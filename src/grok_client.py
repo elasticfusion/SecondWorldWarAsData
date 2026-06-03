@@ -314,7 +314,21 @@ class GrokClient:
             raise GrokAPIError("cache_dir required for batch mode")
         jsonl_path = self.cache_dir / "batch_requests.jsonl"
         count = self._batch_collector.write_jsonl(jsonl_path)
-        logger.info("Wrote %d requests to %s", count, jsonl_path)
+        from collections import Counter
+
+        type_counts = Counter(r.cache_type for r in self._batch_collector.requests)
+        logger.info(
+            "Wrote %d requests to %s — breakdown: %s",
+            count,
+            jsonl_path,
+            dict(type_counts),
+            extra={
+                "extra_fields": {
+                    "event": "batch_breakdown",
+                    "type_counts": dict(type_counts),
+                }
+            },
+        )
 
         # Index requests by id for retry lookup
         requests_by_id = {r.request_id: r for r in self._batch_collector.requests}
@@ -424,12 +438,26 @@ class GrokClient:
                     counter_map.get(status, "empty"),
                     getattr(metrics, counter_map.get(status, "empty")) + 1,
                 )
+                prompt_preview = self._batch_prompt_preview(request_id, requests_by_id)
                 logger.warning(
-                    "Batch result %s: %s (finish_reason=%s, %d chars)",
+                    "Batch result failed: %s [%s] %s (%d chars)",
                     request_id,
+                    cache_type,
                     status,
-                    br.finish_reason,
                     len(br.content),
+                    extra={
+                        "extra_fields": {
+                            "event": "batch_result_failed",
+                            "request_id": request_id,
+                            "cache_type": cache_type,
+                            "status": status,
+                            "finish_reason": br.finish_reason,
+                            "content_length": len(br.content),
+                            "content_tail": br.content[-200:] if br.content else "",
+                            "error": br.error[:500] if br.error else "",
+                            "prompt_preview": prompt_preview,
+                        }
+                    },
                 )
                 failed_ids.append(request_id)
 
@@ -547,11 +575,22 @@ class GrokClient:
 
         # Log token usage
         usage = result.get("usage", {})
-        logger.info(
-            f"Response tokens - prompt: {usage.get('prompt_tokens', 0)}, "
-            f"completion: {usage.get('completion_tokens', 0)}, "
-            f"total: {usage.get('total_tokens', 0)}"
-        )
+        if usage:
+            logger.info(
+                "API tokens: %d prompt, %d completion, %d total",
+                usage.get("prompt_tokens", 0),
+                usage.get("completion_tokens", 0),
+                usage.get("total_tokens", 0),
+                extra={
+                    "extra_fields": {
+                        "event": "api_usage",
+                        "prompt_tokens": usage.get("prompt_tokens", 0),
+                        "completion_tokens": usage.get("completion_tokens", 0),
+                        "total_tokens": usage.get("total_tokens", 0),
+                        "model": self.model,
+                    }
+                },
+            )
 
         # Log response content
         if "choices" in result and len(result["choices"]) > 0:

@@ -1,189 +1,102 @@
 # Documentation Index
 
-**Last Updated:** 2026-05-23
+**Last Updated:** 2026-06-02
 
 ---
 
-## Quick Start
+## Active Documents
 
-- **[README.md](../../README.md)** — Project overview and deployment options
-- **[Content Contributor Guide](CONTENT_CONTRIBUTOR_GUIDE.md)** — Add content without coding
-- **[Local Deployment](LOCAL_DEPLOYMENT.md)** — Run locally with filesystem storage
-- **[AWS Deployment](AWS_DEPLOYMENT.md)** — Deploy with ECS Fargate, S3, DynamoDB
-- **[core/DEVELOPMENT.md](core/DEVELOPMENT.md)** — Setup and development workflow
-- **[core/PIPELINE.md](core/PIPELINE.md)** — Complete pipeline documentation (Phase 1, 2 & 3)
-- **[pipeline/RETRY_WRAPPERS.md](pipeline/RETRY_WRAPPERS.md)** — Automatic retry for Phase 2 & 3
-- **[KNOWN_ISSUES.md](KNOWN_ISSUES.md)** — Known issues and workarounds
+### Deployment & Operations
+| Document | Description |
+|----------|-------------|
+| [LOCAL_DEPLOYMENT.md](LOCAL_DEPLOYMENT.md) | Prerequisites, setup, local run instructions |
+| [AWS_DEPLOYMENT.md](AWS_DEPLOYMENT.md) | CloudFormation, Lambda, ECS, S3 setup |
+| [AWS_DEPLOYMENT_PLAN.md](AWS_DEPLOYMENT_PLAN.md) | Architecture decisions and cost analysis |
+| [GITHUB_ACTIONS_AWS_SETUP.md](GITHUB_ACTIONS_AWS_SETUP.md) | CI/CD with GitHub Actions + OIDC |
+| [SPOT_RECOVERY.md](SPOT_RECOVERY.md) | Spot instance termination handling |
 
----
+### Core Reference
+| Document | Description |
+|----------|-------------|
+| [core/PIPELINE.md](core/PIPELINE.md) | Complete pipeline workflow (Phases 1-4) |
+| [core/CONFIGURATION.md](core/CONFIGURATION.md) | All config.yaml options |
+| [core/CODE_ARCHITECTURE.md](core/CODE_ARCHITECTURE.md) | Code structure and module responsibilities |
+| [core/API_REFERENCE.md](core/API_REFERENCE.md) | GrokClient API |
+| [core/DEVELOPMENT.md](core/DEVELOPMENT.md) | Setup and contributing |
+| [core/TESTING.md](core/TESTING.md) | Test framework and conventions |
+| [core/WORKFLOW_DIAGRAMS.md](core/WORKFLOW_DIAGRAMS.md) | Mermaid diagrams of all flows |
+| [core/ULID_IMPLEMENTATION.md](core/ULID_IMPLEMENTATION.md) | ULID generation and validation |
+| [core/PROMPT_MANAGEMENT.md](core/PROMPT_MANAGEMENT.md) | Prompt template system |
+| [core/TEXT_UTILS.md](core/TEXT_UTILS.md) | Text normalization utilities |
+| [core/JSON_REPAIR.md](core/JSON_REPAIR.md) | LLM JSON output repair |
+| [core/CACHE_AUTO_RECOVERY.md](core/CACHE_AUTO_RECOVERY.md) | Poisoned cache detection |
+| [core/ISO_COUNTRY_CODES.md](core/ISO_COUNTRY_CODES.md) | Country code reference |
 
-## Core Documentation
+### Features (Entity Types)
+| Document | Description |
+|----------|-------------|
+| [features/README.md](features/README.md) | Feature index (all 11 entity types) |
+| [features/events/README.md](features/events/README.md) | Event extraction |
+| [features/dates/README.md](features/dates/README.md) | Date extraction |
+| [features/places/README.md](features/places/README.md) | Place extraction |
+| [features/people/README.md](features/people/README.md) | People extraction + enrichment |
+| [features/people/deduplication.md](features/people/deduplication.md) | People dedup system |
+| [features/people/GROUP_DEDUPLICATION_SYSTEM.md](features/people/GROUP_DEDUPLICATION_SYSTEM.md) | Group dedup |
+| [features/equipment/MILITARY_EQUIPMENT.md](features/equipment/MILITARY_EQUIPMENT.md) | Equipment extraction |
+| [features/weather/README.md](features/weather/README.md) | Weather extraction |
+| [features/logistics/README.md](features/logistics/README.md) | Logistics extraction |
+| [features/maps/README.md](features/maps/README.md) | Maps extraction |
+| [features/external-maps/README.md](features/external-maps/README.md) | External map search |
+| [features/supplemental/SUPPLEMENTAL_COMPLETE.md](features/supplemental/SUPPLEMENTAL_COMPLETE.md) | Supplemental materials |
+| [features/batch_processing/README.md](features/batch_processing/README.md) | Batch API processing |
 
-Essential architecture, configuration, and API documentation.
+### Pipeline Operations
+| Document | Description |
+|----------|-------------|
+| [pipeline/ADDING_DATA_SOURCES.md](pipeline/ADDING_DATA_SOURCES.md) | How to add new books |
+| [pipeline/HYPERWAR_HTML_IMPORT.md](pipeline/HYPERWAR_HTML_IMPORT.md) | HyperWar import process |
+| [pipeline/PDF_CONVERSION.md](pipeline/PDF_CONVERSION.md) | PDF to markdown conversion |
+| [pipeline/RETRY_WRAPPERS.md](pipeline/RETRY_WRAPPERS.md) | Phase 2/3 retry logic |
 
-### Architecture & Configuration
+### Guides
+| Document | Description |
+|----------|-------------|
+| [CONTENT_CONTRIBUTOR_GUIDE.md](CONTENT_CONTRIBUTOR_GUIDE.md) | Adding content to the repository |
+| [PROMPT_EDITING_GUIDE.md](PROMPT_EDITING_GUIDE.md) | Modifying extraction prompts |
+| [SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md) | JSON schemas for all entity types |
+| [VALIDATION_REPORTS.md](VALIDATION_REPORTS.md) | Validation report generation |
 
-- **[CODE_ARCHITECTURE.md](core/CODE_ARCHITECTURE.md)** — Code structure and design patterns
-- **[API_REFERENCE.md](core/API_REFERENCE.md)** — Complete API documentation
-- **[CONFIGURATION.md](core/CONFIGURATION.md)** — config.yaml reference guide
-- **[DEVELOPMENT.md](core/DEVELOPMENT.md)** — Setup and development workflow
-- **[PIPELINE.md](core/PIPELINE.md)** — Phase 1, 2 & 3 pipeline overview
-- **[WORKFLOW_DIAGRAMS.md](core/WORKFLOW_DIAGRAMS.md)** — Visual workflow diagrams
-- **[error_handling.md](core/error_handling.md)** — Error handling patterns (25 patterns)
-- **[PROMPT_MANAGEMENT.md](core/PROMPT_MANAGEMENT.md)** — Grok prompt inventory, patterns, and modification guide
-- **[ULID_IMPLEMENTATION.md](core/ULID_IMPLEMENTATION.md)** — ULID identifier system
+### Specifications
+| Document | Description |
+|----------|-------------|
+| [PHASE4_SPEC.md](PHASE4_SPEC.md) | Phase 4: Document acquisition spec |
+| [TODO.md](TODO.md) | Pipeline backlog (prioritized) |
 
-### Prompts & Extraction
-
-- **[Prompt Editing Guide](PROMPT_EDITING_GUIDE.md)** — How to customize extraction prompts (YAML templates, S3 override, variables)
-- **[prompts/](../../prompts/)** — YAML prompt templates (S3-overridable)
-- **[KNOWN_ISSUES.md](KNOWN_ISSUES.md)** — Entity misclassification, model quirks
-
-### Standards
-
-- **[ISO_COUNTRY_CODES.md](core/ISO_COUNTRY_CODES.md)** — ISO 3166-1 alpha-3 country codes
-- **[JSON_REPAIR.md](core/JSON_REPAIR.md)** — Automatic JSON repair patterns
-- **[CACHE_AUTO_RECOVERY.md](core/CACHE_AUTO_RECOVERY.md)** — Cache corruption auto-recovery (includes poisoned cache auto-detection)
-
-### Testing
-
-- **[TESTING.md](core/TESTING.md)** - Testing framework and best practices
-
-### Scripts
-
-See [scripts/README.md](../../scripts/README.md) for the complete scripts reference.
-
-Key monitoring scripts:
-- **`scripts/monitor_logs.sh`** — Polling-based log monitor with color-coded output
-- **`scripts/json_quality_report.py`** — JSON extraction quality statistics (clean/markdown-stripped/repaired/truncated/failed)
-
----
-
-## Pipeline
-
-Data ingestion and processing workflows.
-
-- **[RETRY_WRAPPERS.md](pipeline/RETRY_WRAPPERS.md)** - Automatic retry for Phase 2 & 3 ⭐
-- **[ADDING_DATA_SOURCES.md](pipeline/ADDING_DATA_SOURCES.md)** - How to add new books/content
-- **[PAPERS_AND_ARTICLES.md](pipeline/PAPERS_AND_ARTICLES.md)** - Handling papers, articles, and non-chapter documents
-- **[PDF_CONVERSION.md](pipeline/PDF_CONVERSION.md)** - Converting PDFs to markdown
-- **[HYPERWAR_HTML_IMPORT.md](pipeline/HYPERWAR_HTML_IMPORT.md)** - HyperWar HTML import
-
----
-
-## Features
-
-### External Maps
-
-External map discovery from archives, museums, and historical sites.
-
-- **[README.md](features/external-maps/README.md)** - Overview and main documentation
-- **[openserp-integration.md](features/external-maps/openserp-integration.md)** - OpenSERP search integration
-- **[grok-search.md](features/external-maps/grok-search.md)** - Grok search-based discovery
-- **[grok-implementation.md](features/external-maps/grok-implementation.md)** - Grok search technical details
-- **[combined-search.md](features/external-maps/combined-search.md)** - Two-phase search strategy
-- **[vision-verification.md](features/external-maps/vision-verification.md)** - Grok vision API verification
-- **[image-processing.md](features/external-maps/image-processing.md)** - Image validation and processing
-- **[domain-blacklist.md](features/external-maps/domain-blacklist.md)** - URL filtering configuration
-- **[search-history.md](features/external-maps/search-history.md)** - Search history tracking
-- **[whitelist-config.md](features/external-maps/whitelist-config.md)** - YAML whitelist configuration
-
-### People Management
-
-Person extraction, deduplication, and group management.
-
-- **[README.md](features/people/README.md)** - Overview and file-per-person architecture
-- **[biographical-enrichment.md](features/people/biographical-enrichment.md)** - Phase 3 biographical enrichment ⭐
-- **[deduplication.md](features/people/deduplication.md)** - Duplicate detection strategy
-- **[duplicate-exclusions.md](features/people/duplicate-exclusions.md)** - False positive prevention
-- **[groups.md](features/people/groups.md)** - Organizations and military units
-- **[GROUP_DEDUPLICATION_SYSTEM.md](features/people/GROUP_DEDUPLICATION_SYSTEM.md)** - Group deduplication v2.0
-
-### Maps
-
-Map extraction from source material.
-
-- **[README.md](features/maps/README.md)** - Maps extraction from source material
-- **[S3_STORAGE.md](features/maps/S3_STORAGE.md)** - S3 storage backend configuration
-
-### Military Equipment
-
-Military equipment extraction and tracking (experimental).
-
-- **[MILITARY_EQUIPMENT.md](features/equipment/MILITARY_EQUIPMENT.md)** - Complete proposal and examples
-- **[MILITARY_EQUIPMENT_SUMMARY.md](features/MILITARY_EQUIPMENT_SUMMARY.md)** - Quick summary
-- **[EQUIPMENT_FINAL_STRUCTURE.md](features/equipment/EQUIPMENT_FINAL_STRUCTURE.md)** - Final schema structure
-- **[EQUIPMENT_DEDUPLICATION.md](features/equipment/EQUIPMENT_DEDUPLICATION.md)** - Equipment deduplication
-- **[EQUIPMENT_ENTITY_LINKING.md](features/equipment/EQUIPMENT_ENTITY_LINKING.md)** - Entity linking
-- **[EQUIPMENT_MEDIA_INTEGRATION.md](features/equipment/EQUIPMENT_MEDIA_INTEGRATION.md)** - Media integration
-- **[EQUIPMENT_ERROR_HANDLING.md](features/equipment/EQUIPMENT_ERROR_HANDLING.md)** - Error handling
-
-### Supplemental Material
-
-Citations, footnotes, endnotes, and bibliographic references.
-
-- **[SUPPLEMENTAL_COMPLETE.md](features/supplemental/SUPPLEMENTAL_COMPLETE.md)** - Complete implementation guide (split architecture) ⭐
-- **[SUPPLEMENTAL_VALIDATION.md](features/supplemental/SUPPLEMENTAL_VALIDATION.md)** - Validation and ULID fixing
-- **[SUPPLEMENTAL_ERROR_HANDLING.md](features/supplemental/SUPPLEMENTAL_ERROR_HANDLING.md)** - Error handling
-- **[SUPPLEMENTAL_TESTING.md](features/supplemental/SUPPLEMENTAL_TESTING.md)** - Testing guide
-
-### Batch Processing
-
-Parallel chapter processing, batched API calls, and xAI Batch API for 50% cost reduction.
-
-- **[batch_processing/README.md](features/batch_processing/README.md)** - Batch and parallel processing architecture ⭐
-- **`src/utils/batch_api.py`** - xAI Batch API client (`--batch` flag on phase2/phase3)
+### Historical
+| Document | Description |
+|----------|-------------|
+| [end-2-end-0.md](end-2-end-0.md) | First end-to-end run issues (2026-05-25) |
 
 ---
 
-## Reference
+## Archived Documents
 
-- **[SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md)** - JSON schema reference for all 11 entity types, cross-reference conventions
-- **[VALIDATION_REPORTS.md](VALIDATION_REPORTS.md)** - Validation report generation
-- **[MONGODB_IMPORT_PLAN.md](MONGODB_IMPORT_PLAN.md)** - MongoDB import plan
-- **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)** - Distributed processing options
-- **[AWS_DEPLOYMENT_PLAN.md](AWS_DEPLOYMENT_PLAN.md)** - AWS Lambda/ECS/S3 deployment plan
-- **[TODO.md](TODO.md)** - Outstanding tasks
-- **[TEXT_UTILS.md](core/TEXT_UTILS.md)** - Text utility functions
+Review documents whose actionable items have been consolidated into [TODO.md](TODO.md):
 
----
-
-## Archive
-
-Historical docs moved to `docs/archive/` — includes phase implementation logs, point-in-time reviews, and superseded schema docs.
-
----
-
-## Archived Documentation
-
-Historical documentation organized by date and subject matter.
-
-Located in: `../archive/`
-
-### Recent Archives
-
-- **2026-03-08/** - Implementation reports (supplemental, QA, group dedup)
-- **changelogs/** - Historical changelogs (2026-03-02, 2026-03-04, reorganization)
-- **bug-fixes/** - Bug fix documentation (2026-03-05)
-- **migrations/** - Migration guides (httpx→requests)
-- **2026-03-02/** - Previous reorganization and consolidation
-
-### Subject Archives
-
-- **core/** - Core architecture archives
-- **external-maps/** - External maps development history
-- **people/** - People management archives
-- **pipeline/** - Pipeline development history
-- **qa-reports/** - Historical QA reports
-- **misc/** - Miscellaneous documentation
-
----
-
-**Navigation:** Use this index to find documentation. All paths are relative to `docs/current/`.
-
-**Contributing:** Follow the established structure when adding new documentation:
-- Core docs → `core/`
-- Pipeline docs → `pipeline/`
-- Feature docs → `features/{feature-name}/`
-- QA reports → `qa-reports/`
-- Dated docs → Archive after consolidation
+- `docs/archive/CODE_REVIEW.md`
+- `docs/archive/QA_GAPS.md`
+- `docs/archive/PERFORMANCE_ENHANCEMENTS.md`
+- `docs/archive/DEVOPS_RECOMMENDATIONS.md`
+- `docs/archive/DATA_SCIENCE_RECOMMENDATIONS.md`
+- `docs/archive/DATA_FLOW_ANALYSIS.md`
+- `docs/archive/PIPELINE_REVIEW.md`
+- `docs/archive/DEDUP_ANALYSIS.md`
+- `docs/archive/DEDUP_ANALYSIS_ALL_ENTITIES.md`
+- `docs/archive/COST_OPTIMIZATION.md`
+- `docs/archive/FUTURE_ENHANCEMENTS.md`
+- `docs/archive/SUGGESTED_CHANGES.md`
+- `docs/archive/POST_FIX_REVIEW.md`
+- `docs/archive/PROMPT_REVIEW.md`
+- `docs/archive/logging.md`
+- `docs/archive/end-2-end-0-ds.md`
+- `docs/archive/MONGODB_IMPORT_PLAN.md`

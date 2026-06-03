@@ -185,6 +185,25 @@ def submit_batch(api_key: str, jsonl_path: Path, batch_name: str = "pipeline") -
     """Upload JSONL and create batch. Returns batch_id."""
     headers = {"Authorization": f"Bearer {api_key}"}
 
+    # Log submission details
+    file_size = jsonl_path.stat().st_size
+    with open(jsonl_path) as f:
+        line_count = sum(1 for _ in f)
+    logger.info(
+        "Submitting batch: %s (%d requests, %.1f KB)",
+        batch_name,
+        line_count,
+        file_size / 1024,
+        extra={
+            "extra_fields": {
+                "event": "batch_submit",
+                "batch_name": batch_name,
+                "request_count": line_count,
+                "jsonl_size_bytes": file_size,
+            }
+        },
+    )
+
     # Upload file
     with open(jsonl_path, "rb") as f:
         resp = requests.post(

@@ -249,17 +249,19 @@ def _trigger_retrieve(job: dict) -> None:
     phase = job.get("phase", "phase3")
     phase_script = "phase2_extract.py" if phase == "phase2" else "phase3_enrich_data.py"
 
-    # First, ensure networking is up (synchronous — must be ready before ECS launch)
+    # First, ensure networking is up
     try:
         lam = boto3.client("lambda", region_name=REGION)
         lam.invoke(
             FunctionName=f"{ENV_NAME}-wwii-nat-manager",
-            InvocationType="RequestResponse",
+            InvocationType="Event",
             Payload=json.dumps({"action": "create"}).encode(),
         )
-        logger.info("Networking ready for retrieve task")
     except Exception as e:
-        logger.warning("Failed to create networking: %s", e)
+        logger.warning("Failed to invoke nat_manager: %s", e)
+
+    # Wait for NAT to be available (takes ~2 min after creation)
+    _wait_for_nat()
 
     # Launch ECS task with --retrieve-only
     ecs = boto3.client("ecs", region_name=REGION)
@@ -316,6 +318,29 @@ def _trigger_retrieve(job: dict) -> None:
             logger.info("Reset job %s to pending for retry", batch_id)
         except Exception:
             pass
+
+
+def _wait_for_nat(max_seconds: int = 180) -> None:
+    """Poll until NAT gateway is available (max 3 min)."""
+    ec2 = boto3.client("ec2", region_name=REGION)
+    import time
+
+    for _ in range(max_seconds // 10):
+        try:
+            resp = ec2.describe_nat_gateways(
+                Filters=[
+                    {"Name": "tag:Project", "Values": ["wwii-pipeline"]},
+                    {"Name": "state", "Values": ["available", "pending"]},
+                ]
+            )
+            gateways = resp.get("NatGateways", [])
+            if any(g["State"] == "available" for g in gateways):
+                logger.info("Networking ready for retrieve task")
+                return
+        except Exception as e:
+            logger.debug("NAT check error: %s", e)
+        time.sleep(10)
+    logger.warning("NAT not available after %ds — launching task anyway", max_seconds)
 
 
 def _get_network_config() -> dict:

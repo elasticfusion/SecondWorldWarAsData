@@ -25,7 +25,6 @@ CACHE_TABLE = os.environ.get("CACHE_TABLE", "")
 NOTIFY_TOPIC = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
 ENV_NAME = os.environ.get("ENV_NAME", "dev")
 NAT_MANAGER_FN = os.environ.get("NAT_MANAGER_FN", f"{ENV_NAME}-wwii-nat-manager")
-NETWORKING_STACK = os.environ.get("NETWORKING_STACK", f"{ENV_NAME}-wwii-networking")
 
 PHASE1_TASK_DEF = os.environ.get("PHASE1_TASK_DEF", f"{ENV_NAME}-wwii-phase1-parse")
 PHASE2_TASK_DEF = os.environ.get("PHASE2_TASK_DEF", f"{ENV_NAME}-wwii-phase2-extract")
@@ -47,7 +46,7 @@ s3 = boto3.client("s3")
 dynamo = boto3.resource("dynamodb").Table(CACHE_TABLE)
 
 
-def handler(event, context):
+def handler(event, _context):
     """Main entry point."""
     # Scheduled stale lock check
     if event.get("source") == "scheduled":
@@ -183,8 +182,22 @@ def _stop_phase2_tasks():
         logger.warning("Failed to stop phase2 tasks: %s", e)
 
 
-def _run_task(task_def, source):
+def _cancel_delayed_teardown():
+    """Cancel any pending delayed networking teardown."""
+    schedule_name = f"{ENV_NAME}-wwii-delayed-teardown"
+    try:
+        scheduler = boto3.client("scheduler")
+        scheduler.delete_schedule(Name=schedule_name)
+        logger.info("Cancelled delayed teardown")
+    except Exception:
+        pass  # Schedule may not exist
+
+
+def _run_task(task_def, source, book_name=""):
     """Create networking, acquire lock, launch ECS task."""
+    # Cancel any pending delayed teardown
+    _cancel_delayed_teardown()
+
     # Ensure networking
     try:
         boto3.client("lambda").invoke(
@@ -232,7 +245,19 @@ def _run_task(task_def, source):
             return
 
     # Launch task
-    logger.info("Launching ECS task %s from %s", family, source)
+    logger.info(
+        "Launching ECS task %s from %s (book=%s)", family, source, book_name or "all"
+    )
+    overrides = {}
+    if book_name:
+        overrides = {
+            "containerOverrides": [
+                {
+                    "name": "pipeline",
+                    "environment": [{"name": "BOOK_NAME", "value": book_name}],
+                }
+            ]
+        }
     ecs.run_task(
         cluster=CLUSTER,
         taskDefinition=task_def,
@@ -248,26 +273,31 @@ def _run_task(task_def, source):
                 "assignPublicIp": "DISABLED",
             }
         },
+        overrides=overrides,
     )
 
 
 def _wait_for_networking():
-    """Poll for networking to be ready (max 3 min)."""
-    cf = boto3.client("cloudformation")
+    """Poll for NAT gateway to be available (max 3 min)."""
+    ec2 = boto3.client("ec2")
     for _ in range(18):
         try:
-            resp = cf.describe_stacks(StackName=NETWORKING_STACK)
-            status = resp["Stacks"][0]["StackStatus"]
-            if status in ("CREATE_COMPLETE", "UPDATE_COMPLETE"):
-                logger.info("Networking stack ready")
+            resp = ec2.describe_nat_gateways(
+                Filters=[
+                    {"Name": "tag:Project", "Values": ["wwii-pipeline"]},
+                    {"Name": "state", "Values": ["available", "pending"]},
+                ]
+            )
+            gateways = resp.get("NatGateways", [])
+            if any(g["State"] == "available" for g in gateways):
+                logger.info("Networking ready (NAT available)")
                 return
-            if "FAILED" in status or "ROLLBACK" in status:
-                logger.warning("Networking stack failed: %s", status)
-                return
-        except Exception:
-            pass
+            if gateways:
+                logger.info("NAT gateway pending, waiting...")
+        except Exception as e:
+            logger.debug("Networking check error: %s", e)
         time.sleep(10)
-    logger.warning("Networking stack not ready after 3 min — launching task anyway")
+    logger.warning("NAT not available after 3 min — launching task anyway")
 
 
 def _queue_pending(keys):
@@ -344,5 +374,19 @@ def _launch_phase2_if_idle():
                 fam,
             )
             return
+    # Extract book name from pending parsed keys
+    book_name = ""
+    try:
+        resp = dynamo.get_item(Key={"cache_key": "pending#parsed"})
+        keys = resp.get("Item", {}).get("keys", [])
+        books = set()
+        for k in keys:
+            parts = k.split("/")
+            if len(parts) >= 3 and parts[0] == "output" and parts[1] == "content":
+                books.add(parts[2])
+        if len(books) == 1:
+            book_name = books.pop()
+    except Exception as e:
+        logger.debug("Could not extract book name from pending keys: %s", e)
     logger.info("Pipeline idle, launching Phase 2 to process queued parsed files")
-    _run_task(PHASE2_TASK_DEF, "pending-parsed")
+    _run_task(PHASE2_TASK_DEF, "pending-parsed", book_name=book_name)

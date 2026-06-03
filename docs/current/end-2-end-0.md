@@ -1,7 +1,8 @@
 # End-to-End Run #0 — Issues Found
 
 **Date:** 2026-05-25  
-**Book:** TheLorraineCampaign
+**Book:** TheLorraineCampaign  
+**Status:** Issues 2, 3, 4 fixed (2026-05-25). Issue 1 (notifications) tracked in TODO.md Medium Priority.
 
 ---
 
@@ -300,3 +301,95 @@ keys = resp.get("Item", {}).get("keys", [])
 books = set(k.split("/")[2] for k in keys if k.startswith("output/content/"))
 # Launch one task per book, or pass the first book
 ```
+
+---
+
+## Feature Request: Separate Batch Jobs for New vs Revised Content
+
+**Context:** When prompts change, the entire corpus needs re-extraction (cache invalidated). This should not block or delay processing of genuinely new content.
+
+**Request:** Split batch submissions into two separate jobs:
+
+1. **New content job** — chapters that have never been processed (no event file in S3). High priority, fast turnaround.
+2. **Revised content job** — chapters that have existing event files but need re-extraction due to prompt/model changes. Lower priority, can run on a schedule.
+
+**Proposed Behavior:**
+
+```
+Phase 2 submit-only:
+  1. Scan for parsed files without event files → "new" set
+  2. Scan for parsed files WITH event files but cache miss → "revised" set
+  3. Submit "new" as immediate batch job (existing flow)
+  4. Submit "revised" as separate batch job (or defer to scheduled run)
+```
+
+**Benefits:**
+- New content gets processed immediately without waiting for full-corpus re-extraction
+- Revised content can be batched into off-peak scheduled runs (e.g., nightly)
+- Easier to track costs: new content extraction vs prompt-improvement re-runs
+- Avoids the 440-request surprise when only 1 new chapter was intended
+
+**Implementation Notes:**
+- Add `batch.revision_schedule: "cron(0 2 * * ? *)"` to config.yaml (run revisions at 2 AM)
+- The batch poller already handles multiple concurrent jobs per phase
+- Job queue already has `book` field — add `job_type: "new" | "revised"` field
+- Revised jobs could use a lower-priority capacity provider or smaller task size
+
+---
+
+## New Issue Found During Review
+
+### Issue 5: Delayed Teardown Uses Wrong API — `at()` Not Supported by EventBridge Rules
+
+**File:** `ecs_entrypoint.py`, `_schedule_delayed_teardown` (line ~1295)
+
+```python
+events.put_rule(
+    ScheduleExpression=f"at({run_at.strftime('%Y-%m-%dT%H:%M:%S')})",
+    ...
+)
+```
+
+The `at()` expression is only supported by **EventBridge Scheduler** (`scheduler.create_schedule`), NOT by **EventBridge Rules** (`events.put_rule`). Rules only support `cron()` and `rate()`. This call will fail with `ValidationException: Parameter ScheduleExpression is not valid`.
+
+**Fix:** Use EventBridge Scheduler instead:
+
+```python
+def _schedule_delayed_teardown(delay_minutes: int = 30) -> None:
+    import datetime
+    env = os.environ.get("ENV_NAME", "dev")
+    schedule_name = f"{env}-wwii-delayed-teardown"
+    run_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=delay_minutes)
+    nat_fn_arn = f"arn:aws:lambda:{REGION}:{_get_account_id()}:function:{env}-wwii-nat-manager"
+    
+    try:
+        scheduler = boto3.client("scheduler", region_name=REGION)
+        scheduler.create_schedule(
+            Name=schedule_name,
+            ScheduleExpression=f"at({run_at.strftime('%Y-%m-%dT%H:%M:%S')})",
+            ScheduleExpressionTimezone="UTC",
+            FlexibleTimeWindow={"Mode": "OFF"},
+            Target={
+                "Arn": nat_fn_arn,
+                "RoleArn": os.environ.get("SCHEDULER_ROLE_ARN", ""),
+                "Input": '{"action": "delete"}',
+            },
+            ActionAfterCompletion="DELETE",  # Auto-cleanup after firing
+        )
+        logger.info("Scheduled networking teardown in %d minutes", delay_minutes)
+    except Exception as e:
+        logger.warning("Failed to schedule delayed teardown: %s", e)
+```
+
+And update `_cancel_delayed_teardown` in trigger_handler.py:
+```python
+def _cancel_delayed_teardown():
+    try:
+        scheduler = boto3.client("scheduler")
+        scheduler.delete_schedule(Name=f"{ENV_NAME}-wwii-delayed-teardown")
+        logger.info("Cancelled delayed teardown")
+    except Exception:
+        pass
+```
+
+**Note:** EventBridge Scheduler requires a separate IAM role (`SCHEDULER_ROLE_ARN`) with permission to invoke the Lambda. Add to CloudFormation.
