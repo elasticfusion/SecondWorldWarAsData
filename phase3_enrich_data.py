@@ -7,6 +7,7 @@ by searching external sources and merging additional data.
 """
 
 import argparse
+import os
 from pathlib import Path
 from typing import Optional
 

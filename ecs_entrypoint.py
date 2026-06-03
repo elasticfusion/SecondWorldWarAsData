@@ -14,6 +14,21 @@ import boto3
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(message)s"
 )
+# Use structured JSON logging in ECS for CloudWatch Logs Insights
+if os.environ.get("ECS_CONTAINER_METADATA_URI"):
+    from src.utils.json_logging import configure_json_logging
+
+    configure_json_logging()
+    # Resolve ECS task ID for log correlation
+    _meta_uri = os.environ.get("ECS_CONTAINER_METADATA_URI_V4", "")
+    if _meta_uri and not os.environ.get("ECS_TASK_ID"):
+        try:
+            import requests as _req
+
+            _task_meta = _req.get(f"{_meta_uri}/task", timeout=2).json()
+            os.environ["ECS_TASK_ID"] = _task_meta.get("TaskARN", "").split("/")[-1]
+        except Exception:
+            pass
 logger = logging.getLogger(__name__)
 
 BUCKET = os.environ["S3_BUCKET"]
@@ -25,7 +40,7 @@ SYNC_INTERVAL = int(os.environ.get("SYNC_INTERVAL", "120"))  # seconds
 _current_phase_script = ""
 
 
-def _handle_sigterm(signum, frame):
+def _handle_sigterm(_signum, _frame):
     """Emergency sync on spot termination — 30 second window."""
     logger.warning("SIGTERM received — performing emergency S3 sync")
     try:
@@ -96,6 +111,11 @@ def _clear_manifest() -> None:
 
 def _s3_client():
     return boto3.client("s3", region_name=REGION)
+
+
+def _get_account_id() -> str:
+    """Get AWS account ID from STS."""
+    return boto3.client("sts", region_name=REGION).get_caller_identity()["Account"]
 
 
 _downloaded_keys: set = set()
@@ -425,17 +445,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     _start_openserp_if_needed(phase_script)
 
     if "phase1" in phase_script:
-        _remove_lock(phase_script)  # Only clear own lock, not Phase 2/3
-        # Reset dedup review (new content requires re-review)
-        try:
-            _s3_client().put_object(
-                Bucket=BUCKET,
-                Key="dedup/review_status.json",
-                Body=json.dumps({"complete": False, "reviewed": {}}).encode(),
-            )
-            logger.info("Reset dedup review status")
-        except Exception as e:
-            logger.warning("Failed to reset dedup status: %s", e)
+        _prepare_phase1()
 
     _download_inputs(phase_script)
     _setup_symlinks()
@@ -448,7 +458,86 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     if "phase2" in phase_script or "phase3" in phase_script:
         sync.start()
 
-    # Check config for batch mode — delegate to submit-only if enabled
+    # Delegate to submit-only if batch mode enabled for this phase
+    if _should_use_batch_mode(phase_script):
+        sync.stop()
+        run_submit_only(phase_script, extra_args)
+        return
+
+    env = os.environ.copy()
+    phase_name = Path(phase_script).stem
+    env["PIPELINE_PHASE"] = phase_name
+    cmd = [sys.executable, phase_script] + extra_args
+    logger.info(
+        "Phase started: %s",
+        phase_name,
+        extra={"extra_fields": {"event": "phase_start", "phase": phase_name}},
+    )
+    import time as _time
+
+    _phase_start = _time.monotonic()
+    result = subprocess.run(cmd, cwd="/app", env=env, check=False)
+    _phase_duration = _time.monotonic() - _phase_start
+
+    sync.stop()
+
+    if result.returncode != 0:
+        logger.error(
+            "Phase failed: %s (code %d, %.0fs)",
+            phase_name,
+            result.returncode,
+            _phase_duration,
+            extra={
+                "extra_fields": {
+                    "event": "phase_failed",
+                    "phase": phase_name,
+                    "returncode": result.returncode,
+                    "duration_s": round(_phase_duration),
+                }
+            },
+        )
+        _notify_failure(phase_script, result.returncode)
+        _final_sync(phase_script)
+        if "phase3" not in phase_script:
+            _remove_lock(phase_script)
+        sys.exit(result.returncode)
+
+    logger.info(
+        "Phase complete: %s (%.0fs)",
+        phase_name,
+        _phase_duration,
+        extra={
+            "extra_fields": {
+                "event": "phase_complete",
+                "phase": phase_name,
+                "duration_s": round(_phase_duration),
+            }
+        },
+    )
+
+    if "phase1" in phase_script:
+        _clear_manifest()
+
+    _final_sync(phase_script)
+    _post_process(phase_script, env)
+
+
+def _prepare_phase1() -> None:
+    """Phase 1 pre-processing: clear own lock and reset dedup status."""
+    _remove_lock(_current_phase_script)
+    try:
+        _s3_client().put_object(
+            Bucket=BUCKET,
+            Key="dedup/review_status.json",
+            Body=json.dumps({"complete": False, "reviewed": {}}).encode(),
+        )
+        logger.info("Reset dedup review status")
+    except Exception as e:
+        logger.warning("Failed to reset dedup status: %s", e)
+
+
+def _should_use_batch_mode(phase_script: str) -> bool:
+    """Check if batch mode is enabled for this phase in config."""
     import yaml
 
     try:
@@ -462,34 +551,10 @@ def run_phase(phase_script: str, extra_args: list) -> None:
         )
         if phase_key and batch_cfg.get(phase_key, False):
             logger.info("Batch mode enabled for %s — using submit-only flow", phase_key)
-            sync.stop()
-            run_submit_only(phase_script, extra_args)
-            return
+            return True
     except Exception:
         pass
-
-    env = os.environ.copy()
-    cmd = [sys.executable, phase_script] + extra_args
-    logger.info("Running: %s", " ".join(cmd))
-    result = subprocess.run(cmd, cwd="/app", env=env, check=False)
-
-    sync.stop()
-
-    if result.returncode != 0:
-        logger.error("Phase script exited with code %d", result.returncode)
-        _notify_failure(phase_script, result.returncode)
-        _final_sync(phase_script)
-        if "phase3" not in phase_script:
-            _remove_lock(phase_script)
-        sys.exit(result.returncode)
-
-    # Clear manifest before Phase 1 upload so the trigger Lambda's new
-    # manifest entries (from S3 notifications) aren't wiped after the fact
-    if "phase1" in phase_script:
-        _clear_manifest()
-
-    _final_sync(phase_script)
-    _post_process(phase_script, env)
+    return False
 
 
 def _get_book_entity_files(s3, book_name: str) -> list:
@@ -757,6 +822,7 @@ def _post_process(phase_script: str, env: dict) -> None:
                 "Dedup detection failed after 2 attempts — sending notification anyway"
             )
         _check_pending_content()
+        _schedule_delayed_teardown()
     if "phase3" not in phase_script:
         _remove_lock(phase_script)
     _stop_openserp_if_running(phase_script)
@@ -794,7 +860,15 @@ def _check_pending_content() -> None:
 
 def _run_dedup_detection(env: dict) -> None:
     """Run duplicate detection scripts after Phase 2."""
-    # Reclassify military units from places to groups
+    _reclassify_military_units()
+    _cleanup_entity_indexes()
+    _migrate_exclusions_to_dynamo()
+    _download_dedup_data()
+    _execute_dedup_scripts()
+
+
+def _reclassify_military_units() -> None:
+    """Reclassify military units from places to groups."""
     try:
         from scripts.reclassify_military_units import reclassify
 
@@ -802,7 +876,9 @@ def _run_dedup_detection(env: dict) -> None:
     except Exception as e:
         logger.warning("Military unit reclassification failed: %s", e)
 
-    # Clean stale index entries before dedup
+
+def _cleanup_entity_indexes() -> None:
+    """Clean stale index entries before dedup."""
     try:
         from scripts.cleanup_indexes import cleanup_index
 
@@ -818,7 +894,9 @@ def _run_dedup_detection(env: dict) -> None:
     except Exception as e:
         logger.warning("Index cleanup failed: %s", e)
 
-    # Migrate local exclusion files to DynamoDB (one-time, idempotent)
+
+def _migrate_exclusions_to_dynamo() -> None:
+    """Migrate local exclusion files to DynamoDB (one-time, idempotent)."""
     try:
         from src.dedup.exclusions import migrate_local_to_dynamo
 
@@ -843,8 +921,9 @@ def _run_dedup_detection(env: dict) -> None:
     except Exception as e:
         logger.warning("Exclusion migration failed: %s", e)
 
-    # Download index.json files from S3 for cross-book name matching.
-    # Exclusions are now in DynamoDB — no file download needed.
+
+def _download_dedup_data() -> None:
+    """Download entity files needed for cross-book dedup comparison."""
     s3 = _s3_client()
     dedup_files = [
         "output/people/index.json",
@@ -854,7 +933,6 @@ def _run_dedup_detection(env: dict) -> None:
     ]
     for key in dedup_files:
         _download_s3_file(s3, key)
-    # Download ALL entity files for full cross-book dedup comparison
     for prefix in [
         "output/people/",
         "output/people_groups/",
@@ -862,7 +940,6 @@ def _run_dedup_detection(env: dict) -> None:
         "output/equipment/",
     ]:
         _download_s3_prefix_skip_existing(s3, prefix)
-    # Download event files for cross-book text proximity matching
     d, s = _download_s3_prefix_skip_existing(s3, "output/content/")
     logger.info(
         "Dedup: downloaded entity + event files (%d event files, %d skipped)",
@@ -870,6 +947,9 @@ def _run_dedup_detection(env: dict) -> None:
         s,
     )
 
+
+def _execute_dedup_scripts() -> None:
+    """Run dedup detection scripts and upload reports."""
     dedup_scripts = [
         "scripts/find_duplicate_people.py",
         "scripts/find_duplicate_places_v2.py",
@@ -888,7 +968,7 @@ def _run_dedup_detection(env: dict) -> None:
                 logger.warning(
                     "Dedup script %s exited with code %d", script, result.returncode
                 )
-    # Sync dedup reports to S3 (only entity dirs, not book dirs)
+    # Sync dedup reports to S3
     entity_dirs = ["people", "people_groups", "places", "equipment"]
     for subdir in entity_dirs:
         d = WORKDIR / "output" / subdir
@@ -1269,6 +1349,65 @@ def _clear_all_locks() -> None:
         pass
 
 
+def _schedule_delayed_teardown(delay_minutes: int = 30) -> None:
+    """Schedule networking teardown after a delay via EventBridge Scheduler.
+
+    If Phase 3 launches before the delay expires, the trigger Lambda
+    cancels this schedule. Avoids churn when dedup review is fast.
+    """
+    import datetime
+
+    env = os.environ.get("ENV_NAME", "dev")
+    schedule_name = f"{env}-wwii-delayed-teardown"
+    run_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
+        minutes=delay_minutes
+    )
+    nat_fn_arn = (
+        f"arn:aws:lambda:{REGION}:{_get_account_id()}:function:{env}-wwii-nat-manager"
+    )
+    role_arn = os.environ.get(
+        "SCHEDULER_ROLE_ARN",
+        f"arn:aws:iam::{_get_account_id()}:role/{env}-wwii-scheduler-role",
+    )
+    try:
+        scheduler = boto3.client("scheduler", region_name=REGION)
+        scheduler.create_schedule(
+            Name=schedule_name,
+            ScheduleExpression=f"at({run_at.strftime('%Y-%m-%dT%H:%M:%S')})",
+            ScheduleExpressionTimezone="UTC",
+            FlexibleTimeWindow={"Mode": "OFF"},
+            Target={
+                "Arn": nat_fn_arn,
+                "RoleArn": role_arn,
+                "Input": '{"action": "delete"}',
+            },
+            ActionAfterCompletion="DELETE",
+        )
+        logger.info("Scheduled networking teardown in %d minutes", delay_minutes)
+    except scheduler.exceptions.ConflictException:
+        # Schedule already exists — update it
+        try:
+            scheduler.update_schedule(
+                Name=schedule_name,
+                ScheduleExpression=f"at({run_at.strftime('%Y-%m-%dT%H:%M:%S')})",
+                ScheduleExpressionTimezone="UTC",
+                FlexibleTimeWindow={"Mode": "OFF"},
+                Target={
+                    "Arn": nat_fn_arn,
+                    "RoleArn": role_arn,
+                    "Input": '{"action": "delete"}',
+                },
+                ActionAfterCompletion="DELETE",
+            )
+            logger.info(
+                "Updated delayed teardown schedule to %d minutes", delay_minutes
+            )
+        except Exception as e:
+            logger.warning("Failed to update delayed teardown: %s", e)
+    except Exception as e:
+        logger.warning("Failed to schedule delayed teardown: %s", e)
+
+
 def _teardown_networking() -> None:
     """Scale down OpenSERP and invoke nat_manager to delete NAT + VPC endpoints."""
     try:
@@ -1329,7 +1468,9 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
 
     cmd = [sys.executable, phase_script] + extra_args
     logger.info("Running (submit-only): %s", " ".join(cmd))
-    result = subprocess.run(cmd, cwd="/app", env=os.environ.copy(), check=False)
+    env = os.environ.copy()
+    env["PIPELINE_PHASE"] = Path(phase_script).stem
+    result = subprocess.run(cmd, cwd="/app", env=env, check=False)
 
     sync.stop()
     _batch_mod.poll_batch = _orig_poll
@@ -1376,15 +1517,39 @@ def _enqueue_from_metrics(phase_script: str) -> None:
         return
 
     phase = "phase2" if "phase2" in phase_script else "phase3"
+    book = os.environ.get("BOOK_NAME", "unknown")
+    request_count = metrics.get("total_requests", 0)
+
+    # Dedup guard: skip if identical batch already pending or recently completed
+    try:
+        from src.utils.job_queue import get_active_jobs
+
+        for existing in get_active_jobs():
+            if (
+                existing.phase == phase
+                and existing.book == book
+                and existing.request_count == request_count
+            ):
+                logger.warning(
+                    "Skipping batch submission — identical job already pending "
+                    "(batch_id=%s, book=%s, requests=%d)",
+                    existing.batch_id,
+                    book,
+                    request_count,
+                )
+                return
+    except Exception as e:
+        logger.debug("Dedup guard check failed (proceeding): %s", e)
+
     enqueue_job(
         BatchJob(
             batch_id=batch_id,
             phase=phase,
-            book=os.environ.get("BOOK_NAME", "unknown"),
+            book=book,
             batch_name=metrics.get("batch_name", ""),
             submitted_at=int(_t.time()),
             status="pending",
-            request_count=metrics.get("total_requests", 0),
+            request_count=request_count,
         )
     )
 
@@ -1417,6 +1582,8 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     if job.book and job.book != "unknown":
         os.environ["BOOK_NAME"] = job.book
     _download_inputs(phase_script)
+    # Download metrics so cache_type mapping is available for result classification
+    _download_s3_prefix(_s3_client(), "output/metrics/")
     _setup_symlinks()
 
     if "phase3" in phase_script:
@@ -1465,6 +1632,7 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
 
     env = os.environ.copy()
     env["SKIP_RETRY"] = "1"
+    env["PIPELINE_PHASE"] = Path(phase_script).stem
     cmd = [sys.executable, phase_script] + clean_args
     logger.info("Re-running with cached results: %s", " ".join(cmd))
     result = subprocess.run(cmd, cwd="/app", env=env, check=False)

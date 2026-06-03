@@ -1,6 +1,7 @@
 """Logging configuration and setup."""
 
 import logging
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -56,7 +57,13 @@ def setup_logging(
 
     if console:
         console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setFormatter(formatter)
+        # Use JSON in ECS, plain text locally
+        if os.environ.get("ECS_CONTAINER_METADATA_URI"):
+            from src.utils.json_logging import JSONFormatter
+
+            console_handler.setFormatter(JSONFormatter())
+        else:
+            console_handler.setFormatter(formatter)
         # Force UTF-8 encoding to prevent null byte artifacts
         if hasattr(sys.stdout, "reconfigure"):
             sys.stdout.reconfigure(encoding="utf-8", errors="replace")

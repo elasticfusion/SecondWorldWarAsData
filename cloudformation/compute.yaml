@@ -125,6 +125,10 @@ Resources:
               Value: !Sub https://${DedupApi}.execute-api.${AWS::Region}.amazonaws.com/app/dedup
             - Name: CONTENT_TOPIC_ARN
               Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-content-uploaded
+            - Name: ENV_NAME
+              Value: !Ref EnvironmentName
+            - Name: SCHEDULER_ROLE_ARN
+              Value: !Sub arn:aws:iam::${AWS::AccountId}:role/${EnvironmentName}-wwii-scheduler-role
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -713,6 +717,82 @@ Resources:
             - !Ref PrivateSubnet2Id
           SecurityGroups:
             - !Ref OpenSerpSGId
+
+  PipelineDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub ${EnvironmentName}-wwii-pipeline-logs
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "log",
+              "x": 0, "y": 0, "width": 12, "height": 6,
+              "properties": {
+                "title": "Pipeline Run Summary",
+                "region": "${AWS::Region}",
+                "view": "table",
+                "logGroupNames": ["/ecs/${EnvironmentName}-wwii-pipeline"],
+                "query": "fields @timestamp, extra_fields.phase, extra_fields.duration_s | filter extra_fields.event = 'phase_complete' OR extra_fields.event = 'phase_failed' | sort @timestamp desc | limit 20"
+              }
+            },
+            {
+              "type": "log",
+              "x": 12, "y": 0, "width": 12, "height": 6,
+              "properties": {
+                "title": "Batch Submissions",
+                "region": "${AWS::Region}",
+                "view": "table",
+                "logGroupNames": ["/ecs/${EnvironmentName}-wwii-pipeline"],
+                "query": "fields @timestamp, extra_fields.batch_name, extra_fields.request_count, extra_fields.type_counts | filter extra_fields.event = 'batch_submit' OR extra_fields.event = 'batch_breakdown' | sort @timestamp desc | limit 20"
+              }
+            },
+            {
+              "type": "log",
+              "x": 0, "y": 6, "width": 12, "height": 6,
+              "properties": {
+                "title": "Failed Batch Results",
+                "region": "${AWS::Region}",
+                "view": "table",
+                "logGroupNames": ["/ecs/${EnvironmentName}-wwii-pipeline"],
+                "query": "fields @timestamp, extra_fields.request_id, extra_fields.cache_type, extra_fields.status, extra_fields.finish_reason, extra_fields.content_tail | filter extra_fields.event = 'batch_result_failed' | sort @timestamp desc | limit 50"
+              }
+            },
+            {
+              "type": "log",
+              "x": 12, "y": 6, "width": 12, "height": 6,
+              "properties": {
+                "title": "Token Usage (hourly)",
+                "region": "${AWS::Region}",
+                "view": "bar",
+                "logGroupNames": ["/ecs/${EnvironmentName}-wwii-pipeline"],
+                "query": "filter extra_fields.event = 'api_usage' | stats sum(extra_fields.total_tokens) as total_tokens, sum(extra_fields.prompt_tokens) as prompt, sum(extra_fields.completion_tokens) as completion by bin(1h)"
+              }
+            },
+            {
+              "type": "log",
+              "x": 0, "y": 12, "width": 12, "height": 6,
+              "properties": {
+                "title": "Rate Limiting Events",
+                "region": "${AWS::Region}",
+                "view": "bar",
+                "logGroupNames": ["/ecs/${EnvironmentName}-wwii-pipeline"],
+                "query": "filter message like /Rate limit/ OR message like /429/ OR message like /backing off/ | stats count() as rate_limits by bin(10m)"
+              }
+            },
+            {
+              "type": "log",
+              "x": 12, "y": 12, "width": 12, "height": 6,
+              "properties": {
+                "title": "Errors (last 24h)",
+                "region": "${AWS::Region}",
+                "view": "table",
+                "logGroupNames": ["/ecs/${EnvironmentName}-wwii-pipeline"],
+                "query": "fields @timestamp, level, message, extra_fields.phase, extra_fields.book | filter level = 'ERROR' | sort @timestamp desc | limit 50"
+              }
+            }
+          ]
+        }
 
 Outputs:
   TriggerFunctionArn:

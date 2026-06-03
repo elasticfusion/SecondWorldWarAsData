@@ -84,6 +84,14 @@ echo "  Pushed: $(aws ecr describe-images --repository-name wwii-pipeline --regi
 
 echo ""
 echo "=== 5. Deploying CloudFormation ==="
+# Check stack is in a deployable state
+STACK_STATUS=$(aws cloudformation describe-stacks --stack-name wwii-pipeline-$ENV --region $REGION --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "DOES_NOT_EXIST")
+if [[ "$STACK_STATUS" == *"IN_PROGRESS"* ]]; then
+    echo "  ❌ Stack is $STACK_STATUS — wait for it to finish before deploying"
+    echo "  Monitor: aws cloudformation describe-stacks --stack-name wwii-pipeline-$ENV --query Stacks[0].StackStatus --output text --region $REGION"
+    exit 1
+fi
+echo "  Stack status: $STACK_STATUS"
 aws s3 sync cloudformation/ s3://$TEMPLATE_BUCKET/cloudformation/ --region $REGION
 python3 scripts/deploy_aws.py deploy --env $ENV --region $REGION --template-bucket $TEMPLATE_BUCKET --pipeline-image $PIPELINE_IMAGE --openserp-image $OPENSERP_IMAGE --notification-email $EMAIL
 
@@ -110,6 +118,9 @@ echo "  Dedup: $(aws s3 cp s3://dev-wwii-data-pipeline/dedup/review_status.json 
 echo ""
 echo "=== Deploy complete ==="
 echo "  $(date)"
+echo ""
+echo "=== 9. Validate structured logging ==="
+bash scripts/validate_logging.sh --cloudwatch || echo "  ⚠ CloudWatch validation incomplete (may need a pipeline run first)"
 echo ""
 echo "Monitor with:"
 echo "  aws logs tail /ecs/dev-wwii-pipeline --follow --region $REGION --since 2m"

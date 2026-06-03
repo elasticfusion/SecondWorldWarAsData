@@ -156,6 +156,12 @@ Resources:
                   - lambda:DeleteFunctionConcurrency
                 Resource:
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-*
+              - Sid: SchedulerCancel
+                Effect: Allow
+                Action:
+                  - scheduler:DeleteSchedule
+                Resource:
+                  - !Sub arn:aws:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/default/${EnvironmentName}-wwii-*
               - Sid: CloudFormationManagement
                 Effect: Allow
                 Action:
@@ -235,12 +241,19 @@ Resources:
                 Action:
                   - ecs:DescribeServices
                   - ecs:UpdateService
-                  - ecs:ListTasks
                   - ecs:DescribeTasks
                 Resource:
                   - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${EnvironmentName}-wwii-*
                   - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:service/${EnvironmentName}-wwii-*/*
                   - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task/${EnvironmentName}-wwii-*/*
+              - Sid: ECSListTasks
+                Effect: Allow
+                Action:
+                  - ecs:ListTasks
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    aws:RequestedRegion: !Ref AWS::Region
               - Sid: LambdaManagement
                 Effect: Allow
                 Action:
@@ -249,6 +262,23 @@ Resources:
                   - lambda:DeleteFunctionConcurrency
                 Resource:
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-*
+              - Sid: SchedulerManagement
+                Effect: Allow
+                Action:
+                  - scheduler:CreateSchedule
+                  - scheduler:UpdateSchedule
+                  - scheduler:DeleteSchedule
+                Resource:
+                  - !Sub arn:aws:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/default/${EnvironmentName}-wwii-*
+              - Sid: PassSchedulerRole
+                Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  - !GetAtt SchedulerRole.Arn
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: scheduler.amazonaws.com
 
   ECSTaskExecutionRole:
     Type: AWS::IAM::Role
@@ -274,6 +304,26 @@ Resources:
         - sts.amazonaws.com
       ThumbprintList:
         - 6938fd4d98bab03faadb97b34396831e3780aea1
+
+  SchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-scheduler-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: InvokeNatManager
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-nat-manager
 
   GitHubActionsDeployRole:
     Type: AWS::IAM::Role
@@ -415,6 +465,8 @@ Outputs:
     Value: !GetAtt ECSTaskRole.Arn
   ECSTaskExecutionRoleArn:
     Value: !GetAtt ECSTaskExecutionRole.Arn
+  SchedulerRoleArn:
+    Value: !GetAtt SchedulerRole.Arn
   GitHubActionsDeployRoleArn:
     Condition: EnableGitHubOIDC
     Value: !GetAtt GitHubActionsDeployRole.Arn
