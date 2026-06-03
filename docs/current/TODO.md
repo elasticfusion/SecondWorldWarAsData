@@ -52,22 +52,6 @@ Causes unnecessary retries that always find nothing.
 
 ### Infrastructure Fixes
 
-#### Fix watchdog notification failure preventing self-termination
-If `_notify_failure` raises, SIGTERM is never sent. Wrap in try/except before `os.kill`.
-*Source: POST_FIX_REVIEW.md*
-
-#### Fix `_stamp_file` non-atomic writes
-Uses `write_text()` directly. Use `write_json_with_lock` or temp+replace.
-*Source: POST_FIX_REVIEW.md*
-
-#### SQS MessageRetentionPeriod too short (1hr)
-Messages lost during outages. Increase to 4-14 days.
-*Source: CODE_REVIEW.md*
-
-#### Fix CloudWatch Alarms referencing wrong namespace
-Alarms reference Lambda namespace for ECS tasks — non-functional monitoring.
-*Source: CODE_REVIEW.md*
-
 #### Fix EntityCreatedTopic S3 notification (never configured)
 Phase 3 entity-created flow broken.
 *Source: CODE_REVIEW.md*
@@ -105,31 +89,6 @@ Operator blind to stalled batches.
 #### Phase 1 notification: include incremental vs full context
 "Incremental: 3 new files" vs "Full re-parse: 47 files".
 *Source: PIPELINE_REVIEW.md*
-
-### Testing
-
-#### Write tests for batch_parallel.py
-Critical orchestration module (1007 lines) with zero tests.
-*Source: QA_GAPS.md, CODE_REVIEW.md*
-
-#### Write tests for dedup_ui_handler.py
-User-facing Lambda (1141 lines) with zero tests.
-*Source: QA_GAPS.md*
-
-#### Add extraction-time validation
-Validate required fields present, referenced IDs exist before writing entity files.
-*Source: DATA_SCIENCE_RECOMMENDATIONS.md*
-
-#### Validate all 11 entity types in CI
-Currently only validates 3 of 11.
-*Source: QA_GAPS.md*
-
-#### Convert anti-pattern tests to proper pytest tests
-3 test files with zero assertions.
-*Source: QA_GAPS.md*
-
-#### Add S3 mocking with moto for storage layer tests
-*Source: QA_GAPS.md*
 
 ### CI/CD & DevOps
 
@@ -179,17 +138,9 @@ Image + base64 = ~4x memory. 80MB for a 20MB image.
 
 ### Testing
 
-#### Add golden file tests for extraction
-Catches prompt/schema regressions.
-*Source: CODE_REVIEW.md*
-
-#### Add integration tests for Phase 3 enrichment pipeline
-Mock external APIs, test merge logic.
-*Source: QA_GAPS.md*
-
-#### Add Lambda handler tests (remaining 7 handlers)
-Use moto for DynamoDB/S3/Lambda mocking.
-*Source: QA_GAPS.md*
+#### Expand Lambda handler tests with invocation tests
+Current tests only verify importability. Add at least one `handler(event, context)` call per handler with mocked boto3 clients. Requires refactoring handlers to avoid module-level boto3 initialization.
+*Source: QA review*
 
 #### Local end-to-end simulation test
 Full pipeline with mocked Grok API (canned JSON responses).
@@ -356,6 +307,19 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Add OpenSERP circuit breaker (5 consecutive failures → skip remaining, 90-day retry via timestamp)
 - ✅ Phase 3 batch architecture verified (already implemented: submit-only collects searches + Grok prompts → batch API → retrieve-only hits all caches)
 - ✅ Grok model tiering (model_map in config.yaml routes cache_type to per-task model, works in both real-time and batch)
+- ✅ Write tests for batch_parallel.py (14 tests: entity creation, helpers, process logic)
+- ✅ Convert test_equipment_deduplication.py to proper pytest (4 tests with assertions)
+- ✅ Write tests for dedup_ui_handler.py (11 tests: path validation, actions, helpers, report modification)
+- ✅ Add extraction-time validation (required fields checked on every entity write, warns on missing)
+- ✅ Validate all 11 entity types in CI (fixed 3 schema name mismatches: places→place, dates→date, maps→map)
+- ✅ Add S3 mocking with moto for storage layer tests (10 tests: read/write/list/delete/prefix/errors)
+- ✅ Add golden file tests for extraction (13 tests: parsed structure, event structure, entity schemas, index format)
+- ✅ Add integration tests for Phase 3 enrichment (5 tests: enrichment flow, skip-enriched, not_found, max_people)
+- ✅ Add Lambda handler tests (7 tests: dedup_gate logic + importability for all 8 handlers)
+- ✅ Fix mypy errors in phase2/phase3 Lambda handlers (type mismatch + 4 wrong function names)
+- ✅ Verify watchdog notification + _stamp_file already fixed (try/except + atomic write already in place)
+- ✅ SQS MessageRetentionPeriod increased (3600 → 1209600 = 14 days)
+- ✅ Fix CloudWatch Alarms (pointed to ECS task names instead of Lambda functions)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)

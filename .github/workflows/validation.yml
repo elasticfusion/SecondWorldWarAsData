@@ -61,14 +61,14 @@ jobs:
         if: hashFiles('output/places/*.json') != ''
         run: |
           python scripts/validation_report.py validate output/places \
-            --schema places --format html \
+            --schema place --format html \
             --output reports/places_validation.html --save-history
 
       - name: Validate Dates Data
         if: hashFiles('output/dates/*.json') != ''
         run: |
           python scripts/validation_report.py validate output/dates \
-            --schema dates --format html \
+            --schema date --format html \
             --output reports/dates_validation.html --save-history
 
       - name: Validate Logistics Data
@@ -103,7 +103,7 @@ jobs:
         if: hashFiles('output/maps/*.json') != ''
         run: |
           python scripts/validation_report.py validate output/maps \
-            --schema maps --format html \
+            --schema map --format html \
             --output reports/maps_validation.html --save-history
 
       - name: Validate People Groups Data

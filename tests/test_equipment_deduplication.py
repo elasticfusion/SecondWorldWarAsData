@@ -1,85 +1,61 @@
-#!/usr/bin/env python3
 """Test equipment image deduplication."""
 
-import sys
-from pathlib import Path
-
-from src.extraction.equipment import _compute_image_hash
+import pytest
 
 
-def test_image_hash():
-    """Test image hash computation."""
-    print("Testing image hash computation...")
-
-    # Find some equipment images
-    filestore = Path("filestore/equipment")
-    if not filestore.exists():
-        print("❌ No equipment filestore found")
-        return False
-
-    image_files = list(filestore.glob("*/*.jpg"))[:5]
-    if not image_files:
-        print("❌ No images found")
-        return False
-
-    print(f"Found {len(image_files)} images to test")
-
-    hashes = {}
-    for img_path in image_files:
-        img_hash = _compute_image_hash(img_path)
-        if img_hash:
-            print(f"✅ {img_path.name}: {img_hash}")
-            if img_hash in hashes:
-                print(f"   🔍 Duplicate of: {hashes[img_hash]}")
-            else:
-                hashes[img_hash] = img_path.name
-        else:
-            print(f"❌ Failed to hash: {img_path.name}")
-
-    print(f"\n{len(hashes)} unique images out of {len(image_files)}")
-    return True
-
-
-def test_duplicate_detection():
-    """Test that same image produces same hash."""
-    print("\nTesting duplicate detection...")
-
-    filestore = Path("filestore/equipment")
-    image_files = list(filestore.glob("*/*.jpg"))[:1]
-
-    if not image_files:
-        print("⚠️  No images to test")
-        return True
-
-    img_path = image_files[0]
-    hash1 = _compute_image_hash(img_path)
-    hash2 = _compute_image_hash(img_path)
-
-    if hash1 == hash2:
-        print(f"✅ Same image produces same hash: {hash1}")
-        return True
-    else:
-        print(f"❌ Hash mismatch: {hash1} != {hash2}")
-        return False
-
-
-if __name__ == "__main__":
-    print("=" * 60)
-    print("Equipment Image Deduplication Test")
-    print("=" * 60)
+def test_compute_image_hash_same_image(tmp_path):
+    """Same image file produces same hash."""
+    from src.extraction.equipment import _compute_image_hash
 
     try:
-        result1 = test_image_hash()
-        result2 = test_duplicate_detection()
+        from PIL import Image
 
-        print("\n" + "=" * 60)
-        if result1 and result2:
-            print("✅ All tests passed")
-            sys.exit(0)
-        else:
-            print("❌ Some tests failed")
-            sys.exit(1)
-    except ImportError as e:
-        print(f"\n⚠️  Missing dependency: {e}")
-        print("Run: pip install Pillow imagehash")
-        sys.exit(1)
+        img_path = tmp_path / "test.jpg"
+        Image.new("RGB", (64, 64), color="red").save(img_path, format="JPEG")
+
+        hash1 = _compute_image_hash(img_path)
+        hash2 = _compute_image_hash(img_path)
+        assert hash1 is not None
+        assert hash1 == hash2
+    except ImportError:
+        pytest.skip("Pillow not available")
+
+
+def test_compute_image_hash_different_images(tmp_path):
+    """Visually distinct images produce different perceptual hashes."""
+    from src.extraction.equipment import _compute_image_hash
+
+    try:
+        from PIL import Image, ImageDraw
+
+        path1 = tmp_path / "img1.jpg"
+        img1 = Image.new("RGB", (128, 128), color="white")
+        ImageDraw.Draw(img1).rectangle([0, 0, 64, 64], fill="black")
+        img1.save(path1, format="JPEG")
+
+        path2 = tmp_path / "img2.jpg"
+        img2 = Image.new("RGB", (128, 128), color="black")
+        ImageDraw.Draw(img2).rectangle([64, 64, 128, 128], fill="white")
+        img2.save(path2, format="JPEG")
+
+        hash1 = _compute_image_hash(path1)
+        hash2 = _compute_image_hash(path2)
+        assert hash1 != hash2
+    except ImportError:
+        pytest.skip("Pillow not available")
+
+
+def test_compute_image_hash_invalid_file(tmp_path):
+    """Invalid file returns None."""
+    from src.extraction.equipment import _compute_image_hash
+
+    bad_file = tmp_path / "not_image.jpg"
+    bad_file.write_text("not an image")
+    assert _compute_image_hash(bad_file) is None
+
+
+def test_compute_image_hash_missing_file(tmp_path):
+    """Missing file returns None."""
+    from src.extraction.equipment import _compute_image_hash
+
+    assert _compute_image_hash(tmp_path / "nonexistent.jpg") is None

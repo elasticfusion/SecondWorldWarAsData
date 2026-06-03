@@ -81,8 +81,8 @@ def _extract_chapter(key: str, storage, grok_client, config: dict) -> None:
     from src.extraction.events import extract_events
 
     # Download parsed file to temp
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmpdir = Path(tmpdir)
+    with tempfile.TemporaryDirectory() as tmp:
+        tmpdir = Path(tmp)
         data = storage.read_json(key)
         parsed_file = tmpdir / Path(key).name
         parsed_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")

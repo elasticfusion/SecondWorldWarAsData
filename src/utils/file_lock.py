@@ -82,11 +82,40 @@ def locked_json(filepath: Path):
         thread_lock.release()
 
 
+# Required fields per entity type (directory name → field list)
+_REQUIRED_FIELDS: Dict[str, list] = {
+    "people": ["PersonID", "name"],
+    "people_groups": ["GroupID", "group_name"],
+    "places": ["PlaceID"],
+    "dates": ["DateID", "date_start"],
+    "equipment": ["EquipmentID", "common_name"],
+    "weather": ["WeatherID"],
+    "casualties": ["CasualtyID"],
+    "logistics": ["LogisticsID"],
+}
+
+
+def _validate_entity(filepath: Path, data: Dict[str, Any]) -> None:
+    """Validate required fields before writing. Logs warning on invalid data."""
+    entity_type = filepath.parent.name
+    required = _REQUIRED_FIELDS.get(entity_type)
+    if not required:
+        return
+    missing = [f for f in required if not data.get(f)]
+    if missing:
+        logger.warning(
+            "Entity validation: %s missing required fields %s",
+            filepath.name,
+            missing,
+        )
+
+
 def write_json_with_lock(filepath: Path, data: Dict[str, Any]) -> None:
     """Write JSON file with file locking for concurrent access."""
     from src.schemas import inject_metadata
 
     inject_metadata(data)
+    _validate_entity(filepath, data)
     filepath.parent.mkdir(parents=True, exist_ok=True)
 
     # Atomic write: write to temp file, then replace (crash-safe)
