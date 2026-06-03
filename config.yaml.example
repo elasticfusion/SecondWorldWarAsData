@@ -27,6 +27,12 @@ api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
     model: "grok-4.3"
+    model_map:                        # Per-task model routing (cost optimization)
+      # isbn: "grok-3-mini"
+      # url_verify: "grok-3-mini"
+      # copyright: "grok-3-mini"
+      # nara_match: "grok-3-mini"
+      # openserp_verify: "grok-3-mini"
     max_retries: 3
     timeout: 60
   calls_per_minute: 30            # Rate limit: max API calls per minute (across all threads)

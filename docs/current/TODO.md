@@ -30,10 +30,6 @@ All dedup scripts load ALL files and score ALL pairs every run (O(n²)). Track `
 
 ### Pipeline Efficiency
 
-#### Phase 3: separate search pass from Grok analysis pass for batching
-Restructure into: Pass 1 (search, collect raw data) → Pass 2 (batch all Grok prompts) → Pass 3 (retrieve, write files). Enables 50% cost savings and eliminates per-entity round-trips.
-*Source: end-2-end-1 observation*
-
 #### Parallel S3 downloads in ecs_entrypoint
 `s3_sync_down` downloads sequentially (~15 min for 7,600 files). Use ThreadPoolExecutor with 20 workers. Cuts to ~2 min.
 *Source: PERFORMANCE_ENHANCEMENTS.md*
@@ -41,14 +37,6 @@ Restructure into: Pass 1 (search, collect raw data) → Pass 2 (batch all Grok p
 #### Phase 2 should read pending#parsed as input manifest
 Phase 2 always falls through to S3 scan. Read the DynamoDB queue directly instead.
 *Source: CODE_REVIEW agent analysis*
-
-#### Increase API rate limit (test with 60 RPM)
-Current 30 RPM is conservative. Rate limiter handles 429 backoff. Doubles throughput.
-*Source: PERFORMANCE_ENHANCEMENTS.md*
-
-#### Buffer entity file writes per chapter
-Each entity mention triggers immediate file read+write. Buffer in memory, flush once at end. Reduces I/O from O(mentions) to O(unique_entities).
-*Source: PERFORMANCE_ENHANCEMENTS.md*
 
 #### Conditional S3 downloads (skip unchanged files)
 Use `head_object` to check size/ETag before downloading. Skips 80-90% of downloads on Phase 3 re-runs.
@@ -61,10 +49,6 @@ Add `book`/`source_book` field to entity files during Phase 2, filter index by t
 #### Optional entity extraction: parallelize across event files
 Weather, equipment, logistics, casualties, supplemental extracted sequentially. Could run in parallel.
 *Source: PIPELINE_REVIEW.md*
-
-#### Grok model tiering (use lighter models for simple tasks)
-Add configurable `model_map` in config.yaml. 15-25% cost savings.
-*Source: COST_OPTIMIZATION.md*
 
 #### Reduce prompt fulltext for dates/places extraction
 Sub-event summaries likely suffice. 10-15% cost savings.
@@ -404,6 +388,8 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Normalize caliber formats in equipment dedup (.50-caliber = 50 cal, 155-mm = 155mm, 7.5-cm = 7.5cm)
 - ✅ Use technical_identifier as primary equipment index key (falls back to common_name)
 - ✅ Add OpenSERP circuit breaker (5 consecutive failures → skip remaining, 90-day retry via timestamp)
+- ✅ Phase 3 batch architecture verified (already implemented: submit-only collects searches + Grok prompts → batch API → retrieve-only hits all caches)
+- ✅ Grok model tiering (model_map in config.yaml routes cache_type to per-task model, works in both real-time and batch)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)
