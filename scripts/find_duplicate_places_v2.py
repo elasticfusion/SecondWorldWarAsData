@@ -204,6 +204,49 @@ def _filter_excluded(
     return filtered
 
 
+def _load_coords_cache(places_dir: Path) -> Dict[str, Dict]:
+    """Load coords cache from local file or DynamoDB."""
+    coords_file = places_dir / "coords.json"
+    if coords_file.exists():
+        try:
+            return json.loads(coords_file.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            pass
+    # Fall back to DynamoDB (per-place items)
+    try:
+        from src.utils.config import load_config
+
+        cfg = load_config()
+        if cfg.get("aws", {}).get("enabled"):
+            import boto3
+
+            table_name = cfg["aws"].get("cache_table", "")
+            region = cfg["aws"].get("region", "us-east-1")
+            table = boto3.resource("dynamodb", region_name=region).Table(table_name)
+            coords: Dict[str, Dict] = {}
+            kwargs = {
+                "FilterExpression": "begins_with(cache_key, :prefix)",
+                "ExpressionAttributeValues": {":prefix": "place_coords#"},
+                "ProjectionExpression": "cache_key, lat, lon, PlaceID",
+            }
+            while True:
+                resp = table.scan(**kwargs)
+                for item in resp.get("Items", []):
+                    filename = item["cache_key"].split("#", 1)[1]
+                    coords[filename] = {
+                        "lat": float(item.get("lat", 0)),
+                        "lon": float(item.get("lon", 0)),
+                        "PlaceID": item.get("PlaceID", ""),
+                    }
+                if "LastEvaluatedKey" not in resp:
+                    break
+                kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
+            return coords
+    except Exception:
+        pass
+    return {}
+
+
 def _load_places(places_dir: Path) -> list:
     """Load place data from local files + index.json for non-local entries."""
     places = []
@@ -233,18 +276,20 @@ def _load_places(places_dir: Path) -> list:
 
     # Add entries from index.json that aren't local
     index_file = places_dir / "index.json"
+    coords_cache = _load_coords_cache(places_dir)
     if index_file.exists():
         try:
             raw = json.loads(index_file.read_text(encoding="utf-8"))
             for name, filename in raw.items():
                 if filename not in seen_filenames and filename not in SKIP_FILES:
+                    cached = coords_cache.get(filename, {})
                     places.append(
                         {
                             "name": name.replace("_", " "),
                             "filename": filename,
-                            "PlaceID": "",
-                            "lat": None,
-                            "lon": None,
+                            "PlaceID": cached.get("PlaceID", ""),
+                            "lat": cached.get("lat"),
+                            "lon": cached.get("lon"),
                         }
                     )
         except (json.JSONDecodeError, OSError):
