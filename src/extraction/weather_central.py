@@ -466,20 +466,35 @@ def _add_event_mention(
     logger.info("    Added mention to %s", weather_file.name)
 
 
-def _build_places_section(sub_event: Dict[str, Any]) -> str:
-    """Build places section for prompt."""
-    if "Places" not in sub_event or not sub_event["Places"]:
+def _build_places_section(
+    sub_event: Dict[str, Any], places_index: Optional[Dict[str, str]] = None
+) -> str:
+    """Build places section for prompt using the places index."""
+    if not places_index:
         return ""
 
-    places_list = [
-        f"  - {p.get('place_name', 'Unknown')}: {p.get('PlaceMentionID', 'N/A')}"
-        for p in sub_event["Places"]
-        if isinstance(p, dict)
-    ]
+    # Match place names from the sub-event text against the index
+    text = ""
+    fulltext = sub_event.get("Sub-event_fulltext", {})
+    if fulltext:
+        text = " ".join(str(v) for v in fulltext.values()).lower()
+    summary = sub_event.get("Sub-event_summary", "").lower()
+    combined = text + " " + summary
 
-    if places_list:
-        return "\n\nAvailable Places (link to these):\n" + "\n".join(places_list)
+    if not combined.strip():
+        return ""
 
+    # Find places mentioned in this sub-event's text
+    matched = []
+    for name, place_id in places_index.items():
+        if name.lower() in combined:
+            matched.append(f"  - {name}: {place_id}")
+
+    if matched:
+        return (
+            "\n\nAvailable Places (COPY these IDs exactly — do NOT generate new ones):\n"
+            + "\n".join(matched[:20])
+        )
     return ""
 
 
@@ -501,7 +516,10 @@ def _build_dates_section(sub_event: Dict[str, Any]) -> str:
 
 
 def create_weather_prompt(
-    sub_event: Dict[str, Any], event_id: str, event_name: str
+    sub_event: Dict[str, Any],
+    event_id: str,
+    event_name: str,
+    places_index: Optional[Dict[str, str]] = None,
 ) -> str:
     """Create prompt for weather extraction."""
     sub_event_id = sub_event.get("Sub-eventID", "")
@@ -511,7 +529,7 @@ def create_weather_prompt(
     text = "\n".join(fulltext.values())
 
     # Extract available PlaceIDs and DateIDs
-    places_section = _build_places_section(sub_event)
+    places_section = _build_places_section(sub_event, places_index)
     dates_section = _build_dates_section(sub_event)
 
     prompt = f"""Extract weather mentions from this WWII event text.
@@ -606,6 +624,7 @@ def _batch_extract_weather(
     event_name: str,
     grok_client: GrokClient,
     max_retries: int,
+    places_index: Optional[Dict[str, str]] = None,
 ) -> Dict[str, List[Dict[str, Any]]]:
     """Extract weather from all sub-events in a single API call.
 
@@ -623,7 +642,7 @@ def _batch_extract_weather(
         text = "\n".join(fulltext.values()) if fulltext else ""
         if not text:
             continue
-        places_section = _build_places_section(se)
+        places_section = _build_places_section(se, places_index)
         dates_section = _build_dates_section(se)
         blocks.append(
             f"--- Sub-event [{seid}] {summary} ---{places_section}{dates_section}\n\nText:\n{text}"
@@ -759,9 +778,29 @@ def extract_weather_central(
     dates_dir = places_dir.parent / "dates"
     date_id_lookup = _build_date_id_lookup(dates_dir)
 
+    # Build places name→ID index for cross-referencing in prompts
+    places_name_index: Dict[str, str] = {}
+    places_index_file = places_dir / "index.json"
+    if places_index_file.exists():
+        try:
+            raw = json.loads(places_index_file.read_text(encoding="utf-8"))
+            # index.json maps name → filename; we need name → PlaceID
+            for name, filename in raw.items():
+                place_file = places_dir / filename
+                if place_file.exists():
+                    try:
+                        pd = json.loads(place_file.read_text(encoding="utf-8"))
+                        pid = pd.get("PlaceID", "")
+                        if pid:
+                            places_name_index[name] = pid
+                    except (json.JSONDecodeError, OSError):
+                        pass
+        except (json.JSONDecodeError, OSError):
+            pass
+
     # Batch extract from all sub-events in single API call
     batch_results = _batch_extract_weather(
-        sub_events, event_id, event_name, grok_client, max_retries
+        sub_events, event_id, event_name, grok_client, max_retries, places_name_index
     )
 
     for sub_event in sub_events:
