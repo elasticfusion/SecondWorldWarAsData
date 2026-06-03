@@ -421,46 +421,47 @@ def _add_event_mention(
     series: str,
 ) -> None:
     """Add event mention and extracted data to weather file."""
-    with open(weather_file, "r", encoding="utf-8") as f:
-        weather_data = json.load(f)
+    from src.utils.file_lock import locked_json
 
-    # Check for duplicate mention
-    existing = [
-        m for m in weather_data["event_mentions"] if m["Sub_eventID"] == sub_event_id
-    ]
-    if existing:
-        logger.info("    Weather already has mention from this sub-event, skipping")
-        return
+    with locked_json(weather_file) as (weather_data, save):
+        # Check for duplicate mention
+        existing = [
+            m
+            for m in weather_data.get("event_mentions", [])
+            if m["Sub_eventID"] == sub_event_id
+        ]
+        if existing:
+            logger.info("    Weather already has mention from this sub-event, skipping")
+            return
 
-    # Add extracted data if not present
-    if not weather_data["extracted_data"]:
-        weather_data["extracted_data"] = {
-            "description": mention.get("weather_description", ""),
-            "temperature": mention.get("temperature") or None,
-            "temperature_unit": mention.get("temperature_unit") or None,
-            "measurement_system": mention.get("measurement_system") or None,
-            "notable_impact": mention.get("notable_impact") or None,
-            "original_text": mention.get("original_text", ""),
+        # Add extracted data if not present
+        if not weather_data.get("extracted_data"):
+            weather_data["extracted_data"] = {
+                "description": mention.get("weather_description", ""),
+                "temperature": mention.get("temperature") or None,
+                "temperature_unit": mention.get("temperature_unit") or None,
+                "measurement_system": mention.get("measurement_system") or None,
+                "notable_impact": mention.get("notable_impact") or None,
+                "original_text": mention.get("original_text", ""),
+                "book": book,
+                "author": author,
+            }
+            if weather_data.get("api_data"):
+                weather_data["source_type"] = "hybrid"
+
+        # Add event mention
+        event_mention = {
+            "MentionID": str(ulid.new()),
+            "Event_Name": event_name,
+            "EventID": event_id,
+            "Sub_event_Name": sub_event_name,
+            "Sub_eventID": sub_event_id,
             "book": book,
             "author": author,
+            "series": series,
         }
-        if weather_data["api_data"]:
-            weather_data["source_type"] = "hybrid"
-
-    # Add event mention
-    event_mention = {
-        "MentionID": str(ulid.new()),
-        "Event_Name": event_name,
-        "EventID": event_id,
-        "Sub_event_Name": sub_event_name,
-        "Sub_eventID": sub_event_id,
-        "book": book,
-        "author": author,
-        "series": series,
-    }
-    weather_data["event_mentions"].append(event_mention)
-
-    write_json_with_lock(weather_file, weather_data)
+        weather_data.setdefault("event_mentions", []).append(event_mention)
+        save(weather_data)
 
     logger.info("    Added mention to %s", weather_file.name)
 

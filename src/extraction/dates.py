@@ -288,36 +288,36 @@ def _add_event_mention(
     series: str,
 ) -> None:
     """Add event mention to existing date file."""
-    with open(date_file, "r", encoding="utf-8") as f:
-        date_data = json.load(f)
+    from src.utils.file_lock import locked_json
 
-    # Create event mention
-    event_mention = {
-        "MentionID": str(ulid.new()),
-        "Event_Name": event_name,
-        "EventID": event_id,
-        "Sub_event_Name": sub_event_name,
-        "Sub_eventID": sub_event_id,
-        "book": book,
-        "author": author,
-        "series": series,
-        "context": None,  # TODO: Extract from text
-        "original_text": mention.get("original_text", ""),
-    }
+    with locked_json(date_file) as (date_data, save):
+        # Create event mention
+        event_mention = {
+            "MentionID": str(ulid.new()),
+            "Event_Name": event_name,
+            "EventID": event_id,
+            "Sub_event_Name": sub_event_name,
+            "Sub_eventID": sub_event_id,
+            "book": book,
+            "author": author,
+            "series": series,
+            "context": None,  # TODO: Extract from text
+            "original_text": mention.get("original_text", ""),
+        }
 
-    # Check for duplicate mention (same sub-event)
-    existing = [
-        m for m in date_data["event_mentions"] if m["Sub_eventID"] == sub_event_id
-    ]
-    if existing:
-        logger.info("    Date already has mention from this sub-event, skipping")
-        return
+        # Check for duplicate mention (same sub-event)
+        existing = [
+            m
+            for m in date_data.get("event_mentions", [])
+            if m["Sub_eventID"] == sub_event_id
+        ]
+        if existing:
+            logger.info("    Date already has mention from this sub-event, skipping")
+            return
 
-    # Add mention
-    date_data["event_mentions"].append(event_mention)
-
-    # Save updated file
-    write_json_with_lock(date_file, date_data)
+        # Add mention
+        date_data.setdefault("event_mentions", []).append(event_mention)
+        save(date_data)
 
     logger.info("    Added mention to %s", date_file.name)
 

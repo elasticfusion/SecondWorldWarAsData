@@ -14,10 +14,6 @@ Eliminates the 15-30 min S3 download phase, prevents data loss on spot terminati
 **Strategy: Dual-write (DynamoDB + S3).** DynamoDB is source of truth for operational reads/writes (fast, durable, queryable). S3 remains as archival/bulk export (browsable JSON, versioned, cheap). Write DynamoDB first (immediate durability), periodic S3 export on phase completion for human review and backup.
 *Source: end-2-end-1 spot termination data loss*
 
-#### Fix event mention race in batch_parallel.py (data loss)
-`_add_event_mention_batch` reads entity file without lock under 3-chapter parallel processing. Two chapters mentioning the same entity overwrite each other's mentions. Use `locked_json` for the full read-modify-write in `batch_parallel.py` line 254.
-*Source: SUGGESTED_CHANGES.md, POST_FIX_REVIEW.md*
-
 #### Investigate why pending queues persist without triggering action
 `pending#content` and `pending#parsed` entries remained in DynamoDB for a week without any service consuming them. Either the trigger Lambda isn't being invoked (SQS→Lambda path broken after idle period), or the hourly scheduled check doesn't process pending queues.
 *Source: end-2-end-1 observation*
@@ -466,6 +462,12 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 ---
 
 ## Completed
+
+### 2026-06-03
+- ✅ Fix missing `import os` in phase3_enrich_data.py (crashed after enrichment completed)
+- ✅ Fix event mention race condition in dates.py, places.py, weather_central.py (locked_json)
+- ✅ Fix locked_json threading bug (fcntl.flock is per-FD, not per-file — added per-file threading.Lock)
+- ✅ Add concurrent event mention tests (test_event_mention_race.py)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)
