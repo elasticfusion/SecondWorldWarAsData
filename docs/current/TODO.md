@@ -24,10 +24,6 @@ No email when ECS tasks launch. Add `_notify_launch()` at end of `_run_task()` i
 
 ### Dedup & Normalization
 
-#### Normalize group index keys more aggressively
-Strip "the/us/u.s.", remove branch names, collapse ordinals. Prevents "4th division" ≠ "4th infantry division" creating separate files.
-*Source: DEDUP_ANALYSIS_ALL_ENTITIES.md*
-
 #### Incremental dedup (only score new files vs corpus)
 All dedup scripts load ALL files and score ALL pairs every run (O(n²)). Track `last_dedup_run` timestamp, only compare new files against existing.
 *Source: DEDUP_ANALYSIS_ALL_ENTITIES.md*
@@ -425,6 +421,7 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Equipment dedup: reject matches when numeric prefix differs
 - ✅ Reduce false-positive place matches on common geographic prefixes/suffixes
 - ✅ Equipment dedup: require country of origin match (exception for captured equipment)
+- ✅ Normalize group index keys (strip branch names + nationality guard)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)

@@ -22,11 +22,28 @@ SKIP_FILES = {
 def _normalize(name: str) -> str:
     """Normalize group name for comparison."""
     name = name.lower().strip()
-    # Remove common suffixes/prefixes that vary
+    # Remove common prefixes that vary
     for noise in ["the ", "u.s. ", "us "]:
         if name.startswith(noise):
             name = name[len(noise) :]
-    return name
+    # Remove branch names that cause false splits
+    for branch in [
+        " infantry",
+        " armored",
+        " airborne",
+        " panzer",
+        " panzergrenadier",
+        " cavalry",
+        " artillery",
+        " engineer",
+        " signal",
+        " mechanized",
+        " mountain",
+        " parachute",
+        " volksgrenadier",
+    ]:
+        name = name.replace(branch, "")
+    return " ".join(name.split())
 
 
 def _is_substring_match(a: str, b: str) -> bool:
@@ -243,6 +260,11 @@ def _find_group_cluster(i, g1, groups, seen):
         if j in seen:
             continue
         if not _numbers_match(g1["name"], g2["name"]):
+            continue
+        # Reject if nationalities are known and differ
+        nat1 = g1.get("data", {}).get("nationality", "")
+        nat2 = g2.get("data", {}).get("nationality", "")
+        if nat1 and nat2 and nat1 != nat2:
             continue
         sim = _similarity(g1["name"], g2["name"])
         if sim >= 0.85:
