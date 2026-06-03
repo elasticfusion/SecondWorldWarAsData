@@ -24,10 +24,6 @@ No email when ECS tasks launch. Add `_notify_launch()` at end of `_run_task()` i
 
 ### Data Quality
 
-#### Fix weather _build_places_section() passing MentionIDs instead of PlaceIDs
-Weather extraction receives `PlaceMentionID` values (per-mention) instead of top-level `PlaceID` from consolidated place files. 31% of weather PlaceIDs don't resolve.
-*Source: end-2-end-0-ds.md*
-
 #### Add few-shot examples to logistics prompt for severity calibration
 Severity calibration text alone had no effect (still 78% high/critical). Add 3-4 examples or "Default to medium unless text explicitly says operations halted/postponed/impossible."
 *Source: end-2-end-0-ds.md*
@@ -451,6 +447,7 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Verify casualties entity_context already fixed (passes name:ID pairs, limit 50)
 - ✅ Verify "COPY — do NOT generate" already in all prompts that inject IDs (casualties, weather)
 - ✅ Align logistics enum values (added capacity_constraint + production_delay to _VALID_TYPES and hardcoded prompts)
+- ✅ Fix weather _build_places_section (now uses places index with real PlaceIDs instead of nonexistent PlaceMentionIDs)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)
