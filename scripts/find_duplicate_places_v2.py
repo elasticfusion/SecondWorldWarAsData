@@ -26,8 +26,63 @@ def _normalize(name: str) -> str:
     return " ".join(name.split())
 
 
+# Common geographic terms that inflate similarity between unrelated places
+_GEO_PREFIXES = (
+    "fort ",
+    "hill ",
+    "mont ",
+    "monte ",
+    "bois ",
+    "foret ",
+    "col ",
+    "pont ",
+    "saint ",
+    "st ",
+    "sainte ",
+    "ste ",
+    "camp ",
+    "chateau ",
+)
+_GEO_SUFFIXES = (
+    " river",
+    " creek",
+    " bridge",
+    " forest",
+    " woods",
+    " ridge",
+    " hill",
+    " mountain",
+    " pass",
+    " crossing",
+    " canal",
+    " lake",
+)
+
+
+def _strip_geo_terms(name: str) -> str:
+    """Strip common geographic prefixes/suffixes for core name comparison."""
+    n = name.lower().strip()
+    for prefix in _GEO_PREFIXES:
+        if n.startswith(prefix):
+            n = n[len(prefix) :]
+            break
+    for suffix in _GEO_SUFFIXES:
+        if n.endswith(suffix):
+            n = n[: -len(suffix)]
+            break
+    return n.strip()
+
+
 def _similarity(a: str, b: str) -> float:
-    return SequenceMatcher(None, _normalize(a), _normalize(b)).ratio()
+    base_sim = SequenceMatcher(None, _normalize(a), _normalize(b)).ratio()
+    # If names share a geographic prefix/suffix, also check core name similarity
+    core_a = _strip_geo_terms(_normalize(a))
+    core_b = _strip_geo_terms(_normalize(b))
+    if core_a != _normalize(a) or core_b != _normalize(b):
+        # At least one name had a geo term stripped — use the lower of base vs core
+        core_sim = SequenceMatcher(None, core_a, core_b).ratio()
+        return min(base_sim, max(core_sim, base_sim * 0.7))
+    return base_sim
 
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
