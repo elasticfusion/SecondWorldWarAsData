@@ -21,6 +21,13 @@ from src.utils.http_pool import get_session
 
 logger = logging.getLogger(__name__)
 
+# Circuit breaker: skip all OpenSERP searches after N consecutive failures
+_CIRCUIT_BREAKER_THRESHOLD = 5
+_consecutive_failures = 0
+_circuit_open = False
+
+logger = logging.getLogger(__name__)
+
 SKIP_FILES = {
     "index.json",
     "duplicate_report.json",
@@ -42,6 +49,11 @@ def _openserp_reachable(openserp_url: str) -> bool:
 
 def _search_openserp(query: str, openserp_url: str) -> List[Dict]:
     """Run an OpenSERP search. Returns list of {url, title, description}."""
+    global _consecutive_failures, _circuit_open
+
+    if _circuit_open:
+        return []
+
     try:
         import time
 
@@ -63,9 +75,26 @@ def _search_openserp(query: str, openserp_url: str) -> List[Dict]:
         if resp.status_code == 200:
             data = resp.json()
             if not data:
-                logger.warning("OpenSERP [%s]: empty response", query[:60])
+                _consecutive_failures += 1
+                if _consecutive_failures >= _CIRCUIT_BREAKER_THRESHOLD:
+                    _circuit_open = True
+                    logger.warning(
+                        "OpenSERP circuit breaker OPEN — %d consecutive empty responses, skipping remaining searches",
+                        _consecutive_failures,
+                    )
                 return []
             results = data.get("results", [])
+            if results:
+                _consecutive_failures = 0  # Reset on success
+            else:
+                _consecutive_failures += 1
+                if _consecutive_failures >= _CIRCUIT_BREAKER_THRESHOLD:
+                    _circuit_open = True
+                    logger.warning(
+                        "OpenSERP circuit breaker OPEN — %d consecutive empty results, skipping remaining searches",
+                        _consecutive_failures,
+                    )
+                    return []
             logger.info("OpenSERP [%s]: %d results", query[:60], len(results))
             return [
                 {
@@ -77,8 +106,17 @@ def _search_openserp(query: str, openserp_url: str) -> List[Dict]:
                 if r
             ]
         logger.warning("OpenSERP [%s]: HTTP %d", query[:60], resp.status_code)
+        _consecutive_failures += 1
     except Exception as e:
         logger.warning("OpenSERP [%s]: %s", query[:60], e)
+        _consecutive_failures += 1
+
+    if _consecutive_failures >= _CIRCUIT_BREAKER_THRESHOLD and not _circuit_open:
+        _circuit_open = True
+        logger.warning(
+            "OpenSERP circuit breaker OPEN — %d consecutive failures",
+            _consecutive_failures,
+        )
     return []
 
 
@@ -387,7 +425,11 @@ def enrich_people_with_openserp(
             continue
 
         if data.get("openserp_searched"):
-            continue
+            import time as _time
+
+            searched_at = data.get("openserp_searched_at", 0)
+            if searched_at and (_time.time() - searched_at) < 90 * 86400:
+                continue
 
         name = data.get("name", "")
         if not name:
@@ -428,6 +470,9 @@ def enrich_people_with_openserp(
         changed = _verify_and_apply(c, data, name, grok_client, max_images, max_web)
 
         data["openserp_searched"] = True
+        import time as _time
+
+        data["openserp_searched_at"] = int(_time.time())
         inject_metadata(data)
         c["file"].write_text(
             json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -463,7 +508,11 @@ def enrich_equipment_with_openserp(
             continue
 
         if data.get("openserp_searched"):
-            continue
+            import time as _time
+
+            searched_at = data.get("openserp_searched_at", 0)
+            if searched_at and (_time.time() - searched_at) < 90 * 86400:
+                continue
 
         name = data.get("common_name", data.get("name", ""))
         if not name:
@@ -477,6 +526,9 @@ def enrich_equipment_with_openserp(
                 logger.info("  ✓ OpenSERP enriched: %s", name)
 
         data["openserp_searched"] = True
+        import time as _time
+
+        data["openserp_searched_at"] = int(_time.time())
         inject_metadata(data)
         f.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
 
