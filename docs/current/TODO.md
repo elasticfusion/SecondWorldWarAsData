@@ -9,7 +9,12 @@
 ### Production Reliability (observed failures in E2E testing)
 
 #### Phase 4: DynamoDB as primary entity storage
-Eliminates the 15-30 min S3 download phase, prevents data loss on spot termination (writes are immediately durable), and enables incremental processing (query only unenriched entities). Current architecture loses all enrichment work on spot kill because background sync hasn't uploaded yet. With DynamoDB: zero data loss, instant restart from where it left off. Spec: `docs/current/PHASE4_SPEC.md`. Existing `import_to_dynamodb.py` provides the schema foundation.
+Phase A (core abstraction + dual-write) complete. Remaining:
+- **Phase B:** Read path migration — Phase 3 queries DynamoDB instead of downloading files. Eliminates 15-30 min download.
+- **Phase C:** Dedup migration — dedup scripts query DynamoDB, incremental dedup via `created_at`.
+- **Phase D:** Full migration — Phase 2 writes directly to DynamoDB, remove file download logic, S3 becomes export-only.
+
+Activate dual-write: set `storage.entity_backend: "dynamodb"` in config.yaml. Spec: `docs/current/PHASE4_DYNAMODB_STORAGE.md`.
 
 **Strategy: Dual-write (DynamoDB + S3).** DynamoDB is source of truth for operational reads/writes (fast, durable, queryable). S3 remains as archival/bulk export (browsable JSON, versioned, cheap). Write DynamoDB first (immediate durability), periodic S3 export on phase completion for human review and backup.
 *Source: end-2-end-1 spot termination data loss*
@@ -112,6 +117,10 @@ Move `boto3.client("scheduler")` before the try block.
 
 #### Dedup guard: also check recently completed batches
 Add time-bounded check for status "complete" within last hour.
+*Source: code review*
+
+#### Remove hardcoded region ("us-east-1") throughout codebase
+Multiple files default to `"us-east-1"` instead of reading from config.yaml `aws.region`. Derive region from config or `AWS_DEFAULT_REGION` env var consistently.
 *Source: code review*
 
 #### Fix prompt_loader str.format() breaking on JSON with braces
@@ -320,6 +329,7 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Verify watchdog notification + _stamp_file already fixed (try/except + atomic write already in place)
 - ✅ SQS MessageRetentionPeriod increased (3600 → 1209600 = 14 days)
 - ✅ Fix CloudWatch Alarms (pointed to ECS task names instead of Lambda functions)
+- ✅ Phase 4A: DynamoDB entity store core (DynamoEntityStore class + dual-write hook + config + tests)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)

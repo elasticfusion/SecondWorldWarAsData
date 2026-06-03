@@ -137,6 +137,43 @@ def write_json_with_lock(filepath: Path, data: Dict[str, Any]) -> None:
             pass
         raise
 
+    # Dual-write to DynamoDB if enabled (immediate durability)
+    _dual_write_dynamo(filepath, data)
+
+
+# ID field per entity type
+_ID_FIELDS: Dict[str, str] = {
+    "people": "PersonID",
+    "people_groups": "GroupID",
+    "places": "PlaceID",
+    "dates": "DateID",
+    "equipment": "EquipmentID",
+    "weather": "WeatherID",
+    "casualties": "CasualtyID",
+    "logistics": "LogisticsID",
+    "bibliography": "BibliographyID",
+    "maps": "MapID",
+}
+
+
+def _dual_write_dynamo(filepath: Path, data: Dict[str, Any]) -> None:
+    """Write entity to DynamoDB if dual-write is enabled. Non-blocking on failure."""
+    entity_type = filepath.parent.name
+    id_field = _ID_FIELDS.get(entity_type)
+    if not id_field:
+        return
+    entity_id = data.get(id_field)
+    if not entity_id:
+        return
+    try:
+        from src.utils.entity_store import get_entity_store
+
+        store = get_entity_store()
+        if store:
+            store.put(entity_type, entity_id, data)
+    except Exception as e:
+        logger.debug("Dual-write to DynamoDB failed: %s", e)
+
 
 def read_json_with_lock(filepath: Path) -> Dict[str, Any]:
     """Read JSON file with file locking for concurrent access."""
