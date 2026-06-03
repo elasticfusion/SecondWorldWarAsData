@@ -14,21 +14,9 @@ Eliminates the 15-30 min S3 download phase, prevents data loss on spot terminati
 **Strategy: Dual-write (DynamoDB + S3).** DynamoDB is source of truth for operational reads/writes (fast, durable, queryable). S3 remains as archival/bulk export (browsable JSON, versioned, cheap). Write DynamoDB first (immediate durability), periodic S3 export on phase completion for human review and backup.
 *Source: end-2-end-1 spot termination data loss*
 
-#### Investigate why pending queues persist without triggering action
-`pending#content` and `pending#parsed` entries remained in DynamoDB for a week without any service consuming them. Either the trigger Lambda isn't being invoked (SQS→Lambda path broken after idle period), or the hourly scheduled check doesn't process pending queues.
-*Source: end-2-end-1 observation*
-
 #### Validate dedup exclusion lists are working (places, groups, equipment)
 Entities previously marked as not-duplicates may be reappearing in the dedup review queue. Verify that DynamoDB-backed exclusions are being loaded and checked correctly in `find_duplicate_places_v2.py`, `find_duplicate_groups.py`, and `find_duplicate_equipment.py`.
 *Source: end-2-end-1 dedup review*
-
-#### Fix OpenSERP null response crash in equipment photo search
-`openserp_enrichment.py` calls `.get()` on `None` when OpenSERP returns empty/malformed results for image searches. Add null guard before accessing response fields. Causes repeated warnings and wasted time in Phase 3.
-*Source: end-2-end-1 Phase 3 logs*
-
-#### Add circuit breaker for OpenSERP image search
-After N consecutive failures (e.g., 5), skip remaining OpenSERP searches for the current run. Mark failed entities with `openserp_search_failed_at` timestamp. Only retry entities whose failure is older than 90 days. Prevents wasting 5s × hundreds of entities on a broken/unavailable OpenSERP service.
-*Source: end-2-end-1 Phase 3 logs*
 
 #### Add "Phase started" notifications
 No email when ECS tasks launch. Add `_notify_launch()` at end of `_run_task()` in trigger_handler.py. Currently only get notifications on completion/failure — operator blind to whether pipeline is running.
@@ -115,6 +103,10 @@ More stable than common_name. Fall back to common_name only when no technical ID
 *Source: DEDUP_ANALYSIS_ALL_ENTITIES.md*
 
 ### Pipeline Efficiency
+
+#### Add circuit breaker for OpenSERP image search
+After N consecutive failures (e.g., 5), skip remaining OpenSERP searches for the current run. Mark failed entities with `openserp_search_failed_at` timestamp. Only retry entities whose failure is older than 90 days.
+*Source: end-2-end-1 Phase 3 logs*
 
 #### Phase 3: separate search pass from Grok analysis pass for batching
 Restructure into: Pass 1 (search, collect raw data) → Pass 2 (batch all Grok prompts) → Pass 3 (retrieve, write files). Enables 50% cost savings and eliminates per-entity round-trips.
@@ -468,6 +460,8 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 - ✅ Fix event mention race condition in dates.py, places.py, weather_central.py (locked_json)
 - ✅ Fix locked_json threading bug (fcntl.flock is per-FD, not per-file — added per-file threading.Lock)
 - ✅ Add concurrent event mention tests (test_event_mention_race.py)
+- ✅ Fix pending queue reconciliation (hourly check now triggers Phase 1/2 if queues have items and no tasks running)
+- ✅ Fix OpenSERP null response crash (null guard on resp.json() in _search_openserp)
 
 ### 2026-06-02
 - ✅ Implement structured JSON logging for CloudWatch (JSONFormatter + ECS detection)
