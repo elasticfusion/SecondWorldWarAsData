@@ -36,11 +36,34 @@ def _similarity(a: str, b: str) -> float:
     return SequenceMatcher(None, _normalize(a), _normalize(b)).ratio()
 
 
+def _load_aliases() -> Dict[str, str]:
+    """Load equipment alias table."""
+    import yaml
+
+    alias_file = Path(__file__).parent.parent / "config" / "equipment_aliases.yaml"
+    if alias_file.exists():
+        try:
+            data = yaml.safe_load(alias_file.read_text(encoding="utf-8"))
+            return {k.lower(): v.lower() for k, v in data.get("aliases", {}).items()}
+        except Exception:
+            pass
+    return {}
+
+
+_EQUIPMENT_ALIASES: Dict[str, str] = _load_aliases()
+
+
 def _all_names(equip: Dict[str, Any]) -> List[str]:
-    """Get primary names for an equipment item (excludes variants)."""
+    """Get primary names for an equipment item, including alias resolutions."""
     names = [equip.get("common_name", ""), equip.get("technical_identifier", "")]
     names.extend(equip.get("alternate_names", []))
-    return [n for n in names if n]
+    names = [n for n in names if n]
+    # Add canonical names from alias table
+    for n in list(names):
+        canonical = _EQUIPMENT_ALIASES.get(n.lower())
+        if canonical and canonical not in [x.lower() for x in names]:
+            names.append(canonical)
+    return names
 
 
 def _best_name_match(equip1: Dict, equip2: Dict) -> float:

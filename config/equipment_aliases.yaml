@@ -1,0 +1,76 @@
+# Equipment Alias Table
+# Maps common nicknames/abbreviations to canonical technical names.
+# Used by dedup to match informal references to formal equipment entries.
+
+aliases:
+  # US Armor
+  sherman: "m4 sherman"
+  easy eight: "m4a3e8 sherman"
+  jumbo: "m4a3e2 sherman"
+  stuart: "m5 stuart"
+  pershing: "m26 pershing"
+  hellcat: "m18 hellcat"
+  wolverine: "m10 wolverine"
+  jackson: "m36 jackson"
+  priest: "m7 priest"
+  scott: "m8 scott"
+  greyhound: "m8 greyhound"
+  chaffee: "m24 chaffee"
+
+  # German Armor
+  panther: "pzkpfw v panther"
+  tiger: "pzkpfw vi tiger"
+  king tiger: "pzkpfw vi ausf b tiger ii"
+  royal tiger: "pzkpfw vi ausf b tiger ii"
+  tiger ii: "pzkpfw vi ausf b tiger ii"
+  mark iv: "pzkpfw iv"
+  mark v: "pzkpfw v panther"
+  mark vi: "pzkpfw vi tiger"
+  stug: "sturmgeschutz iii"
+  jagdpanther: "jagdpanzer v jagdpanther"
+  ferdinand: "panzerjager tiger p ferdinand"
+  elefant: "panzerjager tiger p ferdinand"
+  hetzer: "jagdpanzer 38 hetzer"
+  brummbar: "sturmpanzer iv brummbar"
+
+  # Artillery
+  "88": "88mm flak 36"
+  eighty-eight: "88mm flak 36"
+  long tom: "155mm gun m1 long tom"
+  nebelwerfer: "15cm nebelwerfer 41"
+  screaming mimi: "15cm nebelwerfer 41"
+  calliope: "t34 calliope"
+
+  # Infantry Weapons
+  garand: "m1 garand"
+  carbine: "m1 carbine"
+  tommy gun: "m1 thompson"
+  thompson: "m1 thompson"
+  bar: "m1918 browning automatic rifle"
+  bazooka: "m1 bazooka"
+  panzerfaust: "panzerfaust 60"
+  panzerschreck: "raketenpanzerbuchse 54"
+  mg42: "maschinengewehr 42"
+  mp40: "maschinenpistole 40"
+  schmeisser: "maschinenpistole 40"
+  grease gun: "m3 grease gun"
+  browning: "m2 browning"
+
+  # Vehicles
+  jeep: "willys mb jeep"
+  deuce and a half: "gmc cckw 2.5 ton truck"
+  half-track: "m3 half-track"
+  dukw: "dukw amphibious truck"
+  duck: "dukw amphibious truck"
+
+  # Aircraft
+  thunderbolt: "p-47 thunderbolt"
+  jug: "p-47 thunderbolt"
+  mustang: "p-51 mustang"
+  lightning: "p-38 lightning"
+  liberator: "b-24 liberator"
+  fortress: "b-17 flying fortress"
+  flying fortress: "b-17 flying fortress"
+  marauder: "b-26 marauder"
+  havoc: "a-20 havoc"
+  typhoon: "hawker typhoon"
