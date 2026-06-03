@@ -62,6 +62,9 @@ def _search_openserp(query: str, openserp_url: str) -> List[Dict]:
         )
         if resp.status_code == 200:
             data = resp.json()
+            if not data:
+                logger.warning("OpenSERP [%s]: empty response", query[:60])
+                return []
             results = data.get("results", [])
             logger.info("OpenSERP [%s]: %d results", query[:60], len(results))
             return [
@@ -71,6 +74,7 @@ def _search_openserp(query: str, openserp_url: str) -> List[Dict]:
                     "description": r.get("snippet", ""),
                 }
                 for r in results
+                if r
             ]
         logger.warning("OpenSERP [%s]: HTTP %d", query[:60], resp.status_code)
     except Exception as e:
