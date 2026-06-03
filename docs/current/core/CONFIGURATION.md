@@ -45,7 +45,11 @@ Settings for external API services.
 api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
-    model: "grok-4-1-fast-non-reasoning"
+    model: "grok-4.3"
+    model_map:
+      # isbn: "grok-3-mini"
+      # url_verify: "grok-3-mini"
+      # openserp_verify: "grok-3-mini"
     max_retries: 3
     timeout: 60
   calls_per_minute: 30            # Rate limit: max API calls per minute (across all threads)
@@ -53,10 +57,11 @@ api:
 
 **Options:**
 - `base_url` — Grok API endpoint
-- `model` — Model to use. Available: `grok-4-1-fast-non-reasoning` (cheapest), `grok-4-fast-non-reasoning`, `grok-4.20-0309-non-reasoning` (flagship). Must support batch API.
+- `model` — Default model for all tasks. Used when `model_map` has no entry for the task.
+- `model_map` — Per-task model routing for cost optimization. Maps `cache_type` (task name) to a model. Uncommented entries use cheaper/faster models for simple tasks. Keys: `events`, `dates`, `places`, `people`, `peoplegroups`, `weather`, `equipment`, `logistics`, `casualties`, `supplemental`, `isbn`, `url_verify`, `copyright`, `nara_match`, `openserp_verify`. Unset keys use the default `model`.
 - `max_retries` — Number of retry attempts on failure
 - `timeout` — Request timeout in seconds
-- `calls_per_minute` — Proactive rate limit across all threads (default 30)
+- `calls_per_minute` — Proactive rate limit across all threads (default 30). Irrelevant in batch mode.
 
 **NARA Catalog API:**
 - `nara_api_key` — API key for National Archives catalog search. Get from [archives.gov](https://www.archives.gov/research/catalog/help/api-getting-started). Used by bibliography resolver to find digitized military records and identify Record Groups. 10,000 requests/month limit. Leave empty to skip NARA search (Grok still identifies Record Groups without it).

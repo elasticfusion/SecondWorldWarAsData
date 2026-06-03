@@ -168,6 +168,9 @@ class GrokClient:
             "GROK_MODEL",
             config.get("api", {}).get("grok", {}).get("model", "grok-4.3"),
         )
+        self._model_map = (
+            config.get("api", {}).get("grok", {}).get("model_map", {}) or {}
+        )
         self.caches: Dict[str, Any] = {}  # Cache per extraction type
         self.timeout = 600.0  # 10 minutes for large chapters
         self._deprecation_alerted = False
@@ -242,6 +245,10 @@ class GrokClient:
             self.caches[cache_key] = self._cache_backend.get_sub_cache(cache_key)
         return self.caches[cache_key]
 
+    def _get_model(self, cache_type: str = "default") -> str:
+        """Get model for a given task type. Falls back to default model."""
+        return self._model_map.get(cache_type, self.model)
+
     def log_cache_stats(self) -> None:
         """Log cache hit/miss summary at INFO level."""
         total = self._cache_hits + self._cache_misses
@@ -273,11 +280,11 @@ class GrokClient:
                 self._json_failed,
             )
 
-    def _make_cache_key(self, prompt: str, temperature: float) -> str:
+    def _make_cache_key(self, prompt: str, temperature: float, model: str = "") -> str:
         """Create cache key from prompt and parameters."""
         import hashlib
 
-        content = f"{prompt}:{temperature}:{self.model}"
+        content = f"{prompt}:{temperature}:{model or self.model}"
         return hashlib.sha256(content.encode()).hexdigest()
 
     def clear_cache_entry(
@@ -696,7 +703,9 @@ class GrokClient:
         retry=retry_if_exception_type((requests.HTTPError, requests.ConnectionError)),
         reraise=True,
     )
-    def _call_api(self, messages: list, temperature: float = 0.1) -> Dict[str, Any]:
+    def _call_api(
+        self, messages: list, temperature: float = 0.1, model: str = ""
+    ) -> Dict[str, Any]:
         """Make API call with retry logic."""
         self._rate_limiter.wait()
         self._validate_input_size(messages)
@@ -708,7 +717,7 @@ class GrokClient:
         }
 
         payload = {
-            "model": self.model,
+            "model": model or self.model,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": 131072,
@@ -761,7 +770,9 @@ class GrokClient:
         cache = self._get_cache(cache_type)
 
         # Check cache
-        cache_key = self._make_cache_key(prompt, temperature)
+        cache_key = self._make_cache_key(
+            prompt, temperature, self._get_model(cache_type)
+        )
 
         if use_cache and cache_key in cache:
             logger.debug("[API] CACHE HIT | type=%s key=%s", cache_type, cache_key[:16])
@@ -782,7 +793,7 @@ class GrokClient:
                 BatchRequest(
                     request_id=cache_key,
                     messages=messages,
-                    model=self.model,
+                    model=self._get_model(cache_type),
                     temperature=temperature,
                     cache_type=cache_type,
                 )
@@ -806,7 +817,7 @@ class GrokClient:
         messages.append({"role": "user", "content": prompt})
 
         # Call API
-        response = self._call_api(messages, temperature)
+        response = self._call_api(messages, temperature, self._get_model(cache_type))
 
         # Extract content
         content = response["choices"][0]["message"]["content"]
@@ -886,7 +897,9 @@ class GrokClient:
         import hashlib
 
         image_hash = hashlib.sha256(image_base64.encode()).hexdigest()[:16]
-        cache_key = self._make_cache_key(f"{prompt}:img_{image_hash}", temperature)
+        cache_key = self._make_cache_key(
+            f"{prompt}:img_{image_hash}", temperature, self._get_model(cache_type)
+        )
 
         if use_cache and cache_key in cache:
             logger.info("Cache hit for image analysis")
@@ -948,7 +961,9 @@ class GrokClient:
         cache = self._get_cache(cache_type)
 
         # Check cache (include image URL in cache key)
-        cache_key = self._make_cache_key(f"{prompt}:{image_url}", temperature)
+        cache_key = self._make_cache_key(
+            f"{prompt}:{image_url}", temperature, self._get_model(cache_type)
+        )
 
         if use_cache and cache_key in cache:
             logger.info(f"Cache hit for image analysis")
@@ -998,7 +1013,7 @@ class GrokClient:
         )
 
         # Call API
-        response = self._call_api(messages, temperature)
+        response = self._call_api(messages, temperature, self._get_model(cache_type))
 
         # Extract content
         content = response["choices"][0]["message"]["content"]
@@ -1107,7 +1122,9 @@ class GrokClient:
     ) -> str:
         """Generate cache clearing command for specific entry."""
         cache = self._get_cache(cache_type)
-        cache_key = self._make_cache_key(prompt, temperature)
+        cache_key = self._make_cache_key(
+            prompt, temperature, self._get_model(cache_type)
+        )
         cache_dir = getattr(cache, "directory", "unknown")
         return (
             f'python3 -c "from diskcache import Cache; '
@@ -1133,7 +1150,9 @@ class GrokClient:
 
         # Auto-clear corrupted cache entry
         cache = self._get_cache(cache_type)
-        cache_key = self._make_cache_key(prompt, temperature)
+        cache_key = self._make_cache_key(
+            prompt, temperature, self._get_model(cache_type)
+        )
         if cache_key in cache:
             cache.pop(cache_key, None)
 
@@ -1164,7 +1183,9 @@ class GrokClient:
 
             # Auto-clear corrupted cache entry
             cache = self._get_cache(cache_type)
-            cache_key = self._make_cache_key(prompt, temperature)
+            cache_key = self._make_cache_key(
+                prompt, temperature, self._get_model(cache_type)
+            )
             if cache_key in cache:
                 cache.pop(cache_key, None)
 
@@ -1260,7 +1281,9 @@ class GrokClient:
                     stripped[:20],
                 )
                 cache = self._get_cache(cache_type)
-                cache_key = self._make_cache_key(prompt, temperature)
+                cache_key = self._make_cache_key(
+                    prompt, temperature, self._get_model(cache_type)
+                )
                 cache.pop(cache_key, None)
                 return self.extract_json(
                     prompt, system_prompt, temperature, False, cache_type, _retried=True
@@ -1276,7 +1299,9 @@ class GrokClient:
                     len(response),
                 )
                 cache = self._get_cache(cache_type)
-                cache_key = self._make_cache_key(prompt, temperature)
+                cache_key = self._make_cache_key(
+                    prompt, temperature, self._get_model(cache_type)
+                )
                 cache.pop(cache_key, None)
                 return self.extract_json(
                     prompt, system_prompt, temperature, False, cache_type, _retried=True
@@ -1355,7 +1380,9 @@ class GrokClient:
         cache = self._get_cache(cache_type)
 
         # Check cache
-        cache_key = self._make_cache_key(f"{prompt}:{schema.__name__}", 0.1)
+        cache_key = self._make_cache_key(
+            f"{prompt}:{schema.__name__}", 0.1, self._get_model(cache_type)
+        )
 
         if use_cache and cache_key in cache:
             logger.info("Cache hit for %s", schema.__name__)
