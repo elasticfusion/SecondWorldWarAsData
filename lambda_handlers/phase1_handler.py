@@ -59,7 +59,7 @@ def _extract_s3_records(event: dict) -> list[tuple[str, str]]:
 
 def _download_book(storage, book_name: str, tmpdir: Path) -> None:
     """Download all content files for a book to local temp dir."""
-    prefix = f"content/{book_name}"
+    prefix = f"contentrepository/{book_name}"
     for path in storage.list_files(prefix, "*"):
         data = storage.read_bytes(path)
         local = tmpdir / path

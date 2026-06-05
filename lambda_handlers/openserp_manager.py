@@ -30,6 +30,19 @@ def handler(event, _context):
 
     ecs = boto3.client("ecs", region_name=region)
 
+    # Guardrail: force teardown if NAT has been up >2h with no pipeline tasks
+    if _nat_too_old(max_hours=2):
+        running = ecs.list_tasks(cluster=cluster, desiredStatus="RUNNING")
+        task_arns = running.get("taskArns", [])
+        # Only openserp or nothing — no pipeline work happening
+        pipeline_tasks = [t for t in task_arns if "openserp" not in t]
+        if not pipeline_tasks:
+            logger.warning(
+                "NAT has been up >2h with no pipeline tasks — force teardown"
+            )
+            _teardown(ecs, cluster, service, region)
+            return {"action": "force_teardown", "reason": "NAT age exceeded 2h"}
+
     # Check for any running tasks in the cluster
     running = ecs.list_tasks(cluster=cluster, desiredStatus="RUNNING")
     task_count = len(running.get("taskArns", []))
@@ -92,34 +105,64 @@ def _get_last_task_time(ecs, cluster, task_arns):
 
 
 def _nat_recently_created(minutes=5):
-    """Check if networking stack was created within the last N minutes."""
+    """Check if NAT was created within the last N minutes."""
     import boto3
 
-    cf = boto3.client(
-        "cloudformation", region_name=os.getenv("AWS_REGION", "us-east-1")
-    )
+    ec2 = boto3.client("ec2", region_name=os.getenv("AWS_REGION", "us-east-1"))
     try:
-        resp = cf.describe_stacks(StackName=f"{ENV_NAME}-wwii-networking")
-        stack = resp["Stacks"][0]
-        create_time = stack.get("CreationTime")
-        if create_time:
-            age = (datetime.now(timezone.utc) - create_time).total_seconds()
-            return age < minutes * 60
+        resp = ec2.describe_nat_gateways(
+            Filters=[
+                {"Name": "tag:Name", "Values": [f"{ENV_NAME}-nat"]},
+                {"Name": "state", "Values": ["available", "pending"]},
+            ]
+        )
+        for gw in resp.get("NatGateways", []):
+            create_time = gw.get("CreateTime")
+            if create_time:
+                age = (datetime.now(timezone.utc) - create_time).total_seconds()
+                if age < minutes * 60:
+                    return True
+    except Exception:
+        pass
+    return False
+
+
+def _nat_too_old(max_hours=2):
+    """Return True if NAT has been available for longer than max_hours."""
+    import boto3
+
+    ec2 = boto3.client("ec2", region_name=os.getenv("AWS_REGION", "us-east-1"))
+    try:
+        resp = ec2.describe_nat_gateways(
+            Filters=[
+                {"Name": "tag:Name", "Values": [f"{ENV_NAME}-nat"]},
+                {"Name": "state", "Values": ["available"]},
+            ]
+        )
+        for gw in resp.get("NatGateways", []):
+            create_time = gw.get("CreateTime")
+            if create_time:
+                age = (datetime.now(timezone.utc) - create_time).total_seconds()
+                if age > max_hours * 3600:
+                    return True
     except Exception:
         pass
     return False
 
 
 def _networking_already_down():
-    """Return True if networking stack doesn't exist (already torn down)."""
+    """Return True if no NAT gateway exists."""
     import boto3
 
-    cf = boto3.client(
-        "cloudformation", region_name=os.getenv("AWS_REGION", "us-east-1")
-    )
+    ec2 = boto3.client("ec2", region_name=os.getenv("AWS_REGION", "us-east-1"))
     try:
-        cf.describe_stacks(StackName=f"{ENV_NAME}-wwii-networking")
-        return False
+        resp = ec2.describe_nat_gateways(
+            Filters=[
+                {"Name": "tag:Name", "Values": [f"{ENV_NAME}-nat"]},
+                {"Name": "state", "Values": ["available", "pending"]},
+            ]
+        )
+        return len(resp.get("NatGateways", [])) == 0
     except Exception:
         return True
 

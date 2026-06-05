@@ -197,21 +197,29 @@ def enrich_all_groups(
         group_files = group_files[:max_groups]
 
     logger.info("Enriching %d people groups...", len(group_files))
-    logger.info("=" * 60)
 
     enriched = 0
+    processed = 0
+    total = len(group_files)
 
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
         futures = {pool.submit(enrich_group, gf, grok_client): gf for gf in group_files}
         for future in as_completed(futures):
+            processed += 1
             try:
                 if future.result():
                     enriched += 1
             except Exception as e:
                 logger.warning("Failed to enrich group %s: %s", futures[future].stem, e)
+            if processed % 10 == 0 or processed == total:
+                logger.info(
+                    "  Groups progress: %d/%d done (%d enriched)",
+                    processed,
+                    total,
+                    enriched,
+                )
 
-    logger.info("=" * 60)
     logger.info("Group enrichment complete: %d/%d enriched", enriched, len(group_files))
     return enriched

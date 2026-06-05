@@ -8,6 +8,23 @@
 
 ### Production Reliability (observed failures in E2E testing)
 
+#### S3 sync does not delete merged/removed entity files
+
+#### Phase 3 has no completion notification
+Phase 1 and 2 publish SNS on completion; Phase 3 does not. No email sent when pipeline finishes.
+*Source: E2E testing 2026-06-05*
+
+#### OpenSERP torn down before Phase 3 uses it
+Phase 3 connects to `localhost:7001` but OpenSERP (separate ECS task) was already scaled to 0 by the idle monitor before Phase 3 reached the OpenSERP enrichment steps. Result: all OpenSERP-dependent enrichment (people images, equipment images, web links) skipped.
+*Source: E2E testing 2026-06-05*
+After auto-merge deletes duplicate files locally, the final S3 sync only uploads — never deletes. Stale files persist in S3, get re-downloaded next run, and trigger repeated merges. Fix: track local deletions and issue `s3 rm` for merged files, or use `aws s3 sync --delete` for the entity directories.
+*Source: E2E testing 2026-06-05 — 5 M4_Sherman files persist in S3 after merge*
+
+#### Delayed networking teardown kills active retrieve tasks
+Stale EventBridge Scheduler teardown fires after a new task has started, removing NAT and killing the task. The `_cancel_delayed_teardown` call either isn't executing or the scheduler name doesn't match. Result: retrieve task dies, results lost, pipeline stalls.
+Additionally: batch_poller creates NAT with fire-and-forget (InvocationType='Event') so errors are invisible; and nat_manager SNS subscription is on Phase2CompleteTopic but filters for "Phase 3" (dead code).
+*Source: E2E testing 2026-06-04 — batch retrieved but task killed by teardown*
+
 #### Phase 4: DynamoDB as primary entity storage
 Phase A (core abstraction + dual-write) complete. Remaining:
 - **Phase B:** Read path migration — Phase 3 queries DynamoDB instead of downloading files. Eliminates 15-30 min download.
@@ -35,6 +52,23 @@ All dedup scripts load ALL files and score ALL pairs every run (O(n²)). Track `
 
 ### Pipeline Efficiency
 
+#### Preload DynamoDB cache into memory at Phase 2 start
+
+#### Normalize abbreviated ranks to full form in people entities
+Abbreviated ranks (Col., Lt. Col., Brig. Gen., etc.) should be written out in full (Colonel, Lieutenant Colonel, Brigadier General). Either normalize in extraction prompt or post-process.
+*Source: data review 2026-06-05*
+
+#### People dedup: first name alone is insufficient for duplicate detection
+Matching on first name only produces false positives (e.g., "John Smith" vs "John Doe"). Require at minimum first + last name overlap, or rank + surname match.
+*Source: data review 2026-06-05*
+
+#### _complete_metadata() bypasses batch mode
+`phase2_extract.py:50` creates a GrokClient without `batch_mode=True`, making real-time API calls at full price even during `--batch` runs. Small cost (only incomplete metadata) but should be batch-eligible.
+*Source: code review 2026-06-05*
+
+Currently 1600+ individual DynamoDB gets (~5-10ms each). Scan all cache entries for the book's prompts into a local dict at startup. Reduces minutes of latency to one scan. Alternative: use `batch_get_item` (100 keys/call → 16 calls instead of 1600).
+*Source: E2E testing 2026-06-04*
+
 #### Phase 2 should read pending#parsed as input manifest
 Phase 2 always falls through to S3 scan. Read the DynamoDB queue directly instead.
 *Source: CODE_REVIEW agent analysis*
@@ -56,6 +90,14 @@ Causes unnecessary retries that always find nothing.
 *Source: PIPELINE_REVIEW.md*
 
 ### Infrastructure Fixes
+
+#### Pending content queue not cleared after Phase 1 completes
+Phase 1 finishes but `pending#content` DynamoDB item still has keys, causing reconciliation to re-launch Phase 1 repeatedly.
+*Source: E2E testing 2026-06-03*
+
+#### NAT availability check always times out (3 min wasted per launch)
+`_wait_for_networking` in trigger Lambda polls for NAT but never detects it as available, even when NAT manager confirms it's up. Wastes 3 min on every task launch.
+*Source: E2E testing 2026-06-03*
 
 #### Fix EntityCreatedTopic S3 notification (never configured)
 Phase 3 entity-created flow broken.
@@ -159,6 +201,10 @@ Verify local mode (non-AWS) still works correctly after all AWS-focused changes.
 
 ### UI & UX
 
+#### Dedup UI: batch-commit merges with undo support
+Currently merges execute immediately on each action. Instead: queue merge decisions in-memory on the client, show a "commit all" button. On commit, submit each merge individually (sequential API calls from the browser) to avoid Lambda timeout. Store pre-merge snapshots (both original files) in `dedup/history/` before each merge. Add undo button that restores originals from snapshot.
+*Source: UX review 2026-06-05*
+
 #### Dedup UI: rename person (edit name field + rename file)
 
 ### DevOps
@@ -215,6 +261,9 @@ Phase 3 enrichment field for canonical name identification.
 ---
 
 ## Future / Research
+
+### True multi-job concurrency
+Run multiple books in parallel (separate ECS tasks per book). Currently one task at a time with SQS queuing. Requires: per-book locking, shared DynamoDB entity store (Phase 4B), and dedup coordination across concurrent jobs. Prerequisite: DynamoDB as primary storage.
 
 ### Grok function calling for Phase 3 enrichment
 Blocked on: function calling support in batch API.

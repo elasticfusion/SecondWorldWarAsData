@@ -253,14 +253,24 @@ def enrich_all_places(
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
     enriched = 0
+    processed = 0
+    total = len(files)
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
         futures = {pool.submit(enrich_place, f, grok_client): f for f in files}
         for future in as_completed(futures):
+            processed += 1
             try:
                 if future.result():
                     enriched += 1
             except Exception as e:
                 logger.warning("Failed to enrich place %s: %s", futures[future].stem, e)
+            if processed % 10 == 0 or processed == total:
+                logger.info(
+                    "  Places progress: %d/%d done (%d enriched)",
+                    processed,
+                    total,
+                    enriched,
+                )
 
     logger.info("Place enrichment complete: %d/%d enriched", enriched, len(files))
     return enriched

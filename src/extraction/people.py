@@ -756,7 +756,12 @@ def _extract_people_for_sub_event(
                 logger.warning(f"  ⚠ Attempt {attempt + 1} failed: {e}")
                 logger.info(f"  Retrying ({attempt + 2}/{max_retries})...")
             else:
-                logger.error(f"  ✗ All {max_retries} attempts failed: {e}")
+                import os
+
+                if os.environ.get("PIPELINE_PHASE"):
+                    logger.info("  ⊘ Sync people fallback skipped (batch mode): %s", e)
+                else:
+                    logger.error(f"  ✗ All {max_retries} attempts failed: {e}")
                 return None
 
     return None

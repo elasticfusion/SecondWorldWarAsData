@@ -275,7 +275,13 @@ def _setup_symlinks():
     for name, target in symlinks.items():
         link = app_dir / name
         target.mkdir(parents=True, exist_ok=True)
-        if link.exists() or link.is_symlink():
+        if link.is_symlink():
+            link.unlink()
+        elif link.is_dir():
+            import shutil
+
+            shutil.rmtree(link)
+        elif link.exists():
             link.unlink()
         link.symlink_to(target)
 
@@ -294,6 +300,7 @@ def _patch_config():
     cache_table = os.environ.get("CACHE_TABLE", "")
     if cache_table:
         config["aws"]["cache_table"] = cache_table
+    config.setdefault("storage", {})["entity_backend"] = "dynamodb"
 
     with open(config_path, "w", encoding="utf-8") as f:
         yaml.dump(config, f, default_flow_style=False)
@@ -438,8 +445,12 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     """Run a pipeline phase script with incremental S3 sync."""
     global _current_phase_script
     _current_phase_script = phase_script
+    phase_name = Path(phase_script).stem
     WORKDIR.mkdir(parents=True, exist_ok=True)
+
+    logger.info("[step] %s: loading secrets", phase_name)
     _load_secrets()
+    logger.info("[step] %s: preflight credit check", phase_name)
     _preflight_credit_check()
     _patch_config()
     _start_openserp_if_needed(phase_script)
@@ -447,8 +458,9 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     if "phase1" in phase_script:
         _prepare_phase1()
 
-    _download_inputs(phase_script)
     _setup_symlinks()
+    logger.info("[step] %s: downloading inputs from S3", phase_name)
+    _download_inputs(phase_script)
 
     if "phase3" in phase_script:
         _stamp_schema_versions()
@@ -465,9 +477,9 @@ def run_phase(phase_script: str, extra_args: list) -> None:
         return
 
     env = os.environ.copy()
-    phase_name = Path(phase_script).stem
     env["PIPELINE_PHASE"] = phase_name
     cmd = [sys.executable, phase_script] + extra_args
+    logger.info("[step] %s: running extraction", phase_name)
     logger.info(
         "Phase started: %s",
         phase_name,
@@ -518,6 +530,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     if "phase1" in phase_script:
         _clear_manifest()
 
+    logger.info("[step] %s: final S3 sync", phase_name)
     _final_sync(phase_script)
     _post_process(phase_script, env)
 
@@ -617,17 +630,19 @@ def _get_book_entity_files(s3, book_name: str) -> list:
 def _download_inputs(phase_script: str) -> None:
     """Download the appropriate inputs from S3 for this phase."""
     if "phase1" in phase_script:
-        keys = _read_s3_manifest("content/")
+        keys = _read_s3_manifest("contentrepository/")
         if keys:
-            n = _download_keys(keys, WORKDIR)
+            n = _download_keys(keys, Path("/app"))
             logger.info("Downloaded %d content files (incremental)", n)
         else:
             # Scope full sync to BOOK_NAME if set, otherwise download all
             book_name = os.environ.get("BOOK_NAME", "")
-            prefix = f"content/{book_name}/" if book_name else "content/"
+            prefix = (
+                f"contentrepository/{book_name}/" if book_name else "contentrepository/"
+            )
             if not book_name:
                 logger.warning("No manifest and no BOOK_NAME — downloading ALL content")
-            n = s3_sync_down(prefix, WORKDIR)
+            n = s3_sync_down(prefix, Path("/app"))
             logger.info("Downloaded %d content files (full, prefix=%s)", n, prefix)
     elif "phase2" in phase_script:
         n = _download_phase2_inputs()
@@ -699,7 +714,11 @@ def _download_phase2_inputs() -> int:
         logger.info(
             "No manifest found, falling back to S3 scan (prefix: %s)", scan_prefix
         )
-        existing_events = _list_s3_keys_matching(s3, scan_prefix, "-event.json")
+        force_all = os.environ.get("FORCE_DOWNLOAD_PARSED") == "1"
+        if force_all:
+            existing_events: set = set()
+        else:
+            existing_events = _list_s3_keys_matching(s3, scan_prefix, "-event.json")
         new_parsed = _download_new_parsed(s3, existing_events, prefix=scan_prefix)
         logger.info(
             "Phase 2 incremental (S3 scan): %d new parsed files, %d existing events skipped",
@@ -831,12 +850,14 @@ def _post_process(phase_script: str, env: dict) -> None:
 
 def _check_pending_content() -> None:
     """Check DynamoDB for queued content and re-trigger Phase 1 if found."""
+    logger.info("Checking DynamoDB for pending content")
     try:
         table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
         table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
         resp = table.get_item(Key={"cache_key": "pending#content"})
         item = resp.get("Item")
         if not item or not item.get("keys"):
+            logger.info("No pending content in DynamoDB")
             return
         keys = item["keys"]
         logger.info("Found %d pending content files, re-triggering pipeline", len(keys))
@@ -900,6 +921,7 @@ def _migrate_exclusions_to_dynamo() -> None:
     try:
         from src.dedup.exclusions import migrate_local_to_dynamo
 
+        logger.info("Migrating dedup exclusions to DynamoDB")
         s3_migrate = _s3_client()
         migration_files = [
             "output/people/not_duplicates.json",
@@ -1044,6 +1066,7 @@ def _generate_places_coords() -> None:
     try:
         table_name = os.environ.get("CACHE_TABLE", "")
         if table_name:
+            logger.info("Writing %d place coords to DynamoDB", len(coords))
             table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
             with table.batch_writer() as batch:
                 for filename, c in coords.items():
@@ -1055,8 +1078,9 @@ def _generate_places_coords() -> None:
                             "PlaceID": c["PlaceID"],
                         }
                     )
+            logger.info("Wrote %d place coords to DynamoDB", len(coords))
     except Exception as e:
-        logger.debug("Failed to store coords in DynamoDB: %s", e)
+        logger.warning("Failed to store coords in DynamoDB: %s", e)
 
 
 def _execute_dedup_scripts() -> None:
@@ -1108,7 +1132,7 @@ def _write_manifest(keys: list) -> None:
                 "keys": keys,
             }
         )
-        logger.info("Wrote manifest: %d keys", len(keys))
+        logger.info("Wrote manifest to DynamoDB: %d keys", len(keys))
     except Exception as e:
         logger.warning("Failed to write manifest: %s", e)
 
@@ -1122,7 +1146,7 @@ def _read_manifest() -> list:
         item = resp.get("Item")
         if item:
             keys = item.get("keys", [])
-            logger.info("Read manifest: %d keys", len(keys))
+            logger.info("Read manifest from DynamoDB: %d keys", len(keys))
             return keys
     except Exception as e:
         logger.warning("Failed to read manifest: %s", e)
@@ -1393,6 +1417,7 @@ def _acquire_lock(phase_script: str) -> bool:
         return True
     env_name = os.environ.get("ENV_NAME", "dev")
     lock_key = f"lock#{env_name}-wwii-{family_suffix}"
+    logger.info("Acquiring DynamoDB lock: %s", lock_key)
     try:
         import time
 
@@ -1406,8 +1431,10 @@ def _acquire_lock(phase_script: str) -> bool:
             },
             ConditionExpression="attribute_not_exists(cache_key)",
         )
+        logger.info("Acquired DynamoDB lock: %s", lock_key)
         return True
     except table.meta.client.exceptions.ConditionalCheckFailedException:
+        logger.warning("DynamoDB lock already held: %s", lock_key)
         return False
     except Exception as e:
         logger.warning("Lock check failed: %s, proceeding anyway", e)
@@ -1555,22 +1582,27 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     """Run phase in batch mode, submit to Grok, enqueue job, then exit immediately."""
     global _current_phase_script
     _current_phase_script = phase_script
+    phase_name = Path(phase_script).stem
     if "--batch" not in extra_args:
         extra_args = ["--batch"] + extra_args
 
     WORKDIR.mkdir(parents=True, exist_ok=True)
+    logger.info("[step] %s: loading secrets", phase_name)
     _load_secrets()
+    logger.info("[step] %s: preflight credit check", phase_name)
     _preflight_credit_check()
     _patch_config()
     _start_openserp_if_needed(phase_script)
 
-    _download_inputs(phase_script)
     _setup_symlinks()
+    logger.info("[step] %s: downloading inputs from S3", phase_name)
+    _download_inputs(phase_script)
 
     if "phase3" in phase_script:
         _stamp_schema_versions()
         _reset_openserp_searched()
 
+    logger.info("[step] %s: submitting batch to Grok API", phase_name)
     # Monkey-patch poll_batch/retrieve_results so submit_batch returns after upload
     import src.utils.batch_api as _batch_mod
 
@@ -1594,8 +1626,10 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     _batch_mod.retrieve_results = _orig_retrieve
 
     # Enqueue the batch job
+    logger.info("[step] %s: enqueueing batch job", phase_name)
     _enqueue_from_metrics(phase_script)
 
+    logger.info("[step] %s: final S3 sync", phase_name)
     _final_sync(phase_script)
     _stop_openserp_if_running(phase_script)
 
@@ -1604,6 +1638,7 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
         sys.exit(result.returncode)
 
     # Tear down networking (NAT + VPC endpoints) — Lambda poller will recreate on completion
+    logger.info("[step] %s: tearing down networking", phase_name)
     _teardown_networking()
 
     logger.info("Submit-only complete — batch enqueued, infra torn down, exiting.")
@@ -1658,6 +1693,13 @@ def _enqueue_from_metrics(phase_script: str) -> None:
     except Exception as e:
         logger.debug("Dedup guard check failed (proceeding): %s", e)
 
+    logger.info(
+        "Enqueueing batch job to DynamoDB: batch_id=%s, phase=%s, book=%s, requests=%d",
+        batch_id,
+        phase,
+        book,
+        request_count,
+    )
     enqueue_job(
         BatchJob(
             batch_id=batch_id,
@@ -1669,6 +1711,7 @@ def _enqueue_from_metrics(phase_script: str) -> None:
             request_count=request_count,
         )
     )
+    logger.info("Enqueued batch job to DynamoDB: %s", batch_id)
 
 
 def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> None:
@@ -1698,10 +1741,11 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     # Scope downloads to the book being retrieved (avoid processing entire backlog)
     if job.book and job.book != "unknown":
         os.environ["BOOK_NAME"] = job.book
+    os.environ["FORCE_DOWNLOAD_PARSED"] = "1"  # Retrieve needs all parsed files
+    _setup_symlinks()
     _download_inputs(phase_script)
     # Download metrics so cache_type mapping is available for result classification
     _download_s3_prefix(_s3_client(), "output/metrics/")
-    _setup_symlinks()
 
     if "phase3" in phase_script:
         _stamp_schema_versions()

@@ -211,7 +211,14 @@ def _call_and_parse_casualties(
                     "  ⚠ Batch casualties attempt %d failed: %s", attempt + 1, e
                 )
             else:
-                logger.error("  ✗ All %d batch attempts failed: %s", max_retries, e)
+                import os
+
+                if os.environ.get("PIPELINE_PHASE"):
+                    logger.info(
+                        "  ⊘ Sync casualties fallback skipped (batch mode): %s", e
+                    )
+                else:
+                    logger.error("  ✗ All %d batch attempts failed: %s", max_retries, e)
     return {}
 
 

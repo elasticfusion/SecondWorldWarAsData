@@ -173,6 +173,17 @@ def get_entity_store() -> Optional[DynamoEntityStore]:
 
     config = load_config()
     aws = config.get("aws", {})
+    # Lambda context: check env vars (config.yaml isn't patched at runtime in Lambda)
+    if os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+        table = os.environ.get("CACHE_TABLE", "")
+        if table:
+            _entity_store_cache = DynamoEntityStore(
+                table_name=table,
+                region=os.environ.get("AWS_REGION", "us-east-1"),
+            )
+            return _entity_store_cache
+        return None
+
     if not aws.get("enabled"):
         return None
 

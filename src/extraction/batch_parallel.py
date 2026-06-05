@@ -571,17 +571,29 @@ async def process_chapters_parallel(
     heartbeat=None,
 ) -> Dict[str, Any]:
     """Process multiple chapters in parallel."""
+    import time as _time
+
     results: Dict[str, Any] = {"processed": 0, "failed": 0, "chapters": []}
+    total_chapters = len(parsed_files)
+    phase_start = _time.monotonic()
 
     # Process in batches to limit concurrency
     for i in range(0, len(parsed_files), max_parallel):
         batch = parsed_files[i : i + max_parallel]
         batch_num = i // max_parallel + 1
-        logger.info("Processing batch %d: %d chapters", batch_num, len(batch))
+        done = results["processed"] + results["failed"]
+        logger.info(
+            "Processing batch %d (%d/%d chapters done): %d chapters",
+            batch_num,
+            done,
+            total_chapters,
+            len(batch),
+        )
         if heartbeat:
             heartbeat.ping(f"Step 1 batch {batch_num}: {len(batch)} chapters")
 
         # Create tasks for this batch
+        batch_start = _time.monotonic()
         tasks = _create_chapter_tasks(batch, grok_client, output_root, config)
 
         # Run batch in parallel (5 min timeout per chapter)
@@ -590,9 +602,19 @@ async def process_chapters_parallel(
             return_exceptions=True,
         )
 
+        batch_elapsed = _time.monotonic() - batch_start
+        logger.info("Batch %d complete in %.0fs", batch_num, batch_elapsed)
+
         # Process results
         _process_batch_results(tasks, batch_results, results, heartbeat)
 
+    total_elapsed = _time.monotonic() - phase_start
+    logger.info(
+        "All chapters processed: %d/%d OK in %.0fs",
+        results["processed"],
+        total_chapters,
+        total_elapsed,
+    )
     return results
 
 
