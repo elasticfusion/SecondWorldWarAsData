@@ -227,6 +227,14 @@ Resources:
     Properties:
       TopicName: !Sub ${EnvironmentName}-wwii-alarms
 
+  AlarmEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasNotificationEmail
+    Properties:
+      TopicArn: !Ref AlarmSNSTopic
+      Protocol: email
+      Endpoint: !Ref NotificationEmail
+
   Phase1ErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -446,7 +454,7 @@ Resources:
                                   "TopicArn": props["ContentUploadedTopicArn"],
                                   "Events": ["s3:ObjectCreated:*"],
                                   "Filter": {"Key": {"FilterRules": [
-                                      {"Name": "prefix", "Value": "content/"},
+                                      {"Name": "prefix", "Value": "contentrepository/"},
                                       {"Name": "suffix", "Value": ".md"},
                                   ]}},
                               },
@@ -477,6 +485,7 @@ Resources:
       ContentUploadedTopicArn: !Ref ContentUploadedTopic
       ChapterParsedTopicArn: !Ref ChapterParsedTopic
       EntityCreatedTopicArn: !Ref EntityCreatedTopic
+      ConfigVersion: "2"  # Bump to force re-execution when notification config changes
 
 Outputs:
   ContentUploadedTopicArn:

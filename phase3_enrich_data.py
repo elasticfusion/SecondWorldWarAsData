@@ -33,9 +33,7 @@ def enrich_people_data(
     max_workers: int = 6,
 ) -> int:
     """Enrich people biographical data from Grokipedia and Wikipedia."""
-    logger.info("\n" + "=" * 80)
-    logger.info("ENRICHING PEOPLE")
-    logger.info("=" * 80)
+    logger.info("[phase3 step 1/6] Enriching people (%s)", people_dir)
 
     if not people_dir.exists():
         logger.warning(f"People directory not found: {people_dir}")
@@ -74,9 +72,7 @@ def enrich_groups_data(
     max_workers: int = 6,
 ) -> int:
     """Enrich people groups with external data."""
-    logger.info("\n" + "=" * 80)
-    logger.info("ENRICHING PEOPLE GROUPS")
-    logger.info("=" * 80)
+    logger.info("[phase3 step 2/6] Enriching people groups")
 
     enriched = enrich_all_groups(
         groups_dir, grok_client, max_groups=max_items, max_workers=max_workers
@@ -147,7 +143,7 @@ def main():
         logger.error(f"Output directory not found: {args.output_dir}")
         return 1
 
-    logger.info("Starting enrichment process...")
+    logger.info("Phase 3: starting enrichment (%s)", args.output_dir)
     if args.max_items:
         logger.info(f"Limiting to {args.max_items} items per entity type")
     if args.no_references:
@@ -184,6 +180,7 @@ def main():
 
     # Enrich places
     if not args.people_only:
+        logger.info("[phase3 step 3/6] Enriching places")
         places_dir = args.output_dir / "places"
         places_enriched = enrich_all_places(
             places_dir, grok_client, max_places=args.max_items, max_workers=max_workers
@@ -195,6 +192,7 @@ def main():
 
     # Enrich bibliography (ISBN, copyright, archive URLs)
     if not args.people_only:
+        logger.info("[phase3 step 4/6] Enriching bibliography")
         bib_dir = args.output_dir / "bibliography"
         supplemental_config = config.get("supplemental_material", {})
         bib_enriched = enrich_bibliography(bib_dir, supplemental_config, grok_client)
@@ -221,6 +219,7 @@ def main():
     if not args.people_only and config.get("supplemental_material", {}).get(
         "use_openserp", False
     ):
+        logger.info("[phase3 step 5/6] OpenSERP enrichment (people + equipment)")
         from src.enrichment.openserp_enrichment import (
             enrich_equipment_with_openserp,
             enrich_people_with_openserp,
@@ -239,6 +238,7 @@ def main():
     # NOAA weather enrichment (observed data to supplement Open-Meteo)
     noaa_token = config.get("api", {}).get("noaa_api_token", "")
     if not args.people_only and noaa_token:
+        logger.info("[phase3 step 6/6] NOAA weather enrichment")
         from src.enrichment.noaa_weather import enrich_weather_with_noaa
 
         weather_dir = args.output_dir / "weather"
@@ -247,10 +247,8 @@ def main():
                 weather_dir, noaa_token, args.max_items or 0
             )
 
-    logger.info("\n" + "=" * 80)
-    logger.info(f"ENRICHMENT COMPLETE: {total_enriched} total items enriched")
+    logger.info("Phase 3 complete: %d total items enriched", total_enriched)
     grok_client.log_cache_stats()
-    logger.info("=" * 80)
 
     # If batch mode, submit collected requests, wait, then re-run
     if (
@@ -318,11 +316,10 @@ def main():
                 )
                 total_enriched += resolve_stats["resolved"]
 
-            logger.info("\n" + "=" * 80)
             logger.info(
-                f"ENRICHMENT (batch) COMPLETE: {total_enriched} total items enriched"
+                "[phase3] Batch re-run complete: %d total items enriched",
+                total_enriched,
             )
-            logger.info("=" * 80)
 
     from src.utils.http_pool import close_session
 

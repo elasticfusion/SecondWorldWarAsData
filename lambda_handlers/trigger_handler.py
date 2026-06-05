@@ -48,6 +48,16 @@ dynamo = boto3.resource("dynamodb").Table(CACHE_TABLE)
 
 def handler(event, _context):
     """Main entry point."""
+    # Manual invocation: {"source": "manual", "book": "BookName"}
+    if event.get("source") == "manual":
+        book = event.get("book", "")
+        phase = event.get("phase", "1")
+        task_map = {"1": PHASE1_TASK_DEF, "2": PHASE2_TASK_DEF, "3": PHASE3_TASK_DEF}
+        task_def = task_map.get(phase, PHASE1_TASK_DEF)
+        logger.info("Manual trigger for book=%s phase=%s", book or "all", phase)
+        _run_task(task_def, "manual", book_name=book)
+        return {"status": "launched", "book": book, "phase": phase}
+
     # Scheduled stale lock check
     if event.get("source") == "scheduled":
         return _handle_scheduled_check()
@@ -134,7 +144,15 @@ def _handle_scheduled_check():
                     "Pending content queue has %d items, launching Phase 1",
                     len(pending_content["keys"]),
                 )
-                _run_task(PHASE1_TASK_DEF, "pending-reconciliation")
+                books = set()
+                for k in pending_content["keys"]:
+                    parts = k.split("/")
+                    if len(parts) >= 2 and parts[0] == "contentrepository":
+                        books.add(parts[1])
+                book_name = books.pop() if len(books) == 1 else ""
+                _run_task(
+                    PHASE1_TASK_DEF, "pending-reconciliation", book_name=book_name
+                )
             else:
                 pending_parsed = dynamo.get_item(
                     Key={"cache_key": "pending#parsed"}
@@ -363,7 +381,20 @@ def _launch_phase1_if_idle():
                 pass
             return
     logger.info("Pipeline idle, launching Phase 1 to process queued content")
-    _run_task(PHASE1_TASK_DEF, "pending-queue")
+    book_name = ""
+    try:
+        resp = dynamo.get_item(Key={"cache_key": "pending#content"})
+        keys = resp.get("Item", {}).get("keys", [])
+        books = set()
+        for k in keys:
+            parts = k.split("/")
+            if len(parts) >= 2 and parts[0] == "contentrepository":
+                books.add(parts[1])
+        if len(books) == 1:
+            book_name = books.pop()
+    except Exception:
+        pass
+    _run_task(PHASE1_TASK_DEF, "pending-queue", book_name=book_name)
 
 
 def _queue_parsed(keys):

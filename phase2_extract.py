@@ -216,9 +216,7 @@ def _extract_maps(output_root, config, logger):
     if not config.get("maps", {}).get("enabled", False):
         return
 
-    logger.info("\n%s", "=" * 60)
-    logger.info("Extracting maps from source material...")
-    logger.info("=" * 60)
+    logger.info("[phase2 step 2/5] Extracting maps from source material")
     try:
         from src.extraction.maps import extract_maps
 
@@ -238,9 +236,7 @@ def _extract_images(output_root, config, logger):
     if not config.get("images", {}).get("enabled", True):
         return
 
-    logger.info("\n%s", "=" * 60)
-    logger.info("Extracting images from source material...")
-    logger.info("=" * 60)
+    logger.info("[phase2 step 3/5] Extracting images from source material")
     try:
         from src.extraction.images import extract_images
 
@@ -264,9 +260,7 @@ def _extract_external_maps(base_dir, grok_client, paths, config, logger):
     if not config.get("external_maps", {}).get("enabled", False):
         return
 
-    logger.info("\n%s", "=" * 60)
-    logger.info("Searching for external maps...")
-    logger.info("=" * 60)
+    logger.info("[phase2 step 3/5] Searching for external maps (OpenSERP)")
 
     # Check OpenSERP availability
     openserp_available = False
@@ -395,9 +389,7 @@ def _retry_missing_events(parsed_files, grok_client, logger):
 def _run_analysis(output_root, logger):
     """Run duplicate detection and group analysis."""
     # People duplicates
-    logger.info("\n%s", "=" * 60)
-    logger.info("Analyzing for duplicate people...")
-    logger.info("=" * 60)
+    logger.info("[phase2 step 5/5] Analyzing for duplicate people")
 
     people_dir = output_root / "people"
     if people_dir.exists():
@@ -411,9 +403,7 @@ def _run_analysis(output_root, logger):
         logger.warning("No people directory found")
 
     # Related groups
-    logger.info("\n%s", "=" * 60)
-    logger.info("Analyzing people groups for relationships...")
-    logger.info("%s", "=" * 60)
+    logger.info("[phase2 step 5/5] Analyzing people groups for relationships")
 
     groups_dir = output_root / "people_groups"
     if groups_dir.exists():
@@ -565,9 +555,7 @@ def main():
     logger.info("Starting Phase 2: Event and Entity Extraction")
 
     # Step 0: Complete metadata
-    logger.info("\n%s", "=" * 60)
-    logger.info("Checking metadata completeness...")
-    logger.info("=" * 60)
+    logger.info("[phase2 step 0/5] Checking metadata completeness")
     _complete_metadata(base_dir, paths, logger)
 
     # Check for API key
@@ -619,9 +607,10 @@ def main():
     # -----------------------------------------------------------------------
     # Steps 1-3: Parallel extraction, retry, optional entities
     # -----------------------------------------------------------------------
-    logger.info("\n%s", "=" * 60)
-    logger.info("Processing all chapters in parallel...")
-    logger.info("=" * 60)
+    logger.info(
+        "[phase2 step 1/5] Extracting events and entities (%d chapters)",
+        len(parsed_files),
+    )
 
     from src.extraction.batch_parallel import process_chapters_parallel
 
@@ -640,11 +629,11 @@ def main():
         logger,
     )
 
-    logger.info("\n%s", "=" * 60)
     logger.info(
-        "Core extraction complete! Processed: %d, Failed: %d", processed, failed
+        "[phase2 step 1/5] Core extraction complete: %d processed, %d failed",
+        processed,
+        failed,
     )
-    logger.info("%s", "=" * 60)
 
     # -----------------------------------------------------------------------
     # Step 4: Maps and Images extraction
@@ -661,10 +650,8 @@ def main():
     # -----------------------------------------------------------------------
     # Done
     # -----------------------------------------------------------------------
-    logger.info("\n%s", "=" * 60)
-    logger.info("Phase 2 complete! Processed: %d, Failed: %d", processed, failed)
+    logger.info("Phase 2 complete: %d processed, %d failed", processed, failed)
     grok_client.log_cache_stats()
-    logger.info("%s", "=" * 60)
     heartbeat.stop()
 
     # If batch mode, submit collected requests, wait, then re-run
@@ -673,12 +660,10 @@ def main():
         and grok_client._batch_collector
         and len(grok_client._batch_collector) > 0
     ):
-        logger.info("\n%s", "=" * 60)
         logger.info(
-            "Submitting %d requests to xAI Batch API (50%% off)...",
+            "[phase2] Submitting %d requests to Grok Batch API",
             len(grok_client._batch_collector),
         )
-        logger.info("%s", "=" * 60)
         # Build descriptive batch name from processed books
         books = set()
         for pf in parsed_files:
@@ -708,13 +693,11 @@ def main():
             )
 
             heartbeat.stop()
-            logger.info("\n%s", "=" * 60)
             logger.info(
-                "Phase 2 (batch) complete! Processed: %d, Failed: %d",
+                "[phase2] Batch re-run complete: %d processed, %d failed",
                 processed,
                 failed,
             )
-            logger.info("%s", "=" * 60)
 
             # Second batch cycle: optional extractors
             if any(

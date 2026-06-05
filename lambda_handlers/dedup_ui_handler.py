@@ -23,6 +23,38 @@ logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
 STATUS_KEY = "dedup/review_status.json"
 
+# Entity ID fields per type
+_ID_FIELDS = {
+    "people": "PersonID",
+    "people_groups": "GroupID",
+    "places": "PlaceID",
+    "dates": "DateID",
+    "equipment": "EquipmentID",
+    "weather": "WeatherID",
+    "casualties": "CasualtyID",
+    "logistics": "LogisticsID",
+    "bibliography": "BibliographyID",
+    "maps": "MapID",
+}
+
+
+def _sync_entity_to_dynamo(entity_type: str, data: dict) -> None:
+    """Write merged entity to DynamoDB entity store (dual-write)."""
+    id_field = _ID_FIELDS.get(entity_type)
+    if not id_field:
+        return
+    entity_id = data.get(id_field)
+    if not entity_id:
+        return
+    try:
+        from src.utils.entity_store import get_entity_store
+
+        store = get_entity_store()
+        if store:
+            store.put(entity_type, entity_id, data)
+    except Exception as e:
+        logger.debug("DynamoDB entity sync failed: %s", e)
+
 
 def _append_to_manifest(keys: list) -> None:
     """Append changed S3 keys to the Phase 2 manifest in DynamoDB."""
@@ -353,6 +385,7 @@ def _merge_generic_files(entity_type, people, primary_index, storage):
     primary_data["event_mentions"] = primary_mentions
     primary_data["aliases"] = aliases
     storage.write_json(f"{prefix}/{primary['filename']}", primary_data)
+    _sync_entity_to_dynamo(prefix.split("/")[-1], primary_data)
     _append_to_manifest([f"{prefix}/{primary['filename']}"])
 
 
@@ -406,6 +439,7 @@ def _rename_to_match_content(event, storage):
         # Copy to new key, delete old
         storage.write_json(f"{prefix}/{new_filename}", data)
         storage.delete(f"{prefix}/{filename}")
+        _sync_entity_to_dynamo(entity_type, data)
         _append_to_manifest([f"{prefix}/{new_filename}"])
 
         # Update index.json

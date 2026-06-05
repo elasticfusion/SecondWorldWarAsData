@@ -769,7 +769,6 @@ def enrich_all_people(
         person_files = person_files[:max_people]
 
     logger.info("Enriching %d people from external sources...", len(person_files))
-    logger.info("=" * 60)
 
     from src.utils.heartbeat import Heartbeat
 
@@ -777,6 +776,8 @@ def enrich_all_people(
     heartbeat.start()
 
     enriched = 0
+    processed = 0
+    total = len(person_files)
 
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -787,11 +788,19 @@ def enrich_all_people(
         futures = {pool.submit(_enrich_one, pf): pf for pf in person_files}
         for future in as_completed(futures):
             pf = futures[future]
+            processed += 1
             try:
                 if future.result():
                     enriched += 1
             except Exception as e:
                 logger.warning("Failed to enrich %s: %s", pf.stem, e)
+            if processed % 10 == 0 or processed == total:
+                logger.info(
+                    "  People progress: %d/%d done (%d enriched)",
+                    processed,
+                    total,
+                    enriched,
+                )
             heartbeat.ping(f"{pf.stem} ({enriched} enriched)")
 
     heartbeat.stop()

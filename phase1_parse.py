@@ -202,19 +202,17 @@ def main():
         console=log_config.get("console", True),
     )
 
-    logger.info("Starting Phase 1: File Discovery and Parsing")
+    logger.info("Phase 1: file discovery and parsing")
 
     content_root = paths["content_root"]
-    logger.info(f"Scanning content directory: {content_root}")
+    logger.info("[phase1 step 1/2] Scanning content: %s", content_root)
 
     structure = discover_content_structure(content_root)
 
-    logger.info(f"Found {len(structure)} book(s)")
+    total_chapters = sum(len(ch) for ch in structure.values())
+    logger.info("Found %d book(s), %d chapter(s) total", len(structure), total_chapters)
     for book_name, chapters in structure.items():
-        logger.info(f"  {book_name}: {len(chapters)} chapter(s)")
-        for chapter in chapters:
-            sections = ", ".join(chapter.content_files.keys()) or "single file"
-            logger.info(f"    Chapter {chapter.chapter_number}: sections [{sections}]")
+        logger.info("  %s: %d chapter(s)", book_name, len(chapters))
 
     output_root = paths["output_root"]
     output_root.mkdir(exist_ok=True)
@@ -224,17 +222,26 @@ def main():
     content_root_out = get_content_root(paths)
     content_root_out.mkdir(parents=True, exist_ok=True)
 
+    logger.info("[phase1 step 2/2] Parsing %d chapters", total_chapters)
+    parsed = 0
     for book_name, chapters in structure.items():
         book_output = content_root_out / book_name
         book_output.mkdir(exist_ok=True)
 
         for chapter_group in chapters:
-            logger.info(f"Parsing {book_name} - Chapter {chapter_group.chapter_number}")
+            logger.info(
+                "  Parsing %s ch%s (%d/%d)",
+                book_name,
+                chapter_group.chapter_number,
+                parsed + 1,
+                total_chapters,
+            )
             documents = parse_chapter(chapter_group)
             for doc in documents:
                 _process_document(doc, book_output, logger)
+            parsed += 1
 
-    logger.info("Phase 1 complete!")
+    logger.info("Phase 1 complete: %d chapters parsed", parsed)
 
 
 if __name__ == "__main__":

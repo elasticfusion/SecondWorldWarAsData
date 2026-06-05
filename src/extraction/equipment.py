@@ -1503,7 +1503,14 @@ Example:
                 logger.warning("  ⚠ Attempt %s failed: %s", attempt + 1, e)
                 logger.info("  Retrying (%s/%s)...", attempt + 2, max_retries)
             else:
-                logger.error("  ✗ All %s attempts failed: %s", max_retries, e)
+                import os
+
+                if os.environ.get("PIPELINE_PHASE"):
+                    logger.info(
+                        "  ⊘ Sync equipment fallback skipped (batch mode): %s", e
+                    )
+                else:
+                    logger.error("  ✗ All %s attempts failed: %s", max_retries, e)
 
     return None
 

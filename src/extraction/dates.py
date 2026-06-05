@@ -412,7 +412,12 @@ def _extract_dates_for_sub_event(
                 logger.warning("  ⚠ Attempt %d failed: %s", attempt + 1, e)
                 logger.info("  Retrying (%d/%d)...", attempt + 2, max_retries)
             else:
-                logger.error("  ✗ All %d attempts failed: %s", max_retries, e)
+                import os
+
+                if os.environ.get("PIPELINE_PHASE"):
+                    logger.info("  ⊘ Sync dates fallback skipped (batch mode): %s", e)
+                else:
+                    logger.error("  ✗ All %d attempts failed: %s", max_retries, e)
                 return 0
 
     return 0
