@@ -107,21 +107,36 @@ def _resolve_book(entry, citation, grok_client, config):
     """Resolve books."""
     title = citation.get("title") or ""
     author = (citation.get("author") or [None])[0]
-    return _resolve_book_search(title, author, citation, grok_client, config)
+    result = _resolve_book_search(title, author, citation, grok_client, config)
+    if not result:
+        alt_title = citation.get("alt_title") or ""
+        if alt_title and alt_title != title:
+            result = _resolve_book_search(alt_title, author, citation, grok_client, config)
+    return result
 
 
 def _resolve_article(entry, citation, grok_client, config):
     """Resolve articles."""
     title = citation.get("title") or ""
     author = (citation.get("author") or [None])[0]
-    return _resolve_article_search(title, author, citation, grok_client, config)
+    result = _resolve_article_search(title, author, citation, grok_client, config)
+    if not result:
+        alt_title = citation.get("alt_title") or ""
+        if alt_title and alt_title != title:
+            result = _resolve_article_search(alt_title, author, citation, grok_client, config)
+    return result
 
 
 def _resolve_generic_entry(entry, citation, grok_client, config):
     """Generic fallback."""
     title = citation.get("title") or ""
     author = (citation.get("author") or [None])[0]
-    return _resolve_generic(title, author, grok_client, config)
+    result = _resolve_generic(title, author, grok_client, config)
+    if not result:
+        alt_title = citation.get("alt_title") or ""
+        if alt_title and alt_title != title:
+            result = _resolve_generic(alt_title, author, grok_client, config)
+    return result
 
 
 # --- Archive/Military Records ---
@@ -254,13 +269,19 @@ def _search_online_sources(
         url = _search_nara(query, nara_key, grok_client, verbatim)
         if url:
             return (url, "nara_catalog")
+        # Retry with alt_title if available
+        alt_title = (entry.get("citation") or {}).get("alt_title") or ""
+        if alt_title and alt_title != query:
+            url = _search_nara(alt_title[:100], nara_key, grok_client, verbatim)
+            if url:
+                return (url, "nara_catalog")
 
     # 2. OpenSERP for digitized copies (HathiTrust, university sites, etc.)
     if config.get("use_openserp"):
         openserp_url = config.get("openserp_url", "http://localhost:7001")
         current_ref = entry.get("archive_reference_number") or ""
         ref = current_ref if current_ref and current_ref != "None" else title
-        url = _search_openserp_archive(ref, openserp_url)
+        url = _search_openserp_archive(ref, openserp_url, grok_client, entry)
         if url:
             return (url, "openserp_archive")
 
@@ -277,7 +298,7 @@ def _search_online_sources(
 _openserp_down = False
 
 
-def _search_openserp_archive(ref: str, openserp_url: str) -> Optional[str]:
+def _search_openserp_archive(ref: str, openserp_url: str, grok_client: Any = None, entry: Dict = None) -> Optional[str]:
     """Search OpenSERP for digitized copies of archive documents."""
     global _openserp_down
     if _openserp_down:
@@ -311,10 +332,15 @@ def _search_openserp_archive(ref: str, openserp_url: str) -> Optional[str]:
             results = data.get("results", [])
             for r in results:
                 url = r.get("url", "")
-                if url:
-                    cache_result("openserp_archive", ref, url)
-                    logger.info("Found online copy: %s", url)
-                    return url
+                if not url:
+                    continue
+                result_title = r.get("title", "")
+                if grok_client and not _verify_openserp_match(ref, result_title, url, grok_client, entry):
+                    logger.debug("  ✗ OpenSERP rejected: '%s' for query '%s'", result_title[:60], ref[:60])
+                    continue
+                cache_result("openserp_archive", ref, url)
+                logger.info("Found online copy: %s", url)
+                return url
     except Exception as e:
         logger.warning("OpenSERP unreachable, disabling for this run: %s", e)
         _openserp_down = True
@@ -322,6 +348,61 @@ def _search_openserp_archive(ref: str, openserp_url: str) -> Optional[str]:
 
     cache_result("openserp_archive", ref, None)
     return None
+
+
+def _verify_openserp_match(query: str, result_title: str, url: str, grok_client: Any, entry: Dict = None) -> bool:
+    """Verify an OpenSERP result is relevant to the specific citation, not a random document.
+
+    Equipment searches are allowed to match photographs, but must be of the correct equipment.
+    All other searches must match the specific event/unit/document cited.
+    """
+    doc_type = ""
+    if entry:
+        citation = entry.get("citation") or {}
+        doc_type = (citation.get("document_type") or "").lower()
+
+    is_equipment = doc_type in {"equipment", "photograph", "image"}
+
+    if is_equipment:
+        prompt = f"""Does this search result show an accurate photograph of the specific equipment cited?
+
+Citation: "{query[:300]}"
+Search result title: "{result_title[:300]}"
+URL: {url}
+
+Rules:
+- Must be the SPECIFIC equipment model/variant cited (e.g., "M4A3 Sherman" ≠ "M4A1 Sherman")
+- Must be an actual photograph, not an unrelated page that mentions the equipment
+- Stock photos, illustrations, or modern replicas are NOT acceptable
+
+Return ONLY "YES" or "NO"."""
+    else:
+        prompt = f"""Does this search result match the specific document/event being searched for?
+
+Citation searched: "{query[:300]}"
+Search result title: "{result_title[:300]}"
+URL: {url}
+
+Rules:
+- The specific UNIT must match (e.g., "5th Division" ≠ "41st Division")
+- The specific DOCUMENT TYPE should match (e.g., "Telephone Journal" ≠ "Operations Report")
+- The TIME PERIOD must be relevant
+- A random WWII document or image is NOT a match
+- A generic search results page is NOT a match
+
+Return ONLY "YES" or "NO"."""
+
+    try:
+        response = grok_client.chat_completion(
+            prompt=prompt,
+            system_prompt="You verify whether search results match specific military document citations. Be strict.",
+            temperature=0.0,
+            use_cache=True,
+            cache_type="bibliography_verify",
+        )
+        return response.strip().upper().startswith("YES")
+    except Exception:
+        return False
 
 
 def _identify_nara_record(verbatim: str, grok_client: Any) -> Optional[str]:
@@ -392,9 +473,10 @@ def _search_nara(
             logger.debug("  Candidate: %s (naId=%s)", title[:80], nara_id)
             if not nara_id:
                 continue
-            # For NARA, accept first result — the query is the document title
-            # and NARA's relevance ranking is reliable for exact title searches
             url = f"https://catalog.archives.gov/id/{nara_id}"
+            if grok_client and not _verify_nara_match(query, title, grok_client):
+                logger.debug("  ✗ Rejected: '%s' does not match query '%s'", title[:60], query[:60])
+                continue
             logger.debug("  ✓ Accepted: %s", url)
             cache_result("nara", query, url)
             return url
@@ -444,40 +526,12 @@ def _resolve_book_search(
 def _resolve_article_search(
     title: str, author: Optional[str], citation: Dict, grok_client: Any, config: Dict
 ) -> Optional[Tuple[Optional[str], str, Optional[Dict]]]:
-    """Resolve journal articles via LOC."""
-    periodical = citation.get("periodical_name", "")
-    query = f"{title} {periodical}".strip()
-    url = _search_loc(query, grok_client, title)
-    if url:
-        return (url, "loc", None)
-    return None
+    """Resolve journal articles."""
+    from src.extraction.supplemental_search import search_archive_org
 
-
-# --- LOC Search ---
-
-
-def _search_loc(
-    query: str, grok_client: Any = None, verbatim: str = ""
-) -> Optional[str]:
-    """Search Library of Congress catalog."""
-    try:
-        session = get_session()
-        resp = session.get(
-            "https://www.loc.gov/search/",
-            params={"q": query, "fo": "json", "c": "5"},
-            timeout=30,
-        )
-        if resp.status_code != 200:
-            return None
-
-        results = resp.json().get("results", [])
-        for r in results:
-            url = r.get("url", "")
-            title = r.get("title", "")
-            if url and (not grok_client or _verify_match(title, verbatim, grok_client)):
-                return url
-    except Exception as e:
-        logger.debug("LOC search failed: %s", e)
+    url = search_archive_org(title, author)
+    if url and _verify_match(title, url, grok_client):
+        return (url, "archive_org", None)
     return None
 
 
@@ -494,6 +548,38 @@ def _resolve_generic(
     if url:
         return (url, "archive_org", None)
     return None
+
+
+def _verify_nara_match(query: str, nara_title: str, grok_client: Any) -> bool:
+    """Verify a NARA catalog result actually matches the searched citation.
+
+    Checks that the specific unit, document type, and time period align.
+    A generic WWII document from the wrong unit is NOT a match.
+    """
+    prompt = f"""Does this NARA catalog record match the citation being searched for?
+
+Citation searched: "{query[:300]}"
+NARA record found: "{nara_title[:300]}"
+
+Rules:
+- The UNIT must match (e.g., "5th Division" ≠ "41st Division")
+- The DOCUMENT TYPE should match (e.g., "Telephone Journal" ≠ "Operations Report")
+- A generic WWII document from a different unit is NOT a match
+- Minor spelling/abbreviation differences are OK (e.g., "Jnl" = "Journal", "Div" = "Division")
+
+Return ONLY "YES" or "NO"."""
+
+    try:
+        response = grok_client.chat_completion(
+            prompt=prompt,
+            system_prompt="You verify whether NARA catalog records match specific military document citations. Be strict about unit identity.",
+            temperature=0.0,
+            use_cache=True,
+            cache_type="bibliography_verify",
+        )
+        return response.strip().upper().startswith("YES")
+    except Exception:
+        return False  # Reject on failure rather than accept wrong documents
 
 
 # --- Verification ---

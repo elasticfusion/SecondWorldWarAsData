@@ -61,3 +61,6 @@ rules:
   - License status values: public_domain, copyright, unknown
   - Document type values: book, article, report, letter, memo, periodical, government_document, other
   - Handle mixed entries by splitting into separate items
+  - CRITICAL: When a single footnote/endnote cites MULTIPLE documents separated by semicolons (;) or "and", split each into a SEPARATE Supplemental_Material entry. Each entry must reference exactly ONE document.
+    Example: "12th AGp Ltr of Instrs 5, 17 Aug; Telecon, Patton to Haislip, 19 Aug; Sylvan Diary, 19 Aug." → THREE separate entries
+  - Do NOT combine multiple documents into one entry just because they appear in the same footnote

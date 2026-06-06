@@ -276,6 +276,20 @@ Use ISO 3166-1 alpha-3 country codes (USA, GBR, DEU, FRA, CAN, etc.).
     return prompts
 
 
+def _is_cross_reference(title: str) -> bool:
+    """Check if a title is actually a cross-reference, not a document title."""
+    if not title:
+        return False
+    t = title.lower().strip().rstrip(".")
+    if t in ("ibid", "ibid.", "op. cit", "op cit", "loc. cit", "loc cit"):
+        return True
+    if t.startswith("ibid") and len(title) < 20:
+        return True
+    if t.startswith("see chap") or t.startswith("see p.") or t.startswith("see above"):
+        return True
+    return False
+
+
 def _sanitize_material(material: Dict[str, Any]) -> None:
     """Sanitize a single supplemental material (modifies in place)."""
     # Required string fields with defaults
@@ -316,8 +330,22 @@ def _sanitize_material(material: Dict[str, Any]) -> None:
     # Citation defaults
     citation = material.get("citation") or {}
     material["citation"] = citation
-    if citation.get("title") is None:
-        citation["title"] = "Unknown"
+    if citation.get("title") is None or _is_cross_reference(citation.get("title", "")):
+        # Derive title from verbatim_reference instead of defaulting to "Unknown"
+        mentions = material.get("mentions") or []
+        verbatim = ""
+        for m in mentions:
+            v = m.get("verbatim_reference", "")
+            if v and not _is_cross_reference(v):
+                verbatim = v
+                break
+        if verbatim:
+            import re
+            title = re.sub(r"^\d+[\.\:\)]\s*", "", verbatim)
+            title = re.sub(r"^[\*\†\‡\§\¶\#]+\s*", "", title).strip()[:200]
+            citation["title"] = title if title else "Unknown"
+        else:
+            citation["title"] = "Unknown"
     if citation.get("author") is None:
         citation["author"] = []
 
