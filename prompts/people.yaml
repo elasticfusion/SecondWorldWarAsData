@@ -96,6 +96,7 @@ rules:
   - CRITICAL: Every person MUST have a "name" field and a "PersonID" field. If you cannot determine the full name, use the most complete form available (e.g., "Colonel Abrams" rather than just "Abrams").
   - When text says "Bradley" and context makes clear this is "Omar N. Bradley", use the full name.
   - Most people will only have a name, rank, and nationality mentioned. That is fine — extract what IS mentioned. Do NOT fabricate biographical details. Only populate biographical_profile fields that are EXPLICITLY stated in the text.
+  - For original_text: use the EXACT text from the source. Do NOT truncate with ellipsis (...). Include the full sentence or clause as written.
   - If no people found, return empty People array
   - Do NOT extract military units, divisions, corps, armies, or organizations as people
   - Entries beginning with numbers (1st, 2nd, 3rd), Roman numerals (I, II, III, IV, V, VI, VII), or number words (First, Second, Third) are military units and belong in people_groups, not people
