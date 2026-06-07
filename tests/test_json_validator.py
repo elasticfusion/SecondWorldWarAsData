@@ -58,10 +58,8 @@ class TestValidateJson:
                 }
             ]
         }
-        # validate_json now auto-fixes invalid ULIDs, so validation passes
+        # validate_json fixes ULIDs internally (non-mutating) and validates
         assert validate_json(data, PEOPLE_SCHEMA) is True
-        # Verify ULID was fixed
-        assert data["people"][0]["PersonID"] != "invalid-ulid"
 
     def test_valid_equipment_data(self):
         """Test validation with valid equipment data."""
@@ -145,7 +143,8 @@ class TestValidateAndWriteJson:
             assert filepath.exists()
             with open(filepath, encoding="utf-8") as f:
                 written_data = json.load(f)
-            assert written_data == data
+            # Written data contains original fields plus metadata
+            assert written_data["people"] == data["people"]
 
     def test_write_valid_data_with_lock(self):
         """Test writing valid data with file locking."""
@@ -166,7 +165,7 @@ class TestValidateAndWriteJson:
             assert filepath.exists()
             with open(filepath, encoding="utf-8") as f:
                 written_data = json.load(f)
-            assert written_data == data
+            assert written_data["people"] == data["people"]
 
     def test_write_invalid_data_raises_error(self):
         """Test writing invalid data raises ValidationError."""
@@ -197,7 +196,9 @@ class TestValidateAndWriteJson:
             assert filepath.exists()
             with open(filepath) as f:
                 written_data = json.load(f)
-            assert written_data == data
+            # Written data may include metadata fields
+            assert written_data["any"] == "data"
+            assert written_data["no"] == "validation"
 
     def test_creates_parent_directories(self):
         """Test that parent directories are created if they don't exist."""

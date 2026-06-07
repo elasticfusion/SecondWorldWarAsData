@@ -179,8 +179,8 @@ def _process_document(doc, book_output, logger):
             if existing.get("_source_hash") == source_hash:
                 logger.info(f"  Skipped: {output_file.name} (unchanged)")
                 return
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Parse step failed: %s", e)
 
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(output_data, f, indent=2, ensure_ascii=False)

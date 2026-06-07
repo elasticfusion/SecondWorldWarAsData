@@ -92,7 +92,15 @@ def _fix_invalid_ulids(data: Any) -> Any:
     Fix invalid ULIDs in data recursively.
 
     Replaces any ID field with invalid ULID format with a valid ULID.
+    Returns a new structure; does not mutate the input.
     """
+    import copy
+
+    return _fix_ulids_recursive(copy.deepcopy(data))
+
+
+def _fix_ulids_recursive(data: Any) -> Any:
+    """Recursively fix ULIDs in place on an already-copied structure."""
     if isinstance(data, dict):
         for key, value in data.items():
             if _is_ulid_field(key, value):
@@ -104,9 +112,9 @@ def _fix_invalid_ulids(data: Any) -> Any:
                     f"Fixed invalid ULID in {key}: {value[:20]}... → {new_ulid}"
                 )
             elif isinstance(value, (dict, list)):
-                data[key] = _fix_invalid_ulids(value)
+                data[key] = _fix_ulids_recursive(value)
     elif isinstance(data, list):
-        return [_fix_invalid_ulids(item) for item in data]
+        return [_fix_ulids_recursive(item) for item in data]
 
     return data
 

@@ -1,5 +1,0 @@
-'EOF'                                                                                          
-  # Right-click paste in terminal (PuTTY style)                                                                         
-  "xdotool key --clearmodifiers ctrl+shift+v"                                                                           
-    b:3 + Release                                                                                                       
-  EOF                     

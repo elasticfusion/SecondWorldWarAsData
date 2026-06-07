@@ -1,77 +1,75 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-06-03
+**Last Updated:** 2026-06-06
 
 ---
 
 ## High Priority
 
-### Production Reliability (observed failures in E2E testing)
+### Data Quality (affects extraction/enrichment outcomes)
 
-#### S3 sync does not delete merged/removed entity files
-
-#### Phase 3 has no completion notification
-Phase 1 and 2 publish SNS on completion; Phase 3 does not. No email sent when pipeline finishes.
-*Source: E2E testing 2026-06-05*
+#### ~~S3 sync does not delete merged/removed entity files~~ ✅ Fixed
+After auto-merge deletes duplicate files locally, the final S3 sync now tracks deletions and removes them from S3. Merged files no longer persist across runs.
 
 #### OpenSERP torn down before Phase 3 uses it
-Phase 3 connects to `localhost:7001` but OpenSERP (separate ECS task) was already scaled to 0 by the idle monitor before Phase 3 reached the OpenSERP enrichment steps. Result: all OpenSERP-dependent enrichment (people images, equipment images, web links) skipped.
+~~Phase 3 connects to `localhost:7001`~~ Fixed: ECS tasks now cancel stale delayed teardowns at startup. Remaining risk: if idle monitor fires during Phase 3 (shouldn't happen — it checks for running tasks, but verify).
 *Source: E2E testing 2026-06-05*
-After auto-merge deletes duplicate files locally, the final S3 sync only uploads — never deletes. Stale files persist in S3, get re-downloaded next run, and trigger repeated merges. Fix: track local deletions and issue `s3 rm` for merged files, or use `aws s3 sync --delete` for the entity directories.
-*Source: E2E testing 2026-06-05 — 5 M4_Sherman files persist in S3 after merge*
 
-#### Delayed networking teardown kills active retrieve tasks
-Stale EventBridge Scheduler teardown fires after a new task has started, removing NAT and killing the task. The `_cancel_delayed_teardown` call either isn't executing or the scheduler name doesn't match. Result: retrieve task dies, results lost, pipeline stalls.
-Additionally: batch_poller creates NAT with fire-and-forget (InvocationType='Event') so errors are invisible; and nat_manager SNS subscription is on Phase2CompleteTopic but filters for "Phase 3" (dead code).
-*Source: E2E testing 2026-06-04 — batch retrieved but task killed by teardown*
+#### ~~People dedup: first name alone is insufficient for duplicate detection~~ ✅ Fixed
+Tightened: single-name matches now require shared context or distinctive name (>5 chars). Last-name-only matches require >4 chars. Short common names no longer produce false positives.
 
-#### Phase 4: DynamoDB as primary entity storage
-Phase A (core abstraction + dual-write) complete. Remaining:
-- **Phase B:** Read path migration — Phase 3 queries DynamoDB instead of downloading files. Eliminates 15-30 min download.
-- **Phase C:** Dedup migration — dedup scripts query DynamoDB, incremental dedup via `created_at`.
-- **Phase D:** Full migration — Phase 2 writes directly to DynamoDB, remove file download logic, S3 becomes export-only.
+#### ~~Normalize abbreviated ranks to full form in people entities~~ ✅ Fixed
+Already implemented in `_normalize_rank`. Expanded mapping to handle period-less variants (Col, Lt Gen, etc.) and German ranks.
 
-Activate dual-write: set `storage.entity_backend: "dynamodb"` in config.yaml. Spec: `docs/current/PHASE4_DYNAMODB_STORAGE.md`.
+#### ~~Incremental dedup (only score new files vs corpus)~~ ✅ Implemented
+All 4 dedup scripts now use `src/dedup/incremental.py` — tracks `dedup_run#{type}` timestamp in DynamoDB, only scores pairs where at least one file is newer than last run. First run = full mode. Delete DynamoDB keys to force full re-scan.
 
-**Strategy: Dual-write (DynamoDB + S3).** DynamoDB is source of truth for operational reads/writes (fast, durable, queryable). S3 remains as archival/bulk export (browsable JSON, versioned, cheap). Write DynamoDB first (immediate durability), periodic S3 export on phase completion for human review and backup.
-*Source: end-2-end-1 spot termination data loss*
+#### ~~Add `additionalProperties: false` to extraction schemas~~ ✅ Done
+All 15 schemas now reject unexpected fields. Internal metadata (`_schema_version`, `_last_updated`) allowed via `patternProperties: {"^_": {}}`.
 
-#### Add "Phase started" notifications
-No email when ECS tasks launch. Add `_notify_launch()` at end of `_run_task()` in trigger_handler.py. Currently only get notifications on completion/failure — operator blind to whether pipeline is running.
-*Source: end-2-end-0.md Issue 1*
+### Production Reliability (pipeline completes without intervention)
+
+#### ~~Delayed networking teardown kills active retrieve tasks~~ ✅ Fixed
+Three fixes: (1) ECS tasks cancel stale scheduled teardowns at startup, (2) batch_poller uses RequestResponse for NAT creation (errors visible), (3) nat_manager SNS filter fixed to trigger on any pipeline completion (was dead code filtering for "Phase 3" on Phase2CompleteTopic).
+
+#### ~~Pending content queue not cleared after Phase 1 completes~~ ✅ Fixed
+`_post_process` now deletes `pending#content` from DynamoDB after Phase 1 completes.
+
+#### ~~NAT availability check always times out (3 min wasted per launch)~~ ✅ Fixed
+`_wait_for_networking` was filtering by `tag:Project` but NAT is tagged `tag:Name`. Fixed to use `f"{ENV_NAME}-nat"` matching nat_manager.
+
+#### ~~Phase 3 has no completion notification~~ ✅ Fixed
+Added `_notify_complete` call after Phase 3 submit-only completes, with "Pipeline run complete" message.
+
+#### ~~Add "Phase started" notifications~~ ✅ Fixed
+`_notify_launch()` added to `_run_task()` — sends email with phase name, book, and trigger source on every ECS task launch.
+
+### Architecture (enables future data improvements)
+
+#### Phase 4: DynamoDB as primary entity storage ✅ B/C/D implemented
+- **Phase A:** ✅ Core abstraction + dual-write
+- **Phase B:** ✅ `_materialize_from_dynamo()` — Phase 3 reads entities from DynamoDB (writes to disk for existing code compatibility), falls back to S3 if DynamoDB empty
+- **Phase C:** ✅ Dedup materialization — `_download_dedup_data()` uses DynamoDB materializer, then downloads event files from S3
+- **Phase D:** ✅ Phase 2 writes directly to DynamoDB via dual-write in `write_json_with_lock`. S3 is export-only (final sync uploads for archival).
+
+**Note:** First run after enabling must populate DynamoDB (dual-write does this automatically). Until DynamoDB has data, falls back to S3 transparently.
+
+Spec: `docs/current/PHASE4_DYNAMODB_STORAGE.md`.
 
 ---
 
 ## Medium Priority
 
-### Dedup & Normalization
-
-#### Incremental dedup (only score new files vs corpus)
-All dedup scripts load ALL files and score ALL pairs every run (O(n²)). Track `last_dedup_run` timestamp per entity type in DynamoDB, only compare new files against existing. Add `dedup.mode: incremental|full` to config.yaml — `full` forces all-pairs comparison (useful after prompt changes or bulk re-extraction). Store file creation timestamps via S3 LastModified or entity metadata. Modify all 4 scripts to accept "newer than X" filter.
-*Source: DEDUP_ANALYSIS_ALL_ENTITIES.md, end-2-end-1*
-
 ### Pipeline Efficiency
 
-#### Preload DynamoDB cache into memory at Phase 2 start
+#### ~~Preload DynamoDB cache into memory at Phase 2 start~~ ✅ Done
+`DynamoCacheBackend.preload()` scans all entries into a local dict on `GrokClient` init. Eliminates 1600+ individual gets — one paginated scan instead.
 
-#### Normalize abbreviated ranks to full form in people entities
-Abbreviated ranks (Col., Lt. Col., Brig. Gen., etc.) should be written out in full (Colonel, Lieutenant Colonel, Brigadier General). Either normalize in extraction prompt or post-process.
-*Source: data review 2026-06-05*
+#### ~~_complete_metadata() bypasses batch mode~~ ✅ Fixed
+Now passes `batch_mode=args.batch` to `GrokClient` — metadata completions are batched at 50% discount.
 
-#### People dedup: first name alone is insufficient for duplicate detection
-Matching on first name only produces false positives (e.g., "John Smith" vs "John Doe"). Require at minimum first + last name overlap, or rank + surname match.
-*Source: data review 2026-06-05*
-
-#### _complete_metadata() bypasses batch mode
-`phase2_extract.py:50` creates a GrokClient without `batch_mode=True`, making real-time API calls at full price even during `--batch` runs. Small cost (only incomplete metadata) but should be batch-eligible.
-*Source: code review 2026-06-05*
-
-Currently 1600+ individual DynamoDB gets (~5-10ms each). Scan all cache entries for the book's prompts into a local dict at startup. Reduces minutes of latency to one scan. Alternative: use `batch_get_item` (100 keys/call → 16 calls instead of 1600).
-*Source: E2E testing 2026-06-04*
-
-#### Phase 2 should read pending#parsed as input manifest
-Phase 2 always falls through to S3 scan. Read the DynamoDB queue directly instead.
-*Source: CODE_REVIEW agent analysis*
+#### ~~Phase 2 should read pending#parsed as input manifest~~ ✅ Fixed
+`_read_manifest()` now reads `pending#parsed` (written by trigger Lambda), clears it after reading, falls back to `manifest#phase2`.
 
 #### Optional entity extraction: parallelize across event files
 Weather, equipment, logistics, casualties, supplemental extracted sequentially. Could run in parallel.
@@ -90,14 +88,6 @@ Causes unnecessary retries that always find nothing.
 *Source: PIPELINE_REVIEW.md*
 
 ### Infrastructure Fixes
-
-#### Pending content queue not cleared after Phase 1 completes
-Phase 1 finishes but `pending#content` DynamoDB item still has keys, causing reconciliation to re-launch Phase 1 repeatedly.
-*Source: E2E testing 2026-06-03*
-
-#### NAT availability check always times out (3 min wasted per launch)
-`_wait_for_networking` in trigger Lambda polls for NAT but never detects it as available, even when NAT manager confirms it's up. Wastes 3 min on every task launch.
-*Source: E2E testing 2026-06-03*
 
 #### Fix EntityCreatedTopic S3 notification (never configured)
 Phase 3 entity-created flow broken.
@@ -141,10 +131,6 @@ Operator blind to stalled batches.
 
 #### Unify schema versioning
 `json_schemas.py` uses "1.0.0", output schemas use "2.3".
-*Source: QA_GAPS.md*
-
-#### Add `additionalProperties: false` to extraction schemas
-LLM-hallucinated fields pass undetected.
 *Source: QA_GAPS.md*
 
 ---

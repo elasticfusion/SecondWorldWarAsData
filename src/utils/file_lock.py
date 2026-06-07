@@ -118,6 +118,16 @@ def write_json_with_lock(filepath: Path, data: Dict[str, Any]) -> None:
     _validate_entity(filepath, data)
     filepath.parent.mkdir(parents=True, exist_ok=True)
 
+    # Disk space check (local mode only — skip in /tmp/pipeline ECS workdir)
+    if not str(filepath).startswith("/tmp/"):
+        import shutil
+
+        free = shutil.disk_usage(filepath.parent).free
+        if free < 50 * 1024 * 1024:  # 50MB threshold
+            raise OSError(
+                f"Low disk space ({free // 1024 // 1024}MB free) — aborting write to {filepath.name}"
+            )
+
     # Atomic write: write to temp file, then replace (crash-safe)
     import tempfile
 
@@ -170,7 +180,7 @@ def _dual_write_dynamo(filepath: Path, data: Dict[str, Any]) -> None:
 
         store = get_entity_store()
         if store:
-            store.put(entity_type, entity_id, data)
+            store.put(entity_type, entity_id, data, filename=filepath.name)
     except Exception as e:
         logger.debug("Dual-write to DynamoDB failed: %s", e)
 

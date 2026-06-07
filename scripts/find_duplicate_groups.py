@@ -46,6 +46,16 @@ def find_duplicate_groups(groups_dir: Path) -> List[Dict]:
     groups = _load_groups(groups_dir)
     excluded_pairs, excluded_names = _load_group_exclusions(groups_dir)
 
+    # Incremental: only process clusters containing new files
+    from src.dedup.incremental import get_last_dedup_run, get_new_files
+
+    since = get_last_dedup_run("groups")
+    new_files = get_new_files(groups_dir, since)
+    if new_files:
+        logger.info(
+            "Incremental dedup: %d new group files since last run", len(new_files)
+        )
+
     duplicates: List[Dict[str, Any]] = []
     seen: set = set()
 
@@ -54,6 +64,9 @@ def find_duplicate_groups(groups_dir: Path) -> List[Dict]:
             continue
         cluster, reasons = _find_group_cluster(i, g1, groups, seen)
         if len(cluster) >= 2:
+            # Incremental: skip cluster if no member is new
+            if new_files and not any(g["filename"] in new_files for g in cluster):
+                continue
             seen.add(i)
             duplicates.append(_build_group(cluster, reasons))
 

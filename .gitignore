@@ -42,10 +42,25 @@ review/
 filestore/equipment/
 filestore/maps/
 
+# Generated / artifacts
+htmlcov/
+.coverage
+.git.bfg-report/
+scalene-profile.json
+awscliv2.zip
+
 # Temporary files
 *.tmp
 *.bak
 *.orig
+tmp_*.sh
+debug
+debug2
+
+# AI agent artifacts
+agent-history/
+contextmanagement/
+messages/
 
 # Tools
 .gitnexus

@@ -23,7 +23,7 @@ OPENSERP_SG = os.getenv("OPENSERP_SG_ID", "")
 NAT_TAG = f"{ENV_NAME}-nat"
 MANAGED_TAG = f"{ENV_NAME}-wwii-pipeline"
 
-INTERFACE_ENDPOINTS = ["ecr.api", "ecr.dkr", "logs"]
+INTERFACE_ENDPOINTS = ["ecr.api", "ecr.dkr", "logs", "secretsmanager"]
 
 
 def handler(event, _context):
@@ -35,13 +35,13 @@ def handler(event, _context):
         for record in event.get("Records", []):
             if record.get("EventSource") == "aws:sns":
                 message = record.get("Sns", {}).get("Message", "")
-                if "Phase 3" in message and "completed successfully" in message:
-                    logger.info("Phase 3 completion — tearing down networking")
+                if "completed successfully" in message:
+                    logger.info("Pipeline completion — tearing down networking")
                     region = os.getenv("AWS_REGION", "us-east-1")
                     ec2 = boto3.client("ec2", region_name=region)
                     return _delete_all(ec2, region)
-                logger.info("Ignoring SNS (not Phase 3 completion): %s", message[:80])
-                return {"action": "none", "reason": "not Phase 3 completion"}
+                logger.info("Ignoring SNS (not completion): %s", message[:80])
+                return {"action": "none", "reason": "not pipeline completion"}
 
     action = event.get("action", "status")
     region = os.getenv("AWS_REGION", "us-east-1")
@@ -104,8 +104,8 @@ def _create_all(ec2, region):
     finally:
         try:
             table.delete_item(Key={"cache_key": "lock#nat-manager"})
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to release lock: %s", e)
 
 
 # === DELETE ===
@@ -118,8 +118,27 @@ def _delete_all(ec2, region):
     # 1. NAT Gateway
     nat_id = _find_nat(ec2)
     if nat_id:
+        # Get EIP allocation before deleting NAT
+        nat_info = ec2.describe_nat_gateways(NatGatewayIds=[nat_id])
+        eip_alloc_ids = [
+            addr["AllocationId"]
+            for gw in nat_info.get("NatGateways", [])
+            for addr in gw.get("NatGatewayAddresses", [])
+            if addr.get("AllocationId")
+        ]
         ec2.delete_nat_gateway(NatGatewayId=nat_id)
         logger.info("Deleted NAT: %s", nat_id)
+        # Release EIPs after NAT is deleted (wait for disassociation)
+        if eip_alloc_ids:
+            import time as _t
+
+            _t.sleep(5)  # Brief wait for NAT to release EIP
+            for alloc_id in eip_alloc_ids:
+                try:
+                    ec2.release_address(AllocationId=alloc_id)
+                    logger.info("Released EIP: %s", alloc_id)
+                except Exception as e:
+                    logger.warning("Failed to release EIP %s: %s", alloc_id, e)
         deleted = True
 
     # 2. VPC Endpoints
@@ -236,7 +255,7 @@ def _wait_for_nat(ec2):
                 )
                 return
             except Exception:
-                pass
+                continue
         time.sleep(10)
 
 

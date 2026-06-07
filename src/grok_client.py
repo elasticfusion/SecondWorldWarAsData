@@ -145,6 +145,13 @@ class GrokClient:
                     region=aws_cfg.get("region", "us-east-1"),
                     ttl_days=aws_cfg.get("cache_ttl_days", 90),
                 )
+                # Preload all cache entries into memory (one scan vs 1600+ gets)
+                try:
+                    n = self._cache_backend.preload()
+                    if n:
+                        logger.info("Preloaded %d cache entries", n)
+                except Exception:
+                    pass
             else:
                 self.cache_dir = cache_dir
                 self._cache_backend = DiskCacheBackend(cache_dir)

@@ -341,6 +341,7 @@ def _sanitize_material(material: Dict[str, Any]) -> None:
                 break
         if verbatim:
             import re
+
             title = re.sub(r"^\d+[\.\:\)]\s*", "", verbatim)
             title = re.sub(r"^[\*\†\‡\§\¶\#]+\s*", "", title).strip()[:200]
             citation["title"] = title if title else "Unknown"
@@ -808,8 +809,8 @@ def _write_notes_event(
             "author": source_event.get("author", ""),
             "series": source_event.get("series", ""),
         }
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Supplemental extraction step failed: %s", e)
 
     urls = endnote_urls or {}
     notes_file = event_file.with_name(
@@ -956,8 +957,8 @@ def extract_supplemental(
             for fn in parsed_data.get("footnotes", []):
                 if fn.get("number") and fn.get("url"):
                     endnote_urls[fn["number"]] = fn["url"]
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Supplemental extraction step failed: %s", e)
     notes_file = _write_notes_event(event_file, factual, endnote_urls)
 
     # Queue ambiguous items for human review

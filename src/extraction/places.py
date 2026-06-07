@@ -233,8 +233,8 @@ Examples of what to EXCLUDE: "1st Infantry Division", "VII Corps", "Third Army",
             sub_event_id=sub_event_id,
             text=text,
         )
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Place extraction step failed: %s", e)
 
     return prompt
 

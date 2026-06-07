@@ -115,7 +115,12 @@ def create_date_prompt(
     sub_event_summary = sub_event.get("Sub-event_summary", "")
     fulltext = sub_event.get("Sub-event_fulltext", {})
 
-    text = "\n".join(fulltext.values())
+    # Use summary as primary text (10-15% cost savings).
+    # Fall back to fulltext only if summary is very short (< 50 chars).
+    if len(sub_event_summary) >= 50:
+        text = sub_event_summary
+    else:
+        text = "\n".join(fulltext.values())
 
     prompt = f"""Extract ALL date and time mentions from this WWII event text.
 
@@ -168,8 +173,8 @@ If no dates found, return empty Date_Mentions array."""
             sub_event_id=sub_event_id,
             text=text,
         )
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Date extraction step failed: %s", e)
     return prompt
 
 

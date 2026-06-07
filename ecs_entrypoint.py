@@ -32,7 +32,7 @@ if os.environ.get("ECS_CONTAINER_METADATA_URI"):
 logger = logging.getLogger(__name__)
 
 BUCKET = os.environ["S3_BUCKET"]
-REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+REGION = os.environ.get("AWS_DEFAULT_REGION", os.environ.get("AWS_REGION", "us-east-1"))
 WORKDIR = Path("/tmp/pipeline")
 SYNC_INTERVAL = int(os.environ.get("SYNC_INTERVAL", "120"))  # seconds
 
@@ -119,6 +119,24 @@ def _get_account_id() -> str:
 
 
 _downloaded_keys: set = set()
+_deleted_keys: set = (
+    set()
+)  # Files deleted locally (merged) — remove from S3 in final sync
+
+
+def track_deletion(local_path: Path) -> None:
+    """Record a local file deletion for S3 cleanup in final sync."""
+    try:
+        rel = local_path.relative_to(WORKDIR)
+        _deleted_keys.add(str(rel))
+    except ValueError:
+        # Path not under WORKDIR — try relative to /app via symlink resolution
+        try:
+            resolved = local_path.resolve()
+            rel = resolved.relative_to(WORKDIR)
+            _deleted_keys.add(str(rel))
+        except ValueError:
+            pass
 
 
 def s3_sync_down(prefix: str, local_dir: Path) -> int:
@@ -286,6 +304,17 @@ def _setup_symlinks():
         link.symlink_to(target)
 
 
+def _cancel_stale_teardown() -> None:
+    """Cancel any pending delayed networking teardown from a previous task."""
+    try:
+        env = os.environ.get("ENV_NAME", "dev")
+        scheduler = boto3.client("scheduler", region_name=REGION)
+        scheduler.delete_schedule(Name=f"{env}-wwii-delayed-teardown")
+        logger.info("Cancelled stale delayed teardown")
+    except Exception:
+        pass  # No schedule exists — normal
+
+
 def _patch_config():
     """Enable AWS mode in config.yaml so scripts use DynamoDB cache."""
     import yaml  # pylint: disable=import-outside-toplevel
@@ -447,6 +476,9 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     _current_phase_script = phase_script
     phase_name = Path(phase_script).stem
     WORKDIR.mkdir(parents=True, exist_ok=True)
+
+    # Cancel any stale delayed teardown from a previous task
+    _cancel_stale_teardown()
 
     logger.info("[step] %s: loading secrets", phase_name)
     _load_secrets()
@@ -627,6 +659,73 @@ def _get_book_entity_files(s3, book_name: str) -> list:
     return list(referenced)
 
 
+def _materialize_from_dynamo() -> bool:
+    """Materialize entities from DynamoDB to local files. Returns True if successful."""
+    try:
+        from src.utils.entity_store import get_entity_store
+
+        store = get_entity_store()
+        if not store:
+            return False
+
+        entity_types = [
+            "people",
+            "people_groups",
+            "places",
+            "dates",
+            "equipment",
+            "weather",
+            "logistics",
+            "casualties",
+            "maps",
+            "supplemental",
+            "bibliography",
+        ]
+
+        total = 0
+        for entity_type in entity_types:
+            entities = store.list_all(entity_type)
+            if not entities:
+                continue
+            local_dir = WORKDIR / "output" / entity_type
+            local_dir.mkdir(parents=True, exist_ok=True)
+            for item in entities:
+                entity = item["data"]
+                filename = item.get("filename")
+                if not filename:
+                    # Fallback: use entity ID as filename (no collisions)
+                    id_fields = {
+                        "people": "PersonID",
+                        "people_groups": "GroupID",
+                        "places": "PlaceID",
+                        "dates": "DateID",
+                        "equipment": "EquipmentID",
+                        "weather": "WeatherID",
+                        "logistics": "LogisticsID",
+                        "casualties": "CasualtyID",
+                        "maps": "MapID",
+                        "supplemental": "BibliographyID",
+                        "bibliography": "BibliographyID",
+                    }
+                    eid = entity.get(id_fields.get(entity_type, ""), "unknown")
+                    filename = f"{eid}.json"
+                filepath = local_dir / filename
+                filepath.write_text(
+                    json.dumps(entity, indent=2, ensure_ascii=False), encoding="utf-8"
+                )
+                total += 1
+
+        if total > 0:
+            logger.info(
+                "Materialized %d entities from DynamoDB (skipped S3 download)", total
+            )
+            return True
+        return False
+    except Exception as e:
+        logger.warning("DynamoDB materialization failed, falling back to S3: %s", e)
+        return False
+
+
 def _download_inputs(phase_script: str) -> None:
     """Download the appropriate inputs from S3 for this phase."""
     if "phase1" in phase_script:
@@ -634,6 +733,7 @@ def _download_inputs(phase_script: str) -> None:
         if keys:
             n = _download_keys(keys, Path("/app"))
             logger.info("Downloaded %d content files (incremental)", n)
+            os.environ["_PHASE1_MODE"] = f"Incremental: {n} new files"
         else:
             # Scope full sync to BOOK_NAME if set, otherwise download all
             book_name = os.environ.get("BOOK_NAME", "")
@@ -644,11 +744,15 @@ def _download_inputs(phase_script: str) -> None:
                 logger.warning("No manifest and no BOOK_NAME — downloading ALL content")
             n = s3_sync_down(prefix, Path("/app"))
             logger.info("Downloaded %d content files (full, prefix=%s)", n, prefix)
+            os.environ["_PHASE1_MODE"] = f"Full re-parse: {n} files"
     elif "phase2" in phase_script:
         n = _download_phase2_inputs()
         logger.info("Downloaded %d files for Phase 2", n)
     elif "phase3" in phase_script or "import" in phase_script:
-        # Phase 3: download only entities relevant to current book (or all if no BOOK_NAME)
+        # Phase 3: try DynamoDB first (fast), fall back to S3
+        if _materialize_from_dynamo():
+            return
+        # Fallback: download from S3
         entity_dirs = [
             "people",
             "people_groups",
@@ -825,6 +929,15 @@ def _download_s3_file(s3, key: str) -> None:
 
 def _post_process(phase_script: str, env: dict) -> None:
     """Run post-processing steps after a successful phase."""
+    if "phase1" in phase_script:
+        # Clear pending content queue — Phase 1 has processed it
+        try:
+            table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
+            table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
+            table.delete_item(Key={"cache_key": "pending#content"})
+            logger.info("Cleared pending#content queue")
+        except Exception:
+            pass
     if "phase2" in phase_script:
         dedup_ok = False
         for attempt in range(2):
@@ -881,6 +994,9 @@ def _check_pending_content() -> None:
 
 def _run_dedup_detection(env: dict) -> None:
     """Run duplicate detection scripts after Phase 2."""
+    from src.dedup.merge import set_deletion_callback
+
+    set_deletion_callback(track_deletion)
     _reclassify_military_units()
     _cleanup_entity_indexes()
     _migrate_exclusions_to_dynamo()
@@ -946,6 +1062,17 @@ def _migrate_exclusions_to_dynamo() -> None:
 
 def _download_dedup_data() -> None:
     """Download entity files needed for cross-book dedup comparison."""
+    # Try DynamoDB first (faster than S3 for entity files)
+    if _materialize_from_dynamo():
+        # Still need event files from S3 for cross-reference
+        s3 = _s3_client()
+        d, s = _download_s3_prefix_skip_existing(s3, "output/content/")
+        logger.info(
+            "Dedup: materialized entities from DynamoDB, downloaded %d event files from S3",
+            d,
+        )
+        return
+
     s3 = _s3_client()
     dedup_files = [
         "output/people/index.json",
@@ -1109,6 +1236,12 @@ def _execute_dedup_scripts() -> None:
     # Auto-merge exact duplicates (identical normalized names) without human review
     _auto_merge_exact_duplicates()
 
+    # Record dedup run timestamps for incremental mode
+    from src.dedup.incremental import set_last_dedup_run
+
+    for entity_type in ["people", "places", "groups", "equipment"]:
+        set_last_dedup_run(entity_type)
+
     # Sync dedup reports to S3
     entity_dirs = ["people", "people_groups", "places", "equipment"]
     for subdir in entity_dirs:
@@ -1142,11 +1275,21 @@ def _read_manifest() -> list:
     try:
         table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
         table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
+        # Try pending#parsed first (written by trigger Lambda)
+        resp = table.get_item(Key={"cache_key": "pending#parsed"})
+        item = resp.get("Item")
+        if item:
+            keys = item.get("keys", [])
+            if keys:
+                logger.info("Read pending#parsed from DynamoDB: %d keys", len(keys))
+                table.delete_item(Key={"cache_key": "pending#parsed"})
+                return keys
+        # Fallback: legacy manifest#phase2
         resp = table.get_item(Key={"cache_key": "manifest#phase2"})
         item = resp.get("Item")
         if item:
             keys = item.get("keys", [])
-            logger.info("Read manifest from DynamoDB: %d keys", len(keys))
+            logger.info("Read manifest#phase2 from DynamoDB: %d keys", len(keys))
             return keys
     except Exception as e:
         logger.warning("Failed to read manifest: %s", e)
@@ -1188,6 +1331,18 @@ def _final_sync(phase_script: str = ""):
                 total += n
                 all_uploaded.extend(keys)
         logger.info("Final sync: uploaded %d entity files", total)
+
+        # Delete merged/removed files from S3
+        if _deleted_keys:
+            s3 = _s3_client()
+            for key in _deleted_keys:
+                try:
+                    s3.delete_object(Bucket=BUCKET, Key=key)
+                except Exception:
+                    pass
+            logger.info(
+                "Final sync: deleted %d merged files from S3", len(_deleted_keys)
+            )
 
         # Write manifest to DynamoDB so next phase only downloads changed files
         if all_uploaded and "phase2" in phase_script:
@@ -1384,8 +1539,28 @@ def _notify_complete(phase_script: str) -> None:
     phase_name = PHASE_NAMES.get(phase_script, phase_script)
     dedup_url = os.environ.get("DEDUP_REVIEW_URL", "")
     message = f"{phase_name} completed successfully.\nBucket: {BUCKET}"
+
+    # Include entity counts from phase results
+    results_file = WORKDIR / "output" / ".phase_results.json"
+    if results_file.exists():
+        try:
+            results = json.loads(results_file.read_text(encoding="utf-8"))
+            counts = results.get("entity_counts", {})
+            if counts:
+                message += "\n\nEntity counts:"
+                for entity_type, count in sorted(counts.items()):
+                    message += f"\n  {entity_type}: {count}"
+            if "processed" in results:
+                message += f"\n\nProcessed: {results['processed']}, Failed: {results.get('failed', 0)}"
+            if "enriched" in results:
+                message += f"\n\nEnriched: {results['enriched']} items"
+        except Exception:
+            pass
     if "phase1" in phase_script:
         # List what was parsed
+        mode = os.environ.get("_PHASE1_MODE", "")
+        if mode:
+            message += f"\nMode: {mode}"
         content_dir = WORKDIR / "output" / "content"
         if content_dir.exists():
             parsed = sorted(f.name for f in content_dir.rglob("*-parsed.json"))
@@ -1398,6 +1573,8 @@ def _notify_complete(phase_script: str) -> None:
             f"\n\nPhase 3 is blocked until you review duplicates."
             f"\nDedup Review UI: {dedup_url}"
         )
+    if "phase3" in phase_script:
+        message += "\n\nPipeline run complete. All entities enriched."
     try:
         sns = boto3.client("sns", region_name=REGION)
         sns.publish(
@@ -1515,6 +1692,10 @@ def _schedule_delayed_teardown(delay_minutes: int = 30) -> None:
     )
     try:
         scheduler = boto3.client("scheduler", region_name=REGION)
+    except Exception as e:
+        logger.warning("Failed to create scheduler client: %s", e)
+        return
+    try:
         scheduler.create_schedule(
             Name=schedule_name,
             ScheduleExpression=f"at({run_at.strftime('%Y-%m-%dT%H:%M:%S')})",
@@ -1641,6 +1822,10 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: tearing down networking", phase_name)
     _teardown_networking()
 
+    # Phase 3 does real work in submit-only mode — notify on completion
+    if "phase3" in phase_script:
+        _notify_complete(phase_script)
+
     logger.info("Submit-only complete — batch enqueued, infra torn down, exiting.")
 
 
@@ -1674,8 +1859,11 @@ def _enqueue_from_metrics(phase_script: str) -> None:
 
     # Dedup guard: skip if identical batch already pending or recently completed
     try:
-        from src.utils.job_queue import get_active_jobs
+        import time as _time
 
+        from src.utils.job_queue import get_active_jobs, _get_table
+
+        # Check pending jobs
         for existing in get_active_jobs():
             if (
                 existing.phase == phase
@@ -1686,6 +1874,36 @@ def _enqueue_from_metrics(phase_script: str) -> None:
                     "Skipping batch submission — identical job already pending "
                     "(batch_id=%s, book=%s, requests=%d)",
                     existing.batch_id,
+                    book,
+                    request_count,
+                )
+                return
+
+        # Check recently completed jobs (within last hour)
+        one_hour_ago = int(_time.time()) - 3600
+        table = _get_table()
+        resp = table.scan(
+            FilterExpression=(
+                "begins_with(cache_key, :prefix) AND #s = :status "
+                "AND completed_at > :since"
+            ),
+            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeValues={
+                ":prefix": "batch_job#",
+                ":status": "complete",
+                ":since": one_hour_ago,
+            },
+        )
+        for item in resp.get("Items", []):
+            if (
+                item.get("phase") == phase
+                and item.get("book") == book
+                and int(item.get("request_count", 0)) == request_count
+            ):
+                logger.warning(
+                    "Skipping batch submission — identical job completed recently "
+                    "(batch_id=%s, book=%s, requests=%d)",
+                    item.get("batch_id"),
                     book,
                     request_count,
                 )
@@ -1712,6 +1930,32 @@ def _enqueue_from_metrics(phase_script: str) -> None:
         )
     )
     logger.info("Enqueued batch job to DynamoDB: %s", batch_id)
+    _notify_batch_submitted(phase, book, batch_id, request_count)
+
+
+def _notify_batch_submitted(
+    phase: str, book: str, batch_id: str, request_count: int
+) -> None:
+    """Send SNS notification that batch was submitted."""
+    try:
+        topic_arn = os.environ.get("SNS_TOPIC_ARN", "")
+        if not topic_arn:
+            return
+        sns = boto3.client("sns", region_name=REGION)
+        sns.publish(
+            TopicArn=topic_arn,
+            Subject=f"WWII Pipeline: {phase} batch submitted ({request_count} requests)",
+            Message=(
+                f"Batch submitted successfully.\n\n"
+                f"Phase: {phase}\n"
+                f"Book: {book}\n"
+                f"Batch ID: {batch_id}\n"
+                f"Requests: {request_count}\n\n"
+                f"The batch poller will retrieve results when complete."
+            ),
+        )
+    except Exception as e:
+        logger.warning("Failed to send batch submitted notification: %s", e)
 
 
 def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> None:

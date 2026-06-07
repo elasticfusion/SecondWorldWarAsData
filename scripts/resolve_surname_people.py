@@ -9,7 +9,6 @@ import argparse
 import json
 import glob
 import logging
-import re
 import sys
 from pathlib import Path
 
@@ -49,7 +48,9 @@ def _knowledge_lookup(entry: dict, surname: str, grok_client) -> str:
     rank = entry.get("rank", "")
     nationality = entry.get("nationality", "")
     mentions = entry.get("event_mentions", [])
-    positions = [m.get("position_at_event", "") for m in mentions if m.get("position_at_event")]
+    positions = [
+        m.get("position_at_event", "") for m in mentions if m.get("position_at_event")
+    ]
     contexts = [m.get("original_text", "") for m in mentions if m.get("original_text")]
 
     position = positions[0] if positions else ""
@@ -59,8 +60,11 @@ def _knowledge_lookup(entry: dict, surname: str, grok_client) -> str:
         return surname
 
     prompt = KNOWLEDGE_PROMPT.format(
-        surname=surname, rank=rank, nationality=nationality,
-        position=position, context=context,
+        surname=surname,
+        rank=rank,
+        nationality=nationality,
+        position=position,
+        context=context,
     )
 
     response = grok_client.chat_completion(
@@ -70,7 +74,7 @@ def _knowledge_lookup(entry: dict, surname: str, grok_client) -> str:
         use_cache=True,
         cache_type="people_name_knowledge",
     )
-    return response.strip().strip('"').split('\n')[0].strip()
+    return response.strip().strip('"').split("\n")[0].strip()
 
 
 def main():
@@ -80,12 +84,36 @@ def main():
     args = parser.parse_args()
 
     from src.grok_client import GrokClient
+
     grok_client = GrokClient(Path("cache/grok_cache"))
 
+    candidates = _find_candidates()
+    logger.info(f"Found {len(candidates)} single-word name entries")
+    if args.max_items:
+        candidates = candidates[: args.max_items]
+
+    resolved = 0
+    for path, entry in candidates:
+        full_name = _resolve_name(entry, grok_client)
+        if not full_name:
+            continue
+        if args.dry_run:
+            logger.info(f"  {entry['name']} → {full_name}")
+        else:
+            _apply_rename(path, entry, full_name)
+        resolved += 1
+
+    logger.info(
+        f"\n{'Would resolve' if args.dry_run else 'Resolved'}: {resolved}/{len(candidates)}"
+    )
+
+
+def _find_candidates():
+    """Find people files with single-word names."""
     candidates = []
     for f in sorted(glob.glob("output/people/*.json")):
         try:
-            d = json.load(open(f))
+            d = json.load(open(f, encoding="utf-8"))
             if not isinstance(d, dict):
                 continue
             name = d.get("name", "")
@@ -94,55 +122,61 @@ def main():
             candidates.append((Path(f), d))
         except (json.JSONDecodeError, OSError):
             pass
+    return candidates
 
-    logger.info(f"Found {len(candidates)} single-word name entries")
-    if args.max_items:
-        candidates = candidates[:args.max_items]
 
-    resolved = 0
-    for path, entry in candidates:
-        surname = entry.get("name", "")
-        mentions = entry.get("event_mentions", [])
-        excerpts = [m.get("original_text", "") for m in mentions if m.get("original_text")]
-        if not excerpts:
-            continue
+def _resolve_name(entry, grok_client):
+    """Resolve a single-word surname to a full name via Grok."""
+    surname = entry.get("name", "")
+    mentions = entry.get("event_mentions", [])
+    excerpts = [m.get("original_text", "") for m in mentions if m.get("original_text")]
+    if not excerpts:
+        return None
 
-        # Prioritize excerpts that contain more than just the surname (likely have full name)
-        excerpts.sort(key=lambda e: len(e) if surname.lower() in e.lower() else 0, reverse=True)
+    excerpts.sort(
+        key=lambda e: len(e) if surname.lower() in e.lower() else 0, reverse=True
+    )
 
-        prompt = PROMPT.format(surname=surname, excerpts="\n".join(f"- {e[:150]}" for e in excerpts[:5]))
+    prompt = PROMPT.format(
+        surname=surname, excerpts="\n".join(f"- {e[:150]}" for e in excerpts[:5])
+    )
 
-        response = grok_client.chat_completion(
-            prompt=prompt,
-            system_prompt="You extract full names from military history text. Return only the name.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="people_name_resolve",
-        )
+    response = grok_client.chat_completion(
+        prompt=prompt,
+        system_prompt="You extract full names from military history text. Return only the name.",
+        temperature=0.0,
+        use_cache=True,
+        cache_type="people_name_resolve",
+    )
 
-        full_name = response.strip().strip('"').split('\n')[0].strip()
-        # Reject if unchanged, too short, or contains explanatory text
-        if not full_name or full_name == surname or len(full_name) > 60 or len(full_name) < len(surname):
-            # Fallback: ask Grok from knowledge using rank, nationality, position
-            full_name = _knowledge_lookup(entry, surname, grok_client)
+    full_name = response.strip().strip('"').split("\n")[0].strip()
+    if not _is_valid_resolution(full_name, surname):
+        full_name = _knowledge_lookup(entry, surname, grok_client)
 
-        if not full_name or full_name == surname or len(full_name) > 60 or len(full_name) < len(surname):
-            continue
+    if not _is_valid_resolution(full_name, surname):
+        return None
+    return full_name
 
-        if args.dry_run:
-            logger.info(f"  {surname} → {full_name}")
-        else:
-            entry["name"] = full_name
-            with open(path, "w") as out:
-                json.dump(entry, out, indent=2, ensure_ascii=False)
-            # Rename file
-            new_fname = full_name.lower().replace(" ", " ") + ".json"
-            new_path = path.parent / new_fname
-            if not new_path.exists():
-                path.rename(new_path)
-        resolved += 1
 
-    logger.info(f"\n{'Would resolve' if args.dry_run else 'Resolved'}: {resolved}/{len(candidates)}")
+def _is_valid_resolution(full_name, surname):
+    """Check if a resolved name is valid."""
+    return (
+        full_name
+        and full_name != surname
+        and len(full_name) <= 60
+        and len(full_name) >= len(surname)
+    )
+
+
+def _apply_rename(path, entry, full_name):
+    """Write resolved name and rename file."""
+    entry["name"] = full_name
+    with open(path, "w", encoding="utf-8") as out:
+        json.dump(entry, out, indent=2, ensure_ascii=False)
+    new_fname = full_name.lower().replace(" ", "_") + ".json"
+    new_path = path.parent / new_fname
+    if not new_path.exists():
+        path.rename(new_path)
 
 
 if __name__ == "__main__":

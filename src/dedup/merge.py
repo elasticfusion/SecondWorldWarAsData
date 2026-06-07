@@ -5,8 +5,37 @@ Handles people merge, generic entity merge, event ref updates, and index updates
 
 import json
 import logging
+import shutil
 from pathlib import Path
 from typing import Dict, List, Optional
+
+
+def _backup_before_delete(filepath: Path) -> None:
+    """Copy file to dedup/backups/ before deletion for undo support."""
+    try:
+        # Find output root (parent of entity dir)
+        output_root = filepath.parent.parent
+        backup_dir = output_root.parent / "dedup" / "backups" / filepath.parent.name
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(filepath, backup_dir / filepath.name)
+    except Exception:
+        pass  # Best-effort — don't block merge on backup failure
+
+
+def _notify_deletion(path: Path) -> None:
+    """Notify that a file was deleted (for S3 cleanup)."""
+    if _deletion_callback:
+        _deletion_callback(path)
+
+
+_deletion_callback = None
+
+
+def set_deletion_callback(callback) -> None:
+    """Register a callback for tracking file deletions. Called by ecs_entrypoint."""
+    global _deletion_callback
+    _deletion_callback = callback
+
 
 from src.extraction.people import _merge_person
 
@@ -102,7 +131,9 @@ def do_merge(people_dir: Path, people: List[Dict], primary_idx: int) -> Optional
         index_path = people_dir / "index.json"
         update_index(index_path, person["name"], primary_person["filename"])
 
+        _backup_before_delete(secondary_file)
         secondary_file.unlink()
+        _notify_deletion(secondary_file)
         merged_count += 1
 
         if secondary_id and primary_id:
@@ -165,7 +196,9 @@ def merge_generic(
                 aliases.append(sec_name)
                 break
 
+        _backup_before_delete(f)
         f.unlink()
+        _notify_deletion(f)
 
     primary_data["event_mentions"] = primary_mentions
     primary_data["aliases"] = aliases

@@ -37,8 +37,11 @@ def count_unenriched_people(people_dir: Path) -> int:
             with open(person_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
-            # Check if enrichment data exists
-            if not data.get("enrichment_data"):
+            # Check if enrichment data exists (skip not_found — already searched)
+            if (
+                not data.get("enrichment_data")
+                and data.get("enrichment_status") != "not_found"
+            ):
                 unenriched += 1
         except Exception:
             continue

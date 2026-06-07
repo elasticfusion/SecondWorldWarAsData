@@ -227,8 +227,9 @@ def _get_sub_event_text(sub_event: Dict[str, Any]) -> str:
 def _batch_extract_logistics(
     sub_events: List[Dict[str, Any]],
     grok_client: GrokClient,
+    chunk_size: int = 10,
 ) -> Dict[str, List[LogisticsExtraction]]:
-    """Extract logistics from all sub-events in a single API call.
+    """Extract logistics from sub-events, chunked for large chapters.
 
     Returns dict mapping sub_event_id → list of LogisticsExtraction.
     """
@@ -242,6 +243,21 @@ def _batch_extract_logistics(
     if not relevant:
         return {}
 
+    # Chunk to avoid truncation on large chapters
+    chunks = [relevant[i : i + chunk_size] for i in range(0, len(relevant), chunk_size)]
+    all_results: Dict[str, List[LogisticsExtraction]] = {}
+
+    for chunk in chunks:
+        results = _extract_logistics_chunk(chunk, grok_client)
+        all_results.update(results)
+
+    return all_results
+
+
+def _extract_logistics_chunk(
+    relevant: list, grok_client: GrokClient
+) -> Dict[str, List[LogisticsExtraction]]:
+    """Extract logistics for a chunk of sub-events."""
     sub_event_block = "\n\n".join(
         f"--- Sub-event [{seid}] ---\n{text}" for seid, text in relevant
     )

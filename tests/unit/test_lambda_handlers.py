@@ -67,3 +67,75 @@ class TestSmallHandlers:
         from lambda_handlers.nat_manager import handler
 
         assert callable(handler)
+
+
+class TestHandlerInvocations:
+    """Test actual handler invocations with mocked AWS clients."""
+
+    def test_nat_manager_status(self):
+        """nat_manager returns status when action=status."""
+        from unittest.mock import MagicMock
+
+        with patch("boto3.client") as mock_client:
+            ec2 = MagicMock()
+            ec2.describe_nat_gateways.return_value = {"NatGateways": []}
+            ec2.describe_vpc_endpoints.return_value = {"VpcEndpoints": []}
+            mock_client.return_value = ec2
+
+            from lambda_handlers.nat_manager import handler
+
+            result = handler({"action": "status"}, None)
+            assert "status" in result or "nat" in str(result).lower()
+
+    def test_batch_poller_poll_no_jobs(self):
+        """batch_poller returns empty when no pending jobs."""
+        from unittest.mock import MagicMock
+
+        with patch("boto3.resource") as mock_resource:
+            table = MagicMock()
+            table.scan.return_value = {"Items": []}
+            mock_resource.return_value.Table.return_value = table
+
+            from lambda_handlers.batch_poller import handler
+
+            result = handler({"action": "poll"}, None)
+            assert result is not None
+
+    def test_nat_manager_sns_non_completion(self):
+        """nat_manager ignores non-completion SNS messages."""
+        from lambda_handlers.nat_manager import handler
+
+        event = {
+            "Records": [
+                {
+                    "EventSource": "aws:sns",
+                    "Sns": {"Message": "some random message"},
+                }
+            ]
+        }
+        with patch("boto3.client"):
+            result = handler(event, None)
+            assert result.get("action") == "none"
+
+    def test_openserp_manager_no_tasks(self):
+        """openserp_manager handles no running tasks."""
+        from unittest.mock import MagicMock
+
+        with patch("boto3.client") as mock_client:
+            ecs = MagicMock()
+            ec2 = MagicMock()
+            ecs.list_tasks.return_value = {"taskArns": []}
+            ecs.describe_services.return_value = {"services": [{"desiredCount": 0}]}
+            ec2.describe_nat_gateways.return_value = {"NatGateways": []}
+
+            def client_factory(service, **kwargs):
+                if service == "ecs":
+                    return ecs
+                return ec2
+
+            mock_client.side_effect = client_factory
+
+            from lambda_handlers.openserp_manager import handler
+
+            result = handler({}, None)
+            assert result is not None

@@ -1,18 +1,14 @@
-"""JSON schemas for validation.
+"""JSON schemas for validation."""
 
-Note: This SCHEMA_VERSION ("1.0.0") is the version of the validation schema definitions.
-The output data format version is in src/schemas/__init__.py (currently "2.3").
-They are independent — this version changes when validation rules change,
-the output version changes when the data format changes.
-"""
-
-SCHEMA_VERSION = "1.0.0"
+from src.schemas import SCHEMA_VERSION
 
 # Event schema
 EVENT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": ["Chapter", "Event"],
     "properties": {
         "Chapter": {"type": "string"},
@@ -52,6 +48,8 @@ DATE_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": [
         "Event_Name",
         "EventID",
@@ -124,6 +122,8 @@ PLACE_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": [
         "Event_Name",
         "EventID",
@@ -228,6 +228,8 @@ SUPPLEMENTAL_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": [
         "Event_Name",
         "EventID",
@@ -330,6 +332,8 @@ PEOPLE_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": ["people"],
     "properties": {
         "people": {
@@ -356,6 +360,8 @@ PEOPLE_GROUPS_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": ["groups"],
     "properties": {
         "groups": {
@@ -380,6 +386,8 @@ EQUIPMENT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": ["equipment"],
     "properties": {
         "equipment": {
@@ -404,6 +412,8 @@ MAP_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": [
         "MapID",
         "map_title",
@@ -451,6 +461,8 @@ CASUALTIES_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": ["casualties"],
     "properties": {
         "casualties": {
@@ -527,6 +539,8 @@ WEATHER_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": [
         "Event_Name",
         "EventID",
@@ -576,6 +590,8 @@ LOGISTICS_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": [
         "LogisticsID",
         "logistics_type",
@@ -658,6 +674,8 @@ IMAGES_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": ["ImageID", "image_title", "content_type", "extracted_date"],
     "properties": {
         "ImageID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
@@ -682,6 +700,8 @@ BIBLIOGRAPHY_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": ["BibliographyID", "title", "citation", "mentions"],
     "properties": {
         "BibliographyID": {
@@ -730,6 +750,8 @@ BIBLIOGRAPHY_SCHEMA = {
 
 CASUALTY_ITEM_SCHEMA = {
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": ["type", "description"],
     "properties": {
         "type": {
@@ -747,6 +769,8 @@ CASUALTY_ITEM_SCHEMA = {
 
 PEOPLE_GROUP_ITEM_SCHEMA = {
     "type": "object",
+    "additionalProperties": False,
+    "patternProperties": {"^_": {}},
     "required": ["group_name"],
     "properties": {
         "group_name": {"type": "string"},
