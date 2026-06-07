@@ -252,11 +252,13 @@ def _trigger_retrieve(job: dict) -> None:
     # First, ensure networking is up
     try:
         lam = boto3.client("lambda", region_name=REGION)
-        lam.invoke(
+        resp = lam.invoke(
             FunctionName=f"{ENV_NAME}-wwii-nat-manager",
-            InvocationType="Event",
+            InvocationType="RequestResponse",
             Payload=json.dumps({"action": "create"}).encode(),
         )
+        if resp.get("FunctionError"):
+            logger.error("nat_manager error: %s", resp["Payload"].read().decode())
     except Exception as e:
         logger.warning("Failed to invoke nat_manager: %s", e)
 
@@ -316,8 +318,8 @@ def _trigger_retrieve(job: dict) -> None:
                 ExpressionAttributeValues={":s": "pending"},
             )
             logger.info("Reset job %s to pending for retry", batch_id)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to reset job %s: %s", batch_id, e)
 
 
 def _wait_for_nat(max_seconds: int = 180) -> None:

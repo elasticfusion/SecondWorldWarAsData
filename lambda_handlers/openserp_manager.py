@@ -122,8 +122,8 @@ def _nat_recently_created(minutes=5):
                 age = (datetime.now(timezone.utc) - create_time).total_seconds()
                 if age < minutes * 60:
                     return True
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("NAT age check failed: %s", e)
     return False
 
 
@@ -145,8 +145,8 @@ def _nat_too_old(max_hours=2):
                 age = (datetime.now(timezone.utc) - create_time).total_seconds()
                 if age > max_hours * 3600:
                     return True
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Pipeline activity check failed: %s", e)
     return False
 
 

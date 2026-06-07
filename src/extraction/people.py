@@ -23,25 +23,85 @@ _WHITESPACE_PATTERN = re.compile(r"\s+")
 
 # Rank abbreviation normalization
 RANK_ABBREVIATIONS = {
+    # US/Commonwealth shared
     "Gen.": "General",
+    "Gen": "General",
     "Lt. Gen.": "Lieutenant General",
+    "Lt Gen": "Lieutenant General",
+    "Lt.-Gen.": "Lieutenant General",
     "Maj. Gen.": "Major General",
+    "Maj Gen": "Major General",
+    "Maj.-Gen.": "Major General",
     "Brig. Gen.": "Brigadier General",
+    "Brig Gen": "Brigadier General",
     "Col.": "Colonel",
+    "Col": "Colonel",
     "Lt. Col.": "Lieutenant Colonel",
+    "Lt Col": "Lieutenant Colonel",
+    "Lt.-Col.": "Lieutenant Colonel",
     "Maj.": "Major",
+    "Maj": "Major",
     "Capt.": "Captain",
+    "Capt": "Captain",
     "Lt.": "Lieutenant",
+    "Lt": "Lieutenant",
     "1st Lt.": "First Lieutenant",
+    "1st Lt": "First Lieutenant",
     "2nd Lt.": "Second Lieutenant",
+    "2nd Lt": "Second Lieutenant",
     "Sgt.": "Sergeant",
+    "Sgt": "Sergeant",
     "Cpl.": "Corporal",
+    "Cpl": "Corporal",
     "Pvt.": "Private",
+    "Pvt": "Private",
     "Adm.": "Admiral",
+    "Adm": "Admiral",
     "Vice Adm.": "Vice Admiral",
+    "Vice Adm": "Vice Admiral",
     "Rear Adm.": "Rear Admiral",
+    "Rear Adm": "Rear Admiral",
     "Cmdr.": "Commander",
+    "Cmdr": "Commander",
     "Lt. Cmdr.": "Lieutenant Commander",
+    "Lt Cmdr": "Lieutenant Commander",
+    # British/Canadian
+    "Brig.": "Brigadier",
+    "Brig": "Brigadier",
+    "Fld. Mshl.": "Field Marshal",
+    "FM": "Field Marshal",
+    "F.M.": "Field Marshal",
+    "Gp. Capt.": "Group Captain",
+    "Gp Capt": "Group Captain",
+    "Wg. Cdr.": "Wing Commander",
+    "Sqn. Ldr.": "Squadron Leader",
+    "Flt. Lt.": "Flight Lieutenant",
+    # French
+    "Gén.": "Général",
+    "Mal.": "Maréchal",
+    "Cdt.": "Commandant",
+    "Cdt": "Commandant",
+    "Lcl.": "Lieutenant-Colonel",
+    "Cne.": "Capitaine",
+    # German
+    "Generalfeldmarschall": "Generalfeldmarschall",
+    "GFM": "Generalfeldmarschall",
+    "Gen.d.Inf.": "General der Infanterie",
+    "Gen.d.Art.": "General der Artillerie",
+    "Gen.d.Kav.": "General der Kavallerie",
+    "Gen.d.Pz.Tr.": "General der Panzertruppen",
+    "Generaloberst": "Generaloberst",
+    "Generalleutnant": "Generalleutnant",
+    "Generalmajor": "Generalmajor",
+    "Oberst": "Oberst",
+    "Oberstleutnant": "Oberstleutnant",
+    "Oberstlt.": "Oberstleutnant",
+    "Hptm.": "Hauptmann",
+    "Oblt.": "Oberleutnant",
+    "SS-Obergruppenführer": "SS-Obergruppenführer",
+    "SS-Gruppenführer": "SS-Gruppenführer",
+    "SS-Brigadeführer": "SS-Brigadeführer",
+    "SS-Oberführer": "SS-Oberführer",
 }
 
 
@@ -630,10 +690,13 @@ def _check_if_processed(event_file: Path, people_dir: Path) -> bool:
         with open(processed_registry, "r", encoding="utf-8") as f:
             processed = json.load(f)
         if event_file_str in processed:
-            logger.info(
-                f"Event already processed for people extraction: {event_file.name}"
-            )
-            return True
+            from src.utils.config import should_reprocess
+
+            if not should_reprocess("people"):
+                logger.info(
+                    f"Event already processed for people extraction: {event_file.name}"
+                )
+                return True
 
     return False
 

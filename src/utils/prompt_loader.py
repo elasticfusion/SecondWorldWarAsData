@@ -62,7 +62,10 @@ def render_prompt(name: str, **kwargs: Any) -> str:
         rules_text = "\n".join(f"- {r}" for r in rules)
         prompt = prompt.rstrip() + "\n\n" + rules_text
 
-    return prompt.format(**kwargs)
+    # Safe substitution: replace {var} without breaking JSON braces
+    for key, value in kwargs.items():
+        prompt = prompt.replace("{" + key + "}", str(value))
+    return prompt
 
 
 def get_system_prompt(name: str) -> Optional[str]:

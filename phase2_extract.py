@@ -24,7 +24,7 @@ from scripts.find_related_groups import generate_related_groups_report
 # ---------------------------------------------------------------------------
 
 
-def _complete_metadata(base_dir, paths, logger):
+def _complete_metadata(base_dir, paths, logger, batch_mode=False):
     """Step 0: Complete any incomplete metadata."""
     try:
         from scripts.complete_metadata_with_grok import (
@@ -47,7 +47,7 @@ def _complete_metadata(base_dir, paths, logger):
                 incomplete_count += 1
                 logger.info("  Completing: %s", meta_file.relative_to(content_dir))
 
-                grok_client = GrokClient(paths["api_cache"])
+                grok_client = GrokClient(paths["api_cache"], batch_mode=batch_mode)
                 updated_metadata = extract_metadata_with_grok(
                     meta_file.parent, metadata, grok_client
                 )
@@ -503,10 +503,13 @@ def _run_core_extraction(
 
     if any_optional and not skip_optional:
         from src.utils.config import get_content_root
+        from concurrent.futures import ThreadPoolExecutor, as_completed
 
         content_root = get_content_root(paths)
         event_files = sorted(content_root.rglob("*-event.json"))
-        for event_file in event_files:
+        max_workers = config.get("concurrency", {}).get("max_event_files", 3)
+
+        def _process_event(event_file):
             current_book.set(event_file.parent.name)
             parsed_file = event_file.parent / event_file.name.replace(
                 "-event.json", "-parsed.json"
@@ -516,6 +519,14 @@ def _run_core_extraction(
             _extract_optional_entities(
                 event_file, parsed_file, grok_client, paths, config, logger
             )
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [executor.submit(_process_event, ef) for ef in event_files]
+            for future in as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    logger.warning("Optional extraction failed: %s", e)
 
     return processed, failed
 
@@ -556,7 +567,7 @@ def main():
 
     # Step 0: Complete metadata
     logger.info("[phase2 step 0/5] Checking metadata completeness")
-    _complete_metadata(base_dir, paths, logger)
+    _complete_metadata(base_dir, paths, logger, batch_mode=args.batch)
 
     # Check for API key
     from dotenv import load_dotenv
@@ -766,6 +777,42 @@ def main():
     from src.utils.http_pool import close_session
 
     close_session()
+
+    # Write results for entrypoint notification
+    _write_phase_results(output_root, processed, failed)
+
+
+def _write_phase_results(output_root, processed, failed):
+    """Write phase results JSON for entrypoint to read."""
+    results_file = output_root / ".phase_results.json"
+    entity_counts = {}
+    for subdir in [
+        "people",
+        "people_groups",
+        "places",
+        "dates",
+        "equipment",
+        "weather",
+        "logistics",
+        "casualties",
+        "maps",
+        "supplemental",
+    ]:
+        d = output_root / subdir
+        if d.exists():
+            entity_counts[subdir] = len(
+                [f for f in d.glob("*.json") if f.name != "index.json"]
+            )
+    results_file.write_text(
+        json.dumps(
+            {
+                "processed": processed,
+                "failed": failed,
+                "entity_counts": entity_counts,
+            }
+        ),
+        encoding="utf-8",
+    )
 
 
 if __name__ == "__main__":

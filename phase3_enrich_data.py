@@ -325,6 +325,36 @@ def main():
 
     close_session()
 
+    # Write results for entrypoint notification
+    results_file = output_root / ".phase_results.json"
+    entity_counts = {}
+    for subdir in [
+        "people",
+        "people_groups",
+        "places",
+        "dates",
+        "equipment",
+        "weather",
+        "logistics",
+        "casualties",
+        "maps",
+        "supplemental",
+    ]:
+        d = output_root / subdir
+        if d.exists():
+            entity_counts[subdir] = len(
+                [f for f in d.glob("*.json") if f.name != "index.json"]
+            )
+    results_file.write_text(
+        json.dumps(
+            {
+                "enriched": total_enriched,
+                "entity_counts": entity_counts,
+            }
+        ),
+        encoding="utf-8",
+    )
+
     return 0
 
 

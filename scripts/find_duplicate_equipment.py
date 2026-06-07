@@ -238,11 +238,23 @@ def find_potential_duplicates(equipment_dir: Path) -> List[Dict[str, Any]]:
 
     reviewed = load_reviewed_pairs("equipment")
 
+    # Incremental: only compare pairs where at least one file is new
+    from src.dedup.incremental import get_last_dedup_run, get_new_files, should_compare
+
+    since = get_last_dedup_run("equipment")
+    new_files = get_new_files(equipment_dir, since)
+    if new_files:
+        logger.info(
+            "Incremental dedup: %d new equipment files since last run", len(new_files)
+        )
+
     # Score all pairs
     pairs = []
     for i, item1 in enumerate(items):
         for j in range(i + 1, len(items)):
             item2 = items[j]
+            if not should_compare(item1["_filename"], item2["_filename"], new_files):
+                continue
             if _is_excluded(item1, item2, excluded_pairs, excluded_names):
                 continue
             if reviewed:

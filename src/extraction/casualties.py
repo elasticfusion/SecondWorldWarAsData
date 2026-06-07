@@ -124,8 +124,9 @@ def _batch_extract_casualties(
     places_index: Dict[str, Any],
     people_index: Dict[str, Any],
     people_groups_index: Dict[str, Any],
+    chunk_size: int = 10,
 ) -> Dict[str, List[Dict[str, Any]]]:
-    """Extract casualties from all sub-events in a single API call.
+    """Extract casualties from sub-events, chunked for large chapters.
 
     Returns dict mapping sub_event_id → list of casualty items.
     """
@@ -154,10 +155,23 @@ def _batch_extract_casualties(
         f"  Places:\n    {_format_index(places_index)}\n"
     )
 
-    sub_event_block = "\n\n".join(
-        f"--- Sub-event [{seid}] ---\n{text}" for seid, text in relevant
-    )
+    # Chunk to avoid truncation on large chapters
+    chunks = [relevant[i : i + chunk_size] for i in range(0, len(relevant), chunk_size)]
+    all_results: Dict[str, List[Dict[str, Any]]] = {}
 
+    for chunk in chunks:
+        sub_event_block = "\n\n".join(
+            f"--- Sub-event [{seid}] ---\n{text}" for seid, text in chunk
+        )
+        prompt = _build_casualties_prompt(entity_context, sub_event_block)
+        results = _call_and_parse_casualties(grok_client, prompt)
+        all_results.update(results)
+
+    return all_results
+
+
+def _build_casualties_prompt(entity_context: str, sub_event_block: str) -> str:
+    """Build the casualties extraction prompt."""
     prompt = f"""Extract personnel casualty information from these sub-events.
 Casualties are about PEOPLE only — not equipment, vehicles, or materiel.
 
@@ -188,10 +202,10 @@ Return empty arrays for sub-events with no casualties."""
         prompt = _rp(
             "casualties", entity_context=entity_context, sub_event_block=sub_event_block
         )
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Casualty extraction step failed: %s", e)
 
-    return _call_and_parse_casualties(grok_client, prompt)
+    return prompt
 
 
 def _call_and_parse_casualties(

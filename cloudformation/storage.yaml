@@ -38,6 +38,10 @@ Resources:
                 TransitionInDays: 30
               - StorageClass: GLACIER_IR
                 TransitionInDays: 90
+          - Id: ExpireOldVersions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
       Tags:
         - Key: Environment
           Value: !Ref EnvironmentName

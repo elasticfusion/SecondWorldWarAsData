@@ -47,7 +47,7 @@ Resources:
       ClusterName: !Sub ${EnvironmentName}-wwii-pipeline
       ClusterSettings:
         - Name: containerInsights
-          Value: enhanced
+          Value: enabled
       CapacityProviders:
         - FARGATE_SPOT
         - FARGATE
@@ -307,7 +307,7 @@ Resources:
       Code:
         S3Bucket: !Ref LambdaCodeBucket
         S3Key: !Ref LambdaCodeKey
-      MemorySize: 256
+      MemorySize: 128
       Timeout: 120
       Role: !Ref LambdaExecutionRoleArn
 
@@ -345,7 +345,7 @@ Resources:
       Code:
         S3Bucket: !Ref LambdaCodeBucket
         S3Key: !Ref LambdaCodeKey
-      MemorySize: 256
+      MemorySize: 128
       Timeout: 30
       Role: !Ref LambdaExecutionRoleArn
       Environment:

@@ -1478,8 +1478,8 @@ Example:
         from src.utils.prompt_loader import render_prompt
 
         prompt = render_prompt("equipment", event_data=json.dumps(event_data, indent=2))
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Equipment extraction step failed: %s", e)
 
     for attempt in range(max_retries):
         try:
@@ -1875,8 +1875,11 @@ def extract_equipment_from_event(
     output_dir.mkdir(parents=True, exist_ok=True)
     processed = _load_processed_registry(output_dir)
     if str(event_file) in processed:
-        logger.debug("  Already processed, skipping")
-        return []
+        from src.utils.config import should_reprocess
+
+        if not should_reprocess("equipment"):
+            logger.debug("  Already processed, skipping")
+            return []
 
     # Load and validate event data
     event_data = _load_event_data(event_file)

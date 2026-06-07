@@ -97,6 +97,7 @@ def handler(event, context):
         "POST /dedup/api/action": lambda: _handle_action(event, storage, config),
         "GET /dedup/api/status": lambda: _get_status(storage),
         "POST /dedup/api/complete": lambda: _mark_complete(storage, config),
+        "POST /dedup/api/undo": lambda: _handle_undo(event, storage),
     }
 
     # Handle parameterized routes
@@ -224,8 +225,8 @@ def _handle_action(event, storage, config):
                 if group_filenames & g_files:
                     group_index = i
                     break
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("DynamoDB sync failed: %s", e)
 
     if action == "merge":
         return _do_merge(
@@ -300,11 +301,13 @@ def _do_merge(
         )
 
     if entity_type == "people":
+        snapshot_id = _save_merge_snapshot(entity_type, people, storage)
         result = _merge_people_files(people, primary_index, storage)
         if result:
             _remove_group_from_report(entity_type, group_index, storage, all_people)
             return result
     else:
+        snapshot_id = _save_merge_snapshot(entity_type, people, storage)
         _merge_generic_files(entity_type, people, primary_index, storage)
 
     _remove_group_from_report(entity_type, group_index, storage, all_people)
@@ -314,7 +317,83 @@ def _do_merge(
         _re_cluster_and_add(entity_type, excluded_people, storage)
 
     return _json_response(
-        200, {"result": "merged", "primary": people[primary_index]["name"]}
+        200,
+        {
+            "result": "merged",
+            "primary": people[primary_index]["name"],
+            "snapshot_id": snapshot_id,
+        },
+    )
+
+
+def _save_merge_snapshot(entity_type, people, storage):
+    """Save pre-merge snapshots for undo support. Returns snapshot_id."""
+    import time
+
+    prefix = ENTITY_PREFIXES.get(entity_type, f"output/{entity_type}")
+    snapshot_id = str(int(time.time() * 1000))
+    snapshot_prefix = f"dedup/history/{snapshot_id}"
+    files_saved = []
+    for person in people:
+        filename = person.get("filename", "")
+        if not filename:
+            continue
+        try:
+            data = storage.read_json(f"{prefix}/{filename}")
+            storage.write_json(f"{snapshot_prefix}/{entity_type}/{filename}", data)
+            files_saved.append(filename)
+        except Exception:
+            pass
+    # Save snapshot manifest
+    storage.write_json(
+        f"{snapshot_prefix}/manifest.json",
+        {
+            "entity_type": entity_type,
+            "prefix": prefix,
+            "files": files_saved,
+            "timestamp": snapshot_id,
+        },
+    )
+    logger.info("Saved merge snapshot %s: %d files", snapshot_id, len(files_saved))
+    return snapshot_id
+
+
+def _handle_undo(event, storage):
+    """Restore files from the most recent merge snapshot."""
+    body = json.loads(event.get("body", "{}"))
+    snapshot_id = body.get("snapshot_id", "")
+
+    if not snapshot_id:
+        # Find most recent snapshot
+        try:
+            # List snapshots by scanning dedup/history/
+            # For simplicity, use the snapshot_id from the client
+            return _json_response(400, {"error": "snapshot_id required"})
+        except Exception:
+            return _json_response(400, {"error": "no snapshots found"})
+
+    manifest_path = f"dedup/history/{snapshot_id}/manifest.json"
+    try:
+        manifest = storage.read_json(manifest_path)
+    except Exception:
+        return _json_response(404, {"error": f"snapshot {snapshot_id} not found"})
+
+    entity_type = manifest["entity_type"]
+    prefix = manifest["prefix"]
+    restored = 0
+    for filename in manifest["files"]:
+        try:
+            data = storage.read_json(
+                f"dedup/history/{snapshot_id}/{entity_type}/{filename}"
+            )
+            storage.write_json(f"{prefix}/{filename}", data)
+            restored += 1
+        except Exception as e:
+            logger.warning("Failed to restore %s: %s", filename, e)
+
+    logger.info("Undo: restored %d files from snapshot %s", restored, snapshot_id)
+    return _json_response(
+        200, {"result": "undone", "restored": restored, "snapshot_id": snapshot_id}
     )
 
 
@@ -432,8 +511,8 @@ def _rename_to_match_content(event, storage):
                             "removed_aliases": stale,
                         },
                     )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("DynamoDB entity sync failed: %s", e)
             return _json_response(200, {"result": "unchanged", "filename": filename})
 
         # Copy to new key, delete old
@@ -451,8 +530,8 @@ def _rename_to_match_content(event, storage):
                     del index[k]
             index[name.lower()] = new_filename
             storage.write_json(f"{prefix}/index.json", index)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Index update failed: %s", e)
 
         # Update duplicate report references
         _update_filename_in_report(entity_type, filename, new_filename, storage)
@@ -475,8 +554,8 @@ def _update_filename_in_report(entity_type, old_filename, new_filename, storage)
                 if person.get("filename") == old_filename:
                     person["filename"] = new_filename
         storage.write_json(report_path, report)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Report update failed: %s", e)
 
 
 def _merge_people_files(people, primary_index, storage):
@@ -1097,26 +1176,78 @@ function renderGroups() {
 }
 
 let processing = false;
+let pendingActions = [];
+let lastSnapshots = [];
+
+function queueAction(idx, action) {
+  const primary = document.querySelector('input[name="primary-'+idx+'"]:checked');
+  const excluded = [];
+  document.querySelectorAll('.include-cb[data-group="'+idx+'"]').forEach(cb => {
+    if (!cb.checked) excluded.push(parseInt(cb.dataset.idx));
+  });
+  const body = {action, entity_type:currentTab, group_filenames: (data[currentTab]||[])[idx]?.people?.map(p=>p.filename)||[], primary_index: primary?parseInt(primary.value):0, excluded_indices: excluded};
+  pendingActions.push(body);
+  // Mark group as queued visually
+  const cards = document.querySelectorAll('.group-card');
+  if (cards[idx]) { cards[idx].style.opacity = '0.5'; cards[idx].querySelector('.actions').innerHTML = '<span style="color:#2563eb">⏳ Queued: '+action+'</span> <button class="btn" style="background:#dc2626;color:#fff;padding:4px 10px;font-size:12px" onclick="unqueue('+pendingActions.length+')">✕</button>'; }
+  updateCommitBar();
+}
+
+function unqueue(n) {
+  pendingActions.splice(n-1, 1);
+  renderGroups();
+  updateCommitBar();
+}
+
+function updateCommitBar() {
+  let bar = document.getElementById('commit-bar');
+  if (!bar) { bar = document.createElement('div'); bar.id='commit-bar'; bar.style.cssText='position:sticky;bottom:0;background:#1f2937;color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;border-radius:8px;margin:10px 0'; document.querySelector('.container').appendChild(bar); }
+  if (pendingActions.length === 0) { bar.style.display='none'; return; }
+  bar.style.display='flex';
+  bar.innerHTML = '<span>'+pendingActions.length+' action(s) queued</span><div><button class="btn" style="background:#6b7280;color:#fff;margin-right:8px" onclick="pendingActions=[];renderGroups();updateCommitBar()">Clear</button><button class="btn" style="background:#059669;color:#fff" onclick="commitAll()">Commit All</button></div>';
+}
+
+async function commitAll() {
+  if (processing || !pendingActions.length) return;
+  processing = true;
+  const bar = document.getElementById('commit-bar');
+  const total = pendingActions.length;
+  lastSnapshots = [];
+  for (let i = 0; i < total; i++) {
+    bar.innerHTML = '<span>Committing '+(i+1)+'/'+total+'...</span>';
+    try {
+      const resp = await fetch(API+'/action', {method:'POST', body:JSON.stringify(pendingActions[i]), headers:{'Content-Type':'application/json'}, credentials:'include'});
+      const result = await resp.json();
+      if (result.snapshot_id) lastSnapshots.push(result.snapshot_id);
+      if (result.error) { alert('Error on item '+(i+1)+': '+result.error); break; }
+    } catch(e) { alert('Network error on item '+(i+1)); break; }
+  }
+  pendingActions = [];
+  processing = false;
+  await load();
+  updateCommitBar();
+  if (lastSnapshots.length) showUndoBar();
+}
+
+function showUndoBar() {
+  let bar = document.getElementById('undo-bar');
+  if (!bar) { bar = document.createElement('div'); bar.id='undo-bar'; bar.style.cssText='background:#fef3c7;padding:10px 20px;border-radius:8px;margin:10px 0;display:flex;justify-content:space-between;align-items:center'; document.querySelector('.container').insertBefore(bar, document.getElementById('groups')); }
+  bar.style.display='flex';
+  bar.innerHTML = '<span>'+lastSnapshots.length+' merge(s) committed</span><button class="btn" style="background:#d97706;color:#fff" onclick="undoLast()">Undo Last</button>';
+}
+
+async function undoLast() {
+  if (!lastSnapshots.length) return;
+  const sid = lastSnapshots.pop();
+  const resp = await fetch(API+'/undo', {method:'POST', body:JSON.stringify({snapshot_id:sid}), headers:{'Content-Type':'application/json'}, credentials:'include'});
+  const result = await resp.json();
+  if (result.error) { alert('Undo failed: '+result.error); return; }
+  await load();
+  if (!lastSnapshots.length) { const bar = document.getElementById('undo-bar'); if(bar) bar.style.display='none'; }
+}
 
 async function doAction(idx, action) {
-  if (processing) return;
-  processing = true;
-  document.querySelectorAll('.btn').forEach(b => b.disabled = true);
-  try {
-    const primary = document.querySelector('input[name="primary-'+idx+'"]:checked');
-    const excluded = [];
-    document.querySelectorAll('.include-cb[data-group="'+idx+'"]').forEach(cb => {
-      if (!cb.checked) excluded.push(parseInt(cb.dataset.idx));
-    });
-    const body = {action, entity_type:currentTab, group_filenames: (data[currentTab]||[])[idx]?.people?.map(p=>p.filename)||[], primary_index: primary?parseInt(primary.value):0, excluded_indices: excluded};
-    const resp = await fetch(API+'/action', {method:'POST', body:JSON.stringify(body), headers:{'Content-Type':'application/json'}, credentials:'include'});
-    const result = await resp.json();
-    if (result.error) { alert('Error: '+result.error); }
-    await load();
-  } finally {
-    processing = false;
-    document.querySelectorAll('.btn').forEach(b => b.disabled = false);
-  }
+  queueAction(idx, action);
 }
 
 async function markComplete() {

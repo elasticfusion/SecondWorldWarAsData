@@ -583,8 +583,8 @@ IMPORTANT:
             dates_section=dates_section,
             text=text,
         )
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Weather extraction step failed: %s", e)
     return prompt
 
 
@@ -625,8 +625,9 @@ def _batch_extract_weather(
     grok_client: GrokClient,
     max_retries: int,
     places_index: Optional[Dict[str, str]] = None,
+    chunk_size: int = 10,
 ) -> Dict[str, List[Dict[str, Any]]]:
-    """Extract weather from all sub-events in a single API call.
+    """Extract weather from sub-events, chunked for large chapters.
 
     Returns dict mapping sub_event_id → list of weather mention dicts.
     """
@@ -651,12 +652,17 @@ def _batch_extract_weather(
     if not blocks:
         return {}
 
-    prompt = f"""Extract weather mentions from these WWII event sub-events.
+    # Chunk to avoid truncation on large chapters
+    chunks = [blocks[i : i + chunk_size] for i in range(0, len(blocks), chunk_size)]
+    all_results: Dict[str, List[Dict[str, Any]]] = {}
+
+    for chunk in chunks:
+        prompt = f"""Extract weather mentions from these WWII event sub-events.
 
 Event: {event_name}
 EventID: {event_id}
 
-{"".join(chr(10) + chr(10) + b for b in blocks)}
+{"".join(chr(10) + chr(10) + b for b in chunk)}
 
 For each weather mention provide:
 - WeatherMentionID: 26-character ULID
@@ -671,7 +677,10 @@ Return JSON object keyed by Sub-eventID:
 {{"<Sub-eventID>": [{{"WeatherMentionID": "...", "place_name": "...", ...}}], ...}}
 Return empty arrays for sub-events with no weather mentions."""
 
-    return _call_and_parse_weather(grok_client, prompt, max_retries)
+        results = _call_and_parse_weather(grok_client, prompt, max_retries)
+        all_results.update(results)
+
+    return all_results
 
 
 def _call_and_parse_weather(

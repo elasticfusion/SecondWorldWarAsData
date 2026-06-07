@@ -185,8 +185,8 @@ def _extract_records(event):
                         s3_event = json.loads(msg)
                         for s3_rec in s3_event.get("Records", []):
                             s3_keys.append(s3_rec["s3"]["object"]["key"])
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.warning("Failed to parse S3 event: %s", e)
             except Exception:
                 topic_arn = ""
         else:
@@ -324,6 +324,25 @@ def _run_task(task_def, source, book_name=""):
         },
         overrides=overrides,
     )
+    # Notify operator that a task was launched
+    _notify_launch(family, book_name, source)
+
+
+def _notify_launch(family: str, book_name: str, source: str) -> None:
+    """Send SNS notification that a pipeline task was launched."""
+    topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", NOTIFY_TOPIC)
+    if not topic_arn:
+        return
+    try:
+        phase = family.split("-")[-1] if "-" in family else family
+        msg = f"Pipeline task launched: {phase}\nBook: {book_name or 'all'}\nSource: {source}"
+        boto3.client("sns").publish(
+            TopicArn=topic_arn,
+            Subject=f"WWII Pipeline: {phase} started",
+            Message=msg,
+        )
+    except Exception as e:
+        logger.warning("Failed to send notification: %s", e)
 
 
 def _wait_for_networking():
@@ -333,7 +352,7 @@ def _wait_for_networking():
         try:
             resp = ec2.describe_nat_gateways(
                 Filters=[
-                    {"Name": "tag:Project", "Values": ["wwii-pipeline"]},
+                    {"Name": "tag:Name", "Values": [f"{ENV_NAME}-nat"]},
                     {"Name": "state", "Values": ["available", "pending"]},
                 ]
             )
@@ -350,13 +369,15 @@ def _wait_for_networking():
 
 
 def _queue_pending(keys):
-    """Queue content keys for Phase 1 processing."""
+    """Queue content keys for Phase 1 processing (atomic, race-safe)."""
     try:
-        resp = dynamo.get_item(Key={"cache_key": "pending#content"})
-        existing = resp.get("Item", {}).get("keys", [])
-        merged = list(set(existing + keys))
-        dynamo.put_item(Item={"cache_key": "pending#content", "keys": merged})
-        logger.info("Queued %d content keys (%d total pending)", len(keys), len(merged))
+        dynamo.update_item(
+            Key={"cache_key": "pending#content"},
+            UpdateExpression="SET #k = list_append(if_not_exists(#k, :empty), :new)",
+            ExpressionAttributeNames={"#k": "keys"},
+            ExpressionAttributeValues={":new": keys, ":empty": []},
+        )
+        logger.info("Queued %d content keys (atomic append)", len(keys))
     except Exception as e:
         logger.error("Failed to queue pending content: %s", e)
 
@@ -377,8 +398,8 @@ def _launch_phase1_if_idle():
                     Subject="WWII Pipeline: Content queued",
                     Message="Pipeline is busy. Content queued for processing when current run completes.",
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("Failed to send queued notification: %s", e)
             return
     logger.info("Pipeline idle, launching Phase 1 to process queued content")
     book_name = ""
@@ -392,8 +413,8 @@ def _launch_phase1_if_idle():
                 books.add(parts[1])
         if len(books) == 1:
             book_name = books.pop()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Failed to extract book name from pending queue: %s", e)
     _run_task(PHASE1_TASK_DEF, "pending-queue", book_name=book_name)
 
 
@@ -413,13 +434,13 @@ def _queue_parsed(keys):
         logger.info("All parsed files already processed, nothing to queue")
         return
     try:
-        resp = dynamo.get_item(Key={"cache_key": "pending#parsed"})
-        existing = resp.get("Item", {}).get("keys", [])
-        merged = list(set(existing + new_keys))
-        dynamo.put_item(Item={"cache_key": "pending#parsed", "keys": merged})
-        logger.info(
-            "Queued %d parsed keys (%d total pending)", len(new_keys), len(merged)
+        dynamo.update_item(
+            Key={"cache_key": "pending#parsed"},
+            UpdateExpression="SET #k = list_append(if_not_exists(#k, :empty), :new)",
+            ExpressionAttributeNames={"#k": "keys"},
+            ExpressionAttributeValues={":new": new_keys, ":empty": []},
         )
+        logger.info("Queued %d parsed keys (atomic append)", len(new_keys))
     except Exception as e:
         logger.error("Failed to queue parsed keys: %s", e)
 

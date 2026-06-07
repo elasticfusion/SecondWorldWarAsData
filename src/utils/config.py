@@ -1,9 +1,29 @@
 """Configuration file loading and path management."""
 
+import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 import yaml
+
+
+def get_aws_region() -> str:
+    """Get AWS region from env var, config, or default. Single source of truth."""
+    return os.environ.get(
+        "AWS_REGION",
+        os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+    )
+
+
+def should_reprocess(entity_type: str) -> bool:
+    """Check if an entity type should be re-extracted (ignoring processed registry)."""
+    try:
+        config = load_config()
+        types = config.get("processing", {}).get("reprocess_types", [])
+        return entity_type in types
+    except Exception:
+        return False
+
 
 # Entity directories that live directly under output_root (not book content)
 ENTITY_DIRS = frozenset(
@@ -73,7 +93,9 @@ def _validate_config(config: Dict[str, Any], path: Path) -> None:
     for key in ("max_event_files", "max_extraction_group", "max_enrichment_workers"):
         val = conc.get(key)
         if val is not None and (not isinstance(val, int) or val < 1):
-            raise ValueError(f"concurrency.{key} must be a positive integer, got: {val}")
+            raise ValueError(
+                f"concurrency.{key} must be a positive integer, got: {val}"
+            )
 
 
 def get_paths(

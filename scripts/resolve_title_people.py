@@ -12,7 +12,6 @@ import argparse
 import json
 import glob
 import logging
-import os
 import sys
 from pathlib import Path
 
@@ -23,8 +22,16 @@ logging.getLogger("src.grok_client").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 TITLE_PATTERNS = [
-    "commander", "chief of", "head of", "director", "minister",
-    "officer", "leader", "president", "secretary", "fortress",
+    "commander",
+    "chief of",
+    "head of",
+    "director",
+    "minister",
+    "officer",
+    "leader",
+    "president",
+    "secretary",
+    "fortress",
 ]
 
 PROMPT = """Identify the specific person who held this position/title during WWII.
@@ -48,7 +55,7 @@ def find_title_people():
     candidates = []
     for f in sorted(glob.glob("output/people/*.json")):
         try:
-            d = json.load(open(f))
+            d = json.load(open(f, encoding="utf-8"))
             if not isinstance(d, dict):
                 continue
             name = (d.get("name") or "").lower()
@@ -78,7 +85,9 @@ def resolve_person(entry: dict, grok_client) -> dict | None:
     book = ", ".join(books) if books else "Unknown"
     time_period = "1939-1945 (WWII)"
 
-    prompt = PROMPT.format(title=title, context=context, time_period=time_period, book=book)
+    prompt = PROMPT.format(
+        title=title, context=context, time_period=time_period, book=book
+    )
 
     response = grok_client.chat_completion(
         prompt=prompt,
@@ -103,6 +112,7 @@ def main():
     args = parser.parse_args()
 
     from src.grok_client import GrokClient
+
     grok_client = GrokClient(Path("cache/grok_cache"))
 
     candidates = find_title_people()
@@ -115,20 +125,25 @@ def main():
 
         if result:
             if args.dry_run:
-                logger.info(f"  {old_name} → {result['name']} (conf={result['confidence']}, src={result['source'][:50]})")
+                logger.info(
+                    f"  {old_name} → {result['name']} (conf={result['confidence']}, src={result['source'][:50]})"
+                )
             else:
                 entry["name"] = result["name"]
-                entry.setdefault("name_resolution", {
-                    "original_title": old_name,
-                    "resolved_by": "grok",
-                    "confidence": result["confidence"],
-                    "source": result["source"],
-                })
-                with open(path, "w") as out:
+                entry.setdefault(
+                    "name_resolution",
+                    {
+                        "original_title": old_name,
+                        "resolved_by": "grok",
+                        "confidence": result["confidence"],
+                        "source": result["source"],
+                    },
+                )
+                with open(path, "w", encoding="utf-8") as out:
                     json.dump(entry, out, indent=2, ensure_ascii=False)
 
                 # Rename file
-                new_fname = result["name"].lower().replace(" ", " ") + ".json"
+                new_fname = result["name"].lower().replace(" ", "_") + ".json"
                 new_path = path.parent / new_fname
                 if not new_path.exists():
                     path.rename(new_path)
@@ -138,7 +153,9 @@ def main():
             if args.dry_run:
                 logger.info(f"  {old_name} → [unresolved]")
 
-    logger.info(f"\n{'Would resolve' if args.dry_run else 'Resolved'}: {resolved}/{len(candidates)}")
+    logger.info(
+        f"\n{'Would resolve' if args.dry_run else 'Resolved'}: {resolved}/{len(candidates)}"
+    )
 
 
 if __name__ == "__main__":

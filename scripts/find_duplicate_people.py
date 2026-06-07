@@ -275,8 +275,8 @@ def _check_name_similarity(name1: str, name2: str) -> tuple[list[str], float]:
 
 
 def _check_same_last_name(last1: str, last2: str) -> tuple[list[str], float]:
-    """Check 2: Same last name."""
-    if last1 == last2 and len(last1) > 2:
+    """Check 2: Same last name (only distinctive names, >4 chars)."""
+    if last1 == last2 and len(last1) > 4:
         return [f"Same last name: {last1}"], 0.4
     return [], 0.0
 
@@ -315,7 +315,11 @@ def _check_substring_match(
 def _check_single_name(
     name1: str, name2: str, last1: str, last2: str, p1: Dict, p2: Dict
 ) -> tuple[list[str], float]:
-    """Check 5b: Single last name vs full name with matching last name."""
+    """Check 5b: Single last name vs full name with matching last name.
+
+    Requires shared biographical/positional context to avoid false positives
+    from common names matching unrelated people.
+    """
     is_single = len(name1.split()) == 1 or len(name2.split()) == 1
     if not is_single or len(last1) < 3:
         return [], 0.0
@@ -324,9 +328,10 @@ def _check_single_name(
     if last_sim >= 0.85:
         if _has_shared_biographical_data(p1, p2) or _has_shared_positions(p1, p2):
             return ["Single name match with shared context"], 0.6
-        # Even without shared context, high last-name similarity is enough
-        # for single-word names (they exist because the source used last name only)
-        return ["Single name match with shared context"], 0.6
+        # Without shared context, only match if the name is long enough
+        # to be distinctive (>5 chars avoids "John", "Smith" false positives)
+        if len(last1) > 5:
+            return ["Single name match (distinctive)"], 0.4
     return [], 0.0
 
 
@@ -595,8 +600,18 @@ def find_potential_duplicates(
     people_data = _load_people_data(people_dir_path)
     logger.info("Analyzing %d people for duplicates...", len(people_data))
 
+    # Incremental: only compare pairs with new files
+    from src.dedup.incremental import get_last_dedup_run, get_new_files
+
+    since = get_last_dedup_run("people")
+    new_files = get_new_files(people_dir_path, since)
+    if new_files:
+        logger.info(
+            "Incremental dedup: %d new people files since last run", len(new_files)
+        )
+
     return _find_duplicate_groups(
-        people_data, excluded_pairs, text_index, excluded_names
+        people_data, excluded_pairs, text_index, excluded_names, new_files
     )
 
 
@@ -707,6 +722,7 @@ def _build_pairwise_matches(
     excluded_pairs: Set[tuple],
     text_index: Dict[str, str],
     excluded_names: Optional[Set[tuple]] = None,
+    new_files: Optional[Set[str]] = None,
 ) -> list[tuple[int, int, list[str], float]]:
     """Score all pairs and return those with name-based evidence above threshold.
 
@@ -724,12 +740,19 @@ def _build_pairwise_matches(
     }
     raw_pairs: list[tuple[int, int, list[str], float]] = []
 
+    # Incremental: only compare pairs where at least one file is new
+    from src.dedup.incremental import should_compare
+
     for i, person1 in enumerate(people_data):
         if "name" not in person1:
             continue
         for j in range(i + 1, len(people_data)):
             person2 = people_data[j]
             if "name" not in person2:
+                continue
+            if not should_compare(
+                person1.get("_filename", ""), person2.get("_filename", ""), new_files
+            ):
                 continue
 
             if _is_pair_excluded(person1, person2, excluded_pairs, excluded_names):
@@ -836,6 +859,7 @@ def _find_duplicate_groups(
     excluded_pairs: Set[tuple],
     text_index: Dict[str, str],
     excluded_names: Optional[Set[tuple]] = None,
+    new_files: Optional[Set[str]] = None,
 ) -> List[Dict[str, Any]]:
     """Find duplicate groups from scored pairs using union-find.
 
@@ -843,7 +867,7 @@ def _find_duplicate_groups(
     Requires name-based evidence for any pair.
     """
     pairs = _build_pairwise_matches(
-        people_data, excluded_pairs, text_index, excluded_names
+        people_data, excluded_pairs, text_index, excluded_names, new_files
     )
     groups = _union_find_groups(pairs)
 

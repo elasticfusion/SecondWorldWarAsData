@@ -270,10 +270,14 @@ def extract_people_groups(
     groups_dir.mkdir(parents=True, exist_ok=True)
 
     if _is_already_processed(groups_dir, event_file):
-        logger.info(
-            "Event already processed for people groups extraction: %s", event_file.name
-        )
-        return groups_dir
+        from src.utils.config import should_reprocess
+
+        if not should_reprocess("people_groups"):
+            logger.info(
+                "Event already processed for people groups extraction: %s",
+                event_file.name,
+            )
+            return groups_dir
 
     with open(event_file, "r", encoding="utf-8") as f:
         event_data = json.load(f)

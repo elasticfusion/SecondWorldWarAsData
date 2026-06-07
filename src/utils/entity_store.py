@@ -6,6 +6,8 @@ import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from src.utils.config import get_aws_region
+
 logger = logging.getLogger(__name__)
 
 
@@ -43,7 +45,9 @@ class DynamoEntityStore:
             logger.warning("DynamoEntityStore.get failed: %s", e)
         return None
 
-    def put(self, entity_type: str, entity_id: str, data: Dict[str, Any]) -> bool:
+    def put(
+        self, entity_type: str, entity_id: str, data: Dict[str, Any], filename: str = ""
+    ) -> bool:
         """Write an entity. Returns True on success."""
         try:
             name = (
@@ -59,6 +63,7 @@ class DynamoEntityStore:
                     "entity_type": entity_type,
                     "entity_id": entity_id,
                     "name": name.lower() if name else "",
+                    "filename": filename,
                     "enrichment_status": data.get("enrichment_status", ""),
                     "book": (
                         data.get("event_mentions", [{}])[0].get("book", "")
@@ -157,6 +162,35 @@ class DynamoEntityStore:
             logger.warning("DynamoEntityStore.count failed: %s", e)
             return 0
 
+    def list_all(self, entity_type: str) -> List[Dict[str, Any]]:
+        """Return all entities of a given type. Each dict has 'data' and 'filename' keys."""
+        results: List[Dict[str, Any]] = []
+        try:
+            kwargs = {
+                "FilterExpression": "begins_with(cache_key, :prefix)",
+                "ExpressionAttributeValues": {":prefix": f"entity#{entity_type}#"},
+                "ProjectionExpression": "#d, filename",
+                "ExpressionAttributeNames": {"#d": "data"},
+            }
+            while True:
+                resp = self._table.scan(**kwargs)
+                for item in resp.get("Items", []):
+                    try:
+                        results.append(
+                            {
+                                "data": json.loads(item["data"]),
+                                "filename": item.get("filename", ""),
+                            }
+                        )
+                    except (json.JSONDecodeError, KeyError):
+                        pass
+                if "LastEvaluatedKey" not in resp:
+                    break
+                kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
+        except Exception as e:
+            logger.warning("DynamoEntityStore.list_all failed: %s", e)
+        return results
+
 
 _entity_store_cache: Optional[DynamoEntityStore] = None
 _entity_store_checked = False
@@ -179,7 +213,7 @@ def get_entity_store() -> Optional[DynamoEntityStore]:
         if table:
             _entity_store_cache = DynamoEntityStore(
                 table_name=table,
-                region=os.environ.get("AWS_REGION", "us-east-1"),
+                region=get_aws_region(),
             )
             return _entity_store_cache
         return None
@@ -193,6 +227,6 @@ def get_entity_store() -> Optional[DynamoEntityStore]:
 
     _entity_store_cache = DynamoEntityStore(
         table_name=aws.get("cache_table", ""),
-        region=aws.get("region", "us-east-1"),
+        region=aws.get("region", get_aws_region()),
     )
     return _entity_store_cache

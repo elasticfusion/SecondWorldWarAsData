@@ -29,8 +29,9 @@ def _get_table():
     import os
 
     table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
-    region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
-    return boto3.resource("dynamodb", region_name=region).Table(table_name)
+    from src.utils.config import get_aws_region
+
+    return boto3.resource("dynamodb", region_name=get_aws_region()).Table(table_name)
 
 
 def enqueue_job(job: BatchJob) -> None:

@@ -200,8 +200,8 @@ OTHER REQUIREMENTS:
             images_text=images_text,
             maps_text=maps_text,
         )
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Event extraction step failed: %s", e)
     return prompt
 
 
@@ -310,8 +310,8 @@ def _try_fix_ulid_errors(
             validate_event_json(fixed_response)
             logger.info("Fixed invalid ULIDs automatically")
             return _save_event_output(fixed_response, parsed_file, output_dir)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Event extraction step failed: %s", e)
 
     return None
 

@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated:** 2026-06-02
+**Last Updated:** 2026-06-07
 
 ---
 
@@ -9,9 +9,11 @@
 ### Deployment & Operations
 | Document | Description |
 |----------|-------------|
+| [RUNBOOK.md](RUNBOOK.md) | Operations runbook — re-runs, locks, debugging, emergency |
 | [LOCAL_DEPLOYMENT.md](LOCAL_DEPLOYMENT.md) | Prerequisites, setup, local run instructions |
 | [AWS_DEPLOYMENT.md](AWS_DEPLOYMENT.md) | CloudFormation, Lambda, ECS, S3 setup |
 | [AWS_DEPLOYMENT_PLAN.md](AWS_DEPLOYMENT_PLAN.md) | Architecture decisions and cost analysis |
+| [LAMBDA_FUNCTIONS.md](LAMBDA_FUNCTIONS.md) | All 9 Lambda functions documented |
 | [GITHUB_ACTIONS_AWS_SETUP.md](GITHUB_ACTIONS_AWS_SETUP.md) | CI/CD with GitHub Actions + OIDC |
 | [SPOT_RECOVERY.md](SPOT_RECOVERY.md) | Spot instance termination handling |
 
@@ -30,24 +32,17 @@
 | [core/TEXT_UTILS.md](core/TEXT_UTILS.md) | Text normalization utilities |
 | [core/JSON_REPAIR.md](core/JSON_REPAIR.md) | LLM JSON output repair |
 | [core/CACHE_AUTO_RECOVERY.md](core/CACHE_AUTO_RECOVERY.md) | Poisoned cache detection |
-| [core/ISO_COUNTRY_CODES.md](core/ISO_COUNTRY_CODES.md) | Country code reference |
+
+### Architecture & Design
+| Document | Description |
+|----------|-------------|
+| [PHASE4_DYNAMODB_STORAGE.md](PHASE4_DYNAMODB_STORAGE.md) | DynamoDB entity store (Phase A-D) |
+| [SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md) | JSON schemas for all entity types |
 
 ### Features (Entity Types)
 | Document | Description |
 |----------|-------------|
 | [features/README.md](features/README.md) | Feature index (all 11 entity types) |
-| [features/events/README.md](features/events/README.md) | Event extraction |
-| [features/dates/README.md](features/dates/README.md) | Date extraction |
-| [features/places/README.md](features/places/README.md) | Place extraction |
-| [features/people/README.md](features/people/README.md) | People extraction + enrichment |
-| [features/people/deduplication.md](features/people/deduplication.md) | People dedup system |
-| [features/people/GROUP_DEDUPLICATION_SYSTEM.md](features/people/GROUP_DEDUPLICATION_SYSTEM.md) | Group dedup |
-| [features/equipment/MILITARY_EQUIPMENT.md](features/equipment/MILITARY_EQUIPMENT.md) | Equipment extraction |
-| [features/weather/README.md](features/weather/README.md) | Weather extraction |
-| [features/logistics/README.md](features/logistics/README.md) | Logistics extraction |
-| [features/maps/README.md](features/maps/README.md) | Maps extraction |
-| [features/external-maps/README.md](features/external-maps/README.md) | External map search |
-| [features/supplemental/SUPPLEMENTAL_COMPLETE.md](features/supplemental/SUPPLEMENTAL_COMPLETE.md) | Supplemental materials |
 | [features/batch_processing/README.md](features/batch_processing/README.md) | Batch API processing |
 
 ### Pipeline Operations
@@ -56,47 +51,32 @@
 | [pipeline/ADDING_DATA_SOURCES.md](pipeline/ADDING_DATA_SOURCES.md) | How to add new books |
 | [pipeline/HYPERWAR_HTML_IMPORT.md](pipeline/HYPERWAR_HTML_IMPORT.md) | HyperWar import process |
 | [pipeline/PDF_CONVERSION.md](pipeline/PDF_CONVERSION.md) | PDF to markdown conversion |
-| [pipeline/RETRY_WRAPPERS.md](pipeline/RETRY_WRAPPERS.md) | Phase 2/3 retry logic |
 
 ### Guides
 | Document | Description |
 |----------|-------------|
 | [CONTENT_CONTRIBUTOR_GUIDE.md](CONTENT_CONTRIBUTOR_GUIDE.md) | Adding content to the repository |
 | [PROMPT_EDITING_GUIDE.md](PROMPT_EDITING_GUIDE.md) | Modifying extraction prompts |
-| [SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md) | JSON schemas for all entity types |
 | [VALIDATION_REPORTS.md](VALIDATION_REPORTS.md) | Validation report generation |
 
-### Specifications
+### Project Management
 | Document | Description |
 |----------|-------------|
-| [PHASE4_SPEC.md](PHASE4_SPEC.md) | Phase 4: Document acquisition spec |
 | [TODO.md](TODO.md) | Pipeline backlog (prioritized) |
 
-### Historical
+### Data Quality
 | Document | Description |
 |----------|-------------|
-| [end-2-end-0.md](end-2-end-0.md) | First end-to-end run issues (2026-05-25) |
+| [dataquality/bibliography_resolution_process.md](dataquality/bibliography_resolution_process.md) | Bibliography resolution workflow |
+
+---
+
+## Scripts Reference
+
+See [scripts/README.md](../../scripts/README.md) for all 70+ utility scripts, categorized.
 
 ---
 
 ## Archived Documents
 
-Review documents whose actionable items have been consolidated into [TODO.md](TODO.md):
-
-- `docs/archive/CODE_REVIEW.md`
-- `docs/archive/QA_GAPS.md`
-- `docs/archive/PERFORMANCE_ENHANCEMENTS.md`
-- `docs/archive/DEVOPS_RECOMMENDATIONS.md`
-- `docs/archive/DATA_SCIENCE_RECOMMENDATIONS.md`
-- `docs/archive/DATA_FLOW_ANALYSIS.md`
-- `docs/archive/PIPELINE_REVIEW.md`
-- `docs/archive/DEDUP_ANALYSIS.md`
-- `docs/archive/DEDUP_ANALYSIS_ALL_ENTITIES.md`
-- `docs/archive/COST_OPTIMIZATION.md`
-- `docs/archive/FUTURE_ENHANCEMENTS.md`
-- `docs/archive/SUGGESTED_CHANGES.md`
-- `docs/archive/POST_FIX_REVIEW.md`
-- `docs/archive/PROMPT_REVIEW.md`
-- `docs/archive/logging.md`
-- `docs/archive/end-2-end-0-ds.md`
-- `docs/archive/MONGODB_IMPORT_PLAN.md`
+Historical implementation logs, review documents, and completed specs in `docs/archive/`. Not maintained. Items consolidated into [TODO.md](TODO.md).
