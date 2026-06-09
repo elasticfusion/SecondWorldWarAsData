@@ -266,7 +266,7 @@ def _run_task(task_def, source, book_name=""):
             Item={
                 "cache_key": lock_key,
                 "response": str(int(time.time())),
-                "ttl": int(time.time()) + 86400,
+                "ttl": int(time.time()) + 7200,
             },
             ConditionExpression="attribute_not_exists(cache_key)",
         )
@@ -282,7 +282,7 @@ def _run_task(task_def, source, book_name=""):
                     Item={
                         "cache_key": lock_key,
                         "response": str(int(time.time())),
-                        "ttl": int(time.time()) + 86400,
+                        "ttl": int(time.time()) + 7200,
                     },
                     ConditionExpression="attribute_not_exists(cache_key)",
                 )

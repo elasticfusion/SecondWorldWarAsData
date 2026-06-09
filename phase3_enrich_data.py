@@ -326,7 +326,7 @@ def main():
     close_session()
 
     # Write results for entrypoint notification
-    results_file = output_root / ".phase_results.json"
+    results_file = args.output_dir / ".phase_results.json"
     entity_counts = {}
     for subdir in [
         "people",
@@ -340,7 +340,7 @@ def main():
         "maps",
         "supplemental",
     ]:
-        d = output_root / subdir
+        d = args.output_dir / subdir
         if d.exists():
             entity_counts[subdir] = len(
                 [f for f in d.glob("*.json") if f.name != "index.json"]

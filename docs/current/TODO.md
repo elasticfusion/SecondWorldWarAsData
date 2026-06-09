@@ -1,6 +1,6 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-06-06
+**Last Updated:** 2026-06-07
 
 ---
 
@@ -8,53 +8,15 @@
 
 ### Data Quality (affects extraction/enrichment outcomes)
 
-#### ~~S3 sync does not delete merged/removed entity files~~ ✅ Fixed
-After auto-merge deletes duplicate files locally, the final S3 sync now tracks deletions and removes them from S3. Merged files no longer persist across runs.
-
 #### OpenSERP torn down before Phase 3 uses it
 ~~Phase 3 connects to `localhost:7001`~~ Fixed: ECS tasks now cancel stale delayed teardowns at startup. Remaining risk: if idle monitor fires during Phase 3 (shouldn't happen — it checks for running tasks, but verify).
 *Source: E2E testing 2026-06-05*
 
-#### ~~People dedup: first name alone is insufficient for duplicate detection~~ ✅ Fixed
-Tightened: single-name matches now require shared context or distinctive name (>5 chars). Last-name-only matches require >4 chars. Short common names no longer produce false positives.
-
-#### ~~Normalize abbreviated ranks to full form in people entities~~ ✅ Fixed
-Already implemented in `_normalize_rank`. Expanded mapping to handle period-less variants (Col, Lt Gen, etc.) and German ranks.
-
-#### ~~Incremental dedup (only score new files vs corpus)~~ ✅ Implemented
-All 4 dedup scripts now use `src/dedup/incremental.py` — tracks `dedup_run#{type}` timestamp in DynamoDB, only scores pairs where at least one file is newer than last run. First run = full mode. Delete DynamoDB keys to force full re-scan.
-
-#### ~~Add `additionalProperties: false` to extraction schemas~~ ✅ Done
-All 15 schemas now reject unexpected fields. Internal metadata (`_schema_version`, `_last_updated`) allowed via `patternProperties: {"^_": {}}`.
-
 ### Production Reliability (pipeline completes without intervention)
-
-#### ~~Delayed networking teardown kills active retrieve tasks~~ ✅ Fixed
-Three fixes: (1) ECS tasks cancel stale scheduled teardowns at startup, (2) batch_poller uses RequestResponse for NAT creation (errors visible), (3) nat_manager SNS filter fixed to trigger on any pipeline completion (was dead code filtering for "Phase 3" on Phase2CompleteTopic).
-
-#### ~~Pending content queue not cleared after Phase 1 completes~~ ✅ Fixed
-`_post_process` now deletes `pending#content` from DynamoDB after Phase 1 completes.
-
-#### ~~NAT availability check always times out (3 min wasted per launch)~~ ✅ Fixed
-`_wait_for_networking` was filtering by `tag:Project` but NAT is tagged `tag:Name`. Fixed to use `f"{ENV_NAME}-nat"` matching nat_manager.
-
-#### ~~Phase 3 has no completion notification~~ ✅ Fixed
-Added `_notify_complete` call after Phase 3 submit-only completes, with "Pipeline run complete" message.
-
-#### ~~Add "Phase started" notifications~~ ✅ Fixed
-`_notify_launch()` added to `_run_task()` — sends email with phase name, book, and trigger source on every ECS task launch.
 
 ### Architecture (enables future data improvements)
 
-#### Phase 4: DynamoDB as primary entity storage ✅ B/C/D implemented
-- **Phase A:** ✅ Core abstraction + dual-write
-- **Phase B:** ✅ `_materialize_from_dynamo()` — Phase 3 reads entities from DynamoDB (writes to disk for existing code compatibility), falls back to S3 if DynamoDB empty
-- **Phase C:** ✅ Dedup materialization — `_download_dedup_data()` uses DynamoDB materializer, then downloads event files from S3
-- **Phase D:** ✅ Phase 2 writes directly to DynamoDB via dual-write in `write_json_with_lock`. S3 is export-only (final sync uploads for archival).
 
-**Note:** First run after enabling must populate DynamoDB (dual-write does this automatically). Until DynamoDB has data, falls back to S3 transparently.
-
-Spec: `docs/current/PHASE4_DYNAMODB_STORAGE.md`.
 
 ---
 
@@ -62,52 +24,11 @@ Spec: `docs/current/PHASE4_DYNAMODB_STORAGE.md`.
 
 ### Pipeline Efficiency
 
-#### ~~Preload DynamoDB cache into memory at Phase 2 start~~ ✅ Done
-`DynamoCacheBackend.preload()` scans all entries into a local dict on `GrokClient` init. Eliminates 1600+ individual gets — one paginated scan instead.
-
-#### ~~_complete_metadata() bypasses batch mode~~ ✅ Fixed
-Now passes `batch_mode=args.batch` to `GrokClient` — metadata completions are batched at 50% discount.
-
-#### ~~Phase 2 should read pending#parsed as input manifest~~ ✅ Fixed
-`_read_manifest()` now reads `pending#parsed` (written by trigger Lambda), clears it after reading, falls back to `manifest#phase2`.
-
-#### Optional entity extraction: parallelize across event files
-Weather, equipment, logistics, casualties, supplemental extracted sequentially. Could run in parallel.
-*Source: PIPELINE_REVIEW.md*
-
-#### Reduce prompt fulltext for dates/places extraction
-Sub-event summaries likely suffice. 10-15% cost savings.
-*Source: COST_OPTIMIZATION.md*
-
-#### Split large prompts into smaller batches for parallel processing
-Reduces wall-clock time ~4x for large chapters and reduces truncation risk.
-*Source: PERFORMANCE_ENHANCEMENTS.md*
-
-#### Phase 3 retry: exclude enrichment_status "not_found" from unenriched count
-Causes unnecessary retries that always find nothing.
-*Source: PIPELINE_REVIEW.md*
-
 ### Infrastructure Fixes
 
 #### Fix EntityCreatedTopic S3 notification (never configured)
 Phase 3 entity-created flow broken.
 *Source: CODE_REVIEW.md*
-
-#### Fix manifest read-modify-write race in trigger Lambda
-Lost S3 keys when concurrent Lambda invocations modify manifest.
-*Source: CODE_REVIEW.md*
-
-#### Fix non-paginated DynamoDB cache clear
-`DynamoCacheBackend.clear()` only processes first page.
-*Source: QA_GAPS.md*
-
-#### Move SecretsManager VPC endpoint to dynamic set
-Always-on costs $14.60/month for ~5 calls per run.
-*Source: COST_OPTIMIZATION.md*
-
-#### Replace silent exception swallowing
-Multiple `except Exception: pass` locations. Log at WARNING with context.
-*Source: QA_GAPS.md*
 
 ### Notifications
 
@@ -115,57 +36,15 @@ Multiple `except Exception: pass` locations. Log at WARNING with context.
 Distinguishes "task launched" (before download) from "enrichment in progress" (real work starting).
 *Source: end-2-end-1 observation*
 
-#### Add "Batch submitted" notification from submit-only task
-No confirmation that submission worked or how many requests.
-*Source: end-2-end-0.md Issue 2b*
-
 #### Add "still waiting" notification for long-running batches
 Operator blind to stalled batches.
 *Source: PIPELINE_REVIEW.md*
 
-#### Phase 1 notification: include incremental vs full context
-"Incremental: 3 new files" vs "Full re-parse: 47 files".
-*Source: PIPELINE_REVIEW.md*
-
 ### CI/CD & DevOps
-
-#### Unify schema versioning
-`json_schemas.py` uses "1.0.0", output schemas use "2.3".
-*Source: QA_GAPS.md*
-
----
 
 ## Low Priority
 
 ### Code Quality
-
-#### Fix scheduler variable scope in _schedule_delayed_teardown
-Move `boto3.client("scheduler")` before the try block.
-*Source: code review*
-
-#### Dedup guard: also check recently completed batches
-Add time-bounded check for status "complete" within last hour.
-*Source: code review*
-
-#### Remove hardcoded region ("us-east-1") throughout codebase
-Multiple files default to `"us-east-1"` instead of reading from config.yaml `aws.region`. Derive region from config or `AWS_DEFAULT_REGION` env var consistently.
-*Source: code review*
-
-#### Fix prompt_loader str.format() breaking on JSON with braces
-*Source: CODE_REVIEW.md*
-
-#### Fix json_validator._fix_invalid_ulids mutating input
-Validate shouldn't modify.
-*Source: CODE_REVIEW.md*
-
-#### Refactor ecs_entrypoint.py (1,499 lines)
-Split into focused modules: `aws_networking.py`, `s3_sync.py`, `phase_runner.py`.
-
-#### Refactor equipment.py (1,959 lines)
-Split into extraction, enrichment, media handling, and dedup sub-modules.
-
-#### Include entity counts in phase_complete structured log
-Write results JSON from phase scripts, read in `_post_process`.
 
 ### Performance
 
@@ -175,76 +54,221 @@ Image + base64 = ~4x memory. 80MB for a 20MB image.
 
 ### Testing
 
-#### Expand Lambda handler tests with invocation tests
-Current tests only verify importability. Add at least one `handler(event, context)` call per handler with mocked boto3 clients. Requires refactoring handlers to avoid module-level boto3 initialization.
-*Source: QA review*
-
-#### Local end-to-end simulation test
-Full pipeline with mocked Grok API (canned JSON responses).
-
-#### Review local implementation end-to-end
-Verify local mode (non-AWS) still works correctly after all AWS-focused changes. Test: Phase 1 parse → Phase 2 extract → Phase 3 enrich using filesystem storage, local cache, and real-time Grok API. Confirm config.yaml with `aws.enabled: false` produces correct output without S3/DynamoDB dependencies.
-
 ### UI & UX
-
-#### Dedup UI: batch-commit merges with undo support
-Currently merges execute immediately on each action. Instead: queue merge decisions in-memory on the client, show a "commit all" button. On commit, submit each merge individually (sequential API calls from the browser) to avoid Lambda timeout. Store pre-merge snapshots (both original files) in `dedup/history/` before each merge. Add undo button that restores originals from snapshot.
-*Source: UX review 2026-06-05*
-
-#### Dedup UI: rename person (edit name field + rename file)
 
 ### DevOps
 
-#### AWS cost quick wins
-Container Insights level, S3 version expiration, Lambda memory reduction, single DynamoDB read for cache hits.
-*Source: COST_OPTIMIZATION.md*
-
-#### Scripts cleanup and categorization
-60+ scripts, no categorization, duplicates.
-*Source: DEVOPS_RECOMMENDATIONS.md*
-
 #### CloudFormation drift detection
-*Source: DEVOPS_RECOMMENDATIONS.md*
-
-#### Dedup UI refactor (extract HTML to S3/CloudFront)
-47KB Lambda with inline HTML.
 *Source: DEVOPS_RECOMMENDATIONS.md*
 
 #### Add secrets scanning to CI
 detect-secrets or gitleaks.
 *Source: QA_GAPS.md*
 
-#### Fix EIP leak on NAT delete
-$3.60/month per leaked EIP.
-
 #### Evaluate residential proxy for OpenSERP searches
-Search engines block AWS datacenter IPs. Route OpenSERP traffic through residential proxy service to enable image/web searches from ECS. Alternatives: paid SERP API (SerpAPI, ScaleSerp ~$50-100/mo) or restrict search to local-only runs.
+Search engines block AWS datacenter IPs. **Preferred approach: Tailscale exit node** on a home machine (RPi/NAS). ECS OpenSERP container joins Tailnet, routes outbound traffic through residential IP. Tailscale ACLs restrict ECS to internet-only (no LAN access — protects local secrets). Free, no third-party proxy trust, ~20-50ms added latency. Alternatives: paid SERP API (SerpAPI, ScaleSerp ~$50-100/mo) or restrict search to local-only runs.
 *Source: end-2-end-1 Phase 3 observation*
-
-#### Add disk space checks before writes (local mode only)
-*Source: QA_GAPS.md*
-
-#### Add backup before dedup merge operations
-*Source: QA_GAPS.md*
-
-#### Create operations runbook (RUNBOOK.md)
-How to re-run failed phases, clear locks, handle dedup, debug batch failures.
-*Source: project review*
 
 ### Data
 
-#### Re-extract entities with updated prompts
-Add `processing.reprocess_types` config option.
 
-#### Create place entities for 248 unresolved weather locations
-
-#### Source-anchored names (`identified_as` field)
-Phase 3 enrichment field for canonical name identification.
-
-#### Periodic re-search of not_found entities
-`enrichment.re_search_after_days: 90`
 
 ---
+
+## Completed (2026-06-03 through 2026-06-07)
+
+#### ~~Phase 4: DynamoDB as primary entity storage~~ ✅ B/C/D implemented
+Phase A (core + dual-write), Phase B (DynamoDB materializer), Phase C (dedup reads), Phase D (S3 export-only). Spec: `docs/current/PHASE4_DYNAMODB_STORAGE.md`.
+
+#### ~~S3 sync does not delete merged/removed entity files~~ ✅ Fixed
+After auto-merge deletes duplicate files locally, the final S3 sync now tracks deletions and removes them from S3. Merged files no longer persist across runs.
+
+
+#### ~~People dedup: first name alone is insufficient for duplicate detection~~ ✅ Fixed
+Tightened: single-name matches now require shared context or distinctive name (>5 chars). Last-name-only matches require >4 chars. Short common names no longer produce false positives.
+
+
+#### ~~Normalize abbreviated ranks to full form in people entities~~ ✅ Fixed
+Already implemented in `_normalize_rank`. Expanded mapping to handle period-less variants (Col, Lt Gen, etc.) and German ranks.
+
+
+#### ~~Incremental dedup (only score new files vs corpus)~~ ✅ Implemented
+All 4 dedup scripts now use `src/dedup/incremental.py` — tracks `dedup_run#{type}` timestamp in DynamoDB, only scores pairs where at least one file is newer than last run. First run = full mode. Delete DynamoDB keys to force full re-scan.
+
+
+#### ~~Add `additionalProperties: false` to extraction schemas~~ ✅ Done
+All 15 schemas now reject unexpected fields. Internal metadata (`_schema_version`, `_last_updated`) allowed via `patternProperties: {"^_": {}}`.
+
+
+#### ~~Delayed networking teardown kills active retrieve tasks~~ ✅ Fixed
+Three fixes: (1) ECS tasks cancel stale scheduled teardowns at startup, (2) batch_poller uses RequestResponse for NAT creation (errors visible), (3) nat_manager SNS filter fixed to trigger on any pipeline completion (was dead code filtering for "Phase 3" on Phase2CompleteTopic).
+
+
+#### ~~Pending content queue not cleared after Phase 1 completes~~ ✅ Fixed
+`_post_process` now deletes `pending#content` from DynamoDB after Phase 1 completes.
+
+
+#### ~~NAT availability check always times out (3 min wasted per launch)~~ ✅ Fixed
+`_wait_for_networking` was filtering by `tag:Project` but NAT is tagged `tag:Name`. Fixed to use `f"{ENV_NAME}-nat"` matching nat_manager.
+
+
+#### ~~Phase 3 has no completion notification~~ ✅ Fixed
+Added `_notify_complete` call after Phase 3 submit-only completes, with "Pipeline run complete" message.
+
+
+#### ~~Add "Phase started" notifications~~ ✅ Fixed
+`_notify_launch()` added to `_run_task()` — sends email with phase name, book, and trigger source on every ECS task launch.
+
+
+#### ~~Preload DynamoDB cache into memory at Phase 2 start~~ ✅ Done
+`DynamoCacheBackend.preload()` scans all entries into a local dict on `GrokClient` init. Eliminates 1600+ individual gets — one paginated scan instead.
+
+
+#### ~~_complete_metadata() bypasses batch mode~~ ✅ Fixed
+Now passes `batch_mode=args.batch` to `GrokClient` — metadata completions are batched at 50% discount.
+
+
+#### ~~Phase 2 should read pending#parsed as input manifest~~ ✅ Fixed
+`_read_manifest()` now reads `pending#parsed` (written by trigger Lambda), clears it after reading, falls back to `manifest#phase2`.
+
+
+#### ~~Optional entity extraction: parallelize across event files~~ ✅ Done
+`ThreadPoolExecutor(max_workers=config.max_event_files)` processes event files in parallel.
+
+
+#### ~~Reduce prompt fulltext for dates extraction~~ ✅ Done
+Dates uses summary when ≥50 chars. Places kept fulltext (needs geographic context).
+
+
+#### ~~Split large prompts into smaller batches~~ ✅ Done
+Logistics, casualties, weather chunked to 10 sub-events per API call.
+
+
+#### ~~Phase 3 retry: exclude not_found from unenriched count~~ ✅ Fixed
+
+
+#### ~~Fix manifest read-modify-write race in trigger Lambda~~ ✅ Fixed
+Replaced get+put with atomic `list_append` via `update_item`.
+
+
+#### ~~Fix non-paginated DynamoDB cache clear~~ ✅ Fixed
+
+
+#### ~~Move SecretsManager VPC endpoint to dynamic set~~ ✅ Done
+Moved to `INTERFACE_ENDPOINTS` in nat_manager.py. Saves $14.60/month.
+
+
+#### ~~Replace silent exception swallowing~~ ✅ Done
+22 silent `pass` blocks replaced with `logger.warning()` across 13 files.
+
+
+#### ~~Add "Batch submitted" notification~~ ✅ Done
+SNS notification with phase, book, batch_id, request count.
+
+
+#### ~~Phase 1 notification: include incremental vs full context~~ ✅ Done
+
+
+#### ~~Unify schema versioning~~ ✅ Done
+Single `SCHEMA_VERSION = "2.3"` in `src/schemas/__init__.py`, imported everywhere.
+
+---
+
+
+#### ~~Fix scheduler variable scope~~ ✅ Fixed
+
+
+#### ~~Dedup guard: check recently completed batches~~ ✅ Done
+
+
+#### ~~Remove hardcoded region~~ ✅ Done
+`get_aws_region()` in `src/utils/config.py` as single source of truth.
+
+
+#### ~~Fix prompt_loader str.format() breaking on JSON braces~~ ✅ Fixed
+
+
+#### ~~Fix json_validator._fix_invalid_ulids mutating input~~ ✅ Fixed
+Now deep-copies before modifying.
+
+
+#### ~~Refactor ecs_entrypoint.py~~ ✅ Extracted
+`ecs_modules/s3_sync.py` (591 lines), `ecs_modules/aws_networking.py` (324 lines). Original remains functional.
+
+
+#### ~~Refactor equipment.py~~ ✅ Extracted
+`src/extraction/equipment_ext/` — media.py, dedup.py, enrichment.py. Original remains functional.
+
+
+#### ~~Include entity counts in phase_complete notification~~ ✅ Done
+Phase scripts write `.phase_results.json`, entrypoint reads it for SNS notification.
+
+
+#### ~~Expand Lambda handler tests~~ ✅ Done
+4 invocation tests with mocked boto3.
+
+
+#### ~~Local end-to-end simulation test~~ ✅ Done
+`tests/integration/test_local_e2e.py` — Phase 2 extraction with canned responses.
+
+
+#### ~~Review local implementation end-to-end~~ ✅ Verified
+All imports, cache, entity store, validators confirmed working in local mode.
+
+
+#### ~~Dedup UI: batch-commit merges with undo support~~ ✅ Done
+Client-side queue + Commit All button + `dedup/history/` snapshots + undo endpoint.
+
+
+#### ~~Dedup UI: rename person~~ ✅ Already implemented
+`POST /dedup/api/rename` + "✎ Fix name" button in UI.
+
+
+#### ~~AWS cost quick wins~~ ✅ Done
+Insights→enabled, S3 version expiry 30d, Lambda 256→128MB, `__contains__` caches value.
+
+
+#### ~~Scripts cleanup and categorization~~ ✅ Done
+8 scripts archived, README rewritten with 9 categories.
+
+
+#### ~~Dedup UI refactor~~ — Skipped
+Not justified for single-user internal tool. Revisit if UI grows past 100KB.
+
+
+#### ~~Fix EIP leak on NAT delete~~ ✅ Fixed
+NAT deletion now captures and releases EIP after gateway is deleted.
+
+
+#### ~~Add disk space checks before writes~~ ✅ Done
+50MB threshold in `write_json_with_lock`, local mode only.
+
+
+#### ~~Add backup before dedup merge operations~~ ✅ Done
+`_backup_before_delete()` copies to `dedup/backups/` before every merge unlink.
+
+
+#### ~~Create operations runbook~~ ✅ Done
+`docs/current/RUNBOOK.md` — re-runs, locks, debugging, emergency procedures.
+
+
+#### ~~Re-extract entities with updated prompts~~ ✅ Done
+`processing.reprocess_types: ["people"]` bypasses processed registry for listed types.
+
+
+#### ~~Create place entities for unresolved weather locations~~ ✅ Done
+67 places created, 164 weather files linked. Script: `scripts/resolve_weather_places.py`.
+
+
+#### ~~Source-anchored names~~ ✅ Already implemented
+Weather places created with `identified_as` field.
+
+
+#### ~~Periodic re-search of not_found entities~~ ✅ Already implemented
+`re_search_after_days: 90` in config, checked by all enrichment functions.
+
+---
+
 
 ## Future / Research
 
@@ -320,7 +344,7 @@ Replace SNS→SQS→Lambda→ECS with Step Functions.
 
 ---
 
-## Completed
+## Completed (Earlier)
 
 ### 2026-06-03
 - ✅ Fix missing `import os` in phase3_enrich_data.py (crashed after enrichment completed)

@@ -1,109 +1,154 @@
 # AWS Deployment Plan
 
-**Status:** Planning  
-**Last Updated:** 2026-04-19
+**Status:** Implemented (dev)  
+**Last Updated:** 2026-06-08
 
 ---
 
 ## Architecture Overview
 
 ```
-                    ┌─────────────┐
-                    │  S3 Bucket  │ (source markdown + output JSON)
-                    │  (content)  │
-                    └──────┬──────┘
-                           │ S3 Event
-                           ▼
-                    ┌─────────────┐
-                    │     SNS     │
-                    │   (topic)   │
-                    └──────┬──────┘
-                           │
-              ┌────────────┼────────────┐
-              ▼            ▼            ▼
+                    ┌─────────────────┐
+                    │   S3 Bucket     │ (source markdown + output JSON)
+                    │  (data-pipeline)│
+                    └───────┬─────────┘
+                            │ S3 Event → SNS
+                            ▼
+                    ┌─────────────────┐
+                    │ Trigger Lambda  │ (orchestrator)
+                    └───────┬─────────┘
+                            │ ecs:RunTask
+              ┌─────────────┼─────────────┐
+              ▼             ▼             ▼
         ┌───────────┐ ┌──────────┐ ┌──────────┐
-        │  Lambda   │ │  Lambda  │ │  Lambda  │
+        │ ECS Task  │ │ ECS Task │ │ ECS Task │
         │  Phase 1  │ │ Phase 2  │ │ Phase 3  │
         │  (parse)  │ │(extract) │ │(enrich)  │
         └─────┬─────┘ └────┬─────┘ └────┬─────┘
               │             │            │
               ▼             ▼            ▼
-        ┌─────────────────────────────────────┐
-        │            S3 Bucket (output)       │
-        └─────────────────────────────────────┘
-              │             │            │
-              ▼             ▼            ▼
-        ┌───────────┐ ┌──────────┐ ┌──────────┐
-        │ DynamoDB  │ │   ECS    │ │ DynamoDB │
-        │  (cache)  │ │(OpenSERP)│ │or MongoDB│
-        └───────────┘ └──────────┘ └──────────┘
+        ┌────────────────────────────────────────┐
+        │       S3 Bucket (output JSON)          │
+        └────────────────────────────────────────┘
+              │             │
+              ▼             ▼
+        ┌───────────┐ ┌──────────────────┐
+        │ DynamoDB  │ │  Batch Poller    │
+        │  (cache)  │ │  Lambda (15 min) │
+        └───────────┘ └──────────────────┘
 ```
+
+### Key Architectural Decisions
+
+- **ECS Fargate tasks** (not Lambda) run the pipeline phases — they need >15 min runtime, large memory, and local filesystem for `ecs_entrypoint.py` S3 sync pattern.
+- **Trigger Lambda** orchestrates ECS task launches based on S3 events, manual invocations, and scheduled lock checks.
+- **Batch API** — Phase 2 and Phase 3 submit to Grok Batch API (50% cost savings). A Batch Poller Lambda checks completion every 15 minutes.
+- **NAT Gateway** is dynamically managed (created/destroyed) to avoid idle costs (~$32/month).
+- **Fargate Spot** (4:1 ratio over regular Fargate) for cost savings with spot termination recovery.
 
 ---
 
-## Design Decisions
+## Implemented Components
 
-### OpenSERP → ECS Fargate (not Lambda)
-
-OpenSERP is a Go HTTP server that drives headless Chrome for web scraping. It cannot run on Lambda because:
-- It's a long-running HTTP server maintaining a Chrome browser pool
-- Chrome is ~400MB and needs warm startup (5-10s cold start per invocation)
-- The pipeline makes many sequential HTTP requests to it per chapter
-
-**ECS Fargate** is the right fit: existing Dockerfile works, Chrome stays warm, stateless, single task sufficient.
-
-**On-demand deployment:** If OpenSERP is not running when a Lambda needs it, the Lambda triggers an ECS task start via the AWS SDK and waits for the health check to pass before proceeding.
-
-### Lambda ↔ ECS Networking
-
-Lambdas and ECS tasks run in the same VPC private subnets. Lambdas reach OpenSERP via an internal Application Load Balancer (ALB) that routes to the ECS target group. The ALB provides health checking and publishes `RequestCount` metrics to CloudWatch for idle monitoring.
-
-### Storage: S3
-
-All filesystem paths become S3 prefixes:
-
-| Local Path | S3 Key Prefix | Trigger |
-|---|---|---|
-| `contentrepository/` | `s3://{bucket}/content/` | Upload triggers Phase 1 |
-| `output/{Book}/*-parsed.json` | `s3://{bucket}/output/{Book}/` | Phase 1 write triggers Phase 2 |
-| `output/dates/`, `places/`, `people/`, etc. | `s3://{bucket}/output/{entity}/` | Phase 2 writes |
-| `output/bibliography/` | `s3://{bucket}/output/bibliography/` | Phase 2 write triggers Phase 3 |
-| `filestore/` | `s3://{bucket}/filestore/` | Image downloads |
-| `cache/api/` | DynamoDB table (not S3) | API response cache |
-| `logs/` | CloudWatch Logs | Automatic |
-
-### Cache: DynamoDB
-
-Replace `diskcache` (SQLite-based) with a DynamoDB table:
+### CloudFormation Templates
 
 ```
-Table: wwii-api-cache
-  Partition Key: cache_key (String) — "{cache_type}#{sha256(prompt+temperature)}"
-  Attributes:
-    response: (String) — compressed JSON response
-    created_at: (Number) — epoch timestamp
-    ttl: (Number) — epoch expiry for DynamoDB TTL
+cloudformation/
+├── main.yaml          # Root stack (nested stacks)
+├── network.yaml       # VPC, subnets, security groups, VPC endpoints, SSM params
+├── storage.yaml       # S3 bucket, DynamoDB tables (cache + 10 entity tables), budgets
+├── compute.yaml       # ECS cluster, task definitions, Lambda functions, API Gateways
+├── events.yaml        # S3 notifications, SNS topics, EventBridge rules
+└── iam.yaml           # IAM roles and policies
 ```
 
-### Database: DynamoDB option alongside MongoDB
+### Lambda Functions
 
-Add a `--database` flag to `import_to_mongodb.py` (or a new `import_to_dynamodb.py`):
+| Function | Trigger | Purpose |
+|----------|---------|---------|
+| `trigger` | SNS (S3 events), EventBridge (hourly), ECS state changes | Orchestrates ECS task launches, manages locks, spot recovery |
+| `batch-poller` | EventBridge (every 15 min) | Polls Grok Batch API for job completion, triggers retrieve tasks |
+| `nat-manager` | SNS (phase2-complete), direct invoke | Creates/destroys NAT Gateway and routes dynamically |
+| `openserp-manager` | Direct invoke from trigger | Starts/stops OpenSERP ECS service |
+| `dedup-ui` | API Gateway (Basic Auth) | HTML review UI for duplicate entity resolution |
+| `dedup-gate` | SNS (entity-created) | Gates Phase 3 until dedup review complete |
+| `dedup-auth` | API Gateway authorizer | Basic Auth token validation |
+| `metrics` | API Gateway (Basic Auth) | Pipeline metrics dashboard API |
 
-| MongoDB Collection | DynamoDB Table | Partition Key | Sort Key |
-|---|---|---|---|
-| `events` | `wwii-events` | `EventID` | — |
-| `people` | `wwii-people` | `PersonID` | — |
-| `places` | `wwii-places` | `PlaceID` | — |
-| `dates` | `wwii-dates` | `DateID` | — |
-| `people_groups` | `wwii-groups` | `GroupID` | — |
-| `equipment` | `wwii-equipment` | `EquipmentID` | — |
-| `weather` | `wwii-weather` | `WeatherID` | — |
-| `logistics` | `wwii-logistics` | `LogisticsID` | — |
-| `casualties` | `wwii-casualties` | `CasualtyID` | — |
-| `maps` | `wwii-maps` | `MapID` | — |
-| `bibliography` | `wwii-bibliography` | `BibliographyID` | — |
+### ECS Task Definitions
 
-Single-table design is also viable but per-entity tables are simpler and match the existing MongoDB collection structure.
+| Task | CPU/Memory | Command | Purpose |
+|------|-----------|---------|---------|
+| `phase1-parse` | 512/1024 | `phase1_parse.py` | Parse markdown → JSON |
+| `phase2-extract` | 1024/2048 | `phase2_extract.py --batch` | Extract entities via Grok Batch API |
+| `phase3-enrich` | 512/1024 | `phase3_enrich_data.py --batch` | Enrich entities with external data |
+| `import` | 512/1024 | `import_to_dynamodb.py` | Import JSON to DynamoDB tables |
+| `openserp` | 512/1024 | `serve --host 0.0.0.0 --port 7001 --raw` | Web search service (headless Chrome) |
+
+### ECS Entrypoint Pattern
+
+`ecs_entrypoint.py` runs in each pipeline ECS task:
+1. Syncs S3 content to local `/tmp/pipeline`
+2. Runs the phase script with local filesystem
+3. Incrementally syncs output back to S3 (every 120s)
+4. Handles SIGTERM for Spot termination (emergency sync in 30s window)
+5. Uses S3 lock files to prevent concurrent runs
+
+---
+
+## Network Architecture
+
+- **VPC** with CIDR 10.0.0.0/16
+- 2 private subnets (ECS tasks + Lambda) in separate AZs
+- 1 public subnet (NAT Gateway when active)
+- Internet Gateway for public subnet
+- **VPC Endpoints** (Gateway type, free):
+  - S3
+  - DynamoDB
+- **NAT Gateway** — dynamically managed:
+  - Created by `nat-manager` Lambda when outbound internet needed (Grok API, Wikipedia, etc.)
+  - Destroyed after pipeline completes (via Phase2Complete SNS topic)
+  - State stored in SSM Parameter Store for re-creation
+- **Security Groups**:
+  - `LambdaSG` — Lambda + pipeline ECS tasks (egress all)
+  - `OpenSerpSG` — OpenSERP ECS service (ingress 7001 from LambdaSG)
+
+---
+
+## Storage
+
+### S3 Bucket: `{env}-wwii-data-pipeline`
+
+| Prefix | Purpose | Lifecycle |
+|--------|---------|-----------|
+| `content/` | Source markdown documents | — |
+| `output/{Book}/` | Parsed + event JSON per book | → Standard-IA at 30d, Glacier-IR at 90d |
+| `output/people/`, `places/`, `dates/`, etc. | Central entity files | → Standard-IA at 30d |
+| `cache/` | API response cache | Expires after 90d |
+| `tmp/` | Temporary working files | Expires after 7d |
+| `batch/` | Grok Batch API job tracking | — |
+| `review/` | Dedup review state | — |
+| `filestore/` | Downloaded images and maps | — |
+
+Versioning enabled. Old versions expire after 30 days.
+
+### DynamoDB Tables
+
+| Table | Partition Key | Purpose |
+|-------|--------------|---------|
+| `{env}-wwii-api-cache` | `cache_key` (String) | API response cache with TTL |
+| `{env}-wwii-people` | `PersonID` | People entities |
+| `{env}-wwii-groups` | `GroupID` | People groups |
+| `{env}-wwii-places` | `PlaceID` | Places |
+| `{env}-wwii-dates` | `DateID` | Dates |
+| `{env}-wwii-equipment` | `EquipmentID` | Equipment |
+| `{env}-wwii-weather` | `WeatherID` | Weather |
+| `{env}-wwii-logistics` | `LogisticsID` | Logistics |
+| `{env}-wwii-casualties` | `CasualtyID` | Casualties |
+| `{env}-wwii-maps` | `MapID` | Maps |
+| `{env}-wwii-bibliography` | `BibliographyID` | Bibliography/citations |
+
+All tables: PAY_PER_REQUEST billing, point-in-time recovery on cache table.
 
 ---
 
@@ -112,441 +157,214 @@ Single-table design is also viable but per-entity tables are simpler and match t
 ### 1. Content Upload → Phase 1 (Parse)
 
 ```
-User uploads markdown to s3://{bucket}/content/{Book}/
+Upload to s3://{bucket}/content/{Book}/
   → S3 Event Notification
-    → SNS Topic (content-uploaded)
-      → Lambda: phase1-parse
-        Reads: s3://{bucket}/content/{Book}/*.md, *-meta.yaml
-        Writes: s3://{bucket}/output/{Book}/*-parsed.json
+    → SNS: {env}-wwii-content-uploaded
+      → Trigger Lambda
+        → Invokes nat-manager (ensure NAT exists)
+        → ecs:RunTask phase1-parse
+          → ecs_entrypoint.py syncs, runs phase1_parse.py, syncs output
 ```
 
-### 2. Parsed File → Phase 2 (Extract)
+### 2. Phase 1 Complete → Phase 2 (Extract via Batch API)
 
 ```
-Phase 1 writes *-parsed.json to S3
-  → S3 Event Notification (suffix: -parsed.json)
-    → SNS Topic (chapter-parsed)
-      → Lambda: phase2-extract-chapter
-        Reads: s3://{bucket}/output/{Book}/chapter*-parsed.json
-        Calls: Grok API, Open-Meteo, OpenSERP (ECS)
-        Writes: s3://{bucket}/output/{Book}/*-event.json
-                s3://{bucket}/output/dates/*.json
-                s3://{bucket}/output/places/*.json
-                s3://{bucket}/output/people/*.json
-                s3://{bucket}/output/people_groups/*.json
-        Cache: DynamoDB (wwii-api-cache)
+Phase 1 writes *-parsed.json → S3
+  → SNS: {env}-wwii-chapter-parsed
+    → Trigger Lambda
+      → ecs:RunTask phase2-extract --batch
+        → Submits all extraction requests to Grok Batch API
+        → Writes batch job IDs to S3 (batch/ prefix)
+        → Publishes to Phase2Complete topic when submission done
+
+Batch Poller Lambda (every 15 min):
+  → Checks pending batch jobs via Grok API
+  → When job complete: triggers ECS retrieve task to process results
+  → Runs dedup, writes entities to S3
 ```
 
-**Shared entity handling:** Each Lambda writes entities with unique keys to S3. S3 PutObject is atomic — no file locking needed. The `locked_json` pattern becomes: read from S3, modify, put back with conditional write (ETag-based optimistic locking via `If-Match`).
-
-### 3. Entity Files → Dedup Gate → Phase 3 (Enrich)
+### 3. Dedup Gate → Phase 3 (Enrich)
 
 ```
-Phase 2 writes entity files to S3
-  → S3 Event Notification (prefix: output/people/, output/places/, etc.)
-    → SNS Topic (entity-created)
-      → Lambda: dedup-gate
-        Reads: dedup/review_status.json
-        If NOT complete: event dropped (Phase 3 blocked)
-        If complete: forwards to Lambda: phase3-enrich
+Entity files written to S3
+  → SNS: {env}-wwii-entity-created
+    → Dedup Gate Lambda
+      → If dedup review NOT complete: blocked
+      → If complete: triggers Phase 3
 
-User reviews duplicates in Dedup Review UI (API Gateway + Basic Auth)
-  → Clicks "Mark Complete"
-    → SNS Topic (dedup-complete)
-      → Lambda: dedup-gate
-        Invokes Phase 3 for ALL entity files in output/people/, places/, groups/, bibliography/
+Human reviews in Dedup UI (API Gateway + Basic Auth):
+  → Marks review complete
+    → SNS: {env}-wwii-dedup-complete
+      → Trigger Lambda: launches Phase 3 ECS task
 ```
 
-Phase 3 does not start until the human review is done.
-
-### 4. Enriched Files → Import
+### 4. Phase Completion → Teardown
 
 ```
-Manual trigger or scheduled
-  → Lambda: import-to-database
-    Reads: s3://{bucket}/output/**/*.json
-    Writes: DynamoDB tables (or MongoDB via DocumentDB/Atlas)
+Phase 2/3 complete
+  → SNS: {env}-wwii-phase2-complete
+    → nat-manager Lambda (subscriber)
+      → Destroys NAT Gateway and Elastic IP
+      → Removes route from private route table
+    → Email notification (if configured)
 ```
 
-### 5. OpenSERP On-Demand
+### 5. Spot Termination Recovery
 
 ```
-Lambda needs OpenSERP but ECS task is not running
-  → Lambda calls ecs:DescribeTasks to check
-  → If no running task: ecs:RunTask to start OpenSERP
-  → Poll health check (GET /health) with exponential backoff
-  → Proceed with search requests
-  → (Optional) Scale to zero after idle timeout via ECS auto-scaling
+ECS task stopped due to Spot reclamation
+  → EventBridge rule detects ECS Task State Change (stoppedReason: "Your Spot Task...")
+    → Trigger Lambda
+      → Clears stale lock
+      → Re-launches the task
+
+Hourly EventBridge rule:
+  → Trigger Lambda with action=check_locks
+    → Detects locks >2 hours old (stale from crashes)
+    → Clears them to unblock pipeline
 ```
 
 ---
 
-## Code Changes Required
+## Cost Management
 
-### 1. Storage Abstraction Layer (new)
+### Dynamic NAT Gateway Lifecycle
 
-Create `src/utils/storage.py` with a `Storage` interface:
+NAT Gateway (~$32/month) is NOT persistent. Managed dynamically:
+- **Created** by `nat-manager` when pipeline needs outbound internet
+- **Destroyed** after pipeline completes (Phase2Complete SNS trigger)
+- Config stored in SSM Parameter Store for re-creation
 
+### Fargate Spot
+
+ECS cluster uses Fargate Spot (4:1 weight ratio):
+- ~70% cost savings on compute
+- Spot termination recovery via EventBridge + trigger Lambda
+
+### AWS Budgets
+
+Monthly budget alert at $75 (80% threshold) via SNS alarm topic.
+
+### Idle Cost: ~$0/month
+
+| Resource | When Idle | Cost |
+|----------|-----------|------|
+| VPC, subnets, route tables, SGs | Always exist | $0 |
+| VPC Endpoints (S3, DynamoDB) | Gateway type | $0 |
+| NAT Gateway | Destroyed | $0 |
+| ECS Cluster (no tasks) | Exists | $0 |
+| OpenSERP (desired=0) | No tasks | $0 |
+| Lambda functions | Not invoked | $0 |
+| S3 | Storage only | ~$0.50 |
+| DynamoDB | No reads/writes | $0 |
+
+### Active Run Cost Estimate
+
+| Service | Per-run usage | Cost |
+|---------|--------------|------|
+| ECS Fargate Spot (pipeline tasks) | ~2-4 hours | ~$2-5 |
+| NAT Gateway (data transfer) | ~5GB | ~$5 |
+| Grok Batch API | Per chapter | Variable |
+| DynamoDB | ~10K reads/writes | ~$0.01 |
+| Lambda invocations | ~100 | ~$0.01 |
+
+---
+
+## Code Abstractions (Implemented)
+
+### Storage (`src/utils/storage.py`)
+
+Protocol-based abstraction — `LocalStorage` or `S3Storage` selected by config:
 ```python
 class Storage(Protocol):
     def read_json(self, path: str) -> dict: ...
     def write_json(self, path: str, data: dict) -> None: ...
     def list_files(self, prefix: str, pattern: str) -> list[str]: ...
     def exists(self, path: str) -> bool: ...
-
-class LocalStorage:
-    """Current filesystem-based storage."""
-
-class S3Storage:
-    """S3-backed storage with same interface."""
 ```
 
-All extraction modules switch from `Path` operations to `Storage` calls. Config determines which backend: `storage.backend: "local"` or `storage.backend: "s3"`.
+### Cache (`src/utils/cache_backend.py`)
 
-### 2. Cache Abstraction Layer (new)
-
-Create `src/utils/cache_backend.py`:
-
+Protocol-based abstraction — `DiskCacheBackend` or `DynamoCacheBackend`:
 ```python
 class CacheBackend(Protocol):
     def get(self, key: str) -> Optional[str]: ...
     def set(self, key: str, value: str, ttl: int = 0) -> None: ...
-    def delete(self, key: str) -> None: ...
-
-class DiskCacheBackend:
-    """Current diskcache-based backend."""
-
-class DynamoCacheBackend:
-    """DynamoDB-backed cache."""
 ```
 
-`GrokClient` accepts a `CacheBackend` instead of a `cache_dir` Path.
+### OpenSERP Client (`src/utils/openserp_client.py`)
 
-### 3. Lambda Handlers (new)
+Handles ECS service start/stop and health checks. Replaces hardcoded localhost.
 
-Create `lambda_handlers/`:
+### Batch API (`src/utils/batch_api.py`)
 
-```
-lambda_handlers/
-├── phase1_handler.py      # S3 event → parse chapter → write to S3
-├── phase2_handler.py      # S3 event → extract entities → write to S3
-├── phase3_handler.py      # S3 event → enrich entity → write to S3
-├── import_handler.py      # Manual trigger → import to DynamoDB
-├── openserp_manager.py    # Start/stop/health-check ECS OpenSERP task
-├── dedup_ui_handler.py    # API Gateway → HTML review UI + merge/skip/exclude API
-└── dedup_gate_handler.py  # SNS → check review status → conditionally invoke Phase 3
-```
-
-Each handler:
-- Receives S3 event via SNS
-- Initializes `S3Storage` and `DynamoCacheBackend`
-- Calls existing extraction functions
-- Writes results back to S3
-
-### 4. DynamoDB Import (new)
-
-Create `import_to_dynamodb.py` alongside existing `import_to_mongodb.py`. Same structure, different backend.
-
-### 5. OpenSERP ECS Client (new)
-
-Create `src/utils/openserp_client.py`:
-- Check if OpenSERP ECS task is running
-- Start task if needed, wait for health check
-- Return the service URL for the pipeline to use
-- Replace hardcoded `localhost:7001` with configurable endpoint
-
-### 6. Config Changes
-
-```yaml
-# New AWS section in config.yaml
-aws:
-  enabled: false                    # Toggle local vs AWS mode
-  region: "us-east-1"
-  s3_bucket: "wwii-data-pipeline"
-  cache_table: "wwii-api-cache"
-  secrets_id: "wwii-pipeline/grok-api-key"
-  openserp:
-    cluster: "wwii-pipeline"
-    service: "openserp"
-    task_definition: "openserp"
-    container_name: "openserp"
-    health_check_url: "/health"
-    startup_timeout: 120
-  database:
-    backend: "dynamodb"             # "dynamodb" or "mongodb"
-    dynamodb_table_prefix: "wwii-"
-    mongodb_uri: ""                 # Only if backend=mongodb
-```
+Grok Batch API submission and result retrieval with S3-based job tracking.
 
 ---
 
-## CloudFormation Templates
+## Deployment
 
-### Template Structure
+### Prerequisites
 
-```
-cloudformation/
-├── main.yaml                # Root stack (nested stacks)
-├── network.yaml             # VPC, subnets, security groups
-├── storage.yaml             # S3 buckets, DynamoDB tables
-├── compute.yaml             # Lambda functions, ECS cluster/service
-├── events.yaml              # S3 notifications, SNS topics, subscriptions
-└── iam.yaml                 # IAM roles and policies
-```
+- AWS account with appropriate permissions
+- ECR repositories for pipeline and OpenSERP images
+- Secrets Manager secret: `{env}-wwii-pipeline/grok-api-key`
+- Secrets Manager secret: `{env}-wwii-pipeline/dedup-auth`
+- S3 bucket for CloudFormation templates and Lambda code
 
-### network.yaml
-
-- VPC with 2 private subnets (Lambda + ECS)
-- VPC endpoints for S3, DynamoDB, Secrets Manager (avoid NAT Gateway costs)
-- Security group for OpenSERP ECS (allow inbound 7001 from Lambda SG)
-- NAT Gateway (1 AZ) for outbound internet (Grok API, Wikipedia, search engines)
-
-### storage.yaml
-
-- S3 bucket: `wwii-data-pipeline` with versioning
-- DynamoDB table: `wwii-api-cache` (PAY_PER_REQUEST, TTL enabled)
-- DynamoDB tables: one per entity type (PAY_PER_REQUEST)
-- S3 bucket policy: Lambda role access
-
-### compute.yaml
-
-- **Lambda: phase1-parse**
-  - Runtime: python3.12, 512MB, 5min timeout
-  - Layers: project dependencies
-  - VPC: private subnets
-  - Trigger: SNS (content-uploaded)
-
-- **Lambda: phase2-extract**
-  - Runtime: python3.12, 2048MB, 15min timeout
-  - VPC: private subnets (needs OpenSERP access)
-  - Trigger: SNS (chapter-parsed)
-  - Environment: GROK_API_KEY from Secrets Manager
-
-- **Lambda: phase3-enrich**
-  - Runtime: python3.12, 1024MB, 15min timeout
-  - VPC: private subnets
-  - Trigger: SNS (entity-created)
-  - Environment: GROK_API_KEY from Secrets Manager
-
-- **Lambda: import-to-database**
-  - Runtime: python3.12, 2048MB, 15min timeout
-  - Trigger: manual (API Gateway or CLI)
-
-- **Lambda: openserp-manager**
-  - Runtime: python3.12, 256MB, 2min timeout
-  - Permissions: ecs:RunTask, ecs:DescribeTasks
-
-- **ECS Cluster + Fargate Service: openserp**
-  - Image: built from `tools/openserp/Dockerfile`
-  - CPU: 512, Memory: 1024
-  - Port: 7001
-  - Internal ALB: routes to target group `openserp-tg` on port 7001
-  - Lambdas reach OpenSERP via ALB DNS: `http://openserp-alb.internal:7001`
-  - ALB health check: GET /health (also provides CloudWatch `RequestCount` metric for idle monitoring)
-  - Auto-scaling: min 0, max 1 (managed by idle monitor Lambda)
-
-### events.yaml
-
-- S3 event notifications → SNS topics
-- SNS topics: `content-uploaded`, `chapter-parsed`, `entity-created`
-- SNS → Lambda subscriptions with filter policies
-
-### iam.yaml
-
-- Lambda execution role: S3 read/write, DynamoDB read/write, Secrets Manager read, CloudWatch Logs, VPC access, SNS publish
-- ECS task role: CloudWatch Logs
-- ECS task execution role: ECR pull, CloudWatch Logs
-
----
-
-## Deployment Script
-
-`scripts/deploy_aws.py` — single entry point for deploying, updating, and tearing down the AWS infrastructure.
+### Deploy
 
 ```bash
-# Validate templates (runs cfn-lint)
-python3 scripts/deploy_aws.py validate
+# Package and upload Lambda code
+zip -r code.zip lambda_handlers/ src/ scripts/ phase*.py ecs_entrypoint.py config.yaml requirements.txt
+aws s3 cp code.zip s3://{template-bucket}/lambda/code.zip
 
-# Deploy full stack (or update if exists)
-python3 scripts/deploy_aws.py deploy --env dev --region us-east-1
+# Build and push Docker images
+docker build -t wwii-pipeline .
+docker tag wwii-pipeline:latest {account}.dkr.ecr.us-east-1.amazonaws.com/wwii-pipeline:latest
+docker push {account}.dkr.ecr.us-east-1.amazonaws.com/wwii-pipeline:latest
 
-# Deploy specific nested stack only
-python3 scripts/deploy_aws.py deploy --env dev --stack network
-
-# Check deployment status
-python3 scripts/deploy_aws.py status --env dev
-
-# Tear down everything
-python3 scripts/deploy_aws.py destroy --env dev
+# Deploy CloudFormation
+aws cloudformation deploy \
+  --template-file cloudformation/main.yaml \
+  --stack-name dev-wwii-pipeline \
+  --parameter-overrides \
+    EnvironmentName=dev \
+    TemplateBucket={template-bucket} \
+    LambdaCodeBucket={template-bucket} \
+    OpenSerpImageUri={account}.dkr.ecr.us-east-1.amazonaws.com/wwii-openserp:latest \
+    PipelineImageUri={account}.dkr.ecr.us-east-1.amazonaws.com/wwii-pipeline:latest \
+  --capabilities CAPABILITY_NAMED_IAM
 ```
 
-### Parameters
-
-| Flag | Default | Description |
-|---|---|---|
-| `--env` | `dev` | Environment name (prefixes all resource names) |
-| `--region` | `us-east-1` | AWS region |
-| `--stack` | (all) | Deploy only a specific nested stack: `network`, `storage`, `compute`, `events`, `iam` |
-| `--profile` | (default) | AWS CLI profile name |
-| `--dry-run` | false | Show what would be deployed without executing |
-
-### What It Does
-
-**`validate`:**
-1. Runs `cfn-lint` on all templates in `cloudformation/`
-2. Runs `aws cloudformation validate-template` for each template
-3. Reports errors and warnings
-
-**`deploy`:**
-1. Validates templates (fails fast on errors)
-2. Packages Lambda code into a zip, uploads to S3
-3. Builds and pushes OpenSERP Docker image to ECR
-4. Creates/updates the CloudFormation stack (`wwii-pipeline-{env}`)
-5. Waits for stack completion, streams events
-6. Outputs key resource ARNs (S3 bucket, DynamoDB tables, ECS cluster, Lambda functions)
-
-**`status`:**
-1. Shows stack status and last event
-2. Lists running ECS tasks
-3. Shows NAT Gateway state (active/deleted)
-4. Shows recent Lambda invocation counts
-
-**`destroy`:**
-1. Empties S3 buckets (required before stack deletion)
-2. Deletes the CloudFormation stack
-3. Waits for deletion, streams events
-
-### Dependencies
+### Trigger a Run
 
 ```bash
-pip install cfn-lint boto3
+# Upload content to trigger pipeline
+aws s3 sync contentrepository/BookName/ s3://dev-wwii-data-pipeline/content/BookName/
+
+# Or manual trigger via Lambda
+aws lambda invoke --function-name dev-wwii-trigger \
+  --payload '{"source":"manual","book":"BookName","phase":"1"}' /dev/stdout
 ```
 
----
+### Monitor
 
-## Implementation Phases
-
-### Phase A: Storage Abstraction (local-compatible)
-
-1. Create `Storage` protocol + `LocalStorage` + `S3Storage`
-2. Create `CacheBackend` protocol + `DiskCacheBackend` + `DynamoCacheBackend`
-3. Refactor `GrokClient` to accept `CacheBackend`
-4. Refactor extraction modules to accept `Storage`
-5. **Test locally** — everything still works with `LocalStorage` + `DiskCacheBackend`
-
-### Phase B: Lambda Handlers
-
-1. Create `lambda_handlers/` with thin wrappers
-2. Create `openserp_client.py` for ECS management
-3. Create `import_to_dynamodb.py`
-4. **Test locally** with `aws lambda invoke` or SAM CLI
-
-### Phase C: CloudFormation
-
-1. Create templates, validate with `cfn-lint`
-2. Deploy to dev account
-3. Upload test content to S3, verify end-to-end flow
-4. Tune Lambda memory/timeout based on actual execution
-
-### Phase D: Production Hardening
-
-1. Dead-letter queues for failed Lambda invocations
-2. CloudWatch alarms for errors, throttling, duration
-3. S3 lifecycle rules for cache/temp data
-4. Cost monitoring with AWS Budgets
-
----
-
-## Idle Monitoring and Cost-Saving Teardown
-
-The NAT Gateway costs ~$32/month even when idle. OpenSERP ECS costs ~$0.05/hr when running. A scheduled Lambda monitors activity and tears down expensive resources when idle.
-
-### EventBridge Rule (cron)
-
-```
-Schedule: rate(10 minutes)
-Target: Lambda openserp-idle-monitor
-```
-
-### Lambda: openserp-idle-monitor
-
-Logic:
-1. Check ECS service desired count — if already 0, check NAT Gateway
-2. Query ALB `RequestCount` metric for the OpenSERP target group over the last 30 minutes:
-   ```
-   CloudWatch → AWS/ApplicationELB → RequestCount
-   Dimension: TargetGroup = openserp-tg
-   Period: 1800s, Statistic: Sum
-   ```
-3. If Sum == 0 (no requests in 30 minutes):
-   - Set ECS service desired count to 0 (stops container)
-   - Delete NAT Gateway and release Elastic IP
-   - Remove NAT Gateway route from private subnet route table
-   - Store NAT Gateway config in SSM Parameter Store for re-creation
-4. Log action to CloudWatch
-
-### Re-creation on Pipeline Start
-
-When a Lambda needs OpenSERP (or outbound internet):
-1. `openserp-manager` Lambda checks if NAT Gateway exists
-2. If not: create NAT Gateway, add route, wait for `available` state (~60s)
-3. Start ECS task, wait for health check
-4. Return OpenSERP endpoint URL
-
-### CloudFormation Support
-
-The NAT Gateway is created by CloudFormation initially but managed dynamically after that. The template uses a `Condition` to optionally create it:
-
-```yaml
-Conditions:
-  CreateNatGateway: !Equals [!Ref InitialDeploy, "true"]
-```
-
-After first deploy, the idle monitor and openserp-manager handle lifecycle.
-
-### What Gets Torn Down vs Kept
-
-| Resource | Idle Cost | Tear Down? |
-|---|---|---|
-| VPC, subnets, route tables, SGs | $0 | No — free when idle |
-| VPC endpoints (S3, DynamoDB) | $0 (gateway type) | No |
-| VPC endpoints (Secrets Manager) | ~$7/month | Yes — tear down with NAT GW |
-| NAT Gateway + Elastic IP | ~$32/month | **Yes** |
-| ALB (internal) | ~$16/month | **Yes** — tear down with NAT GW |
-| ECS cluster (no tasks) | $0 | No — free when idle |
-| ECS Fargate task (OpenSERP) | ~$0.05/hr | **Yes** — scale to 0 |
-| S3, DynamoDB | Pay-per-use | No |
-| Lambda functions | $0 when idle | No |
-| CloudWatch Logs | Storage only | No |
-
-**Fully idle cost: ~$0/month** (all expensive resources torn down).
-
----
-
-## Cost Estimate
-
-| Service | Usage | Estimated Monthly Cost |
-|---|---|---|
-| Lambda | ~1000 invocations × 30s avg × 2GB | ~$1-2 |
-| ECS Fargate (OpenSERP) | ~10 hours/month (on-demand) | ~$5-10 |
-| S3 | ~10GB storage + requests | ~$1 |
-| DynamoDB (cache) | ~10K reads/writes per run | ~$1 |
-| DynamoDB (entity tables) | ~50K items, on-demand | ~$1 |
-| NAT Gateway | 1 AZ, ~5GB data | ~$35 |
-| ALB (internal) | Idle + ~1000 requests/month | ~$16 |
-| Secrets Manager | 1 secret | ~$0.40 |
-| **Total** | | **~$45-50/month** |
-
-NAT Gateway dominates cost. Consider NAT instances or VPC endpoints for Grok API if cost-sensitive.
+- **CloudWatch Dashboard**: `dev-wwii-pipeline-logs` — run summaries, batch submissions, errors, token usage
+- **Dedup Review UI**: `https://{api-id}.execute-api.us-east-1.amazonaws.com/app/dedup`
+- **Metrics API**: `https://{api-id}.execute-api.us-east-1.amazonaws.com/app/metrics`
 
 ---
 
 ## Preserving Local Execution
 
-All changes are behind the `aws.enabled` config flag. When `false` (default):
-- `Storage` → `LocalStorage` (filesystem)
-- `CacheBackend` → `DiskCacheBackend` (diskcache)
-- OpenSERP → `localhost:7001`
-- Database → MongoDB localhost
+All AWS behavior is behind `aws.enabled: false` (default in config.yaml):
+- Storage → local filesystem
+- Cache → diskcache (SQLite)
+- OpenSERP → localhost:7001
+- Batch API → direct Grok API calls
 
-No existing CLI workflows change. `python3 phase1_parse.py && python3 phase2_retry.py` continues to work exactly as before.
+```bash
+# Local execution unchanged
+python phase1_parse.py && python phase2_extract.py && python phase3_enrich_data.py
+```

@@ -743,6 +743,21 @@ def _download_inputs(phase_script: str) -> None:
             if not book_name:
                 logger.warning("No manifest and no BOOK_NAME — downloading ALL content")
             n = s3_sync_down(prefix, Path("/app"))
+            # Case-insensitive fallback if exact prefix found nothing
+            if n == 0 and book_name:
+                s3 = _s3_client()
+                resp = s3.list_objects_v2(
+                    Bucket=BUCKET, Prefix="contentrepository/", Delimiter="/"
+                )
+                for cp in resp.get("CommonPrefixes", []):
+                    folder = cp["Prefix"].rstrip("/").split("/")[-1]
+                    if folder.lower() == book_name.lower() and folder != book_name:
+                        logger.warning(
+                            "Book name case mismatch: %s → %s", book_name, folder
+                        )
+                        prefix = f"contentrepository/{folder}/"
+                        n = s3_sync_down(prefix, Path("/app"))
+                        break
             logger.info("Downloaded %d content files (full, prefix=%s)", n, prefix)
             os.environ["_PHASE1_MODE"] = f"Full re-parse: {n} files"
     elif "phase2" in phase_script:
@@ -938,6 +953,22 @@ def _post_process(phase_script: str, env: dict) -> None:
             logger.info("Cleared pending#content queue")
         except Exception:
             pass
+        # Trigger Phase 2 directly (don't rely on S3 notification chain)
+        try:
+            book_name = os.environ.get("BOOK_NAME", "")
+            lambda_client = boto3.client("lambda", region_name=REGION)
+            env_name = os.environ.get("ENV_NAME", "dev")
+            payload = json.dumps(
+                {"source": "phase1-complete", "book": book_name, "phase": "2"}
+            )
+            lambda_client.invoke(
+                FunctionName=f"{env_name}-wwii-trigger",
+                InvocationType="Event",
+                Payload=payload.encode(),
+            )
+            logger.info("Triggered Phase 2 for book=%s", book_name)
+        except Exception as e:
+            logger.warning("Failed to trigger Phase 2: %s", e)
     if "phase2" in phase_script:
         dedup_ok = False
         for attempt in range(2):
@@ -1604,7 +1635,7 @@ def _acquire_lock(phase_script: str) -> bool:
             Item={
                 "cache_key": lock_key,
                 "response": str(int(time.time())),
-                "ttl": int(time.time()) + 86400,
+                "ttl": int(time.time()) + 7200,  # 2h — auto-expire stale locks
             },
             ConditionExpression="attribute_not_exists(cache_key)",
         )
