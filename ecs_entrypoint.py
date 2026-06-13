@@ -729,85 +729,79 @@ def _materialize_from_dynamo() -> bool:
 def _download_inputs(phase_script: str) -> None:
     """Download the appropriate inputs from S3 for this phase."""
     if "phase1" in phase_script:
-        keys = _read_s3_manifest("contentrepository/")
-        if keys:
-            n = _download_keys(keys, Path("/app"))
-            logger.info("Downloaded %d content files (incremental)", n)
-            os.environ["_PHASE1_MODE"] = f"Incremental: {n} new files"
-        else:
-            # Scope full sync to BOOK_NAME if set, otherwise download all
-            book_name = os.environ.get("BOOK_NAME", "")
-            prefix = (
-                f"contentrepository/{book_name}/" if book_name else "contentrepository/"
-            )
-            if not book_name:
-                logger.warning("No manifest and no BOOK_NAME — downloading ALL content")
-            n = s3_sync_down(prefix, Path("/app"))
-            # Case-insensitive fallback if exact prefix found nothing
-            if n == 0 and book_name:
-                s3 = _s3_client()
-                resp = s3.list_objects_v2(
-                    Bucket=BUCKET, Prefix="contentrepository/", Delimiter="/"
-                )
-                for cp in resp.get("CommonPrefixes", []):
-                    folder = cp["Prefix"].rstrip("/").split("/")[-1]
-                    if folder.lower() == book_name.lower() and folder != book_name:
-                        logger.warning(
-                            "Book name case mismatch: %s → %s", book_name, folder
-                        )
-                        prefix = f"contentrepository/{folder}/"
-                        n = s3_sync_down(prefix, Path("/app"))
-                        break
-            logger.info("Downloaded %d content files (full, prefix=%s)", n, prefix)
-            os.environ["_PHASE1_MODE"] = f"Full re-parse: {n} files"
+        _download_phase1_inputs()
     elif "phase2" in phase_script:
         n = _download_phase2_inputs()
         logger.info("Downloaded %d files for Phase 2", n)
     elif "phase3" in phase_script or "import" in phase_script:
-        # Phase 3: try DynamoDB first (fast), fall back to S3
-        if _materialize_from_dynamo():
-            return
-        # Fallback: download from S3
-        entity_dirs = [
-            "people",
-            "people_groups",
-            "places",
-            "dates",
-            "equipment",
-            "weather",
-            "logistics",
-            "casualties",
-            "maps",
-            "supplemental",
-            "bibliography",
-        ]
-        s3 = _s3_client()
-        book_name = os.environ.get("BOOK_NAME", "")
-        total = 0
+        if not _materialize_from_dynamo():
+            _download_phase3_from_s3()
 
-        if book_name:
-            # Scoped download: index.json + files referenced by this book's events
-            logger.info("Scoped download for book: %s", book_name)
-            referenced = _get_book_entity_files(s3, book_name)
-            for subdir in entity_dirs:
-                local = WORKDIR / "output" / subdir
-                local.mkdir(parents=True, exist_ok=True)
-                # Always download index
-                _download_s3_file(s3, f"output/{subdir}/index.json")
-                # Download only referenced files for this subdir
-                subdir_files = [
-                    f for f in referenced if f.startswith(f"output/{subdir}/")
-                ]
-                for key in subdir_files:
-                    _download_s3_file(s3, key)
-                total += len(subdir_files)
-            logger.info("Downloaded %d entity files (scoped to %s)", total, book_name)
-        else:
-            # Full download (no book scope)
-            for subdir in entity_dirs:
-                d, s = _download_s3_prefix_skip_existing(s3, f"output/{subdir}/")
-                total += d
-            logger.info("Downloaded %d entity files for Phase 3 (full)", total)
+
+def _download_phase1_inputs() -> None:
+    """Download content files for Phase 1 (incremental or full)."""
+    keys = _read_s3_manifest("contentrepository/")
+    if keys:
+        n = _download_keys(keys, Path("/app"))
+        logger.info("Downloaded %d content files (incremental)", n)
+        os.environ["_PHASE1_MODE"] = f"Incremental: {n} new files"
+        return
+
+    book_name = os.environ.get("BOOK_NAME", "")
+    prefix = f"contentrepository/{book_name}/" if book_name else "contentrepository/"
+    if not book_name:
+        logger.warning("No manifest and no BOOK_NAME — downloading ALL content")
+
+    n = s3_sync_down(prefix, Path("/app"))
+
+    # Case-insensitive fallback if exact prefix found nothing
+    if n == 0 and book_name:
+        prefix = _find_book_prefix_case_insensitive(book_name) or prefix
+        if prefix != f"contentrepository/{book_name}/":
+            n = s3_sync_down(prefix, Path("/app"))
+
+    logger.info("Downloaded %d content files (full, prefix=%s)", n, prefix)
+    os.environ["_PHASE1_MODE"] = f"Full re-parse: {n} files"
+
+
+def _find_book_prefix_case_insensitive(book_name: str) -> str:
+    """Find S3 prefix with case-insensitive book name match."""
+    s3 = _s3_client()
+    resp = s3.list_objects_v2(Bucket=BUCKET, Prefix="contentrepository/", Delimiter="/")
+    for cp in resp.get("CommonPrefixes", []):
+        folder = cp["Prefix"].rstrip("/").split("/")[-1]
+        if folder.lower() == book_name.lower() and folder != book_name:
+            logger.warning("Book name case mismatch: %s → %s", book_name, folder)
+            return f"contentrepository/{folder}/"
+    return ""
+
+
+def _download_phase3_from_s3() -> None:
+    """Fallback: download entity files from S3 for Phase 3."""
+    entity_dirs = [
+        "people", "people_groups", "places", "dates", "equipment",
+        "weather", "logistics", "casualties", "maps", "supplemental", "bibliography",
+    ]
+    s3 = _s3_client()
+    book_name = os.environ.get("BOOK_NAME", "")
+    total = 0
+
+    if book_name:
+        logger.info("Scoped download for book: %s", book_name)
+        referenced = _get_book_entity_files(s3, book_name)
+        for subdir in entity_dirs:
+            (WORKDIR / "output" / subdir).mkdir(parents=True, exist_ok=True)
+            _download_s3_file(s3, f"output/{subdir}/index.json")
+            subdir_files = [f for f in referenced if f.startswith(f"output/{subdir}/")]
+            for key in subdir_files:
+                _download_s3_file(s3, key)
+            total += len(subdir_files)
+        logger.info("Downloaded %d entity files (scoped to %s)", total, book_name)
+    else:
+        for subdir in entity_dirs:
+            d, s = _download_s3_prefix_skip_existing(s3, f"output/{subdir}/")
+            total += d
+        logger.info("Downloaded %d entity files for Phase 3 (full)", total)
 
 
 def _download_phase2_inputs() -> int:
@@ -958,9 +952,7 @@ def _post_process(phase_script: str, env: dict) -> None:
             book_name = os.environ.get("BOOK_NAME", "")
             lambda_client = boto3.client("lambda", region_name=REGION)
             env_name = os.environ.get("ENV_NAME", "dev")
-            payload = json.dumps(
-                {"source": "phase1-complete", "book": book_name, "phase": "2"}
-            )
+            payload = json.dumps({"source": "manual", "book": book_name, "phase": "2"})
             lambda_client.invoke(
                 FunctionName=f"{env_name}-wwii-trigger",
                 InvocationType="Event",
@@ -984,8 +976,26 @@ def _post_process(phase_script: str, env: dict) -> None:
             logger.error(
                 "Dedup detection failed after 2 attempts — sending notification anyway"
             )
+        # Auto-trigger Phase 3 if no duplicates need review
+        if dedup_ok and _dedup_has_no_pending():
+            logger.info("No duplicates found — auto-triggering Phase 3")
+            try:
+                env_name = os.environ.get("ENV_NAME", "dev")
+                book_name = os.environ.get("BOOK_NAME", "")
+                lambda_client = boto3.client("lambda", region_name=REGION)
+                payload = json.dumps(
+                    {"source": "manual", "book": book_name, "phase": "3"}
+                )
+                lambda_client.invoke(
+                    FunctionName=f"{env_name}-wwii-trigger",
+                    InvocationType="Event",
+                    Payload=payload.encode(),
+                )
+            except Exception as e:
+                logger.warning("Failed to auto-trigger Phase 3: %s", e)
+        else:
+            _schedule_delayed_teardown()
         _check_pending_content()
-        _schedule_delayed_teardown()
     if "phase3" not in phase_script:
         _remove_lock(phase_script)
     _stop_openserp_if_running(phase_script)
@@ -1021,6 +1031,20 @@ def _check_pending_content() -> None:
         table.delete_item(Key={"cache_key": "pending#content"})
     except Exception as e:
         logger.warning("Failed to check pending content: %s", e)
+
+
+def _dedup_has_no_pending() -> bool:
+    """Check if dedup reports have zero duplicates requiring review."""
+    for subdir in ["people", "people_groups", "places", "equipment"]:
+        report = WORKDIR / "output" / subdir / "duplicate_report.json"
+        if report.exists():
+            try:
+                data = json.loads(report.read_text(encoding="utf-8"))
+                if data.get("duplicate_groups", 0) > 0:
+                    return False
+            except Exception:
+                return False
+    return True
 
 
 def _run_dedup_detection(env: dict) -> None:
@@ -1568,44 +1592,10 @@ def _notify_complete(phase_script: str) -> None:
     if not topic_arn:
         return
     phase_name = PHASE_NAMES.get(phase_script, phase_script)
-    dedup_url = os.environ.get("DEDUP_REVIEW_URL", "")
     message = f"{phase_name} completed successfully.\nBucket: {BUCKET}"
+    message += _build_results_section()
+    message += _build_phase_section(phase_script)
 
-    # Include entity counts from phase results
-    results_file = WORKDIR / "output" / ".phase_results.json"
-    if results_file.exists():
-        try:
-            results = json.loads(results_file.read_text(encoding="utf-8"))
-            counts = results.get("entity_counts", {})
-            if counts:
-                message += "\n\nEntity counts:"
-                for entity_type, count in sorted(counts.items()):
-                    message += f"\n  {entity_type}: {count}"
-            if "processed" in results:
-                message += f"\n\nProcessed: {results['processed']}, Failed: {results.get('failed', 0)}"
-            if "enriched" in results:
-                message += f"\n\nEnriched: {results['enriched']} items"
-        except Exception:
-            pass
-    if "phase1" in phase_script:
-        # List what was parsed
-        mode = os.environ.get("_PHASE1_MODE", "")
-        if mode:
-            message += f"\nMode: {mode}"
-        content_dir = WORKDIR / "output" / "content"
-        if content_dir.exists():
-            parsed = sorted(f.name for f in content_dir.rglob("*-parsed.json"))
-            if parsed:
-                message += f"\n\nParsed {len(parsed)} file(s):\n" + "\n".join(
-                    f"  {f}" for f in parsed
-                )
-    if "phase2" in phase_script and dedup_url:
-        message += (
-            f"\n\nPhase 3 is blocked until you review duplicates."
-            f"\nDedup Review UI: {dedup_url}"
-        )
-    if "phase3" in phase_script:
-        message += "\n\nPipeline run complete. All entities enriched."
     try:
         sns = boto3.client("sns", region_name=REGION)
         sns.publish(
@@ -1616,6 +1606,52 @@ def _notify_complete(phase_script: str) -> None:
         logger.info("Sent completion notification for %s", phase_name)
     except Exception as e:
         logger.warning("Failed to send notification: %s", e)
+
+
+def _build_results_section() -> str:
+    """Build entity counts / processed stats from .phase_results.json."""
+    results_file = WORKDIR / "output" / ".phase_results.json"
+    if not results_file.exists():
+        return ""
+    try:
+        results = json.loads(results_file.read_text(encoding="utf-8"))
+    except Exception:
+        return ""
+    parts = []
+    counts = results.get("entity_counts", {})
+    if counts:
+        parts.append("\n\nEntity counts:")
+        parts.extend(f"\n  {t}: {c}" for t, c in sorted(counts.items()))
+    if "processed" in results:
+        parts.append(f"\n\nProcessed: {results['processed']}, Failed: {results.get('failed', 0)}")
+    if "enriched" in results:
+        parts.append(f"\n\nEnriched: {results['enriched']} items")
+    return "".join(parts)
+
+
+def _build_phase_section(phase_script: str) -> str:
+    """Build phase-specific notification content."""
+    parts = []
+    if "phase1" in phase_script:
+        mode = os.environ.get("_PHASE1_MODE", "")
+        if mode:
+            parts.append(f"\nMode: {mode}")
+        content_dir = WORKDIR / "output" / "content"
+        if content_dir.exists():
+            parsed = sorted(f.name for f in content_dir.rglob("*-parsed.json"))
+            if parsed:
+                parts.append(f"\n\nParsed {len(parsed)} file(s):\n")
+                parts.append("\n".join(f"  {f}" for f in parsed))
+    elif "phase2" in phase_script:
+        dedup_url = os.environ.get("DEDUP_REVIEW_URL", "")
+        if dedup_url:
+            parts.append(
+                f"\n\nPhase 3 is blocked until you review duplicates."
+                f"\nDedup Review UI: {dedup_url}"
+            )
+    elif "phase3" in phase_script:
+        parts.append("\n\nPipeline run complete. All entities enriched.")
+    return "".join(parts)
 
 
 def _acquire_lock(phase_script: str) -> bool:
@@ -1701,12 +1737,14 @@ def _clear_all_locks() -> None:
         pass
 
 
-def _schedule_delayed_teardown(delay_minutes: int = 30) -> None:
+def _schedule_delayed_teardown(delay_minutes: int = None) -> None:
     """Schedule networking teardown after a delay via EventBridge Scheduler.
 
     If Phase 3 launches before the delay expires, the trigger Lambda
     cancels this schedule. Avoids churn when dedup review is fast.
     """
+    if delay_minutes is None:
+        delay_minutes = int(os.environ.get("TEARDOWN_DELAY_MINUTES", "30"))
     import datetime
 
     env = os.environ.get("ENV_NAME", "dev")
@@ -1837,17 +1875,46 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     _batch_mod.poll_batch = _orig_poll
     _batch_mod.retrieve_results = _orig_retrieve
 
-    # Enqueue the batch job
+    # Enqueue the batch job (returns False if no batch was actually submitted)
     logger.info("[step] %s: enqueueing batch job", phase_name)
-    _enqueue_from_metrics(phase_script)
+    batch_enqueued = _enqueue_from_metrics(phase_script)
 
     logger.info("[step] %s: final S3 sync", phase_name)
     _final_sync(phase_script)
     _stop_openserp_if_running(phase_script)
 
-    if result.returncode != 0:
+    if result.returncode != 0 and batch_enqueued:
         logger.error("Submit-only exited with code %d", result.returncode)
         sys.exit(result.returncode)
+
+    # If no batch was submitted (all events cached), run non-batch to extract entities.
+    # The batch submit only collects event requests; people/places/groups/optional
+    # entities need live API calls which only happen in non-batch mode.
+    if not batch_enqueued:
+        logger.info(
+            "[step] %s: no batch submitted (all cached) — running non-batch for entities",
+            phase_name,
+        )
+        # Force-download parsed files (incremental logic skips them when events exist)
+        os.environ["FORCE_DOWNLOAD_PARSED"] = "1"
+        _download_inputs(phase_script)
+        del os.environ["FORCE_DOWNLOAD_PARSED"]
+
+        clean_args = [a for a in extra_args if a != "--batch"]
+        env = os.environ.copy()
+        env["PIPELINE_PHASE"] = Path(phase_script).stem
+        cmd = [sys.executable, phase_script] + clean_args
+        sync2 = BackgroundSync(SYNC_INTERVAL)
+        sync2.start()
+        result = subprocess.run(cmd, cwd="/app", env=env, check=False)
+        sync2.stop()
+        _final_sync(phase_script)
+        if result.returncode != 0:
+            logger.error("Non-batch entity run exited with code %d", result.returncode)
+        _post_process(phase_script, os.environ.copy())
+        _teardown_networking()
+        logger.info("Non-batch entity run complete.")
+        return
 
     # Tear down networking (NAT + VPC endpoints) — Lambda poller will recreate on completion
     logger.info("[step] %s: tearing down networking", phase_name)
@@ -1860,8 +1927,8 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     logger.info("Submit-only complete — batch enqueued, infra torn down, exiting.")
 
 
-def _enqueue_from_metrics(phase_script: str) -> None:
-    """Find the latest batch metrics and enqueue the job."""
+def _enqueue_from_metrics(phase_script: str) -> bool:
+    """Find the latest batch metrics and enqueue the job. Returns True if a batch was enqueued."""
     import time as _t
 
     from src.utils.job_queue import BatchJob, enqueue_job
@@ -1869,12 +1936,12 @@ def _enqueue_from_metrics(phase_script: str) -> None:
     metrics_dir = WORKDIR / "output" / "metrics"
     if not metrics_dir.exists():
         logger.warning("No metrics dir — batch may not have submitted")
-        return
+        return False
 
     files = sorted(metrics_dir.glob("batch_*.json"), key=lambda f: f.stat().st_mtime)
     if not files:
         logger.warning("No batch metrics files found")
-        return
+        return False
 
     with open(files[-1]) as f:
         metrics = json.load(f)
@@ -1882,7 +1949,7 @@ def _enqueue_from_metrics(phase_script: str) -> None:
     batch_id = metrics.get("batch_id", "")
     if not batch_id:
         logger.warning("No batch_id in %s", files[-1].name)
-        return
+        return False
 
     phase = "phase2" if "phase2" in phase_script else "phase3"
     book = os.environ.get("BOOK_NAME", "unknown")
@@ -1908,7 +1975,7 @@ def _enqueue_from_metrics(phase_script: str) -> None:
                     book,
                     request_count,
                 )
-                return
+                return False
 
         # Check recently completed jobs (within last hour)
         one_hour_ago = int(_time.time()) - 3600
@@ -1938,7 +2005,7 @@ def _enqueue_from_metrics(phase_script: str) -> None:
                     book,
                     request_count,
                 )
-                return
+                return False
     except Exception as e:
         logger.debug("Dedup guard check failed (proceeding): %s", e)
 
@@ -1962,6 +2029,7 @@ def _enqueue_from_metrics(phase_script: str) -> None:
     )
     logger.info("Enqueued batch job to DynamoDB: %s", batch_id)
     _notify_batch_submitted(phase, book, batch_id, request_count)
+    return True
 
 
 def _notify_batch_submitted(

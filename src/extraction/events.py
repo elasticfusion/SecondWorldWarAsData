@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from jsonschema import ValidationError, validate
-import ulid
 
 from src.grok_client import GrokClient, GrokAPIError
 from src.json_schemas import EVENT_SCHEMA
@@ -98,6 +97,14 @@ def _reconstruct_fulltext(response: dict, parsed_data: dict) -> dict:
             else:
                 logger.warning("  Paragraph %s not found in parsed data, skipping", n)
         se["Sub-event_fulltext"] = fulltext
+
+        # Fallback: if fulltext is empty but summary exists, use summary as text
+        if not fulltext and se.get("Sub-event_summary"):
+            logger.debug(
+                "Sub-event %s has summary but no fulltext — using summary as fallback",
+                se.get("Sub-eventID"),
+            )
+            se["Sub-event_fulltext"] = {"summary": se["Sub-event_summary"]}
     return response
 
 
@@ -292,6 +299,8 @@ def _extract_chunk(
         use_cache=True,
         cache_type="events",
     )
+    if "EventID" in result and "Event" not in result:
+        result = {"Event": result}
     _reconstruct_fulltext(result, chunk_data)
     validate_event_json(result)
     return result
@@ -437,6 +446,14 @@ def extract_events(
             if split_result:
                 return split_result
             raise
+
+        # Wrap flat response (AI returns {EventID, Sub-events} instead of {Event: {...}})
+        if "EventID" in response and "Event" not in response:
+            response = {"Event": response}
+
+        # Ensure Chapter is present (required by schema, may not be in AI response)
+        if "Chapter" not in response:
+            response["Chapter"] = parsed_data.get("chapter_title", "")
 
         # Reconstruct fulltext from parsed data before validation
         _reconstruct_fulltext(response, parsed_data)

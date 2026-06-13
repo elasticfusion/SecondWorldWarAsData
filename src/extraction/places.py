@@ -177,6 +177,10 @@ def create_place_prompt(
         text_parts.append(fulltext[key])
     text = "\n\n".join(text_parts)
 
+    if not text.strip():
+        logger.debug("Skipping empty sub-event %s (places)", sub_event_id)
+        return ""
+
     prompt = f"""Extract all place mentions from this WWII text with coordinates.
 For large geographic features (oceans, continents, military fronts), provide the geographic center coordinates.
 
@@ -276,6 +280,8 @@ def _extract_place_for_sub_event(
     logger.info("  Processing sub-event %s", sub_event_id)
 
     prompt = create_place_prompt(sub_event, event_id, event_name)
+    if not prompt:
+        return None
 
     for attempt in range(max_retries):
         try:

@@ -1,6 +1,6 @@
 # Feature Documentation
 
-**Last Updated:** 2026-03-13  
+**Last Updated:** 2026-06-13  
 **Status:** Comprehensive feature documentation based on code analysis
 
 ---
@@ -8,6 +8,22 @@
 ## Overview
 
 This directory contains comprehensive documentation for all extraction features in the WWII data pipeline. Each feature is documented based on actual code implementation.
+
+### Current Entity Counts (across all processed books)
+
+| Entity Type | Files | Status |
+|-------------|-------|--------|
+| Events | 866 | Production |
+| People | 1,652 | Production |
+| People Groups | 1,609 | Production |
+| Places | 2,859 | Production |
+| Dates | 1,683 | Production |
+| Equipment | 555 | Experimental |
+| Weather | 734 | Optional |
+| Casualties | 8,696 | Experimental |
+| Logistics | 7,769 | Experimental |
+| Bibliography | 13,565 | Production |
+| Maps | 55 | Production |
 
 ---
 

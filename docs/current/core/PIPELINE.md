@@ -1,6 +1,6 @@
 # Pipeline Documentation
 
-**Last Updated:** 2026-05-23
+**Last Updated:** 2026-06-13
 
 ## Overview
 
@@ -13,7 +13,7 @@ Converts markdown source files into structured JSON with absolute paragraph numb
 - Clears any stale DynamoDB manifest from previous runs
 
 ### Phase 2: Extraction
-Extracts entities and events using Grok AI. Prompts are loaded from YAML templates in `prompts/` (overridable from S3). In AWS mode, Phase 2 uses **incremental processing** — only downloads and processes parsed files that don't have a corresponding event file in S3. When `batch.phase2: true`, the task auto-delegates to submit-only mode: submits the batch, enqueues the job, tears down infrastructure, and exits. The batch poller Lambda (`dev-wwii-batch-poller`) checks every 15 minutes and launches a retrieve task on completion.
+Extracts entities and events using Grok AI. Prompts are loaded from YAML templates in `prompts/` (overridable from S3). In AWS mode, Phase 2 uses **incremental processing** — only downloads and processes parsed files that don't have a corresponding event file in S3. When `batch.phase2: true`, the task auto-delegates to submit-only mode: submits the batch, enqueues the job, tears down infrastructure, and exits. The batch poller Lambda (`dev-wwii-batch-poller`) checks every 5 minutes (configurable) and launches a retrieve task on completion. After Phase 2 completes, if no duplicates are found, Phase 3 is auto-triggered without waiting for human review.
 
 ### Dedup Review Gate
 After Phase 2, duplicate detection runs automatically:
@@ -299,7 +299,7 @@ If a task is killed mid-run, its DynamoDB lock persists. The trigger Lambda auto
 2. If no task running → lock is stale → clear it and proceed
 3. If task IS running → legitimately locked → skip
 
-An hourly EventBridge rule invokes the trigger Lambda to check for stale locks even when no new content is uploaded. This also reconciles the dedup gate — if review is marked complete but Phase 3 never launched (e.g., due to a transient failure), the hourly check detects this and re-triggers Phase 3.
+A configurable EventBridge rule (default: every 15 minutes) invokes the trigger Lambda to check for stale locks even when no new content is uploaded. This also reconciles the dedup gate — if review is marked complete but Phase 3 never launched (e.g., due to a transient failure), the check detects this and re-triggers Phase 3.
 
 ## ECS Entrypoint Modes
 
@@ -330,3 +330,55 @@ The `ecs_entrypoint.py` supports three execution modes:
 5. Updates job status to `retrieved`
 6. Tears down networking
 7. Triggers next pipeline stage (dedup/Phase 3)
+
+## Recent Features (2026-06)
+
+### Cache Preloading
+
+On startup, `DynamoCacheBackend` performs a single DynamoDB scan to load all cache entries into memory. This eliminates per-request `GetItem` calls during extraction (~1600+ for a typical book). Sub-caches share the parent's preloaded data.
+
+### DynamoDB Materialization
+
+Phase 3 can materialize entities directly from DynamoDB instead of downloading from S3. If `get_entity_store()` returns a store, `_materialize_from_dynamo()` reads all entities and writes them as local files, using the stored `filename` field (falling back to entity ID). This is faster than S3 download for large entity sets.
+
+### Incremental Dedup
+
+Dedup scripts track the last run time in DynamoDB (`dedup_run#{entity_type}`). On subsequent runs, only pairs where at least one file is new (mtime > last run) are compared. Reduces O(n²) comparisons dramatically for large entity sets where only a few files changed.
+
+### Auto-Trigger Phase 3
+
+After Phase 2 dedup detection completes, if `_dedup_has_no_pending()` returns True (zero duplicate groups in all reports), Phase 3 is auto-triggered via the trigger Lambda without waiting for human review. The delayed networking teardown is only scheduled when duplicates exist.
+
+### Prompt Validation
+
+`GrokClient._validate_prompt()` runs before every API call. Checks:
+- Empty/whitespace-only prompts → `ValueError`
+- Unfilled template placeholders (`{book}`, `{author}`) → `ValueError`
+- Empty data sections (e.g., "Text:\n\n") → `ValueError`
+- Oversized prompts (>500k chars) → `ValueError`
+
+All extractors also guard against empty input text by returning `""` from prompt creation, which the caller skips.
+
+### Merge Undo/Snapshots
+
+The dedup UI saves a pre-merge snapshot (all involved entity files) to `dedup/history/{timestamp}/` in S3 before executing a merge. The merge response includes a `snapshot_id`. The `POST /dedup/api/undo` endpoint restores files from the snapshot.
+
+### S3 Deletion Tracking
+
+When dedup merge deletes a local entity file, `track_deletion()` records it in `_deleted_keys`. During `_final_sync`, these keys are deleted from S3. Prevents orphan files from lingering after merges.
+
+### OpenSERP Circuit Breaker
+
+`openserp_enrichment.py` tracks consecutive failures. After 5 consecutive empty responses or errors, the circuit breaker opens and all remaining searches are skipped. Resets on any successful response.
+
+### Configurable Intervals (CloudFormation)
+
+Timing constants are now CloudFormation parameters:
+- `BatchPollerIntervalMinutes` (default 5)
+- `ReconciliationIntervalMinutes` (default 15)
+- `NatWaitSeconds` (default 180)
+- `TeardownDelayMinutes` (default 30)
+
+### Batch Poller State Machine
+
+Jobs flow through: `pending` → `ready` → `retrieved` (or `failed`). The `ready` state means Grok confirmed completion but the retrieve task hasn't launched yet. If retrieve fails, the job stays `ready` and is retried on the next poll without re-checking Grok.

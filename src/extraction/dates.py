@@ -114,13 +114,21 @@ def create_date_prompt(
     sub_event_id = sub_event.get("Sub-eventID", "")
     sub_event_summary = sub_event.get("Sub-event_summary", "")
     fulltext = sub_event.get("Sub-event_fulltext", {})
+    fulltext_joined = "\n".join(fulltext.values()) if fulltext else ""
 
-    # Use summary as primary text (10-15% cost savings).
-    # Fall back to fulltext only if summary is very short (< 50 chars).
-    if len(sub_event_summary) >= 50:
+    # Use summary for short sub-events; use fulltext when it's substantially
+    # longer (likely contains temporal details not captured in summary).
+    if (
+        len(sub_event_summary) >= 50
+        and len(fulltext_joined) <= len(sub_event_summary) * 3
+    ):
         text = sub_event_summary
     else:
-        text = "\n".join(fulltext.values())
+        text = fulltext_joined or sub_event_summary
+
+    if not text.strip():
+        logger.debug("Skipping empty sub-event %s (dates)", sub_event_id)
+        return ""
 
     prompt = f"""Extract ALL date and time mentions from this WWII event text.
 

@@ -527,6 +527,9 @@ def create_weather_prompt(
     fulltext = sub_event.get("Sub-event_fulltext", {})
 
     text = "\n".join(fulltext.values())
+    if not text.strip() and not sub_event_summary.strip():
+        logger.debug("Skipping empty sub-event %s (weather)", sub_event_id)
+        return ""
 
     # Extract available PlaceIDs and DateIDs
     places_section = _build_places_section(sub_event, places_index)

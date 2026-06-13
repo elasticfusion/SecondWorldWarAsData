@@ -1,0 +1,136 @@
+---
+# PROFILE: balanced
+# Middle ground: batch API for bulk extraction (50% off), live calls for enrichment
+# (faster feedback), moderate concurrency, all features enabled.
+# Use when: normal production runs where you want results today, not tomorrow.
+
+paths:
+  content_root: "contentrepository"
+  output_root: "output"
+  content_output: "output/content"
+  cache_root: "cache"
+  review_root: "review"
+  api_cache: "cache/api"
+  image_cache: "cache/images"
+  maps_images: "output/maps_images"
+  people_data: "output/people.json"
+  peoplegroup_data: "output/peoplegroups.json"
+  supplemental_data: "output/supplemental.json"
+
+api:
+  grok:
+    base_url: "https://api.x.ai/v1/chat/completions"
+    model: "grok-4.3"
+    model_map:
+      isbn: "grok-3-mini"             # Light tasks get cheap model
+      url_verify: "grok-3-mini"
+      copyright: "grok-3-mini"
+      nara_match: "grok-3-mini"
+      openserp_verify: "grok-3-mini"
+    max_retries: 3
+    timeout: 60
+  calls_per_minute: 30
+  nara_api_key: ""
+  noaa_api_token: ""
+
+processing:
+  validate_ulids: true
+  generate_jq_queries: true
+  generate_download_scripts: true
+  force_reprocess: false
+  reprocess_types: []
+
+weather:
+  enabled: true
+  fetch_api_data: true
+  api_provider: "open-meteo"
+  cache_responses: true
+  only_precise_dates: true
+  timeout: 30
+
+equipment:
+  enabled: true
+  enable_enrichment: true
+  verify_media_with_vision: true
+
+logistics:
+  enabled: true
+
+casualties:
+  enabled: true
+
+supplemental_material:
+  enabled: true
+  extract_citations: true
+  enrich_with_searches: true
+  llm_search: true
+  search_gutenberg: true
+  search_archive_org: true
+  use_openserp: true
+  verify_archive_urls: true
+  extract_isbn: true
+  determine_copyright: true
+  max_materials_per_chapter: 1000
+
+concurrency:
+  enabled: true                        # Parallel — faster than sequential
+  max_event_files: 3                   # Moderate parallelism
+  max_extraction_group: 3
+  max_enrichment_workers: 6
+
+enrichment:
+  re_search_after_days: 90
+
+batch:
+  phase2: true                         # Batch extraction (50% off, async)
+  phase3: false                        # Live enrichment (faster feedback loop)
+
+openserp:
+  results_per_query: 20
+  max_images_per_entity: 5
+  max_web_results_per_entity: 5
+  rate_limit_seconds: 5
+
+maps:
+  enabled: true
+  extract_during_phase1: true
+  download_images: true
+  storage_backend: "filesystem"
+  storage_path: "output/maps/"
+  image_storage_path: "filestore/maps/"
+
+external_maps:
+  enabled: true
+  max_places: 50
+  openserp_url: "http://localhost:7001"
+  search_limit: 50
+  verify_with_vision: true
+  max_images_per_page: 5
+  image_download_timeout: 30
+  page_download_timeout: 15
+  image_storage_path: "filestore/external_maps/"
+  storage_path: "output/external_maps/"
+  require_license: true
+  allowed_licenses:
+    - "Public Domain"
+    - "CC0"
+    - "CC-BY"
+    - "CC-BY-SA"
+    - "Unknown"
+  download_images: false
+  link_to_places: true
+  link_to_dates: true
+
+storage:
+  entity_backend: "filesystem"
+
+aws:
+  enabled: false
+  region: "us-east-1"
+
+logging:
+  level: "INFO"
+  file: "logs/pipeline.log"
+  console: true
+  debug_message_preview_chars: 15000
+  debug_response_preview_chars: 15000

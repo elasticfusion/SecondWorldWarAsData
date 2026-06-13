@@ -65,3 +65,5 @@ messages/
 # Tools
 .gitnexus
 .idea/
+unprocesseddocs/
+output/metrics/

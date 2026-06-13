@@ -49,13 +49,22 @@ def handler(event, _context):
     results = {"checked": len(jobs), "complete": 0, "pending": 0, "failed": 0}
 
     for job in jobs:
+        # "ready" jobs already confirmed complete — just retry retrieve
+        if job.get("status") == "ready":
+            if _trigger_retrieve(job):
+                results["complete"] += 1
+            else:
+                results["pending"] += 1
+            continue
         status = _check_batch_status(
             api_key, job["batch_id"], int(job.get("submitted_at", 0))
         )
         if status == "complete":
-            if _mark_complete(job["batch_id"]):
-                _trigger_retrieve(job)
-                results["complete"] += 1
+            if _mark_ready(job["batch_id"]):
+                if _trigger_retrieve(job):
+                    results["complete"] += 1
+                else:
+                    results["pending"] += 1  # retrieve failed, will retry next poll
             else:
                 results["pending"] += 1  # another invocation handling it
         elif status == "failed":
@@ -139,13 +148,17 @@ def _get_api_key() -> str:
 
 
 def _get_pending_jobs() -> list:
-    """Scan DynamoDB for pending batch jobs."""
+    """Scan DynamoDB for pending or ready batch jobs."""
     table = boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE)
     items = []
     kwargs = {
-        "FilterExpression": "begins_with(cache_key, :prefix) AND #s = :status",
+        "FilterExpression": "begins_with(cache_key, :prefix) AND #s IN (:pending, :ready)",
         "ExpressionAttributeNames": {"#s": "status"},
-        "ExpressionAttributeValues": {":prefix": "batch_job#", ":status": "pending"},
+        "ExpressionAttributeValues": {
+            ":prefix": "batch_job#",
+            ":pending": "pending",
+            ":ready": "ready",
+        },
     }
     while True:
         resp = table.scan(**kwargs)
@@ -207,8 +220,8 @@ def _check_batch_status(api_key: str, batch_id: str, submitted_at: int = 0) -> s
         return "pending"  # don't mark failed on transient errors
 
 
-def _mark_complete(batch_id: str) -> bool:
-    """Atomically update job status to complete. Returns True if this invocation claimed it."""
+def _mark_ready(batch_id: str) -> bool:
+    """Atomically update job status to ready. Returns True if this invocation claimed it."""
     import time
 
     table = boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE)
@@ -219,7 +232,7 @@ def _mark_complete(batch_id: str) -> bool:
             ConditionExpression="#s = :expected",
             ExpressionAttributeNames={"#s": "status"},
             ExpressionAttributeValues={
-                ":new_status": "complete",
+                ":new_status": "ready",
                 ":expected": "pending",
                 ":ts": int(time.time()),
             },
@@ -243,11 +256,25 @@ def _mark_failed(batch_id: str) -> None:
     )
 
 
-def _trigger_retrieve(job: dict) -> None:
-    """Start ECS task in retrieve-only mode for the completed batch."""
+def _trigger_retrieve(job: dict) -> bool:
+    """Start ECS task in retrieve-only mode for the completed batch. Returns True on success."""
     batch_id = job["batch_id"]
     phase = job.get("phase", "phase3")
     phase_script = "phase2_extract.py" if phase == "phase2" else "phase3_enrich_data.py"
+
+    # Guard: don't launch if a retrieve task is already running for this phase
+    ecs = boto3.client("ecs", region_name=REGION)
+    task_def = (
+        f"{ENV_NAME}-wwii-phase2-extract"
+        if phase == "phase2"
+        else f"{ENV_NAME}-wwii-phase3-enrich"
+    )
+    running = ecs.list_tasks(
+        cluster=CLUSTER, family=task_def, desiredStatus="RUNNING"
+    ).get("taskArns", [])
+    if running:
+        logger.info("Retrieve task already running for %s, skipping", task_def)
+        return True  # Don't retry, task is in progress
 
     # First, ensure networking is up
     try:
@@ -305,25 +332,17 @@ def _trigger_retrieve(job: dict) -> None:
             f"Batch {batch_id} complete ({job.get('book', '?')}, "
             f"{job.get('request_count', '?')} reqs). Retrieve task started."
         )
+        return True
     except Exception as e:
         logger.error("Failed to start retrieve task for %s: %s", batch_id, e)
         _notify(f"Batch {batch_id} complete but FAILED to start retrieve: {e}")
-        # Reset to pending so poller retries on next cycle
-        try:
-            table = boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE)
-            table.update_item(
-                Key={"cache_key": f"batch_job#{batch_id}"},
-                UpdateExpression="SET #s = :s",
-                ExpressionAttributeNames={"#s": "status"},
-                ExpressionAttributeValues={":s": "pending"},
-            )
-            logger.info("Reset job %s to pending for retry", batch_id)
-        except Exception as e:
-            logger.warning("Failed to reset job %s: %s", batch_id, e)
+        return False
 
 
-def _wait_for_nat(max_seconds: int = 180) -> None:
-    """Poll until NAT gateway is available (max 3 min)."""
+def _wait_for_nat(max_seconds: int = None) -> None:
+    """Poll until NAT gateway is available."""
+    if max_seconds is None:
+        max_seconds = int(os.environ.get("NAT_WAIT_SECONDS", "180"))
     ec2 = boto3.client("ec2", region_name=REGION)
     import time
 
