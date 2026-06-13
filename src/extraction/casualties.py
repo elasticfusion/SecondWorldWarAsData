@@ -144,15 +144,21 @@ def _batch_extract_casualties(
         return {}
 
     # Build entity context with name:ID pairs for cross-referencing
-    def _format_index(index, limit=50):
+    def _format_index(label, index, limit=50):
         items = [f"{name}: {eid}" for name, eid in list(index.items())[:limit]]
-        return "\n    ".join(items) if items else "(none)"
+        if not items:
+            return ""
+        return f"  {label}:\n    " + "\n    ".join(items) + "\n"
 
+    sections = (
+        _format_index("Organizations", people_groups_index)
+        + _format_index("People", people_index)
+        + _format_index("Places", places_index)
+    )
     entity_context = (
-        f"Available entities (COPY these IDs exactly — do NOT generate new ones):\n"
-        f"  Organizations:\n    {_format_index(people_groups_index)}\n"
-        f"  People:\n    {_format_index(people_index)}\n"
-        f"  Places:\n    {_format_index(places_index)}\n"
+        f"Available entities (COPY these IDs exactly — do NOT generate new ones):\n{sections}"
+        if sections
+        else ""
     )
 
     # Chunk to avoid truncation on large chapters

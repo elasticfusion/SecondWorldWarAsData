@@ -8,8 +8,8 @@
 
 | Function | Trigger | Schedule | Purpose |
 |----------|---------|----------|---------|
-| trigger | SQS (S3 notifications) | 1 hour (stale lock check) | Orchestrates pipeline — launches ECS tasks |
-| batch-poller | — | 15 minutes | Checks Grok batch job status, triggers retrieval |
+| trigger | SQS (S3 notifications) | configurable (ReconciliationIntervalMinutes, default 15 min) | Orchestrates pipeline — launches ECS tasks |
+| batch-poller | — | 5 minutes | Checks Grok batch job status, triggers retrieval |
 | nat-manager | SNS, Lambda invoke | — | Creates/deletes NAT gateway + VPC endpoints |
 | openserp-manager | — | 10 minutes | Idle monitoring, force-teardown NAT if stale |
 | metrics | API Gateway GET | — | Pipeline metrics dashboard |
@@ -28,14 +28,14 @@
 
 **Invocation sources:**
 - SQS queue (from SNS topics: content-uploaded, chapter-parsed, entity-created, dedup-complete)
-- EventBridge schedule (hourly stale lock check + pending queue reconciliation)
+- EventBridge schedule (configurable stale lock check + pending queue reconciliation, default every 15 min)
 - Manual: `aws lambda invoke --function-name dev-wwii-trigger --payload '{"source": "manual", "book": "BookName", "phase": "2"}'`
 
 **What it does:**
 - Routes S3 events by topic (content uploaded → queue for Phase 1, parsed file → queue for Phase 2)
 - Checks for running ECS tasks before launching new ones (single-task concurrency)
 - Extracts `BOOK_NAME` from pending queues and passes to ECS tasks
-- Reconciles stale locks (hourly) — detects dead tasks and re-triggers
+- Reconciles stale locks — detects dead tasks and re-triggers
 - Detects "dedup complete but Phase 3 never ran" state
 
 **Environment variables:** `CLUSTER`, `PHASE1_TASK_DEF`, `PHASE2_TASK_DEF`, `PHASE3_TASK_DEF`, `CACHE_TABLE`, `S3_BUCKET`
@@ -46,13 +46,16 @@
 
 **Purpose:** Polls Grok Batch API for completed jobs and triggers ECS retrieve tasks.
 
-**Schedule:** Every 15 minutes.
+**Schedule:** Every 5 minutes (configurable via `BatchPollerIntervalMinutes` CloudFormation parameter).
 
+**State machine:** Jobs flow through: `pending` → `ready` → `complete` (or `failed`).
 **What it does:**
-- Scans DynamoDB for batch jobs with `status: "pending"`
-- Checks each job's status via the Grok API (`GET /batch/{id}`)
-- When a batch completes: invokes nat-manager (async), waits for NAT, launches ECS retrieve task
-- Updates job status in DynamoDB (pending → complete → retrieved, or failed)
+- Scans DynamoDB for batch jobs with `status: "pending"` or `status: "ready"`
+- For pending jobs: checks status via Grok API (`GET /batch/{id}`)
+- When a batch completes: atomically marks as `ready`, invokes nat-manager (synchronous), waits for NAT, launches ECS retrieve task
+- For ready jobs (retrieve previously failed): retries launching the retrieve task
+- Guards against duplicate retrieve tasks (checks for running ECS tasks before launching)
+- Updates job status in DynamoDB (pending → ready → complete, or failed)
 
 **Environment variables:** `CACHE_TABLE`, `CLUSTER`, `PHASE2_TASK_DEF`, `NAT_MANAGER_ARN`
 
@@ -63,14 +66,15 @@
 **Purpose:** Dynamic networking lifecycle — creates/deletes NAT gateway and VPC endpoints on demand.
 
 **Invocation sources:**
-- Lambda invoke from trigger/batch-poller (action: "up")
-- SNS subscription (Phase 2 complete → action: "down")
+- Lambda invoke from trigger/batch-poller (action: "create")
+- SNS subscription (any "completed successfully" message → action: "delete")
 - EventBridge Scheduler (delayed teardown)
 
 **What it does:**
-- `{"action": "up"}` — Creates NAT gateway, allocates EIP, updates route tables, ensures VPC endpoints (ECR, logs, S3)
-- `{"action": "down"}` — Deletes NAT, releases EIP, removes routes, deletes non-essential VPC endpoints
+- `{"action": "create"}` — Creates NAT gateway, allocates EIP, updates route tables, ensures VPC endpoints (ECR, logs, S3, Secrets Manager)
+- `{"action": "delete"}` — Deletes NAT, releases EIP, removes routes, deletes non-essential VPC endpoints
 - `{"action": "status"}` — Returns current NAT state
+- On SNS: tears down on ANY "completed successfully" message (not just Phase 3)
 
 **Cost impact:** NAT gateway = $0.045/hr + $0.045/GB processed. Only runs during active pipeline execution.
 
@@ -167,9 +171,9 @@
 | Invocation | Purpose | Caller |
 |------------|---------|--------|
 | `trigger` via SQS | S3 event routing | S3 → SNS → SQS (automatic) |
-| `trigger` via EventBridge | Stale lock reconciliation | Scheduled (hourly) |
+| `trigger` via EventBridge | Stale lock reconciliation | Scheduled (configurable, default 15 min) |
 | `trigger` via `aws lambda invoke` | Manual pipeline trigger | Operator |
-| `batch-poller` via EventBridge | Poll Grok batch status | Scheduled (15 min) |
+| `batch-poller` via EventBridge | Poll Grok batch status | Scheduled (5 min) |
 | `nat-manager` via Lambda invoke | Create/delete NAT | batch-poller, trigger |
 | `nat-manager` via SNS | Teardown after Phase 2 | phase2-complete topic |
 | `openserp-manager` via EventBridge | Idle cost monitoring | Scheduled (10 min) |
@@ -188,8 +192,8 @@ aws cloudformation describe-stacks --stack-name wwii-pipeline-dev --region us-ea
 
 | Schedule | Rate | Target |
 |----------|------|--------|
-| `dev-wwii-stale-lock-check` | 1 hour | trigger (with `{"source": "scheduled"}`) |
-| `dev-wwii-batch-poller-schedule` | 15 min | batch-poller |
+| `dev-wwii-stale-lock-check` | configurable (default 15 min) | trigger (with `{"source": "scheduled"}`) |
+| `dev-wwii-batch-poller-schedule` | configurable (default 5 min) | batch-poller |
 | `dev-wwii-openserp-idle-monitor` | 10 min | openserp-manager |
 
 ---
@@ -209,7 +213,7 @@ aws cloudformation describe-stacks --stack-name wwii-pipeline-dev --region us-ea
 
 ## Cost Notes
 
-- **Batch poller:** Runs every 15 min regardless of activity (~$0.30/month). Cold starts each time.
+- **Batch poller:** Runs every 5 min regardless of activity (~$0.60/month). Cold starts each time.
 - **OpenSERP manager:** Runs every 10 min (~$0.20/month). Most invocations are no-ops.
 - **Trigger:** Only runs on S3 events + hourly schedule. Minimal cost.
 - **NAT gateway:** $0.045/hr when active. The 2-hour guardrail caps worst-case to ~$0.09 per orphan.

@@ -1,7 +1,7 @@
 # Configuration Guide
 
 **File:** `config.yaml`  
-**Last Updated:** 2026-05-23
+**Last Updated:** 2026-06-13
 
 Complete reference for all configuration options in the WWII data extraction pipeline.
 
@@ -516,15 +516,26 @@ Set automatically by CloudFormation on ECS task definitions:
 | `SKIP_RETRY` | Retrieve task | When true, skips retry logic (results already in cache) |
 | `ENV_NAME` | All | Environment name prefix (e.g., `dev`) |
 
+### CloudFormation Timing Parameters
+
+Configurable via CloudFormation stack parameters in `cloudformation/compute.yaml`. No code changes needed.
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `BatchPollerIntervalMinutes` | 5 | How often batch poller checks xAI API |
+| `ReconciliationIntervalMinutes` | 15 | Stale lock check / Phase 3 re-trigger interval |
+| `NatWaitSeconds` | 180 | Seconds to wait for NAT gateway availability |
+| `TeardownDelayMinutes` | 30 | Delay before tearing down networking after batch submit |
+
 ### DynamoDB Keys Used by Pipeline
 
 | Key | Written by | Read by | Description |
 |-----|-----------|---------|-------------|
-| `lock#<family>` | Trigger Lambda | Trigger Lambda, entrypoint | Pipeline task locks (conditional put) |
+| `lock#<family>` | Trigger Lambda | Trigger Lambda, entrypoint | Pipeline task locks (conditional put, 2h TTL) |
 | `manifest#phase2` | Phase 2 final sync, dedup UI | Phase 3 download | List of S3 keys changed by Phase 2 and dedup review |
 | `pending#content` | Trigger Lambda | Phase 2 post-process | Queued content keys when pipeline is busy |
 | `pending#parsed` | Trigger Lambda | Phase 2 launcher | Queued parsed file keys when Phase 2 is busy |
-| `batch_job#<batch_id>` | Submit-only task | Batch poller Lambda | Batch job tracking (status: pending/complete/failed/retrieved, 30-day TTL) |
+| `batch_job#<batch_id>` | Submit-only task | Batch poller Lambda | Batch job tracking (status: pending/ready/retrieved/failed, 30-day TTL) |
 | `book_manifest#<book>#<entity_type>` | Phase 2 | Phase 3 | Entity files belonging to a specific book (scopes S3 downloads) |
 | `name_exclusion#<type>#<name1>#<name2>` | Dedup UI, merge script | Dedup scripts | Name-based exclusion pairs (survives file recreation) |
 | `metrics#<id>` | Phase 2/3 | Metrics API | Batch API metrics |

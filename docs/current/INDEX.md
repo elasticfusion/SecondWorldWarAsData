@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated:** 2026-06-07
+**Last Updated:** 2026-06-13
 
 ---
 
@@ -9,13 +9,14 @@
 ### Deployment & Operations
 | Document | Description |
 |----------|-------------|
-| [RUNBOOK.md](RUNBOOK.md) | Operations runbook — re-runs, locks, debugging, emergency |
-| [LOCAL_DEPLOYMENT.md](LOCAL_DEPLOYMENT.md) | Prerequisites, setup, local run instructions |
+| [RUNBOOK.md](RUNBOOK.md) | Operations runbook — re-runs, locks, batch states, Spot recovery, cost runaway |
+| [MONITORING.md](MONITORING.md) | CloudWatch alarms, dashboard, notifications, cost controls |
+| [NETWORKING_LIFECYCLE.md](NETWORKING_LIFECYCLE.md) | Dynamic NAT Gateway and VPC endpoint management |
+| [LAMBDA_FUNCTIONS.md](LAMBDA_FUNCTIONS.md) | All Lambda functions, schedules, SNS topics |
 | [AWS_DEPLOYMENT.md](AWS_DEPLOYMENT.md) | CloudFormation, Lambda, ECS, S3 setup |
-| [AWS_DEPLOYMENT_PLAN.md](AWS_DEPLOYMENT_PLAN.md) | Architecture decisions and cost analysis |
-| [LAMBDA_FUNCTIONS.md](LAMBDA_FUNCTIONS.md) | All 9 Lambda functions documented |
 | [GITHUB_ACTIONS_AWS_SETUP.md](GITHUB_ACTIONS_AWS_SETUP.md) | CI/CD with GitHub Actions + OIDC |
-| [SPOT_RECOVERY.md](SPOT_RECOVERY.md) | Spot instance termination handling |
+| [LOCAL_DEPLOYMENT.md](LOCAL_DEPLOYMENT.md) | Prerequisites, setup, local run instructions |
+| [CODE_REVIEW.md](CODE_REVIEW.md) | Latest code review findings (auto-generated) |
 
 ### Core Reference
 | Document | Description |
@@ -36,8 +37,16 @@
 ### Architecture & Design
 | Document | Description |
 |----------|-------------|
-| [PHASE4_DYNAMODB_STORAGE.md](PHASE4_DYNAMODB_STORAGE.md) | DynamoDB entity store (Phase A-D) |
 | [SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md) | JSON schemas for all entity types |
+| [ENTITY_RELATIONSHIP_MAP.md](ENTITY_RELATIONSHIP_MAP.md) | Cross-references between entities, ID types, structural inconsistencies |
+
+### Data Quality & Integrity
+| Document | Description |
+|----------|-------------|
+| [DATA_QUALITY_STATUS.md](DATA_QUALITY_STATUS.md) | Entity counts, enrichment rates, known issues, cross-ref integrity |
+| [CODE_INTEGRITY_REVIEW.md](CODE_INTEGRITY_REVIEW.md) | Code-level data integrity issues (20 findings, prioritized) |
+| [dataquality/new_entity_types.md](dataquality/new_entity_types.md) | Proposed Economic Data and Policy/Legislation types |
+| [dataquality/bibliography_resolution_process.md](dataquality/bibliography_resolution_process.md) | Bibliography resolution end-to-end workflow |
 
 ### Features (Entity Types)
 | Document | Description |
@@ -64,11 +73,6 @@
 |----------|-------------|
 | [TODO.md](TODO.md) | Pipeline backlog (prioritized) |
 
-### Data Quality
-| Document | Description |
-|----------|-------------|
-| [dataquality/bibliography_resolution_process.md](dataquality/bibliography_resolution_process.md) | Bibliography resolution workflow |
-
 ---
 
 ## Scripts Reference
@@ -79,4 +83,11 @@ See [scripts/README.md](../../scripts/README.md) for all 70+ utility scripts, ca
 
 ## Archived Documents
 
-Historical implementation logs, review documents, and completed specs in `docs/archive/`. Not maintained. Items consolidated into [TODO.md](TODO.md).
+Historical implementation logs, review documents, and completed specs in `docs/archive/`:
+- `AWS_DEPLOYMENT_PLAN.md` — Architecture decisions and cost analysis (implemented)
+- `SPOT_RECOVERY.md` — Spot termination analysis (recommendations implemented)
+- `PHASE4_DYNAMODB_STORAGE.md` — Design spec (fully implemented)
+- `PHASE4_SPEC.md` — Original Phase 4 spec
+- `end-2-end-0.md` — First end-to-end test log
+
+Items consolidated into [TODO.md](TODO.md).

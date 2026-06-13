@@ -1,0 +1,117 @@
+---
+# PROFILE: cost-optimized
+# Minimizes API spend. Uses batch API (50% off), cheaper models for light tasks,
+# aggressive caching, and limits external searches.
+# Use when: processing new books in production, budgets are tight.
+
+paths:
+  content_root: "contentrepository"
+  output_root: "output"
+  content_output: "output/content"
+  cache_root: "cache"
+  review_root: "review"
+  api_cache: "cache/api"
+  image_cache: "cache/images"
+  maps_images: "output/maps_images"
+  people_data: "output/people.json"
+  peoplegroup_data: "output/peoplegroups.json"
+  supplemental_data: "output/supplemental.json"
+
+api:
+  grok:
+    base_url: "https://api.x.ai/v1/chat/completions"
+    model: "grok-4.3"
+    model_map:
+      isbn: "grok-3-mini"             # Cheap model for simple lookups
+      url_verify: "grok-3-mini"
+      copyright: "grok-3-mini"
+      nara_match: "grok-3-mini"
+      openserp_verify: "grok-3-mini"
+    max_retries: 3
+    timeout: 60
+  calls_per_minute: 20                 # Conservative rate limit
+  nara_api_key: ""
+  noaa_api_token: ""
+
+processing:
+  validate_ulids: true
+  generate_jq_queries: false           # Skip — not needed for production
+  generate_download_scripts: false
+  force_reprocess: false
+  reprocess_types: []
+
+weather:
+  enabled: true
+  fetch_api_data: true                 # Open-Meteo is free
+  api_provider: "open-meteo"
+  cache_responses: true
+  only_precise_dates: true             # Skip vague dates (fewer API calls)
+  timeout: 30
+
+equipment:
+  enabled: true
+  enable_enrichment: false             # Skip enrichment — saves many API calls
+  verify_media_with_vision: false      # Skip vision API ($$$)
+
+logistics:
+  enabled: true
+
+casualties:
+  enabled: true
+
+supplemental_material:
+  enabled: true
+  extract_citations: true
+  enrich_with_searches: true
+  llm_search: true
+  search_gutenberg: true               # Free
+  search_archive_org: true             # Free
+  use_openserp: false                  # Disable — requires running OpenSERP service ($)
+  verify_archive_urls: false           # Skip verification pass
+  extract_isbn: false                  # Skip — uses API calls
+  determine_copyright: false           # Skip — uses API calls
+  max_materials_per_chapter: 500       # Limit scope
+
+concurrency:
+  enabled: false
+  max_event_files: 3
+  max_extraction_group: 3
+  max_enrichment_workers: 4
+
+enrichment:
+  re_search_after_days: 180            # Re-search less frequently
+
+batch:
+  phase2: true                         # 50% off extraction
+  phase3: true                         # 50% off enrichment
+
+openserp:
+  results_per_query: 10                # Fewer results = fewer verification calls
+  max_images_per_entity: 3
+  max_web_results_per_entity: 3
+  rate_limit_seconds: 5
+
+maps:
+  enabled: true
+  extract_during_phase1: true
+  download_images: false               # Don't download images (saves bandwidth/storage)
+  storage_backend: "filesystem"
+  storage_path: "output/maps/"
+  image_storage_path: "filestore/maps/"
+
+external_maps:
+  enabled: false                       # Disable external map search (expensive: OpenSERP + vision)
+
+storage:
+  entity_backend: "filesystem"
+
+aws:
+  enabled: false
+  region: "us-east-1"
+
+logging:
+  level: "INFO"
+  file: "logs/pipeline.log"
+  console: true
+  debug_message_preview_chars: 500
+  debug_response_preview_chars: 500

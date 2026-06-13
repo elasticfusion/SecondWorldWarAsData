@@ -38,6 +38,22 @@ Parameters:
   PipelineImageUri:
     Type: String
     Description: ECR image URI for pipeline container
+  BatchPollerIntervalMinutes:
+    Type: Number
+    Default: 5
+    Description: How often the batch poller checks for completed batches
+  ReconciliationIntervalMinutes:
+    Type: Number
+    Default: 15
+    Description: How often the stale lock / reconciliation check runs
+  NatWaitSeconds:
+    Type: Number
+    Default: 180
+    Description: Max seconds to wait for NAT gateway availability
+  TeardownDelayMinutes:
+    Type: Number
+    Default: 30
+    Description: Minutes to wait before tearing down networking after Phase 2 (dedup review window)
 
 Resources:
   # --- ECS Cluster ---
@@ -129,6 +145,10 @@ Resources:
               Value: !Ref EnvironmentName
             - Name: SCHEDULER_ROLE_ARN
               Value: !Sub arn:aws:iam::${AWS::AccountId}:role/${EnvironmentName}-wwii-scheduler-role
+            - Name: TEARDOWN_DELAY_MINUTES
+              Value: !Ref TeardownDelayMinutes
+            - Name: NAT_WAIT_SECONDS
+              Value: !Ref NatWaitSeconds
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -223,12 +243,13 @@ Resources:
           PHASE1_TASK_DEF: !Ref Phase1TaskDef
           PHASE2_TASK_DEF: !Ref Phase2TaskDef
           PHASE3_TASK_DEF: !Ref Phase3TaskDef
+          NAT_WAIT_SECONDS: !Ref NatWaitSeconds
   # --- Hourly stale lock check ---
   StaleLockCheckRule:
     Type: AWS::Events::Rule
     Properties:
       Name: !Sub ${EnvironmentName}-wwii-stale-lock-check
-      ScheduleExpression: "rate(1 hour)"
+      ScheduleExpression: !Sub "rate(${ReconciliationIntervalMinutes} minutes)"
       State: ENABLED
       Targets:
         - Id: TriggerLambda
@@ -374,12 +395,13 @@ Resources:
           SECURITY_GROUP_ID: !Ref LambdaSGId
           SECRETS_ID: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
           NOTIFICATION_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+          NAT_WAIT_SECONDS: !Ref NatWaitSeconds
 
   BatchPollerSchedule:
     Type: AWS::Events::Rule
     Properties:
       Name: !Sub ${EnvironmentName}-wwii-batch-poller-schedule
-      ScheduleExpression: rate(15 minutes)
+      ScheduleExpression: !Sub "rate(${BatchPollerIntervalMinutes} minutes)"
       State: ENABLED
       Targets:
         - Id: BatchPollerTarget

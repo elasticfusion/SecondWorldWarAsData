@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 import ulid as ulid_mod
 
-from src.grok_client import GrokClient, current_book
+from src.grok_client import GrokClient, BatchModeCollecting, current_book
 from src.utils.file_lock import write_json_with_lock
 from src.utils.json_validator import _fix_invalid_ulids
 
@@ -425,11 +425,17 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
                 prompt += f"\n   {ft[pk]}"
 
     # API call
+    # NOTE: Entity extraction follows a hierarchical order within each book:
+    # events → people/groups/places/dates → optional (equipment/weather/etc.)
+    # Parallelism is across books, not within a single book's entity hierarchy.
     loop = asyncio.get_event_loop()
     try:
         response = await loop.run_in_executor(
             None, lambda: grok_client.extract_json(prompt, cache_type=cache_type)
         )
+    except BatchModeCollecting:
+        # In batch mode, request was queued — not a failure
+        return empty
     except Exception as e:  # pylint: disable=broad-except
         logger.error("%s batch extraction failed: %s", entity_type, e)
         return empty

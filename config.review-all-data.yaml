@@ -1,0 +1,141 @@
+---
+# PROFILE: review-all-data
+# Forces a complete reprocessing of all data, ignoring caches.
+# Use when: prompts have changed, data is corrupted, or you want a fresh extraction.
+# WARNING: Expensive — makes live API calls for every chapter/entity.
+
+paths:
+  content_root: "contentrepository"
+  output_root: "output"
+  content_output: "output/content"
+  cache_root: "cache"
+  review_root: "review"
+  api_cache: "cache/api"
+  image_cache: "cache/images"
+  maps_images: "output/maps_images"
+  people_data: "output/people.json"
+  peoplegroup_data: "output/peoplegroups.json"
+  supplemental_data: "output/supplemental.json"
+
+api:
+  grok:
+    base_url: "https://api.x.ai/v1/chat/completions"
+    model: "grok-4.3"
+    model_map: {}                      # Use best model for everything
+    max_retries: 5                     # More retries — we're investing in completeness
+    timeout: 120                       # Longer timeout for complex extractions
+  calls_per_minute: 30
+  nara_api_key: ""
+  noaa_api_token: ""
+
+processing:
+  validate_ulids: true
+  generate_jq_queries: true
+  generate_download_scripts: true
+  force_reprocess: true                # Ignore all caches, reprocess everything
+  reprocess_types:                     # Re-extract ALL entity types
+    - people
+    - places
+    - dates
+    - equipment
+    - weather
+    - logistics
+    - casualties
+    - maps
+    - supplemental
+    - people_groups
+
+weather:
+  enabled: true
+  fetch_api_data: true
+  api_provider: "open-meteo"
+  cache_responses: false               # Don't cache — we want fresh data
+  only_precise_dates: false            # Include approximate dates too
+  timeout: 30
+
+equipment:
+  enabled: true
+  enable_enrichment: true
+  verify_media_with_vision: true
+
+logistics:
+  enabled: true
+
+casualties:
+  enabled: true
+
+supplemental_material:
+  enabled: true
+  extract_citations: true
+  enrich_with_searches: true
+  llm_search: true
+  search_gutenberg: true
+  search_archive_org: true
+  use_openserp: true
+  verify_archive_urls: true
+  extract_isbn: true
+  determine_copyright: true
+  max_materials_per_chapter: 1000
+
+concurrency:
+  enabled: false                       # Sequential — maximize quality, avoid race conditions
+  max_event_files: 1
+  max_extraction_group: 1
+  max_enrichment_workers: 3
+
+enrichment:
+  re_search_after_days: 0              # Re-search everything regardless of when last searched
+
+batch:
+  phase2: false                        # Live calls — see results immediately
+  phase3: false                        # Live calls
+
+openserp:
+  results_per_query: 30                # More results for thorough coverage
+  max_images_per_entity: 10
+  max_web_results_per_entity: 10
+  rate_limit_seconds: 3
+
+maps:
+  enabled: true
+  extract_during_phase1: true
+  download_images: true
+  storage_backend: "filesystem"
+  storage_path: "output/maps/"
+  image_storage_path: "filestore/maps/"
+
+external_maps:
+  enabled: true
+  max_places: null                     # Search ALL places
+  openserp_url: "http://localhost:7001"
+  search_limit: 50
+  verify_with_vision: true
+  max_images_per_page: 5
+  image_download_timeout: 60
+  page_download_timeout: 30
+  image_storage_path: "filestore/external_maps/"
+  storage_path: "output/external_maps/"
+  require_license: true
+  allowed_licenses:
+    - "Public Domain"
+    - "CC0"
+    - "CC-BY"
+    - "CC-BY-SA"
+    - "Unknown"
+  download_images: true                # Download everything
+  link_to_places: true
+  link_to_dates: true
+
+storage:
+  entity_backend: "filesystem"
+
+aws:
+  enabled: false
+  region: "us-east-1"
+
+logging:
+  level: "DEBUG"                       # Full visibility into what's happening
+  file: "logs/pipeline.log"
+  console: true
+  debug_message_preview_chars: 15000
+  debug_response_preview_chars: 15000

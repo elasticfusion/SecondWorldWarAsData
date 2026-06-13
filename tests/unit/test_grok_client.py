@@ -86,3 +86,35 @@ class TestGrokClient:
 
         assert "key1" not in events_cache
         assert "key2" in people_cache
+
+
+class TestValidatePrompt:
+    """Test input validation before sending to API."""
+
+    def test_empty_prompt_raises(self, tmp_path):
+        client = GrokClient(cache_dir=tmp_path / "cache", api_key="test-key")
+        with pytest.raises(ValueError, match="Empty prompt"):
+            client._validate_prompt("")
+
+    def test_whitespace_only_raises(self, tmp_path):
+        client = GrokClient(cache_dir=tmp_path / "cache", api_key="test-key")
+        with pytest.raises(ValueError, match="Empty prompt"):
+            client._validate_prompt("   \n  ")
+
+    def test_unfilled_placeholders_raises(self, tmp_path):
+        client = GrokClient(cache_dir=tmp_path / "cache", api_key="test-key")
+        with pytest.raises(ValueError, match="unfilled placeholders.*book"):
+            client._validate_prompt("Extract events from {book} by {author}")
+
+    def test_json_braces_not_flagged(self, tmp_path):
+        """JSON content with braces should not trigger placeholder detection."""
+        client = GrokClient(cache_dir=tmp_path / "cache", api_key="test-key")
+        prompt = 'Return JSON: {"EventID": "abc", "Sub-events": []}'
+        # Should not raise
+        client._validate_prompt(prompt)
+
+    def test_valid_prompt_passes(self, tmp_path):
+        client = GrokClient(cache_dir=tmp_path / "cache", api_key="test-key")
+        client._validate_prompt(
+            "Extract events from The Lorraine Campaign by Hugh Cole"
+        )

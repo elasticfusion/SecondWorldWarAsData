@@ -11,6 +11,22 @@ TEMPLATE_BUCKET="wwii-pipeline-deploy"
 ENV="dev"
 EMAIL="dchristian@cirrusnine.com"
 
+echo "=== 0. Select config profile ==="
+echo "  1) balanced          — batch extraction, live enrichment (default)"
+echo "  2) cost-optimized    — everything batched, cheap models for light tasks"
+echo "  3) performance       — live calls, max concurrency, fastest"
+echo "  4) review-all-data   — force reprocess everything (expensive)"
+echo "  5) keep current      — don't change config.yaml"
+read -p "  Profile [1-5, default=5]: " -r profile_choice
+case "$profile_choice" in
+    1) cp config.balanced.yaml config.yaml && echo "  → balanced" ;;
+    2) cp config.cost-optimized.yaml config.yaml && echo "  → cost-optimized" ;;
+    3) cp config.performance-optimized.yaml config.yaml && echo "  → performance" ;;
+    4) cp config.review-all-data.yaml config.yaml && echo "  → review-all-data (WARNING: expensive)" ;;
+    *) echo "  → keeping current config.yaml" ;;
+esac
+echo ""
+
 echo "=== 1. Stopping running tasks ==="
 TASKS=$(aws ecs list-tasks --cluster $CLUSTER --region $REGION --query "taskArns[]" --output text 2>/dev/null)
 if [ -n "$TASKS" ] && [ "$TASKS" != "None" ]; then

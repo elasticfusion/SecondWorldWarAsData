@@ -19,7 +19,7 @@ Phase 2 (batch:true) → auto-delegates to submit-only mode
                                                                   ↓ enqueues batch_job#{batch_id} in DynamoDB
                                                                   ↓ tears down NAT + scales OpenSERP to 0
                                                                   ↓ exits
-EventBridge (15 min) → batch_poller Lambda → polls Grok batch API
+EventBridge (5 min) → batch_poller Lambda → polls Grok batch API
                                                                   ↓ on completion: creates networking
                                                                   ↓ launches ECS retrieve-only task
 Retrieve task        → downloads batch results → populates cache
@@ -37,9 +37,10 @@ DynamoDB (import)   ← ECS Import (manual trigger)
 ```
 
 - **Pipeline compute:** ECS Fargate tasks (Phase 1/2/3, import) — no timeout limits, batch mode for Grok API
+- **Capacity providers:** Fargate Spot (weight 4) + Fargate (weight 1) — ~70% cost savings with automatic Spot termination recovery via SIGTERM handler and EventBridge task state change rule
 - **ECS entrypoint modes:** `run_phase` (default), `--submit-only` (submit batch then exit), `--retrieve-only` (retrieve results and re-run)
 - **Trigger:** Single lightweight Lambda receives SQS-batched events, queues content in DynamoDB (`pending#content`, `pending#parsed`), and launches ECS tasks only if pipeline is idle
-- **Batch Poller:** Lambda (`dev-wwii-batch-poller`) triggered by EventBridge every 15 min — polls Grok batch API, launches ECS retrieve task on completion
+- **Batch Poller:** Lambda (`dev-wwii-batch-poller`) triggered by EventBridge every 5 min — polls Grok batch API, launches ECS retrieve task on completion
 - **Job Queue:** DynamoDB entries (`batch_job#{batch_id}`) track submitted batch jobs with status (pending/complete/failed/retrieved)
 - **OpenSERP:** ECS Fargate service with internal ALB (headless Chrome)
 - **Storage:** S3 for content and output, DynamoDB for API cache, pipeline locks, manifests, job queue, and entity tables
@@ -244,7 +245,7 @@ aws:
 | `storage.yaml` | S3 bucket (DeletionPolicy: Retain, PublicAccessBlock enabled), 11 DynamoDB tables, AWS Budget |
 | `iam.yaml` | Lambda and ECS IAM roles |
 | `compute.yaml` | ECS cluster, 4 pipeline task definitions, trigger Lambda, batch poller Lambda, OpenSERP service, ALB, dedup UI/gate/auth Lambdas |
-| `events.yaml` | SNS topics, S3→SNS notifications, EventBridge schedules (15-min poller, hourly reconciliation), CloudWatch alarms + dashboard |
+| `events.yaml` | SNS topics, S3→SNS notifications, EventBridge schedules (5-min poller, 15-min reconciliation), CloudWatch alarms + dashboard |
 | `main.yaml` | Root stack (nests all above) |
 
 **Key settings:**
@@ -276,7 +277,7 @@ bash scripts/update_lambdas.sh dev us-east-1 wwii-pipeline-deploy
 
 **Name:** `dev-wwii-batch-poller`  
 **Source:** `lambda_handlers/batch_poller.py`  
-**Triggered by:** EventBridge schedule (`rate(15 minutes)`) OR direct invoke with `{action: "submit"}`
+**Triggered by:** EventBridge schedule (`rate(5 minutes)`, configurable via `BatchPollerIntervalMinutes`) OR direct invoke with `{action: "submit"}`
 
 Polls the Grok batch API for pending jobs and launches ECS retrieve tasks on completion.
 
@@ -391,6 +392,7 @@ VPC, subnets, S3, DynamoDB, and Lambda functions cost $0 when idle. Pipeline ECS
 | `tmp/` | Delete after 7 days |
 | `cache/` | Delete after 90 days |
 | `output/` | → Standard-IA at 30 days → Glacier IR at 90 days |
+| All (noncurrent versions) | Expire after 30 days |
 
 ### S3 Directory Structure
 
@@ -469,11 +471,11 @@ aws s3 rm s3://dev-wwii-data-pipeline/locks/ --recursive --region us-east-1
 
 ### Alarms (→ SNS topic `dev-wwii-alarms`)
 
-- Lambda errors (≥1 in 5 min)
-- Lambda throttles
-- Phase 2 duration warnings
+- Lambda errors (≥3 in 5 min) for trigger, batch-poller, nat-manager
 - ECS task failures (phase errors trigger SNS notification)
 - Batch job failures (poller sends SNS on Grok API errors)
+
+See [MONITORING.md](MONITORING.md) for full alarm details and management commands.
 
 ### Email Notifications
 

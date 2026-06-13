@@ -17,31 +17,31 @@ prompt_template: |
   {schema}
 
 schema: |
-  {{
+  {
     "SUB_EVENT_ID": [
-      {{
+      {
         "CasualtyID": "01ULID...",
         "type": "casualties",
         "side": "allied",
         "description": "Heavy losses during assault on Hill 192",
-        "count": {{
-          "killed": {{"value": 45, "qualifier": "exact"}},
-          "wounded": {{"value": 120, "qualifier": "approximately"}},
-          "missing": {{"value": 10, "qualifier": "exact"}},
-          "captured": {{"value": 0, "qualifier": "exact"}},
-          "total": {{"value": 175, "qualifier": "exact"}}
-        }},
+        "count": {
+          "killed": {"value": 45, "qualifier": "exact"},
+          "wounded": {"value": 120, "qualifier": "approximately"},
+          "missing": {"value": 10, "qualifier": "exact"},
+          "captured": {"value": 0, "qualifier": "exact"},
+          "total": {"value": 175, "qualifier": "exact"}
+        },
         "date_string": "1944-07-11",
         "impacted_organizations": [
-          {{"name": "2nd Infantry Division", "PeopleGroupID": "<COPY from Available entities > Organizations, or null>", "nationality": "USA", "role": "attacking_force"}}
+          {"name": "2nd Infantry Division", "PeopleGroupID": "<COPY from Available entities > Organizations, or null>", "nationality": "USA", "role": "attacking_force"}
         ],
         "impacted_people": [
-          {{"name": "Colonel Smith", "PersonID": "<COPY from Available entities > People, or null>", "casualty_type": "wounded"}}
+          {"name": "Colonel Smith", "PersonID": "<COPY from Available entities > People, or null>", "casualty_type": "wounded"}
         ],
-        "impacted_places": [{{"name": "Hill 192", "PlaceID": "<COPY from Available entities > Places, or null>"}}]
-      }}
+        "impacted_places": [{"name": "Hill 192", "PlaceID": "<COPY from Available entities > Places, or null>"}]
+      }
     ]
-  }}
+  }
 
 rules:
   - Generate 26-character ULIDs ONLY for CasualtyID

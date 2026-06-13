@@ -1,9 +1,18 @@
 # JSON Schema Reference
 
-**Last Updated:** 2026-05-23
-**Schema Version:** 2.1
+**Last Updated:** 2026-06-13
+**Schema Version:** 2.3
 
 All entity files use 26-character ULIDs for cross-referencing. Cross-references always point to top-level entity IDs (e.g., `DateMentionID` → `DateID` in a date file, `PlaceMentionID` → `PlaceID` in a place file).
+
+All entity files include internal metadata fields (prefixed with `_`):
+
+| Field | Type | Description |
+|---|---|---|
+| `_schema_version` | string | Output format version (currently "2.3") |
+| `_last_updated` | string | ISO date of last modification (e.g., "2026-06-13") |
+
+These are auto-injected by `src/schemas.inject_metadata()` at write time and excluded from schema validation via `patternProperties: {"^_": {}}`.
 
 > **Note:** This document describes the **output file format** — what is stored on disk after extraction and consolidation. This differs from the extraction-time schemas in `src/json_schemas.py`, which validate intermediate results returned by the LLM during pipeline execution. Where the two diverge (field names, enum values), this document reflects the final output.
 

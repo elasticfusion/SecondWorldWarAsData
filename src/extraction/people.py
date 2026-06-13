@@ -405,6 +405,10 @@ def create_people_prompt(
         text_parts.append(fulltext[key])
     text = "\n\n".join(text_parts)
 
+    if not text.strip():
+        logger.debug("Skipping empty sub-event %s (people)", sub_event_id)
+        return ""
+
     prompt = f"""Extract all people mentions from this WWII text with biographical details.
 When a plural rank precedes multiple names joined by 'and'/'or' (e.g. 'Admirals Leahy and King'), extract each as a SEPARATE person with the singular rank.
 
@@ -796,6 +800,8 @@ def _extract_people_for_sub_event(
     logger.info("  Processing sub-event %s", sub_event_id)
 
     prompt = create_people_prompt(sub_event, event_id, event_name, book, author, series)
+    if not prompt:
+        return []
 
     for attempt in range(max_retries):
         try:

@@ -346,9 +346,10 @@ def _notify_launch(family: str, book_name: str, source: str) -> None:
 
 
 def _wait_for_networking():
-    """Poll for NAT gateway to be available (max 3 min)."""
+    """Poll for NAT gateway to be available."""
+    max_seconds = int(os.environ.get("NAT_WAIT_SECONDS", "180"))
     ec2 = boto3.client("ec2")
-    for _ in range(18):
+    for _ in range(max_seconds // 10):
         try:
             resp = ec2.describe_nat_gateways(
                 Filters=[
@@ -365,7 +366,7 @@ def _wait_for_networking():
         except Exception as e:
             logger.debug("Networking check error: %s", e)
         time.sleep(10)
-    logger.warning("NAT not available after 3 min — launching task anyway")
+    logger.warning("NAT not available after %ds — launching task anyway", max_seconds)
 
 
 def _queue_pending(keys):

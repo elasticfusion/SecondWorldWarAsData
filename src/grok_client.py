@@ -551,12 +551,31 @@ class GrokClient:
                     d.error = error
                 break
 
-    @retry(
-        stop=stop_after_attempt(5),
-        wait=wait_exponential(multiplier=2, min=4, max=60),
-        retry=retry_if_exception_type(requests.HTTPError),
-        reraise=True,
-    )
+    def _validate_prompt(self, prompt: str) -> None:
+        """Validate prompt before sending to API."""
+        import re
+
+        if not prompt or not prompt.strip():
+            raise ValueError("Empty prompt — nothing to send to API")
+        if len(prompt) > 500_000:
+            raise ValueError(
+                f"Prompt too large: {len(prompt)} chars (~{len(prompt)//4} tokens)"
+            )
+        # Detect unfilled template placeholders (e.g., {book}, {author})
+        unfilled = re.findall(r"\{([a-z_]+)\}", prompt)
+        if unfilled:
+            raise ValueError(
+                f"Prompt has unfilled placeholders: {unfilled[:5]}. "
+                f"Check that all template variables are provided."
+            )
+        # Detect prompts with empty data sections
+        if re.search(
+            r"(?:Text|Sub-events|Event data):\s*\n\s*\n\s*(?:Return|$)", prompt
+        ):
+            raise ValueError(
+                "Prompt has empty data section — no text content to extract from"
+            )
+
     def _validate_input_size(self, messages: list) -> None:
         """Validate input size and warn if approaching context limit."""
         total_chars = sum(len(str(msg.get("content", ""))) for msg in messages)
@@ -773,6 +792,9 @@ class GrokClient:
         Returns:
             Response text from API
         """
+        # Validate inputs before sending
+        self._validate_prompt(prompt)
+
         # Get cache for this type
         cache = self._get_cache(cache_type)
 

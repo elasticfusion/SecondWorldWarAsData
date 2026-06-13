@@ -492,7 +492,7 @@ When `batch.phase2: true` or `batch.phase3: true` in `config.yaml`, the ECS entr
    - Exits (no long-running ECS task)
 
 2. **Batch poller Lambda** (`dev-wwii-batch-poller`):
-   - EventBridge triggers every 15 minutes
+   - EventBridge triggers every 5 minutes (configurable via BatchPollerIntervalMinutes)
    - Scans DynamoDB for `batch_job#*` entries with status `pending`
    - Polls Grok batch API for completion
    - On completion: updates status, creates networking, launches ECS retrieve task

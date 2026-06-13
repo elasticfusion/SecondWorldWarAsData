@@ -85,7 +85,7 @@ def test_poll_batch_complete(mock_trigger, mock_get, dynamodb_table):
         "test-wwii-api-cache"
     )
     item = table.get_item(Key={"cache_key": "batch_job#batch-abc"})["Item"]
-    assert item["status"] == "complete"
+    assert item["status"] == "ready"
 
 
 @patch("lambda_handlers.batch_poller.requests.get")

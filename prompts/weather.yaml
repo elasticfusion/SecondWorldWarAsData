@@ -20,21 +20,21 @@ prompt_template: |
   {schema}
 
 schema: |
-  {{
+  {
     "Weather_Mentions": [
-      {{
+      {
         "WeatherID": "01ULID...",
         "place_name": "Normandy",
         "PlaceMentionID": "<COPY from Available places above, or null if no match>",
         "date": "1944-06-06",
         "DateMentionID": "<COPY from Available dates above, or null if no match>",
         "weather_description": "Overcast skies with intermittent rain",
-        "temperature": {{"value": 15, "unit": "celsius", "system": "metric"}},
+        "temperature": {"value": 15, "unit": "celsius", "system": "metric"},
         "notable_impact": "Poor visibility delayed air support",
         "original_text": "overcast skies and rain hampered air operations"
-      }}
+      }
     ]
-  }}
+  }
 
 rules:
   - Generate 26-character ULIDs ONLY for WeatherID
