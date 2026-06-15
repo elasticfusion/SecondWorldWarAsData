@@ -24,7 +24,7 @@ prompt_template: |
 
 schema: |
   {
-    "Supplemental_Materials": [
+    "Supplemental_Material": [
       {
         "MaterialID": "01ULID...",
         "classification": "document_reference",
@@ -45,7 +45,7 @@ schema: |
           "author_death_date": null
         },
         "availability": "online",
-        "resource_url": "https://...",
+        "resource_urls": ["https://..."],
         "archive_reference": null,
         "license_status": "public_domain"
       }
@@ -61,6 +61,9 @@ rules:
   - License status values: public_domain, copyright, unknown
   - Document type values: book, article, report, letter, memo, periodical, government_document, other
   - Handle mixed entries by splitting into separate items
-  - CRITICAL: When a single footnote/endnote cites MULTIPLE documents separated by semicolons (;) or "and", split each into a SEPARATE Supplemental_Material entry. Each entry must reference exactly ONE document.
-    Example: "12th AGp Ltr of Instrs 5, 17 Aug; Telecon, Patton to Haislip, 19 Aug; Sylvan Diary, 19 Aug." → THREE separate entries
+  - >-
+    CRITICAL: When a single footnote/endnote cites MULTIPLE documents separated by semicolons (;)
+    or "and", split each into a SEPARATE Supplemental_Material entry. Each entry must reference
+    exactly ONE document. Example: "12th AGp Ltr of Instrs 5, 17 Aug; Telecon, Patton to Haislip,
+    19 Aug; Sylvan Diary, 19 Aug." becomes THREE separate entries.
   - Do NOT combine multiple documents into one entry just because they appear in the same footnote

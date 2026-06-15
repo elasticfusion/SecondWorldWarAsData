@@ -14,6 +14,8 @@ from src.grok_client import GrokClient
 from src.utils.json_validator import _fix_invalid_ulids
 from src.utils.text_utils import normalize_name
 
+from src.utils.prompt_loader import get_system_prompt
+
 logger = logging.getLogger(__name__)
 
 # Compiled regex patterns for performance
@@ -382,11 +384,6 @@ class PeopleOutput(BaseModel):
     People: list[Person]
 
 
-SYSTEM_PROMPT = """You are an expert historian analyzing World War II documents.
-Extract all people mentions with biographical details and event context.
-Return structured data matching the schema."""
-
-
 def create_people_prompt(
     sub_event: Dict[str, Any],
     event_id: str,
@@ -409,116 +406,19 @@ def create_people_prompt(
         logger.debug("Skipping empty sub-event %s (people)", sub_event_id)
         return ""
 
-    prompt = f"""Extract all people mentions from this WWII text with biographical details.
-When a plural rank precedes multiple names joined by 'and'/'or' (e.g. 'Admirals Leahy and King'), extract each as a SEPARATE person with the singular rank.
+    from src.utils.prompt_loader import get_system_prompt, render_prompt
 
-Source: {book} by {author} ({series})
-Event: {event_name} (ID: {event_id})
-Sub-event: {sub_event_summary} (ID: {sub_event_id})
-
-Text:
-{text}
-
-Return JSON matching this structure:
-{{
-  "People": [
-    {{
-      "PersonID": "01H8XYZI1AB123CD456EF789GH",
-      "name": "Dwight D. Eisenhower",
-      "source_language": "English",
-      "biographical_profile": {{
-        "birth_date": "1890-10-14",
-        "birth_place": "Denison, Texas, USA",
-        "death_date": "1969-03-28",
-        "death_place": "Washington, D.C., USA",
-        "nationality": "USA",
-        "role_type": "military_leader",
-        "ranks": [
-          {{"rank": "General", "date": "1943", "branch": "US Army"}},
-          {{"rank": "General of the Army", "date": "1944-12-20", "branch": "US Army"}}
-        ],
-        "units_served": [
-          {{"unit": "Supreme Headquarters Allied Expeditionary Force", "from": "1943", "to": "1945"}}
-        ],
-        "education": [
-          {{"institution": "United States Military Academy", "degree": "Bachelor of Science", "year": "1915"}}
-        ],
-        "military_awards": [
-          {{"award": "Distinguished Service Medal", "class": null, "date_awarded": "1945-05-08"}}
-        ],
-        "family": {{"spouse": "Mamie Eisenhower", "children": ["Doud Dwight Eisenhower", "John Eisenhower"]}},
-        "aliases": ["Ike"],
-        "biography_sources": [
-          {{
-            "source": "{book}",
-            "page": null,
-            "confidence": 0.9,
-            "fields_sourced": ["birth_date", "nationality", "ranks", "biographical_details"]
-          }}
-        ],
-        "biographical_details": "Supreme Commander of Allied Forces in Europe"
-      }},
-      "event_mentions": [
-        {{
-          "MentionID": "01H8XYZJ2MN456PQ789RS012TU",
-          "Event_Name": "{event_name}",
-          "EventID": "{event_id}",
-          "Sub-event_Name": "{sub_event_summary}",
-          "Sub-eventID": "{sub_event_id}",
-          "book": "{book}",
-          "author": "{author}",
-          "series": "{series}",
-          "date": null,
-          "DateMentionID": null,
-          "position_at_event": "Supreme Commander",
-          "life_event": "Directed Allied operations",
-          "original_text": "General Eisenhower ordered the attack"
-        }}
-      ]
-    }}
-  ]
-}}
-
-Extract biographical data when mentioned:
-- ranks: Military rank progression with dates
-- units_served: Military units with service periods
-- education: Educational institutions and degrees
-- military_awards: Medals and decorations
-- family: Spouse and children names
-- aliases: Nicknames, alternative names, titles
-- biography_sources: Track which fields came from this source
-
-For biography_sources, include:
-- source: Book title (use "{book}")
-- page: Page number if mentioned
-- confidence: 0.0-1.0 (how certain the extraction is)
-- fields_sourced: List of field names extracted from this source
-
-Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
-If no people found, return empty People array.
-
-IMPORTANT: Do NOT extract military units, divisions, corps, armies, or organizations as people.
-Entries beginning with numbers (1st, 2nd, 3rd), Roman numerals (I, II, III, IV, V, VI, VII),
-or number words (First, Second, Third) are military units and belong in people_groups, not people.
-Examples of what to EXCLUDE: "1st Infantry Division", "VII Corps", "Third Army", "II SS Panzer Corps"."""
-
-    # Use YAML template if available, fall back to hardcoded prompt
-    try:
-        from src.utils.prompt_loader import render_prompt
-
-        prompt = render_prompt(
-            "people",
-            book=book,
-            author=author,
-            series=series,
-            event_name=event_name,
-            event_id=event_id,
-            sub_event_summary=sub_event_summary,
-            sub_event_id=sub_event_id,
-            text=text,
-        )
-    except Exception:
-        pass  # keep hardcoded prompt as fallback
+    prompt = render_prompt(
+        "people",
+        book=book,
+        author=author,
+        series=series,
+        event_name=event_name,
+        event_id=event_id,
+        sub_event_summary=sub_event_summary,
+        sub_event_id=sub_event_id,
+        text=text,
+    )
 
     return prompt
 
@@ -808,7 +708,7 @@ def _extract_people_for_sub_event(
             people_output = grok_client.extract_structured(
                 prompt=prompt,
                 schema=PeopleOutput,
-                system_prompt=SYSTEM_PROMPT,
+                system_prompt=get_system_prompt("people"),
                 use_cache=(attempt == 0),
                 cache_type="people",
             )

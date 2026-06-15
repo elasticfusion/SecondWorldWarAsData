@@ -16,7 +16,7 @@ schema: |
     "Equipment": [
       {
         "EquipmentID": "01ULID...",
-        "common_name": "M4 Sherman",
+        "name": "M4 Sherman",
         "technical_identifier": "M4A1",
         "category": "armor",
         "subcategory": "medium_tank",

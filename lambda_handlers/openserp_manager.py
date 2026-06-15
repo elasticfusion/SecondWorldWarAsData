@@ -37,6 +37,12 @@ def handler(event, _context):
         # Only openserp or nothing — no pipeline work happening
         pipeline_tasks = [t for t in task_arns if "openserp" not in t]
         if not pipeline_tasks:
+            # Double-check: is a lock held? (task may be starting or between PROVISIONING/RUNNING)
+            if _any_lock_held():
+                logger.info(
+                    "NAT >2h but lock held — task likely starting, skipping teardown"
+                )
+                return {"action": "none", "reason": "lock held"}
             logger.warning(
                 "NAT has been up >2h with no pipeline tasks — force teardown"
             )
@@ -102,6 +108,27 @@ def _get_last_task_time(ecs, cluster, task_arns):
         if stopped and (latest is None or stopped > latest):
             latest = stopped
     return latest
+
+
+def _any_lock_held() -> bool:
+    """Check if any pipeline lock exists in DynamoDB."""
+    import boto3
+
+    try:
+        region = os.getenv("AWS_REGION", "us-east-1")
+        table = boto3.resource("dynamodb", region_name=region).Table(
+            f"{ENV_NAME}-wwii-api-cache"
+        )
+        resp = table.scan(
+            FilterExpression="begins_with(cache_key, :prefix)",
+            ExpressionAttributeValues={":prefix": "lock#"},
+            ProjectionExpression="cache_key",
+            Limit=10,
+        )
+        return resp.get("Count", 0) > 0
+    except Exception as e:
+        logger.warning("Lock check failed: %s", e)
+        return True  # Assume locked on error — don't tear down
 
 
 def _nat_recently_created(minutes=5):

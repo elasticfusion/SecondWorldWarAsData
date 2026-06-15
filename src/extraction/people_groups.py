@@ -130,72 +130,11 @@ def _mark_as_processed(
 
 
 def _build_extraction_prompt(event_data: dict) -> str:
-    """Build prompt for people groups extraction."""
-    return f"""Extract all people groups mentioned in these events.
+    """Build prompt for people groups extraction from YAML template."""
+    from src.utils.prompt_loader import render_prompt
 
-For each group, provide:
-- group_name: Official name
-- group_type: One of: country, alliance, military_unit, political_party, government_organization, anti_government_organization, religious_organization
-- military_hierarchy: (if military_unit) squad/platoon/company/battalion/regiment/brigade/division/corps/army/army_group
-- country_of_origin: ISO 3166-1 alpha-3 country code (e.g., USA, GBR, DEU, FRA, ITA, JPN)
-- alliance_membership: List of alliances (e.g., ["Axis Powers"], ["Allied Powers"])
-- description: Brief description
-- parent_organization: (if applicable) Parent unit/organization
-- member_countries: (if alliance) List of member countries
-- sub_organizations: (if applicable) List of sub-organizations
-- common_name: (if different from official name)
-- members: List of people associated with this group (commanders, leaders, key personnel)
-
-For each member, include:
-- PersonID: ULID of the person (if mentioned in events)
-- name: Person's name
-- role: Their role/position in the group (e.g., "Commander", "Member", "Leader")
-- date_range: When they held this position (if mentioned)
-
-For each mention, include:
-- Event_Name, EventID, Sub-event_Name, Sub-eventID
-- date (if mentioned)
-- context: Role/action in this event
-- original_text: Exact quote mentioning the group
-
-Events:
-{json.dumps(event_data, indent=2)}
-
-Return ONLY valid JSON matching this structure:
-{{
-  "People_Groups": [
-    {{
-      "GroupID": "01...",
-      "group_name": "...",
-      "group_type": "...",
-      "country_of_origin": "...",
-      "alliance_membership": [...],
-      "source_language": "English",
-      "description": "...",
-      "members": [
-        {{
-          "PersonID": "01...",
-          "name": "...",
-          "role": "...",
-          "date_range": "..."
-        }}
-      ],
-      "event_mentions": [
-        {{
-          "MentionID": "01...",
-          "Event_Name": "...",
-          "EventID": "01...",
-          "Sub-event_Name": "...",
-          "Sub-eventID": "01...",
-          "date": "YYYY-MM-DD",
-          "DateMentionID": "01...",
-          "context": "...",
-          "original_text": "..."
-        }}
-      ]
-    }}
-  ]
-}}"""
+    text = json.dumps(event_data, indent=2)
+    return render_prompt("people_groups", text=text)
 
 
 def _parse_groups_response(response: str) -> list:
@@ -288,9 +227,20 @@ def extract_people_groups(
 
     logger.info("  Extracting people groups from %s...", event_file.name)
     prompt = _build_extraction_prompt(event_data)
-    response = grok_client.chat_completion(
-        prompt, temperature=0.3, cache_type="people_groups"
-    )
+    try:
+        response = grok_client.chat_completion(
+            prompt, temperature=0.3, cache_type="people_groups"
+        )
+    except Exception as e:
+        from src.grok_client import GrokTruncationError
+
+        if isinstance(e, GrokTruncationError):
+            logger.error(
+                "  People groups response truncated for %s — event too large",
+                event_file.name,
+            )
+            return None
+        raise
 
     if not response:
         logger.error("  Failed to get response from Grok API")

@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import re
+import threading
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
@@ -14,6 +15,19 @@ from src.utils.file_lock import write_json_with_lock
 from src.utils.json_validator import _fix_invalid_ulids
 
 _book_manifest = None
+
+# Per-directory locks for index.json read-modify-write (prevents race conditions)
+_index_locks: Dict[str, threading.Lock] = {}
+_index_locks_lock = threading.Lock()
+
+
+def _get_index_lock(index_path: Path) -> threading.Lock:
+    """Get or create a lock for a specific index.json file."""
+    key = str(index_path)
+    with _index_locks_lock:
+        if key not in _index_locks:
+            _index_locks[key] = threading.Lock()
+        return _index_locks[key]
 
 
 def _register_entity(book: str, entity_type: str, filename: str) -> None:
@@ -267,7 +281,14 @@ def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-pos
 
     with locked_json(entity_file) as (data, save):
         mentions = data.get("event_mentions", [])
-        if any(m.get("Sub_eventID") == seid for m in mentions):
+        book = meta.get("book", "")
+        # Dedup by (EventID + book + Sub_event_Name) — not Sub_eventID which changes on re-extraction
+        if any(
+            m.get("EventID") == event_id
+            and m.get("book") == book
+            and m.get("Sub_event_Name") == se_name
+            for m in mentions
+        ):
             return
         mention = {
             "MentionID": str(ulid_mod.new()),
@@ -446,31 +467,35 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     entity_dir = output_root / entity_type
     entity_dir.mkdir(parents=True, exist_ok=True)
     index_file = entity_dir / "index.json"
-    index = _load_index(index_file, entity_type)
 
-    # Build date_start → DateID lookup for cross-referencing
+    # Build date lookup outside lock (read-only, safe for parallel access)
     dates_dir = output_root / "dates"
     date_id_lookup = _build_date_id_lookup(dates_dir)
 
-    result = _process_batch_response(
-        response,
-        response_key,
-        inner_key,
-        make_key,
-        make_record,
-        entity_dir,
-        index,
-        id_field,
-        se_by_id,
-        event_id,
-        event_name,
-        meta,
-        sub_event_key,
-        make_filename,
-        date_id_lookup,
-    )
+    # Lock protects read-modify-write of index.json across concurrent event files
+    lock = _get_index_lock(index_file)
+    with lock:
+        index = _load_index(index_file, entity_type)
 
-    write_json_with_lock(index_file, index)
+        result = _process_batch_response(
+            response,
+            response_key,
+            inner_key,
+            make_key,
+            make_record,
+            entity_dir,
+            index,
+            id_field,
+            se_by_id,
+            event_id,
+            event_name,
+            meta,
+            sub_event_key,
+            make_filename,
+            date_id_lookup,
+        )
+
+        write_json_with_lock(index_file, index)
     if post_process:
         post_process(response, entity_dir, index)
     return result
@@ -544,7 +569,6 @@ def _process_batch_results(
     """Process results from a batch of chapters."""
     for (book_name, name, _), result in zip(tasks, batch_results):
         if isinstance(result, Exception):
-            error_msg = str(result)
             logger.error("  ✗ %s: %s", name, result)
 
             cache_cmd = _get_cache_clear_command(book_name)
@@ -642,31 +666,13 @@ async def extract_events_batch_async(
             chapters_data.append({"file": pf, "data": data})
 
     # Batch prompt
-    prompt = f"""Extract events and sub-events from these {len(chapters_data)} chapters.
+    from src.utils.prompt_loader import render_prompt
 
-For each chapter, identify the main event and break it into sub-events (specific actions/battles).
-
-Return JSON:
-{{
-  "chapters": [
-    {{
-      "chapter_number": 1,
-      "Event": {{
-        "EventID": "01ABC...",
-        "Event_summary": "Main event description",
-        "Sub-events": [
-          {{
-            "Sub-eventID": "01DEF...",
-            "Sub-event_summary": "Specific action description"
-          }}
-        ]
-      }}
-    }}
-  ]
-}}
-
-Chapters:
-"""
+    prompt = render_prompt(
+        "events_batch",
+        chapter_count=str(len(chapters_data)),
+        chapters_text=json.dumps(chapters_data, indent=2),
+    )
 
     for i, ch in enumerate(chapters_data, 1):
         data = ch["data"]
@@ -954,7 +960,7 @@ async def extract_places_batch_async(
         response_key="places",
         inner_key="places",
         make_key=lambda obj: normalize_name(obj.get("name", "")),
-        make_record=lambda obj: _make_place_record(obj),
+        make_record=_make_place_record,
         id_field="PlaceID",
         sub_event_key="places",
         book_meta=book_meta,

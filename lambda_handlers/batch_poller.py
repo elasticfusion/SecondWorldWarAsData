@@ -73,6 +73,8 @@ def handler(event, _context):
             results["failed"] += 1
         else:
             results["pending"] += 1
+            # Notify if batch has been pending >4h
+            _check_stalled(job, api_key)
 
     logger.info("Results: %s", results)
     return results
@@ -377,6 +379,44 @@ def _get_network_config() -> dict:
             "assignPublicIp": "DISABLED",
         }
     }
+
+
+def _check_stalled(job: dict, api_key: str) -> None:
+    """Send notification if batch has been pending >4h with progress info."""
+    import time
+
+    submitted_at = int(job.get("submitted_at", 0))
+    if not submitted_at:
+        return
+    age_hours = (time.time() - submitted_at) / 3600
+    if age_hours < 4:
+        return
+    # Rate-limit: only notify on whole-hour boundaries (once per hour, not every 5 min)
+    if int(age_hours) == int(age_hours - 5 / 60):
+        return  # Same hour as 5 min ago — skip
+
+    # Get current progress from API
+    total = int(job.get("request_count", 0))
+    completed = 0
+    try:
+        resp = requests.get(
+            f"{GROK_API_BASE}/batches/{job['batch_id']}",
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=10,
+        )
+        if resp.ok:
+            state = resp.json().get("state", {})
+            completed = state.get("num_success", 0) + state.get("num_error", 0)
+    except Exception:
+        pass
+
+    _notify(
+        f"⏳ Batch still waiting ({age_hours:.1f}h elapsed)\n"
+        f"Batch: {job['batch_id']}\n"
+        f"Book: {job.get('book', '?')}\n"
+        f"Progress: {completed} of {total} requests completed\n"
+        f"Remaining: {total - completed}"
+    )
 
 
 def _notify(message: str) -> None:

@@ -80,22 +80,14 @@ def _verify_media_with_vision(
 
     image_b64 = base64.b64encode(image_data).decode()
 
-    prompt = f"""Analyze this image to verify it's relevant WWII equipment media.
+    from src.utils.prompt_loader import render_prompt
 
-Expected:
-- Equipment: {equipment_name}
-- Category: {equipment_category}
-- Title claims: {media_title}
-
-Verify:
-1. Does this show {equipment_name} or related equipment?
-2. Is it from WWII era (1935-1950)?
-3. Is it a photo, diagram, or document (not unrelated content)?
-4. Does it match the category: {equipment_category}?
-
-Respond with ONLY a JSON object:
-{{"is_relevant": true or false, "reason": "Brief explanation"}}
-"""
+    prompt = render_prompt(
+        "equipment_vision",
+        equipment_name=equipment_name,
+        equipment_category=equipment_category,
+        image_title=media_title,
+    )
 
     try:
         result = grok_client.extract_json_with_image_base64(
@@ -498,23 +490,11 @@ def _extract_image_urls_from_page(
         page_content = response.text
 
         # Ask Grok to extract image URLs
-        prompt = f"""Extract direct image URLs from this Wikipedia/Wikimedia page about {equipment_name}.
+        from src.utils.prompt_loader import render_prompt as _rp
 
-Page URL: {page_url}
-Page content (first 8000 chars):
-{page_content[:8000]}
-
-Find URLs that point to actual image files (jpg, png, svg, etc.), not wiki pages.
-Look for:
-- URLs in src attributes of <img> tags
-- URLs in href attributes linking to File: pages
-- Full resolution image URLs (not thumbnails if possible)
-
-Return ONLY a JSON array of direct image URLs:
-["https://upload.wikimedia.org/...", ...]
-
-If no images found, return empty array: []
-"""
+        prompt = _rp(
+            "equipment_urls", equipment_name=equipment_name, page_content=page_content
+        )
 
         result = grok_client.extract_json(
             prompt=prompt, cache_type="equipment_image_extraction", temperature=0.0

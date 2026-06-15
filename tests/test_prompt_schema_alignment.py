@@ -24,6 +24,9 @@ ALL_PROMPT_TYPES = [
     "casualties",
     "logistics",
     "weather",
+    "supplemental",
+    "people_groups",
+    "biography",
 ]
 
 # These prompts have malformed schema fields (known issues to fix)
@@ -103,3 +106,56 @@ class TestEventPromptAlignment:
 
         with pytest.raises(ValidationError):
             validate(instance=example, schema=EVENTS_OUTPUT_SCHEMA)
+
+
+class TestOutputSchemaAlignment:
+    """Verify prompt examples don't contain fields rejected by output schemas."""
+
+    def test_casualty_item_schema_accepts_prompt_fields(self):
+        """Prompt example fields must all be in CASUALTY_ITEM_SCHEMA.properties."""
+        from src.json_schemas import CASUALTY_ITEM_SCHEMA
+
+        example = _load_prompt_schema("casualties")
+        # Get the first item from the example (keyed by sub-event ID)
+        items = list(example.values())[0]
+        item = items[0]
+        schema_props = set(CASUALTY_ITEM_SCHEMA["properties"].keys())
+        pattern_ok = CASUALTY_ITEM_SCHEMA.get("patternProperties", {})
+        for key in item.keys():
+            assert key in schema_props or any(
+                __import__("re").match(p, key) for p in pattern_ok
+            ), f"Casualty field '{key}' not in schema properties — will be rejected by additionalProperties: false"
+
+    def test_people_group_item_schema_accepts_prompt_fields(self):
+        """Prompt example fields must all be in PEOPLE_GROUP_ITEM_SCHEMA.properties."""
+        from src.json_schemas import PEOPLE_GROUP_ITEM_SCHEMA
+
+        example = _load_prompt_schema("people_groups")
+        items = example.get("People_Groups", [])
+        if items:
+            item = items[0]
+            schema_props = set(PEOPLE_GROUP_ITEM_SCHEMA["properties"].keys())
+            pattern_ok = PEOPLE_GROUP_ITEM_SCHEMA.get("patternProperties", {})
+            for key in item.keys():
+                assert key in schema_props or any(
+                    __import__("re").match(p, key) for p in pattern_ok
+                ), f"People group field '{key}' not in schema properties — will be rejected"
+
+    def test_supplemental_schema_key_is_singular(self):
+        """Prompt schema must use Supplemental_Material (singular), not plural."""
+        example = _load_prompt_schema("supplemental")
+        assert "Supplemental_Material" in example, "Prompt should use singular key"
+        assert "Supplemental_Materials" not in example, "Prompt must NOT use plural key"
+
+    def test_equipment_schema_has_required_fields(self):
+        """Equipment prompt example must have EquipmentID and name."""
+        from src.json_schemas import EQUIPMENT_SCHEMA
+
+        example = _load_prompt_schema("equipment")
+        items = example.get("equipment", example.get("Equipment", []))
+        if items:
+            item = items[0]
+            # Item-level schema only requires EquipmentID + name
+            item_schema = EQUIPMENT_SCHEMA["properties"]["equipment"]["items"]
+            for req in item_schema.get("required", []):
+                assert req in item, f"Equipment prompt missing required field: {req}"

@@ -79,28 +79,15 @@ def _enrich_equipment_data(
     """
     identifier = technical_identifier or common_name
 
-    prompt = f"""Look up information about this WWII military equipment: {identifier} ({common_name})
-Category: {category}
+    from src.utils.prompt_loader import render_prompt
 
-Provide a brief summary with:
-1. Description (2-3 sentences)
-2. Key specifications (if applicable: weight, dimensions, armament, speed, range, crew)
-3. Alternate names/designations
-4. Notable variants
-5. Wikipedia URL (if it exists)
-6. Grokipedia URL (if it exists, format: https://grokipedia.com/Article_Name)
-
-Return as JSON:
-{{
-  "description": "Brief description",
-  "specifications": {{"key": "value"}},
-  "alternate_names": ["name1", "name2"],
-  "variants": [{{"variant_name": "name", "description": "desc"}}],
-  "wikipedia_url": "https://en.wikipedia.org/wiki/...",
-  "grokipedia_url": "https://grokipedia.com/..."
-}}
-
-If information is not available, return empty fields."""
+    prompt = render_prompt(
+        "equipment_enrichment",
+        identifier=identifier,
+        common_name=common_name,
+        category=category,
+        country="",
+    )
 
     try:
         response = grok_client.chat_completion(

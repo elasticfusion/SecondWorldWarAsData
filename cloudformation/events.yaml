@@ -485,7 +485,7 @@ Resources:
       ContentUploadedTopicArn: !Ref ContentUploadedTopic
       ChapterParsedTopicArn: !Ref ChapterParsedTopic
       EntityCreatedTopicArn: !Ref EntityCreatedTopic
-      ConfigVersion: "2"  # Bump to force re-execution when notification config changes
+      ConfigVersion: "3"  # Bump to force re-execution when notification config changes
 
 Outputs:
   ContentUploadedTopicArn:

@@ -85,18 +85,59 @@ def update_event_refs(
             with open(f, "w", encoding="utf-8") as fh:
                 json.dump(d, fh, indent=2, ensure_ascii=False)
 
-    # Update entity files that reference the old ID
+    # Update entity files that reference the old ID (targeted field replacement)
+    id_fields = {
+        "PersonID",
+        "PlaceID",
+        "PeopleGroupID",
+        "EquipmentID",
+        "DateID",
+        "DateMentionID",
+        "PlaceMentionID",
+        "WeatherMentionID",
+        "EventID",
+        "Sub-eventID",
+        "Sub_eventID",
+        "CasualtyID",
+        "LogisticsID",
+    }
     for subdir in ("logistics", "casualties", "weather"):
         entity_dir = output_root / subdir
         if not entity_dir.exists():
             continue
         for f in entity_dir.glob("*.json"):
-            try:
-                text = f.read_text(encoding="utf-8")
-            except OSError:
+            if f.name.startswith("."):
                 continue
-            if old_id in text:
-                f.write_text(text.replace(old_id, new_id), encoding="utf-8")
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            if _replace_id_in_obj(data, old_id, new_id, id_fields):
+                f.write_text(
+                    json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
+                )
+
+
+def _replace_id_in_obj(obj, old_id: str, new_id: str, id_fields: set) -> bool:
+    """Recursively replace old_id with new_id only in known ID fields. Returns True if changed."""
+    changed = False
+    if isinstance(obj, dict):
+        for key, val in obj.items():
+            if key in id_fields and val == old_id:
+                obj[key] = new_id
+                changed = True
+            elif isinstance(val, (dict, list)):
+                if _replace_id_in_obj(val, old_id, new_id, id_fields):
+                    changed = True
+    elif isinstance(obj, list):
+        for i, item in enumerate(obj):
+            if isinstance(item, str) and item == old_id:
+                obj[i] = new_id
+                changed = True
+            elif isinstance(item, (dict, list)):
+                if _replace_id_in_obj(item, old_id, new_id, id_fields):
+                    changed = True
+    return changed
 
 
 def do_merge(people_dir: Path, people: List[Dict], primary_idx: int) -> Optional[str]:
@@ -195,6 +236,13 @@ def merge_generic(
             if sec_name and sec_name not in aliases:
                 aliases.append(sec_name)
                 break
+
+        # Update event files: replace old ID with primary ID
+        old_id = secondary.get(id_field, "")
+        new_id = primary_data.get(id_field, "")
+        if old_id and new_id and old_id != new_id:
+            output_root = entity_dir.parent
+            update_event_refs(output_root, old_id, new_id, id_field)
 
         _backup_before_delete(f)
         f.unlink()

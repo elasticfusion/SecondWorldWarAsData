@@ -1,0 +1,11 @@
+# Search query templates for equipment enrichment (OpenSERP + Wikipedia)
+# Variables: {name}, {identifier}, {year}
+
+images:
+  - '"{name}" WWII photo'
+  - '"{identifier}" World War II photograph'
+  - '"{name}" {year} military'
+
+wikipedia:
+  - '{name}'
+  - '{identifier}'

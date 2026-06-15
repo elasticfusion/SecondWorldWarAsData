@@ -38,7 +38,7 @@ processing:
   generate_jq_queries: false           # Skip — not needed for production
   generate_download_scripts: false
   force_reprocess: false
-  reprocess_types: []
+  reprocess_types: []                  # To re-extract one type: ["supplemental"], ["people"], etc.
 
 weather:
   enabled: true
@@ -83,7 +83,7 @@ enrichment:
 
 batch:
   phase2: true                         # 50% off extraction
-  phase3: true                         # 50% off enrichment
+  phase3: false                        # Live calls — avoids network bounce between submit/retrieve
 
 openserp:
   results_per_query: 10                # Fewer results = fewer verification calls

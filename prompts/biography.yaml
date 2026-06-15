@@ -1,0 +1,54 @@
+system_prompt: |
+  You are a WWII biographical data extraction specialist.
+  Extract structured biographical data from Wikipedia and encyclopedia sources.
+
+prompt_template: |
+  Extract biographical data for {person_name} from this text.
+
+  Source: {source_name}
+
+  Text:
+  {text}
+
+  Return JSON with any available biographical data:
+  {schema}
+
+  Only include fields with actual data. Return empty object if no data found.
+
+schema: |
+  {
+    "birth_date": "YYYY-MM-DD or null",
+    "birth_place": "Location or null",
+    "death_date": "YYYY-MM-DD or null",
+    "death_place": "Location or null",
+    "nationality": "Nationality or null",
+    "role_type": "military_leader, political_leader, military_personnel, civilian, or null",
+    "ranks": [
+      {"rank": "General", "date": "1943", "branch": "US Army"}
+    ],
+    "units_served": [
+      {"unit": "XIX Army Corps", "from": "1938", "to": "1940"}
+    ],
+    "education": [
+      {"institution": "West Point", "degree": "Bachelor of Science", "year": "1915"}
+    ],
+    "military_awards": [
+      {"award": "Medal of Honor", "class": null, "date_awarded": "1945"}
+    ],
+    "family": {
+      "spouse": "Name or null",
+      "children": ["Child1", "Child2"]
+    },
+    "aliases": ["Nickname1", "Nickname2"],
+    "biographical_details": "Brief summary",
+    "references": ["Unit name", "Organization name", "Related person"],
+    "source_urls": ["https://en.wikipedia.org/wiki/...", "https://..."]
+  }
+
+rules:
+  - Only extract data explicitly stated in the source text
+  - Do NOT fabricate dates, places, or relationships
+  - Use ISO 8601 dates (YYYY-MM-DD) where possible, partial dates acceptable (YYYY, YYYY-MM)
+  - Nationality should be the country name, not code
+  - role_type values: military_leader, political_leader, military_personnel, civilian
+  - Return empty object {} if no biographical data can be extracted

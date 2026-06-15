@@ -15,6 +15,8 @@ from src.utils.json_validator import _fix_invalid_ulids
 from src.grok_client import GrokClient
 from src.utils.file_lock import write_json_with_lock
 
+from src.utils.prompt_loader import get_system_prompt
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,20 +58,6 @@ class DateOutput(BaseModel):
     Date_Mentions: list[DateMention] = Field(description="List of date mentions")
 
     model_config = ConfigDict(populate_by_name=True)
-
-
-SYSTEM_PROMPT = """You are an expert historian analyzing World War II documents.
-Extract all date and time mentions from the provided event text.
-
-CRITICAL RULES:
-1. You MUST complete the entire JSON response. Do NOT stop until all closing braces and brackets are in place.
-2. Return ONLY valid, complete JSON. Ensure all arrays and objects are properly closed.
-3. ONLY extract dates you can parse into a specific format (ISO or approximate).
-4. If you cannot determine a date_start value, OMIT that mention entirely.
-5. Do NOT include mentions with null, empty, or missing date_start fields.
-6. Every mention MUST have both date_start and original_text populated.
-
-Return structured data matching the schema."""
 
 
 def _is_valid_date_mention(mention: Any) -> bool:
@@ -130,59 +118,17 @@ def create_date_prompt(
         logger.debug("Skipping empty sub-event %s (dates)", sub_event_id)
         return ""
 
-    prompt = f"""Extract ALL date and time mentions from this WWII event text.
+    from src.utils.prompt_loader import get_system_prompt, render_prompt
 
-Event: {event_name}
-EventID: {event_id}
-Sub-event: {sub_event_summary}
-Sub-eventID: {sub_event_id}
+    prompt = render_prompt(
+        "dates",
+        event_name=event_name,
+        event_id=event_id,
+        sub_event_summary=sub_event_summary,
+        sub_event_id=sub_event_id,
+        text=text,
+    )
 
-Text:
-{text}
-
-Return JSON matching this structure:
-{{
-  "Event_Name": "{event_name}",
-  "EventID": "{event_id}",
-  "Sub_event_Name": "{sub_event_summary}",
-  "Sub_eventID": "{sub_event_id}",
-  "Date_Mentions": [
-    {{
-      "DateMentionID": "01KHYP2M4N6P8Q0R2S4T6V8W0X",
-      "date_start": "1944-07-01",
-      "date_end": null,
-      "time_start": "14:30",
-      "time_end": null,
-      "time_precision": "exact",
-      "date_precision": "exact",
-      "time_source": "Allied",
-      "original_text": "1 July 1944 at 1430 hours"
-    }}
-  ]
-}}
-
-Instructions:
-- For exact dates: use ISO format (1944-07-15)
-- For approximate dates: use prefix format (mid-1944-07, early-1944, late-1944-06, summer-1942, winter-1944)
-- date_precision: "exact", "early", "mid", "late", "spring", "summer", "fall", "autumn", or "winter"
-- time_precision: "exact" or "approximate"
-
-Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
-If no dates found, return empty Date_Mentions array."""
-
-    try:
-        from src.utils.prompt_loader import render_prompt
-
-        prompt = render_prompt(
-            "dates",
-            event_name=event_name,
-            event_id=event_id,
-            sub_event_summary=sub_event_summary,
-            sub_event_id=sub_event_id,
-            text=text,
-        )
-    except Exception as e:
-        logger.warning("Date extraction step failed: %s", e)
     return prompt
 
 
@@ -384,7 +330,7 @@ def _extract_dates_for_sub_event(
             date_output = grok_client.extract_structured(
                 prompt=prompt,
                 schema=DateOutput,
-                system_prompt=SYSTEM_PROMPT,
+                system_prompt=get_system_prompt("dates"),
                 use_cache=(attempt == 0),
                 cache_type="dates",
             )

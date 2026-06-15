@@ -754,6 +754,7 @@ CASUALTY_ITEM_SCHEMA = {
     "patternProperties": {"^_": {}},
     "required": ["type", "description"],
     "properties": {
+        "CasualtyID": {"type": "string"},
         "type": {
             "type": "string",
             "enum": ["wounded", "killed", "casualties", "pow", "missing"],
@@ -764,6 +765,10 @@ CASUALTY_ITEM_SCHEMA = {
             "enum": ["allied", "axis", "civilian", "unknown"],
         },
         "count": {"type": "object"},
+        "date_string": {"type": ["string", "null"]},
+        "impacted_organizations": {"type": "array"},
+        "impacted_people": {"type": "array"},
+        "impacted_places": {"type": "array"},
     },
 }
 
@@ -773,9 +778,20 @@ PEOPLE_GROUP_ITEM_SCHEMA = {
     "patternProperties": {"^_": {}},
     "required": ["group_name"],
     "properties": {
+        "GroupID": {"type": "string"},
         "group_name": {"type": "string"},
         "group_type": {"type": ["string", "null"]},
         "nationality": {"type": ["string", "null"]},
+        "country_of_origin": {"type": ["string", "null"]},
+        "source_language": {"type": ["string", "null"]},
+        "military_hierarchy": {"type": ["string", "null"]},
+        "alliance_membership": {"type": "array"},
+        "description": {"type": ["string", "null"]},
+        "parent_organization": {"type": ["string", "null"]},
+        "member_countries": {"type": "array"},
+        "sub_organizations": {"type": "array"},
+        "common_name": {"type": ["string", "null"]},
+        "members": {"type": "array"},
         "event_mentions": {"type": "array"},
     },
 }

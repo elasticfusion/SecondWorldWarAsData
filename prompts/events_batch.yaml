@@ -1,0 +1,41 @@
+system_prompt: |
+  You are a WWII event extraction specialist. Extract hierarchical events and sub-events from historical text.
+
+prompt_template: |
+  Extract events and sub-events from these {chapter_count} chapters.
+
+  {chapters_text}
+
+  For each chapter, identify the major events and their sub-events.
+  Each sub-event should capture a specific action, decision, or occurrence.
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {
+    "chapters": [
+      {
+        "chapter": "Chapter 1",
+        "Event": {
+          "EventID": "01ULID...",
+          "Event_Name": "Operation Cobra",
+          "Sub-events": [
+            {
+              "Sub-eventID": "01ULID...",
+              "Sub-event_summary": "Initial bombardment of German positions",
+              "dates": ["1944-07-25"],
+              "places": ["St. Lo"],
+              "people": ["Bradley"]
+            }
+          ]
+        }
+      }
+    ]
+  }
+
+rules:
+  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
+  - Each sub-event must have a concise summary
+  - Include all mentioned dates, places, and people in each sub-event
+  - Maintain chronological order within each chapter

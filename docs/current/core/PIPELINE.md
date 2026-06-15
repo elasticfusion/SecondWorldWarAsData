@@ -177,6 +177,53 @@ Phase 2's final sync writes all uploaded entity file keys to `manifest#phase2` i
 
 Phase 1 clears the manifest at the start of each new pipeline run.
 
+### Per-Book Queues
+
+Each book gets its own DynamoDB queue entry. When a phase is locked (another book is running), work is queued per-book rather than dropped.
+
+**Queue keys:**
+
+| Key Pattern | Written By | Consumed By | Purpose |
+|---|---|---|---|
+| `pending#content` | Trigger Lambda | Phase 2 `_check_pending_content` | Raw content files awaiting Phase 1 |
+| `pending#parsed#{book}` | Trigger Lambda | Phase 2 `_read_manifest` (on task start) | Parsed files for a specific book awaiting Phase 2 |
+| `pending#enrich#{book}` | Trigger Lambda | Phase 3 `_get_next_pending_enrich` (on completion) | Book awaiting Phase 3 enrichment |
+
+**Multi-book flow:**
+
+```
+Book A uploaded → Phase 2 starts (Book A)
+Book B uploaded → Phase 2 locked → queued as pending#parsed#BookB
+
+Book A Phase 2 completes → checks pending#parsed#* → finds BookB
+  → triggers Phase 2 for BookB (networking stays up)
+  
+Book B Phase 2 completes → no more pending books
+  → auto-triggers Phase 3 for BookB (if no duplicates)
+  → tears down networking (nothing pending)
+
+--- If Phase 3 overlaps: ---
+
+Book A Phase 3 running, Book B Phase 3 triggered:
+  → trigger sees Phase 3 lock held → queues pending#enrich#BookB
+
+Book A Phase 3 completes → releases lock → checks pending#enrich#*
+  → finds BookB → triggers Phase 3 for BookB (networking stays up)
+
+Book B Phase 3 completes → no pending enrich or parsed queues
+  → tears down networking + OpenSERP
+```
+
+**Networking optimization:** Networking (NAT Gateway, VPC endpoints) stays up as long as either queue has entries. Teardown only happens when both `pending#parsed#*` and `pending#enrich#*` are empty after a phase completes.
+
+**Queue consumption:**
+- `pending#parsed#{book}` is consumed (deleted) when the Phase 2 task starts and reads its manifest via `_read_manifest()`
+- `pending#enrich#{book}` is consumed (deleted) by `_get_next_pending_enrich()` when Phase 3 completes and picks up the next book
+
+**Ordering:** Books are processed in arrival order (first match from DynamoDB scan). No priority mechanism.
+
+**Legacy compatibility:** The old `pending#parsed` (no book suffix) is still read as a fallback if no per-book queue exists.
+
 ### Pending Content Queue
 
 When new content is uploaded while the pipeline is already running:
@@ -186,8 +233,6 @@ When new content is uploaded while the pipeline is already running:
 3. Sends email notification: "Content queued — pipeline busy"
 4. When Phase 2 completes, it checks `pending#content`
 5. If pending files exist, clears the queue and re-triggers Phase 1 via SNS
-
-Similarly, parsed files are queued as `pending#parsed` when Phase 2 is busy. The trigger Lambda only launches a phase if the pipeline is idle (no active lock for that phase family).
 
 **Publish-before-delete ordering:** When re-triggering pending content, the new SNS message is published *before* the DynamoDB pending entry is deleted. This ensures no content is lost if the Lambda crashes between the two operations.
 

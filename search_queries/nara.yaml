@@ -1,0 +1,11 @@
+# Search query templates for NARA catalog (National Archives)
+# Variables: {title}, {unit}, {record_group}
+
+catalog:
+  - '{title}'
+  - '{unit} after action report'
+  - '{unit} war diary journal'
+
+record_group_scoped:
+  - '{record_group} {unit}'
+  - '{record_group} {title}'

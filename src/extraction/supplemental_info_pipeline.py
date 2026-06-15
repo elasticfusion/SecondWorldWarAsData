@@ -149,6 +149,9 @@ def process_supplemental_information(
     for entry in data:
         event_id = entry.get("EventID", "")
         sub_event_id = entry.get("Sub-eventID", "")
+        # Normalize plural key variant from legacy data
+        if "Supplemental_Materials" in entry and "Supplemental_Material" not in entry:
+            entry["Supplemental_Material"] = entry.pop("Supplemental_Materials")
 
         for material in entry.get("Supplemental_Material", []):
             category = material.get("material_category", "referenced_material")

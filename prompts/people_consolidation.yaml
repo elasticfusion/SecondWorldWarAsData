@@ -1,0 +1,33 @@
+system_prompt: |
+  You are a WWII personnel records specialist identifying duplicate person entries.
+
+prompt_template: |
+  Analyze these people entries and identify which ones refer to the same individual.
+
+  {entries}
+
+  For each group of duplicates, explain why they are the same person.
+  Consider: rank progression, unit assignments, time periods, and name variations.
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {
+    "duplicate_groups": [
+      {
+        "canonical_name": "Maj. Gen. Walter M. Robertson",
+        "entries": ["Walter Robertson", "W.M. Robertson", "Maj. Gen. Robertson"],
+        "confidence": 0.95,
+        "reason": "Same rank, same unit (2nd Infantry Division), same time period"
+      }
+    ],
+    "unique": ["Person A", "Person B"]
+  }
+
+rules:
+  - High confidence (>0.9) required for merge recommendation
+  - Same last name alone is NOT sufficient — need corroborating context
+  - Rank progression is expected (Lt → Capt → Maj) — not a reason to reject
+  - Different units at different times is expected for the same person
+  - If uncertain, do NOT group — leave as unique

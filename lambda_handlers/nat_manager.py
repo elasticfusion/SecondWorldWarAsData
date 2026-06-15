@@ -196,15 +196,18 @@ def _ensure_nat(ec2):
 
 
 def _create_nat(ec2):
-    """Create NAT Gateway with EIP."""
-    # Reuse free EIP or allocate
-    eips = ec2.describe_addresses(Filters=[{"Name": "domain", "Values": ["vpc"]}])
-    free = [a for a in eips.get("Addresses", []) if not a.get("AssociationId")]
-    eip_alloc = (
-        free[0]["AllocationId"]
-        if free
-        else ec2.allocate_address(Domain="vpc")["AllocationId"]
-    )
+    """Create NAT Gateway with fresh EIP (new IP each time for reputation isolation)."""
+    # Release any orphaned EIPs first (prevents AddressLimitExceeded)
+    try:
+        eips = ec2.describe_addresses(Filters=[{"Name": "domain", "Values": ["vpc"]}])
+        for addr in eips.get("Addresses", []):
+            if not addr.get("AssociationId"):
+                ec2.release_address(AllocationId=addr["AllocationId"])
+                logger.info("Released orphaned EIP: %s", addr["AllocationId"])
+    except Exception as e:
+        logger.warning("EIP cleanup failed: %s", e)
+
+    eip_alloc = ec2.allocate_address(Domain="vpc")["AllocationId"]
 
     resp = ec2.create_nat_gateway(
         SubnetId=PUBLIC_SUBNET,

@@ -1,0 +1,40 @@
+system_prompt: |
+  You are a WWII historian analyzing footnotes and endnotes for narrative content.
+
+prompt_template: |
+  Analyze the footnotes and endnotes in this event for narrative content.
+
+  Narrative content is factual information that adds to the historical record (battles, movements, decisions, context) but is NOT a bibliographic citation.
+
+  Event: {event_name} (ID: {event_id})
+
+  Endnotes/footnotes:
+  {footnote_text}
+
+  For each footnote that contains narrative content, extract:
+  - The factual content as a sub-event summary
+  - Any people, places, dates, or units mentioned
+  - The footnote number/reference
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {
+    "narrative_footnotes": [
+      {
+        "footnote_ref": "12",
+        "Sub-event_summary": "The 2nd Division launched a counterattack at 0600",
+        "people": ["Col. Smith"],
+        "places": ["Hill 192"],
+        "dates": ["1944-07-11"],
+        "units": ["2nd Infantry Division"]
+      }
+    ]
+  }
+
+rules:
+  - Only extract footnotes with genuine narrative/factual content
+  - Do NOT extract pure bibliographic citations (those go to supplemental extraction)
+  - If a footnote is ambiguous, include it with a note
+  - If no narrative footnotes found, return empty array

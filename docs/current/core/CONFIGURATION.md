@@ -395,22 +395,24 @@ aws:
 
 ## Prompt Templates
 
-Extraction prompts are loaded from YAML files in `prompts/`. These can be overridden from S3 without rebuilding the container.
+Extraction prompts are loaded from YAML files in `prompts/` (27 files). Search query templates are in `search_queries/` (6 files). Missing files cause a hard build failure (validated by `deploy_all.sh`).
 
 ```
-prompts/
-├── people.yaml       # People extraction prompt
-├── places.yaml       # Places extraction prompt
-└── ...               # Other entity types
+prompts/           # 27 LLM prompt templates
+search_queries/    # 6 third-party search query templates
 ```
 
-**Each YAML file contains:**
+**Each prompt YAML contains:**
 - `system_prompt` — System message for the LLM
 - `prompt_template` — Main prompt with `{variable}` placeholders
-- `schema` — JSON schema example for the expected output
+- `schema` — JSON schema example for the expected output (optional for verification prompts)
 - `rules` — List of extraction rules appended to the prompt
 
+**Each search query YAML contains:** category → list of query template strings with `{variable}` placeholders.
+
 **S3 override:** Upload to `s3://<bucket>/prompts/<name>.yaml` to override the local template at runtime. The `prompt_loader.py` checks S3 first, falls back to the container's local copy.
+
+**Cache invalidation:** Cache key hashes `system_prompt + prompt + temperature + model`. Any YAML change auto-invalidates relevant cache entries.
 
 **Variables available in templates:**
 - `{book}`, `{author}`, `{series}` — Book metadata
@@ -534,7 +536,8 @@ Configurable via CloudFormation stack parameters in `cloudformation/compute.yaml
 | `lock#<family>` | Trigger Lambda | Trigger Lambda, entrypoint | Pipeline task locks (conditional put, 2h TTL) |
 | `manifest#phase2` | Phase 2 final sync, dedup UI | Phase 3 download | List of S3 keys changed by Phase 2 and dedup review |
 | `pending#content` | Trigger Lambda | Phase 2 post-process | Queued content keys when pipeline is busy |
-| `pending#parsed` | Trigger Lambda | Phase 2 launcher | Queued parsed file keys when Phase 2 is busy |
+| `pending#parsed#<book>` | Trigger Lambda | Phase 2 `_read_manifest` | Per-book parsed file queue (consumed on task start) |
+| `pending#enrich#<book>` | Trigger Lambda | Phase 3 `_get_next_pending_enrich` | Per-book enrichment queue (consumed on completion) |
 | `batch_job#<batch_id>` | Submit-only task | Batch poller Lambda | Batch job tracking (status: pending/ready/retrieved/failed, 30-day TTL) |
 | `book_manifest#<book>#<entity_type>` | Phase 2 | Phase 3 | Entity files belonging to a specific book (scopes S3 downloads) |
 | `name_exclusion#<type>#<name1>#<name2>` | Dedup UI, merge script | Dedup scripts | Name-based exclusion pairs (survives file recreation) |

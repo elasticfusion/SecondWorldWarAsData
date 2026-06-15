@@ -1,0 +1,27 @@
+system_prompt: |
+  You verify whether images are relevant WWII military equipment photographs.
+
+prompt_template: |
+  Analyze this image to verify it's relevant WWII equipment media.
+
+  Equipment: {equipment_name}
+  Category: {equipment_category}
+  Image title: {image_title}
+
+  Determine:
+  1. Is this actually a photograph (not illustration, diagram, or unrelated)?
+  2. Does it show the specific equipment named above?
+  3. Is it from the WWII era or a preserved/museum example?
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {"is_relevant": true, "reason": "Authentic WWII photograph of M4 Sherman tank in combat"}
+
+rules:
+  - Must be the SPECIFIC equipment model/variant named
+  - Must be a photograph (not illustration, diagram, or modern CGI)
+  - Museum/preserved examples are acceptable
+  - Stock photos of different equipment models are NOT acceptable
+  - If unclear, err on the side of rejection

@@ -16,6 +16,8 @@ from src.utils.file_lock import write_json_with_lock
 from src.utils.http_pool import get_session
 from src.utils.json_validator import _fix_invalid_ulids
 
+from src.utils.prompt_loader import get_system_prompt
+
 logger = logging.getLogger(__name__)
 
 
@@ -51,24 +53,6 @@ class WeatherOutput(BaseModel):
     Weather_Mentions: List[WeatherMention] = Field(description="Weather mentions")
 
     model_config = ConfigDict(populate_by_name=True)
-
-
-SYSTEM_PROMPT = """You are an expert historian analyzing World War II documents.
-Extract weather mentions from the provided event text.
-
-CRITICAL RULES:
-1. ONLY extract weather explicitly mentioned in the text.
-2. ONLY extract for EXACT dates (e.g., "June 6, 1944"). Skip approximate dates like "early June".
-3. ALWAYS link to PlaceMentionID when the place is mentioned in the text.
-4. ALWAYS link to DateMentionID when the date is mentioned in the text.
-5. Extract temperature with units (celsius/fahrenheit).
-6. Note notable operational impacts.
-7. Generate valid 26-character ULIDs for new mentions.
-8. Return complete, valid JSON.
-
-IMPORTANT: Cross-reference places and dates to link weather to existing entities.
-
-If no weather mentions found, return empty Weather_Mentions array."""
 
 
 def _is_valid_weather_mention(mention: dict) -> tuple[bool, str]:
@@ -574,7 +558,7 @@ IMPORTANT:
 - Generate 26-character ULIDs using: 0-9 A-H J-K M-N P-T V-Z"""
 
     try:
-        from src.utils.prompt_loader import render_prompt
+        from src.utils.prompt_loader import get_system_prompt, render_prompt
 
         prompt = render_prompt(
             "weather",
@@ -659,31 +643,20 @@ def _batch_extract_weather(
     chunks = [blocks[i : i + chunk_size] for i in range(0, len(blocks), chunk_size)]
     all_results: Dict[str, List[Dict[str, Any]]] = {}
 
-    for chunk in chunks:
-        prompt = f"""Extract weather mentions from these WWII event sub-events.
+    from src.utils.chunked_extract import extract_with_chunk_halving
 
-Event: {event_name}
-EventID: {event_id}
+    def _extract_weather_chunk(chunk):
+        from src.utils.prompt_loader import get_system_prompt, render_prompt as _rp
 
-{"".join(chr(10) + chr(10) + b for b in chunk)}
+        prompt = _rp(
+            "weather_batch",
+            event_name=event_name,
+            event_id=event_id,
+            sub_event_blocks="".join(chr(10) + chr(10) + b for b in chunk),
+        )
+        return _call_and_parse_weather(grok_client, prompt, max_retries)
 
-For each weather mention provide:
-- WeatherMentionID: 26-character ULID
-- place_name, PlaceMentionID (from available places above)
-- date (YYYY-MM-DD exact only), DateMentionID (from available dates above)
-- weather_description, temperature, temperature_unit, measurement_system
-- notable_impact, original_text
-
-CRITICAL: Only extract EXACT dates. Skip approximate dates.
-
-Return JSON object keyed by Sub-eventID:
-{{"<Sub-eventID>": [{{"WeatherMentionID": "...", "place_name": "...", ...}}], ...}}
-Return empty arrays for sub-events with no weather mentions."""
-
-        results = _call_and_parse_weather(grok_client, prompt, max_retries)
-        all_results.update(results)
-
-    return all_results
+    return extract_with_chunk_halving(chunks, _extract_weather_chunk, "weather")
 
 
 def _call_and_parse_weather(
@@ -694,7 +667,7 @@ def _call_and_parse_weather(
         try:
             response = grok_client.extract_json(
                 prompt=prompt,
-                system_prompt=SYSTEM_PROMPT,
+                system_prompt=get_system_prompt("weather"),
                 use_cache=(attempt == 0),
                 cache_type="weather",
             )

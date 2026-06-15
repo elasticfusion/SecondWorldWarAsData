@@ -166,10 +166,9 @@ def search_person_images(
     max_results: int = 3,
 ) -> List[Dict[str, str]]:
     """Search for portrait images of a person."""
-    queries = [
-        f'"{person_name}" WWII portrait photo',
-        f'"{person_name}" World War II general officer photo',
-    ]
+    from src.utils.search_query_loader import render_search_queries
+
+    queries = render_search_queries("people", "portrait_images", name=person_name)
     images = []
     for query in queries:
         results = _search_openserp(query, openserp_url)
@@ -212,11 +211,9 @@ def search_academic_sources(
     max_results: int = 5,
 ) -> List[Dict[str, str]]:
     """Search for academic papers, oral histories, and media about a person."""
-    queries = [
-        f'"{person_name}" oral history WWII',
-        f'"{person_name}" university archive World War II',
-        f'"{person_name}" documentary interview WWII',
-    ]
+    from src.utils.search_query_loader import render_search_queries as _rsq
+
+    queries = _rsq("people", "academic_sources", name=person_name)
     sources = []
     seen_urls = set()
     for query in queries:
@@ -326,7 +323,9 @@ def search_event_content(
     max_results: int = 5,
 ) -> List[Dict[str, str]]:
     """Search for primary sources related to an event, including non-English."""
-    queries = [f'"{event_name}" veteran interview primary source']
+    from src.utils.search_query_loader import render_search_queries as _rsq2
+
+    queries = _rsq2("events", "primary_sources", event_name=event_name)
 
     # Add non-English queries for major events
     if aliases:

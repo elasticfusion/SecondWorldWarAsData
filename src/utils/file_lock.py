@@ -6,7 +6,7 @@ import platform
 import threading
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +97,15 @@ _REQUIRED_FIELDS: Dict[str, list] = {
 
 def _validate_entity(filepath: Path, data: Dict[str, Any]) -> None:
     """Validate required fields before writing. Logs warning on invalid data."""
+    # Skip non-entity files (metadata, indexes, reports, tracking)
+    if filepath.name in (
+        "index.json",
+        "duplicate_report.json",
+        "not_duplicates.json",
+        "not_people.json",
+        "not_related.json",
+    ) or filepath.name.startswith("."):
+        return
     entity_type = filepath.parent.name
     required = _REQUIRED_FIELDS.get(entity_type)
     if not required:
@@ -182,7 +191,35 @@ def _dual_write_dynamo(filepath: Path, data: Dict[str, Any]) -> None:
         if store:
             store.put(entity_type, entity_id, data, filename=filepath.name)
     except Exception as e:
-        logger.debug("Dual-write to DynamoDB failed: %s", e)
+        logger.warning(
+            "Dual-write to DynamoDB failed for %s/%s: %s", entity_type, entity_id, e
+        )
+        _track_failed_write(entity_type, entity_id, filepath)
+
+
+# Track failed dual-writes for reconciliation at Phase 3 start
+_failed_writes: List = []
+_failed_writes_lock = threading.Lock()
+
+
+def _track_failed_write(entity_type: str, entity_id: str, filepath: Path) -> None:
+    """Record failed DynamoDB write for later reconciliation."""
+    with _failed_writes_lock:
+        _failed_writes.append(
+            {"type": entity_type, "id": entity_id, "path": str(filepath)}
+        )
+
+
+def get_failed_writes() -> List[Dict[str, str]]:
+    """Return list of failed dual-writes since last clear."""
+    with _failed_writes_lock:
+        return list(_failed_writes)
+
+
+def clear_failed_writes() -> None:
+    """Clear tracked failures after successful reconciliation."""
+    with _failed_writes_lock:
+        _failed_writes.clear()
 
 
 def read_json_with_lock(filepath: Path) -> Dict[str, Any]:

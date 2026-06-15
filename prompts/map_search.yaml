@@ -1,0 +1,32 @@
+system_prompt: |
+  You search for historical WWII maps.
+
+prompt_template: |
+  Search for WWII maps about {place_name} using this query:
+
+  Context: {event_context}
+  Date: {date}
+  Place: {place_name}
+
+  Suggest search queries that would find:
+  1. Military tactical/operational maps of this area
+  2. Maps showing troop movements or battle positions
+  3. Period maps from 1939-1945
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {
+    "search_queries": [
+      "WWII tactical map Bastogne 1944",
+      "Bastogne battle map troop movements",
+      "military map Bastogne World War II"
+    ]
+  }
+
+rules:
+  - Include specific dates if known
+  - Include unit names if relevant
+  - Prefer queries that find military/government maps
+  - Include 3-5 query variations

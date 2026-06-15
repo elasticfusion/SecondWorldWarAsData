@@ -1,0 +1,7 @@
+# Search query templates for event enrichment (OpenSERP)
+# Variables: {event_name}
+
+primary_sources:
+  - '"{event_name}" veteran interview primary source'
+  - '"{event_name}" after action report'
+  - '"{event_name}" war diary'

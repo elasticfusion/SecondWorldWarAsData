@@ -17,6 +17,9 @@ cp config.yaml.example config.yaml  # Add your GROK_API_KEY
 python phase1_parse.py               # Parse → JSON
 python phase2_extract.py             # Extract entities (uses Grok API)
 python phase3_enrich_data.py         # Enrich with external data
+
+# Optional: container vulnerability scanning (used by deploy_all.sh)
+curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
 ```
 
 Full setup: [Local Deployment Guide](docs/current/LOCAL_DEPLOYMENT.md) | AWS: [AWS Deployment Guide](docs/current/AWS_DEPLOYMENT.md)

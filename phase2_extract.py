@@ -12,7 +12,7 @@ from pathlib import Path
 
 from src.utils.config import load_config, get_paths
 from src.utils.logger import setup_logging
-from src.grok_client import GrokClient, current_book
+from src.grok_client import GrokClient, BatchModeCollecting, current_book
 from src.extraction.events import extract_events
 from src.extraction.external_maps import import_maps
 
@@ -77,6 +77,23 @@ def _complete_metadata(base_dir, paths, logger, batch_mode=False):
         logger.warning("  Continuing with existing metadata...")
 
 
+def _is_processed(output_root: Path, entity_type: str, event_name: str) -> bool:
+    """Check if an event file has already been processed for this entity type."""
+    marker = output_root / entity_type / ".processed_events.json"
+    if not marker.exists():
+        return False
+    return event_name in set(json.loads(marker.read_text()))
+
+
+def _mark_processed(output_root: Path, entity_type: str, event_name: str) -> None:
+    """Record that an event file has been processed for this entity type."""
+    marker = output_root / entity_type / ".processed_events.json"
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    processed = set(json.loads(marker.read_text())) if marker.exists() else set()
+    processed.add(event_name)
+    marker.write_text(json.dumps(sorted(processed)))
+
+
 def _extract_optional_entities(
     event_file, parsed_file, grok_client, paths, config, logger
 ):
@@ -111,6 +128,8 @@ def _extract_weather(event_file, parsed_file, grok_client, output_root, config, 
         logger.error("    Weather config error for %s: %s", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Weather file I/O error for %s: %s", event_file.name, e)
+    except BatchModeCollecting:
+        logger.debug("    Batch collecting (weather): %s", event_file.name)
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting weather from %s: %s", event_file.name, e)
 
@@ -139,12 +158,20 @@ def _extract_equipment(event_file, grok_client, output_root, config, logger):
         logger.error("    Equipment JSON parse error for %s: %s", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Equipment file I/O error for %s: %s", event_file.name, e)
+    except BatchModeCollecting:
+        logger.debug("    Batch collecting (equipment): %s", event_file.name)
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting equipment from %s: %s", event_file.name, e)
 
 
 def _extract_logistics(event_file, grok_client, output_root, config, logger):
     if not config.get("logistics", {}).get("enabled", False):
+        return
+    from src.utils.config import should_reprocess
+
+    if not should_reprocess("logistics") and _is_processed(
+        output_root, "logistics", event_file.name
+    ):
         return
     try:
         from src.extraction.logistics import extract_logistics_from_event
@@ -156,16 +183,25 @@ def _extract_logistics(event_file, grok_client, output_root, config, logger):
         )
         if result:
             logger.info("    ✓ Logistics updated")
+        _mark_processed(output_root, "logistics", event_file.name)
     except json.JSONDecodeError as e:
         logger.error("    Logistics JSON parse error for %s: %s", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Logistics file I/O error for %s: %s", event_file.name, e)
+    except BatchModeCollecting:
+        logger.debug("    Batch collecting (logistics): %s", event_file.name)
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting logistics from %s: %s", event_file.name, e)
 
 
 def _extract_casualties(event_file, grok_client, output_root, config, logger):
     if not config.get("casualties", {}).get("enabled", False):
+        return
+    from src.utils.config import should_reprocess
+
+    if not should_reprocess("casualties") and _is_processed(
+        output_root, "casualties", event_file.name
+    ):
         return
     try:
         from src.extraction.casualties import extract_casualties
@@ -177,10 +213,13 @@ def _extract_casualties(event_file, grok_client, output_root, config, logger):
         )
         if casualties:
             logger.info("    ✓ Casualties: %d record(s)", len(casualties))
+        _mark_processed(output_root, "casualties", event_file.name)
     except json.JSONDecodeError as e:
         logger.error("    Casualties JSON parse error for %s: %s", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Casualties file I/O error for %s: %s", event_file.name, e)
+    except BatchModeCollecting:
+        logger.debug("    Batch collecting (casualties): %s", event_file.name)
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting casualties from %s: %s", event_file.name, e)
 
@@ -813,6 +852,22 @@ def _write_phase_results(output_root, processed, failed):
         ),
         encoding="utf-8",
     )
+
+    # Sanity check: warn if all optional extractors produced 0 with >5 events
+    optional_types = ["equipment", "weather", "logistics", "casualties"]
+    event_count = entity_counts.get("dates", 0)  # dates ~= event count proxy
+    content_dir = output_root / "content"
+    if content_dir.exists():
+        event_count = len(list(content_dir.rglob("*-event.json")))
+    if event_count > 5:
+        all_zero = all(entity_counts.get(t, 0) == 0 for t in optional_types)
+        if all_zero:
+            import logging
+
+            logging.getLogger(__name__).warning(
+                "⚠ All optional extractors produced 0 entities with %d events — possible extraction failure",
+                event_count,
+            )
 
 
 if __name__ == "__main__":

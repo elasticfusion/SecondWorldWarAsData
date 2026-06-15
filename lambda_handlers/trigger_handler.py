@@ -79,11 +79,7 @@ def handler(event, _context):
             _queue_parsed(s3_keys)
             _launch_phase2_if_idle()
         elif topic_name == ENTITY_TOPIC:
-            if _review_complete():
-                _stop_phase2_tasks()
-                _run_task(PHASE3_TASK_DEF, topic_name)
-            else:
-                logger.info("Dedup review not complete, skipping phase3")
+            pass  # Dead path — Phase 3 triggered via dedup-complete or auto-trigger
         elif topic_name == DEDUP_COMPLETE_TOPIC:
             logger.info("Dedup complete, launching phase3")
             _stop_phase2_tasks()
@@ -109,7 +105,7 @@ def _handle_scheduled_check():
         except Exception as e:
             logger.warning("Lock check failed for %s: %s", family, e)
 
-    # Reconcile: if dedup complete but Phase 3 never ran, trigger it
+    # Reconcile: if dedup complete but Phase 3 never ran, trigger it (only if work is queued)
     try:
         phase3_family = f"{ENV_NAME}-wwii-phase3-enrich"
         phase3_lock = dynamo.get_item(Key={"cache_key": f"lock#{phase3_family}"}).get(
@@ -119,11 +115,11 @@ def _handle_scheduled_check():
             cluster=CLUSTER, family=phase3_family, desiredStatus="RUNNING"
         ).get("taskArns", [])
         if not phase3_lock and not phase3_running:
-            resp = s3.get_object(Bucket=BUCKET, Key="dedup/review_status.json")
-            status = json.loads(resp["Body"].read())
-            if status.get("complete"):
-                logger.info("Dedup complete but Phase 3 never ran — triggering")
-                _run_task(PHASE3_TASK_DEF, "reconciliation")
+            # Only trigger if there's a pending enrich queue entry
+            pending = _get_pending_books_for_enrich()
+            if pending:
+                logger.info("Pending enrich for %s, triggering Phase 3", pending[0])
+                _run_task(PHASE3_TASK_DEF, "reconciliation", book_name=pending[0])
     except Exception as e:
         logger.debug("Dedup reconciliation check: %s", e)
 
@@ -154,15 +150,15 @@ def _handle_scheduled_check():
                     PHASE1_TASK_DEF, "pending-reconciliation", book_name=book_name
                 )
             else:
-                pending_parsed = dynamo.get_item(
-                    Key={"cache_key": "pending#parsed"}
-                ).get("Item", {})
-                if pending_parsed.get("keys"):
+                # Check for any per-book pending queues
+                pending_books = _get_pending_books()
+                if pending_books:
                     logger.info(
-                        "Pending parsed queue has %d items, launching Phase 2",
-                        len(pending_parsed["keys"]),
+                        "Pending parsed queues for %d book(s): %s, launching Phase 2",
+                        len(pending_books),
+                        pending_books[0],
                     )
-                    _launch_phase2_if_idle()
+                    _launch_phase2_if_idle(book_name=pending_books[0])
     except Exception as e:
         logger.debug("Pending queue reconciliation: %s", e)
 
@@ -265,6 +261,7 @@ def _run_task(task_def, source, book_name=""):
         dynamo.put_item(
             Item={
                 "cache_key": lock_key,
+                "book": book_name or "all",
                 "response": str(int(time.time())),
                 "ttl": int(time.time()) + 7200,
             },
@@ -281,6 +278,7 @@ def _run_task(task_def, source, book_name=""):
                 dynamo.put_item(
                     Item={
                         "cache_key": lock_key,
+                        "book": book_name or "all",
                         "response": str(int(time.time())),
                         "ttl": int(time.time()) + 7200,
                     },
@@ -291,6 +289,12 @@ def _run_task(task_def, source, book_name=""):
                 return
         else:
             logger.info("Task %s already locked and running, skipping", family)
+            # Queue per-book requests for later processing
+            if book_name:
+                if task_def == PHASE3_TASK_DEF:
+                    _queue_pending_enrich(book_name)
+                elif task_def == PHASE2_TASK_DEF:
+                    _queue_pending_parsed_book(book_name)
             return
 
     # Launch task
@@ -420,8 +424,9 @@ def _launch_phase1_if_idle():
 
 
 def _queue_parsed(keys):
-    """Queue parsed files, skipping those with existing event files."""
-    new_keys = []
+    """Queue parsed files per book, skipping those with existing event files."""
+    # Group keys by book
+    by_book = {}
     for key in keys:
         if not key.endswith("-parsed.json"):
             continue
@@ -430,23 +435,54 @@ def _queue_parsed(keys):
             s3.head_object(Bucket=BUCKET, Key=event_key)
             logger.info("Skipping %s (event file exists)", key.split("/")[-1])
         except Exception:
-            new_keys.append(key)
-    if not new_keys:
+            # Extract book name from key: output/content/{BookName}/chapter*-parsed.json
+            parts = key.split("/")
+            book = parts[2] if len(parts) >= 4 else "unknown"
+            by_book.setdefault(book, []).append(key)
+
+    if not by_book:
         logger.info("All parsed files already processed, nothing to queue")
         return
+
+    # Write per-book queues
+    for book, book_keys in by_book.items():
+        try:
+            dynamo.update_item(
+                Key={"cache_key": f"pending#parsed#{book}"},
+                UpdateExpression="SET #k = list_append(if_not_exists(#k, :empty), :new)",
+                ExpressionAttributeNames={"#k": "keys"},
+                ExpressionAttributeValues={":new": book_keys, ":empty": []},
+            )
+            logger.info(
+                "Queued %d parsed keys for %s (atomic append)", len(book_keys), book
+            )
+        except Exception as e:
+            logger.error("Failed to queue parsed keys for %s: %s", book, e)
+
+
+def _get_pending_books() -> list:
+    """Return list of book names with pending parsed queues."""
     try:
-        dynamo.update_item(
-            Key={"cache_key": "pending#parsed"},
-            UpdateExpression="SET #k = list_append(if_not_exists(#k, :empty), :new)",
-            ExpressionAttributeNames={"#k": "keys"},
-            ExpressionAttributeValues={":new": new_keys, ":empty": []},
+        resp = dynamo.scan(
+            FilterExpression="begins_with(cache_key, :prefix)",
+            ExpressionAttributeValues={":prefix": "pending#parsed#"},
+            ProjectionExpression="cache_key",
+            Limit=1000,  # Cap scan cost; pending queue will never exceed this
         )
-        logger.info("Queued %d parsed keys (atomic append)", len(new_keys))
+        books = []
+        for item in resp.get("Items", []):
+            # pending#parsed#BookName → BookName
+            key = item["cache_key"]
+            book = key.split("#", 2)[2] if key.count("#") >= 2 else ""
+            if book:
+                books.append(book)
+        return sorted(books)
     except Exception as e:
-        logger.error("Failed to queue parsed keys: %s", e)
+        logger.warning("Failed to scan pending books: %s", e)
+        return []
 
 
-def _launch_phase2_if_idle():
+def _launch_phase2_if_idle(book_name=""):
     """Launch Phase 2 only if no pipeline tasks are running."""
     for fam in TASK_FAMILIES.values():
         running = ecs.list_tasks(
@@ -454,23 +490,58 @@ def _launch_phase2_if_idle():
         ).get("taskArns", [])
         if running:
             logger.info(
-                "Pipeline busy (%s running), Phase 2 will run after Phase 1 completes",
+                "Pipeline busy (%s running), Phase 2 will run after current task completes",
                 fam,
             )
             return
-    # Extract book name from pending parsed keys
-    book_name = ""
-    try:
-        resp = dynamo.get_item(Key={"cache_key": "pending#parsed"})
-        keys = resp.get("Item", {}).get("keys", [])
-        books = set()
-        for k in keys:
-            parts = k.split("/")
-            if len(parts) >= 3 and parts[0] == "output" and parts[1] == "content":
-                books.add(parts[2])
-        if len(books) == 1:
-            book_name = books.pop()
-    except Exception as e:
-        logger.debug("Could not extract book name from pending keys: %s", e)
-    logger.info("Pipeline idle, launching Phase 2 to process queued parsed files")
+    # If no book specified, pick first from pending queues
+    if not book_name:
+        pending = _get_pending_books()
+        book_name = pending[0] if pending else ""
+    logger.info("Pipeline idle, launching Phase 2 for book=%s", book_name)
     _run_task(PHASE2_TASK_DEF, "pending-parsed", book_name=book_name)
+
+
+def _queue_pending_enrich(book_name: str) -> None:
+    """Queue a book for Phase 3 enrichment when the lock is held."""
+    try:
+        dynamo.put_item(
+            Item={"cache_key": f"pending#enrich#{book_name}", "book": book_name}
+        )
+        logger.info("Queued Phase 3 enrichment for %s", book_name)
+    except Exception as e:
+        logger.error("Failed to queue enrichment for %s: %s", book_name, e)
+
+
+def _get_pending_books_for_enrich() -> list:
+    """Return list of book names with pending enrichment queues."""
+    try:
+        resp = dynamo.scan(
+            FilterExpression="begins_with(cache_key, :prefix)",
+            ExpressionAttributeValues={":prefix": "pending#enrich#"},
+            ProjectionExpression="cache_key",
+            Limit=100,
+        )
+        books = []
+        for item in resp.get("Items", []):
+            key = item["cache_key"]
+            book = key.split("#", 2)[2] if key.count("#") >= 2 else ""
+            if book:
+                books.append(book)
+        return sorted(books)
+    except Exception as e:
+        logger.warning("Failed to scan pending enrich: %s", e)
+        return []
+
+
+def _queue_pending_parsed_book(book_name: str) -> None:
+    """Queue a book for Phase 2 extraction when the lock is held (no file keys, just marks book as pending)."""
+    try:
+        dynamo.update_item(
+            Key={"cache_key": f"pending#parsed#{book_name}"},
+            UpdateExpression="SET book = if_not_exists(book, :b)",
+            ExpressionAttributeValues={":b": book_name},
+        )
+        logger.info("Queued Phase 2 extraction for %s", book_name)
+    except Exception as e:
+        logger.error("Failed to queue extraction for %s: %s", book_name, e)

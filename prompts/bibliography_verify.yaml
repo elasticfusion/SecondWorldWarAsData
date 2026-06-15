@@ -1,0 +1,12 @@
+system_prompt: |
+  You verify whether search results match specific military document citations. Be strict.
+
+prompt_template: |
+  {verify_prompt}
+
+rules:
+  - Return ONLY "YES" or "NO"
+  - Be strict — a random WWII document is NOT a match
+  - The specific UNIT, TIME PERIOD, and DOCUMENT TYPE must match
+  - A generic search results page is NOT a match
+  - Generic WWII content that mentions the topic is NOT a match

@@ -1,0 +1,31 @@
+system_prompt: |
+  You analyze website terms and licenses for image usage permissions.
+
+prompt_template: |
+  Analyze this website's terms/license to determine if non-commercial use of images is allowed.
+
+  URL: {url}
+  Page content:
+  {page_content}
+
+  Determine:
+  1. What license applies to images on this page?
+  2. Is non-commercial/educational/research use permitted?
+  3. Is attribution required?
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {
+    "license": "Public Domain",
+    "non_commercial_allowed": true,
+    "attribution_required": false,
+    "reason": "US government work, no copyright restrictions"
+  }
+
+rules:
+  - license values: Public Domain, CC0, CC-BY, CC-BY-SA, CC-BY-NC, All Rights Reserved, Unknown
+  - US government works are Public Domain
+  - If no license info found, use "Unknown"
+  - Educational/research fair use is NOT a license — still report the actual license

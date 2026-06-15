@@ -116,23 +116,9 @@ def _analyze_license_with_grok(
     domain: str, url: str, license_text: str, grok_client: GrokClient
 ) -> tuple[bool, str]:
     """Analyze license terms with Grok. Returns (allowed, license_url)."""
-    prompt = f"""Analyze this website's terms/license to determine if non-commercial use of images is allowed.
+    from src.utils.prompt_loader import render_prompt
 
-Domain: {domain}
-URL: {url}
-
-License/Terms text:
-{license_text[:5000]}
-
-Determine:
-1. Does the site explicitly allow non-commercial use of images?
-2. Does it use Creative Commons, Public Domain, or similar permissive license?
-3. Does it prohibit commercial use but allow educational/research use?
-4. Does it have "All Rights Reserved" or prohibit reproduction?
-
-Respond with ONLY a JSON object:
-{{"allowed": true or false, "reason": "Brief explanation of license terms", "license_type": "CC-BY, Public Domain, All Rights Reserved, etc."}}
-"""
+    prompt = render_prompt("license_check", url=url, page_content=license_text)
 
     result = grok_client.extract_json(
         prompt=prompt, cache_type="license_check", temperature=0.0

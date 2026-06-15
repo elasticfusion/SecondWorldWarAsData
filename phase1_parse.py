@@ -103,9 +103,12 @@ def _save_split_chapter(doc, book_output, logger):
         f"  Large chapter: {total_chars:,} chars ({len(doc.paragraphs)} paragraphs)"
     )
     chunk_size = 50
-    for i in range(0, len(doc.paragraphs), chunk_size):
+    overlap = 3
+    i = 0
+    chunk_idx = 0
+    while i < len(doc.paragraphs):
         chunk_paras = doc.paragraphs[i : i + chunk_size]
-        chunk_suffix = chr(97 + i // chunk_size)
+        chunk_suffix = chr(97 + chunk_idx)
         chunk_file = (
             book_output / f"chapter{doc.chapter_number}{chunk_suffix}-parsed.json"
         )
@@ -124,8 +127,11 @@ def _save_split_chapter(doc, book_output, logger):
         with open(chunk_file, "w", encoding="utf-8") as f:
             json.dump(chunk_data, f, indent=2, ensure_ascii=False)
         logger.info(
-            f"  Saved: {chunk_file.name} ({len(chunk_paras)} paragraphs, chunk {i // chunk_size + 1})"
+            f"  Saved: {chunk_file.name} ({len(chunk_paras)} paragraphs, chunk {chunk_idx + 1})"
         )
+        # Advance by chunk_size minus overlap (so chunks share boundary paragraphs)
+        i += chunk_size - overlap
+        chunk_idx += 1
     return True
 
 
