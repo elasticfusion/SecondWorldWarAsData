@@ -72,7 +72,7 @@ class TestUpdateEventRefs:
 
         logistics_dir = output_root / "logistics"
         logistics_dir.mkdir()
-        data = {"linked_person": "OLD_ID", "note": "test"}
+        data = {"PersonID": "OLD_ID", "note": "test"}
         (logistics_dir / "supply.json").write_text(json.dumps(data), encoding="utf-8")
 
         update_event_refs(output_root, "OLD_ID", "NEW_ID", "people")

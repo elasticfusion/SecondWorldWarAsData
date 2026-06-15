@@ -1,209 +1,117 @@
 ---
-# Project Configuration
-# Copy this file to config.yaml and fill in your API keys.
+# PROFILE: cost-optimized
+# Minimizes API spend. Uses batch API (50% off), cheaper models for light tasks,
+# aggressive caching, and limits external searches.
+# Use when: processing new books in production, budgets are tight.
 
-# Paths
 paths:
   content_root: "contentrepository"
   output_root: "output"
-  content_output: "output/content"    # Book-specific output (parsed/event files)
+  content_output: "output/content"
   cache_root: "cache"
   review_root: "review"
-  
-  # Cache subdirectories
-  api_cache: "cache/api"           # Grok API response cache
-  image_cache: "cache/images"      # Downloaded images
-  
-  # Output subdirectories
-  maps_images: "output/maps_images"  # Map images from source material
-  
-  # Central data files
-  people_data: "output/people.json"              # Centrally managed people
-  peoplegroup_data: "output/peoplegroups.json"   # Centrally managed groups
-  supplemental_data: "output/supplemental.json"  # All supplemental materials
+  api_cache: "cache/api"
+  image_cache: "cache/images"
+  maps_images: "output/maps_images"
+  people_data: "output/people.json"
+  peoplegroup_data: "output/peoplegroups.json"
+  supplemental_data: "output/supplemental.json"
 
-# API Configuration
 api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
     model: "grok-4.3"
-    model_map:                        # Per-task model routing (cost optimization)
-      # isbn: "grok-3-mini"
-      # url_verify: "grok-3-mini"
-      # copyright: "grok-3-mini"
-      # nara_match: "grok-3-mini"
-      # openserp_verify: "grok-3-mini"
+    model_map:
+      isbn: "grok-3-mini"             # Cheap model for simple lookups
+      url_verify: "grok-3-mini"
+      copyright: "grok-3-mini"
+      nara_match: "grok-3-mini"
+      openserp_verify: "grok-3-mini"
     max_retries: 3
     timeout: 60
-  calls_per_minute: 30            # Rate limit: max API calls per minute (across all threads)
-  nara_api_key: ""                # NARA catalog API key (https://www.archives.gov/research/catalog/help/api)
-  noaa_api_token: ""              # NOAA API token
+  calls_per_minute: 20                 # Conservative rate limit
+  nara_api_key: ""
+  noaa_api_token: ""
 
-# Processing
 processing:
   validate_ulids: true
-  generate_jq_queries: true
-  generate_download_scripts: true
-  force_reprocess: false             # WARNING: Reprocesses ALL content from scratch, ignoring cache.
-                                     # Clears event files and API cache. Use only when prompts have
-                                     # fundamentally changed or data is corrupted. Expensive.
+  generate_jq_queries: false           # Skip — not needed for production
+  generate_download_scripts: false
+  force_reprocess: false
+  reprocess_types: []
 
-# Weather Extraction
 weather:
-  enabled: true                    # Enable weather extraction
-  fetch_api_data: true            # Fetch from Open-Meteo API
-  api_provider: "open-meteo"       # API provider
-  cache_responses: true            # Cache API responses
-  only_precise_dates: true         # Skip approximate dates
-  timeout: 30                      # API timeout (seconds)
+  enabled: true
+  fetch_api_data: true                 # Open-Meteo is free
+  api_provider: "open-meteo"
+  cache_responses: true
+  only_precise_dates: true             # Skip vague dates (fewer API calls)
+  timeout: 30
 
-# Equipment Extraction
 equipment:
-  enabled: true                    # Enable equipment extraction (experimental)
-  enable_enrichment: true          # Enrich with Wikipedia/Grokipedia data (slower, uses more API calls)
-  verify_media_with_vision: true   # Verify media relevance with Grok vision API (recommended)
+  enabled: true
+  enable_enrichment: false             # Skip enrichment — saves many API calls
+  verify_media_with_vision: false      # Skip vision API ($$$)
 
-# Logistics Extraction
 logistics:
-  enabled: true                   # Enable logistics extraction (experimental)
+  enabled: true
 
-# Casualties Extraction
 casualties:
-  enabled: true                  # Enable casualties extraction (experimental)
+  enabled: true
 
-# Supplemental Material Extraction
 supplemental_material:
-  enabled: true                    # Enable supplemental material extraction (Phase 1: Core)
-  extract_citations: true          # Parse citations into structured format
-  enrich_with_searches: true      # Phase 2: Search integration
-  llm_search: true                 # Phase 2: Use LLM for search (first pass)
-  search_gutenberg: true          # Phase 2: Search Gutenberg.org for books/periodicals
-  search_archive_org: true        # Phase 2: Search Archive.org
-  use_openserp: true               # Phase 2/3: Use OpenSERP for web search (auto-configured in AWS mode)
-  verify_archive_urls: true       # Phase 3: Verify archive URLs
-  extract_isbn: true              # Phase 3: Extract ISBN for books (post-1966)
-  determine_copyright: true       # Phase 3: Determine copyright status
-  max_materials_per_chapter: 1000   # Limit materials per chapter
+  enabled: true
+  extract_citations: true
+  enrich_with_searches: true
+  llm_search: true
+  search_gutenberg: true               # Free
+  search_archive_org: true             # Free
+  use_openserp: false                  # Disable — requires running OpenSERP service ($)
+  verify_archive_urls: false           # Skip verification pass
+  extract_isbn: false                  # Skip — uses API calls
+  determine_copyright: false           # Skip — uses API calls
+  max_materials_per_chapter: 500       # Limit scope
 
-# Concurrency
 concurrency:
-  enabled: false                   # Enable concurrent processing (experimental)
-  max_event_files: 3              # Process N event files concurrently
-  max_extraction_group: 3         # Max parallel extractions per group
-  max_enrichment_workers: 6       # Phase 3: concurrent enrichment threads per entity type
+  enabled: false
+  max_event_files: 3
+  max_extraction_group: 3
+  max_enrichment_workers: 4
 
-# Enrichment
 enrichment:
-  re_search_after_days: 90         # Re-search not_found entities after this many days
+  re_search_after_days: 180            # Re-search less frequently
 
-# Batch Mode
 batch:
-  phase2: true                     # Use batch API for Phase 2 (50% cost reduction)
-  phase3: true                     # Use batch API for Phase 3 (50% cost reduction)
+  phase2: true                         # 50% off extraction
+  phase3: false                        # Live calls — avoids network bounce between submit/retrieve
 
-# OpenSERP
 openserp:
-  results_per_query: 20            # Max results returned per search query
-  max_images_per_entity: 5        # Max images to keep per person/equipment
-  max_web_results_per_entity: 5    # Max web results (awards, bio links) per entity
-  rate_limit_seconds: 5            # Delay between searches to avoid blocking
+  results_per_query: 10                # Fewer results = fewer verification calls
+  max_images_per_entity: 3
+  max_web_results_per_entity: 3
+  rate_limit_seconds: 5
 
-# Maps Extraction
 maps:
-  enabled: true                    # Enable maps extraction
-  extract_during_phase1: true      # Extract during document parsing
-  download_images: true           # Download actual map image files
-  storage_backend: "filesystem"    # filesystem or s3
+  enabled: true
+  extract_during_phase1: true
+  download_images: false               # Don't download images (saves bandwidth/storage)
+  storage_backend: "filesystem"
   storage_path: "output/maps/"
-  image_storage_path: "filestore/maps/"  # Where to store downloaded map images
+  image_storage_path: "filestore/maps/"
 
-# External Maps Search
 external_maps:
-  enabled: true                    # Enable external maps search
-  max_places: 50                   # Maximum places to search (null for all)
-  openserp_url: "http://localhost:7001"  # OpenSERP service URL
-  search_limit: 50                 # Max results per search
-  verify_with_vision: true         # Use Grok vision API to verify maps
-  max_images_per_page: 5           # Max images to analyze per page
-  image_download_timeout: 30       # Timeout for downloading images (seconds)
-  page_download_timeout: 15        # Timeout for downloading HTML pages (seconds)
-  image_storage_path: "filestore/external_maps/"  # Where to store downloaded images
-  storage_path: "output/external_maps/"  # Where to store map metadata JSON
-  s3_bucket: ""                    # S3 bucket name (required if backend=s3)
-  s3_prefix: "maps/"               # S3 key prefix
-  s3_region: "us-east-1"           # AWS region
-  require_license: true            # Reject maps without license info
-  allowed_licenses:                # Permitted license types
-    - "Public Domain"
-    - "CC0"
-    - "CC-BY"
-    - "CC-BY-SA"
-    - "Unknown"                    # Allow AI to add maps with unclear licenses for later review
-  download_images: false           # Download map images if permitted
-  supported_formats:
-    - jpg
-    - jpeg
-    - png
-    - tif
-    - tiff
-    - pdf
-    - gif
-    - bmp
-  link_to_places: true             # Link maps to PlaceIDs
-  link_to_dates: true              # Link maps to DateIDs
-  download_timeout: 30             # Image download timeout (seconds)
-  classification_keywords:
-    tactical:
-      - attack
-      - assault
-      - advance
-      - retreat
-      - defense
-      - battle
-    strategic:
-      - campaign
-      - theater
-      - front
-      - invasion
-      - offensive
-      - deployment
-    logistical:
-      - supply
-      - logistics
-      - transport
-      - route
-      - port
-    political:
-      - border
-      - territory
-      - zone
-      - occupation
-      - political
+  enabled: false                       # Disable external map search (expensive: OpenSERP + vision)
 
-# AWS Configuration (set enabled: true to use S3/DynamoDB instead of local filesystem)
+storage:
+  entity_backend: "filesystem"
+
 aws:
   enabled: false
   region: "us-east-1"
-  s3_bucket: ""                      # S3 bucket for content and output
-  s3_prefix: ""                      # Optional key prefix
-  cache_table: "wwii-api-cache"      # DynamoDB table for API response cache
-  cache_ttl_days: 90                 # Cache entry TTL
-  secrets_id: ""                     # Secrets Manager secret ID for GROK_API_KEY
-  notification_email: ""             # Email for pipeline completion notifications
-  openserp:
-    cluster: "wwii-pipeline"
-    service: "openserp"
-    health_check_url: "/health"
-    startup_timeout: 120
-  database:
-    backend: "dynamodb"              # "dynamodb" or "mongodb"
-    dynamodb_table_prefix: "wwii-"
-    mongodb_uri: ""
 
-# Logging
 logging:
   level: "INFO"
   file: "logs/pipeline.log"
   console: true
-  debug_message_preview_chars: 15000      # Characters to show in DEBUG logs for API messages
-  debug_response_preview_chars: 15000     # Characters to show in DEBUG logs for API responses
+  debug_message_preview_chars: 500
+  debug_response_preview_chars: 500

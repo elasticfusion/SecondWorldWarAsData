@@ -13,6 +13,8 @@ from src.grok_client import GrokClient
 from src.utils.file_lock import write_json_with_lock
 from src.utils.json_validator import _fix_invalid_ulids
 
+from src.utils.prompt_loader import get_system_prompt
+
 logger = logging.getLogger(__name__)
 
 
@@ -69,12 +71,6 @@ class PlaceOutput(BaseModel):
     Place_Mentions: list[PlaceMention] = Field(description="List of place mentions")
 
     model_config = ConfigDict(populate_by_name=True)
-
-
-SYSTEM_PROMPT = """You are an expert historian and geographer analyzing World War II documents.
-Extract all place mentions from the provided event text with accurate coordinates.
-For large regions (oceans, continents, fronts), use the geographic center point.
-Return structured data matching the schema."""
 
 
 @lru_cache(maxsize=1000)
@@ -181,64 +177,16 @@ def create_place_prompt(
         logger.debug("Skipping empty sub-event %s (places)", sub_event_id)
         return ""
 
-    prompt = f"""Extract all place mentions from this WWII text with coordinates.
-For large geographic features (oceans, continents, military fronts), provide the geographic center coordinates.
+    from src.utils.prompt_loader import get_system_prompt, render_prompt
 
-Event: {event_name} (ID: {event_id})
-Sub-event: {sub_event_summary} (ID: {sub_event_id})
-
-Text:
-{text}
-
-Return JSON matching this structure:
-{{
-  "Event_Name": "{event_name}",
-  "EventID": "{event_id}",
-  "Sub_event_Name": "{sub_event_summary}",
-  "Sub_eventID": "{sub_event_id}",
-  "Place_Mentions": [
-    {{
-      "PlaceMentionID": "01KHYP2M4N6P8Q0R2S4T6V8W0X",
-      "current_name": "Normandy",
-      "historical_name": null,
-      "source_language": "English",
-      "latitude": 49.18,
-      "longitude": -0.37,
-      "geography_type": "region",
-      "date_context": "June 1944",
-      "role_in_event": "location of Allied invasion",
-      "original_text": "Normandy"
-    }}
-  ]
-}}
-
-Instructions:
-- date_context: Extract any date/time context mentioned with this place (e.g., "June 1944", "morning of D-Day")
-- role_in_event: Describe the place's role in this event (e.g., "target of attack", "defensive position", "supply route")
-- Use null if not mentioned in text
-
-Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
-All places MUST have latitude/longitude coordinates.
-If no places found, return empty Place_Mentions array.
-
-IMPORTANT: Do NOT extract military units, divisions, corps, armies, or organizations as places.
-Entries beginning with numbers (1st, 2nd, 3rd), Roman numerals (I, II, III, IV, V, VI, VII),
-or number words (First, Second, Third) are military units and belong in people_groups, not places.
-Examples of what to EXCLUDE: "1st Infantry Division", "VII Corps", "Third Army", "12th Army Group headquarters"."""
-
-    try:
-        from src.utils.prompt_loader import render_prompt
-
-        prompt = render_prompt(
-            "places",
-            event_name=event_name,
-            event_id=event_id,
-            sub_event_summary=sub_event_summary,
-            sub_event_id=sub_event_id,
-            text=text,
-        )
-    except Exception as e:
-        logger.warning("Place extraction step failed: %s", e)
+    prompt = render_prompt(
+        "places",
+        event_name=event_name,
+        event_id=event_id,
+        sub_event_summary=sub_event_summary,
+        sub_event_id=sub_event_id,
+        text=text,
+    )
 
     return prompt
 
@@ -288,7 +236,7 @@ def _extract_place_for_sub_event(
             place_output = grok_client.extract_structured(
                 prompt=prompt,
                 schema=PlaceOutput,
-                system_prompt=SYSTEM_PROMPT,
+                system_prompt=get_system_prompt("places"),
                 use_cache=(attempt == 0),
                 cache_type="places",
             )

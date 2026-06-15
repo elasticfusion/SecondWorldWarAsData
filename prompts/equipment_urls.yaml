@@ -1,0 +1,33 @@
+system_prompt: |
+  You extract direct image URLs from Wikipedia and Wikimedia pages.
+
+prompt_template: |
+  Extract direct image URLs from this Wikipedia/Wikimedia page about {equipment_name}.
+
+  Page content:
+  {page_content}
+
+  Look for:
+  1. Direct links to image files (.jpg, .png, .gif, .svg)
+  2. Wikimedia Commons file URLs
+  3. Thumbnail URLs that can be converted to full-size
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {
+    "images": [
+      {
+        "url": "https://upload.wikimedia.org/wikipedia/commons/...",
+        "title": "M4 Sherman in Normandy",
+        "source_page": "https://en.wikipedia.org/wiki/M4_Sherman"
+      }
+    ]
+  }
+
+rules:
+  - Only include direct image file URLs (not HTML page URLs)
+  - Prefer full-resolution over thumbnails
+  - Skip logos, icons, and non-equipment images
+  - If no relevant images found, return empty array

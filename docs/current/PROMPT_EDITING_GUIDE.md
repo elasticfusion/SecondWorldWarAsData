@@ -2,22 +2,64 @@
 
 How to customize the AI extraction prompts used by the pipeline.
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-06-15
 
 ---
 
 ## Overview
 
-The pipeline uses YAML prompt templates to instruct the Grok LLM on what to extract from WWII texts. Each entity type has its own template. You can edit these to improve extraction quality, add rules, or change the output format — without modifying Python code.
+All LLM prompts are externalized to YAML files. There are NO inline prompts in Python code — if a YAML file is missing or malformed, the pipeline fails at build time (deploy_all.sh validates) or at runtime (hard error, no silent fallback).
 
-**Prompt files:** `prompts/*.yaml`
+**Prompt files:** `prompts/*.yaml` (27 files)  
+**Search query files:** `search_queries/*.yaml` (6 files)
+
+### Extraction Prompts
 
 | File | What it extracts |
 |------|-----------------|
 | `events.yaml` | Battles, operations, sub-events |
+| `events_batch.yaml` | Multi-chapter event extraction |
 | `dates.yaml` | Temporal mentions (exact and approximate) |
 | `places.yaml` | Geographic locations with coordinates |
 | `people.yaml` | Biographical profiles |
+| `people_groups.yaml` | Military units, organizations |
+| `equipment.yaml` | Military equipment mentions |
+| `weather.yaml` | Single sub-event weather |
+| `weather_batch.yaml` | Chunked weather extraction |
+| `casualties.yaml` | Personnel casualty data |
+| `logistics.yaml` | Supply chain issues |
+| `supplemental.yaml` | Bibliography/citation extraction |
+| `supplemental_narrative.yaml` | Narrative content from footnotes |
+| `biography.yaml` | Phase 3 biographical enrichment |
+
+### Verification/Utility Prompts
+
+| File | Purpose |
+|------|---------|
+| `equipment_vision.yaml` | Image relevance verification |
+| `equipment_urls.yaml` | Wiki image URL extraction |
+| `equipment_enrichment.yaml` | Equipment specs lookup |
+| `map_search.yaml` | Map search query generation |
+| `map_vision.yaml` | Map image verification |
+| `license_check.yaml` | License/copyright analysis |
+| `isbn_lookup.yaml` | ISBN number lookup |
+| `author_death_date.yaml` | Author death date lookup |
+| `publication_search.yaml` | Online publication search |
+| `bibliography_verify.yaml` | Search result relevance (YES/NO) |
+| `nara_identify.yaml` | NARA Record Group identification |
+| `nara_verify.yaml` | NARA catalog match verification |
+| `people_consolidation.yaml` | Duplicate person detection |
+
+### Search Query Templates
+
+| File | Used by |
+|------|---------|
+| `search_queries/people.yaml` | OpenSERP portrait/academic searches |
+| `search_queries/equipment.yaml` | Equipment image/wiki searches |
+| `search_queries/events.yaml` | Primary source searches |
+| `search_queries/bibliography.yaml` | Gutenberg/Archive.org searches |
+| `search_queries/maps.yaml` | External map searches |
+| `search_queries/nara.yaml` | NARA catalog searches |
 | `equipment.yaml` | Weapons, vehicles, specifications |
 | `weather.yaml` | Historical weather conditions |
 | `logistics.yaml` | Supply chain issues |

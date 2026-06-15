@@ -12,20 +12,9 @@ from src.grok_client import GrokClient, GrokAPIError
 from src.json_schemas import EVENT_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
 
+from src.utils.prompt_loader import get_system_prompt
+
 logger = logging.getLogger(__name__)
-
-
-SYSTEM_PROMPT = """You are an expert historian analyzing World War II documents.
-Extract events and sub-events from the provided text.
-
-Requirements:
-- Group related paragraphs into logical sub-events
-- Each sub-event should have a clear summary
-- Preserve the exact paragraph text with absolute paragraph numbers
-- Extract images, maps, dates, places mentioned in each sub-event
-- Identify endnote and footnote references
-
-Return ONLY valid JSON matching the schema. No additional text."""
 
 
 def _is_footnote_paragraph(para: Dict[str, Any], all_paragraphs: list) -> bool:
@@ -151,64 +140,18 @@ def create_event_prompt(parsed_data: Dict[str, Any]) -> Optional[str]:
 
     maps_text = "\n".join(maps) if maps else "None"
 
-    prompt = f"""CRITICAL ULID REQUIREMENTS - READ FIRST:
-- ULID Specification: https://github.com/ulid/spec
-- EventID and Sub-eventID MUST be exactly 26 characters long
-- Use only these characters: 0-9 A-H J-K M-N P-T V-Z (NO I, L, O, U)
-- NO SPACES allowed in ULIDs
-- Valid example: 01KHXNSE0W41DV7VV6PEMDJJ5H (26 chars, no spaces, no I/L/O/U)
-- Generate NEW unique ULIDs - do not reuse the examples above
+    from src.utils.prompt_loader import get_system_prompt, render_prompt
 
-Analyze this chapter from "{book}" by {author}.
+    prompt = render_prompt(
+        "events",
+        book=book,
+        author=author,
+        chapter=chapter,
+        paragraphs=paragraphs,
+        images_text=images_text,
+        maps_text=maps_text,
+    )
 
-Chapter: {chapter}
-
-Paragraphs:
-{paragraphs}
-
-Available Images:
-{images_text}
-
-Available Maps:
-{maps_text}
-
-Extract the main event and sub-events. Return JSON in this exact format:
-{{
-  "Chapter": "Chapter title",
-  "Event": {{
-    "EventID": "01KHXNSE0W41DV7VV6PEMDJJ5H",
-    "Sub-events": [
-      {{
-        "Sub-eventID": "01KHXNSE0WX99GG0CB53CD2242",
-        "Sub-event_summary": "Brief summary",
-        "paragraphs": [1, 2],
-        "Endnote_References": [1, 2],
-        "Footnote_References": ["*", "†"]
-      }}
-    ]
-  }}
-}}
-
-OTHER REQUIREMENTS:
-- Group related paragraphs into sub-events
-- "paragraphs" is an array of absolute paragraph NUMBERS only (integers) — do NOT include paragraph text
-- Extract endnote numbers and footnote symbols from the text
-"""
-
-    try:
-        from src.utils.prompt_loader import render_prompt
-
-        prompt = render_prompt(
-            "events",
-            book=book,
-            author=author,
-            chapter=chapter,
-            paragraphs=paragraphs,
-            images_text=images_text,
-            maps_text=maps_text,
-        )
-    except Exception as e:
-        logger.warning("Event extraction step failed: %s", e)
     return prompt
 
 
@@ -294,7 +237,7 @@ def _extract_chunk(
     )
     result = grok_client.extract_json(
         prompt=prompt,
-        system_prompt=SYSTEM_PROMPT,
+        system_prompt=get_system_prompt("events"),
         temperature=0.1,
         use_cache=True,
         cache_type="events",
@@ -431,7 +374,7 @@ def extract_events(
             # Call Grok API
             response = grok_client.extract_json(
                 prompt=prompt,
-                system_prompt=SYSTEM_PROMPT,
+                system_prompt=get_system_prompt("events"),
                 temperature=0.1,
                 use_cache=True,
                 cache_type="events",

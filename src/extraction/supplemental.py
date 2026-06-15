@@ -11,6 +11,8 @@ from src.grok_client import GrokClient
 from src.utils.json_validator import _fix_invalid_ulids
 from src.json_schemas import SUPPLEMENTAL_SCHEMA
 
+from src.utils.prompt_loader import get_system_prompt
+
 logger = logging.getLogger(__name__)
 
 
@@ -61,43 +63,6 @@ def _resolve_mentioned_organizations(
     return mentioned
 
 
-SYSTEM_PROMPT = """You are an expert librarian and historian analyzing World War II documents.
-Extract all supplemental material references (endnotes, footnotes, bibliography) from the provided event text.
-
-CRITICAL: First determine the material category:
-- "referenced_material": Citations to books, articles, documents, archives (has author/title/publisher)
-- "supplemental_information": Additional narrative, context, or explanations (no formal citation)
-
-Phase 1 Requirements:
-- Identify reference type (endnote, footnote, bibliography)
-- Extract reference number or symbol (null for unnumbered bibliography)
-- Preserve verbatim reference text exactly as it appears
-- Determine material_category: "referenced_material" or "supplemental_information"
-- For referenced_material, parse citation into structured components:
-  * author(s) as array
-  * title
-  * publisher (if applicable)
-  * publication_date (YYYY, YYYY-MM, or YYYY-MM-DD, or "UNKNOWN")
-  * first_edition_date (for books with long publication history)
-  * publication_location
-  * publication_country (ISO 3166-1 alpha-3)
-  * isbn (preferably first edition, null for pre-1966 books)
-  * isbn_edition (if ISBN is not first edition)
-  * pages, volume, edition, translator (if applicable)
-  * periodical_name (for journals/periodicals)
-  * document_type (e.g., "Primary source", "Journal article")
-  * author_death_date (for copyright determination, if known)
-- For supplemental_information, set citation fields to null/empty
-- Classify availability: online, offline, archive, or unknown
-- For online: extract all URLs
-- For offline/archive materials:
-  * archive_reference_number (document reference number, if available)
-  * archive_physical_address (physical address of archive, if known)
-- Initial license determination (public_domain for government/educational, copyright, or unknown)
-
-Return ONLY valid JSON. No additional text."""
-
-
 def _build_ref_context(
     endnote_refs: List,
     footnote_refs: List,
@@ -145,133 +110,21 @@ def create_supplemental_prompt(
             endnote_refs, footnote_refs, endnote_texts
         )
 
-        prompt = f"""Classify and extract endnote/footnote references from this sub-event.
+        from src.utils.prompt_loader import get_system_prompt, render_prompt
 
-Event: {event_title}
-EventID: {event_id}
-Sub-event: {sub_event_summary}
-Sub-eventID: {sub_event_id}
-
-Text:
-{text}
-
-Endnote References Found: {endnote_refs}
-Footnote References Found: {footnote_refs}
-{endnote_block}
-{ref_type_hint}
-
-CLASSIFICATION: Each endnote/footnote must be classified as one of:
-- "document_reference" — a citation to a book, report, memo, field order, AAR, letter,
-  journal article, or any other document. The note tells you WHERE information came from.
-- "factual_content" — historical narrative containing facts: casualties, awards, troop
-  movements, dates, equipment details, weather, or other extractable information.
-  The note tells you WHAT happened.
-- "ambiguous" — cannot clearly determine if it is a document reference or factual content.
-
-MIXED ENTRIES: If a single endnote/footnote contains BOTH a factual statement AND a
-document citation, split it into TWO separate entries sharing the same reference_number:
-one classified as "factual_content" and one as "document_reference".
-
-Return JSON in this format:
-{{
-  "Event_Name": "{event_title}",
-  "EventID": "{event_id}",
-  "Sub-event_Name": "{sub_event_summary}",
-  "Sub-eventID": "{sub_event_id}",
-  "Supplemental_Material": [
-    {{
-      "MaterialID": "GENERATE_NEW_ULID",
-      "EventID": "{event_id}",
-      "Sub-eventID": "{sub_event_id}",
-      "content_class": "document_reference|factual_content|ambiguous",
-      "reference_type": "endnote|footnote|bibliography",
-      "reference_number": "number or symbol from text",
-      "verbatim_reference": "EXACT text from the source document — do NOT invent references",
-      "citation": {{
-        "author": ["Last, First"],
-        "title": "Title from the source text",
-        "alt_title": "Expanded/unabbreviated form of the title, or null if title is already full",
-        "publisher": "Publisher or null",
-        "publication_date": "YYYY or YYYY-MM-DD or null",
-        "first_edition_date": "YYYY or null",
-        "publication_location": "City or null",
-        "publication_country": "ISO 3166-1 alpha-3 or null",
-        "isbn": "ISBN or null",
-        "isbn_edition": "ISBN of specific edition or null",
-        "pages": "page range or null",
-        "volume": "volume or null",
-        "edition": "edition or null",
-        "translator": "translator or null",
-        "periodical_name": "journal/newspaper name or null",
-        "document_type": "Primary source document or null",
-        "author_death_date": "YYYY or YYYY-MM-DD or null"
-      }},
-      "availability": "online|offline|archive|unknown",
-      "resource_urls": [],
-      "archive_reference_number": "archive ref or null",
-      "archive_physical_address": "archive address or null",
-      "license": "public_domain|copyright|unknown",
-      "license_notes": "brief license note"
-    }}
-  ]
-}}
-
-CRITICAL: Only extract references that actually appear in the source text above.
-Do NOT invent, fabricate, or copy example references. If "Actual endnote/footnote text"
-is provided above, use that as the verbatim_reference — it is the real text from the
-source document. If no actual text is provided, use the reference number only and set
-verbatim_reference to the reference number (e.g. "5"). Do NOT fabricate citation text.
-If no references are found, return an empty Supplemental_Material array.
-
-MULTIPLE SOURCES IN ONE REFERENCE: A single endnote/footnote often contains multiple
-distinct sources separated by semicolons, periods, or other delimiters. Each distinct
-source MUST become its own Supplemental_Material entry with a separate citation object.
-They share the same reference_number but each gets its own MaterialID.
-Example: "Eisenhower, Crusade in Europe (1948), pp 245; Answers by Smith, OCMH Files."
-= TWO entries, both "document_reference".
-
-CLASSIFICATION NOTES for citation fields:
-- For "document_reference": populate citation fields fully.
-  Use alt_title to expand military abbreviations (e.g., "357th Inf Jnl" → "357th Infantry Journal").
-- For "factual_content": set citation to null. The verbatim_reference IS the content.
-- For "ambiguous": populate citation if possible, preserve verbatim_reference.
-
-RESOURCE LOCATION RULES:
-- resource_urls must point to where the CITED DOCUMENT can be found, NOT the HyperWar
-  page where the footnote/endnote appears. HyperWar URLs are the source we're extracting
-  FROM, not the resource being cited. Only include a URL if the cited document itself is
-  available online (e.g., a digitized report, a journal article URL).
-- For military files, memos, cables, and government records (e.g., "SHAEF SGS file",
-  "FUSA AAR", "AG files", "OCMH files"), set availability to "archive" and use your
-  knowledge to populate archive_physical_address (typically "National Archives and Records
-  Administration (NARA), College Park, MD, USA" for US military records).
-- For published books, set availability to "offline" unless you know of a specific online
-  edition. Do NOT guess URLs.
-- Only set availability to "online" when the cited material itself has a known URL.
-For author_death_date, include if known (format: YYYY or YYYY-MM-DD).
-For government/educational institutions, use license "public_domain".
-For commercial publishers, use license "copyright".
-If uncertain, use license "unknown".
-Use ISO 3166-1 alpha-3 country codes (USA, GBR, DEU, FRA, CAN, etc.).
-"""
-        try:
-            from src.utils.prompt_loader import render_prompt
-
-            prompt = render_prompt(
-                "supplemental",
-                event_title=event_title,
-                event_id=event_id,
-                sub_event_summary=sub_event_summary,
-                sub_event_id=sub_event_id,
-                text=text,
-                endnote_refs=endnote_refs,
-                footnote_refs=footnote_refs,
-                endnote_block=endnote_block,
-                ref_type_hint=ref_type_hint,
-            )
-        except Exception:
-            pass
-        prompts.append((event_id, sub_event_id, prompt))
+        prompt = render_prompt(
+            "supplemental",
+            event_title=event_title,
+            event_id=event_id,
+            sub_event_summary=sub_event_summary,
+            sub_event_id=sub_event_id,
+            text=text,
+            endnote_refs=endnote_refs,
+            footnote_refs=footnote_refs,
+            endnote_block=endnote_block,
+            ref_type_hint=ref_type_hint,
+        )
+        prompts.append((sub_event_id, prompt))
 
     return prompts
 
@@ -292,7 +145,14 @@ def _is_cross_reference(title: str) -> bool:
 
 def _sanitize_material(material: Dict[str, Any]) -> None:
     """Sanitize a single supplemental material (modifies in place)."""
-    # Required string fields with defaults
+    _apply_defaults(material)
+    _normalize_enums(material)
+    _normalize_urls(material)
+    _normalize_citation(material)
+
+
+def _apply_defaults(material: Dict[str, Any]) -> None:
+    """Set required string fields to defaults if missing."""
     defaults = {
         "MaterialID": "",
         "EventID": "",
@@ -306,32 +166,40 @@ def _sanitize_material(material: Dict[str, Any]) -> None:
         if material.get(key) is None:
             material[key] = default
 
-    # Validate content_class
+
+def _normalize_enums(material: Dict[str, Any]) -> None:
+    """Validate enum fields to allowed values."""
     valid_classes = {"document_reference", "factual_content", "ambiguous"}
     if material.get("content_class") not in valid_classes:
         material["content_class"] = "document_reference"
 
-    # Validate and normalize reference_type
     ref_type = material.get("reference_type", "")
     if ref_type == "map":
-        # Maps are typically referenced in endnotes or footnotes
-        # Default to endnote for map references
         material["reference_type"] = "endnote"
-    elif ref_type not in ["endnote", "footnote", "bibliography"]:
+    elif ref_type not in ("endnote", "footnote", "bibliography"):
         logger.warning(
             "Invalid reference_type '%s', defaulting to 'bibliography'", ref_type
         )
         material["reference_type"] = "bibliography"
 
-    # Required array fields
+
+def _normalize_urls(material: Dict[str, Any]) -> None:
+    """Normalize resource_url singular → resource_urls array."""
+    if "resource_url" in material and "resource_urls" not in material:
+        url = material.pop("resource_url")
+        material["resource_urls"] = [url] if url else []
+    elif "resource_url" in material:
+        material.pop("resource_url")
     if material.get("resource_urls") is None:
         material["resource_urls"] = []
 
-    # Citation defaults
+
+def _normalize_citation(material: Dict[str, Any]) -> None:
+    """Ensure citation has required fields and derive title from verbatim if needed."""
     citation = material.get("citation") or {}
     material["citation"] = citation
+
     if citation.get("title") is None or _is_cross_reference(citation.get("title", "")):
-        # Derive title from verbatim_reference instead of defaulting to "Unknown"
         mentions = material.get("mentions") or []
         verbatim = ""
         for m in mentions:
@@ -347,12 +215,17 @@ def _sanitize_material(material: Dict[str, Any]) -> None:
             citation["title"] = title if title else "Unknown"
         else:
             citation["title"] = "Unknown"
+
     if citation.get("author") is None:
         citation["author"] = []
 
 
 def sanitize_supplemental_data(data: Dict[str, Any]) -> Dict[str, Any]:
     """Sanitize supplemental data to ensure schema compliance."""
+    # Normalize plural key variant (LLM sometimes returns "Supplemental_Materials")
+    if "Supplemental_Materials" in data and "Supplemental_Material" not in data:
+        data["Supplemental_Material"] = data.pop("Supplemental_Materials")
+
     # Event-level defaults
     defaults = {
         "Sub-event_Name": "",
@@ -391,27 +264,27 @@ def extract_narrative_from_references(
     event_data: Dict[str, Any], grok_client: GrokClient
 ) -> list[Dict[str, Any]]:
     """Extract narrative content from footnotes/endnotes to create new sub-events."""
-    prompt = f"""Analyze the footnotes and endnotes in this event for narrative content.
+    event = event_data.get("Event", {})
+    event_name = event.get("Event_Name", "")
+    event_id = event.get("EventID", "")
 
-Event: {event_data.get('Event', {}).get('Event_Name', '')}
+    # Collect all footnote/endnote text
+    footnotes = []
+    for se in event.get("Sub-events", []):
+        for ref in se.get("Endnote_References", []):
+            footnotes.append(f"[{ref}]")
+        for ref in se.get("Footnote_References", []):
+            footnotes.append(f"[{ref}]")
+    footnote_text = "\n".join(footnotes) if footnotes else "None"
 
-Extract ONLY footnotes/endnotes that contain historical narrative, context, or supplemental 
-information beyond just citations. Ignore pure citations.
+    from src.utils.prompt_loader import get_system_prompt, render_prompt
 
-For each footnote/endnote with narrative content, return:
-{{
-  "Sub-eventID": "GENERATE_NEW_ULID",
-  "Sub-event_summary": "Brief summary of the narrative content",
-  "Sub-event_fulltext": {{
-    "paragraph_1": "The narrative text from the footnote/endnote"
-  }},
-  "reference_source": "Footnote 4" or "Endnote 12",
-  "Endnote_References": [],
-  "Footnote_References": []
-}}
-
-Return JSON array of sub-events, or empty array [] if no narrative content found.
-"""
+    prompt = render_prompt(
+        "supplemental_narrative",
+        event_name=event_name,
+        event_id=event_id,
+        footnote_text=footnote_text,
+    )
 
     try:
         response = grok_client.extract_json(
@@ -512,7 +385,7 @@ def _extract_with_retry(
         try:
             response = grok_client.extract_json(
                 prompt=prompt,
-                system_prompt=SYSTEM_PROMPT,
+                system_prompt=get_system_prompt("supplemental"),
                 temperature=0.1,
                 use_cache=(attempt == 0),
                 cache_type="supplemental",
@@ -654,6 +527,14 @@ def _separate_by_type(
     footnotes = []
 
     for sub_event_data in all_supplemental:
+        # Normalize plural key variant
+        if (
+            "Supplemental_Materials" in sub_event_data
+            and "Supplemental_Material" not in sub_event_data
+        ):
+            sub_event_data["Supplemental_Material"] = sub_event_data.pop(
+                "Supplemental_Materials"
+            )
         materials = sub_event_data.get("Supplemental_Material", [])
 
         # Resolve entities
@@ -921,7 +802,7 @@ def extract_supplemental(
 
     # Extract from API
     all_supplemental = []
-    for _, sub_event_id, prompt in prompts:
+    for sub_event_id, prompt in prompts:
         logger.debug("Processing sub-event %s", sub_event_id)
         response = _extract_with_retry(prompt, sub_event_id, grok_client)
         if response:

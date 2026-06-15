@@ -165,15 +165,16 @@ def _batch_extract_casualties(
     chunks = [relevant[i : i + chunk_size] for i in range(0, len(relevant), chunk_size)]
     all_results: Dict[str, List[Dict[str, Any]]] = {}
 
-    for chunk in chunks:
+    from src.utils.chunked_extract import extract_with_chunk_halving
+
+    def _extract_chunk(chunk):
         sub_event_block = "\n\n".join(
             f"--- Sub-event [{seid}] ---\n{text}" for seid, text in chunk
         )
         prompt = _build_casualties_prompt(entity_context, sub_event_block)
-        results = _call_and_parse_casualties(grok_client, prompt)
-        all_results.update(results)
+        return _call_and_parse_casualties(grok_client, prompt)
 
-    return all_results
+    return extract_with_chunk_halving(chunks, _extract_chunk, "casualties")
 
 
 def _build_casualties_prompt(entity_context: str, sub_event_block: str) -> str:

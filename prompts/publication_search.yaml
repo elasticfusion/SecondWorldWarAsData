@@ -1,0 +1,29 @@
+system_prompt: |
+  You search for online copies of historical publications.
+
+prompt_template: |
+  Find the URL for this publication:
+
+  Title: {title}
+  Author: {author}
+  Type: {doc_type}
+
+  Search in: Archive.org, HathiTrust, Google Books, Gutenberg, government archives.
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {
+    "url": "https://archive.org/details/...",
+    "source": "archive_org",
+    "confidence": "high",
+    "access": "full_text"
+  }
+
+rules:
+  - "source values: archive_org, gutenberg, hathitrust, google_books, government, other"
+  - "access values: full_text, preview, metadata_only"
+  - "confidence values: high, medium, low"
+  - "If not found, return {\"url\": null, \"source\": null, \"confidence\": null, \"access\": null}"
+  - Do NOT fabricate URLs

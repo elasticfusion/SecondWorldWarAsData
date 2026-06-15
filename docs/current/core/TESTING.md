@@ -188,7 +188,7 @@ def dynamodb_table():
 ### Current State (2026-06-13)
 
 ```
-~473 tests, all passing in typical run
+~555 tests, all passing in typical run
 ```
 
 Key covered areas:

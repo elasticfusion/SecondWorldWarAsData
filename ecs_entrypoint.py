@@ -7,6 +7,7 @@ import signal
 import subprocess
 import sys
 import threading
+import time
 from pathlib import Path
 
 import boto3
@@ -118,7 +119,7 @@ def _get_account_id() -> str:
     return boto3.client("sts", region_name=REGION).get_caller_identity()["Account"]
 
 
-_downloaded_keys: set = set()
+_downloaded_keys: dict = {}  # key → mtime at download time
 _deleted_keys: set = (
     set()
 )  # Files deleted locally (merged) — remove from S3 in final sync
@@ -147,10 +148,10 @@ def s3_sync_down(prefix: str, local_dir: Path) -> int:
     for page in paginator.paginate(Bucket=BUCKET, Prefix=prefix):
         for obj in page.get("Contents", []):
             key = obj["Key"]
-            _downloaded_keys.add(key)
             local = local_dir / key
             local.parent.mkdir(parents=True, exist_ok=True)
             s3.download_file(BUCKET, key, str(local))
+            _downloaded_keys[key] = local.stat().st_mtime
             count += 1
     return count
 
@@ -191,11 +192,11 @@ class BackgroundSync:
         self._stop = threading.Event()
         self._thread = None
         self._uploaded_mtimes: dict = {}  # key → mtime of last upload
-        self._last_activity_time = __import__("time").time()
+        self._last_activity_time = time.time()
 
     def ping(self):
         """Signal activity to the watchdog (call from heartbeat or any progress)."""
-        self._last_activity_time = __import__("time").time()
+        self._last_activity_time = time.time()
 
     def start(self):
         """Start the background sync thread."""
@@ -220,12 +221,10 @@ class BackgroundSync:
                 if d.exists():
                     n = self._sync_changed(d, prefix)
                     if n:
-                        self._last_activity_time = __import__("time").time()
+                        self._last_activity_time = time.time()
                         logger.info("Background sync: uploaded %d %s files", n, name)
             # Watchdog: self-terminate if no activity for too long
-            import time as _t
-
-            idle = _t.time() - self._last_activity_time
+            idle = time.time() - self._last_activity_time
             if idle > self.WATCHDOG_TIMEOUT:
                 logger.error(
                     "WATCHDOG: No activity for %.0f minutes — task appears stuck. Terminating.",
@@ -247,16 +246,24 @@ class BackgroundSync:
             "-parsed.json"
         ]  # Keep parsed excluded (triggers Phase 2 via S3 notification)
         count = 0
+        now = time.time()
         for f in local_dir.rglob("*"):
             if not f.is_file():
                 continue
             if any(pat in f.name for pat in exclude):
                 continue
-            key = f"{prefix}/{f.relative_to(local_dir)}"
-            if key in _downloaded_keys:
+            # Skip temp files (mid-write by write_json_with_lock)
+            if f.suffix == ".tmp":
                 continue
+            key = f"{prefix}/{f.relative_to(local_dir)}"
             mtime = f.stat().st_mtime
+            # Skip if unchanged since download (not modified by enrichment)
+            if key in _downloaded_keys and _downloaded_keys[key] == mtime:
+                continue
             if self._uploaded_mtimes.get(key) == mtime:
+                continue
+            # Skip files modified in the last 2s (may still be mid-write)
+            if now - mtime < 2:
                 continue
             s3.upload_file(str(f), BUCKET, key)
             self._uploaded_mtimes[key] = mtime
@@ -663,10 +670,36 @@ def _materialize_from_dynamo() -> bool:
     """Materialize entities from DynamoDB to local files. Returns True if successful."""
     try:
         from src.utils.entity_store import get_entity_store
+        from src.utils.file_lock import get_failed_writes, clear_failed_writes
 
         store = get_entity_store()
         if not store:
             return False
+
+        # Reconcile any failed dual-writes before reading
+        failed = get_failed_writes()
+        if failed:
+            logger.info(
+                "Reconciling %d failed dual-writes before materialization", len(failed)
+            )
+            reconciled = 0
+            for entry in failed:
+                try:
+                    filepath = Path(entry["path"])
+                    if filepath.exists():
+                        import json as _json
+
+                        data = _json.loads(filepath.read_text(encoding="utf-8"))
+                        store.put(
+                            entry["type"], entry["id"], data, filename=filepath.name
+                        )
+                        reconciled += 1
+                except Exception as e:
+                    logger.warning(
+                        "Reconcile failed for %s/%s: %s", entry["type"], entry["id"], e
+                    )
+            clear_failed_writes()
+            logger.info("Reconciled %d/%d failed writes", reconciled, len(failed))
 
         entity_types = [
             "people",
@@ -734,8 +767,14 @@ def _download_inputs(phase_script: str) -> None:
         n = _download_phase2_inputs()
         logger.info("Downloaded %d files for Phase 2", n)
     elif "phase3" in phase_script or "import" in phase_script:
-        if not _materialize_from_dynamo():
-            _download_phase3_from_s3()
+        # Skip DynamoDB shortcut when force_reprocess — need full S3 corpus
+        import yaml as _yaml
+
+        _cfg = _yaml.safe_load(Path("/app/config.yaml").read_text())
+        force = _cfg.get("processing", {}).get("force_reprocess", False)
+        if not force and _materialize_from_dynamo():
+            return
+        _download_phase3_from_s3()
 
 
 def _download_phase1_inputs() -> None:
@@ -779,8 +818,17 @@ def _find_book_prefix_case_insensitive(book_name: str) -> str:
 def _download_phase3_from_s3() -> None:
     """Fallback: download entity files from S3 for Phase 3."""
     entity_dirs = [
-        "people", "people_groups", "places", "dates", "equipment",
-        "weather", "logistics", "casualties", "maps", "supplemental", "bibliography",
+        "people",
+        "people_groups",
+        "places",
+        "dates",
+        "equipment",
+        "weather",
+        "logistics",
+        "casualties",
+        "maps",
+        "supplemental",
+        "bibliography",
     ]
     s3 = _s3_client()
     book_name = os.environ.get("BOOK_NAME", "")
@@ -813,8 +861,17 @@ def _download_phase2_inputs() -> int:
     parsed_keys = [k for k in manifest_keys if k.endswith("-parsed.json")]
 
     if parsed_keys:
-        for key in parsed_keys:
+        start = time.time()
+        for i, key in enumerate(parsed_keys, 1):
             _download_s3_file(s3, key)
+            if i % 500 == 0:
+                elapsed = int(time.time() - start)
+                logger.info(
+                    "Downloading %d of %d parsed files (%ds elapsed)",
+                    i,
+                    len(parsed_keys),
+                    elapsed,
+                )
         logger.info(
             "Phase 2 incremental (manifest): %d parsed files from manifest",
             len(parsed_keys),
@@ -873,6 +930,22 @@ def _download_new_parsed(
     s3, existing_events: set, prefix: str = "output/content/"
 ) -> int:
     """Download parsed files without corresponding event files."""
+    # Count total to download (for progress logging)
+    total = 0
+    for page in s3.get_paginator("list_objects_v2").paginate(
+        Bucket=BUCKET, Prefix=prefix
+    ):
+        for obj in page.get("Contents", []):
+            key = obj["Key"]
+            if (
+                key.endswith("-parsed.json")
+                and key.replace("-parsed.json", "-event.json") not in existing_events
+            ):
+                total += 1
+    if total:
+        logger.info("Downloading %d parsed files from %s", total, prefix)
+
+    start = time.time()
     count = 0
     for page in s3.get_paginator("list_objects_v2").paginate(
         Bucket=BUCKET, Prefix=prefix
@@ -885,11 +958,26 @@ def _download_new_parsed(
                 continue
             _download_s3_file(s3, key)
             count += 1
+            if count % 500 == 0:
+                elapsed = int(time.time() - start)
+                logger.info(
+                    "Downloading %d of %d files (%ds elapsed)", count, total, elapsed
+                )
     return count
 
 
 def _download_s3_prefix(s3, prefix: str) -> int:
     """Download all files under an S3 prefix."""
+    # Count first
+    total = 0
+    for page in s3.get_paginator("list_objects_v2").paginate(
+        Bucket=BUCKET, Prefix=prefix
+    ):
+        total += len(page.get("Contents", []))
+    if total:
+        logger.info("Downloading %d files from %s", total, prefix)
+
+    start = time.time()
     count = 0
     for page in s3.get_paginator("list_objects_v2").paginate(
         Bucket=BUCKET, Prefix=prefix
@@ -897,6 +985,15 @@ def _download_s3_prefix(s3, prefix: str) -> int:
         for obj in page.get("Contents", []):
             _download_s3_file(s3, obj["Key"])
             count += 1
+            if count % 500 == 0:
+                elapsed = int(time.time() - start)
+                logger.info(
+                    "Downloading %d of %d from %s (%ds elapsed)",
+                    count,
+                    total,
+                    prefix,
+                    elapsed,
+                )
     return count
 
 
@@ -928,7 +1025,7 @@ def _download_s3_file(s3, key: str) -> None:
     local.parent.mkdir(parents=True, exist_ok=True)
     try:
         s3.download_file(BUCKET, key, str(local))
-        _downloaded_keys.add(key)
+        _downloaded_keys[key] = local.stat().st_mtime
     except ClientError as e:
         if e.response["Error"]["Code"] in ("404", "NoSuchKey"):
             logger.debug("File not found, skipping: %s", key)
@@ -995,11 +1092,116 @@ def _post_process(phase_script: str, env: dict) -> None:
                 logger.warning("Failed to auto-trigger Phase 3: %s", e)
         else:
             _schedule_delayed_teardown()
-        _check_pending_content()
-    if "phase3" not in phase_script:
+
+        # Check for other books in the per-book queue — trigger next and skip teardown
+        next_book = _get_next_pending_book()
+        if next_book:
+            logger.info(
+                "Next book in queue: %s — triggering Phase 2, keeping networking up",
+                next_book,
+            )
+            try:
+                env_name = os.environ.get("ENV_NAME", "dev")
+                lambda_client = boto3.client("lambda", region_name=REGION)
+                payload = json.dumps(
+                    {"source": "manual", "book": next_book, "phase": "2"}
+                )
+                lambda_client.invoke(
+                    FunctionName=f"{env_name}-wwii-trigger",
+                    InvocationType="Event",
+                    Payload=payload.encode(),
+                )
+            except Exception as e:
+                logger.warning("Failed to trigger Phase 2 for %s: %s", next_book, e)
+        else:
+            _check_pending_content()
+
+    if "phase3" in phase_script:
+        # Phase 3 complete — release lock and check for next book in enrich queue
         _remove_lock(phase_script)
-    _stop_openserp_if_running(phase_script)
+        next_enrich = _get_next_pending_enrich()
+        if next_enrich:
+            logger.info(
+                "Next book for enrichment: %s — triggering Phase 3, keeping networking up",
+                next_enrich,
+            )
+            try:
+                env_name = os.environ.get("ENV_NAME", "dev")
+                lambda_client = boto3.client("lambda", region_name=REGION)
+                payload = json.dumps(
+                    {"source": "manual", "book": next_enrich, "phase": "3"}
+                )
+                lambda_client.invoke(
+                    FunctionName=f"{env_name}-wwii-trigger",
+                    InvocationType="Event",
+                    Payload=payload.encode(),
+                )
+                _consume_pending_enrich(next_enrich)
+            except Exception as e:
+                logger.warning(
+                    "Failed to trigger Phase 3 for %s (will retry on next reconciliation): %s",
+                    next_enrich,
+                    e,
+                )
+    else:
+        _remove_lock(phase_script)
+
+    # Only stop OpenSERP if no more books pending in either queue
+    if not _get_next_pending_book() and not _get_next_pending_enrich():
+        _stop_openserp_if_running(phase_script)
     _notify_complete(phase_script)
+
+
+def _get_next_pending_book() -> str:
+    """Check DynamoDB for other books with pending parsed queues. Returns book name or ''."""
+    try:
+        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
+        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
+        resp = table.scan(
+            FilterExpression="begins_with(cache_key, :prefix)",
+            ExpressionAttributeValues={":prefix": "pending#parsed#"},
+            ProjectionExpression="cache_key",
+            Limit=100,
+        )
+        for item in resp.get("Items", []):
+            key = item["cache_key"]
+            book = key.split("#", 2)[2] if key.count("#") >= 2 else ""
+            if book:
+                return book
+    except Exception as e:
+        logger.warning("Failed to check pending books: %s", e)
+    return ""
+
+
+def _get_next_pending_enrich() -> str:
+    """Check DynamoDB for books with pending enrichment. Returns book name or ''."""
+    try:
+        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
+        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
+        resp = table.scan(
+            FilterExpression="begins_with(cache_key, :prefix)",
+            ExpressionAttributeValues={":prefix": "pending#enrich#"},
+            ProjectionExpression="cache_key",
+            Limit=100,
+        )
+        for item in resp.get("Items", []):
+            key = item["cache_key"]
+            book = key.split("#", 2)[2] if key.count("#") >= 2 else ""
+            if book:
+                return book
+    except Exception as e:
+        logger.warning("Failed to check pending enrich: %s", e)
+    return ""
+
+
+def _consume_pending_enrich(book: str) -> None:
+    """Delete a pending enrich queue entry after successful trigger."""
+    try:
+        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
+        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
+        table.delete_item(Key={"cache_key": f"pending#enrich#{book}"})
+    except Exception as e:
+        logger.warning("Failed to consume pending#enrich#%s: %s", book, e)
 
 
 def _check_pending_content() -> None:
@@ -1330,7 +1532,22 @@ def _read_manifest() -> list:
     try:
         table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
         table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-        # Try pending#parsed first (written by trigger Lambda)
+        book_name = os.environ.get("BOOK_NAME", "")
+        # Try per-book pending queue first (written by trigger Lambda)
+        if book_name:
+            resp = table.get_item(Key={"cache_key": f"pending#parsed#{book_name}"})
+            item = resp.get("Item")
+            if item:
+                keys = item.get("keys", [])
+                if keys:
+                    logger.info(
+                        "Read pending#parsed#%s from DynamoDB: %d keys",
+                        book_name,
+                        len(keys),
+                    )
+                    table.delete_item(Key={"cache_key": f"pending#parsed#{book_name}"})
+                    return keys
+        # Legacy: try unscoped pending#parsed
         resp = table.get_item(Key={"cache_key": "pending#parsed"})
         item = resp.get("Item")
         if item:
@@ -1378,7 +1595,7 @@ def _final_sync(phase_script: str = ""):
         total = 0
         all_uploaded = []
         # Phase 3 modifies existing files — don't skip any
-        skip = _downloaded_keys if "phase2" in phase_script else set()
+        skip = set(_downloaded_keys) if "phase2" in phase_script else set()
         for subdir in entity_dirs:
             d = WORKDIR / "output" / subdir
             if d.exists():
@@ -1554,9 +1771,67 @@ def _stamp_schema_versions() -> None:
             logger.warning("Could not re-enable trigger Lambda: %s", e)
 
 
+def _other_phase_locked(current_phase_script: str) -> bool:
+    """Check if any OTHER phase (not the current one) has a lock held."""
+    try:
+        env_name = os.environ.get("ENV_NAME", "dev")
+        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
+        dynamodb = boto3.client("dynamodb", region_name=REGION)
+        lock_keys = [
+            f"lock#{env_name}-wwii-phase1-parse",
+            f"lock#{env_name}-wwii-phase2-extract",
+            f"lock#{env_name}-wwii-phase3-enrich",
+        ]
+        current_suffix = PHASE_SUFFIXES.get(current_phase_script, "")
+        current_lock = (
+            f"lock#{env_name}-wwii-{current_suffix}" if current_suffix else ""
+        )
+        resp = dynamodb.batch_get_item(
+            RequestItems={
+                table_name: {
+                    "Keys": [{"cache_key": {"S": k}} for k in lock_keys],
+                    "ProjectionExpression": "cache_key",
+                }
+            }
+        )
+        for item in resp.get("Responses", {}).get(table_name, []):
+            if item["cache_key"]["S"] != current_lock:
+                return True
+    except Exception:
+        pass
+    return False
+
+
+def _any_pipeline_lock_held() -> bool:
+    """Check if ANY pipeline lock exists (Phase 1, 2, or 3)."""
+    try:
+        env_name = os.environ.get("ENV_NAME", "dev")
+        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
+        dynamodb = boto3.client("dynamodb", region_name=REGION)
+        lock_keys = [
+            f"lock#{env_name}-wwii-phase1-parse",
+            f"lock#{env_name}-wwii-phase2-extract",
+            f"lock#{env_name}-wwii-phase3-enrich",
+        ]
+        resp = dynamodb.batch_get_item(
+            RequestItems={
+                table_name: {
+                    "Keys": [{"cache_key": {"S": k}} for k in lock_keys],
+                    "ProjectionExpression": "cache_key",
+                }
+            }
+        )
+        return len(resp.get("Responses", {}).get(table_name, [])) > 0
+    except Exception:
+        return True  # Assume locked on error — don't tear down
+
+
 def _stop_openserp_if_running(phase_script: str) -> None:
-    """Scale OpenSERP to 0 after Phase 2/3 completes."""
+    """Scale OpenSERP to 0 after Phase 2/3 completes — only if no other phase is active."""
     if "phase1" in phase_script:
+        return
+    if _other_phase_locked(phase_script):
+        logger.info("Skipping OpenSERP teardown — another phase is active")
         return
     try:
         env = os.environ.get("ENV_NAME", "dev")
@@ -1623,9 +1898,19 @@ def _build_results_section() -> str:
         parts.append("\n\nEntity counts:")
         parts.extend(f"\n  {t}: {c}" for t, c in sorted(counts.items()))
     if "processed" in results:
-        parts.append(f"\n\nProcessed: {results['processed']}, Failed: {results.get('failed', 0)}")
+        parts.append(
+            f"\n\nProcessed: {results['processed']}, Failed: {results.get('failed', 0)}"
+        )
     if "enriched" in results:
         parts.append(f"\n\nEnriched: {results['enriched']} items")
+    # Warn if all optional extractors produced 0 with significant events
+    optional = ["equipment", "weather", "logistics", "casualties"]
+    if counts and all(counts.get(t, 0) == 0 for t in optional):
+        event_count = counts.get("dates", 0)
+        if event_count > 5:
+            parts.append(
+                f"\n\n⚠ WARNING: All optional extractors produced 0 entities with {event_count}+ events — check logs for extraction failures"
+            )
     return "".join(parts)
 
 
@@ -1650,7 +1935,19 @@ def _build_phase_section(phase_script: str) -> str:
                 f"\nDedup Review UI: {dedup_url}"
             )
     elif "phase3" in phase_script:
-        parts.append("\n\nPipeline run complete. All entities enriched.")
+        book = os.environ.get("BOOK_NAME", "")
+        parts.append(f"\n\nPipeline run complete. All entities enriched.")
+        if book:
+            parts.append(f"\nBook: {book}")
+        parts.append(
+            "\n\nEnrichment steps completed:"
+            "\n  1. People (biographical data)"
+            "\n  2. People Groups (organizational history)"
+            "\n  3. Places (geographic context)"
+            "\n  4. Bibliography (source verification)"
+            "\n  5. OpenSERP (images, academic papers)"
+            "\n  6. NOAA weather (historical measurements)"
+        )
     return "".join(parts)
 
 
@@ -1803,7 +2100,12 @@ def _schedule_delayed_teardown(delay_minutes: int = None) -> None:
 
 
 def _teardown_networking() -> None:
-    """Scale down OpenSERP and invoke nat_manager to delete NAT + VPC endpoints."""
+    """Scale down OpenSERP and invoke nat_manager to delete NAT + VPC endpoints.
+    Skipped if another phase has an active lock (prevents killing networking mid-run).
+    """
+    if _any_pipeline_lock_held():
+        logger.info("Skipping network teardown — another phase lock is active")
+        return
     try:
         env = os.environ.get("ENV_NAME", "dev")
         ecs = boto3.client("ecs", region_name=REGION)

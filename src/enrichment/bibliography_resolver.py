@@ -111,7 +111,9 @@ def _resolve_book(entry, citation, grok_client, config):
     if not result:
         alt_title = citation.get("alt_title") or ""
         if alt_title and alt_title != title:
-            result = _resolve_book_search(alt_title, author, citation, grok_client, config)
+            result = _resolve_book_search(
+                alt_title, author, citation, grok_client, config
+            )
     return result
 
 
@@ -123,7 +125,9 @@ def _resolve_article(entry, citation, grok_client, config):
     if not result:
         alt_title = citation.get("alt_title") or ""
         if alt_title and alt_title != title:
-            result = _resolve_article_search(alt_title, author, citation, grok_client, config)
+            result = _resolve_article_search(
+                alt_title, author, citation, grok_client, config
+            )
     return result
 
 
@@ -264,8 +268,14 @@ def _search_online_sources(
     # 1. NARA catalog
     nara_key = config.get("nara_api_key")
     if nara_key and _is_nara_searchable(entry, verbatim):
-        ref = entry.get("archive_reference_number")
-        query = ref if ref and ref != "None" else (verbatim[:100] or title)
+        ref = entry.get("archive_reference_number") or ""
+        if ref and ref != "None":
+            # Extract just the RG number (e.g., "RG 407, Entry 427") — strip Grok commentary
+            rg_short = ref.split("\n")[0].strip()[:50]
+            # Combine RG with verbatim for specific search
+            query = f"{verbatim[:60]} {rg_short}" if verbatim else rg_short
+        else:
+            query = verbatim[:100] or title
         url = _search_nara(query, nara_key, grok_client, verbatim)
         if url:
             return (url, "nara_catalog")
@@ -298,7 +308,9 @@ def _search_online_sources(
 _openserp_down = False
 
 
-def _search_openserp_archive(ref: str, openserp_url: str, grok_client: Any = None, entry: Dict = None) -> Optional[str]:
+def _search_openserp_archive(
+    ref: str, openserp_url: str, grok_client: Any = None, entry: Dict = None
+) -> Optional[str]:
     """Search OpenSERP for digitized copies of archive documents."""
     global _openserp_down
     if _openserp_down:
@@ -335,8 +347,14 @@ def _search_openserp_archive(ref: str, openserp_url: str, grok_client: Any = Non
                 if not url:
                     continue
                 result_title = r.get("title", "")
-                if grok_client and not _verify_openserp_match(ref, result_title, url, grok_client, entry):
-                    logger.debug("  ✗ OpenSERP rejected: '%s' for query '%s'", result_title[:60], ref[:60])
+                if grok_client and not _verify_openserp_match(
+                    ref, result_title, url, grok_client, entry
+                ):
+                    logger.debug(
+                        "  ✗ OpenSERP rejected: '%s' for query '%s'",
+                        result_title[:60],
+                        ref[:60],
+                    )
                     continue
                 cache_result("openserp_archive", ref, url)
                 logger.info("Found online copy: %s", url)
@@ -350,7 +368,9 @@ def _search_openserp_archive(ref: str, openserp_url: str, grok_client: Any = Non
     return None
 
 
-def _verify_openserp_match(query: str, result_title: str, url: str, grok_client: Any, entry: Dict = None) -> bool:
+def _verify_openserp_match(
+    query: str, result_title: str, url: str, grok_client: Any, entry: Dict = None
+) -> bool:
     """Verify an OpenSERP result is relevant to the specific citation, not a random document.
 
     Equipment searches are allowed to match photographs, but must be of the correct equipment.
@@ -364,33 +384,25 @@ def _verify_openserp_match(query: str, result_title: str, url: str, grok_client:
     is_equipment = doc_type in {"equipment", "photograph", "image"}
 
     if is_equipment:
-        prompt = f"""Does this search result show an accurate photograph of the specific equipment cited?
+        verify_prompt = f"""Does this search result show an accurate photograph of the specific equipment cited?
 
 Citation: "{query[:300]}"
 Search result title: "{result_title[:300]}"
 URL: {url}
 
-Rules:
-- Must be the SPECIFIC equipment model/variant cited (e.g., "M4A3 Sherman" ≠ "M4A1 Sherman")
-- Must be an actual photograph, not an unrelated page that mentions the equipment
-- Stock photos, illustrations, or modern replicas are NOT acceptable
-
 Return ONLY "YES" or "NO"."""
     else:
-        prompt = f"""Does this search result match the specific document/event being searched for?
+        verify_prompt = f"""Does this search result match the specific document/event being searched for?
 
 Citation searched: "{query[:300]}"
 Search result title: "{result_title[:300]}"
 URL: {url}
 
-Rules:
-- The specific UNIT must match (e.g., "5th Division" ≠ "41st Division")
-- The specific DOCUMENT TYPE should match (e.g., "Telephone Journal" ≠ "Operations Report")
-- The TIME PERIOD must be relevant
-- A random WWII document or image is NOT a match
-- A generic search results page is NOT a match
-
 Return ONLY "YES" or "NO"."""
+
+    from src.utils.prompt_loader import render_prompt
+
+    prompt = render_prompt("bibliography_verify", verify_prompt=verify_prompt)
 
     try:
         response = grok_client.chat_completion(
@@ -400,27 +412,24 @@ Return ONLY "YES" or "NO"."""
             use_cache=True,
             cache_type="bibliography_verify",
         )
-        return response.strip().upper().startswith("YES")
+        accepted = response.strip().upper().startswith("YES")
+        logger.info(
+            "Verify result: %s | query=%s | title=%s | url=%s",
+            "ACCEPT" if accepted else "REJECT",
+            query[:80],
+            result_title[:80],
+            url[:100],
+        )
+        return accepted
     except Exception:
         return False
 
 
 def _identify_nara_record(verbatim: str, grok_client: Any) -> Optional[str]:
     """Use Grok to identify the NARA Record Group for a citation."""
-    prompt = f"""Identify the NARA (National Archives) Record Group for this WWII citation:
+    from src.utils.prompt_loader import render_prompt
 
-"{verbatim}"
-
-Common WWII Record Groups:
-- RG 331: Allied Operational and Occupation Headquarters, WWII (SHAEF)
-- RG 407: Adjutant General's Office (unit records, AARs, journals)
-- RG 338: Records of U.S. Army Commands
-- RG 319: Army Staff (G-2, G-3, G-4)
-- RG 218: Joint Chiefs of Staff
-- RG 165: War Department General and Special Staffs
-
-Return ONLY a reference string like "RG 407, Entry 427" or "RG 331, SHAEF SGS files".
-If you cannot determine the record group, return "UNKNOWN"."""
+    prompt = render_prompt("nara_identify", verbatim=verbatim)
 
     try:
         response = grok_client.chat_completion(
@@ -432,7 +441,9 @@ If you cannot determine the record group, return "UNKNOWN"."""
         )
         ref = response.strip().strip('"')
         if ref and ref != "UNKNOWN" and "RG" in ref:
+            logger.info("NARA identify: FOUND %s | citation=%s", ref, verbatim[:80])
             return ref
+        logger.info("NARA identify: NOT FOUND | citation=%s", verbatim[:80])
     except Exception as e:
         logger.debug("NARA identification failed: %s", e)
     return None
@@ -475,7 +486,11 @@ def _search_nara(
                 continue
             url = f"https://catalog.archives.gov/id/{nara_id}"
             if grok_client and not _verify_nara_match(query, title, grok_client):
-                logger.debug("  ✗ Rejected: '%s' does not match query '%s'", title[:60], query[:60])
+                logger.debug(
+                    "  ✗ Rejected: '%s' does not match query '%s'",
+                    title[:60],
+                    query[:60],
+                )
                 continue
             logger.debug("  ✓ Accepted: %s", url)
             cache_result("nara", query, url)
@@ -556,18 +571,11 @@ def _verify_nara_match(query: str, nara_title: str, grok_client: Any) -> bool:
     Checks that the specific unit, document type, and time period align.
     A generic WWII document from the wrong unit is NOT a match.
     """
-    prompt = f"""Does this NARA catalog record match the citation being searched for?
+    from src.utils.prompt_loader import render_prompt as _rp
 
-Citation searched: "{query[:300]}"
-NARA record found: "{nara_title[:300]}"
-
-Rules:
-- The UNIT must match (e.g., "5th Division" ≠ "41st Division")
-- The DOCUMENT TYPE should match (e.g., "Telephone Journal" ≠ "Operations Report")
-- A generic WWII document from a different unit is NOT a match
-- Minor spelling/abbreviation differences are OK (e.g., "Jnl" = "Journal", "Div" = "Division")
-
-Return ONLY "YES" or "NO"."""
+    prompt = _rp(
+        "nara_verify", citation=query, nara_title=nara_title, nara_description=""
+    )
 
     try:
         response = grok_client.chat_completion(
@@ -602,12 +610,15 @@ def _verify_match(candidate_title: str, verbatim: str, grok_client: Any) -> bool
 
     # Quick title-based check (only if we don't have a URL to verify)
     if not url:
-        prompt = f"""Does this search result match the citation?
+        verify_prompt = f"""Does this search result match the citation?
 
 Citation: "{candidate_title[:200]}"
 Result: "{verbatim[:200]}"
 
 Return ONLY "YES" or "NO"."""
+        from src.utils.prompt_loader import render_prompt as _rp2
+
+        prompt = _rp2("bibliography_verify", verify_prompt=verify_prompt)
         try:
             response = grok_client.chat_completion(
                 prompt=prompt,
@@ -616,7 +627,14 @@ Return ONLY "YES" or "NO"."""
                 use_cache=True,
                 cache_type="bibliography_verify",
             )
-            return response.strip().upper().startswith("YES")
+            accepted = response.strip().upper().startswith("YES")
+            logger.info(
+                "Verify title: %s | citation=%s | result=%s",
+                "ACCEPT" if accepted else "REJECT",
+                candidate_title[:80],
+                verbatim[:80],
+            )
+            return accepted
         except Exception:
             return True
 
@@ -641,7 +659,7 @@ def _verify_url_content(url: str, citation: str, grok_client: Any) -> bool:
         else:
             content = content[:2000]
 
-        prompt = f"""Does this web page content match the cited document?
+        verify_prompt = f"""Does this web page content match the cited document?
 
 Citation: "{citation[:300]}"
 
@@ -649,6 +667,9 @@ Page content (first 2000 chars):
 {content}
 
 Return ONLY "YES" or "NO". Answer "NO" if the page is unrelated, a generic search page, a paywall, or doesn't contain the cited document."""
+        from src.utils.prompt_loader import render_prompt as _rp3
+
+        prompt = _rp3("bibliography_verify", verify_prompt=verify_prompt)
 
         response = grok_client.chat_completion(
             prompt=prompt,
@@ -658,10 +679,12 @@ Return ONLY "YES" or "NO". Answer "NO" if the page is unrelated, a generic searc
             cache_type="bibliography_verify",
         )
         match = response.strip().upper().startswith("YES")
-        if not match:
-            logger.info(
-                "URL content mismatch: %s does not match '%s'", url[:80], citation[:60]
-            )
+        logger.info(
+            "Verify URL content: %s | url=%s | citation=%s",
+            "ACCEPT" if match else "REJECT",
+            url[:100],
+            citation[:80],
+        )
         return match
     except Exception as e:
         logger.debug("URL content verification failed for %s: %s", url[:80], e)

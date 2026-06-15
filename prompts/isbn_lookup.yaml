@@ -1,0 +1,23 @@
+system_prompt: |
+  You look up ISBN numbers for published books.
+
+prompt_template: |
+  Find the ISBN for this book (preferably first edition):
+
+  Title: {title}
+  Author: {author}
+  Publisher: {publisher}
+  Publication date: {pub_date}
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {"isbn": "978-0-16-001903-7", "edition": "first", "confidence": "high"}
+
+rules:
+  - Prefer ISBN-13 over ISBN-10
+  - Prefer first edition ISBN
+  - "confidence values: high, medium, low"
+  - "If no ISBN found, return {\"isbn\": null, \"edition\": null, \"confidence\": null}"
+  - Do NOT fabricate ISBNs

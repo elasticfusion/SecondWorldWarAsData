@@ -59,6 +59,61 @@ echo "=== 3. Running QA checks ==="
 cd "$(dirname "$0")/.."
 source .venv/bin/activate
 python3 -c "import ast; ast.parse(open('ecs_entrypoint.py').read()); ast.parse(open('src/utils/batch_api.py').read()); print('  Syntax OK')"
+python3 -c "
+import yaml, json, sys
+from pathlib import Path
+
+REQUIRED = ['events', 'events_batch', 'people', 'places', 'dates', 'equipment',
+            'equipment_vision', 'equipment_urls', 'equipment_enrichment',
+            'weather', 'weather_batch', 'casualties', 'logistics',
+            'supplemental', 'supplemental_narrative', 'people_groups', 'biography',
+            'people_consolidation', 'map_search', 'map_vision', 'license_check',
+            'isbn_lookup', 'author_death_date', 'publication_search',
+            'bibliography_verify', 'nara_identify', 'nara_verify']
+errors = []
+for name in REQUIRED:
+    p = Path(f'prompts/{name}.yaml')
+    if not p.exists():
+        errors.append(f'MISSING: prompts/{name}.yaml')
+        continue
+    data = yaml.safe_load(p.read_text())
+    if not data.get('prompt_template'):
+        errors.append(f'NO prompt_template: {p}')
+    schema = data.get('schema')
+    if schema:
+        # Verify schema parses as JSON (only if present)
+        try:
+            json.loads(schema)
+        except (json.JSONDecodeError, TypeError) as e:
+            errors.append(f'INVALID schema JSON in {p}: {e}')
+if errors:
+    print('  ✗ Prompt validation failed:')
+    for e in errors:
+        print(f'    {e}')
+    sys.exit(1)
+print(f'  Prompts OK ({len(REQUIRED)} validated)')
+" || { echo "  ✗ Prompt check failed — aborting deploy"; exit 1; }
+python3 -c "
+import yaml, sys
+from pathlib import Path
+
+REQUIRED = ['people', 'equipment', 'events', 'bibliography', 'maps', 'nara']
+errors = []
+for name in REQUIRED:
+    p = Path(f'search_queries/{name}.yaml')
+    if not p.exists():
+        errors.append(f'MISSING: search_queries/{name}.yaml')
+        continue
+    data = yaml.safe_load(p.read_text())
+    if not isinstance(data, dict) or not data:
+        errors.append(f'EMPTY/INVALID: {p}')
+if errors:
+    print('  ✗ Search query validation failed:')
+    for e in errors:
+        print(f'    {e}')
+    sys.exit(1)
+print(f'  Search queries OK ({len(REQUIRED)} validated)')
+" || { echo "  ✗ Search query check failed — aborting deploy"; exit 1; }
 python3 -m pytest tests/ -m "not slow and not requires_api" -q --tb=short || { echo "  ✗ Tests failed — aborting deploy"; exit 1; }
 
 echo ""
@@ -82,6 +137,15 @@ if command -v cfn_nag_scan &>/dev/null; then
 else
   echo "  cfn-nag: not installed (skipping)"
 fi
+# Secrets scanning
+if command -v gitleaks &>/dev/null; then
+  gitleaks detect --source . --no-git -q 2>&1 && echo "  Gitleaks: OK (no secrets found)" || { echo "  ✗ Gitleaks found potential secrets — aborting deploy"; exit 1; }
+elif command -v detect-secrets &>/dev/null; then
+  detect-secrets scan --list-all-plugins 2>/dev/null | detect-secrets audit --report - 2>&1 | head -5
+  echo "  detect-secrets: checked"
+else
+  echo "  Secrets scanning: not installed (install gitleaks: https://github.com/gitleaks/gitleaks#installing)"
+fi
 
 echo ""
 echo "=== 4. Building and pushing container ==="
@@ -90,9 +154,38 @@ docker build --no-cache --progress=plain -t wwii-pipeline .
 # Container vulnerability scan
 if command -v trivy &>/dev/null; then
   echo "  Scanning image for vulnerabilities..."
-  trivy image --severity HIGH,CRITICAL --exit-code 0 wwii-pipeline:latest 2>&1 | tail -5
+  # Check for newer trivy version
+  TRIVY_CURRENT=$(trivy --version 2>/dev/null | head -1 | grep -oP '\d+\.\d+\.\d+')
+  TRIVY_LATEST=$(curl -sf https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep -oP '"tag_name":\s*"v\K[^"]+' 2>/dev/null)
+  if [ -n "$TRIVY_LATEST" ] && [ "$TRIVY_CURRENT" != "$TRIVY_LATEST" ]; then
+    echo "  ⚠ Trivy update available: $TRIVY_CURRENT → $TRIVY_LATEST (curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin)"
+  fi
+  # Detect container runtime
+  TRIVY_IMAGE_SRC=""
+  if command -v podman &>/dev/null && podman image exists wwii-pipeline:latest 2>/dev/null; then
+    # Podman: save to tar then scan
+    podman save wwii-pipeline:latest -o /tmp/wwii-scan.tar 2>/dev/null || true
+    set +e
+    TRIVY_OUTPUT=$(trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --input /tmp/wwii-scan.tar 2>&1)
+    TRIVY_EXIT=$?
+    set -e
+    rm -f /tmp/wwii-scan.tar
+  else
+    set +e
+    TRIVY_OUTPUT=$(trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 wwii-pipeline:latest 2>&1)
+    TRIVY_EXIT=$?
+    set -e
+  fi
+  echo "$TRIVY_OUTPUT" | tail -10
+  if [ $TRIVY_EXIT -ne 0 ]; then
+    echo "  ✗ HIGH/CRITICAL vulnerabilities found — aborting deploy"
+    exit 1
+  fi
+  echo "  Trivy: OK"
 else
-  echo "  Trivy: not installed (skipping container scan)"
+  echo "  Trivy: not installed — falling back to pip-audit"
+  pip-audit -r requirements.txt --severity high 2>&1 | tail -10 || { echo "  ✗ pip-audit found vulnerabilities — aborting deploy"; exit 1; }
+  echo "  pip-audit: OK"
 fi
 docker tag wwii-pipeline:latest $PIPELINE_IMAGE
 docker push $PIPELINE_IMAGE

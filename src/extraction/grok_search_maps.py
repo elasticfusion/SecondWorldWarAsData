@@ -61,32 +61,11 @@ def search_maps_with_grok(
     year = date.split("-")[0] if date else "1939-1945"
     sites = " OR ".join([f"site:{site}" for site in whitelisted_sites])
 
-    prompt = f"""Search for WWII maps about {place_name} using this query:
-    
-"WWII map {place_name} {year}" ({sites})
+    from src.utils.prompt_loader import render_prompt
 
-Find maps that show:
-- Military operations near {place_name}
-- Event context: {event_context}
-- Time period: {year}
-
-Return ONLY a JSON array of maps found:
-[
-  {{
-    "title": "Map title from page",
-    "url": "Direct URL to page containing map",
-    "image_url": "Direct URL to map image file",
-    "source": "Website name",
-    "description": "Brief description"
-  }}
-]
-
-Requirements:
-- Only return maps from whitelisted sites: {', '.join(whitelisted_sites)}
-- image_url must be direct link to image file (.jpg, .png, .gif, etc)
-- Verify the site actually exists in the whitelist
-- Return empty array [] if no maps found
-"""
+    prompt = render_prompt(
+        "map_search", place_name=place_name, event_context=event_context, date=date
+    )
 
     result = grok_client.extract_json(
         prompt=prompt, cache_type="grok_search_maps", temperature=0.1
@@ -192,23 +171,15 @@ def verify_map_with_vision(
 
     image_b64 = base64.b64encode(image_data).decode()
 
-    prompt = f"""Analyze this image to verify it's a relevant WWII map.
+    from src.utils.prompt_loader import render_prompt as _rp
 
-Expected:
-- Place: {place_name}
-- Date: {date or "WWII era (1939-1945)"}
-- Context: {event_context}
-- Title claims: {map_title}
-
-Verify:
-1. Is this actually a map (not a photo, document, or other content)?
-2. Does it show {place_name} or surrounding area?
-3. Is it from WWII era (1935-1950)?
-4. Does it relate to military operations?
-
-Respond with ONLY a JSON object:
-{{"is_relevant": true or false, "reason": "Brief explanation"}}
-"""
+    prompt = _rp(
+        "map_vision",
+        place_name=place_name,
+        event_context=event_context,
+        date=date or "",
+        title=map_title,
+    )
 
     try:
         result = grok_client.extract_json_with_image_base64(

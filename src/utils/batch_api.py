@@ -160,14 +160,18 @@ class BatchCollector:
     """Collects API requests for batch submission instead of real-time calls."""
 
     def __init__(self):
+        import threading
+
         self.requests: List[BatchRequest] = []
         self._seen: set = set()
+        self._lock = threading.Lock()
 
     def add(self, req: BatchRequest) -> None:
-        """Add request if not already queued."""
-        if req.request_id not in self._seen:
-            self.requests.append(req)
-            self._seen.add(req.request_id)
+        """Add request if not already queued (thread-safe)."""
+        with self._lock:
+            if req.request_id not in self._seen:
+                self.requests.append(req)
+                self._seen.add(req.request_id)
 
     def __len__(self) -> int:
         return len(self.requests)
@@ -187,7 +191,7 @@ def submit_batch(api_key: str, jsonl_path: Path, batch_name: str = "pipeline") -
 
     # Log submission details
     file_size = jsonl_path.stat().st_size
-    with open(jsonl_path) as f:
+    with open(jsonl_path, encoding="utf-8") as f:
         line_count = sum(1 for _ in f)
     logger.info(
         "Submitting batch: %s (%d requests, %.1f KB)",
@@ -276,7 +280,7 @@ def poll_batch(
             pending,
         )
 
-        if success + error >= total and total > 0:
+        if 0 < total <= success + error:
             batch["_poll_seconds"] = time.monotonic() - start
             return batch
 

@@ -36,42 +36,11 @@ def create_consolidation_prompt(people_list: List[Dict[str, Any]]) -> str:
         }
         people_summary.append(summary)
 
-    prompt = f"""Analyze these people entries and identify which ones refer to the same individual.
+    from src.utils.prompt_loader import render_prompt
 
-People may be referenced by:
-- Full name: "Dwight D. Eisenhower"
-- Last name only: "Eisenhower"
-- Title: "Supreme Commander of the Allied Expeditionary Force"
-- Position: "Commander of the Third Army"
-- Rank + name: "General Patton"
-- Nickname: "Ike"
-
-People entries:
-{json.dumps(people_summary, indent=2)}
-
-Return JSON with groups of indices that refer to the same person:
-{{
-  "duplicates": [
-    {{
-      "canonical_name": "Dwight D. Eisenhower",
-      "indices": [0, 5, 12],
-      "reason": "Same person - full name, 'Eisenhower', and 'Supreme Commander' all refer to Dwight D. Eisenhower based on position and context"
-    }},
-    {{
-      "canonical_name": "George S. Patton",
-      "indices": [3, 8],
-      "reason": "Same person - 'Patton' and 'Commander of the Third Army' refer to George S. Patton"
-    }}
-  ]
-}}
-
-Only group entries that clearly refer to the same individual based on:
-- Biographical data (birth/death dates, nationality as ISO 3166-1 alpha-3 codes like USA, GBR, DEU)
-- Positions held
-- Historical context
-- Name variations
-
-If uncertain, keep entries separate."""
+    prompt = render_prompt(
+        "people_consolidation", entries=json.dumps(people_summary, indent=2)
+    )
 
     return prompt
 

@@ -247,11 +247,11 @@ def _batch_extract_logistics(
     chunks = [relevant[i : i + chunk_size] for i in range(0, len(relevant), chunk_size)]
     all_results: Dict[str, List[LogisticsExtraction]] = {}
 
-    for chunk in chunks:
-        results = _extract_logistics_chunk(chunk, grok_client)
-        all_results.update(results)
+    from src.utils.chunked_extract import extract_with_chunk_halving
 
-    return all_results
+    return extract_with_chunk_halving(
+        chunks, lambda chunk: _extract_logistics_chunk(chunk, grok_client), "logistics"
+    )
 
 
 def _extract_logistics_chunk(

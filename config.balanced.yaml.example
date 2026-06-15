@@ -1,8 +1,8 @@
 ---
-# PROFILE: review-all-data
-# Forces a complete reprocessing of all data, ignoring caches.
-# Use when: prompts have changed, data is corrupted, or you want a fresh extraction.
-# WARNING: Expensive — makes live API calls for every chapter/entity.
+# PROFILE: balanced
+# Middle ground: batch API for bulk extraction (50% off), live calls for enrichment
+# (faster feedback), moderate concurrency, all features enabled.
+# Use when: normal production runs where you want results today, not tomorrow.
 
 paths:
   content_root: "contentrepository"
@@ -21,9 +21,14 @@ api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
     model: "grok-4.3"
-    model_map: {}                      # Use best model for everything
-    max_retries: 5                     # More retries — we're investing in completeness
-    timeout: 120                       # Longer timeout for complex extractions
+    model_map:
+      isbn: "grok-3-mini"             # Light tasks get cheap model
+      url_verify: "grok-3-mini"
+      copyright: "grok-3-mini"
+      nara_match: "grok-3-mini"
+      openserp_verify: "grok-3-mini"
+    max_retries: 3
+    timeout: 60
   calls_per_minute: 30
   nara_api_key: ""
   noaa_api_token: ""
@@ -32,25 +37,15 @@ processing:
   validate_ulids: true
   generate_jq_queries: true
   generate_download_scripts: true
-  force_reprocess: true                # Ignore all caches, reprocess everything
-  reprocess_types:                     # Re-extract ALL entity types
-    - people
-    - places
-    - dates
-    - equipment
-    - weather
-    - logistics
-    - casualties
-    - maps
-    - supplemental
-    - people_groups
+  force_reprocess: false
+  reprocess_types: []                  # To re-extract one type: ["supplemental"], ["people"], etc.
 
 weather:
   enabled: true
   fetch_api_data: true
   api_provider: "open-meteo"
-  cache_responses: false               # Don't cache — we want fresh data
-  only_precise_dates: false            # Include approximate dates too
+  cache_responses: true
+  only_precise_dates: true
   timeout: 30
 
 equipment:
@@ -78,23 +73,23 @@ supplemental_material:
   max_materials_per_chapter: 1000
 
 concurrency:
-  enabled: false                       # Sequential — maximize quality, avoid race conditions
-  max_event_files: 1
-  max_extraction_group: 1
-  max_enrichment_workers: 3
+  enabled: true                        # Parallel — faster than sequential
+  max_event_files: 3                   # Moderate parallelism
+  max_extraction_group: 3
+  max_enrichment_workers: 6
 
 enrichment:
-  re_search_after_days: 0              # Re-search everything regardless of when last searched
+  re_search_after_days: 90
 
 batch:
-  phase2: false                        # Live calls — see results immediately
-  phase3: false                        # Live calls
+  phase2: true                         # Batch extraction (50% off, async)
+  phase3: false                        # Live enrichment (faster feedback loop)
 
 openserp:
-  results_per_query: 30                # More results for thorough coverage
-  max_images_per_entity: 10
-  max_web_results_per_entity: 10
-  rate_limit_seconds: 3
+  results_per_query: 20
+  max_images_per_entity: 5
+  max_web_results_per_entity: 5
+  rate_limit_seconds: 5
 
 maps:
   enabled: true
@@ -106,13 +101,13 @@ maps:
 
 external_maps:
   enabled: true
-  max_places: null                     # Search ALL places
+  max_places: 50
   openserp_url: "http://localhost:7001"
   search_limit: 50
   verify_with_vision: true
   max_images_per_page: 5
-  image_download_timeout: 60
-  page_download_timeout: 30
+  image_download_timeout: 30
+  page_download_timeout: 15
   image_storage_path: "filestore/external_maps/"
   storage_path: "output/external_maps/"
   require_license: true
@@ -122,7 +117,7 @@ external_maps:
     - "CC-BY"
     - "CC-BY-SA"
     - "Unknown"
-  download_images: true                # Download everything
+  download_images: false
   link_to_places: true
   link_to_dates: true
 
@@ -134,7 +129,7 @@ aws:
   region: "us-east-1"
 
 logging:
-  level: "DEBUG"                       # Full visibility into what's happening
+  level: "INFO"
   file: "logs/pipeline.log"
   console: true
   debug_message_preview_chars: 15000

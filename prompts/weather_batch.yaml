@@ -1,0 +1,31 @@
+system_prompt: |
+  You extract weather mentions from WWII historical texts.
+
+prompt_template: |
+  Extract weather mentions from these WWII event sub-events.
+
+  Event: {event_name}
+  EventID: {event_id}
+
+  {sub_event_blocks}
+
+  For each weather mention provide:
+  - WeatherMentionID: 26-character ULID
+  - place_name, PlaceMentionID (from available places above)
+  - date (YYYY-MM-DD exact only), DateMentionID (from available dates above)
+  - weather_description, temperature, temperature_unit, measurement_system
+  - notable_impact, original_text
+
+  CRITICAL: Only extract EXACT dates. Skip approximate dates.
+
+  Return JSON object keyed by Sub-eventID:
+  {schema}
+
+schema: |
+  {"<Sub-eventID>": [{"WeatherMentionID": "01ULID...", "place_name": "Bastogne", "PlaceMentionID": "01ULID...", "date": "1944-12-22", "DateMentionID": "01ULID...", "weather_description": "Heavy snowfall", "temperature": -5, "temperature_unit": "celsius", "measurement_system": "metric", "notable_impact": "Limited visibility for air support", "original_text": "Heavy snow blanketed the region"}]}
+
+rules:
+  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
+  - Only extract EXACT dates (YYYY-MM-DD), skip "early December", "mid-winter"
+  - Link PlaceMentionID and DateMentionID from available lists in sub-event headers
+  - Return empty arrays for sub-events with no weather mentions

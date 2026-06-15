@@ -1,0 +1,24 @@
+system_prompt: |
+  You are a NARA archivist specializing in WWII military records.
+
+prompt_template: |
+  Identify the NARA (National Archives) Record Group for this WWII citation:
+
+  "{verbatim}"
+
+  Common WWII Record Groups:
+  - RG 331: Allied Operational and Occupation Headquarters, WWII (SHAEF)
+  - RG 407: Adjutant General's Office (unit records, AARs, journals)
+  - RG 338: Records of U.S. Army Commands
+  - RG 319: Army Staff (G-2, G-3, G-4)
+  - RG 218: Joint Chiefs of Staff
+  - RG 165: War Department General and Special Staffs
+
+  Return ONLY a reference string like "RG 407, Entry 427" or "RG 331, SHAEF SGS files".
+  If you cannot determine the record group, return "UNKNOWN".
+
+rules:
+  - Return ONLY the record group reference string
+  - Include Entry number if identifiable
+  - If uncertain, return "UNKNOWN"
+  - Do NOT guess — only identify if the citation clearly maps to a known RG

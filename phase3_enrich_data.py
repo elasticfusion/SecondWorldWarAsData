@@ -7,6 +7,7 @@ by searching external sources and merging additional data.
 """
 
 import argparse
+import json
 import os
 from pathlib import Path
 from typing import Optional
@@ -25,6 +26,48 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _notify_enrichment_started() -> None:
+    """Send SNS notification that enrichment is starting (downloads complete)."""
+    if not os.environ.get("ECS_CONTAINER_METADATA_URI"):
+        return  # Local mode
+    try:
+        import boto3
+
+        topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
+        if not topic_arn:
+            return
+        region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+        book = os.environ.get("BOOK_NAME", "all")
+        boto3.client("sns", region_name=region).publish(
+            TopicArn=topic_arn,
+            Subject="WWII Pipeline: Phase 3 enrichment in progress",
+            Message=f"Enrichment started (downloads complete, API calls beginning).\nBook: {book}",
+        )
+    except Exception:
+        pass
+
+
+def _update_lock_status(status: str) -> None:
+    """Update the Phase 3 lock with current enrichment status (best-effort)."""
+    if not os.environ.get("ECS_CONTAINER_METADATA_URI"):
+        return  # Local mode — no lock
+    try:
+        import boto3
+
+        region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
+        env_name = os.environ.get("ENV_NAME", "dev")
+        table = boto3.resource("dynamodb", region_name=region).Table(table_name)
+        table.update_item(
+            Key={"cache_key": f"lock#{env_name}-wwii-phase3-enrich"},
+            UpdateExpression="SET #s = :s",
+            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeValues={":s": status},
+        )
+    except Exception:
+        pass
+
+
 def enrich_people_data(
     people_dir: Path,
     grok_client: GrokClient,
@@ -34,6 +77,7 @@ def enrich_people_data(
 ) -> int:
     """Enrich people biographical data from Grokipedia and Wikipedia."""
     logger.info("[phase3 step 1/6] Enriching people (%s)", people_dir)
+    _update_lock_status("step 1/6: enriching people")
 
     if not people_dir.exists():
         logger.warning(f"People directory not found: {people_dir}")
@@ -73,6 +117,7 @@ def enrich_groups_data(
 ) -> int:
     """Enrich people groups with external data."""
     logger.info("[phase3 step 2/6] Enriching people groups")
+    _update_lock_status("step 2/6: enriching people_groups")
 
     enriched = enrich_all_groups(
         groups_dir, grok_client, max_groups=max_items, max_workers=max_workers
@@ -144,6 +189,10 @@ def main():
         return 1
 
     logger.info("Phase 3: starting enrichment (%s)", args.output_dir)
+
+    # Notify: enrichment is starting (downloads complete, real work beginning)
+    _notify_enrichment_started()
+
     if args.max_items:
         logger.info(f"Limiting to {args.max_items} items per entity type")
     if args.no_references:
@@ -181,6 +230,7 @@ def main():
     # Enrich places
     if not args.people_only:
         logger.info("[phase3 step 3/6] Enriching places")
+        _update_lock_status("step 3/6: enriching places")
         places_dir = args.output_dir / "places"
         places_enriched = enrich_all_places(
             places_dir, grok_client, max_places=args.max_items, max_workers=max_workers
@@ -193,6 +243,7 @@ def main():
     # Enrich bibliography (ISBN, copyright, archive URLs)
     if not args.people_only:
         logger.info("[phase3 step 4/6] Enriching bibliography")
+        _update_lock_status("step 4/6: enriching bibliography")
         bib_dir = args.output_dir / "bibliography"
         supplemental_config = config.get("supplemental_material", {})
         bib_enriched = enrich_bibliography(bib_dir, supplemental_config, grok_client)
@@ -220,6 +271,7 @@ def main():
         "use_openserp", False
     ):
         logger.info("[phase3 step 5/6] OpenSERP enrichment (people + equipment)")
+        _update_lock_status("step 5/6: enriching openserp")
         from src.enrichment.openserp_enrichment import (
             enrich_equipment_with_openserp,
             enrich_people_with_openserp,
@@ -239,6 +291,7 @@ def main():
     noaa_token = config.get("api", {}).get("noaa_api_token", "")
     if not args.people_only and noaa_token:
         logger.info("[phase3 step 6/6] NOAA weather enrichment")
+        _update_lock_status("step 6/6: enriching weather (NOAA)")
         from src.enrichment.noaa_weather import enrich_weather_with_noaa
 
         weather_dir = args.output_dir / "weather"

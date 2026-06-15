@@ -96,6 +96,9 @@ def validate_supplemental_file(file_path: Path, save: bool = True) -> Dict[str, 
     stats = {"validated": 0, "partial": 0, "broken": 0, "timeout": 0, "no_urls": 0}
 
     for entry in data:
+        # Normalize plural key variant from legacy data
+        if "Supplemental_Materials" in entry and "Supplemental_Material" not in entry:
+            entry["Supplemental_Material"] = entry.pop("Supplemental_Materials")
         for material in entry.get("Supplemental_Material", []):
             validate_material_urls(material)
             status = material.get("url_validation_status", "unknown")

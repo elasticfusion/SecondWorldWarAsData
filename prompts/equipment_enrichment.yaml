@@ -1,0 +1,46 @@
+system_prompt: |
+  You are a WWII military equipment specialist providing technical details.
+
+prompt_template: |
+  Look up information about this WWII military equipment: {identifier} ({common_name})
+
+  Category: {category}
+  Country of origin: {country}
+
+  Provide:
+  1. Official designation and common name
+  2. Type/role (tank, fighter, artillery, etc.)
+  3. Key specifications (weight, speed, armament, crew, range)
+  4. Production numbers and dates
+  5. Notable variants
+  6. Primary users (nations/units)
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {
+    "official_name": "Medium Tank, M4",
+    "common_name": "Sherman",
+    "type": "medium_tank",
+    "country": "USA",
+    "specifications": {
+      "weight_kg": 30300,
+      "max_speed_kmh": 39,
+      "main_armament": "75mm M3 gun",
+      "crew": 5,
+      "range_km": 193
+    },
+    "production": {
+      "total": 49234,
+      "years": "1942-1945"
+    },
+    "variants": ["M4A1", "M4A2", "M4A3", "M4A3E8"],
+    "primary_users": ["USA", "GBR", "USSR", "FRA"]
+  }
+
+rules:
+  - Use metric units for specifications
+  - Country codes use ISO 3166-1 alpha-3
+  - Only include verified specifications (do not guess)
+  - If information is unavailable, use null

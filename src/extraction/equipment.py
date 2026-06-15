@@ -383,22 +383,14 @@ def _verify_media_with_vision(
 
     image_b64 = base64.b64encode(image_data).decode()
 
-    prompt = f"""Analyze this image to verify it's relevant WWII equipment media.
+    from src.utils.prompt_loader import render_prompt
 
-Expected:
-- Equipment: {equipment_name}
-- Category: {equipment_category}
-- Title claims: {media_title}
-
-Verify:
-1. Does this show {equipment_name} or related equipment?
-2. Is it from WWII era (1935-1950)?
-3. Is it a photo, diagram, or document (not unrelated content)?
-4. Does it match the category: {equipment_category}?
-
-Respond with ONLY a JSON object:
-{{"is_relevant": true or false, "reason": "Brief explanation"}}
-"""
+    prompt = render_prompt(
+        "equipment_vision",
+        equipment_name=equipment_name,
+        equipment_category=equipment_category,
+        image_title=media_title,
+    )
 
     try:
         result = grok_client.extract_json_with_image_base64(
@@ -844,23 +836,11 @@ def _extract_image_urls_from_page(
         page_content = response.text
 
         # Ask Grok to extract image URLs
-        prompt = f"""Extract direct image URLs from this Wikipedia/Wikimedia page about {equipment_name}.
+        from src.utils.prompt_loader import render_prompt
 
-Page URL: {page_url}
-Page content (first 8000 chars):
-{page_content[:8000]}
-
-Find URLs that point to actual image files (jpg, png, svg, etc.), not wiki pages.
-Look for:
-- URLs in src attributes of <img> tags
-- URLs in href attributes linking to File: pages
-- Full resolution image URLs (not thumbnails if possible)
-
-Return ONLY a JSON array of direct image URLs:
-["https://upload.wikimedia.org/...", ...]
-
-If no images found, return empty array: []
-"""
+        prompt = render_prompt(
+            "equipment_urls", equipment_name=equipment_name, page_content=page_content
+        )
 
         result = grok_client.extract_json(
             prompt=prompt, cache_type="equipment_image_extraction", temperature=0.0
@@ -1140,28 +1120,15 @@ def _enrich_equipment_data(
     """
     identifier = technical_identifier or common_name
 
-    prompt = f"""Look up information about this WWII military equipment: {identifier} ({common_name})
-Category: {category}
+    from src.utils.prompt_loader import render_prompt
 
-Provide a brief summary with:
-1. Description (2-3 sentences)
-2. Key specifications (if applicable: weight, dimensions, armament, speed, range, crew)
-3. Alternate names/designations
-4. Notable variants
-5. Wikipedia URL (if it exists)
-6. Grokipedia URL (if it exists, format: https://grokipedia.com/Article_Name)
-
-Return as JSON:
-{{
-  "description": "Brief description",
-  "specifications": {{"key": "value"}},
-  "alternate_names": ["name1", "name2"],
-  "variants": [{{"variant_name": "name", "description": "desc"}}],
-  "wikipedia_url": "https://en.wikipedia.org/wiki/...",
-  "grokipedia_url": "https://grokipedia.com/..."
-}}
-
-If information is not available, return empty fields."""
+    prompt = render_prompt(
+        "equipment_enrichment",
+        identifier=identifier,
+        common_name=common_name,
+        category=category,
+        country="",
+    )
 
     try:
         response = grok_client.chat_completion(
@@ -1411,75 +1378,9 @@ def _extract_equipment_with_llm(
     event_data: Dict[str, Any], grok_client: GrokClient, max_retries: int
 ) -> Optional[List[Dict[str, Any]]]:
     """Extract equipment using LLM with retry logic."""
-    prompt = f"""Extract military equipment mentioned in this WWII event data.
+    from src.utils.prompt_loader import render_prompt
 
-IMPORTANT: Always identify specific equipment by name/designation, not generic categories.
-For example, use "Browning Automatic Rifle" not "Light machine guns and automatic rifles",
-"M4 Sherman" not "Medium tanks", "M1 Garand" not "Rifles". If the text only mentions a
-generic category without identifying specific equipment, omit it.
-
-Event Data:
-{json.dumps(event_data, indent=2)}
-
-For each piece of equipment mentioned:
-1. Identify common name and technical designation
-2. Determine category (armor, aircraft, naval, artillery, infantry_weapons, communications, vehicles, uniforms, other)
-3. Extract any variants mentioned
-4. Note specifications if mentioned (weight, armament, armor, speed, range, crew)
-5. Identify which unit or person was using it
-6. Identify supporting units (e.g., air support, artillery support, naval support)
-7. Extract performance observations (successes, failures, modifications, maintenance issues)
-8. Extract context (brief situation summary)
-9. Extract original text mentioning the equipment
-10. Note which variant was mentioned (if applicable)
-11. Extract paragraph numbers where mentioned (if available)
-
-Return a JSON array of equipment objects with these fields:
-- common_name (required)
-- technical_identifier (optional)
-- description (optional, general description)
-- alternate_names (optional array)
-- category (required)
-- subcategory (optional)
-- country_of_origin (optional, ISO 3166-1 alpha-3 code e.g. 'USA', 'DEU', 'GBR', 'JPN')
-- variants (optional array)
-- specifications (optional dict)
-- using_unit_name (optional)
-- using_person_name (optional)
-- supporting_unit_names (optional array, names of supporting units)
-- performance_successes (optional array)
-- performance_failures (optional array)
-- field_modifications (optional array)
-- maintenance_issues (optional array)
-- variant_mentioned (optional, which variant in this event)
-- context (optional, brief situation summary)
-- original_text (optional, text mentioning equipment)
-- paragraph_numbers (optional array of integers)
-
-Example:
-[
-  {{
-    "common_name": "Sherman",
-    "technical_identifier": "M4",
-    "category": "armor",
-    "subcategory": "medium_tank",
-    "using_unit_name": "2nd Armored Division",
-    "supporting_unit_names": ["IX Tactical Air Command", "VII Corps Artillery"],
-    "variant_mentioned": "M4A1",
-    "context": "Attack on St. Lô",
-    "original_text": "The Shermans advanced through the hedgerows...",
-    "paragraph_numbers": [145, 146],
-    "performance_successes": ["Effective against infantry"],
-    "performance_failures": ["Outgunned by Panthers"]
-  }}
-]"""
-
-    try:
-        from src.utils.prompt_loader import render_prompt
-
-        prompt = render_prompt("equipment", event_data=json.dumps(event_data, indent=2))
-    except Exception as e:
-        logger.warning("Equipment extraction step failed: %s", e)
+    prompt = render_prompt("equipment", text=json.dumps(event_data, indent=2))
 
     for attempt in range(max_retries):
         try:

@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated:** 2026-06-13
+**Last Updated:** 2026-06-15
 
 ---
 
@@ -44,7 +44,6 @@
 | Document | Description |
 |----------|-------------|
 | [DATA_QUALITY_STATUS.md](DATA_QUALITY_STATUS.md) | Entity counts, enrichment rates, known issues, cross-ref integrity |
-| [CODE_INTEGRITY_REVIEW.md](CODE_INTEGRITY_REVIEW.md) | Code-level data integrity issues (20 findings, prioritized) |
 | [dataquality/new_entity_types.md](dataquality/new_entity_types.md) | Proposed Economic Data and Policy/Legislation types |
 | [dataquality/bibliography_resolution_process.md](dataquality/bibliography_resolution_process.md) | Bibliography resolution end-to-end workflow |
 
@@ -84,6 +83,7 @@ See [scripts/README.md](../../scripts/README.md) for all 70+ utility scripts, ca
 ## Archived Documents
 
 Historical implementation logs, review documents, and completed specs in `docs/archive/`:
+- `CODE_INTEGRITY_REVIEW.md` — 20 findings (17 resolved, 3 remaining in TODO)
 - `AWS_DEPLOYMENT_PLAN.md` — Architecture decisions and cost analysis (implemented)
 - `SPOT_RECOVERY.md` — Spot termination analysis (recommendations implemented)
 - `PHASE4_DYNAMODB_STORAGE.md` — Design spec (fully implemented)

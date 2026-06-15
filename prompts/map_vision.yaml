@@ -1,0 +1,28 @@
+system_prompt: |
+  You verify whether images are relevant WWII historical maps.
+
+prompt_template: |
+  Analyze this image to verify it's a relevant WWII map.
+
+  Expected: Map of {place_name}
+  Context: {event_context}
+  Date: {date}
+  Image title: {title}
+
+  Determine:
+  1. Is this actually a map (not a photograph, diagram, or unrelated image)?
+  2. Does it show the geographic area named above?
+  3. Is it relevant to WWII (1939-1945)?
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {"is_relevant": true, "reason": "Tactical map showing troop positions near St. Lo, July 1944"}
+
+rules:
+  - Must be a MAP (cartographic representation), not a photo or painting
+  - Must show the relevant geographic area
+  - Must be from or about the WWII period
+  - Modern maps of the area are NOT relevant
+  - Tourist/travel maps are NOT relevant

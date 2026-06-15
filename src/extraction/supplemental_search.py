@@ -21,7 +21,16 @@ def search_gutenberg_openserp(
         URL if found, None otherwise
     """
     try:
-        query = f"{title} {author or ''} site:gutenberg.org".strip()
+        from src.utils.search_query_loader import render_search_queries
+
+        queries = render_search_queries(
+            "bibliography", "gutenberg", title=title, author=author or ""
+        )
+        query = (
+            queries[0]
+            if queries
+            else f"{title} {author or ''} site:gutenberg.org".strip()
+        )
 
         response = requests.post(
             f"{openserp_url}/search",
@@ -52,6 +61,27 @@ def search_archive_org(
     Returns:
         URL if found, None otherwise
     """
+    # Guard: skip titles that are too short, numeric, or clearly primary source citations
+    if not title or len(title) < 10 or title.strip().isdigit():
+        return None
+    if any(
+        kw in title.lower()
+        for kw in [
+            "memo,",
+            "ltr,",
+            "msg,",
+            "jnl,",
+            "aar,",
+            "tel conv",
+            "file ",
+            "telecon,",
+            "sitrep",
+            "rpt,",
+            "instrs,",
+        ]
+    ):
+        return None
+
     from src.utils.search_cache import cache_result, get_cached
 
     query_key = f"{title}|{author or ''}|{periodical or ''}"
@@ -150,12 +180,11 @@ def search_llm(
         return None
 
     try:
-        prompt = f"""Find the URL for this publication:
-Title: {title}
-Author: {author or "Unknown"}
+        from src.utils.prompt_loader import render_prompt
 
-Return ONLY the URL, or "NOT_FOUND" if you don't know a reliable URL.
-Do not make up URLs. Only return URLs you are confident about."""
+        prompt = render_prompt(
+            "publication_search", title=title, author=author or "", doc_type="unknown"
+        )
 
         response = grok_client.chat_completion(
             prompt=prompt,

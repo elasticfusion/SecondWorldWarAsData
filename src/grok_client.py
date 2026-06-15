@@ -37,6 +37,10 @@ class GrokAPIError(Exception):
     """Grok API error."""
 
 
+class GrokTruncationError(GrokAPIError):
+    """Response was truncated (hit max_tokens or context limit)."""
+
+
 class _RateLimiter:
     """Thread-safe token-bucket rate limiter.
 
@@ -287,11 +291,13 @@ class GrokClient:
                 self._json_failed,
             )
 
-    def _make_cache_key(self, prompt: str, temperature: float, model: str = "") -> str:
-        """Create cache key from prompt and parameters."""
+    def _make_cache_key(
+        self, prompt: str, temperature: float, model: str = "", system_prompt: str = ""
+    ) -> str:
+        """Create cache key from prompt, system prompt, and parameters."""
         import hashlib
 
-        content = f"{prompt}:{temperature}:{model or self.model}"
+        content = f"{system_prompt}:{prompt}:{temperature}:{model or self.model}"
         return hashlib.sha256(content.encode()).hexdigest()
 
     def clear_cache_entry(
@@ -800,12 +806,18 @@ class GrokClient:
 
         # Check cache
         cache_key = self._make_cache_key(
-            prompt, temperature, self._get_model(cache_type)
+            prompt, temperature, self._get_model(cache_type), system_prompt or ""
         )
 
         if use_cache and cache_key in cache:
             logger.debug("[API] CACHE HIT | type=%s key=%s", cache_type, cache_key[:16])
             self._cache_hits += 1
+            if self._cache_hits % 100 == 0:
+                logger.info(
+                    "Cache: %d hits so far (%d misses)",
+                    self._cache_hits,
+                    self._cache_misses,
+                )
             return cache[cache_key]
 
         self._cache_misses += 1
@@ -1220,7 +1232,7 @@ class GrokClient:
 
         logger.debug("JSON error: %s", error_msg)
         logger.debug("Last 200 chars: ...%s", response[-200:])
-        raise GrokAPIError(
+        raise GrokTruncationError(
             f"API response truncated at {response_len} chars. "
             f"{'Likely transient API error - retry may succeed.' if response_len < 100000 else 'Consider splitting chapter.'}"
         )

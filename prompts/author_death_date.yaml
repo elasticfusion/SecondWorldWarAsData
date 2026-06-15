@@ -1,0 +1,20 @@
+system_prompt: |
+  You look up biographical dates for authors and historians.
+
+prompt_template: |
+  What is the death date of author: {author}
+
+  Context: This author wrote about WWII military history.
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {"death_date": "1995-03-15", "confidence": "high"}
+
+rules:
+  - Use ISO 8601 format (YYYY-MM-DD)
+  - If only year known, use YYYY-01-01
+  - "confidence values: high, medium, low"
+  - "If unknown or still alive, return {\"death_date\": null, \"confidence\": null}"
+  - Do NOT guess — only return verified information

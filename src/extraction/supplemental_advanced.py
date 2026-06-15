@@ -76,14 +76,15 @@ def extract_isbn(citation: Dict[str, Any], grok_client: Any) -> Optional[str]:
 
     publisher = citation.get("publisher", "")
 
-    prompt = f"""Find the ISBN for this book (preferably first edition):
-Author: {author}
-Title: {title}
-Publisher: {publisher}
-Publication Date: {pub_date}
+    from src.utils.prompt_loader import render_prompt
 
-Return ONLY the ISBN number (10 or 13 digits), or "NOT_FOUND" if unavailable.
-Do not include hyphens or spaces."""
+    prompt = render_prompt(
+        "isbn_lookup",
+        title=title,
+        author=author,
+        publisher=publisher,
+        pub_date=pub_date,
+    )
 
     try:
         response = grok_client.chat_completion(
@@ -102,10 +103,9 @@ def get_author_death_date(author: str, grok_client: Any) -> Optional[str]:
     if not author:
         return None
 
-    prompt = f"""What is the death date of author: {author}
+    from src.utils.prompt_loader import render_prompt as _rp
 
-Return ONLY the death date in ISO 8601 format (YYYY-MM-DD), or "UNKNOWN" if not found or still living.
-If only year is known, use YYYY-01-01."""
+    prompt = _rp("author_death_date", author=author)
 
     try:
         response = grok_client.chat_completion(
@@ -258,6 +258,14 @@ def _extract_materials_from_data(data: Any) -> list:
         # Array of sub-event objects
         all_materials = []
         for sub_event in data:
+            # Normalize plural key variant from legacy data
+            if (
+                "Supplemental_Materials" in sub_event
+                and "Supplemental_Material" not in sub_event
+            ):
+                sub_event["Supplemental_Material"] = sub_event.pop(
+                    "Supplemental_Materials"
+                )
             all_materials.extend(sub_event.get("Supplemental_Material", []))
         return all_materials
     else:

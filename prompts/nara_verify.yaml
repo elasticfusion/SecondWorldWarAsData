@@ -1,0 +1,17 @@
+system_prompt: |
+  You verify whether NARA catalog records match specific WWII citations.
+
+prompt_template: |
+  Does this NARA catalog record match the citation being searched for?
+
+  Citation: "{citation}"
+  NARA record title: "{nara_title}"
+  NARA record description: "{nara_description}"
+
+  Return ONLY "YES" or "NO".
+
+rules:
+  - The specific unit, time period, and document type must match
+  - A record from the same Record Group but different unit is NOT a match
+  - A record from a different time period is NOT a match
+  - If uncertain, return "NO"

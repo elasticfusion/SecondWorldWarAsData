@@ -1,0 +1,12 @@
+# Search query templates for bibliography resolution
+# Variables: {title}, {author}
+
+gutenberg:
+  - '{title} {author} site:gutenberg.org'
+
+archive_org:
+  - '{title} {author}'
+
+openserp:
+  - '"{title}" {author} full text'
+  - '"{title}" pdf download'

@@ -190,44 +190,14 @@ def extract_biographical_data(
     max_retries: int = 2,
 ) -> Optional[Dict[str, Any]]:
     """Extract structured biographical data from source text using Grok."""
-    prompt = f"""Extract biographical data for {person_name} from this text.
+    from src.utils.prompt_loader import render_prompt
 
-Source: {source_name}
-
-Text:
-{source_text[:5000]}
-
-Return JSON with any available biographical data:
-{{
-  "birth_date": "YYYY-MM-DD or null",
-  "birth_place": "Location or null",
-  "death_date": "YYYY-MM-DD or null",
-  "death_place": "Location or null",
-  "nationality": "Nationality or null",
-  "role_type": "military_leader, political_leader, military_personnel, civilian, or null",
-  "ranks": [
-    {{"rank": "General", "date": "1943", "branch": "US Army"}}
-  ],
-  "units_served": [
-    {{"unit": "XIX Army Corps", "from": "1938", "to": "1940"}}
-  ],
-  "education": [
-    {{"institution": "West Point", "degree": "Bachelor of Science", "year": "1915"}}
-  ],
-  "military_awards": [
-    {{"award": "Medal of Honor", "class": null, "date_awarded": "1945"}}
-  ],
-  "family": {{
-    "spouse": "Name or null",
-    "children": ["Child1", "Child2"]
-  }},
-  "aliases": ["Nickname1", "Nickname2"],
-  "biographical_details": "Brief summary",
-  "references": ["Unit name", "Organization name", "Related person"],
-  "source_urls": ["https://en.wikipedia.org/wiki/...", "https://..."]
-}}
-
-Only include fields with actual data. Return empty object if no data found."""
+    prompt = render_prompt(
+        "biography",
+        person_name=person_name,
+        source_name=source_name,
+        text=source_text[:5000],
+    )
 
     for attempt in range(max_retries):
         try:
@@ -336,7 +306,15 @@ def _validate_url_relevance(
             prompt=prompt, cache_type="api", temperature=0.1
         )
         if isinstance(result, dict):
-            return bool(result.get("relevant"))
+            relevant = bool(result.get("relevant"))
+            logger.info(
+                "Verify bio URL: %s | person=%s | url=%s | reason=%s",
+                "ACCEPT" if relevant else "REJECT",
+                person_name[:40],
+                url[:100],
+                result.get("reason", "")[:80],
+            )
+            return relevant
     except Exception as exc:
         logger.debug("  URL relevance check failed: %s", exc)
     return False

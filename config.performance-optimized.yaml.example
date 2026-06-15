@@ -1,8 +1,8 @@
 ---
-# PROFILE: balanced
-# Middle ground: batch API for bulk extraction (50% off), live calls for enrichment
-# (faster feedback), moderate concurrency, all features enabled.
-# Use when: normal production runs where you want results today, not tomorrow.
+# PROFILE: performance-optimized
+# Maximizes speed regardless of cost. Live API calls, max concurrency, no batch waits.
+# Use when: testing changes, iterating on prompts, tight deadlines.
+# Expect: 3-5x higher API costs vs cost-optimized.
 
 paths:
   content_root: "contentrepository"
@@ -21,24 +21,19 @@ api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
     model: "grok-4.3"
-    model_map:
-      isbn: "grok-3-mini"             # Light tasks get cheap model
-      url_verify: "grok-3-mini"
-      copyright: "grok-3-mini"
-      nara_match: "grok-3-mini"
-      openserp_verify: "grok-3-mini"
-    max_retries: 3
-    timeout: 60
-  calls_per_minute: 30
+    model_map: {}                      # Best model everywhere — speed over savings
+    max_retries: 2                     # Fail fast, move on
+    timeout: 45                        # Short timeout — don't wait for hung requests
+  calls_per_minute: 60                 # Push rate limit (adjust if 429s appear)
   nara_api_key: ""
   noaa_api_token: ""
 
 processing:
   validate_ulids: true
-  generate_jq_queries: true
-  generate_download_scripts: true
+  generate_jq_queries: false           # Skip non-essential I/O
+  generate_download_scripts: false
   force_reprocess: false
-  reprocess_types: []
+  reprocess_types: []                  # To re-extract one type: ["supplemental"], ["people"], etc.
 
 weather:
   enabled: true
@@ -46,7 +41,7 @@ weather:
   api_provider: "open-meteo"
   cache_responses: true
   only_precise_dates: true
-  timeout: 30
+  timeout: 10                          # Fail fast on slow API
 
 equipment:
   enabled: true
@@ -73,23 +68,23 @@ supplemental_material:
   max_materials_per_chapter: 1000
 
 concurrency:
-  enabled: true                        # Parallel — faster than sequential
-  max_event_files: 3                   # Moderate parallelism
-  max_extraction_group: 3
-  max_enrichment_workers: 6
+  enabled: true                        # Max parallelism
+  max_event_files: 6                   # Process 6 chapters at once
+  max_extraction_group: 6             # 6 parallel extractions per group
+  max_enrichment_workers: 12           # 12 concurrent enrichment threads
 
 enrichment:
   re_search_after_days: 90
 
 batch:
-  phase2: true                         # Batch extraction (50% off, async)
-  phase3: false                        # Live enrichment (faster feedback loop)
+  phase2: false                        # Live calls — no waiting for batch completion
+  phase3: false                        # Live calls
 
 openserp:
   results_per_query: 20
   max_images_per_entity: 5
   max_web_results_per_entity: 5
-  rate_limit_seconds: 5
+  rate_limit_seconds: 2                # Aggressive search rate
 
 maps:
   enabled: true
@@ -106,8 +101,8 @@ external_maps:
   search_limit: 50
   verify_with_vision: true
   max_images_per_page: 5
-  image_download_timeout: 30
-  page_download_timeout: 15
+  image_download_timeout: 15           # Short timeouts
+  page_download_timeout: 10
   image_storage_path: "filestore/external_maps/"
   storage_path: "output/external_maps/"
   require_license: true
@@ -132,5 +127,5 @@ logging:
   level: "INFO"
   file: "logs/pipeline.log"
   console: true
-  debug_message_preview_chars: 15000
-  debug_response_preview_chars: 15000
+  debug_message_preview_chars: 5000
+  debug_response_preview_chars: 5000

@@ -10,7 +10,8 @@ FROM python:3.12-slim@sha256:090ba77e2958f6af52a5341f788b50b032dd4ca28377d2893dc
 WORKDIR /app
 
 # Create non-root user
-RUN useradd -r -s /bin/false -d /app pipeline && \
+RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/* && \
+    useradd -r -s /bin/false -d /app pipeline && \
     mkdir -p /tmp/pipeline && chown pipeline:pipeline /tmp/pipeline
 
 # Copy dependencies
@@ -20,6 +21,7 @@ COPY --from=builder /deps /usr/local/lib/python3.12/site-packages/
 COPY src/ src/
 COPY scripts/ scripts/
 COPY prompts/ prompts/
+COPY search_queries/ search_queries/
 COPY config.yaml .
 COPY ecs_entrypoint.py .
 COPY phase1_parse.py phase2_extract.py phase2_retry.py \

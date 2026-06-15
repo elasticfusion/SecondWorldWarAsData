@@ -1,0 +1,11 @@
+# Search query templates for external map search (OpenSERP)
+# Variables: {place_name}, {date}, {event_context}
+
+tactical:
+  - '"{place_name}" WWII tactical map {date}'
+  - '"{place_name}" military map 1944 1945'
+  - '"{place_name}" battle map troop movements'
+
+strategic:
+  - '"{place_name}" campaign map World War II'
+  - '"{place_name}" front line map {date}'
