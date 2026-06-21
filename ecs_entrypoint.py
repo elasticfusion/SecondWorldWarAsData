@@ -484,6 +484,11 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     phase_name = Path(phase_script).stem
     WORKDIR.mkdir(parents=True, exist_ok=True)
 
+    # Set env vars for structured logging context (entrypoint + BackgroundSync threads)
+    os.environ["PIPELINE_PHASE"] = phase_name
+    if not os.environ.get("BOOK_NAME"):
+        os.environ["BOOK_NAME"] = ""
+
     # Cancel any stale delayed teardown from a previous task
     _cancel_stale_teardown()
 
@@ -2135,6 +2140,7 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     global _current_phase_script
     _current_phase_script = phase_script
     phase_name = Path(phase_script).stem
+    os.environ["PIPELINE_PHASE"] = phase_name
     if "--batch" not in extra_args:
         extra_args = ["--batch"] + extra_args
 
@@ -2214,7 +2220,6 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
         if result.returncode != 0:
             logger.error("Non-batch entity run exited with code %d", result.returncode)
         _post_process(phase_script, os.environ.copy())
-        _teardown_networking()
         logger.info("Non-batch entity run complete.")
         return
 

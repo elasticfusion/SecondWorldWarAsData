@@ -1,0 +1,39 @@
+Country,Archive/Institution,Website/Digital Portal,Digital Search Possible?,Shows Digitized Only or Also Non-Digitized?,Native API?,Aggregated API Notes,Notes/Specialized Focus,Naval Records Location / Notes
+Albania,Albanian State Archives,National institutions via aggregators,Partial,Both,No,Europeana + Archives Portal Europe,Italian/German occupation records,Integrated into national military archives
+Australia,Australian War Memorial,https://www.awm.gov.au,Yes,Strongly Digitized (excellent collections),No,Europeana (limited),Premier specialized WWII (Pacific) memorial and research site,RAN records primarily at Australian War Memorial and National Archives of Australia
+Belarus,National Archives of Belarus,https://archives.gov.by,Yes,Both,No,Europeana (limited),Partisan and Eastern Front records,Integrated (Soviet-era)
+Bulgaria,Bulgarian State Archives / War Archive,http://archives.bg/wars/,Yes,Both,No,Europeana + Archives Portal Europe,Axis-aligned and wartime records,Partially separate in military archives
+Canada,Library and Archives Canada (LAC),https://recherche-collection-search.bac-lac.gc.ca,Yes,Both,No,Europeana (limited),Main national repository,Royal Canadian Navy in RG24 at LAC
+Canada,Canadian War Museum / Veterans Affairs Canada,https://www.warmuseum.ca or VAC sites,Yes,Primarily Digitized,No,Limited,Specialized in Canadian WWII service, oral histories, and memorials,Integrated with LAC naval files
+China,National Archives Administration / Second Historical Archives of China,http://www.archives.gov.cn or Nanjing,Yes,Both (growing),Limited,Limited,Second Sino-Japanese War records,Republic of China Navy records in historical archives
+Croatia,Croatian State Archives,https://www.arhiv.hr,Yes,Both,No,Europeana + Archives Portal Europe,Independent State of Croatia records,Integrated / Adriatic naval records
+Estonia,Estonian National Archives,https://www.rahvusarhiiv.ee,Yes,Both,No,Europeana + Archives Portal Europe,Occupation and resistance,Integrated (Soviet Baltic Fleet)
+France,Archives nationales,https://www.archives-nationales.culture.gouv.fr,Yes,Both,No,Europeana + Archives Portal Europe,Main national repository,SHD has dedicated naval section
+France,Service historique de la Défense (SHD),https://www.servicehistorique.sga.defense.gouv.fr,Yes,Both,No,Europeana + Archives Portal Europe,Military operations and unit records,Dedicated naval holdings (Marine) at SHD
+Germany,Bundesarchiv,https://invenio.bundesarchiv.de,Yes,Both,No,DDB + Europeana + Archives Portal Europe,Main national repository,Kriegsmarine records at Bundesarchiv-Militärarchiv (Freiburg)
+Germany,German Federal Archives - specialized collections,https://www.bundesarchiv.de (Invenio),Yes,Both,No,Europeana,Operational and propaganda records,Kriegsmarine records at Bundesarchiv-Militärarchiv (Freiburg)
+Japan,National Archives of Japan (JACAR),https://www.digital.archives.go.jp,Yes,Both,No,Limited via Europeana,Main national repository with WWII-era documents,Imperial Japanese Navy at NIDS
+Japan,National Institute for Defense Studies (NIDS) Military Archives,https://www.nids.mod.go.jp/english/military_archives,Yes,Both (catalogs),No,Limited,Specialized Imperial Japanese Army/Navy historical documents,Dedicated IJN collections
+Latvia,Latvian State Archives,https://www.arhivi.gov.lv,Yes,Both,No,Europeana + Archives Portal Europe,Occupation records,Integrated (Soviet-era)
+Lithuania,Lithuanian State Historical Archives,https://www.archyvai.lt,Yes,Both,No,Europeana + Archives Portal Europe,Soviet/German occupation,Integrated (Soviet-era)
+Montenegro,Montenegrin Archives,National institutions via aggregators,Partial,Both,No,Europeana + Archives Portal Europe,Limited dedicated WWII portals,Integrated
+Philippines,Philippine National Archives / WWII-specific projects,National institutions + US partnerships,Partial,Both,No,Limited via US aggregators,Japanese occupation and liberation records,Many with US Navy / NARA
+Poland,Polish State Archives (szukajwarchiwach),https://szukajwarchiwach.gov.pl,Yes,Both,No,Europeana + Archives Portal Europe,Main national portal,Polish Navy records often with UK Allies
+Poland,Institute of National Remembrance (IPN),https://ipn.gov.pl,Yes,Both (growing digitized),No,Limited,Specialized in Polish WWII resistance, occupation, and postwar records,Integrated
+Portugal,Arquivo Nacional da Torre do Tombo,https://antt.dglab.gov.pt,Yes,Both,No,Europeana + Archives Portal Europe,Neutrality and colonial records,Separate naval historical service
+Russia,Pamyat Naroda (Memory of the People),https://pamyat-naroda.ru,Yes,Both (extensive digitized documents),No,Europeana (limited),Specialized WWII memorial with operations, awards, maps, burials, and unit routes,Soviet Navy records integrated
+Russia,Russian State Military Archive (RGVA) / TsAMO,https://rusarchives.ru,Partial,Both,No,Limited via aggregators,Core military archives,Central Naval Archive (Gatchina) for Soviet Navy
+Serbia,Serbian Archives / Military Archive,https://www.archives.gov.rs,Yes,Both,No,Europeana + Archives Portal Europe,Occupation and resistance,Integrated
+Slovakia,Slovak National Archives,https://www.minv.sk/?statny-archiv,Yes,Both,No,Europeana + Archives Portal Europe,WWII state and resistance records,Limited / integrated
+Slovenia,Slovenian Archives,https://www.gov.si/en/state-authorities/ministries/ministry-of-culture/directorate-for-cultural-heritage/,Yes,Both,No,Europeana + Archives Portal Europe,Partisan and occupation records,Integrated
+Spain,Archivo Histórico Nacional / General Military Archive,https://www.cultura.gob.es/archivos,Yes,Both,No,Europeana + Archives Portal Europe,Civil War overlap with WWII; neutrality records,Separate naval archives
+Sweden,Swedish National Archives (Riksarkivet),https://riksarkivet.se,Yes,Both,No,Europeana + Archives Portal Europe,Neutrality and humanitarian records (e.g., White Buses),Separate naval collections
+Sweden,Swedish Holocaust Museum Digital Platform,https://museumforintelsen.se (special projects),Yes,Primarily Digitized,No,Limited,Rescue missions and Holocaust-related collections,Integrated
+Switzerland,Swiss Federal Archives,https://www.bar.admin.ch,Yes,Both,No,Europeana (limited),Neutrality, Red Cross, and refugee records,N/A (landlocked)
+Taiwan,Academia Historica / National Archives Administration,https://www.drnh.gov.tw,Yes,Both,No,Limited,Republican China / WWII-era government documents,Republic of China Navy records
+Ukraine,State Archives of Ukraine / War-related portals,https://www.archives.gov.ua,Yes,Both,No,Europeana + Archives Portal Europe,Strong WWII Eastern Front materials,Black Sea Fleet records
+United Kingdom,The National Archives (TNA),https://discovery.nationalarchives.gov.uk,Yes,Both,Limited,Europeana,Main national repository,ADM series (Admiralty) at TNA
+United Kingdom,Imperial War Museum (IWM) Collections,https://www.iwm.org.uk/collections,Yes,Both (catalog + digitized),No,Europeana,Specialized in British/Commonwealth war experiences, photos, films, personal stories,Naval records integrated with TNA
+United States,NARA (National Archives and Records Administration),https://catalog.archives.gov,Yes,Both (catalog + digitized),Yes (Catalog API),N/A,Main national repository,RG 38 / RG 45 at NARA; NHHC for historical collections
+United States,Fold3 (by Ancestry),https://www.fold3.com,Yes,Primarily Digitized (subscription),Limited,No,Specialized WWII military records, photos, unit histories (strong US/UK overlap),US Navy records well-represented
+United States,US Army Heritage and Education Center (USAHEC),https://ahec.armywarcollege.edu,Yes,Both,Limited,No,Army-specific collections and oral histories,Army-focused (limited naval)

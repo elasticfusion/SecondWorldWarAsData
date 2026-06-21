@@ -139,7 +139,7 @@ else
 fi
 # Secrets scanning
 if command -v gitleaks &>/dev/null; then
-  gitleaks detect --source . --no-git -q 2>&1 && echo "  Gitleaks: OK (no secrets found)" || { echo "  ✗ Gitleaks found potential secrets — aborting deploy"; exit 1; }
+  gitleaks detect --source . --no-git --no-banner 2>&1 && echo "  Gitleaks: OK (no secrets found)" || { echo "  ✗ Gitleaks found potential secrets — aborting deploy"; exit 1; }
 elif command -v detect-secrets &>/dev/null; then
   detect-secrets scan --list-all-plugins 2>/dev/null | detect-secrets audit --report - 2>&1 | head -5
   echo "  detect-secrets: checked"

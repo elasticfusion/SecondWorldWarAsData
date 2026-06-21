@@ -359,7 +359,7 @@ class GrokClient:
         # Submit and poll
         batch_id = submit_batch(self.api_key, jsonl_path, batch_name)
         logger.info("Waiting for batch to complete (may take minutes to hours)...")
-        batch_state = poll_batch(self.api_key, batch_id)
+        batch_state = poll_batch(self.api_key, batch_id, submitted_count=count)
 
         # Retrieve rich results
         results = retrieve_results(self.api_key, batch_id)
@@ -1015,7 +1015,7 @@ class GrokClient:
 
         try:
             headers = {
-                "User-Agent": "Mozilla/5.0 (compatible; WWII-Data-Extractor/1.0)"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
             }
             session = get_session()
             img_response = session.get(

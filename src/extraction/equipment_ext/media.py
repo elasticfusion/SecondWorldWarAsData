@@ -372,7 +372,7 @@ def _download_media_file(
     try:
         # Download file with User-Agent header
         headers = {
-            "User-Agent": "Mozilla/5.0 (compatible; WWII-Research-Bot/1.0; +https://github.com/yourusername/project)"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
         }
         session = get_session()
         response = session.get(url, timeout=30, headers=headers, allow_redirects=True)
@@ -639,7 +639,7 @@ def _extract_media_from_wikipedia(
     """
     identifier = technical_identifier or common_name
     session = get_session()
-    headers = {"User-Agent": "WWII-Research-Bot/1.0 (academic research)"}
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"}
 
     try:
         # Step 1: Find the Wikipedia article

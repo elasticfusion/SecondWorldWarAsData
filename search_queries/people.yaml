@@ -2,14 +2,14 @@
 # Variables: {name}
 
 portrait_images:
-  - '"{name}" WWII portrait photo'
-  - '"{name}" World War II general officer photo'
+  - '{name} WWII portrait photo'
+  - '{name} World War II general officer photo'
 
 academic_sources:
-  - '"{name}" oral history WWII'
-  - '"{name}" university archive World War II'
-  - '"{name}" documentary interview WWII'
+  - '{name} oral history WWII'
+  - '{name} university archive World War II'
+  - '{name} documentary interview WWII'
 
 web_results:
-  - '"{name}" WWII biography'
-  - '"{name}" World War II military service'
+  - '{name} WWII biography'
+  - '{name} World War II military service'

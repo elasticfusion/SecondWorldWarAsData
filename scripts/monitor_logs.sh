@@ -37,17 +37,26 @@ CLUSTER="${ENV}-wwii-pipeline"
 echo "Monitoring pipeline logs (env=${ENV}, since=${SINCE}, Ctrl+C to stop)"
 echo "---"
 
+LAST_TASK_STATUS=""
 while true; do
-  # Show running tasks
+  # Show running tasks (only when changed)
   TASKS=$(aws ecs list-tasks --cluster "$CLUSTER" --region "$REGION" --query "taskArns[]" --output text 2>/dev/null | tr '\t' '\n' | sort -u)
+  TASK_STATUS=""
   if [ -n "$TASKS" ] && [ "$TASKS" != "None" ]; then
     for task in $TASKS; do
       [ -z "$task" ] && continue
       info=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$task" --region "$REGION" \
         --query "tasks[0].[group,lastStatus,startedAt]" --output text 2>/dev/null)
       echo "$info" | grep -qi openserp && continue
-      printf "\033[1m[TASK]\033[0m %s\n" "$info"
+      TASK_STATUS="${TASK_STATUS}|${info}"
     done
+  fi
+  if [ "$TASK_STATUS" != "$LAST_TASK_STATUS" ]; then
+    IFS='|' read -ra PARTS <<< "$TASK_STATUS"
+    for part in "${PARTS[@]}"; do
+      [ -n "$part" ] && printf "\033[1m[TASK]\033[0m %s\n" "$part"
+    done
+    LAST_TASK_STATUS="$TASK_STATUS"
   fi
 
   # Tail all log groups
