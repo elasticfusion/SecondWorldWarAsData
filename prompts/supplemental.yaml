@@ -67,3 +67,9 @@ rules:
     exactly ONE document. Example: "12th AGp Ltr of Instrs 5, 17 Aug; Telecon, Patton to Haislip,
     19 Aug; Sylvan Diary, 19 Aug." becomes THREE separate entries.
   - Do NOT combine multiple documents into one entry just because they appear in the same footnote
+  - >-
+    For edited volumes (chapters in collected works), use the BOOK title as "title" and the
+    chapter title as "alt_title". Example: 'David Ryelandt, "The Resistance Movement," in
+    Jan Albert Goris, ed., Belgium under Occupation (New York, 1947)' → title: "Belgium under
+    Occupation", alt_title: "The Resistance Movement", author: "Goris, Jan Albert" (editor).
+    The book is what we search for, not the chapter.

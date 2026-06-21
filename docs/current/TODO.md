@@ -26,6 +26,14 @@ Same invalid ULID referenced in multiple places within one response gets differe
 Currently only events go to Batch API (50% savings). People, places, groups, dates, and optional entities still use live calls. Design: submit-only collects ALL requests into batch, retrieve-only re-runs with full cache. Saves ~60% of API costs.
 *Source: Ardennes debugging 2026-06-13*
 
+#### Bibliography resolver processes duplicate citations redundantly
+Same citation referenced by multiple sub-events is processed N times (NARA identify + search). Cache prevents duplicate API calls but generates log noise (4x identical log lines). Fix: deduplicate by citation text before resolution loop.
+*Source: Phase 3 log observation 2026-06-16*
+
+#### Narrative content misclassified as document_reference reaches NARA resolver
+Footnotes with factual narrative (e.g., "In October 1941, the Germans had discussed...") are being sent to NARA identification. Two fixes needed: (1) improve supplemental.yaml classification prompt to better distinguish narrative from citations, (2) add guard in bibliography_resolver to skip text that doesn't match citation patterns (no author/title/date structure).
+*Source: Phase 3 log observation 2026-06-16*
+
 ### Prompts & LLM Integration
 
 #### ~~Prompt versioning (cache invalidation)~~ ✅ Fixed
@@ -102,6 +110,10 @@ Prevent `find_related_groups.py`-style issues from accumulating. Don't enforce o
 ---
 
 ## Future / Research
+
+#### Amazon metadata enrichment for confirmed books
+For bibliography entries confirmed as published books, search Amazon.com for metadata: book cover image, ISBN, edition info, page count, publisher details. Supplements Archive.org/Gutenberg data with commercial metadata.
+*Source: Search debug session 2026-06-17*
 
 #### True multi-job concurrency
 Multiple books in parallel. Requires per-book locking, shared DynamoDB entity store, dedup coordination.

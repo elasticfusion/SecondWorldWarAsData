@@ -1,7 +1,7 @@
 """Search for supplemental material URLs using multiple sources."""
 
 import logging
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 from urllib.parse import quote
 
 import requests
@@ -101,16 +101,30 @@ def _search_archive_org_api(
 ) -> Optional[str]:
     """Execute archive.org API search."""
     try:
-        # Build query
+        # Build query — use parenthesized keywords, not exact quotes
+        # (Archive.org metadata titles often differ from citation titles)
         query_parts = []
         if title:
-            query_parts.append(f'title:"{title}"')
+            # Strip punctuation that breaks search, keep meaningful words
+            words = " ".join(w for w in title.split() if len(w) > 2)
+            query_parts.append(f"title:({words})")
         if author:
-            query_parts.append(f'creator:"{author}"')
+            # Use last name for personal names, full string for corporate authors
+            if any(kw in author.lower() for kw in ["department", "division", "admiralty", "office", "command", "staff"]):
+                query_parts.append(f"creator:({author})")
+            else:
+                # Handle "LastName, FirstName" and "FirstName LastName" formats
+                if "," in author:
+                    last_name = author.split(",")[0].strip()
+                else:
+                    parts = author.split()
+                    last_name = parts[-1] if len(parts[-1]) > 2 else parts[0]
+                query_parts.append(f"creator:({last_name})")
         if periodical:
             query_parts.append(f'"{periodical}"')
 
         query = " AND ".join(query_parts) if query_parts else title
+        query += " AND mediatype:texts"
 
         # Search API
         url = f"https://archive.org/advancedsearch.php?q={quote(query)}&fl[]=identifier&fl[]=title&output=json&rows=5"
@@ -132,6 +146,45 @@ def _search_archive_org_api(
         logger.debug("Archive.org search failed: %s", e)
 
     return None
+
+
+def fetch_archive_org_metadata(identifier: str) -> Optional[Dict]:
+    """Fetch metadata and PDF link from Archive.org for a given identifier."""
+    try:
+        resp = requests.get(
+            f"https://archive.org/metadata/{identifier}", timeout=30.0
+        )
+        if resp.status_code != 200:
+            return None
+
+        data = resp.json()
+        meta = data.get("metadata", {})
+        files = data.get("files", [])
+
+        # Find PDF file
+        pdf_files = [f for f in files if f.get("name", "").lower().endswith(".pdf")]
+        pdf_url = None
+        if pdf_files:
+            pdf_url = f"https://archive.org/download/{identifier}/{pdf_files[0]['name']}"
+
+        result = {
+            "archive_org_identifier": identifier,
+            "archive_org_title": meta.get("title"),
+            "archive_org_creator": meta.get("creator"),
+            "archive_org_date": meta.get("date"),
+            "archive_org_language": meta.get("language"),
+            "archive_org_ocr": meta.get("ocr"),
+            "archive_org_pages": meta.get("pages") or meta.get("imagecount"),
+        }
+        if pdf_url:
+            result["pdf_url"] = pdf_url
+
+        # Remove None values
+        return {k: v for k, v in result.items() if v is not None}
+
+    except Exception as e:
+        logger.debug("Archive.org metadata fetch failed for %s: %s", identifier, e)
+        return None
 
 
 def search_openserp(

@@ -42,7 +42,7 @@ SKIP_FILES = frozenset(
 )
 
 _WIKI_HEADERS = {
-    "User-Agent": "WWII-Data-Extraction-Bot/1.0 (Historical research project)"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 }
 
 _WIKI_API = "https://en.wikipedia.org/w/api.php"
@@ -66,6 +66,107 @@ _CONTINENT_KEYWORDS = {
     "South America": ["South America"],
     "Oceania": ["Oceania", "Pacific", "Australia"],
 }
+
+
+def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
+    """Fetch Wikipedia URL + image for a place."""
+    try:
+        resp = requests.get(
+            _WIKI_API,
+            params={
+                "action": "query",
+                "format": "json",
+                "titles": name,
+                "prop": "extracts|pageimages",
+                "exintro": "True",
+                "explaintext": "True",
+                "redirects": "1",
+                "piprop": "original",
+            },
+            headers=_WIKI_HEADERS,
+            timeout=15,
+        )
+        if resp.status_code != 200:
+            return None
+        pages = resp.json().get("query", {}).get("pages", {})
+        for page_id, page_data in pages.items():
+            if page_id == "-1" or page_data.get("missing") is not None:
+                continue
+            page_title = page_data.get("title", name)
+            img_url = page_data.get("original", {}).get("source", "")
+            license_info = None
+            if img_url:
+                filename = img_url.rsplit("/", 1)[-1]
+                license_info = _fetch_image_license(filename)
+            return {
+                "wikipedia_url": f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}",
+                "image": img_url,
+                "license": license_info or "unknown",
+            }
+    except Exception:
+        pass
+    return None
+
+
+def _fetch_image_license(filename: str) -> Optional[str]:
+    """Fetch license from Wikimedia Commons."""
+    try:
+        resp = requests.get(
+            "https://commons.wikimedia.org/w/api.php",
+            params={
+                "action": "query",
+                "format": "json",
+                "titles": f"File:{filename}",
+                "prop": "imageinfo",
+                "iiprop": "extmetadata",
+            },
+            headers=_WIKI_HEADERS,
+            timeout=10,
+        )
+        if resp.status_code == 200:
+            pages = resp.json().get("query", {}).get("pages", {})
+            for page_data in pages.values():
+                ii = page_data.get("imageinfo", [])
+                if ii:
+                    meta = ii[0].get("extmetadata", {})
+                    return meta.get("LicenseShortName", {}).get("value", "unknown")
+    except Exception:
+        pass
+    return None
+
+
+def _search_grokipedia_place(name: str) -> Optional[str]:
+    """Search Grokipedia for a place. Returns page URL or None."""
+    import re
+
+    from src.utils.search_cache import cache_result, get_cached
+
+    cached = get_cached("grokipedia_place", name)
+    if cached == "NOT_FOUND":
+        return None
+    if cached:
+        return cached
+
+    try:
+        resp = requests.get(
+            f"https://grokipedia.com/search?q={name} World War",
+            headers=_WIKI_HEADERS,
+            timeout=15,
+        )
+        if resp.status_code == 200 and "/page/" in resp.text:
+            # Find page links matching the place name
+            page_links = re.findall(r'href="/page/([^"]+)"', resp.text)
+            name_lower = name.lower().replace(" ", "")
+            for link in page_links:
+                link_lower = link.lower().replace("_", "")
+                if name_lower in link_lower or link_lower in name_lower:
+                    url = f"https://grokipedia.com/page/{link}"
+                    cache_result("grokipedia_place", name, url)
+                    return url
+    except Exception:
+        pass
+    cache_result("grokipedia_place", name, None)
+    return None
 
 
 def _search_wikipedia(name: str, timeout: int = 15) -> Optional[dict]:
@@ -223,13 +324,32 @@ def enrich_place(place_file: Path, grok_client: GrokClient) -> bool:
 
 
 def _enrich_place_data(data, name, grok_client):
-    """Try Grok then Wikipedia to enrich place. Returns True if changed."""
+    """Try Grok then Wikipedia then Grokipedia to enrich place. Returns True if changed."""
     enrichment = _try_grok(name, grok_client)
     changed = _apply_enrichment(data, enrichment) if enrichment else False
     if _needs_enrichment(data):
         wiki = _search_wikipedia(name)
         if wiki:
             changed = _apply_enrichment(data, wiki) or changed
+    # Also fetch Wikipedia image + Grokipedia
+    if not data.get("wikipedia_url"):
+        wiki_data = _fetch_place_wikipedia_full(name)
+        if wiki_data:
+            if wiki_data.get("wikipedia_url"):
+                data["wikipedia_url"] = wiki_data["wikipedia_url"]
+                changed = True
+            if wiki_data.get("image") and not data.get("images"):
+                data.setdefault("images", []).insert(0, {
+                    "url": wiki_data["image"],
+                    "license": wiki_data.get("license", "unknown"),
+                    "source": "wikipedia",
+                })
+                changed = True
+    if not data.get("grokipedia_url"):
+        grok_data = _search_grokipedia_place(name)
+        if grok_data:
+            data["grokipedia_url"] = grok_data
+            changed = True
     return changed
 
 

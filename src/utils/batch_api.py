@@ -241,7 +241,11 @@ def submit_batch(api_key: str, jsonl_path: Path, batch_name: str = "pipeline") -
 
 
 def poll_batch(
-    api_key: str, batch_id: str, interval: int = 30, max_hours: int = 24
+    api_key: str,
+    batch_id: str,
+    interval: int = 30,
+    max_hours: int = 24,
+    submitted_count: int = 0,
 ) -> Dict[str, Any]:
     """Poll until batch completes. Returns final batch state."""
     headers = {"Authorization": f"Bearer {api_key}"}
@@ -271,13 +275,14 @@ def poll_batch(
         total = state.get("num_requests", 0)
 
         logger.info(
-            "Batch %s: %d/%d complete (%d success, %d error, %d pending)",
+            "Batch %s: %d/%d complete (%d success, %d error, %d pending)%s",
             batch_id,
             success + error,
             total,
             success,
             error,
             pending,
+            f" [submitted: {submitted_count}]" if submitted_count and total != submitted_count else "",
         )
 
         if 0 < total <= success + error:

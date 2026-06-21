@@ -88,7 +88,7 @@ def download_image(image_url: str, timeout: int = 30) -> Optional[bytes]:
         ):
             # Sites requiring bot identification
             headers = {
-                "User-Agent": "WWII-Data-Extraction-Bot/1.0 (Historical research project; contact via GitHub)"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
             }
         else:
             # Standard modern browser User-Agent for other sites

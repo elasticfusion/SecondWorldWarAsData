@@ -290,6 +290,29 @@ def _check_shared_bio(
     return [], 0.0
 
 
+def _check_shared_external_urls(p1: Dict, p2: Dict) -> tuple[list[str], float]:
+    """Check: Shared Wikipedia or Grokipedia URLs — very high confidence match."""
+    urls1 = set()
+    urls2 = set()
+    for p, urls in [(p1, urls1), (p2, urls2)]:
+        # Wikipedia URL
+        wiki = p.get("wikipedia_url") or p.get("source_metadata", {}).get("wikipedia_url", "")
+        if wiki:
+            urls.add(wiki)
+        # Grokipedia URLs
+        for u in p.get("grokipedia_urls", []):
+            urls.add(u)
+        # Also check biography_sources
+        for src in p.get("biographical_profile", {}).get("biography_sources", []):
+            url = src.get("url", "")
+            if "wikipedia.org" in url or "grokipedia.com" in url:
+                urls.add(url)
+    shared = urls1 & urls2
+    if shared:
+        return [f"Shared external URL: {next(iter(shared))}"], 3.0
+    return [], 0.0
+
+
 def _check_shared_positions(p1: Dict, p2: Dict) -> tuple[list[str], float]:
     """Check 4: Shared positions."""
     if _has_shared_positions(p1, p2):
@@ -548,6 +571,7 @@ def _score_pair(
         _check_middle_name_variant(name1, name2, last1, last2),
         _check_event_overlap(person1, person2),
         _check_title_alias(name1, name2, person1, person2),
+        _check_shared_external_urls(person1, person2),
     ]
 
     for reasons, conf in checks:

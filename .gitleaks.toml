@@ -1,0 +1,12 @@
+# Gitleaks configuration — exclude known false positives
+title = "WWII Pipeline Gitleaks Config"
+
+[allowlist]
+paths = [
+    '''.venv/''',
+    '''node_modules/''',
+    '''cache/''',
+    '''output/''',
+    '''htmlcov/''',
+    '''.env''',
+]

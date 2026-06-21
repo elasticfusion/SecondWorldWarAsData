@@ -81,9 +81,17 @@ def _apply_result(entry: Dict, result: Optional[Tuple]) -> None:
     url, source, extra = result
     if url:
         entry.setdefault("resource_urls", []).append(url)
+        # Add PDF URL from metadata if available
+        if extra and extra.get("pdf_url"):
+            pdf_url = extra.pop("pdf_url")
+            if pdf_url not in entry.get("resource_urls", []):
+                entry["resource_urls"].append(pdf_url)
         entry["search_source"] = source
         entry["availability"] = "online"
         entry["search_status"] = "resolved"
+        # Merge additional metadata
+        if extra:
+            entry.setdefault("source_metadata", {}).update(extra)
     elif extra:
         entry.update(extra)
         entry["search_status"] = (
@@ -461,6 +469,16 @@ def _search_nara(
     if cached:
         return cached
 
+    # Rate limit: NARA API allows ~10 requests/minute
+    import time
+
+    if not hasattr(_search_nara, "_last_call"):
+        _search_nara._last_call = 0.0
+    elapsed = time.time() - _search_nara._last_call
+    if elapsed < 6:  # Max ~10/min
+        time.sleep(6 - elapsed)
+    _search_nara._last_call = time.time()
+
     try:
         session = get_session()
         logger.debug("NARA query: %s", query[:100])
@@ -470,6 +488,10 @@ def _search_nara(
             headers={"x-api-key": api_key, "Content-Type": "application/json"},
             timeout=30,
         )
+        if resp.status_code == 429:
+            logger.warning("NARA API rate limited (429) — backing off 60s")
+            time.sleep(60)
+            return None  # Don't cache — retry next run
         if resp.status_code != 200:
             logger.debug("NARA API returned %d", resp.status_code)
             return None
@@ -517,7 +539,12 @@ def _resolve_book_search(
     # Archive.org
     url = search_archive_org(title, author)
     if url and _verify_match(title, url, grok_client):
-        return (url, "archive_org", None)
+        # Fetch metadata (PDF link, OCR info, page count)
+        from src.extraction.supplemental_search import fetch_archive_org_metadata
+
+        identifier = url.rstrip("/").split("/")[-1]
+        meta = fetch_archive_org_metadata(identifier)
+        return (url, "archive_org", meta)
 
     # Gutenberg
     openserp_url = config.get("openserp_url", "http://localhost:7001")
@@ -646,7 +673,7 @@ def _verify_url_content(url: str, citation: str, grok_client: Any) -> bool:
     """Fetch first ~2000 chars of a URL and ask Grok if it matches the citation."""
     try:
         session = get_session()
-        resp = session.get(url, timeout=10, headers={"User-Agent": "WWII-Pipeline/2.2"})
+        resp = session.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"})
         if resp.status_code != 200:
             return False
 

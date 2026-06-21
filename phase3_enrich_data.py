@@ -266,6 +266,30 @@ def main():
         )
         total_enriched += resolve_stats["resolved"]
 
+    # Equipment Wikipedia enrichment (images + extracts)
+    if not args.people_only and config.get("equipment", {}).get("enabled"):
+        logger.info("[phase3 step 4b/6] Equipment Wikipedia enrichment")
+        _update_lock_status("step 4b/6: enriching equipment (Wikipedia)")
+        from src.enrichment.equipment_wikipedia import enrich_all_equipment_wikipedia
+
+        equipment_dir = args.output_dir / "equipment"
+        if equipment_dir.exists():
+            total_enriched += enrich_all_equipment_wikipedia(
+                equipment_dir, max_items=args.max_items
+            )
+
+    # Groups Wikipedia enrichment (images + extracts)
+    if not args.people_only:
+        logger.info("[phase3 step 4c/6] Groups Wikipedia enrichment")
+        _update_lock_status("step 4c/6: enriching groups (Wikipedia)")
+        from src.enrichment.groups_wikipedia import enrich_all_groups_wikipedia
+
+        groups_dir = args.output_dir / "people_groups"
+        if groups_dir.exists():
+            total_enriched += enrich_all_groups_wikipedia(
+                groups_dir, max_items=args.max_items
+            )
+
     # OpenSERP enrichment (images, academic sources) — requires OpenSERP running
     if not args.people_only and config.get("supplemental_material", {}).get(
         "use_openserp", False

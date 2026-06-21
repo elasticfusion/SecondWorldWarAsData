@@ -19,7 +19,7 @@ from src.grok_client import BatchModeCollecting, GrokClient
 logger = logging.getLogger(__name__)
 
 _URL_HEADERS = {
-    "User-Agent": "WWII-Data-Extraction-Bot/1.0 (Historical research project)"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 }
 
 
@@ -37,22 +37,63 @@ def search_grokipedia(
 
     for attempt in range(max_retries):
         try:
-            search_url = f"https://grokipedia.com/search?q={person_name}"
+            # Try full name first, then last name fallback
+            name_parts = [p for p in person_name.split() if len(p) > 2 and not p.endswith(".")]
+            last_name = name_parts[-1] if name_parts else person_name
+            first_initial = ""
+            for p in person_name.split():
+                if p[0].isupper():
+                    first_initial = p[0].lower()
+                    break
+
+            search_queries = [
+                f"{person_name} World War",
+                f"{last_name} World War",
+            ]
+
             headers = {
-                "User-Agent": "WWII-Data-Extraction-Bot/1.0 (Historical research project; contact via GitHub)"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
             }
 
-            response = requests.get(
-                search_url, headers=headers, timeout=timeout, allow_redirects=True
-            )
+            for search_q in search_queries:
+                search_url = f"https://grokipedia.com/search?q={search_q}"
+                response = requests.get(
+                    search_url, headers=headers, timeout=timeout, allow_redirects=True
+                )
 
-            if response.status_code == 200:
-                cache_result("grokipedia", person_name, response.text)
-                return response.text
+                if response.status_code != 200:
+                    continue
 
-            logger.debug(
-                "Grokipedia returned %d for %s", response.status_code, person_name
-            )
+                if '/page/' not in response.text:
+                    continue
+
+                # Find matching page links with snippets
+                import re as _re
+                # Extract link + snippet pairs
+                results = _re.findall(
+                    r'data-slug="([^"]+)"[^>]*data-search-result-link="true"[^>]*data-scroll-anchor-text="([^"]*)"',
+                    response.text,
+                )
+
+                last_name_lower = last_name.lower()
+                for slug, snippet in results:
+                    slug_lower = slug.lower().replace("_", " ")
+                    # Last name must be in slug
+                    if last_name_lower not in slug_lower:
+                        continue
+                    # First initial must match first word of slug
+                    if first_initial and slug_lower.split()[0][0] != first_initial:
+                        continue
+                    # Military relevance check on snippet
+                    # Short snippets may lack context — only enforce for longer ones
+                    if len(snippet) > 50 and not _is_military_relevant(snippet):
+                        continue
+                    # Passed all checks
+                    cache_result("grokipedia", person_name, response.text)
+                    _grokipedia_slugs[person_name] = slug
+                    return response.text
+
+            # No match found in any search query
             cache_result("grokipedia", person_name, None)
             return None
 
@@ -80,12 +121,14 @@ def _build_wikipedia_request(person_name: str) -> tuple[str, dict, dict]:
         "action": "query",
         "format": "json",
         "titles": person_name,
-        "prop": "extracts",
+        "prop": "extracts|pageimages",
         "exintro": "True",
         "explaintext": "True",
+        "redirects": "1",
+        "piprop": "original",
     }
     headers = {
-        "User-Agent": "WWII-Data-Extraction-Bot/1.0 (Historical research project; contact via GitHub)",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
         "Accept": "application/json",
         "Accept-Language": "en-US,en;q=0.9",
     }
@@ -101,6 +144,78 @@ def _extract_page_content(response_data: dict) -> Optional[str]:
             return page_data.get("extract", "")
 
     return None
+
+
+def _extract_page_image(response_data: dict) -> Optional[str]:
+    """Extract primary image URL from Wikipedia API response."""
+    pages = response_data.get("query", {}).get("pages", {})
+
+    for page_id, page_data in pages.items():
+        if page_id != "-1":
+            return page_data.get("original", {}).get("source")
+
+    return None
+
+
+def _extract_page_image_filename(response_data: dict) -> Optional[str]:
+    """Extract the pageimage filename for license lookup."""
+    pages = response_data.get("query", {}).get("pages", {})
+
+    for page_id, page_data in pages.items():
+        if page_id != "-1":
+            # Try pageimage field first, fall back to extracting from URL
+            filename = page_data.get("pageimage")
+            if filename:
+                return filename
+            url = page_data.get("original", {}).get("source", "")
+            if url:
+                return url.rsplit("/", 1)[-1]
+
+    return None
+
+
+def _fetch_image_license(filename: str) -> Optional[str]:
+    """Fetch license info for a Wikipedia/Commons image file."""
+    try:
+        resp = requests.get(
+            "https://commons.wikimedia.org/w/api.php",
+            params={
+                "action": "query",
+                "format": "json",
+                "titles": f"File:{filename}",
+                "prop": "imageinfo",
+                "iiprop": "extmetadata",
+            },
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            },
+            timeout=10,
+        )
+        if resp.status_code == 200:
+            pages = resp.json().get("query", {}).get("pages", {})
+            for page_id, page_data in pages.items():
+                ii = page_data.get("imageinfo", [])
+                if ii:
+                    meta = ii[0].get("extmetadata", {})
+                    return meta.get("LicenseShortName", {}).get("value", "unknown")
+    except Exception as e:
+        logger.debug("Failed to fetch image license for %s: %s", filename, e)
+    return None
+
+
+# Module-level store for Wikipedia images found during search
+_wikipedia_images: dict = {}
+
+# Grokipedia slug for each person (used to hint Wikipedia lookup)
+_grokipedia_slugs: dict = {}
+
+
+def get_wikipedia_image(person_name: str) -> Optional[dict]:
+    """Get cached Wikipedia image info for a person (found during search_wikipedia).
+    
+    Returns dict with 'url' and 'license' keys, or None.
+    """
+    return _wikipedia_images.get(person_name)
 
 
 def _handle_wikipedia_error(
@@ -135,10 +250,121 @@ def _handle_wikipedia_error(
     return False
 
 
+_MILITARY_KEYWORDS = frozenset([
+    "military", "army", "navy", "general", "colonel", "major", "captain",
+    "lieutenant", "brigadier", "world war", "wwii", "division", "regiment",
+    "battalion", "infantry", "armor", "artillery", "combat", "campaign",
+    "luftwaffe", "wehrmacht", "panzer", "allied", "soldier", "officer",
+])
+
+
+def _is_military_relevant(text: str) -> bool:
+    """Check if Wikipedia extract is about a military figure."""
+    lower = text.lower()
+    return sum(1 for kw in _MILITARY_KEYWORDS if kw in lower) >= 2
+
+
+def _search_wikipedia_fallback(
+    person_name: str, headers: dict, timeout: int
+) -> Optional[str]:
+    """Fall back to Wikipedia search API when direct title lookup misses."""
+    try:
+        # Try exact name first, then last name only
+        name_parts = [p for p in person_name.split() if len(p) > 2 and not p.endswith(".")]
+        last_name = name_parts[-1] if name_parts else person_name
+        search_queries = [
+            f'"{person_name}" "World War"',
+            f'{last_name} "World War" {" ".join(p[0] for p in person_name.split() if p[0].isupper() and len(p) <= 2)}',
+        ]
+
+        for srsearch in search_queries:
+            import time as _time
+            _time.sleep(3)  # Rate limit between Wikipedia API calls
+            resp = requests.get(
+                "https://en.wikipedia.org/w/api.php",
+                params={
+                    "action": "query",
+                    "format": "json",
+                    "list": "search",
+                    "srsearch": srsearch,
+                    "srlimit": "3",
+                },
+                headers=headers,
+                timeout=timeout,
+            )
+            if resp.status_code != 200:
+                return None
+            results = resp.json().get("query", {}).get("search", [])
+            if not results:
+                continue
+
+            # Check each result — last name and first initial must match
+            first_initial = ""
+            for p in person_name.split():
+                if p[0].isupper():
+                    first_initial = p[0]
+                    break
+
+            for result in results:
+                title = result.get("title", "")
+                if not last_name or last_name.lower() not in title.lower():
+                    continue
+                # First initial must match
+                if first_initial:
+                    title_words = title.split()
+                    if title_words and title_words[0][0].upper() != first_initial:
+                        continue
+                # Fetch extract
+                resp2 = requests.get(
+                    "https://en.wikipedia.org/w/api.php",
+                    params={
+                        "action": "query",
+                        "format": "json",
+                        "titles": result["title"],
+                        "prop": "extracts|pageimages",
+                        "exintro": "True",
+                        "explaintext": "True",
+                        "redirects": "1",
+                        "piprop": "original",
+                    },
+                    headers=headers,
+                    timeout=timeout,
+                )
+                if resp2.status_code == 200:
+                    content = _extract_page_content(resp2.json())
+                    if content and _is_military_relevant(content):
+                        # Store image + license if available
+                        img_url = _extract_page_image(resp2.json())
+                        if img_url:
+                            filename = _extract_page_image_filename(resp2.json())
+                            license_info = _fetch_image_license(filename) if filename else None
+                            _wikipedia_images[person_name] = {
+                                "url": img_url,
+                                "license": license_info or "unknown",
+                            }
+                        return content
+    except Exception as e:
+        logger.debug("Wikipedia search fallback failed for %s: %s", person_name, e)
+    return None
+
+
 def search_wikipedia(
     person_name: str, timeout: int = 30, max_retries: int = 2
 ) -> Optional[str]:
     """Search Wikipedia for person biographical data."""
+    import threading
+    import time
+
+    # Rate limit: max 1 request per 5 seconds across all threads
+    if not hasattr(search_wikipedia, "_lock"):
+        search_wikipedia._lock = threading.Lock()
+        search_wikipedia._last_call = 0.0
+    with search_wikipedia._lock:
+        elapsed = time.time() - search_wikipedia._last_call
+        if elapsed < 5:
+            time.sleep(5 - elapsed)
+        search_wikipedia._last_call = time.time()
+
     from src.utils.search_cache import cache_result, get_cached
 
     cached = get_cached("wikipedia", person_name)
@@ -147,7 +373,17 @@ def search_wikipedia(
     if cached:
         return cached
 
-    api_url, params, headers = _build_wikipedia_request(person_name)
+    # If Grokipedia already found a page, use slug as Wikipedia title hint
+    grok_info = get_wikipedia_image(person_name)  # check if already populated
+    grok_slug = _grokipedia_slugs.get(person_name)
+    if grok_slug:
+        # Convert "albin_f_irzyk" → "Albin F Irzyk" for targeted lookup
+        wiki_title = grok_slug.replace("_", " ").title()
+        logger.debug("Wikipedia: using Grokipedia hint '%s' for %s", wiki_title, person_name)
+    else:
+        wiki_title = person_name
+
+    api_url, params, headers = _build_wikipedia_request(wiki_title)
 
     for attempt in range(max_retries):
         try:
@@ -157,8 +393,33 @@ def search_wikipedia(
 
             if response.status_code == 200:
                 content = _extract_page_content(response.json())
+                # Store image + license if available
+                img_url = _extract_page_image(response.json())
+                if img_url:
+                    filename = _extract_page_image_filename(response.json())
+                    license_info = _fetch_image_license(filename) if filename else None
+                    _wikipedia_images[person_name] = {
+                        "url": img_url,
+                        "license": license_info or "unknown",
+                    }
+                if content:
+                    cache_result("wikipedia", person_name, content)
+                    return content
+                # Direct title miss — try search API
+                content = _search_wikipedia_fallback(person_name, headers, timeout)
                 cache_result("wikipedia", person_name, content)
                 return content
+
+            if response.status_code == 429:
+                import time
+
+                retry_after = int(response.headers.get("retry-after", "15"))
+                logger.debug(
+                    "Wikipedia rate limited for %s, waiting %ds",
+                    person_name, retry_after,
+                )
+                time.sleep(retry_after)
+                continue  # Retry
 
             if response.status_code == 403:
                 logger.warning(
@@ -178,7 +439,8 @@ def search_wikipedia(
             if not _handle_wikipedia_error(e, person_name, attempt, max_retries):
                 return None
 
-    cache_result("wikipedia", person_name, None)
+    # Exhausted retries without success — don't cache (likely rate limited)
+    return None
     return None
 
 

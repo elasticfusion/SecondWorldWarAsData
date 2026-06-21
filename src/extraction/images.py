@@ -16,7 +16,7 @@ import ulid as ulid_mod
 logger = logging.getLogger(__name__)
 
 _DOWNLOAD_TIMEOUT = 30
-_USER_AGENT = "SecondWorldWarAsData/2.0 (WWII research project)"
+_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
 
 def _classify_content_type(alt_text: str, url: str) -> str:

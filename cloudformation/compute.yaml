@@ -80,7 +80,55 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-pipeline
-      RetentionInDays: 30
+      RetentionInDays: 14
+
+  TriggerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${EnvironmentName}-wwii-trigger
+      RetentionInDays: 14
+
+  BatchPollerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${EnvironmentName}-wwii-batch-poller
+      RetentionInDays: 14
+
+  NatManagerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${EnvironmentName}-wwii-nat-manager
+      RetentionInDays: 14
+
+  OpenSerpManagerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${EnvironmentName}-wwii-openserp-manager
+      RetentionInDays: 14
+
+  DedupUiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${EnvironmentName}-wwii-dedup-ui
+      RetentionInDays: 14
+
+  DedupGateLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${EnvironmentName}-wwii-dedup-gate
+      RetentionInDays: 14
+
+  DedupAuthLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${EnvironmentName}-wwii-dedup-auth
+      RetentionInDays: 14
+
+  MetricsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${EnvironmentName}-wwii-metrics
+      RetentionInDays: 14
 
   # --- Pipeline ECS Task Definitions ---
   Phase1TaskDef:

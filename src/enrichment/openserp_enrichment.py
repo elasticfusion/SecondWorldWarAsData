@@ -47,11 +47,12 @@ def _openserp_reachable(openserp_url: str) -> bool:
         return False
 
 
-def _search_openserp(query: str, openserp_url: str) -> List[Dict]:
+def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict]:
     """Run an OpenSERP search. Returns list of {url, title, description}."""
     global _consecutive_failures, _circuit_open
 
     if _circuit_open:
+        logger.info("OpenSERP circuit breaker SKIP: %s", query[:60])
         return []
 
     try:
@@ -66,9 +67,8 @@ def _search_openserp(query: str, openserp_url: str) -> List[Dict]:
             f"{openserp_url}/mega/search",
             params={
                 "text": query,
-                "limit": str(cfg.get("results_per_query", 20)),
+                "limit": str(limit),
                 "mode": "any",
-                "engines": "google,bing,duckduckgo",
             },
             timeout=30,
         )
@@ -83,7 +83,8 @@ def _search_openserp(query: str, openserp_url: str) -> List[Dict]:
                         _consecutive_failures,
                     )
                 return []
-            results = data.get("results", [])
+            # Handle both flat list and {"results": [...]} formats
+            results = data if isinstance(data, list) else data.get("results", [])
             if results:
                 _consecutive_failures = 0  # Reset on success
             else:
@@ -159,6 +160,31 @@ def _verify_result(
 # --- Image Search ---
 
 
+def _name_initial_matches(person_name: str, result_title: str) -> bool:
+    """Pre-filter: check if result title could be about this person (first initial + last name)."""
+    # Extract last name and first initial from person
+    parts = person_name.split()
+    name_parts = [p for p in parts if len(p) > 2 and not p.endswith(".")]
+    last_name = name_parts[-1].lower() if name_parts else ""
+    first_initial = ""
+    for p in parts:
+        if p and p[0].isupper():
+            first_initial = p[0].lower()
+            break
+    if not last_name:
+        return True  # Can't filter, allow through
+    title_lower = result_title.lower()
+    # Last name must appear in title
+    if last_name not in title_lower:
+        return False
+    # If we have a first initial, check that some word in title starts with it
+    if first_initial:
+        title_words = title_lower.split()
+        if not any(w.startswith(first_initial) for w in title_words):
+            return False
+    return True
+
+
 def search_person_images(
     person_name: str,
     openserp_url: str,
@@ -175,7 +201,12 @@ def search_person_images(
         for r in results:
             url = r.get("url", "")
             title = r.get("title", "")
-            if url and _verify_result(title, f"Photo of {person_name}", grok_client):
+            if not url:
+                continue
+            # Pre-filter: skip results that clearly aren't about this person
+            if not _name_initial_matches(person_name, title):
+                continue
+            if _verify_result(title, f"Photo of {person_name}", grok_client):
                 images.append({"url": url, "title": title, "source": "openserp"})
                 if len(images) >= max_results:
                     return images
@@ -189,7 +220,7 @@ def search_equipment_images(
     max_results: int = 3,
 ) -> List[Dict[str, str]]:
     """Search for photos of military equipment."""
-    results = _search_openserp(f'"{equipment_name}" WWII photo', openserp_url)
+    results = _search_openserp(f'{equipment_name} WWII military equipment photo', openserp_url)
     images = []
     for r in results:
         url = r.get("url", "")
@@ -222,6 +253,9 @@ def search_academic_sources(
             url = r.get("url", "")
             title = r.get("title", "")
             if url and url not in seen_urls:
+                # Pre-filter: skip results that clearly aren't about this person
+                if not _name_initial_matches(person_name, title):
+                    continue
                 if _verify_result(
                     title, f"Academic/media about {person_name}", grok_client
                 ):
@@ -287,13 +321,16 @@ def search_military_awards(
 
         return _json.loads(cached)
 
-    results = _search_openserp(f'"{person_name}" WWII', openserp_url)
+    results = _search_openserp(f'{person_name} WWII', openserp_url)
     awards = []
     seen = set()
     for r in results:
         url = r.get("url", "")
         title = r.get("title", "")
         if not url or url in seen:
+            continue
+        # Pre-filter: skip results that clearly aren't about this person
+        if not _name_initial_matches(person_name, title):
             continue
         if _verify_result(
             title, f"Military service of {person_name} in WWII", grok_client
@@ -310,6 +347,53 @@ def search_military_awards(
     else:
         cache_result("openserp_awards", person_name, None)
     return awards
+
+
+def search_valor(
+    person_name: str,
+    openserp_url: str,
+    grok_client: Any = None,
+) -> List[Dict[str, str]]:
+    """Search valor databases for US military personnel awards and citations."""
+    from src.utils.search_cache import cache_result, get_cached
+
+    cached = get_cached("valor", person_name)
+    if cached == "NOT_FOUND":
+        return []
+    if cached:
+        import json as _json
+
+        return _json.loads(cached)
+
+    # Search via OpenSERP — use site name as keyword (site: operator causes timeouts)
+    queries = [
+        f'{person_name} valor militarytimes',
+        f'{person_name} valor defense.gov',
+    ]
+
+    results = []
+    seen = set()
+    for query in queries:
+        hits = _search_openserp(query, openserp_url)
+        for h in hits:
+            url = h.get("url", "")
+            title = h.get("title", "")
+            if not url or url in seen:
+                continue
+            if "valor.militarytimes.com" in url or "valor.defense.gov" in url or "homeofheroes.com" in url:
+                # Skip homepage-only results
+                if url.rstrip("/") in ("https://valor.militarytimes.com", "https://valor.defense.gov", "https://homeofheroes.com"):
+                    continue
+                results.append({"url": url, "title": title, "source": "valor"})
+                seen.add(url)
+
+    if results:
+        import json as _json
+
+        cache_result("valor", person_name, _json.dumps(results))
+    else:
+        cache_result("valor", person_name, None)
+    return results
 
 
 # --- Event Content Search ---
@@ -372,7 +456,9 @@ def _verify_and_apply(
     for r in candidate.get("image_results", []):
         url = r.get("url", "")
         title = r.get("title", "")
-        if url and _verify_result(title, f"Photo of {name} WWII", grok_client):
+        if not url or not _name_initial_matches(name, title):
+            continue
+        if _verify_result(title, f"Photo of {name} WWII", grok_client):
             data.setdefault("images", []).append(
                 {"url": url, "title": title, "source": "openserp"}
             )
@@ -382,7 +468,9 @@ def _verify_and_apply(
     for r in candidate.get("web_results", []):
         url = r.get("url", "")
         title = r.get("title", "")
-        if url and _verify_result(
+        if not url or not _name_initial_matches(name, title):
+            continue
+        if _verify_result(
             title, f"Military service of {name} in WWII", grok_client
         ):
             data.setdefault("military_awards", []).append(
@@ -436,16 +524,21 @@ def enrich_people_with_openserp(
 
         person_candidates: Dict = {"file": f, "name": name, "data": data}
 
-        # Search for images
-        if not data.get("images"):
+        # Search for images — skip if Wikipedia already provided a portrait
+        from src.extraction.enrich_biographies import get_wikipedia_image
+
+        wiki_image = get_wikipedia_image(name)
+        if wiki_image:
+            person_candidates["wiki_image"] = wiki_image
+        elif not data.get("images"):
             person_candidates["image_results"] = _search_openserp(
-                f'"{name}" WWII portrait photo', openserp_url
+                f'{name} WWII portrait photo', openserp_url
             )
 
         # Search for web results (awards, bio, academic)
         if not data.get("military_awards"):
             person_candidates["web_results"] = _search_openserp(
-                f'"{name}" WWII', openserp_url
+                f'{name} WWII', openserp_url
             )
 
         candidates.append(person_candidates)
