@@ -312,6 +312,28 @@ rows, below). Findings that shaped the implementation:
       serves `GroupID`/`EquipmentID` for OOB units later. Full corpus: 1,324
       command-staff links → 41 exact + 19 fuzzy matched (was 9 exact-only before
       the normalization fix + fuzzy tier).
+- [x] Piece 2 / entity convergence — Consume the crosswalk into the people
+      entity space (`src/ingestion/oob_markdown/entity_emit.py`) so the existing
+      dedup pass (`scripts/find_duplicate_people.py` + dedup UI) unifies
+      OOB-derived and narrative-derived people into single `PersonID`s (the
+      "Huebner goal"). OOB data is treated as **biographical, not narrative**: a
+      command-staff row maps to `biographical_profile` (`ranks`/`units_served`/
+      `biography_sources` with an `OOB: <file>` provenance entry), never to
+      `event_mentions` (which would require narrative event ULIDs OOB lacks).
+      Convergence policy mirrors the match tiers: `exact` merges the OOB bio into
+      the resolved person file (via the real `_merge_person`, so OOB ranks get
+      the same normalization as narrative ranks); `fuzzy` and `none` mint a new
+      person (fuzzy tagged with its candidate + `oob_convergence_note`) so dedup
+      surfaces it for human confirmation rather than silently merging. People are
+      written through `write_json_with_lock` (metadata + schema validation +
+      DynamoDB dual-write) and the `index.json` is kept in sync — no parallel
+      write path. **Opt-in**: off by default (crosswalk stays read-only); enable
+      via `ingestion.converge_people: true` in `config.yaml` or the
+      `OOB_CONVERGE_PEOPLE` env var. Verified end-to-end on the full corpus:
+      1,324 links → 59 merged into existing + 1,262 new people minted, and the
+      existing dedup scorer groups a minted OOB "Clarence Huebner" with the
+      narrative "Clarence R Huebner" (confidence 1.37) — the convergence loop
+      closes.
 - [x] Piece 2 (increment 3) — STATISTICS and ORGANIC UNITS markdown parsers
       (`statistics.py`, `organic_units.py`). Statistics parses category
       sub-blocks (Chronology/Casualties/Individual Awards) of `metric..... value`
