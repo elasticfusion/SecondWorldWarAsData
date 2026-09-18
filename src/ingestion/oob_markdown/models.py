@@ -44,6 +44,7 @@ class CommandStaffRow:  # pylint: disable=too-many-instance-attributes
     notes: str = ""
     source_file: str = ""
     raw_cell: str = ""
+    division_source: str = "title"  # title | inferred_next_title | unknown
 
     def to_dict(self) -> Dict[str, Any]:
         """Return a JSON-serializable dict."""
@@ -92,6 +93,7 @@ class CampaignRow:
     needs_review: bool = False
     notes: str = ""
     source_file: str = ""
+    division_source: str = "title"  # title | inferred_next_title | unknown
 
     def to_dict(self) -> Dict[str, Any]:
         """Return a JSON-serializable dict."""
@@ -147,6 +149,7 @@ class CommandPostRow:  # pylint: disable=too-many-instance-attributes
     needs_review: bool = False
     notes: str = ""
     source_file: str = ""
+    division_source: str = "title"  # title | inferred_next_title | unknown
 
     def to_dict(self) -> Dict[str, Any]:
         """Return a JSON-serializable dict."""
@@ -200,6 +203,7 @@ class StatisticRow:  # pylint: disable=too-many-instance-attributes
     needs_review: bool = False
     notes: str = ""
     source_file: str = ""
+    division_source: str = "title"  # title | inferred_next_title | unknown
 
     def to_dict(self) -> Dict[str, Any]:
         """Return a JSON-serializable dict."""
@@ -248,6 +252,7 @@ class OrganicUnitRow:
     confidence: float = 1.0
     needs_review: bool = False
     source_file: str = ""
+    division_source: str = "title"  # title | inferred_next_title | unknown
 
     def to_dict(self) -> Dict[str, Any]:
         """Return a JSON-serializable dict."""

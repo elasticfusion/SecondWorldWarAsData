@@ -28,6 +28,11 @@ from bs4 import BeautifulSoup, Tag
 # the first in-content title. Assigning a division here would be a guess.
 UNKNOWN_DIVISION = "(unknown)"
 
+# How a row's division was determined (for auditability and review triage).
+DIVISION_SOURCE_TITLE = "title"  # read from an in-content division title
+DIVISION_SOURCE_INFERRED = "inferred_next_title"  # Signal 1 inference
+DIVISION_SOURCE_UNKNOWN = "unknown"  # no signal; left (unknown)
+
 # Canonical section keys. The walk classifies each region as one of these.
 SECTION_COMMAND_STAFF = "command_staff"
 SECTION_STATISTICS = "statistics"
@@ -125,15 +130,74 @@ def clean_cell(tag: Tag) -> str:
     return re.sub(r"\s+", " ", tag.get_text(separator=" ")).strip()
 
 
+def apply_division_flag(
+    division_source: str, confidence: float, needs_review: bool, notes: str
+) -> Tuple[float, bool, str]:
+    """Adjust confidence/review based on how the division was determined.
+
+    * ``title``  -> unchanged (division read directly from the source).
+    * ``inferred_next_title`` -> flag for review, cap confidence; inferred, not
+      fabricated, so a reviewer should confirm.
+    * ``unknown`` -> flag for review, cap confidence; no division signal at all.
+    """
+    if division_source == DIVISION_SOURCE_TITLE:
+        return confidence, needs_review, notes
+    if division_source == DIVISION_SOURCE_INFERRED:
+        extra = "division inferred from next title in file (verify)"
+        combined = f"{notes}; {extra}" if notes else extra
+        return min(confidence, 0.6), True, combined
+    extra = "division unknown (no title in file)"
+    combined = f"{notes}; {extra}" if notes else extra
+    return min(confidence, 0.5), True, combined
+
+
 def apply_unknown_division_flag(
     division: str, confidence: float, needs_review: bool, notes: str
 ) -> Tuple[float, bool, str]:
-    """Force a review flag when the division could not be determined."""
+    """Backward-compatible flag helper keyed on the division string.
+
+    Prefer :func:`apply_division_flag` (keyed on division_source). Retained so
+    existing callers keep working: an ``(unknown)`` division flags for review.
+    """
     if division != UNKNOWN_DIVISION:
         return confidence, needs_review, notes
     extra = "division unknown (no title before table)"
     combined = f"{notes}; {extra}" if notes else extra
     return min(confidence, 0.5), True, combined
+
+
+def first_division_in(markdown: str) -> Optional[str]:
+    """Return the first division title that appears anywhere in the document.
+
+    Signal 1 for division inference: a leading section table/block that precedes
+    any division title belongs (verified on real files) to the FIRST title that
+    appears later in the same file. Since the leading region is by definition
+    before the first title, "first title in document" is that "next title".
+    """
+    for line in text_lines(markdown):
+        div = division_from_line(line)
+        if div:
+            return div
+    return None
+
+
+def attribute_division(
+    seen_division: str, inferred_division: Optional[str]
+) -> Tuple[str, str]:
+    """Resolve a block's division and its source.
+
+    Returns (division, division_source):
+      * a division read from a title before the block  -> source "title"
+      * else the inferred next-title division, if any   -> "inferred_next_title"
+      * else                                            -> UNKNOWN_DIVISION / "unknown"
+
+    Never overwrites a title-read division; never fabricates.
+    """
+    if seen_division:
+        return seen_division, DIVISION_SOURCE_TITLE
+    if inferred_division:
+        return inferred_division, DIVISION_SOURCE_INFERRED
+    return UNKNOWN_DIVISION, DIVISION_SOURCE_UNKNOWN
 
 
 def _update_state(
@@ -150,25 +214,30 @@ def _update_state(
     return division, section
 
 
-def iter_section_tables(markdown: str, wanted_section: str) -> List[Tuple[str, Tag]]:
-    """Yield (division, table) for tables inside ``wanted_section`` regions.
+def iter_section_tables(
+    markdown: str, wanted_section: str
+) -> List[Tuple[str, str, Tag]]:
+    """Yield (division, division_source, table) for tables in ``wanted_section``.
 
-    Walks the document in order, tracking the current division and section, and
-    returns each ``<table>`` encountered while the current section matches
-    ``wanted_section``. Division defaults to :data:`UNKNOWN_DIVISION` when none
-    has been seen yet.
+    Walks the document tracking the current division and section. A table that
+    appears before any division title is attributed to the first title in the
+    document (Signal 1 inference), tagged ``inferred_next_title``; a table under
+    a title keeps that title's division (``title``); if the document has no
+    title at all the division is ``(unknown)``.
     """
     soup = BeautifulSoup(markdown, "html.parser")
+    inferred = first_division_in(markdown)
     division = ""
     section: Optional[str] = None
-    pairs: List[Tuple[str, Tag]] = []
+    results: List[Tuple[str, str, Tag]] = []
     for element in soup.descendants:
         if isinstance(element, Tag):
             if element.name == "table" and section == wanted_section:
-                pairs.append((division or UNKNOWN_DIVISION, element))
+                div, source = attribute_division(division, inferred)
+                results.append((div, source, element))
             continue
         division, section = _update_state(str(element), division, section)
-    return pairs
+    return results
 
 
 def text_lines(markdown: str) -> List[str]:
@@ -184,15 +253,14 @@ def text_lines(markdown: str) -> List[str]:
 
 def iter_section_text_blocks(
     markdown: str, wanted_section: str
-) -> List[Tuple[str, List[str]]]:
-    """Yield (division, lines) for plain-text runs inside ``wanted_section``.
+) -> List[Tuple[str, str, List[str]]]:
+    """Yield (division, division_source, lines) for text runs in ``wanted_section``.
 
-    For sections whose content is plain text rather than an HTML table (e.g. the
-    plain-list CAMPAIGNS form). Single-pass state machine over the document's
-    text lines: tracks the current division and section, and emits a block each
-    time a wanted-section run ends (at a new section marker or end of input).
+    Plain-text analogue of :func:`iter_section_tables`, with the same Signal 1
+    next-title inference for blocks that precede any division title.
     """
-    blocks: List[Tuple[str, List[str]]] = []
+    inferred = first_division_in(markdown)
+    blocks: List[Tuple[str, str, List[str]]] = []
     division = ""
     section: Optional[str] = None
     collected: List[str] = []
@@ -200,7 +268,8 @@ def iter_section_text_blocks(
 
     def flush() -> None:
         if collected and section == wanted_section:
-            blocks.append((block_division or UNKNOWN_DIVISION, list(collected)))
+            div, source = attribute_division(block_division, inferred)
+            blocks.append((div, source, list(collected)))
 
     for line in text_lines(markdown):
         div = division_from_line(line)

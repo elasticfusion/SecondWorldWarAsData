@@ -22,7 +22,7 @@ from bs4 import Tag
 
 from src.ingestion.oob_markdown._common import (
     SECTION_ORGANIC_UNITS,
-    apply_unknown_division_flag,
+    apply_division_flag,
     clean_cell,
     iter_section_tables,
 )
@@ -55,7 +55,7 @@ def _assess_unit(name: str) -> Tuple[float, bool, str]:
 
 
 def _parse_table_rows(
-    division: str, table: Tag, source_file: str
+    division: str, division_source: str, table: Tag, source_file: str
 ) -> List[OrganicUnitRow]:
     """Expand a 2-column organic-units table into one row per non-empty cell."""
     rows: List[OrganicUnitRow] = []
@@ -68,8 +68,8 @@ def _parse_table_rows(
             if not unit_name:
                 continue
             confidence, needs_review, notes = _assess_unit(unit_name)
-            confidence, needs_review, notes = apply_unknown_division_flag(
-                division, confidence, needs_review, notes
+            confidence, needs_review, notes = apply_division_flag(
+                division_source, confidence, needs_review, notes
             )
             note_field = glyph if not notes else f"{glyph} {notes}".strip()
             rows.append(
@@ -80,6 +80,7 @@ def _parse_table_rows(
                     confidence=confidence,
                     needs_review=needs_review,
                     source_file=source_file,
+                    division_source=division_source,
                 )
             )
     return rows
@@ -88,8 +89,8 @@ def _parse_table_rows(
 def parse_organic_units(markdown: str, source_file: str = "") -> OrganicUnitParseResult:
     """Parse all ORGANIC UNITS rows from a markdown string."""
     result = OrganicUnitParseResult(source_file=source_file)
-    for division, table in iter_section_tables(markdown, SECTION_ORGANIC_UNITS):
-        result.rows.extend(_parse_table_rows(division, table, source_file))
+    for division, source, table in iter_section_tables(markdown, SECTION_ORGANIC_UNITS):
+        result.rows.extend(_parse_table_rows(division, source, table, source_file))
     return result
 
 

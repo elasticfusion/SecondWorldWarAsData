@@ -1,3 +1,8 @@
+# Row-construction boilerplate (confidence/review/notes/source_file/division_source)
+# NOTE: the per-row construction here is intentionally parallel to the other
+# section parsers (campaigns/command-staff/etc.); pylint R0801 (duplicate-code)
+# flags this, but abstracting it would couple otherwise-independent parsers for
+# no real benefit. Score stays >= 9.9 per docs/current/core/DEVELOPMENT.md.
 """Parse STATISTICS content from Chandra OCR+AI markdown into rows.
 
 Statistics appear as plain text within a ``STATISTICS`` section: category
@@ -19,8 +24,10 @@ from typing import List, Optional, Tuple
 
 from src.ingestion.oob_markdown._common import (
     SECTION_STATISTICS,
-    apply_unknown_division_flag,
+    apply_division_flag,
+    attribute_division,
     division_from_line,
+    first_division_in,
     section_from_line,
     text_lines,
 )
@@ -67,7 +74,11 @@ def _assess_stat(metric: str, value: str) -> Tuple[float, bool, str]:
 
 
 def _parse_stat_line(
-    division: str, category: str, line: str, source_file: str
+    division: str,
+    division_source: str,
+    category: str,
+    line: str,
+    source_file: str,
 ) -> Optional[StatisticRow]:
     """Parse one 'metric..... value' line into a row, or None if not a stat."""
     match = _DOT_LEADER_RE.match(line)
@@ -78,8 +89,8 @@ def _parse_stat_line(
     if not metric:
         return None
     confidence, needs_review, notes = _assess_stat(metric, value)
-    confidence, needs_review, notes = apply_unknown_division_flag(
-        division, confidence, needs_review, notes
+    confidence, needs_review, notes = apply_division_flag(
+        division_source, confidence, needs_review, notes
     )
     return StatisticRow(
         division=division,
@@ -90,6 +101,7 @@ def _parse_stat_line(
         needs_review=needs_review,
         notes=notes,
         source_file=source_file,
+        division_source=division_source,
     )
 
 
@@ -104,6 +116,7 @@ def parse_statistics(markdown: str, source_file: str = "") -> StatisticParseResu
     begins.
     """
     result = StatisticParseResult(source_file=source_file)
+    inferred = first_division_in(markdown)
     division = ""
     in_stats = False
     category = ""
@@ -114,7 +127,8 @@ def parse_statistics(markdown: str, source_file: str = "") -> StatisticParseResu
         in_stats, category = _advance_section(line, in_stats, category)
         if not in_stats or not category:
             continue
-        row = _parse_stat_line(division, category, line, source_file)
+        resolved_division, source = attribute_division(division, inferred)
+        row = _parse_stat_line(resolved_division, source, category, line, source_file)
         if row is not None:
             result.rows.append(row)
     return result

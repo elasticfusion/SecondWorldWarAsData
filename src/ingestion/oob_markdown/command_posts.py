@@ -22,7 +22,7 @@ from bs4 import Tag
 
 from src.ingestion.oob_markdown._common import (
     SECTION_COMMAND_POSTS,
-    apply_unknown_division_flag,
+    apply_division_flag,
     clean_cell,
     iter_section_tables,
 )
@@ -77,7 +77,11 @@ def _is_header_row(tr: Tag) -> bool:
 
 
 def _post_row_from_cells(
-    texts: List[str], division: str, current_year: str, source_file: str
+    texts: List[str],
+    division: str,
+    division_source: str,
+    current_year: str,
+    source_file: str,
 ) -> Tuple[Optional[CommandPostRow], str]:
     """Build a command-post row from a cell-text list.
 
@@ -96,8 +100,8 @@ def _post_row_from_cells(
         return None, current_year
 
     confidence, needs_review, notes = _assess_post(date, town, current_year)
-    confidence, needs_review, notes = apply_unknown_division_flag(
-        division, confidence, needs_review, notes
+    confidence, needs_review, notes = apply_division_flag(
+        division_source, confidence, needs_review, notes
     )
     row = CommandPostRow(
         division=division,
@@ -110,12 +114,13 @@ def _post_row_from_cells(
         needs_review=needs_review,
         notes=notes,
         source_file=source_file,
+        division_source=division_source,
     )
     return row, current_year
 
 
 def _parse_table_rows(
-    division: str, table: Tag, source_file: str
+    division: str, division_source: str, table: Tag, source_file: str
 ) -> List[CommandPostRow]:
     """Expand a command-posts table into rows, inheriting the year."""
     rows: List[CommandPostRow] = []
@@ -127,7 +132,7 @@ def _parse_table_rows(
         if not texts:
             continue
         row, current_year = _post_row_from_cells(
-            texts, division, current_year, source_file
+            texts, division, division_source, current_year, source_file
         )
         if row is not None:
             rows.append(row)
@@ -137,8 +142,8 @@ def _parse_table_rows(
 def parse_command_posts(markdown: str, source_file: str = "") -> CommandPostParseResult:
     """Parse all COMMAND POSTS rows from a markdown string."""
     result = CommandPostParseResult(source_file=source_file)
-    for division, table in iter_section_tables(markdown, SECTION_COMMAND_POSTS):
-        result.rows.extend(_parse_table_rows(division, table, source_file))
+    for division, source, table in iter_section_tables(markdown, SECTION_COMMAND_POSTS):
+        result.rows.extend(_parse_table_rows(division, source, table, source_file))
     return result
 
 
