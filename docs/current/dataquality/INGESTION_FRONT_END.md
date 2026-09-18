@@ -287,9 +287,16 @@ rows, below). Findings that shaped the implementation:
       splitting, `(actg)` acting flags, `<br/>`/entity cleanup, and division
       tracking from content. Verification-flagging only (no correction): suspect
       cells get `needs_review` + `confidence` + `notes`, raw cell preserved.
-- [ ] Piece 2 (increment 2+) — Remaining OOB sections (statistics, campaigns,
-      organic units, attachments, detachments, higher-unit assignments, command
-      posts) using the same framework.
+- [x] Piece 2 (increment 2) — CAMPAIGNS and COMMAND POSTS parsers, plus a
+      shared `_common.py` framework (division/section tracking, cell cleanup,
+      verification flags) that `command_staff` was refactored onto. Campaigns
+      handles both the plain-text list and the chronology-table-column forms
+      (with colspan-aware column indexing); command posts inherit the year from
+      underlined context rows. Full corpus: 175 campaign rows and ~2,280
+      command-post rows.
+- [ ] Piece 2 (increment 3+) — Remaining OOB sections (statistics, organic
+      units, attachments, detachments, higher-unit assignments) using the same
+      framework.
 - [ ] **Region-coverage record (required, testable)** — the markdown parser must
       walk a heterogeneous document and emit a record of every region it
       recognized, marking each as *parsed* or *recognized-but-not-yet-parsed*,
