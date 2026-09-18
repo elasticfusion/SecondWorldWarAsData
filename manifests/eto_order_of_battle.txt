@@ -1,0 +1,74 @@
+# ETO Order of Battle - OCR Job Manifest
+# Format: page-range #label
+# Submit all: python3 scripts/submit_ocr_job.py s3://dev-wwii-data-pipeline/source/ETO_Order_of_Battle.pdf --manifest manifests/eto_order_of_battle.txt --wait
+
+6-15 #preface
+21-34 #1st infantry
+35-45 #2nd infantry
+46-57 #3rd infantry
+58-72 #4th infantry
+73-83 #5th infantry
+84-92 #8th infantry
+93-107 #9th infantry
+108-113 #13th airborne
+114-119 #17th airborne
+120-128 #26th infantry
+129-140 #29th infantry
+141-151 #30th infantry
+152-161 #35th infantry
+162-170 #36th infantry
+171-178 #42nd infantry
+179-186 #44th infantry
+187-196 #45th infantry
+197-204 #63rd infantry
+205-211 #65th infantry
+212-218 #66th infantry
+219-225 #69th infantry
+226-232 #70th infantry
+233-237 #71st infantry
+238-246 #75th infantry
+247-254 #76th infantry
+255-263 #78th infantry
+264-274 #79th infantry
+275-284 #80th infantry
+285-295 #82nd airborne
+296-307 #83rd infantry
+308-316 #84th infantry
+317-323 #86th infantry
+324-331 #87th infantry
+332-337 #89th infantry
+338-350 #90th infantry
+351-357 #94th infantry
+358-364 #95th infantry
+365-371 #97th infantry
+372-379 #99th infantry
+380-387 #100th infantry
+381-398 #101st airborne
+399-407 #102nd infantry
+408-416 #103rd infantry
+417-424 #104th infantry
+425-431 #106th infantry
+432-441 #2nd armored
+442-454 #3rd armored
+455-466 #4th armored
+467-475 #5th armored
+476-486 #6th armored
+487-496 #7th armored
+497-504 #8th armored
+505-512 #9th armored
+513-520 #10th armored
+521-527 #11th armored
+528-537 #12th armored
+538-536 #13th armored
+544-552 #14th armored
+533-558 #16th armored
+559-564 #20th armored
+565-569 #2nd french armored
+571-577 #tables of organic units
+578-582 #tables of organization and strength
+578-584 #summary of divisional equipment
+585-588 #comparitive statistics chronology
+589-590 #comparitive statistics individual awards
+591-592 #comparitive statistics casualties
+597-598 #european geographical sub-divisions
+599-600 #abbreviations

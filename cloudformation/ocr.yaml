@@ -1,0 +1,222 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: WWII Pipeline - OCR Standalone (AWS Batch with GPU for Chandra OCR)
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+  PrivateSubnetIds:
+    Type: CommaDelimitedList
+    Description: Private subnet IDs in GPU-capable AZs
+  SecurityGroupId:
+    Type: String
+  ChandraImageUri:
+    Type: String
+    Description: ECR image URI for Chandra OCR container
+  DataBucketName:
+    Type: String
+    Default: dev-wwii-data-pipeline
+  MaxvCpus:
+    Type: Number
+    Default: 280
+    Description: Maximum vCPUs across all Batch instances
+  SpotBidPercent:
+    Type: Number
+    Default: 70
+    Description: Max percentage of on-demand price for Spot instances
+  ComputeType:
+    Type: String
+    Default: EC2
+    AllowedValues: [EC2, SPOT]
+    Description: Compute type - EC2 (on-demand) or SPOT
+
+Conditions:
+  IsSpot: !Equals [!Ref ComputeType, SPOT]
+
+Resources:
+  # --- Log Group ---
+  ChandraLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/batch/${EnvironmentName}-wwii-chandra
+      RetentionInDays: 14
+
+  # --- IAM Roles ---
+  BatchServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-batch-service-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: batch.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole
+
+  BatchInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-batch-instance-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+
+  BatchInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub ${EnvironmentName}-wwii-batch-instance-profile
+      Roles:
+        - !Ref BatchInstanceRole
+
+  BatchJobRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-batch-job-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ChandraJobPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub arn:aws:s3:::${DataBucketName}
+                  - !Sub arn:aws:s3:::${DataBucketName}/*
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt ChandraLogGroup.Arn
+
+  BatchExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-batch-execution-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  # --- Launch Template (larger root volume for big Docker images) ---
+  ChandraLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub ${EnvironmentName}-wwii-chandra-lt
+      LaunchTemplateData:
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: 100
+              VolumeType: gp3
+              DeleteOnTermination: true
+
+  # --- Batch Compute Environment ---
+  ChandraComputeEnv:
+    Type: AWS::Batch::ComputeEnvironment
+    Properties:
+      ComputeEnvironmentName: !Sub ${EnvironmentName}-wwii-chandra-gpu
+      Type: MANAGED
+      State: ENABLED
+      ServiceRole: !GetAtt BatchServiceRole.Arn
+      ComputeResources:
+        Type: !Ref ComputeType
+        AllocationStrategy: !If [IsSpot, SPOT_CAPACITY_OPTIMIZED, BEST_FIT_PROGRESSIVE]
+        BidPercentage: !Ref SpotBidPercent
+        SpotIamFleetRole: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-ec2-spot-fleet-tagging-role
+        MaxvCpus: !Ref MaxvCpus
+        MinvCpus: 0
+        DesiredvCpus: 0
+        InstanceTypes:
+          - g5.xlarge
+          - g5.2xlarge
+          - g6.xlarge
+          - g6.2xlarge
+        Subnets: !Ref PrivateSubnetIds
+        SecurityGroupIds:
+          - !Ref SecurityGroupId
+        InstanceRole: !GetAtt BatchInstanceProfile.Arn
+        LaunchTemplate:
+          LaunchTemplateId: !Ref ChandraLaunchTemplate
+          Version: $Latest
+        Ec2Configuration:
+          - ImageType: ECS_AL2_NVIDIA
+        Tags:
+          Name: !Sub ${EnvironmentName}-wwii-chandra
+
+  # --- Job Queue ---
+  ChandraJobQueue:
+    Type: AWS::Batch::JobQueue
+    Properties:
+      JobQueueName: !Sub ${EnvironmentName}-wwii-chandra-gpu
+      State: ENABLED
+      Priority: 1
+      ComputeEnvironmentOrder:
+        - ComputeEnvironment: !Ref ChandraComputeEnv
+          Order: 1
+
+  # --- Job Definition ---
+  ChandraJobDef:
+    Type: AWS::Batch::JobDefinition
+    Properties:
+      JobDefinitionName: !Sub ${EnvironmentName}-wwii-chandra
+      Type: container
+      ContainerProperties:
+        Image: !Ref ChandraImageUri
+        ResourceRequirements:
+          - Type: VCPU
+            Value: "4"
+          - Type: MEMORY
+            Value: "15000"
+          - Type: GPU
+            Value: "1"
+        ExecutionRoleArn: !GetAtt BatchExecutionRole.Arn
+        JobRoleArn: !GetAtt BatchJobRole.Arn
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: !Ref ChandraLogGroup
+            awslogs-region: !Ref AWS::Region
+        Environment:
+          - Name: AWS_REGION
+            Value: !Ref AWS::Region
+          - Name: DATA_BUCKET
+            Value: !Ref DataBucketName
+          - Name: PYTORCH_CUDA_ALLOC_CONF
+            Value: expandable_segments:True
+      RetryStrategy:
+        Attempts: 2
+      Timeout:
+        AttemptDurationSeconds: 3600
+
+Outputs:
+  JobQueueName:
+    Value: !Ref ChandraJobQueue
+  JobDefinitionName:
+    Value: !Ref ChandraJobDef
+  ComputeEnvironmentName:
+    Value: !Ref ChandraComputeEnv

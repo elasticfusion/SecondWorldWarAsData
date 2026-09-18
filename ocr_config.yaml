@@ -1,0 +1,54 @@
+# OCR Job Configuration
+# Used by scripts/submit_ocr_job.py
+
+# Spot vs On-Demand decision logic
+spot:
+  # If best Spot price is within this % of on-demand, use on-demand instead
+  # (e.g., 10 means if Spot is only 10% cheaper, just pay full price for guaranteed capacity)
+  max_price_proximity_percent: 10
+
+  # If Spot instances haven't launched after this many minutes, switch to on-demand
+  max_wait_minutes: 120
+
+  # Minimum placement score (1-10) to attempt Spot. Below this, go straight to on-demand
+ # min_placement_score: 3
+  min_placement_score: 11
+# Instance preferences (ordered by priority — Batch tries first available)
+instance_types:
+  - g4dn.xlarge
+  - g4dn.2xlarge
+  - g5.xlarge
+  - g5.2xlarge
+  - g6.xlarge
+  - g6.2xlarge
+
+# On-demand reference prices (update periodically)
+on_demand_prices:
+  g4dn.xlarge: 0.526
+  g4dn.2xlarge: 1.052
+  g5.xlarge: 1.006
+  g5.2xlarge: 2.012
+  g6.xlarge: 0.978
+  g6.2xlarge: 1.956
+
+# Job settings
+jobs:
+  # Default pages per chunk when auto-splitting (no manifest)
+  default_chunk_size: 50
+
+  # Poll interval in seconds when waiting for jobs
+  poll_interval: 30
+
+  # How often (seconds) to run diagnostics when jobs are stuck
+  diagnostics_interval: 150
+
+  # Job timeout in seconds (per chunk)
+  timeout_seconds: 1800
+
+# Networking
+networking:
+  # Automatically disable idle monitor during OCR jobs
+  disable_idle_monitor: true
+
+  # Automatically invoke nat_manager before job submission
+  ensure_nat: true

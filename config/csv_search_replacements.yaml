@@ -1,0 +1,1689 @@
+# CSV search-and-replace rules for post-processing extracted tabular data.
+# Rules are applied in file order, then rule order within each set.
+# Patterns are Python regular expressions (re.sub). Use raw-string escaping in YAML.
+
+rule_sets:
+  unit_name_expansions:
+    description: >-
+      Expand U.S. Army unit abbreviations and OCR fixes in unit-like text columns.
+      Apply after OCR cleanup; order matters (.AA before AAA).
+    columns:
+      - unit_name
+      - parent_unit_name
+      - position
+      - attached_to_organization
+      - metric
+    rules:
+      - pattern: '-'
+        replacement: ' '
+        description: Normalize hyphens to spaces
+      - pattern: '\.AA(?!A)'
+        replacement: AAA
+        description: OCR ".AA" abbreviation (skip ".AAug" date fragments)
+      - pattern: 'AAA(?!A)'
+        replacement: Antiaircraft Artillery
+        description: Antiaircraft Artillery (skip "AAAug" date fragments)
+      - pattern: '\bAW\b'
+        replacement: Automatic Weapons
+        description: Automatic Weapons battalion suffix
+      - pattern: '\bBtry\b'
+        replacement: Battery
+        description: Battery
+      - pattern: 'Bn~'
+        replacement: Battalion
+        description: OCR "Bn~" abbreviation
+      - pattern: '\bBn\b'
+        replacement: Battalion
+        description: Battalion
+      - pattern: '\bBtrys\b'
+        replacement: Batteries
+        description: Batteries (plural battery)
+      - pattern: 'llbl'
+        replacement: Mobile
+        description: OCR "(llbl)" mobility designation
+      - pattern: '\bMbl\b'
+        replacement: Mobile
+        description: Mobile (OCR "Mbl")
+      - pattern: 'AI\^'
+        replacement: Automatic Weapons
+        description: OCR "AI^" for Automatic Weapons
+      - pattern: '\bEn\b'
+        replacement: Battalion
+        description: OCR "En" for Battalion
+      - pattern: ' J \.\.\.'
+        replacement: )
+        description: OCR trailing " J ..." before closing paren
+      - pattern: ' • \* » « • « •'
+        replacement: ''
+        description: OCR junk punctuation cluster
+      - pattern: '\bTk\b'
+        replacement: Tank
+        description: Tank
+      - pattern: '\bAmid\b'
+        replacement: Armored
+        description: OCR "Amid" for Armored
+      - pattern: '\bArmd\.?[''"]+'
+        replacement: Armored
+        description: OCR "Armd'" (optional dot, trailing quote) for Armored
+      - pattern: '\bArmd\b'
+        replacement: Armored
+        description: Armd abbreviation for Armored
+      - pattern: '\bGp\b'
+        replacement: Group
+        description: Group abbreviation
+      - pattern: ' • '
+        replacement: ' '
+        description: Normalize spaced bullet to single space
+      - pattern: '(?:\.\s*){3,}[''"]?'
+        replacement: ''
+        description: OCR spaced dot runs with optional trailing quote
+      - pattern: '(?:\s\.\s*)+[''"]+[.,;:\s]*$'
+        replacement: ''
+        description: Trailing OCR " .'" dot-quote junk at end of field
+
+  unit_name_9tli_arrid:
+    description: OCR 9tli Arrid to 9th Armored (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '9tli"Arrid'
+        replacement: 9th Armored
+        description: OCR 9tli"Arrid for 9th Armored (e.g. 9th Armored Division)
+
+  unit_name_llbt:
+    description: OCR Mobile designation variants (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: 'llbT'
+        replacement: Mobile
+        description: OCR llbT for Mobile (e.g. Automatic Weapons Battalion (llbT))
+      - pattern: 'Ilbl'
+        replacement: Mobile
+        description: OCR Ilbl for Mobile (e.g. Antiaircraft Artillery Gun (Ilbl))
+      - pattern: 'TlbX"'
+        replacement: Mobile
+        description: OCR TlbX" for Mobile (e.g. Automatic Weapons Battalion (TlbX"))
+      - pattern: '"\(Mobile\)'
+        replacement: ' (Mobile)'
+        description: OCR stray quote before (Mobile) (CSV ""(Mobile)"")
+
+  unit_name_amd_regt:
+    description: OCR spaced "A m d R e g t" to Armored Regiment (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: 'A\s*m\s*d\s*(?:R\s*e\s*g\s*t|Regt)\.?[''"]*'
+        replacement: Armored Regiment
+        description: OCR spaced Amd Regt (optional trailing quote) for Armored Regiment
+
+  unit_name_amd:
+    description: OCR spaced "A m d" to Armored (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '&±md'
+        replacement: Armored
+        description: OCR &±md for Armored (e.g. 3d &±md Div)
+      - pattern: '\bA\s*m\s*d\b(?!\s*(?:R\s*e\s*g\s*t|Regt))\.?[''"]*'
+        replacement: Armored
+        description: OCR spaced A m d (not A m d Regt) for Armored
+
+  unit_name_amd_bdiv:
+    description: OCR AmdBBiv to Armored Division (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: 'AmdBBiv'
+        replacement: Armored Division
+        description: OCR AmdBBiv for Armored Division (e.g. 3d AmdBBiv)
+
+  unit_name_treadway_br:
+    description: Treadway Br is Bridge Company, not British (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)(Tread\w*way|ATreadway)\s+Br\.?\b'
+        replacement: '\1 Bridge'
+        description: Engineer Treadway Bridge Company before Br->British expansion
+      - pattern: '(?i)(Tread\w*way|ATreadway)\s+British\b'
+        replacement: '\1 Bridge'
+        description: Undo Br->British on Treadway rows already processed
+
+  unit_name_br:
+    description: Expand Br abbreviation to British (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bBr\.?\b'
+        replacement: British
+        description: British unit prefix (e.g. Br 74th AT Battery)
+
+  unit_name_inf:
+    description: Expand Inf abbreviations to Infantry (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)I\s+n\s+f\b(?!\s*a)'
+        replacement: Infantry
+        description: OCR spaced I n f for Infantry (not I n f a n t r y)
+      - pattern: '\bInf\.?[''"]+'
+        replacement: Infantry
+        description: OCR "Inf'" (optional dot, trailing quote) for Infantry
+      - pattern: '\bInf\b'
+        replacement: Infantry
+        description: Inf abbreviation for Infantry
+
+  unit_name_fa:
+    description: Expand FA abbreviations to Field Artillery (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: 'FA\.?[''"]+'
+        replacement: Field Artillery
+        description: OCR "FA'" (optional dot, trailing quote) for Field Artillery
+      - pattern: '\bFA\b'
+        replacement: Field Artillery
+        description: FA abbreviation for Field Artillery
+
+  unit_name_f_field_artillery:
+    description: >-
+      Expand OCR "F Battalion" / "F v Battalion" to Field Artillery Battalion (unit_name only).
+      Run after unit_name_fa.
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\b(\d+(?:st|nd|rd|th)?)\s+F[,;]+\s*Battalion\b'
+        replacement: '\1 Field Artillery Battalion'
+        description: F with comma/semicolon before Battalion (e.g. 529th F, Battalion)
+      - pattern: '\b(\d+(?:st|nd|rd|th)?)\s+F\s+v?\s+Battalion\b'
+        replacement: '\1 Field Artillery Battalion'
+        description: Ordinal F or F v Battalion (e.g. 730th F Battalion)
+      - pattern: '\b(\d+)\s+d\s+F\s+Battalion\b'
+        replacement: '\1d Field Artillery Battalion'
+        description: Spaced ordinal before F Battalion (e.g. 42 d F Battalion)
+      - pattern: '\b(\d+(?:st|nd|rd|th)?)\s+F\s+Battalion(?=\d)'
+        replacement: '\1 Field Artillery Battalion '
+        description: Glued division after F Battalion (e.g. 131st F Battalion100th)
+      - pattern: '\bF\s*[,;]+\s*Battalion\b'
+        replacement: Field Artillery Battalion
+        description: F;, Battalion without leading ordinal (e.g. 522d F;, Battalion)
+
+  parent_unit_name_annd:
+    description: OCR "Annd" misread to Armored (unit_name and parent_unit_name).
+    columns:
+      - unit_name
+      - parent_unit_name
+    rules:
+      - pattern: 'Annd'
+        replacement: Armored
+        description: OCR Annd for Armored
+
+  parent_unit_name_ccr_ocr:
+    description: OCR CCR parenthetical junk to 3d Armored Division (parent_unit_name and unit_name).
+    columns:
+      - parent_unit_name
+      - unit_name
+    rules:
+      - pattern: ' \( 3 d : i \^ r m d \^ D i v \) \} '
+        replacement: ' (3d Armored Division)'
+        description: 'OCR CCR parenthetical junk with trailing brace for (3d Armored Division)'
+      - pattern: '\( 3 d : i \^ r m d \^ D i v \)'
+        replacement: ' (3d Armored Division)'
+        description: 'OCR CCR parenthetical junk for (3d Armored Division)'
+      - pattern: '^CCR 3d Armored Division$'
+        replacement: CCR (3d Armored Division)
+        description: Normalize CCR parent after prior junk cleanup
+
+  unit_name_div:
+    description: Expand Div abbreviations to Division (unit_name only).
+    columns:
+      - unit_name
+      - parent_unit_name
+    rules:
+      - pattern: 'Div\.?[''"]+'
+        replacement: Division
+        description: OCR "Div'" (optional dot, trailing quote) for Division
+      - pattern: '\bDiv\b'
+        replacement: Division
+        description: Div abbreviation for Division
+      - pattern: '\bPiv\b'
+        replacement: Division
+        description: OCR Piv for Division
+
+  unit_name_ren:
+    description: Expand Ren abbreviations to Reconnaissance (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: 'Ren\.?[''"]+'
+        replacement: Reconnaissance
+        description: OCR "Ren'" (optional dot, trailing quote) for Reconnaissance
+      - pattern: '\bRen\b'
+        replacement: Reconnaissance
+        description: Ren abbreviation for Reconnaissance
+
+  unit_name_tr:
+    description: Expand Tr abbreviation to Troop (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bTr\b'
+        replacement: Troop
+        description: Tr abbreviation for Troop (e.g. Reconnaissance Tr, Tr A)
+
+  unit_name_det:
+    description: Expand det abbreviation to detachment (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)\bdet\b'
+        replacement: detachment
+        description: det abbreviation for detachment (e.g. 1 det 29th Reconnaissance Troop)
+
+  unit_name_plat:
+    description: Expand plat/Plat abbreviations to Platoon (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bP\s*l\s*a\s*t\b\.?[''"]*'
+        replacement: Platoon
+        description: OCR spaced P l a t / Plat (optional dot, trailing quote) for Platoon
+      - pattern: '(?i)\bplat\b'
+        replacement: Platoon
+        description: plat abbreviation for Platoon (e.g. 1 plat, 3d Plat)
+      - pattern: '(?i)\bplats\b'
+        replacement: Platoons
+        description: plats abbreviation for Platoons (e.g. 2 plats)
+      - pattern: 'p l a t s'
+        replacement: Platoon
+        description: OCR spaced p l a t s for Platoon
+
+  unit_name_equip:
+    description: Expand Equip abbreviation to Equipment (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)\bEquip\b'
+        replacement: Equipment
+        description: Equip abbreviation for Equipment (e.g. Light Equip Platoon)
+
+  unit_name_pon:
+    description: Expand Pon abbreviation to Pontoon (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)\bPon\b'
+        replacement: Pontoon
+        description: Pon abbreviation for Pontoon (e.g. Light Pon Company)
+
+  unit_name_155_how:
+    description: Expand 155 How abbreviation to 155 Howitzer (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)155\s+How\b'
+        replacement: 155 Howitzer
+        description: 155 How abbreviation for 155 Howitzer (e.g. FA Battalion (155 How))
+      - pattern: '(?i)155\s+Howp[a-z]*'
+        replacement: 155 Howitzer)
+        description: OCR 155 HowpT etc. for 155 Howitzer)
+
+  unit_name_155_gun:
+    description: Expand 155 Gun to 155 Howitzer (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)155\s+Gun\b'
+        replacement: 155 Howitzer
+        description: 155 Gun abbreviation for 155 Howitzer (e.g. FA Battalion (155 Gun))
+
+  unit_name_155_hon:
+    description: Expand 155 Hon OCR to 155 Howitzer (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)155\s+Hon\b'
+        replacement: 155 Howitzer
+        description: OCR 155 Hon for 155 Howitzer (e.g. FA Battalion (155 Hon))
+
+  unit_name_105_how:
+    description: Expand 105 How abbreviation to 105 Howitzer (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)105\s+How\b'
+        replacement: 105 Howitzer
+        description: 105 How abbreviation for 105 Howitzer (e.g. FA Battalion (105 How))
+      - pattern: '105 Hov'
+        replacement: 105 Howitzer
+        description: OCR 105 Hov for 105 Howitzer (e.g. FA Battalion (105 Hov))
+      - pattern: '(?i)105\s+''How\b'
+        replacement: 105 Howitzer
+        description: OCR 105 'How for 105 Howitzer (e.g. FA Battalion (105 'How))
+      - pattern: '\.105 Howitzer'
+        replacement: 105 Howitzer
+        description: OCR .105 Howitzer for 105 Howitzer
+      - pattern: '\(105 IIOVJ\)?'
+        replacement: (105 Howitzer)
+        description: OCR (105 IIOVJ for (105 Howitzer)
+
+  unit_name_ho_star:
+    description: OCR Ho*' to Howitzer (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: 'Ho\*'''
+        replacement: Howitzer
+        description: OCR Ho*' for Howitzer
+
+  unit_name_ocr_155_howitzer:
+    description: OCR spaced 155 Howitzer junk to (155 Howitzer) (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\^ 5 5 10T'
+        replacement: (155 Howitzer)
+        description: OCR ^ 5 5 10T for (155 Howitzer)
+
+  unit_name_etry_e:
+    description: OCR Etry E to Battery B (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)Etry\s+E\b'
+        replacement: Battery B
+        description: OCR Etry E for Battery B
+
+  unit_name_etry:
+    description: OCR Etry to Battery (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)\bEtry\b'
+        replacement: Battery
+        description: OCR Etry for Battery (e.g. Hq & Hq Etry, Etry C)
+
+  unit_name_loth:
+    description: OCR loth to 13th (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)\bloth\b'
+        replacement: 13th
+        description: OCR loth for 13th (e.g. loth FA Obsn Battalion)
+
+  unit_name_obsn:
+    description: Expand Obsn abbreviation to Observation (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)\bObsn\b'
+        replacement: Observation
+        description: Obsn abbreviation for Observation (e.g. FA Obsn Battalion)
+
+  unit_name_hq:
+    description: Expand Hq abbreviation to Headquarters (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)\bHq\b'
+        replacement: Headquarters
+        description: Hq abbreviation for Headquarters (e.g. Hq & Hq Battery)
+
+  unit_name_iln:
+    description: OCR Iln to Headquarters (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)\bIln\b'
+        replacement: Headquarters
+        description: OCR Iln for Headquarters (e.g. Hq & Iln Etry)
+
+  unit_name_he_battery:
+    description: OCR He Battery to Headquarters Battery (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)He Battery'
+        replacement: Headquarters Battery
+        description: OCR He Battery for Headquarters Battery (e.g. Hq & He Battery)
+
+  unit_name_155_dm:
+    description: OCR 155 dm to 155 Howitzer (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)155\s+dm\b'
+        replacement: 155 Howitzer
+        description: OCR 155 dm for 155 Howitzer (e.g. FA Battalion (155 dm))
+
+  unit_name_ct:
+    description: Expand CT abbreviation to Combat Team (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bCT\b'
+        replacement: Combat Team
+        description: CT abbreviation for Combat Team (e.g. 116th CT 29th Division)
+      - pattern: 'C\?'
+        replacement: Combat Team
+        description: OCR C? for Combat Team
+
+  unit_name_29th_division_paren:
+    description: Fix missing open paren before 29th Division) (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?<![(])29th Division\)'
+        replacement: (29th Division)
+        description: 29th Division) to (29th Division) when opening paren is missing
+
+  unit_name_9th_division_paren:
+    description: Add parens around bare 9th Division references (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: ' 9th Division\b'
+        replacement: ' (9th Division)'
+        description: Bare 9th Division after space to (9th Division)
+      - pattern: '^9th Division\b'
+        replacement: (9th Division)
+        description: unit_name starting with 9th Division
+      - pattern: '\(9th$'
+        replacement: (9th Division)
+        description: Truncated (9th at end of unit_name
+
+  unit_name_1st_division_paren:
+    description: Add parens around bare 1st Division references (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\{1st Division'
+        replacement: (1st Division)
+        description: OCR {1st Division to (1st Division)
+      - pattern: '(?<![0-9(])1st Division\)'
+        replacement: (1st Division)
+        description: 1st Division) to (1st Division) when opening paren is missing (skip 71st etc.)
+      - pattern: '(?<!\()\b1st Division\b(?!\s+Artillery\b)(?!\))'
+        replacement: (1st Division)
+        description: Bare 1st Division to (1st Division); skip Artillery organic unit and existing parens
+
+  unit_name_division_close:
+    description: >-
+      Strip stray Division) to Division in unit_name (keeps balanced (N Division)).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '__python__:strip_stray_division_close_paren'
+        replacement: ''
+        description: Remove stray Division) close paren without removing (N Division)
+
+  unit_name_155_imr:
+    description: OCR 155 Imr to 155 Howitzer (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?i)155\s+Imr\b'
+        replacement: 155 Howitzer
+        description: OCR 155 Imr for 155 Howitzer (e.g. FA Battalion (155 Imr))
+
+  unit_name_f_slash:
+    description: Expand F/ abbreviation to Field Artillery (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: 'F/'
+        replacement: Field Artillery
+        description: F/ abbreviation for Field Artillery (e.g. Armored F/ Battalion)
+
+  unit_name_tank_battalion_slash:
+    description: Fix OCR Tank/Battalion slash in unit_name.
+    columns:
+      - unit_name
+    rules:
+      - pattern: 'Tank/Battalion'
+        replacement: Tank Battalion
+        description: OCR Tank/Battalion for Tank Battalion
+
+  unit_name_btrys:
+    description: OCR spaced "B t r y s" to Batteries (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bB\s*t\s*r\s*y\s*s\b\.?[''"]*'
+        replacement: Batteries
+        description: OCR spaced B t r y s / Btrys (optional dot, trailing quote) for Batteries
+
+  unit_name_btry:
+    description: OCR spaced "B t r y" to Battery (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bbtry\b'
+        replacement: Battery
+        description: OCR lowercase btry for Battery
+      - pattern: '\b(?:B\s*t\s*r\s*y(?!\s*s)|Bt\s*ry)\b\.?[''"]*'
+        replacement: Battery
+        description: OCR spaced B t r y / Bt ry (not B t r y s) for Battery
+
+  unit_name_cos:
+    description: Expand Cos abbreviations to Companies (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bCos\.?[''"]+'
+        replacement: Companies
+        description: OCR "Cos'" (optional dot, trailing quote) for Companies
+      - pattern: '\bCos\b'
+        replacement: Companies
+        description: Cos abbreviation for Companies
+
+  unit_name_co:
+    description: Expand Co abbreviation to Company (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bCo\b'
+        replacement: Company
+        description: Co abbreviation for Company
+      - pattern: '\bCp\b'
+        replacement: Company
+        description: Cp abbreviation for Company
+      - pattern: '\bGo\b'
+        replacement: Company
+        description: OCR Go for Co/Company
+      - pattern: 'Company\* A'
+        replacement: Company A
+        description: OCR Company* A for Company A
+      - pattern: 'C»'
+        replacement: Company
+        description: OCR C» for Company
+      - pattern: 'C®'
+        replacement: Company
+        description: OCR C® for Company
+      - pattern: 'C\*'
+        replacement: Company
+        description: OCR C* for Company
+      - pattern: 'Ct>'
+        replacement: Company
+        description: OCR Ct> for Company
+      - pattern: 'C©'
+        replacement: Company
+        description: OCR C© for Company
+      - pattern: '\bCa\b(?!\s*v\b)(?!\s*ul)(?!\s+Reconnaissance)'
+        replacement: Company
+        description: OCR Ca for Company (excludes Ca v/Ca ul/Ca Reconnaissance = Cavalry)
+
+  unit_name_regt:
+    description: Expand Regt abbreviation to Regiment (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bRegt\b'
+        replacement: Regiment
+        description: Regt abbreviation for Regiment
+
+  unit_name_prcht:
+    description: Expand Prcht abbreviation to Parachute (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: 'Prcht'
+        replacement: Parachute
+        description: Prcht abbreviation for Parachute (e.g. 507th Prcht Infantry)
+
+  unit_name_non_division:
+    description: Expand (Non Division) to Regiment (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\(Non Division\)'
+        replacement: Regiment
+        description: OOB (Non Division) designation for separate regiment
+      - pattern: '\(Hon Division\)'
+        replacement: Regiment
+        description: OCR (Hon Division) for separate regiment (e.g. 159th Infantry)
+
+  unit_name_cav:
+    description: Expand Cav abbreviation to Cavalry (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: 'Ca v'
+        replacement: Calvary
+        description: OCR spaced Ca v for Calvary (e.g. 14th Ca v Group)
+      - pattern: ':\(Atchd 14th'
+        replacement: '(Attached 14th Calvary Group)'
+        description: OCR :(Atchd 14th for (Attached 14th Calvary Group) (106th ID p421)
+      - pattern: '\bCav\b'
+        replacement: Cavalry
+        description: Cav abbreviation for Cavalry
+
+  unit_name_cml:
+    description: Expand Cml abbreviation to Chemical (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bCml\b'
+        replacement: Chemical
+        description: Cml abbreviation for Chemical
+
+  unit_name_cmi:
+    description: Expand Cmi abbreviation to Chemical (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bCmi\b'
+        replacement: Chemical
+        description: Cmi abbreviation for Chemical
+
+  unit_name_mort:
+    description: Expand Mort abbreviation to Mortar (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bMort\b'
+        replacement: Mortar
+        description: Mort abbreviation for Mortar
+      - pattern: 'I5ort'
+        replacement: Mortar
+        description: OCR I5ort for Mortar
+      - pattern: 'Kqrt'
+        replacement: Mortar
+        description: OCR Kqrt for Mortar
+
+  unit_name_sq:
+    description: Expand Sq abbreviation to Squadron (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bSq\b'
+        replacement: Squadron
+        description: Sq abbreviation for Squadron
+
+  unit_name_rmd_ocr:
+    description: OCR rmd abbreviations misread to Armored (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?<![A-Za-z])\^rmd'
+        replacement: Armored
+        description: OCR caret-rmd for Armored
+      - pattern: '\brmd\b'
+        replacement: Armored
+        description: OCR rmd for Armored
+
+  unit_name_rind_ocr:
+    description: OCR rind misread to Armored (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: ' rind'
+        replacement: ' Armored'
+        description: OCR spaced rind for Armored
+      - pattern: '(?<=\d[d])Armored'
+        replacement: ' Armored'
+        description: Restore space after ordinal before Armored (e.g. 3dArmored)
+      - pattern: '\brind\b'
+        replacement: Armored
+        description: OCR rind for Armored
+      - pattern: '\biirmd\b'
+        replacement: Armored
+        description: OCR iirmd for Armored
+
+  unit_name_r_colon_nd_ocr:
+    description: OCR "^r:nd" misread to Armored (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?<![A-Za-z])\^r:nd'
+        replacement: Armored
+        description: OCR caret-r-colon-nd for Armored
+
+  unit_name_dot_raid_ocr:
+    description: OCR "..raid" misread to Armored (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\.\.raid'
+        replacement: Armored
+        description: OCR dot-dot-raid for Armored
+
+  unit_name_raid_ocr:
+    description: OCR "raid" misread to Armored (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\braid\b'
+        replacement: Armored
+        description: OCR raid for Armored
+
+  unit_name_23d_ocr:
+    description: OCR "? 0 3 d" misread to 23d (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\?\s*0\s*3\s*d'
+        replacement: 23d
+        description: OCR spaced "? 0 3 d" for 23d
+
+  unit_name_engr:
+    description: Expand Engr abbreviation to Engineer in unit-like text columns.
+    columns:
+      - unit_name
+      - position
+      - attached_to_organization
+    rules:
+      - pattern: '\bEngr\b'
+        replacement: Engineer
+        description: Engr abbreviation for Engineer
+
+  unit_name_c_battalion:
+    description: Expand OCR C Battalion to Combat Battalion (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: 'C Battalion'
+        replacement: Combat Battalion
+        description: OCR C for Combat in C Battalion
+      - pattern: 'Engineer G Battalion'
+        replacement: Engineer Combat Battalion
+        description: OCR Engineer G Battalion for Engineer Combat Battalion
+
+  unit_name_td:
+    description: Expand TD abbreviation to Tank Destroyer (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bTD\b'
+        replacement: Tank Destroyer
+        description: TD abbreviation for Tank Destroyer
+
+  unit_name_tb:
+    description: Expand TB abbreviation to Tank Destroyer (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bTB\b'
+        replacement: Tank Destroyer
+        description: OCR TB abbreviation for Tank Destroyer (e.g. 635th TB Battalion)
+
+  unit_name_abn:
+    description: Expand Abn abbreviation to Airborne (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bAbn\b'
+        replacement: Airborne
+        description: Abn abbreviation for Airborne (e.g. 32d Abn Division)
+
+  unit_name_t_towed:
+    description: Expand (T) abbreviation to Towed (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\(T\)'
+        replacement: Towed
+        description: (T) abbreviation for Towed (e.g. Tank Destroyer Battalion (T))
+      - pattern: 'Battalion I T\)'
+        replacement: Battalion Towed
+        description: OCR Battalion I T) for Battalion (T) / Towed
+      - pattern: 'Towed\(Company A\)'
+        replacement: 'Towed (Company A)'
+        description: Add space after Towed before (Company A)
+      - pattern: 'Towed~["'']?7'
+        replacement: '(Towed)'
+        description: OCR Towed~""7 junk for (Towed) (820th TD Bn, 106th ID p421)
+
+  unit_name_sp:
+    description: Expand (SP) abbreviation to (Self-Propelled) in unit-like text columns.
+    columns:
+      - unit_name
+      - position
+    rules:
+      - pattern: '\(\s*S\s*P\s*\)\.?[''"]*'
+        replacement: (Self-Propelled)
+        description: OCR "(SP)" / "(SP)'" (optional dot, trailing quote) for (Self-Propelled)
+
+  unit_name_sp_open:
+    description: Expand incomplete (SP to (Self-Propelled) (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\(\s*S\s*P(?!\s*\))'
+        replacement: (Self-Propelled)
+        description: OCR "(SP" without closing paren for (Self-Propelled)
+
+  unit_name_sb:
+    description: Expand OCR (SB) to (Self-Propelled) (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\(SB\)'
+        replacement: (Self-Propelled)
+        description: OCR (SB) for (Self-Propelled) (e.g. Tank Destroyer Battalion (SB))
+
+  unit_name_st_brace:
+    description: Expand OCR {ST) to (Self-Propelled) (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\{ST\)'
+        replacement: (Self-Propelled)
+        description: OCR {ST) for (Self-Propelled) (e.g. Tank Destroyer Battalion {ST))
+      - pattern: '\(Self Propelled\)'
+        replacement: (Self-Propelled)
+        description: Normalize (Self Propelled) to (Self-Propelled)
+      - pattern: 'Battalion''\(Self-Propelled\)'
+        replacement: Battalion (Self-Propelled)
+        description: OCR Battalion'(Self-Propelled) for Battalion (Self-Propelled)
+      - pattern: 'Battalion ''\s*\(Self-Propelled\)'
+        replacement: Battalion (Self-Propelled)
+        description: OCR Battalion '(Self-Propelled) stray quote before paren
+      - pattern: '\(Self-Propelled\)f\b'
+        replacement: (Self-Propelled)
+        description: Trailing f after (Self-Propelled)
+
+  unit_name_tp:
+    description: Expand OCR Tp to Tank Destroyer before Battalion (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bTp Battalion\b'
+        replacement: Tank Destroyer Battalion
+        description: OCR Tp abbreviation for Tank Destroyer (e.g. 629th Tp Battalion)
+
+  unit_name_ma:
+    description: OCR "M A" misread to Antiaircraft (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bM\s*A\.?[''"]+'
+        replacement: Antiaircraft
+        description: OCR "M A'" (optional dot, trailing quote) for Antiaircraft
+      - pattern: '\bM\s*A\b'
+        replacement: Antiaircraft
+        description: OCR spaced M A for Antiaircraft
+
+  unit_name_mid_ocr:
+    description: OCR "mid" misread to Armored (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bmid\b'
+        replacement: Armored
+        description: OCR mid for Armored
+
+  unit_name_3n_ocr:
+    description: OCR "3n" misread to Batallion (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\b3n\b'
+        replacement: Batallion
+        description: OCR 3n for Batallion
+
+  unit_name_bii:
+    description: OCR "Bii" misread to Batallion (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\bBii\b'
+        replacement: Batallion
+        description: OCR Bii for Batallion
+      - pattern: '(?<=[A-Za-z])Bii(?=[\s(\''"]|$)'
+        replacement: Batallion
+        description: OCR glued Bii (e.g. AntiaircraftBii, IstBii) for Batallion
+      - pattern: '(?<=[A-Za-z])Batallion'
+        replacement: ' Batallion'
+        description: Space before Batallion when conjoined (e.g. AntiaircraftBatallion)
+
+  unit_name_at_r:
+    description: OCR "AT/r" misread to Antiaircraft (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: 'AT/r'
+        replacement: Antiaircraft
+        description: OCR AT/r for Antiaircraft
+
+  unit_name_leading_junk:
+    description: Strip leading OCR punctuation artifacts (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '^[\s•\*\.;,:''"!-]+'
+        replacement: ''
+        description: Leading bullets, whitespace, and OCR punctuation
+
+  unit_name_contd:
+    description: Strip OCR continuation marker (Contd) from unit_name.
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\(Contd\)'
+        replacement: ''
+        description: OCR section continuation marker (Contd)
+
+  unit_name_trailing_junk:
+    description: Strip trailing OCR dot artifacts (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: '(?:\s*[\.\•][\s\.\•\*;,:\''"!-]*)+$'
+        replacement: ''
+        description: Trailing spaced dots (. .), bullets, and OCR punctuation
+      - pattern: ' \. \. ,v 7$'
+        replacement: ''
+        description: Trailing OCR junk ( . . ,v 7)
+      - pattern: '\. '' , \. \. 7$'
+        replacement: ''
+        description: Trailing OCR junk (. ' , . . 7)
+      - pattern: "' \\.«+$"
+        replacement: ''
+        description: Trailing OCR junk (' .«...)
+      - pattern: '\s+<\s*$'
+        replacement: ''
+        description: Trailing OCR less-than artifact
+      - pattern: '\s*„\s*$'
+        replacement: ''
+        description: Trailing OCR low double quote (German „)
+
+  unit_name_trailing_dates:
+    description: >-
+      Strip trailing dates, page-number bleed, and junk after closing parens in unit_name.
+      Run before unit_name_trailing_gunk.
+    columns:
+      - unit_name
+    repeat: 4
+    rules:
+      - pattern: '(?<=\))\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+\d{2,4}(?:\s+\d{1,2})?\s*$'
+        replacement: ''
+        description: Date glued directly after closing paren (e.g. Division)29 Oct. 44)
+      - pattern: '(?<=\))\s+\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+\d{2,4}(?:\s+\d{1,2})?\s*$'
+        replacement: ''
+        description: Spaced date after closing paren (e.g. (Self-Propelled) 17 Jul 44)
+      - pattern: '\s*[\.,;:\*•]+\s*\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+\d{2,4}(?:\s+\d{1,2})?\s*$'
+        replacement: ''
+        description: OCR punctuation run before trailing date (e.g. ..;;30 Mar 45   31)
+      - pattern: '\s+\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+\d{2,4}(?:\s+\d{1,2})?\s*$'
+        replacement: ''
+        description: Trailing standalone date (e.g. Group 17 Jul 44)
+      - pattern: '(?<=\))\s+\d{1,2}\s*$'
+        replacement: ''
+        description: Page-number bleed after closing paren (e.g. Squadron) 12)
+      - pattern: '(?<=\))[\s,;:\.•\*''"<>/0-9=-]+$'
+        replacement: ''
+        description: Junk punctuation or digits after closing paren (e.g. Division) ; ; ,7)
+      - pattern: '\s+$'
+        replacement: ''
+        description: Trailing whitespace
+
+  unit_name_date_bleed_extended:
+    description: >-
+      Strip glued corps/div dates and OCR date tails missed by unit_name_trailing_dates.
+      Run after unit_name_trailing_dates and before unit_name_trailing_gunk.
+    columns:
+      - unit_name
+    repeat: 4
+    rules:
+      - pattern: '(Division),(?:\s*)?\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+\d{2,4}\s*~?\s*$'
+        replacement: '\1'
+        description: Comma-glued date after Division (e.g. Division,6 Apr 45 ~)
+      - pattern: '\s*((?:Corps|DiV|Div|Liv|Piv|CT))\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+\d{2,4}\s*~?\s*$'
+        replacement: ' \1'
+        description: Glued corps/div date tail (e.g. Corps26 Mar 45)
+      - pattern: '(?<![0-9])(?:Div|DiV|Liv|Piv)\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+\d{2,4}\s*~?\s*$'
+        replacement: ''
+        description: Glued Div/Liv date without space (e.g. Div13 Apr 45)
+      - pattern: '(?<=[a-zA-Z])(?=\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+\d{2,4}\s*$)'
+        replacement: ' '
+        description: Space before glued trailing date (e.g. ,T3 Apr 45)
+      - pattern: '\s+\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+\d{2,4}\s+[\d''?£\s~^•\*-]{0,12}(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+\d{2,4}\s*[~^''"]*\s*$'
+        replacement: ''
+        description: Trailing OCR date range (e.g. 17 Sep 44   2? Nov 44)
+      - pattern: '\s*[,;]{2,}\s*\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+\d{2,4}\s*$'
+        replacement: ''
+        description: Semicolon/comma run before trailing date
+      - pattern: '\s*[\.,;:]+[A-Za-z]?\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+\d{2,4}\s*$'
+        replacement: ''
+        description: Punctuation before glued date (e.g. ..,T3 Apr 45)
+      - pattern: '\s+\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+\d{2,4}.*$'
+        replacement: ''
+        description: Trailing date with OCR junk tail (e.g. 11 Sep 44   1 4 ' S e p 44)
+
+  unit_name_spaced_ocr:
+    description: Collapse OCR-spaced letter runs in unit_name (D i v, H o w, S q, etc.).
+    columns:
+      - unit_name
+    repeat: 3
+    rules:
+      - pattern: '\bN\s+o\s+n\s+D\s+i\s+v\b'
+        replacement: Non Div
+        description: OCR spaced Non Div (non-divisional attachment)
+      - pattern: '\bD\s+i\s+v\s+i\s+s\s+i\s+o\s+n\b'
+        replacement: Division
+        description: OCR spaced D i v i s i o n
+      - pattern: '\bD\s+i\s+v\b'
+        replacement: Division
+        description: OCR spaced D i v
+      - pattern: '\bB\s+i\s+v\b'
+        replacement: Division
+        description: OCR spaced B i v
+      - pattern: '\bH\s+o\s+w\b'
+        replacement: How
+        description: OCR spaced H o w
+      - pattern: '\bG\s+u\s+n\b'
+        replacement: Gun
+        description: OCR spaced G u n
+      - pattern: '\bS\s+q\b'
+        replacement: Squadron
+        description: OCR spaced S q
+      - pattern: '\bl\s+0\s+5\b'
+        replacement: '105'
+        description: OCR spaced l 0 5 for 105
+      - pattern: '\b1\s+0\s+5\b'
+        replacement: '105'
+        description: OCR spaced 1 0 5 for 105
+      - pattern: '\bA\s+r\s+t\s+i\s+l\s+l\s+e\s+r\s+y\b'
+        replacement: Artillery
+        description: OCR spaced Artillery
+
+  unit_name_glued_corps:
+    description: Insert spaces in glued corps/division OCR (BattalionV Corps, XVCorps, ArmoredDiv).
+    columns:
+      - unit_name
+    repeat: 3
+    rules:
+      - pattern: '(?<=[a-z])(?=VII\s+Corps\b)'
+        replacement: ' '
+        description: Space before VII Corps when glued
+      - pattern: '(?<=[a-z])(?=XIX\s+Corps\b)'
+        replacement: ' '
+        description: Space before XIX Corps when glued
+      - pattern: '(?<=[a-z])(?=XV\s+Corps\b)'
+        replacement: ' '
+        description: Space before XV Corps when glued
+      - pattern: '(?<=[a-z])(?=XIII\s+Corps\b)'
+        replacement: ' '
+        description: Space before XIII Corps when glued
+      - pattern: '(?<=[a-z])(?=XII\s+Corps\b)'
+        replacement: ' '
+        description: Space before XII Corps when glued
+      - pattern: '(?<=[a-z])(?=VI\s+Corps\b)'
+        replacement: ' '
+        description: Space before VI Corps when glued
+      - pattern: '(?<=[a-z])(?=VI\b)(?! Corps)'
+        replacement: ' '
+        description: Space before glued VI suffix (e.g. BattalionVI)
+      - pattern: '(?<=[a-z])(?=V\s+Corps\b)'
+        replacement: ' '
+        description: Space before V Corps when glued
+      - pattern: '\b([IVX]{1,4})(Corps)\b'
+        replacement: '\1 \2'
+        description: Roman numeral glued to Corps (e.g. XVCorps)
+      - pattern: '\bArmored(Div|DiV|Liv|Piv)\b'
+        replacement: Armored Division
+        description: Armored glued to Div/Liv (e.g. ArmoredDiv, ArmoredLiv)
+      - pattern: '\b(\d{1,2}[a-z]{0,3})(Div|DiV|Liv|Piv)\b'
+        replacement: '\1 Division'
+        description: Ordinal glued to Div/Liv (e.g. 33dDiv, 63aDiv)
+
+  unit_name_quote_artifacts:
+    description: Replace OCR quote glues between letters/digits in unit_name.
+    columns:
+      - unit_name
+    repeat: 3
+    rules:
+      - pattern: 'Battalion""'
+        replacement: Battalion
+        description: OCR Battalion"" for Battalion
+      - pattern: 'Battalion"+'
+        replacement: Battalion
+        description: OCR Battalion" / Battalion"" for Battalion
+      - pattern: '(?<=[A-Za-z])''(?=\s*[A-Za-z])'
+        replacement: ' '
+        description: Quote with optional space (e.g. Engineer' C, 3d'Cavalry)
+      - pattern: '(?<=[A-Za-z])''(?=[A-Za-z])'
+        replacement: ' '
+        description: Quote directly between letters (e.g. Engineer'C, 36th'Armored)
+
+  unit_name_paren_space:
+    description: Normalize extra whitespace around parentheses in unit_name.
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\(\s+'
+        replacement: '('
+        description: Remove space after opening paren
+      - pattern: '\s+\)'
+        replacement: ')'
+        description: Remove space before closing paren
+      - pattern: '\s{2,}'
+        replacement: ' '
+        description: Collapse repeated internal spaces
+
+  unit_name_spaced_abbrev_ocr:
+    description: Collapse OCR-spaced battalion/company/mortar abbreviations in unit_name.
+    columns:
+      - unit_name
+    repeat: 3
+    rules:
+      - pattern: '\bB\s+n\b'
+        replacement: Battalion
+        description: OCR spaced B n for Battalion
+      - pattern: '\bC\s+o\s+(?=[A-Z])'
+        replacement: Company
+        description: OCR spaced C o before letter (e.g. C o B, C o C)
+      - pattern: '\bC\s+o\s*$'
+        replacement: Company
+        description: OCR spaced C o at end of field
+      - pattern: '\bM\s+o\s+r\s+t\b'
+        replacement: Mort
+        description: OCR spaced M o r t for Mort
+      - pattern: '\bE\s+n\s+g\s+r\b'
+        replacement: Engineer
+        description: OCR spaced E n g r for Engineer
+      - pattern: 'Sn gr'
+        replacement: Engineer
+        description: OCR Sn gr for Engineer
+      - pattern: 'G p , , 7'
+        replacement: Group
+        description: OCR G p , , 7 for Group
+      - pattern: '\bF\s+n\b'
+        replacement: Battalion
+        description: OCR spaced F n for Battalion
+      - pattern: '\bG\s+o\b'
+        replacement: Company
+        description: OCR spaced G o for Company
+
+  unit_name_ordinal_ocr:
+    description: Fix OCR l/I/2b/2a ordinal misreads in unit_name.
+    columns:
+      - unit_name
+    repeat: 2
+    rules:
+      - pattern: '\bl(\d{1,2})(st|d|th)\b'
+        replacement: '1\1\2'
+        description: OCR lowercase-l ordinal (e.g. l4th, l6th)
+      - pattern: '\bl(\d{2,3})d\b'
+        replacement: '1\1d'
+        description: OCR lowercase-l glued ordinal (e.g. l63d)
+      - pattern: '\bI(\d{1,2})(st|d|th)\b'
+        replacement: '1\1\2'
+        description: OCR capital-I ordinal (e.g. I4th)
+      - pattern: '\b2bth\b'
+        replacement: 28th
+        description: OCR 2bth for 28th
+      - pattern: '\b2a\b'
+        replacement: 2d
+        description: OCR 2a for 2d ordinal
+      - pattern: '\bAth\b'
+        replacement: 4th
+        description: OCR Ath for 4th
+      - pattern: '\b(\d)l(\d)(st|d|th)\b'
+        replacement: '\1\2\3'
+        description: OCR digit-l-digit ordinal (e.g. 9l4th to 94th)
+      - pattern: '112feh'
+        replacement: 112th
+        description: OCR 112feh for 112th
+      - pattern: '5t h'
+        replacement: 5th
+        description: OCR spaced 5t h for 5th
+
+  unit_name_squadron_misc_ocr:
+    description: Fix truncated Squadron OCR, glued parens, and misc word misreads.
+    columns:
+      - unit_name
+    repeat: 3
+    rules:
+      - pattern: '\bReconnaissance So\b'
+        replacement: Reconnaissance Squadron
+        description: Truncated Reconnaissance So
+      - pattern: '\bReconnaissance SqT\b'
+        replacement: Reconnaissance Squadron
+        description: Truncated Reconnaissance SqT
+      - pattern: '\bReconnaissance Sqf\b'
+        replacement: Reconnaissance Squadron
+        description: Truncated Reconnaissance Sqf
+      - pattern: '\bRenSq\b'
+        replacement: Reconnaissance Squadron
+        description: OCR RenSq for Reconnaissance Squadron
+      - pattern: '\bSqT\b'
+        replacement: Squadron
+        description: Truncated SqT
+      - pattern: '\bSqf\b'
+        replacement: Squadron
+        description: Truncated Sqf
+      - pattern: 'Squadron\('
+        replacement: 'Squadron ('
+        description: Space before paren after Squadron
+      - pattern: 'Battalion\('
+        replacement: 'Battalion ('
+        description: Space before paren after Battalion
+      - pattern: 'Regiment\('
+        replacement: 'Regiment ('
+        description: Space before paren after Regiment
+      - pattern: 'Company\('
+        replacement: 'Company ('
+        description: Space before paren after Company
+      - pattern: '\bCoj\^l\b'
+        replacement: Company
+        description: OCR Coj^l for Company
+      - pattern: '\bArnyrBiy\b'
+        replacement: Armored Battalion
+        description: OCR ArnyrBiy for Armored Battalion
+      - pattern: '\bEiiRr\b'
+        replacement: Engineer
+        description: OCR EiiRr for Engineer
+      - pattern: '\bCnl\b'
+        replacement: Chemical
+        description: OCR Cnl for Chemical
+      - pattern: '\bllort\b'
+        replacement: Mort
+        description: OCR llort for Mort
+      - pattern: '\bIjort\b'
+        replacement: Mort
+        description: OCR Ijort for Mort
+      - pattern: '\bCaviJBcn\b'
+        replacement: Cavalry Reconnaissance
+        description: OCR CaviJBcn for Cavalry Reconnaissance
+      - pattern: '\bEcn\b'
+        replacement: Reconnaissance
+        description: OCR Ecn for Reconnaissance
+      - pattern: '\bRcn\b'
+        replacement: Reconnaissance
+        description: OCR Rcn for Reconnaissance
+      - pattern: '\bRon\b'
+        replacement: Reconnaissance
+        description: OCR Ron for Reconnaissance
+      - pattern: '\bGav\b'
+        replacement: Cav
+        description: OCR Gav for Cav
+      - pattern: '\bRen Sq\b'
+        replacement: Reconnaissance Squadron
+        description: OCR Ren Sq for Reconnaissance Squadron
+      - pattern: '\bRcriSq\b'
+        replacement: Reconnaissance Squadron
+        description: OCR RcriSq for Reconnaissance Squadron
+      - pattern: '\bSq_\b'
+        replacement: Squadron
+        description: OCR Sq_ for Squadron
+      - pattern: '\bSq(\d{1,2})'
+        replacement: 'Squadron \1'
+        description: Glued Sq ordinal (e.g. Sq94th)
+      - pattern: '#Field'
+        replacement: ' Field'
+        description: OCR hash before Field Artillery
+
+  unit_name_mid_junk:
+    description: Strip mid-string OCR junk (e.g. F;* Battalion, (105 How);; ..., empty ()).
+    columns:
+      - unit_name
+    repeat: 6
+    rules:
+      - pattern: '(?<=[A-Za-z])\s*;\*\s*'
+        replacement: ' '
+        description: Semicolon-asterisk glue between letters (e.g. F;* Battalion)
+      - pattern: '(?<=[A-Za-z])\s*;\*\s*(?=[a-z]{1,8}\b)'
+        replacement: ''
+        description: Semicolon-asterisk before short OCR fragment (e.g. ;*rty)
+      - pattern: '\(\s*\)'
+        replacement: ''
+        description: Empty parenthetical (e.g. (Self-Propelled) ())
+      - pattern: '(How\))\s*;;.*$'
+        replacement: '\1'
+        description: Double-semicolon junk after (105 How)
+      - pattern: '(How\))\s*[\^;:\.•\*''"<>vV%].*$'
+        replacement: '\1'
+        description: Junk punctuation after (105 How)
+      - pattern: '(Self-Propelled\))\s*[,;:\.\*''"<>()\s]{0,50}$'
+        replacement: '\1'
+        description: Junk after (Self-Propelled) tail
+      - pattern: '(Mobile\))[a-z\.•\*''"<>0-9\s]{1,25}$'
+        replacement: '\1'
+        description: Junk after (Mobile) tail (e.g. (Mobile)e .•••• 9)
+      - pattern: '(Division\))\s*[\.,;:\*•''"<>«»^]{2,}.*$'
+        replacement: '\1'
+        description: Junk after (Division) closing paren
+      - pattern: '(Battalion)\s*;;\s*[^A-Za-z0-9()]{2,}.*$'
+        replacement: '\1'
+        description: Double-semicolon junk after Battalion
+      - pattern: '(Battalion)\s*;{2,}[,;:\.\*''"<>0-9''\s]{2,}.*$'
+        replacement: '\1'
+        description: Semicolon cluster and date bleed after Battalion
+      - pattern: '(Battalion)\s+[;]\s+\d{1,2}\s*$'
+        replacement: '\1'
+        description: Trailing ; digit after Battalion (e.g. Battalion ; 4)
+      - pattern: '(CT)\s*.{0,80}?(?=\d+(?:st|nd|rd|th)?\s+(?:Armored|Arrid|Infantry|Division)\b)'
+        replacement: '\1 '
+        description: OCR junk between CT and following division reference
+      - pattern: '(?<=[^\w])\s*;\*\s*[^A-Za-z0-9(,)]*'
+        replacement: ' '
+        description: Semicolon-asterisk cluster after punctuation
+      - pattern: '(Self-Propelled\))[\^;:\.,•\*''"<>vViVrV~0-9\s/]{3,}.*$'
+        replacement: '\1'
+        description: Extended junk tail after (Self-Propelled)
+      - pattern: '(Reconnaissance Squadron)\.?\s*[,.\s•*;]{2,}.*$'
+        replacement: '\1'
+        description: Junk tail after Reconnaissance Squadron
+      - pattern: 'Mprt;;\s*Battalion'
+        replacement: ' Mortar Battalion'
+        description: OCR ;; between Mprt and Battalion
+      - pattern: 'Btfy;;\s*A;'
+        replacement: ' Btry A'
+        description: OCR Btfy;; A; for Btry A
+      - pattern: '(Cavalry Group)\s*[:,;.\s•]{2,}[^A-Za-z0-9(,)]{2,}.*$'
+        replacement: '\1'
+        description: Junk after Cavalry Group
+      - pattern: '(Tank Battalion)[''"]*\s*[iI]\s*;;.*$'
+        replacement: '\1'
+        description: Junk after Tank Battalion
+      - pattern: '(Mortar Battalion)[\*''",.;:\s]*;{2,}.*$'
+        replacement: '\1'
+        description: Semicolon cluster after Mortar Battalion
+      - pattern: '(Chemical Mortar Battalion)\.?\s*;{2,}.*$'
+        replacement: '\1'
+        description: Semicolon cluster after Chemical Mortar Battalion
+      - pattern: '(Field Artillery Battalion \(105 How\))\s*[iI];\s*[,.\s:•;]+.*$'
+        replacement: '\1'
+        description: Junk and date after (105 How) on FA battalion
+      - pattern: '(Armored Regiment \([^)]+\))\s*\.\s*;\s*\.\s*•?;;.*$'
+        replacement: '\1'
+        description: Junk after Armored Regiment parenthetical
+      - pattern: '\b(\d+d)\.;\s*Battalion'
+        replacement: '\1 Battalion'
+        description: OCR .; before Battalion (e.g. 2d.;Battalion)
+      - pattern: 'Mortar Bh ll l.*;{2,}.*$'
+        replacement: Mortar Battalion
+        description: OCR Mortar Bh ll l with semicolon junk tail
+      - pattern: '(Battalion);?\.?:;{2,}.*$'
+        replacement: '\1'
+        description: Semicolon cluster after Battalion (e.g. Sngr C Battalion;.:;;;)
+      - pattern: '(Field Artillery Group)[,.\s•*;:]{2,}[^A-Za-z0-9()]{2,}.*$'
+        replacement: '\1'
+        description: Junk tail after Field Artillery Group
+      - pattern: '(105 H O W\))\s*r[^\d(].*$'
+        replacement: '\1'
+        description: Junk tail after spaced (105 H O W)
+      - pattern: 'Infvl;;;.*$'
+        replacement: ''
+        description: OCR Infvl;;; junk tail
+      - pattern: '(Battalion)\s+;?vV[^A-Za-z0-9(,)]{2,}.*$'
+        replacement: '\1'
+        description: OCR ;vV junk tail after Battalion
+      - pattern: '(Battalion \(T\))\s*V[,.\^;:*]{2,}.*$'
+        replacement: '\1'
+        description: OCR junk tail after Battalion (T)
+      - pattern: '\(105 [^)]{3,40}\)\s*[^A-Za-z0-9(,)]{2,}\d.*$'
+        replacement: ''
+        description: Junk and date bleed after garbled (105 How) parenthetical
+      - pattern: '\s*\|t\s*;\*[^A-Za-z0-9()]*'
+        replacement: ''
+        description: Pipe-t semicolon-asterisk OCR fragment
+      - pattern: '\s*»•»\.\.[\*\.•\s]+'
+        replacement: ' '
+        description: Mid-string guillemet-dot OCR cluster
+      - pattern: '^=\s*'
+        replacement: ''
+        description: Leading equals OCR artifact
+
+  unit_name_ocr_tilde_c_star:
+    description: Strip OCR (~C* C) junk from unit_name (unit_name only).
+    columns:
+      - unit_name
+    rules:
+      - pattern: ' \(~C\* C\)'
+        replacement: ''
+        description: OCR (~C* C) junk tail (e.g. after Self-Propelled)
+
+  unit_name_trailing_gunk:
+    description: Strip layered OCR junk tails (e.g. .., k..,..;. ••>) from unit_name.
+    columns:
+      - unit_name
+    repeat: 8
+    rules:
+      - pattern: '\s*;;\s*\*\s*[a-zA-Z]{1,2}\s*>?\s*$'
+        replacement: ''
+        description: Trailing ;; *j or ;; *j> OCR junk
+      - pattern: '\s*;\s*\*\s*[a-zA-Z]{1,2}\s*>?\s*$'
+        replacement: ''
+        description: Trailing ; *J or ; *J> OCR junk
+      - pattern: '\s*[,;:\.\s]+\*\s*[a-zA-Z]{1,2}\s*>?\s*$'
+        replacement: ''
+        description: Trailing punctuation run before asterisk-letter (e.g. , ; . ; * J)
+      - pattern: '\s*;\s*\*[\.,;:\*•''"<>«»^]{1,30}\s*$'
+        replacement: ''
+        description: Trailing semicolon-asterisk punctuation cluster (e.g. ;*."«)
+      - pattern: '\s*[;][\.,;:\*•''"<>]{2,}(?:\s*\d{1,2})?\s*$'
+        replacement: ''
+        description: Trailing semicolon punctuation with optional digit (e.g. ;..;;;; 24)
+      - pattern: '\s*[,;:\.•\*''"<>]{1,}[a-zA-Z]{0,2}\s*>\s*$'
+        replacement: ''
+        description: Trailing punctuation with short fragment and greater-than
+      - pattern: '\s*;\s*[^A-Za-z0-9()]{3,}\s*$'
+        replacement: ''
+        description: Trailing semicolon plus OCR junk run
+      - pattern: '\s*••>\s*$'
+        replacement: ''
+        description: Trailing bullet-arrow OCR junk
+      - pattern: '\s*;\s*[\.,;:\*•''"<>]+$'
+        replacement: ''
+        description: Trailing semicolon punctuation runs
+      - pattern: '\s*,\s*[a-zA-Z]{1,2}\.[\.,;:\*•''"<>]+$'
+        replacement: ''
+        description: Trailing comma with short OCR fragment (e.g. , k..)
+      - pattern: '\s*\.\.[,;]\s*$'
+        replacement: ''
+        description: Trailing double-dot comma/semicolon
+      - pattern: '\s*[,;]{2,}\s*$'
+        replacement: ''
+        description: Trailing repeated commas or semicolons
+      - pattern: '\s*[,;:\.•\*''"<>]{2,}\s*$'
+        replacement: ''
+        description: Trailing punctuation clusters
+      - pattern: '\s*/,\s*$'
+        replacement: ''
+        description: Trailing slash-comma OCR junk
+      - pattern: '\s*[,;:\.•\*''"<>/]+\s*$'
+        replacement: ''
+        description: Trailing single punctuation layer
+      - pattern: '[\s•\*»]+$'
+        replacement: ''
+        description: Trailing guillemets and bullet OCR artifacts
+
+  unit_name_dot_artifacts:
+    description: Remove OCR dot artifacts within unit_name fields.
+    columns:
+      - unit_name
+    rules:
+      - pattern: '\.\s*\('
+        replacement: '('
+        description: Dot before opening parenthesis
+      - pattern: '\s*\.+\s*(?=[A-Za-z(])'
+        replacement: ' '
+        description: Spaced dot(s) before word or parenthesis
+      - pattern: '(?<=[A-Za-z])\.\s*(?=\))'
+        replacement: ''
+        description: Dot after word before closing parenthesis
+      - pattern: '(?<=[A-Za-z])\.(?=[A-Za-z])'
+        replacement: ' '
+        description: Dot between alphabetic words
+
+  unit_name_specific_ocr:
+    description: One-off OCR unit_name corrections (literal matches).
+    columns:
+      - unit_name
+    rules:
+      - pattern: "2ILQth FU\\^ M\\.\\., M»',,\\.\\.,\\.\\. 2"
+        replacement: '210th Field Artillery Group'
+        description: OCR 2ILQth FU^ M.. for 210th Field Artillery Group
+      - pattern: ',vv'
+        replacement: ''
+        description: OCR junk ",vv" in unit_name
+      - pattern: 'l;9th A3Xid Division'
+        replacement: '(9th Armored Division)'
+        description: OCR l;9th A3Xid Division for (9th Armored Division)
+      - pattern: '\?th Field Artillery Battalion \(1st Division\) \(105 Howitzer\)'
+        replacement: '7th Field Artillery Battalion (1st Division) (105 Howitzer)'
+        description: OCR ?th for 7th (5th ID p69 source_line 141)
+      - pattern: "23th Field Artillery Battalion , , , , ' 4th"
+        replacement: "28th Field Artillery Battalion , , , , ' 4th"
+        description: OCR 23th for 28th (5th ID p69 source_line 403)
+      - pattern: '117th" Cavalry~Reconnaissance Squadron'
+        replacement: '117th Cavalry Reconnaissance Troop (45th Division)'
+        description: OCR 117th Cavalry~Reconnaissance Squadron for Troop (45th Division)
+      - pattern: '898th "Antiaircraft'
+        replacement: '898th Antiaircraft'
+        description: Remove stray quote after 898th before Antiaircraft
+      - pattern: "•\\.,\\.\\.,,•,\\*\\.\\.'\\.,\\*«"
+        replacement: ''
+        description: OCR junk tail (e.g. 78lst Tank Battalion•.,..,,•,*..'.,*«)
+      - pattern: '\bUlst\b'
+        replacement: 142nd
+        description: OCR Ulst for 142nd (e.g. 142nd Infantry 36th Division)
+      - pattern: '\b27HJ1\b'
+        replacement: 274th
+        description: OCR 27HJ1 for 274th Infantry
+      - pattern: '\bQ2kth\b'
+        replacement: 629th
+        description: OCR Q2kth for 629th Tank Destroyer Battalion
+      - pattern: '\^>04th'
+        replacement: 304th
+        description: OCR ^>04th for 304th (British AT Battery, 101st Abn p337)
+      - pattern: '\^13th Inf[^,]*'
+        replacement: 413th Infantry
+        description: OCR ^13th Inf for 413th Infantry (104th ID p414)
+      - pattern: '\^13th'
+        replacement: 413th
+        description: OCR caret before 413th Infantry (104th ID p414)
+      - pattern: '\b414 th Inf(?:antry)?\b'
+        replacement: 414th Infantry
+        description: OCR 414 th Inf for 414th Infantry (104th ID p414)
+      - pattern: '13th Infantry «'
+        replacement: 413th Infantry
+        description: OCR 13th Infantry « remnant (104th ID p414)
+      - pattern: '\.,,\*9th Division'
+        replacement: 9th Division
+        description: OCR junk prefix .,,* before 9th Division (104th ID p414)
+      - pattern: lppJiat
+        replacement: 1st Platoon
+        description: OCR lppJiat for 1st Platoon
+      - pattern: '\bCompany x\b'
+        replacement: Company A
+        description: OCR Company x for Company A (602d TD Bn, 101st Abn p337)
+      - pattern: Bnn\(3P\)
+        replacement: Battalion (self-propelled)
+        description: OCR Bnn(3P) for Battalion (self-propelled)
+      - pattern: "Prov \\^bn Naval shore Fire control parties \\.\\. \\d{1,2}\\s+Kay\\s*\\.?\\s*\\d{2,4}[^,]*"
+        replacement: Provisional Airborne Naval Shore Fire Control Parties
+        description: OCR Prov ^bn NSFCP with embedded Kay date bleed (101st p337)
+      - pattern: 'Prov \^bn Naval shore Fire control parties \.\. '
+        replacement: Provisional Airborne Naval Shore Fire Control Parties
+        description: OCR Prov ^bn Naval shore Fire control parties (101st Abn NSFCP)
+      - pattern: 'Provisional Airborne Naval Shore Fire Control Parties\s*\d{1,2}\s+May\s+\d{2,4}[^,]*'
+        replacement: Provisional Airborne Naval Shore Fire Control Parties
+        description: Strip embedded May date after NSFCP unit_name
+      - pattern: 'Provisional Airborne Naval Shore Fire Control Parties,\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{2,4}'
+        replacement: Provisional Airborne Naval Shore Fire Control Parties
+        description: Strip embedded date after comma in NSFCP unit_name
+      - pattern: '(\d{1,2})\s+Kay\s*\.?\s*(\d{2,4})'
+        replacement: '\1 May \2'
+        description: OCR Kay for May in embedded unit_name dates (e.g. 16 Kay 44)
+      - pattern: '\(71st Division\)t\b'
+        replacement: (71st Division)
+        description: Trailing OCR t after (71st Division)
+      - pattern: '\(71st Division\) r\b'
+        replacement: (71st Division)
+        description: Trailing OCR r after (71st Division)
+
+  date_from_ocr:
+    description: >-
+      OCR fixes for attachment date_from (split-column junk, dotted day-month,
+      kk misread for 44). Run before date propagation in clean_eto_oob_dates.
+    columns:
+      - date_from
+    rules:
+      - pattern: '^[\s.,;:''"*•\-–—~_]+'
+        replacement: ''
+        description: Strip leading dot/punctuation runs (e.g. ........ 3 Dec)
+      - pattern: '(\d{1,2})\.(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b'
+        replacement: '\1 \2'
+        description: OCR dotted day-month (e.g. 6.Dec)
+      - pattern: '(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))[-–—~\s]*kk\b'
+        replacement: '\1 44'
+        description: OCR -kk year tail after day-month (e.g. 3 Dec -kk)
+      - pattern: '\bkk\b'
+        replacement: '44'
+        description: OCR kk misread for year 44
+      - pattern: '\^5\b'
+        replacement: '45'
+        description: OCR caret-5 for year 45
+      - pattern: '\bU5\b'
+        replacement: '45'
+        description: OCR U5 for year 45
+      - pattern: '\bk5\b'
+        replacement: '45'
+        description: OCR k5 for year 45
+      - pattern: 'k[$]'
+        replacement: '45'
+        description: OCR k$ for year 45
+      - pattern: '\bky\b'
+        replacement: '45'
+        description: OCR ky for year 45
+      - pattern: 'i£'
+        replacement: '45'
+        description: OCR i£ for year 45
+      - pattern: '\b51\s+Dec\b'
+        replacement: '1 Dec'
+        description: OCR 51 Dec for 1 Dec
+      - pattern: '\.Jan\b'
+        replacement: ' Jan'
+        description: OCR .Jan for Jan
+      - pattern: '(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{2,4})[\s''"•*<>«»^\-–—~]+.*$'
+        replacement: '\1'
+        description: Keep leading date; strip trailing OCR junk after year
+
+  date_to_ocr:
+    description: >-
+      OCR fixes for attachment date_to (dotted day-month, kk misread for 44).
+    columns:
+      - date_to
+    rules:
+      - pattern: '^[\s.,;:''"*•\-–—~_]+'
+        replacement: ''
+        description: Strip leading dot/punctuation runs
+      - pattern: '(\d{1,2})\.(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b'
+        replacement: '\1 \2'
+        description: OCR dotted day-month (e.g. 6.Dec)
+      - pattern: '(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))[-–—~\s]*kk\b'
+        replacement: '\1 44'
+        description: OCR -kk year tail after day-month
+      - pattern: '\bkk\b'
+        replacement: '44'
+        description: OCR kk misread for year 44
+      - pattern: '\^5\b'
+        replacement: '45'
+        description: OCR caret-5 for year 45
+      - pattern: '\bU5\b'
+        replacement: '45'
+        description: OCR U5 for year 45
+      - pattern: '\bk5\b'
+        replacement: '45'
+        description: OCR k5 for year 45
+      - pattern: 'k[$]'
+        replacement: '45'
+        description: OCR k$ for year 45
+      - pattern: '\bky\b'
+        replacement: '45'
+        description: OCR ky for year 45
+      - pattern: 'i£'
+        replacement: '45'
+        description: OCR i£ for year 45
+      - pattern: '\b2k\s+Apr\b'
+        replacement: '24 Apr'
+        description: OCR 2k Apr for 24 Apr
+      - pattern: '(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{2,4})[\s''"•*<>«»^\-–—~]+.*$'
+        replacement: '\1'
+        description: Keep leading date; strip trailing OCR junk after year
