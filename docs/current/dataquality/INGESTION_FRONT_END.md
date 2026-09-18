@@ -312,20 +312,28 @@ rows, below). Findings that shaped the implementation:
       boundary; organic units parses the 2-column unit tables, capturing footnote
       glyphs into `notes`. Full corpus: ~810 statistics rows, ~4,890 organic-unit
       rows.
+- [x] Division-inference pass — **Signal 1 (next in-content title)** implemented
+      (`_common.first_division_in` / `attribute_division`; every row now carries
+      `division_source` = `title` | `inferred_next_title` | `unknown`). A section
+      table/block that precedes any division title is attributed to the first
+      title in the file, flagged for review; a block under a title keeps that
+      title (unflagged); a file with no title stays `(unknown)`. Never overwrites
+      a title-read division; never fabricates. Recovered ~510 rows across
+      command-staff/statistics/organic. IMPORTANT nuance: the large residual
+      `(unknown)` organic rows (~4,180) are almost entirely from three
+      **aggregate cross-division reference files** (`tables_of_organic_units.md`,
+      `summary_of_divisional_equipment.md`, `tables_of_organization_and_strength.md`)
+      that legitimately have no single division — `(unknown)` is correct there.
+      Only ~200 unknown rows are real per-division content inference can't reach
+      (OCR-garbled titles), the documented residual.
+- [ ] Division inference — **Signal 2 (PDF page→division map)** and **Signal 3
+      (unit-number→division)** remain as escalations if higher recall/accuracy is
+      needed. Signal 2 requires re-introducing PDF page geometry (page numbers are
+      absent from the markdown), against the markdown-first direction; Signal 3 is
+      net-new (build a unit-number→division reverse lookup from the organic-unit
+      data) and independent, so it doubles as a cross-check on Signal 1.
 - [ ] Piece 2 (increment 4) — Remaining sections: attachments, detachments,
-      higher-unit assignments (the messiest: date-range OCR noise, category
-      sub-headers, Asgd/Atchd colspan headers).
-- [ ] **Division-inference pass (high value, cross-section)** — the single
-      biggest OOB data-quality issue. Many section tables (especially organic
-      units: ~89% of rows) appear BEFORE any in-content division title, so they
-      are captured under `(unknown)` and flagged. Their content is otherwise
-      clean (e.g. "405th Infantry"). A dedicated pass that infers the division
-      for `(unknown)` rows (from surrounding context, unit-number ranges, or the
-      original PDF page→division map) would recover the large majority of flagged
-      rows across ALL sections. Verification, not guessing: infer with confidence
-      + review, never fabricate.
-      (b)/(c) companions from increment 3 still apply: improve the CSV extractor
-      where gaps appear; add a markdown-vs-`eto_oob_*.csv` discrepancy cross-check.
+      higher-unit assignments (the messiest).
 - [ ] **Region-coverage record (required, testable)** — the markdown parser must
       walk a heterogeneous document and emit a record of every region it
       recognized, marking each as *parsed* or *recognized-but-not-yet-parsed*,

@@ -22,9 +22,10 @@ from typing import List, Optional
 from bs4 import BeautifulSoup, Tag
 
 from src.ingestion.oob_markdown._common import (
+    DIVISION_SOURCE_TITLE,
     SECTION_CAMPAIGNS,
     UNKNOWN_DIVISION,
-    apply_unknown_division_flag,
+    apply_division_flag,
     clean_cell,
     division_from_line,
     iter_section_text_blocks,
@@ -80,10 +81,16 @@ def _assess_campaign(name: str, from_table: bool) -> tuple[float, bool, str]:
     return 0.5, True, "campaign not in known list; verify (may be OCR fragment)"
 
 
-def _row(division: str, name: str, source_file: str, from_table: bool) -> CampaignRow:
+def _row(
+    division: str,
+    name: str,
+    source_file: str,
+    from_table: bool,
+    division_source: str = DIVISION_SOURCE_TITLE,
+) -> CampaignRow:
     confidence, needs_review, notes = _assess_campaign(name, from_table)
-    confidence, needs_review, notes = apply_unknown_division_flag(
-        division, confidence, needs_review, notes
+    confidence, needs_review, notes = apply_division_flag(
+        division_source, confidence, needs_review, notes
     )
     return CampaignRow(
         division=division,
@@ -92,6 +99,7 @@ def _row(division: str, name: str, source_file: str, from_table: bool) -> Campai
         needs_review=needs_review,
         notes=notes,
         source_file=source_file,
+        division_source=division_source,
     )
 
 
@@ -128,7 +136,9 @@ def _parse_plain_text(markdown: str, source_file: str) -> List[CampaignRow]:
     campaign-shape check.
     """
     rows: List[CampaignRow] = []
-    for division, lines in iter_section_text_blocks(markdown, SECTION_CAMPAIGNS):
+    for division, source, lines in iter_section_text_blocks(
+        markdown, SECTION_CAMPAIGNS
+    ):
         for line in lines:
             name = line.strip()
             if not name:
@@ -137,7 +147,15 @@ def _parse_plain_text(markdown: str, source_file: str) -> List[CampaignRow]:
                 break
             if not _looks_like_campaign(name):
                 continue
-            rows.append(_row(division, name, source_file, from_table=False))
+            rows.append(
+                _row(
+                    division,
+                    name,
+                    source_file,
+                    from_table=False,
+                    division_source=source,
+                )
+            )
     return rows
 
 

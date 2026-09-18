@@ -28,7 +28,7 @@ from bs4 import Tag
 from src.ingestion.oob_markdown._common import (
     SECTION_COMMAND_STAFF,
     UNKNOWN_DIVISION,
-    apply_unknown_division_flag,
+    apply_division_flag,
     clean_cell,
     iter_section_tables,
 )
@@ -102,7 +102,7 @@ def _row_fields(texts: List[str]) -> Tuple[str, str, str]:
 
 
 def _parse_table_rows(
-    division: str, table: Tag, source_file: str
+    division: str, division_source: str, table: Tag, source_file: str
 ) -> List[CommandStaffRow]:
     """Expand a command-staff table into flat rows (rowspan/empty-td grouping)."""
     rows: List[CommandStaffRow] = []
@@ -118,8 +118,8 @@ def _parse_table_rows(
             continue
         rank, name, acting = _split_rank_name(rank_name)
         confidence, needs_review, notes = _assess_row(rank, name)
-        confidence, needs_review, notes = apply_unknown_division_flag(
-            division, confidence, needs_review, notes
+        confidence, needs_review, notes = apply_division_flag(
+            division_source, confidence, needs_review, notes
         )
         rows.append(
             CommandStaffRow(
@@ -134,6 +134,7 @@ def _parse_table_rows(
                 notes=notes,
                 source_file=source_file,
                 raw_cell=rank_name,
+                division_source=division_source,
             )
         )
     return rows
@@ -144,8 +145,8 @@ def parse_command_staff(
 ) -> CommandStaffParseResult:
     """Parse all COMMAND AND STAFF rows from a markdown string."""
     result = CommandStaffParseResult(source_file=source_file)
-    for division, table in iter_section_tables(markdown, SECTION_COMMAND_STAFF):
-        result.rows.extend(_parse_table_rows(division, table, source_file))
+    for division, source, table in iter_section_tables(markdown, SECTION_COMMAND_STAFF):
+        result.rows.extend(_parse_table_rows(division, source, table, source_file))
     return result
 
 
