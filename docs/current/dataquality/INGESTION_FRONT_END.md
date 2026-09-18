@@ -187,6 +187,8 @@ unchanged; it is finally fed the data it was designed to accept.
 - [ ] Step 2 — Media-type detector (`src/ingestion/media_detection.py`)
 - [x] Step 3 — Per-page/section disposition classifier
 - [x] Step 4 — Routing manifest emitter
-- [ ] Step 5 — Stage-3 seam + image/map extraction converter
+- [x] Step 5 — Stage-3 seam + image/map extraction converter
 - [ ] Step 6 — Verify image/map handler output end-to-end on the OOB PDF
 - [ ] Later — relocate OOB table normalization into the `structured` converter
+- [ ] Later — parser extension so local map assets populate the `Map` slot
+      (currently emitted as embedded images; parser's map regex is URL-only)
