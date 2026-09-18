@@ -233,6 +233,33 @@ ranks, units), and can risk false merges — so it is a safety net, not the
 primary strategy. Cleanliness comes from reading the good source (Chandra
 markdown) and flagging the rest.
 
+### Piece 2, increment 1 — command-and-staff parser (findings)
+
+`src/ingestion/oob_markdown/command_staff.py` parses the COMMAND AND STAFF
+succession tables. Validated on the full corpus (62 markdown files): **1,324
+rows across 53 files**, with **27% flagged for review** (mostly unknown-division
+rows, below). Findings that shaped the implementation:
+
+* **Filenames are misaligned with content** — not merely unreliable. E.g.
+  `1st_infantry.md` contains 14th/16th Armored data; `4th_armored.md` contains
+  4th/5th Armored. Division identity is therefore tracked from in-content title
+  lines (letter-spaced `## 1 0 1 st A I R B O R N E ...` H2s and inline
+  `Nnn Infantry Division` lines), never the filename.
+* **Leading title-less tables** — some files open with a COMMAND AND STAFF table
+  before any in-content division title. These rows are **captured under the
+  `(unknown)` division and flagged for review**, not dropped and not guessed
+  (assigning a division from the misaligned filename would be a fabrication).
+  363 rows fall in this bucket and await human division assignment.
+* **Two division files** (`2nd_french_armored`, `71st_infantry`) yield no
+  command-staff table (unrecognized structure or genuinely absent); noted for
+  follow-up rather than silently ignored.
+* **No abbreviations authority exists** in the repo, so rank/position/unit
+  normalization is derived from the data itself (a rank-token vocabulary), not a
+  lookup file. Rank+name are split from the single combined cell.
+* **HTML parsing** uses BeautifulSoup (already a project dependency via the
+  HyperWar importer), which handles the irregular markup (mixed
+  `border`/`thead`/`tbody`, single-line tables, `<br/>`, `&amp;`).
+
 ## Non-goals
 
 - No LLM/vision classifier (cost + non-determinism; heuristics suffice for 4
@@ -254,9 +281,17 @@ markdown) and flagging the rest.
 - [x] Step 6 — Verify image/map handler output end-to-end on the OOB PDF
       (validated; surfaced the scanned-document finding above; classifier made
       scanned-aware so it no longer mislabels scanned pages)
-- [ ] Piece 2 — Parse Chandra OCR+AI markdown tables into structured JSON
-      (rowspan expansion, OOB schema mapping, provenance join, verification/
-      flagging of suspect cells)
+- [x] Piece 2 (increment 1) — Parse COMMAND AND STAFF markdown tables into
+      structured rows (`src/ingestion/oob_markdown/`). BeautifulSoup-based;
+      handles rowspan + empty-`<td>` position grouping, combined rank+name cell
+      splitting, `(actg)` acting flags, `<br/>`/entity cleanup, and division
+      tracking from content. Verification-flagging only (no correction): suspect
+      cells get `needs_review` + `confidence` + `notes`, raw cell preserved.
+- [ ] Piece 2 (increment 2+) — Remaining OOB sections (statistics, campaigns,
+      organic units, attachments, detachments, higher-unit assignments, command
+      posts) using the same framework.
 - [ ] Later — relocate OOB table normalization into the `structured` converter
 - [ ] Later — parser extension so local map assets populate the `Map` slot
       (currently emitted as embedded images; parser's map regex is URL-only)
+- [ ] Later — resolve `(unknown)`-division command-staff rows and the two
+      division files with no detected table (`2nd_french_armored`, `71st_infantry`)
