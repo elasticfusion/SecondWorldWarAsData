@@ -1,6 +1,146 @@
 #!/bin/bash
 set -e
 
+# --- OCR Standalone Mode ---
+if [ "$1" = "--ocr-standalone" ]; then
+    REGION="us-east-1"
+    ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+    ECR_REPO="$ACCOUNT.dkr.ecr.$REGION.amazonaws.com"
+    CHANDRA_IMAGE="$ECR_REPO/wwii-chandra:latest"
+    ENV="dev"
+    TEMPLATE_BUCKET="wwii-pipeline-deploy"
+
+    echo "=== OCR Standalone Deploy ==="
+    echo "  Image: $CHANDRA_IMAGE"
+    echo ""
+
+    if [ "${OCR_SKIP_BUILD:-0}" = "1" ]; then
+        echo "=== 1. Skipping image build (OCR_SKIP_BUILD=1) ==="
+        echo "  Using existing image: $CHANDRA_IMAGE"
+    else
+        echo "=== 1. Building Chandra image ==="
+        aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO
+        # Create ECR repo if it doesn't exist
+        aws ecr describe-repositories --repository-names wwii-chandra --region $REGION 2>/dev/null || \
+            aws ecr create-repository --repository-name wwii-chandra --region $REGION --no-cli-pager
+        docker build --no-cache --progress=plain -f Dockerfile.chandra -t wwii-chandra .
+        # Vulnerability scan
+        if command -v trivy &>/dev/null; then
+            echo "  Scanning image for vulnerabilities..."
+            set +e
+            TRIVY_OUTPUT=$(trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 wwii-chandra:latest 2>&1)
+            TRIVY_EXIT=$?
+            set -e
+            echo "$TRIVY_OUTPUT" | tail -10
+            if [ $TRIVY_EXIT -ne 0 ]; then
+                echo "  ⚠ HIGH/CRITICAL vulnerabilities found (non-blocking for OCR)"
+            else
+                echo "  Trivy: OK"
+            fi
+        else
+            echo "  Trivy: not installed (skipping scan)"
+        fi
+        docker tag wwii-chandra:latest $CHANDRA_IMAGE
+        docker push $CHANDRA_IMAGE
+        echo "  Pushed: $CHANDRA_IMAGE"
+    fi
+
+    echo ""
+    echo "=== 2. Validating CloudFormation ==="
+    set +e
+    cfn-lint cloudformation/ocr.yaml
+    CFN_EXIT=$?
+    set -e
+    if [ $CFN_EXIT -eq 0 ] || [ $CFN_EXIT -eq 4 ]; then
+        echo "  OK (exit $CFN_EXIT)"
+    else
+        echo "  ✗ cfn-lint failed (exit $CFN_EXIT)"
+        exit 1
+    fi
+
+    echo ""
+    echo "=== 3. Deploying OCR stack ==="
+    # Read subnet and SG from SSM (set by network stack)
+    # Note: Only use subnets in AZs that offer GPU instance types (g5/g6)
+    # us-east-1a does NOT have g5/g6. us-east-1b does.
+    SG=$(aws ssm get-parameter --name "/${ENV}-wwii-pipeline/LambdaSGId" --query Parameter.Value --output text --region $REGION)
+
+    # Gather all private subnets from SSM
+    ALL_SUBNETS=""
+    for i in 1 2 3 4 5 6; do
+        SUBNET=$(aws ssm get-parameter --name "/${ENV}-wwii-pipeline/PrivateSubnet${i}Id" --query Parameter.Value --output text --region $REGION 2>/dev/null) || continue
+        ALL_SUBNETS="${ALL_SUBNETS:+$ALL_SUBNETS }$SUBNET"
+    done
+
+    # Determine which subnets are in GPU-capable AZs
+    GPU_SUBNETS=""
+    for SUBNET in $ALL_SUBNETS; do
+        AZ=$(aws ec2 describe-subnets --subnet-ids $SUBNET --region $REGION --query 'Subnets[0].AvailabilityZone' --output text)
+        HAS_GPU=$(aws ec2 describe-instance-type-offerings --location-type availability-zone \
+            --filters "Name=instance-type,Values=g5.xlarge" "Name=location,Values=$AZ" \
+            --region $REGION --query 'InstanceTypeOfferings | length(@)')
+        if [ "$HAS_GPU" -gt 0 ]; then
+            GPU_SUBNETS="${GPU_SUBNETS:+$GPU_SUBNETS,}$SUBNET"
+            echo "  ✓ $SUBNET ($AZ) — has GPU instances"
+        else
+            echo "  ✗ $SUBNET ($AZ) — no GPU instances, skipping"
+        fi
+    done
+
+    if [ -z "$GPU_SUBNETS" ]; then
+        echo "  ❌ No subnets in GPU-capable AZs. Cannot deploy OCR."
+        exit 1
+    fi
+
+    aws s3 cp cloudformation/ocr.yaml s3://$TEMPLATE_BUCKET/cloudformation/ocr.yaml --region $REGION
+
+    STACK_NAME="wwii-ocr-${ENV}"
+    STACK_STATUS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --region $REGION --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "DOES_NOT_EXIST")
+
+    if [ "$STACK_STATUS" = "DOES_NOT_EXIST" ]; then
+        ACTION="create-stack"
+    else
+        ACTION="update-stack"
+    fi
+
+    set +e
+    aws cloudformation $ACTION \
+        --stack-name $STACK_NAME \
+        --template-url "https://${TEMPLATE_BUCKET}.s3.amazonaws.com/cloudformation/ocr.yaml" \
+        --parameters \
+            ParameterKey=EnvironmentName,ParameterValue=$ENV \
+            ParameterKey=PrivateSubnetIds,ParameterValue=\"$GPU_SUBNETS\" \
+            ParameterKey=SecurityGroupId,ParameterValue=$SG \
+            ParameterKey=ChandraImageUri,ParameterValue=$CHANDRA_IMAGE \
+            ParameterKey=ComputeType,ParameterValue=${OCR_COMPUTE_TYPE:-EC2} \
+        --capabilities CAPABILITY_NAMED_IAM \
+        --region $REGION \
+        --no-cli-pager
+    CF_EXIT=$?
+    set -e
+
+    if [ $CF_EXIT -ne 0 ]; then
+        echo "  (No changes to deploy, or error above)"
+    else
+        echo "  Waiting for stack..."
+        aws cloudformation wait stack-${ACTION%%-stack}-complete --stack-name $STACK_NAME --region $REGION 2>/dev/null || \
+            aws cloudformation wait stack-update-complete --stack-name $STACK_NAME --region $REGION 2>/dev/null || true
+        echo "  Stack status: $(aws cloudformation describe-stacks --stack-name $STACK_NAME --region $REGION --query 'Stacks[0].StackStatus' --output text)"
+    fi
+
+    echo ""
+    echo "=== OCR Deploy Complete ==="
+    echo ""
+    echo "Submit jobs with:"
+    echo "  python3 scripts/submit_ocr_job.py s3://dev-wwii-data-pipeline/source/MyBook.pdf --wait"
+    echo ""
+    echo "  Options:"
+    echo "    --chunk-size 25     Pages per parallel job (default 50)"
+    echo "    --page-range 1-10   Process specific pages only"
+    echo "    --wait              Block until done, then merge output"
+    exit 0
+fi
+
 REGION="us-east-1"
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 CLUSTER="dev-wwii-pipeline"
