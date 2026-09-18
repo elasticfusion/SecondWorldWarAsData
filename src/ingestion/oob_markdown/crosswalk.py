@@ -5,10 +5,12 @@ Part of Piece 2 / C1. Builds a **crosswalk**: a derived, re-runnable record of
 row's name against the existing people store. It never writes to people files,
 so a better matcher can be run later over pristine inputs.
 
-Matching is **exact normalized-name only** for now (the safe baseline: no false
-merges — e.g. "McLuliffe" will NOT match "McAuliffe"). Each link records a
-``match_method`` so a future ``"fuzzy"``/``"verified"`` pass can upgrade
-``"none"``/low-confidence links in place without changing this code's contract.
+Matching has two tiers (see :mod:`src.ingestion.oob_markdown.name_resolver`):
+an **exact** normalized-name match (auto-confirmed) and a last-name-gated
+**fuzzy** match (flagged ``needs_review`` so a human confirms it via the
+existing dedup review flow). The gate prevents OCR garbles like "McLuliffe"
+from resolving to "McAuliffe" while still catching real variants. Each link
+records a ``match_method`` (``"exact"``/``"fuzzy"``/``"none"``).
 
 See docs/current/dataquality/INGESTION_FRONT_END.md ("Scanned documents").
 """
@@ -20,13 +22,24 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
+from src.ingestion.oob_markdown.name_resolver import (
+    MATCH_EXACT,
+    MATCH_FUZZY,
+    MATCH_NONE,
+    NameResolver,
+)
 from src.utils.entity_index import build_name_index
-from src.utils.text_utils import normalize_name
 
 logger = logging.getLogger(__name__)
 
-MATCH_EXACT = "exact"
-MATCH_NONE = "none"
+__all__ = [
+    "MATCH_EXACT",
+    "MATCH_FUZZY",
+    "MATCH_NONE",
+    "CrosswalkLink",
+    "CrosswalkResult",
+    "build_command_staff_crosswalk",
+]
 
 
 @dataclass
@@ -76,8 +89,8 @@ class CrosswalkResult:
         }
 
 
-def _exact_link(row: Any, name_index: Dict[str, str]) -> CrosswalkLink:
-    """Build a link for one row by exact normalized-name match."""
+def _link_row(row: Any, resolver: NameResolver) -> CrosswalkLink:
+    """Build a link for one row by resolving its name (exact then fuzzy)."""
     link = CrosswalkLink(
         name=row.name,
         rank=row.rank,
@@ -85,18 +98,27 @@ def _exact_link(row: Any, name_index: Dict[str, str]) -> CrosswalkLink:
         division=row.division,
         source_file=row.source_file,
     )
-    key = normalize_name(row.name) if row.name else ""
-    person_id = name_index.get(key) if key else None
-    if person_id:
-        link.person_id = person_id
-        link.matched_name = row.name
+    match = resolver.resolve(row.name or "")
+    if match.entity_id and match.method == MATCH_EXACT:
+        link.person_id = match.entity_id
+        link.matched_name = match.matched_name
         link.match_method = MATCH_EXACT
         link.confidence = 0.9
         link.needs_review = False
+    elif match.entity_id and match.method == MATCH_FUZZY:
+        link.person_id = match.entity_id
+        link.matched_name = match.matched_name
+        link.match_method = MATCH_FUZZY
+        link.confidence = match.confidence
+        link.needs_review = True
+        link.notes = (
+            f"fuzzy match to '{match.matched_name}' "
+            f"(similarity {match.confidence:.0%}) — needs review"
+        )
     else:
         link.match_method = MATCH_NONE
         link.needs_review = True
-        link.notes = "no exact name match in people store (fuzzy match pending)"
+        link.notes = "no exact or fuzzy name match in people store"
     return link
 
 
@@ -115,9 +137,10 @@ def build_command_staff_crosswalk(
         A :class:`CrosswalkResult`. People files are never modified.
     """
     name_index = build_name_index(people_dir, "PersonID", "name")
+    resolver = NameResolver(name_index)
     result = CrosswalkResult()
     for row in rows:
-        result.links.append(_exact_link(row, name_index))
+        result.links.append(_link_row(row, resolver))
     logger.info(
         "Command-staff crosswalk: %d link(s), %d matched, %d for review",
         len(result.links),

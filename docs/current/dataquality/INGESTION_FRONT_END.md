@@ -296,15 +296,22 @@ rows, below). Findings that shaped the implementation:
       command-post rows.
 - [x] Piece 2 / C1 — Persist parsed OOB rows to `output/oob/<section>/` and
       build a non-destructive name→`PersonID` crosswalk for command-staff
-      (`src/ingestion/oob_markdown/persist.py`, `crosswalk.py`). Matching is
-      exact normalized-name only (safe baseline: no false merges, e.g.
-      "McLuliffe" does not match "McAuliffe"); each link records a
-      `match_method` so a later **fuzzy/verified** pass can upgrade unmatched
-      links in place. People files are never modified — the crosswalk is a
-      derived, re-runnable artifact.
-- [ ] Later — fuzzy / LLM-verified matcher pass over the crosswalk (upgrades
-      `match_method: none` and low-confidence links; runs over pristine inputs
-      since C1 kept both the OOB rows and the people store unmodified).
+      (`src/ingestion/oob_markdown/persist.py`, `crosswalk.py`). Matching has two
+      tiers (`name_resolver.py`): **exact** normalized-name (auto-confirmed) and
+      **fuzzy**, a last-name-gated similarity match (via
+      `text_utils.similarity_ratio`) that catches middle-initial/spelling/OCR
+      variants (e.g. `I T Wyche`→`ira t. wyche`, `Harry F Hansen`→`harry f.
+      hanson`) while the surname gate blocks garble false-merges (`McLuliffe`
+      does not resolve to `McAuliffe`). Every fuzzy link is flagged
+      `needs_review` for human confirmation via the existing dedup review flow;
+      each link records a `match_method` (`exact`/`fuzzy`/`none`). The resolver
+      re-keys the people index by `normalize_name` so punctuation/accent
+      differences no longer drop true exact matches. People files are never
+      modified — the crosswalk is a derived, re-runnable artifact. The resolver
+      is entity-agnostic (takes any `build_name_index` map), so the same pass
+      serves `GroupID`/`EquipmentID` for OOB units later. Full corpus: 1,324
+      command-staff links → 41 exact + 19 fuzzy matched (was 9 exact-only before
+      the normalization fix + fuzzy tier).
 - [x] Piece 2 (increment 3) — STATISTICS and ORGANIC UNITS markdown parsers
       (`statistics.py`, `organic_units.py`). Statistics parses category
       sub-blocks (Chronology/Casualties/Individual Awards) of `metric..... value`
