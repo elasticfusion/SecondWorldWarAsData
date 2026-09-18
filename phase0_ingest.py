@@ -19,6 +19,7 @@ See docs/current/dataquality/INGESTION_FRONT_END.md.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import List
 
@@ -31,6 +32,19 @@ _OCR_OUTPUT_DIRNAME = "ocr_output"
 
 # Markdown files that are not per-division/section OOB content.
 _SKIP_STEMS = frozenset({"00-missing"})
+
+
+def _converge_enabled(config: dict) -> bool:
+    """Whether OOB command-staff rows should converge into output/people/.
+
+    Off by default (crosswalk stays a read-only artifact). Enable via
+    ``ingestion.converge_people: true`` in config.yaml, or the
+    ``OOB_CONVERGE_PEOPLE`` env var (``1``/``true``/``yes``) which overrides.
+    """
+    env = os.environ.get("OOB_CONVERGE_PEOPLE")
+    if env is not None:
+        return env.strip().lower() in {"1", "true", "yes"}
+    return bool(config.get("ingestion", {}).get("converge_people", False))
 
 
 def discover_oob_markdown(content_root: Path) -> List[Path]:
@@ -70,6 +84,14 @@ def main() -> None:
     people_dir = output_root / "people"
     output_root.mkdir(parents=True, exist_ok=True)
 
+    converge_people = _converge_enabled(config)
+    if converge_people:
+        logger.info(
+            "OOB->people convergence ENABLED: command-staff rows will be "
+            "emitted/merged into %s for dedup unification",
+            people_dir,
+        )
+
     logger.info("[phase0 step 1/2] Scanning for OOB markdown under %s", content_root)
     sources = discover_oob_markdown(content_root)
     logger.info("Found %d OOB markdown file(s)", len(sources))
@@ -77,12 +99,19 @@ def main() -> None:
     logger.info("[phase0 step 2/2] Parsing %d file(s)", len(sources))
     total_rows = 0
     total_review = 0
+    total_merged = 0
+    total_created = 0
     for index, md_path in enumerate(sources, start=1):
-        summary = run_oob_markdown_file(md_path, output_root, people_dir)
+        summary = run_oob_markdown_file(
+            md_path, output_root, people_dir, converge_people=converge_people
+        )
         rows = sum(s["rows"] for s in summary["sections"].values())
         review = sum(s["review"] for s in summary["sections"].values())
         total_rows += rows
         total_review += review
+        if "emit" in summary:
+            total_merged += summary["emit"]["merged"]
+            total_created += summary["emit"]["created"]
         logger.info(
             "  (%d/%d) %s: %d row(s), %d for review%s",
             index,
@@ -104,6 +133,13 @@ def main() -> None:
         total_rows,
         total_review,
     )
+    if converge_people:
+        logger.info(
+            "OOB->people convergence: %d merged into existing, %d new people minted "
+            "(dedup will unify new ones)",
+            total_merged,
+            total_created,
+        )
 
 
 if __name__ == "__main__":

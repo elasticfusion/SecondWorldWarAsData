@@ -20,6 +20,7 @@ from src.ingestion.oob_markdown.campaigns import parse_campaigns
 from src.ingestion.oob_markdown.command_posts import parse_command_posts
 from src.ingestion.oob_markdown.command_staff import parse_command_staff
 from src.ingestion.oob_markdown.crosswalk import build_command_staff_crosswalk
+from src.ingestion.oob_markdown.entity_emit import emit_crosswalk_to_people
 from src.ingestion.oob_markdown.organic_units import parse_organic_units
 from src.ingestion.oob_markdown.persist import persist_parse_result
 from src.ingestion.oob_markdown.statistics import parse_statistics
@@ -41,6 +42,7 @@ def run_oob_markdown_file(
     markdown_path: Path,
     output_root: Path,
     people_dir: Path,
+    converge_people: bool = False,
 ) -> Dict[str, Any]:
     """Parse one OOB markdown file across all sections, persist, and crosswalk.
 
@@ -50,9 +52,15 @@ def run_oob_markdown_file(
             written under ``output/oob/<section>/``.
         people_dir: The people entity dir (e.g. ``output/people/``) the
             command-staff crosswalk resolves names against. May not exist yet.
+        converge_people: When True, converge command-staff crosswalk links into
+            ``output/people/`` (exact -> merge bio into the resolved person;
+            fuzzy/none -> mint a new person for the existing dedup pass to
+            unify). When False (default) the crosswalk stays a derived,
+            read-only artifact and people files are never modified.
 
     Returns:
-        A summary dict: per-section row/review counts + crosswalk match counts.
+        A summary dict: per-section row/review counts + crosswalk match counts
+        (and, when ``converge_people``, ``emit`` merge/create counts).
     """
     markdown = markdown_path.read_text(encoding="utf-8")
     source_file = markdown_path.name
@@ -82,6 +90,9 @@ def run_oob_markdown_file(
             "matched": crosswalk.matched_count,
             "review": crosswalk.review_count,
         }
+        if converge_people:
+            emit = emit_crosswalk_to_people(crosswalk, people_dir)
+            summary["emit"] = emit.to_dict()
 
     return summary
 
