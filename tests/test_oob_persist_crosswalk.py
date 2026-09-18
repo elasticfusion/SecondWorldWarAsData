@@ -6,6 +6,7 @@ from pathlib import Path
 from src.ingestion.oob_markdown.command_staff import parse_command_staff
 from src.ingestion.oob_markdown.crosswalk import (
     MATCH_EXACT,
+    MATCH_FUZZY,
     MATCH_NONE,
     build_command_staff_crosswalk,
 )
@@ -106,11 +107,11 @@ def test_garbled_name_does_not_false_match(tmp_path: Path) -> None:
     people = _fake_people(tmp_path)
     result = build_command_staff_crosswalk(_rows(), people)
     garbled = result.links[1]
-    # "McLuliffe" must not match anything -> recorded as unmatched, flagged.
+    # "McLuliffe" has no candidate at all in this store -> unmatched, flagged.
     assert garbled.person_id is None
     assert garbled.match_method == MATCH_NONE
     assert garbled.needs_review is True
-    assert "fuzzy" in garbled.notes.lower()
+    assert "no exact or fuzzy" in garbled.notes.lower()
 
 
 def test_crosswalk_counts(tmp_path: Path) -> None:
@@ -137,3 +138,51 @@ def test_crosswalk_is_serializable(tmp_path: Path) -> None:
     assert isinstance(data["links"], list)
     # Round-trips through JSON.
     json.loads(json.dumps(data))
+
+
+# --- crosswalk (fuzzy match + normalization) -----------------------------
+
+
+def _one_row(name: str) -> list:
+    return [
+        CommandStaffRow(
+            division="82d Airborne Division",
+            position="Comdg Gen",
+            effective_date="15 Sep 1943",
+            rank="Maj Gen",
+            name=name,
+            source_file="82nd_airborne.md",
+        )
+    ]
+
+
+def test_fuzzy_match_flags_for_review(tmp_path: Path) -> None:
+    # OCR dropped a letter: "Ridgeway" vs indexed "Ridgway" -> fuzzy, reviewed.
+    people = _fake_people(tmp_path)
+    result = build_command_staff_crosswalk(_one_row("Matthew B Ridgeway"), people)
+    link = result.links[0]
+    assert link.person_id == "01HZZZRIDGWAY01"
+    assert link.match_method == MATCH_FUZZY
+    assert link.needs_review is True
+    assert 0.0 < link.confidence < 1.0
+    assert "fuzzy" in link.notes.lower()
+
+
+def test_fuzzy_gate_blocks_different_last_name(tmp_path: Path) -> None:
+    # Same store (only Ridgway). A wholly different surname must not fuzzy-match.
+    people = _fake_people(tmp_path)
+    result = build_command_staff_crosswalk(_one_row("Matthew B Bradley"), people)
+    link = result.links[0]
+    assert link.person_id is None
+    assert link.match_method == MATCH_NONE
+
+
+def test_exact_match_survives_punctuation(tmp_path: Path) -> None:
+    # Index keyed plain-lowercase would miss on punctuation; normalize_name
+    # re-keying makes "Matthew B. Ridgway" an EXACT match to "Matthew B Ridgway".
+    people = _fake_people(tmp_path)
+    result = build_command_staff_crosswalk(_one_row("Matthew B. Ridgway,"), people)
+    link = result.links[0]
+    assert link.person_id == "01HZZZRIDGWAY01"
+    assert link.match_method == MATCH_EXACT
+    assert link.needs_review is False
