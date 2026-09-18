@@ -294,6 +294,17 @@ rows, below). Findings that shaped the implementation:
       (with colspan-aware column indexing); command posts inherit the year from
       underlined context rows. Full corpus: 175 campaign rows and ~2,280
       command-post rows.
+- [x] Piece 2 / C1 — Persist parsed OOB rows to `output/oob/<section>/` and
+      build a non-destructive name→`PersonID` crosswalk for command-staff
+      (`src/ingestion/oob_markdown/persist.py`, `crosswalk.py`). Matching is
+      exact normalized-name only (safe baseline: no false merges, e.g.
+      "McLuliffe" does not match "McAuliffe"); each link records a
+      `match_method` so a later **fuzzy/verified** pass can upgrade unmatched
+      links in place. People files are never modified — the crosswalk is a
+      derived, re-runnable artifact.
+- [ ] Later — fuzzy / LLM-verified matcher pass over the crosswalk (upgrades
+      `match_method: none` and low-confidence links; runs over pristine inputs
+      since C1 kept both the OOB rows and the people store unmodified).
 - [ ] Piece 2 (increment 3+) — Remaining OOB sections (statistics, organic
       units, attachments, detachments, higher-unit assignments) using the same
       framework.
