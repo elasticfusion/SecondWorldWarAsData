@@ -290,6 +290,16 @@ rows, below). Findings that shaped the implementation:
 - [ ] Piece 2 (increment 2+) — Remaining OOB sections (statistics, campaigns,
       organic units, attachments, detachments, higher-unit assignments, command
       posts) using the same framework.
+- [ ] **Region-coverage record (required, testable)** — the markdown parser must
+      walk a heterogeneous document and emit a record of every region it
+      recognized, marking each as *parsed* or *recognized-but-not-yet-parsed*,
+      so intra-document coverage is measurable per document rather than implicit.
+      A single source doc contains varied data types in different regions (e.g.
+      an OOB division block interleaves 8 section types; ibiblio narrative pages
+      mix prose + images + maps + footnotes); the dispatch must recognize each
+      region and never silently skip one. **Validate on the clean ibiblio docs
+      first** (mixed but low-noise, easy to judge correct), then apply to the
+      garbled OOB scans. Not required immediately, but must be built and tested.
 - [ ] Later — relocate OOB table normalization into the `structured` converter
 - [ ] Later — parser extension so local map assets populate the `Map` slot
       (currently emitted as embedded images; parser's map regex is URL-only)
