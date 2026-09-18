@@ -185,8 +185,8 @@ unchanged; it is finally fed the data it was designed to accept.
 - [x] Spec (this document)
 - [ ] Step 1 — Source-metadata model (`src/ingestion/source_metadata.py`)
 - [ ] Step 2 — Media-type detector (`src/ingestion/media_detection.py`)
-- [ ] Step 3 — Per-page/section disposition classifier
-- [ ] Step 4 — Routing manifest emitter
+- [x] Step 3 — Per-page/section disposition classifier
+- [x] Step 4 — Routing manifest emitter
 - [ ] Step 5 — Stage-3 seam + image/map extraction converter
 - [ ] Step 6 — Verify image/map handler output end-to-end on the OOB PDF
 - [ ] Later — relocate OOB table normalization into the `structured` converter
