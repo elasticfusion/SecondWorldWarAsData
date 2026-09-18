@@ -171,7 +171,7 @@ def iter_section_tables(markdown: str, wanted_section: str) -> List[Tuple[str, T
     return pairs
 
 
-def _text_lines(markdown: str) -> List[str]:
+def text_lines(markdown: str) -> List[str]:
     """Return the document's non-tag text as a flat list of lines, in order."""
     soup = BeautifulSoup(markdown, "html.parser")
     lines: List[str] = []
@@ -202,7 +202,7 @@ def iter_section_text_blocks(
         if collected and section == wanted_section:
             blocks.append((block_division or UNKNOWN_DIVISION, list(collected)))
 
-    for line in _text_lines(markdown):
+    for line in text_lines(markdown):
         div = division_from_line(line)
         if div:
             division = div
