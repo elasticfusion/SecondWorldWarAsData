@@ -3,7 +3,21 @@
 Design for classifying source documents at ingestion and routing structured
 (tabular) data through the same entity model as unstructured (prose) data.
 
-**Status:** Proposed | **Last Updated:** 2026-06-30
+**Status:** Partially implemented (ingestion front-end + OOB markdown parsers built; entity convergence pending) | **Last Updated:** 2026-09-18
+
+> **Reconciliation note (2026-09-18).** The ingestion front-end and the
+> scanned-OOB structured extraction described here have now been **built** in
+> `src/ingestion/` (see [INGESTION_FRONT_END.md](INGESTION_FRONT_END.md)). The
+> implementation differs from parts of the original proposal below in ways that
+> are called out inline — most importantly: (a) disposition is classified by a
+> **per-page heuristic classifier**, not only by declarative per-source meta;
+> (b) scanned tables are parsed from the **Chandra OCR+AI markdown** by
+> purpose-built section parsers, while the generic **CSV field-map** remains the
+> path for cleanly-CSV sources; (c) parsed rows are persisted to `output/oob/`
+> and linked to `PersonID` via a **non-destructive crosswalk** (reversible,
+> enabling later fuzzy matching), with full **entity convergence at dedup** as
+> the remaining bridge step. Inline "**Built:**" / "**Pending:**" markers below
+> record current status.
 
 ---
 
@@ -108,6 +122,18 @@ for media, a new `MediaGroup`). Two axes:
   `mixed` (a PDF with both narrative and OOB tables).
 - **`source_format`** — the physical medium Phase 0 must normalize first.
 
+> **Built vs. designed — classification.** The declarative meta is still the
+> intended way for a contributor to *assert* a source's type. In addition, a
+> **per-page heuristic classifier** was built
+> (`src/ingestion/disposition_classifier.py`) that determines each page's
+> disposition (`structured` | `unstructured` | `image` | `map`) directly from
+> the content — essential because a single scanned PDF is *mixed* at the page
+> level and cannot be described by one document-level `content_type`. It is
+> **scanned-aware**: on a fully-scanned PDF (where page geometry cannot reveal
+> structure) it defers structure recovery to the OCR+AI markdown rather than
+> guessing. So classification is now two-layer: declarative meta per source,
+> heuristic disposition per page/region. See INGESTION_FRONT_END.md.
+
 ### 2. Phase 0 — format-agnostic ingestion normalization
 
 Phase 0 is not "PDF→markdown." It is a **dispatcher** that normalizes any
@@ -127,15 +153,25 @@ front door that unifies them.
 |---------------|---------|-------------|--------|
 | `markdown` | none (ready) | text | ✅ exists |
 | `html` | HTML→markdown (HyperWar converter, generalized) | text | ⚠️ exists for ibiblio only |
-| `pdf` | Chandra OCR → markdown | text | ⚠️ OCR built, not wired |
-| `pdf` (scanned tables) | Chandra OCR → CSV/HTML tables → tabular parser | text | ⚠️ partial |
-| `csv` | tabular parser | text (entities) | ❌ to build |
+| `pdf` | Chandra OCR → markdown | text | ✅ **Built** (`src/ingestion/region_converter.py`; media detection + per-page disposition classify → convert) |
+| `pdf` (scanned tables) | Chandra OCR markdown → **section parsers** → rows | text | ✅ **Built** (`src/ingestion/oob_markdown/*`: command-staff, campaigns, command-posts, statistics, organic-units + division inference) — see note below on markdown-parser vs. CSV-field-map |
+| `csv` | tabular parser (declarative field-map) | text (entities) | ❌ to build (still the right path for *cleanly*-CSV sources) |
 | `epub` | epub→markdown (ebooklib/pandoc) | text | ❌ to build |
 | `txt` | wrap as markdown | text | ❌ trivial |
-| `image` (still) | register asset + vision caption/OCR | media entity | ⚠️ `images.py` exists |
+| `image` (still) | register asset + vision caption/OCR | media entity | ⚠️ `images.py` + region converter extract embedded images |
 | `map` (still) | register asset + vision verify | `maps` entity | ✅ exists |
 | `video` (moving) | register asset + transcript (whisper) + keyframes | media entity | ❌ future |
 | `audio` (oral history) | transcribe → markdown + register asset | both | ❌ future |
+
+> **Built vs. designed — scanned tables.** The original design (§4 below) routed
+> tabular data through a generic **CSV → entity field-map**. What was actually
+> built for the ETO Order of Battle instead parses structure directly from the
+> **Chandra OCR+AI markdown** with purpose-built section parsers, because that
+> markdown is where the scanned document's table structure and cleanest cell
+> text actually live (validated: cleaner than the legacy CSVs — see
+> INGESTION_FRONT_END.md). The generic CSV field-map (§4) remains the intended
+> path for sources that arrive as *clean* CSV/HTML tables. The two coexist:
+> markdown-parser for scanned OCR tables, field-map for clean tabular sources.
 
 This makes the downloaders' PDF dumps first-class inputs, brings HTML handling
 out of the ibiblio-only special case, and gives still/moving images and audio
@@ -224,6 +260,33 @@ Every path emits the **same entity JSON** with ULIDs and cross-references.
 They converge at dedup, where existing name/position/shared-URL scoring merges
 duplicates regardless of whether an entity came from prose, an OOB table, or a
 captioned photograph.
+
+> **Built vs. designed — convergence (the key reconciliation).** The end goal
+> above — "Maj Gen Huebner from the OOB table and Huebner from the prose
+> converge as one ULID'd Person at dedup" — remains the target. What was built
+> so far deliberately stops one step short of it, for safety:
+>
+> - Parsed OOB rows are persisted to their **own store** (`output/oob/<section>/`)
+>   via `src/ingestion/oob_markdown/persist.py`, and linked to existing people
+>   with a **non-destructive name→`PersonID` crosswalk**
+>   (`crosswalk.py`) — currently **exact normalized-name match only**.
+> - This is intentional (design "C1"): it does **not** write into
+>   `output/people/` at ingestion, because write-time dedup there is pure
+>   normalized-name match with **no fuzzy step**, so merging garbled OCR names
+>   (e.g. `McLuliffe`) directly would create false-new or, worse, false-merged
+>   people in the authoritative store. Keeping OOB rows separate + a re-runnable
+>   crosswalk preserves both inputs pristine so a **fuzzy / LLM-verified matcher**
+>   can be applied later without redoing ingestion.
+>
+> **The remaining bridge to full convergence** is therefore: (1) a fuzzy/verified
+> matcher that upgrades the crosswalk's `match_method` from `exact`/`none`, then
+> (2) an emit step that turns confidently-matched OOB rows into the *same*
+> `people`/`people_groups`/`dates` entity JSON (or merges into existing ones) so
+> they flow through dedup exactly as the diagram above intends. Until then, the
+> crosswalk *is* the linkage: reversible now, convergent later. The generic
+> field-map (§4) describes the eventual emit shape for clean CSV sources; the
+> OOB markdown parsers produce equivalent rows that the same emit step will
+> consume.
 
 ### 4. Generic tabular → entity mapper
 
@@ -419,47 +482,56 @@ points land in the same place.
 Foundation first, then one medium at a time. Each medium reuses an existing
 handler where one exists.
 
+> **Progress (2026-09-18).** The ingestion front-end and OOB scanned-table
+> extraction are built in `src/ingestion/` (steps marked ✅ below). Remaining
+> work is the entity-convergence bridge, pipeline wiring (Phase 0 as a runnable
+> step), the clean-CSV field-map, and the media/audio/acquisition handlers.
+
 **Foundation**
-1. **Add `content_type` / `source_format` / `media_type` to discovery** —
-   defaults prose/markdown, zero behavior change. Introduce `MediaGroup`
-   alongside `ChapterGroup`. *(small)*
-2. **Phase 0 dispatcher skeleton** — reads `source_format`, routes to a handler,
-   no-op for `markdown`. *(small)*
+1. ✅ **Source metadata + media-type detection** — `source_metadata.py`,
+   `media_detection.py` (media type + supported/unsupported flag). Declarative
+   `content_type`/`source_format` on discovery still to be added. *(mostly done)*
+2. ✅ **Phase 0 dispatcher skeleton** — per-page disposition classifier +
+   routing manifest + region converter (`disposition_classifier.py`,
+   `routing_manifest.py`, `region_converter.py`), no-op-safe for markdown.
+   *(built as library; not yet wired as a runnable phase — see "Pipeline wiring")*
 
-**Text-producing media (unblocks the most stalled content)**
-3. **HTML handler** — generalize the HyperWar `import_hyperwar_html.py`
-   converter into a Phase 0 handler for any `source_format: html`. *(small —
-   code exists)*
-4. **PDF handler** — wire the existing Chandra OCR pipeline as the `pdf`
-   handler. Unblocks Eisenhower/Donovan PDF dumps. *(medium — OCR built)*
-5. **txt / epub handlers** — trivial wrap / pandoc. *(small)*
+**Text-producing media**
+3. ⚠️ **HTML handler** — generalize `import_hyperwar_html.py`. *(exists for ibiblio)*
+4. ✅ **PDF handler** — region converter drives Chandra OCR → markdown, with
+   image/map asset extraction. *(built)*
+5. ❌ **txt / epub handlers** — trivial wrap / pandoc.
 
-**Tabular**
-6. **`src/parser/tabular.py` + field-map loader** — generic CSV→entity mapper. *(medium)*
-7. **8 field-maps for the OOB CSVs** — route existing extractor output into the
-   entity store; verify dedup convergence on a known figure (Huebner). *(small per map)*
+**Tabular (scanned OOB — built via markdown parsers)**
+6. ✅ **OOB markdown section parsers** — command-staff, campaigns, command-posts,
+   statistics, organic-units on a shared `_common` framework, with **division
+   inference** (Signal 1) and verification-flagging. *(built)*
+7. ✅ **Persist + crosswalk** — rows → `output/oob/<section>/`; non-destructive
+   name→`PersonID` crosswalk. *(built — design "C1")*
+8. ❌ **Generic `src/parser/tabular.py` + field-maps** — for *clean* CSV sources
+   (and the eventual entity-emit shape). Still to build.
+
+**Entity convergence + wiring**
+9. ❌ **Fuzzy / LLM-verified matcher** — upgrade the crosswalk beyond exact match.
+10. ❌ **Entity-convergence emit** — turn matched OOB rows into the same
+    `people`/`people_groups`/`dates` entities so they flow through dedup (the
+    Huebner goal).
+11. ❌ **Pipeline wiring ("B")** — run the ingestion front-end as a Phase 0 step
+    in both local and AWS/ECS execution paths.
 
 **Media entities**
-8. **Still image / map handler** — register asset in `filestore/`, create
-   `images`/`maps` entity with vision caption + cross-refs. Reuses `images.py`
-   and the maps vision-verify path. *(medium)*
-9. **Audio handler (oral histories)** — whisper transcript → prose path +
-   linked audio asset. Drives Eisenhower oral histories + LoC VHP. *(future)*
-10. **Video handler** — transcript + keyframes. *(future)*
+12. ⚠️ **Still image / map handler** — asset register + vision caption + cross-refs.
+13. ❌ **Audio handler (oral histories)** — whisper transcript → prose path. *(future)*
+14. ❌ **Video handler** — transcript + keyframes. *(future)*
 
 **Acquisition loop (footnote extraction)**
-11. **`acquisition` block on bibliography entries** — additive field + state
-    enum. Backfill `identified`/`requestable` from existing
-    `archive_reference_number` + `availability`. *(small)*
-12. **Case 1 auto-fetch** — download `resource_urls` bytes and hand to Phase 0.
-    Turns 3,635 online citations into ingested content. *(medium)*
-13. **Case 2 request batching + triage** — group by repository/record group,
-    rank by `mentions` frequency, emit human-actionable order lists. *(medium)*
-14. **Receipt handoff** — a received scan (uploaded by a human) is matched to its
-    citation and flows through Phase 0; entities dedup against the citing prose. *(medium)*
+15. ❌ **`acquisition` block on bibliography entries** — additive field + state enum.
+16. ❌ **Case 1 auto-fetch** — download `resource_urls` bytes → Phase 0.
+17. ❌ **Case 2 request batching + triage** — group by repository, rank by `mentions`.
+18. ❌ **Receipt handoff** — received scan matched to citation → Phase 0 → dedup.
 
-Steps 1–2 are the reusable spine; every handler and acquisition step after can
-land independently. Steps 11–14 are what make the footnoted-data goal reachable.
+Steps 1–2 are the reusable spine (built). Steps 9–11 are the current critical
+path to making the built work converge and run end-to-end.
 
 ---
 
@@ -477,7 +549,11 @@ and go straight through the generic mapper.
 
 ## Related
 
+- [INGESTION_FRONT_END.md](INGESTION_FRONT_END.md) — the built ingestion
+  front-end + OOB markdown parsers (media detection, per-page disposition,
+  routing manifest, region converter, section parsers, division inference,
+  persist + crosswalk)
 - [CHANDRA_OCR_DESIGN.md](CHANDRA_OCR_DESIGN.md) — PDF→markdown OCR (Phase 0 bridge)
 - [eto_oob_division_coverage_report.md](eto_oob_division_coverage_report.md) — OOB extraction coverage
-- [../core/PIPELINE.md](../core/PIPELINE.md) — prose pipeline phases
+- [../core/PIPELINE.md](../core/PIPELINE.md) — prose pipeline phases (now incl. Phase 0)
 - [../SCHEMA_REFERENCE.md](../SCHEMA_REFERENCE.md) — entity schemas the mapper targets

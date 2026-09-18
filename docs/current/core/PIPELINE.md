@@ -1,10 +1,35 @@
 # Pipeline Documentation
 
-**Last Updated:** 2026-06-13
+**Last Updated:** 2026-09-18
 
 ## Overview
 
-The extraction pipeline consists of three main phases, with a dedup review gate between Phase 2 and Phase 3:
+The extraction pipeline consists of four phases (Phase 0 ingestion + three
+extraction phases), with a dedup review gate between Phase 2 and Phase 3:
+
+### Phase 0: Ingestion Normalization
+Normalizes any source medium into the pipeline's inputs *before* Phase 1. Built
+in `src/ingestion/` (see
+[../dataquality/INGESTION_FRONT_END.md](../dataquality/INGESTION_FRONT_END.md)
+and [../dataquality/STRUCTURED_DATA_ROUTING.md](../dataquality/STRUCTURED_DATA_ROUTING.md)):
+- **Media-type detection** — PDF / HTML / image / moving-image; unsupported
+  media is recorded and flagged, never fails the run.
+- **Per-page disposition classification** — `structured` | `unstructured` |
+  `image` | `map`, heuristic + config-override, scanned-aware (a fully-scanned
+  PDF defers structure to its OCR+AI markdown rather than guessing from
+  geometry).
+- **Region conversion** — each page/region → Markdown (the universal
+  intermediate) via a disposition-appropriate method, extracting image/map
+  assets that the prose converter previously dropped.
+- **Scanned tabular parsing** — for scanned reference tables (e.g. the ETO
+  Order of Battle), section parsers turn the OCR+AI markdown into structured
+  rows (command-staff, campaigns, command-posts, statistics, organic-units) with
+  division inference and verification-flagging, persisted to `output/oob/` and
+  linked to `PersonID` via a non-destructive crosswalk.
+
+Phase 0 runs both locally and (primarily) in the AWS/ECS path. Its outputs feed
+Phase 1. Note: the ingestion modules are built and tested as a library; wiring
+them as a single runnable phase step is the current integration task.
 
 ### Phase 1: Parsing
 Converts markdown source files into structured JSON with absolute paragraph numbering. On AWS, Phase 1 also:
