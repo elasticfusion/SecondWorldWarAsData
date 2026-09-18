@@ -115,6 +115,13 @@ Prevent `find_related_groups.py`-style issues from accumulating. Don't enforce o
 Once the format-agnostic ingestion + media classification work is built (see
 `docs/current/dataquality/STRUCTURED_DATA_ROUTING.md`), build a specialized
 audit-and-reimport script that:
+
+> **Status (2026-09-18):** the Phase 0 ingestion front-end + OOB scanned-table
+> parsers are now built (`src/ingestion/`, see
+> `docs/current/dataquality/INGESTION_FRONT_END.md`). This reprocess/backfill
+> script remains pending and should run once Phase 0 is wired as a runnable
+> phase and the entity-convergence bridge lands.
+
 1. **Audits existing output** — scans already-extracted content and entities for
    sources affected by the pre-Phase-0 gaps: embedded image-maps that were lost
    between `images.py` and `maps.py`, images misclassified by keyword-only

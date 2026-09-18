@@ -29,11 +29,17 @@ Full setup: [Local Deployment Guide](docs/current/LOCAL_DEPLOYMENT.md) | AWS: [A
 ## Pipeline
 
 ```
-Phase 1: Parse    →  Markdown → structured JSON               (seconds)
-Phase 2: Extract  →  11 entity types via Grok Batch API       (50% cost savings)
+Phase 0: Ingest   →  Any source → Markdown; scanned tables → rows   (media detect, disposition, OCR)
+Phase 1: Parse    →  Markdown → structured JSON                     (seconds)
+Phase 2: Extract  →  11 entity types via Grok Batch API            (50% cost savings)
          Dedup    →  Auto-merge + human review gate
-Phase 3: Enrich   →  Wikipedia, OpenSERP, Open-Meteo, NARA    (per entity)
+Phase 3: Enrich   →  Wikipedia, OpenSERP, Open-Meteo, NARA          (per entity)
 ```
+
+Phase 0 (ingestion normalization, `src/ingestion/`) detects media type,
+classifies each page's disposition, converts to Markdown, and parses scanned
+reference tables (e.g. the ETO Order of Battle) into structured rows. It runs
+both locally and in AWS; see [Ingestion Front-End](docs/current/dataquality/INGESTION_FRONT_END.md).
 
 In AWS mode, Phase 2 submits requests asynchronously via the Grok Batch API (50% discount), retrieves results via Lambda poller, then runs dedup and enrichment automatically.
 
@@ -71,6 +77,8 @@ SecondWorldWarAsData/
 ├── ecs_entrypoint.py        # ECS orchestrator (S3 sync, batch, dedup)
 ├── phase{1,2,3}_*.py        # Phase scripts
 ├── src/
+│   ├── ingestion/           # Phase 0: media detection, disposition, region
+│   │   └── oob_markdown/    #          conversion, OOB table parsers + crosswalk
 │   ├── extraction/          # 11 entity extractors
 │   ├── enrichment/          # OpenSERP, Wikipedia, NARA
 │   ├── dedup/               # Deduplication logic

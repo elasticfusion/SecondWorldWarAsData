@@ -262,11 +262,17 @@ aws s3 sync "$LOCAL_OUTPUT" "$OUTPUT_S3"
 
 1. **Manual** — Lambda or CLI invocation for ad-hoc PDFs
 2. **S3 event** — New PDF uploaded to `source/` prefix triggers job submission
-3. **Pipeline Phase 0** — Before Phase 1 parsing, convert any PDFs to markdown
+3. **Pipeline Phase 0** — Before Phase 1 parsing, convert any PDFs to markdown.
+   The Phase 0 ingestion front-end (`src/ingestion/`) consumes Chandra markdown:
+   it classifies each page's disposition and, for scanned reference tables,
+   parses the markdown into structured rows (see
+   [INGESTION_FRONT_END.md](INGESTION_FRONT_END.md) and
+   [STRUCTURED_DATA_ROUTING.md](STRUCTURED_DATA_ROUTING.md)). Chandra is the
+   PDF→markdown OCR bridge feeding that front-end.
 
 ### Output Format
 
-Chandra produces markdown with HTML tables. This is directly compatible with the existing Phase 1 parser — no conversion needed. Output goes to `contentrepository/{Book}/` alongside other markdown chapter files.
+Chandra produces markdown with HTML tables. This is directly compatible with the existing Phase 1 parser (for prose) and with the Phase 0 OOB section parsers (for scanned tables) — no conversion needed. Output goes to `contentrepository/{Book}/` alongside other markdown chapter files.
 
 ### Workflow
 

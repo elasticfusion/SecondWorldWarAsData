@@ -420,6 +420,30 @@ def discover_content_structure(content_root: Path) -> Dict[str, List[ChapterGrou
     # Returns: {book_name: [ChapterGroup, ...]}
 ```
 
+### Ingestion — Phase 0 (`src/ingestion/`)
+
+Format-agnostic ingestion front-end that runs ahead of Phase 1 (media detection,
+per-page disposition classification, region→Markdown conversion) plus the OOB
+scanned-table parsers. Built as a library; wiring as a runnable phase is pending.
+See [../dataquality/INGESTION_FRONT_END.md](../dataquality/INGESTION_FRONT_END.md).
+
+```
+src/ingestion/
+├── source_metadata.py        # recorded-original record + checksum
+├── media_detection.py        # detect PDF/HTML/image/moving-image; flag unsupported
+├── disposition.py            # Disposition types + PageSignals/DispositionResult
+├── disposition_classifier.py # per-page structured/unstructured/image/map (scanned-aware)
+├── routing_manifest.py       # coalesce regions → manifest for conversion
+├── region_converter.py       # per-disposition region → Markdown + image/map asset extraction
+└── oob_markdown/             # scanned OOB tables → structured rows
+    ├── _common.py            # division/section tracking, cleanup, verification, inference
+    ├── command_staff.py, campaigns.py, command_posts.py,
+    │   statistics.py, organic_units.py   # section parsers
+    ├── models.py             # row models (carry division_source + review flags)
+    ├── persist.py            # write rows → output/oob/<section>/
+    └── crosswalk.py          # non-destructive name→PersonID crosswalk
+```
+
 ## Extraction Modules (`src/extraction/`)
 
 ### Events (`src/extraction/events.py`)
