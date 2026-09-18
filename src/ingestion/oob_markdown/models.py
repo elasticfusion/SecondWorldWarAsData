@@ -70,3 +70,106 @@ class CommandStaffParseResult:
             "review_count": self.review_count,
             "rows": [r.to_dict() for r in self.rows],
         }
+
+
+@dataclass
+class CampaignRow:
+    """One campaign a division participated in.
+
+    Attributes:
+        division: Division the campaign belongs to (tracked from content).
+        campaign: Campaign name as read (e.g. "Normandy", "Rhineland").
+        confidence: Parse confidence in [0.0, 1.0].
+        needs_review: True when the value looks suspect or the division is
+            unknown.
+        notes: Free text explaining a review flag.
+        source_file: The markdown file the row came from (provenance).
+    """
+
+    division: str
+    campaign: str
+    confidence: float = 1.0
+    needs_review: bool = False
+    notes: str = ""
+    source_file: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Return a JSON-serializable dict."""
+        return asdict(self)
+
+
+@dataclass
+class CampaignParseResult:
+    """Result of parsing a markdown file's CAMPAIGNS content."""
+
+    source_file: str
+    rows: List[CampaignRow] = field(default_factory=list)
+
+    @property
+    def review_count(self) -> int:
+        """Number of rows flagged for review."""
+        return sum(1 for r in self.rows if r.needs_review)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Return a JSON-serializable dict."""
+        return {
+            "source_file": self.source_file,
+            "row_count": len(self.rows),
+            "review_count": self.review_count,
+            "rows": [r.to_dict() for r in self.rows],
+        }
+
+
+@dataclass
+class CommandPostRow:  # pylint: disable=too-many-instance-attributes
+    """One command-post location entry.
+
+    Attributes:
+        division: Division the command post belongs to (tracked from content).
+        date: Day-month date as read (e.g. "20 Oct"); year is separate.
+        year: Year inherited from the most recent underlined year context row.
+        town: Town/place name.
+        region: Region/administrative area (may be empty in the source).
+        country: Country (as read; may be abbreviated, e.g. "Neth").
+        confidence: Parse confidence in [0.0, 1.0].
+        needs_review: True when a cell looks suspect or the division is unknown.
+        notes: Free text explaining a review flag.
+        source_file: The markdown file the row came from (provenance).
+    """
+
+    division: str
+    date: str
+    year: str
+    town: str
+    region: str
+    country: str
+    confidence: float = 1.0
+    needs_review: bool = False
+    notes: str = ""
+    source_file: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Return a JSON-serializable dict."""
+        return asdict(self)
+
+
+@dataclass
+class CommandPostParseResult:
+    """Result of parsing a markdown file's COMMAND POSTS tables."""
+
+    source_file: str
+    rows: List[CommandPostRow] = field(default_factory=list)
+
+    @property
+    def review_count(self) -> int:
+        """Number of rows flagged for review."""
+        return sum(1 for r in self.rows if r.needs_review)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Return a JSON-serializable dict."""
+        return {
+            "source_file": self.source_file,
+            "row_count": len(self.rows),
+            "review_count": self.review_count,
+            "rows": [r.to_dict() for r in self.rows],
+        }

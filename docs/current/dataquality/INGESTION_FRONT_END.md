@@ -287,9 +287,26 @@ rows, below). Findings that shaped the implementation:
       splitting, `(actg)` acting flags, `<br/>`/entity cleanup, and division
       tracking from content. Verification-flagging only (no correction): suspect
       cells get `needs_review` + `confidence` + `notes`, raw cell preserved.
-- [ ] Piece 2 (increment 2+) — Remaining OOB sections (statistics, campaigns,
-      organic units, attachments, detachments, higher-unit assignments, command
-      posts) using the same framework.
+- [x] Piece 2 (increment 2) — CAMPAIGNS and COMMAND POSTS parsers, plus a
+      shared `_common.py` framework (division/section tracking, cell cleanup,
+      verification flags) that `command_staff` was refactored onto. Campaigns
+      handles both the plain-text list and the chronology-table-column forms
+      (with colspan-aware column indexing); command posts inherit the year from
+      underlined context rows. Full corpus: 175 campaign rows and ~2,280
+      command-post rows.
+- [ ] Piece 2 (increment 3+) — Remaining OOB sections (statistics, organic
+      units, attachments, detachments, higher-unit assignments) using the same
+      framework.
+- [ ] **Region-coverage record (required, testable)** — the markdown parser must
+      walk a heterogeneous document and emit a record of every region it
+      recognized, marking each as *parsed* or *recognized-but-not-yet-parsed*,
+      so intra-document coverage is measurable per document rather than implicit.
+      A single source doc contains varied data types in different regions (e.g.
+      an OOB division block interleaves 8 section types; ibiblio narrative pages
+      mix prose + images + maps + footnotes); the dispatch must recognize each
+      region and never silently skip one. **Validate on the clean ibiblio docs
+      first** (mixed but low-noise, easy to judge correct), then apply to the
+      garbled OOB scans. Not required immediately, but must be built and tested.
 - [ ] Later — relocate OOB table normalization into the `structured` converter
 - [ ] Later — parser extension so local map assets populate the `Map` slot
       (currently emitted as embedded images; parser's map regex is URL-only)
