@@ -34,3 +34,28 @@ repos:
         entry: bash -c 'source .venv/bin/activate && python -m pylint --disable=C0301,C0103,R0913,R0914,R0915,W0511,R0917,W0718,W0212,W1203,C0415 "$@"' --
         language: system
         types: [python]
+
+      # Type checking (only on changed files) — blocking
+      - id: mypy
+        name: Mypy
+        entry: bash -c 'source .venv/bin/activate && python -m mypy --ignore-missing-imports "$@"' --
+        language: system
+        types: [python]
+
+      # Security scanning (only on changed files) — blocking on HIGH severity/confidence
+      - id: bandit
+        name: Bandit (fail on HIGH)
+        entry: bash -c 'source .venv/bin/activate && python -m bandit -lll -iii "$@"' --
+        language: system
+        types: [python]
+
+      # Complexity analysis (only on changed files) — ADVISORY, non-blocking.
+      # Reports functions at grade C or worse for review; never fails the commit.
+      # Policy: a C prompts the question "can this be simplified?" — sometimes
+      # yes, sometimes the complexity is inherent. See docs/current/core/DEVELOPMENT.md.
+      - id: radon
+        name: Radon complexity (advisory, reports C+)
+        entry: bash -c 'source .venv/bin/activate && python -m radon cc --min C -s "$@"; true' --
+        language: system
+        types: [python]
+        verbose: true
