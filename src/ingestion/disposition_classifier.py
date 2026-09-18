@@ -1,20 +1,29 @@
 """Per-page disposition classifier (heuristic + config override).
 
 Classifies each page of a PDF as ``structured`` | ``unstructured`` | ``image``
-| ``map`` using cheap, deterministic signals from PyMuPDF (``fitz``):
+| ``map`` using cheap, deterministic signals from PyMuPDF (``fitz``).
 
-  * text density (character count, text-area fraction) -> unstructured prose
-  * detected tables (count, area fraction)             -> structured
-  * image-area fraction                                -> image
-  * large image/graphic + sparse text (+ drawings)     -> map
+Two regimes:
 
-Ambiguous pages (the fuzzy image/map boundary, or weak signals) get a low
-confidence and ``needs_review=True``. A config override can force a page's
-disposition, which always wins and is recorded as such. No ML is used; four
-coarse classes are well served by heuristics, matching the config-override
-reality already established by the OOB extractor.
+* **Native PDFs** (vector text, embedded raster images): geometry signals work
+  well — text density -> unstructured; detected tables -> structured;
+  image-area dominance (+ drawings) -> image/map.
+* **Scanned PDFs** (every page is a full-page scan image, usually with an OCR
+  text layer): geometry cannot distinguish structure. Validated on the ETO
+  Order of Battle: ``image_area_fraction`` is ~1.0 on every page, ``find_tables``
+  finds nothing (no vector layer), and OCR span geometry does not separate
+  tables from prose. So for scanned pages this classifier does NOT guess
+  structure. Text-bearing scanned pages are marked ``unstructured`` and flagged
+  for review, with a note that STRUCTURE for scanned documents is recovered from
+  the OCR+AI (Chandra) markdown, not from PDF geometry (see
+  INGESTION_FRONT_END.md, "scanned documents"). Near-empty-text scanned pages
+  are treated as ``image``.
 
-See docs/current/dataquality/INGESTION_FRONT_END.md (step 3).
+Ambiguous pages get a low confidence and ``needs_review=True``. A config
+override always wins and is recorded as such. No ML is used.
+
+See docs/current/dataquality/INGESTION_FRONT_END.md (step 3, and the scanned-
+document finding under step 6).
 """
 
 from __future__ import annotations
@@ -60,6 +69,18 @@ CONF_CLEAR = 0.9
 CONF_WEAK = 0.55
 # At/below this confidence a result is flagged for human review.
 REVIEW_BELOW = 0.6
+
+# --- Scanned-document detection ------------------------------------------
+# A page is "scan-like" when a raster image covers essentially the whole page.
+SCAN_IMAGE_AREA = 0.95
+# A document is treated as scanned when at least this fraction of sampled pages
+# are scan-like. Scanned docs cannot be structure-classified by geometry.
+SCANNED_DOC_FRACTION = 0.8
+# Number of pages sampled (evenly spaced) for the document-level scan check.
+SCAN_SAMPLE_PAGES = 12
+# On a scanned page, at least this many characters of OCR text means the page
+# carries content (tables or prose) rather than being a bare image.
+SCAN_TEXT_MIN_CHARS = 100
 
 
 def _rect_area(bbox: tuple[float, float, float, float]) -> float:
@@ -120,6 +141,48 @@ def compute_page_signals(page: "fitz.Page") -> PageSignals:
     )
 
 
+def _page_is_scan_like(page: "fitz.Page") -> bool:
+    """True when a raster image covers essentially the whole page."""
+    signals = compute_page_signals(page)
+    return signals.image_area_fraction >= SCAN_IMAGE_AREA
+
+
+def detect_scanned(doc: "fitz.Document") -> bool:
+    """Return True if the document is a scanned PDF (full-page images).
+
+    Samples up to ``SCAN_SAMPLE_PAGES`` evenly-spaced pages and checks whether a
+    dominant fraction are full-page raster scans. Cheap and document-level: the
+    result drives whether per-page classification trusts geometry-based
+    structure signals.
+    """
+    total = doc.page_count
+    if total == 0:
+        return False
+    step = max(1, total // SCAN_SAMPLE_PAGES)
+    sampled = list(range(0, total, step))
+    scan_like = sum(1 for i in sampled if _page_is_scan_like(doc[i]))
+    return scan_like / len(sampled) >= SCANNED_DOC_FRACTION
+
+
+def _classify_scanned_page(signals: PageSignals) -> tuple[Disposition, float, str]:
+    """Classify a page of a SCANNED document.
+
+    Geometry cannot tell structured from unstructured here (see module docstring
+    and INGESTION_FRONT_END.md). So: a page with an OCR text layer is routed as
+    ``unstructured`` and flagged for review, with a note that structure is
+    recovered from the OCR+AI markdown, not PDF geometry. A page with little or
+    no text is treated as an ``image``.
+    """
+    if signals.char_count >= SCAN_TEXT_MIN_CHARS:
+        return (
+            "unstructured",
+            CONF_WEAK,
+            "scanned page with OCR text; geometry cannot classify structure "
+            "(structure recovered from OCR+AI markdown, not PDF geometry)",
+        )
+    return "image", CONF_WEAK, "scanned page with little/no text layer"
+
+
 def _classify_from_signals(signals: PageSignals) -> tuple[Disposition, float, str]:
     """Return (disposition, confidence, note) from measured signals.
 
@@ -163,9 +226,16 @@ def classify_page(
     page_number: int,
     *,
     override: Optional[Disposition] = None,
+    scanned: bool = False,
 ) -> DispositionResult:
-    """Classify a single page, honoring a config override when supplied."""
+    """Classify a single page, honoring a config override when supplied.
+
+    When ``scanned`` is True the page is classified with the scanned-document
+    rules (geometry cannot determine structure); otherwise native-PDF geometry
+    signals are used.
+    """
     signals = compute_page_signals(page)
+    signals.scanned = scanned
 
     if override is not None:
         return DispositionResult(
@@ -180,7 +250,10 @@ def classify_page(
             notes="disposition forced by config override",
         )
 
-    disposition, confidence, note = _classify_from_signals(signals)
+    if scanned:
+        disposition, confidence, note = _classify_scanned_page(signals)
+    else:
+        disposition, confidence, note = _classify_from_signals(signals)
     return DispositionResult(
         source_id=source_id,
         disposition=disposition,
@@ -202,6 +275,9 @@ def classify_pdf(
 ) -> List[DispositionResult]:
     """Classify every page of a PDF.
 
+    Detects whether the document is scanned once, then classifies each page
+    under the appropriate regime.
+
     Args:
         source_id: Identifier of the owning source.
         pdf_path: Path to the PDF.
@@ -213,6 +289,7 @@ def classify_pdf(
     override_map: Dict[int, Disposition] = dict(overrides or {})
     results: List[DispositionResult] = []
     with fitz.open(str(pdf_path)) as doc:
+        scanned = detect_scanned(doc)
         for index, page in enumerate(doc):
             page_number = index + 1
             results.append(
@@ -221,13 +298,15 @@ def classify_pdf(
                     page,
                     page_number,
                     override=override_map.get(page_number),
+                    scanned=scanned,
                 )
             )
     review = sum(1 for r in results if r.needs_review)
     logger.info(
-        "Classified %d page(s) of %s (%d flagged for review)",
+        "Classified %d page(s) of %s (scanned=%s, %d flagged for review)",
         len(results),
         pdf_path.name,
+        scanned,
         review,
     )
     return results

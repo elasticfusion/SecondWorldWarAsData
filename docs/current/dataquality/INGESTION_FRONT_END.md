@@ -122,7 +122,26 @@ Approach: **heuristic + config override** (deterministic, debuggable, no
 per-page inference cost). This matches the operational reality of the OOB
 extractor, which already relies on config overrides for messy scans.
 
-Per-page heuristics (PDF, via `fitz`):
+**Two regimes — native vs. scanned PDFs.** End-to-end validation on the real ETO
+Order of Battle PDF (step 6) established that geometry heuristics only work on
+*native* PDFs:
+
+* **Native PDFs** (vector text + embedded raster images): per-page heuristics
+  work — text density -> `unstructured`; detected tables (`find_tables`) ->
+  `structured`; image-area fraction -> `image`; large image/graphic + sparse
+  text (+ vector drawings) -> `map`.
+* **Scanned PDFs** (every page a full-page scan image, usually with an OCR text
+  layer): geometry **cannot** determine structure. On the OOB PDF every page has
+  `image_area_fraction` ~1.0, `find_tables` finds nothing (no vector layer), and
+  OCR span geometry does not separate tables from prose (a real command-staff
+  roster page looked *less* columnar than the prose preface). So the classifier
+  detects "scanned" up front (a dominant fraction of sampled pages are full-page
+  images) and does **not** guess structure: text-bearing scanned pages ->
+  `unstructured` + `needs_review`, with a note that structure is recovered from
+  the **OCR+AI (Chandra) markdown**, not PDF geometry; near-empty-text scanned
+  pages -> `image`. See "Scanned documents" below.
+
+Per-page heuristics (native PDF, via `fitz`):
 
 - **text density / char count** → prose (`unstructured`) vs. sparse.
 - **table/column detection** (line rulings, aligned x-spans) → `structured`.
@@ -170,6 +189,50 @@ so nothing currently working breaks. The region loop is the only new control
 flow. This is what unblocks PDF image/map extraction: the downstream model is
 unchanged; it is finally fed the data it was designed to accept.
 
+## Scanned documents (validated finding, step 6)
+
+End-to-end validation on the real ETO Order of Battle PDF (602 pages) surfaced a
+design limitation and set the direction for structured extraction from scans.
+
+**Finding.** The OOB PDF is a fully-scanned document: every page is a full-page
+raster scan with an embedded OCR text layer. Consequently none of the native
+geometry signals discriminate structure:
+
+* `image_area_fraction` is ~1.0 on every page (useless as a discriminator).
+* `find_tables()` returns nothing (it needs a vector text layer).
+* OCR span/line geometry does not separate tables from prose — measured on real
+  pages, a command-staff roster looked *less* columnar than the prose preface.
+
+**Decision (validated).** Structure for scanned documents is recovered from the
+**OCR+AI (Chandra) markdown**, not from raw-PDF geometry. This was verified: the
+per-division Chandra markdown (`ocr_output/*.md`, 54 files, ~9,180 table rows)
+represents every OOB section as proper HTML tables with `rowspan` grouping, and
+its cell content is *cleaner* than the current CSV pipeline (e.g. `William C Lee`
+vs. the OCR-mangled `William C Leo`). Residual issues are minor and bounded
+(occasional letter slips like `McLuliffe`; some empty cells) — not dropped or
+hallucinated rows.
+
+**What the front-end does for scanned docs (this step).** Detect "scanned" and
+classify honestly: text-bearing pages -> `unstructured` + `needs_review` with a
+note deferring structure to the markdown; blank-ish pages -> `image`. The
+front-end no longer emits confidently-wrong `structured`/`image` labels on
+scans. This is the correctness fix (Piece 1).
+
+**Follow-up (Piece 2): markdown -> structured JSON.** A separate component will
+parse the Chandra HTML tables into structured JSON (rowspan expansion, mapping
+to the OOB schema, joining `source_page` provenance). Garble handling there
+should be **verification/flagging, not LLM correction**: emit confidence +
+`needs_review` for suspect cells rather than rewriting text (a confidently-wrong
+correction is worse than visible garble for a citable reference). Actual
+correction, if ever needed, should re-read the source *image* region (where the
+model can see the pixels), and is a cost-gated optimization. The downstream
+person identify/merge stage will incidentally repair some garbled names of
+*well-attested* people via cross-source redundancy, but it will NOT rescue the
+OOB's unique long-tail officers (no redundancy) or non-person fields (dates,
+ranks, units), and can risk false merges — so it is a safety net, not the
+primary strategy. Cleanliness comes from reading the good source (Chandra
+markdown) and flagging the rest.
+
 ## Non-goals
 
 - No LLM/vision classifier (cost + non-determinism; heuristics suffice for 4
@@ -188,7 +251,12 @@ unchanged; it is finally fed the data it was designed to accept.
 - [x] Step 3 — Per-page/section disposition classifier
 - [x] Step 4 — Routing manifest emitter
 - [x] Step 5 — Stage-3 seam + image/map extraction converter
-- [ ] Step 6 — Verify image/map handler output end-to-end on the OOB PDF
+- [x] Step 6 — Verify image/map handler output end-to-end on the OOB PDF
+      (validated; surfaced the scanned-document finding above; classifier made
+      scanned-aware so it no longer mislabels scanned pages)
+- [ ] Piece 2 — Parse Chandra OCR+AI markdown tables into structured JSON
+      (rowspan expansion, OOB schema mapping, provenance join, verification/
+      flagging of suspect cells)
 - [ ] Later — relocate OOB table normalization into the `structured` converter
 - [ ] Later — parser extension so local map assets populate the `Map` slot
       (currently emitted as embedded images; parser's map regex is URL-only)
