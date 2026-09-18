@@ -344,6 +344,11 @@ rows, below). Findings that shaped the implementation:
       region and never silently skip one. **Validate on the clean ibiblio docs
       first** (mixed but low-noise, easy to judge correct), then apply to the
       garbled OOB scans. Not required immediately, but must be built and tested.
+- [x] Pipeline wiring (B) — Phase 0 is runnable: `phase0_ingest.py` (local) +
+      `ecs_entrypoint.py` phase0 branch (AWS: input download + `output/oob/` sync).
+      Drives the OOB markdown parsers → persist + crosswalk end-to-end. (Generic
+      PDF→markdown region conversion is built and can be added to the
+      orchestrator as its Chandra-OCR path is wired.)
 - [ ] Later — relocate OOB table normalization into the `structured` converter
 - [ ] Later — parser extension so local map assets populate the `Map` slot
       (currently emitted as embedded images; parser's map regex is URL-only)

@@ -28,8 +28,11 @@ and [../dataquality/STRUCTURED_DATA_ROUTING.md](../dataquality/STRUCTURED_DATA_R
   linked to `PersonID` via a non-destructive crosswalk.
 
 Phase 0 runs both locally and (primarily) in the AWS/ECS path. Its outputs feed
-Phase 1. Note: the ingestion modules are built and tested as a library; wiring
-them as a single runnable phase step is the current integration task.
+Phase 1. It is now runnable: `python phase0_ingest.py` locally, or
+`ecs_entrypoint.py phase0_ingest.py` in AWS (which downloads sources from S3 and
+syncs `output/oob/` back up). The current increment wires the scanned-OOB
+structured-parsing path; generic PDF→markdown region conversion (also built in
+`src/ingestion/`) is added to the orchestrator as its Chandra-OCR path is wired.
 
 ### Phase 1: Parsing
 Converts markdown source files into structured JSON with absolute paragraph numbering. On AWS, Phase 1 also:
