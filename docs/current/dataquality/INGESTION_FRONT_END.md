@@ -305,9 +305,27 @@ rows, below). Findings that shaped the implementation:
 - [ ] Later — fuzzy / LLM-verified matcher pass over the crosswalk (upgrades
       `match_method: none` and low-confidence links; runs over pristine inputs
       since C1 kept both the OOB rows and the people store unmodified).
-- [ ] Piece 2 (increment 3+) — Remaining OOB sections (statistics, organic
-      units, attachments, detachments, higher-unit assignments) using the same
-      framework.
+- [x] Piece 2 (increment 3) — STATISTICS and ORGANIC UNITS markdown parsers
+      (`statistics.py`, `organic_units.py`). Statistics parses category
+      sub-blocks (Chronology/Casualties/Individual Awards) of `metric..... value`
+      dot-leader lines, treating the nested Campaigns sub-block as an internal
+      boundary; organic units parses the 2-column unit tables, capturing footnote
+      glyphs into `notes`. Full corpus: ~810 statistics rows, ~4,890 organic-unit
+      rows.
+- [ ] Piece 2 (increment 4) — Remaining sections: attachments, detachments,
+      higher-unit assignments (the messiest: date-range OCR noise, category
+      sub-headers, Asgd/Atchd colspan headers).
+- [ ] **Division-inference pass (high value, cross-section)** — the single
+      biggest OOB data-quality issue. Many section tables (especially organic
+      units: ~89% of rows) appear BEFORE any in-content division title, so they
+      are captured under `(unknown)` and flagged. Their content is otherwise
+      clean (e.g. "405th Infantry"). A dedicated pass that infers the division
+      for `(unknown)` rows (from surrounding context, unit-number ranges, or the
+      original PDF page→division map) would recover the large majority of flagged
+      rows across ALL sections. Verification, not guessing: infer with confidence
+      + review, never fabricate.
+      (b)/(c) companions from increment 3 still apply: improve the CSV extractor
+      where gaps appear; add a markdown-vs-`eto_oob_*.csv` discrepancy cross-check.
 - [ ] **Region-coverage record (required, testable)** — the markdown parser must
       walk a heterogeneous document and emit a record of every region it
       recognized, marking each as *parsed* or *recognized-but-not-yet-parsed*,
