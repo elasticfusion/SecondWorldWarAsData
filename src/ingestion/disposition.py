@@ -35,6 +35,8 @@ class PageSignals:
         drawing_count: Number of vector-drawing paths (a map cue).
         table_count: Number of tables detected on the page.
         table_area_fraction: Fraction of page area covered by detected tables.
+        scanned: True when the page is a full-page scan image (a raster covers
+            the whole page), so geometry-based structure signals do not apply.
     """
 
     char_count: int = 0
@@ -43,6 +45,7 @@ class PageSignals:
     drawing_count: int = 0
     table_count: int = 0
     table_area_fraction: float = 0.0
+    scanned: bool = False
 
 
 @dataclass

@@ -15,6 +15,7 @@ from src.ingestion.disposition_classifier import (
     classify_page,
     classify_pdf,
     compute_page_signals,
+    detect_scanned,
 )
 
 
@@ -163,3 +164,97 @@ def test_page_numbering_is_preserved(tmp_path: Path, bad_page: int) -> None:
     doc = fitz.open()
     result = classify_page("S", _sparse_page(doc), bad_page)
     assert result.page_number == bad_page
+
+
+# --- scanned-document regime (step 6 finding) ----------------------------
+
+
+def _scanned_text_page(doc: fitz.Document) -> None:
+    """A full-page scan image WITH an OCR-like text layer (tabular content).
+
+    Simulates a scanned roster page: a raster covers the whole page and there
+    is an OCR text layer. Geometry cannot tell this is a table.
+    """
+    page = doc.new_page()
+    pix = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 595, 842))
+    pix.clear_with(240)
+    page.insert_image(page.rect, pixmap=pix)
+    # OCR-like text layer over the scan.
+    page.insert_textbox(
+        fitz.Rect(50, 50, 545, 780),
+        "Comdg Gen 15 Sep 1943 Maj Gen William C Lee\n"
+        "Asst Div Comdr 1 Aug 1944 Brig Gen Gerald J Higgins\n" * 8,
+        fontsize=10,
+    )
+
+
+def _scanned_blank_page(doc: fitz.Document) -> None:
+    """A full-page scan image with essentially no text layer."""
+    page = doc.new_page()
+    pix = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 595, 842))
+    pix.clear_with(240)
+    page.insert_image(page.rect, pixmap=pix)
+
+
+def _scanned_pdf(tmp_path: Path, blank_last: bool = True) -> Path:
+    doc = fitz.open()
+    for _ in range(6):
+        _scanned_text_page(doc)
+    if blank_last:
+        _scanned_blank_page(doc)
+    path = tmp_path / "scanned.pdf"
+    doc.save(str(path))
+    doc.close()
+    return path
+
+
+def test_detect_scanned_true_for_full_page_images(tmp_path: Path) -> None:
+    path = _scanned_pdf(tmp_path)
+    with fitz.open(str(path)) as doc:
+        assert detect_scanned(doc) is True
+
+
+def test_detect_scanned_false_for_native_prose(tmp_path: Path) -> None:
+    doc = fitz.open()
+    for _ in range(4):
+        _prose_page(doc)
+    path = tmp_path / "native.pdf"
+    doc.save(str(path))
+    doc.close()
+    with fitz.open(str(path)) as native:
+        assert detect_scanned(native) is False
+
+
+def test_scanned_text_page_is_unstructured_not_structured(tmp_path: Path) -> None:
+    # The core fix: a scanned table page must NOT be confidently mislabeled.
+    # It routes to unstructured + review, deferring structure to the markdown.
+    path = _scanned_pdf(tmp_path)
+    results = classify_pdf("S", path)
+    text_pages = [r for r in results if r.signals.char_count > 100]
+    assert text_pages, "expected scanned text pages in fixture"
+    for result in text_pages:
+        assert result.disposition == "unstructured"
+        assert result.signals.scanned is True
+        assert result.needs_review is True
+        assert "markdown" in result.notes.lower()
+
+
+def test_scanned_blank_page_is_image(tmp_path: Path) -> None:
+    path = _scanned_pdf(tmp_path, blank_last=True)
+    results = classify_pdf("S", path)
+    assert results[-1].disposition == "image"
+    assert results[-1].signals.scanned is True
+
+
+def test_native_path_unaffected_by_scanned_logic(tmp_path: Path) -> None:
+    # A native prose PDF must still classify as before (not scanned).
+    doc = fitz.open()
+    _prose_page(doc)
+    path = tmp_path / "native.pdf"
+    doc.save(str(path))
+    doc.close()
+    result = classify_pdf("S", path)[0]
+    assert result.signals.scanned is False
+    assert result.disposition == "unstructured"
+    assert result.needs_review is False  # clear native decision
+    assert result.confidence > REVIEW_BELOW
