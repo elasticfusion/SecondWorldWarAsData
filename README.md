@@ -14,6 +14,8 @@ git clone <repo> && cd SecondWorldWarAsData
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp config.yaml.example config.yaml  # Add your GROK_API_KEY
+# Optional: build/compile step (if any) then:
+python phase0_ingest.py               # Phase 0: normalize sources (OOB tables → output/oob/)
 python phase1_parse.py               # Parse → JSON
 python phase2_extract.py             # Extract entities (uses Grok API)
 python phase3_enrich_data.py         # Enrich with external data
@@ -38,8 +40,9 @@ Phase 3: Enrich   →  Wikipedia, OpenSERP, Open-Meteo, NARA          (per entit
 
 Phase 0 (ingestion normalization, `src/ingestion/`) detects media type,
 classifies each page's disposition, converts to Markdown, and parses scanned
-reference tables (e.g. the ETO Order of Battle) into structured rows. It runs
-both locally and in AWS; see [Ingestion Front-End](docs/current/dataquality/INGESTION_FRONT_END.md).
+reference tables (e.g. the ETO Order of Battle) into structured rows. It is
+runnable as `python phase0_ingest.py` (local) or `ecs_entrypoint.py
+phase0_ingest.py` (AWS); see [Ingestion Front-End](docs/current/dataquality/INGESTION_FRONT_END.md).
 
 In AWS mode, Phase 2 submits requests asynchronously via the Grok Batch API (50% discount), retrieves results via Lambda poller, then runs dedup and enrichment automatically.
 

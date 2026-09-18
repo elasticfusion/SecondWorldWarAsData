@@ -372,7 +372,7 @@ def _get_openserp_alb_dns() -> str:
 
 def _start_openserp_if_needed(phase_script: str) -> None:
     """Scale OpenSERP service to 1 for Phase 2/3 and discover its IP."""
-    if "phase1" in phase_script:
+    if "phase0" in phase_script or "phase1" in phase_script:
         return
     try:
         env = os.environ.get("ENV_NAME", "dev")
@@ -766,7 +766,9 @@ def _materialize_from_dynamo() -> bool:
 
 def _download_inputs(phase_script: str) -> None:
     """Download the appropriate inputs from S3 for this phase."""
-    if "phase1" in phase_script:
+    if "phase0" in phase_script:
+        _download_phase0_inputs()
+    elif "phase1" in phase_script:
         _download_phase1_inputs()
     elif "phase2" in phase_script:
         n = _download_phase2_inputs()
@@ -780,6 +782,16 @@ def _download_inputs(phase_script: str) -> None:
         if not force and _materialize_from_dynamo():
             return
         _download_phase3_from_s3()
+
+
+def _download_phase0_inputs() -> None:
+    """Download source content for Phase 0 (raw sources incl. OOB markdown).
+
+    Phase 0 normalizes sources under ``contentrepository/`` (OOB Chandra
+    markdown in ``*/ocr_output/*.md``, PDFs, etc.), so it needs the same content
+    prefix Phase 1 consumes. Reuse the Phase 1 content download.
+    """
+    _download_phase1_inputs()
 
 
 def _download_phase1_inputs() -> None:
@@ -1575,6 +1587,13 @@ def _read_manifest() -> list:
 
 def _final_sync(phase_script: str = ""):
     """Final upload of new output to S3. Only uploads entity subdirs, not parsed/event files."""
+    if "phase0" in phase_script:
+        # Phase 0: upload the OOB structured rows + crosswalk it produced.
+        d = WORKDIR / "output" / "oob"
+        if d.exists():
+            n, _ = s3_sync_up(d, "output/oob")
+            logger.info("Final sync: uploaded %d Phase 0 output files", n)
+        return
     if "phase1" in phase_script:
         # Phase 1: upload book content (parsed files trigger Phase 2)
         d = WORKDIR / "output" / "content"
