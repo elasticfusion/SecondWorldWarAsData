@@ -307,7 +307,14 @@ rows, below). Findings that shaped the implementation:
       since C1 kept both the OOB rows and the people store unmodified).
 - [ ] Piece 2 (increment 3+) — Remaining OOB sections (statistics, organic
       units, attachments, detachments, higher-unit assignments) using the same
-      framework.
+      framework. Approach (a): fresh markdown parsers feeding persist/crosswalk,
+      with the existing `eto_oob_*.csv` (old PDF-geometry extractor) as a
+      validation reference. Two tracked companions, not to be forgotten:
+      **(b)** improvements to the existing CSV extractor where the markdown pass
+      reveals gaps; **(c)** a discrepancy cross-check that compares the
+      markdown-derived rows against the CSV-derived rows and flags disagreements
+      (doubles as a verification signal, since the two derivations are
+      independent).
 - [ ] **Region-coverage record (required, testable)** — the markdown parser must
       walk a heterogeneous document and emit a record of every region it
       recognized, marking each as *parsed* or *recognized-but-not-yet-parsed*,
