@@ -71,3 +71,11 @@ messages/
 .idea/
 unprocesseddocs/
 output/metrics/
+
+# Large source content & regenerable data artifacts (keep in S3 / LFS, not git)
+contentrepository/
+indexes/
+manifests/manifests_complete/
+
+# Editor lock files
+.~lock.*#

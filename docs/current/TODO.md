@@ -111,6 +111,25 @@ Prevent `find_related_groups.py`-style issues from accumulating. Don't enforce o
 
 ## Future / Research
 
+#### Reprocess already-imported data after Phase 0 routing lands
+Once the format-agnostic ingestion + media classification work is built (see
+`docs/current/dataquality/STRUCTURED_DATA_ROUTING.md`), build a specialized
+audit-and-reimport script that:
+1. **Audits existing output** — scans already-extracted content and entities for
+   sources affected by the pre-Phase-0 gaps: embedded image-maps that were lost
+   between `images.py` and `maps.py`, images misclassified by keyword-only
+   `_classify_content_type`, images dropped by `alt_text` dedup, and any
+   sources that never parsed (raw PDFs sitting in `contentrepository/`).
+2. **Reports** what would change (per source: images recovered, maps
+   reclassified, entities newly created) before touching anything.
+3. **Re-attempts import** through the finished Phase 0 pipeline, feeding results
+   into dedup so recovered media/entities merge with existing ones rather than
+   duplicating.
+Applies across ALL sources (not ibiblio-specific) — the underlying fixes are
+made once in the shared parser/media path, and this script backfills everything
+imported before the fix.
+*Source: Structured-data routing analysis 2026-06-30*
+
 #### Amazon metadata enrichment for confirmed books
 For bibliography entries confirmed as published books, search Amazon.com for metadata: book cover image, ISBN, edition info, page count, publisher details. Supplements Archive.org/Gutenberg data with commercial metadata.
 *Source: Search debug session 2026-06-17*

@@ -1,0 +1,91 @@
+# PDF pages where division header OCR still fails match_division after normalization.
+# Keys are 1-based PDF page numbers; values are canonical division names.
+overrides:
+  "41": "2d Infantry Division"
+  "305": "83d Infantry Division"
+  "306": "83d Infantry Division"
+  "432": "2d Armored Division"
+
+# Inclusive PDF page ranges when headers OCR as wrong division (e.g. 8->3, 78->73/8).
+division_page_ranges:
+  29th Infantry Division:
+    first_pdf_page: 130
+    last_pdf_page: 136
+  30th Infantry Division:
+    first_pdf_page: 142
+    last_pdf_page: 151
+  36th Infantry Division:
+    first_pdf_page: 163
+    last_pdf_page: 170
+  42d Infantry Division:
+    first_pdf_page: 172
+    last_pdf_page: 178
+  44th Infantry Division:
+    first_pdf_page: 180
+    last_pdf_page: 186
+  45th Infantry Division:
+    first_pdf_page: 188
+    last_pdf_page: 196
+  63d Infantry Division:
+    first_pdf_page: 198
+    last_pdf_page: 204
+  65th Infantry Division:
+    first_pdf_page: 205
+    last_pdf_page: 209
+  70th Infantry Division:
+    first_pdf_page: 227
+    last_pdf_page: 230
+  75th Infantry Division:
+    first_pdf_page: 239
+    last_pdf_page: 246
+  76th Infantry Division:
+    first_pdf_page: 248
+    last_pdf_page: 254
+  9th Infantry Division:
+    first_pdf_page: 96
+    last_pdf_page: 96
+  13th Airborne Division:
+    first_pdf_page: 108
+    last_pdf_page: 113
+  5th Infantry Division:
+    first_pdf_page: 75
+    last_pdf_page: 75
+  78th Infantry Division:
+    first_pdf_page: 255
+    last_pdf_page: 263
+  79th Infantry Division:
+    first_pdf_page: 264
+    last_pdf_page: 274
+  80th Infantry Division:
+    first_pdf_page: 276
+    last_pdf_page: 283
+  83d Infantry Division:
+    first_pdf_page: 296
+    last_pdf_page: 307
+  84th Infantry Division:
+    first_pdf_page: 309
+    last_pdf_page: 316
+  86th Infantry Division:
+    first_pdf_page: 317
+    last_pdf_page: 324
+  89th Infantry Division:
+    first_pdf_page: 333
+    last_pdf_page: 337
+
+# Divisions listed in the volume TOC but absent from the scanned PDF.
+missing_from_scan:
+  28th Infantry Division:
+    printed_pages: [109, 119]
+    note: >
+      Printed page footers jump from 108 to 120 (pdf 128 to 129). The full 28th
+      Infantry Division section is not present in this PDF file.
+
+# Divisions partially present: specific printed pages missing from an otherwise
+# extractable section (insignia/attachments may exist; gaps are not renumbered).
+missing_printed_pages:
+  71st Infantry Division:
+    printed_pages: [225, 226]
+    note: >
+      Insignia at printed p. 224 (pdf 233). Command & staff, statistics,
+      campaigns, and organic units are absent; the scan resumes at pdf 234
+      with attachments.
