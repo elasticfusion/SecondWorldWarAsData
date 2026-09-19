@@ -50,17 +50,20 @@ def _parse_filename(stem: str) -> tuple[str, Optional[str]]:
 def build_name_index(
     entity_dir: Path,
     id_field: str,
-    _name_field: str,
+    name_field: str = "name",
 ) -> Dict[str, str]:
-    """Build name→ID index from local files without reading contents.
+    """Build name→ID index from local files.
 
-    Tries index.json first (single file read). Falls back to reading
-    individual files only when IDs aren't in filenames.
+    Prefers ``index.json`` (fast, single read) but validates it: if a large
+    share of its entries point to files that no longer exist (a stale index),
+    it is abandoned in favor of a content scan that reads each entity file's
+    authoritative ``name``/ID fields. This prevents the silent match-rate
+    collapse seen when an index.json drifts from the files on disk.
 
     Args:
         entity_dir: Path to entity directory (e.g., output/people/)
         id_field: ID field name (e.g., 'PersonID')
-        _name_field: Name field name (unused — kept for API compat)
+        name_field: Name field to read from file contents (default 'name').
 
     Returns:
         Dict mapping lowercase name → entity ID
@@ -68,13 +71,70 @@ def build_name_index(
     if not entity_dir.exists():
         return {}
 
-    # Try index.json first — maps name → filename
     index_file = entity_dir / "index.json"
-    if index_file.exists():
+    if index_file.exists() and not _index_json_is_stale(entity_dir, index_file):
         return _build_from_index_json(entity_dir, index_file, id_field)
 
-    # Fall back to filename parsing
-    return _build_from_filenames(entity_dir, id_field)
+    # No index, or a stale one: read authoritative name/ID from file contents.
+    return _build_from_contents(entity_dir, id_field, name_field)
+
+
+# If more than this fraction of index.json entries point to missing files, the
+# index is treated as stale and rebuilt from file contents.
+_STALE_INDEX_THRESHOLD = 0.2
+
+
+def _index_json_is_stale(entity_dir: Path, index_file: Path) -> bool:
+    """True if too many index.json entries point to files that don't exist."""
+    try:
+        raw = json.loads(index_file.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return True
+    if not raw:
+        return True
+    missing = sum(
+        1 for filename in raw.values() if not (entity_dir / filename).exists()
+    )
+    return missing / len(raw) > _STALE_INDEX_THRESHOLD
+
+
+def _build_from_contents(
+    entity_dir: Path, id_field: str, name_field: str
+) -> Dict[str, str]:
+    """Build name→ID by reading each entity file's name/ID fields.
+
+    Authoritative but slower: reads every file. Used when no index.json exists
+    or the existing one is stale. The in-file ``name`` field is preferred over
+    the filename stem (stems drop punctuation/casing and can be ambiguous).
+    """
+    index: Dict[str, str] = {}
+    for f in sorted(entity_dir.glob("*.json")):
+        if f.name in _SKIP_FILES:
+            continue
+        name, entity_id = _name_and_id_from_file(f, id_field, name_field)
+        if entity_id and name:
+            index.setdefault(name.lower(), entity_id)
+    logger.debug(
+        "Built %s index from file contents: %d entries", entity_dir.name, len(index)
+    )
+    return index
+
+
+def _name_and_id_from_file(
+    filepath: Path, id_field: str, name_field: str
+) -> tuple[Optional[str], Optional[str]]:
+    """Return (name, id) for an entity file, falling back to the filename stem."""
+    try:
+        data = json.loads(filepath.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        data = {}
+    entity_id = data.get(id_field) or data.get("GroupID")
+    name = data.get(name_field)
+    if not entity_id or not name:
+        stem_name, stem_id = _parse_filename(filepath.stem)
+        name = name or stem_name
+        entity_id = entity_id or stem_id
+    return name, entity_id
 
 
 def _build_from_index_json(

@@ -57,8 +57,21 @@ def load_config(config_path: Optional[Path] = None) -> Dict[str, Any]:
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
+    _apply_env_overrides(config)
     _validate_config(config, config_path)
     return config
+
+
+def _apply_env_overrides(config: Dict[str, Any]) -> None:
+    """Inject secrets from environment variables into the loaded config.
+
+    Secrets must not live in the committed config file. When the matching env
+    var is set it takes precedence, so ``config.yaml`` can hold an empty
+    placeholder. Currently: ``NARA_API_KEY`` -> ``api.nara_api_key``.
+    """
+    nara_key = os.environ.get("NARA_API_KEY")
+    if nara_key:
+        config.setdefault("api", {})["nara_api_key"] = nara_key
 
 
 def _validate_config(config: Dict[str, Any], path: Path) -> None:
