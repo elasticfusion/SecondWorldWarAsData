@@ -23,6 +23,7 @@ from bs4 import Tag
 from src.ingestion.oob_markdown._common import (
     SECTION_COMMAND_POSTS,
     apply_division_flag,
+    apply_date_flag,
     clean_cell,
     iter_section_tables,
 )
@@ -102,6 +103,14 @@ def _post_row_from_cells(
     confidence, needs_review, notes = _assess_post(date, town, current_year)
     confidence, needs_review, notes = apply_division_flag(
         division_source, confidence, needs_review, notes
+    )
+    # Command-post dates are day-month; the year is tracked separately. Check the
+    # day/month, and the full date+year when a year context is known.
+    confidence, needs_review, notes = apply_date_flag(
+        f"{date} {current_year}".strip() if current_year else date,
+        confidence,
+        needs_review,
+        notes,
     )
     row = CommandPostRow(
         division=division,

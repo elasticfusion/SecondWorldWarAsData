@@ -29,6 +29,7 @@ from src.ingestion.oob_markdown._common import (
     SECTION_COMMAND_STAFF,
     UNKNOWN_DIVISION,
     apply_division_flag,
+    apply_date_flag,
     clean_cell,
     iter_section_tables,
 )
@@ -120,6 +121,9 @@ def _parse_table_rows(
         confidence, needs_review, notes = _assess_row(rank, name)
         confidence, needs_review, notes = apply_division_flag(
             division_source, confidence, needs_review, notes
+        )
+        confidence, needs_review, notes = apply_date_flag(
+            date, confidence, needs_review, notes
         )
         rows.append(
             CommandStaffRow(

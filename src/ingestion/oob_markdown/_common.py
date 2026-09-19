@@ -31,6 +31,7 @@ UNKNOWN_DIVISION = "(unknown)"
 # How a row's division was determined (for auditability and review triage).
 DIVISION_SOURCE_TITLE = "title"  # read from an in-content division title
 DIVISION_SOURCE_INFERRED = "inferred_next_title"  # Signal 1 inference
+DIVISION_SOURCE_RECON = "inferred_recon_troop"  # Signal 2: from the recon troop
 DIVISION_SOURCE_UNKNOWN = "unknown"  # no signal; left (unknown)
 
 # Canonical section keys. The walk classifies each region as one of these.
@@ -77,6 +78,16 @@ _DIVISION_PARTS_RE = re.compile(
 )
 _SPACELESS_PARTS_RE = re.compile(
     r"(\d{1,3})(ST|ND|RD|D|TH)(INFANTRY|ARMORED|AIRBORNE|FRENCHARMORED)DIVISION",
+    re.IGNORECASE,
+)
+# A division's organic reconnaissance troop embeds the division number, e.g.
+# "79th Reconnaissance Troop" -> 79th Division. Infantry divisions field a
+# "Reconnaissance Troop"; this recovers the division number when the OCR dropped
+# the title heading entirely (Signal 2). Type is not encoded here, so callers
+# treat it as Infantry (the troop form is infantry-specific; armored divisions
+# field a "Cavalry Reconnaissance Squadron" instead).
+_RECON_TROOP_RE = re.compile(
+    r"\b(\d{1,3})(st|nd|rd|d|th)\s+Reconnaissance\s+Troop\b",
     re.IGNORECASE,
 )
 
@@ -138,12 +149,18 @@ def apply_division_flag(
     * ``title``  -> unchanged (division read directly from the source).
     * ``inferred_next_title`` -> flag for review, cap confidence; inferred, not
       fabricated, so a reviewer should confirm.
+    * ``inferred_recon_troop`` -> flag for review, cap confidence; recovered from
+      the organic reconnaissance troop when no title existed.
     * ``unknown`` -> flag for review, cap confidence; no division signal at all.
     """
     if division_source == DIVISION_SOURCE_TITLE:
         return confidence, needs_review, notes
     if division_source == DIVISION_SOURCE_INFERRED:
         extra = "division inferred from next title in file (verify)"
+        combined = f"{notes}; {extra}" if notes else extra
+        return min(confidence, 0.6), True, combined
+    if division_source == DIVISION_SOURCE_RECON:
+        extra = "division inferred from reconnaissance troop (verify)"
         combined = f"{notes}; {extra}" if notes else extra
         return min(confidence, 0.6), True, combined
     extra = "division unknown (no title in file)"
@@ -166,6 +183,112 @@ def apply_unknown_division_flag(
     return min(confidence, 0.5), True, combined
 
 
+# Month abbreviations (and common OCR/full-name variants) -> month number.
+# Includes 3-9 letter abbreviations and full names, since the corpus mixes
+# "7 Nov 44" with spelled-out "1 June" (command posts).
+_MONTHS = {
+    "jan": 1,
+    "january": 1,
+    "feb": 2,
+    "february": 2,
+    "mar": 3,
+    "march": 3,
+    "apr": 4,
+    "april": 4,
+    "may": 5,
+    "jun": 6,
+    "june": 6,
+    "jul": 7,
+    "july": 7,
+    "aug": 8,
+    "august": 8,
+    "sep": 9,
+    "sept": 9,
+    "september": 9,
+    "oct": 10,
+    "october": 10,
+    "nov": 11,
+    "november": 11,
+    "dec": 12,
+    "december": 12,
+}
+# A "day month [year]" military date, e.g. "7 Nov 44", "15 Sep 1943", "3 Sep",
+# "1 June". The month is 3-9 letters (abbrev or full name).
+_MIL_DATE_RE = re.compile(r"^\s*(\d{1,2})\s+([A-Za-z]{3,9})\.?(?:\s+(\d{2,4}))?\s*$")
+# The ETO / WWII plausibility window. US Army divisions in this volume were
+# activated as early as 1940 and demobilized by 1946; a parsed date outside this
+# is almost certainly an OCR error or a mis-split cell, so it is flagged (never
+# rewritten).
+DATE_WINDOW_MIN_YEAR = 1940
+DATE_WINDOW_MAX_YEAR = 1946
+
+
+def check_date_plausibility(value: str) -> Optional[str]:
+    """Return a problem note if a military date looks implausible, else None.
+
+    Verification only — the value is never rewritten. Handles the corpus date
+    forms ("7 Nov 44", "15 Sep 1943", and the year-less "3 Sep" used by command
+    posts). Rules, each a distinct, catchable OCR-error class:
+
+    * unparseable as a day/month(/year) date -> problem (e.g. a unit fragment
+      leaked into the date cell like "84th Div ..... 8 Feb 45");
+    * a day outside 1..31 or an unknown month -> problem;
+    * a year (when present) outside the ETO window 1940-1946 -> problem
+      (e.g. "16 Dec 1945" is in-window, but "16 Dec 1955" or a mis-split
+      "26 Mar 439" is not).
+
+    A year-less date ("3 Sep") is plausible as far as it goes (the year is
+    tracked separately for command posts), so only its day/month are checked.
+    """
+    if not value or not value.strip():
+        return None
+    match = _MIL_DATE_RE.match(value)
+    if not match:
+        return "date unparseable (unexpected format)"
+    day = int(match.group(1))
+    month = _MONTHS.get(match.group(2).lower())
+    if not 1 <= day <= 31:
+        return f"day {day} out of range"
+    if month is None:
+        return f"unknown month '{match.group(2)}'"
+    if match.group(3) is not None:
+        year = _normalize_year(match.group(3))
+        if not DATE_WINDOW_MIN_YEAR <= year <= DATE_WINDOW_MAX_YEAR:
+            return (
+                f"year {year} outside ETO window "
+                f"{DATE_WINDOW_MIN_YEAR}-{DATE_WINDOW_MAX_YEAR}"
+            )
+    return None
+
+
+def _normalize_year(raw: str) -> int:
+    """Expand a 2-digit OOB year to 19xx; leave a 4-digit year as-is.
+
+    Two-digit years in this WWII corpus are always 19xx (``44`` -> 1944). A
+    3-digit value (e.g. a mis-split ``439``) is returned as-is so the window
+    check flags it.
+    """
+    if len(raw) == 2:
+        return 1900 + int(raw)
+    return int(raw)
+
+
+def apply_date_flag(
+    value: str, confidence: float, needs_review: bool, notes: str
+) -> Tuple[float, bool, str]:
+    """Fold a date-plausibility problem into a row's confidence/review/notes.
+
+    If :func:`check_date_plausibility` finds a problem, cap confidence and flag
+    for review with an explanatory note; otherwise pass the row through
+    unchanged. Verification, not correction.
+    """
+    problem = check_date_plausibility(value)
+    if problem is None:
+        return confidence, needs_review, notes
+    combined = f"{notes}; {problem}" if notes else problem
+    return min(confidence, 0.5), True, combined
+
+
 def first_division_in(markdown: str) -> Optional[str]:
     """Return the first division title that appears anywhere in the document.
 
@@ -181,15 +304,35 @@ def first_division_in(markdown: str) -> Optional[str]:
     return None
 
 
+def division_from_recon_troop(markdown: str) -> Optional[str]:
+    """Infer an Infantry division from its reconnaissance troop (Signal 2).
+
+    When a file has no division title anywhere (OCR dropped the heading), the
+    organic ``Nth Reconnaissance Troop`` still names the division number. Returns
+    a normalized ``"<n><ord> Infantry Division"`` (the troop form is
+    infantry-specific), or None if no recon troop is present. Never fabricates a
+    type: armored divisions use a Cavalry Reconnaissance Squadron and so are not
+    matched here.
+    """
+    match = _RECON_TROOP_RE.search(markdown)
+    if not match:
+        return None
+    number, ordinal = match.group(1), match.group(2).lower()
+    return f"{number}{ordinal} Infantry Division"
+
+
 def attribute_division(
-    seen_division: str, inferred_division: Optional[str]
+    seen_division: str,
+    inferred_division: Optional[str],
+    recon_division: Optional[str] = None,
 ) -> Tuple[str, str]:
     """Resolve a block's division and its source.
 
-    Returns (division, division_source):
-      * a division read from a title before the block  -> source "title"
-      * else the inferred next-title division, if any   -> "inferred_next_title"
-      * else                                            -> UNKNOWN_DIVISION / "unknown"
+    Returns (division, division_source), preferring the strongest signal:
+      * a division read from a title before the block  -> ``title``
+      * else the inferred next-title division, if any  -> ``inferred_next_title``
+      * else the recon-troop division, if any          -> ``inferred_recon_troop``
+      * else                                           -> UNKNOWN_DIVISION / ``unknown``
 
     Never overwrites a title-read division; never fabricates.
     """
@@ -197,6 +340,8 @@ def attribute_division(
         return seen_division, DIVISION_SOURCE_TITLE
     if inferred_division:
         return inferred_division, DIVISION_SOURCE_INFERRED
+    if recon_division:
+        return recon_division, DIVISION_SOURCE_RECON
     return UNKNOWN_DIVISION, DIVISION_SOURCE_UNKNOWN
 
 
@@ -223,17 +368,19 @@ def iter_section_tables(
     appears before any division title is attributed to the first title in the
     document (Signal 1 inference), tagged ``inferred_next_title``; a table under
     a title keeps that title's division (``title``); if the document has no
-    title at all the division is ``(unknown)``.
+    title at all the division is inferred from the reconnaissance troop
+    (``inferred_recon_troop``), else ``(unknown)``.
     """
     soup = BeautifulSoup(markdown, "html.parser")
     inferred = first_division_in(markdown)
+    recon = division_from_recon_troop(markdown)
     division = ""
     section: Optional[str] = None
     results: List[Tuple[str, str, Tag]] = []
     for element in soup.descendants:
         if isinstance(element, Tag):
             if element.name == "table" and section == wanted_section:
-                div, source = attribute_division(division, inferred)
+                div, source = attribute_division(division, inferred, recon)
                 results.append((div, source, element))
             continue
         division, section = _update_state(str(element), division, section)
@@ -257,9 +404,11 @@ def iter_section_text_blocks(
     """Yield (division, division_source, lines) for text runs in ``wanted_section``.
 
     Plain-text analogue of :func:`iter_section_tables`, with the same Signal 1
-    next-title inference for blocks that precede any division title.
+    next-title inference for blocks that precede any division title, and the same
+    Signal 2 reconnaissance-troop fallback when the file has no title at all.
     """
     inferred = first_division_in(markdown)
+    recon = division_from_recon_troop(markdown)
     blocks: List[Tuple[str, str, List[str]]] = []
     division = ""
     section: Optional[str] = None
@@ -268,7 +417,7 @@ def iter_section_text_blocks(
 
     def flush() -> None:
         if collected and section == wanted_section:
-            div, source = attribute_division(block_division, inferred)
+            div, source = attribute_division(block_division, inferred, recon)
             blocks.append((div, source, list(collected)))
 
     for line in text_lines(markdown):
@@ -303,3 +452,50 @@ def section_counts(markdown: str) -> Dict[str, int]:
         if sec:
             counts[sec] = counts.get(sec, 0) + 1
     return counts
+
+
+# Maps a section *marker* present in a document to the parser output key(s) that
+# should carry its rows. Some markers do not map 1:1 to a parser:
+#   * COMPOSITION is a wrapper header; its rows come out under organic_units.
+#   * DETACHMENTS rows are emitted by the attachments parser (kind="detached"),
+#     so both ATTACHMENTS and DETACHMENTS markers expect the "attachments" key.
+#   * CAMPAIGNS may have no plain-text marker yet still yield rows from the
+#     statistics table's Campaigns column; handled in coverage as a soft case.
+_MARKER_TO_OUTPUT_KEYS: Dict[str, Tuple[str, ...]] = {
+    SECTION_COMMAND_STAFF: ("command_staff",),
+    SECTION_STATISTICS: ("statistics",),
+    SECTION_CAMPAIGNS: ("campaigns",),
+    SECTION_COMPOSITION: ("organic_units",),
+    SECTION_ORGANIC_UNITS: ("organic_units",),
+    SECTION_ATTACHMENTS: ("attachments",),
+    SECTION_DETACHMENTS: ("attachments",),
+    SECTION_HIGHER_UNITS: ("higher_units",),
+    SECTION_COMMAND_POSTS: ("command_posts",),
+}
+
+
+def coverage_gaps(
+    markdown: str, parsed_keys: Dict[str, int]
+) -> List[Tuple[str, Tuple[str, ...]]]:
+    """Report section markers present in ``markdown`` that yielded no rows.
+
+    ``parsed_keys`` maps parser output keys (``command_staff``, ``statistics``,
+    ...) to their row counts for this document. A section marker whose expected
+    output key(s) all produced zero rows is a coverage gap — the region exists in
+    the source but nothing was extracted from it, i.e. a silently-skipped section
+    (an unrecognized format, or a parser that does not yet cover it).
+
+    Returns a list of ``(marker_section, expected_output_keys)`` for each gap,
+    so a caller can surface exactly which sections were seen-but-unparsed. This
+    turns a silent skip into a reported, reviewable fact.
+    """
+    present = section_counts(markdown)
+    gaps: List[Tuple[str, Tuple[str, ...]]] = []
+    for marker in present:
+        expected = _MARKER_TO_OUTPUT_KEYS.get(marker)
+        if not expected:
+            continue
+        if any(parsed_keys.get(key, 0) > 0 for key in expected):
+            continue
+        gaps.append((marker, expected))
+    return gaps

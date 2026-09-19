@@ -81,7 +81,7 @@ def test_discover_oob_markdown_finds_ocr_output(tmp_path: Path) -> None:
 
     ocr = tmp_path / "contentrepository" / "OOB" / "ocr_output"
     ocr.mkdir(parents=True)
-    (ocr / "1st_infantry.md").write_text("x", encoding="utf-8")
+    (ocr / "26th_infantry.md").write_text("x", encoding="utf-8")
     (ocr / "00-missing.md").write_text("skip me", encoding="utf-8")
     # A markdown file NOT under ocr_output should be ignored.
     other = tmp_path / "contentrepository" / "Book" / "chapter1"
@@ -90,9 +90,67 @@ def test_discover_oob_markdown_finds_ocr_output(tmp_path: Path) -> None:
 
     found = discover_oob_markdown(tmp_path / "contentrepository")
     names = {p.name for p in found}
-    assert "1st_infantry.md" in names
+    assert "26th_infantry.md" in names
     assert "00-missing.md" not in names  # skip stem
     assert "chapter1-content.md" not in names  # not under ocr_output
+
+
+def test_discover_oob_markdown_skips_misfiled_and_reference(tmp_path: Path) -> None:
+    from phase0_ingest import discover_oob_markdown
+
+    ocr = tmp_path / "contentrepository" / "OOB" / "ocr_output"
+    ocr.mkdir(parents=True)
+    # A real per-division file is kept.
+    (ocr / "9th_infantry.md").write_text("x", encoding="utf-8")
+    # The confirmed misfiled duplicate (holds 14th Armored, not 1st Infantry) is
+    # skipped by name; its data is sourced from the Chandra 14th_armored file.
+    (ocr / "1st_infantry.md").write_text("x", encoding="utf-8")
+    # Aggregate/reference files (no division-type stem) are skipped.
+    (ocr / "preface.md").write_text("x", encoding="utf-8")
+    (ocr / "tables_of_organic_units.md").write_text("x", encoding="utf-8")
+
+    names = {p.name for p in discover_oob_markdown(tmp_path / "contentrepository")}
+    assert "9th_infantry.md" in names
+    assert "1st_infantry.md" not in names  # misfiled duplicate, skipped
+    assert "preface.md" not in names  # reference, not per-division
+    assert "tables_of_organic_units.md" not in names
+
+
+def test_discover_oob_markdown_finds_book_named_single_division(tmp_path: Path) -> None:
+    from phase0_ingest import discover_oob_markdown
+
+    # A Chandra file misnamed after the book but holding one real division is
+    # included; an empty stub with the same name is not.
+    real = tmp_path / "contentrepository" / "OOB_chandra" / "ETO_Order_of_Battle"
+    real.mkdir(parents=True)
+    (real / "ETO_Order_of_Battle.md").write_text(
+        "1st Infantry Division\n\nCOMMAND AND STAFF\n", encoding="utf-8"
+    )
+    stub = tmp_path / "contentrepository" / "OOB_chandra.md" / "ETO_Order_of_Battle"
+    stub.mkdir(parents=True)
+    (stub / "ETO_Order_of_Battle.md").write_text("\n", encoding="utf-8")
+
+    found = discover_oob_markdown(tmp_path / "contentrepository")
+    real_included = any(p.parent.parent.name == "OOB_chandra" for p in found)
+    stub_included = any(p.parent.parent.name == "OOB_chandra.md" for p in found)
+    assert real_included  # single-division book-named file is kept
+    assert not stub_included  # empty stub is skipped
+
+
+def test_discover_pdfs_excludes_ocr_output(tmp_path: Path) -> None:
+    from phase0_ingest import discover_pdfs
+
+    root = tmp_path / "contentrepository"
+    (root / "OOB").mkdir(parents=True)
+    (root / "OOB" / "source.pdf").write_bytes(b"%PDF-1.4 fake")
+    # A PDF already inside ocr_output is an output, not a source -> excluded.
+    (root / "OOB" / "ocr_output").mkdir(parents=True)
+    (root / "OOB" / "ocr_output" / "derived.pdf").write_bytes(b"%PDF-1.4 fake")
+
+    found = discover_pdfs(root)
+    names = {p.name for p in found}
+    assert "source.pdf" in names
+    assert "derived.pdf" not in names
 
 
 def test_ecs_download_inputs_routes_phase0(monkeypatch) -> None:

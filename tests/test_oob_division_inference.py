@@ -8,10 +8,12 @@ leaves the division (unknown).
 
 from src.ingestion.oob_markdown._common import (
     DIVISION_SOURCE_INFERRED,
+    DIVISION_SOURCE_RECON,
     DIVISION_SOURCE_TITLE,
     DIVISION_SOURCE_UNKNOWN,
     UNKNOWN_DIVISION,
     attribute_division,
+    division_from_recon_troop,
     first_division_in,
 )
 from src.ingestion.oob_markdown.command_staff import parse_command_staff
@@ -134,3 +136,59 @@ def test_organic_units_inference_applies_too() -> None:
     assert all(r.division == "90th Infantry Division" for r in rows)
     assert all(r.division_source == DIVISION_SOURCE_INFERRED for r in rows)
     assert all(r.needs_review for r in rows)
+
+
+# --- recon-troop inference (Signal 2) ------------------------------------
+
+# No division title anywhere, but the organic reconnaissance troop names the
+# division number (the OCR-dropped-title case seen in real files).
+RECON_ONLY_MD = """
+COMMAND AND STAFF
+
+<table><tbody>
+<tr><td>Comdg Gen</td><td>1 Nov 1944</td><td>Maj Gen John A Smith</td></tr>
+</tbody></table>
+
+ORGANIC UNITS
+
+<table border="0">
+<tr><td>313th Infantry</td><td>79th Reconnaissance Troop</td></tr>
+</table>
+"""
+
+
+def test_division_from_recon_troop_helper() -> None:
+    assert division_from_recon_troop(RECON_ONLY_MD) == "79th Infantry Division"
+    # No recon troop -> None (armored divisions field a Cavalry Recon Squadron).
+    assert division_from_recon_troop("102d Cavalry Reconnaissance Squadron") is None
+    assert division_from_recon_troop(NO_TITLE_MD) is None
+
+
+def test_attribute_division_recon_is_third_signal() -> None:
+    # Title beats everything; next-title beats recon; recon beats unknown.
+    assert (
+        attribute_division("4th Armored Division", None, "79th Infantry Division")[1]
+        == DIVISION_SOURCE_TITLE
+    )
+    assert (
+        attribute_division("", "82d Airborne Division", "79th Infantry Division")[1]
+        == DIVISION_SOURCE_INFERRED
+    )
+    assert attribute_division("", None, "79th Infantry Division") == (
+        "79th Infantry Division",
+        DIVISION_SOURCE_RECON,
+    )
+    assert attribute_division("", None, None) == (
+        UNKNOWN_DIVISION,
+        DIVISION_SOURCE_UNKNOWN,
+    )
+
+
+def test_recon_troop_recovers_division_when_no_title() -> None:
+    rows = parse_command_staff(RECON_ONLY_MD, "t.md").rows
+    assert rows
+    row = rows[0]
+    assert row.division == "79th Infantry Division"
+    assert row.division_source == DIVISION_SOURCE_RECON
+    assert row.needs_review is True  # inferred -> flagged for verification
+    assert "reconnaissance troop" in row.notes.lower()

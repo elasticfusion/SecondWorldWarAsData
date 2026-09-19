@@ -233,6 +233,128 @@ class StatisticParseResult:
 
 
 @dataclass
+class AttachmentRow:  # pylint: disable=too-many-instance-attributes
+    """One attached (or detached) support unit for a division.
+
+    Attributes:
+        division: Division the attachment belongs to (tracked from content).
+        arm: Branch sub-header the unit falls under (e.g. "Armored",
+            "Cavalry", "Chemical", "Antiaircraft Artillery").
+        unit: Attached unit as read (e.g. "781st Tk Bn",
+            "Co A 47th Tk Bn (14th Armd Div)").
+        start_date: Attachment start date as read (e.g. "7 Nov 44"), or "".
+        end_date: Attachment end date as read (e.g. "26 Nov 44"), or "".
+        kind: "attached" or "detached" (which section the row came from).
+        confidence: Parse confidence in [0.0, 1.0].
+        needs_review: True when a cell looks suspect or the division is unknown.
+        notes: Free text explaining a review flag.
+        source_file: The markdown file the row came from (provenance).
+    """
+
+    division: str
+    arm: str
+    unit: str
+    start_date: str = ""
+    end_date: str = ""
+    kind: str = "attached"
+    confidence: float = 1.0
+    needs_review: bool = False
+    notes: str = ""
+    source_file: str = ""
+    division_source: str = "title"  # title | inferred_next_title | ... | unknown
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Return a JSON-serializable dict."""
+        return asdict(self)
+
+
+@dataclass
+class AttachmentParseResult:
+    """Result of parsing a markdown file's ATTACHMENTS/DETACHMENTS content."""
+
+    source_file: str
+    rows: List[AttachmentRow] = field(default_factory=list)
+
+    @property
+    def review_count(self) -> int:
+        """Number of rows flagged for review."""
+        return sum(1 for r in self.rows if r.needs_review)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Return a JSON-serializable dict."""
+        return {
+            "source_file": self.source_file,
+            "row_count": len(self.rows),
+            "review_count": self.review_count,
+            "rows": [r.to_dict() for r in self.rows],
+        }
+
+
+@dataclass
+class HigherUnitRow:  # pylint: disable=too-many-instance-attributes
+    """One dated higher-echelon assignment/attachment for a division.
+
+    The ASSIGNMENT AND ATTACHMENT ("To Higher Units") table records, per date,
+    the corps the division was under and the army / army-group it was assigned
+    (``Asgd``) or attached (``Atchd``) to. A blank cell means unchanged/none; a
+    literal ``-`` in the source is preserved as read.
+
+    Attributes:
+        division: Division the row belongs to (tracked from content).
+        date: Effective date as read (e.g. "1 Nov 44").
+        corps: Corps the division was under (e.g. "VII"), or "".
+        army_assigned: Army the division was assigned to (e.g. "First"), or "".
+        army_attached: Army the division was attached to, or "".
+        group_assigned: Army group / higher command assigned (e.g. "12th"), or "".
+        group_attached: Army group / higher command attached (e.g. "Br 21st"),
+            or "".
+        confidence: Parse confidence in [0.0, 1.0].
+        needs_review: True when the row looks suspect or the division is unknown.
+        notes: Free text explaining a review flag.
+        source_file: The markdown file the row came from (provenance).
+    """
+
+    division: str
+    date: str
+    corps: str = ""
+    army_assigned: str = ""
+    army_attached: str = ""
+    group_assigned: str = ""
+    group_attached: str = ""
+    confidence: float = 1.0
+    needs_review: bool = False
+    notes: str = ""
+    source_file: str = ""
+    division_source: str = "title"  # title | inferred_next_title | ... | unknown
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Return a JSON-serializable dict."""
+        return asdict(self)
+
+
+@dataclass
+class HigherUnitParseResult:
+    """Result of parsing a markdown file's ASSIGNMENT AND ATTACHMENT table."""
+
+    source_file: str
+    rows: List[HigherUnitRow] = field(default_factory=list)
+
+    @property
+    def review_count(self) -> int:
+        """Number of rows flagged for review."""
+        return sum(1 for r in self.rows if r.needs_review)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Return a JSON-serializable dict."""
+        return {
+            "source_file": self.source_file,
+            "row_count": len(self.rows),
+            "review_count": self.review_count,
+            "rows": [r.to_dict() for r in self.rows],
+        }
+
+
+@dataclass
 class OrganicUnitRow:
     """One organic unit of a division.
 
