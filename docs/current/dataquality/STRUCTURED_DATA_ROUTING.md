@@ -3,7 +3,47 @@
 Design for classifying source documents at ingestion and routing structured
 (tabular) data through the same entity model as unstructured (prose) data.
 
-**Status:** Partially implemented (ingestion front-end + OOB markdown parsers built; entity convergence pending) | **Last Updated:** 2026-09-18
+**Status:** Partially implemented (ingestion front-end + OOB markdown parsers built; entity convergence pending) | **Last Updated:** 2026-09-20
+
+---
+
+## Governing invariant: every fact traces to its source
+
+The non-negotiable requirement the whole design serves: **every asserted fact
+must be traceable back to the original source material, in a thoroughly
+documented way.** Where in the pipeline this is enforced does not matter; the
+guarantee does. A number in a table, a sentence of prose, a claim spoken in a
+video, or an assertion on a web page must all resolve backward to their origin.
+
+This invariant is already realized in pieces — `mentions[]`/`event_mentions[]`
+(entity → sub-event → source), `verbatim_reference` and `provenance_anchor`
+(page/offset), the `bibliography` record, the `acquisition` block (below), and
+`biography_sources` on OOB-derived people. It is stated here once so no path is
+built that breaks it.
+
+### Required source/citation metadata (per document)
+
+Every ingested source must capture the following, to the extent the medium
+allows. Formally published works are expected to carry all of these;
+self-published or archival material captures what exists and **flags the gaps
+(`needs_review`)** rather than omitting the fields:
+
+| Field | Where it lives today | Notes |
+|-------|----------------------|-------|
+| Author | `bibliography.citation.author[]` | |
+| Copyright / status | `bibliography.copyright_status`, `license` | enumerate explicitly |
+| Publish date | `bibliography.citation.publication_date` | |
+| Publisher | `bibliography.citation.publisher` | |
+| Publisher location | `bibliography.citation.publication_location` | |
+| Website URL (if applicable) | `bibliography.resource_urls[]`, source-metadata `acquisition_url` | |
+| — Capture date (for web) | *gap — add* | when the URL was fetched/snapshotted |
+
+The web **capture date** is the notable gap: web sources are mutable, so the
+fetch/snapshot timestamp is required to make a web-sourced fact reproducible.
+It belongs on the source-metadata record (alongside `detected_at`/`checksum`)
+and, for cited web pages, on the bibliography/acquisition record.
+
+---
 
 > **Reconciliation note (2026-09-18).** The ingestion front-end and the
 > scanned-OOB structured extraction described here have now been **built** in
@@ -107,7 +147,7 @@ knows what it is — don't rely on fragile content sniffing.
 ```yaml
 # contentrepository/{Source}/{item}/item-meta.yaml
 content_type: prose        # prose | tabular | media | mixed
-source_format: markdown    # markdown | html | pdf | csv | epub | txt
+source_format: markdown    # markdown | html | pdf | csv | epub | docx | txt
                            #   | image | map | video | audio
 media_type: null           # (when content_type: media) photograph | map
                            #   | film | audio | drawing
@@ -157,6 +197,7 @@ front door that unifies them.
 | `pdf` (scanned tables) | Chandra OCR markdown → **section parsers** → rows | text | ✅ **Built** (`src/ingestion/oob_markdown/*`: command-staff, campaigns, command-posts, statistics, organic-units + division inference) — see note below on markdown-parser vs. CSV-field-map |
 | `csv` | tabular parser (declarative field-map) | text (entities) | ❌ to build (still the right path for *cleanly*-CSV sources) |
 | `epub` | epub→markdown (ebooklib/pandoc) | text | ❌ to build |
+| `docx` (Word) | docx→markdown (pandoc/mammoth) — carries embedded images/tables | text (+ media) | ❌ to build |
 | `txt` | wrap as markdown | text | ❌ trivial |
 | `image` (still) | register asset + vision caption/OCR | media entity | ⚠️ `images.py` + region converter extract embedded images |
 | `map` (still) | register asset + vision verify | `maps` entity | ✅ exists |
@@ -218,7 +259,7 @@ rather than a gate that most images never reach. Caption/alt text and any
 trigger. This fixes the embedded-map miss (including in ibiblio) and gives
 photographs, unit insignia, and charts the same first-class treatment.
 
-#### Audio/video (oral histories, event footage)
+#### Audio/video (oral histories, event footage) and web pages with video
 
 The Eisenhower oral histories and LoC VHP narratives are the near-term driver:
 - **Audio** → transcribe (whisper) → the transcript is prose that flows through
@@ -228,8 +269,31 @@ The Eisenhower oral histories and LoC VHP narratives are the near-term driver:
   through vision captioning); the film is a media entity linked to the events
   it depicts.
 
-These are later steps, but the classifier and media-entity model should be
-designed now so they slot in without rework.
+**Web page containing video** is a distinct, first-class case (requirement:
+track any web-asserted fact back to source). Such a page yields *two* linked
+provenance objects, both retained:
+
+1. **The web page itself** — captured as a media/source record with its URL and
+   **capture date** (see required-metadata table above), plus the page text.
+   The page text is *later summarized*; the summary is an entity that cites the
+   captured page, so the summary never floats free of its source.
+2. **The embedded video** — registered as a media asset with a **transcript**.
+   Each transcript segment carries its **timecode**, so a specific spoken
+   assertion (a general's or politician's statement) binds to
+   `(video asset, start–end timestamp)`. The transcript is prose that flows
+   through the entity pipeline; extracted claims/quotes reference the timecoded
+   segment, not just the video as a whole.
+
+Binding: the web-page record and the video asset are cross-referenced to each
+other and to the same events/people, so a fact surfaced from the video resolves
+to *both* the page it appeared on and the exact moment in the recording. This is
+the moving-image analogue of `verbatim_reference` + page number for print — the
+provenance anchor for time-based media is `(asset_id, timecode)` and, for the
+containing page, `(url, capture_date)`.
+
+These are later steps, but the classifier and media-entity model (and the
+timecode/capture-date anchors) should be designed now so they slot in without
+rework.
 
 ### 3. Parse paths converge on one entity model
 
@@ -523,6 +587,7 @@ handler where one exists.
 12. ⚠️ **Still image / map handler** — asset register + vision caption + cross-refs.
 13. ❌ **Audio handler (oral histories)** — whisper transcript → prose path. *(future)*
 14. ❌ **Video handler** — transcript + keyframes. *(future)*
+14a. ❌ **Web-page-with-video handler** — capture page (URL + capture date, text→summary later) + register embedded video with timecoded transcript; cross-link both. *(future)*
 
 **Acquisition loop (footnote extraction)**
 15. ❌ **`acquisition` block on bibliography entries** — additive field + state enum.

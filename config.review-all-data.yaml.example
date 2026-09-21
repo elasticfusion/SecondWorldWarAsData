@@ -20,7 +20,7 @@ paths:
 api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
-    model: "grok-4.3"
+    model: "grok-4.6"
     model_map: {}                      # Use best model for everything
     max_retries: 5                     # More retries — we're investing in completeness
     timeout: 120                       # Longer timeout for complex extractions

@@ -79,3 +79,6 @@ manifests/manifests_complete/
 
 # Editor lock files
 .~lock.*#
+
+# Local scratch / inspection artifacts (not tracked)
+tmp/

@@ -20,7 +20,7 @@ paths:
 api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
-    model: "grok-4.3"
+    model: "grok-4.6"
     model_map:
       isbn: "grok-3-mini"             # Light tasks get cheap model
       url_verify: "grok-3-mini"

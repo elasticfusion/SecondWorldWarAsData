@@ -218,6 +218,50 @@ note deferring structure to the markdown; blank-ish pages -> `image`. The
 front-end no longer emits confidently-wrong `structured`/`image` labels on
 scans. This is the correctness fix (Piece 1).
 
+### Chandra markdown structural blind spots (validated 2026-09-20)
+
+The scanned-document strategy above **defers structure recovery to the Chandra
+OCR+AI markdown**. An edge-case probe (St. Vith / Boyer PDF; see
+[CHANDRA_OCR_DESIGN.md](CHANDRA_OCR_DESIGN.md) "Operational findings")
+established that this markdown, while strong on most content, has two structural
+blind spots the markdown parsers / a repair step must own — because no upstream
+signal will supply them and a **model update did not fix them**:
+
+- **Block quotes are not marked.** An indented source quotation is emitted as
+  ordinary paragraphs with quote characters, no `>` / `<blockquote>`. For a
+  citable corpus this is an **attribution-integrity** issue: a quotation can be
+  mistaken for the author's own assertion. Handling: detect block-quote-shaped
+  passages (leading/trailing quote runs, "In the words of ..." lead-ins,
+  page-cited quotations) and re-mark them as quotations with their attributed
+  source, so the quote's *own* provenance (the quoted work) is preserved
+  distinctly from the containing document's provenance.
+- **Complex horizontal / 2-D tables are flattened.** Multi-column
+  task-organization tables come through as sequential vertical lists with no
+  `<table>` markup, so the structured-table path (which keys off `<table>`)
+  never fires. Handling: detect columnar-fragment blocks (runs of short
+  unit/code tokens under repeated group headers) and either re-structure them
+  into a table or emit them `needs_review` rather than letting them fall through
+  to prose. Simple vertical tables are unaffected (Chandra emits proper
+  `<table>`).
+
+These sit alongside the existing `needs_review` discipline: flag, never
+silently drop or guess. The block-quote and table-repair detectors are the
+disposition classifier's job at the region level, downstream of OCR.
+
+### Media binding for scanned pages (update)
+
+The stage-3 seam below plans image/map extraction via `fitz get_pixmap`/
+`extract_image`. For **scanned** pages, the probe showed Chandra 2 already
+emits the image artifact and a caption directly (`total_images: 1`, a `.webp`
+file, and a natural-language description; it also auto-rotates sideways photos).
+So for scanned sources the binding source is **Chandra's emitted artifact +
+caption**, bound to the markdown image reference — `fitz` extraction remains the
+path for **native** PDFs where Chandra is not in the loop. Either way the
+requirement is the same: the actual image file is attached to the markdown
+reference (populating the `Image`/`Map` slots), not merely described. Maps
+remain a distinct `media_type` sub-category of image (formal and hand-drawn),
+classified by vision/description cues, not filename.
+
 **Follow-up (Piece 2): markdown -> structured JSON.** A separate component will
 parse the Chandra HTML tables into structured JSON (rowspan expansion, mapping
 to the OOB schema, joining `source_page` provenance). Garble handling there

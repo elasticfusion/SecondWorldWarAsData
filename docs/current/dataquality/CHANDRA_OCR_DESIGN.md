@@ -2,7 +2,7 @@
 
 Design document for deploying Chandra OCR on AWS with GPU instances for high-quality PDF-to-markdown conversion.
 
-**Status:** Planned | **Last Updated:** 2026-06-30
+**Status:** Deployed (AWS Batch GPU, `dev-wwii-chandra` job def / `dev-wwii-chandra-gpu` queue) | **Last Updated:** 2026-09-20
 
 ---
 
@@ -17,6 +17,85 @@ Tested on `ETO_Order_of_Battle.pdf` (33MB, pages 21-34):
 - Correctly extracted names, ranks, dates, unit designations
 - Ran on CPU in ~15 minutes for 14 pages (no GPU available locally)
 - With GPU: estimated 2-5 minutes for the same pages
+
+---
+
+## Operational findings (validated 2026-09-20)
+
+Established by an edge-case probe on `St. Vith — The 7th Armored Division in
+the Battle of the Bulge` (Boyer), a fully-scanned 252-page PDF, run on the
+deployed Batch GPU pipeline. Six pages were chosen to exercise distinct
+content types (map, block quote, rotated photo, footnotes, vertical table,
+horizontal table). Outputs live under
+`s3://dev-wwii-data-pipeline/ocr-output/stvith-probe/`.
+
+### `--page-range` is 0-based — submit `N-1` for physical page `N`
+
+The `chandra` CLI's `--page-range` argument is **0-based**, while the cover is
+physical page 1. Passing `--page-range 12-12` returns the content of physical
+page **13**. This was confirmed against local `pdftoppm` renders (physical
+page 1 = cover; page 8 = a hand-drawn dispositions map; page 12 = the
+INTRODUCTION containing the block quote).
+
+**Rule:** to OCR intended physical page `N`, submit `--page-range (N-1)-(N-1)`.
+The `entrypoint.sh` forwards the arg verbatim, so this offset is inherent to
+`chandra` itself, not the wrapper. Any manifest or submission helper must apply
+the `N-1` conversion (and the automatic full-document chunking is unaffected
+only because it ranges the whole doc).
+
+### Chandra 2 emits image artifacts + captions on scanned pages
+
+For a page whose content is a **photograph** (probe page 17, a rotated
+combat photo), Chandra 2 emits `total_images: 1`, saves the cropped image as a
+`.webp` artifact, and writes a natural-language caption/description into the
+markdown (`![...](..._img.webp)` + descriptive text). It also auto-rotated the
+sideways photo without prompting. For a **hand-drawn map** (page 8) it produced
+a labelled transcription plus a natural-language description ("A hand-drawn map
+showing the dispositions ... oriented with the top of the page to the left").
+
+Implication for media binding (see INGESTION_FRONT_END.md): for **scanned**
+pages the image artifact + caption can be taken from Chandra's own output,
+rather than relying solely on `fitz` extraction. The binding requirement — the
+actual image file attached to the markdown reference, not just described — is
+satisfiable directly from Chandra output for scanned sources.
+
+### Structural blind spots — NOT fixed by a model update
+
+Two structural-fidelity gaps were found where Chandra **captures the content
+but drops the block-type markup**:
+
+- **Block quotes are not marked as block quotes** (page 12). The indented
+  Ingersoll *Top Secret* quotation was rendered as ordinary paragraphs with
+  quotation marks — no `>` / `<blockquote>` markup. Integrity risk: an unmarked
+  block quote can later be misattributed as the author's own words rather than a
+  quotation.
+- **Complex horizontal / 2-D task-org tables are flattened** (page 155). The
+  multi-column task-organization table was emitted as sequential vertical lists
+  with **no `<table>` markup at all**. (Simple vertical tables — page 103
+  casualties — are handled well, with correct `<table>` + `<u>` + totals.)
+
+These were re-tested on the **updated** image (chandra-ocr 0.2.0, current
+weights, pushed 2026-09-20) and **neither gap closed**. They are therefore
+persistent Chandra limitations, not staleness — they must be addressed in the
+pipeline (block-quote re-marking; table re-structuring or `needs_review`
+flagging), not by waiting on a newer model. See INGESTION_FRONT_END.md
+"Chandra markdown structural blind spots".
+
+Pages handled well (no action needed): footnotes (page 20 — body + `<sup>`
+markers + `---` divider + numbered citation list) and simple vertical tables
+(page 103).
+
+### Version pinning (reproducibility)
+
+`Dockerfile.chandra` installs `chandra-ocr[hf]`, `torch`/`torchvision`, and the
+`datalab-to/chandra-ocr-2` weights **unpinned**, so a `--no-cache` rebuild
+resolves whatever is current at build time. The 2026-09-20 rebuild resolved:
+`chandra-ocr 0.2.0`, `transformers 5.17.0`, `torch 2.5.1+cu121`,
+`torchvision 0.20.1+cu121` (note the Dockerfile force-reinstalls the cu121
+torch build over the version `chandra-ocr` pulls). For a citable dataset,
+"which Chandra produced this output" should be answerable — pin these versions
+(and a specific HF model revision), or at minimum record the resolved versions
+per build.
 
 ---
 

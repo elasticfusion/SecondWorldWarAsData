@@ -111,6 +111,51 @@ def test_organic_units_empty_cell_skipped() -> None:
     assert all(r.unit_name for r in result.rows)
 
 
+ORGANIC_TEXT_MD = """
+29th Infantry Division
+
+ORGANIC UNITS
+
+115th Infantry ..... 29th Reconnaissance Troop (Mecz)
+ 116th Infantry ..... 121st Engineer Combat Battalion
+
+29th Division Artillery
+
+110th Field Artillery Battalion (105 Howitzer)
+ 227th Field Artillery Battalion (155 Howitzer)
+
+Special Troops
+
+29th Signal Company
+"""
+
+
+def test_organic_units_text_form_two_column() -> None:
+    result = parse_organic_units(ORGANIC_TEXT_MD, "t.md")
+    names = {r.unit_name for r in result.rows}
+    # Both columns of a dot-leader line are captured.
+    assert "115th Infantry" in names
+    assert "29th Reconnaissance Troop (Mecz)" in names
+    assert "121st Engineer Combat Battalion" in names
+
+
+def test_organic_units_text_form_single_column_lists() -> None:
+    result = parse_organic_units(ORGANIC_TEXT_MD, "t.md")
+    names = {r.unit_name for r in result.rows}
+    # Single-column artillery / special-troops lists are captured...
+    assert "110th Field Artillery Battalion (105 Howitzer)" in names
+    assert "29th Signal Company" in names
+    # ...but the sub-headers themselves are not emitted as units.
+    assert "29th Division Artillery" not in names
+    assert "Special Troops" not in names
+
+
+def test_organic_units_text_form_division_tracked() -> None:
+    result = parse_organic_units(ORGANIC_TEXT_MD, "t.md")
+    assert result.rows
+    assert all(r.division == "29th Infantry Division" for r in result.rows)
+
+
 # --- real-file smoke + CSV validation reference --------------------------
 
 

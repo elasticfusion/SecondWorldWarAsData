@@ -175,41 +175,51 @@ def extract_footnotes(text: str) -> List[Tuple[int, str]]:
     return footnotes
 
 
-def split_into_paragraphs(text: str) -> List[str]:
-    """Split text into paragraphs, preserving all content."""
-    # Remove blockquote markers but keep content
-    lines = text.split("\n")
-    cleaned_lines = []
+def split_into_blocks(text: str) -> List[Tuple[str, bool]]:
+    """Split text into paragraph blocks, preserving a block-quote flag.
 
-    for line in lines:
-        # Remove blockquote marker
-        line = _BLOCKQUOTE_PATTERN.sub("", line)
-        cleaned_lines.append(line)
+    Returns a list of ``(paragraph_text, is_quote)``. A block is a quote when
+    all of its non-empty lines begin with a ``>`` marker (as emitted by the
+    markdown-structure block-quote repair). The ``>`` markers are stripped from
+    the returned text, but the fact that it *was* a quote is preserved so the
+    parser can keep the quotation distinct from the author's own prose.
 
-    text = "\n".join(cleaned_lines)
+    ``split_into_paragraphs`` delegates here for the plain-text view, so existing
+    callers are unaffected.
+    """
+    # Remove page/footnote/separator markers first (as before), but do NOT strip
+    # blockquote markers yet — we need them to detect quote blocks.
+    working = _PAGE_MARKER_PATTERN.sub("", text)
+    working = _FOOTNOTE_PATTERN.sub("", working)
+    working = _SEPARATOR_PATTERN.sub("\n\n", working)
 
-    # Remove page markers but keep surrounding content
-    text = _PAGE_MARKER_PATTERN.sub("", text)
-    text = _FOOTNOTE_PATTERN.sub("", text)
-    text = _SEPARATOR_PATTERN.sub("\n\n", text)
-
-    # Split by double newlines
-    blocks = text.split("\n\n")
-
-    paragraphs = []
+    blocks = working.split("\n\n")
+    result: List[Tuple[str, bool]] = []
     for block in blocks:
-        block = block.strip()
-        if not block:
+        raw_lines = block.split("\n")
+        nonempty = [ln for ln in raw_lines if ln.strip()]
+        is_quote = bool(nonempty) and all(
+            _BLOCKQUOTE_PATTERN.match(ln.lstrip()) for ln in nonempty
+        )
+        # Strip blockquote markers to get the clean text (same as before).
+        cleaned = "\n".join(_BLOCKQUOTE_PATTERN.sub("", ln) for ln in raw_lines)
+        cleaned = cleaned.strip()
+        if not cleaned:
             continue
-
-        # Skip standalone headings
-        if _HEADING_PATTERN.match(block):
+        # Skip standalone headings (unchanged behavior).
+        if _HEADING_PATTERN.match(cleaned):
             continue
+        result.append((cleaned, is_quote))
+    return result
 
-        # Keep everything else including images with captions
-        paragraphs.append(block)
 
-    return paragraphs
+def split_into_paragraphs(text: str) -> List[str]:
+    """Split text into paragraphs, preserving all content.
+
+    Thin wrapper over :func:`split_into_blocks` returning only the text, so
+    existing callers keep their exact behavior (blockquote markers stripped).
+    """
+    return [para for para, _is_quote in split_into_blocks(text)]
 
 
 def _build_page_map(content: str) -> Dict[int, int]:
@@ -235,17 +245,22 @@ def _find_page_number(
 
 
 def _create_paragraphs(
-    paragraphs_text: List[str],
+    paragraph_blocks: List[Tuple[str, bool]],
     start_paragraph_num: int,
     section_id: str,
     file_path: Path,
     content: str,
     page_map: Dict[int, int],
 ) -> List[Paragraph]:
-    """Create paragraph objects with page numbers."""
+    """Create paragraph objects with page numbers.
+
+    ``paragraph_blocks`` is a list of ``(text, is_quote)`` from
+    :func:`split_into_blocks`; the quote flag is preserved on each Paragraph so
+    quotations stay distinct from the author's own prose.
+    """
     paragraphs = []
 
-    for i, para_text in enumerate(paragraphs_text):
+    for i, (para_text, is_quote) in enumerate(paragraph_blocks):
         para_num = start_paragraph_num + i
         current_page = _find_page_number(para_text, content, page_map)
 
@@ -255,6 +270,7 @@ def _create_paragraphs(
             page_number=current_page,
             section_id=section_id,
             source_file=file_path.name,
+            is_quote=is_quote,
         )
         paragraphs.append(para)
 
@@ -307,11 +323,70 @@ def _add_footnotes_to_doc(doc: MarkdownDocument, content: str) -> None:
         doc.footnotes.append(footnote)
 
 
+def _apply_structure_repair(content: str) -> Tuple[str, Dict[int, Optional[str]]]:
+    """Apply in-memory markdown-structure repair before parsing (opt-in).
+
+    Runs the block-quote detector (src.ingestion.markdown_structure) so Chandra
+    quotations that were emitted as plain paragraphs get re-marked as ``>``
+    blockquotes, which ``split_into_blocks`` then preserves as ``is_quote``
+    paragraphs. Returns the (possibly rewritten) content plus a map from the
+    0-based paragraph-block index of a re-marked quote to its attribution text
+    (the quote's own source), so the parser can record ``quote_attribution``.
+
+    Never rewrites the quotation's words; only adds ``>`` markers. Import is
+    local so the parser has no hard dependency on the ingestion package unless
+    the repair is actually requested.
+    """
+    from src.ingestion.markdown_structure import detect_block_quotes
+
+    result = detect_block_quotes(content)
+    if not result.changed:
+        return content, {}
+    # Map each applied quote span's paragraph range to its attribution.
+    attribution_by_para: Dict[int, Optional[str]] = {}
+    for span in result.spans:
+        if span.needs_review:
+            continue
+        for para_idx in range(span.start_para, span.end_para + 1):
+            attribution_by_para[para_idx] = span.attribution
+    return result.markdown, attribution_by_para
+
+
+def _detect_table_hints(content: str) -> List[dict]:
+    """Detect flattened task-org / 2-D tables in Chandra markdown (opt-in).
+
+    Returns review-flagged hint dicts (snapshot -> group -> units) for the
+    document's ``table_hints``; empty when no flattened table is found. Local
+    import keeps the parser free of a hard ingestion dependency unless repair is
+    requested.
+    """
+    from src.ingestion.markdown_structure import detect_flattened_tables
+
+    return detect_flattened_tables(content).to_hint_dicts()
+
+
 def parse_content_file(
-    file_path: Path, section_id: str, start_paragraph_num: int, metadata: Metadata
+    file_path: Path,
+    section_id: str,
+    start_paragraph_num: int,
+    metadata: Metadata,
+    *,
+    apply_structure_repair: bool = False,
 ) -> MarkdownDocument:
-    """Parse a single content markdown file."""
+    """Parse a single content markdown file.
+
+    When ``apply_structure_repair`` is True, Chandra's markdown structural blind
+    spots are repaired in-memory first (block quotes re-marked) so quotations are
+    preserved as ``is_quote`` paragraphs. Off by default: existing callers and
+    non-Chandra sources are unaffected.
+    """
     content = file_path.read_text(encoding="utf-8")
+
+    attribution_by_para: Dict[int, Optional[str]] = {}
+    table_hints: List[dict] = []
+    if apply_structure_repair:
+        table_hints = _detect_table_hints(content)
+        content, attribution_by_para = _apply_structure_repair(content)
 
     # Extract chapter number from filename
     match = _CHAPTER_NUM_PATTERN.search(file_path.name)
@@ -331,21 +406,35 @@ def parse_content_file(
 
     # Build page map and create paragraphs
     page_map = _build_page_map(content)
-    paragraphs_text = split_into_paragraphs(content)
+    paragraph_blocks = split_into_blocks(content)
     doc.paragraphs = _create_paragraphs(
-        paragraphs_text, start_paragraph_num, section_id, file_path, content, page_map
+        paragraph_blocks, start_paragraph_num, section_id, file_path, content, page_map
     )
+    # Attach quote attribution to re-marked quote paragraphs (by block index).
+    if attribution_by_para:
+        for block_idx, para in enumerate(doc.paragraphs):
+            if para.is_quote and block_idx in attribution_by_para:
+                para.quote_attribution = attribution_by_para[block_idx]
 
     # Add images, maps, and footnotes
     _add_images_to_doc(doc, content)
     _add_maps_to_doc(doc, content)
     _add_footnotes_to_doc(doc, content)
 
+    # Attach flattened-table hints (review-flagged) from structure repair.
+    doc.table_hints = table_hints
+
     return doc
 
 
-def parse_chapter(chapter_group: ChapterGroup) -> List[MarkdownDocument]:
-    """Parse all sections of a chapter with continuous paragraph numbering."""
+def parse_chapter(
+    chapter_group: ChapterGroup, *, apply_structure_repair: bool = False
+) -> List[MarkdownDocument]:
+    """Parse all sections of a chapter with continuous paragraph numbering.
+
+    ``apply_structure_repair`` (opt-in) enables in-memory Chandra
+    structure repair (block-quote re-marking) per section file.
+    """
     metadata = parse_metadata(chapter_group.meta_file)
 
     documents = []
@@ -355,7 +444,13 @@ def parse_chapter(chapter_group: ChapterGroup) -> List[MarkdownDocument]:
     sorted_sections = sorted(chapter_group.content_files.items())
 
     for section_id, file_path in sorted_sections:
-        doc = parse_content_file(file_path, section_id, current_para_num, metadata)
+        doc = parse_content_file(
+            file_path,
+            section_id,
+            current_para_num,
+            metadata,
+            apply_structure_repair=apply_structure_repair,
+        )
         documents.append(doc)
 
         # Update paragraph counter for next section

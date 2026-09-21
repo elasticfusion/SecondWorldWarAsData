@@ -16,11 +16,14 @@ import logging
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
+from src.ingestion.oob_markdown._common import coverage_gaps
+from src.ingestion.oob_markdown.attachments import parse_attachments
 from src.ingestion.oob_markdown.campaigns import parse_campaigns
 from src.ingestion.oob_markdown.command_posts import parse_command_posts
 from src.ingestion.oob_markdown.command_staff import parse_command_staff
 from src.ingestion.oob_markdown.crosswalk import build_command_staff_crosswalk
 from src.ingestion.oob_markdown.entity_emit import emit_crosswalk_to_people
+from src.ingestion.oob_markdown.higher_units import parse_higher_units
 from src.ingestion.oob_markdown.organic_units import parse_organic_units
 from src.ingestion.oob_markdown.persist import persist_parse_result
 from src.ingestion.oob_markdown.statistics import parse_statistics
@@ -35,6 +38,8 @@ _SECTION_PARSERS: Dict[str, Callable[[str, str], Any]] = {
     "command_posts": parse_command_posts,
     "statistics": parse_statistics,
     "organic_units": parse_organic_units,
+    "attachments": parse_attachments,
+    "higher_units": parse_higher_units,
 }
 
 
@@ -67,8 +72,10 @@ def run_oob_markdown_file(
     summary: Dict[str, Any] = {"source_file": source_file, "sections": {}}
 
     command_staff_rows: List[Any] = []
+    parsed_counts: Dict[str, int] = {}
     for section, parser in _SECTION_PARSERS.items():
         result = parser(markdown, source_file)
+        parsed_counts[section] = len(result.rows)
         if not result.rows:
             continue
         persist_parse_result(result, section, output_root)
@@ -78,6 +85,12 @@ def run_oob_markdown_file(
         }
         if section == "command_staff":
             command_staff_rows = result.rows
+
+    gaps = coverage_gaps(markdown, parsed_counts)
+    if gaps:
+        summary["coverage_gaps"] = [
+            {"section": marker, "expected_output": list(keys)} for marker, keys in gaps
+        ]
 
     if command_staff_rows:
         crosswalk = build_command_staff_crosswalk(command_staff_rows, people_dir)
