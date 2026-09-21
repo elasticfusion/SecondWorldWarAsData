@@ -29,7 +29,9 @@ from src.ingestion.source_metadata import (
 logger = logging.getLogger(__name__)
 
 # Which detected media types the downstream pipeline currently handles.
-SUPPORTED_MEDIA: frozenset[MediaType] = frozenset({"pdf", "html", "image"})
+SUPPORTED_MEDIA: frozenset[MediaType] = frozenset(
+    {"pdf", "html", "image", "docx", "epub", "text"}
+)
 
 # Extension -> media type.
 _EXTENSION_MAP: dict[str, MediaType] = {
@@ -37,6 +39,12 @@ _EXTENSION_MAP: dict[str, MediaType] = {
     ".html": "html",
     ".htm": "html",
     ".xhtml": "html",
+    ".docx": "docx",
+    ".epub": "epub",
+    ".txt": "text",
+    ".text": "text",
+    ".md": "text",
+    ".markdown": "text",
     ".png": "image",
     ".jpg": "image",
     ".jpeg": "image",
@@ -58,6 +66,10 @@ _CONTENT_TYPE_MAP: dict[str, MediaType] = {
     "application/pdf": "pdf",
     "text/html": "html",
     "application/xhtml+xml": "html",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",  # noqa: E501
+    "application/epub+zip": "epub",
+    "text/plain": "text",
+    "text/markdown": "text",
     "image/png": "image",
     "image/jpeg": "image",
     "image/gif": "image",

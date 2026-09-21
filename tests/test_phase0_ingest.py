@@ -1,9 +1,17 @@
 """Tests for Phase 0 ingestion wiring (phase0_ingest + oob_markdown.run)."""
 
 import json
+import logging
+import shutil
+import subprocess
 from pathlib import Path
 
+import pytest
+
 from src.ingestion.oob_markdown.run import run_oob_markdown_file
+
+_HAVE_PANDOC = shutil.which("pandoc") is not None
+_needs_pandoc = pytest.mark.skipif(not _HAVE_PANDOC, reason="pandoc not installed")
 
 # A minimal OOB markdown file with a division title + two sections.
 OOB_MD = """
@@ -169,3 +177,90 @@ def test_ecs_download_inputs_routes_phase0(monkeypatch) -> None:
     # _final_sync must handle phase0 (so output/oob reaches S3).
     final_src = inspect.getsource(ecs_entrypoint._final_sync)
     assert "phase0" in final_src and "output/oob" in final_src
+
+
+# --- document (docx/epub/txt) -> markdown conversion pre-step ----------------
+
+
+def test_convert_documents_enabled_gate(monkeypatch) -> None:
+    from phase0_ingest import _convert_documents_enabled
+
+    # Off by default.
+    assert _convert_documents_enabled({}) is False
+    assert (
+        _convert_documents_enabled({"ingestion": {"convert_documents": False}}) is False
+    )
+    # Config opt-in.
+    assert (
+        _convert_documents_enabled({"ingestion": {"convert_documents": True}}) is True
+    )
+    # Env opt-in.
+    monkeypatch.setenv("PHASE0_CONVERT_DOCUMENTS", "1")
+    assert _convert_documents_enabled({}) is True
+
+
+def test_discover_text_documents_excludes_ocr_output(tmp_path: Path) -> None:
+    from phase0_ingest import discover_text_documents
+
+    root = tmp_path / "contentrepository"
+    (root / "Book").mkdir(parents=True)
+    (root / "Book" / "notes.txt").write_text("plain", encoding="utf-8")
+    (root / "Book" / "report.docx").write_bytes(b"PK\x03\x04fake")
+    (root / "Book" / "vol.epub").write_bytes(b"PK\x03\x04fake")
+    # A converted output already in ocr_output is not a source -> excluded.
+    (root / "Book" / "ocr_output").mkdir()
+    (root / "Book" / "ocr_output" / "derived.txt").write_text("x", encoding="utf-8")
+
+    names = {p.name for p in discover_text_documents(root)}
+    assert names == {"notes.txt", "report.docx", "vol.epub"}
+    assert "derived.txt" not in names
+
+
+def test_convert_text_documents_txt_to_markdown(tmp_path: Path) -> None:
+    from phase0_ingest import _convert_text_documents
+
+    root = tmp_path / "contentrepository"
+    (root / "Book").mkdir(parents=True)
+    (root / "Book" / "note.txt").write_text(
+        "Section One\r\n\r\nThe 7th Armored moved out.\n", encoding="utf-8"
+    )
+
+    converted, skipped = _convert_text_documents(root, logging.getLogger("t"))
+    assert converted == 1 and skipped == 0
+    out = root / "Book" / "ocr_output" / "note.md"
+    assert out.exists()
+    md = out.read_text(encoding="utf-8")
+    assert "7th Armored" in md
+    assert "\r" not in md  # normalized
+    # Output lands where OOB/markdown discovery would look (ocr_output sibling).
+    assert "ocr_output" in out.parts
+
+
+@_needs_pandoc
+def test_convert_text_documents_docx_via_pandoc(tmp_path: Path) -> None:
+    from phase0_ingest import _convert_text_documents
+
+    root = tmp_path / "contentrepository"
+    (root / "Book").mkdir(parents=True)
+    src_md = root / "Book" / "src.md"
+    src_md.write_text("# Title\n\nText about **St. Vith**.\n", encoding="utf-8")
+    subprocess.run(
+        ["pandoc", str(src_md), "-o", str(root / "Book" / "report.docx")],
+        check=True,
+        capture_output=True,
+    )
+    src_md.unlink()
+
+    converted, skipped = _convert_text_documents(root, logging.getLogger("t"))
+    assert converted == 1 and skipped == 0
+    out = (root / "Book" / "ocr_output" / "report.md").read_text(encoding="utf-8")
+    assert "St. Vith" in out.replace("\xa0", " ")
+
+
+def test_convert_text_documents_empty_when_none(tmp_path: Path) -> None:
+    from phase0_ingest import _convert_text_documents
+
+    root = tmp_path / "contentrepository"
+    root.mkdir(parents=True)
+    converted, skipped = _convert_text_documents(root, logging.getLogger("t"))
+    assert converted == 0 and skipped == 0

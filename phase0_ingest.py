@@ -30,6 +30,11 @@ from src.ingestion.pdf_pipeline import (
     STATUS_NEEDS_OCR,
     convert_pdf_to_markdown,
 )
+from src.ingestion.text_converters import (
+    ConverterError,
+    ConverterUnavailable,
+    convert_to_markdown,
+)
 from src.utils.config import get_paths, load_config
 from src.utils.logger import setup_logging
 
@@ -135,6 +140,19 @@ def _convert_pdfs_enabled(config: dict) -> bool:
     if env is not None:
         return env.strip().lower() in {"1", "true", "yes"}
     return bool(config.get("ingestion", {}).get("convert_pdfs", False))
+
+
+def _convert_documents_enabled(config: dict) -> bool:
+    """Whether Phase 0 should convert docx/epub/txt sources to markdown first.
+
+    Off by default. Enable via ``ingestion.convert_documents: true`` in
+    config.yaml or the ``PHASE0_CONVERT_DOCUMENTS`` env var. Converts the
+    non-PDF/HTML text formats (Word, EPUB, plain text) to markdown so they enter
+    the same discovery path as everything else (requirement #6).
+    """
+    if os.environ.get("PHASE0_CONVERT_DOCUMENTS") == "1":
+        return True
+    return bool(config.get("ingestion", {}).get("convert_documents", False))
 
 
 def discover_oob_markdown(content_root: Path) -> List[Path]:
@@ -247,6 +265,75 @@ def _convert_source_pdfs(content_root: Path, logger) -> Tuple[int, int, int]:
         other,
     )
     return converted, needs_ocr, other
+
+
+# Extension -> the media_type token convert_to_markdown expects.
+_DOC_EXT_MEDIA: dict = {
+    ".docx": "docx",
+    ".epub": "epub",
+    ".txt": "text",
+    ".text": "text",
+}
+
+
+def discover_text_documents(content_root: Path) -> List[Path]:
+    """Find docx/epub/txt source documents under the content repository.
+
+    Excludes anything already inside an ``ocr_output`` directory (outputs) and
+    any file whose converted markdown already sits beside it. Used by the
+    optional document->markdown pre-step.
+    """
+    docs: List[Path] = []
+    seen: set = set()
+    for ext in _DOC_EXT_MEDIA:
+        for path in content_root.rglob(f"*{ext}"):
+            if not path.is_file() or _OCR_OUTPUT_DIRNAME in path.parts:
+                continue
+            key = path.resolve()
+            if key not in seen:
+                seen.add(key)
+                docs.append(path)
+    return sorted(docs)
+
+
+def _convert_text_documents(content_root: Path, logger) -> Tuple[int, int]:
+    """Convert docx/epub/txt sources to markdown in their ``ocr_output/`` dir.
+
+    Each document is written to ``<dir>/ocr_output/<stem>.md`` so existing
+    markdown discovery picks it up unchanged. Conversion failures (bad file, or
+    pandoc unavailable for docx/epub) are logged and skipped, never fatal.
+
+    Returns: ``(converted, skipped)`` counts.
+    """
+    docs = discover_text_documents(content_root)
+    logger.info(
+        "[phase0 pre-step] Found %d text document(s) (docx/epub/txt)", len(docs)
+    )
+    converted = skipped = 0
+    for doc in docs:
+        media_type = _DOC_EXT_MEDIA[doc.suffix.lower()]
+        ocr_dir = doc.parent / _OCR_OUTPUT_DIRNAME
+        markdown_out = ocr_dir / f"{doc.stem}.md"
+        try:
+            markdown = convert_to_markdown(doc, media_type)
+        except ConverterUnavailable as exc:
+            skipped += 1
+            logger.warning("  %s: skipped (%s)", doc.name, exc)
+            continue
+        except ConverterError as exc:
+            skipped += 1
+            logger.warning("  %s: conversion failed (%s)", doc.name, exc)
+            continue
+        ocr_dir.mkdir(parents=True, exist_ok=True)
+        markdown_out.write_text(markdown, encoding="utf-8")
+        converted += 1
+        logger.info("  converted %s -> %s", doc.name, markdown_out)
+    logger.info(
+        "[phase0 pre-step] Document routing: %d converted, %d skipped",
+        converted,
+        skipped,
+    )
+    return converted, skipped
 
 
 def _log_file_summary(index, count, md_path, summary, logger) -> list:
@@ -367,6 +454,13 @@ def main() -> None:
             "(digital in-process; scanned deferred to Chandra)"
         )
         _convert_source_pdfs(content_root, logger)
+
+    if _convert_documents_enabled(config):
+        logger.info(
+            "[phase0 pre-step] Document->markdown conversion ENABLED "
+            "(docx/epub/txt via pandoc/text)"
+        )
+        _convert_text_documents(content_root, logger)
 
     logger.info("[phase0 step 1/2] Scanning for OOB markdown under %s", content_root)
     sources = discover_oob_markdown(content_root)
