@@ -15,7 +15,10 @@ from src.ingestion.web_video import (
     NullTranscriber,
     Transcriber,
     TranscriptSegment,
+    VideoAsset,
     capture_web_page_with_video,
+    render_transcript_markdown,
+    write_transcript_markdown,
 )
 
 
@@ -209,3 +212,56 @@ def test_grok_transcriber_skips_malformed_words(tmp_path, monkeypatch) -> None:
     clip.write_bytes(b"RIFF")
     segs = GrokTranscriber().transcribe(str(clip))
     assert len(segs) == 1 and segs[0].text == "Hi."
+
+
+# --- transcript -> timecoded markdown rendering -----------------------------
+
+
+def _sample_video() -> VideoAsset:
+    return VideoAsset(
+        asset_id="01VIDEO",
+        source_url="https://example.org/doc.mp4",
+        segments=[
+            TranscriptSegment(0.0, 11.0, "Three German armies launch a counterattack."),
+            TranscriptSegment(12.0, 14.0, "Their goal: turn the tide.", speaker="0"),
+        ],
+        transcription_status="complete",
+        needs_review=False,
+    )
+
+
+def test_render_transcript_preserves_timecodes_and_metadata() -> None:
+    md = render_transcript_markdown(_sample_video(), title="Doc")
+    assert md.startswith("# Doc")
+    assert "asset_id: 01VIDEO" in md
+    assert "transcription_status: complete" in md
+    # Each segment carries its timecode as a bold prefix (provenance anchor).
+    assert "**[00:00:00-00:00:11]**" in md
+    assert "**[00:00:12-00:00:14]** (Speaker 0)" in md
+    assert "counterattack." in md and "turn the tide." in md
+
+
+def test_render_transcript_flows_through_parser_as_prose() -> None:
+    from src.parser import split_into_blocks
+
+    md = render_transcript_markdown(_sample_video(), title="Doc")
+    paras = [t for t, _ in split_into_blocks(md)]
+    # Transcript text is extractable prose, with timecodes surviving into it.
+    assert any("counterattack." in p for p in paras)
+    assert any("00:00:12-00:00:14" in p for p in paras)
+
+
+def test_render_transcript_pending_is_not_fabricated() -> None:
+    md = render_transcript_markdown(
+        VideoAsset(asset_id="01X", transcription_status="pending")
+    )
+    assert "No transcript available" in md
+    assert "pending" in md
+    assert "needs_review: true" in md  # pending asset defaults needs_review=True
+
+
+def test_write_transcript_markdown_writes_file(tmp_path) -> None:
+    out = tmp_path / "sub" / "transcript.md"
+    written = write_transcript_markdown(_sample_video(), out, title="Doc")
+    assert written == out and out.exists()
+    assert "**[00:00:00-00:00:11]**" in out.read_text(encoding="utf-8")

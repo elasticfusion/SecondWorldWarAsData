@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import List, Optional, Protocol, runtime_checkable
 
 import requests
@@ -349,3 +350,71 @@ def capture_web_page_with_video(
     )
 
     return WebVideoCapture(page=page, video=video, needs_review=video.needs_review)
+
+
+def render_transcript_markdown(
+    video: VideoAsset,
+    *,
+    title: Optional[str] = None,
+    source_url: Optional[str] = None,
+) -> str:
+    """Render a video's timecoded transcript to a markdown document.
+
+    Each transcript segment becomes a block prefixed with its timecode, so the
+    ``(asset_id, timecode)`` provenance survives into the markdown and downstream
+    parse. The result is ordinary prose that flows through the existing pipeline
+    (Phase 1 parse -> Phase 2 extraction) like any other text source, and is a
+    natural chunk source for RAG.
+
+    Format per segment:
+
+        **[HH:MM:SS-HH:MM:SS]** (Speaker N) segment text
+
+    A leading metadata block records the asset id, source, and transcription
+    status so a fact extracted from the transcript traces back to the recording.
+    Returns an empty-transcript notice (not fabricated text) when the video has
+    no segments (e.g. transcription still pending).
+    """
+    lines: List[str] = []
+    heading = title or "Video Transcript"
+    lines.append(f"# {heading}")
+    lines.append("")
+    lines.append(f"- asset_id: {video.asset_id}")
+    if source_url or video.source_url:
+        lines.append(f"- source: {source_url or video.source_url}")
+    lines.append(f"- transcription_status: {video.transcription_status}")
+    if video.needs_review:
+        lines.append("- needs_review: true")
+    lines.append("")
+
+    if not video.segments:
+        lines.append("_No transcript available (transcription pending)._")
+        return "\n".join(lines) + "\n"
+
+    for seg in video.segments:
+        speaker = f" (Speaker {seg.speaker})" if seg.speaker else ""
+        text = seg.text.strip()
+        if not text:
+            continue
+        lines.append(f"**[{seg.timecode}]**{speaker} {text}")
+        lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def write_transcript_markdown(
+    video: VideoAsset,
+    out_path: Path,
+    *,
+    title: Optional[str] = None,
+    source_url: Optional[str] = None,
+) -> Path:
+    """Render the transcript and write it to ``out_path`` (parent dirs created).
+
+    Returns the written path. The document is the pipeline's markdown contract,
+    so it can be dropped where content discovery finds it.
+    """
+    markdown = render_transcript_markdown(video, title=title, source_url=source_url)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(markdown, encoding="utf-8")
+    return out_path
