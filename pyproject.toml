@@ -16,6 +16,11 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 
+# Put the repo root on sys.path so tests can import root-level modules
+# (phase0_ingest, phase1_parse, phase3_retry, ecs_entrypoint, ...) whether the
+# suite is run as a whole or a single file in isolation.
+pythonpath = ["."]
+
 # Show extra test summary info
 addopts = [
     "-v",

@@ -21,7 +21,7 @@ import logging
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, TypedDict
 
 from bs4 import BeautifulSoup, Tag
 
@@ -42,6 +42,19 @@ from src.ingestion.oob_markdown.models import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+class _StatsWalkState(TypedDict):
+    """Mutable state threaded through the STATISTICS table walk.
+
+    Typed so ``division``/``category`` are known ``str`` (not ``object``) when
+    passed to division/table helpers.
+    """
+
+    division: str
+    in_stats: bool
+    category: str
+
 
 # Recognized statistics category sub-headers (normalized keys).
 _CATEGORIES = {
@@ -223,7 +236,7 @@ def _collect_statistics_tables(markdown: str, source_file: str) -> List[Statisti
     soup = BeautifulSoup(markdown, "html.parser")
     inferred = first_division_in(markdown)
     recon = division_from_recon_troop(markdown)
-    state = {"division": "", "in_stats": False, "category": ""}
+    state: _StatsWalkState = {"division": "", "in_stats": False, "category": ""}
     rows: List[StatisticRow] = []
     for element in soup.descendants:
         if isinstance(element, Tag):
@@ -238,7 +251,7 @@ def _collect_statistics_tables(markdown: str, source_file: str) -> List[Statisti
     return rows
 
 
-def _update_stats_walk_state(text: str, state: dict) -> None:
+def _update_stats_walk_state(text: str, state: _StatsWalkState) -> None:
     """Fold a text node's lines into the statistics-walk ``state`` in place.
 
     Tracks the current ``division`` (title lines), STATISTICS ``in_stats``
