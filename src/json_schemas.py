@@ -723,6 +723,28 @@ BIBLIOGRAPHY_SCHEMA = {
         "availability": {"type": "string"},
         "resource_urls": {"type": "array", "items": {"type": "string"}},
         "license": {"type": ["string", "null"]},
+        "acquisition": {
+            "type": ["object", "null"],
+            "description": (
+                "Source-acquisition lifecycle + web capture provenance. "
+                "Additive; see docs/current/dataquality/STRUCTURED_DATA_ROUTING.md."
+            ),
+            "properties": {
+                "state": {"type": ["string", "null"]},
+                "repository": {"type": ["string", "null"]},
+                "record_group": {"type": ["string", "null"]},
+                "catalog_url": {"type": ["string", "null"]},
+                "order_method": {"type": ["string", "null"]},
+                "estimated_cost": {"type": ["string", "null"]},
+                "request_id": {"type": ["string", "null"]},
+                "requested_date": {"type": ["string", "null"]},
+                "received_date": {"type": ["string", "null"]},
+                # For cited web pages: when the URL was fetched/snapshotted.
+                # Required to make a web-sourced fact reproducible (pages mutate).
+                "capture_date": {"type": ["string", "null"]},
+                "history": {"type": "array"},
+            },
+        },
         "mentions": {
             "type": "array",
             "minItems": 1,

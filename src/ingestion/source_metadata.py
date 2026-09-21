@@ -19,7 +19,9 @@ from typing import Any, Dict, Literal, Optional
 
 # Media types recognized by the front-end. "unsupported" is a recognized-but-
 # unhandled bucket (see media_detection). Kept in sync with MediaType there.
-MediaType = Literal["pdf", "html", "image", "moving_image", "unsupported"]
+MediaType = Literal[
+    "pdf", "html", "image", "moving_image", "docx", "epub", "text", "unsupported"
+]
 
 # Acquisition provenance: how the original was obtained.
 AcquisitionMethod = Literal["download", "local", "unknown"]
@@ -30,6 +32,16 @@ _CHECKSUM_CHUNK = 1 << 20  # 1 MiB
 def _utc_now_iso() -> str:
     """Return the current UTC time as an ISO-8601 string."""
     return datetime.now(timezone.utc).isoformat()
+
+
+def capture_now_iso() -> str:
+    """Return an ISO-8601 UTC timestamp for a web capture (fetch/snapshot).
+
+    Web-fetch callers should record this as ``capture_date`` at the moment the
+    URL's bytes are retrieved, so a web-sourced fact remains reproducible even
+    though the page is mutable.
+    """
+    return _utc_now_iso()
 
 
 @dataclass
@@ -46,6 +58,11 @@ class SourceMetadata:  # pylint: disable=too-many-instance-attributes
             recognized-but-unsupported media (e.g. moving images today).
         acquisition_method: How the original was obtained.
         acquisition_url: Source URL/DOI when applicable.
+        capture_date: For web-sourced originals, the ISO-8601 UTC timestamp at
+            which the URL was fetched/snapshotted. Web pages are mutable, so this
+            is required to make a web-sourced fact reproducible. None for local
+            (non-web) originals. Distinct from ``detected_at`` (when this record
+            was created): ``capture_date`` is when the *bytes* were captured.
         checksum: Content hash of the original (change detection / versioning).
             Prefixed with the algorithm, e.g. "sha256:abc...".
         detected_at: ISO-8601 UTC timestamp of when this record was created.
@@ -58,6 +75,7 @@ class SourceMetadata:  # pylint: disable=too-many-instance-attributes
     supported: bool = False
     acquisition_method: AcquisitionMethod = "unknown"
     acquisition_url: Optional[str] = None
+    capture_date: Optional[str] = None
     checksum: Optional[str] = None
     detected_at: str = field(default_factory=_utc_now_iso)
     notes: str = ""
