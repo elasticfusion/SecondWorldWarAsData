@@ -3,20 +3,53 @@ FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
+# --- Pinned versions (reproducibility; see docs/current/dataquality/CHANDRA_OCR_DESIGN.md) ---
+# Resolved on the 2026-09-20 build. Bump deliberately, not implicitly.
+#   chandra-ocr 0.2.0 / transformers 5.17.0 / tokenizers 0.23.2 / accelerate 1.15.0
+#   huggingface_hub 1.32.0 / torch 2.5.1+cu121 / torchvision 0.20.1+cu121
+#   model datalab-to/chandra-ocr-2 @ af93b47dba1b47b6640c86ccf487ed2260ab9a09
+ENV CHANDRA_MODEL_REVISION=af93b47dba1b47b6640c86ccf487ed2260ab9a09
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         python3 python3-pip python3-dev curl unzip && \
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip && \
     unzip -q /tmp/awscliv2.zip -d /tmp && /tmp/aws/install && rm -rf /tmp/aws /tmp/awscliv2.zip && \
-    pip3 install --no-cache-dir "chandra-ocr[hf]" boto3 PyPDF2 && \
-    pip3 install --no-cache-dir --force-reinstall torch torchvision --index-url https://download.pytorch.org/whl/cu121 && \
+    pip3 install --no-cache-dir \
+        "chandra-ocr[hf]==0.2.0" \
+        "transformers==5.17.0" \
+        "tokenizers==0.23.2" \
+        "accelerate==1.15.0" \
+        "huggingface_hub==1.32.0" \
+        "boto3==1.43.98" \
+        "PyPDF2==3.0.1" && \
+    pip3 install --no-cache-dir --force-reinstall \
+        "torch==2.5.1+cu121" "torchvision==0.20.1+cu121" \
+        --index-url https://download.pytorch.org/whl/cu121 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Pre-download model weights into image (~8GB) to avoid runtime download
+# Pre-download model weights into image (~8GB) to avoid runtime download.
+# Download WITHOUT an explicit revision so HF writes the `refs/main` pointer the
+# chandra CLI relies on (it loads `from_pretrained("datalab-to/chandra-ocr-2")`
+# with no revision). Then ASSERT the resolved commit matches the pinned one, so
+# the build FAILS if upstream `main` has moved — reproducibility is enforced,
+# not merely hoped for. Bump CHANDRA_MODEL_REVISION deliberately when updating.
 RUN python3 -c "\
+import os; from huggingface_hub import snapshot_download; \
+p = snapshot_download('datalab-to/chandra-ocr-2'); \
+commit = os.path.basename(os.path.realpath(p)); \
+exp = os.environ['CHANDRA_MODEL_REVISION']; \
+assert commit == exp, f'chandra-ocr-2 main is {commit}, expected {exp}; bump CHANDRA_MODEL_REVISION intentionally'; \
 from transformers import AutoProcessor, AutoModelForImageTextToText; \
 AutoProcessor.from_pretrained('datalab-to/chandra-ocr-2'); \
-AutoModelForImageTextToText.from_pretrained('datalab-to/chandra-ocr-2')"
+AutoModelForImageTextToText.from_pretrained('datalab-to/chandra-ocr-2'); \
+print('chandra-ocr-2 pinned at', commit)"
+
+# After weights are baked in: force offline at RUNTIME so the container always
+# uses the pinned, cached weights and never silently re-fetches a newer HF
+# revision. (Set only now — the download RUN above needs network.)
+ENV HF_HUB_OFFLINE=1
+ENV TRANSFORMERS_OFFLINE=1
 
 COPY scripts/chandra_entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
