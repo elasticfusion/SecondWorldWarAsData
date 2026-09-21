@@ -14,6 +14,11 @@ class Paragraph:
     page_number: Optional[int] = None
     section_id: str = ""
     source_file: str = ""
+    # Quotation provenance (set when a block was re-marked as a block quote by
+    # the markdown-structure repair, so the parser preserves it rather than
+    # flattening it into ordinary prose). Defaults keep existing behavior.
+    is_quote: bool = False
+    quote_attribution: Optional[str] = None
 
 
 @dataclass
@@ -70,7 +75,7 @@ class Metadata:
 
 
 @dataclass
-class MarkdownDocument:
+class MarkdownDocument:  # pylint: disable=too-many-instance-attributes
     """Complete parsed markdown document."""
 
     book: str
@@ -86,6 +91,11 @@ class MarkdownDocument:
     maps: List[Map] = field(default_factory=list)
     footnotes: List[Footnote] = field(default_factory=list)
     page_markers: List[PageMarker] = field(default_factory=list)
+    # Flattened task-org / 2-D table detections from the markdown-structure
+    # repair (opt-in). Review-flagged hint trees, not authoritative grids; each
+    # dict carries the snapshot->group->units structure + provenance. Empty
+    # unless structure repair ran and found a flattened table.
+    table_hints: List[dict] = field(default_factory=list)
 
     file_path: Optional[Path] = None
     meta_path: Optional[Path] = None

@@ -1,6 +1,7 @@
 """Phase 1: Parse markdown content into structured JSON."""
 
 import json
+import os
 import re
 from pathlib import Path
 
@@ -28,6 +29,12 @@ def _doc_to_dict(doc):
                 "page_number": p.page_number,
                 "section_id": p.section_id,
                 "source_file": p.source_file,
+                **({"is_quote": True} if p.is_quote else {}),
+                **(
+                    {"quote_attribution": p.quote_attribution}
+                    if p.quote_attribution
+                    else {}
+                ),
             }
             for p in doc.paragraphs
         ],
@@ -46,6 +53,7 @@ def _doc_to_dict(doc):
             for m in doc.maps
         ],
         "footnotes": [{"number": f.number, "url": f.url} for f in doc.footnotes],
+        **({"table_hints": doc.table_hints} if doc.table_hints else {}),
     }
 
 
@@ -121,6 +129,12 @@ def _save_split_chapter(doc, book_output, logger):
                 "page_number": p.page_number,
                 "section_id": p.section_id,
                 "source_file": p.source_file,
+                **({"is_quote": True} if p.is_quote else {}),
+                **(
+                    {"quote_attribution": p.quote_attribution}
+                    if p.quote_attribution
+                    else {}
+                ),
             }
             for p in chunk_paras
         ]
@@ -210,6 +224,21 @@ def main():
 
     logger.info("Phase 1: file discovery and parsing")
 
+    # Opt-in: in-memory Chandra markdown structure repair (block-quote
+    # re-marking) during parsing. Off by default; enable via
+    # ingestion.repair_markdown_structure: true in config.yaml or the
+    # PHASE1_REPAIR_STRUCTURE env var. Mirrors the convert_pdfs/converge_people
+    # opt-in convention.
+    repair_structure = (
+        bool(config.get("ingestion", {}).get("repair_markdown_structure", False))
+        or os.environ.get("PHASE1_REPAIR_STRUCTURE") == "1"
+    )
+    if repair_structure:
+        logger.info(
+            "[phase1] markdown structure repair ENABLED "
+            "(block quotes re-marked in-memory; preserved as is_quote paragraphs)"
+        )
+
     content_root = paths["content_root"]
     logger.info("[phase1 step 1/2] Scanning content: %s", content_root)
 
@@ -242,7 +271,9 @@ def main():
                 parsed + 1,
                 total_chapters,
             )
-            documents = parse_chapter(chapter_group)
+            documents = parse_chapter(
+                chapter_group, apply_structure_repair=repair_structure
+            )
             for doc in documents:
                 _process_document(doc, book_output, logger)
             parsed += 1
