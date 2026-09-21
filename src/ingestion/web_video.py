@@ -16,13 +16,13 @@ provenance objects, both retained, so any asserted fact traces back to source:
 The provenance anchors mirror print's ``verbatim_reference`` + page number:
 ``(url, capture_date)`` for the page and ``(asset_id, timecode)`` for the video.
 
-**Scope of this module (scaffold).** Per the design, the *model and binding* are
-built now so the transcription backend slots in without rework; the heavy
-transcription engine (e.g. whisper) is intentionally behind a pluggable
-:class:`Transcriber` protocol. A :class:`NullTranscriber` records the video as an
-asset flagged ``needs_review`` (transcription pending) rather than fabricating a
-transcript — consistent with the project's "flag, never fabricate" discipline.
-A whisper-backed transcriber is a drop-in later.
+**Scope of this module.** The *model and binding* plus a real transcription
+backend are provided. :class:`GrokTranscriber` calls the xAI Grok
+Speech-to-Text API (``/v1/stt``) and maps its word-level timestamps into
+:class:`TranscriptSegment` spans. :class:`NullTranscriber` remains the default,
+recording the video as an asset flagged ``needs_review`` (transcription pending)
+rather than fabricating a transcript when no backend is supplied — consistent
+with the project's "flag, never fabricate" discipline.
 
 This module does not itself fetch the network or decode video; callers supply
 the already-fetched page text and a local video path (obtained by the
@@ -31,8 +31,11 @@ acquisition layer), keeping this unit testable and side-effect free.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from typing import List, Optional, Protocol, runtime_checkable
+
+import requests
 
 from src.ingestion.source_metadata import capture_now_iso
 
@@ -92,6 +95,116 @@ class NullTranscriber:  # pylint: disable=too-few-public-methods
     ) -> List[TranscriptSegment]:
         """Return no segments: a transcript is never invented (flag, don't fabricate)."""
         return []
+
+
+# Group word-level timestamps into segments at these sentence-ending marks.
+_SEGMENT_END_CHARS = (".", "!", "?")
+# Cap segment length so a run without punctuation still yields usable spans.
+_MAX_WORDS_PER_SEGMENT = 40
+
+
+class GrokTranscriber:  # pylint: disable=too-few-public-methods
+    """Transcriber backed by the xAI Grok Speech-to-Text API (``/v1/stt``).
+
+    Calls the batch REST endpoint (``POST https://api.x.ai/v1/stt``,
+    multipart/form-data) and groups the API's *word-level* timestamps into
+    sentence-ish :class:`TranscriptSegment` spans (the API returns per-word
+    timings, not sentence segments). Reuses the project's ``GROK_API_KEY``
+    convention; the base URL is overridable via ``GROK_STT_URL`` for testing.
+
+    Grouping policy: a segment ends at sentence-ending punctuation, on a speaker
+    change (when ``diarize`` is on), or at ``_MAX_WORDS_PER_SEGMENT`` — so a long
+    unpunctuated stretch still produces bounded, timecoded spans.
+
+    Network is only touched on ``transcribe``; construction is side-effect free,
+    so the binding/model can be unit-tested with a mocked HTTP response.
+    """
+
+    def __init__(
+        self,
+        *,
+        api_key: Optional[str] = None,
+        model: str = "grok-voice-transcribe-2.0",
+        language: Optional[str] = None,
+        diarize: bool = False,
+        timeout: float = 600.0,
+    ) -> None:
+        self.api_key = api_key or os.getenv("GROK_API_KEY") or ""
+        if not self.api_key:
+            raise ValueError("GROK_API_KEY not found for GrokTranscriber")
+        self.model = model
+        self.language = language
+        self.diarize = diarize
+        self.timeout = timeout
+        self.url = os.getenv("GROK_STT_URL", "https://api.x.ai/v1/stt")
+
+    def transcribe(self, media_path: str) -> List[TranscriptSegment]:
+        """Transcribe a local audio/video file into timecoded segments."""
+        payload = self._request(media_path)
+        return self._segments_from_words(payload.get("words", []))
+
+    def _request(self, media_path: str) -> dict:
+        """POST the file to /v1/stt and return the parsed JSON response.
+
+        ``file`` is sent last, as the API requires (fields after ``file`` may be
+        ignored for streamable uploads).
+        """
+        data = [("model", self.model)]
+        if self.language:
+            data.append(("language", self.language))
+        if self.diarize:
+            data.append(("diarize", "true"))
+        with open(media_path, "rb") as handle:
+            resp = requests.post(
+                self.url,
+                headers={"Authorization": f"Bearer {self.api_key}"},
+                data=data,
+                files={"file": (os.path.basename(media_path), handle)},
+                timeout=self.timeout,
+            )
+        resp.raise_for_status()
+        return resp.json()
+
+    @staticmethod
+    def _segments_from_words(words: List[dict]) -> List[TranscriptSegment]:
+        """Group per-word timestamps into sentence-ish timecoded segments.
+
+        Boundaries: sentence-ending punctuation, a speaker change, or the
+        word cap. Empty/malformed words are skipped defensively.
+        """
+        segments: List[TranscriptSegment] = []
+        buf: List[dict] = []
+
+        def flush() -> None:
+            if not buf:
+                return
+            text = " ".join(w["text"] for w in buf).strip()
+            if text:
+                speaker = buf[0].get("speaker")
+                segments.append(
+                    TranscriptSegment(
+                        start=float(buf[0]["start"]),
+                        end=float(buf[-1]["end"]),
+                        text=text,
+                        speaker=(str(speaker) if speaker is not None else None),
+                    )
+                )
+            buf.clear()
+
+        prev_speaker = None
+        for word in words:
+            if "text" not in word or "start" not in word or "end" not in word:
+                continue
+            speaker = word.get("speaker")
+            if buf and speaker != prev_speaker and speaker is not None:
+                flush()
+            buf.append(word)
+            prev_speaker = speaker
+            ends_sentence = word["text"].rstrip().endswith(_SEGMENT_END_CHARS)
+            if ends_sentence or len(buf) >= _MAX_WORDS_PER_SEGMENT:
+                flush()
+        flush()
+        return segments
 
 
 @dataclass
