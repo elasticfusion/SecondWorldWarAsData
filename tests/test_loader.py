@@ -83,6 +83,33 @@ def _fixture_output(root: Path) -> Path:
             },
         },
     )
+    # casualty: links via event_context/source (not event_mentions[])
+    _write(
+        out / "casualties" / "killed1.json",
+        {
+            "CasualtyID": "C1",
+            "type": "killed",
+            "description": "German dead after the pocket battle",
+            "count": {"killed": {"value": 10000, "qualifier": "exact"}},
+            "event_context": {"EventID": "EV1", "Sub-eventID": "SE1"},
+            "source": {
+                "book": "Breakout And Pursuit",
+                "chapter": "Closing the Pocket",
+                "paragraph_number": 177,
+            },
+            "date": {"date_string": "1944-08", "iso_date": "1944-08"},
+        },
+    )
+    # weather: nested location object linking to a place
+    _write(
+        out / "weather" / "w1.json",
+        {
+            "WeatherID": "W1",
+            "DateID": "D1",
+            "location": {"place_name": "near Metz", "PlaceID": "PL1"},
+            "source_type": "extracted",
+        },
+    )
     return out
 
 
@@ -95,7 +122,56 @@ def test_load_all_populates_hub_and_entities(tmp_path: Path) -> None:
     assert counts["people"] == 1
     assert counts["places"] == 1
     assert counts["sources"] == 1
-    assert counts["mentions"] == 2  # person + place mention
+    assert counts["casualties"] == 1
+    assert counts["weather"] == 1
+    # person mention + place mention + casualty mention (via event_context)
+    assert counts["mentions"] == 3
+
+
+def test_casualty_links_to_subevent_with_synthesized_citation(tmp_path: Path) -> None:
+    """Casualties carry source (book/chapter/para) though no event_mentions[]."""
+    out = _fixture_output(tmp_path)
+    conn = sqlite3.connect(":memory:")
+    load_all(conn, out)
+    row = conn.execute(
+        "SELECT sub_event_id, verbatim_ref FROM mentions "
+        "WHERE entity_type='casualty' AND entity_id='C1'"
+    ).fetchone()
+    assert row is not None, "casualty must produce a mention row"
+    sub_event_id, verbatim_ref = row
+    assert sub_event_id == "SE1"  # resolved from event_context
+    # citation synthesized from the structured source locus
+    assert "Breakout And Pursuit" in verbatim_ref
+    assert "para 177" in verbatim_ref
+
+
+def test_no_dangling_mentions(tmp_path: Path) -> None:
+    """Every mention resolves to a loaded entity (no dangling entity_id)."""
+    out = _fixture_output(tmp_path)
+    conn = sqlite3.connect(":memory:")
+    load_all(conn, out)
+    checks = [
+        ("person", "people", "person_id"),
+        ("place", "places", "place_id"),
+        ("casualty", "casualties", "casualty_id"),
+    ]
+    for entity_type, table, id_col in checks:
+        dangling = conn.execute(
+            f"SELECT COUNT(*) FROM mentions m WHERE m.entity_type=? "
+            f"AND NOT EXISTS (SELECT 1 FROM {table} e WHERE e.{id_col}=m.entity_id)",
+            (entity_type,),
+        ).fetchone()[0]
+        assert dangling == 0, f"{entity_type} has {dangling} dangling mentions"
+
+
+def test_weather_location_flattened_to_place(tmp_path: Path) -> None:
+    out = _fixture_output(tmp_path)
+    conn = sqlite3.connect(":memory:")
+    load_all(conn, out)
+    row = conn.execute(
+        "SELECT place_name, place_id FROM weather WHERE weather_id='W1'"
+    ).fetchone()
+    assert row == ("near Metz", "PL1")  # nested location.* flattened + linkable
 
 
 def test_subevent_fulltext_flattened(tmp_path: Path) -> None:
@@ -138,14 +214,15 @@ def test_load_is_idempotent(tmp_path: Path) -> None:
     load_all(conn, out)  # second load must not duplicate PK rows
     assert conn.execute("SELECT COUNT(*) FROM people").fetchone()[0] == 1
     assert conn.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 1
-    # mentions must be idempotent too (composite PK); fixture has 2 mentions
-    assert conn.execute("SELECT COUNT(*) FROM mentions").fetchone()[0] == 2
-    # the place mention has no MentionID (null id) -> coalesced to "" so it
-    # still de-duplicates on reload rather than piling up
+    # mentions must be idempotent too (composite PK); fixture has 3 mentions
+    # (person + place via event_mentions[], casualty via event_context)
+    assert conn.execute("SELECT COUNT(*) FROM mentions").fetchone()[0] == 3
+    # rows without a MentionID (place mention + casualty) coalesce to "" so
+    # they still de-duplicate on reload rather than piling up
     null_id = conn.execute(
         "SELECT COUNT(*) FROM mentions WHERE mention_id = ''"
     ).fetchone()[0]
-    assert null_id == 1
+    assert null_id == 2
 
 
 def test_raw_blob_preserved(tmp_path: Path) -> None:

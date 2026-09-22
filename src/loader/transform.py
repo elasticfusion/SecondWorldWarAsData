@@ -216,6 +216,106 @@ EQUIPMENT_COLUMNS = {
     "category": "category",
     "country_of_origin": "country_of_origin",
 }
+DATE_COLUMNS = {
+    "date_id": "DateID",
+    "date_start": "date_start",
+    "date_end": "date_end",
+    "date_precision": "date_precision",
+    "normalized_datetime": "normalized_datetime",
+    "original_text": "original_text",
+}
+LOGISTICS_COLUMNS = {
+    "logistics_id": "LogisticsID",
+    "logistics_type": "logistics_type",
+    "category": "category",
+    "description": "description",
+    "severity": "severity",
+    "status": "status",
+}
+def weather_rows(entity_dir: Path) -> List[Dict[str, Any]]:
+    """Weather rows: flatten the nested ``location`` object (name + PlaceID).
+
+    ``location`` is an object linking to a place; extract its ``place_name`` and
+    ``PlaceID`` so weather can join to the places table.
+    """
+    rows: List[Dict[str, Any]] = []
+    for data in _iter_entity_files(entity_dir):
+        wid = data.get("WeatherID")
+        if not wid:
+            continue
+        loc = data.get("location") or {}
+        rows.append(
+            {
+                "weather_id": wid,
+                "date_id": data.get("DateID"),
+                "place_name": loc.get("place_name"),
+                "place_id": loc.get("PlaceID"),
+                "source_type": data.get("source_type"),
+                "raw": _json(data),
+            }
+        )
+    return rows
+
+
+def casualty_rows(entity_dir: Path) -> List[Dict[str, Any]]:
+    """Casualty rows: typed columns + flattened nested date; ``count`` as JSON.
+
+    ``count`` is a nested object (per-type value/qualifier) preserved as a JSON
+    string; the date lives under a nested ``date`` object.
+    """
+    rows: List[Dict[str, Any]] = []
+    for data in _iter_entity_files(entity_dir):
+        cid = data.get("CasualtyID")
+        if not cid:
+            continue
+        date = data.get("date") or {}
+        rows.append(
+            {
+                "casualty_id": cid,
+                "type": data.get("type"),
+                "description": data.get("description"),
+                "count": _json(data.get("count")) if data.get("count") else None,
+                "date_string": date.get("date_string"),
+                "iso_date": date.get("iso_date"),
+                "raw": _json(data),
+            }
+        )
+    return rows
+
+
+def casualty_mention_rows(entity_dir: Path) -> List[Dict[str, Any]]:
+    """Casualties link via ``event_context``/``source`` (not event_mentions[]).
+
+    Produce one mention row per casualty tying it to its sub-event, using the
+    source's verbatim locus (book/chapter/paragraph) as the citation ref.
+    """
+    rows: List[Dict[str, Any]] = []
+    for data in _iter_entity_files(entity_dir):
+        cid = data.get("CasualtyID")
+        if not cid:
+            continue
+        ctx = data.get("event_context") or {}
+        src = data.get("source") or {}
+        sub_event_id = ctx.get("Sub-eventID") or src.get("Sub-eventID") or ""
+        locus_bits = [
+            src.get("book"),
+            src.get("chapter"),
+            f"para {src.get('paragraph_number')}"
+            if src.get("paragraph_number") is not None
+            else None,
+        ]
+        verbatim = ", ".join(b for b in locus_bits if b) or None
+        rows.append(
+            {
+                "mention_id": "",  # casualties carry no MentionID
+                "sub_event_id": sub_event_id,
+                "entity_type": "casualty",
+                "entity_id": cid,
+                "original_text": data.get("description"),
+                "verbatim_ref": verbatim,
+            }
+        )
+    return rows
 
 
 def source_rows(entity_dir: Path) -> List[Dict[str, Any]]:

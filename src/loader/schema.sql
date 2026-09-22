@@ -67,6 +67,45 @@ CREATE TABLE IF NOT EXISTS equipment (
     raw              TEXT
 );
 
+CREATE TABLE IF NOT EXISTS dates (
+    date_id             TEXT PRIMARY KEY,
+    date_start          TEXT,
+    date_end            TEXT,
+    date_precision      TEXT,
+    normalized_datetime TEXT,
+    original_text       TEXT,
+    raw                 TEXT
+);
+
+CREATE TABLE IF NOT EXISTS casualties (
+    casualty_id  TEXT PRIMARY KEY,
+    type         TEXT,
+    description  TEXT,
+    count        TEXT,
+    date_string  TEXT,
+    iso_date     TEXT,
+    raw          TEXT
+);
+
+CREATE TABLE IF NOT EXISTS logistics (
+    logistics_id   TEXT PRIMARY KEY,
+    logistics_type TEXT,
+    category       TEXT,
+    description    TEXT,
+    severity       TEXT,
+    status         TEXT,
+    raw            TEXT
+);
+
+CREATE TABLE IF NOT EXISTS weather (
+    weather_id  TEXT PRIMARY KEY,
+    date_id     TEXT,
+    place_name  TEXT,
+    place_id    TEXT,
+    source_type TEXT,
+    raw         TEXT
+);
+
 CREATE TABLE IF NOT EXISTS mentions (
     mention_id    TEXT,
     sub_event_id  TEXT,

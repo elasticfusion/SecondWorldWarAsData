@@ -83,6 +83,24 @@ def load_all(conn: Any, output_root: Path) -> Dict[str, int]:
         "equipment",
         T.to_entity_rows(output_root / "equipment", "EquipmentID", T.EQUIPMENT_COLUMNS),
     )
+    counts["dates"] = _insert(
+        conn,
+        "dates",
+        T.to_entity_rows(output_root / "dates", "DateID", T.DATE_COLUMNS),
+    )
+    counts["casualties"] = _insert(
+        conn, "casualties", T.casualty_rows(output_root / "casualties")
+    )
+    counts["logistics"] = _insert(
+        conn,
+        "logistics",
+        T.to_entity_rows(output_root / "logistics", "LogisticsID", T.LOGISTICS_COLUMNS),
+    )
+    counts["weather"] = _insert(
+        conn,
+        "weather",
+        T.weather_rows(output_root / "weather"),
+    )
 
     counts["mentions"] = _load_mentions(conn, output_root)
     logger.info("Load complete: %s", counts)
@@ -95,10 +113,11 @@ _MENTION_SOURCES = [
     ("places", "place", "PlaceID"),
     ("equipment", "equipment", "EquipmentID"),
     ("dates", "date", "DateID"),
-    ("casualties", "casualty", "CasualtyID"),
     ("logistics", "logistics", "LogisticsID"),
     ("weather", "weather", "WeatherID"),
 ]
+# casualties link via event_context/source, not event_mentions[] — handled
+# separately in _load_mentions via T.casualty_mention_rows.
 
 
 def _load_mentions(conn: Any, output_root: Path) -> int:
@@ -107,4 +126,7 @@ def _load_mentions(conn: Any, output_root: Path) -> int:
     for subdir, entity_type, id_field in _MENTION_SOURCES:
         rows = T.to_mention_rows(output_root / subdir, entity_type, id_field)
         total += _insert(conn, "mentions", rows)
+    total += _insert(
+        conn, "mentions", T.casualty_mention_rows(output_root / "casualties")
+    )
     return total

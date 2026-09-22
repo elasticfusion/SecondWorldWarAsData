@@ -23,7 +23,9 @@ structured/faceted-search corpus.
    logistics, weather, images, maps. Each has a stable `<Entity>ID`.
 4. **Mentions** — the junction: an entity is *mentioned in* a sub-event, with a
    `MentionID`. This is the many-to-many fabric already present as
-   `event_mentions[]` in each entity file.
+   `event_mentions[]` in each entity file. (Casualties are the exception: they
+   link via a `event_context`/`source` object rather than `event_mentions[]`,
+   and their citation locus is synthesized from `book/chapter/paragraph`.)
 5. **OOB** — the Order-of-Battle structured dataset (`output/oob/*`): a parallel
    authoritative roster (command staff, campaigns, attachments, higher units,
    organic units, statistics), crosswalked to `people`.
