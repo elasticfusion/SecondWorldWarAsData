@@ -221,6 +221,11 @@ def to_mention_rows(entity_dir: Path, entity_type: str, id_field: str) -> List[d
                     or "",
                     "entity_type": entity_type,
                     "entity_id": entity_id,
+                    # source_id (BibliographyID) is not carried in entity
+                    # event_mentions today; the citation lives in verbatim_ref
+                    # text. Column present per SCHEMA_DESIGN; resolving text ->
+                    # BibliographyID is a separate future pass.
+                    "source_id": mention.get("BibliographyID"),
                     "original_text": mention.get("original_text"),
                     "verbatim_ref": mention.get("verbatim_reference"),
                 }
@@ -272,6 +277,8 @@ LOGISTICS_COLUMNS = {
     "severity": "severity",
     "status": "status",
 }
+
+
 def weather_rows(entity_dir: Path) -> List[Dict[str, Any]]:
     """Weather rows: flatten the nested ``location`` object (name + PlaceID).
 
@@ -340,9 +347,11 @@ def casualty_mention_rows(entity_dir: Path) -> List[Dict[str, Any]]:
         locus_bits = [
             src.get("book"),
             src.get("chapter"),
-            f"para {src.get('paragraph_number')}"
-            if src.get("paragraph_number") is not None
-            else None,
+            (
+                f"para {src.get('paragraph_number')}"
+                if src.get("paragraph_number") is not None
+                else None
+            ),
         ]
         verbatim = ", ".join(b for b in locus_bits if b) or None
         rows.append(
@@ -351,6 +360,7 @@ def casualty_mention_rows(entity_dir: Path) -> List[Dict[str, Any]]:
                 "sub_event_id": sub_event_id,
                 "entity_type": "casualty",
                 "entity_id": cid,
+                "source_id": None,  # casualty source is book/chapter text, not a BibliographyID
                 "original_text": data.get("description"),
                 "verbatim_ref": verbatim,
             }
@@ -386,6 +396,93 @@ def source_rows(entity_dir: Path) -> List[Dict[str, Any]]:
             }
         )
     return rows
+
+
+def image_rows(entity_dir: Path) -> List[Dict[str, Any]]:
+    """Image entity rows (media metadata + typed columns the site queries)."""
+    rows: List[Dict[str, Any]] = []
+    for data in _iter_entity_files(entity_dir):
+        iid = data.get("ImageID")
+        if not iid:
+            continue
+        rows.append(
+            {
+                "image_id": iid,
+                "image_title": data.get("image_title"),
+                "content_type": data.get("content_type"),
+                "place_name": data.get("place_name"),
+                "url": data.get("url"),
+                "local_copy": data.get("local_copy"),
+                "license": data.get("license"),
+                "description": data.get("description"),
+                "raw": _json(data),
+            }
+        )
+    return rows
+
+
+def map_rows(entity_dir: Path) -> List[Dict[str, Any]]:
+    """Map entity rows (media metadata + source locus)."""
+    rows: List[Dict[str, Any]] = []
+    for data in _iter_entity_files(entity_dir):
+        mid = data.get("MapID")
+        if not mid:
+            continue
+        rows.append(
+            {
+                "map_id": mid,
+                "map_title": data.get("map_title"),
+                "source_book": data.get("source_book"),
+                "page_number": data.get("page_number"),
+                "place_name": data.get("place_name"),
+                "local_path": data.get("local_path"),
+                "description": data.get("description"),
+                "map_type": data.get("map_type"),
+                "raw": _json(data),
+            }
+        )
+    return rows
+
+
+def _inline_mention_rows(
+    entity_dir: Path, entity_type: str, id_field: str
+) -> List[Dict[str, Any]]:
+    """Mention rows for entities that carry EventID/Sub-eventID *inline*.
+
+    Images and maps (unlike people/places) have no ``event_mentions[]``; they
+    reference a single sub-event via top-level ``Sub-eventID`` / ``Sub_eventID``.
+    Produces at most one mention row per such entity.
+    """
+    rows: List[Dict[str, Any]] = []
+    for data in _iter_entity_files(entity_dir):
+        entity_id = data.get(id_field)
+        if not entity_id:
+            continue
+        sub_event_id = data.get("Sub_eventID") or data.get("Sub-eventID")
+        if not sub_event_id:
+            continue  # nothing to link (many images have no event)
+        rows.append(
+            {
+                "mention_id": "",  # images/maps carry no MentionID
+                "sub_event_id": sub_event_id,
+                "entity_type": entity_type,
+                "entity_id": entity_id,
+                "source_id": None,  # source is free-text (source/source_book), not a BibliographyID
+                "original_text": data.get("description"),
+                "verbatim_ref": data.get("source") or data.get("source_book"),
+            }
+        )
+    return rows
+
+
+def image_mention_rows(entity_dir: Path) -> List[Dict[str, Any]]:
+    """Mention rows linking images to their sub-event (inline EventID)."""
+    return _inline_mention_rows(entity_dir, "image", "ImageID")
+
+
+def map_mention_rows(entity_dir: Path) -> List[Dict[str, Any]]:
+    """Mention rows linking maps to their sub-event (inline EventID)."""
+    return _inline_mention_rows(entity_dir, "map", "MapID")
 
 
 def place_rows_with_coords(entity_dir: Path) -> List[Dict[str, Any]]:

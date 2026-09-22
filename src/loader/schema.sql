@@ -106,11 +106,36 @@ CREATE TABLE IF NOT EXISTS weather (
     raw         TEXT
 );
 
+CREATE TABLE IF NOT EXISTS images (
+    image_id     TEXT PRIMARY KEY,
+    image_title  TEXT,
+    content_type TEXT,
+    place_name   TEXT,
+    url          TEXT,
+    local_copy   TEXT,
+    license      TEXT,
+    description  TEXT,
+    raw          TEXT
+);
+
+CREATE TABLE IF NOT EXISTS maps (
+    map_id       TEXT PRIMARY KEY,
+    map_title    TEXT,
+    source_book  TEXT,
+    page_number  TEXT,
+    place_name   TEXT,
+    local_path   TEXT,
+    description  TEXT,
+    map_type     TEXT,
+    raw          TEXT
+);
+
 CREATE TABLE IF NOT EXISTS mentions (
     mention_id    TEXT,
     sub_event_id  TEXT,
     entity_type   TEXT,
     entity_id     TEXT,
+    source_id     TEXT,
     original_text TEXT,
     verbatim_ref  TEXT,
     -- Composite key: mention_id alone is not unique (it repeats across

@@ -25,7 +25,12 @@ structured/faceted-search corpus.
    `MentionID`. This is the many-to-many fabric already present as
    `event_mentions[]` in each entity file. (Casualties are the exception: they
    link via a `event_context`/`source` object rather than `event_mentions[]`,
-   and their citation locus is synthesized from `book/chapter/paragraph`.)
+   and their citation locus is synthesized from `book/chapter/paragraph`.
+   Images and maps are also inline: they carry a single `EventID`/`Sub-eventID`
+   at the top level, not an `event_mentions[]` array.) The `source_id` column
+   (→ `sources`) exists per this design but is unpopulated today — entity
+   mentions carry the citation as `verbatim_ref` text, not a resolved
+   `BibliographyID`; text→ID resolution is a separate future pass.
 5. **OOB** — the Order-of-Battle structured dataset (`output/oob/*`): a parallel
    authoritative roster (command staff, campaigns, attachments, higher units,
    organic units, statistics), crosswalked to `people`.

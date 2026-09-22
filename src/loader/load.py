@@ -124,6 +124,8 @@ def load_all(conn: Any, output_root: Path) -> Dict[str, int]:
         "weather",
         T.weather_rows(output_root / "weather"),
     )
+    counts["images"] = _insert(conn, "images", T.image_rows(output_root / "images"))
+    counts["maps"] = _insert(conn, "maps", T.map_rows(output_root / "maps"))
 
     counts["mentions"] = _load_mentions(conn, output_root)
 
@@ -162,4 +164,7 @@ def _load_mentions(conn: Any, output_root: Path) -> int:
     total += _insert(
         conn, "mentions", T.casualty_mention_rows(output_root / "casualties")
     )
+    # images and maps carry EventID/Sub-eventID inline (no event_mentions[])
+    total += _insert(conn, "mentions", T.image_mention_rows(output_root / "images"))
+    total += _insert(conn, "mentions", T.map_mention_rows(output_root / "maps"))
     return total

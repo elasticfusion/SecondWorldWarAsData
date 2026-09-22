@@ -110,6 +110,36 @@ def _fixture_output(root: Path) -> Path:
             "source_type": "extracted",
         },
     )
+    # image: links via inline Sub-eventID (no event_mentions[])
+    _write(
+        out / "images" / "img1.json",
+        {
+            "ImageID": "IMG1",
+            "image_title": "Trench scene",
+            "content_type": "photograph",
+            "description": "Soldiers in a muddy trench",
+            "url": "http://example/img1.jpg",
+            "license": "public_domain",
+            "EventID": "EV1",
+            "Sub-eventID": "SE1",
+        },
+    )
+    # image with no event -> loads as entity but produces no mention
+    _write(
+        out / "images" / "img2.json",
+        {"ImageID": "IMG2", "image_title": "Unlinked", "content_type": "photograph"},
+    )
+    # map: links via inline Sub_eventID (underscore)
+    _write(
+        out / "maps" / "map1.json",
+        {
+            "MapID": "MAP1",
+            "map_title": "Approaches to Metz",
+            "source_book": "The Lorraine Campaign",
+            "Sub_eventID": "SE1",
+            "description": "Operational map",
+        },
+    )
     return out
 
 
@@ -124,8 +154,10 @@ def test_load_all_populates_hub_and_entities(tmp_path: Path) -> None:
     assert counts["sources"] == 1
     assert counts["casualties"] == 1
     assert counts["weather"] == 1
-    # person mention + place mention + casualty mention (via event_context)
-    assert counts["mentions"] == 3
+    assert counts["images"] == 2  # IMG1 (linked) + IMG2 (no event)
+    assert counts["maps"] == 1
+    # person + place + casualty + image(IMG1) + map — IMG2 has no event so no mention
+    assert counts["mentions"] == 5
 
 
 def test_casualty_links_to_subevent_with_synthesized_citation(tmp_path: Path) -> None:
@@ -154,6 +186,8 @@ def test_no_dangling_mentions(tmp_path: Path) -> None:
         ("person", "people", "person_id"),
         ("place", "places", "place_id"),
         ("casualty", "casualties", "casualty_id"),
+        ("image", "images", "image_id"),
+        ("map", "maps", "map_id"),
     ]
     for entity_type, table, id_col in checks:
         dangling = conn.execute(
@@ -172,6 +206,46 @@ def test_weather_location_flattened_to_place(tmp_path: Path) -> None:
         "SELECT place_name, place_id FROM weather WHERE weather_id='W1'"
     ).fetchone()
     assert row == ("near Metz", "PL1")  # nested location.* flattened + linkable
+
+
+def test_images_maps_link_via_inline_subevent(tmp_path: Path) -> None:
+    """Images/maps carry EventID/Sub-eventID inline (no event_mentions[])."""
+    out = _fixture_output(tmp_path)
+    conn = sqlite3.connect(":memory:")
+    load_all(conn, out)
+    img = conn.execute("""SELECT i.image_title, e.event_name
+           FROM mentions m
+           JOIN images i ON m.entity_id = i.image_id AND m.entity_type='image'
+           JOIN sub_events se ON m.sub_event_id = se.sub_event_id
+           JOIN events e ON se.event_id = e.event_id""").fetchone()
+    assert img == ("Trench scene", "Test Event")
+    mp = conn.execute(
+        "SELECT sub_event_id FROM mentions WHERE entity_type='map' AND entity_id='MAP1'"
+    ).fetchone()
+    assert mp == ("SE1",)  # underscore Sub_eventID resolved
+    # image with no event: loaded as entity, but produces no mention row
+    assert (
+        conn.execute("SELECT COUNT(*) FROM mentions WHERE entity_id='IMG2'").fetchone()[
+            0
+        ]
+        == 0
+    )
+    assert (
+        conn.execute("SELECT COUNT(*) FROM images WHERE image_id='IMG2'").fetchone()[0]
+        == 1
+    )
+
+
+def test_mentions_has_source_id_column(tmp_path: Path) -> None:
+    """source_id column exists (per SCHEMA_DESIGN); nullable + queryable."""
+    out = _fixture_output(tmp_path)
+    conn = sqlite3.connect(":memory:")
+    load_all(conn, out)
+    total = conn.execute("SELECT COUNT(*) FROM mentions").fetchone()[0]
+    null_src = conn.execute(
+        "SELECT COUNT(*) FROM mentions WHERE source_id IS NULL"
+    ).fetchone()[0]
+    assert null_src == total  # column present; unpopulated today (no BibliographyID)
 
 
 def test_subevent_fulltext_flattened(tmp_path: Path) -> None:
@@ -214,15 +288,15 @@ def test_load_is_idempotent(tmp_path: Path) -> None:
     load_all(conn, out)  # second load must not duplicate PK rows
     assert conn.execute("SELECT COUNT(*) FROM people").fetchone()[0] == 1
     assert conn.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 1
-    # mentions must be idempotent too (composite PK); fixture has 3 mentions
-    # (person + place via event_mentions[], casualty via event_context)
-    assert conn.execute("SELECT COUNT(*) FROM mentions").fetchone()[0] == 3
-    # rows without a MentionID (place mention + casualty) coalesce to "" so
+    # mentions must be idempotent too (composite PK); fixture has 5 mentions
+    # (person + place + casualty + image + map)
+    assert conn.execute("SELECT COUNT(*) FROM mentions").fetchone()[0] == 5
+    # rows without a MentionID (place, casualty, image, map) coalesce to "" so
     # they still de-duplicate on reload rather than piling up
     null_id = conn.execute(
         "SELECT COUNT(*) FROM mentions WHERE mention_id = ''"
     ).fetchone()[0]
-    assert null_id == 2
+    assert null_id == 4
 
 
 def test_raw_blob_preserved(tmp_path: Path) -> None:
@@ -266,16 +340,19 @@ def test_corrupt_file_is_skipped_counted_and_logged(tmp_path: Path, caplog) -> N
 
     out = _fixture_output(tmp_path)
     # valid person already present (P1); add a corrupt one alongside it
-    (out / "people" / "broken.json").write_text("{ this is not valid json",
-                                                 encoding="utf-8")
+    (out / "people" / "broken.json").write_text(
+        "{ this is not valid json", encoding="utf-8"
+    )
     conn = sqlite3.connect(":memory:")
     with caplog.at_level(logging.WARNING, logger="src.loader.transform"):
         counts = load_all(conn, out)
     # the good record still loads; the bad one is skipped, not silently lost
     assert counts["people"] == 1
     assert counts["skipped"] >= 1
-    assert any("broken.json" in r.message or "broken.json" in str(r.args)
-               for r in caplog.records)
+    assert any(
+        "broken.json" in r.message or "broken.json" in str(r.args)
+        for r in caplog.records
+    )
 
 
 def test_source_document_type_from_nested_citation(tmp_path: Path) -> None:

@@ -37,8 +37,14 @@ from pathlib import Path
 from typing import List, Tuple
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT))
-from src.loader.transform import _SKIP_FILES  # noqa: E402  (share loader's skip set)
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+# Import after the sys.path insert so the script runs standalone; the loader's
+# skip set is reused rather than duplicated. pylint: disable=wrong-import-position
+from src.loader import transform as _t  # noqa: E402
+
+_SKIP_FILES = _t._SKIP_FILES  # noqa: E402
 
 DEFAULT_OUTPUT = PROJECT_ROOT / "output"
 
@@ -75,6 +81,7 @@ def scan(output_dir: Path) -> Tuple[int, List[Tuple[str, str, str]]]:
 
 
 def main(argv: List[str]) -> int:
+    """Scan the corpus and print a report; return a process exit code."""
     output_dir = Path(argv[1]) if len(argv) > 1 else DEFAULT_OUTPUT
     if not output_dir.is_dir():
         print(f"error: {output_dir} is not a directory", file=sys.stderr)
