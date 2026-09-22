@@ -1,6 +1,6 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-06-15
+**Last Updated:** 2026-09-22
 
 ---
 
@@ -110,6 +110,23 @@ Prevent `find_related_groups.py`-style issues from accumulating. Don't enforce o
 ---
 
 ## Future / Research
+
+#### Postgres dialect adapter for src/loader (Aurora target)
+The `output/` → relational loader (`src/loader/`) currently runs **SQLite only**,
+though its docstring claims "works with any PEP-249 connection ... psycopg
+against Aurora." Three SQLite-specific spots block Postgres: `create_schema`
+uses `conn.executescript` (not in psycopg), `_insert` uses `INSERT OR REPLACE`
+(Postgres needs `ON CONFLICT (pk) DO UPDATE`), and `?` placeholders (psycopg
+uses `%s`). `transform.py` is already DB-agnostic, so this is a contained seam,
+not a rewrite. Also missing: `schema_pg_extras.sql` (pgvector/PostGIS/HNSW),
+referenced in a comment but not on disk. Defer the full adapter until the Aurora
+target is provisioned (untestable before then) and the embedding dimension is
+settled (`content_chunks VECTOR(?)` depends on the chosen embedder). **Done
+(2026-09-22):** `load.py` docstring corrected to "SQLite today; Postgres via a
+planned dialect adapter," and a `_require_sqlite` guard now rejects non-sqlite
+connections with a clear `NotImplementedError` (tested). Remaining: the adapter
+itself + `schema_pg_extras.sql`.
+*Source: loader schema-gap review 2026-09-22*
 
 #### Reprocess already-imported data after Phase 0 routing lands
 Once the format-agnostic ingestion + media classification work is built (see

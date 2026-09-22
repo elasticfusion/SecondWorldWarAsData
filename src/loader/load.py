@@ -1,11 +1,14 @@
 """Load transformed ``output/`` rows into the relational schema.
 
-Thin DB-API adapter over :mod:`src.loader.transform`. Works with any PEP-249
-connection: sqlite3 (tests, local exploration) now, and psycopg/psycopg2 against
-Aurora PostgreSQL later without changing the transform layer. Postgres-only
-concerns (pgvector embeddings, PostGIS geometry, HNSW indexes) are applied
-separately from ``schema_pg_extras.sql`` and the embedding pass; this module
-loads the portable core.
+Thin loader over :mod:`src.loader.transform`. **Runs against SQLite today**
+(tests and local exploration). The transform layer is fully DB-agnostic, so a
+Postgres path (psycopg against Aurora) is a contained future addition — but it
+does not exist yet: the SQL emitted here is SQLite dialect (``executescript``,
+``INSERT OR REPLACE``, ``?`` placeholders), so a non-sqlite connection is
+rejected (see ``_require_sqlite``). Adding Postgres means a small dialect seam
+(``ON CONFLICT DO UPDATE``, ``%s`` params, per-statement DDL execution) plus the
+still-to-be-written ``schema_pg_extras.sql`` for pgvector/PostGIS/HNSW; the
+transform layer stays unchanged. Tracked in ``docs/current/TODO.md``.
 
 Order matters (referential): sources → events → sub_events → entities →
 mentions. Loads are idempotent via INSERT-OR-REPLACE semantics on primary keys.
@@ -14,6 +17,7 @@ mentions. Loads are idempotent via INSERT-OR-REPLACE semantics on primary keys.
 from __future__ import annotations
 
 import logging
+import sqlite3
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -24,8 +28,26 @@ logger = logging.getLogger(__name__)
 _SCHEMA_SQL = Path(__file__).with_name("schema.sql")
 
 
+def _require_sqlite(conn: Any) -> None:
+    """Guard: this loader emits SQLite-dialect SQL only.
+
+    Fails fast with a clear message if handed a non-sqlite connection, rather
+    than dying obscurely inside ``executescript``/``INSERT OR REPLACE`` (which
+    psycopg neither implements nor parses). Remove once the Postgres dialect
+    adapter lands (see module docstring / TODO.md).
+    """
+    if not isinstance(conn, sqlite3.Connection):
+        raise NotImplementedError(
+            "src.loader currently supports SQLite connections only; the Postgres "
+            "dialect adapter (ON CONFLICT / %s params / schema_pg_extras.sql) is "
+            f"not implemented yet. Got connection type {type(conn).__name__!r}. "
+            "See docs/current/TODO.md."
+        )
+
+
 def create_schema(conn: Any) -> None:
-    """Create the core tables/indexes from schema.sql (idempotent)."""
+    """Create the core tables/indexes from schema.sql (idempotent, SQLite)."""
+    _require_sqlite(conn)
     conn.executescript(_SCHEMA_SQL.read_text(encoding="utf-8"))
     conn.commit()
 

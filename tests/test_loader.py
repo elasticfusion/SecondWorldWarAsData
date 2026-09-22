@@ -240,6 +240,19 @@ def test_transform_event_rows_direct(tmp_path: Path) -> None:
     assert hub["sub_events"][0]["event_id"] == "EV1"
 
 
+def test_non_sqlite_connection_rejected(tmp_path: Path) -> None:
+    """Loader emits SQLite dialect only -> non-sqlite conn fails fast & clearly."""
+    import pytest
+
+    class FakePostgresConn:  # duck-types a DB-API conn but isn't sqlite3
+        def executescript(self, *_a, **_k):  # would exist? psycopg doesn't
+            raise AssertionError("guard should trip before this is called")
+
+    out = _fixture_output(tmp_path)
+    with pytest.raises(NotImplementedError, match="SQLite connections only"):
+        load_all(FakePostgresConn(), out)
+
+
 def test_source_document_type_from_nested_citation(tmp_path: Path) -> None:
     """document_type/author come from citation.*, not top-level availability."""
     out = _fixture_output(tmp_path)
