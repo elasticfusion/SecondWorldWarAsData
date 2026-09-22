@@ -98,25 +98,8 @@ def ensure_networking():
     _disable_idle_monitor()
 
 
-def _check_spot_placement() -> str | None:
-    """Check Spot placement scores and return the best AZ. Returns None if scores are too low."""
-    print("\nChecking Spot availability...")
-    ec2 = boto3.client("ec2", region_name=REGION)
-
-    # Check current Spot prices
-    spot_config = OCR_CONFIG.get("spot", {})
-    max_proximity = spot_config.get("max_price_proximity_percent", 10)
-    min_score = spot_config.get("min_placement_score", 3)
-    on_demand_prices = OCR_CONFIG.get(
-        "on_demand_prices",
-        {
-            "g4dn.xlarge": 0.526,
-            "g5.xlarge": 1.006,
-            "g6.xlarge": 0.978,
-        },
-    )
-
-    price_too_close = False
+def _spot_prices_all_too_close(ec2, on_demand_prices: dict, max_proximity: int) -> bool:
+    """Print current Spot prices; return True if ALL are within max_proximity."""
     try:
         from datetime import datetime, timezone, timedelta
 
@@ -126,49 +109,43 @@ def _check_spot_placement() -> str | None:
             ProductDescriptions=["Linux/UNIX"],
             StartTime=start_time,
         )
-        # Group by instance type and AZ, keep most recent
         prices = {}
         for p in price_resp.get("SpotPriceHistory", []):
             key = (p["InstanceType"], p["AvailabilityZone"])
             if key not in prices:
                 prices[key] = p
+        if not prices:
+            return False
 
-        if prices:
-            print("  Current Spot Prices:")
-            # Sort by instance type then AZ
-            for (itype, az), p in sorted(prices.items()):
-                spot_price = float(p["SpotPrice"])
-                od_price = on_demand_prices.get(itype, 1.0)
-                savings = int((1 - spot_price / od_price) * 100)
-                indicator = "✓" if savings >= 50 else "⚠" if savings >= 20 else "✗"
-                print(
-                    f"    {indicator} {itype:14s} {az}: ${spot_price:.3f}/hr ({savings}% off)"
-                )
-                # Check if best price is too close to on-demand
-                if savings <= max_proximity:
-                    price_too_close = True
-            print()
+        print("  Current Spot Prices:")
+        for (itype, az), p in sorted(prices.items()):
+            spot_price = float(p["SpotPrice"])
+            savings = int((1 - spot_price / on_demand_prices.get(itype, 1.0)) * 100)
+            indicator = "✓" if savings >= 50 else "⚠" if savings >= 20 else "✗"
+            print(
+                f"    {indicator} {itype:14s} {az}: ${spot_price:.3f}/hr ({savings}% off)"
+            )
+        print()
 
-            if price_too_close:
-                # Check if ALL prices are too close
-                all_close = all(
-                    (
-                        1
-                        - float(p["SpotPrice"])
-                        / on_demand_prices.get(p["InstanceType"], 1.0)
-                    )
-                    * 100
-                    <= max_proximity
-                    for p in prices.values()
-                )
-                if all_close:
-                    print(
-                        f"  ⚠ All Spot prices within {max_proximity}% of on-demand — recommending on-demand."
-                    )
-                    return None
-    except Exception as e:
+        all_close = all(
+            (1 - float(p["SpotPrice"]) / on_demand_prices.get(p["InstanceType"], 1.0))
+            * 100
+            <= max_proximity
+            for p in prices.values()
+        )
+        if all_close:
+            print(
+                f"  ⚠ All Spot prices within {max_proximity}% of on-demand — "
+                "recommending on-demand."
+            )
+        return all_close
+    except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"  ⚠ Could not check Spot prices: {e}\n")
+        return False
 
+
+def _best_placement_az(ec2, min_score: int) -> "str | None":
+    """Return the best-scoring AZ name, or None if no AZ meets ``min_score``."""
     try:
         resp = ec2.get_spot_placement_scores(
             InstanceTypes=[
@@ -187,8 +164,6 @@ def _check_spot_placement() -> str | None:
         if not scores:
             print("  ⚠ No placement scores returned")
             return None
-
-        # Sort by score descending
         scores.sort(key=lambda s: s.get("Score", 0), reverse=True)
 
         print("  AZ Placement Scores:")
@@ -201,24 +176,38 @@ def _check_spot_placement() -> str | None:
         best = scores[0]
         best_az_id = best.get("AvailabilityZoneId", "")
         best_score = best.get("Score", 0)
-
         if best_score < min_score:
             print(
-                f"\n  ⚠ Best Spot score is {best_score}/10 (min: {min_score}) — Spot unlikely to be fulfilled."
+                f"\n  ⚠ Best Spot score is {best_score}/10 (min: {min_score}) — "
+                "Spot unlikely to be fulfilled."
             )
             print(
-                f"    Recommendation: Use on-demand (Type: EC2 in cloudformation/ocr.yaml)"
+                "    Recommendation: Use on-demand (Type: EC2 in cloudformation/ocr.yaml)"
             )
             return None
-
-        # Map AZ ID to AZ name (e.g., use1-az2 → us-east-1b)
         az_name = _az_id_to_name(ec2, best_az_id)
         print(f"\n  Best AZ: {az_name} ({best_az_id}) — score {best_score}/10")
         return az_name
-
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"  ⚠ Could not check Spot placement: {e}")
         return None
+
+
+def _check_spot_placement():
+    """Check Spot prices + placement scores; return the best AZ or None."""
+    print("\nChecking Spot availability...")
+    ec2 = boto3.client("ec2", region_name=REGION)
+    spot_config = OCR_CONFIG.get("spot", {})
+    max_proximity = spot_config.get("max_price_proximity_percent", 10)
+    min_score = spot_config.get("min_placement_score", 3)
+    on_demand_prices = OCR_CONFIG.get(
+        "on_demand_prices",
+        {"g4dn.xlarge": 0.526, "g5.xlarge": 1.006, "g6.xlarge": 0.978},
+    )
+
+    if _spot_prices_all_too_close(ec2, on_demand_prices, max_proximity):
+        return None
+    return _best_placement_az(ec2, min_score)
 
 
 def _az_id_to_name(ec2, az_id: str) -> str:
@@ -442,6 +431,19 @@ def submit_jobs(
     return jobs
 
 
+def _bucket_jobs(statuses: dict) -> tuple:
+    """Return (succeeded, failed, running, pending) job-id lists from statuses."""
+    succeeded = [jid for jid, j in statuses.items() if j["status"] == "SUCCEEDED"]
+    failed = [jid for jid, j in statuses.items() if j["status"] == "FAILED"]
+    running = [jid for jid, j in statuses.items() if j["status"] == "RUNNING"]
+    pending = [
+        jid
+        for jid, j in statuses.items()
+        if j["status"] in ("SUBMITTED", "PENDING", "RUNNABLE")
+    ]
+    return succeeded, failed, running, pending
+
+
 def wait_for_jobs(jobs: list, poll_interval: int = 30) -> bool:
     """Wait for all jobs to complete. Returns True if all succeeded."""
     batch = boto3.client("batch", region_name=REGION)
@@ -456,73 +458,19 @@ def wait_for_jobs(jobs: list, poll_interval: int = 30) -> bool:
     print(f"  Queue: {JOB_QUEUE}")
     print(f"{'═' * 60}")
 
-    seen_running = set()
-    seen_succeeded = set()
-    seen_failed = set()
+    seen: dict = {"running": set(), "succeeded": set(), "failed": set()}
     start_time = time.time()
 
     while True:
-        # Batch API limits describe_jobs to 100 at a time
-        all_jobs = []
-        for i in range(0, len(job_ids), 100):
-            resp = batch.describe_jobs(jobs=job_ids[i : i + 100])
-            all_jobs.extend(resp["jobs"])
+        statuses = _describe_all_jobs(batch, job_ids)
+        succeeded, failed, running, pending = _bucket_jobs(statuses)
 
-        statuses = {}
-        for j in all_jobs:
-            statuses[j["jobId"]] = j
-
-        succeeded = [jid for jid, j in statuses.items() if j["status"] == "SUCCEEDED"]
-        failed = [jid for jid, j in statuses.items() if j["status"] == "FAILED"]
-        running = [jid for jid, j in statuses.items() if j["status"] == "RUNNING"]
-        pending = [
-            jid
-            for jid, j in statuses.items()
-            if j["status"] in ("SUBMITTED", "PENDING", "RUNNABLE")
-        ]
-
-        # Log newly running jobs
-        for jid in running:
-            if jid not in seen_running:
-                seen_running.add(jid)
-                elapsed = _format_elapsed(start_time)
-                print(f"  [{elapsed}] ▶ RUNNING  {job_labels[jid]}")
-
-        # Log newly succeeded jobs
-        for jid in succeeded:
-            if jid not in seen_succeeded:
-                seen_succeeded.add(jid)
-                elapsed = _format_elapsed(start_time)
-                print(f"  [{elapsed}] ✓ SUCCESS  {job_labels[jid]}")
-
-        # Log newly failed jobs
-        for jid in failed:
-            if jid not in seen_failed:
-                seen_failed.add(jid)
-                elapsed = _format_elapsed(start_time)
-                reason = statuses[jid].get("statusReason", "unknown")
-                container_reason = ""
-                attempts = statuses[jid].get("attempts", [])
-                if attempts:
-                    container_reason = (
-                        attempts[-1].get("container", {}).get("reason", "")
-                    )
-                print(f"  [{elapsed}] ✗ FAILED   {job_labels[jid]}")
-                if container_reason:
-                    print(f"             └─ {container_reason[:100]}")
-                elif reason:
-                    print(f"             └─ {reason[:100]}")
+        _log_status_transitions(statuses, job_labels, start_time, seen)
+        _maybe_run_diagnostics(
+            batch, running, pending, succeeded, start_time, poll_interval
+        )
 
         done = len(succeeded) + len(failed)
-
-        # Warn if jobs stuck in RUNNABLE with no progress
-        diag_interval = OCR_CONFIG.get("jobs", {}).get("diagnostics_interval", 150)
-        if len(pending) > 0 and len(running) == 0 and len(succeeded) == 0:
-            elapsed_secs = int(time.time() - start_time)
-            if elapsed_secs > 0 and elapsed_secs % diag_interval < poll_interval:
-                _check_compute_status(batch)
-
-        # Print queue view
         elapsed = _format_elapsed(start_time)
         _print_queue_status(
             jobs,
@@ -536,34 +484,93 @@ def wait_for_jobs(jobs: list, poll_interval: int = 30) -> bool:
         )
 
         if done >= total:
-            print(f"\n{'═' * 60}")
-            elapsed = _format_elapsed(start_time)
-            if failed:
-                print(
-                    f"  ✗ COMPLETE ({elapsed}) — {len(succeeded)} succeeded, {len(failed)} failed"
-                )
-                print(f"\n  Failed jobs:")
-                for jid in failed:
-                    attempts = statuses[jid].get("attempts", [])
-                    reason = ""
-                    if attempts:
-                        reason = attempts[-1].get("container", {}).get("reason", "")
-                    if not reason:
-                        reason = statuses[jid].get("statusReason", "unknown")
-                    print(f"    {job_labels[jid]}: {reason[:120]}")
-                print(f"{'═' * 60}")
-                return False
-            else:
-                print(f"  ✓ ALL SUCCEEDED ({elapsed}) — {len(succeeded)}/{total} jobs")
-                print(f"{'═' * 60}")
-                return True
+            return _print_completion_summary(
+                statuses, job_labels, succeeded, failed, _format_elapsed(start_time)
+            )
 
         time.sleep(poll_interval)
 
 
+def _describe_all_jobs(batch, job_ids: list) -> dict:
+    """Return {jobId: job} for all job_ids (Batch describe_jobs caps at 100)."""
+    statuses = {}
+    for i in range(0, len(job_ids), 100):
+        resp = batch.describe_jobs(jobs=job_ids[i : i + 100])
+        for j in resp["jobs"]:
+            statuses[j["jobId"]] = j
+    return statuses
+
+
+def _failure_reason(job: dict) -> str:
+    """Best-effort failure reason: container reason, else statusReason."""
+    attempts = job.get("attempts", [])
+    if attempts:
+        reason = attempts[-1].get("container", {}).get("reason", "")
+        if reason:
+            return reason
+    return job.get("statusReason", "unknown")
+
+
+def _log_status_transitions(
+    statuses: dict,
+    job_labels: dict,
+    start_time: float,
+    seen: dict,
+) -> None:
+    """Print a line for each job newly entering RUNNING/SUCCEEDED/FAILED.
+
+    ``seen`` holds the sets of already-logged job ids per status, mutated here so
+    each transition is logged once across poll iterations.
+    """
+    transitions = (
+        ("RUNNING", seen["running"], "▶ RUNNING "),
+        ("SUCCEEDED", seen["succeeded"], "✓ SUCCESS "),
+        ("FAILED", seen["failed"], "✗ FAILED  "),
+    )
+    for status, seen_set, marker in transitions:
+        for jid, job in statuses.items():
+            if job["status"] != status or jid in seen_set:
+                continue
+            seen_set.add(jid)
+            elapsed = _format_elapsed(start_time)
+            print(f"  [{elapsed}] {marker} {job_labels[jid]}")
+            if status == "FAILED":
+                print(f"             └─ {_failure_reason(job)[:100]}")
+
+
+def _print_completion_summary(
+    statuses: dict, job_labels: dict, succeeded: list, failed: list, elapsed: str
+) -> bool:
+    """Print the terminal summary block; return True if all jobs succeeded."""
+    print(f"\n{'═' * 60}")
+    if failed:
+        print(
+            f"  ✗ COMPLETE ({elapsed}) — {len(succeeded)} succeeded, {len(failed)} failed"
+        )
+        print("\n  Failed jobs:")
+        for jid in failed:
+            print(f"    {job_labels[jid]}: {_failure_reason(statuses[jid])[:120]}")
+        print(f"{'═' * 60}")
+        return False
+    print(f"  ✓ ALL SUCCEEDED ({elapsed}) — {len(succeeded)} jobs")
+    print(f"{'═' * 60}")
+    return True
+
+
+def _maybe_run_diagnostics(
+    batch, running: list, pending: list, succeeded: list, start_time: float, poll: int
+) -> None:
+    """Run compute diagnostics when jobs are stuck RUNNABLE with no progress."""
+    if not (pending and not running and not succeeded):
+        return
+    diag_interval = OCR_CONFIG.get("jobs", {}).get("diagnostics_interval", 150)
+    elapsed_secs = int(time.time() - start_time)
+    if elapsed_secs > 0 and elapsed_secs % diag_interval < poll:
+        _check_compute_status(batch)
+
+
 def _print_queue_status(jobs, statuses, elapsed, done, total, running, pending, failed):
     """Print a compact queue view showing status of each manifest entry."""
-    # Build status map
     status_chars = []
     for j in jobs:
         jid = j["jobId"]
@@ -597,132 +604,152 @@ def _format_elapsed(start_time: float) -> str:
     return f"{minutes:02d}:{seconds:02d}"
 
 
+def _fix_nat_down(nat_up: bool) -> bool:
+    """Fix 1: bring NAT up if it's down. Returns True if this case handled it."""
+    if nat_up:
+        return False
+    print("\n  ⚠ NAT is DOWN — bringing it up...")
+    try:
+        lam = boto3.client("lambda", region_name=REGION)
+        lam.invoke(
+            FunctionName=NAT_MANAGER_FN,
+            InvocationType="Event",  # async, don't block
+            Payload=json.dumps({"action": "create"}).encode(),
+        )
+        print("    → nat_manager invoked (async, ~2 min to be ready)")
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        print(f"    → Failed to invoke nat_manager: {e}")
+    _disable_idle_monitor()  # also ensure idle monitor is disabled
+    print()
+    return True
+
+
+def _fix_no_spot_capacity(instance_count: int, desired: int, compute_type: str) -> bool:
+    """Fix 2: no Spot instances — retarget AZ or fall back to on-demand."""
+    if not (instance_count == 0 and desired > 0 and compute_type == "SPOT"):
+        return False
+    global _spot_wait_start
+    max_wait = OCR_CONFIG.get("spot", {}).get("max_wait_minutes", 120)
+    if _spot_wait_start is None:
+        _spot_wait_start = time.time()
+    wait_minutes = (time.time() - _spot_wait_start) / 60
+
+    if wait_minutes >= max_wait:
+        print(
+            f"\n  ⚠ Spot wait exceeded {max_wait} min — forcing switch to on-demand..."
+        )
+        _recreate_compute_as_ondemand()
+        _spot_wait_start = None
+        print()
+        return True
+
+    print(
+        f"\n  ⚠ No Spot capacity (waiting {int(wait_minutes)}/{max_wait} min) — "
+        "checking placement scores..."
+    )
+    best_az = _check_spot_placement()
+    if best_az:
+        _target_az(best_az)
+    else:
+        print("    Switching compute environment to on-demand...")
+        _recreate_compute_as_ondemand()
+        _spot_wait_start = None
+    print()
+    return True
+
+
+def _fix_wrong_az(
+    ec2, instance_count: int, desired: int, compute_type: str, subnets, instance_types
+) -> bool:
+    """Fix 3: on-demand with no instances — subnets may be in a non-GPU AZ."""
+    if not (instance_count == 0 and desired > 0 and compute_type == "EC2"):
+        return False
+    print("\n  ⚠ On-demand requested but no instances launching...")
+    gpu_subnet = _find_gpu_subnet(ec2, subnets, instance_types)
+    if gpu_subnet and gpu_subnet not in subnets:
+        print(f"    Subnets are in wrong AZs — updating to {gpu_subnet}...")
+        try:
+            boto3.client("batch", region_name=REGION).update_compute_environment(
+                computeEnvironment=JOB_QUEUE,
+                computeResources={"subnets": [gpu_subnet]},
+            )
+            print("    → Updated subnet")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            print(f"    → Failed: {e}")
+    else:
+        subnet_azs = []
+        if subnets:
+            sub_resp = ec2.describe_subnets(SubnetIds=subnets)
+            subnet_azs = [s["AvailabilityZone"] for s in sub_resp.get("Subnets", [])]
+        print(f"    Instance types: {', '.join(instance_types)}")
+        print(f"    Subnets/AZs: {', '.join(subnet_azs)}")
+        print("    Waiting for EC2 to provision...")
+    print()
+    return True
+
+
+def _count_gpu_instances(ec2, instance_types: list) -> int:
+    """Count pending/running instances of the CE's GPU instance types."""
+    instances = ec2.describe_instances(
+        Filters=[
+            {
+                "Name": "instance-type",
+                "Values": instance_types or ["g5.xlarge", "g5.2xlarge"],
+            },
+            {"Name": "instance-state-name", "Values": ["pending", "running"]},
+        ]
+    )
+    return sum(len(r["Instances"]) for r in instances.get("Reservations", []))
+
+
+def _nat_is_up(ec2) -> bool:
+    """True when the environment's NAT gateway is available."""
+    nats = ec2.describe_nat_gateways(
+        Filters=[
+            {"Name": "tag:Name", "Values": [f"{ENV}-nat"]},
+            {"Name": "state", "Values": ["available"]},
+        ]
+    )
+    return len(nats.get("NatGateways", [])) > 0
+
+
 def _check_compute_status(batch):
-    """Check compute environment health when jobs are stuck pending. Takes corrective action."""
+    """Check compute environment health when jobs are stuck pending; self-heal.
+
+    Gathers CE + instance + NAT state, then applies the first matching
+    corrective handler (NAT down, no Spot capacity, wrong-AZ subnets). If none
+    apply, reports progress. Each handler is self-contained and returns True
+    when it owns the situation.
+    """
     try:
         resp = batch.describe_compute_environments(computeEnvironments=[JOB_QUEUE])
-        env = resp["computeEnvironments"][0]
-        resources = env.get("computeResources", {})
+        resources = resp["computeEnvironments"][0].get("computeResources", {})
         desired = resources.get("desiredvCpus", 0)
         compute_type = resources.get("type", "unknown")
         instance_types = resources.get("instanceTypes", [])
         subnets = resources.get("subnets", [])
 
         ec2 = boto3.client("ec2", region_name=REGION)
-        instances = ec2.describe_instances(
-            Filters=[
-                {
-                    "Name": "instance-type",
-                    "Values": instance_types or ["g5.xlarge", "g5.2xlarge"],
-                },
-                {"Name": "instance-state-name", "Values": ["pending", "running"]},
-            ]
-        )
-        instance_count = sum(
-            len(r["Instances"]) for r in instances.get("Reservations", [])
-        )
+        instance_count = _count_gpu_instances(ec2, instance_types)
+        nat_up = _nat_is_up(ec2)
 
-        # Check NAT
-        nats = ec2.describe_nat_gateways(
-            Filters=[
-                {"Name": "tag:Name", "Values": [f"{ENV}-nat"]},
-                {"Name": "state", "Values": ["available"]},
-            ]
-        )
-        nat_up = len(nats.get("NatGateways", [])) > 0
-
-        # --- CORRECTIVE ACTIONS ---
-
-        # Fix 1: NAT is down — bring it up
-        if not nat_up:
-            print(f"\n  ⚠ NAT is DOWN — bringing it up...")
-            try:
-                lam = boto3.client("lambda", region_name=REGION)
-                lam.invoke(
-                    FunctionName=NAT_MANAGER_FN,
-                    InvocationType="Event",  # async, don't block
-                    Payload=json.dumps({"action": "create"}).encode(),
-                )
-                print(f"    → nat_manager invoked (async, ~2 min to be ready)")
-            except Exception as e:
-                print(f"    → Failed to invoke nat_manager: {e}")
-            # Also ensure idle monitor is disabled
-            _disable_idle_monitor()
-            print()
+        # Apply the first corrective handler that owns this situation.
+        if _fix_nat_down(nat_up):
+            return
+        if _fix_no_spot_capacity(instance_count, desired, compute_type):
+            return
+        if _fix_wrong_az(
+            ec2, instance_count, desired, compute_type, subnets, instance_types
+        ):
             return
 
-        # Fix 2: No instances and Spot — check scores and switch to on-demand if needed
-        if instance_count == 0 and desired > 0 and compute_type == "SPOT":
-            global _spot_wait_start
-            spot_config = OCR_CONFIG.get("spot", {})
-            max_wait = spot_config.get("max_wait_minutes", 120)
-
-            # Track how long we've been waiting for Spot
-            if _spot_wait_start is None:
-                _spot_wait_start = time.time()
-
-            wait_minutes = (time.time() - _spot_wait_start) / 60
-
-            # If we've exceeded max wait time, force switch to on-demand
-            if wait_minutes >= max_wait:
-                print(
-                    f"\n  ⚠ Spot wait exceeded {max_wait} min — forcing switch to on-demand..."
-                )
-                _recreate_compute_as_ondemand()
-                _spot_wait_start = None
-                print()
-                return
-
-            print(
-                f"\n  ⚠ No Spot capacity (waiting {int(wait_minutes)}/{max_wait} min) — checking placement scores..."
-            )
-            best_az = _check_spot_placement()
-            if best_az:
-                # Found a good AZ — retarget
-                _target_az(best_az)
-            else:
-                # No good Spot AZ — switch to on-demand
-                print(f"    Switching compute environment to on-demand...")
-                _recreate_compute_as_ondemand()
-                _spot_wait_start = None
-            print()
-            return
-
-        # Fix 3: No instances, on-demand, subnets may be in wrong AZ
-        if instance_count == 0 and desired > 0 and compute_type == "EC2":
-            print(f"\n  ⚠ On-demand requested but no instances launching...")
-            gpu_subnet = _find_gpu_subnet(ec2, subnets, instance_types)
-            if gpu_subnet and gpu_subnet not in subnets:
-                print(f"    Subnets are in wrong AZs — updating to {gpu_subnet}...")
-                try:
-                    batch.update_compute_environment(
-                        computeEnvironment=JOB_QUEUE,
-                        computeResources={"subnets": [gpu_subnet]},
-                    )
-                    print(f"    → Updated subnet")
-                except Exception as e:
-                    print(f"    → Failed: {e}")
-            else:
-                # Get subnet AZs for diagnostics
-                subnet_azs = []
-                if subnets:
-                    sub_resp = ec2.describe_subnets(SubnetIds=subnets)
-                    subnet_azs = [
-                        s["AvailabilityZone"] for s in sub_resp.get("Subnets", [])
-                    ]
-                print(f"    Instance types: {', '.join(instance_types)}")
-                print(f"    Subnets/AZs: {', '.join(subnet_azs)}")
-                print(f"    Waiting for EC2 to provision...")
-            print()
-            return
-
-        # Info: instances up, waiting for image pull
+        # Info: instances up, waiting for image pull.
         if instance_count > 0 and nat_up:
             print(
-                f"\n  ℹ {instance_count} instance(s) up — pulling Docker image (~15GB, may take 5-10 min)\n"
+                f"\n  ℹ {instance_count} instance(s) up — pulling Docker image "
+                "(~15GB, may take 5-10 min)\n"
             )
-
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"\n  ⚠ Could not check compute status: {e}\n")
 
 
@@ -765,22 +792,23 @@ def _recreate_compute_as_ondemand():
         # Wait for deletion
         waiter = cf.get_waiter("stack_delete_complete")
         waiter.wait(StackName=stack_name, WaiterConfig={"Delay": 10, "MaxAttempts": 60})
-        print(f"    → Stack deleted")
+        print("    → Stack deleted")
     except Exception as e:
         print(f"    → Delete failed: {e}")
         return
 
     # Redeploy with on-demand (deploy_all.sh --ocr-standalone skips image build if already pushed)
-    print(f"    Redeploying as on-demand...")
+    print("    Redeploying as on-demand...")
     try:
         result = subprocess.run(
             ["bash", "scripts/deploy_all.sh", "--ocr-standalone"],
             capture_output=True,
             text=True,
+            check=False,
             timeout=600,
         )
         if result.returncode == 0:
-            print(f"    → Stack recreated as on-demand")
+            print("    → Stack recreated as on-demand")
         else:
             # Show last few lines of output
             lines = (result.stdout + result.stderr).strip().split("\n")
@@ -835,8 +863,6 @@ def publish_individual_outputs(
     if not output_prefix:
         output_prefix = f"contentrepository/{pdf_name}"
 
-    prefix = f"ocr-output/{pdf_name}/"
-
     print(f"\nPublishing individual files to s3://{bucket}/{output_prefix}/")
 
     published = 0
@@ -875,25 +901,12 @@ def publish_individual_outputs(
     print(f"\n  Published {published} files to s3://{bucket}/{output_prefix}/")
 
 
-def _decide_compute_type() -> str:
-    """Decide whether to use SPOT or EC2 based on current prices and config."""
-    spot_config = OCR_CONFIG.get("spot", {})
-    max_proximity = spot_config.get("max_price_proximity_percent", 10)
-    min_score = spot_config.get("min_placement_score", 3)
-    on_demand_prices = OCR_CONFIG.get(
-        "on_demand_prices",
-        {
-            "g4dn.xlarge": 0.526,
-            "g5.xlarge": 1.006,
-            "g6.xlarge": 0.978,
-        },
-    )
+def _spot_price_decision(ec2, on_demand_prices: dict, max_proximity: int):
+    """Spot-price phase of the compute decision.
 
-    print("\n=== Compute Type Decision ===")
-
-    ec2 = boto3.client("ec2", region_name=REGION)
-
-    # Check Spot prices
+    Returns "EC2" to force on-demand (all Spot within proximity, or prices
+    unavailable), or None to continue to the placement-score check.
+    """
     try:
         from datetime import datetime, timezone, timedelta
 
@@ -908,34 +921,37 @@ def _decide_compute_type() -> str:
             key = (p["InstanceType"], p["AvailabilityZone"])
             if key not in prices:
                 prices[key] = p
+        if not prices:
+            return None
 
-        if prices:
-            # Find best savings across all instance types
-            best_savings = 0
-            print("  Spot Prices:")
-            for (itype, az), p in sorted(prices.items()):
-                spot_price = float(p["SpotPrice"])
-                od_price = on_demand_prices.get(itype, 1.0)
-                savings = int((1 - spot_price / od_price) * 100)
-                best_savings = max(best_savings, savings)
-                indicator = (
-                    "✓" if savings >= 50 else "⚠" if savings > max_proximity else "✗"
-                )
-                print(
-                    f"    {indicator} {itype:14s} {az}: ${spot_price:.3f}/hr ({savings}% off)"
-                )
+        best_savings = 0
+        print("  Spot Prices:")
+        for (itype, az), p in sorted(prices.items()):
+            spot_price = float(p["SpotPrice"])
+            od_price = on_demand_prices.get(itype, 1.0)
+            savings = int((1 - spot_price / od_price) * 100)
+            best_savings = max(best_savings, savings)
+            indicator = (
+                "✓" if savings >= 50 else "⚠" if savings > max_proximity else "✗"
+            )
+            print(
+                f"    {indicator} {itype:14s} {az}: ${spot_price:.3f}/hr ({savings}% off)"
+            )
 
-            if best_savings <= max_proximity:
-                print(f"\n  → All Spot prices within {max_proximity}% of on-demand.")
-                print(f"  → Decision: ON-DEMAND (guaranteed capacity, similar cost)")
-                return "EC2"
-            print(f"\n  Best savings: {best_savings}% off on-demand")
-    except Exception as e:
+        if best_savings <= max_proximity:
+            print(f"\n  → All Spot prices within {max_proximity}% of on-demand.")
+            print("  → Decision: ON-DEMAND (guaranteed capacity, similar cost)")
+            return "EC2"
+        print(f"\n  Best savings: {best_savings}% off on-demand")
+        return None
+    except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"  ⚠ Could not check Spot prices: {e}")
-        print(f"  → Decision: ON-DEMAND (can't verify Spot value)")
+        print("  → Decision: ON-DEMAND (can't verify Spot value)")
         return "EC2"
 
-    # Check placement scores
+
+def _placement_score_decision(ec2, on_demand_prices: dict, min_score: int):
+    """Placement-score phase. Returns "EC2" if score too low, else None."""
     try:
         resp = ec2.get_spot_placement_scores(
             InstanceTypes=list(on_demand_prices.keys()),
@@ -949,13 +965,85 @@ def _decide_compute_type() -> str:
             best_score = scores[0].get("Score", 0)
             print(f"  Best placement score: {best_score}/10 (min: {min_score})")
             if best_score < min_score:
-                print(f"  → Decision: ON-DEMAND (placement score too low)")
+                print("  → Decision: ON-DEMAND (placement score too low)")
                 return "EC2"
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"  ⚠ Could not check placement scores: {e}")
+    return None
 
-    print(f"  → Decision: SPOT (good price + availability)")
+
+def _decide_compute_type() -> str:
+    """Decide SPOT vs EC2 from current Spot prices and placement scores."""
+    spot_config = OCR_CONFIG.get("spot", {})
+    max_proximity = spot_config.get("max_price_proximity_percent", 10)
+    min_score = spot_config.get("min_placement_score", 3)
+    on_demand_prices = OCR_CONFIG.get(
+        "on_demand_prices",
+        {"g4dn.xlarge": 0.526, "g5.xlarge": 1.006, "g6.xlarge": 0.978},
+    )
+
+    print("\n=== Compute Type Decision ===")
+    ec2 = boto3.client("ec2", region_name=REGION)
+
+    decision = _spot_price_decision(ec2, on_demand_prices, max_proximity)
+    if decision:
+        return decision
+    decision = _placement_score_decision(ec2, on_demand_prices, min_score)
+    if decision:
+        return decision
+
+    print("  → Decision: SPOT (good price + availability)")
     return "SPOT"
+
+
+def _current_compute_type(stack: dict) -> "str | None":
+    """Read ComputeType from stack params, falling back to the live CE."""
+    for param in stack.get("Parameters", []):
+        if param["ParameterKey"] == "ComputeType":
+            return param["ParameterValue"]
+    try:
+        batch = boto3.client("batch", region_name=REGION)
+        env_resp = batch.describe_compute_environments(computeEnvironments=[JOB_QUEUE])
+        if env_resp["computeEnvironments"]:
+            return env_resp["computeEnvironments"][0]["computeResources"]["type"]
+    except Exception:  # pylint: disable=broad-exception-caught
+        pass
+    return None
+
+
+def _inspect_ocr_stack(cf, stack_name: str) -> tuple:
+    """Return (stack_exists, current_type, needs_recreate) for the OCR stack."""
+    broken_states = {
+        "ROLLBACK_COMPLETE",
+        "CREATE_FAILED",
+        "DELETE_FAILED",
+        "UPDATE_ROLLBACK_COMPLETE",
+        "ROLLBACK_FAILED",
+    }
+    try:
+        stack = cf.describe_stacks(StackName=stack_name)["Stacks"][0]
+    except cf.exceptions.ClientError:
+        print("\n  OCR stack: does not exist")
+        return False, None, False
+
+    status = stack["StackStatus"]
+    if status in broken_states:
+        print(f"\n  OCR stack: {status} — needs recreation")
+        return True, None, True
+    current_type = _current_compute_type(stack)
+    print(f"\n  OCR stack: {status} (current: {current_type or 'unknown'})")
+    return True, current_type, False
+
+
+def _delete_stack_and_wait(cf, stack_name: str) -> None:
+    """Delete a CloudFormation stack and wait for completion (best-effort)."""
+    try:
+        cf.delete_stack(StackName=stack_name)
+        waiter = cf.get_waiter("stack_delete_complete")
+        waiter.wait(StackName=stack_name, WaiterConfig={"Delay": 10, "MaxAttempts": 60})
+        print("  → Deleted")
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        print(f"  → Delete failed: {e}")
 
 
 def _ensure_ocr_stack(compute_type: str):
@@ -963,85 +1051,22 @@ def _ensure_ocr_stack(compute_type: str):
     cf = boto3.client("cloudformation", region_name=REGION)
     stack_name = f"wwii-ocr-{ENV}"
 
-    # Check current stack state
-    current_type = None
-    stack_exists = False
-    needs_recreate = False
-    try:
-        resp = cf.describe_stacks(StackName=stack_name)
-        stack = resp["Stacks"][0]
-        stack_status = stack["StackStatus"]
-        stack_exists = True
+    stack_exists, current_type, needs_recreate = _inspect_ocr_stack(cf, stack_name)
 
-        # These states mean the stack is broken and needs deletion + recreation
-        broken_states = [
-            "ROLLBACK_COMPLETE",
-            "CREATE_FAILED",
-            "DELETE_FAILED",
-            "UPDATE_ROLLBACK_COMPLETE",
-            "ROLLBACK_FAILED",
-        ]
-        if stack_status in broken_states:
-            print(f"\n  OCR stack: {stack_status} — needs recreation")
-            needs_recreate = True
-        else:
-            # Determine current compute type from parameters
-            for param in stack.get("Parameters", []):
-                if param["ParameterKey"] == "ComputeType":
-                    current_type = param["ParameterValue"]
-                    break
-
-            # If we can't determine type from params, check the compute environment
-            if not current_type:
-                try:
-                    batch = boto3.client("batch", region_name=REGION)
-                    env_resp = batch.describe_compute_environments(
-                        computeEnvironments=[JOB_QUEUE]
-                    )
-                    if env_resp["computeEnvironments"]:
-                        current_type = env_resp["computeEnvironments"][0][
-                            "computeResources"
-                        ]["type"]
-                except Exception:
-                    pass
-
-            print(
-                f"\n  OCR stack: {stack_status} (current: {current_type or 'unknown'})"
-            )
-
-    except cf.exceptions.ClientError:
-        print(f"\n  OCR stack: does not exist")
-
-    # If stack is broken, delete it first
+    # Broken stack: delete so it can be recreated cleanly.
     if needs_recreate:
-        print(f"  Deleting broken stack...")
-        try:
-            cf.delete_stack(StackName=stack_name)
-            waiter = cf.get_waiter("stack_delete_complete")
-            waiter.wait(
-                StackName=stack_name, WaiterConfig={"Delay": 10, "MaxAttempts": 60}
-            )
-            print(f"  → Deleted")
-        except Exception as e:
-            print(f"  → Delete failed: {e}")
-        stack_exists = False
-        current_type = None
+        print("  Deleting broken stack...")
+        _delete_stack_and_wait(cf, stack_name)
+        stack_exists, current_type = False, None
 
-    # If stack exists with wrong type, delete and recreate
+    # Right stack, wrong compute type: cancel jobs, delete, recreate.
     if stack_exists and current_type and current_type != compute_type:
         print(f"  Stack has {current_type} but need {compute_type} — recreating...")
-
-        # Cancel any existing jobs first
         _cancel_all_jobs()
-
-        cf.delete_stack(StackName=stack_name)
-        print(f"  Deleting stack...")
-        waiter = cf.get_waiter("stack_delete_complete")
-        waiter.wait(StackName=stack_name, WaiterConfig={"Delay": 10, "MaxAttempts": 60})
-        print(f"  → Deleted")
+        print("  Deleting stack...")
+        _delete_stack_and_wait(cf, stack_name)
         stack_exists = False
 
-    # If stack doesn't exist (or was just deleted), deploy it
     if not stack_exists:
         print(f"  Deploying OCR stack as {compute_type}...")
         _deploy_ocr_stack(compute_type)
@@ -1065,6 +1090,7 @@ def _deploy_ocr_stack(compute_type: str):
         ["bash", "scripts/deploy_all.sh", "--ocr-standalone"],
         env=env,
         timeout=1200,
+        check=False,
     )
     if result.returncode != 0:
         raise RuntimeError(f"OCR stack deployment failed (exit {result.returncode})")
@@ -1105,7 +1131,8 @@ def _archive_manifest(manifest_path: str):
     print(f"\n  Manifest archived: {dest}")
 
 
-def main():
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser."""
     parser = argparse.ArgumentParser(description="Submit Chandra OCR jobs to AWS Batch")
     parser.add_argument("s3_path", help="S3 path to PDF (s3://bucket/key.pdf)")
     parser.add_argument(
@@ -1168,13 +1195,73 @@ def main():
         default=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
         help="AWS region (default: AWS_DEFAULT_REGION or us-east-1)",
     )
-    args = parser.parse_args()
+    return parser
+
+
+def _submit_jobs_for_args(args) -> list:
+    """Submit jobs per the CLI args (manifest / page-range / full-document)."""
+    if args.manifest:
+        return submit_from_manifest(args.s3_path, args.manifest, dpi=args.dpi)
+    if args.page_range:
+        print(f"\nSubmitting single job for pages {args.page_range}")
+        if args.dpi:
+            print(f"  Render DPI override: IMAGE_DPI={args.dpi}")
+        return submit_jobs(args.s3_path, 0, 0, args.page_range, dpi=args.dpi)
+    print("\nCounting pages...")
+    total_pages = get_page_count(args.s3_path)
+    num_chunks = math.ceil(total_pages / args.chunk_size)
+    print(f"  {total_pages} pages → {num_chunks} job(s) of {args.chunk_size} pages")
+    if args.dpi:
+        print(f"  Render DPI override: IMAGE_DPI={args.dpi}")
+    print("\nSubmitting jobs:")
+    return submit_jobs(args.s3_path, total_pages, args.chunk_size, dpi=args.dpi)
+
+
+def _publish_results(args, jobs: list, success: bool) -> None:
+    """Publish/merge outputs and archive the manifest based on run outcome."""
+    if success:
+        if args.no_merge:
+            publish_individual_outputs(args.s3_path, jobs, args.output_prefix)
+        else:
+            merge_outputs(args.s3_path, len(jobs), args.output_key)
+        if args.manifest:
+            _archive_manifest(args.manifest)
+        return
+    # Partial success — still publish what completed.
+    if args.no_merge:
+        print("\n  Publishing outputs for succeeded jobs...")
+        publish_individual_outputs(args.s3_path, jobs, args.output_prefix)
+    if args.manifest:
+        print("  Manifest NOT archived (some jobs failed — fix and resubmit)")
+
+
+def _wait_and_publish(args, jobs: list, compute_type: str) -> None:
+    """Block on jobs, publish outputs, and always re-enable the idle monitor."""
+    try:
+        success = wait_for_jobs(jobs)
+        if not success and compute_type == "SPOT":
+            print("\n  Spot failed — checking if on-demand fallback is needed...")
+            print("  To resubmit as on-demand:")
+            print(
+                f"    python3 scripts/submit_ocr_job.py {args.s3_path} "
+                f"--manifest {args.manifest} --wait --no-merge --region {REGION}"
+            )
+        _publish_results(args, jobs, success)
+    except KeyboardInterrupt:
+        print("\n\nInterrupted. Jobs continue running in AWS Batch.")
+    finally:
+        if not args.skip_networking:
+            _enable_idle_monitor()
+
+
+def main():
+    """CLI entry point: submit Chandra OCR jobs, optionally wait and publish."""
+    args = _build_arg_parser().parse_args()
 
     if not args.s3_path.startswith("s3://"):
         print("Error: s3_path must start with s3://")
         sys.exit(1)
 
-    # Initialize config from region
     _init_config(args.region)
 
     # 1. Ensure networking
@@ -1187,65 +1274,16 @@ def main():
     # 3. Ensure OCR stack is deployed with correct compute type
     _ensure_ocr_stack(compute_type)
 
-    # 4. Determine job structure and submit
-    if args.manifest:
-        jobs = submit_from_manifest(args.s3_path, args.manifest, dpi=args.dpi)
-    elif args.page_range:
-        print(f"\nSubmitting single job for pages {args.page_range}")
-        if args.dpi:
-            print(f"  Render DPI override: IMAGE_DPI={args.dpi}")
-        jobs = submit_jobs(args.s3_path, 0, 0, args.page_range, dpi=args.dpi)
-    else:
-        print("\nCounting pages...")
-        total_pages = get_page_count(args.s3_path)
-        num_chunks = math.ceil(total_pages / args.chunk_size)
-        print(f"  {total_pages} pages → {num_chunks} job(s) of {args.chunk_size} pages")
-        if args.dpi:
-            print(f"  Render DPI override: IMAGE_DPI={args.dpi}")
-        print("\nSubmitting jobs:")
-        jobs = submit_jobs(args.s3_path, total_pages, args.chunk_size, dpi=args.dpi)
+    # 4. Submit jobs.
+    jobs = _submit_jobs_for_args(args)
 
     print(f"\n{'─' * 50}")
     print(f"Submitted {len(jobs)} job(s) to queue: {JOB_QUEUE} ({compute_type})")
     print(f"Monitor: aws batch list-jobs --job-queue {JOB_QUEUE} --region {REGION}")
 
-    # 5. Wait, monitor, and handle Spot timeout
+    # 5. Wait, monitor, publish (or print manual next steps).
     if args.wait:
-        try:
-            success = wait_for_jobs(jobs)
-
-            # If Spot timed out and self-healed to on-demand, jobs were resubmitted internally
-            if not success and compute_type == "SPOT":
-                print("\n  Spot failed — checking if on-demand fallback is needed...")
-                # The wait loop already handles this via _check_compute_status
-                # If it couldn't switch, offer manual resubmit
-                print(f"  To resubmit as on-demand:")
-                print(
-                    f"    python3 scripts/submit_ocr_job.py {args.s3_path} --manifest {args.manifest} --wait --no-merge --region {REGION}"
-                )
-
-            if success:
-                if args.no_merge:
-                    publish_individual_outputs(args.s3_path, jobs, args.output_prefix)
-                else:
-                    num_chunks = len(jobs)
-                    merge_outputs(args.s3_path, num_chunks, args.output_key)
-                if args.manifest:
-                    _archive_manifest(args.manifest)
-            else:
-                # Partial success — still publish what completed
-                if args.no_merge:
-                    print("\n  Publishing outputs for succeeded jobs...")
-                    publish_individual_outputs(args.s3_path, jobs, args.output_prefix)
-                if args.manifest:
-                    print(
-                        "  Manifest NOT archived (some jobs failed — fix and resubmit)"
-                    )
-        except KeyboardInterrupt:
-            print("\n\nInterrupted. Jobs continue running in AWS Batch.")
-        finally:
-            if not args.skip_networking:
-                _enable_idle_monitor()
+        _wait_and_publish(args, jobs, compute_type)
     else:
         print("\nJobs submitted. Use --wait to block until complete and auto-merge.")
         print(f"Manual merge: python3 scripts/submit_ocr_job.py {args.s3_path} --wait")
