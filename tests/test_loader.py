@@ -66,7 +66,7 @@ def _fixture_output(root: Path) -> Path:
             "geocode_source": "osm",
             "enrichment_status": "geocoded",
             "coordinates": {"latitude": 50.77, "longitude": 6.08, "confidence": 0.9},
-            "event_mentions": [{"MentionID": "M2", "Sub_eventID": "SE1"}],
+            "event_mentions": [{"Sub_eventID": "SE1"}],  # no MentionID (null id)
         },
     )
     _write(
@@ -138,6 +138,14 @@ def test_load_is_idempotent(tmp_path: Path) -> None:
     load_all(conn, out)  # second load must not duplicate PK rows
     assert conn.execute("SELECT COUNT(*) FROM people").fetchone()[0] == 1
     assert conn.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 1
+    # mentions must be idempotent too (composite PK); fixture has 2 mentions
+    assert conn.execute("SELECT COUNT(*) FROM mentions").fetchone()[0] == 2
+    # the place mention has no MentionID (null id) -> coalesced to "" so it
+    # still de-duplicates on reload rather than piling up
+    null_id = conn.execute(
+        "SELECT COUNT(*) FROM mentions WHERE mention_id = ''"
+    ).fetchone()[0]
+    assert null_id == 1
 
 
 def test_raw_blob_preserved(tmp_path: Path) -> None:

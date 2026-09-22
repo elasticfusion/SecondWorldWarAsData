@@ -170,9 +170,15 @@ def to_mention_rows(entity_dir: Path, entity_type: str, id_field: str) -> List[d
         for mention in data.get("event_mentions", []) or []:
             rows.append(
                 {
-                    "mention_id": mention.get("MentionID"),
+                    # Coalesce to "" (never None): mention_id is part of the
+                    # composite PK, and SQLite/Postgres treat NULL key parts as
+                    # distinct, which would break idempotent reloads. The
+                    # (mention_id, entity_type, entity_id, sub_event_id) tuple
+                    # stays unique with "" standing in for a missing id.
+                    "mention_id": mention.get("MentionID") or "",
                     "sub_event_id": mention.get("Sub_eventID")
-                    or mention.get("Sub-eventID"),
+                    or mention.get("Sub-eventID")
+                    or "",
                     "entity_type": entity_type,
                     "entity_id": entity_id,
                     "original_text": mention.get("original_text"),

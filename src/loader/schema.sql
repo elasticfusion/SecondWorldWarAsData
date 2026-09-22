@@ -73,7 +73,11 @@ CREATE TABLE IF NOT EXISTS mentions (
     entity_type   TEXT,
     entity_id     TEXT,
     original_text TEXT,
-    verbatim_ref  TEXT
+    verbatim_ref  TEXT,
+    -- Composite key: mention_id alone is not unique (it repeats across
+    -- entity/sub-event pairings) and is sometimes null, so idempotent
+    -- INSERT OR REPLACE / ON CONFLICT keys on the full identifying tuple.
+    PRIMARY KEY (mention_id, entity_type, entity_id, sub_event_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_mentions_entity ON mentions (entity_type, entity_id);
