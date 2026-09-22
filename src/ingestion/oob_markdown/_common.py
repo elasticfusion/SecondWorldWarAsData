@@ -439,6 +439,52 @@ def iter_section_text_blocks(
     return blocks
 
 
+def iter_section_elements(
+    markdown: str, wanted_section: str
+) -> List[Tuple[str, str, str, object]]:
+    """Yield ordered ``(division, division_source, kind, payload)`` for a section.
+
+    Unlike :func:`iter_section_tables` (tables only) and
+    :func:`iter_section_text_blocks` (text only), this preserves *document
+    order* across BOTH text lines and tables within ``wanted_section``. It is
+    needed where a section interleaves the two — e.g. ATTACHMENTS/DETACHMENTS,
+    whose arm-of-service sub-headers appear as plain text *between* tables in
+    some files (and as ``colspan`` rows *inside* the table in others), so a
+    parser must see the text headers and the tables in sequence to attribute
+    each unit row to the right arm.
+
+    ``kind`` is ``"text"`` (payload = the stripped line, str) or ``"table"``
+    (payload = the ``<table>`` Tag). Division/source use the same Signal 1/2
+    inference as the sibling iterators.
+    """
+    soup = BeautifulSoup(markdown, "html.parser")
+    inferred = first_division_in(markdown)
+    recon = division_from_recon_troop(markdown)
+    division = ""
+    section: Optional[str] = None
+    out: List[Tuple[str, str, str, object]] = []
+    for element in soup.descendants:
+        if isinstance(element, Tag):
+            if element.name == "table" and section == wanted_section:
+                div, source = attribute_division(division, inferred, recon)
+                out.append((div, source, "table", element))
+            continue
+        # Text node: it may carry a division title, a section marker, and/or
+        # arm-header lines. Update state per line and emit in-section text.
+        for line in str(element).splitlines():
+            found_div = division_from_line(line)
+            if found_div:
+                division = found_div
+            sec = section_from_line(line)
+            if sec is not None:
+                section = sec
+                continue
+            if section == wanted_section and line.strip():
+                div_attr, source = attribute_division(division, inferred, recon)
+                out.append((div_attr, source, "text", line.strip()))
+    return out
+
+
 def section_counts(markdown: str) -> Dict[str, int]:
     """Return a count of section markers seen (coverage-record precursor).
 

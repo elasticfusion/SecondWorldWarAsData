@@ -242,6 +242,9 @@ class AttachmentRow:  # pylint: disable=too-many-instance-attributes
             "Cavalry", "Chemical", "Antiaircraft Artillery").
         unit: Attached unit as read (e.g. "781st Tk Bn",
             "Co A 47th Tk Bn (14th Armd Div)").
+        attached_to: For DETACHMENTS, the formation this division's unit was
+            attached to (e.g. "4th Div", "VI Corps"); "" for ATTACHMENTS, which
+            have no such column.
         start_date: Attachment start date as read (e.g. "7 Nov 44"), or "".
         end_date: Attachment end date as read (e.g. "26 Nov 44"), or "".
         kind: "attached" or "detached" (which section the row came from).
@@ -254,6 +257,7 @@ class AttachmentRow:  # pylint: disable=too-many-instance-attributes
     division: str
     arm: str
     unit: str
+    attached_to: str = ""
     start_date: str = ""
     end_date: str = ""
     kind: str = "attached"
