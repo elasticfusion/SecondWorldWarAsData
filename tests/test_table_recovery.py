@@ -57,7 +57,7 @@ class _FakeRunner:
         return RecoveredTable(
             html=self._html,
             markdown=self._html,
-            table_count=_extract_tables(self._html).__len__(),
+            table_count=len(_extract_tables(self._html)),
             device="cpu",
             notes="fake",
         )
@@ -98,11 +98,12 @@ def test_flattened_page_is_recovered_with_injected_runner(
     img.write_bytes(b"\x89PNG\r\n\x1a\n")  # content irrelevant to the fake runner
     fake = _FakeRunner("<table><tr><td>CC-A</td><td>170300</td></tr></table>")
 
-    result = recover_page_tables(FLATTENED_MD, page_image=img, runner=fake)
+    result = recover_page_tables(FLATTENED_MD, page_image=img, runner=fake)  # type: ignore[arg-type]
 
     assert result.routed is True
     assert fake.calls == 1
     assert result.recovered_a_table is True
+    assert result.recovered is not None
     assert "<table>" in result.recovered.html
     # The bridge's own note reports the routing outcome (the runner's internal
     # note is separate and controlled by the fake).
