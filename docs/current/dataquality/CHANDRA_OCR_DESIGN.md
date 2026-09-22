@@ -97,6 +97,58 @@ torch build over the version `chandra-ocr` pulls). For a citable dataset,
 (and a specific HF model revision), or at minimum record the resolved versions
 per build.
 
+### Render DPI: we run the 192 baseline, not the recommended 300
+
+Investigated 2026-09-22. Chandra's page-render DPI is a **library setting**
+(`chandra/settings.py: IMAGE_DPI = 192`), **not** exposed on the CLI — so our
+`chandra --method hf ... --page-range ...` invocation runs at the 192 baseline.
+Chandra's own benchmark script (`scripts/olmocr_bench.py`) defaults to **300**
+and explicitly labels 192 the "stock baseline". The gap is material:
+
+| Render DPI | Rendered px | Pixels the model actually sees* | Megapixels |
+|-----------:|------------:|--------------------------------:|-----------:|
+| 192 (ours) | 1632×2112   | 1624×2100                       | 3.41 MP    |
+| 300 (rec.) | 2550×3301   | 2184×2856                       | 6.24 MP    |
+| 400        | 3400×4400   | 2184×2856                       | 6.24 MP    |
+
+*After `chandra/model/util.py: scale_to_fit(max_size=(3072,2048))` downscales
+every page image before inference. **Key finding:** 192→300 gives the model
+**+83% usable detail**; the `scale_to_fit` ceiling caps gains **above** 300, so
+300 is the sweet spot (400 is identical to 300, wasted render cost). Our current
+192 leaves ~45% of usable input resolution unused — a corpus-wide config
+decision worth revisiting, especially for dense/table-heavy pages. Raising it
+requires overriding the library setting (env/config or `load_pdf_images(...,
+image_dpi=300)`), since the CLI has no DPI flag. NOTE: extra resolution may help
+marginal pages but is **not** expected to fully fix the 2-D task-org flattening
+(a model reasoning limit, not a resolution limit); an empirical 192-vs-300
+re-OCR of p155/p103 is the way to confirm (`tmp/dpi_probe.py`).
+
+### Augmenting Chandra with a second OCR engine (evaluated 2026-09-22)
+
+For the persistent structural blind spots (2-D task-org tables, block quotes),
+the 2025–2026 best-practice is a **pipeline** (VLM-OCR → structured parsing →
+dedicated table extraction), i.e. **augment Chandra, don't replace it**.
+Candidates to evaluate (verify current versions/licenses before adopting):
+
+- **PaddleOCR PP-StructureV3** (Apache-2.0) — dedicated table-structure
+  recognition (rows/cols/cells→HTML) + multi-column reading-order recovery +
+  Markdown. Directly targets the p155 2-D-table flattening; sub-100M-param
+  models reportedly rival billion-param VLMs. **First choice to trial as a
+  table-specialist augmentation.**
+- **Docling** (IBM, Apache-2.0) — layout-aware PDF→Markdown/JSON; good as a
+  cross-check / second opinion.
+- **Marker** (Datalab — *same team as Chandra*) — fast, but GPL-3.0 + RAIL-M
+  weight license restricts commercial use above a revenue threshold, and likely
+  shares Chandra's blind spots (weak augmentation choice).
+- Broader self-hostable VLM-OCR field: PaddleOCR-VL, DeepSeek-OCR, dots.ocr,
+  GOT-OCR 2.0, Granite-Docling.
+
+Recommended shape: keep Chandra as default; route table-heavy / suspect pages
+through PP-StructureV3; where a second engine **disagrees** on structure, flag
+`needs_review` (ensemble-as-verification — same "make corruption loud" stance
+as the loader's skip-logging and `scripts/check_output_integrity.py`). Block
+quotes need post-processing regardless of engine.
+
 ---
 
 ## Architecture

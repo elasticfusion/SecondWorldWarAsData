@@ -111,6 +111,23 @@ Prevent `find_related_groups.py`-style issues from accumulating. Don't enforce o
 
 ## Future / Research
 
+#### OCR structural fidelity: raise render DPI + evaluate augmenting Chandra
+Chandra runs at the 192 render-DPI baseline (`chandra/settings.py:IMAGE_DPI`,
+not exposed on the CLI); its own benchmark recommends 300. Measured: 192→300 =
++83% usable detail (3.41→6.24 MP the model actually sees); the
+`scale_to_fit(max_size=(3072,2048))` ceiling caps gains above 300. **Do:** (1)
+empirically diff 192-vs-300 re-OCR of the hard St. Vith pages (p155 2-D
+task-org table, p103 casualty table) via `tmp/dpi_probe.py`; if 300 helps, make
+it the corpus-wide default (override the library setting — no CLI flag exists).
+(2) For the persistent structural blind spots that DPI won't fix (2-D task-org
+flattening, block-quote markup loss), evaluate augmenting Chandra with a
+dedicated table engine — **PaddleOCR PP-StructureV3** (Apache-2.0, table
+structure + multi-column reading order) is the first candidate; Docling as a
+cross-check; ensemble-disagreement → `needs_review`. Full analysis in
+`docs/current/dataquality/CHANDRA_OCR_DESIGN.md` (Render DPI / Augmenting
+Chandra sections).
+*Source: OCR fidelity investigation 2026-09-22*
+
 #### Postgres dialect adapter for src/loader (Aurora target)
 The `output/` → relational loader (`src/loader/`) currently runs **SQLite only**,
 though its docstring claims "works with any PEP-249 connection ... psycopg

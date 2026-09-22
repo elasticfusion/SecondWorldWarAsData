@@ -294,7 +294,23 @@ def _enable_idle_monitor():
         print(f"  ⚠ Could not re-enable idle monitor: {e}")
 
 
-def submit_from_manifest(s3_path: str, manifest_path: str) -> list:
+def _container_overrides(command: list, dpi: int | None = None) -> dict:
+    """Build Batch containerOverrides, injecting IMAGE_DPI when dpi is given.
+
+    Chandra's render DPI is a pydantic BaseSettings field (``IMAGE_DPI``,
+    default 192), overridable via the environment with no image rebuild — so a
+    higher DPI (e.g. Chandra's recommended 300) is passed as a container env
+    var. See docs/current/dataquality/CHANDRA_OCR_DESIGN.md "Render DPI".
+    """
+    overrides: dict = {"command": command}
+    if dpi is not None:
+        overrides["environment"] = [{"name": "IMAGE_DPI", "value": str(dpi)}]
+    return overrides
+
+
+def submit_from_manifest(
+    s3_path: str, manifest_path: str, dpi: int | None = None
+) -> list:
     """Submit one job per line in a manifest file.
 
     Manifest format (one per line):
@@ -336,14 +352,15 @@ def submit_from_manifest(s3_path: str, manifest_path: str) -> list:
             jobName=job_name,
             jobQueue=JOB_QUEUE,
             jobDefinition=JOB_DEF,
-            containerOverrides={
-                "command": [
+            containerOverrides=_container_overrides(
+                [
                     s3_path,
                     f"s3://{bucket}/{output_prefix}/chunk-{i:03d}/",
                     "--page-range",
                     page_range,
                 ],
-            },
+                dpi=dpi,
+            ),
         )
         jobs.append(
             {
@@ -365,6 +382,7 @@ def submit_jobs(
     total_pages: int,
     chunk_size: int,
     page_range: str | None = None,
+    dpi: int | None = None,
 ) -> list:
     """Submit Batch jobs for each chunk. Returns list of job IDs."""
     batch = boto3.client("batch", region_name=REGION)
@@ -381,14 +399,15 @@ def submit_jobs(
             jobName=job_name,
             jobQueue=JOB_QUEUE,
             jobDefinition=JOB_DEF,
-            containerOverrides={
-                "command": [
+            containerOverrides=_container_overrides(
+                [
                     s3_path,
                     f"s3://{bucket}/{output_prefix}/chunk-000/",
                     "--page-range",
                     page_range,
                 ],
-            },
+                dpi=dpi,
+            ),
         )
         jobs.append({"jobId": resp["jobId"], "jobName": job_name, "pages": page_range})
         print(f"  Submitted: {job_name} (pages {page_range}) → {resp['jobId'][:12]}")
@@ -405,14 +424,15 @@ def submit_jobs(
                 jobName=job_name,
                 jobQueue=JOB_QUEUE,
                 jobDefinition=JOB_DEF,
-                containerOverrides={
-                    "command": [
+                containerOverrides=_container_overrides(
+                    [
                         s3_path,
                         f"s3://{bucket}/{output_prefix}/chunk-{i:03d}/",
                         "--page-range",
                         page_spec,
                     ],
-                },
+                    dpi=dpi,
+                ),
             )
             jobs.append(
                 {"jobId": resp["jobId"], "jobName": job_name, "pages": page_spec}
@@ -1134,6 +1154,14 @@ def main():
         help="Skip nat_manager invocation (networking already up)",
     )
     parser.add_argument(
+        "--dpi",
+        type=int,
+        default=None,
+        help="Override Chandra render DPI (default 192; 300 recommended for "
+        "dense/table pages). Passed as IMAGE_DPI container env var — no image "
+        "rebuild. See docs/current/dataquality/CHANDRA_OCR_DESIGN.md.",
+    )
+    parser.add_argument(
         "--region",
         type=str,
         default=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
@@ -1160,17 +1188,21 @@ def main():
 
     # 4. Determine job structure and submit
     if args.manifest:
-        jobs = submit_from_manifest(args.s3_path, args.manifest)
+        jobs = submit_from_manifest(args.s3_path, args.manifest, dpi=args.dpi)
     elif args.page_range:
         print(f"\nSubmitting single job for pages {args.page_range}")
-        jobs = submit_jobs(args.s3_path, 0, 0, args.page_range)
+        if args.dpi:
+            print(f"  Render DPI override: IMAGE_DPI={args.dpi}")
+        jobs = submit_jobs(args.s3_path, 0, 0, args.page_range, dpi=args.dpi)
     else:
         print("\nCounting pages...")
         total_pages = get_page_count(args.s3_path)
         num_chunks = math.ceil(total_pages / args.chunk_size)
         print(f"  {total_pages} pages → {num_chunks} job(s) of {args.chunk_size} pages")
+        if args.dpi:
+            print(f"  Render DPI override: IMAGE_DPI={args.dpi}")
         print("\nSubmitting jobs:")
-        jobs = submit_jobs(args.s3_path, total_pages, args.chunk_size)
+        jobs = submit_jobs(args.s3_path, total_pages, args.chunk_size, dpi=args.dpi)
 
     print(f"\n{'─' * 50}")
     print(f"Submitted {len(jobs)} job(s) to queue: {JOB_QUEUE} ({compute_type})")
@@ -1203,9 +1235,7 @@ def main():
                 # Partial success — still publish what completed
                 if args.no_merge:
                     print("\n  Publishing outputs for succeeded jobs...")
-                    publish_individual_outputs(
-                        args.s3_path, jobs, args.output_prefix
-                    )
+                    publish_individual_outputs(args.s3_path, jobs, args.output_prefix)
                 if args.manifest:
                     print(
                         "  Manifest NOT archived (some jobs failed — fix and resubmit)"
