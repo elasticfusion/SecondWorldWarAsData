@@ -22,10 +22,18 @@ python_functions = ["test_*"]
 pythonpath = ["."]
 
 # Show extra test summary info
+# Skip API/slow/integration tests by default so `pytest tests/` runs the fast
+# offline suite (~18s). Run them explicitly with, e.g.:
+#   pytest -m requires_api      (real API-credentialed tests)
+#   pytest -m slow              (real-API/slow tests)
+#   pytest -m integration       (multi-component integration)
+#   pytest -m ""                (everything, overriding this filter)
 addopts = [
     "-v",
     "--strict-markers",
     "--tb=short",
+    "-m",
+    "not requires_api and not slow and not integration",
     "--cov=src",
     "--cov-report=term-missing",
     "--cov-report=html",

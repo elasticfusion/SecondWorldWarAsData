@@ -16,13 +16,13 @@ provenance objects, both retained, so any asserted fact traces back to source:
 The provenance anchors mirror print's ``verbatim_reference`` + page number:
 ``(url, capture_date)`` for the page and ``(asset_id, timecode)`` for the video.
 
-**Scope of this module (scaffold).** Per the design, the *model and binding* are
-built now so the transcription backend slots in without rework; the heavy
-transcription engine (e.g. whisper) is intentionally behind a pluggable
-:class:`Transcriber` protocol. A :class:`NullTranscriber` records the video as an
-asset flagged ``needs_review`` (transcription pending) rather than fabricating a
-transcript — consistent with the project's "flag, never fabricate" discipline.
-A whisper-backed transcriber is a drop-in later.
+**Scope of this module.** The *model and binding* plus a real transcription
+backend are provided. :class:`GrokTranscriber` calls the xAI Grok
+Speech-to-Text API (``/v1/stt``) and maps its word-level timestamps into
+:class:`TranscriptSegment` spans. :class:`NullTranscriber` remains the default,
+recording the video as an asset flagged ``needs_review`` (transcription pending)
+rather than fabricating a transcript when no backend is supplied — consistent
+with the project's "flag, never fabricate" discipline.
 
 This module does not itself fetch the network or decode video; callers supply
 the already-fetched page text and a local video path (obtained by the
@@ -31,8 +31,12 @@ acquisition layer), keeping this unit testable and side-effect free.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import List, Optional, Protocol, runtime_checkable
+
+import requests
 
 from src.ingestion.source_metadata import capture_now_iso
 
@@ -92,6 +96,116 @@ class NullTranscriber:  # pylint: disable=too-few-public-methods
     ) -> List[TranscriptSegment]:
         """Return no segments: a transcript is never invented (flag, don't fabricate)."""
         return []
+
+
+# Group word-level timestamps into segments at these sentence-ending marks.
+_SEGMENT_END_CHARS = (".", "!", "?")
+# Cap segment length so a run without punctuation still yields usable spans.
+_MAX_WORDS_PER_SEGMENT = 40
+
+
+class GrokTranscriber:  # pylint: disable=too-few-public-methods
+    """Transcriber backed by the xAI Grok Speech-to-Text API (``/v1/stt``).
+
+    Calls the batch REST endpoint (``POST https://api.x.ai/v1/stt``,
+    multipart/form-data) and groups the API's *word-level* timestamps into
+    sentence-ish :class:`TranscriptSegment` spans (the API returns per-word
+    timings, not sentence segments). Reuses the project's ``GROK_API_KEY``
+    convention; the base URL is overridable via ``GROK_STT_URL`` for testing.
+
+    Grouping policy: a segment ends at sentence-ending punctuation, on a speaker
+    change (when ``diarize`` is on), or at ``_MAX_WORDS_PER_SEGMENT`` — so a long
+    unpunctuated stretch still produces bounded, timecoded spans.
+
+    Network is only touched on ``transcribe``; construction is side-effect free,
+    so the binding/model can be unit-tested with a mocked HTTP response.
+    """
+
+    def __init__(
+        self,
+        *,
+        api_key: Optional[str] = None,
+        model: str = "grok-voice-transcribe-2.0",
+        language: Optional[str] = None,
+        diarize: bool = False,
+        timeout: float = 600.0,
+    ) -> None:
+        self.api_key = api_key or os.getenv("GROK_API_KEY") or ""
+        if not self.api_key:
+            raise ValueError("GROK_API_KEY not found for GrokTranscriber")
+        self.model = model
+        self.language = language
+        self.diarize = diarize
+        self.timeout = timeout
+        self.url = os.getenv("GROK_STT_URL", "https://api.x.ai/v1/stt")
+
+    def transcribe(self, media_path: str) -> List[TranscriptSegment]:
+        """Transcribe a local audio/video file into timecoded segments."""
+        payload = self._request(media_path)
+        return self._segments_from_words(payload.get("words", []))
+
+    def _request(self, media_path: str) -> dict:
+        """POST the file to /v1/stt and return the parsed JSON response.
+
+        ``file`` is sent last, as the API requires (fields after ``file`` may be
+        ignored for streamable uploads).
+        """
+        data = [("model", self.model)]
+        if self.language:
+            data.append(("language", self.language))
+        if self.diarize:
+            data.append(("diarize", "true"))
+        with open(media_path, "rb") as handle:
+            resp = requests.post(
+                self.url,
+                headers={"Authorization": f"Bearer {self.api_key}"},
+                data=data,
+                files={"file": (os.path.basename(media_path), handle)},
+                timeout=self.timeout,
+            )
+        resp.raise_for_status()
+        return resp.json()
+
+    @staticmethod
+    def _segments_from_words(words: List[dict]) -> List[TranscriptSegment]:
+        """Group per-word timestamps into sentence-ish timecoded segments.
+
+        Boundaries: sentence-ending punctuation, a speaker change, or the
+        word cap. Empty/malformed words are skipped defensively.
+        """
+        segments: List[TranscriptSegment] = []
+        buf: List[dict] = []
+
+        def flush() -> None:
+            if not buf:
+                return
+            text = " ".join(w["text"] for w in buf).strip()
+            if text:
+                speaker = buf[0].get("speaker")
+                segments.append(
+                    TranscriptSegment(
+                        start=float(buf[0]["start"]),
+                        end=float(buf[-1]["end"]),
+                        text=text,
+                        speaker=(str(speaker) if speaker is not None else None),
+                    )
+                )
+            buf.clear()
+
+        prev_speaker = None
+        for word in words:
+            if "text" not in word or "start" not in word or "end" not in word:
+                continue
+            speaker = word.get("speaker")
+            if buf and speaker != prev_speaker and speaker is not None:
+                flush()
+            buf.append(word)
+            prev_speaker = speaker
+            ends_sentence = word["text"].rstrip().endswith(_SEGMENT_END_CHARS)
+            if ends_sentence or len(buf) >= _MAX_WORDS_PER_SEGMENT:
+                flush()
+        flush()
+        return segments
 
 
 @dataclass
@@ -236,3 +350,71 @@ def capture_web_page_with_video(
     )
 
     return WebVideoCapture(page=page, video=video, needs_review=video.needs_review)
+
+
+def render_transcript_markdown(
+    video: VideoAsset,
+    *,
+    title: Optional[str] = None,
+    source_url: Optional[str] = None,
+) -> str:
+    """Render a video's timecoded transcript to a markdown document.
+
+    Each transcript segment becomes a block prefixed with its timecode, so the
+    ``(asset_id, timecode)`` provenance survives into the markdown and downstream
+    parse. The result is ordinary prose that flows through the existing pipeline
+    (Phase 1 parse -> Phase 2 extraction) like any other text source, and is a
+    natural chunk source for RAG.
+
+    Format per segment:
+
+        **[HH:MM:SS-HH:MM:SS]** (Speaker N) segment text
+
+    A leading metadata block records the asset id, source, and transcription
+    status so a fact extracted from the transcript traces back to the recording.
+    Returns an empty-transcript notice (not fabricated text) when the video has
+    no segments (e.g. transcription still pending).
+    """
+    lines: List[str] = []
+    heading = title or "Video Transcript"
+    lines.append(f"# {heading}")
+    lines.append("")
+    lines.append(f"- asset_id: {video.asset_id}")
+    if source_url or video.source_url:
+        lines.append(f"- source: {source_url or video.source_url}")
+    lines.append(f"- transcription_status: {video.transcription_status}")
+    if video.needs_review:
+        lines.append("- needs_review: true")
+    lines.append("")
+
+    if not video.segments:
+        lines.append("_No transcript available (transcription pending)._")
+        return "\n".join(lines) + "\n"
+
+    for seg in video.segments:
+        speaker = f" (Speaker {seg.speaker})" if seg.speaker else ""
+        text = seg.text.strip()
+        if not text:
+            continue
+        lines.append(f"**[{seg.timecode}]**{speaker} {text}")
+        lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def write_transcript_markdown(
+    video: VideoAsset,
+    out_path: Path,
+    *,
+    title: Optional[str] = None,
+    source_url: Optional[str] = None,
+) -> Path:
+    """Render the transcript and write it to ``out_path`` (parent dirs created).
+
+    Returns the written path. The document is the pipeline's markdown contract,
+    so it can be dropped where content discovery finds it.
+    """
+    markdown = render_transcript_markdown(video, title=title, source_url=source_url)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(markdown, encoding="utf-8")
+    return out_path
