@@ -330,6 +330,22 @@ def casualty_rows(entity_dir: Path) -> List[Dict[str, Any]]:
     return rows
 
 
+def _citation_locus(src: Dict[str, Any]) -> Optional[str]:
+    """Build a human citation string from a casualty ``source`` object.
+
+    Joins the available ``book``/``chapter``/``paragraph_number`` parts, e.g.
+    "Breakout And Pursuit, Closing the Pocket, para 177". Returns None if the
+    source carries none of them.
+    """
+    para = src.get("paragraph_number")
+    parts = [
+        src.get("book"),
+        src.get("chapter"),
+        f"para {para}" if para is not None else None,
+    ]
+    return ", ".join(p for p in parts if p) or None
+
+
 def casualty_mention_rows(entity_dir: Path) -> List[Dict[str, Any]]:
     """Casualties link via ``event_context``/``source`` (not event_mentions[]).
 
@@ -343,26 +359,15 @@ def casualty_mention_rows(entity_dir: Path) -> List[Dict[str, Any]]:
             continue
         ctx = data.get("event_context") or {}
         src = data.get("source") or {}
-        sub_event_id = ctx.get("Sub-eventID") or src.get("Sub-eventID") or ""
-        locus_bits = [
-            src.get("book"),
-            src.get("chapter"),
-            (
-                f"para {src.get('paragraph_number')}"
-                if src.get("paragraph_number") is not None
-                else None
-            ),
-        ]
-        verbatim = ", ".join(b for b in locus_bits if b) or None
         rows.append(
             {
                 "mention_id": "",  # casualties carry no MentionID
-                "sub_event_id": sub_event_id,
+                "sub_event_id": ctx.get("Sub-eventID") or src.get("Sub-eventID") or "",
                 "entity_type": "casualty",
                 "entity_id": cid,
                 "source_id": None,  # casualty source is book/chapter text, not a BibliographyID
                 "original_text": data.get("description"),
-                "verbatim_ref": verbatim,
+                "verbatim_ref": _citation_locus(src),
             }
         )
     return rows
