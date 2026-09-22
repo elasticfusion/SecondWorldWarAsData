@@ -1156,10 +1156,11 @@ def main():
     parser.add_argument(
         "--dpi",
         type=int,
-        default=None,
-        help="Override Chandra render DPI (default 192; 300 recommended for "
-        "dense/table pages). Passed as IMAGE_DPI container env var — no image "
-        "rebuild. See docs/current/dataquality/CHANDRA_OCR_DESIGN.md.",
+        default=300,
+        help="Chandra render DPI (default 300, recommended for dense/table "
+        "pages; pass a lower value such as 192 for plain text pages). Passed "
+        "as IMAGE_DPI container env var — no image rebuild. See "
+        "docs/current/dataquality/CHANDRA_OCR_DESIGN.md.",
     )
     parser.add_argument(
         "--region",
