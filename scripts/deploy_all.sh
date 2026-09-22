@@ -7,11 +7,13 @@ if [ "$1" = "--ocr-standalone" ]; then
     ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
     ECR_REPO="$ACCOUNT.dkr.ecr.$REGION.amazonaws.com"
     CHANDRA_IMAGE="$ECR_REPO/wwii-chandra:latest"
+    PADDLE_IMAGE="$ECR_REPO/wwii-paddle:latest"
     ENV="dev"
     TEMPLATE_BUCKET="wwii-pipeline-deploy"
 
     echo "=== OCR Standalone Deploy ==="
-    echo "  Image: $CHANDRA_IMAGE"
+    echo "  Chandra image: $CHANDRA_IMAGE"
+    echo "  Paddle image:  $PADDLE_IMAGE"
     echo ""
 
     if [ "${OCR_SKIP_BUILD:-0}" = "1" ]; then
@@ -43,6 +45,32 @@ if [ "$1" = "--ocr-standalone" ]; then
         docker tag wwii-chandra:latest $CHANDRA_IMAGE
         docker push $CHANDRA_IMAGE
         echo "  Pushed: $CHANDRA_IMAGE"
+    fi
+
+    # --- Paddle (PP-StructureV3) table-recovery image ---
+    # Built/pushed alongside Chandra. Skip with PADDLE_SKIP_BUILD=1 (e.g. to
+    # deploy only Chandra). The CFN Paddle job def is created only when
+    # PaddleImageUri is passed (below), so an empty build is never referenced.
+    if [ "${PADDLE_SKIP_BUILD:-0}" = "1" ]; then
+        echo "=== 1b. Skipping Paddle image build (PADDLE_SKIP_BUILD=1) ==="
+        echo "  Using existing image: $PADDLE_IMAGE"
+    else
+        echo "=== 1b. Building Paddle (PP-StructureV3) image ==="
+        aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO
+        aws ecr describe-repositories --repository-names wwii-paddle --region $REGION 2>/dev/null || \
+            aws ecr create-repository --repository-name wwii-paddle --region $REGION --no-cli-pager
+        docker build --no-cache --progress=plain -f Dockerfile.paddle -t wwii-paddle .
+        if command -v trivy &>/dev/null; then
+            echo "  Scanning image for vulnerabilities..."
+            set +e
+            trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 wwii-paddle:latest 2>&1 | tail -10
+            set -e
+        else
+            echo "  Trivy: not installed (skipping scan)"
+        fi
+        docker tag wwii-paddle:latest $PADDLE_IMAGE
+        docker push $PADDLE_IMAGE
+        echo "  Pushed: $PADDLE_IMAGE"
     fi
 
     echo ""
@@ -112,6 +140,7 @@ if [ "$1" = "--ocr-standalone" ]; then
             ParameterKey=PrivateSubnetIds,ParameterValue=\"$GPU_SUBNETS\" \
             ParameterKey=SecurityGroupId,ParameterValue=$SG \
             ParameterKey=ChandraImageUri,ParameterValue=$CHANDRA_IMAGE \
+            ParameterKey=PaddleImageUri,ParameterValue=$PADDLE_IMAGE \
             ParameterKey=ComputeType,ParameterValue=${OCR_COMPUTE_TYPE:-EC2} \
         --capabilities CAPABILITY_NAMED_IAM \
         --region $REGION \

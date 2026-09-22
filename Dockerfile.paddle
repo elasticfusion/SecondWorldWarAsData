@@ -31,20 +31,13 @@ RUN pip3 install --no-cache-dir \
         "boto3==1.43.98" \
         "PyMuPDF==1.27.2.2"
 
-# Pre-download the PP-StructureV3 model set the runner uses (server det/rec +
-# layout + table-structure models) so no per-job download is needed. We warm the
-# exact server-model pipeline configured in src/ingestion/paddle_structure.py.
-# Runs on CPU at build time (no GPU in the build host); weights are device-
-# agnostic. enable_mkldnn=False mirrors the runner (avoids the paddlepaddle
-# 3.3.x MKL-DNN PIR bug on CPU).
-RUN python3 -c "\
-from paddleocr import PPStructureV3; \
-PPStructureV3(device='cpu', enable_mkldnn=False, \
-    text_detection_model_name='PP-OCRv5_server_det', \
-    text_recognition_model_name='PP-OCRv5_server_rec', \
-    text_det_limit_side_len=2048, text_det_limit_type='max', \
-    use_formula_recognition=False); \
-print('PP-StructureV3 server models cached')"
+# Model weights are downloaded on first job run (PP-StructureV3 fetches the
+# server det/rec + layout + table models to ~/.paddlex on first predict). We do
+# NOT warm them at build time: the paddlepaddle-GPU wheel links libcuda.so.1
+# (the NVIDIA driver), which is absent on the CPU build host, so importing
+# paddle at build fails. The download is a one-time cost on the first Batch job;
+# a warm-up job can prime a persistent cache later if needed. PADDLE_PDX_* below
+# still pins the model SOURCE behavior at runtime.
 
 # App code: the in-repo runner + auto-routing bridge + worker entrypoint.
 WORKDIR /app
@@ -53,9 +46,10 @@ COPY scripts/paddle_recover_page.py /app/scripts/paddle_recover_page.py
 COPY scripts/paddle_entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Force offline model source at RUNTIME so a job always uses the baked, pinned
-# weights and never silently fetches newer ones (mirrors Chandra's offline env).
+# Skip the model-source connectivity check at runtime (the check itself is slow
+# and flaky in a locked-down VPC). Models still download on first predict via the
+# normal source; we do NOT force HF offline here because the first job needs to
+# fetch weights. A future warm-cache step can bake them in via a builder stage.
 ENV PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True
-ENV HF_HUB_OFFLINE=1
 
 ENTRYPOINT ["/entrypoint.sh"]
