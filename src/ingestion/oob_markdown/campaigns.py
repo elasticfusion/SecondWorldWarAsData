@@ -24,10 +24,12 @@ from bs4 import BeautifulSoup, Tag
 from src.ingestion.oob_markdown._common import (
     DIVISION_SOURCE_TITLE,
     SECTION_CAMPAIGNS,
-    UNKNOWN_DIVISION,
     apply_division_flag,
+    attribute_division,
     clean_cell,
     division_from_line,
+    division_from_recon_troop,
+    first_division_in,
     iter_section_text_blocks,
 )
 from src.ingestion.oob_markdown.models import CampaignParseResult, CampaignRow
@@ -185,10 +187,16 @@ def _parse_table_form(markdown: str, source_file: str) -> List[CampaignRow]:
     """Parse campaigns from the chronology+campaigns table form.
 
     Collects cells in a table's 'Campaigns' column that match a known campaign
-    name, tracking the current division across the document.
+    name, tracking the current division across the document. A campaigns table
+    that precedes any division title is attributed by the same Signal 1
+    (next-title) / Signal 2 (recon-troop) inference the other section parsers
+    use via :func:`attribute_division`, so a leading STATISTICS/Campaigns table
+    is no longer left ``(unknown)`` when the file's title appears later.
     """
     rows: List[CampaignRow] = []
     soup = BeautifulSoup(markdown, "html.parser")
+    inferred = first_division_in(markdown)
+    recon = division_from_recon_troop(markdown)
     division = ""
     for element in soup.descendants:
         if not isinstance(element, Tag):
@@ -196,11 +204,12 @@ def _parse_table_form(markdown: str, source_file: str) -> List[CampaignRow]:
             continue
         if element.name != "table":
             continue
+        div, source = attribute_division(division, inferred, recon)
         for name in _campaign_cells(element):
             if name in KNOWN_CAMPAIGNS:
                 rows.append(
                     _row(
-                        division or UNKNOWN_DIVISION, name, source_file, from_table=True
+                        div, name, source_file, from_table=True, division_source=source
                     )
                 )
     return rows

@@ -77,6 +77,40 @@ def test_table_form_campaigns() -> None:
     assert "Activated" not in " ".join(names)
 
 
+# Regression: a STATISTICS/Campaigns table that appears BEFORE the division
+# title in the file. Previously these rows came out division="(unknown)" (yet
+# mislabeled source="title"); the table-form path now applies Signal-1
+# next-title inference like the other parsers, recovering the division and
+# flagging it inferred_next_title + needs_review.
+TABLE_BEFORE_TITLE_MD = """
+STATISTICS
+
+<table border="0">
+<thead>
+<tr><th colspan="2"><u>Chronology</u></th><th><u>Campaigns</u></th></tr>
+</thead>
+<tbody>
+<tr><td>Activated .....</td><td>25 Mar 42</td><td>Ardennes</td></tr>
+<tr><td>Days in Combat .....</td><td>199</td><td>Rhineland</td></tr>
+</tbody>
+</table>
+
+7th Armored Division
+
+COMMAND AND STAFF
+"""
+
+
+def test_table_before_title_infers_division() -> None:
+    result = parse_campaigns(TABLE_BEFORE_TITLE_MD, "t.md")
+    assert result.rows, "expected campaign rows recovered from the leading table"
+    # No row is left (unknown); all attribute to the file's (later) title.
+    assert all(r.division == "7th Armored Division" for r in result.rows)
+    # Inferred, not title-read -> flagged for review, not silently trusted.
+    assert all(r.division_source == "inferred_next_title" for r in result.rows)
+    assert all(r.needs_review for r in result.rows)
+
+
 def test_known_campaigns_not_flagged() -> None:
     result = parse_campaigns(PLAIN_MD, "t.md")
     assert all(not r.needs_review for r in result.rows)
