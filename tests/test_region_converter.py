@@ -122,3 +122,75 @@ def test_pdf_to_markdown_default_path_untouched() -> None:
     import scripts.pdf_to_markdown as p2m
 
     assert hasattr(p2m, "pdf_to_markdown")
+
+
+def _image_page_with_caption(doc: fitz.Document) -> None:
+    """A page: image near the top, a small-font caption just below it, then a
+    body paragraph further down in normal-size font."""
+    page = doc.new_page()
+    pix = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 400, 300))
+    pix.clear_with(100)
+    page.insert_image(fitz.Rect(100, 60, 495, 360), pixmap=pix)
+    # Caption: small font, immediately below the image.
+    page.insert_textbox(
+        fitz.Rect(100, 366, 495, 386),
+        "Maj Gen Clarence R. Huebner, 1st Infantry Division",
+        fontsize=8,
+    )
+    # Body paragraph: normal size, lower on the page.
+    page.insert_textbox(
+        fitz.Rect(60, 470, 545, 760),
+        "The division advanced at dawn. " * 30,
+        fontsize=12,
+    )
+
+
+def _caption_pdf(tmp_path: Path) -> Path:
+    doc = fitz.open()
+    _image_page_with_caption(doc)
+    path = tmp_path / "caption.pdf"
+    doc.save(str(path))
+    doc.close()
+    return path
+
+
+def test_image_caption_is_extracted_as_alt_and_caption(tmp_path: Path) -> None:
+    """The adjacent small-font caption is captured (not the placeholder), and
+    it becomes the Markdown alt text so stage-4 carries it downstream."""
+    path = _caption_pdf(tmp_path)
+    meta = build_source_metadata("01SRC", path, acquisition_method="local")
+    # Force the page to image disposition so the media branch runs regardless
+    # of how the synthetic page classifies.
+    from src.ingestion.disposition_classifier import classify_pdf
+
+    results = classify_pdf(meta.source_id, path, overrides={1: "image"})
+    manifest = build_manifest(meta, results)
+    result = convert_manifest(manifest, path, tmp_path / "out")
+
+    assert result.assets, "expected an extracted asset"
+    asset = result.assets[0]
+    assert "Huebner" in asset.caption, f"caption not detected: {asset.caption!r}"
+    # The caption (not the 'image pN' placeholder) is the markdown alt text.
+    assert "Huebner" in asset.alt_text
+    assert not asset.alt_text.startswith("image p")
+
+
+def test_caption_falls_back_to_placeholder_when_absent(tmp_path: Path) -> None:
+    """A bare image page with no adjacent text yields the placeholder alt and an
+    empty caption — no false caption invented."""
+    doc = fitz.open()
+    _image_page(doc)  # full-bleed image, no caption text
+    path = tmp_path / "nocap.pdf"
+    doc.save(str(path))
+    doc.close()
+    meta = build_source_metadata("01SRC", path, acquisition_method="local")
+    from src.ingestion.disposition_classifier import classify_pdf
+
+    results = classify_pdf(meta.source_id, path, overrides={1: "image"})
+    manifest = build_manifest(meta, results)
+    result = convert_manifest(manifest, path, tmp_path / "out")
+
+    assert result.assets
+    asset = result.assets[0]
+    assert asset.caption == ""
+    assert asset.alt_text.startswith("image p")
