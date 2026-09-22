@@ -13,6 +13,14 @@ Parameters:
   ChandraImageUri:
     Type: String
     Description: ECR image URI for Chandra OCR container
+  PaddleImageUri:
+    Type: String
+    Default: ""
+    Description: >-
+      ECR image URI for the PP-StructureV3 table-recovery container. Optional:
+      leave empty to skip creating the Paddle job definition (Chandra-only
+      deploys). When set, a job def sharing the same GPU compute env/queue is
+      created.
   DataBucketName:
     Type: String
     Default: dev-wwii-data-pipeline
@@ -32,6 +40,7 @@ Parameters:
 
 Conditions:
   IsSpot: !Equals [!Ref ComputeType, SPOT]
+  HasPaddleImage: !Not [!Equals [!Ref PaddleImageUri, ""]]
 
 Resources:
   # --- Log Group ---
@@ -39,6 +48,13 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/batch/${EnvironmentName}-wwii-chandra
+      RetentionInDays: 14
+
+  PaddleLogGroup:
+    Condition: HasPaddleImage
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/batch/${EnvironmentName}-wwii-paddle
       RetentionInDays: 14
 
   # --- IAM Roles ---
@@ -106,7 +122,9 @@ Resources:
                 Action:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: !GetAtt ChandraLogGroup.Arn
+                Resource:
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/batch/${EnvironmentName}-wwii-chandra:*
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/batch/${EnvironmentName}-wwii-paddle:*
 
   BatchExecutionRole:
     Type: AWS::IAM::Role
@@ -213,6 +231,43 @@ Resources:
       Timeout:
         AttemptDurationSeconds: 3600
 
+  # --- Paddle (PP-StructureV3) Job Definition ---
+  # Table-recovery worker for Chandra's flattened 2-D tables. Shares the same
+  # GPU compute environment and job queue as Chandra (both A10G) — only a
+  # distinct job definition + log group are needed. Created only when a Paddle
+  # image URI is supplied.
+  PaddleJobDef:
+    Condition: HasPaddleImage
+    Type: AWS::Batch::JobDefinition
+    Properties:
+      JobDefinitionName: !Sub ${EnvironmentName}-wwii-paddle
+      Type: container
+      ContainerProperties:
+        Image: !Ref PaddleImageUri
+        ResourceRequirements:
+          - Type: VCPU
+            Value: "4"
+          - Type: MEMORY
+            Value: "15000"
+          - Type: GPU
+            Value: "1"
+        ExecutionRoleArn: !GetAtt BatchExecutionRole.Arn
+        JobRoleArn: !GetAtt BatchJobRole.Arn
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: !Ref PaddleLogGroup
+            awslogs-region: !Ref AWS::Region
+        Environment:
+          - Name: AWS_REGION
+            Value: !Ref AWS::Region
+          - Name: DATA_BUCKET
+            Value: !Ref DataBucketName
+      RetryStrategy:
+        Attempts: 2
+      Timeout:
+        AttemptDurationSeconds: 3600
+
 Outputs:
   JobQueueName:
     Value: !Ref ChandraJobQueue
@@ -220,3 +275,6 @@ Outputs:
     Value: !Ref ChandraJobDef
   ComputeEnvironmentName:
     Value: !Ref ChandraComputeEnv
+  PaddleJobDefinitionName:
+    Condition: HasPaddleImage
+    Value: !Ref PaddleJobDef
