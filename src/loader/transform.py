@@ -37,9 +37,40 @@ _SKIP_FILES = frozenset(
     }
 )
 
+# Per-run tally of files skipped during loading, keyed by reason. A load reads
+# this to surface "skipped: N" alongside the loaded counts so a batch of
+# corrupt/misshapen files that quietly didn't load is visible, not silent.
+_SKIPS: Dict[str, int] = {}
+
+
+def reset_skips() -> None:
+    """Clear the skip tally (call at the start of a load)."""
+    _SKIPS.clear()
+
+
+def skip_count() -> int:
+    """Total files skipped since the last :func:`reset_skips`."""
+    return sum(_SKIPS.values())
+
+
+def skip_breakdown() -> Dict[str, int]:
+    """Copy of the per-reason skip tally."""
+    return dict(_SKIPS)
+
+
+def _record_skip(reason: str, path: Path, detail: Any = None) -> None:
+    """Log a skipped file at WARNING and increment the per-reason tally."""
+    _SKIPS[reason] = _SKIPS.get(reason, 0) + 1
+    logger.warning("Skipped %s (%s): %s", path, reason, detail)
+
 
 def _iter_entity_files(entity_dir: Path) -> Iterable[Dict[str, Any]]:
-    """Yield parsed JSON dicts for each entity file in a directory."""
+    """Yield parsed JSON dicts for each entity file in a directory.
+
+    Files that fail to parse, aren't JSON objects, or can't be read are skipped
+    to keep the load resilient — but each skip is logged at WARNING and counted
+    (see :data:`_SKIPS`) so silent data loss is impossible to miss.
+    """
     if not entity_dir.is_dir():
         return
     for path in sorted(entity_dir.glob("*.json")):
@@ -47,10 +78,13 @@ def _iter_entity_files(entity_dir: Path) -> Iterable[Dict[str, Any]]:
             continue
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except (OSError, json.JSONDecodeError) as exc:
+            _record_skip("unreadable_or_invalid_json", path, exc)
             continue
         if isinstance(data, dict):
             yield data
+        else:
+            _record_skip("not_a_json_object", path, f"top-level {type(data).__name__}")
 
 
 def _json(value: Any) -> str:
@@ -93,15 +127,21 @@ def to_event_rows(content_root: Path) -> Dict[str, List[Dict[str, Any]]]:
 
 
 def _load_event_file(path: Path):
-    """Return (event_dict, book, chapter) for an event file, or None."""
+    """Return (event_dict, book, chapter) for an event file, or None.
+
+    Skips (with a logged WARNING + tally) files that don't parse or lack a
+    usable ``Event`` object, so a broken event file can't vanish silently.
+    """
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError) as exc:
+        _record_skip("event_unreadable_or_invalid_json", path, exc)
         return None
     event = data.get("Event")
     if isinstance(event, list):
         event = event[0] if event else None
     if not isinstance(event, dict):
+        _record_skip("event_missing_or_malformed", path, "no Event object")
         return None
     return event, path.parent.name, data.get("Chapter")
 

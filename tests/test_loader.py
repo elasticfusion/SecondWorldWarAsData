@@ -253,6 +253,31 @@ def test_non_sqlite_connection_rejected(tmp_path: Path) -> None:
         load_all(FakePostgresConn(), out)
 
 
+def test_clean_load_reports_zero_skips(tmp_path: Path) -> None:
+    out = _fixture_output(tmp_path)
+    conn = sqlite3.connect(":memory:")
+    counts = load_all(conn, out)
+    assert counts["skipped"] == 0
+
+
+def test_corrupt_file_is_skipped_counted_and_logged(tmp_path: Path, caplog) -> None:
+    """A corrupt entity file must be counted + logged, not silently dropped."""
+    import logging
+
+    out = _fixture_output(tmp_path)
+    # valid person already present (P1); add a corrupt one alongside it
+    (out / "people" / "broken.json").write_text("{ this is not valid json",
+                                                 encoding="utf-8")
+    conn = sqlite3.connect(":memory:")
+    with caplog.at_level(logging.WARNING, logger="src.loader.transform"):
+        counts = load_all(conn, out)
+    # the good record still loads; the bad one is skipped, not silently lost
+    assert counts["people"] == 1
+    assert counts["skipped"] >= 1
+    assert any("broken.json" in r.message or "broken.json" in str(r.args)
+               for r in caplog.records)
+
+
 def test_source_document_type_from_nested_citation(tmp_path: Path) -> None:
     """document_type/author come from citation.*, not top-level availability."""
     out = _fixture_output(tmp_path)

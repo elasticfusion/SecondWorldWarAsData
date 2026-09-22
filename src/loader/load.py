@@ -76,6 +76,7 @@ def load_all(conn: Any, output_root: Path) -> Dict[str, int]:
     mention junction spanning all entity types.
     """
     create_schema(conn)
+    T.reset_skips()
     counts: Dict[str, int] = {}
 
     hub = T.to_event_rows(output_root / "content")
@@ -125,7 +126,17 @@ def load_all(conn: Any, output_root: Path) -> Dict[str, int]:
     )
 
     counts["mentions"] = _load_mentions(conn, output_root)
-    logger.info("Load complete: %s", counts)
+
+    counts["skipped"] = T.skip_count()
+    if counts["skipped"]:
+        logger.warning(
+            "Load complete with %d skipped file(s): %s | counts=%s",
+            counts["skipped"],
+            T.skip_breakdown(),
+            {k: v for k, v in counts.items() if k != "skipped"},
+        )
+    else:
+        logger.info("Load complete (0 skipped): %s", counts)
     return counts
 
 
