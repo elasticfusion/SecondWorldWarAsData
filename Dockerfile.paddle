@@ -13,6 +13,7 @@ ENV PYTHONUNBUFFERED=1
 # The GPU paddlepaddle wheel is installed from Paddle's CUDA-12.x index.
 
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         python3 python3-pip python3-dev curl unzip \
         libgl1 libglib2.0-0 && \
@@ -30,6 +31,18 @@ RUN pip3 install --no-cache-dir \
         "paddlex[ocr]==3.7.2" \
         "boto3==1.43.98" \
         "PyMuPDF==1.27.2.2"
+
+# Security pins (Trivy HIGH/CRITICAL remediation, 2026-09-22). Applied AFTER the
+# paddle stack so they override the transitive versions it pulled in:
+#   anyio    4.12.1 -> 4.14.2  (CVE-2026-63374, CRITICAL)
+#   pillow   12.1.0 -> 12.3.0  (multiple crafted-image DoS/heap CVEs; relevant
+#                               since this container processes image files)
+#   protobuf 6.33.4 -> 6.33.5  (CVE-2026-0994, recursion-depth DoS)
+# Re-verify with a Trivy scan when bumping the paddle stack, in case pins drift.
+RUN pip3 install --no-cache-dir \
+        "anyio>=4.14.2" \
+        "pillow>=12.3.0" \
+        "protobuf>=6.33.5"
 
 # Model weights are downloaded on first job run (PP-StructureV3 fetches the
 # server det/rec + layout + table models to ~/.paddlex on first predict). We do
