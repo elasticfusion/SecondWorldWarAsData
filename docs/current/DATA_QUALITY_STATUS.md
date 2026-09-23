@@ -1,7 +1,13 @@
 # Data Quality Status
 
-**Last Updated:** 2026-06-13  
+**Last Updated:** 2026-09-23  
 **Schema Version:** 2.3
+
+> This document is the **canonical source** for entity counts and enrichment
+> rates. Other docs (e.g. `features/README.md`) link here rather than
+> duplicating numbers. Counts are a dated snapshot and drift with each pipeline
+> run; the enrichment/quality columns below predate the 2026-09 ingestion work
+> and are refreshed on the next full enrichment pass.
 
 ---
 
@@ -9,18 +15,19 @@
 
 | Entity Type | Files | Enriched | Not Found | No Status |
 |---|---|---|---|---|
-| People | 1,651 | 68 (4%) | 1,476 (89%) | 106 (6%) |
-| People Groups | 1,609 | 794 (49%) | 1 (<1%) | 812 (51%) |
-| Places | 2,858 | 1,058 (37%) | 183 (6%) | 1,604 (56%) |
-| Dates | 1,683 | — | — | — |
-| Equipment | 553 | — | — | — |
+| People | 1,650 | 68 (4%) | 1,476 (89%) | 106 (6%) |
+| People Groups | 1,606 | 794 (49%) | 1 (<1%) | 812 (51%) |
+| Places | 2,847 | 1,058 (37%) | 183 (6%) | 1,604 (56%) |
+| Dates | 1,680 | — | — | — |
+| Equipment | 554 | — | — | — |
 | Weather | 734 | — | — | — |
 | Logistics | 7,769 | — | — | — |
 | Casualties | 8,696 | — | — | — |
-| Bibliography | 13,565 | — | — | — |
-| Maps | 54 | — | — | — |
+| Bibliography | 12,754 | — | — | — |
+| Maps | 55 | — | — | — |
+| Events | 866 | — | — | — |
 
-**Total entities:** ~39,172
+**Total entities:** ~38,111 (excludes events; snapshot 2026-09-23)
 
 ---
 

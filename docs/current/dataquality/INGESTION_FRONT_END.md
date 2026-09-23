@@ -1,7 +1,7 @@
 # Ingestion Front-End: Media Detection & Disposition Routing
 
-Status: design + phased implementation
-Last updated: 2026-06-19
+Status: built (phased) — front-end steps 1–6 and OOB parser track implemented; see "Implementation status" for remaining items
+Last updated: 2026-09-23
 
 ## Purpose
 
@@ -317,8 +317,8 @@ rows, below). Findings that shaped the implementation:
 ## Implementation status
 
 - [x] Spec (this document)
-- [ ] Step 1 — Source-metadata model (`src/ingestion/source_metadata.py`)
-- [ ] Step 2 — Media-type detector (`src/ingestion/media_detection.py`)
+- [x] Step 1 — Source-metadata model (`src/ingestion/source_metadata.py`) — built + tested
+- [x] Step 2 — Media-type detector (`src/ingestion/media_detection.py`) — built + tested
 - [x] Step 3 — Per-page/section disposition classifier
 - [x] Step 4 — Routing manifest emitter
 - [x] Step 5 — Stage-3 seam + image/map extraction converter

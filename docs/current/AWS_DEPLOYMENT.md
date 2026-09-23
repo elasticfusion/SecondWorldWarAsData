@@ -54,7 +54,7 @@ DynamoDB (import)   ← ECS Import (manual trigger)
 - **Prompts:** YAML templates in `prompts/`, overridable from S3 without container rebuild
 - **Cost control:** Submit-only task tears down NAT Gateway + scales OpenSERP to 0 after batch submission. Poller re-creates networking before launching retrieve task.
 
-See [AWS Architecture Plan](AWS_DEPLOYMENT_PLAN.md) for detailed design decisions.
+See [AWS Architecture Plan](../archive/AWS_DEPLOYMENT_PLAN.md) for detailed design decisions (archived — implemented).
 
 ---
 

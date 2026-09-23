@@ -123,31 +123,42 @@ marginal pages but is **not** expected to fully fix the 2-D task-org flattening
 (a model reasoning limit, not a resolution limit); an empirical 192-vs-300
 re-OCR of p155/p103 is the way to confirm (`tmp/dpi_probe.py`).
 
-### Augmenting Chandra with a second OCR engine (evaluated 2026-09-22)
+### Augmenting Chandra with a second OCR engine — PP-StructureV3 (implemented 2026-09-22)
 
 For the persistent structural blind spots (2-D task-org tables, block quotes),
 the 2025–2026 best-practice is a **pipeline** (VLM-OCR → structured parsing →
-dedicated table extraction), i.e. **augment Chandra, don't replace it**.
-Candidates to evaluate (verify current versions/licenses before adopting):
+dedicated table extraction), i.e. **augment Chandra, don't replace it**. This is
+now **built and deployed** with **PaddleOCR PP-StructureV3** as the table
+specialist; the other engines below remain unused cross-check options.
 
-- **PaddleOCR PP-StructureV3** (Apache-2.0) — dedicated table-structure
-  recognition (rows/cols/cells→HTML) + multi-column reading-order recovery +
-  Markdown. Directly targets the p155 2-D-table flattening; sub-100M-param
-  models reportedly rival billion-param VLMs. **First choice to trial as a
-  table-specialist augmentation.**
-- **Docling** (IBM, Apache-2.0) — layout-aware PDF→Markdown/JSON; good as a
-  cross-check / second opinion.
+- **PaddleOCR PP-StructureV3** (Apache-2.0) — **IMPLEMENTED.** Dedicated
+  table-structure recognition (rows/cols/cells→HTML) + multi-column
+  reading-order recovery. Directly targets the p155 2-D-table flattening. A PoC
+  (2026-09-22) confirmed the **server** text models materially out-transcribe
+  the mobile ones on this content, and the validated configuration is now an
+  in-repo runner (`src/ingestion/paddle_structure.py`) driven by an AWS Batch
+  GPU worker (`Dockerfile.paddle`, `scripts/paddle_recover_page.py`). See
+  [../OCR_OPERATIONS.md](../OCR_OPERATIONS.md) "Table Recovery (PP-StructureV3)"
+  for operations.
+- **Docling** (IBM, Apache-2.0) — layout-aware PDF→Markdown/JSON; still a viable
+  cross-check / second opinion (not currently wired).
 - **Marker** (Datalab — *same team as Chandra*) — fast, but GPL-3.0 + RAIL-M
   weight license restricts commercial use above a revenue threshold, and likely
   shares Chandra's blind spots (weak augmentation choice).
 - Broader self-hostable VLM-OCR field: PaddleOCR-VL, DeepSeek-OCR, dots.ocr,
   GOT-OCR 2.0, Granite-Docling.
 
-Recommended shape: keep Chandra as default; route table-heavy / suspect pages
-through PP-StructureV3; where a second engine **disagrees** on structure, flag
-`needs_review` (ensemble-as-verification — same "make corruption loud" stance
-as the loader's skip-logging and `scripts/check_output_integrity.py`). Block
-quotes need post-processing regardless of engine.
+**Implemented shape:** Chandra stays the default; table-heavy / suspect pages
+are **pre-emptively routed** through PP-StructureV3 (the routing decision runs
+locally by scanning Chandra's markdown for the flattened signature via
+`table_recovery.page_needs_recovery`, so GPU cost is spent only on pages that
+flattened). The two engines' outputs are kept side-by-side — where they
+**disagree** on structure the region is flagged `needs_review`
+(ensemble-as-verification — the same "make corruption loud" stance as the
+loader's skip-logging and `scripts/check_output_integrity.py`); recovered tables
+are spliced back non-destructively via `table_merge_back.py`. Block quotes are
+handled by post-processing regardless of engine
+(`markdown_structure.py`, implemented).
 
 ---
 

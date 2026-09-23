@@ -349,8 +349,6 @@ python3 phase3_retry.py    # Retries until all people are enriched (default: 3 a
 - **Poisoned cache auto-detection:** Detects cache entries that cause repeated failures and automatically evicts them before retry
 - Configurable: `--max-attempts N`
 
-See [Retry Wrappers](../pipeline/RETRY_WRAPPERS.md) for details.
-
 ## AWS Networking Lifecycle
 
 NAT Gateway and VPC endpoints are created/deleted dynamically to minimize costs:

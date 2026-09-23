@@ -3,7 +3,7 @@
 Design for classifying source documents at ingestion and routing structured
 (tabular) data through the same entity model as unstructured (prose) data.
 
-**Status:** Partially implemented (ingestion front-end + OOB markdown parsers built; entity convergence pending) | **Last Updated:** 2026-09-20
+**Status:** Partially implemented (ingestion front-end + OOB markdown parsers built; docx/epub/txt + web-video/transcript converters built; entity convergence pending) | **Last Updated:** 2026-09-23
 
 ---
 
@@ -121,6 +121,16 @@ project now handles or intends to. Five distinct problems:
    transcribed, but nothing converts them or links the resulting entities back
    to the recording as a media asset.
 
+   > **Update (2026-09-23) — addressed.** `src/ingestion/web_video.py` now models
+   > the web-page-with-video case: the page is captured as a source record with
+   > `(url, capture_date)` and the embedded video is registered as a media asset
+   > whose transcript is split into **timecoded segments**, so a spoken assertion
+   > binds to `(asset_id, start–end)` — the audio/video analogue of
+   > `verbatim_reference` + page number. `GrokTranscriber` provides a real
+   > backend (xAI `/v1/stt`, word-level timestamps); `NullTranscriber` (default)
+   > flags the asset `needs_review` rather than fabricating a transcript.
+   > Acquisition wiring for the specific oral-history collections remains to do.
+
 5. **The footnoted-source acquisition problem is entirely absent.** The ultimate
    goal is extracting the data *behind the footnotes*, not just the narrative.
    Of ~13,500 identified citations, **72% (`archive`/`offline`) are physical
@@ -196,13 +206,13 @@ front door that unifies them.
 | `pdf` | Chandra OCR → markdown | text | ✅ **Built** (`src/ingestion/region_converter.py`; media detection + per-page disposition classify → convert) |
 | `pdf` (scanned tables) | Chandra OCR markdown → **section parsers** → rows | text | ✅ **Built** (`src/ingestion/oob_markdown/*`: command-staff, campaigns, command-posts, statistics, organic-units + division inference) — see note below on markdown-parser vs. CSV-field-map |
 | `csv` | tabular parser (declarative field-map) | text (entities) | ❌ to build (still the right path for *cleanly*-CSV sources) |
-| `epub` | epub→markdown (ebooklib/pandoc) | text | ❌ to build |
-| `docx` (Word) | docx→markdown (pandoc/mammoth) — carries embedded images/tables | text (+ media) | ❌ to build |
-| `txt` | wrap as markdown | text | ❌ trivial |
+| `epub` | epub→markdown (pandoc) | text | ✅ **Built** (`src/ingestion/text_converters.py`, `epub_to_markdown`) |
+| `docx` (Word) | docx→markdown (pandoc) — carries embedded images/tables | text (+ media) | ✅ **Built** (`src/ingestion/text_converters.py`, `docx_to_markdown`) |
+| `txt` | wrap as markdown | text | ✅ **Built** (`src/ingestion/text_converters.py`, `txt_to_markdown`) |
 | `image` (still) | register asset + vision caption/OCR | media entity | ⚠️ `images.py` + region converter extract embedded images |
 | `map` (still) | register asset + vision verify | `maps` entity | ✅ exists |
-| `video` (moving) | register asset + transcript (whisper) + keyframes | media entity | ❌ future |
-| `audio` (oral history) | transcribe → markdown + register asset | both | ❌ future |
+| `video` (moving, incl. web-page-with-video) | register asset + **timecoded transcript** + linked page-capture | media entity | ✅ **Built** (`src/ingestion/web_video.py`; `GrokTranscriber` → xAI `/v1/stt` word-level timecodes, `NullTranscriber` default flags `needs_review`) |
+| `audio` (oral history) | transcribe → markdown + register asset | both | ⚠️ transcription path exists via `GrokTranscriber`; oral-history acquisition wiring pending |
 
 > **Built vs. designed — scanned tables.** The original design (§4 below) routed
 > tabular data through a generic **CSV → entity field-map**. What was actually

@@ -11,19 +11,25 @@ This directory contains comprehensive documentation for all extraction features 
 
 ### Current Entity Counts (across all processed books)
 
-| Entity Type | Files | Status |
-|-------------|-------|--------|
-| Events | 866 | Production |
-| People | 1,652 | Production |
-| People Groups | 1,609 | Production |
-| Places | 2,859 | Production |
-| Dates | 1,683 | Production |
-| Equipment | 555 | Experimental |
-| Weather | 734 | Optional |
-| Casualties | 8,696 | Experimental |
-| Logistics | 7,769 | Experimental |
-| Bibliography | 13,565 | Production |
-| Maps | 55 | Production |
+Entity counts drift with every pipeline run, so they are **not duplicated here**.
+See [DATA_QUALITY_STATUS.md](../DATA_QUALITY_STATUS.md) for the canonical, dated
+snapshot of file counts and enrichment rates.
+
+The table below lists only the **maturity status** of each entity type (stable):
+
+| Entity Type | Status |
+|-------------|--------|
+| Events | Production |
+| People | Production |
+| People Groups | Production |
+| Places | Production |
+| Dates | Production |
+| Equipment | Experimental |
+| Weather | Optional |
+| Casualties | Experimental |
+| Logistics | Experimental |
+| Bibliography | Production |
+| Maps | Production |
 
 ---
 

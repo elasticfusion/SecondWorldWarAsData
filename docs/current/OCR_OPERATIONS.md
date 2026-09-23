@@ -309,6 +309,82 @@ This format is directly compatible with Phase 1 parsing — no conversion needed
 
 ---
 
+## Table Recovery (PP-StructureV3)
+
+Chandra flattens complex 2-D task-organization tables into vertical lists with
+no `<table>` markup (a validated structural blind spot — see CHANDRA_OCR_DESIGN).
+The OOB section parsers key off `<table>`, so those regions would otherwise be
+dropped. A **second OCR engine, PaddleOCR PP-StructureV3**, recovers the real
+grid from the page image. It runs as a **separate AWS Batch GPU job**
+(`Dockerfile.paddle` → `{env}-wwii-paddle` job definition), independent of the
+Chandra job.
+
+**Cost posture — recovery only fires where Chandra failed.** The routing
+decision runs *locally and cheaply*: `submit_table_recovery.py` scans each
+page's Chandra markdown for the flattened-table signature
+(`src/ingestion/table_recovery.page_needs_recovery`, reusing
+`markdown_structure.detect_flattened_tables`). Only pages that actually
+flattened are rendered, uploaded, and sent to a GPU job. Prose, images, and
+already-correct `<table>` pages never reach Paddle.
+
+### Deploy
+
+The Paddle image is built and pushed by `deploy_all.sh` (same flow as Chandra);
+model weights are downloaded at first job run, not baked into the image.
+
+```bash
+bash scripts/deploy_all.sh --ocr-standalone   # builds/pushes chandra + paddle images
+```
+
+### Submit
+
+Run *after* Chandra has produced per-page markdown (`p<N>.md`, one file per
+physical page) under an S3 prefix:
+
+```bash
+python3 scripts/submit_table_recovery.py \
+  --pdf s3://dev-wwii-data-pipeline/source/ETO_Order_of_Battle.pdf \
+  --markdown-prefix s3://dev-wwii-data-pipeline/ocr-output/ETO_Order_of_Battle/ \
+  --wait
+```
+
+Per flattened page the submitter: (1) renders the PDF page to a 300-DPI PNG
+(matching the OCR render standard), (2) uploads the image next to the existing
+markdown, (3) submits a `{env}-wwii-paddle` Batch job via
+`scripts/paddle_entrypoint.sh` → `scripts/paddle_recover_page.py`, which writes
+a `p<N>.recovery.json`.
+
+### Reconcile / merge back
+
+Recovery is **ensemble-as-verification, not replacement.** The worker records
+*both* Chandra's original (review-flagged) output and Paddle's recovered
+`<table>` — it never silently overwrites one with the other. To splice recovered
+tables back into the markdown in place of the flattened region (so the OOB
+parsers see real `<table>` markup with no parser changes), use
+`src/ingestion/table_merge_back.py`. The splice is non-destructive: the original
+flattened lines are preserved in an adjacent HTML comment for audit, and each
+spliced table is marked as PP-StructureV3-derived and review-flagged.
+
+### Runner configuration (validated PoC, 2026-09-22)
+
+`src/ingestion/paddle_structure.py` captures the validated config: **server**
+text models (`PP-OCRv5_server_det`/`_rec`) for accuracy; `text_det_limit_side_len`
+bounds detection input so the server det model doesn't over-allocate on a full
+300-DPI render; oneDNN disabled (paddlepaddle 3.3.x MKL-DNN kernel bug on CPU;
+harmless on GPU); GPU when available with CPU fallback; formula recognition off.
+PaddleOCR is an **optional dependency** (only on the OCR worker) — the module
+imports it lazily and exposes `is_available()` so the rest of the pipeline and
+the tests degrade gracefully when it is absent.
+
+### Security
+
+The Paddle image is Trivy-scanned in the deploy path (blocking on HIGH/CRITICAL).
+Security pins (`anyio`, `pillow`, `protobuf`) are applied *after* the paddle
+stack in `Dockerfile.paddle` so they override its transitive versions; re-scan
+after any paddle-stack bump.
+
+---
+
 ## Related
 
 - [dataquality/CHANDRA_OCR_DESIGN.md](dataquality/CHANDRA_OCR_DESIGN.md) — Full design document

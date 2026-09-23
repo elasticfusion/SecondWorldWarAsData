@@ -323,5 +323,5 @@ The loader caches templates in memory for the duration of the ECS task. To force
 
 - **Prompt loader code:** `src/utils/prompt_loader.py`
 - **Configuration:** [Configuration Guide — Prompt Templates](core/CONFIGURATION.md#prompt-templates)
-- **Known Issues:** [Entity misclassification](KNOWN_ISSUES.md)
+- **Known Issues:** [Data Quality Status — Known Issues](DATA_QUALITY_STATUS.md#known-data-quality-issues)
 - **Schema Reference:** [JSON output format](SCHEMA_REFERENCE.md)

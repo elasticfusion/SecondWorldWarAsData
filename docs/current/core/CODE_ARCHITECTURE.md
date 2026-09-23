@@ -424,25 +424,49 @@ def discover_content_structure(content_root: Path) -> Dict[str, List[ChapterGrou
 
 Format-agnostic ingestion front-end that runs ahead of Phase 1 (media detection,
 per-page disposition classification, region→Markdown conversion) plus the OOB
-scanned-table parsers. Built as a library; wiring as a runnable phase is pending.
-See [../dataquality/INGESTION_FRONT_END.md](../dataquality/INGESTION_FRONT_END.md).
+scanned-table parsers. Runnable as **Phase 0** (`phase0_ingest.py` locally,
+`ecs_entrypoint.py` phase0 branch in AWS). See
+[../dataquality/INGESTION_FRONT_END.md](../dataquality/INGESTION_FRONT_END.md)
+and [../dataquality/STRUCTURED_DATA_ROUTING.md](../dataquality/STRUCTURED_DATA_ROUTING.md).
 
 ```
 src/ingestion/
-├── source_metadata.py        # recorded-original record + checksum
+├── source_metadata.py        # recorded-original record + checksum + capture_date
 ├── media_detection.py        # detect PDF/HTML/image/moving-image; flag unsupported
 ├── disposition.py            # Disposition types + PageSignals/DispositionResult
 ├── disposition_classifier.py # per-page structured/unstructured/image/map (scanned-aware)
 ├── routing_manifest.py       # coalesce regions → manifest for conversion
 ├── region_converter.py       # per-disposition region → Markdown + image/map asset extraction
+├── pdf_pipeline.py           # PDF→Markdown routing seam: digital-text in-process;
+│                             #   scanned → needs_ocr hand-off to Chandra (no garbled md)
+├── markdown_structure.py     # repair Chandra blind spots: re-mark block quotes;
+│                             #   detect_flattened_tables (2-D task-org) → review hints
+├── text_converters.py        # docx/epub (pandoc) + txt → Markdown contract
+├── web_video.py              # web-page-with-video: page capture + timecoded transcript
+│                             #   (GrokTranscriber → xAI /v1/stt; NullTranscriber default)
+├── paddle_structure.py       # PP-StructureV3 runner (optional dep, lazy import, is_available)
+├── table_recovery.py         # bridge: flattened-table detect → PP-StructureV3 recover
+├── table_merge_back.py       # splice recovered <table> back into markdown (non-destructive)
 └── oob_markdown/             # scanned OOB tables → structured rows
     ├── _common.py            # division/section tracking, cleanup, verification, inference
-    ├── command_staff.py, campaigns.py, command_posts.py,
-    │   statistics.py, organic_units.py   # section parsers
+    ├── command_staff.py, campaigns.py, command_posts.py, statistics.py,
+    │   organic_units.py, attachments.py, higher_units.py   # section parsers
     ├── models.py             # row models (carry division_source + review flags)
+    ├── name_resolver.py      # exact + fuzzy (surname-gated) name matching
+    ├── crosswalk.py          # non-destructive name→PersonID crosswalk
+    ├── entity_emit.py        # converge crosswalk into people entity space (opt-in)
+    ├── reconcile.py          # cross-file date-plausibility + division reconciliation
     ├── persist.py            # write rows → output/oob/<section>/
-    └── crosswalk.py          # non-destructive name→PersonID crosswalk
+    └── run.py                # orchestrate the OOB parser track
 ```
+
+**Table recovery (Chandra + PP-StructureV3).** Chandra flattens complex 2-D
+task-org tables; `markdown_structure.detect_flattened_tables` recognizes the
+flattened signature, `table_recovery` pre-emptively routes only those pages to
+the PP-StructureV3 GPU worker (`paddle_structure` / `scripts/paddle_recover_page.py`),
+and `table_merge_back` splices the recovered `<table>` back in — keeping both
+engines' output side-by-side (ensemble-as-verification). Operations:
+[../OCR_OPERATIONS.md](../OCR_OPERATIONS.md) "Table Recovery (PP-StructureV3)".
 
 ## Extraction Modules (`src/extraction/`)
 
@@ -582,6 +606,56 @@ Advanced supplemental material extraction with enhanced classification and routi
 ### Copyright Calculator (`src/extraction/copyright_calculator.py`)
 
 Calculates copyright status and public domain eligibility for source documents.
+
+## Enrichment Modules (`src/enrichment/`)
+
+Phase 3 enrichment logic — adds external data to already-extracted entities.
+
+### External-data enrichers
+
+| Module | Responsibility |
+|--------|----------------|
+| `bibliography_resolver.py` | Resolve citations to real sources (NARA Record Group → OpenSERP → Archive.org / Gutenberg), with Grok URL content verification |
+| `openserp_enrichment.py` | OpenSERP-backed media/source search (portraits, papers, oral histories, photos) with Grok verification + circuit breaker |
+| `groups_wikipedia.py` | Organizational history / command structure from Wikipedia/Grokipedia |
+| `equipment_wikipedia.py` | Equipment specifications and imagery from Wikipedia/Grokipedia |
+| `noaa_weather.py` | Observed historical weather from the NOAA CDO API (supplements Open-Meteo reanalysis) |
+
+### Place geocoding cascade (2026-09)
+
+Backfills the placeholder `latitude/longitude = 0.0` gap. A cascade of geocoders
+is tried in order of cost/confidence, with terrain verification; the posture is
+**"verification, not correction"** — out-of-theater or implausible results are
+*flagged* for review, never silently moved.
+
+| Module | Responsibility |
+|--------|----------------|
+| `places_geo.py` | Orchestrates the cascade; recomputes derived fields (`bounding_box`, `map_urls`) offline; builds a targeted work-queue of un-geocoded names; flags out-of-theater coordinates |
+| `nominatim_geocode.py` | OSM/Nominatim gazetteer lookup (free, first choice) |
+| `hill_geocode.py` | Resolves numbered hills / terrain features (e.g. "Hill 314") |
+| `situational_geocode.py` | Context-aware geocoding using surrounding event/place signals |
+| `places_grok_geocode.py` | Grok-based geocoding fallback for names the gazetteers miss |
+| `elevation_verify.py` | Elevation/terrain cross-check to catch geocoding errors before acceptance |
+
+## Relational Loader (`src/loader/`)
+
+Loads the file-per-entity `output/` corpus into a relational schema — the first
+step toward the PostgreSQL + pgvector platform (see architecture-decisions
+steering doc and `docs/SCHEMA_DESIGN.md`).
+
+| Module | Responsibility |
+|--------|----------------|
+| `transform.py` | **DB-agnostic** transform: `output/` JSON → relational rows (sources hub, events, sub_events, entities, mentions), with citation-correct source rows |
+| `load.py` | Thin PEP-249 loader that creates the schema and inserts rows in referential order (sources → events → sub_events → entities → mentions); idempotent via INSERT-OR-REPLACE on primary keys |
+| `schema.sql` | Portable core schema (events hub, entities, mentions) |
+
+**Dialect status:** SQLite today (tests + local exploration). `transform.py` is
+already DB-agnostic; `load.py` emits SQLite-dialect SQL (`executescript`,
+`INSERT OR REPLACE`, `?` placeholders) and **rejects non-sqlite connections via
+`_require_sqlite`** rather than mis-emitting SQL. The Postgres/Aurora adapter
+(`ON CONFLICT DO UPDATE`, `%s` params, per-statement DDL) plus a
+`schema_pg_extras.sql` for pgvector/PostGIS/HNSW are pending — tracked in
+[../TODO.md](../TODO.md).
 
 ## Utilities (`src/utils/`)
 

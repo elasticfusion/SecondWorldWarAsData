@@ -101,7 +101,7 @@ SecondWorldWarAsData/
 - **[Complete Index](docs/current/INDEX.md)** — All documentation
 - [Configuration](docs/current/core/CONFIGURATION.md) | [API Reference](docs/current/core/API_REFERENCE.md) | [Architecture](docs/current/core/CODE_ARCHITECTURE.md)
 - [Lambda Functions](docs/current/LAMBDA_FUNCTIONS.md) | [Development Guide](docs/current/core/DEVELOPMENT.md) | [Scripts Reference](scripts/README.md)
-- [AWS Architecture Plan](docs/current/AWS_DEPLOYMENT_PLAN.md)
+- [AWS Architecture Plan](docs/archive/AWS_DEPLOYMENT_PLAN.md)
 
 ---
 
