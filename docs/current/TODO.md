@@ -1,12 +1,32 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-09-22
+**Last Updated:** 2026-09-23
 
 ---
 
 ## Critical (actively losing data or breaking pipeline)
 
 _None — all critical items resolved._
+
+---
+
+## Recently Completed (2026-09-23) — OCR reliability
+
+#### ~~Chandra OCR killed by 1h wall-clock timeout on healthy dense chunks~~ ✅ Fixed (code; deploy pending)
+Progress-watchdog (`scripts/ocr_watchdog.py`) is now the primary failure
+detector — fails on no-page-progress for `OCR_NO_PROGRESS_SECS` (900s), not
+elapsed time. `AttemptDurationSeconds` raised 3600→14400 as a loose backstop.
+Wired via `chandra_entrypoint.sh` + `Dockerfile.chandra`; 7 tests in
+`tests/test_ocr_watchdog.py`. **Deploy pending:** rebuild+push Chandra image
+(`deploy_all.sh --ocr-standalone`) + CFN stack update.
+*Source: St. Vith end-to-end test 2026-09-23*
+
+#### ~~submit_ocr_job.py chunk-000 collision overwrites prior OCR output~~ ✅ Fixed
+Page-range/manifest re-runs all wrote to `chunk-000/` (submission-local index),
+silently clobbering earlier chunks. Output dir now derived from the page range
+(`chunk-p0001-0050`, zero-padded/sortable) in all submit paths + publish. A
+re-run overwrites only its own range.
+*Source: St. Vith end-to-end test 2026-09-23*
 
 ---
 

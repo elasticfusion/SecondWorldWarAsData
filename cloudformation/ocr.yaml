@@ -226,10 +226,18 @@ Resources:
             Value: !Ref DataBucketName
           - Name: PYTORCH_CUDA_ALLOC_CONF
             Value: expandable_segments:True
+          # Progress-watchdog: fail the job if no page completes within this many
+          # seconds (see scripts/ocr_watchdog.py). This — NOT the wall-clock
+          # AttemptDurationSeconds below — is the primary failure detector.
+          - Name: OCR_NO_PROGRESS_SECS
+            Value: "900"
       RetryStrategy:
         Attempts: 2
       Timeout:
-        AttemptDurationSeconds: 3600
+        # Loose absolute backstop / cost circuit-breaker only. Healthy-but-slow
+        # dense scanned chunks legitimately exceed 1h; the progress-watchdog
+        # (OCR_NO_PROGRESS_SECS) is what catches genuine stalls quickly.
+        AttemptDurationSeconds: 14400
 
   # --- Paddle (PP-StructureV3) Job Definition ---
   # Table-recovery worker for Chandra's flattened 2-D tables. Shares the same

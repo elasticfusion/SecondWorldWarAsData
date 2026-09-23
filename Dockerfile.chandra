@@ -52,6 +52,7 @@ ENV HF_HUB_OFFLINE=1
 ENV TRANSFORMERS_OFFLINE=1
 
 COPY scripts/chandra_entrypoint.sh /entrypoint.sh
+COPY scripts/ocr_watchdog.py /ocr_watchdog.py
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

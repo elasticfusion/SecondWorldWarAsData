@@ -33,9 +33,24 @@ done
 echo "Downloading input..."
 aws s3 cp "$INPUT_S3" "$LOCAL_INPUT"
 
-# Run chandra
-echo "Running OCR..."
-chandra --method hf "$@" "$LOCAL_INPUT" "$LOCAL_OUTPUT"
+# Run chandra under the progress-watchdog. The watchdog fails the job on
+# LACK OF PROGRESS (no page completed within OCR_NO_PROGRESS_SECS, default
+# 900s), not on wall-clock time — so a slow-but-healthy dense scanned chunk is
+# never killed mid-run, while a true hang is caught fast. The AWS Batch
+# AttemptDurationSeconds is only a loose absolute backstop. See
+# scripts/ocr_watchdog.py and docs/current/OCR_OPERATIONS.md.
+echo "Running OCR (progress-watchdog: no-progress limit ${OCR_NO_PROGRESS_SECS:-900}s)..."
+WATCHDOG="$(dirname "$0")/ocr_watchdog.py"
+# --paginate_output inserts per-page separators in the merged markdown, which
+# the post-OCR table-recovery router (src/ingestion/chunk_pages.py) parses to
+# map a flattened table back to its physical PDF page. See OCR_OPERATIONS.md.
+if [ -f "$WATCHDOG" ]; then
+    python3 "$WATCHDOG" -- chandra --method hf --paginate_output "$@" "$LOCAL_INPUT" "$LOCAL_OUTPUT"
+else
+    # Fallback: run chandra directly if the watchdog is not present in the image.
+    echo "WARN: ocr_watchdog.py not found — running chandra without watchdog"
+    chandra --method hf --paginate_output "$@" "$LOCAL_INPUT" "$LOCAL_OUTPUT"
+fi
 
 # Upload results to S3
 echo "Uploading results..."

@@ -168,6 +168,42 @@ All manifest jobs submit at once. AWS Batch runs them in parallel up to the comp
 
 ---
 
+## Reliability
+
+### Progress-watchdog (failure detection ≠ wall clock)
+
+The Chandra container runs `chandra` under `scripts/ocr_watchdog.py`, which is
+the **primary failure detector**. It watches Chandra's per-page progress
+(`Processing pages N-N...`) and fails the job only if **no page completes**
+within `OCR_NO_PROGRESS_SECS` (default **900 s / 15 min**). This means:
+
+- A slow-but-healthy dense scanned chunk (e.g. a 50-page 300-DPI OOB appendix
+  that legitimately takes ~an hour) is **never killed mid-run**.
+- A genuinely hung job (CUDA deadlock, stuck read) is caught in ~15 min instead
+  of burning GPU until a wall-clock limit.
+
+The AWS Batch `AttemptDurationSeconds` (now **14400 s / 4 h**) is only a loose
+absolute backstop / cost circuit-breaker, **not** the working limit. Tune the
+no-progress window via the `OCR_NO_PROGRESS_SECS` env on the Chandra job def.
+
+> Deploy note: the watchdog ships in the Chandra image, so it takes effect only
+> after a rebuild+push (`bash scripts/deploy_all.sh --ocr-standalone`); the
+> `AttemptDurationSeconds`/env change requires a CFN stack update.
+
+**Dense scanned books:** prefer a smaller `--chunk-size` (e.g. 25). Even with
+the watchdog, smaller chunks parallelize better and keep any single retry cheap.
+
+### Collision-safe chunk output
+
+Each job writes to `ocr-output/{pdf}/chunk-p{start}-{end}/` — the output dir is
+derived from the **page range** (zero-padded, page-order sortable), not a
+submission-local index. So auto-chunk runs, manifest runs, single `--page-range`
+runs, **and re-runs of a failed range** all land in deterministic,
+non-overlapping locations. Re-running one range overwrites only its own output
+(idempotent) and can never clobber another chunk.
+
+---
+
 ## What Happens
 
 ### Without `--wait`

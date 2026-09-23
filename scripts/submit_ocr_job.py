@@ -15,7 +15,9 @@ import json
 import math
 import os
 import sys
+import tempfile
 import time
+from pathlib import Path
 
 import boto3
 import yaml
@@ -62,8 +64,7 @@ def _init_config(region: str, env: str = "dev"):
 
 def get_page_count(s3_path: str) -> int:
     """Download PDF and count pages."""
-    import tempfile
-    from PyPDF2 import PdfReader
+    from PyPDF2 import PdfReader  # pylint: disable=import-outside-toplevel
 
     s3 = boto3.client("s3", region_name=REGION)
     bucket, key = _parse_s3_path(s3_path)
@@ -283,6 +284,32 @@ def _enable_idle_monitor():
         print(f"  ⚠ Could not re-enable idle monitor: {e}")
 
 
+def _chunk_dir(page_range: str) -> str:
+    """Return a stable, collision-free chunk directory name for a page range.
+
+    Historically the output dir was ``chunk-{i:03d}`` where ``i`` was the job's
+    index *within a single submission*. That silently collided across
+    submissions: a re-run of a failed range (or any separate ``--page-range``
+    submission) started again at ``i=0`` and overwrote ``chunk-000`` — clobbering
+    earlier output. Deriving the dir from the page range itself makes every
+    submission (auto-chunk, manifest, single range, and any re-run) write to a
+    deterministic, non-overlapping location, and makes re-running one range
+    idempotent (it overwrites only its own range).
+
+    Page numbers are zero-padded so lexical sort == page order (``merge_outputs``
+    concatenates by sorted key). ``"1-50"`` -> ``chunk-p0001-0050``;
+    ``"101-125"`` -> ``chunk-p0101-0125``; a bare ``"7"`` -> ``chunk-p0007``.
+    """
+    parts = [p.strip() for p in page_range.replace(",", "-").split("-") if p.strip()]
+    try:
+        nums = [f"{int(p):04d}" for p in parts]
+    except ValueError:
+        # Non-numeric range — fall back to a sanitized literal (still unique).
+        safe = "".join(c if c.isalnum() else "-" for c in page_range)
+        return f"chunk-p{safe}"
+    return "chunk-p" + "-".join(nums)
+
+
 def _container_overrides(command: list, dpi: int | None = None) -> dict:
     """Build Batch containerOverrides, injecting IMAGE_DPI when dpi is given.
 
@@ -337,6 +364,7 @@ def submit_from_manifest(
         safe_label = "".join(c if c.isalnum() or c in "-_" else "-" for c in label)
         job_name = f"chandra-{pdf_name}-{safe_label}"[:128]
 
+        chunk_dir = _chunk_dir(page_range)
         resp = batch.submit_job(
             jobName=job_name,
             jobQueue=JOB_QUEUE,
@@ -344,7 +372,7 @@ def submit_from_manifest(
             containerOverrides=_container_overrides(
                 [
                     s3_path,
-                    f"s3://{bucket}/{output_prefix}/chunk-{i:03d}/",
+                    f"s3://{bucket}/{output_prefix}/{chunk_dir}/",
                     "--page-range",
                     page_range,
                 ],
@@ -357,6 +385,7 @@ def submit_from_manifest(
                 "jobName": job_name,
                 "pages": page_range,
                 "label": label,
+                "chunk_dir": chunk_dir,
             }
         )
         print(
@@ -384,6 +413,7 @@ def submit_jobs(
     if page_range:
         # Single job with explicit page range
         job_name = f"chandra-{pdf_name}-p{page_range.replace(',', '-')}"[:128]
+        chunk_dir = _chunk_dir(page_range)
         resp = batch.submit_job(
             jobName=job_name,
             jobQueue=JOB_QUEUE,
@@ -391,14 +421,21 @@ def submit_jobs(
             containerOverrides=_container_overrides(
                 [
                     s3_path,
-                    f"s3://{bucket}/{output_prefix}/chunk-000/",
+                    f"s3://{bucket}/{output_prefix}/{chunk_dir}/",
                     "--page-range",
                     page_range,
                 ],
                 dpi=dpi,
             ),
         )
-        jobs.append({"jobId": resp["jobId"], "jobName": job_name, "pages": page_range})
+        jobs.append(
+            {
+                "jobId": resp["jobId"],
+                "jobName": job_name,
+                "pages": page_range,
+                "chunk_dir": chunk_dir,
+            }
+        )
         print(f"  Submitted: {job_name} (pages {page_range}) → {resp['jobId'][:12]}")
     else:
         # Split into chunks
@@ -409,6 +446,7 @@ def submit_jobs(
             page_spec = f"{start}-{end}"
             job_name = f"chandra-{pdf_name}-p{start}-{end}"[:128]
 
+            chunk_dir = _chunk_dir(page_spec)
             resp = batch.submit_job(
                 jobName=job_name,
                 jobQueue=JOB_QUEUE,
@@ -416,7 +454,7 @@ def submit_jobs(
                 containerOverrides=_container_overrides(
                     [
                         s3_path,
-                        f"s3://{bucket}/{output_prefix}/chunk-{i:03d}/",
+                        f"s3://{bucket}/{output_prefix}/{chunk_dir}/",
                         "--page-range",
                         page_spec,
                     ],
@@ -424,7 +462,12 @@ def submit_jobs(
                 ),
             )
             jobs.append(
-                {"jobId": resp["jobId"], "jobName": job_name, "pages": page_spec}
+                {
+                    "jobId": resp["jobId"],
+                    "jobName": job_name,
+                    "pages": page_spec,
+                    "chunk_dir": chunk_dir,
+                }
             )
             print(f"  Submitted: {job_name} (pages {page_spec}) → {resp['jobId'][:12]}")
 
@@ -872,15 +915,17 @@ def publish_individual_outputs(
         filename = "".join(c if c.isalnum() or c in "-_" else "_" for c in label)
         filename = filename.strip("_").lower() + ".md"
 
-        # Find the chunk output
-        chunk_prefix = f"ocr-output/{pdf_name}/chunk-{i:03d}/"
+        # Find the chunk output — use the dir recorded at submit time (derived
+        # from the page range), falling back to the range for older jobs.
+        chunk_sub = job.get("chunk_dir") or _chunk_dir(job.get("pages", ""))
+        chunk_prefix = f"ocr-output/{pdf_name}/{chunk_sub}/"
         resp = s3.list_objects_v2(Bucket=bucket, Prefix=chunk_prefix)
         md_files = [
             obj["Key"] for obj in resp.get("Contents", []) if obj["Key"].endswith(".md")
         ]
 
         if not md_files:
-            print(f"  ⚠ No output for: {label} (chunk-{i:03d})")
+            print(f"  ⚠ No output for: {label} ({chunk_sub})")
             continue
 
         # Concatenate all .md files in this chunk (usually just one)
@@ -1111,8 +1156,7 @@ def _cancel_all_jobs():
 
 def _archive_manifest(manifest_path: str):
     """Move completed manifest to manifests_complete/ subdirectory."""
-    import shutil
-    from pathlib import Path
+    import shutil  # pylint: disable=import-outside-toplevel
 
     src = Path(manifest_path)
     if not src.exists():
@@ -1181,6 +1225,13 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="Skip nat_manager invocation (networking already up)",
     )
     parser.add_argument(
+        "--no-recover-tables",
+        action="store_true",
+        help="Do not auto-route flattened 2-D tables to PP-StructureV3 after "
+        "OCR. By default, pages whose OCR markdown contains a flattened "
+        "task-org table are sent to the Paddle recovery worker.",
+    )
+    parser.add_argument(
         "--dpi",
         type=int,
         default=300,
@@ -1217,6 +1268,124 @@ def _submit_jobs_for_args(args) -> list:
     return submit_jobs(args.s3_path, total_pages, args.chunk_size, dpi=args.dpi)
 
 
+def _discover_flattened_pages(s3, bucket: str, base_prefix: str) -> list:
+    """Scan a book's chunk markdown and return ``[(physical_page, chunk_prefix)]``.
+
+    Splits each ``chunk-*/input/input.md`` into physical pages (via the
+    ``--paginate_output`` separators) and keeps only pages whose markdown
+    contains a flattened task-org table.
+    """
+    from src.ingestion.chunk_pages import (  # pylint: disable=import-outside-toplevel
+        chunk_start_page_from_dir,
+        flattened_pages_in_chunk,
+    )
+
+    chunk_dirs: list = []
+    paginator = s3.get_paginator("list_objects_v2")
+    for page in paginator.paginate(Bucket=bucket, Prefix=base_prefix, Delimiter="/"):
+        for cp_entry in page.get("CommonPrefixes", []) or []:
+            chunk_dirs.append(cp_entry["Prefix"])
+
+    flattened: list = []
+    for chunk_prefix in sorted(chunk_dirs):
+        start_page = chunk_start_page_from_dir(chunk_prefix)
+        if start_page is None:
+            print(
+                f"  \u26a0 {chunk_prefix}: legacy chunk dir without page range — "
+                "cannot map to physical pages; skipping."
+            )
+            continue
+        md_key = f"{chunk_prefix}input/input.md"
+        try:
+            body = (
+                s3.get_object(Bucket=bucket, Key=md_key)["Body"]
+                .read()
+                .decode("utf-8", errors="replace")
+            )
+        except s3.exceptions.NoSuchKey:
+            continue
+        for phys_page in flattened_pages_in_chunk(body, start_page):
+            flattened.append((phys_page, chunk_prefix))
+    flattened.sort()
+    return flattened
+
+
+def auto_route_table_recovery(
+    s3_path: str,
+    region: str,
+    env: str = "dev",
+    dpi: int = 300,
+    dry_run: bool = False,
+) -> list:  # pylint: disable=too-many-locals
+    """Auto-route Chandra's flattened 2-D tables to the PP-StructureV3 worker.
+
+    Runs *after* OCR. For each ``chunk-*/input/input.md`` under
+    ``ocr-output/{pdf}/``, splits the (``--paginate_output``) markdown into
+    physical pages via :mod:`src.ingestion.chunk_pages`, detects which physical
+    pages contain a flattened task-org table, and submits one Paddle
+    (``{env}-wwii-paddle``) recovery job per such page — so PP-StructureV3 cost
+    is spent only where Chandra flattened a table, never on prose/normal pages.
+
+    Reuses the render/submit helpers from :mod:`scripts.submit_table_recovery`
+    so there is a single implementation of the page render + Paddle submission.
+    Returns the list of submitted job IDs (empty if nothing needed recovery).
+    Factored as a standalone function so Phase 0 orchestration can call it too.
+    """
+    from submit_table_recovery import (  # pylint: disable=import-outside-toplevel,import-error
+        _submit_page,
+    )
+
+    s3 = boto3.client("s3", region_name=region)
+    bucket, key = _parse_s3_path(s3_path)
+    pdf_name = key.rsplit("/", maxsplit=1)[-1].replace(".pdf", "")
+    base_prefix = f"ocr-output/{pdf_name}/"
+
+    flattened_pages = _discover_flattened_pages(s3, bucket, base_prefix)
+    if not flattened_pages:
+        print(
+            "\n  Table recovery: no flattened 2-D tables detected — nothing to route."
+        )
+        return []
+
+    flattened_pages.sort()
+    pages_str = ", ".join(f"p{n}" for n, _ in flattened_pages)
+    print(
+        f"\n  Table recovery: {len(flattened_pages)} flattened page(s) "
+        f"detected → routing to PP-StructureV3: {pages_str}"
+    )
+    if dry_run:
+        return []
+
+    # Render each flagged page from the source PDF and submit a Paddle job.
+    pdf_local = Path(tempfile.mkstemp(prefix="recover_src_", suffix=".pdf")[1])
+    s3.download_file(bucket, key, str(pdf_local))
+    batch = boto3.client("batch", region_name=region)
+    job_queue = f"{env}-wwii-chandra-gpu"  # shared GPU queue
+    job_def = f"{env}-wwii-paddle"
+    submitted: list = []
+    try:
+        for phys_page, chunk_prefix in flattened_pages:
+            submitted.append(
+                _submit_page(
+                    batch,
+                    s3,
+                    bucket=bucket,
+                    md_key=f"{chunk_prefix}input/input.md",
+                    page_number=phys_page,
+                    pdf_local=pdf_local,
+                    out_prefix=f"{base_prefix}recovery/",
+                    job_queue=job_queue,
+                    job_def=job_def,
+                    dpi=dpi,
+                )
+            )
+    finally:
+        pdf_local.unlink(missing_ok=True)
+
+    print(f"  Submitted {len(submitted)} recovery job(s) to {job_queue}")
+    return submitted
+
+
 def _publish_results(args, jobs: list, success: bool) -> None:
     """Publish/merge outputs and archive the manifest based on run outcome."""
     if success:
@@ -1226,6 +1395,13 @@ def _publish_results(args, jobs: list, success: bool) -> None:
             merge_outputs(args.s3_path, len(jobs), args.output_key)
         if args.manifest:
             _archive_manifest(args.manifest)
+        # Auto-route flattened 2-D tables to PP-StructureV3 (opt-out).
+        if not getattr(args, "no_recover_tables", False):
+            try:
+                auto_route_table_recovery(args.s3_path, REGION, env=ENV, dpi=args.dpi)
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                # Recovery is best-effort and must never fail the OCR run.
+                print(f"  ⚠ Table-recovery routing skipped (non-fatal): {exc}")
         return
     # Partial success — still publish what completed.
     if args.no_merge:
