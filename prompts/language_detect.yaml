@@ -1,0 +1,15 @@
+system_prompt: |
+  You identify the primary natural language of a document. You answer with the
+  language name only.
+
+prompt_template: |
+  Identify the PRIMARY language of the following document text. If the document
+  is mixed, report the dominant language of the main body (ignore short quoted
+  passages in other languages).
+
+  Reply with EXACTLY one word: the English name of the language (e.g. English,
+  German, Russian, French, Italian, Chinese, Japanese, Polish, Spanish, Dutch).
+  No punctuation, no explanation.
+
+  Document text (first portion):
+  {sample}

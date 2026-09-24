@@ -19,6 +19,7 @@ See docs/current/dataquality/INGESTION_FRONT_END.md.
 
 from __future__ import annotations
 
+import json
 import os
 import re
 from pathlib import Path
@@ -153,6 +154,20 @@ def _convert_documents_enabled(config: dict) -> bool:
     if os.environ.get("PHASE0_CONVERT_DOCUMENTS") == "1":
         return True
     return bool(config.get("ingestion", {}).get("convert_documents", False))
+
+
+def _translate_enabled(config: dict) -> bool:
+    """Whether Phase 0 should detect language + translate non-English markdown.
+
+    Off by default. Enable via ``ingestion.translate: true`` in config.yaml or
+    the ``PHASE0_TRANSLATE`` env var. Detects each converted markdown's language
+    and, if not English, translates it to English via Grok (keeping the original
+    alongside). English documents pass through untouched. See
+    docs/current/dataquality/LANGUAGE_TRANSLATION.md.
+    """
+    if os.environ.get("PHASE0_TRANSLATE") == "1":
+        return True
+    return bool(config.get("ingestion", {}).get("translate", False))
 
 
 def discover_oob_markdown(content_root: Path) -> List[Path]:
@@ -336,6 +351,97 @@ def _convert_text_documents(content_root: Path, logger) -> Tuple[int, int]:
     return converted, skipped
 
 
+def _translate_converted_markdown(
+    content_root: Path, config: dict, cache_dir: Path, logger
+) -> tuple:
+    """Detect language + translate converted markdown to English, **per page**.
+
+    Operates on ``<dir>/ocr_output/*.md`` (whatever the converters produced).
+    Detection/translation is per PHYSICAL PAGE (``--paginate_output`` separators)
+    because a scanned roll/document can mix languages page to page (e.g. an
+    English cover sheet + a German transcript). For each file:
+
+    * split into physical pages; detect each page's language;
+    * English pages pass through untouched (no Grok translation call);
+    * non-English pages are translated and prefixed with an inert
+      translation-provenance marker (`<!-- translated from X by grok -->`);
+    * if ANY page was translated, write the original to ``<stem>.orig.md``,
+      overwrite ``<stem>.md`` with the reassembled English, and write a
+      ``<stem>.lang.json`` sidecar (per-page languages + translator).
+
+    Files with an existing ``.orig.md`` are skipped (idempotent re-runs).
+    Returns ``(files_translated, files_passthrough)`` counts.
+    """
+    from src.grok_client import GrokClient  # pylint: disable=import-outside-toplevel
+    from src.ingestion.translation import (  # pylint: disable=import-outside-toplevel
+        normalize_pages_to_english,
+    )
+
+    md_files = sorted(content_root.glob(f"**/{_OCR_OUTPUT_DIRNAME}/*.md"))
+    md_files = [p for p in md_files if not p.name.endswith(".orig.md")]
+    logger.info(
+        "[phase0 pre-step] Per-page language pass over %d markdown file(s)",
+        len(md_files),
+    )
+    grok = GrokClient(cache_dir)
+    model_name = config.get("api", {}).get("grok", {}).get("model")
+    translated = passthrough = 0
+    for md_path in md_files:
+        orig_path = md_path.with_suffix(".orig.md")
+        if orig_path.exists():
+            continue  # already translated on a prior run — idempotent skip
+        # Each converted file is one document starting at physical page 1.
+        result = normalize_pages_to_english(
+            md_path.read_text(encoding="utf-8"), 1, grok, model_name=model_name
+        )
+        if not result.translated:
+            passthrough += 1
+            continue
+        orig_path.write_text(result.original_markdown or "", encoding="utf-8")
+        md_path.write_text(result.english_markdown, encoding="utf-8")
+        _write_lang_sidecar(md_path, result)
+        translated += 1
+        logger.info(
+            "  translated %s (languages: %s; %d/%d page(s) translated; original -> %s)",
+            md_path.name,
+            ", ".join(result.source_languages),
+            sum(1 for p in result.pages if p.translated),
+            len(result.pages),
+            orig_path.name,
+        )
+    logger.info(
+        "[phase0 pre-step] Per-page language pass: %d file(s) translated, "
+        "%d all-English",
+        translated,
+        passthrough,
+    )
+    return translated, passthrough
+
+
+def _write_lang_sidecar(md_path: Path, result) -> None:
+    """Write the per-page language/translation provenance sidecar."""
+    sidecar = md_path.with_suffix(".lang.json")
+    sidecar.write_text(
+        json.dumps(
+            {
+                "source_languages": result.source_languages,
+                "translated": result.translated,
+                "translator": result.translator,
+                "pages": [
+                    {
+                        "page": p.page,
+                        "source_language": p.source_language,
+                        "translated": p.translated,
+                    }
+                    for p in result.pages
+                ],
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+
 def _log_file_summary(index, count, md_path, summary, logger) -> list:
     """Log one file's parse result (rows/review/crosswalk/gaps); return gaps."""
     rows = sum(s["rows"] for s in summary["sections"].values())
@@ -461,6 +567,13 @@ def main() -> None:
             "(docx/epub/txt via pandoc/text)"
         )
         _convert_text_documents(content_root, logger)
+
+    if _translate_enabled(config):
+        logger.info(
+            "[phase0 pre-step] Language detection + translation ENABLED "
+            "(non-English markdown -> English via Grok; original kept)"
+        )
+        _translate_converted_markdown(content_root, config, paths["api_cache"], logger)
 
     logger.info("[phase0 step 1/2] Scanning for OOB markdown under %s", content_root)
     sources = discover_oob_markdown(content_root)
