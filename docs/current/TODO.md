@@ -1,6 +1,6 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-09-23
+**Last Updated:** 2026-09-24
 
 ---
 
@@ -68,6 +68,22 @@ is no longer needed for a full rebuild (kept as a fast code-only-change helper).
 ---
 
 ## High Priority (produces wrong results or wastes significant resources)
+
+#### Deploy + wire the OCR markdown-review UI
+The markdown-review Lambda + UI is **built and tested but not deployed**
+(commit d1c9869): `lambda_handlers/mdreview_ui_handler.py` (two-pane page image
++ editable snippet, saves to `ocr-output/{book}/reviewed/pN.md`), merge-time
+substitution + consume-once in `submit_ocr_job.merge_outputs`, and CFN
+(`MdReviewUIFunction` + `/mdreview` routes on the existing DedupApi). Remaining:
+1. **Deploy** — rebuild the Lambda code bundle + main-stack CFN update
+   (`deploy_all.sh` main path), then smoke-test the `/mdreview` route (basic
+   auth via the shared dedup authorizer).
+2. **Direct UI↔pipeline wiring (deferred by design)** — today the UI and merge
+   are decoupled via the `reviewed/` prefix. Decide whether a reviewer save
+   should trigger anything (e.g. re-merge/re-publish) or stay pull-based at the
+   next OCR/merge run.
+3. Confirm reviewers can discover the URL + credentials (same pattern as dedup).
+*Source: human-review compromise for layout-miss task-org tables, 2026-09-24*
 
 #### Layout-miss task-org tables (e.g. p156) → human review (DECIDED 2026-09-24)
 **Decision:** sparse/borderless task-org pages that PP-StructureV3's layout
