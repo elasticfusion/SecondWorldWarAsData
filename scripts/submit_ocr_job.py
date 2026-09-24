@@ -861,11 +861,64 @@ def _recreate_compute_as_ondemand():
         print(f"    → Redeploy failed: {e}")
 
 
+def _load_reviewed_snippets(s3, bucket: str, base_prefix: str) -> dict:
+    """Return ``{physical_page: (markdown, s3_key)}`` from ``reviewed/pN.md``.
+
+    Human-reviewed per-page corrections (written by the markdown-review UI) live
+    under ``ocr-output/{book}/reviewed/pN.md``. They override that page's raw OCR
+    markdown at merge time, then are consumed (deleted) on a successful merge so
+    a correction applies exactly once and never silently re-applies to a later
+    re-OCR.
+    """
+    reviewed: dict = {}
+    prefix = f"{base_prefix}reviewed/"
+    paginator = s3.get_paginator("list_objects_v2")
+    for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+        for obj in page.get("Contents", []) or []:
+            key = obj["Key"]
+            stem = key.rsplit("/", 1)[-1]
+            if not (stem.startswith("p") and stem.endswith(".md")):
+                continue
+            num = stem[1:-3]
+            if not num.isdigit():
+                continue
+            body = s3.get_object(Bucket=bucket, Key=key)["Body"].read().decode("utf-8")
+            reviewed[int(num)] = (body, key)
+    return reviewed
+
+
+def _merge_chunk_with_reviews(markdown: str, chunk_dir: str, reviewed: dict) -> str:
+    """Substitute reviewed per-page snippets into one chunk's markdown.
+
+    Splits the chunk into physical pages (via the ``--paginate_output``
+    separators) and replaces any page that has a reviewed snippet. Falls back to
+    the original markdown unchanged when the chunk has no page range (legacy
+    dir) or no reviewed page lands in it.
+    """
+    from src.ingestion.chunk_pages import (  # pylint: disable=import-outside-toplevel
+        chunk_start_page_from_dir,
+        split_pages,
+    )
+
+    start_page = chunk_start_page_from_dir(chunk_dir)
+    if start_page is None or not reviewed:
+        return markdown
+    pages = split_pages(markdown, start_page)
+    if not any(p in reviewed for p, _ in pages):
+        return markdown
+    out = [reviewed[p][0] if p in reviewed else text for p, text in pages]
+    return "\n\n".join(out)
+
+
 def merge_outputs(s3_path: str, _num_chunks: int, output_key: str | None = None):
-    """Merge chunk outputs into a single markdown file."""
+    """Merge chunk outputs into a single markdown file.
+
+    Per-page human corrections under ``reviewed/pN.md`` override the raw OCR for
+    that page and are deleted once the merge succeeds (consumed exactly once).
+    """
     s3 = boto3.client("s3", region_name=REGION)
     bucket, key = _parse_s3_path(s3_path)
-    pdf_name = key.split("/")[-1].replace(".pdf", "")
+    pdf_name = key.rsplit("/", maxsplit=1)[-1].replace(".pdf", "")
     prefix = f"ocr-output/{pdf_name}/"
 
     if not output_key:
@@ -873,21 +926,38 @@ def merge_outputs(s3_path: str, _num_chunks: int, output_key: str | None = None)
 
     print(f"\nMerging chunks from s3://{bucket}/{prefix}")
 
-    # List all .md files in chunk directories, sorted by chunk number then filename
+    reviewed = _load_reviewed_snippets(s3, bucket, prefix)
+    if reviewed:
+        print(
+            f"  Applying {len(reviewed)} reviewed page correction(s): "
+            + ", ".join(f"p{n}" for n in sorted(reviewed))
+        )
+
+    # Chunk markdown lives at ocr-output/{book}/chunk-*/input/input.md. Sort by
+    # key so pages concatenate in order; substitute reviewed snippets per chunk.
     merged = []
     resp = s3.list_objects_v2(Bucket=bucket, Prefix=prefix)
     md_files = sorted(
-        [obj["Key"] for obj in resp.get("Contents", []) if obj["Key"].endswith(".md")]
+        obj["Key"]
+        for obj in resp.get("Contents", [])
+        if obj["Key"].endswith("/input/input.md")
     )
-
     for md_key in md_files:
         body = s3.get_object(Bucket=bucket, Key=md_key)["Body"].read().decode("utf-8")
-        merged.append(body)
+        # md_key: ocr-output/{book}/{chunk_dir}/input/input.md
+        chunk_dir = md_key[len(prefix) :].split("/", 1)[0]
+        merged.append(_merge_chunk_with_reviews(body, chunk_dir, reviewed))
 
     final = "\n\n".join(merged)
     s3.put_object(Bucket=bucket, Key=output_key, Body=final.encode("utf-8"))
-    print(f"  Merged {len(md_files)} files → s3://{bucket}/{output_key}")
+    print(f"  Merged {len(md_files)} file(s) → s3://{bucket}/{output_key}")
     print(f"  Total size: {len(final):,} chars")
+
+    # Consume reviewed snippets only after a successful write.
+    for _page, (_body, review_key) in reviewed.items():
+        s3.delete_object(Bucket=bucket, Key=review_key)
+    if reviewed:
+        print(f"  Consumed {len(reviewed)} reviewed snippet(s) from reviewed/")
 
 
 def publish_individual_outputs(

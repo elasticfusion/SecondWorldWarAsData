@@ -567,6 +567,29 @@ Resources:
           CACHE_TABLE: !Ref CacheTableName
           DEDUP_COMPLETE_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-dedup-complete
 
+  # --- OCR Markdown Review UI (shares DedupApi + auth) ---
+  MdReviewUILogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${EnvironmentName}-wwii-mdreview-ui
+      RetentionInDays: 14
+
+  MdReviewUIFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-mdreview-ui
+      Runtime: python3.12
+      Handler: lambda_handlers.mdreview_ui_handler.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 512
+      Timeout: 30
+      Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref DataBucketName
+
   DedupGateFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -709,11 +732,61 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${DedupApi}/*
 
-  DedupApiDeploymentV3:
+  MdReviewResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref DedupApi
+      ParentId: !GetAtt DedupApi.RootResourceId
+      PathPart: mdreview
+
+  MdReviewProxyResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref DedupApi
+      ParentId: !Ref MdReviewResource
+      PathPart: '{proxy+}'
+
+  MdReviewGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref DedupApi
+      ResourceId: !Ref MdReviewResource
+      HttpMethod: GET
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref DedupAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MdReviewUIFunction.Arn}/invocations
+
+  MdReviewProxyMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref DedupApi
+      ResourceId: !Ref MdReviewProxyResource
+      HttpMethod: ANY
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref DedupAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MdReviewUIFunction.Arn}/invocations
+
+  MdReviewUIInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref MdReviewUIFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${DedupApi}/*
+
+  DedupApiDeploymentV4:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
       - DedupGetMethod
       - DedupProxyMethod
+      - MdReviewGetMethod
+      - MdReviewProxyMethod
       - DedupUnauthorizedResponse
       - DedupAccessDeniedResponse
     Properties:
@@ -723,7 +796,7 @@ Resources:
     Type: AWS::ApiGateway::Stage
     Properties:
       RestApiId: !Ref DedupApi
-      DeploymentId: !Ref DedupApiDeploymentV3
+      DeploymentId: !Ref DedupApiDeploymentV4
       StageName: app
 
   # --- OpenSERP ECS Service ---
