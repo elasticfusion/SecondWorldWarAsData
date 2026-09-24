@@ -53,20 +53,21 @@ the recovery jobs to drain before releasing networking (Option B —
 "networking stays up while work pending").
 *Source: St. Vith end-to-end test 2026-09-23*
 
+#### ~~Chandra image full rebuild fails on torch CUDA-dep hash drift~~ ✅ Fixed
+`docker build --no-cache -f Dockerfile.chandra` failed at the `torch==2.5.1+cu121`
+install: pip resolved torch 2.5.1's declared CUDA deps (`nvidia-cudnn-cu12`,
+`nvidia-cusparse-cu12`, …) whose upstream hashes on the pytorch CDN no longer
+matched torch's recorded metadata (a different nvidia-* pkg failed each run).
+Fix: install torch/torchvision `--no-deps` (skip that resolution), then install
+the exact CUDA runtime deps torch needs (incl. `nvidia-cudnn-cu12==9.1.0.70`)
+from PyPI, which has no stale hash-file enforcement; a build-time `import torch`
+asserts the result loads. Verified in isolation. The `Dockerfile.chandra.overlay`
+is no longer needed for a full rebuild (kept as a fast code-only-change helper).
+*Source: St. Vith end-to-end test 2026-09-23*
+
 ---
 
 ## High Priority (produces wrong results or wastes significant resources)
-
-#### Chandra image full rebuild fails on torch CUDA-dep hash drift
-`docker build --no-cache -f Dockerfile.chandra` fails at the `torch==2.5.1+cu121`
-install: pip resolves CUDA deps (e.g. `nvidia-cudnn-cu12`, `nvidia-cusolver-cu12`)
-whose upstream hashes on the pytorch CDN no longer match torch 2.5.1's recorded
-metadata (different package fails each run). Deterministic, not transient. The
-2026-09-23 watchdog+pagination ship used an **overlay** (`Dockerfile.chandra.overlay`,
-`FROM` the last good image) to avoid it, but the next real rebuild is blocked.
-Fix: refresh the torch pin / pin the CUDA-dep versions+hashes, or install torch
-without `--no-cache` hash enforcement. Same risk noted for `Dockerfile.paddle`.
-*Source: St. Vith end-to-end test 2026-09-23*
 
 #### PP-StructureV3 recovers p155 task-org table but not p156
 With the libgomp fix, PP-StructureV3 runs on GPU and reconstructed the p155
