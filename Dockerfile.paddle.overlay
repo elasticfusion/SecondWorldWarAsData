@@ -1,14 +1,16 @@
-# Minimal overlay: add the missing libgomp1 (OpenMP runtime) to the existing
-# Paddle image. PaddlePaddle's core (paddle/base/libpaddle.so) links against
-# libgomp.so.1; without it, PP-StructureV3 crashes at import ("Can not import
-# paddle core" -> CPU fallback -> "libgomp.so.1: cannot open shared object
-# file"), so recovery jobs ran but reconstructed 0 tables (validated on the
-# St. Vith task-org pages, 2026-09-23).
+# Overlay for the Paddle (PP-StructureV3) worker: layer code/lib fixes onto the
+# last good image without a full --no-cache rebuild (see TODO on torch/CDN hash
+# drift; the same rebuild fragility applies to the paddle stack).
 #
-# Layered onto the existing image to avoid a full --no-cache rebuild. The next
-# full rebuild picks up the same fix from Dockerfile.paddle directly.
-FROM localhost/wwii-paddle:latest
+# Two fixes stacked here, both from the St. Vith end-to-end validation:
+#   1) libgomp1 — PaddlePaddle core (libpaddle.so) links libgomp.so.1; without
+#      it PP-StructureV3 crashed at import (already in the :libgomp base below).
+#   2) src/ update — enable document/textline orientation correction in
+#      src/ingestion/paddle_structure.py so 90deg-rotated OOB task-org pages are
+#      de-rotated before table detection (fixes p156 recovering 0 tables).
+#
+# The full rebuild picks up both from Dockerfile.paddle directly.
+FROM localhost/wwii-paddle:libgomp
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends libgomp1 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+COPY src/ /app/src/
+COPY scripts/paddle_recover_page.py /app/scripts/paddle_recover_page.py
