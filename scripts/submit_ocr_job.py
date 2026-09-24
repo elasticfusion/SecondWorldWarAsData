@@ -1386,8 +1386,12 @@ def auto_route_table_recovery(
     return submitted
 
 
-def _publish_results(args, jobs: list, success: bool) -> None:
-    """Publish/merge outputs and archive the manifest based on run outcome."""
+def _publish_results(args, jobs: list, success: bool) -> list:
+    """Publish/merge outputs and archive the manifest based on run outcome.
+
+    Returns the list of table-recovery (Paddle) job IDs submitted, if any, so
+    the caller can wait for them to drain before tearing down networking.
+    """
     if success:
         if args.no_merge:
             publish_individual_outputs(args.s3_path, jobs, args.output_prefix)
@@ -1398,21 +1402,32 @@ def _publish_results(args, jobs: list, success: bool) -> None:
         # Auto-route flattened 2-D tables to PP-StructureV3 (opt-out).
         if not getattr(args, "no_recover_tables", False):
             try:
-                auto_route_table_recovery(args.s3_path, REGION, env=ENV, dpi=args.dpi)
+                return auto_route_table_recovery(
+                    args.s3_path, args.region, env=ENV, dpi=args.dpi
+                )
             except Exception as exc:  # pylint: disable=broad-exception-caught
                 # Recovery is best-effort and must never fail the OCR run.
                 print(f"  ⚠ Table-recovery routing skipped (non-fatal): {exc}")
-        return
+        return []
     # Partial success — still publish what completed.
     if args.no_merge:
         print("\n  Publishing outputs for succeeded jobs...")
         publish_individual_outputs(args.s3_path, jobs, args.output_prefix)
     if args.manifest:
         print("  Manifest NOT archived (some jobs failed — fix and resubmit)")
+    return []
 
 
 def _wait_and_publish(args, jobs: list, compute_type: str) -> None:
-    """Block on jobs, publish outputs, and always re-enable the idle monitor."""
+    """Block on jobs, publish outputs, and always re-enable the idle monitor.
+
+    Networking (NAT) must stay up while *any* work is pending — including the
+    asynchronous PP-StructureV3 table-recovery jobs that publishing may submit,
+    which need NAT for their first-run model download. So we wait for those
+    recovery jobs to drain too before the ``finally`` re-enables the idle
+    monitor (which is what ultimately allows teardown). This mirrors the main
+    pipeline's "networking stays up while a queue has entries" accounting.
+    """
     try:
         success = wait_for_jobs(jobs)
         if not success and compute_type == "SPOT":
@@ -1422,7 +1437,13 @@ def _wait_and_publish(args, jobs: list, compute_type: str) -> None:
                 f"    python3 scripts/submit_ocr_job.py {args.s3_path} "
                 f"--manifest {args.manifest} --wait --no-merge --region {REGION}"
             )
-        _publish_results(args, jobs, success)
+        recovery_jobs = _publish_results(args, jobs, success)
+        if recovery_jobs:
+            print(
+                f"\n  Waiting for {len(recovery_jobs)} table-recovery job(s) to "
+                "drain before releasing networking..."
+            )
+            wait_for_jobs([{"jobId": jid, "jobName": jid} for jid in recovery_jobs])
     except KeyboardInterrupt:
         print("\n\nInterrupted. Jobs continue running in AWS Batch.")
     finally:

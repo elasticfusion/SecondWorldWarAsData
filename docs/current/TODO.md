@@ -10,27 +10,72 @@ _None — all critical items resolved._
 
 ---
 
-## Recently Completed (2026-09-23) — OCR reliability
+## Recently Completed (2026-09-23) — OCR reliability + table recovery
 
-#### ~~Chandra OCR killed by 1h wall-clock timeout on healthy dense chunks~~ ✅ Fixed (code; deploy pending)
+_All deployed and validated end-to-end on the St. Vith / Boyer book (252-page
+scanned PDF)._
+
+#### ~~Chandra OCR killed by 1h wall-clock timeout on healthy dense chunks~~ ✅ Fixed + deployed
 Progress-watchdog (`scripts/ocr_watchdog.py`) is now the primary failure
 detector — fails on no-page-progress for `OCR_NO_PROGRESS_SECS` (900s), not
 elapsed time. `AttemptDurationSeconds` raised 3600→14400 as a loose backstop.
-Wired via `chandra_entrypoint.sh` + `Dockerfile.chandra`; 7 tests in
-`tests/test_ocr_watchdog.py`. **Deploy pending:** rebuild+push Chandra image
-(`deploy_all.sh --ocr-standalone`) + CFN stack update.
+Wired via `chandra_entrypoint.sh` + `Dockerfile.chandra`; 7 tests. Chandra image
+rebuilt+pushed, CFN job def at rev 13 with the new env/timeout.
 *Source: St. Vith end-to-end test 2026-09-23*
 
 #### ~~submit_ocr_job.py chunk-000 collision overwrites prior OCR output~~ ✅ Fixed
 Page-range/manifest re-runs all wrote to `chunk-000/` (submission-local index),
 silently clobbering earlier chunks. Output dir now derived from the page range
-(`chunk-p0001-0050`, zero-padded/sortable) in all submit paths + publish. A
-re-run overwrites only its own range.
+(`chunk-p0001-0050`, zero-padded/sortable) in all submit paths + publish.
+*Source: St. Vith end-to-end test 2026-09-23*
+
+#### ~~Auto-route flattened 2-D tables to PP-StructureV3 after OCR~~ ✅ Fixed + validated
+`src/ingestion/chunk_pages.py` maps `--paginate_output` chunk markdown to
+physical PDF pages and flags pages with a flattened task-org table;
+`submit_ocr_job.py:auto_route_table_recovery()` fires after OCR (best-effort,
+`--no-recover-tables` opt-out), submitting one Paddle job per flattened page.
+Validated: OCR → detect pp.154/155/156 → recovery submitted with no manual
+steps; p155 produced a reconstructed `<table>`.
+*Source: St. Vith end-to-end test 2026-09-23*
+
+#### ~~PP-StructureV3 recovery recovered 0 tables (libgomp1 missing)~~ ✅ Fixed + deployed
+Paddle worker crashed at import (`libgomp.so.1: cannot open shared object
+file`) → CPU fallback → also crashed. `Dockerfile.paddle` now installs
+`libgomp1`. Image rebuilt+pushed; re-run confirmed `device=gpu` and a recovered
+table.
+*Source: St. Vith end-to-end test 2026-09-23*
+
+#### ~~NAT torn down while async recovery jobs still pending~~ ✅ Fixed
+`auto_route_table_recovery` submits Paddle jobs asynchronously; `--wait` used to
+tear NAT down as soon as the Chandra job finished, stranding recovery jobs
+(which need NAT for first-run model download). `_wait_and_publish` now waits for
+the recovery jobs to drain before releasing networking (Option B —
+"networking stays up while work pending").
 *Source: St. Vith end-to-end test 2026-09-23*
 
 ---
 
 ## High Priority (produces wrong results or wastes significant resources)
+
+#### Chandra image full rebuild fails on torch CUDA-dep hash drift
+`docker build --no-cache -f Dockerfile.chandra` fails at the `torch==2.5.1+cu121`
+install: pip resolves CUDA deps (e.g. `nvidia-cudnn-cu12`, `nvidia-cusolver-cu12`)
+whose upstream hashes on the pytorch CDN no longer match torch 2.5.1's recorded
+metadata (different package fails each run). Deterministic, not transient. The
+2026-09-23 watchdog+pagination ship used an **overlay** (`Dockerfile.chandra.overlay`,
+`FROM` the last good image) to avoid it, but the next real rebuild is blocked.
+Fix: refresh the torch pin / pin the CUDA-dep versions+hashes, or install torch
+without `--no-cache` hash enforcement. Same risk noted for `Dockerfile.paddle`.
+*Source: St. Vith end-to-end test 2026-09-23*
+
+#### PP-StructureV3 recovers p155 task-org table but not p156
+With the libgomp fix, PP-StructureV3 runs on GPU and reconstructed the p155
+2-D task-org grid, but returned 0 tables for p156 (a very similar task-org
+page) — and the p155 recovery carries OCR noise (`17030-Harch South`,
+`$\frac{3}{}$` artifacts). Recovery *plumbing* is proven; recovery *quality*
+needs work: evaluate render DPI/rotation/preprocessing for these rotated,
+sparse hand-typed columnar pages, and consider a second-engine cross-check.
+*Source: St. Vith end-to-end test 2026-09-23*
 
 #### ULID fix generates different replacements for same invalid ID
 Same invalid ULID referenced in multiple places within one response gets different replacements, breaking internal referential integrity. Fix: build replacement map and reuse same new ULID for repeated occurrences.

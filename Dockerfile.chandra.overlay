@@ -1,0 +1,16 @@
+# Minimal overlay: layer ONLY the changed entrypoint + watchdog onto the
+# existing, working Chandra image. Used to ship the progress-watchdog +
+# --paginate_output entrypoint change WITHOUT a full --no-cache rebuild, which
+# currently fails on upstream hash drift in torch==2.5.1+cu121's CUDA deps
+# (nvidia-cudnn/cusolver wheels re-hosted with new hashes on the pytorch CDN).
+#
+# The base already contains chandra-ocr 0.2.0 + model weights + all deps; only
+# our two scripts changed. A proper full rebuild (with torch pins refreshed) is
+# tracked separately — this unblocks the watchdog/pagination deploy now.
+FROM localhost/wwii-chandra:latest
+
+COPY scripts/chandra_entrypoint.sh /entrypoint.sh
+COPY scripts/ocr_watchdog.py /ocr_watchdog.py
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
