@@ -69,13 +69,19 @@ is no longer needed for a full rebuild (kept as a fast code-only-change helper).
 
 ## High Priority (produces wrong results or wastes significant resources)
 
-#### PP-StructureV3 recovers p155 task-org table but not p156
-With the libgomp fix, PP-StructureV3 runs on GPU and reconstructed the p155
-2-D task-org grid, but returned 0 tables for p156 (a very similar task-org
-page) — and the p155 recovery carries OCR noise (`17030-Harch South`,
-`$\frac{3}{}$` artifacts). Recovery *plumbing* is proven; recovery *quality*
-needs work: evaluate render DPI/rotation/preprocessing for these rotated,
-sparse hand-typed columnar pages, and consider a second-engine cross-check.
+#### ~~PP-StructureV3 recovers p155 task-org table but not p156~~ ✅ Fixed (code; needs rebuild to verify)
+Root cause: the OOB task-org pages are scanned **90° rotated**, but the
+`PaddleStructureRunner` built `PPStructureV3(...)` with orientation correction
+**off** (PaddleOCR defaults `use_doc_orientation_classify`/`use_textline_orientation`
+to `False`), so borderless sparse grids fed un-rotated defeated table detection
+(p155 barely passed, p156 missed). Fix: enable `use_doc_orientation_classify=True`
++ `use_textline_orientation=True` (`use_doc_unwarping=False`) in
+`src/ingestion/paddle_structure.py` — PP-LCNet_x1_0_doc_ori de-rotates the page
+before detection. Params verified against the PP-StructureV3 API docs.
+**Verify:** rebuild+push `wwii-paddle` (or overlay) and re-run recovery on
+p155/p156; also assess the residual OCR noise in recovered cells
+(`17030-Harch South`, `$\frac{3}{}$`). Can't run PP-StructureV3 locally (needs
+GPU/paddle), so end-to-end confirmation is pending the rebuild.
 *Source: St. Vith end-to-end test 2026-09-23*
 
 #### ULID fix generates different replacements for same invalid ID

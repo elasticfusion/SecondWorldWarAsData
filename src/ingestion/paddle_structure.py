@@ -125,6 +125,15 @@ class PaddleStructureRunner:
 
         # enable_mkldnn=False only matters on CPU (avoids the paddlepaddle 3.3.x
         # MKL-DNN PIR-attribute bug); harmless on GPU.
+        #
+        # Orientation correction ON: the OOB task-org pages are scanned 90°
+        # rotated (landscape content on a portrait page). Without orientation
+        # classification PP-StructureV3's table *detection* is fragile on these
+        # borderless, sparse grids — it barely found p155's table and missed the
+        # near-identical p156. use_doc_orientation_classify de-rotates the whole
+        # page (PP-LCNet_x1_0_doc_ori) and use_textline_orientation fixes rotated
+        # text lines, both before table detection. Doc unwarping stays off (flat
+        # scans, not photos — saves a model load).
         pipeline = PPStructureV3(
             device=self._device,
             enable_mkldnn=False,
@@ -133,6 +142,9 @@ class PaddleStructureRunner:
             text_det_limit_side_len=self._det_limit,
             text_det_limit_type="max",
             use_formula_recognition=False,
+            use_doc_orientation_classify=True,
+            use_textline_orientation=True,
+            use_doc_unwarping=False,
         )
         logger.info(
             "Built PP-StructureV3 (device=%s, det_limit=%d, server models)",
