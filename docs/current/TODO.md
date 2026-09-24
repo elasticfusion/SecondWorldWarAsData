@@ -69,25 +69,29 @@ is no longer needed for a full rebuild (kept as a fast code-only-change helper).
 
 ## High Priority (produces wrong results or wastes significant resources)
 
-#### PP-StructureV3 recovers p155 task-org table but not p156 (partial)
-**Verified 2026-09-23 after the orientation fix + wwii-paddle rebuild:** enabling
-`use_doc_orientation_classify`/`use_textline_orientation` **improved p155's
-recovered-table quality** (cleaner header row: `CC-A|CCB|CC-R|DIV ARTY|DIV TRPS|
-DIVTNS`, 20 rows) but **p156 still recovers 0 tables**. Root cause is one level
-upstream of table-structure recognition: PP-StructureV3's **layout detector
-classifies p156's content as vertical *text blocks*, not a `table` region**, so
-the table recognizer never fires — its markdown for p156 is a sequential list
-(`## 192406 / CC-B / 87(-D) / ...`), same failure mode as Chandra. p156 is
-sparser / more scattered than p155 (TF JONES/LINDSEY + "Atchd 7th Armd Div"
-blocks at irregular positions, handwritten margin notes), so the borderless grid
-reads as prose. Orientation tuning won't fix this.
-**Remaining options (not yet tried):** (1) lower `layout_threshold` for the
-table class so the weak table region is accepted; (2) a table-specialist
-fallback/second engine; (3) accept that Chandra's review-flagged `flattened_hints`
-(which DO carry p156's parsed CC-A/B/R structure) are the fallback for pages the
-layout model won't call a table. Also assess residual cell OCR noise
-(`1703dd -arch South`). Decide cost/benefit before more GPU runs.
-*Source: St. Vith end-to-end test 2026-09-23*
+#### PP-StructureV3 recovers p155 task-org table but not p156 (layout-detection miss)
+**Diagnosed conclusively 2026-09-24** via layout-box instrumentation
+(`RecoveredTable.layout_boxes` dumps `layout_det_res` label+score). On p156 the
+layout detector produced **only `text` (0.49, 0.43) + `paragraph_title` (0.32)
+boxes — zero `table`-class boxes at any score**. So this is a layout
+**misclassification** (sparse/scattered columns read as text), NOT a
+low-confidence table box being rejected.
+- **`layout_threshold` (option 1) ruled OUT** — it only admits an existing
+  below-cutoff `table` box; there is none here, so lowering it cannot help
+  (verified, not assumed). The orientation fix earlier improved p155 quality but
+  never applied to p156's root cause.
+- **Real levers (by cost/benefit):** (3, recommended) accept Chandra's
+  review-flagged `flattened_hints` — the recovery JSON already carries p156's
+  parsed CC-A/B/R structure there — as the fallback for pages the layout model
+  won't call a table (ensemble-as-verification; zero extra cost). (A) preprocess
+  the image (tight crop to the columnar region / synthesize faint grid rules) so
+  the layout model fires the `table` class. (B) run the table-structure model
+  directly on a cropped region, bypassing layout detection. Reserve A/B for
+  high-value pages only — forcing a table engine on genuinely borderless sparse
+  pages fights the data.
+Also note the `text` boxes sit ~0.43–0.49 (borderline). Residual cell OCR noise
+(`1703dd -arch South`) is a separate rec-quality item.
+*Source: St. Vith end-to-end test 2026-09-23/24*
 
 #### ULID fix generates different replacements for same invalid ID
 Same invalid ULID referenced in multiple places within one response gets different replacements, breaking internal referential integrity. Fix: build replacement map and reuse same new ULID for repeated occurrences.

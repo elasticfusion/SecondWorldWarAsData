@@ -84,6 +84,10 @@ def _build_result(recovery, *, page_image: str, markdown_path: str) -> dict:
                 "html": recovered.html,
                 "markdown": recovered.markdown,
                 "notes": recovered.notes,
+                # Diagnostic: layout detector regions (label+score) — shows
+                # whether a table-class box was produced/rejected vs. the
+                # content being classified as text.
+                "layout_boxes": recovered.layout_boxes,
             }
             if recovered is not None
             else None

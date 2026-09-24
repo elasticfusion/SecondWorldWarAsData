@@ -31,7 +31,7 @@ installed. Nothing here imports paddle at module load time.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, List, Optional
 
@@ -71,6 +71,12 @@ class RecoveredTable:
         det_limit_side_len: The detection side-length cap actually used.
         device: "gpu" or "cpu" — the device the run used.
         notes: Free text (e.g. why empty).
+        layout_boxes: Diagnostic — the layout detector's regions as
+            ``[{"label": str, "score": float}]`` (from ``layout_det_res``), so a
+            caller can see whether a ``table``-class box was produced (and at
+            what confidence) vs. the region being classified ``text``. This is
+            what distinguishes "table box rejected by threshold" (fixable via
+            ``layout_threshold``) from "confidently misclassified as text".
     """
 
     html: str = ""
@@ -80,6 +86,7 @@ class RecoveredTable:
     det_limit_side_len: int = DEFAULT_DET_LIMIT
     device: str = "cpu"
     notes: str = ""
+    layout_boxes: List[dict] = field(default_factory=list)
 
 
 def _select_device(prefer_gpu: bool) -> str:
@@ -188,10 +195,12 @@ class PaddleStructureRunner:
             )
 
         markdown_parts: List[str] = []
+        layout_boxes: List[dict] = []
         for res in results:
             md = _result_markdown(res)
             if md:
                 markdown_parts.append(md)
+            layout_boxes.extend(_extract_layout_boxes(res))
         markdown = "\n\n".join(markdown_parts).strip()
         tables = _extract_tables(markdown)
         return RecoveredTable(
@@ -201,6 +210,7 @@ class PaddleStructureRunner:
             det_limit_side_len=self._det_limit,
             device=self._device,
             notes="recovered" if tables else "no <table> recovered",
+            layout_boxes=layout_boxes,
         )
 
 
@@ -224,6 +234,47 @@ def _result_markdown(res: Any) -> str:
         if isinstance(text, str):
             return text
     return ""
+
+
+def _layout_boxes_raw(res: Any) -> list:
+    """Locate the raw ``layout_det_res.boxes`` list on a result, or ``[]``.
+
+    Result objects vary across PaddleOCR versions: the layout result may live in
+    ``res.json`` (optionally nested under ``"res"``) or as a ``.layout_det_res``
+    attribute, itself a dict or an object with a ``.boxes``. Degrades to ``[]``.
+    """
+    data = getattr(res, "json", None)
+    layout: Any = None
+    if isinstance(data, dict):
+        inner = data.get("res")
+        source = inner if isinstance(inner, dict) else data
+        layout = source.get("layout_det_res")
+    if layout is None:
+        layout = getattr(res, "layout_det_res", None)
+    if isinstance(layout, dict):
+        boxes = layout.get("boxes")
+    else:
+        boxes = getattr(layout, "boxes", None)
+    return boxes if isinstance(boxes, list) else []
+
+
+def _extract_layout_boxes(res: Any) -> List[dict]:
+    """Return the layout detector's regions as ``[{"label","score"}]``.
+
+    Diagnostic accessor for ``layout_det_res.boxes`` (each box has ``label`` +
+    ``score``), used to tell whether the layout model produced a ``table``-class
+    region (and at what confidence) versus classifying the content as text.
+    """
+    out: List[dict] = []
+    for box in _layout_boxes_raw(res):
+        if isinstance(box, dict) and "label" in box:
+            out.append(
+                {
+                    "label": box.get("label"),
+                    "score": round(float(box.get("score", 0.0)), 4),
+                }
+            )
+    return out
 
 
 def _extract_tables(markdown: str) -> List[str]:
