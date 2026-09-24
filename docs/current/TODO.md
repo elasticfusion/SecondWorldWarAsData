@@ -69,6 +69,24 @@ is no longer needed for a full rebuild (kept as a fast code-only-change helper).
 
 ## High Priority (produces wrong results or wastes significant resources)
 
+#### ~~OCR page-range off-by-one dropped the first page of every range~~ ✅ Fixed (code); re-OCR needed
+`submit_ocr_job.py` emitted **1-based** `--page-range` values, but Chandra's
+`--page-range` is **0-based**, matched against 0-based PDF page indices
+(`chandra.input.parse_range_str("1-2")` → `[1,2]`). So every OCR job **dropped
+the first page of its range and read one page past the end**. Auto-chunk runs
+(e.g. St. Vith `1-50`, `51-100`, …) were each shifted by one page — physical
+page 1 of every chunk missing, chunk boundaries off by one; a single-page/small
+range dropped its first page entirely (found via the M1019 2-page test: only
+page 2 OCR'd). Fix: `_to_chandra_range` converts physical N → index N-1 at the
+Chandra arg only (chunk-dir naming, logs, manifests, merge mapping stay 1-based
+physical). Verified against Chandra's own parser; 6 tests.
+**Re-OCR consequence (open):** all OCR output produced before this fix is
+off-by-one and should be **re-OCR'd** to be correct — notably the St. Vith /
+Boyer corpus and any ETO OOB Chandra markdown generated via this path. Scope +
+cost TBD; the fix is deployed-pending (ships in the Chandra path with the next
+`submit_ocr_job` run — no image rebuild needed, it's a client-side arg change).
+*Source: M1019 language-path investigation 2026-09-24*
+
 #### Deploy + wire the OCR markdown-review UI
 The markdown-review Lambda + UI is **built and tested but not deployed**
 (commit d1c9869): `lambda_handlers/mdreview_ui_handler.py` (two-pane page image

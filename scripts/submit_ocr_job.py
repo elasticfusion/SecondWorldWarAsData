@@ -310,6 +310,36 @@ def _chunk_dir(page_range: str) -> str:
     return "chunk-p" + "-".join(nums)
 
 
+def _to_chandra_range(page_range: str) -> str:
+    """Convert a 1-based *physical* page-range spec to Chandra's 0-based arg.
+
+    **Why:** Chandra's ``--page-range`` is 0-based and matches PDF page indices
+    (``chandra.input.parse_range_str("1-2")`` -> ``[1, 2]``, tested against
+    0-based page indices). The rest of this pipeline — CLI args, ``chunk_dir``,
+    logs, manifests — speaks *1-based physical* pages (what a human means by
+    "page 1"). Passing our 1-based spec straight through made Chandra drop the
+    first page of every range and read one page past the end (documented gotcha
+    in CHANDRA_OCR_DESIGN.md, never applied here). This converts only the value
+    handed to Chandra: physical page ``N`` -> index ``N-1``.
+
+    Supports single (``"7"`` -> ``"6"``), hyphen range (``"1-50"`` -> ``"0-49"``)
+    and comma lists (``"21-34,40"`` -> ``"20-33,39"``). Non-numeric input is
+    returned unchanged (defensive; should not occur for real page specs).
+    """
+
+    def _shift_token(token: str) -> str:
+        token = token.strip()
+        if "-" in token:
+            a, _, b = token.partition("-")
+            return f"{int(a) - 1}-{int(b) - 1}"
+        return str(int(token) - 1)
+
+    try:
+        return ",".join(_shift_token(t) for t in page_range.split(",") if t.strip())
+    except ValueError:
+        return page_range
+
+
 def _container_overrides(command: list, dpi: int | None = None) -> dict:
     """Build Batch containerOverrides, injecting IMAGE_DPI when dpi is given.
 
@@ -374,7 +404,7 @@ def submit_from_manifest(
                     s3_path,
                     f"s3://{bucket}/{output_prefix}/{chunk_dir}/",
                     "--page-range",
-                    page_range,
+                    _to_chandra_range(page_range),
                 ],
                 dpi=dpi,
             ),
@@ -423,7 +453,7 @@ def submit_jobs(
                     s3_path,
                     f"s3://{bucket}/{output_prefix}/{chunk_dir}/",
                     "--page-range",
-                    page_range,
+                    _to_chandra_range(page_range),
                 ],
                 dpi=dpi,
             ),
@@ -456,7 +486,7 @@ def submit_jobs(
                         s3_path,
                         f"s3://{bucket}/{output_prefix}/{chunk_dir}/",
                         "--page-range",
-                        page_spec,
+                        _to_chandra_range(page_spec),
                     ],
                     dpi=dpi,
                 ),
