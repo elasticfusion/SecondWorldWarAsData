@@ -69,28 +69,26 @@ is no longer needed for a full rebuild (kept as a fast code-only-change helper).
 
 ## High Priority (produces wrong results or wastes significant resources)
 
-#### PP-StructureV3 recovers p155 task-org table but not p156 (layout-detection miss)
-**Diagnosed conclusively 2026-09-24** via layout-box instrumentation
-(`RecoveredTable.layout_boxes` dumps `layout_det_res` label+score). On p156 the
-layout detector produced **only `text` (0.49, 0.43) + `paragraph_title` (0.32)
-boxes — zero `table`-class boxes at any score**. So this is a layout
-**misclassification** (sparse/scattered columns read as text), NOT a
-low-confidence table box being rejected.
-- **`layout_threshold` (option 1) ruled OUT** — it only admits an existing
-  below-cutoff `table` box; there is none here, so lowering it cannot help
-  (verified, not assumed). The orientation fix earlier improved p155 quality but
-  never applied to p156's root cause.
-- **Real levers (by cost/benefit):** (3, recommended) accept Chandra's
-  review-flagged `flattened_hints` — the recovery JSON already carries p156's
-  parsed CC-A/B/R structure there — as the fallback for pages the layout model
-  won't call a table (ensemble-as-verification; zero extra cost). (A) preprocess
-  the image (tight crop to the columnar region / synthesize faint grid rules) so
-  the layout model fires the `table` class. (B) run the table-structure model
-  directly on a cropped region, bypassing layout detection. Reserve A/B for
-  high-value pages only — forcing a table engine on genuinely borderless sparse
-  pages fights the data.
-Also note the `text` boxes sit ~0.43–0.49 (borderline). Residual cell OCR noise
-(`1703dd -arch South`) is a separate rec-quality item.
+#### Layout-miss task-org tables (e.g. p156) → human review (DECIDED 2026-09-24)
+**Decision:** sparse/borderless task-org pages that PP-StructureV3's layout
+detector classifies as `text` (no `table`-class box — verified on p156 via
+`layout_boxes`: text@0.49/0.43 + paragraph_title@0.32, zero table boxes) are
+**resolved by human review, not further recovery-engine work**. Ruled out:
+`layout_threshold` (nothing to admit) and orientation tuning. This matches the
+pipeline's existing "flag, don't fabricate" compromise. The page's structure is
+preserved in the recovery JSON `flattened_hints` (group→units, `needs_review`);
+`flattened_hints` carry content+grouping, NOT a reconstructed 2-D grid — a
+reviewer supplies the column crosstab. See CHANDRA_OCR_DESIGN.md "Recovery
+limits & the human-review compromise". Dense tables (p155, OOB corpus generally)
+still auto-recover to `<table>`.
+
+**Open follow-up (path being decided by owner):** wire flagged pages'
+`flattened_hints` into the existing review surface (with page image + parsed
+groups) so a human actually sees and completes them — the gap between "flagged"
+and "reviewed". Not yet designed. Escape hatches if a specific page is
+high-value: (A) image preprocess to make the grid table-like; (B) crop to the
+columnar region and run the table-structure model directly (bypass layout
+detection). Also: residual recovered-cell OCR noise (`1703dd -arch South`).
 *Source: St. Vith end-to-end test 2026-09-23/24*
 
 #### ULID fix generates different replacements for same invalid ID

@@ -160,6 +160,45 @@ are spliced back non-destructively via `table_merge_back.py`. Block quotes are
 handled by post-processing regardless of engine
 (`markdown_structure.py`, implemented).
 
+### Recovery limits & the human-review compromise (decided 2026-09-24)
+
+PP-StructureV3 recovery is **not** guaranteed to reconstruct every flattened
+table, and we deliberately do not chase 100%. Validated on the St. Vith Appendix
+"A" TROOP ASSIGNMENTS spread:
+
+- **p155** (dense, column-aligned grid) → PP-StructureV3 reconstructs a real 2-D
+  `<table>` (timecodes × commands). ✅
+- **p156** (sparse, scattered — TF JONES/LINDSEY + "Atchd 7th Armd Div" blocks
+  at irregular positions, margin notes) → recovers **0 tables**. Diagnosed via
+  layout-box instrumentation (`RecoveredTable.layout_boxes`): the layout
+  detector emits only `text` (0.49, 0.43) + `paragraph_title` (0.32) boxes —
+  **no `table`-class box at any score**. This is a layout *misclassification*,
+  one stage upstream of table recognition, so it is **not** fixable by
+  `layout_threshold` (nothing to admit) or by orientation tuning.
+
+**Decision: such layout-miss edge cases are resolved by human review, not by
+further recovery-engine work.** This is the same "verification/flagging, not
+fabrication" compromise the pipeline already makes elsewhere (OOB
+`(unknown)`-division rows, fuzzy name-match confirmations, block-quote flags).
+Concretely:
+
+- The common case (dense tables, and the OOB corpus generally) is recovered
+  automatically to `<table>`.
+- The edge case is **flagged, never dropped**: the page's Chandra-parsed
+  structure is preserved in the recovery JSON's `flattened_hints`
+  (group→units, `needs_review`) for a human to complete into a grid. **Note:**
+  `flattened_hints` preserve the *content and grouping*, not a reconstructed 2-D
+  grid — a reviewer supplies the column crosstab.
+- We spend GPU/engineering only where it pays off; forcing a table engine on
+  genuinely borderless, sparse pages fights the data.
+
+**Not pursued (available if a specific page proves high-value):** (A) preprocess
+the image (tight crop / synthesize faint rules) so the layout model fires the
+`table` class; (B) run the table-structure model directly on a cropped region,
+bypassing layout detection. **Open follow-up (deferred):** ensure flagged pages'
+`flattened_hints` actually reach a reviewer with the page image + parsed groups
+through the existing review surface — see TODO.
+
 ---
 
 ## Architecture
