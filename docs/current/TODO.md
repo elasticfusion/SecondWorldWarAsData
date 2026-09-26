@@ -1,6 +1,6 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-09-24
+**Last Updated:** 2026-09-26
 
 ---
 
@@ -128,6 +128,23 @@ detection). Also: residual recovered-cell OCR noise (`1703dd -arch South`).
 #### ULID fix generates different replacements for same invalid ID
 Same invalid ULID referenced in multiple places within one response gets different replacements, breaking internal referential integrity. Fix: build replacement map and reuse same new ULID for repeated occurrences.
 *Source: CODE_INTEGRITY_REVIEW.md #5*
+
+#### SHAEF OB map corpus gaps → source acquisition (likely a NARA visit)
+The `SHAEF OB Maps` daily situation-map set has coverage gaps that limit
+date-based queries (e.g. "unit X on date Y → show the map"). These are
+**acquisition** issues, not code — deferred; likely require obtaining the
+missing sheets from NARA.
+- **December 1944 entirely missing** — no `44-12` folder. The Ardennes/Bulge
+  month is absent, so any query in Dec 1944 (e.g. "3rd Armored on 15 Dec 1944")
+  is unanswerable from this set. Coverage is Oct–Nov 1944 + Jan–Apr 1945.
+- **Missing 15 Feb 1945** — the `45-02` folder has 29 files (a single-day gap).
+- **`311144 SHAEF OB.jpg` mislabeled** — filename encodes 31 November (does not
+  exist); needs disambiguation (likely 30 Nov or 1 Dec) when the corpus is
+  revisited.
+- Interim behavior: the ingestion should return "no map for that date" rather
+  than a wrong neighboring map. See
+  `docs/current/dataquality/MAP_IMAGE_AV_INGESTION.md`.
+*Source: B405 / SHAEF map assessment 2026-09-26*
 
 ---
 
