@@ -114,9 +114,17 @@ def _save_split_chapter(doc, book_output, logger):
     overlap = 3
     i = 0
     chunk_idx = 0
+    # Estimate total chunks up front so the suffix width is stable and sortable.
+    step = chunk_size - overlap
+    total_chunks = max(1, (len(doc.paragraphs) + step - 1) // step)
+    width = max(2, len(str(total_chunks - 1)))
     while i < len(doc.paragraphs):
         chunk_paras = doc.paragraphs[i : i + chunk_size]
-        chunk_suffix = chr(97 + chunk_idx)
+        # Zero-padded numeric suffix (e.g. "c00", "c01", ...): filesystem-safe
+        # and correctly ordered for any chunk count. A bare chr(97+idx) scheme
+        # overflowed past 26 chunks into punctuation/non-ASCII bytes ({ | } ~ ...)
+        # and could collide, corrupting large-document output.
+        chunk_suffix = f"c{chunk_idx:0{width}d}"
         chunk_file = (
             book_output / f"chapter{doc.chapter_number}{chunk_suffix}-parsed.json"
         )
