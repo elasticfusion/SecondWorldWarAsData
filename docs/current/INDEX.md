@@ -49,6 +49,7 @@
 | [dataquality/INGESTION_FRONT_END.md](dataquality/INGESTION_FRONT_END.md) | Phase 0 ingestion front-end: media detection, per-page disposition, region conversion, OOB markdown parsers, division inference, persist + crosswalk |
 | [dataquality/STRUCTURED_DATA_ROUTING.md](dataquality/STRUCTURED_DATA_ROUTING.md) | Phase 0 design-of-record: provenance invariant + required citation metadata, format-agnostic routing (incl. docx, web-page-with-video), tabular→entity convergence, source-acquisition lifecycle |
 | [dataquality/CHANDRA_OCR_DESIGN.md](dataquality/CHANDRA_OCR_DESIGN.md) | Chandra PDF→markdown OCR (Phase 0 bridge) |
+| [dataquality/MAP_IMAGE_AV_INGESTION.md](dataquality/MAP_IMAGE_AV_INGESTION.md) | Map/image/moving-image routing: deterministic-first funnel to minimize Grok, per-map dating, units-as-metadata, map georeferencing |
 
 ### Features (Entity Types)
 | Document | Description |
