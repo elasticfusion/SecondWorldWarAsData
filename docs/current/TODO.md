@@ -146,6 +146,27 @@ missing sheets from NARA.
   `docs/current/dataquality/MAP_IMAGE_AV_INGESTION.md`.
 *Source: B405 / SHAEF map assessment 2026-09-26*
 
+#### Wire Phase 0 as an auto-triggered phase + type-routing (close the ingest→extract seam)
+Adding a **raw** document today does **not** run source-to-finish. The narrative
+markdown path auto-chains (S3 `content/` upload → Phase 1 → 2 → dedup gate → 3),
+but for a raw document there are manual seams:
+1. **Phase 0 / OCR is operator-run** — `submit_ocr_job.py` is invoked by hand on
+   AWS Batch; a raw scanned-PDF upload does **not** auto-trigger OCR.
+2. **Phase 0 → Phase 1 handoff is not chained** — OCR/converted markdown must be
+   placed into the `content/`-trigger path manually; the "upload triggers Phase
+   1" doc assumes markdown already exists.
+3. **No document-type routing at ingest** — narrative → Phase 1/2/3 extraction;
+   structured/reference (e.g. ETO OOB) → the deterministic `src/ingestion/
+   oob_markdown/` parser track (script-invoked, not auto-triggered);
+   maps/images/film → the vision branch (design only, unbuilt, see
+   `MAP_IMAGE_AV_INGESTION.md`).
+Work: auto-trigger OCR on raw-PDF upload, chain the Phase 0→1 output handoff, and
+route by disposition (narrative vs. OOB vs. map/media) to the correct downstream
+track. Note: the dedup review gate and OCR markdown-review UI are **intentional**
+human gates, not seams to remove. Related: the tracked "reprocess after Phase 0
+routing lands" item under Future/Research.
+*Source: end-to-end wiring review 2026-09-26*
+
 ---
 
 ## Medium Priority (efficiency, observability, developer experience)
