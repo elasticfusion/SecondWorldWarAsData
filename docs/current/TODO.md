@@ -152,6 +152,29 @@ missing sheets from NARA.
 
 ### Pipeline Efficiency
 
+#### Delete stale legacy `chunk-NNN` OCR dirs superseded by re-OCR
+Re-OCR runs (off-by-one fix) write new page-range chunk dirs
+(`chunk-p0001-0050`, …) but leave the **old pre-fix `chunk-000`..`chunk-NNN`**
+dirs in place. The merge correctly **skips** them ("legacy chunk dir without
+page range — cannot map to physical pages"), so output is not polluted, but the
+stale dirs are confusing clutter and could trip tooling that globs `chunk-*`.
+Delete the superseded legacy dirs from
+`s3://dev-wwii-data-pipeline/ocr-output/{source}/` after a re-OCR is verified.
+Affected so far: `stvith_boyer_full` (chunk-000..005), and `ETO_Order_of_Battle`
+(chunk-000..019) once it is re-OCR'd. Mildly destructive (S3 rm) — verify the
+new page-range chunks + merged output first.
+*Source: stvith_boyer_full re-OCR 2026-09-26*
+
+#### Verify page-separator count vs. page count after OCR merge
+The `stvith_boyer_full` re-OCR merged with **246 page separators for 252 pages**
+(6 short). Likely blank/near-blank scan pages for which Chandra emits no
+separator (B405 was a clean 13/14), but this should be **confirmed** before the
+markdown feeds the OOB parsers / extraction — a missing separator shifts
+per-page mapping. Add a lightweight post-merge check that reports
+`separators vs. pages` and lists the pages with no separator for a quick
+blank-page eyeball.
+*Source: stvith_boyer_full re-OCR 2026-09-26*
+
 #### Batch ALL entity types, not just events
 Currently only events go to Batch API (50% savings). People, places, groups, dates, and optional entities still use live calls. Design: submit-only collects ALL requests into batch, retrieve-only re-runs with full cache. Saves ~60% of API costs.
 *Source: Ardennes debugging 2026-06-13*
