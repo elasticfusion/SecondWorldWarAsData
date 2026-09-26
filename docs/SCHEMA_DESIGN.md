@@ -5,6 +5,11 @@ Target datastore for the website and RAG layer. Grounded in the actual
 Serverless v2, PostgreSQL, pgvector with HNSW, min-capacity 0 ACU (scale to
 zero) — per the cost/architecture decisions.
 
+> **Store choice confirmed 2026-09-26:** single-store Postgres+pgvector retained
+> over Amazon S3 Vectors, because the target query model is blended (semantic +
+> facets + geo, co-ranked) which needs SQL joins + PostGIS. See
+> [SCHEMA_DESIGN_rag_store_tradeoff.md](SCHEMA_DESIGN_rag_store_tradeoff.md).
+
 ## The model in one sentence
 
 Every extracted fact links, via `EventID`/`Sub_eventID` and per-mention IDs,
