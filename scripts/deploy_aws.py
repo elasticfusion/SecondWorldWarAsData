@@ -12,6 +12,7 @@ import argparse
 import subprocess
 import time
 from pathlib import Path
+from typing import Optional
 
 TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "cloudformation"
 TEMPLATES = [
@@ -97,6 +98,18 @@ def cmd_deploy(args):
     print(f"\n{action.title()}ing stack: {stack_name}")
 
     method = cf.create_stack if action == "create" else cf.update_stack
+
+    def _image_param(key: str, value: Optional[str]) -> dict:
+        # If no image was passed on an UPDATE, keep the currently-deployed image
+        # (UsePreviousValue) rather than blanking it to "" — an empty image makes
+        # every ECS TaskDef fail with "Container.image should not be null or
+        # empty" (root cause of the 2026-07 ComputeStack rollback).
+        if value:
+            return {"ParameterKey": key, "ParameterValue": value}
+        if action == "update":
+            return {"ParameterKey": key, "UsePreviousValue": True}
+        return {"ParameterKey": key, "ParameterValue": ""}
+
     try:
         method(
             StackName=stack_name,
@@ -112,14 +125,8 @@ def cmd_deploy(args):
                     "ParameterValue": args.template_bucket,
                 },
                 {"ParameterKey": "LambdaCodeKey", "ParameterValue": "lambda/code.zip"},
-                {
-                    "ParameterKey": "OpenSerpImageUri",
-                    "ParameterValue": args.openserp_image or "",
-                },
-                {
-                    "ParameterKey": "PipelineImageUri",
-                    "ParameterValue": args.pipeline_image or "",
-                },
+                _image_param("OpenSerpImageUri", args.openserp_image),
+                _image_param("PipelineImageUri", args.pipeline_image),
                 {
                     "ParameterKey": "NotificationEmail",
                     "ParameterValue": args.notification_email or "",
