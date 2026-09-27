@@ -582,6 +582,25 @@ def run_phase(phase_script: str, extra_args: list) -> None:
         run_submit_only(phase_script, extra_args)
         return
 
+    # Defect guard (St. Vith 2026-09-27): in AWS/ECS mode, a batch-requested run
+    # MUST go through submit-only so the batch is enqueued (batch_job#) for the
+    # poller. If batch was requested (--batch) but _should_use_batch_mode said no
+    # (e.g. a config-read failure), running the in-process path would submit a
+    # batch that the poller never sees. Route to submit-only instead of silently
+    # taking the orphaning path.
+    _in_ecs = bool(
+        os.environ.get("ECS_TASK_ID") or os.environ.get("ECS_CONTAINER_METADATA_URI_V4")
+    )
+    if _in_ecs and "--batch" in extra_args:
+        logger.error(
+            "Batch requested (--batch) but batch-mode routing said no — forcing "
+            "submit-only so the batch is enqueued for the poller (avoids orphaned "
+            "batch, St. Vith 2026-09-27). Check /app/config.yaml batch.* config."
+        )
+        sync.stop()
+        run_submit_only(phase_script, extra_args)
+        return
+
     env = os.environ.copy()
     env["PIPELINE_PHASE"] = phase_name
     cmd = [sys.executable, phase_script] + extra_args
@@ -658,11 +677,19 @@ def _prepare_phase1() -> None:
 
 
 def _should_use_batch_mode(phase_script: str) -> bool:
-    """Check if batch mode is enabled for this phase in config."""
+    """Check if batch mode is enabled for this phase in config.
+
+    Returning False here routes the run through the IN-PROCESS extractor path,
+    which does NOT enqueue a batch_job# record for the poller (only the
+    submit-only path does). A silently-swallowed error therefore used to send a
+    batch run down the non-enqueueing path — orphaning the batch from the poller
+    (St. Vith 2026-09-27). So a config-read failure is now logged LOUDLY rather
+    than silently defaulting to in-process.
+    """
     import yaml
 
     try:
-        with open("/app/config.yaml") as f:
+        with open("/app/config.yaml", encoding="utf-8") as f:
             cfg = yaml.safe_load(f)
         batch_cfg = cfg.get("batch", {})
         phase_key = (
@@ -673,8 +700,16 @@ def _should_use_batch_mode(phase_script: str) -> bool:
         if phase_key and batch_cfg.get(phase_key, False):
             logger.info("Batch mode enabled for %s — using submit-only flow", phase_key)
             return True
-    except Exception:
-        pass
+        logger.info(
+            "Batch mode NOT enabled for %s (batch.%s falsy)", phase_key, phase_key
+        )
+    except Exception as e:
+        # Do NOT silently pick the in-process path — that skips batch_job# enqueue.
+        logger.error(
+            "Failed to read batch config from /app/config.yaml (%s) — falling back to "
+            "in-process; this SKIPS poller enqueue, investigate if a batch was expected",
+            e,
+        )
     return False
 
 
