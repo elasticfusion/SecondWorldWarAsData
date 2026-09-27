@@ -253,7 +253,48 @@ cluster-wide shared state once we go parallel.
 - Dedup barrier must handle a book that never finishes (timeout → proceed with
   the books that did, or hold — decide).
 
-### 6.1 Grok Batch failure + size-limit handling (verified current state)
+### 6.1 Batch resilience is failure-CAUSE driven (primary design)
+
+Batch handling/resubmission is the **primary resilience abstraction**; a Grok
+model transition is **one failure cause among many**, not a special mechanism.
+The batch layer must **classify the cause of each failure** (batch-level and
+per-request) and route it to a per-cause recovery policy — rather than bolt on
+model-specific logic. Any new failure cause (including future ones we haven't
+seen) slots into the taxonomy without new special-casing.
+
+**Current gap:** the code classifies by **response SHAPE**
+(`valid/truncated/empty/error/missing`) — *what the response looked like* — not
+by **cause / retryability**. Transient-vs-permanent is guessed ad hoc in
+`grok_client` ("likely transient" vs "consider splitting"). No unified taxonomy
+drives resubmission.
+
+**Required — a failure-cause taxonomy with per-cause policy:**
+
+| Cause (examples) | Class | Recovery policy |
+|------------------|-------|-----------------|
+| 5xx / connection / timeout | transient | retry (backoff), same batch |
+| 429 rate limit | transient (paced) | honor Retry-After; cluster-wide budget (§5.2) |
+| Model retirement / redirect / not-found | config/transitional | **do NOT retry blindly**; apply fallback model (§6.2), then resubmit affected requests |
+| Batch exceeds per-batch limit | structural | **split + resubmit** as sub-batches (§ below) |
+| Request too large (tokens) | structural | split the request / chunk; not a plain retry |
+| `content_filter` / policy refusal | permanent-ish | do not loop; flag → needs-review |
+| Malformed / poison content | permanent | cap retries → failed/needs-review queue |
+| Partial batch (some ok) | mixed | recover the failed subset only (per-request) |
+| Whole batch failed / 24h expiry | batch-level | resubmit-on-failure (bounded) → needs-review |
+
+**Design rules:**
+- **Classify first, then act** — map the batch/request error (HTTP status, xAI
+  error code, `finish_reason`, served-model mismatch) to a cause, then apply that
+  cause's policy. Model-transition (§6.2) is just the "config/transitional" row.
+- **Transient → retry; structural → transform (split/fallback) then resubmit;
+  permanent → stop + route to needs-review.** Never retry a permanent cause.
+- **Bounded** per cause (retry caps) so no cause loops forever; exhaustion →
+  failed/needs-review queue (reuse the poison-doc pattern).
+- Keep the existing **20% systemic circuit breaker**, but drive it off the cause
+  mix (e.g. a spike of "model not-found" → treat as systemic → fallback, not
+  per-request real-time retry).
+
+### 6.2 Grok Batch failure + size-limit handling (verified current state)
 
 **Handled today (post-submission):**
 - **Whole-batch failure** (`num_error >= total`) → poller marks `failed` + SNS
@@ -278,10 +319,12 @@ cluster-wide shared state once we go parallel.
   retrieval). Under concurrency, chunking also interacts with the cluster-wide
   rate/limit budget (§5.2).
 
-### 6.2 Grok model-transition resilience (verified gap)
+### 6.3 Grok model-transition resilience (verified gap)
 
 Grok itself fails around **model introductions/deprecations** (observed in
-practice). Current state:
+practice). This is the **"config/transitional" row of the §6.1 taxonomy** — a
+failure *cause* the batch layer classifies and routes, not a parallel mechanism.
+The specifics below define that row's detection + policy. Current state:
 - **Soft redirect handled (alert only):** if xAI serves a different model than
   requested (`served_model != self.model`), `grok_client` logs "MODEL DEPRECATED"
   and sends an SNS alert — but **keeps running on whatever was served** (could be
@@ -305,7 +348,7 @@ retirement/redirect; escalate the alert to **block-or-fallback** rather than
 silently proceed on an unvetted served model; verify + handle model changes in
 batch mode.
 
-### 6.3 Batch resubmission (verified current + gaps)
+### 6.4 Batch resubmission (verified current + gaps)
 
 **Exists today:**
 - **Partial (per-request), automatic:** `_retry_failed_batch` retries errored/
@@ -348,11 +391,13 @@ cheap.
 4. **Shared-entity-store hardening** — route cross-book entity writes through
    DynamoEntityStore with conditional/idempotent updates.
 5. **Global dedup barrier** — quiescence detection across per-book locks.
-6. **Batch resilience** (§6.1–6.3) — per-batch retrieval + accounting; size-aware
-   chunking + split-resubmit; model-transition handling (no-retry-on-retirement +
-   fallback chain); automatic whole-batch resubmit-on-failure with a bounded
-   retry → failed/needs-review queue. Verify Grok per-batch limits + batch-mode
-   model-change surfacing first.
+6. **Batch resilience** (§6.1–6.4) — build the **failure-CAUSE taxonomy +
+   per-cause policy engine first** (§6.1), then the specific causes plug in:
+   per-batch retrieval + accounting; size-aware chunking + split-resubmit;
+   model-transition (config/transitional cause: no-retry-on-retirement +
+   fallback chain); automatic whole-batch resubmit-on-failure (bounded → failed/
+   needs-review queue). Classify by cause, not response shape. Verify Grok
+   per-batch limits + batch-mode model-change surfacing first.
 7. **Load test** on a subset of WWIIArchives (e.g. 20 docs) before full drain.
 
 ---
