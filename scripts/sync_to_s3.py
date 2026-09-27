@@ -66,6 +66,12 @@ def build_sync_command(
         ".DS_Store",
         "--exclude",
         "*/.git/*",
+        # Zips are ignored — the pre-stage expands archives locally; upload the
+        # expanded files, never the archive itself.
+        "--exclude",
+        "*.zip",
+        "--exclude",
+        "*.rar",
     ]
     if dry_run:
         cmd.append("--dryrun")

@@ -21,6 +21,13 @@ def test_build_sync_command_dry_run_flag():
     assert "--dryrun" in cmd
 
 
+def test_build_sync_command_excludes_archives():
+    """Zips are ignored — pre-stage expands them; upload expanded files only."""
+    cmd = sync_to_s3.build_sync_command(Path("/x"), "b", "d", "us-east-1", False)
+    assert "*.zip" in cmd
+    assert "*.rar" in cmd
+
+
 def test_build_sync_command_strips_dest_slashes():
     cmd = sync_to_s3.build_sync_command(Path("/x"), "b", "/Maps/", "us-east-1", False)
     assert cmd[4] == "s3://b/contentrepository/Maps/"
