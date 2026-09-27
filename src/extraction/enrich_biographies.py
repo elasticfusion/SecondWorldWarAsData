@@ -388,13 +388,13 @@ def search_wikipedia(
 
     # Rate limit: max 1 request per 5 seconds across all threads
     if not hasattr(search_wikipedia, "_lock"):
-        search_wikipedia._lock = threading.Lock()
-        search_wikipedia._last_call = 0.0
-    with search_wikipedia._lock:
-        elapsed = time.time() - search_wikipedia._last_call
+        search_wikipedia._lock = threading.Lock()  # type: ignore[attr-defined]
+        search_wikipedia._last_call = 0.0  # type: ignore[attr-defined]
+    with search_wikipedia._lock:  # type: ignore[attr-defined]
+        elapsed = time.time() - search_wikipedia._last_call  # type: ignore[attr-defined]
         if elapsed < 5:
             time.sleep(5 - elapsed)
-        search_wikipedia._last_call = time.time()
+        search_wikipedia._last_call = time.time()  # type: ignore[attr-defined]
 
     from src.utils.search_cache import cache_result, get_cached
 

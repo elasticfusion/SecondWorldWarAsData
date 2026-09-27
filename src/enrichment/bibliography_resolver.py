@@ -576,11 +576,11 @@ def _search_nara(
     import time
 
     if not hasattr(_search_nara, "_last_call"):
-        _search_nara._last_call = 0.0
-    elapsed = time.time() - _search_nara._last_call
+        _search_nara._last_call = 0.0  # type: ignore[attr-defined]
+    elapsed = time.time() - _search_nara._last_call  # type: ignore[attr-defined]
     if elapsed < 6:  # Max ~10/min
         time.sleep(6 - elapsed)
-    _search_nara._last_call = time.time()
+    _search_nara._last_call = time.time()  # type: ignore[attr-defined]
 
     try:
         session = get_session()
