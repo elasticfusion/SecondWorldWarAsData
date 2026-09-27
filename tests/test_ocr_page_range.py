@@ -44,6 +44,11 @@ def test_non_numeric_returned_unchanged():
 def test_roundtrip_against_chandra_parser_covers_all_physical_pages():
     """Our 0-based output, parsed by Chandra, must cover exactly the intended
     physical pages as 0-based indices (physical N -> index N-1)."""
+    import pytest
+
+    # chandra (the OCR VLM lib) is only installed in the Chandra Docker image,
+    # not in CI's deps — skip cleanly there; still validates where it exists.
+    pytest.importorskip("chandra")
     from chandra.input import parse_range_str  # pylint: disable=import-error
 
     # Physical pages 1..50 -> indices 0..49, all present, none dropped/overshot.
