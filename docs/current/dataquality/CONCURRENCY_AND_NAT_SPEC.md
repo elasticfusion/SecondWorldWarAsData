@@ -87,6 +87,34 @@ Related: `docs/current/TODO.md` "True multi-job concurrency" (High/Future) and
   - Materialize to `output/` files only at safe points (post-dedup), or make the
     file layer a read-through cache of Dynamo.
 
+### 3.4 Batch retrieval must be per-batch, not per-phase (verified finding)
+
+The Grok Batch flow (submit → poller → retrieve task) must retrieve the **correct
+batch for each job** under concurrency. Current state (verified 2026-09-27):
+
+- **Batch identity is correctly bound** ✅ — jobs are keyed `batch_job#{batch_id}`
+  (globally-unique xAI id) carrying `book` + `phase`; the retrieve task is launched
+  with the specific `--retrieve-only <batch_id>` arg **and** `BOOK_NAME`. So the
+  batch *download* is correctly targeted — no wrong-batch fetch.
+- **BUT the retrieve orchestration is a per-PHASE singleton** ⚠️
+  (`batch_poller._trigger_retrieve`): "if a retrieve task for this phase is already
+  RUNNING, skip and return True." Under concurrency this **serializes** retrievals
+  and, worse, **returns success (`True`) for a batch it did NOT retrieve** — it
+  relies on the `ready` status + next poll cycle to eventually pick it up. Safe
+  under serial (no corruption/loss — just delayed), but **not parallel-safe** and
+  the success-masking return is a latent bug.
+
+**Required changes:**
+- Retrieve orchestration keyed **per-batch** (one retrieve per `batch_id`), not a
+  single-flight-per-phase guard. Multiple batches for different books retrieve
+  concurrently (subject to the compute pool cap, §5).
+- **Rigorously book-scoped result application** — verify `BOOK_NAME` threads
+  through every write in `--retrieve-only` processing so two concurrent retrieves
+  cannot cross-attribute results. Combined with §3.3 (entity writes via
+  conditional DynamoDB updates), this makes parallel retrieval correct.
+- Don't return `True` for a batch that wasn't actually retrieved — track per-batch
+  retrieve state so the poller's accounting is truthful.
+
 ---
 
 ## 4. NAT management under concurrency — MULTI-JOB AWARE (primary invariant)
