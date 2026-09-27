@@ -28,7 +28,7 @@ Related: `docs/current/TODO.md` "True multi-job concurrency" (High/Future) and
   exists for durable writes; file layer uses `flock` + threading locks.
 - **Dedup:** **cross-book / global** (`find_duplicate_people/places_v2/...` compare
   across all books; places use a global coords cache). This is the hardest part
-  to parallelize — it is inherently a global barrier.
+  to coordinate — but it runs CONTINUOUSLY/incrementally (per-book against the running resolved set), not as a batch barrier (§3.2).
 - **NAT:** single shared NAT gateway, created on demand (`nat_manager` action
   create), delayed-teardown via EventBridge schedule, 2h no-tasks guardrail
   (`openserp_manager`). The per-phase teardown races (tracked bug).
@@ -47,7 +47,7 @@ Related: `docs/current/TODO.md` "True multi-job concurrency" (High/Future) and
 - Keep **cost control** (spot, scale-to-zero when idle, single NAT).
 
 **Non-goals**
-- Parallelizing the **global dedup pass** itself (it stays a single barrier).
+- (Dedup is continuous/incremental, not a batch barrier — see §3.2; no wave synchronization to build.)
 - Real-time/interactive latency — this is batch throughput.
 
 ---
@@ -68,13 +68,28 @@ Related: `docs/current/TODO.md` "True multi-job concurrency" (High/Future) and
 - **OCR (AWS Batch)** already fans out across chunks/jobs; extend to submit
   multiple documents' OCR jobs concurrently up to the Batch vCPU/GPU quota.
 
-### 3.2 Dedup as a global barrier
-- Dedup is cross-book, so it **cannot** run per-book concurrently. Model it as a
-  **barrier**: once a wave of books finishes Phase 2, run ONE global dedup pass →
-  human review gate → Phase 3.
-- Requires a **quiescence check**: don't start dedup until in-flight Phase 2
-  books for the wave have drained (extend the existing lock-count logic to count
-  per-book locks).
+### 3.2 Dedup is CONTINUOUS / incremental — NOT a barrier
+Dedup is cross-book, but that does **not** require a batch barrier — the barrier
+was an artifact of the current all-pairs implementation. Model dedup as an
+**ongoing, incremental** process: as each book finishes Phase 2, dedup **its**
+entities against the **running resolved set**, then let it flow to Phase 3. No
+wave, no quiescence wait, **no straggler problem** — a slow/late book is simply
+deduped whenever it completes.
+- **Merge-on-reappearance is routine** — a name resolved earlier that reappears
+  in a later book just merges the new mention into the existing entity.
+- **Auto-merge flows through; only HARD cases go to human review** — confident
+  matches auto-merge continuously; ambiguous pairs go to a **rolling human-review
+  queue** (not a per-wave gate). Only an entity with an unresolved hard-case pair
+  waits; the rest flow to Phase 3.
+- **Late merge may re-touch an already-enriched entity — accepted.** This is
+  inherent to a continuously-growing corpus (new sources always arrive later), so
+  it is not a cost the incremental model introduces. Requirement: merges are
+  **idempotent + cheap**; a merge into an already-enriched entity **flags it for
+  cached/cheap re-enrichment**. No barrier is needed to avoid it.
+- **Right long-term too:** the steering goal is a continuous stream of new data;
+  dedup must be ongoing for the live system anyway. Under Step Functions Map,
+  each book's branch runs `phase2 → incremental-dedup → phase3` independently —
+  no Map-wide barrier (mechanics in §11).
 
 ### 3.3 Shared entity store (the correctness crux)
 - Concurrent books writing People/Places/Groups **will collide** on the same
@@ -265,8 +280,7 @@ cluster-wide shared state once we go parallel.
 - **Poison document** (one doc always fails) must not block the pool — cap
   retries per book, then route to a **failed/needs-review queue** and free the
   slot.
-- Dedup barrier must handle a book that never finishes (timeout → proceed with
-  the books that did, or hold — decide).
+- No dedup straggler problem: dedup is continuous (§3.2), so a book that never finishes just isn't deduped/enriched until it does; it blocks nothing else. A hung book still hits the poison-doc cap → failed/needs-review.
 
 ### 6.1 Batch resilience is failure-CAUSE driven (primary design)
 
@@ -424,8 +438,8 @@ A pre-stage must run before the concurrency dispatcher:
   `failed/needs-review`). The dispatcher dispatches only docs not already `done`
   or in-flight — idempotent across restarts; no re-dispatch of completed work.
 - **Ordering / prioritization — DECIDED (2026-09-27): FIFO.** Documents are
-  dispatched in arrival/enumeration order (no priority tiers). Dedup-barrier
-  waves (§3.2) are formed from consecutive FIFO runs of completed docs. Keeps the
+  dispatched in arrival/enumeration order (no priority tiers). Dedup is
+  incremental per-doc (§3.2), so FIFO just governs dispatch order. Keeps the
   dispatcher simple and predictable; revisit only if a high-value subset ever
   needs to jump the queue.
 ## 9. Cost awareness — soft pre-spend alert (not a hard block)
@@ -551,16 +565,19 @@ Draining 628 docs across N parallel jobs over hours/days needs visibility:
 - Reuse the existing SNS→Slack path; the failure-cause taxonomy makes alerts
   actionable ("12 docs failed: model-not-found → fallback needed").
 
-## 11. Dedup-barrier scalability
+## 11. Incremental dedup mechanics (sublinear cost)
 
-Dedup is global + roughly O(entities²) (cross-book compare + coords cache). As the
-corpus grows past thousands of docs it becomes the bottleneck and may exceed
-Lambda/task time limits.
-- **Incremental dedup** — only compare NEW entities against the existing resolved
-  set (blocking/indexing by normalized name + geo cell), not all-pairs each wave.
-- **Bounded wave size** — cap docs per dedup wave so the barrier stays within
-  task time limits; multiple waves over the drain.
-- Keep it a barrier (correctness), but make its **cost sublinear** in corpus size.
+Continuous dedup (§3.2) must stay cheap as the corpus grows past thousands of
+docs — the old all-pairs O(entities²) pass would not.
+- **Compare only NEW entities against the existing resolved set** — never
+  all-pairs. Use **blocking/indexing**: candidate lookup by normalized name +
+  geo cell (reuse the places `coords` index) so each new entity checks a small
+  candidate set, not the whole corpus.
+- **Per-book dedup step** runs within a book's pipeline (bounded work = that
+  book's entities × candidate lookups), so it fits task/Lambda time limits
+  naturally — no wave sizing needed.
+- **Merge is idempotent**; a merge into an already-enriched entity flags cheap
+  cached re-enrichment (§3.2). Net: dedup cost is **sublinear** in corpus size.
 
 ---
 
@@ -579,8 +596,7 @@ Lambda/task time limits.
    overspend = unprocessed work)**, soft spend-threshold alert (§9, default ~$10).
 5. **Shared-entity-store hardening** — cross-book entity writes via
    DynamoEntityStore conditional/idempotent updates (§3.3).
-6. **Global dedup barrier** — quiescence across per-doc locks; incremental +
-   bounded-wave dedup (§11).
+6. **Incremental/continuous dedup** (§3.2, §11) — per-book dedup against the running resolved set with blocking/indexed candidate lookup; rolling human-review queue for hard cases; idempotent merge + cached re-enrichment. No barrier/wave synchronization.
 7. **Batch resilience** (§6.1–6.4) — failure-CAUSE taxonomy + per-cause policy
    FIRST, then causes plug in (per-batch retrieval, chunk/split-resubmit,
    model-transition fallback, auto resubmit-on-failure). Verify Grok per-batch
@@ -602,7 +618,7 @@ Lambda/task time limits.
 - ~~Dispatcher: trigger Lambda vs Step Functions~~ **DECIDED (2026-09-27):
   Step Functions (Map state).** Rationale: the hard part — cluster-wide NAT
   leases (§4), Grok rate limiter + credit reservation (§5.2/§9.0), shared
-  entity-store writes (§3.3), the global dedup barrier (§3.2) — is
+  entity-store writes (§3.3), the (now continuous/incremental) dedup coordination (§3.2) — is
   **shared-state coordination in DynamoDB that must be built regardless of
   orchestrator**. Since that cost is orchestrator-agnostic, take Step Functions'
   free wins on the easy part: Map `MaxConcurrency` (limit-aware fan-out, §5),
@@ -617,7 +633,7 @@ Lambda/task time limits.
   3. **SFN orchestrates; DynamoDB coordinates** — Map branches still call the
      shared NAT-lease / rate / credit / entity-store state. Step Functions does
      NOT own coordination; it owns fan-out, retry, and flow.
-- Dedup barrier policy for stragglers (timeout vs wait).
+- ~~Dedup straggler policy~~ **RESOLVED (2026-09-27): no barrier.** Dedup is continuous/incremental (§3.2), so there is no wave for a straggler to hold up; a slow/late book is deduped when it finishes and blocks nothing.
 - ~~Whether zips/rar are auto-expanded~~ **DECIDED (2026-09-27):** archives MUST
   be unarchived before submission — the §7 pre-stage unpacks zips/rars to
   individual source files (deduped against holdings, media-routed) before the
