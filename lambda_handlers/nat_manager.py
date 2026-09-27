@@ -26,6 +26,65 @@ MANAGED_TAG = f"{ENV_NAME}-wwii-pipeline"
 INTERFACE_ENDPOINTS = ["ecr.api", "ecr.dkr", "logs", "secretsmanager"]
 
 
+def _lease_table():
+    """DynamoDB table for lease lookups (patchable in tests — no global boto3 patch)."""
+    import boto3
+
+    region = os.getenv("AWS_REGION", "us-east-1")
+    return boto3.resource("dynamodb", region_name=region).Table(
+        f"{ENV_NAME}-wwii-api-cache"
+    )
+
+
+def _ecs_client():
+    """ECS client for task lookups (patchable in tests)."""
+    import boto3
+
+    region = os.getenv("AWS_REGION", "us-east-1")
+    return boto3.client("ecs", region_name=region)
+
+
+def _nat_demand_present() -> bool:
+    """Cluster-wide NAT demand (M3, §4): live leases OR running pipeline tasks.
+
+    A phase-completion SNS message must NOT tear down NAT while ANOTHER phase/job
+    still needs egress (the Phase1->Phase2 churn: Phase 1 'complete' fired teardown
+    under a starting Phase 2). Checks live nat#lease# entries (filtering expired
+    TTLs) and running non-openserp ECS tasks. Returns True (keep NAT) on any error
+    — never tear down on uncertainty.
+    """
+    now = int(time.time())
+    try:
+        # 1) live leases
+        resp = _lease_table().scan(
+            FilterExpression="begins_with(cache_key, :p)",
+            ExpressionAttributeValues={":p": "nat#lease#"},
+            ProjectionExpression="cache_key, #t",
+            ExpressionAttributeNames={"#t": "ttl"},
+        )
+        for item in resp.get("Items", []):
+            ttl = item.get("ttl")
+            if ttl is None or int(ttl) > now:
+                logger.info("NAT demand: live lease present — keeping NAT")
+                return True
+        # 2) running pipeline tasks (exclude openserp support service)
+        running = (
+            _ecs_client()
+            .list_tasks(cluster=f"{ENV_NAME}-wwii-pipeline", desiredStatus="RUNNING")
+            .get("taskArns", [])
+        )
+        pipeline = [t for t in running if "openserp" not in t]
+        if pipeline:
+            logger.info(
+                "NAT demand: %d running pipeline task(s) — keeping NAT", len(pipeline)
+            )
+            return True
+        return False
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("NAT demand check failed (%s) — assuming demand, keeping NAT", e)
+        return True
+
+
 def handler(event, _context):
     """Manage dynamic networking lifecycle."""
     import boto3
@@ -36,6 +95,14 @@ def handler(event, _context):
             if record.get("EventSource") == "aws:sns":
                 message = record.get("Sns", {}).get("Message", "")
                 if "completed successfully" in message:
+                    # M3 (§4): a phase-completion message must NOT tear down NAT
+                    # while another phase/job still needs egress. Check cluster
+                    # demand first — fixes the Phase1->Phase2 NAT churn.
+                    if _nat_demand_present():
+                        logger.info(
+                            "Completion message, but NAT demand remains — NOT tearing down"
+                        )
+                        return {"action": "none", "reason": "nat demand present"}
                     logger.info("Pipeline completion — tearing down networking")
                     region = os.getenv("AWS_REGION", "us-east-1")
                     ec2 = boto3.client("ec2", region_name=region)
