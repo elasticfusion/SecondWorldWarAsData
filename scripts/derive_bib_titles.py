@@ -72,7 +72,9 @@ def needs_title_fix(entry: dict) -> bool:
 def derive_title(entry: dict, grok_client: GrokClient) -> str:
     """Ask Grok to derive the proper title."""
     mentions = entry.get("mentions") or []
-    verbatims = [m.get("verbatim_reference", "") for m in mentions if m.get("verbatim_reference")]
+    verbatims = [
+        m.get("verbatim_reference", "") for m in mentions if m.get("verbatim_reference")
+    ]
     if not verbatims:
         return entry.get("title", "Unknown")
 
@@ -88,13 +90,19 @@ def derive_title(entry: dict, grok_client: GrokClient) -> str:
         use_cache=True,
         cache_type="bibliography_titles",
     )
-    return response.strip().strip('"').split('\n')[0].strip()
+    return response.strip().strip('"').split("\n")[0].strip()
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Derive proper bibliography titles via Grok")
-    parser.add_argument("--max-items", type=int, default=None, help="Max items to process")
-    parser.add_argument("--dry-run", action="store_true", help="Show changes without writing")
+    parser = argparse.ArgumentParser(
+        description="Derive proper bibliography titles via Grok"
+    )
+    parser.add_argument(
+        "--max-items", type=int, default=None, help="Max items to process"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Show changes without writing"
+    )
     parser.add_argument("--bib-dir", type=Path, default=Path("output/bibliography"))
     args = parser.parse_args()
 
@@ -122,7 +130,7 @@ def main():
     logger.info(f"Found {len(candidates)} entries needing title derivation")
 
     if args.max_items:
-        candidates = candidates[:args.max_items]
+        candidates = candidates[: args.max_items]
 
     fixed = 0
     for f, d in candidates:

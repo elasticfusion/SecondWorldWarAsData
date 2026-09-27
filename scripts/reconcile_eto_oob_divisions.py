@@ -29,9 +29,7 @@ DEFAULT_ROOT = (
     / "contentrepository"
     / "European Thater of Operations - Order of Battle"
 )
-DEFAULT_OVERRIDES = (
-    PROJECT_ROOT / "config" / "eto_oob_pdf_page_division_overrides.yaml"
-)
+DEFAULT_OVERRIDES = PROJECT_ROOT / "config" / "eto_oob_pdf_page_division_overrides.yaml"
 
 ETO_CSV_GLOB = "eto_oob_*.csv"
 
@@ -96,7 +94,10 @@ def reconcile_command_and_staff(
             break
         fitz_page = doc[page_index]
         page_text = fitz_page.get_text("text")
-        if "ORGANIC COMPOSITION" in page_text.upper() and "DIVISIONS" in page_text.upper():
+        if (
+            "ORGANIC COMPOSITION" in page_text.upper()
+            and "DIVISIONS" in page_text.upper()
+        ):
             break
 
         pdf_page = str(page_index + 1)
@@ -121,7 +122,9 @@ def reconcile_command_and_staff(
         pages_to_reparse[pdf_page] = division
 
     new_rows_by_page: dict[str, list[dict]] = {}
-    for pdf_page, division in sorted(pages_to_reparse.items(), key=lambda item: int(item[0])):
+    for pdf_page, division in sorted(
+        pages_to_reparse.items(), key=lambda item: int(item[0])
+    ):
         fitz_page = doc[int(pdf_page) - 1]
         page_text = fitz_page.get_text("text")
         page_lines = build_page_lines(page_text)

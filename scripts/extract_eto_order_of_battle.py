@@ -479,12 +479,32 @@ def _infer_start_year(from_month: str, end_month: str, end_year: str) -> str:
     end_month_key = end_month[:3].lower()
     from_month_key = from_month[:3].lower()
     from_month_num = {
-        "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
-        "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+        "jan": 1,
+        "feb": 2,
+        "mar": 3,
+        "apr": 4,
+        "may": 5,
+        "jun": 6,
+        "jul": 7,
+        "aug": 8,
+        "sep": 9,
+        "oct": 10,
+        "nov": 11,
+        "dec": 12,
     }.get(from_month_key, 0)
     end_month_num = {
-        "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
-        "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+        "jan": 1,
+        "feb": 2,
+        "mar": 3,
+        "apr": 4,
+        "may": 5,
+        "jun": 6,
+        "jul": 7,
+        "aug": 8,
+        "sep": 9,
+        "oct": 10,
+        "nov": 11,
+        "dec": 12,
     }.get(end_month_key, 0)
     year = int(end_year_full)
     if from_month_num and end_month_num and from_month_num > end_month_num:
@@ -492,9 +512,7 @@ def _infer_start_year(from_month: str, end_month: str, end_year: str) -> str:
     return str(year)[-2:]
 
 
-def parse_inline_from_range(
-    from_norm: str, to_norm: str
-) -> tuple[str, str] | None:
+def parse_inline_from_range(from_norm: str, to_norm: str) -> tuple[str, str] | None:
     """Parse date range embedded in the from column (with optional year-only to)."""
     stripped = clean_text(from_norm)
     range_match = DATE_RANGE_RE.search(stripped)
@@ -640,9 +658,7 @@ def parse_attachment_date_columns(from_raw: str, to_raw: str) -> tuple[str, str]
             partial = clean_text(month_year.group(1))
             day_match = re.match(r"(\d{1,2})\s", date_from)
             date_to = (
-                clean_text(f"{day_match.group(1)} {partial}")
-                if day_match
-                else partial
+                clean_text(f"{day_match.group(1)} {partial}") if day_match else partial
             )
 
     if not date_from:
@@ -975,7 +991,10 @@ def resolve_attachment_parent(
             "",
         )
     if _is_attachment_group_hq_row(unit_name):
-        return AttachmentParentState(combat_command=state.combat_command, group=None), ""
+        return (
+            AttachmentParentState(combat_command=state.combat_command, group=None),
+            "",
+        )
 
     if state.group and _is_attachment_group_child(unit_name, state.group):
         return state, state.group
@@ -1004,7 +1023,9 @@ def apply_attachment_parents_to_rows(rows: list[dict]) -> list[dict]:
         if current_scope != scope:
             state = AttachmentParentState()
             current_scope = scope
-        state, parent_unit_name = resolve_attachment_parent(row.get("unit_name", ""), state)
+        state, parent_unit_name = resolve_attachment_parent(
+            row.get("unit_name", ""), state
+        )
         new_row = dict(row)
         new_row["parent_unit_name"] = parent_unit_name
         updated.append(new_row)
@@ -1067,8 +1088,15 @@ def normalize_organic_unit_name(text: str) -> str:
     text = re.sub(r"[\^E]ield", "Field", text, flags=re.I)
     text = re.sub(r"\^ight", "Light", text, flags=re.I)
     text = re.sub(r"\bI32d\b", "132d", text, flags=re.I)
-    text = re.sub(r"\b43d\s+Reconnaissance\s+Troop\b", "42d Reconnaissance Troop", text, flags=re.I)
-    text = re.sub(r"\b42nd\s+Division\s+Artillery\b", "42d Division Artillery", text, flags=re.I)
+    text = re.sub(
+        r"\b43d\s+Reconnaissance\s+Troop\b",
+        "42d Reconnaissance Troop",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        r"\b42nd\s+Division\s+Artillery\b", "42d Division Artillery", text, flags=re.I
+    )
     text = re.sub(r"Comp'any", "Company", text, flags=re.I)
     text = re.sub(r"\binfantry\b", "Infantry", text)
     text = re.sub(r"114£h", "114th", text, flags=re.I)
@@ -1117,13 +1145,19 @@ def normalize_organic_unit_name(text: str) -> str:
     text = re.sub(r"Ba\^tali6n", "Battalion", text, flags=re.I)
     text = re.sub(r"\{iQ5", "(105", text, flags=re.I)
     text = re.sub(r"904th\.", "904th ", text, flags=re.I)
-    text = re.sub(r"79th Division\s*•\s*Artillery", "79th Division Artillery", text, flags=re.I)
+    text = re.sub(
+        r"79th Division\s*•\s*Artillery", "79th Division Artillery", text, flags=re.I
+    )
     text = re.sub(r"310th''Field", "310th Field", text, flags=re.I)
     text = re.sub(r"Artillery\.»\s*Battalion", "Artillery Battalion", text, flags=re.I)
     text = re.sub(r"Battalion';", "Battalion", text, flags=re.I)
     text = re.sub(r"Battalion':", "Battalion", text, flags=re.I)
-    text = re.sub(r"312th;\s*Field Art'illary", "312th Field Artillery", text, flags=re.I)
-    text = re.sub(r"['\",./\s]+Special;?\s*Troops.*", "Special Troops", text, flags=re.I)
+    text = re.sub(
+        r"312th;\s*Field Art'illary", "312th Field Artillery", text, flags=re.I
+    )
+    text = re.sub(
+        r"['\",./\s]+Special;?\s*Troops.*", "Special Troops", text, flags=re.I
+    )
     text = re.sub(r"\.»", "", text)
     text = re.sub(r"Artillery\.\(", "Artillery (", text, flags=re.I)
     text = re.sub(r"\s*\.;\s*•\s*$", "", text)
@@ -1170,10 +1204,17 @@ def normalize_organic_unit_name(text: str) -> str:
     text = re.sub(r"\(105;\s*Howitzer\)", "(105 Howitzer)", text, flags=re.I)
     text = re.sub(r":\s*3Q8th", "308th", text, flags=re.I)
     text = re.sub(r"\b508th Medical\b", "383rd Medical", text, flags=re.I)
-    text = re.sub(r"\bird Division\.Artillery\b", "83d Division Artillery", text, flags=re.I)
+    text = re.sub(
+        r"\bird Division\.Artillery\b", "83d Division Artillery", text, flags=re.I
+    )
     text = re.sub(r"\b522nd\b", "322nd", text, flags=re.I)
     text = re.sub(r"\b523rd\b", "323rd", text, flags=re.I)
-    text = re.sub(r";524th\s+\.Field Artillery Battalion \(155", "908th Field Artillery Battalion (155", text, flags=re.I)
+    text = re.sub(
+        r";524th\s+\.Field Artillery Battalion \(155",
+        "908th Field Artillery Battalion (155",
+        text,
+        flags=re.I,
+    )
     text = re.sub(r"\b785d\b", "783rd", text, flags=re.I)
     text = re.sub(r"Special Trjiops", "Special Troops", text, flags=re.I)
     text = re.sub(r"Fie\s+id", "Field", text, flags=re.I)
@@ -1197,7 +1238,9 @@ def normalize_organic_unit_name(text: str) -> str:
         flags=re.I,
     )
     text = collapse_spaced_ocr_tokens(text)
-    text = re.sub(r"Field\s+Artilleryfattalion", "Field Artillery Battalion", text, flags=re.I)
+    text = re.sub(
+        r"Field\s+Artilleryfattalion", "Field Artillery Battalion", text, flags=re.I
+    )
     text = re.sub(r"Artilleryfattalion", "Artillery Battalion", text, flags=re.I)
     text = re.sub(r"Combat\s+attalion\b", "Combat Battalion", text, flags=re.I)
     text = re.sub(r"\bHeconnaissance\b", "Reconnaissance", text, flags=re.I)
@@ -1210,7 +1253,12 @@ def normalize_organic_unit_name(text: str) -> str:
     text = re.sub(r"Battalion\.\(", "Battalion (", text, flags=re.I)
     text = re.sub(r"artillery\s*battalion", "Artillery Battalion", text, flags=re.I)
     text = re.sub(r"FieldArtillery", "Field Artillery", text, flags=re.I)
-    text = re.sub(r"\bffth\s*\.?\s*Division\s+Artillery", "9th Division Artillery", text, flags=re.I)
+    text = re.sub(
+        r"\bffth\s*\.?\s*Division\s+Artillery",
+        "9th Division Artillery",
+        text,
+        flags=re.I,
+    )
     text = re.sub(
         r"(\d+(?:st|nd|rd|th|d)?)['\"]?\s*Division\s*\.?\s*Artillery",
         r"\1 Division Artillery",
@@ -1422,9 +1470,7 @@ def match_division_from_page_context(page_text: str) -> str | None:
         return "78th Infantry Division"
     if re.search(r"Keystone", sample, re.I):
         return "28th Infantry Division"
-    if re.search(r"Black\s+Cat", sample, re.I) and re.search(
-        r"AIRBORNE", sample, re.I
-    ):
+    if re.search(r"Black\s+Cat", sample, re.I) and re.search(r"AIRBORNE", sample, re.I):
         return "13th Airborne Division"
     if re.search(r"Cross of Lorraine", sample, re.I) and re.search(
         r"79th", sample, re.I
@@ -1445,7 +1491,9 @@ def walk_pdf_page_divisions(
     end_page: int = 570,
 ) -> dict[str, str]:
     """Map each PDF page to the active division using header OCR and carry-forward."""
-    page_overrides = overrides if overrides is not None else load_pdf_page_division_overrides()
+    page_overrides = (
+        overrides if overrides is not None else load_pdf_page_division_overrides()
+    )
     range_pages = expand_division_page_ranges(load_division_page_ranges())
     current_division = ""
     page_divisions: dict[str, str] = {}
@@ -1453,7 +1501,10 @@ def walk_pdf_page_divisions(
     for page_index in range(start_page - 1, min(end_page, doc.page_count)):
         fitz_page = doc[page_index]
         page_text = fitz_page.get_text("text")
-        if "ORGANIC COMPOSITION" in page_text.upper() and "DIVISIONS" in page_text.upper():
+        if (
+            "ORGANIC COMPOSITION" in page_text.upper()
+            and "DIVISIONS" in page_text.upper()
+        ):
             break
 
         pdf_page = str(page_index + 1)
@@ -1522,13 +1573,14 @@ def detect_section(line: str) -> str | None:
         return "higher_units"
     assign_key = re.sub(r"[^a-z]", "", cleaned.lower())
     if (
-        "assign" in assign_key
-        or "ssigm" in assign_key
-        or "ssigmm" in assign_key
+        "assign" in assign_key or "ssigm" in assign_key or "ssigmm" in assign_key
     ) and "attach" in assign_key:
         if "organic" not in cleaned.lower():
             return "higher_units"
-    if re.search(r"assignment.*attachment", cleaned, re.I) and "organic" not in cleaned.lower():
+    if (
+        re.search(r"assignment.*attachment", cleaned, re.I)
+        and "organic" not in cleaned.lower()
+    ):
         return "higher_units"
     if re.search(r"comm[ao]hd\s+posts?", cleaned, re.I):
         return "command_posts"
@@ -1540,7 +1592,9 @@ def detect_section(line: str) -> str | None:
         re.I,
     ):
         return "command_posts"
-    if re.fullmatch(r"[\s'\",\.•\-^*]*[0O][\s'\",\.•\-^*]+N[\s'\",\.•\-^*]*", cleaned, re.I):
+    if re.fullmatch(
+        r"[\s'\",\.•\-^*]*[0O][\s'\",\.•\-^*]+N[\s'\",\.•\-^*]*", cleaned, re.I
+    ):
         return "organic_units"
     if re.fullmatch(
         r"[\s'\",\.•\-^*]*P\s+O\s+S\s+I\s+T\s+I\s+O\s+N[\s'\",\.•\-^*]*",
@@ -1572,10 +1626,16 @@ def detect_section(line: str) -> str | None:
         return "organic_units"
     if re.search(r"detach\s+h[o0]ts?", cleaned, re.I):
         return "detachments"
-    if re.search(r"attack|attac|ttach|ttac", cleaned, re.I) and "detach" not in cleaned.lower():
+    if (
+        re.search(r"attack|attac|ttach|ttac", cleaned, re.I)
+        and "detach" not in cleaned.lower()
+    ):
         if "assignment" not in cleaned.lower():
             return "attachments"
-    if SECTION_PATTERNS["higher_units"].search(cleaned) and "organic" not in cleaned.lower():
+    if (
+        SECTION_PATTERNS["higher_units"].search(cleaned)
+        and "organic" not in cleaned.lower()
+    ):
         return "higher_units"
     for name, pattern in SECTION_PATTERNS.items():
         if name == "higher_units":
@@ -1676,10 +1736,31 @@ def parse_month_year(date_text: str) -> tuple[int, int]:
     if not m:
         return (0, 0)
     month_map = {
-        "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
-        "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
-        "lee": 12, "hay": 5, "tan": 1, "bee": 12, "liar": 3, "my": 5,
-        "ug": 8, "pr": 4, "kar": 3, "jen": 1, "dig": 12, "m": 5, "iiar": 3,
+        "jan": 1,
+        "feb": 2,
+        "mar": 3,
+        "apr": 4,
+        "may": 5,
+        "jun": 6,
+        "jul": 7,
+        "aug": 8,
+        "sep": 9,
+        "oct": 10,
+        "nov": 11,
+        "dec": 12,
+        "lee": 12,
+        "hay": 5,
+        "tan": 1,
+        "bee": 12,
+        "liar": 3,
+        "my": 5,
+        "ug": 8,
+        "pr": 4,
+        "kar": 3,
+        "jen": 1,
+        "dig": 12,
+        "m": 5,
+        "iiar": 3,
     }
     month_key = m.group(2).lower()[:3]
     month = month_map.get(month_key, 0)
@@ -1900,7 +1981,9 @@ def parse_higher_units_page(
                     "date": date,
                     "corps": corps[idx] if idx < len(corps) else "",
                     "army": armies[idx] if idx < len(armies) else "",
-                    "army_group_other": army_groups[idx] if idx < len(army_groups) else "",
+                    "army_group_other": (
+                        army_groups[idx] if idx < len(army_groups) else ""
+                    ),
                     "scope_note": SCOPE_NOTE,
                 },
                 source_page,
@@ -1985,7 +2068,9 @@ def complete_partial_command_post_date(date_str: str) -> str:
         return text
     base = match.group(1)
     month_token = base.split()[1][:3].lower()
-    year = "1945" if month_token in {"jan", "feb", "mar", "apr", "may", "jun"} else "1944"
+    year = (
+        "1945" if month_token in {"jan", "feb", "mar", "apr", "may", "jun"} else "1944"
+    )
     return f"{base} {year}"
 
 
@@ -2146,9 +2231,7 @@ def normalize_attachment_category(line: str) -> str | None:
         cat_key = attachment_category_key(cat)
         for key in low_key_variants:
             if key == cat_key or key.startswith(cat_key):
-                return ATTACHMENT_CATEGORY_DISPLAY.get(
-                    cat_key, clean_text(cat.title())
-                )
+                return ATTACHMENT_CATEGORY_DISPLAY.get(cat_key, clean_text(cat.title()))
     return None
 
 
@@ -2252,19 +2335,21 @@ def is_attachment_junk_line(line: str) -> bool:
         return True
     if is_attachment_contd_header(line):
         return True
-    if re.search(r"^(?:To\s+Higher|Indicates\s+relieved|\(-\)\s*Indicates)", line, re.I):
-        return True
-    if re.search(r"ASSIG[A-Za-z0-9'£\s]*ATTAC[A-Za-z0-9'£\s]*", line, re.I) and not re.search(
-        r"\b(?:Battalion|Bn|Company|Infantry|Regiment)\b", line, re.I
+    if re.search(
+        r"^(?:To\s+Higher|Indicates\s+relieved|\(-\)\s*Indicates)", line, re.I
     ):
+        return True
+    if re.search(
+        r"ASSIG[A-Za-z0-9'£\s]*ATTAC[A-Za-z0-9'£\s]*", line, re.I
+    ) and not re.search(r"\b(?:Battalion|Bn|Company|Infantry|Regiment)\b", line, re.I):
         return True
     if re.search(r"\bAsgd\b", line, re.I) and not re.search(
         r"\b(?:Battalion|Bn|Company|Infantry|Regiment)\b", line, re.I
     ):
         return True
-    if re.search(r"\b(?:I{1,3}|IV|VI{1,2}|XXI)\s*Seventh\b", line, re.I) and not re.search(
-        r"\b(?:Battalion|Bn|Company|Infantry|Regiment)\b", line, re.I
-    ):
+    if re.search(
+        r"\b(?:I{1,3}|IV|VI{1,2}|XXI)\s*Seventh\b", line, re.I
+    ) and not re.search(r"\b(?:Battalion|Bn|Company|Infantry|Regiment)\b", line, re.I):
         return True
     if re.match(r"^t\s*\\?$", line):
         return True
@@ -2342,9 +2427,7 @@ def pair_attachment_dates(
         return [(from_dates[i][1], to_dates[i][1]) for i in range(n)]
 
     if not to_dates and len(from_dates) == 2 * n:
-        return [
-            (from_dates[i][1], from_dates[n + i][1]) for i in range(n)
-        ]
+        return [(from_dates[i][1], from_dates[n + i][1]) for i in range(n)]
 
     if not to_dates and n < len(from_dates) <= 2 * n:
         return [
@@ -2363,9 +2446,7 @@ def pair_attachment_dates(
             and len(stacked_from) <= n
         ):
             use_n = len(stacked_from)
-            return [
-                (stacked_from[i][1], stacked_to[i][1]) for i in range(use_n)
-            ]
+            return [(stacked_from[i][1], stacked_to[i][1]) for i in range(use_n)]
 
     if len(from_dates) == n and not to_dates:
         return [(from_dates[i][1], "") for i in range(n)]
@@ -2393,9 +2474,7 @@ def extract_attachment_inline_row(
     line = normalize_date_ocr(line)
     range_match = DATE_RANGE_RE.search(line)
     if range_match:
-        unit_part = normalize_cc_names(
-            DATE_RANGE_RE.sub("", line).strip(" .-;,")
-        )
+        unit_part = normalize_cc_names(DATE_RANGE_RE.sub("", line).strip(" .-;,"))
         if unit_part and not is_attachment_junk_line(unit_part):
             return (
                 unit_part,
@@ -2421,9 +2500,7 @@ def extract_attachment_inline_row(
             )
     trailing_pair = TRAILING_DATE_PAIR_RE.search(line)
     if trailing_pair:
-        unit_part = normalize_cc_names(
-            line[: trailing_pair.start()].strip(" .-;,")
-        )
+        unit_part = normalize_cc_names(line[: trailing_pair.start()].strip(" .-;,"))
         if unit_part and not is_attachment_junk_line(unit_part):
             return (
                 unit_part,
@@ -2435,12 +2512,8 @@ def extract_attachment_inline_row(
         line,
         re.I,
     )
-    if trailing_date and is_attachment_unit_line(
-        line[: trailing_date.start()].strip()
-    ):
-        unit_part = normalize_cc_names(
-            line[: trailing_date.start()].strip(" .-;,")
-        )
+    if trailing_date and is_attachment_unit_line(line[: trailing_date.start()].strip()):
+        unit_part = normalize_cc_names(line[: trailing_date.start()].strip(" .-;,"))
         if unit_part:
             return (unit_part, clean_text(trailing_date.group(1)), "")
     return None
@@ -2781,7 +2854,9 @@ def parse_detachments_page_spatial(
                 pending_dates = {"date_from": date_from, "date_to": date_to}
             continue
 
-        combined = clean_text(" ".join(part for part in (unit_raw, attached_raw) if part))
+        combined = clean_text(
+            " ".join(part for part in (unit_raw, attached_raw) if part)
+        )
         if is_detachment_header_line(combined) or is_attachment_junk_line(combined):
             continue
         if normalize_attachment_category(combined):
@@ -2897,8 +2972,12 @@ def parse_attachments_page_attached_to_spatial(
         dates_raw = _join_attachment_column(band["dates"])  # type: ignore[arg-type]
         source_line = int(band["y"])
 
-        combined_header = clean_text(" ".join(part for part in (unit_raw, attached_raw) if part))
-        if is_detachment_header_line(combined_header) or _attached_to_section_marker(combined_header):
+        combined_header = clean_text(
+            " ".join(part for part in (unit_raw, attached_raw) if part)
+        )
+        if is_detachment_header_line(combined_header) or _attached_to_section_marker(
+            combined_header
+        ):
             continue
 
         if not unit_raw and dates_raw:
@@ -3131,8 +3210,10 @@ def should_parse_attachments_page(
         return False
     if declared == "attachments":
         return True
-    if page_section == "attachments" and declared is None and page_has_attachment_content(
-        page_lines
+    if (
+        page_section == "attachments"
+        and declared is None
+        and page_has_attachment_content(page_lines)
     ):
         return True
     if (
@@ -3334,7 +3415,10 @@ class ETOOrderOfBattleExtractor:
             page_text = fitz_page.get_text()
             self.current_pdf_page = page_index + 1
             self.current_source_page = extract_source_page(page_text)
-            if "ORGANIC COMPOSITION" in page_text.upper() and "DIVISIONS" in page_text.upper():
+            if (
+                "ORGANIC COMPOSITION" in page_text.upper()
+                and "DIVISIONS" in page_text.upper()
+            ):
                 break
             page_lines = build_page_lines(page_text)
             lines = [text for _, text in page_lines]
@@ -3382,9 +3466,10 @@ class ETOOrderOfBattleExtractor:
                         self.current_pdf_page,
                     )
                 )
-                if page_section == "command_staff" or page_declares_section(
-                    page_lines
-                ) == "command_staff":
+                if (
+                    page_section == "command_staff"
+                    or page_declares_section(page_lines) == "command_staff"
+                ):
                     continue
 
             if page_division and page_section == "higher_units":
@@ -3440,16 +3525,21 @@ class ETOOrderOfBattleExtractor:
                 page_section=page_section,
                 current_section=current_section,
             ):
-                if current_section == "organic_units" or page_section == "organic_units":
+                if (
+                    current_section == "organic_units"
+                    or page_section == "organic_units"
+                ):
                     current_section = "attachments"
                     page_section = "attachments"
-                page_rows, page_detachment_rows, current_category = parse_attachments_page(
-                    page_lines,
-                    page_division,
-                    current_category,
-                    self.current_source_page,
-                    self.current_pdf_page,
-                    fitz_page=fitz_page,
+                page_rows, page_detachment_rows, current_category = (
+                    parse_attachments_page(
+                        page_lines,
+                        page_division,
+                        current_category,
+                        self.current_source_page,
+                        self.current_pdf_page,
+                        fitz_page=fitz_page,
+                    )
                 )
                 self.attachments.extend(page_rows)
                 self.detachments.extend(page_detachment_rows)
@@ -3705,9 +3795,7 @@ class ETOOrderOfBattleExtractor:
             return stat_key, clean_text(line)
         if pending_metric and value_match:
             category = (
-                "chronology"
-                if stat_key == "chronology"
-                else "casualties_or_awards"
+                "chronology" if stat_key == "chronology" else "casualties_or_awards"
             )
             self.statistics.append(
                 self._row(
@@ -3771,7 +3859,12 @@ class ETOOrderOfBattleExtractor:
                 self._parse_organic_unit_line(line, division)
 
     def _parse_organic_unit_line(self, line: str, division: str) -> None:
-        if detect_section(line) in {"attachments", "detachments", "higher_units", "command_posts"}:
+        if detect_section(line) in {
+            "attachments",
+            "detachments",
+            "higher_units",
+            "command_posts",
+        }:
             return
         if SECTION_PATTERNS["attachments"].search(line):
             return
@@ -3844,7 +3937,9 @@ class ETOOrderOfBattleExtractor:
         if re.fullmatch(r"\d+(?:st|nd|rd|th|d)\.?", cleaned, re.I):
             self._pending_organic_ordinal = cleaned.rstrip(".")
             return
-        if self._pending_organic_ordinal and re.fullmatch(r"infantry\.?", cleaned, re.I):
+        if self._pending_organic_ordinal and re.fullmatch(
+            r"infantry\.?", cleaned, re.I
+        ):
             line = f"{self._pending_organic_ordinal} Infantry"
             self._pending_organic_ordinal = ""
         elif self._pending_organic_ordinal and re.search(
@@ -3852,26 +3947,33 @@ class ETOOrderOfBattleExtractor:
             collapse_spaced_ocr_tokens(cleaned),
             re.I,
         ):
-            line = f"{self._pending_organic_ordinal} {collapse_spaced_ocr_tokens(cleaned)}"
+            line = (
+                f"{self._pending_organic_ordinal} {collapse_spaced_ocr_tokens(cleaned)}"
+            )
             self._pending_organic_ordinal = ""
         elif self._pending_organic_ordinal and re.search(
             r"engineer\s+combat",
             collapse_spaced_ocr_tokens(cleaned),
             re.I,
         ):
-            line = f"{self._pending_organic_ordinal} {collapse_spaced_ocr_tokens(cleaned)}"
+            line = (
+                f"{self._pending_organic_ordinal} {collapse_spaced_ocr_tokens(cleaned)}"
+            )
             self._pending_organic_ordinal = ""
-        dash_unit = re.match(
-            r"^[•\*\-]+\s*(\d+(?:st|nd|rd|th)\b.+)", line, re.I
-        )
+        dash_unit = re.match(r"^[•\*\-]+\s*(\d+(?:st|nd|rd|th)\b.+)", line, re.I)
         if dash_unit:
             line = dash_unit.group(1)
         if re.match(r"^-\s*Band\.?$", line, re.I):
             line = "Band"
         if re.search(r"^[«_]\s*\d+", cleaned):
             return
-        if line.startswith("*") or line.startswith("#") or (
-            line.startswith("-") and not re.match(r"^-\s*\d+(?:st|nd|rd|th)\b", line, re.I)
+        if (
+            line.startswith("*")
+            or line.startswith("#")
+            or (
+                line.startswith("-")
+                and not re.match(r"^-\s*\d+(?:st|nd|rd|th)\b", line, re.I)
+            )
         ):
             note = clean_text(line.lstrip("*-# "))
             if re.search(r"\b\d{1,3}\s*r\.?\s*$", note, re.I) and len(note) < 20:
@@ -3938,9 +4040,10 @@ class ETOOrderOfBattleExtractor:
         unit_lines: list[int],
     ) -> tuple[str, list[str], list[str], list[str], list[int]]:
         low = line.lower().rstrip(".")
-        if low.replace(" ", "") in {
-            c.replace(" ", "") for c in ATTACHMENT_CATEGORIES
-        } or low in ATTACHMENT_CATEGORIES:
+        if (
+            low.replace(" ", "") in {c.replace(" ", "") for c in ATTACHMENT_CATEGORIES}
+            or low in ATTACHMENT_CATEGORIES
+        ):
             self._flush_attachment_buffers(
                 division, category, units, date_from, date_to, unit_lines
             )
@@ -3984,9 +4087,7 @@ class ETOOrderOfBattleExtractor:
             unit_lines.append(self.current_source_line)
         return category, units, date_from, date_to, unit_lines
 
-    def _parse_detachment_line(
-        self, line: str, division: str, attached_to: str
-    ) -> str:
+    def _parse_detachment_line(self, line: str, division: str, attached_to: str) -> str:
         if line.lower().startswith("(attached to)"):
             return ""
         if DATE_RANGE_RE.search(line):
@@ -4002,8 +4103,12 @@ class ETOOrderOfBattleExtractor:
                         "division": division,
                         "unit_name": normalize_cc_names(unit_part),
                         "attached_to_organization": attached_to_clean,
-                        "date_from": clean_text(range_match.group(1)) if range_match else "",
-                        "date_to": clean_text(range_match.group(2)) if range_match else "",
+                        "date_from": (
+                            clean_text(range_match.group(1)) if range_match else ""
+                        ),
+                        "date_to": (
+                            clean_text(range_match.group(2)) if range_match else ""
+                        ),
                         "scope_note": SCOPE_NOTE,
                     }
                 )
@@ -4049,7 +4154,9 @@ class ETOOrderOfBattleExtractor:
                         "date": dates[idx],
                         "corps": corps[idx] if idx < len(corps) else "",
                         "army": armies[idx] if idx < len(armies) else "",
-                        "army_group_other": army_groups[idx] if idx < len(army_groups) else "",
+                        "army_group_other": (
+                            army_groups[idx] if idx < len(army_groups) else ""
+                        ),
                         "scope_note": SCOPE_NOTE,
                     },
                     source_line=date_lines[idx] if idx < len(date_lines) else None,
@@ -4067,7 +4174,14 @@ class ETOOrderOfBattleExtractor:
         date_lines: list[int],
     ) -> tuple[list[str], list[str], list[str], list[str], list[int]]:
         low = line.lower()
-        if low in {"corps", "army", "army group", "army group and other", "asgd", "atchd"}:
+        if low in {
+            "corps",
+            "army",
+            "army group",
+            "army group and other",
+            "asgd",
+            "atchd",
+        }:
             return dates, corps, armies, army_groups, date_lines
         if DATE_RE.match(line) or re.match(r"^\d{1,2}\s+\w{3,9}\s+\d{2,4}$", line):
             dates.append(clean_text(line))
@@ -4077,12 +4191,36 @@ class ETOOrderOfBattleExtractor:
             corps.append("")
             return dates, corps, armies, army_groups, date_lines
         if line.upper() in {
-            "VII", "V", "VI", "III", "VIII", "XII", "XIX", "IX", "IV", "II", "I", "X",
-            "XVIII ABN", "XVIII", "XVI", "XX", "XIII", "XIV", "XV",
+            "VII",
+            "V",
+            "VI",
+            "III",
+            "VIII",
+            "XII",
+            "XIX",
+            "IX",
+            "IV",
+            "II",
+            "I",
+            "X",
+            "XVIII ABN",
+            "XVIII",
+            "XVI",
+            "XX",
+            "XIII",
+            "XIV",
+            "XV",
         }:
             corps.append(clean_text(line))
             return dates, corps, armies, army_groups, date_lines
-        if line.title() in {"First", "Third", "Ninth", "Fifteenth", "Eighth", "Twelfth"}:
+        if line.title() in {
+            "First",
+            "Third",
+            "Ninth",
+            "Fifteenth",
+            "Eighth",
+            "Twelfth",
+        }:
             armies.append(clean_text(line.title()))
             return dates, corps, armies, army_groups, date_lines
         if line.upper() in {"ETOUSA", "12TH", "21ST"} or "21ST" in line.upper():
@@ -4143,9 +4281,7 @@ class ETOOrderOfBattleExtractor:
             return dates, towns, regions, countries, town_lines
         if re.match(r"^\d{4}\s", line):
             return dates, towns, regions, countries, town_lines
-        if DATE_RE.match(line) or re.match(
-            rf"^\d{{1,2}}\s+(?:{MONTHS})", line, re.I
-        ):
+        if DATE_RE.match(line) or re.match(rf"^\d{{1,2}}\s+(?:{MONTHS})", line, re.I):
             dates.append(clean_text(line))
             return dates, towns, regions, countries, town_lines
         countries_known = {
@@ -4217,7 +4353,14 @@ class ETOOrderOfBattleExtractor:
                 self.statistics,
             ),
             "eto_oob_campaigns.csv": (
-                ["division", "source_page", "pdf_page", "source_line", "campaign", "scope_note"],
+                [
+                    "division",
+                    "source_page",
+                    "pdf_page",
+                    "source_line",
+                    "campaign",
+                    "scope_note",
+                ],
                 self.campaigns,
             ),
             "eto_oob_organic_units.csv": (

@@ -89,7 +89,6 @@ MAX_PROPAGATION_GAP = 30
 MAX_WIDE_GAP = 45
 
 
-
 def normalize_whitespace(value: str) -> str:
     return re.sub(r"\s+", " ", value.replace("\u00a0", " ")).strip()
 
@@ -394,10 +393,7 @@ def find_matching_start_in_block(ordered: list[dict], date_from: str) -> str:
     normalized_from = normalize_date_field(date_from)
     for row in ordered:
         row_from, row_to = row_dates(row)
-        if (
-            normalize_date_field(row_from) == normalized_from
-            and is_full_date(row_to)
-        ):
+        if normalize_date_field(row_from) == normalized_from and is_full_date(row_to):
             return row_to
     return ""
 
@@ -422,7 +418,8 @@ def fill_shared_start_clusters(ordered: list[dict]) -> int:
             candidate_from, candidate_to = normalize_row_dates(candidate)
             if (
                 is_propagatable_unit(candidate.get("unit_name", ""))
-                and normalize_date_field(candidate_from) == normalize_date_field(date_from)
+                and normalize_date_field(candidate_from)
+                == normalize_date_field(date_from)
                 and not candidate_to
             ):
                 cluster.append(candidate)
@@ -474,12 +471,8 @@ def propagate_dates_wide(ordered: list[dict]) -> int:
         original_from, original_to = row_dates(row)
         if original_from and original_to:
             continue
-        prev_anchor = nearest_anchor(
-            ordered, index, direction=-1, max_gap=MAX_WIDE_GAP
-        )
-        next_anchor = nearest_anchor(
-            ordered, index, direction=1, max_gap=MAX_WIDE_GAP
-        )
+        prev_anchor = nearest_anchor(ordered, index, direction=-1, max_gap=MAX_WIDE_GAP)
+        next_anchor = nearest_anchor(ordered, index, direction=1, max_gap=MAX_WIDE_GAP)
         date_from, date_to = normalize_row_dates(row)
         if not date_from and not date_to:
             if prev_anchor:
@@ -537,9 +530,13 @@ def propagate_dates_in_block(rows: list[dict]) -> int:
             matched_to = find_matching_start_in_block(ordered, date_from)
             if matched_to:
                 date_to = matched_to
-            elif prev_anchor and normalize_date_field(row_dates(prev_anchor)[0]) == normalize_date_field(date_from):
+            elif prev_anchor and normalize_date_field(
+                row_dates(prev_anchor)[0]
+            ) == normalize_date_field(date_from):
                 date_to = row_dates(prev_anchor)[1]
-            elif next_anchor and normalize_date_field(row_dates(next_anchor)[0]) == normalize_date_field(date_from):
+            elif next_anchor and normalize_date_field(
+                row_dates(next_anchor)[0]
+            ) == normalize_date_field(date_from):
                 date_to = row_dates(next_anchor)[1]
 
         date_from = normalize_date_field(date_from)
@@ -628,7 +625,8 @@ def repair_subblock(rows: list[dict]) -> int:
     orphan_from = [
         row["date_from"].strip()
         for row in rows
-        if is_full_date(row.get("date_from", "")) and not is_full_date(row.get("date_to", ""))
+        if is_full_date(row.get("date_from", ""))
+        and not is_full_date(row.get("date_to", ""))
     ]
     orphan_to = [
         row["date_to"].strip()
@@ -638,11 +636,14 @@ def repair_subblock(rows: list[dict]) -> int:
     full_to = [
         row["date_to"].strip()
         for row in rows
-        if is_full_date(row.get("date_to", "")) and not is_full_date(row.get("date_from", ""))
+        if is_full_date(row.get("date_to", ""))
+        and not is_full_date(row.get("date_from", ""))
     ]
 
     shared_from = orphan_from[0] if len(orphan_from) == 1 else ""
-    shared_to_raw = orphan_to[0] if orphan_to else (full_to[0] if len(full_to) == 1 else "")
+    shared_to_raw = (
+        orphan_to[0] if orphan_to else (full_to[0] if len(full_to) == 1 else "")
+    )
     if not shared_from and not shared_to_raw:
         for row in rows:
             for field in ("date_from", "date_to"):
@@ -701,12 +702,8 @@ def propagate_dates_page_wide(page_rows: list[dict]) -> int:
         if original_from and original_to:
             continue
         date_from, date_to = normalize_row_dates(row)
-        prev_anchor = nearest_anchor(
-            ordered, index, direction=-1, max_gap=MAX_WIDE_GAP
-        )
-        next_anchor = nearest_anchor(
-            ordered, index, direction=1, max_gap=MAX_WIDE_GAP
-        )
+        prev_anchor = nearest_anchor(ordered, index, direction=-1, max_gap=MAX_WIDE_GAP)
+        next_anchor = nearest_anchor(ordered, index, direction=1, max_gap=MAX_WIDE_GAP)
         if not date_from and not date_to:
             if prev_anchor:
                 date_from, date_to = row_dates(prev_anchor)
@@ -716,9 +713,13 @@ def propagate_dates_page_wide(page_rows: list[dict]) -> int:
             matched_to = find_matching_start_in_block(ordered, date_from)
             if matched_to:
                 date_to = matched_to
-            elif prev_anchor and normalize_date_field(row_dates(prev_anchor)[0]) == normalize_date_field(date_from):
+            elif prev_anchor and normalize_date_field(
+                row_dates(prev_anchor)[0]
+            ) == normalize_date_field(date_from):
                 date_to = row_dates(prev_anchor)[1]
-            elif next_anchor and normalize_date_field(row_dates(next_anchor)[0]) == normalize_date_field(date_from):
+            elif next_anchor and normalize_date_field(
+                row_dates(next_anchor)[0]
+            ) == normalize_date_field(date_from):
                 date_to = row_dates(next_anchor)[1]
             else:
                 date_to = date_from

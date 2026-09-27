@@ -12,16 +12,13 @@ from pathlib import Path
 import fitz
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SOURCE_URL = (
-    "https://www.eisenhowerlibrary.gov/sites/default/files/file/German_Language_Guide.pdf"
-)
+SOURCE_URL = "https://www.eisenhowerlibrary.gov/sites/default/files/file/German_Language_Guide.pdf"
 PDF_CACHE = (
     PROJECT_ROOT
     / "contentrepository/EisenhowerPresidentialLibrarySubjectGuides/German_Language_Guide.pdf"
 )
 OUTPUT_CSV = (
-    PROJECT_ROOT
-    / "contentrepository/indexes/eisenhower_german_language_guide_wwii.csv"
+    PROJECT_ROOT / "contentrepository/indexes/eisenhower_german_language_guide_wwii.csv"
 )
 MANIFEST_JSON = (
     PROJECT_ROOT
@@ -250,7 +247,8 @@ def make_row(
         "box": box,
         "folder_or_item_title": folder_or_item_title,
         "description": description,
-        "language_materials": language_materials or extract_language_note(
+        "language_materials": language_materials
+        or extract_language_note(
             f"{description} {folder_or_item_title} {raw_entry_text}"
         ),
         "student_project_note": student_project_note,
@@ -425,7 +423,9 @@ def parse_project_entries(project: dict[str, str | int]) -> list[dict[str, str]]
                 else:
                     current_collection = header_line
                     desc, next_index = join_paragraph(lines, index + 1)
-                    while next_index < len(lines) and is_subsection_line(lines[next_index]):
+                    while next_index < len(lines) and is_subsection_line(
+                        lines[next_index]
+                    ):
                         break
                     entries.append(
                         make_row(
@@ -460,9 +460,8 @@ def parse_project_entries(project: dict[str, str | int]) -> list[dict[str, str]]
             continue
 
         if not current_subsection:
-            if (
-                number == 21
-                and line.startswith("Dwight D. Eisenhower Library Collection")
+            if number == 21 and line.startswith(
+                "Dwight D. Eisenhower Library Collection"
             ):
                 desc, next_index = join_paragraph(lines, index)
                 entries.append(
@@ -631,7 +630,9 @@ def parse_project_entries(project: dict[str, str | int]) -> list[dict[str, str]]
                 entry_type=entry_type,
                 page_number=page_map.get(0, int(project["start_page"])),
                 description=intro_text,
-                student_project_note=intro_text if "student" in intro_text.lower() else "",
+                student_project_note=(
+                    intro_text if "student" in intro_text.lower() else ""
+                ),
                 raw_entry_text=intro_text,
             ),
         )

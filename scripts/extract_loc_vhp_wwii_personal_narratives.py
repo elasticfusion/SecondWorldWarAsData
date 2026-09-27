@@ -241,7 +241,7 @@ class LocJsonClient:
                 if cache_path:
                     cache_path.unlink(missing_ok=True)
                 if attempt < MAX_RETRIES - 1:
-                    wait = (2 ** attempt) + random.uniform(0.5, 1.5)
+                    wait = (2**attempt) + random.uniform(0.5, 1.5)
                     print(
                         f"Retry {attempt + 1}/{MAX_RETRIES - 1} after invalid JSON "
                         f"from {request_url} (waiting {wait:.1f}s)",
@@ -257,9 +257,16 @@ class LocJsonClient:
                     and exc.code in RETRYABLE_HTTP_CODES
                 )
                 if retryable and attempt < MAX_RETRIES - 1:
-                    code = exc.code if isinstance(exc, urllib.error.HTTPError) else "IncompleteRead"
-                    base_wait = (2 ** attempt) + random.uniform(0.5, 1.5)
-                    if isinstance(exc, urllib.error.HTTPError) and code in CLOUDFLARE_HTTP_CODES:
+                    code = (
+                        exc.code
+                        if isinstance(exc, urllib.error.HTTPError)
+                        else "IncompleteRead"
+                    )
+                    base_wait = (2**attempt) + random.uniform(0.5, 1.5)
+                    if (
+                        isinstance(exc, urllib.error.HTTPError)
+                        and code in CLOUDFLARE_HTTP_CODES
+                    ):
                         base_wait += 5.0
                     print(
                         f"Retry {attempt + 1}/{MAX_RETRIES - 1} after HTTP {code} "
@@ -272,7 +279,7 @@ class LocJsonClient:
             except urllib.error.URLError as exc:
                 last_error = exc
                 if attempt < MAX_RETRIES - 1:
-                    wait = (2 ** attempt) + random.uniform(0.5, 1.5)
+                    wait = (2**attempt) + random.uniform(0.5, 1.5)
                     print(
                         f"Retry {attempt + 1}/{MAX_RETRIES - 1} after network error "
                         f"from {request_url} (waiting {wait:.1f}s)",
@@ -415,7 +422,10 @@ def annotate_transcript_links(
         [row["artifact_id"] for row in transcript_rows_with_files]
     )
     linked_urls = unique_preserve_order(
-        [transcript_file_url_from_artifact_row(row) for row in transcript_rows_with_files]
+        [
+            transcript_file_url_from_artifact_row(row)
+            for row in transcript_rows_with_files
+        ]
     )
 
     for row in artifact_rows:
@@ -521,7 +531,16 @@ def choose_primary_media_url(urls: dict[str, str], image_urls: list[str]) -> str
 
 def flatten_urls(urls: dict[str, str], image_urls: list[str]) -> str:
     combined: list[str] = []
-    for key in ("video", "audio", "pdf", "fulltext_file", "image", "background", "video_stream", "info"):
+    for key in (
+        "video",
+        "audio",
+        "pdf",
+        "fulltext_file",
+        "image",
+        "background",
+        "video_stream",
+        "info",
+    ):
         value = urls.get(key)
         if value:
             combined.append(value)
@@ -655,7 +674,9 @@ def load_checkpoint_rows() -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     individuals: list[dict[str, str]] = []
     artifacts: list[dict[str, str]] = []
     if CHECKPOINT_INDIVIDUALS_JSONL.exists():
-        for line in CHECKPOINT_INDIVIDUALS_JSONL.read_text(encoding="utf-8").splitlines():
+        for line in CHECKPOINT_INDIVIDUALS_JSONL.read_text(
+            encoding="utf-8"
+        ).splitlines():
             if line.strip():
                 individuals.append(json.loads(line))
     if CHECKPOINT_ARTIFACTS_JSONL.exists():
@@ -710,8 +731,7 @@ def trim_checkpoint_overlap(
     remove_count = min(overlap, len(individual_rows))
     kept_individuals = individual_rows[:-remove_count]
     removed_urls = {
-        row.get("metadata_page_url", "")
-        for row in individual_rows[-remove_count:]
+        row.get("metadata_page_url", "") for row in individual_rows[-remove_count:]
     }
     kept_artifacts = [
         row
@@ -881,12 +901,16 @@ def build_individual_row(
         "collection_title": clean_text(record.get("title", "")),
         "veteran_name": veteran_name_from_record(record),
         "birth_place": clean_text(item.get("birth_place", "")),
-        "gender": clean_text(item.get("gender") or join_values(record.get("subject_gender"))),
+        "gender": clean_text(
+            item.get("gender") or join_values(record.get("subject_gender"))
+        ),
         "race": clean_text(item.get("race", "")),
         "state_of_residence_at_collection": clean_text(
             item.get("state_of_residence_at_time_of_collection_donation", "")
         ),
-        "veteran_status": clean_text(item.get("status") or join_values(record.get("subject_status"))),
+        "veteran_status": clean_text(
+            item.get("status") or join_values(record.get("subject_status"))
+        ),
         "prisoner_of_war": clean_text(item.get("pow", "")),
         "rank": clean_text(item.get("rank") or join_values(record.get("subject_rank"))),
         "branch_of_service": clean_text(
@@ -1008,9 +1032,13 @@ def build_artifact_rows(
                     "artifact_segment_title": clean_text(
                         segment_info.get("segment_title", "")
                     ),
-                    "artifact_segment_count": str(segment_info.get("segment_count", "")),
+                    "artifact_segment_count": str(
+                        segment_info.get("segment_count", "")
+                    ),
                     "artifact_resource_page_url": resource_page_url,
-                    "artifact_file_url_primary": choose_primary_media_url(urls, image_urls),
+                    "artifact_file_url_primary": choose_primary_media_url(
+                        urls, image_urls
+                    ),
                     "artifact_file_url_mp4": urls.get("video", ""),
                     "artifact_file_url_mp3": urls.get("audio", ""),
                     "artifact_file_url_pdf": urls.get("pdf", ""),
@@ -1041,11 +1069,15 @@ def build_artifact_rows(
                 "artifact_segment_title": "",
                 "artifact_segment_count": "",
                 "artifact_resource_page_url": "",
-                "artifact_file_url_primary": best_image_url(record.get("image_url") or []),
+                "artifact_file_url_primary": best_image_url(
+                    record.get("image_url") or []
+                ),
                 "artifact_file_url_mp4": "",
                 "artifact_file_url_mp3": "",
                 "artifact_file_url_pdf": "",
-                "artifact_file_url_image": best_image_url(record.get("image_url") or []),
+                "artifact_file_url_image": best_image_url(
+                    record.get("image_url") or []
+                ),
                 "artifact_file_url_stream": "",
                 "artifact_file_url_other": "",
                 "artifact_all_file_urls": best_image_url(record.get("image_url") or []),
@@ -1339,7 +1371,9 @@ def main() -> None:
             client,
             max_pages=args.max_pages,
             on_page_complete=on_search_page,
-            resume_pages_completed=state.get("search_pages_completed", 0) if resume else 0,
+            resume_pages_completed=(
+                state.get("search_pages_completed", 0) if resume else 0
+            ),
         )
         state["phase"] = "processing"
         state["total_records"] = total_records
@@ -1372,7 +1406,10 @@ def main() -> None:
         start_index = len(individual_rows) + 1
         overlap = state.get("resume_overlap", args.resume_overlap)
         if start_index > total_records:
-            print("Checkpoint already contains all records; finalizing outputs.", flush=True)
+            print(
+                "Checkpoint already contains all records; finalizing outputs.",
+                flush=True,
+            )
         else:
             if start_index > 1:
                 print(
@@ -1380,7 +1417,9 @@ def main() -> None:
                     flush=True,
                 )
 
-            for index, record in enumerate(iter_search_records(args.max_pages), start=1):
+            for index, record in enumerate(
+                iter_search_records(args.max_pages), start=1
+            ):
                 if index < start_index:
                     continue
                 if resume and index < start_index + overlap:

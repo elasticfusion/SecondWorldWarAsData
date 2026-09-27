@@ -42,7 +42,10 @@ def search_group_wikipedia(name: str) -> Optional[dict]:
 
     if result:
         cache_result("wikipedia_group", name, json.dumps(result))
-        _groups_wiki_images[name] = {"url": result.get("image", ""), "license": result.get("license", "unknown")}
+        _groups_wiki_images[name] = {
+            "url": result.get("image", ""),
+            "license": result.get("license", "unknown"),
+        }
     else:
         cache_result("wikipedia_group", name, None)
     return result
@@ -78,11 +81,26 @@ def _lookup_group(title: str) -> Optional[dict]:
                 continue
             # Must be about a military unit/organization
             lower = extract.lower()
-            if not any(kw in lower for kw in [
-                "division", "regiment", "brigade", "corps", "army",
-                "battalion", "infantry", "armored", "armoured", "airborne",
-                "panzer", "military", "forces", "command", "group",
-            ]):
+            if not any(
+                kw in lower
+                for kw in [
+                    "division",
+                    "regiment",
+                    "brigade",
+                    "corps",
+                    "army",
+                    "battalion",
+                    "infantry",
+                    "armored",
+                    "armoured",
+                    "airborne",
+                    "panzer",
+                    "military",
+                    "forces",
+                    "command",
+                    "group",
+                ]
+            ):
                 continue
 
             img_url = page_data.get("original", {}).get("source", "")
@@ -159,15 +177,22 @@ def enrich_all_groups_wikipedia(
             data["wikipedia_url"] = result["wikipedia_url"]
             data["wikipedia_extract"] = result["extract"][:500]
             if result.get("image"):
-                data.setdefault("images", []).insert(0, {
-                    "url": result["image"],
-                    "license": result["license"],
-                    "source": "wikipedia",
-                })
+                data.setdefault("images", []).insert(
+                    0,
+                    {
+                        "url": result["image"],
+                        "license": result["license"],
+                        "source": "wikipedia",
+                    },
+                )
             data["enrichment_status"] = "enriched"
-            f.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+            f.write_text(
+                json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
             enriched += 1
-            logger.info("  ✓ Wikipedia enriched group: %s → %s", name, result["wikipedia_url"])
+            logger.info(
+                "  ✓ Wikipedia enriched group: %s → %s", name, result["wikipedia_url"]
+            )
         time.sleep(1)
 
     logger.info("Groups Wikipedia enrichment: %d enriched", enriched)

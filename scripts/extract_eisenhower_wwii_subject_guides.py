@@ -16,7 +16,9 @@ from pathlib import Path
 import fitz
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SOURCE_URL = "https://www.eisenhowerlibrary.gov/research/online-documents/subject-guides"
+SOURCE_URL = (
+    "https://www.eisenhowerlibrary.gov/research/online-documents/subject-guides"
+)
 BASE_URL = "https://www.eisenhowerlibrary.gov"
 PDF_CACHE_DIR = (
     PROJECT_ROOT / "contentrepository/EisenhowerPresidentialLibrarySubjectGuides"
@@ -25,7 +27,8 @@ OUTPUT_CSV = (
     PROJECT_ROOT / "contentrepository/indexes/eisenhower_wwii_subject_guides.csv"
 )
 MANIFEST_JSON = (
-    PROJECT_ROOT / "contentrepository/indexes/eisenhower_wwii_subject_guides_manifest.json"
+    PROJECT_ROOT
+    / "contentrepository/indexes/eisenhower_wwii_subject_guides_manifest.json"
 )
 
 USER_AGENT = (
@@ -332,9 +335,7 @@ SKIP_LINE_RE = re.compile(
     r"RESOURCES IN THE|RELATING TO|http://|eisenhower\.|@copyright|Copyright:)",
     re.I,
 )
-CREATOR_NAME_RE = re.compile(
-    r"([A-Z][A-Z'\.\-]*(?:,\s+[A-Z][A-Za-z' \.\-]+)+):"
-)
+CREATOR_NAME_RE = re.compile(r"([A-Z][A-Z'\.\-]*(?:,\s+[A-Z][A-Za-z' \.\-]+)+):")
 
 
 @dataclass
@@ -426,7 +427,10 @@ def split_collection_header(line: str) -> tuple[str, str, str, str] | None:
     match = PAPERS_DATE_TAIL_RE.match(line)
     if match:
         prefix = match.group(1).strip()
-        if re.match(r"^(\d{4}|Commanding|Normandy)", prefix) and "," not in line.split(":", 1)[0]:
+        if (
+            re.match(r"^(\d{4}|Commanding|Normandy)", prefix)
+            and "," not in line.split(":", 1)[0]
+        ):
             return None
         name_matches = CREATOR_NAME_RE.findall(line)
         creator = name_matches[0] if name_matches else line.split(":", 1)[0].strip()
@@ -477,7 +481,12 @@ def split_collection_header(line: str) -> tuple[str, str, str, str] | None:
     if match:
         creator = match.group(1).strip()
         collection = line.rstrip(".")
-        return collection, creator, match.group(2) or "", "Collection of World War II Documents"
+        return (
+            collection,
+            creator,
+            match.group(2) or "",
+            "Collection of World War II Documents",
+        )
     if US_ARMY_UNIT_RE.match(line):
         return line, "US Army Unit Records", "", "Unit Records"
     if SHAEF_COLLECTION_RE.match(line):
@@ -549,9 +558,8 @@ def parse_numbered_entry(
 ) -> dict[str, str] | None:
     match = NUMBERED_EISENHOWER_RE.match(line)
     if match:
-        state.collection_name = (
-            f"Eisenhower, Dwight D.: {match.group(2)}"
-            + (f", {match.group(3)}" if match.group(3) else "")
+        state.collection_name = f"Eisenhower, Dwight D.: {match.group(2)}" + (
+            f", {match.group(3)}" if match.group(3) else ""
         )
         state.creator = "Eisenhower, Dwight D."
         state.date_range = match.group(3) or ""
@@ -605,7 +613,9 @@ def parse_numbered_entry(
         colon_idx = body.find(":")
         if colon_idx > 0:
             creator = body[:colon_idx].strip()
-            collection_name = creator + ": " + body[colon_idx + 1 :].split(".")[0].strip()
+            collection_name = (
+                creator + ": " + body[colon_idx + 1 :].split(".")[0].strip()
+            )
             dates = DATE_RANGE_RE.findall(body)
             date_range = dates[0] if dates else ""
         description = body
@@ -633,7 +643,9 @@ def parse_numbered_entry(
     )
 
 
-def join_numbered_entry(lines: list[str], line_index: int) -> tuple[str, str, int] | None:
+def join_numbered_entry(
+    lines: list[str], line_index: int
+) -> tuple[str, str, int] | None:
     line = lines[line_index]
     match = NUMBERED_ENTRY_RE.match(line)
     if match:
@@ -872,7 +884,9 @@ def parse_guide(
                             entry_type="oral_history",
                             item_id=f"OH-{state.pending_oral_history['oh_id']}",
                             folder_or_item_title=state.pending_oral_history["name"],
-                            description=state.pending_oral_history.get("description", ""),
+                            description=state.pending_oral_history.get(
+                                "description", ""
+                            ),
                             raw_entry_text=state.pending_oral_history["raw"],
                         )
                     )
@@ -883,7 +897,9 @@ def parse_guide(
                     "raw": line,
                 }
                 line_index += 1
-                if line_index < len(lines) and not ORAL_HISTORY_RE.match(lines[line_index]):
+                if line_index < len(lines) and not ORAL_HISTORY_RE.match(
+                    lines[line_index]
+                ):
                     desc = lines[line_index]
                     if not desc.startswith("*") and not PAGE_MARKER_RE.match(desc):
                         state.pending_oral_history["description"] = desc
@@ -910,9 +926,11 @@ def parse_guide(
                             guide_date=guide_date,
                             page_number=page_number,
                             state=state,
-                            entry_type="collection_overview"
-                            if state.section == "overview_of_collections"
-                            else "collection_header",
+                            entry_type=(
+                                "collection_overview"
+                                if state.section == "overview_of_collections"
+                                else "collection_header"
+                            ),
                             description=desc,
                             raw_entry_text=f"{state.collection_name} {desc}".strip(),
                         )
@@ -921,7 +939,10 @@ def parse_guide(
                 state.box = ""
                 state.subunit = ""
                 state.pending_description.clear()
-                if state.section in {"body", "introduction"} and not found_content_section:
+                if (
+                    state.section in {"body", "introduction"}
+                    and not found_content_section
+                ):
                     state.section = "detailed_folder_lists"
                 if state.section == "overview_of_collections":
                     if not used_joined_header:
@@ -1001,7 +1022,10 @@ def parse_guide(
                 line_index += 1
                 continue
 
-            if SUBUNIT_HEADER_RE.match(line) and state.section == "detailed_folder_lists":
+            if (
+                SUBUNIT_HEADER_RE.match(line)
+                and state.section == "detailed_folder_lists"
+            ):
                 state.subunit = line
                 line_index += 1
                 continue
@@ -1108,7 +1132,9 @@ def parse_guide(
                 and len(line) > 2
             ):
                 if state.section == "detailed_folder_lists" and pending_folder_parts:
-                    if split_collection_header(line) or PAPERS_DATE_TAIL_RE.search(line):
+                    if split_collection_header(line) or PAPERS_DATE_TAIL_RE.search(
+                        line
+                    ):
                         flush_pending_folder(page_number)
                     elif line[0].islower() or line.startswith(
                         ("Continent,", "of ", "and ", "to ")
@@ -1139,7 +1165,10 @@ def parse_guide(
                             and not BOX_RE.match(nxt)
                             and not BOX_INLINE_RE.match(nxt)
                             and not any(p.match(nxt) for _, p in SECTION_PATTERNS)
-                            and (nxt[0].islower() or nxt.startswith(("Continent,", "of ")))
+                            and (
+                                nxt[0].islower()
+                                or nxt.startswith(("Continent,", "of "))
+                            )
                         ):
                             pending_folder_parts.append(nxt)
                             line_index += 1

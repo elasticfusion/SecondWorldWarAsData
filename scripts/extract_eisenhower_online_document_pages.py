@@ -15,8 +15,7 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 BASE_URL = "https://www.eisenhowerlibrary.gov"
 OUTPUT_CSV = (
-    PROJECT_ROOT
-    / "contentrepository/indexes/eisenhower_online_document_pages_wwii.csv"
+    PROJECT_ROOT / "contentrepository/indexes/eisenhower_online_document_pages_wwii.csv"
 )
 MANIFEST_JSON = (
     PROJECT_ROOT
@@ -293,7 +292,9 @@ def parse_landing_page(page_meta: dict[str, str]) -> list[dict[str, str]]:
     seen_photo_urls: set[str] = set()
 
     def add_entry(**kwargs: str) -> None:
-        entries.append(make_row(page_title=page_title_text, page_meta=page_meta, **kwargs))
+        entries.append(
+            make_row(page_title=page_title_text, page_meta=page_meta, **kwargs)
+        )
 
     for element in body.find_all(["h3", "p", "figure", "section"]):
         if should_skip_element(element, body):
@@ -410,8 +411,12 @@ def parse_landing_page(page_meta: dict[str, str]) -> list[dict[str, str]]:
                 entry_type=entry_type,
                 title=title,
                 description=description,
-                digital_resource_url=href if entry_type != "transcript" else primary_href,
-                related_resource_url=href if entry_type == "transcript" else transcript_href,
+                digital_resource_url=(
+                    href if entry_type != "transcript" else primary_href
+                ),
+                related_resource_url=(
+                    href if entry_type == "transcript" else transcript_href
+                ),
                 collection_name=meta["collection_name"],
                 box=meta["box"],
                 folder_or_item_title=meta["folder_or_item_title"],
@@ -457,10 +462,7 @@ def main() -> None:
                 "entries_by_category": by_category,
             }
         )
-        print(
-            f"{page_meta['topic_slug']}: {len(entries)} entries "
-            f"({by_type})"
-        )
+        print(f"{page_meta['topic_slug']}: {len(entries)} entries " f"({by_type})")
 
     write_csv(all_entries)
     manifest = {
@@ -469,7 +471,9 @@ def main() -> None:
         "pages": manifest_pages,
         "total_entries": len(all_entries),
         "entries_by_category": {
-            category: sum(1 for entry in all_entries if entry["record_category"] == category)
+            category: sum(
+                1 for entry in all_entries if entry["record_category"] == category
+            )
             for category in sorted({entry["record_category"] for entry in all_entries})
         },
     }

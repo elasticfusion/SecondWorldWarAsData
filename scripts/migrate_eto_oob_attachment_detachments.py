@@ -36,13 +36,9 @@ DEFAULT_ROOT = (
     / "contentrepository"
     / "European Thater of Operations - Order of Battle"
 )
-DEFAULT_101ST_MOVES = (
-    PROJECT_ROOT / "config" / "eto_oob_101st_detachment_moves.yaml"
-)
+DEFAULT_101ST_MOVES = PROJECT_ROOT / "config" / "eto_oob_101st_detachment_moves.yaml"
 
-DEFAULT_OVERRIDES = (
-    PROJECT_ROOT / "config" / "eto_oob_pdf_page_division_overrides.yaml"
-)
+DEFAULT_OVERRIDES = PROJECT_ROOT / "config" / "eto_oob_pdf_page_division_overrides.yaml"
 
 
 def attachment_to_detachment_row(row: dict[str, str]) -> dict[str, str]:
@@ -71,9 +67,7 @@ def migrate_101st_detachments(
 ) -> dict[str, int]:
     spec = load_101st_move_spec(spec_path)
     division = spec.get("division", "101st Airborne Division")
-    move_keys = {
-        (str(pair[0]), str(pair[1])) for pair in (spec.get("row_keys") or [])
-    }
+    move_keys = {(str(pair[0]), str(pair[1])) for pair in (spec.get("row_keys") or [])}
     reparse_pages = {
         str(item["pdf_page"]): item for item in (spec.get("reparse_pdf_pages") or [])
     }
@@ -182,7 +176,9 @@ def migrate_101st_detachments(
             writer = csv.DictWriter(handle, fieldnames=det_fields, lineterminator="\n")
             writer.writeheader()
             writer.writerows(kept_det)
-        from extract_eto_order_of_battle import apply_csv_search_replacements  # noqa: PLC0415
+        from extract_eto_order_of_battle import (
+            apply_csv_search_replacements,
+        )  # noqa: PLC0415
 
         apply_csv_search_replacements(root)
 
@@ -206,9 +202,7 @@ def start_category_for_page(
         if category:
             return category
     header_sls = [
-        int(r["source_line"])
-        for r in rows
-        if is_detach_header(r.get("unit_name", ""))
+        int(r["source_line"]) for r in rows if is_detach_header(r.get("unit_name", ""))
     ]
     cutoff = min(header_sls) if header_sls else 10**9
     category = ""
@@ -309,7 +303,9 @@ def migrate(root: Path, *, dry_run: bool = False) -> dict[str, int]:
         pages_to_migrate.add((division, source_page, pdf_page))
 
     for key in pages_from_att:
-        if any(is_detach_header(row.get("unit_name", "")) for row in pages_from_att[key]):
+        if any(
+            is_detach_header(row.get("unit_name", "")) for row in pages_from_att[key]
+        ):
             keys_to_drop.add(key)
             pages_to_migrate.add(key)
 
@@ -376,7 +372,9 @@ def migrate(root: Path, *, dry_run: bool = False) -> dict[str, int]:
             writer = csv.DictWriter(handle, fieldnames=det_fields, lineterminator="\n")
             writer.writeheader()
             writer.writerows(kept_det)
-        from extract_eto_order_of_battle import apply_csv_search_replacements  # noqa: PLC0415
+        from extract_eto_order_of_battle import (
+            apply_csv_search_replacements,
+        )  # noqa: PLC0415
 
         apply_csv_search_replacements(root)
 
@@ -416,7 +414,10 @@ def reconcile_all_attachments(root: Path, *, dry_run: bool = False) -> dict[str,
             break
         fitz_page = doc[page_index]
         page_text = fitz_page.get_text("text")
-        if "ORGANIC COMPOSITION" in page_text.upper() and "DIVISIONS" in page_text.upper():
+        if (
+            "ORGANIC COMPOSITION" in page_text.upper()
+            and "DIVISIONS" in page_text.upper()
+        ):
             break
 
         pdf_page = str(page_index + 1)
@@ -425,8 +426,7 @@ def reconcile_all_attachments(root: Path, *, dry_run: bool = False) -> dict[str,
         page_lines = build_page_lines(page_text)
         lines = [text for _, text in page_lines]
         lines_enum = [
-            (index, line)
-            for index, line in enumerate(page_text.splitlines(), 1)
+            (index, line) for index, line in enumerate(page_text.splitlines(), 1)
         ]
 
         page_section = current_section
@@ -478,9 +478,7 @@ def reconcile_all_attachments(root: Path, *, dry_run: bool = False) -> dict[str,
     doc.close()
 
     reparse_pdf_pages = set(pages_to_reparse)
-    keys_to_drop = {
-        key for key in pages_from_att if key[2] in reparse_pdf_pages
-    }
+    keys_to_drop = {key for key in pages_from_att if key[2] in reparse_pdf_pages}
 
     wrong_section_dropped = sum(
         1 for row in all_att if str(row.get("pdf_page", "")) not in reparse_pdf_pages
@@ -526,7 +524,9 @@ def reconcile_all_attachments(root: Path, *, dry_run: bool = False) -> dict[str,
             writer = csv.DictWriter(handle, fieldnames=det_fields, lineterminator="\n")
             writer.writeheader()
             writer.writerows(kept_det)
-        from extract_eto_order_of_battle import apply_csv_search_replacements  # noqa: PLC0415
+        from extract_eto_order_of_battle import (
+            apply_csv_search_replacements,
+        )  # noqa: PLC0415
 
         apply_csv_search_replacements(root)
 

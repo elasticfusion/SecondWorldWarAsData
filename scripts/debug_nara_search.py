@@ -18,6 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from src.utils.config import load_config
@@ -79,9 +80,11 @@ def main():
     class Tee:
         def __init__(self, *streams):
             self.streams = streams
+
         def write(self, data):
             for s in self.streams:
                 s.write(data)
+
         def flush(self):
             for s in self.streams:
                 s.flush()
@@ -117,8 +120,14 @@ def main():
             ref = response.strip().strip('"')
             found = ref and ref != "UNKNOWN" and "RG" in ref
             status = "✅" if found else "❌"
-            match = "MATCH" if citation["expected_rg"] in ref else "MISMATCH" if found else ""
-            print(f"  {status} {citation['type']:20s} → {ref[:50]:50s} (expected {citation['expected_rg']}) {match}")
+            match = (
+                "MATCH"
+                if citation["expected_rg"] in ref
+                else "MISMATCH" if found else ""
+            )
+            print(
+                f"  {status} {citation['type']:20s} → {ref[:50]:50s} (expected {citation['expected_rg']}) {match}"
+            )
             print(f"     Raw response: {response.strip()[:120]}")
         except Exception as e:
             print(f"  ❌ {citation['type']:20s} → ERROR: {e}")
@@ -154,7 +163,12 @@ def main():
             if resp.status_code == 200:
                 data = resp.json()
                 hits = data.get("body", {}).get("hits", {}).get("hits", [])
-                total = data.get("body", {}).get("hits", {}).get("total", {}).get("value", 0)
+                total = (
+                    data.get("body", {})
+                    .get("hits", {})
+                    .get("total", {})
+                    .get("value", 0)
+                )
                 print(f"    Results: {len(hits)} (total available: {total})")
                 for hit in hits[:2]:
                     source = hit.get("_source", {})

@@ -109,20 +109,36 @@ def section_nara(config, grok_client):
 
     # Sample real military record citations
     entries = _sample_entities(
-        "bibliography", count=9999,
+        "bibliography",
+        count=9999,
         filter_fn=lambda d: d.get("search_status") != "resolved"
-        and any(kw in (d.get("mentions", [{}])[0].get("verbatim_reference", "") if d.get("mentions") else "")
-                for kw in ["Jnl", "AAR", "Rpt", "Ltr", "Div", "Corps", "SHAEF"]),
+        and any(
+            kw
+            in (
+                d.get("mentions", [{}])[0].get("verbatim_reference", "")
+                if d.get("mentions")
+                else ""
+            )
+            for kw in ["Jnl", "AAR", "Rpt", "Ltr", "Div", "Corps", "SHAEF"]
+        ),
     )
     entries = _dedup_by_title(entries, 9999)
 
     if not entries:
         entries = [
-            {"citation": {"title": "101st Inf Jnl, 14 Jul 44"}, "mentions": [{"verbatim_reference": "101st Inf Jnl, 14 Jul 44"}]},
-            {"citation": {"title": "104th Div AAR"}, "mentions": [{"verbatim_reference": "104th Div AAR, 23-31 Oct 44"}]},
+            {
+                "citation": {"title": "101st Inf Jnl, 14 Jul 44"},
+                "mentions": [{"verbatim_reference": "101st Inf Jnl, 14 Jul 44"}],
+            },
+            {
+                "citation": {"title": "104th Div AAR"},
+                "mentions": [{"verbatim_reference": "104th Div AAR, 23-31 Oct 44"}],
+            },
         ]
 
-    print(f"\n  Searching {len(entries)} entries (Grok RG identify → NARA catalog, until first success):\n")
+    print(
+        f"\n  Searching {len(entries)} entries (Grok RG identify → NARA catalog, until first success):\n"
+    )
     found = False
     for entry in entries:
         verbatim = ""
@@ -155,7 +171,9 @@ def section_nara(config, grok_client):
         url = _search_nara(query, nara_key, grok_client, verbatim)
         if url:
             print(f"    ✅ {url}")
-            _confirmed_urls.append({"section": "NARA", "name": search_text[:50], "url": url})
+            _confirmed_urls.append(
+                {"section": "NARA", "name": search_text[:50], "url": url}
+            )
             found = True
             break
         else:
@@ -187,13 +205,42 @@ def section_archive_org(config, grok_client):
         title = d.get("citation", {}).get("title", "")
         if len(title) < 10 or title == "Unknown":
             return False
-        verbatim = d.get("mentions", [{}])[0].get("verbatim_reference", "") if d.get("mentions") else ""
+        verbatim = (
+            d.get("mentions", [{}])[0].get("verbatim_reference", "")
+            if d.get("mentions")
+            else ""
+        )
         text = verbatim or title
-        has_book_signal = any(kw in text for kw in [
-            "(Washington", "(London", "(New York", "(Paris", "(Berlin",
-            "University Press", "ed.", "Vol.", "Houghton", "Macmillan",
-        ])
-        has_military = any(kw in text for kw in ["Jnl", "AAR", "Rpt", "Ltr,", " Div ", "Corps", "Mtg", "Telecon", "FO ", "Cable"])
+        has_book_signal = any(
+            kw in text
+            for kw in [
+                "(Washington",
+                "(London",
+                "(New York",
+                "(Paris",
+                "(Berlin",
+                "University Press",
+                "ed.",
+                "Vol.",
+                "Houghton",
+                "Macmillan",
+            ]
+        )
+        has_military = any(
+            kw in text
+            for kw in [
+                "Jnl",
+                "AAR",
+                "Rpt",
+                "Ltr,",
+                " Div ",
+                "Corps",
+                "Mtg",
+                "Telecon",
+                "FO ",
+                "Cable",
+            ]
+        )
         return has_book_signal and not has_military
 
     entries = _sample_entities("bibliography", count=200, filter_fn=_is_book)
@@ -201,17 +248,28 @@ def section_archive_org(config, grok_client):
 
     if not entries:
         entries = [
-            {"citation": {"title": "Crusade in Europe", "author": ["Dwight D. Eisenhower"]}},
+            {
+                "citation": {
+                    "title": "Crusade in Europe",
+                    "author": ["Dwight D. Eisenhower"],
+                }
+            },
             {"citation": {"title": "A Soldier's Story", "author": ["Omar N. Bradley"]}},
         ]
 
-    print(f"\n  Searching {len(entries)} books via _search_archive_org_api() (until first success):\n")
+    print(
+        f"\n  Searching {len(entries)} books via _search_archive_org_api() (until first success):\n"
+    )
     found = False
     for entry in entries:
         citation = entry.get("citation", {})
         title = citation.get("title", "Unknown")
         author = citation.get("author", [])
-        author_str = author[0] if isinstance(author, list) and author else str(author) if author else ""
+        author_str = (
+            author[0]
+            if isinstance(author, list) and author
+            else str(author) if author else ""
+        )
         time.sleep(2)
         print(f"  Title: {title[:60]}")
         print(f"  Author: {author_str}")
@@ -219,7 +277,9 @@ def section_archive_org(config, grok_client):
         if url:
             found = True
             print(f"    ✅ {url}")
-            _confirmed_urls.append({"section": "Archive.org", "name": title[:50], "url": url})
+            _confirmed_urls.append(
+                {"section": "Archive.org", "name": title[:50], "url": url}
+            )
             # Fetch metadata (same as production)
             identifier = url.rstrip("/").split("/")[-1]
             meta = fetch_archive_org_metadata(identifier)
@@ -256,6 +316,7 @@ def section_gutenberg(config, grok_client):
 
     # Health check
     import requests
+
     try:
         requests.get(f"{openserp_url}/health", timeout=3)
     except Exception:
@@ -267,13 +328,42 @@ def section_gutenberg(config, grok_client):
         title = d.get("citation", {}).get("title", "")
         if len(title) < 10 or title == "Unknown":
             return False
-        verbatim = d.get("mentions", [{}])[0].get("verbatim_reference", "") if d.get("mentions") else ""
+        verbatim = (
+            d.get("mentions", [{}])[0].get("verbatim_reference", "")
+            if d.get("mentions")
+            else ""
+        )
         text = verbatim or title
-        has_book_signal = any(kw in text for kw in [
-            "(Washington", "(London", "(New York", "(Paris", "(Berlin",
-            "University Press", "ed.", "Vol.", "Houghton", "Macmillan",
-        ])
-        has_military = any(kw in text for kw in ["Jnl", "AAR", "Rpt", "Ltr,", " Div ", "Corps", "Mtg", "Telecon", "FO ", "Cable"])
+        has_book_signal = any(
+            kw in text
+            for kw in [
+                "(Washington",
+                "(London",
+                "(New York",
+                "(Paris",
+                "(Berlin",
+                "University Press",
+                "ed.",
+                "Vol.",
+                "Houghton",
+                "Macmillan",
+            ]
+        )
+        has_military = any(
+            kw in text
+            for kw in [
+                "Jnl",
+                "AAR",
+                "Rpt",
+                "Ltr,",
+                " Div ",
+                "Corps",
+                "Mtg",
+                "Telecon",
+                "FO ",
+                "Cable",
+            ]
+        )
         return has_book_signal and not has_military
 
     entries = _sample_entities("bibliography", count=200, filter_fn=_is_book)
@@ -285,7 +375,9 @@ def section_gutenberg(config, grok_client):
             {"citation": {"title": "On War", "author": ["Carl von Clausewitz"]}},
         ]
 
-    print(f"\n  Searching up to 50 entries via search_gutenberg_openserp() (until first success):\n")
+    print(
+        f"\n  Searching up to 50 entries via search_gutenberg_openserp() (until first success):\n"
+    )
     found = False
     for entry in entries:
         citation = entry.get("citation", {})
@@ -296,14 +388,18 @@ def section_gutenberg(config, grok_client):
         url = search_gutenberg_openserp(title, author_str, openserp_url)
         if url:
             print(f"    ✅ {url}")
-            _confirmed_urls.append({"section": "Gutenberg", "name": title[:50], "url": url})
+            _confirmed_urls.append(
+                {"section": "Gutenberg", "name": title[:50], "url": url}
+            )
             found = True
             break
         else:
             print(f"    ❌ Not found")
         print()
     if not found:
-        print("  ⚠ No Gutenberg results after all attempts (expected for WWII military texts)")
+        print(
+            "  ⚠ No Gutenberg results after all attempts (expected for WWII military texts)"
+        )
         print()
 
 
@@ -341,7 +437,8 @@ def section_openserp(config, grok_client):
 
     # Portrait images — real people (no limit, search until Grok-confirmed)
     people = _sample_entities(
-        "people", count=9999,
+        "people",
+        count=9999,
         filter_fn=lambda d: len(d.get("name", "")) > 5,
     )
     if not people:
@@ -354,6 +451,7 @@ def section_openserp(config, grok_client):
             break
         name = p.get("name", "Unknown")
         from src.utils.search_query_loader import render_search_queries
+
         queries = render_search_queries("people", "portrait_images", name=name)
         print(f"    {name} (query: {queries[0] if queries else 'N/A'})")
         results = search_person_images(name, openserp_url, grok_client)
@@ -362,7 +460,13 @@ def section_openserp(config, grok_client):
             print(f"      → {r.get('title', '')[:50]} | {r.get('url', '')[:50]}")
         if results:
             found_portrait = True
-            _confirmed_urls.append({"section": "OpenSERP Portrait", "name": name, "url": results[0].get("url", "")})
+            _confirmed_urls.append(
+                {
+                    "section": "OpenSERP Portrait",
+                    "name": name,
+                    "url": results[0].get("url", ""),
+                }
+            )
         time.sleep(2)
     if not found_portrait:
         print("    ⚠ No Grok-confirmed portrait found")
@@ -381,7 +485,13 @@ def section_openserp(config, grok_client):
             print(f"      → {r.get('title', '')[:50]}")
         if results:
             found_awards = True
-            _confirmed_urls.append({"section": "OpenSERP Awards", "name": name, "url": results[0].get("url", "")})
+            _confirmed_urls.append(
+                {
+                    "section": "OpenSERP Awards",
+                    "name": name,
+                    "url": results[0].get("url", ""),
+                }
+            )
         time.sleep(2)
     if not found_awards:
         print("    ⚠ No Grok-confirmed awards found")
@@ -406,14 +516,17 @@ def section_openserp(config, grok_client):
             print(f"      → {r.get('url', '')[:70]}")
         if results:
             found_valor = True
-            _confirmed_urls.append({"section": "Valor", "name": name, "url": results[0].get("url", "")})
+            _confirmed_urls.append(
+                {"section": "Valor", "name": name, "url": results[0].get("url", "")}
+            )
         time.sleep(2)
     if not found_valor:
         print("    ⚠ No valor results found")
 
     # Equipment images (keep searching until Grok-confirmed find)
     equipment = _sample_entities(
-        "equipment", count=9999,
+        "equipment",
+        count=9999,
         filter_fn=lambda d: len(d.get("name", d.get("equipment_name", ""))) > 3,
     )
     if not equipment:
@@ -432,7 +545,13 @@ def section_openserp(config, grok_client):
             print(f"      → {r.get('title', '')[:50]}")
         if results:
             found_equip = True
-            _confirmed_urls.append({"section": "OpenSERP Equipment", "name": name, "url": results[0].get("url", "")})
+            _confirmed_urls.append(
+                {
+                    "section": "OpenSERP Equipment",
+                    "name": name,
+                    "url": results[0].get("url", ""),
+                }
+            )
         time.sleep(2)
     if not found_equip:
         print("    ⚠ No Grok-confirmed equipment images found")
@@ -459,18 +578,26 @@ def section_wikipedia(config, grok_client):
 
     # Sample real people — no limit, keep going until positive
     people = _sample_entities(
-        "people", count=9999,
+        "people",
+        count=9999,
         filter_fn=lambda d: d.get("enrichment_status") == "not_found"
         and len(d.get("name", "")) > 3,
     )
     if not people:
-        people = [{"name": "Dwight D. Eisenhower"}, {"name": "George S. Patton"}, {"name": "Walter Model"}]
+        people = [
+            {"name": "Dwight D. Eisenhower"},
+            {"name": "George S. Patton"},
+            {"name": "Walter Model"},
+        ]
 
-    print(f"\n  Searching {len(people)} people via search_wikipedia() + search_grokipedia() (until first success):\n")
+    print(
+        f"\n  Searching {len(people)} people via search_wikipedia() + search_grokipedia() (until first success):\n"
+    )
     print("  (Clearing wikipedia/grokipedia cache for test entries...)")
     for person_data in people:
         person = person_data.get("name", "Unknown")
         import hashlib
+
         for source in ("wikipedia", "grokipedia"):
             h = hashlib.sha256(f"{source}:{person}".encode()).hexdigest()[:16]
             cache_file = Path(f"cache/search_cache/search#{source}#{h}.json")
@@ -491,8 +618,11 @@ def section_wikipedia(config, grok_client):
             content = search_grokipedia(person)
             if content:
                 import re
+
                 page_links = re.findall(r'href="/page/([^"]+)"', content)
-                name_parts = [p for p in person.split() if len(p) > 2 and not p.endswith(".")]
+                name_parts = [
+                    p for p in person.split() if len(p) > 2 and not p.endswith(".")
+                ]
                 last_name = name_parts[-1].lower() if name_parts else ""
                 first_initial = ""
                 for p in person.split():
@@ -503,7 +633,9 @@ def section_wikipedia(config, grok_client):
                 for p in page_links:
                     p_lower = p.lower().replace("%2c", ",").replace("_", " ")
                     if last_name in p_lower:
-                        if first_initial and not p_lower.split()[0].startswith(first_initial):
+                        if first_initial and not p_lower.split()[0].startswith(
+                            first_initial
+                        ):
                             continue
                         matched.append(f"https://grokipedia.com/page/{p}")
                 if matched:
@@ -511,7 +643,9 @@ def section_wikipedia(config, grok_client):
                     for link in matched[:3]:
                         print(f"      → {link}")
                     found_grok = True
-                    _confirmed_urls.append({"section": "Grokipedia", "name": person, "url": matched[0]})
+                    _confirmed_urls.append(
+                        {"section": "Grokipedia", "name": person, "url": matched[0]}
+                    )
                 else:
                     print(f"    Grokipedia: ❌ no matching pages")
             else:
@@ -522,6 +656,7 @@ def section_wikipedia(config, grok_client):
             content = search_wikipedia(person)
             if content:
                 from urllib.parse import quote
+
                 first_paren = content.find("(")
                 real_name = content[:first_paren].strip() if first_paren > 0 else person
                 wiki_url = f"https://en.wikipedia.org/wiki/{quote(real_name.replace(' ', '_'))}"
@@ -532,14 +667,21 @@ def section_wikipedia(config, grok_client):
                     print(f"      📷 Portrait: {wiki_img['url']}")
                     print(f"         License: {wiki_img['license']}")
                 found_wiki = True
-                _confirmed_urls.append({"section": "Wikipedia", "name": person, "url": wiki_url})
+                _confirmed_urls.append(
+                    {"section": "Wikipedia", "name": person, "url": wiki_url}
+                )
             else:
                 # Check if it was rate-limited vs genuinely not found
                 import requests as _req
-                _resp = _req.get("https://en.wikipedia.org/w/api.php",
+
+                _resp = _req.get(
+                    "https://en.wikipedia.org/w/api.php",
                     params={"action": "query", "format": "json", "meta": "siteinfo"},
-                    headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"},
-                    timeout=5)
+                    headers={
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+                    },
+                    timeout=5,
+                )
                 if _resp.status_code == 429:
                     print(f"    Wikipedia: ⚠ RATE LIMITED (429)")
                 else:
@@ -561,9 +703,12 @@ def section_wikipedia(config, grok_client):
 
 def main():
     parser = argparse.ArgumentParser(description="Debug external search integrations")
-    parser.add_argument("--section", default="all",
-                        choices=["all", "nara", "archive", "gutenberg", "openserp", "wikipedia"],
-                        help="Which section to run")
+    parser.add_argument(
+        "--section",
+        default="all",
+        choices=["all", "nara", "archive", "gutenberg", "openserp", "wikipedia"],
+        help="Which section to run",
+    )
     args = parser.parse_args()
 
     config = load_config()

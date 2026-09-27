@@ -14,7 +14,10 @@ from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-CSV_PATH = PROJECT_ROOT / "contentrepository/indexes/eisenhower_oral_histories_wwii_participants.csv"
+CSV_PATH = (
+    PROJECT_ROOT
+    / "contentrepository/indexes/eisenhower_oral_histories_wwii_participants.csv"
+)
 OUT_DIR = PROJECT_ROOT / "contentrepository/EisenhowerPresidentialLibraryOralHistories"
 SOURCE_PAGE = "https://www.eisenhowerlibrary.gov/research/oral-histories"
 
@@ -106,7 +109,9 @@ def main() -> int:
                 manifest.append(record)
                 continue
 
-            print(f"[{index}/{len(entries)}] downloading {entry.get('name')} ({entry.get('oh_id')})")
+            print(
+                f"[{index}/{len(entries)}] downloading {entry.get('name')} ({entry.get('oh_id')})"
+            )
             try:
                 response = context.request.get(
                     url,
@@ -121,7 +126,9 @@ def main() -> int:
 
                 body = response.body()
                 if len(body) < 1024:
-                    raise RuntimeError(f"suspiciously small payload ({len(body)} bytes)")
+                    raise RuntimeError(
+                        f"suspiciously small payload ({len(body)} bytes)"
+                    )
 
                 dest.write_bytes(body)
                 record["status"] = "downloaded"

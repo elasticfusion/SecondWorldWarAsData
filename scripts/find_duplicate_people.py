@@ -296,7 +296,9 @@ def _check_shared_external_urls(p1: Dict, p2: Dict) -> tuple[list[str], float]:
     urls2 = set()
     for p, urls in [(p1, urls1), (p2, urls2)]:
         # Wikipedia URL
-        wiki = p.get("wikipedia_url") or p.get("source_metadata", {}).get("wikipedia_url", "")
+        wiki = p.get("wikipedia_url") or p.get("source_metadata", {}).get(
+            "wikipedia_url", ""
+        )
         if wiki:
             urls.add(wiki)
         # Grokipedia URLs

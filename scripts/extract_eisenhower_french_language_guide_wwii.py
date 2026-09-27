@@ -12,16 +12,13 @@ from pathlib import Path
 import fitz
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SOURCE_URL = (
-    "https://www.eisenhowerlibrary.gov/sites/default/files/file/French_Language_Guide.pdf"
-)
+SOURCE_URL = "https://www.eisenhowerlibrary.gov/sites/default/files/file/French_Language_Guide.pdf"
 PDF_CACHE = (
     PROJECT_ROOT
     / "contentrepository/EisenhowerPresidentialLibrarySubjectGuides/French_Language_Guide.pdf"
 )
 OUTPUT_CSV = (
-    PROJECT_ROOT
-    / "contentrepository/indexes/eisenhower_french_language_guide_wwii.csv"
+    PROJECT_ROOT / "contentrepository/indexes/eisenhower_french_language_guide_wwii.csv"
 )
 MANIFEST_JSON = (
     PROJECT_ROOT
@@ -197,10 +194,9 @@ def parse_projects(pages: list[tuple[int, str]]) -> list[dict[str, str | int]]:
         if current is None:
             continue
 
-        title_continuation = (
-            is_likely_title_line(line)
-            and not SUGGESTED_READING_RE.match(line)
-        )
+        title_continuation = is_likely_title_line(
+            line
+        ) and not SUGGESTED_READING_RE.match(line)
         if not body_lines and title_continuation:
             title_parts.append(line)
         elif (
@@ -350,7 +346,8 @@ def make_row(
         "box": box,
         "folder_or_item_title": folder_or_item_title,
         "description": description,
-        "language_materials": language_materials or extract_language_note(
+        "language_materials": language_materials
+        or extract_language_note(
             f"{description} {folder_or_item_title} {raw_entry_text}"
         ),
         "student_project_note": student_project_note,
@@ -453,16 +450,18 @@ def parse_project_entries(project: dict[str, str | int]) -> list[dict[str, str]]
                         entry_type="project_intro",
                         page_number=page_map[0],
                         description=intro_text,
-                        student_project_note=intro_text
-                        if "student" in intro_text.lower()
-                        else "",
+                        student_project_note=(
+                            intro_text if "student" in intro_text.lower() else ""
+                        ),
                         raw_entry_text=intro_text,
                     )
                 )
                 intro_parts.clear()
 
             if remainder:
-                collection_name, series, box, folder = extract_collection_parts(remainder)
+                collection_name, series, box, folder = extract_collection_parts(
+                    remainder
+                )
                 current_collection = collection_name or remainder
                 current_series = series
                 desc, next_index = join_paragraph(lines, index + 1)
@@ -615,7 +614,9 @@ def parse_project_entries(project: dict[str, str | int]) -> list[dict[str, str]]
             index = next_index
             continue
 
-        if current_collection and re.match(r"^See (also |Chapter |Project )", line, re.I):
+        if current_collection and re.match(
+            r"^See (also |Chapter |Project )", line, re.I
+        ):
             entries.append(
                 make_row(
                     project=project,
@@ -680,7 +681,9 @@ def parse_project_entries(project: dict[str, str | int]) -> list[dict[str, str]]
                 entry_type="project_intro",
                 page_number=page_map.get(0, int(project["start_page"])),
                 description=intro_text,
-                student_project_note=intro_text if "student" in intro_text.lower() else "",
+                student_project_note=(
+                    intro_text if "student" in intro_text.lower() else ""
+                ),
                 raw_entry_text=intro_text,
             ),
         )

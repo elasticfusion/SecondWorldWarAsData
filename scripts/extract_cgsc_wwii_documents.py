@@ -66,12 +66,12 @@ def fetch_json(url: str, retries: int = 4) -> dict:
                 return json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             if exc.code in {429, 500, 502, 503, 504} and attempt < retries - 1:
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
                 continue
             raise
         except urllib.error.URLError:
             if attempt < retries - 1:
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
                 continue
             raise
     raise RuntimeError(f"Failed to fetch {url}")
@@ -104,8 +104,12 @@ def flatten_detail(item_id: str, detail: dict) -> dict[str, str]:
         "content_type": detail.get("contentType", ""),
         "filename": filename,
         "download_uri": file_url,
-        "thumbnail_uri": f"{BASE}{detail['thumbnailUri']}" if detail.get("thumbnailUri") else "",
-        "iiif_info_uri": f"{BASE}{detail['iiifInfoUri']}" if detail.get("iiifInfoUri") else "",
+        "thumbnail_uri": (
+            f"{BASE}{detail['thumbnailUri']}" if detail.get("thumbnailUri") else ""
+        ),
+        "iiif_info_uri": (
+            f"{BASE}{detail['iiifInfoUri']}" if detail.get("iiifInfoUri") else ""
+        ),
     }
 
     fields: dict[str, str] = {}

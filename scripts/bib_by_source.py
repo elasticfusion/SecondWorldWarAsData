@@ -8,7 +8,14 @@ from collections import defaultdict
 from urllib.parse import urlparse
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "output", "bibliography")
-REPORT_PATH = os.path.join(os.path.dirname(__file__), "..", "docs", "current", "dataquality", "bibliography_by_source.md")
+REPORT_PATH = os.path.join(
+    os.path.dirname(__file__),
+    "..",
+    "docs",
+    "current",
+    "dataquality",
+    "bibliography_by_source.md",
+)
 
 groups = defaultdict(list)
 
@@ -30,14 +37,18 @@ for f in sorted(glob.glob(os.path.join(OUTPUT_DIR, "*.json"))):
     status = d.get("search_status", "unknown")
 
     if not urls:
-        groups["(no URL)"].append({"title": title, "id": bid, "file": fname, "url": None, "status": status})
+        groups["(no URL)"].append(
+            {"title": title, "id": bid, "file": fname, "url": None, "status": status}
+        )
     else:
         for url in urls:
             try:
                 domain = urlparse(url).netloc or "(invalid URL)"
             except Exception:
                 domain = "(invalid URL)"
-            groups[domain].append({"title": title, "id": bid, "file": fname, "url": url, "status": status})
+            groups[domain].append(
+                {"title": title, "id": bid, "file": fname, "url": url, "status": status}
+            )
 
 # Write markdown
 with open(REPORT_PATH, "w") as out:

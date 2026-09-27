@@ -259,7 +259,9 @@ def make_row(
     }
 
 
-def parse_standard_book(meta: dict[str, str | int], line_page: list[tuple[int, str]]) -> list[dict[str, str]]:
+def parse_standard_book(
+    meta: dict[str, str | int], line_page: list[tuple[int, str]]
+) -> list[dict[str, str]]:
     entries: list[dict[str, str]] = []
     state = "collection_intro"
     current_unit = ""

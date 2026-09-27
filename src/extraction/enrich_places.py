@@ -339,11 +339,14 @@ def _enrich_place_data(data, name, grok_client):
                 data["wikipedia_url"] = wiki_data["wikipedia_url"]
                 changed = True
             if wiki_data.get("image") and not data.get("images"):
-                data.setdefault("images", []).insert(0, {
-                    "url": wiki_data["image"],
-                    "license": wiki_data.get("license", "unknown"),
-                    "source": "wikipedia",
-                })
+                data.setdefault("images", []).insert(
+                    0,
+                    {
+                        "url": wiki_data["image"],
+                        "license": wiki_data.get("license", "unknown"),
+                        "source": "wikipedia",
+                    },
+                )
                 changed = True
     if not data.get("grokipedia_url"):
         grok_data = _search_grokipedia_place(name)

@@ -38,7 +38,9 @@ def search_grokipedia(
     for attempt in range(max_retries):
         try:
             # Try full name first, then last name fallback
-            name_parts = [p for p in person_name.split() if len(p) > 2 and not p.endswith(".")]
+            name_parts = [
+                p for p in person_name.split() if len(p) > 2 and not p.endswith(".")
+            ]
             last_name = name_parts[-1] if name_parts else person_name
             first_initial = ""
             for p in person_name.split():
@@ -64,11 +66,12 @@ def search_grokipedia(
                 if response.status_code != 200:
                     continue
 
-                if '/page/' not in response.text:
+                if "/page/" not in response.text:
                     continue
 
                 # Find matching page links with snippets
                 import re as _re
+
                 # Extract link + snippet pairs
                 results = _re.findall(
                     r'data-slug="([^"]+)"[^>]*data-search-result-link="true"[^>]*data-scroll-anchor-text="([^"]*)"',
@@ -212,7 +215,7 @@ _grokipedia_slugs: dict = {}
 
 def get_wikipedia_image(person_name: str) -> Optional[dict]:
     """Get cached Wikipedia image info for a person (found during search_wikipedia).
-    
+
     Returns dict with 'url' and 'license' keys, or None.
     """
     return _wikipedia_images.get(person_name)
@@ -250,12 +253,35 @@ def _handle_wikipedia_error(
     return False
 
 
-_MILITARY_KEYWORDS = frozenset([
-    "military", "army", "navy", "general", "colonel", "major", "captain",
-    "lieutenant", "brigadier", "world war", "wwii", "division", "regiment",
-    "battalion", "infantry", "armor", "artillery", "combat", "campaign",
-    "luftwaffe", "wehrmacht", "panzer", "allied", "soldier", "officer",
-])
+_MILITARY_KEYWORDS = frozenset(
+    [
+        "military",
+        "army",
+        "navy",
+        "general",
+        "colonel",
+        "major",
+        "captain",
+        "lieutenant",
+        "brigadier",
+        "world war",
+        "wwii",
+        "division",
+        "regiment",
+        "battalion",
+        "infantry",
+        "armor",
+        "artillery",
+        "combat",
+        "campaign",
+        "luftwaffe",
+        "wehrmacht",
+        "panzer",
+        "allied",
+        "soldier",
+        "officer",
+    ]
+)
 
 
 def _is_military_relevant(text: str) -> bool:
@@ -270,7 +296,9 @@ def _search_wikipedia_fallback(
     """Fall back to Wikipedia search API when direct title lookup misses."""
     try:
         # Try exact name first, then last name only
-        name_parts = [p for p in person_name.split() if len(p) > 2 and not p.endswith(".")]
+        name_parts = [
+            p for p in person_name.split() if len(p) > 2 and not p.endswith(".")
+        ]
         last_name = name_parts[-1] if name_parts else person_name
         search_queries = [
             f'"{person_name}" "World War"',
@@ -279,6 +307,7 @@ def _search_wikipedia_fallback(
 
         for srsearch in search_queries:
             import time as _time
+
             _time.sleep(3)  # Rate limit between Wikipedia API calls
             resp = requests.get(
                 "https://en.wikipedia.org/w/api.php",
@@ -337,7 +366,9 @@ def _search_wikipedia_fallback(
                         img_url = _extract_page_image(resp2.json())
                         if img_url:
                             filename = _extract_page_image_filename(resp2.json())
-                            license_info = _fetch_image_license(filename) if filename else None
+                            license_info = (
+                                _fetch_image_license(filename) if filename else None
+                            )
                             _wikipedia_images[person_name] = {
                                 "url": img_url,
                                 "license": license_info or "unknown",
@@ -379,7 +410,9 @@ def search_wikipedia(
     if grok_slug:
         # Convert "albin_f_irzyk" → "Albin F Irzyk" for targeted lookup
         wiki_title = grok_slug.replace("_", " ").title()
-        logger.debug("Wikipedia: using Grokipedia hint '%s' for %s", wiki_title, person_name)
+        logger.debug(
+            "Wikipedia: using Grokipedia hint '%s' for %s", wiki_title, person_name
+        )
     else:
         wiki_title = person_name
 
@@ -416,7 +449,8 @@ def search_wikipedia(
                 retry_after = int(response.headers.get("retry-after", "15"))
                 logger.debug(
                     "Wikipedia rate limited for %s, waiting %ds",
-                    person_name, retry_after,
+                    person_name,
+                    retry_after,
                 )
                 time.sleep(retry_after)
                 continue  # Retry

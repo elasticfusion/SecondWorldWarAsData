@@ -220,7 +220,9 @@ def search_equipment_images(
     max_results: int = 3,
 ) -> List[Dict[str, str]]:
     """Search for photos of military equipment."""
-    results = _search_openserp(f'{equipment_name} WWII military equipment photo', openserp_url)
+    results = _search_openserp(
+        f"{equipment_name} WWII military equipment photo", openserp_url
+    )
     images = []
     for r in results:
         url = r.get("url", "")
@@ -321,7 +323,7 @@ def search_military_awards(
 
         return _json.loads(cached)
 
-    results = _search_openserp(f'{person_name} WWII', openserp_url)
+    results = _search_openserp(f"{person_name} WWII", openserp_url)
     awards = []
     seen = set()
     for r in results:
@@ -367,8 +369,8 @@ def search_valor(
 
     # Search via OpenSERP — use site name as keyword (site: operator causes timeouts)
     queries = [
-        f'{person_name} valor militarytimes',
-        f'{person_name} valor defense.gov',
+        f"{person_name} valor militarytimes",
+        f"{person_name} valor defense.gov",
     ]
 
     results = []
@@ -380,9 +382,17 @@ def search_valor(
             title = h.get("title", "")
             if not url or url in seen:
                 continue
-            if "valor.militarytimes.com" in url or "valor.defense.gov" in url or "homeofheroes.com" in url:
+            if (
+                "valor.militarytimes.com" in url
+                or "valor.defense.gov" in url
+                or "homeofheroes.com" in url
+            ):
                 # Skip homepage-only results
-                if url.rstrip("/") in ("https://valor.militarytimes.com", "https://valor.defense.gov", "https://homeofheroes.com"):
+                if url.rstrip("/") in (
+                    "https://valor.militarytimes.com",
+                    "https://valor.defense.gov",
+                    "https://homeofheroes.com",
+                ):
                     continue
                 results.append({"url": url, "title": title, "source": "valor"})
                 seen.add(url)
@@ -470,9 +480,7 @@ def _verify_and_apply(
         title = r.get("title", "")
         if not url or not _name_initial_matches(name, title):
             continue
-        if _verify_result(
-            title, f"Military service of {name} in WWII", grok_client
-        ):
+        if _verify_result(title, f"Military service of {name} in WWII", grok_client):
             data.setdefault("military_awards", []).append(
                 {"url": url, "title": title, "source": "openserp"}
             )
@@ -532,13 +540,13 @@ def enrich_people_with_openserp(
             person_candidates["wiki_image"] = wiki_image
         elif not data.get("images"):
             person_candidates["image_results"] = _search_openserp(
-                f'{name} WWII portrait photo', openserp_url
+                f"{name} WWII portrait photo", openserp_url
             )
 
         # Search for web results (awards, bio, academic)
         if not data.get("military_awards"):
             person_candidates["web_results"] = _search_openserp(
-                f'{name} WWII', openserp_url
+                f"{name} WWII", openserp_url
             )
 
         candidates.append(person_candidates)

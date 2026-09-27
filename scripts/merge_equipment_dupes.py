@@ -22,7 +22,12 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
 
 EQUIPMENT_DIR = Path("output/equipment")
-SKIP_FILES = {"index.json", "duplicate_report.json", "not_duplicates.json", ".processed_events.json"}
+SKIP_FILES = {
+    "index.json",
+    "duplicate_report.json",
+    "not_duplicates.json",
+    ".processed_events.json",
+}
 
 
 def _normalize(name: str) -> str:
@@ -69,7 +74,13 @@ def merge_group(files: list[tuple[Path, dict]]) -> dict:
                 seen_mentions.add(key)
 
         # Merge any fields the primary is missing
-        for field in ["technical_identifier", "specifications", "variants", "alternate_names", "external_data"]:
+        for field in [
+            "technical_identifier",
+            "specifications",
+            "variants",
+            "alternate_names",
+            "external_data",
+        ]:
             if not primary.get(field) and dup.get(field):
                 primary[field] = dup[field]
 
@@ -78,6 +89,7 @@ def merge_group(files: list[tuple[Path, dict]]) -> dict:
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -128,7 +140,9 @@ def main():
         merged += 1
 
     logger.info(f"{'Would merge' if args.dry_run else 'Merged'}: {merged} groups")
-    logger.info(f"{'Would remove' if args.dry_run else 'Removed'}: {removed} duplicate files")
+    logger.info(
+        f"{'Would remove' if args.dry_run else 'Removed'}: {removed} duplicate files"
+    )
     logger.info(f"Final file count: {total - removed}")
 
 

@@ -38,14 +38,17 @@ def merge_group(files: list[tuple[Path, dict]]) -> tuple[dict, list[str]]:
     """Merge a group of duplicate date records. Returns (merged_record, deprecated_ids)."""
     # Sort by file mod time — keep earliest as canonical
     files.sort(key=lambda x: os.path.getmtime(x[0]))
-    
+
     canonical_path, canonical = files[0]
     deprecated_ids = []
     seen_mentions = set()
 
     # Track existing mentions by content key
     for m in canonical.get("event_mentions", []):
-        key = (m.get("Sub_eventID", m.get("Sub-eventID", "")), m.get("original_text", ""))
+        key = (
+            m.get("Sub_eventID", m.get("Sub-eventID", "")),
+            m.get("original_text", ""),
+        )
         seen_mentions.add(key)
 
     # Merge mentions from duplicates
@@ -54,7 +57,10 @@ def merge_group(files: list[tuple[Path, dict]]) -> tuple[dict, list[str]]:
         if dup_id and dup_id != canonical.get("DateID"):
             deprecated_ids.append(dup_id)
         for m in dup.get("event_mentions", []):
-            key = (m.get("Sub_eventID", m.get("Sub-eventID", "")), m.get("original_text", ""))
+            key = (
+                m.get("Sub_eventID", m.get("Sub-eventID", "")),
+                m.get("original_text", ""),
+            )
             if key not in seen_mentions:
                 canonical.setdefault("event_mentions", []).append(m)
                 seen_mentions.add(key)

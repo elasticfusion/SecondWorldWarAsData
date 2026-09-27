@@ -23,9 +23,7 @@ WAYBACK_LANDING_URL = (
 HTML_CACHE = (
     PROJECT_ROOT / "contentrepository/DonovanResearchLibrary/Bibliographies.html"
 )
-PDF_CACHE_DIR = (
-    PROJECT_ROOT / "contentrepository/DonovanResearchLibrary/Bibliographies"
-)
+PDF_CACHE_DIR = PROJECT_ROOT / "contentrepository/DonovanResearchLibrary/Bibliographies"
 OUTPUT_CSV = (
     PROJECT_ROOT
     / "contentrepository/indexes/donovan_research_library_wwii_battle_bibliographies.csv"
@@ -276,12 +274,8 @@ CALL_NUMBER_RE = re.compile(
     r"^[A-Z]{1,3}(?:\.\d+)?(?:\s+[A-Z]?\d{1,4}[\w./#()\-]*)+"
     r"(?:\s+\d{4}[a-z]?(?:\s+[A-Z]{1,3})?)?\s*$"
 )
-CALL_NUMBER_LOOSE_RE = re.compile(
-    r"^[A-Z]{1,3}[\d.].{0,70}$"
-)
-AUTHOR_START_RE = re.compile(
-    r"^[A-Z][A-Za-z'\-]+,\s+[A-Z]"
-)
+CALL_NUMBER_LOOSE_RE = re.compile(r"^[A-Z]{1,3}[\d.].{0,70}$")
+AUTHOR_START_RE = re.compile(r"^[A-Z][A-Za-z'\-]+,\s+[A-Z]")
 URL_RE = re.compile(r"https?://\S+")
 PUBLISHER_RE = re.compile(
     r"([A-Z][A-Za-z .'-]+(?:,\s*[A-Z]{2})?):\s*([^,.]+(?:,\s*[^,.]+)?),\s*(\d{4})\b"
@@ -350,7 +344,9 @@ def download_landing_html() -> str:
     HTML_CACHE.parent.mkdir(parents=True, exist_ok=True)
     if HTML_CACHE.exists() and HTML_CACHE.stat().st_size > 1000:
         return HTML_CACHE.read_text(encoding="utf-8", errors="replace")
-    request = urllib.request.Request(WAYBACK_LANDING_URL, headers={"User-Agent": USER_AGENT})
+    request = urllib.request.Request(
+        WAYBACK_LANDING_URL, headers={"User-Agent": USER_AGENT}
+    )
     with urllib.request.urlopen(request, timeout=120) as response:
         html = response.read().decode("utf-8", errors="replace")
     HTML_CACHE.write_text(html, encoding="utf-8")
@@ -423,7 +419,7 @@ def download_pdf(slug: str, original_url: str) -> Path:
                 last_error = exc
                 if attempt == 3:
                     break
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
     if last_error:
         raise last_error
     raise RuntimeError(f"Failed to download PDF for {slug}")
@@ -476,7 +472,10 @@ def battle_title_matches(line: str, battle_name: str, battle_slug: str = "") -> 
             return True
         battle_tokens = normalized_battle.split()
         line_tokens = normalized_line.split()
-        if len(battle_tokens) >= 2 and line_tokens[: len(battle_tokens)] == battle_tokens:
+        if (
+            len(battle_tokens) >= 2
+            and line_tokens[: len(battle_tokens)] == battle_tokens
+        ):
             return True
     if battle_slug:
         slug_tokens = [
@@ -484,7 +483,9 @@ def battle_title_matches(line: str, battle_name: str, battle_slug: str = "") -> 
             for token in re.split(r"[_\W]+", battle_slug.upper())
             if token and token not in {"WWII", "THE", "AND", "OF"}
         ]
-        if len(slug_tokens) >= 2 and all(token in normalized_line for token in slug_tokens[:3]):
+        if len(slug_tokens) >= 2 and all(
+            token in normalized_line for token in slug_tokens[:3]
+        ):
             return True
     return False
 
@@ -631,7 +632,9 @@ def should_start_entry(line: str, current_lines: list[str], current_call: str) -
         return True
     if AUTHOR_START_RE.match(stripped) and current_lines:
         joined = clean_text(" ".join(current_lines))
-        if joined.endswith((".", ")", "]", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+        if joined.endswith(
+            (".", ")", "]", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+        ):
             return True
     if AUTHOR_START_RE.match(stripped) and not current_lines and not current_call:
         return True
@@ -688,8 +691,12 @@ def flush_entry(
 
 
 def extract_revision_date(text: str) -> str:
-    match = re.search(r"\b((?:JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|"
-                      r"SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER)\s+\d{4})\b", text, re.I)
+    match = re.search(
+        r"\b((?:JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|"
+        r"SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER)\s+\d{4})\b",
+        text,
+        re.I,
+    )
     return match.group(1).title() if match else ""
 
 
@@ -738,7 +745,11 @@ def extract_entries_from_pdf(
             battle_title_seen = True
             continue
         if not battle_title_seen:
-            if normalize_section(line) or is_call_number(line) or AUTHOR_START_RE.match(line):
+            if (
+                normalize_section(line)
+                or is_call_number(line)
+                or AUTHOR_START_RE.match(line)
+            ):
                 battle_title_seen = True
             else:
                 continue
@@ -797,7 +808,9 @@ def main() -> None:
         for battle in battles
         if not is_wwii_candidate(battle["battle_slug"])
     ]
-    wwii_battles = [battle for battle in battles if is_wwii_candidate(battle["battle_slug"])]
+    wwii_battles = [
+        battle for battle in battles if is_wwii_candidate(battle["battle_slug"])
+    ]
 
     for index, battle in enumerate(wwii_battles):
         slug = battle["battle_slug"]

@@ -26,9 +26,7 @@ DEFAULT_ROOT = (
     / "contentrepository"
     / "European Thater of Operations - Order of Battle"
 )
-DEFAULT_CONFIG = (
-    PROJECT_ROOT / "config" / "eto_oob_pdf_page_division_overrides.yaml"
-)
+DEFAULT_CONFIG = PROJECT_ROOT / "config" / "eto_oob_pdf_page_division_overrides.yaml"
 
 OUTPUT_FILES = (
     "eto_oob_command_and_staff.csv",
@@ -96,7 +94,11 @@ def merge_extracted_rows(
         )
         merged.sort(key=sort_key)
         write_csv(path, fieldnames, merged)
-        stats[filename] = {"dropped": dropped, "added": len(added), "total": len(merged)}
+        stats[filename] = {
+            "dropped": dropped,
+            "added": len(added),
+            "total": len(merged),
+        }
     return stats
 
 

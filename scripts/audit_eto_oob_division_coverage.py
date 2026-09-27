@@ -27,7 +27,9 @@ DEFAULT_ROOT = (
     / "European Thater of Operations - Order of Battle"
 )
 DEFAULT_CONFIG = PROJECT_ROOT / "config" / "eto_oob_pdf_page_division_overrides.yaml"
-DEFAULT_REPORT = PROJECT_ROOT / "docs/current/dataquality/eto_oob_division_coverage_report.md"
+DEFAULT_REPORT = (
+    PROJECT_ROOT / "docs/current/dataquality/eto_oob_division_coverage_report.md"
+)
 
 CSV_FILES = {
     "command_and_staff": "eto_oob_command_and_staff.csv",
@@ -92,7 +94,7 @@ def canonical_from_toc_line(line: str) -> str | None:
         (r">63rd\b", "63d"),
         (r"l/71st\b", "71st"),
         (r",t-78th\b", "78th"),
-        (r'~-4\'5th\b', "45th"),
+        (r"~-4\'5th\b", "45th"),
         (r'"i 20th\b', "20th"),
         (r"v—-5th\b", "5th"),
         (r"\*-5th\b", "5th"),
@@ -190,7 +192,9 @@ def scan_pdf_divisions(doc: fitz.Document) -> tuple[set[str], dict[str, list[int
     return divisions, page_ranges
 
 
-def load_csv_coverage(root: Path) -> tuple[set[str], dict[str, set[str]], dict[str, dict[str, int]]]:
+def load_csv_coverage(
+    root: Path,
+) -> tuple[set[str], dict[str, set[str]], dict[str, dict[str, int]]]:
     all_divisions: set[str] = set()
     presence: dict[str, set[str]] = {key: set() for key in CSV_FILES}
     counts: dict[str, dict[str, int]] = {key: defaultdict(int) for key in CSV_FILES}
@@ -240,10 +244,7 @@ def division_notes(
         spec = missing_scan_details.get(division)
         if isinstance(spec, dict):
             printed_pages = spec.get("printed_pages")
-            if (
-                isinstance(printed_pages, list)
-                and len(printed_pages) >= 2
-            ):
+            if isinstance(printed_pages, list) and len(printed_pages) >= 2:
                 notes.append(
                     f"Printed pp. {printed_pages[0]}–{printed_pages[1]} "
                     "missing from scan"
@@ -290,7 +291,11 @@ def build_report(root: Path, config_path: Path, report_path: Path) -> str:
 
     toc_set = set(toc_divisions)
     master = sorted(
-        set(ETO_VOLUME_DIVISIONS) | csv_divisions | pdf_divisions | toc_set | missing_scan,
+        set(ETO_VOLUME_DIVISIONS)
+        | csv_divisions
+        | pdf_divisions
+        | toc_set
+        | missing_scan,
         key=sort_division,
     )
 
@@ -308,8 +313,7 @@ def build_report(root: Path, config_path: Path, report_path: Path) -> str:
     fully_present = {
         d
         for d in master
-        if d in csv_divisions
-        and all(d in presence[key] for key in CSV_FILES)
+        if d in csv_divisions and all(d in presence[key] for key in CSV_FILES)
     }
 
     pdf_divisions_adjusted = pdf_divisions
@@ -374,9 +378,7 @@ def build_report(root: Path, config_path: Path, report_path: Path) -> str:
     lines.append(
         "| Division | PDF | TOC | Cmd Staff | Stats | Campaigns | Organic | Attach | Detach | Higher | Cmd Posts | Notes |"
     )
-    lines.append(
-        "|---|:---:|:---:|---:|---:|---:|---:|---:|---:|---:|---:|---|"
-    )
+    lines.append("|---|:---:|:---:|---:|---:|---:|---:|---:|---:|---:|---:|---|")
 
     no_attach: list[str] = []
     no_detach: list[str] = []
@@ -384,7 +386,9 @@ def build_report(root: Path, config_path: Path, report_path: Path) -> str:
     for division in master:
         if division == "1st Armored Division":
             continue
-        in_toc = "Y" if division in toc_set else ("—" if division in missing_scan else "N")
+        in_toc = (
+            "Y" if division in toc_set else ("—" if division in missing_scan else "N")
+        )
         if division in missing_scan:
             in_pdf = "—"
         elif division in pdf_divisions_adjusted:
@@ -434,7 +438,9 @@ def build_report(root: Path, config_path: Path, report_path: Path) -> str:
     lines.extend(["", "## PDF page ranges (header/insignia hits)", ""])
     for division in sorted(pdf_page_ranges, key=sort_division):
         pages = pdf_page_ranges[division]
-        lines.append(f"- **{division}:** pdf {pages[0]}–{pages[-1]} ({len(pages)} header/insignia hits)")
+        lines.append(
+            f"- **{division}:** pdf {pages[0]}–{pages[-1]} ({len(pages)} header/insignia hits)"
+        )
 
     lines.extend(["", "## Method", ""])
     lines.extend(

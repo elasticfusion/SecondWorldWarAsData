@@ -20,8 +20,7 @@ WAYBACK_LANDING_URL = (
     f"https://web.archive.org/web/{WAYBACK_TIMESTAMP}/{ORIGINAL_LANDING_URL}"
 )
 HTML_CACHE = (
-    PROJECT_ROOT
-    / "contentrepository/DonovanResearchLibrary/Hardcopy/index.html"
+    PROJECT_ROOT / "contentrepository/DonovanResearchLibrary/Hardcopy/index.html"
 )
 OUTPUT_CSV = (
     PROJECT_ROOT
@@ -80,7 +79,10 @@ CSV_FIELDS = [
 DOCUMENT_TYPE_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("after_action_report", re.compile(r"after\s+action\s+report", re.I)),
     ("unit_history", re.compile(r"unit\s+history", re.I)),
-    ("combat_operations_report", re.compile(r"combat\s+operations?\s+after\s+action", re.I)),
+    (
+        "combat_operations_report",
+        re.compile(r"combat\s+operations?\s+after\s+action", re.I),
+    ),
     ("field_order", re.compile(r"field\s+order", re.I)),
     ("observer_report", re.compile(r"observer'?s?\s+report", re.I)),
     ("lessons_learned", re.compile(r"lessons?\s+(?:learned|from)", re.I)),
@@ -151,7 +153,9 @@ def download_html() -> str:
     HTML_CACHE.parent.mkdir(parents=True, exist_ok=True)
     if HTML_CACHE.exists() and HTML_CACHE.stat().st_size > 1000:
         return HTML_CACHE.read_text(encoding="utf-8", errors="replace")
-    request = urllib.request.Request(WAYBACK_LANDING_URL, headers={"User-Agent": USER_AGENT})
+    request = urllib.request.Request(
+        WAYBACK_LANDING_URL, headers={"User-Agent": USER_AGENT}
+    )
     with urllib.request.urlopen(request, timeout=120) as response:
         html = response.read().decode("utf-8", errors="replace")
     HTML_CACHE.write_text(html, encoding="utf-8")
@@ -219,7 +223,9 @@ def extract_enclosure_note(catalog_number: str, description: str) -> str:
     return match.group(0) if match else ""
 
 
-def extract_title(description: str, part_section: str, submitting_organization: str) -> str:
+def extract_title(
+    description: str, part_section: str, submitting_organization: str
+) -> str:
     title = description
     if part_section and title.lower().startswith(part_section.lower()):
         title = title[len(part_section) :].lstrip(": ").strip()
@@ -270,7 +276,9 @@ def extract_report_date(description: str, catalog_number: str = "") -> str:
     if re.search(r"\bundated\b", description, re.I):
         return "undated"
     for source in (description, catalog_number):
-        paren = re.search(r"\((\d{1,2}/\d{1,2}/\d{2,4}|\d{1,2}/\d{2,4}|\d{4})\)", source)
+        paren = re.search(
+            r"\((\d{1,2}/\d{1,2}/\d{2,4}|\d{1,2}/\d{2,4}|\d{4})\)", source
+        )
         if paren:
             return clean_text(paren.group(1))
     return ""
@@ -369,8 +377,12 @@ def main() -> None:
     by_system: dict[str, int] = {}
     by_type: dict[str, int] = {}
     for entry in entries:
-        by_catalog[entry["catalog_number"]] = by_catalog.get(entry["catalog_number"], 0) + 1
-        by_system[entry["catalog_system"]] = by_system.get(entry["catalog_system"], 0) + 1
+        by_catalog[entry["catalog_number"]] = (
+            by_catalog.get(entry["catalog_number"], 0) + 1
+        )
+        by_system[entry["catalog_system"]] = (
+            by_system.get(entry["catalog_system"], 0) + 1
+        )
         for doc_type in filter(None, entry["document_type"].split("; ")):
             by_type[doc_type] = by_type.get(doc_type, 0) + 1
 

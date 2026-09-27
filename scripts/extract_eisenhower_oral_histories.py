@@ -11,7 +11,10 @@ from urllib.request import Request, urlopen
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SOURCE_URL = "https://www.eisenhowerlibrary.gov/research/oral-histories"
-OUTPUT_CSV = PROJECT_ROOT / "contentrepository/indexes/eisenhower_oral_histories_wwii_participants.csv"
+OUTPUT_CSV = (
+    PROJECT_ROOT
+    / "contentrepository/indexes/eisenhower_oral_histories_wwii_participants.csv"
+)
 
 
 def fetch_html() -> str:
@@ -29,7 +32,9 @@ def fetch_html() -> str:
 
 
 def parse_rows(html: str) -> list[dict[str, str]]:
-    rows = re.findall(r'<div class="views-row">(.*?)</div></div></div>', html, re.DOTALL)
+    rows = re.findall(
+        r'<div class="views-row">(.*?)</div></div></div>', html, re.DOTALL
+    )
     entries: list[dict[str, str]] = []
 
     for row in rows:
@@ -73,7 +78,11 @@ def parse_rows(html: str) -> list[dict[str, str]]:
             if bio_match:
                 bio = re.sub(r"<[^>]+>", " ", bio_match.group(1))
                 bio = re.sub(r"\s+", " ", bio).strip()
-                bio = bio.replace("&ldquo;", '"').replace("&rdquo;", '"').replace("&nbsp;", " ")
+                bio = (
+                    bio.replace("&ldquo;", '"')
+                    .replace("&rdquo;", '"')
+                    .replace("&nbsp;", " ")
+                )
 
         finding_aid_match = re.search(
             r'href="([^"]*oral-history-finding-aids[^"]*)"', row
@@ -144,31 +153,65 @@ def classify_wwii(entry: dict[str, str]) -> tuple[bool, list[str]]:
     reasons: list[str] = []
 
     if re.search(r"^eisenhower,\s*dwight d\.?$", name.strip(), re.I):
-        return True, [
-            "Supreme Allied Commander, European Theater; General of the Army"
-        ]
+        return True, ["Supreme Allied Commander, European Theater; General of the Army"]
 
     checks = [
-        (r"world war ii|second world war", "Explicit World War II service/role in catalog description"),
+        (
+            r"world war ii|second world war",
+            "Explicit World War II service/role in catalog description",
+        ),
         (r"during world war ii", "Explicitly served/acted during World War II"),
-        (r"\bshaef\b|\bcossac\b|\bafhq\b", "Allied high-command headquarters (SHAEF/COSSAC/AFHQ)"),
+        (
+            r"\bshaef\b|\bcossac\b|\bafhq\b",
+            "Allied high-command headquarters (SHAEF/COSSAC/AFHQ)",
+        ),
         (r"los alamos|manhattan", "Manhattan Project / Los Alamos"),
         (r"paratrooper|101st airborne|airborne division", "Combat paratrooper"),
         (r"canadian army officer", "Canadian Army officer during WWII"),
         (r"red cross worker.*world war ii", "Red Cross worker during WWII"),
         (r"invasion in italy|5th army", "Fifth Army, Italian campaign"),
-        (r"9th army|6th army group|north african campaign", "U.S./Allied Army command in European/North African campaigns"),
-        (r"airplane repair management specialist during world war ii", "Aircraft repair management during WWII"),
-        (r"commanding general, canadian pacific command, 1942-45", "Canadian Pacific Command, 1942-45"),
-        (r"driver for general eisenhower during the north african campaign", "Driver for Eisenhower, North African Campaign"),
+        (
+            r"9th army|6th army group|north african campaign",
+            "U.S./Allied Army command in European/North African campaigns",
+        ),
+        (
+            r"airplane repair management specialist during world war ii",
+            "Aircraft repair management during WWII",
+        ),
+        (
+            r"commanding general, canadian pacific command, 1942-45",
+            "Canadian Pacific Command, 1942-45",
+        ),
+        (
+            r"driver for general eisenhower during the north african campaign",
+            "Driver for Eisenhower, North African Campaign",
+        ),
         (r"world war ii corps commander", "World War II corps commander"),
-        (r"u\.s\. forces in the british isles", "U.S. Forces in the British Isles (ETO buildup)"),
-        (r"military police.*european|european theatre.*world war", "U.S. Army service in European Theater"),
-        (r"jeep driver and bodyguard for general mark clark", "Service with General Mark Clark, 1944-45"),
-        (r"war department official", "War Department official (wartime service; dates not specified in catalog)"),
-        (r"personal representative in french north africa|chief civil affairs officer", "North Africa civil affairs / diplomatic mission, 1940-43"),
+        (
+            r"u\.s\. forces in the british isles",
+            "U.S. Forces in the British Isles (ETO buildup)",
+        ),
+        (
+            r"military police.*european|european theatre.*world war",
+            "U.S. Army service in European Theater",
+        ),
+        (
+            r"jeep driver and bodyguard for general mark clark",
+            "Service with General Mark Clark, 1944-45",
+        ),
+        (
+            r"war department official",
+            "War Department official (wartime service; dates not specified in catalog)",
+        ),
+        (
+            r"personal representative in french north africa|chief civil affairs officer",
+            "North Africa civil affairs / diplomatic mission, 1940-43",
+        ),
         (r"shaef staff, 1944", "SHAEF staff, 1944"),
-        (r"ambassador to the dominican republic, 1944-45", "Wartime diplomatic post, 1944-45"),
+        (
+            r"ambassador to the dominican republic, 1944-45",
+            "Wartime diplomatic post, 1944-45",
+        ),
         (
             r"military associate with\s+eisenhower.*during world war ii|military associate of general eisenhower during world war ii|world war ii military associate",
             "Documented Eisenhower military associate during World War II",
@@ -184,31 +227,37 @@ def classify_wwii(entry: dict[str, str]) -> tuple[bool, list[str]]:
 
     if re.search(r"\boss\b", plain) and re.search(r"194[0-6]", bio):
         reasons.append("Office of Strategic Services during war years")
-    if re.search(r"assistant secretary of war|under secretary of war|secretary of war", plain) and re.search(
-        r"194[0-5]", bio
-    ):
+    if re.search(
+        r"assistant secretary of war|under secretary of war|secretary of war", plain
+    ) and re.search(r"194[0-5]", bio):
         reasons.append("Senior War Department leadership, 1941-45")
-    if re.search(r"war plans division|war department general staff|operations war department", plain) and re.search(
-        r"194[0-5]", bio
-    ):
+    if re.search(
+        r"war plans division|war department general staff|operations war department",
+        plain,
+    ) and re.search(r"194[0-5]", bio):
         reasons.append("War Department planning/operations staff, 1940-45")
-    if re.search(r"commanding general|commander, u\.s\. forces|deputy supreme commander|chief of staff under", plain) and re.search(
-        r"194[0-5]", bio
-    ):
+    if re.search(
+        r"commanding general|commander, u\.s\. forces|deputy supreme commander|chief of staff under",
+        plain,
+    ) and re.search(r"194[0-5]", bio):
         reasons.append("Field/command staff assignment, 1940-45")
-    if re.search(r"european theater|european theatre|north african theater|mediterranean theater", plain) and re.search(
-        r"194[0-5]", bio
-    ):
+    if re.search(
+        r"european theater|european theatre|north african theater|mediterranean theater",
+        plain,
+    ) and re.search(r"194[0-5]", bio):
         reasons.append("Named wartime theater assignment")
     if re.search(r"\bwac\b", plain) and re.search(r"194[0-5]", bio):
         reasons.append("Women's Army Corps / SHAEF staff")
-    if re.search(r"naval reserve.*194[0-5]|commander, united states naval reserve", plain):
+    if re.search(
+        r"naval reserve.*194[0-5]|commander, united states naval reserve", plain
+    ):
         reasons.append("U.S. Naval Reserve command during WWII")
     if re.search(r"intelligence officer", plain) and re.search(r"194[0-5]", bio):
         reasons.append("Military intelligence officer, 1940-45")
-    if re.search(r"pilot for (?:general )?dwight d\. eisenhower|pilot for dwight d\. eisenhower", plain) and re.search(
-        r"1945", bio
-    ):
+    if re.search(
+        r"pilot for (?:general )?dwight d\. eisenhower|pilot for dwight d\. eisenhower",
+        plain,
+    ) and re.search(r"1945", bio):
         reasons.append("Eisenhower's pilot in 1945")
     if re.search(r"commander, 9th armored division, 1942-45", plain):
         reasons.append("Commander, 9th Armored Division, 1942-45")
@@ -217,11 +266,20 @@ def classify_wwii(entry: dict[str, str]) -> tuple[bool, list[str]]:
     if re.search(r"u\.s\. joint chiefs of staff, 1944-46", plain):
         reasons.append("Joint Chiefs of Staff staff, 1944-46")
     if re.search(r"war department official", plain):
-        reasons.append("War Department official (wartime service; dates not specified in catalog)")
-    if re.search(r"military associate of general eisenhower, 1945-59", plain) and "clay" in full:
-        reasons.append("Military associate of Eisenhower from 1945 (occupation/post-hostilities command)")
+        reasons.append(
+            "War Department official (wartime service; dates not specified in catalog)"
+        )
+    if (
+        re.search(r"military associate of general eisenhower, 1945-59", plain)
+        and "clay" in full
+    ):
+        reasons.append(
+            "Military associate of Eisenhower from 1945 (occupation/post-hostilities command)"
+        )
     if re.search(r"ft\. lewis.*1940.*war plans division.*1941-42", plain):
-        reasons.append("Eisenhower military associate, Ft. Lewis 1940 and War Plans Division 1941-42")
+        reasons.append(
+            "Eisenhower military associate, Ft. Lewis 1940 and War Plans Division 1941-42"
+        )
 
     if re.search(r"attorney general of the united states, 1945-1949", plain):
         return False, []
@@ -231,10 +289,22 @@ def classify_wwii(entry: dict[str, str]) -> tuple[bool, list[str]]:
 
 
 SUPPLEMENTS = {
-    ("Nevins, Arthur", "OH-380"): "Military associate with Eisenhower during World War II (see OH-119)",
-    ("Quesada, Elwood Richard", "OH-476"): "Military associate of Eisenhower during World War II (see OH-308)",
-    ("Clay, Gen. Lucius D.", "OH-285"): "Military associate of Eisenhower from 1945 (see OH-56); occupation-era command",
-    ("Clay, Gen. Lucius D.", "OH-526"): "Military associate of Eisenhower from 1945 (see OH-56); occupation-era command",
+    (
+        "Nevins, Arthur",
+        "OH-380",
+    ): "Military associate with Eisenhower during World War II (see OH-119)",
+    (
+        "Quesada, Elwood Richard",
+        "OH-476",
+    ): "Military associate of Eisenhower during World War II (see OH-308)",
+    (
+        "Clay, Gen. Lucius D.",
+        "OH-285",
+    ): "Military associate of Eisenhower from 1945 (see OH-56); occupation-era command",
+    (
+        "Clay, Gen. Lucius D.",
+        "OH-526",
+    ): "Military associate of Eisenhower from 1945 (see OH-56); occupation-era command",
 }
 
 
@@ -262,7 +332,9 @@ def main() -> None:
             row["source_page"] = SOURCE_URL
             wwii_entries.append(row)
 
-    wwii_entries.sort(key=lambda row: (row["digital_artifact"] == "no", row["name"], row["oh_id"]))
+    wwii_entries.sort(
+        key=lambda row: (row["digital_artifact"] == "no", row["name"], row["oh_id"])
+    )
 
     fields = [
         "name",

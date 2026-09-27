@@ -162,9 +162,9 @@ def is_chronology_junk_unit_name(name: str) -> bool:
         return True
     if re.match(r"^[_\s\d]+$", name) and len(name) < 15 and not UNIT_KW.search(name):
         return True
-    if re.match(rf"^(?:[a-z]\s+)?\d{{1,2}}\s+(?:{MONTHS})\b", name, re.I) and not UNIT_KW.search(
-        name
-    ):
+    if re.match(
+        rf"^(?:[a-z]\s+)?\d{{1,2}}\s+(?:{MONTHS})\b", name, re.I
+    ) and not UNIT_KW.search(name):
         return True
     if re.match(r"^[A-Za-z]\s+r\s+[\W\s]+\d", name):
         return True
@@ -240,7 +240,9 @@ def is_corrupted_unit_name(name: str) -> bool:
             return True
         if len(DATE_LIKE.findall(name)) >= 2 and name.count("'") >= 2:
             return True
-    if re.match(r"^[\d.]+?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)", name, re.I):
+    if re.match(
+        r"^[\d.]+?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)", name, re.I
+    ):
         return True
     return False
 
@@ -300,13 +302,15 @@ def clean_csv(path: Path, *, dry_run: bool = False) -> dict[str, int]:
     cleaned_rows: list[dict] = []
     for row in rows:
         original = row.get("unit_name", "")
-        if path.name == "eto_oob_attachments.csv" and is_division_page_header_unit_name(
-            original, row.get("division", "")
+        if (
+            path.name == "eto_oob_attachments.csv"
+            and is_division_page_header_unit_name(original, row.get("division", ""))
         ):
             stats["deleted_junk"] += 1
             continue
-        if path.name == "eto_oob_attachments.csv" and is_attachment_category_header_unit_name(
-            original
+        if (
+            path.name == "eto_oob_attachments.csv"
+            and is_attachment_category_header_unit_name(original)
         ):
             stats["deleted_junk"] += 1
             continue
@@ -369,7 +373,9 @@ def main() -> None:
         )
 
     action = "Would change" if args.dry_run else "Changed"
-    print(f"\n{action} {total_deleted} row deletions and {total_stripped} unit_name strips.")
+    print(
+        f"\n{action} {total_deleted} row deletions and {total_stripped} unit_name strips."
+    )
 
 
 if __name__ == "__main__":
