@@ -128,7 +128,9 @@ def write_json_with_lock(filepath: Path, data: Dict[str, Any]) -> None:
     filepath.parent.mkdir(parents=True, exist_ok=True)
 
     # Disk space check (local mode only — skip in /tmp/pipeline ECS workdir)
-    if not str(filepath).startswith("/tmp/"):  # nosec B108 -- path prefix check, not temp-file use
+    if not str(filepath).startswith(
+        "/tmp/"
+    ):  # nosec B108 -- path prefix check, not temp-file use
         import shutil
 
         free = shutil.disk_usage(filepath.parent).free
