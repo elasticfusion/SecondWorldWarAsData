@@ -20,7 +20,7 @@ paths:
 api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
-    model: "grok-4.6"
+    model: "grok-4.20-0309-reasoning"  # batch-supported (grok-4.6 is NOT accepted by the Batch API)
     model_map:
       isbn: "grok-3-mini"             # Cheap model for simple lookups
       url_verify: "grok-3-mini"
