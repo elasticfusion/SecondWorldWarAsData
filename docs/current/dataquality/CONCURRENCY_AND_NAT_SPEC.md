@@ -412,19 +412,31 @@ A pre-stage must run before the concurrency dispatcher:
   waves (§3.2) are formed from consecutive FIFO runs of completed docs. Keeps the
   dispatcher simple and predictable; revisit only if a high-value subset ever
   needs to jump the queue.
+## 9. Cost awareness — soft pre-spend alert (not a hard block)
 
-## 9. Cost guardrail (throughput must not blow the budget)
+Submitting jobs is **expected to cost money** on Grok — that is the point. So cost
+handling is an **alert, not a circuit breaker**: notify before/as a soft,
+configurable threshold is crossed, then **keep running** unless the operator
+intervenes.
 
-Concurrency optimizes throughput; it must not blow spend. The existing $75/mo
-budget alarm is a *detector*, not a *control*.
-- **Cost-rate circuit breaker** — track spend rate (Grok tokens × price + Fargate
-  + Batch GPU); if it exceeds a configured $/hr ceiling, **throttle the pool**
-  (reduce `MAX_CONCURRENT_*`) rather than keep launching. Backpressure on cost,
-  same as on quota.
-- **Spot-first** already reduces compute cost; keep GPU-OCR (the priciest) pool
-  small and separately capped.
-- **Dry-run estimate** — before a full-archive drain, estimate total cost from a
-  sample (per-doc token/GPU cost × 628) and surface it for approval.
+- **Soft spend-threshold alert** — a configurable value (`GROK_SPEND_ALERT_USD`,
+  **default ~$10**) that fires an SNS→Slack/email alert **as projected/accrued
+  Grok spend approaches or crosses it**, *before* a large overspend — a heads-up,
+  not a stop. Jobs continue.
+- **Re-arm at multiples** — alert again at each further increment (e.g. $10, $20,
+  $30…) so a long drain keeps the operator informed rather than one alert then
+  silence.
+- **Track accrued + projected spend** — Grok tokens × price (Fargate/Batch GPU
+  secondary); surface running total in the observability dashboard (§10).
+- **Dry-run estimate (optional, informational)** — before a full-archive drain,
+  estimate total cost from a sample (per-doc token cost × 628) so the operator
+  knows the ballpark up front. Informational, not a gate.
+- **Hard controls remain available but OFF by default** — a hard ceiling that
+  throttles/halts the pool is a *separate, opt-in* safety (e.g. runaway
+  protection), not the normal path. The $75/mo AWS budget alarm stays as the
+  backstop detector.
+- **Spot-first** already minimizes compute cost; GPU-OCR (priciest) pool kept
+  small.
 
 ## 10. Observability at scale
 
@@ -462,7 +474,7 @@ Lambda/task time limits.
    construction AND required for safe concurrency.
 4. **Dispatcher with bounded pool + limit-aware backpressure** — per-resource
    caps (Fargate vCPU / Batch GPU / Grok rate), cluster-wide Grok limiter (§5.2),
-   cost circuit breaker (§9).
+   soft spend-threshold alert (§9, default ~$10, configurable — notify not block).
 5. **Shared-entity-store hardening** — cross-book entity writes via
    DynamoEntityStore conditional/idempotent updates (§3.3).
 6. **Global dedup barrier** — quiescence across per-doc locks; incremental +
