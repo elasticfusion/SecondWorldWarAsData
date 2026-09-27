@@ -886,3 +886,112 @@ layers:
 - **CI gate:** unit + moto-integration run under the existing full quality gate
   (black/pylint/mypy/bandit/radon/vulture + pytest, CI-pinned versions). Load test
   is manual/out-of-band (costs money + real AWS).
+
+---
+
+## 17. M4.3 design — Step Functions Map dispatcher (review before build)
+
+**Purpose.** The coordination primitives (M2 per-doc locks, M3 NAT leases, M4.1
+cluster Grok rate, M4.2/M4.4 credit gate) are built and DynamoDB-backed. M4.3 adds
+the *orchestrator* that fans work out concurrently within those primitives — a
+Step Functions **Standard** state machine with a **Map** state.
+
+### 17.1 What exists today (must coexist with / replace)
+
+`trigger_handler.py` is the current dispatcher, and it is **strictly serial by
+construction**:
+- `_launch_phase{1,2}_if_idle()` bail if ANY task in ANY phase family is running.
+- `_run_task()` ensures NAT, takes the single per-phase lock, and `run_task`s ONE
+  task with the 4:1 `FARGATE_SPOT:FARGATE` strategy; if the lock is held it
+  **queues** the book (`pending#parsed#{book}`, `pending#enrich#{book}`) instead.
+- Triggered by SQS(SNS S3 events) + an hourly EventBridge reconciliation.
+
+So the serial gate is **not** the lock (M2 made that per-doc) — it's the explicit
+`_if_idle` checks and the one-task-per-invoke `_run_task`. M4.3 replaces the
+*dispatch decision*, not the task-launch mechanics (NAT ensure, capacity strategy,
+overrides) which are reused.
+
+### 17.2 State machine shape
+
+**Standard workflow** (not Express — multi-hour docs exceed the 5-min cap; §13).
+One execution = one **drain pass** over the pending set.
+
+```
+EnumeratePending           (Lambda: list docs not done/in-flight — §8 lifecycle)
+   └─> ClampPool            (Lambda: effective = min(pool_max, quota cap); §5.0)
+   └─> Map[MaxConcurrency = clamped pool]           ← the fan-out
+        input: one doc/work-item (heterogeneous, §7)
+        each branch:
+          AcquirePerDocLock  (Task: M2 lock; on CONFLICT → skip, already in-flight)
+          AcquireNatLease    (Task: M3 lease)
+          RouteByMedia       (Choice: OCR / extraction / vision / parse — §7.1 profile)
+          RunTask.sync       (ecs:runTask.sync with the per-work-type compute
+                              profile + capacity strategy from §7.1)
+          [HumanGate?]        (Task.waitForTaskToken: dedup/OCR/biblio review —
+                              execution parks; lease released → NAT demand −1, §4)
+          ReleaseNatLease
+          ReleasePerDocLock
+        Catch → per-cause handler (§6.1 taxonomy): credit-hold, size-split,
+                model-fallback, spot-retry — each item independent.
+   └─> CheckDrained          (Choice: pending still non-empty? → loop EnumeratePending)
+   └─> Done
+```
+
+**Key properties:**
+- **`MaxConcurrency` = clamped pool** — Step Functions enforces the fan-out cap for
+  free; backpressure (M4.4-style) is the pool clamp + the Grok limiter's per-task
+  share (`GROK_RATE_POOL_SIZE` = current pool, injected as a task-def env override).
+- **`ecs:runTask.sync`** — the branch blocks until the task ends, so lease/lock
+  release happen deterministically in the state machine (belt-and-suspenders with
+  the task's own SIGTERM/exit release).
+- **Human gates = `waitForTaskToken`** — the dedup/OCR/biblio gate Lambda stores the
+  token; the review UI (or its completion event) sends `SendTaskSuccess`. While
+  parked, the branch holds NO lease → contributes 0 to NAT demand (§4), so NAT
+  tears down naturally if all branches are parked and comes back when one resumes.
+- **Per-cause `Catch`** — maps the §6.1 failure taxonomy to Retry/Catch: credit-hold
+  (§9.0) → don't retry, route to held queue; size-limit → split-resubmit; spot →
+  bounded retry; model-transition → fallback. Each Map branch fails independently
+  (no straggler coupling — dedup is incremental, §3.2).
+
+### 17.3 Coexistence + migration (kill-switch)
+
+- **`multi_doc.enabled: false` (default):** `trigger_handler` behaves exactly as
+  today (serial `_if_idle` + single `_run_task`). The state machine is deployed but
+  **not invoked**. This is the M4.3 safe-deploy state.
+- **`multi_doc.enabled: true`:** the SQS/EventBridge triggers invoke the **state
+  machine** instead of `_launch_phase*_if_idle`; `trigger_handler` shrinks to
+  "enumerate + start execution." `run_task` mechanics (NAT ensure, capacity
+  strategy, book override) move into the Map branch's `RunTask` state / a thin
+  launch Lambda reused by both paths.
+- Start at **`MaxConcurrency: 1`** even when enabled → provably equals serial
+  behavior (§15 M4 smoke test) before raising the pool.
+
+### 17.4 New infra (CloudFormation — `cloudformation/dispatcher.yaml`, nested)
+
+- `AWS::StepFunctions::StateMachine` (Standard) + its execution IAM role
+  (`ecs:RunTask`/`StopTask`, `iam:PassRole` for task+exec roles, `states:*` for
+  tokens, DynamoDB on the cache table, `lambda:InvokeFunction` for the small
+  enumerate/clamp/gate Lambdas).
+- A few thin **Lambdas**: `enumerate_pending`, `clamp_pool` (Service Quotas +
+  pool_max), `human_gate` (token store/resume). Reuse existing `nat_manager`.
+- EventBridge/SQS wiring switches target from `trigger_handler` → state machine
+  **only when the kill-switch is on** (parameterized).
+- Given July rollback history: author + `cfn-lint` on the branch; deploy via
+  **change-set/dry-run**, nested under the parent stack, NOT a big-bang.
+
+### 17.5 Open questions for review (before writing CFN)
+
+1. **One execution per drain pass, looping** (as drawn) vs **one execution per
+   doc**? Looping keeps a single "drain" observable; per-doc gives cleaner
+   isolation but N executions. Leaning **looping drain** (matches FIFO §8, one
+   dashboard).
+2. **`runTask.sync` vs fire-and-forget + poll?** `.sync` is simpler and gives
+   deterministic release, at the cost of a held SFN branch (per-state-transition
+   billing on Standard). For multi-hour tasks the transition count is tiny, so
+   `.sync` is fine.
+3. **Where do the M4.1/M4.2 primitives get invoked** — in the Map branch (SFN
+   Task states) or inside the ECS task (as now)? Proposal: keep them **in the
+   task** (already wired, works serial-or-parallel) and have SFN only own fan-out /
+   lease / lock / retry. Matches §13 "SFN orchestrates; DynamoDB coordinates."
+4. Batch-poller path (the logged TODO): confirm the poller sees ECS-submitted
+   batches before the async human-gate/retrieve path depends on it.
