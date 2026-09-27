@@ -278,6 +278,62 @@ cluster-wide shared state once we go parallel.
   retrieval). Under concurrency, chunking also interacts with the cluster-wide
   rate/limit budget (§5.2).
 
+### 6.2 Grok model-transition resilience (verified gap)
+
+Grok itself fails around **model introductions/deprecations** (observed in
+practice). Current state:
+- **Soft redirect handled (alert only):** if xAI serves a different model than
+  requested (`served_model != self.model`), `grok_client` logs "MODEL DEPRECATED"
+  and sends an SNS alert — but **keeps running on whatever was served** (could be
+  an unvetted model producing different output for a whole run of items).
+- **Transient 5xx/connection:** retried 5× with exponential backoff (absorbs
+  rollout blips).
+- **GAP — hard model retirement:** a fully-retired model returns model-not-found
+  (400/404). That is an `HTTPError` → **retried 5× uselessly** (retrying won't
+  revive a dead model) → then **hard-fails the job**. There is **no fallback
+  model** and no "model retired → switch to configured alternate" path.
+  `self.model` is a single value; `_model_map` is per-task-type, not a fallback
+  chain.
+- **GAP — batch-mode coverage:** deprecation detection lives in the real-time
+  response path; whether the **batch API** surfaces a model change / triggers the
+  alert is unverified. Under concurrency a transition fails ALL in-flight jobs at
+  once.
+
+**Required:** classify model-not-found distinctly and **do NOT retry it**; add a
+**configured fallback model chain** (primary → fallback) applied on
+retirement/redirect; escalate the alert to **block-or-fallback** rather than
+silently proceed on an unvetted served model; verify + handle model changes in
+batch mode.
+
+### 6.3 Batch resubmission (verified current + gaps)
+
+**Exists today:**
+- **Partial (per-request), automatic:** `_retry_failed_batch` retries errored/
+  truncated requests via the **real-time API**, with a **20% failure-rate circuit
+  breaker** (skips retry above 20% as "likely systemic").
+- **Whole-batch resubmit, MANUAL:** RUNBOOK — reset the `batch_job#` status / mark
+  failed + re-run the phase; **cache-aware** so only genuinely-missing requests
+  re-batch (succeeded ones hit the DynamoDB cache).
+- **Phase-level retry loop:** `phase{2,3}_retry.py` re-run up to `--max-attempts`,
+  driven by counting missing `-event.json` (incremental, skip-existing).
+
+**GAPS:**
+- **Per-request retry falls to real-time, not re-batch** — if real-time is ALSO
+  down (outage/model transition), retry fails; no "re-submit failed requests as a
+  new batch."
+- **Whole-batch resubmit is manual** — a `failed` batch waits for a human; no
+  auto-resubmit-on-failure. Bad at archive scale / under concurrency.
+- **20%-breaker + model transition:** a model retirement causing >20% failure
+  skips retry (good) but leaves **only the manual path** to recover once config is
+  fixed.
+- **No split-resubmit** for oversized batches (ties to §6.1).
+
+**Required:** automatic whole-batch **resubmit-on-failure** (bounded retries, then
+route to a failed/needs-review queue — reuse the poison-doc pattern §6); optional
+**re-batch** (vs real-time) retry for the failed subset; **split-resubmit** for
+size rejections; all keyed per-batch (§3.4) and cache-aware so resubmits stay
+cheap.
+
 ---
 
 ## 7. Phased implementation
@@ -292,7 +348,12 @@ cluster-wide shared state once we go parallel.
 4. **Shared-entity-store hardening** — route cross-book entity writes through
    DynamoEntityStore with conditional/idempotent updates.
 5. **Global dedup barrier** — quiescence detection across per-book locks.
-6. **Load test** on a subset of WWIIArchives (e.g. 20 docs) before full drain.
+6. **Batch resilience** (§6.1–6.3) — per-batch retrieval + accounting; size-aware
+   chunking + split-resubmit; model-transition handling (no-retry-on-retirement +
+   fallback chain); automatic whole-batch resubmit-on-failure with a bounded
+   retry → failed/needs-review queue. Verify Grok per-batch limits + batch-mode
+   model-change surfacing first.
+7. **Load test** on a subset of WWIIArchives (e.g. 20 docs) before full drain.
 
 ---
 
