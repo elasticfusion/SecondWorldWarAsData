@@ -33,8 +33,6 @@ Parameters:
   ExecutionRoleArn:
     Type: String
     Description: ECS task execution role (passed to RunTask)
-  NatManagerFunctionArn:
-    Type: String
   LambdaCodeBucket:
     Type: String
     Description: S3 bucket holding the dispatcher Lambda deployment package
@@ -160,7 +158,7 @@ Resources:
                   - !GetAtt EnumeratePendingFunction.Arn
                   - !GetAtt ClampPoolFunction.Arn
                   - !GetAtt HumanGateFunction.Arn
-                  - !Ref NatManagerFunctionArn
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-nat-manager
               - Effect: Allow
                 # runTask.sync requires these; scope RunTask to our task defs.
                 # DescribeTasks/StopTask are cluster-wide (task ARNs are dynamic).

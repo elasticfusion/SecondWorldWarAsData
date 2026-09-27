@@ -29,6 +29,11 @@ Parameters:
     Type: String
     Default: ''
     Description: GitHub org/user for OIDC deploy role (leave empty to skip)
+  MultiDocEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: M4 concurrency kill-switch — 'true' routes triggers to the SFN dispatcher
 
 Resources:
   NetworkStack:
@@ -62,6 +67,7 @@ Resources:
       TemplateURL: !Sub https://${TemplateBucket}.s3.amazonaws.com/cloudformation/compute.yaml
       Parameters:
         EnvironmentName: !Ref EnvironmentName
+        MultiDocEnabled: !Ref MultiDocEnabled
         VpcId: !GetAtt NetworkStack.Outputs.VpcId
         PrivateSubnet1Id: !GetAtt NetworkStack.Outputs.PrivateSubnet1Id
         PrivateSubnet2Id: !GetAtt NetworkStack.Outputs.PrivateSubnet2Id
@@ -90,6 +96,30 @@ Resources:
         OpenSerpManagerFunctionArn: !GetAtt ComputeStack.Outputs.OpenSerpManagerFunctionArn
         NotificationEmail: !Ref NotificationEmail
 
+  # M4.3 concurrency dispatcher (SFN Map). Deployed but NOT invoked while the
+  # multi_doc kill-switch is off; start at MaxConcurrency=1 before raising the
+  # pool (§15/§17). Nested after ComputeStack (needs its task defs + cluster).
+  DispatcherStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${TemplateBucket}.s3.amazonaws.com/cloudformation/dispatcher.yaml
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
+        ECSClusterArn: !GetAtt ComputeStack.Outputs.ECSClusterName
+        Phase1TaskDefArn: !GetAtt ComputeStack.Outputs.Phase1TaskDefArn
+        Phase2TaskDefArn: !GetAtt ComputeStack.Outputs.Phase2TaskDefArn
+        Phase3TaskDefArn: !GetAtt ComputeStack.Outputs.Phase3TaskDefArn
+        CacheTableArn: !GetAtt StorageStack.Outputs.CacheTableArn
+        PrivateSubnetIds: !Sub
+          - ${S1},${S2}
+          - S1: !GetAtt NetworkStack.Outputs.PrivateSubnet1Id
+            S2: !GetAtt NetworkStack.Outputs.PrivateSubnet2Id
+        SecurityGroupId: !GetAtt NetworkStack.Outputs.LambdaSGId
+        TaskRoleArn: !GetAtt IAMStack.Outputs.ECSTaskRoleArn
+        ExecutionRoleArn: !GetAtt IAMStack.Outputs.ECSTaskExecutionRoleArn
+        LambdaCodeBucket: !Ref LambdaCodeBucket
+        LambdaCodeKey: !Ref LambdaCodeKey
+
 Outputs:
   DataBucket:
     Value: !GetAtt StorageStack.Outputs.DataBucketName
@@ -99,3 +129,6 @@ Outputs:
     Value: !GetAtt NetworkStack.Outputs.VpcId
   DedupReviewUrl:
     Value: !GetAtt ComputeStack.Outputs.DedupApiUrl
+  DispatcherStateMachineArn:
+    Value: !GetAtt DispatcherStack.Outputs.DispatcherStateMachineArn
+    Description: Concurrency dispatcher (invoke only when multi_doc.enabled)

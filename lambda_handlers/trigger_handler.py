@@ -35,6 +35,51 @@ PARSED_TOPIC = f"{ENV_NAME}-wwii-chapter-parsed"
 DEDUP_COMPLETE_TOPIC = f"{ENV_NAME}-wwii-dedup-complete"
 ENTITY_TOPIC = f"{ENV_NAME}-wwii-entity-created"
 
+# M4-final: kill-switch (§15/§17.3). When on, triggers start the SFN dispatcher
+# (concurrent) instead of the serial _launch_phase*_if_idle path. Off by default
+# so behavior is unchanged until an operator opts in.
+MULTI_DOC_ENABLED = os.environ.get("MULTI_DOC_ENABLED", "false").lower() == "true"
+DISPATCHER_STATE_MACHINE_ARN = os.environ.get("DISPATCHER_STATE_MACHINE_ARN", "")
+
+
+def _multi_doc_active() -> bool:
+    """True if concurrency dispatch is switched on AND a state machine is wired."""
+    return MULTI_DOC_ENABLED and bool(DISPATCHER_STATE_MACHINE_ARN)
+
+
+def _start_dispatcher(reason: str) -> bool:
+    """Start one SFN dispatcher drain execution (idempotent-ish: skip if running).
+
+    Returns True if it started (or one is already running), False on error — the
+    caller falls back to the serial path so a dispatcher misconfig never strands
+    work.
+    """
+    try:
+        sfn = boto3.client("stepfunctions")
+        # Don't pile up executions — if one is already draining, let it continue.
+        running = sfn.list_executions(
+            stateMachineArn=DISPATCHER_STATE_MACHINE_ARN,
+            statusFilter="RUNNING",
+            maxResults=1,
+        ).get("executions", [])
+        if running:
+            logger.info(
+                "Dispatcher already draining — not starting another (%s)", reason
+            )
+            return True
+        sfn.start_execution(
+            stateMachineArn=DISPATCHER_STATE_MACHINE_ARN,
+            input=json.dumps({"source": reason}),
+        )
+        logger.info("Started dispatcher drain execution (%s)", reason)
+        return True
+    except Exception as e:
+        logger.error(
+            "Failed to start dispatcher (%s) — falling back to serial: %s", reason, e
+        )
+        return False
+
+
 TASK_FAMILIES = {
     PHASE1_TASK_DEF: f"{ENV_NAME}-wwii-phase1-parse",
     PHASE2_TASK_DEF: f"{ENV_NAME}-wwii-phase2-extract",
@@ -74,9 +119,13 @@ def handler(event, _context):
     for topic_name in topics:
         if topic_name == CONTENT_TOPIC:
             _queue_pending(s3_keys)
+            if _multi_doc_active() and _start_dispatcher("content-uploaded"):
+                continue
             _launch_phase1_if_idle()
         elif topic_name == PARSED_TOPIC:
             _queue_parsed(s3_keys)
+            if _multi_doc_active() and _start_dispatcher("chapter-parsed"):
+                continue
             _launch_phase2_if_idle()
         elif topic_name == ENTITY_TOPIC:
             pass  # Dead path — Phase 3 triggered via dedup-complete or auto-trigger

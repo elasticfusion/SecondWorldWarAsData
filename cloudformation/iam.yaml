@@ -79,6 +79,13 @@ Resources:
                   - sns:Publish
                 Resource:
                   - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-*
+              - Sid: StepFunctionsDispatcher
+                Effect: Allow
+                Action:
+                  - states:StartExecution
+                  - states:ListExecutions
+                Resource:
+                  - !Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${EnvironmentName}-wwii-dispatcher
               - Sid: SQSDeadLetterQueue
                 Effect: Allow
                 Action:

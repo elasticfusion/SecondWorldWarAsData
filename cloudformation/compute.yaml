@@ -5,6 +5,11 @@ Parameters:
   EnvironmentName:
     Type: String
     Default: dev
+  MultiDocEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: M4 concurrency kill-switch — 'true' routes triggers to the SFN dispatcher
   VpcId:
     Type: String
   PrivateSubnet1Id:
@@ -292,6 +297,9 @@ Resources:
           PHASE2_TASK_DEF: !Ref Phase2TaskDef
           PHASE3_TASK_DEF: !Ref Phase3TaskDef
           NAT_WAIT_SECONDS: !Ref NatWaitSeconds
+          # M4-final kill-switch (§17.3): off => serial; on => start SFN dispatcher.
+          MULTI_DOC_ENABLED: !Ref MultiDocEnabled
+          DISPATCHER_STATE_MACHINE_ARN: !Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${EnvironmentName}-wwii-dispatcher
   # --- Hourly stale lock check ---
   StaleLockCheckRule:
     Type: AWS::Events::Rule
