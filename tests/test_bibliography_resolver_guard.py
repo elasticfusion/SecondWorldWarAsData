@@ -92,3 +92,23 @@ class TestResolveDir:
         queue = json.loads((tmp_path / "review_queue.json").read_text())
         assert len(queue) == 1
         assert "human disposition" in queue[0]["reason"]
+
+    def test_local_holding_short_circuits_online_search(self, tmp_path):
+        # A cited source we already hold resolves to the local copy WITHOUT any
+        # online resolver call (fake resolver would raise if reached).
+        def boom(*a, **k):
+            raise AssertionError("online resolver must NOT be called for a holding")
+
+        import src.enrichment.bibliography_resolver as brm
+
+        entry = {"citation": {"title": "MS # B-405"}}
+        holdings = {"B405": "unprocesseddocs/B405.pdf"}
+        original = brm._pick_resolver
+        brm._pick_resolver = lambda *a, **k: boom
+        try:
+            brm.resolve_bibliography_entry(entry, None, {"holdings_index": holdings})
+        finally:
+            brm._pick_resolver = original
+        assert entry["search_status"] == "resolved"
+        assert entry["search_source"] == "local_holding"
+        assert entry["local_source_path"].endswith("B405.pdf")

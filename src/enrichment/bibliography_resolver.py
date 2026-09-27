@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.utils.http_pool import get_session
+from src.enrichment.local_holdings import build_holdings_index, find_local_holding
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +118,20 @@ def resolve_bibliography_entry(
     if entry.get("search_status") == "resolved" or entry.get("resource_urls"):
         entry["search_status"] = "resolved"
         return entry
+
+    # Best resolution: we ALREADY HOLD the cited source (e.g. MS # B-405 ->
+    # unprocesseddocs/B405.pdf). Short-circuit before any online search — our own
+    # copy is the authoritative artifact for attribution and needs no retrieval.
+    holdings = (config or {}).get("holdings_index")
+    if holdings:
+        local_path = find_local_holding(entry, holdings)
+        if local_path:
+            entry["search_status"] = "resolved"
+            entry["search_source"] = "local_holding"
+            entry["local_source_path"] = local_path
+            entry["availability"] = "local"
+            logger.debug("Resolved from local holding: %s", local_path)
+            return entry
 
     # Guard: narrative prose misclassified as a document reference should not be
     # sent to NARA/online resolvers. Mark it distinctly (not "not_found", which
@@ -876,9 +891,7 @@ def _account_bib_status(stats: Dict[str, int], status: str, was_deduped: bool) -
     if was_deduped:
         stats["deduped"] += 1
     stats[status if status in stats else "not_found"] += 1
-    return (
-        status not in ("resolved", "not_citation", "skipped") and not was_deduped
-    )
+    return status not in ("resolved", "not_citation", "skipped") and not was_deduped
 
 
 def resolve_bibliography_dir(
@@ -913,6 +926,13 @@ def resolve_bibliography_dir(
     resolved_by_key: Dict[str, Dict[str, Any]] = {}
     review_queue: List[Dict[str, Any]] = []
     processed = 0
+
+    # Build the local-holdings index ONCE and inject it so each entry can be
+    # short-circuited to a source we already hold (MS # B-405 -> B405.pdf).
+    config = dict(config or {})
+    if "holdings_index" not in config:
+        config["holdings_index"] = build_holdings_index()
+    logger.info("Local holdings index: %d source docs", len(config["holdings_index"]))
 
     for f in sorted(bib_dir.glob("*.json")):
         if f.name in skip_files:
