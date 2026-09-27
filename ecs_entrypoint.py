@@ -477,6 +477,64 @@ def _preflight_credit_check() -> None:
         logger.warning("Preflight check failed (proceeding anyway): %s", e)
 
 
+def _preflight_notification_subscriptions() -> None:
+    """Non-blocking: warn if notification/alarm SNS topics have no confirmed subscription.
+
+    Catches the silent-gap class where an email subscription was never confirmed
+    (SNS purges unconfirmed subs after 3 days) so alarms/notifications go
+    nowhere. This never aborts the run — it only logs a WARNING so the pipeline
+    keeps working while making the misconfiguration visible in logs.
+    """
+    region = os.environ.get("AWS_DEFAULT_REGION", REGION)
+    account = os.environ.get("AWS_ACCOUNT_ID", "")
+    env = os.environ.get("ENV_NAME", "dev")
+    # The topics that are supposed to reach a human operator.
+    topic_arns = [
+        os.environ.get("NOTIFICATION_TOPIC_ARN", ""),
+        f"arn:aws:sns:{region}:{account}:{env}-wwii-alarms" if account else "",
+    ]
+    try:
+        sns = boto3.client("sns", region_name=region)
+    except Exception as e:  # pragma: no cover - client init rarely fails
+        logger.warning("SNS subscription preflight skipped (client init): %s", e)
+        return
+
+    for arn in topic_arns:
+        if arn:
+            _warn_if_no_confirmed_subs(sns, arn)
+
+
+def _warn_if_no_confirmed_subs(sns, topic_arn: str) -> None:
+    """Log a WARNING (never raise) if a topic has no confirmed subscription."""
+    try:
+        subs = sns.list_subscriptions_by_topic(TopicArn=topic_arn).get(
+            "Subscriptions", []
+        )
+    except Exception as e:
+        # Topic missing / no permission — surface but never block.
+        logger.warning(
+            "SNS subscription preflight: could not list subs for %s: %s", topic_arn, e
+        )
+        return
+    confirmed = any(
+        s.get("SubscriptionArn", "") not in ("", "PendingConfirmation", "Deleted")
+        for s in subs
+    )
+    if confirmed:
+        return
+    pending = sum(
+        1 for s in subs if s.get("SubscriptionArn", "") == "PendingConfirmation"
+    )
+    detail = f"{pending} pending-confirmation" if pending else "none"
+    logger.warning(
+        "SNS topic %s has NO confirmed subscriptions (%s) — notifications/alarms "
+        "will not be delivered until a subscription is confirmed. Non-blocking; "
+        "pipeline continues.",
+        topic_arn.rsplit(":", 1)[-1],
+        detail,
+    )
+
+
 def run_phase(phase_script: str, extra_args: list) -> None:
     """Run a pipeline phase script with incremental S3 sync."""
     global _current_phase_script
@@ -496,6 +554,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     _load_secrets()
     logger.info("[step] %s: preflight credit check", phase_name)
     _preflight_credit_check()
+    _preflight_notification_subscriptions()
     _patch_config()
     _start_openserp_if_needed(phase_script)
 
@@ -2168,6 +2227,7 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     _load_secrets()
     logger.info("[step] %s: preflight credit check", phase_name)
     _preflight_credit_check()
+    _preflight_notification_subscriptions()
     _patch_config()
     _start_openserp_if_needed(phase_script)
 
