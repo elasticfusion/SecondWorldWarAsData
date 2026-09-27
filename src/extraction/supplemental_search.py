@@ -110,7 +110,17 @@ def _search_archive_org_api(
             query_parts.append(f"title:({words})")
         if author:
             # Use last name for personal names, full string for corporate authors
-            if any(kw in author.lower() for kw in ["department", "division", "admiralty", "office", "command", "staff"]):
+            if any(
+                kw in author.lower()
+                for kw in [
+                    "department",
+                    "division",
+                    "admiralty",
+                    "office",
+                    "command",
+                    "staff",
+                ]
+            ):
                 query_parts.append(f"creator:({author})")
             else:
                 # Handle "LastName, FirstName" and "FirstName LastName" formats
@@ -151,9 +161,7 @@ def _search_archive_org_api(
 def fetch_archive_org_metadata(identifier: str) -> Optional[Dict]:
     """Fetch metadata and PDF link from Archive.org for a given identifier."""
     try:
-        resp = requests.get(
-            f"https://archive.org/metadata/{identifier}", timeout=30.0
-        )
+        resp = requests.get(f"https://archive.org/metadata/{identifier}", timeout=30.0)
         if resp.status_code != 200:
             return None
 
@@ -161,11 +169,8 @@ def fetch_archive_org_metadata(identifier: str) -> Optional[Dict]:
         meta = data.get("metadata", {})
         files = data.get("files", [])
 
-        # Find PDF file
-        pdf_files = [f for f in files if f.get("name", "").lower().endswith(".pdf")]
-        pdf_url = None
-        if pdf_files:
-            pdf_url = f"https://archive.org/download/{identifier}/{pdf_files[0]['name']}"
+        pdf_url = _select_archive_pdf(identifier, files)
+        text_formats = _archive_text_formats(identifier, files)
 
         result = {
             "archive_org_identifier": identifier,
@@ -178,6 +183,17 @@ def fetch_archive_org_metadata(identifier: str) -> Optional[Dict]:
         }
         if pdf_url:
             result["pdf_url"] = pdf_url
+        # Record ALL available processing formats (nothing discarded — the human/
+        # retrieval can pick EPUB even if large). ``text_url``/``text_format`` is
+        # only the size-aware DEFAULT recommendation, not an exclusive choice.
+        if text_formats.get("epub_url"):
+            result["epub_url"] = text_formats["epub_url"]
+            result["epub_size"] = text_formats.get("epub_size")
+        if text_formats.get("djvu_txt_url"):
+            result["djvu_txt_url"] = text_formats["djvu_txt_url"]
+        if text_formats.get("text_url"):
+            result["text_url"] = text_formats["text_url"]
+            result["text_format"] = text_formats["text_format"]
 
         # Remove None values
         return {k: v for k, v in result.items() if v is not None}
@@ -185,6 +201,84 @@ def fetch_archive_org_metadata(identifier: str) -> Optional[Dict]:
     except Exception as e:
         logger.debug("Archive.org metadata fetch failed for %s: %s", identifier, e)
         return None
+
+
+def _dl_url(identifier: str, name: str) -> str:
+    return f"https://archive.org/download/{identifier}/{name}"
+
+
+def _select_archive_pdf(identifier: str, files: list) -> Optional[str]:
+    """Pick the best PDF: prefer source=original over derivatives (_bw/_text),
+    then by size (largest = fullest scan). Deterministic, not file-list order."""
+    pdfs = [f for f in files if f.get("name", "").lower().endswith(".pdf")]
+    if not pdfs:
+        return None
+
+    def _rank(f: dict) -> tuple:
+        original = 1 if f.get("source", "").lower() == "original" else 0
+        try:
+            size = int(f.get("size", 0) or 0)
+        except (TypeError, ValueError):
+            size = 0
+        return (original, size)
+
+    best = max(pdfs, key=_rank)
+    return _dl_url(identifier, best["name"])
+
+
+# Size above which an EPUB is *flagged* as large (usually because it carries
+# embedded images — photos/maps we WANT). Not a rejection threshold: retrieval is
+# human-gated, so a reviewer decides whether to pull a large image-rich EPUB.
+_LARGE_EPUB_BYTES = 50 * 1024 * 1024
+
+
+def _file_size(f: dict) -> int:
+    try:
+        return int(f.get("size", 0) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _archive_text_formats(identifier: str, files: list) -> Dict:
+    """Record ALL available processing formats (nothing discarded) + a default.
+
+    EPUB is preferred as the default when present: pandoc converts it to markdown
+    WITH its embedded images (photos/maps), which the raw DjVuTXT lacks entirely.
+    DjVuTXT is recorded as the lightweight text-only alternative. A large EPUB is
+    flagged (``epub_large``) — not rejected — since size usually means embedded
+    images we want, and retrieval is human-gated anyway.
+    """
+    out: Dict = {}
+
+    epubs = [f for f in files if f.get("name", "").lower().endswith(".epub")]
+    epub = max(epubs, key=_file_size) if epubs else None  # richest (most images)
+    if epub:
+        out["epub_url"] = _dl_url(identifier, epub["name"])
+        out["epub_size"] = _file_size(epub)
+
+    txts = [
+        f
+        for f in files
+        if f.get("name", "").lower().endswith("_djvu.txt")
+        or f.get("format", "") == "DjVuTXT"
+    ]
+    if txts:
+        out["djvu_txt_url"] = _dl_url(identifier, txts[0]["name"])
+
+    _set_default_text(out, epub)
+    return out
+
+
+def _set_default_text(out: Dict, epub: Optional[dict]) -> None:
+    """Set the default processing text: EPUB (with images) if present, else txt."""
+    if epub:
+        out["text_url"] = out["epub_url"]
+        out["text_format"] = (
+            "epub_large" if _file_size(epub) > _LARGE_EPUB_BYTES else "epub"
+        )
+    elif out.get("djvu_txt_url"):
+        out["text_url"] = out["djvu_txt_url"]
+        out["text_format"] = "djvu_txt"
 
 
 def search_openserp(
