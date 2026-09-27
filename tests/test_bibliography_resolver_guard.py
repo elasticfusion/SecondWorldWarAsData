@@ -1,0 +1,75 @@
+"""Tests for bibliography resolver: citation guard, dedup, human-disposition queue.
+
+Design intent (owner): grab what is legitimately online, and queue every real
+citation we cannot grab for HUMAN disposition; skip narrative prose entirely.
+"""
+
+import json
+
+from src.enrichment import bibliography_resolver as br
+
+
+class TestLooksLikeCitation:
+    def test_narrative_prose_is_not_citation(self):
+        entry = {
+            "verbatim_reference": "In October 1941, the Germans had discussed the plan."
+        }
+        assert br._looks_like_citation(entry) is False
+
+    def test_short_prose_is_not_citation(self):
+        assert (
+            br._looks_like_citation({"verbatim_reference": "They advanced."}) is False
+        )
+
+    def test_structured_citation_is_citation(self):
+        entry = {"citation": {"author": "Blumenson", "title": "Breakout and Pursuit"}}
+        assert br._looks_like_citation(entry) is True
+
+    def test_archive_ref_is_citation(self):
+        assert br._looks_like_citation({"archive_reference_number": "RG 407, Box 3"})
+
+    def test_archive_verbatim_is_citation(self):
+        entry = {"verbatim_reference": "AAR, 7th Armd Div, RG 407, Box 12, pp. 3-5"}
+        assert br._looks_like_citation(entry) is True
+
+    def test_empty_is_not_citation(self):
+        assert br._looks_like_citation({}) is False
+
+
+class TestResolveDir:
+    def _run(self, tmp_path, files, monkeypatch):
+        for name, obj in files.items():
+            (tmp_path / name).write_text(json.dumps(obj))
+
+        def fake_entry(entry, _grok=None, _config=None):
+            if not br._looks_like_citation(entry):
+                entry["search_status"] = "not_citation"
+            else:
+                entry["search_status"] = "not_found"
+            return entry
+
+        monkeypatch.setattr(br, "resolve_bibliography_entry", fake_entry)
+        return br.resolve_bibliography_dir(tmp_path, None, {})
+
+    def test_dedup_identical_citations(self, tmp_path, monkeypatch):
+        files = {
+            "a.json": {"citation": {"author": "X", "title": "Y"}},
+            "b.json": {"citation": {"author": "X", "title": "Y"}},
+        }
+        stats = self._run(tmp_path, files, monkeypatch)
+        assert stats["deduped"] == 1  # second identical citation reused
+
+    def test_narrative_marked_not_citation_not_queued(self, tmp_path, monkeypatch):
+        files = {"c.json": {"verbatim_reference": "In October 1941 they met."}}
+        stats = self._run(tmp_path, files, monkeypatch)
+        assert stats["not_citation"] == 1
+        assert stats["queued"] == 0
+        assert not (tmp_path / "review_queue.json").exists()
+
+    def test_unresolvable_citation_queued_for_human(self, tmp_path, monkeypatch):
+        files = {"e.json": {"verbatim_reference": "AAR, RG 407, Box 12, pp. 3-5"}}
+        stats = self._run(tmp_path, files, monkeypatch)
+        assert stats["queued"] == 1
+        queue = json.loads((tmp_path / "review_queue.json").read_text())
+        assert len(queue) == 1
+        assert "human disposition" in queue[0]["reason"]

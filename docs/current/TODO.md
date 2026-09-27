@@ -255,12 +255,45 @@ Currently only events go to Batch API (50% savings). People, places, groups, dat
 *Source: Ardennes debugging 2026-06-13*
 
 #### Bibliography resolver processes duplicate citations redundantly
+#### ~~Bibliography resolver processes duplicate citations redundantly~~ ✅ Fixed 2026-09-27
 Same citation referenced by multiple sub-events is processed N times (NARA identify + search). Cache prevents duplicate API calls but generates log noise (4x identical log lines). Fix: deduplicate by citation text before resolution loop.
+**Done:** `resolve_bibliography_dir` now dedups by citation key (verbatim, else
+author|title); identical citations resolve once and reuse the result (`deduped`
+stat). Tested in `tests/test_bibliography_resolver_guard.py`.
 *Source: Phase 3 log observation 2026-06-16*
 
-#### Narrative content misclassified as document_reference reaches NARA resolver
+#### ~~Narrative content misclassified as document_reference reaches NARA resolver~~ ✅ Fixed 2026-09-27 (guard)
 Footnotes with factual narrative (e.g., "In October 1941, the Germans had discussed...") are being sent to NARA identification. Two fixes needed: (1) improve supplemental.yaml classification prompt to better distinguish narrative from citations, (2) add guard in bibliography_resolver to skip text that doesn't match citation patterns (no author/title/date structure).
+**Done (guard, #2):** `_looks_like_citation` gates the resolvers — prose with no
+bibliographic structure is marked `not_citation` and never sent to NARA
+(preserves legitimate NARA lookups: any RG/archive-ref/structured entry still
+resolves). **Still open (#1):** tighten `supplemental.yaml` classification prompt
+to reduce misclassification upstream (defense in depth).
 *Source: Phase 3 log observation 2026-06-16*
+
+#### Bibliography human-disposition UI (review_queue.json)
+`resolve_bibliography_dir` now writes `review_queue.json` — real citations that
+could not be grabbed online (per the "grab what's legitimately online, human-
+disposition the rest" intent). There is **no UI** to work that queue yet. Build a
+disposition UI analogous to the dedup UI + OCR markdown-review UI: show the
+structured citation + verbatim, let a human mark disposition (request-from-
+archive, manual link, mark-not-a-source, etc.). **NAT: treat as an async human-
+review gate like dedup + mdreview** (tear down while waiting, resume on
+completion). Deploy alongside the other UIs (same ComputeStack deploy-path
+caveats).
+*Source: bibliography-resolution intent discussion 2026-09-27*
+
+#### Archive.org metadata + legitimacy enrichment (free, no new key)
+The resolver already calls the Archive.org Metadata API (`/metadata/{id}`) but
+only extracts PDF url + page count. From the **same call** we can also capture
+**publisher, ISBN, date, creator, rights/license** (actionable publication data
+for the professional-historian audience even when not downloadable) and check
+`access-restricted-item`/rights so only **legitimately** public items are
+presented as "grabbed online" — lending-only/restricted ones route to the
+human-disposition queue. Also consider OpenLibrary (book metadata) and Crossref
+(journal DOIs) as free authoritative metadata sources. Additive to the resolver;
+ties into the existing "Amazon metadata enrichment" future item.
+*Source: bibliography-resolution intent discussion 2026-09-27*
 
 ### Prompts & LLM Integration
 

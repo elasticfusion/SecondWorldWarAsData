@@ -11,15 +11,69 @@ Each search result is verified by Grok before acceptance.
 
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-from urllib.parse import quote
-
-import requests
 
 from src.utils.http_pool import get_session
 
 logger = logging.getLogger(__name__)
+
+
+def _looks_like_citation(entry: Dict[str, Any]) -> bool:
+    """Heuristic: does this entry look like a bibliographic citation vs. narrative?
+
+    Guards the NARA/online resolvers against narrative footnotes misclassified as
+    document references (e.g. "In October 1941, the Germans had discussed..."),
+    which waste identification calls. A citation is accepted if it carries any
+    structured bibliographic signal (author, title, archive ref, RG number,
+    date/page markers). Prose with none of these is treated as non-citation.
+    """
+    if _has_structured_citation_fields(entry):
+        return True
+    citation = entry.get("citation") or {}
+    verbatim = str(entry.get("verbatim_reference") or citation.get("verbatim") or "")
+    if not verbatim.strip():
+        # Nothing structured and no text → nothing to resolve; don't send to NARA.
+        return False
+    return _verbatim_looks_citational(verbatim)
+
+
+def _has_structured_citation_fields(entry: Dict[str, Any]) -> bool:
+    """True if the entry has any explicit bibliographic/archive field."""
+    citation = entry.get("citation") or {}
+    if any(
+        str(citation.get(k) or "").strip()
+        for k in ("author", "title", "publisher", "record_group")
+    ):
+        return True
+    ref = str(entry.get("archive_reference_number") or "")
+    return bool(ref and ref != "None")
+
+
+# Citation-shaped signals: RG/box/folder, p./pp., a 4-digit year, "Last, First".
+_STRUCT_PATTERNS = (
+    r"\bRG\s*\d+",
+    r"\b(?:pp?\.|p\.)\s*\d+",
+    r"\b(?:box|folder|file|vol\.?|no\.?)\s*\d+",
+)
+_WEAK_PATTERNS = (r"\b(1[89]\d{2}|20\d{2})\b", r"[A-Z][a-z]+,\s+[A-Z]")
+
+
+def _verbatim_looks_citational(verbatim: str) -> bool:
+    """True if verbatim text carries citation structure (not just prose).
+
+    Requires a strong structural signal (RG/box/page), OR at least two signals
+    overall — so a prose sentence with only a stray year does not qualify.
+    """
+    strong = any(re.search(p, verbatim) for p in _STRUCT_PATTERNS)
+    if strong:
+        return True
+    total = sum(
+        1 for p in (_STRUCT_PATTERNS + _WEAK_PATTERNS) if re.search(p, verbatim)
+    )
+    return total >= 2
+
 
 # Document types that are military/government records
 ARCHIVE_TYPES = {
@@ -48,6 +102,16 @@ def resolve_bibliography_entry(
     """Resolve a single bibliography entry to its source. Modifies in place."""
     if entry.get("search_status") == "resolved" or entry.get("resource_urls"):
         entry["search_status"] = "resolved"
+        return entry
+
+    # Guard: narrative prose misclassified as a document reference should not be
+    # sent to NARA/online resolvers. Mark it distinctly (not "not_found", which
+    # means "a real citation we couldn't locate") so it's filterable downstream.
+    if not _looks_like_citation(entry):
+        entry["search_status"] = "not_citation"
+        logger.debug(
+            "Skipping non-citation entry (narrative/prose, no bibliographic structure)"
+        )
         return entry
 
     citation = entry.get("citation") or {}
@@ -673,7 +737,13 @@ def _verify_url_content(url: str, citation: str, grok_client: Any) -> bool:
     """Fetch first ~2000 chars of a URL and ask Grok if it matches the citation."""
     try:
         session = get_session()
-        resp = session.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"})
+        resp = session.get(
+            url,
+            timeout=10,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            },
+        )
         if resp.status_code != 200:
             return False
 
@@ -721,6 +791,82 @@ Return ONLY "YES" or "NO". Answer "NO" if the page is unrelated, a generic searc
 # --- Batch Processing ---
 
 
+_REUSE_FIELDS = (
+    "search_status",
+    "resource_urls",
+    "search_source",
+    "availability",
+    "archive_reference_number",
+    "archive_physical_address",
+    "source_metadata",
+)
+
+
+def _citation_key(d: Dict[str, Any]) -> str:
+    """Dedup key: verbatim text, else author|title (lowercased)."""
+    cit = d.get("citation") or {}
+    return (
+        str(d.get("verbatim_reference") or cit.get("verbatim") or "").strip()
+        or f"{cit.get('author', '')}|{cit.get('title', '')}".strip()
+    ).lower()
+
+
+def _reuse_cached_resolution(data: Dict[str, Any], cached: Dict[str, Any]) -> None:
+    """Copy resolution fields from a prior identical citation onto ``data``."""
+    for fld in _REUSE_FIELDS:
+        if fld in cached:
+            data[fld] = cached[fld]
+
+
+def _queue_entry(f_name: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    """Build a human-disposition review-queue record for an unresolved citation."""
+    return {
+        "file": f_name,
+        "citation": data.get("citation") or {},
+        "verbatim_reference": data.get("verbatim_reference", ""),
+        "reason": "not found online — needs human disposition",
+    }
+
+
+def _process_bib_file(
+    f: Path,
+    grok_client: Any,
+    config: Optional[Dict],
+    resolved_by_key: Dict[str, Dict[str, Any]],
+) -> Optional[Tuple[str, bool]]:
+    """Resolve one bibliography file in place. Returns (status, was_deduped) or
+    None if the file should be skipped/errored (caller records the stat)."""
+    data = json.loads(f.read_text(encoding="utf-8"))
+    if data.get("search_status") == "resolved":
+        return ("skipped", False)
+
+    key = _citation_key(data)
+    cached = resolved_by_key.get(key) if key else None
+    if cached is not None:
+        _reuse_cached_resolution(data, cached)
+    else:
+        resolve_bibliography_entry(data, grok_client, config)
+        if key:
+            resolved_by_key[key] = data
+
+    from src.schemas import inject_metadata
+
+    inject_metadata(data)
+    f.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    return (data.get("search_status") or "not_found", cached is not None)
+
+
+def _account_bib_status(stats: Dict[str, int], status: str, was_deduped: bool) -> bool:
+    """Update stats for one processed file. Returns True if it needs queueing
+    (a real, non-deduped citation that was not found online)."""
+    if was_deduped:
+        stats["deduped"] += 1
+    stats[status if status in stats else "not_found"] += 1
+    return (
+        status not in ("resolved", "not_citation", "skipped") and not was_deduped
+    )
+
+
 def resolve_bibliography_dir(
     bib_dir: Path,
     grok_client: Any = None,
@@ -729,52 +875,71 @@ def resolve_bibliography_dir(
 ) -> Dict[str, int]:
     """Resolve all unresolved bibliography entries in a directory.
 
-    Returns stats: {resolved, not_found, skipped, errors}
-    """
-    stats = {"resolved": 0, "not_found": 0, "skipped": 0, "errors": 0}
-    skip_files = {"index.json", "review_queue.json"}
+    Grabs what is legitimately available online (Archive.org/Gutenberg/HathiTrust/
+    LOC/NARA-catalog, Grok-verified) or produces an actionable archive locator;
+    every real citation we cannot grab is queued for human disposition
+    (``review_queue.json``). Narrative prose (``not_citation``) is skipped.
 
-    files = sorted(bib_dir.glob("*.json"))
+    Returns stats: {resolved, not_found, skipped, errors, not_citation, queued,
+    deduped}.
+    """
+    stats = {
+        k: 0
+        for k in (
+            "resolved",
+            "not_found",
+            "skipped",
+            "errors",
+            "not_citation",
+            "queued",
+            "deduped",
+        )
+    }
+    skip_files = {"index.json", "review_queue.json"}
+    resolved_by_key: Dict[str, Dict[str, Any]] = {}
+    review_queue: List[Dict[str, Any]] = []
     processed = 0
 
-    for f in files:
+    for f in sorted(bib_dir.glob("*.json")):
         if f.name in skip_files:
             continue
+        if max_items and processed >= max_items:
+            break
+        processed += 1
         try:
-            data = json.loads(f.read_text(encoding="utf-8"))
+            result = _process_bib_file(f, grok_client, config, resolved_by_key)
         except (json.JSONDecodeError, OSError):
             stats["errors"] += 1
             continue
-
-        if data.get("search_status") == "resolved":
-            stats["skipped"] += 1
-            continue
-
-        if max_items and processed >= max_items:
-            break
-
-        try:
-            resolve_bibliography_entry(data, grok_client, config)
-            from src.schemas import inject_metadata
-
-            inject_metadata(data)
-            f.write_text(
-                json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
-            )
-            if data.get("search_status") == "resolved":
-                stats["resolved"] += 1
-            else:
-                stats["not_found"] += 1
-        except Exception as e:
+        except Exception as e:  # resolver failure — count, keep going
             logger.warning("Failed to resolve %s: %s", f.name, e)
             stats["errors"] += 1
+            continue
 
-        processed += 1
+        status, was_deduped = result
+        if _account_bib_status(stats, status, was_deduped):
+            # Real citation, unresolved online → human disposition.
+            data = json.loads(f.read_text(encoding="utf-8"))
+            review_queue.append(_queue_entry(f.name, data))
+            stats["queued"] += 1
+
+    if review_queue:
+        try:
+            (bib_dir / "review_queue.json").write_text(
+                json.dumps(review_queue, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+        except OSError as e:
+            logger.warning("Failed to write bibliography review_queue.json: %s", e)
 
     logger.info(
-        "Bibliography resolution: %d resolved, %d not found, %d skipped, %d errors",
+        "Bibliography resolution: %d resolved, %d not found (%d queued for review), "
+        "%d not-citation, %d deduped, %d skipped, %d errors",
         stats["resolved"],
         stats["not_found"],
+        stats["queued"],
+        stats["not_citation"],
+        stats["deduped"],
         stats["skipped"],
         stats["errors"],
     )
