@@ -87,6 +87,29 @@ cost TBD; the fix is deployed-pending (ships in the Chandra path with the next
 `submit_ocr_job` run — no image rebuild needed, it's a client-side arg change).
 *Source: M1019 language-path investigation 2026-09-24*
 
+#### NAT torn down between compute phases (persistent race) — should only drop at dedup gate + final completion
+NAT teardown keeps firing **between compute phases**, stranding the next phase.
+Observed live 2026-09-27: Phase 1 finished → PARSED_TOPIC cascade launched
+Phase 2 (NAT create) but Phase 1's own teardown deleted NAT **~2s after** Phase
+2 launched → Phase 2 ran with no networking, failed Grok/S3, was relaunched by
+self-heal (~8 min lost). Prior "fixes" (lock-check before teardown) don't cover
+this: **Phase 2's lock isn't held yet** when Phase 1 tears down in the S3-notif
+cascade, so the guard passes.
+
+**Intended lifecycle (confirmed with owner):**
+- Phases 1 → 2 (and any compute→compute): NAT stays **UP continuously** — never
+  torn down between compute phases.
+- **Dedup gate: NAT SHOULD tear down** (async, indefinite human review) — this
+  teardown is correct/wanted. Phase 3 re-creates NAT when review completes.
+- **End of Phase 3 / job complete: final teardown.**
+
+Rule to implement: tear down **only** at (a) the dedup gate and (b) final
+completion — never between compute phases. Fix likely: gate `_teardown_networking`
+/ submit-only teardown on "no downstream compute work queued" (check pending
+content/parsed queues, not just current locks), or make the teardown decision
+explicit per phase-transition type rather than per-phase-completion.
+*Source: St. Vith AWS end-to-end run 2026-09-27*
+
 #### Deploy + wire the OCR markdown-review UI
 The markdown-review Lambda + UI is **built and tested but not deployed**
 (commit d1c9869): `lambda_handlers/mdreview_ui_handler.py` (two-pane page image
