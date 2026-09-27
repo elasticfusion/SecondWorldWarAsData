@@ -61,8 +61,10 @@ Related: `docs/current/TODO.md` "True multi-job concurrency" (High/Future) and
 - **Per-book locks** (`lock#book#{book}#{phase}`) instead of one global per-phase
   lock, so different books run the same phase concurrently while a single book
   can't double-run a phase.
-- A **dispatcher** (trigger Lambda or a small Step Functions map) pulls from the
-  pending queue and launches up to the pool size, respecting limits (§5).
+- A **Step Functions Map** (Standard workflow) fans out over pending docs with
+  `MaxConcurrency` = the derived pool size (§5); Map branches call the shared
+  DynamoDB coordination state (NAT lease, rate/credit, entity store). SFN owns
+  fan-out/retry/flow; DynamoDB owns coordination.
 - **OCR (AWS Batch)** already fans out across chunks/jobs; extend to submit
   multiple documents' OCR jobs concurrently up to the Batch vCPU/GPU quota.
 
@@ -558,7 +560,7 @@ Lambda/task time limits.
 3. **Job-aware NAT** (DynamoDB per-task leases + demand from live leases/running
    tasks/pending queues) replacing per-phase delayed-teardown — fixes the race by
    construction AND required for safe concurrency.
-4. **Dispatcher with bounded pool + limit-aware backpressure** — per-resource
+4. **Step Functions Map dispatcher** (Standard; `MaxConcurrency`=pool) with per-resource
    caps (Fargate vCPU / Batch GPU / Grok rate), cluster-wide Grok limiter (§5.2),
    **credit-aware submission gating (§9.0 — don't submit beyond available credit;
    overspend = unprocessed work)**, soft spend-threshold alert (§9, default ~$10).
@@ -580,9 +582,24 @@ Lambda/task time limits.
 
 - Pool size / per-task Grok rate — set after querying live quotas
   (`aws service-quotas get-service-quota`) and the Grok plan's rate limit.
-- Dispatcher: extend the trigger Lambda, or adopt **Step Functions** (Map state
-  with `MaxConcurrency` gives limit-aware fan-out for free) — the existing
-  "Step Functions pipeline orchestration" TODO aligns here.
+- ~~Dispatcher: trigger Lambda vs Step Functions~~ **DECIDED (2026-09-27):
+  Step Functions (Map state).** Rationale: the hard part — cluster-wide NAT
+  leases (§4), Grok rate limiter + credit reservation (§5.2/§9.0), shared
+  entity-store writes (§3.3), the global dedup barrier (§3.2) — is
+  **shared-state coordination in DynamoDB that must be built regardless of
+  orchestrator**. Since that cost is orchestrator-agnostic, take Step Functions'
+  free wins on the easy part: Map `MaxConcurrency` (limit-aware fan-out, §5),
+  built-in per-item retry/catch (§6), and execution-history observability (§10) —
+  code we'd otherwise hand-build in the trigger Lambda.
+  **Constraints this imposes (must design for):**
+  1. **Standard** workflow (not Express — the 5-min cap can't hold multi-hour
+     docs); accept **per-state-transition billing** on long-lived executions.
+  2. Human gates (dedup / OCR review / bibliography disposition) modeled with
+     **`waitForTaskToken`** callbacks — the execution parks (possibly days) until
+     the reviewer completes; NAT demand drops to 0 meanwhile (§4).
+  3. **SFN orchestrates; DynamoDB coordinates** — Map branches still call the
+     shared NAT-lease / rate / credit / entity-store state. Step Functions does
+     NOT own coordination; it owns fan-out, retry, and flow.
 - Dedup barrier policy for stragglers (timeout vs wait).
 - ~~Whether zips/rar are auto-expanded~~ **DECIDED (2026-09-27):** archives MUST
   be unarchived before submission — the §7 pre-stage unpacks zips/rars to
