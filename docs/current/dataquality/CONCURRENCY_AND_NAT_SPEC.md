@@ -379,30 +379,103 @@ cheap.
 
 ---
 
-## 7. Phased implementation
+## 7. Input pre-stage: archive expansion + heterogeneous media routing
 
-1. **Per-book locks** replacing the single per-phase lock (unblocks concurrency;
-   smallest change).
-2. **Job-aware NAT** (DynamoDB per-task leases + demand computed from live
-   leases/running tasks/pending queues) replacing per-phase delayed-teardown —
-   fixes the race by construction AND is required for safe concurrency.
-3. **Dispatcher with bounded pool + limit-aware backpressure** (config pool size;
-   global Grok rate limiter).
-4. **Shared-entity-store hardening** — route cross-book entity writes through
-   DynamoEntityStore with conditional/idempotent updates.
-5. **Global dedup barrier** — quiescence detection across per-book locks.
-6. **Batch resilience** (§6.1–6.4) — build the **failure-CAUSE taxonomy +
-   per-cause policy engine first** (§6.1), then the specific causes plug in:
-   per-batch retrieval + accounting; size-aware chunking + split-resubmit;
-   model-transition (config/transitional cause: no-retry-on-retirement +
-   fallback chain); automatic whole-batch resubmit-on-failure (bounded → failed/
-   needs-review queue). Classify by cause, not response shape. Verify Grok
-   per-batch limits + batch-mode model-change surfacing first.
-7. **Load test** on a subset of WWIIArchives (e.g. 20 docs) before full drain.
+The backlog is **not** uniform "books": 238 PDFs, **204 zips + 2 rars**, 184 JPGs.
+A pre-stage must run before the concurrency dispatcher:
+- **Archive expansion** — unpack zips/rars to individual source files. A zip may
+  contain **already-held** docs (dedupe against the holdings index, §local_holdings)
+  and mixed media. Expansion is itself parallelizable + resumable (track expanded
+  state so a re-run doesn't re-unpack 502 GB).
+- **Media-type routing** — each expanded file is classified (existing
+  `media_detection`/`disposition_classifier`) and routed to the correct track,
+  which the dispatcher must treat as **heterogeneous work items**, not all "books":
+  - Scanned text PDF → OCR (Chandra Batch) → narrative extraction.
+  - Native/text PDF, docx, epub → text converter → narrative extraction.
+  - Structured/reference (OOB) → `oob_markdown` parser track (NOT narrative).
+  - Images/maps (184 JPGs) → vision path (`MAP_IMAGE_AV_INGESTION.md`), NOT the
+    LLM narrative pipeline.
+  - Video → keyframes + transcription.
+- The dispatcher pool therefore schedules **mixed work types** with different
+  resource profiles (GPU-OCR vs Grok-extraction vs vision vs CPU-parse) — pool
+  accounting (§5) must be **per-resource** (Batch GPU vs Fargate vCPU vs Grok
+  rate), not a single number.
+
+## 8. Completion tracking + ordering
+
+- **Per-document lifecycle state** (DynamoDB): `held_unprocessed → expanding →
+  routed → ocr → parsed → extracted → deduped → enriched → done` (or
+  `failed/needs-review`). The dispatcher dispatches only docs not already `done`
+  or in-flight — idempotent across restarts; no re-dispatch of completed work.
+- **Ordering / prioritization** — decide FIFO vs priority (e.g. ETO/B-series,
+  or complete-a-collection-first). Waves for the dedup barrier (§3.2) are formed
+  from this ordering.
+
+## 9. Cost guardrail (throughput must not blow the budget)
+
+Concurrency optimizes throughput; it must not blow spend. The existing $75/mo
+budget alarm is a *detector*, not a *control*.
+- **Cost-rate circuit breaker** — track spend rate (Grok tokens × price + Fargate
+  + Batch GPU); if it exceeds a configured $/hr ceiling, **throttle the pool**
+  (reduce `MAX_CONCURRENT_*`) rather than keep launching. Backpressure on cost,
+  same as on quota.
+- **Spot-first** already reduces compute cost; keep GPU-OCR (the priciest) pool
+  small and separately capped.
+- **Dry-run estimate** — before a full-archive drain, estimate total cost from a
+  sample (per-doc token/GPU cost × 628) and surface it for approval.
+
+## 10. Observability at scale
+
+Draining 628 docs across N parallel jobs over hours/days needs visibility:
+- **Progress dashboard** — counts per lifecycle state (§8), throughput
+  (docs/hr), ETA, per-resource utilization vs quota (§5), failure/needs-review
+  counts by cause (§6.1 taxonomy).
+- **Stuck-job detection** — a doc in a state past a timeout → alert (extends the
+  existing stale-lock check).
+- **Cost tracking** — running spend vs the guardrail (§9), to Slack (§alerting).
+- Reuse the existing SNS→Slack path; the failure-cause taxonomy makes alerts
+  actionable ("12 docs failed: model-not-found → fallback needed").
+
+## 11. Dedup-barrier scalability
+
+Dedup is global + roughly O(entities²) (cross-book compare + coords cache). As the
+corpus grows past thousands of docs it becomes the bottleneck and may exceed
+Lambda/task time limits.
+- **Incremental dedup** — only compare NEW entities against the existing resolved
+  set (blocking/indexing by normalized name + geo cell), not all-pairs each wave.
+- **Bounded wave size** — cap docs per dedup wave so the barrier stays within
+  task time limits; multiple waves over the drain.
+- Keep it a barrier (correctness), but make its **cost sublinear** in corpus size.
 
 ---
 
-## 8. Open decisions
+## 12. Phased implementation
+
+1. **Input pre-stage** — archive expansion (zip/rar) + media routing + per-doc
+   lifecycle state (§7, §8); dedupe expanded files against holdings.
+2. **Per-book/per-doc locks** replacing the single per-phase lock (unblocks
+   concurrency; smallest core change).
+3. **Job-aware NAT** (DynamoDB per-task leases + demand from live leases/running
+   tasks/pending queues) replacing per-phase delayed-teardown — fixes the race by
+   construction AND required for safe concurrency.
+4. **Dispatcher with bounded pool + limit-aware backpressure** — per-resource
+   caps (Fargate vCPU / Batch GPU / Grok rate), cluster-wide Grok limiter (§5.2),
+   cost circuit breaker (§9).
+5. **Shared-entity-store hardening** — cross-book entity writes via
+   DynamoEntityStore conditional/idempotent updates (§3.3).
+6. **Global dedup barrier** — quiescence across per-doc locks; incremental +
+   bounded-wave dedup (§11).
+7. **Batch resilience** (§6.1–6.4) — failure-CAUSE taxonomy + per-cause policy
+   FIRST, then causes plug in (per-batch retrieval, chunk/split-resubmit,
+   model-transition fallback, auto resubmit-on-failure). Verify Grok per-batch
+   limits + batch-mode model-change surfacing first.
+8. **Observability** (§10) — progress/cost/failure dashboard + stuck-job alerts.
+9. **Load test** on a subset of WWIIArchives (e.g. 20 docs, mixed media) before
+   full drain; use it to set pool sizes + validate the cost estimate.
+
+---
+
+## 13. Open decisions
 
 - Pool size / per-task Grok rate — set after querying live quotas
   (`aws service-quotas get-service-quota`) and the Grok plan's rate limit.
@@ -410,5 +483,7 @@ cheap.
   with `MaxConcurrency` gives limit-aware fan-out for free) — the existing
   "Step Functions pipeline orchestration" TODO aligns here.
 - Dedup barrier policy for stragglers (timeout vs wait).
-- Whether zips/rar in the archive are auto-expanded before dispatch (238 PDFs are
-  direct; 204 zips need an unpack stage).
+- ~~Whether zips/rar are auto-expanded~~ **DECIDED (2026-09-27):** archives MUST
+  be unarchived before submission — the §7 pre-stage unpacks zips/rars to
+  individual source files (deduped against holdings, media-routed) before the
+  dispatcher sees them. No archive is ever submitted directly.
