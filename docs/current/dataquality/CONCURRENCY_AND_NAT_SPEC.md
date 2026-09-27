@@ -253,6 +253,31 @@ cluster-wide shared state once we go parallel.
 - Dedup barrier must handle a book that never finishes (timeout → proceed with
   the books that did, or hold — decide).
 
+### 6.1 Grok Batch failure + size-limit handling (verified current state)
+
+**Handled today (post-submission):**
+- **Whole-batch failure** (`num_error >= total`) → poller marks `failed` + SNS
+  notify with book name (not silently dropped).
+- **Partial failure** (some requests error) → batch treated `complete`; individual
+  errored requests classified + **retried at the result level** (`batch_api`
+  statuses: valid/truncated/empty/error/missing/retry_ok/retry_fail).
+- **24h timeout** — `poll_batch(max_hours=24)` + poller marks jobs failed after
+  24h (matches Grok's batch completion window; an unfinished batch expires).
+- **Transient poll errors** — tolerated up to 5 consecutive (60s backoff).
+
+**GAP — batch that EXCEEDS Grok's per-batch limit at submission:**
+- `submit_batch` only retries on **429**. A **size/limit rejection** (too many
+  requests or too many enqueued tokens per batch — see the "verify Grok batch
+  limits" open item) would hit `raise_for_status()` and **fail hard** — there is
+  **no pre-emptive chunking** and **no split-on-rejection**. A large document or
+  the archive fan-out can produce an oversized batch that errors out.
+- **Required:** (1) verify Grok's per-batch limits (requests + enqueued tokens);
+  (2) **chunk** the JSONL to stay under them before submit; (3) on a size-class
+  rejection, **split and resubmit** rather than raise; (4) track the sub-batches
+  as a group so retrieval/accounting stays correct (ties to §3.4 per-batch
+  retrieval). Under concurrency, chunking also interacts with the cluster-wide
+  rate/limit budget (§5.2).
+
 ---
 
 ## 7. Phased implementation
