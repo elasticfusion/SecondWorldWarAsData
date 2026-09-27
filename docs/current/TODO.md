@@ -250,6 +250,29 @@ to the task role (`cloudformation/iam.yaml`) so the preflight does its job.
 Non-blocking; the run proceeds regardless.
 *Source: St. Vith verification run 2026-09-27 log*
 
+#### Misleading "0 processed, N failed" log in batch mode
+In batch mode, the synchronous core-extraction step does **not** process inline —
+it *collects* requests for the xAI Batch API. But it still logs
+`Core extraction complete: 0 processed, 140 failed` / `Phase 2 complete: 0
+processed, 140 failed` (70 events + 70 dates requests deferred to the batch),
+which reads like a total failure when the batch actually submitted fine
+(`num_requests: 70, num_success: 70`). Reword the batch-mode path to report
+"N requests collected for batch" instead of "0 processed / N failed" so operators
+(and the zero-count warning) don't false-alarm. Observability, not correctness.
+*Source: St. Vith verification run 2026-09-27 — batch_bb0c1ba0 succeeded 70/70 while log said "140 failed"*
+
+#### Confirm batch-poller sees ECS-submitted batch jobs (poller visibility)
+The `dev-wwii-batch-poller` Lambda logged **"No pending batch jobs"** on every
+5-min poll while `batch_bb0c1ba0` was submitted and completed (70/70) by the
+running phase2 task. Likely fine for this run (the task handles submit→retrieve
+in-process for the interactive path), but the **detached/async path** the
+concurrency build relies on assumes the Lambda poller picks up ECS-submitted
+batches. **Confirm the batch-job record key/table the task writes matches what
+the poller scans** (`metrics#batch_...` was present; the poller may key on a
+different `batch_job#`/pending marker). Must be resolved *before* the Step
+Functions Map dispatcher depends on poller-driven retrieval.
+*Source: St. Vith verification run 2026-09-27 — poller "No pending" vs live batch*
+
 #### Delete stale legacy `chunk-NNN` OCR dirs superseded by re-OCR
 Re-OCR runs (off-by-one fix) write new page-range chunk dirs
 (`chunk-p0001-0050`, …) but leave the **old pre-fix `chunk-000`..`chunk-NNN`**
