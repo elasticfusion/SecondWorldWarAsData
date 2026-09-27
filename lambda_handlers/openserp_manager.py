@@ -111,7 +111,12 @@ def _get_last_task_time(ecs, cluster, task_arns):
 
 
 def _any_lock_held() -> bool:
-    """Check if any pipeline lock exists in DynamoDB."""
+    """Check if any pipeline lock OR live NAT lease exists in DynamoDB.
+
+    Under concurrency (M3, §4), a running task's demand is represented by a
+    per-task lease (`nat#lease#...`) as well as its phase lock; either means the
+    network is still needed, so the idle monitor must not tear down.
+    """
     import boto3
 
     try:
@@ -119,13 +124,16 @@ def _any_lock_held() -> bool:
         table = boto3.resource("dynamodb", region_name=region).Table(
             f"{ENV_NAME}-wwii-api-cache"
         )
-        resp = table.scan(
-            FilterExpression="begins_with(cache_key, :prefix)",
-            ExpressionAttributeValues={":prefix": "lock#"},
-            ProjectionExpression="cache_key",
-            Limit=10,
-        )
-        return resp.get("Count", 0) > 0
+        for prefix in ("lock#", "nat#lease#"):
+            resp = table.scan(
+                FilterExpression="begins_with(cache_key, :prefix)",
+                ExpressionAttributeValues={":prefix": prefix},
+                ProjectionExpression="cache_key",
+                Limit=10,
+            )
+            if resp.get("Count", 0) > 0:
+                return True
+        return False
     except Exception as e:
         logger.warning("Lock check failed: %s", e)
         return True  # Assume locked on error — don't tear down

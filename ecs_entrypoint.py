@@ -47,6 +47,7 @@ def _handle_sigterm(_signum, _frame):
     try:
         _final_sync(_current_phase_script)
         _remove_lock(_current_phase_script)
+        _release_nat_lease()
         logger.info("Emergency sync complete — exiting cleanly")
     except Exception as e:
         logger.error("Emergency sync failed: %s", e)
@@ -216,6 +217,7 @@ class BackgroundSync:
 
     def _sync(self):
         try:
+            _heartbeat_nat_lease()  # M3: keep NAT lease alive while task runs
             for name, prefix in [("output", "output")]:
                 d = WORKDIR / name
                 if d.exists():
@@ -539,6 +541,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     """Run a pipeline phase script with incremental S3 sync."""
     global _current_phase_script
     _current_phase_script = phase_script
+    _acquire_nat_lease()  # M3: register NAT demand for the life of this task
     phase_name = Path(phase_script).stem
     WORKDIR.mkdir(parents=True, exist_ok=True)
 
@@ -615,6 +618,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
         _final_sync(phase_script)
         if "phase3" not in phase_script:
             _remove_lock(phase_script)
+        _release_nat_lease()  # M3: task exiting — drop NAT demand
         sys.exit(result.returncode)
 
     logger.info(
@@ -636,6 +640,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: final S3 sync", phase_name)
     _final_sync(phase_script)
     _post_process(phase_script, env)
+    _release_nat_lease()  # M3: task done — drop NAT demand
 
 
 def _prepare_phase1() -> None:
@@ -2136,6 +2141,72 @@ def _build_phase_section(phase_script: str) -> str:
     return "".join(parts)
 
 
+def _acquire_nat_lease() -> None:
+    """Register this task's NAT demand (M3, §4). AWS mode only; never blocks."""
+    if not os.environ.get("ECS_TASK_ID") and not os.environ.get(
+        "ECS_CONTAINER_METADATA_URI_V4"
+    ):
+        return  # local run — no cluster NAT to manage
+    try:
+        from src.utils import nat_lease
+
+        nat_lease.acquire_lease()
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("NAT lease acquire failed: %s", e)
+
+
+def _heartbeat_nat_lease() -> None:
+    """Extend this task's NAT lease (called from the background sync loop)."""
+    if not os.environ.get("ECS_TASK_ID") and not os.environ.get(
+        "ECS_CONTAINER_METADATA_URI_V4"
+    ):
+        return
+    try:
+        from src.utils import nat_lease
+
+        nat_lease.heartbeat_lease()
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("NAT lease heartbeat failed: %s", e)
+
+
+def _release_nat_lease() -> None:
+    """Drop this task's NAT demand (normal exit / SIGTERM / human-gate park)."""
+    if not os.environ.get("ECS_TASK_ID") and not os.environ.get(
+        "ECS_CONTAINER_METADATA_URI_V4"
+    ):
+        return
+    try:
+        from src.utils import nat_lease
+
+        nat_lease.release_lease()
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("NAT lease release failed: %s", e)
+
+
+def _nat_demand_present() -> bool:
+    """Cluster-wide NAT demand (M3, §4): live leases OR running pipeline tasks.
+
+    Cross-checks the lease count against the ECS running-task list (ground truth)
+    so a dropped lease can't wrongly tear NAT down while a book is still running.
+    Returns True (demand present) on any error — never tear down on uncertainty.
+    """
+    try:
+        env = os.environ.get("ENV_NAME", "dev")
+        ecs = boto3.client("ecs", region_name=REGION)
+        running = ecs.list_tasks(
+            cluster=f"{env}-wwii-pipeline", desiredStatus="RUNNING"
+        ).get("taskArns", [])
+        # Exclude openserp (support service) and our own task from "pipeline demand"
+        own = os.environ.get("ECS_TASK_ID", "")
+        pipeline = [t for t in running if "openserp" not in t and own not in t]
+        from src.utils import nat_lease
+
+        return nat_lease.has_nat_demand(running_task_count=len(pipeline))
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("NAT demand check failed: %s — assuming demand", e)
+        return True
+
+
 def _multi_doc_enabled() -> bool:
     """True if multi-document concurrency is switched on (config kill-switch).
 
@@ -2320,10 +2391,18 @@ def _schedule_delayed_teardown(delay_minutes: int = None) -> None:
 
 def _teardown_networking() -> None:
     """Scale down OpenSERP and invoke nat_manager to delete NAT + VPC endpoints.
-    Skipped if another phase has an active lock (prevents killing networking mid-run).
+    Skipped if another phase has an active lock OR any NAT demand remains
+    (per-task leases / running tasks) — prevents killing networking that a
+    concurrent book still needs (M3, §4).
     """
+    # M3: this task no longer needs the network — drop its lease first, then
+    # decide teardown from cluster-wide demand (not this task's state alone).
+    _release_nat_lease()
     if _any_pipeline_lock_held():
         logger.info("Skipping network teardown — another phase lock is active")
+        return
+    if _nat_demand_present():
+        logger.info("Skipping network teardown — NAT demand remains (leases/tasks)")
         return
     try:
         env = os.environ.get("ENV_NAME", "dev")
@@ -2353,6 +2432,7 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     """Run phase in batch mode, submit to Grok, enqueue job, then exit immediately."""
     global _current_phase_script
     _current_phase_script = phase_script
+    _acquire_nat_lease()  # M3: register NAT demand
     phase_name = Path(phase_script).stem
     os.environ["PIPELINE_PHASE"] = phase_name
     if "--batch" not in extra_args:
