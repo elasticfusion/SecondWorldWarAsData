@@ -1934,57 +1934,79 @@ def _stamp_schema_versions() -> None:
             logger.warning("Could not re-enable trigger Lambda: %s", e)
 
 
+def _held_lock_keys() -> list:
+    """Return all currently-held pipeline lock keys.
+
+    Serial mode (multi_doc off): exact batch_get of the 3 singleton phase keys
+    (unchanged pre-M2 behavior). Multi-doc mode: a prefix scan on `lock#` so
+    per-document keys (`...phase2-extract#Book`) are also detected — required so
+    NAT/OpenSERP teardown decisions stay correct under concurrency (§12.2, §15).
+    """
+    env_name = os.environ.get("ENV_NAME", "dev")
+    table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
+    if _multi_doc_enabled():
+        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
+        keys: list = []
+        kwargs = {
+            "FilterExpression": "begins_with(cache_key, :p)",
+            "ExpressionAttributeValues": {":p": "lock#"},
+            "ProjectionExpression": "cache_key",
+        }
+        while True:
+            resp = table.scan(**kwargs)
+            keys.extend(i["cache_key"] for i in resp.get("Items", []))
+            lek = resp.get("LastEvaluatedKey")
+            if not lek:
+                break
+            kwargs["ExclusiveStartKey"] = lek
+        return keys
+    # Serial: exact keys only
+    dynamodb = boto3.client("dynamodb", region_name=REGION)
+    lock_keys = [
+        f"lock#{env_name}-wwii-phase1-parse",
+        f"lock#{env_name}-wwii-phase2-extract",
+        f"lock#{env_name}-wwii-phase3-enrich",
+    ]
+    resp = dynamodb.batch_get_item(
+        RequestItems={
+            table_name: {
+                "Keys": [{"cache_key": {"S": k}} for k in lock_keys],
+                "ProjectionExpression": "cache_key",
+            }
+        }
+    )
+    return [i["cache_key"]["S"] for i in resp.get("Responses", {}).get(table_name, [])]
+
+
 def _other_phase_locked(current_phase_script: str) -> bool:
-    """Check if any OTHER phase (not the current one) has a lock held."""
+    """Check if any OTHER phase (not the current one) has a lock held.
+
+    Under multi-doc, "other phase" means a lock whose phase-suffix differs from
+    the current phase — a concurrent lock for the SAME phase (another book) is
+    NOT "another phase" and must not block same-phase teardown logic.
+    """
     try:
         env_name = os.environ.get("ENV_NAME", "dev")
-        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
-        dynamodb = boto3.client("dynamodb", region_name=REGION)
-        lock_keys = [
-            f"lock#{env_name}-wwii-phase1-parse",
-            f"lock#{env_name}-wwii-phase2-extract",
-            f"lock#{env_name}-wwii-phase3-enrich",
-        ]
         current_suffix = PHASE_SUFFIXES.get(current_phase_script, "")
-        current_lock = (
+        current_prefix = (
             f"lock#{env_name}-wwii-{current_suffix}" if current_suffix else ""
         )
-        resp = dynamodb.batch_get_item(
-            RequestItems={
-                table_name: {
-                    "Keys": [{"cache_key": {"S": k}} for k in lock_keys],
-                    "ProjectionExpression": "cache_key",
-                }
-            }
-        )
-        for item in resp.get("Responses", {}).get(table_name, []):
-            if item["cache_key"]["S"] != current_lock:
-                return True
+        for held in _held_lock_keys():
+            # Same phase (exact singleton key or a per-doc key of this phase) → not "other"
+            if current_prefix and (
+                held == current_prefix or held.startswith(current_prefix + "#")
+            ):
+                continue
+            return True
     except Exception:
         pass
     return False
 
 
 def _any_pipeline_lock_held() -> bool:
-    """Check if ANY pipeline lock exists (Phase 1, 2, or 3)."""
+    """Check if ANY pipeline lock exists (Phase 1, 2, or 3; any book)."""
     try:
-        env_name = os.environ.get("ENV_NAME", "dev")
-        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
-        dynamodb = boto3.client("dynamodb", region_name=REGION)
-        lock_keys = [
-            f"lock#{env_name}-wwii-phase1-parse",
-            f"lock#{env_name}-wwii-phase2-extract",
-            f"lock#{env_name}-wwii-phase3-enrich",
-        ]
-        resp = dynamodb.batch_get_item(
-            RequestItems={
-                table_name: {
-                    "Keys": [{"cache_key": {"S": k}} for k in lock_keys],
-                    "ProjectionExpression": "cache_key",
-                }
-            }
-        )
-        return len(resp.get("Responses", {}).get(table_name, [])) > 0
+        return len(_held_lock_keys()) > 0
     except Exception:
         return True  # Assume locked on error — don't tear down
 
@@ -2114,13 +2136,49 @@ def _build_phase_section(phase_script: str) -> str:
     return "".join(parts)
 
 
-def _acquire_lock(phase_script: str) -> bool:
-    """Acquire a DynamoDB lock for this phase. Returns True if acquired."""
+def _multi_doc_enabled() -> bool:
+    """True if multi-document concurrency is switched on (config kill-switch).
+
+    Reads concurrency.multi_doc.enabled from the baked config. Defaults to
+    False, so absent config == today's serial per-phase behavior (§15 M2).
+    """
+    try:
+        import yaml as _yaml
+
+        cfg = _yaml.safe_load(Path("/app/config.yaml").read_text())
+        return bool(
+            cfg.get("concurrency", {}).get("multi_doc", {}).get("enabled", False)
+        )
+    except Exception:
+        return False
+
+
+def _lock_key(phase_script: str) -> str:
+    """Build the DynamoDB lock key for a phase.
+
+    Serial mode (multi_doc off) OR no book set → the historical singleton
+    per-phase key `lock#{env}-wwii-{suffix}` (byte-identical to pre-M2 behavior,
+    so pool=1 == serial). Multi-doc mode WITH a book → the per-document key
+    `lock#{env}-wwii-{suffix}#{book}`, letting different books hold the same
+    phase concurrently while still serializing the same book+phase (§12.2).
+    """
     family_suffix = PHASE_SUFFIXES.get(phase_script)
     if not family_suffix:
-        return True
+        return ""
     env_name = os.environ.get("ENV_NAME", "dev")
-    lock_key = f"lock#{env_name}-wwii-{family_suffix}"
+    base = f"lock#{env_name}-wwii-{family_suffix}"
+    if _multi_doc_enabled():
+        book = os.environ.get("BOOK_NAME", "")
+        if book:
+            return f"{base}#{book}"
+    return base
+
+
+def _acquire_lock(phase_script: str) -> bool:
+    """Acquire a DynamoDB lock for this phase. Returns True if acquired."""
+    lock_key = _lock_key(phase_script)
+    if not lock_key:
+        return True
     logger.info("Acquiring DynamoDB lock: %s", lock_key)
     try:
         import time
@@ -2147,11 +2205,9 @@ def _acquire_lock(phase_script: str) -> bool:
 
 def _remove_lock(phase_script: str) -> None:
     """Remove the DynamoDB lock for this phase."""
-    family_suffix = PHASE_SUFFIXES.get(phase_script)
-    if not family_suffix:
+    lock_key = _lock_key(phase_script)
+    if not lock_key:
         return
-    env_name = os.environ.get("ENV_NAME", "dev")
-    lock_key = f"lock#{env_name}-wwii-{family_suffix}"
     try:
         table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
         table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
