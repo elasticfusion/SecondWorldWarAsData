@@ -306,7 +306,10 @@ def poll_batch(
         # Fail fast on xAI cancellation/rejection or an empty accepted batch
         # (raises BatchSubmissionError) instead of polling 0/0 for hours.
         _check_batch_submission_ok(
-            batch, batch_id, submitted_count, total,
+            batch,
+            batch_id,
+            submitted_count,
+            total,
             grace_elapsed=(time.monotonic() - start) > _SUBMIT_GRACE_SECS,
         )
 
