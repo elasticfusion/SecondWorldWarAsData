@@ -89,26 +89,59 @@ Related: `docs/current/TODO.md` "True multi-job concurrency" (High/Future) and
 
 ---
 
-## 4. NAT management under concurrency (the lifecycle rule)
+## 4. NAT management under concurrency — MULTI-JOB AWARE (primary invariant)
 
-**Rule:** NAT is a **shared, reference-counted** resource.
-- **UP** whenever ≥1 compute task (any phase, any book) is running or queued.
-- **DOWN** only at: (a) the **global dedup human-review gate** (async, indefinite
-  — no compute pending), and (b) **full backlog drain** (queues empty, no locks).
-- **Never** torn down between compute phases or between books while work remains.
+Under parallel processing, NAT teardown **cannot** be driven by phase transitions
+or by human-gate events — that framing strands jobs (Job A finishing must not tear
+down NAT that Jobs B/C still need). NAT management must be driven by **aggregate
+network demand across ALL jobs**, cluster-wide.
 
-**Mechanism:**
-- Replace per-phase delayed-teardown with a **NAT reference count** in DynamoDB
-  (`nat#refcount`): each task increments on launch, decrements on exit/SIGTERM;
-  `nat_manager` tears down only when count reaches 0 **and** no pending queue
-  entries. This fixes the current race (Phase 1 teardown stranding Phase 2 launch)
-  by construction — teardown can't happen while the count > 0.
-- Keep the **2h no-tasks guardrail** as a cost backstop (safe: it checks for
-  running tasks / locks first).
-- At the **dedup gate**, drop NAT deliberately (refcount → 0, human review is
-  async) and recreate when review completes (existing dedup-complete → trigger →
-  `_wait_for_networking`). This matches the confirmed intent (dedup + the OCR
-  markdown-review + bibliography-disposition gates are async human pauses).
+**Primary invariant (job-aware):**
+> NAT is UP if and only if **any job anywhere** currently needs outbound network,
+> OR any queued work will need it imminently. Teardown happens only when
+> **cluster-wide network demand is zero** — regardless of which phase any
+> individual job is in, and regardless of *why* it reached zero.
+
+Human review gates are **NOT** a special teardown trigger — they are simply **one
+way a job stops needing the network** (a job parked at the dedup / OCR-review /
+bibliography-disposition gate contributes 0 to demand). Teardown is decided by the
+**aggregate**, never by any single job's state or transition.
+
+**Mechanism — cluster-wide reference count (source of truth):**
+- A **NAT demand counter** in DynamoDB (`nat#demand`), incremented/decremented
+  **atomically** (conditional update) by every network-needing unit of work:
+  - **+1** when a task launches / acquires a per-book phase lock that needs egress.
+  - **−1** on task exit, on SIGTERM (add to the emergency handler alongside
+    `_final_sync`/lock-clear), AND when a job **parks at a human gate** (it
+    releases its NAT hold while waiting — the gate is just a −1, not a special
+    teardown).
+  - Queued-but-not-started work that will need egress counts via a separate
+    **pending-demand** check so NAT isn't torn down microseconds before the next
+    job launches (closes the current Phase1→Phase2 launch race by construction).
+- `nat_manager` tears NAT down **only** when `nat#demand == 0` **AND** no pending
+  queue entries imply imminent demand. It **never** infers teardown from a phase
+  completing.
+- **Idempotent / crash-safe counting:** a spot-killed task must not leak its +1.
+  Use a **per-task lease with TTL** (task writes `nat#lease#{taskArn}` with a
+  heartbeat/TTL; demand = count of live leases) rather than a raw integer that a
+  crash could leave incremented. `nat_manager` computes demand from live leases +
+  running-task list + pending queues — self-healing if a decrement is missed.
+
+**Guardrails (defense in depth, unchanged in spirit):**
+- Keep the **2h stale-NAT guardrail** (`openserp_manager`) as a backstop, but it
+  must also consult the demand counter/leases (tear down only if genuinely no
+  demand and no running tasks — it already checks running tasks/locks).
+- Reconciliation: a scheduled check recomputes demand from ground truth (running
+  ECS tasks + pending queues + live leases) and corrects a drifted counter, so a
+  missed increment/decrement can't leave NAT permanently up or wrongly down.
+
+**Why this supersedes the per-phase/human-gate framing:**
+- The previously tracked "NAT torn down between compute phases" race and the
+  "tear down at the dedup gate" behavior both become **emergent consequences** of
+  the single job-aware invariant: between-phase teardown can't happen (demand > 0
+  while any job runs); dedup-gate teardown happens naturally (all jobs parked →
+  demand 0) and comes back up when a job resumes and takes a lease.
+- Correct for **1 job or N jobs** identically — no special-casing.
 
 ---
 
@@ -153,8 +186,9 @@ and per-task Grok rate a **config** so it can be tuned to the current quotas.
 
 1. **Per-book locks** replacing the single per-phase lock (unblocks concurrency;
    smallest change).
-2. **NAT refcount** (DynamoDB) replacing per-phase delayed-teardown (fixes the
-   race AND is required for safe concurrency).
+2. **Job-aware NAT** (DynamoDB per-task leases + demand computed from live
+   leases/running tasks/pending queues) replacing per-phase delayed-teardown —
+   fixes the race by construction AND is required for safe concurrency.
 3. **Dispatcher with bounded pool + limit-aware backpressure** (config pool size;
    global Grok rate limiter).
 4. **Shared-entity-store hardening** — route cross-book entity writes through
