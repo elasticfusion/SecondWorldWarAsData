@@ -204,10 +204,14 @@ Verified live (account 340339225515, us-east-1) — all adjustable:
 | NAT gateways per AZ | (vpc) | 5 | keep ONE shared NAT (§4) |
 | EIP per NAT gateway | (vpc) | 2 | NAT egress IPs |
 
-So `pool_size` is **derived**: `min` across (vCPU-quota ÷ per-task-vCPU × margin,
-Grok-rate headroom, Batch GPU capacity). If the derived cap is lower than the
-backlog demands, **warn + surface the specific quota to raise** rather than
-silently throttle.
+So the quota gives a **derived cap** = `min` across (vCPU-quota ÷ per-task-vCPU
+× margin, Grok-rate headroom, Batch GPU capacity). **Pool size is a soft-coded
+config option** (`MAX_CONCURRENT_BOOKS` / per-resource variants, with a sensible
+default) that the operator sets; the effective pool is
+**`min(configured_pool, derived_cap)`** — so config controls concurrency but can
+**never exceed the live quota ceiling** (a config typo can't blow past AWS
+limits). If the configured value is clamped down by the cap, **log it**; if the
+cap itself is below backlog demand, **warn + name the quota to raise** (§5.1).
 
 ### 5.1 Limit table
 
@@ -580,8 +584,11 @@ Lambda/task time limits.
 
 ## 13. Open decisions
 
-- Pool size / per-task Grok rate — set after querying live quotas
-  (`aws service-quotas get-service-quota`) and the Grok plan's rate limit.
+- ~~Pool size~~ **DECIDED (2026-09-27): soft-coded config option**
+  (`MAX_CONCURRENT_BOOKS` + per-resource caps, sensible default), **clamped** to
+  the live quota-derived cap: effective = `min(configured, derived_cap)` (§5.0).
+  Operator-tunable, never exceeds quota. (Per-task Grok rate still set from the
+  Grok plan limit ÷ pool — external fact to confirm.)
 - ~~Dispatcher: trigger Lambda vs Step Functions~~ **DECIDED (2026-09-27):
   Step Functions (Map state).** Rationale: the hard part — cluster-wide NAT
   leases (§4), Grok rate limiter + credit reservation (§5.2/§9.0), shared
