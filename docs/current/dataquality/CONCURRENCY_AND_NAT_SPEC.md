@@ -205,13 +205,22 @@ Verified live (account 340339225515, us-east-1) — all adjustable:
 | EIP per NAT gateway | (vpc) | 2 | NAT egress IPs |
 
 So the quota gives a **derived cap** = `min` across (vCPU-quota ÷ per-task-vCPU
-× margin, Grok-rate headroom, Batch GPU capacity). **Pool size is a soft-coded
-config option** (`MAX_CONCURRENT_BOOKS` / per-resource variants, with a sensible
-default) that the operator sets; the effective pool is
-**`min(configured_pool, derived_cap)`** — so config controls concurrency but can
-**never exceed the live quota ceiling** (a config typo can't blow past AWS
-limits). If the configured value is clamped down by the cap, **log it**; if the
-cap itself is below backlog demand, **warn + name the quota to raise** (§5.1).
+× margin, Grok-rate headroom, Batch GPU capacity).
+
+**Pool size is a soft-coded MIN/MAX range** (`POOL_MIN` / `POOL_MAX`, sensible
+defaults) — not a single value — enabling **adaptive scaling**:
+- **Effective ceiling** = `min(POOL_MAX, derived_cap)` — config max, but never
+  above the live quota (a typo can't blow past AWS limits; log when clamped;
+  warn + name the quota if the cap is below backlog demand, §5.1).
+- **Floor** = `POOL_MIN` — keep at least this many jobs running so throughput
+  doesn't collapse toward serial — **when work + credit + quota allow** (min
+  yields to reality: fewer docs than min, or credit-gate/cost/quota backpressure,
+  can drop below it).
+- **Adaptive:** start near `POOL_MIN`, scale up toward the effective ceiling
+  while quota/cost/credit headroom exists; scale **back down** under backpressure
+  (429 spikes, spend-alert, spot unavailability, DynamoDB throttling), always
+  bounded by `[POOL_MIN, effective_ceiling]`. Better than a static number for a
+  long, variable archive drain.
 
 ### 5.1 Limit table
 
@@ -584,11 +593,12 @@ Lambda/task time limits.
 
 ## 13. Open decisions
 
-- ~~Pool size~~ **DECIDED (2026-09-27): soft-coded config option**
-  (`MAX_CONCURRENT_BOOKS` + per-resource caps, sensible default), **clamped** to
-  the live quota-derived cap: effective = `min(configured, derived_cap)` (§5.0).
-  Operator-tunable, never exceeds quota. (Per-task Grok rate still set from the
-  Grok plan limit ÷ pool — external fact to confirm.)
+- ~~Pool size~~ **DECIDED (2026-09-27): soft-coded MIN/MAX range**
+  (`POOL_MIN`/`POOL_MAX`, sensible defaults) with **adaptive scaling** within it;
+  effective ceiling = `min(POOL_MAX, quota-derived cap)`, floor = `POOL_MIN`
+  (yields to work/credit/quota reality). Scales up on headroom, down on
+  backpressure (§5.0). Never exceeds quota. (Per-task Grok rate still derived
+  from the Grok plan limit ÷ current pool — external fact to confirm.)
 - ~~Dispatcher: trigger Lambda vs Step Functions~~ **DECIDED (2026-09-27):
   Step Functions (Map state).** Rationale: the hard part — cluster-wide NAT
   leases (§4), Grok rate limiter + credit reservation (§5.2/§9.0), shared
