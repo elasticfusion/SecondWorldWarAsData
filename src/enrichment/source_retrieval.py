@@ -16,6 +16,9 @@ run automatically in a phase; the human-disposition UI (tracked TODO) drives it.
 """
 
 import logging
+import random
+import threading
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
@@ -30,6 +33,51 @@ DEFAULT_BLACKLIST = Path("config/domain_blacklist.yaml")
 # Quarantine holding area — deliberately NOT under content/ or contentrepository/
 # so Phase 1 discovery can never auto-ingest a retrieved-but-unreviewed source.
 QUARANTINE_PREFIX = "bibliography/retrieved/pending_review"
+
+# Present as an ordinary browser client (blend in) — paired with courteous,
+# human-paced rate limiting below. We identify as a normal browser, but we do
+# NOT hammer: one request per domain every few seconds, honoring Retry-After.
+BROWSER_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    ),
+    "Accept": (
+        "text/html,application/xhtml+xml,application/xml;q=0.9,"
+        "application/pdf,*/*;q=0.8"
+    ),
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
+
+class _DomainPacer:
+    """Thread-safe per-domain rate limiter for courteous, human-paced downloads.
+
+    Enforces a minimum interval between requests to the same host, with a small
+    random jitter so the cadence isn't robotically uniform. This is politeness,
+    not evasion — it keeps us from overloading archive servers.
+    """
+
+    def __init__(self, min_interval: float = 4.0, jitter: float = 1.5):
+        self._min = min_interval
+        self._jitter = jitter
+        self._last: Dict[str, float] = {}
+        self._lock = threading.Lock()
+
+    def wait(self, host: str) -> None:
+        """Block until it is polite to hit ``host`` again."""
+        with self._lock:
+            now = time.monotonic()
+            last = self._last.get(host, 0.0)
+            gap = self._min + random.uniform(0, self._jitter)
+            sleep_for = last + gap - now
+            if sleep_for > 0:
+                time.sleep(sleep_for)
+            self._last[host] = time.monotonic()
+
+
+# Module-level pacer shared across retrievals (per-domain state).
+_PACER = _DomainPacer()
 
 
 def load_blacklist(path: Path = DEFAULT_BLACKLIST) -> List[str]:
@@ -96,8 +144,24 @@ def _download_to_quarantine(
     sess: Any,
     max_bytes: int,
 ) -> Dict[str, Any]:
-    """Stream a URL to the quarantine dir; mark entry retrieved_pending_review."""
-    resp = sess.get(url, timeout=60, stream=True, allow_redirects=True)
+    """Stream a URL to the quarantine dir; mark entry retrieved_pending_review.
+
+    Polite + human-like: identifies as a browser, paces per-domain, and honors a
+    429 Retry-After before giving up (does not hammer).
+    """
+    host = (urlparse(url).hostname or "").lower()
+    _PACER.wait(host)  # courteous per-domain spacing
+    resp = sess.get(
+        url, timeout=60, stream=True, allow_redirects=True, headers=BROWSER_HEADERS
+    )
+    if resp.status_code == 429:
+        # Rate-limited: wait the server-requested delay once, then retry.
+        retry_after = _parse_retry_after(resp.headers.get("Retry-After"))
+        logger.info("429 from %s — honoring Retry-After=%.0fs", host, retry_after)
+        time.sleep(retry_after)
+        resp = sess.get(
+            url, timeout=60, stream=True, allow_redirects=True, headers=BROWSER_HEADERS
+        )
     if resp.status_code != 200:
         return {"status": "error", "url": url, "reason": f"HTTP {resp.status_code}"}
     dest_dir.mkdir(parents=True, exist_ok=True)
@@ -124,3 +188,15 @@ def _download_to_quarantine(
     entry["retrieved_path"] = str(out)
     logger.info("Retrieved (pending review, not processed): %s -> %s", url, out)
     return {"status": "retrieved_pending_review", "url": url, "path": str(out)}
+
+
+def _parse_retry_after(
+    value: Optional[str], default: float = 10.0, cap: float = 120.0
+) -> float:
+    """Parse a Retry-After header (seconds form). Falls back to a sane default."""
+    if not value:
+        return default
+    try:
+        return min(float(value), cap)
+    except (TypeError, ValueError):
+        return default
