@@ -448,6 +448,7 @@ For bibliography entries confirmed as published books, search Amazon.com for met
 
 #### True multi-job concurrency
 Multiple books in parallel. Requires per-book locking, shared DynamoDB entity store, dedup coordination.
+**Spec written 2026-09-27:** `docs/current/dataquality/CONCURRENCY_AND_NAT_SPEC.md` — per-book locks, reference-counted NAT, limit-aware dispatcher pool (Grok rate + Fargate vCPU as binding limits), global dedup barrier, shared-entity-store hardening. Motivated by the WWIIArchives backlog (628 files / ~502 GB).
 
 #### Grok function calling for Phase 3 enrichment
 Blocked on: function calling support in batch API.

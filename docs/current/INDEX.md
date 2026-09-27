@@ -50,6 +50,7 @@
 | [dataquality/STRUCTURED_DATA_ROUTING.md](dataquality/STRUCTURED_DATA_ROUTING.md) | Phase 0 design-of-record: provenance invariant + required citation metadata, format-agnostic routing (incl. docx, web-page-with-video), tabular→entity convergence, source-acquisition lifecycle |
 | [dataquality/CHANDRA_OCR_DESIGN.md](dataquality/CHANDRA_OCR_DESIGN.md) | Chandra PDF→markdown OCR (Phase 0 bridge) |
 | [dataquality/MAP_IMAGE_AV_INGESTION.md](dataquality/MAP_IMAGE_AV_INGESTION.md) | Map/image/moving-image routing: deterministic-first funnel to minimize Grok, per-map dating, units-as-metadata, map georeferencing |
+| [dataquality/CONCURRENCY_AND_NAT_SPEC.md](dataquality/CONCURRENCY_AND_NAT_SPEC.md) | Spec: true multi-job concurrency (parallel document processing) + reference-counted NAT lifecycle, within AWS service limits; motivated by the WWIIArchives backlog |
 
 ### Features (Entity Types)
 | Document | Description |
