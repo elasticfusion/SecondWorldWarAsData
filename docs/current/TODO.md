@@ -119,12 +119,36 @@ substitution + consume-once in `submit_ocr_job.merge_outputs`, and CFN
 1. **Deploy** — rebuild the Lambda code bundle + main-stack CFN update
    (`deploy_all.sh` main path), then smoke-test the `/mdreview` route (basic
    auth via the shared dedup authorizer).
+   **Deploy-path health (investigated 2026-09-27 — must clear before deploying):**
+   the parent stack `wwii-pipeline-dev` is in **UPDATE_ROLLBACK_COMPLETE** (last
+   attempt 2026-07-01: ComputeStack "Validation failed with 8 errors"). History
+   of recurring ComputeStack update failures. Known causes seen in events:
+   (a) `PipelineDashboard` name collision with EventsStack — **appears fixed**
+   (compute.yaml now uses `-wwii-pipeline-logs` vs events' `-wwii-pipeline`),
+   verify no other duplicate logical/physical names; (b) TaskDef
+   "Container.image should not be null or empty" — deploy MUST pass
+   `--pipeline-image`/`--openserp-image` (use the `deploy_all.sh` path, not a
+   bare `deploy_aws.py`); (c) enumerate the July "8 validation errors" via
+   `describe-stack-events` on ComputeStack before retrying. Do a **change-set /
+   dry-run first**, and NOT during a live Phase 2/3 run (ComputeStack holds the
+   phase task defs + the API).
 2. **Direct UI↔pipeline wiring (deferred by design)** — today the UI and merge
    are decoupled via the `reviewed/` prefix. Decide whether a reviewer save
    should trigger anything (e.g. re-merge/re-publish) or stay pull-based at the
    next OCR/merge run.
 3. Confirm reviewers can discover the URL + credentials (same pattern as dedup).
-*Source: human-review compromise for layout-miss task-org tables, 2026-09-24*
+4. **NAT management — treat as an async human-review gate (like dedup).** The
+   OCR markdown review is an **indefinite human pause**, exactly like the dedup
+   gate. So NAT must follow the same lifecycle: **tear down NAT while waiting on
+   the reviewer** (no compute is running; don't pay for idle NAT), and **bring
+   it back up when review completes** and downstream work (re-merge/re-publish,
+   or continued OCR) resumes. Mirror the dedup gate's teardown/resume mechanism
+   (the delayed-teardown at the gate + recreate-on-resume) rather than holding
+   NAT up. This ties into the "NAT torn down between compute phases" fix: the
+   rule is NAT UP across compute, DOWN at async human gates (dedup **and** OCR
+   markdown review), final teardown at completion.
+*Source: human-review compromise for layout-miss task-org tables, 2026-09-24;
+NAT-as-async-gate requirement added 2026-09-27*
 
 #### Layout-miss task-org tables (e.g. p156) → human review (DECIDED 2026-09-24)
 **Decision:** sparse/borderless task-org pages that PP-StructureV3's layout
