@@ -292,8 +292,8 @@ def _check_shared_bio(
 
 def _check_shared_external_urls(p1: Dict, p2: Dict) -> tuple[list[str], float]:
     """Check: Shared Wikipedia or Grokipedia URLs — very high confidence match."""
-    urls1 = set()
-    urls2 = set()
+    urls1: set = set()
+    urls2: set = set()
     for p, urls in [(p1, urls1), (p2, urls2)]:
         # Wikipedia URL
         wiki = p.get("wikipedia_url") or p.get("source_metadata", {}).get(
