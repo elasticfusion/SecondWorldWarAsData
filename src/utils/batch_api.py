@@ -258,15 +258,19 @@ def _check_batch_submission_ok(
     submitted requests but xAI accepted none (file rejected at validation)."""
     cancel_msg = batch.get("cancel_by_xai_message") or ""
     if batch.get("cancel_time") or cancel_msg:
-        raise BatchSubmissionError(
+        msg = (
             f"Batch {batch_id} was cancelled by xAI: {cancel_msg or 'no message'} "
             f"(submitted {submitted_count}, xAI num_requests={total})"
         )
+        logger.error("BatchSubmissionError: %s", msg)  # explicit for M8 metric filter
+        raise BatchSubmissionError(msg)
     if submitted_count and total == 0 and grace_elapsed:
-        raise BatchSubmissionError(
+        msg = (
             f"Batch {batch_id}: submitted {submitted_count} requests but xAI shows "
             f"num_requests=0 after {_SUBMIT_GRACE_SECS}s — file rejected/not ingested."
         )
+        logger.error("BatchSubmissionError: %s", msg)  # explicit for M8 metric filter
+        raise BatchSubmissionError(msg)
 
 
 def poll_batch(

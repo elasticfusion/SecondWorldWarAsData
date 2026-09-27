@@ -334,6 +334,216 @@ Resources:
       AlarmActions:
         - !Ref AlarmSNSTopic
 
+  # ===========================================================================
+  # M8 observability for the concurrency footprint (§10). Metric filters turn
+  # correctness-critical log lines into metrics + alarms so a bug under parallel
+  # load pages the operator instead of hiding in logs. All notify AlarmSNSTopic
+  # (SNS -> Slack via Chatbot + email).
+  # ===========================================================================
+
+  # --- Metric filters on the ECS pipeline log group (correctness signals) ---
+  CreditHoldMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-pipeline
+      FilterPattern: '"HOLDING work"'
+      MetricTransformations:
+        - MetricName: CreditHolds
+          MetricNamespace: !Sub ${EnvironmentName}-wwii/concurrency
+          MetricValue: '1'
+          DefaultValue: 0
+
+  CreditHoldAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-credit-hold
+      AlarmDescription: Credit gate is HOLDING work (unsubmitted = unprocessed) — top up credit / raise budget
+      MetricName: CreditHolds
+      Namespace: !Sub ${EnvironmentName}-wwii/concurrency
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  MergeRetryExhaustedMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-pipeline
+      FilterPattern: '"mentions NOT merged"'
+      MetricTransformations:
+        - MetricName: MergeRetryExhausted
+          MetricNamespace: !Sub ${EnvironmentName}-wwii/concurrency
+          MetricValue: '1'
+          DefaultValue: 0
+
+  MergeRetryExhaustedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-merge-retry-exhausted
+      AlarmDescription: Entity mention merge exhausted retries — a cross-book write was LOST (§3.3)
+      MetricName: MergeRetryExhausted
+      Namespace: !Sub ${EnvironmentName}-wwii/concurrency
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  BatchSubmissionErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-pipeline
+      FilterPattern: '"BatchSubmissionError"'
+      MetricTransformations:
+        - MetricName: BatchSubmissionErrors
+          MetricNamespace: !Sub ${EnvironmentName}-wwii/concurrency
+          MetricValue: '1'
+          DefaultValue: 0
+
+  BatchSubmissionErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-batch-submission-error
+      AlarmDescription: A batch was rejected/cancelled by xAI (fail-fast) — investigate model/size
+      MetricName: BatchSubmissionErrors
+      Namespace: !Sub ${EnvironmentName}-wwii/concurrency
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  NatLeaseFailureMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-pipeline
+      FilterPattern: '"Failed to acquire NAT lease"'
+      MetricTransformations:
+        - MetricName: NatLeaseFailures
+          MetricNamespace: !Sub ${EnvironmentName}-wwii/concurrency
+          MetricValue: '1'
+          DefaultValue: 0
+
+  NatLeaseFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-nat-lease-failures
+      AlarmDescription: Repeated NAT lease acquisition failures — NAT demand accounting may drift
+      MetricName: NatLeaseFailures
+      Namespace: !Sub ${EnvironmentName}-wwii/concurrency
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  # --- Step Functions dispatcher alarms (M4.3 had NONE — the biggest gap) ---
+  DispatcherFailedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-dispatcher-failed
+      AlarmDescription: Concurrency dispatcher execution failed
+      MetricName: ExecutionsFailed
+      Namespace: AWS/States
+      Dimensions:
+        - Name: StateMachineArn
+          Value: !Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${EnvironmentName}-wwii-dispatcher
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  DispatcherTimedOutAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-dispatcher-timedout
+      AlarmDescription: Concurrency dispatcher execution timed out (stuck drain)
+      MetricName: ExecutionsTimedOut
+      Namespace: AWS/States
+      Dimensions:
+        - Name: StateMachineArn
+          Value: !Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${EnvironmentName}-wwii-dispatcher
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  # --- Dispatcher Lambda error alarms (enumerate/clamp/gate) ---
+  EnumeratePendingErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-enumerate-pending-errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub ${EnvironmentName}-wwii-enumerate-pending
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 3
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  ClampPoolErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-clamp-pool-errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub ${EnvironmentName}-wwii-clamp-pool
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 3
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  HumanGateErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-human-gate-errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub ${EnvironmentName}-wwii-human-gate
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 3
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
   # --- CloudWatch Dashboard ---
   PipelineDashboard:
     Type: AWS::CloudWatch::Dashboard
