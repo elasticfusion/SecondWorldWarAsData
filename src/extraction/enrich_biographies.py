@@ -475,7 +475,6 @@ def search_wikipedia(
 
     # Exhausted retries without success — don't cache (likely rate limited)
     return None
-    return None
 
 
 def extract_biographical_data(
