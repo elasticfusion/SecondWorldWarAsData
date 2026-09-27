@@ -102,7 +102,7 @@ class TestResolveDir:
         import src.enrichment.bibliography_resolver as brm
 
         entry = {"citation": {"title": "MS # B-405"}}
-        holdings = {"B405": "unprocesseddocs/B405.pdf"}
+        holdings = {"B405": ("contentrepository/x/B405.pdf", "processed")}
         original = brm._pick_resolver
         brm._pick_resolver = lambda *a, **k: boom
         try:

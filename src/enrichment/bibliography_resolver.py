@@ -120,17 +120,27 @@ def resolve_bibliography_entry(
         return entry
 
     # Best resolution: we ALREADY HOLD the cited source (e.g. MS # B-405 ->
-    # unprocesseddocs/B405.pdf). Short-circuit before any online search — our own
-    # copy is the authoritative artifact for attribution and needs no retrieval.
+    # B405.pdf). Short-circuit before any online search. Distinguish PROCESSED
+    # holdings (ingested content exists -> resolved) from raw UNPROCESSED staging
+    # files (we have the source but it still needs the pipeline -> held_unprocessed,
+    # NOT a clean resolution).
     holdings = (config or {}).get("holdings_index")
     if holdings:
-        local_path = find_local_holding(entry, holdings)
-        if local_path:
-            entry["search_status"] = "resolved"
-            entry["search_source"] = "local_holding"
+        hit = find_local_holding(entry, holdings)
+        if hit:
+            local_path, kind = hit
             entry["local_source_path"] = local_path
-            entry["availability"] = "local"
-            logger.debug("Resolved from local holding: %s", local_path)
+            if kind == "processed":
+                entry["search_status"] = "resolved"
+                entry["search_source"] = "local_holding"
+                entry["availability"] = "local"
+                logger.debug("Resolved from processed local holding: %s", local_path)
+            else:
+                # Raw source on hand but not ingested — flag for the processing
+                # queue rather than claiming resolution.
+                entry["search_status"] = "held_unprocessed"
+                entry["search_source"] = "local_holding_unprocessed"
+                logger.debug("Held but unprocessed: %s", local_path)
             return entry
 
     # Guard: narrative prose misclassified as a document reference should not be
@@ -891,7 +901,10 @@ def _account_bib_status(stats: Dict[str, int], status: str, was_deduped: bool) -
     if was_deduped:
         stats["deduped"] += 1
     stats[status if status in stats else "not_found"] += 1
-    return status not in ("resolved", "not_citation", "skipped") and not was_deduped
+    return (
+        status not in ("resolved", "not_citation", "skipped", "held_unprocessed")
+        and not was_deduped
+    )
 
 
 def resolve_bibliography_dir(
@@ -920,6 +933,7 @@ def resolve_bibliography_dir(
             "not_citation",
             "queued",
             "deduped",
+            "held_unprocessed",
         )
     }
     skip_files = {"index.json", "review_queue.json"}

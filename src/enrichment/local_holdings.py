@@ -14,15 +14,19 @@ collection we ingest.
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
-# Default local directories that hold source documents.
-DEFAULT_SOURCE_DIRS = (
-    Path("unprocesseddocs"),
+# Source directories, split by processing state. A citation matching a PROCESSED
+# holding (ingested content exists) is a real resolution; matching only an
+# UNPROCESSED staging file means we have the raw source but it still needs to go
+# through the pipeline — a different, weaker outcome.
+PROCESSED_SOURCE_DIRS = (
     Path("contentrepository"),
+    Path("output/content"),
 )
+UNPROCESSED_SOURCE_DIRS = (Path("unprocesseddocs"),)
 
 # MS-number series identifiers: "MS #B-405", "MS # A-105", "B-405", "M-502".
 _MS_ID = re.compile(r"\bMS\s*#?\s*([A-Z])\s*-?\s*(\d{2,4})\b", re.IGNORECASE)
@@ -60,19 +64,38 @@ def _index_dir(root: Path) -> Dict[str, str]:
 
 
 def build_holdings_index(
-    source_dirs: Optional[List[Path]] = None,
-) -> Dict[str, str]:
-    """Build a canonical-id -> local-path index of held source documents."""
-    dirs = source_dirs if source_dirs is not None else list(DEFAULT_SOURCE_DIRS)
-    index: Dict[str, str] = {}
-    for root in dirs:
+    processed_dirs: Optional[List[Path]] = None,
+    unprocessed_dirs: Optional[List[Path]] = None,
+) -> Dict[str, Tuple[str, str]]:
+    """Build canonical-id -> (path, kind) index of held source documents.
+
+    kind is "processed" (ingested content exists in contentrepository/output) or
+    "unprocessed" (raw file staged in unprocesseddocs, still needs the pipeline).
+    Processed holdings take precedence when the same id appears in both.
+    """
+    p_dirs = (
+        processed_dirs if processed_dirs is not None else list(PROCESSED_SOURCE_DIRS)
+    )
+    u_dirs = (
+        unprocessed_dirs
+        if unprocessed_dirs is not None
+        else list(UNPROCESSED_SOURCE_DIRS)
+    )
+    index: Dict[str, Tuple[str, str]] = {}
+    # Unprocessed first, then processed overrides (processed wins).
+    for root in u_dirs:
         for canon, path in _index_dir(root).items():
-            index.setdefault(canon, path)
+            index.setdefault(canon, (path, "unprocessed"))
+    for root in p_dirs:
+        for canon, path in _index_dir(root).items():
+            index[canon] = (path, "processed")  # override any unprocessed entry
     return index
 
 
-def find_local_holding(entry: Dict, holdings_index: Dict[str, str]) -> Optional[str]:
-    """Return the local path if we already hold this entry's cited source."""
+def find_local_holding(
+    entry: Dict, holdings_index: Dict[str, Tuple[str, str]]
+) -> Optional[Tuple[str, str]]:
+    """Return (path, kind) if we already hold this entry's cited source, else None."""
     citation = entry.get("citation") or {}
     for text in (
         citation.get("title"),

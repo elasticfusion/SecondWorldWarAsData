@@ -20,30 +20,49 @@ class TestNormalize:
 
 
 class TestIndexAndFind:
-    def test_build_index_from_source_dir(self, tmp_path):
-        (tmp_path / "B405.pdf").write_text("x")
-        (tmp_path / "sub").mkdir()
-        (tmp_path / "sub" / "A-105.pdf").write_text("x")
-        (tmp_path / "notes.txt").write_text("x")  # no id -> not indexed
-        idx = lh.build_holdings_index([tmp_path])
-        assert idx["B405"].endswith("B405.pdf")
-        assert idx["A105"].endswith("A-105.pdf")
-        assert "notes" not in idx
+    def test_build_index_marks_processed_vs_unprocessed(self, tmp_path):
+        proc = tmp_path / "content"
+        unproc = tmp_path / "staging"
+        proc.mkdir()
+        unproc.mkdir()
+        (proc / "B405.pdf").write_text("x")
+        (unproc / "A-105.pdf").write_text("x")
+        idx = lh.build_holdings_index(processed_dirs=[proc], unprocessed_dirs=[unproc])
+        assert idx["B405"] == (idx["B405"][0], "processed")
+        assert idx["A105"][1] == "unprocessed"
 
-    def test_find_local_holding_by_title(self, tmp_path):
-        (tmp_path / "B405.pdf").write_text("x")
-        idx = lh.build_holdings_index([tmp_path])
+    def test_processed_overrides_unprocessed(self, tmp_path):
+        proc = tmp_path / "content"
+        unproc = tmp_path / "staging"
+        proc.mkdir()
+        unproc.mkdir()
+        (unproc / "B405.pdf").write_text("x")  # raw
+        (proc / "B405.pdf").write_text("x")  # ingested
+        idx = lh.build_holdings_index(processed_dirs=[proc], unprocessed_dirs=[unproc])
+        assert idx["B405"][1] == "processed"  # processed wins
+
+    def test_find_local_holding_returns_kind(self, tmp_path):
+        proc = tmp_path / "content"
+        proc.mkdir()
+        (proc / "B405.pdf").write_text("x")
+        idx = lh.build_holdings_index(processed_dirs=[proc], unprocessed_dirs=[])
         entry = {"citation": {"title": "MS # B-405"}}
-        assert lh.find_local_holding(entry, idx).endswith("B405.pdf")
+        path, kind = lh.find_local_holding(entry, idx)
+        assert path.endswith("B405.pdf") and kind == "processed"
 
     def test_find_local_holding_by_verbatim(self, tmp_path):
-        (tmp_path / "B405.pdf").write_text("x")
-        idx = lh.build_holdings_index([tmp_path])
+        unproc = tmp_path / "staging"
+        unproc.mkdir()
+        (unproc / "B405.pdf").write_text("x")
+        idx = lh.build_holdings_index(processed_dirs=[], unprocessed_dirs=[unproc])
         entry = {"verbatim_reference": "see MS #B-405, p. 3"}
-        assert lh.find_local_holding(entry, idx) is not None
+        hit = lh.find_local_holding(entry, idx)
+        assert hit is not None and hit[1] == "unprocessed"
 
     def test_no_holding_returns_none(self, tmp_path):
-        (tmp_path / "B405.pdf").write_text("x")
-        idx = lh.build_holdings_index([tmp_path])
+        proc = tmp_path / "content"
+        proc.mkdir()
+        (proc / "B405.pdf").write_text("x")
+        idx = lh.build_holdings_index(processed_dirs=[proc], unprocessed_dirs=[])
         entry = {"citation": {"title": "MS # B-999"}}  # not held
         assert lh.find_local_holding(entry, idx) is None
