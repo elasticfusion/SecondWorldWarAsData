@@ -13,6 +13,17 @@ logger = logging.getLogger(__name__)
 
 API_BASE = "https://api.x.ai/v1"
 
+# Grace period for xAI to asynchronously ingest an uploaded JSONL file before we
+# treat "submitted N but num_requests=0" as a rejection (file validation is
+# usually near-instant; this is a safety margin).
+_SUBMIT_GRACE_SECS = 120
+
+
+class BatchSubmissionError(RuntimeError):
+    """A batch was rejected/cancelled by xAI at submission/validation time
+    (e.g. unsupported model, malformed JSONL) — distinct from a batch that ran
+    and had per-request errors. Fail fast; do not poll for hours."""
+
 
 @dataclass
 class BatchResult:
@@ -274,6 +285,27 @@ def poll_batch(
         error = state.get("num_error", 0)
         total = state.get("num_requests", 0)
 
+        # FAIL FAST: xAI cancelled/rejected the batch (e.g. JSONL validation
+        # failed — unsupported model, malformed line). Don't poll 0/0 for hours.
+        cancel_msg = batch.get("cancel_by_xai_message") or ""
+        if batch.get("cancel_time") or cancel_msg:
+            raise BatchSubmissionError(
+                f"Batch {batch_id} was cancelled by xAI: "
+                f"{cancel_msg or 'no message'} "
+                f"(submitted {submitted_count}, xAI num_requests={total})"
+            )
+
+        # FAIL FAST: we submitted N requests but xAI accepted 0 — the file was
+        # rejected at validation even without an explicit cancel message. Give it
+        # a brief grace for async ingestion, then fail rather than poll forever.
+        if submitted_count and total == 0:
+            if (time.monotonic() - start) > _SUBMIT_GRACE_SECS:
+                raise BatchSubmissionError(
+                    f"Batch {batch_id}: submitted {submitted_count} requests but "
+                    f"xAI shows num_requests=0 after "
+                    f"{_SUBMIT_GRACE_SECS}s — file rejected/not ingested."
+                )
+
         logger.info(
             "Batch %s: %d/%d complete (%d success, %d error, %d pending)%s",
             batch_id,
@@ -282,7 +314,11 @@ def poll_batch(
             success,
             error,
             pending,
-            f" [submitted: {submitted_count}]" if submitted_count and total != submitted_count else "",
+            (
+                f" [submitted: {submitted_count}]"
+                if submitted_count and total != submitted_count
+                else ""
+            ),
         )
 
         if 0 < total <= success + error:
