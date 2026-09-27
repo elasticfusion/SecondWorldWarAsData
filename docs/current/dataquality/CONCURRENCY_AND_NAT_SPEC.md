@@ -739,3 +739,150 @@ docs — the old all-pairs O(entities²) pass would not.
   be unarchived before submission — the §7 pre-stage unpacks zips/rars to
   individual source files (deduped against holdings, media-routed) before the
   dispatcher sees them. No archive is ever submitted directly.
+
+---
+
+## 14. Configuration schema
+
+All concurrency behavior is **soft-coded** (§5.0, §7.1) — no hardcoded pool sizes,
+task sizes, or limits. This section pins the full config surface. It **extends**
+today's `concurrency:` and `batch:` blocks (see `config.yaml.example`) rather than
+replacing them; existing keys keep their meaning (they govern *intra-document*
+parallelism — chapters/workers within one book).
+
+```yaml
+concurrency:
+  enabled: false                 # (existing) master switch for intra-doc parallelism
+  max_event_files: 3             # (existing) parallel chapter extractions within a book
+  max_extraction_group: 3        # (existing)
+  max_enrichment_workers: 4      # (existing)
+
+  # --- NEW: multi-document dispatcher (this spec) ---
+  multi_doc:
+    enabled: false               # off by default; flip on per §15 migration
+    pool_min: 2                  # POOL_MIN floor (§5, §13)
+    pool_max: 8                  # POOL_MAX ceiling; effective = min(pool_max, quota-derived cap)
+    adaptive: true               # scale within [min,max] on headroom/backpressure (§5.0)
+    dispatch_order: fifo         # §8 — FIFO (only supported value today)
+
+  # --- NEW: per-work-type compute profiles (§7.1) ---
+  # work_type -> right-sized task + capacity-provider strategy
+  compute_profiles:
+    cpu_parse:   { cpu: 512,  memory: 1024, spot_weight: 5, ondemand_weight: 1 }
+    extraction:  { cpu: 512,  memory: 2048, spot_weight: 4, ondemand_weight: 1 }
+    gpu_ocr:     { batch_env: dev-wwii-chandra-gpu, spot: false }  # on-demand until checkpoint verified
+    vision:      { cpu: 1024, memory: 2048, spot_weight: 4, ondemand_weight: 1 }
+    dedup_coord: { cpu: 512,  memory: 2048, spot_weight: 0, ondemand_weight: 1 }  # on-demand only
+
+  # --- NEW: per-resource pool caps (§5, §7) ---
+  resource_caps:
+    fargate_vcpu_quota_code: L-3032A538   # discovered via Service Quotas API, not hardcoded
+    fargate_spot_vcpu_quota_code: L-36FBB829
+    warn_at_quota_pct: 80                 # warn + request-increase hint at >=80%
+
+  # --- NEW: cluster-wide Grok rate limiter (§5.2) ---
+  grok_rate:
+    requests_per_min: null       # null => derive from plan limit / discover; else override
+    per_task_share: auto         # plan_limit / current_pool
+    limiter_backend: dynamodb     # cluster-wide token bucket table
+
+nat:                             # §4 job-aware NAT (lease/demand)
+  lease_ttl_seconds: 900         # per-task lease TTL; renewed by heartbeat
+  idle_grace_seconds: 300        # tear down only after demand=0 for this long
+  demand_sources: [leases, running_tasks, pending_queues]  # NAT up if ANY > 0
+
+batch:
+  phase2: true                   # (existing)
+  phase3: false                  # (existing)
+  # --- NEW: resilience + size limits (§6) ---
+  max_requests_per_file: 50000   # xAI hard limit (§6.2)
+  max_file_mb: 200               # xAI hard limit
+  max_request_mb: 25             # xAI hard limit
+  split_on_size: true            # auto-split oversized batches (§6.4)
+  submit_grace_seconds: 120      # _SUBMIT_GRACE_SECS fail-fast (already implemented)
+
+cost:                            # §9 — soft alert + credit-aware gating
+  spend_alert_usd: 10.0          # SOFT alert threshold (not a block)
+  credit_gating: true            # §9.0 — do not submit beyond available credit
+  budget_usd: null               # fallback budget if no credit-balance API (§13)
+  batch_discount_pct: 20         # grok-4.20 family (§9.1, verified)
+```
+
+**Rules:**
+- **Unknown work type → safe default** (`extraction` profile) + a warning, never a
+  crash.
+- **`multi_doc.enabled: false` is a hard kill-switch** — the pipeline falls back to
+  today's serial single-lock behavior (the migration §15 relies on this).
+- Every numeric limit that AWS/xAI exposes via API (Fargate vCPU, Grok rate,
+  credit balance) is **discovered and clamped at runtime** (§5.0); config values
+  are *ceilings/overrides*, not the source of truth.
+
+## 15. Migration plan (serial → concurrent, no big-bang)
+
+The build ships **incrementally on `feature/concurrency-parallelism`**, each phase
+independently deployable and reversible via the `multi_doc.enabled` kill-switch.
+Ordering follows §12; the migration constraint is **every phase must leave the
+serial pipeline working when `multi_doc.enabled: false`.**
+
+| Step | Ships | Backward-compatible because | Rollback |
+|---|---|---|---|
+| M1 | Input pre-stage (§7) — archive expand + media routing + per-doc lifecycle state | Produces the same per-book work items the serial queue already consumes | Skip pre-stage; feed books directly (today's path) |
+| M2 | **Per-doc locks** (§12.2) replacing single per-phase lock | With pool=1, per-doc locks behave exactly like the old per-phase lock | Revert lock key scheme (feature-flagged) |
+| M3 | **Job-aware NAT leases** (§4) | Lease demand with a single task == today's single-NAT behavior; fixes the teardown race regardless | Fall back to per-phase delayed-teardown |
+| M4 | **SFN Map dispatcher** + backpressure + cluster Grok limiter + credit gating (§12.4) | `MaxConcurrency=1` ⇒ serial; raise pool only after M2/M3 proven | `multi_doc.enabled: false` → bypass SFN, use serial queue |
+| M5 | Shared-entity-store hardening (§3.3) | Idempotent conditional writes are correct at pool=1 too | Conditional writes degrade gracefully to today's writes |
+| M6 | Incremental dedup (§3.2, §11) | Per-book-against-running-set == today's per-book dedup when only one book exists | Fall back to batch dedup |
+| M7 | Batch resilience taxonomy (§6) | Pure additive error handling | N/A (additive) |
+| M8 | Observability (§10) | Additive dashboards/alarms | N/A |
+| M9 | **Load test** (20 mixed docs) → then raise `pool_max` for full drain | Gated; pool stays low until proven | Lower pool |
+
+**Cutover discipline:** merge each M-step to `main` behind the kill-switch, deploy,
+smoke-test at **pool=1** (must equal serial behavior), then raise the pool only
+after M2+M3+M4 are jointly proven. No step raises concurrency until locks + NAT +
+dispatcher are all in place.
+
+## 16. Testing strategy
+
+Concurrency correctness can't be proven by "it ran once" — the failures are
+**races, double-writes, and lease leaks** that appear only under contention. Test
+layers:
+
+- **Unit (fast, no AWS):**
+  - Compute-profile selection: each media type → correct profile; unknown →
+    `extraction` default + warning (§7.1).
+  - Pool clamp math: `effective = min(pool_max, quota_cap)`, floor `pool_min`;
+    per-task Grok share = `plan_limit / pool` (§5).
+  - Spend calc (§9.1) — per-kind/per-model token × price × 0.8 batch discount;
+    credit-gating decision boundaries (§9.0).
+  - Fail-fast: `_check_batch_submission_ok` (already tested) + size-split logic.
+
+- **Integration (moto — matches CI, `moto==5.2.1`):**
+  - **Lock contention:** N simulated tasks contend for the same per-doc lock →
+    exactly one wins; loser backs off; no deadlock (§12.2).
+  - **Idempotent entity writes:** concurrent `DynamoEntityStore` conditional
+    updates for the same entity from 2 "books" → single consistent record, no lost
+    update (§3.3). This is the correctness crux.
+  - **NAT lease lifecycle:** acquire/renew/expire; demand=0 only when all leases
+    gone AND queues empty → teardown; a stale lease (crashed task) expires via TTL
+    and doesn't pin NAT forever (§4).
+  - **Backpressure:** dispatcher at `MaxConcurrency` holds new dispatch until a
+    slot frees; quota at ≥80% warns; never exceeds the clamp (§5).
+  - **Incremental dedup:** book B deduped against the running resolved set from A;
+    a late/straggler book blocks nothing (§3.2).
+
+- **Fault injection:**
+  - Spot reclaim mid-extraction → SIGTERM → `_final_sync` → relaunch → incremental
+    resume skips done chapters (no re-pay of Grok; DynamoDB cache hit).
+  - Batch rejected (model/size) → `BatchSubmissionError` raised loudly, per-cause
+    policy applies (§6.1) — regression-locks the St. Vith `num_requests:0` bug.
+  - Crashed task's lock + NAT lease both expire via TTL (no permanent leak).
+
+- **Load test (M9, pre-drain):** 20 mixed-media WWIIArchives docs at `pool=4` →
+  measure throughput, per-resource utilization (validate the §7.1 right-size
+  assumptions with Container Insights), actual cost vs the §9.1 estimate, and zero
+  correctness violations (no dup entities, no lease leaks). Sets `pool_max` for the
+  full 628-file drain.
+
+- **CI gate:** unit + moto-integration run under the existing full quality gate
+  (black/pylint/mypy/bandit/radon/vulture + pytest, CI-pinned versions). Load test
+  is manual/out-of-band (costs money + real AWS).
