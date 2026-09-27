@@ -150,12 +150,44 @@ bibliography-disposition gate contributes 0 to demand). Teardown is decided by t
 Concurrency fan-out hits real quotas. The dispatcher MUST apply **backpressure**
 (cap concurrency, queue the rest) rather than launch blindly and fail.
 
+### 5.0 Limits are RETRIEVABLE — discover, cap, and warn (do not hardcode)
+
+AWS exposes compute limits via the **Service Quotas API**
+(`aws service-quotas get-service-quota` / `list-service-quotas`). The dispatcher
+MUST:
+1. **Query the live quota** at startup (and periodically), not hardcode a pool
+   size.
+2. **Cap concurrent compute below the established limit** — computed max tasks =
+   `floor(quota_vCPU / per_task_vCPU)`, then apply a safety margin (e.g. 80%).
+   Concurrent compute must **not exceed** the quota.
+3. **Warn as usage approaches the ceiling** (e.g. ≥80% of the quota) — emit an
+   alert (SNS → Slack/email) so the operator can **request a quota increase**
+   before it becomes the bottleneck. A warning, not a failure.
+
+Verified live (account 340339225515, us-east-1) — all adjustable:
+
+| Quota | Code | Value | Use |
+|-------|------|-------|-----|
+| Fargate On-Demand vCPU resource count | `L-3032A538` | 4000 | max concurrent on-demand task vCPUs |
+| Fargate Spot vCPU resource count | `L-36FBB829` | 4000 | max concurrent spot task vCPUs (primary) |
+| Fargate Spot Sustained Launch Rate | `L-FAA52651` | 20/s | launch pacing |
+| NAT gateways per AZ | (vpc) | 5 | keep ONE shared NAT (§4) |
+| EIP per NAT gateway | (vpc) | 2 | NAT egress IPs |
+
+So `pool_size` is **derived**: `min` across (vCPU-quota ÷ per-task-vCPU × margin,
+Grok-rate headroom, Batch GPU capacity). If the derived cap is lower than the
+backlog demands, **warn + surface the specific quota to raise** rather than
+silently throttle.
+
+### 5.1 Limit table
+
 | Resource | Limit type | Concern at scale | Mitigation |
 |----------|-----------|------------------|------------|
-| **Fargate tasks / vCPU** per region | Soft (raisable) | Pool of N book pipelines × tasks may exceed the account Fargate vCPU quota | Cap pool to fit quota; request increase; check `service-quotas` before launch |
-| **Fargate Spot capacity** | Practical | Spot may be unavailable → tasks stuck PROVISIONING | 4:1 spot:on-demand fallback already set; monitor; consider capacity-optimized |
-| **AWS Batch (Chandra GPU)** vCPU / GPU | Soft | Many concurrent OCR jobs exceed GPU queue capacity | Batch job queue naturally queues; cap concurrent submissions; the GPU instance count / spot GPU availability is the real ceiling |
-| **Grok API rate limits** | Hard (vendor) | N concurrent books × parallel chapters → burst of Grok calls → 429s | **Global** token-bucket/rate-limiter across tasks (shared counter in Dynamo or a fixed per-task cap × pool size ≤ vendor limit); batch API already smooths; honor 429 backoff |
+| **Fargate vCPU** (`L-3032A538`/`L-36FBB829`, 4000) | Soft (raisable) | Pool × per-task vCPU may exceed quota | **Query via Service Quotas API; cap pool below it; warn at ≥80% → request increase** |
+| **Fargate launch rate** (`L-FAA52651`, 20/s) | Soft | Bursty dispatch throttled | Pace launches; dispatcher respects the rate |
+| **Fargate Spot capacity** | Practical | Spot unavailable → PROVISIONING | 4:1 spot:on-demand fallback; monitor |
+| **AWS Batch (Chandra GPU)** vCPU/GPU | Soft | Concurrent OCR jobs exceed GPU capacity | Batch queue absorbs; cap concurrent submissions; GPU/spot-GPU availability is the real ceiling |
+| **Grok API rate** | Hard (vendor) | N tasks × parallel chapters → 429s | **Cluster-wide** limiter (below); honor 429 backoff |
 | **NAT Gateway** | Soft (per-AZ) | Single NAT is fine; don't spawn per-book NATs | Keep ONE shared NAT (§4) |
 | **Elastic IPs** | Soft (5/region default) | NAT churn leaked EIPs before (fixed) | Reuse; the create path already releases orphaned EIPs |
 | **DynamoDB throughput** | Soft (on-demand scales) | Concurrent entity writes spike WCU | On-demand billing mode; exponential backoff on throttling; conditional writes |
@@ -166,6 +198,19 @@ Concurrency fan-out hits real quotas. The dispatcher MUST apply **backpressure**
 and Fargate vCPU quota first) and sizes the pool to the *minimum* headroom across
 limits. Prefer **queue + backpressure** over launch-and-fail. Make the pool size
 and per-task Grok rate a **config** so it can be tuned to the current quotas.
+
+### 5.2 Current rate limiter is per-process — must become cluster-wide
+
+Today `src/grok_client.py:_RateLimiter` is a **per-process** token bucket
+(`calls_per_minute`, default 30) + 429 backoff. It is correct for serial
+(one-task) operation but **breaks under concurrency**: N parallel task processes
+each get their OWN 30/min bucket → **N×30/min** hitting Grok's *account-wide* hard
+limit. Required change: a **cluster-wide** limiter — either a shared token bucket
+in DynamoDB (atomic decrement of a refilling budget) OR a static per-task budget
+= `vendor_limit ÷ pool_size` enforced locally. The vendor limit itself is a config
+input (no API to query it), so the dispatcher divides it across the pool. Same
+class of fix as the NAT counter: coordination must move from per-process to
+cluster-wide shared state once we go parallel.
 
 ---
 
