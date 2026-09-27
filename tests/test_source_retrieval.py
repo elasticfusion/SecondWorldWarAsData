@@ -113,7 +113,7 @@ def test_pacer_spaces_same_domain(monkeypatch):
 
 
 def test_429_then_retry_succeeds(tmp_path, monkeypatch):
-    monkeypatch.setattr(sr.time, "sleep", lambda s: None)  # don't actually sleep
+    monkeypatch.setattr(sr.time, "sleep", lambda _s: None)  # don't actually sleep
     sess = MagicMock()
     r429 = MagicMock()
     r429.status_code = 429
