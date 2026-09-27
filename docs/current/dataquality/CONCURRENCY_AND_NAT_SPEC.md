@@ -407,9 +407,11 @@ A pre-stage must run before the concurrency dispatcher:
   routed → ocr → parsed → extracted → deduped → enriched → done` (or
   `failed/needs-review`). The dispatcher dispatches only docs not already `done`
   or in-flight — idempotent across restarts; no re-dispatch of completed work.
-- **Ordering / prioritization** — decide FIFO vs priority (e.g. ETO/B-series,
-  or complete-a-collection-first). Waves for the dedup barrier (§3.2) are formed
-  from this ordering.
+- **Ordering / prioritization — DECIDED (2026-09-27): FIFO.** Documents are
+  dispatched in arrival/enumeration order (no priority tiers). Dedup-barrier
+  waves (§3.2) are formed from consecutive FIFO runs of completed docs. Keeps the
+  dispatcher simple and predictable; revisit only if a high-value subset ever
+  needs to jump the queue.
 
 ## 9. Cost guardrail (throughput must not blow the budget)
 
