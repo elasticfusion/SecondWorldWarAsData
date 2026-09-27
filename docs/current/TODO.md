@@ -227,6 +227,29 @@ routing lands" item under Future/Research.
 
 ### Pipeline Efficiency
 
+#### Pipeline notifications don't render in Slack (only email + alarms do)
+Phase-complete / phase-FAILURE notifications (`_notify_complete` /
+`_notify_failure` → `dev-wwii-phase2-complete`) publish **free-form SNS text**,
+which AWS Chatbot / Amazon Q **silently drops** ("Event received is not
+supported") — only CloudWatch **alarms** and supported structured events render
+in Slack. Confirmed twice: the St. Vith Phase 2 **failure** emailed but never
+reached `#wwii-pipeline-alerts`. Fix options: (a) route pipeline failures/
+completions through a **CloudWatch alarm** (metric filter on the failure log or a
+custom metric) so Slack renders them; or (b) a small **formatter Lambda**
+subscribed to the topic that reposts as a Chatbot custom-notification schema; or
+(c) SNS→Lambda→Slack webhook. Email delivery works today, so this is
+observability, not correctness.
+*Source: St. Vith Phase 2 failure 2026-09-27 (emailed, not Slacked)*
+
+#### ECS task role missing `SNS:ListSubscriptionsByTopic` (notification preflight always warns)
+The new `_preflight_notification_subscriptions` (non-blocking) hits
+`AuthorizationError` — `dev-wwii-ecs-task-role` lacks `SNS:ListSubscriptionsByTopic`
+on the notification topic, so the preflight can't actually verify subscriptions
+and always logs its warning (then correctly continues). Add the read permission
+to the task role (`cloudformation/iam.yaml`) so the preflight does its job.
+Non-blocking; the run proceeds regardless.
+*Source: St. Vith verification run 2026-09-27 log*
+
 #### Delete stale legacy `chunk-NNN` OCR dirs superseded by re-OCR
 Re-OCR runs (off-by-one fix) write new page-range chunk dirs
 (`chunk-p0001-0050`, …) but leave the **old pre-fix `chunk-000`..`chunk-NNN`**
