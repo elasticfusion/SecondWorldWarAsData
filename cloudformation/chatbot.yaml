@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  WWII Pipeline - AWS Chatbot Slack alerting. Deployed to us-east-2 (the region
+  where AWS Chatbot has an API/CloudFormation endpoint); references the
+  cross-region SNS topics in us-east-1. Replaces the fragile email-confirmation
+  path for operator alerts with Slack (no subscription confirmation required).
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+  SlackTeamId:
+    Type: String
+    Description: Slack workspace / team ID (e.g. T1D8E0ZGT for CirrusNine)
+  SlackChannelId:
+    Type: String
+    Description: Slack channel ID (e.g. C0C4BK472DD for wwii-pipeline-alerts)
+  TopicRegion:
+    Type: String
+    Default: us-east-1
+    Description: Region where the SNS topics live
+  AccountId:
+    Type: String
+    Description: AWS account ID that owns the SNS topics
+
+Resources:
+  # IAM role Chatbot assumes to read notification context. Least-privilege:
+  # CloudWatch read for alarm context; no write. SNS delivery is handled by the
+  # Chatbot service, not this role.
+  ChatbotRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-chatbot-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: chatbot.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: chatbot-notification-read
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudwatch:Describe*
+                  - cloudwatch:Get*
+                  - cloudwatch:List*
+                Resource: '*'
+
+  SlackChannelConfig:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Properties:
+      ConfigurationName: !Sub ${EnvironmentName}-wwii-pipeline-alerts
+      IamRoleArn: !GetAtt ChatbotRole.Arn
+      SlackChannelId: !Ref SlackChannelId
+      SlackWorkspaceId: !Ref SlackTeamId
+      LoggingLevel: ERROR
+      SnsTopicArns:
+        - !Sub arn:aws:sns:${TopicRegion}:${AccountId}:${EnvironmentName}-wwii-alarms
+        - !Sub arn:aws:sns:${TopicRegion}:${AccountId}:${EnvironmentName}-wwii-phase2-complete
+
+Outputs:
+  ChatbotConfigArn:
+    Description: ARN of the Slack channel configuration
+    Value: !Ref SlackChannelConfig
+  ChatbotRoleArn:
+    Value: !GetAtt ChatbotRole.Arn
