@@ -1,0 +1,301 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  WWII Pipeline - M4.3 concurrency dispatcher. A Step Functions Standard state
+  machine with a Map state that fans documents out concurrently within the
+  coordination primitives (per-doc locks M2, NAT leases M3, cluster Grok rate
+  M4.1, credit gate M4.2/M4.4). Deployed but NOT invoked while the multi_doc
+  kill-switch is off; start at MaxConcurrency=1 (== serial) before raising the
+  pool. See docs/current/dataquality/CONCURRENCY_AND_NAT_SPEC.md §17.
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+  ECSClusterArn:
+    Type: String
+    Description: ARN of the pipeline ECS cluster
+  Phase1TaskDefArn:
+    Type: String
+  Phase2TaskDefArn:
+    Type: String
+  Phase3TaskDefArn:
+    Type: String
+  CacheTableArn:
+    Type: String
+    Description: ARN of the DynamoDB cache table (locks, leases, credit, job queue)
+  PrivateSubnetIds:
+    Type: CommaDelimitedList
+  SecurityGroupId:
+    Type: String
+  TaskRoleArn:
+    Type: String
+    Description: ECS task role (passed to RunTask)
+  ExecutionRoleArn:
+    Type: String
+    Description: ECS task execution role (passed to RunTask)
+  NatManagerFunctionArn:
+    Type: String
+  LambdaCodeBucket:
+    Type: String
+    Description: S3 bucket holding the dispatcher Lambda deployment package
+  LambdaCodeKey:
+    Type: String
+    Default: lambda/dispatcher.zip
+
+Resources:
+  # ---------------------------------------------------------------------------
+  # Thin Lambdas: enumerate pending docs, clamp the pool, human-gate token store.
+  # All three share one small deployment package (handlers in lambda_handlers/).
+  # ---------------------------------------------------------------------------
+  DispatcherLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-dispatcher-lambda-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: dispatcher-lambda
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource: !Ref CacheTableArn
+              - Effect: Allow
+                # clamp_pool queries the live Fargate vCPU quota (§5.0)
+                Action:
+                  - servicequotas:GetServiceQuota
+                  - ecs:ListTasks
+                Resource: '*'
+              - Effect: Allow
+                # human_gate resumes a parked Map branch
+                Action:
+                  - states:SendTaskSuccess
+                  - states:SendTaskFailure
+                Resource: '*'
+
+  EnumeratePendingFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-enumerate-pending
+      Runtime: python3.12
+      Handler: dispatcher_handlers.enumerate_pending
+      Role: !GetAtt DispatcherLambdaRole.Arn
+      Timeout: 60
+      MemorySize: 256
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          CACHE_TABLE: !Sub ${EnvironmentName}-wwii-api-cache
+
+  ClampPoolFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-clamp-pool
+      Runtime: python3.12
+      Handler: dispatcher_handlers.clamp_pool
+      Role: !GetAtt DispatcherLambdaRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          CACHE_TABLE: !Sub ${EnvironmentName}-wwii-api-cache
+
+  HumanGateFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-human-gate
+      Runtime: python3.12
+      Handler: dispatcher_handlers.human_gate
+      Role: !GetAtt DispatcherLambdaRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          CACHE_TABLE: !Sub ${EnvironmentName}-wwii-api-cache
+
+  # ---------------------------------------------------------------------------
+  # State machine execution role
+  # ---------------------------------------------------------------------------
+  DispatcherStateMachineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-dispatcher-sfn-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: states.amazonaws.com }
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: dispatcher-sfn
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: [lambda:InvokeFunction]
+                Resource:
+                  - !GetAtt EnumeratePendingFunction.Arn
+                  - !GetAtt ClampPoolFunction.Arn
+                  - !GetAtt HumanGateFunction.Arn
+                  - !Ref NatManagerFunctionArn
+              - Effect: Allow
+                # runTask.sync requires these; scope RunTask to our task defs.
+                # DescribeTasks/StopTask are cluster-wide (task ARNs are dynamic).
+                Action: [ecs:RunTask]
+                Resource:
+                  - !Ref Phase1TaskDefArn
+                  - !Ref Phase2TaskDefArn
+                  - !Ref Phase3TaskDefArn
+              - Effect: Allow
+                Action: [ecs:StopTask, ecs:DescribeTasks]
+                Resource: '*'
+              - Effect: Allow
+                Action: [iam:PassRole]
+                Resource: [!Ref TaskRoleArn, !Ref ExecutionRoleArn]
+              - Effect: Allow
+                Action:
+                  - events:PutTargets
+                  - events:PutRule
+                  - events:DescribeRule
+                Resource: !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/StepFunctionsGetEventsForECSTaskRule
+              - Effect: Allow
+                Action: [dynamodb:GetItem, dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:Scan]
+                Resource: !Ref CacheTableArn
+
+  # ---------------------------------------------------------------------------
+  # The state machine (Standard). One execution = one looping drain pass (§17.5).
+  # ---------------------------------------------------------------------------
+  DispatcherStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: !Sub ${EnvironmentName}-wwii-dispatcher
+      StateMachineType: STANDARD
+      RoleArn: !GetAtt DispatcherStateMachineRole.Arn
+      DefinitionSubstitutions:
+        EnumerateArn: !GetAtt EnumeratePendingFunction.Arn
+        ClampArn: !GetAtt ClampPoolFunction.Arn
+        ClusterArn: !Ref ECSClusterArn
+        Subnet0: !Select [0, !Ref PrivateSubnetIds]
+        SecurityGroup: !Ref SecurityGroupId
+      DefinitionString: |
+        {
+          "Comment": "WWII pipeline concurrent drain dispatcher (M4.3, spec §17)",
+          "StartAt": "EnumeratePending",
+          "States": {
+            "EnumeratePending": {
+              "Type": "Task",
+              "Resource": "${EnumerateArn}",
+              "ResultPath": "$.pending",
+              "Next": "AnyPending"
+            },
+            "AnyPending": {
+              "Type": "Choice",
+              "Choices": [
+                { "Variable": "$.pending.count", "NumericGreaterThan": 0, "Next": "ClampPool" }
+              ],
+              "Default": "Done"
+            },
+            "ClampPool": {
+              "Type": "Task",
+              "Resource": "${ClampArn}",
+              "ResultPath": "$.pool",
+              "Next": "FanOut"
+            },
+            "FanOut": {
+              "Type": "Map",
+              "ItemsPath": "$.pending.items",
+              "MaxConcurrencyPath": "$.pool.effective",
+              "ResultPath": "$.results",
+              "Iterator": {
+                "StartAt": "RunDocTask",
+                "States": {
+                  "RunDocTask": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::ecs:runTask.sync",
+                    "Parameters": {
+                      "Cluster": "${ClusterArn}",
+                      "TaskDefinition.$": "$.task_def",
+                      "CapacityProviderStrategy": [
+                        { "CapacityProvider": "FARGATE_SPOT", "Weight": 4, "Base": 0 },
+                        { "CapacityProvider": "FARGATE", "Weight": 1, "Base": 0 }
+                      ],
+                      "NetworkConfiguration": {
+                        "AwsvpcConfiguration": {
+                          "Subnets": ["${Subnet0}"],
+                          "SecurityGroups": ["${SecurityGroup}"],
+                          "AssignPublicIp": "DISABLED"
+                        }
+                      },
+                      "Overrides": {
+                        "ContainerOverrides": [
+                          {
+                            "Name": "pipeline",
+                            "Environment": [
+                              { "Name": "BOOK_NAME", "Value.$": "$.book" },
+                              { "Name": "GROK_RATE_POOL_SIZE", "Value.$": "States.Format('{}', $.pool.effective)" }
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "Retry": [
+                      { "ErrorEquals": ["States.TaskFailed"], "IntervalSeconds": 30, "MaxAttempts": 2, "BackoffRate": 2.0 }
+                    ],
+                    "Catch": [
+                      { "ErrorEquals": ["States.ALL"], "ResultPath": "$.error", "Next": "DocFailed" }
+                    ],
+                    "End": true
+                  },
+                  "DocFailed": {
+                    "Type": "Pass",
+                    "Comment": "Per-cause taxonomy (§6.1) applied by the task itself; branch failure is isolated (incremental dedup §3.2 = no straggler coupling).",
+                    "End": true
+                  }
+                }
+              },
+              "Next": "EnumeratePending"
+            },
+            "Done": {
+              "Type": "Succeed"
+            }
+          }
+        }
+      Tags:
+        - Key: Project
+          Value: wwii-pipeline
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+Outputs:
+  DispatcherStateMachineArn:
+    Value: !Ref DispatcherStateMachine
+    Description: ARN of the concurrency dispatcher state machine (invoke only when multi_doc.enabled)
+  EnumeratePendingFunctionArn:
+    Value: !GetAtt EnumeratePendingFunction.Arn
+  ClampPoolFunctionArn:
+    Value: !GetAtt ClampPoolFunction.Arn
+  HumanGateFunctionArn:
+    Value: !GetAtt HumanGateFunction.Arn
