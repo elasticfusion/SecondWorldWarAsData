@@ -177,7 +177,9 @@ class GrokClient:
         )
         self.model = os.getenv(
             "GROK_MODEL",
-            config.get("api", {}).get("grok", {}).get("model", "grok-4.20-0309-reasoning"),
+            config.get("api", {})
+            .get("grok", {})
+            .get("model", "grok-4.20-0309-reasoning"),
         )
         self._model_map = (
             config.get("api", {}).get("grok", {}).get("model_map", {}) or {}
