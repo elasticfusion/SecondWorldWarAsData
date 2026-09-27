@@ -275,6 +275,7 @@ drives resubmission.
 | 5xx / connection / timeout | transient | retry (backoff), same batch |
 | 429 rate limit | transient (paced) | honor Retry-After; cluster-wide budget (§5.2) |
 | Model retirement / redirect / not-found | config/transitional | **do NOT retry blindly**; apply fallback model (§6.2), then resubmit affected requests |
+| **Credit/quota exhausted (402/403)** | funding | **pause submissions, HOLD unsubmitted work (don't drop), alert; resume on top-up** (§9.0) — never counted as processed |
 | Batch exceeds per-batch limit | structural | **split + resubmit** as sub-batches (§ below) |
 | Request too large (tokens) | structural | split the request / chunk; not a plain retry |
 | `content_filter` / policy refusal | permanent-ish | do not loop; flag → needs-review |
@@ -419,6 +420,40 @@ handling is an **alert, not a circuit breaker**: notify before/as a soft,
 configurable threshold is crossed, then **keep running** unless the operator
 intervenes.
 
+### 9.0 CRITICAL — credit-aware submission gating (job integrity, not just cost)
+
+**An overspend on Grok does not just cost more — the work does NOT get
+processed.** If credit is exhausted during/after submission, those requests
+fail silently (returned as generic errors, or dropped), so managing submission
+against available credit is a **correctness prerequisite**, not a courtesy.
+
+- **Current state (verified):** `_preflight_credit_check` only asks "are there
+  ANY credits?" (a minimal test request → abort on 402/403). It does **NOT**
+  check whether there is **enough** credit for the batch about to be submitted.
+  So a batch can pass preflight, then **run out of credit mid-batch → remaining
+  requests unprocessed.** Under concurrency this is worse: N books submitting at
+  once can jointly exhaust the balance with no coordination.
+- **Required — gate submissions on available balance:**
+  1. **Know the balance** — query available Grok credit (if the API exposes it)
+     or track a configured operator-set credit budget decremented by accrued
+     spend.
+  2. **Estimate the batch's cost** (token estimate × price) and **do not submit a
+     batch whose estimated cost exceeds remaining credit** — hold it in the
+     pending queue and alert, rather than submit work that will silently fail.
+  3. **Cluster-wide credit accounting** under concurrency — a shared (DynamoDB)
+     running-spend/remaining-credit counter so N concurrent submitters don't
+     collectively overspend; each submitter atomically "reserves" its estimated
+     cost before submitting.
+  4. **On credit exhaustion (402/403 mid-run):** treat as a **first-class
+     failure cause** in the §6.1 taxonomy — pause submissions, hold unsubmitted
+     work in the queue (do NOT drop it), alert loudly, and **resume when credit
+     is topped up** (the held/needs-review work resubmits, cache-aware).
+  5. Distinguish "out of credit" from other failures so it isn't retried as if
+     transient and isn't silently counted as processed.
+
+This gate is about **not losing work**; the soft alert below is about
+**visibility**. Both apply.
+
 - **Soft spend-threshold alert** — a configurable value (`GROK_SPEND_ALERT_USD`,
   **default ~$10**) that fires an SNS→Slack/email alert **as projected/accrued
   Grok spend approaches or crosses it**, *before* a large overspend — a heads-up,
@@ -474,7 +509,8 @@ Lambda/task time limits.
    construction AND required for safe concurrency.
 4. **Dispatcher with bounded pool + limit-aware backpressure** — per-resource
    caps (Fargate vCPU / Batch GPU / Grok rate), cluster-wide Grok limiter (§5.2),
-   soft spend-threshold alert (§9, default ~$10, configurable — notify not block).
+   **credit-aware submission gating (§9.0 — don't submit beyond available credit;
+   overspend = unprocessed work)**, soft spend-threshold alert (§9, default ~$10).
 5. **Shared-entity-store hardening** — cross-book entity writes via
    DynamoEntityStore conditional/idempotent updates (§3.3).
 6. **Global dedup barrier** — quiescence across per-doc locks; incremental +
