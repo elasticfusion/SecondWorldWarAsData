@@ -473,6 +473,57 @@ This gate is about **not losing work**; the soft alert below is about
 - **Spot-first** already minimizes compute cost; GPU-OCR (priciest) pool kept
   small.
 
+### 9.1 Spend calculation — per job, per kind, per model
+
+Both the credit gate (§9.0) and the alert (§9) need a **cost estimate + actual**.
+What the pipeline already captures (verified) vs. what's needed:
+
+**Available today:**
+- **Per-request token usage** — real-time path logs `prompt_tokens` /
+  `completion_tokens` / `total_tokens` from Grok's `usage`.
+- **Per-request job KIND** — batch `request_details[].cache_type`
+  (events/people/casualties/…), so spend rolls up **per kind** for free.
+- **Per-book / per-batch** grouping — batch metrics are keyed by book + batch_id.
+- `content_length` per request (a proxy where token usage isn't persisted).
+
+**Per-KIND → per-MODEL routing (this is why cost isn't one flat rate):**
+- `GrokClient._get_model(cache_type)` returns `model_map.get(cache_type,
+  default_model)`. So **different job kinds can use different models** (the
+  intended cost lever: cheap model for simple extractors, best model for hard
+  ones — tracked TODO "model routing expansion").
+- **Today** `model_map: {}` → everything uses `grok-4.6` (one price). But the
+  cost model MUST resolve **per request** via the same `model_map`/`cache_type`
+  routing, so spend stays correct automatically when cheaper models are enabled.
+
+**Missing piece — a configurable PRICE TABLE keyed by model:**
+- Add `api.grok.pricing: { <model>: {input_per_mtok, output_per_mtok}, ... }` +
+  a **batch discount** factor (Grok batch ≈ 50% off). No price data exists in
+  config today — this is the one addition required.
+
+**Cost formula (per request, then grouped):**
+```
+model      = model_map.get(cache_type, default_model)
+price      = pricing[model]
+cost_req   = (prompt_tokens/1e6 * price.input + completion_tokens/1e6 * price.output)
+           * (batch_discount if batch else 1.0)
+```
+Group by `book` (per-job spend) and/or `cache_type` (per-kind spend) — both tags
+already present.
+
+**Estimate (pre-submit, for the credit gate) vs actual (post-hoc):**
+- **Estimate:** token-count each request's prompt (tiktoken-style / chars÷4) +
+  an assumed output-token budget × `price[model_for(cache_type)]` × batch
+  discount → the batch's projected cost. Gate submission on `estimate ≤ remaining
+  credit` (§9.0).
+- **Actual:** from real `usage` after completion (batch results must surface
+  usage, not just `content_length` — a gap to close). Reconcile estimate vs
+  actual; feed the running total to the dashboard (§10) and the alert (§9).
+
+**Also capture batch token usage** — batch `request_details` currently store
+`content_length` but not per-request `usage`; pull token usage from the batch
+results so batch (the dominant, discounted path) has accurate actuals, not just a
+proxy.
+
 ## 10. Observability at scale
 
 Draining 628 docs across N parallel jobs over hours/days needs visibility:
