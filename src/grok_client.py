@@ -41,6 +41,32 @@ class GrokTruncationError(GrokAPIError):
     """Response was truncated (hit max_tokens or context limit)."""
 
 
+def _effective_calls_per_minute(config: Dict[str, Any]) -> int:
+    """Per-task Grok call budget, made cluster-wide-safe under concurrency (§5.2).
+
+    Grok's rate limit is **account-wide**. With N task processes each running an
+    independent per-process limiter, N × calls_per_minute would blow past the
+    vendor cap. Since the vendor limit is a config input (no API to query it), the
+    safe cluster-wide budget is the configured rate DIVIDED across the pool:
+
+        per_task = calls_per_minute // effective_pool_size
+
+    where effective_pool_size is the multi-doc pool ceiling when concurrency is on,
+    else 1. At pool=1 (or multi_doc off) this returns the configured value
+    unchanged — byte-identical to today's serial behavior (§15 migration).
+    """
+    base = int(config.get("api", {}).get("calls_per_minute", 30))
+    multi = config.get("concurrency", {}).get("multi_doc", {})
+    if not multi.get("enabled", False):
+        return base
+    # Divide by the pool ceiling (pool_max) — the worst case of concurrent tasks.
+    # An env override lets the dispatcher inject the *current* adaptive pool size.
+    pool = int(os.getenv("GROK_RATE_POOL_SIZE", "0")) or int(multi.get("pool_max", 1))
+    pool = max(pool, 1)
+    per_task = base // pool
+    return max(per_task, 1)  # never drop below 1/min
+
+
 class _RateLimiter:
     """Thread-safe token-bucket rate limiter.
 
@@ -218,8 +244,10 @@ class GrokClient:
             "supplemental_advanced",
         }
 
-        # Rate limiter — shared across all threads
-        calls_per_minute = config.get("api", {}).get("calls_per_minute", 30)
+        # Rate limiter — shared across all threads. Under multi-doc concurrency
+        # the per-task budget is the account-wide rate divided across the pool
+        # (§5.2), so N parallel tasks collectively stay under Grok's cap.
+        calls_per_minute = _effective_calls_per_minute(config)
         self._rate_limiter = _RateLimiter(calls_per_minute)
 
         # Cache stats
