@@ -88,6 +88,138 @@ class DynamoEntityStore:
         except Exception as e:
             logger.warning("DynamoEntityStore.delete failed: %s", e)
 
+    @staticmethod
+    def _mention_key(mention: Dict[str, Any]) -> Any:
+        """Dedup key for an event mention: (Sub_eventID, book) — matches dedup/merge."""
+        return (mention.get("Sub_eventID"), mention.get("book"))
+
+    def _merge_mentions(
+        self, existing: List[Dict[str, Any]], incoming: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Append incoming mentions not already present (idempotent, §3.3)."""
+        seen = {self._mention_key(m) for m in existing if m.get("Sub_eventID")}
+        merged = list(existing)
+        for m in incoming:
+            key = self._mention_key(m)
+            # A mention with no Sub_eventID can't be deduped — keep it (rare).
+            if not m.get("Sub_eventID") or key not in seen:
+                merged.append(m)
+                if m.get("Sub_eventID"):
+                    seen.add(key)
+        return merged
+
+    def merge_entity(
+        self,
+        entity_type: str,
+        entity_id: str,
+        data: Dict[str, Any],
+        *,
+        filename: str = "",
+        max_retries: int = 5,
+    ) -> bool:
+        """Idempotently merge an entity's event_mentions into the stored record.
+
+        The correctness crux under concurrency (§3.3): two books extracting the
+        same entity (e.g. "Eisenhower") must NOT clobber each other's mentions.
+        Uses optimistic concurrency — read current + `_version`, merge mentions
+        (deduped on Sub_eventID+book), then a version-conditional put; on a
+        conflict (another writer won the race) re-read and retry. Idempotent: a
+        relaunched/retried task re-merging the same mentions is a no-op.
+
+        Falls back to a plain put() when the entity doesn't exist yet.
+        """
+        key = self._key(entity_type, entity_id)
+        for attempt in range(max_retries):
+            try:
+                resp = self._table.get_item(Key={"cache_key": key})
+                item = resp.get("Item")
+                if not item or "data" not in item:
+                    # First writer — create with version 1 (conditional so a racing
+                    # creator doesn't get silently overwritten).
+                    return self._conditional_create(
+                        entity_type, entity_id, data, filename
+                    )
+                current = json.loads(item["data"])
+                version = int(item.get("_version", 0))
+                merged = dict(current)
+                merged["event_mentions"] = self._merge_mentions(
+                    current.get("event_mentions", []),
+                    data.get("event_mentions", []),
+                )
+                if merged.get("event_mentions") == current.get("event_mentions"):
+                    return True  # nothing new to append — idempotent no-op
+                self._table.put_item(
+                    Item=self._item(
+                        entity_type, entity_id, merged, filename, version + 1
+                    ),
+                    ConditionExpression="#v = :cur",
+                    ExpressionAttributeNames={"#v": "_version"},
+                    ExpressionAttributeValues={":cur": version},
+                )
+                return True
+            except self._table.meta.client.exceptions.ConditionalCheckFailedException:
+                logger.info(
+                    "merge_entity conflict on %s (attempt %d) — retrying",
+                    key,
+                    attempt + 1,
+                )
+                continue
+            except Exception as e:
+                logger.warning("DynamoEntityStore.merge_entity failed: %s", e)
+                return False
+        logger.error("merge_entity exhausted retries for %s — mentions NOT merged", key)
+        return False
+
+    def _conditional_create(
+        self, entity_type: str, entity_id: str, data: Dict[str, Any], filename: str
+    ) -> bool:
+        """Create an entity only if absent (version 1). Retry-safe first write."""
+        try:
+            self._table.put_item(
+                Item=self._item(entity_type, entity_id, data, filename, 1),
+                ConditionExpression="attribute_not_exists(cache_key)",
+            )
+            return True
+        except self._table.meta.client.exceptions.ConditionalCheckFailedException:
+            # Lost the create race — someone else created it; merge into theirs.
+            return self.merge_entity(entity_type, entity_id, data, filename=filename)
+        except Exception as e:
+            logger.warning("DynamoEntityStore._conditional_create failed: %s", e)
+            return False
+
+    def _item(
+        self,
+        entity_type: str,
+        entity_id: str,
+        data: Dict[str, Any],
+        filename: str,
+        version: int,
+    ) -> Dict[str, Any]:
+        """Build the DynamoDB item for an entity (shared by put/merge)."""
+        name = (
+            data.get("name", "")
+            or data.get("current_name", "")
+            or data.get("group_name", "")
+            or data.get("common_name", "")
+            or data.get("date_start", "")
+        )
+        return {
+            "cache_key": self._key(entity_type, entity_id),
+            "entity_type": entity_type,
+            "entity_id": entity_id,
+            "name": name.lower() if name else "",
+            "filename": filename,
+            "enrichment_status": data.get("enrichment_status", ""),
+            "book": (
+                data.get("event_mentions", [{}])[0].get("book", "")
+                if data.get("event_mentions")
+                else ""
+            ),
+            "data": json.dumps(data, ensure_ascii=False),
+            "_version": version,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+
     def query_unenriched(
         self, entity_type: str, limit: int = 100
     ) -> List[Dict[str, Any]]:
