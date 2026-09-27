@@ -172,8 +172,15 @@ columnar region and run the table-structure model directly (bypass layout
 detection). Also: residual recovered-cell OCR noise (`1703dd -arch South`).
 *Source: St. Vith end-to-end test 2026-09-23/24*
 
-#### ULID fix generates different replacements for same invalid ID
+#### ~~ULID fix generates different replacements for same invalid ID~~ ✅ Already fixed + now regression-tested
 Same invalid ULID referenced in multiple places within one response gets different replacements, breaking internal referential integrity. Fix: build replacement map and reuse same new ULID for repeated occurrences.
+**Resolution (2026-09-27):** verified already fixed — `src/utils/json_validator.py`
+`_fix_invalid_ulids` builds a `replacement_map` keyed by the invalid value and
+`_fix_ulids_recursive` reuses it, so repeated occurrences collapse to one ULID
+(the dedup path `src/dedup/merge.py:_replace_id_in_obj` is likewise deterministic).
+Behavioral check confirmed same-invalid→one replacement across nested
+fields/lists; different-invalid→own id; input not mutated. Added regression test
+`tests/test_ulid_replacement_consistency.py` (2 tests) to lock it in.
 *Source: CODE_INTEGRITY_REVIEW.md #5*
 
 #### SHAEF OB map corpus gaps → source acquisition (likely a NARA visit)
