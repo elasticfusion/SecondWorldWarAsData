@@ -450,6 +450,51 @@ A pre-stage must run before the concurrency dispatcher:
   accounting (§5) must be **per-resource** (Batch GPU vs Fargate vCPU vs Grok
   rate), not a single number.
 
+### 7.1 Compute profile + spot strategy per work type
+
+The baseline (§1) launches **every** task with a uniform `FARGATE_SPOT:FARGATE`
+4:1 weighting and a single task size. At 628-file scale that is wasteful and, for
+GPU-OCR, risky: a spot reclaim mid-OCR wastes expensive GPU minutes, and an
+I/O-bound extraction task over-provisioned on vCPU pays for cores that sit idle
+waiting on the Grok API. Since §7 already routes work as **heterogeneous items**,
+each work type should carry its own **compute profile** — right-sized capacity
+plus a spot/on-demand mix tuned to its **interruption cost** and **resource
+boundedness**.
+
+**Interruption cost = (wasted work on reclaim) × (probability the work isn't
+cheaply resumable).** Cheap-to-restart, checkpointed, or short work tolerates
+aggressive spot; long/expensive/poorly-checkpointed work should lean on-demand.
+
+| Work type | Bound by | Right-size | Spot mix | Rationale |
+|---|---|---|---|---|
+| **CPU parse** (Phase 1, text convert, OOB) | CPU, short | small vCPU / low mem | **aggressive spot** (e.g. 5:1) | seconds-to-minutes, fully resumable from S3 → reclaim is nearly free |
+| **Grok extraction** (Phase 2 sync + batch collect) | **I/O / Grok rate**, not CPU | **small vCPU**, modest mem | **aggressive spot** (4:1+) | mostly *waiting* on the API + rate limiter; DynamoDB cache means a reclaim re-pays no Grok cost; incremental resume skips done chapters |
+| **GPU-OCR** (Chandra, AWS Batch) | **GPU**, long | GPU instance per Batch env | **on-demand base + spot burst**, or spot **only with page-range checkpointing** | a mid-run spot reclaim wastes costly GPU minutes; protect with checkpoint-per-page-range (re-OCR resumes at the last completed range) before trusting spot |
+| **Vision** (maps/images, 184 JPGs) | GPU or vision-API | per `MAP_IMAGE_AV_INGESTION` | spot OK if per-image idempotent | each image independent + idempotent → reclaim loses at most one image |
+| **Dedup / enrich** (Phase 3) | I/O + DB | small vCPU | **on-demand** for the human-gate/dedup coordinator; spot for per-entity enrich | the incremental-dedup coordinator (§3.2) is stateful and awkward to restart mid-merge; per-entity enrichment is idempotent → spot fine |
+
+**Mechanism (soft-coded, like the pool size in §5):**
+- A **profile table** (config, not hardcoded) maps `work_type → {cpu, memory,
+  capacity_provider_strategy}`. The trigger Lambda / dispatcher selects the
+  profile by the routed media type (§7) rather than using one global task def.
+- Capacity-provider strategy is **per work type**, not cluster-global: e.g.
+  extraction `[{FARGATE_SPOT, weight:4},{FARGATE, weight:1}]` vs a dedup
+  coordinator `[{FARGATE, weight:1}]` (on-demand only).
+- GPU-OCR spot is **gated on checkpointing existing**: only enable spot for the
+  Chandra Batch env once per-page-range checkpoint/resume is verified (the
+  off-by-one re-OCR work already writes page-range chunk dirs — build on that).
+- Profiles feed the **per-resource pool accounting** (§5/§7): each profile
+  declares which quota bucket it draws (Fargate vCPU vs Batch GPU vs Grok rate),
+  so the pool clamp stays correct across mixed work.
+
+**Non-goal:** dynamic in-flight resizing of a running task. Profiles are chosen
+at dispatch; adaptation happens by choosing the profile, not by resizing live.
+
+**Open item to verify before build:** confirm right-size numbers against actual
+per-phase CPU/mem utilization (CloudWatch Container Insights) rather than
+guessing — extraction is asserted I/O-bound (the St. Vith run spends most time in
+the Grok rate limiter, §verification 2026-09-27); confirm with metrics.
+
 ## 8. Completion tracking + ordering
 
 - **Per-document lifecycle state** (DynamoDB): `held_unprocessed → expanding →
