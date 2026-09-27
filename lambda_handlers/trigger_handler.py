@@ -47,6 +47,61 @@ def _multi_doc_active() -> bool:
     return MULTI_DOC_ENABLED and bool(DISPATCHER_STATE_MACHINE_ARN)
 
 
+# Content suffixes the pipeline processes (Option B). Zips are IGNORED — the
+# pre-stage expands them locally; the archive never reaches processing. Anything
+# not in this set (e.g. .zip, .rar, sidecar files) is filtered out before queuing.
+_CONTENT_SUFFIXES = (
+    ".md",
+    ".pdf",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".tif",
+    ".tiff",
+    ".docx",
+    ".epub",
+    ".html",
+    ".txt",
+)
+
+
+# Compressed/archive suffixes — ALL ignored. The pre-stage expands archives
+# locally; a compressed file never reaches processing. Covers common formats.
+_COMPRESSED_SUFFIXES = (
+    ".zip",
+    ".rar",
+    ".7z",
+    ".tar",
+    ".tar.gz",
+    ".tgz",
+    ".gz",
+    ".bz2",
+    ".tar.bz2",
+    ".xz",
+    ".tar.xz",
+    ".z",
+    ".lz",
+    ".lzma",
+    ".cab",
+    ".arj",
+)
+
+
+def _content_keys(keys: list) -> list:
+    """Keep only processable content keys; drop compressed files and non-content."""
+    out = []
+    for k in keys:
+        low = k.lower()
+        if low.endswith(_COMPRESSED_SUFFIXES):
+            logger.info("Ignoring compressed file (pre-stage expands these): %s", k)
+            continue
+        if low.endswith(_CONTENT_SUFFIXES):
+            out.append(k)
+        else:
+            logger.info("Skipping non-content upload: %s", k)
+    return out
+
+
 def _start_dispatcher(reason: str) -> bool:
     """Start one SFN dispatcher drain execution (idempotent-ish: skip if running).
 
@@ -118,7 +173,14 @@ def handler(event, _context):
     # Route by topic
     for topic_name in topics:
         if topic_name == CONTENT_TOPIC:
-            _queue_pending(s3_keys)
+            # Option B: the trigger now fires on ALL contentrepository/ uploads
+            # (no S3 suffix filter). Route by suffix here — drop zips/non-content,
+            # keep processable media for the pre-stage/dispatcher.
+            content = _content_keys(s3_keys)
+            if not content:
+                logger.info("No processable content in upload batch — nothing to do")
+                continue
+            _queue_pending(content)
             if _multi_doc_active() and _start_dispatcher("content-uploaded"):
                 continue
             _launch_phase1_if_idle()

@@ -22,10 +22,10 @@ def test_build_sync_command_dry_run_flag():
 
 
 def test_build_sync_command_excludes_archives():
-    """Zips are ignored — pre-stage expands them; upload expanded files only."""
+    """All compressed files are ignored — pre-stage expands them."""
     cmd = sync_to_s3.build_sync_command(Path("/x"), "b", "d", "us-east-1", False)
-    assert "*.zip" in cmd
-    assert "*.rar" in cmd
+    for pat in ("*.zip", "*.rar", "*.7z", "*.tar", "*.gz", "*.bz2", "*.xz"):
+        assert pat in cmd
 
 
 def test_build_sync_command_strips_dest_slashes():

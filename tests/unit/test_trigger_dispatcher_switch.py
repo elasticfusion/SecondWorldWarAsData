@@ -59,3 +59,33 @@ def test_start_dispatcher_returns_false_on_error():
         patch.object(th.boto3, "client", return_value=sfn),
     ):
         assert th._start_dispatcher("content-uploaded") is False
+
+
+def test_content_keys_keeps_media_drops_compressed_and_junk():
+    keys = [
+        "contentrepository/FMS/B-Series/B 400-499/B400.pdf",
+        "contentrepository/Maps/map1.jpg",
+        "contentrepository/BreakoutAndPursuit/chapter1/chapter1a-content.md",
+        "contentrepository/FMS/B-Series/B 400-499.zip",  # compressed -> ignored
+        "contentrepository/FMS/notes.rar",  # compressed -> ignored
+        "contentrepository/FMS/archive.7z",  # compressed -> ignored
+        "contentrepository/FMS/bundle.tar.gz",  # compressed -> ignored
+        "contentrepository/FMS/thumbs.db",  # non-content -> skipped
+    ]
+    kept = th._content_keys(keys)
+    assert "contentrepository/FMS/B-Series/B 400-499/B400.pdf" in kept
+    assert "contentrepository/Maps/map1.jpg" in kept
+    assert any(k.endswith(".md") for k in kept)
+    assert not any(k.endswith((".zip", ".rar", ".7z", ".tar.gz", ".gz")) for k in kept)
+    assert not any(k.endswith(".db") for k in kept)
+    assert len(kept) == 3
+
+
+def test_content_keys_empty_when_only_compressed():
+    keys = [
+        "contentrepository/x.zip",
+        "contentrepository/y.rar",
+        "contentrepository/z.tar.gz",
+        "contentrepository/w.7z",
+    ]
+    assert th._content_keys(keys) == []

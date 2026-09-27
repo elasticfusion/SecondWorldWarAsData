@@ -663,9 +663,14 @@ Resources:
                               {
                                   "TopicArn": props["ContentUploadedTopicArn"],
                                   "Events": ["s3:ObjectCreated:*"],
+                                  # No suffix filter: raw media (pdf/jpg/docx/epub/
+                                  # md) all fire; the trigger Lambda routes by
+                                  # suffix (Option B — feeds pre-stage/dispatcher)
+                                  # and ignores non-content (zip, etc.). S3 forbids
+                                  # overlapping same-prefix rules, so one broad rule
+                                  # + code-side routing is the correct model.
                                   "Filter": {"Key": {"FilterRules": [
                                       {"Name": "prefix", "Value": "contentrepository/"},
-                                      {"Name": "suffix", "Value": ".md"},
                                   ]}},
                               },
                               {
@@ -695,7 +700,7 @@ Resources:
       ContentUploadedTopicArn: !Ref ContentUploadedTopic
       ChapterParsedTopicArn: !Ref ChapterParsedTopic
       EntityCreatedTopicArn: !Ref EntityCreatedTopic
-      ConfigVersion: "3"  # Bump to force re-execution when notification config changes
+      ConfigVersion: "4"  # Bump to force re-execution when notification config changes
 
 Outputs:
   ContentUploadedTopicArn:
