@@ -1149,9 +1149,15 @@ def _post_process(phase_script: str, env: dict) -> None:
             logger.error(
                 "Dedup detection failed after 2 attempts — sending notification anyway"
             )
-        # Auto-trigger Phase 3 if no duplicates need review
-        if dedup_ok and _dedup_has_no_pending():
-            logger.info("No duplicates found — auto-triggering Phase 3")
+        # Dedup gate decision: auto-proceed ONLY when detection ran cleanly with
+        # zero groups and the run isn't suspiciously large; otherwise block for
+        # human review. Notify on the decision either way (auto-proceed is now
+        # observable, not silent).
+        gate_action, gate_reason = _dedup_gate_decision(dedup_ok)
+        logger.info("Dedup gate: %s — %s", gate_action, gate_reason)
+        _notify_dedup_gate(gate_action, gate_reason)
+        if gate_action == "auto_proceed":
+            logger.info("Auto-triggering Phase 3 (%s)", gate_reason)
             try:
                 env_name = os.environ.get("ENV_NAME", "dev")
                 book_name = os.environ.get("BOOK_NAME", "")
@@ -1312,17 +1318,91 @@ def _check_pending_content() -> None:
 
 
 def _dedup_has_no_pending() -> bool:
-    """Check if dedup reports have zero duplicates requiring review."""
+    """Check if dedup reports have zero duplicates requiring review.
+
+    Returns True ONLY when every expected report exists, parses, and reports
+    zero duplicate groups. A missing or unparseable report returns False
+    (fail-safe: do NOT silently auto-proceed on a detection failure — that
+    conflates "no duplicates" with "detection broke"). Callers that need to
+    distinguish those cases should use _dedup_gate_decision().
+    """
     for subdir in ["people", "people_groups", "places", "equipment"]:
         report = WORKDIR / "output" / subdir / "duplicate_report.json"
-        if report.exists():
-            try:
-                data = json.loads(report.read_text(encoding="utf-8"))
-                if data.get("duplicate_groups", 0) > 0:
-                    return False
-            except Exception:
-                return False
+        if not report.exists():
+            # Missing report = detection did not produce output for this type.
+            # Fail safe: treat as "pending" so we block/alert rather than skip.
+            logger.warning(
+                "Dedup report missing for %s — not treating as no-pending", subdir
+            )
+            return False
+        try:
+            data = json.loads(report.read_text(encoding="utf-8"))
+        except Exception as e:
+            logger.warning("Dedup report unreadable for %s: %s", subdir, e)
+            return False
+        if data.get("duplicate_groups", 0) > 0:
+            return False
     return True
+
+
+def _count_entities() -> int:
+    """Count entity files across dedup-relevant types (proxy for run size)."""
+    total = 0
+    for subdir in ["people", "people_groups", "places", "equipment"]:
+        d = WORKDIR / "output" / subdir
+        if d.exists():
+            total += sum(1 for _ in d.glob("*.json"))
+    return total
+
+
+def _dedup_gate_decision(dedup_ok: bool) -> tuple:
+    """Decide how the dedup gate should proceed and why.
+
+    Returns (action, reason) where action is one of:
+      - "auto_proceed": detection ran, all reports present + zero groups → safe.
+      - "block": duplicates pending, OR detection failed/reports missing, OR a
+        suspicious zero (many entities but zero groups) → require human review.
+    Never silently auto-proceeds on a detection failure or a suspicious zero.
+    """
+    if not dedup_ok:
+        return "block", "dedup detection failed — blocking for human review"
+    if not _dedup_has_no_pending():
+        return (
+            "block",
+            "duplicate groups pending review (or a report missing/unreadable)",
+        )
+    # All reports present, parsed, zero groups. Guard against silent detection
+    # under-performance: a large corpus finding zero ambiguous groups is
+    # suspicious and should be reviewed, not auto-skipped.
+    entity_count = _count_entities()
+    threshold = int(os.environ.get("DEDUP_ZERO_SUSPICION_THRESHOLD", "500"))
+    if entity_count >= threshold:
+        return (
+            "block",
+            f"zero duplicate groups across {entity_count} entities (>= {threshold}) "
+            "— suspicious, blocking for human review",
+        )
+    return "auto_proceed", f"zero duplicate groups across {entity_count} entities"
+
+
+def _notify_dedup_gate(action: str, reason: str) -> None:
+    """Notify (non-blocking) on the dedup gate decision, incl. auto-proceed."""
+    topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
+    if not topic_arn:
+        return
+    subject = (
+        "WWII Pipeline: dedup auto-proceed"
+        if action == "auto_proceed"
+        else "WWII Pipeline: dedup review needed"
+    )
+    try:
+        boto3.client("sns", region_name=REGION).publish(
+            TopicArn=topic_arn,
+            Subject=subject,
+            Message=f"Dedup gate: {action}\nReason: {reason}\nBucket: {BUCKET}",
+        )
+    except Exception as e:
+        logger.warning("Failed to send dedup gate notification: %s", e)
 
 
 def _run_dedup_detection(env: dict) -> None:
