@@ -342,12 +342,31 @@ drives resubmission.
   limits" open item) would hit `raise_for_status()` and **fail hard** — there is
   **no pre-emptive chunking** and **no split-on-rejection**. A large document or
   the archive fan-out can produce an oversized batch that errors out.
-- **Required:** (1) verify Grok's per-batch limits (requests + enqueued tokens);
-  (2) **chunk** the JSONL to stay under them before submit; (3) on a size-class
-  rejection, **split and resubmit** rather than raise; (4) track the sub-batches
-  as a group so retrieval/accounting stays correct (ties to §3.4 per-batch
-  retrieval). Under concurrency, chunking also interacts with the cluster-wide
-  rate/limit budget (§5.2).
+- **Required:** (1) ~~verify Grok's per-batch limits~~ **VERIFIED (docs.x.ai,
+  2026-09-08), see below**; (2) **chunk** the JSONL to stay under them before
+  submit; (3) on a size-class rejection, **split and resubmit** rather than raise;
+  (4) track the sub-batches as a group so retrieval/accounting stays correct
+  (ties to §3.4 per-batch retrieval). Under concurrency, chunking also interacts
+  with the cluster-wide rate/limit budget (§5.2).
+
+**VERIFIED xAI Batch limits (docs.x.ai, as of 2026-09-08):**
+- **JSONL file: ≤ 200 MB and ≤ 50,000 requests** — the hard per-file cap → the
+  chunk threshold (chunk well under both).
+- **Per-request payload: ≤ 25 MB.**
+- **Batches: unlimited count**, but **> 100,000 requests may be throttled** for
+  processing stability.
+- **Submission-rate limits (team-wide — matter under concurrency):** **2 batch
+  creations / sec / team**; **1,000 add-batch-requests calls / 30s / team**
+  (rolling, shared across all batches). The dispatcher must pace batch
+  creation/add cluster-wide (ties §5.2).
+- **Results + media URLs expire** — batches have `expires_at`; media signed URLs
+  expire after 1h. Retrieve/persist promptly (ties §3.4).
+- **File-based batches are sealed** after creation (no adding requests); an
+  invalid JSONL line **cancels the whole batch** — validate before upload.
+- **The Batch API RETURNS actual cost** — `usage.cost_in_usd_ticks` (1 tick =
+  1e-10 USD) per result + `batch.cost_breakdown.total_cost_usd_ticks`. So the
+  price table (§9.1) is only needed for the **pre-submit ESTIMATE**; **actuals
+  come from the API**, no price-math needed post-hoc.
 
 ### 6.3 Grok model-transition resilience (verified gap)
 
@@ -526,8 +545,34 @@ What the pipeline already captures (verified) vs. what's needed:
 
 **Missing piece — a configurable PRICE TABLE keyed by model:**
 - Add `api.grok.pricing: { <model>: {input_per_mtok, output_per_mtok}, ... }` +
-  a **batch discount** factor (Grok batch ≈ 50% off). No price data exists in
-  config today — this is the one addition required.
+  a **batch discount** factor. No price data exists in config today — this is the
+  one addition required.
+
+**VERIFIED xAI pricing (docs.x.ai, as of 2026-09-21) — per 1M tokens:**
+
+| Model | Input | Cached | Output | Long-ctx (≥200k) in/cached/out | Batch discount |
+|-------|-------|--------|--------|-------------------------------|----------------|
+| `grok-4.20-0309-reasoning` (**this pipeline's model**) | $1.25 | $0.20 | $2.50 | $2.50 / $0.40 / $5.00 | **20%** |
+| `grok-4.20-0309-non-reasoning` | $1.25 | $0.20 | $2.50 | $2.50 / $0.40 / $5.00 | 20% |
+| `grok-4.6` (config default) | $2.00 | $0.50 | $6.00 | $4.00 / $1.00 / $12.00 | none |
+| `grok-4.7` (current flagship) | $2.00 | $0.50 | $6.00 | $4.00 / $1.00 / $12.00 | (see model page) |
+| `grok-4.3` | $1.25 | $0.20 | $2.50 | $2.50 / $0.40 / $5.00 | 20% |
+
+Key facts to bake in:
+- **Batch discount is 20%** for the grok-4.20/4.3 family (NOT the ~50% the project
+  previously assumed — correct the cost model). Models not listed have **no**
+  batch discount.
+- **Long-context billing is a cliff:** once a request's prompt crosses the model's
+  long-context threshold (200k for 4.x), **ALL tokens** bill at the ~2× long rate.
+  The estimator must apply the long rate when prompt ≥ threshold.
+- **Config drift:** config default is `grok-4.6`, but the pipeline's actual model
+  is `grok-4.20-0309-reasoning` (cheaper + batch-discounted). Reconcile config;
+  use **model aliases** (`grok-4.20` → latest stable) to ride model migrations.
+- Batch: "most complete within 24 hours"; batch requests **don't count toward
+  rate limits** (separate from the §5.2 real-time budget).
+- xAI publishes a **Model Retirement migration guide** — confirms the §6.3
+  transition failure mode is real and recurring; the fallback-chain + alias
+  strategy directly addresses it.
 
 **Cost formula (per request, then grouped):**
 ```
@@ -544,9 +589,12 @@ already present.
   an assumed output-token budget × `price[model_for(cache_type)]` × batch
   discount → the batch's projected cost. Gate submission on `estimate ≤ remaining
   credit` (§9.0).
-- **Actual:** from real `usage` after completion (batch results must surface
-  usage, not just `content_length` — a gap to close). Reconcile estimate vs
-  actual; feed the running total to the dashboard (§10) and the alert (§9).
+- **Actual:** the **Batch API returns exact cost** — `usage.cost_in_usd_ticks`
+  per result (1 tick = 1e-10 USD) + `batch.cost_breakdown.total_cost_usd_ticks`
+  (verified docs.x.ai 2026-09-08). So actuals need **no price math** — read them
+  from the API and feed the running total to the dashboard (§10) + alert (§9).
+  (The price table is only for the pre-submit *estimate*.) Still capture
+  per-request `usage` from batch results for per-kind/per-book attribution.
 
 **Also capture batch token usage** — batch `request_details` currently store
 `content_length` but not per-request `usage`; pull token usage from the batch
@@ -608,6 +656,14 @@ docs — the old all-pairs O(entities²) pass would not.
 ---
 
 ## 13. Open decisions
+
+- **External facts — RESOLVED (docs.x.ai, 2026-09):** model pricing (§9.1 table),
+  batch discount = 20% for grok-4.20 family, batch limits (200MB/50k req/file,
+  25MB/req, 2 creations/s + 1000 adds/30s team-wide, §6.2), and **actual cost via
+  API** (`cost_in_usd_ticks`). Still account-specific / to confirm at build:
+  real-time **rate limits** (per-min, from the Rate Limits page / your plan) and
+  whether a **credit-balance query** endpoint exists for §9.0 (else track a
+  configured budget).
 
 - ~~Pool size~~ **DECIDED (2026-09-27): soft-coded MIN/MAX range**
   (`POOL_MIN`/`POOL_MAX`, sensible defaults) with **adaptive scaling** within it;
