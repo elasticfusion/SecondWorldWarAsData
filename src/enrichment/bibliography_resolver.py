@@ -43,12 +43,26 @@ def _has_structured_citation_fields(entry: Dict[str, Any]) -> bool:
     """True if the entry has any explicit bibliographic/archive field."""
     citation = entry.get("citation") or {}
     if any(
-        str(citation.get(k) or "").strip()
+        _has_real_value(citation.get(k))
         for k in ("author", "title", "publisher", "record_group")
     ):
         return True
-    ref = str(entry.get("archive_reference_number") or "")
-    return bool(ref and ref != "None")
+    return _has_real_value(entry.get("archive_reference_number"))
+
+
+# Placeholder tokens that OCR/extraction leave in stub entries — these do NOT
+# count as real bibliographic content (they'd otherwise pass a "has title" check
+# and send stub entries to the NARA/online resolvers).
+_PLACEHOLDER_VALUES = {"", "unknown", "none", "n/a", "na", "null", "-", "?"}
+
+
+def _has_real_value(value: Any) -> bool:
+    """True if a citation field holds real content (not empty/placeholder)."""
+    if value is None:
+        return False
+    if isinstance(value, (list, tuple)):
+        return any(_has_real_value(v) for v in value)
+    return str(value).strip().lower() not in _PLACEHOLDER_VALUES
 
 
 # Citation-shaped signals: RG/box/folder, p./pp., a 4-digit year, "Last, First".

@@ -35,6 +35,25 @@ class TestLooksLikeCitation:
     def test_empty_is_not_citation(self):
         assert br._looks_like_citation({}) is False
 
+    def test_placeholder_title_is_not_citation(self):
+        # Stub entries with "Unknown"/empty placeholder fields are not real
+        # citations and must not be sent to the resolver.
+        for title in ("Unknown", "", "None", "N/A"):
+            entry = {"citation": {"title": title, "author": []}}
+            assert br._looks_like_citation(entry) is False, title
+
+    def test_real_title_is_citation(self):
+        entry = {"citation": {"title": "Operation MARKET-GARDEN, 17-26 Sep 44"}}
+        assert br._looks_like_citation(entry) is True
+
+    def test_has_real_value_helper(self):
+        assert br._has_real_value("Unknown") is False
+        assert br._has_real_value(None) is False
+        assert br._has_real_value([]) is False
+        assert br._has_real_value(["Unknown", ""]) is False
+        assert br._has_real_value("MS #B-090") is True
+        assert br._has_real_value(["", "Blumenson"]) is True
+
 
 class TestResolveDir:
     def _run(self, tmp_path, files, monkeypatch):
