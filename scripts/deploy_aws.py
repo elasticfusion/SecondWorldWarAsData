@@ -131,8 +131,14 @@ def cmd_deploy(args):
                     "ParameterKey": "NotificationEmail",
                     "ParameterValue": args.notification_email or "",
                 },
+                # M4 concurrency kill-switch — default OFF. Deploy the dispatcher
+                # dormant; enable deliberately later.
+                {
+                    "ParameterKey": "MultiDocEnabled",
+                    "ParameterValue": getattr(args, "multi_doc", "false") or "false",
+                },
             ],
-            Capabilities=["CAPABILITY_NAMED_IAM"],
+            Capabilities=["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"],
         )
     except cf.exceptions.ClientError as e:
         if "No updates" in str(e):
@@ -247,6 +253,12 @@ def main():
         "--notification-email",
         default=None,
         help="Email for Phase 2 completion notifications",
+    )
+    deploy_parser.add_argument(
+        "--multi-doc",
+        default="false",
+        choices=["true", "false"],
+        help="M4 concurrency kill-switch (default false = dispatcher dormant)",
     )
 
     args = parser.parse_args()
