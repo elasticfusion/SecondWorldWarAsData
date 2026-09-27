@@ -281,6 +281,16 @@ archive, manual link, mark-not-a-source, etc.). **NAT: treat as an async human-
 review gate like dedup + mdreview** (tear down while waiting, resume on
 completion). Deploy alongside the other UIs (same ComputeStack deploy-path
 caveats).
+**Retrieval mechanism now exists (2026-09-27):** `src/enrichment/source_retrieval.py`
+downloads legitimately-online resolved items into a **quarantine** area
+(`bibliography/retrieved/pending_review`, deliberately outside content/ so Phase 1
+can't auto-ingest), gated on the existing `config/domain_blacklist.yaml` (NOT a
+strict allow-list — download unless blacklisted; human review decides import).
+Marks entries `retrieved_pending_review` and **never auto-processes** them.
+Legitimacy basis: the pipeline downloads to AI-summarize (Grok) + attribute, not
+republish. The UI needs to: drive retrieval for queued/resolved items, show the
+downloaded content, and let a human accept (→ move into processable corpus) or
+reject. Mechanism is staged/tested but intentionally NOT auto-wired to a phase.
 *Source: bibliography-resolution intent discussion 2026-09-27*
 
 #### Archive.org metadata + legitimacy enrichment (free, no new key)
