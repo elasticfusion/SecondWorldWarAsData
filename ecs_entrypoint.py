@@ -1149,17 +1149,62 @@ def _download_s3_file(s3, key: str) -> None:
             raise
 
 
+def _clear_processed_content_keys(table, book_name: str) -> None:
+    """Remove only the keys for the book this Phase 1 run processed from
+    pending#content, preserving content queued (for other books) while it ran.
+    If book_name is empty (whole-queue run), clear the queue as before."""
+    if not book_name:
+        table.delete_item(Key={"cache_key": "pending#content"})
+        logger.info("Cleared pending#content queue (whole-queue run)")
+        return
+    resp = table.get_item(Key={"cache_key": "pending#content"})
+    keys = resp.get("Item", {}).get("keys", [])
+    remaining = [
+        k for k in keys if f"/{book_name}/" not in k and not k.endswith(f"/{book_name}")
+    ]
+    if remaining:
+        table.put_item(Item={"cache_key": "pending#content", "keys": remaining})
+        logger.info(
+            "Pruned pending#content: removed %s, %d key(s) remain",
+            book_name,
+            len(remaining),
+        )
+    else:
+        table.delete_item(Key={"cache_key": "pending#content"})
+        logger.info(
+            "Cleared pending#content (processed %s, no others queued)", book_name
+        )
+
+
+def _invoke_trigger_phase_complete(phase: str) -> None:
+    """Tell the trigger Lambda a phase finished so it drives the NEXT phase from
+    parked pending#* queues immediately (event-driven chain; the 15-min scheduled
+    check is only a backstop). Best-effort — a lost invoke is covered by the poll."""
+    try:
+        env_name = os.environ.get("ENV_NAME", "dev")
+        boto3.client("lambda", region_name=REGION).invoke(
+            FunctionName=f"{env_name}-wwii-trigger",
+            InvocationType="Event",
+            Payload=json.dumps({"source": "phase-complete", "phase": phase}).encode(),
+        )
+        logger.info("Notified trigger: phase %s complete -> drive next phase", phase)
+    except Exception as e:
+        logger.warning("Failed to notify trigger of phase %s completion: %s", phase, e)
+
+
 def _post_process(phase_script: str, env: dict) -> None:
     """Run post-processing steps after a successful phase."""
     if "phase1" in phase_script:
-        # Clear pending content queue — Phase 1 has processed it
+        # Clear ONLY the content keys this Phase 1 run actually processed — a blind
+        # delete_item discarded content that arrived (and was queued) WHILE this
+        # phase ran, stranding it (the B460 defect). Remove just this book's keys.
         try:
             table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
             table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-            table.delete_item(Key={"cache_key": "pending#content"})
-            logger.info("Cleared pending#content queue")
-        except Exception:
-            pass
+            book_name = os.environ.get("BOOK_NAME", "")
+            _clear_processed_content_keys(table, book_name)
+        except Exception as e:
+            logger.warning("Failed to prune pending#content: %s", e)
         # Trigger Phase 2 directly (don't rely on S3 notification chain)
         try:
             book_name = os.environ.get("BOOK_NAME", "")
@@ -1174,6 +1219,8 @@ def _post_process(phase_script: str, env: dict) -> None:
             logger.info("Triggered Phase 2 for book=%s", book_name)
         except Exception as e:
             logger.warning("Failed to trigger Phase 2: %s", e)
+        # Event-driven chain: drive any OTHER content parked while this phase ran.
+        _invoke_trigger_phase_complete("1")
     if "phase2" in phase_script:
         dedup_ok = False
         for attempt in range(2):
@@ -1236,7 +1283,10 @@ def _post_process(phase_script: str, env: dict) -> None:
             except Exception as e:
                 logger.warning("Failed to trigger Phase 2 for %s: %s", next_book, e)
         else:
-            _check_pending_content()
+            # Event-driven: tell the trigger Phase 2 is done so it drains any content
+            # parked while this run was busy (robust _reconcile_pending, replaces the
+            # fragile SNS-republish that deleted pending#content without launching).
+            _invoke_trigger_phase_complete("2")
 
     if "phase3" in phase_script:
         # Phase 3 complete — release lock and check for next book in enrich queue
@@ -1324,37 +1374,6 @@ def _consume_pending_enrich(book: str) -> None:
         table.delete_item(Key={"cache_key": f"pending#enrich#{book}"})
     except Exception as e:
         logger.warning("Failed to consume pending#enrich#%s: %s", book, e)
-
-
-def _check_pending_content() -> None:
-    """Check DynamoDB for queued content and re-trigger Phase 1 if found."""
-    logger.info("Checking DynamoDB for pending content")
-    try:
-        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
-        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-        resp = table.get_item(Key={"cache_key": "pending#content"})
-        item = resp.get("Item")
-        if not item or not item.get("keys"):
-            logger.info("No pending content in DynamoDB")
-            return
-        keys = item["keys"]
-        logger.info("Found %d pending content files, re-triggering pipeline", len(keys))
-        # Write keys as S3 manifest for Phase 1
-        _s3_client().put_object(
-            Bucket=BUCKET,
-            Key="manifests/pending.json",
-            Body=json.dumps(list(keys)).encode(),
-        )
-        # Trigger Phase 1 — publish BEFORE deleting pending entry
-        topic_arn = os.environ.get("CONTENT_TOPIC_ARN", "")
-        if topic_arn:
-            sns = boto3.client("sns", region_name=REGION)
-            sns.publish(TopicArn=topic_arn, Message=json.dumps({"pending": True}))
-            logger.info("Re-triggered pipeline for pending content")
-        # Only delete after successful publish
-        table.delete_item(Key={"cache_key": "pending#content"})
-    except Exception as e:
-        logger.warning("Failed to check pending content: %s", e)
 
 
 def _dedup_has_no_pending() -> bool:

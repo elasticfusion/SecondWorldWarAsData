@@ -204,6 +204,14 @@ def handler(event, _context):
     if event.get("source") == "scheduled":
         return _handle_scheduled_check()
 
+    # Phase-complete event: a phase's ECS task finished and invoked us to drive the
+    # NEXT phase immediately (event-driven chain — no waiting for the 15-min poll).
+    # This is what resumes work parked in pending#* while the pipeline was busy.
+    if event.get("source") == "phase-complete":
+        completed = str(event.get("phase", ""))
+        logger.info("Phase-complete event: phase=%s -> driving next phase", completed)
+        return _drive_next_phase(completed)
+
     # Extract topics and S3 keys from SQS/SNS records
     topics, s3_keys = _extract_records(event)
     logger.info("Trigger topics: %s, keys: %d", topics, len(s3_keys))
@@ -246,6 +254,100 @@ def handler(event, _context):
             logger.warning("Unknown topic: %s", topic_name)
 
 
+def _drive_next_phase(completed_phase: str) -> dict:
+    """Event-driven phase chaining: a completed phase invokes this to launch the
+    NEXT phase immediately from parked pending#* queues (instead of relying on the
+    15-min scheduled poll). Idempotent — only launches when the cluster is idle, so
+    a duplicate phase-complete event cannot double-launch.
+
+    completed_phase: "1" (parse done -> drive Phase 2), "2" (extract done -> drive
+    Phase 3 if enrich queued, else drain any content parked while busy), or "" to
+    just reconcile all pending queues. Delegates to _reconcile_pending so the
+    event-driven path and the scheduled backstop share ONE drain implementation.
+    """
+    launched = _reconcile_pending(reason=f"phase-{completed_phase}-complete")
+    return {
+        "action": "drive_next_phase",
+        "completed": completed_phase,
+        "launched": launched,
+    }
+
+
+def _reconcile_pending(reason: str) -> list:
+    """Launch the next phase from parked pending#* queues IF the cluster is idle.
+
+    Shared by the event-driven phase-complete path and the scheduled backstop.
+    Returns the list of phases launched (for observability). Errors are logged at
+    WARNING (not debug) so a silent drain failure — the B460 strand root cause —
+    is visible.
+    """
+    launched: list = []
+    try:
+        any_running = any(
+            ecs.list_tasks(cluster=CLUSTER, family=fam, desiredStatus="RUNNING").get(
+                "taskArns", []
+            )
+            for fam in TASK_FAMILIES.values()
+        )
+        if any_running:
+            logger.info("Reconcile (%s): cluster busy, deferring drain", reason)
+            return launched
+
+        # 1) Content parked for Phase 1 (parse).
+        pending_content = dynamo.get_item(Key={"cache_key": "pending#content"}).get(
+            "Item", {}
+        )
+        if pending_content.get("keys"):
+            books = set()
+            for k in pending_content["keys"]:
+                parts = k.split("/")
+                if len(parts) >= 2 and parts[0] == "contentrepository":
+                    books.add(parts[1])
+            book_name = books.pop() if len(books) == 1 else ""
+            logger.info(
+                "Reconcile (%s): %d content key(s) parked -> launching Phase 1 (book=%s)",
+                reason,
+                len(pending_content["keys"]),
+                book_name or "all",
+            )
+            _run_task(PHASE1_TASK_DEF, f"reconcile-{reason}", book_name=book_name)
+            launched.append("1")
+            return launched
+
+        # 2) Parsed books parked for Phase 2 (extract).
+        pending_books = _get_pending_books()
+        if pending_books:
+            logger.info(
+                "Reconcile (%s): parsed queue for %d book(s) -> launching Phase 2 (%s)",
+                reason,
+                len(pending_books),
+                pending_books[0],
+            )
+            _launch_phase2_if_idle(book_name=pending_books[0])
+            launched.append("2")
+            return launched
+
+        # 3) Books parked for Phase 3 (enrich).
+        pending_enrich = _get_pending_books_for_enrich()
+        if pending_enrich:
+            logger.info(
+                "Reconcile (%s): enrich queue for %s -> launching Phase 3",
+                reason,
+                pending_enrich[0],
+            )
+            _run_task(
+                PHASE3_TASK_DEF, f"reconcile-{reason}", book_name=pending_enrich[0]
+            )
+            launched.append("3")
+            return launched
+
+        logger.info("Reconcile (%s): no pending work to launch", reason)
+    except Exception as e:
+        # WAS logger.debug -> silently swallowed the B460 strand. Now WARNING.
+        logger.warning("Reconcile (%s) failed: %s", reason, e)
+    return launched
+
+
 def _handle_scheduled_check():
     """Hourly lock check + dedup reconciliation."""
     logger.info("Scheduled lock check")
@@ -263,62 +365,11 @@ def _handle_scheduled_check():
         except Exception as e:
             logger.warning("Lock check failed for %s: %s", family, e)
 
-    # Reconcile: if dedup complete but Phase 3 never ran, trigger it (only if work is queued)
-    try:
-        phase3_family = f"{ENV_NAME}-wwii-phase3-enrich"
-        phase3_lock = dynamo.get_item(Key={"cache_key": f"lock#{phase3_family}"}).get(
-            "Item"
-        )
-        phase3_running = ecs.list_tasks(
-            cluster=CLUSTER, family=phase3_family, desiredStatus="RUNNING"
-        ).get("taskArns", [])
-        if not phase3_lock and not phase3_running:
-            # Only trigger if there's a pending enrich queue entry
-            pending = _get_pending_books_for_enrich()
-            if pending:
-                logger.info("Pending enrich for %s, triggering Phase 3", pending[0])
-                _run_task(PHASE3_TASK_DEF, "reconciliation", book_name=pending[0])
-    except Exception as e:
-        logger.debug("Dedup reconciliation check: %s", e)
-
-    # Reconcile: if pending queues have items but no tasks are running, trigger
-    try:
-        any_running = any(
-            ecs.list_tasks(cluster=CLUSTER, family=fam, desiredStatus="RUNNING").get(
-                "taskArns", []
-            )
-            for fam in TASK_FAMILIES.values()
-        )
-        if not any_running:
-            pending_content = dynamo.get_item(Key={"cache_key": "pending#content"}).get(
-                "Item", {}
-            )
-            if pending_content.get("keys"):
-                logger.info(
-                    "Pending content queue has %d items, launching Phase 1",
-                    len(pending_content["keys"]),
-                )
-                books = set()
-                for k in pending_content["keys"]:
-                    parts = k.split("/")
-                    if len(parts) >= 2 and parts[0] == "contentrepository":
-                        books.add(parts[1])
-                book_name = books.pop() if len(books) == 1 else ""
-                _run_task(
-                    PHASE1_TASK_DEF, "pending-reconciliation", book_name=book_name
-                )
-            else:
-                # Check for any per-book pending queues
-                pending_books = _get_pending_books()
-                if pending_books:
-                    logger.info(
-                        "Pending parsed queues for %d book(s): %s, launching Phase 2",
-                        len(pending_books),
-                        pending_books[0],
-                    )
-                    _launch_phase2_if_idle(book_name=pending_books[0])
-    except Exception as e:
-        logger.debug("Pending queue reconciliation: %s", e)
+    # Backstop reconciliation: the event-driven phase-complete chain is primary,
+    # but if a phase-complete invoke was lost, this scheduled poll drains any
+    # parked pending#* queue when the cluster is idle. Shared drain implementation
+    # (WARNING-level errors) — this is the B460-strand fix (was a silent block).
+    _reconcile_pending(reason="scheduled-backstop")
 
     return {"action": "lock_check_complete"}
 

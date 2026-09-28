@@ -51,6 +51,16 @@ Requires a controller (hourly spot check + on-demand routing + 48h cap) — Batc
 has no native "hourly retry then fall back" (native ordered dual-env is the
 simpler alternative; operator chose the custom controller for max spot savings).
 
+**Related gap (§8 — OCR submission is not idempotent):** `_submit_ocr` calls
+`submit_job` unconditionally with no check for an in-flight OCR job or existing
+`ocr-output/{book}/`. Any duplicate `ObjectCreated` event (S3/SNS/SQS is
+at-least-once; a redrive; or a manual re-upload) submits a **redundant GPU job** —
+wasted SPOT cost. Loop-safety IS handled (`_split_by_media` routes `.pdf`→OCR,
+`.md`→parse, so the merge Lambda's `contentrepository/{book}.md` write does NOT
+loop back into OCR). Discovered 2026-09-28 when debug re-triggers of B460 produced
+3 `chandra-B460` jobs. Fix: before submit, skip if a RUNNABLE/STARTING/RUNNING
+`chandra-{book}` job exists OR `ocr-output/{book}/…/input.md` already exists. See §8.
+
 ## 3. Slack notification gap (pipeline events reach email, not Slack)
 
 **Symptom (verified):** "Pipeline task launched: extract" arrived by **email but
@@ -100,6 +110,35 @@ pre-stage to populate `doc#` records on upload, then enable multi_doc at pool>1.
 this is for the larger 628-file drain, not a blocker for basic parallelism.)
 
 ---
+
+## 8. OCR submission is not idempotent — deny redundant submissions at intake
+
+**Symptom (verified 2026-09-28):** debug re-triggers of B460 produced 3
+`chandra-B460` OCR jobs. `_submit_ocr` calls `submit_job` unconditionally.
+
+**Framing (operator):** this is a **front-door / intake** problem, not a
+downstream one. Deny a redundant submission at the moment it arrives and the rest
+solves itself — no duplicate jobs queued, no duplicate OCR output, no downstream
+dedup needed. There is exactly one decision point: `_submit_ocr` at submit time.
+
+**Why it matters:** S3->SNS->SQS is **at-least-once**; a redrive, retry, or
+re-upload each submits a **redundant SPOT GPU job** (wasted $). (Loop-safety is
+already handled — `_split_by_media` routes `.pdf`->OCR, `.md`->parse — so the merge
+Lambda's `contentrepository/{book}.md` write never loops back into OCR.)
+
+**Fix — deny at intake in `_submit_ocr`:**
+- Before submitting, ask one question: *is this book already being handled?* i.e.
+  is there an in-flight `chandra-{book}` job (SUBMITTED/PENDING/RUNNABLE/STARTING/
+  RUNNING)? If yes -> **deny** (drop the event).
+- **Close the race atomically** (two events in the same instant both seeing "no
+  job"): make the intake check an atomic DynamoDB conditional-write claim
+  `ocr#{book}` via the existing `_lease_table()` / M2 lock primitive. The second
+  submission's conditional write fails -> denied. TTL'd + released on terminal
+  failure so a crashed OCR doesn't permanently block re-OCR.
+
+No "existing-output" check or downstream dedup needed — those were symptoms of
+letting a bad submission through. Pairs with #2 (SPOT) since that is where the
+wasted-GPU cost bites.
 
 ## Recommended sequence
 

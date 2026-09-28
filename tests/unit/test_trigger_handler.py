@@ -102,3 +102,75 @@ def test_queue_pending(dynamodb_table):
     )
     item = table.get_item(Key={"cache_key": "pending#content"})["Item"]
     assert len(item["keys"]) == 2
+
+
+def test_phase_complete_event_dispatches_to_drive_next(dynamodb_table):
+    """A phase-complete invoke must route to _drive_next_phase (event-driven chain)."""
+    from lambda_handlers import trigger_handler as th
+
+    with patch.object(th, "_reconcile_pending", return_value=["2"]) as rec:
+        out = th.handler({"source": "phase-complete", "phase": "1"}, None)
+    assert out["action"] == "drive_next_phase"
+    assert out["completed"] == "1"
+    rec.assert_called_once()
+
+
+def test_reconcile_launches_phase1_when_content_parked_and_idle(dynamodb_table):
+    """Parked content + idle cluster => launch Phase 1 (the B460-strand fix)."""
+    from lambda_handlers import trigger_handler as th
+
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    table.put_item(
+        Item={
+            "cache_key": "pending#content",
+            "keys": ["contentrepository/B460/B460.md"],
+        }
+    )
+    with (
+        patch.object(th.ecs, "list_tasks", return_value={"taskArns": []}),
+        patch.object(th, "_run_task") as run,
+    ):
+        launched = th._reconcile_pending(reason="test")
+    assert launched == ["1"]
+    run.assert_called_once()
+    # book parsed from contentrepository/{book}/... => B460
+    assert run.call_args.kwargs.get("book_name") == "B460" or "B460" in str(
+        run.call_args
+    )
+
+
+def test_reconcile_defers_when_busy(dynamodb_table):
+    """Cluster busy => do NOT launch, leave parked content for later."""
+    from lambda_handlers import trigger_handler as th
+
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    table.put_item(
+        Item={"cache_key": "pending#content", "keys": ["contentrepository/X/X.md"]}
+    )
+    with (
+        patch.object(
+            th.ecs, "list_tasks", return_value={"taskArns": ["arn:task/running"]}
+        ),
+        patch.object(th, "_run_task") as run,
+    ):
+        launched = th._reconcile_pending(reason="test")
+    assert launched == []
+    run.assert_not_called()
+
+
+def test_reconcile_noop_when_nothing_parked(dynamodb_table):
+    from lambda_handlers import trigger_handler as th
+
+    with (
+        patch.object(th.ecs, "list_tasks", return_value={"taskArns": []}),
+        patch.object(th, "_get_pending_books", return_value=[]),
+        patch.object(th, "_get_pending_books_for_enrich", return_value=[]),
+        patch.object(th, "_run_task") as run,
+    ):
+        launched = th._reconcile_pending(reason="test")
+    assert launched == []
+    run.assert_not_called()
