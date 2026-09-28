@@ -31,15 +31,14 @@ def test_submit_ocr_submits_chandra_batch_job():
         ok = th._submit_ocr("contentrepository/NARA/B-Series/B 400-499/B460.pdf")
     assert ok is True
     kwargs = batch.submit_job.call_args.kwargs
-    assert kwargs["jobQueue"] == "dev-wwii-chandra-gpu"
-    assert kwargs["jobDefinition"] == "dev-wwii-chandra"
+    assert kwargs["jobQueue"] == th.OCR_JOB_QUEUE
+    assert kwargs["jobDefinition"] == th.OCR_JOB_DEF
     cmd = kwargs["containerOverrides"]["command"]
     # whole-PDF job: [s3_input, s3_output_prefix], no page-range
     assert (
-        cmd[0]
-        == "s3://dev-wwii-data-pipeline/contentrepository/NARA/B-Series/B 400-499/B460.pdf"
+        cmd[0] == f"s3://{th.BUCKET}/contentrepository/NARA/B-Series/B 400-499/B460.pdf"
     )
-    assert cmd[1] == "s3://dev-wwii-data-pipeline/ocr-output/B460/"
+    assert cmd[1] == f"s3://{th.BUCKET}/ocr-output/B460/"
     assert len(cmd) == 2
 
 
