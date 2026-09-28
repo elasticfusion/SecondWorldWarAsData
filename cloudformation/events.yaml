@@ -17,8 +17,13 @@ Parameters:
     Type: String
     Default: ''
     Description: Email address for pipeline notifications (leave empty to skip)
+  OcrMergeFunctionArn:
+    Type: String
+    Default: ''
+    Description: ARN of the OCR->parse merge Lambda (Batch SUCCEEDED handoff)
 
 Conditions:
+  HasOcrMerge: !Not [!Equals [!Ref OcrMergeFunctionArn, '']]
   HasNotificationEmail: !Not [!Equals [!Ref NotificationEmail, '']]
 
 Resources:
@@ -572,6 +577,34 @@ Resources:
       TreatMissingData: notBreaching
       AlarmActions:
         - !Ref AlarmSNSTopic
+
+  # --- OCR -> parse handoff: Batch job SUCCEEDED (chandra) -> merge Lambda ---
+  OcrJobSucceededRule:
+    Type: AWS::Events::Rule
+    Condition: HasOcrMerge
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-ocr-succeeded
+      Description: On Chandra OCR job SUCCEEDED, promote OCR output to contentrepository (triggers parse)
+      EventPattern:
+        source: [aws.batch]
+        detail-type: [Batch Job State Change]
+        detail:
+          status: [SUCCEEDED]
+          jobQueue:
+            - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu
+      State: ENABLED
+      Targets:
+        - Id: OcrMergeLambda
+          Arn: !Ref OcrMergeFunctionArn
+
+  OcrMergeInvokePermission:
+    Type: AWS::Lambda::Permission
+    Condition: HasOcrMerge
+    Properties:
+      FunctionName: !Ref OcrMergeFunctionArn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt OcrJobSucceededRule.Arn
 
   # --- CloudWatch Dashboard ---
   PipelineDashboard:

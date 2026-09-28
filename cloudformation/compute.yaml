@@ -445,6 +445,26 @@ Resources:
       Environment:
         Variables:
           ENV_NAME: !Ref EnvironmentName
+
+  # OCR -> parse handoff (UNATTENDED_READINESS #1): on Chandra OCR job SUCCEEDED
+  # (EventBridge rule in events.yaml), merge ocr-output/{book} markdown into
+  # contentrepository/{book}/{book}.md, which triggers the parse phase.
+  OcrMergeFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-ocr-merge
+      Runtime: python3.12
+      Handler: lambda_handlers.ocr_merge_handler.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 256
+      Timeout: 300
+      Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          S3_BUCKET: !Ref DataBucketName
           CACHE_TABLE: !Ref CacheTableName
           ECS_CLUSTER: !Sub ${EnvironmentName}-wwii-pipeline
           PRIVATE_SUBNET_IDS: !Sub "${PrivateSubnet1Id},${PrivateSubnet2Id}"
@@ -948,6 +968,8 @@ Resources:
 Outputs:
   TriggerFunctionArn:
     Value: !GetAtt TriggerFunction.Arn
+  OcrMergeFunctionArn:
+    Value: !GetAtt OcrMergeFunction.Arn
   OpenSerpManagerFunctionArn:
     Value: !GetAtt OpenSerpManagerFunction.Arn
   DedupGateFunctionArn:
