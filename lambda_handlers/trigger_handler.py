@@ -25,6 +25,9 @@ CACHE_TABLE = os.environ.get("CACHE_TABLE", "")
 NOTIFY_TOPIC = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
 ENV_NAME = os.environ.get("ENV_NAME", "dev")
 NAT_MANAGER_FN = os.environ.get("NAT_MANAGER_FN", f"{ENV_NAME}-wwii-nat-manager")
+# OCR (Chandra GPU) Batch queue + job def — raw PDFs route here (Option B).
+OCR_JOB_QUEUE = os.environ.get("OCR_JOB_QUEUE", f"{ENV_NAME}-wwii-chandra-gpu")
+OCR_JOB_DEF = os.environ.get("OCR_JOB_DEF", f"{ENV_NAME}-wwii-chandra")
 
 PHASE1_TASK_DEF = os.environ.get("PHASE1_TASK_DEF", f"{ENV_NAME}-wwii-phase1-parse")
 PHASE2_TASK_DEF = os.environ.get("PHASE2_TASK_DEF", f"{ENV_NAME}-wwii-phase2-extract")
@@ -102,6 +105,44 @@ def _content_keys(keys: list) -> list:
     return out
 
 
+def _split_by_media(keys: list) -> tuple:
+    """Split content keys into (pdf_keys, parse_keys). PDFs need OCR (Phase 0);
+    everything else (.md/.txt/.docx/.epub/.html) goes to the parse path."""
+    pdfs = [k for k in keys if k.lower().endswith(".pdf")]
+    others = [k for k in keys if not k.lower().endswith(".pdf")]
+    return pdfs, others
+
+
+def _batch_client():
+    """AWS Batch client (patchable in tests — avoids global boto3 patching)."""
+    return boto3.client("batch")
+
+
+def _submit_ocr(pdf_key: str) -> bool:
+    """Submit a Chandra GPU OCR Batch job for a raw PDF (Option B: PDF -> Phase 0).
+
+    Submits a single whole-PDF OCR job (chandra_entrypoint takes optional
+    page-range; without it, the whole PDF is OCR'd). Output lands at
+    ocr-output/{pdf_name}/ for the downstream parse. Returns True on submit.
+    """
+    try:
+        pdf_name = pdf_key.split("/")[-1].rsplit(".", 1)[0]
+        s3_input = f"s3://{BUCKET}/{pdf_key}"
+        s3_output = f"s3://{BUCKET}/ocr-output/{pdf_name}/"
+        job_name = f"chandra-{pdf_name}"[:128].replace(" ", "_")
+        _batch_client().submit_job(
+            jobName=job_name,
+            jobQueue=OCR_JOB_QUEUE,
+            jobDefinition=OCR_JOB_DEF,
+            containerOverrides={"command": [s3_input, s3_output]},
+        )
+        logger.info("Submitted OCR job %s for %s", job_name, pdf_key)
+        return True
+    except Exception as e:
+        logger.error("Failed to submit OCR job for %s: %s", pdf_key, e)
+        return False
+
+
 def _start_dispatcher(reason: str) -> bool:
     """Start one SFN dispatcher drain execution (idempotent-ish: skip if running).
 
@@ -173,14 +214,19 @@ def handler(event, _context):
     # Route by topic
     for topic_name in topics:
         if topic_name == CONTENT_TOPIC:
-            # Option B: the trigger now fires on ALL contentrepository/ uploads
-            # (no S3 suffix filter). Route by suffix here — drop zips/non-content,
-            # keep processable media for the pre-stage/dispatcher.
+            # Option B: fire on ALL contentrepository/ uploads; route by media.
             content = _content_keys(s3_keys)
             if not content:
                 logger.info("No processable content in upload batch — nothing to do")
                 continue
-            _queue_pending(content)
+            pdfs, parse_keys = _split_by_media(content)
+            # Raw PDFs -> Chandra OCR (Phase 0). OCR output later re-triggers the
+            # parse path via its own upload.
+            for pdf in pdfs:
+                _submit_ocr(pdf)
+            if not parse_keys:
+                continue
+            _queue_pending(parse_keys)
             if _multi_doc_active() and _start_dispatcher("content-uploaded"):
                 continue
             _launch_phase1_if_idle()

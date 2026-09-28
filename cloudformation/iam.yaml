@@ -86,6 +86,13 @@ Resources:
                   - states:ListExecutions
                 Resource:
                   - !Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${EnvironmentName}-wwii-dispatcher
+              - Sid: BatchSubmitOCR
+                Effect: Allow
+                Action:
+                  - batch:SubmitJob
+                Resource:
+                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu
+                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-definition/${EnvironmentName}-wwii-chandra*
               - Sid: SQSDeadLetterQueue
                 Effect: Allow
                 Action:
