@@ -369,6 +369,35 @@ Resources:
       AlarmActions:
         - !Ref AlarmSNSTopic
 
+  # Soft spend heads-up (§9): fires as accrued Grok spend crosses each
+  # spend_alert_usd multiple ($10, $20, ...) — BEFORE the hard credit hold.
+  SpendAlertMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-pipeline
+      FilterPattern: '"SPEND ALERT"'
+      MetricTransformations:
+        - MetricName: SpendAlerts
+          MetricNamespace: !Sub ${EnvironmentName}-wwii/concurrency
+          MetricValue: '1'
+          DefaultValue: 0
+
+  SpendAlertAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-spend-alert
+      AlarmDescription: Accrued Grok spend crossed a soft threshold ($10 multiple) — heads-up, not a block
+      MetricName: SpendAlerts
+      Namespace: !Sub ${EnvironmentName}-wwii/concurrency
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
   MergeRetryExhaustedMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:

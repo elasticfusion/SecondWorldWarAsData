@@ -104,6 +104,52 @@ def _gating_enabled(config: Optional[Dict[str, Any]]) -> bool:
     return bool(config.get("cost", {}).get("credit_gating", False))
 
 
+def _spend_alert_usd(config: Optional[Dict[str, Any]]) -> Optional[float]:
+    """Soft spend-alert threshold (§9). None => no soft alert."""
+    env = os.getenv("GROK_SPEND_ALERT_USD")
+    if env:
+        try:
+            return float(env)
+        except ValueError:
+            return None
+    if config:
+        v = config.get("cost", {}).get("spend_alert_usd")
+        if v is not None:
+            return float(v)
+    return None
+
+
+def _maybe_spend_alert(
+    resp: Dict[str, Any],
+    reserved: float,
+    budget: float,
+    config: Optional[Dict[str, Any]],
+) -> None:
+    """Log a SPEND ALERT marker when accrued spend crosses a threshold multiple.
+
+    Soft heads-up (§9): re-armed at each multiple of spend_alert_usd (e.g. $10,
+    $20, ...) so a long drain keeps the operator informed. The 'SPEND ALERT'
+    string is picked up by a CloudWatch metric filter -> alarm -> Slack. Never
+    raises — a monitoring miss must not affect the reservation.
+    """
+    threshold = _spend_alert_usd(config)
+    if not threshold or threshold <= 0:
+        return
+    try:
+        new_total = float(resp.get("Attributes", {}).get("spend_usd", 0))
+        prev_total = new_total - reserved
+        # Crossed a new multiple of `threshold` with this reservation?
+        if int(new_total // threshold) > int(prev_total // threshold):
+            logger.warning(
+                "SPEND ALERT: accrued Grok spend $%.2f crossed $%.0f (budget $%.2f)",
+                new_total,
+                (int(new_total // threshold)) * threshold,
+                budget,
+            )
+    except Exception:  # pragma: no cover - monitoring must never break reserve
+        pass
+
+
 def _table():
     import boto3
 
@@ -141,7 +187,7 @@ def reserve(estimated_cost_usd: float, config: Optional[Dict[str, Any]] = None) 
     try:
         table = _table()
         # Atomic add with a condition that the new total stays within budget.
-        table.update_item(
+        resp = table.update_item(
             Key={"cache_key": SPEND_KEY},
             UpdateExpression="SET spend_usd = if_not_exists(spend_usd, :z) + :c",
             ConditionExpression="if_not_exists(spend_usd, :z) + :c <= :b",
@@ -150,7 +196,9 @@ def reserve(estimated_cost_usd: float, config: Optional[Dict[str, Any]] = None) 
                 ":b": Decimal(str(budget)),
                 ":z": Decimal("0"),
             },
+            ReturnValues="UPDATED_NEW",
         )
+        _maybe_spend_alert(resp, estimated_cost_usd, budget, config)
         return True
     except Exception as e:
         # ConditionalCheckFailed => would exceed budget => hold. Any other error
