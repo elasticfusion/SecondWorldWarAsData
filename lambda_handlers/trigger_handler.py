@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import time
+import urllib.parse
 
 import boto3
 
@@ -337,7 +338,13 @@ def _extract_records(event):
                     try:
                         s3_event = json.loads(msg)
                         for s3_rec in s3_event.get("Records", []):
-                            s3_keys.append(s3_rec["s3"]["object"]["key"])
+                            # S3 event notifications URL-encode the object key
+                            # (space -> '+', other chars -> %XX). Decode so the
+                            # real key (e.g. "B 400-499/...") is used downstream —
+                            # otherwise OCR/parse download the wrong (nonexistent)
+                            # path. unquote_plus handles both '+' and %XX.
+                            raw_key = s3_rec["s3"]["object"]["key"]
+                            s3_keys.append(urllib.parse.unquote_plus(raw_key))
                     except Exception as e:
                         logger.warning("Failed to parse S3 event: %s", e)
             except Exception:
