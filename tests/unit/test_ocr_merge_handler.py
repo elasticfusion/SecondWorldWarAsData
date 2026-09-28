@@ -111,3 +111,32 @@ def test_handler_full_promote_path():
         out = om.handler(_event(), None)
     assert out["action"] == "promoted"
     assert out["book"] == "B460"
+
+
+def test_book_from_command_with_spaces_in_path():
+    """B-series PDFs live under '.../B 400-499/B460.pdf' (spaces in path)."""
+    d = {
+        "jobName": "chandra-B460",
+        "container": {
+            "command": [
+                "s3://dev-wwii-data-pipeline/contentrepository/NARA/B-Series/B 400-499/B460.pdf",
+            ]
+        },
+    }
+    assert om._book_from_event(d) == "B460"
+
+
+def test_handler_no_book_returns_error():
+    """A malformed job (no chandra- prefix, no s3 pdf arg) must fail loud, not silently."""
+    out = om.handler(_event(job_name="weird-job-name"), None)
+    assert out["action"] == "error"
+
+
+def test_merge_missing_bucket_raises():
+    """Missing S3_BUCKET must raise (loud failure), not write to a wrong bucket."""
+    with patch.object(om, "BUCKET", ""):
+        try:
+            om.merge_ocr_output("B460")
+            assert False, "expected RuntimeError"
+        except RuntimeError as e:
+            assert "S3_BUCKET" in str(e)

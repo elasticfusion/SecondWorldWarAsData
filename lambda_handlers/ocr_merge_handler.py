@@ -21,7 +21,9 @@ logger = logging.getLogger()
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
 REGION = os.getenv("AWS_REGION", "us-east-1")
-BUCKET = os.getenv("S3_BUCKET", "dev-wwii-data-pipeline")
+# Match the convention used by every other handler (empty default + guard) so a
+# missing S3_BUCKET fails loud rather than silently writing to a wrong bucket.
+BUCKET = os.environ.get("S3_BUCKET", "")
 CHANDRA_QUEUE_SUFFIX = "chandra"
 
 
@@ -55,6 +57,9 @@ def merge_ocr_output(book: str) -> str:
     writes the promoted markdown. Returns the output key.
     """
     s3 = _s3()
+    if not BUCKET:
+        logger.error("S3_BUCKET not set — cannot promote OCR output for %s", book)
+        raise RuntimeError("S3_BUCKET env var not configured")
     prefix = f"ocr-output/{book}/"
     output_key = f"contentrepository/{book}/{book}.md"
 
