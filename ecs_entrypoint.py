@@ -2800,6 +2800,16 @@ if __name__ == "__main__":
         )
         sys.exit(1)
 
+    # M3 (§4): acquire a NAT lease for the WHOLE lifetime of this task, once,
+    # regardless of which path runs (phase / submit-only / retrieve-only). This
+    # closes the gap where the retrieve-only task held no lease, and guarantees a
+    # task's egress demand is always represented while it lives. atexit release is
+    # a backstop; SIGTERM + explicit release paths still fire.
+    _acquire_nat_lease()
+    import atexit as _atexit
+
+    _atexit.register(_release_nat_lease)
+
     if sys.argv[1] == "--submit-only":
         run_submit_only(sys.argv[2], sys.argv[3:])
     elif sys.argv[1] == "--retrieve-only":
