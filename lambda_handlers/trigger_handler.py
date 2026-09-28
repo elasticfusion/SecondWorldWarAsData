@@ -370,7 +370,6 @@ def _update_manifest(s3_keys):
     logger.info("Manifest: %d keys", len(merged))
 
 
-
 def _stop_phase2_tasks():
     """Stop running Phase 2 tasks before launching Phase 3."""
     try:
