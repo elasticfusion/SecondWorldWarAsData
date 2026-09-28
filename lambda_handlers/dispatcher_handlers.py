@@ -50,7 +50,7 @@ def _table():
     return boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE)
 
 
-def enumerate_pending(event, _context):
+def enumerate_pending(_event, _context):
     """Return {count, items:[{doc_id, book, phase, task_def}]} for dispatch.
 
     Scans doc lifecycle records (`doc#{id}`) for entries not done and not already

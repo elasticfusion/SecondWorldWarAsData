@@ -33,19 +33,19 @@ jobs:
           python -m pylint \
             --disable=C0301,C0103,R0913,R0914,R0915,W0511,R0917,W0718,W0212,W1203,C0415 \
             --fail-under=5.0 \
-            src/
+            src/ lambda_handlers/
 
       - name: Mypy (type checking)
-        run: python -m mypy src/ --ignore-missing-imports --no-strict-optional
+        run: python -m mypy src/ lambda_handlers/ --ignore-missing-imports --no-strict-optional
 
       - name: Bandit (security)
         run: python -m bandit -r src/ lambda_handlers/ -ll -q
 
       - name: Radon (complexity)
-        run: python -m radon cc src/ --min C --show-complexity --total-average
+        run: python -m radon cc src/ lambda_handlers/ --min C --show-complexity --total-average
 
       - name: Vulture (dead code)
-        run: python -m vulture src/ .vulture_whitelist.py --min-confidence 80
+        run: python -m vulture src/ lambda_handlers/ .vulture_whitelist.py --min-confidence 80
 
       - name: CloudFormation lint
         run: cfn-lint cloudformation/*.yaml

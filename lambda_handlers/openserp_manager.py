@@ -17,7 +17,6 @@ logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
 ENV_NAME = os.getenv("ENV_NAME", "dev")
 IDLE_MINUTES = int(os.getenv("IDLE_MINUTES", "30"))
-SSM_PREFIX = f"/{ENV_NAME}-wwii-pipeline"
 
 
 def handler(event, _context):

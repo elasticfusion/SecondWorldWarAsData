@@ -89,26 +89,9 @@ def handler(event, _context):
     """Manage dynamic networking lifecycle."""
     import boto3
 
-    # Handle SNS trigger (pipeline completion → teardown)
+    # SNS trigger (pipeline completion → demand-aware teardown)
     if "Records" in event:
-        for record in event.get("Records", []):
-            if record.get("EventSource") == "aws:sns":
-                message = record.get("Sns", {}).get("Message", "")
-                if "completed successfully" in message:
-                    # M3 (§4): a phase-completion message must NOT tear down NAT
-                    # while another phase/job still needs egress. Check cluster
-                    # demand first — fixes the Phase1->Phase2 NAT churn.
-                    if _nat_demand_present():
-                        logger.info(
-                            "Completion message, but NAT demand remains — NOT tearing down"
-                        )
-                        return {"action": "none", "reason": "nat demand present"}
-                    logger.info("Pipeline completion — tearing down networking")
-                    region = os.getenv("AWS_REGION", "us-east-1")
-                    ec2 = boto3.client("ec2", region_name=region)
-                    return _delete_all(ec2, region)
-                logger.info("Ignoring SNS (not completion): %s", message[:80])
-                return {"action": "none", "reason": "not pipeline completion"}
+        return _handle_sns_records(event)
 
     action = event.get("action", "status")
     region = os.getenv("AWS_REGION", "us-east-1")
@@ -119,6 +102,27 @@ def handler(event, _context):
     if action == "delete":
         return _delete_all(ec2, region)
     return _status(ec2)
+
+
+def _handle_sns_records(event) -> dict:
+    """Handle SNS records: on a pipeline-completion message, tear down NAT — but
+    only if cluster NAT demand is zero (M3 §4 — fixes the Phase1->Phase2 churn)."""
+    import boto3
+
+    for record in event.get("Records", []):
+        if record.get("EventSource") != "aws:sns":
+            continue
+        message = record.get("Sns", {}).get("Message", "")
+        if "completed successfully" not in message:
+            logger.info("Ignoring SNS (not completion): %s", message[:80])
+            return {"action": "none", "reason": "not pipeline completion"}
+        if _nat_demand_present():
+            logger.info("Completion message, but NAT demand remains — NOT tearing down")
+            return {"action": "none", "reason": "nat demand present"}
+        logger.info("Pipeline completion — tearing down networking")
+        region = os.getenv("AWS_REGION", "us-east-1")
+        return _delete_all(boto3.client("ec2", region_name=region), region)
+    return {"action": "none", "reason": "no sns record"}
 
 
 def _status(ec2):
@@ -197,9 +201,7 @@ def _delete_all(ec2, region):
         logger.info("Deleted NAT: %s", nat_id)
         # Release EIPs after NAT is deleted (wait for disassociation)
         if eip_alloc_ids:
-            import time as _t
-
-            _t.sleep(5)  # Brief wait for NAT to release EIP
+            time.sleep(5)  # Brief wait for NAT to release EIP
             for alloc_id in eip_alloc_ids:
                 try:
                     ec2.release_address(AllocationId=alloc_id)

@@ -249,7 +249,7 @@ def handler(event, _context):
 def _handle_scheduled_check():
     """Hourly lock check + dedup reconciliation."""
     logger.info("Scheduled lock check")
-    for task_def, family in TASK_FAMILIES.items():
+    for _task_def, family in TASK_FAMILIES.items():
         lock_key = f"lock#{family}"
         try:
             existing = dynamo.get_item(Key={"cache_key": lock_key}).get("Item")
@@ -369,14 +369,6 @@ def _update_manifest(s3_keys):
     s3.put_object(Bucket=BUCKET, Key=manifest_key, Body=json.dumps(merged).encode())
     logger.info("Manifest: %d keys", len(merged))
 
-
-def _review_complete():
-    """Check if dedup review is marked complete."""
-    try:
-        resp = s3.get_object(Bucket=BUCKET, Key="dedup/review_status.json")
-        return json.loads(resp["Body"].read()).get("complete", False)
-    except Exception:
-        return False
 
 
 def _stop_phase2_tasks():
