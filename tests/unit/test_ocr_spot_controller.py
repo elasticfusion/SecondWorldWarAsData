@@ -55,9 +55,9 @@ def test_resubmit_to_ondemand_moves_once(table):
     assert rec["ondemand_job_id"] == "od-1"
 
 
-def test_escalate_oom_to_highvram_once(table):
-    """A FAILED job with watchdog exit 76 (OOM) is resubmitted once to the
-    high-VRAM queue; a second escalation of the same job is a no-op."""
+def test_flag_oom_to_review_once(table):
+    """A FAILED job with watchdog exit 76 (OOM) is alerted/flagged for review
+    once (24GB is the floor, so no auto-retry); a second pass is a no-op."""
     batch = MagicMock()
 
     def _list_jobs(jobQueue, jobStatus):  # noqa: N803
@@ -75,18 +75,17 @@ def test_escalate_oom_to_highvram_once(table):
             {"container": {"exitCode": 76, "command": ["s3://in.pdf", "s3://out/"]}}
         ]
     }
-    batch.submit_job.return_value = {"jobId": "hv-1"}
     with patch.object(ctl, "_batch", return_value=batch):
-        n1 = ctl._escalate_oom_failures()
-        n2 = ctl._escalate_oom_failures()
+        n1 = ctl._flag_oom_failures()
+        n2 = ctl._flag_oom_failures()
     assert n1 == 1 and n2 == 0
-    assert batch.submit_job.call_count == 1
-    assert batch.submit_job.call_args.kwargs["jobQueue"].endswith("-highvram")
+    # flagged for review — NOT resubmitted to any queue
+    batch.submit_job.assert_not_called()
     rec = table.get_item(Key={"cache_key": "ocrctl#oom#chandra-B406"})["Item"]
-    assert rec["highvram_job_id"] == "hv-1"
+    assert "flagged_at" in rec
 
 
-def test_non_oom_failure_not_escalated(table):
+def test_non_oom_failure_not_flagged(table):
     """A FAILED job with a non-OOM exit code is left alone."""
     batch = MagicMock()
     paginator = MagicMock()
@@ -100,7 +99,7 @@ def test_non_oom_failure_not_escalated(table):
     batch.get_paginator.return_value = paginator
     batch.describe_jobs.return_value = {"jobs": [{"container": {"exitCode": 1}}]}
     with patch.object(ctl, "_batch", return_value=batch):
-        assert ctl._escalate_oom_failures() == 0
+        assert ctl._flag_oom_failures() == 0
     batch.submit_job.assert_not_called()
 
 

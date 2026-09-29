@@ -30,7 +30,6 @@ def test_submit_ocr_submits_chandra_batch_job():
     with (
         patch.object(th, "_batch_client", return_value=batch),
         patch.object(th, "dynamo", MagicMock()),
-        patch.object(th, "_pdf_has_large_page", return_value=False),
     ):
         ok = th._submit_ocr("contentrepository/NARA/B-Series/B 400-499/B460.pdf")
     assert ok is True
@@ -44,20 +43,6 @@ def test_submit_ocr_submits_chandra_batch_job():
     )
     assert cmd[1] == f"s3://{th.BUCKET}/ocr-output/B460/"
     assert len(cmd) == 2
-
-
-def test_submit_ocr_large_page_routes_to_highvram():
-    """Anticipate-first: a PDF with an oversized page is routed to the 24GB
-    high-VRAM queue at submit, avoiding a wasted 16GB OOM attempt."""
-    batch = MagicMock()
-    with (
-        patch.object(th, "_batch_client", return_value=batch),
-        patch.object(th, "dynamo", MagicMock()),
-        patch.object(th, "_pdf_has_large_page", return_value=True),
-    ):
-        ok = th._submit_ocr("contentrepository/x/bigmap.pdf")
-    assert ok is True
-    assert batch.submit_job.call_args.kwargs["jobQueue"] == th.OCR_HIGHVRAM_QUEUE
 
 
 def test_submit_ocr_returns_false_on_error():

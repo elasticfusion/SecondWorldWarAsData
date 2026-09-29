@@ -93,7 +93,6 @@ Resources:
                 Resource:
                   - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu
                   - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu-ondemand
-                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu-highvram
                   - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-definition/${EnvironmentName}-wwii-chandra*
               - Sid: BatchDescribeForNatDemand
                 Effect: Allow

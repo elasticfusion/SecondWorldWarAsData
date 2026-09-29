@@ -35,11 +35,8 @@ SPOT_QUEUE = os.getenv("OCR_SPOT_QUEUE", f"{ENV_NAME}-wwii-chandra-gpu")
 ONDEMAND_QUEUE = os.getenv(
     "OCR_ONDEMAND_QUEUE", f"{ENV_NAME}-wwii-chandra-gpu-ondemand"
 )
-# High-VRAM (24GB g5/g6, no g4dn) escalation queue for OOM-failed jobs.
-HIGHVRAM_QUEUE = os.getenv(
-    "OCR_HIGHVRAM_QUEUE", f"{ENV_NAME}-wwii-chandra-gpu-highvram"
-)
-# Watchdog exit code meaning "GPU OOM — escalate to higher VRAM" (see ocr_watchdog).
+# Watchdog exit code meaning "GPU OOM" (see ocr_watchdog). With a 24GB VRAM floor
+# on all Chandra pools this is exceptional and flagged for review (not retried).
 EXIT_OOM = 76
 JOB_DEF = os.getenv("OCR_JOB_DEF", f"{ENV_NAME}-wwii-chandra")
 NOTIFICATION_TOPIC_ARN = os.getenv("NOTIFICATION_TOPIC_ARN", "")
@@ -166,14 +163,15 @@ def _route_spot_starved() -> int:
     return routed
 
 
-def _escalate_oom_failures() -> int:
-    """Resubmit OOM-failed OCR jobs (watchdog exit 76) to the high-VRAM queue.
+def _flag_oom_failures() -> int:
+    """Flag OOM-failed OCR jobs (watchdog exit 76) for human review + alert.
 
-    Anticipate-first (submit-time large-page routing) handles predictable OOMs;
-    this is the fail-and-escalate backstop for OOMs that only surface at runtime.
-    A job is escalated at most once (ocrctl#oom#{name} claim); a second OOM on
-    24GB is left FAILED for human review rather than looped."""
-    escalated = 0
+    With the 24GB-VRAM floor on ALL Chandra pools, a CUDA OOM is EXCEPTIONAL (a
+    single page needing >~23GB — e.g. an enormous fold-out plate). Bouncing it to
+    another 24GB queue would not help, so we do NOT loop: alert once (email+Slack)
+    so a human can decide (down-sample the page / split it / larger instance).
+    One alert per job (ocrctl#oom#{name} claim). Returns the count flagged."""
+    flagged = 0
     for queue in (SPOT_QUEUE, ONDEMAND_QUEUE):
         for job in _list_jobs(queue, "FAILED"):
             desc = _batch().describe_jobs(jobs=[job["jobId"]])["jobs"]
@@ -189,38 +187,23 @@ def _escalate_oom_failures() -> int:
                 table.put_item(
                     Item={
                         "cache_key": ident,
-                        "escalated_at": int(time.time()),
+                        "flagged_at": int(time.time()),
                         "oom_job_id": job["jobId"],
                     },
                     ConditionExpression="attribute_not_exists(cache_key)",
                 )
             except table.meta.client.exceptions.ConditionalCheckFailedException:
-                continue  # already escalated once — leave FAILED for review
-            cmd = container.get("command", [])
-            try:
-                resp = _batch().submit_job(
-                    jobName=name[:128],
-                    jobQueue=HIGHVRAM_QUEUE,
-                    jobDefinition=JOB_DEF,
-                    containerOverrides={"command": cmd} if cmd else {},
-                )
-                table.update_item(
-                    Key={"cache_key": ident},
-                    UpdateExpression="SET highvram_job_id = :j",
-                    ExpressionAttributeValues={":j": resp["jobId"]},
-                )
-                _notify(
-                    "WWII Pipeline: OCR job escalated to high-VRAM (OOM)",
-                    f"OCR job {name} hit CUDA OOM on a 16GB GPU and was resubmitted "
-                    f"to the 24GB high-VRAM queue ({resp['jobId']}). A second OOM "
-                    f"there is left FAILED for review.",
-                )
-                logger.info("Escalated OOM %s -> high-VRAM %s", name, resp["jobId"])
-                escalated += 1
-            except Exception as e:
-                table.delete_item(Key={"cache_key": ident})  # release for retry
-                logger.error("Failed to escalate %s to high-VRAM: %s", name, e)
-    return escalated
+                continue  # already alerted once
+            _notify(
+                "WWII Pipeline: OCR job OOM on 24GB GPU — needs review",
+                f"OCR job {name} hit CUDA out-of-memory even on a 24GB GPU "
+                f"(job {job['jobId']}). This is exceptional — likely an oversized "
+                f"page. It needs human review: down-sample/split the page or use a "
+                f"larger instance. It will NOT be retried automatically.",
+            )
+            logger.warning("OOM on 24GB — flagged %s for review", name)
+            flagged += 1
+    return flagged
 
 
 def _enforce_ondemand_cap() -> int:
@@ -254,9 +237,12 @@ def handler(_event, _context):
     """Hourly: warn near quota, route spot-starved -> on-demand, enforce 48h cap."""
     _warn_if_near_quota()
     routed = _route_spot_starved()
-    escalated = _escalate_oom_failures()
+    oom_flagged = _flag_oom_failures()
     capped = _enforce_ondemand_cap()
     logger.info(
-        "OCR controller: routed=%d escalated=%d capped=%d", routed, escalated, capped
+        "OCR controller: routed=%d oom_flagged=%d capped=%d",
+        routed,
+        oom_flagged,
+        capped,
     )
-    return {"routed": routed, "escalated": escalated, "capped": capped}
+    return {"routed": routed, "oom_flagged": oom_flagged, "capped": capped}

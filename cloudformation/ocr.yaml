@@ -175,7 +175,7 @@ Resources:
       # custom-named resource. Changing the name lets CFN create the new CE,
       # repoint the queue's !Ref, then delete the old one.
       ComputeEnvironmentName: !Sub
-        - ${EnvironmentName}-wwii-chandra-gpu-${TypeLower}-v3
+        - ${EnvironmentName}-wwii-chandra-gpu-${TypeLower}-v4
         - TypeLower: !If [IsSpot, spot, ec2]
       Type: MANAGED
       State: ENABLED
@@ -192,13 +192,11 @@ Resources:
         MinvCpus: 0
         DesiredvCpus: 0
         InstanceTypes:
-          # Forgiving GPU pool (§2): ANY instance meeting the Chandra job spec
-          # (1 GPU, 4 vCPU, ~15GB) — widened beyond g5/g6 to g4dn so
-          # SPOT_CAPACITY_OPTIMIZED draws from the deepest available spot pool.
-          # All are 1-GPU/4-vCPU/16GB (xlarge) fitting one job; 2xlarge variants
-          # fit too (Batch bin-packs, may co-locate on larger hosts).
-          - g4dn.xlarge
-          - g4dn.2xlarge
+          # 24GB-VRAM floor (g5/g6 only). EMPIRICAL: Chandra needs ~9-10GB GPU
+          # per page REGARDLESS of page size — a 16GB g4dn OOMs on essentially
+          # any page (observed on B406 11-page AND B400 6-page/small). g4dn is
+          # therefore broken capacity for this model, not cheaper capacity, so
+          # it is excluded from ALL Chandra pools. g5 and g6 (~23GB) both fit.
           - g5.xlarge
           - g5.2xlarge
           - g6.xlarge
@@ -236,7 +234,7 @@ Resources:
   ChandraOnDemandComputeEnv:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
-      ComputeEnvironmentName: !Sub ${EnvironmentName}-wwii-chandra-gpu-ondemand-v3
+      ComputeEnvironmentName: !Sub ${EnvironmentName}-wwii-chandra-gpu-ondemand-v4
       Type: MANAGED
       State: ENABLED
       # No ServiceRole -> AWSServiceRoleForBatch SLR (current best practice).
@@ -247,8 +245,7 @@ Resources:
         MinvCpus: 0
         DesiredvCpus: 0
         InstanceTypes:
-          - g4dn.xlarge
-          - g4dn.2xlarge
+          # 24GB floor — g4dn (16GB) excluded (OOMs Chandra; see spot CE note).
           - g5.xlarge
           - g5.2xlarge
           - g6.xlarge
@@ -273,52 +270,6 @@ Resources:
       Priority: 1
       ComputeEnvironmentOrder:
         - ComputeEnvironment: !Ref ChandraOnDemandComputeEnv
-          Order: 1
-
-  # --- High-VRAM escalation CE + queue (OOM recovery) ---
-  # A job that OOMs on a 16GB g4dn is resubmitted here by the controller. This
-  # pool is restricted to 24GB-VRAM instances (g5/g6, EXCLUDING g4dn) so the
-  # retry runs with enough GPU memory. On-demand (immediate placement; OOM
-  # recovery should not wait on spot). Analogous to the spot->on-demand queue —
-  # a distinct queue so the controller owns the escalation decision explicitly.
-  ChandraHighVramComputeEnv:
-    Type: AWS::Batch::ComputeEnvironment
-    Properties:
-      ComputeEnvironmentName: !Sub ${EnvironmentName}-wwii-chandra-gpu-highvram-v1
-      Type: MANAGED
-      State: ENABLED
-      ComputeResources:
-        Type: EC2
-        AllocationStrategy: BEST_FIT_PROGRESSIVE
-        MaxvCpus: !Ref OnDemandMaxvCpus
-        MinvCpus: 0
-        DesiredvCpus: 0
-        InstanceTypes:
-          # 24GB-VRAM only — g4dn (16GB) deliberately excluded (it OOM'd).
-          - g5.xlarge
-          - g5.2xlarge
-          - g6.xlarge
-          - g6.2xlarge
-        Subnets: !Ref PrivateSubnetIds
-        SecurityGroupIds:
-          - !Ref SecurityGroupId
-        InstanceRole: !GetAtt BatchInstanceProfile.Arn
-        LaunchTemplate:
-          LaunchTemplateId: !Ref ChandraLaunchTemplate
-          Version: $Latest
-        Ec2Configuration:
-          - ImageType: ECS_AL2023_NVIDIA
-        Tags:
-          Name: !Sub ${EnvironmentName}-wwii-chandra-highvram
-
-  ChandraHighVramJobQueue:
-    Type: AWS::Batch::JobQueue
-    Properties:
-      JobQueueName: !Sub ${EnvironmentName}-wwii-chandra-gpu-highvram
-      State: ENABLED
-      Priority: 1
-      ComputeEnvironmentOrder:
-        - ComputeEnvironment: !Ref ChandraHighVramComputeEnv
           Order: 1
 
   # --- Job Definition ---
@@ -455,7 +406,6 @@ Resources:
           CACHE_TABLE: !Sub ${EnvironmentName}-wwii-api-cache
           OCR_SPOT_QUEUE: !Sub ${EnvironmentName}-wwii-chandra-gpu
           OCR_ONDEMAND_QUEUE: !Sub ${EnvironmentName}-wwii-chandra-gpu-ondemand
-          OCR_HIGHVRAM_QUEUE: !Sub ${EnvironmentName}-wwii-chandra-gpu-highvram
           OCR_JOB_DEF: !Sub ${EnvironmentName}-wwii-chandra
           # Publishes free-form alerts to phase2-complete -> fans to EMAIL (direct)
           # + SLACK (via the slack-formatter -> chatbot). Both channels (§operator).
