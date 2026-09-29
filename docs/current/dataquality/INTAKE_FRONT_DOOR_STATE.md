@@ -58,7 +58,7 @@ exist; the Lambda router just needs to call them (or defer to Phase 0
 ## Where the OCR branch is (verified this session)
 
 The OCR RUNNABLE-stall and the follow-on container-pull failure are **both
-fixed and deployed**. A live on-demand OCR job (`B406`, 11 pages) has:
+fixed and deployed**. A live on-demand OCR job (`B406`, 11 pages):
 
 1. Passed the **readiness gate** (NAT + all 7 VPC interface endpoints
    `available`) before compute was requested.
@@ -66,11 +66,33 @@ fixed and deployed**. A live on-demand OCR job (`B406`, 11 pages) has:
    failed every prior attempt).
 3. **Pulled the Chandra image** via the ECR endpoints (past the point that
    failed with `CannotPullECRContainerError`).
-4. Loaded the model and is **OCR-ing pages 1..11** under the progress watchdog.
+4. Ran OCR to `SUCCEEDED` with NAT + endpoints held stable throughout (the
+   teardown guard, once given `batch:ListJobs`, kept infra up).
+5. …but produced **no output** — Chandra hit CUDA OOM on page 1 (16GB g4dn) and
+   silently exited 0. This surfaced the GPU-memory handling gap, now fixed
+   (below).
 
-Remaining to fully close the OCR branch: let the job finish →
-`ocr-output/B406/…` → EventBridge → merge Lambda writes the chapter structure →
-parse triggers; then tear down.
+### GPU CUDA-OOM handling (layered: anticipate + fail-and-escalate)
+
+The infra chain is proven end-to-end; OOM was the remaining application-layer
+gap. Fixed in three layers (commit `84a2a00`):
+
+1. **Fail-loud** — `ocr_watchdog` detects the CUDA-OOM line in Chandra's stream
+   and returns `EXIT_OOM (76)` even when Chandra exits 0, so the job fails
+   visibly instead of "succeeding" with empty output.
+2. **Anticipate-first** — `trigger._pdf_has_large_page` probes page mediabox
+   area at submit; oversized pages (the empirical OOM trigger on 16GB) route
+   straight to the 24GB high-VRAM queue, skipping a wasted attempt.
+3. **Fail-and-escalate** — `ocr_spot_controller._escalate_oom_failures`
+   resubmits an OOM-failed job (exit 76) **once** to the high-VRAM queue
+   (24GB g5/g6, g4dn excluded); a second OOM there is left FAILED for review.
+   This "upsizes + recycles" automatically: Batch scales the failed 16GB
+   instance down and launches a fresh 24GB one.
+
+Deployed + verified: `wwii-ocr-dev` UPDATE_COMPLETE with the new
+`dev-wwii-chandra-gpu-highvram` queue + `-highvram-v1` CE (ENABLED/VALID);
+controller runs `{routed:0, escalated:0, capped:0}` cleanly (escalation path +
+IAM confirmed).
 
 ### Two root causes fixed this session
 
@@ -105,23 +127,33 @@ flowchart TD
 
     %% ---- OCR branch (verified this session) ----
     D --> D2[Best-guess chunking _ocr_chunks]
-    D2 --> E[_ensure_nat_for_ocr:<br/>nat-manager action=create]
+    D2 --> LP{{"ANTICIPATE-FIRST _pdf_has_large_page<br/>oversized page (pt² > threshold)?"}}
+    LP -->|yes: large page| HV0[route to high-VRAM queue up front]
+    LP -->|no| E[_ensure_nat_for_ocr:<br/>nat-manager action=create]
+    HV0 --> E
     E --> F{{"READINESS GATE _verify_ready<br/>NAT + all 7 endpoints available?"}}
     F -->|not_ready| E
     F -->|ready| G[Submit Batch OCR job]
     G --> H{Queue}
-    H -->|spot| I[chandra-gpu spot<br/>waits for capacity - expected]
+    H -->|spot default| I[chandra-gpu spot<br/>waits for capacity - expected]
     H -->|on-demand| J[chandra-gpu-ondemand<br/>places immediately]
+    H -->|large page / OOM escalation| HV[chandra-gpu-highvram<br/>24GB g5/g6 only, no g4dn]
     I -->|no capacity &gt; threshold| K[ocr_spot_controller<br/>-&gt; on-demand, 48h cap]
     K --> J
     I --> L[GPU instance launches]
     J --> L
+    HV --> L
     L --> M{{"Registers with ECS?<br/>egress: ecr.api/dkr, ecs,<br/>ecs-agent/telemetry, logs, secrets"}}
     M -->|no egress| M1["FAIL: CannotPullECRContainerError<br/>(FIXED: readiness gate + teardown guard)"]
     M -->|endpoints present| N[STARTING: pull Chandra image via ECR endpoint]
     N --> O[RUNNING: download PDF via S3 gateway endpoint]
-    O --> P[Chandra OCR pages 1..N, watchdog 900s]
-    P --> Q[Write ocr-output/book/...]
+    O --> P[Chandra OCR pages 1..N<br/>ocr_watchdog: 900s no-progress + OOM detect]
+    P --> OOM{{"watchdog: CUDA OOM detected?<br/>(exit 76, even if Chandra exits 0)"}}
+    OOM -->|OOM on 16GB| OJ[Batch job FAILED exit 76]
+    OJ --> ESC{{"ocr_spot_controller<br/>_escalate_oom_failures<br/>escalated once already?"}}
+    ESC -->|no| HV
+    ESC -->|yes 2nd OOM on 24GB| ORV["leave FAILED<br/>👤 needs-review + alert"]
+    OOM -->|clean| Q[Write ocr-output/book/...]
     Q --> MR{{"👤 OCR→Markdown review (H2)<br/>mdreview_ui UI - BUILT, NOT DEPLOYED<br/>page image + editable snippet"}}
     MR -->|reviewed pN.md saved| MRS["ocr-output/book/reviewed/pN.md<br/>(consume-once at merge)"]
     MR -->|no review / auto| R[Batch job SUCCEEDED]
@@ -171,13 +203,20 @@ flowchart TD
 3. **Readiness gate** (`_verify_ready`) — compute is **not requested** until
    NAT is `available` AND every required interface endpoint is `available`.
    Returns `{ready, missing[]}`. This is what makes registration reliable.
-4. **Queue / spot-vs-on-demand** — spot waits for capacity (expected);
-   `ocr_spot_controller` falls back to on-demand after the threshold (48h cap).
-5. **Registration egress** — the instance needs the 7 interface endpoints
+4. **Queue selection** — three queues: **spot** (default; waits for capacity,
+   expected), **on-demand** (controller fallback after threshold, 48h cap), and
+   **high-VRAM** (24GB g5/g6; anticipate-first for large pages + OOM-escalation
+   target). `ocr_spot_controller` owns the spot→on-demand and OOM→high-VRAM
+   moves.
+5. **GPU VRAM / OOM** — anticipate-first (`_pdf_has_large_page` at submit) routes
+   oversized pages to high-VRAM up front; `ocr_watchdog` turns a swallowed CUDA
+   OOM into a visible `exit 76`; the controller escalates it once to high-VRAM
+   (upsize + recycle), else needs-review.
+6. **Registration egress** — the instance needs the 7 interface endpoints
    (ECR/ECS/logs/secrets) to register + pull; S3 uses the gateway endpoint.
-6. **Teardown guard** (`_delete_all` + `_nat_demand_present`) — refuses to tear
-   down NAT/endpoints while any OCR job is non-terminal on either queue, unless
-   `force=true`. Prevents infra being pulled out from under a running job.
+7. **Teardown guard** (`_delete_all` + `_nat_demand_present`) — refuses to tear
+   down NAT/endpoints while any OCR job is non-terminal on any queue, unless
+   `force=true`. Requires `batch:ListJobs` (the audit gap) + fails safe.
 
 ---
 
