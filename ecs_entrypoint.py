@@ -1247,6 +1247,24 @@ def _advance_doc_lifecycle(completed_phase: str) -> None:
         logger.warning("Failed to advance doc lifecycle for %s: %s", book, e)
 
 
+def _offramp_doc_needs_review(reason: str) -> None:
+    """Off-ramp this doc to needs-review (multi-doc): the dedup gate blocked it, so
+    the SFN dispatcher must stop re-enumerating it. Resumes via human_gate (review
+    UI -> set_status back to a READY state)."""
+    if os.environ.get("MULTI_DOC_ENABLED", "false").lower() != "true":
+        return
+    book = os.environ.get("BOOK_NAME", "")
+    if not book:
+        return
+    try:
+        from src.ingestion import doc_lifecycle
+
+        doc_lifecycle.set_status(book, "needs-review")
+        logger.info("doc lifecycle: %s -> needs-review (dedup gate: %s)", book, reason)
+    except Exception as e:
+        logger.warning("Failed to off-ramp doc %s to needs-review: %s", book, e)
+
+
 def _post_process(phase_script: str, env: dict) -> None:
     """Run post-processing steps after a successful phase."""
     if "phase1" in phase_script:
@@ -1260,23 +1278,31 @@ def _post_process(phase_script: str, env: dict) -> None:
             _clear_processed_content_keys(table, book_name)
         except Exception as e:
             logger.warning("Failed to prune pending#content: %s", e)
-        # Trigger Phase 2 directly (don't rely on S3 notification chain)
-        try:
-            book_name = os.environ.get("BOOK_NAME", "")
-            lambda_client = boto3.client("lambda", region_name=REGION)
-            env_name = os.environ.get("ENV_NAME", "dev")
-            payload = json.dumps({"source": "manual", "book": book_name, "phase": "2"})
-            lambda_client.invoke(
-                FunctionName=f"{env_name}-wwii-trigger",
-                InvocationType="Event",
-                Payload=payload.encode(),
-            )
-            logger.info("Triggered Phase 2 for book=%s", book_name)
-        except Exception as e:
-            logger.warning("Failed to trigger Phase 2: %s", e)
-        # Event-driven chain: drive any OTHER content parked while this phase ran.
-        _invoke_trigger_phase_complete("1")
-        _advance_doc_lifecycle("1")
+        if _multi_doc_enabled():
+            # Multi-doc: the SFN dispatcher OWNS phase progression (Option 1). Only
+            # advance the doc lifecycle; do NOT also launch Phase 2 via the serial
+            # manual/phase-complete paths — that would double-drive (two Phase 2
+            # tasks racing the same book).
+            _advance_doc_lifecycle("1")
+        else:
+            # Serial: trigger Phase 2 directly + drive any parked content via the
+            # event-driven phase-complete chain (no doc# lifecycle in serial mode).
+            try:
+                book_name = os.environ.get("BOOK_NAME", "")
+                lambda_client = boto3.client("lambda", region_name=REGION)
+                env_name = os.environ.get("ENV_NAME", "dev")
+                payload = json.dumps(
+                    {"source": "manual", "book": book_name, "phase": "2"}
+                )
+                lambda_client.invoke(
+                    FunctionName=f"{env_name}-wwii-trigger",
+                    InvocationType="Event",
+                    Payload=payload.encode(),
+                )
+                logger.info("Triggered Phase 2 for book=%s", book_name)
+            except Exception as e:
+                logger.warning("Failed to trigger Phase 2: %s", e)
+            _invoke_trigger_phase_complete("1")
     if "phase2" in phase_script:
         dedup_ok = False
         for attempt in range(2):
@@ -1299,51 +1325,59 @@ def _post_process(phase_script: str, env: dict) -> None:
         gate_action, gate_reason = _dedup_gate_decision(dedup_ok)
         logger.info("Dedup gate: %s — %s", gate_action, gate_reason)
         _notify_dedup_gate(gate_action, gate_reason)
-        if gate_action == "auto_proceed":
-            logger.info("Auto-triggering Phase 3 (%s)", gate_reason)
-            try:
-                env_name = os.environ.get("ENV_NAME", "dev")
-                book_name = os.environ.get("BOOK_NAME", "")
-                lambda_client = boto3.client("lambda", region_name=REGION)
-                payload = json.dumps(
-                    {"source": "manual", "book": book_name, "phase": "3"}
-                )
-                lambda_client.invoke(
-                    FunctionName=f"{env_name}-wwii-trigger",
-                    InvocationType="Event",
-                    Payload=payload.encode(),
-                )
-            except Exception as e:
-                logger.warning("Failed to auto-trigger Phase 3: %s", e)
-        else:
-            _schedule_delayed_teardown()
 
-        # Check for other books in the per-book queue — trigger next and skip teardown
-        next_book = _get_next_pending_book()
-        if next_book:
-            logger.info(
-                "Next book in queue: %s — triggering Phase 2, keeping networking up",
-                next_book,
-            )
-            try:
-                env_name = os.environ.get("ENV_NAME", "dev")
-                lambda_client = boto3.client("lambda", region_name=REGION)
-                payload = json.dumps(
-                    {"source": "manual", "book": next_book, "phase": "2"}
-                )
-                lambda_client.invoke(
-                    FunctionName=f"{env_name}-wwii-trigger",
-                    InvocationType="Event",
-                    Payload=payload.encode(),
-                )
-            except Exception as e:
-                logger.warning("Failed to trigger Phase 2 for %s: %s", next_book, e)
+        if _multi_doc_enabled():
+            # Multi-doc: SFN owns progression. On auto-proceed advance to phase3;
+            # if the gate blocks, off-ramp the doc to needs-review (human gate) so
+            # the dispatcher stops re-enumerating it (it resumes via human_gate).
+            if gate_action == "auto_proceed":
+                _advance_doc_lifecycle("2")  # -> extracted, next_phase phase3
+            else:
+                _offramp_doc_needs_review(gate_reason)
         else:
-            # Event-driven: tell the trigger Phase 2 is done so it drains any content
-            # parked while this run was busy (robust _reconcile_pending, replaces the
-            # fragile SNS-republish that deleted pending#content without launching).
-            _invoke_trigger_phase_complete("2")
-            _advance_doc_lifecycle("2")
+            if gate_action == "auto_proceed":
+                logger.info("Auto-triggering Phase 3 (%s)", gate_reason)
+                try:
+                    env_name = os.environ.get("ENV_NAME", "dev")
+                    book_name = os.environ.get("BOOK_NAME", "")
+                    lambda_client = boto3.client("lambda", region_name=REGION)
+                    payload = json.dumps(
+                        {"source": "manual", "book": book_name, "phase": "3"}
+                    )
+                    lambda_client.invoke(
+                        FunctionName=f"{env_name}-wwii-trigger",
+                        InvocationType="Event",
+                        Payload=payload.encode(),
+                    )
+                except Exception as e:
+                    logger.warning("Failed to auto-trigger Phase 3: %s", e)
+            else:
+                _schedule_delayed_teardown()
+
+            # Check for other books in the per-book queue — trigger next, skip teardown
+            next_book = _get_next_pending_book()
+            if next_book:
+                logger.info(
+                    "Next book in queue: %s — triggering Phase 2, keeping networking up",
+                    next_book,
+                )
+                try:
+                    env_name = os.environ.get("ENV_NAME", "dev")
+                    lambda_client = boto3.client("lambda", region_name=REGION)
+                    payload = json.dumps(
+                        {"source": "manual", "book": next_book, "phase": "2"}
+                    )
+                    lambda_client.invoke(
+                        FunctionName=f"{env_name}-wwii-trigger",
+                        InvocationType="Event",
+                        Payload=payload.encode(),
+                    )
+                except Exception as e:
+                    logger.warning("Failed to trigger Phase 2 for %s: %s", next_book, e)
+            else:
+                # Event-driven: tell the trigger Phase 2 is done so it drains any
+                # content parked while this run was busy.
+                _invoke_trigger_phase_complete("2")
 
     if "phase3" in phase_script:
         # Phase 3 complete — release lock and check for next book in enrich queue

@@ -149,3 +149,42 @@ def test_advance_doc_lifecycle_noop_without_book(entrypoint):
         with patch("src.ingestion.doc_lifecycle.set_status") as ss:
             entrypoint._advance_doc_lifecycle("2")
     ss.assert_not_called()
+
+
+# --- Double-drive fix: multi-doc phase progression owned by SFN, not event chain ---
+
+
+def test_post_process_phase1_multidoc_advances_not_invokes(entrypoint):
+    """Multi-doc: phase1 completion advances doc lifecycle, does NOT invoke the
+    trigger to launch Phase 2 (SFN owns progression — no double-drive)."""
+    with patch.dict(os.environ, {"MULTI_DOC_ENABLED": "true", "BOOK_NAME": "B460"}):
+        with (
+            patch.object(entrypoint, "_multi_doc_enabled", return_value=True),
+            patch.object(entrypoint, "_advance_doc_lifecycle") as adv,
+            patch.object(entrypoint, "_invoke_trigger_phase_complete") as evt,
+            patch.object(entrypoint, "_clear_processed_content_keys"),
+            patch.object(entrypoint.boto3, "client") as bc,
+        ):
+            entrypoint._post_process("phase1_parse.py", {})
+    adv.assert_called_once_with("1")
+    evt.assert_not_called()  # no event-chain phase2 launch under multi-doc
+    # no trigger invoke for {source:manual,phase:2}
+    for call in bc.return_value.invoke.call_args_list:
+        payload = call.kwargs.get("Payload", b"{}")
+        assert b'"phase": "2"' not in payload
+
+
+def test_post_process_phase1_serial_invokes_not_advances(entrypoint):
+    """Serial: phase1 completion invokes the trigger + phase-complete chain, and
+    does NOT touch the doc lifecycle (no doc# records in serial)."""
+    with patch.dict(os.environ, {"MULTI_DOC_ENABLED": "false", "BOOK_NAME": "B460"}):
+        with (
+            patch.object(entrypoint, "_multi_doc_enabled", return_value=False),
+            patch.object(entrypoint, "_advance_doc_lifecycle") as adv,
+            patch.object(entrypoint, "_invoke_trigger_phase_complete") as evt,
+            patch.object(entrypoint, "_clear_processed_content_keys"),
+            patch.object(entrypoint.boto3, "client"),
+        ):
+            entrypoint._post_process("phase1_parse.py", {})
+    adv.assert_not_called()  # no doc lifecycle in serial
+    evt.assert_called_once_with("1")
