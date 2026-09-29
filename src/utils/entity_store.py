@@ -11,18 +11,44 @@ from src.utils.config import get_aws_region
 logger = logging.getLogger(__name__)
 
 
-def _fuzzy_index_match(norm_title: str, index: Dict[str, str]) -> Optional[str]:
-    """Match a normalized title against the bibliography title index (exact then
-    0.85 fuzzy), returning the mapped BibliographyID or None. Mirrors the
-    file-based bibliography._find_match so Dynamo-backed dedup behaves identically."""
+def _fuzzy_index_match(
+    keys: Dict[str, str], index: Dict[str, Dict[str, str]]
+) -> Optional[str]:
+    """Match bibliography keys against the multi-key index — title-focused with
+    fallback to archive-ref then author (operator spec). Mirrors the file-based
+    bibliography._find_match so Dynamo-backed dedup behaves identically.
+
+    index = {'titles': {norm_title: id}, 'refs': {norm_ref: id}, 'authors': {author: id}}.
+    """
     from difflib import SequenceMatcher
 
-    if norm_title in index:
-        return index[norm_title]
-    for existing_title, bib_id in index.items():
-        if SequenceMatcher(None, norm_title, existing_title).ratio() >= 0.85:
-            return bib_id
+    titles = index.get("titles", {})
+    norm = keys.get("title", "")
+    if norm and norm in titles:
+        return titles[norm]
+    if norm:
+        for existing_title, bib_id in titles.items():
+            if SequenceMatcher(None, norm, existing_title).ratio() >= 0.85:
+                return bib_id
+    ref = keys.get("ref", "")
+    if ref and ref in index.get("refs", {}):
+        return index["refs"][ref]
+    author = keys.get("author", "")
+    if author and author in index.get("authors", {}):
+        return index["authors"][author]
     return None
+
+
+def _index_bib_keys(
+    index: Dict[str, Dict[str, str]], keys: Dict[str, str], bib_id: str
+) -> None:
+    """Register title/ref/author keys -> bib_id in the multi-key Dynamo index."""
+    if keys.get("title"):
+        index.setdefault("titles", {})[keys["title"]] = bib_id
+    if keys.get("ref"):
+        index.setdefault("refs", {})[keys["ref"]] = bib_id
+    if keys.get("author"):
+        index.setdefault("authors", {})[keys["author"]] = bib_id
 
 
 class DynamoEntityStore:
@@ -346,35 +372,45 @@ class DynamoEntityStore:
 
     _BIB_INDEX_KEY = "bibindex#all"
 
-    def get_bibliography_index(self) -> Dict[str, str]:
-        """Return the normalized-title -> BibliographyID map (empty if none)."""
+    def get_bibliography_index(self) -> Dict[str, Dict[str, str]]:
+        """Return the multi-key bibliography index (empty structure if none).
+        {'titles': {norm_title: id}, 'refs': {norm_ref: id}, 'authors': {author: id}}.
+        """
         try:
             resp = self._table.get_item(Key={"cache_key": self._BIB_INDEX_KEY})
             item = resp.get("Item")
             if item and "data" in item:
-                return json.loads(item["data"])
+                raw = json.loads(item["data"])
+                if raw and not any(k in raw for k in ("titles", "refs", "authors")):
+                    return {"titles": raw, "refs": {}, "authors": {}}  # legacy flat
+                return {
+                    "titles": raw.get("titles", {}),
+                    "refs": raw.get("refs", {}),
+                    "authors": raw.get("authors", {}),
+                }
         except Exception as e:
             logger.warning("get_bibliography_index failed: %s", e)
-        return {}
+        return {"titles": {}, "refs": {}, "authors": {}}
 
     def store_bibliography(
         self,
-        norm_title: str,
+        keys: Dict[str, str],
         bib_id: str,
         entry_builder,
         mention: Dict[str, Any],
         mention_exists,
         max_retries: int = 8,
     ) -> Optional[str]:
-        """Atomically dedup-by-title + append a mention, race-safe across hosts.
+        """Atomically dedup + append a mention, race-safe across hosts.
 
-        norm_title: normalized title for the index lookup/insert.
+        keys: match keys {'title','ref','author'} (title-focused, ref/author
+        fallback — operator spec). Dedup tries title (exact+0.85 fuzzy), then
+        archive_reference_number, then author.
         bib_id: caller-proposed new BibliographyID (used only if no match exists).
         entry_builder: () -> dict, builds a fresh entry (called only when creating).
-        mention: the mention dict to append.
-        mention_exists: (mentions_list) -> bool, caller's dedup predicate.
+        mention/mention_exists: the mention to append + the caller's dedup predicate.
 
-        Returns the resulting BibliographyID, or None on error. The title index
+        Returns the resulting BibliographyID, or None on error. The multi-key index
         (bibindex#all) is updated with an optimistic version-conditional put; the
         entry (entity#bibliography#{id}) likewise — so concurrent books adding
         references never clobber each other.
@@ -383,17 +419,23 @@ class DynamoEntityStore:
             try:
                 resp = self._table.get_item(Key={"cache_key": self._BIB_INDEX_KEY})
                 item = resp.get("Item")
-                index: Dict[str, str] = (
-                    json.loads(item["data"]) if item and "data" in item else {}
-                )
+                raw = json.loads(item["data"]) if item and "data" in item else {}
+                if raw and not any(k in raw for k in ("titles", "refs", "authors")):
+                    index = {"titles": raw, "refs": {}, "authors": {}}  # legacy flat
+                else:
+                    index = {
+                        "titles": raw.get("titles", {}),
+                        "refs": raw.get("refs", {}),
+                        "authors": raw.get("authors", {}),
+                    }
                 version = int(item["_version"]) if item and "_version" in item else 0
-                existing_id = _fuzzy_index_match(norm_title, index)
+                existing_id = _fuzzy_index_match(keys, index)
                 if existing_id:
                     # Match: merge the mention into the existing entry (its own
                     # version-conditional loop). Index unchanged.
                     self._append_bib_mention(existing_id, mention, mention_exists)
                     return existing_id
-                # No match: create entry + insert into the index atomically.
+                # No match: create entry + insert its keys into the index atomically.
                 entry = entry_builder()
                 new_id = entry.get("BibliographyID", bib_id)
                 entry.setdefault("mentions", []).append(mention)
@@ -403,7 +445,7 @@ class DynamoEntityStore:
                 self._table.put_item(
                     Item=self._item("bibliography", new_id, entry, "", 1)
                 )
-                index[norm_title] = new_id
+                _index_bib_keys(index, keys, new_id)
                 self._table.put_item(
                     Item={
                         "cache_key": self._BIB_INDEX_KEY,
@@ -424,7 +466,7 @@ class DynamoEntityStore:
             except Exception as e:
                 logger.warning("store_bibliography failed: %s", e)
                 return None
-        logger.error("store_bibliography exhausted retries for %s", norm_title)
+        logger.error("store_bibliography exhausted retries for %s", keys.get("title"))
         return None
 
     def _append_bib_mention(
