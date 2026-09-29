@@ -95,3 +95,34 @@ def test_ensure_endpoints_ignores_deleting_as_present():
     # a deleting endpoint for ecs -> describe with available/pending filter returns none
     ec2.describe_vpc_endpoints.return_value = {"VpcEndpoints": []}
     assert nm._endpoint_present_untagged(ec2, "us-east-1", "ecs") is False
+
+
+def test_delete_all_refuses_when_ocr_demand_present():
+    """Regression: a direct action=delete tore down NAT+endpoints under a RUNNING
+    OCR job (ECR-pull timeout). _delete_all must refuse teardown while demand exists
+    regardless of trigger path — the guard lives in _delete_all now."""
+    ec2 = MagicMock()
+    with patch.object(nm, "_nat_demand_present", return_value=True):
+        out = nm._delete_all(ec2, "us-east-1", force=False)
+    assert out.get("action") == "none" and out.get("reason") == "nat demand present"
+    ec2.delete_nat_gateway.assert_not_called()
+
+
+def test_delete_all_force_overrides_demand():
+    """Operator teardown (force=True) bypasses the demand guard."""
+    ec2 = MagicMock()
+    ec2.describe_nat_gateways.return_value = {"NatGateways": []}
+    ec2.describe_vpc_endpoints.return_value = {"VpcEndpoints": []}
+    with patch.object(nm, "_nat_demand_present", return_value=True):
+        out = nm._delete_all(ec2, "us-east-1", force=True)
+    # proceeds (no 'nat demand present' short-circuit)
+    assert out.get("reason") != "nat demand present"
+
+
+def test_delete_all_proceeds_when_no_demand():
+    ec2 = MagicMock()
+    ec2.describe_nat_gateways.return_value = {"NatGateways": []}
+    ec2.describe_vpc_endpoints.return_value = {"VpcEndpoints": []}
+    with patch.object(nm, "_nat_demand_present", return_value=False):
+        out = nm._delete_all(ec2, "us-east-1", force=False)
+    assert out.get("reason") != "nat demand present"

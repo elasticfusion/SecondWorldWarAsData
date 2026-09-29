@@ -140,7 +140,7 @@ def handler(event, _context):
     if action == "create":
         return _create_all(ec2, region)
     if action == "delete":
-        return _delete_all(ec2, region)
+        return _delete_all(ec2, region, force=bool(event.get("force")))
     if action == "verify":
         ready, missing = _verify_ready(ec2, region)
         return {"ready": ready, "missing": missing}
@@ -271,8 +271,19 @@ def _create_all(ec2, region):
 # === DELETE ===
 
 
-def _delete_all(ec2, region):
-    """Delete all dynamic networking components."""
+def _delete_all(ec2, region, force=False):
+    """Delete all dynamic networking components.
+
+    Refuses teardown while there is live NAT demand (in-flight OCR Batch jobs /
+    running pipeline tasks) unless force=True — a direct action=delete previously
+    bypassed the demand check and tore down NAT+endpoints under a RUNNING OCR job,
+    blackholing its egress so the container could not pull from ECR (CannotPull
+    ECRContainerError). The guard now lives here so EVERY delete path honors it,
+    not just the SNS-completion path."""
+    if not force and _nat_demand_present():
+        logger.info("Delete requested but NAT demand present — refusing teardown")
+        return {"action": "none", "reason": "nat demand present"}
+
     deleted = False
 
     # 1. NAT Gateway
