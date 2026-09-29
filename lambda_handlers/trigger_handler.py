@@ -29,6 +29,15 @@ NAT_MANAGER_FN = os.environ.get("NAT_MANAGER_FN", f"{ENV_NAME}-wwii-nat-manager"
 # OCR (Chandra GPU) Batch queue + job def — raw PDFs route here (Option B).
 OCR_JOB_QUEUE = os.environ.get("OCR_JOB_QUEUE", f"{ENV_NAME}-wwii-chandra-gpu")
 OCR_JOB_DEF = os.environ.get("OCR_JOB_DEF", f"{ENV_NAME}-wwii-chandra")
+# High-VRAM (24GB g5/g6) queue for pages large enough to risk a 16GB OOM.
+OCR_HIGHVRAM_QUEUE = os.environ.get(
+    "OCR_HIGHVRAM_QUEUE", f"{ENV_NAME}-wwii-chandra-gpu-highvram"
+)
+# Anticipate-first threshold: a page whose rendered area (points²; PDF user
+# units at 72/in) exceeds this is routed to the high-VRAM queue up front. A US
+# Letter page is ~612x792 ≈ 0.48M pt²; a large fold-out map/plate is several×
+# that and is the empirical OOM trigger on 16GB. Tunable via env.
+OCR_LARGE_PAGE_PT2 = int(os.environ.get("OCR_LARGE_PAGE_PT2", str(1_600_000)))
 
 PHASE1_TASK_DEF = os.environ.get("PHASE1_TASK_DEF", f"{ENV_NAME}-wwii-phase1-parse")
 PHASE2_TASK_DEF = os.environ.get("PHASE2_TASK_DEF", f"{ENV_NAME}-wwii-phase2-extract")
@@ -163,6 +172,46 @@ def _pdf_page_count(pdf_key: str) -> int:
                 pass
 
 
+def _pdf_has_large_page(pdf_key: str) -> bool:
+    """Anticipate-first VRAM check: True if any page's rendered area (in points²)
+    exceeds OCR_LARGE_PAGE_PT2 — such pages are the empirical CUDA-OOM trigger on
+    16GB GPUs, so they're routed to the 24GB high-VRAM queue up front. Reads page
+    mediaboxes with pypdf (no rendering). Returns False on any error (safe default
+    — the fail-and-escalate backstop still catches a runtime OOM)."""
+    import tempfile
+
+    local = None
+    try:
+        from pypdf import PdfReader
+
+        fd, local = tempfile.mkstemp(suffix=".pdf")
+        os.close(fd)
+        s3.download_file(BUCKET, pdf_key, local)
+        for page in PdfReader(local).pages:
+            box = page.mediabox
+            area = float(box.width) * float(box.height)
+            if area > OCR_LARGE_PAGE_PT2:
+                logger.info(
+                    "OCR: %s has a large page (%.0f pt² > %d) — high-VRAM queue",
+                    pdf_key,
+                    area,
+                    OCR_LARGE_PAGE_PT2,
+                )
+                return True
+        return False
+    except Exception as e:
+        logger.warning(
+            "Large-page probe failed for %s (%s) — default queue", pdf_key, e
+        )
+        return False
+    finally:
+        if local and os.path.exists(local):
+            try:
+                os.remove(local)
+            except OSError:
+                pass
+
+
 def _ocr_chunks(pdf_key: str) -> list:
     """Best-guess chunk plan for an OCR job (operator spec — the code guesses from
     the actual file at submit). Returns a list of page-range args:
@@ -232,6 +281,12 @@ def _submit_ocr(pdf_key: str) -> bool:
             return False
         s3_input = f"s3://{BUCKET}/{pdf_key}"
         chunks = _ocr_chunks(pdf_key)
+        # Anticipate-first: route large-page PDFs straight to the high-VRAM queue
+        # (24GB) so they don't waste a first attempt OOM-ing on a 16GB g4dn. The
+        # controller's fail-and-escalate is the backstop for the rest.
+        ocr_queue = (
+            OCR_HIGHVRAM_QUEUE if _pdf_has_large_page(pdf_key) else OCR_JOB_QUEUE
+        )
         try:
             batch = _batch_client()
             for rng in chunks:
@@ -246,7 +301,7 @@ def _submit_ocr(pdf_key: str) -> bool:
                     cmd = [s3_input, out]
                 batch.submit_job(
                     jobName=job_name,
-                    jobQueue=OCR_JOB_QUEUE,
+                    jobQueue=ocr_queue,
                     jobDefinition=OCR_JOB_DEF,
                     containerOverrides={"command": cmd},
                 )

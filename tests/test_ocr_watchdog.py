@@ -75,6 +75,34 @@ def test_empty_command_fails():
     assert ocr_watchdog.run([]) == 2
 
 
+def test_cuda_oom_forces_nonzero_exit_even_when_child_exits_zero():
+    """Chandra swallows a CUDA OOM and exits 0 with empty output. The watchdog
+    must detect the OOM line in the stream and return EXIT_OOM (76) so the job
+    fails visibly and the controller escalates to a higher-VRAM GPU."""
+    cmd = _py("""
+        print("Processing pages 1-1...", flush=True)
+        print("  Error processing input.pdf: CUDA out of memory. Tried to "
+              "allocate 10.39 GiB.", flush=True)
+        print("Processing complete. Results saved to: /tmp/output", flush=True)
+        print("Done.", flush=True)
+        # exits 0 — the silent-success bug
+        """)
+    assert ocr_watchdog.run(cmd, limit_secs=5) == ocr_watchdog.EXIT_OOM
+
+
+def test_cuda_error_out_of_memory_phrasing_also_detected():
+    cmd = _py("""
+        print("Processing pages 1-1...", flush=True)
+        print("RuntimeError: CUDA error: out of memory", flush=True)
+        """)
+    assert ocr_watchdog.run(cmd, limit_secs=5) == ocr_watchdog.EXIT_OOM
+
+
+def test_no_oom_normal_run_unaffected():
+    cmd = _py("print('Processing pages 1-1...', flush=True)")
+    assert ocr_watchdog.run(cmd, limit_secs=5) == 0
+
+
 def test_split_command_supports_dash_dash():
     assert ocr_watchdog._split_command(["ocr_watchdog.py", "--", "chandra", "x"]) == [
         "chandra",

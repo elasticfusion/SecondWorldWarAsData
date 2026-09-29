@@ -55,6 +55,55 @@ def test_resubmit_to_ondemand_moves_once(table):
     assert rec["ondemand_job_id"] == "od-1"
 
 
+def test_escalate_oom_to_highvram_once(table):
+    """A FAILED job with watchdog exit 76 (OOM) is resubmitted once to the
+    high-VRAM queue; a second escalation of the same job is a no-op."""
+    batch = MagicMock()
+
+    def _list_jobs(jobQueue, jobStatus):  # noqa: N803
+        if jobQueue.endswith("-chandra-gpu") and jobStatus == "FAILED":
+            return {"jobSummaryList": [{"jobName": "chandra-B406", "jobId": "f-1"}]}
+        return {"jobSummaryList": []}
+
+    paginator = MagicMock()
+    paginator.paginate.side_effect = lambda jobQueue, jobStatus: [
+        _list_jobs(jobQueue, jobStatus)
+    ]
+    batch.get_paginator.return_value = paginator
+    batch.describe_jobs.return_value = {
+        "jobs": [
+            {"container": {"exitCode": 76, "command": ["s3://in.pdf", "s3://out/"]}}
+        ]
+    }
+    batch.submit_job.return_value = {"jobId": "hv-1"}
+    with patch.object(ctl, "_batch", return_value=batch):
+        n1 = ctl._escalate_oom_failures()
+        n2 = ctl._escalate_oom_failures()
+    assert n1 == 1 and n2 == 0
+    assert batch.submit_job.call_count == 1
+    assert batch.submit_job.call_args.kwargs["jobQueue"].endswith("-highvram")
+    rec = table.get_item(Key={"cache_key": "ocrctl#oom#chandra-B406"})["Item"]
+    assert rec["highvram_job_id"] == "hv-1"
+
+
+def test_non_oom_failure_not_escalated(table):
+    """A FAILED job with a non-OOM exit code is left alone."""
+    batch = MagicMock()
+    paginator = MagicMock()
+    paginator.paginate.side_effect = lambda jobQueue, jobStatus: [
+        (
+            {"jobSummaryList": [{"jobName": "chandra-X", "jobId": "f-2"}]}
+            if jobStatus == "FAILED" and jobQueue.endswith("-chandra-gpu")
+            else {"jobSummaryList": []}
+        )
+    ]
+    batch.get_paginator.return_value = paginator
+    batch.describe_jobs.return_value = {"jobs": [{"container": {"exitCode": 1}}]}
+    with patch.object(ctl, "_batch", return_value=batch):
+        assert ctl._escalate_oom_failures() == 0
+    batch.submit_job.assert_not_called()
+
+
 def test_route_spot_starved_only_old_runnable(table):
     now_ms = int(time.time() * 1000)
     batch = MagicMock()
