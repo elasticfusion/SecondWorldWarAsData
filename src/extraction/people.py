@@ -448,9 +448,11 @@ def _load_person_file(person_file: Path) -> Dict[str, Any]:
 
 
 def _save_person_file(person_file: Path, person_data: Dict[str, Any]) -> None:
-    """Save a person file."""
-    with open(person_file, "w", encoding="utf-8") as f:
-        json.dump(person_data, f, indent=2, ensure_ascii=False)
+    """Save a person file (via write_json_with_lock: cross-host flock + dual-write
+    to DynamoEntityStore — #8, required for correct isolation under concurrency)."""
+    from src.utils.file_lock import write_json_with_lock
+
+    write_json_with_lock(person_file, person_data)
 
 
 def _update_index(index_file: Path, name: str, filename: str) -> None:

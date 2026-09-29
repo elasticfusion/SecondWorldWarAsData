@@ -376,8 +376,9 @@ def _process_search_result(
     )
 
     json_path = output_dir / f"{map_id}.json"
-    with open(json_path, "w") as f:
-        json.dump(map_json, f, indent=2)
+    from src.utils.file_lock import write_json_with_lock
+
+    write_json_with_lock(json_path, map_json)
 
     logger.info(f"   ✅ Imported: {map_id}")
     return True

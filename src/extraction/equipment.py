@@ -1305,8 +1305,9 @@ def _create_new_equipment(
     safe_name = common_name.replace(" ", "_").replace("/", "_")
     eq_file = equipment_dir / f"{safe_name}_{equipment_id[:8]}.json"
 
-    with open(eq_file, "w") as f:
-        json.dump(equipment_data, f, indent=2)
+    from src.utils.file_lock import write_json_with_lock
+
+    write_json_with_lock(eq_file, equipment_data)
 
     # Update index (prefer technical_identifier for stability)
     index_key = equipment_data.get("technical_identifier") or common_name

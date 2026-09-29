@@ -297,8 +297,9 @@ def extract_images(
             )
 
             out_file = images_dir / f"{record['ImageID']}.json"
-            with open(out_file, "w", encoding="utf-8") as fh:
-                json.dump(record, fh, indent=2, ensure_ascii=False)
+            from src.utils.file_lock import write_json_with_lock
+
+            write_json_with_lock(out_file, record)
 
             index[record["ImageID"]] = out_file.name
             if url:

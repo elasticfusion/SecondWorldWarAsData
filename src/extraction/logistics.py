@@ -604,8 +604,11 @@ def _save_extraction(
             else "UNKNOWN"
         )
         filename = f"{data['category']}_{data['logistics_type']}_{date_str}_{data['LogisticsID'][:8]}.json"
-        with open(logistics_dir / filename, "w", encoding="utf-8") as f:
-            json.dump(validated.model_dump(exclude_none=True), f, indent=2)
+        from src.utils.file_lock import write_json_with_lock
+
+        write_json_with_lock(
+            logistics_dir / filename, validated.model_dump(exclude_none=True)
+        )
         logger.info("Extracted: %s", filename)
         return True
     except Exception as e:

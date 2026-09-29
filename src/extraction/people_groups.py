@@ -195,8 +195,9 @@ def _save_group(
         # Create new file
         filename = _name_to_filename(group_name, group_id)
         filepath = groups_dir / filename
-        with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(group, f, indent=2, ensure_ascii=False)
+        from src.utils.file_lock import write_json_with_lock
+
+        write_json_with_lock(filepath, group)
         _update_index(index_file, group_name, filename)
         logger.info("    Created: %s", group_name)
 

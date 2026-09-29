@@ -648,7 +648,8 @@ def _save_casualty(casualty: Dict[str, Any], output_dir: Path) -> None:
     filename = f"{casualty_type}_{casualty_id}.json"
     filepath = output_dir / filename
 
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(casualty, f, indent=2, ensure_ascii=False)
+    from src.utils.file_lock import write_json_with_lock
+
+    write_json_with_lock(filepath, casualty)
 
     logger.info("Saved casualty: %s", filename)
