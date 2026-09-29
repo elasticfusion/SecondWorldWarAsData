@@ -182,6 +182,33 @@ def _submit_ocr(pdf_key: str) -> bool:
         return False
 
 
+def _seed_docs(keys: list, next_phase: str) -> None:
+    """Seed doc# lifecycle records so the dispatcher's enumerate_pending finds them.
+
+    The trigger writes pending#* queues, but the SFN dispatcher enumerates doc#
+    records (§8) — without seeding, a multi-doc dispatch would find 0 dispatchable
+    docs and exit. One doc per book (derived from contentrepository/{book}/...),
+    status held_unprocessed, at the given next_phase. Idempotent upsert."""
+    from src.ingestion import doc_lifecycle
+
+    books: dict = {}
+    for k in keys:
+        parts = k.split("/")
+        if len(parts) >= 2 and parts[0] == "contentrepository":
+            books[parts[1]] = k  # book -> a representative source key
+    for book, src_key in books.items():
+        try:
+            doc_lifecycle.upsert(
+                book,
+                status="held_unprocessed",
+                book=book,
+                next_phase=next_phase,
+                source_path=src_key,
+            )
+        except Exception as e:
+            logger.warning("Failed to seed doc# for %s: %s", book, e)
+
+
 def _start_dispatcher(reason: str) -> bool:
     """Start one SFN dispatcher drain execution (idempotent-ish: skip if running).
 
@@ -283,13 +310,17 @@ def handler(event, _context):
             if not parse_keys:
                 continue
             _queue_pending(parse_keys)
-            if _multi_doc_active() and _start_dispatcher("content-uploaded"):
-                continue
+            if _multi_doc_active():
+                _seed_docs(parse_keys, "phase1")
+                if _start_dispatcher("content-uploaded"):
+                    continue
             _launch_phase1_if_idle()
         elif topic_name == PARSED_TOPIC:
             _queue_parsed(s3_keys)
-            if _multi_doc_active() and _start_dispatcher("chapter-parsed"):
-                continue
+            if _multi_doc_active():
+                _seed_docs(s3_keys, "phase2")
+                if _start_dispatcher("chapter-parsed"):
+                    continue
             _launch_phase2_if_idle()
         elif topic_name == ENTITY_TOPIC:
             pass  # Dead path — Phase 3 triggered via dedup-complete or auto-trigger

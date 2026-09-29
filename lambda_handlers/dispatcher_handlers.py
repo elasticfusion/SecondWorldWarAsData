@@ -29,15 +29,13 @@ _FARGATE_VCPU_QUOTA = "L-3032A538"
 _PER_TASK_VCPU = int(os.getenv("PER_TASK_VCPU", "1"))
 
 _LIFECYCLE_DONE = {"done", "failed", "needs-review"}
-_IN_FLIGHT = {
-    "expanding",
-    "routed",
-    "ocr",
-    "parsed",
-    "extracted",
-    "deduped",
-    "enriched",
-}
+# A doc is RUNNING (a task actively working it) -> not dispatchable. The dispatcher
+# sets this atomically on claim; the ECS task advances it on phase completion.
+_RUNNING = "running"
+# READY states: a phase can be launched. Each carries next_phase (the phase to run).
+# held_unprocessed->phase1, parsed->phase2, extracted/deduped->phase3.
+_READY = {"held_unprocessed", "parsed", "extracted", "deduped", "enriched"}
+
 
 _PHASE_TASK_DEF = {
     "phase1": f"{ENV_NAME}-wwii-phase1-parse",
@@ -50,13 +48,37 @@ def _table():
     return boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE)
 
 
+def _claim_doc(table, cache_key: str, current_status: str) -> bool:
+    """Atomically move a READY doc to 'running' (claim it for dispatch). Returns
+    True if this invocation won the claim — a concurrent drain that already claimed
+    it fails the condition and is skipped, so a doc is never double-dispatched."""
+    import time as _t
+
+    try:
+        table.update_item(
+            Key={"cache_key": cache_key},
+            UpdateExpression="SET #s = :run, claimed_at = :t",
+            ConditionExpression="#s = :cur",
+            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeValues={
+                ":run": _RUNNING,
+                ":cur": current_status,
+                ":t": int(_t.time()),
+            },
+        )
+        return True
+    except table.meta.client.exceptions.ConditionalCheckFailedException:
+        return False
+
+
 def enumerate_pending(_event, _context):
     """Return {count, items:[{doc_id, book, phase, task_def}]} for dispatch.
 
-    Scans doc lifecycle records (`doc#{id}`) for entries not done and not already
-    in-flight. FIFO order (§8). Each item is a heterogeneous work item carrying
-    its routed task def (§7). Only NOT-in-flight docs are returned so a restart
-    never re-dispatches running work (idempotent, §8).
+    Scans doc lifecycle records (`doc#{id}`) for READY entries (not running, not
+    terminal), ATOMICALLY CLAIMS each (status -> running) so a concurrent/looping
+    drain never re-dispatches a doc already being worked, and returns the claimed
+    work items carrying their routed task def + phase (§7, §8). The ECS task
+    advances the doc on completion (Option 1 — SFN owns lifecycle).
     """
     table = _table()
     items = []
@@ -68,8 +90,10 @@ def enumerate_pending(_event, _context):
         resp = table.scan(**kwargs)
         for it in resp.get("Items", []):
             status = it.get("status", "")
-            if status in _LIFECYCLE_DONE or status in _IN_FLIGHT:
+            if status not in _READY:
                 continue
+            if not _claim_doc(table, it["cache_key"], status):
+                continue  # another drain claimed it — skip (no double-dispatch)
             phase = it.get("next_phase", "phase1")
             items.append(
                 {

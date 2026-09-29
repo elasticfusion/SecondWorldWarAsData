@@ -8,10 +8,12 @@ from lambda_handlers import dispatcher_handlers as dh
 def _table_with(items):
     t = MagicMock()
     t.scan.return_value = {"Items": items}
+    # _claim_doc's conditional update_item succeeds by default (claim won)
+    t.update_item.return_value = {}
     return t
 
 
-def test_enumerate_skips_done_and_in_flight():
+def test_enumerate_returns_ready_claims_and_skips_terminal_running():
     items = [
         {
             "cache_key": "doc#a",
@@ -19,15 +21,49 @@ def test_enumerate_skips_done_and_in_flight():
             "next_phase": "phase1",
             "book": "A",
         },
-        {"cache_key": "doc#b", "status": "done"},  # skip
-        {"cache_key": "doc#c", "status": "extracted"},  # in-flight, skip
-        {"cache_key": "doc#d", "status": "", "next_phase": "phase2", "book": "D"},
+        {"cache_key": "doc#b", "status": "done"},  # terminal, skip
+        {"cache_key": "doc#c", "status": "running"},  # actively running, skip
+        {
+            "cache_key": "doc#d",
+            "status": "extracted",
+            "next_phase": "phase3",
+            "book": "D",
+        },  # READY for phase3
     ]
-    with patch.object(dh, "_table", return_value=_table_with(items)):
+    table = _table_with(items)
+    with patch.object(dh, "_table", return_value=table):
         out = dh.enumerate_pending({}, None)
     ids = [i["doc_id"] for i in out["items"]]
     assert out["count"] == 2
-    assert ids == ["a", "d"]  # FIFO sorted, done/in-flight excluded
+    assert ids == [
+        "a",
+        "d",
+    ]  # READY only (held_unprocessed + extracted); done/running excluded
+    # each returned doc was atomically CLAIMED to running
+    claimed = {c.kwargs["Key"]["cache_key"] for c in table.update_item.call_args_list}
+    assert claimed == {"doc#a", "doc#d"}
+
+
+def test_enumerate_skips_doc_lost_claim_race():
+    """A doc whose claim conditional-fails (another drain won) is NOT returned."""
+    items = [
+        {
+            "cache_key": "doc#a",
+            "status": "held_unprocessed",
+            "next_phase": "phase1",
+            "book": "A",
+        },
+    ]
+    table = _table_with(items)
+
+    class _CCFE(Exception):
+        pass
+
+    table.meta.client.exceptions.ConditionalCheckFailedException = _CCFE
+    table.update_item.side_effect = _CCFE()
+    with patch.object(dh, "_table", return_value=table):
+        out = dh.enumerate_pending({}, None)
+    assert out["count"] == 0  # claim lost -> skipped
 
 
 def test_enumerate_routes_task_def_by_phase():

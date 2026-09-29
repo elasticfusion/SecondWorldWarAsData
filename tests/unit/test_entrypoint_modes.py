@@ -118,3 +118,34 @@ def test_submit_only_adds_batch_flag(entrypoint):
         cmd = mock_run.call_args[0][0]
         assert "--batch" in cmd
         assert "phase3_enrich_data.py" in cmd
+
+
+# --- Option 1: SFN-owned doc lifecycle advancement (multi-doc) ---
+
+
+def test_advance_doc_lifecycle_phase1_to_parsed(entrypoint):
+    with patch.dict(os.environ, {"MULTI_DOC_ENABLED": "true", "BOOK_NAME": "B460"}):
+        with patch("src.ingestion.doc_lifecycle.set_status") as ss:
+            entrypoint._advance_doc_lifecycle("1")
+    ss.assert_called_once_with("B460", "parsed", next_phase="phase2")
+
+
+def test_advance_doc_lifecycle_phase3_to_done(entrypoint):
+    with patch.dict(os.environ, {"MULTI_DOC_ENABLED": "true", "BOOK_NAME": "B460"}):
+        with patch("src.ingestion.doc_lifecycle.set_status") as ss:
+            entrypoint._advance_doc_lifecycle("3")
+    ss.assert_called_once_with("B460", "done", next_phase=None)
+
+
+def test_advance_doc_lifecycle_noop_in_serial_mode(entrypoint):
+    with patch.dict(os.environ, {"MULTI_DOC_ENABLED": "false", "BOOK_NAME": "B460"}):
+        with patch("src.ingestion.doc_lifecycle.set_status") as ss:
+            entrypoint._advance_doc_lifecycle("1")
+    ss.assert_not_called()  # serial mode uses pending#/phase-complete, not doc#
+
+
+def test_advance_doc_lifecycle_noop_without_book(entrypoint):
+    with patch.dict(os.environ, {"MULTI_DOC_ENABLED": "true", "BOOK_NAME": ""}):
+        with patch("src.ingestion.doc_lifecycle.set_status") as ss:
+            entrypoint._advance_doc_lifecycle("2")
+    ss.assert_not_called()

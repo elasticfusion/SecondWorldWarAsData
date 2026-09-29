@@ -1208,6 +1208,45 @@ def _invoke_trigger_phase_complete(phase: str) -> None:
         logger.warning("Failed to notify trigger of phase %s completion: %s", phase, e)
 
 
+def _advance_doc_lifecycle(completed_phase: str) -> None:
+    """Advance this doc's doc#{book} lifecycle after a completed phase, so the SFN
+    dispatcher (Option 1 — SFN owns lifecycle) re-enumerates it at the NEXT phase
+    (or marks it terminal). Multi-doc only; serial mode uses the pending#/phase-
+    complete chain and has no doc# records. The dispatcher claimed the doc to
+    'running' at dispatch; here we move it to the next READY state.
+
+      phase1 -> parsed    (next_phase phase2)   READY
+      phase2 -> extracted (next_phase phase3)   READY
+      phase3 -> done                            TERMINAL
+    """
+    if os.environ.get("MULTI_DOC_ENABLED", "false").lower() != "true":
+        return
+    book = os.environ.get("BOOK_NAME", "")
+    if not book:
+        return
+    transition = {
+        "1": ("parsed", "phase2"),
+        "2": ("extracted", "phase3"),
+        "3": ("done", None),
+    }.get(completed_phase)
+    if not transition:
+        return
+    status, next_phase = transition
+    try:
+        from src.ingestion import doc_lifecycle
+
+        doc_lifecycle.set_status(book, status, next_phase=next_phase)
+        logger.info(
+            "doc lifecycle: %s -> %s (next=%s) after phase %s",
+            book,
+            status,
+            next_phase,
+            completed_phase,
+        )
+    except Exception as e:
+        logger.warning("Failed to advance doc lifecycle for %s: %s", book, e)
+
+
 def _post_process(phase_script: str, env: dict) -> None:
     """Run post-processing steps after a successful phase."""
     if "phase1" in phase_script:
@@ -1237,6 +1276,7 @@ def _post_process(phase_script: str, env: dict) -> None:
             logger.warning("Failed to trigger Phase 2: %s", e)
         # Event-driven chain: drive any OTHER content parked while this phase ran.
         _invoke_trigger_phase_complete("1")
+        _advance_doc_lifecycle("1")
     if "phase2" in phase_script:
         dedup_ok = False
         for attempt in range(2):
@@ -1303,10 +1343,12 @@ def _post_process(phase_script: str, env: dict) -> None:
             # parked while this run was busy (robust _reconcile_pending, replaces the
             # fragile SNS-republish that deleted pending#content without launching).
             _invoke_trigger_phase_complete("2")
+            _advance_doc_lifecycle("2")
 
     if "phase3" in phase_script:
         # Phase 3 complete — release lock and check for next book in enrich queue
         _remove_lock(phase_script)
+        _advance_doc_lifecycle("3")  # doc# -> done (multi-doc; terminal)
         next_enrich = _get_next_pending_enrich()
         if next_enrich:
             logger.info(
