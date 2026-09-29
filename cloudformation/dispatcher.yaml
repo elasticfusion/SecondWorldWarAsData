@@ -92,7 +92,7 @@ Resources:
     Properties:
       FunctionName: !Sub ${EnvironmentName}-wwii-enumerate-pending
       Runtime: python3.12
-      Handler: dispatcher_handlers.enumerate_pending
+      Handler: lambda_handlers.dispatcher_handlers.enumerate_pending
       Role: !GetAtt DispatcherLambdaRole.Arn
       Timeout: 60
       MemorySize: 256
@@ -109,7 +109,7 @@ Resources:
     Properties:
       FunctionName: !Sub ${EnvironmentName}-wwii-clamp-pool
       Runtime: python3.12
-      Handler: dispatcher_handlers.clamp_pool
+      Handler: lambda_handlers.dispatcher_handlers.clamp_pool
       Role: !GetAtt DispatcherLambdaRole.Arn
       Timeout: 30
       MemorySize: 256
@@ -128,7 +128,7 @@ Resources:
     Properties:
       FunctionName: !Sub ${EnvironmentName}-wwii-human-gate
       Runtime: python3.12
-      Handler: dispatcher_handlers.human_gate
+      Handler: lambda_handlers.dispatcher_handlers.human_gate
       Role: !GetAtt DispatcherLambdaRole.Arn
       Timeout: 30
       MemorySize: 256
@@ -232,6 +232,13 @@ Resources:
               "Type": "Map",
               "ItemsPath": "$.pending.items",
               "MaxConcurrencyPath": "$.pool.effective",
+              "ItemSelector": {
+                "doc_id.$": "$$.Map.Item.Value.doc_id",
+                "book.$": "$$.Map.Item.Value.book",
+                "phase.$": "$$.Map.Item.Value.phase",
+                "task_def.$": "$$.Map.Item.Value.task_def",
+                "pool_effective.$": "$.pool.effective"
+              },
               "ResultPath": "$.results",
               "Iterator": {
                 "StartAt": "RunDocTask",
@@ -259,7 +266,7 @@ Resources:
                             "Name": "pipeline",
                             "Environment": [
                               { "Name": "BOOK_NAME", "Value.$": "$.book" },
-                              { "Name": "GROK_RATE_POOL_SIZE", "Value.$": "States.Format('{}', $.pool.effective)" }
+                              { "Name": "GROK_RATE_POOL_SIZE", "Value.$": "States.Format('{}', $.pool_effective)" }
                             ]
                           }
                         ]
