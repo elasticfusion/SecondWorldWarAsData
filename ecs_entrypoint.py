@@ -2070,12 +2070,51 @@ def _any_pipeline_lock_held() -> bool:
         return True  # Assume locked on error — don't tear down
 
 
+def _openserp_demand_present() -> bool:
+    """Aggregate OpenSERP demand across ALL jobs (operator rule: if multiple jobs
+    are in play OpenSERP must NOT shut down; shut down only when NO job needs it).
+
+    Returns True if ANY document anywhere still needs OpenSERP:
+      - any Phase 2 or Phase 3 lock is held (any book — per-book or singleton), OR
+      - any Phase 2 or Phase 3 ECS task is RUNNING/PENDING (any book).
+
+    Demand-counted like the NAT lease (§4): teardown is decided by the aggregate,
+    never by a single job's completion. Fail-safe: on error return True (keep up).
+    """
+    env_name = os.environ.get("ENV_NAME", "dev")
+    serp_suffixes = ("phase2-extract", "phase3-enrich")
+    try:
+        # 1) Any held lock for a serp phase (per-book key `...#Book` or singleton).
+        for held in _held_lock_keys():
+            if any(suf in held for suf in serp_suffixes):
+                return True
+        # 2) Any running/pending serp-phase task (covers the window before a lock
+        #    is written or after it's cleared but the task still runs).
+        cluster = f"{env_name}-wwii-pipeline"
+        ecs = boto3.client("ecs", region_name=REGION)
+        for suf in serp_suffixes:
+            family = f"{env_name}-wwii-{suf}"
+            for status in ("RUNNING", "PENDING"):
+                if ecs.list_tasks(
+                    cluster=cluster, family=family, desiredStatus=status
+                ).get("taskArns"):
+                    return True
+    except Exception as e:
+        logger.warning("OpenSERP demand check failed (keeping OpenSERP up): %s", e)
+        return True
+    return False
+
+
 def _stop_openserp_if_running(phase_script: str) -> None:
-    """Scale OpenSERP to 0 after Phase 2/3 completes — only if no other phase is active."""
+    """Scale OpenSERP to 0 after Phase 2/3 — ONLY when no job anywhere still needs
+    it (operator rule: multiple jobs in play => keep OpenSERP up; shut down only
+    when the queue is empty of serp-phase work)."""
     if "phase1" in phase_script:
         return
-    if _other_phase_locked(phase_script):
-        logger.info("Skipping OpenSERP teardown — another phase is active")
+    if _openserp_demand_present():
+        logger.info(
+            "Skipping OpenSERP teardown — another job still needs it (aggregate demand > 0)"
+        )
         return
     try:
         env = os.environ.get("ENV_NAME", "dev")
@@ -2083,7 +2122,7 @@ def _stop_openserp_if_running(phase_script: str) -> None:
         service = f"{env}-wwii-openserp"
         ecs = boto3.client("ecs", region_name=REGION)
         ecs.update_service(cluster=cluster, service=service, desiredCount=0)
-        logger.info("Scaled OpenSERP to 0")
+        logger.info("Scaled OpenSERP to 0 (no job needs it)")
     except Exception as e:
         logger.warning("Failed to scale OpenSERP to 0: %s", e)
 

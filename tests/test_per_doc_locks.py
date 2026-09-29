@@ -107,6 +107,61 @@ def test_any_pipeline_lock_held_true_when_any():
         assert ecs_entrypoint._any_pipeline_lock_held() is True
 
 
+# --- _openserp_demand_present: operator rule — multiple jobs in play => keep up;
+#     no jobs => allow shutdown (aggregate demand, not single-job completion) ---
+
+
+def test_openserp_demand_true_when_another_book_holds_phase2_lock():
+    """Doc A finishing must NOT shut OpenSERP while Doc B holds a phase2 lock."""
+    held = [
+        "lock#dev-wwii-phase2-extract#BookA",
+        "lock#dev-wwii-phase2-extract#BookB",
+    ]
+    with patch.object(ecs_entrypoint, "_held_lock_keys", return_value=held):
+        with patch.dict(os.environ, {"ENV_NAME": "dev"}):
+            assert ecs_entrypoint._openserp_demand_present() is True
+
+
+def test_openserp_demand_true_when_phase3_lock_held():
+    held = ["lock#dev-wwii-phase3-enrich#BookA"]
+    with patch.object(ecs_entrypoint, "_held_lock_keys", return_value=held):
+        with patch.dict(os.environ, {"ENV_NAME": "dev"}):
+            assert ecs_entrypoint._openserp_demand_present() is True
+
+
+def test_openserp_demand_false_when_no_serp_locks_and_no_tasks():
+    """No serp-phase lock + no serp-phase tasks running => safe to shut down."""
+    fake_ecs = type(
+        "E", (), {"list_tasks": staticmethod(lambda **k: {"taskArns": []})}
+    )()
+    with patch.object(ecs_entrypoint, "_held_lock_keys", return_value=[]):
+        with patch.object(ecs_entrypoint.boto3, "client", return_value=fake_ecs):
+            with patch.dict(os.environ, {"ENV_NAME": "dev"}):
+                assert ecs_entrypoint._openserp_demand_present() is False
+
+
+def test_openserp_demand_true_when_serp_task_running_no_lock():
+    """A running phase2 task with no lock yet still counts as demand."""
+    fake_ecs = type(
+        "E",
+        (),
+        {"list_tasks": staticmethod(lambda **k: {"taskArns": ["arn:task/x"]})},
+    )()
+    with patch.object(ecs_entrypoint, "_held_lock_keys", return_value=[]):
+        with patch.object(ecs_entrypoint.boto3, "client", return_value=fake_ecs):
+            with patch.dict(os.environ, {"ENV_NAME": "dev"}):
+                assert ecs_entrypoint._openserp_demand_present() is True
+
+
+def test_openserp_demand_failsafe_true_on_error():
+    """On error, keep OpenSERP up (fail-safe) rather than risk pulling it."""
+    with patch.object(
+        ecs_entrypoint, "_held_lock_keys", side_effect=RuntimeError("boom")
+    ):
+        with patch.dict(os.environ, {"ENV_NAME": "dev"}):
+            assert ecs_entrypoint._openserp_demand_present() is True
+
+
 def test_any_pipeline_lock_held_false_when_none():
     with patch.object(ecs_entrypoint, "_held_lock_keys", return_value=[]):
         assert ecs_entrypoint._any_pipeline_lock_held() is False
