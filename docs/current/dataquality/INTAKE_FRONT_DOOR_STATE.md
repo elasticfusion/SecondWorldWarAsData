@@ -285,6 +285,31 @@ don't re-enrich unchanged content), and emits SNS progress
   `Loaded 11 page(s)`, `Processing pages 1-1...`.
 - Gate: `scripts/gate.sh` PASS, 1161 tests (commits `4bb5ee0`, `561e71f`).
 
+## IAM compliance audit (2026-09-29)
+
+Triggered by a silent-deny bug: nat_manager's teardown guard was **blind**
+because its role lacked `batch:ListJobs` — every `list_jobs` call was denied and
+swallowed by a per-status `except: continue`, so the guard read "no OCR demand"
+and tore down NAT under a running job (twice). Audited every AWS API call each
+Lambda makes against the actions its role grants (authoritative — read the
+inline policies, since `simulate-principal-policy` false-negatives on
+resource-scoped statements).
+
+| Role | Handlers | Finding |
+|------|----------|---------|
+| `dev-wwii-lambda-role` (shared) | trigger, nat-manager, openserp-manager, batch-poller, ocr-merge, dedup-ui/gate/auth, mdreview-ui, slack-formatter, metrics | **GAP: `batch:ListJobs` missing** (only `batch:SubmitJob` granted). `SubmitJob` also scoped to the spot queue ARN only — missing the on-demand queue. **Both fixed** in `iam.yaml`. All other calls (ecs, sfn start/list, sns, secrets, ec2 nat/endpoints/routes, s3, dynamo, scheduler, ssm, cfn, lambda invoke) properly granted. |
+| `dev-wwii-ocr-controller-role` | ocr-spot-controller | Clean — batch Submit/Describe/List/Terminate + servicequotas + sns + dynamo. |
+| `dev-wwii-dispatcher-lambda-role` | enumerate-pending, clamp-pool, human-gate | Clean — ecs:ListTasks + servicequotas + sns + states SendTaskSuccess/Failure. |
+
+**Defense-in-depth (code):** `_ocr_jobs_in_flight` now **fails safe** — any
+error other than a definitive "queue does not exist" (e.g. `AccessDenied`,
+throttling) is treated as *demand present*, never silently ignored. An IAM gap
+can no longer silently disable a safety guard.
+
+**Principle recorded:** a swallowed AWS error in a *safety-critical* check
+(teardown guards, demand checks) must fail toward the safe state, not the
+permissive one.
+
 ## Follow-ups
 
 - **Multi-format routing gap (highest-value):** wire `trigger_handler`

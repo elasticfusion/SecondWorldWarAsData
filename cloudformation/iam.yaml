@@ -92,7 +92,14 @@ Resources:
                   - batch:SubmitJob
                 Resource:
                   - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu
+                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu-ondemand
                   - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-definition/${EnvironmentName}-wwii-chandra*
+              - Sid: BatchDescribeForNatDemand
+                Effect: Allow
+                Action:
+                  - batch:ListJobs
+                  - batch:DescribeJobs
+                Resource: "*"
               - Sid: SQSDeadLetterQueue
                 Effect: Allow
                 Action:

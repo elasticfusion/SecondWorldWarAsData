@@ -126,3 +126,45 @@ def test_delete_all_proceeds_when_no_demand():
     with patch.object(nm, "_nat_demand_present", return_value=False):
         out = nm._delete_all(ec2, "us-east-1", force=False)
     assert out.get("reason") != "nat demand present"
+
+
+def test_ocr_jobs_in_flight_fails_safe_on_access_denied():
+    """Regression: missing batch:ListJobs must NOT read as 'no demand'. An
+    AccessDenied (or any non-'queue-absent' error) => assume demand (True), so the
+    teardown guard is never silently disabled by an IAM gap."""
+    from botocore.exceptions import ClientError
+
+    err = ClientError(
+        {"Error": {"Code": "AccessDeniedException", "Message": "denied"}}, "ListJobs"
+    )
+    fake_batch = MagicMock()
+    fake_batch.list_jobs.side_effect = err
+    import boto3
+
+    with patch.object(boto3, "client", return_value=fake_batch):
+        assert nm._ocr_jobs_in_flight() is True
+
+
+def test_ocr_jobs_in_flight_skips_absent_queue():
+    """A genuinely absent queue is skipped (not treated as demand)."""
+    from botocore.exceptions import ClientError
+
+    err = ClientError(
+        {"Error": {"Code": "JobQueueNotFoundException", "Message": "no queue"}},
+        "ListJobs",
+    )
+    fake_batch = MagicMock()
+    fake_batch.list_jobs.side_effect = err
+    import boto3
+
+    with patch.object(boto3, "client", return_value=fake_batch):
+        assert nm._ocr_jobs_in_flight() is False
+
+
+def test_ocr_jobs_in_flight_true_when_job_listed():
+    fake_batch = MagicMock()
+    fake_batch.list_jobs.return_value = {"jobSummaryList": [{"jobId": "j1"}]}
+    import boto3
+
+    with patch.object(boto3, "client", return_value=fake_batch):
+        assert nm._ocr_jobs_in_flight() is True

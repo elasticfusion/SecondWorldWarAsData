@@ -106,8 +106,15 @@ def _nat_demand_present() -> bool:
 
 
 def _ocr_jobs_in_flight() -> bool:
-    """True if any OCR Batch job is non-terminal on either OCR queue (needs egress)."""
+    """True if any OCR Batch job is non-terminal on either OCR queue (needs egress).
+
+    Fails SAFE: if a queue check raises anything other than a definitive
+    'queue does not exist', we assume demand is present (return True) rather than
+    silently reporting no-demand. A swallowed error (e.g. missing batch:ListJobs
+    IAM permission) previously made this return False, which tore down NAT under
+    a running OCR job — the guard was blind, not permissive."""
     import boto3
+    from botocore.exceptions import ClientError
 
     batch = boto3.client("batch", region_name=os.getenv("AWS_REGION", "us-east-1"))
     for queue in (
@@ -120,8 +127,23 @@ def _ocr_jobs_in_flight() -> bool:
                     "jobSummaryList"
                 ):
                     return True
-            except Exception:  # queue may not exist in some envs
-                continue
+            except ClientError as e:
+                code = e.response.get("Error", {}).get("Code", "")
+                # A genuinely-absent queue is fine to skip; anything else
+                # (AccessDenied, throttling, etc.) means we CANNOT confirm
+                # no-demand, so fail safe and assume demand.
+                if code in ("ClientException", "JobQueueNotFoundException"):
+                    continue
+                logger.warning(
+                    "OCR demand check error on %s/%s (%s) — assuming demand",
+                    queue,
+                    status,
+                    code,
+                )
+                return True
+            except Exception as e:  # pragma: no cover - defensive, fail safe
+                logger.warning("OCR demand check error (%s) — assuming demand", e)
+                return True
     return False
 
 

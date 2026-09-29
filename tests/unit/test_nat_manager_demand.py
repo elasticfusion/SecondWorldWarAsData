@@ -62,6 +62,7 @@ def test_expired_lease_does_not_count():
             return_value=_table_with([{"cache_key": "nat#lease#t1", "ttl": now - 10}]),
         ),
         patch.object(nm, "_ecs_client", return_value=_ecs_with([])),
+        patch.object(nm, "_ocr_jobs_in_flight", return_value=False),
     ):
         assert nm._nat_demand_present() is False
 
