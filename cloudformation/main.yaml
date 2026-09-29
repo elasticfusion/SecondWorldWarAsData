@@ -42,6 +42,14 @@ Parameters:
     Type: String
     Default: '8'
     Description: Adaptive pool ceiling (§5.0), capped to live Fargate vCPU quota
+  GpuAz1:
+    Type: String
+    Default: ""
+    Description: First GPU-capable AZ (deploy-time probe). Empty -> !GetAZs fallback.
+  GpuAz2:
+    Type: String
+    Default: ""
+    Description: Second GPU-capable AZ (deploy-time probe). Empty -> !GetAZs fallback.
 
 Resources:
   NetworkStack:
@@ -50,6 +58,8 @@ Resources:
       TemplateURL: !Sub https://${TemplateBucket}.s3.amazonaws.com/cloudformation/network.yaml
       Parameters:
         EnvironmentName: !Ref EnvironmentName
+        GpuAz1: !Ref GpuAz1
+        GpuAz2: !Ref GpuAz2
 
   StorageStack:
     Type: AWS::CloudFormation::Stack

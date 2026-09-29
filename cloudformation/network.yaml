@@ -5,6 +5,22 @@ Parameters:
   EnvironmentName:
     Type: String
     Default: dev
+  GpuAz1:
+    Type: String
+    Default: ""
+    Description: >
+      First GPU-capable AZ for PrivateSubnet1 (deploy-time probe supplies it).
+      Empty -> fall back to the first AZ (!GetAZs). The 2 canonical private subnets
+      carry GPU Batch + CPU Fargate + all interface endpoints + NAT, so both MUST
+      be GPU-capable AZs (fixes the OCR-stall AZ misalignment).
+  GpuAz2:
+    Type: String
+    Default: ""
+    Description: Second GPU-capable AZ for PrivateSubnet2 (empty -> second !GetAZs).
+
+Conditions:
+  HasGpuAz1: !Not [!Equals [!Ref GpuAz1, ""]]
+  HasGpuAz2: !Not [!Equals [!Ref GpuAz2, ""]]
 
 Resources:
   VPC:
@@ -17,12 +33,15 @@ Resources:
         - Key: Name
           Value: !Sub ${EnvironmentName}-wwii-vpc
 
+  # --- 2 AZs (both GPU-capable), 1 public + 1 private each. Compute + endpoints
+  # live in the PRIVATE subnets; NAT gateways in the PUBLIC subnets. AZs come from
+  # the deploy-time GPU probe (GpuAz1/2); empty -> !GetAZs fallback. ---
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.1.0/24
-      AvailabilityZone: !Select [0, !GetAZs '']
+      AvailabilityZone: !If [HasGpuAz1, !Ref GpuAz1, !Select [0, !GetAZs '']]
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName}-private-1
@@ -32,61 +51,32 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.2.0/24
-      AvailabilityZone: !Select [1, !GetAZs '']
+      AvailabilityZone: !If [HasGpuAz2, !Ref GpuAz2, !Select [1, !GetAZs '']]
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName}-private-2
-
-  PrivateSubnet3:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      CidrBlock: 10.0.3.0/24
-      AvailabilityZone: !Select [2, !GetAZs '']
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName}-private-3
-
-  PrivateSubnet4:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      CidrBlock: 10.0.4.0/24
-      AvailabilityZone: !Select [3, !GetAZs '']
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName}-private-4
-
-  PrivateSubnet5:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      CidrBlock: 10.0.5.0/24
-      AvailabilityZone: !Select [4, !GetAZs '']
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName}-private-5
-
-  PrivateSubnet6:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      CidrBlock: 10.0.6.0/24
-      AvailabilityZone: !Select [5, !GetAZs '']
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName}-private-6
 
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.10.0/24
-      AvailabilityZone: !Select [0, !GetAZs '']
+      AvailabilityZone: !If [HasGpuAz1, !Ref GpuAz1, !Select [0, !GetAZs '']]
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName}-public-1
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.11.0/24
+      AvailabilityZone: !If [HasGpuAz2, !Ref GpuAz2, !Select [1, !GetAZs '']]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-public-2
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -116,6 +106,12 @@ Resources:
       SubnetId: !Ref PublicSubnet1
       RouteTableId: !Ref PublicRouteTable
 
+  PublicSubnet2RTA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+
   PrivateRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -134,30 +130,6 @@ Resources:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref PrivateSubnet2
-      RouteTableId: !Ref PrivateRouteTable
-
-  PrivateSubnet3RTA:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PrivateSubnet3
-      RouteTableId: !Ref PrivateRouteTable
-
-  PrivateSubnet4RTA:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PrivateSubnet4
-      RouteTableId: !Ref PrivateRouteTable
-
-  PrivateSubnet5RTA:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PrivateSubnet5
-      RouteTableId: !Ref PrivateRouteTable
-
-  PrivateSubnet6RTA:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PrivateSubnet6
       RouteTableId: !Ref PrivateRouteTable
 
   # Security Groups
@@ -247,30 +219,12 @@ Resources:
       Name: !Sub /${EnvironmentName}-wwii-pipeline/PrivateSubnet2Id
       Type: String
       Value: !Ref PrivateSubnet2
-  SSMPrivateSubnet3:
+  SSMPublicSubnet2:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub /${EnvironmentName}-wwii-pipeline/PrivateSubnet3Id
+      Name: !Sub /${EnvironmentName}-wwii-pipeline/PublicSubnet2Id
       Type: String
-      Value: !Ref PrivateSubnet3
-  SSMPrivateSubnet4:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${EnvironmentName}-wwii-pipeline/PrivateSubnet4Id
-      Type: String
-      Value: !Ref PrivateSubnet4
-  SSMPrivateSubnet5:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${EnvironmentName}-wwii-pipeline/PrivateSubnet5Id
-      Type: String
-      Value: !Ref PrivateSubnet5
-  SSMPrivateSubnet6:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${EnvironmentName}-wwii-pipeline/PrivateSubnet6Id
-      Type: String
-      Value: !Ref PrivateSubnet6
+      Value: !Ref PublicSubnet2
   SSMPrivateRouteTable:
     Type: AWS::SSM::Parameter
     Properties:
@@ -291,16 +245,10 @@ Outputs:
     Value: !Ref PrivateSubnet1
   PrivateSubnet2Id:
     Value: !Ref PrivateSubnet2
-  PrivateSubnet3Id:
-    Value: !Ref PrivateSubnet3
-  PrivateSubnet4Id:
-    Value: !Ref PrivateSubnet4
-  PrivateSubnet5Id:
-    Value: !Ref PrivateSubnet5
-  PrivateSubnet6Id:
-    Value: !Ref PrivateSubnet6
   PublicSubnet1Id:
     Value: !Ref PublicSubnet1
+  PublicSubnet2Id:
+    Value: !Ref PublicSubnet2
   LambdaSGId:
     Value: !Ref LambdaSG
   OpenSerpSGId:

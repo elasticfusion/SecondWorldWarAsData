@@ -23,7 +23,20 @@ OPENSERP_SG = os.getenv("OPENSERP_SG_ID", "")
 NAT_TAG = f"{ENV_NAME}-nat"
 MANAGED_TAG = f"{ENV_NAME}-wwii-pipeline"
 
-INTERFACE_ENDPOINTS = ["ecr.api", "ecr.dkr", "logs", "secretsmanager"]
+# Interface endpoints so private-subnet compute reaches AWS services WITHOUT NAT.
+# ecs/ecs-agent/ecs-telemetry are REQUIRED for GPU Batch instances to register with
+# the ECS/Batch control plane without NAT (their absence stalled OCR jobs at
+# RUNNABLE — instances booted but couldn't join the cluster). Placed on the same
+# 2 GPU-capable subnets the Batch CE + Fargate use (single aligned subnet set).
+INTERFACE_ENDPOINTS = [
+    "ecr.api",
+    "ecr.dkr",
+    "logs",
+    "secretsmanager",
+    "ecs",
+    "ecs-agent",
+    "ecs-telemetry",
+]
 
 
 def _lease_table():

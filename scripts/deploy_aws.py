@@ -15,6 +15,43 @@ from pathlib import Path
 from typing import Optional
 
 TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "cloudformation"
+
+
+def _probe_gpu_azs(region: str, profile: Optional[str]) -> list:
+    """Probe for GPU-capable AZs (portable — no hardcoded AZ). Returns the first 2
+    AZs offering the forgiving GPU family set, so the network builds exactly 2
+    GPU+CPU AZ-subnets (operator: 2 public + 2 private, compute in private).
+    Fail-fast if 0 GPU AZs; warn if only 1 (single-AZ, loses capacity resilience)."""
+    import boto3
+
+    sess = boto3.Session(profile_name=profile) if profile else boto3.Session()
+    ec2 = sess.client("ec2", region_name=region)
+    families = ["g4dn.xlarge", "g5.xlarge", "g6.xlarge"]
+    az_sets = []
+    for fam in families:
+        resp = ec2.describe_instance_type_offerings(
+            LocationType="availability-zone",
+            Filters=[{"Name": "instance-type", "Values": [fam]}],
+        )
+        az_sets.append({o["Location"] for o in resp.get("InstanceTypeOfferings", [])})
+    common = set.intersection(*az_sets) if az_sets else set()
+    gpu_azs = (
+        sorted(common) if common else sorted(set.union(*az_sets)) if az_sets else []
+    )
+    if not gpu_azs:
+        raise SystemExit(
+            f"FATAL: no GPU-capable AZ in {region} — cannot deploy GPU OCR."
+        )
+    if len(gpu_azs) == 1:
+        print(
+            f"  WARNING: only 1 GPU-capable AZ in {region} ({gpu_azs[0]}) — "
+            f"single-AZ GPU (no capacity resilience)."
+        )
+    chosen = gpu_azs[:2]
+    print(f"  GPU AZ probe ({region}): available={gpu_azs} -> using {chosen}")
+    return chosen
+
+
 TEMPLATES = [
     "network.yaml",
     "storage.yaml",
@@ -88,6 +125,11 @@ def cmd_deploy(args):
     cf = _get_cf_client(args.region, args.profile)
     stack_name = f"wwii-pipeline-{args.env}"
 
+    # Probe GPU-capable AZs so the network builds exactly 2 aligned GPU+CPU subnets.
+    gpu_azs = _probe_gpu_azs(args.region, args.profile)
+    gpu_az1 = gpu_azs[0]
+    gpu_az2 = gpu_azs[1] if len(gpu_azs) > 1 else gpu_azs[0]
+
     # Check if stack exists
     try:
         cf.describe_stacks(StackName=stack_name)
@@ -137,6 +179,8 @@ def cmd_deploy(args):
                     "ParameterKey": "MultiDocEnabled",
                     "ParameterValue": getattr(args, "multi_doc", "false") or "false",
                 },
+                {"ParameterKey": "GpuAz1", "ParameterValue": gpu_az1},
+                {"ParameterKey": "GpuAz2", "ParameterValue": gpu_az2},
             ],
             Capabilities=["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"],
         )
