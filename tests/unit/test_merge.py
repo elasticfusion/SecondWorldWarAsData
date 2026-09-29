@@ -205,3 +205,65 @@ class TestDoMerge:
         people_dir = output_root / "people"
         people = [{"filename": "nope.json", "name": "Nope"}]
         assert do_merge(people_dir, people, primary_idx=0) is None
+
+
+class TestDynamoMergeSync:
+    """#9: dedup merges must update DynamoDB (delete secondary + put primary)."""
+
+    def test_do_merge_syncs_dynamo(self, output_root, two_people):
+        from unittest.mock import MagicMock, patch
+        from src.dedup import merge as m
+
+        store = MagicMock()
+        people_dir = output_root / "people"
+        with patch("src.utils.entity_store.get_entity_store", return_value=store):
+            m.do_merge(people_dir, two_people, primary_idx=0)
+        # secondary deleted from Dynamo
+        store.delete.assert_any_call("people", "01SECOND0000000000000AB")
+        # merged primary put to Dynamo
+        assert store.put.called
+        args = store.put.call_args
+        assert args[0][0] == "people"
+        assert args[0][1] == "01PRIMARY000000000000AB"
+
+    def test_do_merge_noop_without_store(self, output_root, two_people):
+        from unittest.mock import patch
+        from src.dedup import merge as m
+
+        people_dir = output_root / "people"
+        # No store → must still complete the file merge without error
+        with patch("src.utils.entity_store.get_entity_store", return_value=None):
+            result = m.do_merge(people_dir, two_people, primary_idx=0)
+        assert result == "Omar Bradley"
+        assert not (people_dir / "omar n bradley.json").exists()  # secondary removed
+
+    def test_merge_generic_syncs_dynamo(self, output_root):
+        from unittest.mock import MagicMock, patch
+        from src.dedup import merge as m
+
+        places_dir = output_root / "places"
+        places_dir.mkdir()
+        primary = {
+            "PlaceID": "01PLACEPRIMARY",
+            "name": "Bastogne",
+            "event_mentions": [],
+        }
+        secondary = {
+            "PlaceID": "01PLACESECOND",
+            "name": "Bastonge",
+            "event_mentions": [{"Sub_eventID": "SE9"}],
+        }
+        (places_dir / "bastogne.json").write_text(json.dumps(primary), encoding="utf-8")
+        (places_dir / "bastonge.json").write_text(
+            json.dumps(secondary), encoding="utf-8"
+        )
+        people = [
+            {"filename": "bastogne.json", "name": "Bastogne"},
+            {"filename": "bastonge.json", "name": "Bastonge"},
+        ]
+        store = MagicMock()
+        with patch("src.utils.entity_store.get_entity_store", return_value=store):
+            m.merge_generic(places_dir, people, 0, id_field="PlaceID")
+        store.delete.assert_any_call("places", "01PLACESECOND")
+        put_args = store.put.call_args[0]
+        assert put_args[0] == "places" and put_args[1] == "01PLACEPRIMARY"
