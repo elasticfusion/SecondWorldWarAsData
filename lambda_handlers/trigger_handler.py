@@ -141,15 +141,40 @@ def _submit_ocr(pdf_key: str) -> bool:
     """
     try:
         pdf_name = pdf_key.split("/")[-1].rsplit(".", 1)[0]
+        # G4 (§8) — deny redundant submissions AT INTAKE. S3->SNS->SQS is
+        # at-least-once; a redrive / re-upload must NOT launch a 2nd GPU job for a
+        # book already being OCR'd. Atomic conditional-write claim ocr#{book}, TTL'd
+        # (24h > max OCR runtime) so a crashed/expired OCR can re-claim later.
+        claim_key = f"ocr#{pdf_name}"
+        try:
+            dynamo.put_item(
+                Item={
+                    "cache_key": claim_key,
+                    "response": str(int(time.time())),
+                    "ttl": int(time.time()) + 86400,
+                },
+                ConditionExpression="attribute_not_exists(cache_key)",
+            )
+        except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
+            logger.info(
+                "OCR intake denied: %s already claimed (in-flight or recent) — skipping",
+                pdf_name,
+            )
+            return False
         s3_input = f"s3://{BUCKET}/{pdf_key}"
         s3_output = f"s3://{BUCKET}/ocr-output/{pdf_name}/"
         job_name = f"chandra-{pdf_name}"[:128].replace(" ", "_")
-        _batch_client().submit_job(
-            jobName=job_name,
-            jobQueue=OCR_JOB_QUEUE,
-            jobDefinition=OCR_JOB_DEF,
-            containerOverrides={"command": [s3_input, s3_output]},
-        )
+        try:
+            _batch_client().submit_job(
+                jobName=job_name,
+                jobQueue=OCR_JOB_QUEUE,
+                jobDefinition=OCR_JOB_DEF,
+                containerOverrides={"command": [s3_input, s3_output]},
+            )
+        except Exception:
+            # Release the claim so a genuine retry isn't permanently blocked.
+            dynamo.delete_item(Key={"cache_key": claim_key})
+            raise
         logger.info("Submitted OCR job %s for %s", job_name, pdf_key)
         return True
     except Exception as e:

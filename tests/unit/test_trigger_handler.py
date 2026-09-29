@@ -242,3 +242,52 @@ def test_reconcile_noop_when_nothing_parked(dynamodb_table):
         launched = th._reconcile_pending(reason="test")
     assert launched == []
     run.assert_not_called()
+
+
+# --- G4: OCR intake idempotency (§8) — deny duplicate submissions at the front door ---
+
+
+def test_submit_ocr_first_claims_and_submits(dynamodb_table):
+    from lambda_handlers import trigger_handler as th
+    from unittest.mock import MagicMock
+    import boto3 as _b
+
+    batch = MagicMock()
+    with patch.object(th, "_batch_client", return_value=batch):
+        ok = th._submit_ocr("contentrepository/NARA/B-Series/B 400-499/B460.pdf")
+    assert ok is True
+    batch.submit_job.assert_called_once()
+    table = _b.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    assert table.get_item(Key={"cache_key": "ocr#B460"}).get("Item")
+
+
+def test_submit_ocr_duplicate_is_denied(dynamodb_table):
+    from lambda_handlers import trigger_handler as th
+    from unittest.mock import MagicMock
+
+    batch = MagicMock()
+    with patch.object(th, "_batch_client", return_value=batch):
+        first = th._submit_ocr("contentrepository/B460/B460.pdf")
+        second = th._submit_ocr("contentrepository/B460/B460.pdf")  # duplicate event
+    assert first is True
+    assert second is False  # denied at intake
+    assert batch.submit_job.call_count == 1  # only ONE GPU job submitted
+
+
+def test_submit_ocr_releases_claim_on_submit_failure(dynamodb_table):
+    """A failed submit must release the claim so a genuine retry isn't blocked."""
+    from lambda_handlers import trigger_handler as th
+    from unittest.mock import MagicMock
+    import boto3 as _b
+
+    batch = MagicMock()
+    batch.submit_job.side_effect = RuntimeError("Batch down")
+    with patch.object(th, "_batch_client", return_value=batch):
+        ok = th._submit_ocr("contentrepository/B460/B460.pdf")
+    assert ok is False
+    table = _b.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    assert table.get_item(Key={"cache_key": "ocr#B460"}).get("Item") is None

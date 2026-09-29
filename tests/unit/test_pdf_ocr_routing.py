@@ -27,7 +27,10 @@ def test_split_by_media_separates_pdf_from_parseable():
 
 def test_submit_ocr_submits_chandra_batch_job():
     batch = MagicMock()
-    with patch.object(th, "_batch_client", return_value=batch):
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "dynamo", MagicMock()),
+    ):
         ok = th._submit_ocr("contentrepository/NARA/B-Series/B 400-499/B460.pdf")
     assert ok is True
     kwargs = batch.submit_job.call_args.kwargs
@@ -45,14 +48,20 @@ def test_submit_ocr_submits_chandra_batch_job():
 def test_submit_ocr_returns_false_on_error():
     batch = MagicMock()
     batch.submit_job.side_effect = RuntimeError("batch down")
-    with patch.object(th, "_batch_client", return_value=batch):
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "dynamo", MagicMock()),
+    ):
         assert th._submit_ocr("contentrepository/x/y.pdf") is False
 
 
 def test_submit_ocr_job_name_sanitized():
     """Job name must strip spaces (Batch job names can't contain spaces)."""
     batch = MagicMock()
-    with patch.object(th, "_batch_client", return_value=batch):
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "dynamo", MagicMock()),
+    ):
         th._submit_ocr("contentrepository/NARA/B-Series/B 400-499/B460.pdf")
     name = batch.submit_job.call_args.kwargs["jobName"]
     assert " " not in name
