@@ -39,6 +39,74 @@ def dynamodb_table():
         yield
 
 
+# --- G1: per-book lock key + PROVISIONING-aware stale check (idle-race fix) ---
+
+
+def test_lock_key_serial_is_singleton(dynamodb_table):
+    from lambda_handlers import trigger_handler as th
+
+    with patch.object(th, "MULTI_DOC_ENABLED", False):
+        assert th._lock_key("test-wwii-phase2-extract", "B460") == (
+            "lock#test-wwii-phase2-extract"
+        )
+
+
+def test_lock_key_multi_doc_is_per_book(dynamodb_table):
+    from lambda_handlers import trigger_handler as th
+
+    with patch.object(th, "MULTI_DOC_ENABLED", True):
+        assert th._lock_key("test-wwii-phase2-extract", "B460") == (
+            "lock#test-wwii-phase2-extract#B460"
+        )
+
+
+def test_lock_key_multi_doc_no_book_falls_back_singleton(dynamodb_table):
+    from lambda_handlers import trigger_handler as th
+
+    with patch.object(th, "MULTI_DOC_ENABLED", True):
+        assert th._lock_key("test-wwii-phase1-parse", "") == (
+            "lock#test-wwii-phase1-parse"
+        )
+
+
+def test_run_task_does_not_clear_lock_when_task_provisioning(dynamodb_table):
+    """G1 race: a held lock with a PROVISIONING (not-yet-RUNNING) task must NOT be
+    treated as stale — the 2nd invocation must defer, not clear+relaunch."""
+    from lambda_handlers import trigger_handler as th
+    import boto3 as _b
+
+    table = _b.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    # Pre-existing lock (first doc holds it)
+    table.put_item(
+        Item={
+            "cache_key": "lock#test-wwii-phase1-parse",
+            "book": "all",
+            "response": "1",
+        }
+    )
+
+    def fake_list_tasks(cluster, family, desiredStatus):
+        # No RUNNING, but a PROVISIONING task exists (NAT cold-start window)
+        return (
+            {"taskArns": ["arn:task/x"]}
+            if desiredStatus == "PROVISIONING"
+            else {"taskArns": []}
+        )
+
+    with (
+        patch.object(th.ecs, "list_tasks", side_effect=fake_list_tasks),
+        patch.object(th.ecs, "run_task") as run_task,
+        patch.object(th, "_wait_for_networking"),
+    ):
+        th._run_task(th.PHASE1_TASK_DEF, "test")
+    # Must NOT have launched a second task (lock respected, task is starting)
+    run_task.assert_not_called()
+    # Lock still present (not cleared)
+    assert table.get_item(Key={"cache_key": "lock#test-wwii-phase1-parse"}).get("Item")
+
+
 def test_scheduled_lock_check_clears_stale(dynamodb_table):
     from lambda_handlers.trigger_handler import handler
 

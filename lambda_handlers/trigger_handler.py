@@ -51,6 +51,19 @@ def _multi_doc_active() -> bool:
     return MULTI_DOC_ENABLED and bool(DISPATCHER_STATE_MACHINE_ARN)
 
 
+def _lock_key(family: str, book_name: str) -> str:
+    """Per-document lock key under multi-doc, singleton otherwise (G1 fix).
+
+    Serial (multi_doc OFF): byte-identical to the legacy singleton `lock#{family}`
+    so pool=1 behaves exactly like today. Multi-doc ON + book set: per-document
+    `lock#{family}#{book}` so different books hold the same phase concurrently
+    while the same book+phase still serializes (matches ecs_entrypoint._lock_key).
+    """
+    if MULTI_DOC_ENABLED and book_name:
+        return f"lock#{family}#{book_name}"
+    return f"lock#{family}"
+
+
 # Content suffixes the pipeline processes (Option B). Zips are IGNORED — the
 # pre-stage expands them locally; the archive never reaches processing. Anything
 # not in this set (e.g. .zip, .rar, sidecar files) is filtered out before queuing.
@@ -460,9 +473,10 @@ def _run_task(task_def, source, book_name=""):
         logger.warning("NAT create invoke failed: %s", e)
     _wait_for_networking()
 
-    # Atomic lock
+    # Atomic lock. Per-book under multi-doc (G1) so concurrent books don't share
+    # one phase lock; singleton in serial mode (unchanged).
     family = TASK_FAMILIES.get(task_def, "unknown")
-    lock_key = f"lock#{family}"
+    lock_key = _lock_key(family, book_name)
     try:
         dynamo.put_item(
             Item={
@@ -474,11 +488,17 @@ def _run_task(task_def, source, book_name=""):
             ConditionExpression="attribute_not_exists(cache_key)",
         )
     except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
-        running = ecs.list_tasks(
-            cluster=CLUSTER, family=family, desiredStatus="RUNNING"
-        ).get("taskArns", [])
-        if not running:
-            logger.info("Stale lock for %s (no running task), clearing", family)
+        # Lock exists. A task that is PROVISIONING/PENDING (NAT cold-start) is NOT
+        # stale — treating "not RUNNING" as stale is the G1 race that let a 2nd
+        # doc clear the lock and double-launch. Only a genuinely dead lock (no
+        # task in ANY live state) may be reclaimed.
+        live = []
+        for status in ("PROVISIONING", "PENDING", "RUNNING"):
+            live += ecs.list_tasks(
+                cluster=CLUSTER, family=family, desiredStatus=status
+            ).get("taskArns", [])
+        if not live:
+            logger.info("Stale lock for %s (no live task), clearing", lock_key)
             dynamo.delete_item(Key={"cache_key": lock_key})
             try:
                 dynamo.put_item(
@@ -491,10 +511,12 @@ def _run_task(task_def, source, book_name=""):
                     ConditionExpression="attribute_not_exists(cache_key)",
                 )
             except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
-                logger.info("Another invocation claimed lock for %s, skipping", family)
+                logger.info(
+                    "Another invocation claimed lock for %s, skipping", lock_key
+                )
                 return
         else:
-            logger.info("Task %s already locked and running, skipping", family)
+            logger.info("Task %s already locked and live, skipping", lock_key)
             # Queue per-book requests for later processing
             if book_name:
                 if task_def == PHASE3_TASK_DEF:
@@ -594,14 +616,18 @@ def _queue_pending(keys):
 
 
 def _launch_phase1_if_idle():
-    """Launch Phase 1 only if no pipeline tasks are running."""
+    """Launch Phase 1 only if no pipeline tasks are active (RUNNING/PENDING/
+    PROVISIONING — a starting task counts as busy; the G1 race was treating a
+    PROVISIONING task as idle and double-launching)."""
     for fam in TASK_FAMILIES.values():
-        running = ecs.list_tasks(
-            cluster=CLUSTER, family=fam, desiredStatus="RUNNING"
-        ).get("taskArns", [])
-        if running:
+        active = []
+        for status in ("PROVISIONING", "PENDING", "RUNNING"):
+            active += ecs.list_tasks(
+                cluster=CLUSTER, family=fam, desiredStatus=status
+            ).get("taskArns", [])
+        if active:
             logger.info(
-                "Pipeline busy (%s running), Phase 1 will run after completion", fam
+                "Pipeline busy (%s active), Phase 1 will run after completion", fam
             )
             try:
                 boto3.client("sns").publish(
