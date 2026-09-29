@@ -73,6 +73,28 @@ def test_clamp_pool_uses_pool_max_on_quota_error():
     assert out["effective"] == 6  # falls back to pool_max
 
 
+def test_clamp_pool_warns_near_quota_ceiling():
+    """§5.0: warn (notify) when desired pool_max >= 80% of the quota-derived cap."""
+    fake_sq = MagicMock()
+    fake_sq.get_service_quota.return_value = {"Quota": {"Value": 8.0}}  # cap = 8
+    with patch.object(dh.boto3, "client", return_value=fake_sq):
+        with patch.object(dh, "_PER_TASK_VCPU", 1):
+            with patch.object(dh, "_notify_quota_ceiling") as notify:
+                out = dh.clamp_pool({"pool_min": 2, "pool_max": 8}, None)
+    notify.assert_called_once()  # pool_max 8 >= 0.8*8 → warn
+    assert out["effective"] == 8
+
+
+def test_clamp_pool_no_warn_when_below_ceiling():
+    fake_sq = MagicMock()
+    fake_sq.get_service_quota.return_value = {"Quota": {"Value": 100.0}}  # cap = 100
+    with patch.object(dh.boto3, "client", return_value=fake_sq):
+        with patch.object(dh, "_PER_TASK_VCPU", 1):
+            with patch.object(dh, "_notify_quota_ceiling") as notify:
+                dh.clamp_pool({"pool_min": 2, "pool_max": 8}, None)
+    notify.assert_not_called()  # 8 < 0.8*100 → no warn
+
+
 def test_human_gate_store():
     table = MagicMock()
     with patch.object(dh, "_table", return_value=table):

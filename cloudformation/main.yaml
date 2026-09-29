@@ -34,6 +34,14 @@ Parameters:
     Default: 'false'
     AllowedValues: ['true', 'false']
     Description: M4 concurrency kill-switch — 'true' routes triggers to the SFN dispatcher
+  PoolMin:
+    Type: String
+    Default: '2'
+    Description: Adaptive pool floor (§5.0)
+  PoolMax:
+    Type: String
+    Default: '8'
+    Description: Adaptive pool ceiling (§5.0), capped to live Fargate vCPU quota
 
 Resources:
   NetworkStack:
@@ -68,6 +76,8 @@ Resources:
       Parameters:
         EnvironmentName: !Ref EnvironmentName
         MultiDocEnabled: !Ref MultiDocEnabled
+        PoolMin: !Ref PoolMin
+        PoolMax: !Ref PoolMax
         VpcId: !GetAtt NetworkStack.Outputs.VpcId
         PrivateSubnet1Id: !GetAtt NetworkStack.Outputs.PrivateSubnet1Id
         PrivateSubnet2Id: !GetAtt NetworkStack.Outputs.PrivateSubnet2Id

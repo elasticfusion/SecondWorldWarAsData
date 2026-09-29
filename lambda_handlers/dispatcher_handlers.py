@@ -109,6 +109,17 @@ def clamp_pool(event, _context):
     except Exception as e:  # pragma: no cover - defensive
         logger.warning("Fargate vCPU quota lookup failed (%s) — using pool_max", e)
     effective = max(min(pool_max, quota_cap), pool_min)
+    # §5.0: warn as concurrency approaches the quota ceiling so the operator can
+    # request an increase BEFORE it becomes the bottleneck (a warning, not a fail).
+    if quota_cap and pool_max >= 0.8 * quota_cap:
+        msg = (
+            f"Pool sizing near Fargate vCPU quota ceiling: desired pool_max={pool_max} "
+            f"is >=80% of the quota-derived cap={quota_cap} (per-task vCPU={_PER_TASK_VCPU}). "
+            f"Effective concurrency capped at {effective}. Request a Fargate vCPU quota "
+            f"increase ({_FARGATE_VCPU_QUOTA}) to raise throughput."
+        )
+        logger.warning(msg)
+        _notify_quota_ceiling(msg)
     logger.info(
         "clamp_pool: effective=%d (min=%d max=%d quota_cap=%d)",
         effective,
@@ -122,6 +133,21 @@ def clamp_pool(event, _context):
         "pool_max": pool_max,
         "quota_cap": quota_cap,
     }
+
+
+def _notify_quota_ceiling(message: str) -> None:
+    """Best-effort SNS notification when concurrency nears the quota ceiling (§5.0)."""
+    topic = os.getenv("NOTIFICATION_TOPIC_ARN", "")
+    if not topic:
+        return
+    try:
+        boto3.client("sns", region_name=REGION).publish(
+            TopicArn=topic,
+            Subject="WWII Pipeline: concurrency near quota ceiling",
+            Message=message,
+        )
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("quota-ceiling notify failed: %s", e)
 
 
 def human_gate(event, _context):

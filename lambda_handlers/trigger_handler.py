@@ -204,7 +204,16 @@ def _start_dispatcher(reason: str) -> bool:
             return True
         sfn.start_execution(
             stateMachineArn=DISPATCHER_STATE_MACHINE_ARN,
-            input=json.dumps({"source": reason}),
+            input=json.dumps(
+                {
+                    "source": reason,
+                    # Adaptive pool bounds (§5.0). Operator-tunable via env; clamp_pool
+                    # clamps pool_max down to the live Fargate vCPU quota and floors
+                    # at pool_min. Defaults match clamp_pool's own defaults.
+                    "pool_min": int(os.environ.get("POOL_MIN", "2")),
+                    "pool_max": int(os.environ.get("POOL_MAX", "8")),
+                }
+            ),
         )
         logger.info("Started dispatcher drain execution (%s)", reason)
         return True

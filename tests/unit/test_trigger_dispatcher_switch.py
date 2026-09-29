@@ -29,14 +29,19 @@ def test_multi_doc_active_requires_flag_and_arn():
 
 
 def test_start_dispatcher_starts_execution():
+    import json
+
     sfn = MagicMock()
     sfn.list_executions.return_value = {"executions": []}
     with (
         patch.object(th, "DISPATCHER_STATE_MACHINE_ARN", "arn:sm"),
+        patch.dict("os.environ", {"POOL_MIN": "3", "POOL_MAX": "10"}),
         patch.object(th.boto3, "client", return_value=sfn),
     ):
         assert th._start_dispatcher("content-uploaded") is True
     sfn.start_execution.assert_called_once()
+    payload = json.loads(sfn.start_execution.call_args.kwargs["input"])
+    assert payload["pool_min"] == 3 and payload["pool_max"] == 10  # seeded from env
 
 
 def test_start_dispatcher_skips_when_already_running():

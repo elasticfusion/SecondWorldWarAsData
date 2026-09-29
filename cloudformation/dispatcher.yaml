@@ -82,6 +82,10 @@ Resources:
                   - states:SendTaskSuccess
                   - states:SendTaskFailure
                 Resource: '*'
+              - Effect: Allow
+                # clamp_pool §5.0 quota-ceiling warning
+                Action: sns:Publish
+                Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
 
   EnumeratePendingFunction:
     Type: AWS::Lambda::Function
@@ -116,6 +120,8 @@ Resources:
         Variables:
           ENV_NAME: !Ref EnvironmentName
           CACHE_TABLE: !Sub ${EnvironmentName}-wwii-api-cache
+          NOTIFICATION_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+          PER_TASK_VCPU: "1"
 
   HumanGateFunction:
     Type: AWS::Lambda::Function

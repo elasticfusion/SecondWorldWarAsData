@@ -10,6 +10,14 @@ Parameters:
     Default: 'false'
     AllowedValues: ['true', 'false']
     Description: M4 concurrency kill-switch — 'true' routes triggers to the SFN dispatcher
+  PoolMin:
+    Type: String
+    Default: '2'
+    Description: Adaptive pool floor (§5.0) — min concurrent docs when work+quota allow
+  PoolMax:
+    Type: String
+    Default: '8'
+    Description: Adaptive pool ceiling (§5.0) — capped down to the live Fargate vCPU quota
   VpcId:
     Type: String
   PrivateSubnet1Id:
@@ -300,6 +308,10 @@ Resources:
           # M4-final kill-switch (§17.3): off => serial; on => start SFN dispatcher.
           MULTI_DOC_ENABLED: !Ref MultiDocEnabled
           DISPATCHER_STATE_MACHINE_ARN: !Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${EnvironmentName}-wwii-dispatcher
+          # Adaptive pool bounds (§5.0) — seeded into the dispatcher execution;
+          # clamp_pool clamps pool_max to the live Fargate vCPU quota, floors at min.
+          POOL_MIN: !Ref PoolMin
+          POOL_MAX: !Ref PoolMax
   # --- Hourly stale lock check ---
   StaleLockCheckRule:
     Type: AWS::Events::Rule
