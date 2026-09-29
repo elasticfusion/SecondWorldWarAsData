@@ -79,10 +79,37 @@ def _nat_demand_present() -> bool:
                 "NAT demand: %d running pipeline task(s) — keeping NAT", len(pipeline)
             )
             return True
+        # 3) OCR Batch jobs in flight — GPU instances need egress to register with
+        # ECS + pull the image + S3. Batch jobs aren't ECS tasks and hold no nat
+        # lease, so count them explicitly, else NAT is torn down mid-OCR (jobs then
+        # stall RUNNABLE forever). Check both the spot and on-demand OCR queues.
+        if _ocr_jobs_in_flight():
+            logger.info("NAT demand: OCR Batch job(s) in flight — keeping NAT")
+            return True
         return False
     except Exception as e:  # pragma: no cover - defensive
         logger.warning("NAT demand check failed (%s) — assuming demand, keeping NAT", e)
         return True
+
+
+def _ocr_jobs_in_flight() -> bool:
+    """True if any OCR Batch job is non-terminal on either OCR queue (needs egress)."""
+    import boto3
+
+    batch = boto3.client("batch", region_name=os.getenv("AWS_REGION", "us-east-1"))
+    for queue in (
+        f"{ENV_NAME}-wwii-chandra-gpu",
+        f"{ENV_NAME}-wwii-chandra-gpu-ondemand",
+    ):
+        for status in ("SUBMITTED", "PENDING", "RUNNABLE", "STARTING", "RUNNING"):
+            try:
+                if batch.list_jobs(jobQueue=queue, jobStatus=status).get(
+                    "jobSummaryList"
+                ):
+                    return True
+            except Exception:  # queue may not exist in some envs
+                continue
+    return False
 
 
 def handler(event, _context):

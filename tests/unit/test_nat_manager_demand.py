@@ -78,9 +78,29 @@ def test_demand_present_when_running_pipeline_task():
         assert nm._nat_demand_present() is True
 
 
+def test_demand_present_when_ocr_batch_job_in_flight():
+    """GPU OCR jobs need NAT egress but aren't ECS tasks / leases — count them."""
+    with (
+        patch.object(nm, "_lease_table", return_value=_table_with([])),
+        patch.object(nm, "_ecs_client", return_value=_ecs_with([])),
+        patch.object(nm, "_ocr_jobs_in_flight", return_value=True),
+    ):
+        assert nm._nat_demand_present() is True
+
+
+def test_no_demand_when_no_leases_no_tasks_no_ocr():
+    with (
+        patch.object(nm, "_lease_table", return_value=_table_with([])),
+        patch.object(nm, "_ecs_client", return_value=_ecs_with([])),
+        patch.object(nm, "_ocr_jobs_in_flight", return_value=False),
+    ):
+        assert nm._nat_demand_present() is False
+
+
 def test_no_demand_when_only_openserp_and_no_leases():
     with (
         patch.object(nm, "_lease_table", return_value=_table_with([])),
+        patch.object(nm, "_ocr_jobs_in_flight", return_value=False),
         patch.object(
             nm, "_ecs_client", return_value=_ecs_with(["arn:.../dev-wwii-openserp/xyz"])
         ),

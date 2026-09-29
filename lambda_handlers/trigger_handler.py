@@ -188,6 +188,23 @@ def _ocr_chunks(pdf_key: str) -> list:
     return ranges
 
 
+def _ensure_nat_for_ocr() -> None:
+    """Bring the dynamic NAT up so GPU Batch OCR instances have egress (register
+    with ECS + pull the Chandra image + S3). Best-effort + fire-and-forget: NAT
+    takes ~2min but the Batch job sits RUNNABLE until instances register, so we
+    don't block here. nat_manager's demand check keeps NAT up while OCR jobs run
+    (it now counts in-flight OCR Batch jobs)."""
+    try:
+        boto3.client("lambda").invoke(
+            FunctionName=NAT_MANAGER_FN,
+            InvocationType="Event",  # async — don't block the trigger
+            Payload=json.dumps({"action": "create"}).encode(),
+        )
+        logger.info("Requested NAT create for OCR egress")
+    except Exception as e:
+        logger.warning("Failed to request NAT for OCR: %s", e)
+
+
 def _submit_ocr(pdf_key: str) -> bool:
     """Submit Chandra GPU OCR for a raw PDF/image (Option B: -> Phase 0), with
     best-guess page-range chunking so a SPOT reclaim loses one chunk, not the whole
@@ -372,6 +389,13 @@ def handler(event, _context):
             pdfs, parse_keys = _split_by_media(content)
             # Raw PDFs -> Chandra OCR (Phase 0). OCR output later re-triggers the
             # parse path via its own upload.
+            if pdfs:
+                # GPU Batch instances launch into the private GPU subnets whose
+                # 0.0.0.0/0 route points at the dynamic NAT — they need egress to
+                # register with ECS + pull the Chandra image + read/write S3.
+                # Without NAT up, instances boot but never join the cluster and
+                # jobs sit RUNNABLE forever. Ensure NAT is up at OCR submit.
+                _ensure_nat_for_ocr()
             for pdf in pdfs:
                 _submit_ocr(pdf)
             if not parse_keys:
