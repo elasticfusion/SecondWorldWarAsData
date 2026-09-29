@@ -62,3 +62,22 @@ is a primary constraint throughout.
   volume threshold; API Gateway usage plans enforce the free tier/quota, a
   payment integration like Stripe or AWS Marketplace metering handles billing);
   feature/subscription tier for genealogists; free tier for amateurs.
+
+## Operational alerting: both Slack and email (email = transitional fallback)
+
+As a general principle, **operator alerts go to BOTH Slack and email.** Slack is the
+primary target; email is kept as redundancy until there is confidence that alerts
+are reliably rendering in Slack, after which email may be phased out.
+
+Mechanism (do not reinvent per-alert): publish free-form alert text to the
+`{env}-wwii-phase2-complete` SNS topic, which fans out to:
+- **email** — direct SNS email subscription (immediate, no formatting needed).
+- **Slack** — via the `{env}-wwii-slack-formatter` Lambda, which wraps the free-form
+  text in AWS Chatbot's custom-notification schema (Chatbot silently drops
+  un-formatted text) and republishes to the `{env}-wwii-slack` topic that Chatbot
+  watches. The formatter makes every alert actionable (a "View logs" deep link at
+  minimum; financial alerts embed the dollar figures + Cost Explorer/bill links).
+
+New components that need to alert MUST publish to `phase2-complete` (both channels),
+not to a bespoke topic. Alarm-based alerts (CloudWatch) already render in Slack
+directly; free-form pipeline/controller notifications need the formatter path.
