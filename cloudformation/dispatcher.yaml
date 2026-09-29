@@ -204,6 +204,7 @@ Resources:
         ClusterArn: !Ref ECSClusterArn
         Subnet0: !Select [0, !Ref PrivateSubnetIds]
         Subnet1: !Select [1, !Ref PrivateSubnetIds]
+        NatManagerArn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-nat-manager
         SecurityGroup: !Ref SecurityGroupId
       DefinitionString: |
         {
@@ -227,6 +228,25 @@ Resources:
               "Type": "Task",
               "Resource": "${ClampArn}",
               "ResultPath": "$.pool",
+              "Next": "CreateNat"
+            },
+            "CreateNat": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "FunctionName": "${NatManagerArn}",
+                "Payload": { "action": "create" }
+              },
+              "ResultPath": "$.nat",
+              "Retry": [
+                { "ErrorEquals": ["States.ALL"], "IntervalSeconds": 10, "MaxAttempts": 3, "BackoffRate": 2.0 }
+              ],
+              "Next": "WaitForNat"
+            },
+            "WaitForNat": {
+              "Type": "Wait",
+              "Seconds": 150,
+              "Comment": "NAT gateway takes ~2min to become available before tasks can pull image/secrets.",
               "Next": "FanOut"
             },
             "FanOut": {
