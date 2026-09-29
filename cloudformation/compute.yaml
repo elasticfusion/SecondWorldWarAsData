@@ -473,6 +473,26 @@ Resources:
           NOTIFICATION_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
           NAT_WAIT_SECONDS: !Ref NatWaitSeconds
 
+  # Slack notification formatter (UNATTENDED_READINESS #3): wraps free-form
+  # pipeline notifications in Chatbot's custom-notification schema so they render
+  # in Slack (Chatbot silently drops non-alarm free-form text).
+  SlackFormatterFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-slack-formatter
+      Runtime: python3.12
+      Handler: lambda_handlers.slack_formatter.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 128
+      Timeout: 30
+      Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          SLACK_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-slack
+
   BatchPollerSchedule:
     Type: AWS::Events::Rule
     Properties:

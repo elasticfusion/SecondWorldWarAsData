@@ -71,6 +71,46 @@ Resources:
       Principal: sns.amazonaws.com
       SourceArn: !Ref Phase2CompleteTopic
 
+  # --- Slack notification formatter (UNATTENDED_READINESS #3) ---
+  # The formatter subscribes to the free-form pipeline notification topic, wraps
+  # each message in Chatbot's custom-notification schema (actionable: View-logs +
+  # embedded financials), and republishes to SlackTopic which Chatbot watches.
+  SlackTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${EnvironmentName}-wwii-slack
+
+  SlackFormatterSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref Phase2CompleteTopic
+      Protocol: lambda
+      Endpoint: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-slack-formatter
+
+  SlackFormatterSNSInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-slack-formatter
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref Phase2CompleteTopic
+
+  # Allow the formatter Lambda to publish the reformatted message to SlackTopic.
+  SlackTopicPublishPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref SlackTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowLambdaPublish
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: sns:Publish
+            Resource: !Ref SlackTopic
+
   # --- SNS Topic Policies (allow S3 to publish) ---
   ContentUploadedPolicy:
     Type: AWS::SNS::TopicPolicy
