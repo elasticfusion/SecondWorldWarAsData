@@ -61,7 +61,11 @@ def merge_ocr_output(book: str) -> str:
         logger.error("S3_BUCKET not set — cannot promote OCR output for %s", book)
         raise RuntimeError("S3_BUCKET env var not configured")
     prefix = f"ocr-output/{book}/"
-    output_key = f"contentrepository/{book}/{book}.md"
+    # A whole-PDF OCR is promoted as a single-chapter book in the structure phase1's
+    # discovery requires: {book}/{chapter}/chapter*-content.md (A1). A flat
+    # {book}/{book}.md yields "0 chapters" in discover_content_structure and never
+    # parses. Still under contentrepository/ so the S3 trigger fires the parse path.
+    output_key = f"contentrepository/{book}/chapter1/chapter1-content.md"
 
     md_keys = []
     paginator = s3.get_paginator("list_objects_v2")
@@ -80,9 +84,23 @@ def merge_ocr_output(book: str) -> str:
         body = s3.get_object(Bucket=BUCKET, Key=k)["Body"].read().decode("utf-8")
         parts.append(body)
     merged = "\n\n".join(parts)
+    # Write the meta FIRST, then content — the content-upload S3 event triggers the
+    # parse path, and phase1's discovery needs the meta already present.
+    meta_key = f"contentrepository/{book}/chapter1/chapter1-meta.yaml"
+    meta = (
+        f'series: "TODO - Add series name"\n'
+        f'book: "{book}"\n'
+        f'author: "TODO - Add author name"\n'
+        f'chapter_number: "1"\n'
+        f'chapter_title: "TODO - Add chapter/paper title"\n'
+        f'license: "TODO - Add license"\n'
+        f'copyright_date: "TODO - Add year"\n'
+        f'source_url: "OCR of {book}"\n'
+    )
+    s3.put_object(Bucket=BUCKET, Key=meta_key, Body=meta.encode("utf-8"))
     s3.put_object(Bucket=BUCKET, Key=output_key, Body=merged.encode("utf-8"))
     logger.info(
-        "OCR->parse handoff: merged %d md file(s) -> s3://%s/%s (%d chars)",
+        "OCR->parse handoff: merged %d md file(s) -> s3://%s/%s (+meta) (%d chars)",
         len(md_keys),
         BUCKET,
         output_key,

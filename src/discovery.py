@@ -126,8 +126,39 @@ def discover_content_structure(content_root: Path) -> Dict[str, List[ChapterGrou
             if chapter:
                 chapters.append(chapter)
 
+        # A2 defense-in-depth: if no chapter dirs yielded a chapter but the book has
+        # a flat top-level markdown ({book}/*.md, e.g. {book}/{book}.md), treat it as
+        # a single-chapter book so it still parses (no chapter subdir required).
+        if not chapters:
+            flat = _flat_book_chapter(book_dir, book_name)
+            if flat:
+                chapters.append(flat)
+
         if chapters:
             structure[book_name] = sorted(chapters, key=lambda c: c.chapter_number)
 
     _warn_about_pdfs(pdf_files_found, content_root)
     return structure
+
+
+def _flat_book_chapter(book_dir: Path, book_name: str) -> Optional[ChapterGroup]:
+    """Build a single-chapter ChapterGroup from a flat {book}/*.md file (no chapter
+    subdir). Synthesizes minimal metadata so a flat book markdown still parses (A2).
+    Prefers a *-content.md, else any non-meta .md; meta is optional (synthesized)."""
+    md_files = [
+        p
+        for p in book_dir.glob("*.md")
+        if not p.name.endswith("-meta.md") and not p.name.startswith(".")
+    ]
+    if not md_files:
+        return None
+    content = next((p for p in md_files if p.name.endswith("-content.md")), md_files[0])
+    meta = _find_meta_file(book_dir)  # optional; may be None
+    return ChapterGroup(
+        book=book_name,
+        chapter_number=1,
+        meta_file=(
+            meta if meta else content
+        ),  # parser tolerates content-as-meta fallback
+        content_files={"": content},
+    )

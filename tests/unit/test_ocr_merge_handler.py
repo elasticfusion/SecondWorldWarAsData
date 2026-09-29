@@ -62,10 +62,25 @@ def test_merge_whole_pdf_layout():
     s3.get_object.return_value = {"Body": MagicMock(read=lambda: b"# B460 page 1")}
     with patch.object(om, "_s3", return_value=s3):
         out = om.merge_ocr_output("B460")
-    assert out == "contentrepository/B460/B460.md"
-    put = s3.put_object.call_args.kwargs
-    assert put["Key"] == "contentrepository/B460/B460.md"
-    assert b"B460 page 1" in put["Body"]
+    assert out == "contentrepository/B460/chapter1/chapter1-content.md"
+    # both meta + content written under the chapter structure
+    keys = {c.kwargs["Key"] for c in s3.put_object.call_args_list}
+    assert "contentrepository/B460/chapter1/chapter1-content.md" in keys
+    assert "contentrepository/B460/chapter1/chapter1-meta.yaml" in keys
+    # content body carries the merged markdown
+    content_call = next(
+        c
+        for c in s3.put_object.call_args_list
+        if c.kwargs["Key"].endswith("chapter1-content.md")
+    )
+    assert b"B460 page 1" in content_call.kwargs["Body"]
+    # meta names the book
+    meta_call = next(
+        c
+        for c in s3.put_object.call_args_list
+        if c.kwargs["Key"].endswith("chapter1-meta.yaml")
+    )
+    assert b'book: "B460"' in meta_call.kwargs["Body"]
 
 
 def test_merge_chunked_layout_sorts_pages():
@@ -106,7 +121,9 @@ def test_merge_no_markdown_returns_empty():
 
 def test_handler_full_promote_path():
     with patch.object(
-        om, "merge_ocr_output", return_value="contentrepository/B460/B460.md"
+        om,
+        "merge_ocr_output",
+        return_value="contentrepository/B460/chapter1/chapter1-content.md",
     ):
         out = om.handler(_event(), None)
     assert out["action"] == "promoted"
