@@ -114,20 +114,50 @@ def store_bibliography_entry(
     book: str,
     chapter: str,
 ) -> Optional[str]:
-    """Store a document reference in output/bibliography/, deduplicating by title.
+    """Store a document reference, deduplicating by title.
+
+    Dynamo-backed when the entity store is available (G3 / spec §3.3): the
+    title index + entries live in DynamoEntityStore with atomic version-conditional
+    writes, so concurrent books adding references are race-safe across Fargate
+    hosts (the old flock-guarded S3 JSON writes were per-host = NOT safe) AND
+    Phase 2 no longer bulk-downloads the 13,566-file bibliography dir. Falls back
+    to the local-file implementation when no store (local/test mode).
 
     Returns the BibliographyID of the stored/updated entry, or None on error.
     """
-    bib_dir.mkdir(parents=True, exist_ok=True)
     citation = material.get("citation") or {}
     title = citation.get("title", "")
     if not title or title == "Unknown":
         title = material.get("verbatim_reference", "Unknown")
-
-    index = _load_index(bib_dir)
     mention = _build_mention(material, book, chapter)
 
-    # Try to find existing entry
+    store = None
+    try:
+        from src.utils.entity_store import get_entity_store
+
+        store = get_entity_store()
+    except Exception:  # pragma: no cover - import guard
+        store = None
+
+    if store is not None:
+        norm = _normalize_title(title)
+        new_id = str(ulid.new())
+
+        def _build():
+            entry = _build_bib_entry(material)
+            return entry
+
+        return store.store_bibliography(
+            norm_title=norm,
+            bib_id=new_id,
+            entry_builder=_build,
+            mention=mention,
+            mention_exists=lambda mentions: _has_mention(mentions, mention),
+        )
+
+    # --- Local-file fallback (no Dynamo store: local/test mode) ---
+    bib_dir.mkdir(parents=True, exist_ok=True)
+    index = _load_index(bib_dir)
     existing_file = _find_match(title, index)
     if existing_file and (bib_dir / existing_file).exists():
         with open(bib_dir / existing_file, "r", encoding="utf-8") as f:
@@ -138,14 +168,11 @@ def store_bibliography_entry(
                 json.dump(bib_data, f, indent=2, ensure_ascii=False)
         return bib_data.get("BibliographyID")
 
-    # Create new entry
     bib_data = _build_bib_entry(material)
     bib_data["mentions"].append(mention)
-
     filename = f"{_slugify(title)}_{bib_data['BibliographyID']}.json"
     with open(bib_dir / filename, "w", encoding="utf-8") as f:
         json.dump(bib_data, f, indent=2, ensure_ascii=False)
-
     index[_normalize_title(title)] = filename
     _save_index(bib_dir, index)
     logger.debug("New bibliography entry: %s", filename)

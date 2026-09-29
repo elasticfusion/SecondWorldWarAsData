@@ -72,3 +72,103 @@ class TestDynamoEntityStore:
         assert result["PersonID"] == "01A"
 
         assert entity_store.query_by_name("people", "patton") is None
+
+
+class TestStoreBibliography:
+    """G3/Option B: Dynamo-backed bibliography title-dedup + race-safe merge."""
+
+    @staticmethod
+    def _builder(bib_id, title):
+        return lambda: {
+            "BibliographyID": bib_id,
+            "title": title,
+            "citation": {"title": title},
+            "mentions": [],
+        }
+
+    @staticmethod
+    def _mention(event_id, ref_no):
+        return {"EventID": event_id, "Sub-eventID": "", "reference_number": ref_no}
+
+    @staticmethod
+    def _exists(m):
+        return lambda mentions: any(
+            x.get("EventID") == m["EventID"]
+            and x.get("reference_number") == m["reference_number"]
+            for x in mentions
+        )
+
+    def test_new_title_creates_entry_and_indexes(self, entity_store):
+        m = self._mention("E1", "1")
+        rid = entity_store.store_bibliography(
+            "operation overlord",
+            "BIB1",
+            self._builder("BIB1", "Operation Overlord"),
+            m,
+            self._exists(m),
+        )
+        assert rid == "BIB1"
+        assert entity_store.get("bibliography", "BIB1")["title"] == "Operation Overlord"
+        assert entity_store.get_bibliography_index()["operation overlord"] == "BIB1"
+
+    def test_same_title_merges_into_existing_no_new_entry(self, entity_store):
+        m1 = self._mention("E1", "1")
+        first = entity_store.store_bibliography(
+            "cross channel attack",
+            "BIB1",
+            self._builder("BIB1", "Cross Channel Attack"),
+            m1,
+            self._exists(m1),
+        )
+        m2 = self._mention("E2", "2")
+        second = entity_store.store_bibliography(
+            "cross channel attack",
+            "BIB2",  # different proposed id
+            self._builder("BIB2", "Cross Channel Attack"),
+            m2,
+            self._exists(m2),
+        )
+        assert first == second == "BIB1"  # deduped to the first entry
+        entry = entity_store.get("bibliography", "BIB1")
+        assert len(entry["mentions"]) == 2  # both mentions merged
+        assert entity_store.get("bibliography", "BIB2") is None  # no 2nd entry
+
+    def test_duplicate_mention_is_idempotent(self, entity_store):
+        m = self._mention("E1", "1")
+        entity_store.store_bibliography(
+            "the lorraine campaign",
+            "BIB1",
+            self._builder("BIB1", "The Lorraine Campaign"),
+            m,
+            self._exists(m),
+        )
+        # same mention again (retry / duplicate event)
+        entity_store.store_bibliography(
+            "the lorraine campaign",
+            "BIB1",
+            self._builder("BIB1", "The Lorraine Campaign"),
+            m,
+            self._exists(m),
+        )
+        assert len(entity_store.get("bibliography", "BIB1")["mentions"]) == 1
+
+    def test_different_titles_create_separate_entries(self, entity_store):
+        m = self._mention("E1", "1")
+        a = entity_store.store_bibliography(
+            "cross channel attack",
+            "BIBA",
+            self._builder("BIBA", "Cross Channel Attack"),
+            m,
+            self._exists(m),
+        )
+        b = entity_store.store_bibliography(
+            "the lorraine campaign",
+            "BIBB",
+            self._builder("BIBB", "The Lorraine Campaign"),
+            m,
+            self._exists(m),
+        )
+        assert a == "BIBA" and b == "BIBB"
+        idx = entity_store.get_bibliography_index()
+        assert idx["cross channel attack"] == "BIBA"
+        assert idx["the lorraine campaign"] == "BIBB"

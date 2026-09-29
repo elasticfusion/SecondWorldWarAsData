@@ -1023,9 +1023,25 @@ def _download_phase2_inputs() -> int:
     for key in index_prefixes:
         _download_s3_file(s3, key)
 
-    # Download bibliography and supplemental dirs (needed for dedup/writing, not just indexing)
-    for p in ["output/bibliography/", "output/supplemental/"]:
-        _download_s3_prefix(s3, p)
+    # Bibliography/supplemental: Dynamo-backed dedup (G3) reads the title index
+    # from DynamoEntityStore, so Phase 2 no longer bulk-downloads the (13k+ file)
+    # bibliography dir — the source of N*2 download thrash under concurrency. Only
+    # download the dirs when there's NO entity store (local/file mode). Phase 3
+    # enrichment still downloads them (it iterates every file).
+    _skip_bib_download = False
+    try:
+        from src.utils.entity_store import get_entity_store
+
+        _skip_bib_download = get_entity_store() is not None
+    except Exception:
+        _skip_bib_download = False
+    if not _skip_bib_download:
+        for p in ["output/bibliography/", "output/supplemental/"]:
+            _download_s3_prefix(s3, p)
+    else:
+        logger.info(
+            "Skipping bibliography/supplemental bulk download (Dynamo-backed dedup)"
+        )
 
     return new_parsed
 
