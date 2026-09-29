@@ -66,3 +66,63 @@ def test_submit_ocr_job_name_sanitized():
     name = batch.submit_job.call_args.kwargs["jobName"]
     assert " " not in name
     assert name.startswith("chandra-")
+
+
+# --- Best-guess page-range chunking (#2) ---
+
+
+def test_ocr_chunks_image_single_never_chunked():
+    with patch.object(th, "_pdf_page_count", return_value=999):  # ignored for images
+        assert th._ocr_chunks("contentrepository/x/scan.jpg") == [""]
+        assert th._ocr_chunks("contentrepository/x/scan.tif") == [""]
+        assert th._ocr_chunks("contentrepository/x/scan.png") == [""]
+
+
+def test_ocr_chunks_small_pdf_whole():
+    with (
+        patch.object(th, "_pdf_page_count", return_value=30),
+        patch.object(th, "_OCR_CHUNK_PAGES", 50),
+    ):
+        assert th._ocr_chunks("contentrepository/B/B.pdf") == [""]
+
+
+def test_ocr_chunks_large_pdf_split():
+    with (
+        patch.object(th, "_pdf_page_count", return_value=120),
+        patch.object(th, "_OCR_CHUNK_PAGES", 50),
+    ):
+        assert th._ocr_chunks("contentrepository/Big/Big.pdf") == [
+            "1-50",
+            "51-100",
+            "101-120",
+        ]
+
+
+def test_ocr_chunks_unreadable_pdf_whole_fallback():
+    """page_count 0 (unreadable/encrypted) -> safe whole-PDF job, not a crash."""
+    with patch.object(th, "_pdf_page_count", return_value=0):
+        assert th._ocr_chunks("contentrepository/Bad/Bad.pdf") == [""]
+
+
+def test_ocr_chunks_unknown_media_whole_fallback():
+    assert th._ocr_chunks("contentrepository/x/mystery.dat") == [""]
+
+
+def test_submit_ocr_large_pdf_submits_chunk_set():
+    from unittest.mock import MagicMock
+
+    batch = MagicMock()
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "dynamo", MagicMock()),
+        patch.object(th, "_ocr_chunks", return_value=["1-50", "51-100"]),
+    ):
+        ok = th._submit_ocr("contentrepository/Big/Big.pdf")
+    assert ok is True
+    assert batch.submit_job.call_count == 2  # one job per chunk
+    cmds = [
+        c.kwargs["containerOverrides"]["command"]
+        for c in batch.submit_job.call_args_list
+    ]
+    assert any("--page-range" in c and "1-50" in c for c in cmds)
+    assert any("--page-range" in c and "51-100" in c for c in cmds)

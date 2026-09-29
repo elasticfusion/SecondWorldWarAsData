@@ -132,19 +132,71 @@ def _batch_client():
     return boto3.client("batch")
 
 
-def _submit_ocr(pdf_key: str) -> bool:
-    """Submit a Chandra GPU OCR Batch job for a raw PDF (Option B: PDF -> Phase 0).
+_OCR_CHUNK_PAGES = int(os.environ.get("OCR_CHUNK_PAGES", "50"))
+_IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp", ".bmp")
 
-    Submits a single whole-PDF OCR job (chandra_entrypoint takes optional
-    page-range; without it, the whole PDF is OCR'd). Output lands at
-    ocr-output/{pdf_name}/ for the downstream parse. Returns True on submit.
-    """
+
+def _pdf_page_count(pdf_key: str) -> int:
+    """Best-guess page count for a PDF (0 if unreadable). Downloads to /tmp and
+    reads with pypdf (pure-Python, Lambda-safe). A failure returns 0 so the caller
+    falls back to a safe whole-PDF job rather than erroring."""
+    import tempfile
+
+    local = None
+    try:
+        from pypdf import PdfReader
+
+        fd, local = tempfile.mkstemp(suffix=".pdf")
+        os.close(fd)
+        s3.download_file(BUCKET, pdf_key, local)
+        return len(PdfReader(local).pages)
+    except Exception as e:
+        logger.warning(
+            "Could not read page count for %s (%s) — whole-PDF fallback", pdf_key, e
+        )
+        return 0
+    finally:
+        if local and os.path.exists(local):
+            try:
+                os.remove(local)
+            except OSError:
+                pass
+
+
+def _ocr_chunks(pdf_key: str) -> list:
+    """Best-guess chunk plan for an OCR job (operator spec — the code guesses from
+    the actual file at submit). Returns a list of page-range args:
+      - image (single page) -> [""]  (one job, never chunked)
+      - PDF <= OCR_CHUNK_PAGES pages -> [""]  (one whole-PDF job)
+      - PDF > OCR_CHUNK_PAGES pages -> ["1-50","51-100",...]  (bounded reclaim loss)
+      - unreadable/unknown -> [""]  (safe whole-job fallback)
+    An empty string means 'no --page-range' (whole input)."""
+    low = pdf_key.lower()
+    if low.endswith(_IMAGE_SUFFIXES):
+        return [""]  # a scan is one page — never chunk
+    if not low.endswith(".pdf"):
+        return [""]  # unknown media -> safe whole-job
+    pages = _pdf_page_count(pdf_key)
+    if pages <= 0 or pages <= _OCR_CHUNK_PAGES:
+        return [""]  # small or unreadable -> whole PDF (cheap restart on reclaim)
+    ranges = []
+    start = 1
+    while start <= pages:
+        end = min(start + _OCR_CHUNK_PAGES - 1, pages)
+        ranges.append(f"{start}-{end}")
+        start = end + 1
+    return ranges
+
+
+def _submit_ocr(pdf_key: str) -> bool:
+    """Submit Chandra GPU OCR for a raw PDF/image (Option B: -> Phase 0), with
+    best-guess page-range chunking so a SPOT reclaim loses one chunk, not the whole
+    doc. One atomic per-book claim (ocr#{book}) guards the WHOLE set of chunk jobs.
+    Output lands at ocr-output/{book}/[chunk-{range}/] for the downstream merge."""
     try:
         pdf_name = pdf_key.split("/")[-1].rsplit(".", 1)[0]
-        # G4 (§8) — deny redundant submissions AT INTAKE. S3->SNS->SQS is
-        # at-least-once; a redrive / re-upload must NOT launch a 2nd GPU job for a
-        # book already being OCR'd. Atomic conditional-write claim ocr#{book}, TTL'd
-        # (24h > max OCR runtime) so a crashed/expired OCR can re-claim later.
+        # G4 (§8) — deny redundant submissions AT INTAKE (per book, covering all its
+        # chunks). A duplicate ObjectCreated must not re-launch the chunk set.
         claim_key = f"ocr#{pdf_name}"
         try:
             dynamo.put_item(
@@ -162,20 +214,35 @@ def _submit_ocr(pdf_key: str) -> bool:
             )
             return False
         s3_input = f"s3://{BUCKET}/{pdf_key}"
-        s3_output = f"s3://{BUCKET}/ocr-output/{pdf_name}/"
-        job_name = f"chandra-{pdf_name}"[:128].replace(" ", "_")
+        chunks = _ocr_chunks(pdf_key)
         try:
-            _batch_client().submit_job(
-                jobName=job_name,
-                jobQueue=OCR_JOB_QUEUE,
-                jobDefinition=OCR_JOB_DEF,
-                containerOverrides={"command": [s3_input, s3_output]},
-            )
+            batch = _batch_client()
+            for rng in chunks:
+                if rng:
+                    a, b = rng.split("-")
+                    out = f"s3://{BUCKET}/ocr-output/{pdf_name}/chunk-p{int(a):04d}-{int(b):04d}/"
+                    job_name = f"chandra-{pdf_name}-p{a}-{b}"[:128].replace(" ", "_")
+                    cmd = [s3_input, out, "--page-range", rng]
+                else:
+                    out = f"s3://{BUCKET}/ocr-output/{pdf_name}/"
+                    job_name = f"chandra-{pdf_name}"[:128].replace(" ", "_")
+                    cmd = [s3_input, out]
+                batch.submit_job(
+                    jobName=job_name,
+                    jobQueue=OCR_JOB_QUEUE,
+                    jobDefinition=OCR_JOB_DEF,
+                    containerOverrides={"command": cmd},
+                )
+                logger.info("Submitted OCR job %s (%s)", job_name, rng or "whole")
         except Exception:
-            # Release the claim so a genuine retry isn't permanently blocked.
-            dynamo.delete_item(Key={"cache_key": claim_key})
+            dynamo.delete_item(Key={"cache_key": claim_key})  # release for retry
             raise
-        logger.info("Submitted OCR job %s for %s", job_name, pdf_key)
+        logger.info(
+            "Submitted %d OCR job(s) for %s (chunked=%s)",
+            len(chunks),
+            pdf_key,
+            len(chunks) > 1,
+        )
         return True
     except Exception as e:
         logger.error("Failed to submit OCR job for %s: %s", pdf_key, e)

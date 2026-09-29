@@ -253,7 +253,10 @@ def test_submit_ocr_first_claims_and_submits(dynamodb_table):
     import boto3 as _b
 
     batch = MagicMock()
-    with patch.object(th, "_batch_client", return_value=batch):
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "_ocr_chunks", return_value=[""]),
+    ):
         ok = th._submit_ocr("contentrepository/NARA/B-Series/B 400-499/B460.pdf")
     assert ok is True
     batch.submit_job.assert_called_once()
@@ -268,7 +271,10 @@ def test_submit_ocr_duplicate_is_denied(dynamodb_table):
     from unittest.mock import MagicMock
 
     batch = MagicMock()
-    with patch.object(th, "_batch_client", return_value=batch):
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "_ocr_chunks", return_value=[""]),
+    ):
         first = th._submit_ocr("contentrepository/B460/B460.pdf")
         second = th._submit_ocr("contentrepository/B460/B460.pdf")  # duplicate event
     assert first is True
@@ -284,7 +290,10 @@ def test_submit_ocr_releases_claim_on_submit_failure(dynamodb_table):
 
     batch = MagicMock()
     batch.submit_job.side_effect = RuntimeError("Batch down")
-    with patch.object(th, "_batch_client", return_value=batch):
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "_ocr_chunks", return_value=[""]),
+    ):
         ok = th._submit_ocr("contentrepository/B460/B460.pdf")
     assert ok is False
     table = _b.resource("dynamodb", region_name="us-east-1").Table(
