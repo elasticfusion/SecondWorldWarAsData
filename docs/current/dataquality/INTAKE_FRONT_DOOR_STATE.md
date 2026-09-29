@@ -101,7 +101,7 @@ flowchart TD
     RT -->|docx / epub / html / txt| CV[Convert branch:<br/>pandoc convert_to_markdown /<br/>web_video for html]
     RT -->|markdown| PT[Passthrough:<br/>already markdown]
     RT -->|video| AV[AV branch:<br/>transcript]
-    RT -->|unsupported| NR[needs-review]
+    RT -->|unsupported| NR["needs-review (H1)<br/>👤 human inspects"]
 
     %% ---- OCR branch (verified this session) ----
     D --> D2[Best-guess chunking _ocr_chunks]
@@ -122,19 +122,27 @@ flowchart TD
     N --> O[RUNNING: download PDF via S3 gateway endpoint]
     O --> P[Chandra OCR pages 1..N, watchdog 900s]
     P --> Q[Write ocr-output/book/...]
-    Q --> R[Batch job SUCCEEDED]
+    Q --> MR{{"👤 OCR→Markdown review (H2)<br/>mdreview_ui UI - BUILT, NOT DEPLOYED<br/>page image + editable snippet"}}
+    MR -->|reviewed pN.md saved| MRS["ocr-output/book/reviewed/pN.md<br/>(consume-once at merge)"]
+    MR -->|no review / auto| R[Batch job SUCCEEDED]
+    MRS --> R
     R --> S[EventBridge dev-wwii-ocr-succeeded]
-    S --> T[ocr_merge_handler]
+    S --> T["ocr_merge_handler<br/>(substitutes reviewed pages)"]
     T --> U["contentrepository/book/chapter1/<br/>chapter1-content.md + chapter1-meta.yaml (A1)"]
 
     %% ---- all branches converge on markdown ----
     CV --> U
     PT --> U
     AV --> U
-    U --> V[content-upload event triggers parse]
+    U --> HR{{"👤 weak structure /<br/>OOB suspect cells?<br/>(H3/H4 review off-ramp)"}}
+    HR -->|flagged needs_review| RVW["needs-review queue<br/>👤 confirm/correct"]
+    HR -->|clean| V[content-upload event triggers parse]
     V --> W[Phase 1 parse to JSON]
     W --> X[Phase 2 extract entities Grok Batch]
-    X --> Y[Dedup at intake / front door]
+    X --> XD[duplicate_report.json<br/>people/places/groups/equipment]
+    XD --> DG{{"👤 DEDUP REVIEW GATE (H5)<br/>dedup_ui_handler /dedup UI<br/>merge / skip / exclude"}}
+    DG -->|doc blocked| OFR["_offramp_doc_needs_review (H6)<br/>doc -&gt; needs-review"]
+    DG -->|POST /complete<br/>ungates Phase 3| Y[Dedup applied]
     Y --> Z[Phase 3 enrich]
     Z --> ZZ[done]
 
@@ -143,6 +151,9 @@ flowchart TD
     TD -->|OCR jobs in flight| TD1[REFUSE teardown - keep infra up]
     TD -->|idle & not force| TD2[Tear down NAT + endpoints]
     TD -->|force=true operator| TD2
+
+    %% 👤 = human intervention (H1-H6). H2 & H5 are indefinite async gates: NAT DOWN while waiting.
+    %% Operator alerts (H7) fire throughout via email+Slack.
 ```
 
 ### Key decision points (numbered)
@@ -170,7 +181,34 @@ flowchart TD
 
 ---
 
-## What Phases 1–3 produce
+## Human intervention points (not fully automated)
+
+The pipeline is unattended by default but has explicit human-in-the-loop gates
+and review off-ramps. These are real code paths, not aspirational:
+
+| # | Where | Trigger | Human action | Effect |
+|---|-------|---------|--------------|--------|
+| H1 | **Intake routing** | `unsupported` media type (`prestage._ROUTING` → skip) | inspect the source | doc set to `needs-review` (terminal), not processed |
+| **H2** | **OCR → Markdown review** (`mdreview_ui_handler`, `/mdreview` UI) — **BUILT + TESTED, NOT DEPLOYED** (commit `d1c9869`) | OCR of a scanned page needs verification (the OCR+AI markdown is the *source of truth* for reference material) | two-pane page-image + editable snippet; save to `ocr-output/{book}/reviewed/pN.md` | merge-time **consume-once substitution** in `merge_outputs` — reviewed page replaces the raw OCR page before the chapter markdown is written. **Indefinite human pause** (like dedup); NAT torn down while waiting, resumed on completion |
+| H3 | **Structure detection** (`markdown_structure`, `web_video`) | weak/ambiguous detection (block quotes, flattened tables, pending video transcription) → `needs_review=True` | confirm/correct the span | only `needs_review=False` spans are auto-applied; weak ones await confirmation |
+| H4 | **OOB reference parsing** (`oob_markdown/*`) | suspect cell (empty/garbled/unknown) or fuzzy name crosswalk → `needs_review` + `review_count` | verify the flagged rows/links | verification-only (never auto-corrected); low confidence recorded |
+| H5 | **Dedup review gate** (`dedup_ui_handler`, `/dedup` web UI) | duplicate groups detected in Phase 2 (`duplicate_report.json` for people/places/groups/equipment) | merge / skip / exclude each group, then `POST /dedup/api/complete` | **ungates Phase 3** — enrichment is blocked until review is marked done |
+| H6 | **Doc off-ramp** (`_offramp_doc_needs_review`, `ecs_entrypoint`) | dedup gate blocks a doc in multi-doc mode | review the doc | doc lifecycle → `needs-review`; dispatcher stops advancing it |
+| H7 | **Operator alerts** (both email + Slack) | phase completion, financial/quota warnings, failures | acknowledge / act | informational + actionable deep links; some (quota ≥80%) prompt action |
+
+Two **blocking human gates** are indefinite async pauses, and NAT follows the
+same lifecycle for both (UP across compute, **DOWN while waiting on a reviewer**,
+resumed on completion):
+- **H2 — OCR→Markdown review** (built, not yet deployed): reviewed pages
+  substitute into the merge; the OCR+AI markdown is the source of truth for
+  scanned reference material.
+- **H5 — Dedup review**: Phase 2 duplicate reports resolved via the web UI;
+  only then is Phase 3 ungated.
+
+Everything else (H1, H3, H4, H6) is a **review off-ramp** — flagged items divert
+to `needs-review` while the rest of the corpus flows on.
+
+
 
 All branches converge on Markdown in `contentrepository/{book}/chapter{N}/`
 (content + `-meta.yaml`). From there:
@@ -215,7 +253,8 @@ events via `event_mentions` (the junction that carries book/author/series +
 Key property: **event-centric with ULID cross-refs** — an event's sub-event
 points at DateID/PlaceID/PersonID/GroupID; each entity carries `event_mentions`
 back to the event + source. Dedup runs at the front door (title→ref→author for
-bibliography) and via the duplicate-people/related-groups reports.
+bibliography); Phase 2 **entity** duplicates go through the **human dedup review
+gate (H5)** before Phase 3 is ungated (see Human intervention points).
 
 ### Phase 3 — Enrich (`phase3_enrich_data.py`) → external data merged in
 
