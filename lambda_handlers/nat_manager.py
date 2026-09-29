@@ -141,7 +141,52 @@ def handler(event, _context):
         return _create_all(ec2, region)
     if action == "delete":
         return _delete_all(ec2, region)
+    if action == "verify":
+        ready, missing = _verify_ready(ec2, region)
+        return {"ready": ready, "missing": missing}
     return _status(ec2)
+
+
+def _verify_ready(ec2, region):
+    """Readiness contract: egress is READY iff the NAT gateway is 'available' AND
+    every required interface endpoint is 'available'. Returns (ready, missing[]).
+    Compute (GPU OCR) must not be requested until this is True — otherwise an
+    instance boots with no path to ECS/ECR and can't register (the OCR stall)."""
+    missing = []
+    # NAT available?
+    nat_id = _find_nat(ec2)
+    nat_ok = False
+    if nat_id:
+        resp = ec2.describe_nat_gateways(NatGatewayIds=[nat_id])
+        nat_ok = (
+            bool(resp.get("NatGateways"))
+            and resp["NatGateways"][0]["State"] == "available"
+        )
+    if not nat_ok:
+        missing.append("nat")
+    # All required interface endpoints available?
+    available = {
+        e["ServiceName"].split(".")[-1]
+        for e in _find_endpoints(ec2)
+        if e["State"] == "available"
+    }
+    for svc in INTERFACE_ENDPOINTS:
+        if svc not in available and not _endpoint_available_untagged(ec2, region, svc):
+            missing.append(svc)
+    return (len(missing) == 0, missing)
+
+
+def _endpoint_available_untagged(ec2, region, svc):
+    """True if an AVAILABLE endpoint exists for this service (untagged included)."""
+    service_name = f"com.amazonaws.{region}.{svc}"
+    resp = ec2.describe_vpc_endpoints(
+        Filters=[
+            {"Name": "service-name", "Values": [service_name]},
+            {"Name": "vpc-id", "Values": [VPC_ID]},
+            {"Name": "vpc-endpoint-state", "Values": ["available"]},
+        ]
+    )
+    return len(resp.get("VpcEndpoints", [])) > 0
 
 
 def _handle_sns_records(event) -> dict:
@@ -207,7 +252,11 @@ def _create_all(ec2, region):
 
         if not already_existed:
             _notify("Networking UP — NAT, VPC endpoints ready")
-        return {"status": "ready"}
+        # Return ACCURATE readiness — never blind 'ready'. Compute must not be
+        # requested until egress is verified (NAT available + all required
+        # endpoints available), else GPU instances boot but can't register.
+        ready, missing = _verify_ready(ec2, region)
+        return {"status": "ready" if ready else "not_ready", "missing": missing}
     except Exception as e:
         _notify(f"Networking FAILED — {e}")
         logger.error("Create failed: %s", e)
@@ -389,16 +438,24 @@ def _find_endpoints(ec2):
 
 
 def _ensure_endpoints(ec2, region):
-    """Create missing VPC endpoints. Checks each individually."""
-    existing = {e["ServiceName"].split(".")[-1] for e in _find_endpoints(ec2)}
+    """Create missing VPC endpoints. Each checked individually.
 
+    Only 'available'/'pending' endpoints count as PRESENT — a 'deleting' endpoint
+    is NOT present (the create-after-delete race: treating 'deleting' as present
+    skipped recreation, leaving instances with no endpoints -> can't register).
+    We wait out any 'deleting' endpoint for a service, then (re)create it."""
+    present = {
+        e["ServiceName"].split(".")[-1]
+        for e in _find_endpoints(ec2)
+        if e["State"] in ("available", "pending")
+    }
     for svc in INTERFACE_ENDPOINTS:
-        if svc in existing:
-            logger.info("Endpoint %s already exists", svc)
+        if svc in present:
+            logger.info("Endpoint %s already present", svc)
             continue
-        # Also check for untagged endpoints
-        if _endpoint_exists_untagged(ec2, region, svc):
-            logger.info("Endpoint %s exists (untagged)", svc)
+        _wait_out_deleting(ec2, region, svc)
+        if _endpoint_present_untagged(ec2, region, svc):
+            logger.info("Endpoint %s present (untagged)", svc)
             continue
         _create_endpoint(ec2, region, svc)
 
@@ -410,17 +467,33 @@ def _ensure_endpoints(ec2, region):
         time.sleep(10)
 
 
-def _endpoint_exists_untagged(ec2, region, svc):
-    """Check if an endpoint exists for this service (even without our tag)."""
+def _wait_out_deleting(ec2, region, svc):
+    """Block until any 'deleting' endpoint for this service is gone (so a fresh one
+    can be created without the racy exists-check false-matching it)."""
+    service_name = f"com.amazonaws.{region}.{svc}"
+    for _ in range(30):
+        resp = ec2.describe_vpc_endpoints(
+            Filters=[
+                {"Name": "service-name", "Values": [service_name]},
+                {"Name": "vpc-id", "Values": [VPC_ID]},
+                {"Name": "vpc-endpoint-state", "Values": ["deleting"]},
+            ]
+        )
+        if not resp.get("VpcEndpoints"):
+            return
+        logger.info("Waiting for %s endpoint to finish deleting...", svc)
+        time.sleep(10)
+
+
+def _endpoint_present_untagged(ec2, region, svc):
+    """True if a usable (available/pending) endpoint exists for this service —
+    'deleting' does NOT count as present."""
     service_name = f"com.amazonaws.{region}.{svc}"
     resp = ec2.describe_vpc_endpoints(
         Filters=[
             {"Name": "service-name", "Values": [service_name]},
             {"Name": "vpc-id", "Values": [VPC_ID]},
-            {
-                "Name": "vpc-endpoint-state",
-                "Values": ["available", "pending", "deleting"],
-            },
+            {"Name": "vpc-endpoint-state", "Values": ["available", "pending"]},
         ]
     )
     return len(resp.get("VpcEndpoints", [])) > 0
