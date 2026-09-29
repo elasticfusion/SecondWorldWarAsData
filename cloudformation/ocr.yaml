@@ -175,7 +175,7 @@ Resources:
       # custom-named resource. Changing the name lets CFN create the new CE,
       # repoint the queue's !Ref, then delete the old one.
       ComputeEnvironmentName: !Sub
-        - ${EnvironmentName}-wwii-chandra-gpu-${TypeLower}
+        - ${EnvironmentName}-wwii-chandra-gpu-${TypeLower}-v2
         - TypeLower: !If [IsSpot, spot, ec2]
       Type: MANAGED
       State: ENABLED
@@ -233,7 +233,7 @@ Resources:
   ChandraOnDemandComputeEnv:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
-      ComputeEnvironmentName: !Sub ${EnvironmentName}-wwii-chandra-gpu-ondemand
+      ComputeEnvironmentName: !Sub ${EnvironmentName}-wwii-chandra-gpu-ondemand-v2
       Type: MANAGED
       State: ENABLED
       ServiceRole: !GetAtt BatchServiceRole.Arn
