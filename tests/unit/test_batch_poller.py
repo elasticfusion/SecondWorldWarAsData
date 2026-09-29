@@ -226,3 +226,67 @@ def test_poll_multiple_jobs(mock_trigger, mock_get, dynamodb_table):
     assert result["checked"] == 2
     assert result["complete"] == 1
     assert result["pending"] == 1
+
+
+# --- G5: per-batch retrieve orchestration (not per-phase singleton) ---
+
+
+def test_claim_retrieve_first_wins_duplicate_denied(dynamodb_table):
+    from lambda_handlers import batch_poller as bp
+
+    assert bp._claim_retrieve("batch-1") is True  # first wins
+    assert bp._claim_retrieve("batch-1") is False  # duplicate denied
+    # a DIFFERENT batch can be claimed concurrently
+    assert bp._claim_retrieve("batch-2") is True
+
+
+def test_release_retrieve_allows_reclaim(dynamodb_table):
+    from lambda_handlers import batch_poller as bp
+
+    assert bp._claim_retrieve("batch-x") is True
+    bp._release_retrieve("batch-x")
+    assert bp._claim_retrieve("batch-x") is True  # reclaimable after release
+
+
+@patch("lambda_handlers.batch_poller._wait_for_nat")
+@patch("lambda_handlers.batch_poller._notify")
+@patch("lambda_handlers.batch_poller.boto3.client")
+def test_trigger_retrieve_denies_duplicate_batch_returns_false(
+    mock_client, _n, _w, dynamodb_table
+):
+    """A batch already claimed must return False (NOT True) so it isn't miscounted
+    complete and will retry — the §3.4 success-masking fix."""
+    from lambda_handlers import batch_poller as bp
+
+    bp._claim_retrieve("batch-dup")  # someone already owns it
+    ecs = MagicMock()
+    mock_client.return_value = ecs
+    out = bp._trigger_retrieve(
+        {"batch_id": "batch-dup", "phase": "phase2", "book": "B"}
+    )
+    assert out is False
+    ecs.run_task.assert_not_called()  # did NOT launch a duplicate retrieve
+
+
+@patch("lambda_handlers.batch_poller._wait_for_nat")
+@patch("lambda_handlers.batch_poller._notify")
+@patch("lambda_handlers.batch_poller.boto3.client")
+def test_trigger_retrieve_launches_and_claims(mock_client, _n, _w, dynamodb_table):
+    from lambda_handlers import batch_poller as bp
+
+    ecs = MagicMock()
+    ecs.run_task.return_value = {"tasks": [{"taskArn": "arn:task/r"}]}
+    lam = MagicMock()
+    lam.invoke.return_value = {}
+
+    def _client(svc, **kw):
+        return ecs if svc == "ecs" else lam
+
+    mock_client.side_effect = _client
+    out = bp._trigger_retrieve(
+        {"batch_id": "batch-new", "phase": "phase2", "book": "B460"}
+    )
+    assert out is True
+    ecs.run_task.assert_called_once()
+    # claim now held -> a second attempt is denied
+    assert bp._claim_retrieve("batch-new") is False

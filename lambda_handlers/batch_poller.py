@@ -258,25 +258,60 @@ def _mark_failed(batch_id: str) -> None:
     )
 
 
+def _claim_retrieve(batch_id: str) -> bool:
+    """Atomically claim the retrieve for THIS batch (per-batch, not per-phase).
+
+    Returns True if this invocation won the claim (should launch), False if
+    another invocation already owns this batch's retrieve (skip — do NOT count as
+    complete). TTL'd so a crashed retrieve re-claims on a later poll. This replaces
+    the old per-phase 'is any retrieve task RUNNING?' guard, which serialized ALL
+    books' retrievals behind one task and falsely reported success (§3.4)."""
+    import time as _t
+
+    table = boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE)
+    try:
+        table.put_item(
+            Item={
+                "cache_key": f"retrieve#{batch_id}",
+                "ttl": int(_t.time()) + 21600,  # 6h > max retrieve runtime
+                "claimed_at": int(_t.time()),
+            },
+            ConditionExpression="attribute_not_exists(cache_key)",
+        )
+        return True
+    except table.meta.client.exceptions.ConditionalCheckFailedException:
+        return False
+
+
+def _release_retrieve(batch_id: str) -> None:
+    """Release a per-batch retrieve claim (on launch failure, so it retries)."""
+    try:
+        boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE).delete_item(
+            Key={"cache_key": f"retrieve#{batch_id}"}
+        )
+    except Exception as e:
+        logger.warning("Failed to release retrieve claim %s: %s", batch_id, e)
+
+
 def _trigger_retrieve(job: dict) -> bool:
-    """Start ECS task in retrieve-only mode for the completed batch. Returns True on success."""
+    """Start ECS task in retrieve-only mode for the completed batch. Returns True
+    only if THIS invocation actually launched (or a launch is genuinely owned)."""
     batch_id = job["batch_id"]
     phase = job.get("phase", "phase3")
     phase_script = "phase2_extract.py" if phase == "phase2" else "phase3_enrich_data.py"
 
-    # Guard: don't launch if a retrieve task is already running for this phase
-    ecs = boto3.client("ecs", region_name=REGION)
+    # Per-batch claim (§3.4): concurrent retrieves for DIFFERENT batches are allowed
+    # (bounded elsewhere by the pool cap); a duplicate poll for the SAME batch is
+    # denied. Do NOT return True for a batch we didn't retrieve.
+    if not _claim_retrieve(batch_id):
+        logger.info("Retrieve already claimed for batch %s, skipping", batch_id)
+        return False  # not retrieved by us — caller counts as pending, retries
+
     task_def = (
         f"{ENV_NAME}-wwii-phase2-extract"
         if phase == "phase2"
         else f"{ENV_NAME}-wwii-phase3-enrich"
     )
-    running = ecs.list_tasks(
-        cluster=CLUSTER, family=task_def, desiredStatus="RUNNING"
-    ).get("taskArns", [])
-    if running:
-        logger.info("Retrieve task already running for %s, skipping", task_def)
-        return True  # Don't retry, task is in progress
 
     # First, ensure networking is up
     try:
@@ -296,11 +331,6 @@ def _trigger_retrieve(job: dict) -> bool:
 
     # Launch ECS task with --retrieve-only
     ecs = boto3.client("ecs", region_name=REGION)
-    task_def = (
-        f"{ENV_NAME}-wwii-phase2-extract"
-        if phase == "phase2"
-        else f"{ENV_NAME}-wwii-phase3-enrich"
-    )
 
     try:
         resp = ecs.run_task(
@@ -337,6 +367,7 @@ def _trigger_retrieve(job: dict) -> bool:
         return True
     except Exception as e:
         logger.error("Failed to start retrieve task for %s: %s", batch_id, e)
+        _release_retrieve(batch_id)  # let a later poll retry this batch
         _notify(f"Batch {batch_id} complete but FAILED to start retrieve: {e}")
         return False
 
