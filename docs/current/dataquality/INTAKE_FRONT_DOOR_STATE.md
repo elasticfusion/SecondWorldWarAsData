@@ -349,8 +349,30 @@ can no longer silently disable a safety guard.
 (teardown guards, demand checks) must fail toward the safe state, not the
 permissive one.
 
+**Deployed (2026-09-29):** the `iam.yaml` fix converged via a main-stack change
+set (all nested stacks `Modify`/`Replace:False`, 0 tasks running — safe);
+verified `dev-wwii-lambda-role` PipelineAccess now carries the
+`BatchDescribeForNatDemand` (ListJobs/DescribeJobs) statement, and the temporary
+`batch-listjobs-hotfix` inline policy was removed.
+
 ## Follow-ups
 
+- **Hardcoded GPU instance lists (brittle — deploy-time probe recommended):**
+  the 3 Batch CEs in `ocr.yaml` enumerate instance types by name
+  (`g4dn/g5/g6.xlarge/.2xlarge`); the high-VRAM CE encodes "24GB" as *g5/g6*
+  rather than as the *property*. A newly-released GPU family (g7/p6/…) is NOT
+  used until the YAML is hand-edited — silently missing cheaper/deeper spot
+  pools. **Note:** EC2 attribute-based `InstanceRequirements`
+  (`acceleratorTotalMemoryMiB`) is **not** supported by Batch *managed* GPU CEs
+  (only ASG/EC2-Fleet/Spot-Fleet), so the fix is NOT attribute-based selection.
+  Instead, mirror the existing `_probe_gpu_azs` pattern: a deploy-time
+  `_probe_gpu_instances(min_gpu_mib)` that queries `describe-instance-types`
+  (GPU count ≥1, `GpuInfo.TotalGpuMemoryInMiB` ≥ threshold), filtered to
+  AMI-supported family prefixes (`g*`,`p*`), and passes the lists as CFN params.
+  Auto-includes new families **at next deploy** (verified feasible:
+  describe-instance-types reports g4dn=16384, g5/g6=22888 MiB). True *runtime*
+  auto-pickup would need self-managed ASG CEs + `InstanceRequirements` — bigger
+  change, AMI/bootstrap burden, deferred.
 - **Multi-format routing gap (highest-value):** wire `trigger_handler`
   (`_split_by_media`) to the intended per-media-type routing so images go to
   OCR and docx/epub/html/txt go through their pandoc/`convert_to_markdown`
