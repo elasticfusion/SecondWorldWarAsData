@@ -170,7 +170,74 @@ flowchart TD
 
 ---
 
-## Verification evidence (this session)
+## What Phases 1–3 produce
+
+All branches converge on Markdown in `contentrepository/{book}/chapter{N}/`
+(content + `-meta.yaml`). From there:
+
+### Phase 1 — Parse (`phase1_parse.py`) → structured JSON per chapter
+
+Deterministic, no LLM. `discover_content_structure` walks the book/chapter
+layout; `parse_chapter` turns each Markdown chapter into a serializable
+document. **Produces** (one JSON per chapter) with:
+- **Metadata**: `book`, `chapter_number`, `chapter_title`, `section_id`,
+  `author`, `series`, `license`, `source_file`.
+- **Paragraphs**: ordered, each with `absolute_number`, `text`, `page_number`,
+  `section_id`, `source_file`, and quote flags (`is_quote`,
+  `quote_attribution`) — this is the unit of provenance later extraction cites.
+- **Images / maps / footnotes**: `resource_id`/`url`/`alt_text`/`caption`,
+  `map_id`, footnote `number`→`url`.
+- **`table_hints`**: spans of flattened/scanned tables for downstream repair.
+
+This is the citable substrate: page/paragraph numbers + verbatim text, no
+interpretation yet.
+
+### Phase 2 — Extract (`phase2_extract.py`) → 11 cross-referenced entity types
+
+LLM extraction via the **Grok Batch API** (50% discount). Runs in stages:
+metadata completion (fills incomplete `-meta.yaml` via Grok) →
+`extract_events` (the event-centric spine) → the typed entity extractors →
+`import_maps` → **dedup reports** (`find_duplicate_people`,
+`find_related_groups`). **Produces** JSON keyed by ULID, all linked back to
+events via `event_mentions` (the junction that carries book/author/series +
+`MentionID` + page context):
+
+| Type | Output | Notable fields |
+|------|--------|----------------|
+| **Events** | `output/events/*.json` | `EventID`, `Sub-events[]` each with entity-ID arrays (dates/places/people/groups) |
+| **Dates** | `output/dates/` | `date_start/end`, `date_precision`, `time_*`, `original_text` |
+| **Places** | `output/places/` | `geography_type`, `coordinates` (+`confidence`), `hierarchy`, `map_urls`, `related_places` |
+| **People** | `output/people/` | `biographical_profile` (ranks/units/awards) — mostly filled in Phase 3 |
+| **People Groups** (units/orgs) | `output/people_groups/` | `group_type`, `military_hierarchy`, `parent_organization`, `members[]` |
+| **Weather** | `output/weather/` | deduped by date+location; `extracted_data` (+ api in P3) |
+| **Equipment, Logistics, Casualties, Maps, Citations** | `output/…` | typed per schema; Maps/Citations carry source + `verbatim_reference` |
+
+Key property: **event-centric with ULID cross-refs** — an event's sub-event
+points at DateID/PlaceID/PersonID/GroupID; each entity carries `event_mentions`
+back to the event + source. Dedup runs at the front door (title→ref→author for
+bibliography) and via the duplicate-people/related-groups reports.
+
+### Phase 3 — Enrich (`phase3_enrich_data.py`) → external data merged in
+
+Per-entity enrichment from external sources, merged into the Phase 2 JSON
+(never re-extracted):
+- **People** (`enrich_all_people`): OpenSERP images + academic/oral-history
+  references; `biographical_profile` (birth/death, nationality, ranks,
+  units_served, awards) with `biography_sources` + confidence; sets
+  `enrichment_status`/`openserp_searched`.
+- **Groups** (`enrich_all_groups`): `enrichment_data` (formed/disbanded,
+  commanding_officers, notable_operations), resolved `members[]`.
+- **Places** (`enrich_all_places` + `link_parent_place_ids`): geocode
+  lat/long, hierarchy, bounding box, map URLs; links parent places.
+- **Bibliography** (`enrich_bibliography`): resolves/cleans citation entries so
+  they point at real sources.
+- **Weather**: hybrid extracted + Open-Meteo API where dated+located.
+
+Enrichment is idempotent per the steering discipline (track processed state;
+don't re-enrich unchanged content), and emits SNS progress
+(Phase 3 in-progress / complete) to both email + Slack.
+
+
 
 - `action=verify` → `{"ready": true, "missing": []}` with all 7 endpoints
   available.
