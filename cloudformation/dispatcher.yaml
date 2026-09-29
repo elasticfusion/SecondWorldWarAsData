@@ -203,6 +203,7 @@ Resources:
         ClampArn: !GetAtt ClampPoolFunction.Arn
         ClusterArn: !Ref ECSClusterArn
         Subnet0: !Select [0, !Ref PrivateSubnetIds]
+        Subnet1: !Select [1, !Ref PrivateSubnetIds]
         SecurityGroup: !Ref SecurityGroupId
       DefinitionString: |
         {
@@ -255,7 +256,7 @@ Resources:
                       ],
                       "NetworkConfiguration": {
                         "AwsvpcConfiguration": {
-                          "Subnets": ["${Subnet0}"],
+                          "Subnets": ["${Subnet0}", "${Subnet1}"],
                           "SecurityGroups": ["${SecurityGroup}"],
                           "AssignPublicIp": "DISABLED"
                         }
