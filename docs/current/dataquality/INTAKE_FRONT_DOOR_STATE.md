@@ -324,6 +324,37 @@ don't re-enrich unchanged content), and emits SNS progress
   `Loaded 11 page(s)`, `Processing pages 1-1...`.
 - Gate: `scripts/gate.sh` PASS, 1161 tests (commits `4bb5ee0`, `561e71f`).
 
+### Full-chain validation (2026-09-30) — PROVEN end-to-end + 5 bugs fixed
+
+Ran B400 through the real front door (S3 upload → trigger). The complete chain
+is demonstrated working:
+`PDF → (24GB) OCR → merge → chapter structure → trigger → dispatcher → phase1
+parse → parsed JSON`. Evidence: B400 ran on a **g5.xlarge (24GB)**, OCR'd all 6
+pages with **no OOM**, produced `input.md`; merge wrote
+`contentrepository/B400/chapter1/chapter1-content.md` + `chapter1-meta.yaml`;
+trigger queued it; dispatcher launched a phase1 task; output
+`output/content/B400/chapter1full-parsed.json` (13.5KB) + `-event.json` produced.
+
+The validation surfaced + fixed **five** real bugs (each committed, gated,
+deployed):
+1. **24GB VRAM floor** (`a00cc6e`) — Chandra OOMs on 16GB g4dn for ANY page
+   (not size-driven); g4dn removed from all pools, high-VRAM special-casing
+   dropped.
+2. **Controller stale-claim** (`12c702d`) — `ocrctl#{name}` from a terminal
+   prior job blocked re-routing forever; `routed` counted attempts not moves
+   (silent no-op). Now reclaims stale (terminal) claims + truthful counter.
+3. **Merge trigger queue match** (`0bdfca4`) — ocr-succeeded rule matched only
+   the spot queue; on-demand successes never merged. Now matches both.
+4. **Container fail-loud** (`a00cc6e`) — Chandra swallowed CUDA OOM + exited 0;
+   entrypoint now preserves the watchdog exit code (no silent-success upload).
+5. **NAT private-DNS conflict** (`1371c2f`) — dispatcher CreateNat failed while a
+   just-deleted endpoint's private-DNS lingered; `_create_endpoint` now waits it
+   out + retries.
+
+Gate: `scripts/gate.sh` PASS, 1175 tests. NAT auto-teardown confirmed (guard
+allows teardown when no OCR jobs in flight; pipeline completion SNS drives it).
+
+
 ## IAM compliance audit (2026-09-29)
 
 Triggered by a silent-deny bug: nat_manager's teardown guard was **blind**
