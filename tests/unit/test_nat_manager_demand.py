@@ -40,6 +40,22 @@ def _table_with(items):
 def _ecs_with(task_arns):
     e = MagicMock()
     e.list_tasks.return_value = {"taskArns": task_arns}
+
+    # Mirror the real describe_tasks: each task has a 'group'. Tasks whose ARN
+    # mentions openserp get the openserp service group (so the demand check's
+    # group-based exclusion can drop them); others are pipeline phase tasks.
+    def _describe(cluster, tasks):  # noqa: ARG001
+        out = []
+        for arn in tasks:
+            group = (
+                "service:dev-wwii-openserp"
+                if "openserp" in arn
+                else "family:dev-wwii-phase2-extract"
+            )
+            out.append({"taskArn": arn, "group": group})
+        return {"tasks": out}
+
+    e.describe_tasks.side_effect = _describe
     return e
 
 
@@ -77,6 +93,19 @@ def test_demand_present_when_running_pipeline_task():
         ),
     ):
         assert nm._nat_demand_present() is True
+
+
+def test_openserp_only_task_is_not_demand():
+    """Regression: an openserp SERVICE task must not count as pipeline demand.
+    The exclusion inspects the task GROUP (service:...openserp), not the ARN."""
+    # _ecs_with tags any ARN containing 'openserp' with the openserp group.
+    openserp_arn = "arn:aws:ecs:us-east-1:1:task/dev-wwii-pipeline/openserp-task-1"
+    with (
+        patch.object(nm, "_lease_table", return_value=_table_with([])),
+        patch.object(nm, "_ecs_client", return_value=_ecs_with([openserp_arn])),
+        patch.object(nm, "_ocr_jobs_in_flight", return_value=False),
+    ):
+        assert nm._nat_demand_present() is False
 
 
 def test_demand_present_when_ocr_batch_job_in_flight():

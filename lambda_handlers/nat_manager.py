@@ -80,13 +80,24 @@ def _nat_demand_present() -> bool:
             if ttl is None or int(ttl) > now:
                 logger.info("NAT demand: live lease present — keeping NAT")
                 return True
-        # 2) running pipeline tasks (exclude openserp support service)
-        running = (
-            _ecs_client()
-            .list_tasks(cluster=f"{ENV_NAME}-wwii-pipeline", desiredStatus="RUNNING")
-            .get("taskArns", [])
-        )
-        pipeline = [t for t in running if "openserp" not in t]
+        # 2) running pipeline tasks (exclude the openserp support SERVICE).
+        # NOTE: the openserp exclusion must inspect each task's GROUP
+        # (service:{env}-wwii-openserp), NOT the task ARN — the ARN is
+        # .../task/{cluster}/{taskId} and never contains 'openserp', so an
+        # ARN-substring check silently counted openserp as a pipeline task and
+        # pinned NAT up forever. describe_tasks to read the group.
+        ecs = _ecs_client()
+        running = ecs.list_tasks(
+            cluster=f"{ENV_NAME}-wwii-pipeline", desiredStatus="RUNNING"
+        ).get("taskArns", [])
+        pipeline = []
+        if running:
+            described = ecs.describe_tasks(
+                cluster=f"{ENV_NAME}-wwii-pipeline", tasks=running
+            ).get("tasks", [])
+            pipeline = [
+                t for t in described if "openserp" not in (t.get("group", "") or "")
+            ]
         if pipeline:
             logger.info(
                 "NAT demand: %d running pipeline task(s) — keeping NAT", len(pipeline)
