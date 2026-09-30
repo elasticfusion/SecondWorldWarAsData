@@ -64,16 +64,11 @@ class GrokVisionAnalyzer:  # pylint: disable=too-few-public-methods
         if self._client is not None:
             return self._client
         from src.grok_client import GrokClient
-        from src.utils.config import load_config
-        import os
-        import tempfile
+        from src.utils.config import load_config, get_paths
 
         cfg = load_config()
-        paths = cfg.get("paths", {}) if isinstance(cfg, dict) else {}
-        cache = paths.get("api_cache") or os.path.join(
-            tempfile.gettempdir(), "api_cache"
-        )
-        return GrokClient(cache)
+        paths = get_paths(cfg)
+        return GrokClient(paths["api_cache"])
 
     def analyze_frame(
         self, frame: bytes, roster: List[RosterCandidate], transcript_context: str
