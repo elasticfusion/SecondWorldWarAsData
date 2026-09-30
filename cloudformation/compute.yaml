@@ -360,7 +360,11 @@ Resources:
       Runtime: python3.12
       Handler: lambda_handlers.trigger_handler.handler
       Timeout: 240
-      MemorySize: 128
+      # 128MB OOM-killed the handler mid-execution (used 127/128MB) AFTER writing
+      # an OCR claim but BEFORE submitting the job — a silent doc drop (B401). The
+      # handler reads the manifest + creates boto3 clients (batch/ecs/sns/ec2/dynamo)
+      # + waits on NAT; 512MB gives headroom.
+      MemorySize: 512
       Role: !Ref LambdaExecutionRoleArn
       Code:
         S3Bucket: !Ref LambdaCodeBucket
