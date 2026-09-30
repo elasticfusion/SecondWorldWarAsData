@@ -109,25 +109,43 @@ def _warn_if_near_quota() -> None:
         )
 
 
-def _resubmit_to_ondemand(job: dict) -> None:
-    """Resubmit a spot-starved job to the on-demand queue (once), terminate the
-    spot job, and record the move. Reuses the job's container command so the same
-    input/output/page-range is OCR'd."""
+def _resubmit_to_ondemand(job: dict) -> bool:
+    """Resubmit a spot-starved job to the on-demand queue, terminate the spot job,
+    and record the move. Reuses the job's container command so the same
+    input/output/page-range is OCR'd. Returns True iff a move actually happened.
+
+    The ocrctl#{name} claim prevents moving the SAME live job twice. But a claim
+    left over from a PRIOR job of the same name (now terminal) must not block a
+    freshly-submitted job forever — so a claim whose recorded spot_job_id is in a
+    terminal state is treated as stale and overwritten. (Bug: a stale claim
+    silently no-op'd every hourly re-route while `routed` still reported 1.)"""
     name = job["jobName"]
     ident = f"ocrctl#{name}"
     table = _table()
-    # Claim the move atomically — a job is moved at most once.
+    now = int(time.time())
+    claim = {
+        "cache_key": ident,
+        "ondemand_started_at": now,
+        "spot_job_id": job["jobId"],
+    }
     try:
         table.put_item(
-            Item={
-                "cache_key": ident,
-                "ondemand_started_at": int(time.time()),
-                "spot_job_id": job["jobId"],
-            },
-            ConditionExpression="attribute_not_exists(cache_key)",
+            Item=claim, ConditionExpression="attribute_not_exists(cache_key)"
         )
     except table.meta.client.exceptions.ConditionalCheckFailedException:
-        return  # already moved
+        # A claim exists. If it's for THIS same live job, it's genuinely already
+        # moved — skip. If it's a stale claim from a prior (terminal) job of the
+        # same name, overwrite it and proceed so the new job gets routed.
+        existing = table.get_item(Key={"cache_key": ident}).get("Item", {})
+        prior_spot = existing.get("spot_job_id")
+        if prior_spot == job["jobId"]:
+            logger.info("Already routed %s (same job) — skip", name)
+            return False
+        if not _job_is_terminal(prior_spot):
+            logger.info("Route claim for %s held by a live job — skip", name)
+            return False
+        logger.info("Stale route claim for %s (prior job terminal) — reclaiming", name)
+        table.put_item(Item=claim)  # overwrite the stale claim
     batch = _batch()
     # Recover the original container command to replicate the job.
     desc = batch.describe_jobs(jobs=[job["jobId"]])["jobs"]
@@ -146,20 +164,39 @@ def _resubmit_to_ondemand(job: dict) -> None:
             ExpressionAttributeValues={":j": resp["jobId"]},
         )
         logger.info("Routed spot-starved %s -> on-demand %s", name, resp["jobId"])
+        return True
     except Exception as e:
         table.delete_item(Key={"cache_key": ident})  # release for retry
         logger.error("Failed to route %s to on-demand: %s", name, e)
+        return False
+
+
+def _job_is_terminal(job_id) -> bool:
+    """True if the Batch job is gone or in a terminal state (SUCCEEDED/FAILED).
+    A missing/undescribable job is treated as terminal (nothing live to protect).
+    Used to detect a stale route claim left by a prior job of the same name."""
+    if not job_id:
+        return True
+    try:
+        jobs = _batch().describe_jobs(jobs=[job_id]).get("jobs", [])
+        if not jobs:
+            return True
+        return jobs[0].get("status") in ("SUCCEEDED", "FAILED")
+    except Exception as e:  # pragma: no cover - defensive; assume NOT terminal
+        logger.warning("Could not describe %s (%s) — treating as live", job_id, e)
+        return False
 
 
 def _route_spot_starved() -> int:
-    """Route jobs stuck RUNNABLE on the spot queue > SPOT_WAIT_SECS to on-demand."""
+    """Route jobs stuck RUNNABLE on the spot queue > SPOT_WAIT_SECS to on-demand.
+    Counts only jobs ACTUALLY moved (not attempts) so the metric is truthful."""
     now = int(time.time())
     routed = 0
     for job in _list_jobs(SPOT_QUEUE, "RUNNABLE"):
         created = int(job.get("createdAt", now * 1000)) / 1000  # ms -> s
         if now - created >= SPOT_WAIT_SECS:
-            _resubmit_to_ondemand(job)
-            routed += 1
+            if _resubmit_to_ondemand(job):
+                routed += 1
     return routed
 
 

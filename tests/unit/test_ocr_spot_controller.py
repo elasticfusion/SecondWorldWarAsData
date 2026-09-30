@@ -55,6 +55,78 @@ def test_resubmit_to_ondemand_moves_once(table):
     assert rec["ondemand_job_id"] == "od-1"
 
 
+def test_stale_claim_from_terminal_prior_job_is_reclaimed(table):
+    """A leftover ocrctl# claim from a PRIOR (terminal) job of the same name must
+    NOT block a freshly-submitted job — it is reclaimed and the new job routed.
+    (Regression: stale claim silently no-op'd every hourly re-route.)"""
+    # Pre-seed a stale claim pointing at an old job id.
+    table.put_item(
+        Item={
+            "cache_key": "ocrctl#chandra-B400",
+            "spot_job_id": "old-spot-job",
+            "ondemand_started_at": 1,
+        }
+    )
+    batch = MagicMock()
+
+    def _describe(jobs):
+        jid = jobs[0]
+        status = "SUCCEEDED" if jid == "old-spot-job" else "RUNNABLE"
+        return {"jobs": [{"status": status, "container": {"command": ["s3://in"]}}]}
+
+    batch.describe_jobs.side_effect = _describe
+    batch.submit_job.return_value = {"jobId": "od-new"}
+    new_job = {"jobName": "chandra-B400", "jobId": "new-spot-job"}
+    with patch.object(ctl, "_batch", return_value=batch):
+        moved = ctl._resubmit_to_ondemand(new_job)
+    assert moved is True
+    assert batch.submit_job.call_count == 1
+    rec = table.get_item(Key={"cache_key": "ocrctl#chandra-B400"})["Item"]
+    assert rec["spot_job_id"] == "new-spot-job"
+    assert rec["ondemand_job_id"] == "od-new"
+
+
+def test_claim_held_by_live_prior_job_blocks(table):
+    """If the prior claim's job is still LIVE (not terminal), do not re-route."""
+    table.put_item(
+        Item={
+            "cache_key": "ocrctl#chandra-C",
+            "spot_job_id": "live-old",
+            "ondemand_started_at": 1,
+        }
+    )
+    batch = MagicMock()
+    batch.describe_jobs.return_value = {"jobs": [{"status": "RUNNING"}]}
+    with patch.object(ctl, "_batch", return_value=batch):
+        moved = ctl._resubmit_to_ondemand({"jobName": "chandra-C", "jobId": "new-C"})
+    assert moved is False
+    batch.submit_job.assert_not_called()
+
+
+def test_route_spot_starved_counts_only_actual_moves(table):
+    """`routed` must count jobs ACTUALLY moved, not attempts (the misleading
+    metric that hid the stale-claim no-op)."""
+    import time as _t
+
+    old = int((_t.time() - 7200) * 1000)  # created 2h ago -> past SPOT_WAIT
+    batch = MagicMock()
+    paginator = MagicMock()
+    paginator.paginate.return_value = [
+        {"jobSummaryList": [{"jobName": "chandra-Z", "jobId": "z1", "createdAt": old}]}
+    ]
+    batch.get_paginator.return_value = paginator
+    with (
+        patch.object(ctl, "_batch", return_value=batch),
+        patch.object(ctl, "_resubmit_to_ondemand", return_value=False),
+    ):
+        assert ctl._route_spot_starved() == 0  # attempt made but not moved
+    with (
+        patch.object(ctl, "_batch", return_value=batch),
+        patch.object(ctl, "_resubmit_to_ondemand", return_value=True),
+    ):
+        assert ctl._route_spot_starved() == 1
+
+
 def test_flag_oom_to_review_once(table):
     """A FAILED job with watchdog exit 76 (OOM) is alerted/flagged for review
     once (24GB is the floor, so no auto-retry); a second pass is a no-op."""
