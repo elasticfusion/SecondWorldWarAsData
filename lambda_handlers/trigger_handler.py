@@ -714,11 +714,13 @@ def _run_task(task_def, source, book_name="", extra_env=None):
         # stale — treating "not RUNNING" as stale is the G1 race that let a 2nd
         # doc clear the lock and double-launch. Only a genuinely dead lock (no
         # task in ANY live state) may be reclaimed.
-        live = []
-        for status in ("PROVISIONING", "PENDING", "RUNNING"):
-            live += ecs.list_tasks(
-                cluster=CLUSTER, family=family, desiredStatus=status
-            ).get("taskArns", [])
+        # NOTE: ECS list_tasks desiredStatus accepts only RUNNING/PENDING/STOPPED
+        # (PROVISIONING is a lastStatus, not a desiredStatus). desiredStatus=RUNNING
+        # already covers tasks whose lastStatus is PROVISIONING/PENDING/RUNNING, so
+        # querying RUNNING is sufficient to see every not-yet-stopped task.
+        live = ecs.list_tasks(
+            cluster=CLUSTER, family=family, desiredStatus="RUNNING"
+        ).get("taskArns", [])
         if not live:
             logger.info("Stale lock for %s (no live task), clearing", lock_key)
             dynamo.delete_item(Key={"cache_key": lock_key})

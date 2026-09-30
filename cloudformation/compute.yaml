@@ -538,8 +538,12 @@ Resources:
           # without the key it fails every run ('No GROK_API_KEY available') and
           # batches are never retrieved -> the pipeline stalls after phase2 submit.
           SECRETS_ID: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
-
-  # OCR -> parse handoff (UNATTENDED_READINESS #1): on Chandra OCR job SUCCEEDED
+          # The poller RunTask's the retrieve task on Fargate; without the VPC
+          # config run_task fails 'subnets can not be empty' and completed batches
+          # are never retrieved -> the pipeline stalls after phase2 (same class as
+          # the SECRETS_ID gap above).
+          PRIVATE_SUBNET_IDS: !Sub "${PrivateSubnet1Id},${PrivateSubnet2Id}"
+          SECURITY_GROUP_ID: !Ref LambdaSGId
   # (EventBridge rule in events.yaml), merge ocr-output/{book} markdown into
   # contentrepository/{book}/{book}.md, which triggers the parse phase.
   OcrMergeFunction:

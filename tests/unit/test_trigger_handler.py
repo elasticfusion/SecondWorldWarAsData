@@ -88,10 +88,13 @@ def test_run_task_does_not_clear_lock_when_task_provisioning(dynamodb_table):
     )
 
     def fake_list_tasks(cluster, family, desiredStatus):
-        # No RUNNING, but a PROVISIONING task exists (NAT cold-start window)
+        # A task whose lastStatus is PROVISIONING (NAT cold-start window) still
+        # has desiredStatus=RUNNING — ECS list_tasks(desiredStatus=RUNNING) returns
+        # it. desiredStatus only accepts RUNNING/PENDING/STOPPED (PROVISIONING is a
+        # lastStatus, not a valid desiredStatus filter).
         return (
             {"taskArns": ["arn:task/x"]}
-            if desiredStatus == "PROVISIONING"
+            if desiredStatus == "RUNNING"
             else {"taskArns": []}
         )
 
