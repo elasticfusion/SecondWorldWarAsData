@@ -14,14 +14,22 @@ from lambda_handlers import trigger_handler as th
 def test_split_by_media_separates_pdf_from_parseable():
     keys = [
         "contentrepository/NARA/B-Series/B 400-499/B460.pdf",
-        "contentrepository/B405/B405.md",
-        "contentrepository/x/doc.docx",
+        "contentrepository/maps/normandy.png",  # image -> OCR
+        "contentrepository/B405/B405.md",  # markdown -> parse
+        "contentrepository/notes/x.txt",  # text -> parse
+        "contentrepository/x/doc.docx",  # binary -> needs convert (excluded)
+        "contentrepository/books/y.epub",  # binary -> needs convert (excluded)
     ]
-    pdfs, others = th._split_by_media(keys)
-    assert pdfs == ["contentrepository/NARA/B-Series/B 400-499/B460.pdf"]
-    assert set(others) == {
+    ocr_keys, parse_keys = th._split_by_media(keys)
+    # PDFs AND images go to OCR (Chandra reads both)
+    assert set(ocr_keys) == {
+        "contentrepository/NARA/B-Series/B 400-499/B460.pdf",
+        "contentrepository/maps/normandy.png",
+    }
+    # only already-textual content parses; epub/docx are excluded (need pandoc)
+    assert set(parse_keys) == {
         "contentrepository/B405/B405.md",
-        "contentrepository/x/doc.docx",
+        "contentrepository/notes/x.txt",
     }
 
 
@@ -43,6 +51,22 @@ def test_submit_ocr_submits_chandra_batch_job():
     )
     assert cmd[1] == f"s3://{th.BUCKET}/ocr-output/B460/"
     assert len(cmd) == 2
+
+
+def test_submit_ocr_image_single_whole_job():
+    """An image routes to a single whole OCR job (no page-range; Chandra OCRs
+    the scan directly). Reuses _ocr_chunks' image path."""
+    batch = MagicMock()
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "dynamo", MagicMock()),
+    ):
+        ok = th._submit_ocr("contentrepository/maps/normandy.png")
+    assert ok is True
+    cmd = batch.submit_job.call_args.kwargs["containerOverrides"]["command"]
+    assert cmd[0] == f"s3://{th.BUCKET}/contentrepository/maps/normandy.png"
+    assert cmd[1] == f"s3://{th.BUCKET}/ocr-output/normandy/"
+    assert len(cmd) == 2  # whole-job, no --page-range
 
 
 def test_submit_ocr_returns_false_on_error():

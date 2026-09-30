@@ -120,11 +120,29 @@ def _content_keys(keys: list) -> list:
 
 
 def _split_by_media(keys: list) -> tuple:
-    """Split content keys into (pdf_keys, parse_keys). PDFs need OCR (Phase 0);
-    everything else (.md/.txt/.docx/.epub/.html) goes to the parse path."""
-    pdfs = [k for k in keys if k.lower().endswith(".pdf")]
-    others = [k for k in keys if not k.lower().endswith(".pdf")]
-    return pdfs, others
+    """Split content keys into (ocr_keys, parse_keys).
+
+    OCR (Chandra GPU, Phase 0): PDFs AND images (.jpg/.png/.tif/... incl scanned
+    maps) — Chandra reads both; `_ocr_chunks` handles the single-image case. OCR
+    output is later promoted to contentrepository/ and re-triggers parse.
+
+    Parse: already-textual content (.md/.txt/.html) goes straight to the parse
+    path. NOTE: .epub/.docx are text-bearing but BINARY — they need a pandoc
+    conversion step (Phase-0 ingestion task) before parse and are handled
+    separately (not returned here as parse_keys, which would feed the markdown
+    parser a binary blob). Until that convert task is wired they are left for the
+    Phase-0 path; see the multi-format routing follow-up.
+    """
+    ocr_suffixes = (".pdf",) + _IMAGE_SUFFIXES
+    ocr_keys = [k for k in keys if k.lower().endswith(ocr_suffixes)]
+    convert_suffixes = (".epub", ".docx")
+    parse_keys = [
+        k
+        for k in keys
+        if not k.lower().endswith(ocr_suffixes)
+        and not k.lower().endswith(convert_suffixes)
+    ]
+    return ocr_keys, parse_keys
 
 
 def _batch_client():

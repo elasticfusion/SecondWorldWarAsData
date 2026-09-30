@@ -35,6 +35,20 @@ def test_book_from_jobname_fallback():
     assert om._book_from_event({"jobName": "chandra-B421"}) == "B421"
 
 
+def test_book_from_image_input():
+    """Book name derives from an image input too (Chandra OCRs scanned maps)."""
+    d = {
+        "jobName": "chandra-normandy",
+        "container": {
+            "command": [
+                "s3://dev-wwii-data-pipeline/contentrepository/maps/normandy.png",
+                "s3://dev-wwii-data-pipeline/ocr-output/normandy/",
+            ]
+        },
+    }
+    assert om._book_from_event(d) == "normandy"
+
+
 def test_handler_ignores_non_succeeded():
     out = om.handler(_event(status="RUNNING"), None)
     assert out["action"] == "none"

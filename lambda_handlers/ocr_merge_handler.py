@@ -38,11 +38,16 @@ def _book_from_event(detail: dict) -> str:
     job's S3 input path if present, else parse the jobName.
     """
     job_name = detail.get("jobName", "")
-    # Try the container command's input path first (most reliable).
+    # Try the container command's input path first (most reliable). Handle any
+    # OCR-able input extension (PDF or an image — Chandra OCRs scanned maps/plates
+    # too), not just .pdf.
+    _ocr_exts = (".pdf", ".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp", ".bmp")
     cmd = (detail.get("container", {}) or {}).get("command", []) or []
     for arg in cmd:
-        if arg.startswith("s3://") and arg.endswith(".pdf"):
-            return arg.rsplit("/", 1)[-1][:-4]  # strip .pdf
+        low = arg.lower()
+        if arg.startswith("s3://") and low.endswith(_ocr_exts):
+            fname = arg.rsplit("/", 1)[-1]
+            return fname.rsplit(".", 1)[0]  # strip extension
     if job_name.startswith("chandra-"):
         return job_name[len("chandra-") :]
     return ""
