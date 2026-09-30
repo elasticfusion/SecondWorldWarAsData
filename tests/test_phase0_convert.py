@@ -58,3 +58,31 @@ def test_convert_key_conversion_failure_returns_empty():
 def test_main_requires_convert_key(monkeypatch):
     monkeypatch.delenv("CONVERT_KEY", raising=False)
     assert p0.main() == 2
+
+
+def test_convert_rejects_media_type_mismatch(monkeypatch, tmp_path):
+    """A .epub whose bytes are actually HTML is REJECTED — no convert, a
+    needs-review marker is written + an alert published; returns ''."""
+    s3 = MagicMock()
+
+    # Make the downloaded temp file contain HTML bytes (mismatch vs .epub).
+    def _fake_download(bucket, key, local):
+        with open(local, "wb") as fh:
+            fh.write(b"<!DOCTYPE html>\n<html>...")
+
+    s3.download_file.side_effect = _fake_download
+    convert_called = MagicMock()
+    with (
+        patch.object(p0.boto3, "client", return_value=s3),
+        patch.object(p0, "convert_to_markdown", convert_called),
+    ):
+        out = p0.convert_key("contentrepository/books/fake.epub")
+    assert out == ""
+    convert_called.assert_not_called()  # never fed to pandoc
+    # a needs-review marker was written (not under contentrepository/)
+    marker_writes = [
+        c
+        for c in s3.put_object.call_args_list
+        if c.kwargs.get("Key", "").startswith("needs-review/media-mismatch/")
+    ]
+    assert marker_writes, "expected a needs-review marker"

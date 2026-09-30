@@ -16,6 +16,7 @@ See docs/current/dataquality/INGESTION_FRONT_END.md (step 2).
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
@@ -161,6 +162,51 @@ def detect_media_type(
         resolved = declared or by_ext or sniffed
 
     return resolved or "unsupported"
+
+
+@dataclass
+class MediaMismatch:
+    """Verdict on whether a file's DECLARED type (extension) matches its ACTUAL
+    content (sniffed magic bytes). ``is_mismatch`` True means the file is
+    misassigned and MUST be rejected from processing (a .epub that is really a
+    .zip/.txt, a .pdf that is actually HTML, an image with the wrong extension)."""
+
+    is_mismatch: bool
+    declared: Optional[MediaType]  # from the extension
+    detected: Optional[MediaType]  # from magic-byte sniffing
+    reason: str = ""
+
+
+def detect_media_mismatch(
+    path: Path, *, content_type: Optional[str] = None
+) -> MediaMismatch:
+    """Return a mismatch verdict for ``path``.
+
+    A mismatch is a *definite* contradiction: the extension says one media type
+    and the bytes clearly say a DIFFERENT one. We only flag when sniffing yields
+    a confident, contradictory answer — an unsniffable file (no magic match) is
+    NOT a mismatch (we can't prove it wrong), and a matching/absent extension is
+    fine. Callers (intake / convert / OCR entry) reject True verdicts to
+    needs-review rather than feeding a misassigned blob downstream."""
+    by_ext = _from_extension(path)
+    sniffed = _sniff_magic_bytes(path)
+    declared_ct = _from_content_type(content_type)
+
+    # Compare the strongest declared signal (content-type, else extension)
+    # against the sniffed bytes. Only a confident, contradictory sniff flags.
+    declared = declared_ct or by_ext
+    if sniffed and declared and sniffed != declared:
+        return MediaMismatch(
+            is_mismatch=True,
+            declared=declared,
+            detected=sniffed,
+            reason=(
+                f"declared '{declared}' (from "
+                f"{'content-type' if declared_ct else 'extension'}) but content "
+                f"sniffs as '{sniffed}'"
+            ),
+        )
+    return MediaMismatch(is_mismatch=False, declared=declared, detected=sniffed)
 
 
 def build_source_metadata(
