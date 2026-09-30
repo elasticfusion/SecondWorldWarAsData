@@ -17,10 +17,11 @@ def test_split_by_media_separates_pdf_from_parseable():
         "contentrepository/maps/normandy.png",  # image -> OCR
         "contentrepository/B405/B405.md",  # markdown -> parse
         "contentrepository/notes/x.txt",  # text -> parse
-        "contentrepository/x/doc.docx",  # binary -> needs convert (excluded)
-        "contentrepository/books/y.epub",  # binary -> needs convert (excluded)
+        "contentrepository/x/doc.docx",  # binary -> convert
+        "contentrepository/books/y.epub",  # binary -> convert
+        "contentrepository/vid/Battle.mp4",  # video -> video task
     ]
-    ocr_keys, convert_keys, parse_keys = th._split_by_media(keys)
+    ocr_keys, convert_keys, video_keys, parse_keys = th._split_by_media(keys)
     # PDFs AND images go to OCR (Chandra reads both)
     assert set(ocr_keys) == {
         "contentrepository/NARA/B-Series/B 400-499/B460.pdf",
@@ -31,11 +32,26 @@ def test_split_by_media_separates_pdf_from_parseable():
         "contentrepository/x/doc.docx",
         "contentrepository/books/y.epub",
     }
+    # video goes to the video task (NOT silently dropped)
+    assert set(video_keys) == {"contentrepository/vid/Battle.mp4"}
     # only already-textual content parses directly
     assert set(parse_keys) == {
         "contentrepository/B405/B405.md",
         "contentrepository/notes/x.txt",
     }
+
+
+def test_submit_video_launches_phase0_video_task():
+    """A video routes to a demand-only Phase-0 video task with VIDEO_KEY."""
+    with patch.object(th, "_run_task") as run:
+        th._submit_video("contentrepository/vid/Battle of the Bulge.mp4")
+    args, kwargs = run.call_args
+    assert args[0] == th.PHASE0_VIDEO_TASK_DEF
+    assert kwargs["book_name"] == "Battle_of_the_Bulge"
+    assert {
+        "name": "VIDEO_KEY",
+        "value": "contentrepository/vid/Battle of the Bulge.mp4",
+    } in kwargs["extra_env"]
 
 
 def test_submit_ocr_submits_chandra_batch_job():

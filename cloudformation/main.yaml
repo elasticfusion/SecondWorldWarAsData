@@ -21,6 +21,10 @@ Parameters:
   PipelineImageUri:
     Type: String
     Description: ECR image URI for pipeline container
+  VideoImageUri:
+    Type: String
+    Default: ''
+    Description: ECR image URI for the separate video-processing container (optional)
   NotificationEmail:
     Type: String
     Default: ''
@@ -103,6 +107,7 @@ Resources:
         LambdaCodeKey: !Ref LambdaCodeKey
         OpenSerpImageUri: !Ref OpenSerpImageUri
         PipelineImageUri: !Ref PipelineImageUri
+        VideoImageUri: !Ref VideoImageUri
 
   EventsStack:
     Type: AWS::CloudFormation::Stack

@@ -51,6 +51,13 @@ Parameters:
   PipelineImageUri:
     Type: String
     Description: ECR image URI for pipeline container
+  VideoImageUri:
+    Type: String
+    Default: ""
+    Description: >-
+      ECR image URI for the SEPARATE video-processing container (Dockerfile.video,
+      ffmpeg + transcription + speaker-id). Optional: the Phase-0 video task def is
+      only created when supplied.
   BatchPollerIntervalMinutes:
     Type: Number
     Default: 5
@@ -67,6 +74,9 @@ Parameters:
     Type: Number
     Default: 30
     Description: Minutes to wait before tearing down networking after Phase 2 (dedup review window)
+
+Conditions:
+  HasVideoImage: !Not [!Equals [!Ref VideoImageUri, ""]]
 
 Resources:
   # --- ECS Cluster ---
@@ -172,6 +182,42 @@ Resources:
               awslogs-group: !Ref PipelineLogGroup
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: phase0
+
+  Phase0VideoTaskDef:
+    Condition: HasVideoImage
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${EnvironmentName}-wwii-phase0-video
+      # Bigger than the text tasks — video decode is CPU/memory heavy + needs
+      # scratch space for the downloaded video + extracted audio/frames.
+      Cpu: '2048'
+      Memory: '8192'
+      EphemeralStorage:
+        SizeInGiB: 50
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      TaskRoleArn: !Ref ECSTaskRoleArn
+      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
+      ContainerDefinitions:
+        - Name: pipeline
+          Image: !Ref VideoImageUri
+          StopTimeout: 30
+          Command: ['phase0_video.py']
+          Environment:
+            - Name: AWS_DEFAULT_REGION
+              Value: !Ref AWS::Region
+            - Name: S3_BUCKET
+              Value: !Ref DataBucketName
+            - Name: SECRETS_ID
+              Value: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
+            - Name: NOTIFICATION_TOPIC_ARN
+              Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref PipelineLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: phase0video
 
   Phase1TaskDef:
     Type: AWS::ECS::TaskDefinition
@@ -332,6 +378,7 @@ Resources:
           NETWORKING_STACK: !Sub ${EnvironmentName}-wwii-networking
           PHASE1_TASK_DEF: !Ref Phase1TaskDef
           PHASE0_TASK_DEF: !Ref Phase0TaskDef
+          PHASE0_VIDEO_TASK_DEF: !Sub ${EnvironmentName}-wwii-phase0-video
           PHASE2_TASK_DEF: !Ref Phase2TaskDef
           PHASE3_TASK_DEF: !Ref Phase3TaskDef
           NAT_WAIT_SECONDS: !Ref NatWaitSeconds

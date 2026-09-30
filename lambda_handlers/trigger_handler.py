@@ -80,6 +80,12 @@ _CONTENT_SUFFIXES = (
     ".epub",
     ".html",
     ".txt",
+    ".mp4",
+    ".mkv",
+    ".mov",
+    ".webm",
+    ".avi",
+    ".m4v",
 )
 
 
@@ -121,25 +127,28 @@ def _content_keys(keys: list) -> list:
 
 
 def _split_by_media(keys: list) -> tuple:
-    """Split content keys into (ocr_keys, convert_keys, parse_keys).
+    """Split content keys into (ocr_keys, convert_keys, video_keys, parse_keys).
 
     OCR (Chandra GPU, Phase 0): PDFs AND images (.jpg/.png/.tif/... incl scanned
     maps) — Chandra reads both.
     Convert (pandoc, Phase-0 convert task): .epub/.docx — binary text documents
     that must be converted to markdown before parse.
+    Video (Phase-0 video task): .mp4/.mkv/... — transcribe + speaker-id -> markdown.
     Parse: already-textual content (.md/.txt/.html) goes straight to parse.
     """
     ocr_suffixes = (".pdf",) + _IMAGE_SUFFIXES
     convert_suffixes = (".epub", ".docx")
     ocr_keys = [k for k in keys if k.lower().endswith(ocr_suffixes)]
     convert_keys = [k for k in keys if k.lower().endswith(convert_suffixes)]
+    video_keys = [k for k in keys if k.lower().endswith(_VIDEO_SUFFIXES)]
     parse_keys = [
         k
         for k in keys
         if not k.lower().endswith(ocr_suffixes)
         and not k.lower().endswith(convert_suffixes)
+        and not k.lower().endswith(_VIDEO_SUFFIXES)
     ]
-    return ocr_keys, convert_keys, parse_keys
+    return ocr_keys, convert_keys, video_keys, parse_keys
 
 
 def _batch_client():
@@ -149,6 +158,10 @@ def _batch_client():
 
 _OCR_CHUNK_PAGES = int(os.environ.get("OCR_CHUNK_PAGES", "50"))
 _IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp", ".bmp")
+_VIDEO_SUFFIXES = (".mp4", ".mkv", ".mov", ".webm", ".avi", ".m4v")
+PHASE0_VIDEO_TASK_DEF = os.environ.get(
+    "PHASE0_VIDEO_TASK_DEF", f"{ENV_NAME}-wwii-phase0-video"
+)
 
 
 def _pdf_page_count(pdf_key: str) -> int:
@@ -355,6 +368,7 @@ TASK_FAMILIES = {
     PHASE2_TASK_DEF: f"{ENV_NAME}-wwii-phase2-extract",
     PHASE3_TASK_DEF: f"{ENV_NAME}-wwii-phase3-enrich",
     PHASE0_TASK_DEF: f"{ENV_NAME}-wwii-phase0-convert",
+    PHASE0_VIDEO_TASK_DEF: f"{ENV_NAME}-wwii-phase0-video",
 }
 
 ecs = boto3.client("ecs")
@@ -402,7 +416,7 @@ def handler(event, _context):
             if not content:
                 logger.info("No processable content in upload batch — nothing to do")
                 continue
-            ocr_keys, convert_keys, parse_keys = _split_by_media(content)
+            ocr_keys, convert_keys, video_keys, parse_keys = _split_by_media(content)
             # Raw PDFs/images -> Chandra OCR (Phase 0). OCR output later
             # re-triggers the parse path via its own upload.
             if ocr_keys:
@@ -418,6 +432,10 @@ def handler(event, _context):
             # structure, whose upload re-triggers parse (like OCR output).
             for k in convert_keys:
                 _submit_convert(k)
+            # Video -> Phase-0 video task (transcribe + speaker-id) -> chapter
+            # structure -> parse. Demand-launched; never silently dropped.
+            for k in video_keys:
+                _submit_video(k)
             if not parse_keys:
                 continue
             _queue_pending(parse_keys)
@@ -631,6 +649,19 @@ def _cancel_delayed_teardown():
         logger.info("Cancelled delayed teardown")
     except Exception:
         pass  # Schedule may not exist
+
+
+def _submit_video(key: str) -> None:
+    """Launch a demand-only Phase-0 VIDEO task for one video key (VIDEO_KEY
+    override). Transcribes + speaker-ids -> chapter structure -> parse fires.
+    Never a standing service — launched per upload, like _submit_ocr/_submit_convert."""
+    book = key.rsplit("/", 1)[-1].rsplit(".", 1)[0].replace(" ", "_")
+    _run_task(
+        PHASE0_VIDEO_TASK_DEF,
+        "content-uploaded-video",
+        book_name=book,
+        extra_env=[{"name": "VIDEO_KEY", "value": key}],
+    )
 
 
 def _submit_convert(key: str) -> None:

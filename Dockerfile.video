@@ -1,0 +1,36 @@
+# Separate video-processing container (operator decision): ffmpeg + the video
+# ingestion modules, isolated from the shared pipeline image so heavy A/V deps +
+# frequent video changes never touch the core pipeline. Demand-launched by the
+# trigger as the Phase-0 video task; transcribes + speaker-ids a video into the
+# chapter-structure markdown that the parse phase consumes.
+FROM python:3.12-slim@sha256:090ba77e2958f6af52a5341f788b50b032dd4ca28377d2893dcf1ecbdfdfe203 AS builder
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt -t /deps
+
+FROM python:3.12-slim@sha256:090ba77e2958f6af52a5341f788b50b032dd4ca28377d2893dcf1ecbdfdfe203
+
+WORKDIR /app
+
+# ffmpeg for audio extraction + frame sampling (the video-specific dependency).
+RUN apt-get update && apt-get upgrade -y --no-install-recommends && \
+    apt-get install -y --no-install-recommends ffmpeg && \
+    rm -rf /var/lib/apt/lists/* && \
+    useradd -r -s /bin/false -d /app pipeline && \
+    mkdir -p /tmp/pipeline && chown pipeline:pipeline /tmp/pipeline
+
+COPY --from=builder /deps /usr/local/lib/python3.12/site-packages/
+
+# Only what the video path needs: src/ (ingestion + grok client + utils),
+# prompts, config, and the entry.
+COPY src/ src/
+COPY prompts/ prompts/
+COPY config.yaml .
+COPY phase0_video.py .
+
+RUN chown -R pipeline:pipeline /app
+ENV PYTHONUNBUFFERED=1
+USER pipeline
+
+ENTRYPOINT ["python3", "phase0_video.py"]
