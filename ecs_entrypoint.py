@@ -2803,20 +2803,82 @@ def _enqueue_from_metrics(phase_script: str) -> bool:
         book,
         request_count,
     )
-    enqueue_job(
-        BatchJob(
-            batch_id=batch_id,
-            phase=phase,
-            book=book,
-            batch_name=metrics.get("batch_name", ""),
-            submitted_at=int(_t.time()),
-            status="pending",
-            request_count=request_count,
-        )
+    _enqueue_or_alert(
+        batch_id, phase, book, metrics.get("batch_name", ""), request_count
     )
-    logger.info("Enqueued batch job to DynamoDB: %s", batch_id)
     _notify_batch_submitted(phase, book, batch_id, request_count)
     return True
+
+
+def _enqueue_or_alert(
+    batch_id: str, phase: str, book: str, batch_name: str, request_count: int
+) -> None:
+    """Register the submitted batch for the poller (batch_job#) AND verify it
+    landed — a batch submitted to Grok but NOT enqueued is an orphan that stalls
+    the pipeline with no downstream signal (root cause of the Patton epub stall,
+    2026-09-30). Per the operator alerting principle: every transition logs, and
+    a failure OR an unexplained/anomalous outcome ALERTS (email+Slack), never
+    silent. We do not need to know WHY the transition failed to alert on it."""
+    import time as _t
+
+    try:
+        enqueue_job(
+            BatchJob(
+                batch_id=batch_id,
+                phase=phase,
+                book=book,
+                batch_name=batch_name,
+                submitted_at=int(_t.time()),
+                status="pending",
+                request_count=request_count,
+            )
+        )
+    except Exception as e:
+        _alert_anomaly(
+            "batch-enqueue-failed",
+            f"Batch {batch_id} was SUBMITTED to Grok ({book}, {request_count} reqs) "
+            f"but enqueue_job FAILED ({e}). The batch is ORPHANED — the poller will "
+            f"never retrieve it and the pipeline will stall. Manual recovery: write "
+            f"a batch_job#{batch_id} record (status=pending) so the poller picks it "
+            f"up.",
+        )
+        raise
+    # Verify the transition actually completed — do not trust the write blindly.
+    try:
+        from src.utils.job_queue import get_job as _get_job
+
+        if _get_job(batch_id) is None:
+            _alert_anomaly(
+                "batch-enqueue-anomaly",
+                f"Batch {batch_id} ({book}) reported enqueued but the batch_job# "
+                f"record is absent on read-back — anomalous. Treating as orphaned; "
+                f"investigate before the poll cycle.",
+            )
+    except Exception as e:  # verification is best-effort; never mask the enqueue
+        logger.warning("Post-enqueue verification skipped for %s: %s", batch_id, e)
+
+
+def _alert_anomaly(kind: str, message: str) -> None:
+    """Publish an anomaly alert to the notification topic (email + Slack). Used
+    for transitions that fail OR complete in an unexplained way. Best-effort:
+    an alerting failure is itself logged loudly but never raises over the caller."""
+    logger.error("ANOMALY [%s]: %s", kind, message)
+    try:
+        topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "") or os.environ.get(
+            "SNS_TOPIC_ARN", ""
+        )
+        if not topic_arn:
+            logger.error(
+                "No notification topic configured — anomaly UNALERTED: %s", kind
+            )
+            return
+        boto3.client("sns", region_name=REGION).publish(
+            TopicArn=topic_arn,
+            Subject=f"WWII Pipeline ANOMALY: {kind}",
+            Message=message,
+        )
+    except Exception as e:
+        logger.error("Failed to publish anomaly alert [%s]: %s", kind, e)
 
 
 def _notify_batch_submitted(

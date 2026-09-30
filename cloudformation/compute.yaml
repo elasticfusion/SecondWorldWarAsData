@@ -487,6 +487,10 @@ Resources:
       Environment:
         Variables:
           ENV_NAME: !Ref EnvironmentName
+          # The poller calls the Grok Batch API to retrieve completed batches;
+          # without the key it fails every run ('No GROK_API_KEY available') and
+          # batches are never retrieved -> the pipeline stalls after phase2 submit.
+          SECRETS_ID: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
 
   # OCR -> parse handoff (UNATTENDED_READINESS #1): on Chandra OCR job SUCCEEDED
   # (EventBridge rule in events.yaml), merge ocr-output/{book} markdown into
