@@ -33,6 +33,7 @@ OCR_JOB_DEF = os.environ.get("OCR_JOB_DEF", f"{ENV_NAME}-wwii-chandra")
 PHASE1_TASK_DEF = os.environ.get("PHASE1_TASK_DEF", f"{ENV_NAME}-wwii-phase1-parse")
 PHASE2_TASK_DEF = os.environ.get("PHASE2_TASK_DEF", f"{ENV_NAME}-wwii-phase2-extract")
 PHASE3_TASK_DEF = os.environ.get("PHASE3_TASK_DEF", f"{ENV_NAME}-wwii-phase3-enrich")
+PHASE0_TASK_DEF = os.environ.get("PHASE0_TASK_DEF", f"{ENV_NAME}-wwii-phase0-convert")
 
 CONTENT_TOPIC = f"{ENV_NAME}-wwii-content-uploaded"
 PARSED_TOPIC = f"{ENV_NAME}-wwii-chapter-parsed"
@@ -120,29 +121,25 @@ def _content_keys(keys: list) -> list:
 
 
 def _split_by_media(keys: list) -> tuple:
-    """Split content keys into (ocr_keys, parse_keys).
+    """Split content keys into (ocr_keys, convert_keys, parse_keys).
 
     OCR (Chandra GPU, Phase 0): PDFs AND images (.jpg/.png/.tif/... incl scanned
-    maps) — Chandra reads both; `_ocr_chunks` handles the single-image case. OCR
-    output is later promoted to contentrepository/ and re-triggers parse.
-
-    Parse: already-textual content (.md/.txt/.html) goes straight to the parse
-    path. NOTE: .epub/.docx are text-bearing but BINARY — they need a pandoc
-    conversion step (Phase-0 ingestion task) before parse and are handled
-    separately (not returned here as parse_keys, which would feed the markdown
-    parser a binary blob). Until that convert task is wired they are left for the
-    Phase-0 path; see the multi-format routing follow-up.
+    maps) — Chandra reads both.
+    Convert (pandoc, Phase-0 convert task): .epub/.docx — binary text documents
+    that must be converted to markdown before parse.
+    Parse: already-textual content (.md/.txt/.html) goes straight to parse.
     """
     ocr_suffixes = (".pdf",) + _IMAGE_SUFFIXES
-    ocr_keys = [k for k in keys if k.lower().endswith(ocr_suffixes)]
     convert_suffixes = (".epub", ".docx")
+    ocr_keys = [k for k in keys if k.lower().endswith(ocr_suffixes)]
+    convert_keys = [k for k in keys if k.lower().endswith(convert_suffixes)]
     parse_keys = [
         k
         for k in keys
         if not k.lower().endswith(ocr_suffixes)
         and not k.lower().endswith(convert_suffixes)
     ]
-    return ocr_keys, parse_keys
+    return ocr_keys, convert_keys, parse_keys
 
 
 def _batch_client():
@@ -357,6 +354,7 @@ TASK_FAMILIES = {
     PHASE1_TASK_DEF: f"{ENV_NAME}-wwii-phase1-parse",
     PHASE2_TASK_DEF: f"{ENV_NAME}-wwii-phase2-extract",
     PHASE3_TASK_DEF: f"{ENV_NAME}-wwii-phase3-enrich",
+    PHASE0_TASK_DEF: f"{ENV_NAME}-wwii-phase0-convert",
 }
 
 ecs = boto3.client("ecs")
@@ -404,18 +402,22 @@ def handler(event, _context):
             if not content:
                 logger.info("No processable content in upload batch — nothing to do")
                 continue
-            pdfs, parse_keys = _split_by_media(content)
-            # Raw PDFs -> Chandra OCR (Phase 0). OCR output later re-triggers the
-            # parse path via its own upload.
-            if pdfs:
+            ocr_keys, convert_keys, parse_keys = _split_by_media(content)
+            # Raw PDFs/images -> Chandra OCR (Phase 0). OCR output later
+            # re-triggers the parse path via its own upload.
+            if ocr_keys:
                 # GPU Batch instances launch into the private GPU subnets whose
                 # 0.0.0.0/0 route points at the dynamic NAT — they need egress to
                 # register with ECS + pull the Chandra image + read/write S3.
                 # Without NAT up, instances boot but never join the cluster and
                 # jobs sit RUNNABLE forever. Ensure NAT is up at OCR submit.
                 _ensure_nat_for_ocr()
-            for pdf in pdfs:
-                _submit_ocr(pdf)
+            for k in ocr_keys:
+                _submit_ocr(k)
+            # EPUB/DOCX -> Phase-0 convert task (pandoc). It writes the chapter
+            # structure, whose upload re-triggers parse (like OCR output).
+            for k in convert_keys:
+                _submit_convert(k)
             if not parse_keys:
                 continue
             _queue_pending(parse_keys)
@@ -631,8 +633,23 @@ def _cancel_delayed_teardown():
         pass  # Schedule may not exist
 
 
-def _run_task(task_def, source, book_name=""):
-    """Create networking, acquire lock, launch ECS task."""
+def _submit_convert(key: str) -> None:
+    """Launch a Phase-0 convert task for one epub/docx key (CONVERT_KEY override).
+    The task writes the chapter structure -> parse fires on that upload."""
+    book = key.rsplit("/", 1)[-1].rsplit(".", 1)[0].replace(" ", "_")
+    _run_task(
+        PHASE0_TASK_DEF,
+        "content-uploaded-convert",
+        book_name=book,
+        extra_env=[{"name": "CONVERT_KEY", "value": key}],
+    )
+
+
+def _run_task(task_def, source, book_name="", extra_env=None):
+    """Create networking, acquire lock, launch ECS task.
+
+    extra_env: optional list of {"name","value"} container env overrides (e.g.
+    CONVERT_KEY for the Phase-0 convert task)."""
     # Cancel any pending delayed teardown
     _cancel_delayed_teardown()
 
@@ -704,12 +721,17 @@ def _run_task(task_def, source, book_name=""):
         "Launching ECS task %s from %s (book=%s)", family, source, book_name or "all"
     )
     overrides = {}
+    env_over = []
     if book_name:
+        env_over.append({"name": "BOOK_NAME", "value": book_name})
+    if extra_env:
+        env_over.extend(extra_env)
+    if env_over:
         overrides = {
             "containerOverrides": [
                 {
                     "name": "pipeline",
-                    "environment": [{"name": "BOOK_NAME", "value": book_name}],
+                    "environment": env_over,
                 }
             ]
         }

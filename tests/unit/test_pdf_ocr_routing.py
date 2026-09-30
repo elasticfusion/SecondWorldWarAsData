@@ -20,13 +20,18 @@ def test_split_by_media_separates_pdf_from_parseable():
         "contentrepository/x/doc.docx",  # binary -> needs convert (excluded)
         "contentrepository/books/y.epub",  # binary -> needs convert (excluded)
     ]
-    ocr_keys, parse_keys = th._split_by_media(keys)
+    ocr_keys, convert_keys, parse_keys = th._split_by_media(keys)
     # PDFs AND images go to OCR (Chandra reads both)
     assert set(ocr_keys) == {
         "contentrepository/NARA/B-Series/B 400-499/B460.pdf",
         "contentrepository/maps/normandy.png",
     }
-    # only already-textual content parses; epub/docx are excluded (need pandoc)
+    # epub/docx go to the pandoc convert path
+    assert set(convert_keys) == {
+        "contentrepository/x/doc.docx",
+        "contentrepository/books/y.epub",
+    }
+    # only already-textual content parses directly
     assert set(parse_keys) == {
         "contentrepository/B405/B405.md",
         "contentrepository/notes/x.txt",
@@ -51,6 +56,20 @@ def test_submit_ocr_submits_chandra_batch_job():
     )
     assert cmd[1] == f"s3://{th.BUCKET}/ocr-output/B460/"
     assert len(cmd) == 2
+
+
+def test_submit_convert_launches_phase0_task():
+    """epub/docx route to a Phase-0 convert task with the CONVERT_KEY override."""
+    with patch.object(th, "_run_task") as run:
+        th._submit_convert("contentrepository/books/Patton at the Bulge.epub")
+    args, kwargs = run.call_args
+    assert args[0] == th.PHASE0_TASK_DEF
+    assert kwargs["book_name"] == "Patton_at_the_Bulge"
+    env = kwargs["extra_env"]
+    assert {
+        "name": "CONVERT_KEY",
+        "value": "contentrepository/books/Patton at the Bulge.epub",
+    } in env
 
 
 def test_submit_ocr_image_single_whole_job():

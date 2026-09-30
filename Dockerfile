@@ -9,8 +9,11 @@ FROM python:3.12-slim@sha256:090ba77e2958f6af52a5341f788b50b032dd4ca28377d2893dc
 
 WORKDIR /app
 
-# Create non-root user
-RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/* && \
+# Create non-root user. pandoc is required by the Phase-0 convert step
+# (src/ingestion/text_converters — epub/docx -> markdown via pandoc subprocess).
+RUN apt-get update && apt-get upgrade -y --no-install-recommends && \
+    apt-get install -y --no-install-recommends pandoc && \
+    rm -rf /var/lib/apt/lists/* && \
     useradd -r -s /bin/false -d /app pipeline && \
     mkdir -p /tmp/pipeline && chown pipeline:pipeline /tmp/pipeline
 
@@ -24,7 +27,7 @@ COPY prompts/ prompts/
 COPY search_queries/ search_queries/
 COPY config.yaml .
 COPY ecs_entrypoint.py .
-COPY phase0_ingest.py \
+COPY phase0_ingest.py phase0_convert.py \
      phase1_parse.py phase2_extract.py phase2_retry.py \
      phase3_enrich_data.py phase3_retry.py \
      import_to_dynamodb.py ./

@@ -144,6 +144,35 @@ Resources:
       RetentionInDays: 14
 
   # --- Pipeline ECS Task Definitions ---
+  Phase0TaskDef:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${EnvironmentName}-wwii-phase0-convert
+      Cpu: '512'
+      Memory: '1024'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      TaskRoleArn: !Ref ECSTaskRoleArn
+      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
+      ContainerDefinitions:
+        - Name: pipeline
+          Image: !Ref PipelineImageUri
+          StopTimeout: 30
+          Command: ['phase0_convert.py']
+          Environment:
+            - Name: AWS_DEFAULT_REGION
+              Value: !Ref AWS::Region
+            - Name: S3_BUCKET
+              Value: !Ref DataBucketName
+            - Name: NOTIFICATION_TOPIC_ARN
+              Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref PipelineLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: phase0
+
   Phase1TaskDef:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -302,6 +331,7 @@ Resources:
           NAT_MANAGER_FN: !Sub ${EnvironmentName}-wwii-nat-manager
           NETWORKING_STACK: !Sub ${EnvironmentName}-wwii-networking
           PHASE1_TASK_DEF: !Ref Phase1TaskDef
+          PHASE0_TASK_DEF: !Ref Phase0TaskDef
           PHASE2_TASK_DEF: !Ref Phase2TaskDef
           PHASE3_TASK_DEF: !Ref Phase3TaskDef
           NAT_WAIT_SECONDS: !Ref NatWaitSeconds
@@ -1008,6 +1038,8 @@ Outputs:
     Value: !GetAtt DedupGateFunction.Arn
   ECSClusterName:
     Value: !Ref ECSCluster
+  Phase0TaskDefArn:
+    Value: !Ref Phase0TaskDef
   Phase1TaskDefArn:
     Value: !Ref Phase1TaskDef
   Phase2TaskDefArn:
