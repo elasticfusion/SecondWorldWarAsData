@@ -13,6 +13,7 @@ from src.ingestion.speaker_id import (
     HeadshotSignal,
     RosterCandidate,
     RosterSource,
+    SpeakerRole,
     SpeakerSignals,
     resolve_speakers,
 )
@@ -137,3 +138,52 @@ def test_diarization_propagates_confident_identity_to_same_speaker():
     assert r_prop.method == "diarization"
     assert r_prop.needs_review is True  # inherited -> confirm
     assert r_other.person_id is None  # different voice, no signal -> unknown
+
+
+def test_on_screen_person_is_interviewee():
+    seg = SpeakerSignals(
+        "Speaker 1",
+        "00:00:10-00:00:20",
+        caption=CaptionSignal("Veteran X", "P_PATTON", 0.9),
+        on_screen_person=True,
+    )
+    (r,) = resolve_speakers([seg], _roster())
+    assert r.role == SpeakerRole.INTERVIEWEE
+    assert r.to_dict()["role"] == "interviewee"
+
+
+def test_offscreen_voice_is_narrator_role():
+    seg = SpeakerSignals("Speaker 1", "00:00:10-00:00:20", on_screen_person=False)
+    (r,) = resolve_speakers([seg], _roster())
+    assert r.role == SpeakerRole.NARRATOR
+
+
+def test_dominant_offscreen_voice_tagged_narrator_across_segments():
+    """The recurring off-screen voice (no headshot, voice-over) is the
+    documentary's narrator — tagged across all its segments, distinct from
+    on-camera interviewees."""
+    segs = [
+        SpeakerSignals("NARR", "00:00:00-00:00:10", on_screen_person=False),
+        SpeakerSignals("NARR", "00:01:00-00:01:10", on_screen_person=False),
+        SpeakerSignals("NARR", "00:02:00-00:02:10", on_screen_person=False),
+        SpeakerSignals(
+            "GUEST",
+            "00:03:00-00:03:10",
+            caption=CaptionSignal("Bradley", "P_BRADLEY", 0.95),
+            on_screen_person=True,
+        ),
+    ]
+    resolved = resolve_speakers(segs, _roster())
+    narr = [r for r in resolved if r.speaker_label == "NARR"]
+    guest = [r for r in resolved if r.speaker_label == "GUEST"][0]
+    assert all(r.role == SpeakerRole.NARRATOR for r in narr)
+    assert guest.role == SpeakerRole.INTERVIEWEE  # on-camera, not narrator
+    assert guest.person_id == "P_BRADLEY"
+
+
+def test_role_hint_from_perception_respected():
+    seg = SpeakerSignals(
+        "Speaker 1", "00:00:10-00:00:20", role_hint=SpeakerRole.ARCHIVAL
+    )
+    (r,) = resolve_speakers([seg], _roster())
+    assert r.role == SpeakerRole.ARCHIVAL

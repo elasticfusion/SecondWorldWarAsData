@@ -41,6 +41,20 @@ class RosterSource(str, Enum):
     TOPIC = "topic-roster"  # campaign/topic figures (ETO), widening fallback
 
 
+class SpeakerRole(str, Enum):
+    """A speaker's ROLE in the documentary — a provenance dimension distinct from
+    identity. The narrator is the filmmaker's EDITORIAL voice (a claim is the
+    documentary's framing); an interviewee/witness is a PRIMARY SOURCE; archival
+    is a quoted historical recording. Downstream extraction should weight a
+    narrator statement (editorial) differently from a witness statement (source).
+    """
+
+    NARRATOR = "narrator"  # the documentary's own voice-over
+    INTERVIEWEE = "interviewee"  # on-camera interview subject / witness
+    ARCHIVAL = "archival"  # quoted historical recording (e.g. a WWII speech)
+    UNKNOWN = "unknown"
+
+
 _ROSTER_TRUST: Dict[RosterSource, float] = {
     RosterSource.IMDB_CAST: 1.0,
     RosterSource.WIKIPEDIA: 0.9,
@@ -89,6 +103,11 @@ class SpeakerSignals:
     caption: Optional[CaptionSignal] = None
     headshots: List[HeadshotSignal] = field(default_factory=list)
     transcript_context: str = ""  # words near the timecode (a textual prior)
+    # Perception's role hint (9b): e.g. vision saw no on-screen person / speech
+    # over B-roll footage suggests NARRATOR; a face on camera suggests INTERVIEWEE.
+    # None -> the resolver infers from available signals.
+    role_hint: Optional["SpeakerRole"] = None
+    on_screen_person: Optional[bool] = None  # did the frame show a talking person?
 
 
 @dataclass
@@ -102,6 +121,7 @@ class ResolvedSpeaker:
     confidence: float
     method: str  # "caption" | "headshot" | "caption+headshot" | "diarization" | "none"
     needs_review: bool
+    role: "SpeakerRole" = None  # type: ignore[assignment]
     notes: str = ""
 
     def to_dict(self) -> dict:
@@ -112,6 +132,7 @@ class ResolvedSpeaker:
             "name": self.name,
             "confidence": round(self.confidence, 3),
             "method": self.method,
+            "role": (self.role.value if self.role else "unknown"),
             "needs_review": self.needs_review,
             "notes": self.notes,
         }
@@ -121,6 +142,24 @@ def _roster_trust(candidate: Optional[RosterCandidate]) -> float:
     if candidate is None:
         return 0.5  # off-roster (e.g. caption naming someone not listed)
     return _ROSTER_TRUST.get(candidate.source, 0.3)
+
+
+def _infer_role(signals: "SpeakerSignals") -> "SpeakerRole":
+    """Infer the speaker ROLE (narrator vs interviewee vs archival vs unknown).
+
+    Perception may hint it directly (role_hint); otherwise: a person visibly on
+    screen suggests INTERVIEWEE; speech with NO on-screen person (voice over
+    footage) suggests NARRATOR. We stay conservative — UNKNOWN when unsure — so
+    the role, like identity, is a flaggable signal, not a fabricated label.
+    (Final narrator disambiguation also uses corpus-level recurrence; see
+    _tag_narrator.)"""
+    if signals.role_hint is not None:
+        return signals.role_hint
+    if signals.on_screen_person is True:
+        return SpeakerRole.INTERVIEWEE
+    if signals.on_screen_person is False:
+        return SpeakerRole.NARRATOR
+    return SpeakerRole.UNKNOWN
 
 
 def _resolve_one(
@@ -239,5 +278,35 @@ def resolve_speakers(
     needs_review=True (flag, never fabricate)."""
     roster_by_id = {c.person_id: c for c in roster}
     resolved = [_resolve_one(s, roster_by_id) for s in segments]
+    # Attach the per-segment role inference (narrator/interviewee/...).
+    for r, s in zip(resolved, segments):
+        r.role = _infer_role(s)
     _propagate_diarization(resolved)
+    _tag_narrator(resolved)
     return resolved
+
+
+def _tag_narrator(resolved: List["ResolvedSpeaker"]) -> None:
+    """Corpus-level narrator disambiguation: the documentary's narrator is
+    typically the single most-recurring voice that is never shown on camera
+    (no headshot / off-screen). If one speaker_label dominates the off-screen
+    segments, tag ALL its segments NARRATOR (editorial voice), overriding a
+    weaker per-segment guess. Conservative: only when there's a clear dominant
+    off-screen voice."""
+    from collections import Counter
+
+    offscreen = Counter(
+        r.speaker_label
+        for r in resolved
+        if r.role in (SpeakerRole.NARRATOR, SpeakerRole.UNKNOWN)
+        and r.method in ("none", "diarization")
+    )
+    if not offscreen:
+        return
+    label, count = offscreen.most_common(1)[0]
+    # Require the candidate to actually dominate (>= 40% of all segments) to call
+    # it the narrator — avoids mislabeling a one-off off-screen speaker.
+    if count >= max(2, 0.4 * len(resolved)):
+        for r in resolved:
+            if r.speaker_label == label:
+                r.role = SpeakerRole.NARRATOR
