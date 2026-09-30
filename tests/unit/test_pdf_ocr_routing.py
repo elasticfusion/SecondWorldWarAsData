@@ -74,6 +74,60 @@ def test_submit_ocr_submits_chandra_batch_job():
     assert len(cmd) == 2
 
 
+def _dynamo_with_existing_claim():
+    """A dynamo mock whose conditional put_item raises ConditionalCheckFailed
+    (claim already exists); a later unconditional reclaim put succeeds."""
+
+    class _CCFE(Exception):
+        pass
+
+    dy = MagicMock()
+    dy.meta.client.exceptions.ConditionalCheckFailedException = _CCFE
+    calls = {"n": 0}
+
+    def put_item(**kwargs):
+        if "ConditionExpression" in kwargs and calls["n"] == 0:
+            calls["n"] += 1
+            raise _CCFE()
+        return {}
+
+    dy.put_item.side_effect = put_item
+    return dy
+
+
+def test_submit_ocr_claim_with_job_in_flight_skips():
+    """A claim with a REAL in-flight job is a legitimate duplicate — skip, no alert."""
+    dy = _dynamo_with_existing_claim()
+    with (
+        patch.object(th, "dynamo", dy),
+        patch.object(th, "_ocr_job_in_flight", return_value=True),
+        patch.object(th, "_alert_anomaly") as alert,
+        patch.object(th, "_batch_client") as bc,
+    ):
+        ok = th._submit_ocr("contentrepository/x/B401.pdf")
+    assert ok is False
+    alert.assert_not_called()
+    bc.assert_not_called()
+
+
+def test_submit_ocr_claim_without_job_alerts_and_reclaims():
+    """A claim with NO in-flight job is a silent drop (B401): alert the anomaly,
+    reclaim, and actually submit the OCR job."""
+    dy = _dynamo_with_existing_claim()
+    batch = MagicMock()
+    with (
+        patch.object(th, "dynamo", dy),
+        patch.object(th, "_ocr_job_in_flight", return_value=False),
+        patch.object(th, "_alert_anomaly") as alert,
+        patch.object(th, "_batch_client", return_value=batch),
+    ):
+        ok = th._submit_ocr("contentrepository/x/B401.pdf")
+    assert ok is True
+    alert.assert_called_once()
+    assert alert.call_args.args[0] == "ocr-claim-without-job"
+    batch.submit_job.assert_called()
+
+
 def test_submit_convert_launches_phase0_task():
     """epub/docx route to a Phase-0 convert task with the CONVERT_KEY override."""
     with patch.object(th, "_run_task") as run:

@@ -156,6 +156,45 @@ def _batch_client():
     return boto3.client("batch")
 
 
+def _alert_anomaly(kind: str, detail: str) -> None:
+    """Publish an anomaly alert (no-silent-failure principle): a transition that
+    did not complete as expected is itself an anomaly, even when the cause is
+    unknown. Fans out to email + Slack via the phase2-complete topic."""
+    logger.error("ANOMALY [%s]: %s", kind, detail)
+    topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", NOTIFY_TOPIC)
+    if not topic_arn:
+        return
+    try:
+        boto3.client("sns").publish(
+            TopicArn=topic_arn,
+            Subject=f"WWII Pipeline ANOMALY: {kind}",
+            Message=f"Anomaly [{kind}] at intake:\n\n{detail}",
+        )
+    except Exception as e:  # pragma: no cover
+        logger.warning("Failed to publish anomaly alert: %s", e)
+
+
+def _ocr_job_in_flight(book: str) -> bool:
+    """True if an OCR job for this book is in a non-terminal state on any OCR
+    queue. Used to distinguish a legitimate in-flight claim from a silent drop
+    (claim written but no job launched). Fails SAFE: on error, assume in flight
+    (do not reclaim on uncertain state)."""
+    queues = [OCR_JOB_QUEUE, f"{ENV_NAME}-wwii-chandra-gpu-ondemand"]
+    try:
+        batch = _batch_client()
+        for q in queues:
+            for status in ("SUBMITTED", "PENDING", "RUNNABLE", "STARTING", "RUNNING"):
+                jobs = batch.list_jobs(jobQueue=q, jobStatus=status).get(
+                    "jobSummaryList", []
+                )
+                if any(book in j.get("jobName", "") for j in jobs):
+                    return True
+        return False
+    except Exception as e:
+        logger.warning("OCR in-flight check failed for %s (assume yes): %s", book, e)
+        return True
+
+
 _OCR_CHUNK_PAGES = int(os.environ.get("OCR_CHUNK_PAGES", "50"))
 _IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp", ".bmp")
 _VIDEO_SUFFIXES = (".mp4", ".mkv", ".mov", ".webm", ".avi", ".m4v")
@@ -253,11 +292,31 @@ def _submit_ocr(pdf_key: str) -> bool:
                 ConditionExpression="attribute_not_exists(cache_key)",
             )
         except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
-            logger.info(
-                "OCR intake denied: %s already claimed (in-flight or recent) — skipping",
-                pdf_name,
+            # A claim exists. Per the no-silent-failure principle, verify a job is
+            # ACTUALLY in flight. A claim with NO running/queued OCR job is a silent
+            # drop (B401: the claim was written but submission never happened / the
+            # invocation died before submit) — it must ALERT and be reclaimed, not
+            # silently skipped forever.
+            if _ocr_job_in_flight(pdf_name):
+                logger.info(
+                    "OCR intake denied: %s already claimed (job in flight) — skipping",
+                    pdf_name,
+                )
+                return False
+            _alert_anomaly(
+                "ocr-claim-without-job",
+                f"OCR claim for {pdf_name} exists but NO OCR job is in flight — "
+                f"a prior submission was dropped (claim written, job never launched). "
+                f"Reclaiming and re-submitting.",
             )
-            return False
+            # Reclaim: overwrite the stale claim and proceed to submit.
+            dynamo.put_item(
+                Item={
+                    "cache_key": claim_key,
+                    "response": str(int(time.time())),
+                    "ttl": int(time.time()) + 86400,
+                }
+            )
         s3_input = f"s3://{BUCKET}/{pdf_key}"
         chunks = _ocr_chunks(pdf_key)
         try:

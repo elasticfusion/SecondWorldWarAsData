@@ -277,11 +277,14 @@ def test_submit_ocr_duplicate_is_denied(dynamodb_table):
     with (
         patch.object(th, "_batch_client", return_value=batch),
         patch.object(th, "_ocr_chunks", return_value=[""]),
+        # The duplicate arrives while the first job is genuinely in flight, so the
+        # second submission is correctly denied (no double-launch).
+        patch.object(th, "_ocr_job_in_flight", return_value=True),
     ):
         first = th._submit_ocr("contentrepository/B460/B460.pdf")
         second = th._submit_ocr("contentrepository/B460/B460.pdf")  # duplicate event
     assert first is True
-    assert second is False  # denied at intake
+    assert second is False  # denied at intake (job in flight)
     assert batch.submit_job.call_count == 1  # only ONE GPU job submitted
 
 
