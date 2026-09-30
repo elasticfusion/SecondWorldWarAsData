@@ -48,6 +48,26 @@ def _book_from_key(key: str) -> str:
     return stem.replace(" ", "_")
 
 
+def _load_grok_key() -> None:
+    """Load GROK_API_KEY into the env from Secrets Manager (SECRETS_ID) so
+    GrokTranscriber + GrokVisionAnalyzer (which read GROK_API_KEY) work in the
+    container. No-op if the key is already set or no SECRETS_ID is configured."""
+    if os.getenv("GROK_API_KEY"):
+        return
+    secret_id = os.getenv("SECRETS_ID", "")
+    if not secret_id:
+        logger.warning("No SECRETS_ID/GROK_API_KEY — transcription will fail")
+        return
+    try:
+        sm = boto3.client("secretsmanager", region_name=REGION)
+        os.environ["GROK_API_KEY"] = sm.get_secret_value(SecretId=secret_id)[
+            "SecretString"
+        ]
+        logger.info("Loaded GROK_API_KEY from Secrets Manager")
+    except Exception as e:  # pragma: no cover
+        logger.error("Failed to load GROK_API_KEY from %s: %s", secret_id, e)
+
+
 def _extract_audio(video_path: str, out_wav: str) -> bool:
     """ffmpeg: extract mono 16kHz audio for STT. Returns True on success."""
     cmd = [
@@ -141,6 +161,7 @@ def process_video(key: str) -> str:
     local = os.path.join(workdir, "input" + ext)
     wav = os.path.join(workdir, "audio.wav")
     try:
+        _load_grok_key()  # GrokTranscriber/vision read GROK_API_KEY from env
         # 1) download (source of truth stays in S3; local is a working copy)
         s3.download_file(BUCKET, key, local)
 

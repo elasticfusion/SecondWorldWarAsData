@@ -121,6 +121,26 @@ def test_main_requires_video_key(monkeypatch):
     assert pv.main() == 2
 
 
+def test_load_grok_key_from_secrets(monkeypatch):
+    monkeypatch.delenv("GROK_API_KEY", raising=False)
+    monkeypatch.setenv("SECRETS_ID", "dev-wwii-pipeline/grok-api-key")
+    sm = MagicMock()
+    sm.get_secret_value.return_value = {"SecretString": "xai-secret-123"}
+    with patch.object(pv.boto3, "client", return_value=sm):
+        pv._load_grok_key()
+    assert os.environ.get("GROK_API_KEY") == "xai-secret-123"
+    monkeypatch.delenv("GROK_API_KEY", raising=False)
+
+
+def test_load_grok_key_noop_if_already_set(monkeypatch):
+    monkeypatch.setenv("GROK_API_KEY", "already-here")
+    sm = MagicMock()
+    with patch.object(pv.boto3, "client", return_value=sm):
+        pv._load_grok_key()
+    sm.get_secret_value.assert_not_called()  # didn't re-fetch
+    monkeypatch.delenv("GROK_API_KEY", raising=False)
+
+
 def test_apply_resolved_speakers_relabels_with_name_and_role():
     segs = _segs()
     pv._apply_resolved_speakers(
