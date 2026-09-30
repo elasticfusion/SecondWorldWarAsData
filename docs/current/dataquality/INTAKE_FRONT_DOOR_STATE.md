@@ -14,44 +14,54 @@ parse → extract → enrich chain.
 Source formats and their intended route to Markdown (the common substrate the
 parse/extract chain consumes):
 
-| Format | Media type | Track | Route to Markdown |
-|--------|-----------|-------|-------------------|
-| Scanned PDF | `pdf` | narrative | **OCR** (Chandra GPU Batch) |
-| Digital PDF | `pdf` | narrative | text extract / OCR fallback (`pdf_pipeline`) |
-| Image (jpg/png/tif/…) | `image` | vision | **OCR** (Chandra) + caption |
-| DOCX | `docx` | narrative | **pandoc** (`docx_to_markdown`) |
-| EPUB | `epub` | narrative | **pandoc** (`epub_to_markdown`) |
-| HTML | `html` | narrative | HTML→md (`web_video` / pandoc) |
-| TXT | `text` | narrative | `txt_to_markdown` |
-| Markdown | `text` | narrative | passthrough (already md) |
-| Video | `moving_image` | av | transcript (`web_video` + transcriber) |
-| Archive (.zip/.rar) | — | — | expanded by pre-stage; never processed directly |
-| unsupported | `unsupported` | skip | → `needs-review` |
+| Format | Media type | Route to Markdown | Status |
+|--------|-----------|-------------------|--------|
+| Scanned PDF | `pdf` | **OCR** (Chandra GPU, 24GB) | ✅ deployed + proven |
+| Image (jpg/png/tif/…, incl scanned maps) | `image` | **OCR** (Chandra) | ✅ deployed (`4ea9351`) |
+| EPUB | `epub` | **pandoc** via Phase-0 convert task | ✅ deployed + proven (`2b2178d`) |
+| DOCX | `docx` | **pandoc** via Phase-0 convert task | ✅ deployed (same path) |
+| TXT / Markdown | `text` | passthrough → parse | ✅ deployed |
+| HTML | `html` | → parse (pandoc HTML→md is a follow-up) | ⚠️ routes to parse as-is |
+| Video | `moving_image` | transcript (`web_video`) + **multimodal speaker-id** | ❌ not wired (task #9) |
+| Archive (.zip/.rar) | — | expanded by pre-stage; never processed | n/a |
+| Media-type MISMATCH (wrong extension) | (sniffed ≠ declared) | **reject → needs-review** | ❌ not wired (task #8) |
+| unsupported | `unsupported` | → `needs-review` | ✅ |
 
-The conversion capability already exists in `src/ingestion/`:
-- `media_detection.detect_media_type` — content-type + extension + magic-byte sniff
-- `text_converters.convert_to_markdown` → `docx/epub/txt_to_markdown` (pandoc)
-- `pdf_pipeline.convert_pdf_to_markdown` + `_is_scanned_pdf` (digital vs scanned)
-- `web_video` — HTML/video capture + transcription
-- `prestage.route_file` → `_ROUTING` table (the intended per-format router)
+### Router: deployed 3-way split (OCR / convert / parse)
 
-### Gap to close (routing)
-
-`prestage._ROUTING` is the **intended** per-media-type router, but the deployed
-Lambda `trigger_handler._split_by_media` currently does only a coarse split:
+`trigger_handler._split_by_media` now routes by media type (superseding the old
+pdf-vs-rest coarse split):
 
 ```python
-# trigger_handler._split_by_media (current)
-pdfs   = [k for k in keys if k.endswith(".pdf")]   # -> OCR
-others = [everything else]                          # -> parse (assumes markdown!)
+ocr_keys     = pdf + images        # -> Chandra OCR (24GB) -> merge -> parse
+convert_keys = epub + docx         # -> Phase-0 convert task (pandoc) -> parse
+parse_keys   = md + txt + html     # -> parse directly
 ```
 
-So **images, EPUB, HTML, DOCX are sent straight to the markdown parse path**
-instead of through their conversion step. PDFs correctly go to OCR; the rest
-should be split into: `convert` (docx/epub/html/txt → pandoc), `ocr`
-(image), and `passthrough` (md) — mirroring `prestage._ROUTING`. The converters
-exist; the Lambda router just needs to call them (or defer to Phase 0
-`route_file`). Tracked as a follow-up.
+- **OCR** reuses the proven `_ocr_chunks` (`[""]` single-job for images) →
+  `ocr_merge` → `contentrepository/{book}/chapter1/chapter1-content.md`.
+- **Convert** (`_submit_convert`) launches the **Phase-0 ECS task**
+  (`dev-wwii-phase0-convert`, `phase0_convert.py`): downloads `CONVERT_KEY`,
+  `pandoc` → markdown, writes the SAME chapter structure the OCR-merge path
+  produces (so parse fires identically). pandoc is in the pipeline image.
+- All branches converge on `contentrepository/{book}/chapter1/chapter1-content.md`
+  → parse → extract → enrich.
+
+**Remaining routing follow-ups:** HTML→markdown (pandoc, minor); **media-type
+mismatch rejection** (task #8 — sniffed type ≠ extension must off-ramp to
+needs-review, not process); **video** transcript + multimodal speaker-id
+(task #9).
+
+### EPUB path verified (2026-09-30)
+
+Uploaded the Patton epub → trigger routed to convert → Phase-0 task ran
+(`pandoc` epub → **1,028,505 chars** markdown in 11s) → wrote the chapter
+structure → parse triggered → **72 parsed chunks** → Phase-2 extraction running.
+Note: book name derives from the FILENAME (not the upload dir). A transient
+egress race (phase0 released NAT before phase1 pulled its image →
+`ResourceInitializationError`) self-healed via the dispatcher's CreateNat retry
+(NAT pending→available), then phase1 ran. Phase 2/3 continue on the Grok Batch
+async cadence.
 
 ---
 
@@ -117,42 +127,35 @@ flowchart TD
     A[File uploaded to S3 raw] --> B[trigger_handler: filter content suffixes<br/>drop archives/.zip - pre-stage expands]
     B --> C{OCR/dup intake claim<br/>ocr#book exists?}
     C -->|claimed already| C1[Deny duplicate submit]
-    C -->|new| RT{{"ROUTE BY MEDIA TYPE<br/>detect_media_type + prestage._ROUTING<br/>(gap: Lambda _split_by_media only<br/>splits pdf vs rest today)"}}
+    C -->|new| RT{{"ROUTE BY MEDIA TYPE (deployed)<br/>_split_by_media 3-way + detect_media_type"}}
 
-    RT -->|scanned pdf / image| D[OCR branch]
-    RT -->|docx / epub / html / txt| CV[Convert branch:<br/>pandoc convert_to_markdown /<br/>web_video for html]
-    RT -->|markdown| PT[Passthrough:<br/>already markdown]
-    RT -->|video| AV[AV branch:<br/>transcript]
+    RT -->|pdf / image incl map| D[OCR branch - Chandra 24GB]
+    RT -->|epub / docx| CV["Convert branch: Phase-0 ECS task<br/>phase0_convert.py - pandoc -> markdown"]
+    RT -->|md / txt / html| PT[Passthrough: parse directly]
+    RT -->|video| AV["AV branch: transcript + multimodal<br/>speaker-id (task #9, NOT wired)"]
+    RT -->|"sniffed type != extension"| MM["REJECT: media-type mismatch<br/>-> needs-review (task #8, NOT wired)"]
     RT -->|unsupported| NR["needs-review (H1)<br/>👤 human inspects"]
 
-    %% ---- OCR branch (verified this session) ----
+    %% ---- OCR branch (verified) ----
     D --> D2[Best-guess chunking _ocr_chunks]
-    D2 --> LP{{"ANTICIPATE-FIRST _pdf_has_large_page<br/>oversized page (pt² > threshold)?"}}
-    LP -->|yes: large page| HV0[route to high-VRAM queue up front]
-    LP -->|no| E[_ensure_nat_for_ocr:<br/>nat-manager action=create]
-    HV0 --> E
+    D2 --> E[_ensure_nat_for_ocr:<br/>nat-manager action=create]
     E --> F{{"READINESS GATE _verify_ready<br/>NAT + all 7 endpoints available?"}}
     F -->|not_ready| E
-    F -->|ready| G[Submit Batch OCR job]
+    F -->|ready| G[Submit Batch OCR job - 24GB g5/g6 floor]
     G --> H{Queue}
     H -->|spot default| I[chandra-gpu spot<br/>waits for capacity - expected]
-    H -->|on-demand| J[chandra-gpu-ondemand<br/>places immediately]
-    H -->|large page / OOM escalation| HV[chandra-gpu-highvram<br/>24GB g5/g6 only, no g4dn]
+    H -->|on-demand| J[chandra-gpu-ondemand<br/>controller fallback after threshold]
     I -->|no capacity &gt; threshold| K[ocr_spot_controller<br/>-&gt; on-demand, 48h cap]
     K --> J
-    I --> L[GPU instance launches]
+    I --> L[GPU instance launches - g5/g6 24GB only]
     J --> L
-    HV --> L
     L --> M{{"Registers with ECS?<br/>egress: ecr.api/dkr, ecs,<br/>ecs-agent/telemetry, logs, secrets"}}
     M -->|no egress| M1["FAIL: CannotPullECRContainerError<br/>(FIXED: readiness gate + teardown guard)"]
     M -->|endpoints present| N[STARTING: pull Chandra image via ECR endpoint]
     N --> O[RUNNING: download PDF via S3 gateway endpoint]
     O --> P[Chandra OCR pages 1..N<br/>ocr_watchdog: 900s no-progress + OOM detect]
     P --> OOM{{"watchdog: CUDA OOM detected?<br/>(exit 76, even if Chandra exits 0)"}}
-    OOM -->|OOM on 16GB| OJ[Batch job FAILED exit 76]
-    OJ --> ESC{{"ocr_spot_controller<br/>_escalate_oom_failures<br/>escalated once already?"}}
-    ESC -->|no| HV
-    ESC -->|yes 2nd OOM on 24GB| ORV["leave FAILED<br/>👤 needs-review + alert"]
+    OOM -->|OOM on 24GB - exceptional| ORV["_flag_oom_failures<br/>👤 needs-review + alert (no auto-retry)"]
     OOM -->|clean| Q[Write ocr-output/book/...]
     Q --> MR{{"👤 OCR→Markdown review (H2)<br/>mdreview_ui UI - BUILT, NOT DEPLOYED<br/>page image + editable snippet"}}
     MR -->|reviewed pN.md saved| MRS["ocr-output/book/reviewed/pN.md<br/>(consume-once at merge)"]
@@ -203,15 +206,16 @@ flowchart TD
 3. **Readiness gate** (`_verify_ready`) — compute is **not requested** until
    NAT is `available` AND every required interface endpoint is `available`.
    Returns `{ready, missing[]}`. This is what makes registration reliable.
-4. **Queue selection** — three queues: **spot** (default; waits for capacity,
-   expected), **on-demand** (controller fallback after threshold, 48h cap), and
-   **high-VRAM** (24GB g5/g6; anticipate-first for large pages + OOM-escalation
-   target). `ocr_spot_controller` owns the spot→on-demand and OOM→high-VRAM
-   moves.
-5. **GPU VRAM / OOM** — anticipate-first (`_pdf_has_large_page` at submit) routes
-   oversized pages to high-VRAM up front; `ocr_watchdog` turns a swallowed CUDA
-   OOM into a visible `exit 76`; the controller escalates it once to high-VRAM
-   (upsize + recycle), else needs-review.
+4. **Queue selection** — two queues: **spot** (default; waits for capacity,
+   expected) and **on-demand** (controller fallback after threshold, 48h cap).
+   Both restricted to a **24GB-VRAM floor** (g5/g6 only). `ocr_spot_controller`
+   owns the spot→on-demand move.
+5. **GPU VRAM / OOM** — EMPIRICAL: Chandra needs ~24GB for ANY page (a 16GB g4dn
+   OOMs regardless of page size), so g4dn is excluded from all pools. `ocr_watchdog`
+   turns a swallowed CUDA OOM into a visible `exit 76`; an OOM on 24GB is
+   exceptional → `_flag_oom_failures` alerts + off-ramps to needs-review (no
+   auto-retry). The container entrypoint preserves the exit code (no
+   silent-success upload).
 6. **Registration egress** — the instance needs the 7 interface endpoints
    (ECR/ECS/logs/secrets) to register + pull; S3 uses the gateway endpoint.
 7. **Teardown guard** (`_delete_all` + `_nat_demand_present`) — refuses to tear
