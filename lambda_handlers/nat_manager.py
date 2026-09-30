@@ -533,26 +533,59 @@ def _endpoint_present_untagged(ec2, region, svc):
 
 
 def _create_endpoint(ec2, region, svc):
-    """Create a single VPC endpoint."""
+    """Create a single VPC interface endpoint with private DNS.
+
+    Tolerates the AWS 'private-dns-enabled cannot be set because there is already
+    a conflicting DNS domain' error: a just-deleted endpoint's private-DNS
+    association lingers briefly after the endpoint leaves 'deleting', so a fresh
+    create can be rejected. We wait the deleting endpoint out and retry; if a
+    usable endpoint appears meanwhile, that's success. (This is distinct from the
+    exists-check race — here AWS rejects the create outright on the DNS domain.)"""
+    from botocore.exceptions import ClientError
+
     service_name = f"com.amazonaws.{region}.{svc}"
-    ec2.create_vpc_endpoint(
-        VpcId=VPC_ID,
-        ServiceName=service_name,
-        VpcEndpointType="Interface",
-        SubnetIds=PRIVATE_SUBNETS,
-        SecurityGroupIds=[sg for sg in [SECURITY_GROUP, OPENSERP_SG] if sg],
-        PrivateDnsEnabled=True,
-        TagSpecifications=[
-            {
-                "ResourceType": "vpc-endpoint",
-                "Tags": [
-                    {"Key": "Name", "Value": f"{ENV_NAME}-{svc}"},
-                    {"Key": "ManagedBy", "Value": MANAGED_TAG},
-                ],
-            }
-        ],
-    )
-    logger.info("Created endpoint: %s", svc)
+    tag_spec = [
+        {
+            "ResourceType": "vpc-endpoint",
+            "Tags": [
+                {"Key": "Name", "Value": f"{ENV_NAME}-{svc}"},
+                {"Key": "ManagedBy", "Value": MANAGED_TAG},
+            ],
+        }
+    ]
+    for attempt in range(6):
+        try:
+            ec2.create_vpc_endpoint(
+                VpcId=VPC_ID,
+                ServiceName=service_name,
+                VpcEndpointType="Interface",
+                SubnetIds=PRIVATE_SUBNETS,
+                SecurityGroupIds=[sg for sg in [SECURITY_GROUP, OPENSERP_SG] if sg],
+                PrivateDnsEnabled=True,
+                TagSpecifications=tag_spec,
+            )
+            logger.info("Created endpoint: %s", svc)
+            return
+        except ClientError as e:
+            msg = str(e)
+            if "conflicting DNS domain" not in msg and "private-dns-enabled" not in msg:
+                raise
+            # A prior endpoint's private-DNS still lingers. If a usable one now
+            # exists, we're done; otherwise wait out the deleting one and retry.
+            if _endpoint_present_untagged(ec2, region, svc):
+                logger.info("Endpoint %s now present (DNS conflict resolved)", svc)
+                return
+            logger.info(
+                "DNS-domain conflict creating %s (attempt %d) — waiting out deleting",
+                svc,
+                attempt + 1,
+            )
+            _wait_out_deleting(ec2, region, svc)
+            time.sleep(10)
+    # Last resort: if it's present after all retries, success; else raise.
+    if _endpoint_present_untagged(ec2, region, svc):
+        return
+    raise RuntimeError(f"Could not create endpoint {svc} — persistent DNS conflict")
 
 
 # === Notifications ===

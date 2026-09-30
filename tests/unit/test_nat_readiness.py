@@ -7,6 +7,7 @@ not-ready (with the missing components) until everything is truly up.
 """
 
 import os
+import pytest
 from unittest.mock import MagicMock, patch
 
 os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
@@ -126,6 +127,61 @@ def test_delete_all_proceeds_when_no_demand():
     with patch.object(nm, "_nat_demand_present", return_value=False):
         out = nm._delete_all(ec2, "us-east-1", force=False)
     assert out.get("reason") != "nat demand present"
+
+
+def test_create_endpoint_tolerates_dns_conflict_then_succeeds():
+    """A private-DNS conflict from a still-deleting endpoint is waited out +
+    retried; the second create succeeds. (Regression: dispatcher CreateNat kept
+    failing with 'conflicting DNS domain for api.ecr...'.)"""
+    from botocore.exceptions import ClientError
+
+    ec2 = MagicMock()
+    conflict = ClientError(
+        {
+            "Error": {
+                "Code": "InvalidParameter",
+                "Message": "private-dns-enabled cannot be set because there is "
+                "already a conflicting DNS domain for api.ecr.us-east-1.amazonaws.com",
+            }
+        },
+        "CreateVpcEndpoint",
+    )
+    ec2.create_vpc_endpoint.side_effect = [conflict, None]  # fail once, then ok
+    # not present during conflict (forces the retry path), no deleting endpoints
+    ec2.describe_vpc_endpoints.return_value = {"VpcEndpoints": []}
+    with patch.object(nm, "_wait_out_deleting"), patch("time.sleep"):
+        nm._create_endpoint(ec2, "us-east-1", "ecr.api")
+    assert ec2.create_vpc_endpoint.call_count == 2
+
+
+def test_create_endpoint_conflict_but_already_present_is_success():
+    """If the endpoint is already present when the DNS conflict fires, treat as
+    success (no error, no infinite retry)."""
+    from botocore.exceptions import ClientError
+
+    ec2 = MagicMock()
+    conflict = ClientError(
+        {"Error": {"Code": "InvalidParameter", "Message": "conflicting DNS domain"}},
+        "CreateVpcEndpoint",
+    )
+    ec2.create_vpc_endpoint.side_effect = conflict
+    ec2.describe_vpc_endpoints.return_value = {"VpcEndpoints": [{"State": "available"}]}
+    with patch("time.sleep"):
+        nm._create_endpoint(ec2, "us-east-1", "ecr.api")  # must not raise
+    assert ec2.create_vpc_endpoint.call_count == 1
+
+
+def test_create_endpoint_reraises_non_dns_error():
+    from botocore.exceptions import ClientError
+
+    ec2 = MagicMock()
+    other = ClientError(
+        {"Error": {"Code": "UnauthorizedOperation", "Message": "nope"}},
+        "CreateVpcEndpoint",
+    )
+    ec2.create_vpc_endpoint.side_effect = other
+    with pytest.raises(ClientError):
+        nm._create_endpoint(ec2, "us-east-1", "ecr.api")
 
 
 def test_ocr_jobs_in_flight_fails_safe_on_access_denied():
