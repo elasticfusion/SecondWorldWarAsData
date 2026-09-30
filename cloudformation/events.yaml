@@ -631,7 +631,12 @@ Resources:
         detail:
           status: [SUCCEEDED]
           jobQueue:
+            # Match ALL Chandra queues — a job the controller routes to the
+            # on-demand fallback (spot-starved) must ALSO trigger the merge/parse
+            # handoff. (Bug: matching only the spot queue meant on-demand
+            # successes produced OCR output but never merged -> parse never ran.)
             - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu
+            - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu-ondemand
       State: ENABLED
       Targets:
         - Id: OcrMergeLambda
