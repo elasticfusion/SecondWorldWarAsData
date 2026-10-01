@@ -67,3 +67,34 @@ Start with **A** (prove the lifecycle — it's the actual Phase-3 blocker and ne
 **measure real duplicate/quality rates** on a clean end-to-end run before committing to B–F,
 so we invest in the problems that are actually hurting the corpus rather than the archived ones
 that were already fixed.
+
+## UPDATE 2026-10-01 — (A) PROVEN + retrieve-path fixes
+
+**Lifecycle PROVEN end-to-end (live).** Patton phase2 retrieve on the fixed image reached:
+`reclassify → run dedup → Auto-merged 21 (no 'int' error) → Dedup gate: BLOCK (duplicate
+groups pending) → doc lifecycle: Patton → needs-review → exit 0`. Doc confirmed
+`status=needs-review` (was stuck at phase1 all session). This validates all three fixes
+together: dedup `int` (`15e3397`), MULTI_DOC_ENABLED task-def env (`d8489c8`), and the
+`_multi_doc_enabled` env-var reconciliation (`b06e03f`). `needs-review` is the correct
+terminal state — Patton has real duplicate groups, so the gate blocks rather than auto-proceeds.
+
+**Retrieve-path bugs found + fixed while proving it:**
+- Optional-entity markers not downloaded on retrieve → every retrieve re-extracted
+  weather/equipment/logistics/casualties/supplemental live. Fixed: download
+  `.processed_events.json` markers (`9ac3f75`). Verified live: logistics/casualties/equipment
+  skipped on the proof run.
+- **Supplemental non-convergence (the worst):** `_extract_supplemental` was the ONLY optional
+  extractor missing both the `_is_processed` skip guard and `_mark_processed`, AND
+  `config.yaml` had `reprocess_types: [supplemental]` forcing re-extract. Together it re-fetched
+  every endnote (slow ibiblio HTTP) on every retrieve and never finished — a non-terminating
+  sink. Fixed: added the skip-guard + mark pattern (matches siblings) and removed supplemental
+  from `reprocess_types`.
+
+**Still open (follow-ups, NOT fixed):**
+- **Core-type live re-extraction in retrieve.** dates/places/people/people_groups re-extract
+  live on every `--retrieve-only` (no processed-events marker for core types; they rely on
+  per-event file existence / cache which the retrieve re-run doesn't short-circuit). This is the
+  biggest remaining retrieve cost/latency driver (~30+ min of the proof run). Needs a core-type
+  skip mechanism analogous to the optional markers.
+- The retrieve path re-runs the FULL phase2 rather than just ingesting batch events + running
+  downstream — a design-level simplification worth considering.
