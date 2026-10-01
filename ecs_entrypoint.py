@@ -2406,11 +2406,22 @@ def _nat_demand_present() -> bool:
 
 
 def _multi_doc_enabled() -> bool:
-    """True if multi-document concurrency is switched on (config kill-switch).
+    """True if multi-document concurrency is switched on (kill-switch).
 
-    Reads concurrency.multi_doc.enabled from the baked config. Defaults to
-    False, so absent config == today's serial per-phase behavior (§15 M2).
+    Honors EITHER source so the switch is reproducible from the repo:
+      1. MULTI_DOC_ENABLED env var — set on the phase task defs from the
+         CFN MultiDocEnabled param (committed infra). This is the authoritative,
+         repo-tracked switch and is checked first.
+      2. concurrency.multi_doc.enabled in the baked config.yaml (local override).
+    Defaults to False (serial per-phase behavior) when neither is set.
+
+    NOTE: the lifecycle guards (_advance_doc_lifecycle / _offramp_doc_needs_review)
+    read the SAME env var; keeping this helper consistent with them avoids the
+    split-brain where the branch selector said "serial" while the guards said
+    "multi-doc" (which stranded docs at phase1 and blocked Phase 3).
     """
+    if os.environ.get("MULTI_DOC_ENABLED", "").lower() == "true":
+        return True
     try:
         import yaml as _yaml
 
