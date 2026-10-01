@@ -9,9 +9,10 @@
 work). Ranking reflects the project goal: *finish unattended ETO ingestion, then
 build RAG/search*. Current ordered priority:
 
-1. **[CRITICAL] Clear the deploy path** (`UPDATE_ROLLBACK_COMPLETE`) — gates ALL
-   merged-but-undeployed infra going live (AV scanning, S3 encryption/TLS, pandoc
-   `--sandbox`, OCR-review UI). Nothing shipped since the last good deploy is live.
+1. **[CRITICAL] Deploy current `main` to AWS** — merged work is not live yet
+   (stack is healthy/`UPDATE_COMPLETE`, NOT blocked). S3 encryption/TLS is
+   deployable now (pure CFN); pandoc `--sandbox` needs a pipeline-image rebuild;
+   AV needs the ClamAV image built + `--av-image` (deploy wiring now done).
 2. **[HIGH] Re-OCR the off-by-one corpus** — data-correctness (St. Vith/Boyer +
    ETO OOB markdown are currently shifted). *(Promoted from Medium.)*
 3. **[HIGH] Deploy + wire OCR markdown-review UI** — depends on #1.
@@ -31,25 +32,24 @@ Not-code (deferred, no action): SHAEF OB map gaps (NARA acquisition).
 
 ## Critical (actively losing data or breaking pipeline)
 
-#### Clear the CloudFormation deploy path (parent stack `UPDATE_ROLLBACK_COMPLETE`)
-The parent stack `wwii-pipeline-dev` is stuck in **UPDATE_ROLLBACK_COMPLETE**
-(last failed attempt 2026-07-01: ComputeStack "Validation failed with 8 errors").
-**Consequence:** every change merged since the last good deploy is **not live** —
-including this session's AV scanning, S3 encryption + TLS policy, pandoc
-`--sandbox`, and the built-but-undeployed OCR markdown-review UI. This is the
-single blocker gating the most work, so it is Critical.
-**Approach (read-only diagnosis first, then careful deploy):**
-- Enumerate the July "8 validation errors" via `describe-stack-events` on
-  ComputeStack before retrying.
-- Known causes seen: (a) `PipelineDashboard` name collision with EventsStack —
-  *appears fixed* (compute uses `-wwii-pipeline-logs`); verify no other duplicate
-  logical/physical names; (b) TaskDef "Container.image should not be null or
-  empty" — deploy MUST pass `--pipeline-image`/`--openserp-image` (use
-  `deploy_all.sh`, not a bare `deploy_aws.py`).
-- Do a **change-set / dry-run first**, and **NOT during a live Phase 2/3 run**
-  (ComputeStack holds the phase task defs + the API). Requires operator go-ahead
-  (touches the live stack).
-*Source: deploy-path investigation 2026-09-27; elevated to Critical 2026-10-01*
+#### Deploy current `main` to AWS (merged work is not yet live)
+**Correction 2026-10-01:** the stack is NOT blocked. `wwii-pipeline-dev` and all
+nested stacks are `UPDATE_COMPLETE` (last successful deploy 2026-10-01 01:29 UTC);
+the old `UPDATE_ROLLBACK_COMPLETE` was cleared and its root cause (empty image →
+TaskDef error) is fixed in `deploy_aws.py` (`UsePreviousValue`). The real task is
+simply that work merged after that deploy is **not live yet**:
+- **S3 encryption + TLS policy** — pure CFN, no image dep. **Deployable now** (the
+  clean win; change-set reviewed first).
+- **pandoc `--sandbox`** — in the pipeline image → needs a pipeline image
+  rebuild+push.
+- **AV scanning** — needs the ClamAV image built+pushed + `--av-image` passed.
+  `deploy_aws.py` now wires `--video-image`/`--av-image` (AvImageUri as a new
+  param, forced "" when absent so UsePreviousValue doesn't error). The ClamAV
+  image build is the remaining prerequisite.
+Deploy prerequisites: `aws s3 sync cloudformation/ s3://{bucket}/cloudformation/`
+re-stages the (currently stale) templates; `deploy_all.sh` does this + the stack-
+state guard. Change-set/dry-run first; not during a live Phase 2/3 run.
+*Source: deploy-path diagnosis 2026-10-01 (stack healthy; deploy pending)*
 
 ## Recently Completed (2026-09-23) — OCR reliability + table recovery
 
