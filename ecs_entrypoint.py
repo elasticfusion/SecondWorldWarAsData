@@ -1023,6 +1023,21 @@ def _download_phase2_inputs() -> int:
     for key in index_prefixes:
         _download_s3_file(s3, key)
 
+    # Download the per-entity processed-events markers so the optional-entity
+    # skip logic (_is_processed) can fire. WITHOUT these, every Phase-2 retrieve
+    # re-run re-extracts weather/equipment/logistics/casualties/supplemental LIVE
+    # from scratch (they are NOT in the batch — only events are), making the
+    # "retrieve" path redo most of extraction every time (cost + ~1h latency).
+    # The markers are uploaded by _final_sync; here we pull them back.
+    for _etype in (
+        "weather",
+        "equipment",
+        "logistics",
+        "casualties",
+        "supplemental",
+    ):
+        _download_s3_file(s3, f"output/{_etype}/.processed_events.json")
+
     # Bibliography/supplemental: Dynamo-backed dedup (G3) reads the title index
     # from DynamoEntityStore, so Phase 2 no longer bulk-downloads the (13k+ file)
     # bibliography dir — the source of N*2 download thrash under concurrency. Only
