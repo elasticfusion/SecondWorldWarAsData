@@ -36,6 +36,41 @@ Conclusion: scanning must happen **before any parser runs**, for **all** tracks 
 not gated on conversion-failure (a cleanly-converting file can still be the
 payload).
 
+## Scope: which file types actually need scanning
+
+AV is **not uniform across types** — scan the binaries whose parsers are attack
+surface; skip inert text.
+
+| Type | Carrier risk in OUR pipeline | Scan? |
+|---|---|---|
+| `.txt`, `.md` | **None.** Inert data; we parse it / send it to Grok as text — never render in a browser or execute it. (Counterfactual where it *would* matter: markdown rendered to HTML in a browser that runs embedded `<script>`, or a byte-polyglot fed to another interpreter — neither occurs here. A giant text "bomb" is a DoS/resource concern, bounded by size/near-empty checks, not malware.) | **No** |
+| `.html` | **Low.** `<script>`/handlers/data-URIs are dangerous only when rendered in a browser or fetched by a tool; we send HTML to pandoc/parser, not a browser, so active content is inert. Residual risk is pandoc/parser-side (crafted HTML → SSRF/file-read in the parser), not "infection." | Optional / parser-hardening, not AV |
+| `.pdf` | **Yes** — PyMuPDF/`fitz` renders pages/images; historic malware vector. | **Yes** |
+| images (`.jpg/.png/.tif/...`) | **Yes** — decoded by torch/Chandra; crafted-image parser exploits. | **Yes** |
+| video (`.mp4/.mkv/...`) | **Yes** — ffmpeg; many CVEs. | **Yes** |
+| Office (`.docx/.xlsx/.pptx/...`) | **Yes** at the door, though conversion-to-text neutralizes macros (below). | **Yes** |
+
+Conclusion: **scan binaries (PDF/image/video/Office); skip `.txt`/`.md`; HTML is
+parser-hardening, not AV.** This also shrinks AV cost/latency — the common
+small-text uploads bypass the scanner entirely.
+
+## Office formats: convert-to-safe-text is the primary neutralization
+
+Same mechanic as docx macros (above): extracting to text/CSV/images drops the
+executable payload. These are **convert-track** additions (not yet built):
+
+- **Excel `.xlsx`/`.xlsm` → CSV** (openpyxl/pandas): extracts cell **values**,
+  dropping VBA (`xl/vbaProject.bin`), OLE objects, DDE. Feeds the **structured/OOB
+  track** (tabular). Note: a cell literally containing `=cmd|...` survives *as
+  text* into CSV — harmless here (we never open the CSV in Excel) but sanitize a
+  leading `= + - @` if a CSV is ever re-exported for a human.
+- **PowerPoint `.pptx` → text + images** (python-pptx): slide text → narrative
+  markdown; slide images → the **vision captioner**. Macros/OLE dropped by
+  extraction.
+
+AV remains the backstop for the *parse step itself* and for any Office file that
+fails/short-circuits conversion.
+
 ## Where to scan
 
 At the **front door, before `_split_by_media`** hands bytes to any track. One
