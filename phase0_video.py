@@ -200,6 +200,10 @@ def process_video(key: str) -> str:
         _apply_resolved_speakers(segments, resolved)
 
         # 7) render markdown w/ resolved names + roles + provenance -> chapter structure
+        # Normalize to English FIRST, at the segment level, so timecodes + speaker
+        # labels are never sent to the translator (only the spoken text is).
+        # Fail-safe: English/disabled/error leaves segments unchanged.
+        _translate_segments(segments)
         asset = VideoAsset(
             asset_id=book,
             source_url=f"s3://{BUCKET}/{key}",
@@ -276,6 +280,42 @@ def _vision_analyzer():
     from src.ingestion.video_vision import GrokVisionAnalyzer
 
     return GrokVisionAnalyzer()
+
+
+def _translate_segments(segments) -> None:
+    """Normalize transcript segment text to English IN PLACE, preserving each
+    segment's timecode + speaker. Detects language once on the joined transcript
+    (one cheap call); if English/disabled/error, leaves segments unchanged
+    (fail-safe). Only the spoken text is sent to Grok — never timecodes/speakers."""
+    try:
+        from src.ingestion.translation import (
+            translation_enabled,
+            detect_language,
+            is_english,
+            translate_markdown,
+        )
+
+        if not translation_enabled():
+            return
+        joined = "\n\n".join((getattr(s, "text", "") or "").strip() for s in segments)
+        if not joined.strip():
+            return
+        from src.grok_client import GrokClient
+        from src.utils.config import load_config, get_paths
+
+        grok = GrokClient(get_paths(load_config())["api_cache"])
+        language = detect_language(joined, grok)
+        if is_english(language):
+            return
+        for seg in segments:
+            txt = (getattr(seg, "text", "") or "").strip()
+            if txt:
+                seg.text = translate_markdown(txt, language, grok)
+        logger.info(
+            "Translated %d video transcript segments from %s", len(segments), language
+        )
+    except Exception as e:  # noqa: BLE001 - fail-safe: keep original transcript
+        logger.warning("Video transcript translation skipped: %s", e)
 
 
 def _alert(kind: str, message: str) -> None:

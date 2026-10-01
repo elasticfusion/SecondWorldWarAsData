@@ -137,6 +137,12 @@ def convert_key(key: str) -> str:
             except OSError:
                 pass
 
+    # Normalize to English before promote-to-parse (fail-safe: English/disabled/
+    # error -> unchanged). A converted doc is one document -> per-document detect.
+    from src.ingestion.translation import normalize_markdown_to_english
+
+    markdown = normalize_markdown_to_english(markdown, per_page=False)
+
     # Write meta FIRST, then content — the content-upload event triggers parse,
     # and phase1 discovery needs the meta already present (mirrors ocr_merge).
     meta_key = f"contentrepository/{book}/chapter1/chapter1-meta.yaml"

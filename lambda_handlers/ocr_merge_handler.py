@@ -187,6 +187,13 @@ def merge_ocr_output(book: str) -> str:
     # and launch the phase0-ingest task instead of promoting to contentrepository/.
     if _is_structured(s3, book):
         return _route_to_oob(s3, book, merged)
+    # Narrative track: normalize to English before promote-to-parse. Chandra emits
+    # physical-page separators, so detect/translate PER PAGE (a scanned roll can
+    # mix languages). Fail-safe: English/disabled/error -> unchanged. (The OOB
+    # fork above translates in phase0_ingest, so it is intentionally skipped here.)
+    from src.ingestion.translation import normalize_markdown_to_english
+
+    merged = normalize_markdown_to_english(merged, per_page=True)
     meta_key = f"contentrepository/{book}/chapter1/chapter1-meta.yaml"
     meta = (
         f'series: "TODO - Add series name"\n'

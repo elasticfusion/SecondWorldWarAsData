@@ -146,11 +146,21 @@ than silently dropping or feeding garbage downstream. No silent failures.
   markdown to the deterministic `phase0_ingest` OOB parser (`Phase0IngestTaskDef`),
   NOT narrative LLM extraction. Entity convergence OOB→people at dedup is the
   documented pending bridge.
-- **Non-English documents → translation (PARTIAL — real gap).** Translation
-  (`src/ingestion/translation.py`, approved design `LANGUAGE_TRANSLATION.md`:
-  per-page detect → Grok translate → English markdown at Phase 0) is wired ONLY
-  into the OOB track (`phase0_ingest`, gated `PHASE0_TRANSLATE`). The **OCR-narrative,
-  CONVERT, and VIDEO tracks do NOT translate** — a non-English source (e.g. a German
-  KTB scan, a German-language video) flows in its original language into the
-  English-centric Phase 2 extractor. Wiring translation into each track's
-  Phase-0 markdown-produced seam is the next correctness item.
+- **Non-English documents → translation (BUILT, all tracks, opt-in).** Translation
+  (`src/ingestion/translation.py`, design `LANGUAGE_TRANSLATION.md`: detect →
+  Grok translate → English markdown at Phase 0, inert provenance marker) is now
+  wired into **every** track via the shared `normalize_markdown_to_english`
+  adapter (config-gated `ingestion.translate` / `PHASE0_TRANSLATE`; fail-safe —
+  English/disabled/error passes through unchanged):
+    - **OOB** (`phase0_ingest`): per-page, pre-existing.
+    - **CONVERT** (`phase0_convert`): per-document, before writing chapter structure.
+    - **OCR-narrative** (`ocr_merge_handler`): per-page (Chandra page separators),
+      before narrative promote; the OOB fork is skipped (it translates in
+      phase0_ingest).
+    - **VIDEO** (`phase0_video`): **per-segment** — detect once on the joined
+      transcript, translate each segment's text while preserving timecodes +
+      speaker labels (only spoken text is sent to Grok).
+  A non-English source (German KTB scan, German-language video, etc.) is now
+  normalized to English BEFORE Phase 1, so the English-centric Phase 1–3 stack
+  (prompts, `normalize_name_ascii`) runs unchanged. Enable via config when the
+  corpus includes non-English material.
