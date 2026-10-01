@@ -42,6 +42,35 @@ from src.extraction.people import _merge_person
 logger = logging.getLogger(__name__)
 
 
+def _dynamo_merge_sync(
+    entity_type: str, primary_id: str, primary_data: Dict, secondary_id: str
+) -> None:
+    """Mirror a dedup merge into DynamoEntityStore (#9): delete the merged-away
+    secondary and put the merged primary, so the store doesn't drift from the
+    files (a stale secondary lingering + a stale primary). Best-effort — a Dynamo
+    failure must not block the (already-completed) file merge; the Phase-3 start
+    reconciliation / next incremental dedup will re-sync. No-op when no store
+    (local/file mode)."""
+    try:
+        from src.utils.entity_store import get_entity_store
+
+        store = get_entity_store()
+        if not store:
+            return
+        if secondary_id:
+            store.delete(entity_type, secondary_id)
+        if primary_id:
+            store.put(entity_type, primary_id, primary_data)
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning(
+            "Dynamo merge-sync failed (%s primary=%s secondary=%s): %s",
+            entity_type,
+            primary_id,
+            secondary_id,
+            e,
+        )
+
+
 def load_person(people_dir: Path, filename: str) -> Dict:
     """Load a person/entity file."""
     with open(people_dir / filename, "r", encoding="utf-8") as f:
@@ -179,9 +208,16 @@ def do_merge(people_dir: Path, people: List[Dict], primary_idx: int) -> Optional
 
         if secondary_id and primary_id:
             update_event_refs(output_root, secondary_id, primary_id, "people")
+        # #9: remove the merged-away secondary from DynamoDB too.
+        if secondary_id:
+            _dynamo_merge_sync("people", "", {}, secondary_id)
 
     with open(people_dir / primary_person["filename"], "w", encoding="utf-8") as f:
         json.dump(primary_data, f, indent=2, ensure_ascii=False)
+
+    # #9: mirror the merged primary into DynamoDB (put, not delete).
+    if primary_id and merged_count:
+        _dynamo_merge_sync("people", primary_id, primary_data, "")
 
     logger.info(
         "✓ Merged %d duplicate(s) into %s", merged_count, primary_person["name"]
@@ -210,6 +246,7 @@ def merge_generic(
     seen_sub_events = {
         m.get("Sub_eventID") for m in primary_mentions if m.get("Sub_eventID")
     }
+    merged_any = False
 
     for i, p in enumerate(people):
         if i == primary_idx:
@@ -247,12 +284,21 @@ def merge_generic(
         _backup_before_delete(f)
         f.unlink()
         _notify_deletion(f)
+        # #9: remove the merged-away secondary from DynamoDB too.
+        if old_id:
+            _dynamo_merge_sync(entity_dir.name, "", {}, old_id)
+        merged_any = True
 
     primary_data["event_mentions"] = primary_mentions
     primary_data["aliases"] = aliases
     (entity_dir / primary["filename"]).write_text(
         json.dumps(primary_data, indent=2, ensure_ascii=False), encoding="utf-8"
     )
+
+    # #9: mirror the merged primary into DynamoDB (put, not delete).
+    primary_id = primary_data.get(id_field, "")
+    if primary_id and merged_any:
+        _dynamo_merge_sync(entity_dir.name, primary_id, primary_data, "")
 
     primary_name = primary.get("name", primary.get("filename", ""))
     logger.info("✓ Merged %d into %s", len(people) - 1, primary_name)

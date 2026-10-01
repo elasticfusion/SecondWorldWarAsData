@@ -72,3 +72,150 @@ class TestDynamoEntityStore:
         assert result["PersonID"] == "01A"
 
         assert entity_store.query_by_name("people", "patton") is None
+
+
+class TestStoreBibliography:
+    """G3 + operator spec: Dynamo-backed bibliography dedup — title-focused with
+    fallback to archive-ref then author; race-safe merge."""
+
+    @staticmethod
+    def _builder(bib_id, title, ref="", authors=None):
+        return lambda: {
+            "BibliographyID": bib_id,
+            "title": title,
+            "citation": {"title": title, "author": authors or []},
+            "archive_reference_number": ref,
+            "mentions": [],
+        }
+
+    @staticmethod
+    def _mention(event_id, ref_no):
+        return {"EventID": event_id, "Sub-eventID": "", "reference_number": ref_no}
+
+    @staticmethod
+    def _exists(m):
+        return lambda mentions: any(
+            x.get("EventID") == m["EventID"]
+            and x.get("reference_number") == m["reference_number"]
+            for x in mentions
+        )
+
+    @staticmethod
+    def _keys(title="", ref="", author=""):
+        return {"title": title, "ref": ref, "author": author}
+
+    def test_new_title_creates_entry_and_indexes(self, entity_store):
+        m = self._mention("E1", "1")
+        rid = entity_store.store_bibliography(
+            self._keys(title="operation overlord"),
+            "BIB1",
+            self._builder("BIB1", "Operation Overlord"),
+            m,
+            self._exists(m),
+        )
+        assert rid == "BIB1"
+        assert entity_store.get("bibliography", "BIB1")["title"] == "Operation Overlord"
+        assert (
+            entity_store.get_bibliography_index()["titles"]["operation overlord"]
+            == "BIB1"
+        )
+
+    def test_same_title_merges_no_new_entry(self, entity_store):
+        m1 = self._mention("E1", "1")
+        first = entity_store.store_bibliography(
+            self._keys(title="cross channel attack"),
+            "BIB1",
+            self._builder("BIB1", "Cross Channel Attack"),
+            m1,
+            self._exists(m1),
+        )
+        m2 = self._mention("E2", "2")
+        second = entity_store.store_bibliography(
+            self._keys(title="cross channel attack"),
+            "BIB2",
+            self._builder("BIB2", "Cross Channel Attack"),
+            m2,
+            self._exists(m2),
+        )
+        assert first == second == "BIB1"
+        assert len(entity_store.get("bibliography", "BIB1")["mentions"]) == 2
+        assert entity_store.get("bibliography", "BIB2") is None
+
+    def test_archive_ref_fallback_matches_different_title(self, entity_store):
+        """Different title strings but SAME archive reference -> same entry."""
+        m1 = self._mention("E1", "1")
+        first = entity_store.store_bibliography(
+            self._keys(title="after action report 90th div", ref="rg 407 entry 427"),
+            "BIB1",
+            self._builder(
+                "BIB1", "After Action Report 90th Div", ref="RG 407 Entry 427"
+            ),
+            m1,
+            self._exists(m1),
+        )
+        m2 = self._mention("E2", "2")
+        # Title differs enough to miss fuzzy, but archive ref is identical
+        second = entity_store.store_bibliography(
+            self._keys(title="aar ninetieth infantry", ref="rg 407 entry 427"),
+            "BIB2",
+            self._builder("BIB2", "AAR Ninetieth Infantry", ref="RG 407 Entry 427"),
+            m2,
+            self._exists(m2),
+        )
+        assert first == second == "BIB1"  # matched on archive ref
+        assert entity_store.get("bibliography", "BIB2") is None
+
+    def test_author_fallback_matches_different_title(self, entity_store):
+        """Different title + no ref, but SAME author -> same entry (weak fallback)."""
+        m1 = self._mention("E1", "1")
+        first = entity_store.store_bibliography(
+            self._keys(title="the lorraine campaign", author="cole hugh m"),
+            "BIB1",
+            self._builder("BIB1", "The Lorraine Campaign", authors=["Cole, Hugh M"]),
+            m1,
+            self._exists(m1),
+        )
+        m2 = self._mention("E2", "2")
+        second = entity_store.store_bibliography(
+            self._keys(title="lorraine 1944 gpo edition", author="cole hugh m"),
+            "BIB2",
+            self._builder(
+                "BIB2", "Lorraine 1944 GPO Edition", authors=["Cole, Hugh M"]
+            ),
+            m2,
+            self._exists(m2),
+        )
+        assert first == second == "BIB1"  # matched on author
+
+    def test_duplicate_mention_is_idempotent(self, entity_store):
+        m = self._mention("E1", "1")
+        for _ in range(2):
+            entity_store.store_bibliography(
+                self._keys(title="the lorraine campaign"),
+                "BIB1",
+                self._builder("BIB1", "The Lorraine Campaign"),
+                m,
+                self._exists(m),
+            )
+        assert len(entity_store.get("bibliography", "BIB1")["mentions"]) == 1
+
+    def test_distinct_sources_create_separate_entries(self, entity_store):
+        m = self._mention("E1", "1")
+        a = entity_store.store_bibliography(
+            self._keys(title="cross channel attack", ref="rg 407 e1"),
+            "BIBA",
+            self._builder("BIBA", "Cross Channel Attack", ref="RG 407 E1"),
+            m,
+            self._exists(m),
+        )
+        b = entity_store.store_bibliography(
+            self._keys(title="the lorraine campaign", ref="rg 407 e2"),
+            "BIBB",
+            self._builder("BIBB", "The Lorraine Campaign", ref="RG 407 E2"),
+            m,
+            self._exists(m),
+        )
+        assert a == "BIBA" and b == "BIBB"
+        idx = entity_store.get_bibliography_index()
+        assert idx["titles"]["cross channel attack"] == "BIBA"
+        assert idx["refs"]["rg 407 e2"] == "BIBB"

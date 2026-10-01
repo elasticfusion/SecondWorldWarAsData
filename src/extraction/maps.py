@@ -339,8 +339,9 @@ def _save_map_record(
     """Save map record to appropriate backend."""
     if storage_backend == "filesystem" and maps_dir:
         map_file = maps_dir / map_filename
-        with open(map_file, "w", encoding="utf-8") as f:
-            json.dump(map_record, f, indent=2)
+        from src.utils.file_lock import write_json_with_lock
+
+        write_json_with_lock(map_file, map_record)
     elif storage_backend == "s3" and s3_client and s3_bucket:
         s3_key = f"{s3_prefix}metadata/{map_filename}"
         map_json = json.dumps(map_record, indent=2).encode("utf-8")

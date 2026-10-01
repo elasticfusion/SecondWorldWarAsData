@@ -49,6 +49,18 @@ from typing import List, Optional
 # change still counts as progress (fail-open toward "still working").
 _PROGRESS_RE = re.compile(r"processing\s+pages?\b", re.IGNORECASE)
 
+# CUDA out-of-memory signature. Chandra CATCHES this per-page and still exits 0
+# ("Error processing ...: CUDA out of memory ... Processing complete ... Done."),
+# producing a silent-success with empty/partial output. We detect it in the
+# stream and force a non-zero exit so (a) the job visibly fails and (b) the
+# controller can escalate it to a higher-VRAM GPU queue. Broad enough to catch
+# torch's phrasings ("CUDA out of memory", "CUDA error: out of memory").
+_OOM_RE = re.compile(r"cuda (?:out of memory|error:\s*out of memory)", re.IGNORECASE)
+
+# Exit code meaning "the OCR ran but hit a GPU OOM" — distinct from a stall (75)
+# and generic failure. The ocr_spot_controller maps this to VRAM escalation.
+EXIT_OOM = 76
+
 # Any non-empty output is a weaker liveness signal than an explicit page line,
 # but a totally silent process for the whole window is the hang we want to kill.
 _DEFAULT_NO_PROGRESS_SECS = 900
@@ -150,12 +162,15 @@ def run(child_cmd: List[str], limit_secs: Optional[int] = None) -> int:
     mon.start()
 
     # Stream child output, resetting the progress timer on each page line.
+    oom_seen = False
     if proc.stdout is not None:
         for line in proc.stdout:
             sys.stdout.write(line)
             sys.stdout.flush()
             if _PROGRESS_RE.search(line):
                 dog.mark_progress()
+            if _OOM_RE.search(line):
+                oom_seen = True
 
     proc.wait()
     mon.join(timeout=5)
@@ -163,6 +178,17 @@ def run(child_cmd: List[str], limit_secs: Optional[int] = None) -> int:
     if dog.stalled:
         print("WATCHDOG: job failed — stalled (no progress)", file=sys.stderr)
         return 75  # EX_TEMPFAIL — signals a retryable stall to Batch retry
+
+    # Chandra swallows a CUDA OOM and exits 0 with empty/partial output. Force a
+    # distinct non-zero exit so the job fails visibly and the controller escalates
+    # it to a higher-VRAM GPU queue instead of silently "succeeding" with no data.
+    if oom_seen:
+        print(
+            "WATCHDOG: job failed — CUDA out of memory detected "
+            "(escalate to higher-VRAM GPU)",
+            file=sys.stderr,
+        )
+        return EXIT_OOM
 
     return proc.returncode
 

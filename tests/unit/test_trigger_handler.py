@@ -39,6 +39,77 @@ def dynamodb_table():
         yield
 
 
+# --- G1: per-book lock key + PROVISIONING-aware stale check (idle-race fix) ---
+
+
+def test_lock_key_serial_is_singleton(dynamodb_table):
+    from lambda_handlers import trigger_handler as th
+
+    with patch.object(th, "MULTI_DOC_ENABLED", False):
+        assert th._lock_key("test-wwii-phase2-extract", "B460") == (
+            "lock#test-wwii-phase2-extract"
+        )
+
+
+def test_lock_key_multi_doc_is_per_book(dynamodb_table):
+    from lambda_handlers import trigger_handler as th
+
+    with patch.object(th, "MULTI_DOC_ENABLED", True):
+        assert th._lock_key("test-wwii-phase2-extract", "B460") == (
+            "lock#test-wwii-phase2-extract#B460"
+        )
+
+
+def test_lock_key_multi_doc_no_book_falls_back_singleton(dynamodb_table):
+    from lambda_handlers import trigger_handler as th
+
+    with patch.object(th, "MULTI_DOC_ENABLED", True):
+        assert th._lock_key("test-wwii-phase1-parse", "") == (
+            "lock#test-wwii-phase1-parse"
+        )
+
+
+def test_run_task_does_not_clear_lock_when_task_provisioning(dynamodb_table):
+    """G1 race: a held lock with a PROVISIONING (not-yet-RUNNING) task must NOT be
+    treated as stale — the 2nd invocation must defer, not clear+relaunch."""
+    from lambda_handlers import trigger_handler as th
+    import boto3 as _b
+
+    table = _b.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    # Pre-existing lock (first doc holds it)
+    table.put_item(
+        Item={
+            "cache_key": "lock#test-wwii-phase1-parse",
+            "book": "all",
+            "response": "1",
+        }
+    )
+
+    def fake_list_tasks(cluster, family, desiredStatus):
+        # A task whose lastStatus is PROVISIONING (NAT cold-start window) still
+        # has desiredStatus=RUNNING — ECS list_tasks(desiredStatus=RUNNING) returns
+        # it. desiredStatus only accepts RUNNING/PENDING/STOPPED (PROVISIONING is a
+        # lastStatus, not a valid desiredStatus filter).
+        return (
+            {"taskArns": ["arn:task/x"]}
+            if desiredStatus == "RUNNING"
+            else {"taskArns": []}
+        )
+
+    with (
+        patch.object(th.ecs, "list_tasks", side_effect=fake_list_tasks),
+        patch.object(th.ecs, "run_task") as run_task,
+        patch.object(th, "_wait_for_networking"),
+    ):
+        th._run_task(th.PHASE1_TASK_DEF, "test")
+    # Must NOT have launched a second task (lock respected, task is starting)
+    run_task.assert_not_called()
+    # Lock still present (not cleared)
+    assert table.get_item(Key={"cache_key": "lock#test-wwii-phase1-parse"}).get("Item")
+
+
 def test_scheduled_lock_check_clears_stale(dynamodb_table):
     from lambda_handlers.trigger_handler import handler
 
@@ -102,3 +173,136 @@ def test_queue_pending(dynamodb_table):
     )
     item = table.get_item(Key={"cache_key": "pending#content"})["Item"]
     assert len(item["keys"]) == 2
+
+
+def test_phase_complete_event_dispatches_to_drive_next(dynamodb_table):
+    """A phase-complete invoke must route to _drive_next_phase (event-driven chain)."""
+    from lambda_handlers import trigger_handler as th
+
+    with patch.object(th, "_reconcile_pending", return_value=["2"]) as rec:
+        out = th.handler({"source": "phase-complete", "phase": "1"}, None)
+    assert out["action"] == "drive_next_phase"
+    assert out["completed"] == "1"
+    rec.assert_called_once()
+
+
+def test_reconcile_launches_phase1_when_content_parked_and_idle(dynamodb_table):
+    """Parked content + idle cluster => launch Phase 1 (the B460-strand fix)."""
+    from lambda_handlers import trigger_handler as th
+
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    table.put_item(
+        Item={
+            "cache_key": "pending#content",
+            "keys": ["contentrepository/B460/B460.md"],
+        }
+    )
+    with (
+        patch.object(th.ecs, "list_tasks", return_value={"taskArns": []}),
+        patch.object(th, "_run_task") as run,
+    ):
+        launched = th._reconcile_pending(reason="test")
+    assert launched == ["1"]
+    run.assert_called_once()
+    # book parsed from contentrepository/{book}/... => B460
+    assert run.call_args.kwargs.get("book_name") == "B460" or "B460" in str(
+        run.call_args
+    )
+
+
+def test_reconcile_defers_when_busy(dynamodb_table):
+    """Cluster busy => do NOT launch, leave parked content for later."""
+    from lambda_handlers import trigger_handler as th
+
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    table.put_item(
+        Item={"cache_key": "pending#content", "keys": ["contentrepository/X/X.md"]}
+    )
+    with (
+        patch.object(
+            th.ecs, "list_tasks", return_value={"taskArns": ["arn:task/running"]}
+        ),
+        patch.object(th, "_run_task") as run,
+    ):
+        launched = th._reconcile_pending(reason="test")
+    assert launched == []
+    run.assert_not_called()
+
+
+def test_reconcile_noop_when_nothing_parked(dynamodb_table):
+    from lambda_handlers import trigger_handler as th
+
+    with (
+        patch.object(th.ecs, "list_tasks", return_value={"taskArns": []}),
+        patch.object(th, "_get_pending_books", return_value=[]),
+        patch.object(th, "_get_pending_books_for_enrich", return_value=[]),
+        patch.object(th, "_run_task") as run,
+    ):
+        launched = th._reconcile_pending(reason="test")
+    assert launched == []
+    run.assert_not_called()
+
+
+# --- G4: OCR intake idempotency (§8) — deny duplicate submissions at the front door ---
+
+
+def test_submit_ocr_first_claims_and_submits(dynamodb_table):
+    from lambda_handlers import trigger_handler as th
+    from unittest.mock import MagicMock
+    import boto3 as _b
+
+    batch = MagicMock()
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "_ocr_chunks", return_value=[""]),
+    ):
+        ok = th._submit_ocr("contentrepository/NARA/B-Series/B 400-499/B460.pdf")
+    assert ok is True
+    batch.submit_job.assert_called_once()
+    table = _b.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    assert table.get_item(Key={"cache_key": "ocr#B460"}).get("Item")
+
+
+def test_submit_ocr_duplicate_is_denied(dynamodb_table):
+    from lambda_handlers import trigger_handler as th
+    from unittest.mock import MagicMock
+
+    batch = MagicMock()
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "_ocr_chunks", return_value=[""]),
+        # The duplicate arrives while the first job is genuinely in flight, so the
+        # second submission is correctly denied (no double-launch).
+        patch.object(th, "_ocr_job_in_flight", return_value=True),
+    ):
+        first = th._submit_ocr("contentrepository/B460/B460.pdf")
+        second = th._submit_ocr("contentrepository/B460/B460.pdf")  # duplicate event
+    assert first is True
+    assert second is False  # denied at intake (job in flight)
+    assert batch.submit_job.call_count == 1  # only ONE GPU job submitted
+
+
+def test_submit_ocr_releases_claim_on_submit_failure(dynamodb_table):
+    """A failed submit must release the claim so a genuine retry isn't blocked."""
+    from lambda_handlers import trigger_handler as th
+    from unittest.mock import MagicMock
+    import boto3 as _b
+
+    batch = MagicMock()
+    batch.submit_job.side_effect = RuntimeError("Batch down")
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "_ocr_chunks", return_value=[""]),
+    ):
+        ok = th._submit_ocr("contentrepository/B460/B460.pdf")
+    assert ok is False
+    table = _b.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    assert table.get_item(Key={"cache_key": "ocr#B460"}).get("Item") is None

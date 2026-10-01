@@ -335,8 +335,9 @@ def _process_single_map(
     )
 
     output_path = output_dir / f"{record['MapID']}.json"
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(record, f, indent=2, ensure_ascii=False)
+    from src.utils.file_lock import write_json_with_lock
+
+    write_json_with_lock(output_path, record)
 
     return True, f"✓ Saved: {output_path.name}"
 

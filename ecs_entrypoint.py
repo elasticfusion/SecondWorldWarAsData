@@ -47,6 +47,7 @@ def _handle_sigterm(_signum, _frame):
     try:
         _final_sync(_current_phase_script)
         _remove_lock(_current_phase_script)
+        _release_nat_lease()
         logger.info("Emergency sync complete — exiting cleanly")
     except Exception as e:
         logger.error("Emergency sync failed: %s", e)
@@ -216,6 +217,7 @@ class BackgroundSync:
 
     def _sync(self):
         try:
+            _heartbeat_nat_lease()  # M3: keep NAT lease alive while task runs
             for name, prefix in [("output", "output")]:
                 d = WORKDIR / name
                 if d.exists():
@@ -539,6 +541,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     """Run a pipeline phase script with incremental S3 sync."""
     global _current_phase_script
     _current_phase_script = phase_script
+    _acquire_nat_lease()  # M3: register NAT demand for the life of this task
     phase_name = Path(phase_script).stem
     WORKDIR.mkdir(parents=True, exist_ok=True)
 
@@ -579,6 +582,25 @@ def run_phase(phase_script: str, extra_args: list) -> None:
         run_submit_only(phase_script, extra_args)
         return
 
+    # Defect guard (St. Vith 2026-09-27): in AWS/ECS mode, a batch-requested run
+    # MUST go through submit-only so the batch is enqueued (batch_job#) for the
+    # poller. If batch was requested (--batch) but _should_use_batch_mode said no
+    # (e.g. a config-read failure), running the in-process path would submit a
+    # batch that the poller never sees. Route to submit-only instead of silently
+    # taking the orphaning path.
+    _in_ecs = bool(
+        os.environ.get("ECS_TASK_ID") or os.environ.get("ECS_CONTAINER_METADATA_URI_V4")
+    )
+    if _in_ecs and "--batch" in extra_args:
+        logger.error(
+            "Batch requested (--batch) but batch-mode routing said no — forcing "
+            "submit-only so the batch is enqueued for the poller (avoids orphaned "
+            "batch, St. Vith 2026-09-27). Check /app/config.yaml batch.* config."
+        )
+        sync.stop()
+        run_submit_only(phase_script, extra_args)
+        return
+
     env = os.environ.copy()
     env["PIPELINE_PHASE"] = phase_name
     cmd = [sys.executable, phase_script] + extra_args
@@ -615,6 +637,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
         _final_sync(phase_script)
         if "phase3" not in phase_script:
             _remove_lock(phase_script)
+        _release_nat_lease()  # M3: task exiting — drop NAT demand
         sys.exit(result.returncode)
 
     logger.info(
@@ -636,6 +659,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: final S3 sync", phase_name)
     _final_sync(phase_script)
     _post_process(phase_script, env)
+    _release_nat_lease()  # M3: task done — drop NAT demand
 
 
 def _prepare_phase1() -> None:
@@ -653,11 +677,19 @@ def _prepare_phase1() -> None:
 
 
 def _should_use_batch_mode(phase_script: str) -> bool:
-    """Check if batch mode is enabled for this phase in config."""
+    """Check if batch mode is enabled for this phase in config.
+
+    Returning False here routes the run through the IN-PROCESS extractor path,
+    which does NOT enqueue a batch_job# record for the poller (only the
+    submit-only path does). A silently-swallowed error therefore used to send a
+    batch run down the non-enqueueing path — orphaning the batch from the poller
+    (St. Vith 2026-09-27). So a config-read failure is now logged LOUDLY rather
+    than silently defaulting to in-process.
+    """
     import yaml
 
     try:
-        with open("/app/config.yaml") as f:
+        with open("/app/config.yaml", encoding="utf-8") as f:
             cfg = yaml.safe_load(f)
         batch_cfg = cfg.get("batch", {})
         phase_key = (
@@ -668,8 +700,16 @@ def _should_use_batch_mode(phase_script: str) -> bool:
         if phase_key and batch_cfg.get(phase_key, False):
             logger.info("Batch mode enabled for %s — using submit-only flow", phase_key)
             return True
-    except Exception:
-        pass
+        logger.info(
+            "Batch mode NOT enabled for %s (batch.%s falsy)", phase_key, phase_key
+        )
+    except Exception as e:
+        # Do NOT silently pick the in-process path — that skips batch_job# enqueue.
+        logger.error(
+            "Failed to read batch config from /app/config.yaml (%s) — falling back to "
+            "in-process; this SKIPS poller enqueue, investigate if a batch was expected",
+            e,
+        )
     return False
 
 
@@ -983,9 +1023,25 @@ def _download_phase2_inputs() -> int:
     for key in index_prefixes:
         _download_s3_file(s3, key)
 
-    # Download bibliography and supplemental dirs (needed for dedup/writing, not just indexing)
-    for p in ["output/bibliography/", "output/supplemental/"]:
-        _download_s3_prefix(s3, p)
+    # Bibliography/supplemental: Dynamo-backed dedup (G3) reads the title index
+    # from DynamoEntityStore, so Phase 2 no longer bulk-downloads the (13k+ file)
+    # bibliography dir — the source of N*2 download thrash under concurrency. Only
+    # download the dirs when there's NO entity store (local/file mode). Phase 3
+    # enrichment still downloads them (it iterates every file).
+    _skip_bib_download = False
+    try:
+        from src.utils.entity_store import get_entity_store
+
+        _skip_bib_download = get_entity_store() is not None
+    except Exception:
+        _skip_bib_download = False
+    if not _skip_bib_download:
+        for p in ["output/bibliography/", "output/supplemental/"]:
+            _download_s3_prefix(s3, p)
+    else:
+        logger.info(
+            "Skipping bibliography/supplemental bulk download (Dynamo-backed dedup)"
+        )
 
     return new_parsed
 
@@ -1109,31 +1165,144 @@ def _download_s3_file(s3, key: str) -> None:
             raise
 
 
+def _clear_processed_content_keys(table, book_name: str) -> None:
+    """Remove only the keys for the book this Phase 1 run processed from
+    pending#content, preserving content queued (for other books) while it ran.
+    If book_name is empty (whole-queue run), clear the queue as before."""
+    if not book_name:
+        table.delete_item(Key={"cache_key": "pending#content"})
+        logger.info("Cleared pending#content queue (whole-queue run)")
+        return
+    resp = table.get_item(Key={"cache_key": "pending#content"})
+    keys = resp.get("Item", {}).get("keys", [])
+    remaining = [
+        k for k in keys if f"/{book_name}/" not in k and not k.endswith(f"/{book_name}")
+    ]
+    if remaining:
+        table.put_item(Item={"cache_key": "pending#content", "keys": remaining})
+        logger.info(
+            "Pruned pending#content: removed %s, %d key(s) remain",
+            book_name,
+            len(remaining),
+        )
+    else:
+        table.delete_item(Key={"cache_key": "pending#content"})
+        logger.info(
+            "Cleared pending#content (processed %s, no others queued)", book_name
+        )
+
+
+def _invoke_trigger_phase_complete(phase: str) -> None:
+    """Tell the trigger Lambda a phase finished so it drives the NEXT phase from
+    parked pending#* queues immediately (event-driven chain; the 15-min scheduled
+    check is only a backstop). Best-effort — a lost invoke is covered by the poll."""
+    try:
+        env_name = os.environ.get("ENV_NAME", "dev")
+        boto3.client("lambda", region_name=REGION).invoke(
+            FunctionName=f"{env_name}-wwii-trigger",
+            InvocationType="Event",
+            Payload=json.dumps({"source": "phase-complete", "phase": phase}).encode(),
+        )
+        logger.info("Notified trigger: phase %s complete -> drive next phase", phase)
+    except Exception as e:
+        logger.warning("Failed to notify trigger of phase %s completion: %s", phase, e)
+
+
+def _advance_doc_lifecycle(completed_phase: str) -> None:
+    """Advance this doc's doc#{book} lifecycle after a completed phase, so the SFN
+    dispatcher (Option 1 — SFN owns lifecycle) re-enumerates it at the NEXT phase
+    (or marks it terminal). Multi-doc only; serial mode uses the pending#/phase-
+    complete chain and has no doc# records. The dispatcher claimed the doc to
+    'running' at dispatch; here we move it to the next READY state.
+
+      phase1 -> parsed    (next_phase phase2)   READY
+      phase2 -> extracted (next_phase phase3)   READY
+      phase3 -> done                            TERMINAL
+    """
+    if os.environ.get("MULTI_DOC_ENABLED", "false").lower() != "true":
+        return
+    book = os.environ.get("BOOK_NAME", "")
+    if not book:
+        return
+    transition = {
+        "1": ("parsed", "phase2"),
+        "2": ("extracted", "phase3"),
+        "3": ("done", None),
+    }.get(completed_phase)
+    if not transition:
+        return
+    status, next_phase = transition
+    try:
+        from src.ingestion import doc_lifecycle
+
+        doc_lifecycle.set_status(book, status, next_phase=next_phase)
+        logger.info(
+            "doc lifecycle: %s -> %s (next=%s) after phase %s",
+            book,
+            status,
+            next_phase,
+            completed_phase,
+        )
+    except Exception as e:
+        logger.warning("Failed to advance doc lifecycle for %s: %s", book, e)
+
+
+def _offramp_doc_needs_review(reason: str) -> None:
+    """Off-ramp this doc to needs-review (multi-doc): the dedup gate blocked it, so
+    the SFN dispatcher must stop re-enumerating it. Resumes via human_gate (review
+    UI -> set_status back to a READY state)."""
+    if os.environ.get("MULTI_DOC_ENABLED", "false").lower() != "true":
+        return
+    book = os.environ.get("BOOK_NAME", "")
+    if not book:
+        return
+    try:
+        from src.ingestion import doc_lifecycle
+
+        doc_lifecycle.set_status(book, "needs-review")
+        logger.info("doc lifecycle: %s -> needs-review (dedup gate: %s)", book, reason)
+    except Exception as e:
+        logger.warning("Failed to off-ramp doc %s to needs-review: %s", book, e)
+
+
 def _post_process(phase_script: str, env: dict) -> None:
     """Run post-processing steps after a successful phase."""
     if "phase1" in phase_script:
-        # Clear pending content queue — Phase 1 has processed it
+        # Clear ONLY the content keys this Phase 1 run actually processed — a blind
+        # delete_item discarded content that arrived (and was queued) WHILE this
+        # phase ran, stranding it (the B460 defect). Remove just this book's keys.
         try:
             table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
             table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-            table.delete_item(Key={"cache_key": "pending#content"})
-            logger.info("Cleared pending#content queue")
-        except Exception:
-            pass
-        # Trigger Phase 2 directly (don't rely on S3 notification chain)
-        try:
             book_name = os.environ.get("BOOK_NAME", "")
-            lambda_client = boto3.client("lambda", region_name=REGION)
-            env_name = os.environ.get("ENV_NAME", "dev")
-            payload = json.dumps({"source": "manual", "book": book_name, "phase": "2"})
-            lambda_client.invoke(
-                FunctionName=f"{env_name}-wwii-trigger",
-                InvocationType="Event",
-                Payload=payload.encode(),
-            )
-            logger.info("Triggered Phase 2 for book=%s", book_name)
+            _clear_processed_content_keys(table, book_name)
         except Exception as e:
-            logger.warning("Failed to trigger Phase 2: %s", e)
+            logger.warning("Failed to prune pending#content: %s", e)
+        if _multi_doc_enabled():
+            # Multi-doc: the SFN dispatcher OWNS phase progression (Option 1). Only
+            # advance the doc lifecycle; do NOT also launch Phase 2 via the serial
+            # manual/phase-complete paths — that would double-drive (two Phase 2
+            # tasks racing the same book).
+            _advance_doc_lifecycle("1")
+        else:
+            # Serial: trigger Phase 2 directly + drive any parked content via the
+            # event-driven phase-complete chain (no doc# lifecycle in serial mode).
+            try:
+                book_name = os.environ.get("BOOK_NAME", "")
+                lambda_client = boto3.client("lambda", region_name=REGION)
+                env_name = os.environ.get("ENV_NAME", "dev")
+                payload = json.dumps(
+                    {"source": "manual", "book": book_name, "phase": "2"}
+                )
+                lambda_client.invoke(
+                    FunctionName=f"{env_name}-wwii-trigger",
+                    InvocationType="Event",
+                    Payload=payload.encode(),
+                )
+                logger.info("Triggered Phase 2 for book=%s", book_name)
+            except Exception as e:
+                logger.warning("Failed to trigger Phase 2: %s", e)
+            _invoke_trigger_phase_complete("1")
     if "phase2" in phase_script:
         dedup_ok = False
         for attempt in range(2):
@@ -1156,51 +1325,64 @@ def _post_process(phase_script: str, env: dict) -> None:
         gate_action, gate_reason = _dedup_gate_decision(dedup_ok)
         logger.info("Dedup gate: %s — %s", gate_action, gate_reason)
         _notify_dedup_gate(gate_action, gate_reason)
-        if gate_action == "auto_proceed":
-            logger.info("Auto-triggering Phase 3 (%s)", gate_reason)
-            try:
-                env_name = os.environ.get("ENV_NAME", "dev")
-                book_name = os.environ.get("BOOK_NAME", "")
-                lambda_client = boto3.client("lambda", region_name=REGION)
-                payload = json.dumps(
-                    {"source": "manual", "book": book_name, "phase": "3"}
-                )
-                lambda_client.invoke(
-                    FunctionName=f"{env_name}-wwii-trigger",
-                    InvocationType="Event",
-                    Payload=payload.encode(),
-                )
-            except Exception as e:
-                logger.warning("Failed to auto-trigger Phase 3: %s", e)
-        else:
-            _schedule_delayed_teardown()
 
-        # Check for other books in the per-book queue — trigger next and skip teardown
-        next_book = _get_next_pending_book()
-        if next_book:
-            logger.info(
-                "Next book in queue: %s — triggering Phase 2, keeping networking up",
-                next_book,
-            )
-            try:
-                env_name = os.environ.get("ENV_NAME", "dev")
-                lambda_client = boto3.client("lambda", region_name=REGION)
-                payload = json.dumps(
-                    {"source": "manual", "book": next_book, "phase": "2"}
-                )
-                lambda_client.invoke(
-                    FunctionName=f"{env_name}-wwii-trigger",
-                    InvocationType="Event",
-                    Payload=payload.encode(),
-                )
-            except Exception as e:
-                logger.warning("Failed to trigger Phase 2 for %s: %s", next_book, e)
+        if _multi_doc_enabled():
+            # Multi-doc: SFN owns progression. On auto-proceed advance to phase3;
+            # if the gate blocks, off-ramp the doc to needs-review (human gate) so
+            # the dispatcher stops re-enumerating it (it resumes via human_gate).
+            if gate_action == "auto_proceed":
+                _advance_doc_lifecycle("2")  # -> extracted, next_phase phase3
+            else:
+                _offramp_doc_needs_review(gate_reason)
         else:
-            _check_pending_content()
+            if gate_action == "auto_proceed":
+                logger.info("Auto-triggering Phase 3 (%s)", gate_reason)
+                try:
+                    env_name = os.environ.get("ENV_NAME", "dev")
+                    book_name = os.environ.get("BOOK_NAME", "")
+                    lambda_client = boto3.client("lambda", region_name=REGION)
+                    payload = json.dumps(
+                        {"source": "manual", "book": book_name, "phase": "3"}
+                    )
+                    lambda_client.invoke(
+                        FunctionName=f"{env_name}-wwii-trigger",
+                        InvocationType="Event",
+                        Payload=payload.encode(),
+                    )
+                except Exception as e:
+                    logger.warning("Failed to auto-trigger Phase 3: %s", e)
+            else:
+                _schedule_delayed_teardown()
+
+            # Check for other books in the per-book queue — trigger next, skip teardown
+            next_book = _get_next_pending_book()
+            if next_book:
+                logger.info(
+                    "Next book in queue: %s — triggering Phase 2, keeping networking up",
+                    next_book,
+                )
+                try:
+                    env_name = os.environ.get("ENV_NAME", "dev")
+                    lambda_client = boto3.client("lambda", region_name=REGION)
+                    payload = json.dumps(
+                        {"source": "manual", "book": next_book, "phase": "2"}
+                    )
+                    lambda_client.invoke(
+                        FunctionName=f"{env_name}-wwii-trigger",
+                        InvocationType="Event",
+                        Payload=payload.encode(),
+                    )
+                except Exception as e:
+                    logger.warning("Failed to trigger Phase 2 for %s: %s", next_book, e)
+            else:
+                # Event-driven: tell the trigger Phase 2 is done so it drains any
+                # content parked while this run was busy.
+                _invoke_trigger_phase_complete("2")
 
     if "phase3" in phase_script:
         # Phase 3 complete — release lock and check for next book in enrich queue
         _remove_lock(phase_script)
+        _advance_doc_lifecycle("3")  # doc# -> done (multi-doc; terminal)
         next_enrich = _get_next_pending_enrich()
         if next_enrich:
             logger.info(
@@ -1284,37 +1466,6 @@ def _consume_pending_enrich(book: str) -> None:
         table.delete_item(Key={"cache_key": f"pending#enrich#{book}"})
     except Exception as e:
         logger.warning("Failed to consume pending#enrich#%s: %s", book, e)
-
-
-def _check_pending_content() -> None:
-    """Check DynamoDB for queued content and re-trigger Phase 1 if found."""
-    logger.info("Checking DynamoDB for pending content")
-    try:
-        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
-        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-        resp = table.get_item(Key={"cache_key": "pending#content"})
-        item = resp.get("Item")
-        if not item or not item.get("keys"):
-            logger.info("No pending content in DynamoDB")
-            return
-        keys = item["keys"]
-        logger.info("Found %d pending content files, re-triggering pipeline", len(keys))
-        # Write keys as S3 manifest for Phase 1
-        _s3_client().put_object(
-            Bucket=BUCKET,
-            Key="manifests/pending.json",
-            Body=json.dumps(list(keys)).encode(),
-        )
-        # Trigger Phase 1 — publish BEFORE deleting pending entry
-        topic_arn = os.environ.get("CONTENT_TOPIC_ARN", "")
-        if topic_arn:
-            sns = boto3.client("sns", region_name=REGION)
-            sns.publish(TopicArn=topic_arn, Message=json.dumps({"pending": True}))
-            logger.info("Re-triggered pipeline for pending content")
-        # Only delete after successful publish
-        table.delete_item(Key={"cache_key": "pending#content"})
-    except Exception as e:
-        logger.warning("Failed to check pending content: %s", e)
 
 
 def _dedup_has_no_pending() -> bool:
@@ -1538,8 +1689,21 @@ def _auto_merge_entity_type(entity_dir: Path, id_field: str) -> int:
     except (json.JSONDecodeError, OSError):
         return 0
 
-    groups_key = "duplicate_groups" if "duplicate_groups" in report else "groups"
-    groups = report.get(groups_key, [])
+    # The report stores the list of duplicate groups under "duplicates";
+    # "duplicate_groups" is an INT count (not the list). Older/other reports may
+    # use "groups". Pick the first key whose value is actually a list — never
+    # iterate the int count (that raised 'int' object is not iterable, which
+    # failed dedup for every doc and blocked the whole pipeline at the gate).
+    groups = None
+    groups_key = None
+    for candidate in ("duplicates", "duplicate_groups", "groups"):
+        value = report.get(candidate)
+        if isinstance(value, list):
+            groups = value
+            groups_key = candidate
+            break
+    if groups is None:
+        return 0
     remaining = []
     merged = 0
 
@@ -1934,67 +2098,128 @@ def _stamp_schema_versions() -> None:
             logger.warning("Could not re-enable trigger Lambda: %s", e)
 
 
+def _held_lock_keys() -> list:
+    """Return all currently-held pipeline lock keys.
+
+    Serial mode (multi_doc off): exact batch_get of the 3 singleton phase keys
+    (unchanged pre-M2 behavior). Multi-doc mode: a prefix scan on `lock#` so
+    per-document keys (`...phase2-extract#Book`) are also detected — required so
+    NAT/OpenSERP teardown decisions stay correct under concurrency (§12.2, §15).
+    """
+    env_name = os.environ.get("ENV_NAME", "dev")
+    table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
+    if _multi_doc_enabled():
+        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
+        keys: list = []
+        kwargs = {
+            "FilterExpression": "begins_with(cache_key, :p)",
+            "ExpressionAttributeValues": {":p": "lock#"},
+            "ProjectionExpression": "cache_key",
+        }
+        while True:
+            resp = table.scan(**kwargs)
+            keys.extend(i["cache_key"] for i in resp.get("Items", []))
+            lek = resp.get("LastEvaluatedKey")
+            if not lek:
+                break
+            kwargs["ExclusiveStartKey"] = lek
+        return keys
+    # Serial: exact keys only
+    dynamodb = boto3.client("dynamodb", region_name=REGION)
+    lock_keys = [
+        f"lock#{env_name}-wwii-phase1-parse",
+        f"lock#{env_name}-wwii-phase2-extract",
+        f"lock#{env_name}-wwii-phase3-enrich",
+    ]
+    resp = dynamodb.batch_get_item(
+        RequestItems={
+            table_name: {
+                "Keys": [{"cache_key": {"S": k}} for k in lock_keys],
+                "ProjectionExpression": "cache_key",
+            }
+        }
+    )
+    return [i["cache_key"]["S"] for i in resp.get("Responses", {}).get(table_name, [])]
+
+
 def _other_phase_locked(current_phase_script: str) -> bool:
-    """Check if any OTHER phase (not the current one) has a lock held."""
+    """Check if any OTHER phase (not the current one) has a lock held.
+
+    Under multi-doc, "other phase" means a lock whose phase-suffix differs from
+    the current phase — a concurrent lock for the SAME phase (another book) is
+    NOT "another phase" and must not block same-phase teardown logic.
+    """
     try:
         env_name = os.environ.get("ENV_NAME", "dev")
-        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
-        dynamodb = boto3.client("dynamodb", region_name=REGION)
-        lock_keys = [
-            f"lock#{env_name}-wwii-phase1-parse",
-            f"lock#{env_name}-wwii-phase2-extract",
-            f"lock#{env_name}-wwii-phase3-enrich",
-        ]
         current_suffix = PHASE_SUFFIXES.get(current_phase_script, "")
-        current_lock = (
+        current_prefix = (
             f"lock#{env_name}-wwii-{current_suffix}" if current_suffix else ""
         )
-        resp = dynamodb.batch_get_item(
-            RequestItems={
-                table_name: {
-                    "Keys": [{"cache_key": {"S": k}} for k in lock_keys],
-                    "ProjectionExpression": "cache_key",
-                }
-            }
-        )
-        for item in resp.get("Responses", {}).get(table_name, []):
-            if item["cache_key"]["S"] != current_lock:
-                return True
+        for held in _held_lock_keys():
+            # Same phase (exact singleton key or a per-doc key of this phase) → not "other"
+            if current_prefix and (
+                held == current_prefix or held.startswith(current_prefix + "#")
+            ):
+                continue
+            return True
     except Exception:
         pass
     return False
 
 
 def _any_pipeline_lock_held() -> bool:
-    """Check if ANY pipeline lock exists (Phase 1, 2, or 3)."""
+    """Check if ANY pipeline lock exists (Phase 1, 2, or 3; any book)."""
     try:
-        env_name = os.environ.get("ENV_NAME", "dev")
-        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
-        dynamodb = boto3.client("dynamodb", region_name=REGION)
-        lock_keys = [
-            f"lock#{env_name}-wwii-phase1-parse",
-            f"lock#{env_name}-wwii-phase2-extract",
-            f"lock#{env_name}-wwii-phase3-enrich",
-        ]
-        resp = dynamodb.batch_get_item(
-            RequestItems={
-                table_name: {
-                    "Keys": [{"cache_key": {"S": k}} for k in lock_keys],
-                    "ProjectionExpression": "cache_key",
-                }
-            }
-        )
-        return len(resp.get("Responses", {}).get(table_name, [])) > 0
+        return len(_held_lock_keys()) > 0
     except Exception:
         return True  # Assume locked on error — don't tear down
 
 
+def _openserp_demand_present() -> bool:
+    """Aggregate OpenSERP demand across ALL jobs (operator rule: if multiple jobs
+    are in play OpenSERP must NOT shut down; shut down only when NO job needs it).
+
+    Returns True if ANY document anywhere still needs OpenSERP:
+      - any Phase 2 or Phase 3 lock is held (any book — per-book or singleton), OR
+      - any Phase 2 or Phase 3 ECS task is RUNNING/PENDING (any book).
+
+    Demand-counted like the NAT lease (§4): teardown is decided by the aggregate,
+    never by a single job's completion. Fail-safe: on error return True (keep up).
+    """
+    env_name = os.environ.get("ENV_NAME", "dev")
+    serp_suffixes = ("phase2-extract", "phase3-enrich")
+    try:
+        # 1) Any held lock for a serp phase (per-book key `...#Book` or singleton).
+        for held in _held_lock_keys():
+            if any(suf in held for suf in serp_suffixes):
+                return True
+        # 2) Any running/pending serp-phase task (covers the window before a lock
+        #    is written or after it's cleared but the task still runs).
+        cluster = f"{env_name}-wwii-pipeline"
+        ecs = boto3.client("ecs", region_name=REGION)
+        for suf in serp_suffixes:
+            family = f"{env_name}-wwii-{suf}"
+            for status in ("RUNNING", "PENDING"):
+                if ecs.list_tasks(
+                    cluster=cluster, family=family, desiredStatus=status
+                ).get("taskArns"):
+                    return True
+    except Exception as e:
+        logger.warning("OpenSERP demand check failed (keeping OpenSERP up): %s", e)
+        return True
+    return False
+
+
 def _stop_openserp_if_running(phase_script: str) -> None:
-    """Scale OpenSERP to 0 after Phase 2/3 completes — only if no other phase is active."""
+    """Scale OpenSERP to 0 after Phase 2/3 — ONLY when no job anywhere still needs
+    it (operator rule: multiple jobs in play => keep OpenSERP up; shut down only
+    when the queue is empty of serp-phase work)."""
     if "phase1" in phase_script:
         return
-    if _other_phase_locked(phase_script):
-        logger.info("Skipping OpenSERP teardown — another phase is active")
+    if _openserp_demand_present():
+        logger.info(
+            "Skipping OpenSERP teardown — another job still needs it (aggregate demand > 0)"
+        )
         return
     try:
         env = os.environ.get("ENV_NAME", "dev")
@@ -2002,7 +2227,7 @@ def _stop_openserp_if_running(phase_script: str) -> None:
         service = f"{env}-wwii-openserp"
         ecs = boto3.client("ecs", region_name=REGION)
         ecs.update_service(cluster=cluster, service=service, desiredCount=0)
-        logger.info("Scaled OpenSERP to 0")
+        logger.info("Scaled OpenSERP to 0 (no job needs it)")
     except Exception as e:
         logger.warning("Failed to scale OpenSERP to 0: %s", e)
 
@@ -2114,13 +2339,115 @@ def _build_phase_section(phase_script: str) -> str:
     return "".join(parts)
 
 
-def _acquire_lock(phase_script: str) -> bool:
-    """Acquire a DynamoDB lock for this phase. Returns True if acquired."""
+def _acquire_nat_lease() -> None:
+    """Register this task's NAT demand (M3, §4). AWS mode only; never blocks."""
+    if not os.environ.get("ECS_TASK_ID") and not os.environ.get(
+        "ECS_CONTAINER_METADATA_URI_V4"
+    ):
+        return  # local run — no cluster NAT to manage
+    try:
+        from src.utils import nat_lease
+
+        nat_lease.acquire_lease()
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("NAT lease acquire failed: %s", e)
+
+
+def _heartbeat_nat_lease() -> None:
+    """Extend this task's NAT lease (called from the background sync loop)."""
+    if not os.environ.get("ECS_TASK_ID") and not os.environ.get(
+        "ECS_CONTAINER_METADATA_URI_V4"
+    ):
+        return
+    try:
+        from src.utils import nat_lease
+
+        nat_lease.heartbeat_lease()
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("NAT lease heartbeat failed: %s", e)
+
+
+def _release_nat_lease() -> None:
+    """Drop this task's NAT demand (normal exit / SIGTERM / human-gate park)."""
+    if not os.environ.get("ECS_TASK_ID") and not os.environ.get(
+        "ECS_CONTAINER_METADATA_URI_V4"
+    ):
+        return
+    try:
+        from src.utils import nat_lease
+
+        nat_lease.release_lease()
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("NAT lease release failed: %s", e)
+
+
+def _nat_demand_present() -> bool:
+    """Cluster-wide NAT demand (M3, §4): live leases OR running pipeline tasks.
+
+    Cross-checks the lease count against the ECS running-task list (ground truth)
+    so a dropped lease can't wrongly tear NAT down while a book is still running.
+    Returns True (demand present) on any error — never tear down on uncertainty.
+    """
+    try:
+        env = os.environ.get("ENV_NAME", "dev")
+        ecs = boto3.client("ecs", region_name=REGION)
+        running = ecs.list_tasks(
+            cluster=f"{env}-wwii-pipeline", desiredStatus="RUNNING"
+        ).get("taskArns", [])
+        # Exclude openserp (support service) and our own task from "pipeline demand"
+        own = os.environ.get("ECS_TASK_ID", "")
+        pipeline = [t for t in running if "openserp" not in t and own not in t]
+        from src.utils import nat_lease
+
+        return nat_lease.has_nat_demand(running_task_count=len(pipeline))
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("NAT demand check failed: %s — assuming demand", e)
+        return True
+
+
+def _multi_doc_enabled() -> bool:
+    """True if multi-document concurrency is switched on (config kill-switch).
+
+    Reads concurrency.multi_doc.enabled from the baked config. Defaults to
+    False, so absent config == today's serial per-phase behavior (§15 M2).
+    """
+    try:
+        import yaml as _yaml
+
+        cfg = _yaml.safe_load(Path("/app/config.yaml").read_text())
+        return bool(
+            cfg.get("concurrency", {}).get("multi_doc", {}).get("enabled", False)
+        )
+    except Exception:
+        return False
+
+
+def _lock_key(phase_script: str) -> str:
+    """Build the DynamoDB lock key for a phase.
+
+    Serial mode (multi_doc off) OR no book set → the historical singleton
+    per-phase key `lock#{env}-wwii-{suffix}` (byte-identical to pre-M2 behavior,
+    so pool=1 == serial). Multi-doc mode WITH a book → the per-document key
+    `lock#{env}-wwii-{suffix}#{book}`, letting different books hold the same
+    phase concurrently while still serializing the same book+phase (§12.2).
+    """
     family_suffix = PHASE_SUFFIXES.get(phase_script)
     if not family_suffix:
-        return True
+        return ""
     env_name = os.environ.get("ENV_NAME", "dev")
-    lock_key = f"lock#{env_name}-wwii-{family_suffix}"
+    base = f"lock#{env_name}-wwii-{family_suffix}"
+    if _multi_doc_enabled():
+        book = os.environ.get("BOOK_NAME", "")
+        if book:
+            return f"{base}#{book}"
+    return base
+
+
+def _acquire_lock(phase_script: str) -> bool:
+    """Acquire a DynamoDB lock for this phase. Returns True if acquired."""
+    lock_key = _lock_key(phase_script)
+    if not lock_key:
+        return True
     logger.info("Acquiring DynamoDB lock: %s", lock_key)
     try:
         import time
@@ -2147,11 +2474,9 @@ def _acquire_lock(phase_script: str) -> bool:
 
 def _remove_lock(phase_script: str) -> None:
     """Remove the DynamoDB lock for this phase."""
-    family_suffix = PHASE_SUFFIXES.get(phase_script)
-    if not family_suffix:
+    lock_key = _lock_key(phase_script)
+    if not lock_key:
         return
-    env_name = os.environ.get("ENV_NAME", "dev")
-    lock_key = f"lock#{env_name}-wwii-{family_suffix}"
     try:
         table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
         table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
@@ -2264,10 +2589,18 @@ def _schedule_delayed_teardown(delay_minutes: int = None) -> None:
 
 def _teardown_networking() -> None:
     """Scale down OpenSERP and invoke nat_manager to delete NAT + VPC endpoints.
-    Skipped if another phase has an active lock (prevents killing networking mid-run).
+    Skipped if another phase has an active lock OR any NAT demand remains
+    (per-task leases / running tasks) — prevents killing networking that a
+    concurrent book still needs (M3, §4).
     """
+    # M3: this task no longer needs the network — drop its lease first, then
+    # decide teardown from cluster-wide demand (not this task's state alone).
+    _release_nat_lease()
     if _any_pipeline_lock_held():
         logger.info("Skipping network teardown — another phase lock is active")
+        return
+    if _nat_demand_present():
+        logger.info("Skipping network teardown — NAT demand remains (leases/tasks)")
         return
     try:
         env = os.environ.get("ENV_NAME", "dev")
@@ -2297,6 +2630,7 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     """Run phase in batch mode, submit to Grok, enqueue job, then exit immediately."""
     global _current_phase_script
     _current_phase_script = phase_script
+    _acquire_nat_lease()  # M3: register NAT demand
     phase_name = Path(phase_script).stem
     os.environ["PIPELINE_PHASE"] = phase_name
     if "--batch" not in extra_args:
@@ -2482,20 +2816,82 @@ def _enqueue_from_metrics(phase_script: str) -> bool:
         book,
         request_count,
     )
-    enqueue_job(
-        BatchJob(
-            batch_id=batch_id,
-            phase=phase,
-            book=book,
-            batch_name=metrics.get("batch_name", ""),
-            submitted_at=int(_t.time()),
-            status="pending",
-            request_count=request_count,
-        )
+    _enqueue_or_alert(
+        batch_id, phase, book, metrics.get("batch_name", ""), request_count
     )
-    logger.info("Enqueued batch job to DynamoDB: %s", batch_id)
     _notify_batch_submitted(phase, book, batch_id, request_count)
     return True
+
+
+def _enqueue_or_alert(
+    batch_id: str, phase: str, book: str, batch_name: str, request_count: int
+) -> None:
+    """Register the submitted batch for the poller (batch_job#) AND verify it
+    landed — a batch submitted to Grok but NOT enqueued is an orphan that stalls
+    the pipeline with no downstream signal (root cause of the Patton epub stall,
+    2026-09-30). Per the operator alerting principle: every transition logs, and
+    a failure OR an unexplained/anomalous outcome ALERTS (email+Slack), never
+    silent. We do not need to know WHY the transition failed to alert on it."""
+    import time as _t
+
+    try:
+        enqueue_job(
+            BatchJob(
+                batch_id=batch_id,
+                phase=phase,
+                book=book,
+                batch_name=batch_name,
+                submitted_at=int(_t.time()),
+                status="pending",
+                request_count=request_count,
+            )
+        )
+    except Exception as e:
+        _alert_anomaly(
+            "batch-enqueue-failed",
+            f"Batch {batch_id} was SUBMITTED to Grok ({book}, {request_count} reqs) "
+            f"but enqueue_job FAILED ({e}). The batch is ORPHANED — the poller will "
+            f"never retrieve it and the pipeline will stall. Manual recovery: write "
+            f"a batch_job#{batch_id} record (status=pending) so the poller picks it "
+            f"up.",
+        )
+        raise
+    # Verify the transition actually completed — do not trust the write blindly.
+    try:
+        from src.utils.job_queue import get_job as _get_job
+
+        if _get_job(batch_id) is None:
+            _alert_anomaly(
+                "batch-enqueue-anomaly",
+                f"Batch {batch_id} ({book}) reported enqueued but the batch_job# "
+                f"record is absent on read-back — anomalous. Treating as orphaned; "
+                f"investigate before the poll cycle.",
+            )
+    except Exception as e:  # verification is best-effort; never mask the enqueue
+        logger.warning("Post-enqueue verification skipped for %s: %s", batch_id, e)
+
+
+def _alert_anomaly(kind: str, message: str) -> None:
+    """Publish an anomaly alert to the notification topic (email + Slack). Used
+    for transitions that fail OR complete in an unexplained way. Best-effort:
+    an alerting failure is itself logged loudly but never raises over the caller."""
+    logger.error("ANOMALY [%s]: %s", kind, message)
+    try:
+        topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "") or os.environ.get(
+            "SNS_TOPIC_ARN", ""
+        )
+        if not topic_arn:
+            logger.error(
+                "No notification topic configured — anomaly UNALERTED: %s", kind
+            )
+            return
+        boto3.client("sns", region_name=REGION).publish(
+            TopicArn=topic_arn,
+            Subject=f"WWII Pipeline ANOMALY: {kind}",
+            Message=message,
+        )
+    except Exception as e:
+        logger.error("Failed to publish anomaly alert [%s]: %s", kind, e)
 
 
 def _notify_batch_submitted(
@@ -2628,6 +3024,16 @@ if __name__ == "__main__":
             "       ecs_entrypoint.py --retrieve-only <batch_id> <phase_script> [args...]"
         )
         sys.exit(1)
+
+    # M3 (§4): acquire a NAT lease for the WHOLE lifetime of this task, once,
+    # regardless of which path runs (phase / submit-only / retrieve-only). This
+    # closes the gap where the retrieve-only task held no lease, and guarantees a
+    # task's egress demand is always represented while it lives. atexit release is
+    # a backstop; SIGTERM + explicit release paths still fire.
+    _acquire_nat_lease()
+    import atexit as _atexit
+
+    _atexit.register(_release_nat_lease)
 
     if sys.argv[1] == "--submit-only":
         run_submit_only(sys.argv[2], sys.argv[3:])

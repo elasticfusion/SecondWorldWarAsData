@@ -739,3 +739,259 @@ docs — the old all-pairs O(entities²) pass would not.
   be unarchived before submission — the §7 pre-stage unpacks zips/rars to
   individual source files (deduped against holdings, media-routed) before the
   dispatcher sees them. No archive is ever submitted directly.
+
+---
+
+## 14. Configuration schema
+
+All concurrency behavior is **soft-coded** (§5.0, §7.1) — no hardcoded pool sizes,
+task sizes, or limits. This section pins the full config surface. It **extends**
+today's `concurrency:` and `batch:` blocks (see `config.yaml.example`) rather than
+replacing them; existing keys keep their meaning (they govern *intra-document*
+parallelism — chapters/workers within one book).
+
+```yaml
+concurrency:
+  enabled: false                 # (existing) master switch for intra-doc parallelism
+  max_event_files: 3             # (existing) parallel chapter extractions within a book
+  max_extraction_group: 3        # (existing)
+  max_enrichment_workers: 4      # (existing)
+
+  # --- NEW: multi-document dispatcher (this spec) ---
+  multi_doc:
+    enabled: false               # off by default; flip on per §15 migration
+    pool_min: 2                  # POOL_MIN floor (§5, §13)
+    pool_max: 8                  # POOL_MAX ceiling; effective = min(pool_max, quota-derived cap)
+    adaptive: true               # scale within [min,max] on headroom/backpressure (§5.0)
+    dispatch_order: fifo         # §8 — FIFO (only supported value today)
+
+  # --- NEW: per-work-type compute profiles (§7.1) ---
+  # work_type -> right-sized task + capacity-provider strategy
+  compute_profiles:
+    cpu_parse:   { cpu: 512,  memory: 1024, spot_weight: 5, ondemand_weight: 1 }
+    extraction:  { cpu: 512,  memory: 2048, spot_weight: 4, ondemand_weight: 1 }
+    gpu_ocr:     { batch_env: dev-wwii-chandra-gpu, spot: false }  # on-demand until checkpoint verified
+    vision:      { cpu: 1024, memory: 2048, spot_weight: 4, ondemand_weight: 1 }
+    dedup_coord: { cpu: 512,  memory: 2048, spot_weight: 0, ondemand_weight: 1 }  # on-demand only
+
+  # --- NEW: per-resource pool caps (§5, §7) ---
+  resource_caps:
+    fargate_vcpu_quota_code: L-3032A538   # discovered via Service Quotas API, not hardcoded
+    fargate_spot_vcpu_quota_code: L-36FBB829
+    warn_at_quota_pct: 80                 # warn + request-increase hint at >=80%
+
+  # --- NEW: cluster-wide Grok rate limiter (§5.2) ---
+  grok_rate:
+    requests_per_min: null       # null => derive from plan limit / discover; else override
+    per_task_share: auto         # plan_limit / current_pool
+    limiter_backend: dynamodb     # cluster-wide token bucket table
+
+nat:                             # §4 job-aware NAT (lease/demand)
+  lease_ttl_seconds: 900         # per-task lease TTL; renewed by heartbeat
+  idle_grace_seconds: 300        # tear down only after demand=0 for this long
+  demand_sources: [leases, running_tasks, pending_queues]  # NAT up if ANY > 0
+
+batch:
+  phase2: true                   # (existing)
+  phase3: false                  # (existing)
+  # --- NEW: resilience + size limits (§6) ---
+  max_requests_per_file: 50000   # xAI hard limit (§6.2)
+  max_file_mb: 200               # xAI hard limit
+  max_request_mb: 25             # xAI hard limit
+  split_on_size: true            # auto-split oversized batches (§6.4)
+  submit_grace_seconds: 120      # _SUBMIT_GRACE_SECS fail-fast (already implemented)
+
+cost:                            # §9 — soft alert + credit-aware gating
+  spend_alert_usd: 10.0          # SOFT alert threshold (not a block)
+  credit_gating: true            # §9.0 — do not submit beyond available credit
+  budget_usd: null               # fallback budget if no credit-balance API (§13)
+  batch_discount_pct: 20         # grok-4.20 family (§9.1, verified)
+```
+
+**Rules:**
+- **Unknown work type → safe default** (`extraction` profile) + a warning, never a
+  crash.
+- **`multi_doc.enabled: false` is a hard kill-switch** — the pipeline falls back to
+  today's serial single-lock behavior (the migration §15 relies on this).
+- Every numeric limit that AWS/xAI exposes via API (Fargate vCPU, Grok rate,
+  credit balance) is **discovered and clamped at runtime** (§5.0); config values
+  are *ceilings/overrides*, not the source of truth.
+
+## 15. Migration plan (serial → concurrent, no big-bang)
+
+The build ships **incrementally on `feature/concurrency-parallelism`**, each phase
+independently deployable and reversible via the `multi_doc.enabled` kill-switch.
+Ordering follows §12; the migration constraint is **every phase must leave the
+serial pipeline working when `multi_doc.enabled: false`.**
+
+| Step | Ships | Backward-compatible because | Rollback |
+|---|---|---|---|
+| M1 | Input pre-stage (§7) — archive expand + media routing + per-doc lifecycle state | Produces the same per-book work items the serial queue already consumes | Skip pre-stage; feed books directly (today's path) |
+| M2 | **Per-doc locks** (§12.2) replacing single per-phase lock | With pool=1, per-doc locks behave exactly like the old per-phase lock | Revert lock key scheme (feature-flagged) |
+| M3 | **Job-aware NAT leases** (§4) | Lease demand with a single task == today's single-NAT behavior; fixes the teardown race regardless | Fall back to per-phase delayed-teardown |
+| M4 | **SFN Map dispatcher** + backpressure + cluster Grok limiter + credit gating (§12.4) | `MaxConcurrency=1` ⇒ serial; raise pool only after M2/M3 proven | `multi_doc.enabled: false` → bypass SFN, use serial queue |
+| M5 | Shared-entity-store hardening (§3.3) | Idempotent conditional writes are correct at pool=1 too | Conditional writes degrade gracefully to today's writes |
+| M6 | Incremental dedup (§3.2, §11) | Per-book-against-running-set == today's per-book dedup when only one book exists | Fall back to batch dedup |
+| M7 | Batch resilience taxonomy (§6) | Pure additive error handling | N/A (additive) |
+| M8 | Observability (§10) | Additive dashboards/alarms | N/A |
+| M9 | **Load test** (20 mixed docs) → then raise `pool_max` for full drain | Gated; pool stays low until proven | Lower pool |
+
+**Cutover discipline:** merge each M-step to `main` behind the kill-switch, deploy,
+smoke-test at **pool=1** (must equal serial behavior), then raise the pool only
+after M2+M3+M4 are jointly proven. No step raises concurrency until locks + NAT +
+dispatcher are all in place.
+
+## 16. Testing strategy
+
+Concurrency correctness can't be proven by "it ran once" — the failures are
+**races, double-writes, and lease leaks** that appear only under contention. Test
+layers:
+
+- **Unit (fast, no AWS):**
+  - Compute-profile selection: each media type → correct profile; unknown →
+    `extraction` default + warning (§7.1).
+  - Pool clamp math: `effective = min(pool_max, quota_cap)`, floor `pool_min`;
+    per-task Grok share = `plan_limit / pool` (§5).
+  - Spend calc (§9.1) — per-kind/per-model token × price × 0.8 batch discount;
+    credit-gating decision boundaries (§9.0).
+  - Fail-fast: `_check_batch_submission_ok` (already tested) + size-split logic.
+
+- **Integration (moto — matches CI, `moto==5.2.1`):**
+  - **Lock contention:** N simulated tasks contend for the same per-doc lock →
+    exactly one wins; loser backs off; no deadlock (§12.2).
+  - **Idempotent entity writes:** concurrent `DynamoEntityStore` conditional
+    updates for the same entity from 2 "books" → single consistent record, no lost
+    update (§3.3). This is the correctness crux.
+  - **NAT lease lifecycle:** acquire/renew/expire; demand=0 only when all leases
+    gone AND queues empty → teardown; a stale lease (crashed task) expires via TTL
+    and doesn't pin NAT forever (§4).
+  - **Backpressure:** dispatcher at `MaxConcurrency` holds new dispatch until a
+    slot frees; quota at ≥80% warns; never exceeds the clamp (§5).
+  - **Incremental dedup:** book B deduped against the running resolved set from A;
+    a late/straggler book blocks nothing (§3.2).
+
+- **Fault injection:**
+  - Spot reclaim mid-extraction → SIGTERM → `_final_sync` → relaunch → incremental
+    resume skips done chapters (no re-pay of Grok; DynamoDB cache hit).
+  - Batch rejected (model/size) → `BatchSubmissionError` raised loudly, per-cause
+    policy applies (§6.1) — regression-locks the St. Vith `num_requests:0` bug.
+  - Crashed task's lock + NAT lease both expire via TTL (no permanent leak).
+
+- **Load test (M9, pre-drain):** 20 mixed-media WWIIArchives docs at `pool=4` →
+  measure throughput, per-resource utilization (validate the §7.1 right-size
+  assumptions with Container Insights), actual cost vs the §9.1 estimate, and zero
+  correctness violations (no dup entities, no lease leaks). Sets `pool_max` for the
+  full 628-file drain.
+
+- **CI gate:** unit + moto-integration run under the existing full quality gate
+  (black/pylint/mypy/bandit/radon/vulture + pytest, CI-pinned versions). Load test
+  is manual/out-of-band (costs money + real AWS).
+
+---
+
+## 17. M4.3 design — Step Functions Map dispatcher (review before build)
+
+**Purpose.** The coordination primitives (M2 per-doc locks, M3 NAT leases, M4.1
+cluster Grok rate, M4.2/M4.4 credit gate) are built and DynamoDB-backed. M4.3 adds
+the *orchestrator* that fans work out concurrently within those primitives — a
+Step Functions **Standard** state machine with a **Map** state.
+
+### 17.1 What exists today (must coexist with / replace)
+
+`trigger_handler.py` is the current dispatcher, and it is **strictly serial by
+construction**:
+- `_launch_phase{1,2}_if_idle()` bail if ANY task in ANY phase family is running.
+- `_run_task()` ensures NAT, takes the single per-phase lock, and `run_task`s ONE
+  task with the 4:1 `FARGATE_SPOT:FARGATE` strategy; if the lock is held it
+  **queues** the book (`pending#parsed#{book}`, `pending#enrich#{book}`) instead.
+- Triggered by SQS(SNS S3 events) + an hourly EventBridge reconciliation.
+
+So the serial gate is **not** the lock (M2 made that per-doc) — it's the explicit
+`_if_idle` checks and the one-task-per-invoke `_run_task`. M4.3 replaces the
+*dispatch decision*, not the task-launch mechanics (NAT ensure, capacity strategy,
+overrides) which are reused.
+
+### 17.2 State machine shape
+
+**Standard workflow** (not Express — multi-hour docs exceed the 5-min cap; §13).
+One execution = one **drain pass** over the pending set.
+
+```
+EnumeratePending           (Lambda: list docs not done/in-flight — §8 lifecycle)
+   └─> ClampPool            (Lambda: effective = min(pool_max, quota cap); §5.0)
+   └─> Map[MaxConcurrency = clamped pool]           ← the fan-out
+        input: one doc/work-item (heterogeneous, §7)
+        each branch:
+          AcquirePerDocLock  (Task: M2 lock; on CONFLICT → skip, already in-flight)
+          AcquireNatLease    (Task: M3 lease)
+          RouteByMedia       (Choice: OCR / extraction / vision / parse — §7.1 profile)
+          RunTask.sync       (ecs:runTask.sync with the per-work-type compute
+                              profile + capacity strategy from §7.1)
+          [HumanGate?]        (Task.waitForTaskToken: dedup/OCR/biblio review —
+                              execution parks; lease released → NAT demand −1, §4)
+          ReleaseNatLease
+          ReleasePerDocLock
+        Catch → per-cause handler (§6.1 taxonomy): credit-hold, size-split,
+                model-fallback, spot-retry — each item independent.
+   └─> CheckDrained          (Choice: pending still non-empty? → loop EnumeratePending)
+   └─> Done
+```
+
+**Key properties:**
+- **`MaxConcurrency` = clamped pool** — Step Functions enforces the fan-out cap for
+  free; backpressure (M4.4-style) is the pool clamp + the Grok limiter's per-task
+  share (`GROK_RATE_POOL_SIZE` = current pool, injected as a task-def env override).
+- **`ecs:runTask.sync`** — the branch blocks until the task ends, so lease/lock
+  release happen deterministically in the state machine (belt-and-suspenders with
+  the task's own SIGTERM/exit release).
+- **Human gates = `waitForTaskToken`** — the dedup/OCR/biblio gate Lambda stores the
+  token; the review UI (or its completion event) sends `SendTaskSuccess`. While
+  parked, the branch holds NO lease → contributes 0 to NAT demand (§4), so NAT
+  tears down naturally if all branches are parked and comes back when one resumes.
+- **Per-cause `Catch`** — maps the §6.1 failure taxonomy to Retry/Catch: credit-hold
+  (§9.0) → don't retry, route to held queue; size-limit → split-resubmit; spot →
+  bounded retry; model-transition → fallback. Each Map branch fails independently
+  (no straggler coupling — dedup is incremental, §3.2).
+
+### 17.3 Coexistence + migration (kill-switch)
+
+- **`multi_doc.enabled: false` (default):** `trigger_handler` behaves exactly as
+  today (serial `_if_idle` + single `_run_task`). The state machine is deployed but
+  **not invoked**. This is the M4.3 safe-deploy state.
+- **`multi_doc.enabled: true`:** the SQS/EventBridge triggers invoke the **state
+  machine** instead of `_launch_phase*_if_idle`; `trigger_handler` shrinks to
+  "enumerate + start execution." `run_task` mechanics (NAT ensure, capacity
+  strategy, book override) move into the Map branch's `RunTask` state / a thin
+  launch Lambda reused by both paths.
+- Start at **`MaxConcurrency: 1`** even when enabled → provably equals serial
+  behavior (§15 M4 smoke test) before raising the pool.
+
+### 17.4 New infra (CloudFormation — `cloudformation/dispatcher.yaml`, nested)
+
+- `AWS::StepFunctions::StateMachine` (Standard) + its execution IAM role
+  (`ecs:RunTask`/`StopTask`, `iam:PassRole` for task+exec roles, `states:*` for
+  tokens, DynamoDB on the cache table, `lambda:InvokeFunction` for the small
+  enumerate/clamp/gate Lambdas).
+- A few thin **Lambdas**: `enumerate_pending`, `clamp_pool` (Service Quotas +
+  pool_max), `human_gate` (token store/resume). Reuse existing `nat_manager`.
+- EventBridge/SQS wiring switches target from `trigger_handler` → state machine
+  **only when the kill-switch is on** (parameterized).
+- Given July rollback history: author + `cfn-lint` on the branch; deploy via
+  **change-set/dry-run**, nested under the parent stack, NOT a big-bang.
+
+### 17.5 Open questions for review (before writing CFN)
+
+1. **One execution per drain pass, looping** (as drawn) vs **one execution per
+   doc**? Looping keeps a single "drain" observable; per-doc gives cleaner
+   isolation but N executions. Leaning **looping drain** (matches FIFO §8, one
+   dashboard).
+2. **`runTask.sync` vs fire-and-forget + poll?** `.sync` is simpler and gives
+   deterministic release, at the cost of a held SFN branch (per-state-transition
+   billing on Standard). For multi-hour tasks the transition count is tiny, so
+   `.sync` is fine.
+3. **Where do the M4.1/M4.2 primitives get invoked** — in the Map branch (SFN
+   Task states) or inside the ECS task (as now)? Proposal: keep them **in the
+   task** (already wired, works serial-or-parallel) and have SFN only own fan-out /
+   lease / lock / retry. Matches §13 "SFN orchestrates; DynamoDB coordinates."
+4. Batch-poller path (the logged TODO): confirm the poller sees ECS-submitted
+   batches before the async human-gate/retrieve path depends on it.

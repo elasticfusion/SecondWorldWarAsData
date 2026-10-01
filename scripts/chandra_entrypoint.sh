@@ -44,12 +44,26 @@ WATCHDOG="$(dirname "$0")/ocr_watchdog.py"
 # --paginate_output inserts per-page separators in the merged markdown, which
 # the post-OCR table-recovery router (src/ingestion/chunk_pages.py) parses to
 # map a flattened table back to its physical PDF page. See OCR_OPERATIONS.md.
+# Capture the watchdog exit code explicitly (temporarily disable -e) so a
+# watchdog failure — notably EXIT_OOM(76), which the watchdog raises even when
+# Chandra swallows a CUDA OOM and exits 0 — is PRESERVED as the container exit
+# code. We must NOT upload partial/empty output and must NOT exit 0 on failure,
+# or the job looks successful with no data (the B406/B400 silent-success bug).
+set +e
 if [ -f "$WATCHDOG" ]; then
     python3 "$WATCHDOG" -- chandra --method hf --paginate_output "$@" "$LOCAL_INPUT" "$LOCAL_OUTPUT"
+    OCR_RC=$?
 else
-    # Fallback: run chandra directly if the watchdog is not present in the image.
     echo "WARN: ocr_watchdog.py not found — running chandra without watchdog"
     chandra --method hf --paginate_output "$@" "$LOCAL_INPUT" "$LOCAL_OUTPUT"
+    OCR_RC=$?
+fi
+set -e
+
+if [ "$OCR_RC" -ne 0 ]; then
+    echo "OCR failed (exit $OCR_RC) — NOT uploading partial output; failing the job."
+    rm -rf "$LOCAL_INPUT" "$LOCAL_OUTPUT"
+    exit "$OCR_RC"
 fi
 
 # Upload results to S3

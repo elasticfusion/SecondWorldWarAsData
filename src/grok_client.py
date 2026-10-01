@@ -41,6 +41,32 @@ class GrokTruncationError(GrokAPIError):
     """Response was truncated (hit max_tokens or context limit)."""
 
 
+def _effective_calls_per_minute(config: Dict[str, Any]) -> int:
+    """Per-task Grok call budget, made cluster-wide-safe under concurrency (§5.2).
+
+    Grok's rate limit is **account-wide**. With N task processes each running an
+    independent per-process limiter, N × calls_per_minute would blow past the
+    vendor cap. Since the vendor limit is a config input (no API to query it), the
+    safe cluster-wide budget is the configured rate DIVIDED across the pool:
+
+        per_task = calls_per_minute // effective_pool_size
+
+    where effective_pool_size is the multi-doc pool ceiling when concurrency is on,
+    else 1. At pool=1 (or multi_doc off) this returns the configured value
+    unchanged — byte-identical to today's serial behavior (§15 migration).
+    """
+    base = int(config.get("api", {}).get("calls_per_minute", 30))
+    multi = config.get("concurrency", {}).get("multi_doc", {})
+    if not multi.get("enabled", False):
+        return base
+    # Divide by the pool ceiling (pool_max) — the worst case of concurrent tasks.
+    # An env override lets the dispatcher inject the *current* adaptive pool size.
+    pool = int(os.getenv("GROK_RATE_POOL_SIZE", "0")) or int(multi.get("pool_max", 1))
+    pool = max(pool, 1)
+    per_task = base // pool
+    return max(per_task, 1)  # never drop below 1/min
+
+
 class _RateLimiter:
     """Thread-safe token-bucket rate limiter.
 
@@ -169,6 +195,7 @@ class GrokClient:
         from src.utils.config import load_config
 
         config = load_config()
+        self._config = config
         self.base_url = os.getenv(
             "GROK_API_BASE_URL",
             config.get("api", {})
@@ -218,8 +245,10 @@ class GrokClient:
             "supplemental_advanced",
         }
 
-        # Rate limiter — shared across all threads
-        calls_per_minute = config.get("api", {}).get("calls_per_minute", 30)
+        # Rate limiter — shared across all threads. Under multi-doc concurrency
+        # the per-task budget is the account-wide rate divided across the pool
+        # (§5.2), so N parallel tasks collectively stay under Grok's cap.
+        calls_per_minute = _effective_calls_per_minute(config)
         self._rate_limiter = _RateLimiter(calls_per_minute)
 
         # Cache stats
@@ -310,6 +339,36 @@ class GrokClient:
         key = self._make_cache_key(prompt, temperature)
         return cache.pop(key, None) is not None
 
+    def _estimate_batch_cost(self) -> float:
+        """Estimate USD cost of the collected batch for the credit gate (§9.1).
+
+        Input tokens are estimated from message content length (~4 chars/token,
+        the spec's content_length proxy where exact usage isn't yet known), plus
+        a conservative output allowance per request. Cost resolves PER REQUEST via
+        the same per-kind model routing (_get_model), so mixed-model batches price
+        correctly. Batch discount is applied by the price table.
+        """
+        if not self._batch_collector:
+            return 0.0
+        from src.utils import credit_gate
+
+        # Per-request output allowance (tokens). Conservative default; extractions
+        # are structured JSON, typically well under this.
+        out_allowance = int(os.getenv("GROK_EST_OUTPUT_TOKENS", "2000"))
+        total = 0.0
+        for req in self._batch_collector.requests:
+            chars = sum(len(str(m.get("content", ""))) for m in (req.messages or []))
+            in_tokens = max(chars // 4, 1)
+            model = self._get_model(getattr(req, "cache_type", "default"))
+            total += credit_gate.estimate_cost_usd(
+                in_tokens,
+                out_allowance,
+                model=model,
+                is_batch=True,
+                config=self._config,
+            )
+        return round(total, 6)
+
     def submit_batch(  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
         self, batch_name: str = "pipeline"
     ) -> Optional[str]:
@@ -325,6 +384,7 @@ class GrokClient:
 
         from src.utils.batch_api import (
             BatchMetrics,
+            BatchSubmissionError,
             RequestDetail,
             submit_batch,
             poll_batch,
@@ -358,8 +418,29 @@ class GrokClient:
             r.request_id: r.cache_type for r in self._batch_collector.requests
         }
 
+        # M4.2/M4.4: credit-aware submission gate (§9.0). Estimate this batch's
+        # cost and atomically reserve it against the cluster-wide budget BEFORE
+        # submitting. If it would overspend, HOLD the work (raise) rather than
+        # submit requests that would silently fail unprocessed. No-op unless the
+        # operator enabled cost.credit_gating with a budget.
+        est_cost = self._estimate_batch_cost()
+        from src.utils import credit_gate
+
+        if not credit_gate.reserve(est_cost, config=self._config):
+            raise BatchSubmissionError(
+                f"Credit gate: estimated batch cost ${est_cost:.4f} would exceed "
+                f"the remaining budget — holding {count} requests (not submitting). "
+                f"Top up credit / raise cost.budget_usd and resubmit."
+            )
+
         # Submit and poll
-        batch_id = submit_batch(self.api_key, jsonl_path, batch_name)
+        try:
+            batch_id = submit_batch(self.api_key, jsonl_path, batch_name)
+        except Exception:
+            # Submission never happened — release the reservation so the budget
+            # isn't permanently consumed by a batch that didn't run.
+            credit_gate.release(est_cost, config=self._config)
+            raise
         logger.info("Waiting for batch to complete (may take minutes to hours)...")
         batch_state = poll_batch(self.api_key, batch_id, submitted_count=count)
 

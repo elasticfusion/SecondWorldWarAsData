@@ -88,37 +88,25 @@ if [ "$1" = "--ocr-standalone" ]; then
 
     echo ""
     echo "=== 3. Deploying OCR stack ==="
-    # Read subnet and SG from SSM (set by network stack)
-    # Note: Only use subnets in AZs that offer GPU instance types (g5/g6)
-    # us-east-1a does NOT have g5/g6. us-east-1b does.
+    # Read subnet and SG from SSM (set by network stack). The network stack now
+    # guarantees PrivateSubnet1/2 are BOTH in GPU-capable AZs (deploy-time GPU
+    # probe -> GpuAz1/GpuAz2), so the OCR Batch CE uses those 2 canonical subnets —
+    # the SAME 2 subnets that carry Fargate + the (ECS/ECR/...) interface endpoints.
+    # This retires the old g5-only 6-subnet probe that mis-aligned OCR subnets with
+    # the endpoints (root cause of the OCR RUNNABLE stall).
     SG=$(aws ssm get-parameter --name "/${ENV}-wwii-pipeline/LambdaSGId" --query Parameter.Value --output text --region $REGION)
 
-    # Gather all private subnets from SSM
-    ALL_SUBNETS=""
-    for i in 1 2 3 4 5 6; do
-        SUBNET=$(aws ssm get-parameter --name "/${ENV}-wwii-pipeline/PrivateSubnet${i}Id" --query Parameter.Value --output text --region $REGION 2>/dev/null) || continue
-        ALL_SUBNETS="${ALL_SUBNETS:+$ALL_SUBNETS }$SUBNET"
-    done
-
-    # Determine which subnets are in GPU-capable AZs
     GPU_SUBNETS=""
-    for SUBNET in $ALL_SUBNETS; do
-        AZ=$(aws ec2 describe-subnets --subnet-ids $SUBNET --region $REGION --query 'Subnets[0].AvailabilityZone' --output text)
-        HAS_GPU=$(aws ec2 describe-instance-type-offerings --location-type availability-zone \
-            --filters "Name=instance-type,Values=g5.xlarge" "Name=location,Values=$AZ" \
-            --region $REGION --query 'InstanceTypeOfferings | length(@)')
-        if [ "$HAS_GPU" -gt 0 ]; then
-            GPU_SUBNETS="${GPU_SUBNETS:+$GPU_SUBNETS,}$SUBNET"
-            echo "  ✓ $SUBNET ($AZ) — has GPU instances"
-        else
-            echo "  ✗ $SUBNET ($AZ) — no GPU instances, skipping"
-        fi
+    for i in 1 2; do
+        SUBNET=$(aws ssm get-parameter --name "/${ENV}-wwii-pipeline/PrivateSubnet${i}Id" --query Parameter.Value --output text --region $REGION 2>/dev/null) || continue
+        GPU_SUBNETS="${GPU_SUBNETS:+$GPU_SUBNETS,}$SUBNET"
     done
 
     if [ -z "$GPU_SUBNETS" ]; then
-        echo "  ❌ No subnets in GPU-capable AZs. Cannot deploy OCR."
+        echo "  ❌ No private subnets from network stack. Cannot deploy OCR."
         exit 1
     fi
+    echo "  OCR Batch CE subnets (GPU-capable, endpoint-aligned): $GPU_SUBNETS"
 
     aws s3 cp cloudformation/ocr.yaml s3://$TEMPLATE_BUCKET/cloudformation/ocr.yaml --region $REGION
 

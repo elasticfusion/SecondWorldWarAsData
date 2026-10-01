@@ -10,3 +10,4 @@ ulid-py
 jsonschema
 beautifulsoup4
 html2text
+pypdf>=4.0.0

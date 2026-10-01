@@ -1,0 +1,241 @@
+"""Tests for PDF -> OCR routing in the trigger (Option B)."""
+
+import os
+from unittest.mock import MagicMock, patch
+
+os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
+os.environ.setdefault("ECS_CLUSTER", "dev-wwii-pipeline")
+os.environ.setdefault("CACHE_TABLE", "dev-wwii-api-cache")
+os.environ.setdefault("S3_BUCKET", "dev-wwii-data-pipeline")
+
+from lambda_handlers import trigger_handler as th
+
+
+def test_split_by_media_separates_pdf_from_parseable():
+    keys = [
+        "contentrepository/NARA/B-Series/B 400-499/B460.pdf",
+        "contentrepository/maps/normandy.png",  # image -> OCR
+        "contentrepository/B405/B405.md",  # markdown -> parse
+        "contentrepository/notes/x.txt",  # text -> parse
+        "contentrepository/x/doc.docx",  # binary -> convert
+        "contentrepository/books/y.epub",  # binary -> convert
+        "contentrepository/vid/Battle.mp4",  # video -> video task
+    ]
+    ocr_keys, convert_keys, video_keys, parse_keys = th._split_by_media(keys)
+    # PDFs AND images go to OCR (Chandra reads both)
+    assert set(ocr_keys) == {
+        "contentrepository/NARA/B-Series/B 400-499/B460.pdf",
+        "contentrepository/maps/normandy.png",
+    }
+    # epub/docx go to the pandoc convert path
+    assert set(convert_keys) == {
+        "contentrepository/x/doc.docx",
+        "contentrepository/books/y.epub",
+    }
+    # video goes to the video task (NOT silently dropped)
+    assert set(video_keys) == {"contentrepository/vid/Battle.mp4"}
+    # only already-textual content parses directly
+    assert set(parse_keys) == {
+        "contentrepository/B405/B405.md",
+        "contentrepository/notes/x.txt",
+    }
+
+
+def test_submit_video_launches_phase0_video_task():
+    """A video routes to a demand-only Phase-0 video task with VIDEO_KEY."""
+    with patch.object(th, "_run_task") as run:
+        th._submit_video("contentrepository/vid/Battle of the Bulge.mp4")
+    args, kwargs = run.call_args
+    assert args[0] == th.PHASE0_VIDEO_TASK_DEF
+    assert kwargs["book_name"] == "Battle_of_the_Bulge"
+    assert {
+        "name": "VIDEO_KEY",
+        "value": "contentrepository/vid/Battle of the Bulge.mp4",
+    } in kwargs["extra_env"]
+
+
+def test_submit_ocr_submits_chandra_batch_job():
+    batch = MagicMock()
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "dynamo", MagicMock()),
+    ):
+        ok = th._submit_ocr("contentrepository/NARA/B-Series/B 400-499/B460.pdf")
+    assert ok is True
+    kwargs = batch.submit_job.call_args.kwargs
+    assert kwargs["jobQueue"] == th.OCR_JOB_QUEUE
+    assert kwargs["jobDefinition"] == th.OCR_JOB_DEF
+    cmd = kwargs["containerOverrides"]["command"]
+    # whole-PDF job: [s3_input, s3_output_prefix], no page-range
+    assert (
+        cmd[0] == f"s3://{th.BUCKET}/contentrepository/NARA/B-Series/B 400-499/B460.pdf"
+    )
+    assert cmd[1] == f"s3://{th.BUCKET}/ocr-output/B460/"
+    assert len(cmd) == 2
+
+
+def _dynamo_with_existing_claim():
+    """A dynamo mock whose conditional put_item raises ConditionalCheckFailed
+    (claim already exists); a later unconditional reclaim put succeeds."""
+
+    class _CCFE(Exception):
+        pass
+
+    dy = MagicMock()
+    dy.meta.client.exceptions.ConditionalCheckFailedException = _CCFE
+    calls = {"n": 0}
+
+    def put_item(**kwargs):
+        if "ConditionExpression" in kwargs and calls["n"] == 0:
+            calls["n"] += 1
+            raise _CCFE()
+        return {}
+
+    dy.put_item.side_effect = put_item
+    return dy
+
+
+def test_submit_ocr_claim_with_job_in_flight_skips():
+    """A claim with a REAL in-flight job is a legitimate duplicate — skip, no alert."""
+    dy = _dynamo_with_existing_claim()
+    with (
+        patch.object(th, "dynamo", dy),
+        patch.object(th, "_ocr_job_in_flight", return_value=True),
+        patch.object(th, "_alert_anomaly") as alert,
+        patch.object(th, "_batch_client") as bc,
+    ):
+        ok = th._submit_ocr("contentrepository/x/B401.pdf")
+    assert ok is False
+    alert.assert_not_called()
+    bc.assert_not_called()
+
+
+def test_submit_ocr_claim_without_job_alerts_and_reclaims():
+    """A claim with NO in-flight job is a silent drop (B401): alert the anomaly,
+    reclaim, and actually submit the OCR job."""
+    dy = _dynamo_with_existing_claim()
+    batch = MagicMock()
+    with (
+        patch.object(th, "dynamo", dy),
+        patch.object(th, "_ocr_job_in_flight", return_value=False),
+        patch.object(th, "_alert_anomaly") as alert,
+        patch.object(th, "_batch_client", return_value=batch),
+    ):
+        ok = th._submit_ocr("contentrepository/x/B401.pdf")
+    assert ok is True
+    alert.assert_called_once()
+    assert alert.call_args.args[0] == "ocr-claim-without-job"
+    batch.submit_job.assert_called()
+
+
+def test_submit_convert_launches_phase0_task():
+    """epub/docx route to a Phase-0 convert task with the CONVERT_KEY override."""
+    with patch.object(th, "_run_task") as run:
+        th._submit_convert("contentrepository/books/Patton at the Bulge.epub")
+    args, kwargs = run.call_args
+    assert args[0] == th.PHASE0_TASK_DEF
+    assert kwargs["book_name"] == "Patton_at_the_Bulge"
+    env = kwargs["extra_env"]
+    assert {
+        "name": "CONVERT_KEY",
+        "value": "contentrepository/books/Patton at the Bulge.epub",
+    } in env
+
+
+def test_submit_ocr_image_single_whole_job():
+    """An image routes to a single whole OCR job (no page-range; Chandra OCRs
+    the scan directly). Reuses _ocr_chunks' image path."""
+    batch = MagicMock()
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "dynamo", MagicMock()),
+    ):
+        ok = th._submit_ocr("contentrepository/maps/normandy.png")
+    assert ok is True
+    cmd = batch.submit_job.call_args.kwargs["containerOverrides"]["command"]
+    assert cmd[0] == f"s3://{th.BUCKET}/contentrepository/maps/normandy.png"
+    assert cmd[1] == f"s3://{th.BUCKET}/ocr-output/normandy/"
+    assert len(cmd) == 2  # whole-job, no --page-range
+
+
+def test_submit_ocr_returns_false_on_error():
+    batch = MagicMock()
+    batch.submit_job.side_effect = RuntimeError("batch down")
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "dynamo", MagicMock()),
+    ):
+        assert th._submit_ocr("contentrepository/x/y.pdf") is False
+
+
+def test_submit_ocr_job_name_sanitized():
+    """Job name must strip spaces (Batch job names can't contain spaces)."""
+    batch = MagicMock()
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "dynamo", MagicMock()),
+    ):
+        th._submit_ocr("contentrepository/NARA/B-Series/B 400-499/B460.pdf")
+    name = batch.submit_job.call_args.kwargs["jobName"]
+    assert " " not in name
+    assert name.startswith("chandra-")
+
+
+# --- Best-guess page-range chunking (#2) ---
+
+
+def test_ocr_chunks_image_single_never_chunked():
+    with patch.object(th, "_pdf_page_count", return_value=999):  # ignored for images
+        assert th._ocr_chunks("contentrepository/x/scan.jpg") == [""]
+        assert th._ocr_chunks("contentrepository/x/scan.tif") == [""]
+        assert th._ocr_chunks("contentrepository/x/scan.png") == [""]
+
+
+def test_ocr_chunks_small_pdf_whole():
+    with (
+        patch.object(th, "_pdf_page_count", return_value=30),
+        patch.object(th, "_OCR_CHUNK_PAGES", 50),
+    ):
+        assert th._ocr_chunks("contentrepository/B/B.pdf") == [""]
+
+
+def test_ocr_chunks_large_pdf_split():
+    with (
+        patch.object(th, "_pdf_page_count", return_value=120),
+        patch.object(th, "_OCR_CHUNK_PAGES", 50),
+    ):
+        assert th._ocr_chunks("contentrepository/Big/Big.pdf") == [
+            "1-50",
+            "51-100",
+            "101-120",
+        ]
+
+
+def test_ocr_chunks_unreadable_pdf_whole_fallback():
+    """page_count 0 (unreadable/encrypted) -> safe whole-PDF job, not a crash."""
+    with patch.object(th, "_pdf_page_count", return_value=0):
+        assert th._ocr_chunks("contentrepository/Bad/Bad.pdf") == [""]
+
+
+def test_ocr_chunks_unknown_media_whole_fallback():
+    assert th._ocr_chunks("contentrepository/x/mystery.dat") == [""]
+
+
+def test_submit_ocr_large_pdf_submits_chunk_set():
+    from unittest.mock import MagicMock
+
+    batch = MagicMock()
+    with (
+        patch.object(th, "_batch_client", return_value=batch),
+        patch.object(th, "dynamo", MagicMock()),
+        patch.object(th, "_ocr_chunks", return_value=["1-50", "51-100"]),
+    ):
+        ok = th._submit_ocr("contentrepository/Big/Big.pdf")
+    assert ok is True
+    assert batch.submit_job.call_count == 2  # one job per chunk
+    cmds = [
+        c.kwargs["containerOverrides"]["command"]
+        for c in batch.submit_job.call_args_list
+    ]
+    assert any("--page-range" in c and "1-50" in c for c in cmds)
+    assert any("--page-range" in c and "51-100" in c for c in cmds)

@@ -11,6 +11,46 @@ from src.utils.config import get_aws_region
 logger = logging.getLogger(__name__)
 
 
+def _fuzzy_index_match(
+    keys: Dict[str, str], index: Dict[str, Dict[str, str]]
+) -> Optional[str]:
+    """Match bibliography keys against the multi-key index — title-focused with
+    fallback to archive-ref then author (operator spec). Mirrors the file-based
+    bibliography._find_match so Dynamo-backed dedup behaves identically.
+
+    index = {'titles': {norm_title: id}, 'refs': {norm_ref: id}, 'authors': {author: id}}.
+    """
+    from difflib import SequenceMatcher
+
+    titles = index.get("titles", {})
+    norm = keys.get("title", "")
+    if norm and norm in titles:
+        return titles[norm]
+    if norm:
+        for existing_title, bib_id in titles.items():
+            if SequenceMatcher(None, norm, existing_title).ratio() >= 0.85:
+                return bib_id
+    ref = keys.get("ref", "")
+    if ref and ref in index.get("refs", {}):
+        return index["refs"][ref]
+    author = keys.get("author", "")
+    if author and author in index.get("authors", {}):
+        return index["authors"][author]
+    return None
+
+
+def _index_bib_keys(
+    index: Dict[str, Dict[str, str]], keys: Dict[str, str], bib_id: str
+) -> None:
+    """Register title/ref/author keys -> bib_id in the multi-key Dynamo index."""
+    if keys.get("title"):
+        index.setdefault("titles", {})[keys["title"]] = bib_id
+    if keys.get("ref"):
+        index.setdefault("refs", {})[keys["ref"]] = bib_id
+    if keys.get("author"):
+        index.setdefault("authors", {})[keys["author"]] = bib_id
+
+
 class DynamoEntityStore:
     """Read/write entities to DynamoDB with immediate durability.
 
@@ -87,6 +127,138 @@ class DynamoEntityStore:
             )
         except Exception as e:
             logger.warning("DynamoEntityStore.delete failed: %s", e)
+
+    @staticmethod
+    def _mention_key(mention: Dict[str, Any]) -> Any:
+        """Dedup key for an event mention: (Sub_eventID, book) — matches dedup/merge."""
+        return (mention.get("Sub_eventID"), mention.get("book"))
+
+    def _merge_mentions(
+        self, existing: List[Dict[str, Any]], incoming: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Append incoming mentions not already present (idempotent, §3.3)."""
+        seen = {self._mention_key(m) for m in existing if m.get("Sub_eventID")}
+        merged = list(existing)
+        for m in incoming:
+            key = self._mention_key(m)
+            # A mention with no Sub_eventID can't be deduped — keep it (rare).
+            if not m.get("Sub_eventID") or key not in seen:
+                merged.append(m)
+                if m.get("Sub_eventID"):
+                    seen.add(key)
+        return merged
+
+    def merge_entity(
+        self,
+        entity_type: str,
+        entity_id: str,
+        data: Dict[str, Any],
+        *,
+        filename: str = "",
+        max_retries: int = 5,
+    ) -> bool:
+        """Idempotently merge an entity's event_mentions into the stored record.
+
+        The correctness crux under concurrency (§3.3): two books extracting the
+        same entity (e.g. "Eisenhower") must NOT clobber each other's mentions.
+        Uses optimistic concurrency — read current + `_version`, merge mentions
+        (deduped on Sub_eventID+book), then a version-conditional put; on a
+        conflict (another writer won the race) re-read and retry. Idempotent: a
+        relaunched/retried task re-merging the same mentions is a no-op.
+
+        Falls back to a plain put() when the entity doesn't exist yet.
+        """
+        key = self._key(entity_type, entity_id)
+        for attempt in range(max_retries):
+            try:
+                resp = self._table.get_item(Key={"cache_key": key})
+                item = resp.get("Item")
+                if not item or "data" not in item:
+                    # First writer — create with version 1 (conditional so a racing
+                    # creator doesn't get silently overwritten).
+                    return self._conditional_create(
+                        entity_type, entity_id, data, filename
+                    )
+                current = json.loads(item["data"])
+                version = int(item.get("_version", 0))
+                merged = dict(current)
+                merged["event_mentions"] = self._merge_mentions(
+                    current.get("event_mentions", []),
+                    data.get("event_mentions", []),
+                )
+                if merged.get("event_mentions") == current.get("event_mentions"):
+                    return True  # nothing new to append — idempotent no-op
+                self._table.put_item(
+                    Item=self._item(
+                        entity_type, entity_id, merged, filename, version + 1
+                    ),
+                    ConditionExpression="#v = :cur",
+                    ExpressionAttributeNames={"#v": "_version"},
+                    ExpressionAttributeValues={":cur": version},
+                )
+                return True
+            except self._table.meta.client.exceptions.ConditionalCheckFailedException:
+                logger.info(
+                    "merge_entity conflict on %s (attempt %d) — retrying",
+                    key,
+                    attempt + 1,
+                )
+                continue
+            except Exception as e:
+                logger.warning("DynamoEntityStore.merge_entity failed: %s", e)
+                return False
+        logger.error("merge_entity exhausted retries for %s — mentions NOT merged", key)
+        return False
+
+    def _conditional_create(
+        self, entity_type: str, entity_id: str, data: Dict[str, Any], filename: str
+    ) -> bool:
+        """Create an entity only if absent (version 1). Retry-safe first write."""
+        try:
+            self._table.put_item(
+                Item=self._item(entity_type, entity_id, data, filename, 1),
+                ConditionExpression="attribute_not_exists(cache_key)",
+            )
+            return True
+        except self._table.meta.client.exceptions.ConditionalCheckFailedException:
+            # Lost the create race — someone else created it; merge into theirs.
+            return self.merge_entity(entity_type, entity_id, data, filename=filename)
+        except Exception as e:
+            logger.warning("DynamoEntityStore._conditional_create failed: %s", e)
+            return False
+
+    def _item(
+        self,
+        entity_type: str,
+        entity_id: str,
+        data: Dict[str, Any],
+        filename: str,
+        version: int,
+    ) -> Dict[str, Any]:
+        """Build the DynamoDB item for an entity (shared by put/merge)."""
+        name = (
+            data.get("name", "")
+            or data.get("current_name", "")
+            or data.get("group_name", "")
+            or data.get("common_name", "")
+            or data.get("date_start", "")
+        )
+        return {
+            "cache_key": self._key(entity_type, entity_id),
+            "entity_type": entity_type,
+            "entity_id": entity_id,
+            "name": name.lower() if name else "",
+            "filename": filename,
+            "enrichment_status": data.get("enrichment_status", ""),
+            "book": (
+                data.get("event_mentions", [{}])[0].get("book", "")
+                if data.get("event_mentions")
+                else ""
+            ),
+            "data": json.dumps(data, ensure_ascii=False),
+            "_version": version,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
 
     def query_unenriched(
         self, entity_type: str, limit: int = 100
@@ -190,6 +362,141 @@ class DynamoEntityStore:
         except Exception as e:
             logger.warning("DynamoEntityStore.list_all failed: %s", e)
         return results
+
+    # --- Bibliography (G3): Dynamo-backed title-dedup + entry merge ---
+    # Bibliography dedups cross-book by TITLE (not event_mentions), so it needs a
+    # normalized-title -> BibliographyID index. Stored as ONE versioned item
+    # (bibindex#all) so the fuzzy-match logic (iterate titles) is preserved while
+    # both index and entries are Dynamo-backed and race-safe across Fargate hosts
+    # (the old flock-guarded S3 JSON writes were per-host, NOT concurrency-safe).
+
+    _BIB_INDEX_KEY = "bibindex#all"
+
+    def get_bibliography_index(self) -> Dict[str, Dict[str, str]]:
+        """Return the multi-key bibliography index (empty structure if none).
+        {'titles': {norm_title: id}, 'refs': {norm_ref: id}, 'authors': {author: id}}.
+        """
+        try:
+            resp = self._table.get_item(Key={"cache_key": self._BIB_INDEX_KEY})
+            item = resp.get("Item")
+            if item and "data" in item:
+                raw = json.loads(item["data"])
+                if raw and not any(k in raw for k in ("titles", "refs", "authors")):
+                    return {"titles": raw, "refs": {}, "authors": {}}  # legacy flat
+                return {
+                    "titles": raw.get("titles", {}),
+                    "refs": raw.get("refs", {}),
+                    "authors": raw.get("authors", {}),
+                }
+        except Exception as e:
+            logger.warning("get_bibliography_index failed: %s", e)
+        return {"titles": {}, "refs": {}, "authors": {}}
+
+    def store_bibliography(
+        self,
+        keys: Dict[str, str],
+        bib_id: str,
+        entry_builder,
+        mention: Dict[str, Any],
+        mention_exists,
+        max_retries: int = 8,
+    ) -> Optional[str]:
+        """Atomically dedup + append a mention, race-safe across hosts.
+
+        keys: match keys {'title','ref','author'} (title-focused, ref/author
+        fallback — operator spec). Dedup tries title (exact+0.85 fuzzy), then
+        archive_reference_number, then author.
+        bib_id: caller-proposed new BibliographyID (used only if no match exists).
+        entry_builder: () -> dict, builds a fresh entry (called only when creating).
+        mention/mention_exists: the mention to append + the caller's dedup predicate.
+
+        Returns the resulting BibliographyID, or None on error. The multi-key index
+        (bibindex#all) is updated with an optimistic version-conditional put; the
+        entry (entity#bibliography#{id}) likewise — so concurrent books adding
+        references never clobber each other.
+        """
+        for attempt in range(max_retries):
+            try:
+                resp = self._table.get_item(Key={"cache_key": self._BIB_INDEX_KEY})
+                item = resp.get("Item")
+                raw = json.loads(item["data"]) if item and "data" in item else {}
+                if raw and not any(k in raw for k in ("titles", "refs", "authors")):
+                    index = {"titles": raw, "refs": {}, "authors": {}}  # legacy flat
+                else:
+                    index = {
+                        "titles": raw.get("titles", {}),
+                        "refs": raw.get("refs", {}),
+                        "authors": raw.get("authors", {}),
+                    }
+                version = int(item["_version"]) if item and "_version" in item else 0
+                existing_id = _fuzzy_index_match(keys, index)
+                if existing_id:
+                    # Match: merge the mention into the existing entry (its own
+                    # version-conditional loop). Index unchanged.
+                    self._append_bib_mention(existing_id, mention, mention_exists)
+                    return existing_id
+                # No match: create entry + insert its keys into the index atomically.
+                entry = entry_builder()
+                new_id = entry.get("BibliographyID", bib_id)
+                entry.setdefault("mentions", []).append(mention)
+                # Create WITH _version=1 so later _append_bib_mention (which does a
+                # version-conditional put) works — a plain put() omits _version and
+                # would make every subsequent append's condition fail.
+                self._table.put_item(
+                    Item=self._item("bibliography", new_id, entry, "", 1)
+                )
+                _index_bib_keys(index, keys, new_id)
+                self._table.put_item(
+                    Item={
+                        "cache_key": self._BIB_INDEX_KEY,
+                        "data": json.dumps(index, ensure_ascii=False),
+                        "_version": version + 1,
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                    },
+                    ConditionExpression=(
+                        "attribute_not_exists(cache_key) OR #v = :cur"
+                    ),
+                    ExpressionAttributeNames={"#v": "_version"},
+                    ExpressionAttributeValues={":cur": version},
+                )
+                return new_id
+            except self._table.meta.client.exceptions.ConditionalCheckFailedException:
+                logger.info("bib index conflict (attempt %d) — retrying", attempt + 1)
+                continue
+            except Exception as e:
+                logger.warning("store_bibliography failed: %s", e)
+                return None
+        logger.error("store_bibliography exhausted retries for %s", keys.get("title"))
+        return None
+
+    def _append_bib_mention(
+        self, bib_id: str, mention: Dict[str, Any], mention_exists, max_retries: int = 8
+    ) -> None:
+        """Version-conditional append of a mention to an existing bib entry."""
+        key = self._key("bibliography", bib_id)
+        for _ in range(max_retries):
+            try:
+                resp = self._table.get_item(Key={"cache_key": key})
+                item = resp.get("Item")
+                if not item or "data" not in item:
+                    return
+                entry = json.loads(item["data"])
+                version = int(item.get("_version", 0))
+                if mention_exists(entry.get("mentions", [])):
+                    return  # idempotent — mention already present
+                entry.setdefault("mentions", []).append(mention)
+                self._table.put_item(
+                    Item=self._item("bibliography", bib_id, entry, "", version + 1),
+                    ConditionExpression="#v = :cur",
+                    ExpressionAttributeNames={"#v": "_version"},
+                    ExpressionAttributeValues={":cur": version},
+                )
+                return
+            except self._table.meta.client.exceptions.ConditionalCheckFailedException:
+                continue
+            except Exception as e:
+                logger.warning("_append_bib_mention failed: %s", e)
+                return
 
 
 _entity_store_cache: Optional[DynamoEntityStore] = None

@@ -28,6 +28,18 @@ Parameters:
     Type: Number
     Default: 280
     Description: Maximum vCPUs across all Batch instances
+  OnDemandMaxvCpus:
+    Type: Number
+    Default: 96
+    Description: Max vCPUs for the on-demand fallback CE (roomy 768 G/VT on-demand quota)
+  LambdaCodeBucket:
+    Type: String
+    Default: ""
+    Description: S3 bucket holding the Lambda code zip (for the OCR spot controller)
+  LambdaCodeKey:
+    Type: String
+    Default: lambda/code.zip
+    Description: S3 key of the Lambda code zip
   SpotBidPercent:
     Type: Number
     Default: 70
@@ -40,6 +52,7 @@ Parameters:
 
 Conditions:
   IsSpot: !Equals [!Ref ComputeType, SPOT]
+  HasLambdaCode: !Not [!Equals [!Ref LambdaCodeBucket, ""]]
   HasPaddleImage: !Not [!Equals [!Ref PaddleImageUri, ""]]
 
 Resources:
@@ -157,19 +170,33 @@ Resources:
   ChandraComputeEnv:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
-      ComputeEnvironmentName: !Sub ${EnvironmentName}-wwii-chandra-gpu
+      # Name includes the compute type so an EC2<->SPOT switch REPLACES the CE
+      # cleanly — Batch CE Type is immutable, and CFN can't in-place replace a
+      # custom-named resource. Changing the name lets CFN create the new CE,
+      # repoint the queue's !Ref, then delete the old one.
+      ComputeEnvironmentName: !Sub
+        - ${EnvironmentName}-wwii-chandra-gpu-${TypeLower}-v4
+        - TypeLower: !If [IsSpot, spot, ec2]
       Type: MANAGED
       State: ENABLED
-      ServiceRole: !GetAtt BatchServiceRole.Arn
+      # No ServiceRole -> AWS Batch uses the AWSServiceRoleForBatch service-linked
+      # role, which is REQUIRED for SPOT_CAPACITY_OPTIMIZED spot provisioning +
+      # instance tagging. A custom service role + SpotIamFleetRole is the legacy
+      # spot-fleet model and does NOT reliably provision under CAPACITY_OPTIMIZED
+      # (healthy CE, desired>0, but zero spot requests — the observed stall).
       ComputeResources:
         Type: !Ref ComputeType
         AllocationStrategy: !If [IsSpot, SPOT_CAPACITY_OPTIMIZED, BEST_FIT_PROGRESSIVE]
         BidPercentage: !Ref SpotBidPercent
-        SpotIamFleetRole: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-ec2-spot-fleet-tagging-role
         MaxvCpus: !Ref MaxvCpus
         MinvCpus: 0
         DesiredvCpus: 0
         InstanceTypes:
+          # 24GB-VRAM floor (g5/g6 only). EMPIRICAL: Chandra needs ~9-10GB GPU
+          # per page REGARDLESS of page size — a 16GB g4dn OOMs on essentially
+          # any page (observed on B406 11-page AND B400 6-page/small). g4dn is
+          # therefore broken capacity for this model, not cheaper capacity, so
+          # it is excluded from ALL Chandra pools. g5 and g6 (~23GB) both fit.
           - g5.xlarge
           - g5.2xlarge
           - g6.xlarge
@@ -182,7 +209,8 @@ Resources:
           LaunchTemplateId: !Ref ChandraLaunchTemplate
           Version: $Latest
         Ec2Configuration:
-          - ImageType: ECS_AL2_NVIDIA
+          # AL2 is EOL — Batch blocks new CEs on ECS_AL2_NVIDIA. AL2023 GPU AMI.
+          - ImageType: ECS_AL2023_NVIDIA
         Tags:
           Name: !Sub ${EnvironmentName}-wwii-chandra
 
@@ -195,6 +223,53 @@ Resources:
       Priority: 1
       ComputeEnvironmentOrder:
         - ComputeEnvironment: !Ref ChandraComputeEnv
+          Order: 1
+
+  # --- On-demand fallback CE + queue (Option B controller target) ---
+  # Always on-demand (EC2), separate from the primary SPOT queue. The custom
+  # controller resubmits spot-starved jobs here (roomy 768 G/VT on-demand quota),
+  # capped at 48h cumulative on-demand. Kept as its own queue (not an order-2 CE
+  # on the spot queue) so the controller owns the spot->on-demand decision
+  # explicitly (operator chose the custom controller over native ordered fallback).
+  ChandraOnDemandComputeEnv:
+    Type: AWS::Batch::ComputeEnvironment
+    Properties:
+      ComputeEnvironmentName: !Sub ${EnvironmentName}-wwii-chandra-gpu-ondemand-v4
+      Type: MANAGED
+      State: ENABLED
+      # No ServiceRole -> AWSServiceRoleForBatch SLR (current best practice).
+      ComputeResources:
+        Type: EC2
+        AllocationStrategy: BEST_FIT_PROGRESSIVE
+        MaxvCpus: !Ref OnDemandMaxvCpus
+        MinvCpus: 0
+        DesiredvCpus: 0
+        InstanceTypes:
+          # 24GB floor — g4dn (16GB) excluded (OOMs Chandra; see spot CE note).
+          - g5.xlarge
+          - g5.2xlarge
+          - g6.xlarge
+          - g6.2xlarge
+        Subnets: !Ref PrivateSubnetIds
+        SecurityGroupIds:
+          - !Ref SecurityGroupId
+        InstanceRole: !GetAtt BatchInstanceProfile.Arn
+        LaunchTemplate:
+          LaunchTemplateId: !Ref ChandraLaunchTemplate
+          Version: $Latest
+        Ec2Configuration:
+          - ImageType: ECS_AL2023_NVIDIA
+        Tags:
+          Name: !Sub ${EnvironmentName}-wwii-chandra-ondemand
+
+  ChandraOnDemandJobQueue:
+    Type: AWS::Batch::JobQueue
+    Properties:
+      JobQueueName: !Sub ${EnvironmentName}-wwii-chandra-gpu-ondemand
+      State: ENABLED
+      Priority: 1
+      ComputeEnvironmentOrder:
+        - ComputeEnvironment: !Ref ChandraOnDemandComputeEnv
           Order: 1
 
   # --- Job Definition ---
@@ -275,6 +350,86 @@ Resources:
         Attempts: 2
       Timeout:
         AttemptDurationSeconds: 3600
+
+  # --- OCR SPOT controller (Option B): hourly spot-retry / 48h on-demand cap ---
+  OcrSpotControllerRole:
+    Type: AWS::IAM::Role
+    Condition: HasLambdaCode
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-ocr-controller-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: ocr-controller
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - batch:ListJobs
+                  - batch:DescribeJobs
+                  - batch:SubmitJob
+                  - batch:TerminateJob
+                Resource: '*'
+              - Effect: Allow
+                Action: [dynamodb:GetItem, dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:Scan]
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${EnvironmentName}-wwii-api-cache
+              - Effect: Allow
+                Action: servicequotas:GetServiceQuota
+                Resource: '*'
+              - Effect: Allow
+                Action: sns:Publish
+                Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+
+  OcrSpotControllerFunction:
+    Type: AWS::Lambda::Function
+    Condition: HasLambdaCode
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-ocr-spot-controller
+      Runtime: python3.12
+      Handler: lambda_handlers.ocr_spot_controller.handler
+      Role: !GetAtt OcrSpotControllerRole.Arn
+      Timeout: 120
+      MemorySize: 256
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          CACHE_TABLE: !Sub ${EnvironmentName}-wwii-api-cache
+          OCR_SPOT_QUEUE: !Sub ${EnvironmentName}-wwii-chandra-gpu
+          OCR_ONDEMAND_QUEUE: !Sub ${EnvironmentName}-wwii-chandra-gpu-ondemand
+          OCR_JOB_DEF: !Sub ${EnvironmentName}-wwii-chandra
+          # Publishes free-form alerts to phase2-complete -> fans to EMAIL (direct)
+          # + SLACK (via the slack-formatter -> chatbot). Both channels (§operator).
+          NOTIFICATION_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+
+  OcrSpotControllerSchedule:
+    Type: AWS::Events::Rule
+    Condition: HasLambdaCode
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-ocr-spot-controller-hourly
+      ScheduleExpression: rate(1 hour)
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt OcrSpotControllerFunction.Arn
+          Id: ocr-spot-controller
+
+  OcrSpotControllerInvokePermission:
+    Type: AWS::Lambda::Permission
+    Condition: HasLambdaCode
+    Properties:
+      FunctionName: !Ref OcrSpotControllerFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt OcrSpotControllerSchedule.Arn
 
 Outputs:
   JobQueueName:

@@ -17,8 +17,13 @@ Parameters:
     Type: String
     Default: ''
     Description: Email address for pipeline notifications (leave empty to skip)
+  OcrMergeFunctionArn:
+    Type: String
+    Default: ''
+    Description: ARN of the OCR->parse merge Lambda (Batch SUCCEEDED handoff)
 
 Conditions:
+  HasOcrMerge: !Not [!Equals [!Ref OcrMergeFunctionArn, '']]
   HasNotificationEmail: !Not [!Equals [!Ref NotificationEmail, '']]
 
 Resources:
@@ -65,6 +70,46 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: sns.amazonaws.com
       SourceArn: !Ref Phase2CompleteTopic
+
+  # --- Slack notification formatter (UNATTENDED_READINESS #3) ---
+  # The formatter subscribes to the free-form pipeline notification topic, wraps
+  # each message in Chatbot's custom-notification schema (actionable: View-logs +
+  # embedded financials), and republishes to SlackTopic which Chatbot watches.
+  SlackTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${EnvironmentName}-wwii-slack
+
+  SlackFormatterSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref Phase2CompleteTopic
+      Protocol: lambda
+      Endpoint: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-slack-formatter
+
+  SlackFormatterSNSInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-slack-formatter
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref Phase2CompleteTopic
+
+  # Allow the formatter Lambda to publish the reformatted message to SlackTopic.
+  SlackTopicPublishPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref SlackTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowLambdaPublish
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: sns:Publish
+            Resource: !Ref SlackTopic
 
   # --- SNS Topic Policies (allow S3 to publish) ---
   ContentUploadedPolicy:
@@ -334,6 +379,278 @@ Resources:
       AlarmActions:
         - !Ref AlarmSNSTopic
 
+  # ===========================================================================
+  # M8 observability for the concurrency footprint (§10). Metric filters turn
+  # correctness-critical log lines into metrics + alarms so a bug under parallel
+  # load pages the operator instead of hiding in logs. All notify AlarmSNSTopic
+  # (SNS -> Slack via Chatbot + email).
+  # ===========================================================================
+
+  # --- Metric filters on the ECS pipeline log group (correctness signals) ---
+  CreditHoldMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-pipeline
+      FilterPattern: '"HOLDING work"'
+      MetricTransformations:
+        - MetricName: CreditHolds
+          MetricNamespace: !Sub ${EnvironmentName}-wwii/concurrency
+          MetricValue: '1'
+          DefaultValue: 0
+
+  CreditHoldAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-credit-hold
+      AlarmDescription: Credit gate is HOLDING work (unsubmitted = unprocessed) — top up credit / raise budget
+      MetricName: CreditHolds
+      Namespace: !Sub ${EnvironmentName}-wwii/concurrency
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  # Soft spend heads-up (§9): fires as accrued Grok spend crosses each
+  # spend_alert_usd multiple ($10, $20, ...) — BEFORE the hard credit hold.
+  SpendAlertMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-pipeline
+      FilterPattern: '"SPEND ALERT"'
+      MetricTransformations:
+        - MetricName: SpendAlerts
+          MetricNamespace: !Sub ${EnvironmentName}-wwii/concurrency
+          MetricValue: '1'
+          DefaultValue: 0
+
+  SpendAlertAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-spend-alert
+      AlarmDescription: Accrued Grok spend crossed a soft threshold ($10 multiple) — heads-up, not a block
+      MetricName: SpendAlerts
+      Namespace: !Sub ${EnvironmentName}-wwii/concurrency
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  MergeRetryExhaustedMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-pipeline
+      FilterPattern: '"mentions NOT merged"'
+      MetricTransformations:
+        - MetricName: MergeRetryExhausted
+          MetricNamespace: !Sub ${EnvironmentName}-wwii/concurrency
+          MetricValue: '1'
+          DefaultValue: 0
+
+  MergeRetryExhaustedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-merge-retry-exhausted
+      AlarmDescription: Entity mention merge exhausted retries — a cross-book write was LOST (§3.3)
+      MetricName: MergeRetryExhausted
+      Namespace: !Sub ${EnvironmentName}-wwii/concurrency
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  BatchSubmissionErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-pipeline
+      FilterPattern: '"BatchSubmissionError"'
+      MetricTransformations:
+        - MetricName: BatchSubmissionErrors
+          MetricNamespace: !Sub ${EnvironmentName}-wwii/concurrency
+          MetricValue: '1'
+          DefaultValue: 0
+
+  BatchSubmissionErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-batch-submission-error
+      AlarmDescription: A batch was rejected/cancelled by xAI (fail-fast) — investigate model/size
+      MetricName: BatchSubmissionErrors
+      Namespace: !Sub ${EnvironmentName}-wwii/concurrency
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  NatLeaseFailureMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-pipeline
+      FilterPattern: '"Failed to acquire NAT lease"'
+      MetricTransformations:
+        - MetricName: NatLeaseFailures
+          MetricNamespace: !Sub ${EnvironmentName}-wwii/concurrency
+          MetricValue: '1'
+          DefaultValue: 0
+
+  NatLeaseFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-nat-lease-failures
+      AlarmDescription: Repeated NAT lease acquisition failures — NAT demand accounting may drift
+      MetricName: NatLeaseFailures
+      Namespace: !Sub ${EnvironmentName}-wwii/concurrency
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  # --- Step Functions dispatcher alarms (M4.3 had NONE — the biggest gap) ---
+  DispatcherFailedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-dispatcher-failed
+      AlarmDescription: Concurrency dispatcher execution failed
+      MetricName: ExecutionsFailed
+      Namespace: AWS/States
+      Dimensions:
+        - Name: StateMachineArn
+          Value: !Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${EnvironmentName}-wwii-dispatcher
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  DispatcherTimedOutAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-dispatcher-timedout
+      AlarmDescription: Concurrency dispatcher execution timed out (stuck drain)
+      MetricName: ExecutionsTimedOut
+      Namespace: AWS/States
+      Dimensions:
+        - Name: StateMachineArn
+          Value: !Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${EnvironmentName}-wwii-dispatcher
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  # --- Dispatcher Lambda error alarms (enumerate/clamp/gate) ---
+  EnumeratePendingErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-enumerate-pending-errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub ${EnvironmentName}-wwii-enumerate-pending
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 3
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  ClampPoolErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-clamp-pool-errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub ${EnvironmentName}-wwii-clamp-pool
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 3
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  HumanGateErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-human-gate-errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub ${EnvironmentName}-wwii-human-gate
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 3
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  # --- OCR -> parse handoff: Batch job SUCCEEDED (chandra) -> merge Lambda ---
+  OcrJobSucceededRule:
+    Type: AWS::Events::Rule
+    Condition: HasOcrMerge
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-ocr-succeeded
+      Description: On Chandra OCR job SUCCEEDED, promote OCR output to contentrepository (triggers parse)
+      EventPattern:
+        source: [aws.batch]
+        detail-type: [Batch Job State Change]
+        detail:
+          status: [SUCCEEDED]
+          jobQueue:
+            # Match ALL Chandra queues — a job the controller routes to the
+            # on-demand fallback (spot-starved) must ALSO trigger the merge/parse
+            # handoff. (Bug: matching only the spot queue meant on-demand
+            # successes produced OCR output but never merged -> parse never ran.)
+            - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu
+            - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu-ondemand
+      State: ENABLED
+      Targets:
+        - Id: OcrMergeLambda
+          Arn: !Ref OcrMergeFunctionArn
+
+  OcrMergeInvokePermission:
+    Type: AWS::Lambda::Permission
+    Condition: HasOcrMerge
+    Properties:
+      FunctionName: !Ref OcrMergeFunctionArn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt OcrJobSucceededRule.Arn
+
   # --- CloudWatch Dashboard ---
   PipelineDashboard:
     Type: AWS::CloudWatch::Dashboard
@@ -453,9 +770,14 @@ Resources:
                               {
                                   "TopicArn": props["ContentUploadedTopicArn"],
                                   "Events": ["s3:ObjectCreated:*"],
+                                  # No suffix filter: raw media (pdf/jpg/docx/epub/
+                                  # md) all fire; the trigger Lambda routes by
+                                  # suffix (Option B — feeds pre-stage/dispatcher)
+                                  # and ignores non-content (zip, etc.). S3 forbids
+                                  # overlapping same-prefix rules, so one broad rule
+                                  # + code-side routing is the correct model.
                                   "Filter": {"Key": {"FilterRules": [
                                       {"Name": "prefix", "Value": "contentrepository/"},
-                                      {"Name": "suffix", "Value": ".md"},
                                   ]}},
                               },
                               {
@@ -485,7 +807,7 @@ Resources:
       ContentUploadedTopicArn: !Ref ContentUploadedTopic
       ChapterParsedTopicArn: !Ref ChapterParsedTopic
       EntityCreatedTopicArn: !Ref EntityCreatedTopic
-      ConfigVersion: "3"  # Bump to force re-execution when notification config changes
+      ConfigVersion: "4"  # Bump to force re-execution when notification config changes
 
 Outputs:
   ContentUploadedTopicArn:

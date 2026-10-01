@@ -533,8 +533,9 @@ def _process_search_result(
     )
 
     output_file = output_dir / f"{map_record['MapID']}.json"
-    with open(output_file, "w") as f:
-        json.dump(map_record, f, indent=2)
+    from src.utils.file_lock import write_json_with_lock
+
+    write_json_with_lock(output_file, map_record)
 
     logger.info(f"   ✅ Imported: {title[:60]}")
     downloaded_urls.add(url)

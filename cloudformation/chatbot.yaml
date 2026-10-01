@@ -60,7 +60,7 @@ Resources:
       LoggingLevel: ERROR
       SnsTopicArns:
         - !Sub arn:aws:sns:${TopicRegion}:${AccountId}:${EnvironmentName}-wwii-alarms
-        - !Sub arn:aws:sns:${TopicRegion}:${AccountId}:${EnvironmentName}-wwii-phase2-complete
+        - !Sub arn:aws:sns:${TopicRegion}:${AccountId}:${EnvironmentName}-wwii-slack
 
 Outputs:
   ChatbotConfigArn:
