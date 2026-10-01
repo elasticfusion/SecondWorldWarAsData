@@ -122,7 +122,23 @@ def _content_keys(keys: list) -> list:
         if low.endswith(_CONTENT_SUFFIXES):
             out.append(k)
         else:
-            logger.info("Skipping non-content upload: %s", k)
+            # Unrecognized extension — do NOT silently drop. Off-ramp to
+            # needs-review so an unexpected upload is surfaced, not lost.
+            logger.warning("Unrecognized upload type, rejecting to review: %s", k)
+            try:
+                from src.ingestion.review_reject import reject_to_review
+
+                book = k.rsplit("/", 1)[-1].rsplit(".", 1)[0] or "unknown"
+                reject_to_review(
+                    boto3.client("s3"),
+                    BUCKET,
+                    k,
+                    book,
+                    f"unrecognized file type (not a supported content extension): {k}",
+                    category="unrecognized-type",
+                )
+            except Exception as e:  # noqa: BLE001 - never let a reject crash intake
+                logger.warning("Could not reject-to-review %s: %s", k, e)
     return out
 
 

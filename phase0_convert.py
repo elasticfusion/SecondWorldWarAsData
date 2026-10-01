@@ -49,6 +49,24 @@ def _book_from_key(key: str) -> str:
     return stem.replace(" ", "_")
 
 
+def _grok_correct_fallback(local_path, book: str):
+    """Second-pass recovery: read the raw file text and ask Grok to repair it
+    into clean markdown. Returns corrected markdown or None (caller escalates to
+    human review). Best-effort — never raises."""
+    try:
+        from src.ingestion.md_correction import correct_markdown
+        from src.grok_client import GrokClient
+        from src.utils.config import load_config, get_paths
+
+        raw = Path(local_path).read_text(encoding="utf-8", errors="replace")
+        paths = get_paths(load_config())
+        client = GrokClient(paths["api_cache"])
+        return correct_markdown(raw, grok_client=client, source_hint=book)
+    except Exception as e:  # noqa: BLE001 - fallback must never crash the convert
+        logger.warning("Grok MD-correction fallback unavailable for %s: %s", book, e)
+        return None
+
+
 def convert_key(key: str) -> str:
     """Convert one EPUB/DOCX/TXT S3 key to the chapter structure. Returns the
     content output key, or "" on skip/failure (logged, non-fatal)."""
@@ -93,8 +111,25 @@ def convert_key(key: str) -> str:
             return ""
         markdown = convert_to_markdown(Path(local), media)
     except (ConverterUnavailable, ConverterError) as exc:
-        logger.error("Convert failed for %s (%s)", key, exc)
-        return ""
+        logger.error("Convert failed for %s (%s) — trying Grok MD-correction", key, exc)
+        # Second pass: the deterministic converter choked. Attempt a Grok repair
+        # over the raw extracted text before giving up. If it recovers usable
+        # markdown, continue with it; otherwise off-ramp to human review.
+        markdown = _grok_correct_fallback(local, book)
+        if not markdown:
+            from src.ingestion.review_reject import reject_to_review
+
+            reject_to_review(
+                s3,
+                BUCKET,
+                key,
+                book,
+                f"convert failed ({exc}) and Grok MD-correction could not recover "
+                f"usable markdown — needs human review",
+                category="convert-failed",
+                region=REGION,
+            )
+            return ""
     finally:
         if local and os.path.exists(local):
             try:

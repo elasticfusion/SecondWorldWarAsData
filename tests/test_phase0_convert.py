@@ -50,9 +50,12 @@ def test_convert_key_conversion_failure_returns_empty():
         patch.object(
             p0, "convert_to_markdown", side_effect=p0.ConverterError("bad epub")
         ),
+        # Grok MD-correction second pass also can't recover -> reject-to-review.
+        patch.object(p0, "_grok_correct_fallback", return_value=None),
+        patch("src.ingestion.review_reject.reject_to_review") as rej,
     ):
         assert p0.convert_key("contentrepository/books/broken.epub") == ""
-    s3.put_object.assert_not_called()
+    rej.assert_called_once()  # escalated to human review, not silently empty
 
 
 def test_main_requires_convert_key(monkeypatch):
