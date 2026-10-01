@@ -272,6 +272,43 @@ def _ensure_nat_for_ocr() -> None:
         logger.warning("Failed to request NAT for OCR: %s", e)
 
 
+def _ocr_media_mismatch(pdf_key: str, book: str) -> bool:
+    """True (and off-ramped) if the file's bytes contradict its OCR-routed
+    extension. Fetches only the header (sniffing needs <=16 bytes) via a ranged
+    GET. Fail-open: any error returns False (proceed to OCR) — never block a
+    legitimate doc on a transient read or an unsniffable file."""
+    import tempfile
+    from pathlib import Path as _Path
+
+    try:
+        from src.ingestion.media_detection import detect_media_mismatch
+        from src.ingestion.review_reject import reject_to_review
+
+        s3 = boto3.client("s3")
+        head = s3.get_object(Bucket=BUCKET, Key=pdf_key, Range="bytes=0-4095")[
+            "Body"
+        ].read()
+        suffix = _Path(pdf_key).suffix or ".bin"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=True) as tmp:
+            tmp.write(head)
+            tmp.flush()
+            verdict = detect_media_mismatch(_Path(tmp.name))
+        if verdict.is_mismatch:
+            reject_to_review(
+                s3,
+                BUCKET,
+                pdf_key,
+                book,
+                f"OCR intake: {verdict.reason}",
+                category="ocr-media-mismatch",
+            )
+            return True
+        return False
+    except Exception as e:  # noqa: BLE001 - fail-open: proceed to OCR on any error
+        logger.warning("OCR media-mismatch check skipped for %s: %s", pdf_key, e)
+        return False
+
+
 def _submit_ocr(pdf_key: str) -> bool:
     """Submit Chandra GPU OCR for a raw PDF/image (Option B: -> Phase 0), with
     best-guess page-range chunking so a SPOT reclaim loses one chunk, not the whole
@@ -279,6 +316,14 @@ def _submit_ocr(pdf_key: str) -> bool:
     Output lands at ocr-output/{book}/[chunk-{range}/] for the downstream merge."""
     try:
         pdf_name = pdf_key.split("/")[-1].rsplit(".", 1)[0]
+        # Reject a misassigned file (declared extension != actual bytes) BEFORE
+        # spending a GPU OCR job: a .pdf/.jpg that is really a zip/html/garbage
+        # OCRs to nothing. Off-ramp to needs-review for more extensive evaluation
+        # instead. Only the header is fetched (sniffing needs <=16 bytes), so this
+        # is cheap even for very large PDFs. Fail-open: any sniff error -> proceed
+        # to OCR (don't block a legit doc on a transient S3 read).
+        if _ocr_media_mismatch(pdf_key, pdf_name):
+            return False
         # G4 (§8) — deny redundant submissions AT INTAKE (per book, covering all its
         # chunks). A duplicate ObjectCreated must not re-launch the chunk set.
         claim_key = f"ocr#{pdf_name}"

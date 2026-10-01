@@ -49,42 +49,6 @@ def _book_from_key(key: str) -> str:
     return stem.replace(" ", "_")
 
 
-def _reject_to_review(s3, key: str, book: str, reason: str) -> None:
-    """Off-ramp a misassigned file: write a needs-review marker (NOT under
-    contentrepository/, so it never triggers parse) + alert operator (email +
-    Slack via the phase2-complete topic). Flag, never process."""
-    import json
-
-    marker_key = f"needs-review/media-mismatch/{book}.json"
-    body = json.dumps(
-        {
-            "source_key": key,
-            "book": book,
-            "reason": reason,
-            "disposition": "rejected-media-type-mismatch",
-        }
-    )
-    try:
-        s3.put_object(Bucket=BUCKET, Key=marker_key, Body=body.encode("utf-8"))
-    except Exception as e:  # pragma: no cover - best-effort marker
-        logger.warning("Could not write needs-review marker for %s: %s", key, e)
-    topic = os.getenv("NOTIFICATION_TOPIC_ARN", "")
-    if topic:
-        try:
-            boto3.client("sns", region_name=REGION).publish(
-                TopicArn=topic,
-                Subject="WWII Pipeline: media-type mismatch rejected",
-                Message=(
-                    f"Rejected {key} from processing — {reason}. "
-                    f"A needs-review marker was written to s3://{BUCKET}/{marker_key}. "
-                    f"Verify the file's true type / re-upload with the correct "
-                    f"extension."
-                ),
-            )
-        except Exception as e:  # pragma: no cover - best-effort alert
-            logger.warning("Could not alert on mismatch for %s: %s", key, e)
-
-
 def convert_key(key: str) -> str:
     """Convert one EPUB/DOCX/TXT S3 key to the chapter structure. Returns the
     content output key, or "" on skip/failure (logged, non-fatal)."""
@@ -115,7 +79,17 @@ def convert_key(key: str) -> str:
                 key,
                 verdict.reason,
             )
-            _reject_to_review(s3, key, book, verdict.reason)
+            from src.ingestion.review_reject import reject_to_review
+
+            reject_to_review(
+                s3,
+                BUCKET,
+                key,
+                book,
+                verdict.reason,
+                category="media-mismatch",
+                region=REGION,
+            )
             return ""
         markdown = convert_to_markdown(Path(local), media)
     except (ConverterUnavailable, ConverterError) as exc:

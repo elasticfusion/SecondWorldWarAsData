@@ -81,7 +81,20 @@ def merge_ocr_output(book: str) -> str:
     md_keys.sort()
 
     if not md_keys:
-        logger.warning("No OCR markdown under %s — nothing to merge", prefix)
+        # OCR produced no markdown at all — do NOT silently drop. Off-ramp to
+        # needs-review (e.g. a photo/map sent to OCR, a blank scan, or a job that
+        # wrote nothing) for more extensive evaluation.
+        from src.ingestion.review_reject import reject_to_review
+
+        reject_to_review(
+            s3,
+            BUCKET,
+            prefix,
+            book,
+            "OCR produced no markdown output (empty result)",
+            category="ocr-empty",
+            region=REGION,
+        )
         return ""
 
     parts = []
@@ -89,6 +102,26 @@ def merge_ocr_output(book: str) -> str:
         body = s3.get_object(Bucket=BUCKET, Key=k)["Body"].read().decode("utf-8")
         parts.append(body)
     merged = "\n\n".join(parts)
+
+    # Near-empty OCR = effectively failed (blank scan, non-text image, or a
+    # born-digital PDF Chandra couldn't read). Promoting it would feed garbage to
+    # parse/extract. Off-ramp to needs-review instead. Threshold is deliberately
+    # low (whitespace-stripped) so a legitimately short page still passes.
+    min_chars = int(os.environ.get("OCR_MIN_USABLE_CHARS", "40"))
+    if len(merged.strip()) < min_chars:
+        from src.ingestion.review_reject import reject_to_review
+
+        reject_to_review(
+            s3,
+            BUCKET,
+            prefix,
+            book,
+            f"OCR output near-empty ({len(merged.strip())} usable chars < "
+            f"{min_chars}) — likely a non-text image or unreadable scan",
+            category="ocr-near-empty",
+            region=REGION,
+        )
+        return ""
     # Write the meta FIRST, then content — the content-upload S3 event triggers the
     # parse path, and phase1's discovery needs the meta already present.
     meta_key = f"contentrepository/{book}/chapter1/chapter1-meta.yaml"
