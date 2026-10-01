@@ -1023,6 +1023,21 @@ def _download_phase2_inputs() -> int:
     for key in index_prefixes:
         _download_s3_file(s3, key)
 
+    # Download the per-entity processed-events markers so the optional-entity
+    # skip logic (_is_processed) can fire. WITHOUT these, every Phase-2 retrieve
+    # re-run re-extracts weather/equipment/logistics/casualties/supplemental LIVE
+    # from scratch (they are NOT in the batch — only events are), making the
+    # "retrieve" path redo most of extraction every time (cost + ~1h latency).
+    # The markers are uploaded by _final_sync; here we pull them back.
+    for _etype in (
+        "weather",
+        "equipment",
+        "logistics",
+        "casualties",
+        "supplemental",
+    ):
+        _download_s3_file(s3, f"output/{_etype}/.processed_events.json")
+
     # Bibliography/supplemental: Dynamo-backed dedup (G3) reads the title index
     # from DynamoEntityStore, so Phase 2 no longer bulk-downloads the (13k+ file)
     # bibliography dir — the source of N*2 download thrash under concurrency. Only
@@ -2406,11 +2421,22 @@ def _nat_demand_present() -> bool:
 
 
 def _multi_doc_enabled() -> bool:
-    """True if multi-document concurrency is switched on (config kill-switch).
+    """True if multi-document concurrency is switched on (kill-switch).
 
-    Reads concurrency.multi_doc.enabled from the baked config. Defaults to
-    False, so absent config == today's serial per-phase behavior (§15 M2).
+    Honors EITHER source so the switch is reproducible from the repo:
+      1. MULTI_DOC_ENABLED env var — set on the phase task defs from the
+         CFN MultiDocEnabled param (committed infra). This is the authoritative,
+         repo-tracked switch and is checked first.
+      2. concurrency.multi_doc.enabled in the baked config.yaml (local override).
+    Defaults to False (serial per-phase behavior) when neither is set.
+
+    NOTE: the lifecycle guards (_advance_doc_lifecycle / _offramp_doc_needs_review)
+    read the SAME env var; keeping this helper consistent with them avoids the
+    split-brain where the branch selector said "serial" while the guards said
+    "multi-doc" (which stranded docs at phase1 and blocked Phase 3).
     """
+    if os.environ.get("MULTI_DOC_ENABLED", "").lower() == "true":
+        return True
     try:
         import yaml as _yaml
 

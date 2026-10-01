@@ -227,6 +227,16 @@ def _extract_casualties(event_file, grok_client, output_root, config, logger):
 def _extract_supplemental(event_file, grok_client, output_root, config, logger):
     if not config.get("supplemental_material", {}).get("enabled", False):
         return
+    from src.utils.config import should_reprocess
+
+    # Skip already-processed endnotes so a retrieve re-run doesn't re-fetch EVERY
+    # endnote (slow per-endnote HTTP fetches to ibiblio) from scratch. Without
+    # this guard + the _mark_processed below, supplemental never converged on a
+    # --retrieve-only re-run (every endnote re-processed each time).
+    if not should_reprocess("supplemental") and _is_processed(
+        output_root, "supplemental", event_file.name
+    ):
+        return
     try:
         from src.extraction.supplemental import extract_supplemental
 
@@ -240,10 +250,13 @@ def _extract_supplemental(event_file, grok_client, output_root, config, logger):
         )
         if result:
             logger.info("    ✓ Supplemental updated")
+        _mark_processed(output_root, "supplemental", event_file.name)
     except json.JSONDecodeError as e:
         logger.error("    Supplemental JSON parse error for %s: %s", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Supplemental file I/O error for %s: %s", event_file.name, e)
+    except BatchModeCollecting:
+        logger.debug("    Batch collecting (supplemental): %s", event_file.name)
     except Exception as e:  # pylint: disable=broad-except
         logger.error(
             "    Error extracting supplemental from %s: %s", event_file.name, e
