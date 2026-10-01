@@ -18,6 +18,14 @@ Resources:
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
+      # Encryption at rest. SSE-S3 (AES256) rather than KMS: no per-request KMS
+      # cost or key management, which suits the cost-conscious design; the data is
+      # historical/public-domain, not regulated. BucketKeyEnabled reduces calls.
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+            BucketKeyEnabled: true
       VersioningConfiguration:
         Status: Enabled
       LifecycleConfiguration:
@@ -45,6 +53,26 @@ Resources:
       Tags:
         - Key: Environment
           Value: !Ref EnvironmentName
+
+  # TLS-only: deny any request made over plain HTTP (aws:SecureTransport=false).
+  # Standard S3 hardening — enforces encryption in transit for all principals.
+  DataBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref DataBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt DataBucket.Arn
+              - !Sub '${DataBucket.Arn}/*'
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
 
   # API response cache
   CacheTable:
