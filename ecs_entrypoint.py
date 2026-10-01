@@ -1689,8 +1689,21 @@ def _auto_merge_entity_type(entity_dir: Path, id_field: str) -> int:
     except (json.JSONDecodeError, OSError):
         return 0
 
-    groups_key = "duplicate_groups" if "duplicate_groups" in report else "groups"
-    groups = report.get(groups_key, [])
+    # The report stores the list of duplicate groups under "duplicates";
+    # "duplicate_groups" is an INT count (not the list). Older/other reports may
+    # use "groups". Pick the first key whose value is actually a list — never
+    # iterate the int count (that raised 'int' object is not iterable, which
+    # failed dedup for every doc and blocked the whole pipeline at the gate).
+    groups = None
+    groups_key = None
+    for candidate in ("duplicates", "duplicate_groups", "groups"):
+        value = report.get(candidate)
+        if isinstance(value, list):
+            groups = value
+            groups_key = candidate
+            break
+    if groups is None:
+        return 0
     remaining = []
     merged = 0
 
