@@ -111,6 +111,52 @@ _COMPRESSED_SUFFIXES = (
 )
 
 
+def _validate_parse_keys(keys: list) -> list:
+    """Filter standalone text keys (.md/.txt/.html) headed to parse: a file with
+    no usable content is off-ramped to needs-review instead of queuing a doomed
+    parse (previously it reached Phase 1 and only produced a parse error). Keeps
+    usable files. Fail-open: a fetch/read error keeps the key (let parse try) —
+    never block a legit doc on a transient S3 issue.
+
+    Note: OCR/convert/video outputs re-enter parse via their OWN upload events and
+    are already content-validated at their source; this guards only direct uploads.
+    """
+    import re as _re
+
+    s3 = boto3.client("s3")
+    min_chars = int(os.environ.get("PARSE_MIN_USABLE_CHARS", "20"))
+    kept = []
+    for k in keys:
+        try:
+            body = (
+                s3.get_object(Bucket=BUCKET, Key=k)["Body"]
+                .read()
+                .decode("utf-8", errors="replace")
+            )
+            # Strip markdown structure (headings/list/table markers, whitespace)
+            # to measure actual textual content, not formatting.
+            stripped = _re.sub(r"[#>*_`|\-\s]", "", body)
+            if len(stripped) < min_chars:
+                book = k.rsplit("/", 1)[-1].rsplit(".", 1)[0] or "unknown"
+                from src.ingestion.review_reject import reject_to_review
+
+                reject_to_review(
+                    s3,
+                    BUCKET,
+                    k,
+                    book,
+                    f"standalone markdown has no usable content "
+                    f"({len(stripped)} content chars < {min_chars})",
+                    category="bad-markdown",
+                )
+                continue
+            kept.append(k)
+        except Exception as e:  # noqa: BLE001 - fail-open: keep key, let parse try
+            logger.warning("Parse-key validation skipped for %s: %s", k, e)
+            kept.append(k)
+    return kept
+
+
 def _content_keys(keys: list) -> list:
     """Keep only processable content keys; drop compressed files and non-content."""
     out = []
@@ -122,7 +168,23 @@ def _content_keys(keys: list) -> list:
         if low.endswith(_CONTENT_SUFFIXES):
             out.append(k)
         else:
-            logger.info("Skipping non-content upload: %s", k)
+            # Unrecognized extension — do NOT silently drop. Off-ramp to
+            # needs-review so an unexpected upload is surfaced, not lost.
+            logger.warning("Unrecognized upload type, rejecting to review: %s", k)
+            try:
+                from src.ingestion.review_reject import reject_to_review
+
+                book = k.rsplit("/", 1)[-1].rsplit(".", 1)[0] or "unknown"
+                reject_to_review(
+                    boto3.client("s3"),
+                    BUCKET,
+                    k,
+                    book,
+                    f"unrecognized file type (not a supported content extension): {k}",
+                    category="unrecognized-type",
+                )
+            except Exception as e:  # noqa: BLE001 - never let a reject crash intake
+                logger.warning("Could not reject-to-review %s: %s", k, e)
     return out
 
 
@@ -272,6 +334,65 @@ def _ensure_nat_for_ocr() -> None:
         logger.warning("Failed to request NAT for OCR: %s", e)
 
 
+def _ocr_media_mismatch(pdf_key: str, book: str) -> bool:
+    """True (and off-ramped) if the file's bytes contradict its OCR-routed
+    extension. Fetches only the header (sniffing needs <=16 bytes) via a ranged
+    GET. Fail-open: any error returns False (proceed to OCR) — never block a
+    legitimate doc on a transient read or an unsniffable file."""
+    import tempfile
+    from pathlib import Path as _Path
+
+    try:
+        from src.ingestion.media_detection import detect_media_mismatch
+        from src.ingestion.review_reject import reject_to_review
+
+        s3 = boto3.client("s3")
+        head = s3.get_object(Bucket=BUCKET, Key=pdf_key, Range="bytes=0-4095")[
+            "Body"
+        ].read()
+        suffix = _Path(pdf_key).suffix or ".bin"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=True) as tmp:
+            tmp.write(head)
+            tmp.flush()
+            verdict = detect_media_mismatch(_Path(tmp.name))
+        if verdict.is_mismatch:
+            reject_to_review(
+                s3,
+                BUCKET,
+                pdf_key,
+                book,
+                f"OCR intake: {verdict.reason}",
+                category="ocr-media-mismatch",
+            )
+            return True
+        return False
+    except Exception as e:  # noqa: BLE001 - fail-open: proceed to OCR on any error
+        logger.warning("OCR media-mismatch check skipped for %s: %s", pdf_key, e)
+        return False
+
+
+def _is_structured_reference(key: str) -> bool:
+    """Declarative structured-reference signal (narrative vs structured tracks,
+    per project steering). True when the upload is under a reserved ``_oob/`` path
+    segment OR its stem is in the configured structured-reference list. Structured
+    docs (e.g. ETO Order of Battle) route to the deterministic OOB parser track
+    after OCR, not narrative LLM extraction."""
+    low = key.lower()
+    if "/_oob/" in low or low.startswith("_oob/") or "/oob/" in low:
+        return True
+    try:
+        from src.utils.config import load_config
+
+        stems = [
+            s.lower()
+            for s in load_config().get("ingestion", {}).get("structured_stems", [])
+        ]
+        stem = key.rsplit("/", 1)[-1].rsplit(".", 1)[0].lower()
+        return stem in stems
+    except Exception:  # noqa: BLE001 - config optional
+        return False
+
+
 def _submit_ocr(pdf_key: str) -> bool:
     """Submit Chandra GPU OCR for a raw PDF/image (Option B: -> Phase 0), with
     best-guess page-range chunking so a SPOT reclaim loses one chunk, not the whole
@@ -279,6 +400,14 @@ def _submit_ocr(pdf_key: str) -> bool:
     Output lands at ocr-output/{book}/[chunk-{range}/] for the downstream merge."""
     try:
         pdf_name = pdf_key.split("/")[-1].rsplit(".", 1)[0]
+        # Reject a misassigned file (declared extension != actual bytes) BEFORE
+        # spending a GPU OCR job: a .pdf/.jpg that is really a zip/html/garbage
+        # OCRs to nothing. Off-ramp to needs-review for more extensive evaluation
+        # instead. Only the header is fetched (sniffing needs <=16 bytes), so this
+        # is cheap even for very large PDFs. Fail-open: any sniff error -> proceed
+        # to OCR (don't block a legit doc on a transient S3 read).
+        if _ocr_media_mismatch(pdf_key, pdf_name):
+            return False
         # G4 (§8) — deny redundant submissions AT INTAKE (per book, covering all its
         # chunks). A duplicate ObjectCreated must not re-launch the chunk set.
         claim_key = f"ocr#{pdf_name}"
@@ -318,6 +447,25 @@ def _submit_ocr(pdf_key: str) -> bool:
                 }
             )
         s3_input = f"s3://{BUCKET}/{pdf_key}"
+        # Declarative structured-reference signal: a doc uploaded under the
+        # reserved _oob/ path is a structured/tabular reference (e.g. the ETO
+        # Order of Battle), NOT narrative prose. It still needs Chandra OCR (the
+        # tables are scanned), but its OCR markdown must go to the deterministic
+        # OOB parser track, not narrative LLM extraction. Drop a sidecar marker
+        # the merge handler checks (survives the OCR->merge EventBridge hop
+        # reliably, unlike the original upload's S3 tags).
+        if _is_structured_reference(pdf_key):
+            try:
+                boto3.client("s3").put_object(
+                    Bucket=BUCKET,
+                    Key=f"ocr-output/{pdf_name}/.structured",
+                    Body=b"oob",
+                )
+                logger.info("Tagged %s as structured-reference (OOB track)", pdf_name)
+            except Exception as e:  # noqa: BLE001 - marker is best-effort
+                logger.warning(
+                    "Could not write .structured marker for %s: %s", pdf_name, e
+                )
         chunks = _ocr_chunks(pdf_key)
         try:
             batch = _batch_client()
@@ -495,6 +643,9 @@ def handler(event, _context):
             # structure -> parse. Demand-launched; never silently dropped.
             for k in video_keys:
                 _submit_video(k)
+            if not parse_keys:
+                continue
+            parse_keys = _validate_parse_keys(parse_keys)
             if not parse_keys:
                 continue
             _queue_pending(parse_keys)

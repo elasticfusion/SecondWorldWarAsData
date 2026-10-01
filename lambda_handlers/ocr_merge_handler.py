@@ -25,6 +25,63 @@ REGION = os.getenv("AWS_REGION", "us-east-1")
 # missing S3_BUCKET fails loud rather than silently writing to a wrong bucket.
 BUCKET = os.environ.get("S3_BUCKET", "")
 CHANDRA_QUEUE_SUFFIX = "chandra"
+ENV_NAME = os.getenv("ENV_NAME", "dev")
+CLUSTER = os.getenv("ECS_CLUSTER", f"{ENV_NAME}-wwii-pipeline")
+PHASE0_INGEST_TASK_DEF = os.getenv(
+    "PHASE0_INGEST_TASK_DEF", f"{ENV_NAME}-wwii-phase0-ingest"
+)
+
+
+def _is_structured(s3, book: str) -> bool:
+    """True if the trigger tagged this book structured-reference (OOB track):
+    an ``ocr-output/{book}/.structured`` sidecar marker exists."""
+    try:
+        s3.head_object(Bucket=BUCKET, Key=f"ocr-output/{book}/.structured")
+        return True
+    except Exception:  # noqa: BLE001 - absent marker (404) = not structured
+        return False
+
+
+def _route_to_oob(s3, book: str, merged: str) -> str:
+    """Structured-reference routing: place the OCR markdown where the OOB parser
+    (phase0_ingest.discover_oob_markdown) consumes it (``{book}/ocr_output/*.md``)
+    and launch the phase0-ingest ECS task. Returns the OOB input key. Does NOT
+    promote to contentrepository/ (so it never enters narrative parse)."""
+    oob_key = f"contentrepository/{book}/ocr_output/{book}.md"
+    s3.put_object(Bucket=BUCKET, Key=oob_key, Body=merged.encode("utf-8"))
+    logger.info(
+        "STRUCTURED route: OCR markdown -> s3://%s/%s (OOB parser track)",
+        BUCKET,
+        oob_key,
+    )
+    try:
+        subnets = [x for x in os.getenv("PRIVATE_SUBNET_IDS", "").split(",") if x]
+        sg = os.getenv("SECURITY_GROUP_ID", "")
+        boto3.client("ecs", region_name=REGION).run_task(
+            cluster=CLUSTER,
+            taskDefinition=PHASE0_INGEST_TASK_DEF,
+            count=1,
+            launchType="FARGATE",
+            networkConfiguration={
+                "awsvpcConfiguration": {
+                    "subnets": subnets,
+                    "securityGroups": [sg] if sg else [],
+                    "assignPublicIp": "DISABLED",
+                }
+            },
+            overrides={
+                "containerOverrides": [
+                    {
+                        "name": "pipeline",
+                        "environment": [{"name": "BOOK_NAME", "value": book}],
+                    }
+                ]
+            },
+        )
+        logger.info("Launched phase0-ingest (OOB parser) for %s", book)
+    except Exception as e:  # noqa: BLE001 - surface, don't crash the merge
+        logger.error("Failed to launch phase0-ingest for %s: %s", book, e)
+    return oob_key
 
 
 def _s3():
@@ -81,7 +138,20 @@ def merge_ocr_output(book: str) -> str:
     md_keys.sort()
 
     if not md_keys:
-        logger.warning("No OCR markdown under %s — nothing to merge", prefix)
+        # OCR produced no markdown at all — do NOT silently drop. Off-ramp to
+        # needs-review (e.g. a photo/map sent to OCR, a blank scan, or a job that
+        # wrote nothing) for more extensive evaluation.
+        from src.ingestion.review_reject import reject_to_review
+
+        reject_to_review(
+            s3,
+            BUCKET,
+            prefix,
+            book,
+            "OCR produced no markdown output (empty result)",
+            category="ocr-empty",
+            region=REGION,
+        )
         return ""
 
     parts = []
@@ -89,8 +159,41 @@ def merge_ocr_output(book: str) -> str:
         body = s3.get_object(Bucket=BUCKET, Key=k)["Body"].read().decode("utf-8")
         parts.append(body)
     merged = "\n\n".join(parts)
+
+    # Near-empty OCR = effectively failed (blank scan, non-text image, or a
+    # born-digital PDF Chandra couldn't read). Promoting it would feed garbage to
+    # parse/extract. Off-ramp to needs-review instead. Threshold is deliberately
+    # low (whitespace-stripped) so a legitimately short page still passes.
+    min_chars = int(os.environ.get("OCR_MIN_USABLE_CHARS", "40"))
+    if len(merged.strip()) < min_chars:
+        from src.ingestion.review_reject import reject_to_review
+
+        reject_to_review(
+            s3,
+            BUCKET,
+            prefix,
+            book,
+            f"OCR output near-empty ({len(merged.strip())} usable chars < "
+            f"{min_chars}) — likely a non-text image or unreadable scan",
+            category="ocr-near-empty",
+            region=REGION,
+        )
+        return ""
     # Write the meta FIRST, then content — the content-upload S3 event triggers the
     # parse path, and phase1's discovery needs the meta already present.
+    # STRUCTURED-REFERENCE fork: if the trigger tagged this doc structured (ETO
+    # OOB etc.), its OCR markdown goes to the deterministic OOB parser track, NOT
+    # narrative parse. Write it to the ocr_output/ layout phase0_ingest consumes
+    # and launch the phase0-ingest task instead of promoting to contentrepository/.
+    if _is_structured(s3, book):
+        return _route_to_oob(s3, book, merged)
+    # Narrative track: normalize to English before promote-to-parse. Chandra emits
+    # physical-page separators, so detect/translate PER PAGE (a scanned roll can
+    # mix languages). Fail-safe: English/disabled/error -> unchanged. (The OOB
+    # fork above translates in phase0_ingest, so it is intentionally skipped here.)
+    from src.ingestion.translation import normalize_markdown_to_english
+
+    merged = normalize_markdown_to_english(merged, per_page=True)
     meta_key = f"contentrepository/{book}/chapter1/chapter1-meta.yaml"
     meta = (
         f'series: "TODO - Add series name"\n'

@@ -296,3 +296,80 @@ def normalize_pages_to_english(  # pylint: disable=too-many-locals
         pages=outcomes,
         translator=tag if any_translated else None,
     )
+
+
+# --- Shared per-track adapter -------------------------------------------------
+#
+# Each Phase-0 track (convert/OCR-narrative/video) produces original-language
+# markdown and must normalize it to English BEFORE promote-to-parse, so the
+# English-centric Phase 1-3 stack never sees a non-English document. This adapter
+# is the single reuse point: config-gated, builds its own Grok client, picks
+# per-document vs per-page, and is FAIL-SAFE — disabled, English, or any error
+# returns the markdown unchanged (never block/garble a doc on a translation hiccup).
+
+
+def translation_enabled(config: Optional[dict] = None) -> bool:
+    """True if Phase-0 translation is on (``ingestion.translate`` or
+    ``PHASE0_TRANSLATE=1``). Matches the OOB track's gate so all tracks share one
+    switch."""
+    import os
+
+    if os.environ.get("PHASE0_TRANSLATE") == "1":
+        return True
+    if config is None:
+        try:
+            from src.utils.config import load_config
+
+            config = load_config()
+        except Exception:  # noqa: BLE001
+            return False
+    return bool((config or {}).get("ingestion", {}).get("translate", False))
+
+
+def normalize_markdown_to_english(
+    markdown: str,
+    *,
+    per_page: bool = False,
+    grok=None,
+    config: Optional[dict] = None,
+) -> str:
+    """Normalize produced markdown to English for ANY track. Returns the English
+    markdown (== input when disabled / already English / on any error).
+
+    per_page=True uses physical-page detection (Chandra multi-page OCR); False
+    uses whole-document detection (a single converted/transcript document).
+    English pages/docs pass through untouched; translated output carries the
+    inert provenance marker. Never raises.
+    """
+    if not markdown or not markdown.strip():
+        return markdown
+    if not translation_enabled(config):
+        return markdown
+    try:
+        if grok is None:
+            from src.grok_client import GrokClient
+            from src.utils.config import load_config, get_paths
+
+            grok = GrokClient(get_paths(load_config())["api_cache"])
+        model_name = None
+        try:
+            model_name = (config or {}).get("api", {}).get("grok", {}).get("model")
+        except Exception:  # noqa: BLE001
+            pass
+        if per_page:
+            page_res = normalize_pages_to_english(
+                markdown, 1, grok, model_name=model_name
+            )
+            if page_res.translated:
+                logger.info(
+                    "Translated non-English markdown (%s) to English",
+                    ", ".join(page_res.source_languages),
+                )
+            return page_res.english_markdown
+        doc_res = normalize_to_english(markdown, grok, model_name=model_name)
+        if doc_res.translated:
+            logger.info("Translated %s markdown to English", doc_res.source_language)
+        return doc_res.english_markdown
+    except Exception as e:  # noqa: BLE001 - fail-safe: keep original on any error
+        logger.warning("Translation normalization skipped (keeping original): %s", e)
+        return markdown
