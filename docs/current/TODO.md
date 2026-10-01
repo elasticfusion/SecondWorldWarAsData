@@ -428,6 +428,55 @@ Prevent `find_related_groups.py`-style issues from accumulating. Don't enforce o
 
 ## Future / Research
 
+#### Explore removing DynamoDB as a general data store (esp. Phase 3 bulk transfer)
+Investigate whether DynamoDB is still earning its place, and scope removing it as
+a *general* data store. Code review (2026-09-30) found it plays three distinct
+roles — they must be evaluated separately, not lumped together:
+
+1. **Bulk Phase 3 materialization (weak — prime candidate for removal).**
+   `s3_sync._materialize_from_dynamo` calls `DynamoEntityStore.list_all` once per
+   entity type = **11 sequential full-table `Scan`s** (`FilterExpression`
+   `begins_with(cache_key, "entity#<type>#")`), deserializing every entity's
+   `data` blob. A filtered `Scan` reads/bills the whole table then discards
+   non-matches — the same "crawl everything" anti-pattern as the S3
+   `list_objects_v2` + per-object `download_file` loop it's meant to beat, so it
+   is unlikely to be a real bulk-transfer win. **This is the "S3 is slow on Phase
+   3" path the removal question is really about.**
+2. **Small coordination (KV-shaped, legitimately good on DynamoDB).** Manifests
+   (`manifest#phase2`, `pending#parsed`) and the Phase 3 lock/status
+   (`_update_lock_status`). Tiny; keep unless the whole store goes.
+3. **Concurrency-safe entity merge (genuinely earns its keep).**
+   `merge_entity` / `store_bibliography` use version-conditional writes so two
+   books extracting the same entity (e.g. "Eisenhower") don't clobber each
+   other's `event_mentions`. Comments note this replaced flock-guarded S3 JSON
+   writes that were per-host, NOT cross-host safe. Removing this without a
+   replacement reintroduces that race — see "True multi-job concurrency" and
+   `CONCURRENCY_AND_NAT_SPEC.md`.
+
+**Fix options for the Phase 3 transfer bottleneck (cheapest first), to benchmark
+before deciding:**
+- (a) **Parallelize the S3 transfer** — current `s3_sync` loop is serial
+  `download_file`; use concurrent downloads / `aws s3 sync`. Lowest-risk quick
+  win, zero architecture change; may erase the pain that motivated
+  `_materialize_from_dynamo`.
+- (b) **Consolidate into few large objects** — write one Parquet/NDJSON blob per
+  entity type so Phase 3 pulls ~11 objects instead of thousands (attacks the
+  actual cause: object count; Parquet adds columnar projection).
+- (c) **If DynamoDB materialization stays, stop using `Scan`** — add a GSI on
+  `entity_type` so `list_all` becomes a `Query`. (Overlaps the existing Low-Prio
+  item "DynamoEntityStore.query_unenriched does full table scan".) Weaker than
+  (a)/(b).
+
+**Decision inputs to gather (not yet done):** measured Phase 3 timings +
+corpus/object counts, DynamoDB-scan vs. parallel-S3 vs. Parquet crossover, and a
+plan for preserving role #3's concurrency safety (Postgres row-level
+locking/`ON CONFLICT`, or keep a minimal Dynamo lock table) if the general store
+is removed. Ties into the Aurora/pgvector direction ("Postgres dialect adapter
+for src/loader") — the eventual query store is Postgres, so DynamoDB here is
+really ingestion-time coordination, not a query store.
+**Status:** exploration only — nothing to implement yet (per owner 2026-09-30).
+*Source: DynamoDB value review 2026-09-30*
+
 #### OCR structural fidelity: raise render DPI + evaluate augmenting Chandra
 Chandra runs at the 192 render-DPI baseline (`chandra/settings.py:IMAGE_DPI`,
 not exposed on the CLI); its own benchmark recommends 300. Measured: 192→300 =
