@@ -1,14 +1,55 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-09-26
+**Last Updated:** 2026-10-01 (reprioritized + swept against code)
+
+---
+
+## Current Priority (reprioritized index)
+**Reprioritized 2026-10-01** (after the phase0-autotrigger/AV/security/sweep
+work). Ranking reflects the project goal: *finish unattended ETO ingestion, then
+build RAG/search*. Current ordered priority:
+
+1. **[CRITICAL] Clear the deploy path** (`UPDATE_ROLLBACK_COMPLETE`) — gates ALL
+   merged-but-undeployed infra going live (AV scanning, S3 encryption/TLS, pandoc
+   `--sandbox`, OCR-review UI). Nothing shipped since the last good deploy is live.
+2. **[HIGH] Re-OCR the off-by-one corpus** — data-correctness (St. Vith/Boyer +
+   ETO OOB markdown are currently shifted). *(Promoted from Medium.)*
+3. **[HIGH] Deploy + wire OCR markdown-review UI** — depends on #1.
+4. **[HIGH] Verify page-separator vs page count after merge** — data-integrity
+   guard before markdown feeds parsers. *(Promoted from Medium.)*
+5. **[HIGH] Layout-miss task-org tables → review surface.**
+6. **[MED] Slack refinement; misleading batch log; SNS:ListSubscriptions IAM;
+   bibliography + Archive.org enrichment UIs; delete stale chunk dirs.**
+7. **[LOW/REGRESSION] mypy --strict on new files (quick guardrail); the 5
+   regression tests; code-quality refactors.**
+8. **[FUTURE] Postgres adapter, DynamoDB-removal, multi-job concurrency, Step
+   Functions, new entity types — gated on the post-ingestion RAG/Aurora phase.**
+
+Not-code (deferred, no action): SHAEF OB map gaps (NARA acquisition).
 
 ---
 
 ## Critical (actively losing data or breaking pipeline)
 
-_None — all critical items resolved._
-
----
+#### Clear the CloudFormation deploy path (parent stack `UPDATE_ROLLBACK_COMPLETE`)
+The parent stack `wwii-pipeline-dev` is stuck in **UPDATE_ROLLBACK_COMPLETE**
+(last failed attempt 2026-07-01: ComputeStack "Validation failed with 8 errors").
+**Consequence:** every change merged since the last good deploy is **not live** —
+including this session's AV scanning, S3 encryption + TLS policy, pandoc
+`--sandbox`, and the built-but-undeployed OCR markdown-review UI. This is the
+single blocker gating the most work, so it is Critical.
+**Approach (read-only diagnosis first, then careful deploy):**
+- Enumerate the July "8 validation errors" via `describe-stack-events` on
+  ComputeStack before retrying.
+- Known causes seen: (a) `PipelineDashboard` name collision with EventsStack —
+  *appears fixed* (compute uses `-wwii-pipeline-logs`); verify no other duplicate
+  logical/physical names; (b) TaskDef "Container.image should not be null or
+  empty" — deploy MUST pass `--pipeline-image`/`--openserp-image` (use
+  `deploy_all.sh`, not a bare `deploy_aws.py`).
+- Do a **change-set / dry-run first**, and **NOT during a live Phase 2/3 run**
+  (ComputeStack holds the phase task defs + the API). Requires operator go-ahead
+  (touches the live stack).
+*Source: deploy-path investigation 2026-09-27; elevated to Critical 2026-10-01*
 
 ## Recently Completed (2026-09-23) — OCR reliability + table recovery
 
@@ -68,6 +109,26 @@ is no longer needed for a full rebuild (kept as a fast code-only-change helper).
 ---
 
 ## High Priority (produces wrong results or wastes significant resources)
+
+#### Re-OCR the off-by-one corpus (data-correctness) — PROMOTED from Medium 2026-10-01
+The OCR page-range off-by-one is **fixed in code** (`_to_chandra_range`), but all
+OCR output produced before the fix is shifted by one page and must be **re-OCR'd**
+to be correct: notably `stvith_boyer_full` (St. Vith/Boyer) and any ETO OOB
+Chandra markdown generated via the old path. This is wrong *data* feeding the
+parsers/extraction, so it ranks above cleanup/observability. No image rebuild
+needed — it's a client-side `submit_ocr_job` re-run (now auto-triggered on
+re-upload). Scope + cost per corpus TBD. Pairs with the page-separator check
+(below) and the stale-chunk-dir cleanup (Medium) after re-OCR is verified.
+*Source: M1019 off-by-one 2026-09-24; promoted to High 2026-10-01*
+
+#### Verify page-separator count vs. page count after OCR merge — PROMOTED from Medium 2026-10-01
+`stvith_boyer_full` merged with **246 separators for 252 pages** (6 short).
+Likely blank/near-blank scans (Chandra emits no separator), but a missing
+separator **shifts per-page mapping** — a data-integrity risk before the markdown
+feeds the OOB parsers / extraction. Add a lightweight post-merge check reporting
+`separators vs. pages` + listing pages with no separator for a quick blank-page
+eyeball. Belongs with the re-OCR work (verify the re-OCR'd output here).
+*Source: stvith_boyer_full re-OCR 2026-09-26; promoted to High 2026-10-01*
 
 #### ~~OCR page-range off-by-one dropped the first page of every range~~ ✅ Fixed (code); re-OCR needed
 `submit_ocr_job.py` emitted **1-based** `--page-range` values, but Chandra's
@@ -294,16 +355,6 @@ Delete the superseded legacy dirs from
 Affected so far: `stvith_boyer_full` (chunk-000..005), and `ETO_Order_of_Battle`
 (chunk-000..019) once it is re-OCR'd. Mildly destructive (S3 rm) — verify the
 new page-range chunks + merged output first.
-*Source: stvith_boyer_full re-OCR 2026-09-26*
-
-#### Verify page-separator count vs. page count after OCR merge
-The `stvith_boyer_full` re-OCR merged with **246 page separators for 252 pages**
-(6 short). Likely blank/near-blank scan pages for which Chandra emits no
-separator (B405 was a clean 13/14), but this should be **confirmed** before the
-markdown feeds the OOB parsers / extraction — a missing separator shifts
-per-page mapping. Add a lightweight post-merge check that reports
-`separators vs. pages` and lists the pages with no separator for a quick
-blank-page eyeball.
 *Source: stvith_boyer_full re-OCR 2026-09-26*
 
 #### ~~Batch ALL entity types, not just events~~ ✅ Done + verified
