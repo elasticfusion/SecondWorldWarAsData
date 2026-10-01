@@ -111,6 +111,52 @@ _COMPRESSED_SUFFIXES = (
 )
 
 
+def _validate_parse_keys(keys: list) -> list:
+    """Filter standalone text keys (.md/.txt/.html) headed to parse: a file with
+    no usable content is off-ramped to needs-review instead of queuing a doomed
+    parse (previously it reached Phase 1 and only produced a parse error). Keeps
+    usable files. Fail-open: a fetch/read error keeps the key (let parse try) —
+    never block a legit doc on a transient S3 issue.
+
+    Note: OCR/convert/video outputs re-enter parse via their OWN upload events and
+    are already content-validated at their source; this guards only direct uploads.
+    """
+    import re as _re
+
+    s3 = boto3.client("s3")
+    min_chars = int(os.environ.get("PARSE_MIN_USABLE_CHARS", "20"))
+    kept = []
+    for k in keys:
+        try:
+            body = (
+                s3.get_object(Bucket=BUCKET, Key=k)["Body"]
+                .read()
+                .decode("utf-8", errors="replace")
+            )
+            # Strip markdown structure (headings/list/table markers, whitespace)
+            # to measure actual textual content, not formatting.
+            stripped = _re.sub(r"[#>*_`|\-\s]", "", body)
+            if len(stripped) < min_chars:
+                book = k.rsplit("/", 1)[-1].rsplit(".", 1)[0] or "unknown"
+                from src.ingestion.review_reject import reject_to_review
+
+                reject_to_review(
+                    s3,
+                    BUCKET,
+                    k,
+                    book,
+                    f"standalone markdown has no usable content "
+                    f"({len(stripped)} content chars < {min_chars})",
+                    category="bad-markdown",
+                )
+                continue
+            kept.append(k)
+        except Exception as e:  # noqa: BLE001 - fail-open: keep key, let parse try
+            logger.warning("Parse-key validation skipped for %s: %s", k, e)
+            kept.append(k)
+    return kept
+
+
 def _content_keys(keys: list) -> list:
     """Keep only processable content keys; drop compressed files and non-content."""
     out = []
@@ -556,6 +602,9 @@ def handler(event, _context):
             # structure -> parse. Demand-launched; never silently dropped.
             for k in video_keys:
                 _submit_video(k)
+            if not parse_keys:
+                continue
+            parse_keys = _validate_parse_keys(parse_keys)
             if not parse_keys:
                 continue
             _queue_pending(parse_keys)

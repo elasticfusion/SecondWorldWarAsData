@@ -129,3 +129,60 @@ def test_convert_failure_correction_fails_then_rejects(tmp_path, monkeypatch):
     assert out == ""
     rej.assert_called_once()
     assert rej.call_args.kwargs.get("category") == "convert-failed"
+
+
+# --- standalone bad-markdown reject (TEXT/parse track) ---
+
+
+def _th_with_s3(body_by_key):
+    import lambda_handlers.trigger_handler as th
+
+    s3 = MagicMock()
+
+    def get_object(Bucket, Key):
+        return {"Body": MagicMock(read=lambda k=Key: body_by_key[k].encode("utf-8"))}
+
+    s3.get_object.side_effect = get_object
+    return th, s3
+
+
+def test_validate_parse_keys_rejects_empty_markdown():
+    th, s3 = _th_with_s3({"contentrepository/x/blank.md": "#  \n\n>  \n---\n"})
+    with (
+        patch.object(th, "BUCKET", "buck"),
+        patch.object(th.boto3, "client", return_value=s3),
+        patch("src.ingestion.review_reject.reject_to_review") as rej,
+    ):
+        kept = th._validate_parse_keys(["contentrepository/x/blank.md"])
+    assert kept == []  # dropped from parse
+    rej.assert_called_once()
+    assert rej.call_args.kwargs.get("category") == "bad-markdown"
+
+
+def test_validate_parse_keys_keeps_usable_markdown():
+    th, s3 = _th_with_s3(
+        {
+            "contentrepository/x/good.md": "# Chapter 1\n\nReal narrative content about the Ardennes campaign."
+        }
+    )
+    with (
+        patch.object(th, "BUCKET", "buck"),
+        patch.object(th.boto3, "client", return_value=s3),
+        patch("src.ingestion.review_reject.reject_to_review") as rej,
+    ):
+        kept = th._validate_parse_keys(["contentrepository/x/good.md"])
+    assert kept == ["contentrepository/x/good.md"]
+    rej.assert_not_called()
+
+
+def test_validate_parse_keys_fail_open_on_error():
+    import lambda_handlers.trigger_handler as th
+
+    s3 = MagicMock()
+    s3.get_object.side_effect = RuntimeError("s3 timeout")
+    with (
+        patch.object(th, "BUCKET", "buck"),
+        patch.object(th.boto3, "client", return_value=s3),
+    ):
+        kept = th._validate_parse_keys(["contentrepository/x/maybe.md"])
+    assert kept == ["contentrepository/x/maybe.md"]  # kept — let parse try

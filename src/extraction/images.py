@@ -203,8 +203,16 @@ def _process_single_image(
     dates_dir: Path,
     download: bool,
     storage_dir: Path,
+    captioner: Optional[Any] = None,
 ) -> Tuple[Dict[str, Any], Optional[str]]:
-    """Process one image. Returns (record, local_copy)."""
+    """Process one image. Returns (record, local_copy).
+
+    When ``captioner`` is provided and the image was downloaded locally, run a
+    Grok-vision captioning pass (identify the photo/diagram using the linked
+    surrounding context) and populate ``description`` + caption fields. The
+    deterministic ``content_type`` is the prior; vision fills the semantic
+    residual, low-confidence results are flagged needs_review, never fabricated.
+    """
     image_id = str(ulid_mod.new())
 
     event_ctx = None
@@ -233,6 +241,32 @@ def _process_single_image(
         local_copy,
         book,
     )
+
+    # VISION step: identify the image (don't OCR it). Only when enabled + we have
+    # local bytes to look at. Captioner never raises / never fabricates.
+    if captioner is not None and local_copy:
+        try:
+            image_bytes = Path(local_copy).read_bytes()
+        except OSError:
+            image_bytes = None
+        caption = captioner.caption(
+            image_bytes,
+            {
+                "alt_text": img.get("alt_text", ""),
+                "sub_event_name": (event_ctx or {}).get("Sub-event_Name", ""),
+                "place_name": place_name or "",
+                "date": date_val or "",
+                "book": book,
+                "classification": record.get("content_type", "unknown"),
+            },
+        )
+        cap = caption.to_dict()
+        if cap["description"]:
+            record["description"] = cap["description"]
+        record["caption_confidence"] = cap["caption_confidence"]
+        record["caption_method"] = cap["caption_method"]
+        record["needs_review"] = cap["needs_review"]
+
     return record, local_copy
 
 
@@ -257,14 +291,29 @@ def extract_images(
     dates_dir: Path,
     download: bool = True,
     image_storage_path: Optional[Path] = None,
+    captioner: Optional[Any] = None,
 ) -> int:
     """Extract images from parsed files, link to events, save as entities.
 
-    Returns: number of images extracted.
+    When ``captioner`` is None, it is built from config: a Grok-vision
+    ``ImageCaptioner`` if ``images.vision_caption`` is enabled, else no captioning
+    (description stays the alt text — prior behavior). Returns: number extracted.
     """
     images_dir = output_dir / "images"
     images_dir.mkdir(parents=True, exist_ok=True)
     storage_dir = image_storage_path or Path("cache/images")
+
+    if captioner is None:
+        try:
+            from src.utils.config import load_config
+
+            if load_config().get("images", {}).get("vision_caption", False):
+                from src.extraction.image_captioner import ImageCaptioner
+
+                captioner = ImageCaptioner()
+                logger.info("Image vision captioning enabled")
+        except Exception as e:  # noqa: BLE001 - captioning is optional
+            logger.warning("Could not init image captioner (skipping): %s", e)
 
     index_path = images_dir / "index.json"
     index = json.loads(index_path.read_text()) if index_path.exists() else {}
@@ -293,7 +342,14 @@ def extract_images(
                 continue
 
             record, local_copy = _process_single_image(
-                img, event_data, book, places_dir, dates_dir, download, storage_dir
+                img,
+                event_data,
+                book,
+                places_dir,
+                dates_dir,
+                download,
+                storage_dir,
+                captioner,
             )
 
             out_file = images_dir / f"{record['ImageID']}.json"
