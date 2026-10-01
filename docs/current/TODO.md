@@ -87,28 +87,31 @@ cost TBD; the fix is deployed-pending (ships in the Chandra path with the next
 `submit_ocr_job` run — no image rebuild needed, it's a client-side arg change).
 *Source: M1019 language-path investigation 2026-09-24*
 
-#### NAT torn down between compute phases (persistent race) — should only drop at dedup gate + final completion
-NAT teardown keeps firing **between compute phases**, stranding the next phase.
-Observed live 2026-09-27: Phase 1 finished → PARSED_TOPIC cascade launched
-Phase 2 (NAT create) but Phase 1's own teardown deleted NAT **~2s after** Phase
-2 launched → Phase 2 ran with no networking, failed Grok/S3, was relaunched by
-self-heal (~8 min lost). Prior "fixes" (lock-check before teardown) don't cover
-this: **Phase 2's lock isn't held yet** when Phase 1 tears down in the S3-notif
-cascade, so the guard passes.
-
-**Intended lifecycle (confirmed with owner):**
-- Phases 1 → 2 (and any compute→compute): NAT stays **UP continuously** — never
-  torn down between compute phases.
-- **Dedup gate: NAT SHOULD tear down** (async, indefinite human review) — this
-  teardown is correct/wanted. Phase 3 re-creates NAT when review completes.
-- **End of Phase 3 / job complete: final teardown.**
-
-Rule to implement: tear down **only** at (a) the dedup gate and (b) final
-completion — never between compute phases. Fix likely: gate `_teardown_networking`
-/ submit-only teardown on "no downstream compute work queued" (check pending
-content/parsed queues, not just current locks), or make the teardown decision
-explicit per phase-transition type rather than per-phase-completion.
-*Source: St. Vith AWS end-to-end run 2026-09-27*
+#### ~~NAT torn down between compute phases (persistent race)~~ ✅ Done + verified (job-aware NAT leases)
+Fixed by the **job-aware NAT lease** system (`src/utils/nat_lease.py`,
+CONCURRENCY_AND_NAT_SPEC §4), which replaces the timing-heuristic teardown
+(task-count + lock-scan + age windows that raced a PROVISIONING task) with an
+explicit cluster-wide **demand** signal. Verified in code + tests 2026-10-01:
+- Each network-needing task `acquire_lease` → `heartbeat_lease` → `release_lease`
+  (wired in `ecs_entrypoint.py` 2366/2380/2394). A lease exists the moment Phase 2
+  starts, so Phase 1's teardown sees demand **before** Phase 2 holds its lock —
+  closing the exact "lock not held yet" gap this item described.
+- **Every** teardown path consults demand: `nat_manager._nat_demand_present`
+  guards both the SNS-completion path and `_delete_all` (direct deletes too),
+  cross-checking live leases + running pipeline tasks + in-flight OCR Batch jobs +
+  pending queues (ground truth). `ecs_entrypoint._nat_demand_present` likewise via
+  `has_nat_demand`.
+- Fail-safe: every uncertainty path returns "demand present" (keep NAT up); TTL
+  expiry prevents a crashed task leaking demand forever.
+- Tests: `test_nat_lease.py`, `test_nat_lease_entrypoint.py`,
+  `test_nat_manager_demand.py` (asserts the SNS path keeps NAT when demand),
+  `test_nat_readiness.py` — 39 passing.
+The intended lifecycle (NAT up across compute, down at the dedup human gate,
+final teardown at completion) is realized: a human gate releases its lease →
+demand drops → NAT tears down; resume re-creates it. Related open piece: wiring
+the **OCR markdown-review UI** as an async gate reuses this same lease/demand
+mechanism.
+*Source: St. Vith run 2026-09-27; fixed via nat_lease (M3) + verified 2026-10-01*
 
 #### Deploy + wire the OCR markdown-review UI
 The markdown-review Lambda + UI is **built and tested but not deployed**
