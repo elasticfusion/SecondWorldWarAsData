@@ -25,6 +25,10 @@ Parameters:
     Type: String
     Default: ''
     Description: ECR image URI for the separate video-processing container (optional)
+  AvImageUri:
+    Type: String
+    Default: ''
+    Description: ECR image URI for the separate ClamAV scanning container (optional)
   NotificationEmail:
     Type: String
     Default: ''
@@ -108,6 +112,7 @@ Resources:
         OpenSerpImageUri: !Ref OpenSerpImageUri
         PipelineImageUri: !Ref PipelineImageUri
         VideoImageUri: !Ref VideoImageUri
+        AvImageUri: !Ref AvImageUri
 
   EventsStack:
     Type: AWS::CloudFormation::Stack

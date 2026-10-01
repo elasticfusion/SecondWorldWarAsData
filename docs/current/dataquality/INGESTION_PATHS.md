@@ -47,6 +47,43 @@ whose upload re-triggers the PARSE path → Phase 1 → 2 → dedup gate → Pha
 
 ---
 
+## AV gate — when ClamAV is invoked (and when not)
+
+After `_split_by_media`, before any track's processor touches the bytes, the
+**AV gate** (`_av_gate` → `src/ingestion/av_scan.scan_and_gate`) runs. It is
+**demand-launched and binary-only**: the ClamAV scan container
+(`AvScanTaskDef`, a *separate* image from the pipeline) is launched **only when
+the upload batch contains a binary**, over those binary keys. Opt-in via
+`AV_SCAN_ENABLED` (set `true` once the ClamAV image is deployed).
+
+### Invoked (scanned)
+| Track | Types | Why scanned |
+|---|---|---|
+| OCR | `.pdf`, images `.jpg/.jpeg/.png/.tif/.tiff/.bmp/.gif/.webp` | PDF → PyMuPDF/`fitz`; images → torch/Chandra — native parsers, real malware vectors. |
+| CONVERT | `.epub .docx .doc .xlsx .xlsm .xls .pptx .ppt .rtf` | pandoc/office parsers; macros/OLE in the container. |
+| VIDEO | `.mp4 .mkv .mov .avi .webm .m4v` (+ `.mp3 .wav .m4a`) | ffmpeg — many CVEs. Fargate scanner handles the ~2.4 GB files (no Lambda size cliff). |
+| (any) | `.zip` | unpacked downstream. |
+
+- **Clean** → the key proceeds to its track.
+- **Infected** → **quarantine** (moved to `quarantine/{key}`, *not* deleted) +
+  reject-to-review `needs-review/av-infected/` + alert + **freeze-submitter hook**.
+- **Unscannable** (scanner outage/error/timeout, or a binary the scanner didn't
+  report on) → **fail-closed**: quarantined-for-review, never advanced unscanned.
+
+### NOT invoked (skipped) — and the underlying assumptions
+| Input | AV? | Underlying assumption (why skipping is safe) |
+|---|---|---|
+| `.txt`, `.md`, `.markdown` | **No** | Inert data. We **parse** it / send it to Grok **as text** — we never render it in a browser or execute it. The only ways text "carries a virus" (browser-rendered `<script>`; a byte-polyglot fed to another interpreter) **do not occur in this pipeline**. A giant text "bomb" is a DoS/resource concern, already bounded by the empty/near-empty + size checks — not malware. |
+| `.html`, `.htm` | **No** (parser-hardening, not AV) | `<script>`/handlers/data-URIs are dangerous only when **rendered in a browser or fetched by a tool**; we send HTML to pandoc/parser, not a browser, so active content is inert. Residual risk is pandoc/parser-side (crafted HTML → SSRF/file-read), addressed by parser hardening, not virus signatures. |
+| text-only batch (no binary present) | **No launch** | The scan container is never started → **zero AV cost** for the common text-only upload. Gate: launch iff `ocr_keys ∪ convert_keys ∪ video_keys` is non-empty. |
+| any type when `AV_SCAN_ENABLED=false` | **No** | Feature opt-in; until the ClamAV image is deployed the gate passes keys through unchanged. (The media-mismatch byte-sniff check still runs and catches disguised payloads.) |
+
+Full design, threat model (incl. the pandoc-macro analysis), ClamAV placement
+(separate container, Fargate), quarantine-not-delete, and the freeze-submitter /
+identity-provenance requirement: **`AV_SCANNING_DESIGN.md`**.
+
+---
+
 ### 1. TEXT / PARSE track — `.md .txt .html`
 - **Success:** queued to parse (Phase 1) directly → extract → dedup → enrich.
 - **Failure:** malformed markdown surfaces as a Phase-1 parse error (logged).

@@ -1,8 +1,36 @@
 # Malicious-Document / AV Scanning — Design
 
-Status: **design** (2026-10-01). Not yet built. Scopes antivirus / malicious-input
+Status: **in build** (2026-10-01). Scopes antivirus / malicious-input
 scanning at the ingestion front door, as part of ingestion management
 (companion: `INGESTION_PATHS.md`).
+
+---
+
+## Submitter accountability: freeze-on-infection (requirement + hook)
+
+An infected upload is not just a bad file — it is a signal about the **submitter**.
+Requirement: **a file found infected freezes the submitting user / API-key owner
+pending human review** (block further submissions from that principal until an
+operator clears them).
+
+**Today there is NO submitter identity.** Uploads arrive via **S3 events** with no
+principal attached; the only "API key" in the system is *our outbound Grok key*,
+not a submitter credential. So freeze cannot be enforced yet. Therefore:
+
+- **Now (this build):** implement the freeze as a **hook** — on infection, call a
+  `freeze_submitter(identity)` seam that records the intent (structured log +
+  alert + a `quarantine/frozen/{identity}.json` marker) and is a **no-op when no
+  identity is present** (the S3-event case). Fail-safe: never blocks ingestion
+  machinery, never raises.
+- **Identity-provenance requirement (capture now so freeze is wireable later):**
+  when the API/UI submission path is built, it MUST stamp submitter identity onto
+  the upload — S3 object metadata `x-amz-meta-submitter` / `x-amz-meta-api-key-id`
+  (and/or a DynamoDB upload record). The AV seam already reads this metadata; the
+  day identity exists, `freeze_submitter` flips from record-intent to
+  enforce (disable the API key / set an account `frozen` flag) with no redesign.
+- **Enforcement point (future):** API Gateway usage-plan key disable + an
+  `account.frozen` check at the submission Lambda; until then the recorded
+  freeze-intent markers are the audit trail an operator acts on manually.
 
 ---
 

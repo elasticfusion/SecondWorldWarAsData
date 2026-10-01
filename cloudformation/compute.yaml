@@ -58,6 +58,16 @@ Parameters:
       ECR image URI for the SEPARATE video-processing container (Dockerfile.video,
       ffmpeg + transcription + speaker-id). Optional: the Phase-0 video task def is
       only created when supplied.
+  AvImageUri:
+    Type: String
+    Default: ""
+    Description: >-
+      ECR image URI for the SEPARATE ClamAV container (Dockerfile.clamav:
+      clamscan + freshclam + S3 signature sync). Kept separate from the pipeline
+      image for isolation (scans untrusted bytes in a minimal least-privilege
+      container), independent lifecycle, and the ~1GB daily-updated signature DB.
+      Optional: the AV scan + signature-update resources are only created when
+      supplied (same pattern as VideoImageUri).
   BatchPollerIntervalMinutes:
     Type: Number
     Default: 5
@@ -77,6 +87,7 @@ Parameters:
 
 Conditions:
   HasVideoImage: !Not [!Equals [!Ref VideoImageUri, ""]]
+  HasAvImage: !Not [!Equals [!Ref AvImageUri, ""]]
 
 Resources:
   # --- ECS Cluster ---
@@ -258,6 +269,109 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: phase0video
 
+  # --- AV scanning (separate ClamAV container; see AV_SCANNING_DESIGN.md) ---
+  # Demand-launched by the trigger over binary keys (pdf/image/video/office).
+  # Kept separate from the pipeline image for isolation + the ~1GB signature DB.
+  AvScanLogGroup:
+    Condition: HasAvImage
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-av-scan
+      RetentionInDays: 30
+
+  AvScanTaskDef:
+    Condition: HasAvImage
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${EnvironmentName}-wwii-av-scan
+      # Fargate so ANY size scans (incl. 2.4GB video) with no Lambda /tmp cliff.
+      Cpu: '2048'
+      Memory: '8192'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      TaskRoleArn: !Ref ECSTaskRoleArn
+      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
+      ContainerDefinitions:
+        - Name: clamav
+          Image: !Ref AvImageUri
+          StopTimeout: 60
+          # Syncs signatures from s3://bucket/clamav-sigs/, clamscan's each key in
+          # AV_KEYS, writes av-scan/results/{run}.json = {key:{verdict,signature}}.
+          Command: ['scan']
+          Environment:
+            - Name: AWS_DEFAULT_REGION
+              Value: !Ref AWS::Region
+            - Name: S3_BUCKET
+              Value: !Ref DataBucketName
+            - Name: AV_SIG_PREFIX
+              Value: clamav-sigs/
+            - Name: NOTIFICATION_TOPIC_ARN
+              Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref AvScanLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: avscan
+
+  # freshclam signature-update job: refreshes the ClamAV virus DB to S3 so the
+  # scan task syncs current signatures (the DB updates daily). Scheduled daily.
+  AvSignatureUpdateTaskDef:
+    Condition: HasAvImage
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${EnvironmentName}-wwii-av-freshclam
+      Cpu: '512'
+      Memory: '2048'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      TaskRoleArn: !Ref ECSTaskRoleArn
+      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
+      ContainerDefinitions:
+        - Name: freshclam
+          Image: !Ref AvImageUri
+          StopTimeout: 60
+          # freshclam -> upload main.cvd/daily.cvd to s3://bucket/clamav-sigs/.
+          Command: ['freshclam']
+          Environment:
+            - Name: AWS_DEFAULT_REGION
+              Value: !Ref AWS::Region
+            - Name: S3_BUCKET
+              Value: !Ref DataBucketName
+            - Name: AV_SIG_PREFIX
+              Value: clamav-sigs/
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref AvScanLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: freshclam
+
+  AvFreshclamSchedule:
+    Condition: HasAvImage
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-av-freshclam
+      Description: Daily ClamAV signature refresh to S3
+      ScheduleExpression: rate(1 day)
+      State: ENABLED
+      Targets:
+        - Id: freshclam
+          Arn: !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${EnvironmentName}-wwii-pipeline
+          RoleArn: !Ref ECSTaskRoleArn
+          EcsParameters:
+            TaskDefinitionArn: !Ref AvSignatureUpdateTaskDef
+            TaskCount: 1
+            LaunchType: FARGATE
+            NetworkConfiguration:
+              AwsVpcConfiguration:
+                Subnets:
+                  - !Ref PrivateSubnet1Id
+                  - !Ref PrivateSubnet2Id
+                SecurityGroups:
+                  - !Ref LambdaSGId
+                AssignPublicIp: DISABLED
+
   Phase1TaskDef:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -428,6 +542,11 @@ Resources:
           PHASE1_TASK_DEF: !Ref Phase1TaskDef
           PHASE0_TASK_DEF: !Ref Phase0TaskDef
           PHASE0_VIDEO_TASK_DEF: !Sub ${EnvironmentName}-wwii-phase0-video
+          # AV scanning (binary-only, demand-launched). Opt-in; enable after the
+          # ClamAV image is deployed. Task def name is static so the trigger can
+          # reference it even when the HasAvImage-gated resource isn't created yet.
+          AV_SCAN_ENABLED: !If [HasAvImage, 'true', 'false']
+          AV_SCAN_TASK_DEF: !Sub ${EnvironmentName}-wwii-av-scan
           PHASE2_TASK_DEF: !Ref Phase2TaskDef
           PHASE3_TASK_DEF: !Ref Phase3TaskDef
           NAT_WAIT_SECONDS: !Ref NatWaitSeconds

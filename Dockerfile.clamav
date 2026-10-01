@@ -1,0 +1,28 @@
+# Separate ClamAV scanning container (operator decision): the virus engine +
+# signature tooling, isolated from the shared pipeline image. Rationale: it scans
+# UNTRUSTED, possibly-malicious bytes (keep that in a minimal least-privilege
+# container, away from the pipeline's Grok keys + data processing); ClamAV is a
+# system service with its own packages; and the virus signature DB is ~1GB and
+# updates daily (do not bloat/couple the pipeline image with it).
+#
+# Two commands (selected by the ECS task Command):
+#   scan      — demand-launched by the trigger over AV_KEYS; syncs signatures from
+#               s3://$S3_BUCKET/$AV_SIG_PREFIX, clamscan's each key, writes the
+#               verdict JSON to s3://$S3_BUCKET/$AV_RESULT_KEY.
+#   freshclam — scheduled job: refresh signatures and upload them to S3.
+#
+# See docs/current/dataquality/AV_SCANNING_DESIGN.md.
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get upgrade -y --no-install-recommends && \
+    apt-get install -y --no-install-recommends \
+        clamav clamav-daemon clamav-freshclam python3 python3-boto3 awscli && \
+    rm -rf /var/lib/apt/lists/* && \
+    useradd -r -s /bin/false -d /app clamav-run && \
+    mkdir -p /app /var/lib/clamav && chown -R clamav-run:clamav-run /app /var/lib/clamav
+
+WORKDIR /app
+COPY scripts/av_entrypoint.py /app/av_entrypoint.py
+
+ENV PYTHONUNBUFFERED=1
+ENTRYPOINT ["python3", "/app/av_entrypoint.py"]
