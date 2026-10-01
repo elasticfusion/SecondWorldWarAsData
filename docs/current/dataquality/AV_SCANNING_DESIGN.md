@@ -71,15 +71,25 @@ executable payload. These are **convert-track** additions (not yet built):
 AV remains the backstop for the *parse step itself* and for any Office file that
 fails/short-circuits conversion.
 
-## Where to scan
+## Where to scan — demand-launched, binary-only
 
-At the **front door, before `_split_by_media`** hands bytes to any track. One
-scan protects OCR / convert / video uniformly.
+AV runs **only when a binary is in the upload batch**, and the scanner is
+**demand-launched** (never a standing service — same pattern as OCR/convert/video,
+which launch per-upload). Text-only batches (`.txt`/`.md`/`.html`) **skip AV
+entirely** and never spin the container → zero AV cost for the common case.
 
 ```
-upload → _content_keys → [AV SCAN] → clean?  → _split_by_media → tracks
-                                   └ infected → QUARANTINE + alert (never processed)
+upload → _content_keys → _split_by_media
+   ├─ any binary key present (pdf/image/video/office)?
+   │     → demand-launch ClamAV scan task (Fargate) over the binary keys
+   │         ├─ clean    → proceed to OCR / convert / video
+   │         └─ infected → QUARANTINE + alert (never processed)
+   └─ text/md/html only → straight to parse (no AV)
 ```
+
+Gate: launch the scan iff `ocr_keys ∪ convert_keys ∪ video_keys` is non-empty.
+Scanning happens **before** those tracks' processors (fitz/ffmpeg/torch/pandoc)
+touch the bytes.
 
 ## Infected handling: QUARANTINE, not delete
 
@@ -113,18 +123,19 @@ our file sizes force a placement decision.
 | …same Lambda for 2.4 GB video | ⚠️ needs EFS mount or won't fit |
 | **ClamAV in a Fargate task** (reuse our ECS pattern) | ✅ any size, no `/tmp` ceiling; cost = a task launch per scan |
 
-## Recommendation
+## Recommendation (decided)
 
-Two viable architectures:
-- **(A) Hybrid:** ClamAV-on-Lambda for small files (fast door-side reject), Fargate
-  scan for video. Best latency/cost for the common case; more moving parts.
-- **(B) Uniform Fargate scan:** one ClamAV scan task for all uploads. Sidesteps the
-  size cliff, reuses the ECS/launch machinery we already run for every track;
-  simpler to operate; costs a task spin-up per upload.
+**Demand-launched, binary-only ClamAV scan on Fargate.** Settled per operator
+decision 2026-10-01:
+- Launch the scan task **only when the upload batch contains a binary** (never a
+  standing service; text/md/html skip AV) — matches the OCR/convert/video
+  demand-launch pattern.
+- **Fargate** (not Lambda) so any size scans uniformly — avoids the ~2.4 GB video
+  `/tmp`/memory cliff and reuses the ECS launch machinery we already run.
+- A hybrid (Lambda for small files, Fargate for video) remains a later latency/cost
+  optimization if needed, but adds moving parts; start uniform-Fargate.
+- Shared regardless: the `quarantine/` seam + the `freshclam` signature-update job.
 
-**Lean: (B)** for a first cut — uniform, no size cliff, matches existing pattern —
-then optimize to (A) if door-side reject latency/cost matters. Either way the
-quarantine seam + `freshclam` signature-update job are shared.
 
 ## Build checklist (when scheduled)
 
