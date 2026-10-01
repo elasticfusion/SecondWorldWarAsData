@@ -35,6 +35,11 @@ PHASE2_TASK_DEF = os.environ.get("PHASE2_TASK_DEF", f"{ENV_NAME}-wwii-phase2-ext
 PHASE3_TASK_DEF = os.environ.get("PHASE3_TASK_DEF", f"{ENV_NAME}-wwii-phase3-enrich")
 PHASE0_TASK_DEF = os.environ.get("PHASE0_TASK_DEF", f"{ENV_NAME}-wwii-phase0-convert")
 
+# AV scanning (demand-launched, binary-only). Gate is opt-in via AV_SCAN_ENABLED
+# so behavior is unchanged until an operator turns it on + deploys the engine.
+AV_SCAN_ENABLED = os.environ.get("AV_SCAN_ENABLED", "false").lower() == "true"
+AV_SCAN_TASK_DEF = os.environ.get("AV_SCAN_TASK_DEF", f"{ENV_NAME}-wwii-av-scan")
+
 CONTENT_TOPIC = f"{ENV_NAME}-wwii-content-uploaded"
 PARSED_TOPIC = f"{ENV_NAME}-wwii-chapter-parsed"
 DEDUP_COMPLETE_TOPIC = f"{ENV_NAME}-wwii-dedup-complete"
@@ -624,6 +629,14 @@ def handler(event, _context):
                 logger.info("No processable content in upload batch — nothing to do")
                 continue
             ocr_keys, convert_keys, video_keys, parse_keys = _split_by_media(content)
+            # AV gate (demand-launched, binary-only): scan pdf/image/video/office
+            # BEFORE any parser (fitz/ffmpeg/torch/pandoc) touches the bytes.
+            # Infected/unscannable -> quarantine + alert + freeze-submitter hook
+            # (fail-closed); only clean binaries proceed. Text/md skip AV entirely
+            # (never launches the scan container). See AV_SCANNING_DESIGN.md.
+            ocr_keys, convert_keys, video_keys = _av_gate(
+                ocr_keys, convert_keys, video_keys
+            )
             # Raw PDFs/images -> Chandra OCR (Phase 0). OCR output later
             # re-triggers the parse path via its own upload.
             if ocr_keys:
@@ -859,6 +872,100 @@ def _cancel_delayed_teardown():
         logger.info("Cancelled delayed teardown")
     except Exception:
         pass  # Schedule may not exist
+
+
+def _av_gate(ocr_keys, convert_keys, video_keys):
+    """Scan binary keys before any parser touches them; return the clean subsets.
+
+    Demand-launched + binary-only: all three track lists are binaries, so when AV
+    is enabled and any are present, launch the ClamAV scan task over them.
+    Infected/unscannable keys are quarantined + alerted + freeze-hooked inside the
+    gate (fail-closed); only clean keys are returned to proceed. When AV is
+    disabled, the lists pass through unchanged. Fail-safe: on any gate error we
+    fail closed by dropping the binaries from this batch (they stay in S3 for a
+    retry) rather than advancing unscanned bytes.
+    """
+    binaries = list(ocr_keys) + list(convert_keys) + list(video_keys)
+    if not AV_SCAN_ENABLED or not binaries:
+        return ocr_keys, convert_keys, video_keys
+    try:
+        from src.ingestion.av_scan import scan_and_gate
+
+        outcome = scan_and_gate(
+            s3,
+            BUCKET,
+            binaries,
+            EcsClamavScanner(),
+            region=os.getenv("AWS_DEFAULT_REGION", "us-east-1"),
+        )
+        clean = set(outcome.clean_keys)
+        if outcome.quarantined_keys:
+            logger.warning(
+                "AV gate quarantined %d of %d binaries",
+                len(outcome.quarantined_keys),
+                len(binaries),
+            )
+        return (
+            [k for k in ocr_keys if k in clean],
+            [k for k in convert_keys if k in clean],
+            [k for k in video_keys if k in clean],
+        )
+    except Exception as e:  # noqa: BLE001 - fail closed: do not advance unscanned
+        logger.error("AV gate failed (failing closed, binaries held): %s", e)
+        return [], [], []
+
+
+class EcsClamavScanner:
+    """Scanner that demand-launches the ClamAV Fargate task over the binary keys
+    and reads back the verdict JSON it writes to S3. Never raises — returns
+    Verdict.ERROR per key on any failure so the gate fails closed.
+
+    The task (cloudformation AvScanTaskDef) syncs ClamAV signatures from S3,
+    clamscan's each key, writes av-scan/results/{run}.json = {key: {verdict,
+    signature}}, and exits. Fargate handles any size (incl. 2.4 GB video) with no
+    Lambda /tmp cliff.
+    """
+
+    def scan(self, bucket: str, keys: list[str]):
+        from src.ingestion.av_scan import ScanResult, Verdict
+
+        run_id = f"{int(time.time())}-{abs(hash(tuple(keys))) % 100000}"
+        result_key = f"av-scan/results/{run_id}.json"
+        try:
+            _run_task(
+                AV_SCAN_TASK_DEF,
+                "av-scan",
+                extra_env=[
+                    {"name": "AV_KEYS", "value": json.dumps(keys)},
+                    {"name": "AV_RESULT_KEY", "value": result_key},
+                ],
+            )
+            verdicts = _poll_av_result(bucket, result_key)
+        except Exception as e:  # noqa: BLE001 - fail closed
+            logger.error("ClamAV scan launch/poll failed: %s", e)
+            return [ScanResult(k, Verdict.ERROR, detail=str(e)[:120]) for k in keys]
+        out = []
+        for k in keys:
+            v = verdicts.get(k, {})
+            verdict = {
+                "clean": Verdict.CLEAN,
+                "infected": Verdict.INFECTED,
+            }.get(str(v.get("verdict", "")), Verdict.ERROR)
+            out.append(ScanResult(k, verdict, signature=str(v.get("signature", ""))))
+        return out
+
+
+def _poll_av_result(
+    bucket: str, result_key: str, *, attempts: int = 40, delay: int = 15
+):
+    """Poll S3 for the ClamAV task's verdict JSON. Raises on timeout -> fail closed."""
+    for _ in range(attempts):
+        try:
+            obj = s3.get_object(Bucket=bucket, Key=result_key)
+            return json.loads(obj["Body"].read())
+        except Exception:  # noqa: BLE001 - not ready yet
+            time.sleep(delay)
+    raise TimeoutError(f"AV result {result_key} not ready after polling")
 
 
 def _submit_video(key: str) -> None:
