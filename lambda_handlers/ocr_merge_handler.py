@@ -25,6 +25,63 @@ REGION = os.getenv("AWS_REGION", "us-east-1")
 # missing S3_BUCKET fails loud rather than silently writing to a wrong bucket.
 BUCKET = os.environ.get("S3_BUCKET", "")
 CHANDRA_QUEUE_SUFFIX = "chandra"
+ENV_NAME = os.getenv("ENV_NAME", "dev")
+CLUSTER = os.getenv("ECS_CLUSTER", f"{ENV_NAME}-wwii-pipeline")
+PHASE0_INGEST_TASK_DEF = os.getenv(
+    "PHASE0_INGEST_TASK_DEF", f"{ENV_NAME}-wwii-phase0-ingest"
+)
+
+
+def _is_structured(s3, book: str) -> bool:
+    """True if the trigger tagged this book structured-reference (OOB track):
+    an ``ocr-output/{book}/.structured`` sidecar marker exists."""
+    try:
+        s3.head_object(Bucket=BUCKET, Key=f"ocr-output/{book}/.structured")
+        return True
+    except Exception:  # noqa: BLE001 - absent marker (404) = not structured
+        return False
+
+
+def _route_to_oob(s3, book: str, merged: str) -> str:
+    """Structured-reference routing: place the OCR markdown where the OOB parser
+    (phase0_ingest.discover_oob_markdown) consumes it (``{book}/ocr_output/*.md``)
+    and launch the phase0-ingest ECS task. Returns the OOB input key. Does NOT
+    promote to contentrepository/ (so it never enters narrative parse)."""
+    oob_key = f"contentrepository/{book}/ocr_output/{book}.md"
+    s3.put_object(Bucket=BUCKET, Key=oob_key, Body=merged.encode("utf-8"))
+    logger.info(
+        "STRUCTURED route: OCR markdown -> s3://%s/%s (OOB parser track)",
+        BUCKET,
+        oob_key,
+    )
+    try:
+        subnets = [x for x in os.getenv("PRIVATE_SUBNET_IDS", "").split(",") if x]
+        sg = os.getenv("SECURITY_GROUP_ID", "")
+        boto3.client("ecs", region_name=REGION).run_task(
+            cluster=CLUSTER,
+            taskDefinition=PHASE0_INGEST_TASK_DEF,
+            count=1,
+            launchType="FARGATE",
+            networkConfiguration={
+                "awsvpcConfiguration": {
+                    "subnets": subnets,
+                    "securityGroups": [sg] if sg else [],
+                    "assignPublicIp": "DISABLED",
+                }
+            },
+            overrides={
+                "containerOverrides": [
+                    {
+                        "name": "pipeline",
+                        "environment": [{"name": "BOOK_NAME", "value": book}],
+                    }
+                ]
+            },
+        )
+        logger.info("Launched phase0-ingest (OOB parser) for %s", book)
+    except Exception as e:  # noqa: BLE001 - surface, don't crash the merge
+        logger.error("Failed to launch phase0-ingest for %s: %s", book, e)
+    return oob_key
 
 
 def _s3():
@@ -124,6 +181,12 @@ def merge_ocr_output(book: str) -> str:
         return ""
     # Write the meta FIRST, then content — the content-upload S3 event triggers the
     # parse path, and phase1's discovery needs the meta already present.
+    # STRUCTURED-REFERENCE fork: if the trigger tagged this doc structured (ETO
+    # OOB etc.), its OCR markdown goes to the deterministic OOB parser track, NOT
+    # narrative parse. Write it to the ocr_output/ layout phase0_ingest consumes
+    # and launch the phase0-ingest task instead of promoting to contentrepository/.
+    if _is_structured(s3, book):
+        return _route_to_oob(s3, book, merged)
     meta_key = f"contentrepository/{book}/chapter1/chapter1-meta.yaml"
     meta = (
         f'series: "TODO - Add series name"\n'

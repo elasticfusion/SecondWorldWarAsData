@@ -145,6 +145,7 @@ def test_merge_promotes_good_ocr(monkeypatch):
     ]
     good = b"# Chapter\n\n" + b"Real OCR text content that is clearly usable. " * 5
     s3.get_object.return_value = {"Body": MagicMock(read=lambda: good)}
+    s3.head_object.side_effect = Exception("404")  # no .structured marker (narrative)
     with (
         patch.object(mh, "_s3", return_value=s3),
         patch("src.ingestion.review_reject.reject_to_review") as rej,

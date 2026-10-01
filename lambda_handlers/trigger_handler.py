@@ -371,6 +371,28 @@ def _ocr_media_mismatch(pdf_key: str, book: str) -> bool:
         return False
 
 
+def _is_structured_reference(key: str) -> bool:
+    """Declarative structured-reference signal (narrative vs structured tracks,
+    per project steering). True when the upload is under a reserved ``_oob/`` path
+    segment OR its stem is in the configured structured-reference list. Structured
+    docs (e.g. ETO Order of Battle) route to the deterministic OOB parser track
+    after OCR, not narrative LLM extraction."""
+    low = key.lower()
+    if "/_oob/" in low or low.startswith("_oob/") or "/oob/" in low:
+        return True
+    try:
+        from src.utils.config import load_config
+
+        stems = [
+            s.lower()
+            for s in load_config().get("ingestion", {}).get("structured_stems", [])
+        ]
+        stem = key.rsplit("/", 1)[-1].rsplit(".", 1)[0].lower()
+        return stem in stems
+    except Exception:  # noqa: BLE001 - config optional
+        return False
+
+
 def _submit_ocr(pdf_key: str) -> bool:
     """Submit Chandra GPU OCR for a raw PDF/image (Option B: -> Phase 0), with
     best-guess page-range chunking so a SPOT reclaim loses one chunk, not the whole
@@ -425,6 +447,25 @@ def _submit_ocr(pdf_key: str) -> bool:
                 }
             )
         s3_input = f"s3://{BUCKET}/{pdf_key}"
+        # Declarative structured-reference signal: a doc uploaded under the
+        # reserved _oob/ path is a structured/tabular reference (e.g. the ETO
+        # Order of Battle), NOT narrative prose. It still needs Chandra OCR (the
+        # tables are scanned), but its OCR markdown must go to the deterministic
+        # OOB parser track, not narrative LLM extraction. Drop a sidecar marker
+        # the merge handler checks (survives the OCR->merge EventBridge hop
+        # reliably, unlike the original upload's S3 tags).
+        if _is_structured_reference(pdf_key):
+            try:
+                boto3.client("s3").put_object(
+                    Bucket=BUCKET,
+                    Key=f"ocr-output/{pdf_name}/.structured",
+                    Body=b"oob",
+                )
+                logger.info("Tagged %s as structured-reference (OOB track)", pdf_name)
+            except Exception as e:  # noqa: BLE001 - marker is best-effort
+                logger.warning(
+                    "Could not write .structured marker for %s: %s", pdf_name, e
+                )
         chunks = _ocr_chunks(pdf_key)
         try:
             batch = _batch_client()

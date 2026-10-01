@@ -183,6 +183,45 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: phase0
 
+  Phase0IngestTaskDef:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${EnvironmentName}-wwii-phase0-ingest
+      Cpu: '1024'
+      Memory: '2048'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      TaskRoleArn: !Ref ECSTaskRoleArn
+      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
+      ContainerDefinitions:
+        - Name: pipeline
+          Image: !Ref PipelineImageUri
+          StopTimeout: 30
+          # Structured-reference (OOB) parser track: parses Chandra OCR markdown
+          # of tabular reference docs (ETO Order of Battle) into structured rows,
+          # NOT narrative LLM extraction. Launched by ocr_merge_handler when a doc
+          # is tagged structured.
+          Command: ['phase0_ingest.py']
+          Environment:
+            - Name: AWS_DEFAULT_REGION
+              Value: !Ref AWS::Region
+            - Name: S3_BUCKET
+              Value: !Ref DataBucketName
+            - Name: CACHE_TABLE
+              Value: !Ref CacheTableName
+            - Name: MULTI_DOC_ENABLED
+              Value: !Ref MultiDocEnabled
+            - Name: SECRETS_ID
+              Value: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
+            - Name: NOTIFICATION_TOPIC_ARN
+              Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref PipelineLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: phase0ingest
+
   Phase0VideoTaskDef:
     Condition: HasVideoImage
     Type: AWS::ECS::TaskDefinition
@@ -574,6 +613,7 @@ Resources:
           S3_BUCKET: !Ref DataBucketName
           CACHE_TABLE: !Ref CacheTableName
           ECS_CLUSTER: !Sub ${EnvironmentName}-wwii-pipeline
+          PHASE0_INGEST_TASK_DEF: !Sub ${EnvironmentName}-wwii-phase0-ingest
           PRIVATE_SUBNET_IDS: !Sub "${PrivateSubnet1Id},${PrivateSubnet2Id}"
           SECURITY_GROUP_ID: !Ref LambdaSGId
           SECRETS_ID: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key

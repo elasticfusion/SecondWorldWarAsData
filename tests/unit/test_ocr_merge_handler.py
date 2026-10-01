@@ -78,6 +78,7 @@ def test_merge_whole_pdf_layout():
             read=lambda: b"# B460 page 1\n\nReal OCR markdown body with enough usable text to pass the near-empty gate."
         )
     }
+    s3.head_object.side_effect = Exception("404")  # no .structured marker (narrative)
     with patch.object(om, "_s3", return_value=s3):
         out = om.merge_ocr_output("B460")
     assert out == "contentrepository/B460/chapter1/chapter1-content.md"
@@ -121,6 +122,7 @@ def test_merge_chunked_layout_sorts_pages():
     s3.get_object.side_effect = lambda Bucket, Key: {
         "Body": MagicMock(read=lambda k=Key: bodies[k])
     }
+    s3.head_object.side_effect = Exception("404")  # no .structured marker (narrative)
     with patch.object(om, "_s3", return_value=s3):
         om.merge_ocr_output("Big")
     merged = s3.put_object.call_args.kwargs["Body"].decode()
