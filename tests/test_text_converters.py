@@ -118,3 +118,24 @@ def test_missing_file_raises(tmp_path: Path) -> None:
     else:
         with pytest.raises(ConverterError):
             docx_to_markdown(tmp_path / "nope.docx")
+
+
+def test_pandoc_invoked_with_sandbox(tmp_path: Path, monkeypatch) -> None:
+    """Security: pandoc must run with --sandbox so a crafted input document
+    cannot read local files / make network requests during conversion."""
+    from unittest.mock import MagicMock
+
+    import src.ingestion.text_converters as tc
+
+    src = tmp_path / "x.docx"
+    src.write_bytes(b"stub")  # content irrelevant; subprocess is mocked
+    monkeypatch.setattr(tc, "pandoc_available", lambda: True)
+    fake = MagicMock(returncode=0, stdout="# ok\n", stderr="")
+    run = MagicMock(return_value=fake)
+    monkeypatch.setattr(tc.subprocess, "run", run)
+
+    tc.docx_to_markdown(src)
+
+    cmd = run.call_args.args[0]
+    assert cmd[0] == "pandoc"
+    assert "--sandbox" in cmd

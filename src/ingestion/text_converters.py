@@ -95,6 +95,11 @@ def _run_pandoc(path: Path, from_format: str) -> str:
 
     cmd = [
         "pandoc",
+        # --sandbox: run the reader in pandoc's sandbox so a crafted/attacker-
+        # controlled input document cannot read local files or make network
+        # requests during conversion (mitigates the pandoc SSRF/local-file-read
+        # CVE class). Does not affect markdown output for normal docs.
+        "--sandbox",
         "--from",
         from_format,
         "--to",
