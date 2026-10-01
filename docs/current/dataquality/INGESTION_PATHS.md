@@ -130,14 +130,27 @@ than silently dropping or feeding garbage downstream. No silent failures.
   text-first path exists (`pdf_pipeline`, orphaned) and is validated to route an
   image-only/JPG-in-PDF correctly to Chandra; wiring it is an **efficiency option**,
   not required. Decision deferred (low payoff for a scanned corpus).
-- **Photos / maps / diagrams → vision (UNBUILT).** A standalone photo `.jpg`, an
-  image embedded in a born-digital PDF, or an image embedded in Chandra markdown
-  (`![...]`) are all text-less. Today they land in OCR and fail to
-  `ocr-empty`/`ocr-near-empty` (correctly surfaced, not lost). The intended
-  destination is a **Grok-vision captioner** that identifies the image using its
-  linked surrounding context (sub-event summary / place / date that
-  `src/extraction/images.py` already assembles). This is the designed-but-unbuilt
-  VISION branch (`MAP_IMAGE_AV_INGESTION.md`); the reject-to-review queue is its
-  current feeder. Distinct from the video track's speaker-id vision.
-- **Standalone bad markdown** on the TEXT track has no dedicated reject-to-review
-  (parse error only) — a minor remaining gap.
+- **Photos / maps / diagrams → vision captioner (BUILT, opt-in).** Images from any
+  source (standalone, embedded-in-PDF, Chandra `![...]`) land as `parsed['images']`.
+  `src/extraction/image_captioner.ImageCaptioner` identifies (not OCRs) them via
+  Grok vision using the surrounding context `images.py` links; populates
+  `description` + classification + confidence; low-confidence/empty → `needs_review`;
+  never fabricates. Config-gated `images.vision_caption` (default off). Distinct
+  from the video track's speaker-id vision.
+- **Standalone bad markdown → reject-to-review (BUILT).** A direct `.md/.txt/.html`
+  upload with no usable content off-ramps to `needs-review/bad-markdown/` instead
+  of a doomed parse (trigger `_validate_parse_keys`).
+- **Structured-reference (OOB) routing (BUILT).** A doc under the reserved `_oob/`
+  path (or a configured `ingestion.structured_stems`) is tagged structured at OCR
+  intake (`.structured` marker); after Chandra OCR, `ocr_merge_handler` routes its
+  markdown to the deterministic `phase0_ingest` OOB parser (`Phase0IngestTaskDef`),
+  NOT narrative LLM extraction. Entity convergence OOB→people at dedup is the
+  documented pending bridge.
+- **Non-English documents → translation (PARTIAL — real gap).** Translation
+  (`src/ingestion/translation.py`, approved design `LANGUAGE_TRANSLATION.md`:
+  per-page detect → Grok translate → English markdown at Phase 0) is wired ONLY
+  into the OOB track (`phase0_ingest`, gated `PHASE0_TRANSLATE`). The **OCR-narrative,
+  CONVERT, and VIDEO tracks do NOT translate** — a non-English source (e.g. a German
+  KTB scan, a German-language video) flows in its original language into the
+  English-centric Phase 2 extractor. Wiring translation into each track's
+  Phase-0 markdown-produced seam is the next correctness item.
