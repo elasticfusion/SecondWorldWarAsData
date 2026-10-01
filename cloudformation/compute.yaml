@@ -239,6 +239,8 @@ Resources:
               Value: !Ref AWS::Region
             - Name: S3_BUCKET
               Value: !Ref DataBucketName
+            - Name: MULTI_DOC_ENABLED
+              Value: !Ref MultiDocEnabled
             - Name: NOTIFICATION_TOPIC_ARN
               Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
           LogConfiguration:
@@ -285,6 +287,8 @@ Resources:
               Value: !Ref TeardownDelayMinutes
             - Name: NAT_WAIT_SECONDS
               Value: !Ref NatWaitSeconds
+            - Name: MULTI_DOC_ENABLED
+              Value: !Ref MultiDocEnabled
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -313,6 +317,8 @@ Resources:
               Value: !Ref DataBucketName
             - Name: CACHE_TABLE
               Value: !Ref CacheTableName
+            - Name: MULTI_DOC_ENABLED
+              Value: !Ref MultiDocEnabled
             - Name: SECRETS_ID
               Value: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
             - Name: NOTIFICATION_TOPIC_ARN
