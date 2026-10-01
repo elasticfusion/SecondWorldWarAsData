@@ -235,19 +235,20 @@ Still open separately: the maps/images/film **vision branch** (design only, see
 
 ### Pipeline Efficiency
 
-#### Pipeline notifications don't render in Slack (only email + alarms do)
-Phase-complete / phase-FAILURE notifications (`_notify_complete` /
-`_notify_failure` → `dev-wwii-phase2-complete`) publish **free-form SNS text**,
-which AWS Chatbot / Amazon Q **silently drops** ("Event received is not
-supported") — only CloudWatch **alarms** and supported structured events render
-in Slack. Confirmed twice: the St. Vith Phase 2 **failure** emailed but never
-reached `#wwii-pipeline-alerts`. Fix options: (a) route pipeline failures/
-completions through a **CloudWatch alarm** (metric filter on the failure log or a
-custom metric) so Slack renders them; or (b) a small **formatter Lambda**
-subscribed to the topic that reposts as a Chatbot custom-notification schema; or
-(c) SNS→Lambda→Slack webhook. Email delivery works today, so this is
-observability, not correctness.
-*Source: St. Vith Phase 2 failure 2026-09-27 (emailed, not Slacked)*
+#### Slack notifications — formatter built, needs refinement
+**Mechanism DONE (verified 2026-10-01):** `lambda_handlers/slack_formatter.py`
+subscribes to the phase2-complete topic and wraps free-form text in Chatbot's
+custom-notification schema (emoji triage, phase-aware "View logs" deep link,
+financial amount/Cost-Explorer links), republishing to the Slack topic
+(`cloudformation/events.yaml` `SlackFormatterSubscription`). This closed the
+original "free-form text silently dropped by Chatbot" gap.
+**OPEN — refinement (per owner 2026-10-01):** the formatting/UX needs another
+pass. Specifics TBD — candidate areas: clearer success-vs-failure-vs-review
+distinction (a dedup-gate `needs-review` block currently reads like a failure —
+see the "pipeline failure email" false-alarm), richer actionable links/structure,
+noise reduction, and live-render verification against a deployed stack. Scope the
+exact refinements with the owner before implementing.
+*Source: St. Vith 2026-09-27; mechanism verified + refinement flagged 2026-10-01*
 
 #### ECS task role missing `SNS:ListSubscriptionsByTopic` (notification preflight always warns)
 The new `_preflight_notification_subscriptions` (non-blocking) hits
@@ -269,17 +270,18 @@ which reads like a total failure when the batch actually submitted fine
 (and the zero-count warning) don't false-alarm. Observability, not correctness.
 *Source: St. Vith verification run 2026-09-27 — batch_bb0c1ba0 succeeded 70/70 while log said "140 failed"*
 
-#### Confirm batch-poller sees ECS-submitted batch jobs (poller visibility)
-The `dev-wwii-batch-poller` Lambda logged **"No pending batch jobs"** on every
-5-min poll while `batch_bb0c1ba0` was submitted and completed (70/70) by the
-running phase2 task. Likely fine for this run (the task handles submit→retrieve
-in-process for the interactive path), but the **detached/async path** the
-concurrency build relies on assumes the Lambda poller picks up ECS-submitted
-batches. **Confirm the batch-job record key/table the task writes matches what
-the poller scans** (`metrics#batch_...` was present; the poller may key on a
-different `batch_job#`/pending marker). Must be resolved *before* the Step
-Functions Map dispatcher depends on poller-driven retrieval.
-*Source: St. Vith verification run 2026-09-27 — poller "No pending" vs live batch*
+#### ~~Confirm batch-poller sees ECS-submitted batch jobs (poller visibility)~~ ✅ Done + verified (keys match, tested)
+Resolved: the ECS task writes `batch_job#{batch_id}` (status=pending) via
+`src/utils/job_queue.enqueue_job` to `CACHE_TABLE`, and
+`lambda_handlers/batch_poller._get_pending_jobs` scans the SAME table on
+`begins_with(cache_key, "batch_job#")` with status pending/ready. The
+`metrics#{batch_id}` record (`grok_client.py`) the TODO flagged is a SEPARATE
+metrics record, not what the poller keys on. `ecs_entrypoint` enforces routing
+through submit-only (anti-orphan guard: alerts if the enqueue/read-back is
+absent). Tested: `tests/unit/test_batch_poller.py` seeds `batch_job#{id}` and
+asserts the poller finds→marks ready→triggers retrieve (19 passing w/
+test_job_queue); `tests/test_batch_routing_guard.py` guards the submit-only path.
+*Source: St. Vith 2026-09-27; verified 2026-10-01*
 
 #### Delete stale legacy `chunk-NNN` OCR dirs superseded by re-OCR
 Re-OCR runs (off-by-one fix) write new page-range chunk dirs
@@ -304,11 +306,19 @@ per-page mapping. Add a lightweight post-merge check that reports
 blank-page eyeball.
 *Source: stvith_boyer_full re-OCR 2026-09-26*
 
-#### Batch ALL entity types, not just events
-Currently only events go to Batch API (50% savings). People, places, groups, dates, and optional entities still use live calls. Design: submit-only collects ALL requests into batch, retrieve-only re-runs with full cache. Saves ~60% of API costs.
-*Source: Ardennes debugging 2026-06-13*
+#### ~~Batch ALL entity types, not just events~~ ✅ Done + verified
+All core extractors route Grok calls through `grok_client.extract_json` →
+`chat_completion`, which in batch_mode collects into the batch collector and
+raises `BatchModeCollecting` — so dates/places/people/groups
+(`src/extraction/batch_parallel._batch_extract`) AND events
+(`src/extraction/events.extract_events`) all batch, and `phase2_extract.main`
+runs a second batch cycle for the optional extractors
+(weather/equipment/logistics/casualties/supplemental). Empirically confirmed
+2026-10-01: invoking `extract_dates_batch_async` + `extract_people_batch_async`
+with `batch_mode=True` made NO live call and collected 2 requests
+(cache_types ['dates','people']). The TODO premise (only events batch) is stale.
+*Source: Ardennes 2026-06-13; verified 2026-10-01*
 
-#### Bibliography resolver processes duplicate citations redundantly
 #### ~~Bibliography resolver processes duplicate citations redundantly~~ ✅ Fixed 2026-09-27
 Same citation referenced by multiple sub-events is processed N times (NARA identify + search). Cache prevents duplicate API calls but generates log noise (4x identical log lines). Fix: deduplicate by citation text before resolution loop.
 **Done:** `resolve_bibliography_dir` now dedups by citation key (verbatim, else
@@ -379,8 +389,11 @@ Strategy pattern or shared base would cut ~40% code.
 #### Refactor phase3_enrich_data.py:main (D(23) complexity)
 *Source: QA radon 2026-06-13*
 
-#### Fix `.gitignore` trailing newline + run `black` on 6 scripts
-*Source: Code review 2026-06-13*
+#### Fix `.gitignore` trailing newline (black already clean)
+`black --check` passes repo-wide (427 files, verified 2026-10-01) — the "6
+scripts" half is DONE. Remaining: `.gitignore` has no terminating newline on its
+last line (`tmp/`); add one.
+*Source: Code review 2026-06-13; black-half verified done 2026-10-01*
 
 #### Reduce image memory usage in equipment.py
 *Source: CODE_REVIEW.md*
