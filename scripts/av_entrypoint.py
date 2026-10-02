@@ -113,13 +113,20 @@ def _scan() -> None:
 
 def _freshclam() -> None:
     s3, bucket = _s3(), _bucket()
-    subprocess.run(["freshclam", "--datadir", SIG_DIR], check=False, timeout=1800)
+    proc = subprocess.run(
+        ["freshclam", "--datadir", SIG_DIR], check=False, timeout=1800
+    )
+    if proc.returncode != 0:
+        # Do NOT silently succeed — a failed refresh means stale/no signatures.
+        raise SystemExit(f"freshclam failed (rc={proc.returncode}); not uploading")
     uploaded = 0
     for name in os.listdir(SIG_DIR):
         if name.endswith((".cvd", ".cld")):
             s3.upload_file(os.path.join(SIG_DIR, name), bucket, f"{SIG_PREFIX}{name}")
             uploaded += 1
     print(f"Uploaded {uploaded} signature files to s3://{bucket}/{SIG_PREFIX}")
+    if uploaded == 0:
+        raise SystemExit("freshclam produced no .cvd/.cld signature files")
 
 
 def main() -> int:
