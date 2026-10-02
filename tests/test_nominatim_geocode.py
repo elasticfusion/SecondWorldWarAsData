@@ -34,16 +34,19 @@ def test_to_result_no_match() -> None:
     assert r.found is False
 
 
-def test_to_result_out_of_theater_noted() -> None:
+def test_to_result_non_european_not_flagged() -> None:
+    # The corpus spans ETO now but will add North Africa, the Pacific, and Naval
+    # data — a non-European country must NOT be flagged "outside theater".
     raw = {
-        "lat": "40.7",
-        "lon": "-74.0",
+        "lat": "35.6",
+        "lon": "139.7",
         "importance": 0.8,
-        "address": {"country": "United States"},
+        "address": {"country": "Japan"},
     }
     r = _to_result(raw)
     assert r.found is True
-    assert "outside primary theater" in r.note
+    assert r.country == "Japan"
+    assert r.note is None  # no outside-theater flag anymore
 
 
 class _FakeResp:
@@ -85,6 +88,94 @@ def test_nominatim_geocoder_caches(tmp_path: Path) -> None:
     r2 = geocode("Aachen", {}, None)  # served from cache
     assert r1.latitude == 50.78 and r2.latitude == 50.78
     assert session.calls == 1  # second call hit the cache, not the network
+
+
+class _QueryAwareSession:
+    """Returns a hit only for specific query strings; records params seen."""
+
+    def __init__(self, hits):
+        self._hits = hits  # {query_lower: result_dict}
+        self.params_seen = []
+
+    def get(self, url, params=None, headers=None, timeout=None):
+        assert headers and "User-Agent" in headers
+        self.params_seen.append(params or {})
+        q = (params or {}).get("q", "").lower()
+        return _FakeResp([self._hits[q]] if q in self._hits else [])
+
+
+def test_country_normalized_from_multilingual(tmp_path: Path) -> None:
+    session = _FakeSession(
+        [
+            {
+                "lat": "50.43",
+                "lon": "6.30",
+                "importance": 0.6,
+                "address": {"country": "België / Belgique / Belgien"},
+            }
+        ]
+    )
+    geocode = make_nominatim_geocoder(tmp_path / "c", session=session)
+    r = geocode("Rocherath", {"country": "Belgium"}, None)
+    assert r.found and r.country == "België"  # first component, not the slash-string
+
+
+def test_country_code_scoping_applied(tmp_path: Path) -> None:
+    session = _QueryAwareSession(
+        {
+            "clervaux": {
+                "lat": "50.05",
+                "lon": "6.03",
+                "importance": 0.6,
+                "address": {"country": "Luxembourg"},
+            }
+        }
+    )
+    geocode = make_nominatim_geocoder(tmp_path / "c", session=session)
+    geocode("Clervaux", {"country": "Luxembourg"}, None)
+    assert session.params_seen[0].get("countrycodes") == "lu"
+    assert session.params_seen[0].get("accept-language") == "en"
+
+
+def test_country_code_scoping_skipped_when_unknown(tmp_path: Path) -> None:
+    # Naval / unknown-country place -> no countrycodes (unscoped), still works.
+    session = _QueryAwareSession(
+        {
+            "wake island": {
+                "lat": "19.3",
+                "lon": "166.6",
+                "importance": 0.6,
+                "address": {"country": "United States"},
+            }
+        }
+    )
+    geocode = make_nominatim_geocoder(tmp_path / "c", session=session)
+    r = geocode("Wake Island", {}, None)
+    assert r.found
+    assert "countrycodes" not in session.params_seen[0]
+
+
+def test_alias_translation_fallback(tmp_path: Path) -> None:
+    # Primary (as written in the source doc) misses; a translated/historical
+    # variant resolves. OSM only knows "Aachen"; the doc said "Aix-la-Chapelle".
+    session = _QueryAwareSession(
+        {
+            "aachen": {
+                "lat": "50.78",
+                "lon": "6.08",
+                "importance": 0.7,
+                "address": {"country": "Germany"},
+            }
+        }
+    )
+    geocode = make_nominatim_geocoder(tmp_path / "c", session=session)
+    place = {
+        "country": "Germany",
+        "historical_names": [{"name": "Aachen", "language": "German"}],
+    }
+    r = geocode("Aix-la-Chapelle", place, None)
+    assert r.found and r.latitude == 50.78
+    assert "variant 'Aachen'" in (r.note or "")
 
 
 def test_cascade_prefers_first_confident() -> None:
