@@ -11,6 +11,7 @@ Requires OpenSERP service running (ECS Fargate or localhost:7001).
 
 import json
 import logging
+import threading
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -25,6 +26,47 @@ logger = logging.getLogger(__name__)
 _CIRCUIT_BREAKER_THRESHOLD = 5
 _consecutive_failures = 0
 _circuit_open = False
+# H3: the breaker globals are mutated from the enrichment thread pool and persist
+# across books in one process. Guard them with a lock and reset per run so an
+# opened breaker from one book doesn't poison the next.
+_circuit_lock = threading.Lock()
+
+
+def reset_circuit() -> None:
+    """Reset the OpenSERP circuit breaker (call at the start of an enrichment run
+    so breaker state never leaks across books/runs in a long-lived process)."""
+    global _consecutive_failures, _circuit_open
+    with _circuit_lock:
+        _consecutive_failures = 0
+        _circuit_open = False
+
+
+def _breaker_is_open() -> bool:
+    with _circuit_lock:
+        return _circuit_open
+
+
+def _breaker_record_failure() -> bool:
+    """Count a failure; open the breaker at threshold. Returns True if now open."""
+    global _consecutive_failures, _circuit_open
+    with _circuit_lock:
+        _consecutive_failures += 1
+        if _consecutive_failures >= _CIRCUIT_BREAKER_THRESHOLD:
+            if not _circuit_open:
+                logger.warning(
+                    "OpenSERP circuit breaker OPEN — %d consecutive empty/failed "
+                    "responses, skipping remaining searches",
+                    _consecutive_failures,
+                )
+            _circuit_open = True
+        return _circuit_open
+
+
+def _breaker_record_success() -> None:
+    global _consecutive_failures
+    with _circuit_lock:
+        _consecutive_failures = 0
+
 
 logger = logging.getLogger(__name__)
 
@@ -49,9 +91,7 @@ def _openserp_reachable(openserp_url: str) -> bool:
 
 def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict]:
     """Run an OpenSERP search. Returns list of {url, title, description}."""
-    global _consecutive_failures, _circuit_open
-
-    if _circuit_open:
+    if _breaker_is_open():
         logger.info("OpenSERP circuit breaker SKIP: %s", query[:60])
         return []
 
@@ -75,27 +115,15 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
         if resp.status_code == 200:
             data = resp.json()
             if not data:
-                _consecutive_failures += 1
-                if _consecutive_failures >= _CIRCUIT_BREAKER_THRESHOLD:
-                    _circuit_open = True
-                    logger.warning(
-                        "OpenSERP circuit breaker OPEN — %d consecutive empty responses, skipping remaining searches",
-                        _consecutive_failures,
-                    )
+                _breaker_record_failure()
                 return []
             # Handle both flat list and {"results": [...]} formats
             results = data if isinstance(data, list) else data.get("results", [])
             if results:
-                _consecutive_failures = 0  # Reset on success
+                _breaker_record_success()
             else:
-                _consecutive_failures += 1
-                if _consecutive_failures >= _CIRCUIT_BREAKER_THRESHOLD:
-                    _circuit_open = True
-                    logger.warning(
-                        "OpenSERP circuit breaker OPEN — %d consecutive empty results, skipping remaining searches",
-                        _consecutive_failures,
-                    )
-                    return []
+                _breaker_record_failure()
+                return []
             logger.info("OpenSERP [%s]: %d results", query[:60], len(results))
             return [
                 {
@@ -107,17 +135,10 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
                 if r
             ]
         logger.warning("OpenSERP [%s]: HTTP %d", query[:60], resp.status_code)
-        _consecutive_failures += 1
+        _breaker_record_failure()
     except Exception as e:
         logger.warning("OpenSERP [%s]: %s", query[:60], e)
-        _consecutive_failures += 1
-
-    if _consecutive_failures >= _CIRCUIT_BREAKER_THRESHOLD and not _circuit_open:
-        _circuit_open = True
-        logger.warning(
-            "OpenSERP circuit breaker OPEN — %d consecutive failures",
-            _consecutive_failures,
-        )
+        _breaker_record_failure()
     return []
 
 
@@ -503,6 +524,7 @@ def enrich_people_with_openserp(
     2. Verify candidates with Grok (cached — repeat runs are free)
     3. Write verified results to files
     """
+    reset_circuit()  # H3: don't inherit breaker state from a prior book/run
     if not _openserp_reachable(openserp_url):
         logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
         return 0
@@ -592,6 +614,7 @@ def enrich_equipment_with_openserp(
     max_items: Optional[int] = None,
 ) -> int:
     """Add images to equipment files. Returns count enriched."""
+    reset_circuit()  # H3: don't inherit breaker state from a prior book/run
     if not _openserp_reachable(openserp_url):
         logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
         return 0

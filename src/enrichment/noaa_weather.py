@@ -9,6 +9,7 @@ API limits: 5 requests/second, 10,000 requests/day.
 import json
 import logging
 import time
+import threading
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -31,17 +32,22 @@ DATATYPE_MAP = {
 
 _last_request_time = 0.0
 _request_count = 0
+# H3: guard the rate-limiter state so it is correct if NOAA enrichment ever runs
+# under the enrichment thread pool / multi-doc (check-then-sleep-then-update must
+# be atomic or concurrent callers under-throttle).
+_rate_lock = threading.Lock()
 
 
 def _rate_limit():
     """Enforce 5 requests/second limit."""
     global _last_request_time, _request_count
-    now = time.time()
-    elapsed = now - _last_request_time
-    if elapsed < 0.2:  # 5 req/sec = 200ms between requests
-        time.sleep(0.2 - elapsed)
-    _last_request_time = time.time()
-    _request_count += 1
+    with _rate_lock:
+        now = time.time()
+        elapsed = now - _last_request_time
+        if elapsed < 0.2:  # 5 req/sec = 200ms between requests
+            time.sleep(0.2 - elapsed)
+        _last_request_time = time.time()
+        _request_count += 1
 
 
 def _get(endpoint: str, token: str, params: Dict) -> Optional[Dict]:

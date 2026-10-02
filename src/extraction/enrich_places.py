@@ -278,7 +278,10 @@ def _needs_enrichment(data):
 
 
 def _try_grok(name, grok_client):
-    """Try Grok enrichment. Returns dict or None."""
+    """Try Grok enrichment. Returns a dict, or None for a clean no-result.
+
+    Raises on a TRANSIENT error (so the caller does not cache it as a durable
+    'not_found'); BatchModeCollecting propagates separately as usual."""
     try:
         return grok_client.extract_json(
             prompt=PROMPT.format(name=name),
@@ -288,8 +291,8 @@ def _try_grok(name, grok_client):
     except BatchModeCollecting:
         raise
     except Exception as exc:
-        logger.debug("Grok failed for %s: %s", name, exc)
-        return None
+        logger.warning("Grok place-enrichment errored for %s: %s", name, exc)
+        raise  # M3: transient error must NOT be recorded as a clean not_found
 
 
 def enrich_place(place_file: Path, grok_client: GrokClient) -> bool:
@@ -312,11 +315,21 @@ def enrich_place(place_file: Path, grok_client: GrokClient) -> bool:
 
     logger.info("Enriching place: %s", name)
     try:
-        changed = _enrich_place_data(data, name, grok_client)
+        changed, errored = _enrich_place_data(data, name, grok_client)
     except BatchModeCollecting:
         return False
-    data["enrichment_status"] = "enriched" if changed else "not_found"
-    data["last_enrichment_search"] = _today()
+    if changed:
+        data["enrichment_status"] = "enriched"
+        data["last_enrichment_search"] = _today()
+    elif errored:
+        # M3: a transient source error is NOT a clean negative — do NOT stamp
+        # not_found/last_enrichment_search (that would suppress retries for the
+        # whole re-search window). Leave the entity unstamped so it retries.
+        logger.warning("Place '%s' enrichment errored — leaving for retry", name)
+        return False
+    else:
+        data["enrichment_status"] = "not_found"
+        data["last_enrichment_search"] = _today()
     write_json_with_lock(place_file, data)
     if changed:
         logger.info("  ✓ Enriched %s", name)
@@ -324,8 +337,19 @@ def enrich_place(place_file: Path, grok_client: GrokClient) -> bool:
 
 
 def _enrich_place_data(data, name, grok_client):
-    """Try Grok then Wikipedia then Grokipedia to enrich place. Returns True if changed."""
-    enrichment = _try_grok(name, grok_client)
+    """Try Grok then Wikipedia then Grokipedia to enrich place.
+
+    Returns ``(changed, errored)``: ``errored`` is True if a source raised a
+    transient error (so the caller must NOT stamp a durable ``not_found`` — the
+    entity should be retried next run)."""
+    errored = False
+    try:
+        enrichment = _try_grok(name, grok_client)
+    except BatchModeCollecting:
+        raise
+    except Exception:  # noqa: BLE001 - transient; already logged in _try_grok
+        enrichment = None
+        errored = True
     changed = _apply_enrichment(data, enrichment) if enrichment else False
     if _needs_enrichment(data):
         wiki = _search_wikipedia(name)
@@ -353,7 +377,7 @@ def _enrich_place_data(data, name, grok_client):
         if grok_data:
             data["grokipedia_url"] = grok_data
             changed = True
-    return changed
+    return changed, errored
 
 
 def enrich_all_places(

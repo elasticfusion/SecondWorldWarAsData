@@ -153,10 +153,10 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
     except BatchModeCollecting:
         return False
     except Exception as e:
-        logger.warning("Failed to enrich %s: %s", name, e)
-        data["enrichment_status"] = "not_found"
-        data["last_enrichment_search"] = _today()
-        write_json_with_lock(group_file, data)
+        # M3: a transient error is NOT a clean negative — do NOT stamp not_found
+        # (that suppresses retries for the whole re-search window). Leave the
+        # entity unstamped so the next run retries it.
+        logger.warning("Group '%s' enrichment errored — leaving for retry: %s", name, e)
         return False
 
     if not isinstance(enrichment, dict):
