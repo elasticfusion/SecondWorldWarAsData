@@ -338,15 +338,20 @@ def awarding_power(award_name: Optional[str]) -> Optional[str]:
 
 
 def award_source_nationality(award: dict, person: dict) -> Optional[str]:
-    """Which record system holds THIS award's citation. Prefer the awarding power
-    (derived from the award name); fall back to the recipient's nationality when the
-    award name is unrecognized. This routes e.g. a French LVF/Waffen-SS man's Iron
-    Cross to the German sources, not a French one."""
+    """Which record system holds THIS award's citation — CONFINED to the countries the
+    person indicates (citizenship or serving power). Prefer the award's awarding power
+    *only when the person indicates that country* (e.g. a French man who served under
+    Germany — nationality_served=DEU — routes his Iron Cross to German sources).
+    Otherwise fall back to the person's first indicated country. Never routes to a
+    country the person does not indicate (sourcing is not broadened by award name)."""
+    indicated = person_nationalities(person)
+    if not indicated:
+        return None
     if isinstance(award, dict):
         power = awarding_power(award.get("award"))
-        if power:
+        if power and power in indicated:
             return power
-    return person_nationality(person)
+    return indicated[0]
 
 
 def has_award_context(person: dict) -> bool:
@@ -357,23 +362,39 @@ def has_award_context(person: dict) -> bool:
 
 
 def person_nationality(person: dict) -> Optional[str]:
-    """Canonical nationality code for a person record, or None."""
+    """Canonical nationality code for a person record (citizenship first, then the
+    serving power), or None. 'Indicated nationality OR serving country'."""
     bp = person.get("biographical_profile") or {}
-    return canonical_nationality(bp.get("nationality") or person.get("nationality"))
+    raw = (
+        bp.get("nationality")
+        or person.get("nationality")
+        or bp.get("nationality_served")
+        or person.get("nationality_served")
+    )
+    return canonical_nationality(raw)
+
+
+def person_nationalities(person: dict) -> list:
+    """All canonical country codes a person INDICATES — citizenship and serving power.
+    These are the only countries we may source awards against (never broader)."""
+    bp = person.get("biographical_profile") or {}
+    codes = []
+    for raw in (
+        bp.get("nationality") or person.get("nationality"),
+        bp.get("nationality_served") or person.get("nationality_served"),
+    ):
+        c = canonical_nationality(raw)
+        if c and c not in codes:
+            codes.append(c)
+    return codes
 
 
 def should_source_awards(person: dict) -> bool:
-    """Gate: a person named in an award context routable to a registered record
-    system. Routable means EITHER the person's nationality OR the awarding power of
-    at least one of their awards is a country we have sources for. This admits a
-    French LVF/Waffen-SS man decorated by Germany (routed via his Iron Cross)."""
-    if not has_award_context(person):
-        return False
-    if person_nationality(person):
-        return True
-    bp = person.get("biographical_profile") or {}
-    awards = bp.get("military_awards") or person.get("military_awards") or []
-    return any(isinstance(a, dict) and awarding_power(a.get("award")) for a in awards)
+    """Gate: source awards ONLY when the person INDICATES a nationality or a serving
+    country (and is in an award context). The awarding power of an award name is used
+    for ROUTING, never to admit a person who indicates no country at all — sourcing is
+    confined to the indicated country's sites, not broadened by award name alone."""
+    return has_award_context(person) and bool(person_nationalities(person))
 
 
 SourceSelector = Callable[[Optional[str]], List[AwardCitationSource]]

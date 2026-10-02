@@ -83,3 +83,28 @@ def test_hall_of_valor_rejects_wrong_recipient(tmp_path):
     src = HallOfValorSource(tmp_path / "cache", session=_FakeSession())
     res = src.lookup("Robert Smith")
     assert res == []
+
+
+def test_canonical_award_strips_suffixes():
+    from src.enrichment.award_hall_of_valor import _canonical_award
+
+    assert _canonical_award("Medal of Honor (Posthumously)") == "Medal of Honor"
+    assert _canonical_award("Silver Star (1st Oak Leaf Cluster)") == "Silver Star"
+    assert (
+        _canonical_award("Distinguished Service Cross") == "Distinguished Service Cross"
+    )
+
+
+def test_wwii_era_filter_excludes_non_wwii_citations():
+    from src.enrichment.award_hall_of_valor import _is_wwii_citation
+
+    # Spanish-American War (same-name recipient) -> excluded
+    assert (
+        _is_wwii_citation("heroism in action at Santiago, Cuba, 1 July 1898") is False
+    )
+    # Korea -> excluded
+    assert _is_wwii_citation("for gallantry in action in Korea, 1951") is False
+    # WWII -> included
+    assert _is_wwii_citation("for gallantry on 6 June 1944 at Utah Beach") is True
+    # undated prose -> not over-rejected
+    assert _is_wwii_citation("for conspicuous gallantry in action") is True

@@ -372,64 +372,6 @@ def search_military_awards(
     return awards
 
 
-def search_valor(
-    person_name: str,
-    openserp_url: str,
-    grok_client: Any = None,
-) -> List[Dict[str, str]]:
-    """Search valor databases for US military personnel awards and citations."""
-    from src.utils.search_cache import cache_result, get_cached
-
-    cached = get_cached("valor", person_name)
-    if cached == "NOT_FOUND":
-        return []
-    if cached:
-        import json as _json
-
-        return _json.loads(cached)
-
-    # Search via OpenSERP — use site name as keyword (site: operator causes timeouts)
-    queries = [
-        f"{person_name} valor militarytimes",
-        f"{person_name} valor defense.gov",
-    ]
-
-    results = []
-    seen = set()
-    for query in queries:
-        hits = _search_openserp(query, openserp_url)
-        for h in hits:
-            url = h.get("url", "")
-            title = h.get("title", "")
-            if not url or url in seen:
-                continue
-            if (
-                "valor.militarytimes.com" in url
-                or "valor.defense.gov" in url
-                or "homeofheroes.com" in url
-            ):
-                # Skip homepage-only results
-                if url.rstrip("/") in (
-                    "https://valor.militarytimes.com",
-                    "https://valor.defense.gov",
-                    "https://homeofheroes.com",
-                ):
-                    continue
-                results.append({"url": url, "title": title, "source": "valor"})
-                seen.add(url)
-
-    if results:
-        import json as _json
-
-        cache_result("valor", person_name, _json.dumps(results))
-    else:
-        cache_result("valor", person_name, None)
-    return results
-
-
-# --- Event Content Search ---
-
-
 def search_event_content(
     event_name: str,
     aliases: Optional[List[str]] = None,
