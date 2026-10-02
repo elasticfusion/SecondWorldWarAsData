@@ -18,11 +18,10 @@ module-global state unsafe under the project's own multi-doc concurrency, and
 transient errors cached as durable `not_found` (suppressing retries for 90 days).
 
 ## Fix first (top 3)
-1. **C1 — Wire the geocoding cascade into `main()`.** Highest value: turns a built,
-   tested, but DEAD subsystem back on and directly fixes the uncoordinated-places
-   symptom.
+1. **C1 — Wire the geocoding cascade into `main()`. ✅ DONE (PR #217)** — cascade
+   (Nominatim→hill→Grok) now writes coordinates; +4 regression tests.
 2. **C2 + C3 — Stop swallowing failures; report structured per-source stats.**
-   Without this, "complete" doesn't mean "enriched" and no other fix is verifiable.
+   Next up. Without this, "complete" doesn't mean "enriched."
 3. **M3 + H3 — Stop caching transient errors as `not_found`; make breaker/
    rate-limiter/image-cache globals per-run + thread-safe.** Restores idempotent
    re-runs under concurrency.
@@ -31,7 +30,7 @@ transient errors cached as durable `not_found` (suppressing retries for 90 days)
 
 ## CRITICAL
 
-**C1. Geocoding cascade is dead code — places never get coordinates.**
+**C1. Geocoding cascade is dead code — places never get coordinates. ✅ FIXED (PR #217).**
 `phase3_enrich_data.py:242-253` calls `enrich_all_places` (`src/extraction/enrich_places.py:401-440`), which only sets hierarchy/historical_names/wikipedia/images — **never `coordinates`**. The real geocoders (`places_grok_geocode.geocode_places_dir`/`cascade_geocoder`, `nominatim_geocode`, `situational_geocode`, `hill_geocode`, `elevation_verify`, offline `places_geo.enrich_places_dir`) have **zero production callers** (grep: only tests/docs). → Wire `geocode_places_dir(..., geocoder=cascade_geocoder(...))` into `main()`; add a smoke test asserting a known town gets non-zero coordinates.
 
 **C2. Silent exception swallowing violates the no-silent-failure principle.**
