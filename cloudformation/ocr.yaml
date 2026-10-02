@@ -165,6 +165,12 @@ Resources:
               VolumeSize: 100
               VolumeType: gp3
               DeleteOnTermination: true
+              # Encrypt the GPU OCR instance volume at rest — these instances
+              # write the raw scanned source documents + OCR output to local disk
+              # during processing. Uses the AWS-managed EBS key (no KMS cost/mgmt),
+              # consistent with the SSE-S3 choice. (Fargate tasks already auto-
+              # encrypt ephemeral storage; this closes the EC2-backed GPU gap.)
+              Encrypted: true
 
   # --- Batch Compute Environment ---
   ChandraComputeEnv:

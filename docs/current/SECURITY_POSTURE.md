@@ -25,6 +25,15 @@ Companion: `AV_SCANNING_DESIGN.md` (malicious-document scanning),
   subnets with `AssignPublicIp: DISABLED`; NAT is torn down when idle.
 - **Secrets** — Grok API key in Secrets Manager (`SECRETS_ID`), read at runtime;
   not baked into images. `config.yaml` (secrets) is git-ignored.
+- **Compute storage encryption at rest**
+  - **Fargate tasks** (phase0/1/2/3, convert, video, AV scan) — ephemeral task
+    storage is **auto-encrypted by AWS** (AES-256, platform ≥ 1.4.0); not
+    configurable, always on.
+  - **GPU OCR Batch instances** (Chandra) — launch-template EBS volume now
+    `Encrypted: true` (ocr.yaml), AWS-managed EBS key. These EC2-backed instances
+    write raw source docs + OCR output to local disk during processing.
+  - **Account-wide** EBS encryption-by-default enabled (region us-east-1) as
+    defense-in-depth so any future volume is encrypted even if a template omits it.
 - **Ingestion front door (defense-in-depth)**
   - **AV scanning** of all uploaded binaries before any parser touches them
     (demand-launched, binary-only ClamAV; infected → quarantine + freeze hook;
