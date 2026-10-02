@@ -60,16 +60,31 @@ environment's requests:
   US awards (keep OpenSERP only as a last-ditch fallback if desired).
 
 ## WAF bypass — investigated + declined (2026-10-02)
-The WAF-walled sources (valor.defense.gov=Akamai, CMOHS/TracesOfWar=Cloudflare)
-block on **datacenter/VPN IP reputation + bot fingerprint, NOT geography**:
-- **Other AWS regions won't help** — all AWS egress IPs are on the same WAF
-  reputation lists.
-- **A VPN won't help** — experiment 2026-10-02: a commercial VPN exit (Proton AG,
-  Buenos Aires AR, AS208172) still got **403** from valor.defense.gov + CMOHS +
-  TracesOfWar. The exit is itself a datacenter IP → flagged identically. An
-  AWS-hosted VPN is the same (AWS/datacenter egress).
-- **Only residential/mobile egress** (residential proxy, or a Tailscale/WireGuard
-  exit node on a real home connection) would clear these WAFs.
+There are **two distinct block types** — proven by a clean residential-IP test
+(VPN disabled, bare Verizon residential line `AS701`, Chrome UA):
+
+**Type 1 — JS bot-challenge (IP doesn't matter; needs a real browser):**
+valor.defense.gov (Akamai), CMOHS + TracesOfWar (Cloudflare) returned **403 even
+from the residential IP**. Also 403 from the commercial VPN (Proton AR, AS208172)
+and from AWS. → the block is "not a JS-executing browser," NOT the IP. **Nothing
+IP-based (region, VPN, Tailscale, residential proxy) unlocks these** — only a
+headless/real browser that solves the challenge would, and that's a circumvention
+we're not pursuing.
+
+**Type 2 — AWS-WAF IP-reputation challenge (residential DOES help):**
+London Gazette (`server: CloudFront`, `x-amzn-waf-action: challenge`) served a JS
+challenge (202) from the AWS/VPN **datacenter** IP, but returned a clean **200**
+from the **residential** IP. → the Gazette is reputation-sensitive:
+datacenter→challenged, residential→OK.
+
+**Tailscale implication:** a Tailscale exit node on a residential connection would
+unlock **only the London Gazette** (Type 2). It would NOT unlock
+valor.defense.gov / CMOHS / TracesOfWar (Type 1 — residential already 403s).
+
+- **Other AWS regions won't help** anything — all AWS egress is datacenter.
+- **A VPN won't help** the Type-1 sources (commercial VPN exit is itself datacenter
+  AND the block is browser-not-IP).
+- **Only residential/mobile egress** helps, and only for the Type-2 Gazette.
 **Decision (owner):** skip residential egress / Tailscale for now — low payoff
 (it buys only CMOHS, which is MoH-only and redundant with Hall of Valor, + the
 TracesOfWar name index) and the offline material (WO 373, Fold3) isn't WAF-
