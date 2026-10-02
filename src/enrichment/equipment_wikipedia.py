@@ -155,8 +155,8 @@ def _fetch_license(filename: str) -> Optional[str]:
                 if ii:
                     meta = ii[0].get("extmetadata", {})
                     return meta.get("LicenseShortName", {}).get("value", "unknown")
-    except Exception:
-        pass
+    except Exception as e:  # noqa: BLE001 - license is best-effort, but log it
+        logger.debug("Equipment image license fetch failed: %s", e)
     return None
 
 

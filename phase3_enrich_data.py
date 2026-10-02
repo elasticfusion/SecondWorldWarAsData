@@ -43,8 +43,8 @@ def _notify_enrichment_started() -> None:
             Subject="WWII Pipeline: Phase 3 enrichment in progress",
             Message=f"Enrichment started (downloads complete, API calls beginning).\nBook: {book}",
         )
-    except Exception:
-        pass
+    except Exception as e:  # noqa: BLE001 - best-effort notify, but DON'T go silent
+        logger.warning("Could not send enrichment-started notification: %s", e)
 
 
 def _update_lock_status(status: str) -> None:
@@ -64,8 +64,8 @@ def _update_lock_status(status: str) -> None:
             ExpressionAttributeNames={"#s": "status"},
             ExpressionAttributeValues={":s": status},
         )
-    except Exception:
-        pass
+    except Exception as e:  # noqa: BLE001 - best-effort status, but DON'T go silent
+        logger.warning("Could not update Phase 3 lock status '%s': %s", status, e)
 
 
 def enrich_people_data(
@@ -208,34 +208,76 @@ def main():
     total_enriched = 0
     max_workers = config.get("concurrency", {}).get("max_enrichment_workers", 6)
 
+    # C3: per-source enrichment stats so "complete" reflects partial success +
+    # previously-swallowed failures surface to the operator (via .phase_results.json
+    # -> completion notification -> email + Slack). C2: a source that throws is
+    # LOGGED + recorded as errored, never silently swallowed and never aborts the
+    # rest of Phase 3.
+    source_stats: dict = {}
+
+    def _run_step(name: str, fn) -> int:
+        """Run one enrichment source; record enriched/status/error. Returns the
+        enriched count (0 on error). Never raises — a failed source is captured,
+        logged, and surfaced, not swallowed."""
+        try:
+            result = fn()
+            count = (
+                result
+                if isinstance(result, int)
+                else getattr(result, "geocoded", 0) or 0
+            )
+            source_stats[name] = {"enriched": count, "status": "ok"}
+            return count
+        except Exception as e:  # noqa: BLE001 - capture + surface, don't abort Phase 3
+            logger.error("Enrichment source '%s' FAILED: %s", name, e, exc_info=True)
+            source_stats[name] = {
+                "enriched": 0,
+                "status": "error",
+                "error": str(e)[:300],
+            }
+            return 0
+
     # Enrich people
     people_dir = args.output_dir / "people"
-    people_enriched = enrich_people_data(
-        people_dir,
-        grok_client,
-        max_items=args.max_items,
-        search_references=not args.no_references,
-        max_workers=max_workers,
+    people_enriched = _run_step(
+        "people",
+        lambda: enrich_people_data(
+            people_dir,
+            grok_client,
+            max_items=args.max_items,
+            search_references=not args.no_references,
+            max_workers=max_workers,
+        ),
     )
     total_enriched += people_enriched
 
     # Enrich people groups
     if not args.people_only:
         groups_dir = args.output_dir / "people_groups"
-        groups_enriched = enrich_groups_data(
-            groups_dir, grok_client, max_items=args.max_items, max_workers=max_workers
+        total_enriched += _run_step(
+            "people_groups",
+            lambda: enrich_groups_data(
+                groups_dir,
+                grok_client,
+                max_items=args.max_items,
+                max_workers=max_workers,
+            ),
         )
-        total_enriched += groups_enriched
 
     # Enrich places
     if not args.people_only:
         logger.info("[phase3 step 3/6] Enriching places")
         _update_lock_status("step 3/6: enriching places")
         places_dir = args.output_dir / "places"
-        places_enriched = enrich_all_places(
-            places_dir, grok_client, max_places=args.max_items, max_workers=max_workers
+        total_enriched += _run_step(
+            "places",
+            lambda: enrich_all_places(
+                places_dir,
+                grok_client,
+                max_places=args.max_items,
+                max_workers=max_workers,
+            ),
         )
-        total_enriched += places_enriched
 
         # Link parent_place_id after enrichment populates hierarchy
         link_parent_place_ids(places_dir)
@@ -281,8 +323,25 @@ def main():
                 geo_report.errors,
             )
             total_enriched += geo_report.geocoded
+            # C3: record the full geo breakdown (attempted/geocoded/not_found/
+            # low_confidence/errors) so partial geocoding success is visible.
+            source_stats["geocode"] = {
+                "enriched": geo_report.geocoded,
+                "status": "error" if geo_report.errors else "ok",
+                "attempted": geo_report.attempted,
+                "not_found": geo_report.not_found,
+                "low_confidence": geo_report.low_confidence,
+                "errors": geo_report.errors,
+            }
         except Exception as e:  # noqa: BLE001 - geocoding must not abort Phase 3
-            logger.error("Geocoding step failed (places left un-geocoded): %s", e)
+            logger.error(
+                "Geocoding step FAILED (places left un-geocoded): %s", e, exc_info=True
+            )
+            source_stats["geocode"] = {
+                "enriched": 0,
+                "status": "error",
+                "error": str(e)[:300],
+            }
 
     # Enrich bibliography (ISBN, copyright, archive URLs)
     if not args.people_only:
@@ -290,8 +349,10 @@ def main():
         _update_lock_status("step 4/6: enriching bibliography")
         bib_dir = args.output_dir / "bibliography"
         supplemental_config = config.get("supplemental_material", {})
-        bib_enriched = enrich_bibliography(bib_dir, supplemental_config, grok_client)
-        total_enriched += bib_enriched
+        total_enriched += _run_step(
+            "bibliography",
+            lambda: enrich_bibliography(bib_dir, supplemental_config, grok_client),
+        )
 
         # Resolve bibliography sources (NARA, Archive.org, LOC)
         from src.enrichment.bibliography_resolver import resolve_bibliography_dir
@@ -305,10 +366,12 @@ def main():
                 "openserp_url", "http://localhost:7001"
             ),
         }
-        resolve_stats = resolve_bibliography_dir(
-            bib_dir, grok_client, resolve_config, max_items=args.max_items
+        total_enriched += _run_step(
+            "bibliography_resolve",
+            lambda: resolve_bibliography_dir(
+                bib_dir, grok_client, resolve_config, max_items=args.max_items
+            ).get("resolved", 0),
         )
-        total_enriched += resolve_stats["resolved"]
 
     # Equipment Wikipedia enrichment (images + extracts)
     if not args.people_only and config.get("equipment", {}).get("enabled"):
@@ -318,8 +381,11 @@ def main():
 
         equipment_dir = args.output_dir / "equipment"
         if equipment_dir.exists():
-            total_enriched += enrich_all_equipment_wikipedia(
-                equipment_dir, max_items=args.max_items
+            total_enriched += _run_step(
+                "equipment_wikipedia",
+                lambda: enrich_all_equipment_wikipedia(
+                    equipment_dir, max_items=args.max_items
+                ),
             )
 
     # Groups Wikipedia enrichment (images + extracts)
@@ -330,8 +396,11 @@ def main():
 
         groups_dir = args.output_dir / "people_groups"
         if groups_dir.exists():
-            total_enriched += enrich_all_groups_wikipedia(
-                groups_dir, max_items=args.max_items
+            total_enriched += _run_step(
+                "groups_wikipedia",
+                lambda: enrich_all_groups_wikipedia(
+                    groups_dir, max_items=args.max_items
+                ),
             )
 
     # OpenSERP enrichment (images, academic sources) — requires OpenSERP running
@@ -348,11 +417,17 @@ def main():
         openserp_url = config.get("external_maps", {}).get(
             "openserp_url", "http://localhost:7001"
         )
-        total_enriched += enrich_people_with_openserp(
-            args.output_dir / "people", openserp_url, grok_client, args.max_items
+        total_enriched += _run_step(
+            "openserp_people",
+            lambda: enrich_people_with_openserp(
+                args.output_dir / "people", openserp_url, grok_client, args.max_items
+            ),
         )
-        total_enriched += enrich_equipment_with_openserp(
-            args.output_dir / "equipment", openserp_url, grok_client, args.max_items
+        total_enriched += _run_step(
+            "openserp_equipment",
+            lambda: enrich_equipment_with_openserp(
+                args.output_dir / "equipment", openserp_url, grok_client, args.max_items
+            ),
         )
 
     # NOAA weather enrichment (observed data to supplement Open-Meteo)
@@ -364,8 +439,11 @@ def main():
 
         weather_dir = args.output_dir / "weather"
         if weather_dir.exists():
-            total_enriched += enrich_weather_with_noaa(
-                weather_dir, noaa_token, args.max_items or 0
+            total_enriched += _run_step(
+                "noaa_weather",
+                lambda: enrich_weather_with_noaa(
+                    weather_dir, noaa_token, args.max_items or 0
+                ),
             )
 
     logger.info("Phase 3 complete: %d total items enriched", total_enriched)
@@ -466,11 +544,25 @@ def main():
             entity_counts[subdir] = len(
                 [f for f in d.glob("*.json") if f.name != "index.json"]
             )
+    errored_sources = sorted(
+        n for n, s in source_stats.items() if s.get("status") == "error"
+    )
+    if errored_sources:
+        logger.error(
+            "Phase 3: %d enrichment source(s) FAILED: %s",
+            len(errored_sources),
+            ", ".join(errored_sources),
+        )
     results_file.write_text(
         json.dumps(
             {
                 "enriched": total_enriched,
                 "entity_counts": entity_counts,
+                # C3: per-source stats + explicit failure list so "complete"
+                # reflects partial success and previously-swallowed failures reach
+                # the operator via the completion notification (email + Slack).
+                "source_stats": source_stats,
+                "errored_sources": errored_sources,
             }
         ),
         encoding="utf-8",
