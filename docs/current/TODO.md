@@ -15,6 +15,9 @@ build RAG/search*. Current ordered priority:
    AV needs the ClamAV image built + `--av-image` (deploy wiring now done).
 2. **[HIGH] Re-OCR the off-by-one corpus** — data-correctness (St. Vith/Boyer +
    ETO OOB markdown are currently shifted). *(Promoted from Medium.)*
+2b. **[HIGH] Cost: AWS spend ~6× the $75 budget** — reset the (stale) limit +
+   a CloudWatch $85 reduction pass. Largely explainable (one-time $135 domain +
+   grown S3/compute), not a runaway. *(New 2026-10-01.)*
 3. **[HIGH] Deploy + wire OCR markdown-review UI** — depends on #1.
 4. **[HIGH] Verify page-separator vs page count after merge** — data-integrity
    guard before markdown feeds parsers. *(Promoted from Medium.)*
@@ -109,6 +112,25 @@ is no longer needed for a full rebuild (kept as a fast code-only-change helper).
 ---
 
 ## High Priority (produces wrong results or wastes significant resources)
+
+#### Cost: AWS spend ~6× the $75 budget — reset limit + CloudWatch reduction pass
+Found 2026-10-01: `dev-wwii-pipeline-monthly` budget **ACTUAL $471 vs LIMIT $75**
+(MTD). Decomposed via Cost Explorer by service (Sept) — mostly explainable, NOT a
+runaway, and NOT Grok (xAI bills separately):
+- **Amazon Registrar $135** — ONE-TIME domain registration (not recurring).
+- **CloudWatch $85** — genuinely high for this workload; the real inefficiency to
+  chase (log retention/ingestion + ECS container-insights). **Actionable.**
+- **S3 $78** — the ~500 GB corpus; expected + growing (already > the whole $75).
+- **VPC $54 / EC2-compute $44 / EC2-other $29 / ECR $16** — NAT during runs + GPU
+  OCR + Fargate + image storage; consumption-driven, no idle leak (verified: NAT 0,
+  GPU 0, no ALB at rest).
+Two actions: (1) **reset the budget limit** to reflect the real corpus+GPU
+footprint (the $75 predates the 500 GB corpus — S3 alone exceeds it); (2) a
+**CloudWatch cost-reduction pass** (log-group retention policies, trim ingestion,
+reconsider container-insights). High (resource waste), not Critical (no runaway;
+no correctness impact; biggest line is one-time). Use AWS Cost Explorer/Budgets
+for any forward projection.
+*Source: critical survey 2026-10-01 (budget alarm $471 vs $75)*
 
 #### Re-OCR the off-by-one corpus (data-correctness) — PROMOTED from Medium 2026-10-01
 The OCR page-range off-by-one is **fixed in code** (`_to_chandra_range`), but all
