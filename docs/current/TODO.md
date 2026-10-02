@@ -5,27 +5,29 @@
 ---
 
 ## Current Priority (reprioritized index)
-**Reprioritized 2026-10-01** (after the phase0-autotrigger/AV/security/sweep
-work). Ranking reflects the project goal: *finish unattended ETO ingestion, then
+**Reprioritized 2026-10-02** (after this session deployed the security/infra work
+live). Ranking reflects the project goal: *finish unattended ETO ingestion, then
 build RAG/search*. Current ordered priority:
 
-1. **[CRITICAL] Deploy current `main` to AWS** — merged work is not live yet
-   (stack is healthy/`UPDATE_COMPLETE`, NOT blocked). S3 encryption/TLS is
-   deployable now (pure CFN); pandoc `--sandbox` needs a pipeline-image rebuild;
-   AV needs the ClamAV image built + `--av-image` (deploy wiring now done).
-2. **[HIGH] Re-OCR the off-by-one corpus** — data-correctness (St. Vith/Boyer +
-   ETO OOB markdown are currently shifted). *(Promoted from Medium.)*
-2b. **[HIGH] Cost: AWS spend ~6× the $75 budget** — reset the (stale) limit +
-   a CloudWatch $85 reduction pass. Largely explainable (one-time $135 domain +
-   grown S3/compute), not a runaway. *(New 2026-10-01.)*
-3. **[HIGH] Deploy + wire OCR markdown-review UI** — depends on #1.
-4. **[HIGH] Verify page-separator vs page count after merge** — data-integrity
-   guard before markdown feeds parsers. *(Promoted from Medium.)*
-5. **[HIGH] Layout-miss task-org tables → review surface.**
+0. **~~[CRITICAL] Deploy current `main`~~ ✅ DONE 2026-10-02** — verified live: S3
+   AES256 + DenyInsecureTransport; pandoc `--sandbox` image pushed; AV scanning
+   deployed + signatures seeded + EICAR-validated (`AV_SCAN_ENABLED=true`); EBS
+   encryption (account default + launch-template). No Critical items remain open.
+1. **[HIGH] Re-OCR the off-by-one corpus** — data-correctness (St. Vith/Boyer +
+   ETO OOB markdown are currently shifted). Wrong data feeding extraction; now the
+   top real item. Data op (re-run OCR; auto-triggers on re-upload).
+2. **[HIGH] Deploy + wire OCR markdown-review UI** — now **UNBLOCKED** (stack
+   healthy; deploy path proven this session). Deploy + smoke-test the `/mdreview`
+   route; treat NAT as an async human-gate like dedup.
+3. **[HIGH] Verify page-separator vs page count after merge** — data-integrity
+   guard before markdown feeds parsers; pairs with the re-OCR work.
+4. **[HIGH] Cost: budget 6× over** — reset the (stale) $75 limit + CloudWatch $85
+   reduction pass. Largely explainable (one-time $135 domain), not a runaway.
+5. **[HIGH] Layout-miss task-org tables → review surface** (needs design).
 6. **[MED] Slack refinement; misleading batch log; SNS:ListSubscriptions IAM;
    bibliography + Archive.org enrichment UIs; delete stale chunk dirs.**
-7. **[LOW/REGRESSION] mypy --strict on new files (quick guardrail); the 5
-   regression tests; code-quality refactors.**
+7. **[LOW/REGRESSION] mypy --strict on new files; the 5 regression tests;
+   code-quality refactors.**
 8. **[FUTURE] Postgres adapter, DynamoDB-removal, multi-job concurrency, Step
    Functions, new entity types — gated on the post-ingestion RAG/Aurora phase.**
 
@@ -35,24 +37,16 @@ Not-code (deferred, no action): SHAEF OB map gaps (NARA acquisition).
 
 ## Critical (actively losing data or breaking pipeline)
 
-#### Deploy current `main` to AWS (merged work is not yet live)
-**Correction 2026-10-01:** the stack is NOT blocked. `wwii-pipeline-dev` and all
-nested stacks are `UPDATE_COMPLETE` (last successful deploy 2026-10-01 01:29 UTC);
-the old `UPDATE_ROLLBACK_COMPLETE` was cleared and its root cause (empty image →
-TaskDef error) is fixed in `deploy_aws.py` (`UsePreviousValue`). The real task is
-simply that work merged after that deploy is **not live yet**:
-- **S3 encryption + TLS policy** — pure CFN, no image dep. **Deployable now** (the
-  clean win; change-set reviewed first).
-- **pandoc `--sandbox`** — in the pipeline image → needs a pipeline image
-  rebuild+push.
-- **AV scanning** — needs the ClamAV image built+pushed + `--av-image` passed.
-  `deploy_aws.py` now wires `--video-image`/`--av-image` (AvImageUri as a new
-  param, forced "" when absent so UsePreviousValue doesn't error). The ClamAV
-  image build is the remaining prerequisite.
-Deploy prerequisites: `aws s3 sync cloudformation/ s3://{bucket}/cloudformation/`
-re-stages the (currently stale) templates; `deploy_all.sh` does this + the stack-
-state guard. Change-set/dry-run first; not during a live Phase 2/3 run.
-*Source: deploy-path diagnosis 2026-10-01 (stack healthy; deploy pending)*
+_None open._
+
+#### ~~Deploy current `main` to AWS~~ ✅ DONE + verified live 2026-10-02
+Deployed this session (verified against live AWS): S3 `AES256` +
+`DenyInsecureTransport`; pandoc `--sandbox` image pushed (pulled on next convert
+task); AV scanning deployed (`AvScanTaskDef`/freshclam/schedule, signatures
+seeded, EICAR→infected validated, trigger `AV_SCAN_ENABLED=true`); EBS encryption
+(account default `true` + launch-template `Encrypted: true`). deploy_aws.py +
+deploy_all.sh now manage video/clamav images (PRs #199/#202). Remaining deploy
+sliver is the OCR-review UI — tracked as its own High item (unblocked now).
 
 ## Recently Completed (2026-09-23) — OCR reliability + table recovery
 
