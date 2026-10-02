@@ -240,6 +240,50 @@ def main():
         # Link parent_place_id after enrichment populates hierarchy
         link_parent_place_ids(places_dir)
 
+        # Geocode places (C1 fix): enrich_all_places sets hierarchy/names but NOT
+        # coordinates — the geocoding cascade was built + tested but never wired in,
+        # leaving every place at lat/long=0.0 with empty country. Wire it here:
+        # Nominatim first (free, cached, policy-compliant) -> hill/terrain geocoder
+        # for height features -> Grok default for the rest. Writes coordinates +
+        # geocode provenance; low-confidence hits are surfaced + flagged, not
+        # fabricated.
+        logger.info("[phase3 step 3/6] Geocoding places (coordinates)")
+        _update_lock_status("step 3/6: geocoding places")
+        try:
+            from src.enrichment.hill_geocode import make_hill_geocoder
+            from src.enrichment.nominatim_geocode import make_nominatim_geocoder
+            from src.enrichment.places_grok_geocode import (
+                cascade_geocoder,
+                geocode_place,
+                geocode_places_dir,
+            )
+
+            geo_cache = args.cache_dir / "geocode"
+            cascade = cascade_geocoder(
+                make_nominatim_geocoder(geo_cache / "nominatim"),
+                make_hill_geocoder(geo_cache / "elevation"),
+                geocode_place,  # Grok fallback for misses
+            )
+            geo_report = geocode_places_dir(
+                places_dir,
+                grok_client,
+                write=True,
+                limit=args.max_items or None,
+                geocoder=cascade,
+            )
+            logger.info(
+                "Geocoding: attempted %d, geocoded %d, not-found %d, low-conf %d, "
+                "errors %d",
+                geo_report.attempted,
+                geo_report.geocoded,
+                geo_report.not_found,
+                geo_report.low_confidence,
+                geo_report.errors,
+            )
+            total_enriched += geo_report.geocoded
+        except Exception as e:  # noqa: BLE001 - geocoding must not abort Phase 3
+            logger.error("Geocoding step failed (places left un-geocoded): %s", e)
+
     # Enrich bibliography (ISBN, copyright, archive URLs)
     if not args.people_only:
         logger.info("[phase3 step 4/6] Enriching bibliography")
