@@ -2,8 +2,10 @@
 
 The offline pass (:mod:`src.enrichment.places_geo`) leaves a work-queue of named
 places that have no coordinates. This module resolves those, one place at a time,
-by asking Grok for the coordinates of a *historical WWII European Theater* place
-and writing the result back in the same nested ``coordinates`` schema the
+by asking Grok for the coordinates of a *historical WWII* place (any theater —
+European, Mediterranean, North African, CBI, Pacific, or naval), using the
+record's hierarchy/country context to fix the region, and writing the result back
+in the same nested ``coordinates`` schema the
 extractor uses, then deriving ``bounding_box``/``map_urls`` via the offline
 enricher (single source of truth for that derivation).
 
@@ -61,12 +63,16 @@ _SKIP_FILES = frozenset(
 )
 
 _SYSTEM_PROMPT = (
-    "You are a historical geographer specializing in the World War II European "
-    "Theater of Operations (Western Front, 1944-1945). Given a place name as it "
-    "appears in US Army operational records, return its modern coordinates. Many "
-    "names are small French, Belgian, Dutch, Luxembourgish, or German towns, "
-    "rivers, forests, or terrain features. If you cannot identify the place with "
-    "reasonable confidence, say so rather than guessing."
+    "You are a historical geographer specializing in World War II across ALL "
+    "theaters: European, Mediterranean, North African, China-Burma-India (CBI), "
+    "Pacific (incl. Central Pacific), and the naval theaters (North Atlantic, "
+    "Pacific). Given a place name as it appears in operational records — plus any "
+    "hierarchy/country context provided — return its modern coordinates. Use the "
+    "provided context to place the name in the correct region (the same name can "
+    "occur in different theaters). Names may be towns, rivers, forests, islands, "
+    "atolls, reefs, terrain features, or open-ocean/maritime positions (which have "
+    "coordinates but no country). If you cannot identify the place with reasonable "
+    "confidence, say so rather than guessing."
 )
 
 

@@ -44,15 +44,19 @@ def test_in_theater_coordinate_not_flagged() -> None:
     assert "geo_review" not in updated
 
 
-def test_out_of_theater_coordinate_flagged_not_moved() -> None:
+def test_pacific_coordinate_accepted_not_flagged() -> None:
+    # Adak Island (Aleutians, Pacific). All theaters are first-class — a valid
+    # coordinate anywhere must NOT be flagged as "out of theater" (there is no
+    # privileged primary theater; entities move between theaters).
     place = {
         "current_name": "Adak Island",
         "coordinates": {"latitude": 51.88, "longitude": -176.6},
     }
     updated, changes = enrich_place(place)
-    assert "outlier" in changes
-    assert "geo_review" in updated
-    # Coordinates are never moved — verification, not correction.
+    assert "outlier" not in changes
+    assert "geo_review" not in updated
+    # derived fields still computed; coordinates never moved
+    assert "derived" in changes
     assert updated["coordinates"]["longitude"] == -176.6
 
 
@@ -112,9 +116,10 @@ def test_enrich_dir_reports_and_writes(tmp_path: Path) -> None:
 
     report = enrich_places_dir(places, write=True)
     assert report.scanned == 4
-    # Both geocoded places (metz, adak) get derived fields; adak is also flagged.
+    # Both geocoded places (metz, adak) get derived fields; neither is flagged
+    # (all theaters are first-class — no out-of-theater outlier concept).
     assert report.derived_fields_added == 2
-    assert report.outliers_flagged == 1  # adak
+    assert report.outliers_flagged == 0
     assert report.needs_geocoding == ["Aachen"]
     assert report.non_settlement == ["5th Division area"]
 
@@ -122,4 +127,5 @@ def test_enrich_dir_reports_and_writes(tmp_path: Path) -> None:
     metz = json.loads((places / "metz.json").read_text())
     assert "bounding_box" in metz and "map_urls" in metz
     adak = json.loads((places / "adak.json").read_text())
-    assert "geo_review" in adak
+    assert "geo_review" not in adak  # Pacific coord accepted, not flagged
+    assert "bounding_box" in adak  # but derived fields still added

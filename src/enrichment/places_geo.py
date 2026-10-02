@@ -8,11 +8,15 @@ network geocoding call:
 * **Missing derived fields** — a geocoded place that lacks ``bounding_box`` or
   ``map_urls`` (e.g. an older extraction). These are pure functions of the
   coordinates, so they are recomputed deterministically.
-* **Out-of-theater coordinates** — this corpus is the WWII European Theater
-  (Western Front, ~1944-45). A coordinate far outside that theater is almost
-  certainly an LLM geocoding error (e.g. a hill number resolved to the far side
-  of the world). Such places are *flagged* for review, never moved — the same
-  "verification, not correction" posture used elsewhere.
+
+The corpus spans **all WWII theaters** with no privileged "primary theater":
+European, Mediterranean, North African, China-Burma-India, Pacific (incl.
+Central Pacific), and the naval theaters (North Atlantic, Pacific). Entities move
+between theaters over time (a person Pacific → ETO; the 1st Division Africa →
+Sicily/Italy → Northern Europe), so there is **no geographic "theater window"**:
+a valid coordinate anywhere on Earth — including open-ocean/no-country naval
+positions — is legitimate. Coordinate correctness is judged at geocode time
+(confidence/verification), never by where it falls on the globe.
 
 Places that have *no* coordinates but *do* have a name need a real geocoding
 pass (LLM or gazetteer, which requires network/cost); this module does not do
@@ -45,13 +49,6 @@ _SKIP_FILES = frozenset(
         ".processed_events.json",
     }
 )
-
-# European Theater of Operations bounding window (generous): the Western Front
-# and its rear areas span roughly Normandy to the Rhine and the UK to the Alps.
-# A geocoded place outside this is treated as a probable geocoding error and
-# flagged (not moved). Bounds are deliberately loose to avoid false positives.
-ETO_LAT_MIN, ETO_LAT_MAX = 40.0, 56.0
-ETO_LON_MIN, ETO_LON_MAX = -6.0, 16.0
 
 
 @dataclass
@@ -118,17 +115,25 @@ def _place_name(place: Dict[str, Any]) -> Optional[str]:
     )
 
 
-def _is_out_of_theater(lat: float, lon: float) -> bool:
-    """True if a coordinate falls outside the ETO window (probable error)."""
-    return not (ETO_LAT_MIN <= lat <= ETO_LAT_MAX and ETO_LON_MIN <= lon <= ETO_LON_MAX)
+def _is_out_of_theater(lat: float, lon: float) -> bool:  # pragma: no cover
+    """Deprecated no-op. There is no privileged "theater window" — all theaters are
+    first-class (ETO/N.Africa/Med/Pacific/Naval). Retained only so any external
+    caller doesn't break; always returns False. Remove once no callers remain."""
+    return False
 
 
 def enrich_place(place: Dict[str, Any]) -> Tuple[Dict[str, Any], List[str]]:
     """Return (possibly-updated place, list of change tags).
 
-    Recomputes missing ``bounding_box``/``map_urls`` from coordinates and adds a
-    ``geo_review`` flag for out-of-theater coordinates. Never moves coordinates.
-    Change tags: ``"derived"`` (added derived fields), ``"outlier"`` (flagged).
+    Recomputes missing ``bounding_box``/``map_urls`` from coordinates. Never moves
+    coordinates. Change tags: ``"derived"`` (added derived fields).
+
+    NOTE: there is deliberately NO geographic "theater window" check. The corpus
+    spans ALL theaters (ETO, North Africa, Mediterranean, Pacific, Naval) with no
+    privileged "primary theater" — entities move between theaters (a person Pacific
+    → ETO; the 1st Division Africa → Sicily/Italy → Northern Europe), so a valid
+    coordinate anywhere on Earth is legitimate. Correctness of a coordinate is
+    judged at geocode time (confidence/verification), not by where it falls.
     """
     lat, lon = _coords(place)
     changes: List[str] = []
@@ -143,14 +148,6 @@ def enrich_place(place: Dict[str, Any]) -> Tuple[Dict[str, Any], List[str]]:
         if "derived" not in changes:
             changes.append("derived")
 
-    if _is_out_of_theater(lat, lon) and not place.get("geo_review"):
-        place["geo_review"] = (
-            f"coordinate ({lat}, {lon}) is outside the primary ETO window "
-            f"[{ETO_LAT_MIN}..{ETO_LAT_MAX}, {ETO_LON_MIN}..{ETO_LON_MAX}] "
-            "— may be a strategic/background location (correct) or a geocoding "
-            "error; verify"
-        )
-        changes.append("outlier")
     return place, changes
 
 
@@ -246,9 +243,6 @@ def _process_place(
     updated, changes = enrich_place(place)
     if "derived" in changes:
         report.derived_fields_added += 1
-    if "outlier" in changes:
-        report.outliers_flagged += 1
-        report.outliers.append({"name": _place_name(updated), "lat": lat, "lon": lon})
     if changes and write:
         _write_place(path, updated)
 

@@ -44,21 +44,16 @@ _MIN_INTERVAL = 1.1
 # the caller flags it for review rather than trusting it.
 _IMPORTANCE_OK = 0.35
 
-# ETO countries we expect; a match outside these is still returned but noted.
-_ETO_COUNTRIES = frozenset(
-    {"france", "germany", "belgium", "netherlands", "luxembourg", "united kingdom"}
-)
-
 # Country-name/alias -> ISO-3166-alpha2, used ONLY to optionally SCOPE a Nominatim
 # query to a country when the place record gives a hint (disambiguates cross-country
 # name collisions). This is an optional optimization, NOT a theater gate: a place
-# whose country is not listed here simply gets an UNSCOPED search (still works). The
-# project starts in the ETO but will ingest North Africa, the Pacific, and Naval
-# data — extend this map as new theaters land; nothing breaks if it is incomplete.
-# English country NAMES come from OSM directly via accept-language=en (see
-# _query_nominatim), so no exhaustive localized-name map is needed for normalization.
+# whose country is not listed here (or has none, e.g. an open-ocean naval position)
+# simply gets an UNSCOPED search (still works). The corpus spans ALL WWII theaters
+# with no privileged primary — extend this map as needed; nothing breaks if it is
+# incomplete. English country NAMES come from OSM directly via accept-language=en
+# (see _query_nominatim), so no exhaustive localized-name map is needed.
 _COUNTRY_TO_ISO = {
-    # ETO (current focus)
+    # European / Mediterranean
     "france": "fr",
     "germany": "de",
     "deutschland": "de",
@@ -72,17 +67,25 @@ _COUNTRY_TO_ISO = {
     "united kingdom": "gb",
     "england": "gb",
     "italy": "it",
-    # North Africa (future)
+    # North African
     "tunisia": "tn",
     "algeria": "dz",
     "morocco": "ma",
     "libya": "ly",
     "egypt": "eg",
-    # Pacific (future) — many ops are at sea / island groups; scope is best-effort
+    # China-Burma-India (CBI)
+    "china": "cn",
+    "burma": "mm",
+    "myanmar": "mm",
+    "india": "in",
+    "thailand": "th",
+    # Pacific — many ops are at sea / island groups; scope is best-effort and a
+    # no-country (open-ocean) position correctly stays unscoped.
     "japan": "jp",
     "philippines": "ph",
     "australia": "au",
     "papua new guinea": "pg",
+    "united states": "us",  # Central Pacific US territories (e.g. Wake, Midway)
 }
 
 

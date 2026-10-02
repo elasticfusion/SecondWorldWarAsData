@@ -51,12 +51,13 @@ _SLUG_RE = re.compile(r'data-slug="([^"]+)"')
 _TAG_RE = re.compile(r"<[^>]+>")
 
 _SYSTEM_PROMPT = (
-    "You are a historical military geographer for the WWII European Theater "
-    "(Western Front, 1944-1945). Some place names are situational tactical "
-    "features (a gap, corridor, ridge, bridgehead, sector) named relative to a "
-    "known place rather than a mapped settlement. Using the encyclopedic context "
-    "and the operation's nearby places, give an APPROXIMATE center coordinate "
-    "for the feature. If you cannot place it, set found=false rather than guess."
+    "You are a historical military geographer for World War II (any theater — "
+    "European, Mediterranean, North African, Pacific, CBI). Some place names are "
+    "situational tactical features (a gap, corridor, ridge, beachhead, bridgehead, "
+    "sector) named relative to a known place rather than a mapped settlement. Using "
+    "the encyclopedic context and the operation's nearby places (which fix the "
+    "region/theater), give an APPROXIMATE center coordinate for the feature. If you "
+    "cannot place it, set found=false rather than guess."
 )
 
 
