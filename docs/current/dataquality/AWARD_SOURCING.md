@@ -184,3 +184,29 @@ catalog-only; proposals are offline). German award citations route to
 `OfflineAwardDataset` (fed from Bundesarchiv reproductions / transcribed RH 7
 rolls); an invenio catalog lookup could later confirm date/unit only. Gate on
 `nationality == DEU`.
+
+---
+
+## France (FRA) — gallantry awards
+
+French citations are **mostly roll-not-citation**: no complete public roll of
+Croix de guerre 1939-45 or Médaille militaire *with citation text*. One accessible
+citation-bearing source exists. French-language → citations are **translated to
+English** on attach (original + language preserved). Accessibility verified
+2026-10-02 (AWS + full headers).
+
+| Source | Access from AWS | Role |
+|---|---|---|
+| **Ordre de la Libération** (ordredelaliberation.fr/fr/recherche-compagnons) | **200 ✅** | **Direct source.** 1,038 Compagnons, each a biographical notice (decree date, unit/network, services justifying the cross) ≈ citation. Also 18 units + 5 towns. French → translated. BUILT into registry (adapter `ordre_liberation`). |
+| Médaille de la Résistance (ordredelaliberation.fr) + Mémoire des Hommes | 200 | Rolls (~65k awards), NOT citation text → confirm date/unit only. |
+| france-phaleristique.com (Ordre Libération list) | 200 | Name + date list (no citation). |
+| **Base Léonore** (leonore.archives-nationales…) | 200 but **SPA shell (~1.5KB)** | Légion d'honneur dossiers of members deceased <1977; digitized files *may* include the proposal/citation, but it's a JS app + per-dossier open, and not valor-only → offline/dossier. |
+| TracesOfWar — Croix de Guerre 1939-45 | 200 (from AWS w/ full headers) | Partial person list, skewed to known Free French/Allied; only some entries carry citation wording. |
+| **Croix de guerre 1939-45 / Médaille militaire** | — | **No national online citation index.** Citation was in the *Journal officiel* or a unit *ordre* → Gallica / JO collections (need name + approx date); homologation files at **SHD Vincennes** (on-site/request). → `OfflineAwardDataset`. |
+
+**Allied recipients of French awards:** British recs/citations in TNA **WO 373**;
+US awards scattered through unit records + French decrees (no single roll).
+
+**Build:** Ordre de la Libération as the FR direct source (French → translated);
+everything else (Croix de guerre, Médaille militaire, Légion d'honneur) →
+`OfflineAwardDataset` (JO/Gallica, SHD, Léonore dossiers).

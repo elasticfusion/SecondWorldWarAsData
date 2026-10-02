@@ -284,7 +284,11 @@ class MilitaryAward(BaseModel):
     date_awarded: Optional[str] = None
 
     # --- Source record / provenance (migration-safe: all optional) ---
-    citation_text: Optional[str] = None  # verbatim citation from the source
+    citation_text: Optional[str] = None  # citation (English; translated if needed)
+    citation_text_original: Optional[str] = None  # verbatim source text if non-English
+    citation_language: Optional[str] = (
+        None  # source language (e.g. "German"); provenance
+    )
     source_name: Optional[str] = None  # e.g. "American War Library", "Hall of Valor"
     source_url: Optional[str] = None  # per-recipient page the citation came from
     retrieved_date: Optional[str] = None  # ISO-8601 retrieval date

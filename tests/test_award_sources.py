@@ -48,16 +48,25 @@ def test_gate_requires_us_and_award_context():
     }
     assert should_source_awards(us_award) is True
     assert has_award_context(us_award) is True
-    # non-US
-    assert not should_source_awards(
+    # Germany is now a REGISTERED nationality (multi-country) → in scope.
+    assert should_source_awards(
         {
             "biographical_profile": {
                 "nationality": "Germany",
+                "military_awards": [{"award": "Knights Cross"}],
+            }
+        }
+    )
+    # Unknown/unregistered nationality → gated out.
+    assert not should_source_awards(
+        {
+            "biographical_profile": {
+                "nationality": "Freedonia",
                 "military_awards": [{"award": "x"}],
             }
         }
     )
-    # US but no award context
+    # Registered nationality but no award context → gated out.
     assert not should_source_awards(
         {"biographical_profile": {"nationality": "USA", "military_awards": []}}
     )

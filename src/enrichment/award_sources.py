@@ -32,10 +32,36 @@ from typing import List, Optional, Protocol
 
 logger = logging.getLogger(__name__)
 
-# Nationalities this module currently has authoritative sources for. US-only now;
-# extend as other countries' award sources are added (per owner: other countries
-# may follow). Values are matched case-insensitively against common spellings.
-_US_NATIONALITY = {"usa", "us", "united states", "united states of america", "american"}
+# Nationality spellings -> canonical ISO-ish code used in the registry's
+# `nationality` gate. Extend as new countries are added.
+_NATIONALITY_ALIASES = {
+    "usa": "USA",
+    "us": "USA",
+    "united states": "USA",
+    "united states of america": "USA",
+    "american": "USA",
+    "gbr": "GBR",
+    "uk": "GBR",
+    "united kingdom": "GBR",
+    "british": "GBR",
+    "england": "GBR",
+    "english": "GBR",
+    "scotland": "GBR",
+    "wales": "GBR",
+    "deu": "DEU",
+    "germany": "DEU",
+    "german": "DEU",
+    "fra": "FRA",
+    "france": "FRA",
+    "french": "FRA",
+}
+
+
+def canonical_nationality(nationality: Optional[str]) -> Optional[str]:
+    """Map a free-text nationality to the registry's canonical code (USA/GBR/...)."""
+    if not nationality:
+        return None
+    return _NATIONALITY_ALIASES.get(nationality.strip().lower())
 
 
 @dataclass
@@ -48,6 +74,7 @@ class AwardCitation:
     retrieved_date: str  # ISO-8601
     award: str = ""  # the award this citation is for, if the source specifies
     verified: bool = False
+    language: str = "English"  # source language; non-English is translated on attach
 
 
 class AwardCitationSource(Protocol):
@@ -65,7 +92,7 @@ class AwardCitationSource(Protocol):
 
 def is_us_person(nationality: Optional[str]) -> bool:
     """True if the nationality denotes the United States (case/spelling tolerant)."""
-    return bool(nationality) and nationality.strip().lower() in _US_NATIONALITY
+    return canonical_nationality(nationality) == "USA"
 
 
 def has_award_context(person: dict) -> bool:
@@ -75,11 +102,16 @@ def has_award_context(person: dict) -> bool:
     return bool(awards)
 
 
-def should_source_awards(person: dict) -> bool:
-    """Gate: only US personnel named in an award context (for now)."""
+def person_nationality(person: dict) -> Optional[str]:
+    """Canonical nationality code for a person record, or None."""
     bp = person.get("biographical_profile") or {}
-    nat = bp.get("nationality") or person.get("nationality")
-    return is_us_person(nat) and has_award_context(person)
+    return canonical_nationality(bp.get("nationality") or person.get("nationality"))
+
+
+def should_source_awards(person: dict) -> bool:
+    """Gate: a person named in an award context whose nationality is one we have a
+    registered source for. (Nationality-agnostic now — any registered country.)"""
+    return bool(person_nationality(person)) and has_award_context(person)
 
 
 def enrich_person_awards(
@@ -108,19 +140,52 @@ def enrich_person_awards(
         award_name = award.get("award", "")
         citation = _first_match(sources, name, award_name)
         if citation:
-            award["citation_text"] = citation.citation_text
+            text, original, language = _normalize_citation_language(citation)
+            award["citation_text"] = text
+            if original is not None:
+                award["citation_text_original"] = original
+                award["citation_language"] = language
             award["source_name"] = citation.source_name
             award["source_url"] = citation.source_url
             award["retrieved_date"] = citation.retrieved_date
             award["verified"] = citation.verified
             filled += 1
             logger.info(
-                "Award citation for %s (%s) from %s",
+                "Award citation for %s (%s) from %s%s",
                 name,
                 award_name or "?",
                 citation.source_name,
+                f" [translated from {language}]" if original is not None else "",
             )
     return filled
+
+
+def _normalize_citation_language(citation: "AwardCitation"):
+    """Return (english_text, original_text_or_None, language).
+
+    English citations pass through (original=None). A non-English citation is
+    translated to English via the shared translation module (same pattern as the
+    Phase-0 translate-at-the-seam decision); the verbatim original is preserved
+    for provenance. Fail-safe: on disabled/error, keep the original text as-is and
+    still record its language.
+    """
+    lang = citation.language or "English"
+    if lang.strip().lower() in ("english", "en", ""):
+        return citation.citation_text, None, "English"
+    try:
+        from src.ingestion.translation import normalize_markdown_to_english
+
+        english = normalize_markdown_to_english(citation.citation_text, per_page=False)
+        if (
+            english
+            and english.strip()
+            and english.strip() != citation.citation_text.strip()
+        ):
+            return english, citation.citation_text, lang
+    except Exception as e:  # noqa: BLE001 - fail-safe: keep original
+        logger.warning("Award citation translation skipped (%s): %s", lang, e)
+    # Disabled / unchanged / error → keep original but record language for provenance.
+    return citation.citation_text, citation.citation_text, lang
 
 
 def _first_match(
