@@ -79,6 +79,21 @@ Resources:
             Transitions:
               - StorageClass: GLACIER_IR
                 TransitionInDays: 1
+          # Consumed source media/binaries (video, large images, converted
+          # epub/docx) are tagged archive=cold by the ingestion handlers once their
+          # chapter output is written (src/ingestion/archive_tag). They live in
+          # unpredictable per-title dirs mixed with active markdown, so TAG-based
+          # (not prefix/size) transition is the only safe wholesale mechanism — and
+          # unlike a size Filter, TagFilters ARE supported by this template's rule
+          # schema. Glacier IR keeps them instantly readable for re-processing.
+          - Id: ColdArchiveTaggedToGlacierIR
+            Status: Enabled
+            TagFilters:
+              - Key: archive
+                Value: cold
+            Transitions:
+              - StorageClass: GLACIER_IR
+                TransitionInDays: 1
           # Expire the EICAR/AV test artifacts + any scratch under av-test/ fast.
           - Id: CleanupAvTest
             Prefix: av-test/
