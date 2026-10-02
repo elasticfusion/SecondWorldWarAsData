@@ -122,6 +122,23 @@ _NATIONALITY_ALIASES = {
     "mex": "MEX",
     "mexico": "MEX",
     "mexican": "MEX",
+    # No online source (Europe & Asia) — offline placeholders (see registry notes)
+    "chn": "CHN",
+    "china": "CHN",
+    "chinese": "CHN",
+    "grc": "GRC",
+    "greece": "GRC",
+    "greek": "GRC",
+    "yug": "YUG",
+    "yugoslavia": "YUG",
+    "yugoslav": "YUG",
+    "serbian": "YUG",
+    "croatian": "YUG",
+    "csk": "CSK",
+    "czechoslovakia": "CSK",
+    "czechoslovak": "CSK",
+    "czech": "CSK",
+    "slovak": "CSK",
 }
 
 

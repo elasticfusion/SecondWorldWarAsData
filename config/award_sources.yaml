@@ -397,6 +397,80 @@ sources:
       Militari 1939-1945' = exile-govt roll (names/units). Cross of Valour / Grunwald
       Cross = partial plWiki name lists. Narratives → offline (archives).
 
+  # ================================================================================
+  # NO ONLINE CITATION SOURCE (Europe & Asia) — placeholders recording WHERE TO SEARCH
+  # --------------------------------------------------------------------------------
+  # Per owner's instruction: these nations have no accessible online recipient/citation
+  # database as of 2026-10-02. They are registered (enabled:false, adapter:offline) so
+  # that (a) a person of this nationality still passes the gate and is routable, and
+  # (b) if a source turns up later we know exactly where it would plug in. The `notes`
+  # field is the archival/print pointer — the place to look. Non-English → translated
+  # once a dataset exists. Add the real `base_url`/`adapter` here if one appears.
+  # ================================================================================
+
+  - id: cn_roc_offline
+    name: China (Republic of China) — no online roll
+    nationality: CHN
+    language: Chinese
+    adapter: offline
+    dataset_path: data/award_citations_cn.json
+    crawl_delay: 0
+    awards: [Order of Blue Sky and White Sun, Order of Precious Tripod, Order of National Glory]
+    accessible: false
+    enabled: false
+    notes: >-
+      WHERE TO SEARCH: no recipient database exists. Names scattered in the Office of
+      the President (Fu-Zong-Tong-Fu) decoration pages + veterans'-association notes.
+      Citation corpus: none online. Archival: Academia Historica (國史館) + Ministry of
+      National Defence historical records (Taipei). Chinese → translated when sourced.
+
+  - id: gr_offline
+    name: Greece — no online roll
+    nationality: GRC
+    language: Greek
+    adapter: offline
+    dataset_path: data/award_citations_gr.json
+    crawl_delay: 0
+    awards: [Cross of Valour, War Cross, Medal of Military Merit]
+    accessible: false
+    enabled: false
+    notes: >-
+      WHERE TO SEARCH: nothing searchable online with citations. Cross of Valour / War
+      Cross recipients named in regimental histories + the Greek Army History Directorate
+      (ΔΙΣ/ΓΕΣ) official-history volumes (print). Archival: Hellenic Army General Staff
+      Army History Directorate, Athens. Greek → translated when sourced.
+
+  - id: yu_offline
+    name: Yugoslavia — People's Hero (names only online)
+    nationality: YUG
+    language: Serbian
+    adapter: offline
+    dataset_path: data/award_citations_yu.json
+    crawl_delay: 0
+    awards: [Order of the People's Hero, Order of Freedom, Order for Bravery, Partisan Star]
+    accessible: false
+    enabled: false
+    notes: >-
+      WHERE TO SEARCH: Order of the People's Hero ~1,300 names on Wikipedia + Serbian
+      biographical sites (short lives, NOT formal citations); Order of Freedom small
+      enough to be named there too. NO roll for Order for Bravery / Partisan Star.
+      Archival: Vojni arhiv (Military Archive), Belgrade. Serbian/Croatian → translated.
+
+  - id: cs_offline
+    name: Czechoslovakia — no online roll
+    nationality: CSK
+    language: Czech
+    adapter: offline
+    dataset_path: data/award_citations_cs.json
+    crawl_delay: 0
+    awards: [Czechoslovak War Cross 1939, Order of the White Lion For Victory, Medal for Bravery]
+    accessible: false
+    enabled: false
+    notes: >-
+      WHERE TO SEARCH: no War Cross 1939 / White Lion 'For Victory' roll online. Exile
+      army orders + the decoration files are offline. Archival: Vojenský ústřední archiv
+      (Military Central Archive), Prague. Czech/Slovak → translated when sourced.
+
   # ---------------- Offline / request-based (any country) ----------------
     name: Offline award dataset
     nationality: ANY
