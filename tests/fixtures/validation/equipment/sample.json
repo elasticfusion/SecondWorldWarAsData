@@ -1,0 +1,97 @@
+{
+  "equipment": [
+    {
+      "EquipmentID": "01KPSFZET3QG6ZZ37TMF10SZR0",
+      "name": "Churchill"
+    },
+    {
+      "EquipmentID": "01KPSFZET3QG6ZZ37TMF10SZR0",
+      "common_name": "Churchill",
+      "name": "Churchill",
+      "category": "other",
+      "country_of_origin": "UK",
+      "event_mentions": [
+        {
+          "MentionID": "01KPSFZET37B0W5ARRSSD7G0ZF",
+          "Event_Name": "THE ROOTS OF STRATEGY",
+          "EventID": "01KPSFYDX871K1XTRDTB2V351D",
+          "Sub_event_Name": "British assessment that SLEDGEHAMMER was not feasible with available landing craft; planners shift focus from Pas-de-Calais to Cherbourg/Le Havre areas; Churchill rejects 21-day landing timeline and establishes principle against landings without intent to remain.",
+          "Sub_eventID": "01KPSFYDX8ZGWD68D2RKS20D73",
+          "book": "Cross-Channel Attack",
+          "author": "Gordon A. Harrison",
+          "series": "United States Army in World War II",
+          "context": "Rejected the 21-day landing timeline and established the principle against landings without intent to remain",
+          "original_text": "When Churchill was informed of this obstacle he replied... The principle was that 'there should be no substantial landing in France unless we intended to remain.'",
+          "nationality": "UK"
+        },
+        {
+          "MentionID": "01KPSFZET4PN28MSDCYBEY3SYZ",
+          "Event_Name": "THE ROOTS OF STRATEGY",
+          "EventID": "01KPSFYDX871K1XTRDTB2V351D",
+          "Sub_event_Name": "Churchill's dissatisfaction with cautious ROUNDUP plan and proposal for massive simultaneous assaults with ten armored brigades and 400,000 men in first week; planners view concept as unrealistic and maintain requirement for weakened enemy.",
+          "Sub_eventID": "01KPSFYDX84QBS5D81MFFX5850",
+          "book": "Cross-Channel Attack",
+          "author": "Gordon A. Harrison",
+          "series": "United States Army in World War II",
+          "context": "Proposed a more aggressive ROUNDUP concept with massive simultaneous assaults using ten armored brigades and 400,000 men in the first week",
+          "original_text": "Churchill was dissatisfied with the planners' caution. He retorted with a memorandum of his own sketching an operation with 'qualities of magnitude, simultaneity and violence,' and involving six landings by at least ten armored brigades in the first wave, and the debarkation of 400,000 men in the first week",
+          "nationality": "UK"
+        },
+        {
+          "MentionID": "01KPSFZET6C2TTE3J1ZHCQTSNA",
+          "Event_Name": "THE ROOTS OF STRATEGY",
+          "EventID": "01KPSFYDX871K1XTRDTB2V351D",
+          "Sub_event_Name": "Pacific naval victories relieve pressure on Australia; Churchill's June 1942 visit to Washington to counter 1942 operation pressure; Stimson and Marshall defend BOLERO; White House meeting results in compromise prioritizing BOLERO but preparing GYMNAST as alternative, reinforced by Tobruk news.",
+          "Sub_eventID": "01KHXNSJ4V9W8X7Y6Z5A4B3C2D",
+          "book": "Cross-Channel Attack",
+          "author": "Gordon A. Harrison",
+          "series": "United States Army in World War II",
+          "context": "Visited Washington to counter pressure for 1942 operations and advocated for GYMNAST over BOLERO",
+          "original_text": "Churchill came because he had been greatly alarmed by reports from Admiral Mountbatten that the President was pressing for a 1942 operation... Churchill vigorously attacked the BOLERO idea and urged GYMNAST",
+          "nationality": "UK"
+        },
+        {
+          "MentionID": "01KPSFZET869HX9BVG270V38KT",
+          "Event_Name": "THE ROOTS OF STRATEGY",
+          "EventID": "01KPSFYDX871K1XTRDTB2V351D",
+          "Sub_event_Name": "Eisenhower assumes ETOUSA command, criticizes lack of organization and basic decisions; Churchill opposes Western Europe operation as slaughter but supports North Africa; British Chiefs unanimously reject SLEDGEHAMMER.",
+          "Sub_eventID": "01KHXNSJ4W9X8Y7Z6A5B4C3D2E",
+          "book": "Cross-Channel Attack",
+          "author": "Gordon A. Harrison",
+          "series": "United States Army in World War II",
+          "context": "Opposed Western Europe operation as slaughter but supported North Africa operation",
+          "original_text": "Eisenhower talked to the Prime Minister and found him 'quite averse to attempting anything in Western Europe.... He believes it would be slaughter'... On the other hand, Churchill was perfectly confident about the northwest Africa operation",
+          "nationality": "UK"
+        },
+        {
+          "MentionID": "01KPSFZETAXHBK3T4FB0VRPX3A",
+          "Event_Name": "THE ROOTS OF STRATEGY",
+          "EventID": "01KPSFYDX871K1XTRDTB2V351D",
+          "Sub_event_Name": "London conference: Churchill questions SLEDGEHAMMER urgency and explores alternatives including North Africa/Sicily/Italy; emphasizes German power and U-boat vs. air power race; Eisenhower assesses low chances for SLEDGEHAMMER but recommends keeping it alive until September based on Russian situation; opposes GYMNAST as unsound for supporting ROUNDUP.",
+          "Sub_eventID": "01KHXNSJ4Y9Z8A7B6C5D4E3F2G",
+          "book": "Cross-Channel Attack",
+          "author": "Gordon A. Harrison",
+          "series": "United States Army in World War II",
+          "context": "Questioned urgency of SLEDGEHAMMER, explored alternatives including North Africa, Sicily, or Italy",
+          "original_text": "At the first London meeting, on 20 July, Churchill outlined his views... he went on to question the urgency of SLEDGEHAMMER... He then discussed the value of invading North Africa and suggested that if the battle for Egypt went well it might be possible to attack even Sicily or Italy",
+          "nationality": "UK"
+        },
+        {
+          "MentionID": "01KPV7VW71N55RK83W3JBDW4SC",
+          "Event_Name": "THE ROOTS OF STRATEGY",
+          "EventID": "01KHXPA7K5M8N3V2QJ9H4F6T8R",
+          "Sub_event_Name": "Combined Chiefs agree to strategic hypothesis for 1944 including Pacific augmentation, continued Continental invasion preparations, and intensified North African operations; Churchill and Roosevelt discuss post-TORCH Mediterranean and Balkan possibilities.",
+          "Sub_eventID": "01KHXPG6T8V3M9Q2N4K7H5J1P8",
+          "book": "Cross-Channel Attack",
+          "author": "Gordon A. Harrison",
+          "series": "United States Army in World War II",
+          "context": "Outlined post-TORCH Mediterranean and Norway attack possibilities",
+          "original_text": "In September Churchill outlined his conception of future strategy to the President",
+          "nationality": "UK"
+        }
+      ],
+      "openserp_searched": true,
+      "openserp_searched_at": 1780687462
+    }
+  ]
+}
