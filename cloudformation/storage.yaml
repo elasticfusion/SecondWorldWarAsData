@@ -46,6 +46,27 @@ Resources:
                 TransitionInDays: 30
               - StorageClass: GLACIER_IR
                 TransitionInDays: 90
+          # source/ holds the original scanned PDFs (write-once, read-rarely —
+          # kept only for citation + re-OCR). Glacier Instant Retrieval keeps
+          # millisecond access for the occasional re-OCR at ~1/4 the STANDARD cost.
+          - Id: SourcePdfsToGlacierIR
+            Prefix: source/
+            Status: Enabled
+            Transitions:
+              - StorageClass: GLACIER_IR
+                TransitionInDays: 30
+          # NOTE: contentrepository/ (6.25GB) mixes small ACTIVE chapter markdown
+          # (re-read every parse trigger — must stay STANDARD) with large cold
+          # binaries. Transitioning only the large binaries needs a size+prefix
+          # filter, which THIS template's lifecycle rule schema (top-level Prefix,
+          # not Filter) does not support. Deferred: migrate the lifecycle rules to
+          # the Filter form, OR relocate large binaries to a dedicated prefix (e.g.
+          # contentrepository/_binaries/) that can be transitioned wholesale.
+          # Expire the EICAR/AV test artifacts + any scratch under av-test/ fast.
+          - Id: CleanupAvTest
+            Prefix: av-test/
+            Status: Enabled
+            ExpirationInDays: 1
           - Id: ExpireOldVersions
             Status: Enabled
             NoncurrentVersionExpiration:
