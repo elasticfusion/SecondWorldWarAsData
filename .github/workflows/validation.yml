@@ -4,16 +4,19 @@ on:
   push:
     branches: [main, master]
     paths:
-      - "output/**"
+      - "tests/fixtures/validation/**"
       - "src/json_schemas.py"
       - "src/schemas/**"
+      - "src/utils/schema_registry.py"
       - "scripts/validation_report.py"
   pull_request:
     branches: [main, master]
     paths:
-      - "output/**"
+      - "tests/fixtures/validation/**"
       - "src/json_schemas.py"
       - "src/schemas/**"
+      - "src/utils/schema_registry.py"
+      - "scripts/validation_report.py"
   schedule:
     - cron: "0 2 * * *"
   workflow_dispatch:
@@ -40,87 +43,29 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Check output/ JSON integrity
-        if: hashFiles('output/**/*.json') != ''
+      # Validate the committed sample fixtures (one minimal + one fully-expanded
+      # record per classification). The real output/** dataset is git-ignored
+      # (S3-backed, disposable), so these fixtures are what CI validates against.
+      # Data-driven: every tests/fixtures/validation/<schema>/ dir is validated,
+      # so adding a category needs no workflow edit.
+      - name: Validate sample fixtures against schemas
         run: |
-          python scripts/check_output_integrity.py
-
-      - name: Validate People Data
-        if: hashFiles('output/people/*.json') != ''
-        run: |
-          python scripts/validation_report.py validate output/people \
-            --schema people --format html \
-            --output reports/people_validation.html --save-history
-
-      - name: Validate Equipment Data
-        if: hashFiles('output/equipment/*.json') != ''
-        run: |
-          python scripts/validation_report.py validate output/equipment \
-            --schema equipment --format html \
-            --output reports/equipment_validation.html --save-history
-
-      - name: Validate Events Data
-        if: hashFiles('output/content/**/events_*.json') != ''
-        run: |
-          python scripts/validation_report.py validate output/content \
-            --schema event --format html \
-            --output reports/events_validation.html --save-history
-
-      - name: Validate Places Data
-        if: hashFiles('output/places/*.json') != ''
-        run: |
-          python scripts/validation_report.py validate output/places \
-            --schema place --format html \
-            --output reports/places_validation.html --save-history
-
-      - name: Validate Dates Data
-        if: hashFiles('output/dates/*.json') != ''
-        run: |
-          python scripts/validation_report.py validate output/dates \
-            --schema date --format html \
-            --output reports/dates_validation.html --save-history
-
-      - name: Validate Logistics Data
-        if: hashFiles('output/logistics/*.json') != ''
-        run: |
-          python scripts/validation_report.py validate output/logistics \
-            --schema logistics --format html \
-            --output reports/logistics_validation.html --save-history
-
-      - name: Validate Casualties Data
-        if: hashFiles('output/casualties/*.json') != ''
-        run: |
-          python scripts/validation_report.py validate output/casualties \
-            --schema casualties --format html \
-            --output reports/casualties_validation.html --save-history
-
-      - name: Validate Weather Data
-        if: hashFiles('output/weather/*.json') != ''
-        run: |
-          python scripts/validation_report.py validate output/weather \
-            --schema weather --format html \
-            --output reports/weather_validation.html --save-history
-
-      - name: Validate Bibliography Data
-        if: hashFiles('output/bibliography/*.json') != ''
-        run: |
-          python scripts/validation_report.py validate output/bibliography \
-            --schema bibliography --format html \
-            --output reports/bibliography_validation.html --save-history
-
-      - name: Validate Maps Data
-        if: hashFiles('output/maps/*.json') != ''
-        run: |
-          python scripts/validation_report.py validate output/maps \
-            --schema map --format html \
-            --output reports/maps_validation.html --save-history
-
-      - name: Validate People Groups Data
-        if: hashFiles('output/people_groups/*.json') != ''
-        run: |
-          python scripts/validation_report.py validate output/people_groups \
-            --schema people_groups --format html \
-            --output reports/people_groups_validation.html --save-history
+          set -euo pipefail
+          mkdir -p reports
+          status=0
+          for dir in tests/fixtures/validation/*/; do
+            schema="$(basename "$dir")"
+            [ -f "$dir/sample.json" ] || continue
+            echo "::group::validate $schema"
+            if ! python scripts/validation_report.py validate "$dir" \
+                --schema "$schema" --format html \
+                --output "reports/${schema}_validation.html" --save-history; then
+              echo "::error::validation failed for schema '$schema'"
+              status=1
+            fi
+            echo "::endgroup::"
+          done
+          exit $status
 
       - name: Generate Trends Report
         if: always() && hashFiles('validation_history.json') != ''
@@ -136,7 +81,7 @@ jobs:
           retention-days: 30
 
       - name: Upload Validation History
-        if: always()
+        if: always() && hashFiles('validation_history.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: validation-history
@@ -153,10 +98,14 @@ jobs:
             let comment = '## 📊 Data Validation Report\n\n';
             try {
               const history = JSON.parse(fs.readFileSync('validation_history.json', 'utf8'));
-              const latest = history[history.length - 1];
               comment += `| Schema | Total | Valid | Invalid |\n|--------|-------|-------|--------|\n`;
-              comment += `| ${latest.schema} | ${latest.total} | ✅ ${latest.valid} | ❌ ${latest.invalid} |\n`;
-              comment += `\n**Success Rate:** ${(latest.valid / latest.total * 100).toFixed(1)}%\n`;
+              // Summarize the latest entry per schema.
+              const latestBySchema = {};
+              for (const h of history) { latestBySchema[h.schema] = h; }
+              for (const schema of Object.keys(latestBySchema).sort()) {
+                const h = latestBySchema[schema];
+                comment += `| ${schema} | ${h.total} | ✅ ${h.valid} | ❌ ${h.invalid} |\n`;
+              }
             } catch (e) {
               comment += 'No validation data available for this run.';
             }

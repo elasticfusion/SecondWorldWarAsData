@@ -1,0 +1,114 @@
+{
+  "casualties": [
+    {
+      "CasualtyID": "01KPVR79AJJQEDQEHC6ET055PS",
+      "type": "pow",
+      "description": "Approximately 25,000 German troops from remnants of twenty disorganized divisions captured in the Mons pocket after being encircled by US forces",
+      "event_context": {
+        "EventID": "01KHXPA7K8M7N4V2QJ3R5T6V8X",
+        "Sub-eventID": "01KHXPJ6S7T8V9X0Y1Z2A3B4C5"
+      },
+      "source": {
+        "EventID": "01KHXPA7K8M7N4V2QJ3R5T6V8X",
+        "Sub-eventID": "01KHXPJ6S7T8V9X0Y1Z2A3B4C5",
+        "book": "Breakout And Pursuit",
+        "chapter": "Toward the Heart of Germany",
+        "paragraph_number": 32
+      }
+    },
+    {
+      "CasualtyID": "01KPVR79AJJQEDQEHC6ET055PS",
+      "type": "pow",
+      "description": "Approximately 25,000 German troops from remnants of twenty disorganized divisions captured in the Mons pocket after being encircled by US forces",
+      "event_context": {
+        "EventID": "01KHXPA7K8M7N4V2QJ3R5T6V8X",
+        "Sub-eventID": "01KHXPJ6S7T8V9X0Y1Z2A3B4C5"
+      },
+      "source": {
+        "EventID": "01KHXPA7K8M7N4V2QJ3R5T6V8X",
+        "Sub-eventID": "01KHXPJ6S7T8V9X0Y1Z2A3B4C5",
+        "book": "Breakout And Pursuit",
+        "chapter": "Toward the Heart of Germany",
+        "paragraph_number": 32
+      },
+      "count": {
+        "captured": {
+          "value": 25000,
+          "qualifier": "exact"
+        },
+        "total": {
+          "value": 25000,
+          "qualifier": "exact"
+        }
+      },
+      "date": {
+        "DateID": null,
+        "date_string": "3 September",
+        "precision": "unknown"
+      },
+      "impacted_organizations": [
+        {
+          "PeopleGroupID": null,
+          "name": "LVIII Panzer Corps",
+          "nationality": "DEU",
+          "role": "suffered_casualties"
+        },
+        {
+          "PeopleGroupID": null,
+          "name": "II SS Corps",
+          "nationality": "DEU",
+          "role": "suffered_casualties"
+        },
+        {
+          "PeopleGroupID": null,
+          "name": "LXXIV Corps",
+          "nationality": "DEU",
+          "role": "suffered_casualties"
+        },
+        {
+          "PeopleGroupID": null,
+          "name": "3rd Parachute Division",
+          "nationality": "DEU",
+          "role": "suffered_casualties"
+        },
+        {
+          "PeopleGroupID": null,
+          "name": "6th Parachute Division",
+          "nationality": "DEU",
+          "role": "suffered_casualties"
+        },
+        {
+          "PeopleGroupID": null,
+          "name": "18th Luftwaffe Field Division",
+          "nationality": "DEU",
+          "role": "suffered_casualties"
+        },
+        {
+          "PeopleGroupID": null,
+          "name": "First Army",
+          "nationality": "USA",
+          "role": "captor"
+        },
+        {
+          "PeopleGroupID": null,
+          "name": "3rd Armored Division",
+          "nationality": "USA",
+          "role": "captor"
+        },
+        {
+          "PeopleGroupID": null,
+          "name": "1st Infantry Division",
+          "nationality": "USA",
+          "role": "captor"
+        }
+      ],
+      "impacted_people": [],
+      "impacted_places": [
+        {
+          "PlaceID": null,
+          "name": "Mons"
+        }
+      ]
+    }
+  ]
+}
