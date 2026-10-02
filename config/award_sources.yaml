@@ -188,8 +188,31 @@ sources:
       Dapperheidsonderscheidingen (Defence/NIMH; name index, not released as data).
       Citation text → Nationaal Archief / NIMH files + Meijer printed rolls (offline).
 
+  # ---------------- Germany ----------------
+  # No accessible direct citation-text source: invenio is catalog-only; the proposals
+  # (Begründung) are offline at Bundesarchiv (Freiburg = army RH series; Berlin = SS
+  # files incl. Waffen-SS "Charlemagne"). RH 7 Verleihungslisten are name rolls+dates,
+  # NOT the reason. Routed by AWARDING POWER: an Iron Cross / Knight's Cross goes here
+  # even for a FRENCH recipient (LVF / Infanterie-Regiment 638 / Waffen-SS), whose file
+  # may instead be on the French side (SHD) — still German-award provenance.
+  - id: de_offline
+    name: German award citations (Bundesarchiv — offline)
+    nationality: DEU
+    language: German          # Begründung text → translated to English on attach
+    adapter: offline
+    dataset_path: data/award_citations_de.json
+    crawl_delay: 0
+    awards: [Iron Cross, Knight's Cross of the Iron Cross, German Cross, War Merit Cross]
+    accessible: true          # local dataset, no network
+    enabled: false            # enable when a transcribed dataset is provided
+    notes: >-
+      Feed transcribed Begründung from Bundesarchiv Freiburg (RH 7 / Pers 6 / division
+      + regiment files) or, for Waffen-SS, Bundesarchiv Berlin SS files. Foreign
+      volunteers (French LVF / Charlemagne): German file hit-and-miss (Soldbücher lost
+      1944-45; thin Berlin card index) → SHD engagement lists / collaboration dossiers
+      are the fallback source for the same German award. German → translated.
+
   # ---------------- Offline / request-based (any country) ----------------
-  - id: offline_dataset
     name: Offline award dataset
     nationality: ANY
     language: null   # per-record; non-English citations are translated to English (original preserved)

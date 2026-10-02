@@ -185,6 +185,38 @@ catalog-only; proposals are offline). German award citations route to
 rolls); an invenio catalog lookup could later confirm date/unit only. Gate on
 `nationality == DEU`.
 
+### Foreign nationals decorated by Germany — route by AWARDING POWER, not nationality
+
+A non-German decorated by the Wehrmacht or Waffen-SS was, for record purposes, in
+the **German** system — his award citation is in German (or German-held) files, not
+in his home country's sources. The code therefore routes each award by its
+**awarding power** (`awarding_power(award_name)`): an **Iron Cross / Knight's Cross
+/ German Cross** → the German record system **regardless of the recipient's
+nationality**, falling back to nationality only when the award name is unrecognized.
+
+Typical case — a Frenchman in the **Légion des volontaires français** (carried as
+**Infanterie-Regiment 638**): Soldbuch, pay card, a line on the regimental
+*Kriegsstammrolle*; an Iron Cross proposal went up the army chain to the
+**Heerespersonalamt** like any other, and if approved his name can appear on an
+**RH 7 Verleihungsliste** or the unit award list, with the *Vorschlag* possibly
+surviving in a personnel or division/regiment file at **Freiburg**. A Knight's
+Cross also puts him on the central roll.
+
+Two limits (documented, not solvable by code):
+- Individual foreign-volunteer files are hit-and-miss — many Soldbücher were lost
+  in 1944-45, and the Berlin personnel card index is much thinner for foreign
+  volunteers than for Reich Germans.
+- Many of these men transferred to the **Waffen-SS** in 1943-44, so a later award
+  — including the **Charlemagne** Knight's Crosses — sits in the **SS files at
+  Bundesarchiv Berlin**, not the army (RH) series at Freiburg.
+
+When the German file is missing, the **French** side is often better: the **Service
+historique de la Défense** holds LVF/French-Waffen-SS engagement lists, Cernay camp
+reports, captured German papers, and postwar collaboration dossiers. All offline →
+`OfflineAwardDataset` (German-award provenance even though sourced via French
+archives). A medal doesn't guarantee a surviving German dossier, but it's one of the
+better reasons one was created.
+
 ---
 
 ## France (FRA) — gallantry awards

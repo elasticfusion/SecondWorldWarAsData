@@ -28,7 +28,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Optional, Protocol
+from typing import Callable, List, Optional, Protocol
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +108,125 @@ def is_us_person(nationality: Optional[str]) -> bool:
     return canonical_nationality(nationality) == "USA"
 
 
+# Award name -> awarding POWER (the state/military that issued the decoration).
+# This matters because a recipient's nationality is NOT always the awarding power:
+# a Frenchman in the Légion des volontaires français (Infanterie-Regiment 638) or
+# the Waffen-SS "Charlemagne" was decorated by GERMANY — his Iron Cross / Knight's
+# Cross citation lives in the German record system (RH 7 Verleihungslisten,
+# Heerespersonalamt, or SS files in Bundesarchiv Berlin), never in a French source.
+# Keyed on lowercased substrings of the award name; first match wins.
+_AWARD_POWER_PATTERNS = [
+    (
+        "DEU",
+        (
+            "iron cross",
+            "eisernes kreuz",
+            "knight's cross",
+            "knights cross",
+            "ritterkreuz",
+            "german cross",
+            "deutsches kreuz",
+            "war merit cross",
+            "kriegsverdienstkreuz",
+            "wound badge",
+            "close combat clasp",
+        ),
+    ),
+    (
+        "USA",
+        (
+            "medal of honor",
+            "distinguished service cross",
+            "navy cross",
+            "silver star",
+            "bronze star",
+            "distinguished flying cross",
+            "legion of merit",
+            "soldier's medal",
+            "air medal",
+            "purple heart",
+        ),
+    ),
+    (
+        "GBR",
+        (
+            "victoria cross",
+            "george cross",
+            "distinguished service order",
+            "military cross",
+            "distinguished conduct medal",
+            "military medal",
+            "distinguished flying cross",
+            "mentioned in despatches",
+        ),
+    ),
+    (
+        "FRA",
+        (
+            "légion d'honneur",
+            "legion of honour",
+            "legion of honor",
+            "croix de guerre",
+            "médaille militaire",
+            "medaille militaire",
+            "ordre de la libération",
+            "croix de la libération",
+            "médaille de la résistance",
+            "medaille de la resistance",
+            "compagnon de la libération",
+        ),
+    ),
+    (
+        "ITA",
+        (
+            "valor militare",
+            "medaglia d'oro",
+            "medaglia d'argento",
+            "ordine militare d'italia",
+        ),
+    ),
+    ("BEL", ("croix de guerre 1940", "order of leopold", "order of the crown")),
+    (
+        "NLD",
+        (
+            "willems-orde",
+            "willems order",
+            "bronzen leeuw",
+            "bronzen kruis",
+            "vliegerkruis",
+            "kruis van verdienste",
+            "verzetskruis",
+        ),
+    ),
+]
+
+
+def awarding_power(award_name: Optional[str]) -> Optional[str]:
+    """The nation that ISSUED an award, inferred from its name (not the recipient's
+    nationality). Returns a canonical code (USA/GBR/DEU/FRA/ITA/BEL/NLD) or None if
+    the award name is not recognized. Note the UK/French DFC collision resolves to
+    GBR here; a French DFC is vanishingly rare in this corpus and offline anyway."""
+    if not award_name:
+        return None
+    name = award_name.strip().lower()
+    for code, patterns in _AWARD_POWER_PATTERNS:
+        if any(p in name for p in patterns):
+            return code
+    return None
+
+
+def award_source_nationality(award: dict, person: dict) -> Optional[str]:
+    """Which record system holds THIS award's citation. Prefer the awarding power
+    (derived from the award name); fall back to the recipient's nationality when the
+    award name is unrecognized. This routes e.g. a French LVF/Waffen-SS man's Iron
+    Cross to the German sources, not a French one."""
+    if isinstance(award, dict):
+        power = awarding_power(award.get("award"))
+        if power:
+            return power
+    return person_nationality(person)
+
+
 def has_award_context(person: dict) -> bool:
     """True if the person appears in the context of an award (has >=1 award)."""
     bp = person.get("biographical_profile") or {}
@@ -122,21 +241,37 @@ def person_nationality(person: dict) -> Optional[str]:
 
 
 def should_source_awards(person: dict) -> bool:
-    """Gate: a person named in an award context whose nationality is one we have a
-    registered source for. (Nationality-agnostic now — any registered country.)"""
-    return bool(person_nationality(person)) and has_award_context(person)
+    """Gate: a person named in an award context routable to a registered record
+    system. Routable means EITHER the person's nationality OR the awarding power of
+    at least one of their awards is a country we have sources for. This admits a
+    French LVF/Waffen-SS man decorated by Germany (routed via his Iron Cross)."""
+    if not has_award_context(person):
+        return False
+    if person_nationality(person):
+        return True
+    bp = person.get("biographical_profile") or {}
+    awards = bp.get("military_awards") or person.get("military_awards") or []
+    return any(isinstance(a, dict) and awarding_power(a.get("award")) for a in awards)
+
+
+SourceSelector = Callable[[Optional[str]], List[AwardCitationSource]]
 
 
 def enrich_person_awards(
     person: dict,
-    sources: List[AwardCitationSource],
+    sources,
 ) -> int:
-    """Attach authoritative citations to this person's awards via ``sources`` in
-    order (first authoritative match wins per award). Returns the number of awards
-    augmented with a citation. Fail-safe: a source error is logged and the next
-    source is tried; never raises.
+    """Attach authoritative citations to this person's awards.
 
-    Only fills a citation on an award that lacks one; existing provenance is kept.
+    ``sources`` may be either:
+      * a flat ``List[AwardCitationSource]`` tried in order for every award, or
+      * a selector ``callable(nationality_code) -> List[AwardCitationSource]`` so
+        each award is routed to the record system of its AWARDING POWER (e.g. an
+        Iron Cross -> German sources even for a French recipient).
+
+    Returns the number of awards augmented with a citation. Fail-safe: a source
+    error is logged and the next source is tried; never raises. Only fills a
+    citation on an award that lacks one; existing provenance is kept.
     """
     if not should_source_awards(person):
         return 0
@@ -146,12 +281,21 @@ def enrich_person_awards(
     if not name or not awards:
         return 0
 
+    selector = sources if callable(sources) else None
+
     filled = 0
     for award in awards:
         if not isinstance(award, dict) or award.get("citation_text"):
             continue  # keep existing provenance; only fill gaps
         award_name = award.get("award", "")
-        citation = _first_match(sources, name, award_name)
+        if selector is not None:
+            route = award_source_nationality(award, person)
+            award_sources_list = selector(route)
+        else:
+            award_sources_list = sources
+        if not award_sources_list:
+            continue
+        citation = _first_match(award_sources_list, name, award_name)
         if citation:
             text, original, language = _normalize_citation_language(citation)
             award["citation_text"] = text
