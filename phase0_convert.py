@@ -159,6 +159,10 @@ def convert_key(key: str) -> str:
     )
     s3.put_object(Bucket=BUCKET, Key=meta_key, Body=meta.encode("utf-8"))
     s3.put_object(Bucket=BUCKET, Key=content_key, Body=markdown.encode("utf-8"))
+    # Source doc (epub/docx) now consumed — tag it for cold archive. Fail-safe.
+    from src.ingestion.archive_tag import tag_source_cold
+
+    tag_source_cold(s3, BUCKET, key)
     logger.info("Converted %s -> %s (%d chars)", key, content_key, len(markdown))
     return content_key
 

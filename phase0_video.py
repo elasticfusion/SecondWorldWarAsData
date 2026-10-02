@@ -264,6 +264,11 @@ def _write_chapter_structure(s3, key, book, markdown, resolved) -> str:
     )
     s3.put_object(Bucket=BUCKET, Key=meta_key, Body=meta.encode("utf-8"))
     s3.put_object(Bucket=BUCKET, Key=content_key, Body=markdown.encode("utf-8"))
+    # The source video is now consumed (chapter written) — tag it for cold archive
+    # (Glacier IR via the tag-based lifecycle rule). Fail-safe: never blocks.
+    from src.ingestion.archive_tag import tag_source_cold
+
+    tag_source_cold(s3, BUCKET, key)
     logger.info(
         "Video %s -> %s (%d segments, %d speakers need review)",
         key,
