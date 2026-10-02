@@ -59,6 +59,23 @@ environment's requests:
 - Replace/retire the OpenSERP `search_valor` path now that Hall of Valor covers
   US awards (keep OpenSERP only as a last-ditch fallback if desired).
 
+## WAF bypass — investigated + declined (2026-10-02)
+The WAF-walled sources (valor.defense.gov=Akamai, CMOHS/TracesOfWar=Cloudflare)
+block on **datacenter/VPN IP reputation + bot fingerprint, NOT geography**:
+- **Other AWS regions won't help** — all AWS egress IPs are on the same WAF
+  reputation lists.
+- **A VPN won't help** — experiment 2026-10-02: a commercial VPN exit (Proton AG,
+  Buenos Aires AR, AS208172) still got **403** from valor.defense.gov + CMOHS +
+  TracesOfWar. The exit is itself a datacenter IP → flagged identically. An
+  AWS-hosted VPN is the same (AWS/datacenter egress).
+- **Only residential/mobile egress** (residential proxy, or a Tailscale/WireGuard
+  exit node on a real home connection) would clear these WAFs.
+**Decision (owner):** skip residential egress / Tailscale for now — low payoff
+(it buys only CMOHS, which is MoH-only and redundant with Hall of Valor, + the
+TracesOfWar name index) and the offline material (WO 373, Fold3) isn't WAF-
+solvable anyway. Build against sources that serve us; route the rest to
+`OfflineAwardDataset`.
+
 ## Source map (verified 2026-10-02)
 | Source | Access from our IP | Role |
 |---|---|---|
@@ -83,3 +100,68 @@ Silver Stars route to NARA/Fold3 general orders → the offline dataset path.
   (`AWARD_CITATIONS_ENABLED=true`), gated US + award context, fail-safe, records
   full provenance. Preferred over the OpenSERP `search_valor` path.
 
+
+
+---
+
+## United Kingdom (GBR) — gallantry awards
+
+UK citations are not one free list; the official notices + recommendation files
+are online, with some compiled registers. Source map (accessibility verified
+2026-10-02):
+
+| Source | Access from our IP | Role |
+|---|---|---|
+| **London Gazette** (thegazette.co.uk) | **AWS WAF JS-challenge** (`server: CloudFront`, `x-amzn-waf-action: challenge`, 202 + JS page) | Official citation wording, BUT **not reliably fetchable** from a datacenter IP: the first request may pass, then the WAF serves a JS bot-challenge (202/empty for a plain UA; 202 + challenge page for a Chrome UA). Needs a JS-executing browser on a residential IP (the skipped route). robots (when reachable) asks `Crawl-delay: 10` + disallows `/notice/*/data.xml|data.pdf|version/*`. **Deferred** → offline/manual for now. |
+| **Victoria Cross Online** (victoriacrossonline.co.uk) | **200, nginx** | VC/GC per-recipient pages with citation. Secondary, VC/GC-focused. |
+| TracesOfWar (tracesofwar.com/awards) | **403 (Cloudflare)** | Name index DSO/DCM/CGM/VC; blocked — defer / residential egress. |
+| TNA Discovery — **WO 373** (recs for honours/awards 1935-90), WO 390 (DSO reg), WO 391 (DCM reg) | 202 (CloudFront, async/JS) | Original recommendation forms (often fuller than the Gazette); per-record downloads, not a simple fetch → treat as offline/manual → `OfflineAwardDataset`. |
+| Fold3 — UK DCM register 1939-45 (~2,117, N&MP), London Gazette WWII military notices (~1.3M) | subscription | Transcribed DCM recommendations + Gazette index. Offline/manual only. |
+
+**Per-award citation availability (what the Gazette actually prints):**
+- **VC / GC**: full citations published in the Gazette (+ Victoria Cross Online). Easiest.
+- **DSO / DFC / DFM / GM**: short citation usually published in the Gazette.
+- **DCM / MM**: often **name/rank/unit only** in the Gazette — the **full story is in the WO 373 recommendation file** (offline). So for DCM/MM, the Gazette gives confirmation + date; the citation TEXT needs WO 373 / the Fold3 DCM register → the offline dataset path.
+
+**Practical lookup order (per owner):** Gazette first → WO 373 on Discovery →
+Fold3 (transcribed DCM) if needed.
+
+**Build plan (GB `AwardCitationSource`):** The London Gazette is behind an AWS WAF
+JS-challenge (deferred — same residential-egress problem we skipped), so it is NOT
+the first direct source. **Victoria Cross Online** (victoriacrossonline.co.uk;
+nginx, served cleanly) is the one accessible UK direct source → build it for
+VC/GC, gated `nationality == GBR` + award context, provenance recorded. DCM/MM
+full text (WO 373 / Fold3 register), TracesOfWar (Cloudflare), and the Gazette
+wording → `OfflineAwardDataset`. Same pluggable interface as the US sources.
+source (polite: **10s crawl-delay**, cached, descriptive UA, HTML notice page not
+the disallowed data.xml/pdf), Victoria Cross Online for VC/GC, gated on
+`nationality == GBR` + award context, provenance recorded, preferring the official
+Gazette wording. DCM/MM citation text + anything behind Cloudflare/subscription →
+`OfflineAwardDataset`. (Same pluggable interface as the US sources.)
+
+
+---
+
+## Germany (DEU) — gallantry awards
+
+Finding aids are online; some award *rolls* are digitized; the individual
+proposals with the citation (*Begründung*) usually are **not**. So for German
+awards the open path gives **date + unit**, not the reason — citation text is
+mostly a Bundesarchiv-Freiburg request → `OfflineAwardDataset`.
+
+| Source | Access | Role |
+|---|---|---|
+| **Bundesarchiv invenio** (invenio.bundesarchiv.de, "Suche ohne Anmeldung") | catalog search only (not scan text); some "Digitalisat anzeigen" | Finding aid; search hits the **description**, not the scan text. |
+| **RH 7** (OKH Heerespersonalamt, *Orden und Ehrenzeichen*) | partly digitized | *Verleihungslisten* (Iron Cross, by division incl. some Waffen-SS) = **name rolls + dates, NOT the Begründung**; coverage uneven, often only from late 1940/41 (Poland/France thin). RH 7/3030 = Ritterkreuz holders by theater/rank/division (digital copy). RH 7/305 = some War Merit Cross proposal lists **with** a short Begründung. |
+| **Pers 6** (personnel files, Freiburg) | **not free online**; request-based; protection period for recent/<10yr-deceased | Often holds a copy of the *Vorschlag* (the citation). Request a named-person search / reproduction from the Bundesarchiv. |
+| **Scherzer / Wikipedia Ritterkreuz roll** | web | Confirm the man + date/unit; citation reason still needs Pers 6 / RH 7. |
+
+**Practical path (Knight's Cross citation):** confirm in Scherzer or the Wikipedia
+roll → order the Pers 6 file or the relevant RH 7 proposal from Freiburg. Open
+digital material gives date/unit more often than the *reason*.
+
+**Build implication:** no accessible direct citation-text source (invenio is
+catalog-only; proposals are offline). German award citations route to
+`OfflineAwardDataset` (fed from Bundesarchiv reproductions / transcribed RH 7
+rolls); an invenio catalog lookup could later confirm date/unit only. Gate on
+`nationality == DEU`.
