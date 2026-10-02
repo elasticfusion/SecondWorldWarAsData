@@ -7,6 +7,7 @@ that already have a Wikipedia photo.
 
 import json
 import logging
+import threading
 from pathlib import Path
 from typing import Optional
 
@@ -21,11 +22,14 @@ _HEADERS = {
 
 # Store Wikipedia images for equipment (checked by OpenSERP to skip duplicates)
 _equipment_wiki_images: dict = {}
+# H3: guarded — written during the threaded Wikipedia enrich + read later.
+_equipment_wiki_images_lock = threading.Lock()
 
 
 def get_equipment_wikipedia_image(name: str) -> Optional[dict]:
     """Get cached Wikipedia image for equipment (found during enrich)."""
-    return _equipment_wiki_images.get(name)
+    with _equipment_wiki_images_lock:
+        return _equipment_wiki_images.get(name)
 
 
 def search_equipment_wikipedia(name: str) -> Optional[dict]:
@@ -49,10 +53,11 @@ def search_equipment_wikipedia(name: str) -> Optional[dict]:
 
     if result:
         cache_result("wikipedia_equipment", name, json.dumps(result))
-        _equipment_wiki_images[name] = {
-            "url": result.get("image", ""),
-            "license": result.get("license", "unknown"),
-        }
+        with _equipment_wiki_images_lock:
+            _equipment_wiki_images[name] = {
+                "url": result.get("image", ""),
+                "license": result.get("license", "unknown"),
+            }
     else:
         cache_result("wikipedia_equipment", name, None)
     return result

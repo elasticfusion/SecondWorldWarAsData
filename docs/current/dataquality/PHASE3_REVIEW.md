@@ -21,9 +21,7 @@ transient errors cached as durable `not_found` (suppressing retries for 90 days)
 1. **C1 — Wire the geocoding cascade into `main()`. ✅ DONE (PR #217)** — cascade
    (Nominatim→hill→Grok) now writes coordinates; +4 regression tests.
 2. **C2 + C3 — Stop swallowing failures; report structured per-source stats. ✅ DONE (PR #221)** — silent except:pass logged; per-source stats (attempted/enriched/errors) in .phase_results.json surfaced in the completion notification (email + Slack) with a prominent failure block.
-3. **M3 + H3 — Stop caching transient errors as `not_found`; make breaker/
-   rate-limiter/image-cache globals per-run + thread-safe.** Restores idempotent
-   re-runs under concurrency.
+3. **M3 + H3 — Stop caching transient errors as `not_found`; make breaker/rate-limiter/image-cache globals per-run + thread-safe. ✅ DONE (PR #222)** — places/groups transient errors now leave the entity unstamped (retriable); OpenSERP breaker lock-guarded + reset_circuit() per run; NOAA rate-limiter + equipment/groups image caches lock-guarded.
 
 ---
 

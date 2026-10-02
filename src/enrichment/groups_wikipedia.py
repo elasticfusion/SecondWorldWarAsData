@@ -5,6 +5,7 @@ Searches Wikipedia for military unit articles, extracts images + metadata.
 
 import json
 import logging
+import threading
 from pathlib import Path
 from typing import Optional
 
@@ -18,11 +19,14 @@ _HEADERS = {
 }
 
 _groups_wiki_images: dict = {}
+# H3: guarded — written during the threaded Wikipedia enrich + read later.
+_groups_wiki_images_lock = threading.Lock()
 
 
 def get_group_wikipedia_image(name: str) -> Optional[dict]:
     """Get cached Wikipedia image for a group."""
-    return _groups_wiki_images.get(name)
+    with _groups_wiki_images_lock:
+        return _groups_wiki_images.get(name)
 
 
 def search_group_wikipedia(name: str) -> Optional[dict]:
@@ -42,10 +46,11 @@ def search_group_wikipedia(name: str) -> Optional[dict]:
 
     if result:
         cache_result("wikipedia_group", name, json.dumps(result))
-        _groups_wiki_images[name] = {
-            "url": result.get("image", ""),
-            "license": result.get("license", "unknown"),
-        }
+        with _groups_wiki_images_lock:
+            _groups_wiki_images[name] = {
+                "url": result.get("image", ""),
+                "license": result.get("license", "unknown"),
+            }
     else:
         cache_result("wikipedia_group", name, None)
     return result
