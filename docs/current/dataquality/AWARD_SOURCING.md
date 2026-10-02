@@ -210,3 +210,42 @@ US awards scattered through unit records + French decrees (no single roll).
 **Build:** Ordre de la Libération as the FR direct source (French → translated);
 everything else (Croix de guerre, Médaille militaire, Légion d'honneur) →
 `OfflineAwardDataset` (JO/Gallica, SHD, Léonore dossiers).
+
+---
+
+## Canada (CAN) — gallantry awards
+
+English. The DHH overseas recommendation files are the full citations; the Gazette
+is the published citation; Veterans Affairs quotes VC citations. Accessibility
+verified 2026-10-02 (AWS + full headers).
+
+| Source | Access from AWS | Role |
+|---|---|---|
+| **DHH — Canadian Army Overseas Honours and Awards 1939-45** (dhh-dhp.forces.gc.ca/cao-aco) | **200 ✅** | **Direct source.** Original overseas recommendation files (54 vols, by name) = full theatre citations (DSO/MC/DCM/MM, incl. other ranks, nursing sisters, civilians). Army only; VC paperwork + Canada-only recs excluded. |
+| **Veterans Affairs — WWII VC fact sheet** (veterans.gc.ca) | **200 ✅** | 16 Canadians (incl. British-unit VCs); individual pages quote the London Gazette VC citation in full. |
+| London Gazette | 200 (see UK) | The published legal citation; LAC/DHH give the gazette date to pull it. |
+| LAC — Military medals 1812-1969 | timed out (slow/heavy) | Citation cards + registers (Army only; post-1918 MM cards often omit the reason; no RCAF/RCN) → treat as unreliable/offline. |
+| Blatherwick rolls (blatherwick.net) | 200 | Free PDF compiled rolls (name/rank/unit/gazette date) — finding aids, NOT narrative citations. |
+| RCAF Association / London Gazette | — | RCAF + Canadian-in-RAF (DFC/DFM/DSO) transcripts; Navy (DSC/DSM/CGM) thinnest → Gazette + Blatherwick → offline. |
+
+**Build:** DHH as the CAN direct source (English); VC via Veterans Affairs/Gazette;
+RCAF/RCN + LAC cards → offline/Gazette.
+
+---
+
+## Italy (ITA) — gallantry awards
+
+Italian → citations translated to English (original + language preserved). The
+Quirinale database carries the full *motivazione* for the **gold** medal; silver/
+bronze are thin online. Accessibility verified 2026-10-02 (AWS + full headers).
+
+| Source | Access from AWS | Role |
+|---|---|---|
+| **Quirinale — Onorificenze** (quirinale.it/onorificenze) | **200 ✅** | **Direct source.** Each record = grade, rank, decree date, full *motivazione* (citation). Gold Medal of Military Valor (~2,607 all-wars; search needs ≥2 surname letters) + Ordine Militare d'Italia + branch valor medals. Italian → translated. |
+| Gazzetta Ufficiale (gazzettaufficiale.it) | **200 ✅** | Legal primary text (citation in the decree) — use if a Quirinale sheet is missing. Harder to query by name → offline/targeted. |
+| ANCFARGL MOVM 1943-45 | web | 543 gold medals (8 Sep 1943–8 May 1945) by region/birthplace — names/places, NOT full citations. |
+| *Le Medaglie d'Oro al Valor Militare* (print, Nastro Azzurro) + branch volumes | print/library | The standard citation collection; WWII split across 1940-43 + liberation vols → offline. |
+
+**Build:** Quirinale as the ITA direct source (Italian → translated); silver/bronze
++ Gazzetta + print volumes → offline. **No complete public roll for WWII silver/
+bronze medals** (tens of thousands).
