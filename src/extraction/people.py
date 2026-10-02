@@ -293,6 +293,9 @@ class MilitaryAward(BaseModel):
     source_url: Optional[str] = None  # per-recipient page the citation came from
     retrieved_date: Optional[str] = None  # ISO-8601 retrieval date
     verified: Optional[bool] = None  # True only when source recipient matched person
+    # Per-source attempt log (source/outcome/error-with-URL/attempted_date) so a later
+    # run knows what was tried + why it failed (no blind re-hammering). Optional.
+    sourcing_attempts: Optional[list] = None
 
     model_config = ConfigDict(populate_by_name=True)
 

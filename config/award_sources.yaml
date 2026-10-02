@@ -21,7 +21,19 @@
 #   accessible    from AWS with the full browser header profile? (probe result)
 #   enabled       whether the source is active
 #   dataset_path  (offline adapter only) local JSON dataset of citations
+#   user_agent    (optional) per-source UA override — set when a site's policy prefers
+#                 an identifying/contact UA over the default browser profile. Validated
+#                 by tests/test_award_user_agent_efficacy.py (keep the choice honest).
+#   accept_language (optional) per-source Accept-Language, best-fit for the site's
+#                 locale (e.g. 'ru-RU,ru;q=0.9' for Podvig, 'fr-FR,fr;q=0.9' for Ordre
+#                 de la Libération) so results come back in the expected language.
 #   notes         freeform
+#
+# ACCESS PROFILE: the default is the shared full browser header profile
+# (src/utils/http_pool.browser_headers). Per-source `user_agent`/`accept_language`
+# override just those fields when a site is best served by something specific —
+# "optimized per search", not one-size-fits-all. Politeness (crawl_delay) is enforced
+# for EVERY source by the PoliteSource base regardless of header choice.
 #
 # Access facts verified 2026-10-02 from AWS Lambda + full browser headers
 # (src/utils/http_pool.browser_headers). valor.defense.gov EXCLUDED: Akamai 403s
@@ -88,6 +100,7 @@ sources:
     base_url: https://www.ordredelaliberation.fr
     search_path: "/fr/recherche-compagnons?q={q}"
     crawl_delay: 3
+    accept_language: fr-FR,fr;q=0.9,en;q=0.8
     awards: [Ordre de la Libération, Croix de la Libération]
     accessible: true
     enabled: true
@@ -129,6 +142,7 @@ sources:
     base_url: https://www.quirinale.it
     search_path: "/onorificenze?cognome={q}"
     crawl_delay: 3
+    accept_language: it-IT,it;q=0.9,en;q=0.8
     awards: [Medaglia d'Oro al Valor Militare, Ordine Militare d'Italia]
     accessible: true
     enabled: true
@@ -312,6 +326,7 @@ sources:
     base_url: https://podvignaroda.ru
     search_path: "/?#tab=navHome"
     crawl_delay: 3
+    accept_language: ru-RU,ru;q=0.9,en;q=0.8
     awards: [Hero of the Soviet Union, Order of Lenin, Order of the Red Banner, Order of the Red Star, Order of Glory, Medal for Courage]
     accessible: true
     enabled: true                 # scanned award sheets = the citation
