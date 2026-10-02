@@ -18,8 +18,14 @@ RUN apt-get update && apt-get upgrade -y --no-install-recommends && \
     apt-get install -y --no-install-recommends \
         clamav clamav-daemon clamav-freshclam python3 python3-boto3 awscli && \
     rm -rf /var/lib/apt/lists/* && \
-    useradd -r -s /bin/false -d /app clamav-run && \
-    mkdir -p /app /var/lib/clamav && chown -R clamav-run:clamav-run /app /var/lib/clamav
+    mkdir -p /app /var/lib/clamav && \
+    # freshclam/clamscan internally drop privileges to the packaged `clamav`
+    # user (UID ~100). The signature DB dir MUST be writable by that user or
+    # freshclam fails to create freshclam.dat ("database directory must be
+    # writable"). chown to clamav + make group-writable so both the clamav user
+    # and root-run invocations can write.
+    chown -R clamav:clamav /app /var/lib/clamav && \
+    chmod -R g+w /var/lib/clamav
 
 WORKDIR /app
 COPY scripts/av_entrypoint.py /app/av_entrypoint.py
