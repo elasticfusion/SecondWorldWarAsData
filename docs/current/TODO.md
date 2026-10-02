@@ -521,6 +521,16 @@ Investigate whether DynamoDB is still earning its place, and scope removing it a
 a *general* data store. Code review (2026-09-30) found it plays three distinct
 roles — they must be evaluated separately, not lumped together:
 
+> **Storage review 2026-10-02** (`docs/current/STORAGE_REVIEW.md`) decided the
+> role-split: remove the entity *materialization* copy (→ Postgres with the RAG
+> phase), **preserve** the concurrency-safe `merge_entity`, **keep** the tiny
+> coordination KV (locks/`pending#*`/NAT leases/`batch_job#`) on DynamoDB
+> long-term. pgvector single-store AFFIRMED but deferred to the post-ingestion
+> RAG phase. Also tracked there: **S3 `output/` JSON consolidation** (45k
+> per-entity objects → per-type NDJSON/Parquet) — an efficiency/cost
+> optimization, NOT a correctness fix; do when Phase-3 bulk-read time is a felt
+> bottleneck OR when the Postgres load is built, whichever first.
+
 1. **Bulk Phase 3 materialization (weak — prime candidate for removal).**
    `s3_sync._materialize_from_dynamo` calls `DynamoEntityStore.list_all` once per
    entity type = **11 sequential full-table `Scan`s** (`FilterExpression`
