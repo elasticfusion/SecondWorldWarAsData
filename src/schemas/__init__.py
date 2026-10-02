@@ -1,7 +1,7 @@
 """Schema infrastructure for output validation.
 
 Every output JSON file carries:
-  _schema_version: "2.3"    — which schema version wrote this file
+  _schema_version: "2.4"    — which schema version wrote this file
   _last_updated: "2026-05-09"  — when the file was last modified
 
 When a schema evolves:
@@ -20,7 +20,7 @@ Validation rules:
 from datetime import date
 from typing import Any, Dict
 
-SCHEMA_VERSION = "2.3"
+SCHEMA_VERSION = "2.4"
 
 # Shared patterns
 ULID_PATTERN = "^[0-9A-HJKMNP-TV-Z]{26}$"

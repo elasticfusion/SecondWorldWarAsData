@@ -18,7 +18,11 @@ prompt_template: |
 
   Extract biographical data when mentioned:
   - ranks: Military rank progression with dates
-  - units_served: Military units with service periods
+  - units_served: Military units with service periods. For each unit also give
+    structured fields when identifiable: designation (canonical name e.g. "9th
+    Infantry Division"), echelon (division|corps|army|regiment|battalion|company|
+    brigade|group|fleet|squadron|wing), unit_number (numeric designator e.g. "9").
+    Leave GroupID out (set later by entity resolution).
   - education: Educational institutions and degrees
   - military_awards: Medals and decorations
   - family: Spouse and children names
@@ -50,7 +54,8 @@ schema: |
             {"rank": "General of the Army", "date": "1944-12-20", "branch": "US Army"}
           ],
           "units_served": [
-            {"unit": "Supreme Headquarters Allied Expeditionary Force", "from": "1943", "to": "1945"}
+            {"unit": "Supreme Headquarters Allied Expeditionary Force", "from": "1943", "to": "1945", "designation": "Supreme Headquarters Allied Expeditionary Force", "echelon": "command"},
+            {"unit": "9th Infantry Division", "from": "1944", "to": "1945", "designation": "9th Infantry Division", "echelon": "division", "unit_number": "9"}
           ],
           "education": [
             {"institution": "United States Military Academy", "degree": "Bachelor of Science", "year": "1915"}

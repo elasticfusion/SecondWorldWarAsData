@@ -1,7 +1,7 @@
 # JSON Schema Reference
 
 **Last Updated:** 2026-06-13
-**Schema Version:** 2.3
+**Schema Version:** 2.4
 
 All entity files use 26-character ULIDs for cross-referencing. Cross-references always point to top-level entity IDs (e.g., `DateMentionID` → `DateID` in a date file, `PlaceMentionID` → `PlaceID` in a place file).
 
@@ -9,7 +9,7 @@ All entity files include internal metadata fields (prefixed with `_`):
 
 | Field | Type | Description |
 |---|---|---|
-| `_schema_version` | string | Output format version (currently "2.3") |
+| `_schema_version` | string | Output format version (currently "2.4") |
 | `_last_updated` | string | ISO date of last modification (e.g., "2026-06-13") |
 
 These are auto-injected by `src/schemas.inject_metadata()` at write time and excluded from schema validation via `patternProperties: {"^_": {}}`.
@@ -159,8 +159,8 @@ Sub-event entity arrays contain top-level entity IDs (DateID, PlaceID, PersonID,
     "nationality": "American",
     "biographical_details": "...",
     "ranks": [{ "rank": "General", "branch": "US Army", "date": "1945-03-12" }],
-    "units_served": [{ "unit": "First Army", "from": "1944-01", "to": "1944-08" }],
-    "military_awards": [{ "award": "...", "class": null, "date_awarded": null }],
+    "units_served": [{ "unit": "9th Infantry Division", "from": "1944-01", "to": "1944-08", "designation": "9th Infantry Division", "echelon": "division", "unit_number": "9", "GroupID": "01ULID… (optional, set by unit entity-resolution)" }],
+    "military_awards": [{ "award": "...", "class": null, "date_awarded": null, "citation_text": null, "source_name": null, "source_url": null, "retrieved_date": null, "verified": null }],
     "biography_sources": [{ "source": "Wikipedia", "confidence": 0.9, "fields_sourced": ["birth_date"], "page": null }]
   },
   "event_mentions": [
