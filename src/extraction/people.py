@@ -148,7 +148,7 @@ def _deduplicate_units(units: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
     if not units:
         return []
 
-    # Normalize all units
+    # Normalize all units (carry the structured affiliation fields through)
     normalized = []
     for u in units:
         norm_unit = _normalize_unit(u.get("unit", ""))
@@ -157,6 +157,10 @@ def _deduplicate_units(units: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
                 "unit": norm_unit,
                 "from": u.get("from"),
                 "to": u.get("to"),
+                "GroupID": u.get("GroupID"),
+                "designation": u.get("designation"),
+                "echelon": u.get("echelon"),
+                "unit_number": u.get("unit_number"),
             }
         )
 
@@ -183,7 +187,16 @@ def _deduplicate_units(units: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
             )
 
         best = max(entries, key=priority)
-        result.append(best)
+        # Preserve the richest structured affiliation across duplicates: a GroupID
+        # or designation present on ANY duplicate should survive onto the kept one.
+        for field in ("GroupID", "designation", "echelon", "unit_number"):
+            if not best.get(field):
+                for e in entries:
+                    if e.get(field):
+                        best[field] = e[field]
+                        break
+        # Drop keys that are None so records stay clean (migration-safe).
+        result.append({k: v for k, v in best.items() if v is not None})
 
     return result
 
@@ -289,11 +302,36 @@ class MilitaryRank(BaseModel):
 
 
 class UnitServed(BaseModel):
-    """Military unit in which a person served."""
+    """Military unit in which a person served.
+
+    ``unit`` is the free-text unit name as written. The structured fields enable
+    unit-scoped work (e.g. targeting a unit's own recipients page) without first
+    doing full entity resolution, and ``GroupID`` links to the resolved
+    people_groups entity once resolution has run.
+    """
 
     unit: str
     from_: Optional[str] = Field(default=None, alias="from")
     to: Optional[str] = None
+
+    # (A) Link to the resolved people_groups entity (ULID), when known. Empty until
+    # unit entity-resolution runs; present = authoritative person->unit affiliation.
+    GroupID: Optional[str] = Field(
+        default=None, description="26-char ULID of the people_groups unit"
+    )
+    # (B) Structured, normalized unit identity — usable immediately for unit-scoped
+    # sourcing even before GroupID resolution:
+    designation: Optional[str] = Field(
+        default=None, description="Canonical designation, e.g. '9th Infantry Division'"
+    )
+    echelon: Optional[str] = Field(
+        default=None,
+        description="Echelon type: division|corps|army|regiment|battalion|company|brigade|group|fleet|squadron|wing",
+    )
+    unit_number: Optional[str] = Field(
+        default=None,
+        description="Numeric designator, e.g. '9' for 9th Infantry Division",
+    )
 
     model_config = ConfigDict(populate_by_name=True)
 
