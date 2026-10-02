@@ -82,3 +82,9 @@ manifests/manifests_complete/
 
 # Local scratch / inspection artifacts (not tracked)
 tmp/
+
+# NOTE: the real output/** dataset is ignored above (S3-backed, disposable), but the
+# curated schema-validation fixtures under tests/fixtures/validation/** ARE tracked
+# on purpose (they give CI real shapes to validate — see that dir's README). They do
+# not live under output/, so no un-ignore is needed; keep it that way (do not add a
+# broad tests/**/*.json or output-style rule that would capture them).

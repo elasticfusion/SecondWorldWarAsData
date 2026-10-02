@@ -49,6 +49,8 @@ jobs:
       # Data-driven: every tests/fixtures/validation/<schema>/ dir is validated,
       # so adding a category needs no workflow edit.
       - name: Validate sample fixtures against schemas
+        env:
+          PYTHONPATH: . # make 'src' importable when running the script directly
         run: |
           set -euo pipefail
           mkdir -p reports
