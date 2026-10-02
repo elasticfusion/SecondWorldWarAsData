@@ -33,6 +33,29 @@ transient errors cached as durable `not_found` (suppressing retries for 90 days)
 **C1. Geocoding cascade is dead code — places never get coordinates. ✅ FIXED (PR #217).**
 `phase3_enrich_data.py:242-253` calls `enrich_all_places` (`src/extraction/enrich_places.py:401-440`), which only sets hierarchy/historical_names/wikipedia/images — **never `coordinates`**. The real geocoders (`places_grok_geocode.geocode_places_dir`/`cascade_geocoder`, `nominatim_geocode`, `situational_geocode`, `hill_geocode`, `elevation_verify`, offline `places_geo.enrich_places_dir`) have **zero production callers** (grep: only tests/docs). → Wire `geocode_places_dir(..., geocoder=cascade_geocoder(...))` into `main()`; add a smoke test asserting a known town gets non-zero coordinates.
 
+**Geocoding accuracy follow-ups (found while live-testing C1 on real data; FIXED PR #219):**
+- **Cascade ordering is context-blind-first.** Nominatim (first leg) queried the
+  bare name only; the context-aware Grok leg ran only as a fallback — so an
+  ambiguous name could get a confident-but-wrong hit before context was consulted.
+  → Nominatim leg now uses the record's country/hierarchy to **scope the query**
+  (`countrycodes`), making the cheap first leg context-aware.
+- **Country-name localization.** Nominatim returned localized/multilingual country
+  names ("Deutschland", "België / Belgique / Belgien"). → `accept-language=en`
+  returns English names natively for ALL countries + a defensive multilingual
+  splitter. Verified live: Aachen→Germany, Rocherath→Belgium.
+- **Theater lock-in.** The "outside primary theater" flag + ETO-only country list
+  hard-coded a Europe assumption. The corpus will add **North Africa, the Pacific,
+  and Naval** data. → Removed the theater flag; country-code scoping is now an
+  optional optimization (unknown/naval → unscoped search, still works). Verified
+  live: Tunis→Tunisia, Okinawa→Japan.
+- **Translated place names.** Source docs use translated/period forms
+  (Aix-la-Chapelle/Aken for Aachen; Weißenburg for Wissembourg). → On a primary-name
+  miss, the Nominatim leg now retries the record's `historical_names` + `aliases`
+  variants. Verified live: a primary miss resolved via the `Aachen` variant.
+- **Observation (not a bug):** ~50% of sampled places already had coordinates;
+  the cascade's idempotency correctly skips those.
+
+
 **C2. Silent exception swallowing violates the no-silent-failure principle.**
 Bare `except Exception: pass` in `phase3_enrich_data.py:48-49` (`_notify_enrichment_started`), `:72-73` (`_update_lock_status`); plus `enrich_places._fetch_place_wikipedia_full`/`_fetch_image_license`/`_search_grokipedia_place`, `equipment_wikipedia._fetch_license`, `groups_wikipedia._fetch_license`, `noaa_weather._get` (→debug). API/lock/license failures vanish with no WARNING + no metric; the run still reports "complete." → Downgrade to `logger.warning`, count per-source failures into `.phase_results.json`.
 
