@@ -496,32 +496,35 @@ def section_openserp(config, grok_client):
     if not found_awards:
         print("    ⚠ No Grok-confirmed awards found")
 
-    # Valor searches (US personnel only, keep searching until find)
-    from src.enrichment.openserp_enrichment import search_valor
+    # Authoritative award citations (US personnel) via the direct Hall of Valor
+    # adapter — the real pipeline path (search_valor was retired as redundant).
+    from pathlib import Path as _Path
+
+    from src.enrichment.award_hall_of_valor import HallOfValorSource
 
     us_people = [p for p in people if p.get("nationality") == "USA"]
     if not us_people:
         us_people = people[:20]
-    print("\n  Valor Databases (US personnel, search_valor, until first find):")
+    print("\n  Hall of Valor (US personnel, direct adapter, until first find):")
     found_valor = False
+    hov = HallOfValorSource(_Path("cache/hall_of_valor"))
     for p in us_people:
         if found_valor:
             break
         name = p.get("name", "Unknown")
         print(f"    {name}")
-        print(f"      queries: {name} valor militarytimes | {name} valor defense.gov")
-        results = search_valor(name, openserp_url, grok_client)
-        print(f"      {len(results)} results")
-        for r in results[:3]:
-            print(f"      → {r.get('url', '')[:70]}")
-        if results:
+        citations = hov.lookup(name)
+        print(f"      {len(citations)} citation(s)")
+        for c in citations[:3]:
+            print(f"      → {c.award}: {c.source_url[:70]}")
+        if citations:
             found_valor = True
             _confirmed_urls.append(
-                {"section": "Valor", "name": name, "url": results[0].get("url", "")}
+                {"section": "Valor", "name": name, "url": citations[0].source_url}
             )
         time.sleep(2)
     if not found_valor:
-        print("    ⚠ No valor results found")
+        print("    ⚠ No Hall of Valor citations found")
 
     # Equipment images (keep searching until Grok-confirmed find)
     equipment = _sample_entities(

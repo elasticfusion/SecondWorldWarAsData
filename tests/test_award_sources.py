@@ -30,24 +30,38 @@ def test_awarding_power_classifies_issuing_nation():
 
 
 def test_foreign_national_routes_by_awarding_power_not_nationality():
-    """A Frenchman in the LVF/Waffen-SS decorated with the Iron Cross routes to the
-    GERMAN record system, not a French source."""
-    person = {"biographical_profile": {"nationality": "French"}}
+    """A Frenchman who SERVED under Germany (nationality_served=DEU) routes his Iron
+    Cross to the German record system; routing is confined to indicated countries."""
+    # Serving country indicated -> Iron Cross routes to DEU.
+    served = {
+        "biographical_profile": {
+            "nationality": "French",
+            "nationality_served": "German",
+        }
+    }
     iron_cross = {"award": "Iron Cross 1st Class"}
-    assert award_source_nationality(iron_cross, person) == "DEU"
-    # An unrecognized award falls back to the recipient's nationality.
+    assert award_source_nationality(iron_cross, served) == "DEU"
+    # An unrecognized award falls back to the first indicated country (FRA).
     unknown = {"award": "Some Regimental Token"}
-    assert award_source_nationality(unknown, person) == "FRA"
+    assert award_source_nationality(unknown, served) == "FRA"
+    # A Frenchman with NO serving country indicated: his Iron Cross must NOT route to
+    # a country he doesn't indicate -> falls back to his only indicated country, FRA.
+    fra_only = {"biographical_profile": {"nationality": "French"}}
+    assert award_source_nationality(iron_cross, fra_only) == "FRA"
 
 
-def test_gate_admits_foreign_national_via_awarding_power():
-    """Nationality not registered, but an Iron Cross makes him routable (DEU)."""
+def test_gate_requires_indicated_country_not_award_name_alone():
+    """A person who indicates NO nationality/serving country is NOT sourced, even with
+    a recognizable award — the award name alone must not broaden sourcing."""
     person = {
         "biographical_profile": {
-            "nationality": "Freedonia",  # not registered
+            "nationality": "Freedonia",  # not a recognized country code
             "military_awards": [{"award": "Iron Cross 2nd Class"}],
         }
     }
+    assert should_source_awards(person) is False
+    # But indicating a serving country admits him (and routing is confined to it).
+    person["biographical_profile"]["nationality_served"] = "German"
     assert should_source_awards(person) is True
 
 
@@ -76,6 +90,7 @@ def test_enrich_routes_per_award_via_selector():
         "name": "Jean Dupont",
         "biographical_profile": {
             "nationality": "French",
+            "nationality_served": "German",  # served under Germany -> DEU routing allowed
             "military_awards": [{"award": "Iron Cross"}],
         },
     }
