@@ -139,6 +139,55 @@ sources:
       original kept. Gazzetta Ufficiale (gazzettaufficiale.it) is the legal primary
       if a Quirinale sheet is missing → offline.
 
+  # ---------------- Belgium ----------------
+  # Verified 2026-10-02 (AWS + full headers). NO accessible official citation text:
+  # Belgium never published narrative citations (the palm/lion IS the citation level);
+  # the 2012 Defence Minister confirmed no systematic War Cross roll exists. Real
+  # citations are offline (War Heritage Institute Brussels / State Archives). The one
+  # reachable NAME source (TracesOfWar) is selective + rarely carries the official
+  # citation → registered but DISABLED (do not auto-run a name-list as a citation src).
+  - id: be_tracesofwar
+    name: TracesOfWar — Belgium (Croix de Guerre 1940 et al.)
+    nationality: BEL
+    language: null            # FR/NL notes when present; translated if used
+    adapter: tracesofwar
+    base_url: https://www.tracesofwar.com
+    search_path: "/awards/country.asp?countryid=427"
+    crawl_delay: 2
+    awards: [Croix de Guerre 1940, Order of Leopold, Order of the Crown]
+    accessible: true
+    enabled: false            # name-list + partial deed notes, NOT official citations
+    notes: >-
+      Largest public BE name DB (selective: notable Belgians, Allied commanders,
+      contributor entries). Pages sometimes note WHY an award was given but not the
+      official citation. Decree name-lists in Moniteur belge (ejustice) carry stock
+      phrases, not narratives. Citation text → War Heritage Institute / State Archives
+      (offline). Allied-to-Belgian awards may appear in UK WO 373 / US GOs.
+
+  # ---------------- Netherlands ----------------
+  # Verified 2026-10-02 (AWS + full headers). Name lists online; full official
+  # citations NOT in one public DB. TracesOfWar = practical WWII name entry point
+  # with PARTIAL deed/citation notes on better pages; rmwo.nl = MWO biographies (not
+  # decree transcripts); real citations in Nationaal Archief / NIMH + Meijer rolls.
+  - id: nl_tracesofwar
+    name: TracesOfWar — Netherlands (Bronzen Leeuw / Bronzen Kruis et al.)
+    nationality: NLD
+    language: null            # NL notes when present; translated if used
+    adapter: tracesofwar
+    base_url: https://www.tracesofwar.com
+    search_path: "/awards/200/Bronzen-Leeuw-BL.htm"
+    crawl_delay: 2
+    awards: [Militaire Willems-Orde, Bronzen Leeuw, Bronzen Kruis, Vliegerkruis, Kruis van Verdienste, Verzetskruis]
+    accessible: true
+    enabled: false            # pages vary; better ones give deed/citation, many don't
+    notes: >-
+      Alphabetical recipient lists; better pages give rank/unit/date/place + Royal
+      Decree + a short deed account, sometimes the recommendation/citation, many do
+      not. Strongest for higher awards. rmwo.nl = ~6,000 MWO biographies (WWII cohort
+      ~169; biographical, not decree transcripts). Official 1815-1963 index = Databank
+      Dapperheidsonderscheidingen (Defence/NIMH; name index, not released as data).
+      Citation text → Nationaal Archief / NIMH files + Meijer printed rolls (offline).
+
   # ---------------- Offline / request-based (any country) ----------------
   - id: offline_dataset
     name: Offline award dataset

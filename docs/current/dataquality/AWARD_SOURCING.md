@@ -249,3 +249,42 @@ bronze are thin online. Accessibility verified 2026-10-02 (AWS + full headers).
 **Build:** Quirinale as the ITA direct source (Italian → translated); silver/bronze
 + Gazzetta + print volumes → offline. **No complete public roll for WWII silver/
 bronze medals** (tens of thousands).
+
+---
+
+## Belgium (BEL) — gallantry awards
+
+**No accessible official citation text.** Belgium never published narrative
+citations the way the London Gazette did — the palm/lion is itself the citation
+level, and the 2012 Defence Minister confirmed no systematic War Cross roll is
+kept. Registered but **DISABLED** (name-list only). Accessibility verified
+2026-10-02 (AWS + full headers).
+
+| Source | Access from AWS | Role |
+|---|---|---|
+| TracesOfWar — Belgium (country 427 / Croix de Guerre 1940) | 200 | Largest public NAME DB; selective (notable Belgians, Allied commanders, contributors). Sometimes notes *why* an award was given; **not** the official citation. |
+| Moniteur belge / Belgisch Staatsblad (ejustice) | 200 (search shell) | Royal-decree name lists with device + stock phrase ("en témoignage de reconnaissance des services rendus"), **not** a narrative of the act; wartime London decrees only partly digitized. |
+| Wikipedia/Wikimedia category pages | web | Short, uneven lists (senior officers, resistance). |
+| **Citation text** | — | War Heritage Institute Brussels / State Archives (dossiers; **offline**). Croix des Évadés 40-45 inventory (3,527 dossiers) is the most citation-rich series — on-site. Allied-to-Belgian awards: UK WO 373 / US GOs. |
+
+**Build:** TracesOfWar registered as a NAME source but **`enabled: false`** (don't
+run a name-list as a citation source); real citations → `OfflineAwardDataset`.
+
+---
+
+## Netherlands (NLD) — gallantry awards
+
+Name lists online; **full official citations are not in one public DB**. Registered
+but **DISABLED** by default (TracesOfWar pages vary; many lack the citation).
+Accessibility verified 2026-10-02 (AWS + full headers).
+
+| Source | Access from AWS | Role |
+|---|---|---|
+| TracesOfWar — NL (Bronzen Leeuw 200 / Bronzen Kruis 201, Vliegerkruis, Verzetskruis…) | 200 | Alphabetical recipient lists; better pages give rank/unit/date/place + Royal Decree + short deed account, sometimes the recommendation/citation, **many do not**. Strongest for higher awards. |
+| rmwo.nl (Museum Bronbeek MWO database, 2024) | 200 (JS app) | ~6,000 MWO knight biographies (WWII cohort ~169); **biographical, not decree transcripts**. |
+| lintjes.nl → Databank Dapperheidsonderscheidingen | 200 | Official 1815-1963 **name-and-award index** (Defence/NIMH); not citations, not released as open data. |
+| **Citation text** | — | Nationaal Archief decoration files 1815-1993 + **NIMH** recommendation/Kapittel files (**offline**); printed rolls (Meijer, *Bronzen Leeuw/Bronzen Kruis* 1990; Meijer & Vis, *Het Vliegerkruis* 1997) give rank/unit/Royal Decree + "mutatie" (place/date) — deed summary, not always full narrative. |
+
+**Build:** TracesOfWar registered as a NAME source, **`enabled: false`** (partial
+citations only); MWO biographies via rmwo.nl later if useful; real citations →
+`OfflineAwardDataset` (Nationaal Archief / NIMH + Meijer rolls).

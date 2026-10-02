@@ -60,6 +60,13 @@ _NATIONALITY_ALIASES = {
     "ita": "ITA",
     "italy": "ITA",
     "italian": "ITA",
+    "bel": "BEL",
+    "belgium": "BEL",
+    "belgian": "BEL",
+    "nld": "NLD",
+    "netherlands": "NLD",
+    "dutch": "NLD",
+    "holland": "NLD",
 }
 
 
