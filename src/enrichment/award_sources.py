@@ -67,6 +67,18 @@ _NATIONALITY_ALIASES = {
     "netherlands": "NLD",
     "dutch": "NLD",
     "holland": "NLD",
+    "rou": "ROU",
+    "romania": "ROU",
+    "romanian": "ROU",
+    "hun": "HUN",
+    "hungary": "HUN",
+    "hungarian": "HUN",
+    "fin": "FIN",
+    "finland": "FIN",
+    "finnish": "FIN",
+    "esp": "ESP",
+    "spain": "ESP",
+    "spanish": "ESP",
 }
 
 
@@ -196,6 +208,44 @@ _AWARD_POWER_PATTERNS = [
             "vliegerkruis",
             "kruis van verdienste",
             "verzetskruis",
+        ),
+    ),
+    (
+        "ROU",
+        (
+            "mihai viteazul",
+            "michael the brave",
+            "military virtue medal",
+            "aeronautical virtue",
+        ),
+    ),
+    (
+        "HUN",
+        (
+            "vitézségi érem",
+            "vitezsegi erem",
+            "medal of bravery",
+            "maria theresa",
+            "mária terézia",
+            "signum laudis",
+        ),
+    ),
+    (
+        "FIN",
+        (
+            "mannerheim cross",
+            "mannerheim-risti",
+            "cross of liberty",
+            "medal of liberty",
+        ),
+    ),
+    (
+        "ESP",
+        (
+            "laureada de san fernando",
+            "san fernando",
+            "medalla militar",
+            "cruz de guerra",
         ),
     ),
 ]
