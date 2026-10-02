@@ -18,6 +18,33 @@ from src.grok_client import BatchModeCollecting, GrokClient
 
 logger = logging.getLogger(__name__)
 
+
+def _source_award_citations(person_data: Dict[str, Any]) -> None:
+    """Fill authoritative award citations + provenance for US personnel in an
+    award context, via Hall of Valor (direct, polite, cached). Opt-in via
+    AWARD_CITATIONS_ENABLED (default off, since it makes network calls). Fail-safe:
+    any error leaves awards unchanged."""
+    import os
+
+    if os.getenv("AWARD_CITATIONS_ENABLED", "false").lower() != "true":
+        return
+    try:
+        from src.enrichment.award_hall_of_valor import HallOfValorSource
+        from src.enrichment.award_sources import (
+            enrich_person_awards,
+            should_source_awards,
+        )
+
+        if not should_source_awards(person_data):
+            return
+        cache_dir = Path(os.getenv("AWARD_CACHE_DIR", "cache/hall_of_valor"))
+        n = enrich_person_awards(person_data, [HallOfValorSource(cache_dir)])
+        if n:
+            logger.info("  ✓ Sourced %d award citation(s) from Hall of Valor", n)
+    except Exception as e:  # noqa: BLE001 - enrichment extra; never block the person
+        logger.warning("Award-citation sourcing skipped: %s", e)
+
+
 _URL_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 }
@@ -808,6 +835,13 @@ def enrich_person_biography(
     person_data["last_enrichment_search"] = datetime.now(timezone.utc).strftime(
         "%Y-%m-%d"
     )
+
+    # Authoritative award citations (US personnel in an award context): fill
+    # verbatim citation text + provenance from Hall of Valor (direct, polite,
+    # cached) — preferred over the search-engine valor path. Fail-safe: any error
+    # leaves awards as-is. See AWARD_SOURCING.md.
+    _source_award_citations(person_data)
+
     try:
         from src.extraction.people import (
             Person,

@@ -56,9 +56,30 @@ environment's requests:
   MilitaryAward; the live one is in `src/extraction/people.py`.)*
 
 ## Pending
-- The **first alternate direct source** (`AwardCitationSource` impl) — needs the
-  authoritative source URL(s); **verify the source serves our IP (no WAF) before
-  building**. Then wire the source list into people enrichment ahead of the
-  OpenSERP valor path, recording provenance.
-- Replace/retire the OpenSERP `search_valor` path once a direct/offline source
-  covers US awards.
+- Replace/retire the OpenSERP `search_valor` path now that Hall of Valor covers
+  US awards (keep OpenSERP only as a last-ditch fallback if desired).
+
+## Source map (verified 2026-10-02)
+| Source | Access from our IP | Role |
+|---|---|---|
+| **Hall of Valor** (valor.militarytimes.com) | **200, nginx, permissive robots** | **PRIMARY** — largest citation DB; MoH + all service crosses, partial Silver Star. BUILT + wired. |
+| Home of Heroes (homeofheroes.com) | 200 (Cloudflare) | Secondary; WWII browsing. Future source. |
+| CMOHS (cmohs.org) | **403 (Cloudflare)** on pages | MoH citations; Cloudflare-blocked like valor.defense.gov — defer / needs residential egress. |
+| valor.defense.gov | **403 (Akamai, IP-level)** | Name-list PDFs only (no citations). Not used. |
+| NARA (Navy Awards Citations Files NAID 599836; Army award cards/GOs) | n/a (not digitized) | Silver Star + unlisted awards; offline/manual → feed `OfflineAwardDataset`. |
+
+Coverage reality (per owner): MoH essentially complete; DSC/Navy Cross strong;
+Silver Star only partial for citation TEXT (Army alone awarded ~70k+). Unlisted
+Silver Stars route to NARA/Fold3 general orders → the offline dataset path.
+
+## Built this iteration
+- `src/enrichment/award_hall_of_valor.HallOfValorSource` — polite (>=1 req/s,
+  on-disk cache, descriptive UA honoring the permissive robots), `?s=` search →
+  `/recipient/recipient-<id>/` → parses per-award citation prose ("presenting the
+  <AWARD> to ... for <gallantry> in action ..."); name+award matched →
+  `verified=True`. Live-verified: Audie Murphy → 4 citations (Silver Star, DSC,
+  Bronze Star, Medal of Honor) correctly attributed; award-hint filter works.
+- Wired into `enrich_person_biography` via `_source_award_citations` — opt-in
+  (`AWARD_CITATIONS_ENABLED=true`), gated US + award context, fail-safe, records
+  full provenance. Preferred over the OpenSERP `search_valor` path.
+
