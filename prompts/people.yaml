@@ -48,6 +48,7 @@ schema: |
           "death_date": "1969-03-28",
           "death_place": "Washington, D.C., USA",
           "nationality": "USA",
+          "nationality_served": null,
           "role_type": "military_leader",
           "ranks": [
             {"rank": "General", "date": "1943", "branch": "US Army"},
@@ -101,6 +102,7 @@ rules:
   - CRITICAL: Every person MUST have a "name" field and a "PersonID" field. If you cannot determine the full name, use the most complete form available (e.g., "Colonel Abrams" rather than just "Abrams").
   - When text says "Bradley" and context makes clear this is "Omar N. Bradley", use the full name.
   - Most people will only have a name, rank, and nationality mentioned. That is fine — extract what IS mentioned. Do NOT fabricate biographical details. Only populate biographical_profile fields that are EXPLICITLY stated in the text.
+  - nationality is ISO 3166-1 alpha-3 (USA, GBR, DEU, FRA, CAN, ITA, POL, ...). Only set it when stated or unambiguous from the text; leave null otherwise (it may be inferred later). nationality_served is OPTIONAL and only set when the person served under a DIFFERENT power than their nationality — e.g. a French national in the Waffen-SS has nationality FRA and nationality_served DEU; a Pole in the RAF has nationality POL and nationality_served GBR. Leave nationality_served null when it equals nationality.
   - For original_text: use the EXACT text from the source. Do NOT truncate with ellipsis (...). Include the full sentence or clause as written.
   - If no people found, return empty People array
   - Do NOT extract military units, divisions, corps, armies, or organizations as people

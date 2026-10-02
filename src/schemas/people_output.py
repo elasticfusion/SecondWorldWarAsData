@@ -34,7 +34,9 @@ PEOPLE_OUTPUT_SCHEMA = {
                 "birth_date": make_nullable("string"),
                 "death_date": make_nullable("string"),
                 "nationality": make_nullable("string"),
+                "nationality_served": make_nullable("string"),
                 "role_type": make_nullable("string"),
+                "primary_group_id": make_nullable("string"),
                 "biographical_details": make_nullable("string"),
                 "ranks": {
                     "type": ["array", "null"],

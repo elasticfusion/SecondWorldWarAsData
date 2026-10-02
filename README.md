@@ -2,7 +2,7 @@
 
 Extract structured data from World War II historical documents using AI-powered entity extraction. Produces cross-referenced JSON entities (events, people, places, dates, equipment, and 6 more types) from markdown source material.
 
-**Version:** 2.4 | **Last Updated:** 2026-06-05
+**Version:** 2.5 | **Last Updated:** 2026-10-02
 
 ---
 

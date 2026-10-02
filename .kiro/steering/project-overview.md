@@ -39,7 +39,7 @@ LLM-extraction pipeline.
 - Rich **provenance** is already captured: `verbatim_reference`,
   `archive_reference_number` (NARA), `license`, `copyright_status`,
   `original_text`, page/line numbers. This is citation-ready.
-- Records are versioned via `_schema_version` (currently 2.4) and
+- Records are versioned via `_schema_version` (currently 2.5) and
   `_last_updated` — usable for incremental ingestion / change detection.
 
 ## Known data-quality gaps (planned enrichment, not bugs)

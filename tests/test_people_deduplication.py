@@ -97,3 +97,31 @@ def test_normalize_name():
     assert _normalize_name("John Smith") == "john smith"
     assert _normalize_name("  John Smith  ") == "john smith"
     assert _normalize_name("JOHN SMITH") == "john smith"
+
+
+def test_v25_nationality_served_and_primary_group_survive_merge():
+    """v2.5: nationality_served + primary_group_id are optional and survive the
+    gap-fill person merge."""
+    from src.extraction.people import BiographicalProfile, _update_missing_fields
+
+    # optional at schema level (old records omit them)
+    bp = BiographicalProfile(nationality="FRA")
+    assert bp.nationality_served is None and bp.primary_group_id is None
+
+    # settable
+    bp2 = BiographicalProfile(
+        nationality="FRA",
+        nationality_served="DEU",
+        primary_group_id="01M3G34VAE8Q198HA79T21C1KZ",
+    )
+    assert bp2.nationality_served == "DEU"
+    assert bp2.primary_group_id == "01M3G34VAE8Q198HA79T21C1KZ"
+
+    # gap-fill merge preserves them when existing lacks them
+    existing = {"nationality": "FRA"}
+    _update_missing_fields(
+        existing,
+        {"nationality_served": "DEU", "primary_group_id": "01ABCDEF"},
+    )
+    assert existing["nationality_served"] == "DEU"
+    assert existing["primary_group_id"] == "01ABCDEF"
