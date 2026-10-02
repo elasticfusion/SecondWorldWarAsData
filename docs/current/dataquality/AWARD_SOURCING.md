@@ -59,37 +59,41 @@ environment's requests:
 - Replace/retire the OpenSERP `search_valor` path now that Hall of Valor covers
   US awards (keep OpenSERP only as a last-ditch fallback if desired).
 
-## WAF bypass — investigated + declined (2026-10-02)
-There are **two distinct block types** — proven by a clean residential-IP test
-(VPN disabled, bare Verizon residential line `AS701`, Chrome UA):
+## Access reality — CORRECTED by rigorous testing (2026-10-02)
 
-**Type 1 — JS bot-challenge (IP doesn't matter; needs a real browser):**
-valor.defense.gov (Akamai), CMOHS + TracesOfWar (Cloudflare) returned **403 even
-from the residential IP**. Also 403 from the commercial VPN (Proton AR, AS208172)
-and from AWS. → the block is "not a JS-executing browser," NOT the IP. **Nothing
-IP-based (region, VPN, Tailscale, residential proxy) unlocks these** — only a
-headless/real browser that solves the challenge would, and that's a circumvention
-we're not pursuing.
+**The dominant factor is REQUEST HEADERS, not the IP.** Earlier probes used bare
+`curl` (UA + Accept only) and were wrongly read as hard WAF/JS blocks. A **full
+browser header profile** — `User-Agent` + `Accept-Language` + `sec-ch-ua` /
+`sec-ch-ua-mobile` / `sec-ch-ua-platform` + `Sec-Fetch-Dest/Mode/Site/User` +
+`Upgrade-Insecure-Requests` — changes the result dramatically.
 
-**Type 2 — AWS-WAF IP-reputation challenge (residential DOES help):**
-London Gazette (`server: CloudFront`, `x-amzn-waf-action: challenge`) served a JS
-challenge (202) from the AWS/VPN **datacenter** IP, but returned a clean **200**
-from the **residential** IP. → the Gazette is reputation-sensitive:
-datacenter→challenged, residential→OK.
+**Tested from AWS Lambda (the pipeline's real datacenter egress) with full headers:**
+| Source | AWS + full headers | Note |
+|---|---|---|
+| London Gazette | **200 ✅** | earlier "challenge" was missing headers, not the IP |
+| CMOHS | **200 ✅** | earlier 403 was missing headers |
+| TracesOfWar | **200 ✅** | earlier 403 was missing headers |
+| Victoria Cross Online | **200 ✅** | |
+| Hall of Valor | **200 ✅** | |
+| **valor.defense.gov** (Akamai) | **403** | the ONLY holdout — Akamai still blocks the AWS IP even with full headers; serves 200 from a residential IP. Carries name-lists only (no citations) → negligible loss. |
 
-**Tailscale implication:** a Tailscale exit node on a residential connection would
-unlock **only the London Gazette** (Type 2). It would NOT unlock
-valor.defense.gov / CMOHS / TracesOfWar (Type 1 — residential already 403s).
+**Implications:**
+- **No Tailscale / residential egress / VPN needed.** From AWS, 5 of 6 sources
+  serve 200 with proper headers. (Prior "needs a JS browser / needs residential"
+  conclusions were WRONG — they were under-instrumented bare-curl probes.)
+- **Every award-source fetcher MUST send the full browser header profile** (add a
+  shared header set) — this is the actual requirement, not a browser or a proxy.
+- **valor.defense.gov** alone needs residential egress AND has no citation text →
+  not worth pursuing; its name-lists aren't needed (Hall of Valor has the
+  citations).
+- Client library matters too: Python `urllib`/`requests` with full headers worked
+  from AWS; keep using the pooled session + full headers.
 
-- **Other AWS regions won't help** anything — all AWS egress is datacenter.
-- **A VPN won't help** the Type-1 sources (commercial VPN exit is itself datacenter
-  AND the block is browser-not-IP).
-- **Only residential/mobile egress** helps, and only for the Type-2 Gazette.
-**Decision (owner):** skip residential egress / Tailscale for now — low payoff
-(it buys only CMOHS, which is MoH-only and redundant with Hall of Valor, + the
-TracesOfWar name index) and the offline material (WO 373, Fold3) isn't WAF-
-solvable anyway. Build against sources that serve us; route the rest to
+**Decision:** build direct sources for US (Hall of Valor — done) and UK (London
+Gazette + Victoria Cross Online) from AWS with a shared full-header profile; no
+bypass infra. Offline/subscription material (WO 373, Fold3, Bundesarchiv) →
 `OfflineAwardDataset`.
+
 
 ## Source map (verified 2026-10-02)
 | Source | Access from our IP | Role |
