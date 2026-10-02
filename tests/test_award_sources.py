@@ -5,6 +5,9 @@ from pathlib import Path
 
 from src.enrichment.award_offline_source import OfflineAwardDataset
 from src.enrichment.award_sources import (
+    AwardCitation,
+    award_source_nationality,
+    awarding_power,
     enrich_person_awards,
     has_award_context,
     is_us_person,
@@ -13,6 +16,88 @@ from src.enrichment.award_sources import (
 from src.extraction.people import MilitaryAward
 
 # --- schema provenance (migration-safe) ---
+
+
+def test_awarding_power_classifies_issuing_nation():
+    assert awarding_power("Medal of Honor") == "USA"
+    assert awarding_power("Victoria Cross") == "GBR"
+    assert awarding_power("Iron Cross 2nd Class") == "DEU"
+    assert awarding_power("Knight's Cross of the Iron Cross") == "DEU"
+    assert awarding_power("Croix de Guerre 1939-1945") == "FRA"
+    assert awarding_power("Medaglia d'Oro al Valor Militare") == "ITA"
+    assert awarding_power("Totally Made Up Medal") is None
+    assert awarding_power(None) is None
+
+
+def test_foreign_national_routes_by_awarding_power_not_nationality():
+    """A Frenchman in the LVF/Waffen-SS decorated with the Iron Cross routes to the
+    GERMAN record system, not a French source."""
+    person = {"biographical_profile": {"nationality": "French"}}
+    iron_cross = {"award": "Iron Cross 1st Class"}
+    assert award_source_nationality(iron_cross, person) == "DEU"
+    # An unrecognized award falls back to the recipient's nationality.
+    unknown = {"award": "Some Regimental Token"}
+    assert award_source_nationality(unknown, person) == "FRA"
+
+
+def test_gate_admits_foreign_national_via_awarding_power():
+    """Nationality not registered, but an Iron Cross makes him routable (DEU)."""
+    person = {
+        "biographical_profile": {
+            "nationality": "Freedonia",  # not registered
+            "military_awards": [{"award": "Iron Cross 2nd Class"}],
+        }
+    }
+    assert should_source_awards(person) is True
+
+
+def test_enrich_routes_per_award_via_selector():
+    """enrich_person_awards accepts a selector(nationality)->sources and routes each
+    award by its awarding power."""
+    de_source = _StubSource(
+        "DE-Stub",
+        [
+            AwardCitation(
+                "Für Tapferkeit",
+                "Bundesarchiv",
+                "u",
+                "2026-10-02",
+                award="Iron Cross",
+                language="German",
+                verified=True,
+            )
+        ],
+    )
+
+    def selector(code):
+        return [de_source] if code == "DEU" else []
+
+    person = {
+        "name": "Jean Dupont",
+        "biographical_profile": {
+            "nationality": "French",
+            "military_awards": [{"award": "Iron Cross"}],
+        },
+    }
+    filled = enrich_person_awards(person, selector)
+    assert filled == 1
+    award = person["biographical_profile"]["military_awards"][0]
+    assert award["source_name"] == "Bundesarchiv"
+    # German text preserved as original (translation disabled in test env).
+    assert award.get("citation_language") == "German"
+    assert award.get("citation_text_original") == "Für Tapferkeit"
+
+
+class _StubSource:
+    def __init__(self, name, citations):
+        self.name = name
+        self._citations = citations
+
+    def lookup(self, person_name, award_hint=""):
+        return list(self._citations)
+
+
+# --- original tests below ---
 
 
 def test_military_award_backcompat_and_provenance():
