@@ -14,6 +14,10 @@ prices), not generic guidance.
 1. **RAG store → PostgreSQL + pgvector, single store.** Affirmed. **Build it after
    ingestion is complete**, not now (it's a derived layer; building early risks
    re-embedding). Resolve the embedding dimension before creating the schema.
+   *DynamoDB native vector search (GA 2026-08) was weighed and not adopted —
+   exact-match-only filtering can't serve our relational/range/join queries, and it
+   would reverse the plan to retire the DynamoDB entity copy; see Decisions. Revisit
+   if the query profile turns out mostly find-similar + exact-match.*
 
 2. **Keep DynamoDB — but split its 3 roles.** It is not one decision:
    - *Entity materialization* (the full-table `Scan` reads) → **remove**, fold
@@ -138,6 +142,34 @@ Aurora Serverless v2 scale-to-zero): entity data is tiny, queries need relationa
 flexibility + semantic search together, workload is bursty/idle. Build after the
 corpus is schema-stable. Resolve embedding dimension first. Consider Neon/Supabase
 for the prototype tier.
+
+**Alternative weighed: DynamoDB native vector search** (GA 2026-08; store
+embeddings on an item, `SearchVectors` API, single-digit-ms, up to 4096 dims).
+Considered and **not adopted** for this workload — reasons, including cost:
+- **Query fit (decisive).** DynamoDB inline filters are **exact-match only** — no
+  range (`BETWEEN`/`BEGINS_WITH`) and each search is scoped to one partition-key
+  value. Our audiences need **range + join** queries (date ranges, place/unit
+  joins, citation resolution via `EventID` FK, genealogical entity-centric
+  lookups). pgvector-in-Postgres serves semantic + relational + range in one SQL
+  query; DynamoDB cannot express the relational side.
+- **Trajectory fit.** Its win ("data already in DynamoDB → no second store") does
+  NOT apply: our entities live in **S3 JSON** (source of truth) + a DynamoDB
+  *derived copy* this review decided to RETIRE. Adopting DynamoDB-vector would mean
+  un-retiring and expanding that store — reversing the plan.
+- **Cost.** DynamoDB-vector removes the "cheaper/simpler single store" angle for
+  us: index bills on **bytes written + bytes stored + bytes processed per search**
+  (`VectorSearchRequestBytes`), on-demand only, and DynamoDB storage is **11× S3
+  Standard/GB**. At our tiny data size the absolute $ is immaterial either way, so
+  cost is **not** a differentiator — but it is NOT the cheaper option at rest, and
+  per-search byte-processing cost grows with dimensions. Aurora Serverless v2
+  scale-to-zero bills storage-only when idle (our mostly-idle profile), which is
+  the better cost fit for bursty ingestion + occasional search.
+- **Where it WOULD win** (revisit triggers): if the query profile turns out to be
+  mostly "find-similar + exact-match filter" (not relational/range), OR if entities
+  end up primarily living in DynamoDB. Neither holds under the current plan.
+Net: pgvector retained primarily on **query fit** (exact-match-only filtering can't
+serve the relational/range needs), with trajectory + cost reinforcing — not
+flipping — the call.
 
 **DynamoDB — keep, split by role:**
 | Role | Decision | Rationale |
