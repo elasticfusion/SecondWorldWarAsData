@@ -270,6 +270,13 @@ class MilitaryAward(BaseModel):
     class_: Optional[str] = Field(default=None, alias="class")
     date_awarded: Optional[str] = None
 
+    # --- Source record / provenance (migration-safe: all optional) ---
+    citation_text: Optional[str] = None  # verbatim citation from the source
+    source_name: Optional[str] = None  # e.g. "American War Library", "Hall of Valor"
+    source_url: Optional[str] = None  # per-recipient page the citation came from
+    retrieved_date: Optional[str] = None  # ISO-8601 retrieval date
+    verified: Optional[bool] = None  # True only when source recipient matched person
+
     model_config = ConfigDict(populate_by_name=True)
 
 
