@@ -29,17 +29,11 @@ from pathlib import Path
 from typing import Any, List, Optional
 
 from src.enrichment.award_sources import AwardCitation, today_iso
+from src.enrichment.award_polite_source import PoliteSource
 
 logger = logging.getLogger(__name__)
 
 _BASE = "https://valor.militarytimes.com"
-_UA = (
-    "SecondWorldWarAsData/1.0 (WWII historical research; award-citation sourcing; "
-    "polite, rate-limited, cached)"
-)
-_MIN_INTERVAL = 1.1  # >= 1 req/sec, politeness
-_rate_lock = threading.Lock()
-_last_call = [0.0]
 
 # Normalize common award-name variants so an entity's award string matches the
 # site's award labels.
@@ -53,14 +47,6 @@ _AWARD_ALIASES = {
 }
 
 
-def _throttle() -> None:
-    with _rate_lock:
-        wait = _MIN_INTERVAL - (time.monotonic() - _last_call[0])
-        if wait > 0:
-            time.sleep(wait)
-        _last_call[0] = time.monotonic()
-
-
 def _norm(s: str) -> str:
     return re.sub(r"[^a-z0-9 ]", "", s.lower()).strip()
 
@@ -69,39 +55,31 @@ def _canonical_award(award: str) -> str:
     return _AWARD_ALIASES.get(_norm(award), award.strip())
 
 
-class HallOfValorSource:
+class HallOfValorSource(PoliteSource):
     """An :class:`AwardCitationSource` backed by valor.militarytimes.com."""
 
     name = "Military Times Hall of Valor"
 
-    def __init__(self, cache_dir: Path, session: Any = None):
-        self._cache = cache_dir
-        self._cache.mkdir(parents=True, exist_ok=True)
-        if session is None:
-            from src.utils.http_pool import get_session
+    def __init__(
+        self,
+        cache_dir: Path,
+        session: Any = None,
+        storage: Any = None,
+        source_id: str = "us_hall_of_valor",
+        crawl_delay: float = 1.1,
+        extra_headers: Optional[dict] = None,
+    ):
+        super().__init__(
+            cache_dir,
+            source_id=source_id,
+            crawl_delay=crawl_delay,
+            session=session,
+            storage=storage,
+        )
+        self._extra_headers = extra_headers
 
-            session = get_session()
-        self._session = session
-
-    # --- polite cached GET ---
     def _get(self, url: str) -> Optional[str]:
-        key = self._cache / f"{hashlib.sha256(url.encode()).hexdigest()[:16]}.html"
-        if key.exists():
-            return key.read_text(encoding="utf-8", errors="replace")
-        _throttle()
-        try:
-            resp = self._session.get(
-                url, headers={"User-Agent": _UA}, timeout=30, allow_redirects=True
-            )
-            if resp.status_code != 200:
-                logger.warning("Hall of Valor %s -> HTTP %s", url, resp.status_code)
-                return None
-            html = resp.text
-            key.write_text(html, encoding="utf-8")
-            return html
-        except Exception as e:  # noqa: BLE001 - transient; caller tries next source
-            logger.warning("Hall of Valor fetch failed %s: %s", url, e)
-            return None
+        return self.polite_get(url, extra_headers=self._extra_headers)
 
     def _recipient_urls(self, name: str) -> List[str]:
         html = self._get(f"{_BASE}/?s={name.replace(' ', '+')}")

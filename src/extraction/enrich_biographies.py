@@ -20,16 +20,26 @@ logger = logging.getLogger(__name__)
 
 
 def _source_award_citations(person_data: Dict[str, Any]) -> None:
-    """Fill authoritative award citations + provenance for US personnel in an
-    award context, via Hall of Valor (direct, polite, cached). Opt-in via
-    AWARD_CITATIONS_ENABLED (default off, since it makes network calls). Fail-safe:
-    any error leaves awards unchanged."""
+    """Fill authoritative award citations + provenance for people in an award
+    context, routed by AWARDING POWER through the YAML source registry
+    (config/award_sources.yaml). Opt-in via AWARD_CITATIONS_ENABLED (default off;
+    makes polite network calls). Behaviour:
+
+      * each award routes to the record system of the power that issued it
+        (e.g. an Iron Cross -> German sources even for a French recipient);
+      * only ENABLED, implemented adapters run; disabled/offline sources no-op;
+      * every fetch is polite (per-host crawl-delay) + cached + the fetched page is
+        PRESERVED as a primary-source record (local/S3);
+      * non-English citations are TRANSLATED to English (original + language kept).
+
+    Fail-safe: any error leaves awards unchanged.
+    """
     import os
 
     if os.getenv("AWARD_CITATIONS_ENABLED", "false").lower() != "true":
         return
     try:
-        from src.enrichment.award_hall_of_valor import HallOfValorSource
+        from src.enrichment.award_registry import make_selector
         from src.enrichment.award_sources import (
             enrich_person_awards,
             should_source_awards,
@@ -37,12 +47,55 @@ def _source_award_citations(person_data: Dict[str, Any]) -> None:
 
         if not should_source_awards(person_data):
             return
-        cache_dir = Path(os.getenv("AWARD_CACHE_DIR", "cache/hall_of_valor"))
-        n = enrich_person_awards(person_data, [HallOfValorSource(cache_dir)])
+        storage = _award_storage()
+        selector = make_selector(storage=storage)
+        n = enrich_person_awards(person_data, selector)
         if n:
-            logger.info("  ✓ Sourced %d award citation(s) from Hall of Valor", n)
+            logger.info("  ✓ Sourced %d authoritative award citation(s)", n)
+        # Persist any errored attempts durably (S3/local) for later retry + UI review.
+        _persist_award_errors(person_data, storage)
     except Exception as e:  # noqa: BLE001 - enrichment extra; never block the person
         logger.warning("Award-citation sourcing skipped: %s", e)
+
+
+def _persist_award_errors(person_data: Dict[str, Any], storage) -> None:
+    """Write any errored sourcing attempts to the durable error log (fail-safe)."""
+    if storage is None:
+        return
+    try:
+        from src.enrichment.award_source_pages import persist_sourcing_errors
+
+        bp = person_data.get("biographical_profile") or {}
+        awards = bp.get("military_awards") or person_data.get("military_awards") or []
+        pid = person_data.get("PersonID") or person_data.get("person_id") or ""
+        pname = person_data.get("name") or person_data.get("current_name") or ""
+        for award in awards:
+            if not isinstance(award, dict):
+                continue
+            attempts = award.get("sourcing_attempts")
+            if attempts:
+                persist_sourcing_errors(
+                    storage, pid, pname, award.get("award", ""), attempts
+                )
+    except Exception as e:  # noqa: BLE001
+        logger.debug("award error persistence skipped: %s", e)
+
+
+def _award_storage():
+    """Build the storage backend for award-page preservation (local/S3) from config.
+    Returns None on any failure (preservation is best-effort, never fatal)."""
+    import os
+
+    try:
+        from src.utils.backends import create_storage
+        from src.utils.config import load_config
+
+        config = load_config()
+        base = Path(os.getenv("AWARD_PAGES_DIR", "output"))
+        return create_storage(config, base)
+    except Exception as e:  # noqa: BLE001
+        logger.debug("award page storage unavailable (%s); pages not preserved", e)
+        return None
 
 
 _URL_HEADERS = {

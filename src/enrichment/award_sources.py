@@ -404,38 +404,54 @@ def enrich_person_awards(
         return 0
 
     selector = sources if callable(sources) else None
-
     filled = 0
     for award in awards:
         if not isinstance(award, dict) or award.get("citation_text"):
             continue  # keep existing provenance; only fill gaps
-        award_name = award.get("award", "")
-        if selector is not None:
-            route = award_source_nationality(award, person)
-            award_sources_list = selector(route)
-        else:
-            award_sources_list = sources
-        if not award_sources_list:
+        srcs = _resolve_award_sources(award, person, selector, sources)
+        if not srcs:
             continue
-        citation = _first_match(award_sources_list, name, award_name)
-        if citation:
-            text, original, language = _normalize_citation_language(citation)
-            award["citation_text"] = text
-            if original is not None:
-                award["citation_text_original"] = original
-                award["citation_language"] = language
-            award["source_name"] = citation.source_name
-            award["source_url"] = citation.source_url
-            award["retrieved_date"] = citation.retrieved_date
-            award["verified"] = citation.verified
+        if _source_one_award(award, name, srcs):
             filled += 1
-            logger.info(
-                "Award citation for %s (%s) from %s%s",
-                name,
-                award_name or "?",
-                citation.source_name,
-                f" [translated from {language}]" if original is not None else "",
-            )
+    return filled
+
+
+def _resolve_award_sources(award, person, selector, sources):
+    """Pick the source list for one award (per-award awarding-power routing when a
+    selector is supplied; otherwise the flat list)."""
+    if selector is not None:
+        return selector(award_source_nationality(award, person))
+    return sources
+
+
+def _source_one_award(award: dict, name: str, srcs) -> bool:
+    """Resolve + attach a citation for one award; record attempts. Returns True if a
+    citation was filled."""
+    award_name = award.get("award", "")
+    citation, attempts = _first_match(srcs, name, award_name)
+    if attempts:
+        # Record what was tried + the outcome per source (don't blindly re-hammer;
+        # a different per-site search may be needed). Appended, not overwritten.
+        award["sourcing_attempts"] = (award.get("sourcing_attempts") or []) + attempts
+    if not citation:
+        return False
+    text, original, language = _normalize_citation_language(citation)
+    award["citation_text"] = text
+    if original is not None:
+        award["citation_text_original"] = original
+        award["citation_language"] = language
+    award["source_name"] = citation.source_name
+    award["source_url"] = citation.source_url
+    award["retrieved_date"] = citation.retrieved_date
+    award["verified"] = citation.verified
+    logger.info(
+        "Award citation for %s (%s) from %s%s",
+        name,
+        award_name or "?",
+        citation.source_name,
+        f" [translated from {language}]" if original is not None else "",
+    )
+    return True
     return filled
 
 
@@ -467,21 +483,52 @@ def _normalize_citation_language(citation: "AwardCitation"):
     return citation.citation_text, citation.citation_text, lang
 
 
-def _first_match(
-    sources: List[AwardCitationSource], name: str, award_hint: str
-) -> Optional[AwardCitation]:
+def _first_match(sources: List[AwardCitationSource], name: str, award_hint: str):
+    """Return (citation_or_None, attempts). ``attempts`` is a per-source record of
+    what was tried + the outcome, so callers can persist it (don't blindly re-hammer;
+    a different per-site search may be needed next run)."""
+    attempts: List[dict] = []
     for src in sources:
+        src_name = getattr(src, "name", str(src))
         try:
             results = src.lookup(name, award_hint)
         except Exception as e:  # noqa: BLE001 - try next source; not a durable fail
-            logger.warning("Award source '%s' errored for %s: %s", src.name, name, e)
+            # Prefer the source's URL-tagged fetch error if it has one.
+            detail = getattr(src, "last_error", None) or str(e)[:200]
+            logger.warning(
+                "Award source '%s' errored for %s: %s", src_name, name, detail
+            )
+            attempts.append(
+                {
+                    "source": src_name,
+                    "outcome": "error",
+                    "error": detail,
+                    "attempted_date": today_iso(),
+                }
+            )
             continue
+        matched = None
         for c in results:
-            # If the award matches (or the source didn't specify), accept the
-            # first verified citation.
+            # Accept the first VERIFIED citation whose award matches (or the source
+            # didn't specify an award).
             if c.verified and (not award_hint or not c.award or c.award == award_hint):
-                return c
-    return None
+                matched = c
+                break
+        record = {
+            "source": src_name,
+            "outcome": "match" if matched else "no_match",
+            "attempted_date": today_iso(),
+        }
+        # If no match AND the source recorded a URL-tagged fetch failure, surface it
+        # (a 'no_match' that was really a blocked/failed fetch is diagnostic signal).
+        src_last_error = getattr(src, "last_error", None)
+        if not matched and src_last_error:
+            record["outcome"] = "error"
+            record["error"] = src_last_error
+        attempts.append(record)
+        if matched:
+            return matched, attempts
+    return None, attempts
 
 
 def today_iso() -> str:

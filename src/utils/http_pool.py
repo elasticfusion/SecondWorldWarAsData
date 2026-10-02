@@ -20,11 +20,13 @@ def get_session() -> requests.Session:
     if _session is None:
         _session = requests.Session()
 
-        # Configure retry strategy
+        # Configure retry strategy. Retries are POLITE: exponential backoff AND
+        # honor the server's Retry-After header on 429/503 (respect_retry_after_header).
         retry_kwargs = dict(
             total=3,
             backoff_factor=1,
             status_forcelist=[429, 500, 502, 503, 504],
+            respect_retry_after_header=True,
         )
         # allowed_methods was called method_whitelist in older urllib3
         try:
