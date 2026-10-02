@@ -358,3 +358,51 @@ Non-English → translated (RO/HU/FI/ES). Accessibility verified 2026-10-02 (AWS
 |---|---|---|
 | esWiki annex (Laureada by year) | 200 | WWII set = División Azul (Eastern Front 1941-43): ~8 Laureadas + ~42-54 Medallas Militares. Names + **one-line merit**, not the formal citation. |
 | **Citation** | — | Award order in the **Diario Oficial del Ministerio del Ejército** (not on one free site) + the *juicio contradictorio* for the Laureada → offline. Blue Division Medallas Militares / Cruces de Guerra: no online citation roll. Print: Prieto Barrio & Pérez Rubio, *Condecoraciones y distintivos de la División Azul*. |
+
+---
+
+## Additional nations — multiple partial sources (2026-10-02, AWS + full headers)
+
+Principle confirmed by the owner: **multiple sites per country is normal; almost none
+is a complete citation file.** Three structural routes handle most of these without a
+new per-country citation adapter:
+
+- **Soviet award → Podvig Naroda** (new citation source; scanned award sheets).
+- **British-channel award → the already-registered UK London Gazette + WO 373**
+  (awarding power = GBR), for India, Australia, NZ, South Africa, Nepal/Gurkhas,
+  Denmark-exile, etc.
+- **US award to a foreign soldier → Hall of Valor** (awarding power = USA), for Brazil
+  (FEB), Philippines (Scouts/guerrillas), Mexico (Esc. 201), Mongolia-via-Soviet=SUN.
+
+### Soviet Union (SUN) — ENABLED citation source
+Podvig Naroda (podvignaroda.ru, 200) carries names/awards/units and for many the
+**scanned award sheet (нагradной лист = the citation)**. Russian → translated. Pamyat
+Naroda (401 from AWS → offline); OBD Memorial = dead/missing cross-links, not valor.
+
+### Registered name-roll sources (enabled:false; citations offline)
+| Country | Source(s) | Note |
+|---|---|---|
+| Australia (AUS) | AWM people search (200) | Award records + rec/Gazette links; DVA/NAA confirm person. VC/DSO citations via Gazette. |
+| Netherlands (NLD) | Oorlogsbronnen (200) + Bronzen Kruis/Leeuw/Vliegerkruis Wikipedia | Bios + decree dates, not narratives; Staatscourant decrees → offline. |
+| Norway (NOR) | krigskorset.no (200) + lokalhistoriewiki + noWiki | War Cross pages/lists; citations only in some bios. |
+| Poland (POL) | FEEFHS VM index (~24k, class only) + plWiki rolls | Cross of Valour / Grunwald partial; NO citations online. |
+
+### British-channel countries (route to UK London Gazette / WO 373)
+| Country | Note |
+|---|---|
+| India (IND) | VC citations in Gazette; MC/DCM/MM name-only; WO 373 recs (paywalled); IOM/IDSM in Gazette of India (British Library). |
+| New Zealand (NZL) | Online Cenotaph (403 from AWS) + Gazette; *Gallant Acts & Noble Deeds* (print). Route to Gazette. |
+| South Africa (ZAF) | Gazette + WO 373; no SA WWII valor DB (Honoris Crux is post-1945). |
+| Nepal (NPL) | Gurkhas in British service → Gazette + WO 373; no Nepalese national roll. |
+| Denmark (DNK) | Danish exile personnel decorated by Britain → Gazette (British awards). |
+
+### US-awarded foreign soldiers (route to Hall of Valor by awarding power)
+Brazil (BRA, FEB: 1 DSC + Silver/Bronze Stars), Philippines (PHL, Scouts/guerrillas),
+Mexico (MEX, Escuadrón 201). Their own national rolls are offline/absent.
+
+### No accessible citation source (→ offline / documented absence)
+China (ROC — no recipient DB), Greece (regimental/official-history print only),
+Yugoslavia (People's Hero ~1,300 names on Wikipedia/bio sites, no formal citations),
+Czechoslovakia (War Cross 1939 / White Lion — files at Vojenský ústřední archiv),
+Ethiopia (none), Luxembourg (none), Belgium (see Belgium section). Mongolia: 1945
+recipients appear under their **Soviet** award in Podvig Naroda.

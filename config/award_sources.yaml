@@ -300,6 +300,103 @@ sources:
       Militares / Cruces de Guerra have NO online citation roll. Print: Prieto Barrio &
       Pérez Rubio, 'Condecoraciones y distintivos de la División Azul'.
 
+  # ---------------- Soviet Union ----------------
+  # Verified 2026-10-02 (AWS + full headers). THE major new citation source: Podvig
+  # Naroda has the scanned AWARD SHEET (the citation itself) for many recipients.
+  # Russian → translated. Pamyat Naroda = same files but 401 from AWS (auth) → offline.
+  - id: su_podvig_naroda
+    name: Podvig Naroda (Подвиг народа)
+    nationality: SUN
+    language: Russian
+    adapter: podvig_naroda
+    base_url: https://podvignaroda.ru
+    search_path: "/?#tab=navHome"
+    crawl_delay: 3
+    awards: [Hero of the Soviet Union, Order of Lenin, Order of the Red Banner, Order of the Red Star, Order of Glory, Medal for Courage]
+    accessible: true
+    enabled: true                 # scanned award sheets = the citation
+    notes: >-
+      Names, awards, units, and for many the SCANNED award sheet (nagradной лист =
+      the citation). Russian → translated, original kept. Pamyat Naroda (pamyat-naroda.ru)
+      holds the same wartime files + loss/unit records but returns 401 from AWS → offline.
+      OBD Memorial = dead/missing (cross-links award docs), not a valor roll. Also covers
+      1945 Mongolian recipients of Soviet awards (route by awarding power = SUN).
+
+  # ---------------- Australia ----------------
+  # Verified 2026-10-02 (AWS + full headers). AWM people search carries award records,
+  # often with the recommendation or a Gazette link. British-channel awards (VC/MC/DCM/MM)
+  # also route to the London Gazette (awarding power = GBR).
+  - id: au_awm
+    name: Australian War Memorial — people
+    nationality: AUS
+    language: English
+    adapter: tracesofwar
+    base_url: https://www.awm.gov.au
+    search_path: "/advanced-search/people"
+    crawl_delay: 2
+    awards: [Victoria Cross, Distinguished Service Order, Military Cross, Distinguished Conduct Medal, Military Medal]
+    accessible: true
+    enabled: false                # award records + recs/Gazette links; not a uniform citation corpus
+    notes: >-
+      Often has the recommendation or a Gazette link. DVA nominal rolls = service (confirm
+      person), NAA = service/honours files. Published VC/DSO citations via London Gazette.
+
+  # ---------------- Netherlands (supplementary) ----------------
+  # Oorlogsbronnen: partial Military Order of William set, biographical notes (not full
+  # citations). Supplements the existing nl_tracesofwar entry. Dutch → translated.
+  - id: nl_oorlogsbronnen
+    name: Oorlogsbronnen (NL)
+    nationality: NLD
+    language: Dutch
+    adapter: tracesofwar
+    base_url: https://www.oorlogsbronnen.nl
+    search_path: "/"
+    crawl_delay: 2
+    awards: [Militaire Willems-Orde, Bronzen Leeuw, Vliegerkruis]
+    accessible: true
+    enabled: false                # biographical notes, not citations; decrees in Staatscourant
+    notes: >-
+      Partial MWO set + bios. Dutch Wikipedia Bronzen Kruis/Bronze Lion/Flying Cross
+      lists = names + royal-decree dates, not narratives. Decrees in Staatscourant → offline.
+
+  # ---------------- Norway ----------------
+  # krigskorset.no + lokalhistoriewiki + noWiki: War Cross recipient pages/lists;
+  # citations only in some biographies. Norwegian → translated.
+  - id: no_krigskorset
+    name: Krigskorset (no)
+    nationality: NOR
+    language: Norwegian
+    adapter: tracesofwar
+    base_url: https://www.krigskorset.no
+    search_path: "/gammel/krigskorset.html"
+    crawl_delay: 2
+    awards: [War Cross with Sword]
+    accessible: true
+    enabled: false                # recipient pages + menu list; citations only in some bios
+    notes: >-
+      No official citation database. lokalhistoriewiki.no + noWiki give fuller name
+      lists; citation prose only in some biographies → offline for the rest.
+
+  # ---------------- Poland ----------------
+  # No citation database (London/Polish monitors published decrees, not narratives).
+  # FEEFHS Virtuti Militari surname index (~24,000, class only) + plWiki rolls = names.
+  # Polish → translated.
+  - id: pl_virtuti_militari
+    name: Poland — Virtuti Militari index (FEEFHS / plWiki)
+    nationality: POL
+    language: Polish
+    adapter: tracesofwar
+    base_url: https://feefhs.org
+    search_path: "/resource/poland-virtuti-militari-recipients"
+    crawl_delay: 2
+    awards: [Virtuti Militari, Cross of Valour, Order of the Cross of Grunwald]
+    accessible: true
+    enabled: false                # surname index (class only) + roll; NO citations online
+    notes: >-
+      FEEFHS = ~24,000 surnames 1792-1992, class only. plWiki 'Kawalerowie Virtuti
+      Militari 1939-1945' = exile-govt roll (names/units). Cross of Valour / Grunwald
+      Cross = partial plWiki name lists. Narratives → offline (archives).
+
   # ---------------- Offline / request-based (any country) ----------------
     name: Offline award dataset
     nationality: ANY
