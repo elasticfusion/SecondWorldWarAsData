@@ -2306,6 +2306,31 @@ def _build_results_section() -> str:
         )
     if "enriched" in results:
         parts.append(f"\n\nEnriched: {results['enriched']} items")
+    # C3: per-source enrichment stats — surfaces partial success + any
+    # previously-swallowed source failures to the operator (this message is
+    # published to the phase2-complete SNS topic → email + Slack).
+    source_stats = results.get("source_stats") or {}
+    if source_stats:
+        parts.append("\n\nEnrichment by source:")
+        for src, st in sorted(source_stats.items()):
+            if st.get("status") == "error":
+                parts.append(f"\n  ✗ {src}: ERROR — {st.get('error', 'see logs')}")
+            else:
+                extra = ""
+                if "attempted" in st:  # geocode-style richer stats
+                    extra = (
+                        f" (attempted {st.get('attempted', 0)}, "
+                        f"not_found {st.get('not_found', 0)}, "
+                        f"errors {st.get('errors', 0)})"
+                    )
+                parts.append(f"\n  ✓ {src}: {st.get('enriched', 0)}{extra}")
+    errored = results.get("errored_sources") or []
+    if errored:
+        parts.append(
+            f"\n\n⚠ ENRICHMENT FAILURES: {len(errored)} source(s) failed — "
+            f"{', '.join(errored)}. Check Phase 3 logs; affected entities were "
+            "not enriched this run."
+        )
     # Warn if all optional extractors produced 0 with significant events
     optional = ["equipment", "weather", "logistics", "casualties"]
     if counts and all(counts.get(t, 0) == 0 for t in optional):
