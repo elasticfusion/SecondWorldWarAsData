@@ -52,7 +52,12 @@ def _norm(s: str) -> str:
 
 
 def _canonical_award(award: str) -> str:
-    return _AWARD_ALIASES.get(_norm(award), award.strip())
+    # Strip trailing parentheticals/suffixes the site appends (e.g.
+    # "Medal of Honor (Posthumously)", "Silver Star (1st Oak Leaf Cluster)") so the
+    # award matches the entity's plain award string + the alias table.
+    base = re.sub(r"\s*\([^)]*\)\s*$", "", award or "").strip()
+    base = re.sub(r"\s*-\s*(posthumous(ly)?)\s*$", "", base, flags=re.I).strip()
+    return _AWARD_ALIASES.get(_norm(base), base)
 
 
 class HallOfValorSource(PoliteSource):
@@ -114,6 +119,8 @@ class HallOfValorSource(PoliteSource):
                     continue
                 if not citation:
                     continue
+                if not _is_wwii_citation(citation):
+                    continue  # not a WWII award (e.g. a same-name recipient's 1898 MoH)
                 results.append(
                     AwardCitation(
                         citation_text=citation,
@@ -159,6 +166,18 @@ class HallOfValorSource(PoliteSource):
             cite = _extract_citation(block)
             if award and cite:
                 yield award, cite
+
+
+def _is_wwii_citation(citation: str) -> bool:
+    """True if the citation plausibly describes a WWII-era award. WWII window is
+    1939-1945 with slack (1937-1946) for Sino-Japanese / early-Pacific / occupation
+    actions. Rule: accept if a WWII-era year appears; REJECT if year(s) appear but
+    none is WWII-era (e.g. a same-name recipient's 1898 Spanish-American War MoH);
+    accept when no year is present (don't over-reject undated prose)."""
+    years = [int(y) for y in re.findall(r"\b(1[89]\d\d)\b", citation or "")]
+    if not years:
+        return True
+    return any(1937 <= y <= 1946 for y in years)
 
 
 def _extract_citation(prose: str) -> str:
