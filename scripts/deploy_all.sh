@@ -1,6 +1,66 @@
 #!/bin/bash
 set -e
 
+# --- Shared image helpers (used by both the main deploy and --ocr-standalone) ---
+# De-duplicates the build->scan->push logic that was copy-pasted per image.
+
+_ecr_logged_in=0
+ecr_login() {  # $1 = ECR registry host
+  [ "$_ecr_logged_in" = "1" ] && return 0
+  aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "$1"
+  _ecr_logged_in=1
+}
+
+ensure_ecr_repo() {  # $1 = repo name
+  aws ecr describe-repositories --repository-names "$1" --region "$REGION" >/dev/null 2>&1 || \
+    aws ecr create-repository --repository-name "$1" --region "$REGION" --image-scanning-configuration scanOnPush=true --no-cli-pager >/dev/null
+}
+
+# trivy_scan <local_tag> <blocking>  — HIGH/CRITICAL, --ignore-unfixed.
+# Handles podman (save->tar) vs docker transparently. blocking=1 aborts on findings;
+# blocking=0 only warns (used for OCR images where a HIGH is tolerated).
+# Returns 0 if OK/non-blocking, 1 only when blocking and findings exist.
+trivy_scan() {
+  local tag="$1" blocking="${2:-1}" rc=0
+  if ! command -v trivy &>/dev/null; then
+    echo "  Trivy: not installed (skipping scan for $tag)"
+    return 0
+  fi
+  echo "  Scanning $tag for HIGH/CRITICAL vulnerabilities..."
+  if command -v podman &>/dev/null && podman image exists "$tag:latest" 2>/dev/null; then
+    local tar="/tmp/trivy-${tag//\//_}.tar"
+    podman save "$tag:latest" -o "$tar" 2>/dev/null || true
+    set +e; trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --input "$tar" 2>&1 | tail -10; rc=${PIPESTATUS[0]}; set -e
+    rm -f "$tar"
+  else
+    set +e; trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 "$tag:latest" 2>&1 | tail -10; rc=${PIPESTATUS[0]}; set -e
+  fi
+  if [ "$rc" -ne 0 ]; then
+    if [ "$blocking" = "1" ]; then echo "  ✗ $tag: HIGH/CRITICAL vulnerabilities — aborting deploy"; return 1; fi
+    echo "  ⚠ $tag: HIGH/CRITICAL vulnerabilities (non-blocking)"
+  else
+    echo "  Trivy $tag: OK"
+  fi
+  return 0
+}
+
+# build_scan_push <dockerfile|.> <local_tag> <repo_name> <full_image> <blocking>
+# One place for the whole build->scan->push cycle. dockerfile "." = default Dockerfile.
+build_scan_push() {
+  local dockerfile="$1" tag="$2" repo="$3" image="$4" blocking="${5:-1}"
+  ecr_login "${image%%/*}"
+  ensure_ecr_repo "$repo"
+  if [ "$dockerfile" = "." ]; then
+    docker build --no-cache --progress=plain -t "$tag" .
+  else
+    docker build --no-cache --progress=plain -f "$dockerfile" -t "$tag" .
+  fi
+  trivy_scan "$tag" "$blocking" || exit 1
+  docker tag "$tag:latest" "$image"
+  docker push "$image"
+  echo "  Pushed: $image"
+}
+
 # --- OCR Standalone Mode ---
 if [ "$1" = "--ocr-standalone" ]; then
     REGION="us-east-1"
@@ -21,30 +81,8 @@ if [ "$1" = "--ocr-standalone" ]; then
         echo "  Using existing image: $CHANDRA_IMAGE"
     else
         echo "=== 1. Building Chandra image ==="
-        aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO
-        # Create ECR repo if it doesn't exist
-        aws ecr describe-repositories --repository-names wwii-chandra --region $REGION 2>/dev/null || \
-            aws ecr create-repository --repository-name wwii-chandra --region $REGION --no-cli-pager
-        docker build --no-cache --progress=plain -f Dockerfile.chandra -t wwii-chandra .
-        # Vulnerability scan
-        if command -v trivy &>/dev/null; then
-            echo "  Scanning image for vulnerabilities..."
-            set +e
-            TRIVY_OUTPUT=$(trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 wwii-chandra:latest 2>&1)
-            TRIVY_EXIT=$?
-            set -e
-            echo "$TRIVY_OUTPUT" | tail -10
-            if [ $TRIVY_EXIT -ne 0 ]; then
-                echo "  ⚠ HIGH/CRITICAL vulnerabilities found (non-blocking for OCR)"
-            else
-                echo "  Trivy: OK"
-            fi
-        else
-            echo "  Trivy: not installed (skipping scan)"
-        fi
-        docker tag wwii-chandra:latest $CHANDRA_IMAGE
-        docker push $CHANDRA_IMAGE
-        echo "  Pushed: $CHANDRA_IMAGE"
+        # OCR images: Trivy non-blocking (a HIGH in the GPU/ML base is tolerated).
+        build_scan_push Dockerfile.chandra wwii-chandra wwii-chandra "$CHANDRA_IMAGE" 0
     fi
 
     # --- Paddle (PP-StructureV3) table-recovery image ---
@@ -56,21 +94,7 @@ if [ "$1" = "--ocr-standalone" ]; then
         echo "  Using existing image: $PADDLE_IMAGE"
     else
         echo "=== 1b. Building Paddle (PP-StructureV3) image ==="
-        aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO
-        aws ecr describe-repositories --repository-names wwii-paddle --region $REGION 2>/dev/null || \
-            aws ecr create-repository --repository-name wwii-paddle --region $REGION --no-cli-pager
-        docker build --no-cache --progress=plain -f Dockerfile.paddle -t wwii-paddle .
-        if command -v trivy &>/dev/null; then
-            echo "  Scanning image for vulnerabilities..."
-            set +e
-            trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 wwii-paddle:latest 2>&1 | tail -10
-            set -e
-        else
-            echo "  Trivy: not installed (skipping scan)"
-        fi
-        docker tag wwii-paddle:latest $PADDLE_IMAGE
-        docker push $PADDLE_IMAGE
-        echo "  Pushed: $PADDLE_IMAGE"
+        build_scan_push Dockerfile.paddle wwii-paddle wwii-paddle "$PADDLE_IMAGE" 0
     fi
 
     echo ""
@@ -308,69 +332,34 @@ fi
 
 echo ""
 echo "=== 4. Building and pushing container ==="
-aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO
-docker build --no-cache --progress=plain -t wwii-pipeline .
-# Container vulnerability scan
 if command -v trivy &>/dev/null; then
-  echo "  Scanning image for vulnerabilities..."
-  # Check for newer trivy version
+  # Opportunistic version hint (non-blocking).
   TRIVY_CURRENT=$(trivy --version 2>/dev/null | head -1 | grep -oP '\d+\.\d+\.\d+')
   TRIVY_LATEST=$(curl -sf https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep -oP '"tag_name":\s*"v\K[^"]+' 2>/dev/null)
   if [ -n "$TRIVY_LATEST" ] && [ "$TRIVY_CURRENT" != "$TRIVY_LATEST" ]; then
-    echo "  ⚠ Trivy update available: $TRIVY_CURRENT → $TRIVY_LATEST (curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin)"
+    echo "  ⚠ Trivy update available: $TRIVY_CURRENT → $TRIVY_LATEST"
   fi
-  # Detect container runtime
-  TRIVY_IMAGE_SRC=""
-  if command -v podman &>/dev/null && podman image exists wwii-pipeline:latest 2>/dev/null; then
-    # Podman: save to tar then scan
-    podman save wwii-pipeline:latest -o /tmp/wwii-scan.tar 2>/dev/null || true
-    set +e
-    TRIVY_OUTPUT=$(trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --input /tmp/wwii-scan.tar 2>&1)
-    TRIVY_EXIT=$?
-    set -e
-    rm -f /tmp/wwii-scan.tar
-  else
-    set +e
-    TRIVY_OUTPUT=$(trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 wwii-pipeline:latest 2>&1)
-    TRIVY_EXIT=$?
-    set -e
-  fi
-  echo "$TRIVY_OUTPUT" | tail -10
-  if [ $TRIVY_EXIT -ne 0 ]; then
-    echo "  ✗ HIGH/CRITICAL vulnerabilities found — aborting deploy"
-    exit 1
-  fi
-  echo "  Trivy: OK"
+  build_scan_push . wwii-pipeline wwii-pipeline "$PIPELINE_IMAGE" 1
 else
-  echo "  Trivy: not installed — falling back to pip-audit"
+  # No Trivy: build+push but gate on pip-audit instead (requirements-level).
+  ecr_login "$ECR_REPO"
+  docker build --no-cache --progress=plain -t wwii-pipeline .
+  echo "  Trivy not installed — falling back to pip-audit"
   pip-audit -r requirements.txt --severity high 2>&1 | tail -10 || { echo "  ✗ pip-audit found vulnerabilities — aborting deploy"; exit 1; }
   echo "  pip-audit: OK"
+  docker tag wwii-pipeline:latest $PIPELINE_IMAGE
+  docker push $PIPELINE_IMAGE
 fi
-docker tag wwii-pipeline:latest $PIPELINE_IMAGE
-docker push $PIPELINE_IMAGE
 echo "  Pushed: $(aws ecr describe-images --repository-name wwii-pipeline --region $REGION --image-ids imageTag=latest --query 'imageDetails[0].imagePushedAt' --output text)"
 
 echo ""
 echo "=== 4b. Optional separate images (video, clamav) ==="
-# These are SEPARATE containers (own Dockerfiles) with heavy/independent deps, so
-# they are NOT rebuilt on every deploy by default. Build them only when asked
-# (VIDEO_BUILD=1 / AV_BUILD=1). Regardless of building, if the image already
-# exists in ECR we PASS it to the deploy so a routine deploy never silently drops
-# VideoImageUri/AvImageUri (which would un-deploy the video track / AV scanning).
-build_and_push() {  # $1=dockerfile $2=localtag $3=repo $4=full_image
-  echo "  Building $2 ($1)..."
-  docker build --no-cache --progress=plain -f "$1" -t "$2" .
-  if command -v trivy &>/dev/null && command -v podman &>/dev/null; then
-    podman save "$2:latest" -o /tmp/scan-$2.tar 2>/dev/null || true
-    set +e; trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --input /tmp/scan-$2.tar >/dev/null 2>&1; rc=$?; set -e
-    rm -f /tmp/scan-$2.tar
-    [ $rc -ne 0 ] && { echo "  ✗ $2: HIGH/CRITICAL vulns — aborting"; exit 1; }
-    echo "  Trivy $2: OK"
-  fi
-  docker tag "$2:latest" "$4"; docker push "$4"
-}
-if [ "${VIDEO_BUILD:-0}" = "1" ]; then build_and_push Dockerfile.video wwii-video wwii-video "$VIDEO_IMAGE"; fi
-if [ "${AV_BUILD:-0}" = "1" ]; then build_and_push Dockerfile.clamav wwii-clamav wwii-clamav "$AV_IMAGE"; fi
+# SEPARATE containers (own Dockerfiles, heavy/independent deps) — NOT rebuilt on
+# every deploy. Build only when asked (VIDEO_BUILD=1 / AV_BUILD=1). Regardless,
+# if the image exists in ECR we PASS it to the deploy so a routine deploy never
+# silently drops VideoImageUri/AvImageUri (which would un-deploy video / AV).
+if [ "${VIDEO_BUILD:-0}" = "1" ]; then build_scan_push Dockerfile.video wwii-video wwii-video "$VIDEO_IMAGE" 1; fi
+if [ "${AV_BUILD:-0}" = "1" ]; then build_scan_push Dockerfile.clamav wwii-clamav wwii-clamav "$AV_IMAGE" 1; fi
 # Resolve pass-through: only pass an optional image flag if that repo+tag exists.
 VIDEO_ARG=""; AV_ARG=""
 if aws ecr describe-images --repository-name wwii-video --region $REGION --image-ids imageTag=latest >/dev/null 2>&1; then
