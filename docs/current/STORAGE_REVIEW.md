@@ -47,17 +47,54 @@ Pricing Calculator / Cost Explorer for authoritative projections.
 | Deep Archive | 0.00099 | −96% | NOT used — would break the immediate-read ingestion path |
 | DynamoDB (on-demand storage) | 0.25 | 11× Standard | entity tables (~21 MB) + cache (~17 MB) |
 
-### Projected effect of this session's S3 work
-~**6.8 GB** of cold large binaries (source/ 0.53 GB + NARA 3.29 GB + media ~2.9 GB)
-move Standard→Glacier IR. At list price that slice drops from ~$0.023 to ~$0.004
-/GB-mo — roughly a **$0.13/mo saving on those bytes**… which exposes the real
-story: **at 6.8 GB the absolute storage dollars are small**; the Standard line is
-$60 because of the TOTAL footprint over time + byte-hours, not because any single
-prefix is huge. The Glacier-IR moves are correct and proportionate, but the
-**biggest future cost lever is not storage class — it is corpus GROWTH** (the
-502 GB WWIIArchives backlog). At 500 GB, Standard = ~$11.50/mo vs Glacier-IR
-~$2/mo — THAT is where the ~83% class saving becomes real money, so the lifecycle
-rules + the archive-tag discipline matter most as the corpus scales.
+### Projected cost scenarios (storage, list price us-east-1)
+
+Scale anchors (measured + from HyperWar review 2026-10-02):
+- **NARA B-series PDF** ≈ 36 MB/vol (scanned; 3.29 GB / 92 today). Large.
+- **HyperWar Green Books** = **HTML + a few map JPGs per volume — NOT scanned
+  PDF.** The Ardennes vol is ~700 pp of HTML (text, tiny) + ~15 map JPGs. The
+  "US Army in WWII" series is ~80 vols; with USMA + Medical/Technical sub-series,
+  ~150 volumes total. Source is small; the only largish artifact is map JPGs.
+- **WWIIArchives backlog** ≈ 502 GB (mostly scanned — the real volume driver).
+
+| Scenario | Added data | Storage $/mo added |
+|---|---|---|
+| **Current** (7.1 GB) | — | all-STD $0.16; **after today's cold→GIR ~$0.04** |
+| **A: +400 NARA PDFs** | +14.4 GB scanned | +$0.06 (GIR) vs +$0.33 (STD) |
+| **B: +150 HyperWar vols** | +3.6 GB (0.3 HTML + 3.3 maps) | **+$0.01** (GIR) — it's text, not scans |
+| **C: full 502 GB backlog** | +502 GB scanned | **$2.01 (GIR) vs $11.55 (STD) vs $0.50 (Deep Archive)** |
+| entity JSON + DynamoDB @10× | ~1.6 GB JSON + ~380 MB DDB | JSON $0.04 + DDB $0.10 — **never the cost** |
+
+### The honest conclusion — where the "fine edge" actually is
+**Storage dollars are tiny until the 502 GB backlog lands, and even then it is
+~$2–12/mo.** At current 7 GB the class optimization saves cents. So:
+
+1. **The $77 S3 bill is NOT current-footprint storage** — 7 GB at Standard is
+   $0.16/mo. The $60 `TimedStorage` byte-hours reflects data resident *earlier in
+   the month* (churn — large objects written then moved/deleted) + the one-off
+   $16 Deep-Archive legacy. **The lever there is churn discipline, not class.**
+2. **HyperWar is cheap to ingest** (HTML/text → convert track, not OCR; ~$0.01/mo
+   storage for 150 volumes). It barely moves storage cost. Its cost shows up as
+   **one-time ingestion compute** (convert + embed + LLM-generate), not storage.
+3. **The real storage lever is the scanned backlog (Scenario C)** — and the
+   Glacier-IR class discipline we built this session is what keeps 502 GB at ~$2
+   instead of ~$12/mo. It is **forward-looking** control: it matters at scale, not
+   today.
+4. **The genuine recurring cost is NOT storage at all** — per the cost-priority
+   steering it is **LLM/Grok inference** (billed by xAI, outside AWS) + **bursty
+   GPU OCR / Fargate** during ingestion. Managing-while-maintaining-performance
+   means: don't re-OCR/re-embed unchanged content (the incremental discipline),
+   keep hot/active data on Standard for Phase-1/serving latency, and push only
+   terminal binaries to Glacier-IR (instant, so performance is preserved).
+
+**Performance-vs-cost edge (the explicit tradeoff):** Glacier-IR was chosen over
+Deep Archive precisely to KEEP performance — ingestion reads stay millisecond, no
+restore. The active chapter markdown + hot entity JSON stay on Standard so Phase 1
+and the future site/search are not penalized. The cost control is applied ONLY to
+terminal, cold, ingestion-only binaries — so there is no performance cost to the
+savings. The one place to watch as the backlog lands: byte-hour **churn** during
+bulk OCR (write-then-archive), which the lifecycle rules + archive-tag at
+chapter-write already minimize.
 
 ### DynamoDB cost perspective
 DynamoDB storage is **$0.25/GB-mo — 11× S3 Standard** — but on ~38 MB it is
