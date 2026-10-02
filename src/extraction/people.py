@@ -384,9 +384,33 @@ class BiographicalProfile(BaseModel):
     death_place: Optional[str] = None
     nationality: Optional[str] = Field(
         default=None,
-        description="ISO 3166-1 alpha-3 country code (e.g., 'USA', 'GBR', 'DEU', 'FRA', 'CAN')",
+        description=(
+            "ISO 3166-1 alpha-3 country code of the person's nationality/citizenship "
+            "(e.g. 'USA', 'GBR', 'DEU', 'FRA', 'CAN'). Optional: often not stated in "
+            "narrative/OOB sources and may be inferred by enrichment (unit, award, "
+            "source) rather than extracted. Do not fabricate at extraction time."
+        ),
+    )
+    nationality_served: Optional[str] = Field(
+        default=None,
+        description=(
+            "ISO 3166-1 alpha-3 code of the POWER the person served under, when it "
+            "differs from `nationality` (e.g. a French national in the Waffen-SS = "
+            "FRA nationality, DEU served; a Pole in the RAF = POL/GBR). Optional; "
+            "leave null when it equals `nationality`."
+        ),
     )
     role_type: Optional[str] = None
+    primary_group_id: Optional[str] = Field(
+        default=None,
+        description=(
+            "26-char ULID of the person's PRIMARY people_groups unit — a derived, "
+            "point-in-time convenience pointer (populated by resolution/dedup, not "
+            "extraction). The authoritative, time-aware affiliations remain the "
+            "per-unit `units_served[].GroupID` links; this is a shortcut to the "
+            "principal one and must never be the sole source of a person->unit link."
+        ),
+    )
     ranks: list[MilitaryRank] = Field(default_factory=list)
     units_served: list[UnitServed] = Field(default_factory=list)
     education: list[Education] = Field(default_factory=list)
@@ -567,7 +591,9 @@ def _update_missing_fields(
         "death_date",
         "death_place",
         "nationality",
+        "nationality_served",
         "role_type",
+        "primary_group_id",
         "biographical_details",
     ]:
         if new_bio.get(field) and not existing_bio.get(field):

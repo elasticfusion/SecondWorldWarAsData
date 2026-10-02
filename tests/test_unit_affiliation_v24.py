@@ -5,8 +5,11 @@ from src.extraction.people import UnitServed, _deduplicate_units
 from src.schemas import SCHEMA_VERSION
 
 
-def test_schema_version_is_2_4():
-    assert SCHEMA_VERSION == "2.4"
+def test_schema_version_at_least_2_4():
+    # v2.4 introduced the UnitServed affiliation fields; the version only moves
+    # forward (2.5 added nationality_served + primary_group_id). Assert the floor.
+    major, minor = (int(x) for x in SCHEMA_VERSION.split(".")[:2])
+    assert (major, minor) >= (2, 4)
 
 
 def test_unit_served_backcompat():
