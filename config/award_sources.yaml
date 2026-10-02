@@ -1,0 +1,117 @@
+# Country-specific award-citation source registry.
+#
+# This is the EDITABLE catalog of authoritative award sources per country. Add a
+# country / fix a URL / tune a crawl-delay HERE (data), not in code. The fetch +
+# parse logic lives in src/enrichment/award_*source.py adapters keyed by `adapter`.
+#
+# Fields per source:
+#   id            unique id (used in provenance source_name if name absent)
+#   name          human-readable source name (stored in MilitaryAward.source_name)
+#   nationality   ISO-ish nationality gate; the source runs only for people of this
+#                 nationality (USA|GBR|DEU|...). Matched case-insensitively.
+#   adapter       which fetch/parse adapter implements it:
+#                   hall_of_valor | london_gazette | victoria_cross_online | offline
+#   base_url      site root
+#   search_path   search path template; {q} = URL-encoded person name
+#   crawl_delay   seconds between requests (politeness; honor site robots)
+#   awards        award types this source carries citation TEXT for (hint/doc)
+#   language      source citation language (English|German|French|...). Non-English
+#                 citation text is translated to English on attach (original kept in
+#                 MilitaryAward.citation_text_original + citation_language).
+#   accessible    from AWS with the full browser header profile? (probe result)
+#   enabled       whether the source is active
+#   dataset_path  (offline adapter only) local JSON dataset of citations
+#   notes         freeform
+#
+# Access facts verified 2026-10-02 from AWS Lambda + full browser headers
+# (src/utils/http_pool.browser_headers). valor.defense.gov EXCLUDED: Akamai 403s
+# the AWS IP even with full headers AND it carries name-lists only (no citations).
+
+sources:
+  # ---------------- United States ----------------
+  - id: us_hall_of_valor
+    name: Military Times Hall of Valor
+    nationality: USA
+    language: English
+    adapter: hall_of_valor
+    base_url: https://valor.militarytimes.com
+    search_path: "/?s={q}"
+    crawl_delay: 1.1
+    awards: [Medal of Honor, Distinguished Service Cross, Navy Cross, Silver Star]
+    accessible: true
+    enabled: true
+    notes: >-
+      Largest US valor citation DB. MoH + all service crosses complete; Silver Star
+      partial. Primary US source. Recipient pages at /recipient/recipient-<id>/.
+
+  # ---------------- United Kingdom ----------------
+  - id: uk_london_gazette
+    name: The London Gazette
+    nationality: GBR
+    language: English
+    adapter: london_gazette
+    base_url: https://www.thegazette.co.uk
+    search_path: "/all-notices/notice?text={q}"
+    crawl_delay: 10          # robots Crawl-delay: 10 — honor it
+    awards: [Victoria Cross, George Cross, Distinguished Service Order, Distinguished Flying Cross, George Medal]
+    accessible: true         # 200 from AWS with full headers
+    enabled: true
+    notes: >-
+      Official citation wording. Fetch the HTML notice page only — robots DISALLOWS
+      /notice/*/data.xml, /notice/*/data.pdf, /notice/*/version/*. VC/GC/DSO/DFC
+      usually carry a citation; DCM/MM are often name-only (full text in WO 373).
+
+  - id: uk_victoria_cross_online
+    name: Victoria Cross Online
+    nationality: GBR
+    language: English
+    adapter: victoria_cross_online
+    base_url: https://victoriacrossonline.co.uk
+    search_path: "/?s={q}"
+    crawl_delay: 2
+    awards: [Victoria Cross, George Cross]
+    accessible: true
+    enabled: true
+    notes: VC/GC per-recipient citation pages. Secondary to the Gazette for GB.
+
+  # ---------------- France ----------------
+  # Verified 2026-10-02 (AWS + full headers): all FR sites serve 200. French-
+  # language citations are translated to English on attach (original preserved).
+  # Only the Ordre de la Libération carries citation-like TEXT; Croix de guerre,
+  # Médaille militaire, and Légion d'honneur citations live in the Journal
+  # officiel / SHD Vincennes / Léonore dossiers → offline/dossier (OfflineAwardDataset).
+  - id: fr_ordre_liberation
+    name: Ordre de la Libération (Compagnons)
+    nationality: FRA
+    language: French
+    adapter: ordre_liberation
+    base_url: https://www.ordredelaliberation.fr
+    search_path: "/fr/recherche-compagnons?q={q}"
+    crawl_delay: 3
+    awards: [Ordre de la Libération, Croix de la Libération]
+    accessible: true
+    enabled: true
+    notes: >-
+      1,038 Compagnons; each has a biographical notice (decree date, unit/network,
+      services justifying the cross) ≈ the citation for this award. French → text
+      is translated to English, original kept. NOT a Croix-de-guerre/Médaille-
+      militaire source (no public citation roll for those).
+
+  # ---------------- Offline / request-based (any country) ----------------
+  - id: offline_dataset
+    name: Offline award dataset
+    nationality: ANY
+    language: null   # per-record; non-English citations are translated to English (original preserved)
+    adapter: offline
+    dataset_path: data/award_citations.json
+    crawl_delay: 0
+    awards: []
+    accessible: true          # local, no network
+    enabled: false            # enable when a dataset is provided
+    notes: >-
+      Local recipients+citations dataset (zero scraping) for material behind
+      subscription/offline walls: US Silver Star (NARA/Fold3), UK DCM/MM (WO 373,
+      Fold3 register), German Begründung (Bundesarchiv Freiburg / RH 7); French Croix de guerre /
+      Médaille militaire / Légion d'honneur citations (Journal officiel via Gallica,
+      SHD Vincennes homologation files, Base Léonore dossiers). Feed it a
+      curated/transcribed JSON; see award_offline_source.OfflineAwardDataset.

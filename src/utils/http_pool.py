@@ -67,3 +67,42 @@ def close_session():
     if _session is not None:
         _session.close()
         _session = None
+
+
+# Full browser header profile. Testing (2026-10-02) showed many WAF-fronted public
+# sources (London Gazette, CMOHS, TracesOfWar, Hall of Valor) return 200 to a plain
+# HTTP client ONLY when it sends a complete browser-like header set — bare UA+Accept
+# gets 403/challenge. These are the headers a real Chrome sends; use them for polite
+# direct fetches of such sources (NOT for defeating a JS-interstitial challenge).
+BROWSER_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    ),
+    "Accept": (
+        "text/html,application/xhtml+xml,application/xml;q=0.9,"
+        "image/avif,image/webp,*/*;q=0.8"
+    ),
+    "Accept-Language": "en-US,en;q=0.9",
+    "sec-ch-ua": '"Chromium";v="131", "Not_A Brand";v="24", "Google Chrome";v="131"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Upgrade-Insecure-Requests": "1",
+}
+
+
+def browser_headers(extra: dict = None) -> dict:
+    """Return the full browser header profile (optionally merged with ``extra``).
+
+    Use for polite direct fetches of WAF-fronted public sources that reject bare
+    clients. Pass a descriptive ``From``/contact or override UA via ``extra`` if a
+    source's policy prefers an identifying agent.
+    """
+    headers = dict(BROWSER_HEADERS)
+    if extra:
+        headers.update(extra)
+    return headers
