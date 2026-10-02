@@ -6,6 +6,70 @@ deliberately deferred. Grounded in the actual code + live AWS state (not generic
 guidance). Companion: `.kiro/steering/architecture-decisions.md` (the recorded
 pgvector/Aurora direction this affirms).
 
+## Cost (the equation behind the decisions)
+
+Figures are **actual Sept MTD** from Cost Explorer + **current us-east-1 list
+prices** for comparison. Treat forward numbers as directional — use the AWS
+Pricing Calculator / Cost Explorer for authoritative projections.
+
+### Where the money actually is (Sept actual)
+| Service | Sept actual | Note |
+|---|---|---|
+| **S3** | **$77.54** | breakdown below — it is ~78% plain Standard storage |
+| DynamoDB | **$1.79** | confirms "smallest line item" — storage+requests for ~38 MB |
+
+**S3 by usage type (the important part):**
+| Usage type | $ | Reading |
+|---|---|---|
+| `TimedStorage-ByteHrs` (Standard) | **60.37** | the real lever — plain Standard storage |
+| `TimedStorage-GDA-ByteHrs` (Deep Archive) | 15.96 | **transient/legacy** — 0 GDA objects remain now; something was archived then deleted |
+| `EarlyDelete-GDA` | 0.66 | GDA 180-day-min early-deletion penalty (confirms the GDA objects were deleted early — one-off) |
+| All requests (Tier1-4, GIR) | **~0.53** | **negligible** |
+| Glacier-IR / SIA storage | ~0.00 | our just-moved cold binaries (not yet accrued) |
+
+### Two corrections this forced to the review
+1. **The 45k-object `output/` sprawl costs ~$0.53/mo in requests — negligible.**
+   The earlier "object-count cost" worry was overstated. The consolidation's value
+   is Phase-3 **latency** + Postgres-load-prep, essentially **not dollars** —
+   reinforcing its "deferred, efficiency-only" status.
+2. **~$60 of the $77 is plain Standard storage**, so the cold-binary → Glacier-IR
+   moves are the correct and only material S3 lever. The $16 Deep-Archive line is
+   **not recurring** (zero GDA objects remain; it + the early-delete penalty are a
+   one-off from a prior archive that was deleted).
+
+### Storage-class cost comparison (list price, /GB-month, us-east-1)
+| Class | $/GB-mo | vs Standard | Our use |
+|---|---|---|---|
+| S3 Standard | 0.023 | — | active markdown, hot JSON |
+| Standard-IA | 0.0125 | −46% | `output/` after 30d (existing rule) |
+| **Glacier IR** | **0.004** | **−83%** | **source/ + NARA PDFs + tagged media (this session)** |
+| Glacier Flexible | 0.0036 | −84% | not used (restore needed) |
+| Deep Archive | 0.00099 | −96% | NOT used — would break the immediate-read ingestion path |
+| DynamoDB (on-demand storage) | 0.25 | 11× Standard | entity tables (~21 MB) + cache (~17 MB) |
+
+### Projected effect of this session's S3 work
+~**6.8 GB** of cold large binaries (source/ 0.53 GB + NARA 3.29 GB + media ~2.9 GB)
+move Standard→Glacier IR. At list price that slice drops from ~$0.023 to ~$0.004
+/GB-mo — roughly a **$0.13/mo saving on those bytes**… which exposes the real
+story: **at 6.8 GB the absolute storage dollars are small**; the Standard line is
+$60 because of the TOTAL footprint over time + byte-hours, not because any single
+prefix is huge. The Glacier-IR moves are correct and proportionate, but the
+**biggest future cost lever is not storage class — it is corpus GROWTH** (the
+502 GB WWIIArchives backlog). At 500 GB, Standard = ~$11.50/mo vs Glacier-IR
+~$2/mo — THAT is where the ~83% class saving becomes real money, so the lifecycle
+rules + the archive-tag discipline matter most as the corpus scales.
+
+### DynamoDB cost perspective
+DynamoDB storage is **$0.25/GB-mo — 11× S3 Standard** — but on ~38 MB it is
+$1.79/mo total. Cost is NOT the reason to migrate the entity tables (fit +
+Scan-efficiency is); and the coordination KV is far too small to matter. Do not
+make the DynamoDB decision on cost grounds.
+
+### Budget implication
+The stale **$75 budget** (TODO item) is unrealistic given corpus growth: S3 alone
+is $77. Reset it to reflect the real steady-state (storage + bursty GPU/Fargate +
+Grok billed separately), using Cost Explorer trend data — not a guess.
+
 ---
 
 ## TL;DR
