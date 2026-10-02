@@ -320,3 +320,41 @@ Accessibility verified 2026-10-02 (AWS + full headers).
 **Build:** TracesOfWar registered as a NAME source, **`enabled: false`** (partial
 citations only); MWO biographies via rmwo.nl later if useful; real citations →
 `OfflineAwardDataset` (Nationaal Archief / NIMH + Meijer rolls).
+
+---
+
+## Romania (ROU), Hungary (HUN), Finland (FIN), Spain (ESP) — top-grade name rolls
+
+Common pattern: **complete/near-complete name rolls online for the TOP award(s), but
+the formal citation text is mostly in print or in the original award orders** — no
+single free citation database. All four are registered but **`enabled: false`**
+(name-roll, not citation source); citation text routes to `OfflineAwardDataset`.
+Non-English → translated (RO/HU/FI/ES). Accessibility verified 2026-10-02 (AWS + full headers).
+
+### Romania — Order of Michael the Brave
+| Source | Access | Role |
+|---|---|---|
+| WorldWar2.ro (/decoratii) | 200 | Officers by class: rank, unit, decree no.+date, class. Names + decree refs, **not** the deed. |
+| Romanian Wikipedia (MO-compiled lists) | web | Officers + battle-flag rolls with decree nos. |
+| **Citation** | — | The **brevet** (diploma) carries the narrative (e.g. the Dicezare brevet is online); most are **offline** (brevet / decoration file at military archives). Monitorul Oficial = conferral lists. Lower grades (Military Virtue, Aeronautical Virtue): no comparable roll. |
+
+### Hungary — Gold Medal of Bravery + Maria Theresa
+| Source | Access | Role |
+|---|---|---|
+| huWiki / enWiki "Medal of Bravery" + archived rendjel roll | web | Officer Gold (~22+3), Enlisted Gold (~39): name/rank/date/place. |
+| TracesOfWar (Officer Gold) | 200 (empty from AWS) | Points at the citation book; roll partial. |
+| hungarianarmedforces.com (Magyar Érdemrend index) | 200 | Searchable award index (incl. swords grades); **not** citations. |
+| **Citation** | — | **Oszlányi** (single WWII Maria Theresa knight) appointment text online (archived rendjel). Otherwise: Illésfalvi/Kovács/Maruzs *For Valour* (2010, print) + scattered articles (Corvinák, Kitörés 1945). Below gold → archives. → offline. |
+
+### Finland — Mannerheim Cross
+| Source | Access | Role |
+|---|---|---|
+| marskinritarit.fi | 200 | Knights' association: the roll + short bios. |
+| en/fi Wikipedia Mannerheim Cross list | 200 | Complete wartime roll (191; 1941-45): knight no., name, rank, service, date, unit, short note — **not** the official citation. |
+| **Citation** | — | GHQ *nimitysperustelut* in Hurmerinta & Viitanen, *Mannerheim-ristin ritarit: ritarimatrikkeli* (1994/2004/2006, **print**) → offline. Lower Liberty crosses/medals too numerous for a public roll. |
+
+### Spain — Cruz Laureada de San Fernando / Medalla Militar (División Azul)
+| Source | Access | Role |
+|---|---|---|
+| esWiki annex (Laureada by year) | 200 | WWII set = División Azul (Eastern Front 1941-43): ~8 Laureadas + ~42-54 Medallas Militares. Names + **one-line merit**, not the formal citation. |
+| **Citation** | — | Award order in the **Diario Oficial del Ministerio del Ejército** (not on one free site) + the *juicio contradictorio* for the Laureada → offline. Blue Division Medallas Militares / Cruces de Guerra: no online citation roll. Print: Prieto Barrio & Pérez Rubio, *Condecoraciones y distintivos de la División Azul*. |

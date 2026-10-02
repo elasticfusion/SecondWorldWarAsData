@@ -212,6 +212,94 @@ sources:
       1944-45; thin Berlin card index) → SHD engagement lists / collaboration dossiers
       are the fallback source for the same German award. German → translated.
 
+  # ---------------- Romania ----------------
+  # Verified 2026-10-02 (AWS + full headers). Names online (Order of Michael the Brave);
+  # citation prose only in the per-recipient BREVET (diploma) — a few online (e.g. the
+  # Dicezare brevet), the rest offline. Monitorul Oficial decrees are conferral lists
+  # (name/rank/unit/class), not the deed. Romanian → translated.
+  - id: ro_worldwar2
+    name: WorldWar2.ro — Ordinul Mihai Viteazul
+    nationality: ROU
+    language: Romanian
+    adapter: tracesofwar          # generic name-roll adapter shape; disabled
+    base_url: https://www.worldwar2.ro
+    search_path: "/decoratii/?article=119"
+    crawl_delay: 3
+    awards: [Order of Michael the Brave]
+    accessible: true
+    enabled: false                # names + decree refs, citation only in brevets (offline)
+    notes: >-
+      Officers by class with rank/unit/decree no.+date. Lower grades (Military Virtue
+      Medal, Aeronautical Virtue) have no comparable roll. Full citation = the brevet
+      or decoration file at the military archives → offline. Romanian Wikipedia has
+      compiled MO lists (names + decree nos). Illésfalvi-style print has the deed.
+
+  # ---------------- Hungary ----------------
+  # Verified 2026-10-02 (AWS + full headers). Complete name rolls for the top grades
+  # (Officer Gold ~22+3, Enlisted Gold ~39, single Maria Theresa knight Oszlányi);
+  # citation prose online only for Oszlányi in full + a handful of gold cases. Lower
+  # Vitézségi Érem grades (silver/bronze, tens of thousands) have no roll. Hungarian → translated.
+  - id: hu_name_rolls
+    name: Hungary — Gold Medal of Bravery rolls (huWiki / rendjel / armedforces)
+    nationality: HUN
+    language: Hungarian
+    adapter: tracesofwar
+    base_url: http://www.hungarianarmedforces.com
+    search_path: "/magyarerdemrend/index.html"
+    crawl_delay: 3
+    awards: [Officer Gold Medal of Bravery, Enlisted Gold Medal of Bravery, Military Order of Maria Theresa]
+    accessible: true
+    enabled: false                # names online; citation prose only for Oszlányi + a few
+    notes: >-
+      Full citation source = Illésfalvi/Kovács/Maruzs 'For Valour' (2010, print) +
+      scattered articles (Corvinák, Kitörés 1945). Oszlányi's Maria Theresa appointment
+      text is online (archived rendjel). Signum Laudis / Order of Merit with swords: a
+      searchable index exists (hungarianarmedforces.com) but no citation files → offline.
+
+  # ---------------- Finland ----------------
+  # Verified 2026-10-02 (AWS + full headers). Mannerheim Cross roll is COMPLETE +
+  # wartime-only (191, 1941-1945). Names/rank/unit online; the citation (GHQ
+  # nimitysperustelut) is in print (Hurmerinta & Viitanen ritarimatrikkeli). Finnish → translated.
+  - id: fi_marskinritarit
+    name: Mannerheim Cross Knights (marskinritarit.fi)
+    nationality: FIN
+    language: Finnish
+    adapter: tracesofwar
+    base_url: https://www.marskinritarit.fi
+    search_path: "/"
+    crawl_delay: 3
+    awards: [Mannerheim Cross]
+    accessible: true
+    enabled: false                # roll + short bios online; citation text is in print
+    notes: >-
+      191 knights (complete, wartime-only). en/fi Wikipedia carry the roll (knight no.,
+      name, rank, service, date, unit, short note) — NOT the official citation. Citation
+      = GHQ nimitysperustelut in Hurmerinta & Viitanen, 'Mannerheim-ristin ritarit:
+      ritarimatrikkeli' (1994/2004/2006, print) → offline. Lower Liberty crosses/medals
+      too numerous for a public citation roll.
+
+  # ---------------- Spain ----------------
+  # Verified 2026-10-02 (AWS + full headers). WWII-relevant set = División Azul (1941-43):
+  # ~8 Cruces Laureadas de San Fernando + ~42-54 Medallas Militares. esWiki annex lists
+  # Laureadas by year with a ONE-LINE merit note, not the formal citation. Spanish → translated.
+  - id: es_wiki_laureada
+    name: Spain — Cruz Laureada de San Fernando (esWiki annex)
+    nationality: ESP
+    language: Spanish
+    adapter: tracesofwar
+    base_url: https://es.wikipedia.org
+    search_path: "/wiki/Anexo:Condecorados_con_la_Cruz_Laureada_de_San_Fernando"
+    crawl_delay: 2
+    awards: [Cruz Laureada de San Fernando, Medalla Militar Individual]
+    accessible: true
+    enabled: false                # names + one-line merit; formal citation in Diario Oficial (offline)
+    notes: >-
+      División Azul (Eastern Front 1941-43) is the WWII set. Formal citation = the award
+      order in the Diario Oficial del Ministerio del Ejército (not on one free site) +
+      the juicio contradictorio for the Laureada → offline. Blue Division Medallas
+      Militares / Cruces de Guerra have NO online citation roll. Print: Prieto Barrio &
+      Pérez Rubio, 'Condecoraciones y distintivos de la División Azul'.
+
   # ---------------- Offline / request-based (any country) ----------------
     name: Offline award dataset
     nationality: ANY
