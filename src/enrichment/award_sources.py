@@ -452,7 +452,6 @@ def _source_one_award(award: dict, name: str, srcs) -> bool:
         f" [translated from {language}]" if original is not None else "",
     )
     return True
-    return filled
 
 
 def _normalize_citation_language(citation: "AwardCitation"):

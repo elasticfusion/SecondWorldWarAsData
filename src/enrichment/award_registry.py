@@ -131,3 +131,34 @@ def make_selector(storage=None, registry_path: Optional[str] = None):
         return sources_for(code, storage=storage, registry_path=registry_path)
 
     return _selector
+
+
+@lru_cache(maxsize=4)
+def award_domains(registry_path: Optional[str] = None) -> frozenset:
+    """Hostnames owned by award sources (from every registry base_url, plus known
+    valor aliases). OpenSERP should SKIP these — they are sourced authoritatively +
+    politely by the award adapters, so search-engine scraping of them is redundant
+    and lower quality. Returns a frozenset of bare hostnames (no scheme)."""
+    from urllib.parse import urlparse
+
+    hosts = set()
+    for entry in load_registry(registry_path):
+        base = entry.get("base_url") or ""
+        host = urlparse(base).netloc
+        if host:
+            hosts.add(host.lower())
+            hosts.add(host.lower().removeprefix("www."))
+    # Known valor domains the old search-engine path targeted (now direct/offline).
+    hosts.update({"valor.militarytimes.com", "valor.defense.gov", "homeofheroes.com"})
+    return frozenset(hosts)
+
+
+def is_award_domain(url: str, registry_path: Optional[str] = None) -> bool:
+    """True if ``url``'s host belongs to an award source (OpenSERP should skip it)."""
+    from urllib.parse import urlparse
+
+    host = (urlparse(url).netloc or "").lower()
+    if not host:
+        return False
+    domains = award_domains(registry_path)
+    return host in domains or host.removeprefix("www.") in domains

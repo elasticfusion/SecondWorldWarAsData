@@ -107,3 +107,19 @@ def test_persist_sourcing_errors_writes_only_on_error():
     rec = json.loads(st.saved[path].decode("utf-8"))
     assert rec["status"] == "needs_retry"
     assert rec["errors"][0]["error"].startswith("HTTP 403")
+
+
+def test_award_domains_includes_registry_and_valor_hosts():
+    from src.enrichment.award_registry import award_domains, is_award_domain
+
+    domains = award_domains()
+    # Registry-derived hosts
+    assert "valor.militarytimes.com" in domains
+    assert "podvignaroda.ru" in domains
+    # valor aliases the old OpenSERP path targeted
+    assert "valor.defense.gov" in domains
+    # is_award_domain tolerates scheme + www + paths
+    assert is_award_domain("https://valor.militarytimes.com/recipient/recipient-1/")
+    assert is_award_domain("http://www.podvignaroda.ru/?id=1")
+    # a non-award site is NOT skipped
+    assert not is_award_domain("https://en.wikipedia.org/wiki/Audie_Murphy")

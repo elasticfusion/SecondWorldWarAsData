@@ -511,6 +511,76 @@ def _verify_and_apply(
     return changed
 
 
+# Non-award sites OpenSERP should also skip (low-value / excluded by the owner).
+_EXTRA_SKIP_HOSTS = frozenset({"ibiblio.org", "www.ibiblio.org"})
+
+
+def _skip_result(url: str) -> bool:
+    """True if an OpenSERP result URL should be dropped: award-source domains (sourced
+    authoritatively by the award adapters) or explicitly excluded hosts (ibiblio)."""
+    if not url:
+        return False
+    from urllib.parse import urlparse
+
+    from src.enrichment.award_registry import is_award_domain
+
+    host = (urlparse(url).netloc or "").lower()
+    if host in _EXTRA_SKIP_HOSTS or host.removeprefix("www.") in _EXTRA_SKIP_HOSTS:
+        return True
+    return is_award_domain(url)
+
+
+def _person_query_terms(data: Dict) -> str:
+    """Build extra query terms from People-JSON facts to sharpen the OpenSERP search:
+    primary unit designation + nationality. Keeps the query specific without flooding
+    it (one unit, one nationality)."""
+    bp = data.get("biographical_profile") or {}
+    terms: List[str] = []
+    units = bp.get("units_served") or []
+    for u in units:
+        if isinstance(u, dict):
+            desig = u.get("designation") or u.get("unit")
+            if desig:
+                terms.append(str(desig))
+                break
+    nat = bp.get("nationality") or data.get("nationality")
+    if nat:
+        terms.append(str(nat))
+    return " ".join(terms)
+
+
+def _collect_person_candidates(f, name: str, data: Dict, openserp_url: str) -> Dict:
+    """Build the OpenSERP candidate bundle for one person: a portrait-image search
+    (skipped if Wikipedia already has a portrait) + a web search (awards/bio/academic),
+    both augmented with People-JSON facts and filtered of award/ibiblio domains."""
+    person_candidates: Dict = {"file": f, "name": name, "data": data}
+    facts = _person_query_terms(data)
+
+    from src.extraction.enrich_biographies import get_wikipedia_image
+
+    wiki_image = get_wikipedia_image(name)
+    if wiki_image:
+        person_candidates["wiki_image"] = wiki_image
+    elif not data.get("images"):
+        hits = _search_openserp(
+            f"{name} {facts} WWII portrait photo".replace("  ", " "), openserp_url
+        )
+        person_candidates["image_results"] = [
+            h for h in hits if not _skip_result(h.get("url", ""))
+        ]
+
+    # Augment the web query with People-JSON facts (unit, nationality) for precision;
+    # skip award-domain + ibiblio hits (award sites sourced authoritatively).
+    if not data.get("military_awards"):
+        web_hits = _search_openserp(
+            f"{name} {facts} WWII".replace("  ", " "), openserp_url
+        )
+        person_candidates["web_results"] = [
+            h for h in web_hits if not _skip_result(h.get("url", ""))
+        ]
+    return person_candidates
+
+
 def enrich_people_with_openserp(
     people_dir: Path,
     openserp_url: str,
@@ -552,24 +622,7 @@ def enrich_people_with_openserp(
         if not name:
             continue
 
-        person_candidates: Dict = {"file": f, "name": name, "data": data}
-
-        # Search for images — skip if Wikipedia already provided a portrait
-        from src.extraction.enrich_biographies import get_wikipedia_image
-
-        wiki_image = get_wikipedia_image(name)
-        if wiki_image:
-            person_candidates["wiki_image"] = wiki_image
-        elif not data.get("images"):
-            person_candidates["image_results"] = _search_openserp(
-                f"{name} WWII portrait photo", openserp_url
-            )
-
-        # Search for web results (awards, bio, academic)
-        if not data.get("military_awards"):
-            person_candidates["web_results"] = _search_openserp(
-                f"{name} WWII", openserp_url
-            )
+        person_candidates = _collect_person_candidates(f, name, data, openserp_url)
 
         candidates.append(person_candidates)
 
