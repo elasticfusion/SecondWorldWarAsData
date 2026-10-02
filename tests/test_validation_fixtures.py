@@ -24,17 +24,15 @@ def _fixture_dirs():
     return sorted(d for d in FIXTURE_ROOT.iterdir() if d.is_dir())
 
 
-@pytest.mark.parametrize(
-    "schema_dir", _fixture_dirs(), ids=lambda d: d.name
-)
+@pytest.mark.parametrize("schema_dir", _fixture_dirs(), ids=lambda d: d.name)
 def test_fixture_validates_against_schema(schema_dir):
     import jsonschema
 
     schema_name = schema_dir.name
     registry = get_registry()
-    assert schema_name in registry.list_schemas(), (
-        f"fixture dir '{schema_name}' has no matching schema in the registry"
-    )
+    assert (
+        schema_name in registry.list_schemas()
+    ), f"fixture dir '{schema_name}' has no matching schema in the registry"
     schema = registry.get_schema(schema_name)
 
     sample = schema_dir / "sample.json"
@@ -48,13 +46,13 @@ def test_fixture_validates_against_schema(schema_dir):
     wrapper_values = [v for v in data.values() if isinstance(v, list)]
     assert wrapper_values, f"{sample} has no array wrapper"
     records = wrapper_values[0]
-    assert len(records) == 2, (
-        f"{schema_name}: expected 2 records (minimal + expanded), got {len(records)}"
-    )
+    assert (
+        len(records) == 2
+    ), f"{schema_name}: expected 2 records (minimal + expanded), got {len(records)}"
     # The expanded record must be strictly richer than the minimal one.
-    assert _leaf_count(records[1]) > _leaf_count(records[0]), (
-        f"{schema_name}: second record should be the fully-expanded one"
-    )
+    assert _leaf_count(records[1]) > _leaf_count(
+        records[0]
+    ), f"{schema_name}: second record should be the fully-expanded one"
 
 
 def test_every_fixture_dir_maps_to_a_real_schema():
