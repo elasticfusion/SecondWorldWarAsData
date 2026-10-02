@@ -141,14 +141,19 @@ def cmd_deploy(args):
 
     method = cf.create_stack if action == "create" else cf.update_stack
 
-    def _image_param(key: str, value: Optional[str]) -> dict:
+    def _image_param(
+        key: str, value: Optional[str], allow_previous: bool = True
+    ) -> dict:
         # If no image was passed on an UPDATE, keep the currently-deployed image
         # (UsePreviousValue) rather than blanking it to "" — an empty image makes
         # every ECS TaskDef fail with "Container.image should not be null or
         # empty" (root cause of the 2026-07 ComputeStack rollback).
+        # allow_previous=False for OPTIONAL images (video/av) that may not exist on
+        # the stack yet: UsePreviousValue errors for a never-before-set parameter,
+        # so fall back to "" (their templates treat "" as "resource not created").
         if value:
             return {"ParameterKey": key, "ParameterValue": value}
-        if action == "update":
+        if action == "update" and allow_previous:
             return {"ParameterKey": key, "UsePreviousValue": True}
         return {"ParameterKey": key, "ParameterValue": ""}
 
@@ -169,6 +174,10 @@ def cmd_deploy(args):
                 {"ParameterKey": "LambdaCodeKey", "ParameterValue": "lambda/code.zip"},
                 _image_param("OpenSerpImageUri", args.openserp_image),
                 _image_param("PipelineImageUri", args.pipeline_image),
+                _image_param("VideoImageUri", args.video_image),
+                # AvImageUri is a NEW parameter (not on the deployed stack yet) —
+                # UsePreviousValue would error, so force "" when no image is given.
+                _image_param("AvImageUri", args.av_image, allow_previous=False),
                 {
                     "ParameterKey": "NotificationEmail",
                     "ParameterValue": args.notification_email or "",
@@ -292,6 +301,16 @@ def main():
     )
     deploy_parser.add_argument(
         "--pipeline-image", default=None, help="ECR image URI for pipeline container"
+    )
+    deploy_parser.add_argument(
+        "--video-image",
+        default=None,
+        help="ECR image URI for the separate video-processing container (optional)",
+    )
+    deploy_parser.add_argument(
+        "--av-image",
+        default=None,
+        help="ECR image URI for the separate ClamAV scanning container (optional)",
     )
     deploy_parser.add_argument(
         "--notification-email",
