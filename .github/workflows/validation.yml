@@ -28,6 +28,8 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: . # make 'src' importable in every step that runs a script directly
 
     steps:
       - uses: actions/checkout@v4
@@ -49,8 +51,6 @@ jobs:
       # Data-driven: every tests/fixtures/validation/<schema>/ dir is validated,
       # so adding a category needs no workflow edit.
       - name: Validate sample fixtures against schemas
-        env:
-          PYTHONPATH: . # make 'src' importable when running the script directly
         run: |
           set -euo pipefail
           mkdir -p reports
