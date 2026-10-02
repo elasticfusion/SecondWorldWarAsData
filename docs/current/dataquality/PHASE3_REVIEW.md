@@ -1,100 +1,83 @@
-# Phase 3 Review — what it does, code reality vs docs, and the real problems
+# Phase 3 (Enrichment) Review — Findings
 
-Prepared 2026-10-01 (branch `fix/phase3-lifecycle`) to scope Phase-3 work. Combines
-a full documentation sweep with code verification, because several docs are stale.
+Rigorous, evidence-based audit of the enrichment phase (requested 2026-10-02 — the
+owner suspected it "isn't as solid as it should be"). Scope: `phase3_enrich_data.py`,
+`src/enrichment/*`, `src/extraction/enrich_*`, `lambda_handlers/phase3_handler.py`.
+Every finding cites file:line. **Read-only review — no code changed yet.**
 
-## 1. What Phase 3 actually does (verified in `phase3_enrich_data.py:main`)
+---
 
-Phase 3 is **enrichment** — it runs AFTER the Phase-2→3 dedup gate and enriches
-extracted entities with external data. Verified step list in `main()`:
+## Verdict
 
-1. **People** — biographical enrichment (`enrich_people_data` → `src/extraction/enrich_biographies.py`): Grokipedia → Wikipedia search, Grok structured extraction (birth/death, ranks, units, awards, family, source_urls), merges into `biographical_profile`, follows references, validates source URLs. **Production.**
-2. **People groups** — org history + command structure (`enrich_groups_data`). **Production.**
-3. **Places** — `enrich_all_places` (step 3/6). **Geocoding IS implemented and wired** (contradicts the steering "lat/long=0.0, no geocoding" note): `nominatim_geocode.py`, `places_grok_geocode.py`, `hill_geocode.py`, `situational_geocode.py`, `elevation_verify.py`, `places_geo.py` (bounding box + map URLs). **Production.**
-4. **Bibliography** — citation resolution + source verification (`bibliography_resolver.py`, `source_retrieval.py`): routes by doc type (NARA Record Group → OpenSERP → Archive.org; books → Archive.org/Gutenberg), ISBN/copyright/archive-URL verification. **Production, but no human-disposition UI for the review queue.**
-5. **OpenSERP enrichment** — portraits/papers/photos/primary sources (circuit breaker after 5 empty).
-6. **Weather** — NOAA CDO observed-station data supplementing Open-Meteo. **Experimental.**
+The owner's instinct is correct. Phase 3 is a set of individually-reasonable
+enrichers wired together loosely, **with one whole subsystem (geocoding) not wired
+in at all** — which is the root cause of the long-standing "places have
+lat/long = 0.0, empty country" gap. It works on the happy path but is fragile and
+under-instrumented: silent failure-swallowing, no partial-success reporting,
+module-global state unsafe under the project's own multi-doc concurrency, and
+transient errors cached as durable `not_found` (suppressing retries for 90 days).
 
-External sources: Grokipedia, Wikipedia, OpenSERP, Archive.org, Gutenberg, NARA Catalog, NOAA CDO, Nominatim/Grok geocoding.
+## Fix first (top 3)
+1. **C1 — Wire the geocoding cascade into `main()`.** Highest value: turns a built,
+   tested, but DEAD subsystem back on and directly fixes the uncoordinated-places
+   symptom.
+2. **C2 + C3 — Stop swallowing failures; report structured per-source stats.**
+   Without this, "complete" doesn't mean "enriched" and no other fix is verifiable.
+3. **M3 + H3 — Stop caching transient errors as `not_found`; make breaker/
+   rate-limiter/image-cache globals per-run + thread-safe.** Restores idempotent
+   re-runs under concurrency.
 
-## 2. Config reality (actual `config.yaml`, not the stale archive defaults)
+---
 
-- `batch.phase3: false` → **Phase 3 runs LIVE calls** (no batch poller dependency; unlike Phase 2).
-- `enrichment.re_search_after_days: 0` → **re-searches everything every run** (thorough, expensive).
-- `supplemental_material`: `use_openserp/verify_archive_urls/extract_isbn/determine_copyright` all **true**.
-- `equipment.enable_enrichment: true` (but equipment is Experimental).
-- `concurrency.max_enrichment_workers` threads per entity type.
-- `concurrency.multi_doc.enabled` — the doc-lifecycle switch (see §4).
+## CRITICAL
 
-## 3. Dedup gate (between Phase 2 and Phase 3) — the thing that actually gates reaching Phase 3
+**C1. Geocoding cascade is dead code — places never get coordinates.**
+`phase3_enrich_data.py:242-253` calls `enrich_all_places` (`src/extraction/enrich_places.py:401-440`), which only sets hierarchy/historical_names/wikipedia/images — **never `coordinates`**. The real geocoders (`places_grok_geocode.geocode_places_dir`/`cascade_geocoder`, `nominatim_geocode`, `situational_geocode`, `hill_geocode`, `elevation_verify`, offline `places_geo.enrich_places_dir`) have **zero production callers** (grep: only tests/docs). → Wire `geocode_places_dir(..., geocoder=cascade_geocoder(...))` into `main()`; add a smoke test asserting a known town gets non-zero coordinates.
 
-Runs after Phase 2: reclassify military units places→groups, clean indexes, migrate
-exclusions to DynamoDB, run 4 dedup scripts (people/groups/places/equipment).
-- **Auto-proceed** to Phase 3 only if zero duplicate groups pending; otherwise **block** for human review (web UI: merge/skip/reclassify; decisions persist in DynamoDB; snapshot+undo).
-- Incremental dedup (only new files), cross-book dedup (full inventory download in AWS).
+**C2. Silent exception swallowing violates the no-silent-failure principle.**
+Bare `except Exception: pass` in `phase3_enrich_data.py:48-49` (`_notify_enrichment_started`), `:72-73` (`_update_lock_status`); plus `enrich_places._fetch_place_wikipedia_full`/`_fetch_image_license`/`_search_grokipedia_place`, `equipment_wikipedia._fetch_license`, `groups_wikipedia._fetch_license`, `noaa_weather._get` (→debug). API/lock/license failures vanish with no WARNING + no metric; the run still reports "complete." → Downgrade to `logger.warning`, count per-source failures into `.phase_results.json`.
 
-## 4. THE blockers we hit (why nothing reached Phase 3) — current, code-verified
+**C3. No completion signal reflects partial enrichment.**
+`phase3_enrich_data.py:328-375` writes `.phase_results.json` = only `{enriched, entity_counts}` — a heterogeneous sum; failures/API-errors/breaker-trips/not-found are discarded. A run where every NOAA call 429'd looks identical to a clean run. → Each enricher returns attempted/enriched/not_found/errors/skipped (geocoders already produce `GeocodeRunReport`); aggregate + alert on non-trivial error rate.
 
-These are the problems *this branch* exists to finish. Two are already fixed, one is the live fix:
-- **(FIXED, merged to main) Dedup `'int' object is not iterable`** — `_auto_merge_entity_type` read the int count key instead of the `duplicates` list; failed dedup for EVERY doc → gate blocked everything. Fixed `15e3397`.
-- **(FIXED, merged) `MULTI_DOC_ENABLED` missing on phase task defs** — lifecycle guards early-returned. Fixed `d8489c8`.
-- **(FIX ON THIS BRANCH, `b06e03f`) `_multi_doc_enabled()` split-brain** — the `_post_process` branch selector read `config.yaml` while the guards read the env var, so it chose the serial branch and NEVER advanced/off-ramped the doc (B401 proved: clean dedup, gate block, stayed phase1). Now honors the env var (repo-tracked via CFN param). **Not yet deployed/proven live.**
+## HIGH
 
-## 5. Real open problems (candidates for Phase-3 work), ranked by evidence
+**H1. Divergent, dormant per-entity Lambda path will double-enrich/drift.**
+`lambda_handlers/phase3_handler.py:22` `_enrich_entity` (`:92-140`) is a second enrichment entry point referenced only by itself + a test (not in CFN). If ever re-enabled by an S3 notification it races the ECS task writing the same `output/{type}/*.json` (last-writer-wins, no lock) and bypasses the cascade/bibliography-resolver. → Delete it, or make it the single shared source of truth with a per-entity lock.
 
-**A. Prove the lifecycle end-to-end (immediate, this branch).** Deploy `b06e03f`, re-run Patton → confirm gate-block → `needs-review` (correct, Patton has real dup groups), and a zero-dup doc → auto-proceed → `extracted/phase3` → enrich → `done`. Until observed once, Phase 3 is unproven live.
+**H2. OpenSERP marks entities "searched" even on empty/failed search.**
+`openserp_enrichment.py:505-583` buffers all candidates in memory (grows with corpus); the equipment path sets `openserp_searched=True` even when nothing found (`:573-575`, `:629-631`), so a transient outage suppresses retries for 90 days. → Only stamp `openserp_searched_at` on a search that actually ran AND returned; stream per-file; honor the breaker mid-run.
 
-**B. Dedup quality — index normalization + name hallucination (high, recurring-duplicate root cause).** Archive DEDUP_ANALYSIS flagged `_normalize_name` as too weak and Grok name-expansion ("Collins"→"J. Lawton Collins", "Sherman"→"M4 Sherman") spawning duplicate files. CODE CHECK: `normalize_name`/`normalize_name_ascii` in `text_utils.py` now do case+punctuation+ASCII folding (stronger than the archived `strip().lower()`), and name-based DynamoDB exclusions + basename processed-events shipped — so several archive bugs are REMEDIATED. Still unconfirmed: `source_name`/`identified_as` to curb hallucinated-canonical variants. **Verify current duplicate rates before investing.**
+**H3. Global mutable state unsafe under concurrency.**
+`openserp_enrichment.py:27-29` `_consecutive_failures`/`_circuit_open` (never reset, no lock), `noaa_weather.py:38-39` non-atomic rate limiter, `equipment_wikipedia`/`groups_wikipedia`/`enrich_biographies` module image-caches — all mutated under `ThreadPoolExecutor(max_workers=6)` and across runs in one process. An opened breaker poisons later books in the same task. → Encapsulate per-run + lock; reset between runs.
 
-**C. Bibliography stub cleanup + human-disposition UI (medium).** Endnote fragments ("ibid", "1", "26") don't resolve to real sources; `review_queue.json` is written but no UI works it; `source_retrieval.py` staged but intentionally not auto-wired.
+**H4. Unconditional `time.sleep(1)` per entity in Wikipedia enrichers.**
+`equipment_wikipedia.py:~210` + `groups_wikipedia.py:~185` sleep 1s per file **even on cache hit/skip**, single-threaded. Tens of thousands of files → hours of pure sleep. → Move the sleep inside the branch that makes a real HTTP call.
 
-**D. Group dedup LLM verification is disabled (medium).** Confidence-threshold only; LLM verify turned off.
+**H5. Batch-mode re-run silently differs from the non-batch path.**
+`phase3_enrich_data.py:280-317` re-run omits `max_workers=` (falls to default 6, ignoring `max_enrichment_workers`) AND omits the equipment-wiki/groups-wiki/OpenSERP/NOAA steps entirely. Results depend on `--batch`. → Factor the enrichment sequence into one function both passes call.
 
-**E. Equipment dedup exact-match only (medium, equipment is Experimental).** "Sherman" ≠ "M4 Sherman", no fuzzy/alias.
+## MEDIUM
 
-**F. Image captioning (low/opportunity).** Empty `description` fields; vision captioning not implemented in Phase 3.
+**M1.** `_needs_geocode`/`_coords` use `0.0` as a magic "empty" sentinel (`places_grok_geocode.py:184-188`, `places_geo.py:140-146`, `noaa_weather.py:188-193`) — fine for ETO but implicit; masks C1. → Use an explicit presence/`geocode_source` check (moot once C1 lands).
 
-**G. Hygiene (low).** `phase3_enrich_data.py:main` complexity D(23); `query_unenriched` full-table scan (needs GSI); NAT-between-phases race.
+**M2.** Bibliography resolver dedup is per-run only + not concurrency-safe; holdings index rebuilt by full `rglob` each run (`local_holdings.py:63-73`); NARA/OpenSERP globals race under multi-doc. → Persist dedup in cache, build holdings index once, guard globals.
 
-## 6. Stale docs to correct (found during this review)
+**M3.** `enrich_place`/`enrich_group` write `not_found` + `last_enrichment_search` on **transient** Grok/Wikipedia errors (`enrich_places.py:385-387`, `enrich_groups.py:148-166`), so the 90-day guard suppresses legitimate retries. → Distinguish "genuinely not found" from "search errored"; only stamp on a clean negative.
 
-- Steering `project-overview.md` says places lat/long=0.0 + no geocoding → **stale**; geocoding is implemented and wired in Phase 3 step 3.
-- `PHASE3_COMPLETE.md` shows supplemental flags default `false` → actual config has them `true`.
-- Archive `DEDUP_ANALYSIS*` (2026-05-23): several "critical/high" bugs (ULID exclusion keys, absolute-path processed-events, O(n²) full-corpus) appear **remediated** in current code; treat as historical.
+**M4.** Non-atomic writes: `openserp_enrichment`/`equipment_wikipedia`/`groups_wikipedia`/`noaa_weather` use plain `write_text` (no temp+rename+lock) unlike `enrich_places`' `write_json_with_lock` — crash mid-write truncates entity JSON under concurrency. → Route all entity writes through `write_json_with_lock`.
 
-## Recommendation
-Start with **A** (prove the lifecycle — it's the actual Phase-3 blocker and nearly done), then
-**measure real duplicate/quality rates** on a clean end-to-end run before committing to B–F,
-so we invest in the problems that are actually hurting the corpus rather than the archived ones
-that were already fixed.
+**M5.** OpenSERP circuit breaker counts legitimate empty (HTTP-200) results as failures (`openserp_enrichment.py:80-104`) — 5 obscure-name misses disable OpenSERP for the whole process. → Only count transport/HTTP errors.
 
-## UPDATE 2026-10-01 — (A) PROVEN + retrieve-path fixes
+## LOW
+- **L1.** `max_items` means different things per enricher (files-considered vs items-enriched vs candidates). Standardize.
+- **L2.** `_name_initial_matches` pre-filter can reject valid name variants (minor recall loss).
+- **L3.** `enrich_places`/`equipment_wikipedia`/`groups_wikipedia` call `requests.get` directly instead of the pooled `http_pool.get_session()` used elsewhere.
 
-**Lifecycle PROVEN end-to-end (live).** Patton phase2 retrieve on the fixed image reached:
-`reclassify → run dedup → Auto-merged 21 (no 'int' error) → Dedup gate: BLOCK (duplicate
-groups pending) → doc lifecycle: Patton → needs-review → exit 0`. Doc confirmed
-`status=needs-review` (was stuck at phase1 all session). This validates all three fixes
-together: dedup `int` (`15e3397`), MULTI_DOC_ENABLED task-def env (`d8489c8`), and the
-`_multi_doc_enabled` env-var reconciliation (`b06e03f`). `needs-review` is the correct
-terminal state — Patton has real duplicate groups, so the gate blocks rather than auto-proceeds.
+---
 
-**Retrieve-path bugs found + fixed while proving it:**
-- Optional-entity markers not downloaded on retrieve → every retrieve re-extracted
-  weather/equipment/logistics/casualties/supplemental live. Fixed: download
-  `.processed_events.json` markers (`9ac3f75`). Verified live: logistics/casualties/equipment
-  skipped on the proof run.
-- **Supplemental non-convergence (the worst):** `_extract_supplemental` was the ONLY optional
-  extractor missing both the `_is_processed` skip guard and `_mark_processed`, AND
-  `config.yaml` had `reprocess_types: [supplemental]` forcing re-extract. Together it re-fetched
-  every endnote (slow ibiblio HTTP) on every retrieve and never finished — a non-terminating
-  sink. Fixed: added the skip-guard + mark pattern (matches siblings) and removed supplemental
-  from `reprocess_types`.
-
-**Still open (follow-ups, NOT fixed):**
-- **Core-type live re-extraction in retrieve.** dates/places/people/people_groups re-extract
-  live on every `--retrieve-only` (no processed-events marker for core types; they rely on
-  per-event file existence / cache which the retrieve re-run doesn't short-circuit). This is the
-  biggest remaining retrieve cost/latency driver (~30+ min of the proof run). Needs a core-type
-  skip mechanism analogous to the optional markers.
-- The retrieve path re-runs the FULL phase2 rather than just ingesting batch events + running
-  downstream — a design-level simplification worth considering.
+## Suggested remediation order
+C1 (wire geocoding) → C2+C3 (failure visibility) → M3+H3 (idempotent retries +
+concurrency-safe state) → H1/H2/M4 (dedup the entry point, fix search-stamping,
+atomic writes) → H4/H5 (perf + batch/non-batch parity) → M/L cleanups. C1 is the
+single highest-leverage fix and the direct answer to the owner's concern.
