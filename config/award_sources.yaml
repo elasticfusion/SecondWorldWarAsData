@@ -97,6 +97,48 @@ sources:
       is translated to English, original kept. NOT a Croix-de-guerre/Médaille-
       militaire source (no public citation roll for those).
 
+  # ---------------- Canada ----------------
+  # Verified 2026-10-02 (AWS + full headers). English. DHH overseas recommendation
+  # files are the full citations; Veterans Affairs quotes the Gazette VC citations.
+  - id: ca_dhh_overseas
+    name: Canadian Army Overseas Honours and Awards (DHH)
+    nationality: CAN
+    language: English
+    adapter: dhh_canada
+    base_url: https://dhh-dhp.forces.gc.ca
+    search_path: "/cao-aco/?q={q}"
+    crawl_delay: 3
+    awards: [Distinguished Service Order, Military Cross, Distinguished Conduct Medal, Military Medal]
+    accessible: true
+    enabled: true
+    notes: >-
+      Original overseas recommendation files (54 vols, searchable by name) = full
+      theatre citations (officers, other ranks, nursing sisters, civilians). Army
+      only; VC paperwork + Canada-only recommendations excluded. RCAF/RCN not here
+      (RCAFA transcripts / London Gazette for those). Pair with the Gazette for the
+      published citation + Blatherwick rolls as a finding aid.
+
+  # ---------------- Italy ----------------
+  # Verified 2026-10-02 (AWS + full headers). Italian → translated. Quirinale carries
+  # the full motivazione (citation) for the GOLD medal; silver/bronze thin.
+  - id: it_quirinale
+    name: Quirinale — Onorificenze (Medaglia d'Oro al Valor Militare)
+    nationality: ITA
+    language: Italian
+    adapter: quirinale
+    base_url: https://www.quirinale.it
+    search_path: "/onorificenze?cognome={q}"
+    crawl_delay: 3
+    awards: [Medaglia d'Oro al Valor Militare, Ordine Militare d'Italia]
+    accessible: true
+    enabled: true
+    notes: >-
+      Each record = grade, rank, decree date, and the full motivazione (citation).
+      Gold medal of military valor (~2,607 across all wars; search needs >=2 surname
+      letters). Silver/bronze NOT complete here → offline. Italian → translated,
+      original kept. Gazzetta Ufficiale (gazzettaufficiale.it) is the legal primary
+      if a Quirinale sheet is missing → offline.
+
   # ---------------- Offline / request-based (any country) ----------------
   - id: offline_dataset
     name: Offline award dataset

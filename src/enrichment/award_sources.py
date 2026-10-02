@@ -54,6 +54,12 @@ _NATIONALITY_ALIASES = {
     "fra": "FRA",
     "france": "FRA",
     "french": "FRA",
+    "can": "CAN",
+    "canada": "CAN",
+    "canadian": "CAN",
+    "ita": "ITA",
+    "italy": "ITA",
+    "italian": "ITA",
 }
 
 
