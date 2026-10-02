@@ -1,21 +1,30 @@
 name: Build & Deploy
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "src/**"
-      - "scripts/**"
-      - "prompts/**"
-      - "lambda_handlers/**"
-      - "cloudformation/**"
-      - "Dockerfile"
-      - "config.yaml"
-      - "requirements.txt"
-      - "requirements-lambda.txt"
-      - "ecs_entrypoint.py"
-      - "phase*.py"
-      - "import_to_dynamodb.py"
+  # NOTE: the automatic push trigger is DISABLED (2026-10-02). This CI deploy path
+  # requires AWS OIDC that is not yet provisioned in the account (no GitHub OIDC
+  # provider, no repo-scoped deploy role, AWS_DEPLOY_ROLE_ARN secret unset), so it
+  # failed at "Configure AWS credentials" on every push. Deploys currently run via
+  # the local operator script (scripts/deploy_all.sh + the `wwii` AWS profile).
+  # To RE-ENABLE: provision the OIDC provider + a least-privilege role scoped to
+  # repo:elasticfusion/SecondWorldWarAsData (ideally the main branch), set the
+  # AWS_DEPLOY_ROLE_ARN secret, then restore the `push:` block below.
+  #
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - "src/**"
+  #     - "scripts/**"
+  #     - "prompts/**"
+  #     - "lambda_handlers/**"
+  #     - "cloudformation/**"
+  #     - "Dockerfile"
+  #     - "config.yaml"
+  #     - "requirements.txt"
+  #     - "requirements-lambda.txt"
+  #     - "ecs_entrypoint.py"
+  #     - "phase*.py"
+  #     - "import_to_dynamodb.py"
   workflow_dispatch:
     inputs:
       deploy_target:
