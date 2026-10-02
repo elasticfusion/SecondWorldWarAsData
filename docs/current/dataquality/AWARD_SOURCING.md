@@ -401,8 +401,12 @@ Brazil (BRA, FEB: 1 DSC + Silver/Bronze Stars), Philippines (PHL, Scouts/guerril
 Mexico (MEX, Escuadrón 201). Their own national rolls are offline/absent.
 
 ### No accessible citation source (→ offline / documented absence)
-China (ROC — no recipient DB), Greece (regimental/official-history print only),
-Yugoslavia (People's Hero ~1,300 names on Wikipedia/bio sites, no formal citations),
-Czechoslovakia (War Cross 1939 / White Lion — files at Vojenský ústřední archiv),
-Ethiopia (none), Luxembourg (none), Belgium (see Belgium section). Mongolia: 1945
-recipients appear under their **Soviet** award in Podvig Naroda.
+Registered as explicit **offline placeholders** (enabled:false) so a person still routes
+and a future source has a home — each registry `notes` field records **where to search**
+(the archive/print location):
+- **China (CHN)** — Academia Historica (國史館) + MND historical records, Taipei.
+- **Greece (GRC)** — Hellenic Army General Staff Army History Directorate (ΔΙΣ/ΓΕΣ), Athens.
+- **Yugoslavia (YUG)** — People's Hero ~1,300 names on Wikipedia/bio sites (not citations); Vojni arhiv, Belgrade.
+- **Czechoslovakia (CSK)** — Vojenský ústřední archiv, Prague.
+- Ethiopia, Luxembourg, Belgium (see its section): no online valor DB. Mongolia: 1945
+  recipients appear under their **Soviet** award in Podvig Naroda.
