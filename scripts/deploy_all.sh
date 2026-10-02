@@ -164,6 +164,8 @@ CLUSTER="dev-wwii-pipeline"
 ECR_REPO="$ACCOUNT.dkr.ecr.$REGION.amazonaws.com"
 PIPELINE_IMAGE="$ECR_REPO/wwii-pipeline:latest"
 OPENSERP_IMAGE="$ECR_REPO/wwii-openserp:latest"
+VIDEO_IMAGE="$ECR_REPO/wwii-video:latest"
+AV_IMAGE="$ECR_REPO/wwii-clamav:latest"
 TEMPLATE_BUCKET="wwii-pipeline-deploy"
 ENV="dev"
 EMAIL="dchristian@cirrusnine.com"
@@ -349,6 +351,38 @@ docker push $PIPELINE_IMAGE
 echo "  Pushed: $(aws ecr describe-images --repository-name wwii-pipeline --region $REGION --image-ids imageTag=latest --query 'imageDetails[0].imagePushedAt' --output text)"
 
 echo ""
+echo "=== 4b. Optional separate images (video, clamav) ==="
+# These are SEPARATE containers (own Dockerfiles) with heavy/independent deps, so
+# they are NOT rebuilt on every deploy by default. Build them only when asked
+# (VIDEO_BUILD=1 / AV_BUILD=1). Regardless of building, if the image already
+# exists in ECR we PASS it to the deploy so a routine deploy never silently drops
+# VideoImageUri/AvImageUri (which would un-deploy the video track / AV scanning).
+build_and_push() {  # $1=dockerfile $2=localtag $3=repo $4=full_image
+  echo "  Building $2 ($1)..."
+  docker build --no-cache --progress=plain -f "$1" -t "$2" .
+  if command -v trivy &>/dev/null && command -v podman &>/dev/null; then
+    podman save "$2:latest" -o /tmp/scan-$2.tar 2>/dev/null || true
+    set +e; trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --input /tmp/scan-$2.tar >/dev/null 2>&1; rc=$?; set -e
+    rm -f /tmp/scan-$2.tar
+    [ $rc -ne 0 ] && { echo "  ✗ $2: HIGH/CRITICAL vulns — aborting"; exit 1; }
+    echo "  Trivy $2: OK"
+  fi
+  docker tag "$2:latest" "$4"; docker push "$4"
+}
+if [ "${VIDEO_BUILD:-0}" = "1" ]; then build_and_push Dockerfile.video wwii-video wwii-video "$VIDEO_IMAGE"; fi
+if [ "${AV_BUILD:-0}" = "1" ]; then build_and_push Dockerfile.clamav wwii-clamav wwii-clamav "$AV_IMAGE"; fi
+# Resolve pass-through: only pass an optional image flag if that repo+tag exists.
+VIDEO_ARG=""; AV_ARG=""
+if aws ecr describe-images --repository-name wwii-video --region $REGION --image-ids imageTag=latest >/dev/null 2>&1; then
+  VIDEO_ARG="--video-image $VIDEO_IMAGE"; echo "  video image present → passing $VIDEO_IMAGE"
+fi
+if aws ecr describe-images --repository-name wwii-clamav --region $REGION --image-ids imageTag=latest >/dev/null 2>&1; then
+  AV_ARG="--av-image $AV_IMAGE"; echo "  clamav image present → passing $AV_IMAGE (AV scanning ENABLED)"
+else
+  echo "  clamav image absent → AV scanning stays disabled (AvImageUri='')"
+fi
+
+echo ""
 echo "=== 5. Deploying CloudFormation ==="
 # Check stack is in a deployable state
 STACK_STATUS=$(aws cloudformation describe-stacks --stack-name wwii-pipeline-$ENV --region $REGION --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "DOES_NOT_EXIST")
@@ -359,7 +393,7 @@ if [[ "$STACK_STATUS" == *"IN_PROGRESS"* ]]; then
 fi
 echo "  Stack status: $STACK_STATUS"
 aws s3 sync cloudformation/ s3://$TEMPLATE_BUCKET/cloudformation/ --region $REGION
-python3 scripts/deploy_aws.py deploy --env $ENV --region $REGION --template-bucket $TEMPLATE_BUCKET --pipeline-image $PIPELINE_IMAGE --openserp-image $OPENSERP_IMAGE --notification-email $EMAIL
+python3 scripts/deploy_aws.py deploy --env $ENV --region $REGION --template-bucket $TEMPLATE_BUCKET --pipeline-image $PIPELINE_IMAGE --openserp-image $OPENSERP_IMAGE $VIDEO_ARG $AV_ARG --notification-email $EMAIL
 
 echo ""
 echo "=== 6. Updating Lambda code ==="
