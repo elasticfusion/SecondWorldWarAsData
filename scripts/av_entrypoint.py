@@ -24,35 +24,52 @@ import tempfile
 
 import boto3
 
-BUCKET = os.environ["S3_BUCKET"]
 SIG_PREFIX = os.environ.get("AV_SIG_PREFIX", "clamav-sigs/")
 SIG_DIR = "/var/lib/clamav"
-s3 = boto3.client("s3", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"))
+
+_S3 = None
 
 
-def _sync_signatures_from_s3() -> bool:
+def _bucket() -> str:
+    """Read S3_BUCKET lazily (only when a command actually needs it) so the
+    entrypoint can dispatch / reject an unknown command without a hard KeyError
+    crash when the env is absent."""
+    return os.environ["S3_BUCKET"]
+
+
+def _s3():
+    global _S3
+    if _S3 is None:
+        _S3 = boto3.client(
+            "s3", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+        )
+    return _S3
+
+
+def _sync_signatures_from_s3(s3, bucket: str) -> bool:
     """Download signature DB files from S3 into SIG_DIR. Returns True if any
     signature file was fetched (scanning without signatures is unsafe)."""
     got = False
     paginator = s3.get_paginator("list_objects_v2")
-    for page in paginator.paginate(Bucket=BUCKET, Prefix=SIG_PREFIX):
+    for page in paginator.paginate(Bucket=bucket, Prefix=SIG_PREFIX):
         for obj in page.get("Contents", []):
             name = obj["Key"].rsplit("/", 1)[-1]
             if not name:
                 continue
-            s3.download_file(BUCKET, obj["Key"], os.path.join(SIG_DIR, name))
+            s3.download_file(bucket, obj["Key"], os.path.join(SIG_DIR, name))
             got = True
     return got
 
 
 def _scan() -> None:
+    s3, bucket = _s3(), _bucket()
     keys = json.loads(os.environ.get("AV_KEYS", "[]"))
     result_key = os.environ["AV_RESULT_KEY"]
     results: dict[str, dict[str, str]] = {}
 
     have_sigs = False
     try:
-        have_sigs = _sync_signatures_from_s3()
+        have_sigs = _sync_signatures_from_s3(s3, bucket)
     except Exception as e:  # noqa: BLE001
         print(f"signature sync failed: {e}", file=sys.stderr)
 
@@ -60,7 +77,7 @@ def _scan() -> None:
         # Fail-closed: no signatures -> report nothing clean. Trigger quarantines.
         print("No signatures available; reporting unscannable (fail-closed)")
         s3.put_object(
-            Bucket=BUCKET, Key=result_key, Body=json.dumps({}).encode("utf-8")
+            Bucket=bucket, Key=result_key, Body=json.dumps({}).encode("utf-8")
         )
         return
 
@@ -68,7 +85,7 @@ def _scan() -> None:
         for key in keys:
             local = os.path.join(tmp, key.replace("/", "_"))
             try:
-                s3.download_file(BUCKET, key, local)
+                s3.download_file(bucket, key, local)
                 proc = subprocess.run(
                     ["clamscan", "--no-summary", "--database", SIG_DIR, local],
                     capture_output=True,
@@ -89,19 +106,20 @@ def _scan() -> None:
                 print(f"scan error for {key}: {e}", file=sys.stderr)
 
     s3.put_object(
-        Bucket=BUCKET, Key=result_key, Body=json.dumps(results).encode("utf-8")
+        Bucket=bucket, Key=result_key, Body=json.dumps(results).encode("utf-8")
     )
     print(f"Wrote {len(results)} verdicts to {result_key}")
 
 
 def _freshclam() -> None:
+    s3, bucket = _s3(), _bucket()
     subprocess.run(["freshclam", "--datadir", SIG_DIR], check=False, timeout=1800)
     uploaded = 0
     for name in os.listdir(SIG_DIR):
         if name.endswith((".cvd", ".cld")):
-            s3.upload_file(os.path.join(SIG_DIR, name), BUCKET, f"{SIG_PREFIX}{name}")
+            s3.upload_file(os.path.join(SIG_DIR, name), bucket, f"{SIG_PREFIX}{name}")
             uploaded += 1
-    print(f"Uploaded {uploaded} signature files to s3://{BUCKET}/{SIG_PREFIX}")
+    print(f"Uploaded {uploaded} signature files to s3://{bucket}/{SIG_PREFIX}")
 
 
 def main() -> int:
