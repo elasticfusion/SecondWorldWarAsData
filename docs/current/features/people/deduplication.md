@@ -113,7 +113,7 @@ The dedup scripts track which event files have been processed in `.processed_eve
 ## See Also
 
 - [People Extraction](README.md) — file-per-person architecture and schema
-- [People Groups](groups.md) — military unit linking
+- [People Groups](../people_groups/groups.md) — military unit linking
 
 ---
 
