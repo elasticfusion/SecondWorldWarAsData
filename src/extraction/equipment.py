@@ -95,6 +95,15 @@ class MediaItem(BaseModel):
     source: str = Field(description="wikipedia, commons, archive, etc.")
     license: Optional[str] = Field(default=None, description="License info")
     description: Optional[str] = Field(default=None, description="Media description")
+    image_scope: str = Field(
+        default="representative",
+        description=(
+            "representative = a generic/stock image illustrating the equipment TYPE "
+            "(the DEFAULT — books routinely use stock photos; do NOT claim it depicts "
+            "this event). documentary = the source EXPLICITLY asserts the image is of "
+            "this specific event/engagement. Vision identifies the TYPE, never the event."
+        ),
+    )
 
 
 class EquipmentMention(BaseModel):
@@ -1411,6 +1420,84 @@ def _merge_into_existing(
     return eq_file
 
 
+# Generic/category words that, alone, do NOT constitute a specific identity.
+_GENERIC_EQUIPMENT_WORDS = {
+    "tank",
+    "tanks",
+    "gun",
+    "guns",
+    "machine gun",
+    "machine guns",
+    "artillery",
+    "aircraft",
+    "plane",
+    "planes",
+    "vehicle",
+    "vehicles",
+    "truck",
+    "trucks",
+    "weapon",
+    "weapons",
+    "rifle",
+    "rifles",
+    "equipment",
+    "armor",
+    "cannon",
+    "howitzer",
+    "mortar",
+}
+
+
+def _is_specific_identity(equipment_data: dict) -> bool:
+    """True if the record has resolved to a SPECIFIC designation worth enriching
+    (has a technical_identifier, or a common_name that is not a bare generic word)."""
+    if equipment_data.get("technical_identifier"):
+        return True
+    name = (equipment_data.get("common_name") or "").strip().lower()
+    if not name:
+        return False
+    return name not in _GENERIC_EQUIPMENT_WORDS
+
+
+def _enrich_on_identity(
+    equipment_data: dict,
+    grok_client: Optional[GrokClient],
+    verify_media_with_vision: bool,
+    sub_event_id: Optional[str],
+    dates_index: Optional[Dict[str, Dict[str, str]]],
+) -> None:
+    """Grokipedia/Wikipedia enrichment + canonical reference image, triggered by identity
+    resolution. Fires once per SPECIFIC record (never re-enriches: enrichment_status
+    stamp). Vision verifies the equipment TYPE for the reference image, never an event.
+    """
+    if not grok_client:
+        return
+    if equipment_data.get("enrichment_status"):
+        return  # already handled — never re-enrich
+    if not _is_specific_identity(equipment_data):
+        logger.debug(
+            "Skipping enrichment for non-specific equipment: %s",
+            equipment_data.get("common_name"),
+        )
+        return
+    try:
+        _enrich_and_add_media(
+            equipment_data,
+            equipment_data["common_name"],
+            grok_client,
+            verify_media_with_vision,
+            sub_event_id,
+            dates_index,
+        )
+        equipment_data["enrichment_status"] = "enriched"
+    except Exception as e:  # noqa: BLE001 - enrichment is best-effort, never block
+        logger.warning(
+            "Identity enrichment failed for %s: %s",
+            equipment_data.get("common_name"),
+            e,
+        )
+
+
 def _create_new_equipment(
     equipment_data: dict,
     new_mention: dict,
@@ -1425,17 +1512,17 @@ def _create_new_equipment(
     common_name = equipment_data["common_name"]
     logger.debug("Creating new equipment file: %s", common_name)
 
-    # Enrich with external data if enabled
-    if enable_enrichment and grok_client:
-        sub_event_id = new_mention.get("Sub_eventID")
-        _enrich_and_add_media(
-            equipment_data,
-            common_name,
-            grok_client,
-            verify_media_with_vision,
-            sub_event_id,
-            dates_index,
-        )
+    # Enrichment follows IDENTITY RESOLUTION: once a record has a specific designation
+    # (M4 Sherman, M2 .50 cal), Grokipedia/Wikipedia enrichment + a canonical reference
+    # image are the natural next step — not an opt-in flag. Generic records (bare "tank")
+    # are skipped. Enriched once, stamped (never re-enriched).
+    _enrich_on_identity(
+        equipment_data,
+        grok_client,
+        verify_media_with_vision,
+        new_mention.get("Sub_eventID"),
+        dates_index,
+    )
 
     equipment_id = str(ulid.new())
     equipment_data["EquipmentID"] = equipment_id
@@ -1749,7 +1836,11 @@ def _process_equipment_item(
     # related records so links carry a real EquipmentID.
     if eq.related_equipment:
         equipment_data["related_equipment"] = _link_related_equipment(
-            eq.related_equipment, equipment_index, output_dir
+            eq.related_equipment,
+            equipment_index,
+            output_dir,
+            grok_client,
+            verify_media_with_vision,
         )
 
     # Merge or create
@@ -1857,6 +1948,8 @@ def _link_related_equipment(
     related_in: List["RelatedEquipmentInput"],
     equipment_index: Dict[str, Path],
     output_dir: Path,
+    grok_client: Optional[GrokClient] = None,
+    verify_media_with_vision: bool = True,
 ) -> List[Dict[str, Any]]:
     """Build the record-level related_equipment list. Each entry is narrative-sourced
     (original_text retained). Resolve name->EquipmentID; auto-create a minimal distinct
@@ -1875,7 +1968,13 @@ def _link_related_equipment(
         eq_id = _resolve_support_equipment_id(rel.name, equipment_index)
         if not eq_id:
             # Auto-create a minimal distinct record so the link resolves to a real ID.
-            eq_id = _autocreate_minimal_equipment(rel.name, equipment_index, output_dir)
+            eq_id = _autocreate_minimal_equipment(
+                rel.name,
+                equipment_index,
+                output_dir,
+                grok_client,
+                verify_media_with_vision,
+            )
         if eq_id:
             entry["EquipmentID"] = eq_id
         linked.append(entry)
@@ -1883,25 +1982,33 @@ def _link_related_equipment(
 
 
 def _autocreate_minimal_equipment(
-    name: str, equipment_index: Dict[str, Path], output_dir: Path
+    name: str,
+    equipment_index: Dict[str, Path],
+    output_dir: Path,
+    grok_client: Optional[GrokClient] = None,
+    verify_media_with_vision: bool = True,
 ) -> Optional[str]:
     """Create a minimal equipment record (EquipmentID + common_name) for a distinct piece
-    the narrative relates but that has no record yet. Registers it in the index. Returns
-    the new EquipmentID, or None on failure."""
+    the narrative relates but that has no record yet. Because the stub has no mention of
+    its own, enrichment is its ONLY source of substance — so if the name is a specific
+    identity (e.g. 'M26 Pershing') it is enriched on creation (Grokipedia/Wikipedia +
+    canonical reference image). Registers it in the index. Returns the EquipmentID."""
     try:
         equipment_id = str(ulid.new())
-        record = {
+        record: Dict[str, Any] = {
             "EquipmentID": equipment_id,
             "common_name": name,
             "extracted_date": datetime.now(timezone.utc).isoformat(),
             "event_mentions": [],
         }
+        # Enrich the stub on identity (no Sub_eventID -> no date context).
+        _enrich_on_identity(record, grok_client, verify_media_with_vision, None, None)
         safe_name = name.replace(" ", "_").replace("/", "_")
         eq_file = output_dir / f"{safe_name}_{equipment_id[:8]}.json"
         with open(eq_file, "w") as f:
             json.dump(record, f, indent=2)
         equipment_index[name] = eq_file
-        logger.info("  ＋ Auto-created minimal related equipment record: %s", name)
+        logger.info("  ＋ Auto-created related equipment record: %s", name)
         return equipment_id
     except Exception as e:  # noqa: BLE001 - best-effort; link falls back to name-only
         logger.warning("Could not auto-create related equipment '%s': %s", name, e)

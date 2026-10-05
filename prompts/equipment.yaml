@@ -73,6 +73,13 @@ rules:
     If the operator is not stated, leave operating_country null and captured false.
   - Only extract specifically named equipment, not generic references
   - |
+    IMAGES — if the source places a figure/photo near a mention, default its image_scope
+    to "representative": books routinely use GENERIC/STOCK pictures to illustrate the
+    equipment TYPE, which do NOT prove the image is of this specific event. Use
+    "documentary" ONLY when the source explicitly asserts the image is of THIS engagement
+    (e.g. a caption "Shermans of the 2nd Armored at this crossroads, 25 July 1944"). Never
+    infer documentary from proximity alone.
+  - |
     RELATED EQUIPMENT — record relationships ONLY when the SOURCE TEXT asserts them,
     between this equipment and a DISTINCT piece (its own record):
     - relationship: one of predecessor | successor | variant.

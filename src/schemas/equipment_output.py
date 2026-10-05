@@ -110,6 +110,18 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         },
         "enrichment_status": enum_field(["enriched", "not_found"], nullable=True),
         "openserp_searched": {"type": ["boolean", "null"]},
-        "images": {"type": ["array", "null"], "items": {"type": "object"}},
+        # image_scope marks trust: representative (default — generic/stock, illustrates
+        # the TYPE) vs documentary (source explicitly asserts it depicts this event).
+        "images": {
+            "type": ["array", "null"],
+            "items": {
+                "type": "object",
+                "properties": {
+                    "image_scope": enum_field(
+                        ["representative", "documentary"], nullable=True
+                    )
+                },
+            },
+        },
     },
 }
