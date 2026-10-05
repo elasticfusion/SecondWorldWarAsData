@@ -71,8 +71,16 @@ Prompt `prompts/people_groups.yaml` yields per group:
 ## Phase 2 completion — Deduplication
 `ecs_entrypoint.py::_run_dedup_detection` runs, in order:
 
-### Step 7 — Reclassify
-`_reclassify_military_units` — moves military units mis-filed as places into groups.
+### Step 7 — Reclassify mis-filed units: FROM `places/` → TO `people_groups/`
+`ecs_entrypoint._reclassify_military_units` → `scripts/reclassify_military_units.py`
+- The LLM sometimes mis-extracts a military unit as a **place** (a unit name can read
+  place-like in narrative). This pass scans `output/places/`, detects military-unit name
+  patterns (division/corps/regiment/infantry/armored/…), and **moves those records out
+  of places and into `people_groups/`** with a place→group schema transformation.
+- Guards against over-eager moves: `FALSE_POSITIVES` ("Infantry School" stays a place)
+  and `GEO_SUFFIXES` (names ending in sector/zone/front/area/beachhead/bridgehead are
+  geographic and stay in places).
+- Direction is one-way: **places → groups** (never groups → places).
 
 ### Step 8 — Index cleanup + exclusion migration
 `_cleanup_entity_indexes`, `_migrate_exclusions_to_dynamo` (human "not-duplicate"
