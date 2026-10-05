@@ -21,15 +21,23 @@ logger = logging.getLogger(__name__)
 PRESERVE_PREFIX = "award_sources"
 
 
-def _page_path(source_id: str, url: str, content_type: str = "text/html") -> str:
+def _page_path(
+    source_id: str,
+    url: str,
+    content_type: str = "text/html",
+    prefix: str = PRESERVE_PREFIX,
+) -> str:
     digest = hashlib.sha256(url.encode("utf-8")).hexdigest()[:16]
     ext = "html"
     if "json" in content_type:
         ext = "json"
     elif "pdf" in content_type:
         ext = "pdf"
+    elif "image/" in content_type:
+        subtype = content_type.split("image/", 1)[1].split(";")[0].strip().lower()
+        ext = {"jpeg": "jpg", "svg+xml": "svg"}.get(subtype, subtype or "img")
     safe_source = "".join(c if c.isalnum() or c in "-_" else "_" for c in source_id)
-    return f"{PRESERVE_PREFIX}/{safe_source}/{digest}.{ext}"
+    return f"{prefix}/{safe_source}/{digest}.{ext}"
 
 
 def preserve_page(
@@ -38,24 +46,26 @@ def preserve_page(
     url: str,
     body: bytes,
     content_type: str = "text/html",
+    prefix: str = PRESERVE_PREFIX,
 ) -> Optional[str]:
-    """Save a fetched source page to ``storage`` as a retained record.
+    """Save a fetched source page/binary to ``storage`` as a retained record.
 
-    Idempotent: if the page already exists it is not rewritten. Returns the stored
-    path (for provenance), or None on failure. Fail-safe: never raises — preservation
-    must not break enrichment, but a failure is logged (no silent loss).
+    Idempotent: if it already exists it is not rewritten. ``prefix`` lets non-award
+    records (e.g. person photos) land under their own top-level path. Returns the
+    stored path (for provenance), or None on failure. Fail-safe: never raises —
+    preservation must not break enrichment, but a failure is logged (no silent loss).
     """
     if storage is None or not body:
         return None
-    path = _page_path(source_id, url, content_type)
+    path = _page_path(source_id, url, content_type, prefix=prefix)
     try:
         if hasattr(storage, "exists") and storage.exists(path):
             return path
         storage.write_bytes(path, body)
-        logger.info("Preserved award source page: %s (%d bytes)", path, len(body))
+        logger.info("Preserved source record: %s (%d bytes)", path, len(body))
         return path
     except Exception as e:  # noqa: BLE001 - preservation is best-effort, never fatal
-        logger.warning("Failed to preserve award page %s: %s", url, e)
+        logger.warning("Failed to preserve source record %s: %s", url, e)
         return None
 
 
