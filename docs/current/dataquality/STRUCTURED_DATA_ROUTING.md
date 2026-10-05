@@ -629,6 +629,6 @@ and go straight through the generic mapper.
   routing manifest, region converter, section parsers, division inference,
   persist + crosswalk)
 - [CHANDRA_OCR_DESIGN.md](CHANDRA_OCR_DESIGN.md) — PDF→markdown OCR (Phase 0 bridge)
-- [eto_oob_division_coverage_report.md](eto_oob_division_coverage_report.md) — OOB extraction coverage
+- [eto_oob_division_coverage_report.md](../../archive/2026-10-05/eto_oob_division_coverage_report.md) — OOB extraction coverage (archived snapshot; regenerate via `scripts/audit_eto_oob_division_coverage.py`)
 - [../core/PIPELINE.md](../core/PIPELINE.md) — prose pipeline phases (now incl. Phase 0)
 - [../SCHEMA_REFERENCE.md](../SCHEMA_REFERENCE.md) — entity schemas the mapper targets

@@ -107,6 +107,28 @@ is no longer needed for a full rebuild (kept as a fast code-only-change helper).
 
 ## High Priority (produces wrong results or wastes significant resources)
 
+#### Enrichment-review findings carried forward (from archived PHASE3_REVIEW + SUPPLEMENTARY_SEARCH_REVIEW, 2026-10-02)
+These were captured in the two 2026-10-02 read-only review docs (now in
+`docs/archive/`). The top items (geocoding C1 PR#217, failure-visibility C2/C3 PR#221,
+M3/H3 PR#222, award sourcing) were fixed; the following remain **open in code** and are
+tracked here by name so they are not lost:
+- **Grokipedia stores raw search-results HTML as the "biographical source"**
+  (`enrich_biographies.py:~175` `cache_result("grokipedia", name, response.text)`) —
+  low-signal input; fetch + cache the actual `/page/<slug>` content instead. (SUPP #1/#4)
+- **Verifiers fail OPEN** — `_verify_result` (`openserp_enrichment.py:~166`) and the
+  bibliography_resolver verifiers admit a result on a Grok/HTTP blip; make them fail
+  CLOSED or tag `verified=false`. (SUPP top-5 #1)
+- **phase3_handler Lambda is a dormant double-enrich path** (batch vs non-batch
+  divergence). (PHASE3 H1/H5)
+- **OpenSERP stamps `openserp_searched` even on an empty/failed search** — re-runs then
+  skip legitimately-unsearched people. (PHASE3 H2)
+- **Unconditional `time.sleep(1)` even on cache hits** in the OpenSERP path. (PHASE3 H4)
+- HallOfValor **name matching / search recall** (last+initial over-matches AND surname
+  particles / Jr-Sr suffixes under-match) — dedicated hardening pass with a real-person
+  precision/recall test set. (person-capture review C1/H1/H2)
+- Theater/nationality/Western-name assumptions pervasive in supplementary search prompts.
+
+
 #### Cost: AWS spend ~6× the $75 budget — reset limit + CloudWatch reduction pass
 Found 2026-10-01: `dev-wwii-pipeline-monthly` budget **ACTUAL $471 vs LIMIT $75**
 (MTD). Decomposed via Cost Explorer by service (Sept) — mostly explainable, NOT a

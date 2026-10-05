@@ -1,5 +1,11 @@
 # Enabling AWS for GitHub Actions CI/CD
 
+> **Status (2026-10-05): CI deploy is currently DISABLED / not provisioned.** The
+> `deploy.yml` push trigger is commented out and no GitHub OIDC provider /
+> `AWS_DEPLOY_ROLE_ARN` is configured. Deploys run **locally** via
+> `scripts/deploy_all.sh` (see `AWS_DEPLOYMENT.md`). This guide describes how to
+> *enable* the CI path when desired; it is aspirational until OIDC is provisioned.
+
 This guide sets up the AWS resources needed for the `deploy.yml` GitHub Actions workflow to build containers, deploy Lambdas, and update CloudFormation stacks.
 
 ---

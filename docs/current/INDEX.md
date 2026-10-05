@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated:** 2026-09-20
+**Last Updated:** 2026-10-05
 
 ---
 
@@ -16,7 +16,8 @@
 | [AWS_DEPLOYMENT.md](AWS_DEPLOYMENT.md) | CloudFormation, Lambda, ECS, S3 setup |
 | [GITHUB_ACTIONS_AWS_SETUP.md](GITHUB_ACTIONS_AWS_SETUP.md) | CI/CD with GitHub Actions + OIDC |
 | [LOCAL_DEPLOYMENT.md](LOCAL_DEPLOYMENT.md) | Prerequisites, setup, local run instructions |
-| [CODE_REVIEW.md](CODE_REVIEW.md) | Latest code review findings (auto-generated) |
+| [SECURITY_POSTURE.md](SECURITY_POSTURE.md) | S3 encryption/TLS, pandoc sandbox, AV scanning, media-mismatch, submitter freeze |
+| [dataquality/AV_SCANNING_DESIGN.md](dataquality/AV_SCANNING_DESIGN.md) | Demand-launched binary-only ClamAV Fargate scan (threat model + design) |
 
 ### Core Reference
 | Document | Description |
@@ -37,8 +38,10 @@
 ### Architecture & Design
 | Document | Description |
 |----------|-------------|
-| [SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md) | JSON schemas for all entity types |
+| [SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md) | JSON schemas for all entity types (v2.5) |
 | [ENTITY_RELATIONSHIP_MAP.md](ENTITY_RELATIONSHIP_MAP.md) | Cross-references between entities, ID types, structural inconsistencies |
+| [STORAGE_REVIEW.md](STORAGE_REVIEW.md) | pgvector single-store decision, DynamoDB role-split, S3 lifecycle, cost model |
+| [dataquality/AWARD_SOURCING.md](dataquality/AWARD_SOURCING.md) | Country-specific authoritative award-citation sourcing (registry, routing, translation, provenance) |
 
 ### Data Quality & Integrity
 | Document | Description |
@@ -49,6 +52,12 @@
 | [dataquality/INGESTION_FRONT_END.md](dataquality/INGESTION_FRONT_END.md) | Phase 0 ingestion front-end: media detection, per-page disposition, region conversion, OOB markdown parsers, division inference, persist + crosswalk |
 | [dataquality/STRUCTURED_DATA_ROUTING.md](dataquality/STRUCTURED_DATA_ROUTING.md) | Phase 0 design-of-record: provenance invariant + required citation metadata, format-agnostic routing (incl. docx, web-page-with-video), tabular→entity convergence, source-acquisition lifecycle |
 | [dataquality/CHANDRA_OCR_DESIGN.md](dataquality/CHANDRA_OCR_DESIGN.md) | Chandra PDF→markdown OCR (Phase 0 bridge) |
+| [OCR_OPERATIONS.md](OCR_OPERATIONS.md) | OCR Batch GPU operations (Chandra queues, spot controller, debugging) |
+| [dataquality/INGESTION_PATHS.md](dataquality/INGESTION_PATHS.md) | Code-synced ingestion routing (trigger_handler + dispatcher), by media type |
+| [dataquality/LANGUAGE_TRANSLATION.md](dataquality/LANGUAGE_TRANSLATION.md) | Per-page translate-at-the-seam (non-English → English, original preserved) |
+| [dataquality/INTAKE_FRONT_DOOR_STATE.md](dataquality/INTAKE_FRONT_DOOR_STATE.md) | Current unattended multi-format intake state (OCR/convert/video/AV branches) |
+| [dataquality/CONCURRENCY_AND_NAT_SPEC.md](dataquality/CONCURRENCY_AND_NAT_SPEC.md) | Canonical spec: multi-job concurrency + reference-counted NAT lifecycle (partially implemented) |
+| [dataquality/GPU_NETWORKING_CONSOLIDATION.md](dataquality/GPU_NETWORKING_CONSOLIDATION.md) | GPU/ECS VPC endpoint consolidation (7 endpoints, AZ alignment, deploy-time GPU probe) |
 | [dataquality/MAP_IMAGE_AV_INGESTION.md](dataquality/MAP_IMAGE_AV_INGESTION.md) | Map/image/moving-image routing: deterministic-first funnel to minimize Grok, per-map dating, units-as-metadata, map georeferencing |
 | [dataquality/CONCURRENCY_AND_NAT_SPEC.md](dataquality/CONCURRENCY_AND_NAT_SPEC.md) | Spec: true multi-job concurrency (parallel document processing) + reference-counted NAT lifecycle, within AWS service limits; motivated by the WWIIArchives backlog |
 
@@ -88,6 +97,7 @@ See [scripts/README.md](../../scripts/README.md) for all 70+ utility scripts, ca
 ## Archived Documents
 
 Historical implementation logs, review documents, and completed specs in `docs/archive/`:
+- **`2026-10-05/`** — documentation-audit batch: `PHASE3_REVIEW.md`, `SUPPLEMENTARY_SEARCH_REVIEW.md` (unresolved findings carried into [TODO.md](TODO.md) → High Priority), `eto_oob_division_coverage_report.md`, `ISOLATION_AUDIT.md`, `UNATTENDED_READINESS.md` (superseded by `INTAKE_FRONT_DOOR_STATE.md`), `CODE_REVIEW-2026-06-13.md`, `PROMPT_AND_MODEL_RECOMMENDATIONS.md`, `TAILSCALE_EXIT_NODE.md` + `PROTONVPN_EXIT_NODE.md` (rejected egress approaches). See `2026-10-05/README.md`.
 - `CODE_INTEGRITY_REVIEW.md` — 20 findings (17 resolved, 3 remaining in TODO)
 - `AWS_DEPLOYMENT_PLAN.md` — Architecture decisions and cost analysis (implemented)
 - `SPOT_RECOVERY.md` — Spot termination analysis (recommendations implemented)

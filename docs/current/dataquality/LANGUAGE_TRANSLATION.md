@@ -1,7 +1,9 @@
 # Language Detection & Translation (Phase 0)
 
 **Status:** design (approved 2026-09-24; revised to **per-page** 2026-09-24) —
-implementation in progress
+**implemented** (per-page translate-at-the-seam; `prompts/translation.yaml`,
+`prompts/language_detect.yaml`, wired in ingestion; `tests/test_translation.py` +
+`tests/test_translation_wiring.py`). Status updated 2026-10-05.
 **Owner decision:** **per-page** detection (revised from per-document after the
 M1019 microfilm example); convert original → markdown, then translate non-English
 pages to English via Grok; every translated page is marked (inert) as translated
@@ -143,3 +145,10 @@ sidecar capturing **per-page** provenance:
 Phase 1/2/3 are **unchanged**. This is purely a Phase 0 normalization step. The
 only schema touch is *populating* the existing `source_language` field with real
 detection rather than a hard-coded default.
+
+---
+
+## Related documents
+- [Award Sourcing](AWARD_SOURCING.md) — reuses this translate-at-the-seam pattern to render non-English award citations in English (original + language preserved).
+- [Ingestion Front-End](INGESTION_FRONT_END.md) — Phase-0 ingestion where source-language detection + translation occur.
+- [People Biographical Enrichment](../features/people/biographical-enrichment.md) — consumes translated citations.

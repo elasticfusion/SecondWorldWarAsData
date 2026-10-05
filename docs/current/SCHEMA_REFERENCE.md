@@ -590,3 +590,11 @@ Each entity directory contains an `index.json` mapping lookup keys to filenames:
 ```
 
 Equipment and maps directories also contain `.processed_events.json` tracking which event files have been processed.
+
+---
+
+## Related documents
+- [People Biographical Enrichment](features/people/biographical-enrichment.md) — populates the v2.5 person fields (`nationality_served`, `primary_group_id`, award provenance).
+- [Award Sourcing](dataquality/AWARD_SOURCING.md) — defines the `MilitaryAward` provenance + `sourcing_attempts` semantics.
+- [Entity Relationship Map](ENTITY_RELATIONSHIP_MAP.md) — cross-reference / ID conventions across entity types.
+- [Data Quality Status](DATA_QUALITY_STATUS.md) — canonical entity counts + enrichment rates for this schema version.
