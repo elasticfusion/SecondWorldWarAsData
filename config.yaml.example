@@ -134,6 +134,13 @@ dedup:
       tight_penalty: -0.6
       near_penalty: -0.2
       loose_penalty: 0.0
+    # Human-gated corpus-frequency SUGGESTION report (output/people/
+    # surname_frequency_suggestions.json). Regenerated only when the corpus GROWS by
+    # >= min_new_people. Suggestion-only — never auto-edits data/surname_frequency.yaml.
+    # Skew-safe (keyed on distinct people per surname, not raw mentions).
+    surname_report:
+      enabled: true
+      min_new_people: 50               # regenerate only after this many new people
 
 openserp:
   results_per_query: 10                # Fewer results = fewer verification calls

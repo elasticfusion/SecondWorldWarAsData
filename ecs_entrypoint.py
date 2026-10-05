@@ -1581,6 +1581,20 @@ def _run_dedup_detection(env: dict) -> None:
     _migrate_exclusions_to_dynamo()
     _download_dedup_data()
     _execute_dedup_scripts()
+    _maybe_generate_surname_report()
+
+
+def _maybe_generate_surname_report() -> None:
+    """Growth-triggered, human-gated corpus-frequency surname suggestion report.
+    Regenerates only when the people corpus grew past the configured threshold.
+    Suggestion-only — never edits the curated surname table. Fail-safe."""
+    try:
+        from src.dedup.surname_report import maybe_generate
+        from src.utils.config import load_config
+
+        maybe_generate(WORKDIR / "output" / "people", load_config())
+    except Exception as e:  # noqa: BLE001 - report is best-effort, never blocks dedup
+        logger.debug("surname suggestion report skipped: %s", e)
 
 
 def _reclassify_military_units() -> None:
