@@ -85,6 +85,40 @@ batch:
   phase2: true                         # 50% off extraction
   phase3: false                        # Live calls — avoids network bounce between submit/retrieve
 
+# Deduplication scoring. All values optional — if a key (or the whole block) is
+# absent, the built-in defaults below are used (= current behavior). Auto-merge stays
+# conservative: with these defaults, nothing new auto-merges beyond byte-identical
+# normalized names until you deliberately lower people.auto_merge_threshold.
+dedup:
+  people:
+    candidate_threshold: 0.5           # min score to surface as a human-review candidate
+    auto_merge_threshold: 999          # score to auto-merge w/o review; 999 = effectively off
+                                       #   (byte-identical names still auto-merge separately).
+    weights:                           # additive evidence weights
+      shared_external_url: 3.0
+      event_overlap_high: 1.5
+      event_overlap_medium: 0.8
+      shared_biographical: 0.5
+      middle_initial_subset: 0.5       # "George Patton" vs "George S. Patton" (one omits middle)
+      same_last_name: 0.4
+    proximity:                         # PRIMARY signal: decays with mention radius (words apart)
+      tight_radius_words: 60           # ~same paragraph
+      near_radius_words: 400           # ~same page/section
+      loose_radius_words: 4000         # same book, far apart
+      tight_weight: 0.8
+      near_weight: 0.4
+      loose_weight: 0.15
+      cross_document_weight: 0.0
+    # Disambiguation veto: both names carry a comparable middle initial/name AND they
+    # DIFFER (George S. vs George P. Patton) -> strong negative that overrides proximity.
+    conflicting_middle_initial_weight: -5.0
+    frequency:                         # SECONDARY: a surname dominating a book (Patton book)
+      enabled: true
+      dominant_surname_boost: 0.3      # applied only with a compatible first name/initial
+    commonness:                        # common surnames (many distinct first names) dampen proximity
+      enabled: true
+      common_surname_damping: 0.5
+
 openserp:
   results_per_query: 10                # Fewer results = fewer verification calls
   max_images_per_entity: 3
