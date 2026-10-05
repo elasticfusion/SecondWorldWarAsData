@@ -89,10 +89,15 @@ Enrichment-on-identity (follows identity resolution)
   too generic to be a specific identity is still created minimal (nothing to look up).
 - **Supporting-unit equipment linking is name-exact.** `equipment_name` → `EquipmentID`
   uses the same exact-index lookup; no alias/fuzzy resolution.
-- **Enrichment-on-identity is untested against live Grok/vision.** The new
-  enrich-once-per-specific-record stage (text/specs/image + vision TYPE verification) and
-  the `image_scope` default (representative vs documentary) are unit-tested with stubs but
-  not yet confirmed against real Grok/vision output or live image fetches.
+- **Enrichment-on-identity: image/license fetch LIVE-validated; Grok text + vision still
+  stubbed.** The Wikipedia canonical-image + license fetch was run against the live
+  Wikipedia/Commons API (M4 Sherman, M26 Pershing → correct article, image, and license
+  e.g. "CC BY-SA 2.0"). A live-only bug was found and fixed: Wikipedia appends
+  `?utm_source=…` tracking params to image URLs, which corrupted the Commons `File:` title
+  and silently broke license lookup (now stripped; regression-tested). Still untested
+  live: the **Grok** text/specs enrichment and **vision TYPE verification** (no Grok API
+  key configured in this environment) and the OpenSERP image path (`search_media` binary
+  absent). The `image_scope` default (representative vs documentary) is unit-tested.
 - **Validated by hermetic tests only.** No live end-to-end equipment run has been executed
   against a real chapter (no equipment records currently in `output/`); the origin/operator,
   quantity/place, assertion-gate, related_equipment, and enrichment-on-identity behaviors
