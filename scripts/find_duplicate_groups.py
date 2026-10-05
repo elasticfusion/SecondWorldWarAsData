@@ -7,7 +7,7 @@ import re
 import sys
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +46,25 @@ def find_duplicate_groups(groups_dir: Path) -> List[Dict]:
     groups = _load_groups(groups_dir)
     excluded_pairs, excluded_names = _load_group_exclusions(groups_dir)
 
+    # Group dedup config + a text index for proximity corroboration (best-effort).
+    from src.dedup.config import load_group_dedup_config
+
+    try:
+        from src.utils.config import load_config
+
+        gcfg = load_group_dedup_config(load_config())
+    except Exception:
+        gcfg = load_group_dedup_config(None)
+    text_index: dict = {}
+    if gcfg.proximity.get("enabled", True):
+        try:
+            from scripts.find_duplicate_people import _build_text_index
+
+            output_root = groups_dir.parent
+            text_index = _build_text_index(output_root)
+        except Exception:
+            text_index = {}
+
     # Incremental: only process clusters containing new files
     from src.dedup.incremental import get_last_dedup_run, get_new_files
 
@@ -62,7 +81,9 @@ def find_duplicate_groups(groups_dir: Path) -> List[Dict]:
     for i, g1 in enumerate(groups):
         if i in seen:
             continue
-        cluster, reasons = _find_group_cluster(i, g1, groups, seen)
+        cluster, reasons = _find_group_cluster(
+            i, g1, groups, seen, gcfg=gcfg, text_index=text_index
+        )
         if len(cluster) >= 2:
             # Incremental: skip cluster if no member is new
             if new_files and not any(g["filename"] in new_files for g in cluster):
@@ -265,15 +286,44 @@ def _numbers_match(name1: str, name2: str) -> bool:
     return n1 == n2
 
 
-def _find_group_cluster(i, g1, groups, seen):
+def _find_group_cluster(i, g1, groups, seen, **kwargs):
     """Find all groups matching g1. Returns (cluster, reasons)."""
+    from src.dedup.unit_key import derive_unit_key, unit_keys_match
+
+    gcfg = kwargs.get("gcfg")
+    text_index = kwargs.get("text_index") or {}
     cluster = [g1]
     reasons = set()
+    key1 = derive_unit_key(g1["name"])
     for j, g2 in enumerate(groups[i + 1 :], i + 1):
         if j in seen:
             continue
         if not _numbers_match(g1["name"], g2["name"]):
             continue
+
+        # PRIMARY: canonical unit key (number + branch[infantry default] + echelon).
+        # A key match clusters; a key VETO (branch/echelon mismatch) blocks the pair
+        # even if the raw strings look similar ("9th Armored" vs "9th Division") AND
+        # even if they are adjacent in the text (a veto always wins over proximity).
+        key2 = derive_unit_key(g2["name"])
+        if key1.numbers and key2.numbers:
+            # Nationality VETO: "2nd Division (Canadian)" != "2nd Division (US)".
+            if _group_nationality_conflict(g1, g2):
+                continue
+            matched, why = unit_keys_match(key1, key2)
+            if matched:
+                cluster.append(g2)
+                reasons.add(why)
+                # Proximity corroboration: note when the match is also text-adjacent
+                # (e.g. "110th Regiment" closely followed by "110th").
+                if _groups_proximate(g1, g2, gcfg, text_index):
+                    reasons.add("text proximity corroboration")
+                seen.add(j)
+            # else: vetoed or number-mismatch — do NOT fall through to string sim.
+            continue
+
+        # FALLBACK (only when a canonical key can't be formed, e.g. no number):
+        # weak string-similarity / substring match, as before.
         sim = _similarity(g1["name"], g2["name"])
         if sim >= 0.85:
             cluster.append(g2)
@@ -287,6 +337,53 @@ def _find_group_cluster(i, g1, groups, seen):
             reasons.add("substring match")
             seen.add(j)
     return cluster, reasons
+
+
+def _group_nationality(g: Dict) -> Optional[str]:
+    """Canonical nationality for a group: stored field first, else a nationality word
+    embedded in the name ('2nd Division (Canadian)')."""
+    data = g.get("data", g) if isinstance(g, dict) else {}
+    raw = data.get("nationality") or data.get("country_of_origin") or ""
+    name = g.get("name", "")
+    try:
+        from src.enrichment.award_sources import canonical_nationality
+
+        c = canonical_nationality(raw)
+        if c:
+            return c
+        # scan the name for a nationality adjective/code
+        for token in re.split(r"[^a-zA-Z]+", name):
+            c = canonical_nationality(token)
+            if c:
+                return c
+    except Exception:
+        return (raw or "").strip().upper() or None
+    return None
+
+
+def _group_nationality_conflict(g1: Dict, g2: Dict) -> bool:
+    """True only when BOTH groups have a known nationality and they DIFFER — a strong
+    veto ('2nd Division (Canadian)' != '2nd Division (US)'). Unknown on either side is
+    permissive (no veto)."""
+    n1 = _group_nationality(g1)
+    n2 = _group_nationality(g2)
+    return bool(n1 and n2 and n1 != n2)
+
+
+def _groups_proximate(g1: Dict, g2: Dict, gcfg, text_index: Dict) -> bool:
+    """True if the two group names appear within the configured 'near' radius in the
+    source text of a shared sub-event. Corroboration only (never a veto override)."""
+    if not gcfg or not text_index or not gcfg.proximity.get("enabled", True):
+        return False
+    try:
+        from scripts.find_duplicate_people import _min_name_distance
+
+        d = _min_name_distance(g1.get("data", g1), g2.get("data", g2), text_index)
+        if d is None:
+            return False
+        return d <= gcfg.proximity.get("near_radius_words", 400)
+    except Exception:
+        return False
 
 
 def generate_duplicate_report(groups_dir: Path, output_file: Path) -> None:

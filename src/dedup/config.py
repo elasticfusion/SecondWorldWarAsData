@@ -90,6 +90,23 @@ _DEFAULTS: Dict[str, Any] = {
     },
 }
 
+# Groups (people-groups / units) dedup config. Canonical unit key is the primary
+# matcher; proximity is a positive corroborator (promotes bare-number cases like
+# "110th" near "110th Regiment"); key vetoes (branch/echelon mismatch) always win.
+_GROUP_DEFAULTS: Dict[str, Dict[str, Any]] = {
+    "canonical_key": {"enabled": True, "infantry_default": True},
+    "proximity": {
+        "enabled": True,
+        "tight_radius_words": 60,
+        "near_radius_words": 400,
+        "loose_radius_words": 4000,
+        "tight_weight": 0.6,
+        "near_weight": 0.3,
+        "loose_weight": 0.1,
+        "cross_document_weight": 0.0,
+    },
+}
+
 
 @dataclass
 class DedupConfig:
@@ -191,6 +208,28 @@ def _merge_shared_unit(section: Dict[str, Any]) -> Dict[str, Any]:
 
 def default_dedup_config() -> DedupConfig:
     return load_dedup_config(None)
+
+
+@dataclass
+class GroupDedupConfig:
+    canonical_key: Dict[str, Any]
+    proximity: Dict[str, Any]
+
+
+def load_group_dedup_config(
+    config: Optional[Dict[str, Any]] = None,
+) -> GroupDedupConfig:
+    """Groups dedup config from config.yaml -> dedup.groups (defaults otherwise)."""
+    groups: Dict[str, Any] = {}
+    if isinstance(config, dict):
+        groups = (config.get("dedup") or {}).get("groups") or {}
+    ck = dict(_GROUP_DEFAULTS["canonical_key"])
+    if isinstance(groups.get("canonical_key"), dict):
+        for k in ck:
+            if k in groups["canonical_key"]:
+                ck[k] = bool(groups["canonical_key"][k])
+    prox = _merge(groups.get("proximity", {}), _GROUP_DEFAULTS["proximity"])
+    return GroupDedupConfig(canonical_key=ck, proximity=prox)
 
 
 # ---- Nationality-aware surname-frequency table ----

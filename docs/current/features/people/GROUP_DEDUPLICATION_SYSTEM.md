@@ -493,3 +493,10 @@ excluded_files = {
 **Status:** ✅ Production Ready  
 **Last Updated:** 2026-03-08  
 **Version:** 2.0
+
+---
+
+## See also
+- [Group (Unit) Deduplication — Canonical Unit Key](group-dedup-unit-key.md) — the
+  canonical-key matcher (number + infantry-default branch + echelon, with veto semantics)
+  that is now the primary group match.

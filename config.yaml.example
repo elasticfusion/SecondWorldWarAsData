@@ -166,6 +166,24 @@ dedup:
         command: 0.0
       unknown_echelon_weight: 0.1      # shared unit, echelon not classified
 
+  # Groups (people-groups / units) dedup. Canonical unit key is the PRIMARY matcher:
+  # number + branch (INFANTRY DEFAULT when unspecified) + echelon. Branch mismatch and
+  # echelon mismatch (both present) VETO a merge (so "9th Armored" != "9th Division").
+  # Proximity corroborates (promotes "110th" near "110th Regiment"); never overrides a veto.
+  groups:
+    canonical_key:
+      enabled: true
+      infantry_default: true           # unspecified branch -> infantry
+    proximity:
+      enabled: true
+      tight_radius_words: 60
+      near_radius_words: 400
+      loose_radius_words: 4000
+      tight_weight: 0.6
+      near_weight: 0.3
+      loose_weight: 0.1
+      cross_document_weight: 0.0
+
 openserp:
   results_per_query: 10                # Fewer results = fewer verification calls
   max_images_per_entity: 3
