@@ -143,6 +143,46 @@ def _has_shared_positions(person1: Dict, person2: Dict) -> bool:
 
 _WORD_SPLIT = re.compile(r"\s+")
 
+# ---- Corpus surname statistics (for commonness damping + dominant-surname boost) ----
+# Populated once per run from the people set via build_surname_stats(). A surname is
+# "common" if many DISTINCT first names share it (ambiguous); "dominant" if it accounts
+# for a large share of all people (the Patton-book effect).
+_surname_distinct_firsts: Dict[str, set] = {}
+_surname_person_count: Dict[str, int] = {}
+_total_people: int = 0
+# thresholds (kept simple; tunable later if needed)
+_COMMON_DISTINCT_FIRSTS = (
+    3  # >=3 different first names on one surname -> common/ambiguous
+)
+_DOMINANT_SHARE = 0.10  # a surname on >=10% of all people -> book's dominant subject
+
+
+def build_surname_stats(people: List[Dict]) -> None:
+    """Compute per-corpus surname statistics once (distinct first names + share)."""
+    global _total_people
+    _surname_distinct_firsts.clear()
+    _surname_person_count.clear()
+    _total_people = len(people)
+    for p in people:
+        name = p.get("name", "")
+        if not name:
+            continue
+        last = _extract_last_name(name)
+        first = name.split()[0].lower().strip(".,") if name.split() else ""
+        _surname_distinct_firsts.setdefault(last, set()).add(first)
+        _surname_person_count[last] = _surname_person_count.get(last, 0) + 1
+
+
+def _is_common_surname(last: str) -> bool:
+    return len(_surname_distinct_firsts.get(last, set())) >= _COMMON_DISTINCT_FIRSTS
+
+
+def _is_dominant_surname(last: str) -> bool:
+    if _total_people <= 0:
+        return False
+    return _surname_person_count.get(last, 0) / _total_people >= _DOMINANT_SHARE
+
+
 # People with more than this many event_mentions are considered high-frequency.
 # For these, name-similarity alone is not enough — proximity or biographical
 # evidence is required to flag a duplicate.
@@ -264,6 +304,62 @@ def _check_proximity(
             if _names_within_distance(text, title, name1):
                 return True
     return False
+
+
+def _min_distance_in_text(text: str, name1: str, name2: str):
+    """Minimum word-distance between any occurrence of name1 and name2 (incl.
+    last-name variants) within one text, or None if both never co-occur."""
+    word_text = " ".join(_WORD_SPLIT.split(text.lower()))
+    variants1 = {name1.lower(), _extract_last_name(name1)}
+    variants2 = {name2.lower(), _extract_last_name(name2)}
+    best = None
+    for v1 in variants1:
+        for v2 in variants2:
+            if v1 == v2 or not v1 or not v2:
+                continue
+            pos1 = [m.start() for m in re.finditer(re.escape(v1), word_text)]
+            pos2 = [m.start() for m in re.finditer(re.escape(v2), word_text)]
+            for p1 in pos1:
+                for p2 in pos2:
+                    between = word_text[min(p1, p2) : max(p1, p2)]
+                    d = len(_WORD_SPLIT.split(between))
+                    if best is None or d < best:
+                        best = d
+    return best
+
+
+def _min_name_distance(person1: Dict, person2: Dict, text_index: Dict[str, str]):
+    """Smallest mention radius (in words) between the two people across the source
+    text of their shared sub-events, or None if they never co-occur."""
+    se_ids = _person_sub_event_ids(person1) & _person_sub_event_ids(person2)
+    name1 = person1.get("name", "")
+    name2 = person2.get("name", "")
+    if not name1 or not name2:
+        return None
+    best = None
+    for seid in se_ids:
+        text = text_index.get(seid, "")
+        if not text:
+            continue
+        d = _min_distance_in_text(text, name1, name2)
+        if d is not None and (best is None or d < best):
+            best = d
+    return best
+
+
+def _proximity_weight(distance, cfg) -> float:
+    """Continuous radius -> weight. Tighter mention radius = stronger same-person
+    evidence (PRIMARY signal). Reads tiers/weights from config."""
+    p = cfg.proximity
+    if distance is None:
+        return float(p.get("cross_document_weight", 0.0))
+    if distance <= p.get("tight_radius_words", 60):
+        return float(p.get("tight_weight", 0.8))
+    if distance <= p.get("near_radius_words", 400):
+        return float(p.get("near_weight", 0.4))
+    if distance <= p.get("loose_radius_words", 4000):
+        return float(p.get("loose_weight", 0.15))
+    return float(p.get("cross_document_weight", 0.0))
 
 
 def _check_name_similarity(name1: str, name2: str) -> tuple[list[str], float]:
@@ -400,6 +496,12 @@ def _check_middle_name_variant(
     if not parts1 or not parts2:
         return [], 0.0
 
+    # If both carry a comparable middle initial/name and they CONFLICT (George S. vs
+    # George P. Patton), this is NOT a variant match — it is an author disambiguation.
+    # Return no positive match here; the conflict is scored (negatively) separately.
+    if _conflicting_middle_initial(name1, name2):
+        return [], 0.0
+
     # Same first name and same last name — middle differs
     if parts1[0] == parts2[0] and parts1[-1] == parts2[-1]:
         return ["Middle name/initial variant"], 0.5
@@ -419,28 +521,47 @@ def _check_middle_name_variant(
     return [], 0.0
 
 
-def _check_text_proximity(
-    p1: Dict,
-    p2: Dict,
-    text_index: Dict,
-    confidence: float,
-    last1: str,
-    last2: str,
-    name1: str,
-    name2: str,
+def _middle_tokens(name: str) -> list[str]:
+    """Core (non-suffix, len>1) tokens EXCLUDING first + last — i.e. middle names."""
+    suffixes = {"jr.", "jr", "sr.", "sr", "ii", "iii", "iv"}
+    core = [
+        p.strip(".,").lower()
+        for p in name.split()
+        if p.strip(".,").lower() not in suffixes and len(p.strip(".,")) > 1
+    ]
+    # include single-letter initials as middles too (compare on first letter)
+    initials = [
+        p.strip(".,").lower()
+        for p in name.split()
+        if len(p.strip(".,")) == 1 and p.strip(".,").isalpha()
+    ]
+    mids = core[1:-1] if len(core) >= 2 else []
+    return [m[0] for m in mids] + [i for i in initials]
+
+
+def _conflicting_middle_initial(name1: str, name2: str) -> bool:
+    """True when both names carry a middle initial/name and NONE overlap on first
+    letter — the author is distinguishing two different people (George S. vs George
+    P. Patton). False when either lacks a middle (one simply omits it) or they share
+    one."""
+    m1 = {t[0] for t in _middle_tokens(name1) if t}
+    m2 = {t[0] for t in _middle_tokens(name2) if t}
+    if not m1 or not m2:
+        return False  # one omits the middle -> not a conflict (handled as subset match)
+    return m1.isdisjoint(m2)
+
+
+def _check_conflicting_middle(
+    name1: str, name2: str, last1: str, last2: str, cfg
 ) -> tuple[list[str], float]:
-    """Check 7: Text proximity — names appear within 1000 words."""
-    if not text_index or confidence <= 0.2:
+    """Disambiguation veto: same surname but conflicting middle initials -> negative."""
+    if last1 != last2:
         return [], 0.0
-    similarity = _similarity_ratio(name1, name2)
-    names_related = (
-        last1 == last2
-        or similarity > 0.8
-        or len(name1.split()) == 1
-        or len(name2.split()) == 1
-    )
-    if names_related and _check_proximity(p1, p2, text_index):
-        return ["Text proximity (<1000 words)"], 0.4
+    if _conflicting_middle_initial(name1, name2):
+        return (
+            ["Conflicting middle initial (author disambiguation)"],
+            cfg.conflicting_middle_initial_weight,
+        )
     return [], 0.0
 
 
@@ -552,9 +673,13 @@ def _check_title_alias(
 
 
 def _score_pair(
-    person1: Dict, person2: Dict, text_index: Dict[str, str]
+    person1: Dict, person2: Dict, text_index: Dict[str, str], cfg=None
 ) -> tuple[list[str], float]:
     """Score a pair of people for duplicate likelihood."""
+    if cfg is None:
+        from src.dedup.config import default_dedup_config
+
+        cfg = default_dedup_config()
     name1 = person1["name"]
     name2 = person2["name"]
     last1 = _extract_last_name(name1)
@@ -585,12 +710,32 @@ def _score_pair(
     all_reasons.extend(r)
     total_confidence += c
 
-    # Check 7 depends on accumulated confidence
-    r, c = _check_text_proximity(
-        person1, person2, text_index, total_confidence, last1, last2, name1, name2
-    )
+    # Disambiguation veto: conflicting middle initials (George S. vs George P. Patton)
+    # -> strong negative that can override proximity. (config-weighted)
+    r, c = _check_conflicting_middle(name1, name2, last1, last2, cfg)
     all_reasons.extend(r)
     total_confidence += c
+
+    # PRIMARY signal: continuous proximity by mention radius (replaces binary <1000w).
+    if text_index and total_confidence > -1.0:
+        distance = _min_name_distance(person1, person2, text_index)
+        pweight = _proximity_weight(distance, cfg)
+        if pweight > 0:
+            # Name-commonness damping (common surname -> weaker proximity evidence).
+            if cfg.commonness.get("enabled", True) and _is_common_surname(last1):
+                pweight *= float(cfg.commonness.get("common_surname_damping", 0.5))
+            # Frequency boost (dominant surname in a book), only with compatible first
+            # name/initial — never bridges a conflict (the veto already fired above).
+            if (
+                cfg.frequency.get("enabled", True)
+                and _is_dominant_surname(last1)
+                and not _conflicting_middle_initial(name1, name2)
+            ):
+                pweight += float(cfg.frequency.get("dominant_surname_boost", 0.3))
+            all_reasons.append(
+                f"Mention proximity (radius={distance}w, +{pweight:.2f})"
+            )
+            total_confidence += pweight
 
     return all_reasons, total_confidence
 
@@ -749,12 +894,24 @@ def _build_pairwise_matches(
     text_index: Dict[str, str],
     excluded_names: Optional[Set[tuple]] = None,
     new_files: Optional[Set[str]] = None,
+    cfg=None,
 ) -> list[tuple[int, int, list[str], float]]:
     """Score all pairs and return those with name-based evidence above threshold.
 
     Single-word names (e.g. "Marshall") are limited to their single best match
     to prevent bridging unrelated people (e.g. George C. Marshall and S.L.A. Marshall).
     """
+    if cfg is None:
+        from src.dedup.config import load_dedup_config
+
+        try:
+            from src.utils.config import load_config
+
+            cfg = load_dedup_config(load_config())
+        except Exception:  # noqa: BLE001 - fall back to built-in defaults
+            cfg = load_dedup_config(None)
+    # Compute corpus surname stats once (commonness + dominant-surname signals).
+    build_surname_stats(people_data)
     name_reasons = {
         "Name similarity",
         "Same last name",
@@ -792,9 +949,9 @@ def _build_pairwise_matches(
             ):
                 continue
 
-            reasons, confidence = _score_pair(person1, person2, text_index)
+            reasons, confidence = _score_pair(person1, person2, text_index, cfg)
 
-            if confidence > 0.5 and reasons:
+            if confidence > cfg.candidate_threshold and reasons:
                 has_name_evidence = any(
                     any(r.startswith(nr) for nr in name_reasons) for r in reasons
                 )
