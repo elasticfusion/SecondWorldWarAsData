@@ -54,7 +54,10 @@ GROUPS_OUTPUT_SCHEMA = {
                 },
             },
         },
-        "enrichment_status": enum_field(["enriched", "not_found"], nullable=True),
+        "enrichment_status": enum_field(
+            ["enriched", "not_found", "ambiguous"], nullable=True
+        ),
+        "enrichment_ambiguity_reason": {"type": ["string", "null"]},
         "last_enrichment_search": {"type": ["string", "null"]},
     },
 }
