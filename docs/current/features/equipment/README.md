@@ -11,12 +11,48 @@ traceability, media, enrichment, and source-recheck are implemented and pipeline
 The richer analytics in the proposal (comparisons, timeline, doctrine, …) remain
 aspirational.
 
+## End-to-end flow
+
+```
+Phase 2 extract (per event file)
+  1. load indices  → people, people_groups, dates, places (name→ID), equipment index
+  2. Grok extract  → equipment list from the event (prompts/equipment.yaml)
+       assertion gate: only extract when the SOURCE ASSERTS presence
+       (narrative text or a video/audio narration); ambient/stock footage ignored
+  3. per equipment item (_process_equipment_item):
+       a. link using_unit → PeopleGroupID, using_person → PersonID
+       b. link supporting_units → support_type (supporting arm) + PeopleGroupID + EquipmentID
+       c. build mention (_build_mention):
+            - record identity: common_name, technical_identifier, country_of_origin
+              (= design/manufacture origin, STABLE)
+            - per-mention: operating_country, captured, quantity (+quantity_text),
+              place_name → single PlaceID, assertion_source, original_text (retained)
+            - denormalize DateID (event:sub-event date index) + PlaceID
+       d. record-level related_equipment (narrative-sourced): resolve name→EquipmentID,
+          auto-create a minimal distinct record (EquipmentID+common_name) when absent
+       e. merge_or_create_equipment:
+            - match: technical_identifier → exact common_name → fuzzy (≥0.80, alt names)
+            - merge fields (alt names, variants, related_equipment accumulate+dedup);
+              append the mention
+            - else create a new record (+ optional enrichment/media)
+  4. generate index.json
+
+Dedup detection (ecs_entrypoint._run_dedup_detection → find_duplicate_equipment.py)
+  - normalize (caliber/mm/cm) + alias-expand (equipment_aliases.yaml)
+  - score name-similarity + name-contained + same-category
+  - VETO on country_of_origin only (never operator); captured flag relaxes the veto
+  - merge tool: scripts/merge_equipment.py
+
+Gap-fill (SourceRechecker, source-first)
+  - when country_of_origin / category / quantity / place_name missing, recover from the
+    retained original_text before any external lookup; gap-fill-only, provenance-stamped
+```
+
 ## Code
 
 | Concern | Module |
 |---|---|
-| Extraction + mention building | `src/extraction/equipment.py` |
-| Dedup (ingest-time merge) | `src/extraction/equipment_ext/dedup.py` |
+| Extraction + mention building + **ingest-time merge (LIVE)** | `src/extraction/equipment.py` |
 | Dedup (detection scoring) | `scripts/find_duplicate_equipment.py` |
 | Merge tool | `scripts/merge_equipment.py`, `scripts/merge_equipment_dupes.py` |
 | Media | `src/extraction/equipment_ext/media.py`, `scripts/backfill_equipment_media.py` |
@@ -25,6 +61,29 @@ aspirational.
 | **Enforced output schema (source of truth)** | `src/schemas/equipment_output.py` |
 | Alias table | `config/equipment_aliases.yaml` |
 | Prompt | `prompts/equipment.yaml` |
+| ⚠️ `src/extraction/equipment_ext/dedup.py` | **DEAD/duplicate** — a stale copy of `merge_or_create_equipment`/`_merge_equipment_fields` that nothing imports; the live merge is the `equipment.py` copy. See Gaps. |
+
+## Known gaps
+
+- **Dead duplicate dedup module.** `src/extraction/equipment_ext/dedup.py` duplicates
+  `merge_or_create_equipment` + `_merge_equipment_fields` but has **no importers**; the
+  live path uses the `equipment.py` copies. The two can drift (e.g. the `related_equipment`
+  merge was added only to the live copy). **Action:** delete `equipment_ext/dedup.py` or
+  make it the single source and import it. (Not done yet — mid-feature.)
+- **PlaceID resolution is exact-name only.** A mention's `place_name` resolves to a
+  PlaceID only on an exact (lowercased) match in the places index; near-misses leave
+  `place_name` set but `PlaceID` null. No fuzzy place resolution yet.
+- **`related_equipment` auto-create is minimal.** Auto-created related records carry only
+  `EquipmentID` + `common_name` (no category/origin), so they look under-specified until
+  the piece is extracted from its own mention.
+- **Supporting-unit equipment linking is name-exact.** `equipment_name` → `EquipmentID`
+  uses the same exact-index lookup; no alias/fuzzy resolution.
+- **Validated by hermetic tests only.** No live end-to-end equipment run has been executed
+  against a real chapter (no equipment records currently in `output/`); the origin/operator,
+  quantity/place, assertion-gate, and related_equipment behaviors are unit-tested but not
+  yet confirmed against real Grok output.
+- **Proposal backlog unbuilt.** `crew_accounts`, comparisons, timeline, doctrine,
+  geographic performance, logistics (see MILITARY_EQUIPMENT.md) remain aspirational.
 
 ## Docs
 
@@ -42,6 +101,6 @@ aspirational.
 - **Enforced schema:** `src/schemas/equipment_output.py` (`additionalProperties: false`).
 - **Canonical structure example:** `EQUIPMENT_FINAL_STRUCTURE.md` (other docs link here
   rather than repeating the JSON).
-- **Schema version:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently 2.8 — adds the
-  per-mention `operating_country` + `captured` origin/operator split and declares
-  `original_text` retention).
+- **Schema version:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently 2.9 — adds
+  record-level `related_equipment`; builds on 2.8's per-mention `quantity`/`place`/
+  `operating_country`/`captured` and declared `original_text` retention).

@@ -125,6 +125,22 @@ are also retained on mentions.
   as its own mention — never merged — because **tracing every fact to its origin source
   (`original_text` + `book`) is non-negotiable.**
 
+### Record-level related_equipment (schema 2.9)
+
+Relationships the **source text asserts** between this equipment and a **distinct** piece
+(its own record). Narrative-sourced only — `original_text` retained.
+
+- Each entry: `relationship` (`predecessor` | `successor` | `variant`), `name`, `basis`
+  (short/verbatim reason, e.g. "76mm gun vs the standard 75mm"), `EquipmentID`,
+  `original_text`.
+- **Discriminator:** a sub-designation/modification of the **same base** (M4A1, "the 76mm
+  version of the M4") stays an **inline `variants[]`** entry — NOT `related_equipment`.
+  Only a **distinct piece** (M26 Pershing, M10) gets a `related_equipment` link.
+- When the related piece has no record yet, a **minimal record** (`EquipmentID` +
+  `common_name`) is **auto-created** so the link carries a real ID; otherwise `name` is
+  kept with a null `EquipmentID`. Relationships accumulate across mentions (deduped by
+  relationship+name; conflicting relationships are all kept).
+
 ---
 
 ## What Was Kept

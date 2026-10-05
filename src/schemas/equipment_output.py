@@ -31,6 +31,24 @@ EQUIPMENT_OUTPUT_SCHEMA = {
             "items": {"type": ["string", "object"]},
         },
         "specifications": {"type": ["object", "null"]},
+        # Narrative-sourced relationships to OTHER distinct equipment records
+        # (predecessor/successor/variant). Inline sub-designations stay in `variants`;
+        # these point to separate records. original_text retained for traceability.
+        "related_equipment": {
+            "type": ["array", "null"],
+            "items": {
+                "type": "object",
+                "properties": {
+                    "relationship": enum_field(
+                        ["predecessor", "successor", "variant"], nullable=True
+                    ),
+                    "name": make_nullable("string"),
+                    "basis": make_nullable("string"),
+                    "EquipmentID": ulid_field(nullable=True),
+                    "original_text": make_nullable("string"),
+                },
+            },
+        },
         "media": {"type": ["array", "object", "null"]},
         "external_data": {"type": ["object", "null"]},
         "extracted_date": make_nullable("string"),

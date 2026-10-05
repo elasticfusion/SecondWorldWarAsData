@@ -57,6 +57,27 @@ class SupportingUnitInput(BaseModel):
     )
 
 
+class RelatedEquipmentInput(BaseModel):
+    """A relationship the SOURCE draws between this equipment and ANOTHER DISTINCT piece
+    (its own record), e.g. predecessor/successor, or a distinct related configuration.
+    Narrative-sourced only — original_text is required for traceability. Inline
+    sub-designations (M4A1, 'up-gunned M4') are NOT related_equipment; they are variants.
+    """
+
+    relationship: str = Field(description="predecessor | successor | variant")
+    name: str = Field(
+        description="Name of the DISTINCT related equipment (e.g. 'M26 Pershing')"
+    )
+    basis: Optional[str] = Field(
+        default=None,
+        description="Short/verbatim reason the source relates them (e.g. '76mm gun vs "
+        "the standard 75mm'). Null if the source just names the relation.",
+    )
+    original_text: Optional[str] = Field(
+        default=None, description="Verbatim passage asserting the relationship"
+    )
+
+
 class PerformanceNotes(BaseModel):
     """Performance observations."""
 
@@ -265,6 +286,14 @@ class EquipmentExtraction(BaseModel):
             "Supporting units in combined-arms ops (e.g. air support, artillery). Each "
             "has unit_name, support_type (the SUPPORTING unit's own arm — aircraft/"
             "artillery/armor — NOT this equipment's type), and the equipment it used."
+        ),
+    )
+    related_equipment: List["RelatedEquipmentInput"] = Field(
+        default_factory=list,
+        description=(
+            "Relationships the SOURCE draws between this equipment and another DISTINCT "
+            "piece (predecessor/successor/variant). Only when the text asserts it. Do "
+            "NOT list inline sub-designations here (M4A1, 'up-gunned M4' are variants)."
         ),
     )
 
@@ -1330,6 +1359,25 @@ def _merge_equipment_fields(existing: dict, equipment_data: dict) -> None:
         else:
             existing[key] = equipment_data[key]
 
+    _merge_related_equipment(existing, equipment_data)
+
+
+def _merge_related_equipment(existing: dict, equipment_data: dict) -> None:
+    """Accumulate narrative-sourced related_equipment across mentions, deduped by
+    (relationship, lowercased name). New relationships are added; exact duplicates
+    collapse (conflicting/different relationships are all kept — each is traceable)."""
+    incoming = equipment_data.get("related_equipment") or []
+    if not incoming:
+        return
+    merged = list(existing.get("related_equipment") or [])
+    seen = {(r.get("relationship"), (r.get("name") or "").lower()) for r in merged}
+    for rel in incoming:
+        key = (rel.get("relationship"), (rel.get("name") or "").lower())
+        if key not in seen:
+            merged.append(rel)
+            seen.add(key)
+    existing["related_equipment"] = merged
+
 
 def _merge_into_existing(
     eq_file: Path, new_mention: dict, equipment_data: dict, matched_name: str
@@ -1697,6 +1745,13 @@ def _process_equipment_item(
     )
     equipment_data = _build_equipment_data(eq)
 
+    # Record-level related_equipment (narrative-sourced). Resolve/auto-create distinct
+    # related records so links carry a real EquipmentID.
+    if eq.related_equipment:
+        equipment_data["related_equipment"] = _link_related_equipment(
+            eq.related_equipment, equipment_index, output_dir
+        )
+
     # Merge or create
     try:
         eq_file = merge_or_create_equipment(
@@ -1795,6 +1850,61 @@ def _resolve_support_equipment_id(
         with open(path, encoding="utf-8") as f:
             return json.load(f).get("EquipmentID")
     except Exception:  # nosec B110 - best-effort link
+        return None
+
+
+def _link_related_equipment(
+    related_in: List["RelatedEquipmentInput"],
+    equipment_index: Dict[str, Path],
+    output_dir: Path,
+) -> List[Dict[str, Any]]:
+    """Build the record-level related_equipment list. Each entry is narrative-sourced
+    (original_text retained). Resolve name->EquipmentID; auto-create a minimal distinct
+    record when the related piece has no record yet (minimal schema = EquipmentID +
+    common_name). Never called for inline sub-designations (prompt keeps those out)."""
+    linked: List[Dict[str, Any]] = []
+    for rel in related_in:
+        if not rel.name:
+            continue
+        entry: Dict[str, Any] = {
+            "relationship": rel.relationship,
+            "name": rel.name,
+            "basis": rel.basis,
+            "original_text": rel.original_text,
+        }
+        eq_id = _resolve_support_equipment_id(rel.name, equipment_index)
+        if not eq_id:
+            # Auto-create a minimal distinct record so the link resolves to a real ID.
+            eq_id = _autocreate_minimal_equipment(rel.name, equipment_index, output_dir)
+        if eq_id:
+            entry["EquipmentID"] = eq_id
+        linked.append(entry)
+    return linked
+
+
+def _autocreate_minimal_equipment(
+    name: str, equipment_index: Dict[str, Path], output_dir: Path
+) -> Optional[str]:
+    """Create a minimal equipment record (EquipmentID + common_name) for a distinct piece
+    the narrative relates but that has no record yet. Registers it in the index. Returns
+    the new EquipmentID, or None on failure."""
+    try:
+        equipment_id = str(ulid.new())
+        record = {
+            "EquipmentID": equipment_id,
+            "common_name": name,
+            "extracted_date": datetime.now(timezone.utc).isoformat(),
+            "event_mentions": [],
+        }
+        safe_name = name.replace(" ", "_").replace("/", "_")
+        eq_file = output_dir / f"{safe_name}_{equipment_id[:8]}.json"
+        with open(eq_file, "w") as f:
+            json.dump(record, f, indent=2)
+        equipment_index[name] = eq_file
+        logger.info("  ＋ Auto-created minimal related equipment record: %s", name)
+        return equipment_id
+    except Exception as e:  # noqa: BLE001 - best-effort; link falls back to name-only
+        logger.warning("Could not auto-create related equipment '%s': %s", name, e)
         return None
 
 

@@ -34,6 +34,9 @@ schema: |
         "supporting_units": [
           {"unit_name": "IX Tactical Air Command", "support_type": "aircraft", "equipment_name": "P-47 Thunderbolt"}
         ],
+        "related_equipment": [
+          {"relationship": "successor", "name": "M26 Pershing", "basis": "introduced to counter German heavy tanks", "original_text": "the M26 Pershing would eventually replace the Sherman"}
+        ],
         "performance_notes": "Effective against infantry positions",
         "context": "Used in breakout operations",
         "original_text": "Sherman tanks of the 2nd Armored",
@@ -69,6 +72,19 @@ rules:
     - US unit using its own Shermans: country_of_origin "USA", operating_country "USA", captured false
     If the operator is not stated, leave operating_country null and captured false.
   - Only extract specifically named equipment, not generic references
+  - |
+    RELATED EQUIPMENT — record relationships ONLY when the SOURCE TEXT asserts them,
+    between this equipment and a DISTINCT piece (its own record):
+    - relationship: one of predecessor | successor | variant.
+    - name: the distinct related piece (e.g. "M26 Pershing", "M10", "M3 Lee").
+    - basis: short/verbatim reason the source relates them (e.g. "76mm gun vs the
+      standard 75mm"); null if the source just names the relation.
+    - original_text: the verbatim passage asserting it (REQUIRED — traceability).
+    DISCRIMINATOR: a sub-designation / modification of the SAME base (M4A1, "the 76mm
+    version of the M4", "up-gunned M4") is an INLINE variant -> put it in variants[],
+    NOT in related_equipment. Only a DISTINCT piece with its own identity (M26 Pershing,
+    M10 Wolverine, M3 Lee) goes in related_equipment. Do NOT invent relationships from
+    general knowledge — only what the text states.
   - |
     SUPPORTING UNITS (combined arms) — for units that supported this equipment, give
     unit_name, support_type = the SUPPORTING unit's OWN arm (a P-47 wing supporting a
