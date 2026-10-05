@@ -296,9 +296,59 @@ _grokipedia_slugs: dict = {}
 def get_wikipedia_image(person_name: str) -> Optional[dict]:
     """Get cached Wikipedia image info for a person (found during search_wikipedia).
 
-    Returns dict with 'url' and 'license' keys, or None.
+    Returns dict with 'url', 'license', and (when preserved) 'preserved_path' keys,
+    or None.
     """
     return _wikipedia_images.get(person_name)
+
+
+def _store_wikipedia_image(person_name: str, response_json: dict) -> None:
+    """Record a person's Wikipedia portrait (url + license) AND preserve the photo
+    itself to storage (S3/local) as a retained source record — same principle as the
+    award source pages. Fail-safe: any error leaves the text enrichment unaffected."""
+    img_url = _extract_page_image(response_json)
+    if not img_url:
+        return
+    filename = _extract_page_image_filename(response_json)
+    license_info = _fetch_image_license(filename) if filename else None
+    info = {"url": img_url, "license": license_info or "unknown"}
+    # Download + preserve the actual photo bytes.
+    try:
+        preserved = _preserve_person_photo(person_name, img_url)
+        if preserved:
+            info["preserved_path"] = preserved
+    except Exception as e:  # noqa: BLE001 - preservation best-effort, never fatal
+        logger.debug("Wikipedia photo preservation skipped for %s: %s", person_name, e)
+    _wikipedia_images[person_name] = info
+
+
+def _preserve_person_photo(person_name: str, img_url: str) -> Optional[str]:
+    """Fetch the portrait bytes (polite UA) and store them to the configured storage
+    backend as a retained record under person_photos/. Returns the stored path."""
+    from src.enrichment.award_source_pages import preserve_page
+    from src.utils.http_pool import browser_headers, get_session
+
+    storage = _award_storage()  # reuse the configured storage backend (local/S3)
+    if storage is None:
+        return None
+    resp = get_session().get(
+        img_url, headers=browser_headers(), timeout=30, allow_redirects=True
+    )
+    if resp.status_code != 200 or not resp.content:
+        logger.debug("photo fetch %s -> HTTP %s", img_url, resp.status_code)
+        return None
+    content_type = resp.headers.get("Content-Type", "image/jpeg")
+    person_slug = "".join(c if c.isalnum() or c in "-_" else "_" for c in person_name)[
+        :60
+    ]
+    return preserve_page(
+        storage,
+        person_slug,
+        img_url,
+        resp.content,
+        content_type,
+        prefix="person_photos",
+    )
 
 
 def _handle_wikipedia_error(
@@ -442,17 +492,8 @@ def _search_wikipedia_fallback(
                 if resp2.status_code == 200:
                     content = _extract_page_content(resp2.json())
                     if content and _is_military_relevant(content):
-                        # Store image + license if available
-                        img_url = _extract_page_image(resp2.json())
-                        if img_url:
-                            filename = _extract_page_image_filename(resp2.json())
-                            license_info = (
-                                _fetch_image_license(filename) if filename else None
-                            )
-                            _wikipedia_images[person_name] = {
-                                "url": img_url,
-                                "license": license_info or "unknown",
-                            }
+                        # Store image + license + preserve the photo itself.
+                        _store_wikipedia_image(person_name, resp2.json())
                         return content
     except Exception as e:
         logger.debug("Wikipedia search fallback failed for %s: %s", person_name, e)
@@ -506,15 +547,8 @@ def search_wikipedia(
 
             if response.status_code == 200:
                 content = _extract_page_content(response.json())
-                # Store image + license if available
-                img_url = _extract_page_image(response.json())
-                if img_url:
-                    filename = _extract_page_image_filename(response.json())
-                    license_info = _fetch_image_license(filename) if filename else None
-                    _wikipedia_images[person_name] = {
-                        "url": img_url,
-                        "license": license_info or "unknown",
-                    }
+                # Store image + license + preserve the photo itself.
+                _store_wikipedia_image(person_name, response.json())
                 if content:
                     cache_result("wikipedia", person_name, content)
                     return content
