@@ -2,7 +2,7 @@
 
 Extract structured data from World War II historical documents using AI-powered entity extraction. Produces cross-referenced JSON entities (events, people, places, dates, equipment, and 6 more types) from markdown source material.
 
-**Version:** 2.5 | **Last Updated:** 2026-10-02
+**Version:** 2.5 | **Last Updated:** 2026-10-05
 
 ---
 
@@ -36,6 +36,8 @@ Phase 1: Parse    →  Markdown → structured JSON                     (seconds
 Phase 2: Extract  →  11 entity types via Grok Batch API            (50% cost savings)
          Dedup    →  Auto-merge + human review gate
 Phase 3: Enrich   →  Wikipedia, OpenSERP, Open-Meteo, NARA          (per entity)
+                     People also get portrait-photo capture + authoritative
+                     award-citation sourcing (direct sources, translated, preserved)
 ```
 
 Phase 0 (ingestion normalization, `src/ingestion/`) detects media type,
@@ -90,8 +92,8 @@ SecondWorldWarAsData/
 ├── lambda_handlers/         # AWS Lambda functions
 ├── cloudformation/          # Infrastructure as code
 ├── prompts/                 # YAML prompt templates
-├── tests/                   # 332 passing tests
-└── scripts/                 # 40+ utility scripts
+├── tests/                   # 1,380+ passing tests
+└── scripts/                 # 130+ utility scripts
 ```
 
 ---
