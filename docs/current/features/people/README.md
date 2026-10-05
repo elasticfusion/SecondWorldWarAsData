@@ -213,3 +213,5 @@ grep -l "EventID.*01ABC123" output/people/*.json
 - [Group dedup rules (for review)](GROUP_DEDUP_RULES_REVIEW.md) — consolidated people-group dedup rules
 
 - [People-groups logic (for review)](PEOPLE_GROUPS_LOGIC_REVIEW.md) — extraction/enrichment/linking/dedup + gaps
+
+- [People-groups logic — step by step (for review)](PEOPLE_GROUPS_STEP_BY_STEP.md) — numbered walkthrough extraction→dedup
