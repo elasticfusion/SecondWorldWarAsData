@@ -114,3 +114,10 @@ The dedup scripts track which event files have been processed in `.processed_eve
 
 - [People Extraction](README.md) — file-per-person architecture and schema
 - [People Groups](groups.md) — military unit linking
+
+---
+
+## Related
+- [Weighted Scoring & Surname Suggestion Report](dedup-weighting.md) — config-driven
+  proximity/rarity/rank scoring subtleties + the growth-triggered, human-gated surname
+  frequency suggestion report (skew-safe, suggestion-only).
