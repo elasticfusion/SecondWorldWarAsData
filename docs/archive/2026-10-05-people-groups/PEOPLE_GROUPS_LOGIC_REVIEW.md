@@ -94,5 +94,5 @@ Adds a person as a `member` of a group, matched from `biographical_profile.units
 ## Related
 - [GROUP_DEDUP_RULES_REVIEW.md](GROUP_DEDUP_RULES_REVIEW.md)
 - [group-dedup-unit-key.md](group-dedup-unit-key.md)
-- [dedup-weighting.md](dedup-weighting.md)
-- [biographical-enrichment.md](biographical-enrichment.md) — title-implied memberships
+- [dedup-weighting.md](../people/dedup-weighting.md)
+- [biographical-enrichment.md](../people/biographical-enrichment.md) — title-implied memberships

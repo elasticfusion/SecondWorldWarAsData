@@ -1141,17 +1141,24 @@ def _add_member_to_group(
     if any(m.get("PersonID") == person_id for m in members):
         return False
 
-    members.append(
-        {
-            "PersonID": person_id,
-            "name": person_name,
-            "role": unit.get("role", "Member"),
-            "from_date": unit.get("from"),
-            "to_date": unit.get("to"),
-            "source": "biographical_enrichment",
-            "confidence": 0.8,
-        }
-    )
+    member = {
+        "PersonID": person_id,
+        "name": person_name,
+        "role": unit.get("role", "Member"),
+        "from_date": unit.get("from"),
+        "to_date": unit.get("to"),
+        "source": "biographical_enrichment",
+        "confidence": 0.8,
+    }
+    # Civilian memberships carry provenance so the group side knows an unverified
+    # title membership is PROVISIONAL (not a confirmed member).
+    for extra in ("membership_kind", "date_verified", "implied_from_title"):
+        if extra in unit:
+            member[extra] = unit[extra]
+    # A date-unverified membership is lower confidence on the group side.
+    if unit.get("date_verified") is False and unit.get("implied_from_title"):
+        member["confidence"] = 0.3
+    members.append(member)
 
     with open(group_file, "w", encoding="utf-8") as f:
         json.dump(group_data, f, indent=2, ensure_ascii=False)
@@ -1168,7 +1175,8 @@ def _link_person_to_groups(person_file: Path, people_groups_dir: Path) -> int:
 
     bio = person_data.get("biographical_profile", {})
     units = bio.get("units_served", [])
-    if not units:
+    affiliations = bio.get("group_affiliations", [])
+    if not units and not affiliations:
         return 0
 
     person_id = person_data.get("PersonID", "")
@@ -1194,7 +1202,43 @@ def _link_person_to_groups(person_file: Path, people_groups_dir: Path) -> int:
             linked += 1
             logger.info("  Linked %s → %s", person_name, unit_name)
 
+    # Civilian group memberships (legislature/state/party), incl. title-implied. The
+    # membership's date_verified flag TRAVELS onto the group member record, so an
+    # unverified title membership shows up as a PROVISIONAL member (not a confirmed one).
+    for aff in affiliations:
+        if not isinstance(aff, dict):
+            continue
+        gname = aff.get("group", "")
+        if not gname:
+            continue
+        group_file = _find_group_file_by_name(gname, group_index, people_groups_dir)
+        if not group_file:
+            continue
+        member = {
+            "role": "Member",
+            "from": aff.get("as_of_source_date"),
+            "membership_kind": aff.get("group_kind"),
+            "date_verified": bool(aff.get("date_verified")),
+            "implied_from_title": bool(aff.get("implied_from_title")),
+        }
+        if _add_member_to_group(group_file, person_id, person_name, member):
+            linked += 1
+            tag = "verified" if member["date_verified"] else "provisional"
+            logger.info("  Linked %s → %s [%s]", person_name, gname, tag)
+
     return linked
+
+
+def _find_group_file_by_name(name, group_index, groups_dir):
+    """Find a group file for a civilian membership by exact case-insensitive name.
+    (Civilian org names are not unit-key resolvable; GroupID-based reconciliation is
+    handled by dedup/merge, not here.)"""
+    for key, filename in group_index.items():
+        if key.lower() == (name or "").lower():
+            p = groups_dir / filename
+            if p.exists():
+                return p
+    return None
 
 
 def enrich_all_people(

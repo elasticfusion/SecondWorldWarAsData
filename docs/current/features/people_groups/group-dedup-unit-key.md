@@ -5,7 +5,7 @@
 Group/unit dedup matches on a **canonical unit key** derived from the name, not raw
 string similarity — so `Ninth Division` / `9th Division` / `9th Infantry Division` all
 cluster, while genuinely different units stay apart. This is the group analog of the
-people weighted model (see [dedup-weighting.md](dedup-weighting.md)); it is deliberately
+people weighted model (see [dedup-weighting.md](../people/dedup-weighting.md)); it is deliberately
 **different** from people (structured designations, not surname rarity) and from
 equipment (which is an alias/synonym problem — a separate future model).
 
@@ -74,9 +74,9 @@ adjacent in the text are still different units).
   not yet built.
 
 ## Related
-- [dedup-weighting.md](dedup-weighting.md) — people weighted scoring
-- [GROUP_DEDUPLICATION_SYSTEM.md](GROUP_DEDUPLICATION_SYSTEM.md) — prior group dedup overview
-- [deduplication.md](deduplication.md) — end-to-end dedup workflow
+- [dedup-weighting.md](../people/dedup-weighting.md) — people weighted scoring
+- [Rules & pipeline](GROUP_DEDUP_RULES_REVIEW.md) — dedup rules + pipeline flow
+- [deduplication.md](../people/deduplication.md) — end-to-end dedup workflow
 
 ---
 

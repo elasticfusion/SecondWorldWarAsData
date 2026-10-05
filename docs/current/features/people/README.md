@@ -210,8 +210,8 @@ grep -l "EventID.*01ABC123" output/people/*.json
 3. Create merge script for confirmed duplicates
 4. Build query tools for common use cases
 
-- [Group dedup rules (for review)](GROUP_DEDUP_RULES_REVIEW.md) — consolidated people-group dedup rules
+---
 
-- [People-groups logic (for review)](PEOPLE_GROUPS_LOGIC_REVIEW.md) — extraction/enrichment/linking/dedup + gaps
-
-- [People-groups logic — step by step (for review)](PEOPLE_GROUPS_STEP_BY_STEP.md) — numbered walkthrough extraction→dedup
+> **People-groups (units & organizations) are a separate, first-class entity** — see
+> [../people_groups/README.md](../people_groups/README.md). A person *belongs to* groups;
+> the group is its own record.

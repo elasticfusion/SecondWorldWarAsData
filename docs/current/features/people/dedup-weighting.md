@@ -151,6 +151,6 @@ say a surname is "common" without the population it's common *in*).
 
 ## Related
 - [deduplication.md](deduplication.md) — end-to-end dedup workflow + exclusions
-- [GROUP_DEDUPLICATION_SYSTEM.md](GROUP_DEDUPLICATION_SYSTEM.md) — group dedup
+- [Group dedup rules & pipeline](../people_groups/GROUP_DEDUP_RULES_REVIEW.md) — group dedup
 - [../../SCHEMA_REFERENCE.md](../../SCHEMA_REFERENCE.md) — `nationality` / `nationality_served` / `ranks`
 - Config: `config.yaml` → `dedup.people`; data: `data/surname_frequency.yaml`
