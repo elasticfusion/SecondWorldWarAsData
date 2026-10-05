@@ -123,3 +123,21 @@ def test_award_domains_includes_registry_and_valor_hosts():
     assert is_award_domain("http://www.podvignaroda.ru/?id=1")
     # a non-award site is NOT skipped
     assert not is_award_domain("https://en.wikipedia.org/wiki/Audie_Murphy")
+
+
+def test_registry_structural_integrity():
+    """Every registry source is a well-formed entry (guards against YAML indent bugs
+    that merge entries, e.g. the offline block overriding a country entry)."""
+    from src.enrichment.award_registry import load_registry
+
+    reg = load_registry()
+    assert len(reg) >= 20
+    ids = [s.get("id") for s in reg]
+    assert len(ids) == len(set(ids)), "duplicate/merged source ids"
+    for s in reg:
+        assert s.get("id"), f"source missing id: {s}"
+        assert s.get("nationality"), f"{s.get('id')} missing nationality"
+        assert s.get("adapter"), f"{s.get('id')} missing adapter"
+    nats = {s["nationality"] for s in reg}
+    assert "CSK" in nats, "Czechoslovakia entry lost (YAML merge regression)"
+    assert "ANY" in nats, "generic offline fallback lost"
