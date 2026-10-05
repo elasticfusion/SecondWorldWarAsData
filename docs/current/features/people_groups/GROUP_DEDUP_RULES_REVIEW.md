@@ -104,14 +104,18 @@ All optional; absent → built-in defaults (= behavior above).
 - **[PENDING] Shared geographic place within a chapter = weak corroborator.** Units are
   often tied to one/multiple places in a chapter; a shared place would be a *weak*
   positive (like proximity). Not yet built.
-- **[REVIEW] Branch default scope.** INFANTRY default is applied at **all** echelons when
-  branch is absent (not only divisions). Confirm this is desired for e.g. "9th Battalion".
-- **[REVIEW] Roman-vs-Arabic numbering.** `VII Corps` and `7th Corps` are treated as
-  **different** numbers today (roman kept distinct). Confirm — if they should unify,
-  the number normalizer must map roman→arabic.
-- **[REVIEW] Auto-merge expansion.** Group auto-merge is still byte-identical-only; the
-  canonical key currently only ranks human-gate candidates. Expanding auto-merge to
-  "key match + no veto" would be a separate, deliberate change.
+- **[FIXED 2026-10-05] Infantry-default scope.** The infantry combat-arm default now
+  applies ONLY at **division/regiment** echelon (Army, bare arm). A bare "9th Battalion"/
+  "9th Company" keeps arm=unknown (not infantry). **Combat Commands (CCA/CCB/CCR)** — the
+  armored-division brigade-equivalent combined-arms formations — are recognized as
+  echelon `combat_command`, arm `armored`, with the command letter captured so CCA≠CCB≠CCR.
+- **[FIXED 2026-10-05] Roman/Arabic corps numbering unified.** `VII Corps` == `7th
+  Corps` ('7th Corps' is a typo for the roman); the number normalizer maps roman→arabic.
+- **[FIXED 2026-10-05] people_groups auto-merge on canonical-key match.** Unlike People
+  (fuzzy/weighted → human gate), a people_group's canonical unit key is DETERMINISTIC, so
+  a clean key match with no veto IS the completed disambiguation → it **auto-merges** (no
+  human gate). Byte-identical names also auto-merge. Underspecified names (no number, bare
+  CC) are not auto-merged.
 - **Not this model:** Equipment dedup is an alias/synonym problem ("Sherman"/"M4"/
   "M4A3") — a different model, not yet built.
 - **[GAP] Civilian group_type unused** — political_party / government_organization are
