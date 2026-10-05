@@ -166,3 +166,27 @@ Key functions:
 - [Deduplication](deduplication.md)
 - [Workflow Diagrams](../../core/WORKFLOW_DIAGRAMS.md) — Phase 3 diagram
 - [Error Handling](../../core/error_handling.md)
+
+---
+
+## Title-implied civilian group memberships (date-unverified until validated)
+
+A civilian title implies (often multiple, concurrent) group memberships —
+"Representative John Smith from NJ, a Republican" → **House of Representatives + New
+Jersey + Republican Party**. These are derived at Phase 3 from the person's
+title/aliases into `biographical_profile.group_affiliations` (schema v2.6).
+
+**Correctness guard — honorifics are point-in-time.** A later honorific does NOT prove
+the person held that role in the source's timeframe. Every title-derived membership is
+therefore **born `implied_from_title=true`, `date_verified=false`, `as_of_source_date=
+<source year>`** and is **never asserted as fact** until confirmed.
+
+**Deliberate temporal validation.** Opt-in via `TITLE_MEMBERSHIP_VALIDATE=true`: for
+each unverified membership, Grok is asked *"was <person> a member of <group> in
+<source year>?"* — YES flips `date_verified=true`; NO/UNKNOWN leaves it false (not
+asserted). See `src/extraction/title_memberships.py`.
+
+**Dedup impact.** Shared civilian memberships are **weak** corroborators, size-scaled
+(a shared state/party is near-noise; a shared chamber is weak), and a **date-unverified
+membership is discounted hard** (`_shared_group_affiliation`) — it never acts as strong
+same-person evidence until temporally validated.

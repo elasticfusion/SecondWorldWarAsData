@@ -58,6 +58,22 @@ PEOPLE_OUTPUT_SCHEMA = {
                     "type": ["array", "null"],
                     "items": {"type": "string"},
                 },
+                "group_affiliations": {
+                    "type": ["array", "null"],
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": True,
+                        "properties": {
+                            "group": {"type": "string"},
+                            "GroupID": make_nullable("string"),
+                            "group_kind": make_nullable("string"),
+                            "implied_from_title": {"type": ["boolean", "null"]},
+                            "date_verified": {"type": ["boolean", "null"]},
+                            "as_of_source_date": make_nullable("string"),
+                            "source_title": make_nullable("string"),
+                        },
+                    },
+                },
                 "education": {
                     "type": ["array", "null"],
                     "items": {"type": "string"},

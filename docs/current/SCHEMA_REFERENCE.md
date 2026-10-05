@@ -1,7 +1,7 @@
 # JSON Schema Reference
 
 **Last Updated:** 2026-10-02
-**Schema Version:** 2.5
+**Schema Version:** 2.6
 
 All entity files use 26-character ULIDs for cross-referencing. Cross-references always point to top-level entity IDs (e.g., `DateMentionID` → `DateID` in a date file, `PlaceMentionID` → `PlaceID` in a place file).
 
@@ -9,7 +9,7 @@ All entity files include internal metadata fields (prefixed with `_`):
 
 | Field | Type | Description |
 |---|---|---|
-| `_schema_version` | string | Output format version (currently "2.5") |
+| `_schema_version` | string | Output format version (currently "2.6") |
 | `_last_updated` | string | ISO date of last modification (e.g., "2026-06-13") |
 
 These are auto-injected by `src/schemas.inject_metadata()` at write time and excluded from schema validation via `patternProperties: {"^_": {}}`.
