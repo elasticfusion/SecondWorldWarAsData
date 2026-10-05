@@ -144,6 +144,22 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
 
     logger.info("Enriching: %s", name)
 
+    # SOURCE-FIRST gap-fill: recover missing critical fields (nationality, CC parent
+    # division) from the RETAINED source text BEFORE the external lookup — Wikipedia
+    # can't disambiguate (e.g. '9th Division (United States)') without nationality.
+    # Gated (makes a Grok call), gap-fill-only, fail-safe.
+    import os as _os
+
+    if _os.getenv("GROUP_SOURCE_RECHECK", "true").lower() == "true":
+        try:
+            from src.extraction.group_source_recheck import recheck_group_from_source
+
+            n = recheck_group_from_source(data, grok_client)
+            if n:
+                logger.info("  ✓ Source-recheck recovered %d critical field(s)", n)
+        except Exception as e:  # noqa: BLE001 - never block enrichment
+            logger.warning("source-recheck skipped: %s", e)
+
     try:
         enrichment = grok_client.extract_json(
             prompt=PROMPT.format(name=name),

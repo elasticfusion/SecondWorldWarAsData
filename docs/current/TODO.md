@@ -107,6 +107,18 @@ is no longer needed for a full rebuild (kept as a fast code-only-change helper).
 
 ## High Priority (produces wrong results or wastes significant resources)
 
+#### Wire the reusable SourceRechecker into PEOPLE enrichment
+`src/extraction/source_recheck.py::SourceRechecker` (reusable, entity-agnostic) is built
+and already used by people_groups (`group_source_recheck.py`) to recover missing critical
+fields (nationality, CC parent division) from retained `event_mentions[].original_text`
+BEFORE external enrichment — source-first, gap-fill-only, provenance-stamped, fail-safe.
+**Apply the same pattern to People**: when a person is missing a critical field
+(esp. `nationality` — needed for award-sourcing gate + Wikipedia disambiguation), recheck
+the retained source text first. Define a `FieldRecheckSpec` for people and call it in
+`enrich_person_biography` before the Wikipedia/award steps. (Owner-requested 2026-10-05.)
+The same should extend to other `docs/current/features` entity types (places, equipment)
+with missing required data.
+
 #### Enrichment-review findings carried forward (from archived PHASE3_REVIEW + SUPPLEMENTARY_SEARCH_REVIEW, 2026-10-02)
 These were captured in the two 2026-10-02 read-only review docs (now in
 `docs/archive/`). The top items (geocoding C1 PR#217, failure-visibility C2/C3 PR#221,
