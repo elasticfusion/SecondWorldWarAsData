@@ -209,3 +209,5 @@ grep -l "EventID.*01ABC123" output/people/*.json
 2. Review duplicates: `cat output/people/duplicate_report.json`
 3. Create merge script for confirmed duplicates
 4. Build query tools for common use cases
+
+- [Group dedup rules (for review)](GROUP_DEDUP_RULES_REVIEW.md) — consolidated people-group dedup rules
