@@ -956,7 +956,9 @@ def _merge_simple_fields(
         "death_date",
         "death_place",
         "nationality",
+        "nationality_served",
         "role_type",
+        "primary_group_id",
         "biographical_details",
     ]
 

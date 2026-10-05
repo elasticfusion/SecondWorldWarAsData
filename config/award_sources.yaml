@@ -487,6 +487,7 @@ sources:
       (Military Central Archive), Prague. Czech/Slovak → translated when sourced.
 
   # ---------------- Offline / request-based (any country) ----------------
+  - id: offline_any
     name: Offline award dataset
     nationality: ANY
     language: null   # per-record; non-English citations are translated to English (original preserved)
