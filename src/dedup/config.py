@@ -92,7 +92,7 @@ _DEFAULTS: Dict[str, Any] = {
 
 # Groups (people-groups / units) dedup config. Canonical unit key is the primary
 # matcher; proximity is a positive corroborator (promotes bare-number cases like
-# "110th" near "110th Regiment"); key vetoes (branch/echelon mismatch) always win.
+# "110th" near "110th Regiment"); key vetoes (service/arm/echelon mismatch) always win.
 _GROUP_DEFAULTS: Dict[str, Dict[str, Any]] = {
     "canonical_key": {"enabled": True, "infantry_default": True},
     "proximity": {

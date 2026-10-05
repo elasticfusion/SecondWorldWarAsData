@@ -40,8 +40,35 @@ _ECHELON_TERMS = {
     "command": "command",
 }
 
-# Branch lexicon. INFANTRY is the default when no branch word is present.
-_BRANCH_TERMS = {
+# SERVICE lexicon — the armed SERVICE (branch of service). A mismatch is an ABSOLUTE
+# veto, same tier as nationality: 1st Marine Division != 1st Infantry Division (Army).
+# Default is ARMY when no service marker (most WWII ground units; the infantry
+# combat-arm default below only applies under Army).
+_SERVICE_TERMS = {
+    "marine": "USMC",
+    "marines": "USMC",
+    "usmc": "USMC",
+    "navy": "USN",
+    "naval": "USN",
+    "usn": "USN",
+    "fleet": "USN",
+    "coast guard": "USCG",
+    "uscg": "USCG",
+    "air force": "USAAF",
+    "air forces": "USAAF",
+    "army air": "USAAF",
+    "army air force": "USAAF",
+    "army air forces": "USAAF",
+    "air corps": "USAAF",
+    "usaaf": "USAAF",
+    "raf": "RAF",
+    "royal air force": "RAF",
+    "royal navy": "RN",
+}
+
+# COMBAT ARM lexicon — the arm WITHIN a service (primarily Army). Mismatch -> veto.
+# Infantry is the default ONLY when the service is Army (see derive_unit_key).
+_ARM_TERMS = {
     "infantry": "infantry",
     "armored": "armored",
     "armoured": "armored",
@@ -52,16 +79,15 @@ _BRANCH_TERMS = {
     "airborne": "airborne",
     "parachute": "airborne",
     "glider": "airborne",
+    "parachute infantry": "airborne",
     "artillery": "artillery",
     "field artillery": "artillery",
     "engineer": "engineer",
     "engineers": "engineer",
     "signal": "signal",
     "mountain": "mountain",
-    "marine": "marine",
     "ranger": "ranger",
     "commando": "commando",
-    "parachute infantry": "airborne",
 }
 
 # Abbreviation expansions applied to the name before term extraction. Order matters
@@ -137,7 +163,8 @@ _ROMAN = {
 @dataclass(frozen=True)
 class UnitKey:
     numbers: frozenset
-    branch: str  # resolved (infantry default)
+    service: str  # armed service (ARMY default); absolute-veto on mismatch
+    arm: Optional[str]  # combat arm within the service (infantry default under ARMY)
     echelon: Optional[str]  # None = unknown/permissive
 
 
@@ -172,30 +199,41 @@ def _first_term(expanded: str, lexicon: dict) -> Optional[str]:
 
 
 def derive_unit_key(name: str, *, infantry_default: bool = True) -> UnitKey:
-    """Derive (numbers, branch, echelon) from a unit name. Branch defaults to
-    'infantry' when absent; echelon stays None (unknown) when absent."""
+    """Derive (numbers, service, arm, echelon) from a unit name.
+
+    service defaults to ARMY when no service marker is present. arm (combat arm) is
+    meaningful under ARMY and defaults to 'infantry' ONLY when service is ARMY (you
+    never default a Navy/Marine unit to 'infantry'). echelon stays None when absent.
+    """
     expanded = _expand(name or "")
     numbers = frozenset(_numbers(name or ""))
-    branch = _first_term(expanded, _BRANCH_TERMS)
-    if branch is None and infantry_default:
-        branch = "infantry"
+    service = _first_term(expanded, _SERVICE_TERMS) or "ARMY"
+    arm = _first_term(expanded, _ARM_TERMS)
+    if arm is None and infantry_default and service == "ARMY":
+        arm = "infantry"
     echelon = _first_term(expanded, _ECHELON_TERMS)
-    return UnitKey(numbers=numbers, branch=branch or "infantry", echelon=echelon)
+    return UnitKey(numbers=numbers, service=service, arm=arm, echelon=echelon)
 
 
 def unit_keys_match(k1: UnitKey, k2: UnitKey) -> tuple[bool, str]:
     """Apply the match rule. Returns (match, reason)."""
-    # Numbers must match (and at least one must have a number — avoid matching two
-    # number-less names on branch/echelon alone).
+    # Numbers must match (and at least one must have a number).
     if k1.numbers != k2.numbers:
         return False, "number mismatch"
     if not k1.numbers:
         return False, "no unit number"
-    # Branch mismatch -> veto (infantry default already applied).
-    if k1.branch != k2.branch:
-        return False, f"branch mismatch ({k1.branch} vs {k2.branch})"
-    # Echelon: veto only when BOTH present and different; absent is permissive.
+    # SERVICE mismatch -> ABSOLUTE veto (1st Marine Division != 1st Infantry Division).
+    if k1.service != k2.service:
+        return False, f"service mismatch ({k1.service} vs {k2.service})"
+    # COMBAT ARM: veto only when BOTH present and different; absent is permissive.
+    if k1.arm and k2.arm and k1.arm != k2.arm:
+        return False, f"arm mismatch ({k1.arm} vs {k2.arm})"
+    # ECHELON: veto only when BOTH present and different; absent is permissive.
     if k1.echelon and k2.echelon and k1.echelon != k2.echelon:
         return False, f"echelon mismatch ({k1.echelon} vs {k2.echelon})"
+    arm = k1.arm or k2.arm or "unspecified"
     ech = k1.echelon or k2.echelon or "unspecified"
-    return True, f"canonical unit key match (#{sorted(k1.numbers)} {k1.branch} {ech})"
+    return (
+        True,
+        f"canonical unit key match (#{sorted(k1.numbers)} {k1.service} {arm} {ech})",
+    )

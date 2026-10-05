@@ -38,7 +38,8 @@ No shared number → not a candidate.
 | Field | Rule |
 |---|---|
 | numbers | must match |
-| **branch** | infantry / armored / cavalry / airborne / artillery / … . **Absent ⇒ defaults to INFANTRY.** Branch **mismatch ⇒ VETO**. |
+| **service** | Armed SERVICE (Army / AAF / Navy / Marines / Coast Guard), from the name. **Mismatch ⇒ ABSOLUTE VETO** (1st Marine Division ≠ 1st Infantry Division). Default ARMY. |
+| **arm (combat arm)** | infantry / armored / cavalry / airborne / artillery / … . **Absent ⇒ defaults to INFANTRY.** Branch **mismatch ⇒ VETO**. |
 | **echelon** | squad…division…army. Absent ⇒ permissive (no veto). Present on **both** AND different ⇒ **VETO**. |
 
 Abbreviations are expanded first (`PIR`→parachute infantry regiment, `Inf Div`→infantry
