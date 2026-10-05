@@ -410,3 +410,11 @@ and a future source has a home — each registry `notes` field records **where t
 - **Czechoslovakia (CSK)** — Vojenský ústřední archiv, Prague.
 - Ethiopia, Luxembourg, Belgium (see its section): no online valor DB. Mongolia: 1945
   recipients appear under their **Soviet** award in Podvig Naroda.
+
+---
+
+## Related documents
+- [People Biographical Enrichment](../features/people/biographical-enrichment.md) — how award sourcing is wired into the per-person Phase-3 flow (gating, routing, preservation).
+- [Language Translation](LANGUAGE_TRANSLATION.md) — the translate-at-the-seam mechanism reused to normalize non-English citations to English.
+- [Schema Reference](../SCHEMA_REFERENCE.md) — the `MilitaryAward` provenance fields (`citation_text`, `citation_text_original`, `citation_language`, `source_name/url`, `verified`, `sourcing_attempts`).
+- [Supplementary search review](../../archive/2026-10-05/SUPPLEMENTARY_SEARCH_REVIEW.md) (archived) — origin of the "authoritative sources over search engines" direction.

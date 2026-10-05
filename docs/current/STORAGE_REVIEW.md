@@ -196,3 +196,10 @@ Phase-3 reads are a felt bottleneck OR when the Postgres load is built.
 - Don't build Postgres/pgvector before ingestion is complete (re-embed/re-schema risk).
 - Don't go deeper than Glacier IR for ingestion-read binaries (restore would break
   the immediate-read path).
+
+---
+
+## Related documents
+- [Code Architecture](core/CODE_ARCHITECTURE.md) — where the storage backends (`src/utils/storage.py`, `backends.py`) sit in the module map.
+- [AWS Deployment](AWS_DEPLOYMENT.md) — S3 / DynamoDB / lifecycle infrastructure that this review covers.
+- [Security Posture](SECURITY_POSTURE.md) — S3 encryption / TLS / lifecycle controls referenced here.

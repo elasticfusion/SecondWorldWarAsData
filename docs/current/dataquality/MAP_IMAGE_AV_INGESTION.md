@@ -1,9 +1,12 @@
 # Map, Image & Moving-Image Ingestion — Design Note
 
-**Status:** proposed (2026-09-26). Assessment + probes done on the SHAEF OB map
-corpus; **no pipeline built or run yet** (all work so far was throwaway tests
-per the "treat OCR as tests" guidance). This note records the recommended
-handling before any build.
+**Status (updated 2026-10-05, by branch):**
+- **AV scanning — BUILT + DEPLOYED** (`scripts/av_entrypoint.py`, `Dockerfile.clamav`,
+  demand-launched ClamAV Fargate gate; EICAR-validated). See `AV_SCANNING_DESIGN.md`.
+- **Image captioning — IMPLEMENTED** (`src/extraction/image_captioner.py`).
+- **Map branch — proposed.** Assessment + probes done on the SHAEF OB map corpus; the
+  map georeferencing/dating pipeline is not built yet. This note records the recommended
+  handling for that remaining branch.
 
 ## Scope
 

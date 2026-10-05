@@ -1,6 +1,10 @@
 # Spec: True Multi-Job Concurrency + NAT Management
 
-**Status:** draft (2026-09-27). Design spec — not yet implemented.
+**Status:** canonical spec (2026-09-27; status updated 2026-10-05). **Partially
+implemented** — per-book locks, the Step Functions dispatcher, NAT demand-leases, and
+OCR idempotency have landed (see `INTAKE_FRONT_DOOR_STATE.md` + the §-citations in
+`nat_manager`/`dispatcher`/`ecs_entrypoint`); full multi-doc parallelism remains gated
+off by default (`MULTI_DOC_ENABLED=false`) pending the controlled isolation test.
 **Motivation:** a real backlog (`~/Downloads/WWIIArchives`: **628 files / ~502 GB**
 — 238 PDFs, 204 zips, 184 JPGs, plus NARA data inbound) must be ingested. Today
 the pipeline processes **one document at a time** (serial per-book queue), which

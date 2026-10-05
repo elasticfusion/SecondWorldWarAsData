@@ -1,7 +1,7 @@
 # Data Quality Status
 
-**Last Updated:** 2026-09-23  
-**Schema Version:** 2.3
+**Last Updated:** 2026-10-05  
+**Schema Version:** 2.5
 
 > This document is the **canonical source** for entity counts and enrichment
 > rates. Other docs (e.g. `features/README.md`) link here rather than
