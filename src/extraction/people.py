@@ -343,6 +343,52 @@ class UnitServed(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
+class GroupAffiliation(BaseModel):
+    """A person's membership in a people_group that is NOT a military unit — e.g. a
+    legislative body (House/Senate), a state/constituency, or a political party.
+
+    Civilians (and officials) can belong to several groups concurrently
+    ("Representative John Smith from NJ, a Republican" → House + New Jersey + Republican
+    Party). Such memberships are often **implied by a title/honorific**, which is a
+    POINT-IN-TIME attribute: a later honorific ("Senator Smith") does NOT prove the
+    person held that role in the source's timeframe. Memberships derived from a title
+    are therefore born **date-unverified** and must be confirmed by a deliberate
+    temporal-validation step before being asserted as fact or trusted as strong
+    dedup evidence. See docs/current/features/people/biographical-enrichment.md.
+    """
+
+    group: str  # free-text group name ("House of Representatives", "New Jersey", "Republican Party")
+    GroupID: Optional[str] = Field(
+        default=None, description="26-char ULID of the resolved people_groups entity"
+    )
+    group_kind: Optional[str] = Field(
+        default=None,
+        description="legislature|state|party|executive|judiciary|civilian_org",
+    )
+    # --- Temporal provenance (the honorific-is-point-in-time guard) ---
+    implied_from_title: Optional[bool] = Field(
+        default=None,
+        description="True if derived from a title/honorific/alias rather than stated membership",
+    )
+    date_verified: Optional[bool] = Field(
+        default=None,
+        description=(
+            "True ONLY after temporal validation confirmed the membership held in the "
+            "source timeframe. False/None = NOT yet confirmed — must not be asserted as "
+            "fact; weak dedup evidence only."
+        ),
+    )
+    as_of_source_date: Optional[str] = Field(
+        default=None,
+        description="The source document's date/year the implied membership is 'as of'",
+    )
+    source_title: Optional[str] = Field(
+        default=None, description="The title/honorific the membership was implied from"
+    )
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
 class Education(BaseModel):
     """Educational institution attended by a person."""
 
@@ -416,6 +462,14 @@ class BiographicalProfile(BaseModel):
     )
     ranks: list[MilitaryRank] = Field(default_factory=list)
     units_served: list[UnitServed] = Field(default_factory=list)
+    group_affiliations: list[GroupAffiliation] = Field(
+        default_factory=list,
+        description=(
+            "Non-unit group memberships (legislature/state/party/etc), possibly "
+            "concurrent. Title-implied memberships are date-unverified until a "
+            "temporal-validation step confirms them."
+        ),
+    )
     education: list[Education] = Field(default_factory=list)
     military_awards: list[MilitaryAward] = Field(default_factory=list)
     family: Optional[Family] = None

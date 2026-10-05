@@ -284,6 +284,66 @@ def _shared_unit_affiliation(
     return [], 0.0
 
 
+def _person_group_affiliations(person: Dict) -> list:
+    """Civilian group memberships as (group_id, normalized_group, kind, verified)."""
+    bp = person.get("biographical_profile", {}) or {}
+    out = []
+    for a in bp.get("group_affiliations", []) or []:
+        if not isinstance(a, dict):
+            continue
+        gid = (a.get("GroupID") or "").strip() or None
+        name = (a.get("group") or "").strip().lower() or None
+        kind = (a.get("group_kind") or "").strip().lower() or None
+        verified = bool(a.get("date_verified"))
+        if gid or name:
+            out.append((gid, name, kind, verified))
+    return out
+
+
+# Weak base weights by civilian group kind (size-inverse, like echelon). A shared
+# tiny constituency is stronger evidence than a shared national party.
+_GROUP_KIND_WEIGHT = {
+    "state": 0.1,  # a whole state's delegation — weak
+    "party": 0.03,  # a national party — ~noise
+    "legislature": 0.15,  # a chamber — weak
+    "executive": 0.2,
+    "judiciary": 0.2,
+    "civilian_org": 0.15,
+}
+# Date-UNVERIFIED title memberships are discounted hard (point-in-time, unconfirmed).
+_UNVERIFIED_DISCOUNT = 0.25
+
+
+def _shared_group_affiliation(
+    person1: Dict, person2: Dict, cfg
+) -> tuple[list[str], float]:
+    """WEAK positive for a shared CIVILIAN group membership (legislature/state/party).
+    Size-inverse base weight; a date-UNVERIFIED (title-implied, unconfirmed) membership
+    is discounted hard — it must not act as strong same-person evidence until a
+    temporal-validation step confirms it. Returns the strongest shared membership."""
+    a1 = _person_group_affiliations(person1)
+    a2 = _person_group_affiliations(person2)
+    if not a1 or not a2:
+        return [], 0.0
+    best_w = 0.0
+    best_desc = ""
+    for g1, n1, k1, v1 in a1:
+        for g2, n2, k2, v2 in a2:
+            if (g1 and g2 and g1 == g2) or (n1 and n2 and n1 == n2):
+                kind = k1 or k2
+                w = _GROUP_KIND_WEIGHT.get(kind, 0.1)
+                verified = v1 and v2
+                if not verified:
+                    w *= _UNVERIFIED_DISCOUNT  # unconfirmed -> weak
+                if w > best_w:
+                    best_w = w
+                    tag = "verified" if verified else "date-unverified"
+                    best_desc = f"Shared group [{kind or 'org'}, {tag}] (+{w:.3f})"
+    if best_w > 0 and best_desc:
+        return [best_desc], best_w
+    return [], 0.0
+
+
 def _unit_pair_weight(u1, u2, ew: dict, unknown_w: float) -> tuple[float, str]:
     """Weight + description for one unit pair (GroupID match preferred, else
     designation). 0 if no match."""
@@ -846,6 +906,12 @@ def _score_pair(
 
     # WEAK corroborator: shared people-group (unit), echelon-scaled (smaller = stronger).
     r, c = _shared_unit_affiliation(person1, person2, cfg)
+    all_reasons.extend(r)
+    total_confidence += c
+
+    # WEAK corroborator: shared CIVILIAN group (legislature/state/party), size-scaled;
+    # date-unverified title memberships are discounted hard (not strong evidence).
+    r, c = _shared_group_affiliation(person1, person2, cfg)
     all_reasons.extend(r)
     total_confidence += c
 

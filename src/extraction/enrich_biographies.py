@@ -58,6 +58,37 @@ def _source_award_citations(person_data: Dict[str, Any]) -> None:
         logger.warning("Award-citation sourcing skipped: %s", e)
 
 
+def _derive_and_validate_title_memberships(
+    person_data: Dict[str, Any], grok_client
+) -> None:
+    """Derive civilian group memberships from title/aliases (born date-unverified), then
+    OPTIONALLY run the deliberate Grok temporal validation to confirm them. The
+    validation is gated by TITLE_MEMBERSHIP_VALIDATE=true (makes Grok calls). Deriving
+    is always safe (nothing is asserted as fact until verified). Fail-safe."""
+    import os
+
+    try:
+        from src.extraction.title_memberships import (
+            enrich_title_memberships,
+            validate_membership_dates,
+        )
+
+        added = enrich_title_memberships(person_data)
+        if added:
+            logger.info(
+                "  ✓ Derived %d title-implied membership(s) [date-unverified]", added
+            )
+        if (
+            os.getenv("TITLE_MEMBERSHIP_VALIDATE", "false").lower() == "true"
+            and grok_client is not None
+        ):
+            v = validate_membership_dates(person_data, grok_client)
+            if v:
+                logger.info("  ✓ Temporal-validated %d membership(s)", v)
+    except Exception as e:  # noqa: BLE001 - never block the person
+        logger.warning("Title-membership enrichment skipped: %s", e)
+
+
 def _persist_award_errors(person_data: Dict[str, Any], storage) -> None:
     """Write any errored sourcing attempts to the durable error log (fail-safe)."""
     if storage is None:
@@ -928,6 +959,11 @@ def enrich_person_biography(
     # cached) — preferred over the search-engine valor path. Fail-safe: any error
     # leaves awards as-is. See AWARD_SOURCING.md.
     _source_award_citations(person_data)
+
+    # Civilian group memberships implied by title/aliases (House/state/party). Born
+    # date-UNVERIFIED (point-in-time honorific); a deliberate, opt-in Grok temporal
+    # validation confirms them before they are asserted as fact. Fail-safe.
+    _derive_and_validate_title_memberships(person_data, grok_client)
 
     try:
         from src.extraction.people import (
