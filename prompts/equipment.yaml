@@ -31,6 +31,9 @@ schema: |
         "specifications": {},
         "using_unit_name": "2nd Armored Division",
         "using_person_name": null,
+        "supporting_units": [
+          {"unit_name": "IX Tactical Air Command", "support_type": "aircraft", "equipment_name": "P-47 Thunderbolt"}
+        ],
         "performance_notes": "Effective against infantry positions",
         "context": "Used in breakout operations",
         "original_text": "Sherman tanks of the 2nd Armored",
@@ -66,6 +69,11 @@ rules:
     - US unit using its own Shermans: country_of_origin "USA", operating_country "USA", captured false
     If the operator is not stated, leave operating_country null and captured false.
   - Only extract specifically named equipment, not generic references
+  - |
+    SUPPORTING UNITS (combined arms) — for units that supported this equipment, give
+    unit_name, support_type = the SUPPORTING unit's OWN arm (a P-47 wing supporting a
+    tank is "aircraft", NOT the tank's "armor"), and equipment_name if the source names
+    the supporting equipment. Omit if none.
   - |
     QUANTITY — record how many of this equipment the source states for THIS mention:
     - Exact number stated ("10 M4 Shermans at the crossroads"): quantity 10, quantity_text "10".

@@ -109,8 +109,8 @@ SecondWorldWarAsData/
 
 ## Status
 
-✅ Production: Events, Dates, Places, People, Groups, Maps, Supplemental, Dedup, Batch Mode, AWS/Local  
-⚠️ Experimental: Weather, Equipment, Logistics, Casualties
+✅ Production: Events, Dates, Places, People, Groups, Equipment, Maps, Supplemental, Dedup, Batch Mode, AWS/Local  
+⚠️ Experimental: Weather, Logistics, Casualties
 
 ---
 

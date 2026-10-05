@@ -44,6 +44,19 @@ class SupportingUnit(BaseModel):
     equipment_name: Optional[str] = Field(default=None, description="Equipment name")
 
 
+class SupportingUnitInput(BaseModel):
+    """LLM-provided supporting unit (resolved to IDs by _link_supporting_units)."""
+
+    unit_name: Optional[str] = Field(default=None, description="Supporting unit name")
+    support_type: Optional[str] = Field(
+        default=None,
+        description="The supporting unit's OWN arm (aircraft/artillery/armor/…)",
+    )
+    equipment_name: Optional[str] = Field(
+        default=None, description="Equipment the supporting unit used (if named)"
+    )
+
+
 class PerformanceNotes(BaseModel):
     """Performance observations."""
 
@@ -246,9 +259,13 @@ class EquipmentExtraction(BaseModel):
     paragraph_numbers: List[int] = Field(
         default_factory=list, description="Paragraph numbers where mentioned"
     )
-    supporting_unit_names: List[str] = Field(
+    supporting_units: List["SupportingUnitInput"] = Field(
         default_factory=list,
-        description="Names of supporting units (e.g., air support, artillery)",
+        description=(
+            "Supporting units in combined-arms ops (e.g. air support, artillery). Each "
+            "has unit_name, support_type (the SUPPORTING unit's own arm — aircraft/"
+            "artillery/armor — NOT this equipment's type), and the equipment it used."
+        ),
     )
 
     @field_validator("specifications", mode="before")
@@ -1527,6 +1544,7 @@ def _build_mention(
     supporting_units: List[Dict[str, Any]],
     dates_index: Dict[str, Dict[str, str]],
     output_root: Path,
+    places_index: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
     """Build equipment mention with all metadata."""
     sub_event = _find_sub_event(event_data, eq.paragraph_numbers)
@@ -1541,7 +1559,31 @@ def _build_mention(
     _add_metadata_to_mention(mention, event_data)
     _add_event_names_to_mention(mention, event_data)
 
-    # Add equipment-specific fields
+    _populate_mention_fields(mention, eq, sub_event, places_index)
+
+    # Link to date
+    _link_date_to_mention(mention, dates_index, output_root)
+
+    # Add linked entities
+    if using_unit:
+        mention["using_unit"] = using_unit
+    if using_person:
+        mention["using_person"] = using_person
+    if supporting_units:
+        mention["supporting_units"] = supporting_units
+    if performance_notes:
+        mention["performance_notes"] = performance_notes
+
+    return mention
+
+
+def _populate_mention_fields(
+    mention: Dict[str, Any],
+    eq: EquipmentExtraction,
+    sub_event: Dict[str, Any],
+    places_index: Optional[Dict[str, str]],
+) -> None:
+    """Populate the equipment-specific per-mention fields (quantity/operator/place/…)."""
     if eq.paragraph_numbers:
         mention["paragraph_numbers"] = eq.paragraph_numbers
     if eq.variant_mentioned:
@@ -1560,33 +1602,29 @@ def _build_mention(
         mention["quantity"] = eq.quantity
     if eq.quantity_text:
         mention["quantity_text"] = eq.quantity_text
-    # Per-mention place (strongly preferred, not required). Carry the stated name and
-    # denormalize a PlaceID from the sub-event's place link when unambiguous (one place),
-    # mirroring how DateID is denormalized onto the mention.
-    if eq.place_name:
-        mention["place_name"] = eq.place_name
-    sub_places = sub_event.get("places") or []
-    if len(sub_places) == 1:
-        mention["PlaceID"] = sub_places[0]
-    # How the source asserts presence (narrative | media_narration). Only asserting
-    # mentions are extracted; ambient/stock footage is dropped upstream (prompt rule).
+    _resolve_mention_place(mention, eq, sub_event, places_index)
     if eq.assertion_source:
         mention["assertion_source"] = eq.assertion_source
 
-    # Link to date
-    _link_date_to_mention(mention, dates_index, output_root)
 
-    # Add linked entities
-    if using_unit:
-        mention["using_unit"] = using_unit
-    if using_person:
-        mention["using_person"] = using_person
-    if supporting_units:
-        mention["supporting_units"] = supporting_units
-    if performance_notes:
-        mention["performance_notes"] = performance_notes
-
-    return mention
+def _resolve_mention_place(
+    mention: Dict[str, Any],
+    eq: EquipmentExtraction,
+    sub_event: Dict[str, Any],
+    places_index: Optional[Dict[str, str]],
+) -> None:
+    """A mention is ONE assertion about ONE place. Resolve the mention's OWN stated
+    place_name to a single PlaceID (authoritative — what the source said); only when no
+    place_name was stated, fall back to the sub-event's place if it is a single one."""
+    if eq.place_name:
+        mention["place_name"] = eq.place_name
+        place_id = (places_index or {}).get(eq.place_name.lower())
+        if place_id:
+            mention["PlaceID"] = place_id
+        return
+    sub_places = sub_event.get("places") or []
+    if len(sub_places) == 1:
+        mention["PlaceID"] = sub_places[0]
 
 
 def _build_equipment_data(eq: EquipmentExtraction) -> Dict[str, Any]:
@@ -1626,6 +1664,7 @@ def _process_equipment_item(
     grok_client: GrokClient,
     enable_enrichment: bool = False,
     verify_media_with_vision: bool = True,
+    places_index: Optional[Dict[str, str]] = None,
 ) -> Optional[Path]:
     """Process a single equipment item. Returns equipment file path or None."""
     try:
@@ -1641,7 +1680,7 @@ def _process_equipment_item(
     using_person = _link_entity(eq.using_person_name, people_index, "person")
     performance_notes = _build_performance_notes(eq)
     supporting_units = _link_supporting_units(
-        eq.supporting_unit_names, people_groups_index, eq.category
+        eq.supporting_units, people_groups_index, eq.category, equipment_index
     )
 
     # Build mention and equipment data
@@ -1654,6 +1693,7 @@ def _process_equipment_item(
         supporting_units,
         dates_index,
         output_root,
+        places_index,
     )
     equipment_data = _build_equipment_data(eq)
 
@@ -1709,25 +1749,53 @@ def _finalize_extraction(
 
 
 def _link_supporting_units(
-    supporting_unit_names: List[str],
+    supporting_units_in: List["SupportingUnitInput"],
     people_groups_index: Dict[str, str],
-    category: str,
+    equipment_category: str,
+    equipment_index: Optional[Dict[str, Path]] = None,
 ) -> List[Dict[str, Any]]:
-    """Link supporting units by name to ID."""
-    supporting_units = []
-    for unit_name in supporting_unit_names:
-        group_id = people_groups_index.get(unit_name)
-        support_unit = {
-            "support_type": category,  # Use equipment category as support type
-            "unit_name": unit_name,
+    """Link supporting units to IDs.
+
+    - support_type is the SUPPORTING unit's OWN arm (e.g. a P-47 wing supporting a tank
+      is 'aircraft'), NOT the parent equipment's category. Falls back to the parent
+      category only if the supporting unit's type is unknown.
+    - Resolves PeopleGroupID by unit_name and EquipmentID by equipment_name.
+    """
+    linked: List[Dict[str, Any]] = []
+    for su in supporting_units_in:
+        support: Dict[str, Any] = {
+            "support_type": su.support_type or equipment_category,
         }
-        if group_id:
-            support_unit["PeopleGroupID"] = group_id
-            logger.debug("Linked supporting unit '%s' to %s", unit_name, group_id)
-        else:
-            logger.debug("Supporting unit not found: %s", unit_name)
-        supporting_units.append(support_unit)
-    return supporting_units
+        if su.unit_name:
+            support["unit_name"] = su.unit_name
+            group_id = people_groups_index.get(su.unit_name)
+            if group_id:
+                support["PeopleGroupID"] = group_id
+            else:
+                logger.debug("Supporting unit not found: %s", su.unit_name)
+        if su.equipment_name:
+            support["equipment_name"] = su.equipment_name
+            eq_id = _resolve_support_equipment_id(su.equipment_name, equipment_index)
+            if eq_id:
+                support["EquipmentID"] = eq_id
+        linked.append(support)
+    return linked
+
+
+def _resolve_support_equipment_id(
+    name: str, equipment_index: Optional[Dict[str, Path]]
+) -> Optional[str]:
+    """Resolve a supporting unit's equipment name to an EquipmentID via the index."""
+    if not equipment_index:
+        return None
+    path = equipment_index.get(name)
+    if not path:
+        return None
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f).get("EquipmentID")
+    except Exception:  # nosec B110 - best-effort link
+        return None
 
 
 def _load_processed_registry(output_dir: Path) -> Dict[str, bool]:
@@ -1894,6 +1962,11 @@ def extract_equipment_from_event(
             output_root
         )
         equipment_index = load_equipment_index(output_dir)
+        # Places name -> PlaceID index: a mention resolves its own place_name to a
+        # single PlaceID (reuses the shared build_name_index pattern).
+        from src.utils.entity_index import build_name_index
+
+        places_index = build_name_index(output_root / "places", "PlaceID", "name")
     except Exception as e:
         logger.error("Failed to load indices: %s", e)
         return []
@@ -1921,6 +1994,7 @@ def extract_equipment_from_event(
                 grok_client,
                 enable_enrichment,
                 verify_media_with_vision,
+                places_index,
             )
         )
     ]

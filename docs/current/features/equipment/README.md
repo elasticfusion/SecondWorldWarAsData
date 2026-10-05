@@ -5,8 +5,10 @@ equipment mentioned in WWII sources. Equipment is a **single record per equipmen
 type** with an **`event_mentions`** array (one entry per mention in the corpus),
 mirroring the people/people_groups pattern.
 
-**Status:** ⚠️ Experimental (per the project README). Core extraction, dedup, linking,
-and media are implemented and pipeline-wired; the richer analytics in the proposal are
+**Status:** ✅ Production. Extraction, origin-aware two-stage dedup, entity linking
+(people/people_groups/dates/places), per-mention quantity/place/operator with source
+traceability, media, enrichment, and source-recheck are implemented and pipeline-wired.
+The richer analytics in the proposal (comparisons, timeline, doctrine, …) remain
 aspirational.
 
 ## Code
