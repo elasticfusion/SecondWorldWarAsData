@@ -211,3 +211,5 @@ grep -l "EventID.*01ABC123" output/people/*.json
 4. Build query tools for common use cases
 
 - [Group dedup rules (for review)](GROUP_DEDUP_RULES_REVIEW.md) — consolidated people-group dedup rules
+
+- [People-groups logic (for review)](PEOPLE_GROUPS_LOGIC_REVIEW.md) — extraction/enrichment/linking/dedup + gaps
