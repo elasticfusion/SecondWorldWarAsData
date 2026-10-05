@@ -77,3 +77,21 @@ def test_group_nationality_veto():
     assert not fdg._group_nationality_conflict(
         g("2nd Division", "USA"), g("2nd Infantry Division", "USA")
     )
+
+
+def test_service_branch_veto_pacific():
+    # Service (armed service) mismatch is an absolute veto, like nationality.
+    assert not _m("1st Marine Division", "1st Division")  # USMC vs ARMY
+    assert not _m("1st Marine Division", "1st Infantry Division")
+    assert _m("1st Marine Division", "1st Marine Division")  # same service -> ok
+    # a Marine unit is NOT defaulted to the Army infantry arm
+    k = derive_unit_key("1st Marine Division")
+    assert k.service == "USMC" and k.arm is None
+    # Navy / air services resolve too
+    assert derive_unit_key("Seventh Fleet").service == "USN"
+    assert derive_unit_key("8th Air Force").service == "USAAF"
+
+
+def test_army_is_default_service_with_infantry_arm():
+    k = derive_unit_key("9th Division")
+    assert k.service == "ARMY" and k.arm == "infantry"

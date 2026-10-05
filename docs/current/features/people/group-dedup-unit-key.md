@@ -21,7 +21,7 @@ Config: `config.yaml` → `dedup.groups`. Implementation: `src/dedup/unit_key.py
 - **numbers** — the unit's numeric designator(s). Arabic, ordinals ("Ninth"→9), ordinal
   suffixes ("2d"/"2nd"→2), and roman numerals (kept distinct: `VII Corps` ≠ `7th Corps`).
 - **branch** — infantry / armored / cavalry / airborne / artillery / engineer / … .
-  **INFANTRY IS THE DEFAULT when no branch word is present** ("9th Division" ⇒ infantry).
+  **INFANTRY (combat arm) IS THE DEFAULT only when the SERVICE is Army** ("9th Division" ⇒ infantry).
 - **echelon** — squad / platoon / company / battalion / regiment / brigade / division /
   corps / army / … . `None` when unspecified.
 
@@ -34,7 +34,8 @@ battalion, etc.
 | Field | Rule |
 |---|---|
 | **numbers** | MUST match (and at least one number present). |
-| **branch** | Absent → defaults to `infantry`; **branch mismatch ⇒ VETO**. |
+| **service** | Armed SERVICE (Army / AAF / Navy / Marines / Coast Guard), from the name. **Mismatch ⇒ ABSOLUTE VETO** (1st Marine Division ≠ 1st Infantry Division). Default ARMY. |
+| **arm (combat arm)** | Absent → defaults to `infantry`; **branch mismatch ⇒ VETO**. |
 | **echelon** | Absent → permissive (no veto); **present on both AND different ⇒ VETO**. |
 | **nationality** | From the stored `nationality` field (or a nationality word in the name); **both known AND different ⇒ VETO** ('2nd Division (Canadian)' ≠ '2nd Division (US)'); unknown on either side is permissive. |
 

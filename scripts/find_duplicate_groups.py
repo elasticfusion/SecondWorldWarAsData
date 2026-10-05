@@ -301,8 +301,8 @@ def _find_group_cluster(i, g1, groups, seen, **kwargs):
         if not _numbers_match(g1["name"], g2["name"]):
             continue
 
-        # PRIMARY: canonical unit key (number + branch[infantry default] + echelon).
-        # A key match clusters; a key VETO (branch/echelon mismatch) blocks the pair
+        # PRIMARY: canonical unit key (number + service + arm[infantry default] + echelon).
+        # A key match clusters; a key VETO (service/arm/echelon mismatch) blocks the pair
         # even if the raw strings look similar ("9th Armored" vs "9th Division") AND
         # even if they are adjacent in the text (a veto always wins over proximity).
         key2 = derive_unit_key(g2["name"])
