@@ -2238,11 +2238,20 @@ def extract_equipment_from_event(
             output_root
         )
         equipment_index = load_equipment_index(output_dir)
-        # Places name -> PlaceID index: a mention resolves its own place_name to a
-        # single PlaceID (reuses the shared build_name_index pattern).
-        from src.utils.entity_index import build_name_index
+        # Places name -> PlaceID index. Use the places module's OWN alias-aware index
+        # (keys on current_name AND every alias) rather than a bare 'name' lookup, so a
+        # mention's place_name resolves even when the source uses an alias/variant. Falls
+        # back to the generic index if the places module is unavailable.
+        try:
+            from src.extraction.places import _build_place_name_index
 
-        places_index = build_name_index(output_root / "places", "PlaceID", "name")
+            places_index, _ = _build_place_name_index(output_root / "places")
+        except Exception:  # noqa: BLE001 - fall back to the generic name index
+            from src.utils.entity_index import build_name_index
+
+            places_index = build_name_index(
+                output_root / "places", "PlaceID", "current_name"
+            )
     except Exception as e:
         logger.error("Failed to load indices: %s", e)
         return []

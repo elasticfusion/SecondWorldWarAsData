@@ -84,5 +84,5 @@ exclude_lines = [
 target-version = ["py312"]
 
 [tool.vulture]
-exclude = ["scripts/archive", "ecs_modules", "src/extraction/equipment_ext", ".venv"]
+exclude = ["scripts/archive", "ecs_modules", ".venv"]
 min_confidence = 80

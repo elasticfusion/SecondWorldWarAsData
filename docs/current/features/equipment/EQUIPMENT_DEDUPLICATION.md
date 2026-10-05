@@ -11,6 +11,56 @@ Equipment deduplication has been implemented to consolidate multiple mentions of
 
 ---
 
+## How deduplication works (authoritative)
+
+Equipment dedup runs in **two stages**, both living in **`src/extraction/equipment.py`**
+(the detection scorer is `scripts/find_duplicate_equipment.py`). There is **one** live
+implementation — a former duplicate copy under `src/extraction/equipment_ext/` was dead
+(no importers) and has been **deleted** to prevent drift.
+
+### Stage 1 — ingest-time merge (one record per type, as mentions arrive)
+
+`merge_or_create_equipment(equipment_data, mention, dir, index, …)` decides, for each
+extracted equipment item, whether it is a NEW type or another mention of an existing one:
+
+1. **Match** (`_find_matching_equipment`): try `technical_identifier` → exact
+   `common_name` → **fuzzy** (`_fuzzy_match_equipment`, `SequenceMatcher ≥ 0.80`, also
+   checking `alternate_names`).
+2. **Match found → `_merge_into_existing`**: append the mention (deduped by
+   `EventID:Sub_eventID`), merge record fields (`alternate_names`, `variants`,
+   `related_equipment` accumulate+dedup; others latest-wins), stamp `_last_updated`, and
+   **retry enrichment** if the record was never successfully enriched. The matched record
+   is **not** re-enriched if already `enriched`.
+3. **No match → `_create_new_equipment`**: assign `EquipmentID`, attach the first mention,
+   and run **enrichment-on-identity** (specific records only; see README flow).
+
+### Stage 2 — detection-time scoring (catch near-duplicate records post-hoc)
+
+Wired into `ecs_entrypoint._run_dedup_detection` → `scripts/find_duplicate_equipment.py`:
+
+1. **Normalize** names (caliber/mm/cm) and **alias-expand** via
+   `config/equipment_aliases.yaml` (Sherman→M4, 88→88mm Flak 36, …).
+2. **Score** a pair (`_score_pair`): best name-similarity (≥0.85 strong, ≥0.70 weak) +
+   name-contained + same-category.
+3. **Vetoes** (hard rejects): leading-number mismatch (105 vs 155); and
+   **`country_of_origin` mismatch** — the ONLY country veto, and it keys on **origin**
+   (design/manufacture identity), **never the operator**, so British-used US Shermans and
+   German-captured US gear stay one record (relaxed by the structured `captured` flag via
+   `_any_captured`).
+4. A **merge tool** (`scripts/merge_equipment.py`) applies confirmed merges.
+
+### Decision rule summary
+
+- Same `technical_identifier` or exact/fuzzy name → **same record** (merge the mention).
+- Inline sub-designations (M4A1, "up-gunned M4") → stay a `variants[]` entry, **not** a
+  separate record.
+- Different `country_of_origin` (US M4 vs German Panther) → **distinct records** (veto),
+  unless one side is flagged `captured`.
+- Operator / quantity / place / date differences → **never** split a record; they are
+  per-mention facts, and conflicts across mentions are kept (each traceable to its source).
+
+---
+
 ## Country model: origin (identity) vs. operator (per-mention)  — schema 2.7
 
 Two distinct axes, deliberately separated:

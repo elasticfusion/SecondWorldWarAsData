@@ -66,27 +66,29 @@ Enrichment-on-identity (follows identity resolution)
 
 | Concern | Module |
 |---|---|
-| Extraction + mention building + **ingest-time merge (LIVE)** | `src/extraction/equipment.py` |
+| Extraction, mention building, **ingest-time merge, enrichment, media/vision (ALL LIVE)** | `src/extraction/equipment.py` |
+| Dedup — how it works (spec) | [EQUIPMENT_DEDUPLICATION.md](EQUIPMENT_DEDUPLICATION.md) |
 | Dedup (detection scoring) | `scripts/find_duplicate_equipment.py` |
 | Merge tool | `scripts/merge_equipment.py`, `scripts/merge_equipment_dupes.py` |
-| Media | `src/extraction/equipment_ext/media.py`, `scripts/backfill_equipment_media.py` |
-| Enrichment | `src/extraction/equipment_ext/enrichment.py`, `src/enrichment/equipment_wikipedia.py` |
+| Media backfill | `scripts/backfill_equipment_media.py` |
+| Wikipedia enrichment | `src/enrichment/equipment_wikipedia.py` |
+| Enrichment staleness gate | `src/enrichment/enrichment_gate.py` |
 | Source-recheck gap-fill | `src/extraction/equipment_source_recheck.py` (uses the reusable `src/extraction/source_recheck.py`) |
 | **Enforced output schema (source of truth)** | `src/schemas/equipment_output.py` |
 | Alias table | `config/equipment_aliases.yaml` |
 | Prompt | `prompts/equipment.yaml` |
-| ⚠️ `src/extraction/equipment_ext/dedup.py` | **DEAD/duplicate** — a stale copy of `merge_or_create_equipment`/`_merge_equipment_fields` that nothing imports; the live merge is the `equipment.py` copy. See Gaps. |
+
+> Note: a former `src/extraction/equipment_ext/` sub-package held dead duplicate copies of
+> the merge/enrichment/media code (no importers). It was **deleted** — `equipment.py` is
+> the single live implementation.
 
 ## Known gaps
 
-- **Dead duplicate dedup module.** `src/extraction/equipment_ext/dedup.py` duplicates
-  `merge_or_create_equipment` + `_merge_equipment_fields` but has **no importers**; the
-  live path uses the `equipment.py` copies. The two can drift (e.g. the `related_equipment`
-  merge was added only to the live copy). **Action:** delete `equipment_ext/dedup.py` or
-  make it the single source and import it. (Not done yet — mid-feature.)
-- **PlaceID resolution is exact-name only.** A mention's `place_name` resolves to a
-  PlaceID only on an exact (lowercased) match in the places index; near-misses leave
-  `place_name` set but `PlaceID` null. No fuzzy place resolution yet.
+- **PlaceID resolution is alias-aware but not fuzzy.** A mention's `place_name` resolves
+  to a PlaceID via the places module's own index (`places._build_place_name_index`, keyed
+  on `current_name` **and every alias**), so alias/variant names now resolve. It is still
+  exact-match (lowercased) — typos / partial names / "near Cherbourg" vs "Cherbourg" won't
+  match and leave `place_name` set with `PlaceID` null. No fuzzy/geocoded resolution yet.
 - **`related_equipment` auto-create now enriches on identity.** Auto-created related
   records (e.g. "M26 Pershing" from a successor link) are enriched on creation when the
   name is a specific identity — Grokipedia/Wikipedia text/specs/URLs + a canonical
