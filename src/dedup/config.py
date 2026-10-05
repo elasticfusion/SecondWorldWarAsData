@@ -61,6 +61,33 @@ _DEFAULTS: Dict[str, Any] = {
         "near_penalty": -0.2,  # different rank-set + near proximity
         "loose_penalty": 0.0,  # different rank-set + far apart -> neutral
     },
+    # Shared people-group (unit) affiliation = a WEAK positive whose strength scales
+    # INVERSELY with unit size (echelon). Smaller unit shared -> stronger (few people
+    # share a company); regiment/division -> super-weak/noise. Matched on resolved
+    # GroupID first, then normalized designation. Tiny weights: a NUDGE for a candidate
+    # that already has name evidence — never decisive on its own.
+    "shared_unit": {
+        "enabled": True,
+        "echelon_weights": {
+            "squad": 0.6,
+            "section": 0.6,
+            "platoon": 0.5,
+            "company": 0.4,
+            "battery": 0.4,
+            "squadron": 0.4,
+            "battalion": 0.25,
+            "regiment": 0.1,
+            "group": 0.1,
+            "brigade": 0.08,
+            "division": 0.03,
+            "wing": 0.03,
+            "corps": 0.0,
+            "army": 0.0,
+            "fleet": 0.0,
+            "command": 0.0,
+        },
+        "unknown_echelon_weight": 0.1,  # shared unit but echelon not classified
+    },
 }
 
 
@@ -75,6 +102,7 @@ class DedupConfig:
     commonness: Dict[str, Any]
     surname_frequency: Dict[str, Any] = field(default_factory=dict)
     rank_proximity: Dict[str, Any] = field(default_factory=dict)
+    shared_unit: Dict[str, Any] = field(default_factory=dict)
 
     def weight(self, key: str) -> float:
         return float(self.weights.get(key, _DEFAULTS["weights"].get(key, 0.0)))
@@ -133,7 +161,32 @@ def load_dedup_config(config: Dict[str, Any] | None = None) -> DedupConfig:
         rank_proximity=_merge(
             people.get("rank_proximity", {}), _DEFAULTS["rank_proximity"]
         ),
+        shared_unit=_merge_shared_unit(people.get("shared_unit", {})),
     )
+
+
+def _merge_shared_unit(section: Dict[str, Any]) -> Dict[str, Any]:
+    """Merge shared_unit config over defaults, preserving the nested echelon_weights
+    map (a provided map replaces the default map wholesale; absent -> default)."""
+    out = {
+        "enabled": _DEFAULTS["shared_unit"]["enabled"],
+        "echelon_weights": dict(_DEFAULTS["shared_unit"]["echelon_weights"]),
+        "unknown_echelon_weight": _DEFAULTS["shared_unit"]["unknown_echelon_weight"],
+    }
+    if isinstance(section, dict):
+        if "enabled" in section:
+            out["enabled"] = bool(section["enabled"])
+        if isinstance(section.get("echelon_weights"), dict):
+            out["echelon_weights"] = {
+                str(k).lower(): _num(v, 0.0)
+                for k, v in section["echelon_weights"].items()
+            }
+        if "unknown_echelon_weight" in section:
+            out["unknown_echelon_weight"] = _num(
+                section["unknown_echelon_weight"],
+                _DEFAULTS["shared_unit"]["unknown_echelon_weight"],
+            )
+    return out
 
 
 def default_dedup_config() -> DedupConfig:

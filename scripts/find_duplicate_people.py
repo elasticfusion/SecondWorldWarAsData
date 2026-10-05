@@ -240,6 +240,69 @@ def _person_nat(person: Dict) -> str:
     )
 
 
+def _person_units(person: Dict) -> list:
+    """Units a person served in, as (group_id, normalized_designation, echelon) tuples."""
+    bp = person.get("biographical_profile", {}) or {}
+    out = []
+    for u in bp.get("units_served", []) or []:
+        if not isinstance(u, dict):
+            continue
+        gid = (u.get("GroupID") or "").strip() or None
+        desig = (u.get("designation") or u.get("unit") or "").strip().lower() or None
+        ech = (u.get("echelon") or "").strip().lower() or None
+        if gid or desig:
+            out.append((gid, desig, ech))
+    return out
+
+
+def _shared_unit_affiliation(
+    person1: Dict, person2: Dict, cfg
+) -> tuple[list[str], float]:
+    """WEAK positive for a shared people-group (unit). Strength scales INVERSELY with
+    unit size via echelon (company > battalion > regiment > division ~ noise). Matches
+    on resolved GroupID first, then normalized designation. Returns the weight of the
+    STRONGEST (smallest-echelon) shared unit — a nudge, never decisive."""
+    su = cfg.shared_unit
+    if not su.get("enabled", True):
+        return [], 0.0
+    units1 = _person_units(person1)
+    units2 = _person_units(person2)
+    if not units1 or not units2:
+        return [], 0.0
+    ew = su.get("echelon_weights", {})
+    unknown_w = float(su.get("unknown_echelon_weight", 0.1))
+
+    best_w = 0.0
+    best_desc = ""
+    for u1 in units1:
+        for u2 in units2:
+            w, desc = _unit_pair_weight(u1, u2, ew, unknown_w)
+            if w > best_w:
+                best_w, best_desc = w, desc
+    if best_w > 0 and best_desc:
+        return [best_desc], best_w
+    return [], 0.0
+
+
+def _unit_pair_weight(u1, u2, ew: dict, unknown_w: float) -> tuple[float, str]:
+    """Weight + description for one unit pair (GroupID match preferred, else
+    designation). 0 if no match."""
+    g1, d1, e1 = u1
+    g2, d2, e2 = u2
+    if g1 and g2 and g1 == g2:
+        matched_by = "GroupID"
+    elif d1 and d2 and d1 == d2:
+        matched_by = "designation"
+    else:
+        return 0.0, ""
+    echelon = e1 or e2  # size proxy; may be None
+    w = float(ew.get(echelon, unknown_w)) if echelon else unknown_w
+    return (
+        w,
+        f"Shared unit [{echelon or 'unknown echelon'}] via {matched_by} (+{w:.2f})",
+    )
+
+
 # People with more than this many event_mentions are considered high-frequency.
 # For these, name-similarity alone is not enough — proximity or biographical
 # evidence is required to flag a duplicate.
@@ -780,6 +843,11 @@ def _score_pair(
         )
         all_reasons.extend(r)
         total_confidence += c
+
+    # WEAK corroborator: shared people-group (unit), echelon-scaled (smaller = stronger).
+    r, c = _shared_unit_affiliation(person1, person2, cfg)
+    all_reasons.extend(r)
+    total_confidence += c
 
     return all_reasons, total_confidence
 

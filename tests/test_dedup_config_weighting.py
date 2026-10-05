@@ -120,3 +120,71 @@ def test_surname_rarity_preferred_over_corpus_commonness():
     cfg = load_dedup_config(None)
     # A US Kowalski match gets boosted even if 'kowalski' were corpus-common.
     assert surname_rarity_multiplier(cfg, "Kowalski", "USA") > 1.0
+
+
+def _person_units(units):
+    return {"biographical_profile": {"units_served": units}}
+
+
+def test_shared_unit_echelon_inverse_strength():
+    from src.dedup.config import load_dedup_config
+
+    cfg = load_dedup_config(None)
+
+    def shared(ech):
+        u = [{"unit": "X", "designation": "x", "echelon": ech}]
+        return fdp._shared_unit_affiliation(_person_units(u), _person_units(u), cfg)[1]
+
+    # smaller unit = stronger; regiment weak; corps/army = noise(0)
+    assert (
+        shared("squad") > shared("company") > shared("battalion") > shared("regiment")
+    )
+    assert shared("regiment") > shared("division")
+    assert shared("corps") == 0.0
+    # all are WEAK nudges (never decisive)
+    assert shared("squad") < 1.0
+
+
+def test_shared_unit_groupid_preferred_then_designation():
+    from src.dedup.config import load_dedup_config
+
+    cfg = load_dedup_config(None)
+    # GroupID match
+    a = _person_units([{"unit": "X", "GroupID": "01G", "echelon": "company"}])
+    b = _person_units([{"unit": "Y", "GroupID": "01G", "echelon": "company"}])
+    reasons, score = fdp._shared_unit_affiliation(a, b, cfg)
+    assert score > 0 and "GroupID" in reasons[0]
+    # designation fallback (no GroupID)
+    c = _person_units(
+        [{"unit": "502nd PIR", "designation": "502nd pir", "echelon": "regiment"}]
+    )
+    d = _person_units(
+        [{"unit": "502 PIR", "designation": "502nd pir", "echelon": "regiment"}]
+    )
+    r2, s2 = fdp._shared_unit_affiliation(c, d, cfg)
+    assert s2 > 0 and "designation" in r2[0]
+
+
+def test_no_shared_unit_is_zero():
+    from src.dedup.config import load_dedup_config
+
+    cfg = load_dedup_config(None)
+    a = _person_units([{"unit": "A", "designation": "a", "echelon": "company"}])
+    b = _person_units([{"unit": "B", "designation": "b", "echelon": "company"}])
+    assert fdp._shared_unit_affiliation(a, b, cfg) == ([], 0.0)
+    # one has no units
+    assert fdp._shared_unit_affiliation(a, {"biographical_profile": {}}, cfg) == (
+        [],
+        0.0,
+    )
+
+
+def test_shared_unit_disabled_via_config():
+    from src.dedup.config import load_dedup_config
+
+    cfg = load_dedup_config({"dedup": {"people": {"shared_unit": {"enabled": False}}}})
+    u = [{"unit": "X", "designation": "x", "echelon": "squad"}]
+    assert fdp._shared_unit_affiliation(_person_units(u), _person_units(u), cfg) == (
+        [],
+        0.0,
+    )

@@ -78,6 +78,33 @@ never vetoes** (unlike the conflicting-initial case, which is a hard author sign
 A surname that dominates a corpus (a Patton biography) gives co-mentions a modest boost,
 but only with a **compatible** first name/initial — never bridging a conflict.
 
+### Shared unit affiliation — a WEAK positive, strength INVERSE to unit size
+Two same-surname people in the **same people-group (unit)** is same-person evidence, but
+weak — and its strength scales **inversely with the unit's size (echelon)**, because few
+people share a small unit while thousands share a large one
+(`_shared_unit_affiliation`, config `dedup.people.shared_unit`):
+
+| Echelon | Default weight | Note |
+|---|---|---|
+| squad / section | 0.6 | smallest unit → strongest signal |
+| platoon | 0.5 | |
+| company / battery / squadron | 0.4 | |
+| battalion | 0.25 | |
+| regiment / group | 0.1 | "Smith in the 110th Infantry Regiment" — weak |
+| brigade | 0.08 | |
+| division / wing | 0.03 | ≈ noise |
+| corps / army / fleet / command | 0.0 | too large to be evidence |
+| (echelon unknown) | 0.1 | shared unit, echelon not classified |
+
+Subtleties:
+- **Matched on resolved `GroupID` first** (authoritative — same actual unit), falling back
+  to **normalized `designation`** when GroupID isn't resolved yet ("502 PIR" ↔ "502nd PIR").
+- Returns the weight of the **strongest (smallest-echelon)** shared unit.
+- A **weak corroborator only** — all weights are small nudges (< 1.0); it never carries a
+  merge on its own, it just reinforces a candidate that already has name evidence. Example:
+  "Smith in the 502 PIR" is super-weak (0.1) — not zero, but highly unlikely to be
+  decisive, exactly as intended.
+
 ---
 
 ## The surname SUGGESTION report (`output/people/surname_frequency_suggestions.json`)
