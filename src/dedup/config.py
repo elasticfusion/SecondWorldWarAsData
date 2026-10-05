@@ -9,7 +9,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict
+from functools import lru_cache
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,27 @@ _DEFAULTS: Dict[str, Any] = {
     "conflicting_middle_initial_weight": -5.0,
     "frequency": {"enabled": True, "dominant_surname_boost": 0.3},
     "commonness": {"enabled": True, "common_surname_damping": 0.5},
+    # Nationality-aware surname rarity prior (scales bare-surname match evidence by how
+    # rare the surname is in the person's nationality). Falls back to corpus-relative
+    # commonness when nationality or a table entry is absent.
+    "surname_frequency": {
+        "enabled": True,
+        "path": "data/surname_frequency.yaml",
+        # multipliers applied to the surname-match contribution by rarity band
+        "rare_multiplier": 1.5,
+        "uncommon_multiplier": 1.1,
+        "common_multiplier": 0.6,
+        "very_common_multiplier": 0.4,
+    },
+    # Rank difference interacts with proximity: a DIFFERENT rank-set in tight proximity
+    # is a mild negative (likely two people seen together); across wide separation it is
+    # near-neutral (promotion over time is plausible). Dampen, never veto.
+    "rank_proximity": {
+        "enabled": True,
+        "tight_penalty": -0.6,  # different rank-set + tight proximity
+        "near_penalty": -0.2,  # different rank-set + near proximity
+        "loose_penalty": 0.0,  # different rank-set + far apart -> neutral
+    },
 }
 
 
@@ -51,6 +73,8 @@ class DedupConfig:
     conflicting_middle_initial_weight: float
     frequency: Dict[str, Any]
     commonness: Dict[str, Any]
+    surname_frequency: Dict[str, Any] = field(default_factory=dict)
+    rank_proximity: Dict[str, Any] = field(default_factory=dict)
 
     def weight(self, key: str) -> float:
         return float(self.weights.get(key, _DEFAULTS["weights"].get(key, 0.0)))
@@ -103,8 +127,70 @@ def load_dedup_config(config: Dict[str, Any] | None = None) -> DedupConfig:
         ),
         frequency=_merge(people.get("frequency", {}), _DEFAULTS["frequency"]),
         commonness=_merge(people.get("commonness", {}), _DEFAULTS["commonness"]),
+        surname_frequency=_merge(
+            people.get("surname_frequency", {}), _DEFAULTS["surname_frequency"]
+        ),
+        rank_proximity=_merge(
+            people.get("rank_proximity", {}), _DEFAULTS["rank_proximity"]
+        ),
     )
 
 
 def default_dedup_config() -> DedupConfig:
     return load_dedup_config(None)
+
+
+# ---- Nationality-aware surname-frequency table ----
+_RARITY_MULT_KEY = {
+    "rare": "rare_multiplier",
+    "uncommon": "uncommon_multiplier",
+    "common": "common_multiplier",
+    "very_common": "very_common_multiplier",
+}
+
+
+@lru_cache(maxsize=4)
+def _load_surname_table(path: str) -> Dict[str, Dict[str, str]]:
+    """Load the curated nationality->surname->rarity table. Returns {} on any error
+    (missing file / parse error) so the prior degrades gracefully to corpus commonness.
+    """
+    try:
+        import yaml
+
+        from pathlib import Path
+
+        p = Path(path)
+        if not p.is_file():
+            return {}
+        data = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+        raw = data.get("surnames", {}) or {}
+        # normalize: upper nationality keys, lower surnames
+        out: Dict[str, Dict[str, str]] = {}
+        for nat, entries in raw.items():
+            if isinstance(entries, dict):
+                out[str(nat).upper()] = {
+                    str(s).lower(): str(band).lower() for s, band in entries.items()
+                }
+        return out
+    except Exception as e:  # noqa: BLE001
+        logger.warning("surname-frequency table load failed (%s): %s", path, e)
+        return {}
+
+
+def surname_rarity_multiplier(
+    cfg: DedupConfig, surname: str, nationality: Optional[str]
+) -> Optional[float]:
+    """Multiplier for a bare-surname match given the person's nationality, or None when
+    the prior can't apply (disabled / no nationality / surname not in the table) — the
+    caller then falls back to corpus-relative commonness.
+
+    Rare surname in that nationality -> >1 (boost); common -> <1 (damp)."""
+    sf = cfg.surname_frequency
+    if not sf.get("enabled", True) or not surname or not nationality:
+        return None
+    table = _load_surname_table(str(sf.get("path", "data/surname_frequency.yaml")))
+    nat = nationality.strip().upper()
+    band = table.get(nat, {}).get(surname.strip().lower())
+    if not band:
+        return None
+    return float(sf.get(_RARITY_MULT_KEY.get(band, ""), 1.0))

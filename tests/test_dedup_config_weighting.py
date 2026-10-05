@@ -77,3 +77,46 @@ def test_veto_overrides_tight_proximity():
     )
     tight = fdp._proximity_weight(5, cfg)
     assert veto + tight < 0  # veto dominates even tightest proximity
+
+
+def test_surname_rarity_nationality_aware():
+    from src.dedup.config import load_dedup_config, surname_rarity_multiplier
+
+    cfg = load_dedup_config(None)
+    # Kowalski: rare among Americans (boost) vs very common among Poles (damp)
+    assert surname_rarity_multiplier(cfg, "Kowalski", "USA") == 1.5
+    assert surname_rarity_multiplier(cfg, "Kowalski", "POL") == 0.4
+    # common Anglo surname -> damp even for US
+    assert surname_rarity_multiplier(cfg, "Smith", "USA") == 0.4
+    # no nationality OR surname not in table -> None (caller falls back to corpus)
+    assert surname_rarity_multiplier(cfg, "Kowalski", "") is None
+    assert surname_rarity_multiplier(cfg, "Vandervoort", "USA") is None
+
+
+def test_rank_set_difference_is_promotion_aware():
+    maj = {"biographical_profile": {"ranks": [{"rank": "Major"}]}}
+    col = {"biographical_profile": {"ranks": [{"rank": "Colonel"}]}}
+    span = {"biographical_profile": {"ranks": [{"rank": "Major"}, {"rank": "Colonel"}]}}
+    assert fdp._ranks_differ(maj, col) is True  # disjoint -> different
+    assert fdp._ranks_differ(maj, span) is False  # overlap -> not different
+    assert fdp._ranks_differ(maj, {}) is False  # unknown -> not different
+
+
+def test_rank_proximity_dampens_more_when_tight():
+    """Major Smith vs Colonel Smith: tight proximity -> stronger negative than far."""
+    from src.dedup.config import load_dedup_config
+
+    cfg = load_dedup_config(None)
+    # tight penalty should be more negative than near, which >= loose(0)
+    assert cfg.rank_proximity["tight_penalty"] < cfg.rank_proximity["near_penalty"] <= 0
+    assert cfg.rank_proximity["loose_penalty"] == 0.0
+
+
+def test_surname_rarity_preferred_over_corpus_commonness():
+    """When nationality + table entry exist, rarity multiplier applies (not the corpus
+    commonness fallback)."""
+    from src.dedup.config import load_dedup_config, surname_rarity_multiplier
+
+    cfg = load_dedup_config(None)
+    # A US Kowalski match gets boosted even if 'kowalski' were corpus-common.
+    assert surname_rarity_multiplier(cfg, "Kowalski", "USA") > 1.0
