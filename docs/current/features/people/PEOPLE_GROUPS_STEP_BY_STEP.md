@@ -50,8 +50,12 @@ Prompt `prompts/people_groups.yaml` yields per group:
 `src/extraction/enrich_groups.py::enrich_all_groups` → `enrich_group`
 - Wikipedia/Grok enrichment; `member_countries` for alliances;
   `alliance_membership` back-filled from `nationality`; image + licence.
-- ❓ Enrichment is keyed on the group **name** (no canonical key), so it can run per
-  name-variant before dedup merges them.
+- ✅ **(2026-10-05) Enrichment query is DISAMBIGUATED** from the record's identity:
+  nickname-resolved canonical name + Wikipedia-style '(Country)' suffix from nationality
+  (e.g. '9th Division'→'9th Division (United States)'; 'Screaming Eagles'→'101st Airborne
+  Division (United States)'). A **wrong-article GUARD** rejects enrichment whose returned
+  nationality/echelon CONTRADICTS the record (mis-resolved disambiguation) → marks
+  `enrichment_status='ambiguous'` (retriable, visible) instead of stamping wrong data.
 
 ### Step 6 — Link people → groups
 `src/extraction/enrich_biographies.py::_link_person_to_groups` → `_find_group_file` →
