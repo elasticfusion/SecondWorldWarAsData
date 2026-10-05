@@ -141,6 +141,30 @@ dedup:
     surname_report:
       enabled: true
       min_new_people: 50               # regenerate only after this many new people
+    # Shared people-group (unit) affiliation = WEAK positive, strength INVERSE to unit
+    # size (echelon). Smaller unit shared -> stronger (few share a company); regiment/
+    # division -> super-weak/noise. Matched on resolved GroupID first, then normalized
+    # designation. Tiny weights: a NUDGE for name-evidenced candidates, never decisive.
+    shared_unit:
+      enabled: true
+      echelon_weights:
+        squad: 0.6                     # smallest unit -> strongest shared-affiliation signal
+        section: 0.6
+        platoon: 0.5
+        company: 0.4
+        battery: 0.4
+        squadron: 0.4
+        battalion: 0.25
+        regiment: 0.1                  # "Smith in the 110th Infantry Regiment" — weak
+        group: 0.1
+        brigade: 0.08
+        division: 0.03                 # ~noise
+        wing: 0.03
+        corps: 0.0
+        army: 0.0
+        fleet: 0.0
+        command: 0.0
+      unknown_echelon_weight: 0.1      # shared unit, echelon not classified
 
 openserp:
   results_per_query: 10                # Fewer results = fewer verification calls
