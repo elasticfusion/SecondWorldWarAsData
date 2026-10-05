@@ -1390,7 +1390,13 @@ def _merge_related_equipment(existing: dict, equipment_data: dict) -> None:
 
 
 def _merge_into_existing(
-    eq_file: Path, new_mention: dict, equipment_data: dict, matched_name: str
+    eq_file: Path,
+    new_mention: dict,
+    equipment_data: dict,
+    matched_name: str,
+    grok_client: Optional[GrokClient] = None,
+    verify_media_with_vision: bool = True,
+    dates_index: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> Path:
     """Merge mention into existing equipment file."""
     logger.debug("Merging mention into existing equipment: %s", matched_name)
@@ -1414,6 +1420,21 @@ def _merge_into_existing(
 
         # Update optional fields
         _merge_equipment_fields(existing, equipment_data)
+
+        # Enrichment RETRY: a record whose first enrichment FAILED was saved without an
+        # enrichment_status stamp. A later mention is our chance to retry (idempotent —
+        # _enrich_on_identity no-ops once stamped). Already-enriched records are untouched.
+        if grok_client and not existing.get("enrichment_status"):
+            _enrich_on_identity(
+                existing,
+                grok_client,
+                verify_media_with_vision,
+                new_mention.get("Sub_eventID"),
+                dates_index,
+            )
+
+        # Stamp last-modified (equipment previously only set extracted_date on create).
+        existing["_last_updated"] = datetime.now(timezone.utc).date().isoformat()
 
         # Save
         save(existing)
@@ -1473,15 +1494,29 @@ def _enrich_on_identity(
     """
     if not grok_client:
         return
-    if equipment_data.get("enrichment_status"):
-        return  # already handled — never re-enrich
+    if equipment_data.get("enrichment_status") == "enriched":
+        return  # already successfully enriched — never re-enrich
     if not _is_specific_identity(equipment_data):
         logger.debug(
             "Skipping enrichment for non-specific equipment: %s",
             equipment_data.get("common_name"),
         )
         return
+    # LIMIT UPDATES: skip if we checked Grokipedia/Wikipedia within the staleness window.
+    from src.enrichment.enrichment_gate import (
+        diff_enrichment,
+        should_check_enrichment,
+        stamp_checked,
+    )
+
+    if not should_check_enrichment(equipment_data):
+        logger.debug(
+            "Skipping enrichment (checked recently): %s",
+            equipment_data.get("common_name"),
+        )
+        return
     try:
+        before = {k: v for k, v in equipment_data.items()}
         _enrich_and_add_media(
             equipment_data,
             equipment_data["common_name"],
@@ -1490,8 +1525,22 @@ def _enrich_on_identity(
             sub_event_id,
             dates_index,
         )
+        # DIFF the revised entry: which keys did enrichment actually change/add?
+        changed = diff_enrichment(before, equipment_data)
         equipment_data["enrichment_status"] = "enriched"
+        stamp_checked(equipment_data)  # stamp WHEN we checked (all grok/wiki checks)
+        if changed:
+            logger.info(
+                "Enrichment updated %s: %s", equipment_data["common_name"], changed
+            )
+        else:
+            logger.debug(
+                "Enrichment no-op for %s (no new data)", equipment_data["common_name"]
+            )
     except Exception as e:  # noqa: BLE001 - enrichment is best-effort, never block
+        # Stamp the CHECK even on failure so the staleness gate still advances (limit
+        # updates); leave enrichment_status unset so a later run can still retry.
+        stamp_checked(equipment_data)
         logger.warning(
             "Identity enrichment failed for %s: %s",
             equipment_data.get("common_name"),
@@ -1529,6 +1578,7 @@ def _create_new_equipment(
     equipment_data["EquipmentID"] = equipment_id
     equipment_data["event_mentions"] = [new_mention]
     equipment_data["extracted_date"] = datetime.now(timezone.utc).isoformat()
+    equipment_data["_last_updated"] = datetime.now(timezone.utc).date().isoformat()
 
     safe_name = common_name.replace(" ", "_").replace("/", "_")
     eq_file = equipment_dir / f"{safe_name}_{equipment_id[:8]}.json"
@@ -1580,7 +1630,15 @@ def merge_or_create_equipment(
 
     if matched_name:
         eq_file = equipment_index[matched_name]
-        return _merge_into_existing(eq_file, new_mention, equipment_data, matched_name)
+        return _merge_into_existing(
+            eq_file,
+            new_mention,
+            equipment_data,
+            matched_name,
+            grok_client,
+            verify_media_with_vision,
+            dates_index,
+        )
     else:
         return _create_new_equipment(
             equipment_data,

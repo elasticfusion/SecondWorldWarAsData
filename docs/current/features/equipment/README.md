@@ -53,6 +53,11 @@ Enrichment-on-identity (follows identity resolution)
     enrichment_status, never re-run): Grokipedia/Wikipedia text/specs/URLs + a canonical
     reference image; vision VERIFIES the TYPE (never the event). Fires for auto-created
     related records too (fixes the Pershing stub). Generic names are skipped.
+  - a second mention of an already-enriched record is MERGED, not re-enriched; a record
+    whose first enrichment FAILED is retried on the next merge (idempotent).
+  - gated by src/enrichment/enrichment_gate.py: LIMIT UPDATES (skip if checked within the
+    90-day window), stamp enrichment_checked_at + _last_updated on EVERY check, and DIFF
+    the revised entry so no-op results don't rewrite content.
   - mention-level book images carry image_scope: representative (DEFAULT — generic/stock,
     illustrates the type) vs documentary (source explicitly asserts it depicts this event).
 ```
@@ -87,6 +92,12 @@ Enrichment-on-identity (follows identity resolution)
   name is a specific identity — Grokipedia/Wikipedia text/specs/URLs + a canonical
   reference image — so they are no longer bare `EquipmentID`+`common_name` stubs. A name
   too generic to be a specific identity is still created minimal (nothing to look up).
+- **Enrichment gate wired into equipment only (so far).** `src/enrichment/enrichment_gate.py`
+  (staleness window + `enrichment_checked_at`/`_last_updated` stamp + diff-the-revised-entry)
+  is reusable and intended for ALL Grokipedia/Wikipedia checks, but is currently wired only
+  into equipment's `_enrich_on_identity`. People/people_groups/places enrichment still use
+  the bare `enrichment_status` flag with no last-checked timestamp or diff. **Action:**
+  roll the gate into those paths for consistent "limit updates" behavior.
 - **Supporting-unit equipment linking is name-exact.** `equipment_name` → `EquipmentID`
   uses the same exact-index lookup; no alias/fuzzy resolution.
 - **Enrichment-on-identity: Wikipedia + Grok text/specs LIVE-validated; vision + OpenSERP
@@ -126,7 +137,7 @@ Enrichment-on-identity (follows identity resolution)
 - **Enforced schema:** `src/schemas/equipment_output.py` (`additionalProperties: false`).
 - **Canonical structure example:** `EQUIPMENT_FINAL_STRUCTURE.md` (other docs link here
   rather than repeating the JSON).
-- **Schema version:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently 2.10 — adds
-  `image_scope` on images + enrichment-on-identity (`enrichment_status`); builds on 2.9's
+- **Schema version:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently 2.11 — adds
+  `enrichment_checked_at` (enrichment staleness gate); 2.10 added `image_scope` + enrichment-on-identity; builds on 2.9's
   record-level `related_equipment` and 2.8's per-mention `quantity`/`place`/
   `operating_country`/`captured` + declared `original_text` retention).

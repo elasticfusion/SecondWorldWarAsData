@@ -109,6 +109,9 @@ EQUIPMENT_OUTPUT_SCHEMA = {
             },
         },
         "enrichment_status": enum_field(["enriched", "not_found"], nullable=True),
+        # Epoch of the last Grokipedia/Wikipedia enrichment CHECK (staleness gate +
+        # diff). Stamped on every check (success, no-op, or failure) to limit re-checks.
+        "enrichment_checked_at": {"type": ["integer", "null"]},
         "openserp_searched": {"type": ["boolean", "null"]},
         # image_scope marks trust: representative (default — generic/stock, illustrates
         # the TYPE) vs documentary (source explicitly asserts it depicts this event).
