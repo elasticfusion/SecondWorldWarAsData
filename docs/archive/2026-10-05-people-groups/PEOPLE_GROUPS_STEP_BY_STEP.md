@@ -122,4 +122,4 @@ Candidate rule (detail in GROUP_DEDUP_RULES_REVIEW.md):
 - [PEOPLE_GROUPS_LOGIC_REVIEW.md](PEOPLE_GROUPS_LOGIC_REVIEW.md)
 - [GROUP_DEDUP_RULES_REVIEW.md](GROUP_DEDUP_RULES_REVIEW.md)
 - [group-dedup-unit-key.md](group-dedup-unit-key.md)
-- [biographical-enrichment.md](biographical-enrichment.md)
+- [biographical-enrichment.md](../people/biographical-enrichment.md)

@@ -99,7 +99,7 @@ Individual person extraction with biographical profiles.
 
 ### People Groups (`people_groups.py`)
 **Status:** Production  
-**Documentation:** [people/groups.md](people/groups.md)
+**Documentation:** [people/groups.md](people_groups/groups.md)
 
 Military units and organizations extraction.
 

@@ -1,12 +1,31 @@
-# People-Group (Unit) Deduplication — Rules for Review
+# People-Group (Unit) Deduplication & Pipeline
 
 **Last Updated:** 2026-10-05
-**Status:** FOR REVIEW — this is the single consolidated statement of the current
-group-dedup rules. Implementation: `scripts/find_duplicate_groups.py`,
+**Status:** Living doc — the single source of truth for how people_groups flow through
+the pipeline and how group dedup decides matches. Implementation:
+`src/extraction/people_groups.py`, `src/extraction/enrich_groups.py`,
+`src/extraction/enrich_biographies.py` (linking), `scripts/find_duplicate_groups.py`,
 `src/dedup/unit_key.py`, `src/dedup/config.py`; config: `config.yaml → dedup.groups`.
+Open questions are flagged **[REVIEW]**; not-yet-built items **[PENDING]**.
 
-> Reviewer: please confirm each rule reads as intended. Open questions are flagged
-> **[REVIEW]**; not-yet-built items are flagged **[PENDING]**.
+---
+
+## 0. Pipeline flow (end to end)
+
+1. **Extract** (Phase 2, `people_groups.py`): per-event, cached, idempotent. Schema has
+   `group_type` (country/alliance/military_unit/political_party/government/… ) +
+   `military_hierarchy`, `nationality`, `members[]`, etc. ⚠️ In practice only
+   `military_unit`/(none) are populated — civilian types are schema-ready but unused.
+2. **Persist + index**: `GroupID` ULID; write-time merge is by **normalized name only**
+   (variants reconciled later by dedup).
+3. **Enrich** (Phase 3, `enrich_groups.py`): query is **disambiguated** (nickname-resolved
+   canonical name + `(Country)` suffix) with a **wrong-article guard** →
+   `enrichment_status='ambiguous'` on nationality/echelon contradiction.
+4. **Link people → groups** (`enrich_biographies._link_person_to_groups`): units match via
+   the **canonical unit key** (same matcher as dedup); civilian `group_affiliations`
+   (v2.6) link by name and **carry `date_verified`** (unverified title membership →
+   provisional member, confidence 0.3).
+5. **Dedup** (this doc, §§1-5): detect candidates → auto-merge byte-identical → human gate.
 
 ---
 
@@ -95,9 +114,15 @@ All optional; absent → built-in defaults (= behavior above).
   "key match + no veto" would be a separate, deliberate change.
 - **Not this model:** Equipment dedup is an alias/synonym problem ("Sherman"/"M4"/
   "M4A3") — a different model, not yet built.
+- **[GAP] Civilian group_type unused** — political_party / government_organization are
+  defined in extraction but rarely assigned; civilian dedup needs a category-discriminator
+  veto + alias model (NOT the military unit key).
+- **[GAP] Civilian dedup** — "State Dept" vs "Treasury Dept" (shared word ≠ identity),
+  "House" vs "Senate" (distinct chambers), parties — need the alias/category model.
 
 ## Related
-- [group-dedup-unit-key.md](group-dedup-unit-key.md) — canonical-key detail
-- [dedup-weighting.md](dedup-weighting.md) — the parallel people model
-- [GROUP_DEDUPLICATION_SYSTEM.md](GROUP_DEDUPLICATION_SYSTEM.md) — prior overview
-- [deduplication.md](deduplication.md) — end-to-end dedup workflow
+- [group-dedup-unit-key.md](group-dedup-unit-key.md) — canonical-key mechanism detail
+- [groups.md](groups.md) — person↔group linking design
+- [../people/dedup-weighting.md](../people/dedup-weighting.md) — the parallel people model
+- Archived (superseded): `docs/archive/2026-10-05-people-groups/` (old GROUP_DEDUPLICATION_SYSTEM + the two point-in-time review snapshots, consolidated here)
+- [deduplication.md](../people/deduplication.md) — end-to-end dedup workflow
