@@ -1094,11 +1094,39 @@ def _merge_enrichment(bio_profile: Dict[str, Any], enrichment: Dict[str, Any]) -
 def _find_group_file(
     unit_name: str, group_index: Dict[str, str], groups_dir: Path
 ) -> Optional[Path]:
-    """Find a people group file by unit name (case-insensitive)."""
+    """Find a people group file for a unit name.
+
+    Fast path: exact case-insensitive name match. Otherwise match via the canonical
+    unit key (number + service + arm + echelon, nickname-resolved) so that
+    '9th Division' links to a group stored as '9th Infantry Division', and
+    'Screaming Eagles' links to the '101st Airborne Division' — the SAME matcher the
+    group deduper uses. Service/arm/echelon/number vetoes still apply (never a false link).
+    """
+    # Fast path: exact name.
     for key, filename in group_index.items():
         if key.lower() == unit_name.lower():
             path = groups_dir / filename
-            return path if path.exists() else None
+            if path.exists():
+                return path
+
+    # Canonical-key path (unify linker with deduper).
+    try:
+        from src.dedup.unit_key import derive_unit_key, unit_keys_match
+
+        uk = derive_unit_key(unit_name)
+        if not uk.numbers:
+            return None  # no number -> can't canonical-key match (avoid false links)
+        for key, filename in group_index.items():
+            gk = derive_unit_key(key)
+            if not gk.numbers:
+                continue
+            matched, _ = unit_keys_match(uk, gk)
+            if matched:
+                path = groups_dir / filename
+                if path.exists():
+                    return path
+    except Exception:  # noqa: BLE001 - linking is best-effort; never block enrichment
+        return None
     return None
 
 

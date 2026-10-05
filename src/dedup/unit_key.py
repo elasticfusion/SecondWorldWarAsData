@@ -198,15 +198,57 @@ def _first_term(expanded: str, lexicon: dict) -> Optional[str]:
     return None
 
 
+import os
+from functools import lru_cache
+
+
+@lru_cache(maxsize=2)
+def _load_nicknames(path: str) -> dict:
+    """Load the curated nickname -> canonical-name map. {} on any error (graceful)."""
+    try:
+        import yaml
+        from pathlib import Path as _P
+
+        p = _P(path)
+        if not p.is_file():
+            return {}
+        data = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+        return {
+            str(k).strip().lower(): str(v)
+            for k, v in (data.get("nicknames", {}) or {}).items()
+        }
+    except Exception:
+        return {}
+
+
+def resolve_nickname(name: str) -> Optional[str]:
+    """If ``name`` (or a cleaned form) is a known unit nickname, return the canonical
+    unit name; else None. Tolerates a leading 'the' and surrounding punctuation."""
+    if not name:
+        return None
+    path = os.getenv("UNIT_NICKNAMES_PATH", "data/unit_nicknames.yaml")
+    table = _load_nicknames(path)
+    key = name.strip().lower().strip("\"'.,")
+    if key in table:
+        return table[key]
+    if key.startswith("the ") and key[4:] in table:
+        return table[key[4:]]
+    return None
+
+
 def derive_unit_key(name: str, *, infantry_default: bool = True) -> UnitKey:
     """Derive (numbers, service, arm, echelon) from a unit name.
 
-    service defaults to ARMY when no service marker is present. arm (combat arm) is
-    meaningful under ARMY and defaults to 'infantry' ONLY when service is ARMY (you
-    never default a Navy/Marine unit to 'infantry'). echelon stays None when absent.
+    A known NICKNAME ("Screaming Eagles") is resolved to its canonical name first, so
+    nicknames key identically to their numbered unit. service defaults to ARMY when no
+    service marker is present. arm (combat arm) is meaningful under ARMY and defaults to
+    'infantry' ONLY when service is ARMY (never default a Navy/Marine unit to infantry).
+    echelon stays None when absent.
     """
-    expanded = _expand(name or "")
-    numbers = frozenset(_numbers(name or ""))
+    canonical = resolve_nickname(name)
+    source = canonical if canonical else (name or "")
+    expanded = _expand(source)
+    numbers = frozenset(_numbers(source))
     service = _first_term(expanded, _SERVICE_TERMS) or "ARMY"
     arm = _first_term(expanded, _ARM_TERMS)
     if arm is None and infantry_default and service == "ARMY":

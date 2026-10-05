@@ -95,3 +95,55 @@ def test_service_branch_veto_pacific():
 def test_army_is_default_service_with_infantry_arm():
     k = derive_unit_key("9th Division")
     assert k.service == "ARMY" and k.arm == "infantry"
+
+
+def test_nickname_resolution_to_canonical_key():
+    from src.dedup.unit_key import resolve_nickname
+
+    assert resolve_nickname("Screaming Eagles") == "101st Airborne Division"
+    assert resolve_nickname("The Screaming Eagles") == "101st Airborne Division"
+    assert resolve_nickname("Big Red One") == "1st Infantry Division"
+    assert resolve_nickname("Ivy Division") == "4th Infantry Division"
+    assert resolve_nickname("not a nickname") is None
+
+
+def test_nickname_matches_numbered_unit():
+    assert _m("Screaming Eagles", "101st Airborne Division")
+    assert _m("Big Red One", "1st Division")  # infantry default
+    assert _m("Ivy Division", "4th Division")
+    assert _m("Third Armored Division", "3rd Armored Division")
+    assert _m("Spearhead", "3rd Armored Division")
+    # vetoes still protect against false nickname matches
+    assert not _m("Screaming Eagles", "82nd Airborne Division")  # 101 != 82
+    assert not _m("Big Red One", "1st Armored Division")  # infantry != armored
+
+
+def test_linker_uses_canonical_key_and_nicknames():
+    import importlib.util, sys, tempfile
+    from pathlib import Path
+
+    spec = importlib.util.spec_from_file_location(
+        "eb_t",
+        Path(__file__).parent.parent / "src" / "extraction" / "enrich_biographies.py",
+    )
+    # import the module normally (it's a package module) to avoid re-exec issues
+    import src.extraction.enrich_biographies as eb
+
+    idx = {
+        "9th Infantry Division": "g1.json",
+        "101st Airborne Division": "g2.json",
+        "9th Armored Division": "g3.json",
+    }
+    d = Path(tempfile.mkdtemp())
+    for fn in idx.values():
+        (d / fn).write_text("{}")
+
+    def find(u):
+        p = eb._find_group_file(u, idx, d)
+        return p.name if p else None
+
+    assert find("9th Division") == "g1.json"  # variant -> infantry div
+    assert find("Ninth Infantry Division") == "g1.json"
+    assert find("Screaming Eagles") == "g2.json"  # nickname
+    assert find("9th Armored") == "g3.json"  # arm veto routes correctly
+    assert find("bogus unit") is None  # no false link
