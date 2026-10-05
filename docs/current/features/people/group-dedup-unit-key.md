@@ -77,3 +77,15 @@ adjacent in the text are still different units).
 - [dedup-weighting.md](dedup-weighting.md) — people weighted scoring
 - [GROUP_DEDUPLICATION_SYSTEM.md](GROUP_DEDUPLICATION_SYSTEM.md) — prior group dedup overview
 - [deduplication.md](deduplication.md) — end-to-end dedup workflow
+
+---
+
+## Unit nicknames / sobriquets
+
+Many WWII units are referenced by nickname with NO number ("Screaming Eagles", "Big
+Red One", "Ivy Division", "Spearhead") — the canonical key can't derive these. A curated
+map (`data/unit_nicknames.yaml`, our own/growable) resolves a nickname to its canonical
+name BEFORE key derivation, so a nickname keys identically to its numbered unit and the
+vetoes still apply (Screaming Eagles ≠ 82nd Airborne; Big Red One ≠ 1st *Armored*).
+`resolve_nickname()` is used by both the group deduper and the person→group linker, so
+they resolve identically.

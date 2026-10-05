@@ -1,0 +1,66 @@
+# Unit nickname / sobriquet -> canonical unit name.
+#
+# WWII units are frequently referred to by nickname with NO number ("Screaming Eagles",
+# "Big Red One") — the canonical unit key (which needs a number) can't derive these, so
+# this curated map resolves a nickname to the unit's canonical name, which then yields
+# the usual (number + service + arm + echelon) key. Used by BOTH the person->group
+# linker and the group deduper so a nickname and its numbered unit resolve identically.
+#
+# PROVENANCE / SCOPE: OUR OWN curated, growable list (not an authoritative registry).
+# Seeded with well-known US (and a few Allied) WWII division nicknames. Add entries as
+# they appear in sources. Keys are lowercased nicknames; values are canonical names
+# that derive_unit_key can parse.
+
+nicknames:
+  # US Army divisions
+  "big red one": "1st Infantry Division"
+  "the big red one": "1st Infantry Division"
+  "indianhead": "2nd Infantry Division"
+  "indian head division": "2nd Infantry Division"
+  "rock of the marne": "3rd Infantry Division"
+  "marne division": "3rd Infantry Division"
+  "ivy division": "4th Infantry Division"
+  "red diamond": "5th Infantry Division"
+  "red devils": "5th Infantry Division"
+  "sightseeing sixth": "6th Infantry Division"
+  "hourglass division": "7th Infantry Division"
+  "golden arrow": "8th Infantry Division"
+  "pathfinder division": "8th Infantry Division"
+  "old reliables": "9th Infantry Division"
+  "varsity division": "10th Mountain Division"
+  "yankee division": "26th Infantry Division"
+  "keystone division": "28th Infantry Division"
+  "bloody bucket": "28th Infantry Division"
+  "blue and gray division": "29th Infantry Division"
+  "old hickory": "30th Infantry Division"
+  "dixie division": "31st Infantry Division"
+  "red bull division": "34th Infantry Division"
+  "santa fe division": "35th Infantry Division"
+  "texas division": "36th Infantry Division"
+  "thunderbird division": "45th Infantry Division"
+  "custer division": "85th Infantry Division"
+  "blackhawk division": "86th Infantry Division"
+  "golden acorn": "87th Infantry Division"
+  "cloverleaf division": "88th Infantry Division"
+  "rolling w": "89th Infantry Division"
+  "tough ombres": "90th Infantry Division"
+  "powder river division": "91st Infantry Division"
+  "railsplitters": "84th Infantry Division"
+  "timberwolves": "104th Infantry Division"
+
+  # Airborne
+  "all american": "82nd Airborne Division"
+  "all-american": "82nd Airborne Division"
+  "screaming eagles": "101st Airborne Division"
+  "the screaming eagles": "101st Airborne Division"
+
+  # Armored
+  "spearhead": "3rd Armored Division"
+  "spearhead division": "3rd Armored Division"
+  "hell on wheels": "2nd Armored Division"
+  "super sixth": "6th Armored Division"
+  "lucky seventh": "7th Armored Division"
+  "iron snake": "8th Armored Division"
+  "tiger division": "10th Armored Division"
+  "thunderbolt": "11th Armored Division"
+  "hellcats": "12th Armored Division"

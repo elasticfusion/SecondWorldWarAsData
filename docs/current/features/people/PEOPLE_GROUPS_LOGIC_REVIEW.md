@@ -41,7 +41,10 @@ work: ensure these types actually get assigned.
 
 Adds a person as a `member` of a group, matched from `biographical_profile.units_served`.
 
-- **[GAP] Linking matches by case-insensitive NAME EQUALITY** (`_find_group_file`:
+- **[FIXED 2026-10-05] Linking now uses the canonical unit key** (nickname-resolved),
+  the same matcher as the deduper: '9th Division'↔'Ninth Infantry Division'↔'9th
+  Infantry Division' link to the same group; 'Screaming Eagles'→101st Airborne;
+  service/arm/echelon/number vetoes still block false links. (Was: case-insensitive (`_find_group_file`:
   `key.lower() == unit_name.lower()`), NOT the canonical unit key. So "9th Division" on a
   person won't link to a group stored as "9th Infantry Division" — the exact kind of
   variant the dedup canonical key solves. **The linker and the deduper use different
@@ -78,8 +81,8 @@ Adds a person as a `member` of a group, matched from `biographical_profile.units
 
 ## Prioritized gaps (recommendation)
 
-1. **[GAP] Unify person↔group linking with the dedup canonical key** — today they use
-   different matchers (name-equality vs canonical key), so links miss name variants.
+1. **[FIXED] Unified person↔group linking with the dedup canonical key** (+ curated
+   nickname map data/unit_nicknames.yaml). 2026-10-05.
 2. **[GAP] Link civilian `group_affiliations`** (v2.6) into groups, respecting
    `date_verified` (don't assert unverified memberships).
 3. **[GAP] Populate the civilian `group_type`s** at extraction (they're defined but
