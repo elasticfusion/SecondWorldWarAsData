@@ -1,0 +1,84 @@
+# Nationality-aware surname frequency — OUR OWN curated, growable dataset.
+#
+# Purpose: condition surname-match evidence in people dedup on nationality. The same
+# bare-surname match is STRONG when the surname is rare in that nationality's population
+# and WEAK when it is common. Example: "Kowalski" is rare among Americans (so Major
+# Kowalski ≈ Colonel Kowalski likely the same US officer) but one of the most common
+# Polish surnames (so the same match among Poles is weak).
+#
+# PROVENANCE / SCOPE (read before trusting):
+#   • This is a CURATED, WWII-oriented table maintained BY THIS PROJECT — NOT a modern
+#     census import. WWII-era surname distributions overlap heavily with modern ones but
+#     are not identical; treat this as a growing heuristic prior, not authoritative data.
+#   • Seeded with the high-value COLLISION cases (surnames whose rarity flips the dedup
+#     answer depending on nationality). Add entries over time as real cases surface.
+#   • Rarity bands (not raw counts): very_common | common | uncommon | rare.
+#     A surname ABSENT from a nationality's list falls back to the dedup corpus-relative
+#     commonness measure (so missing data degrades gracefully, never fabricates rarity).
+#
+# Keys are ISO-ish nationality codes (match src/enrichment/award_sources canonical set
+# where practical: USA, GBR, DEU, FRA, POL, RUS/SUN, ITA, ...). Surnames lowercased.
+
+surnames:
+  USA:
+    # Common Anglo-American surnames (bare-surname match = weak for these)
+    smith: very_common
+    johnson: very_common
+    williams: very_common
+    brown: very_common
+    jones: very_common
+    miller: common
+    davis: common
+    wilson: common
+    # Surnames RARE in the US population -> a bare-surname match is strong evidence
+    kowalski: rare
+    nowak: rare
+    schmidt: uncommon        # German-origin, moderately present in the US
+    rossi: rare
+
+  GBR:
+    smith: very_common
+    jones: very_common
+    williams: very_common
+    brown: common
+    taylor: common
+    davies: common
+    evans: common
+
+  DEU:
+    # Most common German surnames (weak as bare-surname matches among Germans)
+    müller: very_common
+    mueller: very_common
+    schmidt: very_common
+    schneider: common
+    fischer: common
+    weber: common
+    meyer: common
+    wagner: common
+    becker: common
+
+  POL:
+    # Most common Polish surnames — bare-surname match is WEAK among Poles
+    nowak: very_common
+    kowalski: very_common
+    wiśniewski: common
+    wisniewski: common
+    wójcik: common
+    wojcik: common
+    kowalczyk: common
+    kamiński: common
+    kaminski: common
+
+  RUS:
+    ivanov: very_common
+    smirnov: very_common
+    kuznetsov: common
+    popov: common
+    sokolov: common
+
+  ITA:
+    rossi: very_common
+    russo: very_common
+    ferrari: common
+    esposito: common
+    bianchi: common

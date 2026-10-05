@@ -118,6 +118,22 @@ dedup:
     commonness:                        # common surnames (many distinct first names) dampen proximity
       enabled: true
       common_surname_damping: 0.5
+    # Nationality-aware surname rarity (preferred over corpus commonness when the
+    # person's nationality + a table entry are known). Our own curated, growable table.
+    surname_frequency:
+      enabled: true
+      path: data/surname_frequency.yaml
+      rare_multiplier: 1.5             # rare surname in that nationality -> stronger match
+      uncommon_multiplier: 1.1
+      common_multiplier: 0.6
+      very_common_multiplier: 0.4      # e.g. Kowalski among Poles, Smith among Americans
+    # Rank is point-in-time. Different rank-set + TIGHT proximity = mild negative (likely
+    # two people together); across wide separation = neutral (promotion plausible). Dampen.
+    rank_proximity:
+      enabled: true
+      tight_penalty: -0.6
+      near_penalty: -0.2
+      loose_penalty: 0.0
 
 openserp:
   results_per_query: 10                # Fewer results = fewer verification calls

@@ -183,6 +183,63 @@ def _is_dominant_surname(last: str) -> bool:
     return _surname_person_count.get(last, 0) / _total_people >= _DOMINANT_SHARE
 
 
+# Canonical rank tokens for rank-set comparison (point-in-time; promotion-aware).
+_RANK_TOKENS = {
+    "general",
+    "lieutenant general",
+    "major general",
+    "brigadier general",
+    "colonel",
+    "lieutenant colonel",
+    "major",
+    "captain",
+    "lieutenant",
+    "first lieutenant",
+    "second lieutenant",
+    "sergeant",
+    "corporal",
+    "private",
+    "admiral",
+    "commander",
+    "field marshal",
+    "marshal",
+}
+
+
+def _rank_set(person: Dict) -> set:
+    """Set of normalized rank strings a person held (ranks are point-in-time; a record
+    may span several). Used so 'Major' vs 'Colonel' only counts as DIFFERENT when the
+    two records' rank sets are genuinely disjoint."""
+    bp = person.get("biographical_profile", {}) or {}
+    ranks = set()
+    for r in bp.get("ranks", []) or []:
+        val = (r.get("rank") if isinstance(r, dict) else str(r)) or ""
+        v = val.strip().lower().rstrip(".")
+        if v:
+            ranks.add(v)
+    return ranks
+
+
+def _ranks_differ(p1: Dict, p2: Dict) -> bool:
+    """True when both people have known ranks and the rank sets are DISJOINT (no shared
+    rank) — e.g. one is only-Major, the other only-Colonel. False if either is unknown
+    or the sets overlap (same rank somewhere, or one spans both)."""
+    r1, r2 = _rank_set(p1), _rank_set(p2)
+    if not r1 or not r2:
+        return False
+    return r1.isdisjoint(r2)
+
+
+def _person_nat(person: Dict) -> str:
+    bp = person.get("biographical_profile", {}) or {}
+    return (
+        bp.get("nationality")
+        or person.get("nationality")
+        or bp.get("nationality_served")
+        or ""
+    )
+
+
 # People with more than this many event_mentions are considered high-frequency.
 # For these, name-similarity alone is not enough — proximity or biographical
 # evidence is required to flag a duplicate.
@@ -716,28 +773,66 @@ def _score_pair(
     all_reasons.extend(r)
     total_confidence += c
 
-    # PRIMARY signal: continuous proximity by mention radius (replaces binary <1000w).
+    # PRIMARY signal: continuous proximity by mention radius + rarity + rank×proximity.
     if text_index and total_confidence > -1.0:
-        distance = _min_name_distance(person1, person2, text_index)
-        pweight = _proximity_weight(distance, cfg)
-        if pweight > 0:
-            # Name-commonness damping (common surname -> weaker proximity evidence).
-            if cfg.commonness.get("enabled", True) and _is_common_surname(last1):
-                pweight *= float(cfg.commonness.get("common_surname_damping", 0.5))
-            # Frequency boost (dominant surname in a book), only with compatible first
-            # name/initial — never bridges a conflict (the veto already fired above).
-            if (
-                cfg.frequency.get("enabled", True)
-                and _is_dominant_surname(last1)
-                and not _conflicting_middle_initial(name1, name2)
-            ):
-                pweight += float(cfg.frequency.get("dominant_surname_boost", 0.3))
-            all_reasons.append(
-                f"Mention proximity (radius={distance}w, +{pweight:.2f})"
-            )
-            total_confidence += pweight
+        r, c = _proximity_and_rank_score(
+            person1, person2, text_index, cfg, name1, name2, last1
+        )
+        all_reasons.extend(r)
+        total_confidence += c
 
     return all_reasons, total_confidence
+
+
+def _proximity_and_rank_score(
+    person1, person2, text_index, cfg, name1, name2, last1
+) -> tuple[list[str], float]:
+    """Proximity (radius-decay) scaled by nationality-aware surname rarity (fallback:
+    corpus commonness) + dominant-surname boost, then rank-difference×proximity damping.
+    Returns (reasons, score_delta)."""
+    from src.dedup.config import surname_rarity_multiplier
+
+    reasons: list[str] = []
+    score = 0.0
+    distance = _min_name_distance(person1, person2, text_index)
+    pweight = _proximity_weight(distance, cfg)
+    if pweight > 0:
+        nat = _person_nat(person1) or _person_nat(person2)
+        mult = surname_rarity_multiplier(cfg, last1, nat)
+        if mult is not None:
+            pweight *= mult
+            reasons.append(f"Surname rarity[{nat}]×{mult:.2f}")
+        elif cfg.commonness.get("enabled", True) and _is_common_surname(last1):
+            pweight *= float(cfg.commonness.get("common_surname_damping", 0.5))
+        if (
+            cfg.frequency.get("enabled", True)
+            and _is_dominant_surname(last1)
+            and not _conflicting_middle_initial(name1, name2)
+        ):
+            pweight += float(cfg.frequency.get("dominant_surname_boost", 0.3))
+        reasons.append(f"Mention proximity (radius={distance}w, +{pweight:.2f})")
+        score += pweight
+
+    penalty = _rank_proximity_penalty(person1, person2, distance, cfg)
+    if penalty:
+        reasons.append(f"Rank differs @ radius={distance}w ({penalty:+.2f})")
+        score += penalty
+    return reasons, score
+
+
+def _rank_proximity_penalty(person1, person2, distance, cfg) -> float:
+    """Different rank-set + tight proximity = mild negative; far = neutral. Dampen."""
+    rp = cfg.rank_proximity
+    if not rp.get("enabled", True) or distance is None:
+        return 0.0
+    if not _ranks_differ(person1, person2):
+        return 0.0
+    prox = cfg.proximity
+    if distance <= prox.get("tight_radius_words", 60):
+        return float(rp.get("tight_penalty", -0.6))
+    if distance <= prox.get("near_radius_words", 400):
+        return float(rp.get("near_penalty", -0.2))
+    return float(rp.get("loose_penalty", 0.0))
 
 
 def find_potential_duplicates(
