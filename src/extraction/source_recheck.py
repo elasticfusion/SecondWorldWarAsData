@@ -63,6 +63,9 @@ class FieldRecheckSpec:
     #: optional post-hook(record, filled_fields)->extra_filled for fallbacks (e.g. a
     #: source-book nationality hint). Runs after the LLM result is applied.
     post_hook: Optional[Callable[[Dict[str, Any], List[str]], int]] = None
+    #: optional per-field type coercion applied to the stringified LLM value before it
+    #: is stored (e.g. {"quantity": int}). A coercion that raises skips that field.
+    coerce: Dict[str, Callable[[str], Any]] = field(default_factory=dict)
     confidence: float = 0.8
 
 
@@ -115,7 +118,13 @@ class SourceRechecker:
                 val = res.get(f)
                 sval = str(val).strip() if val is not None else ""
                 if sval and sval.lower() != "null" and not record.get(f):
-                    record[f] = sval
+                    stored: Any = sval
+                    if f in self.spec.coerce:
+                        try:
+                            stored = self.spec.coerce[f](sval)
+                        except (ValueError, TypeError):
+                            continue  # unparseable for this field -> skip, don't store
+                    record[f] = stored
                     record.setdefault("_provenance", {})[f] = {
                         "sourced_from": "original_text",
                         "confidence": self.spec.confidence,

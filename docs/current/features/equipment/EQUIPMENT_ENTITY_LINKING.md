@@ -152,6 +152,8 @@ def extract_equipment_from_event(
     output_dir: Path,
     grok_client: GrokClient,
     output_root: Optional[Path] = None,
+    max_retries: int = 3,
+    enable_enrichment: bool = False,
 ) -> List[Path]:
 ```
 
@@ -248,19 +250,20 @@ python3 -m src.extraction.equipment output/BreakoutAndPursuit/chapter1a-event.js
 
 ---
 
-## Next Steps
+## Status
 
 1. ✅ Entity linking implemented
-2. ⏳ Implement deduplication logic
-3. ⏳ Generate equipment index file
-4. ⏳ Integrate into phase2_extract.py
-5. ⏳ Add unit tests
-6. ⏳ Extract supporting units
+2. ✅ Deduplication implemented (see [EQUIPMENT_DEDUPLICATION.md](EQUIPMENT_DEDUPLICATION.md))
+3. ✅ Equipment index file generated
+4. ✅ Integrated into the pipeline
+5. ✅ Unit tests added
+6. ⏳ Supporting-unit extraction/linking (partial)
 
 ---
 
 ## See Also
 
-- **Equipment Schema:** `contextmanagement/Specs/military_equipment_schema.json`
-- **Equipment Proposal:** `docs/current/features/MILITARY_EQUIPMENT.md`
-- **People Pattern:** `docs/current/features/EQUIPMENT_PEOPLE_PATTERN.md`
+- **Index:** [README.md](README.md)
+- **Structure (canonical example):** [EQUIPMENT_FINAL_STRUCTURE.md](EQUIPMENT_FINAL_STRUCTURE.md)
+- **Deduplication:** [EQUIPMENT_DEDUPLICATION.md](EQUIPMENT_DEDUPLICATION.md)
+- **Enforced schema:** `src/schemas/equipment_output.py`

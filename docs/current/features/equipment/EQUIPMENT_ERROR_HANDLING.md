@@ -120,7 +120,7 @@ if "EventID" not in event_data["Event"]:
 **Location:** `merge_or_create_equipment()`
 ```python
 # Check if mention already exists (by MentionID)
-existing_mention_ids = {m["MentionID"] for m in existing.get("mentions", [])}
+existing_mention_ids = {m["MentionID"] for m in existing.get("event_mentions", [])}
 if new_mention["MentionID"] in existing_mention_ids:
     logger.debug("Mention %s already exists, skipping", new_mention["MentionID"])
     return eq_file
@@ -322,9 +322,9 @@ Equipment extraction follows all applicable error handling patterns from `error_
 
 ## Related Documentation
 
+- **Index:** [README.md](README.md)
 - **Error Handling Spec:** `contextmanagement/Specs/error_handling.md`
-- **Equipment Spec:** `contextmanagement/Specs/military_equipment_example2.json`
-- **Equipment Docs:** `docs/current/features/equipment/`
+- **Enforced schema:** `src/schemas/equipment_output.py`
 
 ---
 

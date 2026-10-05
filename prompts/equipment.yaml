@@ -21,6 +21,12 @@ schema: |
         "category": "armor",
         "subcategory": "medium_tank",
         "country_of_origin": "USA",
+        "operating_country": "GBR",
+        "captured": false,
+        "quantity": 10,
+        "quantity_text": "10",
+        "place_name": "the crossroads in Cherbourg",
+        "assertion_source": "narrative",
         "variants": [],
         "specifications": {},
         "using_unit_name": "2nd Armored Division",
@@ -46,5 +52,42 @@ rules:
     88mm gun → category: "artillery", subcategory: "anti_aircraft" (NOT "armor")
   - 'Do NOT use equipment-specific names as category (e.g., "Medium Tank" is WRONG — use "armor")'
   - "Country codes use ISO 3166-1 alpha-3 (USA, GBR, DEU, FRA, etc.)"
+  - |
+    country_of_origin = the country that DESIGNED/MANUFACTURED the equipment type.
+    This is a STABLE identity of the equipment, NOT who is using it. A Sherman is
+    always country_of_origin "USA" even when a British unit operates it. A Panther
+    is always "DEU".
+  - |
+    operating_country = who was USING the equipment in THIS specific mention. It MAY
+    differ from country_of_origin. Set captured=true only when the operator is using
+    it AGAINST its origin (captured gear). Examples:
+    - British unit using US Shermans: country_of_origin "USA", operating_country "GBR", captured false
+    - Germans using a captured US M10: country_of_origin "USA", operating_country "DEU", captured true
+    - US unit using its own Shermans: country_of_origin "USA", operating_country "USA", captured false
+    If the operator is not stated, leave operating_country null and captured false.
   - Only extract specifically named equipment, not generic references
+  - |
+    QUANTITY — record how many of this equipment the source states for THIS mention:
+    - Exact number stated ("10 M4 Shermans at the crossroads"): quantity 10, quantity_text "10".
+    - Vague count stated ("several Shermans", "a handful", "about a dozen"): quantity null,
+      quantity_text the VERBATIM phrase ("several"). NEVER invent a number for a vague count.
+    - No count stated: quantity null, quantity_text null.
+  - |
+    PLACE — set place_name to where this equipment was for THIS mention (e.g. "the
+    crossroads in Cherbourg"). Strongly preferred but optional; omit if not stated.
+  - |
+    ASSERTION GATE — only create a mention when the SOURCE ASSERTS this equipment was
+    present. Set assertion_source:
+    - "narrative" = the text asserts it ("10 Shermans engaged at the Cherbourg crossroads").
+    - "media_narration" = a video/audio NARRATION explicitly asserts it ("5 Shermans
+      engaged at Cherbourg").
+    DO NOT create a mention from ambient/stock video footage that merely shows or discusses
+    a place without asserting this equipment was in that engagement. If a scene covers the
+    Cherbourg crossroads but does not say the equipment was there, IGNORE it. Only an
+    explicit assertion (narration saying "5 Shermans engaged at Cherbourg") counts.
+  - |
+    CONFLICTS & TRACEABILITY — conflicting facts across sources are EXPECTED and allowed
+    (one source says 10, another says 5): record each as its own mention; do NOT merge or
+    reconcile them. Tracing every fact to its origin is NON-NEGOTIABLE: always populate
+    original_text with the verbatim passage/narration the mention came from.
   - "If no equipment found, return empty Equipment array"

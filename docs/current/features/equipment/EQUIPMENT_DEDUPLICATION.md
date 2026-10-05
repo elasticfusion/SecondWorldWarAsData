@@ -11,6 +11,38 @@ Equipment deduplication has been implemented to consolidate multiple mentions of
 
 ---
 
+## Country model: origin (identity) vs. operator (per-mention)  — schema 2.7
+
+Two distinct axes, deliberately separated:
+
+- **`country_of_origin`** — on the **equipment record**. The country that
+  DESIGNED/MANUFACTURED the equipment type. A *stable identity* (an M4 Sherman is
+  `USA`-origin forever, a Panther is `DEU`). This is the ONLY country field the dedup
+  veto looks at.
+- **`operating_country`** + **`captured`** — on the **mention**. Who was *using* the
+  equipment in that specific mention, and whether it was captured-and-used-against-origin.
+  These vary per mention and are **never** used to veto dedup.
+
+Why: the British operated US-origin Shermans (Lend-Lease) and the Germans operated
+captured US/French equipment. Those are the **same equipment type** (same origin) and
+must stay **one record**, with per-mention operators recorded. Keying the veto on the
+operator would wrongly split them.
+
+**Dedup veto (`find_duplicate_equipment._score_pair`)**: reject a pair only when
+`country_of_origin` differs *and* neither side is flagged `captured` (a structured
+mention flag via `_any_captured`, replacing the former brittle `"captured" in context`
+substring). Operator differences never veto.
+
+Examples:
+| Case | country_of_origin | operating_country | captured | Dedup |
+|---|---|---|---|---|
+| US unit, US Sherman | USA | USA | false | one M4 record |
+| British unit, US Sherman | USA | GBR | false | **same** M4 record |
+| Germans, captured US M10 | USA | DEU | true | **same** M10 record |
+| US Sherman vs German Panther | USA / DEU | — | false | vetoed (distinct types) |
+
+---
+
 ## Implementation
 
 ### Core Functions
@@ -66,7 +98,7 @@ def generate_equipment_index(equipment_dir: Path) -> None:
 {
   "EquipmentID": "01ABC123...",
   "common_name": "Sherman",
-  "mentions": [
+  "event_mentions": [
     {"MentionID": "01XYZ...", "EventID": "01..."}
   ]
 }
@@ -80,7 +112,7 @@ def generate_equipment_index(equipment_dir: Path) -> None:
 {
   "EquipmentID": "01ABC123...",
   "common_name": "Sherman",
-  "mentions": [
+  "event_mentions": [
     {"MentionID": "01XYZ...", "EventID": "01..."},
     {"MentionID": "01DEF...", "EventID": "02..."}  # ← Added
   ]
@@ -227,36 +259,37 @@ cat output/equipment/index.json
 
 ---
 
-## Limitations
+## Matching (implemented)
 
-### Current Behavior
+Dedup is **not** exact-match-only. Both stages resolve name variations:
 
-- **Exact name matching** - "Sherman" ≠ "M4 Sherman"
-- **No fuzzy matching** - Slight variations create separate files
-- **No alias resolution** - Doesn't check alternate_names for matches
+- **Ingest-time merge** (`equipment_ext/dedup.py`): `_find_matching_equipment` tries
+  `technical_identifier` → exact `common_name` → **fuzzy match** (`SequenceMatcher ≥ 0.80`,
+  also checking `alternate_names`).
+- **Detection-time scoring** (`scripts/find_duplicate_equipment.py`, wired into
+  `ecs_entrypoint._run_dedup_detection`): normalizes names (caliber/mm/cm), expands via the
+  **alias table** (`config/equipment_aliases.yaml`: Sherman→M4, 88→88mm Flak 36, …), then
+  scores name-similarity + name-contained + same-category with the origin veto above.
+- **Manual merge tool**: `scripts/merge_equipment.py` (+ `merge_equipment_dupes.py`).
 
-### Future Enhancements
+## Status
 
-1. **Fuzzy Matching** - Handle name variations
-2. **Alias Checking** - Match against alternate_names
-3. **Manual Merging** - Tool to merge incorrectly split equipment
-4. **Similarity Detection** - Suggest potential duplicates
+- ✅ Deduplication implemented (ingest-time merge + detection scoring)
+- ✅ Index generation implemented
+- ✅ Integrated into the pipeline (`ecs_entrypoint._run_dedup_detection`)
+- ✅ Fuzzy + alias matching implemented
+- ✅ Merge tool implemented
+- ✅ Unit tests (`tests/test_equipment_*`, `tests/unit/test_dedup_scripts.py`)
 
----
+### Possible future enhancements
 
-## Next Steps
-
-1. ✅ Deduplication implemented
-2. ✅ Index generation implemented
-3. ⏳ Integrate into phase2_extract.py
-4. ⏳ Add unit tests
-5. ⏳ Implement fuzzy matching
-6. ⏳ Add merge tool for manual corrections
+- Similarity-report suggestions (mirroring the people surname report)
 
 ---
 
 ## See Also
 
-- **Entity Linking:** `docs/current/features/EQUIPMENT_ENTITY_LINKING.md`
-- **Equipment Schema:** `contextmanagement/Specs/military_equipment_schema.json`
-- **People Pattern:** `docs/current/features/EQUIPMENT_PEOPLE_PATTERN.md`
+- **Index:** [README.md](README.md)
+- **Structure (canonical example):** [EQUIPMENT_FINAL_STRUCTURE.md](EQUIPMENT_FINAL_STRUCTURE.md)
+- **Entity Linking:** [EQUIPMENT_ENTITY_LINKING.md](EQUIPMENT_ENTITY_LINKING.md)
+- **Enforced schema:** `src/schemas/equipment_output.py`

@@ -75,6 +75,27 @@ class EquipmentMention(BaseModel):
     variant_mentioned: Optional[str] = None
     context: Optional[str] = None
     original_text: Optional[str] = None
+    operating_country: Optional[str] = Field(
+        default=None, description="Who used it in this mention (per-mention operator)"
+    )
+    captured: bool = Field(
+        default=False, description="Captured and used against its origin (per-mention)"
+    )
+    quantity: Optional[int] = Field(
+        default=None, description="Exact count stated for this mention (per-mention)"
+    )
+    quantity_text: Optional[str] = Field(
+        default=None, description="Verbatim count phrase (e.g. 'several') (per-mention)"
+    )
+    PlaceID: Optional[str] = Field(
+        default=None, description="Linked place for this mention (denormalized)"
+    )
+    place_name: Optional[str] = Field(
+        default=None, description="Place name for this mention (per-mention)"
+    )
+    assertion_source: Optional[str] = Field(
+        default=None, description="narrative | media_narration (how presence asserted)"
+    )
     EventID: str = Field(description="Links to Event.EventID")
     Event_Name: Optional[str] = None
     Sub_eventID: str = Field(description="Links to Sub-eventID in Event.Sub-events[]")
@@ -145,7 +166,61 @@ class EquipmentExtraction(BaseModel):
     )
     country_of_origin: Optional[str] = Field(
         default=None,
-        description="ISO 3166-1 alpha-3 country code (e.g., 'USA', 'DEU', 'GBR', 'FRA', 'ITA', 'JPN', 'CAN')",
+        description=(
+            "DESIGN/MANUFACTURE origin of this equipment TYPE — the country that "
+            "built/designed it, NOT whoever is using it here (a Sherman is 'USA' "
+            "even when used by the British). ISO 3166-1 alpha-3 (e.g., 'USA', "
+            "'DEU', 'GBR', 'FRA', 'ITA', 'JPN', 'CAN')"
+        ),
+    )
+    operating_country: Optional[str] = Field(
+        default=None,
+        description=(
+            "Who was USING the equipment in THIS mention (may differ from origin: "
+            "British using US Shermans -> 'GBR'; Germans using captured US gear -> "
+            "'DEU'). ISO 3166-1 alpha-3. Per-mention, does NOT change the equipment "
+            "type's identity."
+        ),
+    )
+    captured: bool = Field(
+        default=False,
+        description=(
+            "True if the equipment was CAPTURED and used against its origin (e.g. a "
+            "German-operated captured US M10). Per-mention."
+        ),
+    )
+    quantity: Optional[int] = Field(
+        default=None,
+        description=(
+            "Exact number of THIS equipment stated for THIS mention (e.g. '10 M4 "
+            "Shermans' -> 10). Null if not an exact number (use quantity_text for "
+            "vague counts)."
+        ),
+    )
+    quantity_text: Optional[str] = Field(
+        default=None,
+        description=(
+            "Verbatim count phrase exactly as the source states it (e.g. 'several', "
+            "'a handful', 'about a dozen', or '10'). Preserves vague counts without "
+            "fabricating a number. Null if no count is stated."
+        ),
+    )
+    place_name: Optional[str] = Field(
+        default=None,
+        description=(
+            "Where this equipment was, per THIS mention (e.g. 'the crossroads in "
+            "Cherbourg'). Strongly preferred but optional. Linked to a PlaceID when "
+            "resolvable."
+        ),
+    )
+    assertion_source: Optional[str] = Field(
+        default=None,
+        description=(
+            "How the source ASSERTS this equipment was present: 'narrative' (stated "
+            "in the text) or 'media_narration' (a video/audio narration explicitly "
+            "says so). Only create a mention when the source ASSERTS presence; "
+            "ambient/stock footage that does not assert it must NOT be extracted."
+        ),
     )
     variants: List[Variant] = Field(default_factory=list)
     specifications: Optional[Dict[str, Any]] = Field(
@@ -1475,6 +1550,28 @@ def _build_mention(
         mention["context"] = eq.context
     if eq.original_text:
         mention["original_text"] = eq.original_text
+    # Per-mention operator (distinct from the equipment type's country_of_origin)
+    if eq.operating_country:
+        mention["operating_country"] = eq.operating_country
+    if eq.captured:
+        mention["captured"] = True
+    # Per-mention quantity: exact number AND/OR the verbatim count phrase.
+    if eq.quantity is not None:
+        mention["quantity"] = eq.quantity
+    if eq.quantity_text:
+        mention["quantity_text"] = eq.quantity_text
+    # Per-mention place (strongly preferred, not required). Carry the stated name and
+    # denormalize a PlaceID from the sub-event's place link when unambiguous (one place),
+    # mirroring how DateID is denormalized onto the mention.
+    if eq.place_name:
+        mention["place_name"] = eq.place_name
+    sub_places = sub_event.get("places") or []
+    if len(sub_places) == 1:
+        mention["PlaceID"] = sub_places[0]
+    # How the source asserts presence (narrative | media_narration). Only asserting
+    # mentions are extracted; ambient/stock footage is dropped upstream (prompt rule).
+    if eq.assertion_source:
+        mention["assertion_source"] = eq.assertion_source
 
     # Link to date
     _link_date_to_mention(mention, dates_index, output_root)
