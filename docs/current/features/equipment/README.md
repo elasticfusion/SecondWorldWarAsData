@@ -89,15 +89,19 @@ Enrichment-on-identity (follows identity resolution)
   too generic to be a specific identity is still created minimal (nothing to look up).
 - **Supporting-unit equipment linking is name-exact.** `equipment_name` → `EquipmentID`
   uses the same exact-index lookup; no alias/fuzzy resolution.
-- **Enrichment-on-identity: image/license fetch LIVE-validated; Grok text + vision still
-  stubbed.** The Wikipedia canonical-image + license fetch was run against the live
-  Wikipedia/Commons API (M4 Sherman, M26 Pershing → correct article, image, and license
-  e.g. "CC BY-SA 2.0"). A live-only bug was found and fixed: Wikipedia appends
-  `?utm_source=…` tracking params to image URLs, which corrupted the Commons `File:` title
-  and silently broke license lookup (now stripped; regression-tested). Still untested
-  live: the **Grok** text/specs enrichment and **vision TYPE verification** (no Grok API
-  key configured in this environment) and the OpenSERP image path (`search_media` binary
-  absent). The `image_scope` default (representative vs documentary) is unit-tested.
+- **Enrichment-on-identity: Wikipedia + Grok text/specs LIVE-validated; vision + OpenSERP
+  images still untested.** Run against the live APIs with the real Grok key (loaded from
+  `.env` via `load_dotenv`). Confirmed working: Wikipedia canonical image + license
+  (M4 Sherman, M26 Pershing) and Grok text/specs enrichment (returns weight/speed/armament/
+  crew/variants); `_enrich_on_identity` on an M26 Pershing stub stamps `enrichment_status`
+  and fills specs end-to-end. **Three live-only bugs found and fixed:** (1) Wikipedia image
+  URLs carry `?utm_source=…` params that broke Commons license lookup; (2)
+  `equipment_ext/enrichment.py` had a runtime `NameError` (TYPE_CHECKING-only `GrokClient`
+  used in a signature — fixed with `from __future__ import annotations`); (3)
+  `_enrich_equipment_data` did a bare `json.loads` on a ```` ```json ````-fenced response,
+  silently returning `{}` for EVERY record — now uses `extract_json`. Still untested live:
+  **vision TYPE verification** + the **OpenSERP image path** (`search_media` binary absent
+  in this environment). `image_scope` default is unit-tested.
 - **Validated by hermetic tests only.** No live end-to-end equipment run has been executed
   against a real chapter (no equipment records currently in `output/`); the origin/operator,
   quantity/place, assertion-gate, related_equipment, and enrichment-on-identity behaviors

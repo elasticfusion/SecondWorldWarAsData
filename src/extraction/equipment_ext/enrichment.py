@@ -1,5 +1,7 @@
 """Equipment enrichment operations — extracted from equipment.py for readability."""
 
+from __future__ import annotations
+
 import hashlib
 import json
 import logging

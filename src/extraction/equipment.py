@@ -1263,16 +1263,17 @@ def _enrich_equipment_data(
     )
 
     try:
-        response = grok_client.chat_completion(
+        # Use extract_json: the model wraps JSON in a ```json fence, which a bare
+        # json.loads(chat_completion(...)) cannot parse (it silently returned {} for
+        # every record — caught by a live run). extract_json strips the fence.
+        enriched = grok_client.extract_json(
             prompt,
             temperature=0.1,
             use_cache=True,
             cache_type="equipment_enrichment",
         )
-
-        enriched = json.loads(response)
         logger.debug("Enriched data for %s", common_name)
-        return enriched
+        return enriched if isinstance(enriched, dict) else {}
     except Exception as e:
         logger.warning("Failed to enrich equipment data for %s: %s", common_name, e)
         return {}
