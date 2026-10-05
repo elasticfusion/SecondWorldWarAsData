@@ -37,11 +37,10 @@ def test_abbreviations_expand():
     assert _m("3rd Armd Div", "3rd Armored Division")
 
 
-def test_roman_corps_numbering_distinct_from_arabic():
-    # VII Corps (roman 7) should not match 7th Corps (arabic) by number key
-    k_roman = derive_unit_key("VII Corps")
-    k_arabic = derive_unit_key("7th Corps")
-    assert k_roman.numbers != k_arabic.numbers
+def test_roman_corps_numbering_unifies_with_arabic():
+    # Owner rule: '7th Corps' is a typo for 'VII Corps' — roman unifies with arabic.
+    assert derive_unit_key("VII Corps").numbers == derive_unit_key("7th Corps").numbers
+    assert _m("VII Corps", "7th Corps")
 
 
 def test_group_nationality_veto():
@@ -147,3 +146,47 @@ def test_linker_uses_canonical_key_and_nicknames():
     assert find("Screaming Eagles") == "g2.json"  # nickname
     assert find("9th Armored") == "g3.json"  # arm veto routes correctly
     assert find("bogus unit") is None  # no false link
+
+
+def test_infantry_default_only_at_division_and_regiment():
+    from src.dedup.unit_key import derive_unit_key
+
+    # div/regiment -> infantry default
+    assert derive_unit_key("9th Division").arm == "infantry"
+    assert derive_unit_key("9th Regiment").arm == "infantry"
+    # below regiment -> arm unknown (NOT infantry)
+    assert derive_unit_key("9th Battalion").arm is None
+    assert derive_unit_key("9th Company").arm is None
+    # a bare battalion vs battalion still matches (arm unknown-permissive)
+    assert _m("9th Battalion", "9th Battalion")
+    # echelon veto still separates battalion from division
+    assert not _m("9th Battalion", "9th Infantry Division")
+
+
+def test_combat_commands_are_armored_and_letter_distinct():
+    from src.dedup.unit_key import derive_unit_key
+
+    cca = derive_unit_key("CCA, 3rd Armored Division")
+    ccb = derive_unit_key("CCB, 3rd Armored Division")
+    assert cca.echelon == "combat_command" and cca.arm == "armored"
+    assert "cca" in cca.numbers and "ccb" in ccb.numbers
+    # different command letter -> different units
+    assert not _m("CCA, 3rd Armored", "CCB, 3rd Armored")
+    # same command, abbreviated vs full -> match
+    assert _m("CCB, 3rd Armored", "CCB, 3rd Armored Division")
+    # "Combat Command B" spelled out resolves the same
+    assert derive_unit_key("Combat Command B").echelon == "combat_command"
+    assert "ccb" in derive_unit_key("Combat Command B").numbers
+
+
+def test_combat_command_requires_parent_division():
+    # A CC must be affiliated with a division; a bare CC (letter only) is underspecified
+    # and must NOT confidently match another bare CC (could be different divisions).
+    assert not _m("Combat Command B", "Combat Command B")
+    assert not _m("CCB", "CCB")
+    # divisioned CCs: same division+letter match; different division/letter don't.
+    assert _m("CCB, 3rd Armored", "CCB, 3rd Armored Division")
+    assert not _m("CCB, 3rd Armored", "CCB, 7th Armored")
+    assert not _m("CCA, 3rd Armored", "CCB, 3rd Armored")
+    # a bare CC does not match a divisioned CC either.
+    assert not _m("Combat Command B", "CCB, 3rd Armored Division")

@@ -1743,6 +1743,13 @@ def _auto_merge_entity_type(entity_dir: Path, id_field: str) -> int:
         if len(normalized) == 1 and len(people) >= 2:
             merge_generic(entity_dir, people, 0, id_field)
             merged += len(people) - 1
+        elif len(people) >= 2 and _group_cluster_canonically_mergeable(
+            entity_dir, names
+        ):
+            # people_groups: the canonical unit key is DETERMINISTIC — a clean key match
+            # with no veto IS the completed disambiguation, so auto-merge (no human gate).
+            merge_generic(entity_dir, people, 0, id_field)
+            merged += len(people) - 1
         else:
             remaining.append(group)
 
@@ -1751,6 +1758,33 @@ def _auto_merge_entity_type(entity_dir: Path, id_field: str) -> int:
         json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
     )
     return merged
+
+
+def _group_cluster_canonically_mergeable(entity_dir: Path, names: list) -> bool:
+    """True only for people_groups when ALL names resolve to a single canonical unit key
+    with no veto between any pair — i.e. disambiguation is complete and deterministic, so
+    the cluster is a confident auto-merge. False for other entity types or any mismatch.
+    """
+    if entity_dir.name != "people_groups":
+        return False
+    real = [n for n in names if n]
+    if len(real) < 2:
+        return False
+    try:
+        from src.dedup.unit_key import derive_unit_key, unit_keys_match
+
+        keys = [derive_unit_key(n) for n in real]
+        # every key must have a number (a keyless/underspecified name is NOT auto-merged)
+        if any(not k.numbers for k in keys):
+            return False
+        base = keys[0]
+        for k in keys[1:]:
+            ok, _ = unit_keys_match(base, k)
+            if not ok:
+                return False
+        return True
+    except Exception:  # noqa: BLE001 - never auto-merge on error
+        return False
 
 
 def _extract_coords_from_place(data: dict) -> tuple:

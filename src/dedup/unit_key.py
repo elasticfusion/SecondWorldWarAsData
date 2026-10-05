@@ -186,7 +186,9 @@ def _numbers(name: str) -> Set[str]:
         if w in _ORDINAL_WORDS:
             nums.add(_ORDINAL_WORDS[w])
         elif w in _ROMAN:
-            nums.add(f"r{_ROMAN[w]}")  # keep roman distinct (corps numbering)
+            # Roman numerals (used for corps) unify with arabic: 'VII Corps' == '7th
+            # Corps' (a bare arabic corps is a typo for the roman). Owner-confirmed.
+            nums.add(_ROMAN[w])
     return nums
 
 
@@ -239,22 +241,52 @@ def resolve_nickname(name: str) -> Optional[str]:
 def derive_unit_key(name: str, *, infantry_default: bool = True) -> UnitKey:
     """Derive (numbers, service, arm, echelon) from a unit name.
 
-    A known NICKNAME ("Screaming Eagles") is resolved to its canonical name first, so
-    nicknames key identically to their numbered unit. service defaults to ARMY when no
-    service marker is present. arm (combat arm) is meaningful under ARMY and defaults to
-    'infantry' ONLY when service is ARMY (never default a Navy/Marine unit to infantry).
-    echelon stays None when absent.
+    A known NICKNAME ("Screaming Eagles") is resolved to its canonical name first.
+    service defaults to ARMY when no service marker is present. echelon stays None when
+    absent. arm (combat arm) defaults to 'infantry' ONLY at the DIVISION or REGIMENT
+    echelon under Army — WWII bare numbered divisions/regiments are infantry by default,
+    but a bare 'battalion'/'company' is NOT reliably infantry, so arm stays unknown below
+    regiment. Combat Commands (CCA/CCB/CCR) are the armored-division brigade-equivalent
+    combined-arms formations: recognized as echelon 'combat_command', arm 'armored',
+    with the command letter captured so CCA/CCB/CCR stay distinct.
     """
     canonical = resolve_nickname(name)
     source = canonical if canonical else (name or "")
     expanded = _expand(source)
-    numbers = frozenset(_numbers(source))
+
+    # Combat Command (CCA/CCB/CCR or "Combat Command A/B/R"): armored combined-arms.
+    cc = re.search(r"\bcc\s*([abr])\b", expanded) or re.search(
+        r"\bcombat command\s+([abr])\b", expanded
+    )
+
+    numbers = set(_numbers(source))
     service = _first_term(expanded, _SERVICE_TERMS) or "ARMY"
     arm = _first_term(expanded, _ARM_TERMS)
-    if arm is None and infantry_default and service == "ARMY":
-        arm = "infantry"
     echelon = _first_term(expanded, _ECHELON_TERMS)
-    return UnitKey(numbers=numbers, service=service, arm=arm, echelon=echelon)
+
+    if cc:
+        # The CC letter is the discriminating designator (keep distinct from numbers);
+        # a CC belongs to an armored division and is itself an armored combined-arms unit.
+        numbers.add(f"cc{cc.group(1)}")
+        echelon = "combat_command"
+        arm = arm or "armored"
+
+    # Infantry combat-arm default: division/regiment only, Army only, bare arm only.
+    if (
+        arm is None
+        and service == "ARMY"
+        and infantry_default
+        and echelon
+        in (
+            "division",
+            "regiment",
+        )
+    ):
+        arm = "infantry"
+
+    return UnitKey(
+        numbers=frozenset(numbers), service=service, arm=arm, echelon=echelon
+    )
 
 
 def unit_keys_match(k1: UnitKey, k2: UnitKey) -> tuple[bool, str]:
@@ -264,6 +296,13 @@ def unit_keys_match(k1: UnitKey, k2: UnitKey) -> tuple[bool, str]:
         return False, "number mismatch"
     if not k1.numbers:
         return False, "no unit number"
+    # Combat Command must be affiliated with a DIVISION to be identifiable: a bare
+    # CCA/CCB/CCR (letter only, no parent-division number) is underspecified — its
+    # composition is task-organized/fluid, so letter+division is the only reliable
+    # identity. Two bare CCs can't be confidently matched (route to the human gate).
+    if any(str(n).startswith("cc") for n in k1.numbers):
+        if not any(not str(n).startswith("cc") for n in k1.numbers):
+            return False, "combat command without parent division (underspecified)"
     # SERVICE mismatch -> ABSOLUTE veto (1st Marine Division != 1st Infantry Division).
     if k1.service != k2.service:
         return False, f"service mismatch ({k1.service} vs {k2.service})"

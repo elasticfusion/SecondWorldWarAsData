@@ -89,3 +89,21 @@ name BEFORE key derivation, so a nickname keys identically to its numbered unit 
 vetoes still apply (Screaming Eagles ≠ 82nd Airborne; Big Red One ≠ 1st *Armored*).
 `resolve_nickname()` is used by both the group deduper and the person→group linker, so
 they resolve identically.
+
+---
+
+## Combat arm default + Combat Commands (echelon-aware)
+
+- **Infantry default is echelon-conditional:** a bare numbered **division/regiment**
+  (Army) defaults to arm=infantry; **below regiment** (battalion/company/…) arm stays
+  **unknown** — bare lower units are not reliably infantry. (The echelon veto still keeps
+  a battalion from matching a division.)
+- **Combat Commands** (CCA / CCB / CCR, or "Combat Command A/B/R") are the armored
+  division's brigade-equivalent combined-arms formations. They are keyed as echelon
+  `combat_command`, arm `armored`, with the command letter kept distinct (CCA ≠ CCB ≠
+  CCR), and link to their parent division's number when present.
+- A CC **must be affiliated with a division** to be identifiable (its composition is
+  task-organized and changes with circumstances, so you cannot identify it by its
+  subordinate units). A **bare CC** (letter only, no parent division) is *underspecified*
+  → it does NOT confidently match and is routed to the human gate, where the surrounding
+  text — typically the **commanding officer** — is the disambiguating evidence.
