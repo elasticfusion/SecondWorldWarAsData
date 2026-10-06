@@ -49,12 +49,11 @@ reads-then-rewrites it (= has a `SCHEMA_TARGET` contract that must track the ver
 | Maps (catalog) | `output/maps/*.json` | `maps_output.py` | — |
 | Map features | `output/map_features/*.json` | `map_features_output.py` | — (prototype) |
 | Bibliography | `output/bibliography/*.json` | `bibliography_output.py` | — |
+| Images | `output/images/*.json` | `images_output.py` | — |
 | Batch mentions | (per-entity dirs) | per-entity | ✅ `batch_parallel.py` |
 
-**Gap (unenforced):** **Images** (`output/images/*.json`) has **no** `images_output.py`
-enforced schema — only the extraction-time `json_schemas.IMAGES_SCHEMA`, which current image
-records do NOT satisfy. Changes to image records are therefore NOT version-gated. (Tracked
-as a known gap to be enforced.)
+**Images** (`output/images/*.json`) — enforced by `images_output.py` (added; all 567 real
+records validate). No unenforced entity types remain.
 
 **Not entity records (no schema / no version concern):** `index.json`,
 `duplicate_report.json`, `not_duplicates.json`, `.processed_events.json`,
