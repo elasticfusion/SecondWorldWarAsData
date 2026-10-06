@@ -40,16 +40,34 @@ LOGISTICS_OUTPUT_SCHEMA = {
             "type": ["array", "null"],
             "items": {"type": ["string", "object"]},
         },
+        "impacted_places": {
+            "type": ["array", "null"],
+            "items": {"type": ["string", "object"]},
+        },
+        "weather_impact": {
+            "type": ["object", "null"],
+            "additionalProperties": False,
+            "properties": {
+                "WeatherID": ulid_field(nullable=True),
+                "impact_description": make_nullable("string"),
+                "severity": enum_field(
+                    ["critical", "high", "medium", "low"], nullable=True
+                ),
+            },
+        },
         "event_mentions": {
             "type": ["array", "null"],
             "items": {
                 "type": "object",
                 "properties": {
-                    "MentionID": ulid_field(),
-                    "EventID": ulid_field(),
+                    "EventMentionID": ulid_field(),
+                    "EventID": ulid_field(nullable=True),
                     "Sub_eventID": ulid_field(nullable=True),
-                    "book": make_nullable("string"),
-                    "chapter": make_nullable("string"),
+                    "paragraph_numbers": {
+                        "type": ["array", "null"],
+                        "items": {"type": "integer"},
+                    },
+                    "context": make_nullable("string"),
                 },
             },
         },
