@@ -167,7 +167,11 @@ def _save_group(
 ):
     """Save or merge a group file."""
     group_name = group.get("group_name", "Unknown")
-    group_id = group.get("GroupID", str(new_ulid()))
+    # Treat a missing OR empty-string GroupID as absent -> mint one. The computed id MUST be
+    # written into the record (not just used for the filename) or the group has no primary
+    # key and is invisible to every cross-reference (casualties/logistics/maps resolve to it).
+    group_id = group.get("GroupID") or str(new_ulid())
+    group["GroupID"] = group_id
 
     # Add book metadata to event mentions
     for mention in group.get("event_mentions", []):
@@ -186,9 +190,11 @@ def _save_group(
     if existing_filename and (groups_dir / existing_filename).exists():
         # Merge with existing
         from src.utils.file_lock import locked_json
+        from src.schemas import inject_metadata
 
         with locked_json(groups_dir / existing_filename) as (existing_group, save):
             merged = _merge_group(existing_group, group)
+            inject_metadata(merged)
             save(merged)
         logger.info("    Updated: %s", group_name)
     else:
@@ -196,7 +202,9 @@ def _save_group(
         filename = _name_to_filename(group_name, group_id)
         filepath = groups_dir / filename
         from src.utils.file_lock import write_json_with_lock
+        from src.schemas import inject_metadata
 
+        inject_metadata(group)
         write_json_with_lock(filepath, group)
         _update_index(index_file, group_name, filename)
         logger.info("    Created: %s", group_name)
