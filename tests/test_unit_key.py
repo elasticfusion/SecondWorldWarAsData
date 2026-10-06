@@ -250,3 +250,13 @@ def test_roman_parser_rejects_common_words():
         assert _parse_roman(w) is None, w
     assert _parse_roman("lxvi") == 66
     assert _parse_roman("mcm") == 1900 or _parse_roman("mcm") is None  # >399 -> None
+
+
+def test_exclusion_modifier_complement_not_whole():
+    """A task-tailored formation MINUS a component is NOT the whole, NOT the excluded part,
+    and 'less CCA' != 'less CCB' — prevents merging a formation with its complement."""
+    assert not _m("3rd Armored Division (less CCB)", "3rd Armored Division")
+    assert not _m("2nd Armored Division (less CCA)", "2nd Armored Division (less CCB)")
+    assert not _m("1st Division minus 1st Regiment", "1st Division")
+    # the exclusion does not fabricate a match either; genuine dup still matches
+    assert _m("3rd Armored CCB", "CCB, 3rd Armored Division")

@@ -390,6 +390,17 @@ def derive_unit_key(name: str, *, infantry_default: bool = True) -> UnitKey:
         numbers.add(f"cc{cc.group(1)}")
         echelon = "combat_command"
 
+    # Exclusion modifier ("3d Armored Division (less CCB)", "... minus CCA", "(-)"):
+    # a task-tailored formation MINUS a component is NOT the whole formation, and NOT the
+    # excluded component. Stamp a distinguishing token so its key differs from both (rides
+    # the number-set veto in unit_keys_match). The excluded component (if named) is folded
+    # in so "less CCA" and "less CCB" stay distinct too.
+    m_excl = re.search(r"\b(?:less|minus)\s+([a-z0-9]+)\b", expanded)
+    if m_excl:
+        numbers.add(f"less-{m_excl.group(1)}")
+    elif re.search(r"\(\s*-\s*\)", expanded):
+        numbers.add("less-x")
+
     arm = _resolve_arm(arm, expanded, service, echelon, bool(cc), infantry_default)
     return UnitKey(
         numbers=frozenset(numbers), service=service, arm=arm, echelon=echelon
