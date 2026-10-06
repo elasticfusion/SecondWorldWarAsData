@@ -179,6 +179,31 @@ layer. This is the primary thing the prototype surfaced.
 **Other rough edges:** dense-cluster OCR noise on a few labels (`106 XX 28`, `II30 560.VG`)
 — the division symbol (`XX`) bleeding into text; a cleanup/normalization pass + resolution
 confidence floor handle these.
+
+---
+
+## Tier-2 probe — dated movement layer (one tile, live)
+
+Given the dated legend, Grok extracted MOVEMENT as structured `unit × from→to × date ×
+posture` relations and dated front lines:
+
+- **10 movements** on one tile, e.g.
+  - `18 VG | hostile | attack | Ormont → Roth | 16-19 DEC`
+  - `14 CAV | friend | defend | Roth → Kobscheid`
+  - `1 SS | hostile | attack | Hallschlag → Losheim | 16-19 DEC`
+  - `422 INF | friend | axis | Schonberg → Oberlascheid | 18-19 DEC`
+- **3 dated front lines** with the named places each passes near (US positions 15 Dec vs 19
+  Dec; West Wall anchored at Bleialf/Grosslangenfeld/Ormont).
+
+**The `18 VG → Roth, 16-19 Dec` + `14 CAV defend Roth` lines are the flagship Roth-16-Dec
+cross-source use-case answered directly from the map.** Tier-2 is substantially reachable;
+gated mainly on (a) the unit-nomenclature expander (same blocker as Tier-1 units) and (b)
+tile-seam merging for arrows whose origin is off-tile. Minor OCR artifacts (Hallschlag,
+Weckerath) as expected.
+
+**Conclusion:** Green Book maps yield Tier-1 strongly today and Tier-2 (dated operational
+movement) with the unit-expander + seam-merge. Tier-3 (survey geometry) stays out by design
+(coordinates via resolved PlaceID, never pixels).
 2. Confidence floor for auto-resolving PlaceID/GroupID (suggest reuse the weather/equipment
    matcher thresholds — ~0.88 name match) before falling back to `null` + verbatim label.
 3. Do we store the FeatureCollection on the existing map record (new `map_features` key) or
