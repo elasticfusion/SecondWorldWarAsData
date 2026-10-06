@@ -50,9 +50,9 @@ def extract_casualties(
     dates_index = build_name_index(output_root / "dates", "DateID", "date_start")
     places_index = build_name_index(output_root / "places", "PlaceID", "name")
     people_index = build_name_index(output_root / "people", "PersonID", "name")
-    people_groups_index = build_name_index(
-        output_root / "people_groups", "PeopleGroupID", "group_name"
-    )
+    from src.extraction.group_resolver import build_group_unitkey_index
+
+    people_groups_index = build_group_unitkey_index(output_root / "people_groups")
 
     casualties_dir = output_root / "casualties"
     casualties_dir.mkdir(parents=True, exist_ok=True)
@@ -607,14 +607,19 @@ def _normalize_role(role: str) -> str:
 def _resolve_organizations(
     orgs: List[Any], people_groups_index: Dict[str, Any]
 ) -> List[Dict[str, Any]]:
-    """Resolve organization references to PeopleGroupIDs."""
+    """Resolve organization references to PeopleGroupIDs via the shared unit_key resolver
+    (structural number/service/arm/echelon match), not exact-string lookup — so
+    '358th Infantry' resolves to the '358th Infantry Regiment' record. The index is the
+    unit_key index from group_resolver.build_group_unitkey_index."""
+    from src.extraction.group_resolver import resolve_group_id
+
     resolved = []
     for org in orgs:
         if isinstance(org, dict):
             org_name = org.get("name", "")
             if not org_name:
                 continue
-            org_id = _find_organization_id(org_name, people_groups_index)
+            org_id = resolve_group_id(org_name, people_groups_index)
             resolved.append(
                 {
                     "PeopleGroupID": org_id,
@@ -664,11 +669,6 @@ def _resolve_places(
             place_id = _find_place_id(place_name, places_index)
             resolved.append({"PlaceID": place_id, "name": place_name})
     return resolved
-
-
-def _find_organization_id(name: str, index: Dict[str, str]) -> Optional[str]:
-    """Find organization ID by name."""
-    return index.get(name.lower())
 
 
 def _find_person_id(name: str, index: Dict[str, str]) -> Optional[str]:
