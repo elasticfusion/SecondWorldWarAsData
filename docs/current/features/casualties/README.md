@@ -102,13 +102,30 @@ Resolution reuses each category's **shared library** (not bespoke exact-string m
   resolved-interval overlap, carrying `time_source`).
 - **Equipment** → EquipmentID via `equipment_disambiguation.resolve_designation` + the
   equipment index — the `impacted_equipment[]` link (CONTEXT: equipment *involved in* a
-  personnel casualty, `relation: causative|medical`; NOT equipment-loss cataloging).
+  personnel casualty). `relation` is an enforced dimension ∈ {`causative` (the weapon/vehicle
+  that inflicted the loss), `medical` (ambulance/surgical/evacuation equipment responding),
+  `other`}; NOT equipment-loss cataloging.
+- **Logistics** → LogisticsID via the shared `logistics_resolver` (`impacted_logistics[]`),
+  two tiers: **explicit** (the source ties the casualty to a named supply/transport failure)
+  and **co_occurring** (an inferred *candidate* when the casualty shares a GroupID AND
+  co-occurs in time — shared DateID or ISO-interval overlap — with a supply-type logistics
+  record). The `association` field labels the tier; `co_occurring` is a review candidate,
+  never asserted as causation (logistics carries no PlaceID, so place is not a join key).
 - **People** → PersonID via exact name match. **By design:** there is no shared fuzzy
   people resolver (the whole codebase matches people exactly), people records carry
   essentially no aliases, and fuzzy person-matching risks wrong-person links — null is safer
   than a wrong individual.
+- **Date** → DateID also infers a **missing year** from the event's single-year date
+  context (`_event_year_lookup`): a bare "9 August" resolves to 1944-08-09 when the event is
+  wholly in 1944; multi-year events decline (no fabrication). Lifted date resolution 608→1058
+  (+74%) on the corpus.
 
 Unresolved references keep the name with a `null` ID (never fabricated).
+
+> **Note:** these cross-reference improvements populate on **re-extraction** — the current
+> on-disk corpus predates them, so existing records show the old (sparser) resolution. The
+> join substrate exists (e.g. 414 GroupIDs shared between casualties and logistics); it fires
+> once casualties are re-run through the upgraded pipeline.
 
 ---
 

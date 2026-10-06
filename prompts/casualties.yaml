@@ -89,8 +89,12 @@ rules:
   - If no casualties found for a sub-event, return empty array for that key
   - Do NOT include equipment or materiel losses — only personnel casualties
   - The impacted_equipment field is CONTEXT only -- equipment INVOLVED in a PERSONNEL
-    casualty, e.g. the vehicle/weapon that caused it (relation causative) or the medical/
-    evacuation equipment responding (relation medical). This is NOT a list of destroyed
-    equipment (that is the Equipment entity's job). Omit it when no specific equipment is
-    tied to the casualty.
+    casualty. Set relation to causative (the vehicle/weapon that caused it), medical
+    (ambulance/surgical/evacuation equipment responding), or other. This is NOT a list of
+    destroyed equipment (that is the Equipment entity's job). Omit when no specific
+    equipment is tied to the casualty.
+  - The impacted_logistics field links a casualty to a supply/transport failure the SOURCE
+    explicitly ties to it (e.g. deaths from a fuel/ammo shortage or no winter clothing).
+    Provide a LogisticsID if known, else a short description. Omit when the text does not
+    tie the casualty to a logistics problem (co-occurring links are inferred automatically).
   - Count qualifier values: exact, approximately, greater_than, less_than, unknown

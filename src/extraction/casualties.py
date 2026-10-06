@@ -63,6 +63,10 @@ def extract_casualties(
     equipment_index = build_name_index(
         output_root / "equipment", "EquipmentID", "common_name"
     )
+    event_year_by_id = _event_year_lookup(output_root / "dates")
+    from src.extraction.logistics_resolver import build_logistics_index
+
+    logistics_index = build_logistics_index(output_root / "logistics")
 
     casualties_dir = output_root / "casualties"
     casualties_dir.mkdir(parents=True, exist_ok=True)
@@ -112,6 +116,8 @@ def extract_casualties(
                     people_index,
                     people_groups_index,
                     equipment_index,
+                    fallback_year=event_year_by_id.get(event_id),
+                    logistics_index=logistics_index,
                 )
                 casualties.append(casualty)
             except Exception as e:
@@ -375,12 +381,14 @@ def _validate_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 
 def _resolve_casualty_date(
-    casualty_data: Dict[str, Any], dates_index: Dict[str, Any]
+    casualty_data: Dict[str, Any],
+    dates_index: Dict[str, Any],
+    fallback_year: Optional[int] = None,
 ) -> Optional[Dict[str, Any]]:
     """Resolve date from casualty data (structured or string)."""
     for key in ("date", "date_string"):
         if key in casualty_data:
-            resolved = _resolve_date(casualty_data[key], dates_index)
+            resolved = _resolve_date(casualty_data[key], dates_index, fallback_year)
             if resolved:
                 return resolved
     return None
@@ -437,10 +445,11 @@ def _resolve_equipment(
 ) -> List[Dict[str, Any]]:
     """Resolve equipment references to EquipmentID via the shared equipment disambiguator
     (resolve_designation: exact→alias→fuzzy→Grok canonical name) then the equipment index
-    (common_name→EquipmentID). The casualty↔equipment link covers both causative (the
-    weapon/vehicle involved) and medical/evacuation equipment; a `relation` tag is carried
-    through when the extractor provides it (flat link otherwise — relation dimension is
-    Phase B). Unresolved → null EquipmentID, name preserved."""
+    (common_name→EquipmentID). The casualty↔equipment link is a first-class DIMENSION via
+    `relation` ∈ {causative, medical, other}: causative = the weapon/vehicle that inflicted
+    the loss; medical = ambulance/surgical/evacuation equipment responding. Invalid/absent
+    relation → 'other'. Unresolved name → null EquipmentID (preserved, never fabricated).
+    """
     from src.extraction.equipment_disambiguation import resolve_designation
 
     resolved = []
@@ -452,16 +461,15 @@ def _resolve_equipment(
         name = item.get("name", "")
         if not name:
             continue
-        eq_id = None
         res = resolve_designation(name)
         canonical = (res or {}).get("canonical_name") or name
         eq_id = equipment_index.get(canonical.lower()) or equipment_index.get(
             name.lower()
         )
-        entry = {"EquipmentID": eq_id, "name": name}
-        if item.get("relation"):
-            entry["relation"] = item["relation"]
-        resolved.append(entry)
+        relation = item.get("relation")
+        if relation not in _VALID_EQUIPMENT_RELATIONS:
+            relation = "other"
+        resolved.append({"EquipmentID": eq_id, "name": name, "relation": relation})
     return resolved
 
 
@@ -477,6 +485,8 @@ def _build_casualty(
     people_index: Dict[str, Any],
     people_groups_index: GroupUnitKeyIndex,
     equipment_index: Optional[Dict[str, Any]] = None,
+    fallback_year: Optional[int] = None,
+    logistics_index: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Build casualty JSON structure."""
     casualty = {
@@ -501,7 +511,7 @@ def _build_casualty(
     if "count" in casualty_data:
         casualty["count"] = _normalize_counts(casualty_data["count"])
 
-    date = _resolve_casualty_date(casualty_data, dates_index)
+    date = _resolve_casualty_date(casualty_data, dates_index, fallback_year)
     if date:
         casualty["date"] = date
 
@@ -529,11 +539,36 @@ def _build_casualty(
     # the person+place+date join doesn't require parsing the loose arrays.
     _set_direct_anchors(casualty, casualty_data)
 
+    # Logistics cross-ref (Phase B): explicit text-asserted links + inferred co-occurring
+    # candidates (shared GroupID + overlapping date), honestly labeled by association.
+    if logistics_index is not None:
+        from src.extraction.logistics_resolver import resolve_logistics
+
+        group_ids = [
+            o.get("PeopleGroupID")
+            for o in casualty.get("impacted_organizations", []) or []
+            if isinstance(o, dict) and o.get("PeopleGroupID")
+        ]
+        date_iso = None
+        date_id = None
+        if isinstance(casualty.get("date"), dict):
+            date_iso = casualty["date"].get("iso_date")
+            date_id = casualty["date"].get("DateID")
+        links = resolve_logistics(
+            casualty_data.get("impacted_logistics", []),
+            group_ids,
+            date_iso,
+            logistics_index,
+            date_id=date_id,
+        )
+        if links:
+            casualty["impacted_logistics"] = links
+
     return casualty
 
 
 def _resolve_date(
-    date_ref: Any, dates_index: Dict[str, Any]
+    date_ref: Any, dates_index: Dict[str, Any], fallback_year: Optional[int] = None
 ) -> Optional[Dict[str, Any]]:
     """Resolve date reference to DateID via the shared interval-aware linker.
 
@@ -550,7 +585,11 @@ def _resolve_date(
     if not isinstance(date_ref, str) or not date_ref:
         return None
 
-    iso = date_ref if _looks_iso(date_ref) else _parse_date_string(date_ref)
+    iso = (
+        date_ref
+        if _looks_iso(date_ref)
+        else _parse_date_string(date_ref, fallback_year)
+    )
     if iso:
         date_id, time_source = _resolve_date_link(iso, dates_index)
         if date_id:
@@ -570,13 +609,51 @@ def _looks_iso(s: str) -> bool:
     return bool(re.match(r"^\d{4}-\d{2}(-\d{2})?$", s))
 
 
-def _parse_date_string(date_str: str) -> Optional[str]:
-    """Parse natural language date to ISO format (best effort)."""
+def _event_year_lookup(dates_dir: Path) -> Dict[str, Optional[int]]:
+    """Map EventID -> the single year its linked date records fall in, or None when the
+    event spans multiple years (ambiguous -> don't infer). Used to fill a year-less
+    casualty date from its event's context without fabricating."""
+    import glob
+
+    years: Dict[str, set] = {}
+    if not dates_dir.exists():
+        return {}
+    for f in dates_dir.glob("*.json"):
+        if f.name == "index.json":
+            continue
+        try:
+            d = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        ds = d.get("date_start") or ""
+        m = re.match(r"(\d{4})", ds)
+        if not m:
+            continue
+        yr = int(m.group(1))
+        for em in d.get("event_mentions", []) or []:
+            eid = em.get("EventID")
+            if eid:
+                years.setdefault(eid, set()).add(yr)
+    # single-year events -> that year; multi-year -> None (ambiguous, don't guess)
+    return {
+        eid: (next(iter(ys)) if len(ys) == 1 else None) for eid, ys in years.items()
+    }
+
+
+def _parse_date_string(
+    date_str: str, fallback_year: Optional[int] = None
+) -> Optional[str]:
+    """Parse natural language date to ISO (best effort).
+
+    When the string has NO year (e.g. '9 August', 'August') and `fallback_year` is given,
+    the year is inferred from event/sub-event context and appended before parsing — so
+    year-less casualty dates still resolve.
+    """
     import re
     from datetime import datetime
 
     date_str = date_str.strip()
-    # Try common patterns: "18 July 1944", "July 1944", "6 June 1944"
+    # Try common patterns WITH a year first.
     for fmt in ("%d %B %Y", "%B %d, %Y", "%d %b %Y", "%B %Y", "%b %Y"):
         try:
             dt = datetime.strptime(date_str, fmt)
@@ -585,7 +662,7 @@ def _parse_date_string(date_str: str) -> Optional[str]:
             return dt.strftime("%Y-%m-01")
         except ValueError:
             continue
-    # Try extracting year-month-day with regex
+    # Try extracting day-month-year with regex
     m = re.search(r"(\d{1,2})\s+(\w+)\s+(\d{4})", date_str)
     if m:
         try:
@@ -595,6 +672,16 @@ def _parse_date_string(date_str: str) -> Optional[str]:
             return dt.strftime("%Y-%m-%d")
         except ValueError:
             pass
+    # Year-LESS forms ('9 August', 'August', '9 Aug') — infer the year from context.
+    if fallback_year and not re.search(r"\b\d{4}\b", date_str):
+        for fmt in ("%d %B", "%d %b", "%B", "%b"):
+            try:
+                dt = datetime.strptime(date_str, fmt).replace(year=fallback_year)
+                return (
+                    dt.strftime("%Y-%m-%d") if "%d" in fmt else dt.strftime("%Y-%m-01")
+                )
+            except ValueError:
+                continue
     return None
 
 
@@ -608,6 +695,7 @@ VALID_ROLES = {
 
 VALID_SIDES = {"allied", "axis", "civilian", "unknown"}
 _VALID_CAUSES = {"combat", "weather_exposure", "disease", "accident", "other"}
+_VALID_EQUIPMENT_RELATIONS = {"causative", "medical", "other"}
 
 # Map freeform LLM roles to controlled vocabulary
 _ROLE_MAP = {
