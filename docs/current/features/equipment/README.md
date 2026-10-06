@@ -141,9 +141,12 @@ Enrichment-on-identity (follows identity resolution)
   against a real chapter (no equipment records currently in `output/`); the origin/operator,
   quantity/place, assertion-gate, related_equipment, and enrichment-on-identity behaviors
   are unit-tested but not yet confirmed against real Grok output.
-- **Proposal backlog unbuilt.** `crew_accounts`, comparisons, timeline, doctrine,
-  geographic performance, logistics (see MILITARY_EQUIPMENT.md) remain aspirational.
-  (`related_equipment` is now built — no longer on this list.)
+- **Proposal backlog — crew_accounts + reference facts built; 3 items deferred.**
+  `related_equipment`, **`crew_accounts`** (narrative-sourced, person-linked, mandatory
+  `original_text`+`book`), and the Group A reference facts **`timeline`**,
+  **`technical_evolution`**, **`logistics`** (enrichment-sourced, each stamped with
+  `source`+`source_url`) are built. Still deferred (lower value / messier provenance):
+  comparative analysis, tactical doctrine, geographic performance.
 
 ## Docs
 
@@ -162,7 +165,7 @@ Enrichment-on-identity (follows identity resolution)
 - **Enforced schema:** `src/schemas/equipment_output.py` (`additionalProperties: false`).
 - **Canonical structure example:** `EQUIPMENT_FINAL_STRUCTURE.md` (other docs link here
   rather than repeating the JSON).
-- **Schema version:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently 2.12 — adds canonical_name + identity_source (designation disambiguator); 2.11 added
+- **Schema version:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently 2.14 — adds canonical_name + identity_source (designation disambiguator); 2.11 added
   `enrichment_checked_at` (enrichment staleness gate); 2.10 added `image_scope` + enrichment-on-identity; builds on 2.9's
   record-level `related_equipment` and 2.8's per-mention `quantity`/`place`/
   `operating_country`/`captured` + declared `original_text` retention).

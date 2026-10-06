@@ -37,6 +37,9 @@ schema: |
         "related_equipment": [
           {"relationship": "successor", "name": "M26 Pershing", "basis": "introduced to counter German heavy tanks", "original_text": "the M26 Pershing would eventually replace the Sherman"}
         ],
+        "crew_accounts": [
+          {"person_name": "Belton Cooper", "role": "maintenance officer", "observations": "frequent transmission failures in bocage", "original_text": "Cooper recorded that transmissions failed repeatedly in the hedgerows", "book": "Death Traps"}
+        ],
         "performance_notes": "Effective against infantry positions",
         "context": "Used in breakout operations",
         "original_text": "Sherman tanks of the 2nd Armored",
@@ -72,6 +75,11 @@ rules:
     - US unit using its own Shermans: country_of_origin "USA", operating_country "USA", captured false
     If the operator is not stated, leave operating_country null and captured false.
   - Only extract specifically named equipment, not generic references
+  - |
+    CREW ACCOUNTS — if the source narrates a named crew member's firsthand experience
+    operating this equipment, record it in crew_accounts with person_name, role,
+    observations, and the VERBATIM original_text + book. original_text is MANDATORY —
+    source tracking is non-negotiable; never invent an account. Omit if none.
   - |
     IMAGES — if the source places a figure/photo near a mention, default its image_scope
     to "representative": books routinely use GENERIC/STOCK pictures to illustrate the

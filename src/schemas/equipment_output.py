@@ -77,6 +77,66 @@ _EXTERNAL_DATA_SCHEMA = {
     },
 }
 
+# Crew accounts — NARRATIVE-sourced, person-linked. Source tracking is mandatory:
+# original_text (verbatim) + book identify the origin of every account.
+_CREW_ACCOUNTS_SCHEMA = {
+    "type": ["array", "null"],
+    "items": {
+        "type": "object",
+        "properties": {
+            "PersonID": ulid_field(nullable=True),
+            "person_name": make_nullable("string"),
+            "role": make_nullable("string"),
+            "observations": make_nullable("string"),
+            "original_text": make_nullable("string"),
+            "book": make_nullable("string"),
+        },
+    },
+}
+
+# Group A reference facts — ENRICHMENT-sourced (Grokipedia/Wikipedia). Each block carries
+# its own `source` + `source_url` so even reference facts trace to where they came from.
+_TIMELINE_SCHEMA = {
+    "type": ["object", "null"],
+    "properties": {
+        "first_production": make_nullable("string"),
+        "first_combat_use": make_nullable("string"),
+        "last_combat_use": make_nullable("string"),
+        "total_produced": {"type": ["integer", "string", "null"]},
+        "combat_losses": {"type": ["integer", "string", "null"]},
+        "source": make_nullable("string"),
+        "source_url": make_nullable("string"),
+    },
+}
+
+_TECHNICAL_EVOLUTION_SCHEMA = {
+    "type": ["array", "null"],
+    "items": {
+        "type": "object",
+        "properties": {
+            "date": make_nullable("string"),
+            "change": make_nullable("string"),
+            "reason": make_nullable("string"),
+            "effectiveness": make_nullable("string"),
+            "source": make_nullable("string"),
+            "source_url": make_nullable("string"),
+        },
+    },
+}
+
+_LOGISTICS_SCHEMA = {
+    "type": ["object", "null"],
+    "properties": {
+        "fuel_consumption": make_nullable("string"),
+        "ammunition_capacity": make_nullable("string"),
+        "maintenance_hours_per_100_miles": {"type": ["number", "string", "null"]},
+        "common_spare_parts": {"type": ["array", "null"], "items": {"type": "string"}},
+        "supply_challenges": {"type": ["array", "null"], "items": {"type": "string"}},
+        "source": make_nullable("string"),
+        "source_url": make_nullable("string"),
+    },
+}
+
 EQUIPMENT_OUTPUT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
@@ -147,6 +207,11 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         "images": _IMAGES_SCHEMA,
         # Structured external-source data + provenance (Grokipedia/Wikipedia + others).
         "external_data": _EXTERNAL_DATA_SCHEMA,
+        # Proposal-backlog fields (all source-tracked):
+        "crew_accounts": _CREW_ACCOUNTS_SCHEMA,  # narrative-sourced (original_text+book)
+        "timeline": _TIMELINE_SCHEMA,  # enrichment-sourced (source+source_url)
+        "technical_evolution": _TECHNICAL_EVOLUTION_SCHEMA,  # enrichment-sourced
+        "logistics": _LOGISTICS_SCHEMA,  # enrichment-sourced
         "extracted_date": make_nullable("string"),
         "event_mentions": {
             "type": ["array", "null"],

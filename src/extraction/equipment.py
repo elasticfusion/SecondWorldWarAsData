@@ -57,6 +57,24 @@ class SupportingUnitInput(BaseModel):
     )
 
 
+class CrewAccountInput(BaseModel):
+    """A crew member's firsthand account of operating this equipment, as the SOURCE
+    narrates it. Narrative-sourced only — source tracking is mandatory: original_text
+    (verbatim) + book identify the origin. PersonID is resolved from person_name."""
+
+    person_name: Optional[str] = Field(default=None, description="Named crew member")
+    role: Optional[str] = Field(
+        default=None, description="e.g. commander, driver, gunner"
+    )
+    observations: Optional[str] = Field(
+        default=None, description="What they reported about the equipment"
+    )
+    original_text: Optional[str] = Field(
+        default=None, description="Verbatim passage (REQUIRED for traceability)"
+    )
+    book: Optional[str] = Field(default=None, description="Source book/title")
+
+
 class RelatedEquipmentInput(BaseModel):
     """A relationship the SOURCE draws between this equipment and ANOTHER DISTINCT piece
     (its own record), e.g. predecessor/successor, or a distinct related configuration.
@@ -310,6 +328,14 @@ class EquipmentExtraction(BaseModel):
             "Relationships the SOURCE draws between this equipment and another DISTINCT "
             "piece (predecessor/successor/variant). Only when the text asserts it. Do "
             "NOT list inline sub-designations here (M4A1, 'up-gunned M4' are variants)."
+        ),
+    )
+    crew_accounts: List["CrewAccountInput"] = Field(
+        default_factory=list,
+        description=(
+            "Firsthand crew accounts of operating this equipment that the SOURCE "
+            "narrates. Each MUST carry original_text (verbatim) — source tracking is "
+            "mandatory. Do not invent accounts."
         ),
     )
 
@@ -587,6 +613,40 @@ def _merge_enriched_data(
                 equipment_data[key] = enriched[key]
                 logger.debug("  Enriched %s: %s", key, type(enriched[key]).__name__)
     _build_external_data(enriched, equipment_data)
+    _merge_source_tracked_reference(equipment_data, enriched)
+
+
+def _merge_source_tracked_reference(
+    equipment_data: Dict[str, Any], enriched: Dict[str, Any]
+) -> None:
+    """Populate enrichment-sourced reference facts (timeline / technical_evolution /
+    logistics) and STAMP each with its source + source_url so even reference facts trace
+    to where they came from. Gap-fill only (don't overwrite existing)."""
+    source, source_url = _enrichment_source(enriched)
+    # timeline + logistics are objects -> stamp source on the object
+    for key in ("timeline", "logistics"):
+        val = enriched.get(key)
+        if isinstance(val, dict) and val and not equipment_data.get(key):
+            val = {**val, "source": source, "source_url": source_url}
+            equipment_data[key] = val
+    # technical_evolution is a list of change records -> stamp source on each
+    evo = enriched.get("technical_evolution")
+    if isinstance(evo, list) and evo and not equipment_data.get("technical_evolution"):
+        equipment_data["technical_evolution"] = [
+            {**e, "source": source, "source_url": source_url}
+            for e in evo
+            if isinstance(e, dict)
+        ]
+
+
+def _enrichment_source(enriched: Dict[str, Any]) -> tuple:
+    """Return (source_name, source_url) for provenance stamping based on which external
+    URL the enrichment carried."""
+    if enriched.get("grokipedia_url"):
+        return "grokipedia", enriched["grokipedia_url"]
+    if enriched.get("wikipedia_url"):
+        return "wikipedia", enriched["wikipedia_url"]
+    return "enrichment", None
 
 
 def _add_downloaded_media(
@@ -1407,6 +1467,27 @@ def _merge_equipment_fields(existing: dict, equipment_data: dict) -> None:
             existing[key] = equipment_data[key]
 
     _merge_related_equipment(existing, equipment_data)
+    _merge_crew_accounts(existing, equipment_data)
+
+
+def _merge_crew_accounts(existing: dict, equipment_data: dict) -> None:
+    """Accumulate narrative-sourced crew_accounts across mentions, deduped by
+    (person_name, original_text). Each account keeps its own source (original_text+book).
+    """
+    incoming = equipment_data.get("crew_accounts") or []
+    if not incoming:
+        return
+    merged = list(existing.get("crew_accounts") or [])
+    seen = {
+        ((a.get("person_name") or "").lower(), a.get("original_text") or "")
+        for a in merged
+    }
+    for acc in incoming:
+        k = ((acc.get("person_name") or "").lower(), acc.get("original_text") or "")
+        if k not in seen:
+            merged.append(acc)
+            seen.add(k)
+    existing["crew_accounts"] = merged
 
 
 def _merge_related_equipment(existing: dict, equipment_data: dict) -> None:
@@ -2084,6 +2165,12 @@ def _process_equipment_item(
             verify_media_with_vision,
         )
 
+    # Record-level crew_accounts (narrative-sourced; original_text mandatory; person-linked)
+    if eq.crew_accounts:
+        linked_accounts = _link_crew_accounts(eq.crew_accounts, people_index)
+        if linked_accounts:
+            equipment_data["crew_accounts"] = linked_accounts
+
     # Merge or create
     try:
         eq_file = merge_or_create_equipment(
@@ -2183,6 +2270,49 @@ def _resolve_support_equipment_id(
             return json.load(f).get("EquipmentID")
     except Exception:  # nosec B110 - best-effort link
         return None
+
+
+def _link_crew_accounts(
+    crew_in: List["CrewAccountInput"], people_index: Dict[str, str]
+) -> List[Dict[str, Any]]:
+    """Build record-level crew_accounts (narrative-sourced). Require original_text (source
+    tracking is mandatory — drop accounts without it). Resolve person_name -> PersonID via
+    the people index (exact then fuzzy)."""
+    linked: List[Dict[str, Any]] = []
+    for acc in crew_in:
+        if not acc.original_text:
+            logger.debug("Dropping crew account without original_text (untraceable)")
+            continue
+        entry: Dict[str, Any] = {
+            "person_name": acc.person_name,
+            "role": acc.role,
+            "observations": acc.observations,
+            "original_text": acc.original_text,
+            "book": acc.book,
+        }
+        if acc.person_name:
+            pid = _resolve_person_id(acc.person_name, people_index)
+            if pid:
+                entry["PersonID"] = pid
+        linked.append(entry)
+    return linked
+
+
+def _resolve_person_id(
+    name: str, people_index: Dict[str, str], threshold: float = 0.88
+) -> Optional[str]:
+    """Resolve a person name to a PersonID: exact (case-insensitive) then conservative
+    fuzzy. The people index is keyed on the raw name, so compare case-insensitively."""
+    key = name.strip().lower()
+    lower_index = {k.lower(): v for k, v in people_index.items()}
+    if key in lower_index:
+        return lower_index[key]
+    best, best_ratio = None, 0.0
+    for pname, pid in lower_index.items():
+        ratio = SequenceMatcher(None, key, pname).ratio()
+        if ratio > best_ratio:
+            best_ratio, best = ratio, pid
+    return best if best_ratio >= threshold else None
 
 
 def _link_related_equipment(
