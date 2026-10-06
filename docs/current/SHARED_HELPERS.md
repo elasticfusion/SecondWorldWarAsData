@@ -122,6 +122,26 @@ from the resolved PlaceID, never map pixels). See
 
 ---
 
+## 10. Translation — `src/ingestion/translation.py` + map-vision `--translate`
+
+Two distinct paths turn non-English sources into English-normalized, resolvable data:
+
+- **Document path (ingestion):** `detect_language` → `translate_markdown` →
+  `normalize_to_english`. Foreign-language OCR'd text documents (German KTBs, French
+  reports) are detected and translated to English **before** extraction, so the entity
+  extractors operate on English markdown. The original `source_language` is retained; places
+  keep `historical_names` with `language`/`date_range` (e.g. Danzig→Gdańsk).
+- **Map-vision path:** images are not OCR text, so the vision prompt translates in place
+  (`proto_map_vision.py --translate`): verbatim foreign label + English/modern equivalent
+  (`title_en`, legend `meaning_en`, place `name_en`), with place resolution falling back to
+  the English/modern name for exonyms (Lüttich→Liège). See
+  `docs/current/features/maps/MAP_FEATURES_SCHEMA.md`.
+
+**Rule:** preserve the verbatim original (provenance) AND the English/modern form (resolution)
+— never discard the source-language text.
+
+---
+
 ## Provenance / traceability (applies everywhere)
 
 Every fact traces to its origin: **narrative** facts carry `original_text` (+ `book`);

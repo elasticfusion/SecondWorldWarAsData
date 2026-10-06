@@ -43,6 +43,29 @@ Grok vision reads **printed labels**, not pixel-georeferenced geometry. Therefor
   weather `null`-coord convention.)
 
 ---
+## Foreign-language maps (translation)
+
+Captured foreign-language maps (e.g. German *Lage Ost* / *Feindlage West* operational
+sheets) are **not** run through the document ingestion translator (`src/ingestion/
+translation.py`) — that path is for OCR'd text documents. Instead the vision pass itself
+translates, with `scripts/proto_map_vision.py --translate`:
+
+- Every label is returned **verbatim + English/modern equivalent**: the FeatureCollection
+  gains `title_en`, each legend item gains `meaning_en`, and each place feature carries its
+  English/modern name in `properties.additionalInformation`.
+- **Place resolution falls back to the English/modern name** when the verbatim foreign label
+  misses — this is what makes resolution work for exonyms (`Lüttich`→Liège, `Köln`→Cologne,
+  `Straßburg`→Strasbourg, `Antwerpen`→Antwerp).
+- On a *Feindlage* (enemy-situation) map the plotted units are the **German assessment of
+  Allied forces** — the prompt is told this, and the resulting `source: map` claims are kept
+  distinct from (and may legitimately conflict with) Allied/Green Book ground truth.
+
+**Measured** on a German *Feindlage West* (7 Dec 1944) Western-Front sheet: labels/legend
+translated correctly; **10/21 places resolved** to the Western-ETO corpus via the
+English-name fallback (vs ~0 for an Eastern-Front sheet); units 6/38 (German-notation labels
+for Allied formations are a harder match). Schema fields `title_en` / legend `meaning_en` are
+enforced in `map_features_output.py`.
+
 
 ## Shape
 
