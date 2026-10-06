@@ -19,7 +19,6 @@ import json
 
 import pytest
 
-from src.schemas import SCHEMA_VERSION
 from src.schemas.entity_registry import ENTITY_REGISTRY, load_schema
 
 
@@ -31,49 +30,59 @@ def _fingerprint(schema: dict) -> str:
     return hashlib.sha256(canonical.encode()).hexdigest()[:16]
 
 
-# Fingerprints pinned to SCHEMA_VERSION. Regenerate deliberately when you intend a shape
-# change (and bump SCHEMA_VERSION): run
-#   python -c "from tests.test_schema_fingerprint import _print_pins; _print_pins()"
-PINNED_VERSION = "2.24"
-EXPECTED_FINGERPRINTS = {
-    "events": "bcc344080723f54a",
-    "dates": "28553959a617e5e4",
-    "places": "63ac24491f8f3115",
-    "people": "c73f1d99c5c80b61",
-    "people_groups": "0b68e307c8b1f01f",
-    "equipment": "68652cf777542f82",
-    "weather": "0f3460daa0d8519d",
-    "logistics": "0ca708c99ab0dc40",
-    "casualties": "a516e260ed490b55",
-    "maps": "3b81288612b70e10",
-    "map_features": "7cf064901b370f2d",
-    "bibliography": "3bf1e7f997304516",
-    "images": "b85f2b9e30808c50",
+# Per-entity pins: each entity pins BOTH its current version and its schema fingerprint.
+# A shape change to ONE entity trips only ITS check (no cross-entity coupling). Regenerate
+# the single changed entity's pin after a deliberate shape change + that entity's version
+# bump: run  python -c "from tests.test_schema_fingerprint import _print_pins; _print_pins()"
+EXPECTED = {
+    "events": ("2.24", "bcc344080723f54a"),
+    "dates": ("2.24", "28553959a617e5e4"),
+    "places": ("2.24", "63ac24491f8f3115"),
+    "people": ("2.24", "c73f1d99c5c80b61"),
+    "people_groups": ("2.24", "0b68e307c8b1f01f"),
+    "equipment": ("2.24", "68652cf777542f82"),
+    "weather": ("2.24", "0f3460daa0d8519d"),
+    "logistics": ("2.24", "0ca708c99ab0dc40"),
+    "casualties": ("2.24", "a516e260ed490b55"),
+    "maps": ("2.24", "3b81288612b70e10"),
+    "map_features": ("2.24", "7cf064901b370f2d"),
+    "bibliography": ("2.24", "3bf1e7f997304516"),
+    "images": ("2.24", "b85f2b9e30808c50"),
 }
 
 
 def _print_pins():
-    """Helper to (re)generate the pin block after a deliberate shape change + version bump."""
-    print(f'PINNED_VERSION = "{SCHEMA_VERSION}"')
-    print("EXPECTED_FINGERPRINTS = {")
+    """Regenerate the per-entity pin block (version + fingerprint from the central map)."""
+    from src.schemas import entity_version
+
+    print("EXPECTED = {")
     for spec in ENTITY_REGISTRY:
-        print(f'    "{spec.name}": "{_fingerprint(load_schema(spec))}",')
+        v = entity_version(spec.name)
+        print(f'    "{spec.name}": ("{v}", "{_fingerprint(load_schema(spec))}"),')
     print("}")
 
 
-def test_pins_track_current_schema_version():
-    assert PINNED_VERSION == SCHEMA_VERSION, (
-        f"fingerprint pins are for {PINNED_VERSION} but SCHEMA_VERSION is {SCHEMA_VERSION} — "
-        "regenerate the pins (tests.test_schema_fingerprint._print_pins) for the new version."
+def test_pins_track_current_entity_versions():
+    from src.schemas import entity_version
+
+    mismatched = {
+        name: (pinned_v, entity_version(name))
+        for name, (pinned_v, _fp) in EXPECTED.items()
+        if pinned_v != entity_version(name)
+    }
+    assert not mismatched, (
+        f"pinned version != current entity version for: {mismatched}. Regenerate that "
+        "entity's pin (tests.test_schema_fingerprint._print_pins)."
     )
 
 
 @pytest.mark.parametrize("spec", ENTITY_REGISTRY, ids=lambda s: s.name)
 def test_schema_shape_matches_pinned_fingerprint(spec):
-    expected = EXPECTED_FINGERPRINTS.get(spec.name)
+    expected = EXPECTED.get(spec.name, (None, None))[1]
     actual = _fingerprint(load_schema(spec))
     assert expected == actual, (
         f"{spec.name} schema SHAPE changed (fingerprint {actual} != pinned {expected}). "
-        f"A shape change MUST bump SCHEMA_VERSION. Bump it, then regenerate the pins via "
+        f"A shape change MUST bump THIS entity's version in ENTITY_SCHEMA_VERSIONS, then "
+        f"regenerate its pin via tests.test_schema_fingerprint._print_pins()."
         f"tests.test_schema_fingerprint._print_pins()."
     )

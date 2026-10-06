@@ -1,39 +1,38 @@
-"""Guard tests: prevent code that is incompatible with the current JSON schema version.
+"""Guard tests: prevent code incompatible with its entity's JSON schema version.
 
-These FAIL THE BUILD when:
-1. a module declaring SCHEMA_TARGET has drifted from the current SCHEMA_VERSION (code was not
-   updated when the schema was bumped) — forcing a conscious decision: update the code and
-   its target, or register a case-by-case upgrader;
-2. a known entity writer (read-then-rewrite via the schema contract) does not declare a
-   SCHEMA_TARGET at all (a new writer silently skipping the contract);
-3. a module's SCHEMA_TARGET names a version NEWER than the codebase's SCHEMA_VERSION
-   (impossible/typo).
+Per-entity (no cross-entity coupling): each read-then-rewrite module targets ONE entity and
+its SCHEMA_TARGET must equal THAT entity's version in the central ENTITY_SCHEMA_VERSIONS map.
+Bumping one entity's version only trips that entity's module.
+
+FAIL THE BUILD when:
+1. a contract module declares no SCHEMA_TARGET (a new writer skipping the contract);
+2. a module's SCHEMA_TARGET != its entity's current version (code not updated for the bump);
+3. a module's SCHEMA_TARGET is NEWER than its entity's version (impossible/typo).
 """
 
 import importlib
 
 import pytest
 
-from src.schemas import SCHEMA_VERSION
+from src.schemas import entity_version
 
-# Every module that reads-then-rewrites entity records and must honor the schema contract.
-# A new entity writer MUST be added here (and declare SCHEMA_TARGET) — the test enforces it.
-CONTRACT_MODULES = [
-    "src.extraction.people_groups",
-    "src.extraction.dates",
-    "src.extraction.equipment",
-    "src.extraction.people",
-    "src.extraction.places",
-    "src.extraction.weather_central",
-    "src.extraction.batch_parallel",
-]
+# module -> the entity it reads-then-rewrites. A new entity writer MUST be added here.
+CONTRACT_MODULE_ENTITY = {
+    "src.extraction.people_groups": "people_groups",
+    "src.extraction.dates": "dates",
+    "src.extraction.equipment": "equipment",
+    "src.extraction.people": "people",
+    "src.extraction.places": "places",
+    "src.extraction.weather_central": "weather",
+    "src.extraction.batch_parallel": "events",
+}
 
 
 def _version_tuple(v: str) -> tuple:
     return tuple(int(p) for p in str(v).split("."))
 
 
-@pytest.mark.parametrize("module_name", CONTRACT_MODULES)
+@pytest.mark.parametrize("module_name", list(CONTRACT_MODULE_ENTITY))
 def test_contract_module_declares_schema_target(module_name):
     mod = importlib.import_module(module_name)
     assert hasattr(mod, "SCHEMA_TARGET"), (
@@ -42,24 +41,26 @@ def test_contract_module_declares_schema_target(module_name):
     )
 
 
-@pytest.mark.parametrize("module_name", CONTRACT_MODULES)
-def test_contract_module_target_is_current(module_name):
+@pytest.mark.parametrize("module_name", list(CONTRACT_MODULE_ENTITY))
+def test_contract_module_target_is_current_for_its_entity(module_name):
     mod = importlib.import_module(module_name)
+    entity = CONTRACT_MODULE_ENTITY[module_name]
     target = getattr(mod, "SCHEMA_TARGET", None)
-    assert target == SCHEMA_VERSION, (
-        f"{module_name} targets schema {target} but current SCHEMA_VERSION is "
-        f"{SCHEMA_VERSION}. The code was not updated for the current schema. Either update "
-        f"{module_name} for {SCHEMA_VERSION} and bump its SCHEMA_TARGET, or register a "
-        f"case-by-case upgrade and advance the target deliberately."
+    expected = entity_version(entity)
+    assert target == expected, (
+        f"{module_name} targets {target} but entity '{entity}' is at {expected}. Update "
+        f"{module_name} for the new shape and set SCHEMA_TARGET=entity_version('{entity}'), "
+        f"or register a case-by-case upgrade and advance deliberately."
     )
 
 
-@pytest.mark.parametrize("module_name", CONTRACT_MODULES)
-def test_contract_target_not_ahead_of_codebase(module_name):
+@pytest.mark.parametrize("module_name", list(CONTRACT_MODULE_ENTITY))
+def test_contract_target_not_ahead_of_entity(module_name):
     mod = importlib.import_module(module_name)
+    entity = CONTRACT_MODULE_ENTITY[module_name]
     target = getattr(mod, "SCHEMA_TARGET", None)
     if target is not None:
-        assert _version_tuple(target) <= _version_tuple(SCHEMA_VERSION), (
-            f"{module_name} SCHEMA_TARGET {target} is NEWER than SCHEMA_VERSION "
-            f"{SCHEMA_VERSION} — impossible/typo."
+        assert _version_tuple(target) <= _version_tuple(entity_version(entity)), (
+            f"{module_name} SCHEMA_TARGET {target} is NEWER than entity '{entity}' version "
+            f"{entity_version(entity)} — impossible/typo."
         )

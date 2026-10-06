@@ -18,9 +18,59 @@ Validation rules:
 """
 
 from datetime import date
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-SCHEMA_VERSION = "2.24"
+# ---------------------------------------------------------------------------
+# Per-entity schema versions, CENTRALLY MANAGED.
+#
+# Each entity type carries its OWN version so a change to one entity does not ripple to the
+# others (no cross-entity coupling, nothing "left behind"). This single map is the source of
+# truth: schema modules, extractor SCHEMA_TARGETs, and the schema guards all derive their
+# version from here. Bump exactly the entity you changed.
+#
+# Compatibility rule (owner-directed):
+#   • ADDITIVE change (new OPTIONAL field, widened type) -> bump that entity + re-pin its
+#     fingerprint. NO reprocessing: existing records remain valid (the consistency test
+#     confirms it).
+#   • BREAKING change (new REQUIRED field, removed/renamed field, tightened type) -> bump
+#     that entity AND either register_upgrade(old,new) or run a TARGETED reprocess of that
+#     one entity. Never a global reprocess; other entities are untouched.
+# ---------------------------------------------------------------------------
+ENTITY_SCHEMA_VERSIONS: Dict[str, str] = {
+    "events": "2.24",
+    "dates": "2.24",
+    "places": "2.24",
+    "people": "2.24",
+    "people_groups": "2.24",
+    "equipment": "2.24",
+    "weather": "2.24",
+    "logistics": "2.24",
+    "casualties": "2.24",
+    "maps": "2.24",
+    "map_features": "2.24",
+    "bibliography": "2.24",
+    "images": "2.24",
+}
+
+
+def _version_tuple(v: str) -> tuple:
+    try:
+        return tuple(int(p) for p in str(v).split("."))
+    except (TypeError, ValueError):
+        return (0,)
+
+
+def entity_version(entity: Optional[str]) -> str:
+    """Return the schema version for an entity; unknown/None -> the max across all entities
+    (safe default for callers that don't yet know their entity)."""
+    if entity and entity in ENTITY_SCHEMA_VERSIONS:
+        return ENTITY_SCHEMA_VERSIONS[entity]
+    return max(ENTITY_SCHEMA_VERSIONS.values(), key=_version_tuple)
+
+
+# Deprecated global alias (= highest per-entity version). Kept so un-migrated callers keep
+# working; new code should use entity_version(<entity>).
+SCHEMA_VERSION = max(ENTITY_SCHEMA_VERSIONS.values(), key=_version_tuple)
 
 # Shared patterns
 ULID_PATTERN = "^[0-9A-HJKMNP-TV-Z]{26}$"
@@ -35,17 +85,21 @@ METADATA_PROPERTIES = {
 }
 
 
-def inject_metadata(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Stamp schema version and update date on a data dict before writing."""
-    data["_schema_version"] = SCHEMA_VERSION
+def inject_metadata(
+    data: Dict[str, Any], entity: Optional[str] = None
+) -> Dict[str, Any]:
+    """Stamp the entity's schema version + update date before writing. `entity` selects the
+    per-entity version; when omitted, falls back to the max version (safe default — write
+    paths thread the entity in incrementally)."""
+    data["_schema_version"] = entity_version(entity)
     data["_last_updated"] = date.today().isoformat()
     return data
 
 
-def needs_migration(data: Dict[str, Any]) -> bool:
-    """Check if a file needs migration to current schema version."""
+def needs_migration(data: Dict[str, Any], entity: Optional[str] = None) -> bool:
+    """True if a record's stamped version differs from its entity's current version."""
     file_version = data.get("_schema_version", "0.0")
-    return file_version != SCHEMA_VERSION
+    return file_version != entity_version(entity)
 
 
 def make_nullable(type_name: str):
