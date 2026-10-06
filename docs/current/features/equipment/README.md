@@ -84,11 +84,18 @@ Enrichment-on-identity (follows identity resolution)
 
 ## Known gaps
 
-- **PlaceID resolution is alias-aware but not fuzzy.** A mention's `place_name` resolves
-  to a PlaceID via the places module's own index (`places._build_place_name_index`, keyed
-  on `current_name` **and every alias**), so alias/variant names now resolve. It is still
-  exact-match (lowercased) — typos / partial names / "near Cherbourg" vs "Cherbourg" won't
-  match and leave `place_name` set with `PlaceID` null. No fuzzy/geocoded resolution yet.
+- **PlaceID resolution is now fuzzy.** A mention's `place_name` resolves to a PlaceID via
+  the alias-aware places index (`places._build_place_name_index`, keyed on `current_name`
+  + every alias) using `_resolve_place_id`: exact → whole-word containment ("the crossroads
+  in Cherbourg" → Cherbourg, longest key wins) → conservative `SequenceMatcher` ratio ≥ 0.88
+  (tolerates typos like "Cherbourge"). Below threshold → no match (never guesses). Not yet
+  geocoded (no coordinate-based resolution).
+- **Enrichment identity gate is alias- and category-aware.** `_is_specific_identity`
+  treats a nickname that resolves via `config/equipment_aliases.yaml` (Sherman→M4 Sherman,
+  88→88mm Flak 36, Tiger→German Pzkpfw VI) as a specific identity and enriches using the
+  **canonical** name; bare category/subcategory classification phrases ("medium tank" vs
+  "M4", "field gun", "fighter-bomber") are treated as NON-specific and skipped. Aliases map
+  nicknames→specific types only — generics are never aliased to a specific identity.
 - **`related_equipment` auto-create now enriches on identity.** Auto-created related
   records (e.g. "M26 Pershing" from a successor link) are enriched on creation when the
   name is a specific identity — Grokipedia/Wikipedia text/specs/URLs + a canonical

@@ -1442,7 +1442,9 @@ def _merge_into_existing(
     return eq_file
 
 
-# Generic/category words that, alone, do NOT constitute a specific identity.
+# Generic/category words + classification phrases that, alone, do NOT constitute a
+# specific identity. Includes subcategory classes ("medium tank" vs "M4" — a common
+# disambiguation: the category is NOT the specific vehicle).
 _GENERIC_EQUIPMENT_WORDS = {
     "tank",
     "tanks",
@@ -1467,18 +1469,89 @@ _GENERIC_EQUIPMENT_WORDS = {
     "cannon",
     "howitzer",
     "mortar",
+    # category / subcategory CLASSIFICATION phrases (not a specific designation)
+    "medium tank",
+    "heavy tank",
+    "light tank",
+    "tank destroyer",
+    "armored car",
+    "armoured car",
+    "self-propelled gun",
+    "assault gun",
+    "field gun",
+    "field howitzer",
+    "anti-tank gun",
+    "anti-aircraft gun",
+    "anti-tank",
+    "anti-aircraft",
+    "fighter",
+    "bomber",
+    "fighter-bomber",
+    "fighter bomber",
+    "automatic rifle",
+    "submachine gun",
+    "half-track",
+    "half track",
+    "utility vehicle",
+    "landing craft",
+    "artillery piece",
+    "field piece",
 }
+
+
+def _normalize_generic(name: str) -> str:
+    """Normalize a name for generic-phrase comparison: underscores->spaces, collapse ws."""
+    import re as _re
+
+    return _re.sub(r"\s+", " ", name.replace("_", " ")).strip()
 
 
 def _is_specific_identity(equipment_data: dict) -> bool:
     """True if the record has resolved to a SPECIFIC designation worth enriching
-    (has a technical_identifier, or a common_name that is not a bare generic word)."""
+    (has a technical_identifier, a nickname that resolves to a canonical technical name
+    via the alias table, or a common_name that is not a bare generic word)."""
     if equipment_data.get("technical_identifier"):
         return True
     name = (equipment_data.get("common_name") or "").strip().lower()
     if not name:
         return False
-    return name not in _GENERIC_EQUIPMENT_WORDS
+    # A nickname that resolves via the alias table (sherman -> m4 sherman, 88 -> 88mm
+    # flak 36) is a specific identity expressed informally.
+    if name in _equipment_aliases():
+        return True
+    # A bare category/subcategory classification ("medium tank", "medium_tank",
+    # "field gun") is NOT a specific identity — it's a class, not a designation.
+    return _normalize_generic(name) not in _GENERIC_EQUIPMENT_WORDS
+
+
+def _equipment_aliases() -> Dict[str, str]:
+    """Cached nickname/abbreviation -> canonical technical name map (config-driven)."""
+    global _EQUIPMENT_ALIAS_CACHE
+    if _EQUIPMENT_ALIAS_CACHE is None:
+        import yaml
+
+        alias_file = (
+            Path(__file__).parent.parent.parent / "config" / "equipment_aliases.yaml"
+        )
+        try:
+            data = yaml.safe_load(alias_file.read_text(encoding="utf-8"))
+            _EQUIPMENT_ALIAS_CACHE = {
+                k.lower(): v.lower() for k, v in (data.get("aliases") or {}).items()
+            }
+        except Exception:  # noqa: BLE001 - absent/malformed table -> no aliases
+            _EQUIPMENT_ALIAS_CACHE = {}
+    return _EQUIPMENT_ALIAS_CACHE
+
+
+def _canonical_equipment_name(name: str) -> str:
+    """Resolve a nickname to its canonical technical name for enrichment lookups
+    (sherman -> m4 sherman); unchanged if not an alias."""
+    if not name:
+        return name
+    return _equipment_aliases().get(name.strip().lower(), name)
+
+
+_EQUIPMENT_ALIAS_CACHE: Optional[Dict[str, str]] = None
 
 
 def _enrich_on_identity(
@@ -1519,7 +1592,7 @@ def _enrich_on_identity(
         before = {k: v for k, v in equipment_data.items()}
         _enrich_and_add_media(
             equipment_data,
-            equipment_data["common_name"],
+            _canonical_equipment_name(equipment_data["common_name"]),
             grok_client,
             verify_media_with_vision,
             sub_event_id,
@@ -1801,6 +1874,54 @@ def _populate_mention_fields(
         mention["assertion_source"] = eq.assertion_source
 
 
+def _resolve_place_id(
+    place_name: str, places_index: Optional[Dict[str, str]]
+) -> Optional[str]:
+    """Resolve a stated place_name to a single PlaceID, fuzzily.
+
+    The index is alias-aware (keyed on current_name + aliases, lowercased). Matching, in
+    order of confidence: exact -> whole-word containment (longest key) -> SequenceMatcher
+    ratio >= 0.88 (conservative — guards against e.g. Carentan vs Cherbourg). Below
+    threshold -> no match (leave PlaceID null; never guess).
+    """
+    if not place_name or not places_index:
+        return None
+    name = place_name.lower().strip()
+    if name in places_index:
+        return places_index[name]
+    return _place_contains_match(name, places_index) or _place_fuzzy_match(
+        name, places_index
+    )
+
+
+def _place_contains_match(name: str, places_index: Dict[str, str]) -> Optional[str]:
+    """Longest index key that appears as a whole-word phrase in the stated name."""
+    import re as _re
+
+    best_pid = None
+    best_len = 0
+    for key, pid in places_index.items():
+        if len(key) >= 4 and len(key) > best_len:
+            if _re.search(rf"\b{_re.escape(key)}\b", name):
+                best_len, best_pid = len(key), pid
+    return best_pid
+
+
+def _place_fuzzy_match(
+    name: str, places_index: Dict[str, str], threshold: float = 0.88
+) -> Optional[str]:
+    """Best SequenceMatcher match at or above a conservative threshold, else None."""
+    from difflib import SequenceMatcher as _SM
+
+    best_pid = None
+    best_ratio = 0.0
+    for key, pid in places_index.items():
+        ratio = _SM(None, name, key).ratio()
+        if ratio > best_ratio:
+            best_ratio, best_pid = ratio, pid
+    return best_pid if best_ratio >= threshold else None
+
+
 def _resolve_mention_place(
     mention: Dict[str, Any],
     eq: EquipmentExtraction,
@@ -1812,7 +1933,7 @@ def _resolve_mention_place(
     place_name was stated, fall back to the sub-event's place if it is a single one."""
     if eq.place_name:
         mention["place_name"] = eq.place_name
-        place_id = (places_index or {}).get(eq.place_name.lower())
+        place_id = _resolve_place_id(eq.place_name, places_index)
         if place_id:
             mention["PlaceID"] = place_id
         return
