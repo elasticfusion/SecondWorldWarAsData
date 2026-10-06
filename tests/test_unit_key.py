@@ -201,7 +201,9 @@ def test_infantry_default_is_us_only():
     assert derive_unit_key("2nd German Division").arm is None
     assert derive_unit_key("1st SS Division").arm is None
     assert derive_unit_key("British 3rd Division").arm is None
-    assert derive_unit_key("18 VG Division").arm == "vg"  # explicit non-inf modifier
+    assert (
+        derive_unit_key("18 VG Division").arm == "volksgrenadier"
+    )  # explicit non-inf modifier
 
 
 def test_unknown_branch_modifier_vetoes_vs_infantry():

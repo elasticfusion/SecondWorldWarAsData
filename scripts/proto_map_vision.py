@@ -75,11 +75,19 @@ def extract_tile(client: GrokClient, tile: Image.Image, legend: dict, tid: str) 
     prompt = (
         "WWII US Army 'Green Book' operational map TILE (a crop of a larger map). "
         f"Use this LEGEND to interpret colors/line styles:\n{legend_txt}\n\n"
+        "Units use NATO/APP-6 military symbology. For each unit symbol read the SYMBOL, "
+        "not just the text label: the FRAME color/shape gives affiliation (blue/rectangle "
+        "= friendly US/Allied; red/diamond = hostile German); the TICKS above the frame "
+        "give echelon (XXXX=army, XXX=corps, XX=division, X=brigade, III=regiment, "
+        "II=battalion); the ICON inside gives branch (crossed-rifles=infantry, "
+        "oval/track=armored, single-diagonal=cavalry, dot=artillery).\n"
         "Extract ONLY what is visibly in THIS tile. STRICT JSON only:\n"
         '{"places": [<town/city/village names, verbatim>], '
         '"units": [{"label": <verbatim unit label e.g. "423 INF" or "18 VG">, '
-        '"affiliation": <"friend"|"hostile"|"unknown" (US/Allied=friend, German=hostile)>, '
-        '"echelon": <"division"|"regiment"|"corps"|"combat_command"|"battalion"|null>}], '
+        '"affiliation": <"friend"|"hostile"|"unknown" from the FRAME>, '
+        '"echelon": <"army"|"corps"|"division"|"brigade"|"regiment"|"battalion"|'
+        '"combat_command"|null from the TICKS>, '
+        '"branch": <"infantry"|"armored"|"cavalry"|"artillery"|"airborne"|null from the ICON>}], '
         '"fortifications": [<verbatim labels, e.g. "WEST WALL">], '
         '"rivers": [<verbatim>], "roads_railroads": [<verbatim>]}'
     )
@@ -92,9 +100,40 @@ def _norm(s: str) -> str:
     return re.sub(r"[^a-z0-9]", "", (s or "").lower())
 
 
-def _load_group_index(groups_dir: Path):
-    """name/common_name/group_name -> GroupID (lowercase)."""
-    idx = {}
+def _group_affiliation(name: str) -> str:
+    """Infer friend/hostile from a group name's nationality signal (coarse, for the
+    symbology veto). German/SS/Volksgrenadier/Panzer -> hostile; else unknown."""
+    from src.dedup.unit_key import _NON_US_SIGNAL
+
+    n = (name or "").lower()
+    if _NON_US_SIGNAL.search(n) and not any(
+        a in n for a in ("british", "canadian", "french", "polish", "soviet", "us ")
+    ):
+        # _NON_US_SIGNAL also catches british/soviet/etc; restrict "hostile" to the
+        # German-family markers that actually appear as the enemy on ETO maps.
+        if any(
+            g in n
+            for g in (
+                "german",
+                "ss",
+                "volksgrenadier",
+                "volks grenadier",
+                "panzer",
+                "vg",
+                "wehrmacht",
+                "waffen",
+            )
+        ):
+            return "hostile"
+    return "unknown"
+
+
+def _load_group_unitkey_index(groups_dir: Path):
+    """[(GroupID, name, UnitKey, affiliation)] over all people_groups records, for
+    symbology-constrained matching via the SHARED unit_key."""
+    from src.dedup.unit_key import derive_unit_key
+
+    idx = []
     if not groups_dir.exists():
         return idx
     for gf in groups_dir.glob("*.json"):
@@ -107,21 +146,90 @@ def _load_group_index(groups_dir: Path):
         gid = d.get("GroupID")
         if not gid:
             continue
-        for key in (d.get("name"), d.get("common_name"), d.get("group_name")):
-            if key:
-                idx[key.lower()] = gid
+        name = d.get("name") or d.get("common_name") or d.get("group_name") or ""
+        if not name:
+            continue
+        # nationality field is authoritative when present; else infer from the name
+        nat = (d.get("nationality") or d.get("country_of_origin") or "").lower()
+        aff = (
+            "hostile"
+            if any(g in nat for g in ("german", "germany"))
+            else (
+                "friend"
+                if any(
+                    a in nat
+                    for a in ("us", "united states", "american", "british", "allied")
+                )
+                else _group_affiliation(name)
+            )
+        )
+        idx.append((gid, name, derive_unit_key(name), aff))
     return idx
+
+
+_ECHELON_ALIAS = {
+    "combat_command": "combat_command",
+    "division": "division",
+    "regiment": "regiment",
+    "corps": "corps",
+    "battalion": "battalion",
+    "brigade": "brigade",
+    "army": "army",
+}
+
+
+def _resolve_unit(label: str, affiliation, echelon, group_index, branch=None):
+    """Resolve a map unit label -> GroupID using the shared unit_key, constrained by the
+    symbology-derived affiliation + echelon (veto cross-side / cross-echelon matches).
+    Returns (GroupID or None, n_candidates_before_constraint)."""
+    from src.dedup.unit_key import derive_unit_key, unit_keys_match
+
+    k = derive_unit_key(label)
+    raw = [
+        (gid, nm, aff, gk)
+        for (gid, nm, gk, aff) in group_index
+        if unit_keys_match(k, gk)[0]
+    ]
+    before = len({gid for gid, *_ in raw})
+    cand = raw
+    # Affiliation veto: a hostile map unit cannot be a friendly entity, and vice versa.
+    if affiliation in ("friend", "hostile"):
+        cand = [c for c in cand if c[2] == affiliation or c[2] == "unknown"]
+    # Echelon veto: if the symbol gives an echelon and the entity's key has one, they
+    # must agree (corps label must not resolve to a regiment).
+    if echelon in _ECHELON_ALIAS:
+        want = _ECHELON_ALIAS[echelon]
+        cand = [c for c in cand if (c[3].echelon is None or c[3].echelon == want)]
+    gids = {gid for gid, *_ in cand}
+    if len(gids) == 1:
+        return next(iter(gids)), before
+    if not gids:
+        return None, before
+    # Multiple candidates: if they all share ONE canonical unit key, they are unmerged
+    # duplicate records of the SAME real unit (a people_groups dedup gap) — resolving to
+    # any one is correct. Pick deterministically (lowest GroupID).
+    keys = {gk for (_gid, _nm, _aff, gk) in cand}
+    if len(keys) == 1:
+        return sorted(gids)[0], before
+    # Genuinely distinct units remain: branch is a SOFT tiebreaker (rank, never veto) —
+    # doctrinal names (Volksgrenadier/SS/Panzer) legitimately diverge from frame icons.
+    if branch:
+        narrowed = {gid for (gid, _nm, _aff, gk) in cand if gk.arm == branch}
+        if len(narrowed) == 1:
+            return next(iter(narrowed)), before
+    return None, before
 
 
 def resolve_features(fc: dict, places_dir: Path, groups_dir: Path) -> dict:
     """Resolve each feature's verbatim label to PlaceID/GroupID via the SHARED matchers,
     then re-dedup on the resolved id. Unresolved -> null id, verbatim label preserved
-    (null over guess). Mutates + returns fc with a resolution_report."""
+    (null over guess). Units use the symbology-constrained unit_key resolver. Mutates +
+    returns fc with a resolution_report."""
     from src.extraction.places import _build_place_name_index
     from src.extraction.weather_central import _match_place_id
 
     place_index, _ = _build_place_name_index(places_dir)
-    group_index = _load_group_index(groups_dir)
+    group_index = _load_group_unitkey_index(groups_dir)
 
     seen_place, seen_group, out = {}, {}, []
     stats = {
@@ -129,6 +237,7 @@ def resolve_features(fc: dict, places_dir: Path, groups_dir: Path) -> dict:
         "place_null": 0,
         "group_resolved": 0,
         "group_null": 0,
+        "group_narrowed_by_symbology": 0,
         "merged_on_id": 0,
     }
 
@@ -151,9 +260,17 @@ def resolve_features(fc: dict, places_dir: Path, groups_dir: Path) -> dict:
                 continue
             seen_place[key] = f
         elif kind == "unit_position":
-            gid = group_index.get(label.lower())
+            gid, before = _resolve_unit(
+                label,
+                p.get("affiliation"),
+                p.get("echelon"),
+                group_index,
+                branch=p.get("branch"),
+            )
             p["GroupID"] = gid
             stats["group_resolved" if gid else "group_null"] += 1
+            if before > 1 and gid:
+                stats["group_narrowed_by_symbology"] += 1
             key = gid or f"name:{_norm(label)}"
             if key in seen_group:
                 stats["merged_on_id"] += 1
@@ -207,6 +324,7 @@ def to_feature_collection(map_meta: dict, tile_results: list) -> dict:
                         u.get("affiliation") if isinstance(u, dict) else None
                     ),
                     "echelon": (u.get("echelon") if isinstance(u, dict) else None),
+                    "branch": (u.get("branch") if isinstance(u, dict) else None),
                     "tiles": [tid],
                 }
             else:
@@ -245,6 +363,7 @@ def to_feature_collection(map_meta: dict, tile_results: list) -> dict:
             rec,
             affiliation=rec.get("affiliation"),
             echelon=rec.get("echelon"),
+            branch=rec.get("branch"),
         )
     for rec in forts.values():
         feat("fortification", rec)
