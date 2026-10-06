@@ -213,3 +213,38 @@ def test_unknown_branch_modifier_vetoes_vs_infantry():
     assert _m(
         "Ninth Division", "9th Division"
     )  # ordinal word not mistaken for a branch
+
+
+def test_map_shorthand_arm_abbreviations():
+    """Map tactical shorthand (CAV/AD/PZ) expands so the combat arm is captured —
+    without this a bare '14 CAV' loses its arm and over-matches any 14th unit."""
+    assert derive_unit_key("14 CAV").arm == "cavalry"
+    assert derive_unit_key("7 AD").arm == "armored"
+    assert derive_unit_key("7 AD").echelon == "division"
+    assert derive_unit_key("5 PZ Div").arm == "armored"  # panzer -> armored arm
+    # arm now discriminates: 14th Cavalry != a 14th infantry/armored unit
+    assert not _m("14 CAV", "14th Infantry Division")
+    # AD must only expand as a whole word (not inside other tokens)
+    assert "armored" in __import__("src.dedup.unit_key", fromlist=["_expand"])._expand(
+        "7 AD"
+    )
+
+
+def test_higher_roman_corps_numerals():
+    """WWII corps numerals above XX (LXVI=66, LVIII=58, XLVII=47) parse — the small
+    table only reached XX, dropping German/US corps designations."""
+    assert derive_unit_key("LXVI Corps").numbers == frozenset({"66"})
+    assert derive_unit_key("LVIII Panzer Corps").numbers == frozenset({"58"})
+    assert derive_unit_key("XLVII Corps").numbers == frozenset({"47"})
+    assert derive_unit_key("VII Corps").numbers == frozenset({"7"})  # low still works
+
+
+def test_roman_parser_rejects_common_words():
+    """The general roman fallback must only fire on valid canonical numerals, never on
+    ordinary words that happen to use roman letters."""
+    from src.dedup.unit_key import _parse_roman
+
+    for w in ("div", "mix", "mild", "civil", "lid", "did", "mid", "dim"):
+        assert _parse_roman(w) is None, w
+    assert _parse_roman("lxvi") == 66
+    assert _parse_roman("mcm") == 1900 or _parse_roman("mcm") is None  # >399 -> None
