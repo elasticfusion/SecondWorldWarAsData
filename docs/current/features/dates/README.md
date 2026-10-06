@@ -144,6 +144,67 @@ else:
 - `late` - Last third of period
 - `spring` / `summer` / `fall` / `winter` - Seasonal
 
+### 2a. Resolved interval (sortable, queryable) — the vagueness-safe layer
+
+`date_start` is the **verbatim** source form (ISO *or* approximate like `early-1944-06`),
+so it is not directly range-sortable. Every record therefore also carries a **resolved ISO
+interval** derived DETERMINISTICALLY from the stated precision (`src/extraction/
+date_resolution.py`, run at write time):
+
+| Field | Meaning |
+|---|---|
+| `resolved_earliest` | earliest instant the stated date could be (ISO `YYYY-MM-DD`) |
+| `resolved_latest` | latest instant it could be |
+| `resolution_method` | `precision_rule` \| `range` \| `unresolved` |
+
+Examples: `1944-06-06` → `[1944-06-06, 1944-06-06]`; `early-1944-06` →
+`[1944-06-01, 1944-06-10]`; `summer-1944` → `[1944-06-01, 1944-08-31]`; `1944` →
+`[1944-01-01, 1944-12-31]`; a stated range → `[start, end]`.
+
+**Principles (non-negotiable):**
+- **The source is the sole authority.** The resolver performs NO disambiguation and NO
+  guessing — it only expands the precision the source already stated into bounds. A vague
+  source yields a WIDE interval (the honest answer); more precision comes only from better
+  source documents.
+- **Verbatim preserved.** `date_start` + `original_text` are never overwritten; the
+  interval is a derived, additive layer.
+- **Never fabricate.** A date that cannot be mechanically bounded (e.g. an un-anchored
+  "the following spring") gets `resolved_* = null` + `resolution_method: unresolved` — it
+  is stored and linked but excluded from interval queries, not guessed.
+- Config-driven: month-third splits + season bounds live in small tables in the resolver.
+- Relative/contextual dates ("three days later", anchored to the sub-event's date) are a
+  deferred Tier-2 follow-up.
+
+**Datetime bounds (time folded in):** `resolved_earliest`/`resolved_latest` are full
+ISO-8601 **datetimes** (`YYYY-MM-DDThh:mm:ssZ`). A stated time tightens the bounds —
+"5 Jan 1945 at 0500" → `[1945-01-05T05:00:00Z, 1945-01-05T05:00:00Z]`; no time stated →
+the honest full-day span `[…T00:00:00Z, …T23:59:59Z]` ("sometime that day"). This makes
+intra-day ordering and "after 0500" queries work on the interval itself.
+
+### 2b. Significance summary (synthesized, derived — `summary`)
+
+A date can accumulate 1–1000+ `event_mentions`. Each record therefore also carries a
+**1–2 sentence significance summary** so a reader/RAG result gets the gist without reading
+every mention (`src/extraction/date_summary.py`, run as a separate pass `summarize_dates`).
+
+| Field | Meaning |
+|---|---|
+| `summary` | 1–2 sentence "what this date is about", synthesized from THIS date's mentions |
+| `summary_source` | `synthesized` (derived — NOT an extracted fact) |
+| `summary_generated_at` | ISO timestamp of generation |
+| `summary_mention_count` | how many mentions the summary covered (staleness anchor) |
+| `mention_count` | cheap always-present importance signal (count of event_mentions) |
+
+**Principles:**
+- **Source-grounded only.** The LLM summarizes STRICTLY the date's own `event_mentions`
+  (names + `original_text`) — never outside/world knowledge. The authoritative facts remain
+  the individual mentions; the summary is a convenience layer, clearly marked synthesized.
+- **Never fabricate / fail-open.** On error, no summary is written (count still stamped).
+- **Staleness-gated.** Regenerated only when the mention set grew materially
+  (`summary_mention_count`), so it refreshes as new chapters add mentions — not every run.
+- **Batched/parallel.** The pass uses a thread pool (like people/groups/places enrichment)
+  and is xAI Batch-API compatible (50% discount) when the client is in batch mode.
+
 ### 3. Time Handling
 
 **Time Format:** `HH:MM` (24-hour)
