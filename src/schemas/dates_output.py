@@ -61,6 +61,7 @@ DATES_OUTPUT_SCHEMA = {
         "summary_source": enum_field(["synthesized"], nullable=True),
         "summary_generated_at": make_nullable("string"),
         "summary_mention_count": {"type": ["integer", "null"]},
+        "summary_mentions_hash": make_nullable("string"),
         "mention_count": {"type": ["integer", "null"]},
         "event_mentions": {
             "type": ["array", "null"],

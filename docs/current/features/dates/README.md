@@ -200,8 +200,14 @@ every mention (`src/extraction/date_summary.py`, run as a separate pass `summari
   (names + `original_text`) — never outside/world knowledge. The authoritative facts remain
   the individual mentions; the summary is a convenience layer, clearly marked synthesized.
 - **Never fabricate / fail-open.** On error, no summary is written (count still stamped).
-- **Staleness-gated.** Regenerated only when the mention set grew materially
-  (`summary_mention_count`), so it refreshes as new chapters add mentions — not every run.
+- **Staleness-gated, content-aware.** Regenerated when the mention set's CONTENT changes —
+  a cheap `summary_mentions_hash` over `(Sub_eventID, time_start, original_text)` — so a
+  corrected/replaced mention at the same count still triggers re-summary (not count-only),
+  plus a `>=N` growth secondary trigger.
+- **Partial-view honest for huge dates.** A date with more mentions than the render cap is
+  summarized on a REPRESENTATIVE slice (one per distinct event first), and the prompt is
+  told it's a "partial view of N total" — so the summary reflects overall significance and
+  scale, not an arbitrary first-N-by-file-order sample.
 - **Batched/parallel.** The pass uses a thread pool (like people/groups/places enrichment)
   and is xAI Batch-API compatible (50% discount) when the client is in batch mode.
 

@@ -57,13 +57,12 @@ def test_generates_and_stamps_provenance():
 
 
 def test_staleness_skip_when_not_grown():
-    # already summarized at 5; now 6 mentions (< growth threshold) -> no regen
-    d = _date(
-        5 + _MIN_MENTION_GROWTH - 1,
-        summary="old",
-        summary_source="synthesized",
-        summary_mention_count=5,
-    )
+    # content-aware: skip ONLY when the mention set is unchanged (hash matches). Build a
+    # summarized date whose stamped hash matches its current mentions -> no regen.
+    from src.extraction.date_summary import _mentions_hash
+
+    d = _date(5, summary="old", summary_source="synthesized", summary_mention_count=5)
+    d["summary_mentions_hash"] = _mentions_hash(d)
     assert needs_summary(d) is False
     g = FakeGrok("NEW")
     generate_date_summary(d, g)
