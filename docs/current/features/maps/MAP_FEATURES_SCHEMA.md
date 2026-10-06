@@ -1,6 +1,9 @@
 # Map Features Schema (design — for review)
 
-**Status:** DESIGN / proposal. Not yet wired into the enforced schema registry.
+**Status:** ENFORCED — `src/schemas/map_features_output.py` (strict, `additionalProperties:
+False`), validated by `tests/test_map_features_schema.py` and self-checked by
+`scripts/proto_map_vision.py` before write. This doc is the rationale; the module is the
+source of truth.
 **Purpose:** Hold the *interior* of a historical map (units, places, boundaries, routes,
 fortifications) extracted by Grok vision, as a **unified, deduplicated** feature set that
 (a) links to our entity graph (PlaceID / GroupID / DateID), (b) carries provenance +

@@ -414,6 +414,16 @@ def main() -> int:
     fc = resolve_features(fc, Path("output/places"), Path("output/people_groups"))
     print("   resolution:", fc["resolution_report"])
 
+    print("5) validate against enforced map_features schema...")
+    import jsonschema
+    from src.schemas.map_features_output import MAP_FEATURES_OUTPUT_SCHEMA
+
+    try:
+        jsonschema.validate(fc, MAP_FEATURES_OUTPUT_SCHEMA)
+        print("   schema: VALID")
+    except jsonschema.ValidationError as e:
+        print(f"   schema: INVALID -> {e.message} at {list(e.absolute_path)}")
+
     OUT_PATH.write_text(json.dumps(fc, indent=2, ensure_ascii=False), encoding="utf-8")
 
     kinds: dict = {}
