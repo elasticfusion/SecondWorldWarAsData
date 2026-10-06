@@ -105,12 +105,14 @@ Enrichment-on-identity (follows identity resolution)
   name is a specific identity — Grokipedia/Wikipedia text/specs/URLs + a canonical
   reference image — so they are no longer bare `EquipmentID`+`common_name` stubs. A name
   too generic to be a specific identity is still created minimal (nothing to look up).
-- **Enrichment gate wired into equipment only (so far).** `src/enrichment/enrichment_gate.py`
-  (staleness window + `enrichment_checked_at`/`_last_updated` stamp + diff-the-revised-entry)
-  is reusable and intended for ALL Grokipedia/Wikipedia checks, but is currently wired only
-  into equipment's `_enrich_on_identity`. People/people_groups/places enrichment still use
-  the bare `enrichment_status` flag with no last-checked timestamp or diff. **Action:**
-  roll the gate into those paths for consistent "limit updates" behavior.
+- **Enrichment staleness/diff is consistent across entities (people/groups/places/equipment).**
+  People, people_groups, and places all gate re-enrichment with `last_enrichment_search` +
+  `_should_re_search` (90-day `re_search_after_days` window); equipment uses the reusable
+  `enrichment_gate` (`enrichment_checked_at` + staleness window). Diff-the-revised-entry
+  (skip no-op rewrites): equipment ✓, places ✓ (gap-fill merge), groups ✓ (now diffs
+  `enrichment_data` before rewriting). Minor remaining: the staleness check is implemented
+  per-module (`_should_re_search` duplicated in people/groups/places) rather than via the
+  shared `enrichment_gate` — a consolidation opportunity, not a correctness gap.
 - **Multi-national designation disambiguation — runtime Grok resolver built; curated-table
   coverage still thin.** The same type has many valid names across US/German/British
   systems (`M4`=`Sherman V`; `Panzer IV`=`Pz.Kpfw. IV Ausf. H`=`Sd.Kfz. 161/2`;

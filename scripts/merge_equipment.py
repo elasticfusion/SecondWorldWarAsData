@@ -172,17 +172,28 @@ def _do_merge(equipment_dir: Path, items: List[Dict], primary_idx: int):
     """Merge secondary items into primary."""
     primary = items[primary_idx]
     primary_data = load_equipment(equipment_dir, primary["filename"])
+    primary_id = primary_data.get("EquipmentID")
     print(f"\nMerging into: {primary['name']}")
+
+    # References to a merged-away record must resolve to the survivor. Rewrite old
+    # EquipmentID -> survivor across event + entity files (shared helper used by
+    # people/groups), so no reference dangles after the loser file is deleted.
+    from src.dedup.merge import update_event_refs
+
+    output_root = equipment_dir.parent
 
     for i, item in enumerate(items):
         if i == primary_idx:
             continue
         print(f"  Merging: {item['name']}")
         secondary_data = load_equipment(equipment_dir, item["filename"])
+        secondary_id = secondary_data.get("EquipmentID")
         primary_data = merge_equipment_data(primary_data, secondary_data)
+        if secondary_id and primary_id and secondary_id != primary_id:
+            update_event_refs(output_root, secondary_id, primary_id, "equipment")
         update_index(equipment_dir / "index.json", item["name"], primary["filename"])
         (equipment_dir / item["filename"]).unlink()
-        print(f"    Deleted: {item['filename']}")
+        print(f"    Deleted: {item['filename']} (refs redirected to {primary_id})")
 
     with open(equipment_dir / primary["filename"], "w", encoding="utf-8") as f:
         json.dump(primary_data, f, indent=2, ensure_ascii=False)

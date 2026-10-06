@@ -132,8 +132,16 @@ def main():
             with open(primary_path, "w") as out:
                 json.dump(primary, out, indent=2, ensure_ascii=False)
 
-            # Delete duplicates
-            for path, _ in file_group[1:]:
+            # Redirect references from each duplicate's EquipmentID to the survivor so no
+            # reference dangles after deletion (shared helper, consistent across features).
+            from src.dedup.merge import update_event_refs
+
+            primary_id = primary.get("EquipmentID")
+            output_root = primary_path.parent.parent
+            for path, dup_data in file_group[1:]:
+                dup_id = (dup_data or {}).get("EquipmentID")
+                if dup_id and primary_id and dup_id != primary_id:
+                    update_event_refs(output_root, dup_id, primary_id, "equipment")
                 path.unlink()
                 removed += 1
 

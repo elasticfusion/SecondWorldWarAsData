@@ -2321,10 +2321,24 @@ def _link_supporting_units(
 def _resolve_support_equipment_id(
     name: str, equipment_index: Optional[Dict[str, Path]]
 ) -> Optional[str]:
-    """Resolve a supporting unit's equipment name to an EquipmentID via the index."""
+    """Resolve a supporting unit's equipment name to an EquipmentID. Mirrors the main
+    match path (not just exact): exact → curated-alias canonical → fuzzy, so a nickname or
+    variant ("Jug", "Thunderbolt", "P-47D") links to the canonical P-47 record."""
     if not equipment_index:
         return None
+    # exact
     path = equipment_index.get(name)
+    # curated-alias canonical (sherman -> m4 sherman); match case-insensitively
+    if not path:
+        canonical = _equipment_aliases().get(name.strip().lower())
+        if canonical:
+            lower = {k.lower(): v for k, v in equipment_index.items()}
+            path = lower.get(canonical.lower())
+    # fuzzy (reuse the main matcher), then map matched key -> path
+    if not path:
+        matched = _fuzzy_match_equipment(name, equipment_index)
+        if matched:
+            path = equipment_index.get(matched)
     if not path:
         return None
     try:

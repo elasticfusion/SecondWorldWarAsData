@@ -181,16 +181,34 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
         write_json_with_lock(group_file, data)
         return False
 
-    data["enrichment_data"] = enrichment
+    _apply_group_enrichment(data, enrichment, group_file, name)
+    return True
+
+
+def _apply_group_enrichment(
+    data: dict, enrichment: dict, group_file: Path, name: str
+) -> None:
+    """Apply group enrichment with a DIFF guard: if byte-identical to what we already
+    hold, refresh only the staleness stamp (limit updates); else rewrite + promote.
+    Groups previously overwrote enrichment_data unconditionally on every re-search."""
+    from src.enrichment.enrichment_gate import diff_enrichment
+
+    unchanged = not diff_enrichment(
+        {"enrichment_data": data.get("enrichment_data")},
+        {"enrichment_data": enrichment},
+    )
     data["enrichment_status"] = "enriched"
     data["last_enrichment_search"] = _today()
-    # Ensure group_name exists per spec (alias of name)
     if not data.get("group_name") and data.get("name"):
-        data["group_name"] = data["name"]
+        data["group_name"] = data["name"]  # alias of name per spec
+    if unchanged:
+        write_json_with_lock(group_file, data)
+        logger.debug("  = Enrichment unchanged for %s (stamp refreshed only)", name)
+        return
+    data["enrichment_data"] = enrichment
     _promote_enrichment(data)
     write_json_with_lock(group_file, data)
     logger.info("  ✓ Enriched %s", name)
-    return True
 
 
 def enrich_all_groups(

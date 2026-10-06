@@ -60,9 +60,14 @@ _EQUIPMENT_ALIASES: Dict[str, str] = _load_aliases()
 
 
 def _all_names(equip: Dict[str, Any]) -> List[str]:
-    """Get primary names for an equipment item, including alias resolutions."""
+    """Get primary names for an equipment item, including alias + canonical resolutions."""
     names = [equip.get("common_name", ""), equip.get("technical_identifier", "")]
     names.extend(equip.get("alternate_names", []))
+    # The disambiguator-resolved canonical identity (Grok/learned/curated) — so records
+    # resolved to the same canonical name across naming systems match in detection, not
+    # just those covered by the curated alias table.
+    if equip.get("canonical_name"):
+        names.append(equip["canonical_name"])
     names = [n for n in names if n]
     # Add canonical names from alias table
     for n in list(names):
