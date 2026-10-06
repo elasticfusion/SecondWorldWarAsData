@@ -76,3 +76,18 @@ def test_date_link_exact_and_interval():
     assert _resolve_date_link("1944-06-03", lookup) == ("01APPROX", "German")
     # outside any interval -> no link
     assert _resolve_date_link("1944-07-01", lookup) == (None, None)
+
+
+def test_single_weather_prompt_file_live():
+    """The live weather path uses weather_batch for BOTH template and system prompt;
+    the dead weather.yaml is gone (no split-brain, no legacy temperature shape)."""
+    from pathlib import Path
+    from src.utils.prompt_loader import get_system_prompt, load_prompt
+
+    assert not (
+        Path("prompts/weather.yaml").exists()
+    ), "dead prompts/weather.yaml should be removed"
+    sysp = get_system_prompt("weather_batch")
+    assert sysp and "weather" in sysp.lower()
+    tmpl = load_prompt("weather_batch")
+    assert "prompt_template" in tmpl and "schema" in tmpl

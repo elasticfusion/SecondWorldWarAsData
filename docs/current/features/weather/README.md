@@ -29,10 +29,15 @@ is stored in a central repository with links to dates and places.
 
 ## Known gaps / follow-ups
 
-- The non-batch `prompts/weather.yaml` uses a different (legacy) temperature shape; the live
-  path uses `prompts/weather_batch.yaml`.
+_None currently open._
 
 ### Resolved
+- **Single weather prompt file** — the dead `prompts/weather.yaml` (which carried a
+  legacy nested-object temperature shape, `{"value":15,"unit":"celsius"}`, contradicting the
+  enforced flat `temperature` + `temperature_unit: C/F`) has been removed. The live batch
+  path now uses `prompts/weather_batch.yaml` for BOTH the user template and the system
+  prompt (previously it mixed `weather_batch.yaml`'s template with `weather.yaml`'s system
+  prompt).
 - **Date linking is interval-aware** — weather links a date by exact `date_start` OR by
   overlap with a date record's resolved interval (`resolved_earliest/latest`), and carries
   the date's `time_source` onto the weather record.

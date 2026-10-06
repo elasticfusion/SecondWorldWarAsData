@@ -23,7 +23,7 @@ ALL_PROMPT_TYPES = [
     "equipment",
     "casualties",
     "logistics",
-    "weather",
+    "weather_batch",
     "supplemental",
     "people_groups",
     "biography",

@@ -166,7 +166,7 @@ class TestRenderPromptHardFail:
             "places",
             "dates",
             "equipment",
-            "weather",
+            "weather_batch",
             "casualties",
             "logistics",
             "supplemental",

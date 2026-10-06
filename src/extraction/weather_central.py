@@ -768,7 +768,7 @@ def _call_and_parse_weather(
         try:
             response = grok_client.extract_json(
                 prompt=prompt,
-                system_prompt=get_system_prompt("weather"),
+                system_prompt=get_system_prompt("weather_batch"),
                 use_cache=(attempt == 0),
                 cache_type="weather",
             )

@@ -1,5 +1,6 @@
 system_prompt: |
-  You extract weather mentions from WWII historical texts.
+  You are a WWII historical weather data extraction specialist. You extract weather
+  mentions from WWII historical texts.
 
 prompt_template: |
   Extract weather mentions from these WWII event sub-events.
