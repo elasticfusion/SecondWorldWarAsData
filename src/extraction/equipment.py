@@ -16,6 +16,9 @@ from src.utils.json_validator import _fix_invalid_ulids
 
 logger = logging.getLogger(__name__)
 
+# This module targets schema 2.24.
+SCHEMA_TARGET = "2.24"
+
 
 # Pydantic models for structured extraction
 class UsingUnit(BaseModel):
@@ -1577,41 +1580,47 @@ def _merge_into_existing(
 
     # Load existing
     from src.utils.file_lock import locked_json
+    from src.schemas.schema_contract import read_for_update
 
     with locked_json(eq_file) as (existing, save):
-        # Check if mention already exists (semantic dedup by event+sub-event)
-        existing_keys = {
-            (m.get("EventID"), m.get("Sub_eventID"))
-            for m in existing.get("event_mentions", [])
-        }
-        new_key = (new_mention.get("EventID"), new_mention.get("Sub_eventID"))
-        if new_key in existing_keys:
-            logger.debug("Mention for %s already exists, skipping", new_key)
-            return eq_file
+        # Read the historical record under this module's schema contract: a FUTURE-schema
+        # record is skipped gracefully (code not built for it); older records merge
+        # best-effort (upgrade case-by-case if registered).
+        existing, skip = read_for_update(existing, SCHEMA_TARGET, logger, matched_name)
+        if not skip:
+            # Check if mention already exists (semantic dedup by event+sub-event)
+            existing_keys = {
+                (m.get("EventID"), m.get("Sub_eventID"))
+                for m in existing.get("event_mentions", [])
+            }
+            new_key = (new_mention.get("EventID"), new_mention.get("Sub_eventID"))
+            if new_key in existing_keys:
+                logger.debug("Mention for %s already exists, skipping", new_key)
+                return eq_file
 
-        # Append mention
-        existing["event_mentions"].append(new_mention)
+            # Append mention
+            existing["event_mentions"].append(new_mention)
 
-        # Update optional fields
-        _merge_equipment_fields(existing, equipment_data)
+            # Update optional fields
+            _merge_equipment_fields(existing, equipment_data)
 
-        # Enrichment RETRY: a record whose first enrichment FAILED was saved without an
-        # enrichment_status stamp. A later mention is our chance to retry (idempotent —
-        # _enrich_on_identity no-ops once stamped). Already-enriched records are untouched.
-        if grok_client and not existing.get("enrichment_status"):
-            _enrich_on_identity(
-                existing,
-                grok_client,
-                verify_media_with_vision,
-                new_mention.get("Sub_eventID"),
-                dates_index,
-            )
+            # Enrichment RETRY: a record whose first enrichment FAILED was saved without an
+            # enrichment_status stamp. A later mention is our chance to retry (idempotent —
+            # _enrich_on_identity no-ops once stamped). Already-enriched records are untouched.
+            if grok_client and not existing.get("enrichment_status"):
+                _enrich_on_identity(
+                    existing,
+                    grok_client,
+                    verify_media_with_vision,
+                    new_mention.get("Sub_eventID"),
+                    dates_index,
+                )
 
-        # Stamp last-modified (equipment previously only set extracted_date on create).
-        existing["_last_updated"] = datetime.now(timezone.utc).date().isoformat()
+            # Stamp last-modified (equipment previously only set extracted_date on create).
+            existing["_last_updated"] = datetime.now(timezone.utc).date().isoformat()
 
-        # Save
-        save(existing)
+            # Save
+            save(existing)
 
     return eq_file
 

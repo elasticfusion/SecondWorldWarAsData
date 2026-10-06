@@ -22,6 +22,12 @@ from src.utils.text_utils import normalize_name
 
 logger = logging.getLogger(__name__)
 
+# This module is written for schema 2.24 (GroupID always present; member_countries/members
+# fields; metadata stamped). Records read from disk at an older version are upgraded only via
+# a registered case-by-case upgrader (src/schemas/schema_contract), else flagged — never
+# silently assumed. See the schema-contract directive.
+SCHEMA_TARGET = "2.24"
+
 
 @lru_cache(maxsize=5000)
 def _normalize_name(name: str) -> str:
@@ -191,11 +197,19 @@ def _save_group(
         # Merge with existing
         from src.utils.file_lock import locked_json
         from src.schemas import inject_metadata
+        from src.schemas.schema_contract import read_for_update
 
         with locked_json(groups_dir / existing_filename) as (existing_group, save):
-            merged = _merge_group(existing_group, group)
-            inject_metadata(merged)
-            save(merged)
+            # Read the historical record under this module's schema contract: older records
+            # merge best-effort (upgrade case-by-case if registered); a FUTURE-schema record
+            # is skipped gracefully (code not built for it), never silently merged.
+            existing_group, skip = read_for_update(
+                existing_group, SCHEMA_TARGET, logger, group_name
+            )
+            if not skip:
+                merged = _merge_group(existing_group, group)
+                inject_metadata(merged)
+                save(merged)
         logger.info("    Updated: %s", group_name)
     else:
         # Create new file

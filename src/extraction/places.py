@@ -17,6 +17,9 @@ from src.utils.prompt_loader import get_system_prompt
 
 logger = logging.getLogger(__name__)
 
+# This module targets schema 2.24.
+SCHEMA_TARGET = "2.24"
+
 
 # Pydantic schemas for structured outputs
 class MapUrls(BaseModel):
@@ -531,35 +534,43 @@ def _add_event_mention(
 ) -> None:
     """Add event mention to place file."""
     from src.utils.file_lock import locked_json
+    from src.schemas.schema_contract import read_for_update
 
     with locked_json(place_file) as (place_data, save):
-        # Backfill missing v3 fields from mention data
-        _backfill_place_data(place_data, mention)
+        # Read the historical record under this module's schema contract: a FUTURE-schema
+        # record is skipped gracefully (code not built for it); older records merge
+        # best-effort (upgrade case-by-case if registered).
+        place_data, skip = read_for_update(
+            place_data, SCHEMA_TARGET, logger, place_file.name
+        )
+        if not skip:
+            # Backfill missing v3 fields from mention data
+            _backfill_place_data(place_data, mention)
 
-        # Create event mention
-        event_mention = {
-            "MentionID": str(ulid.new()),
-            "Event_Name": event_name,
-            "EventID": event_id,
-            "Sub_event_Name": sub_event_name,
-            "Sub_eventID": sub_event_id,
-            "book": book,
-            "author": author,
-            "series": series,
-            "date_context": mention.get("date_context"),
-            "DateMentionID": None,  # TODO: Link to dates extraction
-            "role_in_event": mention.get("role_in_event"),
-            "original_text": mention.get("original_text", ""),
-        }
+            # Create event mention
+            event_mention = {
+                "MentionID": str(ulid.new()),
+                "Event_Name": event_name,
+                "EventID": event_id,
+                "Sub_event_Name": sub_event_name,
+                "Sub_eventID": sub_event_id,
+                "book": book,
+                "author": author,
+                "series": series,
+                "date_context": mention.get("date_context"),
+                "DateMentionID": None,  # TODO: Link to dates extraction
+                "role_in_event": mention.get("role_in_event"),
+                "original_text": mention.get("original_text", ""),
+            }
 
-        # Check for duplicate mention (same sub-event)
-        existing = [
-            m
-            for m in place_data.get("event_mentions", [])
-            if m["Sub_eventID"] == sub_event_id
-        ]
+            # Check for duplicate mention (same sub-event)
+            existing = [
+                m
+                for m in place_data.get("event_mentions", [])
+                if m["Sub_eventID"] == sub_event_id
+            ]
 
-        if not existing:
-            place_data.setdefault("event_mentions", []).append(event_mention)
-            save(place_data)
-            logger.debug(f"  Added mention to {place_file.name}")
+            if not existing:
+                place_data.setdefault("event_mentions", []).append(event_mention)
+                save(place_data)
+                logger.debug(f"  Added mention to {place_file.name}")
