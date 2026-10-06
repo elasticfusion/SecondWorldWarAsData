@@ -88,6 +88,80 @@ def _norm(s: str) -> str:
     return re.sub(r"[^a-z0-9]", "", (s or "").lower())
 
 
+def _load_group_index(groups_dir: Path):
+    """name/common_name/group_name -> GroupID (lowercase)."""
+    idx = {}
+    if not groups_dir.exists():
+        return idx
+    for gf in groups_dir.glob("*.json"):
+        if "index" in gf.name:
+            continue
+        try:
+            d = json.loads(gf.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        gid = d.get("GroupID")
+        if not gid:
+            continue
+        for key in (d.get("name"), d.get("common_name"), d.get("group_name")):
+            if key:
+                idx[key.lower()] = gid
+    return idx
+
+
+def resolve_features(fc: dict, places_dir: Path, groups_dir: Path) -> dict:
+    """Resolve each feature's verbatim label to PlaceID/GroupID via the SHARED matchers,
+    then re-dedup on the resolved id. Unresolved -> null id, verbatim label preserved
+    (null over guess). Mutates + returns fc with a resolution_report."""
+    from src.extraction.places import _build_place_name_index
+    from src.extraction.weather_central import _match_place_id
+
+    place_index, _ = _build_place_name_index(places_dir)
+    group_index = _load_group_index(groups_dir)
+
+    seen_place, seen_group, out = {}, {}, []
+    stats = {
+        "place_resolved": 0,
+        "place_null": 0,
+        "group_resolved": 0,
+        "group_null": 0,
+        "merged_on_id": 0,
+    }
+
+    for f in fc["features"]:
+        p = f["properties"]
+        label = p["original_label"]
+        kind = p["feature_kind"]
+
+        if kind == "place":
+            pid = _match_place_id(label, place_index)
+            p["PlaceID"] = pid
+            stats["place_resolved" if pid else "place_null"] += 1
+            key = pid or f"name:{_norm(label)}"
+            if key in seen_place:
+                prev = seen_place[key]["properties"]
+                prev["tile_id"] = ",".join(
+                    sorted(set(prev["tile_id"].split(",") + p["tile_id"].split(",")))
+                )
+                stats["merged_on_id"] += 1
+                continue
+            seen_place[key] = f
+        elif kind == "unit_position":
+            gid = group_index.get(label.lower())
+            p["GroupID"] = gid
+            stats["group_resolved" if gid else "group_null"] += 1
+            key = gid or f"name:{_norm(label)}"
+            if key in seen_group:
+                stats["merged_on_id"] += 1
+                continue
+            seen_group[key] = f
+        out.append(f)
+
+    fc["features"] = out
+    fc["resolution_report"] = stats
+    return fc
+
+
 def tiles(full: Image.Image, nx: int = 2, ny: int = 2, overlap: float = 0.12):
     w, h = full.size
     tw, th = w // nx, h // ny
@@ -210,6 +284,11 @@ def main() -> int:
 
     print("3) merge -> unified deduped FeatureCollection...")
     fc = to_feature_collection(legend, results)
+
+    print("4) resolve labels -> PlaceID/GroupID + re-dedup on resolved id...")
+    fc = resolve_features(fc, Path("output/places"), Path("output/people_groups"))
+    print("   resolution:", fc["resolution_report"])
+
     OUT_PATH.write_text(json.dumps(fc, indent=2, ensure_ascii=False), encoding="utf-8")
 
     kinds: dict = {}

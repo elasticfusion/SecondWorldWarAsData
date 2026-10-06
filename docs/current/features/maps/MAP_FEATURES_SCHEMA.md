@@ -143,3 +143,44 @@ elevation | front_line`
 3. Do we store the FeatureCollection on the existing map record (new `map_features` key) or
    as a sibling `output/map_features/<MapID>.json`? (Leaning sibling — keeps the catalog
    record small and lets the overlay layer be regenerated independently.)
+
+---
+
+## Measured results — live Tier-1 run on Map III (`scripts/proto_map_vision.py`)
+
+Global legend pass + 2x2 overlapping tiles + merge + resolve-then-dedup, against the live
+corpus (3457 places, ~4035 people_groups name-forms):
+
+| Layer | Result |
+|---|---|
+| map_number / title / legend | 100% — "MAP III", full title, all 5 dated legend entries |
+| places extracted | 72 (deduped from 83 across tiles) |
+| **places resolved → PlaceID** | **47/72 (65%)**; 25 null (verbatim kept, not guessed) |
+| units extracted | 28 (deduped), affiliation ~100% correct, echelon mostly correct |
+| **units resolved → GroupID** | **0/28** — see finding below |
+
+**Key finding — unit nomenclature mismatch (not a logic bug).** The entities exist, but the
+map uses tactical abbreviations while people_groups uses doctrinal/narrative names:
+
+| Map label | people_groups entity |
+|---|---|
+| `18 VG` | `18th Volksgrenadier Division` |
+| `423 INF` | `423d Infantry` / `423d Regiment` |
+| `7 AD` | `7th Armored` |
+| `CCA 7` | `CC-A, 7th Armored Division` |
+| `106` | `106th Inf Div` |
+
+An exact lookup can't bridge these. **Units need a map-abbreviation expander**
+(`VG→Volksgrenadier Division`, `AD→Armored Division`, `CC→Combat Command`, `INF→Infantry`,
+ordinal `106→106th`), directly analogous to the existing `equipment_disambiguation` curated
++ learned alias stores. Places integrate well today; units are blocked on this translation
+layer. This is the primary thing the prototype surfaced.
+
+**Other rough edges:** dense-cluster OCR noise on a few labels (`106 XX 28`, `II30 560.VG`)
+— the division symbol (`XX`) bleeding into text; a cleanup/normalization pass + resolution
+confidence floor handle these.
+2. Confidence floor for auto-resolving PlaceID/GroupID (suggest reuse the weather/equipment
+   matcher thresholds — ~0.88 name match) before falling back to `null` + verbatim label.
+3. Do we store the FeatureCollection on the existing map record (new `map_features` key) or
+   as a sibling `output/map_features/<MapID>.json`? (Leaning sibling — keeps the catalog
+   record small and lets the overlay layer be regenerated independently.)
