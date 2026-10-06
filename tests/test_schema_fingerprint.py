@@ -48,6 +48,7 @@ EXPECTED_FINGERPRINTS = {
     "maps": "3b81288612b70e10",
     "map_features": "7cf064901b370f2d",
     "bibliography": "3bf1e7f997304516",
+    "images": "b85f2b9e30808c50",
 }
 
 

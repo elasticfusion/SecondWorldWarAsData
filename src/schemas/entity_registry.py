@@ -106,11 +106,17 @@ ENTITY_REGISTRY = [
         None,
         "BibliographyID",
     ),
+    EntitySpec(
+        "images",
+        "src.schemas.images_output:IMAGES_OUTPUT_SCHEMA",
+        "output/images/*.json",
+        None,
+        "ImageID",
+    ),
 ]
 
-# Known gap: 'images' (output/images/*.json) has NO enforced output schema yet
-# (only extraction-time json_schemas.IMAGES_SCHEMA). Tracked in SCHEMA_VERSIONING.md.
-UNENFORCED_ENTITIES = ["images"]
+# All entity types now have an enforced output schema.
+UNENFORCED_ENTITIES: list = []
 
 
 def load_schema(spec: EntitySpec) -> Any:
