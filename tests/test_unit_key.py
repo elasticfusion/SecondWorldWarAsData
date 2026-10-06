@@ -201,7 +201,9 @@ def test_infantry_default_is_us_only():
     assert derive_unit_key("2nd German Division").arm is None
     assert derive_unit_key("1st SS Division").arm is None
     assert derive_unit_key("British 3rd Division").arm is None
-    assert derive_unit_key("18 VG Division").arm == "vg"  # explicit non-inf modifier
+    assert (
+        derive_unit_key("18 VG Division").arm == "volksgrenadier"
+    )  # explicit non-inf modifier
 
 
 def test_unknown_branch_modifier_vetoes_vs_infantry():
@@ -213,3 +215,48 @@ def test_unknown_branch_modifier_vetoes_vs_infantry():
     assert _m(
         "Ninth Division", "9th Division"
     )  # ordinal word not mistaken for a branch
+
+
+def test_map_shorthand_arm_abbreviations():
+    """Map tactical shorthand (CAV/AD/PZ) expands so the combat arm is captured —
+    without this a bare '14 CAV' loses its arm and over-matches any 14th unit."""
+    assert derive_unit_key("14 CAV").arm == "cavalry"
+    assert derive_unit_key("7 AD").arm == "armored"
+    assert derive_unit_key("7 AD").echelon == "division"
+    assert derive_unit_key("5 PZ Div").arm == "armored"  # panzer -> armored arm
+    # arm now discriminates: 14th Cavalry != a 14th infantry/armored unit
+    assert not _m("14 CAV", "14th Infantry Division")
+    # AD must only expand as a whole word (not inside other tokens)
+    assert "armored" in __import__("src.dedup.unit_key", fromlist=["_expand"])._expand(
+        "7 AD"
+    )
+
+
+def test_higher_roman_corps_numerals():
+    """WWII corps numerals above XX (LXVI=66, LVIII=58, XLVII=47) parse — the small
+    table only reached XX, dropping German/US corps designations."""
+    assert derive_unit_key("LXVI Corps").numbers == frozenset({"66"})
+    assert derive_unit_key("LVIII Panzer Corps").numbers == frozenset({"58"})
+    assert derive_unit_key("XLVII Corps").numbers == frozenset({"47"})
+    assert derive_unit_key("VII Corps").numbers == frozenset({"7"})  # low still works
+
+
+def test_roman_parser_rejects_common_words():
+    """The general roman fallback must only fire on valid canonical numerals, never on
+    ordinary words that happen to use roman letters."""
+    from src.dedup.unit_key import _parse_roman
+
+    for w in ("div", "mix", "mild", "civil", "lid", "did", "mid", "dim"):
+        assert _parse_roman(w) is None, w
+    assert _parse_roman("lxvi") == 66
+    assert _parse_roman("mcm") == 1900 or _parse_roman("mcm") is None  # >399 -> None
+
+
+def test_exclusion_modifier_complement_not_whole():
+    """A task-tailored formation MINUS a component is NOT the whole, NOT the excluded part,
+    and 'less CCA' != 'less CCB' — prevents merging a formation with its complement."""
+    assert not _m("3rd Armored Division (less CCB)", "3rd Armored Division")
+    assert not _m("2nd Armored Division (less CCA)", "2nd Armored Division (less CCB)")
+    assert not _m("1st Division minus 1st Regiment", "1st Division")
+    # the exclusion does not fabricate a match either; genuine dup still matches
+    assert _m("3rd Armored CCB", "CCB, 3rd Armored Division")

@@ -1,6 +1,9 @@
 # Map Features Schema (design — for review)
 
-**Status:** DESIGN / proposal. Not yet wired into the enforced schema registry.
+**Status:** ENFORCED — `src/schemas/map_features_output.py` (strict, `additionalProperties:
+False`), validated by `tests/test_map_features_schema.py` and self-checked by
+`scripts/proto_map_vision.py` before write. This doc is the rationale; the module is the
+source of truth.
 **Purpose:** Hold the *interior* of a historical map (units, places, boundaries, routes,
 fortifications) extracted by Grok vision, as a **unified, deduplicated** feature set that
 (a) links to our entity graph (PlaceID / GroupID / DateID), (b) carries provenance +
@@ -40,6 +43,29 @@ Grok vision reads **printed labels**, not pixel-georeferenced geometry. Therefor
   weather `null`-coord convention.)
 
 ---
+## Foreign-language maps (translation)
+
+Captured foreign-language maps (e.g. German *Lage Ost* / *Feindlage West* operational
+sheets) are **not** run through the document ingestion translator (`src/ingestion/
+translation.py`) — that path is for OCR'd text documents. Instead the vision pass itself
+translates, with `scripts/proto_map_vision.py --translate`:
+
+- Every label is returned **verbatim + English/modern equivalent**: the FeatureCollection
+  gains `title_en`, each legend item gains `meaning_en`, and each place feature carries its
+  English/modern name in `properties.additionalInformation`.
+- **Place resolution falls back to the English/modern name** when the verbatim foreign label
+  misses — this is what makes resolution work for exonyms (`Lüttich`→Liège, `Köln`→Cologne,
+  `Straßburg`→Strasbourg, `Antwerpen`→Antwerp).
+- On a *Feindlage* (enemy-situation) map the plotted units are the **German assessment of
+  Allied forces** — the prompt is told this, and the resulting `source: map` claims are kept
+  distinct from (and may legitimately conflict with) Allied/Green Book ground truth.
+
+**Measured** on a German *Feindlage West* (7 Dec 1944) Western-Front sheet: labels/legend
+translated correctly; **10/21 places resolved** to the Western-ETO corpus via the
+English-name fallback (vs ~0 for an Eastern-Front sheet); units 6/38 (German-notation labels
+for Allied formations are a harder match). Schema fields `title_en` / legend `meaning_en` are
+enforced in `map_features_output.py`.
+
 
 ## Shape
 
@@ -204,6 +230,31 @@ Weckerath) as expected.
 **Conclusion:** Green Book maps yield Tier-1 strongly today and Tier-2 (dated operational
 movement) with the unit-expander + seam-merge. Tier-3 (survey geometry) stays out by design
 (coordinates via resolved PlaceID, never pixels).
+
+---
+
+## Reverse registration — map as a backdrop (`src/extraction/map_registration.py`)
+
+The complement to forward extraction: a map advertises a coverage **extent** =
+`covered_places` (resolved PlaceIDs) × `date_range` (from the dated legend). Any narrative
+entity (person, casualty, logistics, equipment) resolved to a `(PlaceID, DateID)` INSIDE
+that extent gets a back-link `maps:[{MapID, association: spatial_temporal_coverage}]` — even
+though the map never names it. The join is the entity graph, so it is immune to map-OCR
+fuzziness and needs no unit-nomenclature resolution.
+
+- Extent is derived by `proto_map_vision.derive_extent` (Map III → 49 covered places,
+  1944-12-15 .. 1944-12-19).
+- `register_entity_to_maps(record, extents, dateid_to_iso)` tests place membership + date
+  range; place-only maps (no range) match on place alone; a dated map requires an in-range
+  date (null date → no link). Never mutates files (report mode).
+
+**Measured (honest):** the mechanism is proven on the user's flagship example — "Sgt Smith,
+DSC, St. Vith, 16 Dec 1944" registers to Map III; a 22-Dec date or an off-map place both
+correctly produce no link. BUT running it against the current `output/` corpus yields **0
+real registrations**: the ingested narrative (e.g. casualties around Le Mans / 9 Aug) is
+from a different sector than Map III's Ardennes extent — there is simply no entity at those
+places+dates yet. The pass will light up once Bulge-sector narrative is ingested. Validated
+by 5 deterministic tests in `tests/test_map_registration.py`.
 
 ---
 

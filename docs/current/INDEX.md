@@ -39,7 +39,8 @@
 ### Architecture & Design
 | Document | Description |
 |----------|-------------|
-| [SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md) | JSON schemas for all entity types (v2.5) |
+| [SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md) | JSON schemas for all entity types (v2.23) |
+| [features/maps/MAP_FEATURES_SCHEMA.md](features/maps/MAP_FEATURES_SCHEMA.md) | Map-interior GeoJSON FeatureCollection schema (places/units/routes, APP-6 profile, entity-graph links) |
 | [ENTITY_RELATIONSHIP_MAP.md](ENTITY_RELATIONSHIP_MAP.md) | Cross-references between entities, ID types, structural inconsistencies |
 | [STORAGE_REVIEW.md](STORAGE_REVIEW.md) | pgvector single-store decision, DynamoDB role-split, S3 lifecycle, cost model |
 | [dataquality/AWARD_SOURCING.md](dataquality/AWARD_SOURCING.md) | Country-specific authoritative award-citation sourcing (registry, routing, translation, provenance) |

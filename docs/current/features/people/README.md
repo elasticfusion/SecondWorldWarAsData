@@ -215,3 +215,12 @@ grep -l "EventID.*01ABC123" output/people/*.json
 > **People-groups (units & organizations) are a separate, first-class entity** — see
 > [../people_groups/README.md](../people_groups/README.md). A person *belongs to* groups;
 > the group is its own record.
+
+## Phase 3 Enrichment
+
+**Step 1/6 (always runs).** Biographical enrichment from **Grokipedia + Wikipedia**
+(`enrich_biographies.enrich_all_people`): follows references, captures portrait photos, and
+sources authoritative award citations (original + translated, provenance preserved). If
+`use_openserp` is enabled, **step 5/6** adds OpenSERP image/academic results. Gated by the
+shared `enrichment_gate` (no re-enrichment of fresh records). See
+[Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).

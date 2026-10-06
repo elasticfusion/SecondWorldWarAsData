@@ -21,6 +21,14 @@ and [../dataquality/STRUCTURED_DATA_ROUTING.md](../dataquality/STRUCTURED_DATA_R
 - **Region conversion** — each page/region → Markdown (the universal
   intermediate) via a disposition-appropriate method, extracting image/map
   assets that the prose converter previously dropped.
+- **Language detection + translation** — a **per-page** pass detects each page's
+  language and translates non-English pages to English (`normalize_pages_to_english`),
+  so every downstream extractor (events, people, …) sees English and needs no language
+  guard. The verbatim original is kept as a `<name>.orig.md` sidecar and `source_language`
+  is stamped (provenance preserved). Idempotent on re-runs. Full spec:
+  [../dataquality/LANGUAGE_TRANSLATION.md](../dataquality/LANGUAGE_TRANSLATION.md).
+  (Foreign-language **maps** are handled separately at vision time — see
+  [../features/maps/MAP_FEATURES_SCHEMA.md](../features/maps/MAP_FEATURES_SCHEMA.md).)
 - **Scanned tabular parsing** — for scanned reference tables (e.g. the ETO
   Order of Battle), section parsers turn the OCR+AI markdown into structured
   rows (command-staff, campaigns, command-posts, statistics, organic-units) with
@@ -53,7 +61,17 @@ After Phase 2, duplicate detection runs automatically:
 In AWS mode, a web UI allows merging, skipping, and reclassifying entities before Phase 3 proceeds. UI actions (merge, reclassify, assign) append changed file keys to the DynamoDB manifest so Phase 3 downloads them. "Not Duplicates" decisions are stored in DynamoDB and persist across pipeline runs.
 
 ### Phase 3: Enrichment
-Enriches people, groups, places, and bibliography with external data. In AWS mode, Phase 3 reads the DynamoDB manifest (`manifest#phase2`) to download only files changed by Phase 2 and dedup review, falling back to a full entity directory download if no manifest exists.
+Enriches entities with external data in a fixed step order: people (Grokipedia/Wikipedia),
+people groups (unit history + Wikipedia), places (hierarchy + **geocoding cascade**:
+Nominatim→hill→Grok), bibliography (ISBN/copyright + NARA/Archive.org/LOC resolution), and —
+when enabled — equipment (Wikipedia), OpenSERP (people/equipment images), and weather (NOAA
+observed). Dates, logistics, casualties, maps, and events have no enrichment step by design.
+Each source is isolated (`_run_step`): a failure is logged + surfaced via
+`.phase_results.json` → email/Slack, never aborting the rest. Full detail, config gating,
+batch re-run, and the reliability model: **[PHASE3_ENRICHMENT.md](PHASE3_ENRICHMENT.md)**. In
+AWS mode, Phase 3 reads the DynamoDB manifest (`manifest#phase2`) to download only files
+changed by Phase 2 and dedup review, falling back to a full entity directory download if no
+manifest exists.
 
 ### Caching
 - **Local mode:** diskcache (SQLite) in `cache/api/`

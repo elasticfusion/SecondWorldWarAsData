@@ -93,6 +93,60 @@ T-34 coded `SUN` on one record and `RUS`/`USSR` on another would wrongly fail to
 
 ---
 
+## 8. Canonical unit key — `src/dedup/unit_key.py::derive_unit_key` / `unit_keys_match`
+
+The single source of truth for "are these two unit designations the same unit?" Parses a
+name into `(numbers, service, arm, echelon)` — NOT string similarity — so `Ninth Division`
+/ `9th Division` / `9th Infantry Division` match while vetoing genuine differences. Handles:
+abbreviations (`inf`/`armd`/`PIR`/`CAV`/`AD`/`PZ`/`VG`), ordinals + Roman numerals
+(incl. corps >XX via a round-trip-validated parser: `LXVI`→66), Combat Commands
+(`CCA/CCB/CCR`, letter-distinct, require a parent division), the US-only infantry default,
+service veto (USMC/USN/USAAF), VG/grenadier unification, and an **exclusion modifier**
+(`less X`/`minus X`/`(-)`) so a task-tailored complement never merges with the whole or the
+excluded part.
+
+**Reuse this** for any unit→GroupID resolution or unit dedup (group dedup
+`find_duplicate_groups`, biography linking, map unit resolution all do). Do NOT re-derive
+unit numbering/echelon logic locally — `find_duplicate_groups` still carries a legacy local
+`ROMAN_MAP`/`_extract_numbers` that should migrate here.
+
+## 9. Reverse map registration — `src/extraction/map_registration.py`
+
+Links narrative entities ONTO a map as a backdrop: a map's extent (`covered_places` ×
+`date_range`) back-links any entity resolved to a `(PlaceID, DateID)` inside it, association
+`spatial_temporal_coverage` — the map need not name the entity. The join is the entity graph
+(immune to map-OCR fuzziness). Map interior extraction + the enforced output live in
+`src/schemas/map_features_output.py` (strict GeoJSON FeatureCollection; coordinates come
+from the resolved PlaceID, never map pixels). See
+`docs/current/features/maps/MAP_FEATURES_SCHEMA.md`.
+
+---
+
+## 10. Translation — `src/ingestion/translation.py` + map-vision `--translate`
+
+Two distinct paths turn non-English sources into English-normalized, resolvable data:
+
+- **Document path (ingestion):** `detect_language` → `translate_markdown` →
+  `normalize_to_english`. Foreign-language OCR'd text documents (German KTBs, French
+  reports) are detected and translated to English **before** extraction — this runs as a
+  **per-page** pass in **Phase 0** (`phase0_ingest.py` → `normalize_pages_to_english`), so
+  every entity extractor (events, people, …) sees English and needs no language guard of its
+  own. The verbatim original is kept as a `<name>.orig.md` sidecar; `source_language` is
+  stamped; places keep `historical_names` with `language`/`date_range` (e.g. Danzig→Gdańsk).
+  **Scope: this guarantee is Phase-0 front-door only** — markdown placed into `output/`
+  without passing through Phase 0 is not language-checked. Full spec:
+  [LANGUAGE_TRANSLATION.md](dataquality/LANGUAGE_TRANSLATION.md).
+- **Map-vision path:** images are not OCR text, so the vision prompt translates in place
+  (`proto_map_vision.py --translate`): verbatim foreign label + English/modern equivalent
+  (`title_en`, legend `meaning_en`, place `name_en`), with place resolution falling back to
+  the English/modern name for exonyms (Lüttich→Liège). See
+  `docs/current/features/maps/MAP_FEATURES_SCHEMA.md`.
+
+**Rule:** preserve the verbatim original (provenance) AND the English/modern form (resolution)
+— never discard the source-language text.
+
+---
+
 ## Provenance / traceability (applies everywhere)
 
 Every fact traces to its origin: **narrative** facts carry `original_text` (+ `book`);
@@ -107,4 +161,5 @@ traceable records, never silently merged.
 - [ ] Missing critical fields recovered via a `SourceRechecker` spec before external lookup.
 - [ ] Name→ID resolution via `build_name_index` (alias/fuzzy where the feature needs it).
 - [ ] Dedup consults the exclusions store.
+- [ ] Unit/formation designations resolved + deduped via `unit_key` (not local string logic).
 - [ ] Every stored fact carries its source (original_text/book or source/source_url).

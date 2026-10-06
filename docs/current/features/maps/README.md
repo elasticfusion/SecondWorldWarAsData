@@ -294,12 +294,34 @@ export AWS_SECRET_ACCESS_KEY="your-secret"
 python3 phase2_extract.py
 ```
 
+## Map-Interior Extraction (new)
+
+This guide covers map **cataloging** (metadata, download, entity linking). Extracting the
+**interior** of an operational map — the places, units (with affiliation/echelon), dated
+movements, and fortifications drawn on it — into structured, entity-linked data is a
+separate capability. See **[MAP_FEATURES_SCHEMA.md](MAP_FEATURES_SCHEMA.md)** for the
+enforced GeoJSON `map_features` schema, the Grok-vision prototype
+(`scripts/proto_map_vision.py`), unit resolution via the shared `unit_key` with APP-6
+symbology constraints, and the reverse-registration pass
+(`src/extraction/map_registration.py`) that links narrative entities onto a map by
+`(PlaceID, DateID)` coverage.
+
 ## Future Enhancements
 
-- [ ] Auto-link maps to EventID/Sub_eventID ✅ **DONE**
-- [ ] Auto-link maps to PlaceMentionID ✅ **DONE**
-- [ ] Auto-link maps to DateMentionID ✅ **DONE**
+- [x] Auto-link maps to EventID/Sub_eventID
+- [x] Auto-link maps to PlaceMentionID
+- [x] Auto-link maps to DateMentionID
+- [x] OCR text extraction from map images — via the Chandra OCR pass (prose/labels; see
+  `docs/current/dataquality/CHANDRA_OCR_DESIGN.md`)
+- [x] Map image analysis (boundaries, features) — **prototype**: map-interior extraction
+  (Tier-1 inventory + Tier-2 dated movement); see MAP_FEATURES_SCHEMA.md
 - [ ] Extract page numbers from parsed documents
-- [ ] OCR text extraction from map images
-- [ ] Map image analysis (boundaries, features)
-- [ ] Map type classification (tactical, strategic, political)
+- [ ] Wire the map-interior prototype into the pipeline + enforced output records
+- [ ] Map type classification refinement (tactical / strategic / political)
+
+## Phase 3 Enrichment
+
+**None.** Map cataloging (this guide) and the map-interior prototype are not wired into
+Phase 3. When map-interior extraction productionizes, a gated Phase-3 map step (extraction →
+entity resolution → reverse registration) would run. See
+[Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md) (Known Gaps).

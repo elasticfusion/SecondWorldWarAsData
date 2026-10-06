@@ -564,3 +564,9 @@ def extract_logistics(
 - [Equipment Extraction](../equipment/MILITARY_EQUIPMENT.md)
 - [Weather Extraction](../weather/README.md)
 - [Configuration](../../core/CONFIGURATION.md)
+
+## Phase 3 Enrichment
+
+**None by design.** Logistics records are extracted and cross-referenced in Phase 2; they
+receive no external enrichment in Phase 3. See
+[Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).

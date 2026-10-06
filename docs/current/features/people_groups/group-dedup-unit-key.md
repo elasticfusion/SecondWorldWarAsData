@@ -19,15 +19,24 @@ Config: `config.yaml` → `dedup.groups`. Implementation: `src/dedup/unit_key.py
 `derive_unit_key(name)` → `(numbers, branch, echelon)`:
 
 - **numbers** — the unit's numeric designator(s). Arabic, ordinals ("Ninth"→9), ordinal
-  suffixes ("2d"/"2nd"→2), and roman numerals (kept distinct: `VII Corps` ≠ `7th Corps`).
-- **branch** — infantry / armored / cavalry / airborne / artillery / engineer / … .
-  **INFANTRY (combat arm) IS THE DEFAULT only when the SERVICE is Army** ("9th Division" ⇒ infantry).
+  suffixes ("2d"/"2nd"→2), and roman numerals. Low romans unify with arabic (`VII Corps`
+  ⇔ `7th Corps`); **higher corps numerals parse too** via a round-trip-validated parser
+  (`LXVI`→66, `LVIII`→58, `XLVII`→47) that rejects ordinary words. An **exclusion modifier**
+  (`less X` / `minus X` / `(-)`) adds a `less-<component>` token so a task-tailored
+  complement never matches the whole formation or the excluded part
+  (`3d Armored Division (less CCB)` ≠ `3d Armored Division` ≠ `… (less CCA)`).
+- **branch** — infantry / armored / cavalry / airborne / artillery / engineer /
+  **volksgrenadier** / … . **INFANTRY (combat arm) IS THE DEFAULT only when the SERVICE is
+  Army** ("9th Division" ⇒ infantry). Volksgrenadier/VG/grenadier unify to one arm so
+  `18th Volksgrenadier Division` / `18 VG Division` / `18th VG Division` match each other
+  (and a VG unit vetoes against a US infantry unit of the same number).
 - **echelon** — squad / platoon / company / battalion / regiment / brigade / division /
   corps / army / … . `None` when unspecified.
 
 **Abbreviations** are expanded before extraction: `PIR` → parachute infantry regiment,
-`Inf Div` → infantry division, `Armd Div` → armored division, `Abn` → airborne, `Bn` →
-battalion, etc.
+`Inf Div` → infantry division, `Armd Div` → armored division, `CAV` → cavalry, `AD` →
+armored division, `PZ` → panzer (→ armored arm), `VG` → volksgrenadier, `Abn` → airborne,
+`Bn` → battalion, etc.
 
 ## The match rule (`unit_keys_match`)
 
@@ -50,6 +59,11 @@ battalion, etc.
 | 9th Armored | 9th Armored Division | match | echelon absent on one → permissive |
 | 110th | 110th Regiment | match | bare number → echelon permissive |
 | 502nd PIR | 502nd Parachute Infantry Regiment | match | abbreviation expansion |
+| 18th Volksgrenadier Division | 18 VG Division | match | VG unification |
+| 14 CAV | 14th Infantry Division | **NO match** | CAV→cavalry arm ≠ infantry — VETO |
+| LXVI Corps | 66th Corps | match | higher roman parses (LXVI→66) |
+| 3d Armored Division (less CCB) | 3d Armored Division | **NO match** | exclusion modifier (complement ≠ whole) |
+| 2d Armd Div (less CCA) | 2d Armd Div (less CCB) | **NO match** | distinct exclusions |
 | 9th Division | 10th Division | NO match | number mismatch |
 
 ## Primary vs fallback

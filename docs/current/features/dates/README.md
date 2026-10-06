@@ -536,3 +536,9 @@ This is expected - LLM sometimes returns unparseable dates.
 - [Places Extraction](../places/README.md)
 - [Weather Extraction](../weather/README.md)
 - [Error Handling](../../core/error_handling.md)
+
+## Phase 3 Enrichment
+
+**None by design.** Dates are extracted, interval-resolved, and summarized in Phase 2; they
+receive no external enrichment in Phase 3. See
+[Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).

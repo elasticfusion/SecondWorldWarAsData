@@ -76,6 +76,9 @@ _ARM_TERMS = {
     "tank": "armored",
     "panzer": "armored",
     "cavalry": "cavalry",
+    "volksgrenadier": "volksgrenadier",
+    "volks grenadier": "volksgrenadier",
+    "grenadier": "volksgrenadier",
     "airborne": "airborne",
     "parachute": "airborne",
     "glider": "airborne",
@@ -98,9 +101,16 @@ _ABBREVIATIONS = [
     (r"\bgir\b", "glider infantry regiment"),
     (r"\binf\s*div\b", "infantry division"),
     (r"\barmd?\s*div\b", "armored division"),
+    (r"\bcav\s*div\b", "cavalry division"),
+    (r"\bpz\s*div\b", "panzer division"),
+    (r"\bvg\s*div\b", "volksgrenadier division"),
+    (r"\bvg\b", "volksgrenadier"),
     (r"\babn\b", "airborne"),
     (r"\binf\b", "infantry"),
     (r"\barmd\b", "armored"),
+    (r"\bad\b", "armored division"),
+    (r"\bcav\b", "cavalry"),
+    (r"\bpz\b", "panzer"),
     (r"\barty\b", "artillery"),
     (r"\bfa\b", "field artillery"),
     (r"\bengr?\b", "engineer"),
@@ -189,7 +199,54 @@ def _numbers(name: str) -> Set[str]:
             # Roman numerals (used for corps) unify with arabic: 'VII Corps' == '7th
             # Corps' (a bare arabic corps is a typo for the roman). Owner-confirmed.
             nums.add(_ROMAN[w])
+        else:
+            # Fallback for higher corps numerals (LXVI, LVIII, XLVII) not in the small
+            # table. Only fires on a token that is a VALID canonical roman numeral, so
+            # real words ("div", "mix") are never misread as numbers.
+            roman = _parse_roman(w)
+            if roman is not None:
+                nums.add(str(roman))
     return nums
+
+
+def _parse_roman(token: str) -> Optional[int]:
+    """Parse a lowercase token as a canonical Roman numeral (1-399), else None.
+
+    Validates by round-trip (int->roman==token) so only genuine numerals match —
+    'div'/'mix'/'did' are rejected. Used for WWII corps designations above XX
+    (e.g. 'lxvi' -> 66, 'lviii' -> 58, 'xlvii' -> 47)."""
+    if not token or any(c not in "ivxlcdm" for c in token):
+        return None
+    vals = {"i": 1, "v": 5, "x": 10, "l": 50, "c": 100, "d": 500, "m": 1000}
+    total, prev = 0, 0
+    for c in reversed(token):
+        v = vals[c]
+        total += -v if v < prev else v
+        prev = max(prev, v)
+    if total <= 0 or total > 399:
+        return None
+    return total if _to_roman(total) == token else None
+
+
+def _to_roman(n: int) -> str:
+    """Canonical lowercase roman for 1..399 (enough for corps numerals)."""
+    table = [
+        (100, "c"),
+        (90, "xc"),
+        (50, "l"),
+        (40, "xl"),
+        (10, "x"),
+        (9, "ix"),
+        (5, "v"),
+        (4, "iv"),
+        (1, "i"),
+    ]
+    out = []
+    for val, sym in table:
+        while n >= val:
+            out.append(sym)
+            n -= val
+    return "".join(out)
 
 
 # Echelon nouns that occupy the 'size' slot; a word just before one of these that is
@@ -332,6 +389,17 @@ def derive_unit_key(name: str, *, infantry_default: bool = True) -> UnitKey:
         # formation of an armored division.
         numbers.add(f"cc{cc.group(1)}")
         echelon = "combat_command"
+
+    # Exclusion modifier ("3d Armored Division (less CCB)", "... minus CCA", "(-)"):
+    # a task-tailored formation MINUS a component is NOT the whole formation, and NOT the
+    # excluded component. Stamp a distinguishing token so its key differs from both (rides
+    # the number-set veto in unit_keys_match). The excluded component (if named) is folded
+    # in so "less CCA" and "less CCB" stay distinct too.
+    m_excl = re.search(r"\b(?:less|minus)\s+([a-z0-9]+)\b", expanded)
+    if m_excl:
+        numbers.add(f"less-{m_excl.group(1)}")
+    elif re.search(r"\(\s*-\s*\)", expanded):
+        numbers.add("less-x")
 
     arm = _resolve_arm(arm, expanded, service, echelon, bool(cc), infantry_default)
     return UnitKey(

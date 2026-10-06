@@ -133,14 +133,16 @@ Military equipment extraction with specifications and media.
 
 ### Casualties (`casualties.py`)
 **Status:** Experimental
+**Documentation:** [casualties/README.md](casualties/README.md)
 
-Casualty data extraction from events.
+Casualty (personnel-loss) extraction from events.
 
 **Key Features:**
 - Casualty counts by type (killed, wounded, missing, captured)
+- `cause` dimension (combat / weather_exposure / disease / accident / other)
 - Side attribution (Allied, Axis, Civilian)
-- Event linkage
-- Structured output
+- Resolution of impacted people / units / places to entity IDs + direct PersonID/PlaceID anchors
+- Event linkage; structured output
 - Batched extraction (1 API call per chapter via `_batch_extract_casualties`)
 
 ---
@@ -195,6 +197,23 @@ Map extraction from source documents.
 - S3 storage support
 - Map classification (tactical, strategic, logistical)
 - Date and place linkage
+
+---
+
+### Map-Interior Extraction (`scripts/proto_map_vision.py` — prototype)
+**Status:** Prototype (not yet wired into the pipeline)
+**Documentation:** [maps/MAP_FEATURES_SCHEMA.md](maps/MAP_FEATURES_SCHEMA.md)
+
+Extracts the *interior* of an operational map (places, units+affiliation/echelon,
+fortifications, dated movement) into a GeoJSON FeatureCollection, resolved to the entity
+graph (PlaceID/GroupID/DateID). Enforced schema: `src/schemas/map_features_output.py`.
+
+**Key Features:**
+- Grok-vision Tier-1 (inventory) + Tier-2 (dated movement) extraction; legend-first + tiling
+- Unit resolution via the shared `unit_key` with APP-6 symbology constraints
+- Reverse registration (`src/extraction/map_registration.py`): narrative entities link onto
+  a map by `(PlaceID, DateID)` coverage — the map-as-backdrop direction
+- Coordinates come from resolved PlaceID (geocode cascade), never map pixels
 
 ---
 
