@@ -2,14 +2,14 @@
 
 from src.schemas import (
     METADATA_PROPERTIES,
-    SCHEMA_VERSION,
+    entity_version,
     make_nullable,
     ulid_field,
 )
 
 MAPS_OUTPUT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "version": SCHEMA_VERSION,
+    "version": entity_version("maps"),
     "title": "Maps Output File",
     "type": "object",
     "required": ["MapID"],

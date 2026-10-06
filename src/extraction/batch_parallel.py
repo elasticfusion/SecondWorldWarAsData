@@ -42,8 +42,11 @@ def _register_entity(book: str, entity_type: str, filename: str) -> None:
 
 logger = logging.getLogger(__name__)
 
-# This module targets schema 2.24.
-SCHEMA_TARGET = "2.24"
+# Schema version this module targets — derived from the central per-entity map.
+# This writer emits event-mention records, so it targets the 'events' entity version.
+from src.schemas import entity_version as _entity_version
+
+SCHEMA_TARGET = _entity_version("events")
 
 _RANK_PREFIX = re.compile(
     r"^(?:(?:Field\s+)?Marshal|Gen(?:eral)?|Lt\.?\s*Gen(?:eral)?|"

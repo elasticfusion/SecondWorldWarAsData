@@ -8,14 +8,14 @@ closes that gap so image records are version-gated like every other entity.
 
 from src.schemas import (
     METADATA_PROPERTIES,
-    SCHEMA_VERSION,
+    entity_version,
     make_nullable,
     ulid_field,
 )
 
 IMAGES_OUTPUT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "version": SCHEMA_VERSION,
+    "version": entity_version("images"),
     "title": "Images Output File",
     "type": "object",
     "required": ["ImageID"],

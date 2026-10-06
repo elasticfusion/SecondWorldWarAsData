@@ -26,7 +26,10 @@ logger = logging.getLogger(__name__)
 # fields; metadata stamped). Records read from disk at an older version are upgraded only via
 # a registered case-by-case upgrader (src/schemas/schema_contract), else flagged — never
 # silently assumed. See the schema-contract directive.
-SCHEMA_TARGET = "2.24"
+# Schema version this module targets — derived from the central per-entity map.
+from src.schemas import entity_version as _entity_version
+
+SCHEMA_TARGET = _entity_version("people_groups")
 
 
 @lru_cache(maxsize=5000)

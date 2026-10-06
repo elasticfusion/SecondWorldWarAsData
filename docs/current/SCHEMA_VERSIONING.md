@@ -1,32 +1,46 @@
 # JSON Schema Versioning — What To Bump, When
 
-**Single source of version truth:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently
-2.24). **All entity schemas share this one constant** — there are no per-entity versions.
-Changing any enforced output schema is a schema change and MUST bump `SCHEMA_VERSION`.
+**Source of version truth:** `src/schemas/__init__.py::ENTITY_SCHEMA_VERSIONS` — a central map
+of **per-entity** versions (each entity has its OWN version). A change to one entity bumps
+ONLY that entity; the others are untouched (no cross-entity coupling, nothing "left behind").
+`SCHEMA_VERSION` remains as a deprecated alias (= the max across the map) for un-migrated
+callers; new code uses `entity_version("<entity>")`.
 
-Records are stamped `_schema_version` automatically at the shared write layer
-(`src/utils/file_lock.write_json_with_lock` and `json_validator`, both call
-`inject_metadata`). Code that reads-then-rewrites a record declares `SCHEMA_TARGET` and uses
-the schema contract (`src/schemas/schema_contract.py`); the guard test
-`tests/test_schema_target_guard.py` fails the build if a module's `SCHEMA_TARGET` drifts from
-`SCHEMA_VERSION`.
+Everything derives from this one map: each schema module's `"version"` field
+(`entity_version("places")`), each extractor's `SCHEMA_TARGET` (`entity_version("places")`),
+and the guards. Records are stamped `_schema_version` with their entity's version at the
+shared write layer (`inject_metadata(data, entity=...)`).
 
 ---
 
-## When to bump SCHEMA_VERSION
+## When to bump an entity's version
 
-Bump when you change the SHAPE of any enforced schema below:
-- add / remove / rename a field,
-- change a field's type or nullability,
-- change an enum's allowed values,
-- change `required` or `additionalProperties`.
+Bump the ONE entity you changed (edit its line in `ENTITY_SCHEMA_VERSIONS`) when you change
+the SHAPE of its enforced schema: add/remove/rename a field, change a type/nullability, change
+an enum, or change `required`/`additionalProperties`. Do NOT bump for doc/prompt/refactor
+changes that don't change output shape, or for index/report files.
 
-Do NOT bump for: doc edits, prompt wording, code refactors that don't change output shape,
-or new *index/report* files (not entity records).
+### Additive vs. breaking (owner rule — determines reprocessing)
 
-After bumping, EITHER update every affected `SCHEMA_TARGET` to the new version AND the code
-for the new shape, OR register a case-by-case upgrader
-(`schema_contract.register_upgrade`). The guard test enforces this.
+- **ADDITIVE** (new **optional** field, widened type): bump that entity + re-pin its
+  fingerprint. **No reprocessing** — existing records remain valid, confirmed automatically
+  by `tests/test_entity_schema_consistency.py` (old records still validate against the new
+  schema).
+- **BREAKING** (new **required** field, removed/renamed field, tightened type): bump that
+  entity AND either register `schema_contract.register_upgrade(old, new)` OR run a **targeted
+  reprocess of that one entity**. Never a global reprocess; other entities are not touched.
+  The consistency test will FAIL on old records until upgraded/reprocessed — that failure is
+  the signal that a breaking change needs one of those two actions.
+
+### The guard chain (all per-entity)
+
+- `tests/test_schema_fingerprint.py` — a schema SHAPE change that doesn't bump THAT entity's
+  version fails the build (fingerprint excludes the version field, so a version bump alone
+  doesn't trip it). Pins are per-entity: `(version, fingerprint)`.
+- `tests/test_schema_target_guard.py` — each read-rewrite module's `SCHEMA_TARGET` must equal
+  ITS entity's version; a new writer with no target fails.
+- `tests/test_entity_schema_consistency.py` — real records of each entity validate against
+  its enforced schema (catches drift; is the additive-vs-breaking gate above).
 
 ---
 
@@ -64,9 +78,9 @@ records validate). No unenforced entity types remain.
 ## Checklist when changing an entity's JSON shape
 
 1. [ ] Edit the enforced `*_output.py` schema.
-2. [ ] Bump `SCHEMA_VERSION` in `src/schemas/__init__.py`.
-3. [ ] Update `SCHEMA_TARGET` in the entity's read-rewrite module(s) (if ✅ above) to the new
-   version — or register a `schema_contract.register_upgrade(old, new)`.
+2. [ ] Bump THAT entity's version in `ENTITY_SCHEMA_VERSIONS` (src/schemas/__init__.py).
+3. [ ] SCHEMA_TARGET auto-derives from the map; for a BREAKING change register a
+   `schema_contract.register_upgrade(old, new)` or targeted-reprocess that entity.
 4. [ ] Update `docs/current/SCHEMA_REFERENCE.md` (version header + the entity's field table).
 5. [ ] Validate real `output/<entity>/*.json` records against the updated schema (0 drift).
 6. [ ] Run the guard test (`tests/test_schema_target_guard.py`) — must pass.

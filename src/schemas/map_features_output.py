@@ -11,7 +11,7 @@ Coordinates come from the resolved PlaceID (geocode cascade), NEVER map pixels; 
 
 from src.schemas import (
     METADATA_PROPERTIES,
-    SCHEMA_VERSION,
+    entity_version,
     enum_field,
     make_nullable,
     ulid_field,
@@ -101,7 +101,7 @@ _FEATURE = {
 
 MAP_FEATURES_OUTPUT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "version": SCHEMA_VERSION,
+    "version": entity_version("map_features"),
     "title": "Map Features Output File",
     "type": "object",
     "required": ["type", "features"],

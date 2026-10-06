@@ -18,8 +18,10 @@ from src.utils.prompt_loader import get_system_prompt
 
 logger = logging.getLogger(__name__)
 
-# This module targets schema 2.24.
-SCHEMA_TARGET = "2.24"
+# Schema version this module targets — derived from the central per-entity map.
+from src.schemas import entity_version as _entity_version
+
+SCHEMA_TARGET = _entity_version("people")
 
 # Compiled regex patterns for performance
 _SPECIAL_CHARS_PATTERN = re.compile(r"[^\w\s-]")

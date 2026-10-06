@@ -2,7 +2,7 @@
 
 from src.schemas import (
     METADATA_PROPERTIES,
-    SCHEMA_VERSION,
+    entity_version,
     enum_field,
     make_nullable,
     ulid_field,
@@ -10,7 +10,7 @@ from src.schemas import (
 
 CASUALTIES_OUTPUT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "version": SCHEMA_VERSION,
+    "version": entity_version("casualties"),
     "title": "Casualties Output File",
     "type": "object",
     "required": ["CasualtyID", "type"],

@@ -16,8 +16,10 @@ from src.utils.json_validator import _fix_invalid_ulids
 
 logger = logging.getLogger(__name__)
 
-# This module targets schema 2.24.
-SCHEMA_TARGET = "2.24"
+# Schema version this module targets — derived from the central per-entity map.
+from src.schemas import entity_version as _entity_version
+
+SCHEMA_TARGET = _entity_version("equipment")
 
 
 # Pydantic models for structured extraction

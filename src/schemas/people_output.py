@@ -3,8 +3,8 @@
 from src.schemas import (
     EVENT_MENTIONS_SCHEMA,
     METADATA_PROPERTIES,
-    SCHEMA_VERSION,
     date_field,
+    entity_version,
     enum_field,
     make_nullable,
     ulid_field,
@@ -13,7 +13,7 @@ from src.schemas import (
 
 PEOPLE_OUTPUT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "version": SCHEMA_VERSION,
+    "version": entity_version("people"),
     "title": "People Output File",
     "type": "object",
     "required": ["PersonID", "name"],
