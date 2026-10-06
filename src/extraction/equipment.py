@@ -1430,9 +1430,15 @@ def _find_matching_equipment(
     common_name: str,
     equipment_index: Dict[str, Path],
     technical_id: str = "",
+    canonical_name: str = "",
 ) -> Optional[str]:
-    """Find matching equipment by exact or fuzzy match."""
-    # Check technical_identifier first (most stable)
+    """Find matching equipment. Canonical identity (resolved across US/German/British
+    naming systems) is the MOST stable key, so check it first — this is what lets the
+    disambiguator actually prevent cross-naming splits (M4 vs Sherman V -> one record).
+    """
+    if canonical_name and canonical_name in equipment_index:
+        return canonical_name
+    # Check technical_identifier next (stable)
     if technical_id and technical_id in equipment_index:
         return technical_id
     if common_name in equipment_index:
@@ -1675,9 +1681,12 @@ _EQUIPMENT_ALIAS_CACHE: Optional[Dict[str, str]] = None
 def _resolve_canonical_identity(
     equipment_data: dict, grok_client: Optional[GrokClient]
 ) -> str:
-    """Resolve the record's designation to a canonical identity (exact→alias→fuzzy→Grok)
-    and stamp canonical_name/identity_source/country_of_origin. Returns the name to use for
-    enrichment. Canonical lookup only (no specs)."""
+    """Resolve the record's designation to a canonical identity
+    (exact→alias→learned→fuzzy→Grok) and stamp canonical_name/identity_source/
+    country_of_origin. Returns the name to use for enrichment. Idempotent: if already
+    resolved, returns the stamped canonical_name without re-resolving."""
+    if equipment_data.get("canonical_name"):
+        return equipment_data["canonical_name"]
     from src.extraction.equipment_disambiguation import resolve_designation
 
     canonical_name = _canonical_equipment_name(equipment_data["common_name"])
@@ -1808,6 +1817,11 @@ def _create_new_equipment(
     # Also index by common_name for lookup compatibility
     if index_key != common_name:
         equipment_index[common_name] = eq_file
+    # And by canonical identity, so a later mention under a different national designation
+    # (M4 vs Sherman V) resolves to THIS record.
+    canonical = equipment_data.get("canonical_name")
+    if canonical and canonical not in equipment_index:
+        equipment_index[canonical] = eq_file
 
     return eq_file
 
@@ -1839,9 +1853,12 @@ def merge_or_create_equipment(
     """
     common_name = equipment_data["common_name"]
 
-    # Find matching equipment
+    # Find matching equipment (canonical identity is the most stable key)
     technical_id = equipment_data.get("technical_identifier", "")
-    matched_name = _find_matching_equipment(common_name, equipment_index, technical_id)
+    canonical = equipment_data.get("canonical_name", "")
+    matched_name = _find_matching_equipment(
+        common_name, equipment_index, technical_id, canonical
+    )
 
     if matched_name:
         eq_file = equipment_index[matched_name]
@@ -2109,6 +2126,32 @@ def _build_equipment_data(eq: EquipmentExtraction) -> Dict[str, Any]:
     return equipment_data
 
 
+def _recheck_equipment_fields(
+    equipment_data: Dict[str, Any],
+    mention: Dict[str, Any],
+    grok_client: Optional[GrokClient],
+) -> None:
+    """Source-first gap-fill of missing critical fields (country_of_origin/category/
+    quantity/place) from the mention's retained original_text, before merge/dedup. The
+    recheck reads event_mentions[].original_text; pass the mention context transiently so
+    it doesn't leak into the merge payload. Fail-open."""
+    if not grok_client:
+        return
+    try:
+        from src.extraction.equipment_source_recheck import (
+            recheck_equipment_from_source,
+        )
+
+        injected = "event_mentions" not in equipment_data
+        if injected:
+            equipment_data["event_mentions"] = [mention]
+        recheck_equipment_from_source(equipment_data, grok_client)
+        if injected:
+            del equipment_data["event_mentions"]
+    except Exception as e:  # noqa: BLE001 - never block extraction
+        logger.debug("equipment source-recheck skipped: %s", e)
+
+
 def _process_equipment_item(
     eq_data: Dict[str, Any],
     event_data: Dict[str, Any],
@@ -2132,6 +2175,15 @@ def _process_equipment_item(
         logger.debug("  Data: %s", eq_data)
         return None
 
+    # ASSERTION GATE (code-enforced, not just prompt): a mention exists only when the
+    # source ASSERTS presence. Drop items with no assertion_source (ambient/stock footage
+    # that merely shows/discusses a place without asserting this equipment was there).
+    if not eq.assertion_source:
+        logger.debug(
+            "  Skipping equipment with no asserted presence: %s", eq.common_name
+        )
+        return None
+
     # Link entities
     using_unit = _link_entity(eq.using_unit_name, people_groups_index, "unit")
     using_person = _link_entity(eq.using_person_name, people_index, "person")
@@ -2153,6 +2205,16 @@ def _process_equipment_item(
         places_index,
     )
     equipment_data = _build_equipment_data(eq)
+
+    # Resolve canonical identity BEFORE matching so it can serve as the merge key (lets
+    # the disambiguator actually prevent cross-naming splits: M4 vs Sherman V -> one
+    # record). Stamps canonical_name/identity_source/country_of_origin on equipment_data.
+    if grok_client:
+        _resolve_canonical_identity(equipment_data, grok_client)
+
+    # SOURCE-RECHECK: recover missing critical fields (esp. country_of_origin — the dedup
+    # veto — + category/quantity/place) from the retained original_text BEFORE merge/dedup.
+    _recheck_equipment_fields(equipment_data, mention, grok_client)
 
     # Record-level related_equipment (narrative-sourced). Resolve/auto-create distinct
     # related records so links carry a real EquipmentID.

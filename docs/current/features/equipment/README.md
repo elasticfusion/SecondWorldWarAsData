@@ -152,6 +152,7 @@ Enrichment-on-identity (follows identity resolution)
 
 | Doc | Purpose |
 |---|---|
+| [EQUIPMENT_FLOW.md](EQUIPMENT_FLOW.md) | **Comprehensive end-to-end flow** — every stage, decision point, provenance rule, and module/function reference. Start here. |
 | [EQUIPMENT_FINAL_STRUCTURE.md](EQUIPMENT_FINAL_STRUCTURE.md) | The record/mention structure actually produced. Canonical example lives here. |
 | [EQUIPMENT_DEDUPLICATION.md](EQUIPMENT_DEDUPLICATION.md) | Dedup behavior, alias/fuzzy matching, and the origin-vs-operator country model. |
 | [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md) | US vs. German naming (M-number vs. Pz.Kpfw./Ausf./Sd.Kfz.) + implications for dedup/alias/identity. |
