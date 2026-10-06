@@ -69,6 +69,82 @@ _ALLIANCE_MAP = {
 }
 
 
+# Nationality code -> Wikipedia-style country suffix for disambiguation.
+_COUNTRY_NAME = {
+    "USA": "United States",
+    "US": "United States",
+    "GBR": "United Kingdom",
+    "UK": "United Kingdom",
+    "CAN": "Canada",
+    "AUS": "Australia",
+    "NZL": "New Zealand",
+    "FRA": "France",
+    "POL": "Poland",
+    "DEU": "Germany",
+    "ITA": "Italy",
+    "JPN": "Japan",
+    "SUN": "Soviet Union",
+    "RUS": "Soviet Union",
+    "IND": "India",
+    "ZAF": "South Africa",
+    "NLD": "Netherlands",
+    "BEL": "Belgium",
+}
+
+
+def _build_enrichment_query(data: dict) -> tuple[str, str]:
+    """Build a DISAMBIGUATED lookup query from the record's structured identity, to
+    avoid Wikipedia disambiguation errors (bare '9th Division' -> wrong country).
+
+    Returns (query, canonical_name):
+      - resolve a nickname to its canonical unit name first;
+      - append the Wikipedia-style '(Country)' suffix from the record's nationality
+        when known (mirrors Wikipedia's own article-title convention);
+    Falls back to the plain name when no disambiguators are available.
+    """
+    name = data.get("name") or data.get("group_name") or ""
+    try:
+        from src.dedup.unit_key import resolve_nickname
+
+        canonical = resolve_nickname(name) or name
+    except Exception:
+        canonical = name
+    nat = (
+        (data.get("nationality") or data.get("country_of_origin") or "").strip().upper()
+    )
+    country = _COUNTRY_NAME.get(nat)
+    query = canonical
+    if country and country.lower() not in canonical.lower():
+        query = f"{canonical} ({country})"
+    return query, canonical
+
+
+def _enrichment_agrees(data: dict, enrich: dict) -> tuple[bool, str]:
+    """Wrong-article GUARD: reject enrichment that CONTRADICTS the record's known facts
+    (the hallmark of a mis-resolved Wikipedia disambiguation). Checks nationality and
+    echelon/hierarchy; a mismatch where BOTH sides are known -> reject. Unknown on
+    either side is permissive. Returns (ok, reason)."""
+    # Nationality agreement
+    rec_nat = (
+        (data.get("nationality") or data.get("country_of_origin") or "").strip().upper()
+    )
+    got_nat = (enrich.get("nationality") or "").strip().upper()
+    if rec_nat and got_nat and rec_nat != got_nat:
+        return (
+            False,
+            f"nationality contradiction (record {rec_nat} vs enrichment {got_nat})",
+        )
+    # Echelon / hierarchy agreement
+    rec_ech = (data.get("military_hierarchy") or "").strip().lower()
+    got_ech = (enrich.get("unit_type") or "").strip().lower()
+    if rec_ech and got_ech and rec_ech != got_ech:
+        return (
+            False,
+            f"echelon contradiction (record {rec_ech} vs enrichment {got_ech})",
+        )
+    return True, "agrees"
+
+
 def _infer_alliance(data, enrich):
     """Set alliance_membership from nationality if not already set."""
     nat = enrich.get("nationality", "")
@@ -149,9 +225,15 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
         except Exception as e:  # noqa: BLE001 - never block enrichment
             logger.warning("source-recheck skipped: %s", e)
 
+    # Build a DISAMBIGUATED query from the record's identity (nickname-resolved +
+    # '(Country)' suffix) so Wikipedia/Grok resolves the correct article, not a
+    # disambiguation page or a same-named unit of another nation. (Runs AFTER the
+    # source-recheck so the recovered nationality feeds the disambiguation.)
+    query, _canonical = _build_enrichment_query(data)
+
     try:
         enrichment = grok_client.extract_json(
-            prompt=PROMPT.format(name=name),
+            prompt=PROMPT.format(name=query),
             use_cache=True,
             cache_type="group_enrichment",
         )
@@ -170,6 +252,18 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
         write_json_with_lock(group_file, data)
         return False
 
+    # Wrong-article GUARD: if the returned enrichment CONTRADICTS the record's known
+    # nationality/echelon, it is almost certainly a mis-resolved disambiguation (wrong
+    # same-named unit). Do NOT stamp the wrong data; mark 'ambiguous' (retriable, visible).
+    ok, reason = _enrichment_agrees(data, enrichment)
+    if not ok:
+        logger.warning("  ⚠ Enrichment rejected for %s — %s", name, reason)
+        data["enrichment_status"] = "ambiguous"
+        data["enrichment_ambiguity_reason"] = reason
+        data["last_enrichment_search"] = _today()
+        write_json_with_lock(group_file, data)
+        return False
+
     _apply_group_enrichment(data, enrichment, group_file, name)
     return True
 
@@ -179,7 +273,8 @@ def _apply_group_enrichment(
 ) -> None:
     """Apply group enrichment with a DIFF guard: if byte-identical to what we already
     hold, refresh only the staleness stamp (limit updates); else rewrite + promote.
-    Groups previously overwrote enrichment_data unconditionally on every re-search."""
+    Groups previously overwrote enrichment_data unconditionally on every re-search.
+    (The wrong-article guard already ran in enrich_group.)"""
     from src.enrichment.enrichment_gate import diff_enrichment
 
     unchanged = not diff_enrichment(

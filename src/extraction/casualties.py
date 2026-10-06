@@ -375,6 +375,30 @@ def _resolve_casualty_date(
     return None
 
 
+def _set_direct_anchors(
+    casualty: Dict[str, Any], casualty_data: Dict[str, Any]
+) -> None:
+    """Set direct PersonID / PlaceID anchors for the person+place+date join. Prefer an
+    explicit LLM-provided ID; else, for a single-person / single-place casualty, hoist the
+    sole resolved impacted person/place so the anchor doesn't require parsing the lists.
+    """
+    person_id = casualty_data.get("PersonID")
+    if not person_id:
+        people = casualty.get("impacted_people") or []
+        if len(people) == 1 and people[0].get("PersonID"):
+            person_id = people[0]["PersonID"]
+    if person_id:
+        casualty["PersonID"] = person_id
+
+    place_id = casualty_data.get("PlaceID")
+    if not place_id:
+        places = casualty.get("impacted_places") or []
+        if len(places) == 1 and places[0].get("PlaceID"):
+            place_id = places[0]["PlaceID"]
+    if place_id:
+        casualty["PlaceID"] = place_id
+
+
 def _resolve_impacted_entities(
     casualty_data: Dict[str, Any],
     casualty: Dict[str, Any],
@@ -434,6 +458,16 @@ def _build_casualty(
     if date:
         casualty["date"] = date
 
+    # CAUSE (combat/weather_exposure/disease/accident/other) — e.g. frostbite/trench foot
+    # -> weather_exposure. Validate against the enum; drop unknown values.
+    cause = casualty_data.get("cause")
+    if cause in _VALID_CAUSES:
+        casualty["cause"] = cause
+
+    # Source traceability (non-negotiable for a stated individual/aggregate casualty).
+    if casualty_data.get("original_text"):
+        casualty["original_text"] = casualty_data["original_text"]
+
     _resolve_impacted_entities(
         casualty_data,
         casualty,
@@ -441,6 +475,11 @@ def _build_casualty(
         people_index,
         people_groups_index,
     )
+
+    # Direct individual anchors: prefer an explicit PersonID/PlaceID from the LLM; else, for
+    # a single-person / single-place casualty, hoist from the resolved impacted_* lists so
+    # the person+place+date join doesn't require parsing the loose arrays.
+    _set_direct_anchors(casualty, casualty_data)
 
     return casualty
 
@@ -520,6 +559,7 @@ VALID_ROLES = {
 }
 
 VALID_SIDES = {"allied", "axis", "civilian", "unknown"}
+_VALID_CAUSES = {"combat", "weather_exposure", "disease", "accident", "other"}
 
 # Map freeform LLM roles to controlled vocabulary
 _ROLE_MAP = {
