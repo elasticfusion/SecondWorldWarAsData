@@ -122,39 +122,65 @@ def _resolve_season(prefix: str, rest: str) -> Optional[Tuple[str, str]]:
 def resolve_date_interval(
     date_start: Optional[str],
     date_end: Optional[str] = None,
+    time_start: Optional[str] = None,
+    time_end: Optional[str] = None,
 ) -> Tuple[Optional[str], Optional[str], str]:
-    """Expand a source-stated date into a sortable ISO interval. Never guesses.
+    """Expand a source-stated date (+ optional time) into a sortable ISO **datetime**
+    interval. Never guesses.
 
     ``date_start`` is self-describing (its form encodes the precision: ``1944-06-06`` /
-    ``1944-06`` / ``1944`` / ``early-1944-06`` / ``summer-1944``), so no separate precision
-    arg is needed. Returns (resolved_earliest, resolved_latest, resolution_method):
+    ``1944-06`` / ``1944`` / ``early-1944-06`` / ``summer-1944``). Time, when stated, is
+    folded into the bounds: a stated ``time_start`` tightens the lower bound (and the upper
+    bound when no separate ``time_end``); when no time is stated the day spans
+    ``00:00:00``..``23:59:59`` ("sometime that day" — the honest default).
+
+    Returns (resolved_earliest, resolved_latest, resolution_method) as ISO-8601 datetimes
+    (``YYYY-MM-DDThh:mm:ssZ``):
       - "precision_rule": derived mechanically from the stated form;
-      - "range": a stated start..end range (both ISO);
+      - "range": a stated start..end range;
       - "unresolved": could not be mechanically bounded (resolved_* are None).
     """
     if not date_start:
         return None, None, "unresolved"
     ds = date_start.strip().lower()
 
+    bounds: Optional[Tuple[str, str]] = None
+    method = "unresolved"
+
     # A stated range (date_start..date_end), both plain ISO -> span the two.
     if date_end:
         start = _resolve_exact(ds)
         end = _resolve_exact(date_end.strip().lower())
         if start and end:
-            return start[0], end[1], "range"
+            bounds, method = (start[0], end[1]), "range"
 
-    # Exact ISO forms (day / month / year).
-    exact = _resolve_exact(ds)
-    if exact:
-        return exact[0], exact[1], "precision_rule"
+    if bounds is None:
+        exact = _resolve_exact(ds)
+        if exact:
+            bounds, method = exact, "precision_rule"
 
-    # Approximate forms (early/mid/late month, or season year).
-    approx = _resolve_approximate(ds)
-    if approx:
-        return approx[0], approx[1], "precision_rule"
+    if bounds is None:
+        approx = _resolve_approximate(ds)
+        if approx:
+            bounds, method = approx, "precision_rule"
 
-    # Could not mechanically bound it -> leave null (never guess).
-    return None, None, "unresolved"
+    if bounds is None:
+        return None, None, "unresolved"
+
+    earliest = _apply_time(bounds[0], time_start, is_start=True)
+    latest = _apply_time(bounds[1], time_end or time_start, is_start=False)
+    return earliest, latest, method
+
+
+def _apply_time(iso_date: str, time_str: Optional[str], is_start: bool) -> str:
+    """Fold a HH:MM(:SS) time into an ISO date -> ISO-8601 datetime (Z). When no time is
+    stated, use day bounds: 00:00:00 for the lower bound, 23:59:59 for the upper."""
+    if time_str:
+        ts = time_str.strip()
+        if ts.count(":") == 1:
+            ts = f"{ts}:00"
+        return f"{iso_date}T{ts}Z"
+    return f"{iso_date}T00:00:00Z" if is_start else f"{iso_date}T23:59:59Z"
 
 
 def _resolve_approximate(ds: str) -> Optional[Tuple[str, str]]:

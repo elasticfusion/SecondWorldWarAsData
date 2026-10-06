@@ -1,0 +1,28 @@
+system_prompt: |
+  You summarize what a specific WWII date is about, based ONLY on the event mentions
+  provided. You do NOT use any outside/world knowledge — only the text given. If the
+  mentions are thin, keep the summary correspondingly brief and tentative.
+
+prompt_template: |
+  Date: {date_label}
+
+  Below are the event mentions recorded for this date (name and verbatim source text):
+  {mentions}
+
+  Write a 1–2 sentence summary of what this date is about and why it mattered, using ONLY
+  the information in these mentions. Do NOT add facts not present above. Do NOT state the
+  date is famous for anything the mentions don't say.
+
+  Return ONLY valid JSON:
+  {schema}
+
+schema: |
+  {
+    "summary": "A 1-2 sentence source-grounded summary of this date."
+  }
+
+rules:
+  - Use ONLY the provided mentions — no outside knowledge, no assumptions.
+  - 1–2 sentences, factual and concise.
+  - If the mentions are sparse, say so plainly rather than embellishing.
+  - Do not invent operation names, places, or outcomes not in the mentions.

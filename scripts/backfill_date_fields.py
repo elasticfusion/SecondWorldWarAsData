@@ -64,7 +64,10 @@ def _backfill_one_file(data: dict) -> bool:
         from src.extraction.date_resolution import resolve_date_interval
 
         earliest, latest, method = resolve_date_interval(
-            data.get("date_start"), data.get("date_end"), data.get("date_precision")
+            data.get("date_start"),
+            data.get("date_end"),
+            data.get("time_start"),
+            data.get("time_end"),
         )
         data["resolved_earliest"] = earliest
         data["resolved_latest"] = latest

@@ -182,7 +182,10 @@ def _stamp_resolved_interval(date_data: Dict[str, Any]) -> None:
     from src.extraction.date_resolution import resolve_date_interval
 
     earliest, latest, method = resolve_date_interval(
-        date_data.get("date_start"), date_data.get("date_end")
+        date_data.get("date_start"),
+        date_data.get("date_end"),
+        date_data.get("time_start"),
+        date_data.get("time_end"),
     )
     date_data["resolved_earliest"] = earliest
     date_data["resolved_latest"] = latest

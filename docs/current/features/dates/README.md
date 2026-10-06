@@ -175,6 +175,36 @@ Examples: `1944-06-06` → `[1944-06-06, 1944-06-06]`; `early-1944-06` →
 - Relative/contextual dates ("three days later", anchored to the sub-event's date) are a
   deferred Tier-2 follow-up.
 
+**Datetime bounds (time folded in):** `resolved_earliest`/`resolved_latest` are full
+ISO-8601 **datetimes** (`YYYY-MM-DDThh:mm:ssZ`). A stated time tightens the bounds —
+"5 Jan 1945 at 0500" → `[1945-01-05T05:00:00Z, 1945-01-05T05:00:00Z]`; no time stated →
+the honest full-day span `[…T00:00:00Z, …T23:59:59Z]` ("sometime that day"). This makes
+intra-day ordering and "after 0500" queries work on the interval itself.
+
+### 2b. Significance summary (synthesized, derived — `summary`)
+
+A date can accumulate 1–1000+ `event_mentions`. Each record therefore also carries a
+**1–2 sentence significance summary** so a reader/RAG result gets the gist without reading
+every mention (`src/extraction/date_summary.py`, run as a separate pass `summarize_dates`).
+
+| Field | Meaning |
+|---|---|
+| `summary` | 1–2 sentence "what this date is about", synthesized from THIS date's mentions |
+| `summary_source` | `synthesized` (derived — NOT an extracted fact) |
+| `summary_generated_at` | ISO timestamp of generation |
+| `summary_mention_count` | how many mentions the summary covered (staleness anchor) |
+| `mention_count` | cheap always-present importance signal (count of event_mentions) |
+
+**Principles:**
+- **Source-grounded only.** The LLM summarizes STRICTLY the date's own `event_mentions`
+  (names + `original_text`) — never outside/world knowledge. The authoritative facts remain
+  the individual mentions; the summary is a convenience layer, clearly marked synthesized.
+- **Never fabricate / fail-open.** On error, no summary is written (count still stamped).
+- **Staleness-gated.** Regenerated only when the mention set grew materially
+  (`summary_mention_count`), so it refreshes as new chapters add mentions — not every run.
+- **Batched/parallel.** The pass uses a thread pool (like people/groups/places enrichment)
+  and is xAI Batch-API compatible (50% discount) when the client is in batch mode.
+
 ### 3. Time Handling
 
 **Time Format:** `HH:MM` (24-hour)

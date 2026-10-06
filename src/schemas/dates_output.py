@@ -44,11 +44,24 @@ DATES_OUTPUT_SCHEMA = {
         # Deterministic resolution of the SOURCE-stated date into a sortable ISO interval
         # (never guessed; vague source -> wide interval). date_start/original_text remain
         # the verbatim authority; these are the derived, queryable bounds.
-        "resolved_earliest": make_nullable("string"),  # ISO YYYY-MM-DD
-        "resolved_latest": make_nullable("string"),  # ISO YYYY-MM-DD
+        "resolved_earliest": make_nullable(
+            "string"
+        ),  # ISO-8601 datetime (YYYY-MM-DDThh:mm:ssZ)
+        "resolved_latest": make_nullable(
+            "string"
+        ),  # ISO-8601 datetime (YYYY-MM-DDThh:mm:ssZ)
         "resolution_method": enum_field(
             ["precision_rule", "range", "unresolved"], nullable=True
         ),
+        # DERIVED, synthesized significance summary (what this date is about), generated
+        # STRICTLY from this date's own event_mentions — a convenience layer, not an
+        # authoritative fact (the mentions remain the source of truth). mention_count is a
+        # cheap always-present importance signal.
+        "summary": make_nullable("string"),
+        "summary_source": enum_field(["synthesized"], nullable=True),
+        "summary_generated_at": make_nullable("string"),
+        "summary_mention_count": {"type": ["integer", "null"]},
+        "mention_count": {"type": ["integer", "null"]},
         "event_mentions": {
             "type": ["array", "null"],
             "items": {
