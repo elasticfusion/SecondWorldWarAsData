@@ -36,28 +36,76 @@ def _mention_count(date_data: Dict[str, Any]) -> int:
     return len(date_data.get("event_mentions") or [])
 
 
+def _mentions_hash(date_data: Dict[str, Any]) -> str:
+    """Stable content hash of the date's mentions (Sub_eventID + time_start + original_text,
+    order-independent). Changes when mentions are added, removed, OR edited in content —
+    so re-summary isn't gated on COUNT alone (a corrected/replaced mention at the same
+    count still triggers)."""
+    import hashlib
+
+    items = sorted(
+        f"{m.get('Sub_eventID','')}|{m.get('time_start') or ''}|{m.get('original_text') or ''}"
+        for m in (date_data.get("event_mentions") or [])
+    )
+    return hashlib.sha256("\n".join(items).encode("utf-8")).hexdigest()[:16]
+
+
 def needs_summary(date_data: Dict[str, Any]) -> bool:
-    """True if this date should be (re)summarized: has mentions, and either has no summary
-    yet or its mention set grew materially since the last summary (staleness gate)."""
+    """True if this date should be (re)summarized. Has mentions, AND either: no summary
+    yet; the mention CONTENT changed since the last summary (hash differs — catches
+    corrected/replaced text at the same count); or the set grew by >= the growth threshold
+    (secondary trigger)."""
     count = _mention_count(date_data)
     if count == 0:
         return False
     if not date_data.get("summary"):
+        return True
+    # content-aware: any change to the mention set's content re-summarizes
+    if date_data.get("summary_mentions_hash") != _mentions_hash(date_data):
         return True
     since = date_data.get("summary_mention_count") or 0
     return (count - since) >= _MIN_MENTION_GROWTH
 
 
 def _render_mentions(date_data: Dict[str, Any], limit: int = 60) -> str:
-    """Compact, source-grounded view of the date's mentions for the prompt."""
+    """Compact, source-grounded view of the date's mentions for the prompt.
+
+    For dates with more mentions than `limit`, select a REPRESENTATIVE slice (one per
+    distinct Event/Sub-event first, so the summary isn't dominated by one repeated event)
+    and PREFIX a note that this is a partial view of the true total — so the model knows it
+    is summarizing a sample, not arbitrarily the first N by file order."""
+    mentions = date_data.get("event_mentions") or []
+    total = len(mentions)
+
+    if total > limit:
+        # representative: first occurrence of each distinct (Event, Sub-event), then fill
+        seen: set = set()
+        primary: List[Dict[str, Any]] = []
+        rest: List[Dict[str, Any]] = []
+        for m in mentions:
+            k = (m.get("Event_Name"), m.get("Sub_event_Name"))
+            (primary if k not in seen else rest).append(m)
+            seen.add(k)
+        chosen = (primary + rest)[:limit]
+    else:
+        chosen = mentions
+
     lines: List[str] = []
-    for m in (date_data.get("event_mentions") or [])[:limit]:
+    for m in chosen:
         ev = m.get("Event_Name") or ""
         se = m.get("Sub_event_Name") or ""
         ot = (m.get("original_text") or "").strip()
         label = " / ".join([p for p in (ev, se) if p])
         lines.append(f"- {label}: {ot}" if label else f"- {ot}")
-    return "\n".join(lines)
+
+    body = "\n".join(lines)
+    if total > limit:
+        return (
+            f"(PARTIAL VIEW: showing {len(chosen)} representative of {total} total "
+            f"mentions on this date; summarize the overall significance, noting the scale)\n"
+            + body
+        )
+    return body
 
 
 def generate_date_summary(date_data: Dict[str, Any], grok_client: Any) -> bool:
@@ -88,6 +136,7 @@ def generate_date_summary(date_data: Dict[str, Any], grok_client: Any) -> bool:
         date_data["summary_source"] = "synthesized"
         date_data["summary_generated_at"] = datetime.now(timezone.utc).isoformat()
         date_data["summary_mention_count"] = count
+        date_data["summary_mentions_hash"] = _mentions_hash(date_data)
         return True
     except Exception as e:  # noqa: BLE001 - derived convenience; never block
         logger.warning("Date summary skipped for %s: %s", date_data.get("DateID"), e)

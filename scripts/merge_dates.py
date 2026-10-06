@@ -23,12 +23,15 @@ DATES_DIR = Path("output/dates")
 
 
 def make_key(d: dict) -> tuple:
-    """Create dedup key from date fields."""
+    """Create dedup key from date fields. Includes date_precision so two records with the
+    same date/time strings but DIFFERENT precision (e.g. one 'exact', one left null) are
+    NOT merged — merging them silently picked one precision."""
     return (
         d.get("date_start") or "",
         d.get("date_end") or "",
         d.get("time_start") or "",
         d.get("time_end") or "",
+        d.get("date_precision") or "",
     )
 
 
