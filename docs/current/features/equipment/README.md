@@ -88,72 +88,35 @@ Enrichment-on-identity (follows identity resolution)
 
 ## Known gaps
 
-- **PlaceID resolution is now fuzzy.** A mention's `place_name` resolves to a PlaceID via
-  the alias-aware places index (`places._build_place_name_index`, keyed on `current_name`
-  + every alias) using `_resolve_place_id`: exact → whole-word containment ("the crossroads
-  in Cherbourg" → Cherbourg, longest key wins) → conservative `SequenceMatcher` ratio ≥ 0.88
-  (tolerates typos like "Cherbourge"). Below threshold → no match (never guesses). Not yet
-  geocoded (no coordinate-based resolution).
-- **Enrichment identity gate is alias- and category-aware.** `_is_specific_identity`
-  treats a nickname that resolves via `config/equipment_aliases.yaml` (Sherman→M4 Sherman,
-  88→88mm Flak 36, Tiger→German Pzkpfw VI) as a specific identity and enriches using the
-  **canonical** name; bare category/subcategory classification phrases ("medium tank" vs
-  "M4", "field gun", "fighter-bomber") are treated as NON-specific and skipped. Aliases map
-  nicknames→specific types only — generics are never aliased to a specific identity.
-- **`related_equipment` auto-create now enriches on identity.** Auto-created related
-  records (e.g. "M26 Pershing" from a successor link) are enriched on creation when the
-  name is a specific identity — Grokipedia/Wikipedia text/specs/URLs + a canonical
-  reference image — so they are no longer bare `EquipmentID`+`common_name` stubs. A name
-  too generic to be a specific identity is still created minimal (nothing to look up).
-- **Enrichment staleness/diff is consistent across entities (people/groups/places/equipment).**
-  People, people_groups, and places all gate re-enrichment with `last_enrichment_search` +
-  `_should_re_search` (90-day `re_search_after_days` window); equipment uses the reusable
-  `enrichment_gate` (`enrichment_checked_at` + staleness window). Diff-the-revised-entry
-  (skip no-op rewrites): equipment ✓, places ✓ (gap-fill merge), groups ✓ (now diffs
-  `enrichment_data` before rewriting). The staleness check is now consolidated: people/
-  people_groups/places delegate to the shared `enrichment_gate.should_re_search` (no longer
-  three duplicate copies). See [../../SHARED_HELPERS.md](../../SHARED_HELPERS.md).
-- **Multi-national designation disambiguation — runtime Grok resolver built; curated-table
-  coverage still thin.** The same type has many valid names across US/German/British
-  systems (`M4`=`Sherman V`; `Panzer IV`=`Pz.Kpfw. IV Ausf. H`=`Sd.Kfz. 161/2`;
-  `Firefly`=`Sherman IC`). `src/extraction/equipment_disambiguation.py` resolves a raw
-  designation to a canonical identity at runtime (exact→curated alias→**learned alias**→
-  fuzzy→**Grok**, cached, canonical-lookup only, provenance `identity_source`), so the long
-  tail is handled without exhaustive hand cross-walks. Grok resolutions **auto-persist** to
-  `config/equipment_aliases_learned.yaml` (first-wins, stable) so repeats are deterministic
-  and Grok-free, and dedup detection (`find_duplicate_equipment._all_names`) now includes
-  the resolved `canonical_name`. **Remaining:** the curated `equipment_aliases.yaml` still
-  lacks Sd.Kfz. numbers / British marks / `Pz.Kpfw.`⇄`Panzer` normalization — resolutions
-  are also written to `output/equipment/disambiguation_suggestions.jsonl` for human
-  promotion into the curated YAML. British **census numbers** must never be used as a type
-  identity. See [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md).
-- **Supporting-unit equipment linking resolves aliases/fuzzy.** `equipment_name` →
-  `EquipmentID` (`_resolve_support_equipment_id`) now matches exact → curated-alias
-  canonical → fuzzy (like the main path), so a nickname/variant ("Thunderbolt", "Jug")
-  links to the canonical record rather than only an exact-name match.
-- **Enrichment-on-identity: Wikipedia + Grok text/specs LIVE-validated; vision + OpenSERP
-  images still untested.** Run against the live APIs with the real Grok key (loaded from
-  `.env` via `load_dotenv`). Confirmed working: Wikipedia canonical image + license
-  (M4 Sherman, M26 Pershing) and Grok text/specs enrichment (returns weight/speed/armament/
-  crew/variants); `_enrich_on_identity` on an M26 Pershing stub stamps `enrichment_status`
-  and fills specs end-to-end. **Three live-only bugs found and fixed:** (1) Wikipedia image
-  URLs carry `?utm_source=…` params that broke Commons license lookup; (2) the (now-deleted)
-  `equipment_ext/enrichment.py` had a runtime `NameError` (TYPE_CHECKING-only `GrokClient`
-  used in a signature); (3)
-  `_enrich_equipment_data` did a bare `json.loads` on a ```` ```json ````-fenced response,
-  silently returning `{}` for EVERY record — now uses `extract_json`. Still untested live:
-  **vision TYPE verification** + the **OpenSERP image path** (`search_media` binary absent
-  in this environment). `image_scope` default is unit-tested.
-- **Validated by hermetic tests only.** No live end-to-end equipment run has been executed
-  against a real chapter (no equipment records currently in `output/`); the origin/operator,
-  quantity/place, assertion-gate, related_equipment, and enrichment-on-identity behaviors
-  are unit-tested but not yet confirmed against real Grok output.
-- **Proposal backlog — crew_accounts + reference facts built; 3 items deferred.**
-  `related_equipment`, **`crew_accounts`** (narrative-sourced, person-linked, mandatory
-  `original_text`+`book`), and the Group A reference facts **`timeline`**,
-  **`technical_evolution`**, **`logistics`** (enrichment-sourced, each stamped with
-  `source`+`source_url`) are built. Still deferred (lower value / messier provenance):
-  comparative analysis, tactical doctrine, geographic performance.
+Open/incomplete items only. (Implemented capabilities — fuzzy PlaceID, alias/category
+identity gate, enrich-on-identity, cross-entity staleness/diff, disambiguation + learned
+aliases, supporting-unit alias/fuzzy linking, merge reference-redirect — are described in
+[EQUIPMENT_FLOW.md](EQUIPMENT_FLOW.md), not here.)
+
+- **No live end-to-end run.** Validated by hermetic tests only; no equipment records exist
+  in `output/` and the full `_process_equipment_item` path has not run against a real
+  chapter. Origin/operator, quantity/place, assertion gate, related_equipment,
+  crew_accounts, and enrichment-on-identity are unit-tested but unconfirmed on real Grok
+  output. **This is the top gap** — several silent bugs were already caught only by partial
+  live runs.
+- **Vision verification + OpenSERP image path untested live.** Wikipedia image/license +
+  Grok text/specs enrichment are live-validated; **vision TYPE verification** and the
+  **OpenSERP image search** are not (the `search_media` binary is absent in this
+  environment). `image_scope` default is unit-tested only.
+- **Curated alias table is thin.** `config/equipment_aliases.yaml` lacks Sd.Kfz. numbers,
+  British Sherman-marks/A-numbers, and `Pz.Kpfw.`⇄`Panzer`/`Ausf.` normalization. The
+  runtime Grok resolver + learned-alias store cover the long tail, but the deterministic
+  (no-Grok) path depends on human promotion of
+  `output/equipment/disambiguation_suggestions.jsonl` into the curated YAML. A bad learned
+  resolution persists until a curated override is added (curated wins). See
+  [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md).
+- **PlaceID resolution is not geocoded.** Fuzzy name resolution only (exact → containment →
+  `SequenceMatcher ≥ 0.88`); no coordinate-based resolution, and sub-0.88 near-misses leave
+  `place_name` set with `PlaceID` null.
+- **Proposal items deferred.** Comparative analysis, tactical doctrine, and geographic
+  performance (`MILITARY_EQUIPMENT.md`) are intentionally unbuilt (lower value / messier
+  provenance). `related_equipment`, `crew_accounts`, `timeline`, `technical_evolution`,
+  `logistics` are done.
 
 ## Docs
 
