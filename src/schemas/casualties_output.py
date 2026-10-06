@@ -19,10 +19,27 @@ CASUALTIES_OUTPUT_SCHEMA = {
         **METADATA_PROPERTIES,
         "CasualtyID": ulid_field(),
         "type": {"type": "string"},  # kia, wia, mia, pow, non_battle, casualties, etc.
+        # CAUSE classifies HOW the casualty occurred — notably non-battle causes like
+        # frostbite/trench foot/exposure (weather_exposure) vs combat. Enables queries like
+        # "weather-caused casualties at Bastogne".
+        "cause": enum_field(
+            ["combat", "weather_exposure", "disease", "accident", "other"],
+            nullable=True,
+        ),
         "description": make_nullable("string"),
         "count": {"type": ["object", "integer", "number", "null"]},
         "date": {"type": ["object", "string", "null"]},
-        "side": enum_field(["allied", "axis", "neutral", "civilian"], nullable=True),
+        # Direct individual anchors (for a single-person casualty like "Sgt Smith had
+        # frostbite"), in addition to the loose impacted_* lists. Enable the
+        # person+place+date join without parsing free text.
+        "PersonID": ulid_field(nullable=True),
+        "PlaceID": ulid_field(nullable=True),
+        "original_text": make_nullable(
+            "string"
+        ),  # source traceability (non-negotiable)
+        "side": enum_field(
+            ["allied", "axis", "neutral", "civilian", "unknown"], nullable=True
+        ),
         "source": {"type": ["object", "string", "null"]},
         "event_context": {
             "type": ["object", "null"],
