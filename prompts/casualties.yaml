@@ -38,7 +38,8 @@ schema: |
         "impacted_people": [
           {"name": "Colonel Smith", "PersonID": "<COPY from Available entities > People, or null>", "casualty_type": "wounded"}
         ],
-        "impacted_places": [{"name": "Hill 192", "PlaceID": "<COPY from Available entities > Places, or null>"}]
+        "impacted_places": [{"name": "Hill 192", "PlaceID": "<COPY from Available entities > Places, or null>"}],
+        "impacted_equipment": [{"name": "M4 Sherman", "EquipmentID": "<COPY from Available entities > Equipment, or null>", "relation": "causative"}]
       },
       {
         "CasualtyID": "01ULID...",
@@ -87,4 +88,9 @@ rules:
   - Country codes use ISO 3166-1 alpha-3
   - If no casualties found for a sub-event, return empty array for that key
   - Do NOT include equipment or materiel losses — only personnel casualties
+  - The impacted_equipment field is CONTEXT only -- equipment INVOLVED in a PERSONNEL
+    casualty, e.g. the vehicle/weapon that caused it (relation causative) or the medical/
+    evacuation equipment responding (relation medical). This is NOT a list of destroyed
+    equipment (that is the Equipment entity's job). Omit it when no specific equipment is
+    tied to the casualty.
   - Count qualifier values: exact, approximately, greater_than, less_than, unknown

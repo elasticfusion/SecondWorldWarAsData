@@ -9,7 +9,7 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import ulid
 
@@ -18,6 +18,9 @@ from src.json_schemas import CASUALTY_ITEM_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
 
 logger = logging.getLogger(__name__)
+
+# people_groups index is the shared unit_key index: [(GroupID, name, UnitKey)].
+GroupUnitKeyIndex = List[Tuple[str, str, Any]]
 
 
 def extract_casualties(
@@ -47,11 +50,18 @@ def extract_casualties(
     # Build entity indexes
     from src.utils.entity_index import build_name_index
 
-    dates_index = build_name_index(output_root / "dates", "DateID", "date_start")
-    places_index = build_name_index(output_root / "places", "PlaceID", "name")
+    from src.extraction.weather_central import _build_date_id_lookup
+
+    dates_index = _build_date_id_lookup(output_root / "dates")
+    from src.extraction.places import _build_place_name_index
+
+    places_index, _ = _build_place_name_index(output_root / "places")
     people_index = build_name_index(output_root / "people", "PersonID", "name")
-    people_groups_index = build_name_index(
-        output_root / "people_groups", "PeopleGroupID", "group_name"
+    from src.extraction.group_resolver import build_group_unitkey_index
+
+    people_groups_index = build_group_unitkey_index(output_root / "people_groups")
+    equipment_index = build_name_index(
+        output_root / "equipment", "EquipmentID", "common_name"
     )
 
     casualties_dir = output_root / "casualties"
@@ -101,6 +111,7 @@ def extract_casualties(
                     places_index,
                     people_index,
                     people_groups_index,
+                    equipment_index,
                 )
                 casualties.append(casualty)
             except Exception as e:
@@ -123,7 +134,7 @@ def _batch_extract_casualties(
     dates_index: Dict[str, Any],
     places_index: Dict[str, Any],
     people_index: Dict[str, Any],
-    people_groups_index: Dict[str, Any],
+    people_groups_index: GroupUnitKeyIndex,
     chunk_size: int = 10,
 ) -> Dict[str, List[Dict[str, Any]]]:
     """Extract casualties from sub-events, chunked for large chapters.
@@ -404,7 +415,8 @@ def _resolve_impacted_entities(
     casualty: Dict[str, Any],
     places_index: Dict[str, Any],
     people_index: Dict[str, Any],
-    people_groups_index: Dict[str, Any],
+    people_groups_index: GroupUnitKeyIndex,
+    equipment_index: Optional[Dict[str, Any]] = None,
 ) -> None:
     """Resolve and attach all impacted entity arrays to casualty."""
     resolvers = {
@@ -413,10 +425,44 @@ def _resolve_impacted_entities(
         ),
         "impacted_people": lambda d: _resolve_people(d, people_index),
         "impacted_places": lambda d: _resolve_places(d, places_index),
+        "impacted_equipment": lambda d: _resolve_equipment(d, equipment_index or {}),
     }
     for field, resolver in resolvers.items():
         if field in casualty_data:
             casualty[field] = resolver(casualty_data[field])
+
+
+def _resolve_equipment(
+    items: List[Any], equipment_index: Dict[str, Any]
+) -> List[Dict[str, Any]]:
+    """Resolve equipment references to EquipmentID via the shared equipment disambiguator
+    (resolve_designation: exact→alias→fuzzy→Grok canonical name) then the equipment index
+    (common_name→EquipmentID). The casualty↔equipment link covers both causative (the
+    weapon/vehicle involved) and medical/evacuation equipment; a `relation` tag is carried
+    through when the extractor provides it (flat link otherwise — relation dimension is
+    Phase B). Unresolved → null EquipmentID, name preserved."""
+    from src.extraction.equipment_disambiguation import resolve_designation
+
+    resolved = []
+    for item in items:
+        if isinstance(item, str):
+            item = {"name": item}
+        if not isinstance(item, dict):
+            continue
+        name = item.get("name", "")
+        if not name:
+            continue
+        eq_id = None
+        res = resolve_designation(name)
+        canonical = (res or {}).get("canonical_name") or name
+        eq_id = equipment_index.get(canonical.lower()) or equipment_index.get(
+            name.lower()
+        )
+        entry = {"EquipmentID": eq_id, "name": name}
+        if item.get("relation"):
+            entry["relation"] = item["relation"]
+        resolved.append(entry)
+    return resolved
 
 
 def _build_casualty(
@@ -429,7 +475,8 @@ def _build_casualty(
     dates_index: Dict[str, Any],
     places_index: Dict[str, Any],
     people_index: Dict[str, Any],
-    people_groups_index: Dict[str, Any],
+    people_groups_index: GroupUnitKeyIndex,
+    equipment_index: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Build casualty JSON structure."""
     casualty = {
@@ -474,6 +521,7 @@ def _build_casualty(
         places_index,
         people_index,
         people_groups_index,
+        equipment_index,
     )
 
     # Direct individual anchors: prefer an explicit PersonID/PlaceID from the LLM; else, for
@@ -487,39 +535,39 @@ def _build_casualty(
 def _resolve_date(
     date_ref: Any, dates_index: Dict[str, Any]
 ) -> Optional[Dict[str, Any]]:
-    """Resolve date reference to DateID.
+    """Resolve date reference to DateID via the shared interval-aware linker.
 
-    Handles: dict with DateID, ISO date string, or natural language date string.
+    Parses the reference to ISO, then uses weather_central._resolve_date_link, which
+    matches an exact date_start OR a date record whose resolved interval
+    [resolved_earliest, resolved_latest] contains the casualty date — so a casualty on a
+    specific day links to an approximately-dated event record. dates_index is the
+    dict-of-dicts from weather_central._build_date_id_lookup. Carries time_source.
     """
+    from src.extraction.weather_central import _resolve_date_link
+
     if isinstance(date_ref, dict) and "DateID" in date_ref:
         return date_ref
-
     if not isinstance(date_ref, str) or not date_ref:
         return None
 
-    # Direct match on ISO date key (e.g. "1944-07-18")
-    if date_ref in dates_index:
-        date_data = dates_index[date_ref]
-        return {
-            "DateID": date_data.get("DateID"),
-            "date_string": date_ref,
-            "iso_date": date_ref,
-            "precision": "day",
-        }
+    iso = date_ref if _looks_iso(date_ref) else _parse_date_string(date_ref)
+    if iso:
+        date_id, time_source = _resolve_date_link(iso, dates_index)
+        if date_id:
+            return {
+                "DateID": date_id,
+                "date_string": date_ref,
+                "iso_date": iso,
+                "time_source": time_source,
+                "precision": "day" if len(iso) == 10 else "month",
+            }
 
-    # Fuzzy match: parse natural language date to ISO and look up
-    iso = _parse_date_string(date_ref)
-    if iso and iso in dates_index:
-        date_data = dates_index[iso]
-        return {
-            "DateID": date_data.get("DateID"),
-            "date_string": date_ref,
-            "iso_date": iso,
-            "precision": "day" if len(iso) == 10 else "month",
-        }
-
-    # No match — still record the date string without a DateID
+    # No match — still record the date string without a DateID (never fabricated).
     return {"DateID": None, "date_string": date_ref, "precision": "unknown"}
+
+
+def _looks_iso(s: str) -> bool:
+    return bool(re.match(r"^\d{4}-\d{2}(-\d{2})?$", s))
 
 
 def _parse_date_string(date_str: str) -> Optional[str]:
@@ -605,16 +653,21 @@ def _normalize_role(role: str) -> str:
 
 
 def _resolve_organizations(
-    orgs: List[Any], people_groups_index: Dict[str, Any]
+    orgs: List[Any], people_groups_index: GroupUnitKeyIndex
 ) -> List[Dict[str, Any]]:
-    """Resolve organization references to PeopleGroupIDs."""
+    """Resolve organization references to PeopleGroupIDs via the shared unit_key resolver
+    (structural number/service/arm/echelon match), not exact-string lookup — so
+    '358th Infantry' resolves to the '358th Infantry Regiment' record. The index is the
+    unit_key index from group_resolver.build_group_unitkey_index."""
+    from src.extraction.group_resolver import resolve_group_id
+
     resolved = []
     for org in orgs:
         if isinstance(org, dict):
             org_name = org.get("name", "")
             if not org_name:
                 continue
-            org_id = _find_organization_id(org_name, people_groups_index)
+            org_id = resolve_group_id(org_name, people_groups_index)
             resolved.append(
                 {
                     "PeopleGroupID": org_id,
@@ -652,7 +705,11 @@ def _resolve_people(
 def _resolve_places(
     places: List[Any], places_index: Dict[str, Any]
 ) -> List[Dict[str, Any]]:
-    """Resolve place references to PlaceIDs."""
+    """Resolve place references to PlaceIDs via the shared alias-aware places matcher
+    (_match_place_id: exact -> whole-word containment -> SequenceMatcher>=0.88), not exact
+    lookup. places_index is places._build_place_name_index's name->PlaceID map."""
+    from src.extraction.weather_central import _match_place_id
+
     resolved = []
     for place in places:
         if isinstance(place, str):
@@ -661,23 +718,13 @@ def _resolve_places(
             place_name = place.get("name", "")
             if not place_name:
                 continue
-            place_id = _find_place_id(place_name, places_index)
+            place_id = _match_place_id(place_name, places_index)
             resolved.append({"PlaceID": place_id, "name": place_name})
     return resolved
 
 
-def _find_organization_id(name: str, index: Dict[str, str]) -> Optional[str]:
-    """Find organization ID by name."""
-    return index.get(name.lower())
-
-
 def _find_person_id(name: str, index: Dict[str, str]) -> Optional[str]:
     """Find person ID by name."""
-    return index.get(name.lower())
-
-
-def _find_place_id(name: str, index: Dict[str, str]) -> Optional[str]:
-    """Find place ID by name."""
     return index.get(name.lower())
 
 

@@ -50,7 +50,8 @@ involves, so it is queryable by who/where/when rather than only as free text.
     { "PeopleGroupID": "01ULID...|null", "name": "358th Infantry", "nationality": "USA", "role": "suffered_casualties" }
   ],
   "impacted_people": [ { "PersonID": "01ULID...|null", "name": "Capt. Smith", "casualty_type": "killed" } ],
-  "impacted_places": [ { "PlaceID": "01ULID...|null", "name": "le Mans" } ]
+  "impacted_places": [ { "PlaceID": "01ULID...|null", "name": "le Mans" } ],
+  "impacted_equipment": [ { "EquipmentID": "01ULID...|null", "name": "M4 Sherman", "relation": "causative|medical" } ]
 }
 ```
 
@@ -92,8 +93,22 @@ For each casualty (_build_casualty):
 Write output/casualties/{CasualtyID}.json
 ```
 
-Resolution is by name against the entity indexes (`_find_person_id` / `_find_organization_id`
-/ `_find_place_id`); unresolved references keep the name with a `null` ID (never fabricated).
+Resolution reuses each category's **shared library** (not bespoke exact-string matching):
+- **People_groups** → GroupID via the canonical `unit_key` (`group_resolver.resolve_group_id`
+  — structural number/service/arm/echelon match, so "358th Infantry" → "358th Infantry
+  Regiment"; ambiguous/generic names decline to null).
+- **Place** → PlaceID via the alias-aware `places._build_place_name_index` + `_match_place_id`.
+- **Date** → DateID via the interval-aware `_resolve_date_link` (exact `date_start` OR
+  resolved-interval overlap, carrying `time_source`).
+- **Equipment** → EquipmentID via `equipment_disambiguation.resolve_designation` + the
+  equipment index — the `impacted_equipment[]` link (CONTEXT: equipment *involved in* a
+  personnel casualty, `relation: causative|medical`; NOT equipment-loss cataloging).
+- **People** → PersonID via exact name match. **By design:** there is no shared fuzzy
+  people resolver (the whole codebase matches people exactly), people records carry
+  essentially no aliases, and fuzzy person-matching risks wrong-person links — null is safer
+  than a wrong individual.
+
+Unresolved references keep the name with a `null` ID (never fabricated).
 
 ---
 
