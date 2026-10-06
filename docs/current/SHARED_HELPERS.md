@@ -128,9 +128,14 @@ Two distinct paths turn non-English sources into English-normalized, resolvable 
 
 - **Document path (ingestion):** `detect_language` → `translate_markdown` →
   `normalize_to_english`. Foreign-language OCR'd text documents (German KTBs, French
-  reports) are detected and translated to English **before** extraction, so the entity
-  extractors operate on English markdown. The original `source_language` is retained; places
-  keep `historical_names` with `language`/`date_range` (e.g. Danzig→Gdańsk).
+  reports) are detected and translated to English **before** extraction — this runs as a
+  **per-page** pass in **Phase 0** (`phase0_ingest.py` → `normalize_pages_to_english`), so
+  every entity extractor (events, people, …) sees English and needs no language guard of its
+  own. The verbatim original is kept as a `<name>.orig.md` sidecar; `source_language` is
+  stamped; places keep `historical_names` with `language`/`date_range` (e.g. Danzig→Gdańsk).
+  **Scope: this guarantee is Phase-0 front-door only** — markdown placed into `output/`
+  without passing through Phase 0 is not language-checked. Full spec:
+  [LANGUAGE_TRANSLATION.md](dataquality/LANGUAGE_TRANSLATION.md).
 - **Map-vision path:** images are not OCR text, so the vision prompt translates in place
   (`proto_map_vision.py --translate`): verbatim foreign label + English/modern equivalent
   (`title_en`, legend `meaning_en`, place `name_en`), with place resolution falling back to

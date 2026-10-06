@@ -12,6 +12,11 @@ Events extraction is the **core feature** of the pipeline. It analyzes parsed ch
 
 **Key Concept:** Events represent major historical occurrences (e.g., "Battle of Normandy"), while sub-events are specific actions or phases within that event (e.g., "Initial landing at Omaha Beach").
 
+> **Language:** Events (like all extractors) operate on English text. Non-English sources
+> (e.g. German KTBs) are detected and translated to English in **Phase 0** before extraction
+> — see [Language Detection & Translation](../../dataquality/LANGUAGE_TRANSLATION.md). The
+> extractor itself does no language handling by design.
+
 ---
 
 ## Architecture

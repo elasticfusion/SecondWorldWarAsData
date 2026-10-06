@@ -21,6 +21,14 @@ and [../dataquality/STRUCTURED_DATA_ROUTING.md](../dataquality/STRUCTURED_DATA_R
 - **Region conversion** — each page/region → Markdown (the universal
   intermediate) via a disposition-appropriate method, extracting image/map
   assets that the prose converter previously dropped.
+- **Language detection + translation** — a **per-page** pass detects each page's
+  language and translates non-English pages to English (`normalize_pages_to_english`),
+  so every downstream extractor (events, people, …) sees English and needs no language
+  guard. The verbatim original is kept as a `<name>.orig.md` sidecar and `source_language`
+  is stamped (provenance preserved). Idempotent on re-runs. Full spec:
+  [../dataquality/LANGUAGE_TRANSLATION.md](../dataquality/LANGUAGE_TRANSLATION.md).
+  (Foreign-language **maps** are handled separately at vision time — see
+  [../features/maps/MAP_FEATURES_SCHEMA.md](../features/maps/MAP_FEATURES_SCHEMA.md).)
 - **Scanned tabular parsing** — for scanned reference tables (e.g. the ETO
   Order of Battle), section parsers turn the OCR+AI markdown into structured
   rows (command-staff, campaigns, command-posts, statistics, organic-units) with
