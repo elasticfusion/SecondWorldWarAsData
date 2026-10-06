@@ -24,13 +24,15 @@ WEATHER_OUTPUT_SCHEMA = {
         "DateID": ulid_field(nullable=True),
         "location": {
             "type": "object",
-            "required": ["place_name", "latitude", "longitude"],
+            "required": ["place_name"],
             "additionalProperties": False,
             "properties": {
                 "place_name": {"type": "string"},
                 "PlaceID": {"type": ["string", "null"]},
-                "latitude": {"type": "number"},
-                "longitude": {"type": "number"},
+                # null = not yet geocoded (honest) rather than a fake 0.0 sentinel.
+                # Coordinates are owned/populated by the places geocoding subsystem.
+                "latitude": {"type": ["number", "null"]},
+                "longitude": {"type": ["number", "null"]},
             },
         },
         "source_type": enum_field(["extracted", "api_only", "hybrid"]),

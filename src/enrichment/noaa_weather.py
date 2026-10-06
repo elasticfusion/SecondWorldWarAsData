@@ -199,7 +199,8 @@ def enrich_weather_with_noaa(weather_dir: Path, token: str, max_items: int = 0) 
         if lat == 0.0 and lon == 0.0:
             continue
 
-        date = data.get("date_start", "")
+        # Weather files store the date under "date" (not "date_start"); tolerate legacy.
+        date = data.get("date") or data.get("date_start") or ""
         if not date or date < "1940-01-01":
             continue
 
