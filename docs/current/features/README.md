@@ -198,6 +198,23 @@ Map extraction from source documents.
 
 ---
 
+### Map-Interior Extraction (`scripts/proto_map_vision.py` — prototype)
+**Status:** Prototype (not yet wired into the pipeline)
+**Documentation:** [maps/MAP_FEATURES_SCHEMA.md](maps/MAP_FEATURES_SCHEMA.md)
+
+Extracts the *interior* of an operational map (places, units+affiliation/echelon,
+fortifications, dated movement) into a GeoJSON FeatureCollection, resolved to the entity
+graph (PlaceID/GroupID/DateID). Enforced schema: `src/schemas/map_features_output.py`.
+
+**Key Features:**
+- Grok-vision Tier-1 (inventory) + Tier-2 (dated movement) extraction; legend-first + tiling
+- Unit resolution via the shared `unit_key` with APP-6 symbology constraints
+- Reverse registration (`src/extraction/map_registration.py`): narrative entities link onto
+  a map by `(PlaceID, DateID)` coverage — the map-as-backdrop direction
+- Coordinates come from resolved PlaceID (geocode cascade), never map pixels
+
+---
+
 ### External Maps (`external_maps.py`, `search_external_maps.py`)
 **Status:** Optional  
 **Documentation:** [external-maps/](external-maps/)
