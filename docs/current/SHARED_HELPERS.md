@@ -68,6 +68,18 @@ Note: places have a richer alias-aware index (`places._build_place_name_index`, 
 `get_exclusion_store(entity_type, dir)` — not-a-duplicate pairs + name exclusions
 (DynamoDB/local). Used by the `find_duplicate_*` scripts.
 
+## 6. Vision (image/video) — `GrokClient.extract_json_with_image[_base64]`
+
+**Cross-feature primitive** for all image/video analysis — used by equipment (verify an
+image depicts the equipment TYPE), maps (`grok_search_maps.py`, `search_external_maps.py`),
+document still-images (`image_captioner.py`), and video speaker ID
+(`ingestion/video_vision.py`). The primitive is shared; the **prompt + accept/reject logic
+is feature-specific** (correctly — "is this an M4?" ≠ "who is speaking?").
+
+**Rule:** build image verification on this primitive + a feature prompt; don't reinvent the
+image API call. Vision answers *what is in the image* (type), never *which specific event*
+it depicts (books/stock photos — see `image_scope`).
+
 ---
 
 ## Provenance / traceability (applies everywhere)

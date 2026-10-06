@@ -99,10 +99,12 @@ aliases, supporting-unit alias/fuzzy linking, merge reference-redirect — are d
   crew_accounts, and enrichment-on-identity are unit-tested but unconfirmed on real Grok
   output. **This is the top gap** — several silent bugs were already caught only by partial
   live runs.
-- **Vision verification + OpenSERP image path untested live.** Wikipedia image/license +
-  Grok text/specs enrichment are live-validated; **vision TYPE verification** and the
-  **OpenSERP image search** are not (the `search_media` binary is absent in this
-  environment). `image_scope` default is unit-tested only.
+- **Vision verification + OpenSERP image path untested live (equipment).** Wikipedia
+  image/license + Grok text/specs enrichment are live-validated; the equipment **vision
+  TYPE verification** and **OpenSERP image search** are not (the `search_media` binary is
+  absent here). Vision is a cross-feature capability on the shared
+  `GrokClient.extract_json_with_image*` primitive (see [../../SHARED_HELPERS.md](../../SHARED_HELPERS.md));
+  this gap is specifically the equipment image path. `image_scope` default is unit-tested.
 - **Curated alias table is thin.** `config/equipment_aliases.yaml` lacks Sd.Kfz. numbers,
   British Sherman-marks/A-numbers, and `Pz.Kpfw.`⇄`Panzer`/`Ausf.` normalization. The
   runtime Grok resolver + learned-alias store cover the long tail, but the deterministic
