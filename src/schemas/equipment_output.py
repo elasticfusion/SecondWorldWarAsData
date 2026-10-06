@@ -94,7 +94,8 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         # records how it was resolved.
         "canonical_name": make_nullable("string"),
         "identity_source": enum_field(
-            ["exact", "alias", "fuzzy", "grok_disambiguation"], nullable=True
+            ["exact", "alias", "learned_alias", "fuzzy", "grok_disambiguation"],
+            nullable=True,
         ),
         "category": make_nullable("string"),
         "subcategory": make_nullable("string"),

@@ -88,3 +88,6 @@ tmp/
 # on purpose (they give CI real shapes to validate — see that dir's README). They do
 # not live under output/, so no un-ignore is needed; keep it that way (do not add a
 # broad tests/**/*.json or output-style rule that would capture them).
+
+# Auto-generated learned equipment aliases (runtime state, not curated source)
+config/equipment_aliases_learned.yaml

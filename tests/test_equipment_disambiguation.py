@@ -1,6 +1,9 @@
 """Canonical-lookup equipment disambiguator: exact->alias->fuzzy->Grok (cached),
 provenance-stamped, fail-open, suggestions written. Canonical lookup only (no specs)."""
 
+import tempfile
+from pathlib import Path
+
 import src.extraction.equipment_disambiguation as d
 from src.schemas.equipment_output import EQUIPMENT_OUTPUT_SCHEMA
 
@@ -21,7 +24,13 @@ class FakeGrok:
 
 
 def setup_function(_):
+    # Isolate ALL persisted state so Grok-path assertions aren't short-circuited by a
+    # learned entry (and nothing is written to the real config/output dirs).
     d._CACHE.clear()
+    d._LEARNED_CACHE = {}
+    _tmp = Path(tempfile.mkdtemp())
+    d._LEARNED_PATH = _tmp / "learned.yaml"
+    d._SUGGESTIONS_PATH = _tmp / "sugg.jsonl"
 
 
 def test_alias_short_circuits_grok():
