@@ -18,11 +18,10 @@ from collections import Counter
 
 import src.enrichment.noaa_weather as nw
 
-
 # lat/lon -> (station_id) for the test geography
 _STATION_BY_LATLON = {
-    (50.3, 6.1): "GHCND:STVITH",   # St. Vith (Belgium)
-    (48.9, 2.4): "GHCND:PARIS",    # Paris
+    (50.3, 6.1): "GHCND:STVITH",  # St. Vith (Belgium)
+    (48.9, 2.4): "GHCND:PARIS",  # Paris
 }
 
 

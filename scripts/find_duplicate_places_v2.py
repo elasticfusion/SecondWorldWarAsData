@@ -6,7 +6,6 @@ import logging
 import sys
 import unicodedata
 from difflib import SequenceMatcher
-from math import asin, cos, radians, sin, sqrt
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -86,10 +85,9 @@ def _similarity(a: str, b: str) -> float:
 
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-    dlat, dlon = lat2 - lat1, lon2 - lon1
-    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
-    return 2 * asin(sqrt(a)) * 6371
+    from src.utils.geo import haversine_km
+
+    return haversine_km(lat1, lon1, lat2, lon2)
 
 
 def _get_coords(data: dict) -> tuple:

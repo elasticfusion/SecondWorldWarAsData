@@ -160,7 +160,10 @@ snowfall is captured in BOTH layers when available, and they are NEVER merged:
   (in/cm/mm)/`precipitation_type` ONLY when the source states a number (else text only;
   never fabricated).
 - *Scientific* (`noaa_observed`): the station-OBSERVED measurement (e.g.
-  `snowfall_mm: 81.3`) with `station_id` + `source`/`source_url`.
+  `snowfall_mm: 81.3`) with full station provenance — `station_id` (GHCND code),
+  `station_name` + `station_latitude`/`station_longitude` (the resolved station place),
+  `station_distance_km` (how far the station is from the requested place), and
+  `source`/`source_url`.
 "3 inches of snow (narrative, Green Book)" and "81.3 mm observed (NOAA station X)" are
 different claims from different authorities about the same event — both preserved and
 attributable.
@@ -182,6 +185,16 @@ are promoted to the named canonical fields above; **every** element (including o
 pre-mapped — weather-type flags `WT**`, `WESD`, `PGTM`, soil/evaporation elements, etc.) is
 also preserved verbatim in `noaa_observed.raw_elements`, keyed by its raw GHCND datatype
 code. New GHCND elements are captured automatically without a schema change.
+
+**Station provenance — the GHCND code AND the resolved place are both preserved.** The
+nearest station is often not the requested place (e.g. a St. Vith record may be sourced from
+an Antwerp station ~140 km away). The record keeps the opaque `station_id`
+(`GHCND:BE000006447`) **and** the station resolved to a readable place — `station_name`
+(e.g. `ANTWERPEN/DEURNE, BE`) + `station_latitude`/`station_longitude` — plus
+`station_distance_km`, the straight-line distance from the requested place to the station,
+so a reader can judge how representative the observation is. Distance uses the shared
+great-circle helper `src/utils/geo.haversine_km` (one implementation, also used by place
+deduplication).
 
 **Cross-references:**
 - `DateID` → top-level `DateID` in `output/dates/*.json`
@@ -544,9 +557,14 @@ def extract_weather_central(
 
 Phase-3 pass (`src/enrichment/noaa_weather.py`, wired in `phase3_enrich_data.py`): for each
 weather file with real coordinates and a date ≥ 1940, finds the nearest NOAA station and
-attaches observed data under `noaa_observed`. Skips already-enriched files and
-null/unresolved coordinates. (Open-Meteo `api_data` is reanalysis; `noaa_observed` is
-station-observed — both may be present.)
+attaches observed data under `noaa_observed`. The nearest station is resolved to its code +
+name + coordinates, and the distance from the requested place is recorded
+(`station_distance_km`). The full standard GHCND daily element set is promoted to named
+fields and **every** returned element is also kept in `raw_elements` (nothing dropped).
+Skips already-enriched files and null/unresolved coordinates. One NOAA data call per
+`(station, date)` — multiple places sharing a station (and reruns) hit the disk cache, not
+the API. (Open-Meteo `api_data` is reanalysis; `noaa_observed` is station-observed — both
+may be present.)
 
 ---
 

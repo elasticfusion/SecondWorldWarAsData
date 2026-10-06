@@ -80,10 +80,47 @@ def _get(endpoint: str, token: str, params: Dict) -> Optional[Dict]:
     return None
 
 
+def _station_from_results(data: Optional[Dict]) -> Optional[Dict[str, Any]]:
+    """Pick the first usable station from a CDO stations response, keeping its
+    resolved provenance (code + human-readable name + coordinates)."""
+    if not data or not data.get("results"):
+        return None
+    r = data["results"][0]
+    if not r.get("id"):
+        return None
+    return {
+        "id": r["id"],
+        "name": r.get("name"),
+        "latitude": r.get("latitude"),
+        "longitude": r.get("longitude"),
+    }
+
+
+def _search_stations_box(lat: float, lon: float, half: float, date: str, token: str):
+    """Query the CDO stations endpoint within a +/- `half` degree box."""
+    extent = f"{lat-half},{lon-half},{lat+half},{lon+half}"
+    return _get(
+        "stations",
+        token,
+        {
+            "datasetid": DATASET,
+            "extent": extent,
+            "startdate": date,
+            "enddate": date,
+            "limit": 5,
+        },
+    )
+
+
 def find_nearest_station(
     lat: float, lon: float, date: str, token: str
-) -> Optional[str]:
-    """Find nearest GHCND station with data for the given date."""
+) -> Optional[Dict[str, Any]]:
+    """Find the nearest GHCND station with data for the date.
+
+    Returns the resolved station dict {id, name, latitude, longitude} (NOT just the
+    code) so St.-Vith-sourced-from-Antwerp records can preserve BOTH the GHCND code
+    and the human-readable station place. Cached as JSON.
+    """
     from src.utils.search_cache import cache_result, get_cached
 
     cache_key = f"{lat:.1f},{lon:.1f},{date[:7]}"
@@ -91,53 +128,48 @@ def find_nearest_station(
     if cached == "NOT_FOUND":
         return None
     if cached:
-        return cached
+        return json.loads(cached)
 
-    # Search within ~50km box
-    extent = f"{lat-0.5},{lon-0.5},{lat+0.5},{lon+0.5}"
-    data = _get(
-        "stations",
-        token,
-        {
-            "datasetid": DATASET,
-            "extent": extent,
-            "startdate": date,
-            "enddate": date,
-            "limit": 5,
-        },
-    )
-    if data and data.get("results"):
-        station_id = data["results"][0]["id"]
-        cache_result("noaa_station", cache_key, station_id)
-        return station_id
+    # ~50km box, then broaden to ~100km.
+    station = _station_from_results(
+        _search_stations_box(lat, lon, 0.5, date, token)
+    ) or _station_from_results(_search_stations_box(lat, lon, 1.0, date, token))
 
-    # Broaden to ~100km
-    extent = f"{lat-1.0},{lon-1.0},{lat+1.0},{lon+1.0}"
-    data = _get(
-        "stations",
-        token,
-        {
-            "datasetid": DATASET,
-            "extent": extent,
-            "startdate": date,
-            "enddate": date,
-            "limit": 5,
-        },
-    )
-    if data and data.get("results"):
-        station_id = data["results"][0]["id"]
-        cache_result("noaa_station", cache_key, station_id)
-        return station_id
+    if station:
+        cache_result("noaa_station", cache_key, json.dumps(station))
+        return station
 
     cache_result("noaa_station", cache_key, None)
     return None
 
 
 def fetch_noaa_weather(
-    station_id: str, date: str, token: str
+    station: Any,
+    date: str,
+    token: str,
+    place_lat: Optional[float] = None,
+    place_lon: Optional[float] = None,
 ) -> Optional[Dict[str, Any]]:
-    """Fetch daily weather observations from NOAA for a station and date."""
+    """Fetch daily weather observations from NOAA for a station and date.
+
+    `station` may be the resolved station dict ({id, name, latitude, longitude}) or a
+    bare id string (back-compat). When the requested place coordinates are provided, the
+    straight-line distance from the place to the observing station is recorded — so a
+    St.-Vith record sourced from an Antwerp station carries BOTH the GHCND code and the
+    resolved station place + how far away it is.
+    """
     from src.utils.search_cache import cache_result, get_cached
+
+    if isinstance(station, dict):
+        station_id = station.get("id", "")
+        station_name = station.get("name")
+        station_lat = station.get("latitude")
+        station_lon = station.get("longitude")
+    else:
+        station_id = station or ""
+        station_name = None
+        station_lat = None
+        station_lon = None
 
     cache_key = f"{station_id}:{date}"
     cached = get_cached("noaa_data", cache_key)
@@ -177,8 +209,15 @@ def fetch_noaa_weather(
         if dtype:
             raw_elements[dtype] = value
     obs["raw_elements"] = raw_elements
-    obs["station_id"] = station_id
-    obs["station_distance_km"] = None  # could calculate if needed
+    obs["station_id"] = station_id  # GHCND code, preserved
+    obs["station_name"] = station_name  # resolved human-readable place
+    obs["station_latitude"] = station_lat
+    obs["station_longitude"] = station_lon
+    # Distance from the REQUESTED place to the observing station (shared geo util).
+    from src.utils.geo import haversine_km_opt
+
+    dist = haversine_km_opt(place_lat, place_lon, station_lat, station_lon)
+    obs["station_distance_km"] = round(dist, 1) if dist is not None else None
     obs["source"] = "noaa_cdo"
     obs["source_url"] = (
         f"https://www.ncei.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&stationid={station_id}&startdate={date}&enddate={date}"
@@ -221,11 +260,11 @@ def enrich_weather_with_noaa(weather_dir: Path, token: str, max_items: int = 0) 
         if not date or date < "1940-01-01":
             continue
 
-        station_id = find_nearest_station(lat, lon, date, token)
-        if not station_id:
+        station = find_nearest_station(lat, lon, date, token)
+        if not station:
             continue
 
-        obs = fetch_noaa_weather(station_id, date, token)
+        obs = fetch_noaa_weather(station, date, token, place_lat=lat, place_lon=lon)
         if obs:
             data["noaa_observed"] = obs
             from src.schemas import inject_metadata
@@ -235,7 +274,7 @@ def enrich_weather_with_noaa(weather_dir: Path, token: str, max_items: int = 0) 
                 json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
             )
             enriched += 1
-            logger.info("  NOAA enriched: %s (%s)", f.name, station_id)
+            logger.info("  NOAA enriched: %s (%s)", f.name, station.get("id"))
 
     logger.info(
         "NOAA weather enrichment: %d files enriched (API calls: %d)",

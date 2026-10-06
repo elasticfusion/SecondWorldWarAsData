@@ -102,6 +102,9 @@ WEATHER_OUTPUT_SCHEMA = {
                 # not promoted to a named field above are preserved here verbatim.
                 "raw_elements": {"type": ["object", "null"]},
                 "station_id": {"type": "string"},
+                "station_name": make_nullable("string"),
+                "station_latitude": make_nullable("number"),
+                "station_longitude": make_nullable("number"),
                 "station_distance_km": make_nullable("number"),
                 "source": enum_field(["noaa_cdo"]),
                 "source_url": {"type": "string"},
