@@ -574,3 +574,11 @@ Use `scripts/find_duplicate_places.py` and `scripts/merge_duplicate_places.py`
 - [Maps Extraction](../maps/README.md)
 - [External Maps](../external-maps/README.md)
 - [Error Handling](../../core/error_handling.md)
+
+## Phase 3 Enrichment
+
+**Step 3/6 (always runs).** Hierarchy/name enrichment + `link_parent_place_ids`, then the
+**geocoding cascade** (Nominatim → hill/terrain → Grok fallback) writes WGS84 coordinates +
+provenance (low-confidence flagged, never fabricated). This is also the coordinate source the
+maps overlay inherits via resolved PlaceID. See
+[Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).

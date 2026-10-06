@@ -149,3 +149,9 @@ aliases, supporting-unit alias/fuzzy linking, merge reference-redirect — are d
   `enrichment_checked_at` (staleness gate); 2.10 `image_scope` + enrichment-on-identity;
   2.9 record-level `related_equipment`; 2.8 per-mention `quantity`/`place`/
   `operating_country`/`captured` + declared `original_text` retention.
+
+## Phase 3 Enrichment
+
+**Step 4b (gated on `equipment.enabled`)** Wikipedia images + extracts
+(`equipment_wikipedia`); **step 5/6 (gated on `use_openserp`)** OpenSERP images/academic
+sources. See [Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).

@@ -618,3 +618,9 @@ WARNING - Filtered weather mention with approximate date: early-1944-06
 - [Places Extraction](../places/README.md)
 - [Configuration](../../core/CONFIGURATION.md)
 - [Error Handling](../../core/error_handling.md)
+
+## Phase 3 Enrichment
+
+**Step 6/6 (gated on `api.noaa_api_token`).** NOAA GHCND station-observed data supplements
+the Phase-2 Open-Meteo reanalysis (`enrich_weather_with_noaa`); full element set + raw
+passthrough + station provenance. See [Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).

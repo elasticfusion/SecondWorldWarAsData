@@ -28,3 +28,9 @@ pre-canonical-key model) and the two point-in-time review snapshots
 - [../people/deduplication.md](../people/deduplication.md)
 - [../people/dedup-weighting.md](../people/dedup-weighting.md)
 - [../people/biographical-enrichment.md](../people/biographical-enrichment.md) — title-implied memberships
+
+## Phase 3 Enrichment
+
+**Step 2/6** external unit-history enrichment (`enrich_groups.enrich_all_groups`), then
+**step 4c** Wikipedia images + extracts (`groups_wikipedia`). Gated by the shared
+`enrichment_gate`. See [Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).

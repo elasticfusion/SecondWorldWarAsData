@@ -318,3 +318,10 @@ symbology constraints, and the reverse-registration pass
 - [ ] Extract page numbers from parsed documents
 - [ ] Wire the map-interior prototype into the pipeline + enforced output records
 - [ ] Map type classification refinement (tactical / strategic / political)
+
+## Phase 3 Enrichment
+
+**None.** Map cataloging (this guide) and the map-interior prototype are not wired into
+Phase 3. When map-interior extraction productionizes, a gated Phase-3 map step (extraction →
+entity resolution → reverse registration) would run. See
+[Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md) (Known Gaps).

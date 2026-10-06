@@ -550,3 +550,9 @@ See `src/json_schemas.py` for complete EVENT_SCHEMA definition.
 - Sub-events: Array of sub-event objects
 - Sub-event_fulltext: Object with `Paragraph_N` keys
 - References: Arrays of integers or strings
+
+## Phase 3 Enrichment
+
+**None by design.** Events are the Phase-2 extraction backbone; they are not externally
+enriched in Phase 3 (the entities they link to — people, places, etc. — are). See
+[Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).
