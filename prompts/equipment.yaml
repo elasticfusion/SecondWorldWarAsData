@@ -60,7 +60,7 @@ rules:
     BAR → category: "infantry_weapons", subcategory: "automatic_rifle"
     88mm gun → category: "artillery", subcategory: "anti_aircraft" (NOT "armor")
   - 'Do NOT use equipment-specific names as category (e.g., "Medium Tank" is WRONG — use "armor")'
-  - "Country codes use ISO 3166-1 alpha-3 (USA, GBR, DEU, FRA, etc.)"
+  - "Country codes use ISO 3166-1 alpha-3 (USA, GBR, DEU, FRA, ITA, JPN; use SUN for the WWII USSR, NOT USSR/RUS)"
   - |
     country_of_origin = the country that DESIGNED/MANUFACTURED the equipment type.
     This is a STABLE identity of the equipment, NOT who is using it. A Sherman is

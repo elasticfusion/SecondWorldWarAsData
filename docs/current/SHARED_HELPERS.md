@@ -80,6 +80,17 @@ is feature-specific** (correctly — "is this an M4?" ≠ "who is speaking?").
 image API call. Vision answers *what is in the image* (type), never *which specific event*
 it depicts (books/stock photos — see `image_scope`).
 
+## 7. Nationality normalization — `src/enrichment/award_sources.py::canonical_nationality`
+
+Maps free-text nationality to a canonical ISO 3166-1 alpha-3. **Critically: the WWII USSR
+is `SUN`** (not `USSR`, which isn't alpha-3, nor `RUS`, the modern Russian Federation);
+`ussr`/`soviet`/`soviet union`/`russia`/`russian` all → `SUN`. Plus the Commonwealth set
+(AUS/NZL/IND/ZAF/…).
+
+**Rule:** normalize any origin/nationality before storing or comparing it (equipment does
+this via `_normalize_origin`), so dedup's origin veto compares consistent codes — a Soviet
+T-34 coded `SUN` on one record and `RUS`/`USSR` on another would wrongly fail to match.
+
 ---
 
 ## Provenance / traceability (applies everywhere)

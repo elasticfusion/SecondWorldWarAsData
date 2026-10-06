@@ -42,7 +42,7 @@ def test_alias_short_circuits_grok():
 
 def test_grok_fallback_resolves_and_stamps():
     g = FakeGrok()
-    r = d.resolve_designation("Sherman V", g)
+    r = d.resolve_designation("T-34", g)
     assert r["identity_source"] == "grok_disambiguation"
     assert r["canonical_name"] == "M4A2 Sherman"
     assert r["nationality_of_origin"] == "USA"
@@ -52,8 +52,8 @@ def test_grok_fallback_resolves_and_stamps():
 
 def test_cache_prevents_re_call():
     g = FakeGrok()
-    d.resolve_designation("Sherman V", g)
-    d.resolve_designation("Sherman V", g)
+    d.resolve_designation("T-34", g)
+    d.resolve_designation("T-34", g)
     assert g.calls == 1  # second call served from cache
 
 
@@ -74,12 +74,12 @@ def test_no_grok_client_falls_through_to_raw():
 
 def test_suggestions_written(tmp_path, monkeypatch):
     monkeypatch.setattr(d, "_SUGGESTIONS_PATH", tmp_path / "sugg.jsonl")
-    d.resolve_designation("Sherman V", FakeGrok())
+    d.resolve_designation("T-34", FakeGrok())
     import json
 
     lines = (tmp_path / "sugg.jsonl").read_text().strip().splitlines()
     rec = json.loads(lines[0])
-    assert rec["raw"] == "Sherman V" and rec["canonical_name"] == "M4A2 Sherman"
+    assert rec["raw"] == "T-34" and rec["canonical_name"] == "M4A2 Sherman"
 
 
 def test_schema_declares_canonical_fields():

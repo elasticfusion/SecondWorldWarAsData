@@ -1641,15 +1641,34 @@ def _is_specific_identity(equipment_data: dict) -> bool:
         return False
     # A nickname that resolves via the alias table (sherman -> m4 sherman, 88 -> 88mm
     # flak 36) is a specific identity expressed informally.
-    if name in _equipment_aliases():
+    if _normalize_designation(name) in _equipment_aliases():
         return True
     # A bare category/subcategory classification ("medium tank", "medium_tank",
     # "field gun") is NOT a specific identity — it's a class, not a designation.
     return _normalize_generic(name) not in _GENERIC_EQUIPMENT_WORDS
 
 
+def _normalize_designation(name: str) -> str:
+    """Normalize a designation so one curated alias matches surface variants:
+    lowercase; unify Pz.Kpfw./PzKpfw/Panzerkampfwagen -> panzer; strip Sd.Kfz. punctuation;
+    collapse punctuation/spacing. (roman<->arabic is handled separately where needed.)
+    """
+    import re as _re
+
+    s = name.lower().strip()
+    s = _re.sub(r"\bpanzerkampfwagen\b", "panzer", s)
+    s = _re.sub(r"\bpz\.?\s*kpfw\.?\b", "panzer", s)
+    s = _re.sub(r"\bpzkpfw\b", "panzer", s)
+    s = _re.sub(r"\bsd\.?\s*kfz\.?\b", "sdkfz", s)
+    s = s.replace(".", " ")
+    s = _re.sub(r"[\s_]+", " ", s).strip()
+    return s
+
+
 def _equipment_aliases() -> Dict[str, str]:
-    """Cached nickname/abbreviation -> canonical technical name map (config-driven)."""
+    """Cached nickname/abbreviation -> canonical technical name map (config-driven).
+    Keys are NORMALIZED (_normalize_designation) so one entry covers surface variants.
+    """
     global _EQUIPMENT_ALIAS_CACHE
     if _EQUIPMENT_ALIAS_CACHE is None:
         import yaml
@@ -1660,7 +1679,8 @@ def _equipment_aliases() -> Dict[str, str]:
         try:
             data = yaml.safe_load(alias_file.read_text(encoding="utf-8"))
             _EQUIPMENT_ALIAS_CACHE = {
-                k.lower(): v.lower() for k, v in (data.get("aliases") or {}).items()
+                _normalize_designation(k): v.lower()
+                for k, v in (data.get("aliases") or {}).items()
             }
         except Exception:  # noqa: BLE001 - absent/malformed table -> no aliases
             _EQUIPMENT_ALIAS_CACHE = {}
@@ -1672,7 +1692,7 @@ def _canonical_equipment_name(name: str) -> str:
     (sherman -> m4 sherman); unchanged if not an alias."""
     if not name:
         return name
-    return _equipment_aliases().get(name.strip().lower(), name)
+    return _equipment_aliases().get(_normalize_designation(name), name)
 
 
 _EQUIPMENT_ALIAS_CACHE: Optional[Dict[str, str]] = None
@@ -1698,8 +1718,25 @@ def _resolve_canonical_identity(
         if ident.get("nationality_of_origin") and not equipment_data.get(
             "country_of_origin"
         ):
-            equipment_data["country_of_origin"] = ident["nationality_of_origin"]
+            equipment_data["country_of_origin"] = _normalize_origin(
+                ident["nationality_of_origin"]
+            )
     return canonical_name
+
+
+def _normalize_origin(nationality: Optional[str]) -> Optional[str]:
+    """Normalize a free-text origin to a canonical ISO alpha-3 (USSR/Soviet/Russia -> SUN,
+    etc.) via the shared award-registry mapper, so dedup's origin veto compares consistent
+    codes. Falls back to the uppercased input when unmapped (never drops a stated value).
+    """
+    if not nationality:
+        return nationality
+    try:
+        from src.enrichment.award_sources import canonical_nationality
+
+        return canonical_nationality(nationality) or nationality.strip().upper()
+    except Exception:  # noqa: BLE001 - normalization is best-effort
+        return nationality.strip().upper()
 
 
 def _enrich_on_identity(
@@ -2117,7 +2154,7 @@ def _build_equipment_data(eq: EquipmentExtraction) -> Dict[str, Any]:
     if eq.subcategory:
         equipment_data["subcategory"] = eq.subcategory
     if eq.country_of_origin:
-        equipment_data["country_of_origin"] = eq.country_of_origin
+        equipment_data["country_of_origin"] = _normalize_origin(eq.country_of_origin)
     if eq.variants:
         equipment_data["variants"] = [v.model_dump() for v in eq.variants]  # type: ignore[assignment]
     if eq.specifications:
@@ -2330,7 +2367,7 @@ def _resolve_support_equipment_id(
     path = equipment_index.get(name)
     # curated-alias canonical (sherman -> m4 sherman); match case-insensitively
     if not path:
-        canonical = _equipment_aliases().get(name.strip().lower())
+        canonical = _equipment_aliases().get(_normalize_designation(name))
         if canonical:
             lower = {k.lower(): v for k, v in equipment_index.items()}
             path = lower.get(canonical.lower())

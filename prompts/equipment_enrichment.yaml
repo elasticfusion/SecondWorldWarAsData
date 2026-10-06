@@ -39,7 +39,7 @@ schema: |
       "years": "1942-1945"
     },
     "variants": ["M4A1", "M4A2", "M4A3", "M4A3E8"],
-    "primary_users": ["USA", "GBR", "USSR", "FRA"],
+    "primary_users": ["USA", "GBR", "SUN", "FRA"],
     "timeline": {
       "first_production": "1942-02",
       "first_combat_use": "1942-10",
