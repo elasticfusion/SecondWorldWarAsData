@@ -112,9 +112,13 @@ aliases, supporting-unit alias/fuzzy linking, merge reference-redirect — are d
   `output/equipment/disambiguation_suggestions.jsonl` into the curated YAML. A bad learned
   resolution persists until a curated override is added (curated wins). See
   [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md).
-- **PlaceID resolution is not geocoded.** Fuzzy name resolution only (exact → containment →
-  `SequenceMatcher ≥ 0.88`); no coordinate-based resolution, and sub-0.88 near-misses leave
-  `place_name` set with `PlaceID` null.
+- **PlaceID resolution — coverage, not geocoding.** Equipment resolves a mention's
+  `place_name` to a `PlaceID` (exact → containment → `SequenceMatcher ≥ 0.88`); it does
+  **not** geocode — coordinates live on the **Place record** (reached via `PlaceID`) and are
+  populated by the dedicated places geocoding pass (`phase3_enrich_data` →
+  `places_grok_geocode.geocode_places_dir`). This delegation is by design (equipment must
+  not duplicate the places geo subsystem). Residual limitation: sub-0.88 name near-misses
+  leave `place_name` set with `PlaceID` null (a resolution-coverage gap, not a geo gap).
 - **Proposal items deferred.** Comparative analysis, tactical doctrine, and geographic
   performance (`MILITARY_EQUIPMENT.md`) are intentionally unbuilt (lower value / messier
   provenance). `related_equipment`, `crew_accounts`, `timeline`, `technical_evolution`,

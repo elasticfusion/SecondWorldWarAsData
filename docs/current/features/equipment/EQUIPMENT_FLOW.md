@@ -55,7 +55,9 @@ Per-mention fields (distinct from the record's type-level identity):
 - `quantity` (exact int) + `quantity_text` (verbatim: "several" preserved, never fabricated).
 - `place_name` → single **PlaceID** (`_resolve_mention_place` → `_resolve_place_id`:
   exact → whole-word containment → `SequenceMatcher ≥ 0.88`; below threshold → null, never
-  guesses). A mention is ONE assertion about ONE place.
+  guesses). A mention is ONE assertion about ONE place. Equipment does NOT geocode —
+  coordinates live on the Place record (via `PlaceID`), populated by the dedicated places
+  geocoding pass (`phase3_enrich_data` → `places_grok_geocode`).
 - `assertion_source`, `original_text` (retained — **traceability**).
 - `DateID`/`DateMentionID` denormalized (`_link_date_to_mention`).
 
