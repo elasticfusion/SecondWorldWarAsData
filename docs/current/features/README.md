@@ -133,14 +133,16 @@ Military equipment extraction with specifications and media.
 
 ### Casualties (`casualties.py`)
 **Status:** Experimental
+**Documentation:** [casualties/README.md](casualties/README.md)
 
-Casualty data extraction from events.
+Casualty (personnel-loss) extraction from events.
 
 **Key Features:**
 - Casualty counts by type (killed, wounded, missing, captured)
+- `cause` dimension (combat / weather_exposure / disease / accident / other)
 - Side attribution (Allied, Axis, Civilian)
-- Event linkage
-- Structured output
+- Resolution of impacted people / units / places to entity IDs + direct PersonID/PlaceID anchors
+- Event linkage; structured output
 - Batched extraction (1 API call per chapter via `_batch_extract_casualties`)
 
 ---
