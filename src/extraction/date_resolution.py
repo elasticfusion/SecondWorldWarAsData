@@ -96,14 +96,25 @@ def _split_approx(date_start: str) -> Optional[Tuple[str, str]]:
 
 
 def _resolve_month_third(prefix: str, rest: str) -> Optional[Tuple[str, str]]:
-    """early/mid/late of a YYYY-MM month -> the matching third of that month."""
+    """early/mid/late of a YYYY-MM month -> that third of the month; of a bare YYYY -> that
+    third of the YEAR (early = Jan-Apr, mid = May-Aug, late = Sep-Dec)."""
     m = _ISO_MONTH.match(rest)
-    if not m:
-        return None
-    y, mo = int(m.group(1)), int(m.group(2))
-    lo, hi = _MONTH_THIRD[prefix]
-    hi = hi or _last_day(y, mo)
-    return _iso(y, mo, lo), _iso(y, mo, hi)
+    if m:
+        y, mo = int(m.group(1)), int(m.group(2))
+        lo, hi = _MONTH_THIRD[prefix]
+        hi = hi or _last_day(y, mo)
+        return _iso(y, mo, lo), _iso(y, mo, hi)
+    ym = _ISO_YEAR.match(rest)
+    if ym:
+        y = int(ym.group(1))
+        year_thirds = {
+            "early": ((1, 1), (4, 30)),
+            "mid": ((5, 1), (8, 31)),
+            "late": ((9, 1), (12, 31)),
+        }
+        (sm, sd), (em, ed) = year_thirds[prefix]
+        return _iso(y, sm, sd), _iso(y, em, ed)
+    return None
 
 
 def _resolve_season(prefix: str, rest: str) -> Optional[Tuple[str, str]]:
@@ -172,15 +183,23 @@ def resolve_date_interval(
     return earliest, latest, method
 
 
+_HHMM = re.compile(r"^([01]?\d|2[0-3]):[0-5]\d(:[0-5]\d)?$")
+
+
 def _apply_time(iso_date: str, time_str: Optional[str], is_start: bool) -> str:
-    """Fold a HH:MM(:SS) time into an ISO date -> ISO-8601 datetime (Z). When no time is
-    stated, use day bounds: 00:00:00 for the lower bound, 23:59:59 for the upper."""
-    if time_str:
+    """Fold a HH:MM(:SS) time into an ISO date -> a NAIVE ISO-8601 datetime (no 'Z').
+
+    No zone suffix is emitted: the time is in the source's stated ``time_source``
+    (German/Allied/Zulu/Local) which this resolver does NOT convert, so asserting UTC
+    ('Z') would be a false claim. Bounds are therefore comparable WITHIN a consistent
+    time_source; cross-source comparison must account for the offset separately. When no
+    (or a malformed) time is stated, use day bounds: 00:00:00 lower, 23:59:59 upper."""
+    if time_str and _HHMM.match(time_str.strip()):
         ts = time_str.strip()
         if ts.count(":") == 1:
             ts = f"{ts}:00"
-        return f"{iso_date}T{ts}Z"
-    return f"{iso_date}T00:00:00Z" if is_start else f"{iso_date}T23:59:59Z"
+        return f"{iso_date}T{ts}"
+    return f"{iso_date}T00:00:00" if is_start else f"{iso_date}T23:59:59"
 
 
 def _resolve_approximate(ds: str) -> Optional[Tuple[str, str]]:

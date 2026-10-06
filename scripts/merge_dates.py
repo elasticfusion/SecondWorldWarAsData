@@ -11,7 +11,6 @@ Usage:
 
 import argparse
 import json
-import glob
 import os
 import logging
 from collections import defaultdict
@@ -21,7 +20,6 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
 
 DATES_DIR = Path("output/dates")
-CROSS_REF_DIRS = ["output/weather", "output/casualties", "output/logistics"]
 
 
 def make_key(d: dict) -> tuple:
@@ -43,13 +41,19 @@ def merge_group(files: list[tuple[Path, dict]]) -> tuple[dict, list[str]]:
     deprecated_ids = []
     seen_mentions = set()
 
-    # Track existing mentions by content key
+    # Track existing mentions by content key -> their surviving mention id.
+    kept_mention_id: dict = {}
     for m in canonical.get("event_mentions", []):
         key = (
             m.get("Sub_eventID", m.get("Sub-eventID", "")),
             m.get("original_text", ""),
         )
         seen_mentions.add(key)
+        mid = m.get("DateMentionID") or m.get("MentionID")
+        if mid:
+            kept_mention_id[key] = mid
+
+    mention_id_map: dict = {}  # dropped/duplicate mention id -> surviving mention id
 
     # Merge mentions from duplicates
     for path, dup in files[1:]:
@@ -61,33 +65,65 @@ def merge_group(files: list[tuple[Path, dict]]) -> tuple[dict, list[str]]:
                 m.get("Sub_eventID", m.get("Sub-eventID", "")),
                 m.get("original_text", ""),
             )
+            dmid = m.get("DateMentionID") or m.get("MentionID")
             if key not in seen_mentions:
                 canonical.setdefault("event_mentions", []).append(m)
                 seen_mentions.add(key)
+                if dmid:
+                    kept_mention_id[key] = dmid
+            elif dmid and kept_mention_id.get(key) and kept_mention_id[key] != dmid:
+                # identical mention deduped out -> redirect its id to the surviving one
+                mention_id_map[dmid] = kept_mention_id[key]
 
-    return canonical, deprecated_ids
+    return canonical, deprecated_ids, mention_id_map
 
 
 def update_cross_references(id_map: dict[str, str], dry_run: bool) -> int:
-    """Update DateID/DateMentionID references in other entity files."""
-    updated = 0
-    for dir_path in CROSS_REF_DIRS:
-        for f in glob.glob(os.path.join(dir_path, "*.json")):
-            try:
-                text = open(f).read()
-                changed = False
-                for old_id, new_id in id_map.items():
-                    if old_id in text:
-                        text = text.replace(old_id, new_id)
-                        changed = True
-                if changed:
-                    if not dry_run:
-                        with open(f, "w") as out:
-                            out.write(text)
-                    updated += 1
-            except (OSError, json.JSONDecodeError):
-                pass
-    return updated
+    """Redirect deprecated DateID/DateMentionID references to the survivor across ALL
+    entity dirs + event files, via the hardened field-targeted helper
+    ``src.dedup.merge.update_event_refs`` — NOT a blind text.replace (which could corrupt
+    unrelated substrings and only scanned 3 dirs, leaving refs in equipment/maps/people/
+    events dangling)."""
+    if dry_run or not id_map:
+        return len(id_map)
+    import sys
+    from pathlib import Path as _P
+
+    sys.path.insert(0, str(_P(__file__).resolve().parent.parent))
+    from src.dedup.merge import update_event_refs
+
+    output_root = _P("output")
+    for old_id, new_id in id_map.items():
+        # ref_key "dates" covers sub-event date arrays; _replace_id_in_obj handles the
+        # DateID/DateMentionID fields in entity files.
+        update_event_refs(output_root, old_id, new_id, "dates")
+    return len(id_map)
+
+
+def _rebuild_index() -> None:
+    """Rebuild output/dates/index.json (normalized key -> filename) from surviving files."""
+    import sys
+    from pathlib import Path as _P
+
+    sys.path.insert(0, str(_P(__file__).resolve().parent.parent))
+    from src.extraction.dates import _normalize_date_key
+
+    index: dict[str, str] = {}
+    for f in sorted(DATES_DIR.glob("*.json")):
+        if f.name == "index.json":
+            continue
+        try:
+            d = json.load(open(f, encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        ds = d.get("date_start")
+        if not ds:
+            continue
+        key = _normalize_date_key(ds, d.get("time_start"))
+        index[key] = f.name
+    with open(DATES_DIR / "index.json", "w", encoding="utf-8") as out:
+        json.dump(index, out, indent=2, ensure_ascii=False)
+    logger.info(f"Rebuilt index.json ({len(index)} entries)")
 
 
 def main():
@@ -124,12 +160,13 @@ def main():
     files_kept = 0
 
     for key, file_group in dupes.items():
-        merged, deprecated_ids = merge_group(file_group)
+        merged, deprecated_ids, mention_id_map = merge_group(file_group)
         canonical_id = merged.get("DateID", "")
 
-        # Map deprecated IDs to canonical
+        # Map deprecated DateIDs -> canonical, plus deduped-mention DateMentionID redirects.
         for old_id in deprecated_ids:
             id_map[old_id] = canonical_id
+        id_map.update(mention_id_map)
 
         # Write merged record
         canonical_path = file_group[0][0]
@@ -150,6 +187,10 @@ def main():
     if id_map:
         logger.info(f"Updating cross-references ({len(id_map)} ID redirects)...")
         xref_updated = update_cross_references(id_map, args.dry_run)
+
+    # Rebuild index.json from surviving files (merges deleted files the old index named).
+    if not args.dry_run and files_removed:
+        _rebuild_index()
 
     logger.info("")
     if args.dry_run:

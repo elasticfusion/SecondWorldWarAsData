@@ -13,24 +13,24 @@ UL = "01ABCDEFGH0123456789ABCDEF"
 
 def test_exact_day_is_point_interval():
     assert R("1944-06-06") == (
-        "1944-06-06T00:00:00Z",
-        "1944-06-06T23:59:59Z",
+        "1944-06-06T00:00:00",
+        "1944-06-06T23:59:59",
         "precision_rule",
     )
 
 
 def test_month_spans_whole_month():
     assert R("1944-06") == (
-        "1944-06-01T00:00:00Z",
-        "1944-06-30T23:59:59Z",
+        "1944-06-01T00:00:00",
+        "1944-06-30T23:59:59",
         "precision_rule",
     )
 
 
 def test_bare_year_spans_whole_year():
     assert R("1944") == (
-        "1944-01-01T00:00:00Z",
-        "1944-12-31T23:59:59Z",
+        "1944-01-01T00:00:00",
+        "1944-12-31T23:59:59",
         "precision_rule",
     )
 
@@ -38,9 +38,9 @@ def test_bare_year_spans_whole_year():
 @pytest.mark.parametrize(
     "ds,lo,hi",
     [
-        ("early-1944-06", "1944-06-01T00:00:00Z", "1944-06-10T23:59:59Z"),
-        ("mid-1944-06", "1944-06-11T00:00:00Z", "1944-06-20T23:59:59Z"),
-        ("late-1944-06", "1944-06-21T00:00:00Z", "1944-06-30T23:59:59Z"),
+        ("early-1944-06", "1944-06-01T00:00:00", "1944-06-10T23:59:59"),
+        ("mid-1944-06", "1944-06-11T00:00:00", "1944-06-20T23:59:59"),
+        ("late-1944-06", "1944-06-21T00:00:00", "1944-06-30T23:59:59"),
     ],
 )
 def test_month_thirds(ds, lo, hi):
@@ -49,21 +49,21 @@ def test_month_thirds(ds, lo, hi):
 
 def test_season_bounds_and_winter_crosses_year():
     assert R("summer-1944") == (
-        "1944-06-01T00:00:00Z",
-        "1944-08-31T23:59:59Z",
+        "1944-06-01T00:00:00",
+        "1944-08-31T23:59:59",
         "precision_rule",
     )
     assert R("winter-1944") == (
-        "1944-12-01T00:00:00Z",
-        "1945-02-28T23:59:59Z",
+        "1944-12-01T00:00:00",
+        "1945-02-28T23:59:59",
         "precision_rule",
     )
 
 
 def test_stated_range():
     assert R("1944-06-06", "1944-06-12") == (
-        "1944-06-06T00:00:00Z",
-        "1944-06-12T23:59:59Z",
+        "1944-06-06T00:00:00",
+        "1944-06-12T23:59:59",
         "range",
     )
 
@@ -95,8 +95,8 @@ def test_stamp_preserves_verbatim_and_adds_interval():
     assert rec["date_start"] == "early-1944-06"
     assert rec["original_text"] == "early June 1944"
     # interval added
-    assert rec["resolved_earliest"] == "1944-06-01T00:00:00Z"
-    assert rec["resolved_latest"] == "1944-06-10T23:59:59Z"
+    assert rec["resolved_earliest"] == "1944-06-01T00:00:00"
+    assert rec["resolved_latest"] == "1944-06-10T23:59:59"
     assert rec["resolution_method"] == "precision_rule"
     jsonschema.validate(rec, S)
 
@@ -115,19 +115,19 @@ def test_schema_accepts_unresolved_nulls():
 def test_time_folded_into_datetime_bounds():
     # "5 Jan 1945 at 0500" -> tight point at 05:00
     assert R("1945-01-05", None, "05:00") == (
-        "1945-01-05T05:00:00Z",
-        "1945-01-05T05:00:00Z",
+        "1945-01-05T05:00:00",
+        "1945-01-05T05:00:00",
         "precision_rule",
     )
     # no time stated -> full-day span (honest 'sometime that day')
     assert R("1945-01-05") == (
-        "1945-01-05T00:00:00Z",
-        "1945-01-05T23:59:59Z",
+        "1945-01-05T00:00:00",
+        "1945-01-05T23:59:59",
         "precision_rule",
     )
     # explicit time range within a day
     assert R("1945-01-05", None, "05:00", "08:00") == (
-        "1945-01-05T05:00:00Z",
-        "1945-01-05T08:00:00Z",
+        "1945-01-05T05:00:00",
+        "1945-01-05T08:00:00",
         "precision_rule",
     )

@@ -466,7 +466,8 @@ def _build_dates_index(output_root: Path) -> Dict[str, Dict[str, str]]:
                 key = f"{mention['EventID']}:{mention['Sub_eventID']}"
                 index[key] = {
                     "DateID": date_data["DateID"],
-                    "DateMentionID": mention.get("MentionID"),
+                    "DateMentionID": mention.get("DateMentionID")
+                    or mention.get("MentionID"),
                 }
 
     return index

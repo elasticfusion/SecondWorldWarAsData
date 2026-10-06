@@ -237,14 +237,25 @@ Each date file tracks all events that reference it:
 - Preserves original text context
 - Includes book metadata for citation
 
-**Duplicate Prevention:**
+**Duplicate Prevention** (keyed on `(Sub_eventID, time_start, original_text)`): a sub-event
+re-run is skipped, but the SAME sub-event citing this date at a DIFFERENT time ("0500" vs
+"1800") or in DIFFERENT words is kept as a distinct mention. Each mention's own id is
+**`DateMentionID`** (the name all consumers reference it by).
 ```python
-# Check if sub-event already has mention
-existing = [m for m in date_data["event_mentions"] 
-            if m["Sub_eventID"] == sub_event_id]
-if existing:
-    return  # Skip duplicate
+new_key = (sub_event_id, mention.get("time_start"), mention.get("original_text", ""))
+existing = {(m.get("Sub_eventID"), m.get("time_start"), m.get("original_text", ""))
+            for m in date_data["event_mentions"]}
+if new_key in existing:
+    return  # exact re-run -> skip
 ```
+
+> **`normalized_datetime` is legacy/exact-only.** It is emitted ONLY for an exact-ISO
+> `date_start` (never for approximate forms like `summer-1944`). For sortable bounds on ANY
+> date, use `resolved_earliest`/`resolved_latest` (the resolved datetime interval), which
+> supersede it. Those bounds are **naive** in the source's `time_source` zone (German/
+> Allied/Zulu/Local) — the resolver does not convert, so cross-`time_source` comparisons
+> must account for the offset. Also note: `early/mid/late` resolve for both a month
+> (`early-1944-06`) and a whole year (`mid-1944` → May–Aug).
 
 ---
 

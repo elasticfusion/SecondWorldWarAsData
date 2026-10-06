@@ -59,6 +59,13 @@ def _backfill_one_file(data: dict) -> bool:
         data["date_precision"] = _infer_precision(data["date_start"])
         changed = True
 
+    # Rename legacy event_mentions[].MentionID -> DateMentionID (consistency with all
+    # consumers; idempotent).
+    for m in data.get("event_mentions", []) or []:
+        if "MentionID" in m and "DateMentionID" not in m:
+            m["DateMentionID"] = m.pop("MentionID")
+            changed = True
+
     # Resolve the sortable ISO interval (deterministic; idempotent — only when absent).
     if "resolution_method" not in data:
         from src.extraction.date_resolution import resolve_date_interval
