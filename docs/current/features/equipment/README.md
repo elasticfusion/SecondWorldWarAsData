@@ -34,7 +34,7 @@ Phase 2 extract (per event file)
             - match: technical_identifier → exact common_name → fuzzy (≥0.80, alt names)
             - merge fields (alt names, variants, related_equipment accumulate+dedup);
               append the mention
-            - else create a new record (+ optional enrichment/media)
+            - else create a new record (+ enrichment-on-identity; see below)
   4. generate index.json
 
 Dedup detection (ecs_entrypoint._run_dedup_detection → find_duplicate_equipment.py)
@@ -108,9 +108,9 @@ Enrichment-on-identity (follows identity resolution)
   (M4 Sherman, M26 Pershing) and Grok text/specs enrichment (returns weight/speed/armament/
   crew/variants); `_enrich_on_identity` on an M26 Pershing stub stamps `enrichment_status`
   and fills specs end-to-end. **Three live-only bugs found and fixed:** (1) Wikipedia image
-  URLs carry `?utm_source=…` params that broke Commons license lookup; (2)
+  URLs carry `?utm_source=…` params that broke Commons license lookup; (2) the (now-deleted)
   `equipment_ext/enrichment.py` had a runtime `NameError` (TYPE_CHECKING-only `GrokClient`
-  used in a signature — fixed with `from __future__ import annotations`); (3)
+  used in a signature); (3)
   `_enrich_equipment_data` did a bare `json.loads` on a ```` ```json ````-fenced response,
   silently returning `{}` for EVERY record — now uses `extract_json`. Still untested live:
   **vision TYPE verification** + the **OpenSERP image path** (`search_media` binary absent
