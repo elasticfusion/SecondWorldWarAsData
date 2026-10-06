@@ -62,5 +62,9 @@ CASUALTIES_OUTPUT_SCHEMA = {
             "type": ["array", "null"],
             "items": {"type": ["string", "object"]},
         },
+        "impacted_equipment": {
+            "type": ["array", "null"],
+            "items": {"type": ["string", "object"]},
+        },
     },
 }
