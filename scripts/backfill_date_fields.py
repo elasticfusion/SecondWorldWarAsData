@@ -5,6 +5,8 @@ import json
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 SPEC_DEFAULTS = {
     "date_end": None,
     "time_start": None,
@@ -55,6 +57,18 @@ def _backfill_one_file(data: dict) -> bool:
     # Infer date_precision from date_start format
     if not data.get("date_precision") and data.get("date_start"):
         data["date_precision"] = _infer_precision(data["date_start"])
+        changed = True
+
+    # Resolve the sortable ISO interval (deterministic; idempotent — only when absent).
+    if "resolution_method" not in data:
+        from src.extraction.date_resolution import resolve_date_interval
+
+        earliest, latest, method = resolve_date_interval(
+            data.get("date_start"), data.get("date_end"), data.get("date_precision")
+        )
+        data["resolved_earliest"] = earliest
+        data["resolved_latest"] = latest
+        data["resolution_method"] = method
         changed = True
 
     return changed

@@ -41,6 +41,14 @@ DATES_OUTPUT_SCHEMA = {
         "time_source": make_nullable("string"),
         "original_text": make_nullable("string"),
         "normalized_datetime": make_nullable("string"),
+        # Deterministic resolution of the SOURCE-stated date into a sortable ISO interval
+        # (never guessed; vague source -> wide interval). date_start/original_text remain
+        # the verbatim authority; these are the derived, queryable bounds.
+        "resolved_earliest": make_nullable("string"),  # ISO YYYY-MM-DD
+        "resolved_latest": make_nullable("string"),  # ISO YYYY-MM-DD
+        "resolution_method": enum_field(
+            ["precision_rule", "range", "unresolved"], nullable=True
+        ),
         "event_mentions": {
             "type": ["array", "null"],
             "items": {

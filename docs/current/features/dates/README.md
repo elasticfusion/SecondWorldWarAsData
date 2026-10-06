@@ -144,6 +144,37 @@ else:
 - `late` - Last third of period
 - `spring` / `summer` / `fall` / `winter` - Seasonal
 
+### 2a. Resolved interval (sortable, queryable) — the vagueness-safe layer
+
+`date_start` is the **verbatim** source form (ISO *or* approximate like `early-1944-06`),
+so it is not directly range-sortable. Every record therefore also carries a **resolved ISO
+interval** derived DETERMINISTICALLY from the stated precision (`src/extraction/
+date_resolution.py`, run at write time):
+
+| Field | Meaning |
+|---|---|
+| `resolved_earliest` | earliest instant the stated date could be (ISO `YYYY-MM-DD`) |
+| `resolved_latest` | latest instant it could be |
+| `resolution_method` | `precision_rule` \| `range` \| `unresolved` |
+
+Examples: `1944-06-06` → `[1944-06-06, 1944-06-06]`; `early-1944-06` →
+`[1944-06-01, 1944-06-10]`; `summer-1944` → `[1944-06-01, 1944-08-31]`; `1944` →
+`[1944-01-01, 1944-12-31]`; a stated range → `[start, end]`.
+
+**Principles (non-negotiable):**
+- **The source is the sole authority.** The resolver performs NO disambiguation and NO
+  guessing — it only expands the precision the source already stated into bounds. A vague
+  source yields a WIDE interval (the honest answer); more precision comes only from better
+  source documents.
+- **Verbatim preserved.** `date_start` + `original_text` are never overwritten; the
+  interval is a derived, additive layer.
+- **Never fabricate.** A date that cannot be mechanically bounded (e.g. an un-anchored
+  "the following spring") gets `resolved_* = null` + `resolution_method: unresolved` — it
+  is stored and linked but excluded from interval queries, not guessed.
+- Config-driven: month-third splits + season bounds live in small tables in the resolver.
+- Relative/contextual dates ("three days later", anchored to the sub-event's date) are a
+  deferred Tier-2 follow-up.
+
 ### 3. Time Handling
 
 **Time Format:** `HH:MM` (24-hour)

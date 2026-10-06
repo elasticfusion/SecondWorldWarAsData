@@ -174,6 +174,21 @@ def _build_normalized_datetime(mention: Dict[str, Any]) -> Optional[str]:
     return f"{ds}T00:00:00Z"
 
 
+def _stamp_resolved_interval(date_data: Dict[str, Any]) -> None:
+    """Fill resolved_earliest/resolved_latest/resolution_method on a date record from its
+    SOURCE-stated date_start/date_end/date_precision. Deterministic; never guesses — a
+    vague source yields a wide interval, an unparseable one yields nulls. Shared by
+    extraction (write time) and the backfill script."""
+    from src.extraction.date_resolution import resolve_date_interval
+
+    earliest, latest, method = resolve_date_interval(
+        date_data.get("date_start"), date_data.get("date_end")
+    )
+    date_data["resolved_earliest"] = earliest
+    date_data["resolved_latest"] = latest
+    date_data["resolution_method"] = method
+
+
 def _find_or_create_date(
     mention: Dict[str, Any], dates_dir: Path, index: Dict[str, str]
 ) -> Path:
@@ -225,6 +240,9 @@ def _find_or_create_date(
         "normalized_datetime": _build_normalized_datetime(mention),
         "event_mentions": [],
     }
+    # Deterministic resolution: expand the SOURCE-stated date into a sortable ISO interval
+    # (never guesses; vague -> wide interval). date_start/original_text stay verbatim.
+    _stamp_resolved_interval(date_data)
 
     write_json_with_lock(date_file, date_data)
 
