@@ -61,7 +61,17 @@ After Phase 2, duplicate detection runs automatically:
 In AWS mode, a web UI allows merging, skipping, and reclassifying entities before Phase 3 proceeds. UI actions (merge, reclassify, assign) append changed file keys to the DynamoDB manifest so Phase 3 downloads them. "Not Duplicates" decisions are stored in DynamoDB and persist across pipeline runs.
 
 ### Phase 3: Enrichment
-Enriches people, groups, places, and bibliography with external data. In AWS mode, Phase 3 reads the DynamoDB manifest (`manifest#phase2`) to download only files changed by Phase 2 and dedup review, falling back to a full entity directory download if no manifest exists.
+Enriches entities with external data in a fixed step order: people (Grokipedia/Wikipedia),
+people groups (unit history + Wikipedia), places (hierarchy + **geocoding cascade**:
+Nominatim→hill→Grok), bibliography (ISBN/copyright + NARA/Archive.org/LOC resolution), and —
+when enabled — equipment (Wikipedia), OpenSERP (people/equipment images), and weather (NOAA
+observed). Dates, logistics, casualties, maps, and events have no enrichment step by design.
+Each source is isolated (`_run_step`): a failure is logged + surfaced via
+`.phase_results.json` → email/Slack, never aborting the rest. Full detail, config gating,
+batch re-run, and the reliability model: **[PHASE3_ENRICHMENT.md](PHASE3_ENRICHMENT.md)**. In
+AWS mode, Phase 3 reads the DynamoDB manifest (`manifest#phase2`) to download only files
+changed by Phase 2 and dedup review, falling back to a full entity directory download if no
+manifest exists.
 
 ### Caching
 - **Local mode:** diskcache (SQLite) in `cache/api/`
