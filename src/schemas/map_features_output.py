@@ -23,6 +23,7 @@ _LEGEND_ITEM = {
     "properties": {
         "symbol_description": make_nullable("string"),
         "meaning": make_nullable("string"),
+        "meaning_en": make_nullable("string"),
         "date_text": make_nullable("string"),
         "DateID": ulid_field(nullable=True),
         "confidence": make_nullable("number"),
@@ -111,6 +112,7 @@ MAP_FEATURES_OUTPUT_SCHEMA = {
         "MapID": ulid_field(nullable=True),
         "map_number": make_nullable("string"),
         "map_title": make_nullable("string"),
+        "title_en": make_nullable("string"),
         "legend": {"type": ["array", "null"], "items": _LEGEND_ITEM},
         "elevation_scale": make_nullable("string"),
         "distance_scale": make_nullable("string"),

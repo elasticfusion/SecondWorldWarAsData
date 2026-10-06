@@ -29,6 +29,9 @@ from src.grok_client import GrokClient  # noqa: E402
 MAP_PATH = Path("output/map_proto/map_III.jpg")
 OUT_PATH = Path("output/map_proto/map_III.features.json")
 MAX_TILE_PX = 1100  # downscale each tile's long edge to control payload
+TRANSLATE = (
+    False  # when True, prompts return verbatim foreign label + English/modern name
+)
 
 
 def _b64(img: Image.Image) -> str:
@@ -56,39 +59,59 @@ def _vision(client: GrokClient, prompt: str, img: Image.Image) -> dict:
 
 
 def read_legend(client: GrokClient, full: Image.Image) -> dict:
+    kind = (
+        "a WWII GERMAN operational/situation map (Lage/Feindlage; labels in German)"
+        if TRANSLATE
+        else "a WWII US Army 'Green Book' operational map"
+    )
+    tr = (
+        " Labels are in German: for every label give BOTH the verbatim German text AND its "
+        "English/modern equivalent (e.g. 'Feindlage West'→'Enemy situation, West'; "
+        "'Köln'→'Cologne')."
+        if TRANSLATE
+        else ""
+    )
     prompt = (
-        "This is a WWII US Army 'Green Book' operational map. Read the MAP NUMBER, TITLE, "
-        "the LEGEND, and any ELEVATION and DISTANCE scales. Return STRICT JSON only: "
-        '{"map_number": <e.g. "MAP III" or null>, "title": <or null>, '
+        f"This is {kind}. Read the MAP NUMBER, TITLE, the LEGEND, and any ELEVATION and "
+        f"DISTANCE scales.{tr} Return STRICT JSON only: "
+        '{"map_number": <e.g. "MAP III" or null>, "title": <verbatim or null>, '
+        '"title_en": <English translation of the title or null>, '
         '"legend": [{"symbol_description": <e.g. "solid red line">, '
-        '"meaning": <verbatim legend text>, "date_text": <date in the entry or null>}], '
-        '"elevation_scale": <verbatim elevation legend, e.g. "ELEVATIONS IN METERS '
-        '0 400 500 600 AND ABOVE" or null>, '
-        '"distance_scale": <verbatim distance/bar scale, e.g. "0 1 2 3 MILES / '
-        '0 1 2 3 KILOMETERS" or null>}'
+        '"meaning": <verbatim legend text>, "meaning_en": <English or null>, '
+        '"date_text": <date in the entry or null>}], '
+        '"elevation_scale": <verbatim or null>, "distance_scale": <verbatim or null>}'
     )
     return _vision(client, prompt, full)
 
 
 def extract_tile(client: GrokClient, tile: Image.Image, legend: dict, tid: str) -> dict:
     legend_txt = json.dumps(legend.get("legend", []))[:1200]
+    if TRANSLATE:
+        head = (
+            "WWII GERMAN operational/situation map TILE (a crop; labels in German). On a "
+            "'Feindlage' (enemy-situation) map the plotted units are the GERMAN assessment "
+            "of ALLIED (enemy) forces. For PLACES give the verbatim German name AND the "
+            "English/modern name. For units, read German-notation labels.\n"
+        )
+        places_field = '"places": [{"label": <verbatim German name>, "name_en": <English/modern or null>}], '
+    else:
+        head = (
+            "WWII US Army 'Green Book' operational map TILE (a crop of a larger map). "
+        )
+        places_field = '"places": [<town/city/village names, verbatim>], '
     prompt = (
-        "WWII US Army 'Green Book' operational map TILE (a crop of a larger map). "
-        f"Use this LEGEND to interpret colors/line styles:\n{legend_txt}\n\n"
+        head + f"Use this LEGEND to interpret colors/line styles:\n{legend_txt}\n\n"
         "Units use NATO/APP-6 military symbology. For each unit symbol read the SYMBOL, "
-        "not just the text label: the FRAME color/shape gives affiliation (blue/rectangle "
-        "= friendly US/Allied; red/diamond = hostile German); the TICKS above the frame "
-        "give echelon (XXXX=army, XXX=corps, XX=division, X=brigade, III=regiment, "
-        "II=battalion); the ICON inside gives branch (crossed-rifles=infantry, "
-        "oval/track=armored, single-diagonal=cavalry, dot=artillery).\n"
+        "not just the text label: the FRAME color/shape gives affiliation; the TICKS above "
+        "the frame give echelon (XXXX=army, XXX=corps, XX=division, X=brigade, "
+        "III=regiment, II=battalion); the ICON inside gives branch.\n"
         "Extract ONLY what is visibly in THIS tile. STRICT JSON only:\n"
-        '{"places": [<town/city/village names, verbatim>], '
-        '"units": [{"label": <verbatim unit label e.g. "423 INF" or "18 VG">, '
+        "{" + places_field + '"units": [{"label": <verbatim unit label>, '
         '"affiliation": <"friend"|"hostile"|"unknown" from the FRAME>, '
         '"echelon": <"army"|"corps"|"division"|"brigade"|"regiment"|"battalion"|'
         '"combat_command"|null from the TICKS>, '
         '"branch": <"infantry"|"armored"|"cavalry"|"artillery"|"airborne"|null from the ICON>}], '
-        '"fortifications": [<verbatim labels, e.g. "WEST WALL">], '
+        '"fortifications": [<verbatim labels>], '
         '"rivers": [<verbatim>], "roads_railroads": [<verbatim>]}'
     )
     r = _vision(client, prompt, tile)
@@ -248,6 +271,9 @@ def resolve_features(fc: dict, places_dir: Path, groups_dir: Path) -> dict:
 
         if kind == "place":
             pid = _match_place_id(label, place_index)
+            if not pid and p.get("additionalInformation"):
+                # German label didn't match — try the English/modern equivalent.
+                pid = _match_place_id(p["additionalInformation"], place_index)
             p["PlaceID"] = pid
             stats["place_resolved" if pid else "place_null"] += 1
             key = pid or f"name:{_norm(label)}"
@@ -358,9 +384,15 @@ def to_feature_collection(map_meta: dict, tile_results: list) -> dict:
     for tr in tile_results:
         tid = tr.get("_tile", "?")
         for p in tr.get("places", []) or []:
-            k = _norm(p)
+            label = p.get("label") if isinstance(p, dict) else p
+            name_en = p.get("name_en") if isinstance(p, dict) else None
+            k = _norm(label)
             if k and k not in places:
-                places[k] = {"original_label": p, "tiles": [tid]}
+                places[k] = {
+                    "original_label": label,
+                    "name_en": name_en,
+                    "tiles": [tid],
+                }
             elif k:
                 places[k]["tiles"].append(tid)
         for u in tr.get("units", []) or []:
@@ -407,7 +439,7 @@ def to_feature_collection(map_meta: dict, tile_results: list) -> dict:
         )
 
     for rec in places.values():
-        feat("place", rec)
+        feat("place", rec, additionalInformation=rec.get("name_en"))
     for rec in units.values():
         feat(
             "unit_position",
@@ -424,6 +456,7 @@ def to_feature_collection(map_meta: dict, tile_results: list) -> dict:
         "MapID": None,  # prototype — not yet a catalog MapID
         "map_number": map_meta.get("map_number"),
         "map_title": map_meta.get("title"),
+        "title_en": map_meta.get("title_en"),
         "legend": map_meta.get("legend", []),
         "elevation_scale": map_meta.get("elevation_scale"),
         "distance_scale": map_meta.get("distance_scale"),
@@ -433,9 +466,19 @@ def to_feature_collection(map_meta: dict, tile_results: list) -> dict:
 
 def main() -> int:
     load_dotenv(dotenv_path=".env")
+    global MAP_PATH, OUT_PATH, TRANSLATE
+    args = [a for a in sys.argv[1:] if a != "--translate"]
+    if "--translate" in sys.argv:
+        TRANSLATE = True
+    if args:
+        MAP_PATH = Path(args[0])
+        OUT_PATH = (
+            Path(args[1]) if len(args) > 1 else MAP_PATH.with_suffix(".features.json")
+        )
     if not MAP_PATH.exists():
         print("map image missing:", MAP_PATH)
         return 1
+    print(f"input: {MAP_PATH}  translate={TRANSLATE}")
     full = Image.open(MAP_PATH)
     client = GrokClient(cache_dir=Path("cache/api"))
 
