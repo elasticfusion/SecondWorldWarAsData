@@ -227,8 +227,15 @@ def _parse_roman(token: str) -> Optional[int]:
 def _to_roman(n: int) -> str:
     """Canonical lowercase roman for 1..399 (enough for corps numerals)."""
     table = [
-        (100, "c"), (90, "xc"), (50, "l"), (40, "xl"),
-        (10, "x"), (9, "ix"), (5, "v"), (4, "iv"), (1, "i"),
+        (100, "c"),
+        (90, "xc"),
+        (50, "l"),
+        (40, "xl"),
+        (10, "x"),
+        (9, "ix"),
+        (5, "v"),
+        (4, "iv"),
+        (1, "i"),
     ]
     out = []
     for val, sym in table:
