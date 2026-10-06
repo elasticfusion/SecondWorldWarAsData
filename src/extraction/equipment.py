@@ -158,11 +158,18 @@ class EquipmentMention(BaseModel):
 
 
 class Variant(BaseModel):
-    """Equipment variant."""
+    """Equipment variant — managed INLINE in the same record file. May carry its own
+    specifications/images (M4A1 vs M4A3E8 differ)."""
 
     variant_name: str
     differences: Optional[str] = None
     alternate_names: List[str] = Field(default_factory=list)
+    specifications: Optional[Dict[str, Any]] = Field(
+        default=None, description="This variant's own specs (if they differ)"
+    )
+    images: List[Dict[str, Any]] = Field(
+        default_factory=list, description="This variant's own images"
+    )
 
 
 class ExternalDataPoint(BaseModel):
@@ -605,7 +612,37 @@ def _add_downloaded_media(
 
     if downloaded_media:
         equipment_data["media"] = downloaded_media
+        # Also populate the structured images[] (first-class, schema-validated) so photos
+        # are managed with provenance + trust markers, not just the legacy loose `media`.
+        equipment_data["images"] = _to_structured_images(
+            downloaded_media, verify_media_with_vision
+        )
         logger.info("  Added %s verified media items", len(downloaded_media))
+
+
+def _to_structured_images(
+    media_items: list, vision_verified: bool
+) -> List[Dict[str, Any]]:
+    """Map downloaded media items to the structured images[] shape. image_scope defaults
+    to 'representative' (a canonical TYPE reference image from Grokipedia/Wikipedia, not a
+    documentary photo of a specific event); vision_verified reflects whether vision ran.
+    """
+    images = []
+    for m in media_items:
+        if m.get("media_type", "photo") != "photo":
+            continue
+        images.append(
+            {
+                "url": m.get("url"),
+                "local_path": m.get("local_path"),
+                "source": m.get("source"),
+                "license": m.get("license"),
+                "caption": m.get("title") or m.get("description"),
+                "image_scope": "representative",
+                "vision_verified": bool(vision_verified),
+            }
+        )
+    return images
 
 
 def _enrich_and_add_media(

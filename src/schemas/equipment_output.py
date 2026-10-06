@@ -8,6 +8,75 @@ from src.schemas import (
     ulid_field,
 )
 
+# Structured specifications (Grokipedia/Wikipedia). Common fields named; tolerant of extra
+# keys (no additionalProperties:false) so sources can add specs without a schema change.
+_SPECIFICATIONS_SCHEMA = {
+    "type": ["object", "null"],
+    "properties": {
+        "weight": make_nullable("string"),
+        "weight_kg": {"type": ["number", "string", "null"]},
+        "speed": make_nullable("string"),
+        "max_speed_kmh": {"type": ["number", "string", "null"]},
+        "armament": make_nullable("string"),
+        "main_armament": make_nullable("string"),
+        "armor": make_nullable("string"),
+        "crew": {"type": ["integer", "string", "null"]},
+        "range": make_nullable("string"),
+        "range_km": {"type": ["number", "string", "null"]},
+    },
+}
+
+# Structured images (Grokipedia/Wikipedia/OpenSERP) with provenance + trust markers.
+_IMAGES_SCHEMA = {
+    "type": ["array", "null"],
+    "items": {
+        "type": "object",
+        "properties": {
+            "url": make_nullable("string"),
+            "local_path": make_nullable("string"),
+            "source": make_nullable("string"),
+            "license": make_nullable("string"),
+            "caption": make_nullable("string"),
+            # representative (default — generic/stock, illustrates the TYPE) vs
+            # documentary (source explicitly asserts it depicts this event).
+            "image_scope": enum_field(["representative", "documentary"], nullable=True),
+            # whether Grok vision confirmed the image depicts this equipment TYPE.
+            "vision_verified": {"type": ["boolean", "null"]},
+        },
+    },
+}
+
+# Structured external-source data + provenance (Grokipedia/Wikipedia + museums/archives).
+_EXTERNAL_DATA_SCHEMA = {
+    "type": ["object", "null"],
+    "properties": {
+        "grokipedia_url": make_nullable("string"),
+        "wikipedia_url": make_nullable("string"),
+        "additional_sources": {
+            "type": ["array", "null"],
+            "items": {
+                "type": "object",
+                "properties": {
+                    "source_type": make_nullable("string"),
+                    "source_name": make_nullable("string"),
+                    "url": make_nullable("string"),
+                    "data_points": {
+                        "type": ["array", "null"],
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "field": make_nullable("string"),
+                                "value": make_nullable("string"),
+                                "verified": {"type": ["boolean", "null"]},
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
+}
+
 EQUIPMENT_OUTPUT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": SCHEMA_VERSION,
@@ -33,11 +102,26 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         "description": make_nullable("string"),
         "aliases": {"type": ["array", "null"], "items": {"type": "string"}},
         "alternate_names": {"type": ["array", "null"], "items": {"type": "string"}},
+        # Variants managed INLINE in the same record file. Each variant may carry its own
+        # specifications + images (M4A1 vs M4A3E8 differ). Tolerant: strings or objects
+        # accepted (back-compat with the earlier loose shape).
         "variants": {
             "type": ["array", "null"],
-            "items": {"type": ["string", "object"]},
+            "items": {
+                "type": ["string", "object"],
+                "properties": {
+                    "variant_name": make_nullable("string"),
+                    "differences": make_nullable("string"),
+                    "alternate_names": {
+                        "type": ["array", "null"],
+                        "items": {"type": "string"},
+                    },
+                    "specifications": _SPECIFICATIONS_SCHEMA,
+                    "images": _IMAGES_SCHEMA,
+                },
+            },
         },
-        "specifications": {"type": ["object", "null"]},
+        "specifications": _SPECIFICATIONS_SCHEMA,
         # Narrative-sourced relationships to OTHER distinct equipment records
         # (predecessor/successor/variant). Inline sub-designations stay in `variants`;
         # these point to separate records. original_text retained for traceability.
@@ -56,8 +140,12 @@ EQUIPMENT_OUTPUT_SCHEMA = {
                 },
             },
         },
+        # Structured media/images (Grokipedia/Wikipedia/OpenSERP). `media` kept as a
+        # tolerant alias of the legacy field; `images` is the structured first-class list.
         "media": {"type": ["array", "object", "null"]},
-        "external_data": {"type": ["object", "null"]},
+        "images": _IMAGES_SCHEMA,
+        # Structured external-source data + provenance (Grokipedia/Wikipedia + others).
+        "external_data": _EXTERNAL_DATA_SCHEMA,
         "extracted_date": make_nullable("string"),
         "event_mentions": {
             "type": ["array", "null"],
@@ -120,18 +208,5 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         # diff). Stamped on every check (success, no-op, or failure) to limit re-checks.
         "enrichment_checked_at": {"type": ["integer", "null"]},
         "openserp_searched": {"type": ["boolean", "null"]},
-        # image_scope marks trust: representative (default — generic/stock, illustrates
-        # the TYPE) vs documentary (source explicitly asserts it depicts this event).
-        "images": {
-            "type": ["array", "null"],
-            "items": {
-                "type": "object",
-                "properties": {
-                    "image_scope": enum_field(
-                        ["representative", "documentary"], nullable=True
-                    )
-                },
-            },
-        },
     },
 }
