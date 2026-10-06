@@ -140,9 +140,43 @@ def _normalize_temp_unit(unit: Optional[str]) -> Optional[str]:
     return None
 
 
-def _build_date_id_lookup(dates_dir: Path) -> Dict[str, str]:
-    """Build date_start → DateID map from dates directory."""
-    lookup: Dict[str, str] = {}
+def _normalize_precip_unit(unit: Optional[str]) -> Optional[str]:
+    """Narrative precipitation unit -> schema enum in/cm/mm (null if unknown)."""
+    if not unit:
+        return None
+    u = str(unit).strip().lower()
+    if u in ("in", "inch", "inches", '"'):
+        return "in"
+    if u in ("cm", "centimeter", "centimeters", "centimetre", "centimetres"):
+        return "cm"
+    if u in ("mm", "millimeter", "millimeters", "millimetre", "millimetres"):
+        return "mm"
+    return None
+
+
+def _normalize_precip_type(ptype: Optional[str]) -> Optional[str]:
+    """Narrative precipitation type -> schema enum (null if unknown)."""
+    if not ptype:
+        return None
+    t = str(ptype).strip().lower()
+    if t in ("snow", "snowfall", "snowing"):
+        return "snow"
+    if t in ("rain", "rainfall", "raining"):
+        return "rain"
+    if t in ("sleet",):
+        return "sleet"
+    if t in ("hail",):
+        return "hail"
+    if t in ("mixed", "wintry mix", "rain and snow"):
+        return "mixed"
+    return None
+
+
+def _build_date_id_lookup(dates_dir: Path) -> Dict[str, Dict[str, Any]]:
+    """Build date_start -> {DateID, resolved_earliest, resolved_latest, time_source} from
+    the dates directory. Carries the resolved interval + time_source so weather can link to
+    a date even when its own date isn't an exact string match (interval overlap)."""
+    lookup: Dict[str, Dict[str, Any]] = {}
     if not dates_dir.exists():
         return lookup
     for f in dates_dir.glob("*.json"):
@@ -155,8 +189,34 @@ def _build_date_id_lookup(dates_dir: Path) -> Dict[str, str]:
         ds = data.get("date_start")
         did = data.get("DateID")
         if ds and did:
-            lookup[ds] = did
+            lookup[ds] = {
+                "DateID": did,
+                "resolved_earliest": data.get("resolved_earliest"),
+                "resolved_latest": data.get("resolved_latest"),
+                "time_source": data.get("time_source"),
+            }
     return lookup
+
+
+def _resolve_date_link(
+    date: str, date_lookup: Dict[str, Dict[str, Any]]
+) -> tuple[Optional[str], Optional[str]]:
+    """Resolve a weather date to (DateID, time_source). Exact date_start match first; else
+    a date record whose RESOLVED INTERVAL contains the weather date (so a weather day inside
+    an approximate 'early-1944-06' date record still links). Returns (None, None) if none.
+    """
+    exact = date_lookup.get(date)
+    if exact:
+        return exact["DateID"], exact.get("time_source")
+    # interval overlap: weather date (YYYY-MM-DD) within [resolved_earliest, resolved_latest]
+    probe = f"{date}T00:00:00"
+    for rec in date_lookup.values():
+        lo, hi = rec.get("resolved_earliest"), rec.get("resolved_latest")
+        if lo and hi and lo[:10] <= date <= hi[:10]:
+            return rec["DateID"], rec.get("time_source")
+        if lo and hi and lo <= probe <= hi:
+            return rec["DateID"], rec.get("time_source")
+    return None, None
 
 
 def _lookup_coordinates(
@@ -322,7 +382,7 @@ def _create_new_weather_file(
     weather_dir: Path,
     places_dir: Path,
     fetch_api: bool,
-    date_id_lookup: Optional[Dict[str, str]] = None,
+    date_id_lookup: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> tuple[Path, str]:
     """Create new weather file. Returns (weather_file, filename)."""
     weather_id = str(ulid.new())
@@ -336,11 +396,15 @@ def _create_new_weather_file(
         mention.get("PlaceMentionID"), place_name, places_dir
     )
 
+    # Resolve DateID (exact date_start, else resolved-interval overlap) + time_source.
+    date_id, time_source = _resolve_date_link(date, date_id_lookup or {})
+
     # Initialize weather data
     weather_data: Dict[str, Any] = {
         "WeatherID": weather_id,
         "date": date,
-        "DateID": (date_id_lookup or {}).get(date),
+        "DateID": date_id,
+        "time_source": time_source,
         "location": {
             "place_name": place_name,
             "PlaceID": place_id,
@@ -373,18 +437,32 @@ def _find_or_create_weather(
     index: Dict[str, str],
     places_dir: Path,
     fetch_api: bool = True,
-    date_id_lookup: Optional[Dict[str, str]] = None,
+    date_id_lookup: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> Path:
     """Find existing weather file or create new one, updating if needed."""
     date = mention.get("date", "")
     place_name = mention.get("place_name", "")
 
-    # Create lookup key
-    weather_key = _normalize_weather_key(date, place_name)
+    # Dedup key: prefer the CANONICAL PlaceID (so 'Saint-Lô' / 'St Lo' / an alias collapse
+    # to ONE weather file per place+date); fall back to the normalized name when the place
+    # can't be resolved. Index entries created before this used the name key — tolerate
+    # both on lookup.
+    _lat, _lon, place_id, _c = _lookup_coordinates(
+        mention.get("PlaceMentionID"), place_name, places_dir
+    )
+    name_key = _normalize_weather_key(date, place_name)
+    weather_key = f"{date}_pid_{place_id}" if place_id else name_key
 
-    # Check if file exists
-    if weather_key in index:
-        weather_file = weather_dir / index[weather_key]
+    # Check if file exists (canonical key, then legacy name key)
+    existing_key = (
+        weather_key
+        if weather_key in index
+        else (name_key if name_key in index else None)
+    )
+    if existing_key:
+        weather_file = weather_dir / index[existing_key]
+        # keep both keys pointing at the survivor (so later aliases find it)
+        index.setdefault(weather_key, index[existing_key])
 
         # Load existing file
         with open(weather_file, "r", encoding="utf-8") as f:
@@ -440,6 +518,14 @@ def _add_event_mention(
                     mention.get("temperature_unit")
                 ),
                 "measurement_system": mention.get("measurement_system") or None,
+                "precipitation_text": mention.get("precipitation_text") or None,
+                "precipitation_amount": mention.get("precipitation_amount"),
+                "precipitation_unit": _normalize_precip_unit(
+                    mention.get("precipitation_unit")
+                ),
+                "precipitation_type": _normalize_precip_type(
+                    mention.get("precipitation_type")
+                ),
                 "notable_impact": mention.get("notable_impact") or None,
                 "original_text": mention.get("original_text", ""),
                 "book": book,
@@ -682,7 +768,7 @@ def _call_and_parse_weather(
         try:
             response = grok_client.extract_json(
                 prompt=prompt,
-                system_prompt=get_system_prompt("weather"),
+                system_prompt=get_system_prompt("weather_batch"),
                 use_cache=(attempt == 0),
                 cache_type="weather",
             )
@@ -777,43 +863,66 @@ def extract_weather_central(
     event_id = event_obj.get("EventID", "")
     sub_events = event_obj.get("Sub-events", [])
 
-    weather_updated = 0
-
     # Build date string → DateID lookup for resolving LLM-generated refs
     dates_dir = places_dir.parent / "dates"
     date_id_lookup = _build_date_id_lookup(dates_dir)
 
-    # Build places name→ID index for cross-referencing in prompts
-    places_name_index: Dict[str, str] = {}
-    places_index_file = places_dir / "index.json"
-    if places_index_file.exists():
-        try:
-            raw = json.loads(places_index_file.read_text(encoding="utf-8"))
-            # index.json maps name → filename; we need name → PlaceID
-            for name, filename in raw.items():
-                place_file = places_dir / filename
-                if place_file.exists():
-                    try:
-                        pd = json.loads(place_file.read_text(encoding="utf-8"))
-                        pid = pd.get("PlaceID", "")
-                        if pid:
-                            places_name_index[name] = pid
-                    except (json.JSONDecodeError, OSError):
-                        pass
-        except (json.JSONDecodeError, OSError):
-            pass
+    # Places name→PlaceID index (reuses the places library's alias-aware index)
+    places_name_index = _build_places_name_index(places_dir)
 
     # Batch extract from all sub-events in single API call
     batch_results = _batch_extract_weather(
         sub_events, event_id, event_name, grok_client, max_retries, places_name_index
     )
 
+    weather_updated = _process_weather_mentions(
+        sub_events,
+        batch_results,
+        weather_dir,
+        index,
+        places_dir,
+        fetch_api,
+        date_id_lookup,
+        (event_name, event_id, book, author, series),
+    )
+
+    # Save index
+    index_file = weather_dir / "index.json"
+    write_json_with_lock(index_file, index)
+
+    logger.info("Updated %d weather mentions in central repository", weather_updated)
+    return weather_dir if weather_updated > 0 else None
+
+
+def _build_places_name_index(places_dir: Path) -> Dict[str, str]:
+    """name→PlaceID index for prompt cross-referencing, via the places library's
+    alias-aware index (current_name + aliases) — not a bespoke reimplementation."""
+    try:
+        from src.extraction.places import _build_place_name_index
+
+        name_to_id, _file_data = _build_place_name_index(places_dir)
+        return name_to_id
+    except Exception:  # noqa: BLE001 - places unavailable
+        return {}
+
+
+def _process_weather_mentions(
+    sub_events: list,
+    batch_results: Dict[str, Any],
+    weather_dir: Path,
+    index: Dict[str, str],
+    places_dir: Path,
+    fetch_api: bool,
+    date_id_lookup: Dict[str, Dict[str, Any]],
+    meta: tuple,
+) -> int:
+    """Create/update weather files + mentions for a batch result. Returns count updated."""
+    event_name, event_id, book, author, series = meta
+    updated = 0
     for sub_event in sub_events:
         sub_event_id = sub_event.get("Sub-eventID", "")
         sub_event_name = sub_event.get("Sub-event_summary", "")
-        mentions = batch_results.get(sub_event_id, [])
-
-        for mention in mentions:
+        for mention in batch_results.get(sub_event_id, []):
             weather_file = _find_or_create_weather(
                 mention, weather_dir, index, places_dir, fetch_api, date_id_lookup
             )
@@ -828,11 +937,5 @@ def extract_weather_central(
                 author,
                 series,
             )
-            weather_updated += 1
-
-    # Save index
-    index_file = weather_dir / "index.json"
-    write_json_with_lock(index_file, index)
-
-    logger.info("Updated %d weather mentions in central repository", weather_updated)
-    return weather_dir if weather_updated > 0 else None
+            updated += 1
+    return updated

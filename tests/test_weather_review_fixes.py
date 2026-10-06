@@ -51,3 +51,43 @@ def test_long_form_temp_unit_would_fail_schema():
 
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(bad, S)  # proves the enum is enforced + why we normalize
+
+
+def test_date_link_exact_and_interval():
+    from src.extraction.weather_central import _resolve_date_link
+
+    lookup = {
+        "1944-06-06": {
+            "DateID": "01EXACT",
+            "resolved_earliest": "1944-06-06T00:00:00",
+            "resolved_latest": "1944-06-06T23:59:59",
+            "time_source": "Allied",
+        },
+        "early-1944-06": {
+            "DateID": "01APPROX",
+            "resolved_earliest": "1944-06-01T00:00:00",
+            "resolved_latest": "1944-06-10T23:59:59",
+            "time_source": "German",
+        },
+    }
+    # exact match wins + carries time_source
+    assert _resolve_date_link("1944-06-06", lookup) == ("01EXACT", "Allied")
+    # a weather day with no exact date record but inside the approximate interval links to it
+    assert _resolve_date_link("1944-06-03", lookup) == ("01APPROX", "German")
+    # outside any interval -> no link
+    assert _resolve_date_link("1944-07-01", lookup) == (None, None)
+
+
+def test_single_weather_prompt_file_live():
+    """The live weather path uses weather_batch for BOTH template and system prompt;
+    the dead weather.yaml is gone (no split-brain, no legacy temperature shape)."""
+    from pathlib import Path
+    from src.utils.prompt_loader import get_system_prompt, load_prompt
+
+    assert not (
+        Path("prompts/weather.yaml").exists()
+    ), "dead prompts/weather.yaml should be removed"
+    sysp = get_system_prompt("weather_batch")
+    assert sysp and "weather" in sysp.lower()
+    tmpl = load_prompt("weather_batch")
+    assert "prompt_template" in tmpl and "schema" in tmpl

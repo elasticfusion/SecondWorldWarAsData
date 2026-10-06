@@ -106,8 +106,8 @@ class TestBuildDateIdLookup:
         (dates_dir / "index.json").write_text("{}", encoding="utf-8")
 
         lookup = _build_date_id_lookup(dates_dir)
-        assert lookup["1944-09-15"] == "01DATE1"
-        assert lookup["1944-09-16"] == "01DATE2"
+        assert lookup["1944-09-15"]["DateID"] == "01DATE1"
+        assert lookup["1944-09-16"]["DateID"] == "01DATE2"
         assert "index.json" not in str(lookup)
 
     def test_returns_empty_if_missing(self, tmp_path):

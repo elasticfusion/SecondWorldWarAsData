@@ -22,6 +22,9 @@ WEATHER_OUTPUT_SCHEMA = {
         "WeatherID": ulid_field(),
         "date": {"type": "string"},  # Allows YYYY-MM-DD, YYYY-MM, and date ranges
         "DateID": ulid_field(nullable=True),
+        # Carried from the linked date record (German/Allied/Zulu/Local); the weather date
+        # is interpreted in this zone.
+        "time_source": make_nullable("string"),
         "location": {
             "type": "object",
             "required": ["place_name"],
@@ -47,6 +50,17 @@ WEATHER_OUTPUT_SCHEMA = {
                     "enum": ["C", "F", None],
                 },
                 "measurement_system": make_nullable("string"),
+                # NARRATIVE precipitation as the SOURCE states it (distinct from the
+                # scientific noaa_observed measurement — both are kept, non-redundant).
+                # precipitation_text is the verbatim phrase ("3 inches of snow"); the parsed
+                # amount/unit/type are populated ONLY when the source gives a number
+                # (null otherwise — vague narrative is preserved, never fabricated).
+                "precipitation_text": make_nullable("string"),
+                "precipitation_amount": make_nullable("number"),
+                "precipitation_unit": enum_field(["in", "cm", "mm"], nullable=True),
+                "precipitation_type": enum_field(
+                    ["snow", "rain", "sleet", "hail", "mixed"], nullable=True
+                ),
                 "notable_impact": make_nullable("string"),
                 "original_text": make_nullable("string"),
                 "book": make_nullable("string"),
@@ -74,10 +88,23 @@ WEATHER_OUTPUT_SCHEMA = {
             "properties": {
                 "temperature_high_c": make_nullable("number"),
                 "temperature_low_c": make_nullable("number"),
+                "temperature_avg_c": make_nullable("number"),
                 "precipitation_mm": make_nullable("number"),
-                "wind_speed_ms": make_nullable("number"),
                 "snowfall_mm": make_nullable("number"),
+                "snow_depth_mm": make_nullable("number"),
+                "wind_speed_ms": make_nullable("number"),
+                "wind_gust_fastest2min_ms": make_nullable("number"),
+                "wind_gust_fastest5sec_ms": make_nullable("number"),
+                "wind_dir_fastest2min_deg": make_nullable("number"),
+                "wind_dir_fastest5sec_deg": make_nullable("number"),
+                # Passthrough: EVERY raw GHCND element NOAA returned, keyed by its
+                # datatype code (e.g. WT01, WESD, PGTM). Nothing is dropped; elements
+                # not promoted to a named field above are preserved here verbatim.
+                "raw_elements": {"type": ["object", "null"]},
                 "station_id": {"type": "string"},
+                "station_name": make_nullable("string"),
+                "station_latitude": make_nullable("number"),
+                "station_longitude": make_nullable("number"),
                 "station_distance_km": make_nullable("number"),
                 "source": enum_field(["noaa_cdo"]),
                 "source_url": {"type": "string"},

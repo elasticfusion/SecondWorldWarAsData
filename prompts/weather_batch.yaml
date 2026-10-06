@@ -1,5 +1,6 @@
 system_prompt: |
-  You extract weather mentions from WWII historical texts.
+  You are a WWII historical weather data extraction specialist. You extract weather
+  mentions from WWII historical texts.
 
 prompt_template: |
   Extract weather mentions from these WWII event sub-events.
@@ -14,6 +15,10 @@ prompt_template: |
   - place_name, PlaceMentionID (from available places above)
   - date (YYYY-MM-DD exact only), DateMentionID (from available dates above)
   - weather_description, temperature, temperature_unit, measurement_system
+  - precipitation_text (verbatim, e.g. "3 inches of snow"), and IF the source states a
+    number: precipitation_amount, precipitation_unit ("in"/"cm"/"mm"),
+    precipitation_type ("snow"/"rain"/"sleet"/"hail"/"mixed"). If no number is stated,
+    give precipitation_text only and leave amount/unit null — do NOT invent a number.
   - notable_impact, original_text
 
   temperature_unit MUST be exactly "C" (Celsius) or "F" (Fahrenheit) — not "celsius"/

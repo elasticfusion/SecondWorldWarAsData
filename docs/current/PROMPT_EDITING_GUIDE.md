@@ -24,8 +24,7 @@ All LLM prompts are externalized to YAML files. There are NO inline prompts in P
 | `people.yaml` | Biographical profiles |
 | `people_groups.yaml` | Military units, organizations |
 | `equipment.yaml` | Military equipment mentions |
-| `weather.yaml` | Single sub-event weather |
-| `weather_batch.yaml` | Chunked weather extraction |
+| `weather_batch.yaml` | Weather extraction (batched; the live weather prompt) |
 | `casualties.yaml` | Personnel casualty data |
 | `logistics.yaml` | Supply chain issues |
 | `supplemental.yaml` | Bibliography/citation extraction |
@@ -61,7 +60,7 @@ All LLM prompts are externalized to YAML files. There are NO inline prompts in P
 | `search_queries/maps.yaml` | External map searches |
 | `search_queries/nara.yaml` | NARA catalog searches |
 | `equipment.yaml` | Weapons, vehicles, specifications |
-| `weather.yaml` | Historical weather conditions |
+| `weather_batch.yaml` | Historical weather conditions (batched; the live weather prompt) |
 | `logistics.yaml` | Supply chain issues |
 | `casualties.yaml` | Casualty tracking |
 | `supplemental.yaml` | Bibliography and citations |
