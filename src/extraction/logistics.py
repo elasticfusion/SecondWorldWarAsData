@@ -39,7 +39,7 @@ class TemporalInfo(BaseModel):
 class ImpactedOrganization(BaseModel):
     """Impacted organization."""
 
-    PeopleGroupID: str
+    PeopleGroupID: Optional[str] = None
     group_name: str
     impact_description: str
 
@@ -47,7 +47,7 @@ class ImpactedOrganization(BaseModel):
 class ImpactedPerson(BaseModel):
     """Impacted person."""
 
-    PersonID: str
+    PersonID: Optional[str] = None
     name: str
     role: Optional[str] = None
     impact_description: str
@@ -56,7 +56,7 @@ class ImpactedPerson(BaseModel):
 class ImpactedPlace(BaseModel):
     """Impacted place."""
 
-    PlaceID: str
+    PlaceID: Optional[str] = None
     place_name: str
     country: Optional[str] = None
     impact_description: str
@@ -65,7 +65,7 @@ class ImpactedPlace(BaseModel):
 class ImpactedEquipment(BaseModel):
     """Impacted equipment."""
 
-    EquipmentID: str
+    EquipmentID: Optional[str] = None
     common_name: str
     impact_description: str
 
@@ -394,10 +394,13 @@ Return JSON with "logistics" array. Extract ALL logistics issues mentioned, even
 
 
 def _build_temporal(
-    extraction: LogisticsExtraction, dates_index: Dict[str, str]
+    extraction: LogisticsExtraction, dates_index: Dict[str, Any]
 ) -> TemporalInfo:
-    """Build temporal object."""
-    # Handle None dates
+    """Build temporal object. DateID resolution is interval-aware (shared
+    _resolve_date_link: exact date_start OR resolved-interval overlap), against the
+    dict-of-dicts index from _build_date_id_lookup."""
+    from src.extraction.weather_central import _resolve_date_link
+
     if not extraction.date_start:
         return TemporalInfo(
             date_start="unknown",
@@ -408,8 +411,10 @@ def _build_temporal(
         )
 
     date_type = "range" if extraction.date_end else "specific"
-    date_id_start = dates_index.get(extraction.date_start)
-    date_id_end = dates_index.get(extraction.date_end) if extraction.date_end else None
+    date_id_start, _ = _resolve_date_link(extraction.date_start, dates_index)
+    date_id_end = None
+    if extraction.date_end:
+        date_id_end, _ = _resolve_date_link(extraction.date_end, dates_index)
 
     return TemporalInfo(
         date_start=extraction.date_start,
@@ -420,36 +425,58 @@ def _build_temporal(
     )
 
 
-def _find_entity(
-    name: str, index: Dict[str, str], lower_index: Dict
-) -> Optional[tuple]:
-    """Find entity by exact, case-insensitive, or substring match."""
-    if eid := index.get(name):
-        return name, eid
-    if hit := lower_index.get(name.lower()):
-        return hit
-    nl = name.lower()
-    for idx_lower, pair in lower_index.items():
-        if nl in idx_lower or idx_lower in nl:
-            return pair
-    return None
-
-
-def _link_entities(
-    names: List[str], index: Dict[str, str], id_key: str, name_key: str
+def _link_people(
+    names: List[str], people_index: Dict[str, str]
 ) -> List[Dict[str, Any]]:
-    """Link entity names to IDs from index with fuzzy fallback."""
-    if not names or not index:
-        return []
-    lower_index = {k.lower(): (k, v) for k, v in index.items()}
-    result = []
-    for name in names:
-        match = _find_entity(name, index, lower_index)
-        if match:
-            result.append(
-                {id_key: match[1], name_key: match[0], "impact_description": ""}
-            )
-    return result
+    """People -> PersonID by exact name (people are exact-by-design across the codebase;
+    fuzzy person-matching risks wrong-person links)."""
+    out = []
+    for name in names or []:
+        pid = people_index.get(name) or people_index.get(name.lower())
+        out.append({"PersonID": pid, "name": name, "impact_description": ""})
+    return out
+
+
+def _link_groups(names: List[str], groups_index: Any) -> List[Dict[str, Any]]:
+    """Organizations -> PeopleGroupID via the shared unit_key resolver (structural match;
+    no risky substring fallback)."""
+    from src.extraction.group_resolver import resolve_group_id
+
+    out = []
+    for name in names or []:
+        gid = resolve_group_id(name, groups_index)
+        out.append({"PeopleGroupID": gid, "group_name": name, "impact_description": ""})
+    return out
+
+
+def _link_places(
+    names: List[str], places_index: Dict[str, str]
+) -> List[Dict[str, Any]]:
+    """Places -> PlaceID via the shared alias-aware matcher."""
+    from src.extraction.weather_central import _match_place_id
+
+    out = []
+    for name in names or []:
+        pid = _match_place_id(name, places_index)
+        out.append({"PlaceID": pid, "place_name": name, "impact_description": ""})
+    return out
+
+
+def _link_equipment(
+    names: List[str], equipment_index: Dict[str, str]
+) -> List[Dict[str, Any]]:
+    """Equipment -> EquipmentID via the shared disambiguator (canonical) + index."""
+    from src.extraction.equipment_disambiguation import resolve_designation
+
+    out = []
+    for name in names or []:
+        res = resolve_designation(name)
+        canonical = (res or {}).get("canonical_name") or name
+        eid = equipment_index.get(canonical.lower()) or equipment_index.get(
+            name.lower()
+        )
+        out.append({"EquipmentID": eid, "common_name": name, "impact_description": ""})
+    return out
 
 
 def _build_weather_impact(
@@ -520,21 +547,13 @@ def _build_logistics_data(
     # Add optional fields
     if extraction.quantity:
         data["quantity"] = extraction.quantity.model_dump(exclude_none=True)
-    if orgs := _link_entities(
-        extraction.impacted_organizations, groups_index, "PeopleGroupID", "group_name"
-    ):
+    if orgs := _link_groups(extraction.impacted_organizations, groups_index):
         data["impacted_organizations"] = orgs
-    if people := _link_entities(
-        extraction.impacted_people, people_index, "PersonID", "name"
-    ):
+    if people := _link_people(extraction.impacted_people, people_index):
         data["impacted_people"] = people
-    if places := _link_entities(
-        extraction.impacted_places, places_index, "PlaceID", "place_name"
-    ):
+    if places := _link_places(extraction.impacted_places, places_index):
         data["impacted_places"] = places
-    if equipment := _link_entities(
-        extraction.impacted_equipment, equipment_index, "EquipmentID", "common_name"
-    ):
+    if equipment := _link_equipment(extraction.impacted_equipment, equipment_index):
         data["impacted_equipment"] = equipment
     if weather := _build_weather_impact(
         extraction.weather, extraction.severity, weather_index
@@ -634,19 +653,22 @@ def extract_logistics_from_event(
         logger.error("Failed to load event file: %s", e)
         return None
 
-    # Build entity indexes
-    people_index = _build_entity_index(output_root, "people", "PersonID", "name")
-    groups_index = _build_entity_index(
-        output_root, "people_groups", "GroupID", "group_name"
-    )
-    places_index = _build_entity_index(output_root, "places", "PlaceID", "name")
-    equipment_index = _build_entity_index(
-        output_root, "equipment", "EquipmentID", "common_name"
+    # Build entity indexes via the SHARED libraries (not bespoke exact/substring matching).
+    from src.extraction.group_resolver import build_group_unitkey_index
+    from src.extraction.places import _build_place_name_index
+    from src.extraction.weather_central import _build_date_id_lookup
+    from src.utils.entity_index import build_name_index
+
+    people_index = build_name_index(output_root / "people", "PersonID", "name")
+    groups_index = build_group_unitkey_index(output_root / "people_groups")
+    places_index, _ = _build_place_name_index(output_root / "places")
+    equipment_index = build_name_index(
+        output_root / "equipment", "EquipmentID", "common_name"
     )
     weather_index = _build_entity_index(
         output_root, "weather", "WeatherID", "description"
     )
-    dates_index = _build_entity_index(output_root, "dates", "DateID", "date_start")
+    dates_index = _build_date_id_lookup(output_root / "dates")
 
     # Create output directory
     logistics_dir = output_root / "logistics"
