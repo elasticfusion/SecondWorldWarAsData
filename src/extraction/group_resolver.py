@@ -42,9 +42,14 @@ def build_group_unitkey_index(groups_dir: Path) -> List[Tuple[str, str, UnitKey]
 def resolve_group_id(name: str, index: List[Tuple[str, str, UnitKey]]) -> Optional[str]:
     """Resolve a unit designation to a GroupID via the canonical unit key, or None.
 
-    Collapses unmerged duplicate records that share one canonical key (resolves to the
-    lowest GroupID deterministically); returns None when genuinely distinct units remain
-    (ambiguous) or nothing matches.
+    Resolution order:
+    1. all matching candidates collapse to one GroupID -> that id;
+    2. all share one canonical key (unmerged dup records) -> lowest id deterministically;
+    3. a fully-specified query whose OWN key EXACTLY matches candidates that collapse to one
+       GroupID -> that id (so '2nd Infantry Division' wins over permissive None-arm noise
+       like 'SHAEF G-2' that merely shares the number);
+    4. otherwise genuinely ambiguous -> None (never guessed).
+    Unnumbered/underspecified queries -> None.
     """
     if not name:
         return None
@@ -60,4 +65,13 @@ def resolve_group_id(name: str, index: List[Tuple[str, str, UnitKey]]) -> Option
     keys = {gk for _gid, gk in cand}
     if len(keys) == 1:  # all candidates are the SAME unit (dup records) -> pick one
         return sorted(gids)[0]
+    # Exact-key preference: if the query is fully specified (has an arm or echelon) and
+    # candidates whose key EXACTLY equals the query's key collapse to one unit, take it —
+    # permissive None-arm/echelon noise sharing only the number must not block a clean match.
+    if k.arm or k.echelon:
+        exact_gids = {gid for gid, gk in cand if gk == k}
+        if len(exact_gids) == 1:
+            return next(iter(exact_gids))
+        if exact_gids and len({gk for _g, gk in cand if gk == k}) == 1:
+            return sorted(exact_gids)[0]
     return None  # genuinely distinct units remain -> ambiguous, don't guess
