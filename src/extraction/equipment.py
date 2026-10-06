@@ -2518,29 +2518,67 @@ def _save_processed_registry(output_dir: Path, processed: Dict[str, bool]) -> No
 def _link_entity(
     entity_name: Optional[str], entity_index: Dict[str, str], entity_type: str
 ) -> Optional[Dict[str, str]]:
-    """Link entity by name to ID with fuzzy fallback."""
+    """Link entity name -> ID conservatively. Exact → case-insensitive → UNAMBIGUOUS
+    whole-word containment → bounded fuzzy (`SequenceMatcher ≥ 0.88`). A name that could
+    match several index entries (e.g. a bare "Smith" with multiple Smiths) is AMBIGUOUS and
+    returns no link — never silently grab the wrong person/unit. (Previously an unbounded
+    substring match could link "Sergeant Smith" to any "Smith".)"""
     if not entity_name or not entity_index:
         return None
     id_key = "PersonID" if entity_type == "person" else "PeopleGroupID"
 
-    # Exact match
+    # 1. exact
     entity_id = entity_index.get(entity_name)
     if entity_id:
         return {id_key: entity_id, "name": entity_name}
 
-    # Case-insensitive match
-    name_lower = entity_name.lower()
+    name_lower = entity_name.lower().strip()
+
+    # 2. case-insensitive exact
     for idx_name, idx_id in entity_index.items():
         if idx_name.lower() == name_lower:
             return {id_key: idx_id, "name": idx_name}
 
-    # Substring match
-    for idx_name, idx_id in entity_index.items():
-        il = idx_name.lower()
-        if name_lower in il or il in name_lower:
-            return {id_key: idx_id, "name": idx_name}
+    # 3. unambiguous whole-word containment, then 4. bounded fuzzy
+    return _link_contained(
+        name_lower, entity_index, id_key, entity_type
+    ) or _link_fuzzy(name_lower, entity_index, id_key)
 
-    logger.debug("%s not found: %s", entity_type.capitalize(), entity_name)
+
+def _link_contained(name_lower, entity_index, id_key, entity_type):
+    """Link only if exactly ONE index entry contains the stated name as a whole phrase
+    (ambiguous -> no link). Returns a link dict, None (fall through to fuzzy), or signals
+    ambiguity by returning None after logging."""
+    import re as _re
+
+    if len(name_lower) < 4:
+        return None
+    contained = [
+        (n, i)
+        for n, i in entity_index.items()
+        if _re.search(rf"\b{_re.escape(name_lower)}\b", n.lower())
+    ]
+    if len(contained) == 1:
+        return {id_key: contained[0][1], "name": contained[0][0]}
+    if len(contained) > 1:
+        logger.debug(
+            "%s '%s' ambiguous (%d candidates) — no link",
+            entity_type,
+            name_lower,
+            len(contained),
+        )
+    return None
+
+
+def _link_fuzzy(name_lower, entity_index, id_key, threshold: float = 0.88):
+    """Bounded fuzzy match (reject distant). Returns a link dict or None."""
+    best, best_ratio = None, 0.0
+    for idx_name, idx_id in entity_index.items():
+        ratio = SequenceMatcher(None, name_lower, idx_name.lower()).ratio()
+        if ratio > best_ratio:
+            best_ratio, best = ratio, (idx_name, idx_id)
+    if best and best_ratio >= threshold:
+        return {id_key: best[1], "name": best[0]}
     return None
 
 
