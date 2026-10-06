@@ -282,17 +282,25 @@ def _add_event_mention(
             "author": author,
             "series": series,
             "context": None,  # TODO: Extract from text
+            "time_start": mention.get("time_start"),
             "original_text": mention.get("original_text", ""),
         }
 
-        # Check for duplicate mention (same sub-event)
-        existing = [
-            m
+        # Dedup by (Sub_eventID, time_start, original_text): a re-run of the SAME mention
+        # is skipped, but the same sub-event citing this date at a DIFFERENT time ("0500"
+        # vs "1800") or in DIFFERENT words is kept (previously keyed on Sub_eventID alone,
+        # which silently dropped a sub-event's second same-date mention).
+        new_key = (
+            sub_event_id,
+            event_mention["time_start"],
+            event_mention["original_text"],
+        )
+        existing_keys = {
+            (m.get("Sub_eventID"), m.get("time_start"), m.get("original_text", ""))
             for m in date_data.get("event_mentions", [])
-            if m["Sub_eventID"] == sub_event_id
-        ]
-        if existing:
-            logger.info("    Date already has mention from this sub-event, skipping")
+        }
+        if new_key in existing_keys:
+            logger.info("    Date already has this exact mention, skipping")
             return
 
         # Add mention

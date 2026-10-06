@@ -72,6 +72,8 @@ DATES_OUTPUT_SCHEMA = {
                     "Sub_eventID": ulid_field(nullable=True),
                     "book": make_nullable("string"),
                     "chapter": make_nullable("string"),
+                    "time_start": make_nullable("string"),
+                    "original_text": make_nullable("string"),
                 },
             },
         },
