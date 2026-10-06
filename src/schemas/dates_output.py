@@ -67,7 +67,7 @@ DATES_OUTPUT_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "MentionID": ulid_field(),
+                    "DateMentionID": ulid_field(),
                     "EventID": ulid_field(),
                     "Sub_eventID": ulid_field(nullable=True),
                     "book": make_nullable("string"),

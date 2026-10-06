@@ -152,6 +152,8 @@ def _normalize_date_key(date_start: str, time_start: Optional[str] = None) -> st
     for prefix in prefixes:
         if date_start.startswith(prefix):
             precision = prefix.rstrip("-")  # early, mid, late, summer, etc.
+            if precision == "autumn":
+                precision = "fall"  # autumn == fall -> one key (semantic dedup)
             date_part = date_start[len(prefix) :]  # 1942-02 or 1942
             date_key = f"{date_part}-{precision}"
             break
@@ -163,10 +165,16 @@ def _normalize_date_key(date_start: str, time_start: Optional[str] = None) -> st
     return date_key
 
 
+_EXACT_ISO = re.compile(r"^\d{4}(-\d{2}(-\d{2})?)?$")
+
+
 def _build_normalized_datetime(mention: Dict[str, Any]) -> Optional[str]:
-    """Build ISO 8601 normalized datetime from date_start and time_start."""
+    """ISO-8601 normalized datetime — ONLY for an exact-ISO ``date_start`` (YYYY,
+    YYYY-MM, YYYY-MM-DD). For approximate forms (``summer-1944``) this returns None rather
+    than emit a non-parseable pseudo-ISO like ``summer-1944T00:00:00Z``; use
+    ``resolved_earliest``/``resolved_latest`` for approximate dates."""
     ds = mention.get("date_start")
-    if not ds:
+    if not ds or not _EXACT_ISO.match(ds):
         return None
     ts = mention.get("time_start")
     if ts:
@@ -273,7 +281,7 @@ def _add_event_mention(
     with locked_json(date_file) as (date_data, save):
         # Create event mention
         event_mention = {
-            "MentionID": str(ulid.new()),
+            "DateMentionID": str(ulid.new()),
             "Event_Name": event_name,
             "EventID": event_id,
             "Sub_event_Name": sub_event_name,
