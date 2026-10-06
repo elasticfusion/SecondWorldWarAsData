@@ -22,6 +22,9 @@ WEATHER_OUTPUT_SCHEMA = {
         "WeatherID": ulid_field(),
         "date": {"type": "string"},  # Allows YYYY-MM-DD, YYYY-MM, and date ranges
         "DateID": ulid_field(nullable=True),
+        # Carried from the linked date record (German/Allied/Zulu/Local); the weather date
+        # is interpreted in this zone.
+        "time_source": make_nullable("string"),
         "location": {
             "type": "object",
             "required": ["place_name"],

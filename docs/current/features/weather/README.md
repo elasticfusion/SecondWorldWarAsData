@@ -29,14 +29,19 @@ is stored in a central repository with links to dates and places.
 
 ## Known gaps / follow-ups
 
-- **Date linking is exact-string only** — weather matches a date by exact `date_start`; it
-  does not yet use the dates feature's resolved interval (`resolved_earliest/latest`) nor
-  record `time_source`. A sub-event dated only approximately gets no `DateID`.
-- **Dedup is by `date + place_name` string** — two aliases/spellings of the same place
-  still yield two weather files for the same real place+date (mitigated now that PlaceID
-  resolution is alias-aware, but the dedup *key* is still the raw name).
 - The non-batch `prompts/weather.yaml` uses a different (legacy) temperature shape; the live
   path uses `prompts/weather_batch.yaml`.
+
+### Resolved
+- **Date linking is interval-aware** — weather links a date by exact `date_start` OR by
+  overlap with a date record's resolved interval (`resolved_earliest/latest`), and carries
+  the date's `time_source` onto the weather record.
+- **Dedup is PlaceID-first** — the weather dedup key is the canonical `PlaceID`
+  (`{date}_pid_{PlaceID}`), so place aliases/spellings collapse to one file per place+date;
+  falls back to the normalized name when unresolved (legacy name keys still match).
+- **Place linking reuses the places library** — `_build_place_name_index` (alias-aware) +
+  bounded matching; coordinates come from the resolved place record (weather never
+  geocodes).
 
 ---
 
