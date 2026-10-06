@@ -25,6 +25,7 @@
 | [core/PIPELINE.md](core/PIPELINE.md) | Complete pipeline workflow (Phases 1-4) |
 | [core/CONFIGURATION.md](core/CONFIGURATION.md) | All config.yaml options |
 | [core/CODE_ARCHITECTURE.md](core/CODE_ARCHITECTURE.md) | Code structure and module responsibilities |
+| [SHARED_HELPERS.md](SHARED_HELPERS.md) | **Cross-feature shared helpers** (enrichment gate, merge-ref-redirect, source-recheck, name index) — integrate these in new features |
 | [core/API_REFERENCE.md](core/API_REFERENCE.md) | GrokClient API |
 | [core/DEVELOPMENT.md](core/DEVELOPMENT.md) | Setup and contributing |
 | [core/TESTING.md](core/TESTING.md) | Test framework and conventions |
