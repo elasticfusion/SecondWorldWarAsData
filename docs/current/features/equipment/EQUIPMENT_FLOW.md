@@ -147,6 +147,15 @@ Writes `output/equipment/index.json`; marks the event processed.
   record), relaxed by the structured `captured` flag (`_any_captured`).
 - `scripts/merge_equipment.py` applies confirmed merges.
 
+**Merge redirect (no dangling references).** When records merge (`merge_equipment.py` /
+`merge_equipment_dupes.py`): the loser's names are unioned into the survivor's
+`alternate_names` (so old names still match), references to the loser's `EquipmentID` are
+redirected to the survivor across event + entity files via the **shared**
+`src.dedup.merge.update_event_refs` (the same helper people/people_groups/dates use — see
+[../../SHARED_HELPERS.md](../../SHARED_HELPERS.md)), and only then is the loser deleted. A
+record's identity is the **set** of its strings (common_name + technical_identifier +
+canonical_name + alternate_names + merged names), all routing to one survivor.
+
 ---
 
 ## Provenance summary (traceability is non-negotiable)

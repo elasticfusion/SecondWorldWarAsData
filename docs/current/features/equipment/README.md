@@ -168,7 +168,10 @@ Enrichment-on-identity (follows identity resolution)
 - **Enforced schema:** `src/schemas/equipment_output.py` (`additionalProperties: false`).
 - **Canonical structure example:** `EQUIPMENT_FINAL_STRUCTURE.md` (other docs link here
   rather than repeating the JSON).
-- **Schema version:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently 2.14 — adds canonical_name + identity_source (designation disambiguator); 2.11 added
-  `enrichment_checked_at` (enrichment staleness gate); 2.10 added `image_scope` + enrichment-on-identity; builds on 2.9's
-  record-level `related_equipment` and 2.8's per-mention `quantity`/`place`/
-  `operating_country`/`captured` + declared `original_text` retention).
+- **Schema version:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently **2.14**).
+  History: 2.14 `crew_accounts` + `timeline`/`technical_evolution`/`logistics` (source-
+  tracked); 2.13 structured `specifications`/`external_data`/`images`/in-file `variants`;
+  2.12 `canonical_name` + `identity_source` (designation disambiguator); 2.11
+  `enrichment_checked_at` (staleness gate); 2.10 `image_scope` + enrichment-on-identity;
+  2.9 record-level `related_equipment`; 2.8 per-mention `quantity`/`place`/
+  `operating_country`/`captured` + declared `original_text` retention.
