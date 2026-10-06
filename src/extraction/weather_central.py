@@ -2,7 +2,7 @@
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -127,6 +127,19 @@ def _normalize_weather_key(date: str, place_name: str) -> str:
     return f"{date}_{place_name.replace(' ', '_')}"
 
 
+def _normalize_temp_unit(unit: Optional[str]) -> Optional[str]:
+    """Normalize a temperature unit to the schema enum C/F (null if unknown/absent).
+    The LLM/prompt may emit 'celsius'/'fahrenheit'; the schema requires 'C'/'F'/null."""
+    if not unit:
+        return None
+    u = str(unit).strip().lower()
+    if u in ("c", "celsius", "centigrade", "°c"):
+        return "C"
+    if u in ("f", "fahrenheit", "°f"):
+        return "F"
+    return None
+
+
 def _build_date_id_lookup(dates_dir: Path) -> Dict[str, str]:
     """Build date_start → DateID map from dates directory."""
     lookup: Dict[str, str] = {}
@@ -146,82 +159,68 @@ def _build_date_id_lookup(dates_dir: Path) -> Dict[str, str]:
     return lookup
 
 
-def _lookup_by_place_id(
-    place_id: str, places_dir: Path, places_index: dict
-) -> tuple[float, float, Optional[str], Optional[str]]:
-    """Look up coordinates by PlaceID. Returns (lat, lon, place_id, country)."""
-    for place_file_name in places_index.values():
-        place_file = places_dir / place_file_name
-        if place_file.exists():
-            with open(place_file, "r", encoding="utf-8") as f:
-                place_data = json.load(f)
-
-            if place_data.get("PlaceID") == place_id:
-                coords = place_data.get("coordinates", {})
-                latitude = coords.get("latitude", 0.0)
-                longitude = coords.get("longitude", 0.0)
-                country = place_data.get("country")
-                logger.info("    Found coordinates via PlaceID: %s", place_id[:8])
-                return latitude, longitude, place_id, country
-
-    return 0.0, 0.0, place_id, None
-
-
-def _lookup_by_name_fuzzy(
-    place_name: str, places_dir: Path, places_index: dict
-) -> tuple[float, float, Optional[str], Optional[str]]:
-    """Look up coordinates by fuzzy name match. Returns (lat, lon, place_id, country)."""
-    place_name_lower = place_name.lower()
-
-    for place_key, place_file_name in places_index.items():
-        if place_name_lower in place_key.lower():
-            place_file = places_dir / place_file_name
-            if place_file.exists():
-                with open(place_file, "r", encoding="utf-8") as f:
-                    place_data = json.load(f)
-
-                coords = place_data.get("coordinates", {})
-                latitude = coords.get("latitude", 0.0)
-                longitude = coords.get("longitude", 0.0)
-                if latitude != 0.0 and longitude != 0.0:
-                    found_place_id = place_data.get("PlaceID")
-                    logger.info(
-                        "    Found coordinates via fuzzy match: %s -> %s",
-                        place_name,
-                        place_key,
-                    )
-                    return latitude, longitude, found_place_id, None
-
-    return 0.0, 0.0, None, None
-
-
 def _lookup_coordinates(
-    place_id: Optional[str], place_name: str, places_dir: Path
-) -> tuple[float, float, Optional[str], Optional[str]]:
+    place_mention_id: Optional[str], place_name: str, places_dir: Path
+) -> tuple[Optional[float], Optional[float], Optional[str], Optional[str]]:
+    """Resolve a weather mention's place to (latitude, longitude, PlaceID, country) using
+    the places subsystem's OWN alias-aware index (current_name + every alias), with
+    conservative name matching (exact -> whole-word containment -> SequenceMatcher >= 0.88).
+
+    Returns (None, None, None, None) when unresolved — NOT (0.0, 0.0) placeholders and NOT
+    the LLM-provided PlaceMentionID echoed as a PlaceID (a mention id is not an entity id).
+    Geo is owned by the places subsystem; weather only links to its PlaceID.
     """
-    Look up coordinates and country from places repository.
+    if not places_dir.exists() or not place_name:
+        return None, None, None, None
+    try:
+        from src.extraction.places import _build_place_name_index
 
-    Returns:
-        (latitude, longitude, place_id, country) tuple
+        name_to_id, file_data = _build_place_name_index(places_dir)
+    except Exception:  # noqa: BLE001 - places unavailable
+        return None, None, None, None
+
+    pid = _match_place_id(place_name, name_to_id)
+    if not pid:
+        return None, None, None, None
+    # pull coords/country from the matched place record
+    for data in file_data.values():
+        if data.get("PlaceID") == pid:
+            coords = data.get("coordinates") or {}
+            lat = coords.get("latitude")
+            lon = coords.get("longitude")
+            # treat 0.0/0.0 placeholder in a place record as "not yet geocoded"
+            if lat in (None, 0.0) and lon in (None, 0.0):
+                lat = lon = None
+            return lat, lon, pid, data.get("country")
+    return None, None, pid, None
+
+
+def _match_place_id(place_name: str, name_to_id: Dict[str, str]) -> Optional[str]:
+    """Conservative resolve of a place name to a PlaceID (exact -> whole-word containment
+    (longest) -> SequenceMatcher >= 0.88). No naive substring; avoids 'Paris' in 'Parisot'.
     """
-    if not places_dir.exists():
-        return 0.0, 0.0, place_id, None
+    import re as _re
+    from difflib import SequenceMatcher
 
-    places_index_file = places_dir / "index.json"
-    if not places_index_file.exists():
-        return 0.0, 0.0, place_id, None
-
-    with open(places_index_file, "r", encoding="utf-8") as f:
-        places_index = json.load(f)
-
-    # Option 1: Look up by PlaceID if provided
-    if place_id:
-        lat, lon, pid, country = _lookup_by_place_id(place_id, places_dir, places_index)
-        if lat != 0.0 and lon != 0.0:
-            return lat, lon, pid, country
-
-    # Option 2: Fallback to fuzzy match by name
-    return _lookup_by_name_fuzzy(place_name, places_dir, places_index)
+    key = place_name.lower().strip()
+    if key in name_to_id:
+        return name_to_id[key]
+    best_contained, best_len = None, 0
+    for name, pid in name_to_id.items():
+        if (
+            len(name) >= 4
+            and len(name) > best_len
+            and _re.search(rf"\b{_re.escape(name)}\b", key)
+        ):
+            best_len, best_contained = len(name), pid
+    if best_contained:
+        return best_contained
+    best, best_ratio = None, 0.0
+    for name, pid in name_to_id.items():
+        r = SequenceMatcher(None, key, name).ratio()
+        if r > best_ratio:
+            best_ratio, best = r, pid
+    return best if best_ratio >= 0.88 else None
 
 
 def _create_api_data_dict(api_response: dict) -> dict:
@@ -230,7 +229,7 @@ def _create_api_data_dict(api_response: dict) -> dict:
     return {
         "provider": "open-meteo",
         "data_type": "reanalysis",
-        "retrieved_at": datetime.utcnow().isoformat() + "Z",
+        "retrieved_at": datetime.now(timezone.utc).isoformat(),
         "temperature_max_c": daily_data.get("temperature_2m_max", [None])[0],
         "temperature_min_c": daily_data.get("temperature_2m_min", [None])[0],
         "precipitation_mm": daily_data.get("precipitation_sum", [None])[0],
@@ -270,18 +269,27 @@ def _maybe_update_coordinates(
 ) -> bool:
     """Update coordinates if missing. Returns True if updated."""
     loc = weather_data["location"]
-    if loc["latitude"] != 0.0 or loc["longitude"] != 0.0:
+    if _has_coords(loc.get("latitude"), loc.get("longitude")):
         return False
     latitude, longitude, place_id, _country = _lookup_coordinates(
         mention.get("PlaceMentionID"), place_name, places_dir
     )
-    if latitude == 0.0 and longitude == 0.0:
+    if not _has_coords(latitude, longitude):
+        # still record a resolved PlaceID even if coords aren't geocoded yet
+        if place_id and not loc.get("PlaceID"):
+            loc["PlaceID"] = place_id
+            return True
         return False
     loc["latitude"] = latitude
     loc["longitude"] = longitude
     loc["PlaceID"] = place_id
     logger.info("    Updated coordinates for %s", weather_file.name)
     return True
+
+
+def _has_coords(lat, lon) -> bool:
+    """True only for real (non-null, non-0.0-sentinel) coordinates."""
+    return lat not in (None, 0.0) or lon not in (None, 0.0)
 
 
 def _maybe_fetch_api_data(
@@ -292,13 +300,17 @@ def _maybe_fetch_api_data(
         return False
     lat = weather_data["location"]["latitude"]
     lon = weather_data["location"]["longitude"]
-    if lat == 0.0 and lon == 0.0:
+    if not _has_coords(lat, lon):
         return False
     api_response = _fetch_weather_from_api(date, lat, lon)
     if not api_response:
         return False
-    weather_data["source_type"] = "hybrid"
     weather_data["api_data"] = _create_api_data_dict(api_response)
+    # hybrid if we also have narrative extracted_data; api_only if the record is API-derived
+    # with no narrative weather statement.
+    weather_data["source_type"] = (
+        "hybrid" if weather_data.get("extracted_data") else "api_only"
+    )
     logger.info("    Added API data to %s", weather_file.name)
     return True
 
@@ -342,10 +354,11 @@ def _create_new_weather_file(
     }
 
     # Fetch API data if enabled and coordinates available
-    if fetch_api and latitude != 0.0 and longitude != 0.0:
+    if fetch_api and _has_coords(latitude, longitude):
         api_response = _fetch_weather_from_api(date, latitude, longitude)
         if api_response:
-            weather_data["source_type"] = "hybrid"
+            # created with no narrative yet -> api_only (a mention is added later as hybrid)
+            weather_data["source_type"] = "api_only"
             weather_data["api_data"] = _create_api_data_dict(api_response)
 
     write_json_with_lock(weather_file, weather_data)
@@ -423,7 +436,9 @@ def _add_event_mention(
             weather_data["extracted_data"] = {
                 "description": mention.get("weather_description", ""),
                 "temperature": mention.get("temperature") or None,
-                "temperature_unit": mention.get("temperature_unit") or None,
+                "temperature_unit": _normalize_temp_unit(
+                    mention.get("temperature_unit")
+                ),
                 "measurement_system": mention.get("measurement_system") or None,
                 "notable_impact": mention.get("notable_impact") or None,
                 "original_text": mention.get("original_text", ""),
@@ -544,7 +559,7 @@ Return JSON matching this structure:
       "DateMentionID": "01KHYP2M4N6P8Q0R2S4T6V8W0X",
       "weather_description": "Clear skies with light fog",
       "temperature": 15,
-      "temperature_unit": "celsius",
+      "temperature_unit": "C",
       "measurement_system": "metric",
       "notable_impact": "Fog delayed H-Hour",
       "original_text": "The morning fog lifted by 0600 hours"

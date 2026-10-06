@@ -16,13 +16,16 @@ prompt_template: |
   - weather_description, temperature, temperature_unit, measurement_system
   - notable_impact, original_text
 
+  temperature_unit MUST be exactly "C" (Celsius) or "F" (Fahrenheit) — not "celsius"/
+  "fahrenheit". measurement_system is "metric" or "imperial".
+
   CRITICAL: Only extract EXACT dates. Skip approximate dates.
 
   Return JSON object keyed by Sub-eventID:
   {schema}
 
 schema: |
-  {"<Sub-eventID>": [{"WeatherMentionID": "01ULID...", "place_name": "Bastogne", "PlaceMentionID": "01ULID...", "date": "1944-12-22", "DateMentionID": "01ULID...", "weather_description": "Heavy snowfall", "temperature": -5, "temperature_unit": "celsius", "measurement_system": "metric", "notable_impact": "Limited visibility for air support", "original_text": "Heavy snow blanketed the region"}]}
+  {"<Sub-eventID>": [{"WeatherMentionID": "01ULID...", "place_name": "Bastogne", "PlaceMentionID": "01ULID...", "date": "1944-12-22", "DateMentionID": "01ULID...", "weather_description": "Heavy snowfall", "temperature": -5, "temperature_unit": "C", "measurement_system": "metric", "notable_impact": "Limited visibility for air support", "original_text": "Heavy snow blanketed the region"}]}
 
 rules:
   - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z

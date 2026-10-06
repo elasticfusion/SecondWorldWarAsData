@@ -2,24 +2,41 @@
 
 **Module:** `src/extraction/weather_central.py`  
 **Status:** Optional (Disabled by default)  
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-10-06
 
 ---
 
 ## Overview
 
-Weather extraction analyzes event files for weather mentions and enriches them with historical weather data from the **Open-Meteo API**. Data is stored in a central repository with links to dates and places.
+Weather extraction analyzes event files for weather mentions and (optionally) enriches them
+with historical data from **Open-Meteo** (reanalysis) and **NOAA** (station-observed). Data
+is stored in a central repository with links to dates and places.
 
 **Key Features:**
-- Extracts weather mentions from text into `extracted_data` object
-- Fetches historical weather data from Open-Meteo API into `api_data` object
+- Extracts weather mentions from text into an `extracted_data` object
+- Optional Open-Meteo historical fetch into `api_data`; NOAA observed into `noaa_observed`
 - Central repository (one file per date+place combination)
-- `DateID` resolved from dates directory lookup (not LLM-provided)
-- `location` object with PlaceID, coordinates
-- `source_type` tracking: `extracted`, `api`, or `hybrid`
+- `DateID` resolved from the dates directory (not LLM-provided)
+- `location` with `PlaceID` + coordinates, resolved via the places **alias-aware** index
+  with bounded matching; `null` coordinates when ungeocoded (no `0.0` placeholder)
+- `source_type`: `extracted`, `api_only`, or `hybrid`
+- `temperature_unit` normalized to the schema enum `C`/`F`
 - Operational impact tracking
 
 **Status:** Optional feature, disabled by default in `config.yaml`
+
+---
+
+## Known gaps / follow-ups
+
+- **Date linking is exact-string only** — weather matches a date by exact `date_start`; it
+  does not yet use the dates feature's resolved interval (`resolved_earliest/latest`) nor
+  record `time_source`. A sub-event dated only approximately gets no `DateID`.
+- **Dedup is by `date + place_name` string** — two aliases/spellings of the same place
+  still yield two weather files for the same real place+date (mitigated now that PlaceID
+  resolution is alias-aware, but the dedup *key* is still the raw name).
+- The non-batch `prompts/weather.yaml` uses a different (legacy) temperature shape; the live
+  path uses `prompts/weather_batch.yaml`.
 
 ---
 
@@ -121,14 +138,21 @@ output/weather/
 }
 ```
 
-**`source_type` values:**
-- `extracted` — LLM-extracted weather description only (no API data)
-- `api` — Open-Meteo API data only (no text extraction)
-- `hybrid` — Both extracted description and API data
+**`source_type` values** (schema enum):
+- `extracted` — narrative weather description only (no API data)
+- `api_only` — Open-Meteo API data only (no narrative extraction)
+- `hybrid` — both narrative description and API data
+
+**Provenance layers:** `extracted_data` (narrative, with `original_text`/book),
+`api_data` (Open-Meteo reanalysis), `noaa_observed` (NOAA station-observed, phase-3). A
+record may carry any combination; `temperature_unit` is normalized to the schema enum
+`C`/`F` (`null` if unknown).
 
 **Cross-references:**
 - `DateID` → top-level `DateID` in `output/dates/*.json`
-- `location.PlaceID` → top-level `PlaceID` in `output/places/*.json`
+- `location.PlaceID` → top-level `PlaceID` in `output/places/*.json` (resolved via the
+  places alias-aware index; `null` + `null` coordinates when unresolved/ungeocoded — geo
+  is owned by the places subsystem, not fabricated here)
 
 ---
 
@@ -260,24 +284,17 @@ Weather extraction runs automatically after places extraction.
 ```python
 from pathlib import Path
 from src.grok_client import GrokClient
-from src.extraction.weather_central import extract_weather
+from src.extraction.weather_central import extract_weather_central
 
 grok_client = GrokClient(cache_dir=Path("cache/api"))
 
-event_file = Path("output/BreakoutAndPursuit/chapter1-event.json")
-parsed_file = Path("output/BreakoutAndPursuit/chapter1-parsed.json")
-weather_dir = Path("output/weather")
-places_dir = Path("output/places")
-dates_dir = Path("output/dates")
-
-extract_weather(
-    event_file=event_file,
+extract_weather_central(
+    event_file=Path("output/BreakoutAndPursuit/chapter1-event.json"),
+    weather_dir=Path("output/weather"),
     grok_client=grok_client,
-    weather_dir=weather_dir,
-    places_dir=places_dir,
-    dates_dir=dates_dir,
-    parsed_file=parsed_file,
-    config={"fetch_api_data": True, "timeout": 30}
+    places_dir=Path("output/places"),
+    parsed_file=Path("output/BreakoutAndPursuit/chapter1-parsed.json"),
+    fetch_api=True,
 )
 ```
 
@@ -460,37 +477,41 @@ Visibility was poor, delaying airborne operations."
 
 ## API Reference
 
-### `extract_weather()`
+### `extract_weather_central()`
 
-Extract weather from event file and add to central repository.
+Extract weather from an event file and add to the central repository (batched; one Grok
+call per chapter). **This is the live entry point** (the older per-sub-event
+`extract_weather` was removed).
 
 **Signature:**
 ```python
-def extract_weather(
+def extract_weather_central(
     event_file: Path,
-    grok_client: GrokClient,
     weather_dir: Path,
-    places_dir: Path,
-    dates_dir: Path,
+    grok_client: GrokClient,
+    places_dir: Optional[Path] = None,
     parsed_file: Optional[Path] = None,
-    config: Optional[Dict[str, Any]] = None,
-    max_retries: int = 3
+    fetch_api: bool = False,
+    max_retries: int = 3,
 ) -> Optional[Path]
 ```
 
 **Parameters:**
-- `event_file` (Path): Path to `*-event.json` file
-- `grok_client` (GrokClient): Initialized Grok API client
-- `weather_dir` (Path): Central weather directory (`output/weather/`)
-- `places_dir` (Path): Places directory for coordinate lookup
-- `dates_dir` (Path): Dates directory for date linking
-- `parsed_file` (Path, optional): Path to parsed file for book metadata
-- `config` (dict, optional): Weather configuration options
-- `max_retries` (int): Maximum retry attempts per sub-event (default: 3)
+- `event_file` (Path): `*-event.json` file.
+- `weather_dir` (Path): central weather directory (`output/weather/`).
+- `grok_client` (GrokClient): initialized client.
+- `places_dir` (Path, optional): places repo for alias-aware PlaceID + coordinate lookup.
+- `parsed_file` (Path, optional): parsed file for book metadata.
+- `fetch_api` (bool): fetch Open-Meteo historical data (default False).
+- `max_retries` (int): retries per batch call.
 
-**Returns:**
-- `Path`: Path to weather directory if weather was extracted
-- `None`: If no weather was extracted
+### NOAA historical enrichment — `enrich_weather_with_noaa()`
+
+Phase-3 pass (`src/enrichment/noaa_weather.py`, wired in `phase3_enrich_data.py`): for each
+weather file with real coordinates and a date ≥ 1940, finds the nearest NOAA station and
+attaches observed data under `noaa_observed`. Skips already-enriched files and
+null/unresolved coordinates. (Open-Meteo `api_data` is reanalysis; `noaa_observed` is
+station-observed — both may be present.)
 
 ---
 
