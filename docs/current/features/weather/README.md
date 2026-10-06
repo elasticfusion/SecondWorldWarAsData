@@ -165,6 +165,24 @@ snowfall is captured in BOTH layers when available, and they are NEVER merged:
 different claims from different authorities about the same event — both preserved and
 attributable.
 
+**NOAA is the unbiased quantitative baseline.** Combat narrative mentions weather only when
+it is a *problem* (mud, grounding fog, frozen crossings) and is silent when weather is not a
+factor — a clear 72 °F day goes unrecorded. Narrative silence therefore does NOT mean "no
+weather"; it means "weather was not an obstacle." NOAA GHCND records every day's actual
+conditions regardless of tactical relevance, so it (a) supplies the benign days the
+narrative omits and (b) puts narrative claims in quantitative context. A `noaa_observed`
+record can validly exist with no narrative weather mention. The full standard GHCND daily
+element set is captured: `temperature_high/low/avg_c`, `precipitation_mm`, `snowfall_mm`,
+`snow_depth_mm`, `wind_speed_ms`, `wind_gust_fastest2min/5sec_ms`,
+`wind_dir_fastest2min/5sec_deg` (whichever the station reported that day; others `null`).
+
+**All NOAA data is absorbed — nothing is dropped.** The request does not restrict
+`datatypeid`, so NOAA returns every element the station reported. Common/queryable elements
+are promoted to the named canonical fields above; **every** element (including ones not
+pre-mapped — weather-type flags `WT**`, `WESD`, `PGTM`, soil/evaporation elements, etc.) is
+also preserved verbatim in `noaa_observed.raw_elements`, keyed by its raw GHCND datatype
+code. New GHCND elements are captured automatically without a schema change.
+
 **Cross-references:**
 - `DateID` → top-level `DateID` in `output/dates/*.json`
 - `location.PlaceID` → top-level `PlaceID` in `output/places/*.json` (resolved via the

@@ -88,9 +88,19 @@ WEATHER_OUTPUT_SCHEMA = {
             "properties": {
                 "temperature_high_c": make_nullable("number"),
                 "temperature_low_c": make_nullable("number"),
+                "temperature_avg_c": make_nullable("number"),
                 "precipitation_mm": make_nullable("number"),
-                "wind_speed_ms": make_nullable("number"),
                 "snowfall_mm": make_nullable("number"),
+                "snow_depth_mm": make_nullable("number"),
+                "wind_speed_ms": make_nullable("number"),
+                "wind_gust_fastest2min_ms": make_nullable("number"),
+                "wind_gust_fastest5sec_ms": make_nullable("number"),
+                "wind_dir_fastest2min_deg": make_nullable("number"),
+                "wind_dir_fastest5sec_deg": make_nullable("number"),
+                # Passthrough: EVERY raw GHCND element NOAA returned, keyed by its
+                # datatype code (e.g. WT01, WESD, PGTM). Nothing is dropped; elements
+                # not promoted to a named field above are preserved here verbatim.
+                "raw_elements": {"type": ["object", "null"]},
                 "station_id": {"type": "string"},
                 "station_distance_km": make_nullable("number"),
                 "source": enum_field(["noaa_cdo"]),

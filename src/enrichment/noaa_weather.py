@@ -21,13 +21,20 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://www.ncei.noaa.gov/cdo-web/api/v2"
 DATASET = "GHCND"
-# Map NOAA data types to our schema fields
+# Map NOAA GHCND daily element codes -> our schema fields (the standard daily set:
+# AWND/PRCP/SNOW/SNWD/TMAX/TMIN/TAVG/WDF2/WDF5/WSF2/WSF5). Only real GHCND codes.
 DATATYPE_MAP = {
     "TMAX": "temperature_high_c",
     "TMIN": "temperature_low_c",
+    "TAVG": "temperature_avg_c",
     "PRCP": "precipitation_mm",
-    "AWND": "wind_speed_ms",
     "SNOW": "snowfall_mm",
+    "SNWD": "snow_depth_mm",
+    "AWND": "wind_speed_ms",
+    "WSF2": "wind_gust_fastest2min_ms",
+    "WSF5": "wind_gust_fastest5sec_ms",
+    "WDF2": "wind_dir_fastest2min_deg",
+    "WDF5": "wind_dir_fastest5sec_deg",
 }
 
 _last_request_time = 0.0
@@ -148,7 +155,9 @@ def fetch_noaa_weather(
             "startdate": date,
             "enddate": date,
             "units": "metric",
-            "limit": 25,
+            # Do NOT restrict datatypeid: absorb EVERY element the station reported
+            # that day (named ones get canonical fields, all are kept in raw_elements).
+            "limit": 1000,
         },
     )
     if not data or not data.get("results"):
@@ -156,10 +165,18 @@ def fetch_noaa_weather(
         return None
 
     obs = {}
+    raw_elements: Dict[str, Any] = {}
     for r in data["results"]:
         dtype = r.get("datatype", "")
+        value = r.get("value")
+        # Named canonical field for the common/queryable elements...
         if dtype in DATATYPE_MAP:
-            obs[DATATYPE_MAP[dtype]] = r["value"]
+            obs[DATATYPE_MAP[dtype]] = value
+        # ...AND absorb EVERY element NOAA returns (nothing dropped), keyed by its
+        # raw GHCND datatype code. Elements we don't pre-map are still preserved here.
+        if dtype:
+            raw_elements[dtype] = value
+    obs["raw_elements"] = raw_elements
     obs["station_id"] = station_id
     obs["station_distance_km"] = None  # could calculate if needed
     obs["source"] = "noaa_cdo"
