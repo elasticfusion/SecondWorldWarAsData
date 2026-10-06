@@ -64,6 +64,9 @@ def extract_casualties(
         output_root / "equipment", "EquipmentID", "common_name"
     )
     event_year_by_id = _event_year_lookup(output_root / "dates")
+    from src.extraction.logistics_resolver import build_logistics_index
+
+    logistics_index = build_logistics_index(output_root / "logistics")
 
     casualties_dir = output_root / "casualties"
     casualties_dir.mkdir(parents=True, exist_ok=True)
@@ -114,6 +117,7 @@ def extract_casualties(
                     people_groups_index,
                     equipment_index,
                     fallback_year=event_year_by_id.get(event_id),
+                    logistics_index=logistics_index,
                 )
                 casualties.append(casualty)
             except Exception as e:
@@ -441,10 +445,11 @@ def _resolve_equipment(
 ) -> List[Dict[str, Any]]:
     """Resolve equipment references to EquipmentID via the shared equipment disambiguator
     (resolve_designation: exact→alias→fuzzy→Grok canonical name) then the equipment index
-    (common_name→EquipmentID). The casualty↔equipment link covers both causative (the
-    weapon/vehicle involved) and medical/evacuation equipment; a `relation` tag is carried
-    through when the extractor provides it (flat link otherwise — relation dimension is
-    Phase B). Unresolved → null EquipmentID, name preserved."""
+    (common_name→EquipmentID). The casualty↔equipment link is a first-class DIMENSION via
+    `relation` ∈ {causative, medical, other}: causative = the weapon/vehicle that inflicted
+    the loss; medical = ambulance/surgical/evacuation equipment responding. Invalid/absent
+    relation → 'other'. Unresolved name → null EquipmentID (preserved, never fabricated).
+    """
     from src.extraction.equipment_disambiguation import resolve_designation
 
     resolved = []
@@ -456,16 +461,15 @@ def _resolve_equipment(
         name = item.get("name", "")
         if not name:
             continue
-        eq_id = None
         res = resolve_designation(name)
         canonical = (res or {}).get("canonical_name") or name
         eq_id = equipment_index.get(canonical.lower()) or equipment_index.get(
             name.lower()
         )
-        entry = {"EquipmentID": eq_id, "name": name}
-        if item.get("relation"):
-            entry["relation"] = item["relation"]
-        resolved.append(entry)
+        relation = item.get("relation")
+        if relation not in _VALID_EQUIPMENT_RELATIONS:
+            relation = "other"
+        resolved.append({"EquipmentID": eq_id, "name": name, "relation": relation})
     return resolved
 
 
@@ -482,6 +486,7 @@ def _build_casualty(
     people_groups_index: GroupUnitKeyIndex,
     equipment_index: Optional[Dict[str, Any]] = None,
     fallback_year: Optional[int] = None,
+    logistics_index: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Build casualty JSON structure."""
     casualty = {
@@ -533,6 +538,31 @@ def _build_casualty(
     # a single-person / single-place casualty, hoist from the resolved impacted_* lists so
     # the person+place+date join doesn't require parsing the loose arrays.
     _set_direct_anchors(casualty, casualty_data)
+
+    # Logistics cross-ref (Phase B): explicit text-asserted links + inferred co-occurring
+    # candidates (shared GroupID + overlapping date), honestly labeled by association.
+    if logistics_index is not None:
+        from src.extraction.logistics_resolver import resolve_logistics
+
+        group_ids = [
+            o.get("PeopleGroupID")
+            for o in casualty.get("impacted_organizations", []) or []
+            if isinstance(o, dict) and o.get("PeopleGroupID")
+        ]
+        date_iso = None
+        date_id = None
+        if isinstance(casualty.get("date"), dict):
+            date_iso = casualty["date"].get("iso_date")
+            date_id = casualty["date"].get("DateID")
+        links = resolve_logistics(
+            casualty_data.get("impacted_logistics", []),
+            group_ids,
+            date_iso,
+            logistics_index,
+            date_id=date_id,
+        )
+        if links:
+            casualty["impacted_logistics"] = links
 
     return casualty
 
@@ -665,6 +695,7 @@ VALID_ROLES = {
 
 VALID_SIDES = {"allied", "axis", "civilian", "unknown"}
 _VALID_CAUSES = {"combat", "weather_exposure", "disease", "accident", "other"}
+_VALID_EQUIPMENT_RELATIONS = {"causative", "medical", "other"}
 
 # Map freeform LLM roles to controlled vocabulary
 _ROLE_MAP = {

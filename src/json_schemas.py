@@ -792,6 +792,7 @@ CASUALTY_ITEM_SCHEMA = {
         "impacted_people": {"type": "array"},
         "impacted_places": {"type": "array"},
         "impacted_equipment": {"type": "array"},
+        "impacted_logistics": {"type": "array"},
     },
 }
 
