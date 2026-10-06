@@ -57,6 +57,26 @@ class SupportingUnitInput(BaseModel):
     )
 
 
+class EnvironmentalPerformanceInput(BaseModel):
+    """How this equipment performed under a stated environmental/weather CONDITION, as the
+    SOURCE narrates it (e.g. 'the M4 performed badly in sub-zero temperatures'). This is
+    equipment-performance conditioned on weather/terrain — distinct from the ambient Weather
+    entity (which records the event's weather state). Narrative-sourced; original_text
+    mandatory for traceability."""
+
+    condition: Optional[str] = Field(
+        default=None,
+        description="The condition (e.g. 'sub-zero temperatures', 'snow', 'bocage', 'mud')",
+    )
+    effect: Optional[str] = Field(
+        default=None,
+        description="The effect on performance (e.g. 'performed badly', 'track wear', 'engine overheating')",
+    )
+    original_text: Optional[str] = Field(
+        default=None, description="Verbatim passage (REQUIRED for traceability)"
+    )
+
+
 class CrewAccountInput(BaseModel):
     """A crew member's firsthand account of operating this equipment, as the SOURCE
     narrates it. Narrative-sourced only — source tracking is mandatory: original_text
@@ -336,6 +356,15 @@ class EquipmentExtraction(BaseModel):
             "Firsthand crew accounts of operating this equipment that the SOURCE "
             "narrates. Each MUST carry original_text (verbatim) — source tracking is "
             "mandatory. Do not invent accounts."
+        ),
+    )
+    environmental_performance: List["EnvironmentalPerformanceInput"] = Field(
+        default_factory=list,
+        description=(
+            "How the equipment performed under weather/terrain CONDITIONS the SOURCE "
+            "states (e.g. 'M4 performed badly in sub-zero temperatures'). Each MUST carry "
+            "original_text. This is condition-linked PERFORMANCE — do NOT record the "
+            "event's ambient weather here (that is the Weather entity's job)."
         ),
     )
 
@@ -1474,6 +1503,26 @@ def _merge_equipment_fields(existing: dict, equipment_data: dict) -> None:
 
     _merge_related_equipment(existing, equipment_data)
     _merge_crew_accounts(existing, equipment_data)
+    _merge_environmental_performance(existing, equipment_data)
+
+
+def _merge_environmental_performance(existing: dict, equipment_data: dict) -> None:
+    """Accumulate condition-linked environmental_performance across mentions, deduped by
+    (condition, original_text). Conflicts/different conditions are all kept."""
+    incoming = equipment_data.get("environmental_performance") or []
+    if not incoming:
+        return
+    merged = list(existing.get("environmental_performance") or [])
+    seen = {
+        ((e.get("condition") or "").lower(), e.get("original_text") or "")
+        for e in merged
+    }
+    for ep in incoming:
+        k = ((ep.get("condition") or "").lower(), ep.get("original_text") or "")
+        if k not in seen:
+            merged.append(ep)
+            seen.add(k)
+    existing["environmental_performance"] = merged
 
 
 def _merge_crew_accounts(existing: dict, equipment_data: dict) -> None:
@@ -2270,6 +2319,12 @@ def _process_equipment_item(
         if linked_accounts:
             equipment_data["crew_accounts"] = linked_accounts
 
+    # Record-level environmental_performance (condition-linked; original_text mandatory)
+    if eq.environmental_performance:
+        linked_env = _link_environmental_performance(eq.environmental_performance)
+        if linked_env:
+            equipment_data["environmental_performance"] = linked_env
+
     # Merge or create
     try:
         eq_file = merge_or_create_equipment(
@@ -2408,6 +2463,26 @@ def _link_crew_accounts(
             if pid:
                 entry["PersonID"] = pid
         linked.append(entry)
+    return linked
+
+
+def _link_environmental_performance(
+    env_in: List["EnvironmentalPerformanceInput"],
+) -> List[Dict[str, Any]]:
+    """Build record-level environmental_performance (condition-linked, narrative-sourced).
+    original_text is mandatory — drop untraceable entries."""
+    linked: List[Dict[str, Any]] = []
+    for ep in env_in:
+        if not ep.original_text:
+            logger.debug("Dropping environmental_performance without original_text")
+            continue
+        linked.append(
+            {
+                "condition": ep.condition,
+                "effect": ep.effect,
+                "original_text": ep.original_text,
+            }
+        )
     return linked
 
 

@@ -142,8 +142,8 @@ aliases, supporting-unit alias/fuzzy linking, merge reference-redirect — are d
 - **Enforced schema:** `src/schemas/equipment_output.py` (`additionalProperties: false`).
 - **Canonical structure example:** `EQUIPMENT_FINAL_STRUCTURE.md` (other docs link here
   rather than repeating the JSON).
-- **Schema version:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently **2.14**).
-  History: 2.14 `crew_accounts` + `timeline`/`technical_evolution`/`logistics` (source-
+- **Schema version:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently **2.15**).
+  History: 2.15 environmental_performance (condition-linked equipment performance; weather/terrain -> effect, source-tracked); 2.14 `crew_accounts` + `timeline`/`technical_evolution`/`logistics` (source-
   tracked); 2.13 structured `specifications`/`external_data`/`images`/in-file `variants`;
   2.12 `canonical_name` + `identity_source` (designation disambiguator); 2.11
   `enrichment_checked_at` (staleness gate); 2.10 `image_scope` + enrichment-on-identity;

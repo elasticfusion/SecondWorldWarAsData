@@ -209,6 +209,19 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         "external_data": _EXTERNAL_DATA_SCHEMA,
         # Proposal-backlog fields (all source-tracked):
         "crew_accounts": _CREW_ACCOUNTS_SCHEMA,  # narrative-sourced (original_text+book)
+        # Condition-linked performance (weather/terrain -> effect), narrative-sourced.
+        # Distinct from the ambient Weather entity. e.g. M4 in sub-zero temps.
+        "environmental_performance": {
+            "type": ["array", "null"],
+            "items": {
+                "type": "object",
+                "properties": {
+                    "condition": make_nullable("string"),
+                    "effect": make_nullable("string"),
+                    "original_text": make_nullable("string"),
+                },
+            },
+        },
         "timeline": _TIMELINE_SCHEMA,  # enrichment-sourced (source+source_url)
         "technical_evolution": _TECHNICAL_EVOLUTION_SCHEMA,  # enrichment-sourced
         "logistics": _LOGISTICS_SCHEMA,  # enrichment-sourced

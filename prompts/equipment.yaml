@@ -40,6 +40,9 @@ schema: |
         "crew_accounts": [
           {"person_name": "Belton Cooper", "role": "maintenance officer", "observations": "frequent transmission failures in bocage", "original_text": "Cooper recorded that transmissions failed repeatedly in the hedgerows", "book": "Death Traps"}
         ],
+        "environmental_performance": [
+          {"condition": "sub-zero temperatures", "effect": "performed badly", "original_text": "the M4 performed badly in sub-zero temperatures"}
+        ],
         "performance_notes": "Effective against infantry positions",
         "context": "Used in breakout operations",
         "original_text": "Sherman tanks of the 2nd Armored",
@@ -75,6 +78,13 @@ rules:
     - US unit using its own Shermans: country_of_origin "USA", operating_country "USA", captured false
     If the operator is not stated, leave operating_country null and captured false.
   - Only extract specifically named equipment, not generic references
+  - |
+    ENVIRONMENTAL PERFORMANCE — if the source states how this equipment PERFORMED under a
+    weather/terrain condition, record it in environmental_performance with condition
+    (e.g. "sub-zero temperatures", "snow", "bocage", "mud"), effect (e.g. "performed badly",
+    "track wear", "engine overheating"), and the VERBATIM original_text (MANDATORY). This is
+    condition-linked PERFORMANCE of the equipment. Do NOT record the event's ambient weather
+    here ("it was snowing") — that belongs to the Weather entity, not equipment.
   - |
     CREW ACCOUNTS — if the source narrates a named crew member's firsthand experience
     operating this equipment, record it in crew_accounts with person_name, role,
