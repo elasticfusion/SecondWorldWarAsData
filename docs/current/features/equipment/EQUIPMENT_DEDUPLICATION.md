@@ -313,9 +313,9 @@ cat output/equipment/index.json
 
 Dedup is **not** exact-match-only. Both stages resolve name variations:
 
-- **Ingest-time merge** (`equipment_ext/dedup.py`): `_find_matching_equipment` tries
-  `technical_identifier` → exact `common_name` → **fuzzy match** (`SequenceMatcher ≥ 0.80`,
-  also checking `alternate_names`).
+- **Ingest-time merge** (`src/extraction/equipment.py`): `_find_matching_equipment` tries
+  **canonical_name** → `technical_identifier` → exact `common_name` → **fuzzy match**
+  (`SequenceMatcher ≥ 0.80`, also checking `alternate_names`).
 - **Detection-time scoring** (`scripts/find_duplicate_equipment.py`, wired into
   `ecs_entrypoint._run_dedup_detection`): normalizes names (caliber/mm/cm), expands via the
   **alias table** (`config/equipment_aliases.yaml`: Sherman→M4, 88→88mm Flak 36, …), then

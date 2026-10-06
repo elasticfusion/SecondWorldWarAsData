@@ -110,22 +110,27 @@ Enrichment-on-identity (follows identity resolution)
   `_should_re_search` (90-day `re_search_after_days` window); equipment uses the reusable
   `enrichment_gate` (`enrichment_checked_at` + staleness window). Diff-the-revised-entry
   (skip no-op rewrites): equipment ✓, places ✓ (gap-fill merge), groups ✓ (now diffs
-  `enrichment_data` before rewriting). Minor remaining: the staleness check is implemented
-  per-module (`_should_re_search` duplicated in people/groups/places) rather than via the
-  shared `enrichment_gate` — a consolidation opportunity, not a correctness gap.
+  `enrichment_data` before rewriting). The staleness check is now consolidated: people/
+  people_groups/places delegate to the shared `enrichment_gate.should_re_search` (no longer
+  three duplicate copies). See [../../SHARED_HELPERS.md](../../SHARED_HELPERS.md).
 - **Multi-national designation disambiguation — runtime Grok resolver built; curated-table
   coverage still thin.** The same type has many valid names across US/German/British
   systems (`M4`=`Sherman V`; `Panzer IV`=`Pz.Kpfw. IV Ausf. H`=`Sd.Kfz. 161/2`;
-  `Firefly`=`Sherman IC`). `src/extraction/equipment_disambiguation.py` now resolves a raw
-  designation to a canonical identity at runtime (exact→alias→fuzzy→**Grok**, cached,
-  canonical-lookup only, provenance `identity_source`), so the long tail is handled without
-  exhaustive hand cross-walks. **Remaining:** the curated `equipment_aliases.yaml` still
-  lacks Sd.Kfz. numbers / British marks / `Pz.Kpfw.`⇄`Panzer` normalization — Grok
-  resolutions are written to `output/equipment/disambiguation_suggestions.jsonl` for human
-  promotion into the YAML (to cut Grok cost over time). British **census numbers** must
-  never be used as a type identity. See [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md).
-- **Supporting-unit equipment linking is name-exact.** `equipment_name` → `EquipmentID`
-  uses the same exact-index lookup; no alias/fuzzy resolution.
+  `Firefly`=`Sherman IC`). `src/extraction/equipment_disambiguation.py` resolves a raw
+  designation to a canonical identity at runtime (exact→curated alias→**learned alias**→
+  fuzzy→**Grok**, cached, canonical-lookup only, provenance `identity_source`), so the long
+  tail is handled without exhaustive hand cross-walks. Grok resolutions **auto-persist** to
+  `config/equipment_aliases_learned.yaml` (first-wins, stable) so repeats are deterministic
+  and Grok-free, and dedup detection (`find_duplicate_equipment._all_names`) now includes
+  the resolved `canonical_name`. **Remaining:** the curated `equipment_aliases.yaml` still
+  lacks Sd.Kfz. numbers / British marks / `Pz.Kpfw.`⇄`Panzer` normalization — resolutions
+  are also written to `output/equipment/disambiguation_suggestions.jsonl` for human
+  promotion into the curated YAML. British **census numbers** must never be used as a type
+  identity. See [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md).
+- **Supporting-unit equipment linking resolves aliases/fuzzy.** `equipment_name` →
+  `EquipmentID` (`_resolve_support_equipment_id`) now matches exact → curated-alias
+  canonical → fuzzy (like the main path), so a nickname/variant ("Thunderbolt", "Jug")
+  links to the canonical record rather than only an exact-name match.
 - **Enrichment-on-identity: Wikipedia + Grok text/specs LIVE-validated; vision + OpenSERP
   images still untested.** Run against the live APIs with the real Grok key (loaded from
   `.env` via `load_dotenv`). Confirmed working: Wikipedia canonical image + license
