@@ -210,6 +210,31 @@ movement) with the unit-expander + seam-merge. Tier-3 (survey geometry) stays ou
 
 ---
 
+## Reverse registration — map as a backdrop (`src/extraction/map_registration.py`)
+
+The complement to forward extraction: a map advertises a coverage **extent** =
+`covered_places` (resolved PlaceIDs) × `date_range` (from the dated legend). Any narrative
+entity (person, casualty, logistics, equipment) resolved to a `(PlaceID, DateID)` INSIDE
+that extent gets a back-link `maps:[{MapID, association: spatial_temporal_coverage}]` — even
+though the map never names it. The join is the entity graph, so it is immune to map-OCR
+fuzziness and needs no unit-nomenclature resolution.
+
+- Extent is derived by `proto_map_vision.derive_extent` (Map III → 49 covered places,
+  1944-12-15 .. 1944-12-19).
+- `register_entity_to_maps(record, extents, dateid_to_iso)` tests place membership + date
+  range; place-only maps (no range) match on place alone; a dated map requires an in-range
+  date (null date → no link). Never mutates files (report mode).
+
+**Measured (honest):** the mechanism is proven on the user's flagship example — "Sgt Smith,
+DSC, St. Vith, 16 Dec 1944" registers to Map III; a 22-Dec date or an off-map place both
+correctly produce no link. BUT running it against the current `output/` corpus yields **0
+real registrations**: the ingested narrative (e.g. casualties around Le Mans / 9 Aug) is
+from a different sector than Map III's Ardennes extent — there is simply no entity at those
+places+dates yet. The pass will light up once Bulge-sector narrative is ingested. Validated
+by 5 deterministic tests in `tests/test_map_registration.py`.
+
+---
+
 ## Chandra vs. Grok (measured on the identical Map III) — recommendation
 
 Both tools were run on the SAME Map III: Grok via the prototype, Chandra via the deployed

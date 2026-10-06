@@ -283,6 +283,57 @@ def resolve_features(fc: dict, places_dir: Path, groups_dir: Path) -> dict:
     return fc
 
 
+_MONTHS = {
+    "jan": 1,
+    "feb": 2,
+    "mar": 3,
+    "apr": 4,
+    "may": 5,
+    "jun": 6,
+    "jul": 7,
+    "aug": 8,
+    "sep": 9,
+    "oct": 10,
+    "nov": 11,
+    "dec": 12,
+}
+
+
+def _parse_legend_dates(legend, default_year=1944):
+    """Pull ISO dates from legend date_text/meaning (e.g. '16-19 DEC' -> 1944-12-16,
+    1944-12-19). Returns a sorted list of ISO date strings found."""
+    found = set()
+    for item in legend or []:
+        txt = f"{item.get('date_text') or ''} {item.get('meaning') or ''}".lower()
+        mon = next((v for k, v in _MONTHS.items() if k in txt), None)
+        if mon is None:
+            continue
+        # day numbers (handle ranges like '16-19')
+        for d in re.findall(r"\b(\d{1,2})\b", txt):
+            day = int(d)
+            if 1 <= day <= 31:
+                found.add(f"{default_year:04d}-{mon:02d}-{day:02d}")
+    return sorted(found)
+
+
+def derive_extent(fc: dict) -> dict:
+    """Stamp coverage extent on the FeatureCollection for reverse-registration:
+    covered_places = resolved PlaceIDs of place/anchor features; date_range =
+    earliest/latest date parsed from the dated legend. Enables 'any narrative entity at a
+    (PlaceID, DateID) inside this extent links back to this map'."""
+    pids = sorted(
+        {
+            f["properties"].get("PlaceID")
+            for f in fc.get("features", [])
+            if f["properties"].get("PlaceID")
+        }
+    )
+    fc["covered_places"] = pids
+    dates = _parse_legend_dates(fc.get("legend"))
+    fc["date_range"] = {"earliest": dates[0], "latest": dates[-1]} if dates else None
+    return fc
+
+
 def tiles(full: Image.Image, nx: int = 2, ny: int = 2, overlap: float = 0.12):
     w, h = full.size
     tw, th = w // nx, h // ny
@@ -413,6 +464,12 @@ def main() -> int:
     print("4) resolve labels -> PlaceID/GroupID + re-dedup on resolved id...")
     fc = resolve_features(fc, Path("output/places"), Path("output/people_groups"))
     print("   resolution:", fc["resolution_report"])
+
+    fc = derive_extent(fc)
+    print(
+        f"   extent: {len(fc.get('covered_places') or [])} covered places,"
+        f" date_range={fc.get('date_range')}"
+    )
 
     print("5) validate against enforced map_features schema...")
     import jsonschema
