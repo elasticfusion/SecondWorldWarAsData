@@ -153,6 +153,18 @@ output/weather/
 record may carry any combination; `temperature_unit` is normalized to the schema enum
 `C`/`F` (`null` if unknown).
 
+**Narrative vs. scientific measurements (both kept, non-redundant).** A quantity like
+snowfall is captured in BOTH layers when available, and they are NEVER merged:
+- *Narrative* (`extracted_data`): what the source document SAYS — `precipitation_text`
+  (verbatim, e.g. "3 inches of snow") + parsed `precipitation_amount`/`precipitation_unit`
+  (in/cm/mm)/`precipitation_type` ONLY when the source states a number (else text only;
+  never fabricated).
+- *Scientific* (`noaa_observed`): the station-OBSERVED measurement (e.g.
+  `snowfall_mm: 81.3`) with `station_id` + `source`/`source_url`.
+"3 inches of snow (narrative, Green Book)" and "81.3 mm observed (NOAA station X)" are
+different claims from different authorities about the same event — both preserved and
+attributable.
+
 **Cross-references:**
 - `DateID` → top-level `DateID` in `output/dates/*.json`
 - `location.PlaceID` → top-level `PlaceID` in `output/places/*.json` (resolved via the

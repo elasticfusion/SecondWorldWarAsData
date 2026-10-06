@@ -50,6 +50,17 @@ WEATHER_OUTPUT_SCHEMA = {
                     "enum": ["C", "F", None],
                 },
                 "measurement_system": make_nullable("string"),
+                # NARRATIVE precipitation as the SOURCE states it (distinct from the
+                # scientific noaa_observed measurement — both are kept, non-redundant).
+                # precipitation_text is the verbatim phrase ("3 inches of snow"); the parsed
+                # amount/unit/type are populated ONLY when the source gives a number
+                # (null otherwise — vague narrative is preserved, never fabricated).
+                "precipitation_text": make_nullable("string"),
+                "precipitation_amount": make_nullable("number"),
+                "precipitation_unit": enum_field(["in", "cm", "mm"], nullable=True),
+                "precipitation_type": enum_field(
+                    ["snow", "rain", "sleet", "hail", "mixed"], nullable=True
+                ),
                 "notable_impact": make_nullable("string"),
                 "original_text": make_nullable("string"),
                 "book": make_nullable("string"),

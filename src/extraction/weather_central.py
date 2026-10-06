@@ -140,6 +140,38 @@ def _normalize_temp_unit(unit: Optional[str]) -> Optional[str]:
     return None
 
 
+def _normalize_precip_unit(unit: Optional[str]) -> Optional[str]:
+    """Narrative precipitation unit -> schema enum in/cm/mm (null if unknown)."""
+    if not unit:
+        return None
+    u = str(unit).strip().lower()
+    if u in ("in", "inch", "inches", '"'):
+        return "in"
+    if u in ("cm", "centimeter", "centimeters", "centimetre", "centimetres"):
+        return "cm"
+    if u in ("mm", "millimeter", "millimeters", "millimetre", "millimetres"):
+        return "mm"
+    return None
+
+
+def _normalize_precip_type(ptype: Optional[str]) -> Optional[str]:
+    """Narrative precipitation type -> schema enum (null if unknown)."""
+    if not ptype:
+        return None
+    t = str(ptype).strip().lower()
+    if t in ("snow", "snowfall", "snowing"):
+        return "snow"
+    if t in ("rain", "rainfall", "raining"):
+        return "rain"
+    if t in ("sleet",):
+        return "sleet"
+    if t in ("hail",):
+        return "hail"
+    if t in ("mixed", "wintry mix", "rain and snow"):
+        return "mixed"
+    return None
+
+
 def _build_date_id_lookup(dates_dir: Path) -> Dict[str, Dict[str, Any]]:
     """Build date_start -> {DateID, resolved_earliest, resolved_latest, time_source} from
     the dates directory. Carries the resolved interval + time_source so weather can link to
@@ -486,6 +518,14 @@ def _add_event_mention(
                     mention.get("temperature_unit")
                 ),
                 "measurement_system": mention.get("measurement_system") or None,
+                "precipitation_text": mention.get("precipitation_text") or None,
+                "precipitation_amount": mention.get("precipitation_amount"),
+                "precipitation_unit": _normalize_precip_unit(
+                    mention.get("precipitation_unit")
+                ),
+                "precipitation_type": _normalize_precip_type(
+                    mention.get("precipitation_type")
+                ),
                 "notable_impact": mention.get("notable_impact") or None,
                 "original_text": mention.get("original_text", ""),
                 "book": book,
