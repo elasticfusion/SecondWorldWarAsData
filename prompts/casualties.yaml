@@ -39,6 +39,28 @@ schema: |
           {"name": "Colonel Smith", "PersonID": "<COPY from Available entities > People, or null>", "casualty_type": "wounded"}
         ],
         "impacted_places": [{"name": "Hill 192", "PlaceID": "<COPY from Available entities > Places, or null>"}]
+      },
+      {
+        "CasualtyID": "01ULID...",
+        "type": "non_battle",
+        "cause": "weather_exposure",
+        "description": "45 men suffered trench foot and frostbite",
+        "count": {"affected": {"value": 45, "qualifier": "approximately"}},
+        "date_string": "1944-12-21",
+        "PlaceID": "<COPY from Available entities > Places, or null>",
+        "original_text": "Forty-five men of the company were evacuated with trench foot and frostbite",
+        "impacted_places": [{"name": "Bastogne", "PlaceID": "<COPY ...>"}]
+      },
+      {
+        "CasualtyID": "01ULID...",
+        "type": "non_battle",
+        "cause": "weather_exposure",
+        "description": "frostbite",
+        "PersonID": "<COPY from Available entities > People, or null>",
+        "PlaceID": "<COPY from Available entities > Places, or null>",
+        "date_string": "1944-12-21",
+        "original_text": "Sergeant Smith suffered frostbite at Bastogne",
+        "impacted_people": [{"name": "Sergeant Smith", "PersonID": "<COPY ...>", "casualty_type": "non_battle"}]
       }
     ]
   }
@@ -48,7 +70,18 @@ rules:
   - CRITICAL: For PeopleGroupID, match the organization name to "Available entities > Organizations" and COPY the ID. If no exact match, try partial match (e.g., "80th Division" matches "80th Infantry Division"). If no match, use null.
   - CRITICAL: For PersonID, match the person name to "Available entities > People" and COPY the ID. If no match, use null.
   - CRITICAL: For PlaceID, match the place name to "Available entities > Places" and COPY the ID. If no match, use null.
-  - Type values: wounded, killed, casualties, pow, missing
+  - Type values: wounded, killed, casualties, pow, missing, non_battle
+  - |
+    CAUSE — classify HOW the casualty occurred: combat, weather_exposure, disease,
+    accident, or other. Weather/environmental injuries (frostbite, trench foot, exposure,
+    hypothermia) are type "non_battle" + cause "weather_exposure". This applies at BOTH
+    granularities and both are relevant:
+    - AGGREGATE: "45 men had trench foot and frostbite" -> non_battle, weather_exposure,
+      count {affected: 45}, PlaceID + date (no PersonID — it's a group).
+    - INDIVIDUAL: "Sergeant Smith had frostbite" -> non_battle, weather_exposure, PersonID
+      (match from Available entities), PlaceID + date.
+    Set original_text to the VERBATIM passage (traceability). Set PlaceID + date when stated
+    so the casualty can be joined to weather/location.
   - Side values: allied, axis, civilian, unknown — reflects who SUFFERED the casualties
   - POW entries MUST include both "captured" (the prisoners) and "captor" (who captured them) organizations
   - Country codes use ISO 3166-1 alpha-3

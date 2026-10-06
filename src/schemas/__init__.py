@@ -20,7 +20,7 @@ Validation rules:
 from datetime import date
 from typing import Any, Dict
 
-SCHEMA_VERSION = "2.6"
+SCHEMA_VERSION = "2.7"
 
 # Shared patterns
 ULID_PATTERN = "^[0-9A-HJKMNP-TV-Z]{26}$"
