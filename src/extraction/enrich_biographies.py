@@ -852,19 +852,9 @@ def _validate_and_store_urls(
 
 def _should_re_search(data: dict) -> bool:
     """Check if a not_found entity should be re-searched based on age."""
-    from src.utils.config import load_config
+    from src.enrichment.enrichment_gate import should_re_search
 
-    config = load_config()
-    days = config.get("enrichment", {}).get("re_search_after_days", 90)
-    last_search = data.get("last_enrichment_search")
-    if not last_search:
-        return True
-    try:
-        searched_date = datetime.strptime(last_search, "%Y-%m-%d")
-        age = (datetime.now() - searched_date).days
-        return age >= days
-    except (ValueError, TypeError):
-        return True
+    return should_re_search(data)
 
 
 def _load_person_for_enrichment(person_file: Path) -> Optional[tuple]:

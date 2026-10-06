@@ -16,20 +16,9 @@ def _today():
 
 def _should_re_search(data: dict) -> bool:
     """Check if a not_found entity should be re-searched based on age."""
-    from datetime import datetime
+    from src.enrichment.enrichment_gate import should_re_search
 
-    from src.utils.config import load_config
-
-    days = load_config().get("enrichment", {}).get("re_search_after_days", 90)
-    last_search = data.get("last_enrichment_search")
-    if not last_search:
-        return True
-    try:
-        return (
-            datetime.now() - datetime.strptime(last_search, "%Y-%m-%d")
-        ).days >= days
-    except (ValueError, TypeError):
-        return True
+    return should_re_search(data)
 
 
 from src.utils.file_lock import write_json_with_lock

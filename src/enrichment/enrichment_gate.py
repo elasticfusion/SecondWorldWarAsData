@@ -27,6 +27,27 @@ DEFAULT_RECHECK_SECONDS = 90 * 86400
 _CHECKED_AT = "enrichment_checked_at"
 
 
+def should_re_search(data: Dict[str, Any]) -> bool:
+    """Shared staleness gate for date-stamped enrichment (people/people_groups/places).
+
+    A ``not_found`` entity is re-searched once its ``last_enrichment_search`` date is older
+    than ``enrichment.re_search_after_days`` (default 90). Never searched / unparseable ->
+    eligible. Consolidates the previously-duplicated per-module ``_should_re_search``.
+    """
+    from datetime import datetime as _dt
+
+    from src.utils.config import load_config
+
+    days = load_config().get("enrichment", {}).get("re_search_after_days", 90)
+    last_search = data.get("last_enrichment_search")
+    if not last_search:
+        return True
+    try:
+        return (_dt.now() - _dt.strptime(last_search, "%Y-%m-%d")).days >= days
+    except (ValueError, TypeError):
+        return True
+
+
 def should_check_enrichment(
     record: Dict[str, Any], recheck_seconds: int = DEFAULT_RECHECK_SECONDS
 ) -> bool:
