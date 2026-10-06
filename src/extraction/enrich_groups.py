@@ -16,20 +16,9 @@ def _today():
 
 def _should_re_search(data: dict) -> bool:
     """Check if a not_found entity should be re-searched based on age."""
-    from datetime import datetime
+    from src.enrichment.enrichment_gate import should_re_search
 
-    from src.utils.config import load_config
-
-    days = load_config().get("enrichment", {}).get("re_search_after_days", 90)
-    last_search = data.get("last_enrichment_search")
-    if not last_search:
-        return True
-    try:
-        return (
-            datetime.now() - datetime.strptime(last_search, "%Y-%m-%d")
-        ).days >= days
-    except (ValueError, TypeError):
-        return True
+    return should_re_search(data)
 
 
 from src.utils.file_lock import write_json_with_lock
@@ -220,9 +209,26 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
 
     logger.info("Enriching: %s", name)
 
+    # SOURCE-FIRST gap-fill: recover missing critical fields (nationality, CC parent
+    # division) from the RETAINED source text BEFORE the external lookup — Wikipedia
+    # can't disambiguate (e.g. '9th Division (United States)') without nationality.
+    # Gated (makes a Grok call), gap-fill-only, fail-safe.
+    import os as _os
+
+    if _os.getenv("GROUP_SOURCE_RECHECK", "true").lower() == "true":
+        try:
+            from src.extraction.group_source_recheck import recheck_group_from_source
+
+            n = recheck_group_from_source(data, grok_client)
+            if n:
+                logger.info("  ✓ Source-recheck recovered %d critical field(s)", n)
+        except Exception as e:  # noqa: BLE001 - never block enrichment
+            logger.warning("source-recheck skipped: %s", e)
+
     # Build a DISAMBIGUATED query from the record's identity (nickname-resolved +
     # '(Country)' suffix) so Wikipedia/Grok resolves the correct article, not a
-    # disambiguation page or a same-named unit of another nation.
+    # disambiguation page or a same-named unit of another nation. (Runs AFTER the
+    # source-recheck so the recovered nationality feeds the disambiguation.)
     query, _canonical = _build_enrichment_query(data)
 
     try:
@@ -258,16 +264,35 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
         write_json_with_lock(group_file, data)
         return False
 
-    data["enrichment_data"] = enrichment
+    _apply_group_enrichment(data, enrichment, group_file, name)
+    return True
+
+
+def _apply_group_enrichment(
+    data: dict, enrichment: dict, group_file: Path, name: str
+) -> None:
+    """Apply group enrichment with a DIFF guard: if byte-identical to what we already
+    hold, refresh only the staleness stamp (limit updates); else rewrite + promote.
+    Groups previously overwrote enrichment_data unconditionally on every re-search.
+    (The wrong-article guard already ran in enrich_group.)"""
+    from src.enrichment.enrichment_gate import diff_enrichment
+
+    unchanged = not diff_enrichment(
+        {"enrichment_data": data.get("enrichment_data")},
+        {"enrichment_data": enrichment},
+    )
     data["enrichment_status"] = "enriched"
     data["last_enrichment_search"] = _today()
-    # Ensure group_name exists per spec (alias of name)
     if not data.get("group_name") and data.get("name"):
-        data["group_name"] = data["name"]
+        data["group_name"] = data["name"]  # alias of name per spec
+    if unchanged:
+        write_json_with_lock(group_file, data)
+        logger.debug("  = Enrichment unchanged for %s (stamp refreshed only)", name)
+        return
+    data["enrichment_data"] = enrichment
     _promote_enrichment(data)
     write_json_with_lock(group_file, data)
     logger.info("  ✓ Enriched %s", name)
-    return True
 
 
 def enrich_all_groups(

@@ -14,6 +14,9 @@ prompt_template: |
   4. Production numbers and dates
   5. Notable variants
   6. Primary users (nations/units)
+  7. Timeline (first production/combat use, total produced, combat losses)
+  8. Technical evolution (dated design changes: what/why/effect)
+  9. Logistics (fuel consumption, ammunition capacity, maintenance, supply challenges)
 
   Return JSON matching this structure:
   {schema}
@@ -36,7 +39,24 @@ schema: |
       "years": "1942-1945"
     },
     "variants": ["M4A1", "M4A2", "M4A3", "M4A3E8"],
-    "primary_users": ["USA", "GBR", "USSR", "FRA"]
+    "primary_users": ["USA", "GBR", "SUN", "FRA"],
+    "timeline": {
+      "first_production": "1942-02",
+      "first_combat_use": "1942-10",
+      "last_combat_use": "1945-05",
+      "total_produced": 49234,
+      "combat_losses": null
+    },
+    "technical_evolution": [
+      {"date": "1943-02", "change": "Wet ammunition stowage", "reason": "reduce fires", "effectiveness": "fewer ammo fires"}
+    ],
+    "logistics": {
+      "fuel_consumption": "about 1 mpg",
+      "ammunition_capacity": "90 rounds 75mm",
+      "maintenance_hours_per_100_miles": null,
+      "common_spare_parts": ["tracks", "final drives"],
+      "supply_challenges": ["track wear in bocage"]
+    }
   }
 
 rules:

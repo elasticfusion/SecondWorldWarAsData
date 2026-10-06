@@ -4,6 +4,15 @@
 **Date:** 2026-03-03  
 **Status:** Experimental
 
+> **⚠️ Aspirational proposal — not the enforced schema.** This document is the original
+> design vision for rich equipment analytics (comparisons, timeline, crew accounts,
+> doctrine, geographic performance, logistics). Most of it is **not implemented**. For
+> what is actually produced and validated, see
+> [EQUIPMENT_FINAL_STRUCTURE.md](EQUIPMENT_FINAL_STRUCTURE.md) and the enforced schema
+> `src/schemas/equipment_output.py`. The mention array is **`event_mentions`** (not
+> `mentions`); per-mention operator fields are `operating_country` + `captured`
+> (schema 2.7).
+
 ---
 
 ## Overview
@@ -23,7 +32,7 @@ Extract and track military equipment mentions from WWII historical texts, linkin
   "technical_identifier": "M4",
   "category": "armor",
   "variants": [...],
-  "mentions": [...]
+  "event_mentions": [...]
 }
 ```
 
@@ -78,7 +87,7 @@ Extract and track military equipment mentions from WWII historical texts, linkin
 
 ```json
 {
-  "mentions": [
+  "event_mentions": [
     {
       "MentionID": "01KJ3DQ64DHFHYHA5WGWFHMCXV",
       "EventID": "01KJ3DQ64D7ESXAET2YZGYK8BT",
@@ -431,7 +440,7 @@ See full examples:
   "technical_identifier": "M4",
   "description": "American medium tank",
   "category": "armor",
-  "mentions": [
+  "event_mentions": [
     {
       "MentionID": "01KJ3DQ64DHFHYHA5WGWFHMCXV",
       "EventID": "01KJ3DQ64D7ESXAET2YZGYK8BT",
@@ -470,7 +479,7 @@ See full examples:
     "range": "120 miles",
     "crew": 5
   },
-  "mentions": [
+  "event_mentions": [
     {
       "MentionID": "01H8XYZ...",
       "book": "Breakout and Pursuit",
@@ -584,7 +593,8 @@ See full examples:
 
 ## See Also
 
-- **Schema:** `contextmanagement/Specs/military_equipment_schema.json`
-- **Original Spec:** `contextmanagement/Specs/military_equipment.yaml`
-- **People Groups:** `docs/current/features/people/groups.md`
-- **Events:** `docs/current/pipeline/PIPELINE.md`
+- **Index:** [README.md](README.md)
+- **Enforced schema (source of truth):** `src/schemas/equipment_output.py`
+- **Actual structure:** [EQUIPMENT_FINAL_STRUCTURE.md](EQUIPMENT_FINAL_STRUCTURE.md)
+- **People Groups:** `docs/current/features/people_groups/README.md`
+- **Pipeline:** `docs/current/core/PIPELINE.md`

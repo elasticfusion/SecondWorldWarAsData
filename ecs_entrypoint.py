@@ -1744,7 +1744,7 @@ def _auto_merge_entity_type(entity_dir: Path, id_field: str) -> int:
             merge_generic(entity_dir, people, 0, id_field)
             merged += len(people) - 1
         elif len(people) >= 2 and _group_cluster_canonically_mergeable(
-            entity_dir, names
+            entity_dir, people
         ):
             # people_groups: the canonical unit key is DETERMINISTIC — a clean key match
             # with no veto IS the completed disambiguation, so auto-merge (no human gate).
@@ -1760,31 +1760,54 @@ def _auto_merge_entity_type(entity_dir: Path, id_field: str) -> int:
     return merged
 
 
-def _group_cluster_canonically_mergeable(entity_dir: Path, names: list) -> bool:
-    """True only for people_groups when ALL names resolve to a single canonical unit key
-    with no veto between any pair — i.e. disambiguation is complete and deterministic, so
-    the cluster is a confident auto-merge. False for other entity types or any mismatch.
+def _group_cluster_canonically_mergeable(entity_dir: Path, records: list) -> bool:
+    """True only for people_groups when ALL records resolve to a single canonical unit
+    key with no veto between any pair AND no nationality conflict — i.e. disambiguation
+    is complete and deterministic, so the cluster is a confident auto-merge. False for
+    other entity types, keyless/underspecified names, or any veto/nationality conflict.
     """
     if entity_dir.name != "people_groups":
         return False
-    real = [n for n in names if n]
-    if len(real) < 2:
+    recs = [
+        r
+        for r in records
+        if isinstance(r, dict) and (r.get("name") or r.get("group_name"))
+    ]
+    if len(recs) < 2:
         return False
     try:
-        from src.dedup.unit_key import derive_unit_key, unit_keys_match
-
-        keys = [derive_unit_key(n) for n in real]
-        # every key must have a number (a keyless/underspecified name is NOT auto-merged)
-        if any(not k.numbers for k in keys):
-            return False
-        base = keys[0]
-        for k in keys[1:]:
-            ok, _ = unit_keys_match(base, k)
-            if not ok:
-                return False
-        return True
+        return _all_keys_match(recs) and not _any_nationality_conflict(recs)
     except Exception:  # noqa: BLE001 - never auto-merge on error
         return False
+
+
+def _group_rec_name(r: dict) -> str:
+    return r.get("name") or r.get("group_name") or ""
+
+
+def _all_keys_match(recs: list) -> bool:
+    """True if every record resolves to a numbered canonical key matching the first (no
+    veto). Keyless/underspecified names -> False (not auto-merged)."""
+    from src.dedup.unit_key import derive_unit_key, unit_keys_match
+
+    keys = [derive_unit_key(_group_rec_name(r)) for r in recs]
+    if any(not k.numbers for k in keys):
+        return False
+    return all(unit_keys_match(keys[0], k)[0] for k in keys[1:])
+
+
+def _any_nationality_conflict(recs: list) -> bool:
+    """True if any pair has a nationality conflict (never auto-merge different nations'
+    same-number units)."""
+    from scripts.find_duplicate_groups import _group_nationality_conflict
+
+    for i in range(len(recs)):
+        for j in range(i + 1, len(recs)):
+            a = {"name": _group_rec_name(recs[i]), "data": recs[i]}
+            b = {"name": _group_rec_name(recs[j]), "data": recs[j]}
+            if _group_nationality_conflict(a, b):
+                return True
+    return False
 
 
 def _extract_coords_from_place(data: dict) -> tuple:

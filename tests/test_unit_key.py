@@ -190,3 +190,26 @@ def test_combat_command_requires_parent_division():
     assert not _m("CCA, 3rd Armored", "CCB, 3rd Armored")
     # a bare CC does not match a divisioned CC either.
     assert not _m("Combat Command B", "CCB, 3rd Armored Division")
+
+
+def test_infantry_default_is_us_only():
+    from src.dedup.unit_key import derive_unit_key
+
+    # US bare division -> infantry
+    assert derive_unit_key("9th Division").arm == "infantry"
+    # non-US signals suppress the infantry default (German/SS/British/Volksgrenadier)
+    assert derive_unit_key("2nd German Division").arm is None
+    assert derive_unit_key("1st SS Division").arm is None
+    assert derive_unit_key("British 3rd Division").arm is None
+    assert derive_unit_key("18 VG Division").arm == "vg"  # explicit non-inf modifier
+
+
+def test_unknown_branch_modifier_vetoes_vs_infantry():
+    # "5th Fighter Division" must NOT merge with "5th Infantry Division"
+    assert not _m("5th Fighter Division", "5th Infantry Division")
+    assert not _m("5th Alpini Division", "5th Infantry Division")
+    # but a US bare division still matches the explicit infantry division
+    assert _m("9th Division", "9th Infantry Division")
+    assert _m(
+        "Ninth Division", "9th Division"
+    )  # ordinal word not mistaken for a branch

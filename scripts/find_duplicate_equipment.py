@@ -60,9 +60,14 @@ _EQUIPMENT_ALIASES: Dict[str, str] = _load_aliases()
 
 
 def _all_names(equip: Dict[str, Any]) -> List[str]:
-    """Get primary names for an equipment item, including alias resolutions."""
+    """Get primary names for an equipment item, including alias + canonical resolutions."""
     names = [equip.get("common_name", ""), equip.get("technical_identifier", "")]
     names.extend(equip.get("alternate_names", []))
+    # The disambiguator-resolved canonical identity (Grok/learned/curated) — so records
+    # resolved to the same canonical name across naming systems match in detection, not
+    # just those covered by the curated alias table.
+    if equip.get("canonical_name"):
+        names.append(equip["canonical_name"])
     names = [n for n in names if n]
     # Add canonical names from alias table
     for n in list(names):
@@ -113,6 +118,15 @@ def _load_exclusions(equipment_dir: Path) -> tuple:
     return store.load(), store.load_name_exclusions()
 
 
+def _any_captured(item: Dict) -> bool:
+    """True if any mention flags this equipment as captured (structured flag, not a
+    context substring). Also tolerates a legacy top-level signal."""
+    for m in item.get("event_mentions", []) or []:
+        if m.get("captured"):
+            return True
+    return bool(item.get("captured"))
+
+
 def _score_pair(item1: Dict, item2: Dict) -> tuple:
     """Score a pair of equipment items. Returns (confidence, reasons, best_match)."""
     import re
@@ -126,13 +140,18 @@ def _score_pair(item1: Dict, item2: Dict) -> tuple:
     if num1 and num2 and num1.group(1) != num2.group(1):
         return 0.0, [], 0.0
 
-    # Reject if countries differ (unless one is marked as captured equipment)
-    country1 = item1.get("country_of_origin", "")
-    country2 = item2.get("country_of_origin", "")
-    if country1 and country2 and country1 != country2:
-        captured1 = "captured" in str(item1.get("context", "")).lower()
-        captured2 = "captured" in str(item2.get("context", "")).lower()
-        if not captured1 and not captured2:
+    # Veto on COUNTRY OF ORIGIN only (the equipment type's design/manufacture origin,
+    # a stable identity property). We must NOT veto on who was *using* it: the British
+    # used US-origin Shermans and the Germans used captured US/FR gear — those are the
+    # SAME equipment type (same origin) and must stay ONE record. Operator lives on the
+    # mention (operating_country / captured), never on this identity veto.
+    origin1 = item1.get("country_of_origin", "")
+    origin2 = item2.get("country_of_origin", "")
+    if origin1 and origin2 and origin1 != origin2:
+        # Genuine different origins (US M4 vs German Panther) -> veto, UNLESS one record
+        # is flagged as captured-and-used-against-origin on any mention (defensive: a
+        # mislabeled origin that actually reflects a captor).
+        if not (_any_captured(item1) or _any_captured(item2)):
             return 0.0, [], 0.0
 
     confidence = 0.0

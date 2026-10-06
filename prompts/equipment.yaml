@@ -21,10 +21,28 @@ schema: |
         "category": "armor",
         "subcategory": "medium_tank",
         "country_of_origin": "USA",
+        "operating_country": "GBR",
+        "captured": false,
+        "quantity": 10,
+        "quantity_text": "10",
+        "place_name": "the crossroads in Cherbourg",
+        "assertion_source": "narrative",
         "variants": [],
         "specifications": {},
         "using_unit_name": "2nd Armored Division",
         "using_person_name": null,
+        "supporting_units": [
+          {"unit_name": "IX Tactical Air Command", "support_type": "aircraft", "equipment_name": "P-47 Thunderbolt"}
+        ],
+        "related_equipment": [
+          {"relationship": "successor", "name": "M26 Pershing", "basis": "introduced to counter German heavy tanks", "original_text": "the M26 Pershing would eventually replace the Sherman"}
+        ],
+        "crew_accounts": [
+          {"person_name": "Belton Cooper", "role": "maintenance officer", "observations": "frequent transmission failures in bocage", "original_text": "Cooper recorded that transmissions failed repeatedly in the hedgerows", "book": "Death Traps"}
+        ],
+        "environmental_performance": [
+          {"condition": "sub-zero temperatures", "effect": "performed badly", "original_text": "the M4 performed badly in sub-zero temperatures"}
+        ],
         "performance_notes": "Effective against infantry positions",
         "context": "Used in breakout operations",
         "original_text": "Sherman tanks of the 2nd Armored",
@@ -45,6 +63,80 @@ rules:
     BAR → category: "infantry_weapons", subcategory: "automatic_rifle"
     88mm gun → category: "artillery", subcategory: "anti_aircraft" (NOT "armor")
   - 'Do NOT use equipment-specific names as category (e.g., "Medium Tank" is WRONG — use "armor")'
-  - "Country codes use ISO 3166-1 alpha-3 (USA, GBR, DEU, FRA, etc.)"
+  - "Country codes use ISO 3166-1 alpha-3 (USA, GBR, DEU, FRA, ITA, JPN; use SUN for the WWII USSR, NOT USSR/RUS)"
+  - |
+    country_of_origin = the country that DESIGNED/MANUFACTURED the equipment type.
+    This is a STABLE identity of the equipment, NOT who is using it. A Sherman is
+    always country_of_origin "USA" even when a British unit operates it. A Panther
+    is always "DEU".
+  - |
+    operating_country = who was USING the equipment in THIS specific mention. It MAY
+    differ from country_of_origin. Set captured=true only when the operator is using
+    it AGAINST its origin (captured gear). Examples:
+    - British unit using US Shermans: country_of_origin "USA", operating_country "GBR", captured false
+    - Germans using a captured US M10: country_of_origin "USA", operating_country "DEU", captured true
+    - US unit using its own Shermans: country_of_origin "USA", operating_country "USA", captured false
+    If the operator is not stated, leave operating_country null and captured false.
   - Only extract specifically named equipment, not generic references
+  - |
+    ENVIRONMENTAL PERFORMANCE — if the source states how this equipment PERFORMED under a
+    weather/terrain condition, record it in environmental_performance with condition
+    (e.g. "sub-zero temperatures", "snow", "bocage", "mud"), effect (e.g. "performed badly",
+    "track wear", "engine overheating"), and the VERBATIM original_text (MANDATORY). This is
+    condition-linked PERFORMANCE of the equipment. Do NOT record the event's ambient weather
+    here ("it was snowing") — that belongs to the Weather entity, not equipment.
+  - |
+    CREW ACCOUNTS — if the source narrates a named crew member's firsthand experience
+    operating this equipment, record it in crew_accounts with person_name, role,
+    observations, and the VERBATIM original_text + book. original_text is MANDATORY —
+    source tracking is non-negotiable; never invent an account. Omit if none.
+  - |
+    IMAGES — if the source places a figure/photo near a mention, default its image_scope
+    to "representative": books routinely use GENERIC/STOCK pictures to illustrate the
+    equipment TYPE, which do NOT prove the image is of this specific event. Use
+    "documentary" ONLY when the source explicitly asserts the image is of THIS engagement
+    (e.g. a caption "Shermans of the 2nd Armored at this crossroads, 25 July 1944"). Never
+    infer documentary from proximity alone.
+  - |
+    RELATED EQUIPMENT — record relationships ONLY when the SOURCE TEXT asserts them,
+    between this equipment and a DISTINCT piece (its own record):
+    - relationship: one of predecessor | successor | variant.
+    - name: the distinct related piece (e.g. "M26 Pershing", "M10", "M3 Lee").
+    - basis: short/verbatim reason the source relates them (e.g. "76mm gun vs the
+      standard 75mm"); null if the source just names the relation.
+    - original_text: the verbatim passage asserting it (REQUIRED — traceability).
+    DISCRIMINATOR: a sub-designation / modification of the SAME base (M4A1, "the 76mm
+    version of the M4", "up-gunned M4") is an INLINE variant -> put it in variants[],
+    NOT in related_equipment. Only a DISTINCT piece with its own identity (M26 Pershing,
+    M10 Wolverine, M3 Lee) goes in related_equipment. Do NOT invent relationships from
+    general knowledge — only what the text states.
+  - |
+    SUPPORTING UNITS (combined arms) — for units that supported this equipment, give
+    unit_name, support_type = the SUPPORTING unit's OWN arm (a P-47 wing supporting a
+    tank is "aircraft", NOT the tank's "armor"), and equipment_name if the source names
+    the supporting equipment. Omit if none.
+  - |
+    QUANTITY — record how many of this equipment the source states for THIS mention:
+    - Exact number stated ("10 M4 Shermans at the crossroads"): quantity 10, quantity_text "10".
+    - Vague count stated ("several Shermans", "a handful", "about a dozen"): quantity null,
+      quantity_text the VERBATIM phrase ("several"). NEVER invent a number for a vague count.
+    - No count stated: quantity null, quantity_text null.
+  - |
+    PLACE — set place_name to where this equipment was for THIS mention (e.g. "the
+    crossroads in Cherbourg"). Strongly preferred but optional; omit if not stated.
+  - |
+    ASSERTION GATE — only create a mention when the SOURCE ASSERTS this equipment was
+    present. Set assertion_source:
+    - "narrative" = the text asserts it ("10 Shermans engaged at the Cherbourg crossroads").
+    - "media_narration" = a video/audio NARRATION explicitly asserts it ("5 Shermans
+      engaged at Cherbourg").
+    DO NOT create a mention from ambient/stock video footage that merely shows or discusses
+    a place without asserting this equipment was in that engagement. If a scene covers the
+    Cherbourg crossroads but does not say the equipment was there, IGNORE it. Only an
+    explicit assertion (narration saying "5 Shermans engaged at Cherbourg") counts.
+  - |
+    CONFLICTS & TRACEABILITY — conflicting facts across sources are EXPECTED and allowed
+    (one source says 10, another says 5): record each as its own mention; do NOT merge or
+    reconcile them. Tracing every fact to its origin is NON-NEGOTIABLE: always populate
+    original_text with the verbatim passage/narration the mention came from.
   - "If no equipment found, return empty Equipment array"

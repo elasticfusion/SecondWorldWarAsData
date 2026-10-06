@@ -281,7 +281,7 @@ class TestBibliographyResolver:
 
 
 class TestEquipmentMedia:
-    """Test equipment_ext/media.py prompt rendering."""
+    """Test equipment media/vision prompt rendering (prompts used by equipment.py)."""
 
     def test_vision_prompt_renders(self):
         from src.utils.prompt_loader import render_prompt

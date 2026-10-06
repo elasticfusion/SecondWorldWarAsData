@@ -1,8 +1,17 @@
 # Equipment Alias Table
-# Maps common nicknames/abbreviations to canonical technical names.
-# Used by dedup to match informal references to formal equipment entries.
+# Maps common nicknames / abbreviations / cross-system designations to a canonical
+# technical name. Used by the disambiguator (checked FIRST, authoritative) + dedup.
+#
+# Organized by NATIONALITY so additional theaters drop in as whole sections. Current
+# corpus is ETO (US / German / British). Japanese / Italian / Soviet sections are
+# placeholders to be populated when those theaters are ingested.
+#
+# Lookups are normalized (lowercase, punctuation/spacing stripped, Pz.Kpfw.<->Panzer,
+# roman<->arabic), so ONE entry matches surface variants ("Pz.Kpfw. IV" == "Panzer IV"
+# == "PzKpfw IV"). Keys here may be written in natural form; they are normalized on load.
 
 aliases:
+  # ============================= UNITED STATES =============================
   # US Armor
   sherman: "m4 sherman"
   easy eight: "m4a3e8 sherman"
@@ -16,8 +25,33 @@ aliases:
   scott: "m8 scott"
   greyhound: "m8 greyhound"
   chaffee: "m24 chaffee"
+  # US Artillery / Infantry weapons / Vehicles / Aircraft
+  long tom: "155mm gun m1 long tom"
+  calliope: "t34 calliope"
+  garand: "m1 garand"
+  carbine: "m1 carbine"
+  tommy gun: "m1 thompson"
+  thompson: "m1 thompson"
+  bar: "m1918 browning automatic rifle"
+  bazooka: "m1 bazooka"
+  grease gun: "m3 grease gun"
+  browning: "m2 browning"
+  jeep: "willys mb jeep"
+  deuce and a half: "gmc cckw 2.5 ton truck"
+  dukw: "dukw amphibious truck"
+  duck: "dukw amphibious truck"
+  thunderbolt: "p-47 thunderbolt"
+  jug: "p-47 thunderbolt"
+  mustang: "p-51 mustang"
+  lightning: "p-38 lightning"
+  liberator: "b-24 liberator"
+  fortress: "b-17 flying fortress"
+  flying fortress: "b-17 flying fortress"
+  marauder: "b-26 marauder"
+  havoc: "a-20 havoc"
 
-  # German Armor
+  # ================================ GERMANY ================================
+  # German Armor — type names + nicknames
   panther: "pzkpfw v panther"
   tiger: "pzkpfw vi tiger"
   king tiger: "pzkpfw vi ausf b tiger ii"
@@ -32,45 +66,70 @@ aliases:
   elefant: "panzerjager tiger p ferdinand"
   hetzer: "jagdpanzer 38 hetzer"
   brummbar: "sturmpanzer iv brummbar"
-
-  # Artillery
+  # German Sd.Kfz. inventory numbers -> canonical type (role-grouped: 100-199 tanks/SP,
+  # 200-299 recon/carriers). Normalization strips the "Sd.Kfz." punctuation.
+  "sdkfz 181": "pzkpfw vi tiger"
+  "sdkfz 171": "pzkpfw v panther"
+  "sdkfz 161": "pzkpfw iv"
+  "sdkfz 161-1": "pzkpfw iv"
+  "sdkfz 161-2": "pzkpfw iv"
+  "sdkfz 141": "pzkpfw iii"
+  "sdkfz 142": "sturmgeschutz iii"
+  "sdkfz 251": "sdkfz 251 half-track"
+  "sdkfz 234": "sdkfz 234 puma"
+  # German Artillery / Infantry weapons
   "88": "88mm flak 36"
   eighty-eight: "88mm flak 36"
-  long tom: "155mm gun m1 long tom"
   nebelwerfer: "15cm nebelwerfer 41"
   screaming mimi: "15cm nebelwerfer 41"
-  calliope: "t34 calliope"
-
-  # Infantry Weapons
-  garand: "m1 garand"
-  carbine: "m1 carbine"
-  tommy gun: "m1 thompson"
-  thompson: "m1 thompson"
-  bar: "m1918 browning automatic rifle"
-  bazooka: "m1 bazooka"
+  moaning minnie: "15cm nebelwerfer 41"
   panzerfaust: "panzerfaust 60"
   panzerschreck: "raketenpanzerbuchse 54"
+  mg34: "maschinengewehr 34"
   mg42: "maschinengewehr 42"
   mp40: "maschinenpistole 40"
   schmeisser: "maschinenpistole 40"
-  grease gun: "m3 grease gun"
-  browning: "m2 browning"
+  kar98k: "karabiner 98k"
+  stg44: "sturmgewehr 44"
 
-  # Vehicles
-  jeep: "willys mb jeep"
-  deuce and a half: "gmc cckw 2.5 ton truck"
-  half-track: "m3 half-track"
-  dukw: "dukw amphibious truck"
-  duck: "dukw amphibious truck"
+  # ============================= UNITED KINGDOM =============================
+  # British-service US tanks: Sherman MARK -> US model (a Sherman V IS an M4A4).
+  sherman i: "m4 sherman"
+  sherman ii: "m4a1 sherman"
+  sherman iii: "m4a2 sherman"
+  sherman iv: "m4a3 sherman"
+  sherman v: "m4a4 sherman"
+  firefly: "sherman firefly"
+  sherman ic: "sherman firefly"
+  sherman vc: "sherman firefly"
+  # British A-numbers + service names
+  a11: "matilda i"
+  a12: "matilda ii"
+  matilda: "matilda ii"
+  a15: "crusader"
+  crusader: "a15 crusader"
+  a22: "churchill"
+  churchill: "a22 churchill"
+  a27l: "centaur"
+  centaur: "a27l centaur"
+  a27m: "cromwell"
+  cromwell: "a27m cromwell"
+  a34: "comet"
+  comet: "a34 comet"
+  valentine: "valentine infantry tank"
+  # British guns
+  6-pounder: "ordnance qf 6-pounder"
+  17-pounder: "ordnance qf 17-pounder"
+  25-pounder: "ordnance qf 25-pounder"
+  sten: "sten mk ii"
 
-  # Aircraft
-  thunderbolt: "p-47 thunderbolt"
-  jug: "p-47 thunderbolt"
-  mustang: "p-51 mustang"
-  lightning: "p-38 lightning"
-  liberator: "b-24 liberator"
-  fortress: "b-17 flying fortress"
-  flying fortress: "b-17 flying fortress"
-  marauder: "b-26 marauder"
-  havoc: "a-20 havoc"
-  typhoon: "hawker typhoon"
+  # ================================ JAPAN ==================================
+  # TODO: populate when the Pacific/Japanese theater is ingested (Chi-Ha / Type 97,
+  # Ha-Go / Type 95, Zero / A6M, etc.). Section intentionally empty for now.
+
+  # ================================ ITALY ==================================
+  # TODO: populate when the Italian theater is ingested (M13/40, Semovente, etc.).
+
+  # =============================== SOVIET UNION ============================
+  # TODO: populate when the Eastern Front / Soviet equipment is ingested
+  # (T-34, KV-1, IS-2, PPSh-41, etc.).

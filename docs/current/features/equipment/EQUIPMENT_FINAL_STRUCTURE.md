@@ -19,7 +19,7 @@
   "subcategory": "medium_tank",
   "variants": [...],
   "specifications": {...},
-  "mentions": [...],
+  "event_mentions": [...],
   "external_data": {...}
 }
 ```
@@ -96,11 +96,50 @@ supporting_units[].EquipmentID → output/equipment/{file}.json
 
 To avoid confusing the LLM, these optional fields were removed:
 - ❌ `book`, `author`, `series`, `chapter` - Available via EventID lookup
-- ❌ `paragraph_numbers` - Not essential for linking
-- ❌ `variant_mentioned` - Can be in performance notes if needed
-- ❌ `context` - Redundant with event/sub-event names
 - ❌ `description` - Redundant with performance notes
-- ❌ `original_text` - Not needed for structured extraction
+
+**Note:** `original_text` is **retained** (it was previously dropped). The extractor
+captures the verbatim source passage per mention and it is now **declared in the enforced
+schema** (`src/schemas/equipment_output.py`) so retention is contractual. It is required
+by the reusable `SourceRechecker` (`src/extraction/source_recheck.py` +
+`equipment_source_recheck.py`) to gap-fill critical fields — notably `country_of_origin`
+(a dedup veto), `category`, `quantity`, and narrative `place_name` — from the source
+rather than guessing externally. `context`, `paragraph_numbers`, and `variant_mentioned`
+are also retained on mentions.
+
+### Per-mention quantity, place, and assertion (schema 2.8)
+
+- **`quantity`** (integer, nullable) + **`quantity_text`** (verbatim, nullable): "10 M4
+  Shermans at the crossroads" → `quantity: 10`, `quantity_text: "10"`; "several Shermans"
+  → `quantity: null`, `quantity_text: "several"` (vague counts are preserved verbatim,
+  never fabricated into a number); no count stated → both null.
+- **`PlaceID`** + **`place_name`**: where the equipment was for this mention. Strongly
+  preferred but **not required**; `PlaceID` is denormalized from the event's place link
+  (consistent with `DateID`).
+- **`assertion_source`** (`narrative` | `media_narration`): a mention is created **only
+  when the source asserts** the equipment was present — stated in the text, or in a
+  video/audio **narration** that explicitly says so (e.g. "5 Shermans engaged at
+  Cherbourg"). **Ambient/stock footage** that merely shows or discusses a place without
+  asserting the equipment was in that engagement is **ignored** (no mention).
+- **Conflicts are expected and allowed.** If sources disagree on count/place, each is kept
+  as its own mention — never merged — because **tracing every fact to its origin source
+  (`original_text` + `book`) is non-negotiable.**
+
+### Record-level related_equipment (schema 2.9)
+
+Relationships the **source text asserts** between this equipment and a **distinct** piece
+(its own record). Narrative-sourced only — `original_text` retained.
+
+- Each entry: `relationship` (`predecessor` | `successor` | `variant`), `name`, `basis`
+  (short/verbatim reason, e.g. "76mm gun vs the standard 75mm"), `EquipmentID`,
+  `original_text`.
+- **Discriminator:** a sub-designation/modification of the **same base** (M4A1, "the 76mm
+  version of the M4") stays an **inline `variants[]`** entry — NOT `related_equipment`.
+  Only a **distinct piece** (M26 Pershing, M10) gets a `related_equipment` link.
+- When the related piece has no record yet, a **minimal record** (`EquipmentID` +
+  `common_name`) is **auto-created** so the link carries a real ID; otherwise `name` is
+  kept with a null `EquipmentID`. Relationships accumulate across mentions (deduped by
+  relationship+name; conflicting relationships are all kept).
 
 ---
 
@@ -131,7 +170,7 @@ Essential linking and data:
   "technical_identifier": "M4",
   "description": "American medium tank",
   "category": "armor",
-  "mentions": [
+  "event_mentions": [
     {
       "MentionID": "01KJ3DQ64DHFHYHA5WGWFHMCXV",
       "EventID": "01KJ3DQ64D7ESXAET2YZGYK8BT",
@@ -155,7 +194,8 @@ Essential linking and data:
 
 ## See Also
 
-- **Schema:** `contextmanagement/Specs/military_equipment_schema.json`
-- **Proposal:** `docs/current/features/MILITARY_EQUIPMENT.md`
-- **Summary:** `docs/current/features/MILITARY_EQUIPMENT_SUMMARY.md`
+- **Index:** [README.md](README.md)
+- **Enforced schema (source of truth):** `src/schemas/equipment_output.py`
+- **Proposal (aspirational):** [MILITARY_EQUIPMENT.md](MILITARY_EQUIPMENT.md)
+- **Deduplication:** [EQUIPMENT_DEDUPLICATION.md](EQUIPMENT_DEDUPLICATION.md)
 - **ULID Guide:** `docs/current/core/ULID_IMPLEMENTATION.md`

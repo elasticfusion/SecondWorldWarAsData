@@ -119,23 +119,37 @@ def update_event_refs(
         "PersonID",
         "PlaceID",
         "PeopleGroupID",
+        "GroupID",
         "EquipmentID",
         "DateID",
         "DateMentionID",
         "PlaceMentionID",
         "WeatherMentionID",
+        "WeatherID",
         "EventID",
         "Sub-eventID",
         "Sub_eventID",
         "CasualtyID",
         "LogisticsID",
     }
-    for subdir in ("logistics", "casualties", "weather"):
+    # Scan ALL entity dirs that can hold cross-references (not just logistics/casualties/
+    # weather) — e.g. equipment mentions carry PlaceID/PeopleGroupID/PersonID/EquipmentID,
+    # so a place/person/group merge must rebase those too or they dangle.
+    for subdir in (
+        "logistics",
+        "casualties",
+        "weather",
+        "equipment",
+        "people",
+        "people_groups",
+        "dates",
+        "maps",
+    ):
         entity_dir = output_root / subdir
         if not entity_dir.exists():
             continue
         for f in entity_dir.glob("*.json"):
-            if f.name.startswith("."):
+            if f.name.startswith(".") or f.name == "index.json":
                 continue
             try:
                 data = json.loads(f.read_text(encoding="utf-8"))

@@ -278,42 +278,12 @@ def _handle_notgroup(groups_dir, groups):
     return None  # Don't auto-merge after removing non-groups
 
 
-def _replace_id_in_entity_files(output_root: Path, old_id: str, new_id: str):
-    """Replace old_id with new_id in logistics, casualties, and weather JSON files."""
-    for subdir in ("logistics", "casualties", "weather"):
-        entity_dir = output_root / subdir
-        if not entity_dir.exists():
-            continue
-        for f in entity_dir.glob("*.json"):
-            try:
-                text = f.read_text(encoding="utf-8")
-            except OSError:
-                continue
-            if old_id not in text:
-                continue
-            f.write_text(text.replace(old_id, new_id), encoding="utf-8")
-
-
 def _update_event_refs(output_root: Path, old_id: str, new_id: str, ref_key: str):
-    """Replace old entity ID with new ID in all event and entity files."""
-    for f in sorted(output_root.rglob("*-event.json")):
-        try:
-            with open(f, "r", encoding="utf-8") as fh:
-                d = json.load(fh)
-        except (OSError, json.JSONDecodeError):
-            continue
-        event = d.get("Event", d)
-        changed = False
-        for se in event.get("Sub-events", []):
-            refs = se.get(ref_key, [])
-            if old_id in refs:
-                refs[refs.index(old_id)] = new_id
-                changed = True
-        if changed:
-            with open(f, "w", encoding="utf-8") as fh:
-                json.dump(d, fh, indent=2, ensure_ascii=False)
+    """Redirect references old_id -> new_id across event + entity files. Delegates to the
+    shared src.dedup.merge.update_event_refs (consolidated — was duplicated here)."""
+    from src.dedup.merge import update_event_refs
 
-    _replace_id_in_entity_files(output_root, old_id, new_id)
+    update_event_refs(output_root, old_id, new_id, ref_key)
 
 
 def _execute_merge(groups_dir, groups):

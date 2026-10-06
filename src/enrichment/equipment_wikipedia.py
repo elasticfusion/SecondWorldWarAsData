@@ -123,7 +123,11 @@ def _lookup_equipment(title: str) -> Optional[dict]:
             img_url = page_data.get("original", {}).get("source", "")
             license_info = None
             if img_url:
-                filename = img_url.rsplit("/", 1)[-1]
+                # Wikipedia appends tracking params (?utm_source=…) to image URLs; strip
+                # the query/fragment so the Commons File: title is valid for license
+                # lookup. (Caught by a live run — hermetic stubs never see these params.)
+                clean_url = img_url.split("?", 1)[0].split("#", 1)[0]
+                filename = clean_url.rsplit("/", 1)[-1]
                 license_info = _fetch_license(filename)
 
             page_title = page_data.get("title", title)

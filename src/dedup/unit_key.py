@@ -192,6 +192,71 @@ def _numbers(name: str) -> Set[str]:
     return nums
 
 
+# Echelon nouns that occupy the 'size' slot; a word just before one of these that is
+# NOT a known arm is treated as an (unrecognized) branch modifier.
+_ECHELON_NOUNS = (
+    r"(?:division|regiment|brigade|battalion|corps|army|squadron|wing|group|command)"
+)
+# Words in the branch slot that are structural, not a branch (skip them).
+_SLOT_SKIP = {
+    "us",
+    "u",
+    "s",
+    "british",
+    "french",
+    "german",
+    "italian",
+    "polish",
+    "canadian",
+    "soviet",
+    "russian",
+    "the",
+    "ss",
+    "panzer",
+}
+
+# Non-US nationality/formation markers: when present, the US infantry-default convention
+# does NOT apply (a German/British/Soviet/SS/Panzer/Volksgrenadier bare division is not
+# infantry-by-default). The infantry default is purely a US Army designation.
+_NON_US_SIGNAL = re.compile(
+    r"\b(panzer|volksgrenadier|volks\s*grenadier|vg|waffen|wehrmacht|ss|german|germany|"
+    r"british|britain|english|soviet|russian|russia|japanese|japan|italian|italy|"
+    r"french|france|polish|poland|canadian|canada|grenadier)\b"
+)
+
+
+def _non_us_signal(expanded: str) -> bool:
+    """True if the name carries a non-US nationality/formation marker (so the US-only
+    infantry default must NOT fire)."""
+    return bool(_NON_US_SIGNAL.search(expanded))
+
+
+def _branch_modifier(expanded: str) -> Optional[str]:
+    """Return an unrecognized branch-like adjective in the 'branch slot' right before the
+    echelon noun ('fighter division', 'alpini division', 'volksgrenadier division'), or
+    None. Signals a NON-infantry arm — captured as a distinct arm value so it vetoes
+    against 'infantry'. Known arms and structural words return None (handled elsewhere).
+    """
+    m = re.search(rf"\b([a-z]+)\s+{_ECHELON_NOUNS}\b", expanded)
+    if not m:
+        return None
+    word = m.group(1)
+    if word in _SLOT_SKIP:
+        return None
+    # service words (marine/naval/air/…) and known arms are not 'unknown' arms
+    if word in _SERVICE_TERMS or word in _ARM_TERMS:
+        return None
+    # a service-mapped token (e.g. "marine"->USMC) is a service, not an arm
+    if any(word == k for k in _SERVICE_TERMS):
+        return None
+    if re.fullmatch(r"\d+(?:st|nd|rd|th|d)?", word):
+        return None
+    # ordinal words in the slot ("ninth division") are the NUMBER, not a branch
+    if word in _ORDINAL_WORDS or word in _ROMAN:
+        return None
+    return word
+
+
 def _first_term(expanded: str, lexicon: dict) -> Optional[str]:
     # match multi-word terms first (e.g. "field artillery", "parachute infantry")
     for term in sorted(lexicon, key=lambda t: -len(t)):
@@ -254,62 +319,62 @@ def derive_unit_key(name: str, *, infantry_default: bool = True) -> UnitKey:
     source = canonical if canonical else (name or "")
     expanded = _expand(source)
 
-    # Combat Command (CCA/CCB/CCR or "Combat Command A/B/R"): armored combined-arms.
-    cc = re.search(r"\bcc\s*([abr])\b", expanded) or re.search(
+    cc = re.search(r"\bcc[\s\-]*([abr])\b", expanded) or re.search(
         r"\bcombat command\s+([abr])\b", expanded
     )
-
     numbers = set(_numbers(source))
     service = _first_term(expanded, _SERVICE_TERMS) or "ARMY"
     arm = _first_term(expanded, _ARM_TERMS)
     echelon = _first_term(expanded, _ECHELON_TERMS)
 
     if cc:
-        # The CC letter is the discriminating designator (keep distinct from numbers);
-        # a CC belongs to an armored division and is itself an armored combined-arms unit.
+        # CC letter is the discriminating designator; a CC is an armored combined-arms
+        # formation of an armored division.
         numbers.add(f"cc{cc.group(1)}")
         echelon = "combat_command"
-        arm = arm or "armored"
 
-    # Infantry combat-arm default: division/regiment only, Army only, bare arm only.
-    if (
-        arm is None
-        and service == "ARMY"
-        and infantry_default
-        and echelon
-        in (
-            "division",
-            "regiment",
-        )
-    ):
-        arm = "infantry"
-
+    arm = _resolve_arm(arm, expanded, service, echelon, bool(cc), infantry_default)
     return UnitKey(
         numbers=frozenset(numbers), service=service, arm=arm, echelon=echelon
     )
 
 
+def _resolve_arm(arm, expanded, service, echelon, is_cc, infantry_default):
+    """Resolve the combat arm: a CC is armored; an explicit-but-unknown branch modifier
+    is captured (so it vetoes vs infantry); otherwise apply the US-only infantry default
+    at division/regiment when no non-US signal is present."""
+    if arm:
+        return arm
+    if is_cc:
+        return "armored"
+    unknown_mod = _branch_modifier(expanded)
+    if unknown_mod:
+        return unknown_mod
+    # Infantry default is PURELY a US Army designation (bare "9th Division" = infantry),
+    # only at division/regiment, and only without a non-US nationality/formation signal.
+    if (
+        service == "ARMY"
+        and infantry_default
+        and echelon in ("division", "regiment")
+        and not _non_us_signal(expanded)
+    ):
+        return "infantry"
+    return None
+
+
 def unit_keys_match(k1: UnitKey, k2: UnitKey) -> tuple[bool, str]:
     """Apply the match rule. Returns (match, reason)."""
-    # Numbers must match (and at least one must have a number).
     if k1.numbers != k2.numbers:
         return False, "number mismatch"
     if not k1.numbers:
         return False, "no unit number"
-    # Combat Command must be affiliated with a DIVISION to be identifiable: a bare
-    # CCA/CCB/CCR (letter only, no parent-division number) is underspecified — its
-    # composition is task-organized/fluid, so letter+division is the only reliable
-    # identity. Two bare CCs can't be confidently matched (route to the human gate).
-    if any(str(n).startswith("cc") for n in k1.numbers):
-        if not any(not str(n).startswith("cc") for n in k1.numbers):
-            return False, "combat command without parent division (underspecified)"
-    # SERVICE mismatch -> ABSOLUTE veto (1st Marine Division != 1st Infantry Division).
+    # A bare Combat Command (letter, no parent division) is underspecified — can't match.
+    if _is_bare_combat_command(k1.numbers):
+        return False, "combat command without parent division (underspecified)"
     if k1.service != k2.service:
         return False, f"service mismatch ({k1.service} vs {k2.service})"
-    # COMBAT ARM: veto only when BOTH present and different; absent is permissive.
     if k1.arm and k2.arm and k1.arm != k2.arm:
         return False, f"arm mismatch ({k1.arm} vs {k2.arm})"
-    # ECHELON: veto only when BOTH present and different; absent is permissive.
     if k1.echelon and k2.echelon and k1.echelon != k2.echelon:
         return False, f"echelon mismatch ({k1.echelon} vs {k2.echelon})"
     arm = k1.arm or k2.arm or "unspecified"
@@ -318,3 +383,13 @@ def unit_keys_match(k1: UnitKey, k2: UnitKey) -> tuple[bool, str]:
         True,
         f"canonical unit key match (#{sorted(k1.numbers)} {k1.service} {arm} {ech})",
     )
+
+
+def _is_bare_combat_command(numbers) -> bool:
+    """True if the number-set has a CC letter but NO parent-division number — a bare
+    Combat Command is underspecified (composition is task-organized; letter+division is
+    the only reliable identity)."""
+    nums = [str(n) for n in numbers]
+    has_cc = any(n.startswith("cc") for n in nums)
+    has_division_number = any(not n.startswith("cc") for n in nums)
+    return has_cc and not has_division_number

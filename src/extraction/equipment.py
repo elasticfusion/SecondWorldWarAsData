@@ -44,6 +44,78 @@ class SupportingUnit(BaseModel):
     equipment_name: Optional[str] = Field(default=None, description="Equipment name")
 
 
+class SupportingUnitInput(BaseModel):
+    """LLM-provided supporting unit (resolved to IDs by _link_supporting_units)."""
+
+    unit_name: Optional[str] = Field(default=None, description="Supporting unit name")
+    support_type: Optional[str] = Field(
+        default=None,
+        description="The supporting unit's OWN arm (aircraft/artillery/armor/…)",
+    )
+    equipment_name: Optional[str] = Field(
+        default=None, description="Equipment the supporting unit used (if named)"
+    )
+
+
+class EnvironmentalPerformanceInput(BaseModel):
+    """How this equipment performed under a stated environmental/weather CONDITION, as the
+    SOURCE narrates it (e.g. 'the M4 performed badly in sub-zero temperatures'). This is
+    equipment-performance conditioned on weather/terrain — distinct from the ambient Weather
+    entity (which records the event's weather state). Narrative-sourced; original_text
+    mandatory for traceability."""
+
+    condition: Optional[str] = Field(
+        default=None,
+        description="The condition (e.g. 'sub-zero temperatures', 'snow', 'bocage', 'mud')",
+    )
+    effect: Optional[str] = Field(
+        default=None,
+        description="The effect on performance (e.g. 'performed badly', 'track wear', 'engine overheating')",
+    )
+    original_text: Optional[str] = Field(
+        default=None, description="Verbatim passage (REQUIRED for traceability)"
+    )
+
+
+class CrewAccountInput(BaseModel):
+    """A crew member's firsthand account of operating this equipment, as the SOURCE
+    narrates it. Narrative-sourced only — source tracking is mandatory: original_text
+    (verbatim) + book identify the origin. PersonID is resolved from person_name."""
+
+    person_name: Optional[str] = Field(default=None, description="Named crew member")
+    role: Optional[str] = Field(
+        default=None, description="e.g. commander, driver, gunner"
+    )
+    observations: Optional[str] = Field(
+        default=None, description="What they reported about the equipment"
+    )
+    original_text: Optional[str] = Field(
+        default=None, description="Verbatim passage (REQUIRED for traceability)"
+    )
+    book: Optional[str] = Field(default=None, description="Source book/title")
+
+
+class RelatedEquipmentInput(BaseModel):
+    """A relationship the SOURCE draws between this equipment and ANOTHER DISTINCT piece
+    (its own record), e.g. predecessor/successor, or a distinct related configuration.
+    Narrative-sourced only — original_text is required for traceability. Inline
+    sub-designations (M4A1, 'up-gunned M4') are NOT related_equipment; they are variants.
+    """
+
+    relationship: str = Field(description="predecessor | successor | variant")
+    name: str = Field(
+        description="Name of the DISTINCT related equipment (e.g. 'M26 Pershing')"
+    )
+    basis: Optional[str] = Field(
+        default=None,
+        description="Short/verbatim reason the source relates them (e.g. '76mm gun vs "
+        "the standard 75mm'). Null if the source just names the relation.",
+    )
+    original_text: Optional[str] = Field(
+        default=None, description="Verbatim passage asserting the relationship"
+    )
+
+
 class PerformanceNotes(BaseModel):
     """Performance observations."""
 
@@ -61,6 +133,15 @@ class MediaItem(BaseModel):
     source: str = Field(description="wikipedia, commons, archive, etc.")
     license: Optional[str] = Field(default=None, description="License info")
     description: Optional[str] = Field(default=None, description="Media description")
+    image_scope: str = Field(
+        default="representative",
+        description=(
+            "representative = a generic/stock image illustrating the equipment TYPE "
+            "(the DEFAULT — books routinely use stock photos; do NOT claim it depicts "
+            "this event). documentary = the source EXPLICITLY asserts the image is of "
+            "this specific event/engagement. Vision identifies the TYPE, never the event."
+        ),
+    )
 
 
 class EquipmentMention(BaseModel):
@@ -75,6 +156,27 @@ class EquipmentMention(BaseModel):
     variant_mentioned: Optional[str] = None
     context: Optional[str] = None
     original_text: Optional[str] = None
+    operating_country: Optional[str] = Field(
+        default=None, description="Who used it in this mention (per-mention operator)"
+    )
+    captured: bool = Field(
+        default=False, description="Captured and used against its origin (per-mention)"
+    )
+    quantity: Optional[int] = Field(
+        default=None, description="Exact count stated for this mention (per-mention)"
+    )
+    quantity_text: Optional[str] = Field(
+        default=None, description="Verbatim count phrase (e.g. 'several') (per-mention)"
+    )
+    PlaceID: Optional[str] = Field(
+        default=None, description="Linked place for this mention (denormalized)"
+    )
+    place_name: Optional[str] = Field(
+        default=None, description="Place name for this mention (per-mention)"
+    )
+    assertion_source: Optional[str] = Field(
+        default=None, description="narrative | media_narration (how presence asserted)"
+    )
     EventID: str = Field(description="Links to Event.EventID")
     Event_Name: Optional[str] = None
     Sub_eventID: str = Field(description="Links to Sub-eventID in Event.Sub-events[]")
@@ -94,11 +196,18 @@ class EquipmentMention(BaseModel):
 
 
 class Variant(BaseModel):
-    """Equipment variant."""
+    """Equipment variant — managed INLINE in the same record file. May carry its own
+    specifications/images (M4A1 vs M4A3E8 differ)."""
 
     variant_name: str
     differences: Optional[str] = None
     alternate_names: List[str] = Field(default_factory=list)
+    specifications: Optional[Dict[str, Any]] = Field(
+        default=None, description="This variant's own specs (if they differ)"
+    )
+    images: List[Dict[str, Any]] = Field(
+        default_factory=list, description="This variant's own images"
+    )
 
 
 class ExternalDataPoint(BaseModel):
@@ -145,7 +254,61 @@ class EquipmentExtraction(BaseModel):
     )
     country_of_origin: Optional[str] = Field(
         default=None,
-        description="ISO 3166-1 alpha-3 country code (e.g., 'USA', 'DEU', 'GBR', 'FRA', 'ITA', 'JPN', 'CAN')",
+        description=(
+            "DESIGN/MANUFACTURE origin of this equipment TYPE — the country that "
+            "built/designed it, NOT whoever is using it here (a Sherman is 'USA' "
+            "even when used by the British). ISO 3166-1 alpha-3 (e.g., 'USA', "
+            "'DEU', 'GBR', 'FRA', 'ITA', 'JPN', 'CAN')"
+        ),
+    )
+    operating_country: Optional[str] = Field(
+        default=None,
+        description=(
+            "Who was USING the equipment in THIS mention (may differ from origin: "
+            "British using US Shermans -> 'GBR'; Germans using captured US gear -> "
+            "'DEU'). ISO 3166-1 alpha-3. Per-mention, does NOT change the equipment "
+            "type's identity."
+        ),
+    )
+    captured: bool = Field(
+        default=False,
+        description=(
+            "True if the equipment was CAPTURED and used against its origin (e.g. a "
+            "German-operated captured US M10). Per-mention."
+        ),
+    )
+    quantity: Optional[int] = Field(
+        default=None,
+        description=(
+            "Exact number of THIS equipment stated for THIS mention (e.g. '10 M4 "
+            "Shermans' -> 10). Null if not an exact number (use quantity_text for "
+            "vague counts)."
+        ),
+    )
+    quantity_text: Optional[str] = Field(
+        default=None,
+        description=(
+            "Verbatim count phrase exactly as the source states it (e.g. 'several', "
+            "'a handful', 'about a dozen', or '10'). Preserves vague counts without "
+            "fabricating a number. Null if no count is stated."
+        ),
+    )
+    place_name: Optional[str] = Field(
+        default=None,
+        description=(
+            "Where this equipment was, per THIS mention (e.g. 'the crossroads in "
+            "Cherbourg'). Strongly preferred but optional. Linked to a PlaceID when "
+            "resolvable."
+        ),
+    )
+    assertion_source: Optional[str] = Field(
+        default=None,
+        description=(
+            "How the source ASSERTS this equipment was present: 'narrative' (stated "
+            "in the text) or 'media_narration' (a video/audio narration explicitly "
+            "says so). Only create a mention when the source ASSERTS presence; "
+            "ambient/stock footage that does not assert it must NOT be extracted."
+        ),
     )
     variants: List[Variant] = Field(default_factory=list)
     specifications: Optional[Dict[str, Any]] = Field(
@@ -171,9 +334,38 @@ class EquipmentExtraction(BaseModel):
     paragraph_numbers: List[int] = Field(
         default_factory=list, description="Paragraph numbers where mentioned"
     )
-    supporting_unit_names: List[str] = Field(
+    supporting_units: List["SupportingUnitInput"] = Field(
         default_factory=list,
-        description="Names of supporting units (e.g., air support, artillery)",
+        description=(
+            "Supporting units in combined-arms ops (e.g. air support, artillery). Each "
+            "has unit_name, support_type (the SUPPORTING unit's own arm — aircraft/"
+            "artillery/armor — NOT this equipment's type), and the equipment it used."
+        ),
+    )
+    related_equipment: List["RelatedEquipmentInput"] = Field(
+        default_factory=list,
+        description=(
+            "Relationships the SOURCE draws between this equipment and another DISTINCT "
+            "piece (predecessor/successor/variant). Only when the text asserts it. Do "
+            "NOT list inline sub-designations here (M4A1, 'up-gunned M4' are variants)."
+        ),
+    )
+    crew_accounts: List["CrewAccountInput"] = Field(
+        default_factory=list,
+        description=(
+            "Firsthand crew accounts of operating this equipment that the SOURCE "
+            "narrates. Each MUST carry original_text (verbatim) — source tracking is "
+            "mandatory. Do not invent accounts."
+        ),
+    )
+    environmental_performance: List["EnvironmentalPerformanceInput"] = Field(
+        default_factory=list,
+        description=(
+            "How the equipment performed under weather/terrain CONDITIONS the SOURCE "
+            "states (e.g. 'M4 performed badly in sub-zero temperatures'). Each MUST carry "
+            "original_text. This is condition-linked PERFORMANCE — do NOT record the "
+            "event's ambient weather here (that is the Weather entity's job)."
+        ),
     )
 
     @field_validator("specifications", mode="before")
@@ -450,6 +642,40 @@ def _merge_enriched_data(
                 equipment_data[key] = enriched[key]
                 logger.debug("  Enriched %s: %s", key, type(enriched[key]).__name__)
     _build_external_data(enriched, equipment_data)
+    _merge_source_tracked_reference(equipment_data, enriched)
+
+
+def _merge_source_tracked_reference(
+    equipment_data: Dict[str, Any], enriched: Dict[str, Any]
+) -> None:
+    """Populate enrichment-sourced reference facts (timeline / technical_evolution /
+    logistics) and STAMP each with its source + source_url so even reference facts trace
+    to where they came from. Gap-fill only (don't overwrite existing)."""
+    source, source_url = _enrichment_source(enriched)
+    # timeline + logistics are objects -> stamp source on the object
+    for key in ("timeline", "logistics"):
+        val = enriched.get(key)
+        if isinstance(val, dict) and val and not equipment_data.get(key):
+            val = {**val, "source": source, "source_url": source_url}
+            equipment_data[key] = val
+    # technical_evolution is a list of change records -> stamp source on each
+    evo = enriched.get("technical_evolution")
+    if isinstance(evo, list) and evo and not equipment_data.get("technical_evolution"):
+        equipment_data["technical_evolution"] = [
+            {**e, "source": source, "source_url": source_url}
+            for e in evo
+            if isinstance(e, dict)
+        ]
+
+
+def _enrichment_source(enriched: Dict[str, Any]) -> tuple:
+    """Return (source_name, source_url) for provenance stamping based on which external
+    URL the enrichment carried."""
+    if enriched.get("grokipedia_url"):
+        return "grokipedia", enriched["grokipedia_url"]
+    if enriched.get("wikipedia_url"):
+        return "wikipedia", enriched["wikipedia_url"]
+    return "enrichment", None
 
 
 def _add_downloaded_media(
@@ -475,7 +701,37 @@ def _add_downloaded_media(
 
     if downloaded_media:
         equipment_data["media"] = downloaded_media
+        # Also populate the structured images[] (first-class, schema-validated) so photos
+        # are managed with provenance + trust markers, not just the legacy loose `media`.
+        equipment_data["images"] = _to_structured_images(
+            downloaded_media, verify_media_with_vision
+        )
         logger.info("  Added %s verified media items", len(downloaded_media))
+
+
+def _to_structured_images(
+    media_items: list, vision_verified: bool
+) -> List[Dict[str, Any]]:
+    """Map downloaded media items to the structured images[] shape. image_scope defaults
+    to 'representative' (a canonical TYPE reference image from Grokipedia/Wikipedia, not a
+    documentary photo of a specific event); vision_verified reflects whether vision ran.
+    """
+    images = []
+    for m in media_items:
+        if m.get("media_type", "photo") != "photo":
+            continue
+        images.append(
+            {
+                "url": m.get("url"),
+                "local_path": m.get("local_path"),
+                "source": m.get("source"),
+                "license": m.get("license"),
+                "caption": m.get("title") or m.get("description"),
+                "image_scope": "representative",
+                "vision_verified": bool(vision_verified),
+            }
+        )
+    return images
 
 
 def _enrich_and_add_media(
@@ -1133,16 +1389,17 @@ def _enrich_equipment_data(
     )
 
     try:
-        response = grok_client.chat_completion(
+        # Use extract_json: the model wraps JSON in a ```json fence, which a bare
+        # json.loads(chat_completion(...)) cannot parse (it silently returned {} for
+        # every record — caught by a live run). extract_json strips the fence.
+        enriched = grok_client.extract_json(
             prompt,
             temperature=0.1,
             use_cache=True,
             cache_type="equipment_enrichment",
         )
-
-        enriched = json.loads(response)
         logger.debug("Enriched data for %s", common_name)
-        return enriched
+        return enriched if isinstance(enriched, dict) else {}
     except Exception as e:
         logger.warning("Failed to enrich equipment data for %s: %s", common_name, e)
         return {}
@@ -1202,9 +1459,15 @@ def _find_matching_equipment(
     common_name: str,
     equipment_index: Dict[str, Path],
     technical_id: str = "",
+    canonical_name: str = "",
 ) -> Optional[str]:
-    """Find matching equipment by exact or fuzzy match."""
-    # Check technical_identifier first (most stable)
+    """Find matching equipment. Canonical identity (resolved across US/German/British
+    naming systems) is the MOST stable key, so check it first — this is what lets the
+    disambiguator actually prevent cross-naming splits (M4 vs Sherman V -> one record).
+    """
+    if canonical_name and canonical_name in equipment_index:
+        return canonical_name
+    # Check technical_identifier next (stable)
     if technical_id and technical_id in equipment_index:
         return technical_id
     if common_name in equipment_index:
@@ -1238,9 +1501,75 @@ def _merge_equipment_fields(existing: dict, equipment_data: dict) -> None:
         else:
             existing[key] = equipment_data[key]
 
+    _merge_related_equipment(existing, equipment_data)
+    _merge_crew_accounts(existing, equipment_data)
+    _merge_environmental_performance(existing, equipment_data)
+
+
+def _merge_environmental_performance(existing: dict, equipment_data: dict) -> None:
+    """Accumulate condition-linked environmental_performance across mentions, deduped by
+    (condition, original_text). Conflicts/different conditions are all kept."""
+    incoming = equipment_data.get("environmental_performance") or []
+    if not incoming:
+        return
+    merged = list(existing.get("environmental_performance") or [])
+    seen = {
+        ((e.get("condition") or "").lower(), e.get("original_text") or "")
+        for e in merged
+    }
+    for ep in incoming:
+        k = ((ep.get("condition") or "").lower(), ep.get("original_text") or "")
+        if k not in seen:
+            merged.append(ep)
+            seen.add(k)
+    existing["environmental_performance"] = merged
+
+
+def _merge_crew_accounts(existing: dict, equipment_data: dict) -> None:
+    """Accumulate narrative-sourced crew_accounts across mentions, deduped by
+    (person_name, original_text). Each account keeps its own source (original_text+book).
+    """
+    incoming = equipment_data.get("crew_accounts") or []
+    if not incoming:
+        return
+    merged = list(existing.get("crew_accounts") or [])
+    seen = {
+        ((a.get("person_name") or "").lower(), a.get("original_text") or "")
+        for a in merged
+    }
+    for acc in incoming:
+        k = ((acc.get("person_name") or "").lower(), acc.get("original_text") or "")
+        if k not in seen:
+            merged.append(acc)
+            seen.add(k)
+    existing["crew_accounts"] = merged
+
+
+def _merge_related_equipment(existing: dict, equipment_data: dict) -> None:
+    """Accumulate narrative-sourced related_equipment across mentions, deduped by
+    (relationship, lowercased name). New relationships are added; exact duplicates
+    collapse (conflicting/different relationships are all kept — each is traceable)."""
+    incoming = equipment_data.get("related_equipment") or []
+    if not incoming:
+        return
+    merged = list(existing.get("related_equipment") or [])
+    seen = {(r.get("relationship"), (r.get("name") or "").lower()) for r in merged}
+    for rel in incoming:
+        key = (rel.get("relationship"), (rel.get("name") or "").lower())
+        if key not in seen:
+            merged.append(rel)
+            seen.add(key)
+    existing["related_equipment"] = merged
+
 
 def _merge_into_existing(
-    eq_file: Path, new_mention: dict, equipment_data: dict, matched_name: str
+    eq_file: Path,
+    new_mention: dict,
+    equipment_data: dict,
+    matched_name: str,
+    grok_client: Optional[GrokClient] = None,
+    verify_media_with_vision: bool = True,
+    dates_index: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> Path:
     """Merge mention into existing equipment file."""
     logger.debug("Merging mention into existing equipment: %s", matched_name)
@@ -1265,10 +1594,268 @@ def _merge_into_existing(
         # Update optional fields
         _merge_equipment_fields(existing, equipment_data)
 
+        # Enrichment RETRY: a record whose first enrichment FAILED was saved without an
+        # enrichment_status stamp. A later mention is our chance to retry (idempotent —
+        # _enrich_on_identity no-ops once stamped). Already-enriched records are untouched.
+        if grok_client and not existing.get("enrichment_status"):
+            _enrich_on_identity(
+                existing,
+                grok_client,
+                verify_media_with_vision,
+                new_mention.get("Sub_eventID"),
+                dates_index,
+            )
+
+        # Stamp last-modified (equipment previously only set extracted_date on create).
+        existing["_last_updated"] = datetime.now(timezone.utc).date().isoformat()
+
         # Save
         save(existing)
 
     return eq_file
+
+
+# Generic/category words + classification phrases that, alone, do NOT constitute a
+# specific identity. Includes subcategory classes ("medium tank" vs "M4" — a common
+# disambiguation: the category is NOT the specific vehicle).
+_GENERIC_EQUIPMENT_WORDS = {
+    "tank",
+    "tanks",
+    "gun",
+    "guns",
+    "machine gun",
+    "machine guns",
+    "artillery",
+    "aircraft",
+    "plane",
+    "planes",
+    "vehicle",
+    "vehicles",
+    "truck",
+    "trucks",
+    "weapon",
+    "weapons",
+    "rifle",
+    "rifles",
+    "equipment",
+    "armor",
+    "cannon",
+    "howitzer",
+    "mortar",
+    # category / subcategory CLASSIFICATION phrases (not a specific designation)
+    "medium tank",
+    "heavy tank",
+    "light tank",
+    "tank destroyer",
+    "armored car",
+    "armoured car",
+    "self-propelled gun",
+    "assault gun",
+    "field gun",
+    "field howitzer",
+    "anti-tank gun",
+    "anti-aircraft gun",
+    "anti-tank",
+    "anti-aircraft",
+    "fighter",
+    "bomber",
+    "fighter-bomber",
+    "fighter bomber",
+    "automatic rifle",
+    "submachine gun",
+    "half-track",
+    "half track",
+    "utility vehicle",
+    "landing craft",
+    "artillery piece",
+    "field piece",
+}
+
+
+def _normalize_generic(name: str) -> str:
+    """Normalize a name for generic-phrase comparison: underscores->spaces, collapse ws."""
+    import re as _re
+
+    return _re.sub(r"\s+", " ", name.replace("_", " ")).strip()
+
+
+def _is_specific_identity(equipment_data: dict) -> bool:
+    """True if the record has resolved to a SPECIFIC designation worth enriching
+    (has a technical_identifier, a nickname that resolves to a canonical technical name
+    via the alias table, or a common_name that is not a bare generic word)."""
+    if equipment_data.get("technical_identifier"):
+        return True
+    name = (equipment_data.get("common_name") or "").strip().lower()
+    if not name:
+        return False
+    # A nickname that resolves via the alias table (sherman -> m4 sherman, 88 -> 88mm
+    # flak 36) is a specific identity expressed informally.
+    if _normalize_designation(name) in _equipment_aliases():
+        return True
+    # A bare category/subcategory classification ("medium tank", "medium_tank",
+    # "field gun") is NOT a specific identity — it's a class, not a designation.
+    return _normalize_generic(name) not in _GENERIC_EQUIPMENT_WORDS
+
+
+def _normalize_designation(name: str) -> str:
+    """Normalize a designation so one curated alias matches surface variants:
+    lowercase; unify Pz.Kpfw./PzKpfw/Panzerkampfwagen -> panzer; strip Sd.Kfz. punctuation;
+    collapse punctuation/spacing. (roman<->arabic is handled separately where needed.)
+    """
+    import re as _re
+
+    s = name.lower().strip()
+    s = _re.sub(r"\bpanzerkampfwagen\b", "panzer", s)
+    s = _re.sub(r"\bpz\.?\s*kpfw\.?\b", "panzer", s)
+    s = _re.sub(r"\bpzkpfw\b", "panzer", s)
+    s = _re.sub(r"\bsd\.?\s*kfz\.?\b", "sdkfz", s)
+    s = s.replace(".", " ")
+    s = _re.sub(r"[\s_]+", " ", s).strip()
+    return s
+
+
+def _equipment_aliases() -> Dict[str, str]:
+    """Cached nickname/abbreviation -> canonical technical name map (config-driven).
+    Keys are NORMALIZED (_normalize_designation) so one entry covers surface variants.
+    """
+    global _EQUIPMENT_ALIAS_CACHE
+    if _EQUIPMENT_ALIAS_CACHE is None:
+        import yaml
+
+        alias_file = (
+            Path(__file__).parent.parent.parent / "config" / "equipment_aliases.yaml"
+        )
+        try:
+            data = yaml.safe_load(alias_file.read_text(encoding="utf-8"))
+            _EQUIPMENT_ALIAS_CACHE = {
+                _normalize_designation(k): v.lower()
+                for k, v in (data.get("aliases") or {}).items()
+            }
+        except Exception:  # noqa: BLE001 - absent/malformed table -> no aliases
+            _EQUIPMENT_ALIAS_CACHE = {}
+    return _EQUIPMENT_ALIAS_CACHE
+
+
+def _canonical_equipment_name(name: str) -> str:
+    """Resolve a nickname to its canonical technical name for enrichment lookups
+    (sherman -> m4 sherman); unchanged if not an alias."""
+    if not name:
+        return name
+    return _equipment_aliases().get(_normalize_designation(name), name)
+
+
+_EQUIPMENT_ALIAS_CACHE: Optional[Dict[str, str]] = None
+
+
+def _resolve_canonical_identity(
+    equipment_data: dict, grok_client: Optional[GrokClient]
+) -> str:
+    """Resolve the record's designation to a canonical identity
+    (exact→alias→learned→fuzzy→Grok) and stamp canonical_name/identity_source/
+    country_of_origin. Returns the name to use for enrichment. Idempotent: if already
+    resolved, returns the stamped canonical_name without re-resolving."""
+    if equipment_data.get("canonical_name"):
+        return equipment_data["canonical_name"]
+    from src.extraction.equipment_disambiguation import resolve_designation
+
+    canonical_name = _canonical_equipment_name(equipment_data["common_name"])
+    ident = resolve_designation(equipment_data["common_name"], grok_client)
+    if ident and ident.get("identity_source") not in (None, "raw"):
+        canonical_name = ident["canonical_name"]
+        equipment_data["canonical_name"] = canonical_name
+        equipment_data["identity_source"] = ident["identity_source"]
+        if ident.get("nationality_of_origin") and not equipment_data.get(
+            "country_of_origin"
+        ):
+            equipment_data["country_of_origin"] = _normalize_origin(
+                ident["nationality_of_origin"]
+            )
+    return canonical_name
+
+
+def _normalize_origin(nationality: Optional[str]) -> Optional[str]:
+    """Normalize a free-text origin to a canonical ISO alpha-3 (USSR/Soviet/Russia -> SUN,
+    etc.) via the shared award-registry mapper, so dedup's origin veto compares consistent
+    codes. Falls back to the uppercased input when unmapped (never drops a stated value).
+    """
+    if not nationality:
+        return nationality
+    try:
+        from src.enrichment.award_sources import canonical_nationality
+
+        return canonical_nationality(nationality) or nationality.strip().upper()
+    except Exception:  # noqa: BLE001 - normalization is best-effort
+        return nationality.strip().upper()
+
+
+def _enrich_on_identity(
+    equipment_data: dict,
+    grok_client: Optional[GrokClient],
+    verify_media_with_vision: bool,
+    sub_event_id: Optional[str],
+    dates_index: Optional[Dict[str, Dict[str, str]]],
+) -> None:
+    """Grokipedia/Wikipedia enrichment + canonical reference image, triggered by identity
+    resolution. Fires once per SPECIFIC record (never re-enriches: enrichment_status
+    stamp). Vision verifies the equipment TYPE for the reference image, never an event.
+    """
+    if not grok_client:
+        return
+    if equipment_data.get("enrichment_status") == "enriched":
+        return  # already successfully enriched — never re-enrich
+    if not _is_specific_identity(equipment_data):
+        logger.debug(
+            "Skipping enrichment for non-specific equipment: %s",
+            equipment_data.get("common_name"),
+        )
+        return
+    # CANONICAL DISAMBIGUATION (exact→alias→fuzzy→Grok, cached): resolve to a canonical
+    # identity so enrichment/dedup use one name across US/German/British naming systems.
+    canonical_name = _resolve_canonical_identity(equipment_data, grok_client)
+    # LIMIT UPDATES: skip if we checked Grokipedia/Wikipedia within the staleness window.
+    from src.enrichment.enrichment_gate import (
+        diff_enrichment,
+        should_check_enrichment,
+        stamp_checked,
+    )
+
+    if not should_check_enrichment(equipment_data):
+        logger.debug(
+            "Skipping enrichment (checked recently): %s",
+            equipment_data.get("common_name"),
+        )
+        return
+    try:
+        before = {k: v for k, v in equipment_data.items()}
+        _enrich_and_add_media(
+            equipment_data,
+            canonical_name,
+            grok_client,
+            verify_media_with_vision,
+            sub_event_id,
+            dates_index,
+        )
+        # DIFF the revised entry: which keys did enrichment actually change/add?
+        changed = diff_enrichment(before, equipment_data)
+        equipment_data["enrichment_status"] = "enriched"
+        stamp_checked(equipment_data)  # stamp WHEN we checked (all grok/wiki checks)
+        if changed:
+            logger.info(
+                "Enrichment updated %s: %s", equipment_data["common_name"], changed
+            )
+        else:
+            logger.debug(
+                "Enrichment no-op for %s (no new data)", equipment_data["common_name"]
+            )
+    except Exception as e:  # noqa: BLE001 - enrichment is best-effort, never block
+        # Stamp the CHECK even on failure so the staleness gate still advances (limit
+        # updates); leave enrichment_status unset so a later run can still retry.
+        stamp_checked(equipment_data)
+        logger.warning(
+            "Identity enrichment failed for %s: %s",
+            equipment_data.get("common_name"),
+            e,
+        )
 
 
 def _create_new_equipment(
@@ -1285,22 +1872,23 @@ def _create_new_equipment(
     common_name = equipment_data["common_name"]
     logger.debug("Creating new equipment file: %s", common_name)
 
-    # Enrich with external data if enabled
-    if enable_enrichment and grok_client:
-        sub_event_id = new_mention.get("Sub_eventID")
-        _enrich_and_add_media(
-            equipment_data,
-            common_name,
-            grok_client,
-            verify_media_with_vision,
-            sub_event_id,
-            dates_index,
-        )
+    # Enrichment follows IDENTITY RESOLUTION: once a record has a specific designation
+    # (M4 Sherman, M2 .50 cal), Grokipedia/Wikipedia enrichment + a canonical reference
+    # image are the natural next step — not an opt-in flag. Generic records (bare "tank")
+    # are skipped. Enriched once, stamped (never re-enriched).
+    _enrich_on_identity(
+        equipment_data,
+        grok_client,
+        verify_media_with_vision,
+        new_mention.get("Sub_eventID"),
+        dates_index,
+    )
 
     equipment_id = str(ulid.new())
     equipment_data["EquipmentID"] = equipment_id
     equipment_data["event_mentions"] = [new_mention]
     equipment_data["extracted_date"] = datetime.now(timezone.utc).isoformat()
+    equipment_data["_last_updated"] = datetime.now(timezone.utc).date().isoformat()
 
     safe_name = common_name.replace(" ", "_").replace("/", "_")
     eq_file = equipment_dir / f"{safe_name}_{equipment_id[:8]}.json"
@@ -1315,6 +1903,11 @@ def _create_new_equipment(
     # Also index by common_name for lookup compatibility
     if index_key != common_name:
         equipment_index[common_name] = eq_file
+    # And by canonical identity, so a later mention under a different national designation
+    # (M4 vs Sherman V) resolves to THIS record.
+    canonical = equipment_data.get("canonical_name")
+    if canonical and canonical not in equipment_index:
+        equipment_index[canonical] = eq_file
 
     return eq_file
 
@@ -1346,13 +1939,24 @@ def merge_or_create_equipment(
     """
     common_name = equipment_data["common_name"]
 
-    # Find matching equipment
+    # Find matching equipment (canonical identity is the most stable key)
     technical_id = equipment_data.get("technical_identifier", "")
-    matched_name = _find_matching_equipment(common_name, equipment_index, technical_id)
+    canonical = equipment_data.get("canonical_name", "")
+    matched_name = _find_matching_equipment(
+        common_name, equipment_index, technical_id, canonical
+    )
 
     if matched_name:
         eq_file = equipment_index[matched_name]
-        return _merge_into_existing(eq_file, new_mention, equipment_data, matched_name)
+        return _merge_into_existing(
+            eq_file,
+            new_mention,
+            equipment_data,
+            matched_name,
+            grok_client,
+            verify_media_with_vision,
+            dates_index,
+        )
     else:
         return _create_new_equipment(
             equipment_data,
@@ -1452,6 +2056,7 @@ def _build_mention(
     supporting_units: List[Dict[str, Any]],
     dates_index: Dict[str, Dict[str, str]],
     output_root: Path,
+    places_index: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
     """Build equipment mention with all metadata."""
     sub_event = _find_sub_event(event_data, eq.paragraph_numbers)
@@ -1466,15 +2071,7 @@ def _build_mention(
     _add_metadata_to_mention(mention, event_data)
     _add_event_names_to_mention(mention, event_data)
 
-    # Add equipment-specific fields
-    if eq.paragraph_numbers:
-        mention["paragraph_numbers"] = eq.paragraph_numbers
-    if eq.variant_mentioned:
-        mention["variant_mentioned"] = eq.variant_mentioned
-    if eq.context:
-        mention["context"] = eq.context
-    if eq.original_text:
-        mention["original_text"] = eq.original_text
+    _populate_mention_fields(mention, eq, sub_event, places_index)
 
     # Link to date
     _link_date_to_mention(mention, dates_index, output_root)
@@ -1490,6 +2087,104 @@ def _build_mention(
         mention["performance_notes"] = performance_notes
 
     return mention
+
+
+def _populate_mention_fields(
+    mention: Dict[str, Any],
+    eq: EquipmentExtraction,
+    sub_event: Dict[str, Any],
+    places_index: Optional[Dict[str, str]],
+) -> None:
+    """Populate the equipment-specific per-mention fields (quantity/operator/place/…)."""
+    if eq.paragraph_numbers:
+        mention["paragraph_numbers"] = eq.paragraph_numbers
+    if eq.variant_mentioned:
+        mention["variant_mentioned"] = eq.variant_mentioned
+    if eq.context:
+        mention["context"] = eq.context
+    if eq.original_text:
+        mention["original_text"] = eq.original_text
+    # Per-mention operator (distinct from the equipment type's country_of_origin)
+    if eq.operating_country:
+        mention["operating_country"] = eq.operating_country
+    if eq.captured:
+        mention["captured"] = True
+    # Per-mention quantity: exact number AND/OR the verbatim count phrase.
+    if eq.quantity is not None:
+        mention["quantity"] = eq.quantity
+    if eq.quantity_text:
+        mention["quantity_text"] = eq.quantity_text
+    _resolve_mention_place(mention, eq, sub_event, places_index)
+    if eq.assertion_source:
+        mention["assertion_source"] = eq.assertion_source
+
+
+def _resolve_place_id(
+    place_name: str, places_index: Optional[Dict[str, str]]
+) -> Optional[str]:
+    """Resolve a stated place_name to a single PlaceID, fuzzily.
+
+    The index is alias-aware (keyed on current_name + aliases, lowercased). Matching, in
+    order of confidence: exact -> whole-word containment (longest key) -> SequenceMatcher
+    ratio >= 0.88 (conservative — guards against e.g. Carentan vs Cherbourg). Below
+    threshold -> no match (leave PlaceID null; never guess).
+    """
+    if not place_name or not places_index:
+        return None
+    name = place_name.lower().strip()
+    if name in places_index:
+        return places_index[name]
+    return _place_contains_match(name, places_index) or _place_fuzzy_match(
+        name, places_index
+    )
+
+
+def _place_contains_match(name: str, places_index: Dict[str, str]) -> Optional[str]:
+    """Longest index key that appears as a whole-word phrase in the stated name."""
+    import re as _re
+
+    best_pid = None
+    best_len = 0
+    for key, pid in places_index.items():
+        if len(key) >= 4 and len(key) > best_len:
+            if _re.search(rf"\b{_re.escape(key)}\b", name):
+                best_len, best_pid = len(key), pid
+    return best_pid
+
+
+def _place_fuzzy_match(
+    name: str, places_index: Dict[str, str], threshold: float = 0.88
+) -> Optional[str]:
+    """Best SequenceMatcher match at or above a conservative threshold, else None."""
+    from difflib import SequenceMatcher as _SM
+
+    best_pid = None
+    best_ratio = 0.0
+    for key, pid in places_index.items():
+        ratio = _SM(None, name, key).ratio()
+        if ratio > best_ratio:
+            best_ratio, best_pid = ratio, pid
+    return best_pid if best_ratio >= threshold else None
+
+
+def _resolve_mention_place(
+    mention: Dict[str, Any],
+    eq: EquipmentExtraction,
+    sub_event: Dict[str, Any],
+    places_index: Optional[Dict[str, str]],
+) -> None:
+    """A mention is ONE assertion about ONE place. Resolve the mention's OWN stated
+    place_name to a single PlaceID (authoritative — what the source said); only when no
+    place_name was stated, fall back to the sub-event's place if it is a single one."""
+    if eq.place_name:
+        mention["place_name"] = eq.place_name
+        place_id = _resolve_place_id(eq.place_name, places_index)
+        if place_id:
+            mention["PlaceID"] = place_id
+        return
+    sub_places = sub_event.get("places") or []
+    if len(sub_places) == 1:
+        mention["PlaceID"] = sub_places[0]
 
 
 def _build_equipment_data(eq: EquipmentExtraction) -> Dict[str, Any]:
@@ -1508,13 +2203,39 @@ def _build_equipment_data(eq: EquipmentExtraction) -> Dict[str, Any]:
     if eq.subcategory:
         equipment_data["subcategory"] = eq.subcategory
     if eq.country_of_origin:
-        equipment_data["country_of_origin"] = eq.country_of_origin
+        equipment_data["country_of_origin"] = _normalize_origin(eq.country_of_origin)
     if eq.variants:
         equipment_data["variants"] = [v.model_dump() for v in eq.variants]  # type: ignore[assignment]
     if eq.specifications:
         equipment_data["specifications"] = dict(eq.specifications)  # type: ignore[assignment]
 
     return equipment_data
+
+
+def _recheck_equipment_fields(
+    equipment_data: Dict[str, Any],
+    mention: Dict[str, Any],
+    grok_client: Optional[GrokClient],
+) -> None:
+    """Source-first gap-fill of missing critical fields (country_of_origin/category/
+    quantity/place) from the mention's retained original_text, before merge/dedup. The
+    recheck reads event_mentions[].original_text; pass the mention context transiently so
+    it doesn't leak into the merge payload. Fail-open."""
+    if not grok_client:
+        return
+    try:
+        from src.extraction.equipment_source_recheck import (
+            recheck_equipment_from_source,
+        )
+
+        injected = "event_mentions" not in equipment_data
+        if injected:
+            equipment_data["event_mentions"] = [mention]
+        recheck_equipment_from_source(equipment_data, grok_client)
+        if injected:
+            del equipment_data["event_mentions"]
+    except Exception as e:  # noqa: BLE001 - never block extraction
+        logger.debug("equipment source-recheck skipped: %s", e)
 
 
 def _process_equipment_item(
@@ -1529,6 +2250,7 @@ def _process_equipment_item(
     grok_client: GrokClient,
     enable_enrichment: bool = False,
     verify_media_with_vision: bool = True,
+    places_index: Optional[Dict[str, str]] = None,
 ) -> Optional[Path]:
     """Process a single equipment item. Returns equipment file path or None."""
     try:
@@ -1539,12 +2261,21 @@ def _process_equipment_item(
         logger.debug("  Data: %s", eq_data)
         return None
 
+    # ASSERTION GATE (code-enforced, not just prompt): a mention exists only when the
+    # source ASSERTS presence. Drop items with no assertion_source (ambient/stock footage
+    # that merely shows/discusses a place without asserting this equipment was there).
+    if not eq.assertion_source:
+        logger.debug(
+            "  Skipping equipment with no asserted presence: %s", eq.common_name
+        )
+        return None
+
     # Link entities
     using_unit = _link_entity(eq.using_unit_name, people_groups_index, "unit")
     using_person = _link_entity(eq.using_person_name, people_index, "person")
     performance_notes = _build_performance_notes(eq)
     supporting_units = _link_supporting_units(
-        eq.supporting_unit_names, people_groups_index, eq.category
+        eq.supporting_units, people_groups_index, eq.category, equipment_index
     )
 
     # Build mention and equipment data
@@ -1557,8 +2288,42 @@ def _process_equipment_item(
         supporting_units,
         dates_index,
         output_root,
+        places_index,
     )
     equipment_data = _build_equipment_data(eq)
+
+    # Resolve canonical identity BEFORE matching so it can serve as the merge key (lets
+    # the disambiguator actually prevent cross-naming splits: M4 vs Sherman V -> one
+    # record). Stamps canonical_name/identity_source/country_of_origin on equipment_data.
+    if grok_client:
+        _resolve_canonical_identity(equipment_data, grok_client)
+
+    # SOURCE-RECHECK: recover missing critical fields (esp. country_of_origin — the dedup
+    # veto — + category/quantity/place) from the retained original_text BEFORE merge/dedup.
+    _recheck_equipment_fields(equipment_data, mention, grok_client)
+
+    # Record-level related_equipment (narrative-sourced). Resolve/auto-create distinct
+    # related records so links carry a real EquipmentID.
+    if eq.related_equipment:
+        equipment_data["related_equipment"] = _link_related_equipment(
+            eq.related_equipment,
+            equipment_index,
+            output_dir,
+            grok_client,
+            verify_media_with_vision,
+        )
+
+    # Record-level crew_accounts (narrative-sourced; original_text mandatory; person-linked)
+    if eq.crew_accounts:
+        linked_accounts = _link_crew_accounts(eq.crew_accounts, people_index)
+        if linked_accounts:
+            equipment_data["crew_accounts"] = linked_accounts
+
+    # Record-level environmental_performance (condition-linked; original_text mandatory)
+    if eq.environmental_performance:
+        linked_env = _link_environmental_performance(eq.environmental_performance)
+        if linked_env:
+            equipment_data["environmental_performance"] = linked_env
 
     # Merge or create
     try:
@@ -1612,25 +2377,201 @@ def _finalize_extraction(
 
 
 def _link_supporting_units(
-    supporting_unit_names: List[str],
+    supporting_units_in: List["SupportingUnitInput"],
     people_groups_index: Dict[str, str],
-    category: str,
+    equipment_category: str,
+    equipment_index: Optional[Dict[str, Path]] = None,
 ) -> List[Dict[str, Any]]:
-    """Link supporting units by name to ID."""
-    supporting_units = []
-    for unit_name in supporting_unit_names:
-        group_id = people_groups_index.get(unit_name)
-        support_unit = {
-            "support_type": category,  # Use equipment category as support type
-            "unit_name": unit_name,
+    """Link supporting units to IDs.
+
+    - support_type is the SUPPORTING unit's OWN arm (e.g. a P-47 wing supporting a tank
+      is 'aircraft'), NOT the parent equipment's category. Falls back to the parent
+      category only if the supporting unit's type is unknown.
+    - Resolves PeopleGroupID by unit_name and EquipmentID by equipment_name.
+    """
+    linked: List[Dict[str, Any]] = []
+    for su in supporting_units_in:
+        support: Dict[str, Any] = {
+            "support_type": su.support_type or equipment_category,
         }
-        if group_id:
-            support_unit["PeopleGroupID"] = group_id
-            logger.debug("Linked supporting unit '%s' to %s", unit_name, group_id)
-        else:
-            logger.debug("Supporting unit not found: %s", unit_name)
-        supporting_units.append(support_unit)
-    return supporting_units
+        if su.unit_name:
+            support["unit_name"] = su.unit_name
+            group_id = people_groups_index.get(su.unit_name)
+            if group_id:
+                support["PeopleGroupID"] = group_id
+            else:
+                logger.debug("Supporting unit not found: %s", su.unit_name)
+        if su.equipment_name:
+            support["equipment_name"] = su.equipment_name
+            eq_id = _resolve_support_equipment_id(su.equipment_name, equipment_index)
+            if eq_id:
+                support["EquipmentID"] = eq_id
+        linked.append(support)
+    return linked
+
+
+def _resolve_support_equipment_id(
+    name: str, equipment_index: Optional[Dict[str, Path]]
+) -> Optional[str]:
+    """Resolve a supporting unit's equipment name to an EquipmentID. Mirrors the main
+    match path (not just exact): exact → curated-alias canonical → fuzzy, so a nickname or
+    variant ("Jug", "Thunderbolt", "P-47D") links to the canonical P-47 record."""
+    if not equipment_index:
+        return None
+    # exact
+    path = equipment_index.get(name)
+    # curated-alias canonical (sherman -> m4 sherman); match case-insensitively
+    if not path:
+        canonical = _equipment_aliases().get(_normalize_designation(name))
+        if canonical:
+            lower = {k.lower(): v for k, v in equipment_index.items()}
+            path = lower.get(canonical.lower())
+    # fuzzy (reuse the main matcher), then map matched key -> path
+    if not path:
+        matched = _fuzzy_match_equipment(name, equipment_index)
+        if matched:
+            path = equipment_index.get(matched)
+    if not path:
+        return None
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f).get("EquipmentID")
+    except Exception:  # nosec B110 - best-effort link
+        return None
+
+
+def _link_crew_accounts(
+    crew_in: List["CrewAccountInput"], people_index: Dict[str, str]
+) -> List[Dict[str, Any]]:
+    """Build record-level crew_accounts (narrative-sourced). Require original_text (source
+    tracking is mandatory — drop accounts without it). Resolve person_name -> PersonID via
+    the people index (exact then fuzzy)."""
+    linked: List[Dict[str, Any]] = []
+    for acc in crew_in:
+        if not acc.original_text:
+            logger.debug("Dropping crew account without original_text (untraceable)")
+            continue
+        entry: Dict[str, Any] = {
+            "person_name": acc.person_name,
+            "role": acc.role,
+            "observations": acc.observations,
+            "original_text": acc.original_text,
+            "book": acc.book,
+        }
+        if acc.person_name:
+            pid = _resolve_person_id(acc.person_name, people_index)
+            if pid:
+                entry["PersonID"] = pid
+        linked.append(entry)
+    return linked
+
+
+def _link_environmental_performance(
+    env_in: List["EnvironmentalPerformanceInput"],
+) -> List[Dict[str, Any]]:
+    """Build record-level environmental_performance (condition-linked, narrative-sourced).
+    original_text is mandatory — drop untraceable entries."""
+    linked: List[Dict[str, Any]] = []
+    for ep in env_in:
+        if not ep.original_text:
+            logger.debug("Dropping environmental_performance without original_text")
+            continue
+        linked.append(
+            {
+                "condition": ep.condition,
+                "effect": ep.effect,
+                "original_text": ep.original_text,
+            }
+        )
+    return linked
+
+
+def _resolve_person_id(
+    name: str, people_index: Dict[str, str], threshold: float = 0.88
+) -> Optional[str]:
+    """Resolve a person name to a PersonID: exact (case-insensitive) then conservative
+    fuzzy. The people index is keyed on the raw name, so compare case-insensitively."""
+    key = name.strip().lower()
+    lower_index = {k.lower(): v for k, v in people_index.items()}
+    if key in lower_index:
+        return lower_index[key]
+    best, best_ratio = None, 0.0
+    for pname, pid in lower_index.items():
+        ratio = SequenceMatcher(None, key, pname).ratio()
+        if ratio > best_ratio:
+            best_ratio, best = ratio, pid
+    return best if best_ratio >= threshold else None
+
+
+def _link_related_equipment(
+    related_in: List["RelatedEquipmentInput"],
+    equipment_index: Dict[str, Path],
+    output_dir: Path,
+    grok_client: Optional[GrokClient] = None,
+    verify_media_with_vision: bool = True,
+) -> List[Dict[str, Any]]:
+    """Build the record-level related_equipment list. Each entry is narrative-sourced
+    (original_text retained). Resolve name->EquipmentID; auto-create a minimal distinct
+    record when the related piece has no record yet (minimal schema = EquipmentID +
+    common_name). Never called for inline sub-designations (prompt keeps those out)."""
+    linked: List[Dict[str, Any]] = []
+    for rel in related_in:
+        if not rel.name:
+            continue
+        entry: Dict[str, Any] = {
+            "relationship": rel.relationship,
+            "name": rel.name,
+            "basis": rel.basis,
+            "original_text": rel.original_text,
+        }
+        eq_id = _resolve_support_equipment_id(rel.name, equipment_index)
+        if not eq_id:
+            # Auto-create a minimal distinct record so the link resolves to a real ID.
+            eq_id = _autocreate_minimal_equipment(
+                rel.name,
+                equipment_index,
+                output_dir,
+                grok_client,
+                verify_media_with_vision,
+            )
+        if eq_id:
+            entry["EquipmentID"] = eq_id
+        linked.append(entry)
+    return linked
+
+
+def _autocreate_minimal_equipment(
+    name: str,
+    equipment_index: Dict[str, Path],
+    output_dir: Path,
+    grok_client: Optional[GrokClient] = None,
+    verify_media_with_vision: bool = True,
+) -> Optional[str]:
+    """Create a minimal equipment record (EquipmentID + common_name) for a distinct piece
+    the narrative relates but that has no record yet. Because the stub has no mention of
+    its own, enrichment is its ONLY source of substance — so if the name is a specific
+    identity (e.g. 'M26 Pershing') it is enriched on creation (Grokipedia/Wikipedia +
+    canonical reference image). Registers it in the index. Returns the EquipmentID."""
+    try:
+        equipment_id = str(ulid.new())
+        record: Dict[str, Any] = {
+            "EquipmentID": equipment_id,
+            "common_name": name,
+            "extracted_date": datetime.now(timezone.utc).isoformat(),
+            "event_mentions": [],
+        }
+        # Enrich the stub on identity (no Sub_eventID -> no date context).
+        _enrich_on_identity(record, grok_client, verify_media_with_vision, None, None)
+        safe_name = name.replace(" ", "_").replace("/", "_")
+        eq_file = output_dir / f"{safe_name}_{equipment_id[:8]}.json"
+        with open(eq_file, "w") as f:
+            json.dump(record, f, indent=2)
+        equipment_index[name] = eq_file
+        logger.info("  ＋ Auto-created related equipment record: %s", name)
+        return equipment_id
+    except Exception as e:  # noqa: BLE001 - best-effort; link falls back to name-only
+        logger.warning("Could not auto-create related equipment '%s': %s", name, e)
+        return None
 
 
 def _load_processed_registry(output_dir: Path) -> Dict[str, bool]:
@@ -1652,29 +2593,67 @@ def _save_processed_registry(output_dir: Path, processed: Dict[str, bool]) -> No
 def _link_entity(
     entity_name: Optional[str], entity_index: Dict[str, str], entity_type: str
 ) -> Optional[Dict[str, str]]:
-    """Link entity by name to ID with fuzzy fallback."""
+    """Link entity name -> ID conservatively. Exact → case-insensitive → UNAMBIGUOUS
+    whole-word containment → bounded fuzzy (`SequenceMatcher ≥ 0.88`). A name that could
+    match several index entries (e.g. a bare "Smith" with multiple Smiths) is AMBIGUOUS and
+    returns no link — never silently grab the wrong person/unit. (Previously an unbounded
+    substring match could link "Sergeant Smith" to any "Smith".)"""
     if not entity_name or not entity_index:
         return None
     id_key = "PersonID" if entity_type == "person" else "PeopleGroupID"
 
-    # Exact match
+    # 1. exact
     entity_id = entity_index.get(entity_name)
     if entity_id:
         return {id_key: entity_id, "name": entity_name}
 
-    # Case-insensitive match
-    name_lower = entity_name.lower()
+    name_lower = entity_name.lower().strip()
+
+    # 2. case-insensitive exact
     for idx_name, idx_id in entity_index.items():
         if idx_name.lower() == name_lower:
             return {id_key: idx_id, "name": idx_name}
 
-    # Substring match
-    for idx_name, idx_id in entity_index.items():
-        il = idx_name.lower()
-        if name_lower in il or il in name_lower:
-            return {id_key: idx_id, "name": idx_name}
+    # 3. unambiguous whole-word containment, then 4. bounded fuzzy
+    return _link_contained(
+        name_lower, entity_index, id_key, entity_type
+    ) or _link_fuzzy(name_lower, entity_index, id_key)
 
-    logger.debug("%s not found: %s", entity_type.capitalize(), entity_name)
+
+def _link_contained(name_lower, entity_index, id_key, entity_type):
+    """Link only if exactly ONE index entry contains the stated name as a whole phrase
+    (ambiguous -> no link). Returns a link dict, None (fall through to fuzzy), or signals
+    ambiguity by returning None after logging."""
+    import re as _re
+
+    if len(name_lower) < 4:
+        return None
+    contained = [
+        (n, i)
+        for n, i in entity_index.items()
+        if _re.search(rf"\b{_re.escape(name_lower)}\b", n.lower())
+    ]
+    if len(contained) == 1:
+        return {id_key: contained[0][1], "name": contained[0][0]}
+    if len(contained) > 1:
+        logger.debug(
+            "%s '%s' ambiguous (%d candidates) — no link",
+            entity_type,
+            name_lower,
+            len(contained),
+        )
+    return None
+
+
+def _link_fuzzy(name_lower, entity_index, id_key, threshold: float = 0.88):
+    """Bounded fuzzy match (reject distant). Returns a link dict or None."""
+    best, best_ratio = None, 0.0
+    for idx_name, idx_id in entity_index.items():
+        ratio = SequenceMatcher(None, name_lower, idx_name.lower()).ratio()
+        if ratio > best_ratio:
+            best_ratio, best = ratio, (idx_name, idx_id)
+    if best and best_ratio >= threshold:
+        return {id_key: best[1], "name": best[0]}
     return None
 
 
@@ -1797,6 +2776,20 @@ def extract_equipment_from_event(
             output_root
         )
         equipment_index = load_equipment_index(output_dir)
+        # Places name -> PlaceID index. Use the places module's OWN alias-aware index
+        # (keys on current_name AND every alias) rather than a bare 'name' lookup, so a
+        # mention's place_name resolves even when the source uses an alias/variant. Falls
+        # back to the generic index if the places module is unavailable.
+        try:
+            from src.extraction.places import _build_place_name_index
+
+            places_index, _ = _build_place_name_index(output_root / "places")
+        except Exception:  # noqa: BLE001 - fall back to the generic name index
+            from src.utils.entity_index import build_name_index
+
+            places_index = build_name_index(
+                output_root / "places", "PlaceID", "current_name"
+            )
     except Exception as e:
         logger.error("Failed to load indices: %s", e)
         return []
@@ -1824,6 +2817,7 @@ def extract_equipment_from_event(
                 grok_client,
                 enable_enrichment,
                 verify_media_with_vision,
+                places_index,
             )
         )
     ]
