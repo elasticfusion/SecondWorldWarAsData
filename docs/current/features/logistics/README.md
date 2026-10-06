@@ -2,7 +2,7 @@
 
 **Module:** `src/extraction/logistics.py`  
 **Status:** Experimental (Disabled by default)  
-**Last Updated:** 2026-03-19
+**Last Updated:** 2026-10-06
 
 ---
 
@@ -37,12 +37,36 @@ For each item:
     ↓
 Validate via LogisticsExtraction.model_validate()
     ↓
-Link to Entities (People, Places, Equipment, Weather)
+Resolve cross-refs via SHARED libraries (see below)
     ↓
 Create Logistics File
     ↓
 Save to output/logistics/
 ```
+
+## Cross-references (shared libraries)
+
+Logistics links to six entities, each resolved via that category's **shared library** (not
+bespoke string matching — the old exact→substring matcher produced false links like
+"9th"→"9th Armored"):
+
+- **organizations** → PeopleGroupID via `group_resolver` (canonical `unit_key`: structural
+  number/service/arm/echelon match; fully-specified names win via exact-key, ambiguous
+  decline to null).
+- **places** → PlaceID via the alias-aware `places._build_place_name_index` + `_match_place_id`.
+- **equipment** → EquipmentID via `equipment_disambiguation.resolve_designation` + index.
+- **dates** → DateID (`temporal.DateID_start/end`) via the interval-aware `_resolve_date_link`
+  (exact `date_start` OR resolved-interval overlap).
+- **people** → PersonID by exact name (people are exact-by-design across the codebase).
+- **weather** → WeatherID (description index).
+
+Unresolved references keep the name with a `null` ID (never fabricated).
+
+**Reverse link:** casualties cross-reference back to logistics — a casualty from a supply
+failure links to a LogisticsID (explicit, or an inferred `co_occurring` candidate on shared
+GroupID + overlapping date). See [Casualties](../casualties/README.md). Note logistics
+records carry **no PlaceID** (place is not modeled here), so the casualty↔logistics join is
+GroupID + time, not place.
 
 **Batching:** All sub-events are sent in a single API call per chapter (via `_batch_extract_logistics`). Entity linking and file creation remain per-item.
 
