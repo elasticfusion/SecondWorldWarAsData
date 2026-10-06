@@ -19,6 +19,9 @@ from src.utils.prompt_loader import get_system_prompt
 
 logger = logging.getLogger(__name__)
 
+# This module targets schema 2.24.
+SCHEMA_TARGET = "2.24"
+
 
 # Pydantic schemas for structured outputs
 class DateMention(BaseModel):
@@ -277,43 +280,49 @@ def _add_event_mention(
 ) -> None:
     """Add event mention to existing date file."""
     from src.utils.file_lock import locked_json
+    from src.schemas.schema_contract import read_for_update
 
     with locked_json(date_file) as (date_data, save):
-        # Create event mention
-        event_mention = {
-            "DateMentionID": str(ulid.new()),
-            "Event_Name": event_name,
-            "EventID": event_id,
-            "Sub_event_Name": sub_event_name,
-            "Sub_eventID": sub_event_id,
-            "book": book,
-            "author": author,
-            "series": series,
-            "context": None,  # TODO: Extract from text
-            "time_start": mention.get("time_start"),
-            "original_text": mention.get("original_text", ""),
-        }
+        # Read the historical record under this module's schema contract: a FUTURE-schema
+        # record is skipped gracefully (code not built for it); older records merge
+        # best-effort (upgrade case-by-case if registered).
+        date_data, skip = read_for_update(date_data, SCHEMA_TARGET, logger, event_name)
+        if not skip:
+            # Create event mention
+            event_mention = {
+                "DateMentionID": str(ulid.new()),
+                "Event_Name": event_name,
+                "EventID": event_id,
+                "Sub_event_Name": sub_event_name,
+                "Sub_eventID": sub_event_id,
+                "book": book,
+                "author": author,
+                "series": series,
+                "context": None,  # TODO: Extract from text
+                "time_start": mention.get("time_start"),
+                "original_text": mention.get("original_text", ""),
+            }
 
-        # Dedup by (Sub_eventID, time_start, original_text): a re-run of the SAME mention
-        # is skipped, but the same sub-event citing this date at a DIFFERENT time ("0500"
-        # vs "1800") or in DIFFERENT words is kept (previously keyed on Sub_eventID alone,
-        # which silently dropped a sub-event's second same-date mention).
-        new_key = (
-            sub_event_id,
-            event_mention["time_start"],
-            event_mention["original_text"],
-        )
-        existing_keys = {
-            (m.get("Sub_eventID"), m.get("time_start"), m.get("original_text", ""))
-            for m in date_data.get("event_mentions", [])
-        }
-        if new_key in existing_keys:
-            logger.info("    Date already has this exact mention, skipping")
-            return
+            # Dedup by (Sub_eventID, time_start, original_text): a re-run of the SAME mention
+            # is skipped, but the same sub-event citing this date at a DIFFERENT time ("0500"
+            # vs "1800") or in DIFFERENT words is kept (previously keyed on Sub_eventID alone,
+            # which silently dropped a sub-event's second same-date mention).
+            new_key = (
+                sub_event_id,
+                event_mention["time_start"],
+                event_mention["original_text"],
+            )
+            existing_keys = {
+                (m.get("Sub_eventID"), m.get("time_start"), m.get("original_text", ""))
+                for m in date_data.get("event_mentions", [])
+            }
+            if new_key in existing_keys:
+                logger.info("    Date already has this exact mention, skipping")
+                return
 
-        # Add mention
-        date_data.setdefault("event_mentions", []).append(event_mention)
-        save(date_data)
+            # Add mention
+            date_data.setdefault("event_mentions", []).append(event_mention)
+            save(date_data)
 
     logger.info("    Added mention to %s", date_file.name)
 

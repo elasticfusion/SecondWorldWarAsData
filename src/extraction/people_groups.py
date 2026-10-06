@@ -22,6 +22,12 @@ from src.utils.text_utils import normalize_name
 
 logger = logging.getLogger(__name__)
 
+# This module is written for schema 2.24 (GroupID always present; member_countries/members
+# fields; metadata stamped). Records read from disk at an older version are upgraded only via
+# a registered case-by-case upgrader (src/schemas/schema_contract), else flagged — never
+# silently assumed. See the schema-contract directive.
+SCHEMA_TARGET = "2.24"
+
 
 @lru_cache(maxsize=5000)
 def _normalize_name(name: str) -> str:
@@ -167,7 +173,11 @@ def _save_group(
 ):
     """Save or merge a group file."""
     group_name = group.get("group_name", "Unknown")
-    group_id = group.get("GroupID", str(new_ulid()))
+    # Treat a missing OR empty-string GroupID as absent -> mint one. The computed id MUST be
+    # written into the record (not just used for the filename) or the group has no primary
+    # key and is invisible to every cross-reference (casualties/logistics/maps resolve to it).
+    group_id = group.get("GroupID") or str(new_ulid())
+    group["GroupID"] = group_id
 
     # Add book metadata to event mentions
     for mention in group.get("event_mentions", []):
@@ -186,17 +196,29 @@ def _save_group(
     if existing_filename and (groups_dir / existing_filename).exists():
         # Merge with existing
         from src.utils.file_lock import locked_json
+        from src.schemas import inject_metadata
+        from src.schemas.schema_contract import read_for_update
 
         with locked_json(groups_dir / existing_filename) as (existing_group, save):
-            merged = _merge_group(existing_group, group)
-            save(merged)
+            # Read the historical record under this module's schema contract: older records
+            # merge best-effort (upgrade case-by-case if registered); a FUTURE-schema record
+            # is skipped gracefully (code not built for it), never silently merged.
+            existing_group, skip = read_for_update(
+                existing_group, SCHEMA_TARGET, logger, group_name
+            )
+            if not skip:
+                merged = _merge_group(existing_group, group)
+                inject_metadata(merged)
+                save(merged)
         logger.info("    Updated: %s", group_name)
     else:
         # Create new file
         filename = _name_to_filename(group_name, group_id)
         filepath = groups_dir / filename
         from src.utils.file_lock import write_json_with_lock
+        from src.schemas import inject_metadata
 
+        inject_metadata(group)
         write_json_with_lock(filepath, group)
         _update_index(index_file, group_name, filename)
         logger.info("    Created: %s", group_name)

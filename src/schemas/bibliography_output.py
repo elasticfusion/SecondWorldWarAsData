@@ -65,7 +65,7 @@ BIBLIOGRAPHY_OUTPUT_SCHEMA = {
             },
         },
         "search_status": enum_field(
-            ["resolved", "not_found", "pending"], nullable=True
+            ["resolved", "not_found", "pending", "unresolved"], nullable=True
         ),
         "search_source": make_nullable("string"),
         "download_status": enum_field(

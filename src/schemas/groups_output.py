@@ -33,6 +33,11 @@ GROUPS_OUTPUT_SCHEMA = {
         "aliases": {"type": ["array", "null"], "items": {"type": "string"}},
         "parent_organization": make_nullable("string"),
         "sub_organizations": {"type": ["array", "null"], "items": {"type": "string"}},
+        "member_countries": {"type": ["array", "null"], "items": {"type": "string"}},
+        "members": {
+            "type": ["array", "null"],
+            "items": {"type": ["string", "object"]},
+        },
         "military_hierarchy": {"type": ["object", "array", "string", "null"]},
         "enrichment_data": {"type": ["object", "null"]},
         "event_mentions": {

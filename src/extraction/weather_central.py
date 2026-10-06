@@ -20,6 +20,9 @@ from src.utils.prompt_loader import get_system_prompt
 
 logger = logging.getLogger(__name__)
 
+# This module targets schema 2.24.
+SCHEMA_TARGET = "2.24"
+
 
 class WeatherMention(BaseModel):
     """Weather mention from document."""
@@ -468,10 +471,25 @@ def _find_or_create_weather(
         with open(weather_file, "r", encoding="utf-8") as f:
             weather_data = json.load(f)
 
-        # Update if needed
-        _update_existing_weather(
-            weather_file, weather_data, mention, place_name, places_dir, fetch_api, date
+        # Read the historical record under this module's schema contract: a FUTURE-schema
+        # record is skipped gracefully (code not built for it); older records update
+        # best-effort (upgrade case-by-case if registered).
+        from src.schemas.schema_contract import read_for_update
+
+        weather_data, skip = read_for_update(
+            weather_data, SCHEMA_TARGET, logger, weather_file.name
         )
+        if not skip:
+            # Update if needed
+            _update_existing_weather(
+                weather_file,
+                weather_data,
+                mention,
+                place_name,
+                places_dir,
+                fetch_api,
+                date,
+            )
 
         return weather_file
 
@@ -497,56 +515,66 @@ def _add_event_mention(
 ) -> None:
     """Add event mention and extracted data to weather file."""
     from src.utils.file_lock import locked_json
+    from src.schemas.schema_contract import read_for_update
 
     with locked_json(weather_file) as (weather_data, save):
-        # Check for duplicate mention
-        existing = [
-            m
-            for m in weather_data.get("event_mentions", [])
-            if m["Sub_eventID"] == sub_event_id
-        ]
-        if existing:
-            logger.info("    Weather already has mention from this sub-event, skipping")
-            return
+        # Read the historical record under this module's schema contract: a FUTURE-schema
+        # record is skipped gracefully (code not built for it); older records merge
+        # best-effort (upgrade case-by-case if registered).
+        weather_data, skip = read_for_update(
+            weather_data, SCHEMA_TARGET, logger, weather_file.name
+        )
+        if not skip:
+            # Check for duplicate mention
+            existing = [
+                m
+                for m in weather_data.get("event_mentions", [])
+                if m["Sub_eventID"] == sub_event_id
+            ]
+            if existing:
+                logger.info(
+                    "    Weather already has mention from this sub-event, skipping"
+                )
+                return
 
-        # Add extracted data if not present
-        if not weather_data.get("extracted_data"):
-            weather_data["extracted_data"] = {
-                "description": mention.get("weather_description", ""),
-                "temperature": mention.get("temperature") or None,
-                "temperature_unit": _normalize_temp_unit(
-                    mention.get("temperature_unit")
-                ),
-                "measurement_system": mention.get("measurement_system") or None,
-                "precipitation_text": mention.get("precipitation_text") or None,
-                "precipitation_amount": mention.get("precipitation_amount"),
-                "precipitation_unit": _normalize_precip_unit(
-                    mention.get("precipitation_unit")
-                ),
-                "precipitation_type": _normalize_precip_type(
-                    mention.get("precipitation_type")
-                ),
-                "notable_impact": mention.get("notable_impact") or None,
-                "original_text": mention.get("original_text", ""),
+            # Add extracted data if not present
+            if not weather_data.get("extracted_data"):
+                weather_data["extracted_data"] = {
+                    "description": mention.get("weather_description", ""),
+                    "temperature": mention.get("temperature") or None,
+                    "temperature_unit": _normalize_temp_unit(
+                        mention.get("temperature_unit")
+                    ),
+                    "measurement_system": mention.get("measurement_system") or None,
+                    "precipitation_text": mention.get("precipitation_text") or None,
+                    "precipitation_amount": mention.get("precipitation_amount"),
+                    "precipitation_unit": _normalize_precip_unit(
+                        mention.get("precipitation_unit")
+                    ),
+                    "precipitation_type": _normalize_precip_type(
+                        mention.get("precipitation_type")
+                    ),
+                    "notable_impact": mention.get("notable_impact") or None,
+                    "original_text": mention.get("original_text", ""),
+                    "book": book,
+                    "author": author,
+                }
+                if weather_data.get("api_data"):
+                    weather_data["source_type"] = "hybrid"
+
+            # Add event mention
+            event_mention = {
+                "MentionID": str(ulid.new()),
+                "Event_Name": event_name,
+                "EventID": event_id,
+                "Sub_event_Name": sub_event_name,
+                "Sub_eventID": sub_event_id,
                 "book": book,
                 "author": author,
+                "series": series,
             }
-            if weather_data.get("api_data"):
-                weather_data["source_type"] = "hybrid"
-
-        # Add event mention
-        event_mention = {
-            "MentionID": str(ulid.new()),
-            "Event_Name": event_name,
-            "EventID": event_id,
-            "Sub_event_Name": sub_event_name,
-            "Sub_eventID": sub_event_id,
-            "book": book,
-            "author": author,
-            "series": series,
-        }
-        weather_data.setdefault("event_mentions", []).append(event_mention)
-        save(weather_data)
+            weather_data.setdefault("event_mentions", []).append(event_mention)
+            save(weather_data)
 
     logger.info("    Added mention to %s", weather_file.name)
 

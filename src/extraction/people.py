@@ -18,6 +18,9 @@ from src.utils.prompt_loader import get_system_prompt
 
 logger = logging.getLogger(__name__)
 
+# This module targets schema 2.24.
+SCHEMA_TARGET = "2.24"
+
 # Compiled regex patterns for performance
 _SPECIAL_CHARS_PATTERN = re.compile(r"[^\w\s-]")
 _WHITESPACE_PATTERN = re.compile(r"\s+")
@@ -794,11 +797,19 @@ def _process_person(
         person_file = people_dir / existing_filename
         if person_file.exists():
             from src.utils.file_lock import locked_json
+            from src.schemas.schema_contract import read_for_update
 
             with locked_json(person_file) as (existing_person, save):
-                merged = _merge_person(existing_person, person)
-                Person(**merged)  # Validate
-                save(merged)
+                # Read the historical record under this module's schema contract: a
+                # FUTURE-schema record is skipped gracefully (code not built for it);
+                # older records merge best-effort (upgrade case-by-case if registered).
+                existing_person, skip = read_for_update(
+                    existing_person, SCHEMA_TARGET, logger, name
+                )
+                if not skip:
+                    merged = _merge_person(existing_person, person)
+                    Person(**merged)  # Validate
+                    save(merged)
             logger.debug("  Updated: %s", name)
             return False, True
         else:

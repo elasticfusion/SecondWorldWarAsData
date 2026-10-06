@@ -162,7 +162,10 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         "country_of_origin": make_nullable("string"),
         "description": make_nullable("string"),
         "aliases": {"type": ["array", "null"], "items": {"type": "string"}},
-        "alternate_names": {"type": ["array", "null"], "items": {"type": "string"}},
+        "alternate_names": {
+            "type": ["array", "string", "null"],
+            "items": {"type": "string"},
+        },
         # Variants managed INLINE in the same record file. Each variant may carry its own
         # specifications + images (M4A1 vs M4A3E8 differ). Tolerant: strings or objects
         # accepted (back-compat with the earlier loose shape).
@@ -287,5 +290,6 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         # diff). Stamped on every check (success, no-op, or failure) to limit re-checks.
         "enrichment_checked_at": {"type": ["integer", "null"]},
         "openserp_searched": {"type": ["boolean", "null"]},
+        "openserp_searched_at": {"type": ["number", "string", "null"]},
     },
 }

@@ -42,6 +42,9 @@ def _register_entity(book: str, entity_type: str, filename: str) -> None:
 
 logger = logging.getLogger(__name__)
 
+# This module targets schema 2.24.
+SCHEMA_TARGET = "2.24"
+
 _RANK_PREFIX = re.compile(
     r"^(?:(?:Field\s+)?Marshal|Gen(?:eral)?|Lt\.?\s*Gen(?:eral)?|"
     r"Maj\.?\s*Gen(?:eral)?|Brig\.?\s*Gen(?:eral)?|Col(?:onel)?|"
@@ -278,33 +281,39 @@ def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-pos
 ) -> None:
     """Add event_mention to entity record if not already present (thread-safe)."""
     from src.utils.file_lock import locked_json
+    from src.schemas.schema_contract import read_for_update
 
     with locked_json(entity_file) as (data, save):
-        mentions = data.get("event_mentions", [])
-        book = meta.get("book", "")
-        # Dedup by (EventID + book + Sub_event_Name) — not Sub_eventID which changes on re-extraction
-        if any(
-            m.get("EventID") == event_id
-            and m.get("book") == book
-            and m.get("Sub_event_Name") == se_name
-            for m in mentions
-        ):
-            return
-        mention = {
-            "MentionID": str(ulid_mod.new()),
-            "Event_Name": event_name,
-            "EventID": event_id,
-            "Sub_event_Name": se_name,
-            "Sub_eventID": seid,
-            "book": meta.get("book", ""),
-            "author": meta.get("author", ""),
-            "series": meta.get("series", ""),
-        }
-        if source_obj:
-            _enrich_mention_from_source(mention, data, source_obj, date_id_lookup)
-        mentions.append(mention)
-        data["event_mentions"] = mentions
-        save(data)
+        # Read the historical record under this module's schema contract: a FUTURE-schema
+        # record is skipped gracefully (code not built for it); older records merge
+        # best-effort (upgrade case-by-case if registered).
+        data, skip = read_for_update(data, SCHEMA_TARGET, logger, entity_file.name)
+        if not skip:
+            mentions = data.get("event_mentions", [])
+            book = meta.get("book", "")
+            # Dedup by (EventID + book + Sub_event_Name) — not Sub_eventID which changes on re-extraction
+            if any(
+                m.get("EventID") == event_id
+                and m.get("book") == book
+                and m.get("Sub_event_Name") == se_name
+                for m in mentions
+            ):
+                return
+            mention = {
+                "MentionID": str(ulid_mod.new()),
+                "Event_Name": event_name,
+                "EventID": event_id,
+                "Sub_event_Name": se_name,
+                "Sub_eventID": seid,
+                "book": meta.get("book", ""),
+                "author": meta.get("author", ""),
+                "series": meta.get("series", ""),
+            }
+            if source_obj:
+                _enrich_mention_from_source(mention, data, source_obj, date_id_lookup)
+            mentions.append(mention)
+            data["event_mentions"] = mentions
+            save(data)
     # Update the in-memory record to reflect the change
     record["event_mentions"] = data.get("event_mentions", [])
 
