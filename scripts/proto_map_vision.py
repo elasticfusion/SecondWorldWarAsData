@@ -58,10 +58,14 @@ def _vision(client: GrokClient, prompt: str, img: Image.Image) -> dict:
 def read_legend(client: GrokClient, full: Image.Image) -> dict:
     prompt = (
         "This is a WWII US Army 'Green Book' operational map. Read the MAP NUMBER, TITLE, "
-        "and the LEGEND. Return STRICT JSON only: "
+        "the LEGEND, and any ELEVATION and DISTANCE scales. Return STRICT JSON only: "
         '{"map_number": <e.g. "MAP III" or null>, "title": <or null>, '
         '"legend": [{"symbol_description": <e.g. "solid red line">, '
-        '"meaning": <verbatim legend text>, "date_text": <date in the entry or null>}]}'
+        '"meaning": <verbatim legend text>, "date_text": <date in the entry or null>}], '
+        '"elevation_scale": <verbatim elevation legend, e.g. "ELEVATIONS IN METERS '
+        '0 400 500 600 AND ABOVE" or null>, '
+        '"distance_scale": <verbatim distance/bar scale, e.g. "0 1 2 3 MILES / '
+        '0 1 2 3 KILOMETERS" or null>}'
     )
     return _vision(client, prompt, full)
 
@@ -251,6 +255,8 @@ def to_feature_collection(map_meta: dict, tile_results: list) -> dict:
         "map_number": map_meta.get("map_number"),
         "map_title": map_meta.get("title"),
         "legend": map_meta.get("legend", []),
+        "elevation_scale": map_meta.get("elevation_scale"),
+        "distance_scale": map_meta.get("distance_scale"),
         "features": feats,
     }
 

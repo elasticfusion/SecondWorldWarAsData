@@ -204,6 +204,40 @@ Weckerath) as expected.
 **Conclusion:** Green Book maps yield Tier-1 strongly today and Tier-2 (dated operational
 movement) with the unit-expander + seam-merge. Tier-3 (survey geometry) stays out by design
 (coordinates via resolved PlaceID, never pixels).
+
+---
+
+## Chandra vs. Grok (measured on the identical Map III) — recommendation
+
+Both tools were run on the SAME Map III: Grok via the prototype, Chandra via the deployed
+GPU pipeline (`wwii-chandra`, DPI 300, on-demand).
+
+| | Chandra (GPU OCR) | Grok vision |
+|---|---|---|
+| Title + legend text | ✓ | ✓ |
+| Elevation + distance scales | ✓ | ✓ *(after prompt fix — see below)* |
+| Places | ~3, in prose | **74 enumerated** (47 → PlaceID) |
+| Units | ~4, in prose | **27** with affiliation + echelon |
+| Affiliation / dated movement | prose only ("red arrows = German attacks") | **structured** (`18 VG → Roth 16-19 Dec`) |
+| Output form | caption/alt-text + webp crops | typed GeoJSON features |
+| Infra cost | GPU Batch: NAT + 7 VPC endpoints + GPU instance (~10 min/page), mandatory teardown | one HTTPS call (key only) |
+
+**The only thing Chandra captured that Grok initially missed — the elevation/distance
+scales — was a prompt omission, not a capability gap.** After adding scales to the legend
+prompt, Grok returns them verbatim:
+`elevation_scale: "ELEVATIONS IN METERS 0 400 500 600 AND ABOVE"`,
+`distance_scale: "0 1 2 3 MILES / 0 1 2 3 KILOMETERS"` — matching Chandra.
+
+**Recommendation: Grok alone for the map interior.**
+- Chandra adds no structured/relational data (architectural: it captions, it does not
+  enumerate/relate), and its one incremental read (scales) is replicable in Grok for free.
+- The tandem roughly doubles the moving parts (GPU pipeline + teardown) per map for a
+  marginal, replicable gain.
+- **Reserve Chandra for its real job** — prose pages and tables (Paddle/PP-StructureV3 for
+  2-D tables), where it is the deployed, correct tool.
+- **Revisit the tandem only for degraded/hand-drawn maps** where Grok's label OCR
+  measurably fails (the prototype's "106 XX 28" noise is the signal). On clean Green Book
+  maps that bottleneck did not appear. Tandem value scales with source degradation.
 2. Confidence floor for auto-resolving PlaceID/GroupID (suggest reuse the weather/equipment
    matcher thresholds — ~0.88 name match) before falling back to `null` + verbatim label.
 3. Do we store the FeatureCollection on the existing map record (new `map_features` key) or
