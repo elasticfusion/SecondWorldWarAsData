@@ -9,7 +9,7 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import ulid
 
@@ -18,6 +18,9 @@ from src.json_schemas import CASUALTY_ITEM_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
 
 logger = logging.getLogger(__name__)
+
+# people_groups index is the shared unit_key index: [(GroupID, name, UnitKey)].
+GroupUnitKeyIndex = List[Tuple[str, str, Any]]
 
 
 def extract_casualties(
@@ -123,7 +126,7 @@ def _batch_extract_casualties(
     dates_index: Dict[str, Any],
     places_index: Dict[str, Any],
     people_index: Dict[str, Any],
-    people_groups_index: Dict[str, Any],
+    people_groups_index: GroupUnitKeyIndex,
     chunk_size: int = 10,
 ) -> Dict[str, List[Dict[str, Any]]]:
     """Extract casualties from sub-events, chunked for large chapters.
@@ -404,7 +407,7 @@ def _resolve_impacted_entities(
     casualty: Dict[str, Any],
     places_index: Dict[str, Any],
     people_index: Dict[str, Any],
-    people_groups_index: Dict[str, Any],
+    people_groups_index: GroupUnitKeyIndex,
 ) -> None:
     """Resolve and attach all impacted entity arrays to casualty."""
     resolvers = {
@@ -429,7 +432,7 @@ def _build_casualty(
     dates_index: Dict[str, Any],
     places_index: Dict[str, Any],
     people_index: Dict[str, Any],
-    people_groups_index: Dict[str, Any],
+    people_groups_index: GroupUnitKeyIndex,
 ) -> Dict[str, Any]:
     """Build casualty JSON structure."""
     casualty = {
@@ -605,7 +608,7 @@ def _normalize_role(role: str) -> str:
 
 
 def _resolve_organizations(
-    orgs: List[Any], people_groups_index: Dict[str, Any]
+    orgs: List[Any], people_groups_index: GroupUnitKeyIndex
 ) -> List[Dict[str, Any]]:
     """Resolve organization references to PeopleGroupIDs via the shared unit_key resolver
     (structural number/service/arm/echelon match), not exact-string lookup — so
