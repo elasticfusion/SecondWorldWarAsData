@@ -107,14 +107,16 @@ Enrichment-on-identity (follows identity resolution)
   into equipment's `_enrich_on_identity`. People/people_groups/places enrichment still use
   the bare `enrichment_status` flag with no last-checked timestamp or diff. **Action:**
   roll the gate into those paths for consistent "limit updates" behavior.
-- **German multi-identifier dedup/alias not implemented.** German equipment carries
-  several identifiers at once (`Panzer IV` = `Pz.Kpfw. IV Ausf. H` = `Sd.Kfz. 161/2`). The
-  alias table has nicknames but **no `Sd.Kfz.` numbers** and no `Pz.Kpfw.`⇄`Panzer`
-  normalization or `Ausf.`-variant handling, so these can fail to match / wrongly split.
-  Captured `(f)`/`(r)` suffixes mark origin (consistent with the origin-vs-operator model).
-  See [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md). **Action:** add
-  Sd.Kfz.→canonical aliases + German-aware normalization to the alias table and
-  `find_duplicate_equipment.py`.
+- **Multi-national multi-identifier dedup/alias not implemented.** The same equipment type
+  has several valid names across US / German / British systems (`M4` = `Sherman V`;
+  `Panzer IV` = `Pz.Kpfw. IV Ausf. H` = `Sd.Kfz. 161/2`; `Firefly` = `Sherman IC`). The
+  alias table lacks `Sd.Kfz.` numbers, British Sherman-marks/A-numbers/service-names, and
+  `Pz.Kpfw.`⇄`Panzer`/`Ausf.` normalization — so these can fail to match / wrongly split.
+  British **census numbers** must never be used as a type identity. See
+  [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md). **Proposed fix:** a
+  cached, cost-gated **Grok disambiguation** fallback (exact→alias→fuzzy→Grok) that resolves
+  a raw designation to a canonical identity + nationality + equivalents, provenance-stamped,
+  feeding the curated alias table. Not yet implemented (awaiting scope confirmation).
 - **Supporting-unit equipment linking is name-exact.** `equipment_name` → `EquipmentID`
   uses the same exact-index lookup; no alias/fuzzy resolution.
 - **Enrichment-on-identity: Wikipedia + Grok text/specs LIVE-validated; vision + OpenSERP
