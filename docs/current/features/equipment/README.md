@@ -107,6 +107,14 @@ Enrichment-on-identity (follows identity resolution)
   into equipment's `_enrich_on_identity`. People/people_groups/places enrichment still use
   the bare `enrichment_status` flag with no last-checked timestamp or diff. **Action:**
   roll the gate into those paths for consistent "limit updates" behavior.
+- **German multi-identifier dedup/alias not implemented.** German equipment carries
+  several identifiers at once (`Panzer IV` = `Pz.Kpfw. IV Ausf. H` = `Sd.Kfz. 161/2`). The
+  alias table has nicknames but **no `Sd.Kfz.` numbers** and no `Pz.Kpfw.`⇄`Panzer`
+  normalization or `Ausf.`-variant handling, so these can fail to match / wrongly split.
+  Captured `(f)`/`(r)` suffixes mark origin (consistent with the origin-vs-operator model).
+  See [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md). **Action:** add
+  Sd.Kfz.→canonical aliases + German-aware normalization to the alias table and
+  `find_duplicate_equipment.py`.
 - **Supporting-unit equipment linking is name-exact.** `equipment_name` → `EquipmentID`
   uses the same exact-index lookup; no alias/fuzzy resolution.
 - **Enrichment-on-identity: Wikipedia + Grok text/specs LIVE-validated; vision + OpenSERP
@@ -136,6 +144,7 @@ Enrichment-on-identity (follows identity resolution)
 |---|---|
 | [EQUIPMENT_FINAL_STRUCTURE.md](EQUIPMENT_FINAL_STRUCTURE.md) | The record/mention structure actually produced. Canonical example lives here. |
 | [EQUIPMENT_DEDUPLICATION.md](EQUIPMENT_DEDUPLICATION.md) | Dedup behavior, alias/fuzzy matching, and the origin-vs-operator country model. |
+| [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md) | US vs. German naming (M-number vs. Pz.Kpfw./Ausf./Sd.Kfz.) + implications for dedup/alias/identity. |
 | [EQUIPMENT_ENTITY_LINKING.md](EQUIPMENT_ENTITY_LINKING.md) | Linking mentions to people/people_groups/dates by real IDs. |
 | [EQUIPMENT_MEDIA_INTEGRATION.md](EQUIPMENT_MEDIA_INTEGRATION.md) | Media sourcing (OpenSERP + wiki) + vision verification + storage. |
 | [EQUIPMENT_ERROR_HANDLING.md](EQUIPMENT_ERROR_HANDLING.md) | Error-handling patterns compliance review. |
