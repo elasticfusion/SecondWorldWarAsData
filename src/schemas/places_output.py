@@ -20,10 +20,25 @@ PLACES_OUTPUT_SCHEMA = {
         "PlaceID": ulid_field(),
         "current_name": make_nullable("string"),
         "name": make_nullable("string"),
-        "historical_names": {"type": ["array", "null"], "items": {"type": "string"}},
+        "historical_names": {
+            "type": ["array", "null"],
+            "items": {"type": ["string", "object"]},
+        },
         "aliases": {"type": ["array", "null"], "items": {"type": "string"}},
         "source_language": make_nullable("string"),
         "geography_type": make_nullable("string"),
+        # Top-level coordinates (geocode cascade also writes these at the root, not only
+        # under the nested "coordinates" object).
+        "latitude": {"type": ["number", "null"]},
+        "longitude": {"type": ["number", "null"]},
+        # Geocoding-enrichment outputs (places_grok_geocode cascade) + identity fields.
+        "country": make_nullable("string"),
+        "geocode_source": make_nullable("string"),
+        "geo_review": make_nullable("string"),
+        "place_name": make_nullable("string"),
+        "identified_as": make_nullable("string"),
+        "place_type": make_nullable("string"),
+        "source": make_nullable("string"),
         "coordinates": {
             "type": ["object", "null"],
             "additionalProperties": False,
@@ -86,7 +101,16 @@ PLACES_OUTPUT_SCHEMA = {
                 },
             },
         },
-        "enrichment_status": enum_field(["enriched", "not_found"], nullable=True),
+        "enrichment_status": enum_field(
+            [
+                "enriched",
+                "not_found",
+                "geocoded",
+                "geocode_low_confidence",
+                "geocode_not_found",
+            ],
+            nullable=True,
+        ),
         "last_enrichment_search": {"type": ["string", "null"]},
     },
 }
