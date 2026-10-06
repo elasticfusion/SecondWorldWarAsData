@@ -20,6 +20,13 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         "EquipmentID": ulid_field(),
         "common_name": make_nullable("string"),
         "technical_identifier": make_nullable("string"),
+        # Canonical identity resolved by the disambiguator (exact/alias/fuzzy/Grok) so one
+        # name is used across US/German/British designation systems; identity_source
+        # records how it was resolved.
+        "canonical_name": make_nullable("string"),
+        "identity_source": enum_field(
+            ["exact", "alias", "fuzzy", "grok_disambiguation"], nullable=True
+        ),
         "category": make_nullable("string"),
         "subcategory": make_nullable("string"),
         "country_of_origin": make_nullable("string"),

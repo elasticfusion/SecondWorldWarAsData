@@ -48,6 +48,9 @@ Gap-fill (SourceRechecker, source-first)
     retained original_text before any external lookup; gap-fill-only, provenance-stamped
 
 Enrichment-on-identity (follows identity resolution)
+  - canonical disambiguation first (src/extraction/equipment_disambiguation.py):
+    exact->alias->fuzzy->Grok (cached) resolves the raw designation to a canonical
+    identity (stamped canonical_name + identity_source); enrichment then uses that name.
   - once a record resolves to a SPECIFIC designation (M4 Sherman, M2 .50 cal — has a
     technical_identifier or a non-generic common_name), enrich ONCE (stamped
     enrichment_status, never re-run): Grokipedia/Wikipedia text/specs/URLs + a canonical
@@ -74,6 +77,7 @@ Enrichment-on-identity (follows identity resolution)
 | Wikipedia enrichment | `src/enrichment/equipment_wikipedia.py` |
 | Enrichment staleness gate | `src/enrichment/enrichment_gate.py` |
 | Source-recheck gap-fill | `src/extraction/equipment_source_recheck.py` (uses the reusable `src/extraction/source_recheck.py`) |
+| Canonical designation disambiguator | `src/extraction/equipment_disambiguation.py` (exact→alias→fuzzy→Grok, cached) |
 | **Enforced output schema (source of truth)** | `src/schemas/equipment_output.py` |
 | Alias table | `config/equipment_aliases.yaml` |
 | Prompt | `prompts/equipment.yaml` |
@@ -107,16 +111,17 @@ Enrichment-on-identity (follows identity resolution)
   into equipment's `_enrich_on_identity`. People/people_groups/places enrichment still use
   the bare `enrichment_status` flag with no last-checked timestamp or diff. **Action:**
   roll the gate into those paths for consistent "limit updates" behavior.
-- **Multi-national multi-identifier dedup/alias not implemented.** The same equipment type
-  has several valid names across US / German / British systems (`M4` = `Sherman V`;
-  `Panzer IV` = `Pz.Kpfw. IV Ausf. H` = `Sd.Kfz. 161/2`; `Firefly` = `Sherman IC`). The
-  alias table lacks `Sd.Kfz.` numbers, British Sherman-marks/A-numbers/service-names, and
-  `Pz.Kpfw.`⇄`Panzer`/`Ausf.` normalization — so these can fail to match / wrongly split.
-  British **census numbers** must never be used as a type identity. See
-  [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md). **Proposed fix:** a
-  cached, cost-gated **Grok disambiguation** fallback (exact→alias→fuzzy→Grok) that resolves
-  a raw designation to a canonical identity + nationality + equivalents, provenance-stamped,
-  feeding the curated alias table. Not yet implemented (awaiting scope confirmation).
+- **Multi-national designation disambiguation — runtime Grok resolver built; curated-table
+  coverage still thin.** The same type has many valid names across US/German/British
+  systems (`M4`=`Sherman V`; `Panzer IV`=`Pz.Kpfw. IV Ausf. H`=`Sd.Kfz. 161/2`;
+  `Firefly`=`Sherman IC`). `src/extraction/equipment_disambiguation.py` now resolves a raw
+  designation to a canonical identity at runtime (exact→alias→fuzzy→**Grok**, cached,
+  canonical-lookup only, provenance `identity_source`), so the long tail is handled without
+  exhaustive hand cross-walks. **Remaining:** the curated `equipment_aliases.yaml` still
+  lacks Sd.Kfz. numbers / British marks / `Pz.Kpfw.`⇄`Panzer` normalization — Grok
+  resolutions are written to `output/equipment/disambiguation_suggestions.jsonl` for human
+  promotion into the YAML (to cut Grok cost over time). British **census numbers** must
+  never be used as a type identity. See [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md).
 - **Supporting-unit equipment linking is name-exact.** `equipment_name` → `EquipmentID`
   uses the same exact-index lookup; no alias/fuzzy resolution.
 - **Enrichment-on-identity: Wikipedia + Grok text/specs LIVE-validated; vision + OpenSERP
@@ -157,7 +162,7 @@ Enrichment-on-identity (follows identity resolution)
 - **Enforced schema:** `src/schemas/equipment_output.py` (`additionalProperties: false`).
 - **Canonical structure example:** `EQUIPMENT_FINAL_STRUCTURE.md` (other docs link here
   rather than repeating the JSON).
-- **Schema version:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently 2.11 — adds
+- **Schema version:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently 2.12 — adds canonical_name + identity_source (designation disambiguator); 2.11 added
   `enrichment_checked_at` (enrichment staleness gate); 2.10 added `image_scope` + enrichment-on-identity; builds on 2.9's
   record-level `related_equipment` and 2.8's per-mention `quantity`/`place`/
   `operating_country`/`captured` + declared `original_text` retention).

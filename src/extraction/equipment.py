@@ -1554,6 +1554,27 @@ def _canonical_equipment_name(name: str) -> str:
 _EQUIPMENT_ALIAS_CACHE: Optional[Dict[str, str]] = None
 
 
+def _resolve_canonical_identity(
+    equipment_data: dict, grok_client: Optional[GrokClient]
+) -> str:
+    """Resolve the record's designation to a canonical identity (exact→alias→fuzzy→Grok)
+    and stamp canonical_name/identity_source/country_of_origin. Returns the name to use for
+    enrichment. Canonical lookup only (no specs)."""
+    from src.extraction.equipment_disambiguation import resolve_designation
+
+    canonical_name = _canonical_equipment_name(equipment_data["common_name"])
+    ident = resolve_designation(equipment_data["common_name"], grok_client)
+    if ident and ident.get("identity_source") not in (None, "raw"):
+        canonical_name = ident["canonical_name"]
+        equipment_data["canonical_name"] = canonical_name
+        equipment_data["identity_source"] = ident["identity_source"]
+        if ident.get("nationality_of_origin") and not equipment_data.get(
+            "country_of_origin"
+        ):
+            equipment_data["country_of_origin"] = ident["nationality_of_origin"]
+    return canonical_name
+
+
 def _enrich_on_identity(
     equipment_data: dict,
     grok_client: Optional[GrokClient],
@@ -1575,6 +1596,9 @@ def _enrich_on_identity(
             equipment_data.get("common_name"),
         )
         return
+    # CANONICAL DISAMBIGUATION (exact→alias→fuzzy→Grok, cached): resolve to a canonical
+    # identity so enrichment/dedup use one name across US/German/British naming systems.
+    canonical_name = _resolve_canonical_identity(equipment_data, grok_client)
     # LIMIT UPDATES: skip if we checked Grokipedia/Wikipedia within the staleness window.
     from src.enrichment.enrichment_gate import (
         diff_enrichment,
@@ -1592,7 +1616,7 @@ def _enrich_on_identity(
         before = {k: v for k, v in equipment_data.items()}
         _enrich_and_add_media(
             equipment_data,
-            _canonical_equipment_name(equipment_data["common_name"]),
+            canonical_name,
             grok_client,
             verify_media_with_vision,
             sub_event_id,
