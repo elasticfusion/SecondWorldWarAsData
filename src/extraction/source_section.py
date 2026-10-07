@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import logging
+from datetime import date
 
 import ulid
 
@@ -209,6 +210,27 @@ def derive_summary_and_operation(
     return True
 
 
+def fetch_section_articles(record: Dict[str, Any]) -> bool:
+    """When an operation is present, fetch Grokipedia + Wikipedia articles as additive
+    reference material (text + inline references). Gated on wikipedia_checked_at (stamped even
+    on a miss, so it is never re-fetched). Mutates the record IN PLACE; returns True if it ran
+    the fetch step (whether or not articles were found)."""
+    if record.get("wikipedia_checked_at"):
+        return False
+    operation = record.get("operation")
+    # Stamp the gate marker up front so a miss (or no-operation) is never re-attempted.
+    record["wikipedia_checked_at"] = date.today().isoformat()
+    if not operation:
+        return True
+    from src.extraction.source_section_articles import fetch_reference_articles
+
+    articles = fetch_reference_articles(operation)
+    if articles:
+        existing = record.get("reference_articles") or []
+        record["reference_articles"] = existing + articles
+    return True
+
+
 def _iter_event_files(output_dir: Path):
     """Yield every finalized event file (one per source section)."""
     yield from (output_dir / "content").glob("*/*-event.json")
@@ -278,8 +300,16 @@ def enrich_all_source_sections(
         except Exception as e:  # noqa: BLE001
             logger.warning("source_section derive failed for %s: %s", event_id, e)
             continue
-        if changed:
+        # Fetch Grokipedia + Wikipedia reference articles (gated on wikipedia_checked_at).
+        try:
+            fetched = fetch_section_articles(record)
+        except Exception as e:  # noqa: BLE001
+            logger.warning(
+                "source_section article fetch failed for %s: %s", event_id, e
+            )
+            fetched = False
+        if changed or fetched:
             _save_source_section(output_dir, record)
             enriched += 1
-    logger.info("source_section: derived summary+operation for %d section(s)", enriched)
+    logger.info("source_section: enriched %d section(s)", enriched)
     return enriched
