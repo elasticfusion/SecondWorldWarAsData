@@ -39,6 +39,15 @@ PLACES_OUTPUT_SCHEMA = {
         "identified_as": make_nullable("string"),
         "place_type": make_nullable("string"),
         "source": make_nullable("string"),
+        # Phase-2 Grokipedia descriptive lookup (grokipedia_url set in extraction;
+        # grokipedia_checked_at stamped even on a miss so it is not re-fetched).
+        "grokipedia_url": make_nullable("string"),
+        "grokipedia_checked_at": make_nullable("string"),
+        # Phase-2 Wikipedia enrichment (url + image, flowing through the same path).
+        # wikipedia_checked_at is stamped even on a miss so it is not re-fetched.
+        "wikipedia_url": make_nullable("string"),
+        "wikipedia_checked_at": make_nullable("string"),
+        "images": {"type": ["array", "null"], "items": {"type": ["object", "string"]}},
         "coordinates": {
             "type": ["object", "null"],
             "additionalProperties": False,

@@ -245,7 +245,13 @@ def main():
     # people' call (enrich_people_data/enrich_all_people) is intentionally removed;
     # those functions remain defined for standalone/CLI + test use.
 
-    # Enrich people groups
+    # Enrich people groups — STRUCTURED org-history facts (unit_type, nationality,
+    # commanding officers, operations) via a Grok extract_json, promoted into spec
+    # fields. This is the groups analogue of place hierarchy/names: structured
+    # reference facts, NOT descriptive Grokipedia/Wikipedia text+images. The latter
+    # (wikipedia_url/extract/images) moved to PHASE 2 (people_groups extractor →
+    # enrich_group_from_wikipedia). This structured-facts enrichment therefore stays
+    # in Phase 3, mirroring the rule that place hierarchy/names remain in Phase 3.
     if not args.people_only:
         groups_dir = args.output_dir / "people_groups"
         total_enriched += _run_step(
@@ -372,20 +378,10 @@ def main():
     # Phase-3 step anymore: Phase 2 owns ALL Grokipedia/Wikipedia enrichment; Phase 3
     # owns only OTHER external enrichment (geocoding, NOAA, OpenSERP, NARA).
 
-    # Groups Wikipedia enrichment (images + extracts)
-    if not args.people_only:
-        logger.info("[phase3 step 4c/6] Groups Wikipedia enrichment")
-        _update_lock_status("step 4c/6: enriching groups (Wikipedia)")
-        from src.enrichment.groups_wikipedia import enrich_all_groups_wikipedia
-
-        groups_dir = args.output_dir / "people_groups"
-        if groups_dir.exists():
-            total_enriched += _run_step(
-                "groups_wikipedia",
-                lambda: enrich_all_groups_wikipedia(
-                    groups_dir, max_items=args.max_items
-                ),
-            )
+    # Groups Wikipedia enrichment (text + images) now runs in PHASE 2, committed
+    # natively by the extractor (src/extraction/people_groups.py). It is intentionally
+    # NOT a Phase-3 step anymore: Phase 2 owns ALL Grokipedia/Wikipedia enrichment;
+    # Phase 3 owns only OTHER external enrichment (geocoding, NOAA, OpenSERP, NARA).
 
     # OpenSERP enrichment (images, academic sources) — requires OpenSERP running
     if not args.people_only and config.get("supplemental_material", {}).get(

@@ -288,6 +288,19 @@ def extract_people_groups(
 
     index_file = groups_dir / "index.json"
     for group in groups:
+        # Phase-2 Wikipedia enrichment (text + images). Phase 2 owns ALL
+        # Grokipedia/Wikipedia enrichment; this augments in place before the native
+        # save. Fail-safe: enrichment must never block extraction.
+        try:
+            from src.enrichment.groups_wikipedia import enrich_group_from_wikipedia
+
+            enrich_group_from_wikipedia(group)
+        except Exception as e:  # noqa: BLE001 - enrichment is best-effort
+            logger.warning(
+                "  Wikipedia enrichment failed for group %s: %s",
+                group.get("group_name", "Unknown"),
+                e,
+            )
         _save_group(groups_dir, index_file, group, book, author, series)
 
     _mark_as_processed(

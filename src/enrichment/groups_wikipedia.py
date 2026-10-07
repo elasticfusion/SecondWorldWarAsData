@@ -153,6 +153,49 @@ def _fetch_license(filename: str) -> Optional[str]:
     return None
 
 
+def enrich_group_from_wikipedia(group: dict) -> bool:
+    """Phase-2 in-place Wikipedia enrichment for a single group record.
+
+    Reuses search_group_wikipedia (the single source of the Wikipedia HTTP code — we do
+    NOT duplicate it) to set wikipedia_url + wikipedia_extract + images on the group
+    record. wikipedia_checked_at is stamped even on a MISS so we never re-fetch, and the
+    whole step is GATED on wikipedia_checked_at (idempotent across runs). Performs NO
+    file I/O — the caller (extractor) owns the native save path.
+
+    Returns True if a Wikipedia hit was applied, else False.
+    """
+    from datetime import date
+
+    # Gate: already checked (hit or miss) -> never re-fetch.
+    if group.get("wikipedia_checked_at"):
+        return False
+
+    group["wikipedia_checked_at"] = date.today().isoformat()
+
+    name = group.get("group_name", "")
+    if not name or len(name) < 3:
+        return False
+
+    result = search_group_wikipedia(name)
+    if not result:
+        logger.debug("No Wikipedia extract for group %s", name)
+        return False
+
+    group["wikipedia_url"] = result["wikipedia_url"]
+    group["wikipedia_extract"] = result["extract"][:500]
+    if result.get("image"):
+        group.setdefault("images", []).insert(
+            0,
+            {
+                "url": result["image"],
+                "license": result.get("license", "unknown"),
+                "source": "wikipedia",
+            },
+        )
+    logger.debug("Wikipedia enriched group %s → %s", name, result["wikipedia_url"])
+    return True
+
+
 def enrich_all_groups_wikipedia(
     groups_dir: Path, max_items: Optional[int] = None
 ) -> int:
