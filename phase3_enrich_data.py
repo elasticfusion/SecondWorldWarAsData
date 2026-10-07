@@ -12,7 +12,6 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from src.extraction.enrich_biographies import enrich_all_people
 from src.extraction.enrich_groups import enrich_all_groups
 from src.extraction.enrich_places import enrich_all_places
 from src.extraction.places import link_parent_place_ids
@@ -68,45 +67,11 @@ def _update_lock_status(status: str) -> None:
         logger.warning("Could not update Phase 3 lock status '%s': %s", status, e)
 
 
-def enrich_people_data(
-    people_dir: Path,
-    grok_client: GrokClient,
-    max_items: Optional[int] = None,
-    search_references: bool = True,
-    max_workers: int = 6,
-) -> int:
-    """Enrich people biographical data from Grokipedia and Wikipedia."""
-    logger.info("[phase3 step 1/6] Enriching people (%s)", people_dir)
-    _update_lock_status("step 1/6: enriching people")
-
-    if not people_dir.exists():
-        logger.warning(f"People directory not found: {people_dir}")
-        return 0
-
-    people_files = [
-        f
-        for f in people_dir.glob("*.json")
-        if f.name not in ["index.json", "duplicate_report.json", "not_duplicates.json"]
-    ]
-
-    if not people_files:
-        logger.info("No people files found")
-        return 0
-
-    logger.info(f"Found {len(people_files)} people file(s)")
-    if max_items:
-        logger.info(f"Limiting to {max_items} people")
-
-    enriched = enrich_all_people(
-        people_dir,
-        grok_client,
-        max_people=max_items,
-        search_references_flag=search_references,
-        max_workers=max_workers,
-    )
-
-    logger.info(f"✓ Enriched {enriched} people")
-    return enriched
+# NOTE: people Grokipedia/Wikipedia enrichment MOVED TO PHASE 2 (people.py
+# _enrich_person_phase2 -> enrich_biographies.enrich_person_from_sources). The former
+# Phase-3 enrich_people_data() has been removed. Phase-3 people enrichment is OpenSERP-only
+# (see the openserp_people step in main()). enrich_all_people remains in enrich_biographies
+# for the module CLI + integration tests, but is intentionally NOT wired into this pipeline.
 
 
 def enrich_groups_data(
@@ -116,8 +81,8 @@ def enrich_groups_data(
     max_workers: int = 6,
 ) -> int:
     """Enrich people groups with external data."""
-    logger.info("[phase3 step 2/6] Enriching people groups")
-    _update_lock_status("step 2/6: enriching people_groups")
+    logger.info("[phase3 step 1/6] Enriching people groups")
+    _update_lock_status("step 1/6: enriching people_groups")
 
     enriched = enrich_all_groups(
         groups_dir, grok_client, max_groups=max_items, max_workers=max_workers
@@ -237,21 +202,21 @@ def main():
             }
             return 0
 
-    # Enrich people
-    people_dir = args.output_dir / "people"
-    people_enriched = _run_step(
-        "people",
-        lambda: enrich_people_data(
-            people_dir,
-            grok_client,
-            max_items=args.max_items,
-            search_references=not args.no_references,
-            max_workers=max_workers,
-        ),
-    )
-    total_enriched += people_enriched
+    # Enrich people — MOVED TO PHASE 2. All Grokipedia/Wikipedia people enrichment
+    # (bio text + Wikipedia portrait images + award citations) is now committed
+    # natively by the Phase-2 people extractor (src/extraction/people.py ->
+    # enrich_biographies.enrich_person_from_sources). Phase 3 owns only OTHER external
+    # people enrichment (OpenSERP, below). The former '[phase3 step 1/6] Enriching
+    # people' call (enrich_people_data/enrich_all_people) is intentionally removed;
+    # those functions remain defined for standalone/CLI + test use.
 
-    # Enrich people groups
+    # Enrich people groups — STRUCTURED org-history facts (unit_type, nationality,
+    # commanding officers, operations) via a Grok extract_json, promoted into spec
+    # fields. This is the groups analogue of place hierarchy/names: structured
+    # reference facts, NOT descriptive Grokipedia/Wikipedia text+images. The latter
+    # (wikipedia_url/extract/images) moved to PHASE 2 (people_groups extractor →
+    # enrich_group_from_wikipedia). This structured-facts enrichment therefore stays
+    # in Phase 3, mirroring the rule that place hierarchy/names remain in Phase 3.
     if not args.people_only:
         groups_dir = args.output_dir / "people_groups"
         total_enriched += _run_step(
@@ -266,8 +231,8 @@ def main():
 
     # Enrich places
     if not args.people_only:
-        logger.info("[phase3 step 3/6] Enriching places")
-        _update_lock_status("step 3/6: enriching places")
+        logger.info("[phase3 step 2/6] Enriching places")
+        _update_lock_status("step 2/6: enriching places")
         places_dir = args.output_dir / "places"
         total_enriched += _run_step(
             "places",
@@ -373,35 +338,15 @@ def main():
             ).get("resolved", 0),
         )
 
-    # Equipment Wikipedia enrichment (images + extracts)
-    if not args.people_only and config.get("equipment", {}).get("enabled"):
-        logger.info("[phase3 step 4b/6] Equipment Wikipedia enrichment")
-        _update_lock_status("step 4b/6: enriching equipment (Wikipedia)")
-        from src.enrichment.equipment_wikipedia import enrich_all_equipment_wikipedia
+    # Equipment Wikipedia enrichment (text + images) now runs in PHASE 2, committed
+    # natively by the extractor (src/extraction/equipment.py). It is intentionally NOT a
+    # Phase-3 step anymore: Phase 2 owns ALL Grokipedia/Wikipedia enrichment; Phase 3
+    # owns only OTHER external enrichment (geocoding, NOAA, OpenSERP, NARA).
 
-        equipment_dir = args.output_dir / "equipment"
-        if equipment_dir.exists():
-            total_enriched += _run_step(
-                "equipment_wikipedia",
-                lambda: enrich_all_equipment_wikipedia(
-                    equipment_dir, max_items=args.max_items
-                ),
-            )
-
-    # Groups Wikipedia enrichment (images + extracts)
-    if not args.people_only:
-        logger.info("[phase3 step 4c/6] Groups Wikipedia enrichment")
-        _update_lock_status("step 4c/6: enriching groups (Wikipedia)")
-        from src.enrichment.groups_wikipedia import enrich_all_groups_wikipedia
-
-        groups_dir = args.output_dir / "people_groups"
-        if groups_dir.exists():
-            total_enriched += _run_step(
-                "groups_wikipedia",
-                lambda: enrich_all_groups_wikipedia(
-                    groups_dir, max_items=args.max_items
-                ),
-            )
+    # Groups Wikipedia enrichment (text + images) now runs in PHASE 2, committed
+    # natively by the extractor (src/extraction/people_groups.py). It is intentionally
+    # NOT a Phase-3 step anymore: Phase 2 owns ALL Grokipedia/Wikipedia enrichment;
+    # Phase 3 owns only OTHER external enrichment (geocoding, NOAA, OpenSERP, NARA).
 
     # OpenSERP enrichment (images, academic sources) — requires OpenSERP running
     if not args.people_only and config.get("supplemental_material", {}).get(
@@ -468,13 +413,7 @@ def main():
             grok_client.batch_mode = False
             total_enriched = 0
 
-            people_enriched = enrich_people_data(
-                people_dir,
-                grok_client,
-                max_items=args.max_items,
-                search_references=not args.no_references,
-            )
-            total_enriched += people_enriched
+            # People enrichment MOVED TO PHASE 2 (not re-run here).
 
             if not args.people_only:
                 groups_dir = args.output_dir / "people_groups"

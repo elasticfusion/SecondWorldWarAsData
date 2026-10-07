@@ -400,6 +400,21 @@ def _find_or_create_place(
         # Generate map URLs if not present
         place_data["map_urls"] = mention.get("map_urls") or _generate_map_urls(lat, lon)
 
+    # Phase-2 Grokipedia + Wikipedia descriptive lookup (sets grokipedia_url /
+    # wikipedia_url + image). Phase 2 owns ALL Grokipedia/Wikipedia enrichment; this
+    # augments in place before the native save. Hierarchy/names + geocoding stay in
+    # Phase 3. Fail-safe: never block extraction.
+    try:
+        from src.extraction.enrich_places import (
+            enrich_place_from_grokipedia,
+            enrich_place_from_wikipedia,
+        )
+
+        enrich_place_from_grokipedia(place_data)
+        enrich_place_from_wikipedia(place_data)
+    except Exception as e:  # noqa: BLE001 - enrichment is best-effort
+        logger.warning("  Grokipedia enrichment failed for place %s: %s", place_name, e)
+
     # Write initial file
     write_json_with_lock(place_file, place_data)
 

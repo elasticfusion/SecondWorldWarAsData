@@ -125,6 +125,84 @@ def _fetch_image_license(filename: str) -> Optional[str]:
     return None
 
 
+def enrich_place_from_grokipedia(place: dict) -> bool:
+    """Phase-2 in-place Grokipedia descriptive lookup for a single place record.
+
+    Reuses _search_grokipedia_place (the single source of the Grokipedia HTTP code — we
+    do NOT duplicate it) to set grokipedia_url on the place record. A
+    grokipedia_checked_at marker is stamped even on a MISS so we never re-fetch, and the
+    step is GATED on grokipedia_checked_at OR an existing grokipedia_url (idempotent
+    across runs). Performs NO file I/O — the caller (extractor) owns the native save
+    path. Hierarchy/names + geocoding remain a Phase-3 concern.
+
+    Returns True if a Grokipedia URL was applied, else False.
+    """
+    from datetime import datetime, timezone
+
+    # Gate: already have a URL, or already checked (hit or miss) -> never re-fetch.
+    if place.get("grokipedia_url") or place.get("grokipedia_checked_at"):
+        return False
+
+    place["grokipedia_checked_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    name = place.get("current_name") or place.get("name", "")
+    if not name:
+        return False
+
+    url = _search_grokipedia_place(name)
+    if not url:
+        logger.debug("No Grokipedia page for place %s", name)
+        return False
+
+    place["grokipedia_url"] = url
+    logger.debug("Grokipedia enriched place %s → %s", name, url)
+    return True
+
+
+def enrich_place_from_wikipedia(place: dict) -> bool:
+    """Phase-2 in-place Wikipedia descriptive lookup (text URL + image) for a place.
+
+    Reuses _fetch_place_wikipedia_full (the single source of the place-Wikipedia HTTP
+    code — not duplicated) to set wikipedia_url + an image entry under images. A
+    wikipedia_checked_at marker is stamped even on a MISS so we never re-fetch, and the
+    step is GATED on wikipedia_url OR wikipedia_checked_at (idempotent across runs). This
+    mirrors the equipment/groups Phase-2 Wikipedia pattern. Performs NO file I/O — the
+    caller (extractor) owns the native save path. Hierarchy/names (Grok + category
+    parsing) and geocoding remain a Phase-3 concern.
+
+    Returns True if a Wikipedia URL was applied, else False.
+    """
+    from datetime import date
+
+    # Gate: already have a URL, or already checked (hit or miss) -> never re-fetch.
+    if place.get("wikipedia_url") or place.get("wikipedia_checked_at"):
+        return False
+
+    place["wikipedia_checked_at"] = date.today().isoformat()
+
+    name = place.get("current_name") or place.get("name", "")
+    if not name:
+        return False
+
+    wiki_data = _fetch_place_wikipedia_full(name)
+    if not wiki_data or not wiki_data.get("wikipedia_url"):
+        logger.debug("No Wikipedia page for place %s", name)
+        return False
+
+    place["wikipedia_url"] = wiki_data["wikipedia_url"]
+    if wiki_data.get("image") and not place.get("images"):
+        place.setdefault("images", []).insert(
+            0,
+            {
+                "url": wiki_data["image"],
+                "license": wiki_data.get("license", "unknown"),
+                "source": "wikipedia",
+            },
+        )
+    logger.debug("Wikipedia enriched place %s → %s", name, wiki_data["wikipedia_url"])
+    return True
+
+
 def _search_grokipedia_place(name: str) -> Optional[str]:
     """Search Grokipedia for a place. Returns page URL or None."""
     import re
@@ -346,28 +424,11 @@ def _enrich_place_data(data, name, grok_client):
         wiki = _search_wikipedia(name)
         if wiki:
             changed = _apply_enrichment(data, wiki) or changed
-    # Also fetch Wikipedia image + Grokipedia
-    if not data.get("wikipedia_url"):
-        wiki_data = _fetch_place_wikipedia_full(name)
-        if wiki_data:
-            if wiki_data.get("wikipedia_url"):
-                data["wikipedia_url"] = wiki_data["wikipedia_url"]
-                changed = True
-            if wiki_data.get("image") and not data.get("images"):
-                data.setdefault("images", []).insert(
-                    0,
-                    {
-                        "url": wiki_data["image"],
-                        "license": wiki_data.get("license", "unknown"),
-                        "source": "wikipedia",
-                    },
-                )
-                changed = True
-    if not data.get("grokipedia_url"):
-        grok_data = _search_grokipedia_place(name)
-        if grok_data:
-            data["grokipedia_url"] = grok_data
-            changed = True
+    # Descriptive Wikipedia (wikipedia_url + image) AND the Grokipedia descriptive lookup
+    # moved to PHASE 2 (src/extraction/places.py → enrich_place_from_wikipedia /
+    # enrich_place_from_grokipedia). Phase 2 owns ALL Grokipedia/Wikipedia enrichment
+    # (text + images); Phase 3 keeps ONLY hierarchy/names (the Grok + category parsing
+    # above) + geocoding (a separate step).
     return changed, errored
 
 

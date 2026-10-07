@@ -9,25 +9,42 @@ them with data from external sources. It runs after the dedup review gate; in AW
 auto-triggered when Phase 2 finds no duplicates, and reads the DynamoDB `manifest#phase2` to
 enrich only changed files.
 
+**Enrichment is split by SOURCE (not by entity):**
+- **Phase 2** owns **all Grokipedia + Wikipedia** enrichment (descriptive text + images),
+  committed natively by each extractor as it writes the entity — people (biography, portrait,
+  award citations), people_groups (Wikipedia text + images), places (Grokipedia/Wikipedia
+  descriptive text + image), equipment (Wikipedia extract + images). See each feature doc.
+- **Phase 3** owns **every other external source**: geocoding (Nominatim/Grok coordinates),
+  NOAA weather, OpenSERP (images / academic search), NARA / Archive.org bibliography
+  resolution, plus the **structured** hierarchy/org-history Grok passes that promote facts into
+  spec fields (place hierarchy/names; group unit-history) — these are structured-field
+  enrichment, not descriptive Grokipedia/Wikipedia text, so they stay in Phase 3.
+
 ---
 
 ## Step order + per-entity process
 
 Steps run in this fixed order. Several are **conditional** (config/token gated) — a default
-local run performs only the unconditional ones (people, groups, places, bibliography).
+local run performs only the unconditional ones (groups, places, bibliography).
 
 | Step | Entity | Process | Module | Gate |
 |---|---|---|---|---|
-| 1/6 | **People** | Grokipedia + Wikipedia biography; follows references; portrait + authoritative award-citation sourcing | `enrich_biographies.enrich_all_people` | always |
-| 2/6 | **People Groups** | Unit history / external data | `enrich_groups.enrich_all_groups` | always |
-| 3/6 | **Places** | (a) hierarchy/name enrichment, (b) `link_parent_place_ids`, (c) **geocoding cascade** → coordinates + provenance | `enrich_places` + `places_grok_geocode.cascade_geocoder` | always |
+| 1/6 | **People Groups** | Structured unit/org history (promoted into spec fields) | `enrich_groups.enrich_all_groups` | always |
+| 2/6 | **Places** | (a) hierarchy/name enrichment (structured), (b) `link_parent_place_ids` | `enrich_places` | always |
+| 3/6 | **Places** | **Geocoding cascade** → coordinates + provenance | `places_grok_geocode.cascade_geocoder` | always |
 | 4/6 | **Bibliography** | ISBN / copyright / archive URLs, then source resolution (NARA, Archive.org, LOC, Gutenberg) | `supplemental_advanced.enrich_bibliography` + `bibliography_resolver` | always |
-| 4b | **Equipment** | Wikipedia images + extracts | `equipment_wikipedia` | `equipment.enabled` |
-| 4c | **People Groups** | Wikipedia images + extracts (second pass) | `groups_wikipedia` | always |
 | 5/6 | **People + Equipment** | OpenSERP images / academic sources | `openserp_enrichment` | `supplemental_material.use_openserp` |
 | 6/6 | **Weather** | NOAA GHCND station-observed data (supplements Open-Meteo) | `noaa_weather.enrich_weather_with_noaa` | `api.noaa_api_token` set |
 
-### Places geocoding cascade (step 3c)
+> **Moved to Phase 2 (no longer a Phase-3 step):** people Grokipedia/Wikipedia biography +
+> portrait + award citations; equipment Wikipedia extract + images (`equipment_wikipedia` —
+> old step 4b); people_groups Wikipedia text + images (`groups_wikipedia` — old step 4c);
+> places Grokipedia/Wikipedia descriptive text + image. These now run in the Phase-2
+> extractors with native commit. The `enrich_all_people` / `enrich_all_groups_wikipedia` /
+> `enrich_all_equipment_wikipedia` functions remain defined for CLI/tests but are **not** wired
+> into the Phase-3 pipeline.
+
+### Places geocoding cascade (step 3)
 `enrich_all_places` sets hierarchy/names but **not** coordinates. The geocoding cascade wires
 them in: **Nominatim (OSM)** first (free, cached, policy-compliant) → **hill/terrain**
 geocoder for height features → **Grok** fallback for the rest. Writes WGS84 coordinates +

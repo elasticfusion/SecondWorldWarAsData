@@ -781,10 +781,32 @@ def _save_people_index(index_file: Path, index: dict) -> None:
     temp_file.replace(index_file)
 
 
+def _enrich_person_phase2(person_data: dict, grok_client) -> None:
+    """Phase-2 Grokipedia/Wikipedia enrichment of a person dict IN PLACE, before the
+    native people save path commits it. Fail-safe: a fetch error (or batch-mode
+    collection) must never abort extraction — log + continue so the un-enriched record
+    still saves and Phase 2 proceeds."""
+    if grok_client is None:
+        return
+    try:
+        from src.extraction.enrich_biographies import enrich_person_from_sources
+
+        enrich_person_from_sources(person_data, grok_client)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - enrichment is additive; never block extraction
+        logger.warning(
+            "  Phase-2 enrichment skipped for %s: %s",
+            person_data.get("name", "?"),
+            e,
+        )
+
+
 def _process_person(
     person: dict,
     people_dir: Path,
     index: dict,
+    grok_client: Optional[GrokClient] = None,
 ) -> tuple[bool, bool]:
     """Process a single person. Returns (is_new, is_updated)."""
     name = person["name"]
@@ -810,6 +832,9 @@ def _process_person(
                 )
                 if not skip:
                     merged = _merge_person(existing_person, person)
+                    # Phase-2 Grokipedia/Wikipedia enrichment on the merged dict BEFORE
+                    # save, so the native people save path commits the enriched record.
+                    _enrich_person_phase2(merged, grok_client)
                     Person(**merged)  # Validate
                     save(merged)
             logger.debug("  Updated: %s", name)
@@ -818,6 +843,7 @@ def _process_person(
             # Index points to missing file, create new
             filename = _name_to_filename(name, person_id)
             person_file = people_dir / filename
+            _enrich_person_phase2(person, grok_client)
             _save_person_file(person_file, person)
             index[name_key] = filename
             logger.debug("  Created: %s", name)
@@ -826,6 +852,7 @@ def _process_person(
         # New person
         filename = _name_to_filename(name, person_id)
         person_file = people_dir / filename
+        _enrich_person_phase2(person, grok_client)
         _save_person_file(person_file, person)
         index[name_key] = filename
         logger.debug("  Created: %s", name)
@@ -970,7 +997,7 @@ def extract_people(
 
         # Process each person
         for person in extracted_people:
-            is_new, is_updated = _process_person(person, people_dir, index)
+            is_new, is_updated = _process_person(person, people_dir, index, grok_client)
             if is_new:
                 new_people_count += 1
             if is_updated:

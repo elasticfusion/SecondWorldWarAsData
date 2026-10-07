@@ -1,6 +1,11 @@
 """Lambda handler for Phase 3: Enrich entities with external data.
 
 Triggered by S3 event (via SNS) when entity files appear in output/people/, output/places/, etc.
+
+Phase 2/3 split: Phase 2 owns ALL Grokipedia/Wikipedia enrichment (bio text, Wikipedia
+images, award citations), committed natively by the extractors. Phase 3 (this handler)
+owns only OTHER external enrichment (geocode/NOAA/OpenSERP/NARA). For people that means
+OpenSERP only — NOT Grok/Wikipedia biography enrichment.
 """
 
 import json
@@ -12,9 +17,10 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
-# Entity types that can be enriched
+# Entity types that can be enriched (Phase 3 = non-Grok/Wiki external enrichment).
+# people -> OpenSERP only (Grok/Wikipedia bio+images+awards moved to Phase 2).
 ENRICHABLE = {
-    "people": "enrich_person",
+    "people": "enrich_person_openserp",
     "people_groups": "enrich_group",
     "places": "enrich_place",
     "bibliography": "enrich_bibliography_entry",
@@ -95,9 +101,21 @@ def _enrich_entity(
         entity_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
 
         if entity_type == "people":
-            from src.extraction.enrich_biographies import enrich_person_biography
+            # Phase 2 owns ALL Grokipedia/Wikipedia people enrichment (bio text,
+            # Wikipedia images, award citations), committed natively by the extractor
+            # (src/extraction/people.py -> enrich_person_from_sources). Phase 3 owns only
+            # OTHER external enrichment; for people that is OpenSERP (images + academic
+            # sources), gated behind config. We do NOT call enrich_person_biography here.
+            from src.enrichment.openserp_enrichment import enrich_people_with_openserp
 
-            enrich_person_biography(entity_file, grok_client)
+            if config.get("supplemental_material", {}).get("use_openserp", False):
+                openserp_url = config.get("external_maps", {}).get(
+                    "openserp_url", "http://localhost:7001"
+                )
+                # entity_file lives alone in tmpdir; enrich that directory.
+                enrich_people_with_openserp(
+                    entity_file.parent, openserp_url, grok_client
+                )
         elif entity_type == "people_groups":
             from src.extraction.enrich_groups import enrich_group
 
