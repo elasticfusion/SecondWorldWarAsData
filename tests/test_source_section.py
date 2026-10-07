@@ -64,3 +64,72 @@ def test_emit_missing_event_id_is_noop(tmp_path):
     assert not (tmp_path / "source_section").exists() or not list(
         (tmp_path / "source_section").glob("*.json")
     )
+
+
+# --- Step 3: summary + operation derivation ---------------------------------------------
+
+from src.extraction.source_section import (  # noqa: E402
+    _normalize_operation,
+    _truncate_to_two_sentences,
+    derive_summary_and_operation,
+    gather_section_signal,
+)
+
+
+class _MockGrok:
+    def __init__(self, result):
+        self._result = result
+        self.calls = 0
+
+    def extract_json(self, prompt, system_prompt=None, cache_type="default"):
+        self.calls += 1
+        return self._result
+
+
+def test_null_over_fake_operation():
+    # below threshold, or no name -> None
+    assert _normalize_operation({"name": "X", "confidence": 0.4}, 0.6) is None
+    assert _normalize_operation({"confidence": 0.9}, 0.6) is None
+    assert _normalize_operation(None, 0.6) is None
+    ok = _normalize_operation({"name": "Battle of the Bulge", "confidence": 0.9}, 0.6)
+    assert ok["name"] == "Battle of the Bulge" and ok["source"] == "derived"
+
+
+def test_truncate_to_two_sentences():
+    assert _truncate_to_two_sentences("One. Two. Three.") == "One. Two."
+    assert _truncate_to_two_sentences(None) is None
+
+
+def test_gather_signal_uses_subevents_not_raw_text():
+    sig = gather_section_signal(_EVENT)
+    assert sig["section_title"] == "The Ardennes Counteroffensive"
+    assert sig["sub_event_summaries"] == ["x"]
+
+
+def test_derive_sets_summary_and_operation_and_is_gated():
+    rec = build_source_section(_EVENT, source={"book": "b"})
+    grok = _MockGrok(
+        {
+            "section_summary": "S1. S2. S3.",
+            "operation": {
+                "name": "Battle of the Bulge",
+                "confidence": 0.9,
+                "wikipedia_title": "Battle of the Bulge",
+            },
+        }
+    )
+    assert derive_summary_and_operation(rec, _EVENT, grok, 0.6) is True
+    assert rec["section_summary"] == "S1. S2."  # 2-sentence cap
+    assert rec["operation"]["name"] == "Battle of the Bulge"
+    # gated: already-summarized record is a no-op (no second LLM call)
+    assert derive_summary_and_operation(rec, _EVENT, grok, 0.6) is False
+    assert grok.calls == 1
+
+
+def test_derive_low_confidence_yields_null_operation():
+    rec = build_source_section(_EVENT, source={"book": "b"})
+    grok = _MockGrok(
+        {"section_summary": "x.", "operation": {"name": "Weak", "confidence": 0.3}}
+    )
+    assert derive_summary_and_operation(rec, _EVENT, grok, 0.6) is True
+    assert rec["operation"] is None
