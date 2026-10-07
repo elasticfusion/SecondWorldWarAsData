@@ -974,6 +974,80 @@ def enrich_person_biography(
     return True
 
 
+def _is_already_enriched(person_data: Dict[str, Any]) -> bool:
+    """Gate: True if this person should be SKIPPED (already enriched or a fresh
+    not_found). Mirrors the skip logic in ``_load_person_for_enrichment`` so the
+    in-place and file-based paths gate identically.
+    """
+    bio_profile = person_data.get("biographical_profile") or {}
+    if bio_profile.get("birth_date") or bio_profile.get("biographical_details"):
+        return True
+    if person_data.get("enrichment_status") == "not_found" and not _should_re_search(
+        person_data
+    ):
+        return True
+    return False
+
+
+def enrich_person_from_sources(person_data: Dict[str, Any], grok_client) -> bool:
+    """Enrich ONE person record from Grokipedia/Wikipedia IN PLACE (Phase 2).
+
+    Augments ``person_data`` with: Grokipedia bio + Wikipedia bio (with search
+    fallback) + Wikipedia portrait image (preserved to storage) + authoritative award
+    citations + title-implied memberships. Returns True if anything changed.
+
+    Does **no file I/O** on person files — the caller (the Phase-2 people extractor)
+    owns the save path (``write_json_with_lock``). Reuses all the existing fetch /
+    caching helpers.
+
+    GATED: skips (returns False) when the record is already enriched or is a fresh
+    ``not_found`` (same staleness logic as ``enrich_all_people`` via
+    ``_load_person_for_enrichment`` / ``_should_re_search``). On a genuine
+    ``BatchModeCollecting`` the request is collected and False is returned (not marked
+    not_found).
+    """
+    person_name = person_data.get("name", "")
+    if not person_name:
+        return False
+
+    if _is_already_enriched(person_data):
+        logger.debug("  Already enriched / fresh not_found: %s, skipping", person_name)
+        return False
+
+    bio_profile = person_data.get("biographical_profile") or {}
+    logger.info("Enriching (phase 2): %s", person_name)
+
+    try:
+        enriched = _run_enrichment_steps(
+            person_name, bio_profile, grok_client, search_references_flag=True
+        )
+    except BatchModeCollecting:
+        # Batch mode — request collected; leave record untouched (don't mark not_found).
+        raise
+
+    if not enriched:
+        person_data["enrichment_status"] = "not_found"
+        person_data["last_enrichment_search"] = datetime.now(timezone.utc).strftime(
+            "%Y-%m-%d"
+        )
+        return True
+
+    person_data["biographical_profile"] = bio_profile
+    person_data["enrichment_status"] = "enriched"
+    person_data["last_enrichment_search"] = datetime.now(timezone.utc).strftime(
+        "%Y-%m-%d"
+    )
+
+    # Authoritative award citations (opt-in via AWARD_CITATIONS_ENABLED). Fail-safe.
+    _source_award_citations(person_data)
+
+    # Title/alias-implied civilian memberships (date-unverified; opt-in Grok temporal
+    # validation via TITLE_MEMBERSHIP_VALIDATE). Fail-safe.
+    _derive_and_validate_title_memberships(person_data, grok_client)
+
+    return True
+
+
 def _merge_simple_fields(
     bio_profile: Dict[str, Any], enrichment: Dict[str, Any]
 ) -> bool:

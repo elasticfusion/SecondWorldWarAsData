@@ -237,19 +237,13 @@ def main():
             }
             return 0
 
-    # Enrich people
-    people_dir = args.output_dir / "people"
-    people_enriched = _run_step(
-        "people",
-        lambda: enrich_people_data(
-            people_dir,
-            grok_client,
-            max_items=args.max_items,
-            search_references=not args.no_references,
-            max_workers=max_workers,
-        ),
-    )
-    total_enriched += people_enriched
+    # Enrich people — MOVED TO PHASE 2. All Grokipedia/Wikipedia people enrichment
+    # (bio text + Wikipedia portrait images + award citations) is now committed
+    # natively by the Phase-2 people extractor (src/extraction/people.py ->
+    # enrich_biographies.enrich_person_from_sources). Phase 3 owns only OTHER external
+    # people enrichment (OpenSERP, below). The former '[phase3 step 1/6] Enriching
+    # people' call (enrich_people_data/enrich_all_people) is intentionally removed;
+    # those functions remain defined for standalone/CLI + test use.
 
     # Enrich people groups
     if not args.people_only:
@@ -458,13 +452,7 @@ def main():
             grok_client.batch_mode = False
             total_enriched = 0
 
-            people_enriched = enrich_people_data(
-                people_dir,
-                grok_client,
-                max_items=args.max_items,
-                search_references=not args.no_references,
-            )
-            total_enriched += people_enriched
+            # People enrichment MOVED TO PHASE 2 (not re-run here).
 
             if not args.people_only:
                 groups_dir = args.output_dir / "people_groups"
