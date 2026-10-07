@@ -1,60 +1,68 @@
-# Phase-3 External-Source Usage Report (Grokipedia / Wikipedia / OpenSERP / NOAA / NARA)
+# External-Source Usage & Phase Split (Grokipedia / Wikipedia / OpenSERP / NOAA / NARA)
 
-**Date:** 2026-10-06. Produced during the Phase-3 enrichment hardening. Lists every place the
-pipeline still fetches from an external source, whether the fetch is **gated** (skips when
-already-enriched/fresh) and **cached** (a re-call doesn't re-hit the network), the **write
-path** (now version-stamped?), and a **refactoring flag**.
+**Date:** 2026-10-06. The pipeline splits external enrichment **by source**:
 
-Legend: ✅ good · ⚠️ needs attention · 🔁 refactor candidate.
-
----
-
-## Grokipedia
-
-| Site | Gated? | Cached? | Notes / flag |
-|---|---|---|---|
-| `enrich_biographies.search_grokipedia` (people) | ✅ via `get_cached("grokipedia", name)` + entity `enrichment_gate`/`last_enrichment` | ✅ disk cache (`grokipedia` namespace, incl. negative cache) | Writes now stamped (people). 🔁 **Grokipedia is scraped via `grokipedia.com/search` HTML** — brittle (depends on page markup). Candidate to move behind a stable client or drop if Wikipedia suffices. |
-
-Grokipedia is used **only** for people biographies. No other entity calls it.
-
-## Wikipedia
-
-| Site | Gated? | Cached? | Notes / flag |
-|---|---|---|---|
-| `enrich_biographies` (people: `_build_wikipedia_request`, `_search_wikipedia_fallback`, image) | ✅ cache + entity gate | ✅ via Grok cache / `_wikipedia_images` | Writes stamped (people). |
-| `equipment_wikipedia.enrich_all_equipment_wikipedia` | ✅ **now gated** on `wikipedia_url` OR `wikipedia_checked_at` (this cycle) | ✅ `cache_result("wikipedia_equipment", …)` | Writes **now routed via `update_enriched`** (stamped + contract). Was raw write + no staleness gate. |
-| `groups_wikipedia.enrich_all_groups_wikipedia` | ✅ **now gated** on `wikipedia_url` OR `wikipedia_checked_at` (this cycle) | ✅ `cache_result("wikipedia_group", …)` | Writes **now via `update_enriched`**. Same fix as equipment. |
-| `equipment._extract_media_from_wikipedia` | partial (within equipment media flow) | via equipment media cache | 🔁 **A SECOND equipment↔Wikipedia path** separate from `equipment_wikipedia.py`. Two code paths hit Wikipedia for equipment — consolidate. |
-
-## OpenSERP (image/academic search)
-
-| Site | Gated? | Cached? | Flag |
-|---|---|---|---|
-| `openserp_enrichment` (people + equipment) | config-gated (`use_openserp`) + per-record | ✅ `cache_result("openserp_*", …)` | Writes stamped (people/equipment). Requires the `search_media` binary (absent in some envs). |
-
-## NOAA / Nominatim / NARA-Archive.org (non-Grok/Wiki, for completeness)
-
-| Site | Gated? | Cached? | Flag |
-|---|---|---|---|
-| `noaa_weather` | ✅ skip-if-`noaa_observed` + `{station}:{date}` cache | ✅ disk cache | OK (reviewed earlier). |
-| `nominatim_geocode` / `places_grok_geocode` | ✅ geocode disk cache + `enrichment_gate` | ✅ | OK; policy-compliant (≤1 req/s, UA). |
-| `bibliography_resolver` (NARA, Archive.org, Gutenberg, OpenSERP) | config-gated + per-record | ✅ | OK. |
+- **Phase 2 (extraction)** — **ALL Grokipedia + Wikipedia** enrichment (descriptive text +
+  images), committed natively by each extractor as it writes the entity.
+- **Phase 3 (enrichment)** — **everything else**: geocoding (Nominatim/Grok coordinates), NOAA
+  weather, OpenSERP (images/academic), NARA/Archive.org bibliography, plus **structured**
+  hierarchy/org-history Grok passes (place hierarchy/names, group unit-history) that promote
+  facts into spec fields — structured enrichment, not descriptive Grok/Wiki text.
 
 ---
 
-## Refactoring candidates (flagged, not yet done)
+## Grokipedia / Wikipedia — now PHASE 2 (native commit)
 
-1. 🔁 **Two equipment↔Wikipedia paths** — `enrichment/equipment_wikipedia.py` AND
-   `extraction/equipment.py::_extract_media_from_wikipedia`. Consolidate into one gated path.
-2. 🔁 **Grokipedia HTML scraping** (`search_grokipedia`) is markup-brittle — wrap in a stable
-   client or evaluate dropping in favor of Wikipedia.
-3. ⚠️ **Staleness vs. presence gating** — most gates are "already has the field" (presence),
-   not time-based. A `*_checked_at` marker (added for equipment/groups Wikipedia this cycle)
-   is the better pattern; roll it out to the people Grokipedia/Wikipedia path too so a
-   not-found result isn't re-attempted every run.
+| Entity | Phase-2 native fn | Reuses fetch | Gated on | Commit |
+|---|---|---|---|---|
+| equipment | `equipment._apply_wikipedia_text_extract` (+ existing media) | `equipment_wikipedia.search_equipment_wikipedia` | `wikipedia_checked_at` | native extractor save |
+| people | `people._enrich_person_phase2` → `enrich_biographies.enrich_person_from_sources` | `search_grokipedia`, Wikipedia bio/image, award citations | `_is_already_enriched` / `_should_re_search` (90-day) | `_save_person_file` |
+| people_groups | `people_groups` loop → `groups_wikipedia.enrich_group_from_wikipedia` | `search_group_wikipedia` | `wikipedia_checked_at` | `_save_group` |
+| places | `places._find_or_create_place` → `enrich_places.enrich_place_from_grokipedia` + `enrich_place_from_wikipedia` | `_search_grokipedia_place`, `_fetch_place_wikipedia_full` | `grokipedia_url`/`grokipedia_checked_at`, `wikipedia_url`/`wikipedia_checked_at` | `write_json_with_lock` |
 
-## What was fixed this cycle
-- equipment/groups Wikipedia: added `*_checked_at` gating (no redundant re-pulls) + routed
-  writes through the native `enrich_write` path (version-stamped, contract-honored).
-- All enrichment entity writes now stamp `_schema_version` via the entity-aware
-  `inject_metadata` / `write_json_with_lock(entity=...)` (closed the silent-downgrade bug).
+All gated (stamped-even-on-miss `*_checked_at` markers → no redundant re-fetch) and cached
+(disk search cache). All commit via the entity's native save path (version-stamped).
+
+## Phase 3 — all other external sources
+
+| Source | Entity | Module | Gate | Note |
+|---|---|---|---|---|
+| Geocoding (Nominatim→hill→Grok) | places | `places_grok_geocode.cascade_geocoder` | always | coordinates + provenance; null-over-fake |
+| Structured hierarchy/names Grok | places | `enrich_places._enrich_place_data` | always | promotes hierarchy/country into spec fields (NOT descriptive text) |
+| Structured org/unit-history Grok | people_groups | `enrich_groups.enrich_group` | always | promotes unit_type/nationality/officers into spec fields |
+| OpenSERP (images/academic) | people, equipment | `openserp_enrichment` | `use_openserp` | search-engine media |
+| NOAA GHCND | weather | `noaa_weather` | `noaa_api_token` | station-observed |
+| NARA / Archive.org / LOC / Gutenberg | bibliography | `bibliography_resolver` | config | source resolution |
+
+---
+
+## Task-6 validation: every feature's native Phase-2 Grok/Wiki fn
+
+Per-feature confirmation that each entity for which Grokipedia/Wikipedia enrichment is
+meaningful now has a **native Phase-2 search-and-augment function with native commit**.
+
+| Feature (docs/current/features) | Entity | Native P2 Grok/Wiki fn | Augment + native commit | Status |
+|---|---|---|---|---|
+| equipment | equipment | ✅ `_apply_wikipedia_text_extract` | ✅ | **present** |
+| people | people | ✅ `enrich_person_from_sources` | ✅ `_save_person_file` | **present** |
+| people_groups | people_groups | ✅ `enrich_group_from_wikipedia` | ✅ `_save_group` | **present** |
+| places | places | ✅ `enrich_place_from_grokipedia` + `enrich_place_from_wikipedia` | ✅ `write_json_with_lock` | **present** |
+| dates | dates | — | — | **N/A** (dates are not Grok/Wiki-enriched; derived from source) |
+| weather | weather | — | — | **N/A** (NOAA/Open-Meteo = Phase 3) |
+| logistics | logistics | — | — | **N/A** (internal cross-refs only) |
+| casualties | casualties | — | — | **N/A** (derived from source narrative) |
+| events | events | — | — | **N/A** (composed from sub-entities) |
+| maps / external-maps | maps | — | — | **N/A** (grok vision map extraction, separate subsystem) |
+| supplemental | supplemental | — | — | **N/A** (narrative; no Grok/Wiki descriptive pull) |
+| batch_processing | — | — | — | **N/A** (infra) |
+
+**Result:** all 4 Grok/Wiki-applicable entities have a native Phase-2 fn with native commit.
+Non-applicable features are correctly N/A (their enrichment is non-Grok/Wiki or internal).
+
+## Refactor candidates still open (flagged, not done)
+- Phase-2 enrichment of places/groups runs only on the **new-record create path**; pre-existing
+  records aren't back-filled by the Phase-2 pass (the `*_checked_at` gate makes this safe but
+  means a one-time forward-only coverage). Consistent with the dev-env "forward fixes only" rule.
+- `enrich_all_people` / `enrich_all_groups_wikipedia` / `enrich_all_equipment_wikipedia` remain
+  defined for CLI/tests but are not pipeline-wired — kept intentionally; a deprecation note
+  guards against accidental re-wiring into Phase 3.

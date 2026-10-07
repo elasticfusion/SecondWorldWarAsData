@@ -12,7 +12,6 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from src.extraction.enrich_biographies import enrich_all_people
 from src.extraction.enrich_groups import enrich_all_groups
 from src.extraction.enrich_places import enrich_all_places
 from src.extraction.places import link_parent_place_ids
@@ -68,45 +67,11 @@ def _update_lock_status(status: str) -> None:
         logger.warning("Could not update Phase 3 lock status '%s': %s", status, e)
 
 
-def enrich_people_data(
-    people_dir: Path,
-    grok_client: GrokClient,
-    max_items: Optional[int] = None,
-    search_references: bool = True,
-    max_workers: int = 6,
-) -> int:
-    """Enrich people biographical data from Grokipedia and Wikipedia."""
-    logger.info("[phase3 step 1/6] Enriching people (%s)", people_dir)
-    _update_lock_status("step 1/6: enriching people")
-
-    if not people_dir.exists():
-        logger.warning(f"People directory not found: {people_dir}")
-        return 0
-
-    people_files = [
-        f
-        for f in people_dir.glob("*.json")
-        if f.name not in ["index.json", "duplicate_report.json", "not_duplicates.json"]
-    ]
-
-    if not people_files:
-        logger.info("No people files found")
-        return 0
-
-    logger.info(f"Found {len(people_files)} people file(s)")
-    if max_items:
-        logger.info(f"Limiting to {max_items} people")
-
-    enriched = enrich_all_people(
-        people_dir,
-        grok_client,
-        max_people=max_items,
-        search_references_flag=search_references,
-        max_workers=max_workers,
-    )
-
-    logger.info(f"✓ Enriched {enriched} people")
-    return enriched
+# NOTE: people Grokipedia/Wikipedia enrichment MOVED TO PHASE 2 (people.py
+# _enrich_person_phase2 -> enrich_biographies.enrich_person_from_sources). The former
+# Phase-3 enrich_people_data() has been removed. Phase-3 people enrichment is OpenSERP-only
+# (see the openserp_people step in main()). enrich_all_people remains in enrich_biographies
+# for the module CLI + integration tests, but is intentionally NOT wired into this pipeline.
 
 
 def enrich_groups_data(
@@ -116,8 +81,8 @@ def enrich_groups_data(
     max_workers: int = 6,
 ) -> int:
     """Enrich people groups with external data."""
-    logger.info("[phase3 step 2/6] Enriching people groups")
-    _update_lock_status("step 2/6: enriching people_groups")
+    logger.info("[phase3 step 1/6] Enriching people groups")
+    _update_lock_status("step 1/6: enriching people_groups")
 
     enriched = enrich_all_groups(
         groups_dir, grok_client, max_groups=max_items, max_workers=max_workers
@@ -266,8 +231,8 @@ def main():
 
     # Enrich places
     if not args.people_only:
-        logger.info("[phase3 step 3/6] Enriching places")
-        _update_lock_status("step 3/6: enriching places")
+        logger.info("[phase3 step 2/6] Enriching places")
+        _update_lock_status("step 2/6: enriching places")
         places_dir = args.output_dir / "places"
         total_enriched += _run_step(
             "places",
