@@ -108,35 +108,10 @@ def fetch_wikipedia_article(title: str, timeout: int = 20) -> Optional[Dict[str,
 
 
 def _resolve_grokipedia_page(name: str, timeout: int) -> Optional[str]:
-    """Resolve an operation name to a Grokipedia /page/ URL via its search (HTML scrape).
+    """Resolve an operation name to a Grokipedia /page/ URL via the shared resolver."""
+    from src.enrichment.grokipedia import resolve_grokipedia_url
 
-    Grokipedia is client-side-rendered, so static HTML often does not contain real result
-    slugs (only JS template fragments). We therefore accept ONLY a clean slug — letters,
-    digits, underscore, hyphen — and return None otherwise (graceful miss) rather than a
-    malformed URL built from a template literal."""
-    try:
-        resp = requests.get(
-            f"https://grokipedia.com/search?q={name}",
-            headers=_HEADERS,
-            timeout=timeout,
-            allow_redirects=True,
-        )
-        if resp.status_code != 200 or "/page/" not in resp.text:
-            return None
-        candidates = re.findall(r'data-slug="([^"]+)"', resp.text)
-        candidates += re.findall(r"/page/([A-Za-z0-9_\-]+)", resp.text)
-        for slug in candidates:
-            if _is_clean_slug(slug):
-                return f"https://grokipedia.com/page/{slug}"
-        return None
-    except (requests.RequestException, ValueError) as e:
-        logger.debug("grokipedia resolve failed for %r: %s", name, e)
-        return None
-
-
-def _is_clean_slug(slug: str) -> bool:
-    """A real Grokipedia slug is a bare token — no quotes, spaces, '+', or JS fragments."""
-    return bool(slug) and re.fullmatch(r"[A-Za-z0-9_\-]+", slug) is not None
+    return resolve_grokipedia_url(name, timeout=timeout)
 
 
 def fetch_grokipedia_article(name: str, timeout: int = 20) -> Optional[Dict[str, Any]]:

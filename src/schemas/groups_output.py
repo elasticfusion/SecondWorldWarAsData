@@ -44,6 +44,7 @@ GROUPS_OUTPUT_SCHEMA = {
         "wikipedia_url": make_nullable("string"),
         "wikipedia_extract": make_nullable("string"),
         "wikipedia_checked_at": make_nullable("string"),
+        "grokipedia_url": make_nullable("string"),
         "event_mentions": {
             "type": ["array", "null"],
             "items": {
