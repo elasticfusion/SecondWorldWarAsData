@@ -626,16 +626,23 @@ def _extract_year_from_date(
 def _build_external_data(
     enriched: Dict[str, Any], equipment_data: Dict[str, Any]
 ) -> None:
-    """Build external_data from enrichment URLs if not already present."""
+    """Build/merge external_data from enrichment URLs.
+
+    Creates external_data when absent and MERGES into it when already present (e.g. when
+    Grokipedia enrichment created it earlier and a later Wikipedia text lookup needs to
+    add wikipedia_url). Existing URL values are not overwritten — gap-fill only."""
     wiki_url = enriched.get("wikipedia_url")
     grok_url = enriched.get("grokipedia_url")
-    if (wiki_url or grok_url) and "external_data" not in equipment_data:
-        ext: Dict[str, Any] = {}
-        if grok_url:
-            ext["grokipedia_url"] = grok_url
-        if wiki_url:
-            ext["wikipedia_url"] = wiki_url
+    if not (wiki_url or grok_url):
+        return
+    ext = equipment_data.get("external_data")
+    if not isinstance(ext, dict):
+        ext = {}
         equipment_data["external_data"] = ext
+    if grok_url and not ext.get("grokipedia_url"):
+        ext["grokipedia_url"] = grok_url
+    if wiki_url and not ext.get("wikipedia_url"):
+        ext["wikipedia_url"] = wiki_url
 
 
 def _merge_enriched_data(
@@ -740,6 +747,49 @@ def _to_structured_images(
     return images
 
 
+def _apply_wikipedia_text_extract(
+    equipment_data: Dict[str, Any], common_name: str
+) -> None:
+    """Phase-2 Wikipedia TEXT enrichment (moved here from Phase-3 equipment_wikipedia).
+
+    Reuses src/enrichment/equipment_wikipedia.search_equipment_wikipedia (the single
+    source of the Wikipedia HTTP code — we do NOT duplicate it) to set wikipedia_url +
+    wikipedia_extract + wikipedia_checked_at on the equipment record. The timestamp is
+    stamped even on a MISS so we never re-fetch, and the whole step is GATED on
+    wikipedia_checked_at (idempotent across runs). Images are NOT taken from here — they
+    continue to flow through the existing media path (_extract_media)."""
+    from datetime import date
+
+    # Gate: already checked (hit or miss) -> never re-fetch.
+    if equipment_data.get("wikipedia_checked_at"):
+        return
+
+    equipment_data["wikipedia_checked_at"] = date.today().isoformat()
+
+    try:
+        from src.enrichment.equipment_wikipedia import search_equipment_wikipedia
+
+        result = search_equipment_wikipedia(common_name)
+    except Exception as e:  # noqa: BLE001 - enrichment is best-effort, never block
+        logger.debug("Wikipedia text lookup failed for %s: %s", common_name, e)
+        return
+
+    if not result:
+        logger.debug("No Wikipedia text extract for %s", common_name)
+        return
+
+    wiki_url = result.get("wikipedia_url")
+    if wiki_url:
+        # wikipedia_url is NOT a valid top-level property (EQUIPMENT_OUTPUT_SCHEMA has
+        # additionalProperties: False). It lives ONLY nested under external_data, matching
+        # the grokipedia_url convention. Write it there via _build_external_data.
+        _build_external_data({"wikipedia_url": wiki_url}, equipment_data)
+    extract = result.get("extract")
+    if extract:
+        equipment_data["wikipedia_extract"] = extract[:500]
+    logger.debug("Wikipedia text extract applied for %s", common_name)
+
+
 def _enrich_and_add_media(
     equipment_data: Dict[str, Any],
     common_name: str,
@@ -771,13 +821,17 @@ def _enrich_and_add_media(
     )
     _merge_enriched_data(equipment_data, enriched)
 
-    # Extract and download media
+    # Wikipedia TEXT extract (Phase-2; was Phase-3 step 4b). Sets wikipedia_url +
+    # wikipedia_extract + wikipedia_checked_at, gated so it is not re-fetched.
+    _apply_wikipedia_text_extract(equipment_data, common_name)
+
+    # Extract and download media (WIKIPEDIA-ONLY in Phase 2 — OpenSERP media moved to
+    # Phase 3). Images come from the Wikipedia article path, not OpenSERP.
     media_list = _extract_media(
         common_name,
         equipment_data.get("technical_identifier"),
         equipment_data["category"],
         grok_client,
-        use_openserp=True,
         year=year,
     )
     _add_downloaded_media(
@@ -1026,34 +1080,26 @@ def _extract_media(
     technical_identifier: Optional[str],
     category: str,
     grok_client: GrokClient,
-    use_openserp: bool = True,
     year: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
-    """Extract media using OpenSERP (preferred) or Wikipedia fallback.
+    """Extract media for Phase 2 — WIKIPEDIA-ONLY.
+
+    Phase 2 owns ALL Wikipedia/Grokipedia enrichment (text + images); OpenSERP media
+    moved to Phase 3. The OpenSERP media helpers (_extract_media_with_openserp and its
+    callees) are intentionally LEFT IN PLACE for Phase 3 to reuse — they are simply no
+    longer invoked on the Phase-2 path.
 
     Args:
         common_name: Equipment common name
         technical_identifier: Technical designation
         category: Equipment category
         grok_client: Grok API client
-        use_openserp: Try OpenSERP first
-        year: Year for temporal filtering (e.g., "1944")
+        year: Year for temporal filtering (unused on the Wikipedia path; kept for the
+            Phase-3 OpenSERP signature compatibility)
 
     Returns:
-        List of media items with URLs
+        List of media items with URLs (from the Wikipedia article)
     """
-    media_list = []
-
-    # Try OpenSERP first (real search engines, no hallucinations)
-    if use_openserp:
-        media_list = _extract_media_with_openserp(
-            common_name, technical_identifier, category, grok_client, year
-        )
-        if media_list:
-            logger.debug("Using OpenSERP media for %s", common_name)
-            return media_list
-
-    # Fallback to Wikipedia/Grokipedia
     media_list = _extract_media_from_wikipedia(
         common_name, technical_identifier, category, grok_client
     )

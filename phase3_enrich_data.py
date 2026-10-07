@@ -373,20 +373,10 @@ def main():
             ).get("resolved", 0),
         )
 
-    # Equipment Wikipedia enrichment (images + extracts)
-    if not args.people_only and config.get("equipment", {}).get("enabled"):
-        logger.info("[phase3 step 4b/6] Equipment Wikipedia enrichment")
-        _update_lock_status("step 4b/6: enriching equipment (Wikipedia)")
-        from src.enrichment.equipment_wikipedia import enrich_all_equipment_wikipedia
-
-        equipment_dir = args.output_dir / "equipment"
-        if equipment_dir.exists():
-            total_enriched += _run_step(
-                "equipment_wikipedia",
-                lambda: enrich_all_equipment_wikipedia(
-                    equipment_dir, max_items=args.max_items
-                ),
-            )
+    # Equipment Wikipedia enrichment (text + images) now runs in PHASE 2, committed
+    # natively by the extractor (src/extraction/equipment.py). It is intentionally NOT a
+    # Phase-3 step anymore: Phase 2 owns ALL Grokipedia/Wikipedia enrichment; Phase 3
+    # owns only OTHER external enrichment (geocoding, NOAA, OpenSERP, NARA).
 
     # Groups Wikipedia enrichment (images + extracts)
     if not args.people_only:
