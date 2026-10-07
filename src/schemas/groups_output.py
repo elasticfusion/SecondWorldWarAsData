@@ -40,6 +40,10 @@ GROUPS_OUTPUT_SCHEMA = {
         },
         "military_hierarchy": {"type": ["object", "array", "string", "null"]},
         "enrichment_data": {"type": ["object", "null"]},
+        "images": {"type": ["array", "null"], "items": {"type": ["object", "string"]}},
+        "wikipedia_url": make_nullable("string"),
+        "wikipedia_extract": make_nullable("string"),
+        "wikipedia_checked_at": make_nullable("string"),
         "event_mentions": {
             "type": ["array", "null"],
             "items": {

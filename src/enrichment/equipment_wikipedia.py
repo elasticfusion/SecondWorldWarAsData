@@ -186,8 +186,9 @@ def enrich_all_equipment_wikipedia(
         except Exception:
             continue
 
-        # Skip if already enriched
-        if data.get("wikipedia_url"):
+        # Gate: skip if already enriched (has a wikipedia_url) OR checked recently. Avoids
+        # redundant Wikipedia re-pulls on every Phase-3 run.
+        if data.get("wikipedia_url") or data.get("wikipedia_checked_at"):
             continue
 
         name = data.get("common_name", "")
@@ -195,22 +196,31 @@ def enrich_all_equipment_wikipedia(
             continue
 
         result = search_equipment_wikipedia(name)
+
+        def _apply(rec, _result=result):
+            # Stamp a last-checked marker even on a miss, so we don't re-pull next run.
+            from datetime import date
+
+            rec["wikipedia_checked_at"] = date.today().isoformat()
+            if _result:
+                rec["wikipedia_url"] = _result["wikipedia_url"]
+                rec["wikipedia_extract"] = _result["extract"][:500]
+                if _result.get("image"):
+                    rec.setdefault("images", []).insert(
+                        0,
+                        {
+                            "url": _result["image"],
+                            "license": _result["license"],
+                            "source": "wikipedia",
+                        },
+                    )
+                rec["enrichment_status"] = "enriched"
+            return rec
+
+        from src.enrichment.enrich_write import update_enriched
+
+        update_enriched(f, "equipment", _apply)
         if result:
-            data["wikipedia_url"] = result["wikipedia_url"]
-            data["wikipedia_extract"] = result["extract"][:500]
-            if result.get("image"):
-                data.setdefault("images", []).insert(
-                    0,
-                    {
-                        "url": result["image"],
-                        "license": result["license"],
-                        "source": "wikipedia",
-                    },
-                )
-            data["enrichment_status"] = "enriched"
-            f.write_text(
-                json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
-            )
             enriched += 1
             logger.info(
                 "  ✓ Wikipedia enriched equipment: %s → %s",
