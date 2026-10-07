@@ -28,6 +28,16 @@ build RAG/search*. Current ordered priority:
    bibliography + Archive.org enrichment UIs; delete stale chunk dirs.**
 7. **[LOW/REGRESSION] mypy --strict on new files; the 5 regression tests;
    code-quality refactors.**
+
+### Backlog item added 2026-10-07
+- **[MED] Promote `source_section` article endnote references → `bibliography`.**
+  The new `source_section` entity captures Grokipedia/Wikipedia article references
+  inline (raw, tagged `source: "wikipedia-reference"` / `"grokipedia-reference"`).
+  Promote those into first-class `bibliography` records so a Wikipedia-cited source
+  becomes a resolvable citation (via the existing NARA/Archive.org resolver),
+  cross-linked by `SourceSectionID`. Keep them clearly distinguished from
+  primary-source citations (secondary provenance). Deferred per design decision —
+  inline capture ships first; promotion is a separate pass.
 8. **[FUTURE] Postgres adapter, DynamoDB-removal, multi-job concurrency, Step
    Functions, new entity types — gated on the post-ingestion RAG/Aurora phase.**
 

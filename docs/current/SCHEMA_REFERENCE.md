@@ -35,6 +35,7 @@ All entity types follow a consistent pattern for linking:
 | `WeatherID` | `output/weather/*.json` | `WeatherID` (top-level) |
 | `LogisticsID` | `output/logistics/*.json` | `LogisticsID` (top-level) |
 | `MapID` | `output/map_features/*.json` | `MapID` (FeatureCollection top-level) |
+| `SourceSectionID` | `output/source_section/*.json` | `SourceSectionID` (top-level) |
 
 ---
 

@@ -180,7 +180,34 @@ def _save_event_output(response: dict, parsed_file: Path, output_dir: Path) -> P
     output_file = output_dir / parsed_file.name.replace("-parsed.json", "-event.json")
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(response, f, indent=2, ensure_ascii=False)
+    _emit_source_section_safe(response, parsed_file, output_dir)
     return output_file
+
+
+def _emit_source_section_safe(
+    response: dict, parsed_file: Path, output_dir: Path
+) -> None:
+    """Emit the coarse-grained source_section anchor for this section (fail-safe: a failure
+    here must never abort event extraction). One source_section per section, linked to the
+    Event by EventID; summary + operation label are added by the Phase-2 LLM pass."""
+    try:
+        from src.extraction.source_section import emit_source_section
+
+        source = None
+        try:
+            if parsed_file.exists():
+                with open(parsed_file, "r", encoding="utf-8") as pf:
+                    pd = json.load(pf) or {}
+                source = {
+                    "book": pd.get("book"),
+                    "author": pd.get("author"),
+                    "series": pd.get("series"),
+                }
+        except Exception as meta_err:  # noqa: BLE001
+            logger.debug("source_section: source metadata unavailable: %s", meta_err)
+        emit_source_section(response, output_dir, source=source)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("source_section emit skipped: %s", e)
 
 
 def _split_paragraphs(paragraphs: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:

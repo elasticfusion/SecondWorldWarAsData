@@ -30,6 +30,7 @@ The table below lists only the **maturity status** of each entity type (stable):
 | Logistics | Experimental |
 | Bibliography | Production |
 | Maps | Production |
+| Source Section | New |
 
 ---
 

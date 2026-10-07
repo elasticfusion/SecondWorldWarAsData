@@ -37,6 +37,7 @@ IMAGES_OUTPUT_SCHEMA = {
         # Entity-graph links (nullable — an image may not resolve to all of them)
         "EventID": ulid_field(nullable=True),
         "Event_Name": make_nullable("string"),
+        "SourceSectionID": ulid_field(nullable=True),
         "Sub-eventID": ulid_field(nullable=True),
         "Sub-event_Name": make_nullable("string"),
         "place_name": make_nullable("string"),
