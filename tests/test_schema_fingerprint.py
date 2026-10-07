@@ -48,6 +48,7 @@ EXPECTED = {
     "map_features": ("2.24", "7cf064901b370f2d"),
     "bibliography": ("2.24", "3bf1e7f997304516"),
     "images": ("2.24", "b85f2b9e30808c50"),
+    "source_section": ("2.24", "ffcc328d46b5c5aa"),
 }
 
 

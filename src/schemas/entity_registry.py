@@ -113,6 +113,13 @@ ENTITY_REGISTRY = [
         None,
         "ImageID",
     ),
+    EntitySpec(
+        "source_section",
+        "src.schemas.source_section_output:SOURCE_SECTION_OUTPUT_SCHEMA",
+        "output/source_section/*.json",
+        "src.extraction.source_section",
+        "SourceSectionID",
+    ),
 ]
 
 # All entity types now have an enforced output schema.
