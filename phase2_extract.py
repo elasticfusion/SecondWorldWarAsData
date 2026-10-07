@@ -438,6 +438,22 @@ def _retry_missing_events(parsed_files, grok_client, logger):
     return retried, retry_failed
 
 
+def _run_source_section_enrichment(output_root, grok_client, logger):
+    """Phase-2 source_section enrichment: derive section summary + operation label, then fetch
+    Grokipedia/Wikipedia reference articles + Wikipedia media. Fail-safe (never aborts phase2).
+    """
+    logger.info(
+        "[phase2 step 4b/5] Source-section enrichment (summary + operation + Grok/Wiki)"
+    )
+    try:
+        from src.extraction.source_section import enrich_all_source_sections
+
+        n = enrich_all_source_sections(output_root, grok_client)
+        logger.info("  ✓ Enriched %d source section(s)", n)
+    except Exception as e:  # noqa: BLE001
+        logger.error("  ✗ Source-section enrichment failed: %s", e)
+
+
 def _run_analysis(output_root, logger):
     """Run duplicate detection and group analysis."""
     # People duplicates
@@ -704,6 +720,11 @@ def main():
     _extract_maps(output_root, config, logger)
     _extract_external_maps(base_dir, grok_client, paths, config, logger)
     _extract_images(output_root, config, logger)
+
+    # -----------------------------------------------------------------------
+    # Step 4b: Source-section enrichment (summary + operation + Grok/Wiki articles + media)
+    # -----------------------------------------------------------------------
+    _run_source_section_enrichment(output_root, grok_client, logger)
 
     # -----------------------------------------------------------------------
     # Step 5: Analysis

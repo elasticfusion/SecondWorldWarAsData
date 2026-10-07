@@ -19,6 +19,7 @@
 | people | `people._enrich_person_phase2` → `enrich_biographies.enrich_person_from_sources` | `search_grokipedia`, Wikipedia bio/image, award citations | `_is_already_enriched` / `_should_re_search` (90-day) | `_save_person_file` |
 | people_groups | `people_groups` loop → `groups_wikipedia.enrich_group_from_wikipedia` | `search_group_wikipedia` | `wikipedia_checked_at` | `_save_group` |
 | places | `places._find_or_create_place` → `enrich_places.enrich_place_from_grokipedia` + `enrich_place_from_wikipedia` | `_search_grokipedia_place`, `_fetch_place_wikipedia_full` | `grokipedia_url`/`grokipedia_checked_at`, `wikipedia_url`/`wikipedia_checked_at` | `write_json_with_lock` |
+| source_section | `enrich_all_source_sections` → `derive_summary_and_operation` + `fetch_section_articles` + `fetch_section_media` | Grokipedia + Wikipedia **article** fetch (`source_section_articles`) + Wikipedia **media** (`source_section_media`) | `wikipedia_checked_at` | `_save_source_section` + first-class `images` records |
 
 All gated (stamped-even-on-miss `*_checked_at` markers → no redundant re-fetch) and cached
 (disk search cache). All commit via the entity's native save path (version-stamped).
