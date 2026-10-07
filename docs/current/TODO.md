@@ -30,14 +30,31 @@ build RAG/search*. Current ordered priority:
    code-quality refactors.**
 
 ### Backlog item added 2026-10-07
-- **[MED] Promote `source_section` article endnote references → `bibliography`.**
-  The new `source_section` entity captures Grokipedia/Wikipedia article references
-  inline (raw, tagged `source: "wikipedia-reference"` / `"grokipedia-reference"`).
-  Promote those into first-class `bibliography` records so a Wikipedia-cited source
-  becomes a resolvable citation (via the existing NARA/Archive.org resolver),
-  cross-linked by `SourceSectionID`. Keep them clearly distinguished from
-  primary-source citations (secondary provenance). Deferred per design decision —
-  inline capture ships first; promotion is a separate pass.
+- **[MED] Promote `source_section` article endnote references → `bibliography`,
+  de-duplicated by URL.** The `source_section` entity already captures Wikipedia
+  article references inline (`reference_articles[].references[]`, tagged
+  `source: "wikipedia-reference"`; Grokipedia refs not yet extracted). Goal: collect
+  the footnoted references for later evaluation as a durable, de-duplicated set.
+  Design decided 2026-10-07:
+  - **Where:** promote each unique reference into a first-class `bibliography` record
+    (resolvable via the existing NARA/Archive.org resolver), NOT left duplicated inline.
+  - **Dedup key = the reference URL (normalized).** Two sections citing the same
+    reference → ONE bibliography record + multiple back-links.
+  - **Pointer approach:** `source_section` keeps lightweight reference-ID pointers to
+    the deduped bibliography records (not full copies), so there is a single copy of
+    each citation and the section still records which it cited.
+  - Keep secondary (Wikipedia-cited) provenance clearly distinguished from
+    primary-source citations.
+  - **Why it matters:** a single operation (e.g. Battle of the Bulge) spans ~15 book
+    chapters → 15 `source_section` records each fetch the same article → ~2,000
+    duplicated reference entries today. URL-keyed bibliography records collapse that.
+  - **Related follow-on (separate):** the same cross-section redundancy affects article
+    TEXT and MEDIA (same Bulge article/images stored 15×). Root cause is that
+    `operation` is an inline label repeated per section. Consider a canonical
+    `operation`/campaign entity (keyed by normalized name/`wikipedia_title`) that holds
+    the article + references + media ONCE, with sections referencing `OperationID`.
+    Not scoped yet — flagged for when operation dedup becomes worth it (measure the
+    actual section→operation fan-out first).
 8. **[FUTURE] Postgres adapter, DynamoDB-removal, multi-job concurrency, Step
    Functions, new entity types — gated on the post-ingestion RAG/Aurora phase.**
 
