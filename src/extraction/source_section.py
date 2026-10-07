@@ -308,7 +308,15 @@ def enrich_all_source_sections(
                 "source_section article fetch failed for %s: %s", event_id, e
             )
             fetched = False
-        if changed or fetched:
+        # Fetch Wikipedia media (photos/maps) -> first-class images records cross-linked.
+        try:
+            from src.extraction.source_section_media import fetch_section_media
+
+            media_written = fetch_section_media(record, output_dir)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("source_section media fetch failed for %s: %s", event_id, e)
+            media_written = 0
+        if changed or fetched or media_written:
             _save_source_section(output_dir, record)
             enriched += 1
     logger.info("source_section: enriched %d section(s)", enriched)
