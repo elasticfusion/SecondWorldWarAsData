@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -161,10 +161,10 @@ def _build_image_record(
         "source": "Wikipedia / Wikimedia Commons",
         "url": url,
         "local_copy": local_copy,
-        "url_capture_date": datetime.utcnow().isoformat() + "Z",
+        "url_capture_date": datetime.now(timezone.utc).isoformat(),
         "license": resolved.get("license"),  # null-over-fake
         "description": resolved.get("attribution"),
-        "extracted_date": datetime.utcnow().isoformat() + "Z",
+        "extracted_date": datetime.now(timezone.utc).isoformat(),
         "EventID": event_id,
         "SourceSectionID": source_section_id,
     }
@@ -182,6 +182,13 @@ def fetch_section_media(
     operation = record.get("operation")
     if not operation:
         return 0
+    # Idempotency: stamp a media gate marker up front so a re-run never re-fetches or writes
+    # duplicate image records. Stamped even when the article yields no media.
+    if record.get("media_checked_at"):
+        return 0
+    from datetime import date as _date
+
+    record["media_checked_at"] = _date.today().isoformat()
     title = operation.get("wikipedia_title") or operation.get("name")
     if not title:
         return 0

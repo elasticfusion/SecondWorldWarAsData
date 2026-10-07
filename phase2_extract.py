@@ -783,6 +783,11 @@ def main():
                 failed,
             )
 
+            # Source-section enrichment now runs with cached batch results available
+            # (grok_client is back in real-time mode), so the derive pass actually produces
+            # output in batch mode (it is a no-op during the collection phase above).
+            _run_source_section_enrichment(output_root, grok_client, logger)
+
             # Second batch cycle: optional extractors
             if any(
                 config.get(f, {}).get("enabled", False)

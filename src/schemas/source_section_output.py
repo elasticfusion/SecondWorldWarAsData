@@ -98,5 +98,7 @@ SOURCE_SECTION_OUTPUT_SCHEMA = {
         },
         # Gate marker for the Grok/Wiki fetch — stamped even on a miss so it is not re-pulled.
         "wikipedia_checked_at": make_nullable("string"),
+        # Gate marker for the Wikipedia media fetch (idempotency — no duplicate image records).
+        "media_checked_at": make_nullable("string"),
     },
 }

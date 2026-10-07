@@ -89,3 +89,36 @@ def test_fetch_writes_image_records(tmp_path):
     jsonschema.validate(saved, IMAGES_OUTPUT_SCHEMA)
     assert saved["image_type"] == "map"
     assert saved["SourceSectionID"] == "01HX7YZABCDEFGHJKMNPQRSTVW"
+
+
+def test_media_fetch_is_idempotent(tmp_path):
+    # Re-running the pass must NOT re-fetch or write duplicate image records (gated on
+    # media_checked_at). Regression test for the audit-found idempotency bug.
+    rec = {
+        "SourceSectionID": "01HX7YZABCDEFGHJKMNPQRSTVW",
+        "EventID": "01HX7YZABCDEFGHJKMNPQRSTVX",
+        "operation": {
+            "name": "Battle of the Bulge",
+            "wikipedia_title": "Battle of the Bulge",
+        },
+    }
+    with (
+        patch.object(
+            ssm, "_list_article_image_titles", return_value=["File:Map_offensive.png"]
+        ),
+        patch.object(
+            ssm,
+            "_resolve_commons_image",
+            return_value={
+                "url": "http://x.png",
+                "license": "Public domain",
+                "attribution": None,
+            },
+        ),
+    ):
+        first = ssm.fetch_section_media(rec, tmp_path, download=False)
+        second = ssm.fetch_section_media(rec, tmp_path, download=False)
+    assert first == 1
+    assert second == 0  # gated on the second run
+    assert rec["media_checked_at"]
+    assert len(list((tmp_path / "images").glob("*.json"))) == 1  # no duplicate
