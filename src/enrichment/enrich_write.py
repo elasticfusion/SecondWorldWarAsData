@@ -31,7 +31,7 @@ def save_enriched(path: Path, data: Dict[str, Any], entity: str) -> None:
     from src.utils.file_lock import write_json_with_lock
 
     inject_metadata(data, entity=entity)
-    write_json_with_lock(path, data)
+    write_json_with_lock(path, data, entity=entity)
 
 
 def update_enriched(

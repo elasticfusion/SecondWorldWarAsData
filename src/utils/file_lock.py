@@ -6,7 +6,7 @@ import platform
 import threading
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -119,11 +119,20 @@ def _validate_entity(filepath: Path, data: Dict[str, Any]) -> None:
         )
 
 
-def write_json_with_lock(filepath: Path, data: Dict[str, Any]) -> None:
-    """Write JSON file with file locking for concurrent access."""
+def write_json_with_lock(
+    filepath: Path, data: Dict[str, Any], entity: Optional[str] = None
+) -> None:
+    """Write JSON file with file locking for concurrent access.
+
+    `entity` selects the per-entity schema version to stamp. When omitted, the
+    stamp falls back to the MIN version across entities — which SILENTLY DOWNGRADES
+    records whose true entity version is above the min (people_groups/equipment at
+    2.25). Callers that know their entity MUST pass it so the stamp lands at the
+    record's real version (otherwise needs_migration() stays True forever).
+    """
     from src.schemas import inject_metadata
 
-    inject_metadata(data)
+    inject_metadata(data, entity=entity)
     _validate_entity(filepath, data)
     filepath.parent.mkdir(parents=True, exist_ok=True)
 

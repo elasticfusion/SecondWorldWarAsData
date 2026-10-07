@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from src.grok_client import BatchModeCollecting, GrokClient
+from src.schemas import inject_metadata
 
 
 def _today():
@@ -249,7 +250,8 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
     if not isinstance(enrichment, dict):
         data["enrichment_status"] = "not_found"
         data["last_enrichment_search"] = _today()
-        write_json_with_lock(group_file, data)
+        inject_metadata(data, entity="people_groups")
+        write_json_with_lock(group_file, data, entity="people_groups")
         return False
 
     # Wrong-article GUARD: if the returned enrichment CONTRADICTS the record's known
@@ -261,7 +263,8 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
         data["enrichment_status"] = "ambiguous"
         data["enrichment_ambiguity_reason"] = reason
         data["last_enrichment_search"] = _today()
-        write_json_with_lock(group_file, data)
+        inject_metadata(data, entity="people_groups")
+        write_json_with_lock(group_file, data, entity="people_groups")
         return False
 
     _apply_group_enrichment(data, enrichment, group_file, name)
@@ -286,12 +289,14 @@ def _apply_group_enrichment(
     if not data.get("group_name") and data.get("name"):
         data["group_name"] = data["name"]  # alias of name per spec
     if unchanged:
-        write_json_with_lock(group_file, data)
+        inject_metadata(data, entity="people_groups")
+        write_json_with_lock(group_file, data, entity="people_groups")
         logger.debug("  = Enrichment unchanged for %s (stamp refreshed only)", name)
         return
     data["enrichment_data"] = enrichment
     _promote_enrichment(data)
-    write_json_with_lock(group_file, data)
+    inject_metadata(data, entity="people_groups")
+    write_json_with_lock(group_file, data, entity="people_groups")
     logger.info("  ✓ Enriched %s", name)
 
 

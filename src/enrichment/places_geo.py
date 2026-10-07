@@ -249,9 +249,11 @@ def _process_place(
 
 def _write_place(path: Path, place: Dict[str, Any]) -> None:
     """Persist an updated place record via the durable writer."""
+    from src.schemas import inject_metadata
     from src.utils.file_lock import write_json_with_lock
 
-    write_json_with_lock(path, place)
+    inject_metadata(place, entity="places")
+    write_json_with_lock(path, place, entity="places")
 
 
 def write_geo_report(output_root: Path, report: PlaceGeoReport) -> Path:
