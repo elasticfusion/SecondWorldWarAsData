@@ -34,7 +34,27 @@ run "pylint"   python -m pylint --disable=$PYLINT_DISABLE --fail-under=5.0 $SCOP
 run "mypy"     python -m mypy $SCOPE --ignore-missing-imports --no-strict-optional
 run "bandit"   python -m bandit -r src/ lambda_handlers/ -ll -q
 # shellcheck disable=SC2086
-run "radon"    python -m radon cc $SCOPE --min C --total-average
+# Radon complexity: a C-grade block (moderate complexity) must BUBBLE UP for evaluation
+# (listed, not silently tolerated); a D-or-worse block HARD-FAILS the gate.
+run_radon() {
+  local out
+  out="$(python -m radon cc $SCOPE --min C 2>&1)"
+  local dworse
+  dworse="$(echo "$out" | grep -E ' - [D-F] ' || true)"
+  local cblocks
+  cblocks="$(echo "$out" | grep -E ' - C ' || true)"
+  if [ -n "$dworse" ]; then
+    echo "  ✗ radon (D+ complexity — must refactor)"
+    echo "$dworse" | sed 's/^/      /'
+    fail=1
+  elif [ -n "$cblocks" ]; then
+    echo "  ⚠ radon: C-grade block(s) to EVALUATE (not blocking):"
+    echo "$cblocks" | sed 's/^/      /'
+  else
+    echo "  ✓ radon"
+  fi
+}
+run_radon
 run "vulture"  python -m vulture src/ lambda_handlers/ .vulture_whitelist.py --min-confidence 80
 run "cfn-lint" bash -c 'cfn-lint cloudformation/*.yaml'
 run "pip-audit" bash -c 'pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-2447 && pip-audit -r requirements-lambda.txt --ignore-vuln PYSEC-2026-2447'
