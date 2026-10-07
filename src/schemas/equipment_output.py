@@ -291,5 +291,7 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         "enrichment_checked_at": {"type": ["integer", "null"]},
         "openserp_searched": {"type": ["boolean", "null"]},
         "openserp_searched_at": {"type": ["number", "string", "null"]},
+        "wikipedia_extract": make_nullable("string"),
+        "wikipedia_checked_at": make_nullable("string"),
     },
 }

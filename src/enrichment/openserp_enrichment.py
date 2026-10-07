@@ -590,7 +590,7 @@ def enrich_people_with_openserp(
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
-        inject_metadata(data)
+        inject_metadata(data, entity="people")
         c["file"].write_text(
             json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
         )
@@ -647,7 +647,7 @@ def enrich_equipment_with_openserp(
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
-        inject_metadata(data)
+        inject_metadata(data, entity="equipment")
         f.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
 
     logger.info("OpenSERP equipment enrichment: %d enriched", enriched)

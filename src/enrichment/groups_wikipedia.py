@@ -170,7 +170,7 @@ def enrich_all_groups_wikipedia(
         except Exception:
             continue
 
-        if data.get("wikipedia_url"):
+        if data.get("wikipedia_url") or data.get("wikipedia_checked_at"):
             continue
 
         name = data.get("group_name", "")
@@ -178,22 +178,30 @@ def enrich_all_groups_wikipedia(
             continue
 
         result = search_group_wikipedia(name)
+
+        def _apply(rec, _result=result):
+            from datetime import date
+
+            rec["wikipedia_checked_at"] = date.today().isoformat()
+            if _result:
+                rec["wikipedia_url"] = _result["wikipedia_url"]
+                rec["wikipedia_extract"] = _result["extract"][:500]
+                if _result.get("image"):
+                    rec.setdefault("images", []).insert(
+                        0,
+                        {
+                            "url": _result["image"],
+                            "license": _result["license"],
+                            "source": "wikipedia",
+                        },
+                    )
+                rec["enrichment_status"] = "enriched"
+            return rec
+
+        from src.enrichment.enrich_write import update_enriched
+
+        update_enriched(f, "people_groups", _apply)
         if result:
-            data["wikipedia_url"] = result["wikipedia_url"]
-            data["wikipedia_extract"] = result["extract"][:500]
-            if result.get("image"):
-                data.setdefault("images", []).insert(
-                    0,
-                    {
-                        "url": result["image"],
-                        "license": result["license"],
-                        "source": "wikipedia",
-                    },
-                )
-            data["enrichment_status"] = "enriched"
-            f.write_text(
-                json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
-            )
             enriched += 1
             logger.info(
                 "  ✓ Wikipedia enriched group: %s → %s", name, result["wikipedia_url"]

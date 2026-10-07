@@ -890,7 +890,7 @@ def _process_bib_file(
 
     from src.schemas import inject_metadata
 
-    inject_metadata(data)
+    inject_metadata(data, entity="bibliography")
     f.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     return (data.get("search_status") or "not_found", cached is not None)
 

@@ -41,8 +41,8 @@ ENTITY_SCHEMA_VERSIONS: Dict[str, str] = {
     "dates": "2.24",
     "places": "2.24",
     "people": "2.24",
-    "people_groups": "2.24",
-    "equipment": "2.24",
+    "people_groups": "2.25",
+    "equipment": "2.25",
     "weather": "2.24",
     "logistics": "2.24",
     "casualties": "2.24",
@@ -61,11 +61,13 @@ def _version_tuple(v: str) -> tuple:
 
 
 def entity_version(entity: Optional[str]) -> str:
-    """Return the schema version for an entity; unknown/None -> the max across all entities
-    (safe default for callers that don't yet know their entity)."""
+    """Return the schema version for an entity. Unknown/None falls back to the MIN version
+    across all entities — a conservative default that never stamps a record ABOVE its real
+    entity's version (which would make the schema contract wrongly skip it as 'future').
+    Callers that know their entity should always pass it."""
     if entity and entity in ENTITY_SCHEMA_VERSIONS:
         return ENTITY_SCHEMA_VERSIONS[entity]
-    return max(ENTITY_SCHEMA_VERSIONS.values(), key=_version_tuple)
+    return min(ENTITY_SCHEMA_VERSIONS.values(), key=_version_tuple)
 
 
 # Deprecated global alias (= highest per-entity version). Kept so un-migrated callers keep

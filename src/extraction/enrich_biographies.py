@@ -15,6 +15,7 @@ from typing import Any, Dict, Optional
 import requests
 
 from src.grok_client import BatchModeCollecting, GrokClient
+from src.schemas import inject_metadata
 
 logger = logging.getLogger(__name__)
 
@@ -935,6 +936,7 @@ def enrich_person_biography(
             "%Y-%m-%d"
         )
         with open(person_file, "w", encoding="utf-8") as f:
+            inject_metadata(person_data, entity="people")
             json.dump(person_data, f, indent=2, ensure_ascii=False)
         return False
 
@@ -966,6 +968,7 @@ def enrich_person_biography(
         return False
 
     with open(person_file, "w", encoding="utf-8") as f:
+        inject_metadata(person_data, entity="people")
         json.dump(person_data, f, indent=2, ensure_ascii=False)
     logger.info("  ✅ Enriched %s", person_name)
     return True
@@ -1151,6 +1154,7 @@ def _add_member_to_group(
     members.append(member)
 
     with open(group_file, "w", encoding="utf-8") as f:
+        inject_metadata(group_data, entity="people_groups")
         json.dump(group_data, f, indent=2, ensure_ascii=False)
     return True
 

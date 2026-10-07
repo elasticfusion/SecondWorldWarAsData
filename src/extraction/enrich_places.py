@@ -22,6 +22,7 @@ def _should_re_search(data: dict) -> bool:
 
 
 from src.grok_client import BatchModeCollecting, GrokClient
+from src.schemas import inject_metadata
 from src.utils.file_lock import write_json_with_lock
 
 logger = logging.getLogger(__name__)
@@ -319,7 +320,8 @@ def enrich_place(place_file: Path, grok_client: GrokClient) -> bool:
     else:
         data["enrichment_status"] = "not_found"
         data["last_enrichment_search"] = _today()
-    write_json_with_lock(place_file, data)
+    inject_metadata(data, entity="places")
+    write_json_with_lock(place_file, data, entity="places")
     if changed:
         logger.info("  ✓ Enriched %s", name)
     return changed

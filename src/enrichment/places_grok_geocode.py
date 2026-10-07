@@ -374,6 +374,8 @@ def _tally(report: GeocodeRunReport, status: str) -> None:
 
 def _write_place(path: Path, place: dict) -> None:
     """Persist an updated place record via the durable writer."""
+    from src.schemas import inject_metadata
     from src.utils.file_lock import write_json_with_lock
 
-    write_json_with_lock(path, place)
+    inject_metadata(place, entity="places")
+    write_json_with_lock(path, place, entity="places")
