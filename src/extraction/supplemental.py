@@ -154,9 +154,9 @@ def _sanitize_material(material: Dict[str, Any]) -> None:
 def _apply_defaults(material: Dict[str, Any]) -> None:
     """Set required string fields to defaults if missing."""
     defaults = {
-        "MaterialID": "",
-        "EventID": "",
-        "Sub-eventID": "",
+        "MaterialID": "GENERATE_NEW_ULID",
+        "EventID": "GENERATE_NEW_ULID",
+        "Sub-eventID": "GENERATE_NEW_ULID",
         "content_class": "document_reference",
         "reference_type": "bibliography",
         "verbatim_reference": "",
@@ -230,8 +230,8 @@ def sanitize_supplemental_data(data: Dict[str, Any]) -> Dict[str, Any]:
     defaults = {
         "Sub-event_Name": "",
         "Event_Name": "",
-        "EventID": "",
-        "Sub-eventID": "",
+        "EventID": "GENERATE_NEW_ULID",
+        "Sub-eventID": "GENERATE_NEW_ULID",
     }
     for key, default in defaults.items():
         if data.get(key) is None:

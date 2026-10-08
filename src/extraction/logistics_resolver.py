@@ -36,28 +36,33 @@ def build_logistics_index(logistics_dir: Path) -> Dict[str, Any]:
         if f.name in ("index.json",):
             continue
         try:
-            d = json.loads(f.read_text(encoding="utf-8"))
+            data = json.loads(f.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             continue
-        lid = d.get("LogisticsID")
-        if not lid:
-            continue
-        temporal = d.get("temporal") if isinstance(d.get("temporal"), dict) else {}
-        entry = {
-            "LogisticsID": lid,
-            "logistics_type": d.get("logistics_type"),
-            "date_start": temporal.get("date_start"),
-            "date_end": temporal.get("date_end") or temporal.get("date_start"),
-            "date_ids": [
-                temporal.get("DateID_start"),
-                temporal.get("DateID_end"),
-            ],
-        }
-        by_id[lid] = entry
-        for org in d.get("impacted_organizations", []) or []:
-            gid = org.get("PeopleGroupID") if isinstance(org, dict) else None
-            if gid:
-                by_group.setdefault(gid, []).append(entry)
+        # A logistics file may hold a single record (dict) OR a list of records.
+        records = data if isinstance(data, list) else [data]
+        for d in records:
+            if not isinstance(d, dict):
+                continue
+            lid = d.get("LogisticsID")
+            if not lid:
+                continue
+            temporal = d.get("temporal") if isinstance(d.get("temporal"), dict) else {}
+            entry = {
+                "LogisticsID": lid,
+                "logistics_type": d.get("logistics_type"),
+                "date_start": temporal.get("date_start"),
+                "date_end": temporal.get("date_end") or temporal.get("date_start"),
+                "date_ids": [
+                    temporal.get("DateID_start"),
+                    temporal.get("DateID_end"),
+                ],
+            }
+            by_id[lid] = entry
+            for org in d.get("impacted_organizations", []) or []:
+                gid = org.get("PeopleGroupID") if isinstance(org, dict) else None
+                if gid:
+                    by_group.setdefault(gid, []).append(entry)
     return {"by_group": by_group, "by_id": by_id}
 
 
