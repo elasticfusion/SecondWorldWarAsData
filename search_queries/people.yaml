@@ -1,15 +1,18 @@
 # Search query templates for people enrichment (OpenSERP)
-# Variables: {name}
+# Variables: {name}, {facts}
+# {facts} = the person's own context (primary unit + rank + nationality) injected to
+# disambiguate — e.g. "Robert Smith 90th Infantry Division Captain American" instead of a
+# bare name. Empty {facts} collapses cleanly (double spaces are squeezed by the caller).
 
 portrait_images:
-  - '{name} WWII portrait photo'
-  - '{name} World War II general officer photo'
+  - '{name} {facts} WWII portrait photo'
+  - '{name} {facts} World War II officer photo'
 
 academic_sources:
-  - '{name} oral history WWII'
-  - '{name} university archive World War II'
+  - '{name} {facts} oral history WWII'
+  - '{name} {facts} university archive World War II'
   - '{name} documentary interview WWII'
 
 web_results:
-  - '{name} WWII biography'
-  - '{name} World War II military service'
+  - '{name} {facts} WWII biography'
+  - '{name} {facts} World War II military service'
