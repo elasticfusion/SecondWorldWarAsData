@@ -360,8 +360,11 @@ def main():
             enrich_people_with_openserp,
             enrich_places_with_openserp,
             enrich_source_sections_with_openserp,
+            reset_metrics as _reset_openserp_metrics,
+            write_metrics as _write_openserp_metrics,
         )
 
+        _reset_openserp_metrics()
         openserp_url = config.get("external_maps", {}).get(
             "openserp_url", "http://localhost:7001"
         )
@@ -404,6 +407,8 @@ def main():
                 args.max_items,
             ),
         )
+        # Durable OpenSERP effectiveness/health metrics -> output/metrics/openserp_metrics.json
+        _write_openserp_metrics(args.output_dir)
 
     # NOAA weather enrichment (observed data to supplement Open-Meteo)
     noaa_token = config.get("api", {}).get("noaa_api_token", "")

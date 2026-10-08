@@ -67,3 +67,13 @@ Non-applicable features are correctly N/A (their enrichment is non-Grok/Wiki or 
 - `enrich_all_people` / `enrich_all_groups_wikipedia` / `enrich_all_equipment_wikipedia` remain
   defined for CLI/tests but are not pipeline-wired — kept intentionally; a deprecation note
   guards against accidental re-wiring into Phase 3.
+
+## OpenSERP metrics (measurement)
+
+Phase 3 writes a per-run OpenSERP effectiveness/health summary to
+`output/metrics/openserp_metrics.json` (and logs a one-line summary): entities_searched /
+entities_enriched (+ enrichment_rate), queries_issued / results_returned / zero_result_queries
+(+ zero_result_rate), verify_yes / verify_no (+ verify_pass_rate), breaker_opened, items_added.
+High zero_result_rate or breaker_opened > 0 signals an OpenSERP health problem (e.g. anti-bot
+blocking) at a glance — the signal that was missing when the empty-results bug had to be
+diagnosed by hand.
