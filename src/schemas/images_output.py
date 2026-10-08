@@ -44,5 +44,9 @@ IMAGES_OUTPUT_SCHEMA = {
         "PlaceMentionID": ulid_field(nullable=True),
         "date": make_nullable("string"),
         "DateMentionID": ulid_field(nullable=True),
+        # Grok-vision captioning pass (optional; present when images.vision_caption is on).
+        "caption_confidence": {"type": ["number", "null"]},
+        "caption_method": make_nullable("string"),
+        "needs_review": {"type": ["boolean", "null"]},
     },
 }

@@ -84,7 +84,7 @@ def test_enrich_dir_reports_and_writes(tmp_path: Path) -> None:
     (places / "metz.json").write_text(
         json.dumps(
             {
-                "PlaceID": "01A",
+                "PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ01",
                 "current_name": "Metz",
                 "coordinates": {"latitude": 49.12, "longitude": 6.18},
             }
@@ -95,7 +95,7 @@ def test_enrich_dir_reports_and_writes(tmp_path: Path) -> None:
     (places / "adak.json").write_text(
         json.dumps(
             {
-                "PlaceID": "01B",
+                "PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ01",
                 "current_name": "Adak Island",
                 "coordinates": {"latitude": 51.88, "longitude": -176.6},
             }
@@ -104,11 +104,17 @@ def test_enrich_dir_reports_and_writes(tmp_path: Path) -> None:
     )
     # no coords, real name
     (places / "aachen.json").write_text(
-        json.dumps({"PlaceID": "01C", "current_name": "Aachen"}), encoding="utf-8"
+        json.dumps({"PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ01", "current_name": "Aachen"}),
+        encoding="utf-8",
     )
     # no coords, unit area
     (places / "sector.json").write_text(
-        json.dumps({"PlaceID": "01D", "current_name": "5th Division area"}),
+        json.dumps(
+            {
+                "PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ01",
+                "current_name": "5th Division area",
+            }
+        ),
         encoding="utf-8",
     )
     # index.json is skipped

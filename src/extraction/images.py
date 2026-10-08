@@ -36,7 +36,7 @@ def _find_sub_event_for_image(img: dict, event_data: dict) -> Optional[Dict[str,
     resource_id = img.get("resource_id", "")
 
     event = event_data.get("Event", {})
-    event_id = event.get("EventID", "")
+    event_id = event.get("EventID") or None
     event_name = event_data.get("Chapter", "")
 
     for se in event.get("Sub-events", []):
@@ -50,7 +50,7 @@ def _find_sub_event_for_image(img: dict, event_data: dict) -> Optional[Dict[str,
             return {
                 "EventID": event_id,
                 "Event_Name": event_name,
-                "Sub-eventID": se.get("Sub-eventID", ""),
+                "Sub-eventID": se.get("Sub-eventID") or None,
                 "Sub-event_Name": se.get("Sub-event_summary", ""),
             }
     return None

@@ -498,7 +498,6 @@ def _build_casualty(
             else "unknown"
         ),
         "description": casualty_data.get("description", ""),
-        "event_context": {"EventID": event_id, "Sub-eventID": sub_event_id},
         "source": {
             "EventID": event_id,
             "Sub-eventID": sub_event_id,
@@ -507,6 +506,14 @@ def _build_casualty(
             "paragraph_number": paragraph_number,
         },
     }
+
+    # event_context.EventID is a NON-nullable ULID in the schema, so only attach event_context
+    # when we actually have a real event ULID (it is an optional top-level field).
+    if event_id:
+        casualty["event_context"] = {
+            "EventID": event_id,
+            "Sub-eventID": sub_event_id or None,
+        }
 
     if "count" in casualty_data:
         casualty["count"] = _normalize_counts(casualty_data["count"])

@@ -122,19 +122,23 @@ def test_locked_json_creates_file_if_missing(tmp_path):
 
 
 def test_validate_entity_warns_on_missing_fields(tmp_path, caplog):
-    """Validation logs warning when required fields are missing."""
+    """The central write guard BLOCKS a schema-invalid record (missing required field) and
+    logs it — the record is not persisted."""
     import logging
+
     from src.utils.file_lock import write_json_with_lock
 
     people_dir = tmp_path / "people"
     people_dir.mkdir()
     filepath = people_dir / "test_person.json"
 
-    with caplog.at_level(logging.WARNING):
-        write_json_with_lock(filepath, {"name": "Test"})  # Missing PersonID
+    with caplog.at_level(logging.ERROR):
+        write_json_with_lock(
+            filepath, {"PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW"}
+        )  # missing required 'name'
 
-    assert any("missing required fields" in r.message for r in caplog.records)
-    assert "PersonID" in caplog.text
+    assert any("BLOCKED schema-invalid" in r.message for r in caplog.records)
+    assert not filepath.exists()  # invalid record not persisted
 
 
 def test_validate_entity_passes_valid_data(tmp_path, caplog):

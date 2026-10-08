@@ -133,14 +133,22 @@ def _build_mention(
     """Build a mention entry from a supplemental material."""
     mention = {
         "MentionID": str(ulid.new()),
-        "EventID": material.get("EventID", ""),
-        "Sub-eventID": material.get("Sub-eventID", ""),
         "book": book,
         "chapter": chapter,
         "reference_type": material.get("reference_type", ""),
         "reference_number": material.get("reference_number", ""),
         "verbatim_reference": material.get("verbatim_reference", ""),
     }
+    # EventID/Sub-eventID are NON-nullable ULIDs but OPTIONAL in the mention schema. Only
+    # attach them when the material carries a real 26-char ULID — never "" (which would fail
+    # the pattern and block the whole bibliography write).
+    import re as _re
+
+    _ULID = r"^[0-9A-HJKMNP-TV-Z]{26}$"
+    for idf in ("EventID", "Sub-eventID"):
+        val = material.get(idf)
+        if isinstance(val, str) and _re.match(_ULID, val):
+            mention[idf] = val
     # Add page/volume from citation if present
     citation = material.get("citation") or {}
     if citation.get("pages"):

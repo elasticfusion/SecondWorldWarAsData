@@ -42,7 +42,11 @@ def _place_file(d: Path, fname: str, obj: dict) -> Path:
 def test_confident_hit_writes_coordinates_and_derived(tmp_path: Path) -> None:
     places = tmp_path / "places"
     places.mkdir()
-    _place_file(places, "aachen.json", {"PlaceID": "01A", "current_name": "Aachen"})
+    _place_file(
+        places,
+        "aachen.json",
+        {"PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ01", "current_name": "Aachen"},
+    )
     grok = _FakeGrok(
         {
             "Aachen": GeocodeResult(
@@ -67,7 +71,11 @@ def test_confident_hit_writes_coordinates_and_derived(tmp_path: Path) -> None:
 def test_low_confidence_not_written_as_coordinate(tmp_path: Path) -> None:
     places = tmp_path / "places"
     places.mkdir()
-    _place_file(places, "hill.json", {"PlaceID": "01B", "current_name": "Hill 401"})
+    _place_file(
+        places,
+        "hill.json",
+        {"PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ01", "current_name": "Hill 401"},
+    )
     grok = _FakeGrok(
         {
             "Hill 401": GeocodeResult(
@@ -89,7 +97,11 @@ def test_low_confidence_not_written_as_coordinate(tmp_path: Path) -> None:
 def test_not_found_recorded(tmp_path: Path) -> None:
     places = tmp_path / "places"
     places.mkdir()
-    _place_file(places, "x.json", {"PlaceID": "01C", "current_name": "Monunirel"})
+    _place_file(
+        places,
+        "x.json",
+        {"PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ01", "current_name": "Monunirel"},
+    )
     grok = _FakeGrok({"Monunirel": GeocodeResult(found=False, confidence=0.0)})
     report = geocode_places_dir(places, grok, write=True)
     assert report.not_found == 1
@@ -103,7 +115,10 @@ def test_unit_area_names_skipped(tmp_path: Path) -> None:
     _place_file(
         places,
         "sector.json",
-        {"PlaceID": "01D", "current_name": "5th Division sector"},
+        {
+            "PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ01",
+            "current_name": "5th Division sector",
+        },
     )
     grok = _FakeGrok({})
     report = geocode_places_dir(places, grok, write=True)
@@ -119,7 +134,7 @@ def test_already_geocoded_skipped(tmp_path: Path) -> None:
         places,
         "metz.json",
         {
-            "PlaceID": "01E",
+            "PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ01",
             "current_name": "Metz",
             "coordinates": {"latitude": 49.12, "longitude": 6.18},
         },
@@ -133,7 +148,11 @@ def test_already_geocoded_skipped(tmp_path: Path) -> None:
 def test_idempotent_after_attempt(tmp_path: Path) -> None:
     places = tmp_path / "places"
     places.mkdir()
-    _place_file(places, "x.json", {"PlaceID": "01F", "current_name": "Monunirel"})
+    _place_file(
+        places,
+        "x.json",
+        {"PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ01", "current_name": "Monunirel"},
+    )
     grok = _FakeGrok({"Monunirel": GeocodeResult(found=False, confidence=0.0)})
     geocode_places_dir(places, grok, write=True)
     # Second run should skip (already attempted), making no new Grok calls.
@@ -165,8 +184,16 @@ def test_limit_bounds_calls(tmp_path: Path) -> None:
 def test_error_recorded_and_batch_continues(tmp_path: Path) -> None:
     places = tmp_path / "places"
     places.mkdir()
-    _place_file(places, "a.json", {"PlaceID": "01", "current_name": "Aachen"})
-    _place_file(places, "b.json", {"PlaceID": "02", "current_name": "Metz Town"})
+    _place_file(
+        places,
+        "a.json",
+        {"PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ00", "current_name": "Aachen"},
+    )
+    _place_file(
+        places,
+        "b.json",
+        {"PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ00", "current_name": "Metz Town"},
+    )
 
     class _Boom:
         def chat_completion(self, **_):
