@@ -81,6 +81,7 @@ def _breaker_record_failure() -> bool:
                     "responses, skipping remaining searches",
                     _consecutive_failures,
                 )
+                _metric("breaker_opened")
             _circuit_open = True
         return _circuit_open
 
@@ -92,6 +93,82 @@ def _breaker_record_success() -> None:
 
 
 logger = logging.getLogger(__name__)
+
+
+# --- OpenSERP effectiveness/health metrics (per Phase-3 run) ---------------------------------
+_metrics_lock = threading.Lock()
+_METRIC_KEYS = (
+    "entities_searched",
+    "entities_enriched",
+    "queries_issued",
+    "results_returned",
+    "zero_result_queries",
+    "verify_yes",
+    "verify_no",
+    "breaker_opened",
+    "urls_fetched",
+    "items_added",
+)
+_metrics: Dict[str, int] = {k: 0 for k in _METRIC_KEYS}
+
+
+def _metric(key: str, n: int = 1) -> None:
+    """Increment an OpenSERP metric (thread-safe)."""
+    with _metrics_lock:
+        _metrics[key] = _metrics.get(key, 0) + n
+
+
+def reset_metrics() -> None:
+    with _metrics_lock:
+        for k in _METRIC_KEYS:
+            _metrics[k] = 0
+
+
+def get_metrics() -> Dict[str, Any]:
+    """Snapshot of the metrics + derived rates (hit rate, verify pass rate)."""
+    with _metrics_lock:
+        m: Dict[str, Any] = dict(_metrics)
+    searched = m["entities_searched"] or 1
+    verified = (m["verify_yes"] + m["verify_no"]) or 1
+    queries = m["queries_issued"] or 1
+    m["enrichment_rate"] = round(m["entities_enriched"] / searched, 3)
+    m["verify_pass_rate"] = round(m["verify_yes"] / verified, 3)
+    m["zero_result_rate"] = round(m["zero_result_queries"] / queries, 3)
+    return m
+
+
+def write_metrics(output_dir: Any) -> Dict[str, Any]:
+    """Write the OpenSERP metrics snapshot to output/metrics/openserp_metrics.json. Returns the
+    snapshot (also suitable for embedding in .phase_results.json). Fail-safe."""
+    import json as _json
+    from datetime import datetime, timezone
+
+    snap = get_metrics()
+    snap["generated_at"] = datetime.now(timezone.utc).isoformat()
+    try:
+        mdir = output_dir / "metrics"
+        mdir.mkdir(parents=True, exist_ok=True)
+        (mdir / "openserp_metrics.json").write_text(
+            _json.dumps(snap, indent=2), encoding="utf-8"
+        )
+        logger.info(
+            "OpenSERP metrics: searched=%d enriched=%d (%.0f%% hit) | queries=%d results=%d "
+            "zero=%d | verify %d/%d (%.0f%% pass) | breaker_open=%d | items_added=%d",
+            snap["entities_searched"],
+            snap["entities_enriched"],
+            snap["enrichment_rate"] * 100,
+            snap["queries_issued"],
+            snap["results_returned"],
+            snap["zero_result_queries"],
+            snap["verify_yes"],
+            snap["verify_yes"] + snap["verify_no"],
+            snap["verify_pass_rate"] * 100,
+            snap["breaker_opened"],
+            snap["items_added"],
+        )
+    except Exception as e:  # noqa: BLE001 - metrics are best-effort
+        logger.debug("Could not write OpenSERP metrics: %s", e)
+    return snap
 
 
 def _render_queries(query_file: str, category: str, **kwargs) -> List[str]:
@@ -138,6 +215,7 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
         logger.info("OpenSERP circuit breaker SKIP: %s", query[:60])
         return []
 
+    _metric("queries_issued")
     try:
         import time
 
@@ -159,6 +237,7 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
             data = resp.json()
             if not data:
                 _breaker_record_failure()
+                _metric("zero_result_queries")
                 return []
             # Handle both flat list and {"results": [...]} formats
             results = data if isinstance(data, list) else data.get("results", [])
@@ -166,8 +245,10 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
                 _breaker_record_success()
             else:
                 _breaker_record_failure()
+                _metric("zero_result_queries")
                 return []
             logger.info("OpenSERP [%s]: %d results", query[:60], len(results))
+            _metric("results_returned", len(results))
             return [
                 {
                     "url": r.get("url", ""),
@@ -226,6 +307,7 @@ def _verify_result(
         )
         answer = "YES" if response.strip().upper().startswith("YES") else "NO"
         cache_result("openserp_verify", cache_key, answer)
+        _metric("verify_yes" if answer == "YES" else "verify_no")
         logger.info(
             "Grok verify [%s]: %s — '%s'",
             answer,
@@ -862,6 +944,7 @@ def enrich_people_with_openserp(
         changed = _verify_and_apply(c, data, name, grok_client, max_images, max_web)
 
         data["openserp_searched"] = True
+        _metric("entities_searched")
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
@@ -869,6 +952,7 @@ def enrich_people_with_openserp(
             write_json_with_lock(c["file"], data, entity="people")
             if changed:
                 enriched += 1
+                _metric("entities_enriched")
                 logger.info("  ✓ OpenSERP enriched: %s", name)
 
     logger.info("OpenSERP people enrichment: %d enriched", enriched)
@@ -920,9 +1004,11 @@ def enrich_equipment_with_openserp(
             if images:
                 data["images"] = images
                 enriched += 1
+                _metric("entities_enriched")
                 logger.info("  ✓ OpenSERP enriched: %s", name)
 
         data["openserp_searched"] = True
+        _metric("entities_searched")
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
@@ -982,9 +1068,11 @@ def enrich_source_sections_with_openserp(
         if added:
             data["primary_sources"] = existing + added
             enriched += 1
+            _metric("entities_enriched")
             logger.info("  ✓ OpenSERP primary sources for %s: +%d", op_name, len(added))
 
         data["openserp_searched"] = True
+        _metric("entities_searched")
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
@@ -1111,6 +1199,7 @@ def enrich_groups_with_openserp(
                 changed = True
 
         data["openserp_searched"] = True
+        _metric("entities_searched")
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
@@ -1118,6 +1207,7 @@ def enrich_groups_with_openserp(
             write_json_with_lock(f, data, entity="people_groups")
         if changed:
             enriched += 1
+            _metric("entities_enriched")
             logger.info("  ✓ OpenSERP enriched group: %s", name)
 
     logger.info("OpenSERP people_groups enrichment: %d enriched", enriched)
@@ -1238,6 +1328,7 @@ def enrich_places_with_openserp(
                         changed = True
 
         data["openserp_searched"] = True
+        _metric("entities_searched")
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
@@ -1245,6 +1336,7 @@ def enrich_places_with_openserp(
             write_json_with_lock(f, data, entity="places")
         if changed:
             enriched += 1
+            _metric("entities_enriched")
             logger.info("  ✓ OpenSERP enriched place: %s", primary)
 
     logger.info("OpenSERP places enrichment: %d enriched", enriched)
