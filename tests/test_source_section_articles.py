@@ -41,18 +41,17 @@ def test_wikipedia_missing_page_returns_none():
         assert ssa.fetch_wikipedia_article("Nonexistent Thing") is None
 
 
-def test_is_clean_slug_rejects_js_fragments():
-    assert ssa._is_clean_slug("Battle_of_the_Bulge")
-    assert not ssa._is_clean_slug("' + escHtml(s.slug) + '")
-    assert not ssa._is_clean_slug("has spaces")
-    assert not ssa._is_clean_slug("")
-
-
 def test_grokipedia_graceful_url_only_when_no_text():
-    # search resolves a clean slug; page body yields no extractable text -> URL-only record
-    search = _resp(text='<a href="/page/Battle_of_the_Bulge">x</a>')
-    page = _resp(text="<html><body></body></html>")
-    with patch.object(ssa.requests, "get", side_effect=[search, page]):
+    # resolver returns a clean URL; page body yields no extractable text -> URL-only record
+    with (
+        patch(
+            "src.enrichment.grokipedia.resolve_grokipedia_url",
+            return_value="https://grokipedia.com/page/Battle_of_the_Bulge",
+        ),
+        patch.object(
+            ssa.requests, "get", return_value=_resp(text="<html><body></body></html>")
+        ),
+    ):
         art = ssa.fetch_grokipedia_article("Battle of the Bulge")
     assert art is not None
     assert art["source"] == "grokipedia"
@@ -62,7 +61,7 @@ def test_grokipedia_graceful_url_only_when_no_text():
 
 
 def test_grokipedia_no_resolution_returns_none():
-    with patch.object(ssa.requests, "get", return_value=_resp(text="no results here")):
+    with patch("src.enrichment.grokipedia.resolve_grokipedia_url", return_value=None):
         assert ssa.fetch_grokipedia_article("Battle of the Bulge") is None
 
 

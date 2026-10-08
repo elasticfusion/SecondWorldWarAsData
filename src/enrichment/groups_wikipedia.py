@@ -176,10 +176,22 @@ def enrich_group_from_wikipedia(group: dict) -> bool:
     if not name or len(name) < 3:
         return False
 
+    # Grokipedia (independent of the Wikipedia outcome; runs within the same gate).
+    changed = False
+    try:
+        from src.enrichment.grokipedia import resolve_grokipedia_url
+
+        grok_url = resolve_grokipedia_url(name)
+        if grok_url:
+            group["grokipedia_url"] = grok_url
+            changed = True
+    except Exception as e:  # noqa: BLE001 - best-effort, never block
+        logger.debug("Grokipedia lookup failed for group %s: %s", name, e)
+
     result = search_group_wikipedia(name)
     if not result:
         logger.debug("No Wikipedia extract for group %s", name)
-        return False
+        return changed
 
     group["wikipedia_url"] = result["wikipedia_url"]
     group["wikipedia_extract"] = result["extract"][:500]

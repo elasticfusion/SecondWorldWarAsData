@@ -766,6 +766,9 @@ def _apply_wikipedia_text_extract(
 
     equipment_data["wikipedia_checked_at"] = date.today().isoformat()
 
+    # Grokipedia (independent of the Wikipedia outcome; runs within the same gate).
+    _apply_grokipedia_url(equipment_data, common_name)
+
     try:
         from src.enrichment.equipment_wikipedia import search_equipment_wikipedia
 
@@ -788,6 +791,24 @@ def _apply_wikipedia_text_extract(
     if extract:
         equipment_data["wikipedia_extract"] = extract[:500]
     logger.debug("Wikipedia text extract applied for %s", common_name)
+
+
+def _apply_grokipedia_url(equipment_data: Dict[str, Any], common_name: str) -> None:
+    """Phase-2 Grokipedia enrichment: resolve a grokipedia_url via the shared generic resolver
+    and store it in external_data.grokipedia_url (the field + media-preference logic already
+    exist). Null-over-fake: a miss leaves it unset. Gated alongside the Wikipedia step by the
+    caller's wikipedia_checked_at window; the resolver itself caches (incl. negatives).
+    """
+    try:
+        from src.enrichment.grokipedia import resolve_grokipedia_url
+
+        grok_url = resolve_grokipedia_url(common_name)
+    except Exception as e:  # noqa: BLE001 - best-effort, never block
+        logger.debug("Grokipedia lookup failed for %s: %s", common_name, e)
+        return
+    if grok_url:
+        _build_external_data({"grokipedia_url": grok_url}, equipment_data)
+        logger.debug("Grokipedia url applied for %s → %s", common_name, grok_url)
 
 
 def _enrich_and_add_media(
