@@ -30,12 +30,18 @@ def _find_content_files(chapter_dir: Path, chapter_num: str) -> Dict[str, Path]:
     """Find content files (subsections or single file)."""
     content_files = {}
 
-    # Check for subsections (a, b, c, d, e, f)
-    for section_letter in ["a", "b", "c", "d", "e", "f"]:
-        pattern = f"chapter{chapter_num}{section_letter}-content.md"
-        matches = list(chapter_dir.glob(pattern))
-        if matches:
-            content_files[section_letter] = matches[0]
+    # Discover ALL subsection letters dynamically. (Previously hardcoded to a-f, which
+    # SILENTLY DROPPED real content in chapters that run past f — e.g. chapter6g..j are combat
+    # narrative, never ingested. Glob + parse the trailing section letter(s) instead.)
+    import re as _re
+
+    sub_pattern = _re.compile(
+        rf"^chapter{_re.escape(chapter_num)}([a-z]+)-content\.md$", _re.IGNORECASE
+    )
+    for match_file in chapter_dir.glob(f"chapter{chapter_num}*-content.md"):
+        m = sub_pattern.match(match_file.name)
+        if m:
+            content_files[m.group(1).lower()] = match_file
 
     # Check for single content file if no subsections
     if not content_files:
