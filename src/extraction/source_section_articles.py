@@ -121,26 +121,17 @@ def fetch_grokipedia_article(name: str, timeout: int = 20) -> Optional[Dict[str,
     page_url = _resolve_grokipedia_page(name, timeout)
     if not page_url:
         return None
-    extract: Optional[str] = None
-    try:
-        page = requests.get(page_url, headers=_HEADERS, timeout=timeout)
-        if page.status_code == 200 and page.text:
-            # Best-effort: prefer <article>/<main> body, else whole page, then strip tags.
-            m = re.search(
-                r"<(?:article|main)[^>]*>(.*?)</(?:article|main)>",
-                page.text,
-                re.DOTALL | re.IGNORECASE,
-            )
-            body = m.group(1) if m else page.text
-            text = _strip_html(body)
-            extract = text[:_MAX_WIKI_TEXT] or None
-    except (requests.RequestException, ValueError) as e:
-        logger.debug("grokipedia page fetch failed for %r: %s", name, e)
+    # Grokipedia is a JS-rendered SPA, so a plain GET returns an empty shell. Render it with
+    # headless Chromium to capture the real article text; falls back to URL-only (extract=None)
+    # if Playwright/Chromium is unavailable or the render fails.
+    from src.enrichment.grokipedia import fetch_grokipedia_rendered
+
+    extract = fetch_grokipedia_rendered(page_url)
     return {
         "source": "grokipedia",
         "title": name,
         "url": page_url,
-        "extract": extract,  # may be None -> graceful URL-only capture
+        "extract": extract,  # None -> graceful URL-only capture
         "references": None,  # grokipedia reference extraction not implemented (backlog)
         "license": None,  # null-over-fake: Grokipedia license not asserted
         "retrieved_at": _today(),

@@ -30,6 +30,12 @@ build RAG/search*. Current ordered priority:
    code-quality refactors.**
 
 ### Backlog item added 2026-10-07
+- **[HIGH] Install Chromium in the Phase-2 container image for Grokipedia rendering.**
+  `fetch_grokipedia_rendered` (headless Playwright) now captures Grokipedia article text
+  locally, but the AWS Phase-2 ECS container has no Chromium — so in AWS it degrades to
+  URL-only (graceful). Add `playwright install chromium` (+ its OS deps) to the container
+  image (Dockerfile), rebuild, and confirm it passes the existing container AV/vuln scan.
+  Until then, Grokipedia text is captured only on local runs.
 - **[MED] Promote `source_section` article endnote references → `bibliography`,
   de-duplicated by URL.** The `source_section` entity already captures Wikipedia
   article references inline (`reference_articles[].references[]`, tagged

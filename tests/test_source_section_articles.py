@@ -41,23 +41,39 @@ def test_wikipedia_missing_page_returns_none():
         assert ssa.fetch_wikipedia_article("Nonexistent Thing") is None
 
 
-def test_grokipedia_graceful_url_only_when_no_text():
-    # resolver returns a clean URL; page body yields no extractable text -> URL-only record
+def test_grokipedia_rendered_text_captured():
+    # resolver returns a clean URL; headless render returns article text -> extract populated
     with (
         patch(
             "src.enrichment.grokipedia.resolve_grokipedia_url",
             return_value="https://grokipedia.com/page/Battle_of_the_Bulge",
         ),
-        patch.object(
-            ssa.requests, "get", return_value=_resp(text="<html><body></body></html>")
+        patch(
+            "src.enrichment.grokipedia.fetch_grokipedia_rendered",
+            return_value="The Battle of the Bulge was a German offensive.",
         ),
     ):
         art = ssa.fetch_grokipedia_article("Battle of the Bulge")
-    assert art is not None
     assert art["source"] == "grokipedia"
     assert art["url"] == "https://grokipedia.com/page/Battle_of_the_Bulge"
-    assert art["extract"] is None  # graceful: URL-only
+    assert art["extract"] == "The Battle of the Bulge was a German offensive."
     assert art["license"] is None  # null-over-fake
+
+
+def test_grokipedia_graceful_url_only_when_render_unavailable():
+    # headless render unavailable/fails -> extract None, but URL+title still captured
+    with (
+        patch(
+            "src.enrichment.grokipedia.resolve_grokipedia_url",
+            return_value="https://grokipedia.com/page/Battle_of_the_Bulge",
+        ),
+        patch("src.enrichment.grokipedia.fetch_grokipedia_rendered", return_value=None),
+    ):
+        art = ssa.fetch_grokipedia_article("Battle of the Bulge")
+    assert art is not None
+    assert art["url"] == "https://grokipedia.com/page/Battle_of_the_Bulge"
+    assert art["extract"] is None  # graceful: URL-only
+    assert art["license"] is None
 
 
 def test_grokipedia_no_resolution_returns_none():
