@@ -100,5 +100,16 @@ SOURCE_SECTION_OUTPUT_SCHEMA = {
         "wikipedia_checked_at": make_nullable("string"),
         # Gate marker for the Wikipedia media fetch (idempotency — no duplicate image records).
         "media_checked_at": make_nullable("string"),
+        # OpenSERP primary-source web results for the operation (Phase 3), keyed on the
+        # operation label — the coarse anchor — not granular event names.
+        "primary_sources": {
+            "type": ["array", "null"],
+            "items": {
+                "type": "object",
+                "additionalProperties": True,
+            },
+        },
+        "openserp_searched": {"type": ["boolean", "null"]},
+        "openserp_searched_at": {"type": ["number", "null"]},
     },
 }

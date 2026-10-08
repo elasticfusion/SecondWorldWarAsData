@@ -50,7 +50,7 @@ ENTITY_SCHEMA_VERSIONS: Dict[str, str] = {
     "map_features": "2.24",
     "bibliography": "2.24",
     "images": "2.25",
-    "source_section": "2.25",
+    "source_section": "2.26",
 }
 
 

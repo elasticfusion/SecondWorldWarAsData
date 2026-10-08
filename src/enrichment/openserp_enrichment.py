@@ -708,3 +708,65 @@ def enrich_equipment_with_openserp(
 
     logger.info("OpenSERP equipment enrichment: %d enriched", enriched)
     return enriched
+
+
+def enrich_source_sections_with_openserp(
+    source_section_dir: Path,
+    openserp_url: str,
+    grok_client: Any = None,
+    max_items: Optional[int] = None,
+) -> int:
+    """Add OpenSERP primary-source web results to source_section records, keyed on the derived
+    OPERATION label (the coarse anchor — e.g. 'Battle of the Bulge') rather than granular event
+    names. Only sections with an operation are searched. Native write, gated on
+    openserp_searched (90-day), deduped. Returns count enriched."""
+    reset_circuit()  # don't inherit breaker state from a prior book/run
+    if not _openserp_reachable(openserp_url):
+        logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
+        return 0
+
+    enriched = 0
+    for f in sorted(source_section_dir.glob("*.json")):
+        if f.name in SKIP_FILES:
+            continue
+        if max_items and enriched >= max_items:
+            break
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+
+        operation = data.get("operation")
+        if not operation or not operation.get("name"):
+            continue  # null-over-fake: no operation -> nothing to search
+
+        if data.get("openserp_searched"):
+            import time as _time
+
+            searched_at = data.get("openserp_searched_at", 0)
+            if searched_at and (_time.time() - searched_at) < 90 * 86400:
+                continue
+
+        op_name = operation["name"]
+        aliases = operation.get("aliases") or []
+        results = search_event_content(
+            op_name, aliases=aliases, openserp_url=openserp_url, grok_client=grok_client
+        )
+
+        existing = data.get("primary_sources") or []
+        existing_urls = {s.get("url") for s in existing if isinstance(s, dict)}
+        added = [r for r in results if r.get("url") not in existing_urls]
+        if added:
+            data["primary_sources"] = existing + added
+            enriched += 1
+            logger.info("  ✓ OpenSERP primary sources for %s: +%d", op_name, len(added))
+
+        data["openserp_searched"] = True
+        import time as _time
+
+        data["openserp_searched_at"] = int(_time.time())
+        if _validate_before_write(data, "source_section"):
+            write_json_with_lock(f, data, entity="source_section")
+
+    logger.info("OpenSERP source_section enrichment: %d enriched", enriched)
+    return enriched
