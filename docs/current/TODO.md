@@ -47,6 +47,20 @@ build RAG/search*. Current ordered priority:
 7. **[LOW/REGRESSION] mypy --strict on new files; the 5 regression tests;
    code-quality refactors.**
 
+### Backlog items added 2026-10-08 (AWS Phase-3 E2E findings)
+- **[HIGH] OpenSERP returns empty results in AWS -> circuit breaker opens, 0 enriched.** A scoped
+  Phase-3 ECS run (BOOK_NAME=TheArdennesBattleOfTheBulge, --max-items 2) connected to live
+  OpenSERP (10.0.21.65:7001) and issued real queries (incl. the new multi-language place queries
+  "Welscheid"/"Winterspelt"/... confirmed working), but OpenSERP's /mega/search returned
+  empty/failed 5x consecutively -> breaker OPEN -> all searches skipped, 0 enriched. OpenSERP
+  connectivity is fine; its SEARCH BACKEND (real Google/Bing/DuckDuckGo scraping) is returning
+  nothing — likely rate-limited/blocked/misconfigured in the container, or needs search-engine
+  egress config. Diagnose OpenSERP container health + a direct /mega/search probe. (Geocoding +
+  the rest of Phase 3 worked: 2 attempted/2 geocoded, no BLOCKED writes.)
+- **[MED] Ad-hoc Phase-3 ECS task without BOOK_NAME does a FULL S3 entity-tree download**
+  (unbounded, ~13min+ stall before enrichment). Set BOOK_NAME to scope (confirmed: 700 files,
+  fast). Document that ad-hoc Phase-3 runs must set BOOK_NAME or use a manifest.
+
 ### Backlog item added 2026-10-07
 - **[MED] Write guard vs. BREAKING schema migrations (schema is never fully stable).** The
   central write guard (file_lock.write_json_with_lock) validates a record's SHAPE against the
