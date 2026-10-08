@@ -48,6 +48,17 @@ build RAG/search*. Current ordered priority:
    code-quality refactors.**
 
 ### Backlog items added 2026-10-08 (AWS Phase-3 E2E findings)
+- **[HIGH] OpenSERP submodule is stale (v0.6.0-15 pinned vs upstream v0.8.12 / 78 commits
+  behind) + build script does not verify component versions.** OpenSERP scrapes live search
+  engines, so staleness likely contributes to empty results (markup/anti-bot drift). (a) Update
+  the `openserp` submodule to the latest release tag (v0.8.12) — CAREFUL: CLI/config changed
+  upstream (e.g. --log_level rename), so re-verify the task-def command (`serve --host --port`,
+  NO `--raw` — see the browser-mode fix) still matches; rebuild + Trivy-scan + push. (b) Make
+  `scripts/deploy_all.sh` (or a preflight) CHECK each vendored/submodule component (openserp,
+  chandra, paddle, clamav) against its upstream latest release and warn/fail if behind, so
+  components don't silently rot.
+
+
 - **[HIGH] OpenSERP returns empty results in AWS -> circuit breaker opens, 0 enriched.** A scoped
   Phase-3 ECS run (BOOK_NAME=TheArdennesBattleOfTheBulge, --max-items 2) connected to live
   OpenSERP (10.0.21.65:7001) and issued real queries (incl. the new multi-language place queries
