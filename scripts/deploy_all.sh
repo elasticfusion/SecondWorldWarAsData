@@ -194,6 +194,18 @@ TEMPLATE_BUCKET="wwii-pipeline-deploy"
 ENV="dev"
 EMAIL="dchristian@cirrusnine.com"
 
+# Preflight: warn (or fail, if STRICT_COMPONENTS=1) when vendored components/base images are
+# stale vs upstream — catches the kind of drift that broke OpenSERP (78 commits behind).
+if [ "${SKIP_COMPONENT_CHECK:-0}" != "1" ]; then
+  if [ "${STRICT_COMPONENTS:-0}" = "1" ]; then
+    bash "$(dirname "$0")/check_component_versions.sh" --strict || {
+      echo "Component check failed (STRICT_COMPONENTS=1) — update stale components or set SKIP_COMPONENT_CHECK=1."; exit 1;
+    }
+  else
+    bash "$(dirname "$0")/check_component_versions.sh" || true
+  fi
+fi
+
 echo "=== 0. Select config profile ==="
 echo "  1) balanced          — batch extraction, live enrichment (default)"
 echo "  2) cost-optimized    — everything batched, cheap models for light tasks"

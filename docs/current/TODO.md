@@ -76,8 +76,7 @@ build RAG/search*. Current ordered priority:
   engines, so staleness likely contributes to empty results (markup/anti-bot drift). (a) Update
   the `openserp` submodule to the latest release tag (v0.8.12) — CAREFUL: CLI/config changed
   upstream (e.g. --log_level rename), so re-verify the task-def command (`serve --host --port`,
-  NO `--raw` — see the browser-mode fix) still matches; rebuild + Trivy-scan + push. (b) Make
-  `scripts/deploy_all.sh` (or a preflight) CHECK each vendored/submodule component (openserp,
+  NO `--raw` — see the browser-mode fix) still matches; rebuild + Trivy-scan + push. (b) ~~DONE 2026-10-08~~: scripts/check_component_versions.sh + deploy_all.sh preflight now CHECK each vendored/submodule component (openserp,
   chandra, paddle, clamav) against its upstream latest release and warn/fail if behind, so
   components don't silently rot.
 
