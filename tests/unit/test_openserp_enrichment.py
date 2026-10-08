@@ -40,14 +40,14 @@ class TestClassifySource:
 
 
 class TestOpenSerpReachable:
-    @patch("src.enrichment.openserp_enrichment.get_session")
-    def test_reachable(self, mock_session):
-        mock_session.return_value.get.return_value = Mock(status_code=200)
+    @patch("src.enrichment.openserp_enrichment.requests.get")
+    def test_reachable(self, mock_get):
+        mock_get.return_value = Mock(status_code=200)
         assert _openserp_reachable("http://localhost:7001") is True
 
-    @patch("src.enrichment.openserp_enrichment.get_session")
-    def test_unreachable(self, mock_session):
-        mock_session.return_value.get.side_effect = Exception("refused")
+    @patch("src.enrichment.openserp_enrichment.requests.get")
+    def test_unreachable(self, mock_get):
+        mock_get.side_effect = Exception("refused")
         assert _openserp_reachable("http://localhost:7001") is False
 
 
