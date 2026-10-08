@@ -17,8 +17,33 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from src.schemas import inject_metadata
 from src.utils.http_pool import get_session
+from src.utils.file_lock import write_json_with_lock
+
+
+def _validate_before_write(data: Dict, entity: str) -> bool:
+    """Validate a record against its enforced schema before writing. Fail-safe: returns True
+    (allow write) if the schema/validator is unavailable; returns False (skip write) only on a
+    genuine schema violation, logging it. Never raises."""
+    try:
+        import jsonschema
+
+        from src.schemas.entity_registry import ENTITY_REGISTRY, load_schema
+
+        spec = next((s for s in ENTITY_REGISTRY if s.name == entity), None)
+        if spec is None:
+            return True
+        schema = load_schema(spec)
+        jsonschema.validate(data, schema)
+        return True
+    except jsonschema.ValidationError as e:  # type: ignore[name-defined]
+        logger.warning(
+            "OpenSERP write skipped — %s record fails schema: %s", entity, e.message
+        )
+        return False
+    except Exception:  # noqa: BLE001 - validator unavailable -> don't block the write
+        return True
+
 
 logger = logging.getLogger(__name__)
 
@@ -239,19 +264,32 @@ def search_equipment_images(
     openserp_url: str,
     grok_client: Any = None,
     max_results: int = 3,
+    identifier: str = "",
+    year: str = "",
 ) -> List[Dict[str, str]]:
-    """Search for photos of military equipment."""
-    results = _search_openserp(
-        f"{equipment_name} WWII military equipment photo", openserp_url
+    """Search for photos of military equipment (uses search_queries/equipment.yaml)."""
+    from src.utils.search_query_loader import render_search_queries
+
+    queries = render_search_queries(
+        "equipment",
+        "images",
+        name=equipment_name,
+        identifier=identifier or equipment_name,
+        year=year,
     )
-    images = []
-    for r in results:
-        url = r.get("url", "")
-        title = r.get("title", "")
-        if url and _verify_result(title, f"Photo of {equipment_name}", grok_client):
-            images.append({"url": url, "title": title, "source": "openserp"})
-            if len(images) >= max_results:
-                break
+    images: List[Dict[str, str]] = []
+    seen: set = set()
+    for query in queries:
+        for r in _search_openserp(query, openserp_url):
+            url = r.get("url", "")
+            title = r.get("title", "")
+            if not url or url in seen:
+                continue
+            if _verify_result(title, f"Photo of {equipment_name}", grok_client):
+                images.append({"url": url, "title": title, "source": "openserp"})
+                seen.add(url)
+                if len(images) >= max_results:
+                    return images
     return images
 
 
@@ -344,24 +382,29 @@ def search_military_awards(
 
         return _json.loads(cached)
 
-    results = _search_openserp(f"{person_name} WWII", openserp_url)
-    awards = []
-    seen = set()
-    for r in results:
-        url = r.get("url", "")
-        title = r.get("title", "")
-        if not url or url in seen:
-            continue
-        # Pre-filter: skip results that clearly aren't about this person
-        if not _name_initial_matches(person_name, title):
-            continue
-        if _verify_result(
-            title, f"Military service of {person_name} in WWII", grok_client
-        ):
-            awards.append({"url": url, "title": title, "source": "openserp"})
-            seen.add(url)
-            if len(awards) >= 5:
-                break
+    from src.utils.search_query_loader import render_search_queries
+
+    queries = render_search_queries("people", "web_results", name=person_name)
+    awards: List[Dict[str, str]] = []
+    seen: set = set()
+    for query in queries:
+        for r in _search_openserp(query, openserp_url):
+            url = r.get("url", "")
+            title = r.get("title", "")
+            if not url or url in seen:
+                continue
+            # Pre-filter: skip results that clearly aren't about this person
+            if not _name_initial_matches(person_name, title):
+                continue
+            if _verify_result(
+                title, f"Military service of {person_name} in WWII", grok_client
+            ):
+                awards.append({"url": url, "title": title, "source": "openserp"})
+                seen.add(url)
+                if len(awards) >= 5:
+                    break
+        if len(awards) >= 5:
+            break
 
     if awards:
         import json as _json
@@ -426,27 +469,43 @@ def _verify_and_apply(
 ) -> bool:
     """Verify OpenSERP results with Grok and apply to entity data."""
     changed = False
+    existing_image_urls = {
+        i.get("url") for i in (data.get("images") or []) if isinstance(i, dict)
+    }
+    existing_award_urls = {
+        a.get("url") for a in (data.get("military_awards") or []) if isinstance(a, dict)
+    }
     for r in candidate.get("image_results", []):
         url = r.get("url", "")
         title = r.get("title", "")
-        if not url or not _name_initial_matches(name, title):
+        if (
+            not url
+            or url in existing_image_urls
+            or not _name_initial_matches(name, title)
+        ):
             continue
         if _verify_result(title, f"Photo of {name} WWII", grok_client):
             data.setdefault("images", []).append(
                 {"url": url, "title": title, "source": "openserp"}
             )
+            existing_image_urls.add(url)
             changed = True
             if len(data.get("images", [])) >= max_images:
                 break
     for r in candidate.get("web_results", []):
         url = r.get("url", "")
         title = r.get("title", "")
-        if not url or not _name_initial_matches(name, title):
+        if (
+            not url
+            or url in existing_award_urls
+            or not _name_initial_matches(name, title)
+        ):
             continue
         if _verify_result(title, f"Military service of {name} in WWII", grok_client):
             data.setdefault("military_awards", []).append(
                 {"url": url, "title": title, "source": "openserp"}
             )
+            existing_award_urls.add(url)
             changed = True
             if len(data.get("military_awards", [])) >= max_web:
                 break
@@ -589,13 +648,11 @@ def enrich_people_with_openserp(
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
-        inject_metadata(data, entity="people")
-        c["file"].write_text(
-            json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
-        )
-        if changed:
-            enriched += 1
-            logger.info("  ✓ OpenSERP enriched: %s", name)
+        if _validate_before_write(data, "people"):
+            write_json_with_lock(c["file"], data, entity="people")
+            if changed:
+                enriched += 1
+                logger.info("  ✓ OpenSERP enriched: %s", name)
 
     logger.info("OpenSERP people enrichment: %d enriched", enriched)
     return enriched
@@ -646,8 +703,8 @@ def enrich_equipment_with_openserp(
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
-        inject_metadata(data, entity="equipment")
-        f.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+        if _validate_before_write(data, "equipment"):
+            write_json_with_lock(f, data, entity="equipment")
 
     logger.info("OpenSERP equipment enrichment: %d enriched", enriched)
     return enriched
