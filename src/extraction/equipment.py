@@ -2066,7 +2066,7 @@ def _extract_equipment_with_llm(
     """Extract equipment using LLM with retry logic."""
     from src.utils.prompt_loader import render_prompt
 
-    prompt = render_prompt("equipment", text=json.dumps(event_data, indent=2))
+    prompt = render_prompt("equipment", event_data=json.dumps(event_data, indent=2))
 
     for attempt in range(max_retries):
         try:

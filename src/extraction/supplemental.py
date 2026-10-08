@@ -152,19 +152,24 @@ def _sanitize_material(material: Dict[str, Any]) -> None:
 
 
 def _apply_defaults(material: Dict[str, Any]) -> None:
-    """Set required string fields to defaults if missing."""
+    """Set required string fields to defaults if missing. ID fields get a REAL ULID directly
+    (not the GENERATE_NEW_ULID sentinel) because this record is validated without a guaranteed
+    generate_ulids pass afterward — an empty string or the literal sentinel both fail the
+    strict ULID pattern."""
+    import ulid
+
     defaults = {
-        "MaterialID": "",
-        "EventID": "",
-        "Sub-eventID": "",
-        "content_class": "document_reference",
-        "reference_type": "bibliography",
-        "verbatim_reference": "",
-        "availability": "unknown",
+        "MaterialID": lambda: str(ulid.new()),
+        "EventID": lambda: str(ulid.new()),
+        "Sub-eventID": lambda: str(ulid.new()),
+        "content_class": lambda: "document_reference",
+        "reference_type": lambda: "bibliography",
+        "verbatim_reference": lambda: "",
+        "availability": lambda: "unknown",
     }
-    for key, default in defaults.items():
+    for key, make_default in defaults.items():
         if material.get(key) is None:
-            material[key] = default
+            material[key] = make_default()
 
 
 def _normalize_enums(material: Dict[str, Any]) -> None:
@@ -226,16 +231,19 @@ def sanitize_supplemental_data(data: Dict[str, Any]) -> Dict[str, Any]:
     if "Supplemental_Materials" in data and "Supplemental_Material" not in data:
         data["Supplemental_Material"] = data.pop("Supplemental_Materials")
 
-    # Event-level defaults
+    # Event-level defaults. ID fields get a REAL ULID — this sanitize pass runs AFTER
+    # generate_ulids(), so a GENERATE_NEW_ULID sentinel here would never be resolved.
+    import ulid
+
     defaults = {
-        "Sub-event_Name": "",
-        "Event_Name": "",
-        "EventID": "",
-        "Sub-eventID": "",
+        "Sub-event_Name": lambda: "",
+        "Event_Name": lambda: "",
+        "EventID": lambda: str(ulid.new()),
+        "Sub-eventID": lambda: str(ulid.new()),
     }
-    for key, default in defaults.items():
+    for key, make_default in defaults.items():
         if data.get(key) is None:
-            data[key] = default
+            data[key] = make_default()
 
     # Sanitize each material
     for material in data.get("Supplemental_Material", []):

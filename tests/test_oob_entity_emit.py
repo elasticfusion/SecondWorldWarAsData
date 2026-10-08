@@ -25,7 +25,7 @@ def _people_dir(tmp_path: Path) -> Path:
     (people / fname).write_text(
         json.dumps(
             {
-                "PersonID": "01HZZHUEBNER1AAAAAAAAAAAAA",
+                "PersonID": "01HZZHVEBNER1AAAAAAAAAAAAA",
                 "name": "Clarence R Huebner",
                 "event_mentions": [],
                 "biographical_profile": {"nationality": "USA", "ranks": []},
@@ -77,7 +77,7 @@ def test_exact_merges_into_existing_no_duplicate(tmp_path: Path) -> None:
     link = _link(
         "Clarence R Huebner",
         MATCH_EXACT,
-        person_id="01HZZHUEBNER1AAAAAAAAAAAAA",
+        person_id="01HZZHVEBNER1AAAAAAAAAAAAA",
         matched_name="Clarence R Huebner",
         confidence=0.9,
     )
@@ -99,7 +99,7 @@ def test_exact_merges_into_existing_no_duplicate(tmp_path: Path) -> None:
     sources = data["biographical_profile"]["biography_sources"]
     assert any(s["source"].startswith("OOB: 1st_infantry.md") for s in sources)
     # Existing PersonID is preserved (merge, not replace).
-    assert data["PersonID"] == "01HZZHUEBNER1AAAAAAAAAAAAA"
+    assert data["PersonID"] == "01HZZHVEBNER1AAAAAAAAAAAAA"
 
 
 # --- fuzzy -> mint new, flagged, no silent merge --------------------------
@@ -110,7 +110,7 @@ def test_fuzzy_mints_new_person_for_review(tmp_path: Path) -> None:
     link = _link(
         "Clarence Huebner",  # fuzzy candidate for the existing person
         MATCH_FUZZY,
-        person_id="01HZZHUEBNER1AAAAAAAAAAAAA",
+        person_id="01HZZHVEBNER1AAAAAAAAAAAAA",
         matched_name="Clarence R Huebner",
         confidence=0.92,
     )
@@ -124,7 +124,7 @@ def test_fuzzy_mints_new_person_for_review(tmp_path: Path) -> None:
     new_file = next(f for f in files if "01HZZHUEBNER1" not in f)
     data = json.loads((people / new_file).read_text(encoding="utf-8"))
     # New minted PersonID != the fuzzy-candidate's id (dedup will unify later).
-    assert data["PersonID"] != "01HZZHUEBNER1AAAAAAAAAAAAA"
+    assert data["PersonID"] != "01HZZHVEBNER1AAAAAAAAAAAAA"
     assert "fuzzy candidate" in data["oob_convergence_note"].lower()
 
 
@@ -169,7 +169,7 @@ def test_exact_merge_is_idempotent(tmp_path: Path) -> None:
     link = _link(
         "Clarence R Huebner",
         MATCH_EXACT,
-        person_id="01HZZHUEBNER1AAAAAAAAAAAAA",
+        person_id="01HZZHVEBNER1AAAAAAAAAAAAA",
         matched_name="Clarence R Huebner",
         confidence=0.9,
     )

@@ -95,8 +95,106 @@ _REQUIRED_FIELDS: Dict[str, list] = {
 }
 
 
-def _validate_entity(filepath: Path, data: Dict[str, Any]) -> None:
-    """Validate required fields before writing. Logs warning on invalid data."""
+def _repair_empty_ulids(data: Any) -> None:
+    """Recursively replace EMPTY-STRING values on ``*ID``/``*_id`` keys with a fresh ULID,
+    in place. Only empty strings are touched — never a non-empty value (so real/merged IDs are
+    preserved) and never ``None`` (nullable fields keep their null). This repairs exactly the
+    empty-ULID write bug without the merge-breaking side effect of regenerating malformed IDs.
+    """
+    import ulid
+
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if (
+                (key.endswith("ID") or key.endswith("_id"))
+                and isinstance(value, str)
+                and value == ""
+            ):
+                data[key] = str(ulid.new())
+            elif isinstance(value, (dict, list)):
+                _repair_empty_ulids(value)
+    elif isinstance(data, list):
+        for item in data:
+            _repair_empty_ulids(item)
+
+
+def _validate_entity(filepath: Path, data: Dict[str, Any]) -> bool:
+    """Central write-time guard. Returns True if the write should proceed.
+
+    Resolves the entity from the output path, repairs empty/None/invalid ULID fields, then
+    jsonschema-validates against the enforced schema. On a genuine schema violation it LOGS and
+    returns False (BLOCK the write — do not persist a schema-invalid record). Fail-safe: returns
+    True when the entity/schema/validator is unavailable, or when the record is a
+    non-entity file (index/report/metadata). Opt-out via WWII_WRITE_VALIDATION=off (returns
+    True without checking) so the guard can never silently wedge the pipeline.
+    """
+    import os
+
+    # Skip non-entity files (metadata, indexes, reports, tracking)
+    if filepath.name in (
+        "index.json",
+        "duplicate_report.json",
+        "not_duplicates.json",
+        "not_people.json",
+        "not_related.json",
+        "related_groups_report.json",
+    ) or filepath.name.startswith("."):
+        return True
+
+    if os.environ.get("WWII_WRITE_VALIDATION", "on").lower() == "off":
+        return True
+
+    entity_type = filepath.parent.name
+    # Repair ONLY empty-string ULID fields (the actual bug class) in place before validating.
+    # We deliberately do NOT regenerate non-empty-but-malformed IDs here: on a merge/update
+    # that would silently rewrite a real, already-persisted ID and orphan cross-references.
+    # (Explicit full ULID repair still lives in validate_and_write_json for callers that want
+    # it.)
+    try:
+        _repair_empty_ulids(data)
+    except Exception:  # noqa: BLE001 - repair is best-effort
+        pass
+
+    # Resolve the enforced schema for this entity (fail-safe if not found).
+    try:
+        from src.schemas.entity_registry import ENTITY_REGISTRY, load_schema
+
+        spec = next((s for s in ENTITY_REGISTRY if s.name == entity_type), None)
+        if spec is None:
+            # Not a schema-enforced entity dir -> fall back to the old required-field warn.
+            required = _REQUIRED_FIELDS.get(entity_type)
+            if required:
+                missing = [f for f in required if not data.get(f)]
+                if missing:
+                    logger.warning(
+                        "Entity validation: %s missing required fields %s",
+                        filepath.name,
+                        missing,
+                    )
+            return True
+        schema = load_schema(spec)
+    except Exception:  # noqa: BLE001 - registry/schema unavailable -> allow write
+        return True
+
+    import jsonschema
+
+    try:
+        jsonschema.validate(data, schema)
+        return True
+    except jsonschema.ValidationError as e:
+        logger.error(
+            "BLOCKED schema-invalid %s write (%s): %s",
+            entity_type,
+            filepath.name,
+            e.message,
+        )
+        return False
+    except Exception:  # noqa: BLE001 - validator error -> fail-safe allow
+        return True
+
+
+def _legacy_required_check(filepath: Path, data: Dict[str, Any]) -> None:
+    """Deprecated: superseded by the schema-aware _validate_entity guard."""
     # Skip non-entity files (metadata, indexes, reports, tracking)
     if filepath.name in (
         "index.json",
@@ -133,7 +231,9 @@ def write_json_with_lock(
     from src.schemas import inject_metadata
 
     inject_metadata(data, entity=entity)
-    _validate_entity(filepath, data)
+    if not _validate_entity(filepath, data):
+        # Schema-invalid record — do NOT persist it (guard logged the reason).
+        return
     filepath.parent.mkdir(parents=True, exist_ok=True)
 
     # Disk space check (local mode only — skip in /tmp/pipeline ECS workdir)

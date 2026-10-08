@@ -162,7 +162,18 @@ def _batch_extract_casualties(
 
     # Build entity context with name:ID pairs for cross-referencing
     def _format_index(label, index, limit=50):
-        items = [f"{name}: {eid}" for name, eid in list(index.items())[:limit]]
+        # An index may be a {name: id} dict OR a list of records; normalize to pairs.
+        if isinstance(index, dict):
+            pairs = list(index.items())
+        elif isinstance(index, list):
+            pairs = [
+                (r.get("name") or r.get("current_name") or r.get("group_name") or "", r)
+                for r in index
+                if isinstance(r, dict)
+            ]
+        else:
+            pairs = []
+        items = [f"{name}: {eid}" for name, eid in pairs[:limit]]
         if not items:
             return ""
         return f"  {label}:\n    " + "\n    ".join(items) + "\n"
@@ -498,7 +509,6 @@ def _build_casualty(
             else "unknown"
         ),
         "description": casualty_data.get("description", ""),
-        "event_context": {"EventID": event_id, "Sub-eventID": sub_event_id},
         "source": {
             "EventID": event_id,
             "Sub-eventID": sub_event_id,
@@ -507,6 +517,14 @@ def _build_casualty(
             "paragraph_number": paragraph_number,
         },
     }
+
+    # event_context.EventID is a NON-nullable ULID in the schema, so only attach event_context
+    # when we actually have a real event ULID (it is an optional top-level field).
+    if event_id:
+        casualty["event_context"] = {
+            "EventID": event_id,
+            "Sub-eventID": sub_event_id or None,
+        }
 
     if "count" in casualty_data:
         casualty["count"] = _normalize_counts(casualty_data["count"])
