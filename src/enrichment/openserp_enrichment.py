@@ -770,3 +770,121 @@ def enrich_source_sections_with_openserp(
 
     logger.info("OpenSERP source_section enrichment: %d enriched", enriched)
     return enriched
+
+
+def _group_name_matches(group_name: str, result_title: str) -> bool:
+    """Pre-filter for unit results: the (often numeric) unit designation must appear in the
+    title. Units are highly ambiguous, so this is a coarse guard before Grok verification.
+    """
+    if not group_name:
+        return True
+    name_low = group_name.lower()
+    title_low = result_title.lower()
+    # Require the longest significant token (usually the ordinal/arm, e.g. "panzer",
+    # "airborne", or the number) to be present.
+    tokens = [t for t in name_low.replace("-", " ").split() if len(t) > 2]
+    if not tokens:
+        return name_low in title_low
+    return any(t in title_low for t in tokens)
+
+
+def _group_openserp_category(
+    group_name: str,
+    nationality: str,
+    category: str,
+    openserp_url: str,
+    grok_client: Any,
+    max_results: int,
+) -> List[Dict[str, str]]:
+    """Run one people_groups.yaml query category (images|web_results|veterans_association)."""
+    from src.utils.search_query_loader import render_search_queries
+
+    queries = render_search_queries(
+        "people_groups", category, name=group_name, nationality=nationality
+    )
+    out: List[Dict[str, str]] = []
+    seen: set = set()
+    for query in queries:
+        for r in _search_openserp(query, openserp_url):
+            url = r.get("url", "")
+            title = r.get("title", "")
+            if not url or url in seen or not _group_name_matches(group_name, title):
+                continue
+            if _verify_result(
+                title, f"{group_name} ({nationality}) in WWII", grok_client
+            ):
+                out.append({"url": url, "title": title, "source": "openserp"})
+                seen.add(url)
+                if len(out) >= max_results:
+                    return out
+    return out
+
+
+def enrich_groups_with_openserp(
+    groups_dir: Path,
+    openserp_url: str,
+    grok_client: Any = None,
+    max_items: Optional[int] = None,
+) -> int:
+    """Add images, unit-history web results, and veterans-association sites to people_groups
+    records. Queries are nationality-disambiguated and WWII-scoped (people_groups.yaml), so a
+    same-numbered unit from another conflict/army is not matched. Native write, gated on
+    openserp_searched (90-day), deduped. Returns count enriched."""
+    reset_circuit()
+    if not _openserp_reachable(openserp_url):
+        logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
+        return 0
+
+    enriched = 0
+    for f in sorted(groups_dir.glob("*.json")):
+        if f.name in SKIP_FILES:
+            continue
+        if max_items and enriched >= max_items:
+            break
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+
+        name = data.get("group_name", "")
+        if not name or len(name) < 3:
+            continue
+
+        if data.get("openserp_searched"):
+            import time as _time
+
+            searched_at = data.get("openserp_searched_at", 0)
+            if searched_at and (_time.time() - searched_at) < 90 * 86400:
+                continue
+
+        nationality = data.get("nationality") or ""
+        changed = False
+        for category, field in (
+            ("images", "images"),
+            ("web_results", "web_results"),
+            ("veterans_association", "veterans_associations"),
+        ):
+            results = _group_openserp_category(
+                name, nationality, category, openserp_url, grok_client, max_results=3
+            )
+            if not results:
+                continue
+            existing = data.get(field) or []
+            existing_urls = {r.get("url") for r in existing if isinstance(r, dict)}
+            added = [r for r in results if r.get("url") not in existing_urls]
+            if added:
+                data[field] = existing + added
+                changed = True
+
+        data["openserp_searched"] = True
+        import time as _time
+
+        data["openserp_searched_at"] = int(_time.time())
+        if _validate_before_write(data, "people_groups"):
+            write_json_with_lock(f, data, entity="people_groups")
+        if changed:
+            enriched += 1
+            logger.info("  ✓ OpenSERP enriched group: %s", name)
+
+    logger.info("OpenSERP people_groups enrichment: %d enriched", enriched)
+    return enriched

@@ -39,7 +39,7 @@ EXPECTED = {
     "dates": ("2.24", "28553959a617e5e4"),
     "places": ("2.25", "6330e6a3a4166429"),
     "people": ("2.24", "c73f1d99c5c80b61"),
-    "people_groups": ("2.26", "ee97ce15da9641ce"),
+    "people_groups": ("2.27", "01528b003ca170ba"),
     "equipment": ("2.25", "80ec735d8a6d009b"),
     "weather": ("2.24", "0f3460daa0d8519d"),
     "logistics": ("2.24", "0ca708c99ab0dc40"),

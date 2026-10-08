@@ -356,6 +356,7 @@ def main():
         _update_lock_status("step 5/6: enriching openserp")
         from src.enrichment.openserp_enrichment import (
             enrich_equipment_with_openserp,
+            enrich_groups_with_openserp,
             enrich_people_with_openserp,
             enrich_source_sections_with_openserp,
         )
@@ -373,6 +374,15 @@ def main():
             "openserp_equipment",
             lambda: enrich_equipment_with_openserp(
                 args.output_dir / "equipment", openserp_url, grok_client, args.max_items
+            ),
+        )
+        total_enriched += _run_step(
+            "openserp_groups",
+            lambda: enrich_groups_with_openserp(
+                args.output_dir / "people_groups",
+                openserp_url,
+                grok_client,
+                args.max_items,
             ),
         )
         total_enriched += _run_step(
