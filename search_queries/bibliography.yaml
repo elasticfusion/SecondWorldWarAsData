@@ -10,3 +10,7 @@ archive_org:
 openserp:
   - '"{title}" {author} full text'
   - '"{title}" pdf download'
+  - '"{title}" {author} HathiTrust'
+  - '"{title}" site:archive.org'
+  - '"{title}" {author} university library digitized'
+  - '"{title}" Google Books'
