@@ -39,9 +39,9 @@ from typing import Any, Dict, Optional
 ENTITY_SCHEMA_VERSIONS: Dict[str, str] = {
     "events": "2.24",
     "dates": "2.24",
-    "places": "2.25",
+    "places": "2.26",
     "people": "2.24",
-    "people_groups": "2.26",
+    "people_groups": "2.27",
     "equipment": "2.25",
     "weather": "2.24",
     "logistics": "2.24",
@@ -50,7 +50,7 @@ ENTITY_SCHEMA_VERSIONS: Dict[str, str] = {
     "map_features": "2.24",
     "bibliography": "2.24",
     "images": "2.25",
-    "source_section": "2.25",
+    "source_section": "2.26",
 }
 
 

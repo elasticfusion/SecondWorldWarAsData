@@ -52,8 +52,9 @@ class TestOpenSerpReachable:
 
 
 class TestVerifyResult:
-    def test_no_grok_client_returns_true(self):
-        assert _verify_result("any title", "any context", None) is True
+    def test_no_grok_client_fails_closed(self):
+        # Hardened: with no verifier we cannot confirm relevance -> reject (fail-closed).
+        assert _verify_result("any title", "any context", None) is False
 
     @patch("src.utils.search_cache.get_cached", return_value="YES")
     def test_cached_yes(self, _):
@@ -62,6 +63,13 @@ class TestVerifyResult:
     @patch("src.utils.search_cache.get_cached", return_value="NO")
     def test_cached_no(self, _):
         assert _verify_result("title", "context", Mock()) is False
+
+    @patch("src.utils.search_cache.get_cached", return_value=None)
+    def test_grok_error_fails_closed(self, _):
+        client = Mock()
+        client.chat_completion.side_effect = RuntimeError("boom")
+        # Hardened: a Grok error must reject (fail-closed), not accept.
+        assert _verify_result("title", "context", client) is False
 
 
 class TestSearchQueryLoader:

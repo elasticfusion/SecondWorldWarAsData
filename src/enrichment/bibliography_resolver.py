@@ -438,19 +438,40 @@ def _search_openserp_archive(
     try:
         import time
 
-        time.sleep(5)
-        session = get_session()
-        resp = session.get(
-            f"{openserp_url}/mega/search",
-            params={
-                "text": f"{ref} digitized document",
-                "limit": "5",
-                "mode": "any",
-                "engines": "google,bing,duckduckgo",
-            },
-            timeout=15,
+        from src.utils.search_query_loader import render_search_queries
+
+        # Broadened beyond a single 'digitized document' query: iterate repository-targeted
+        # templates (HathiTrust, Internet Archive, university libraries, Google Books, general
+        # full-text/pdf) so non-NARA digitized copies are found too.
+        title = ""
+        author = ""
+        if entry:
+            citation = entry.get("citation") or {}
+            title = citation.get("title") or ref
+            author = citation.get("author") or ""
+        if not title:
+            title = ref
+        queries = render_search_queries(
+            "bibliography", "openserp", title=title, author=author
         )
-        if resp.status_code == 200:
+        if not queries:
+            queries = [f"{ref} digitized document"]
+
+        session = get_session()
+        for query in queries:
+            time.sleep(5)
+            resp = session.get(
+                f"{openserp_url}/mega/search",
+                params={
+                    "text": query,
+                    "limit": "5",
+                    "mode": "any",
+                    "engines": "google,bing,duckduckgo",
+                },
+                timeout=15,
+            )
+            if resp.status_code != 200:
+                continue
             data = resp.json()
             results = data.get("results", [])
             for r in results:
@@ -464,7 +485,7 @@ def _search_openserp_archive(
                     logger.debug(
                         "  ✗ OpenSERP rejected: '%s' for query '%s'",
                         result_title[:60],
-                        ref[:60],
+                        query[:60],
                     )
                     continue
                 cache_result("openserp_archive", ref, url)

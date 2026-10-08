@@ -1,0 +1,18 @@
+# Search query templates for people_groups (unit/formation) enrichment (OpenSERP)
+# Variables: {name}, {nationality}
+# NOTE: every query includes "WWII" / "World War II" so results are not about a
+# same-numbered unit from a different conflict (Korea, Vietnam, etc.).
+
+images:
+  - '"{name}" {nationality} WWII insignia'
+  - '"{name}" {nationality} World War II photograph'
+  - '"{name}" WWII unit patch'
+
+web_results:
+  - '"{name}" {nationality} WWII unit history'
+  - '"{name}" World War II operations {nationality}'
+
+veterans_association:
+  - '"{name}" WWII veterans association'
+  - '"{name}" World War II veterans association website'
+  - '"{name}" WWII reunion association'

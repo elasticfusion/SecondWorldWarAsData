@@ -45,6 +45,17 @@ GROUPS_OUTPUT_SCHEMA = {
         "wikipedia_extract": make_nullable("string"),
         "wikipedia_checked_at": make_nullable("string"),
         "grokipedia_url": make_nullable("string"),
+        # OpenSERP (Phase 3) web results + veterans-association sites for the unit, and gate.
+        "web_results": {
+            "type": ["array", "null"],
+            "items": {"type": "object", "additionalProperties": True},
+        },
+        "veterans_associations": {
+            "type": ["array", "null"],
+            "items": {"type": "object", "additionalProperties": True},
+        },
+        "openserp_searched": {"type": ["boolean", "null"]},
+        "openserp_searched_at": {"type": ["number", "null"]},
         "event_mentions": {
             "type": ["array", "null"],
             "items": {
