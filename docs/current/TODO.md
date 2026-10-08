@@ -48,7 +48,18 @@ build RAG/search*. Current ordered priority:
    code-quality refactors.**
 
 ### Backlog items added 2026-10-08 (AWS Phase-3 E2E findings)
-- **[DONE 2026-10-08 / PARTIAL] OpenSERP Chromium --no-sandbox fix.** Root-caused the empty
+- **[DONE 2026-10-08] OpenSERP bumped v0.6.0-15 -> v0.8.12 + no-sandbox -> search WORKS.** The
+  version bump RESOLVED the anti-bot "Found 0 results": v0.8.12's improved scraping now returns
+  real Google results (Found 111/203/1.6M...), and end-to-end OpenSERP enrichment is validated in
+  AWS — Grok fail-closed verify correctly accepted "Maj Gen Allen W. Jones, 106th Infantry" +
+  rejected Clara Barton/obituary false-positives; "OpenSERP enriched: Alan W. Jones". The bump
+  also cleared the stale Go crypto/tls CVEs. Submodule re-pinned to v0.8.12 + a local no-sandbox
+  patch; task-def uses `serve --host --port` (no --raw). REMAINING: (a) OpenSERP BASE image
+  (chromedp/headless-shell@sha256 pin) has ~51 fixable OS-pkg HIGH/CRITICAL (util-linux etc.) ->
+  refresh the base-image digest so Trivy gating passes on deploy; (b) occasional per-engine
+  blocks (Yandex) + per-search browser latency can still approach the pipeline's 30s request
+  timeout -> consider raising it / proxy. 
+- **[SUPERSEDED by the v0.8.12 bump above] OpenSERP Chromium --no-sandbox fix.** Root-caused the empty
   results: (1) task ran `--raw` (raw HTTP engine, blocked by search engines, no image search) —
   removed, registered dev-wwii-openserp:5 (browser mode); (2) browser mode then FATAL-crashed
   (Chromium zygote sandbox) in Fargate — FIXED by adding .Set("no-sandbox") to the rod launcher
