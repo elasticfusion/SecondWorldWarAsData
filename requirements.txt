@@ -16,3 +16,7 @@ pymupdf4llm==1.27.2.2
 pillow==12.3.0
 imagehash==4.3.2
 boto3==1.42.91
+# Headless-browser rendering for JS-rendered sources (Grokipedia SPA). After install, the
+# chromium browser must be fetched once: `python -m playwright install chromium`. Enrichment
+# degrades gracefully to URL-only if playwright/chromium is unavailable.
+playwright==1.60.0
