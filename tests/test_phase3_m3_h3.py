@@ -26,7 +26,6 @@ def test_place_transient_error_not_stamped_notfound(tmp_path, monkeypatch):
     monkeypatch.setattr(
         ep, "_try_grok", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("503"))
     )
-    monkeypatch.setattr(ep, "_search_wikipedia", lambda *a, **k: None)
     monkeypatch.setattr(ep, "_fetch_place_wikipedia_full", lambda *a, **k: None)
     monkeypatch.setattr(ep, "_search_grokipedia_place", lambda *a, **k: None)
 
@@ -45,7 +44,6 @@ def test_place_clean_negative_is_stamped_notfound(tmp_path, monkeypatch):
     pf.write_text(json.dumps({"PlaceID": "02", "current_name": "Nowhere"}), "utf-8")
     # No error anywhere, but nothing found -> clean negative.
     monkeypatch.setattr(ep, "_try_grok", lambda *a, **k: None)
-    monkeypatch.setattr(ep, "_search_wikipedia", lambda *a, **k: None)
     monkeypatch.setattr(ep, "_fetch_place_wikipedia_full", lambda *a, **k: None)
     monkeypatch.setattr(ep, "_search_grokipedia_place", lambda *a, **k: None)
 

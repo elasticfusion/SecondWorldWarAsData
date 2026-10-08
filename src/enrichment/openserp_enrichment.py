@@ -493,17 +493,16 @@ def _person_query_terms(data: Dict) -> str:
 
 def _collect_person_candidates(f, name: str, data: Dict, openserp_url: str) -> Dict:
     """Build the OpenSERP candidate bundle for one person: a portrait-image search
-    (skipped if Wikipedia already has a portrait) + a web search (awards/bio/academic),
-    both augmented with People-JSON facts and filtered of award/ibiblio domains."""
+    (skipped if a Wikipedia portrait was already captured in Phase 2) + a web search
+    (awards/bio/academic), both augmented with People-JSON facts and filtered of
+    award/ibiblio domains."""
     person_candidates: Dict = {"file": f, "name": name, "data": data}
     facts = _person_query_terms(data)
 
-    from src.extraction.enrich_biographies import get_wikipedia_image
-
-    wiki_image = get_wikipedia_image(name)
-    if wiki_image:
-        person_candidates["wiki_image"] = wiki_image
-    elif not data.get("images"):
+    # Phase 2 already captures the Wikipedia portrait (people enrichment); do NOT re-fetch
+    # Wikipedia here (Phase 3 is OpenSERP-only). Only run the OpenSERP image search when the
+    # record has no image yet.
+    if not data.get("images"):
         hits = _search_openserp(
             f"{name} {facts} WWII portrait photo".replace("  ", " "), openserp_url
         )

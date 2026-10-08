@@ -59,19 +59,24 @@ _CONTINENT_KEYWORDS = {
 
 
 def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
-    """Fetch Wikipedia URL + image for a place."""
+    """Fetch Wikipedia URL + image + structured hierarchy for a place in ONE request.
+
+    Requests categories alongside the extract/image so the Phase-2 place Wikipedia fetch
+    also yields the {country, continent, region} hierarchy — Phase 3 no longer makes a
+    second Wikipedia call for that."""
     try:
         resp = requests.get(
             _WIKI_API,
-            params={
+            params={  # type: ignore[arg-type]
                 "action": "query",
                 "format": "json",
                 "titles": name,
-                "prop": "extracts|pageimages",
+                "prop": "extracts|pageimages|categories",
                 "exintro": "True",
                 "explaintext": "True",
                 "redirects": "1",
                 "piprop": "original",
+                "cllimit": 20,
             },
             headers=_WIKI_HEADERS,
             timeout=15,
@@ -92,6 +97,9 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
                 "wikipedia_url": f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}",
                 "image": img_url,
                 "license": license_info or "unknown",
+                # Structured hierarchy parsed from the SAME fetch (categories) — this is
+                # what Phase 3 used to make a second Wikipedia call for.
+                "hierarchy": _parse_wiki_page(page_data),
             }
     except Exception:
         pass
@@ -199,6 +207,11 @@ def enrich_place_from_wikipedia(place: dict) -> bool:
                 "source": "wikipedia",
             },
         )
+    # Structured hierarchy came from the SAME fetch (categories) — apply it here so Phase 3
+    # no longer needs a second Wikipedia call for it.
+    hierarchy = wiki_data.get("hierarchy")
+    if hierarchy:
+        _merge_hierarchy(place, hierarchy)
     logger.debug("Wikipedia enriched place %s → %s", name, wiki_data["wikipedia_url"])
     return True
 
@@ -235,34 +248,6 @@ def _search_grokipedia_place(name: str) -> Optional[str]:
         pass
     cache_result("grokipedia_place", name, None)
     return None
-
-
-def _search_wikipedia(name: str, timeout: int = 15) -> Optional[dict]:
-    """Query Wikipedia API for place info. Returns {country, continent, region} or None."""
-    try:
-        resp = requests.get(
-            _WIKI_API,
-            params={  # type: ignore[arg-type]
-                "action": "query",
-                "format": "json",
-                "titles": name,
-                "prop": "extracts|categories",
-                "exintro": True,
-                "explaintext": True,
-                "cllimit": 20,
-            },
-            headers=_WIKI_HEADERS,
-            timeout=timeout,
-        )
-        if resp.status_code != 200:
-            return None
-        pages = resp.json().get("query", {}).get("pages", {})
-        page: dict = next(iter(pages.values()), {})
-        if page.get("missing") is not None:
-            return None
-        return _parse_wiki_page(page)
-    except (requests.RequestException, StopIteration):
-        return None
 
 
 def _parse_wiki_page(page: dict) -> dict:
@@ -420,15 +405,11 @@ def _enrich_place_data(data, name, grok_client):
         enrichment = None
         errored = True
     changed = _apply_enrichment(data, enrichment) if enrichment else False
-    if _needs_enrichment(data):
-        wiki = _search_wikipedia(name)
-        if wiki:
-            changed = _apply_enrichment(data, wiki) or changed
-    # Descriptive Wikipedia (wikipedia_url + image) AND the Grokipedia descriptive lookup
-    # moved to PHASE 2 (src/extraction/places.py → enrich_place_from_wikipedia /
-    # enrich_place_from_grokipedia). Phase 2 owns ALL Grokipedia/Wikipedia enrichment
-    # (text + images); Phase 3 keeps ONLY hierarchy/names (the Grok + category parsing
-    # above) + geocoding (a separate step).
+    # Wikipedia hierarchy parsing MOVED TO PHASE 2 (enrich_place_from_wikipedia parses the
+    # {country, continent, region} hierarchy from the SAME Wikipedia fetch that gets the
+    # descriptive URL/image). Phase 3 no longer makes a second Wikipedia call — it keeps
+    # ONLY the Grok structured-facts enrichment above + geocoding (a separate step). Phase 3
+    # is now Grokipedia/Wikipedia-free.
     return changed, errored
 
 
