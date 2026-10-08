@@ -13,7 +13,25 @@ build RAG/search*. Current ordered priority:
    AES256 + DenyInsecureTransport; pandoc `--sandbox` image pushed; AV scanning
    deployed + signatures seeded + EICAR-validated (`AV_SCAN_ENABLED=true`); EBS
    encryption (account default + launch-template). No Critical items remain open.
-1. **[HIGH] Re-OCR the off-by-one corpus** — data-correctness (St. Vith/Boyer +
+1. **[HIGH] Fix idle-infra teardown + add an hourly backstop reaper (cost leak found
+   2026-10-08).** Root cause observed live: `dev-wwii-openserp` ECS **service** was pinned
+   `desiredCount=1` and ran 8 days (since 2026-09-30), holding a Fargate task + **1 NAT gateway**
+   up idle. `openserp-manager` runs every ~10 min but logs *"Active: 1 running tasks — skipping
+   teardown"* — its predicate counts the service's OWN idle task as "active work," so it can
+   never scale to 0, and `nat-manager` can't reap NAT while OpenSERP is up. Two-part fix:
+   (a) **Root cause** — openserp-manager must scale OpenSERP→0 when no *pipeline/phase* task has
+   needed it for N minutes, not refuse because its own service task exists; (b) **Backstop
+   watchdog** — a **cron'd Lambda running HOURLY** that checks pipeline progress each run
+   (progress = DynamoDB manifest mtime / S3 output-object count / heartbeat marker — NOT just
+   "a task exists") and stores the observation. Shutdown fires only on **TWO CONSECUTIVE
+   no-progress hourly observations** (debounced two-strikes ≈ 2h confirmed stall) — one
+   transient slow hour does NOT trigger teardown. On the second strike: force-scale idle
+   OpenSERP/tasks to zero + alert via the phase2-complete SNS topic, then reset the strike
+   counter. Defense-in-depth so a future manager bug can't silently burn money for days. Keys
+   off PROGRESS not wall-clock, so a legitimately long batch that keeps advancing is never
+   killed.
+   IMMEDIATE: manually scale `dev-wwii-openserp` to desiredCount=0 to stop the current leak.
+2. **[HIGH] Re-OCR the off-by-one corpus** — data-correctness (St. Vith/Boyer +
    ETO OOB markdown are currently shifted). Wrong data feeding extraction; now the
    top real item. Data op (re-run OCR; auto-triggers on re-upload).
 2. **[HIGH] Deploy + wire OCR markdown-review UI** — now **UNBLOCKED** (stack
@@ -30,6 +48,17 @@ build RAG/search*. Current ordered priority:
    code-quality refactors.**
 
 ### Backlog item added 2026-10-07
+- **[MED] Write guard vs. BREAKING schema migrations (schema is never fully stable).** The
+  central write guard (file_lock.write_json_with_lock) validates a record's SHAPE against the
+  entity's *current* enforced schema and is version-agnostic. This is correct for writes +
+  additive changes (old records still validate). But during a BREAKING migration, an existing
+  record written under an older version that is then re-written (merge/update) could be BLOCKED
+  by the guard even though the read-side `schema_contract.register_upgrade` path would upgrade
+  it. The guard does not consult the upgrade registry. Mitigations today: additive-only is the
+  norm; `WWII_WRITE_VALIDATION=off` escape hatch. Future: have the guard defer to
+  register_upgrade (or validate against the record's declared `_schema_version` schema when it
+  is older-but-registered) so a breaking migration doesn't block in-flight re-writes. Low
+  frequency (breaking changes are rare + deliberate) but real.
 - **~~[HIGH] Install Chromium in the Phase-2 container image~~ ✅ DONE 2026-10-08** — added
   `ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` + `RUN python3 -m playwright install --with-deps
   chromium` to the main `Dockerfile` (runtime stage, shared world-readable path). Validated: the
