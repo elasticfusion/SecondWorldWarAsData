@@ -47,6 +47,54 @@ build RAG/search*. Current ordered priority:
 7. **[LOW/REGRESSION] mypy --strict on new files; the 5 regression tests;
    code-quality refactors.**
 
+### Backlog items added 2026-10-08 (AWS Phase-3 E2E findings)
+- **[DONE 2026-10-08] OpenSERP bumped v0.6.0-15 -> v0.8.12 + no-sandbox -> search WORKS.** The
+  version bump RESOLVED the anti-bot "Found 0 results": v0.8.12's improved scraping now returns
+  real Google results (Found 111/203/1.6M...), and end-to-end OpenSERP enrichment is validated in
+  AWS — Grok fail-closed verify correctly accepted "Maj Gen Allen W. Jones, 106th Infantry" +
+  rejected Clara Barton/obituary false-positives; "OpenSERP enriched: Alan W. Jones". The bump
+  also cleared the stale Go crypto/tls CVEs. Submodule re-pinned to v0.8.12 + a local no-sandbox
+  patch; task-def uses `serve --host --port` (no --raw). REMAINING: (a) OpenSERP BASE image
+  (chromedp/headless-shell@sha256 pin) has ~51 fixable OS-pkg HIGH/CRITICAL (util-linux etc.) ->
+  refresh the base-image digest so Trivy gating passes on deploy; (b) occasional per-engine
+  blocks (Yandex) + per-search browser latency can still approach the pipeline's 30s request
+  timeout -> consider raising it / proxy. 
+- **[SUPERSEDED by the v0.8.12 bump above] OpenSERP Chromium --no-sandbox fix.** Root-caused the empty
+  results: (1) task ran `--raw` (raw HTTP engine, blocked by search engines, no image search) —
+  removed, registered dev-wwii-openserp:5 (browser mode); (2) browser mode then FATAL-crashed
+  (Chromium zygote sandbox) in Fargate — FIXED by adding .Set("no-sandbox") to the rod launcher
+  in the openserp submodule (built, Trivy-flagged fixable Go CVEs [stale deps], pushed, redeployed,
+  verified: browser now launches + navigates google/bing/yandex, 0 FATAL). REMAINING (needs the
+  v0.8.12 version bump + proxy/captcha): engines return "Found 0 results" (anti-bot/consent-page
+  blocking the datacenter IP) + the per-search browser time can exceed the pipeline's 30s request
+  timeout -> breaker still opens. The submodule now carries a local patch -> fold into the version
+  bump. Also: Trivy gating would BLOCK the current openserp image (fixable Go crypto/tls CVEs) ->
+  version bump also resolves that.
+
+- **[HIGH] OpenSERP submodule is stale (v0.6.0-15 pinned vs upstream v0.8.12 / 78 commits
+  behind) + build script does not verify component versions.** OpenSERP scrapes live search
+  engines, so staleness likely contributes to empty results (markup/anti-bot drift). (a) Update
+  the `openserp` submodule to the latest release tag (v0.8.12) — CAREFUL: CLI/config changed
+  upstream (e.g. --log_level rename), so re-verify the task-def command (`serve --host --port`,
+  NO `--raw` — see the browser-mode fix) still matches; rebuild + Trivy-scan + push. (b) Make
+  `scripts/deploy_all.sh` (or a preflight) CHECK each vendored/submodule component (openserp,
+  chandra, paddle, clamav) against its upstream latest release and warn/fail if behind, so
+  components don't silently rot.
+
+
+- **[HIGH] OpenSERP returns empty results in AWS -> circuit breaker opens, 0 enriched.** A scoped
+  Phase-3 ECS run (BOOK_NAME=TheArdennesBattleOfTheBulge, --max-items 2) connected to live
+  OpenSERP (10.0.21.65:7001) and issued real queries (incl. the new multi-language place queries
+  "Welscheid"/"Winterspelt"/... confirmed working), but OpenSERP's /mega/search returned
+  empty/failed 5x consecutively -> breaker OPEN -> all searches skipped, 0 enriched. OpenSERP
+  connectivity is fine; its SEARCH BACKEND (real Google/Bing/DuckDuckGo scraping) is returning
+  nothing — likely rate-limited/blocked/misconfigured in the container, or needs search-engine
+  egress config. Diagnose OpenSERP container health + a direct /mega/search probe. (Geocoding +
+  the rest of Phase 3 worked: 2 attempted/2 geocoded, no BLOCKED writes.)
+- **[MED] Ad-hoc Phase-3 ECS task without BOOK_NAME does a FULL S3 entity-tree download**
+  (unbounded, ~13min+ stall before enrichment). Set BOOK_NAME to scope (confirmed: 700 files,
+  fast). Document that ad-hoc Phase-3 runs must set BOOK_NAME or use a manifest.
+
 ### Backlog item added 2026-10-07
 - **[MED] Write guard vs. BREAKING schema migrations (schema is never fully stable).** The
   central write guard (file_lock.write_json_with_lock) validates a record's SHAPE against the

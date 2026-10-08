@@ -1133,7 +1133,7 @@ Resources:
       ContainerDefinitions:
         - Name: openserp
           Image: !Ref OpenSerpImageUri
-          Command: ['serve', '--host', '0.0.0.0', '--port', '7001', '--raw']
+          Command: ['serve', '--host', '0.0.0.0', '--port', '7001']
           PortMappings:
             - ContainerPort: 7001
               Protocol: tcp
