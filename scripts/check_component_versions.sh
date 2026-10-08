@@ -64,12 +64,16 @@ else
 fi
 
 # --- 2. Dockerfile base-image pins vs current registry digest ---
-inspect_digest() {  # $1 = image:tag  -> prints current digest or empty
+inspect_digest() {  # $1 = image:tag  -> prints the PULLABLE manifest-list digest, or empty
+  # A `FROM image@sha256:...` pin uses the registry manifest-list (RepoDigest) digest — NOT a
+  # per-arch sub-manifest. skopeo gives it directly; otherwise pull + read RepoDigests (the
+  # pull is why this preflight needs registry access).
   if command -v skopeo &>/dev/null; then
-    skopeo inspect --format '{{.Digest}}' "docker://$1" 2>/dev/null && return 0
+    skopeo inspect --format '{{.Digest}}' "docker://$1" 2>/dev/null | grep -oE 'sha256:[a-f0-9]{64}' | head -1 && return 0
   fi
   local bin=docker; command -v docker &>/dev/null || bin=podman
-  "$bin" manifest inspect "$1" 2>/dev/null | grep -oE 'sha256:[a-f0-9]{64}' | head -1
+  "$bin" pull "$1" >/dev/null 2>&1 || return 0
+  "$bin" inspect "$1" --format '{{index .RepoDigests 0}}' 2>/dev/null | grep -oE 'sha256:[a-f0-9]{64}' | head -1
 }
 
 for df in Dockerfile Dockerfile.* openserp/Dockerfile; do
