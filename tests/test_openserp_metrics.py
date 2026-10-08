@@ -41,3 +41,29 @@ def test_reset_metrics():
     oe._metric("queries_issued", 5)
     oe.reset_metrics()
     assert oe.get_metrics()["queries_issued"] == 0
+
+
+def test_apply_path_counts_items_and_fetches(monkeypatch):
+    """The people apply path must feed items_added (image + award) and urls_fetched
+    (regression for the gap where enriched>0 but items_added/urls_fetched stayed 0)."""
+    oe.reset_metrics()
+    # Accept every verification; fetch returns a usable summary (counts a real fetch).
+    monkeypatch.setattr(oe, "_verify_result", lambda *a, **k: True)
+    monkeypatch.setattr(oe, "_summarize_url_page", lambda *a, **k: "summary text")
+    monkeypatch.setattr(oe, "_url_verdict_cached", lambda url: None)
+    monkeypatch.setattr(oe, "_cache_url_verdict", lambda *a, **k: None)
+    monkeypatch.setattr(oe, "_name_initial_matches", lambda *a, **k: True)
+    data: dict = {}
+    candidate = {
+        "image_results": [{"url": "http://img/1", "title": "John Doe"}],
+        "web_results": [
+            {"url": "http://bio/1", "title": "John Doe", "description": "x"}
+        ],
+    }
+    changed = oe._verify_and_apply(
+        candidate, data, "John Doe", grok_client=object(), max_images=5, max_web=5
+    )
+    assert changed is True
+    snap = oe.get_metrics()
+    assert snap["items_added"] == 2  # one image + one award
+    assert snap["urls_fetched"] == 1  # the award URL was actually fetched
