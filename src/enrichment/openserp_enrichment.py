@@ -45,8 +45,6 @@ def _validate_before_write(data: Dict, entity: str) -> bool:
         return True
 
 
-logger = logging.getLogger(__name__)
-
 # Circuit breaker: skip all OpenSERP searches after N consecutive failures
 _CIRCUIT_BREAKER_THRESHOLD = 5
 _consecutive_failures = 0
@@ -94,6 +92,22 @@ def _breaker_record_success() -> None:
 
 
 logger = logging.getLogger(__name__)
+
+
+def _render_queries(query_file: str, category: str, **kwargs) -> List[str]:
+    """Render search-query templates and squeeze whitespace, so an empty {facts} (or any empty
+    variable) collapses cleanly instead of leaving double spaces / a dangling literal.
+    """
+    import re as _re
+
+    from src.utils.search_query_loader import render_search_queries
+
+    out = []
+    for q in render_search_queries(query_file, category, **kwargs):
+        q = _re.sub(r"\{[a-z_]+\}", "", q)  # drop any unfilled placeholder
+        out.append(_re.sub(r"\s+", " ", q).strip())
+    return out
+
 
 SKIP_FILES = {
     "index.json",
@@ -397,11 +411,12 @@ def search_person_images(
     openserp_url: str,
     grok_client: Any = None,
     max_results: int = 3,
+    facts: str = "",
 ) -> List[Dict[str, str]]:
-    """Search for portrait images of a person."""
-    from src.utils.search_query_loader import render_search_queries
-
-    queries = render_search_queries("people", "portrait_images", name=person_name)
+    """Search for portrait images of a person (query sharpened with the person's own facts)."""
+    queries = _render_queries(
+        "people", "portrait_images", name=person_name, facts=facts
+    )
     images = []
     for query in queries:
         results = _search_openserp(query, openserp_url)
@@ -433,16 +448,17 @@ def search_equipment_images(
     max_results: int = 3,
     identifier: str = "",
     year: str = "",
+    facts: str = "",
 ) -> List[Dict[str, str]]:
-    """Search for photos of military equipment (uses search_queries/equipment.yaml)."""
-    from src.utils.search_query_loader import render_search_queries
-
-    queries = render_search_queries(
+    """Search for photos of military equipment (uses search_queries/equipment.yaml,
+    sharpened with the equipment's own facts: category + country_of_origin)."""
+    queries = _render_queries(
         "equipment",
         "images",
         name=equipment_name,
         identifier=identifier or equipment_name,
         year=year,
+        facts=facts,
     )
     images: List[Dict[str, str]] = []
     seen: set = set()
@@ -474,11 +490,12 @@ def search_academic_sources(
     openserp_url: str,
     grok_client: Any = None,
     max_results: int = 5,
+    facts: str = "",
 ) -> List[Dict[str, str]]:
     """Search for academic papers, oral histories, and media about a person."""
-    from src.utils.search_query_loader import render_search_queries as _rsq
-
-    queries = _rsq("people", "academic_sources", name=person_name)
+    queries = _render_queries(
+        "people", "academic_sources", name=person_name, facts=facts
+    )
     sources = []
     seen_urls = set()
     for query in queries:
@@ -543,6 +560,7 @@ def search_military_awards(
     person_name: str,
     openserp_url: str,
     grok_client: Any = None,
+    facts: str = "",
 ) -> List[Dict[str, str]]:
     """Search the web for military award citations and biographical data."""
     from src.utils.search_cache import cache_result, get_cached
@@ -555,9 +573,7 @@ def search_military_awards(
 
         return _json.loads(cached)
 
-    from src.utils.search_query_loader import render_search_queries
-
-    queries = render_search_queries("people", "web_results", name=person_name)
+    queries = _render_queries("people", "web_results", name=person_name, facts=facts)
     awards: List[Dict[str, str]] = []
     seen: set = set()
     for query in queries:
@@ -712,8 +728,8 @@ def _skip_result(url: str) -> bool:
 
 def _person_query_terms(data: Dict) -> str:
     """Build extra query terms from People-JSON facts to sharpen the OpenSERP search:
-    primary unit designation + nationality. Keeps the query specific without flooding
-    it (one unit, one nationality)."""
+    primary unit designation + rank + nationality. Keeps the query specific without flooding
+    it (one unit, one rank, one nationality)."""
     bp = data.get("biographical_profile") or {}
     terms: List[str] = []
     units = bp.get("units_served") or []
@@ -723,9 +739,26 @@ def _person_query_terms(data: Dict) -> str:
             if desig:
                 terms.append(str(desig))
                 break
+    rank = bp.get("rank") or data.get("rank")
+    if rank:
+        terms.append(str(rank))
     nat = bp.get("nationality") or data.get("nationality")
     if nat:
         terms.append(str(nat))
+    return " ".join(terms)
+
+
+def _equipment_query_terms(data: Dict) -> str:
+    """Build extra query terms from Equipment-JSON facts to sharpen the OpenSERP search:
+    category + country_of_origin (the technical_identifier is already a template variable).
+    Keeps it specific without flooding the query."""
+    terms: List[str] = []
+    cat = data.get("category")
+    if cat:
+        terms.append(str(cat))
+    origin = data.get("country_of_origin")
+    if origin:
+        terms.append(str(origin))
     return " ".join(terms)
 
 
@@ -739,21 +772,22 @@ def _collect_person_candidates(f, name: str, data: Dict, openserp_url: str) -> D
 
     # Phase 2 already captures the Wikipedia portrait (people enrichment); do NOT re-fetch
     # Wikipedia here (Phase 3 is OpenSERP-only). Only run the OpenSERP image search when the
-    # record has no image yet.
+    # record has no image yet. Queries come from people.yaml (facts-sharpened), unifying this
+    # path with search_person_images rather than a hardcoded query string.
     if not data.get("images"):
-        hits = _search_openserp(
-            f"{name} {facts} WWII portrait photo".replace("  ", " "), openserp_url
-        )
+        hits: List[Dict[str, str]] = []
+        for q in _render_queries("people", "portrait_images", name=name, facts=facts):
+            hits.extend(_search_openserp(q, openserp_url))
         person_candidates["image_results"] = [
             h for h in hits if not _skip_result(h.get("url", ""))
         ]
 
-    # Augment the web query with People-JSON facts (unit, nationality) for precision;
-    # skip award-domain + ibiblio hits (award sites sourced authoritatively).
+    # Web query from people.yaml web_results (facts-sharpened); skip award-domain + ibiblio
+    # hits (award sites are sourced authoritatively elsewhere).
     if not data.get("military_awards"):
-        web_hits = _search_openserp(
-            f"{name} {facts} WWII".replace("  ", " "), openserp_url
-        )
+        web_hits: List[Dict[str, str]] = []
+        for q in _render_queries("people", "web_results", name=name, facts=facts):
+            web_hits.extend(_search_openserp(q, openserp_url))
         person_candidates["web_results"] = [
             h for h in web_hits if not _skip_result(h.get("url", ""))
         ]
@@ -872,7 +906,13 @@ def enrich_equipment_with_openserp(
             continue
 
         if not data.get("images"):
-            images = search_equipment_images(name, openserp_url, grok_client)
+            images = search_equipment_images(
+                name,
+                openserp_url,
+                grok_client,
+                identifier=data.get("technical_identifier") or "",
+                facts=_equipment_query_terms(data),
+            )
             if images:
                 data["images"] = images
                 enriched += 1

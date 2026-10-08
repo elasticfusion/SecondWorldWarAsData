@@ -2,9 +2,9 @@
 # Variables: {name}, {identifier}, {year}
 
 images:
-  - '"{name}" WWII photo'
-  - '"{identifier}" World War II photograph'
-  - '"{name}" {year} military'
+  - '"{name}" {facts} WWII photo'
+  - '"{identifier}" {facts} World War II photograph'
+  - '"{name}" {year} military {facts}'
 
 wikipedia:
   - '{name}'
