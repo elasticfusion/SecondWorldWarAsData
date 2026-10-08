@@ -162,7 +162,18 @@ def _batch_extract_casualties(
 
     # Build entity context with name:ID pairs for cross-referencing
     def _format_index(label, index, limit=50):
-        items = [f"{name}: {eid}" for name, eid in list(index.items())[:limit]]
+        # An index may be a {name: id} dict OR a list of records; normalize to pairs.
+        if isinstance(index, dict):
+            pairs = list(index.items())
+        elif isinstance(index, list):
+            pairs = [
+                (r.get("name") or r.get("current_name") or r.get("group_name") or "", r)
+                for r in index
+                if isinstance(r, dict)
+            ]
+        else:
+            pairs = []
+        items = [f"{name}: {eid}" for name, eid in pairs[:limit]]
         if not items:
             return ""
         return f"  {label}:\n    " + "\n    ".join(items) + "\n"
