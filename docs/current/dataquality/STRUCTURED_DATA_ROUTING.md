@@ -249,8 +249,8 @@ A downloaded headshot, map scan, or event photo should become an entity:
 
 Because it carries cross-references, a headshot found for Huebner links to the
 same Person entity whether he came from OOB tables or Ardennes prose — and the
-Wikipedia/OpenSERP portrait enrichment (Phase 3) can dedup against it instead
-of re-fetching.
+Wikipedia portrait enrichment (Phase 2) + OpenSERP portrait search (Phase 3) can
+dedup against it instead of re-fetching.
 
 #### Classify media by content, not by the author's wording
 

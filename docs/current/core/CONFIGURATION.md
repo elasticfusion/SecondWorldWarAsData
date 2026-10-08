@@ -235,7 +235,7 @@ concurrency:
 - `enabled` - Enable/disable concurrent chapter processing
 - `max_event_files` - Number of event files to process in parallel
 - `max_extraction_group` - Max parallel extractions within a single group (dates, places, etc.)
-- `max_enrichment_workers` - Phase 3 concurrent threads per entity type (default 6). Grok API calls are rate-limited; extra threads keep search requests (Grokipedia/Wikipedia) running in parallel.
+- `max_enrichment_workers` - Phase 3 concurrent threads per entity type (default 6). Grok API calls are rate-limited; extra threads keep the external search/geocode/OpenSERP requests running in parallel. (Grokipedia/Wikipedia enrichment runs in Phase 2, not here.)
 
 **Note:** Concurrent processing is experimental. See `docs/current/FUTURE_ENHANCEMENTS.md` for distributed processing options.
 

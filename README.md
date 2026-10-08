@@ -33,11 +33,12 @@ Full setup: [Local Deployment Guide](docs/current/LOCAL_DEPLOYMENT.md) | AWS: [A
 ```
 Phase 0: Ingest   →  Any source → Markdown; scanned tables → rows   (media detect, disposition, OCR)
 Phase 1: Parse    →  Markdown → structured JSON                     (seconds)
-Phase 2: Extract  →  11 entity types via Grok Batch API            (50% cost savings)
+Phase 2: Extract  →  Entities + events via Grok Batch API          (50% cost savings)
+                     + ALL Grokipedia/Wikipedia enrichment (text, images, portraits,
+                     award citations) + source_section anchor (operation + maps)
          Dedup    →  Auto-merge + human review gate
-Phase 3: Enrich   →  Wikipedia, OpenSERP, Open-Meteo, NARA          (per entity)
-                     People also get portrait-photo capture + authoritative
-                     award-citation sourcing (direct sources, translated, preserved)
+Phase 3: Enrich   →  Geocoding, Open-Meteo/NOAA, OpenSERP, NARA + non-NARA archives
+                     (everything EXCEPT Grokipedia/Wikipedia — that is Phase 2)
 ```
 
 Phase 0 (ingestion normalization, `src/ingestion/`) detects media type,

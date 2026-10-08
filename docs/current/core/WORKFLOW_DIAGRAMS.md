@@ -50,68 +50,52 @@ flowchart TD
 ```mermaid
 flowchart TD
     Start([Start Phase 2]) --> LoadConfig[Load config.yaml]
-    LoadConfig --> CompleteMeta[Complete missing metadata]
-    CompleteMeta --> InitGrok[Initialize Grok client<br/>+ API cache]
+    LoadConfig --> CompleteMeta["Step 0: Complete missing metadata"]
+    CompleteMeta --> InitGrok[Initialize Grok client + API cache]
+    InitGrok --> Step1["<b>Step 1: Parallel core extraction</b><br/>max N chapters concurrent"]
 
-    InitGrok --> Step1["<b>Step 1: Parallel Core Extraction</b><br/>max 3 chapters concurrent"]
+    Step1 --> Batch{For each chapter async}
+    Batch --> Events["Extract Events<br/>(1 Event per section)"]
+    Events --> Emit["Emit source_section anchor<br/>(title + EventID; summary/op null)"]
+    Emit --> Gather["asyncio.gather:<br/>Dates | Places | Groups | People"]
 
-    Step1 --> Batch{For each batch<br/>of chapters}
-    Batch --> Ch1[Chapter A<br/>async]
-    Batch --> Ch2[Chapter B<br/>async]
-    Batch --> Ch3[Chapter C<br/>async]
+    Gather --> NativeEnrich["<b>Native Grokipedia/Wikipedia enrichment</b><br/>(by-source: ALL Grok/Wiki is Phase 2)"]
+    NativeEnrich --> P["People: bio + portrait + award citations"]
+    NativeEnrich --> G["Groups: Wikipedia text + images + grokipedia_url"]
+    NativeEnrich --> PL["Places: Grok/Wiki descriptive text + image + hierarchy"]
+    P --> OptGate
+    G --> OptGate
+    PL --> OptGate
 
-    Ch1 --> Events1[Extract Events]
-    Ch2 --> Events2[Extract Events]
-    Ch3 --> Events3[Extract Events]
+    OptGate{"Optional features enabled?"}
+    OptGate -->|Yes| Opt["Optional entities (per event file):<br/>Weather | Equipment (Wiki text+images) |<br/>Logistics | Casualties | Supplemental"]
+    OptGate -->|No| Step2
+    Opt --> Step2
 
-    Events1 --> Gather1["asyncio.gather:<br/>Dates | Places | Groups | People"]
-    Events2 --> Gather2["asyncio.gather:<br/>Dates | Places | Groups | People"]
-    Events3 --> Gather3["asyncio.gather:<br/>Dates | Places | Groups | People"]
+    Step2["Step 2-3: Retry missing events;<br/>Maps (source) + Images"] --> Step4b
 
-    Gather1 --> Results[Collect results]
-    Gather2 --> Results
-    Gather3 --> Results
+    Step4b["<b>Step 4b: Source-section enrichment</b><br/>LLM: summary (&lt;2 sent) + operation label (null-over-fake)<br/>→ Grok + Wikipedia reference articles<br/>→ Wikipedia media → images/map_features"] --> Step5
 
-    Results --> Step2["<b>Step 2: Retry Missing Events</b><br/>Per-chapter cache clear + re-extract"]
-
-    Step2 --> Step3{"Optional<br/>features<br/>enabled?"}
-    Step3 -->|Yes| OptLoop["<b>Step 3: Optional Entities</b><br/>Sequential per event file"]
-    Step3 -->|No| Step4
-
-    OptLoop --> Weather[Weather]
-    OptLoop --> Equipment[Equipment]
-    OptLoop --> Logistics[Logistics]
-    OptLoop --> Casualties[Casualties]
-    OptLoop --> Supplemental[Supplemental]
-
-    Weather --> Step4
-    Equipment --> Step4
-    Logistics --> Step4
-    Casualties --> Step4
-    Supplemental --> Step4
-
-    Step4["<b>Step 4: Maps</b><br/>Source maps + External maps"] --> Step5
-
-    Step5["<b>Step 5: Analysis</b><br/>Duplicate people report<br/>Related groups report"] --> End([Phase 2 Complete])
+    Step5["Step 5: Analysis<br/>Duplicate people + related groups reports"] --> BatchQ{Batch mode?}
+    BatchQ -->|Yes| BatchReRun["Submit batch → poll → re-run core<br/>+ re-run source_section enrichment"]
+    BatchQ -->|No| End
+    BatchReRun --> End([Phase 2 Complete])
 
     style Start fill:#90EE90
     style End fill:#90EE90
     style Step1 fill:#87CEEB
-    style Step2 fill:#FFE4B5
-    style OptLoop fill:#FFE4B5
-    style Step4 fill:#DDA0DD
+    style NativeEnrich fill:#FFB6C1
+    style Step4b fill:#FFB6C1
     style Step5 fill:#DDA0DD
-    style Gather1 fill:#87CEEB
-    style Gather2 fill:#87CEEB
-    style Gather3 fill:#87CEEB
 ```
 
-**Key Operations:**
-- Parallel chapter processing (async/await)
-- Batched API calls (4 entity types per chapter in parallel)
-- Per-chapter cache clearing on retry (not full cache wipe)
-- Optional entities run sequentially per event file
-- Analysis reports generated at end
+**Key operations:**
+- One Event per source section; `source_section` anchor emitted as each event is finalized.
+- **Phase 2 owns ALL Grokipedia/Wikipedia enrichment** — people, groups, places, equipment
+  enrich natively (gated on `*_checked_at`), committed through each entity's native path.
+- Step 4b derives the section summary + canonical operation label, then fetches the
+  operation's Grok/Wiki articles + Wikipedia media (first-class `images`, cross-linked).
+- Batch mode re-runs core extraction AND source-section enrichment after cached results land.
 
 ---
 
@@ -120,87 +104,47 @@ flowchart TD
 ```mermaid
 flowchart TD
     Start([Start Phase 3]) --> LoadConfig[Load config.yaml]
-    LoadConfig --> InitGrok[Initialize Grok client<br/>+ API cache]
-    InitGrok --> LoadPeople["Load people JSON files<br/>(skip index, duplicate_report,<br/>not_duplicates)"]
-    
-    LoadPeople --> ForEachPerson{For each<br/>person file}
-    ForEachPerson --> GetName{Has<br/>name?}
-    GetName -->|No| SkipPerson[Skip file]
-    GetName -->|Yes| SearchGrok["Search Grokipedia<br/>HTTP GET with timeout"]
-    
-    SearchGrok --> GrokFound{Text<br/>found?}
-    GrokFound -->|Yes| ExtractGrok["Grok AI: extract structured JSON<br/>birth/death, ranks, units,<br/>awards, education, family,<br/>source_urls"]
-    GrokFound -->|No| SearchWiki
-    ExtractGrok --> MergeGrok["Merge into bio_profile<br/>(simple fields, lists, family)"]
-    MergeGrok --> SearchWiki
-    
-    SearchWiki["Search Wikipedia API"] --> WikiFound{Text<br/>found?}
-    WikiFound -->|Yes| ExtractWiki["Grok AI: extract structured JSON<br/>(same schema + source_urls)"]
-    WikiFound -->|No| CheckRefs
-    ExtractWiki --> MergeWiki[Merge into bio_profile]
-    MergeWiki --> CheckRefs
-    
-    CheckRefs{References<br/>enabled?}
-    CheckRefs -->|Yes| FollowRefs["Follow up to 3 references<br/>Grokipedia → Wikipedia fallback"]
-    CheckRefs -->|No| ValidateURLs
-    FollowRefs --> MergeRefs[Merge reference data]
-    MergeRefs --> ValidateURLs
-    
-    ValidateURLs{Source URLs<br/>returned?}
-    ValidateURLs -->|Yes| FetchURLs["Fetch each URL<br/>(HTTP GET)"]
-    ValidateURLs -->|No| CheckEnriched
-    
-    FetchURLs --> URLExists{HTTP 200?}
-    URLExists -->|No| MarkBroken["Mark URL broken"]
-    URLExists -->|Yes| GrokVerify["Submit page content to Grok:<br/>Is this about the person?<br/>Contains relevant bio data?"]
-    
-    GrokVerify --> Relevant{Relevant?}
-    Relevant -->|Yes| StoreURL["Add to biography_sources<br/>(confidence: 0.9)"]
-    Relevant -->|No| MarkIrrelevant["Discard URL"]
-    
-    MarkBroken --> CheckEnriched
-    StoreURL --> CheckEnriched
-    MarkIrrelevant --> CheckEnriched
-    
-    CheckEnriched{Any new<br/>data added?}
-    CheckEnriched -->|No| LogNoData["Log: no new data found"]
-    CheckEnriched -->|Yes| Validate["Validate with Person model<br/>(Pydantic)"]
-    
-    Validate --> ValidOK{Valid?}
-    ValidOK -->|Yes| SaveJSON["Save updated person JSON<br/>in-place"]
-    ValidOK -->|No| LogError["Log validation error<br/>+ skip save"]
-    
-    SaveJSON --> NextPerson
-    LogNoData --> NextPerson
-    LogError --> NextPerson
-    SkipPerson --> NextPerson{More<br/>people?}
-    
-    NextPerson -->|Yes| ForEachPerson
-    NextPerson -->|No| Summary["Summary:<br/>enriched / total people"]
-    
+    LoadConfig --> InitGrok[Initialize Grok client + API cache]
+    InitGrok --> Note["Phase 3 = ALL external enrichment EXCEPT Grok/Wiki<br/>(Grokipedia/Wikipedia moved to Phase 2)"]
+
+    Note --> S1["Step 1: people_groups structured unit/org history (Grok)"]
+    S1 --> S2["Step 2: places hierarchy/names (structured) + link parents"]
+    S2 --> S3["Step 3: places geocoding cascade<br/>Nominatim → hill/terrain → Grok (coords + provenance)"]
+    S3 --> S4["Step 4: bibliography — ISBN/copyright +<br/>NARA & non-NARA resolution<br/>(Archive.org, HathiTrust, university, Google Books, LOC)"]
+    S4 --> S5Gate{use_openserp?}
+
+    S5Gate -->|Yes| S5["<b>Step 5: OpenSERP (5 entities)</b>"]
+    S5Gate -->|No| S6
+    S5 --> O1["people / equipment / groups / places / source_section"]
+    O1 --> OQ["Queries: entity-fact-sharpened,<br/>multi-language (places), operation-keyed (source_section)"]
+    OQ --> OV["Grok verify (FAIL-CLOSED: title+snippet+url)"]
+    OV --> OR{Verified?}
+    OR -->|No| ONeg["Cache URL verdict REJECT (90d) → skip"]
+    OR -->|Yes, textual| OFetch["Fetch page → Grok summarize →<br/>store {url,title,summary,fetched_at}<br/>+ cache summary (90d)"]
+    OR -->|Yes, image| OImg["Store image reference"]
+    OFetch --> S6
+    OImg --> S6
+    ONeg --> S6
+
+    S6["Step 6: weather — NOAA GHCND observed"] --> Summary["Per-source stats → .phase_results.json<br/>→ email/Slack (isolated: one failure never aborts)"]
     Summary --> End([Phase 3 Complete])
-    
+
     style Start fill:#90EE90
     style End fill:#90EE90
-    style SearchGrok fill:#FFB6C1
-    style SearchWiki fill:#FFB6C1
-    style ExtractGrok fill:#87CEEB
-    style ExtractWiki fill:#87CEEB
-    style Validate fill:#DDA0DD
-    style FollowRefs fill:#FFE4B5
-    style FetchURLs fill:#FFB6C1
-    style GrokVerify fill:#87CEEB
-    style StoreURL fill:#90EE90
+    style Note fill:#FFE4B5
+    style S5 fill:#87CEEB
+    style OFetch fill:#FFB6C1
+    style ONeg fill:#F0A0A0
 ```
 
-**Key Operations:**
-- Two-source search: Grokipedia first, then Wikipedia (both results merged)
-- Grok AI extracts structured biographical JSON from raw source text, including source URLs
-- Reference following: up to 3 referenced entities searched for additional context
-- URL validation: each source URL is fetched, then page content submitted to Grok to verify relevance
-- Pydantic model validation before saving
-- All API responses cached (Grok client cache)
-- Currently people-only; weather/maps enrichment planned but not yet implemented
+**Key operations:**
+- No Grokipedia/Wikipedia here — that is Phase 2. Phase 3 keeps geocoding, NOAA, OpenSERP, and
+  NARA + non-NARA bibliography resolution, plus the *structured* hierarchy/org-history Grok
+  passes (which promote facts into spec fields, not descriptive text).
+- OpenSERP covers 5 entities with fact-sharpened / multi-language / operation-keyed queries.
+- Positive URLs are Grok-verified **fail-closed**, then textual pages are fetched + summarized;
+  every URL verdict (summary or REJECT) is cached 90 days to prevent reprocessing.
+- Each source isolated via `_run_step`; outcomes surface through `.phase_results.json`.
 
 ---
 

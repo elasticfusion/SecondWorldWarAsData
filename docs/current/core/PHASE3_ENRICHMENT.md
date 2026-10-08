@@ -32,8 +32,8 @@ local run performs only the unconditional ones (groups, places, bibliography).
 | 1/6 | **People Groups** | Structured unit/org history (promoted into spec fields) | `enrich_groups.enrich_all_groups` | always |
 | 2/6 | **Places** | (a) hierarchy/name enrichment (structured), (b) `link_parent_place_ids` | `enrich_places` | always |
 | 3/6 | **Places** | **Geocoding cascade** → coordinates + provenance | `places_grok_geocode.cascade_geocoder` | always |
-| 4/6 | **Bibliography** | ISBN / copyright / archive URLs, then source resolution (NARA, Archive.org, LOC, Gutenberg) | `supplemental_advanced.enrich_bibliography` + `bibliography_resolver` | always |
-| 5/6 | **People + Equipment** | OpenSERP images / academic sources | `openserp_enrichment` | `supplemental_material.use_openserp` |
+| 4/6 | **Bibliography** | ISBN / copyright / archive URLs, then source resolution — NARA **and non-NARA** (Archive.org, HathiTrust, university libraries, Google Books, LOC, Gutenberg) | `supplemental_advanced.enrich_bibliography` + `bibliography_resolver` | always |
+| 5/6 | **People, Equipment, People Groups, Places, Source Section** | OpenSERP images / web / academic / primary sources. Queries are **entity-fact-sharpened** (unit/rank/nationality, category/origin), **multi-language for places** (native names), **operation-keyed for source_section**. Results **Grok-verified (fail-closed)**; verified textual pages are **fetched + summarized** with a 90-day positive/negative URL cache | `openserp_enrichment` | `supplemental_material.use_openserp` |
 | 6/6 | **Weather** | NOAA GHCND station-observed data (supplements Open-Meteo) | `noaa_weather.enrich_weather_with_noaa` | `api.noaa_api_token` set |
 
 > **Moved to Phase 2 (no longer a Phase-3 step):** people Grokipedia/Wikipedia biography +

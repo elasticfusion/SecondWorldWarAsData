@@ -51,6 +51,16 @@ Converts markdown source files into structured JSON with absolute paragraph numb
 ### Phase 2: Extraction
 Extracts entities and events using Grok AI. Prompts are loaded from YAML templates in `prompts/` (overridable from S3). In AWS mode, Phase 2 uses **incremental processing** — only downloads and processes parsed files that don't have a corresponding event file in S3. When `batch.phase2: true`, the task auto-delegates to submit-only mode: submits the batch, enqueues the job, tears down infrastructure, and exits. The batch poller Lambda (`dev-wwii-batch-poller`) checks every 5 minutes (configurable) and launches a retrieve task on completion. After Phase 2 completes, if no duplicates are found, Phase 3 is auto-triggered without waiting for human review.
 
+**Phase 2 owns ALL Grokipedia/Wikipedia enrichment** (the enrichment split is *by source*):
+each extractor enriches its entity natively as it writes it — people (biography + portrait +
+award citations), people_groups (Wikipedia text + images), places (Grokipedia/Wikipedia
+descriptive text + image), equipment (Wikipedia extract + images). Phase 2 also emits the
+**`source_section`** entity — a coarse, source-neutral anchor (one per book chapter / article /
+report) that carries a short section summary, a derived canonical **operation/campaign label**
+(null-over-fake), and Grokipedia + Wikipedia reference articles + media for that operation
+(`[phase2 step 4b/5]`). See [PHASE3_ENRICHMENT.md](PHASE3_ENRICHMENT.md) for the by-source
+split and [features/source_section/README.md](../features/source_section/README.md).
+
 ### Dedup Review Gate
 After Phase 2, duplicate detection runs automatically:
 1. Military units in `output/places/` are auto-reclassified to `output/people_groups/`
@@ -61,17 +71,21 @@ After Phase 2, duplicate detection runs automatically:
 In AWS mode, a web UI allows merging, skipping, and reclassifying entities before Phase 3 proceeds. UI actions (merge, reclassify, assign) append changed file keys to the DynamoDB manifest so Phase 3 downloads them. "Not Duplicates" decisions are stored in DynamoDB and persist across pipeline runs.
 
 ### Phase 3: Enrichment
-Enriches entities with external data in a fixed step order: people (Grokipedia/Wikipedia),
-people groups (unit history + Wikipedia), places (hierarchy + **geocoding cascade**:
-Nominatim→hill→Grok), bibliography (ISBN/copyright + NARA/Archive.org/LOC resolution), and —
-when enabled — equipment (Wikipedia), OpenSERP (people/equipment images), and weather (NOAA
-observed). Dates, logistics, casualties, maps, and events have no enrichment step by design.
-Each source is isolated (`_run_step`): a failure is logged + surfaced via
-`.phase_results.json` → email/Slack, never aborting the rest. Full detail, config gating,
-batch re-run, and the reliability model: **[PHASE3_ENRICHMENT.md](PHASE3_ENRICHMENT.md)**. In
-AWS mode, Phase 3 reads the DynamoDB manifest (`manifest#phase2`) to download only files
-changed by Phase 2 and dedup review, falling back to a full entity directory download if no
-manifest exists.
+Enriches entities with **every external source EXCEPT Grokipedia/Wikipedia** (those moved to
+Phase 2). Fixed step order: people_groups (structured unit/org history), places (hierarchy/
+names + **geocoding cascade**: Nominatim→hill→Grok), bibliography (ISBN/copyright + NARA
+**and non-NARA** source resolution — Archive.org, HathiTrust, university libraries, Google
+Books, LOC), and — when enabled — **OpenSERP** for people, equipment, people_groups, places
+(multi-language, native place names), and source_section (primary sources keyed on the
+operation label), plus weather (NOAA observed). OpenSERP results are Grok-verified
+(**fail-closed**), and verified textual pages are fetched + summarized with a 90-day
+positive/negative URL cache. Dates, casualties, maps, map_features, and events have no Phase-3
+step by design (events are anchored for enrichment via source_section). Each source is isolated
+(`_run_step`): a failure is logged + surfaced via `.phase_results.json` → email/Slack, never
+aborting the rest. Full detail, config gating, batch re-run, and the reliability model:
+**[PHASE3_ENRICHMENT.md](PHASE3_ENRICHMENT.md)**. In AWS mode, Phase 3 reads the DynamoDB
+manifest (`manifest#phase2`) to download only files changed by Phase 2 and dedup review,
+falling back to a full entity directory download if no manifest exists.
 
 ### Caching
 - **Local mode:** diskcache (SQLite) in `cache/api/`
