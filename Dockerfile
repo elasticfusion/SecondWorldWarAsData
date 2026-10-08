@@ -20,6 +20,16 @@ RUN apt-get update && apt-get upgrade -y --no-install-recommends && \
 # Copy dependencies
 COPY --from=builder /deps /usr/local/lib/python3.12/site-packages/
 
+# Headless Chromium for Grokipedia JS-SPA rendering (Phase 2 source_section enrichment).
+# Playwright (the Python lib) ships via requirements.txt, but the BROWSER BINARY + its OS
+# shared libraries are a separate install. Install to a shared, world-readable path so the
+# non-root `pipeline` user can use it. Enrichment degrades gracefully to URL-only if this is
+# ever missing. --with-deps pulls the required apt libraries (nss, fonts, libx*, etc.).
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN python3 -m playwright install --with-deps chromium && \
+    chmod -R a+rX /ms-playwright && \
+    rm -rf /var/lib/apt/lists/*
+
 # Copy application code (config.yaml excluded — patched at runtime by entrypoint)
 COPY src/ src/
 COPY scripts/ scripts/
