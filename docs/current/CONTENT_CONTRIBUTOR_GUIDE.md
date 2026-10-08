@@ -135,7 +135,7 @@ You'll receive an email when Phase 2 completes and it's time to review duplicate
 ```bash
 python3 phase1_parse.py          # parse markdown → JSON
 python3 phase2_extract.py        # extract entities via Grok API
-python3 phase3_enrich_data.py    # enrich with Wikipedia/Grokipedia
+python3 phase3_enrich_data.py    # enrich: geocoding, NOAA, OpenSERP, archives
 ```
 
 ---
