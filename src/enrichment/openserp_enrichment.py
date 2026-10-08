@@ -454,6 +454,7 @@ def process_positive_url(
         # reprocessing purposes -> cache REJECT so we don't retry the fetch for 90 days.
         _cache_url_verdict(url, "REJECT")
         return None
+    _metric("urls_fetched")  # a real page fetch+summarize (cache hits return earlier)
     _cache_url_verdict(url, summary)
     return {
         "url": url,
@@ -765,6 +766,7 @@ def _verify_and_apply(
                 {"url": url, "title": title, "source": "openserp"}
             )
             existing_image_urls.add(url)
+            _metric("items_added")
             changed = True
             if len(data.get("images", [])) >= max_images:
                 break
@@ -787,6 +789,7 @@ def _verify_and_apply(
         if processed:
             data.setdefault("military_awards", []).append(processed)
             existing_award_urls.add(url)
+            _metric("items_added")
             changed = True
             if len(data.get("military_awards", [])) >= max_web:
                 break
@@ -1005,6 +1008,7 @@ def enrich_equipment_with_openserp(
                 data["images"] = images
                 enriched += 1
                 _metric("entities_enriched")
+                _metric("items_added", len(images))
                 logger.info("  ✓ OpenSERP enriched: %s", name)
 
         data["openserp_searched"] = True
@@ -1069,6 +1073,7 @@ def enrich_source_sections_with_openserp(
             data["primary_sources"] = existing + added
             enriched += 1
             _metric("entities_enriched")
+            _metric("items_added", len(added))
             logger.info("  ✓ OpenSERP primary sources for %s: +%d", op_name, len(added))
 
         data["openserp_searched"] = True
@@ -1196,6 +1201,7 @@ def enrich_groups_with_openserp(
             added = [r for r in results if r.get("url") not in existing_urls]
             if added:
                 data[field] = existing + added
+                _metric("items_added", len(added))
                 changed = True
 
         data["openserp_searched"] = True
@@ -1325,6 +1331,7 @@ def enrich_places_with_openserp(
                     if processed:
                         data.setdefault("web_results", []).append(processed)
                         existing_src_urls.add(url)
+                        _metric("items_added")
                         changed = True
 
         data["openserp_searched"] = True
