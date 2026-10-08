@@ -119,10 +119,14 @@ SKIP_FILES = {
 
 
 def _openserp_reachable(openserp_url: str) -> bool:
-    """Check if OpenSERP is reachable with a quick connection test."""
+    """Check if OpenSERP is reachable with a FAST, single-shot probe.
+
+    Uses a plain requests.get (NOT the shared session, which carries a urllib3 Retry adapter)
+    so an unreachable OpenSERP fails in one short attempt instead of 3 retries + backoff per
+    call — important because this is probed once per entity step (local/dev runs with OpenSERP
+    down otherwise spent ~30s retrying)."""
     try:
-        session = get_session()
-        resp = session.get(f"{openserp_url}/health", timeout=5)
+        resp = requests.get(f"{openserp_url}/health", timeout=3)
         return resp.status_code == 200
     except Exception:
         return False
