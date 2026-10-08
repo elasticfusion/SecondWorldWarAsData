@@ -36,6 +36,11 @@ def test_group_queries_are_wwii_scoped_and_disambiguated(tmp_path):
         patch.object(oe, "_openserp_reachable", return_value=True),
         patch.object(oe, "_search_openserp", side_effect=fake_search),
         patch.object(oe, "_verify_result", return_value=True),
+        patch(
+            "src.extraction.enrich_biographies._fetch_url_content",
+            return_value="<p>101st Airborne Division WWII unit history.</p>",
+        ),
+        patch.object(oe, "_summarize_url_page", return_value="Unit history summary."),
     ):
         n = oe.enrich_groups_with_openserp(gd, "http://x")
 

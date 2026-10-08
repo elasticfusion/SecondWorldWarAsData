@@ -168,14 +168,23 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
 
 
 def _verify_result(
-    candidate_title: str, expected_context: str, grok_client: Any
+    candidate_title: str,
+    expected_context: str,
+    grok_client: Any,
+    snippet: str = "",
+    url: str = "",
 ) -> bool:
-    """Use Grok to verify a search result is relevant (cached, batch-friendly)."""
+    """Use Grok to verify a search result is relevant (cached, batch-friendly).
+
+    FAIL-CLOSED: with no grok_client, or on any Grok error, return False (reject) rather than
+    accepting an unverified result. The judgment uses the title, the result snippet, AND the
+    URL (not the title alone) for a stronger signal."""
     if not grok_client:
-        return True
+        # No verifier available -> cannot confirm relevance -> reject (fail-closed).
+        return False
     from src.utils.search_cache import cache_result, get_cached
 
-    cache_key = f"{expected_context[:50]}|{candidate_title[:50]}"
+    cache_key = f"{expected_context[:50]}|{candidate_title[:50]}|{url[:60]}"
     cached = get_cached("openserp_verify", cache_key)
     if cached == "YES":
         return True
@@ -184,7 +193,14 @@ def _verify_result(
 
     try:
         response = grok_client.chat_completion(
-            prompt=f'Is this search result relevant?\nContext: "{expected_context[:200]}"\nResult: "{candidate_title[:200]}"\nReturn ONLY "YES" or "NO".',
+            prompt=(
+                "Is this search result relevant to the context?\n"
+                f'Context: "{expected_context[:200]}"\n'
+                f'Result title: "{candidate_title[:200]}"\n'
+                f'Result snippet: "{snippet[:300]}"\n'
+                f"Result URL: {url[:200]}\n"
+                'Return ONLY "YES" or "NO".'
+            ),
             system_prompt="You verify search result relevance.",
             temperature=0.0,
             use_cache=True,
@@ -200,7 +216,152 @@ def _verify_result(
         )
         return answer == "YES"
     except Exception:
-        return True
+        # Verifier errored -> cannot confirm -> reject (fail-closed). NOT cached, so a later
+        # run with a healthy Grok can still verify it.
+        logger.warning(
+            "Grok verify errored (fail-closed reject): %s", candidate_title[:50]
+        )
+        return False
+
+
+# --- Positive-URL page processing (fetch -> summarize -> 90-day retention) ---------------
+
+_URL_FETCH_RETENTION_DAYS = (
+    90  # matches DEFAULT_RECHECK_SECONDS / openserp_searched gate
+)
+
+
+def _summarize_url_page(url: str, context: str, grok_client: Any) -> Optional[str]:
+    """Fetch a discovered page and return a short Grok summary of its content, or None.
+
+    90-day retention: a URL already processed within the window returns its cached summary and
+    is NOT re-fetched (handles both a prior hit and a prior empty result). Requires a
+    grok_client (fail-closed: no client -> no summary). Fail-safe: fetch/summarize errors
+    return None without raising."""
+    if not grok_client or not url:
+        return None
+    from src.utils.search_cache import _get_backend, _make_key
+
+    backend = _get_backend()
+    key = _make_key("openserp_url_summary", url)
+    cached = backend.get(key)
+    if cached is not None:
+        # Already processed within the retention window (summary or sentinel "") -> skip fetch.
+        return cached or None
+
+    summary: Optional[str] = None
+    try:
+        from src.extraction.enrich_biographies import _fetch_url_content
+
+        html = _fetch_url_content(url)
+        if html:
+            import re as _re
+
+            text = _re.sub(r"<[^>]+>", " ", html)
+            text = _re.sub(r"\s+", " ", text).strip()[:6000]
+            if text:
+                resp = grok_client.chat_completion(
+                    prompt=(
+                        f"Summarize this web page in 1-2 sentences, focused on its relevance "
+                        f'to: "{context[:150]}".\n\nURL: {url}\n\nContent:\n{text}'
+                    ),
+                    system_prompt="You summarize web pages concisely.",
+                    temperature=0.1,
+                    use_cache=True,
+                    cache_type="openserp_url_summary",
+                )
+                summary = (resp or "").strip() or None
+    except Exception as e:  # noqa: BLE001 - best-effort; never block enrichment
+        logger.debug("URL summarize failed for %s: %s", url, e)
+
+    # Record the URL as processed (store "" sentinel on a miss) with 90-day retention so it is
+    # not re-fetched for the retention period.
+    try:
+        backend.put(key, summary or "", ttl_days=_URL_FETCH_RETENTION_DAYS)
+    except Exception:  # noqa: BLE001
+        pass
+    return summary
+
+
+def _url_verdict_cached(url: str) -> Optional[str]:
+    """Return a cached URL verdict: 'REJECT' (negative — skip), a summary string (positive), or
+    None (never processed). Negative + positive URLs are both cached (90-day) to prevent
+    reprocessing on future runs."""
+    if not url:
+        return None
+    try:
+        from src.utils.search_cache import _get_backend, _make_key
+
+        return _get_backend().get(_make_key("openserp_url_verdict", url))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _cache_url_verdict(url: str, verdict: str) -> None:
+    """Cache a URL verdict ('REJECT' or a summary) for the retention window."""
+    if not url:
+        return
+    try:
+        from src.utils.search_cache import _get_backend, _make_key
+
+        _get_backend().put(
+            _make_key("openserp_url_verdict", url),
+            verdict,
+            ttl_days=_URL_FETCH_RETENTION_DAYS,
+        )
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def process_positive_url(
+    url: str,
+    title: str,
+    snippet: str,
+    context: str,
+    grok_client: Any,
+) -> Optional[Dict[str, Any]]:
+    """Verify + process one discovered URL into an enriched result, with positive AND negative
+    URL caching (both cached 90 days to prevent reprocessing):
+
+      * previously REJECTED or dead URL -> return None immediately (no re-verify/re-fetch);
+      * previously processed positive    -> rebuild the result from the cached summary;
+      * new URL -> Grok-verify (fail-closed); reject -> cache 'REJECT' + None; accept -> fetch
+        + summarize the page, cache the summary, return {url,title,summary,fetched_at,source}.
+    """
+    import time as _time
+
+    if not url:
+        return None
+    cached = _url_verdict_cached(url)
+    if cached == "REJECT":
+        return None
+    if cached:  # positive summary cached
+        return {
+            "url": url,
+            "title": title,
+            "summary": cached,
+            "fetched_at": int(_time.time()),
+            "source": "openserp",
+        }
+
+    if not _verify_result(title, context, grok_client, snippet=snippet, url=url):
+        _cache_url_verdict(url, "REJECT")
+        return None
+
+    summary = _summarize_url_page(url, context, grok_client)
+    if not summary:
+        # Verified-relevant but the page could not be fetched/summarized: still a negative for
+        # reprocessing purposes -> cache REJECT so we don't retry the fetch for 90 days.
+        _cache_url_verdict(url, "REJECT")
+        return None
+    _cache_url_verdict(url, summary)
+    return {
+        "url": url,
+        "title": title,
+        "summary": summary,
+        "fetched_at": int(_time.time()),
+        "source": "openserp",
+    }
 
 
 # --- Image Search ---
@@ -252,7 +413,13 @@ def search_person_images(
             # Pre-filter: skip results that clearly aren't about this person
             if not _name_initial_matches(person_name, title):
                 continue
-            if _verify_result(title, f"Photo of {person_name}", grok_client):
+            if _verify_result(
+                title,
+                f"Photo of {person_name}",
+                grok_client,
+                snippet=r.get("description", ""),
+                url=url,
+            ):
                 images.append({"url": url, "title": title, "source": "openserp"})
                 if len(images) >= max_results:
                     return images
@@ -285,7 +452,13 @@ def search_equipment_images(
             title = r.get("title", "")
             if not url or url in seen:
                 continue
-            if _verify_result(title, f"Photo of {equipment_name}", grok_client):
+            if _verify_result(
+                title,
+                f"Photo of {equipment_name}",
+                grok_client,
+                snippet=r.get("description", ""),
+                url=url,
+            ):
                 images.append({"url": url, "title": title, "source": "openserp"})
                 seen.add(url)
                 if len(images) >= max_results:
@@ -441,15 +614,16 @@ def search_event_content(
             url = r.get("url", "")
             title = r.get("title", "")
             if url and url not in seen_urls:
-                if _verify_result(title, f"Content about {event_name}", grok_client):
-                    sources.append(
-                        {
-                            "url": url,
-                            "title": title,
-                            "type": _classify_source(url, title),
-                            "source": "openserp",
-                        }
-                    )
+                processed = process_positive_url(
+                    url,
+                    title,
+                    r.get("description", ""),
+                    f"Content about {event_name}",
+                    grok_client,
+                )
+                if processed:
+                    processed["type"] = _classify_source(url, title)
+                    sources.append(processed)
                     seen_urls.add(url)
                     if len(sources) >= max_results:
                         return sources
@@ -501,10 +675,15 @@ def _verify_and_apply(
             or not _name_initial_matches(name, title)
         ):
             continue
-        if _verify_result(title, f"Military service of {name} in WWII", grok_client):
-            data.setdefault("military_awards", []).append(
-                {"url": url, "title": title, "source": "openserp"}
-            )
+        processed = process_positive_url(
+            url,
+            title,
+            r.get("description", ""),
+            f"Military service of {name} in WWII",
+            grok_client,
+        )
+        if processed:
+            data.setdefault("military_awards", []).append(processed)
             existing_award_urls.add(url)
             changed = True
             if len(data.get("military_awards", [])) >= max_web:
@@ -795,7 +974,7 @@ def _group_openserp_category(
     openserp_url: str,
     grok_client: Any,
     max_results: int,
-) -> List[Dict[str, str]]:
+) -> List[Dict[str, Any]]:
     """Run one people_groups.yaml query category (images|web_results|veterans_association)."""
     from src.utils.search_query_loader import render_search_queries
 
@@ -804,19 +983,30 @@ def _group_openserp_category(
     )
     out: List[Dict[str, str]] = []
     seen: set = set()
+    context = f"{group_name} ({nationality}) in WWII"
+    # Images have no article to summarize -> verify-only. Textual categories
+    # (web_results, veterans_association) are fetched + summarized with pos/neg URL caching.
+    textual = category != "images"
     for query in queries:
         for r in _search_openserp(query, openserp_url):
             url = r.get("url", "")
             title = r.get("title", "")
             if not url or url in seen or not _group_name_matches(group_name, title):
                 continue
-            if _verify_result(
-                title, f"{group_name} ({nationality}) in WWII", grok_client
+            if textual:
+                processed = process_positive_url(
+                    url, title, r.get("description", ""), context, grok_client
+                )
+                if processed:
+                    out.append(processed)
+                    seen.add(url)
+            elif _verify_result(
+                title, context, grok_client, snippet=r.get("description", ""), url=url
             ):
                 out.append({"url": url, "title": title, "source": "openserp"})
                 seen.add(url)
-                if len(out) >= max_results:
-                    return out
+            if len(out) >= max_results:
+                return out
     return out
 
 
