@@ -37,7 +37,7 @@ def _fingerprint(schema: dict) -> str:
 EXPECTED = {
     "events": ("2.24", "bcc344080723f54a"),
     "dates": ("2.24", "28553959a617e5e4"),
-    "places": ("2.25", "6330e6a3a4166429"),
+    "places": ("2.26", "94bdd4e0275931a9"),
     "people": ("2.24", "c73f1d99c5c80b61"),
     "people_groups": ("2.27", "01528b003ca170ba"),
     "equipment": ("2.25", "80ec735d8a6d009b"),

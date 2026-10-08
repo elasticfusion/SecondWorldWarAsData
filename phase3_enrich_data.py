@@ -358,6 +358,7 @@ def main():
             enrich_equipment_with_openserp,
             enrich_groups_with_openserp,
             enrich_people_with_openserp,
+            enrich_places_with_openserp,
             enrich_source_sections_with_openserp,
         )
 
@@ -380,6 +381,15 @@ def main():
             "openserp_groups",
             lambda: enrich_groups_with_openserp(
                 args.output_dir / "people_groups",
+                openserp_url,
+                grok_client,
+                args.max_items,
+            ),
+        )
+        total_enriched += _run_step(
+            "openserp_places",
+            lambda: enrich_places_with_openserp(
+                args.output_dir / "places",
                 openserp_url,
                 grok_client,
                 args.max_items,

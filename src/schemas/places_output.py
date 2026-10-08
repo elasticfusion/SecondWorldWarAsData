@@ -48,6 +48,13 @@ PLACES_OUTPUT_SCHEMA = {
         "wikipedia_url": make_nullable("string"),
         "wikipedia_checked_at": make_nullable("string"),
         "images": {"type": ["array", "null"], "items": {"type": ["object", "string"]}},
+        # OpenSERP (Phase 3) web/source results for the place + gate.
+        "web_results": {
+            "type": ["array", "null"],
+            "items": {"type": "object", "additionalProperties": True},
+        },
+        "openserp_searched": {"type": ["boolean", "null"]},
+        "openserp_searched_at": {"type": ["number", "null"]},
         "coordinates": {
             "type": ["object", "null"],
             "additionalProperties": False,

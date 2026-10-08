@@ -1,0 +1,13 @@
+# Search query templates for places enrichment (OpenSERP)
+# Variables: {name}
+# Rendered once per NAME VARIANT (current_name + aliases + historical_names), so native-
+# language WWII names (e.g. German "Pfalz" for Palatinate) are searched too. Every query is
+# WWII-scoped so results are about the 1944-45 place, not a modern/other-era reference.
+
+images:
+  - '"{name}" WWII photograph'
+  - '"{name}" 1944 war photo'
+
+sources:
+  - '"{name}" World War II history'
+  - '"{name}" 1944 battle account'

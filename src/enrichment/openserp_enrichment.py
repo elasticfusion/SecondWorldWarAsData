@@ -1078,3 +1078,130 @@ def enrich_groups_with_openserp(
 
     logger.info("OpenSERP people_groups enrichment: %d enriched", enriched)
     return enriched
+
+
+def place_name_variants(place: Dict) -> List[str]:
+    """Return the deduped set of names to search for a place: current_name + name + aliases +
+    historical_names[].name (the native-language WWII names Phase 2 already extracted, e.g.
+    German 'Pfalz' for Palatinate). Order-preserving, case-insensitive dedup."""
+    variants: List[str] = []
+    seen: set = set()
+
+    def _add(n: Any) -> None:
+        if isinstance(n, str) and n.strip() and n.strip().lower() not in seen:
+            seen.add(n.strip().lower())
+            variants.append(n.strip())
+
+    _add(place.get("current_name"))
+    _add(place.get("name"))
+    for a in place.get("aliases") or []:
+        _add(a)
+    for h in place.get("historical_names") or []:
+        _add(h.get("name") if isinstance(h, dict) else h)
+    return variants
+
+
+def enrich_places_with_openserp(
+    places_dir: Path,
+    openserp_url: str,
+    grok_client: Any = None,
+    max_items: Optional[int] = None,
+) -> int:
+    """Add images + source web results to place records, searching EACH name variant
+    (current + aliases + native-language historical names), so e.g. a place's German WWII name
+    is searched alongside its English name. Textual sources are fetched + summarized via
+    process_positive_url (with pos/neg URL caching); images are verify-only. Native write,
+    gated on openserp_searched (90-day), deduped. Returns count enriched."""
+    reset_circuit()
+    if not _openserp_reachable(openserp_url):
+        logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
+        return 0
+
+    from src.utils.search_query_loader import render_search_queries
+
+    enriched = 0
+    for f in sorted(places_dir.glob("*.json")):
+        if f.name in SKIP_FILES:
+            continue
+        if max_items and enriched >= max_items:
+            break
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+
+        variants = place_name_variants(data)
+        if not variants:
+            continue
+
+        if data.get("openserp_searched"):
+            import time as _time
+
+            searched_at = data.get("openserp_searched_at", 0)
+            if searched_at and (_time.time() - searched_at) < 90 * 86400:
+                continue
+
+        primary = variants[0]
+        changed = False
+
+        # Images (verify-only) — search each name variant.
+        existing_img_urls = {
+            i.get("url") for i in (data.get("images") or []) if isinstance(i, dict)
+        }
+        for variant in variants:
+            for q in render_search_queries("places", "images", name=variant):
+                for r in _search_openserp(q, openserp_url):
+                    url = r.get("url", "")
+                    if not url or url in existing_img_urls:
+                        continue
+                    if _verify_result(
+                        r.get("title", ""),
+                        f"Photo of {primary} (WWII place)",
+                        grok_client,
+                        snippet=r.get("description", ""),
+                        url=url,
+                    ):
+                        data.setdefault("images", []).append(
+                            {
+                                "url": url,
+                                "title": r.get("title", ""),
+                                "source": "openserp",
+                            }
+                        )
+                        existing_img_urls.add(url)
+                        changed = True
+
+        # Textual sources — fetched + summarized + pos/neg URL cached.
+        existing_src_urls = {
+            s.get("url") for s in (data.get("web_results") or []) if isinstance(s, dict)
+        }
+        for variant in variants:
+            for q in render_search_queries("places", "sources", name=variant):
+                for r in _search_openserp(q, openserp_url):
+                    url = r.get("url", "")
+                    if not url or url in existing_src_urls:
+                        continue
+                    processed = process_positive_url(
+                        url,
+                        r.get("title", ""),
+                        r.get("description", ""),
+                        f"{primary} in World War II",
+                        grok_client,
+                    )
+                    if processed:
+                        data.setdefault("web_results", []).append(processed)
+                        existing_src_urls.add(url)
+                        changed = True
+
+        data["openserp_searched"] = True
+        import time as _time
+
+        data["openserp_searched_at"] = int(_time.time())
+        if _validate_before_write(data, "places"):
+            write_json_with_lock(f, data, entity="places")
+        if changed:
+            enriched += 1
+            logger.info("  ✓ OpenSERP enriched place: %s", primary)
+
+    logger.info("OpenSERP places enrichment: %d enriched", enriched)
+    return enriched
