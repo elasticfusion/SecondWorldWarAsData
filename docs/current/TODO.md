@@ -48,6 +48,18 @@ build RAG/search*. Current ordered priority:
    code-quality refactors.**
 
 ### Backlog items added 2026-10-08 (AWS Phase-3 E2E findings)
+- **[DONE 2026-10-08 / PARTIAL] OpenSERP Chromium --no-sandbox fix.** Root-caused the empty
+  results: (1) task ran `--raw` (raw HTTP engine, blocked by search engines, no image search) —
+  removed, registered dev-wwii-openserp:5 (browser mode); (2) browser mode then FATAL-crashed
+  (Chromium zygote sandbox) in Fargate — FIXED by adding .Set("no-sandbox") to the rod launcher
+  in the openserp submodule (built, Trivy-flagged fixable Go CVEs [stale deps], pushed, redeployed,
+  verified: browser now launches + navigates google/bing/yandex, 0 FATAL). REMAINING (needs the
+  v0.8.12 version bump + proxy/captcha): engines return "Found 0 results" (anti-bot/consent-page
+  blocking the datacenter IP) + the per-search browser time can exceed the pipeline's 30s request
+  timeout -> breaker still opens. The submodule now carries a local patch -> fold into the version
+  bump. Also: Trivy gating would BLOCK the current openserp image (fixable Go crypto/tls CVEs) ->
+  version bump also resolves that.
+
 - **[HIGH] OpenSERP submodule is stale (v0.6.0-15 pinned vs upstream v0.8.12 / 78 commits
   behind) + build script does not verify component versions.** OpenSERP scrapes live search
   engines, so staleness likely contributes to empty results (markup/anti-bot drift). (a) Update
