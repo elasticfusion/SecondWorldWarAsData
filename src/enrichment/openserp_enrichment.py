@@ -12,6 +12,7 @@ Requires OpenSERP service running (ECS Fargate or localhost:7001).
 import json
 import logging
 import threading
+import datetime as _dt
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -331,13 +332,23 @@ _URL_FETCH_RETENTION_DAYS = (
 )
 
 
-def _summarize_url_page(url: str, context: str, grok_client: Any) -> Optional[str]:
+def _summarize_url_page(
+    url: str,
+    context: str,
+    grok_client: Any,
+    provenance: Optional[Dict[str, Any]] = None,
+) -> Optional[str]:
     """Fetch a discovered page and return a short Grok summary of its content, or None.
 
     90-day retention: a URL already processed within the window returns its cached summary and
     is NOT re-fetched (handles both a prior hit and a prior empty result). Requires a
     grok_client (fail-closed: no client -> no summary). Fail-safe: fetch/summarize errors
-    return None without raising."""
+    return None without raising.
+
+    If ``provenance`` is supplied and the content had to be recovered from the Internet
+    Archive Wayback Machine (live page WAF-blocked/dead), it is populated with
+    ``archived_url`` + ``wayback_capture_timestamp`` so the caller can record the
+    archive retrieval alongside the original URL in the bibliographical record."""
     if not grok_client or not url:
         return None
     from src.utils.search_cache import _get_backend, _make_key
@@ -353,7 +364,8 @@ def _summarize_url_page(url: str, context: str, grok_client: Any) -> Optional[st
     try:
         from src.extraction.enrich_biographies import _fetch_url_content
 
-        html = _fetch_url_content(url)
+        prov: Dict[str, Any] = {}
+        html = _fetch_url_content(url, provenance=prov)
         if html:
             import re as _re
 
@@ -371,6 +383,17 @@ def _summarize_url_page(url: str, context: str, grok_client: Any) -> Optional[st
                     cache_type="openserp_url_summary",
                 )
                 summary = (resp or "").strip() or None
+                # If recovered via the Wayback Machine, surface the archive provenance
+                # (structured) so the caller records original URL + archive retrieval.
+                if (
+                    summary
+                    and prov.get("source") == "wayback"
+                    and provenance is not None
+                ):
+                    provenance["archived_url"] = prov.get("archived_url", "")
+                    provenance["wayback_capture_timestamp"] = prov.get(
+                        "wayback_capture_timestamp", ""
+                    )
     except Exception as e:  # noqa: BLE001 - best-effort; never block enrichment
         logger.debug("URL summarize failed for %s: %s", url, e)
 
@@ -413,6 +436,21 @@ def _cache_url_verdict(url: str, verdict: str) -> None:
         pass
 
 
+def _wayback_ts_to_iso(ts: str) -> str:
+    """Convert a Wayback 14-digit capture timestamp (YYYYMMDDhhmmss) to an ISO-8601
+    UTC datetime for the bibliographical record. Returns "" if unparseable."""
+    if not ts or len(ts) < 8:
+        return ""
+    try:
+        return (
+            _dt.datetime.strptime(ts[:14].ljust(14, "0"), "%Y%m%d%H%M%S")
+            .replace(tzinfo=_dt.timezone.utc)
+            .isoformat()
+        )
+    except ValueError:
+        return ""
+
+
 def process_positive_url(
     url: str,
     title: str,
@@ -448,7 +486,8 @@ def process_positive_url(
         _cache_url_verdict(url, "REJECT")
         return None
 
-    summary = _summarize_url_page(url, context, grok_client)
+    prov: Dict[str, Any] = {}
+    summary = _summarize_url_page(url, context, grok_client, provenance=prov)
     if not summary:
         # Verified-relevant but the page could not be fetched/summarized: still a negative for
         # reprocessing purposes -> cache REJECT so we don't retry the fetch for 90 days.
@@ -456,13 +495,25 @@ def process_positive_url(
         return None
     _metric("urls_fetched")  # a real page fetch+summarize (cache hits return earlier)
     _cache_url_verdict(url, summary)
-    return {
-        "url": url,
+    result: Dict[str, Any] = {
+        "url": url,  # ALWAYS the original source URL (citation anchor)
         "title": title,
         "summary": summary,
         "fetched_at": int(_time.time()),
         "source": "openserp",
     }
+    # If the live page was WAF-blocked/dead and content came from the Internet Archive,
+    # record BOTH the original URL (above) and the archive retrieval for the citation:
+    # the archived URL, the archive's capture date, and when WE retrieved it.
+    if prov.get("archived_url"):
+        result["retrieved_from"] = "wayback"
+        result["archived_url"] = prov["archived_url"]
+        result["wayback_capture_timestamp"] = prov.get("wayback_capture_timestamp", "")
+        result["archive_capture_date"] = _wayback_ts_to_iso(
+            prov.get("wayback_capture_timestamp", "")
+        )
+        result["retrieved_at"] = _dt.datetime.now(_dt.timezone.utc).isoformat()
+    return result
 
 
 # --- Image Search ---
