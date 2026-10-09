@@ -86,7 +86,14 @@ def _nat_demand_present() -> bool:
         # .../task/{cluster}/{taskId} and never contains 'openserp', so an
         # ARN-substring check silently counted openserp as a pipeline task and
         # pinned NAT up forever. describe_tasks to read the group.
+        #
+        # Exclude ONLY the browser support service group EXACTLY
+        # (service:{env}-wwii-openserp). A substring 'openserp' match is too broad:
+        # it also excluded the SQS worker (service:{env}-wwii-openserp-worker), which
+        # DOES need NAT (ECR/S3/Grok/search egress) — so a running worker was invisible
+        # to the demand check and NAT got torn down under it (ECR pull i/o timeout).
         ecs = _ecs_client()
+        browser_group = f"service:{ENV_NAME}-wwii-openserp"
         running = ecs.list_tasks(
             cluster=f"{ENV_NAME}-wwii-pipeline", desiredStatus="RUNNING"
         ).get("taskArns", [])
@@ -96,7 +103,7 @@ def _nat_demand_present() -> bool:
                 cluster=f"{ENV_NAME}-wwii-pipeline", tasks=running
             ).get("tasks", [])
             pipeline = [
-                t for t in described if "openserp" not in (t.get("group", "") or "")
+                t for t in described if (t.get("group", "") or "") != browser_group
             ]
         if pipeline:
             logger.info(
