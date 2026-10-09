@@ -1325,11 +1325,11 @@ Resources:
       Cluster: !Ref ECSCluster
       TaskDefinition: !Ref OpenSerpWorkerTaskDef
       DesiredCount: !Ref OpenSerpWorkerPoolSize  # default 0 = DORMANT (deployed, not running)
+      # PURE Spot: the SQS architecture is built FOR interruption — a reclaimed worker's
+      # in-flight message simply redelivers (visibility timeout lapses) and another worker
+      # retries idempotently. No on-demand sliver needed; cost is the point.
       CapacityProviderStrategy:
         - CapacityProvider: FARGATE_SPOT
-          Weight: 4
-          Base: 0
-        - CapacityProvider: FARGATE
           Weight: 1
           Base: 0
       NetworkConfiguration:
