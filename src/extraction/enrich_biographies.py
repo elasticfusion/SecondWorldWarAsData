@@ -712,17 +712,50 @@ def search_references(
     return enrichment_data
 
 
-def _fetch_url_content(url: str, timeout: int = 15) -> Optional[str]:
-    """Fetch URL content. Returns text or None on failure."""
+def _fetch_url_content(
+    url: str,
+    timeout: int = 15,
+    provenance: Optional[Dict[str, Any]] = None,
+) -> Optional[str]:
+    """Fetch URL content. Returns text or None on failure.
+
+    If the live page is blocked by a bot-protection/WAF layer (Incapsula/Cloudflare/
+    etc. — often served as an HTTP-200 *block page*) or is unreachable, transparently
+    falls back to the Internet Archive Wayback Machine (politely rate-limited) and
+    returns the archived HTML when a usable snapshot exists. When a caller passes a
+    ``provenance`` dict and the archive is used, it is populated with
+    ``source`` = "wayback", ``archived_url`` and ``wayback_capture_timestamp`` so the
+    record can truthfully reflect that content came from the archive, not the live site.
+    """
+    from src.enrichment import wayback
+
+    live_html: Optional[str] = None
+    status: Optional[int] = None
     try:
         resp = requests.get(
             url, headers=_URL_HEADERS, timeout=timeout, allow_redirects=True
         )
-        if resp.status_code == 200:
-            return resp.text
-        logger.debug("  URL returned %d: %s", resp.status_code, url)
+        status = resp.status_code
+        if status == 200:
+            live_html = resp.text
+        else:
+            logger.debug("  URL returned %d: %s", status, url)
     except requests.RequestException as exc:
         logger.debug("  URL fetch failed (%s): %s", exc, url)
+
+    # Live content is good only if it is not a WAF/bot-block page.
+    if live_html is not None and not wayback.is_block_page(live_html, status):
+        return live_html
+
+    # Blocked or unreachable -> try the Wayback Machine (polite, rate-limited).
+    recovered = wayback.fetch_archived(url, timeout=max(timeout, 20))
+    if recovered is not None:
+        html, archived_url, ts = recovered
+        if provenance is not None:
+            provenance["source"] = "wayback"
+            provenance["archived_url"] = archived_url
+            provenance["wayback_capture_timestamp"] = ts
+        return html
     return None
 
 
