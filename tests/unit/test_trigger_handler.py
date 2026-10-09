@@ -306,3 +306,49 @@ def test_submit_ocr_releases_claim_on_submit_failure(dynamodb_table):
         "test-wwii-api-cache"
     )
     assert table.get_item(Key={"cache_key": "ocr#B460"}).get("Item") is None
+
+
+def test_launch_phase1_uses_valid_desired_status_and_launches_when_idle():
+    """Regression: _launch_phase1_if_idle must NOT pass desiredStatus=PROVISIONING
+    (invalid -> InvalidParameterException crashed the launch, stalling the pipeline).
+    When no tasks are active it must launch Phase 1."""
+    from lambda_handlers import trigger_handler as th
+
+    seen_statuses = []
+
+    def fake_list_tasks(cluster, family, desiredStatus):
+        seen_statuses.append(desiredStatus)
+        return {"taskArns": []}  # idle
+
+    fake_ecs = MagicMock()
+    fake_ecs.list_tasks.side_effect = fake_list_tasks
+    fake_dynamo = MagicMock()
+    fake_dynamo.get_item.return_value = {"Item": {"keys": []}}
+
+    with (
+        patch.object(th, "ecs", fake_ecs),
+        patch.object(th, "dynamo", fake_dynamo),
+        patch.object(th, "_run_task") as run_task,
+    ):
+        th._launch_phase1_if_idle()
+
+    assert run_task.called  # idle -> Phase 1 launched
+    assert set(seen_statuses) <= {"RUNNING", "PENDING", "STOPPED"}, seen_statuses
+    assert "PROVISIONING" not in seen_statuses
+
+
+def test_launch_phase1_skips_when_task_active():
+    """A RUNNING task -> busy -> do NOT launch (queued for later)."""
+    from lambda_handlers import trigger_handler as th
+
+    fake_ecs = MagicMock()
+    fake_ecs.list_tasks.return_value = {"taskArns": ["arn:task/running-1"]}
+
+    with (
+        patch.object(th, "ecs", fake_ecs),
+        patch.object(th, "boto3"),
+        patch.object(th, "_run_task") as run_task,
+    ):
+        th._launch_phase1_if_idle()
+
+    run_task.assert_not_called()
