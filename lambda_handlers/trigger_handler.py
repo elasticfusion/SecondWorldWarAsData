@@ -1167,7 +1167,13 @@ def _launch_phase1_if_idle():
     PROVISIONING task as idle and double-launching)."""
     for fam in TASK_FAMILIES.values():
         active = []
-        for status in ("PROVISIONING", "PENDING", "RUNNING"):
+        # ECS list_tasks desiredStatus accepts ONLY RUNNING/PENDING/STOPPED —
+        # 'PROVISIONING' is a lastStatus, not a desiredStatus, and passing it raises
+        # InvalidParameterException (which previously crashed the whole launch, leaving
+        # content queued but Phase 1 never started). desiredStatus=RUNNING already
+        # surfaces tasks whose lastStatus is PROVISIONING/PENDING/RUNNING; we add PENDING
+        # for completeness. A starting task thus still counts as busy (G1 race guard).
+        for status in ("RUNNING", "PENDING"):
             active += ecs.list_tasks(
                 cluster=CLUSTER, family=fam, desiredStatus=status
             ).get("taskArns", [])
