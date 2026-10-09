@@ -263,7 +263,21 @@ def main() -> int:
         return 2
     openserp_url = os.environ.get("OPENSERP_URL", "http://localhost:7001")
 
-    storage = create_storage(config, Path("output"))
+    # The worker runs as a bare container command (it does NOT go through ecs_entrypoint's
+    # runtime config patching), so derive storage from the env the task def provides: when
+    # S3_BUCKET is set, read/write entities in S3 under the 'output' prefix; otherwise local.
+    region = config.get("aws", {}).get(
+        "region", os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+    )
+    s3_bucket = os.environ.get("S3_BUCKET", "")
+    if s3_bucket:
+        from src.utils.storage import S3Storage
+
+        storage: Any = S3Storage(bucket=s3_bucket, prefix="output", region=region)
+        logger.info("storage: S3 s3://%s/output", s3_bucket)
+    else:
+        storage = create_storage(config, Path("output"))
+        logger.info("storage: local output/")
     grok_client = GrokClient(Path(os.environ.get("CACHE_DIR", ".cache")))
 
     import src.enrichment.openserp_enrichment as oe
