@@ -224,6 +224,9 @@ Resources:
                   - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/ecs/${EnvironmentName}-wwii-*
               - Sid: OpenSerpWorkQueue
                 Effect: Allow
+                # Shared ECSTaskRole runs BOTH the producer (SendMessage) and the worker
+                # (Receive/Delete/ChangeMessageVisibility). DLQ is intentionally omitted — SQS
+                # redrive to the DLQ is service-side and needs no task-role grant.
                 Action:
                   - sqs:ReceiveMessage
                   - sqs:DeleteMessage
@@ -233,7 +236,6 @@ Resources:
                   - sqs:GetQueueUrl
                 Resource:
                   - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-openserp-work
-                  - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-openserp-work-dlq
               - Sid: S3Access
                 Effect: Allow
                 Action:
