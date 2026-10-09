@@ -29,6 +29,12 @@ class LocalStorage:
         self.base_dir = Path(base_dir)
 
     def _resolve(self, path: str) -> Path:
+        # Defense in depth: never resolve outside base_dir (path-traversal guard). Callers that
+        # accept untrusted paths (e.g. the SQS worker) validate too, but this is the backstop.
+        base = self.base_dir.resolve()
+        resolved = (self.base_dir / path).resolve()
+        if base != resolved and base not in resolved.parents:
+            raise ValueError(f"path escapes storage base: {path!r}")
         return self.base_dir / path
 
     def read_json(self, path: str) -> dict[str, Any]:
@@ -77,6 +83,14 @@ class S3Storage:
         self.s3 = boto3.client("s3", region_name=region)
 
     def _key(self, path: str) -> str:
+        # Defense in depth: reject absolute paths / '..' segments that would escape the prefix.
+        import posixpath
+
+        if path.startswith("/") or ".." in path.split("/"):
+            raise ValueError(f"path escapes storage prefix: {path!r}")
+        norm = posixpath.normpath(path)
+        if norm.startswith("..") or posixpath.isabs(norm):
+            raise ValueError(f"path escapes storage prefix: {path!r}")
         return f"{self.prefix}/{path}" if self.prefix else path
 
     def read_json(self, path: str) -> dict[str, Any]:
