@@ -1260,6 +1260,8 @@ Resources:
               Value: !Ref OpenSerpWorkQueue
             - Name: OPENSERP_URL
               Value: http://localhost:7001
+            - Name: SECRETS_ID
+              Value: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
             - Name: NOTIFICATION_TOPIC_ARN
               Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
           LogConfiguration:

@@ -278,6 +278,23 @@ def main() -> int:
     else:
         storage = create_storage(config, Path("output"))
         logger.info("storage: local output/")
+
+    # The worker bypasses ecs_entrypoint, which normally resolves SECRETS_ID -> GROK_API_KEY.
+    # Do that fetch here so GrokClient can authenticate.
+    if not os.environ.get("GROK_API_KEY") and os.environ.get("SECRETS_ID"):
+        try:
+            import boto3
+
+            sm = boto3.client("secretsmanager", region_name=region)
+            os.environ["GROK_API_KEY"] = sm.get_secret_value(
+                SecretId=os.environ["SECRETS_ID"]
+            )["SecretString"]
+            logger.info("loaded GROK_API_KEY from Secrets Manager")
+        except Exception as e:  # noqa: BLE001
+            logger.error(
+                "failed to load SECRETS_ID %s: %s", os.environ.get("SECRETS_ID"), e
+            )
+
     grok_client = GrokClient(Path(os.environ.get("CACHE_DIR", ".cache")))
 
     import src.enrichment.openserp_enrichment as oe
