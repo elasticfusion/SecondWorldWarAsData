@@ -76,3 +76,52 @@ def test_validate_before_write_rejects_bad_allows_good():
 def test_validate_unknown_entity_allows_write():
     # fail-safe: unknown entity -> don't block the write
     assert oe._validate_before_write({"x": 1}, "not_an_entity") is True
+
+
+def test_search_timeout_is_config_driven():
+    """The OpenSERP per-query HTTP timeout comes from config (raised for browser latency),
+    not a hardcoded 30s. Defaults to 60 when unset."""
+    from unittest.mock import MagicMock
+
+    captured = {}
+
+    class _Resp:
+        status_code = 200
+
+        def json(self):
+            return {"results": [{"url": "u", "title": "t", "snippet": "s"}]}
+
+    def fake_get(url, params=None, timeout=None, **k):
+        captured["timeout"] = timeout
+        return _Resp()
+
+    sess = MagicMock()
+    sess.get.side_effect = fake_get
+
+    # Explicit config value is honored.
+    with (
+        patch.object(oe, "_breaker_is_open", lambda: False),
+        patch.object(oe, "get_session", lambda: sess),
+        patch.object(oe, "_breaker_record_success", lambda: None),
+        patch(
+            "src.utils.config.load_config",
+            lambda: {
+                "openserp": {"rate_limit_seconds": 0, "request_timeout_seconds": 90}
+            },
+        ),
+    ):
+        oe._search_openserp("q", "http://x", limit=5)
+    assert captured["timeout"] == 90
+
+    # Default when the key is absent is 60 (not the old hardcoded 30).
+    with (
+        patch.object(oe, "_breaker_is_open", lambda: False),
+        patch.object(oe, "get_session", lambda: sess),
+        patch.object(oe, "_breaker_record_success", lambda: None),
+        patch(
+            "src.utils.config.load_config",
+            lambda: {"openserp": {"rate_limit_seconds": 0}},
+        ),
+    ):
+        oe._search_openserp("q", "http://x", limit=5)
+    assert captured["timeout"] == 60
