@@ -95,11 +95,19 @@ def main() -> int:
     )
     args = ap.parse_args()
 
-    from src.utils.backends import create_storage
     from src.utils.config import load_config
 
     config = load_config()
-    storage = create_storage(config, args.output_dir)
+    s3_bucket = os.environ.get("S3_BUCKET", "")
+    if s3_bucket:
+        from src.utils.storage import S3Storage
+
+        region = config.get("aws", {}).get("region", "us-east-1")
+        storage: Any = S3Storage(bucket=s3_bucket, prefix="output", region=region)
+    else:
+        from src.utils.backends import create_storage
+
+        storage = create_storage(config, args.output_dir)
 
     messages = build_messages(storage, args.book)
     logger.info("OpenSERP enqueue: %d entities need search", len(messages))
