@@ -48,9 +48,9 @@ def _ecs_with(task_arns):
         out = []
         for arn in tasks:
             group = (
-                "service:dev-wwii-openserp"
+                f"service:{nm.ENV_NAME}-wwii-openserp"
                 if "openserp" in arn
-                else "family:dev-wwii-phase2-extract"
+                else f"family:{nm.ENV_NAME}-wwii-phase2-extract"
             )
             out.append({"taskArn": arn, "group": group})
         return {"tasks": out}
@@ -136,6 +136,29 @@ def test_no_demand_when_only_openserp_and_no_leases():
         ),
     ):
         assert nm._nat_demand_present() is False
+
+
+def test_openserp_worker_task_IS_demand():
+    """Regression (SQS worker): a running openserp-WORKER task MUST count as NAT demand.
+    Only the browser support service (group service:{env}-wwii-openserp) is excluded; the
+    worker (service:{env}-wwii-openserp-worker) needs NAT for ECR/S3/Grok/search egress, so
+    tearing NAT down under it caused ECR-pull i/o timeouts."""
+    ecs = MagicMock()
+    ecs.list_tasks.return_value = {"taskArns": ["arn:.../worker-1"]}
+    ecs.describe_tasks.return_value = {
+        "tasks": [
+            {
+                "taskArn": "arn:.../worker-1",
+                "group": f"service:{nm.ENV_NAME}-wwii-openserp-worker",
+            }
+        ]
+    }
+    with (
+        patch.object(nm, "_lease_table", return_value=_table_with([])),
+        patch.object(nm, "_ocr_jobs_in_flight", return_value=False),
+        patch.object(nm, "_ecs_client", return_value=ecs),
+    ):
+        assert nm._nat_demand_present() is True  # worker keeps NAT up
 
 
 def test_demand_check_error_assumes_present():
