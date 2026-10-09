@@ -41,7 +41,9 @@ _MIN_INTERVAL = 2.0
 _MAX_RETRIES = 3
 
 _rate_lock = threading.Lock()
-_last_call = [0.0]
+_last_call: dict = (
+    {}
+)  # host -> monotonic timestamp of last request (per-host politeness)
 
 # Markers that identify a bot-protection / WAF block page served as HTTP-200 HTML
 # (status-code checks alone miss these). Lower-cased substring match.
@@ -94,19 +96,29 @@ def is_block_page(html: Optional[str], status_code: Optional[int] = None) -> boo
     return hits >= 2 and len(html) < 4000
 
 
-def _throttle() -> None:
-    """Block as needed so archive.org calls are spaced >= _MIN_INTERVAL apart."""
+def _throttle(host: str) -> None:
+    """Block so calls TO A GIVEN HOST are spaced >= _MIN_INTERVAL apart.
+
+    Politeness is a per-host concern — the load lands on each distinct server — so the
+    interval is tracked per hostname. In practice this module only ever talks to
+    archive.org / web.archive.org, but keying on host keeps it correct-by-construction
+    (and avoids throttling the availability-API host against the snapshot-content host
+    unnecessarily)."""
     with _rate_lock:
-        wait = _MIN_INTERVAL - (time.monotonic() - _last_call[0])
+        last = _last_call.get(host, 0.0)
+        wait = _MIN_INTERVAL - (time.monotonic() - last)
         if wait > 0:
             time.sleep(wait + random.uniform(0, 0.3))  # jitter
-        _last_call[0] = time.monotonic()
+        _last_call[host] = time.monotonic()
 
 
 def _get_with_courtesy(url: str, timeout: int, **kwargs) -> Optional[requests.Response]:
-    """GET with politeness: throttle, identifying UA, Retry-After + bounded backoff."""
+    """GET with politeness: per-host throttle, identifying UA, Retry-After + bounded backoff."""
+    from urllib.parse import urlparse
+
+    host = urlparse(url).netloc or "archive.org"
     for attempt in range(_MAX_RETRIES):
-        _throttle()
+        _throttle(host)
         try:
             resp = requests.get(url, headers=_HEADERS, timeout=timeout, **kwargs)
         except requests.RequestException as exc:
