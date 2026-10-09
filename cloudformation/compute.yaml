@@ -10,6 +10,13 @@ Parameters:
     Default: 'false'
     AllowedValues: ['true', 'false']
     Description: M4 concurrency kill-switch — 'true' routes triggers to the SFN dispatcher
+  OpenSerpWorkerPoolSize:
+    Type: String
+    Default: '0'
+    Description: >-
+      Desired count for the SQS-driven OpenSERP sidecar worker service (SQS scaling
+      design, step 2). Default 0 = DORMANT (deployed but not running). Set > 0 to drain
+      the OpenSERP work queue with that many sidecar workers (each = 1 worker + 1 Chromium).
   PoolMin:
     Type: String
     Default: '2'
@@ -1175,6 +1182,115 @@ Resources:
           SecurityGroups:
             - !Ref OpenSerpSGId
 
+  # --- SQS work queue for OpenSERP enrichment (SQS scaling design, step 2) ---
+  OpenSerpWorkDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${EnvironmentName}-wwii-openserp-work-dlq
+      MessageRetentionPeriod: 1209600  # 14 days
+
+  OpenSerpWorkQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${EnvironmentName}-wwii-openserp-work
+      VisibilityTimeout: 900           # 15 min; extended via heartbeat for slow entities
+      MessageRetentionPeriod: 1209600  # 14 days
+      ReceiveMessageWaitTimeSeconds: 20  # long-poll (cost/latency)
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt OpenSerpWorkDLQ.Arn
+        maxReceiveCount: 5
+
+  # --- SQS-driven OpenSERP sidecar worker (worker + its own Chromium in one task) ---
+  OpenSerpWorkerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-openserp-worker
+      RetentionInDays: 14
+
+  OpenSerpWorkerTaskDef:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${EnvironmentName}-wwii-openserp-worker
+      Cpu: '1024'
+      Memory: '2048'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      TaskRoleArn: !Ref ECSTaskRoleArn
+      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
+      ContainerDefinitions:
+        # Sidecar browser — identical to the standalone OpenSERP container, reached at localhost.
+        - Name: openserp
+          Image: !Ref OpenSerpImageUri
+          Essential: true
+          Command: ['serve', '--host', '0.0.0.0', '--port', '7001']
+          PortMappings:
+            - ContainerPort: 7001
+              Protocol: tcp
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - wget -q -O /dev/null http://localhost:7001/health || exit 1
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 60
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref OpenSerpWorkerLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: openserp
+        # Worker — drains the SQS queue; verifies against the sidecar at localhost:7001.
+        - Name: worker
+          Image: !Ref PipelineImageUri
+          Essential: true
+          StopTimeout: 120  # grace for in-flight entity + heartbeat stop on SIGTERM (Spot)
+          Command: ['openserp_worker.py']
+          DependsOn:
+            - ContainerName: openserp
+              Condition: HEALTHY
+          Environment:
+            - Name: AWS_DEFAULT_REGION
+              Value: !Ref AWS::Region
+            - Name: S3_BUCKET
+              Value: !Ref DataBucketName
+            - Name: CACHE_TABLE
+              Value: !Ref CacheTableName
+            - Name: OPENSERP_WORK_QUEUE_URL
+              Value: !Ref OpenSerpWorkQueue
+            - Name: OPENSERP_URL
+              Value: http://localhost:7001
+            - Name: NOTIFICATION_TOPIC_ARN
+              Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref OpenSerpWorkerLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: worker
+
+  OpenSerpWorkerService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: !Sub ${EnvironmentName}-wwii-openserp-worker
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref OpenSerpWorkerTaskDef
+      DesiredCount: !Ref OpenSerpWorkerPoolSize  # default 0 = DORMANT (deployed, not running)
+      CapacityProviderStrategy:
+        - CapacityProvider: FARGATE_SPOT
+          Weight: 4
+          Base: 0
+        - CapacityProvider: FARGATE
+          Weight: 1
+          Base: 0
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets:
+            - !Ref PrivateSubnet1Id
+            - !Ref PrivateSubnet2Id
+          SecurityGroups:
+            - !Ref OpenSerpSGId
+
   PipelineDashboard:
     Type: AWS::CloudWatch::Dashboard
     Properties:
@@ -1274,6 +1390,14 @@ Outputs:
     Value: !Ref ImportTaskDef
   OpenSerpServiceName:
     Value: !GetAtt OpenSerpService.Name
+  OpenSerpWorkQueueUrl:
+    Value: !Ref OpenSerpWorkQueue
+  OpenSerpWorkQueueArn:
+    Value: !GetAtt OpenSerpWorkQueue.Arn
+  OpenSerpWorkDLQUrl:
+    Value: !Ref OpenSerpWorkDLQ
+  OpenSerpWorkerServiceName:
+    Value: !GetAtt OpenSerpWorkerService.Name
   DedupApiUrl:
     Value: !Sub https://${DedupApi}.execute-api.${AWS::Region}.amazonaws.com/app/dedup
   MetricsApiUrl:
