@@ -329,6 +329,147 @@ def _verify_result(
         return False
 
 
+def _verify_results_batch(
+    expected_context: str,
+    results: List[Dict[str, Any]],
+    grok_client: Any,
+    snippet_key: str = "description",
+    url_key: str = "url",
+    title_key: str = "title",
+) -> List[bool]:
+    """Prompt-level batched verifier (design doc §10/§10A): verify ALL ``results`` in ONE Grok
+    call that returns a per-result YES/NO array, instead of one Grok call per result.
+
+    Returns a list of bools aligned 1:1 with ``results`` (index i -> result i relevant?).
+
+    Behaviour mirrors _verify_result exactly, just amortised across a call:
+      * FAIL-CLOSED: no grok_client -> all False; any missing/malformed/short array index -> that
+        index is False (reject); a Grok error -> uncached indices are False (and NOT cached, so a
+        healthy later run can re-verify).
+      * CACHE PRESERVED: each result is keyed EXACTLY as _verify_result
+        (``f"{expected_context[:50]}|{title[:50]}|{url[:60]}"``). Already-cached results are
+        pre-filtered out of the batch (so repeat runs issue no Grok call); per-result cache
+        entries are written from the batched response (90-day positive / negative TTL via
+        cache_result).
+      * METRICS PRESERVED: _metric("verify_yes"/"verify_no") is incremented per NEWLY-verified
+        result exactly as _verify_result does (cache hits do not re-increment, matching the
+        single-item path).
+
+    _verify_result remains the single-item path; this is purely an additive batched variant and
+    is NOT yet wired into the batch drivers."""
+    verdicts: List[bool] = [False] * len(results)
+    if not results:
+        return verdicts
+    if not grok_client:
+        # No verifier available -> cannot confirm any -> reject all (fail-closed).
+        return verdicts
+
+    from src.utils.search_cache import cache_result, get_cached
+
+    # Pre-compute per-result cache keys (EXACTLY as _verify_result) and consult the cache so
+    # already-decided results stay free (no Grok call) on repeat runs.
+    cache_keys: List[str] = []
+    to_verify: List[int] = []  # indices still needing a Grok verdict
+    for i, r in enumerate(results):
+        title = str(r.get(title_key, "") or "")
+        url = str(r.get(url_key, "") or "")
+        cache_key = f"{expected_context[:50]}|{title[:50]}|{url[:60]}"
+        cache_keys.append(cache_key)
+        cached = get_cached("openserp_verify", cache_key)
+        if cached == "YES":
+            verdicts[i] = True
+        elif cached in ("NO", "NOT_FOUND"):
+            verdicts[i] = False
+        else:
+            to_verify.append(i)
+
+    if not to_verify:
+        return verdicts  # fully served from cache — no Grok call
+
+    # Build ONE prompt enumerating the uncached results; expect a YES/NO per line/index.
+    lines = []
+    for n, idx in enumerate(to_verify):
+        r = results[idx]
+        title = str(r.get(title_key, "") or "")
+        snippet = str(r.get(snippet_key, "") or "")
+        url = str(r.get(url_key, "") or "")
+        lines.append(
+            f'[{n}] title: "{title[:200]}" | snippet: "{snippet[:300]}" | url: {url[:200]}'
+        )
+    prompt = (
+        "For EACH numbered search result below, decide if it is relevant to the context.\n"
+        f'Context: "{expected_context[:200]}"\n\n'
+        "Results:\n" + "\n".join(lines) + "\n\n"
+        f'Return ONLY a JSON array of exactly {len(to_verify)} strings, each "YES" or "NO", '
+        "in the same order as the numbered results (index 0 first). "
+        'Example for 2 results: ["YES", "NO"]'
+    )
+
+    try:
+        response = grok_client.chat_completion(
+            prompt=prompt,
+            system_prompt="You verify search result relevance. Reply with a JSON YES/NO array.",
+            temperature=0.0,
+            use_cache=True,
+            cache_type="openserp_verify_batch",
+        )
+        answers = _parse_batch_verdicts(response)
+    except Exception:
+        # Verifier errored -> cannot confirm -> reject uncached (fail-closed). NOT cached, so a
+        # later run with a healthy Grok can still verify them.
+        logger.warning(
+            "Grok batch verify errored (fail-closed reject %d results): %s",
+            len(to_verify),
+            expected_context[:40],
+        )
+        return verdicts
+
+    for n, idx in enumerate(to_verify):
+        # Fail-closed on a missing/short/malformed index.
+        answer = answers[n] if n < len(answers) else "NO"
+        verdicts[idx] = answer == "YES"
+        cache_result("openserp_verify", cache_keys[idx], answer)
+        _metric("verify_yes" if answer == "YES" else "verify_no")
+    logger.info(
+        "Grok batch verify: %d results for '%s' -> %d YES",
+        len(to_verify),
+        expected_context[:40],
+        sum(1 for n in range(len(to_verify)) if verdicts[to_verify[n]]),
+    )
+    return verdicts
+
+
+def _parse_batch_verdicts(response: Any) -> List[str]:
+    """Parse a batched-verify Grok response into a list of "YES"/"NO" strings (fail-closed).
+
+    ONLY a well-formed JSON array of verdicts is accepted; any entry that is not an unambiguous
+    YES becomes "NO". Any non-JSON/malformed response returns [] (so the caller treats EVERY
+    result as NO). We deliberately do not token-scan prose — out-of-order YES/NO tokens could
+    misalign verdicts to results, and a verifier must never accept on ambiguous output.
+    """
+    if not response:
+        return []
+    text = str(response).strip()
+    # ONLY accept a well-formed JSON array of verdicts. Anything else is fail-closed:
+    # return [] so the caller treats every result as NO (reject). We deliberately do NOT
+    # token-scan prose for YES/NO — out-of-order tokens could misalign verdicts to results,
+    # and a verifier must never accept on ambiguous output.
+    try:
+        import re as _re
+
+        m = _re.search(r"\[.*\]", text, _re.DOTALL)
+        if m:
+            arr = json.loads(m.group(0))
+            if isinstance(arr, list):
+                return [
+                    "YES" if str(x).strip().upper().startswith("YES") else "NO"
+                    for x in arr
+                ]
+    except Exception:  # noqa: BLE001 - malformed -> fail-closed ([] => all NO)
+        pass
+    return []
+
+
 # --- Positive-URL page processing (fetch -> summarize -> 90-day retention) ---------------
 
 _URL_FETCH_RETENTION_DAYS = (
@@ -938,6 +1079,39 @@ def _collect_person_candidates(f, name: str, data: Dict, openserp_url: str) -> D
     return person_candidates
 
 
+def enrich_one_person(
+    data: Dict,
+    openserp_url: str,
+    grok_client: Any,
+    f: Any = None,
+    max_images: Optional[int] = None,
+    max_web: Optional[int] = None,
+) -> bool:
+    """Enrich ONE already-loaded person record in place (search + verify + apply).
+
+    Returns True if the record was changed. This is the per-entity unit of work shared by the
+    batch directory driver (below) and the SQS worker (one message = one entity); it does NOT
+    read/write files or set the openserp_searched marker — the caller owns persistence.
+    """
+    if max_images is None or max_web is None:
+        from src.utils.config import load_config
+
+        cfg = load_config().get("openserp", {})
+        max_images = (
+            max_images
+            if max_images is not None
+            else cfg.get("max_images_per_entity", 1)
+        )
+        max_web = (
+            max_web if max_web is not None else cfg.get("max_web_results_per_entity", 5)
+        )
+    name = data.get("name", "")
+    if not name:
+        return False
+    c = _collect_person_candidates(f, name, data, openserp_url)
+    return _verify_and_apply(c, data, name, grok_client, max_images, max_web)
+
+
 def enrich_people_with_openserp(
     people_dir: Path,
     openserp_url: str,
@@ -1051,20 +1225,11 @@ def enrich_equipment_with_openserp(
         if not name:
             continue
 
-        if not data.get("images"):
-            images = search_equipment_images(
-                name,
-                openserp_url,
-                grok_client,
-                identifier=data.get("technical_identifier") or "",
-                facts=_equipment_query_terms(data),
-            )
-            if images:
-                data["images"] = images
-                enriched += 1
-                _metric("entities_enriched")
-                _metric("items_added", len(images))
-                logger.info("  ✓ OpenSERP enriched: %s", name)
+        changed = enrich_one_equipment(data, openserp_url, grok_client)
+        if changed:
+            enriched += 1
+            _metric("entities_enriched")
+            logger.info("  ✓ OpenSERP enriched: %s", name)
 
         data["openserp_searched"] = True
         _metric("entities_searched")
@@ -1076,6 +1241,40 @@ def enrich_equipment_with_openserp(
 
     logger.info("OpenSERP equipment enrichment: %d enriched", enriched)
     return enriched
+
+
+def enrich_one_equipment(
+    data: Dict,
+    openserp_url: str,
+    grok_client: Any,
+    f: Any = None,  # noqa: ARG001 - signature parity with enrich_one_person
+    max_images: Optional[int] = None,  # noqa: ARG001 - unused; search uses its own cap
+    max_web: Optional[int] = None,  # noqa: ARG001 - equipment has no web results
+) -> bool:
+    """Enrich ONE already-loaded equipment record in place (search + verify + apply).
+
+    Returns True if the record was changed. Mirrors enrich_one_person: this is the per-entity
+    unit of work shared by the batch directory driver (above) and the SQS worker (one message =
+    one entity); it does NOT read/write files or set the openserp_searched marker — the caller
+    owns persistence. Metric increments other than items_added (which is intrinsic to the apply)
+    stay in the driver's persistence section."""
+    name = data.get("common_name", data.get("name", ""))
+    if not name:
+        return False
+    if data.get("images"):
+        return False
+    images = search_equipment_images(
+        name,
+        openserp_url,
+        grok_client,
+        identifier=data.get("technical_identifier") or "",
+        facts=_equipment_query_terms(data),
+    )
+    if not images:
+        return False
+    data["images"] = images
+    _metric("items_added", len(images))
+    return True
 
 
 def enrich_source_sections_with_openserp(
@@ -1116,20 +1315,15 @@ def enrich_source_sections_with_openserp(
                 continue
 
         op_name = operation["name"]
-        aliases = operation.get("aliases") or []
-        results = search_event_content(
-            op_name, aliases=aliases, openserp_url=openserp_url, grok_client=grok_client
-        )
-
-        existing = data.get("primary_sources") or []
-        existing_urls = {s.get("url") for s in existing if isinstance(s, dict)}
-        added = [r for r in results if r.get("url") not in existing_urls]
-        if added:
-            data["primary_sources"] = existing + added
+        before = len(data.get("primary_sources") or [])
+        changed = enrich_one_source_section(data, openserp_url, grok_client)
+        if changed:
+            added_count = len(data.get("primary_sources") or []) - before
             enriched += 1
             _metric("entities_enriched")
-            _metric("items_added", len(added))
-            logger.info("  ✓ OpenSERP primary sources for %s: +%d", op_name, len(added))
+            logger.info(
+                "  ✓ OpenSERP primary sources for %s: +%d", op_name, added_count
+            )
 
         data["openserp_searched"] = True
         _metric("entities_searched")
@@ -1141,6 +1335,38 @@ def enrich_source_sections_with_openserp(
 
     logger.info("OpenSERP source_section enrichment: %d enriched", enriched)
     return enriched
+
+
+def enrich_one_source_section(
+    data: Dict,
+    openserp_url: str,
+    grok_client: Any,
+    f: Any = None,  # noqa: ARG001 - signature parity with enrich_one_person
+    max_images: Optional[int] = None,  # noqa: ARG001 - unused
+    max_web: Optional[int] = None,  # noqa: ARG001 - unused
+) -> bool:
+    """Enrich ONE already-loaded source_section record in place (search + verify + apply).
+
+    Returns True if primary_sources were added. Mirrors enrich_one_person: shared per-entity
+    unit for the batch driver (above) and the SQS worker; it does NOT read/write files or set
+    openserp_searched. entities_enriched/entities_searched + persistence stay in the driver.
+    """
+    operation = data.get("operation")
+    if not operation or not operation.get("name"):
+        return False  # null-over-fake: no operation -> nothing to search
+    op_name = operation["name"]
+    aliases = operation.get("aliases") or []
+    results = search_event_content(
+        op_name, aliases=aliases, openserp_url=openserp_url, grok_client=grok_client
+    )
+    existing = data.get("primary_sources") or []
+    existing_urls = {s.get("url") for s in existing if isinstance(s, dict)}
+    added = [r for r in results if r.get("url") not in existing_urls]
+    if not added:
+        return False
+    data["primary_sources"] = existing + added
+    _metric("items_added", len(added))
+    return True
 
 
 def _group_name_matches(group_name: str, result_title: str) -> bool:
@@ -1239,25 +1465,7 @@ def enrich_groups_with_openserp(
             if searched_at and (_time.time() - searched_at) < 90 * 86400:
                 continue
 
-        nationality = data.get("nationality") or ""
-        changed = False
-        for category, field in (
-            ("images", "images"),
-            ("web_results", "web_results"),
-            ("veterans_association", "veterans_associations"),
-        ):
-            results = _group_openserp_category(
-                name, nationality, category, openserp_url, grok_client, max_results=3
-            )
-            if not results:
-                continue
-            existing = data.get(field) or []
-            existing_urls = {r.get("url") for r in existing if isinstance(r, dict)}
-            added = [r for r in results if r.get("url") not in existing_urls]
-            if added:
-                data[field] = existing + added
-                _metric("items_added", len(added))
-                changed = True
+        changed = enrich_one_group(data, openserp_url, grok_client)
 
         data["openserp_searched"] = True
         _metric("entities_searched")
@@ -1273,6 +1481,45 @@ def enrich_groups_with_openserp(
 
     logger.info("OpenSERP people_groups enrichment: %d enriched", enriched)
     return enriched
+
+
+def enrich_one_group(
+    data: Dict,
+    openserp_url: str,
+    grok_client: Any,
+    f: Any = None,  # noqa: ARG001 - signature parity with enrich_one_person
+    max_images: Optional[int] = None,  # noqa: ARG001 - unused
+    max_web: Optional[int] = None,  # noqa: ARG001 - unused
+) -> bool:
+    """Enrich ONE already-loaded people_groups record in place (search + verify + apply).
+
+    Returns True if images / web_results / veterans_associations were added. Mirrors
+    enrich_one_person: shared per-entity unit for the batch driver (above) and the SQS worker;
+    it does NOT read/write files or set openserp_searched. entities_enriched/entities_searched +
+    persistence stay in the driver."""
+    name = data.get("group_name", "")
+    if not name or len(name) < 3:
+        return False
+    nationality = data.get("nationality") or ""
+    changed = False
+    for category, field in (
+        ("images", "images"),
+        ("web_results", "web_results"),
+        ("veterans_association", "veterans_associations"),
+    ):
+        results = _group_openserp_category(
+            name, nationality, category, openserp_url, grok_client, max_results=3
+        )
+        if not results:
+            continue
+        existing = data.get(field) or []
+        existing_urls = {r.get("url") for r in existing if isinstance(r, dict)}
+        added = [r for r in results if r.get("url") not in existing_urls]
+        if added:
+            data[field] = existing + added
+            _metric("items_added", len(added))
+            changed = True
+    return changed
 
 
 def place_name_variants(place: Dict) -> List[str]:
@@ -1312,8 +1559,6 @@ def enrich_places_with_openserp(
         logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
         return 0
 
-    from src.utils.search_query_loader import render_search_queries
-
     enriched = 0
     for f in sorted(places_dir.glob("*.json")):
         if f.name in SKIP_FILES:
@@ -1337,57 +1582,7 @@ def enrich_places_with_openserp(
                 continue
 
         primary = variants[0]
-        changed = False
-
-        # Images (verify-only) — search each name variant.
-        existing_img_urls = {
-            i.get("url") for i in (data.get("images") or []) if isinstance(i, dict)
-        }
-        for variant in variants:
-            for q in render_search_queries("places", "images", name=variant):
-                for r in _search_openserp(q, openserp_url):
-                    url = r.get("url", "")
-                    if not url or url in existing_img_urls:
-                        continue
-                    if _verify_result(
-                        r.get("title", ""),
-                        f"Photo of {primary} (WWII place)",
-                        grok_client,
-                        snippet=r.get("description", ""),
-                        url=url,
-                    ):
-                        data.setdefault("images", []).append(
-                            {
-                                "url": url,
-                                "title": r.get("title", ""),
-                                "source": "openserp",
-                            }
-                        )
-                        existing_img_urls.add(url)
-                        changed = True
-
-        # Textual sources — fetched + summarized + pos/neg URL cached.
-        existing_src_urls = {
-            s.get("url") for s in (data.get("web_results") or []) if isinstance(s, dict)
-        }
-        for variant in variants:
-            for q in render_search_queries("places", "sources", name=variant):
-                for r in _search_openserp(q, openserp_url):
-                    url = r.get("url", "")
-                    if not url or url in existing_src_urls:
-                        continue
-                    processed = process_positive_url(
-                        url,
-                        r.get("title", ""),
-                        r.get("description", ""),
-                        f"{primary} in World War II",
-                        grok_client,
-                    )
-                    if processed:
-                        data.setdefault("web_results", []).append(processed)
-                        existing_src_urls.add(url)
-                        _metric("items_added")
-                        changed = True
+        changed = enrich_one_place(data, openserp_url, grok_client)
 
         data["openserp_searched"] = True
         _metric("entities_searched")
@@ -1403,3 +1598,79 @@ def enrich_places_with_openserp(
 
     logger.info("OpenSERP places enrichment: %d enriched", enriched)
     return enriched
+
+
+def enrich_one_place(
+    data: Dict,
+    openserp_url: str,
+    grok_client: Any,
+    f: Any = None,  # noqa: ARG001 - signature parity with enrich_one_person
+    max_images: Optional[int] = None,  # noqa: ARG001 - unused
+    max_web: Optional[int] = None,  # noqa: ARG001 - unused
+) -> bool:
+    """Enrich ONE already-loaded place record in place (search + verify + apply).
+
+    Searches EACH name variant (current + aliases + native-language historical names): images
+    are verify-only; textual sources are fetched + summarized via process_positive_url. Returns
+    True if images or web_results were added. Mirrors enrich_one_person: shared per-entity unit
+    for the batch driver (above) and the SQS worker; it does NOT read/write files or set
+    openserp_searched. entities_enriched/entities_searched + persistence stay in the driver.
+    """
+    from src.utils.search_query_loader import render_search_queries
+
+    variants = place_name_variants(data)
+    if not variants:
+        return False
+    primary = variants[0]
+    changed = False
+
+    # Images (verify-only) — search each name variant.
+    existing_img_urls = {
+        i.get("url") for i in (data.get("images") or []) if isinstance(i, dict)
+    }
+    for variant in variants:
+        for q in render_search_queries("places", "images", name=variant):
+            for r in _search_openserp(q, openserp_url):
+                url = r.get("url", "")
+                if not url or url in existing_img_urls:
+                    continue
+                if _verify_result(
+                    r.get("title", ""),
+                    f"Photo of {primary} (WWII place)",
+                    grok_client,
+                    snippet=r.get("description", ""),
+                    url=url,
+                ):
+                    data.setdefault("images", []).append(
+                        {
+                            "url": url,
+                            "title": r.get("title", ""),
+                            "source": "openserp",
+                        }
+                    )
+                    existing_img_urls.add(url)
+                    changed = True
+
+    # Textual sources — fetched + summarized + pos/neg URL cached.
+    existing_src_urls = {
+        s.get("url") for s in (data.get("web_results") or []) if isinstance(s, dict)
+    }
+    for variant in variants:
+        for q in render_search_queries("places", "sources", name=variant):
+            for r in _search_openserp(q, openserp_url):
+                url = r.get("url", "")
+                if not url or url in existing_src_urls:
+                    continue
+                processed = process_positive_url(
+                    url,
+                    r.get("title", ""),
+                    r.get("description", ""),
+                    f"{primary} in World War II",
+                    grok_client,
+                )
+                if processed:
+                    data.setdefault("web_results", []).append(processed)
+                    existing_src_urls.add(url)
+                    _metric("items_added")
+                    changed = True
+    return changed
