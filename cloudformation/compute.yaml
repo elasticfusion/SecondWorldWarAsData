@@ -79,6 +79,18 @@ Parameters:
     Type: Number
     Default: 5
     Description: How often the batch poller checks for completed batches
+  WorkerAutoscalerIntervalMinutes:
+    Type: Number
+    Default: 3
+    Description: How often the OpenSERP worker autoscaler checks queue depth
+  WorkerMaxPool:
+    Type: Number
+    Default: 4
+    Description: Max OpenSERP sidecar workers the autoscaler will scale to
+  MessagesPerWorker:
+    Type: Number
+    Default: 25
+    Description: Target queue backlog per worker (autoscaler sizing)
   ReconciliationIntervalMinutes:
     Type: Number
     Default: 15
@@ -676,7 +688,42 @@ Resources:
           CACHE_TABLE: !Ref CacheTableName
           NOTIFICATION_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
 
-  # --- Metrics API ---
+  # --- OpenSERP worker autoscaler (SQS scaling step 5) ---
+  OpenSerpWorkerAutoscalerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-openserp-worker-autoscaler
+      Runtime: python3.12
+      Handler: lambda_handlers.openserp_worker_autoscaler.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 128
+      Timeout: 60
+      Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          WORKER_MAX_POOL: !Ref WorkerMaxPool
+          MESSAGES_PER_WORKER: !Ref MessagesPerWorker
+
+  OpenSerpWorkerAutoscalerSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-openserp-worker-autoscaler-schedule
+      ScheduleExpression: !Sub "rate(${WorkerAutoscalerIntervalMinutes} minutes)"
+      State: ENABLED
+      Targets:
+        - Id: OpenSerpWorkerAutoscalerTarget
+          Arn: !GetAtt OpenSerpWorkerAutoscalerFunction.Arn
+
+  OpenSerpWorkerAutoscalerPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref OpenSerpWorkerAutoscalerFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt OpenSerpWorkerAutoscalerSchedule.Arn
   MetricsFunction:
     Type: AWS::Lambda::Function
     Properties:
