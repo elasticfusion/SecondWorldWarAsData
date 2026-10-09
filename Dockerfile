@@ -40,6 +40,7 @@ COPY ecs_entrypoint.py .
 COPY phase0_ingest.py phase0_convert.py \
      phase1_parse.py phase2_extract.py phase2_retry.py \
      phase3_enrich_data.py phase3_retry.py \
+     phase3_enqueue_openserp.py openserp_worker.py \
      import_to_dynamodb.py ./
 
 # Set ownership (config.yaml needs to be writable for runtime patching)
