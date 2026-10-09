@@ -618,7 +618,27 @@ Resources:
       AlarmActions:
         - !Ref AlarmSNSTopic
 
-  # --- OCR -> parse handoff: Batch job SUCCEEDED (chandra) -> merge Lambda ---
+  # --- OpenSERP SQS work DLQ: poison entities land here after maxReceiveCount redeliveries ---
+  OpenSerpWorkDLQAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-openserp-work-dlq
+      AlarmDescription: >-
+        OpenSERP work messages landed in the DLQ (entity repeatedly failed enrich/validate).
+        Inspect the DLQ; these entities were not enriched.
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Dimensions:
+        - Name: QueueName
+          Value: !Sub ${EnvironmentName}-wwii-openserp-work-dlq
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
   OcrJobSucceededRule:
     Type: AWS::Events::Rule
     Condition: HasOcrMerge

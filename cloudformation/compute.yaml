@@ -699,7 +699,7 @@ Resources:
         S3Bucket: !Ref LambdaCodeBucket
         S3Key: !Ref LambdaCodeKey
       MemorySize: 128
-      Timeout: 60
+      Timeout: 120  # allows synchronous NAT create+verify before scale-up from zero
       Role: !Ref LambdaExecutionRoleArn
       Environment:
         Variables:

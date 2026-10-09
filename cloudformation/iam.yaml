@@ -114,6 +114,15 @@ Resources:
                   - sqs:GetQueueAttributes
                 Resource:
                   - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-trigger-queue
+              - Sid: SQSOpenSerpWorkQueueRead
+                Effect: Allow
+                # The worker autoscaler lambda reads the OpenSERP work-queue depth to size the
+                # worker pool. Read-only, scoped to the single work queue.
+                Action:
+                  - sqs:GetQueueUrl
+                  - sqs:GetQueueAttributes
+                Resource:
+                  - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-openserp-work
               - Sid: ECSManagement
                 Effect: Allow
                 Action:
