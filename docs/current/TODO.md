@@ -33,6 +33,14 @@ informative or correct" (observed: empty-`{}` biographies and 0.0-coord places p
 4. **Teach the statistical catcher to see low-information ALLOWS** — record an `allow_empty`
    outcome (populated-field count below a per-entity floor) so empty-`{}` biographies / 0.0-coord
    places are visible (today they're `allow`, so the catcher can't flag them — its biggest blind spot).
+4b. **Extend the guard to PHASE 1 (parse) output.** Phase 1 writes `chapter*-parsed.json` via RAW
+   `json.dump` (no `write_json_with_lock`, no registry schema) — it is UNVALIDATED today, so a
+   malformed/empty parse flows straight into Phase 2 (garbage-in at the earliest point). Add a
+   `parsed`/`content` schema + route Phase-1 writes through the central guard, incl. an
+   empty-parse flag (zero/near-zero paragraphs = structurally valid but useless). NOTE: only the
+   content-validity + guard half of the model applies to Phase 1 — the identity/dedup/
+   no-duplication tiers do NOT (parse artifacts have no PK ULIDs and re-parse is idempotent, so
+   there are no entities to duplicate). Those remain Phase-2/3 concerns.
 
 **MED**
 5. **Persist validation_stats as a time series** (per run + per book) and alert on TREND/regression,
@@ -112,6 +120,15 @@ Two detective/corrective layers remain (the preventive in-process guard is done 
 - **(c) Minor:** make `write_json_with_lock` return a bool (did-write) so `merge._write_entity_guarded`
   consumes it directly instead of the mtime/exists heuristic; consider moving `_validate_entity` to
   `src/schemas/write_guard.py` if the single-writer-facade refactor happens.
+- **(d) Consistency — unify the second validation source.** `src/utils/schema_registry.py`
+  (`SchemaRegistry`/`get_registry`) is a SEPARATE validator stack used by the READ/report tools
+  (`scripts/validate_data.py`, `validation_report.py`, `generate_dashboard.py` + several tests). It
+  validates against `src/json_schemas` — a DIFFERENT schema source than the write guard's
+  `ENTITY_REGISTRY`/`src/schemas`. Two sources of truth can disagree (a record the write guard
+  accepts could be flagged by the report tooling, or vice-versa). Reconcile to ONE schema source so
+  write-time and read-time validation are provably consistent. (The write-path duplicate in
+  `openserp_enrichment._validate_before_write` was already removed — it now delegates to the central
+  `_validate_entity`.)
 0. **~~[CRITICAL] Deploy current `main`~~ ✅ DONE 2026-10-02** — verified live: S3
    AES256 + DenyInsecureTransport; pandoc `--sandbox` image pushed; AV scanning
    deployed + signatures seeded + EICAR-validated (`AV_SCAN_ENABLED=true`); EBS
