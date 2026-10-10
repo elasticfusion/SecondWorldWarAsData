@@ -37,6 +37,13 @@ processing:
   validate_ulids: true
   generate_jq_queries: false           # Skip — not needed for production
   generate_download_scripts: false
+  # Date-plausibility window for the semantic quality flag `date_out_of_window` (advisory, never
+  # blocks). Generous by default so WWII antecedents (Abyssinia 1935, Spanish Civil War 1936-39,
+  # Sino-Japanese 1937, Anschluss/Sudetenland 1938, Khalkhin Gol 1939) + late-1940s aftermath are
+  # in-window. Override per corpus; env DATE_WINDOW_START / DATE_WINDOW_END take precedence.
+  date_window:
+    start: "1930-01-01"
+    end: "1950-12-31"
   force_reprocess: false
   reprocess_types: []
 

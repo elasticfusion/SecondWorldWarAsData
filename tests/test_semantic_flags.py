@@ -31,13 +31,23 @@ def test_geo_missing_or_zero_coords_flagged():
     ]
 
 
-# --- date-in-window (dates) ---
+# --- date-in-window (dates): generous WWII window incl. antecedents + aftermath ---
 def test_date_in_window_no_flag():
     assert sf.flags_for("dates", {"resolved_earliest": "1944-12-16"}) == []
 
 
+def test_wwii_antecedents_not_flagged():
+    # Pre-1939 antecedents the corpus legitimately covers must NOT be flagged.
+    assert sf.flags_for("dates", {"resolved_earliest": "1935-10-03"}) == []  # Abyssinia
+    assert (
+        sf.flags_for("dates", {"resolved_earliest": "1936-07-17"}) == []
+    )  # Spanish CW
+    assert sf.flags_for("dates", {"resolved_earliest": "1938-03-12"}) == []  # Anschluss
+
+
 def test_date_out_of_window_flagged():
-    assert sf.flags_for("dates", {"resolved_earliest": "1946-03-01"}) == [
+    # Far outside any plausible WWII window (default ends 1950).
+    assert sf.flags_for("dates", {"resolved_earliest": "1960-03-01"}) == [
         "date_out_of_window"
     ]
 
@@ -45,6 +55,24 @@ def test_date_out_of_window_flagged():
 def test_approximate_date_not_flagged():
     # Non-ISO approximate form is intentionally NOT flagged (it legitimately resolves to a range).
     assert sf.flags_for("dates", {"date_start": "summer-1944"}) == []
+
+
+def test_date_window_is_config_env_overridable(monkeypatch):
+    """The window is config/env-driven, not a hardcoded single-theater assumption."""
+    import importlib
+
+    monkeypatch.setenv("DATE_WINDOW_START", "1944-01-01")
+    monkeypatch.setenv("DATE_WINDOW_END", "1944-12-31")
+    mod = importlib.reload(sf)
+    try:
+        # 1943 now outside the (narrowed) window -> flagged.
+        assert mod.flags_for("dates", {"resolved_earliest": "1943-05-01"}) == [
+            "date_out_of_window"
+        ]
+    finally:
+        monkeypatch.delenv("DATE_WINDOW_START", raising=False)
+        monkeypatch.delenv("DATE_WINDOW_END", raising=False)
+        importlib.reload(sf)  # restore module-level defaults for other tests
 
 
 # --- citation resolvability (bibliography) ---

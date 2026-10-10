@@ -30,10 +30,47 @@ QUALITY_FLAGS_FIELD = "quality_flags"
 _LAT_MIN, _LAT_MAX = -90.0, 90.0
 _LON_MIN, _LON_MAX = -180.0, 180.0
 
-# ETO campaign window for the DATE check (the corpus is currently the 1944–45 ETO campaign; this is
-# a per-check window, independent of geography). ISO date strings compare lexicographically.
-ETO_DATE_START = "1943-06-01"
-ETO_DATE_END = "1945-12-31"
+# Date-plausibility window — the span of dates a record may legitimately carry. This is a WWII
+# DATA corpus, not an ETO-only one, and WWII had a long antecedent/aftermath tail, so the window is
+# generous AND configurable (never a hardcoded single-theater assumption):
+#   - antecedents the corpus legitimately covers: Italian invasion of Abyssinia (1935), Spanish
+#     Civil War (1936-39), Second Sino-Japanese War (1937), Anschluss/Sudetenland (1938), Battles
+#     of Khalkhin Gol (1939) — all predate the "war started 1 Sep 1939" convention;
+#   - aftermath: occupation, war-crimes trials, demobilization into the late 1940s.
+# Default 1930-01-01 .. 1950-12-31 (wide enough to not false-flag the above). Override per corpus
+# via config `processing.date_window: {start, end}` or env DATE_WINDOW_START / DATE_WINDOW_END.
+_DEFAULT_DATE_WINDOW_START = "1930-01-01"
+_DEFAULT_DATE_WINDOW_END = "1950-12-31"
+
+
+def _load_date_window() -> tuple:
+    """Resolve the plausibility window from env > config > default. Fail-safe: any error returns
+    the generous default (a validator must never crash a write)."""
+    import os
+
+    start = os.environ.get("DATE_WINDOW_START")
+    end = os.environ.get("DATE_WINDOW_END")
+    if start and end:
+        return start, end
+    try:
+        from src.utils.config import load_config
+
+        cfg = load_config() or {}
+        win = (
+            cfg.get("processing", {}).get("date_window") or cfg.get("date_window") or {}
+        )
+        return (
+            start or win.get("start") or _DEFAULT_DATE_WINDOW_START,
+            end or win.get("end") or _DEFAULT_DATE_WINDOW_END,
+        )
+    except Exception:  # noqa: BLE001
+        return (
+            start or _DEFAULT_DATE_WINDOW_START,
+            end or _DEFAULT_DATE_WINDOW_END,
+        )
+
+
+DATE_WINDOW_START, DATE_WINDOW_END = _load_date_window()
 
 # Endnote fragments that cannot resolve to a real source.
 _CITATION_STUBS = {"ibid", "ibid.", "op. cit.", "op.cit.", "loc. cit.", "idem", ""}
@@ -61,7 +98,7 @@ def _iso_in_window(value: Any) -> Any:
     if not isinstance(value, str) or not _ISO_DATE.match(value):
         return None
     day = value[:10]
-    return ETO_DATE_START <= day <= ETO_DATE_END
+    return DATE_WINDOW_START <= day <= DATE_WINDOW_END
 
 
 def _date_flags(record: Dict[str, Any]) -> List[str]:

@@ -32,8 +32,14 @@ would flag legitimate places by design as coverage expands. We validate only coo
 
 ### 2. Date-in-window (dates)
 Fields: `resolved_earliest`, `resolved_latest` (ISO), fallback `date_start`/`normalized_datetime`.
-- `date_out_of_window` — a resolved date falls outside **1943-06-01 … 1945-12-31** (generous ETO
-  campaign window; the corpus is 1944 Normandy→Siegfried/Lorraine, margin for lead-up/aftermath).
+- `date_out_of_window` — a resolved date falls outside the configured date window. This is a WWII
+  DATA corpus (not ETO-only) with a long antecedent/aftermath tail, so the window is GENEROUS and
+  CONFIGURABLE, never a hardcoded single-theater span. Default **1930-01-01 … 1950-12-31** so it
+  does NOT false-flag legitimate antecedents the corpus covers — Italian invasion of Abyssinia
+  (1935), Spanish Civil War (1936–39), Second Sino-Japanese War (1937), Anschluss/Sudetenland
+  (1938), Khalkhin Gol (1939) — nor the late-1940s aftermath (occupation, trials, demobilization).
+  Override per corpus via config `date_window: {start, end}` or env `DATE_WINDOW_START` /
+  `DATE_WINDOW_END` (ISO).
 - `date_unparseable` — a non-null date string that does not parse to ISO (approximate forms like
   `summer-1944` are NOT flagged — they legitimately resolve to a range).
 
@@ -62,9 +68,10 @@ implemented — future work (HIGH-4). Also NOTE: the per-mention merge path (`lo
 is annotated too so coordinate-less creates are covered.
 
 ## Expected base rates (calibrate the catcher, not false alarms)
-- `date_out_of_window`: ~5% of dates are legitimately outside the campaign window (1937/1940/1941
-  lead-up, 1946–48 aftermath the corpus genuinely discusses). This is a real steady-state rate, not
-  error — the catcher threshold must account for it.
+- `date_out_of_window`: with the generous default (1930–1950) only genuinely implausible dates fire
+  (OCR errors, mis-parsed years) — WWII antecedents (1935–39) and late-1940s aftermath are IN-window
+  by design. Narrow the window per corpus (config/env) only if you want a tighter campaign check,
+  accepting the higher expected rate that implies.
 - `geo_impossible_coords`: expected to be rare (only physically-invalid garbage geocodes).
   There is NO theater box — a place far from Europe (Pacific, US, USSR) is legitimate for a global
   conflict and is never flagged. The big current geo signal is `geo_missing_coords` (no coords yet).
