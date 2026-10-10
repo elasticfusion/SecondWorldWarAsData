@@ -305,11 +305,30 @@ def _split_paragraphs(paragraphs: List[Dict[str, Any]]) -> List[List[Dict[str, A
 
 
 def _merge_event_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Merge multiple event extraction results into one, combining sub-events."""
+    """Merge multiple event extraction results into one, combining sub-events.
+
+    All chunks of one section share the same (deterministic) EventID by design. Sub-eventIDs are
+    normally disjoint (keyed on paragraph range), but the positional fallback (``index:N``) resets
+    per chunk, so two chunks could emit the same Sub-eventID. Deterministically disambiguate any
+    collision here so the merged file keeps unique Sub-eventIDs (validate_event_json enforces
+    per-file uniqueness, which this path would otherwise bypass)."""
     base = results[0]
     for extra in results[1:]:
         extra_subs = extra.get("Event", {}).get("Sub-events", [])
         base.setdefault("Event", {}).setdefault("Sub-events", []).extend(extra_subs)
+    seen: set = set()
+    subs = base.get("Event", {}).get("Sub-events", []) or []
+    for pos, se in enumerate(subs):
+        if not isinstance(se, dict):
+            continue
+        seid = se.get("Sub-eventID")
+        if seid in seen:
+            from src.utils.deterministic_ids import sub_event_id as _sub_event_id
+
+            se["Sub-eventID"] = _sub_event_id(
+                base.get("Event", {}).get("EventID", ""), name=f"merged:{pos}"
+            )
+        seen.add(se.get("Sub-eventID"))
     return base
 
 

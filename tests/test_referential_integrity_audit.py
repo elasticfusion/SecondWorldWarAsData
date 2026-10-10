@@ -130,6 +130,45 @@ def test_edges_cover_every_schema_reference_field():
     assert not missing, f"schema reference fields NOT covered by EDGES: {missing}"
 
 
+def test_list_valued_file_does_not_abort(monkeypatch):
+    """REGRESSION: a non-record artifact whose top-level JSON is a LIST (e.g.
+    bibliography/review_queue.json) must be skipped, not crash build_pk_sets/audit."""
+    files = {
+        "people/a.json": {"PersonID": P1, "name": "A"},
+        "bibliography/review_queue.json": [{"not": "a record"}, {"x": 1}],  # a LIST
+    }
+    st = FakeStorage(files)
+    sets = ria.build_pk_sets(st)  # must not raise
+    assert P1 in sets["people"]
+    rep = ria.audit(st)  # must not raise
+    assert "total_dangling" in rep
+
+
+def test_nested_event_files_populate_event_pk_set():
+    """REGRESSION: event files are nested under content/<book>/; the event PK set must be populated
+    (an empty events set makes every EventID reference look dangling)."""
+
+    class NestedStorage(FakeStorage):
+        def list_files(self, prefix, pattern="*.json"):
+            pref = prefix.rstrip("/") + "/"
+            out = [k for k in self.files if k.startswith(pref)]
+            if "-event.json" in pattern:
+                out = [k for k in out if k.endswith("-event.json")]
+            # Emulate a NON-recursive flat glob: "*.json" matches only the immediate dir level.
+            if pattern == "*.json":
+                out = [k for k in out if "/" not in k[len(pref) :]]
+            return out
+
+    st = NestedStorage(
+        {
+            "content/TheBook/ch1-event.json": {
+                "Event": {"EventID": EV1, "Sub-events": []}
+            },
+        }
+    )
+    assert EV1 in ria.build_pk_sets(st)["events"]
+
+
 def test_pk_targets_cover_every_registry_primary_key():
     """DRIFT GUARD: every registry entity with a primary key is a resolvable target."""
     from src.schemas.entity_registry import ENTITY_REGISTRY
