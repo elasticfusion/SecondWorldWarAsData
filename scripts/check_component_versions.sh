@@ -98,6 +98,25 @@ for df in Dockerfile Dockerfile.* openserp/Dockerfile; do
   done < <(grep -nE '^FROM .*@sha256:' "$df" 2>/dev/null)
 done
 
+# --- S3 validation-backstop drift: deployed Lambda must run the CURRENT validation code ----------
+# The backstop Lambda MUST validate with the repo's live _validate_entity. Compare the repo-HEAD
+# fingerprint (schemas + file_lock + validation_stats) to the fingerprint stamped on the deployed
+# Lambda; a mismatch means a partial deploy left the backstop behind the pipeline's schemas/guard.
+echo "Checking: S3 validation-backstop code drift"
+repo_fp="$(bash scripts/validation_fingerprint.sh 2>/dev/null || echo '')"
+env_name="${ENV_NAME:-dev}"
+region="${AWS_DEFAULT_REGION:-us-east-1}"
+deployed_fp="$(aws lambda get-function-configuration \
+  --function-name "${env_name}-wwii-s3-validation-backstop" --region "$region" \
+  --query 'Environment.Variables.VALIDATION_FINGERPRINT' --output text 2>/dev/null || echo '')"
+if [ -z "$deployed_fp" ] || [ "$deployed_fp" = "None" ]; then
+  say_skip "validation-backstop (not deployed / no fingerprint yet)"
+elif [ "$repo_fp" = "$deployed_fp" ]; then
+  say_ok "validation-backstop runs current validation code (${repo_fp:0:12}…)"
+else
+  say_warn "validation-backstop is STALE (repo ${repo_fp:0:12}… vs deployed ${deployed_fp:0:12}…) — run update_lambdas.sh"
+fi
+
 echo "==============================="
 if [ "$behind" = "1" ]; then
   if [ "$STRICT" = "1" ]; then

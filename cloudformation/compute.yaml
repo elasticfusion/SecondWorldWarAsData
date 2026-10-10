@@ -1416,6 +1416,94 @@ Resources:
           ]
         }
 
+  # --- S3 validation backstop (data-quality block b-1) --------------------------------------
+  # Validates every object written under output/ at the storage perimeter using the SAME
+  # file_lock._validate_entity primitive (bundled in code.zip; drift-checked at deploy). Delivery
+  # is via EventBridge (NOT a second S3 notification rule — that would collide with the existing
+  # output/content/-parsed.json rule). On an invalid record: tag quarantine=true in place + alert.
+  BackstopDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${EnvironmentName}-wwii-s3-validation-backstop-dlq
+      MessageRetentionPeriod: 1209600  # 14 days
+
+  BackstopRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-s3-validation-backstop-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: {Service: lambda.amazonaws.com}
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: BackstopLeastPriv
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: ReadAndTagOutputObjects
+                Effect: Allow
+                Action: [s3:GetObject, s3:GetObjectTagging, s3:PutObjectTagging]
+                Resource: !Sub arn:aws:s3:::${DataBucketName}/output/*
+              - Sid: AlertTopic
+                Effect: Allow
+                Action: sns:Publish
+                Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+              - Sid: DeadLetter
+                Effect: Allow
+                Action: sqs:SendMessage
+                Resource: !GetAtt BackstopDLQ.Arn
+
+  S3ValidationBackstopFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-s3-validation-backstop
+      Runtime: python3.12
+      Handler: lambda_handlers.s3_validation_backstop.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 256
+      Timeout: 60
+      Role: !GetAtt BackstopRole.Arn
+      DeadLetterConfig:
+        TargetArn: !GetAtt BackstopDLQ.Arn
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          S3_BUCKET: !Ref DataBucketName
+          NOTIFICATION_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+          VALIDATION_FINGERPRINT: unset  # stamped by scripts/update_lambdas.sh at deploy
+
+  BackstopRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-s3-validation-backstop
+      Description: Validate every object created under output/ (data-quality backstop)
+      EventPattern:
+        source: [aws.s3]
+        detail-type: ["Object Created"]
+        detail:
+          bucket:
+            name: [!Ref DataBucketName]
+          object:
+            key: [{prefix: "output/"}]
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt S3ValidationBackstopFunction.Arn
+          Id: backstop
+
+  BackstopInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref S3ValidationBackstopFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt BackstopRule.Arn
+
 Outputs:
   TriggerFunctionArn:
     Value: !GetAtt TriggerFunction.Arn

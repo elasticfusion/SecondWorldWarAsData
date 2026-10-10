@@ -5,6 +5,16 @@ Parameters:
   EnvironmentName:
     Type: String
     Default: dev
+  QuarantineDenyRoleArns:
+    Type: CommaDelimitedList
+    Default: ''
+    Description: >-
+      Consumer/reader role ARNs that must be DENIED read access to objects tagged
+      quarantine=true (data-quality backstop). Default empty = no DENY applied (the pipeline's own
+      producing role must NOT be denied). Populate when a distinct RAG/API reader role exists.
+
+Conditions:
+  HasQuarantineDenyRoles: !Not [!Equals [!Join ['', !Ref QuarantineDenyRoleArns], '']]
 
 Resources:
   DataBucket:
@@ -126,6 +136,18 @@ Resources:
             Condition:
               Bool:
                 'aws:SecureTransport': 'false'
+          - !If
+            - HasQuarantineDenyRoles
+            - Sid: DenyReadOfQuarantinedObjects
+              Effect: Deny
+              Principal:
+                AWS: !Ref QuarantineDenyRoleArns
+              Action: ['s3:GetObject']
+              Resource: !Sub '${DataBucket.Arn}/output/*'
+              Condition:
+                StringEquals:
+                  's3:ExistingObjectTag/quarantine': 'true'
+            - !Ref AWS::NoValue
 
   # API response cache
   CacheTable:

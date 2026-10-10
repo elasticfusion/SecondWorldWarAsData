@@ -35,9 +35,13 @@ echo "=== Uploading to S3 ==="
 aws s3 cp lambda-code.zip "s3://${BUCKET}/lambda/code.zip" --region "$REGION"
 
 echo "=== Updating Lambda functions ==="
+# Compute the validation fingerprint (schemas + guard + stats catcher) so the s3-validation-backstop
+# Lambda can advertise which validation code it is running — the deploy preflight compares this to
+# repo-HEAD to catch a stale backstop.
+VALIDATION_FP="$(bash scripts/validation_fingerprint.sh 2>/dev/null || echo unknown)"
 # Only update Lambdas that use the S3 code package.
 # Skip: dedup-auth (inline ZipFile), trigger (inline ZipFile), pipeline phases (now ECS).
-for fn in dedup-gate dedup-ui openserp-manager nat-manager openserp-worker-autoscaler metrics batch-poller trigger ocr-merge slack-formatter mdreview-ui; do
+for fn in dedup-gate dedup-ui openserp-manager nat-manager openserp-worker-autoscaler metrics batch-poller trigger ocr-merge slack-formatter mdreview-ui s3-validation-backstop; do
   echo "  Updating ${ENV}-wwii-${fn}..."
   aws lambda update-function-code \
     --function-name "${ENV}-wwii-${fn}" \
@@ -46,6 +50,15 @@ for fn in dedup-gate dedup-ui openserp-manager nat-manager openserp-worker-autos
     --region "$REGION" \
     --no-cli-pager > /dev/null
 done
+
+# Stamp the validation fingerprint onto the backstop Lambda's env (best-effort; the function may
+# not exist yet on a first deploy — the CFN sets a default).
+aws lambda get-function --function-name "${ENV}-wwii-s3-validation-backstop" --region "$REGION" \
+  --no-cli-pager >/dev/null 2>&1 && \
+aws lambda update-function-configuration \
+  --function-name "${ENV}-wwii-s3-validation-backstop" \
+  --environment "Variables={VALIDATION_FINGERPRINT=${VALIDATION_FP},ENV_NAME=${ENV},S3_BUCKET=${ENV}-wwii-data-pipeline,NOTIFICATION_TOPIC_ARN=arn:aws:sns:${REGION}:$(aws sts get-caller-identity --query Account --output text 2>/dev/null):${ENV}-wwii-phase2-complete}" \
+  --region "$REGION" --no-cli-pager >/dev/null 2>&1 || true
 
 rm -f lambda-code.zip
 echo "=== Done ==="
