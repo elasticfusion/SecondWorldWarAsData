@@ -118,6 +118,40 @@ def _repair_empty_ulids(data: Any) -> None:
             _repair_empty_ulids(item)
 
 
+import re as _re_mod
+
+_ULID_RE = _re_mod.compile(r"^[0-9A-HJKMNP-TV-Z]{26}$")
+
+
+def _repair_primary_key(entity_type: str, data: Dict[str, Any], filepath: Path) -> None:
+    """Mint a fresh ULID for an entity's PRIMARY-KEY field when it is missing / None / empty /
+    not a valid ULID. The PK is the record's own identity (locally generated, never a reference),
+    so this self-heal is lossless and needs no reanalysis — it applies uniformly to EVERY
+    schema-enforced entity via its registry ``required_id``. Reference IDs are untouched.
+    """
+    try:
+        import ulid
+
+        from src.schemas.entity_registry import ENTITY_REGISTRY
+
+        spec = next((s for s in ENTITY_REGISTRY if s.name == entity_type), None)
+        if spec is None or not spec.required_id:
+            return
+        pk = spec.required_id
+        val = data.get(pk)
+        if not isinstance(val, str) or not _ULID_RE.match(val):
+            data[pk] = str(ulid.new())
+            logger.warning(
+                "Auto-repaired %s %s (%s): minted a fresh ULID for a missing/invalid "
+                "primary key (self-identity — no reanalysis needed)",
+                entity_type,
+                pk,
+                filepath.name,
+            )
+    except Exception:  # noqa: BLE001 - best-effort; never block on the repair itself
+        pass
+
+
 def _validate_entity(filepath: Path, data: Dict[str, Any]) -> bool:
     """Central write-time guard. Returns True if the write should proceed.
 
@@ -141,6 +175,15 @@ def _validate_entity(filepath: Path, data: Dict[str, Any]) -> bool:
         return (
             True  # not a schema-enforced entity (fail-safe) — legacy warn already done
         )
+
+    # Auto-repair a missing/empty/malformed PRIMARY-KEY ULID. The PK (PersonID/PlaceID/…) is the
+    # record's OWN identity, minted locally (str(ulid.new())) — it is NOT a reference to another
+    # record, so synthesizing one loses nothing and orphans nothing, and needs NO reanalysis of
+    # the record. This heals PK-corrupt records (incl. legacy fragments) in-place across ALL
+    # features instead of blocking them. Reference IDs (EventID/Sub_eventID/cross-ref MentionIDs)
+    # are deliberately NOT regenerated here (that would orphan the link) — only the entity's own
+    # required_id primary key.
+    _repair_primary_key(entity_type, data, filepath)
 
     status, target = _version_status(data, entity_type)
     if status == "future":

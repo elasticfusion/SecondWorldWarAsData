@@ -29,7 +29,8 @@ def base():
 
 def test_storage_write_json_blocks_invalid(base):
     st = LocalStorage(base)
-    st.write_json("people/bad.json", {"name": "No ID"})  # missing PersonID
+    # missing 'name' (people needs PersonID + name). PK auto-heals, but name is unrecoverable -> block.
+    st.write_json("people/bad.json", {"rank": "Gen"})
     assert not (base / "people/bad.json").exists()
 
 
@@ -68,15 +69,17 @@ def test_events_resolved_by_suffix_and_guarded():
 
 
 def test_versionless_invalid_is_blocked():
-    # No _schema_version + missing PersonID = malformed, NOT "legitimately old" -> block.
-    assert _validate_entity(Path("/x/people/a.json"), {"name": "X"}) is False
+    # Missing PK is now AUTO-HEALED (ULID minted). But a record ALSO missing another required
+    # field still blocks — here people requires both PersonID AND name; name is absent -> block.
+    assert _validate_entity(Path("/x/people/a.json"), {"rank": "Gen"}) is False
 
 
 def test_current_version_invalid_is_blocked():
     cur = entity_version("people")
+    # PK auto-heals; blocked here because 'name' (also required) is missing.
     assert (
         _validate_entity(
-            Path("/x/people/b.json"), {"name": "X", "_schema_version": cur}
+            Path("/x/people/b.json"), {"rank": "Gen", "_schema_version": cur}
         )
         is False
     )
@@ -117,16 +120,17 @@ def test_validate_before_stamp_old_record_not_lost(base):
     assert (d / "old.json").exists()
 
 
-def test_old_versioned_but_pk_less_is_blocked():
-    """Reviewers' hole: a record with a plausible OLD _schema_version but MISSING its primary
-    key must still be BLOCKED — the PK was never a version-added field, so a PK-less record is
-    corrupt regardless of version. (Was previously waved through as needs_upgrade.)"""
-    # people fragment: declares old version, has event_mentions, but NO PersonID + no name.
-    frag = {"_schema_version": "2.0", "rank": "General", "event_mentions": []}
-    assert _validate_entity(Path("/x/people/krueger.json"), frag) is False
-    # groups fragment, old version, no GroupID -> blocked
-    gfrag = {"_schema_version": "2.0", "nationality": "USA"}
-    assert _validate_entity(Path("/x/people_groups/div.json"), gfrag) is False
+def test_pk_less_but_otherwise_valid_is_healed():
+    """Policy change: a record missing ONLY its primary key is AUTO-HEALED (ULID minted), not
+    blocked — the PK is self-identity, no reanalysis needed. (This heals legacy fragments like
+    the 25 places blocks.) Records missing OTHER required fields still block (covered elsewhere).
+    """
+    # people needs PersonID + name; supply name, omit PersonID -> healed + allowed.
+    rec = {"_schema_version": "2.0", "name": "Walter Krueger", "rank": "General"}
+    assert _validate_entity(Path("/x/people/krueger.json"), rec) is True
+    import re
+
+    assert re.match(r"^[0-9A-HJKMNP-TV-Z]{26}$", rec["PersonID"])  # minted in place
 
 
 def test_old_versioned_with_pk_missing_nonpk_field_is_allowed():
@@ -134,3 +138,57 @@ def test_old_versioned_with_pk_missing_nonpk_field_is_allowed():
     field (dates.date_start) is still allowed-with-warning (not lost)."""
     rec = {"DateID": VALID_ULID, "_schema_version": "2.0"}  # has PK, missing date_start
     assert _validate_entity(Path("/x/dates/old.json"), rec) is True
+
+
+def test_pk_auto_repair_mints_missing_ulid(base):
+    """A record missing its primary-key ULID is AUTO-HEALED (ULID minted) + written, across
+    features — the PK is self-identity, no reanalysis needed. (Would have healed the 25 places
+    blocks.)"""
+    import re
+
+    ULID = re.compile(r"^[0-9A-HJKMNP-TV-Z]{26}$")
+    # places fragment missing PlaceID (realistic: valid nested refs)
+    d = base / "places"
+    d.mkdir()
+    rec = {
+        "event_mentions": [
+            {"EventID": VALID_ULID, "MentionID": VALID_ULID, "Sub_eventID": VALID_ULID}
+        ]
+    }
+    write_json_with_lock(d / "crozon.json", rec, entity="places")
+    assert (d / "crozon.json").exists()
+    import json
+
+    got = json.loads((d / "crozon.json").read_text())
+    assert ULID.match(got["PlaceID"])  # minted
+    assert got["event_mentions"][0]["EventID"] == VALID_ULID  # reference preserved
+
+
+def test_pk_auto_repair_fixes_malformed(base):
+    import json
+    import re
+
+    d = base / "people"
+    d.mkdir()
+    write_json_with_lock(
+        d / "x.json", {"PersonID": "BADID", "name": "N"}, entity="people"
+    )
+    pid = json.loads((d / "x.json").read_text())["PersonID"]
+    assert re.match(r"^[0-9A-HJKMNP-TV-Z]{26}$", pid) and pid != "BADID"
+
+
+def test_pk_repair_does_not_mask_other_missing_required(base):
+    # dates needs DateID + date_start; PK repair fixes DateID but date_start still missing -> BLOCK
+    d = base / "dates"
+    d.mkdir()
+    write_json_with_lock(d / "d.json", {}, entity="dates")
+    assert not (d / "d.json").exists()
+
+
+def test_pk_repair_never_regenerates_reference_ids(base):
+    # A bad nested REFERENCE id (EventID) must still BLOCK — never silently regenerated.
+    d = base / "places"
+    d.mkdir()
+    rec = {"event_mentions": [{"EventID": "NOTAULID"}]}
+    write_json_with_lock(d / "bad.json", rec, entity="places")
+    assert not (d / "bad.json").exists()

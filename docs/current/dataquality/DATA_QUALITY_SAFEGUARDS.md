@@ -104,8 +104,27 @@ Enforced on every guarded write (per-entity schema + guard logic):
   `events`→`Event` object with `EventID`+`Sub-events`).
 - **Typed/patterned fields** inside declared sub-objects (e.g. nested `event_mentions[].EventID`
   must be a valid ULID; dates match the date pattern).
-- **Empty-string ULIDs repaired** before validation (the targeted empty-ID bug class), without
-  regenerating non-empty malformed IDs (which would orphan cross-references).
+
+### 3.1 Three-tier repair model — what the guard fixes vs. what it must not
+
+A field is only safely auto-fixable if its correct value is knowable **without reanalysing the
+source**. That gives three tiers, and the write guard owns only Tier 1:
+
+| Tier | Field class | Correct value comes from | Guard action |
+|---|---|---|---|
+| **1 — self-identity** | the entity's **primary-key** ULID (`PersonID`/`PlaceID`/…) | minted locally — it IS the identity, no external truth | **AUTO-REPAIR**: a missing / empty / malformed PK is replaced with a fresh ULID in place (`_repair_primary_key`, registry-driven, all entities). Lossless, no reanalysis. Empty-string nested IDs are also repaired. |
+| **2 — references** | cross-ref IDs (`EventID`, `Sub_eventID`, cross-entity mention IDs) | the *referenced* record / the mention's context | **NEVER regenerated** — minting a new value would orphan the link. A bad reference ID **blocks** (→ referential-integrity audit / reprocess). |
+| **3 — content** | required content fields (`name`, `date_start`, `title`, `type`, …) | the **source document** (extraction) | **NEVER fabricated by the guard** — the truth is upstream. The record **blocks** (or allow-with-warning for legit-old), and the **corrective reprocessor** (async, has provenance + Grok) walks back up to the source and re-extracts. |
+
+**Two problems can be true at once** and are handled independently: PK repair runs *first and
+unconditionally*; validation then still blocks on any remaining Tier-2/Tier-3 violation. So a
+record that is BOTH PK-corrupt AND missing required content gets its PK healed **and** is still
+blocked on the content — the heal never masks the real defect.
+
+**Principle (project charter): the source is the authority.** The guard heals only the record's own
+identity and otherwise refuses to persist corruption; it never guesses content. "Working up the
+chain" to repopulate a corrupt content field means **re-extracting from the source** — the job of
+the corrective-reprocess loop (§5), not the synchronous write guard (which has no source context).
 
 Enrichment is validated too: when a Grok-confirmed URL's result is appended (image / award /
 web_result / primary_source), the **whole enriched record** is re-validated on write. Enrichment

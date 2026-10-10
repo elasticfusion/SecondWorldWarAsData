@@ -100,6 +100,7 @@ def test_guard_validation_is_unconditional(monkeypatch, tmp_path):
 
     pdir = tmp_path / "people"
     pdir.mkdir()
-    # Missing the mandatory PersonID -> must be BLOCKED (not written) regardless of env.
-    write_json_with_lock(pdir / "x.json", {"name": "No ID Person"}, entity="people")
+    # Missing the mandatory 'name' (a non-PK required field) -> must be BLOCKED regardless of env.
+    # (A missing PersonID would auto-heal; 'name' is unrecoverable without reanalysis, so it blocks.)
+    write_json_with_lock(pdir / "x.json", {"rank": "General"}, entity="people")
     assert not (pdir / "x.json").exists()  # blocked — the guard cannot be disabled

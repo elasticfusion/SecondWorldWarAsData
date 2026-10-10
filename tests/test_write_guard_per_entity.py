@@ -99,9 +99,33 @@ def test_missing_required_field_is_blocked(spec, tmp_path):
         pytest.skip(f"{spec.name} has no required fields")
     d = tmp_path / spec.name
     d.mkdir()
-    rec = _minimal_valid_record(spec)
-    rec.pop(required[0])  # drop a required field
-    write_json_with_lock(d / "rec.json", rec, entity=spec.name)
-    assert not (
-        d / "rec.json"
-    ).exists(), f"{spec.name}: record missing required '{required[0]}' must be BLOCKED"
+    pk = spec.required_id
+    non_pk = [f for f in required if f != pk]
+
+    if non_pk:
+        # Dropping a NON-PK required field must still BLOCK (unrecoverable without reanalysis).
+        rec = _minimal_valid_record(spec)
+        rec.pop(non_pk[0])
+        write_json_with_lock(d / "blocked.json", rec, entity=spec.name)
+        assert not (
+            d / "blocked.json"
+        ).exists(), (
+            f"{spec.name}: missing non-PK required '{non_pk[0]}' must be BLOCKED"
+        )
+
+    if pk and pk in required:
+        # Dropping the PRIMARY KEY must AUTO-HEAL (ULID minted) + write — PK is self-identity,
+        # no reanalysis needed. (Centralized across all features.)
+        rec2 = _minimal_valid_record(spec)
+        rec2.pop(pk, None)
+        write_json_with_lock(d / "healed.json", rec2, entity=spec.name)
+        assert (
+            d / "healed.json"
+        ).exists(), f"{spec.name}: missing PK '{pk}' must be AUTO-HEALED, not blocked"
+        import json
+        import re as _re
+
+        got = json.loads((d / "healed.json").read_text())
+        assert _re.match(
+            r"^[0-9A-HJKMNP-TV-Z]{26}$", got[pk]
+        ), f"{spec.name}: healed PK must be a valid ULID"
