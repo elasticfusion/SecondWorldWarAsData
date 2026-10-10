@@ -19,13 +19,18 @@ per-write guard is blind to. "The guard confirms a record is well-formed; nothin
 informative or correct" (observed: empty-`{}` biographies and 0.0-coord places pass validation).
 
 **HIGH**
-1. **Corpus referential-integrity audit** — resolve every cross-ref edge; report dangling counts
-   per type. Known damage (DATA_QUALITY_STATUS): Casualties→PeopleGroups ~8,336/9,594 broken
-   (~87%); Weather→Places 168/538 broken (a MentionID-vs-PlaceID TYPE-confusion bug — fix that).
-   Caveat: the guard's empty-string-ULID *repair* mints a fresh ULID, which ORPHANS a cross-ref if
-   the empty field was a reference target — restrict repair to primary keys only, never ref fields.
-   **[DONE 2026-10-10, PR #319] — PK auto-repair (`_repair_primary_key`) is scoped to the entity's
-   `required_id` primary key ONLY; reference IDs are never regenerated. This caveat is satisfied.**
+1. **Corpus referential-integrity audit** — **[TOOL DONE 2026-10-10]
+   `scripts/referential_integrity_audit.py` (read-only, tested); ran on the corpus → 5,076 dangling
+   refs; report `docs/current/dataquality/referential_integrity_report.json`.** PK-repair caveat
+   satisfied (PR #319 scopes repair to the primary key only; reference IDs are never regenerated).
+   Per-edge extractor-fix follow-ups the audit surfaced (each a distinct bug + reprocess candidate):
+   - **maps → events: 100% dangling (54/54)** — maps emit EventIDs resolving to no event (real
+     ULIDs, not placeholders) → wrong-ID-field bug in the maps extractor. Highest signal.
+   - **casualties → impacted_places: 86% (969/1123)** — likely MentionID/PlaceID type confusion.
+   - **weather → location.PlaceID: 48% (361/754)** — known MentionID-vs-PlaceID mismatch.
+   - **casualties → event_context.EventID: 40% (3543/8832)**; images→events 13%; source_section→events 7%.
+   Fix each extractor to emit the resolvable target ID; re-run the audit to confirm; fold the audit
+   into the corpus-quality dashboard (MED-7) + a periodic/CI check.
 2. **Remediate the ~35% invalid merge fragments** (§6) via reprocess-from-provenance → re-dedup →
    purge quarantine (fragments hold UNIQUE mentions — never delete).
 3. **Semantic validators as FLAGS (not hard blocks):** geocode in-theatre bounding-box sanity (43%

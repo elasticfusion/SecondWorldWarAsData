@@ -73,12 +73,29 @@
 
 ## Cross-Reference Integrity
 
-| From → To | Total Refs | Valid | Broken | Notes |
+Regenerate with `scripts/referential_integrity_audit.py` (read-only; writes
+`docs/current/dataquality/referential_integrity_report.json`). Snapshot **2026-10-10**
+(5,076 dangling refs total; PK counts: people 1,714 / places 2,855 / groups 1,682 /
+equipment 551 / dates 1,912 / events 5,953):
+
+| From → To | Total | Dangling | Rate | Notes |
 |---|---|---|---|---|
-| Weather → Dates (DateID) | 662 | 662 (100%) | 0 | Fixed 2026-06-06 |
-| Weather → Places (PlaceID) | 538 | 370 (69%) | 168 (31%) | MentionID vs PlaceID mismatch |
-| Casualties → People Groups | ~9,594 | ~1,258 (13%) | ~8,336 | entity_context fix deployed |
-| People Groups → People (members) | 24 | 20 (83%) | 4 | Fixed 2026-06-06 |
+| maps → events (EventID) | 54 | 54 | **100%** | every map's EventID resolves to no event — likely a wrong-ID-field extractor bug (IDs are real ULIDs, not placeholders) |
+| casualties → places (impacted_places[].PlaceID) | 1,123 | 969 | **86%** | likely MentionID/PlaceID type confusion (cf. weather) |
+| casualties → people (impacted_people[].PersonID) | 160 | 87 | 54% | |
+| weather → places (location.PlaceID) | 754 | 361 | 48% | known MentionID-vs-PlaceID mismatch |
+| casualties → events (event_context.EventID) | 8,832 | 3,543 | 40% | |
+| images → events (EventID) | 387 | 51 | 13% | |
+| source_section → events (EventID) | 157 | 11 | 7% | |
+| casualties → people (PersonID) | 2 | 0 | 0% | |
+| casualties → places (PlaceID) | 9 | 0 | 0% | |
+
+Each high-rate edge is a distinct extractor-level reference bug to investigate + a corpus-reprocess
+candidate; the audit scopes them. (Previous hand-maintained snapshot — Weather→Places 31%,
+Casualties→Groups ~87% — is superseded by the audit above; the groups edge now shows 0 refs
+because casualties carry group references under `impacted_organizations[]`, which currently
+contains none that resolve — tracked.)
+
 
 ---
 
