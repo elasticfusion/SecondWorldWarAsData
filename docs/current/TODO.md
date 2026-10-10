@@ -64,6 +64,26 @@ informative or correct" (observed: empty-`{}` biographies and 0.0-coord places p
    NOTE: a one-off remediation of the current stale TEST data is intentionally SKIPPED — dev/test
    data will be refreshed from prod; the only durable value is recurrence-safety in a future prod
    release, which #2-in-core provides (a throwaway cleanup script would die at the next data refresh).
+   **#1 Deterministic EventIDs — [IN PROGRESS 2026-10-10, branch `feature/deterministic-event-ids`]:**
+   central `src/utils/deterministic_ids.py` (`event_id`/`sub_event_id`) derives a schema-valid ULID
+   from stable content (book+chapter+section / parent+paragraph-range), replacing the volatile
+   LLM-supplied id so re-extraction is idempotent (no ripple). Wired into `events.py` (both paths)
+   + the supplemental notes-event; dependents inherit the id (Phase 3 mints none — read-only).
+   **BLOCKERS from sub-agent review (fix before merge):** (a) CRITICAL — `events.py` reads
+   `parsed_data.get("section","full")` but the real parsed key is `section_id`, so ALL sections of
+   a chapter collapse to one EventID (over-merge, 84% of chapters). Fix: read `section_id`. (b)
+   `sub_event_id` can raise `ValueError` (no range AND no name) before validation → aborts
+   extraction, bypassing the retry loop. Fix: deterministic positional fallback. Add regression
+   tests driving the REAL parsed schema key (`section_id`) + the nameless-sub-event case.
+   **NON-NEW-EVENT RESOLUTION (resolve-before-create — added 2026-10-10 per owner):** any path that
+   ENCOUNTERS an event (now or future) must RESOLVE to the existing event, never mint a new/duplicate
+   one. Deterministic EventIDs give this for free on re-extraction (same content → same id → same
+   record). Confirmed today: Phase 3 enrichment mints NO events (read-only consumer) and the
+   dependents only READ `Event.EventID`, so there is no current duplicate-event path. REQUIREMENT to
+   PRESERVE: if a future phase/feature ever creates events (e.g. a maps/vision branch, a corrective
+   reprocessor), it MUST compute the deterministic id for the source unit and resolve-or-attach to the
+   existing event rather than wrapping/creating a parallel one — this is the event-level analogue of
+   the entity resolve-before-write rule in the corrective-reprocessor acceptance criteria below.
 2. **Semantic validators as FLAGS (not hard blocks):** geocode in-theatre bounding-box sanity (43%
    of places have null/0.0 coords; nothing rejects ocean/wrong-continent); date in the 1944–45 ETO
    window (reuse the existing `resolved_earliest/latest`); citation resolvability

@@ -97,6 +97,63 @@ def _reconstruct_fulltext(response: dict, parsed_data: dict) -> dict:
     return response
 
 
+def _subevent_para_range(se: dict) -> tuple:
+    """Recover a sub-event's (start, end) paragraph numbers from its reconstructed fulltext keys
+    (``Paragraph_N``) so a deterministic Sub-eventID can key on an objective paragraph range.
+    """
+    nums = []
+    for k in se.get("Sub-event_fulltext") or {}:
+        if isinstance(k, str) and k.startswith("Paragraph_"):
+            try:
+                nums.append(int(k.split("_", 1)[1]))
+            except ValueError:
+                continue
+    if not nums:
+        return (None, None)
+    return (min(nums), max(nums))
+
+
+def _apply_deterministic_ids(response: dict, parsed_data: dict) -> dict:
+    """Replace the LLM-supplied EventID/Sub-eventIDs with DETERMINISTIC, content-derived ids so a
+    re-extraction of the same source unit yields identical ids (no cross-reference ripple), and the
+    model's id is derived/validated rather than trusted. Central: ids come from
+    ``src.utils.deterministic_ids``. Called after fulltext reconstruction, before validation.
+    """
+    from src.utils.deterministic_ids import event_id as _event_id
+    from src.utils.deterministic_ids import sub_event_id as _sub_event_id
+
+    event = response.get("Event")
+    if not isinstance(event, dict):
+        return response
+    # Real parsed-data key is "section_id" (chunk-split files set "<base>-<chunk>"); the legacy
+    # "section" key does not exist. Using the wrong key collapses every section of a chapter onto
+    # one EventID (over-merge), so read section_id explicitly.
+    section = parsed_data.get("section_id") or parsed_data.get("section") or "full"
+    eid = _event_id(
+        parsed_data.get("book"),
+        parsed_data.get("chapter_title"),
+        section,
+    )
+    event["EventID"] = eid
+    for index, se in enumerate(event.get("Sub-events", []) or []):
+        if not isinstance(se, dict):
+            continue
+        start, end = _subevent_para_range(se)
+        name = se.get("Sub-event_Name") or se.get("Sub-event_summary")
+        if start is None and end is None and not name:
+            # Fail-safe: a sub-event with no paragraph range AND no name would make sub_event_id
+            # raise before schema validation (aborting the whole extraction + bypassing the retry
+            # loop). Fall back to the sub-event's ordinal — still deterministic within the parent.
+            name = f"index:{index}"
+        se["Sub-eventID"] = _sub_event_id(
+            eid,
+            para_start=start,
+            para_end=end,
+            name=name,
+        )
+    return response
+
+
 def create_event_prompt(parsed_data: Dict[str, Any]) -> Optional[str]:
     """Create prompt for event extraction."""
     book = parsed_data["book"]
@@ -281,6 +338,7 @@ def _extract_chunk(
     if "EventID" in result and "Event" not in result:
         result = {"Event": result}
     _reconstruct_fulltext(result, chunk_data)
+    _apply_deterministic_ids(result, chunk_data)
     validate_event_json(result)
     return result
 
@@ -436,6 +494,10 @@ def extract_events(
 
         # Reconstruct fulltext from parsed data before validation
         _reconstruct_fulltext(response, parsed_data)
+
+        # Replace LLM-supplied event ids with deterministic, content-derived ids (idempotent
+        # across re-runs → no cross-reference ripple; the model's id is derived, not trusted).
+        _apply_deterministic_ids(response, parsed_data)
 
         # Validate against schema
         try:
