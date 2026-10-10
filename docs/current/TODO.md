@@ -24,6 +24,8 @@ informative or correct" (observed: empty-`{}` biographies and 0.0-coord places p
    (~87%); Weather→Places 168/538 broken (a MentionID-vs-PlaceID TYPE-confusion bug — fix that).
    Caveat: the guard's empty-string-ULID *repair* mints a fresh ULID, which ORPHANS a cross-ref if
    the empty field was a reference target — restrict repair to primary keys only, never ref fields.
+   **[DONE 2026-10-10, PR #319] — PK auto-repair (`_repair_primary_key`) is scoped to the entity's
+   `required_id` primary key ONLY; reference IDs are never regenerated. This caveat is satisfied.**
 2. **Remediate the ~35% invalid merge fragments** (§6) via reprocess-from-provenance → re-dedup →
    purge quarantine (fragments hold UNIQUE mentions — never delete).
 3. **Semantic validators as FLAGS (not hard blocks):** geocode in-theatre bounding-box sanity (43%
