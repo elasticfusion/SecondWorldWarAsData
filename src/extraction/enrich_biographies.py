@@ -968,9 +968,9 @@ def enrich_person_biography(
         person_data["last_enrichment_search"] = datetime.now(timezone.utc).strftime(
             "%Y-%m-%d"
         )
-        with open(person_file, "w", encoding="utf-8") as f:
-            inject_metadata(person_data, entity="people")
-            json.dump(person_data, f, indent=2, ensure_ascii=False)
+        from src.utils.file_lock import write_json_with_lock
+
+        write_json_with_lock(person_file, person_data, entity="people")
         return False
 
     person_data["biographical_profile"] = bio_profile
@@ -1000,9 +1000,9 @@ def enrich_person_biography(
         logger.error("  ❌ Validation failed for %s: %s", person_name, e)
         return False
 
-    with open(person_file, "w", encoding="utf-8") as f:
-        inject_metadata(person_data, entity="people")
-        json.dump(person_data, f, indent=2, ensure_ascii=False)
+    from src.utils.file_lock import write_json_with_lock
+
+    write_json_with_lock(person_file, person_data, entity="people")
     logger.info("  ✅ Enriched %s", person_name)
     return True
 
@@ -1260,9 +1260,9 @@ def _add_member_to_group(
         member["confidence"] = 0.3
     members.append(member)
 
-    with open(group_file, "w", encoding="utf-8") as f:
-        inject_metadata(group_data, entity="people_groups")
-        json.dump(group_data, f, indent=2, ensure_ascii=False)
+    from src.utils.file_lock import write_json_with_lock
+
+    write_json_with_lock(group_file, group_data, entity="people_groups")
     return True
 
 

@@ -178,8 +178,9 @@ def _write_processing_summary(parsed_data: dict) -> None:
 def _save_event_output(response: dict, parsed_file: Path, output_dir: Path) -> Path:
     """Save event extraction output to file."""
     output_file = output_dir / parsed_file.name.replace("-parsed.json", "-event.json")
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(response, f, indent=2, ensure_ascii=False)
+    from src.utils.file_lock import write_json_with_lock
+
+    write_json_with_lock(output_file, response, entity="events")
     _emit_source_section_safe(response, parsed_file, output_dir)
     return output_file
 

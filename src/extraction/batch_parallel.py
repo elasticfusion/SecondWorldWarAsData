@@ -718,8 +718,9 @@ async def extract_events_batch_async(
             "Event": chapter_events.get("Event", {}),
         }
 
-        with open(event_file, "w", encoding="utf-8") as f:
-            json.dump(event_output, f, indent=2)
+        from src.utils.file_lock import write_json_with_lock
+
+        write_json_with_lock(event_file, event_output, entity="events")
 
         output_files.append(event_file)
 

@@ -22,7 +22,7 @@ def s3_storage():
 
 class TestS3StorageReadWrite:
     def test_write_and_read_json(self, s3_storage):
-        data = {"PersonID": "01TEST", "name": "Eisenhower"}
+        data = {"PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW", "name": "Eisenhower"}
         s3_storage.write_json("people/eisenhower.json", data)
         result = s3_storage.read_json("people/eisenhower.json")
         assert result == data
@@ -49,8 +49,14 @@ class TestS3StorageReadWrite:
 
 class TestS3StorageListFiles:
     def test_list_files_json(self, s3_storage):
-        s3_storage.write_json("output/people/a.json", {"name": "A"})
-        s3_storage.write_json("output/people/b.json", {"name": "B"})
+        s3_storage.write_json(
+            "output/people/a.json",
+            {"PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW", "name": "A"},
+        )
+        s3_storage.write_json(
+            "output/people/b.json",
+            {"PersonID": "01HX7YZABCDEFGHJKMNPQRSTVX", "name": "B"},
+        )
         s3_storage.write_bytes("output/people/c.txt", b"not json")
 
         files = s3_storage.list_files("output/people", "*.json")
@@ -82,7 +88,10 @@ class TestS3StorageWithPrefix:
                 bucket="test-bucket", prefix="wwii-data", region="us-east-1"
             )
 
-            storage.write_json("people/test.json", {"name": "Test"})
+            storage.write_json(
+                "people/test.json",
+                {"PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW", "name": "Test"},
+            )
 
             # Verify the actual S3 key includes the prefix
             resp = conn.get_object(

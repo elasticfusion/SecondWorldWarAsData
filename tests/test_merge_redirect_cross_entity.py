@@ -5,8 +5,8 @@ covers equipment/people/people_groups, not just logistics/casualties/weather.)""
 import json
 from src.dedup.merge import update_event_refs
 
-OLD = "01OLDPLACE0000000000000000"
-NEW = "01NEWPLACE0000000000000000"
+OLD = "01HX7YZABCDEFGHJKMNPQRSTVW"
+NEW = "01HX7YZABCDEFGHJKMNPQRSTVX"
 
 
 def test_place_merge_rebases_equipment_mention_placeid(tmp_path):
@@ -14,9 +14,11 @@ def test_place_merge_rebases_equipment_mention_placeid(tmp_path):
     (tmp_path / "equipment" / "m4.json").write_text(
         json.dumps(
             {
-                "EquipmentID": "01EQ00000000000000000000AB",
+                "EquipmentID": "01HX7YZABCDEFGHJKMNPQRSTVY",
                 "common_name": "M4 Sherman",
-                "event_mentions": [{"MentionID": "01M", "PlaceID": OLD}],
+                "event_mentions": [
+                    {"MentionID": "01HX7YZABCDEFGHJKMNPQRSTVZ", "PlaceID": OLD}
+                ],
             }
         )
     )
@@ -30,9 +32,12 @@ def test_person_merge_rebases_equipment_using_person(tmp_path):
     (tmp_path / "equipment" / "m4.json").write_text(
         json.dumps(
             {
-                "EquipmentID": "01EQ00000000000000000000AB",
+                "EquipmentID": "01HX7YZABCDEFGHJKMNPQRSTVY",
                 "event_mentions": [
-                    {"MentionID": "01M", "using_person": {"PersonID": OLD}}
+                    {
+                        "MentionID": "01HX7YZABCDEFGHJKMNPQRSTVZ",
+                        "using_person": {"PersonID": OLD},
+                    }
                 ],
             }
         )

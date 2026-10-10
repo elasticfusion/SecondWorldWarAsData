@@ -40,12 +40,18 @@ def test_equipment_ref_redirect_in_event_files(tmp_path):
 
 def test_equipment_ref_redirect_in_entity_files(tmp_path):
     out = tmp_path
+    loser = "01HX7YZABCDEFGHJKMNPQRSTVW"
+    survivor = "01HX7YZABCDEFGHJKMNPQRSTVX"
     (out / "logistics").mkdir()
     (out / "logistics" / "l1.json").write_text(
-        json.dumps({"EquipmentID": "01LOSER0000000000000000000"})
+        json.dumps(
+            {
+                "LogisticsID": "01HX7YZABCDEFGHJKMNPQRSTVY",
+                "logistics_type": "resupply",
+                "impacted_equipment": [loser],
+            }
+        )
     )
-    update_event_refs(
-        out, "01LOSER0000000000000000000", "01SURVIVOR000000000000000", "equipment"
-    )
+    update_event_refs(out, loser, survivor, "equipment")
     d = json.loads((out / "logistics" / "l1.json").read_text())
-    assert d["EquipmentID"] == "01SURVIVOR000000000000000"
+    assert d["impacted_equipment"] == [survivor]

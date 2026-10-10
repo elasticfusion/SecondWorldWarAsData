@@ -12,7 +12,7 @@ def _setup(tmp_path):
     (gdir / "house.json").write_text(
         json.dumps(
             {
-                "GroupID": "01H",
+                "GroupID": "01HX7YZABCDEFGHJKMNPQRSTVW",
                 "group_name": "House of Representatives",
                 "name": "House of Representatives",
                 "members": [],
@@ -22,7 +22,7 @@ def _setup(tmp_path):
     (gdir / "div.json").write_text(
         json.dumps(
             {
-                "GroupID": "019",
+                "GroupID": "01HX7YZABCDEFGHJKMNPQRSTVX",
                 "group_name": "9th Infantry Division",
                 "name": "9th Infantry Division",
                 "members": [],
@@ -46,7 +46,7 @@ def test_unverified_membership_links_as_provisional(tmp_path):
     pf.write_text(
         json.dumps(
             {
-                "PersonID": "01P",
+                "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVY",
                 "name": "John Smith",
                 "biographical_profile": {
                     "units_served": [{"unit": "9th Division"}],
@@ -82,7 +82,7 @@ def test_verified_membership_links_full_confidence(tmp_path):
     pf.write_text(
         json.dumps(
             {
-                "PersonID": "01Q",
+                "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVZ",
                 "name": "Jane Roe",
                 "biographical_profile": {
                     "group_affiliations": [
@@ -109,7 +109,7 @@ def test_person_with_only_affiliations_still_links(tmp_path):
     pf.write_text(
         json.dumps(
             {
-                "PersonID": "01R",
+                "PersonID": "01HX7YZABCDEFGHJKMNPQRSTW0",
                 "name": "No Units",
                 "biographical_profile": {
                     "group_affiliations": [

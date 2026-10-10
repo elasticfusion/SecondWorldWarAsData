@@ -42,6 +42,13 @@ class LocalStorage:
 
     def write_json(self, path: str, data: dict[str, Any]) -> None:
         p = self._resolve(path)
+        # Central write-time schema guard (same primitive as write_json_with_lock): a
+        # schema-invalid entity record is BLOCKED + logged, never persisted. Non-entity
+        # files (index/report/metadata) are passed through by the guard itself.
+        from src.utils.file_lock import _validate_entity
+
+        if not _validate_entity(p, data):
+            return
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
 
@@ -98,6 +105,15 @@ class S3Storage:
         return json.loads(resp["Body"].read().decode("utf-8"))
 
     def write_json(self, path: str, data: dict[str, Any]) -> None:
+        # Central write-time schema guard (shared with LocalStorage + write_json_with_lock):
+        # entity resolved from the path's parent dir (e.g. people/x.json -> 'people'), which is
+        # the same whether or not a bucket prefix is applied. Invalid records are blocked.
+        from pathlib import Path as _Path
+
+        from src.utils.file_lock import _validate_entity
+
+        if not _validate_entity(_Path(path), data):
+            return
         body = json.dumps(data, indent=2, ensure_ascii=False).encode("utf-8")
         self.s3.put_object(Bucket=self.bucket, Key=self._key(path), Body=body)
 

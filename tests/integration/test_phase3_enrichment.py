@@ -25,15 +25,15 @@ def people_dir(tmp_path):
 def sample_person(people_dir):
     """Create a sample person file needing enrichment."""
     data = {
-        "PersonID": "01TEST12345678901234AB",
+        "PersonID": "01TEST12345678901234ABCDEF",
         "name": "Omar N. Bradley",
         "biographical_profile": {},
         "event_mentions": [
             {
-                "MentionID": "01MENT12345678901234AB",
+                "MentionID": "01MENT234567890123456789AB",
                 "Event_Name": "Lorraine Campaign",
-                "EventID": "01EVNT12345678901234AB",
-                "Sub_eventID": "01SEVT12345678901234AB",
+                "EventID": "01EVNT234567890123456789AB",
+                "Sub_eventID": "01SEVT234567890123456789AB",
             }
         ],
     }
@@ -46,7 +46,7 @@ def sample_person(people_dir):
 def enriched_person(people_dir):
     """Create a person file already enriched."""
     data = {
-        "PersonID": "01ENRI12345678901234AB",
+        "PersonID": "01ENRH234567890123456789AB",
         "name": "Dwight D. Eisenhower",
         "enrichment_status": "enriched",
         "biographical_profile": {"nationality": "American"},

@@ -9,6 +9,37 @@ import shutil
 from pathlib import Path
 from typing import Dict, List, Optional
 
+logger = logging.getLogger(__name__)
+
+
+def _write_entity_guarded(filepath: Path, data: Dict) -> bool:
+    """Write an ENTITY record through the central schema write-guard.
+
+    Dedup/merge previously wrote merged entity records with raw json.dump, bypassing the
+    write-guard — so a malformed merge (e.g. a person record missing PersonID/name) could be
+    persisted. Routing through write_json_with_lock makes every merged entity schema-validated:
+    an invalid record is BLOCKED + logged, never written. Entity is derived from the parent dir
+    (output/<entity>/<file>.json), matching the guard's path-based resolution. Returns True if
+    written, False if the guard blocked it.
+    """
+    from src.utils.file_lock import write_json_with_lock
+
+    before = filepath.exists()
+    before_mtime = filepath.stat().st_mtime if before else None
+    write_json_with_lock(filepath, data, entity=filepath.parent.name)
+    # Detect a block: file unchanged (not created, or mtime unchanged).
+    if not filepath.exists():
+        logger.error(
+            "Merge write BLOCKED (schema-invalid) — not persisted: %s", filepath.name
+        )
+        return False
+    if before and filepath.stat().st_mtime == before_mtime:
+        logger.error(
+            "Merge write BLOCKED (schema-invalid) — kept prior: %s", filepath.name
+        )
+        return False
+    return True
+
 
 def _backup_before_delete(filepath: Path) -> None:
     """Copy file to dedup/backups/ before deletion for undo support."""
@@ -38,8 +69,6 @@ def set_deletion_callback(callback) -> None:
 
 
 from src.extraction.people import _merge_person
-
-logger = logging.getLogger(__name__)
 
 
 def _dynamo_merge_sync(
@@ -156,9 +185,7 @@ def update_event_refs(
             except (OSError, json.JSONDecodeError):
                 continue
             if _replace_id_in_obj(data, old_id, new_id, id_fields):
-                f.write_text(
-                    json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
-                )
+                _write_entity_guarded(f, data)
 
 
 def _replace_id_in_obj(obj, old_id: str, new_id: str, id_fields: set) -> bool:
@@ -226,8 +253,7 @@ def do_merge(people_dir: Path, people: List[Dict], primary_idx: int) -> Optional
         if secondary_id:
             _dynamo_merge_sync("people", "", {}, secondary_id)
 
-    with open(people_dir / primary_person["filename"], "w", encoding="utf-8") as f:
-        json.dump(primary_data, f, indent=2, ensure_ascii=False)
+    _write_entity_guarded(people_dir / primary_person["filename"], primary_data)
 
     # #9: mirror the merged primary into DynamoDB (put, not delete).
     if primary_id and merged_count:
@@ -305,9 +331,7 @@ def merge_generic(
 
     primary_data["event_mentions"] = primary_mentions
     primary_data["aliases"] = aliases
-    (entity_dir / primary["filename"]).write_text(
-        json.dumps(primary_data, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    _write_entity_guarded(entity_dir / primary["filename"], primary_data)
 
     # #9: mirror the merged primary into DynamoDB (put, not delete).
     primary_id = primary_data.get(id_field, "")

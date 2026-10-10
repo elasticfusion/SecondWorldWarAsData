@@ -2643,8 +2643,9 @@ def _autocreate_minimal_equipment(
         _enrich_on_identity(record, grok_client, verify_media_with_vision, None, None)
         safe_name = name.replace(" ", "_").replace("/", "_")
         eq_file = output_dir / f"{safe_name}_{equipment_id[:8]}.json"
-        with open(eq_file, "w") as f:
-            json.dump(record, f, indent=2)
+        from src.utils.file_lock import write_json_with_lock
+
+        write_json_with_lock(eq_file, record, entity="equipment")
         equipment_index[name] = eq_file
         logger.info("  ＋ Auto-created related equipment record: %s", name)
         return equipment_id
