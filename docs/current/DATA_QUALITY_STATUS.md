@@ -1,5 +1,8 @@
 # Data Quality Status
 
+> **See also:** [Data Quality — Safeguards & Guarantees](dataquality/DATA_QUALITY_SAFEGUARDS.md) — how validation is enforced on every write (central guard, version-awareness, merge/enrichment coverage).
+
+
 **Last Updated:** 2026-10-05  
 **Schema Version:** 2.5
 
