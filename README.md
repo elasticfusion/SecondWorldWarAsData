@@ -117,4 +117,7 @@ SecondWorldWarAsData/
 
 ## License
 
-Public Domain (US Government works). See individual source documents for specific licenses.
+This project's code is licensed under the **Apache License 2.0** — see [LICENSE](LICENSE).
+
+Source documents processed by the pipeline retain their own licenses (many are US Government
+works in the public domain); see individual source documents for specifics.
