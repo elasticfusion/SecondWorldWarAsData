@@ -20,6 +20,12 @@ logger = logging.getLogger(__name__)
 # are enforced rather than silently dropped.
 _EVENT_PK_FIELDS = ("EventID", "Sub-eventID", "Sub_eventID")
 
+# Referrer-side field-name aliases that point at an entity whose PK field is spelled differently.
+# ``PeopleGroupID`` is the widely-used alias for a group reference (casualties/equipment/supplemental
+# all emit it; equipment.py treats GroupID and PeopleGroupID as interchangeable), but the groups PK
+# field is ``GroupID`` — alias it so those edges resolve to the group key-space.
+_REF_ALIASES = {"PeopleGroupID": "people_groups"}
+
 
 def _pk_field_to_entity() -> Dict[str, str]:
     """Map each primary-key field name -> owning entity, derived from the registry (single source).
@@ -35,6 +41,7 @@ def _pk_field_to_entity() -> Dict[str, str]:
             mapping[spec.required_id] = spec.name
     for f in _EVENT_PK_FIELDS:
         mapping[f] = "events"
+    mapping.update(_REF_ALIASES)
     return mapping
 
 
@@ -49,7 +56,10 @@ def _walk_id_fields(node: Any, path: str = "") -> List[str]:
         if key.endswith("ID"):
             out.append(p)
         if isinstance(val, dict):
-            if val.get("type") == "array" and isinstance(val.get("items"), dict):
+            # `type` may be a scalar ("array") or a union list (["array", "null"]).
+            vtype = val.get("type")
+            types = vtype if isinstance(vtype, list) else [vtype]
+            if "array" in types and isinstance(val.get("items"), dict):
                 out.extend(_walk_id_fields(val["items"], p + "[]"))
             else:
                 out.extend(_walk_id_fields(val, p))

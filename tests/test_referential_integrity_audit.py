@@ -6,6 +6,28 @@ P1 = "01HX7YZABCDEFGHJKMNPQRSTVW"
 P2 = "01HX7YZABCDEFGHJKMNPQRSTVX"
 G1 = "01HX7YZABCDEFGHJKMNPQRSTVY"
 EV1 = "01HX7YZABCDEFGHJKMNPQRSTVZ"
+
+
+def test_impacted_fields_and_alias_edges_are_covered():
+    """Fix A: the tightened `casualties.impacted_*` schemas (ID declared under a nullable-array
+    union type) must be DISCOVERED as edges, and `PeopleGroupID` must resolve to the group
+    key-space. Guards against the union-type walker regressing (type ['array','null']).
+    """
+    by_src_field = {(s, f): t for s, f, t, _n in ria.EDGES}
+    expected = {
+        ("casualties", "impacted_people[].PersonID"): "people",
+        ("casualties", "impacted_places[].PlaceID"): "places",
+        ("casualties", "impacted_equipment[].EquipmentID"): "equipment",
+        ("casualties", "impacted_logistics[].LogisticsID"): "logistics",
+        ("casualties", "impacted_organizations[].PeopleGroupID"): "people_groups",
+    }
+    for key, target in expected.items():
+        assert key in by_src_field, f"missing edge {key}"
+        assert by_src_field[key] == target, f"{key} -> {by_src_field[key]} != {target}"
+    # PeopleGroupID alias resolves to the groups key-space.
+    assert ria._pk_field_to_entity().get("PeopleGroupID") == "people_groups"
+
+
 MISSING = "01MISSINGMISSINGMISSING000"
 
 
