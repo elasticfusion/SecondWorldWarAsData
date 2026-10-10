@@ -168,6 +168,20 @@ following close that gap at the **storage perimeter** (tracked in `TODO.md`):
    - **dedup consistency** (no un-merged name-variant fragments);
    - a **validation-block-rate metric** (the in-process guard is fail-open, so silent allows on
      validator error need an observable counter).
+4. **Corrective reprocessor** — for a Tier-3 (content) block with recoverable provenance, re-extract
+   from the **source** to repopulate the missing content ("work up the chain" terminates at the
+   source — the authority for content). Non-negotiable constraints:
+   - **Re-extract the whole SOURCE UNIT, not one schema** — a passage yields interlinked
+     people/places/units/dates/events; fixing one entity in isolation leaves cross-refs inconsistent.
+   - **Resolve-before-write — NEVER duplicate an existing entity.** A source passage references
+     entities that already exist as canonical records (one passage can mention the same person/place
+     many times). Every re-extracted entity is resolved against the existing corpus (dedup) and
+     **merged into its canonical record** (existing PK preserved, mentions unioned) or healed in
+     place; a fresh record is created only if genuinely new. *The existing corpus is the authority
+     for IDENTITY; the source is the authority for CONTENT.* Re-extraction that writes a new record
+     for an already-known entity is a bug — it fragments the corpus (the exact pathology being fixed).
+   - Deterministic resolution (idempotent) + loop-guard (repeated failure → `unrecoverable` + the
+     statistical bug report, never an infinite reprocess).
 
 ---
 

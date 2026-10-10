@@ -92,6 +92,23 @@ Two detective/corrective layers remain (the preventive in-process guard is done 
   `output/metrics/validation_stats.json`, emails/Slacks on systematic clusters) is the upstream-bug
   report. Humans fix CODE in response to a systematic-cluster alert; they never adjudicate
   individual records. Isolated failures auto-reprocess silently; only systematic clusters alert.
+  **REPROCESSOR ACCEPTANCE CRITERIA (hard — these distinguish a reprocessor that HEALS from one
+  that silently FRAGMENTS the corpus):**
+  - **Only Tier-3 content** triggers reprocess (PK ULIDs self-heal in the guard; bad reference IDs
+    → referential-integrity audit). "Work up the chain" = re-extract the missing CONTENT field from
+    the SOURCE (the record's provenance → `output/content/<book>/<chapter>-parsed.json` + original
+    source + summary data). Source is the authority for content.
+  - **Re-run the RELEVANT extractors for the whole SOURCE UNIT, not one schema.** A single passage
+    yields interlinked people/places/units/dates/events; fixing one entity in isolation leaves its
+    cross-refs inconsistent. Re-extract the unit, not the one broken record.
+  - **MUST resolve-before-write — NEVER duplicate an existing entity.** A source passage references
+    entities (e.g. "McAuliffe") that ALREADY EXIST as canonical records. Every re-extracted entity
+    goes through dedup/entity-resolution against the existing corpus: resolve → **MERGE into the
+    canonical record** (preserve its existing PK, union mentions) or heal-in-place; create ONLY if
+    genuinely new. The existing corpus is the authority for IDENTITY. Re-extraction that writes a
+    fresh record for an already-known entity is a BUG (it fragments the corpus — the exact pathology
+    we are fixing). Resolution must be DETERMINISTIC so repeated runs make identical decisions
+    (idempotent, loop-guard-safe).
 - **(c) Minor:** make `write_json_with_lock` return a bool (did-write) so `merge._write_entity_guarded`
   consumes it directly instead of the mtime/exists heuristic; consider moving `_validate_entity` to
   `src/schemas/write_guard.py` if the single-writer-facade refactor happens.
