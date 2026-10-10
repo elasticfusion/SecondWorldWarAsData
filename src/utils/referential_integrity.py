@@ -15,8 +15,10 @@ from typing import Any, Dict, List, Set, Tuple
 logger = logging.getLogger(__name__)
 
 # EventID/Sub-eventID both resolve to the event key-space (events have no `required_id` in the
-# registry because they are keyed inside the nested Event object, not a flat PK field).
-_EVENT_PK_FIELDS = ("EventID", "Sub-eventID")
+# registry because they are keyed inside the nested Event object, not a flat PK field). The
+# underscore ``Sub_eventID`` is a real referrer-side variant (e.g. maps) — alias it so those edges
+# are enforced rather than silently dropped.
+_EVENT_PK_FIELDS = ("EventID", "Sub-eventID", "Sub_eventID")
 
 
 def _pk_field_to_entity() -> Dict[str, str]:
@@ -100,26 +102,35 @@ _DIR: Dict[str, str] = {}  # registry entity names already equal their output su
 
 
 def _iter_records(storage: Any, entity_dir: str):
-    """Yield (key, data) for each entity JSON (skip index/report/dot files)."""
+    """Yield (key, data) for each entity JSON dict (skip index/report/dot files, and skip any file
+    whose top-level JSON is NOT a dict — e.g. ``bibliography/review_queue.json`` is a list — so a
+    non-record artifact can never crash the pass)."""
     for rel in storage.list_files(entity_dir, "*.json"):
         name = rel.rsplit("/", 1)[-1]
         if name == "index.json" or name.startswith(".") or "report" in name:
             continue
         try:
-            yield rel, storage.read_json(rel)
+            data = storage.read_json(rel)
         except Exception:  # noqa: BLE001
             continue
+        if isinstance(data, dict):
+            yield rel, data
 
 
 def _event_files(storage: Any) -> List[str]:
-    """Event files nested under content/<book>/*-event.json."""
+    """Event files nested under ``content/<book>/*-event.json``. Local filesystem listing is not
+    guaranteed recursive, so try a recursive-style pattern first and fall back to the flat one; a
+    missing event key-space would make every event reference look dangling."""
     out: List[str] = []
-    try:
-        for rel in storage.list_files("content", "*.json"):
-            if rel.endswith("-event.json"):
-                out.append(rel)
-    except Exception:  # noqa: BLE001
-        pass
+    for pattern in ("*/*-event.json", "*-event.json", "*.json"):
+        try:
+            for rel in storage.list_files("content", pattern):
+                if rel.endswith("-event.json"):
+                    out.append(rel)
+        except Exception:  # noqa: BLE001
+            continue
+        if out:
+            return out
     return out
 
 

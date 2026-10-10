@@ -715,7 +715,7 @@ def _write_notes_event(
 
     _chapter_stem = event_file.stem.replace("-event", "")
     _notes_eid = _event_id(source_meta.get("book", ""), _chapter_stem, "notes")
-    for item in factual_items:
+    for item_index, item in enumerate(factual_items):
         ref_num = item.get("reference_number")
         source_ref = {
             "reference_type": item["reference_type"],
@@ -727,9 +727,9 @@ def _write_notes_event(
         # Add source URL if available
         if ref_num and int(ref_num) in urls:
             source_ref["source_url"] = urls[int(ref_num)]
-        # Stable sub-event id: parent + the item's own source reference (ref number + the source
-        # sub-event it annotates), so re-running yields the same id.
-        _locator = f"ref:{ref_num}:{item.get('source_Sub-eventID', '')}"
+        # Stable sub-event id: parent + the item's own source reference + its ordinal (the ordinal
+        # guarantees intra-parent uniqueness when two items share ref_num + source sub-event).
+        _locator = f"ref:{ref_num}:{item.get('source_Sub-eventID', '')}:{item_index}"
         sub_events.append(
             {
                 "Sub-eventID": _sub_event_id(_notes_eid, name=_locator),

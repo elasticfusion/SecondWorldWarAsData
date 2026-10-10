@@ -84,6 +84,22 @@ informative or correct" (observed: empty-`{}` biographies and 0.0-coord places p
    reprocessor), it MUST compute the deterministic id for the source unit and resolve-or-attach to the
    existing event rather than wrapping/creating a parallel one — this is the event-level analogue of
    the entity resolve-before-write rule in the corrective-reprocessor acceptance criteria below.
+   **HOLISTIC-REVIEW FOLLOW-UPS (deferred from the 2026-10-10 merged-code review; CRITICALs already
+   fixed — list-valued-file guard + recursive event listing + `Sub_eventID` alias):**
+   - (perf) `enforce()` is O(corpus): `build_pk_sets` reads every entity+event file, then `audit`
+     re-reads each source entity dir once PER edge. Cache records per dir once + iterate edges in
+     memory; consider skipping the Phase-1 enforcement run (no cross-entity refs yet = pure cost).
+   - (ECS timing) ensure end-of-phase enforcement runs AFTER the final S3 sync (or points at the
+     local workdir), else not-yet-uploaded files read as false dangling.
+   - (centralize path truth) `referential_integrity` re-derives entity dirs / event nesting instead
+     of using the registry's `output_glob` (the root cause of the local nested-event bug). Fold
+     path/nesting knowledge onto `output_glob`.
+   - (consistency) `supplemental._apply_defaults`/`sanitize_supplemental_data` still mint
+     `str(ulid.new())` EventID/Sub-eventID as degenerate null-fallbacks — volatile, bypassing the
+     central deterministic helper; derive from context or document why.
+   - (storage-root consistency) phase3 passes `args.output_dir` while phase1/2 pass
+     `paths["output_root"]`; CLI builds storage via `create_storage` while `run_for_phase` hardcodes
+     `LocalStorage` — confirm all resolve to the same corpus root.
 2. **Semantic validators as FLAGS (not hard blocks):** geocode in-theatre bounding-box sanity (43%
    of places have null/0.0 coords; nothing rejects ocean/wrong-continent); date in the 1944–45 ETO
    window (reuse the existing `resolved_earliest/latest`); citation resolvability
