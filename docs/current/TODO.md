@@ -9,6 +9,31 @@
 live). Ranking reflects the project goal: *finish unattended ETO ingestion, then
 build RAG/search*. Current ordered priority:
 
+
+### [HIGH] Data-quality follow-ups from the write-validation centralization (2026-10-09)
+Added after centralizing the write guard across all paths (PR for `fix/write-validation-always-on`).
+Two detective/corrective layers remain (the preventive in-process guard is done + merged):
+
+- **(a) Remediate pre-existing invalid S3 records.** Pre-fix, the unguarded dedup/merge path wrote
+  schema-invalid fragments to S3 (sampled: ~28/80 across people/people_groups/places/dates — all
+  version-LESS, missing primary-key ID + name, i.e. unresolved per-mention fragments). They carry
+  UNIQUE cross-ref mentions (MentionID/EventID/Sub_eventID with zero overlap vs valid records), so
+  **do NOT delete** (orphans mentions). Remediation: **quarantine** to `output/_quarantine/` →
+  **targeted reprocess** from each fragment's provenance (book + EventIDs) to regenerate canonical
+  PK'd records + re-run dedup so name-variants merge → purge quarantine only after mentions land in
+  canonical records.
+- **(b) Detective layer + bypass prevention.** (1) **S3-event Lambda backstop**: on `ObjectCreated`
+  under `output/`, run the SAME `_validate_entity` primitive (no reimplementation — avoid guard
+  drift); on invalid, alert (phase2-complete SNS → Slack/email) + quarantine. Fail-LOUD. (2) **grep
+  gate** in `scripts/gate.sh` forbidding new raw `json.dump`/`write_text` to `output/` entity dirs,
+  so the next contributor's bypass fails CI. (3) **corpus-level audit job**: periodic scan running
+  the guard across all of `output/` + a referential-integrity check (every cross-ref ID resolves)
+  + ID-uniqueness + dangling-mention + dedup-consistency checks (per-write validation is blind to
+  these corpus invariants) + a validation-block-rate metric (the guard is fail-OPEN, so silent
+  allows on validator error need an observable counter).
+- **(c) Minor:** make `write_json_with_lock` return a bool (did-write) so `merge._write_entity_guarded`
+  consumes it directly instead of the mtime/exists heuristic; consider moving `_validate_entity` to
+  `src/schemas/write_guard.py` if the single-writer-facade refactor happens.
 0. **~~[CRITICAL] Deploy current `main`~~ ✅ DONE 2026-10-02** — verified live: S3
    AES256 + DenyInsecureTransport; pandoc `--sandbox` image pushed; AV scanning
    deployed + signatures seeded + EICAR-validated (`AV_SCAN_ENABLED=true`); EBS
@@ -101,10 +126,12 @@ build RAG/search*. Current ordered priority:
   additive changes (old records still validate). But during a BREAKING migration, an existing
   record written under an older version that is then re-written (merge/update) could be BLOCKED
   by the guard even though the read-side `schema_contract.register_upgrade` path would upgrade
-  it. The guard does not consult the upgrade registry. Mitigations today: additive-only is the
-  norm; `WWII_WRITE_VALIDATION=off` escape hatch. Future: have the guard defer to
-  register_upgrade (or validate against the record's declared `_schema_version` schema when it
-  is older-but-registered) so a breaking migration doesn't block in-flight re-writes. Low
+  it. The guard does not consult the upgrade registry. Mitigation today: additive-only is the
+  norm (the `WWII_WRITE_VALIDATION=off` escape hatch was REMOVED — validation is now
+  unconditional, so a breaking migration cannot be worked around by disabling the guard).
+  Future: have the guard defer to register_upgrade (or validate against the record's declared
+  `_schema_version` schema when it is older-but-registered) so a breaking migration doesn't
+  block in-flight re-writes. Low
   frequency (breaking changes are rare + deliberate) but real.
 - **~~[HIGH] Install Chromium in the Phase-2 container image~~ ✅ DONE 2026-10-08** — added
   `ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` + `RUN python3 -m playwright install --with-deps

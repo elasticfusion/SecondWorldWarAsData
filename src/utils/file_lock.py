@@ -122,46 +122,70 @@ def _validate_entity(filepath: Path, data: Dict[str, Any]) -> bool:
     """Central write-time guard. Returns True if the write should proceed.
 
     Resolves the entity from the output path, repairs empty/None/invalid ULID fields, then
-    jsonschema-validates against the enforced schema. On a genuine schema violation it LOGS and
-    returns False (BLOCK the write — do not persist a schema-invalid record). Fail-safe: returns
-    True when the entity/schema/validator is unavailable, or when the record is a
-    non-entity file (index/report/metadata). Opt-out via WWII_WRITE_VALIDATION=off (returns
-    True without checking) so the guard can never silently wedge the pipeline.
+    jsonschema-validates against the enforced schema (version-aware). On a genuine schema
+    violation it LOGS (path + validator keyword only, never record values) and returns False
+    (BLOCK the write). Fail-safe: returns True when the entity/schema/validator is unavailable
+    or the file is a non-entity file. Validation is UNCONDITIONAL — there is no opt-out env.
     """
-    import os
+    if _is_non_entity_file(filepath):
+        return True
+    entity_type = _resolve_entity_type(filepath)
 
-    # Skip non-entity files (metadata, indexes, reports, tracking)
-    if filepath.name in (
+    try:
+        _repair_empty_ulids(data)
+    except Exception:  # noqa: BLE001 - repair is best-effort
+        pass
+
+    schema = _schema_for_entity(entity_type, filepath, data)
+    if schema is None:
+        return (
+            True  # not a schema-enforced entity (fail-safe) — legacy warn already done
+        )
+
+    status, target = _version_status(data, entity_type)
+    if status == "future":
+        logger.warning(
+            "Allowing %s write (%s) AS-IS: record schema %s is NEWER than target %s",
+            entity_type,
+            filepath.name,
+            data.get("_schema_version"),
+            target,
+        )
+        return True
+
+    return _run_schema_validation(data, schema, entity_type, filepath, status, target)
+
+
+def _is_non_entity_file(filepath: Path) -> bool:
+    """True for metadata/index/report/tracking files that carry no entity schema."""
+    return filepath.name in (
         "index.json",
         "duplicate_report.json",
         "not_duplicates.json",
         "not_people.json",
         "not_related.json",
         "related_groups_report.json",
-    ) or filepath.name.startswith("."):
-        return True
+    ) or filepath.name.startswith(".")
 
-    if os.environ.get("WWII_WRITE_VALIDATION", "on").lower() == "off":
-        return True
 
-    entity_type = filepath.parent.name
-    # Repair ONLY empty-string ULID fields (the actual bug class) in place before validating.
-    # We deliberately do NOT regenerate non-empty-but-malformed IDs here: on a merge/update
-    # that would silently rewrite a real, already-persisted ID and orphan cross-references.
-    # (Explicit full ULID repair still lives in validate_and_write_json for callers that want
-    # it.)
-    try:
-        _repair_empty_ulids(data)
-    except Exception:  # noqa: BLE001 - repair is best-effort
-        pass
+def _resolve_entity_type(filepath: Path) -> str:
+    """Entity type from the path. Events are the exception: they live at
+    output/content/<Book>/<chapter>-event.json (parent is the BOOK), so resolve them by their
+    '-event.json' filename suffix rather than the parent dir."""
+    if filepath.name.endswith("-event.json"):
+        return "events"
+    return filepath.parent.name
 
-    # Resolve the enforced schema for this entity (fail-safe if not found).
+
+def _schema_for_entity(entity_type: str, filepath: Path, data: Dict[str, Any]):
+    """Return the enforced schema dict for an entity, or None if it is not a schema-enforced
+    entity (in which case a legacy required-field warning is emitted). Fail-safe: None on error.
+    """
     try:
         from src.schemas.entity_registry import ENTITY_REGISTRY, load_schema
 
         spec = next((s for s in ENTITY_REGISTRY if s.name == entity_type), None)
         if spec is None:
-            # Not a schema-enforced entity dir -> fall back to the old required-field warn.
             required = _REQUIRED_FIELDS.get(entity_type)
             if required:
                 missing = [f for f in required if not data.get(f)]
@@ -171,22 +195,90 @@ def _validate_entity(filepath: Path, data: Dict[str, Any]) -> bool:
                         filepath.name,
                         missing,
                     )
-            return True
-        schema = load_schema(spec)
+            return None
+        return load_schema(spec)
     except Exception:  # noqa: BLE001 - registry/schema unavailable -> allow write
+        return None
+
+
+def _version_status(data: Dict[str, Any], entity_type: str):
+    """Resolve the version-aware status via schema_contract, applying the version-less rule.
+
+    Returns (status, target). On 'upgraded', `data` is updated in place with the upgraded
+    record so the upgraded form is what gets persisted. A record with NO declared
+    _schema_version is treated as 'ok' (strict) — it is malformed, not legitimately old.
+    """
+    try:
+        from src.schemas import entity_version
+        from src.schemas.schema_contract import read_record
+
+        target = entity_version(entity_type)
+        record, status = read_record(data, target, strict=False)
+    except Exception:  # noqa: BLE001 - contract unavailable -> treat as current ("ok")
+        return "ok", ""
+
+    declared_version = str(data.get("_schema_version", "")).strip()
+    if status == "needs_upgrade" and not declared_version:
+        status = "ok"
+    if status == "upgraded" and record is not data:
+        data.clear()
+        data.update(record)
+    return status, target
+
+
+def _has_identity_floor(entity_type: str, data: Dict[str, Any]) -> bool:
+    """The non-negotiable identity invariant that applies to EVERY schema version: the entity's
+    primary-key ID must be present + non-empty. A record missing its PK is corrupt regardless of
+    version (the PK was never a newly-added field), so the lenient 'needs_upgrade' path must NOT
+    excuse it. Returns True if the identity floor holds (or the entity has no required_id).
+    """
+    try:
+        from src.schemas.entity_registry import ENTITY_REGISTRY
+
+        spec = next((s for s in ENTITY_REGISTRY if s.name == entity_type), None)
+        if spec is None or not spec.required_id:
+            return True
+        return bool(data.get(spec.required_id))
+    except (
+        Exception
+    ):  # noqa: BLE001 - fail-safe: don't let the floor-check itself block
         return True
 
+
+def _run_schema_validation(
+    data: Dict[str, Any],
+    schema: Dict[str, Any],
+    entity_type: str,
+    filepath: Path,
+    status: str,
+    target: str,
+) -> bool:
+    """jsonschema-validate; block on violation unless the record legitimately predates a
+    current constraint (needs_upgrade). Logs only the JSON path + validator keyword (no values).
+    """
     import jsonschema
 
     try:
         jsonschema.validate(data, schema)
         return True
     except jsonschema.ValidationError as e:
+        loc = "/".join(str(p) for p in e.absolute_path) or "<root>"
+        reason = f"{e.validator} at {loc}"
+        if status == "needs_upgrade" and _has_identity_floor(entity_type, data):
+            logger.warning(
+                "Allowing pre-%s %s write (%s) despite current-schema violation (%s): "
+                "no registered upgrader — needs targeted reprocess/upgrade",
+                target,
+                entity_type,
+                filepath.name,
+                reason,
+            )
+            return True
         logger.error(
             "BLOCKED schema-invalid %s write (%s): %s",
             entity_type,
             filepath.name,
-            e.message,
+            reason,
         )
         return False
     except Exception:  # noqa: BLE001 - validator error -> fail-safe allow
@@ -230,10 +322,15 @@ def write_json_with_lock(
     """
     from src.schemas import inject_metadata
 
-    inject_metadata(data, entity=entity)
+    # Validate FIRST, on the record's TRUE incoming _schema_version — the version-aware guard
+    # (read_record) must see the real version to apply upgrades / allow legitimately-old records.
+    # Stamping BEFORE validation would overwrite the incoming version with current and defeat
+    # that logic (an old record would be judged against current and wrongly blocked). Only after
+    # the guard approves do we stamp the current version + last-updated.
     if not _validate_entity(filepath, data):
         # Schema-invalid record — do NOT persist it (guard logged the reason).
         return
+    inject_metadata(data, entity=entity)
     filepath.parent.mkdir(parents=True, exist_ok=True)
 
     # Disk space check (local mode only — skip in /tmp/pipeline ECS workdir)

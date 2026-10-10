@@ -92,11 +92,14 @@ def test_guard_preserves_existing_valid_ulid(tmp_path):
     assert json.loads((pdir / "p.json").read_text())["PersonID"] == pid
 
 
-def test_guard_optout(monkeypatch, tmp_path):
-    monkeypatch.setenv("WWII_WRITE_VALIDATION", "off")
+def test_guard_validation_is_unconditional(monkeypatch, tmp_path):
+    """There is NO opt-out: a schema-invalid record is blocked even if the old
+    WWII_WRITE_VALIDATION=off env is set (the escape hatch was removed)."""
+    monkeypatch.setenv("WWII_WRITE_VALIDATION", "off")  # must have NO effect now
     from src.utils.file_lock import write_json_with_lock
 
     pdir = tmp_path / "people"
     pdir.mkdir()
-    write_json_with_lock(pdir / "x.json", {"PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW"})
-    assert (pdir / "x.json").exists()  # opt-out bypasses the block
+    # Missing the mandatory PersonID -> must be BLOCKED (not written) regardless of env.
+    write_json_with_lock(pdir / "x.json", {"name": "No ID Person"}, entity="people")
+    assert not (pdir / "x.json").exists()  # blocked — the guard cannot be disabled

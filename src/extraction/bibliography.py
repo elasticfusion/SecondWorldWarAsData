@@ -244,15 +244,19 @@ def store_bibliography_entry(
             bib_data = json.load(f)
         if not _has_mention(bib_data.get("mentions", []), mention):
             bib_data.setdefault("mentions", []).append(mention)
-            with open(bib_dir / existing_file, "w", encoding="utf-8") as f:
-                json.dump(bib_data, f, indent=2, ensure_ascii=False)
+            from src.utils.file_lock import write_json_with_lock
+
+            write_json_with_lock(
+                bib_dir / existing_file, bib_data, entity="bibliography"
+            )
         return bib_data.get("BibliographyID")
 
     bib_data = _build_bib_entry(material)
     bib_data["mentions"].append(mention)
     filename = f"{_slugify(title)}_{bib_data['BibliographyID']}.json"
-    with open(bib_dir / filename, "w", encoding="utf-8") as f:
-        json.dump(bib_data, f, indent=2, ensure_ascii=False)
+    from src.utils.file_lock import write_json_with_lock
+
+    write_json_with_lock(bib_dir / filename, bib_data, entity="bibliography")
     _index_entry(index, keys, filename)
     _save_index(bib_dir, index)
     logger.debug("New bibliography entry: %s", filename)

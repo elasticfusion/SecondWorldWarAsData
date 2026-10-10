@@ -909,10 +909,9 @@ def _process_bib_file(
         if key:
             resolved_by_key[key] = data
 
-    from src.schemas import inject_metadata
+    from src.utils.file_lock import write_json_with_lock
 
-    inject_metadata(data, entity="bibliography")
-    f.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    write_json_with_lock(f, data, entity="bibliography")
     return (data.get("search_status") or "not_found", cached is not None)
 
 

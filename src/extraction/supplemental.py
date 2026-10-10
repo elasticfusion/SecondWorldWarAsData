@@ -341,8 +341,9 @@ def _append_to_file(
 
         # Append and write
         data["Event"]["Sub-events"].extend(to_add)
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+        from src.utils.file_lock import write_json_with_lock
+
+        write_json_with_lock(file_path, data, entity="events")
 
         logger.info("Appended %d sub-event(s) to %s", len(to_add), file_path.name)
 
@@ -741,8 +742,9 @@ def _write_notes_event(
         }
     }
 
-    with open(notes_file, "w", encoding="utf-8") as f:
-        json.dump(event_data, f, indent=2, ensure_ascii=False)
+    from src.utils.file_lock import write_json_with_lock
+
+    write_json_with_lock(notes_file, event_data, entity="events")
 
     logger.info("Wrote %d factual items to %s", len(sub_events), notes_file.name)
     return notes_file

@@ -21,17 +21,29 @@ def two_people(output_root):
     """Create two people files that are duplicates."""
     people_dir = output_root / "people"
     primary = {
-        "PersonID": "01PRIMARY000000000000AB",
+        "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW",
         "name": "Omar Bradley",
         "event_mentions": [
-            {"MentionID": "M1", "Sub_eventID": "SE_001", "Event_Name": "Lorraine"}
+            {
+                "MentionID": "01HX7YZABCDEFGHJKMNPQRSTV1",
+                "EventID": "01HX7YZABCDEFGHJKMNPQRSTV2",
+                "Sub-eventID": "01HX7YZABCDEFGHJKMNPQRSTV3",
+                "Sub_eventID": "01HX7YZABCDEFGHJKMNPQRSTV3",
+                "Event_Name": "Lorraine",
+            }
         ],
     }
     secondary = {
-        "PersonID": "01SECOND0000000000000AB",
+        "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVX",
         "name": "Omar N. Bradley",
         "event_mentions": [
-            {"MentionID": "M2", "Sub_eventID": "SE_002", "Event_Name": "Bulge"}
+            {
+                "MentionID": "01HX7YZABCDEFGHJKMNPQRSTV4",
+                "EventID": "01HX7YZABCDEFGHJKMNPQRSTV5",
+                "Sub-eventID": "01HX7YZABCDEFGHJKMNPQRSTV6",
+                "Sub_eventID": "01HX7YZABCDEFGHJKMNPQRSTV6",
+                "Event_Name": "Bulge",
+            }
         ],
     }
     (people_dir / "omar bradley.json").write_text(json.dumps(primary), encoding="utf-8")
@@ -70,16 +82,22 @@ class TestUpdateEventRefs:
     def test_replaces_in_entity_subdirs(self, output_root):
         from src.dedup.merge import update_event_refs
 
+        old_id = "01HX7YZABCDEFGHJKMNPQRSTV7"
+        new_id = "01HX7YZABCDEFGHJKMNPQRSTV8"
         logistics_dir = output_root / "logistics"
         logistics_dir.mkdir()
-        data = {"PersonID": "OLD_ID", "note": "test"}
+        data = {
+            "LogisticsID": "01HX7YZABCDEFGHJKMNPQRSTV9",
+            "logistics_type": "supply",
+            "impacted_people": [old_id],
+        }
         (logistics_dir / "supply.json").write_text(json.dumps(data), encoding="utf-8")
 
-        update_event_refs(output_root, "OLD_ID", "NEW_ID", "people")
+        update_event_refs(output_root, old_id, new_id, "people")
 
         result = json.loads((logistics_dir / "supply.json").read_text(encoding="utf-8"))
-        assert "NEW_ID" in json.dumps(result)
-        assert "OLD_ID" not in json.dumps(result)
+        assert new_id in json.dumps(result)
+        assert old_id not in json.dumps(result)
 
     def test_handles_corrupted_event_file(self, output_root):
         from src.dedup.merge import update_event_refs
@@ -120,15 +138,27 @@ class TestMergeGeneric:
         equip_dir = output_root / "equipment"
         equip_dir.mkdir()
         primary = {
-            "EquipmentID": "01EQ1",
+            "EquipmentID": "01HX7YZABCDEFGHJKMNPQRSTVA",
             "common_name": "Sherman",
-            "event_mentions": [{"Sub_eventID": "SE1", "MentionID": "M1"}],
+            "event_mentions": [
+                {
+                    "MentionID": "01HX7YZABCDEFGHJKMNPQRSTVB",
+                    "EventID": "01HX7YZABCDEFGHJKMNPQRSTVC",
+                    "Sub_eventID": "01HX7YZABCDEFGHJKMNPQRSTVD",
+                }
+            ],
             "aliases": [],
         }
         secondary = {
-            "EquipmentID": "01EQ2",
+            "EquipmentID": "01HX7YZABCDEFGHJKMNPQRSTVE",
             "common_name": "M4 Sherman",
-            "event_mentions": [{"Sub_eventID": "SE2", "MentionID": "M2"}],
+            "event_mentions": [
+                {
+                    "MentionID": "01HX7YZABCDEFGHJKMNPQRSTVF",
+                    "EventID": "01HX7YZABCDEFGHJKMNPQRSTVG",
+                    "Sub_eventID": "01HX7YZABCDEFGHJKMNPQRSTVH",
+                }
+            ],
         }
         (equip_dir / "sherman.json").write_text(json.dumps(primary), encoding="utf-8")
         (equip_dir / "m4 sherman.json").write_text(
@@ -154,15 +184,27 @@ class TestMergeGeneric:
         equip_dir = output_root / "equipment"
         equip_dir.mkdir()
         primary = {
-            "EquipmentID": "01EQ1",
+            "EquipmentID": "01HX7YZABCDEFGHJKMNPQRSTVJ",
             "common_name": "Tiger",
-            "event_mentions": [{"Sub_eventID": "SE1", "MentionID": "M1"}],
+            "event_mentions": [
+                {
+                    "MentionID": "01HX7YZABCDEFGHJKMNPQRSTVK",
+                    "EventID": "01HX7YZABCDEFGHJKMNPQRSTVM",
+                    "Sub_eventID": "01HX7YZABCDEFGHJKMNPQRSTVN",
+                }
+            ],
             "aliases": [],
         }
         secondary = {
-            "EquipmentID": "01EQ2",
+            "EquipmentID": "01HX7YZABCDEFGHJKMNPQRSTVP",
             "common_name": "Tiger I",
-            "event_mentions": [{"Sub_eventID": "SE1", "MentionID": "M1_dup"}],
+            "event_mentions": [
+                {
+                    "MentionID": "01HX7YZABCDEFGHJKMNPQRSTVQ",
+                    "EventID": "01HX7YZABCDEFGHJKMNPQRSTVR",
+                    "Sub_eventID": "01HX7YZABCDEFGHJKMNPQRSTVN",
+                }
+            ],
         }
         (equip_dir / "tiger.json").write_text(json.dumps(primary), encoding="utf-8")
         (equip_dir / "tiger i.json").write_text(json.dumps(secondary), encoding="utf-8")
@@ -196,7 +238,7 @@ class TestDoMerge:
         merged = json.loads(
             (people_dir / "omar bradley.json").read_text(encoding="utf-8")
         )
-        assert merged["PersonID"] == "01PRIMARY000000000000AB"
+        assert merged["PersonID"] == "01HX7YZABCDEFGHJKMNPQRSTVW"
         assert len(merged["event_mentions"]) >= 2
 
     def test_returns_none_on_missing_primary(self, output_root):
@@ -219,12 +261,12 @@ class TestDynamoMergeSync:
         with patch("src.utils.entity_store.get_entity_store", return_value=store):
             m.do_merge(people_dir, two_people, primary_idx=0)
         # secondary deleted from Dynamo
-        store.delete.assert_any_call("people", "01SECOND0000000000000AB")
+        store.delete.assert_any_call("people", "01HX7YZABCDEFGHJKMNPQRSTVX")
         # merged primary put to Dynamo
         assert store.put.called
         args = store.put.call_args
         assert args[0][0] == "people"
-        assert args[0][1] == "01PRIMARY000000000000AB"
+        assert args[0][1] == "01HX7YZABCDEFGHJKMNPQRSTVW"
 
     def test_do_merge_noop_without_store(self, output_root, two_people):
         from unittest.mock import patch
@@ -244,14 +286,14 @@ class TestDynamoMergeSync:
         places_dir = output_root / "places"
         places_dir.mkdir()
         primary = {
-            "PlaceID": "01PLACEPRIMARY",
+            "PlaceID": "01HX7YZABCDEFGHJKMNPQRSTVS",
             "name": "Bastogne",
             "event_mentions": [],
         }
         secondary = {
-            "PlaceID": "01PLACESECOND",
+            "PlaceID": "01HX7YZABCDEFGHJKMNPQRSTVT",
             "name": "Bastonge",
-            "event_mentions": [{"Sub_eventID": "SE9"}],
+            "event_mentions": [{"Sub_eventID": "01HX7YZABCDEFGHJKMNPQRSTVV"}],
         }
         (places_dir / "bastogne.json").write_text(json.dumps(primary), encoding="utf-8")
         (places_dir / "bastonge.json").write_text(
@@ -264,6 +306,6 @@ class TestDynamoMergeSync:
         store = MagicMock()
         with patch("src.utils.entity_store.get_entity_store", return_value=store):
             m.merge_generic(places_dir, people, 0, id_field="PlaceID")
-        store.delete.assert_any_call("places", "01PLACESECOND")
+        store.delete.assert_any_call("places", "01HX7YZABCDEFGHJKMNPQRSTVT")
         put_args = store.put.call_args[0]
-        assert put_args[0] == "places" and put_args[1] == "01PLACEPRIMARY"
+        assert put_args[0] == "places" and put_args[1] == "01HX7YZABCDEFGHJKMNPQRSTVS"

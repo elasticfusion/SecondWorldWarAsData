@@ -39,17 +39,21 @@ run "bandit"   python -m bandit -r src/ lambda_handlers/ -ll -q
 run_radon() {
   local out
   out="$(python -m radon cc $SCOPE --min C 2>&1)"
-  local dworse
+  local dworse cblocks allcplus
   dworse="$(echo "$out" | grep -E ' - [D-F] ' || true)"
-  local cblocks
   cblocks="$(echo "$out" | grep -E ' - C ' || true)"
+  # ALWAYS surface every C-and-above block for decision-making (C/D/E/F), in all cases —
+  # even when a D+ triggers the hard failure (previously the C blocks were hidden then).
+  allcplus="$(echo "$out" | grep -E ' - [C-F] ' || true)"
+  if [ -n "$allcplus" ]; then
+    echo "  radon C+ complexity blocks (review all):"
+    echo "$allcplus" | sed 's/^/      /'
+  fi
   if [ -n "$dworse" ]; then
     echo "  ✗ radon (D+ complexity — must refactor)"
-    echo "$dworse" | sed 's/^/      /'
     fail=1
   elif [ -n "$cblocks" ]; then
-    echo "  ⚠ radon: C-grade block(s) to EVALUATE (not blocking):"
-    echo "$cblocks" | sed 's/^/      /'
+    echo "  ⚠ radon: C-grade block(s) to EVALUATE (not blocking)"
   else
     echo "  ✓ radon"
   fi
