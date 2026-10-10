@@ -125,5 +125,13 @@ def _run_parse(tmpdir: Path, book_name: str, storage) -> None:
                 ],
             }
             dest = f"output/content/{book_name}/{filename}"
-            storage.write_json(dest, output_data)
-            logger.info("Uploaded: %s", dest)
+            from src.utils.file_lock import guard_parsed_content
+
+            if guard_parsed_content(filename, output_data):
+                storage.write_json(dest, output_data)
+                logger.info("Uploaded: %s", dest)
+            else:
+                logger.error(
+                    "DROPPED schema-invalid parse %s — re-parse needed (not uploaded)",
+                    dest,
+                )

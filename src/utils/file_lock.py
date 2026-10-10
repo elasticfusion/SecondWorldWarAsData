@@ -482,6 +482,80 @@ def write_json_with_lock(
     return True
 
 
+# Phase-1 parse: a chapter is useless with no readable paragraphs. Below this -> allow_empty flag
+# (still written — an empty plate/figure page can be legitimate), never a block.
+_PARSED_MIN_PARAGRAPHS = 1
+
+
+def _usable_paragraph_count(data: Dict[str, Any]) -> int:
+    paras = data.get("paragraphs") if isinstance(data, dict) else None
+    if not isinstance(paras, list):
+        return 0
+    return sum(
+        1
+        for p in paras
+        if isinstance(p, dict) and isinstance(p.get("text"), str) and p["text"].strip()
+    )
+
+
+def guard_parsed_content(name: str, data: Dict[str, Any]) -> bool:
+    """Validate + flag Phase-1 parsed content (shared by the local AND S3/Lambda writers so there
+    is ONE validation definition). Returns False if schema-INVALID (caller must NOT persist it),
+    True otherwise. Records block/allow/allow_empty to the catcher under entity ``parsed``. ``name``
+    is a basename for the log (never content). Fail-safe: a validator/import error returns True
+    (never lose a parse to a telemetry bug)."""
+    try:
+        import jsonschema
+
+        from src.schemas.parsed_output import PARSED_OUTPUT_SCHEMA
+
+        try:
+            jsonschema.validate(data, PARSED_OUTPUT_SCHEMA)
+        except jsonschema.ValidationError as e:
+            loc = "/".join(str(p) for p in e.absolute_path) or "<root>"
+            logger.error(
+                "BLOCKED invalid parsed output (%s): %s at %s", name, e.validator, loc
+            )
+            _record_stat("parsed", "block", str(e.validator), "ok")
+            return False
+        if _usable_paragraph_count(data) < _PARSED_MIN_PARAGRAPHS:
+            _record_stat("parsed", "allow_empty", "below_floor", "ok")
+        else:
+            _record_stat("parsed", "allow", None, "ok")
+    except Exception:  # noqa: BLE001 - validation/telemetry must never lose a parse
+        pass
+    return True
+
+
+def write_parsed_with_guard(filepath: Path, data: Dict[str, Any]) -> bool:
+    """Guarded LOCAL writer for Phase-1 ``*-parsed.json`` (HIGH-4b): guard_parsed_content() then
+    atomic write. Returns True if written, False if BLOCKED (garbage not persisted). The S3/Lambda
+    path calls guard_parsed_content() directly before its own storage.write_json — same validation.
+    Deliberately omits the low-disk pre-check + flock of write_json_with_lock (single producer per
+    parsed path, re-parse idempotent → entity-grade locking unnecessary)."""
+    if not guard_parsed_content(filepath.name, data):
+        return False
+
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    import os as _os
+    import tempfile
+
+    tmp_fd, tmp_path = tempfile.mkstemp(
+        dir=filepath.parent, suffix=".tmp", prefix=filepath.stem
+    )
+    try:
+        with _os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        _os.replace(tmp_path, filepath)
+    except Exception:
+        try:
+            Path(tmp_path).unlink(missing_ok=True)
+        except Exception:  # noqa: BLE001
+            pass
+        raise
+    return True
+
+
 # ID field per entity type
 _ID_FIELDS: Dict[str, str] = {
     "people": "PersonID",
