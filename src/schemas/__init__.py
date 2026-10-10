@@ -88,7 +88,7 @@ METADATA_PROPERTIES = {
 }
 
 # Optional, additive advisory field written by src/utils/semantic_flags.py (HIGH-2). A list of
-# non-blocking quality-flag codes (e.g. "geo_out_of_theatre"); absent/empty = no concern. Spread
+# non-blocking quality-flag codes (e.g. "geo_impossible_coords"); absent/empty = no concern. Spread
 # into any schema whose entity has semantic flag validators so the write guard permits the field.
 QUALITY_FLAGS_PROPERTY = {
     "quality_flags": {"type": ["array", "null"], "items": {"type": "string"}},
