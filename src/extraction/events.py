@@ -180,8 +180,16 @@ def _save_event_output(response: dict, parsed_file: Path, output_dir: Path) -> P
     output_file = output_dir / parsed_file.name.replace("-parsed.json", "-event.json")
     from src.utils.file_lock import write_json_with_lock
 
-    write_json_with_lock(output_file, response, entity="events")
-    _emit_source_section_safe(response, parsed_file, output_dir)
+    # Only emit the dependent source_section if the EVENT actually persisted. The guard can BLOCK
+    # a schema-invalid event; emitting the source_section anyway would create a source_section that
+    # references an EventID with no event record — a dangling cross-reference born at write time.
+    if write_json_with_lock(output_file, response, entity="events"):
+        _emit_source_section_safe(response, parsed_file, output_dir)
+    else:
+        logger.warning(
+            "Event write BLOCKED for %s — skipping its source_section to avoid a dangling ref",
+            output_file.name,
+        )
     return output_file
 
 

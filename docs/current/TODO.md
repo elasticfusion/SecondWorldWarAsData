@@ -19,21 +19,52 @@ per-write guard is blind to. "The guard confirms a record is well-formed; nothin
 informative or correct" (observed: empty-`{}` biographies and 0.0-coord places pass validation).
 
 **HIGH**
-1. **Corpus referential-integrity audit** — **[TOOL DONE 2026-10-10]
-   `scripts/referential_integrity_audit.py` (read-only, tested); ran on the corpus → 5,076 dangling
-   refs; report `docs/current/dataquality/referential_integrity_report.json`.** PK-repair caveat
-   satisfied (PR #319 scopes repair to the primary key only; reference IDs are never regenerated).
-   Per-edge extractor-fix follow-ups the audit surfaced (each a distinct bug + reprocess candidate):
-   - **maps → events: 100% dangling (54/54)** — maps emit EventIDs resolving to no event (real
-     ULIDs, not placeholders) → wrong-ID-field bug in the maps extractor. Highest signal.
-   - **casualties → impacted_places: 86% (969/1123)** — likely MentionID/PlaceID type confusion.
-   - **weather → location.PlaceID: 48% (361/754)** — known MentionID-vs-PlaceID mismatch.
-   - **casualties → event_context.EventID: 40% (3543/8832)**; images→events 13%; source_section→events 7%.
-   Fix each extractor to emit the resolvable target ID; re-run the audit to confirm; fold the audit
-   into the corpus-quality dashboard (MED-7) + a periodic/CI check.
-2. **Remediate the ~35% invalid merge fragments** (§6) via reprocess-from-provenance → re-dedup →
-   purge quarantine (fragments hold UNIQUE mentions — never delete).
-3. **Semantic validators as FLAGS (not hard blocks):** geocode in-theatre bounding-box sanity (43%
+1. **Cross-reference integrity — root cause + fix (NOT N separate extractor bugs).** The audit
+   (**[TOOL DONE 2026-10-10]** `scripts/referential_integrity_audit.py`, read-only, tested; corpus
+   run → 5,076 dangling refs; report in `docs/current/dataquality/referential_integrity_report.json`)
+   surfaced the dangling edges (maps→events 100%, casualties→impacted_places 86%, weather→places 48%,
+   casualties→events 40%, images→events 13%, source_section→events 7%). INVESTIGATION (2026-10-10)
+   found these are NOT per-extractor logic bugs — the extractors write the right reference at write
+   time. Two real causes:
+   - **(i) Staleness/ripple:** EventIDs come from the LLM response and are NON-DETERMINISTIC per run.
+     Events re-extracted Sept 2026 got fresh ULIDs; dependents written Apr–Jun (maps/weather/
+     casualties/images) still carry the old IDs → dangling. Any post-write event-ID change ripples
+     to every referrer.
+   - **(ii) Live write-time bug:** FRESH source_sections (written today) reference EventIDs that
+     resolve to NO event (`source_section→events` 11/157, all recent) — a dangling ref created at
+     write time because nothing validates that a reference RESOLVES (only the record's own schema is
+     checked). The LLM-supplied EventID is not validated against a real event.
+   **FIX (both in CORE code, not throwaway utilities):**
+   - **#1 Deterministic EventIDs** — derive the EventID from stable content (book + chapter +
+     sub-event) instead of a volatile LLM/ULID value, so re-extraction yields the SAME id (no
+     staleness, no ripple). Where the LLM supplies an id, VALIDATE it (reject hallucinated/
+     non-resolving). Design-first (schema/migration implications).
+   - **#2 Enforced referential-integrity check across ALL json objects** — reference fields must
+     resolve to an existing target; enforce in core (write-guard reference check and/or a standing
+     pipeline corpus pass), handling the same-run create-order case (an event + its referrer written
+     in one run). The audit tool is the DETECTIVE/reporting half; this is the ENFORCEMENT half.
+     ROOT CAUSE of the live source_section→events bug (confirmed 2026-10-10): a dependent
+     (source_section) was persisted referencing an EventID whose EVENT RECORD WAS NEVER PERSISTED
+     (the event write was blocked by the schema guard, but source_section was still built from the
+     in-memory event dict + written) → a dangling ref born at write time.
+     **[DONE 2026-10-10]** Implemented (branch `feature/referential-integrity-enforcement`):
+     core module `src/utils/referential_integrity.py` — EDGES + PK targets are now DERIVED FROM
+     `entity_registry`/schemas (NOT hand-listed), so coverage is EVERY schema-declared PK-named
+     reference field across ALL entities (17 edges, 12 PK targets) and cannot drift (drift-guard
+     tests assert full coverage). `enforce()`/`run_for_phase()` run at the end of Phase 1/2/3
+     (centralized, fail-safe, SNS alert = aggregate counts only, raw-ID samples opt-in default-OFF).
+     `events.py:_save_event_output` now gates the source_section emit on the event write persisting
+     (fixes the live write-time dangling bug). CLI `scripts/referential_integrity_audit.py` is a thin
+     wrapper over the same core (single source). Full gate PASS; code+security sub-agent reviewed.
+     REMAINING PRECISION GAP (schema, not enforcement): `casualties.impacted_*` are typed
+     `items:{type:[string,object]}` with NO declared `*ID` field, and `people.group_affiliations`
+     is absent from the schema — so those loose relationships are not resolvable by a declared path.
+     Fix = TIGHTEN those schemas to declare the ID field, then derivation picks them up automatically
+     (do NOT hardcode shape assumptions — schema is the source).
+   NOTE: a one-off remediation of the current stale TEST data is intentionally SKIPPED — dev/test
+   data will be refreshed from prod; the only durable value is recurrence-safety in a future prod
+   release, which #2-in-core provides (a throwaway cleanup script would die at the next data refresh).
+2. **Semantic validators as FLAGS (not hard blocks):** geocode in-theatre bounding-box sanity (43%
    of places have null/0.0 coords; nothing rejects ocean/wrong-continent); date in the 1944–45 ETO
    window (reuse the existing `resolved_earliest/latest`); citation resolvability
    (archive_reference_number present / URL dereferences / `ibid` resolved).

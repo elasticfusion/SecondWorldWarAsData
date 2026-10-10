@@ -549,6 +549,12 @@ def main():
     from src.utils.validation_stats import write_validation_stats as _write_val_stats
 
     _write_val_stats(args.output_dir)
+    try:
+        from src.utils.referential_integrity import run_for_phase as _ref_enforce
+
+        _ref_enforce(args.output_dir, phase="Phase 3")
+    except Exception as _e:  # enforcement must never crash a phase
+        logger.warning("referential-integrity enforcement skipped: %s", _e)
 
     return 0
 
