@@ -36,8 +36,8 @@ def _fingerprint(schema: dict) -> str:
 # bump: run  python -c "from tests.test_schema_fingerprint import _print_pins; _print_pins()"
 EXPECTED = {
     "events": ("2.24", "bcc344080723f54a"),
-    "dates": ("2.24", "28553959a617e5e4"),
-    "places": ("2.26", "94bdd4e0275931a9"),
+    "dates": ("2.25", "79f50ab8a186ab18"),
+    "places": ("2.27", "e46991c4a5cae954"),
     "people": ("2.24", "c73f1d99c5c80b61"),
     "people_groups": ("2.27", "01528b003ca170ba"),
     "equipment": ("2.25", "80ec735d8a6d009b"),
@@ -46,7 +46,7 @@ EXPECTED = {
     "casualties": ("2.25", "642d7904524ce70e"),
     "maps": ("2.24", "3b81288612b70e10"),
     "map_features": ("2.24", "7cf064901b370f2d"),
-    "bibliography": ("2.24", "3bf1e7f997304516"),
+    "bibliography": ("2.25", "d8846300db6f7f2f"),
     "images": ("2.26", "e6f5796795d27df1"),
     "source_section": ("2.26", "f19088e6d91b3aac"),
 }

@@ -2,6 +2,7 @@
 
 from src.schemas import (
     METADATA_PROPERTIES,
+    QUALITY_FLAGS_PROPERTY,
     entity_version,
     enum_field,
     make_nullable,
@@ -17,6 +18,7 @@ PLACES_OUTPUT_SCHEMA = {
     "additionalProperties": False,
     "properties": {
         **METADATA_PROPERTIES,
+        **QUALITY_FLAGS_PROPERTY,
         "PlaceID": ulid_field(),
         "current_name": make_nullable("string"),
         "name": make_nullable("string"),

@@ -2,6 +2,7 @@
 
 from src.schemas import (
     METADATA_PROPERTIES,
+    QUALITY_FLAGS_PROPERTY,
     entity_version,
     enum_field,
     make_nullable,
@@ -17,6 +18,7 @@ DATES_OUTPUT_SCHEMA = {
     "additionalProperties": False,
     "properties": {
         **METADATA_PROPERTIES,
+        **QUALITY_FLAGS_PROPERTY,
         "DateID": ulid_field(),
         "date_start": {"type": "string"},
         "date_end": make_nullable("string"),
