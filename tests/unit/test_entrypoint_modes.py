@@ -188,3 +188,16 @@ def test_post_process_phase1_serial_invokes_not_advances(entrypoint):
             entrypoint._post_process("phase1_parse.py", {})
     adv.assert_not_called()  # no doc lifecycle in serial
     evt.assert_called_once_with("1")
+
+
+def test_enqueue_or_alert_resolves_job_queue_names(entrypoint):
+    """Regression: _enqueue_or_alert must import BatchJob + enqueue_job in its OWN scope.
+    Previously they were imported only in _enqueue_from_metrics, so calling _enqueue_or_alert
+    raised NameError: name 'enqueue_job' is not defined (crashed Phase 2 post-extraction).
+    """
+    with patch("src.utils.job_queue.enqueue_job") as eq:
+        # Should enqueue without a NameError; a real BatchJob is constructed internally.
+        entrypoint._enqueue_or_alert("batch-123", "phase2", "SomeBook", "nm", 5)
+    eq.assert_called_once()
+    job = eq.call_args.args[0]
+    assert job.batch_id == "batch-123" and job.phase == "phase2"

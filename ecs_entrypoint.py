@@ -2851,10 +2851,6 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
 
 def _enqueue_from_metrics(phase_script: str) -> bool:
     """Find the latest batch metrics and enqueue the job. Returns True if a batch was enqueued."""
-    import time as _t
-
-    from src.utils.job_queue import BatchJob, enqueue_job
-
     metrics_dir = WORKDIR / "output" / "metrics"
     if not metrics_dir.exists():
         logger.warning("No metrics dir — batch may not have submitted")
@@ -2955,6 +2951,8 @@ def _enqueue_or_alert(
     a failure OR an unexplained/anomalous outcome ALERTS (email+Slack), never
     silent. We do not need to know WHY the transition failed to alert on it."""
     import time as _t
+
+    from src.utils.job_queue import BatchJob, enqueue_job
 
     try:
         enqueue_job(
