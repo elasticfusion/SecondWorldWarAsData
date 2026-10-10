@@ -70,6 +70,25 @@ def _lock_key(family: str, book_name: str) -> str:
     return f"lock#{family}"
 
 
+# NAT-gateway cold-start wait budget (mirrors _wait_for_networking's env default). Used to
+# size the launch grace window so a lock held by an invocation still in NAT-wait is never
+# reclaimed as "stale".
+NAT_WAIT_SECONDS = int(os.environ.get("NAT_WAIT_SECONDS", "180"))
+
+
+def _lock_age_seconds(lock_key: str, now: int):
+    """Age (seconds) of an existing lock from its stored acquire timestamp (`response`),
+    or None if it can't be read. Used to avoid reclaiming a just-acquired lock whose holder
+    is still waiting on NAT (the double-launch race)."""
+    try:
+        item = dynamo.get_item(Key={"cache_key": lock_key}).get("Item", {})
+        ts = int(item.get("response", 0))
+        return now - ts if ts else None
+    except Exception as e:  # noqa: BLE001
+        logger.warning("lock-age read failed for %s: %s", lock_key, e)
+        return None
+
+
 # Content suffixes the pipeline processes (Option B). Zips are IGNORED — the
 # pre-stage expands them locally; the archive never reaches processing. Anything
 # not in this set (e.g. .zip, .rar, sidecar files) is filtered out before queuing.
@@ -1001,53 +1020,51 @@ def _run_task(task_def, source, book_name="", extra_env=None):
     # Cancel any pending delayed teardown
     _cancel_delayed_teardown()
 
-    # Ensure networking
-    try:
-        boto3.client("lambda").invoke(
-            FunctionName=NAT_MANAGER_FN,
-            InvocationType="Event",
-            Payload=json.dumps({"action": "create"}).encode(),
-        )
-    except Exception as e:
-        logger.warning("NAT create invoke failed: %s", e)
-    _wait_for_networking()
-
-    # Atomic lock. Per-book under multi-doc (G1) so concurrent books don't share
-    # one phase lock; singleton in serial mode (unchanged).
+    # Atomic lock FIRST — BEFORE waiting for networking. The old order (NAT wait, then
+    # lock) opened a ~180s window where two concurrent invocations were both alive but
+    # neither held the lock; the second's "stale lock" check saw no RUNNING task (the
+    # first was still in NAT-wait, not yet launched) and cleared the lock -> DOUBLE LAUNCH.
+    # Locking first makes the lock the single serialization point; NAT-wait happens inside it.
+    # Per-book under multi-doc (G1); singleton in serial mode (unchanged).
     family = TASK_FAMILIES.get(task_def, "unknown")
     lock_key = _lock_key(family, book_name)
+    now = int(time.time())
+    # A lock younger than this is presumed held by an invocation still in NAT-wait, so it
+    # must NOT be reclaimed as "stale" even if no task is RUNNING yet (that was the race).
+    LAUNCH_GRACE_S = NAT_WAIT_SECONDS + 120
     try:
         dynamo.put_item(
             Item={
                 "cache_key": lock_key,
                 "book": book_name or "all",
-                "response": str(int(time.time())),
-                "ttl": int(time.time()) + 7200,
+                "response": str(now),
+                "ttl": now + 7200,
             },
             ConditionExpression="attribute_not_exists(cache_key)",
         )
     except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
-        # Lock exists. A task that is PROVISIONING/PENDING (NAT cold-start) is NOT
-        # stale — treating "not RUNNING" as stale is the G1 race that let a 2nd
-        # doc clear the lock and double-launch. Only a genuinely dead lock (no
-        # task in ANY live state) may be reclaimed.
-        # NOTE: ECS list_tasks desiredStatus accepts only RUNNING/PENDING/STOPPED
-        # (PROVISIONING is a lastStatus, not a desiredStatus). desiredStatus=RUNNING
-        # already covers tasks whose lastStatus is PROVISIONING/PENDING/RUNNING, so
-        # querying RUNNING is sufficient to see every not-yet-stopped task.
+        # Lock exists. Only reclaim it if BOTH (a) no live task AND (b) the lock is OLDER
+        # than the launch grace window (so we never clear a lock whose holder is mid-NAT-wait
+        # and hasn't launched its task yet — the G1/double-launch race).
         live = ecs.list_tasks(
             cluster=CLUSTER, family=family, desiredStatus="RUNNING"
         ).get("taskArns", [])
-        if not live:
-            logger.info("Stale lock for %s (no live task), clearing", lock_key)
+        lock_age = _lock_age_seconds(lock_key, now)
+        if not live and lock_age is not None and lock_age > LAUNCH_GRACE_S:
+            logger.info(
+                "Stale lock for %s (no live task, age %ds > %ds), clearing",
+                lock_key,
+                lock_age,
+                LAUNCH_GRACE_S,
+            )
             dynamo.delete_item(Key={"cache_key": lock_key})
             try:
                 dynamo.put_item(
                     Item={
                         "cache_key": lock_key,
                         "book": book_name or "all",
-                        "response": str(int(time.time())),
-                        "ttl": int(time.time()) + 7200,
+                        "response": str(now),
+                        "ttl": now + 7200,
                     },
                     ConditionExpression="attribute_not_exists(cache_key)",
                 )
@@ -1057,7 +1074,12 @@ def _run_task(task_def, source, book_name="", extra_env=None):
                 )
                 return
         else:
-            logger.info("Task %s already locked and live, skipping", lock_key)
+            logger.info(
+                "Task %s already locked (live=%s, age=%ss), skipping",
+                lock_key,
+                bool(live),
+                lock_age,
+            )
             # Queue per-book requests for later processing
             if book_name:
                 if task_def == PHASE3_TASK_DEF:
@@ -1065,6 +1087,18 @@ def _run_task(task_def, source, book_name="", extra_env=None):
                 elif task_def == PHASE2_TASK_DEF:
                     _queue_pending_parsed_book(book_name)
             return
+
+    # Lock is HELD. Now ensure networking (NAT) and wait — inside the lock, so a second
+    # invocation blocks on the lock above rather than racing us here.
+    try:
+        boto3.client("lambda").invoke(
+            FunctionName=NAT_MANAGER_FN,
+            InvocationType="Event",
+            Payload=json.dumps({"action": "create"}).encode(),
+        )
+    except Exception as e:
+        logger.warning("NAT create invoke failed: %s", e)
+    _wait_for_networking()
 
     # Launch task
     logger.info(
@@ -1085,23 +1119,33 @@ def _run_task(task_def, source, book_name="", extra_env=None):
                 }
             ]
         }
-    ecs.run_task(
-        cluster=CLUSTER,
-        taskDefinition=task_def,
-        count=1,
-        capacityProviderStrategy=[
-            {"capacityProvider": "FARGATE_SPOT", "weight": 4, "base": 0},
-            {"capacityProvider": "FARGATE", "weight": 1, "base": 0},
-        ],
-        networkConfiguration={
-            "awsvpcConfiguration": {
-                "subnets": SUBNETS,
-                "securityGroups": [SG],
-                "assignPublicIp": "DISABLED",
-            }
-        },
-        overrides=overrides,
-    )
+    try:
+        ecs.run_task(
+            cluster=CLUSTER,
+            taskDefinition=task_def,
+            count=1,
+            capacityProviderStrategy=[
+                {"capacityProvider": "FARGATE_SPOT", "weight": 4, "base": 0},
+                {"capacityProvider": "FARGATE", "weight": 1, "base": 0},
+            ],
+            networkConfiguration={
+                "awsvpcConfiguration": {
+                    "subnets": SUBNETS,
+                    "securityGroups": [SG],
+                    "assignPublicIp": "DISABLED",
+                }
+            },
+            overrides=overrides,
+        )
+    except Exception as e:
+        # Launch failed AFTER we took the lock — release it so the content isn't stuck
+        # behind a held lock until the 2h TTL (that would need manual intervention).
+        logger.error("run_task failed for %s (%s) — releasing lock", lock_key, e)
+        try:
+            dynamo.delete_item(Key={"cache_key": lock_key})
+        except Exception:  # noqa: BLE001
+            pass
+        raise
     # Notify operator that a task was launched
     _notify_launch(family, book_name, source)
 

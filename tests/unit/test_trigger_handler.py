@@ -352,3 +352,66 @@ def test_launch_phase1_skips_when_task_active():
         th._launch_phase1_if_idle()
 
     run_task.assert_not_called()
+
+
+def test_run_task_fresh_lock_no_task_is_not_reclaimed(dynamodb_table):
+    """Double-launch race: a FRESH lock (holder still in NAT-wait, no RUNNING task yet)
+    must NOT be reclaimed as stale. The old code cleared it -> two Phase-1 tasks launched.
+    """
+    from lambda_handlers import trigger_handler as th
+    import boto3 as _b
+    import time as _t
+
+    table = _b.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    # First invocation just took the lock (age ~0) and is in NAT-wait; NO task RUNNING yet.
+    table.put_item(
+        Item={
+            "cache_key": "lock#test-wwii-phase1-parse",
+            "book": "all",
+            "response": str(int(_t.time())),  # fresh
+        }
+    )
+
+    with (
+        patch.object(
+            th.ecs, "list_tasks", return_value={"taskArns": []}
+        ),  # no live task
+        patch.object(th.ecs, "run_task") as run_task,
+        patch.object(th, "_wait_for_networking"),
+    ):
+        th._run_task(th.PHASE1_TASK_DEF, "second-invocation")
+
+    run_task.assert_not_called()  # second invocation defers -> NO double launch
+    assert table.get_item(Key={"cache_key": "lock#test-wwii-phase1-parse"}).get("Item")
+
+
+def test_run_task_genuinely_stale_lock_is_reclaimed(dynamodb_table):
+    """A lock OLDER than the launch grace window with no live task IS reclaimed + relaunched
+    (genuine crash recovery — the holder died without releasing)."""
+    from lambda_handlers import trigger_handler as th
+    import boto3 as _b
+    import time as _t
+
+    table = _b.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    old_ts = int(_t.time()) - (th.NAT_WAIT_SECONDS + 600)  # well past the grace window
+    table.put_item(
+        Item={
+            "cache_key": "lock#test-wwii-phase1-parse",
+            "book": "all",
+            "response": str(old_ts),
+        }
+    )
+
+    with (
+        patch.object(th.ecs, "list_tasks", return_value={"taskArns": []}),
+        patch.object(th.ecs, "run_task") as run_task,
+        patch.object(th, "_wait_for_networking"),
+        patch.object(th, "_notify_launch"),
+    ):
+        th._run_task(th.PHASE1_TASK_DEF, "recovery")
+
+    run_task.assert_called_once()  # stale lock reclaimed, task relaunched
