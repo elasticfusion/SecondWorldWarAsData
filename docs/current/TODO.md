@@ -123,12 +123,22 @@ informative or correct" (observed: empty-`{}` biographies and 0.0-coord places p
    `QUALITY_FLAGS_PROPERTY` on places/dates/bibliography (+ version bumps + fingerprint pins).
    Code+security sub-agent reviewed; full gate PASS. Design:
    `docs/current/dataquality/SEMANTIC_FLAGS_DESIGN.md`.
-   BASE RATE to calibrate the (future) catcher: `date_out_of_window` ~5% is legitimate (1937–42
-   lead-up / 1946–48 aftermath). NOT-YET-WIRED: forwarding flags to the statistical catcher as an
-   `allow_flagged` dimension (future work, ties to item 4).
-4. **Teach the statistical catcher to see low-information ALLOWS** — record an `allow_empty`
-   outcome (populated-field count below a per-entity floor) so empty-`{}` biographies / 0.0-coord
-   places are visible (today they're `allow`, so the catcher can't flag them — its biggest blind spot).
+   BASE RATE for the (future) catcher: with the GENEROUS config-driven date window (default
+   1930–1950, incl. WWII antecedents Abyssinia/Spanish-CW/Sino-Japanese/Anschluss/Khalkhin-Gol +
+   late-1940s aftermath; override via `processing.date_window` / env) `date_out_of_window` fires
+   only on genuinely implausible dates. NOT-YET-WIRED: forwarding flags to the statistical catcher
+   as an `allow_flagged` dimension (future work, ties to item 4).
+4. **Teach the statistical catcher to see low-information ALLOWS** — **[DONE 2026-10-10]:**
+   `validation_stats` now records `allow_empty` (populated content-field count below a per-entity
+   floor — people/places/bibliography/equipment/dates=2; metadata/PK/quality_flags/0.0-coords not
+   counted) and `allow_flagged` (one datapoint per HIGH-2 `quality_flags` code, keyword constrained
+   to the known vocabulary for PII-safety). `systematic_clusters()` generalized to the concern set
+   {block, allow_empty, allow_flagged} at the same count≥10/rate≥5% thresholds, so a book-wide
+   empty-biography or `geo_missing_coords` cluster alerts like a block cluster (outcome-aware log +
+   SNS body). Wired into the central guard (`_run_schema_validation` allow + allow_warn branches,
+   respecting `record_stats` so pre-checks don't double-count). This closes the catcher's biggest
+   blind spot AND completes the HIGH-2 flag→catcher forwarding. Fail-safe; code+security reviewed;
+   full gate PASS. Design: `docs/current/dataquality/CATCHER_LOW_INFO_FLAGGED_DESIGN.md`.
 4b. **Extend the guard to PHASE 1 (parse) output.** Phase 1 writes `chapter*-parsed.json` via RAW
    `json.dump` (no `write_json_with_lock`, no registry schema) — it is UNVALIDATED today, so a
    malformed/empty parse flows straight into Phase 2 (garbage-in at the earliest point). Add a

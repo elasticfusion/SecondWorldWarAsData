@@ -7,10 +7,10 @@ advisory ``quality_flags`` codes (impossible/placeholder coordinates, out-of-win
 unresolvable citations, ...) WITHOUT blocking the write or altering content — flag, never fabricate.
 
 Central + fail-safe: one flag vocabulary, one entry point; any error returns the record unchanged.
-Flags are additive observability (filterable). Forwarding flag outcomes to the statistical catcher
-(an ``allow_flagged`` dimension, so a SYSTEMATIC cluster — e.g. a whole book geocoding to
-impossible coordinates — raises a code-level alert) is NOT yet wired — tracked as future work
-(HIGH-4).
+Flags are additive observability (filterable) AND are forwarded to the statistical catcher (HIGH-4:
+`validation_stats.record_record_quality` records an ``allow_flagged`` datapoint per code), so a
+SYSTEMATIC cluster — e.g. a whole book geocoding to impossible coordinates — raises a code-level
+alert rather than a per-record decision.
 """
 
 from __future__ import annotations

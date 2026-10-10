@@ -27,13 +27,96 @@ OUTCOME_BLOCK = "block"  # schema-invalid -> write refused
 OUTCOME_WARN = (
     "allow_warn"  # legitimately-old record allowed despite a current-schema miss
 )
+OUTCOME_EMPTY = (
+    "allow_empty"  # wrote, but populated-field count below the entity's floor
+)
+OUTCOME_FLAGGED = (
+    "allow_flagged"  # wrote, but carries semantic quality_flags (one per code)
+)
+
+# Outcomes that signal a possible CODE defect when they CLUSTER (not just block anymore): a book-
+# wide run of empty records or the same semantic flag is as diagnostic as a block cluster.
+_CONCERN_OUTCOMES = (OUTCOME_BLOCK, OUTCOME_EMPTY, OUTCOME_FLAGGED)
 
 # A cluster is "systematic" (code-level, not transient) when both hold:
-#   its block count >= _CLUSTER_MIN_COUNT  AND  its block RATE for that entity >= _CLUSTER_MIN_RATE
+#   its concern count >= _CLUSTER_MIN_COUNT  AND  its RATE for that entity >= _CLUSTER_MIN_RATE
 _CLUSTER_MIN_COUNT = 10
 _CLUSTER_MIN_RATE = (
     0.05  # 5% of an entity's writes blocked on the same keyword = systematic
 )
+
+# Minimum count of POPULATED content fields a real record of each entity should carry (below =>
+# allow_empty). Only entities listed here are checked; others never emit allow_empty. Conservative
+# on purpose — this flags the egregiously-empty (``{}`` biographies, bare PK-only records), not the
+# merely-sparse. Metadata/PK/quality_flags are never counted as content.
+_EMPTY_FLOORS = {
+    "people": 2,
+    "places": 2,
+    "bibliography": 2,
+    "equipment": 2,
+    "dates": 2,
+}
+_NONCONTENT_FIELDS = {
+    "_schema_version",
+    "_last_updated",
+    "quality_flags",
+    "enrichment_status",
+    "last_enrichment_search",
+}
+
+
+def _known_flag_codes() -> frozenset:
+    """The semantic-flag vocabulary we will record (bounds the allow_flagged keyword to static,
+    PII-safe codes). Fail-safe: empty set if the module is unavailable."""
+    try:
+        from src.utils.semantic_flags import _OWNED_FLAGS
+
+        return frozenset(_OWNED_FLAGS)
+    except Exception:  # noqa: BLE001
+        return frozenset()
+
+
+_KNOWN_FLAG_CODES = _known_flag_codes()
+_PK_MAP_CACHE: Optional[Dict[str, str]] = None
+
+
+def _entity_pk_map() -> Dict[str, str]:
+    """Cached entity -> primary-key-field map from the registry (hot path: one lookup per write)."""
+    global _PK_MAP_CACHE
+    if _PK_MAP_CACHE is None:
+        try:
+            from src.schemas.entity_registry import ENTITY_REGISTRY
+
+            _PK_MAP_CACHE = {
+                s.name: s.required_id for s in ENTITY_REGISTRY if s.required_id
+            }
+        except Exception:  # noqa: BLE001
+            _PK_MAP_CACHE = {}
+    return _PK_MAP_CACHE
+
+
+def _is_populated(key: str, value: Any) -> bool:
+    """A field carries information unless it is null/empty-string/empty-list/empty-dict, or the
+    0.0/0.0 coordinate placeholder (lat/lon==0.0 is the 'no geocode' sentinel, not real data).
+    """
+    if value is None or value == "" or value == [] or value == {}:
+        return False
+    if (
+        key in ("latitude", "longitude")
+        and isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and float(value) == 0.0
+    ):
+        return False
+    return True
+
+
+def _populated_content_count(entity: str, record: Dict[str, Any]) -> int:
+    """Count populated CONTENT fields (excludes metadata, the PK, and quality_flags)."""
+    pk = _entity_pk_map().get(entity)
+    skip = _NONCONTENT_FIELDS | ({pk} if pk else set())
+    return sum(1 for k, v in record.items() if k not in skip and _is_populated(k, v))
+
 
 _lock = threading.Lock()
 # key: (entity, outcome, keyword, version_state) -> count
@@ -60,6 +143,32 @@ def record_validation(
         pass
 
 
+def record_record_quality(
+    entity: str, record: Dict[str, Any], version_state: str = "ok"
+) -> None:
+    """For an ALLOWED record, record low-information + semantic-flag observations so the catcher
+    can surface SYSTEMATIC content-quality clusters that a plain ``allow`` hides. Never raises.
+
+    - ``allow_empty`` (keyword ``below_floor``) when the entity has a floor and the record's
+      populated content-field count is below it.
+    - ``allow_flagged`` once per ``quality_flags`` code (keyword = the code)."""
+    try:
+        if not isinstance(record, dict):
+            return
+        floor = _EMPTY_FLOORS.get(entity)
+        if floor is not None and _populated_content_count(entity, record) < floor:
+            record_validation(entity, OUTCOME_EMPTY, "below_floor", version_state)
+        flags = record.get("quality_flags") or []
+        if isinstance(flags, list):
+            for code in flags:
+                # Only record codes from the KNOWN vocabulary — a flag keyword flows into logs/SNS,
+                # so never let a future/foreign producer put record-derived text into it (PII-safe).
+                if isinstance(code, str) and code in _KNOWN_FLAG_CODES:
+                    record_validation(entity, OUTCOME_FLAGGED, code, version_state)
+    except Exception:  # noqa: BLE001 - telemetry must never break the guard
+        pass
+
+
 def _entity_totals() -> Dict[str, int]:
     totals: "Counter[str]" = Counter()
     with _lock:
@@ -70,14 +179,16 @@ def _entity_totals() -> Dict[str, int]:
 
 
 def systematic_clusters() -> List[Dict[str, Any]]:
-    """Return block clusters that look like a CODE defect (count + rate thresholds), sorted by
-    severity. Each: {entity, keyword, version_state, blocks, entity_total, rate}."""
+    """Return CONCERN clusters that look like a CODE defect (count + rate thresholds), sorted by
+    severity. Concern outcomes = block + allow_empty + allow_flagged (a book-wide run of empty or
+    same-flag records is as diagnostic as a block cluster). Each row:
+    {entity, outcome, keyword, version_state, count, entity_total, rate}."""
     totals = _entity_totals()
     out: List[Dict[str, Any]] = []
     with _lock:
         items = list(_counts.items())
     for (entity, outcome, keyword, version_state), n in items:
-        if outcome != OUTCOME_BLOCK:
+        if outcome not in _CONCERN_OUTCOMES:
             continue
         total = totals.get(entity, 0) or 1
         rate = n / total
@@ -85,13 +196,18 @@ def systematic_clusters() -> List[Dict[str, Any]]:
             out.append(
                 {
                     "entity": entity,
+                    "outcome": outcome,
                     "keyword": keyword,
                     "version_state": version_state,
-                    "blocks": n,
+                    "count": n,
+                    "blocks": n,  # back-compat alias for existing consumers
                     "entity_total": total,
                     "rate": round(rate, 4),
                 }
             )
+    # Sort by severity (rate, then count) descending; entity/keyword ascending as a stable
+    # tiebreaker so the JSON/alert order is deterministic across runs.
+    out.sort(key=lambda c: (c["entity"], c["keyword"]))
     out.sort(key=lambda c: (c["rate"], c["blocks"]), reverse=True)
     return out
 
@@ -142,19 +258,23 @@ def write_validation_stats(output_dir: Any) -> Dict[str, Any]:
 
     t = snap["totals"]
     logger.info(
-        "Validation stats: allow=%d block=%d allow_warn=%d (block_rate=%.1f%%)",
+        "Validation stats: allow=%d block=%d allow_warn=%d allow_empty=%d allow_flagged=%d "
+        "(block_rate=%.1f%%)",
         t.get(OUTCOME_ALLOW, 0),
         t.get(OUTCOME_BLOCK, 0),
         t.get(OUTCOME_WARN, 0),
+        t.get(OUTCOME_EMPTY, 0),
+        t.get(OUTCOME_FLAGGED, 0),
         snap["block_rate"] * 100,
     )
     for c in snap["systematic_clusters"]:
         logger.warning(
-            "SYSTEMATIC validation failure (likely a CODE defect — reprocess cannot fix): "
-            "%s blocked on '%s' %d/%d (%.1f%%) — fix upstream",
+            "SYSTEMATIC %s cluster (likely a CODE defect — reprocess cannot fix): "
+            "%s / '%s' %d/%d (%.1f%%) — fix upstream",
+            c.get("outcome", OUTCOME_BLOCK),
             c["entity"],
             c["keyword"],
-            c["blocks"],
+            c.get("count", c.get("blocks", 0)),
             c["entity_total"],
             c["rate"] * 100,
         )
@@ -180,12 +300,12 @@ def _alert_systematic(clusters: List[Dict[str, Any]], block_rate: float) -> None
         "defect — targeted reprocess cannot fix these).",
         f"Overall write block rate: {block_rate * 100:.1f}%",
         "",
-        "Clusters (entity / validator / blocks / rate):",
+        "Clusters (entity / outcome / detail / count / rate):",
     ]
     for c in clusters:
         lines.append(
-            f"  - {c['entity']}: '{c['keyword']}' {c['blocks']}/{c['entity_total']} "
-            f"({c['rate'] * 100:.1f}%)"
+            f"  - {c['entity']}: {c.get('outcome', OUTCOME_BLOCK)} '{c['keyword']}' "
+            f"{c.get('count', c.get('blocks', 0))}/{c['entity_total']} ({c['rate'] * 100:.1f}%)"
         )
     lines.append("")
     lines.append(

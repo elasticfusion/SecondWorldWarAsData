@@ -243,6 +243,19 @@ def _record_stat(
         pass
 
 
+def _record_record_quality(
+    entity: str, data: Dict[str, Any], version_state: str
+) -> None:
+    """Forward low-information + semantic-flag observations for an ALLOWED record to the catcher
+    (allow_empty / allow_flagged). Fail-safe: telemetry must never break the guard."""
+    try:
+        from src.utils.validation_stats import record_record_quality
+
+        record_record_quality(entity, data, version_state)
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def _is_non_entity_file(filepath: Path) -> bool:
     """True for metadata/index/report/tracking files that carry no entity schema."""
     return filepath.name in (
@@ -350,6 +363,7 @@ def _run_schema_validation(
         jsonschema.validate(data, schema)
         if record_stats:
             _record_stat(entity_type, "allow", None, status)
+            _record_record_quality(entity_type, data, status)
         return True
     except jsonschema.ValidationError as e:
         loc = "/".join(str(p) for p in e.absolute_path) or "<root>"
@@ -367,6 +381,7 @@ def _run_schema_validation(
                 _record_stat(
                     entity_type, "allow_warn", str(e.validator), "needs_upgrade"
                 )
+                _record_record_quality(entity_type, data, "needs_upgrade")
             return True
         logger.error(
             "BLOCKED schema-invalid %s write (%s): %s",
