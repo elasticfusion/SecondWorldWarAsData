@@ -38,8 +38,8 @@ from typing import Any, Dict, Optional
 # ---------------------------------------------------------------------------
 ENTITY_SCHEMA_VERSIONS: Dict[str, str] = {
     "events": "2.24",
-    "dates": "2.24",
-    "places": "2.26",
+    "dates": "2.25",
+    "places": "2.27",
     "people": "2.24",
     "people_groups": "2.27",
     "equipment": "2.25",
@@ -48,7 +48,7 @@ ENTITY_SCHEMA_VERSIONS: Dict[str, str] = {
     "casualties": "2.25",
     "maps": "2.24",
     "map_features": "2.24",
-    "bibliography": "2.24",
+    "bibliography": "2.25",
     "images": "2.26",
     "source_section": "2.26",
 }
@@ -85,6 +85,13 @@ URL_PATTERN = "^https?://"
 METADATA_PROPERTIES = {
     "_schema_version": {"type": "string"},
     "_last_updated": {"type": "string", "pattern": DATE_PATTERN},
+}
+
+# Optional, additive advisory field written by src/utils/semantic_flags.py (HIGH-2). A list of
+# non-blocking quality-flag codes (e.g. "geo_out_of_theatre"); absent/empty = no concern. Spread
+# into any schema whose entity has semantic flag validators so the write guard permits the field.
+QUALITY_FLAGS_PROPERTY = {
+    "quality_flags": {"type": ["array", "null"], "items": {"type": "string"}},
 }
 
 

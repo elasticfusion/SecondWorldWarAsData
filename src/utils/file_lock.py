@@ -24,6 +24,21 @@ def _get_file_lock(filepath: Path) -> threading.Lock:
         return _file_locks[key]
 
 
+def _annotate_semantic_flags(filepath: Path, data: Any) -> None:
+    """Attach advisory semantic quality flags to an entity record (fail-safe, additive, content
+    never altered). Shared by the write guard and the locked_json read-modify-write path so both
+    write paths get the same flags. No-op for non-entity files / unknown entities / any error.
+    """
+    try:
+        if not isinstance(data, dict) or _is_non_entity_file(filepath):
+            return
+        from src.utils.semantic_flags import annotate as _annotate_flags
+
+        _annotate_flags(_resolve_entity_type(filepath), data)
+    except Exception:  # noqa: BLE001
+        pass
+
+
 @contextmanager
 def locked_json(filepath: Path):
     """Context manager that holds an exclusive lock across read-modify-write.
@@ -58,6 +73,7 @@ def locked_json(filepath: Path):
                 data = json.loads(content) if content.strip() else {}
 
                 def save(new_data):
+                    _annotate_semantic_flags(filepath, new_data)
                     f.seek(0)
                     f.truncate()
                     json.dump(new_data, f, indent=2, ensure_ascii=False)
@@ -74,6 +90,7 @@ def locked_json(filepath: Path):
                     data = json.load(f)
 
             def save(new_data):
+                _annotate_semantic_flags(filepath, new_data)
                 with open(filepath, "w", encoding="utf-8") as f:
                     json.dump(new_data, f, indent=2, ensure_ascii=False)
 
@@ -174,6 +191,11 @@ def _validate_entity(
         _repair_empty_ulids(data)
     except Exception:  # noqa: BLE001 - repair is best-effort
         pass
+
+    # Attach advisory semantic quality flags (ocean coords, out-of-window dates, unresolvable
+    # citations, ...). Additive + fail-safe: flags are observability only — they never alter
+    # content fields and never change this guard's allow/block decision.
+    _annotate_semantic_flags(filepath, data)
 
     schema = _schema_for_entity(entity_type, filepath, data)
     if schema is None:

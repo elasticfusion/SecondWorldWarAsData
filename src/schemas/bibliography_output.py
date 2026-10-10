@@ -2,6 +2,7 @@
 
 from src.schemas import (
     METADATA_PROPERTIES,
+    QUALITY_FLAGS_PROPERTY,
     entity_version,
     enum_field,
     make_nullable,
@@ -17,6 +18,7 @@ BIBLIOGRAPHY_OUTPUT_SCHEMA = {
     "additionalProperties": False,
     "properties": {
         **METADATA_PROPERTIES,
+        **QUALITY_FLAGS_PROPERTY,
         "BibliographyID": ulid_field(),
         "title": {"type": "string"},
         "alt_title": make_nullable("string"),

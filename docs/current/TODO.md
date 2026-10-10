@@ -92,6 +92,12 @@ informative or correct" (observed: empty-`{}` biographies and 0.0-coord places p
      so a nested cross-reference to ANOTHER record of the same type (e.g.
      `equipment.related_equipment[].EquipmentID`, a future `related_places[].PlaceID`) is silently
      skipped. Exclude own-PK only at the record ROOT (path==""), not for nested list items.
+   - (uncovered group ref) `people.biographical_profile.primary_group_id` is a real group reference
+     but its leaf name is not `*ID`-cased (it's `primary_group_id`), so `_walk_id_fields` does NOT
+     discover it as an edge — it is unenforced. Fix: rename to a `*GroupID` form, or add a name
+     alias. Related consistency invariant worth a FLAG validator: `primary_group_id` SHOULD equal
+     one of the `group_affiliations[].GroupID` / `units_served[].GroupID` on the same person (people
+     can belong to multiple groups — one primary scalar + many affiliations/units arrays).
    - (perf) `enforce()` is O(corpus): `build_pk_sets` reads every entity+event file, then `audit`
      re-reads each source entity dir once PER edge. Cache records per dir once + iterate edges in
      memory; consider skipping the Phase-1 enforcement run (no cross-entity refs yet = pure cost).
@@ -106,10 +112,20 @@ informative or correct" (observed: empty-`{}` biographies and 0.0-coord places p
    - (storage-root consistency) phase3 passes `args.output_dir` while phase1/2 pass
      `paths["output_root"]`; CLI builds storage via `create_storage` while `run_for_phase` hardcodes
      `LocalStorage` — confirm all resolve to the same corpus root.
-2. **Semantic validators as FLAGS (not hard blocks):** geocode in-theatre bounding-box sanity (43%
-   of places have null/0.0 coords; nothing rejects ocean/wrong-continent); date in the 1944–45 ETO
-   window (reuse the existing `resolved_earliest/latest`); citation resolvability
-   (archive_reference_number present / URL dereferences / `ibid` resolved).
+2. **Semantic validators as FLAGS (not hard blocks)** — **[IMPLEMENTED 2026-10-10]:** central
+   `src/utils/semantic_flags.py` (`flags_for`/`annotate`, flag-not-block, fail-safe, recompute+replace
+   so stale flags clear) writes advisory `quality_flags`: `geo_missing_coords`/`geo_impossible_coords`
+   (places — GLOBAL validity, NO theater box: WWII is a global conflict + the corpus will grow
+   worldwide, so a regional box would false-flag by design; only null/0.0/physically-impossible
+   coords are flagged), `date_out_of_window`/`date_unparseable` (dates), `citation_stub`/
+   `citation_unresolvable` (bibliography). Wired into BOTH central write paths (`_validate_entity` +
+   `locked_json.save` via a shared `_annotate_semantic_flags` helper). New optional
+   `QUALITY_FLAGS_PROPERTY` on places/dates/bibliography (+ version bumps + fingerprint pins).
+   Code+security sub-agent reviewed; full gate PASS. Design:
+   `docs/current/dataquality/SEMANTIC_FLAGS_DESIGN.md`.
+   BASE RATE to calibrate the (future) catcher: `date_out_of_window` ~5% is legitimate (1937–42
+   lead-up / 1946–48 aftermath). NOT-YET-WIRED: forwarding flags to the statistical catcher as an
+   `allow_flagged` dimension (future work, ties to item 4).
 4. **Teach the statistical catcher to see low-information ALLOWS** — record an `allow_empty`
    outcome (populated-field count below a per-entity floor) so empty-`{}` biographies / 0.0-coord
    places are visible (today they're `allow`, so the catcher can't flag them — its biggest blind spot).
