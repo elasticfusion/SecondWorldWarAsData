@@ -62,6 +62,12 @@ run_radon
 run "vulture"  python -m vulture src/ lambda_handlers/ .vulture_whitelist.py --min-confidence 80
 run "cfn-lint" bash -c 'cfn-lint cloudformation/*.yaml'
 run "pip-audit" bash -c 'pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-2447 && pip-audit -r requirements-lambda.txt --ignore-vuln PYSEC-2026-2447'
+# Data-quality bypass guard: no NEW raw json.dump/write_text that could skip the central write guard.
+if bash scripts/check_raw_writes.sh >/tmp/gate_rawwrites 2>&1; then
+  grep '✓' /tmp/gate_rawwrites | tail -1
+else
+  cat /tmp/gate_rawwrites; fail=1
+fi
 
 if [ "${1:-}" != "--no-tests" ]; then
   echo "--- tests (CI-equivalent: example config) ---"

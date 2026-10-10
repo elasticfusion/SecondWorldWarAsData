@@ -61,3 +61,6 @@ jobs:
           # diskcache ships a fix or the cache backend changes.
           pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-2447
           pip-audit -r requirements-lambda.txt --ignore-vuln PYSEC-2026-2447
+
+      - name: Raw-write bypass gate (data-quality)
+        run: bash scripts/check_raw_writes.sh
