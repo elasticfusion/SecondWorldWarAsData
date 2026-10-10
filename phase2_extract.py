@@ -915,6 +915,15 @@ def _write_phase_results(output_root, processed, failed):
                 event_count,
             )
 
+    # End-of-phase referential-integrity enforcement — AFTER all extraction (incl. any batch
+    # re-run), so references are checked against the final corpus. Must never crash the phase.
+    try:
+        from src.utils.referential_integrity import run_for_phase as _ref_enforce
+
+        _ref_enforce(output_root, phase="Phase 2")
+    except Exception as _e:  # noqa: BLE001
+        logger.warning("referential-integrity enforcement skipped: %s", _e)
+
 
 if __name__ == "__main__":
     main()

@@ -287,6 +287,12 @@ def main():
             parsed += 1
 
     logger.info("Phase 1 complete: %d chapters parsed", parsed)
+    try:
+        from src.utils.referential_integrity import run_for_phase as _ref_enforce
+
+        _ref_enforce(output_root, phase="Phase 1")
+    except Exception as _e:  # enforcement must never crash a phase
+        logger.warning("referential-integrity enforcement skipped: %s", _e)
 
 
 if __name__ == "__main__":
