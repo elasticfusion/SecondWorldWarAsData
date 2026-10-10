@@ -708,6 +708,13 @@ def _write_notes_event(
     )
 
     sub_events = []
+    # Deterministic notes-event id: stable from book + chapter stem (section "notes" distinguishes
+    # it from the main chapter event). Central helper -> idempotent across re-runs (no ripple).
+    from src.utils.deterministic_ids import event_id as _event_id
+    from src.utils.deterministic_ids import sub_event_id as _sub_event_id
+
+    _chapter_stem = event_file.stem.replace("-event", "")
+    _notes_eid = _event_id(source_meta.get("book", ""), _chapter_stem, "notes")
     for item in factual_items:
         ref_num = item.get("reference_number")
         source_ref = {
@@ -720,9 +727,12 @@ def _write_notes_event(
         # Add source URL if available
         if ref_num and int(ref_num) in urls:
             source_ref["source_url"] = urls[int(ref_num)]
+        # Stable sub-event id: parent + the item's own source reference (ref number + the source
+        # sub-event it annotates), so re-running yields the same id.
+        _locator = f"ref:{ref_num}:{item.get('source_Sub-eventID', '')}"
         sub_events.append(
             {
-                "Sub-eventID": str(ulid.new()),
+                "Sub-eventID": _sub_event_id(_notes_eid, name=_locator),
                 "Sub-event_summary": item["verbatim_reference"][:200],
                 "Sub-event_fulltext": {"paragraph_1": item["verbatim_reference"]},
                 "source_reference": source_ref,
@@ -733,8 +743,8 @@ def _write_notes_event(
 
     event_data = {
         "Event": {
-            "EventID": str(ulid.new()),
-            "Event_Name": f"Notes: {event_file.stem.replace('-event', '')}",
+            "EventID": _notes_eid,
+            "Event_Name": f"Notes: {_chapter_stem}",
             "book": source_meta.get("book", ""),
             "author": source_meta.get("author", ""),
             "series": source_meta.get("series", ""),
