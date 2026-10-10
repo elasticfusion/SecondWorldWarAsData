@@ -146,11 +146,16 @@ def _save_split_chapter(doc, book_output, logger):
             }
             for p in chunk_paras
         ]
-        with open(chunk_file, "w", encoding="utf-8") as f:
-            json.dump(chunk_data, f, indent=2, ensure_ascii=False)
-        logger.info(
-            f"  Saved: {chunk_file.name} ({len(chunk_paras)} paragraphs, chunk {chunk_idx + 1})"
-        )
+        from src.utils.file_lock import write_parsed_with_guard
+
+        if write_parsed_with_guard(chunk_file, chunk_data):
+            logger.info(
+                f"  Saved: {chunk_file.name} ({len(chunk_paras)} paragraphs, chunk {chunk_idx + 1})"
+            )
+        else:
+            logger.error(
+                f"  DROPPED schema-invalid parse {chunk_file.name} — re-parse needed"
+            )
         # Advance by chunk_size minus overlap (so chunks share boundary paragraphs)
         i += chunk_size - overlap
         chunk_idx += 1
@@ -210,9 +215,14 @@ def _process_document(doc, book_output, logger):
         except Exception as e:
             logger.warning("Parse step failed: %s", e)
 
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(output_data, f, indent=2, ensure_ascii=False)
-    logger.info(f"  Saved: {output_file.name} ({len(doc.paragraphs)} paragraphs)")
+    from src.utils.file_lock import write_parsed_with_guard
+
+    if write_parsed_with_guard(output_file, output_data):
+        logger.info(f"  Saved: {output_file.name} ({len(doc.paragraphs)} paragraphs)")
+    else:
+        logger.error(
+            f"  DROPPED schema-invalid parse {output_file.name} — re-parse needed"
+        )
 
     _save_endnote_refs(doc, section_suffix, book_output, logger)
 

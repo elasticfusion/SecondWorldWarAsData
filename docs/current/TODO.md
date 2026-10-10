@@ -139,14 +139,18 @@ informative or correct" (observed: empty-`{}` biographies and 0.0-coord places p
    respecting `record_stats` so pre-checks don't double-count). This closes the catcher's biggest
    blind spot AND completes the HIGH-2 flag→catcher forwarding. Fail-safe; code+security reviewed;
    full gate PASS. Design: `docs/current/dataquality/CATCHER_LOW_INFO_FLAGGED_DESIGN.md`.
-4b. **Extend the guard to PHASE 1 (parse) output.** Phase 1 writes `chapter*-parsed.json` via RAW
-   `json.dump` (no `write_json_with_lock`, no registry schema) — it is UNVALIDATED today, so a
-   malformed/empty parse flows straight into Phase 2 (garbage-in at the earliest point). Add a
-   `parsed`/`content` schema + route Phase-1 writes through the central guard, incl. an
-   empty-parse flag (zero/near-zero paragraphs = structurally valid but useless). NOTE: only the
-   content-validity + guard half of the model applies to Phase 1 — the identity/dedup/
-   no-duplication tiers do NOT (parse artifacts have no PK ULIDs and re-parse is idempotent, so
-   there are no entities to duplicate). Those remain Phase-2/3 concerns.
+4b. **Extend the guard to PHASE 1 (parse) output** — **[DONE 2026-10-10]:** new content schema
+   `src/schemas/parsed_output.py` (backbone: book + chapter_title + paragraphs[absolute_number,text];
+   additionalProperties permissive; NOT in ENTITY_REGISTRY — no PK/dedup/cross-ref applies to parse
+   artifacts). Shared `file_lock.guard_parsed_content()` validates shape (BLOCKS a garbage parse
+   before Phase 2) + flags an empty parse (`allow_empty`, still written — plate pages are
+   legitimate), recording block/allow/allow_empty to the catcher under entity `parsed` (rolls into
+   the same systematic-cluster alert path). Used by BOTH the local writers
+   (`write_parsed_with_guard`, atomic tmp+replace) AND the S3/Lambda production path
+   (`lambda_handlers/phase1_handler.py` — the review-caught bypass, now routed); a blocked chapter
+   logs `DROPPED ... re-parse needed`, not "Saved". Fail-safe (validator/import error still writes).
+   Code+security sub-agent reviewed; full gate PASS (1974 tests). Design:
+   `docs/current/dataquality/PHASE1_PARSE_GUARD_DESIGN.md`.
 
 **MED**
 5. **Persist validation_stats as a time series** (per run + per book) and alert on TREND/regression,
