@@ -10,6 +10,53 @@ live). Ranking reflects the project goal: *finish unattended ETO ingestion, then
 build RAG/search*. Current ordered priority:
 
 
+### [HIGH] Data-quality program — data-scientist review backlog (2026-10-09)
+From an independent data-scientist review of `DATA_QUALITY_SAFEGUARDS.md`. Key reframe: the write
+guard defends against **structural (schema-shape) corruption at write time**, but the dominant
+risks for this corpus + audiences (historians: citations/provenance; genealogists: person/unit/
+place/date lookups) are **corpus-level integrity** and **semantic/content** validity — classes the
+per-write guard is blind to. "The guard confirms a record is well-formed; nothing confirms it is
+informative or correct" (observed: empty-`{}` biographies and 0.0-coord places pass validation).
+
+**HIGH**
+1. **Corpus referential-integrity audit** — resolve every cross-ref edge; report dangling counts
+   per type. Known damage (DATA_QUALITY_STATUS): Casualties→PeopleGroups ~8,336/9,594 broken
+   (~87%); Weather→Places 168/538 broken (a MentionID-vs-PlaceID TYPE-confusion bug — fix that).
+   Caveat: the guard's empty-string-ULID *repair* mints a fresh ULID, which ORPHANS a cross-ref if
+   the empty field was a reference target — restrict repair to primary keys only, never ref fields.
+2. **Remediate the ~35% invalid merge fragments** (§6) via reprocess-from-provenance → re-dedup →
+   purge quarantine (fragments hold UNIQUE mentions — never delete).
+3. **Semantic validators as FLAGS (not hard blocks):** geocode in-theatre bounding-box sanity (43%
+   of places have null/0.0 coords; nothing rejects ocean/wrong-continent); date in the 1944–45 ETO
+   window (reuse the existing `resolved_earliest/latest`); citation resolvability
+   (archive_reference_number present / URL dereferences / `ibid` resolved).
+4. **Teach the statistical catcher to see low-information ALLOWS** — record an `allow_empty`
+   outcome (populated-field count below a per-entity floor) so empty-`{}` biographies / 0.0-coord
+   places are visible (today they're `allow`, so the catcher can't flag them — its biggest blind spot).
+
+**MED**
+5. **Persist validation_stats as a time series** (per run + per book) and alert on TREND/regression,
+   not just absolute threshold; make the systematic rate per-(entity × validator-keyword × BOOK)
+   with a lower count floor for small entities (People 1,650 / Maps 55 can hide a real cluster
+   under the 5%-of-entity rate today).
+6. **Fail-open-allow counter** — the in-process guard fails OPEN on validator/registry/import error
+   (§1.4); add a counter so silent allows are observable (a systematic import failure would show a
+   clean block_rate while admitting corruption).
+7. **Persisted corpus_quality_report** (nightly, versioned, dashboard): null-rate per field,
+   provenance-coverage %, cross-ref-resolvability % per edge, dedup drift/collision rate,
+   geocode-in-theatre %, date-in-window %, enrichment status. Auto-regenerate the stale
+   DATA_QUALITY_STATUS numbers from it.
+8. **Dedup precision/recall** against a small labelled set (can't tell under- vs over-merging today).
+9. **Catcher per-book/per-prompt dimension** to actually distinguish extraction-defect (spread
+   across books) vs source-defect (concentrated in one book) — the docstring claims this but the
+   code only keys on validator keyword.
+
+**LOW**
+10. Cross-source corroboration flags across the 3 overlapping ETO books.
+11. Surface a corpus-wide, queryable `confidence` field for historian filtering.
+12. Doc fixes: ULID-repair scope warning; concrete audit-invariant definitions (ref-graph edges);
+    align the validation_stats docstring to the code.
+
 ### [HIGH] Data-quality follow-ups from the write-validation centralization (2026-10-09)
 Added after centralizing the write guard across all paths (PR for `fix/write-validation-always-on`).
 Two detective/corrective layers remain (the preventive in-process guard is done + merged):
