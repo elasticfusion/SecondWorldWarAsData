@@ -155,6 +155,10 @@ def main():
 
     logger.info("Phase 3: starting enrichment (%s)", args.output_dir)
 
+    from src.utils.validation_stats import reset_stats as _reset_val_stats
+
+    _reset_val_stats()
+
     # Notify: enrichment is starting (downloads complete, real work beginning)
     _notify_enrichment_started()
 
@@ -541,6 +545,10 @@ def main():
         ),
         encoding="utf-8",
     )
+
+    from src.utils.validation_stats import write_validation_stats as _write_val_stats
+
+    _write_val_stats(args.output_dir)
 
     return 0
 

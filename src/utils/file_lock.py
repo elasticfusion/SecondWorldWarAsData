@@ -151,9 +151,23 @@ def _validate_entity(filepath: Path, data: Dict[str, Any]) -> bool:
             data.get("_schema_version"),
             target,
         )
+        _record_stat(entity_type, "allow", None, "future")
         return True
 
     return _run_schema_validation(data, schema, entity_type, filepath, status, target)
+
+
+def _record_stat(
+    entity: str, outcome: str, keyword: Optional[str], version_state: str
+) -> None:
+    """Forward a guard outcome to the validation-stats catcher. Fail-safe: telemetry must never
+    break the guard, so any import/record error is swallowed."""
+    try:
+        from src.utils.validation_stats import record_validation
+
+        record_validation(entity, outcome, keyword, version_state)
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def _is_non_entity_file(filepath: Path) -> bool:
@@ -260,6 +274,7 @@ def _run_schema_validation(
 
     try:
         jsonschema.validate(data, schema)
+        _record_stat(entity_type, "allow", None, status)
         return True
     except jsonschema.ValidationError as e:
         loc = "/".join(str(p) for p in e.absolute_path) or "<root>"
@@ -273,6 +288,7 @@ def _run_schema_validation(
                 filepath.name,
                 reason,
             )
+            _record_stat(entity_type, "allow_warn", str(e.validator), "needs_upgrade")
             return True
         logger.error(
             "BLOCKED schema-invalid %s write (%s): %s",
@@ -280,6 +296,7 @@ def _run_schema_validation(
             filepath.name,
             reason,
         )
+        _record_stat(entity_type, "block", str(e.validator), status)
         return False
     except Exception:  # noqa: BLE001 - validator error -> fail-safe allow
         return True

@@ -24,13 +24,27 @@ Two detective/corrective layers remain (the preventive in-process guard is done 
   canonical records.
 - **(b) Detective layer + bypass prevention.** (1) **S3-event Lambda backstop**: on `ObjectCreated`
   under `output/`, run the SAME `_validate_entity` primitive (no reimplementation — avoid guard
-  drift); on invalid, alert (phase2-complete SNS → Slack/email) + quarantine. Fail-LOUD. (2) **grep
-  gate** in `scripts/gate.sh` forbidding new raw `json.dump`/`write_text` to `output/` entity dirs,
-  so the next contributor's bypass fails CI. (3) **corpus-level audit job**: periodic scan running
-  the guard across all of `output/` + a referential-integrity check (every cross-ref ID resolves)
-  + ID-uniqueness + dangling-mention + dedup-consistency checks (per-write validation is blind to
-  these corpus invariants) + a validation-block-rate metric (the guard is fail-OPEN, so silent
-  allows on validator error need an observable counter).
+  drift); on invalid, alert (phase2-complete SNS → Slack/email) + quarantine. Fail-LOUD.
+  **SYNC REQUIREMENT (acceptance criterion):** the Lambda MUST run the repo's live validation code,
+  never a copy. `update_lambdas.sh` already bundles `src/` into the Lambda zip, so the primitive is
+  shared by construction — but add a DRIFT CHECK to `check_component_versions.sh` (the deploy
+  preflight): hash `src/schemas/` + `src/utils/file_lock.py` + `src/utils/validation_stats.py`,
+  compare repo-HEAD vs the deployed Lambda bundle, WARN (or `--strict` fail) on mismatch so a
+  partial deploy can't leave the validation Lambda behind the pipeline. **Quarantine = tag-in-place
+  (`quarantine=true`) + bucket-policy DENY reads to consumer roles, NOT a key move** (moving
+  orphans the unique cross-ref mentions the bad fragments hold); lifecycle-expire the quarantine
+  tag/prefix. (2) **grep gate** in `scripts/gate.sh` forbidding new raw `json.dump`/`write_text` to
+  `output/` entity dirs, so the next contributor's bypass fails CI. (3) **corpus-level audit job**:
+  periodic scan running the guard across all of `output/` + a referential-integrity check (every
+  cross-ref ID resolves) + ID-uniqueness + dangling-mention + dedup-consistency checks.
+- **(b2) Corrective loop (NO human gate — code, not people).** On a bad finding: auto-classify +
+  quarantine (tag), then AUTOMATED, dedup-aware REPROCESS from the record's provenance (book +
+  EventIDs), with an idempotency/loop-guard (same failure N times → mark `unrecoverable`, stop
+  retrying, keep quarantined). The feedback signal is STATISTICAL, not case-by-case: the
+  **validation-stats catcher** (DONE — `src/utils/validation_stats.py`, writes
+  `output/metrics/validation_stats.json`, emails/Slacks on systematic clusters) is the upstream-bug
+  report. Humans fix CODE in response to a systematic-cluster alert; they never adjudicate
+  individual records. Isolated failures auto-reprocess silently; only systematic clusters alert.
 - **(c) Minor:** make `write_json_with_lock` return a bool (did-write) so `merge._write_entity_guarded`
   consumes it directly instead of the mtime/exists heuristic; consider moving `_validate_entity` to
   `src/schemas/write_guard.py` if the single-writer-facade refactor happens.
