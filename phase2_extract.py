@@ -622,6 +622,10 @@ def main():
     config = load_config(base_dir / "config.yaml")
     paths = get_paths(config, base_dir)
 
+    from src.utils.validation_stats import reset_stats as _reset_val_stats
+
+    _reset_val_stats()
+
     # Setup logging
     log_config = config.get("logging", {})
     log_level = args.log_level or log_config.get("level", "INFO")
@@ -736,6 +740,9 @@ def main():
     # -----------------------------------------------------------------------
     logger.info("Phase 2 complete: %d processed, %d failed", processed, failed)
     grok_client.log_cache_stats()
+    from src.utils.validation_stats import write_validation_stats as _write_val_stats
+
+    _write_val_stats(paths["output_root"])
     heartbeat.stop()
 
     # If batch mode, submit collected requests, wait, then re-run
