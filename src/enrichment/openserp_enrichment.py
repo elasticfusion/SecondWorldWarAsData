@@ -21,31 +21,6 @@ import requests
 from src.utils.http_pool import get_session
 from src.utils.file_lock import write_json_with_lock
 
-
-def _validate_before_write(data: Dict, entity: str) -> bool:
-    """Validate a record against its enforced schema before writing. Fail-safe: returns True
-    (allow write) if the schema/validator is unavailable; returns False (skip write) only on a
-    genuine schema violation, logging it. Never raises."""
-    try:
-        import jsonschema
-
-        from src.schemas.entity_registry import ENTITY_REGISTRY, load_schema
-
-        spec = next((s for s in ENTITY_REGISTRY if s.name == entity), None)
-        if spec is None:
-            return True
-        schema = load_schema(spec)
-        jsonschema.validate(data, schema)
-        return True
-    except jsonschema.ValidationError as e:  # type: ignore[name-defined]
-        logger.warning(
-            "OpenSERP write skipped — %s record fails schema: %s", entity, e.message
-        )
-        return False
-    except Exception:  # noqa: BLE001 - validator unavailable -> don't block the write
-        return True
-
-
 # Circuit breaker: skip all OpenSERP searches after N consecutive failures
 _CIRCUIT_BREAKER_THRESHOLD = 5
 _consecutive_failures = 0
@@ -94,6 +69,22 @@ def _breaker_record_success() -> None:
 
 
 logger = logging.getLogger(__name__)
+
+
+def _validate_before_write(data: Dict, entity: str) -> bool:
+    """Validate a record via the CENTRAL guard (single source of truth) WITHOUT recording a
+    stat — this is a pre-write check (the real write records its own stat), so recording here
+    too would double-count. Returns True if the record may be written. Never raises."""
+    try:
+        from pathlib import Path as _P
+
+        from src.utils.file_lock import _validate_entity
+
+        return _validate_entity(
+            _P(f"output/{entity}/_precheck.json"), data, record_stats=False
+        )
+    except Exception:  # noqa: BLE001 - guard unavailable -> don't block the write
+        return True
 
 
 # --- OpenSERP effectiveness/health metrics (per Phase-3 run) ---------------------------------
@@ -1180,8 +1171,7 @@ def enrich_people_with_openserp(
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
-        if _validate_before_write(data, "people"):
-            write_json_with_lock(c["file"], data, entity="people")
+        if write_json_with_lock(c["file"], data, entity="people"):
             if changed:
                 enriched += 1
                 _metric("entities_enriched")
@@ -1236,8 +1226,7 @@ def enrich_equipment_with_openserp(
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
-        if _validate_before_write(data, "equipment"):
-            write_json_with_lock(f, data, entity="equipment")
+        write_json_with_lock(f, data, entity="equipment")
 
     logger.info("OpenSERP equipment enrichment: %d enriched", enriched)
     return enriched
@@ -1330,8 +1319,7 @@ def enrich_source_sections_with_openserp(
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
-        if _validate_before_write(data, "source_section"):
-            write_json_with_lock(f, data, entity="source_section")
+        write_json_with_lock(f, data, entity="source_section")
 
     logger.info("OpenSERP source_section enrichment: %d enriched", enriched)
     return enriched
@@ -1472,12 +1460,11 @@ def enrich_groups_with_openserp(
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
-        if _validate_before_write(data, "people_groups"):
-            write_json_with_lock(f, data, entity="people_groups")
-        if changed:
-            enriched += 1
-            _metric("entities_enriched")
-            logger.info("  ✓ OpenSERP enriched group: %s", name)
+        if write_json_with_lock(f, data, entity="people_groups"):
+            if changed:
+                enriched += 1
+                _metric("entities_enriched")
+                logger.info("  ✓ OpenSERP enriched group: %s", name)
 
     logger.info("OpenSERP people_groups enrichment: %d enriched", enriched)
     return enriched
@@ -1589,12 +1576,11 @@ def enrich_places_with_openserp(
         import time as _time
 
         data["openserp_searched_at"] = int(_time.time())
-        if _validate_before_write(data, "places"):
-            write_json_with_lock(f, data, entity="places")
-        if changed:
-            enriched += 1
-            _metric("entities_enriched")
-            logger.info("  ✓ OpenSERP enriched place: %s", primary)
+        if write_json_with_lock(f, data, entity="places"):
+            if changed:
+                enriched += 1
+                _metric("entities_enriched")
+                logger.info("  ✓ OpenSERP enriched place: %s", primary)
 
     logger.info("OpenSERP places enrichment: %d enriched", enriched)
     return enriched

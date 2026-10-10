@@ -152,7 +152,9 @@ def _repair_primary_key(entity_type: str, data: Dict[str, Any], filepath: Path) 
         pass
 
 
-def _validate_entity(filepath: Path, data: Dict[str, Any]) -> bool:
+def _validate_entity(
+    filepath: Path, data: Dict[str, Any], record_stats: bool = True
+) -> bool:
     """Central write-time guard. Returns True if the write should proceed.
 
     Resolves the entity from the output path, repairs empty/None/invalid ULID fields, then
@@ -160,6 +162,9 @@ def _validate_entity(filepath: Path, data: Dict[str, Any]) -> bool:
     violation it LOGS (path + validator keyword only, never record values) and returns False
     (BLOCK the write). Fail-safe: returns True when the entity/schema/validator is unavailable
     or the file is a non-entity file. Validation is UNCONDITIONAL — there is no opt-out env.
+
+    ``record_stats``: when False, outcomes are NOT fed to the validation-stats catcher — used by
+    pre-write checks so the subsequent real write is the single recording point (no double-count).
     """
     if _is_non_entity_file(filepath):
         return True
@@ -194,10 +199,13 @@ def _validate_entity(filepath: Path, data: Dict[str, Any]) -> bool:
             data.get("_schema_version"),
             target,
         )
-        _record_stat(entity_type, "allow", None, "future")
+        if record_stats:
+            _record_stat(entity_type, "allow", None, "future")
         return True
 
-    return _run_schema_validation(data, schema, entity_type, filepath, status, target)
+    return _run_schema_validation(
+        data, schema, entity_type, filepath, status, target, record_stats
+    )
 
 
 def _record_stat(
@@ -309,6 +317,7 @@ def _run_schema_validation(
     filepath: Path,
     status: str,
     target: str,
+    record_stats: bool = True,
 ) -> bool:
     """jsonschema-validate; block on violation unless the record legitimately predates a
     current constraint (needs_upgrade). Logs only the JSON path + validator keyword (no values).
@@ -317,7 +326,8 @@ def _run_schema_validation(
 
     try:
         jsonschema.validate(data, schema)
-        _record_stat(entity_type, "allow", None, status)
+        if record_stats:
+            _record_stat(entity_type, "allow", None, status)
         return True
     except jsonschema.ValidationError as e:
         loc = "/".join(str(p) for p in e.absolute_path) or "<root>"
@@ -331,7 +341,10 @@ def _run_schema_validation(
                 filepath.name,
                 reason,
             )
-            _record_stat(entity_type, "allow_warn", str(e.validator), "needs_upgrade")
+            if record_stats:
+                _record_stat(
+                    entity_type, "allow_warn", str(e.validator), "needs_upgrade"
+                )
             return True
         logger.error(
             "BLOCKED schema-invalid %s write (%s): %s",
@@ -339,7 +352,8 @@ def _run_schema_validation(
             filepath.name,
             reason,
         )
-        _record_stat(entity_type, "block", str(e.validator), status)
+        if record_stats:
+            _record_stat(entity_type, "block", str(e.validator), status)
         return False
     except Exception:  # noqa: BLE001 - validator error -> fail-safe allow
         return True
@@ -371,8 +385,10 @@ def _legacy_required_check(filepath: Path, data: Dict[str, Any]) -> None:
 
 def write_json_with_lock(
     filepath: Path, data: Dict[str, Any], entity: Optional[str] = None
-) -> None:
-    """Write JSON file with file locking for concurrent access.
+) -> bool:
+    """Write JSON file with file locking for concurrent access. Returns True if the record was
+    written, False if the central guard BLOCKED it (schema-invalid). Callers may gate follow-on
+    work (e.g. metrics) on the return value instead of a separate pre-check.
 
     `entity` selects the per-entity schema version to stamp. When omitted, the
     stamp falls back to the MIN version across entities — which SILENTLY DOWNGRADES
@@ -389,7 +405,7 @@ def write_json_with_lock(
     # the guard approves do we stamp the current version + last-updated.
     if not _validate_entity(filepath, data):
         # Schema-invalid record — do NOT persist it (guard logged the reason).
-        return
+        return False
     inject_metadata(data, entity=entity)
     filepath.parent.mkdir(parents=True, exist_ok=True)
 
@@ -426,6 +442,7 @@ def write_json_with_lock(
 
     # Dual-write to DynamoDB if enabled (immediate durability)
     _dual_write_dynamo(filepath, data)
+    return True
 
 
 # ID field per entity type
