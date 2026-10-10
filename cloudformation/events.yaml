@@ -786,6 +786,11 @@ Resources:
                   boto3.client("s3").put_bucket_notification_configuration(
                       Bucket=props["BucketName"],
                       NotificationConfiguration={
+                          # EventBridge: enables overlap-free routing (the s3-validation-backstop
+                          # uses an EventBridge rule on prefix=output/, which a second S3
+                          # notification rule could NOT express without colliding with the
+                          # output/content/-parsed.json rule below).
+                          "EventBridgeConfiguration": {},
                           "TopicConfigurations": [
                               {
                                   "TopicArn": props["ContentUploadedTopicArn"],
@@ -827,7 +832,7 @@ Resources:
       ContentUploadedTopicArn: !Ref ContentUploadedTopic
       ChapterParsedTopicArn: !Ref ChapterParsedTopic
       EntityCreatedTopicArn: !Ref EntityCreatedTopic
-      ConfigVersion: "4"  # Bump to force re-execution when notification config changes
+      ConfigVersion: "5"  # Bump to force re-execution when notification config changes
 
 Outputs:
   ContentUploadedTopicArn:
