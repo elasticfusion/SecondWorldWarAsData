@@ -43,7 +43,7 @@ EXPECTED = {
     "equipment": ("2.25", "80ec735d8a6d009b"),
     "weather": ("2.24", "0f3460daa0d8519d"),
     "logistics": ("2.24", "0ca708c99ab0dc40"),
-    "casualties": ("2.24", "a516e260ed490b55"),
+    "casualties": ("2.25", "642d7904524ce70e"),
     "maps": ("2.24", "3b81288612b70e10"),
     "map_features": ("2.24", "7cf064901b370f2d"),
     "bibliography": ("2.24", "3bf1e7f997304516"),

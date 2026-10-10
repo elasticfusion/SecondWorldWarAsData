@@ -52,23 +52,41 @@ CASUALTIES_OUTPUT_SCHEMA = {
         },
         "impacted_organizations": {
             "type": ["array", "null"],
-            "items": {"type": ["string", "object"]},
+            # Resolver emits {"PeopleGroupID": <id|null>, "name", "nationality", "role"}; a bare
+            # string (unresolved name) is still accepted. PeopleGroupID is the group reference
+            # (aliased to the groups key-space by the referential-integrity checker).
+            "items": {
+                "type": ["string", "object"],
+                "properties": {"PeopleGroupID": {"type": ["string", "null"]}},
+            },
         },
         "impacted_people": {
             "type": ["array", "null"],
-            "items": {"type": ["string", "object"]},
+            "items": {
+                "type": ["string", "object"],
+                "properties": {"PersonID": {"type": ["string", "null"]}},
+            },
         },
         "impacted_places": {
             "type": ["array", "null"],
-            "items": {"type": ["string", "object"]},
+            "items": {
+                "type": ["string", "object"],
+                "properties": {"PlaceID": {"type": ["string", "null"]}},
+            },
         },
         "impacted_equipment": {
             "type": ["array", "null"],
-            "items": {"type": ["string", "object"]},
+            "items": {
+                "type": ["string", "object"],
+                "properties": {"EquipmentID": {"type": ["string", "null"]}},
+            },
         },
         "impacted_logistics": {
             "type": ["array", "null"],
-            "items": {"type": ["string", "object"]},
+            "items": {
+                "type": ["string", "object"],
+                "properties": {"LogisticsID": {"type": ["string", "null"]}},
+            },
         },
     },
 }

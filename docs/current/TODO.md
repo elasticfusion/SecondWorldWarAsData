@@ -56,25 +56,27 @@ informative or correct" (observed: empty-`{}` biographies and 0.0-coord places p
      `events.py:_save_event_output` now gates the source_section emit on the event write persisting
      (fixes the live write-time dangling bug). CLI `scripts/referential_integrity_audit.py` is a thin
      wrapper over the same core (single source). Full gate PASS; code+security sub-agent reviewed.
-     REMAINING PRECISION GAP (schema, not enforcement): `casualties.impacted_*` are typed
-     `items:{type:[string,object]}` with NO declared `*ID` field, and `people.group_affiliations`
-     is absent from the schema — so those loose relationships are not resolvable by a declared path.
-     Fix = TIGHTEN those schemas to declare the ID field, then derivation picks them up automatically
-     (do NOT hardcode shape assumptions — schema is the source).
+     REMAINING PRECISION GAP — **[RESOLVED 2026-10-10, Fix A]:** the `casualties.impacted_*` lists
+     now declare their resolved reference id (`PersonID`/`PlaceID`/`EquipmentID`/`LogisticsID`/
+     `PeopleGroupID`) under the object branch, so the schema-derived checker discovers them; the
+     `_walk_id_fields` walker was also fixed to handle union `type` (e.g. `["array","null"]`), which
+     had silently hidden EVERY nullable-array reference field — coverage went 17 → 45 edges, incl.
+     `people.biographical_profile.group_affiliations[].GroupID` (the "absent" person→group edge was
+     real, just nested under a nullable array). `PeopleGroupID` is aliased to the groups key-space.
    NOTE: a one-off remediation of the current stale TEST data is intentionally SKIPPED — dev/test
    data will be refreshed from prod; the only durable value is recurrence-safety in a future prod
    release, which #2-in-core provides (a throwaway cleanup script would die at the next data refresh).
-   **#1 Deterministic EventIDs — [IN PROGRESS 2026-10-10, branch `feature/deterministic-event-ids`]:**
+   **#1 Deterministic EventIDs — [DONE 2026-10-10, PRs #325 + #326 merged to main]:**
    central `src/utils/deterministic_ids.py` (`event_id`/`sub_event_id`) derives a schema-valid ULID
-   from stable content (book+chapter+section / parent+paragraph-range), replacing the volatile
+   from stable content (book+chapter+`section_id` / parent+paragraph-range), replacing the volatile
    LLM-supplied id so re-extraction is idempotent (no ripple). Wired into `events.py` (both paths)
    + the supplemental notes-event; dependents inherit the id (Phase 3 mints none — read-only).
-   **BLOCKERS from sub-agent review (fix before merge):** (a) CRITICAL — `events.py` reads
-   `parsed_data.get("section","full")` but the real parsed key is `section_id`, so ALL sections of
-   a chapter collapse to one EventID (over-merge, 84% of chapters). Fix: read `section_id`. (b)
-   `sub_event_id` can raise `ValueError` (no range AND no name) before validation → aborts
-   extraction, bypassing the retry loop. Fix: deterministic positional fallback. Add regression
-   tests driving the REAL parsed schema key (`section_id`) + the nameless-sub-event case.
+   Sub-agent review blockers FIXED + verified on main: (a) reads the REAL `section_id` key (the
+   `section` typo would have collapsed 84% of chapters onto one EventID); (b) nameless/rangeless
+   sub-event uses a deterministic positional fallback instead of raising before validation.
+   Holistic post-merge review CRITICALs also fixed (PR #326): list-valued artifact no longer aborts
+   the pass; nested local event files are listed (were invisible → mass false-positive); the
+   underscore `Sub_eventID` edge alias; chunk-merge + notes Sub-eventID collision disambiguation.
    **NON-NEW-EVENT RESOLUTION (resolve-before-create — added 2026-10-10 per owner):** any path that
    ENCOUNTERS an event (now or future) must RESOLVE to the existing event, never mint a new/duplicate
    one. Deterministic EventIDs give this for free on re-extraction (same content → same id → same
@@ -86,6 +88,10 @@ informative or correct" (observed: empty-`{}` biographies and 0.0-coord places p
    the entity resolve-before-write rule in the corrective-reprocessor acceptance criteria below.
    **HOLISTIC-REVIEW FOLLOW-UPS (deferred from the 2026-10-10 merged-code review; CRITICALs already
    fixed — list-valued-file guard + recursive event listing + `Sub_eventID` alias):**
+   - (self-type refs) `_discover_edges` excludes a field whose leaf == the entity's own PK GLOBALLY,
+     so a nested cross-reference to ANOTHER record of the same type (e.g.
+     `equipment.related_equipment[].EquipmentID`, a future `related_places[].PlaceID`) is silently
+     skipped. Exclude own-PK only at the record ROOT (path==""), not for nested list items.
    - (perf) `enforce()` is O(corpus): `build_pk_sets` reads every entity+event file, then `audit`
      re-reads each source entity dir once PER edge. Cache records per dir once + iterate edges in
      memory; consider skipping the Phase-1 enforcement run (no cross-entity refs yet = pure cost).
