@@ -1,0 +1,132 @@
+{
+  "pk_counts": {
+    "people": 1714,
+    "places": 2855,
+    "groups": 1682,
+    "equipment": 551,
+    "dates": 1912,
+    "events": 5953
+  },
+  "edges": [
+    {
+      "edge": "casualties.event_context.EventID -> events",
+      "total_refs": 8832,
+      "dangling": 3543,
+      "rate": 0.4012,
+      "sample_dangling": [
+        "01KPSJNBWHHAAXVW0AAH5QDD0N",
+        "01KPSJNBWHHAAXVW0AAH5QDD0N",
+        "01KPSJNBWHHAAXVW0AAH5QDD0N"
+      ]
+    },
+    {
+      "edge": "casualties.impacted_places[].PlaceID -> places",
+      "total_refs": 1123,
+      "dangling": 969,
+      "rate": 0.8629,
+      "sample_dangling": [
+        "01KQJ9HDBSB13P8BSEX9NHW8AH",
+        "01KQJ9HDBSB13P8BSEX9NHW8AH",
+        "01KQJ9HDBSB13P8BSEX9NHW8AH"
+      ]
+    },
+    {
+      "edge": "weather.location.PlaceID -> places",
+      "total_refs": 754,
+      "dangling": 361,
+      "rate": 0.4788,
+      "sample_dangling": [
+        "01KPSFANWXHA3PNKDHR1CSTBNR",
+        "01KSDC1PCD5G2FYRVSM00XYCMD",
+        "01KPSFANWXHA3PNKDHR1CSTBNR"
+      ]
+    },
+    {
+      "edge": "casualties.impacted_people[].PersonID -> people",
+      "total_refs": 160,
+      "dangling": 87,
+      "rate": 0.5437,
+      "sample_dangling": [
+        "01KPSGJMW7X4487A9M48TMPZ6C",
+        "01KPSF8C9GKM53K2084GPNY059",
+        "01KPSFDVYYPGJ1SXKNG75W3EC8"
+      ]
+    },
+    {
+      "edge": "maps.EventID -> events",
+      "total_refs": 54,
+      "dangling": 54,
+      "rate": 1.0,
+      "sample_dangling": [
+        "01KPSJQES0V03K9AV5YXD7VVQB",
+        "01KPSKTQCFGQQWC1S798982X7V",
+        "01KPSKR26W8Q78SS3W8MBF1R9Y"
+      ]
+    },
+    {
+      "edge": "images.EventID -> events",
+      "total_refs": 387,
+      "dangling": 51,
+      "rate": 0.1318,
+      "sample_dangling": [
+        "01J8YTPV5M7NBR2K9G3H4Q5R6S",
+        "01J8YTPV5M7NBR2K9G3H4Q5R6S",
+        "01J8YTPV5M7NBR2K9G3H4Q5R6S"
+      ]
+    },
+    {
+      "edge": "source_section.EventID -> events",
+      "total_refs": 157,
+      "dangling": 11,
+      "rate": 0.0701,
+      "sample_dangling": [
+        "01M4HX17RA3PVCKR4DF359YB2J",
+        "01M4HX17V27HM9KA455JDT170C",
+        "01M4HX17WC2EDRV358AKC1FDKP"
+      ]
+    },
+    {
+      "edge": "casualties.PersonID -> people",
+      "total_refs": 2,
+      "dangling": 0,
+      "rate": 0.0,
+      "sample_dangling": []
+    },
+    {
+      "edge": "casualties.PlaceID -> places",
+      "total_refs": 9,
+      "dangling": 0,
+      "rate": 0.0,
+      "sample_dangling": []
+    },
+    {
+      "edge": "casualties.impacted_organizations[].GroupID -> groups",
+      "total_refs": 0,
+      "dangling": 0,
+      "rate": 0.0,
+      "sample_dangling": []
+    },
+    {
+      "edge": "people.group_affiliations[].GroupID -> groups",
+      "total_refs": 0,
+      "dangling": 0,
+      "rate": 0.0,
+      "sample_dangling": []
+    },
+    {
+      "edge": "logistics.impacted_organizations[].GroupID -> groups",
+      "total_refs": 0,
+      "dangling": 0,
+      "rate": 0.0,
+      "sample_dangling": []
+    },
+    {
+      "edge": "logistics.impacted_places[].PlaceID -> places",
+      "total_refs": 0,
+      "dangling": 0,
+      "rate": 0.0,
+      "sample_dangling": []
+    }
+  ],
+  "total_dangling": 5076
+}
