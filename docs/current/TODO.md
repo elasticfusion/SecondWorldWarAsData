@@ -29,7 +29,13 @@ bottom); what remains is ranked here. Current ordered priority:
 4. **[HIGH · cost] AWS budget reset + CloudWatch reduction pass** — reset the stale $75 limit
    (S3 alone exceeds it); trim CloudWatch log retention/ingestion. Not a runaway.
 5. **[HIGH · enrichment] SourceRechecker into People enrichment** + the carried-forward enrichment
-   findings (Grokipedia raw-HTML source, verifiers fail-OPEN, dormant phase3_handler double-enrich).
+5. **[HIGH · enrichment] SourceRechecker into People enrichment** (source-first gap-fill of
+   `nationality` etc. in `enrich_person_biography`, mirroring people_groups) + Grokipedia should
+   fetch the real `/page/<slug>` article instead of caching raw search-results HTML
+   (`enrich_biographies.py`). Minor residuals: OpenSERP stamps `openserp_searched` on empty/failed
+   search; `time.sleep(1)` on cache hits; HallOfValor name-match recall. (The earlier "verifiers
+   fail-OPEN" + "phase3_handler double-enrich" items are DONE — verified: `_verify_result` is now
+   fail-CLOSED and the Phase-3 people path is OpenSERP-only / phase3_handler is unwired.)
 6. **[MED] data-quality follow-ups** (validation_stats time-series, fail-open-allow counter,
    persisted corpus_quality_report dashboard, dedup precision/recall, catcher per-book dimension)
    + observability (Slack refinement, misleading batch log, SNS IAM) + bibliography/Archive.org UIs.
@@ -350,11 +356,14 @@ tracked here by name so they are not lost:
 - **Grokipedia stores raw search-results HTML as the "biographical source"**
   (`enrich_biographies.py:~175` `cache_result("grokipedia", name, response.text)`) —
   low-signal input; fetch + cache the actual `/page/<slug>` content instead. (SUPP #1/#4)
-- **Verifiers fail OPEN** — `_verify_result` (`openserp_enrichment.py:~166`) and the
-  bibliography_resolver verifiers admit a result on a Grok/HTTP blip; make them fail
-  CLOSED or tag `verified=false`. (SUPP top-5 #1)
-- **phase3_handler Lambda is a dormant double-enrich path** (batch vs non-batch
-  divergence). (PHASE3 H1/H5)
+- **~~Verifiers fail OPEN~~ ✅ DONE (verified 2026-10-11)** — `_verify_result`
+  (`openserp_enrichment.py`) is now explicitly FAIL-CLOSED (no grok_client or any Grok error →
+  `return False`, reject the unverified result).
+- **~~phase3_handler double-enrich path~~ ✅ DONE (verified 2026-10-11)** — the Phase 2/3 split is
+  now explicit: Phase 2 owns ALL Grokipedia/Wikipedia bio enrichment; the Phase-3 people path is
+  OpenSERP-only (`phase3_handler.py` comment "We do NOT call enrich_person_biography here";
+  `phase3_enrich_data.py` `openserp_people` step), and `phase3_handler` is not wired to any
+  CFN/trigger. No double-enrich divergence.
 - **OpenSERP stamps `openserp_searched` even on an empty/failed search** — re-runs then
   skip legitimately-unsearched people. (PHASE3 H2)
 - **Unconditional `time.sleep(1)` even on cache hits** in the OpenSERP path. (PHASE3 H4)
