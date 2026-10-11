@@ -44,6 +44,12 @@ _All HIGH items in this block (1 cross-reference integrity, 2 semantic flags, 4 
 11. Surface a corpus-wide, queryable `confidence` field for historian filtering.
 12. Doc fixes: ULID-repair scope warning; concrete audit-invariant definitions (ref-graph edges);
     align the validation_stats docstring to the code.
+13. **Expose `external_maps` license/download config** (surfaced by the 2026-10-11 doc audit) —
+    `phase2_extract.py` reads `external_maps.{storage_backend, allowed_licenses}` (and the maps
+    path reads `download_images`/`image_storage_path`) via `config.get()`, but `config.yaml` only
+    ships `external_maps: {enabled: false}`, so the license-filter / download knobs are
+    undiscoverable + unsettable. Add them to `config.yaml.example` with defaults + a comment (or
+    confirm intentionally code-only). Small, enables historian-facing license control.
 
 ### [HIGH] Data-quality follow-ups from the write-validation centralization (2026-10-09)
 Added after centralizing the write guard across all paths (PR for `fix/write-validation-always-on`).

@@ -50,7 +50,6 @@
 |----------|-------------|
 | [dataquality/DATA_QUALITY_SAFEGUARDS.md](dataquality/DATA_QUALITY_SAFEGUARDS.md) | **Start here** — the write-guard + referential + semantic-flag + catcher + backstop safeguards, with a §9 table linking every per-layer design spec (deterministic IDs, semantic flags, catcher, Phase-1 guard, S3 backstop, OpenSERP SQS). |
 | [DATA_QUALITY_STATUS.md](DATA_QUALITY_STATUS.md) | Entity counts, enrichment rates, known issues, cross-ref integrity |
-| [UNVALIDATED_CLAIMS_FOR_REVIEW.md](UNVALIDATED_CLAIMS_FOR_REVIEW.md) | Doc claims that could not be tied to code (2026-10-11 audit) — for human review |
 | [dataquality/bibliography_resolution_process.md](dataquality/bibliography_resolution_process.md) | Bibliography resolution end-to-end workflow |
 | _Ingestion — which to read when:_ | **FRONT_END** = Phase-0 per-page disposition design · **INGESTION_PATHS** = as-built routing (trigger/dispatcher) · **STRUCTURED_DATA_ROUTING** = design-of-record + provenance · **MAP_IMAGE_AV_INGESTION** = vision/media branch |
 | [dataquality/INGESTION_FRONT_END.md](dataquality/INGESTION_FRONT_END.md) | Phase 0 ingestion front-end: media detection, per-page disposition, region conversion, OOB markdown parsers, division inference, persist + crosswalk |
