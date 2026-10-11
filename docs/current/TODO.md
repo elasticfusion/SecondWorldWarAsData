@@ -38,11 +38,12 @@ bottom); what remains is ranked here. Current ordered priority:
    fail-OPEN" + "phase3_handler double-enrich" items are DONE — verified: `_verify_result` is now
    fail-CLOSED and the Phase-3 people path is OpenSERP-only / phase3_handler is unwired.)
 6. **[HIGH · security hardening] CloudFormation review follow-ups** (full review 2026-10-11,
-   0 crit / 3 high / 6 med — see `CFN_SECURITY_REVIEW_2026-10-11.md`): HIGH = Chatbot channel
-   `GuardrailPolicies` (defaults to AdminAccess), GitHub-deploy-role `iam:PassRole` lacks a
-   `PassedToService` condition, internet-facing dedup/mdreview/metrics Lambdas share the broad
-   LambdaExecutionRole. MED = entity-table PITR, deploy-role GetSecretValue, TriggerQueue SSE+DLQ,
-   OcrSpotController `batch:*` on `*`, public dedup/metrics APIs, constant-time auth compare.
+   0 crit / 3 high / 6 med — see `CFN_SECURITY_REVIEW_2026-10-11.md`): HIGH = ~~Chatbot channel
+   `GuardrailPolicies` (defaults to AdminAccess)~~ ✅ DONE PR #347; remaining HIGH = GitHub-deploy-role
+   `iam:PassRole` lacks a `PassedToService` condition, internet-facing dedup/mdreview/metrics Lambdas
+   share the broad LambdaExecutionRole. MED = entity-table PITR, deploy-role GetSecretValue,
+   TriggerQueue SSE+DLQ, OcrSpotController `batch:*` on `*`, public dedup/metrics APIs,
+   constant-time auth compare.
 7. **[MED] data-quality follow-ups** (validation_stats time-series, fail-open-allow counter,
    persisted corpus_quality_report dashboard, dedup precision/recall, catcher per-book dimension)
    + observability (Slack refinement, misleading batch log, SNS IAM) + bibliography/Archive.org UIs.
