@@ -22,8 +22,53 @@ def test_schema_required_fields():
     out = sf._to_chatbot_custom("Subj", "Body")
     assert out["version"] == "1.0"
     assert out["source"] == "custom"
-    assert out["content"]["description"] == "Body"
+    # Subject is distinct from the body lead -> surfaced as a bold lead line so
+    # Slack shows the same framing email carries in its subject.
+    assert out["content"]["description"] == "*Subj*\nBody"
     assert out["content"]["textType"] == "client-markdown"
+
+
+def test_full_multiline_body_detail_preserved():
+    """Slack must replicate the detailed email body — the whole multi-line body
+    survives (not just a one-line summary)."""
+    msg = (
+        "Phase 2 failed with exit code 1.\n"
+        "Bucket: dev-wwii-data-pipeline\n\n"
+        "Check logs: aws logs tail /ecs/dev-wwii-pipeline --since 30m"
+    )
+    out = sf._to_chatbot_custom("WWII Pipeline: Phase 2 FAILED", msg)
+    desc = out["content"]["description"]
+    # every line of the body is present
+    assert "exit code 1" in desc
+    assert "Bucket: dev-wwii-data-pipeline" in desc
+    assert "aws logs tail /ecs/dev-wwii-pipeline" in desc
+
+
+def test_subject_surfaced_when_distinct_from_body():
+    out = sf._to_chatbot_custom("WWII Pipeline: dedup gate", "Reason: 3 duplicates")
+    assert out["content"]["description"].startswith("*WWII Pipeline: dedup gate*\n")
+    assert "Reason: 3 duplicates" in out["content"]["description"]
+
+
+def test_subject_not_duplicated_when_body_leads_with_it():
+    """If the body already starts with the subject text, don't prepend it twice."""
+    out = sf._to_chatbot_custom("Enrichment started", "Enrichment started\nBook: B460")
+    desc = out["content"]["description"]
+    assert desc.count("Enrichment started") == 1
+
+
+def test_json_body_rendered_readable_not_raw():
+    """A JSON blob body (e.g. dedup UI) renders as readable key/value lines."""
+    out = sf._to_chatbot_custom("Dedup", json.dumps({"dedup_complete": True}))
+    desc = out["content"]["description"]
+    assert "dedup_complete" in desc
+    assert "{" not in desc  # not raw JSON
+
+
+def test_empty_body_falls_back_to_subject():
+    out = sf._to_chatbot_custom("WWII Pipeline: task launched", "")
+    # subject is the only content -> surfaced as the bold description
+    assert out["content"]["description"] == "*WWII Pipeline: task launched*"
 
 
 def test_every_message_has_view_logs_action():

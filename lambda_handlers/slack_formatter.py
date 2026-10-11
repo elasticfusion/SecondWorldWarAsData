@@ -16,6 +16,13 @@ Every message is ACTIONABLE (operator requirement): at minimum a "View logs"
 CloudWatch deep link in nextSteps; financial notifications (spend/credit/budget)
 embed the dollar figures in the description AND add a billing/Cost Explorer link.
 
+Slack replicates the SAME detail email receives: the Slack formatter and the
+email endpoint both subscribe to the one `phase2-complete` SNS topic, so they get
+the identical message. The full body is carried in `description` (Chatbot allows
+8,000 chars of Slack markdown) — structured here (JSON bodies rendered as readable
+key/value lines; a distinct Subject surfaced as a bold lead line) so the channel
+shows the same content email does rather than a one-line summary.
+
 Schema: https://docs.aws.amazon.com/chatbot/latest/adminguide/custom-notifs.html
     {"version": "1.0", "source": "custom", "content": {"description", "nextSteps", ...}}
 
@@ -100,10 +107,49 @@ def _next_steps(subject: str, message: str) -> list:
     return steps
 
 
+def _coerce_body(message: str) -> str:
+    """Normalize the raw SNS message into human-readable text.
+
+    Most pipeline notifications are already free-form multi-line text and pass
+    through unchanged (Chatbot renders ``description`` in Slack markdown, so the
+    newlines/`*bold*` survive). A few publishers send a JSON blob (e.g. the dedup
+    UI's ``{"dedup_complete": true}``); render those as readable ``key: value``
+    lines instead of dumping raw JSON into the channel.
+    """
+    body = (message or "").strip()
+    if not body:
+        return ""
+    if body[0] in "{[":
+        try:
+            parsed = json.loads(body)
+        except (ValueError, TypeError):
+            return body
+        if isinstance(parsed, dict):
+            return "\n".join(f"*{k}:* {v}" for k, v in parsed.items()) or body
+        if isinstance(parsed, list):
+            return "\n".join(f"• {item}" for item in parsed) or body
+    return body
+
+
 def _description(subject: str, message: str) -> str:
-    """Message body. For financial notifications, embed the detected dollar
-    amounts prominently at the top so the figures are visible without a click."""
-    body = (message or subject or "").strip()
+    """Full message body, structured for Slack — carries the SAME detail email
+    gets (both subscribe to the same SNS topic). We do NOT drop content: the whole
+    body is preserved (Chatbot allows 8,000 chars of Slack markdown).
+
+    - JSON bodies are rendered as readable key/value lines (not raw JSON).
+    - The Subject is surfaced as a bold lead line when it carries context not
+      already present at the start of the body (so operators see the same framing
+      email shows in its subject line, which Slack otherwise buries in the title).
+    - Financial notifications still get the detected dollar amounts pinned on top.
+    """
+    body = _coerce_body(message)
+    subj = (subject or "").strip()
+
+    # Surface the subject as a bold lead when it's distinct from the body lead
+    # (avoid duplicating when the body already starts with the subject text).
+    if subj and not body.lower().startswith(subj.lower()[:40]):
+        body = f"*{subj}*\n{body}" if body else f"*{subj}*"
+
     if _is_financial(f"{subject} {message}"):
         amounts = _MONEY_RE.findall(f"{subject} {message}")
         if amounts:
