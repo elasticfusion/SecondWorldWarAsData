@@ -10,9 +10,9 @@ separation, no 0.0.0.0/0 ingress, GROK key via Secrets Manager (not plaintext), 
 `BackstopRole`/`S3ValidationBackstop` dedicated least-priv roles (the model to copy).
 
 ## HIGH
-1. **chatbot.yaml:SlackChannelConfig — no `GuardrailPolicies`** → AWS Chatbot defaults the channel
-   ceiling to **AdminAccess**. For a notifications-only channel this is needless admin blast radius.
-   FIX: `GuardrailPolicies: [arn:aws:iam::aws:policy/ReadOnlyAccess]` (+ consider `UserRoleRequired: true`).
+1. ✅ **DONE (PR #347)** — **chatbot.yaml:SlackChannelConfig — no `GuardrailPolicies`** → AWS Chatbot
+   defaulted the channel ceiling to **AdminAccess**. Fixed: `GuardrailPolicies: [arn:aws:iam::aws:policy/ReadOnlyAccess]`
+   (the ChatbotRole is already read-only; alerts never need write/command actions). cfn-lint PASS.
 2. **iam.yaml:GitHubActionsDeployRole — `iam:PassRole` on `${env}-wwii-*` with no
    `iam:PassedToService` condition**, in the same statement as `CreateRole`/`PutRolePolicy` over the
    same wildcard → CI-token privilege-escalation primitive (bounded to the dev-wwii namespace).
