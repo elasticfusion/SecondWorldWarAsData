@@ -58,6 +58,13 @@ Resources:
       SlackChannelId: !Ref SlackChannelId
       SlackWorkspaceId: !Ref SlackTeamId
       LoggingLevel: ERROR
+      # Channel permission ceiling. Without this, Chatbot defaults the guardrail
+      # to the AdminAccess managed policy — an unnecessary admin blast radius for a
+      # notifications-only channel. Cap it at ReadOnlyAccess (the ChatbotRole is
+      # already read-only; alerts never need write/command actions). CFN security
+      # review 2026-10-11, HIGH.
+      GuardrailPolicies:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
       SnsTopicArns:
         - !Sub arn:aws:sns:${TopicRegion}:${AccountId}:${EnvironmentName}-wwii-alarms
         - !Sub arn:aws:sns:${TopicRegion}:${AccountId}:${EnvironmentName}-wwii-slack
