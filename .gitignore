@@ -18,6 +18,9 @@ env/
 # IDE
 .idea/
 .vscode/
+# Kiro: keep steering docs + agent defs tracked; ignore local settings + editor backups
+.kiro/settings/
+*.bak
 *.swp
 *.swo
 *~
@@ -68,7 +71,6 @@ messages/
 
 # Tools
 .gitnexus
-.idea/
 unprocesseddocs/
 output/metrics/
 
