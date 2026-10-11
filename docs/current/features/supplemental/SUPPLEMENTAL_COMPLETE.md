@@ -351,7 +351,7 @@ Ambiguous items queued for human review:
 ### Implementation Docs
 - `docs/archive/2026-03-22/SUPPLEMENTAL_PHASE1.md` - Phase 1 details (archived)
 - `docs/archive/2026-03-22/SUPPLEMENTAL_PHASE2.md` - Phase 2 details (archived)
-- `docs/current/features/supplemental/SUPPLEMENTAL_ERROR_HANDLING.md` - Error handling
+- `docs/archive/2026-10-11/features/supplemental/SUPPLEMENTAL_ERROR_HANDLING.md` - Error handling (archived)
 - `docs/current/features/supplemental/SUPPLEMENTAL_VALIDATION.md` - Validation details
 
 ### This Document

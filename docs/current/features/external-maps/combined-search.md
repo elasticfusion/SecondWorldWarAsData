@@ -212,6 +212,19 @@ Watch for:
 ## Files
 
 - `src/extraction/combined_map_search.py` - Orchestrator
-- `src/extraction/grok_search_maps.py` - Phase 1 (whitelist)
+- `src/extraction/grok_search_maps.py` - Phase 1 (whitelist; whitelist loaded from
+  `config/domain_blacklist.yaml`, NOT a hardcoded constant — see `whitelist-config.md`)
 - `src/extraction/openserp_maps.py` - Phase 2 (broader)
-- `test_grok_search.sh` - Quick test script
+- `tools/setup_openserp.sh` / `tools/search_maps.go` - OpenSERP tooling (under `tools/`)
+
+## Choosing a method (merged from the retired grok-search.md)
+
+| Method | Source control | Verification | Setup | When to use |
+|---|---|---|---|---|
+| **Grok whitelist** (`grok_search_maps.py`) | Whitelist (`domain_blacklist.yaml`) | Grok **vision** (sees the image) | Python-only | Trusted authoritative sources; default Phase 1 |
+| **OpenSERP** (`openserp_maps.py`) | Blacklist | Content download | AWS SQS worker (or local Go) | Guaranteed real multi-engine results; Phase 2 breadth |
+| **Manual YAML** (`external_maps.py`) | Full manual control | Metadata only | Edit a YAML file | A small, hand-curated set of specific maps |
+
+The combined orchestrator runs **Grok whitelist first** (quality) then **OpenSERP** (breadth, dedup
+against Phase 1), so you normally do not choose — you get both. Pick a single method only for a
+narrow one-off (e.g. Manual YAML for a known map).

@@ -110,6 +110,21 @@ The Dedup Review UI writes **both** filename-based and name-based exclusions whe
 
 The dedup scripts track which event files have been processed in `.processed_events.json`. This uses **basename** (not absolute path) to ensure portability between local and AWS environments.
 
+## Preventing false positives — the exclusion list
+
+Detection can flag genuinely-different people who share a surname/substring (e.g. "Ray W. Barker"
+vs "General Barker"). Confirmed non-duplicates are recorded so they never resurface:
+
+- **`output/people/not_duplicates.json`** — a persistent list of excluded pairs
+  (`{person1, person2}` filenames). Matching is bidirectional (order-independent) and survives
+  across runs; future detection skips excluded pairs automatically.
+- **Name-based exclusion** — the Dedup Review UI writes BOTH a filename-based and a name-based
+  exclusion (`name_exclusion#people#<book>#<normalized name>`) when "Not Duplicates" is selected,
+  so the exclusion persists even if the files are later regenerated.
+- **How to exclude** — in the Dedup Review UI, mark a group "Not Duplicates" (historically the
+  interactive `merge_duplicate_people.py` CLI offered a `y/n/skip/exclude` prompt; that CLI is now
+  retired in favour of the UI). `not_duplicates.json` can also be hand-edited.
+
 ## See Also
 
 - [People Extraction](README.md) — file-per-person architecture and schema

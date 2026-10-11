@@ -196,6 +196,6 @@ Essential linking and data:
 
 - **Index:** [README.md](README.md)
 - **Enforced schema (source of truth):** `src/schemas/equipment_output.py`
-- **Proposal (aspirational):** [MILITARY_EQUIPMENT.md](MILITARY_EQUIPMENT.md)
+- **Proposal (aspirational, archived 2026-10-11):** [MILITARY_EQUIPMENT.md](../../../archive/2026-10-11/features/equipment/MILITARY_EQUIPMENT.md)
 - **Deduplication:** [EQUIPMENT_DEDUPLICATION.md](EQUIPMENT_DEDUPLICATION.md)
 - **ULID Guide:** `docs/current/core/ULID_IMPLEMENTATION.md`

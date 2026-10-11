@@ -583,9 +583,9 @@ def extract_logistics(
 ## Related Documentation
 
 - [Events Extraction](../events/README.md)
-- [People Groups](../people/groups.md)
+- [People Groups](../people_groups/groups.md)
 - [Places Extraction](../places/README.md)
-- [Equipment Extraction](../equipment/MILITARY_EQUIPMENT.md)
+- [Equipment Extraction](../equipment/README.md)
 - [Weather Extraction](../weather/README.md)
 - [Configuration](../../core/CONFIGURATION.md)
 

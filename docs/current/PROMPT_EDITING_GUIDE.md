@@ -10,8 +10,8 @@ How to customize the AI extraction prompts used by the pipeline.
 
 All LLM prompts are externalized to YAML files. There are NO inline prompts in Python code — if a YAML file is missing or malformed, the pipeline fails at build time (deploy_all.sh validates) or at runtime (hard error, no silent fallback).
 
-**Prompt files:** `prompts/*.yaml` (27 files)  
-**Search query files:** `search_queries/*.yaml` (6 files)
+**Prompt files:** `prompts/*.yaml` (31 files)  
+**Search query files:** `search_queries/*.yaml` (8 files)
 
 ### Extraction Prompts
 

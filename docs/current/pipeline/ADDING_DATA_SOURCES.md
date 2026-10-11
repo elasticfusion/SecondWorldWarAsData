@@ -189,7 +189,7 @@ After adding new content:
 python3 scripts/find_duplicate_people.py
 
 # Review and merge
-python3 scripts/merge_duplicate_people.py
+python3 scripts/archive/merge_duplicate_people.py
 
 # Find related groups
 python3 scripts/find_related_groups.py
@@ -266,7 +266,7 @@ python3 phase1_parse.py
 python3 phase2_extract.py
 
 # 5. Deduplicate
-python3 scripts/merge_duplicate_people.py
+python3 scripts/archive/merge_duplicate_people.py
 python3 scripts/consolidate_people_groups.py
 ```
 
@@ -372,7 +372,7 @@ python3 scripts/complete_metadata_with_grok.py
 python3 scripts/find_duplicate_people.py
 
 # Review and merge
-python3 scripts/merge_duplicate_people.py
+python3 scripts/archive/merge_duplicate_people.py
 ```
 
 ### Issue: Wrong Book/Author in Events
@@ -425,4 +425,4 @@ After adding new content:
 
 - [PIPELINE.md](../core/PIPELINE.md) - Pipeline overview
 - [People Extraction](../features/people/README.md) - People tracking
-- [People Groups](../features/people/groups.md) - Group management
+- [People Groups](../features/people_groups/groups.md) - Group management

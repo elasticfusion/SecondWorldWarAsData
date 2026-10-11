@@ -4,7 +4,7 @@
 
 ---
 
-## Entity Types (11)
+## Entity Types (14)
 
 ```
 Events (top-level container)
@@ -18,8 +18,14 @@ Events (top-level container)
 │   ├── Logistics
 │   ├── Casualties
 │   ├── Maps
+│   ├── Map Features (geo features within a Map)
+│   ├── Images (page/figure images, linked by EventID)
+│   ├── Source Section (per-chapter anchor, linked by EventID)
 │   └── Bibliography (Supplemental)
 ```
+
+_14 registered entity types — see `ENTITY_REGISTRY` in `src/schemas/entity_registry.py` for the
+authoritative list._
 
 ---
 

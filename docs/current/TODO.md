@@ -868,7 +868,7 @@ Blocked on: function calling support in batch API.
 Replace SNS→SQS→Lambda→ECS with Step Functions.
 
 #### New entity types: Economic Data, Policy/Legislation
-Prompts and schemas drafted in `dataquality/new_entity_types.md`.
+Prompts and schemas drafted in `docs/archive/2026-10-11/dataquality/new_entity_types.md` (archived).
 
 #### UK National Archives (Discovery API)
 

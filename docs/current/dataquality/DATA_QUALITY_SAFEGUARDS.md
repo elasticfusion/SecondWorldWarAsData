@@ -223,3 +223,19 @@ now **prevents new** such records.
 add a new entity, register it in `ENTITY_REGISTRY` (+ `ENTITY_SCHEMA_VERSIONS`) and it is guarded
 automatically. A breaking schema change requires either a `register_upgrade(old, new)` or a
 targeted reprocess (see `SCHEMA_VERSIONING.md`).
+
+---
+
+## 9. Per-layer design specs
+
+Each safeguard layer above has a focused design doc (what it closes + how). Status reflects whether
+the layer is built or proposed:
+
+| Layer | Design spec | Status |
+|---|---|---|
+| Deterministic event IDs (no cross-ref ripple) | [DETERMINISTIC_EVENT_IDS_DESIGN.md](DETERMINISTIC_EVENT_IDS_DESIGN.md) | built |
+| Referential-integrity enforcement + semantic flags | [SEMANTIC_FLAGS_DESIGN.md](SEMANTIC_FLAGS_DESIGN.md) | built |
+| Catcher sees low-info / flagged allows | [CATCHER_LOW_INFO_FLAGGED_DESIGN.md](CATCHER_LOW_INFO_FLAGGED_DESIGN.md) | built |
+| Phase-1 parse-output guard | [PHASE1_PARSE_GUARD_DESIGN.md](PHASE1_PARSE_GUARD_DESIGN.md) | built |
+| S3-perimeter validation backstop | [S3_VALIDATION_BACKSTOP_DESIGN.md](S3_VALIDATION_BACKSTOP_DESIGN.md) | built, not yet deployed |
+| OpenSERP SQS scaling | [OPENSERP_SQS_SCALING_DESIGN.md](OPENSERP_SQS_SCALING_DESIGN.md) | built |

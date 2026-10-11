@@ -16,7 +16,7 @@ Import and catalog maps from third-party sources (archives, museums, external we
 1. **Automated Search (Recommended):** Grok searches online for all places automatically
 2. **Manual YAML:** Curate specific maps in `external_maps.yaml`
 
-See: `docs/current/EXTERNAL_MAPS_AUTOMATED_SEARCH.md` for automated workflow.
+See: [combined-search.md](combined-search.md) for automated workflow.
 
 ---
 
@@ -34,7 +34,7 @@ python3 -m src.extraction.search_external_maps
 python3 -m src.extraction.search_external_maps
 ```
 
-See: `docs/current/EXTERNAL_MAPS_AUTOMATED_SEARCH.md`
+See: [combined-search.md](combined-search.md)
 
 ### Manual YAML Curation
 
@@ -72,7 +72,7 @@ Grok can populate `external_maps.yaml` by searching online:
 - Searches archives/museums for maps related to corpus places
 - Documents sources with `found_via` and `found_date`
 - License can be "Unknown" for later review
-- See: `docs/current/EXTERNAL_MAPS_AI_GUIDE.md`
+- See: [AI guide (archived)](../../../archive/external-maps/EXTERNAL_MAPS_AI_GUIDE.md)
 
 ### 3. Run Phase 2
 
@@ -260,8 +260,8 @@ Each map saved as JSON in `output/external_maps/`:
 
 ## See Also
 
-- **Automated Search:** `docs/current/EXTERNAL_MAPS_AUTOMATED_SEARCH.md` (recommended)
-- **AI Guide:** `docs/current/EXTERNAL_MAPS_AI_GUIDE.md` (YAML approach)
+- **Automated Search:** [combined-search.md](combined-search.md) (recommended)
+- **AI Guide:** [AI guide (archived)](../../../archive/external-maps/EXTERNAL_MAPS_AI_GUIDE.md) (YAML approach)
 - **Specification:** `contextmanagement/Specs/external_maps.md`
 - **Schema:** `contextmanagement/Specs/external_maps_v2_schema.json`
 - **Source Material Maps:** `docs/current/MAPS.md` (v1.0.0)

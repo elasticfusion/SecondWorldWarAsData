@@ -122,8 +122,7 @@ python3 phase2_extract.py --batch
 python3 phase3_retry.py
 
 # 5. Import to database (optional)
-python3 import_to_mongodb.py     # MongoDB
-python3 import_to_dynamodb.py    # DynamoDB
+python3 import_to_dynamodb.py    # DynamoDB (no MongoDB path exists)
 ```
 
 Output is in `output/` as JSON files.
@@ -155,7 +154,7 @@ See [Adding Data Sources](pipeline/ADDING_DATA_SOURCES.md) | [HyperWar Import](p
 ```bash
 # Find and merge duplicates
 python3 scripts/find_duplicate_people.py
-python3 scripts/merge_duplicate_people.py
+python3 scripts/archive/merge_duplicate_people.py
 
 # Fix orphaned references
 python3 scripts/fix_orphaned_person_refs.py --dry-run
@@ -197,7 +196,7 @@ cd openserp && docker compose up -d
 
 If OpenSERP is not running, the pipeline falls back to Grok-based search (less accurate).
 
-See [OpenSERP Integration](features/external-maps/openserp-integration.md)
+See [OpenSERP Integration](../archive/2026-10-11/features/external-maps/openserp-integration.md) _(archived — superseded by the SQS worker architecture; see `features/external-maps/combined-search.md`)_
 
 ---
 
