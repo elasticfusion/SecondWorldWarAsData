@@ -39,13 +39,17 @@ def test_fixture_validates_against_schema(schema_dir):
     assert sample.is_file(), f"missing {sample}"
     data = json.loads(sample.read_text(encoding="utf-8"))
 
-    # Must validate cleanly against the registry schema.
-    jsonschema.validate(instance=data, schema=schema)
+    # Authoritative per-entity model: the fixture is a LIST of records [minimal, fully-expanded];
+    # EACH is a standalone entity record validated directly against the entity schema (no wrapper —
+    # the wrapper was the stale pre-refactor read-schema shape).
+    assert isinstance(
+        data, list
+    ), f"{sample} must be a list of records [minimal, expanded]"
+    records = data
+    for rec in records:
+        jsonschema.validate(instance=rec, schema=schema)
 
     # Contract: exactly two records (minimal + fully-expanded).
-    wrapper_values = [v for v in data.values() if isinstance(v, list)]
-    assert wrapper_values, f"{sample} has no array wrapper"
-    records = wrapper_values[0]
     assert (
         len(records) == 2
     ), f"{schema_name}: expected 2 records (minimal + expanded), got {len(records)}"

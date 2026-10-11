@@ -16,8 +16,11 @@ tests/fixtures/validation/<schema>/sample.json
 ```
 
 `<schema>` is a registry schema name (`people`, `people_groups`, `equipment`,
-`casualties`, …). Each `sample.json` is the **consolidated wrapper** form the
-registry schema validates, e.g. `{"people": [ <minimal>, <expanded> ]}`.
+`casualties`, …). Each `sample.json` is a **list of standalone entity records**
+validated individually against the authoritative registry schema, i.e.
+`[ <minimal>, <expanded> ]` — one record per shape, NO wrapper object (the old
+`{"people": [...]}` wrapper was the pre-refactor read-schema shape and has been
+retired now that the registry serves the write-guard's per-entity schemas).
 
 ## The two-record contract (per category)
 

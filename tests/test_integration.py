@@ -147,19 +147,21 @@ class TestSchemaRegistry:
         schemas = registry.list_schemas()
 
         expected = [
-            "event",
-            "date",
-            "place",
-            "supplemental",
+            "events",
+            "dates",
+            "places",
             "people",
             "people_groups",
             "equipment",
-            "map",
+            "maps",
             "casualties",
         ]
 
         for schema_name in expected:
             assert schema_name in schemas
+        # Legacy singular aliases are NOT in the canonical list but remain resolvable.
+        assert registry.get_schema("event") is registry.get_schema("events")
+        assert registry.get_schema("place") is registry.get_schema("places")
 
     def test_get_validator_caching(self):
         """Test validator caching works."""
@@ -172,17 +174,13 @@ class TestSchemaRegistry:
         assert validator1 is validator2
 
     def test_validate_with_registry(self, tmp_path):
-        """Test validation using registry."""
+        """Test validation using the registry (authoritative per-entity record — no wrapper)."""
         registry = get_registry()
         schema = registry.get_schema("people")
 
         data = {
-            "people": [
-                {
-                    "PersonID": ULID1,
-                    "name": "Test Person",
-                }
-            ]
+            "PersonID": ULID1,
+            "name": "Test Person",
         }
 
         assert validate_json(data, schema)
