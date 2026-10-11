@@ -17,6 +17,7 @@
 | [GITHUB_ACTIONS_AWS_SETUP.md](GITHUB_ACTIONS_AWS_SETUP.md) | CI/CD with GitHub Actions + OIDC |
 | [LOCAL_DEPLOYMENT.md](LOCAL_DEPLOYMENT.md) | Prerequisites, setup, local run instructions |
 | [SECURITY_POSTURE.md](SECURITY_POSTURE.md) | S3 encryption/TLS, pandoc sandbox, AV scanning, media-mismatch, submitter freeze |
+| [CFN_SECURITY_REVIEW_2026-10-11.md](CFN_SECURITY_REVIEW_2026-10-11.md) | Full CloudFormation security review (0 crit / 3 high / 6 med) + fixes — hardening backlog |
 | [dataquality/AV_SCANNING_DESIGN.md](dataquality/AV_SCANNING_DESIGN.md) | Demand-launched binary-only ClamAV Fargate scan (threat model + design) |
 
 ### Core Reference
