@@ -16,11 +16,14 @@ tests/fixtures/validation/<schema>/sample.json
 ```
 
 `<schema>` is a registry schema name (`people`, `people_groups`, `equipment`,
-`casualties`, …). Each `sample.json` is a **list of standalone entity records**
-validated individually against the authoritative registry schema, i.e.
-`[ <minimal>, <expanded> ]` — one record per shape, NO wrapper object (the old
-`{"people": [...]}` wrapper was the pre-refactor read-schema shape and has been
-retired now that the registry serves the write-guard's per-entity schemas).
+`casualties`, …). Each category dir holds **two single-record files** —
+`minimal.json` (required fields only) and `expanded.json` (every optional field
+populated) — each a standalone entity record validated directly against the
+authoritative registry schema (one record per file, NO wrapper; the old
+`{"people": [...]}` wrapper + `sample.json` list were pre-refactor shapes and
+have been retired now that the registry serves the write-guard's per-entity
+schemas). Both the unit test and the CI `validate` step (which globs `*.json`
+and validates each file as one record) check them.
 
 ## The two-record contract (per category)
 

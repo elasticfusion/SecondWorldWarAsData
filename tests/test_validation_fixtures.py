@@ -35,28 +35,23 @@ def test_fixture_validates_against_schema(schema_dir):
     ), f"fixture dir '{schema_name}' has no matching schema in the registry"
     schema = registry.get_schema(schema_name)
 
-    sample = schema_dir / "sample.json"
-    assert sample.is_file(), f"missing {sample}"
-    data = json.loads(sample.read_text(encoding="utf-8"))
-
-    # Authoritative per-entity model: the fixture is a LIST of records [minimal, fully-expanded];
-    # EACH is a standalone entity record validated directly against the entity schema (no wrapper —
-    # the wrapper was the stale pre-refactor read-schema shape).
-    assert isinstance(
-        data, list
-    ), f"{sample} must be a list of records [minimal, expanded]"
-    records = data
-    for rec in records:
-        jsonschema.validate(instance=rec, schema=schema)
-
-    # Contract: exactly two records (minimal + fully-expanded).
+    minimal_f = schema_dir / "minimal.json"
+    expanded_f = schema_dir / "expanded.json"
     assert (
-        len(records) == 2
-    ), f"{schema_name}: expected 2 records (minimal + expanded), got {len(records)}"
-    # The expanded record must be strictly richer than the minimal one.
-    assert _leaf_count(records[1]) > _leaf_count(
-        records[0]
-    ), f"{schema_name}: second record should be the fully-expanded one"
+        minimal_f.is_file() and expanded_f.is_file()
+    ), f"missing minimal.json/expanded.json in {schema_dir}"
+    minimal = json.loads(minimal_f.read_text(encoding="utf-8"))
+    expanded = json.loads(expanded_f.read_text(encoding="utf-8"))
+
+    # Authoritative per-entity model: each file is a SINGLE standalone record validated directly
+    # against the entity schema (same path validate_directory + the CI validate step use — one
+    # record per file, no wrapper). minimal proves nothing optional is secretly required; expanded
+    # proves the full current shape is accepted.
+    for rec in (minimal, expanded):
+        jsonschema.validate(instance=rec, schema=schema)
+    assert _leaf_count(expanded) > _leaf_count(
+        minimal
+    ), f"{schema_name}: expanded.json should be strictly richer than minimal.json"
 
 
 def test_every_fixture_dir_maps_to_a_real_schema():
