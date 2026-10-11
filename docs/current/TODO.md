@@ -21,18 +21,21 @@ bottom); what remains is ranked here. Current ordered priority:
    deterministic) and run it as the (a) remediation. Highest-risk (first thing to MUTATE the live
    corpus) — design-first + review. (§ second data-quality block, items (a)/(b2).)
 3. **[HIGH · deploy] OCR markdown-review UI** — built + tested, not deployed; NAT as an async
-   human-gate like dedup. Verify the ComputeStack deploy-path first.
+   human-gate like dedup. Verify the ComputeStack deploy-path first. (ALSO covers the layout-miss
+   task-org tables: that review surface is the same mdreview UI — `table_recovery.py` flags
+   `flattened_hints`, `mdreview_ui_handler._scaffold_from_hints` renders them for a human; the old
+   "needs design" item is retired, only minor OCR-noise cleanup + optional per-page escape hatches
+   remain.)
 4. **[HIGH · cost] AWS budget reset + CloudWatch reduction pass** — reset the stale $75 limit
    (S3 alone exceeds it); trim CloudWatch log retention/ingestion. Not a runaway.
-5. **[HIGH · design] Layout-miss task-org tables → human-review surface** (needs design).
-6. **[HIGH · enrichment] SourceRechecker into People enrichment** + the carried-forward enrichment
+5. **[HIGH · enrichment] SourceRechecker into People enrichment** + the carried-forward enrichment
    findings (Grokipedia raw-HTML source, verifiers fail-OPEN, dormant phase3_handler double-enrich).
-7. **[MED] data-quality follow-ups** (validation_stats time-series, fail-open-allow counter,
+6. **[MED] data-quality follow-ups** (validation_stats time-series, fail-open-allow counter,
    persisted corpus_quality_report dashboard, dedup precision/recall, catcher per-book dimension)
    + observability (Slack refinement, misleading batch log, SNS IAM) + bibliography/Archive.org UIs.
-8. **[LOW] external_maps license config exposure; code-quality refactors; mypy --strict on new
+7. **[LOW] external_maps license config exposure; code-quality refactors; mypy --strict on new
    files; doc-hygiene pass (see docs/archive/2026-10-11/UNVALIDATED_CLAIMS_FOR_REVIEW.md).**
-9. **[FUTURE] Postgres/pgvector + RAG layer, DynamoDB-removal, true multi-job concurrency, Step
+8. **[FUTURE] Postgres/pgvector + RAG layer, DynamoDB-removal, true multi-job concurrency, Step
     Functions, new entity types — gated on the post-ingestion RAG phase.**
 
 Detail for each item follows in the sections below (grouped by original theme; status markers are
@@ -148,7 +151,9 @@ Two detective/corrective layers remain (the preventive in-process guard is done 
    guard before markdown feeds parsers; pairs with the re-OCR work.
 4. **[HIGH] Cost: budget 6× over** — reset the (stale) $75 limit + CloudWatch $85
    reduction pass. Largely explainable (one-time $135 domain), not a runaway.
-5. **[HIGH] Layout-miss task-org tables → review surface** (needs design).
+5. **[HIGH] Layout-miss task-org tables** — review surface BUILT (= the mdreview UI; see the
+   Layout-miss detail section). "Needs design" retired; residual = OCR-noise cleanup + optional
+   per-page escape hatches.
 6. **[MED] Slack refinement; misleading batch log; SNS:ListSubscriptions IAM;
    bibliography + Archive.org enrichment UIs; delete stale chunk dirs.**
 7. **[LOW/REGRESSION] mypy --strict on new files; the 5 regression tests;
@@ -502,14 +507,21 @@ reviewer supplies the column crosstab. See CHANDRA_OCR_DESIGN.md "Recovery
 limits & the human-review compromise". Dense tables (p155, OOB corpus generally)
 still auto-recover to `<table>`.
 
-**Open follow-up (path being decided by owner):** wire flagged pages'
-`flattened_hints` into the existing review surface (with page image + parsed
-groups) so a human actually sees and completes them — the gap between "flagged"
-and "reviewed". Not yet designed. Escape hatches if a specific page is
-high-value: (A) image preprocess to make the grid table-like; (B) crop to the
-columnar region and run the table-structure model directly (bypass layout
-detection). Also: residual recovered-cell OCR noise (`1703dd -arch South`).
-*Source: St. Vith end-to-end test 2026-09-23/24*
+**Follow-up — ✅ REVIEW SURFACE BUILT (verified in code 2026-10-11); only residuals remain.**
+The "wire flagged pages into a review surface" gap the earlier note called "not yet designed" IS
+implemented: `src/ingestion/table_recovery.py` produces the `flattened_hints`/`needs_review` trees
+(and deliberately "never reconstructs the grid"), and `lambda_handlers/mdreview_ui_handler.py`
+consumes them — `_page_snippet` loads `ocr-output/<book>/recovery/pN.recovery.json`,
+`_scaffold_from_hints` renders the groups→units into a starting-point markdown scaffold (with a
+"rebuild the 2-D table from the page image, columns not recovered" reviewer instruction), and the
+reviewer's edit saves to `reviewed/pN.md`. The CFN function `MdReviewUIFunction` exists in
+`compute.yaml`. **So this is NOT separate work — it IS the OCR markdown-review UI (priority #3);
+completing/deploying+smoke-testing that one route covers this item.** Genuine residuals only:
+(1) residual recovered-cell OCR noise (`1703dd -arch South`) — small cleanup; (2) OPTIONAL per-page
+escape hatches, unimplemented and only for a specific high-value page — (A) image-preprocess to make
+the grid table-like; (B) crop the columnar region + run the table-structure model directly
+(bypass layout detection). The "needs design" label is retired.
+*Source: St. Vith end-to-end test 2026-09-23/24; surface verified built 2026-10-11*
 
 #### ~~ULID fix generates different replacements for same invalid ID~~ ✅ Already fixed + now regression-tested
 Same invalid ULID referenced in multiple places within one response gets different replacements, breaking internal referential integrity. Fix: build replacement map and reuse same new ULID for repeated occurrences.
