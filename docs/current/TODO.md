@@ -10,11 +10,13 @@ Ranking reflects the project goal: *finish unattended ETO ingestion, then build 
 Most of the 2026-10-09 data-quality program is now DONE (see "Completed data-quality program" at the
 bottom); what remains is ranked here. Current ordered priority:
 
-1. **[HIGH · cost/correctness] Idle-infra teardown backstop reaper** — the SQS worker autoscaler
-   now scales workers→0 on an empty queue (done this session), but the dedicated HOURLY two-strike
-   no-progress watchdog Lambda (defense-in-depth against a future manager bug burning NAT/Fargate
-   for days) is NOT built. A live cost leak is the highest-impact open risk. (§ "Fix idle-infra
-   teardown + hourly backstop reaper".)
+1. **~~[HIGH · cost/correctness] Idle-infra teardown backstop reaper~~ ✅ DONE 2026-10-11** —
+   (a) root cause fixed: `openserp_manager` now excludes OpenSERP's OWN tasks from the active-work
+   count (an idle openserp task no longer blocks its own teardown); (b) new HOURLY
+   `idle_backstop_reaper` Lambda — two-strike no-progress watchdog (S3 output-object-count
+   progress signal; force-teardown + SNS alert only after 2 consecutive no-progress hours with NAT
+   up + no lock/lease; fail-safe). CFN + schedule + update_lambdas wired; code-complete, NOT yet
+   deployed. Code-reviewed; full gate PASS. (§ "Fix idle-infra teardown + hourly backstop reaper".)
 2. **[HIGH · corrective] (a) Remediate pre-existing invalid S3 fragments + (b2) corrective
    reprocessor** — the LAST data-quality layer (prevention + detection are done). Build the
    no-human-gate reprocessor in CORE (resolve-before-write, re-extract the whole source unit,
@@ -128,24 +130,18 @@ Two detective/corrective layers remain (the preventive in-process guard is done 
    AES256 + DenyInsecureTransport; pandoc `--sandbox` image pushed; AV scanning
    deployed + signatures seeded + EICAR-validated (`AV_SCAN_ENABLED=true`); EBS
    encryption (account default + launch-template). No Critical items remain open.
-1. **[HIGH] Fix idle-infra teardown + add an hourly backstop reaper (cost leak found
-   2026-10-08).** Root cause observed live: `dev-wwii-openserp` ECS **service** was pinned
-   `desiredCount=1` and ran 8 days (since 2026-09-30), holding a Fargate task + **1 NAT gateway**
-   up idle. `openserp-manager` runs every ~10 min but logs *"Active: 1 running tasks — skipping
-   teardown"* — its predicate counts the service's OWN idle task as "active work," so it can
-   never scale to 0, and `nat-manager` can't reap NAT while OpenSERP is up. Two-part fix:
-   (a) **Root cause** — openserp-manager must scale OpenSERP→0 when no *pipeline/phase* task has
-   needed it for N minutes, not refuse because its own service task exists; (b) **Backstop
-   watchdog** — a **cron'd Lambda running HOURLY** that checks pipeline progress each run
-   (progress = DynamoDB manifest mtime / S3 output-object count / heartbeat marker — NOT just
-   "a task exists") and stores the observation. Shutdown fires only on **TWO CONSECUTIVE
-   no-progress hourly observations** (debounced two-strikes ≈ 2h confirmed stall) — one
-   transient slow hour does NOT trigger teardown. On the second strike: force-scale idle
-   OpenSERP/tasks to zero + alert via the phase2-complete SNS topic, then reset the strike
-   counter. Defense-in-depth so a future manager bug can't silently burn money for days. Keys
-   off PROGRESS not wall-clock, so a legitimately long batch that keeps advancing is never
-   killed.
-   IMMEDIATE: manually scale `dev-wwii-openserp` to desiredCount=0 to stop the current leak.
+1. **~~[HIGH] Fix idle-infra teardown + add an hourly backstop reaper~~ ✅ DONE 2026-10-11
+   (code-complete, not yet deployed).** (a) ROOT CAUSE fixed in `lambda_handlers/openserp_manager.py`:
+   the main active-work check now counts only PIPELINE tasks (`[t for t in taskArns if "openserp"
+   not in t]`), so an idle OpenSERP service no longer counts its own task as work and can be torn
+   down. (b) BACKSTOP: new `lambda_handlers/idle_backstop_reaper.py` on an HOURLY EventBridge rule —
+   progress = S3 `output/` object count; stores a strike counter in DynamoDB (`reaper#state`);
+   force-scales OpenSERP→0 + invokes nat-manager delete + alerts the phase2-complete SNS topic ONLY
+   after TWO consecutive no-progress hours with NAT up and no lock/lease; resets on any
+   progress/lock/NAT-down; fail-safe (never reaps on error). CFN (`IdleBackstopReaperFunction` +
+   hourly schedule + permission, compute.yaml) + `update_lambdas.sh` loop + 6 unit tests. Full
+   gate PASS (1993). Deploy via `deploy_all.sh` + `update_lambdas.sh` when next deploying.
+   (Original IMMEDIATE "manually scale dev-wwii-openserp to 0" was a one-time manual action.)
 2. **~~[HIGH] Re-OCR the off-by-one corpus~~ ✅ DONE (verified vs S3 2026-10-11)** — St. Vith/Boyer +
    ETO OOB markdown re-OCR'd (post-fix page-range chunks on S3, no shifted dirs). Was "wrong data
    feeding extraction"; now corrected.

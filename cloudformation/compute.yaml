@@ -724,6 +724,46 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: events.amazonaws.com
       SourceArn: !GetAtt OpenSerpWorkerAutoscalerSchedule.Arn
+
+  # --- Idle-infra backstop reaper (hourly, two-strike no-progress; cost defense-in-depth) ---
+  IdleBackstopReaperFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-idle-backstop-reaper
+      Runtime: python3.12
+      Handler: lambda_handlers.idle_backstop_reaper.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 128
+      Timeout: 120
+      Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          S3_BUCKET: !Ref DataBucketName
+          CACHE_TABLE: !Ref CacheTableName
+          NOTIFICATION_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+
+  IdleBackstopReaperSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-idle-backstop-reaper-schedule
+      Description: Hourly backstop — force teardown on 2 consecutive no-progress hours (cost safety)
+      ScheduleExpression: rate(1 hour)
+      State: ENABLED
+      Targets:
+        - Id: IdleBackstopReaperTarget
+          Arn: !GetAtt IdleBackstopReaperFunction.Arn
+
+  IdleBackstopReaperPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref IdleBackstopReaperFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt IdleBackstopReaperSchedule.Arn
+
   MetricsFunction:
     Type: AWS::Lambda::Function
     Properties:
