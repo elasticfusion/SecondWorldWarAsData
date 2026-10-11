@@ -28,7 +28,6 @@ bottom); what remains is ranked here. Current ordered priority:
    remain.)
 4. **[HIGH · cost] AWS budget reset + CloudWatch reduction pass** — reset the stale $75 limit
    (S3 alone exceeds it); trim CloudWatch log retention/ingestion. Not a runaway.
-5. **[HIGH · enrichment] SourceRechecker into People enrichment** + the carried-forward enrichment
 5. **[HIGH · enrichment] SourceRechecker into People enrichment** (source-first gap-fill of
    `nationality` etc. in `enrich_person_biography`, mirroring people_groups) + Grokipedia should
    fetch the real `/page/<slug>` article instead of caching raw search-results HTML
