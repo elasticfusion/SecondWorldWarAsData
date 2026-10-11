@@ -233,12 +233,20 @@ Two detective/corrective layers remain (the preventive in-process guard is done 
 - **(d) Consistency — unify the second validation source.** `src/utils/schema_registry.py`
   (`SchemaRegistry`/`get_registry`) is a SEPARATE validator stack used by the READ/report tools
   (`scripts/validate_data.py`, `validation_report.py`, `generate_dashboard.py` + several tests). It
-  validates against `src/json_schemas` — a DIFFERENT schema source than the write guard's
-  `ENTITY_REGISTRY`/`src/schemas`. Two sources of truth can disagree (a record the write guard
-  accepts could be flagged by the report tooling, or vice-versa). Reconcile to ONE schema source so
-  write-time and read-time validation are provably consistent. (The write-path duplicate in
-  `openserp_enrichment._validate_before_write` was already removed — it now delegates to the central
-  `_validate_entity`.)
+  validated against `src/json_schemas` — a DIFFERENT (and STALE, pre-refactor event-nested) schema
+  source than the write guard's `ENTITY_REGISTRY`/`src/schemas`, so the report tooling judged
+  current per-entity records against a model they no longer match.
+  **[DONE 2026-10-10]** `SchemaRegistry` now serves the AUTHORITATIVE schemas (resolved via
+  `entity_registry`/`src.schemas` — the same ones the write guard enforces), keeping the legacy
+  singular aliases (`event`/`place`/`date`/`map`) so the CLIs/tests still work. Read-time and
+  write-time validation are now provably consistent. Fixture + integration tests updated from the
+  stale `{name:[records]}` wrapper to authoritative per-entity records (and fixed a stale
+  equipment-fixture `name`→`common_name`). NOTE (scope): `src/json_schemas` is NOT retired — it is
+  still the legitimate EXTRACTION-TIME validator for LLM responses (`events.py` EVENT_SCHEMA, the
+  `*_ITEM_SCHEMA` per-item checks) + the type-stub/doc generators; that is a distinct role from
+  record-shape validation and is out of scope for this read-vs-write reconciliation. (The write-path
+  duplicate in `openserp_enrichment._validate_before_write` was already removed — it delegates to the
+  central `_validate_entity`.)
 0. **~~[CRITICAL] Deploy current `main`~~ ✅ DONE 2026-10-02** — verified live: S3
    AES256 + DenyInsecureTransport; pandoc `--sandbox` image pushed; AV scanning
    deployed + signatures seeded + EICAR-validated (`AV_SCAN_ENABLED=true`); EBS

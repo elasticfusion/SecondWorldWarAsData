@@ -35,24 +35,23 @@ def test_fixture_validates_against_schema(schema_dir):
     ), f"fixture dir '{schema_name}' has no matching schema in the registry"
     schema = registry.get_schema(schema_name)
 
-    sample = schema_dir / "sample.json"
-    assert sample.is_file(), f"missing {sample}"
-    data = json.loads(sample.read_text(encoding="utf-8"))
-
-    # Must validate cleanly against the registry schema.
-    jsonschema.validate(instance=data, schema=schema)
-
-    # Contract: exactly two records (minimal + fully-expanded).
-    wrapper_values = [v for v in data.values() if isinstance(v, list)]
-    assert wrapper_values, f"{sample} has no array wrapper"
-    records = wrapper_values[0]
+    minimal_f = schema_dir / "minimal.json"
+    expanded_f = schema_dir / "expanded.json"
     assert (
-        len(records) == 2
-    ), f"{schema_name}: expected 2 records (minimal + expanded), got {len(records)}"
-    # The expanded record must be strictly richer than the minimal one.
-    assert _leaf_count(records[1]) > _leaf_count(
-        records[0]
-    ), f"{schema_name}: second record should be the fully-expanded one"
+        minimal_f.is_file() and expanded_f.is_file()
+    ), f"missing minimal.json/expanded.json in {schema_dir}"
+    minimal = json.loads(minimal_f.read_text(encoding="utf-8"))
+    expanded = json.loads(expanded_f.read_text(encoding="utf-8"))
+
+    # Authoritative per-entity model: each file is a SINGLE standalone record validated directly
+    # against the entity schema (same path validate_directory + the CI validate step use — one
+    # record per file, no wrapper). minimal proves nothing optional is secretly required; expanded
+    # proves the full current shape is accepted.
+    for rec in (minimal, expanded):
+        jsonschema.validate(instance=rec, schema=schema)
+    assert _leaf_count(expanded) > _leaf_count(
+        minimal
+    ), f"{schema_name}: expanded.json should be strictly richer than minimal.json"
 
 
 def test_every_fixture_dir_maps_to_a_real_schema():
