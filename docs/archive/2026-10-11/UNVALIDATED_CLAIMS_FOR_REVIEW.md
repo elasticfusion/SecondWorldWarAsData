@@ -1,5 +1,17 @@
 # Unvalidated documentation claims — for human review
 
+> **DISPOSITIONED + ARCHIVED 2026-10-11.** Reviewed. One item with real engineering utility — expose
+> the `external_maps` license/download config — was promoted to `TODO.md` (LOW #13). One flagged
+> item was downgraded after verification: `GROUP_DEDUP_RULES_REVIEW.md`'s "byte-identical vs
+> canonical-key auto-merge" contradiction is moot — the live code uses canonical unit-key resolution
+> (`group_resolver.resolve_group_id`); the cited `_auto_merge_exact_duplicates` symbol does not exist
+> (doc fix only, no code gap). The `search-history` URL-dedup claim was VALIDATED (fields
+> `external_source_url`/`source_url` exist in `openserp_maps.py`/`search_history.py`). The remainder
+> below are documentation-hygiene fixes (stale numbers, dead links, naming), tracked here for a
+> future doc-cleanup pass — not product backlog.
+
+---
+
 Produced by the 2026-10-11 comprehensive documentation audit. Each entry is a claim in a **retained
 (CURRENT)** doc that could NOT be tied to a real code file during the audit, and that is NOT an
 objective, auto-correctable fact (those were fixed in place). These need a human to decide: fix the
