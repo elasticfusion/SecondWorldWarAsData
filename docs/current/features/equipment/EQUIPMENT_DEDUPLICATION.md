@@ -341,5 +341,5 @@ Dedup is **not** exact-match-only. Both stages resolve name variations:
 
 - **Index:** [README.md](README.md)
 - **Structure (canonical example):** [EQUIPMENT_FINAL_STRUCTURE.md](EQUIPMENT_FINAL_STRUCTURE.md)
-- **Entity Linking:** [EQUIPMENT_ENTITY_LINKING.md](EQUIPMENT_ENTITY_LINKING.md)
+- **Entity Linking:** [EQUIPMENT_ENTITY_LINKING.md](../../../archive/2026-10-11/features/equipment/EQUIPMENT_ENTITY_LINKING.md) _(archived 2026-10-11)_
 - **Enforced schema:** `src/schemas/equipment_output.py`

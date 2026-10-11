@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated:** 2026-10-05
+**Last Updated:** 2026-10-11
 
 ---
 
@@ -39,7 +39,7 @@
 ### Architecture & Design
 | Document | Description |
 |----------|-------------|
-| [SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md) | JSON schemas for all entity types (v2.23) |
+| [SCHEMA_REFERENCE.md](SCHEMA_REFERENCE.md) | JSON schemas for all entity types (per-entity versions) |
 | [features/maps/MAP_FEATURES_SCHEMA.md](features/maps/MAP_FEATURES_SCHEMA.md) | Map-interior GeoJSON FeatureCollection schema (places/units/routes, APP-6 profile, entity-graph links) |
 | [ENTITY_RELATIONSHIP_MAP.md](ENTITY_RELATIONSHIP_MAP.md) | Cross-references between entities, ID types, structural inconsistencies |
 | [STORAGE_REVIEW.md](STORAGE_REVIEW.md) | pgvector single-store decision, DynamoDB role-split, S3 lifecycle, cost model |
@@ -48,20 +48,20 @@
 ### Data Quality & Integrity
 | Document | Description |
 |----------|-------------|
+| [dataquality/DATA_QUALITY_SAFEGUARDS.md](dataquality/DATA_QUALITY_SAFEGUARDS.md) | **Start here** — the write-guard + referential + semantic-flag + catcher + backstop safeguards, with a §9 table linking every per-layer design spec (deterministic IDs, semantic flags, catcher, Phase-1 guard, S3 backstop, OpenSERP SQS). |
 | [DATA_QUALITY_STATUS.md](DATA_QUALITY_STATUS.md) | Entity counts, enrichment rates, known issues, cross-ref integrity |
-| [dataquality/new_entity_types.md](dataquality/new_entity_types.md) | Proposed Economic Data and Policy/Legislation types |
+| [UNVALIDATED_CLAIMS_FOR_REVIEW.md](UNVALIDATED_CLAIMS_FOR_REVIEW.md) | Doc claims that could not be tied to code (2026-10-11 audit) — for human review |
 | [dataquality/bibliography_resolution_process.md](dataquality/bibliography_resolution_process.md) | Bibliography resolution end-to-end workflow |
+| _Ingestion — which to read when:_ | **FRONT_END** = Phase-0 per-page disposition design · **INGESTION_PATHS** = as-built routing (trigger/dispatcher) · **STRUCTURED_DATA_ROUTING** = design-of-record + provenance · **MAP_IMAGE_AV_INGESTION** = vision/media branch |
 | [dataquality/INGESTION_FRONT_END.md](dataquality/INGESTION_FRONT_END.md) | Phase 0 ingestion front-end: media detection, per-page disposition, region conversion, OOB markdown parsers, division inference, persist + crosswalk |
 | [dataquality/STRUCTURED_DATA_ROUTING.md](dataquality/STRUCTURED_DATA_ROUTING.md) | Phase 0 design-of-record: provenance invariant + required citation metadata, format-agnostic routing (incl. docx, web-page-with-video), tabular→entity convergence, source-acquisition lifecycle |
 | [dataquality/CHANDRA_OCR_DESIGN.md](dataquality/CHANDRA_OCR_DESIGN.md) | Chandra PDF→markdown OCR (Phase 0 bridge) |
 | [OCR_OPERATIONS.md](OCR_OPERATIONS.md) | OCR Batch GPU operations (Chandra queues, spot controller, debugging) |
 | [dataquality/INGESTION_PATHS.md](dataquality/INGESTION_PATHS.md) | Code-synced ingestion routing (trigger_handler + dispatcher), by media type |
 | [dataquality/LANGUAGE_TRANSLATION.md](dataquality/LANGUAGE_TRANSLATION.md) | Per-page translate-at-the-seam (non-English → English, original preserved) |
-| [dataquality/INTAKE_FRONT_DOOR_STATE.md](dataquality/INTAKE_FRONT_DOOR_STATE.md) | Current unattended multi-format intake state (OCR/convert/video/AV branches) |
 | [dataquality/CONCURRENCY_AND_NAT_SPEC.md](dataquality/CONCURRENCY_AND_NAT_SPEC.md) | Canonical spec: multi-job concurrency + reference-counted NAT lifecycle (partially implemented) |
 | [dataquality/GPU_NETWORKING_CONSOLIDATION.md](dataquality/GPU_NETWORKING_CONSOLIDATION.md) | GPU/ECS VPC endpoint consolidation (7 endpoints, AZ alignment, deploy-time GPU probe) |
 | [dataquality/MAP_IMAGE_AV_INGESTION.md](dataquality/MAP_IMAGE_AV_INGESTION.md) | Map/image/moving-image routing: deterministic-first funnel to minimize Grok, per-map dating, units-as-metadata, map georeferencing |
-| [dataquality/CONCURRENCY_AND_NAT_SPEC.md](dataquality/CONCURRENCY_AND_NAT_SPEC.md) | Spec: true multi-job concurrency (parallel document processing) + reference-counted NAT lifecycle, within AWS service limits; motivated by the WWIIArchives backlog |
 
 ### Features (Entity Types)
 | Document | Description |
@@ -99,7 +99,8 @@ See [scripts/README.md](../../scripts/README.md) for all 70+ utility scripts, ca
 ## Archived Documents
 
 Historical implementation logs, review documents, and completed specs in `docs/archive/`:
-- **`2026-10-05/`** — documentation-audit batch: `PHASE3_REVIEW.md`, `SUPPLEMENTARY_SEARCH_REVIEW.md` (unresolved findings carried into [TODO.md](TODO.md) → High Priority), `eto_oob_division_coverage_report.md`, `ISOLATION_AUDIT.md`, `UNATTENDED_READINESS.md` (superseded by `INTAKE_FRONT_DOOR_STATE.md`), `CODE_REVIEW-2026-06-13.md`, `PROMPT_AND_MODEL_RECOMMENDATIONS.md`, `TAILSCALE_EXIT_NODE.md` + `PROTONVPN_EXIT_NODE.md` (rejected egress approaches). See `2026-10-05/README.md`.
+- **`2026-10-11/`** — comprehensive documentation-audit batch: archived 11 stale docs (3 equipment, 2 supplemental, 2 external-maps, `PHASE3_REVIEW_FINDINGS.md`, `new_entity_types.md`, `INTAKE_FRONT_DOOR_STATE.md`, `people/duplicate-exclusions.md`) + 1 merged (`external-maps/grok-search.md` → `combined-search.md`). See `2026-10-11/README.md` and `UNVALIDATED_CLAIMS_FOR_REVIEW.md`.
+- **`2026-10-05/`** — documentation-audit batch: `PHASE3_REVIEW.md`, `SUPPLEMENTARY_SEARCH_REVIEW.md` (unresolved findings carried into [TODO.md](TODO.md) → High Priority), `eto_oob_division_coverage_report.md`, `ISOLATION_AUDIT.md`, `UNATTENDED_READINESS.md`, `CODE_REVIEW-2026-06-13.md`, `PROMPT_AND_MODEL_RECOMMENDATIONS.md`, `TAILSCALE_EXIT_NODE.md` + `PROTONVPN_EXIT_NODE.md` (rejected egress approaches). See `2026-10-05/README.md`.
 - `CODE_INTEGRITY_REVIEW.md` — 20 findings (17 resolved, 3 remaining in TODO)
 - `AWS_DEPLOYMENT_PLAN.md` — Architecture decisions and cost analysis (implemented)
 - `SPOT_RECOVERY.md` — Spot termination analysis (recommendations implemented)

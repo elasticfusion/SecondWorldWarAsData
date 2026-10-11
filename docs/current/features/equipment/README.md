@@ -132,17 +132,17 @@ aliases, supporting-unit alias/fuzzy linking, merge reference-redirect — are d
 | [EQUIPMENT_FINAL_STRUCTURE.md](EQUIPMENT_FINAL_STRUCTURE.md) | The record/mention structure actually produced. Canonical example lives here. |
 | [EQUIPMENT_DEDUPLICATION.md](EQUIPMENT_DEDUPLICATION.md) | Dedup behavior, alias/fuzzy matching, and the origin-vs-operator country model. |
 | [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md) | US vs. German naming (M-number vs. Pz.Kpfw./Ausf./Sd.Kfz.) + implications for dedup/alias/identity. |
-| [EQUIPMENT_ENTITY_LINKING.md](EQUIPMENT_ENTITY_LINKING.md) | Linking mentions to people/people_groups/dates by real IDs. |
+| [EQUIPMENT_ENTITY_LINKING.md](../../../archive/2026-10-11/features/equipment/EQUIPMENT_ENTITY_LINKING.md) | _(archived 2026-10-11 — stale)_ Linking mentions to people/people_groups/dates by real IDs. |
 | [EQUIPMENT_MEDIA_INTEGRATION.md](EQUIPMENT_MEDIA_INTEGRATION.md) | Media sourcing (OpenSERP + wiki) + vision verification + storage. |
-| [EQUIPMENT_ERROR_HANDLING.md](EQUIPMENT_ERROR_HANDLING.md) | Error-handling patterns compliance review. |
-| [MILITARY_EQUIPMENT.md](MILITARY_EQUIPMENT.md) | **Aspirational proposal** — the original rich schema vision (comparisons, timeline, crew accounts, doctrine, geographic performance). NOT the enforced schema; see FINAL_STRUCTURE + `equipment_output.py` for what is actually produced. |
+| [EQUIPMENT_ERROR_HANDLING.md](../../../archive/2026-10-11/features/equipment/EQUIPMENT_ERROR_HANDLING.md) | _(archived 2026-10-11 — closed review)_ Error-handling patterns compliance review. |
+| [MILITARY_EQUIPMENT.md](../../../archive/2026-10-11/features/equipment/MILITARY_EQUIPMENT.md) | _(archived 2026-10-11 — aspirational, unbuilt)_ The original rich schema vision; NOT the enforced schema — see FINAL_STRUCTURE + `equipment_output.py` for what is actually produced. |
 
 ## Single sources of truth
 
 - **Enforced schema:** `src/schemas/equipment_output.py` (`additionalProperties: false`).
 - **Canonical structure example:** `EQUIPMENT_FINAL_STRUCTURE.md` (other docs link here
   rather than repeating the JSON).
-- **Schema version:** `src/schemas/__init__.py::SCHEMA_VERSION` (currently **2.15**).
+- **Schema version:** per-entity via `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py` (equipment currently **2.25**).
   History: 2.15 environmental_performance (condition-linked equipment performance; weather/terrain -> effect, source-tracked); 2.14 `crew_accounts` + `timeline`/`technical_evolution`/`logistics` (source-
   tracked); 2.13 structured `specifications`/`external_data`/`images`/in-file `variants`;
   2.12 `canonical_name` + `identity_source` (designation disambiguator); 2.11

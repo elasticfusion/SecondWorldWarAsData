@@ -203,7 +203,7 @@ response = httpx.get(image_url, timeout=30, headers=headers, follow_redirects=Tr
 
 ## Related Documentation
 
-- **Error Handling:** `EQUIPMENT_ERROR_HANDLING.md`
+- **Error Handling:** `EQUIPMENT_ERROR_HANDLING.md` (archived 2026-10-11)
 - **Error Handling Spec:** `contextmanagement/Specs/error_handling.md` (Pattern 21)
 
 ---

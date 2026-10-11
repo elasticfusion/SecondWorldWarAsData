@@ -126,4 +126,4 @@ contains none that resolve — tracked.)
 
 See: `docs/current/dataquality/` for detailed analysis:
 - `bibliography_resolution_process.md` — End-to-end bibliography resolution
-- `new_entity_types.md` — Proposed Economic Data and Policy/Legislation types
+- `docs/archive/2026-10-11/dataquality/new_entity_types.md` (archived) — Proposed Economic Data and Policy/Legislation types

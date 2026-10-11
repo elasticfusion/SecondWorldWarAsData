@@ -1,7 +1,7 @@
 # JSON Schema Reference
 
 **Last Updated:** 2026-10-06
-**Schema Version:** 2.24
+**Schema Version:** per-entity (see `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py`; e.g. places 2.27, images 2.26, equipment 2.25 as of 2026-10-11) — there is no single global number
 
 All entity files use 26-character ULIDs for cross-referencing. Cross-references always point to top-level entity IDs (e.g., `DateMentionID` → `DateID` in a date file, `PlaceMentionID` → `PlaceID` in a place file).
 
@@ -9,7 +9,7 @@ All entity files include internal metadata fields (prefixed with `_`):
 
 | Field | Type | Description |
 |---|---|---|
-| `_schema_version` | string | Output format version (currently "2.24") |
+| `_schema_version` | string | Output format version — PER ENTITY (e.g. `"2.27"` places, `"2.25"` equipment); see `ENTITY_SCHEMA_VERSIONS` |
 | `_last_updated` | string | ISO date of last modification (e.g., "2026-10-06") |
 
 These are auto-injected by `src/schemas.inject_metadata()` at write time and excluded from schema validation via `patternProperties: {"^_": {}}`.

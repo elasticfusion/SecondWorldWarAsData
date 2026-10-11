@@ -159,7 +159,7 @@ equipment:
 
 **Output:** `output/equipment/{name}_{ulid}.json`
 
-**Documentation:** See `docs/current/features/equipment/MILITARY_EQUIPMENT.md`
+**Documentation:** See `docs/archive/2026-10-11/features/equipment/MILITARY_EQUIPMENT.md` (archived)
 
 ---
 
