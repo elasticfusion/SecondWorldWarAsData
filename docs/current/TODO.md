@@ -1,14 +1,44 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-10-01 (reprioritized + swept against code)
+**Last Updated:** 2026-10-11 (reprioritized index refreshed after the data-quality program + doc audit)
 
 ---
 
 ## Current Priority (reprioritized index)
-**Reprioritized 2026-10-02** (after this session deployed the security/infra work
-live). Ranking reflects the project goal: *finish unattended ETO ingestion, then
-build RAG/search*. Current ordered priority:
+**Reprioritized 2026-10-11** (after the data-quality program + documentation audit landed).
+Ranking reflects the project goal: *finish unattended ETO ingestion, then build RAG/search*.
+Most of the 2026-10-09 data-quality program is now DONE (see "Completed data-quality program" at the
+bottom); what remains is ranked here. Current ordered priority:
 
+1. **[HIGH · cost/correctness] Idle-infra teardown backstop reaper** — the SQS worker autoscaler
+   now scales workers→0 on an empty queue (done this session), but the dedicated HOURLY two-strike
+   no-progress watchdog Lambda (defense-in-depth against a future manager bug burning NAT/Fargate
+   for days) is NOT built. A live cost leak is the highest-impact open risk. (§ "Fix idle-infra
+   teardown + hourly backstop reaper".)
+2. **[HIGH · data-correctness] Re-OCR the off-by-one corpus** — St. Vith/Boyer + ETO OOB markdown
+   are page-shifted; WRONG data feeds extraction. Pairs with the page-separator-vs-page-count check.
+3. **[HIGH · corrective] (a) Remediate pre-existing invalid S3 fragments + (b2) corrective
+   reprocessor** — the LAST data-quality layer (prevention + detection are done). Build the
+   no-human-gate reprocessor in CORE (resolve-before-write, re-extract the whole source unit,
+   deterministic) and run it as the (a) remediation. Highest-risk (first thing to MUTATE the live
+   corpus) — design-first + review. (§ second data-quality block, items (a)/(b2).)
+4. **[HIGH · deploy] OCR markdown-review UI** — built + tested, not deployed; NAT as an async
+   human-gate like dedup. Verify the ComputeStack deploy-path first.
+5. **[HIGH · cost] AWS budget reset + CloudWatch reduction pass** — reset the stale $75 limit
+   (S3 alone exceeds it); trim CloudWatch log retention/ingestion. Not a runaway.
+6. **[HIGH · design] Layout-miss task-org tables → human-review surface** (needs design).
+7. **[HIGH · enrichment] SourceRechecker into People enrichment** + the carried-forward enrichment
+   findings (Grokipedia raw-HTML source, verifiers fail-OPEN, dormant phase3_handler double-enrich).
+8. **[MED] data-quality follow-ups** (validation_stats time-series, fail-open-allow counter,
+   persisted corpus_quality_report dashboard, dedup precision/recall, catcher per-book dimension)
+   + observability (Slack refinement, misleading batch log, SNS IAM) + bibliography/Archive.org UIs.
+9. **[LOW] external_maps license config exposure; code-quality refactors; mypy --strict on new
+   files; doc-hygiene pass (see docs/archive/2026-10-11/UNVALIDATED_CLAIMS_FOR_REVIEW.md).**
+10. **[FUTURE] Postgres/pgvector + RAG layer, DynamoDB-removal, true multi-job concurrency, Step
+    Functions, new entity types — gated on the post-ingestion RAG phase.**
+
+Detail for each item follows in the sections below (grouped by original theme; status markers are
+authoritative where they conflict with this index).
 
 ### [HIGH] Data-quality program — data-scientist review backlog (2026-10-09)
 From an independent data-scientist review of `DATA_QUALITY_SAFEGUARDS.md`. Key reframe: the write
