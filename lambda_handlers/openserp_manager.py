@@ -48,12 +48,21 @@ def handler(event, _context):
             _teardown(ecs, cluster, service, region)
             return {"action": "force_teardown", "reason": "NAT age exceeded 2h"}
 
-    # Check for any running tasks in the cluster
+    # Check for running PIPELINE tasks in the cluster. CRITICAL: exclude OpenSERP's OWN service
+    # tasks — otherwise an idle openserp task counts as "active work" and the service perpetually
+    # blocks its own teardown (the 8-day NAT/Fargate cost leak found 2026-10-08). Only a real
+    # pipeline/phase task should keep networking up.
     running = ecs.list_tasks(cluster=cluster, desiredStatus="RUNNING")
-    task_count = len(running.get("taskArns", []))
+    all_arns = running.get("taskArns", [])
+    pipeline_arns = [t for t in all_arns if "openserp" not in t]
+    task_count = len(pipeline_arns)
 
     if task_count > 0:
-        logger.info("Active: %d running tasks — skipping teardown", task_count)
+        logger.info(
+            "Active: %d pipeline task(s) (%d total incl. openserp) — skipping teardown",
+            task_count,
+            len(all_arns),
+        )
         return {"action": "none", "tasks": task_count}
 
     # Check if OpenSERP service is already at 0
@@ -124,14 +133,21 @@ def _any_lock_held() -> bool:
             f"{ENV_NAME}-wwii-api-cache"
         )
         for prefix in ("lock#", "nat#lease#"):
-            resp = table.scan(
-                FilterExpression="begins_with(cache_key, :prefix)",
-                ExpressionAttributeValues={":prefix": prefix},
-                ProjectionExpression="cache_key",
-                Limit=10,
-            )
-            if resp.get("Count", 0) > 0:
-                return True
+            start_key = None
+            while True:
+                kw = dict(
+                    FilterExpression="begins_with(cache_key, :prefix)",
+                    ExpressionAttributeValues={":prefix": prefix},
+                    ProjectionExpression="cache_key",
+                )
+                if start_key:
+                    kw["ExclusiveStartKey"] = start_key
+                resp = table.scan(**kw)
+                if resp.get("Items"):
+                    return True
+                start_key = resp.get("LastEvaluatedKey")
+                if not start_key:
+                    break
         return False
     except Exception as e:
         logger.warning("Lock check failed: %s", e)
