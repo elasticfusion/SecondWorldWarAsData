@@ -15,26 +15,24 @@ bottom); what remains is ranked here. Current ordered priority:
    no-progress watchdog Lambda (defense-in-depth against a future manager bug burning NAT/Fargate
    for days) is NOT built. A live cost leak is the highest-impact open risk. (§ "Fix idle-infra
    teardown + hourly backstop reaper".)
-2. **[HIGH · data-correctness] Re-OCR the off-by-one corpus** — St. Vith/Boyer + ETO OOB markdown
-   are page-shifted; WRONG data feeds extraction. Pairs with the page-separator-vs-page-count check.
-3. **[HIGH · corrective] (a) Remediate pre-existing invalid S3 fragments + (b2) corrective
+2. **[HIGH · corrective] (a) Remediate pre-existing invalid S3 fragments + (b2) corrective
    reprocessor** — the LAST data-quality layer (prevention + detection are done). Build the
    no-human-gate reprocessor in CORE (resolve-before-write, re-extract the whole source unit,
    deterministic) and run it as the (a) remediation. Highest-risk (first thing to MUTATE the live
    corpus) — design-first + review. (§ second data-quality block, items (a)/(b2).)
-4. **[HIGH · deploy] OCR markdown-review UI** — built + tested, not deployed; NAT as an async
+3. **[HIGH · deploy] OCR markdown-review UI** — built + tested, not deployed; NAT as an async
    human-gate like dedup. Verify the ComputeStack deploy-path first.
-5. **[HIGH · cost] AWS budget reset + CloudWatch reduction pass** — reset the stale $75 limit
+4. **[HIGH · cost] AWS budget reset + CloudWatch reduction pass** — reset the stale $75 limit
    (S3 alone exceeds it); trim CloudWatch log retention/ingestion. Not a runaway.
-6. **[HIGH · design] Layout-miss task-org tables → human-review surface** (needs design).
-7. **[HIGH · enrichment] SourceRechecker into People enrichment** + the carried-forward enrichment
+5. **[HIGH · design] Layout-miss task-org tables → human-review surface** (needs design).
+6. **[HIGH · enrichment] SourceRechecker into People enrichment** + the carried-forward enrichment
    findings (Grokipedia raw-HTML source, verifiers fail-OPEN, dormant phase3_handler double-enrich).
-8. **[MED] data-quality follow-ups** (validation_stats time-series, fail-open-allow counter,
+7. **[MED] data-quality follow-ups** (validation_stats time-series, fail-open-allow counter,
    persisted corpus_quality_report dashboard, dedup precision/recall, catcher per-book dimension)
    + observability (Slack refinement, misleading batch log, SNS IAM) + bibliography/Archive.org UIs.
-9. **[LOW] external_maps license config exposure; code-quality refactors; mypy --strict on new
+8. **[LOW] external_maps license config exposure; code-quality refactors; mypy --strict on new
    files; doc-hygiene pass (see docs/archive/2026-10-11/UNVALIDATED_CLAIMS_FOR_REVIEW.md).**
-10. **[FUTURE] Postgres/pgvector + RAG layer, DynamoDB-removal, true multi-job concurrency, Step
+9. **[FUTURE] Postgres/pgvector + RAG layer, DynamoDB-removal, true multi-job concurrency, Step
     Functions, new entity types — gated on the post-ingestion RAG phase.**
 
 Detail for each item follows in the sections below (grouped by original theme; status markers are
@@ -140,9 +138,9 @@ Two detective/corrective layers remain (the preventive in-process guard is done 
    off PROGRESS not wall-clock, so a legitimately long batch that keeps advancing is never
    killed.
    IMMEDIATE: manually scale `dev-wwii-openserp` to desiredCount=0 to stop the current leak.
-2. **[HIGH] Re-OCR the off-by-one corpus** — data-correctness (St. Vith/Boyer +
-   ETO OOB markdown are currently shifted). Wrong data feeding extraction; now the
-   top real item. Data op (re-run OCR; auto-triggers on re-upload).
+2. **~~[HIGH] Re-OCR the off-by-one corpus~~ ✅ DONE (verified vs S3 2026-10-11)** — St. Vith/Boyer +
+   ETO OOB markdown re-OCR'd (post-fix page-range chunks on S3, no shifted dirs). Was "wrong data
+   feeding extraction"; now corrected.
 2. **[HIGH] Deploy + wire OCR markdown-review UI** — now **UNBLOCKED** (stack
    healthy; deploy path proven this session). Deploy + smoke-test the `/mdreview`
    route; treat NAT as an async human-gate like dedup.
@@ -380,7 +378,7 @@ no correctness impact; biggest line is one-time). Use AWS Cost Explorer/Budgets
 for any forward projection.
 *Source: critical survey 2026-10-01 (budget alarm $471 vs $75)*
 
-#### Re-OCR the off-by-one corpus (data-correctness) — PROMOTED from Medium 2026-10-01
+#### ~~Re-OCR the off-by-one corpus~~ ✅ DONE (verified against S3 2026-10-11)
 The OCR page-range off-by-one is **fixed in code** (`_to_chandra_range`), but all
 OCR output produced before the fix is shifted by one page and must be **re-OCR'd**
 to be correct: notably `stvith_boyer_full` (St. Vith/Boyer) and any ETO OOB
@@ -390,6 +388,13 @@ needed — it's a client-side `submit_ocr_job` re-run (now auto-triggered on
 re-upload). Scope + cost per corpus TBD. Pairs with the page-separator check
 (below) and the stale-chunk-dir cleanup (Medium) after re-OCR is verified.
 *Source: M1019 off-by-one 2026-09-24; promoted to High 2026-10-01*
+**STATUS — ✅ DONE (verified 2026-10-11 against S3).** Code fix (`_to_chandra_range`) merged AND the
+data was re-OCR'd: `s3://dev-wwii-data-pipeline/ocr-output/stvith_boyer_full/` and
+`.../ETO_Order_of_Battle/` both contain ONLY post-fix page-range chunk dirs
+(`chunk-p0001-0050 … chunk-p0251-0252` / `… chunk-p0601-0602`) with NO old shifted `chunk-NNN`
+dirs. The off-by-one corpus is corrected. (Stale local `tmp/stvith_backup/chunk-00N` is a backup,
+not live data.) Remaining tie-in: the page-separator-vs-page-count check below can run against the
+re-OCR'd output; the "delete stale legacy chunk dirs" MED item no longer applies to these two.
 
 #### Verify page-separator count vs. page count after OCR merge — PROMOTED from Medium 2026-10-01
 `stvith_boyer_full` merged with **246 separators for 252 pages** (6 short).
