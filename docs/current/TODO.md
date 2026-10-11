@@ -19,138 +19,8 @@ per-write guard is blind to. "The guard confirms a record is well-formed; nothin
 informative or correct" (observed: empty-`{}` biographies and 0.0-coord places pass validation).
 
 **HIGH**
-1. **Cross-reference integrity — root cause + fix (NOT N separate extractor bugs).** The audit
-   (**[TOOL DONE 2026-10-10]** `scripts/referential_integrity_audit.py`, read-only, tested; corpus
-   run → 5,076 dangling refs; report in `docs/current/dataquality/referential_integrity_report.json`)
-   surfaced the dangling edges (maps→events 100%, casualties→impacted_places 86%, weather→places 48%,
-   casualties→events 40%, images→events 13%, source_section→events 7%). INVESTIGATION (2026-10-10)
-   found these are NOT per-extractor logic bugs — the extractors write the right reference at write
-   time. Two real causes:
-   - **(i) Staleness/ripple:** EventIDs come from the LLM response and are NON-DETERMINISTIC per run.
-     Events re-extracted Sept 2026 got fresh ULIDs; dependents written Apr–Jun (maps/weather/
-     casualties/images) still carry the old IDs → dangling. Any post-write event-ID change ripples
-     to every referrer.
-   - **(ii) Live write-time bug:** FRESH source_sections (written today) reference EventIDs that
-     resolve to NO event (`source_section→events` 11/157, all recent) — a dangling ref created at
-     write time because nothing validates that a reference RESOLVES (only the record's own schema is
-     checked). The LLM-supplied EventID is not validated against a real event.
-   **FIX (both in CORE code, not throwaway utilities):**
-   - **#1 Deterministic EventIDs** — derive the EventID from stable content (book + chapter +
-     sub-event) instead of a volatile LLM/ULID value, so re-extraction yields the SAME id (no
-     staleness, no ripple). Where the LLM supplies an id, VALIDATE it (reject hallucinated/
-     non-resolving). Design-first (schema/migration implications).
-   - **#2 Enforced referential-integrity check across ALL json objects** — reference fields must
-     resolve to an existing target; enforce in core (write-guard reference check and/or a standing
-     pipeline corpus pass), handling the same-run create-order case (an event + its referrer written
-     in one run). The audit tool is the DETECTIVE/reporting half; this is the ENFORCEMENT half.
-     ROOT CAUSE of the live source_section→events bug (confirmed 2026-10-10): a dependent
-     (source_section) was persisted referencing an EventID whose EVENT RECORD WAS NEVER PERSISTED
-     (the event write was blocked by the schema guard, but source_section was still built from the
-     in-memory event dict + written) → a dangling ref born at write time.
-     **[DONE 2026-10-10]** Implemented (branch `feature/referential-integrity-enforcement`):
-     core module `src/utils/referential_integrity.py` — EDGES + PK targets are now DERIVED FROM
-     `entity_registry`/schemas (NOT hand-listed), so coverage is EVERY schema-declared PK-named
-     reference field across ALL entities (17 edges, 12 PK targets) and cannot drift (drift-guard
-     tests assert full coverage). `enforce()`/`run_for_phase()` run at the end of Phase 1/2/3
-     (centralized, fail-safe, SNS alert = aggregate counts only, raw-ID samples opt-in default-OFF).
-     `events.py:_save_event_output` now gates the source_section emit on the event write persisting
-     (fixes the live write-time dangling bug). CLI `scripts/referential_integrity_audit.py` is a thin
-     wrapper over the same core (single source). Full gate PASS; code+security sub-agent reviewed.
-     REMAINING PRECISION GAP — **[RESOLVED 2026-10-10, Fix A]:** the `casualties.impacted_*` lists
-     now declare their resolved reference id (`PersonID`/`PlaceID`/`EquipmentID`/`LogisticsID`/
-     `PeopleGroupID`) under the object branch, so the schema-derived checker discovers them; the
-     `_walk_id_fields` walker was also fixed to handle union `type` (e.g. `["array","null"]`), which
-     had silently hidden EVERY nullable-array reference field — coverage went 17 → 45 edges, incl.
-     `people.biographical_profile.group_affiliations[].GroupID` (the "absent" person→group edge was
-     real, just nested under a nullable array). `PeopleGroupID` is aliased to the groups key-space.
-   NOTE: a one-off remediation of the current stale TEST data is intentionally SKIPPED — dev/test
-   data will be refreshed from prod; the only durable value is recurrence-safety in a future prod
-   release, which #2-in-core provides (a throwaway cleanup script would die at the next data refresh).
-   **#1 Deterministic EventIDs — [DONE 2026-10-10, PRs #325 + #326 merged to main]:**
-   central `src/utils/deterministic_ids.py` (`event_id`/`sub_event_id`) derives a schema-valid ULID
-   from stable content (book+chapter+`section_id` / parent+paragraph-range), replacing the volatile
-   LLM-supplied id so re-extraction is idempotent (no ripple). Wired into `events.py` (both paths)
-   + the supplemental notes-event; dependents inherit the id (Phase 3 mints none — read-only).
-   Sub-agent review blockers FIXED + verified on main: (a) reads the REAL `section_id` key (the
-   `section` typo would have collapsed 84% of chapters onto one EventID); (b) nameless/rangeless
-   sub-event uses a deterministic positional fallback instead of raising before validation.
-   Holistic post-merge review CRITICALs also fixed (PR #326): list-valued artifact no longer aborts
-   the pass; nested local event files are listed (were invisible → mass false-positive); the
-   underscore `Sub_eventID` edge alias; chunk-merge + notes Sub-eventID collision disambiguation.
-   **NON-NEW-EVENT RESOLUTION (resolve-before-create — added 2026-10-10 per owner):** any path that
-   ENCOUNTERS an event (now or future) must RESOLVE to the existing event, never mint a new/duplicate
-   one. Deterministic EventIDs give this for free on re-extraction (same content → same id → same
-   record). Confirmed today: Phase 3 enrichment mints NO events (read-only consumer) and the
-   dependents only READ `Event.EventID`, so there is no current duplicate-event path. REQUIREMENT to
-   PRESERVE: if a future phase/feature ever creates events (e.g. a maps/vision branch, a corrective
-   reprocessor), it MUST compute the deterministic id for the source unit and resolve-or-attach to the
-   existing event rather than wrapping/creating a parallel one — this is the event-level analogue of
-   the entity resolve-before-write rule in the corrective-reprocessor acceptance criteria below.
-   **HOLISTIC-REVIEW FOLLOW-UPS (deferred from the 2026-10-10 merged-code review; CRITICALs already
-   fixed — list-valued-file guard + recursive event listing + `Sub_eventID` alias):**
-   - (self-type refs) `_discover_edges` excludes a field whose leaf == the entity's own PK GLOBALLY,
-     so a nested cross-reference to ANOTHER record of the same type (e.g.
-     `equipment.related_equipment[].EquipmentID`, a future `related_places[].PlaceID`) is silently
-     skipped. Exclude own-PK only at the record ROOT (path==""), not for nested list items.
-   - (uncovered group ref) `people.biographical_profile.primary_group_id` is a real group reference
-     but its leaf name is not `*ID`-cased (it's `primary_group_id`), so `_walk_id_fields` does NOT
-     discover it as an edge — it is unenforced. Fix: rename to a `*GroupID` form, or add a name
-     alias. Related consistency invariant worth a FLAG validator: `primary_group_id` SHOULD equal
-     one of the `group_affiliations[].GroupID` / `units_served[].GroupID` on the same person (people
-     can belong to multiple groups — one primary scalar + many affiliations/units arrays).
-   - (perf) `enforce()` is O(corpus): `build_pk_sets` reads every entity+event file, then `audit`
-     re-reads each source entity dir once PER edge. Cache records per dir once + iterate edges in
-     memory; consider skipping the Phase-1 enforcement run (no cross-entity refs yet = pure cost).
-   - (ECS timing) ensure end-of-phase enforcement runs AFTER the final S3 sync (or points at the
-     local workdir), else not-yet-uploaded files read as false dangling.
-   - (centralize path truth) `referential_integrity` re-derives entity dirs / event nesting instead
-     of using the registry's `output_glob` (the root cause of the local nested-event bug). Fold
-     path/nesting knowledge onto `output_glob`.
-   - (consistency) `supplemental._apply_defaults`/`sanitize_supplemental_data` still mint
-     `str(ulid.new())` EventID/Sub-eventID as degenerate null-fallbacks — volatile, bypassing the
-     central deterministic helper; derive from context or document why.
-   - (storage-root consistency) phase3 passes `args.output_dir` while phase1/2 pass
-     `paths["output_root"]`; CLI builds storage via `create_storage` while `run_for_phase` hardcodes
-     `LocalStorage` — confirm all resolve to the same corpus root.
-2. **Semantic validators as FLAGS (not hard blocks)** — **[IMPLEMENTED 2026-10-10]:** central
-   `src/utils/semantic_flags.py` (`flags_for`/`annotate`, flag-not-block, fail-safe, recompute+replace
-   so stale flags clear) writes advisory `quality_flags`: `geo_missing_coords`/`geo_impossible_coords`
-   (places — GLOBAL validity, NO theater box: WWII is a global conflict + the corpus will grow
-   worldwide, so a regional box would false-flag by design; only null/0.0/physically-impossible
-   coords are flagged), `date_out_of_window`/`date_unparseable` (dates), `citation_stub`/
-   `citation_unresolvable` (bibliography). Wired into BOTH central write paths (`_validate_entity` +
-   `locked_json.save` via a shared `_annotate_semantic_flags` helper). New optional
-   `QUALITY_FLAGS_PROPERTY` on places/dates/bibliography (+ version bumps + fingerprint pins).
-   Code+security sub-agent reviewed; full gate PASS. Design:
-   `docs/current/dataquality/SEMANTIC_FLAGS_DESIGN.md`.
-   BASE RATE for the (future) catcher: with the GENEROUS config-driven date window (default
-   1930–1950, incl. WWII antecedents Abyssinia/Spanish-CW/Sino-Japanese/Anschluss/Khalkhin-Gol +
-   late-1940s aftermath; override via `processing.date_window` / env) `date_out_of_window` fires
-   only on genuinely implausible dates. NOT-YET-WIRED: forwarding flags to the statistical catcher
-   as an `allow_flagged` dimension (future work, ties to item 4).
-4. **Teach the statistical catcher to see low-information ALLOWS** — **[DONE 2026-10-10]:**
-   `validation_stats` now records `allow_empty` (populated content-field count below a per-entity
-   floor — people/places/bibliography/equipment/dates=2; metadata/PK/quality_flags/0.0-coords not
-   counted) and `allow_flagged` (one datapoint per HIGH-2 `quality_flags` code, keyword constrained
-   to the known vocabulary for PII-safety). `systematic_clusters()` generalized to the concern set
-   {block, allow_empty, allow_flagged} at the same count≥10/rate≥5% thresholds, so a book-wide
-   empty-biography or `geo_missing_coords` cluster alerts like a block cluster (outcome-aware log +
-   SNS body). Wired into the central guard (`_run_schema_validation` allow + allow_warn branches,
-   respecting `record_stats` so pre-checks don't double-count). This closes the catcher's biggest
-   blind spot AND completes the HIGH-2 flag→catcher forwarding. Fail-safe; code+security reviewed;
-   full gate PASS. Design: `docs/current/dataquality/CATCHER_LOW_INFO_FLAGGED_DESIGN.md`.
-4b. **Extend the guard to PHASE 1 (parse) output** — **[DONE 2026-10-10]:** new content schema
-   `src/schemas/parsed_output.py` (backbone: book + chapter_title + paragraphs[absolute_number,text];
-   additionalProperties permissive; NOT in ENTITY_REGISTRY — no PK/dedup/cross-ref applies to parse
-   artifacts). Shared `file_lock.guard_parsed_content()` validates shape (BLOCKS a garbage parse
-   before Phase 2) + flags an empty parse (`allow_empty`, still written — plate pages are
-   legitimate), recording block/allow/allow_empty to the catcher under entity `parsed` (rolls into
-   the same systematic-cluster alert path). Used by BOTH the local writers
-   (`write_parsed_with_guard`, atomic tmp+replace) AND the S3/Lambda production path
-   (`lambda_handlers/phase1_handler.py` — the review-caught bypass, now routed); a blocked chapter
-   logs `DROPPED ... re-parse needed`, not "Saved". Fail-safe (validator/import error still writes).
-   Code+security sub-agent reviewed; full gate PASS (1974 tests). Design:
-   `docs/current/dataquality/PHASE1_PARSE_GUARD_DESIGN.md`.
+_All HIGH items in this block (1 cross-reference integrity, 2 semantic flags, 4 catcher low-info,
+4b Phase-1 guard) are DONE — moved to "Completed data-quality program" at the bottom._
 
 **MED**
 5. **Persist validation_stats as a time series** (per run + per book) and alert on TREND/regression,
@@ -187,21 +57,6 @@ Two detective/corrective layers remain (the preventive in-process guard is done 
   **targeted reprocess** from each fragment's provenance (book + EventIDs) to regenerate canonical
   PK'd records + re-run dedup so name-variants merge → purge quarantine only after mentions land in
   canonical records.
-- **(b) Detective layer + bypass prevention.** (1) **S3-event Lambda backstop**: on `ObjectCreated`
-  under `output/`, run the SAME `_validate_entity` primitive (no reimplementation — avoid guard
-  drift); on invalid, alert (phase2-complete SNS → Slack/email) + quarantine. Fail-LOUD.
-  **SYNC REQUIREMENT (acceptance criterion):** the Lambda MUST run the repo's live validation code,
-  never a copy. `update_lambdas.sh` already bundles `src/` into the Lambda zip, so the primitive is
-  shared by construction — but add a DRIFT CHECK to `check_component_versions.sh` (the deploy
-  preflight): hash `src/schemas/` + `src/utils/file_lock.py` + `src/utils/validation_stats.py`,
-  compare repo-HEAD vs the deployed Lambda bundle, WARN (or `--strict` fail) on mismatch so a
-  partial deploy can't leave the validation Lambda behind the pipeline. **Quarantine = tag-in-place
-  (`quarantine=true`) + bucket-policy DENY reads to consumer roles, NOT a key move** (moving
-  orphans the unique cross-ref mentions the bad fragments hold); lifecycle-expire the quarantine
-  tag/prefix. (2) **grep gate** in `scripts/gate.sh` forbidding new raw `json.dump`/`write_text` to
-  `output/` entity dirs, so the next contributor's bypass fails CI. (3) **corpus-level audit job**:
-  periodic scan running the guard across all of `output/` + a referential-integrity check (every
-  cross-ref ID resolves) + ID-uniqueness + dangling-mention + dedup-consistency checks.
 - **(b2) Corrective loop (NO human gate — code, not people).** On a bad finding: auto-classify +
   quarantine (tag), then AUTOMATED, dedup-aware REPROCESS from the record's provenance (book +
   EventIDs), with an idempotency/loop-guard (same failure N times → mark `unrecoverable`, stop
@@ -227,26 +82,6 @@ Two detective/corrective layers remain (the preventive in-process guard is done 
     fresh record for an already-known entity is a BUG (it fragments the corpus — the exact pathology
     we are fixing). Resolution must be DETERMINISTIC so repeated runs make identical decisions
     (idempotent, loop-guard-safe).
-- **(c) Minor:** make `write_json_with_lock` return a bool (did-write) so `merge._write_entity_guarded`
-  consumes it directly instead of the mtime/exists heuristic; consider moving `_validate_entity` to
-  `src/schemas/write_guard.py` if the single-writer-facade refactor happens.
-- **(d) Consistency — unify the second validation source.** `src/utils/schema_registry.py`
-  (`SchemaRegistry`/`get_registry`) is a SEPARATE validator stack used by the READ/report tools
-  (`scripts/validate_data.py`, `validation_report.py`, `generate_dashboard.py` + several tests). It
-  validated against `src/json_schemas` — a DIFFERENT (and STALE, pre-refactor event-nested) schema
-  source than the write guard's `ENTITY_REGISTRY`/`src/schemas`, so the report tooling judged
-  current per-entity records against a model they no longer match.
-  **[DONE 2026-10-10]** `SchemaRegistry` now serves the AUTHORITATIVE schemas (resolved via
-  `entity_registry`/`src.schemas` — the same ones the write guard enforces), keeping the legacy
-  singular aliases (`event`/`place`/`date`/`map`) so the CLIs/tests still work. Read-time and
-  write-time validation are now provably consistent. Fixture + integration tests updated from the
-  stale `{name:[records]}` wrapper to authoritative per-entity records (and fixed a stale
-  equipment-fixture `name`→`common_name`). NOTE (scope): `src/json_schemas` is NOT retired — it is
-  still the legitimate EXTRACTION-TIME validator for LLM responses (`events.py` EVENT_SCHEMA, the
-  `*_ITEM_SCHEMA` per-item checks) + the type-stub/doc generators; that is a distinct role from
-  record-shape validation and is out of scope for this read-vs-write reconciliation. (The write-path
-  duplicate in `openserp_enrichment._validate_before_write` was already removed — it delegates to the
-  central `_validate_entity`.)
 0. **~~[CRITICAL] Deploy current `main`~~ ✅ DONE 2026-10-02** — verified live: S3
    AES256 + DenyInsecureTransport; pandoc `--sandbox` image pushed; AV scanning
    deployed + signatures seeded + EICAR-validated (`AV_SCAN_ENABLED=true`); EBS
@@ -1152,3 +987,181 @@ _(See git log for details — 23 items including Phase transitions, batch states
 ## Completed (2026-06-03 through 2026-06-07)
 
 _(See git log for details — 30+ items including DynamoDB entity store, incremental dedup, cost optimizations)_
+
+
+---
+
+## Completed data-quality program (2026-10-10 / 2026-10-11)
+_Moved from the HIGH blocks above once merged. Prevention + detection layers complete; (a) remediation + (b2) corrective reprocessor remain OPEN above._
+
+### HIGH-1 cross-reference + content-quality program (items 1/2/4/4b)
+1. **Cross-reference integrity — root cause + fix (NOT N separate extractor bugs).** The audit
+   (**[TOOL DONE 2026-10-10]** `scripts/referential_integrity_audit.py`, read-only, tested; corpus
+   run → 5,076 dangling refs; report in `docs/current/dataquality/referential_integrity_report.json`)
+   surfaced the dangling edges (maps→events 100%, casualties→impacted_places 86%, weather→places 48%,
+   casualties→events 40%, images→events 13%, source_section→events 7%). INVESTIGATION (2026-10-10)
+   found these are NOT per-extractor logic bugs — the extractors write the right reference at write
+   time. Two real causes:
+   - **(i) Staleness/ripple:** EventIDs come from the LLM response and are NON-DETERMINISTIC per run.
+     Events re-extracted Sept 2026 got fresh ULIDs; dependents written Apr–Jun (maps/weather/
+     casualties/images) still carry the old IDs → dangling. Any post-write event-ID change ripples
+     to every referrer.
+   - **(ii) Live write-time bug:** FRESH source_sections (written today) reference EventIDs that
+     resolve to NO event (`source_section→events` 11/157, all recent) — a dangling ref created at
+     write time because nothing validates that a reference RESOLVES (only the record's own schema is
+     checked). The LLM-supplied EventID is not validated against a real event.
+   **FIX (both in CORE code, not throwaway utilities):**
+   - **#1 Deterministic EventIDs** — derive the EventID from stable content (book + chapter +
+     sub-event) instead of a volatile LLM/ULID value, so re-extraction yields the SAME id (no
+     staleness, no ripple). Where the LLM supplies an id, VALIDATE it (reject hallucinated/
+     non-resolving). Design-first (schema/migration implications).
+   - **#2 Enforced referential-integrity check across ALL json objects** — reference fields must
+     resolve to an existing target; enforce in core (write-guard reference check and/or a standing
+     pipeline corpus pass), handling the same-run create-order case (an event + its referrer written
+     in one run). The audit tool is the DETECTIVE/reporting half; this is the ENFORCEMENT half.
+     ROOT CAUSE of the live source_section→events bug (confirmed 2026-10-10): a dependent
+     (source_section) was persisted referencing an EventID whose EVENT RECORD WAS NEVER PERSISTED
+     (the event write was blocked by the schema guard, but source_section was still built from the
+     in-memory event dict + written) → a dangling ref born at write time.
+     **[DONE 2026-10-10]** Implemented (branch `feature/referential-integrity-enforcement`):
+     core module `src/utils/referential_integrity.py` — EDGES + PK targets are now DERIVED FROM
+     `entity_registry`/schemas (NOT hand-listed), so coverage is EVERY schema-declared PK-named
+     reference field across ALL entities (17 edges, 12 PK targets) and cannot drift (drift-guard
+     tests assert full coverage). `enforce()`/`run_for_phase()` run at the end of Phase 1/2/3
+     (centralized, fail-safe, SNS alert = aggregate counts only, raw-ID samples opt-in default-OFF).
+     `events.py:_save_event_output` now gates the source_section emit on the event write persisting
+     (fixes the live write-time dangling bug). CLI `scripts/referential_integrity_audit.py` is a thin
+     wrapper over the same core (single source). Full gate PASS; code+security sub-agent reviewed.
+     REMAINING PRECISION GAP — **[RESOLVED 2026-10-10, Fix A]:** the `casualties.impacted_*` lists
+     now declare their resolved reference id (`PersonID`/`PlaceID`/`EquipmentID`/`LogisticsID`/
+     `PeopleGroupID`) under the object branch, so the schema-derived checker discovers them; the
+     `_walk_id_fields` walker was also fixed to handle union `type` (e.g. `["array","null"]`), which
+     had silently hidden EVERY nullable-array reference field — coverage went 17 → 45 edges, incl.
+     `people.biographical_profile.group_affiliations[].GroupID` (the "absent" person→group edge was
+     real, just nested under a nullable array). `PeopleGroupID` is aliased to the groups key-space.
+   NOTE: a one-off remediation of the current stale TEST data is intentionally SKIPPED — dev/test
+   data will be refreshed from prod; the only durable value is recurrence-safety in a future prod
+   release, which #2-in-core provides (a throwaway cleanup script would die at the next data refresh).
+   **#1 Deterministic EventIDs — [DONE 2026-10-10, PRs #325 + #326 merged to main]:**
+   central `src/utils/deterministic_ids.py` (`event_id`/`sub_event_id`) derives a schema-valid ULID
+   from stable content (book+chapter+`section_id` / parent+paragraph-range), replacing the volatile
+   LLM-supplied id so re-extraction is idempotent (no ripple). Wired into `events.py` (both paths)
+   + the supplemental notes-event; dependents inherit the id (Phase 3 mints none — read-only).
+   Sub-agent review blockers FIXED + verified on main: (a) reads the REAL `section_id` key (the
+   `section` typo would have collapsed 84% of chapters onto one EventID); (b) nameless/rangeless
+   sub-event uses a deterministic positional fallback instead of raising before validation.
+   Holistic post-merge review CRITICALs also fixed (PR #326): list-valued artifact no longer aborts
+   the pass; nested local event files are listed (were invisible → mass false-positive); the
+   underscore `Sub_eventID` edge alias; chunk-merge + notes Sub-eventID collision disambiguation.
+   **NON-NEW-EVENT RESOLUTION (resolve-before-create — added 2026-10-10 per owner):** any path that
+   ENCOUNTERS an event (now or future) must RESOLVE to the existing event, never mint a new/duplicate
+   one. Deterministic EventIDs give this for free on re-extraction (same content → same id → same
+   record). Confirmed today: Phase 3 enrichment mints NO events (read-only consumer) and the
+   dependents only READ `Event.EventID`, so there is no current duplicate-event path. REQUIREMENT to
+   PRESERVE: if a future phase/feature ever creates events (e.g. a maps/vision branch, a corrective
+   reprocessor), it MUST compute the deterministic id for the source unit and resolve-or-attach to the
+   existing event rather than wrapping/creating a parallel one — this is the event-level analogue of
+   the entity resolve-before-write rule in the corrective-reprocessor acceptance criteria below.
+   **HOLISTIC-REVIEW FOLLOW-UPS (deferred from the 2026-10-10 merged-code review; CRITICALs already
+   fixed — list-valued-file guard + recursive event listing + `Sub_eventID` alias):**
+   - (self-type refs) `_discover_edges` excludes a field whose leaf == the entity's own PK GLOBALLY,
+     so a nested cross-reference to ANOTHER record of the same type (e.g.
+     `equipment.related_equipment[].EquipmentID`, a future `related_places[].PlaceID`) is silently
+     skipped. Exclude own-PK only at the record ROOT (path==""), not for nested list items.
+   - (uncovered group ref) `people.biographical_profile.primary_group_id` is a real group reference
+     but its leaf name is not `*ID`-cased (it's `primary_group_id`), so `_walk_id_fields` does NOT
+     discover it as an edge — it is unenforced. Fix: rename to a `*GroupID` form, or add a name
+     alias. Related consistency invariant worth a FLAG validator: `primary_group_id` SHOULD equal
+     one of the `group_affiliations[].GroupID` / `units_served[].GroupID` on the same person (people
+     can belong to multiple groups — one primary scalar + many affiliations/units arrays).
+   - (perf) `enforce()` is O(corpus): `build_pk_sets` reads every entity+event file, then `audit`
+     re-reads each source entity dir once PER edge. Cache records per dir once + iterate edges in
+     memory; consider skipping the Phase-1 enforcement run (no cross-entity refs yet = pure cost).
+   - (ECS timing) ensure end-of-phase enforcement runs AFTER the final S3 sync (or points at the
+     local workdir), else not-yet-uploaded files read as false dangling.
+   - (centralize path truth) `referential_integrity` re-derives entity dirs / event nesting instead
+     of using the registry's `output_glob` (the root cause of the local nested-event bug). Fold
+     path/nesting knowledge onto `output_glob`.
+   - (consistency) `supplemental._apply_defaults`/`sanitize_supplemental_data` still mint
+     `str(ulid.new())` EventID/Sub-eventID as degenerate null-fallbacks — volatile, bypassing the
+     central deterministic helper; derive from context or document why.
+   - (storage-root consistency) phase3 passes `args.output_dir` while phase1/2 pass
+     `paths["output_root"]`; CLI builds storage via `create_storage` while `run_for_phase` hardcodes
+     `LocalStorage` — confirm all resolve to the same corpus root.
+2. **Semantic validators as FLAGS (not hard blocks)** — **[IMPLEMENTED 2026-10-10]:** central
+   `src/utils/semantic_flags.py` (`flags_for`/`annotate`, flag-not-block, fail-safe, recompute+replace
+   so stale flags clear) writes advisory `quality_flags`: `geo_missing_coords`/`geo_impossible_coords`
+   (places — GLOBAL validity, NO theater box: WWII is a global conflict + the corpus will grow
+   worldwide, so a regional box would false-flag by design; only null/0.0/physically-impossible
+   coords are flagged), `date_out_of_window`/`date_unparseable` (dates), `citation_stub`/
+   `citation_unresolvable` (bibliography). Wired into BOTH central write paths (`_validate_entity` +
+   `locked_json.save` via a shared `_annotate_semantic_flags` helper). New optional
+   `QUALITY_FLAGS_PROPERTY` on places/dates/bibliography (+ version bumps + fingerprint pins).
+   Code+security sub-agent reviewed; full gate PASS. Design:
+   `docs/current/dataquality/SEMANTIC_FLAGS_DESIGN.md`.
+   BASE RATE for the (future) catcher: with the GENEROUS config-driven date window (default
+   1930–1950, incl. WWII antecedents Abyssinia/Spanish-CW/Sino-Japanese/Anschluss/Khalkhin-Gol +
+   late-1940s aftermath; override via `processing.date_window` / env) `date_out_of_window` fires
+   only on genuinely implausible dates. NOT-YET-WIRED: forwarding flags to the statistical catcher
+   as an `allow_flagged` dimension (future work, ties to item 4).
+4. **Teach the statistical catcher to see low-information ALLOWS** — **[DONE 2026-10-10]:**
+   `validation_stats` now records `allow_empty` (populated content-field count below a per-entity
+   floor — people/places/bibliography/equipment/dates=2; metadata/PK/quality_flags/0.0-coords not
+   counted) and `allow_flagged` (one datapoint per HIGH-2 `quality_flags` code, keyword constrained
+   to the known vocabulary for PII-safety). `systematic_clusters()` generalized to the concern set
+   {block, allow_empty, allow_flagged} at the same count≥10/rate≥5% thresholds, so a book-wide
+   empty-biography or `geo_missing_coords` cluster alerts like a block cluster (outcome-aware log +
+   SNS body). Wired into the central guard (`_run_schema_validation` allow + allow_warn branches,
+   respecting `record_stats` so pre-checks don't double-count). This closes the catcher's biggest
+   blind spot AND completes the HIGH-2 flag→catcher forwarding. Fail-safe; code+security reviewed;
+   full gate PASS. Design: `docs/current/dataquality/CATCHER_LOW_INFO_FLAGGED_DESIGN.md`.
+4b. **Extend the guard to PHASE 1 (parse) output** — **[DONE 2026-10-10]:** new content schema
+   `src/schemas/parsed_output.py` (backbone: book + chapter_title + paragraphs[absolute_number,text];
+   additionalProperties permissive; NOT in ENTITY_REGISTRY — no PK/dedup/cross-ref applies to parse
+   artifacts). Shared `file_lock.guard_parsed_content()` validates shape (BLOCKS a garbage parse
+   before Phase 2) + flags an empty parse (`allow_empty`, still written — plate pages are
+   legitimate), recording block/allow/allow_empty to the catcher under entity `parsed` (rolls into
+   the same systematic-cluster alert path). Used by BOTH the local writers
+   (`write_parsed_with_guard`, atomic tmp+replace) AND the S3/Lambda production path
+   (`lambda_handlers/phase1_handler.py` — the review-caught bypass, now routed); a blocked chapter
+   logs `DROPPED ... re-parse needed`, not "Saved". Fail-safe (validator/import error still writes).
+   Code+security sub-agent reviewed; full gate PASS (1974 tests). Design:
+   `docs/current/dataquality/PHASE1_PARSE_GUARD_DESIGN.md`.
+
+### Detective/bypass-prevention (b) + consistency (c)/(d)
+- **(b) Detective layer + bypass prevention.** (1) **S3-event Lambda backstop**: on `ObjectCreated`
+  under `output/`, run the SAME `_validate_entity` primitive (no reimplementation — avoid guard
+  drift); on invalid, alert (phase2-complete SNS → Slack/email) + quarantine. Fail-LOUD.
+  **SYNC REQUIREMENT (acceptance criterion):** the Lambda MUST run the repo's live validation code,
+  never a copy. `update_lambdas.sh` already bundles `src/` into the Lambda zip, so the primitive is
+  shared by construction — but add a DRIFT CHECK to `check_component_versions.sh` (the deploy
+  preflight): hash `src/schemas/` + `src/utils/file_lock.py` + `src/utils/validation_stats.py`,
+  compare repo-HEAD vs the deployed Lambda bundle, WARN (or `--strict` fail) on mismatch so a
+  partial deploy can't leave the validation Lambda behind the pipeline. **Quarantine = tag-in-place
+  (`quarantine=true`) + bucket-policy DENY reads to consumer roles, NOT a key move** (moving
+  orphans the unique cross-ref mentions the bad fragments hold); lifecycle-expire the quarantine
+  tag/prefix. (2) **grep gate** in `scripts/gate.sh` forbidding new raw `json.dump`/`write_text` to
+  `output/` entity dirs, so the next contributor's bypass fails CI. (3) **corpus-level audit job**:
+  periodic scan running the guard across all of `output/` + a referential-integrity check (every
+  cross-ref ID resolves) + ID-uniqueness + dangling-mention + dedup-consistency checks.
+
+- **(c) Minor:** make `write_json_with_lock` return a bool (did-write) so `merge._write_entity_guarded`
+  consumes it directly instead of the mtime/exists heuristic; consider moving `_validate_entity` to
+  `src/schemas/write_guard.py` if the single-writer-facade refactor happens.
+- **(d) Consistency — unify the second validation source.** `src/utils/schema_registry.py`
+  (`SchemaRegistry`/`get_registry`) is a SEPARATE validator stack used by the READ/report tools
+  (`scripts/validate_data.py`, `validation_report.py`, `generate_dashboard.py` + several tests). It
+  validated against `src/json_schemas` — a DIFFERENT (and STALE, pre-refactor event-nested) schema
+  source than the write guard's `ENTITY_REGISTRY`/`src/schemas`, so the report tooling judged
+  current per-entity records against a model they no longer match.
+  **[DONE 2026-10-10]** `SchemaRegistry` now serves the AUTHORITATIVE schemas (resolved via
+  `entity_registry`/`src.schemas` — the same ones the write guard enforces), keeping the legacy
+  singular aliases (`event`/`place`/`date`/`map`) so the CLIs/tests still work. Read-time and
+  write-time validation are now provably consistent. Fixture + integration tests updated from the
+  stale `{name:[records]}` wrapper to authoritative per-entity records (and fixed a stale
+  equipment-fixture `name`→`common_name`). NOTE (scope): `src/json_schemas` is NOT retired — it is
+  still the legitimate EXTRACTION-TIME validator for LLM responses (`events.py` EVENT_SCHEMA, the
+  `*_ITEM_SCHEMA` per-item checks) + the type-stub/doc generators; that is a distinct role from
+  record-shape validation and is out of scope for this read-vs-write reconciliation. (The write-path
+  duplicate in `openserp_enrichment._validate_before_write` was already removed — it delegates to the
+  central `_validate_entity`.)
