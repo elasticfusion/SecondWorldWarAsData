@@ -55,6 +55,12 @@ bottom); what remains is ranked here. Current ordered priority:
 8. **[MED] data-quality follow-ups** (validation_stats time-series, fail-open-allow counter,
    persisted corpus_quality_report dashboard, dedup precision/recall, catcher per-book dimension)
    + observability (Slack refinement, misleading batch log, SNS IAM) + bibliography/Archive.org UIs.
+   + **incremental referential-integrity audit**: `audit()` now does a SINGLE whole-corpus read
+   (was N+1: once for PKs + once per edge) and the per-phase call is timeout-bounded + skippable,
+   but it still re-reads the WHOLE corpus each run. End-state: persist the PK index + per-record
+   `_source_hash`, and on a run re-read only NEW/CHANGED records, reconciling both reference
+   directions (a new record referencing an existing one; a changed/removed record dangling an
+   existing reference). Needs durable index + change-detection; design-first (own task).
 9. **[LOW] external_maps license config exposure; code-quality refactors; mypy --strict on new
    files; doc-hygiene pass (see docs/archive/2026-10-11/UNVALIDATED_CLAIMS_FOR_REVIEW.md).**
 10. **[FUTURE] Postgres/pgvector + RAG layer, DynamoDB-removal, true multi-job concurrency, Step
