@@ -21,10 +21,17 @@ Parameters:
     Type: String
     Default: ''
     Description: ARN of the OCR->parse merge Lambda (Batch SUCCEEDED handoff)
+  LambdaExecutionRoleArn:
+    Type: String
+    Default: ''
+    Description: >
+      Shared Lambda execution role ARN (the slack-formatter runs under it). Used
+      to scope SlackTopic publish to the formatter's role instead of account :root.
 
 Conditions:
   HasOcrMerge: !Not [!Equals [!Ref OcrMergeFunctionArn, '']]
   HasNotificationEmail: !Not [!Equals [!Ref NotificationEmail, '']]
+  HasLambdaRole: !Not [!Equals [!Ref LambdaExecutionRoleArn, '']]
 
 Resources:
   # --- SNS Topics ---
@@ -96,6 +103,9 @@ Resources:
       SourceArn: !Ref Phase2CompleteTopic
 
   # Allow the formatter Lambda to publish the reformatted message to SlackTopic.
+  # Scoped to the formatter's execution role (not account :root) so no other
+  # in-account principal can spoof operator Slack alerts. Falls back to :root only
+  # if the role ARN param is unset (deploy-safe default). CFN security review 2026-10-11.
   SlackTopicPublishPolicy:
     Type: AWS::SNS::TopicPolicy
     Properties:
@@ -107,7 +117,10 @@ Resources:
           - Sid: AllowLambdaPublish
             Effect: Allow
             Principal:
-              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+              AWS: !If
+                - HasLambdaRole
+                - !Ref LambdaExecutionRoleArn
+                - !Sub arn:aws:iam::${AWS::AccountId}:root
             Action: sns:Publish
             Resource: !Ref SlackTopic
 

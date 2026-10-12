@@ -42,7 +42,8 @@ separation, no 0.0.0.0/0 ingress, GROK key via Secrets Manager (not plaintext), 
 
 ## LOW / INFO (track, not urgent)
 - SNS topics + TriggerQueue unencrypted at rest (add `KmsMasterKeyId: alias/aws/sns` / SQS SSE).
-- `SlackTopicPublishPolicy` allows `:root` publish (scope to the formatter role).
+- ✅ **DONE** — `SlackTopicPublishPolicy` allowed account `:root` publish → now scoped to the
+  formatter's execution role (`LambdaExecutionRoleArn`, with a `:root` fallback only if unset).
 - Shared Lambda/ECS egress `-1` to `0.0.0.0/0` (known posture for scrapers/downloaders).
 - `dispatcher.yaml` state machine has no `LoggingConfiguration` (observability).
 - `AvFreshclamSchedule` uses the task's own role as the EventBridge invoke role (use a dedicated one).

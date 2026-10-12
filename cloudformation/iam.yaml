@@ -278,6 +278,9 @@ Resources:
                 Effect: Allow
                 Action:
                   - sns:Publish
+                  # Lets _preflight_notification_subscriptions actually verify the
+                  # topic has subscribers (was AuthorizationError -> always warned).
+                  - sns:ListSubscriptionsByTopic
                 Resource:
                   - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-*
               - Sid: ECSOpenSERP

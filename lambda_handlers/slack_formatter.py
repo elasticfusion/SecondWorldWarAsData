@@ -44,10 +44,20 @@ ENV_NAME = os.getenv("ENV_NAME", "dev")
 SLACK_TOPIC_ARN = os.environ.get("SLACK_TOPIC_ARN", "")
 
 # Map subject/message keywords to a leading emoji for quick visual triage.
+# Order matters: the FIRST matching rule wins. Review/gate is checked BEFORE
+# failure so a dedup "needs-review"/"gate hold" reads as an action item (:warning:)
+# rather than an error (:x:) — the owner-flagged false-alarm (2026-10-01) where a
+# dedup gate "HOLD" rendered like a pipeline failure. "hold"/"gate"/"review"/
+# "duplicate" are review signals, NOT failures; genuine failures use fail/error/
+# denied/not-authorized/exception.
 _EMOJI_RULES = (
-    (("fail", "error", "not authorized", "blocked", "hold", "denied"), ":x:"),
     (("spend", "credit", "budget", "cost", "$"), ":moneybag:"),
-    (("warn", "queued", "review", "gate"), ":warning:"),
+    (
+        ("review", "gate", "needs-review", "duplicate", "hold", "queued", "awaiting"),
+        ":warning:",
+    ),
+    (("fail", "error", "not authorized", "denied", "exception", "aborted"), ":x:"),
+    (("warn",), ":warning:"),
     (("complete", "success", "done", "proceed"), ":white_check_mark:"),
     (("launched", "started", "starting"), ":rocket:"),
 )

@@ -117,6 +117,17 @@ def test_emoji_success_vs_failure_vs_launch_vs_money():
     assert sf._emoji_for("some neutral status") == ":information_source:"
 
 
+def test_dedup_gate_hold_reads_as_review_not_failure():
+    """Owner-flagged false-alarm (2026-10-01): a dedup gate 'HOLD'/needs-review
+    must render as an action item (:warning:), NOT a failure (:x:)."""
+    assert sf._emoji_for("Dedup gate: HOLD\nReason: 3 duplicates") == ":warning:"
+    assert sf._emoji_for("Phase 2 Complete — Review Duplicates") == ":warning:"
+    assert sf._emoji_for("needs-review: 5 candidates") == ":warning:"
+    # genuine failures still read as failure
+    assert sf._emoji_for("Phase 2 FAILED exit code 1") == ":x:"
+    assert sf._emoji_for("publish not authorized") == ":x:"
+
+
 def test_description_truncated_to_8000():
     out = sf._to_chatbot_custom("t", "x" * 9000)
     assert len(out["content"]["description"]) == 8000
