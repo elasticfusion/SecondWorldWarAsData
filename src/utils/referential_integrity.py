@@ -152,6 +152,13 @@ def build_pk_sets(storage: Any) -> Dict[str, Set[str]]:
             v = data.get(pk)
             if isinstance(v, str) and v:
                 sets[name].add(v)
+    _add_event_pks(storage, sets)
+    return sets
+
+
+def _add_event_pks(storage: Any, sets: Dict[str, Set[str]]) -> None:
+    """Add EventID + Sub-eventID from the nested content/<book>/*-event.json files to
+    the ``events`` PK set (shared by build_pk_sets and the single-read audit)."""
     for rel in _event_files(storage):
         try:
             data = storage.read_json(rel)
@@ -164,7 +171,6 @@ def build_pk_sets(storage: Any) -> Dict[str, Set[str]]:
             for se in ev.get("Sub-events", []) or []:
                 if isinstance(se, dict) and isinstance(se.get("Sub-eventID"), str):
                     sets["events"].add(se["Sub-eventID"])
-    return sets
 
 
 def resolve_path(data: Dict[str, Any], path: str) -> List[Any]:
@@ -189,16 +195,38 @@ def resolve_path(data: Dict[str, Any], path: str) -> List[Any]:
 def audit(storage: Any, include_samples: bool = False) -> Dict[str, Any]:
     """Resolve every edge; return per-edge dangling counts + totals. Read-only.
 
+    SINGLE-READ: every entity record is fetched from storage EXACTLY ONCE. The old
+    implementation read the whole corpus once to build PK sets and then AGAIN once
+    per EDGE (O(edges x files) S3 GETs) — thousands of redundant round-trips that
+    stalled the per-phase call. We now buffer each dir's records on the one read,
+    build the PK sets, then resolve every reference from the in-memory buffer.
+
     ``include_samples`` (default False) controls whether up to 3 raw dangling ID VALUES are
     attached per edge. Raw IDs are record identifiers; keep them OFF on any alerting/sync path
     (aggregate counts only) and enable only for a local operator diagnosis."""
-    pk_sets = build_pk_sets(storage)
+    # One read per source dir referenced by any edge (plus PK dirs). Buffer records.
+    src_dirs = {src for src, _f, _t, _n in EDGES} | set(PK_FIELD)
+    buffered: Dict[str, List[Dict[str, Any]]] = {}
+    for name in src_dirs:
+        buffered[name] = [
+            data for _k, data in _iter_records(storage, _DIR.get(name, name))
+        ]
+
+    # PK sets from the SAME buffered records (no second read) + event key-space.
+    pk_sets: Dict[str, Set[str]] = defaultdict(set)
+    for name, pk in PK_FIELD.items():
+        for data in buffered.get(name, []):
+            v = data.get(pk)
+            if isinstance(v, str) and v:
+                pk_sets[name].add(v)
+    _add_event_pks(storage, pk_sets)
+
     results: List[Dict[str, Any]] = []
     for src, field, target, _nullable in EDGES:
         total = dangling = 0
         samples: List[str] = []
         valid = pk_sets.get(target, set())
-        for _k, data in _iter_records(storage, _DIR.get(src, src)):
+        for data in buffered.get(src, []):
             for val in resolve_path(data, field):
                 if not isinstance(val, str) or not val:
                     continue  # null/absent reference is allowed
@@ -258,30 +286,62 @@ def run_for_phase(output_root: Any, phase: str = "") -> Dict[str, Any]:
 
     Resolves the storage backend (S3 when ``S3_BUCKET`` is set, else local ``output_root``) and the
     operator SNS topic the same way everywhere, then delegates to ``enforce``. Fail-safe: never
-    raises into the pipeline (data-quality enforcement must not crash a phase)."""
-    try:
-        import os
+    raises into the pipeline (data-quality enforcement must not crash a phase).
 
-        region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
-        topic = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
-        if os.environ.get("S3_BUCKET"):
-            from src.utils.storage import S3Storage
+    BOUNDED: the audit enumerates the WHOLE output corpus, which on a large S3 bucket can take a
+    long time. To guarantee it never STALLS a phase (observed: Phase-1 hung 8+ min on the full
+    corpus, blocking the parsed-output sync + the next phase), this runs under a hard timeout and
+    is skippable via SKIP_PHASE_REFERENTIAL_ENFORCE=1. On timeout/skip it returns a skipped report
+    (the standalone corpus_audit job + the S3-validation backstop still cover whole-corpus
+    auditing out-of-band)."""
+    import os
 
-            storage: Any = S3Storage(
-                bucket=os.environ["S3_BUCKET"], prefix="output", region=region
-            )
-        else:
-            from pathlib import Path
+    if os.environ.get("SKIP_PHASE_REFERENTIAL_ENFORCE") == "1":
+        logger.info(
+            "Referential-integrity enforcement SKIPPED (env) for %s", phase or "phase"
+        )
+        return {"edges": [], "total_dangling": 0, "skipped": "env"}
 
-            from src.utils.storage import LocalStorage
+    timeout_s = int(os.environ.get("PHASE_REFERENTIAL_ENFORCE_TIMEOUT", "90"))
+    result: Dict[str, Any] = {"edges": [], "total_dangling": 0, "skipped": "timeout"}
 
-            storage = LocalStorage(base_dir=Path(output_root))
-        if phase:
-            logger.info("Referential-integrity enforcement (%s)", phase)
-        return enforce(storage, alert_topic_arn=topic, region=region)
-    except Exception as e:  # noqa: BLE001
-        logger.warning("referential-integrity enforcement skipped: %s", e)
-        return {"edges": [], "total_dangling": 0, "error": str(e)}
+    def _run() -> None:
+        nonlocal result
+        try:
+            region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+            topic = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
+            if os.environ.get("S3_BUCKET"):
+                from src.utils.storage import S3Storage
+
+                storage: Any = S3Storage(
+                    bucket=os.environ["S3_BUCKET"], prefix="output", region=region
+                )
+            else:
+                from pathlib import Path
+
+                from src.utils.storage import LocalStorage
+
+                storage = LocalStorage(base_dir=Path(output_root))
+            if phase:
+                logger.info("Referential-integrity enforcement (%s)", phase)
+            result = enforce(storage, alert_topic_arn=topic, region=region)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("referential-integrity enforcement skipped: %s", e)
+            result = {"edges": [], "total_dangling": 0, "error": str(e)}
+
+    import threading
+
+    t = threading.Thread(target=_run, name="ref-integrity-enforce", daemon=True)
+    t.start()
+    t.join(timeout_s)
+    if t.is_alive():
+        logger.warning(
+            "referential-integrity enforcement exceeded %ds for %s — skipping (the "
+            "corpus audit runs out-of-band). Set PHASE_REFERENTIAL_ENFORCE_TIMEOUT to raise.",
+            timeout_s,
+            phase or "phase",
+        )
+    return result
 
 
 def _alert(report: Dict[str, Any], topic_arn: str, region: str) -> None:

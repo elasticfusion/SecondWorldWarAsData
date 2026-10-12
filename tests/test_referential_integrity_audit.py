@@ -244,3 +244,35 @@ def test_enforce_is_fail_safe_on_audit_error():
 
     rep = ria.enforce(_Broken())
     assert rep["total_dangling"] == 0
+
+
+def test_run_for_phase_env_skip(monkeypatch):
+    """SKIP_PHASE_REFERENTIAL_ENFORCE=1 short-circuits the whole-corpus audit."""
+    from src.utils import referential_integrity as ri
+
+    monkeypatch.setenv("SKIP_PHASE_REFERENTIAL_ENFORCE", "1")
+    out = ri.run_for_phase("/tmp/output", phase="Phase 1")
+    assert out.get("skipped") == "env"
+    assert out["total_dangling"] == 0
+
+
+def test_run_for_phase_times_out_without_hanging(monkeypatch):
+    """A slow/hanging audit must NOT stall the phase — run_for_phase returns a
+    skipped report within the timeout (regression: Phase-1 hung on a whole-corpus
+    S3 scan, blocking the parsed-output sync + the next phase)."""
+    import time
+    from src.utils import referential_integrity as ri
+
+    monkeypatch.delenv("SKIP_PHASE_REFERENTIAL_ENFORCE", raising=False)
+    monkeypatch.setenv("PHASE_REFERENTIAL_ENFORCE_TIMEOUT", "1")
+    monkeypatch.delenv("S3_BUCKET", raising=False)
+
+    def _hang(*_a, **_k):
+        time.sleep(30)  # simulate the unbounded corpus scan
+
+    monkeypatch.setattr(ri, "enforce", _hang)
+    start = time.time()
+    out = ri.run_for_phase("/tmp/output", phase="Phase 1")
+    elapsed = time.time() - start
+    assert elapsed < 5  # returned promptly, did NOT hang 30s
+    assert out.get("skipped") == "timeout"
