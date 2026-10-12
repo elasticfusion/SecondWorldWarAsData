@@ -73,8 +73,8 @@ def test_extract_external_maps_does_no_openserp_probe(tmp_path):
 
 
 def test_entrypoint_starts_openserp_only_for_phase3():
-    """The ECS orchestrator must bring OpenSERP/NAT up ONLY for phase3 — never
-    phase0/1/2. Guards the orchestration layer (not just the phase script)."""
+    """OpenSERP (browser service) is PHASE 3 ONLY — _start_openserp_if_needed is a
+    no-op for phase0/1/2 (no AWS client touched)."""
     import os
 
     os.environ.setdefault("S3_BUCKET", "test-bucket")
@@ -84,8 +84,68 @@ def test_entrypoint_starts_openserp_only_for_phase3():
     with patch.object(ee, "boto3") as b3:
         for phase in ("phase0_ingest.py", "phase1_parse.py", "phase2_extract.py"):
             ee._start_openserp_if_needed(phase)
-        # No AWS client touched for non-phase3 phases -> OpenSERP/NAT not started.
         b3.client.assert_not_called()
+
+
+def test_entrypoint_ensures_nat_for_phase2_and_phase3_not_phase01():
+    """NAT is DECOUPLED from OpenSERP: it must come up for phase2 AND phase3
+    (Phase 2 needs the internet for Grokipedia/Wikipedia + the Grok API — there
+    is no VPC endpoint for those), but NOT for the local phase0/1."""
+    import os
+    import io
+    import json as _json
+
+    os.environ.setdefault("S3_BUCKET", "test-bucket")
+    os.environ.setdefault("ENV_NAME", "test")
+    import ecs_entrypoint as ee
+
+    def _ready_resp():
+        # Mimic a successful nat-manager invoke: no FunctionError, status=ready.
+        return {"Payload": io.BytesIO(_json.dumps({"status": "ready"}).encode())}
+
+    # phase0/1 -> no NAT (no AWS client touched at all)
+    with patch.object(ee, "boto3") as b3:
+        ee._ensure_nat_if_needed("phase0_ingest.py")
+        ee._ensure_nat_if_needed("phase1_parse.py")
+        b3.client.assert_not_called()
+
+    # phase2 -> NAT create invoked (Grok/Wiki need internet)
+    with patch.object(ee, "boto3") as b3:
+        b3.client.return_value.invoke.return_value = _ready_resp()
+        ee._ensure_nat_if_needed("phase2_extract.py")
+        b3.client.return_value.invoke.assert_called_once()
+        payload = b3.client.return_value.invoke.call_args.kwargs["Payload"]
+        assert b"create" in payload
+
+    # phase3 -> NAT create invoked too
+    with patch.object(ee, "boto3") as b3:
+        b3.client.return_value.invoke.return_value = _ready_resp()
+        ee._ensure_nat_if_needed("phase3_enrich_data.py")
+        b3.client.return_value.invoke.assert_called_once()
+
+
+def test_ensure_nat_fail_loud_on_not_ready(caplog):
+    """A not_ready nat-manager result must be surfaced LOUDLY (ERROR), not
+    swallowed — otherwise phase egress failure shows up only as opaque downstream
+    Grok/Wiki errors."""
+    import os
+    import io
+    import json as _json
+    import logging
+
+    os.environ.setdefault("S3_BUCKET", "test-bucket")
+    os.environ.setdefault("ENV_NAME", "test")
+    import ecs_entrypoint as ee
+
+    with patch.object(ee, "boto3") as b3:
+        b3.client.return_value.invoke.return_value = {
+            "Payload": io.BytesIO(
+                _json.dumps({"status": "not_ready", "missing": ["nat"]}).encode()
+            )
+        }
+        with caplog.at_level(logging.ERROR):
+            ee._ensure_nat_if_needed("phase2_extract.py")
+    assert any("NAT NOT READY" in r.message for r in caplog.records)
 
 
 def test_phase2_handler_has_no_openserp_startup():

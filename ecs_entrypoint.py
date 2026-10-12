@@ -372,13 +372,63 @@ def _get_openserp_alb_dns() -> str:
     return ""
 
 
+def _ensure_nat_if_needed(phase_script: str) -> None:
+    """Bring the NAT gateway up for any phase that needs the public internet.
+
+    NAT is required by BOTH Phase 2 (Grokipedia/Wikipedia + the Grok API — there
+    is no VPC endpoint for those) AND Phase 3 (geocoding/NOAA/NARA/OpenSERP).
+    Only Phase 0/1 (local parse) need no internet. This is DECOUPLED from OpenSERP:
+    OpenSERP (the browser service) is Phase-3 only, but NAT must be up earlier so
+    Phase 2's Grok/Wiki lookups can reach the internet.
+    """
+    if "phase2" not in phase_script and "phase3" not in phase_script:
+        return
+    try:
+        env = os.environ.get("ENV_NAME", "dev")
+        resp = boto3.client("lambda", region_name=REGION).invoke(
+            FunctionName=f"{env}-wwii-nat-manager",
+            InvocationType="RequestResponse",
+            Payload=b'{"action": "create"}',
+        )
+        # Fail LOUD on any create problem: this is the single gate that gives
+        # phase2/3 their internet egress (Grok/Wiki/geocoding). A swallowed
+        # failure would surface later as an opaque mass-failure of every network
+        # call, so escalate to ERROR here where the root cause is visible.
+        if resp.get("FunctionError"):
+            body = resp.get("Payload").read().decode("utf-8", "replace")[:500]
+            logger.error(
+                "NAT create FAILED (nat_manager FunctionError) for %s: %s",
+                Path(phase_script).stem,
+                body,
+            )
+            return
+        payload = {}
+        try:
+            payload = json.loads(resp.get("Payload").read().decode("utf-8"))
+        except Exception:  # noqa: BLE001 - defensive parse
+            payload = {}
+        status = payload.get("status")
+        if status and status != "ready":
+            logger.error(
+                "NAT NOT READY for %s (status=%s, missing=%s) — phase egress may "
+                "fail; investigate before Grok/Wiki calls.",
+                Path(phase_script).stem,
+                status,
+                payload.get("missing"),
+            )
+            return
+        logger.info("Ensured NAT gateway is up for %s", Path(phase_script).stem)
+    except Exception as e:
+        # Fail LOUD: without NAT, every phase2/3 network call fails downstream.
+        logger.error("NAT create invoke FAILED for %s: %s", phase_script, e)
+
+
 def _start_openserp_if_needed(phase_script: str) -> None:
     """Scale OpenSERP service to 1 and discover its IP — PHASE 3 ONLY.
 
-    OpenSERP (live web search) is a Phase-3-only dependency: Phase 2 is limited to
-    Grokipedia/Wikipedia + local-corpus work and must NOT bring up OpenSERP/NAT.
-    Starting it only for phase3 means OpenSERP/NAT come up exactly once and never
-    bounce between phases.
+    OpenSERP (live web-search browser service) is a Phase-3-only dependency.
+    NAT is handled separately by _ensure_nat_if_needed (phase2+phase3), so this
+    function no longer manages NAT — it only brings up the OpenSERP service.
     """
     if "phase3" not in phase_script:
         return
@@ -398,16 +448,8 @@ def _start_openserp_if_needed(phase_script: str) -> None:
             return
 
         if svc.get("desiredCount", 0) == 0:
-            # Ensure VPC endpoints exist (needed for ECR image pull)
-            try:
-                boto3.client("lambda", region_name=REGION).invoke(
-                    FunctionName=f"{env}-wwii-nat-manager",
-                    InvocationType="RequestResponse",
-                    Payload=b'{"action": "create"}',
-                )
-            except Exception as e:
-                logger.warning("nat_manager invoke failed: %s", e)
-
+            # NAT/VPC endpoints are already ensured by _ensure_nat_if_needed
+            # (called earlier in run_phase for phase2+phase3); just scale up.
             ecs.update_service(cluster=cluster, service=service, desiredCount=1)
             logger.info("Started OpenSERP service (scaling from 0 to 1)")
         else:
@@ -558,6 +600,12 @@ def run_phase(phase_script: str, extra_args: list) -> None:
 
     # Cancel any stale delayed teardown from a previous task
     _cancel_stale_teardown()
+
+    # Bring NAT (+ VPC endpoints) up FIRST, before any egress-dependent step:
+    # _load_secrets needs the Secrets Manager interface endpoint (created by
+    # nat-manager) and _preflight_credit_check hits api.x.ai over NAT. phase2/3
+    # need the internet; phase0/1 are a no-op.
+    _ensure_nat_if_needed(phase_script)
 
     logger.info("[step] %s: loading secrets", phase_name)
     _load_secrets()
@@ -2765,6 +2813,8 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
         extra_args = ["--batch"] + extra_args
 
     WORKDIR.mkdir(parents=True, exist_ok=True)
+    # NAT/VPC endpoints up first (secrets endpoint + api.x.ai egress) — see run_phase.
+    _ensure_nat_if_needed(phase_script)
     logger.info("[step] %s: loading secrets", phase_name)
     _load_secrets()
     logger.info("[step] %s: preflight credit check", phase_name)
