@@ -220,6 +220,10 @@ Resources:
             "AnyPending": {
               "Type": "Choice",
               "Choices": [
+                { "And": [
+                    { "Variable": "$.pending.aborted", "IsPresent": true },
+                    { "Variable": "$.pending.aborted", "BooleanEquals": true }
+                  ], "Next": "DispatchAborted" },
                 { "Variable": "$.pending.count", "NumericGreaterThan": 0, "Next": "ClampPool" }
               ],
               "Default": "Done"
@@ -312,6 +316,11 @@ Resources:
             },
             "Done": {
               "Type": "Succeed"
+            },
+            "DispatchAborted": {
+              "Type": "Fail",
+              "Error": "ScopeGuardAborted",
+              "Cause": "Dispatcher scope guard aborted the run (undeclared large backlog or invalid DISPATCH_EXPECTED_COUNT). See $.pending.reason and the enumerate-pending logs. This is a fail-loud safeguard, not a drain completion."
             }
           }
         }
