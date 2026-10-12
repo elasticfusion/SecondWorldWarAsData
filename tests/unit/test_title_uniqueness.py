@@ -102,33 +102,48 @@ def _s3_bodies(mapping):
     return s3
 
 
-def test_launch_gate_multifile_single_title_all_proceed():
+# --- launch-time gate on the CLAIM model (subset-independent) ---
+def test_gate_fresh_claim_proceeds_and_finalizes():
     from lambda_handlers import trigger_handler as th
 
-    keys = [
-        "contentrepository/Book/chapter2/chapter2a-content.md",
-        "contentrepository/Book/chapter3/chapter3a-content.md",
-    ]
+    keys = ["contentrepository/New/a.md", "contentrepository/New/b.md"]
     with (
         patch.object(th, "boto3") as b3,
-        patch.object(th, "_title_registry_get", return_value=None),
-        patch.object(th, "_title_registry_put", return_value=True) as putreg,
+        patch.object(th, "_title_claim", return_value=("claimed", None)),
+        patch.object(th, "_multi_fingerprint", return_value="fp"),
+        patch.object(th, "_title_finalize") as fin,
     ):
-        b3.client.return_value = _s3_bodies({k: k.encode() for k in keys})
+        b3.client.return_value = MagicMock()
         out = th._enforce_title_uniqueness_at_launch(keys)
-    assert set(out) == set(keys)  # one title, all proceed
-    putreg.assert_called_once()  # registered once (marker starts 'llm:')
-    assert putreg.call_args.args[1].startswith("llm:")
+    assert set(out) == set(keys)  # all of the title proceed
+    fin.assert_called_once()  # marker finalized once
 
 
-def test_launch_gate_single_repeat_rejected():
+def test_gate_inflight_sibling_proceeds_no_false_collision():
+    """THE regression: a sibling invocation of the SAME upload wave (claim already
+    held) must PROCEED, never be rejected as a collision."""
+    from lambda_handlers import trigger_handler as th
+
+    keys = ["contentrepository/Wave/a.md"]
+    with (
+        patch.object(th, "boto3") as b3,
+        patch.object(th, "_title_claim", return_value=("inflight", None)),
+        patch("src.ingestion.review_reject.reject_to_review") as reject,
+    ):
+        b3.client.return_value = MagicMock()
+        out = th._enforce_title_uniqueness_at_launch(keys)
+    assert out == keys  # proceeds — same submission in pieces
+    reject.assert_not_called()  # NOT a collision
+
+
+def test_gate_final_prior_same_checksum_single_repeat():
     from lambda_handlers import trigger_handler as th
 
     key = "contentrepository/Solo/solo.md"
     with (
         patch.object(th, "boto3") as b3,
+        patch.object(th, "_title_claim", return_value=("final", "sha256:SAME")),
         patch.object(th, "_title_checksum", return_value="sha256:SAME"),
-        patch.object(th, "_title_registry_get", return_value="sha256:SAME"),
         patch("src.ingestion.review_reject.reject_to_review") as reject,
     ):
         b3.client.return_value = MagicMock()
@@ -137,21 +152,37 @@ def test_launch_gate_single_repeat_rejected():
     assert reject.call_args.kwargs.get("category") == "duplicate"
 
 
-def test_launch_gate_multi_collision_uses_llm_and_rejects():
+def test_gate_final_prior_diff_checksum_single_collision():
+    from lambda_handlers import trigger_handler as th
+
+    key = "contentrepository/Solo2/solo.md"
+    with (
+        patch.object(th, "boto3") as b3,
+        patch.object(th, "_title_claim", return_value=("final", "sha256:OLD")),
+        patch.object(th, "_title_checksum", return_value="sha256:NEW"),
+        patch("src.ingestion.review_reject.reject_to_review") as reject,
+    ):
+        b3.client.return_value = MagicMock()
+        out = th._enforce_title_uniqueness_at_launch([key])
+    assert out == []
+    assert reject.call_args.kwargs.get("category") == "title-collision"
+
+
+def test_gate_final_prior_multi_uses_llm():
     from lambda_handlers import trigger_handler as th
 
     keys = ["contentrepository/Clash/a.md", "contentrepository/Clash/b.md"]
     with (
         patch.object(th, "boto3") as b3,
-        patch.object(th, "_multi_fingerprint", return_value="fp-new"),
-        patch.object(th, "_title_registry_get", return_value="llm:fp-old"),
+        patch.object(th, "_title_claim", return_value=("final", "llm:oldfp")),
+        patch.object(th, "_multi_fingerprint", return_value="newfp"),
         patch.object(th, "_llm_same_work", return_value=False) as llm,
         patch("src.ingestion.review_reject.reject_to_review") as reject,
     ):
         b3.client.return_value = MagicMock()
         out = th._enforce_title_uniqueness_at_launch(keys)
     assert out == []
-    llm.assert_called()  # multi-file -> LLM path exercised
+    llm.assert_called()
     assert reject.call_args.kwargs.get("category") == "title-collision"
 
 
@@ -162,46 +193,63 @@ def test_llm_same_work_fails_safe_without_key():
         assert th._llm_same_work("T", "old", "new") is False
 
 
-def test_launch_gate_lost_claim_redecides_to_repeat():
-    """First-writer-wins loser: put->False, re-decide against the winner's marker."""
-    from lambda_handlers import trigger_handler as th
-
-    key = "contentrepository/Race/solo.md"
-    gets = iter([None, "sha256:SAME"])  # new on first look, winner's marker on retry
-    with (
-        patch.object(th, "boto3") as b3,
-        patch.object(th, "_title_checksum", return_value="sha256:SAME"),
-        patch.object(th, "_title_registry_get", side_effect=lambda t: next(gets)),
-        patch.object(th, "_title_registry_put", return_value=False),
-        patch("src.ingestion.review_reject.reject_to_review") as reject,
-    ):
-        b3.client.return_value = MagicMock()
-        out = th._enforce_title_uniqueness_at_launch([key])
-    assert out == []  # loser rejected as duplicate
-    assert reject.call_args.kwargs.get("category") == "duplicate"
-
-
-def test_launch_gate_single_collision_rejected():
-    from lambda_handlers import trigger_handler as th
-
-    key = "contentrepository/Solo2/solo.md"
-    with (
-        patch.object(th, "boto3") as b3,
-        patch.object(th, "_title_checksum", return_value="sha256:NEW"),
-        patch.object(th, "_title_registry_get", return_value="sha256:OLD"),
-        patch("src.ingestion.review_reject.reject_to_review") as reject,
-    ):
-        b3.client.return_value = MagicMock()
-        out = th._enforce_title_uniqueness_at_launch([key])
-    assert out == []
-    assert reject.call_args.kwargs.get("category") == "title-collision"
-
-
-def test_launch_gate_untitled_key_proceeds_ungated():
+def test_gate_untitled_key_proceeds_ungated():
     from lambda_handlers import trigger_handler as th
 
     key = "contentrepository/..%2f/evil"  # _title_from_key -> "" (unsafe)
     with patch.object(th, "boto3") as b3:
         b3.client.return_value = MagicMock()
         out = th._enforce_title_uniqueness_at_launch([key])
-    assert out == [key]  # untitled -> ungated passthrough
+    assert out == [key]
+
+
+def test_title_claim_same_wave_final_is_inflight_not_collision():
+    """FINALIZE-RACE regression: a sibling that observes state=='final' from the
+    SAME wave (claimed_at within the window) must resolve to 'inflight' (same
+    submission), NOT 'final' (which would compare partial fingerprints -> false
+    collision — the bug that broke 4 prior designs)."""
+    import time
+    from unittest.mock import MagicMock, patch
+    from lambda_handlers import trigger_handler as th
+
+    class _CCFE(Exception):
+        pass
+
+    fake = MagicMock()
+    fake.meta.client.exceptions.ConditionalCheckFailedException = _CCFE
+    fake.put_item.side_effect = _CCFE()  # claim lost (winner already finalized)
+    fake.get_item.return_value = {
+        "Item": {
+            "state": "final",
+            "checksum": "llm:winnerfp",
+            "claimed_at": int(time.time()),
+        }
+    }
+    with patch.object(th, "dynamo", fake):
+        state, marker = th._title_claim("SameWaveTitle")
+    assert state == "inflight"  # same wave -> proceed, no identity compare
+
+
+def test_title_claim_old_final_is_real_collision_candidate():
+    """A GENUINELY PRIOR final entry (claimed_at older than the wave) IS a real
+    identity comparison -> returns 'final' with the marker."""
+    import time
+    from unittest.mock import MagicMock, patch
+    from lambda_handlers import trigger_handler as th
+
+    class _CCFE(Exception):
+        pass
+
+    fake = MagicMock()
+    fake.meta.client.exceptions.ConditionalCheckFailedException = _CCFE
+    fake.put_item.side_effect = _CCFE()
+    fake.get_item.return_value = {
+        "Item": {
+            "state": "final",
+            "checksum": "sha256:prior",
+            "claimed_at": int(time.time()) - th._TITLE_CLAIM_WAVE_S - 100,
+        }
+    }
+    with patch.object(th, "dynamo", fake):
+        state, marker = th._title_claim("OldTitle")
+    assert state == "final" and marker == "sha256:prior"
