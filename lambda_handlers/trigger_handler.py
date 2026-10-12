@@ -74,30 +74,91 @@ def _title_registry_get(title: str):
         return None
 
 
-def _title_registry_put(title: str, checksum: str) -> bool:
-    """Claim a title -> content checksum, FIRST-WRITER-WINS (conditional write).
+# How long a title's "claimed" placeholder is considered part of the SAME upload
+# wave (concurrent partial S3->SNS deliveries of one submission). A sibling claim
+# within this window is NOT a collision — it's the same submission arriving in
+# pieces. After it, the title is treated as a prior submission.
+_TITLE_CLAIM_WAVE_S = 1800  # 30 min
 
-    Uses ConditionExpression attribute_not_exists so two concurrent uploads of the
-    same new title can't both register (TOCTOU) and a lookup error can't silently
-    rebind an existing title. Returns True if THIS call won the claim, else False.
+
+def _title_claim(title: str):
+    """Subset-INDEPENDENT title claim (the fix for concurrent partial deliveries).
+
+    Returns one of:
+      ("claimed", None)       -> THIS invocation won a fresh claim (placeholder
+                                 written); it owns identity finalization.
+      ("inflight", None)      -> a sibling invocation of the SAME upload wave
+                                 already holds a recent placeholder -> NOT a
+                                 collision; proceed (same submission in pieces).
+      ("final", marker)       -> a PRIOR, finalized submission already holds this
+                                 title (compare identity against `marker`).
+
+    The claim is title-only (no content fingerprint), so it is identical no matter
+    which partial file-subset an invocation sees -> concurrent invocations of one
+    submission converge instead of self-colliding.
     """
     import datetime as _dt
+    import time as _t
 
+    now = int(_t.time())
     try:
         dynamo.put_item(
             Item={
                 "cache_key": f"title#{title}",
-                "checksum": checksum,
+                "state": "claimed",
+                "claimed_at": now,
                 "registered_at": _dt.datetime.now(_dt.timezone.utc).isoformat(),
             },
             ConditionExpression="attribute_not_exists(cache_key)",
         )
-        return True
+        return "claimed", None
     except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
-        return False  # another upload already claimed this title
-    except Exception as e:  # noqa: BLE001 - non-fatal; treat as not-claimed
-        logger.warning("title registry write failed for %s: %s", title, e)
-        return False
+        item = dynamo.get_item(Key={"cache_key": f"title#{title}"}).get("Item") or {}
+        state = item.get("state")
+        claimed_at = int(item.get("claimed_at", 0) or 0)
+        same_wave = (now - claimed_at) <= _TITLE_CLAIM_WAVE_S if claimed_at else False
+        if state == "final":
+            if claimed_at == 0:
+                logger.warning(
+                    "title %r is 'final' without claimed_at (legacy/foreign entry) "
+                    "— treating as a prior submission",
+                    title,
+                )
+            # A finalized entry from THIS wave (the claim winner finalized just
+            # ahead of us) is the SAME submission — treat as in-flight, never
+            # compare our partial fingerprint against it (the finalize-race that
+            # caused the self-collision). Only a GENUINELY PRIOR final entry
+            # (outside the wave) is a real identity comparison.
+            if same_wave:
+                return "inflight", None
+            return "final", item.get("checksum")
+        # A 'claimed' placeholder (sibling still finalizing) -> same submission.
+        return "inflight", None
+    except Exception as e:  # noqa: BLE001 - fail-open: proceed, don't false-collide
+        logger.warning("title claim failed for %s: %s — proceeding", title, e)
+        return "inflight", None
+
+
+def _title_finalize(title: str, marker: str) -> None:
+    """Promote a claimed title to its FINAL identity marker (checksum or 'llm:'fp)
+    once the full set is known. UPDATE (not full put) so claimed_at is PRESERVED —
+    a later same-wave sibling that observes 'final' must still recognize the wave
+    (see _title_claim) and NOT false-collide against its own submission."""
+    import datetime as _dt
+
+    try:
+        dynamo.update_item(
+            Key={"cache_key": f"title#{title}"},
+            UpdateExpression="SET #s = :final, checksum = :m, registered_at = :t",
+            ExpressionAttributeNames={"#s": "state"},
+            ExpressionAttributeValues={
+                ":final": "final",
+                ":m": marker,
+                ":t": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+            },
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("title finalize failed for %s: %s", title, e)
 
 
 def _title_checksum(s3, keys: list) -> str:
@@ -193,52 +254,66 @@ def _llm_same_work(title: str, existing_fp: str, new_fp: str) -> bool:
 
 
 def _resolve_title_identity(s3, title: str, tkeys: list):
-    """Decide one title's identity (single=checksum, multi=LLM) and return
-    (proceed: bool, reject_reason, reject_category). Closures bind to THIS
-    function's params, not loop vars."""
-    from src.ingestion.title_uniqueness import decide_identity
+    """Decide one title's identity and return (proceed, reject_reason, category).
+
+    Uses a subset-INDEPENDENT title claim so concurrent partial deliveries of ONE
+    submission converge instead of self-colliding:
+      * claimed  -> we won the claim; finalize the identity marker + proceed.
+      * inflight -> a sibling of the SAME upload wave holds the claim -> proceed
+                    (same submission arriving in pieces; NOT a collision).
+      * final    -> a PRIOR finalized submission holds this title -> compare
+                    identity (single=checksum, multi=LLM) -> repeat or collision.
+    """
+    from src.ingestion.title_uniqueness import content_checksum  # noqa: F401
 
     single = len(tkeys) == 1
-    checksum = _title_checksum(s3, tkeys) if single else ""
-    new_fp = "" if single else _multi_fingerprint(s3, tkeys)
-    marker = checksum if single else ("llm:" + new_fp[:4000])
 
-    def _ck() -> str:
-        return checksum
+    state, existing_marker = _title_claim(title)
 
-    def _same() -> bool:
-        # Compare against the EXISTING stored fingerprint (read once here).
-        existing = _title_registry_get(title) or ""
-        return _llm_same_work(title, existing[4:], new_fp)
+    if state in ("claimed", "inflight"):
+        # Our submission (fresh claim or a same-wave sibling). Finalize the marker
+        # once (only the claim winner), computed over THIS invocation's subset —
+        # which is fine because identity is only ever COMPARED against a 'final'
+        # entry from a DIFFERENT prior submission, never against our own wave.
+        if state == "claimed":
+            try:
+                marker = (
+                    _title_checksum(s3, tkeys)
+                    if single
+                    else "llm:" + _multi_fingerprint(s3, tkeys)[:4000]
+                )
+                _title_finalize(title, marker)
+            except Exception as e:  # noqa: BLE001 - best-effort finalize
+                logger.warning("finalize marker failed for %r: %s", title, e)
+        return True, "", ""
 
-    decision = decide_identity(
-        title, tkeys, lookup=_title_registry_get, single_checksum=_ck, multi_same=_same
-    )
-    if decision.action == "new":
-        if _title_registry_put(title, marker):
-            return True, "", ""
-        decision = decide_identity(
-            title,
-            tkeys,
-            lookup=_title_registry_get,
-            single_checksum=_ck,
-            multi_same=_same,
-        )
-        if decision.action == "new":
-            return True, "", ""  # transient write error -> fail-open once
+    # state == "final": a prior submission owns this title. Compare identity.
+    try:
+        if single:
+            same = _title_checksum(s3, tkeys) == existing_marker
+        else:
+            new_fp = _multi_fingerprint(s3, tkeys)
+            same = _llm_same_work(title, (existing_marker or "")[4:], new_fp)
+    except Exception as e:  # noqa: BLE001 - fail-open: proceed rather than block
+        logger.warning("identity compare failed for %r (%s) — proceeding", title, e)
+        return True, "", ""
 
-    if decision.action == "repeat":
+    if same:
         logger.info("Duplicate submission (same work), rejecting title %r", title)
         return False, "duplicate: same title + same work already ingested", "duplicate"
+
+    from src.ingestion.title_uniqueness import _rand_suffix
+
+    suggested = f"{title}-{_rand_suffix()}"
     logger.warning(
         "Title collision (different work) %r -> suggest %r (method=%s)",
         title,
-        decision.title,
-        decision.method,
+        suggested,
+        "checksum" if single else "llm",
     )
     reason = (
         f"title collision: '{title}' already holds a different work; "
-        f"re-upload under a unique title (suggested: '{decision.title}')"
+        f"re-upload under a unique title (suggested: '{suggested}')"
     )
     return False, reason, "title-collision"
 
