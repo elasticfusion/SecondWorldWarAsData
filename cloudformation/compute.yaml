@@ -551,6 +551,9 @@ Resources:
         Variables:
           ENV_NAME: !Ref EnvironmentName
           ECS_CLUSTER: !Sub ${EnvironmentName}-wwii-pipeline
+          # Grok secret for the multi-file title-uniqueness LLM check (_llm_same_work).
+          # Without it the multi-file identity path fails safe to "different".
+          SECRETS_ID: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
           PRIVATE_SUBNET_IDS: !Sub "${PrivateSubnet1Id},${PrivateSubnet2Id}"
           SECURITY_GROUP_ID: !Ref LambdaSGId
           S3_BUCKET: !Ref DataBucketName
