@@ -57,6 +57,169 @@ def _multi_doc_active() -> bool:
     return MULTI_DOC_ENABLED and bool(DISPATCHER_STATE_MACHINE_ARN)
 
 
+import re as _re_title
+
+# A content title must be a plain safe token (no path separators, no '..') since
+# it becomes a filesystem path segment, a subprocess --book arg, and a DynamoDB key.
+_SAFE_TITLE_RE = _re_title.compile(r"[A-Za-z0-9._-]+")
+
+
+def _title_registry_get(title: str):
+    """Return the registered content checksum for a title, or None if unused."""
+    try:
+        item = dynamo.get_item(Key={"cache_key": f"title#{title}"}).get("Item")
+        return item.get("checksum") if item else None
+    except Exception as e:  # noqa: BLE001 - fail-open: treat as unused on error
+        logger.warning("title registry lookup failed for %s: %s", title, e)
+        return None
+
+
+def _title_registry_put(title: str, checksum: str) -> bool:
+    """Claim a title -> content checksum, FIRST-WRITER-WINS (conditional write).
+
+    Uses ConditionExpression attribute_not_exists so two concurrent uploads of the
+    same new title can't both register (TOCTOU) and a lookup error can't silently
+    rebind an existing title. Returns True if THIS call won the claim, else False.
+    """
+    import datetime as _dt
+
+    try:
+        dynamo.put_item(
+            Item={
+                "cache_key": f"title#{title}",
+                "checksum": checksum,
+                "registered_at": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+            },
+            ConditionExpression="attribute_not_exists(cache_key)",
+        )
+        return True
+    except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
+        return False  # another upload already claimed this title
+    except Exception as e:  # noqa: BLE001 - non-fatal; treat as not-claimed
+        logger.warning("title registry write failed for %s: %s", title, e)
+        return False
+
+
+def _title_checksum(s3, keys: list) -> str:
+    """One stable checksum over ALL of a title's content keys (not per-file), so a
+    normal multi-file/multi-chapter upload is ONE title identity. Streams each body
+    in 1MiB chunks (no full in-memory read) and closes the stream."""
+    import contextlib as _cl
+    import hashlib as _hl
+
+    h = _hl.sha256()
+    for key in sorted(keys):  # sorted => order-independent identity
+        h.update(key.encode("utf-8"))  # include name so renames differ
+        obj = s3.get_object(Bucket=BUCKET, Key=key)
+        with _cl.closing(obj["Body"]) as body:
+            while True:
+                chunk = body.read(1 << 20)
+                if not chunk:
+                    break
+                h.update(chunk)
+    return "sha256:" + h.hexdigest()
+
+
+def _enforce_title_uniqueness(keys: list) -> list:
+    """Titles must be unique. Returns the keys to PROCEED with.
+
+    Decision is made PER TITLE (not per file) over all of a title's keys:
+      * new title            -> claim (conditional) + proceed with all its keys.
+      * same title + content -> REPEAT: drop + reject-to-review (no reprocess).
+      * same title, diff body -> COLLISION: drop + reject-to-review with a suggested
+        unique title (auto-renaming S3 is deferred to the operator; never a silent
+        overwrite of a different item under one title).
+
+    NOTE (migration): the registry is forward-only. Titles ingested BEFORE this
+    gate existed are not registered, so the first post-deploy re-upload of a legacy
+    title is seen as 'new' and reprocesses once. A one-time backfill of existing
+    contentrepository/{TITLE}/ prefixes is a follow-up.
+    """
+    from src.ingestion.title_uniqueness import decide_title
+    from src.ingestion.review_reject import reject_to_review
+
+    s3 = boto3.client("s3")
+
+    # Group keys by title; untitled keys (validated-out elsewhere) pass through.
+    by_title: dict = {}
+    proceed: list = []
+    for k in keys:
+        title = _title_from_key(k)
+        if not title:
+            proceed.append(k)
+            continue
+        by_title.setdefault(title, []).append(k)
+
+    for title, tkeys in by_title.items():
+        try:
+            checksum = _title_checksum(s3, tkeys)
+        except Exception as e:  # noqa: BLE001 - fail-open: let the title proceed
+            logger.warning("checksum failed for title %r (%s) — proceeding", title, e)
+            proceed.extend(tkeys)
+            continue
+        decision = decide_title(title, checksum, _title_registry_get)
+
+        if decision.action == "new":
+            # Conditional claim; if a concurrent upload won, re-decide to classify
+            # this one as repeat/collision instead of double-processing.
+            if _title_registry_put(title, checksum):
+                proceed.extend(tkeys)
+                continue
+            decision = decide_title(title, checksum, _title_registry_get)
+            if decision.action == "new":
+                # Registry still says unused (transient write error) — proceed
+                # fail-open rather than block a legitimate upload.
+                proceed.extend(tkeys)
+                continue
+
+        if decision.action == "repeat":
+            logger.info("Duplicate upload (same title+content), rejecting: %s", title)
+            reason = "duplicate upload: identical title and content already ingested"
+            category = "duplicate"
+        else:  # collision (same title, different content) or any other -> reject
+            logger.warning(
+                "Title collision (different content) for %r -> suggest %r; "
+                "rejecting to review (no silent overwrite)",
+                title,
+                decision.title,
+            )
+            reason = (
+                f"title collision: '{title}' already holds different content; "
+                f"re-upload under a unique title (suggested: '{decision.title}')"
+            )
+            category = "title-collision"
+        for k in tkeys:
+            try:
+                reject_to_review(s3, BUCKET, k, title, reason, category=category)
+            except Exception as e:  # noqa: BLE001
+                logger.warning("reject_to_review failed for %s: %s", k, e)
+    return proceed
+
+
+def _title_from_key(key: str) -> str:
+    """Derive a content item's TITLE from an S3 key, with a filename fallback.
+
+    Not everything is a 'book', but every content item has a title. Prefer the
+    content-repository folder: ``contentrepository/{TITLE}/...`` -> TITLE. If the
+    item is a loose file with no title folder (``contentrepository/Foo.md`` or any
+    other shape), fall back to the FILENAME STEM so the item still gets a stable,
+    non-empty title and never falls through to a whole-corpus run.
+    """
+    parts = [p for p in key.split("/") if p]
+    if len(parts) >= 3 and parts[0] == "contentrepository":
+        candidate = parts[1]  # titled folder
+    else:
+        # Loose file (or no title folder) -> filename stem.
+        candidate = parts[-1].rsplit(".", 1)[0] if parts else ""
+    candidate = candidate.replace(" ", "_")
+    # SECURITY: a title flows into a filesystem path (per-title cache rmtree), a
+    # subprocess --book arg, and a DynamoDB key. Reject path-traversal / unsafe
+    # chars — a title must be a plain safe token or we treat it as untitled ("").
+    if candidate in ("", ".", "..") or not _SAFE_TITLE_RE.fullmatch(candidate):
+        return ""
+    return candidate
+
+
 def _lock_key(family: str, book_name: str) -> str:
     """Per-document lock key under multi-doc, singleton otherwise (G1 fix).
 
@@ -646,6 +809,12 @@ def handler(event, _context):
             content = _content_keys(s3_keys)
             if not content:
                 logger.info("No processable content in upload batch — nothing to do")
+                continue
+            # Titles must be unique: drop exact-duplicate re-uploads (reject) and
+            # title collisions with different content (reject w/ suggested name).
+            content = _enforce_title_uniqueness(content)
+            if not content:
+                logger.info("All uploads were duplicates/collisions — nothing to do")
                 continue
             ocr_keys, convert_keys, video_keys, parse_keys = _split_by_media(content)
             # AV gate (demand-launched, binary-only): scan pdf/image/video/office
@@ -1239,11 +1408,8 @@ def _launch_phase1_if_idle():
     try:
         resp = dynamo.get_item(Key={"cache_key": "pending#content"})
         keys = resp.get("Item", {}).get("keys", [])
-        books = set()
-        for k in keys:
-            parts = k.split("/")
-            if len(parts) >= 2 and parts[0] == "contentrepository":
-                books.add(parts[1])
+        books = {_title_from_key(k) for k in keys if k}
+        books.discard("")
         if len(books) == 1:
             book_name = books.pop()
     except Exception as e:

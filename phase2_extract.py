@@ -710,10 +710,12 @@ def main():
         sys.exit(1)
 
     # Scope + fail-loud guard: a scoped intent must not silently become a
-    # whole-corpus run. Apply the optional --book filter, then abort if the
-    # actual count disagrees with the operator-declared --expected-count.
+    # whole-corpus run. --book takes precedence; otherwise fall back to the
+    # BOOK_NAME env the ECS entrypoint sets for the triggering title, so the
+    # extraction scope matches what was downloaded.
+    scope_book = args.book or os.environ.get("BOOK_NAME", "").strip() or None
     parsed_files = _apply_scope_guard(
-        parsed_files, args.book, args.expected_count, content_root, logger
+        parsed_files, scope_book, args.expected_count, content_root, logger
     )
 
     logger.info("Found %d parsed file(s)", len(parsed_files))

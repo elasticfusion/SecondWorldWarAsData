@@ -36,6 +36,10 @@ BUCKET = os.environ["S3_BUCKET"]
 REGION = os.environ.get("AWS_DEFAULT_REGION", os.environ.get("AWS_REGION", "us-east-1"))
 WORKDIR = Path("/tmp/pipeline")
 SYNC_INTERVAL = int(os.environ.get("SYNC_INTERVAL", "120"))  # seconds
+# Paths used by _clear_title_cache_if_reprocess (module constants so tests can
+# redirect them to a temp dir without patching Path globally).
+_CONFIG_PATH = Path("/app/config.yaml")
+_CACHE_BOOKS_DIR = Path("/app/cache/api/books")
 
 # Global state for SIGTERM handler
 _current_phase_script = ""
@@ -372,6 +376,72 @@ def _get_openserp_alb_dns() -> str:
     return ""
 
 
+def _clear_title_cache_if_reprocess(phase_script: str) -> None:
+    """Idempotent re-run hygiene: when a REPROCESS of this title is requested,
+    clear ONLY this title's per-title event cache (cache/api/books/{TITLE}/events/).
+
+    The per-title Grok event cache is content-hash keyed and persists across runs;
+    a stale/corrupt entry under a title otherwise re-fails every re-run with no
+    auto-remediation (the cross-title failure root cause). This clears exactly the
+    running title's cache — never global, never another title. Reprocess intent =
+    processing.force_reprocess true, OR processing.reprocess_types non-empty, OR
+    REPROCESS_TITLE env == BOOK_NAME.
+    """
+    if "phase2" not in phase_script and "phase3" not in phase_script:
+        return
+    book = os.environ.get("BOOK_NAME", "").strip()
+    if not book:
+        return
+    try:
+        import yaml as _yaml
+
+        cfg = _yaml.safe_load(_CONFIG_PATH.read_text()) or {}
+        proc = cfg.get("processing", {}) or {}
+        reprocess = (
+            bool(proc.get("force_reprocess", False))
+            or bool(proc.get("reprocess_types"))
+            or os.environ.get("REPROCESS_TITLE", "").strip() == book
+        )
+        if not reprocess:
+            return
+        import shutil
+
+        cache_dir = _CACHE_BOOKS_DIR / book / "events"
+        # Defense-in-depth: never rmtree outside the books cache root even if a
+        # malformed title slipped past _title_from_key's charset validation.
+        base = _CACHE_BOOKS_DIR.resolve()
+        resolved = cache_dir.resolve()
+        if not (resolved == base or base in resolved.parents):
+            logger.error("Refusing per-title cache clear outside base: %s", resolved)
+            return
+        if cache_dir.exists():
+            shutil.rmtree(cache_dir, ignore_errors=True)
+            logger.info("Reprocess: cleared per-title event cache for %r", book)
+    except Exception as e:  # pragma: no cover - defensive, never block the run
+        logger.warning("per-title cache clear skipped (%s)", e)
+
+
+def _scope_args(phase_script: str, args: list) -> list:
+    """Append --book <BOOK_NAME> to the PHASE 2 subprocess so EXTRACTION is scoped
+    to the same title the inputs were downloaded for (and phase2's scope guard
+    engages). Without it, download-scope (BOOK_NAME env) and extraction-scope
+    (--book) are decoupled and a title run can process whatever is on disk.
+
+    PHASE 2 ONLY: phase3_enrich_data.py has no --book arg (it already scopes via
+    the BOOK_NAME env + its S3 download), so appending --book there would crash
+    argparse. No-op for phase0/1/3, when BOOK_NAME is unset, or when --book is
+    already present.
+    """
+    book = os.environ.get("BOOK_NAME", "").strip()
+    if not book:
+        return args
+    if "phase2" not in phase_script:
+        return args
+    if "--book" in args:
+        return args
+    return args + ["--book", book]
+
+
 def _ensure_nat_if_needed(phase_script: str) -> None:
     """Bring the NAT gateway up for any phase that needs the public internet.
 
@@ -606,6 +676,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     # nat-manager) and _preflight_credit_check hits api.x.ai over NAT. phase2/3
     # need the internet; phase0/1 are a no-op.
     _ensure_nat_if_needed(phase_script)
+    _clear_title_cache_if_reprocess(phase_script)
 
     logger.info("[step] %s: loading secrets", phase_name)
     _load_secrets()
@@ -657,7 +728,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
 
     env = os.environ.copy()
     env["PIPELINE_PHASE"] = phase_name
-    cmd = [sys.executable, phase_script] + extra_args
+    cmd = [sys.executable, phase_script] + _scope_args(phase_script, extra_args)
     logger.info("[step] %s: running extraction", phase_name)
     logger.info(
         "Phase started: %s",
@@ -2815,6 +2886,7 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     WORKDIR.mkdir(parents=True, exist_ok=True)
     # NAT/VPC endpoints up first (secrets endpoint + api.x.ai egress) — see run_phase.
     _ensure_nat_if_needed(phase_script)
+    _clear_title_cache_if_reprocess(phase_script)
     logger.info("[step] %s: loading secrets", phase_name)
     _load_secrets()
     logger.info("[step] %s: preflight credit check", phase_name)
@@ -2844,7 +2916,7 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     if "phase2" in phase_script or "phase3" in phase_script:
         sync.start()
 
-    cmd = [sys.executable, phase_script] + extra_args
+    cmd = [sys.executable, phase_script] + _scope_args(phase_script, extra_args)
     logger.info("Running (submit-only): %s", " ".join(cmd))
     env = os.environ.copy()
     env["PIPELINE_PHASE"] = Path(phase_script).stem
@@ -2882,7 +2954,7 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
         clean_args = [a for a in extra_args if a != "--batch"]
         env = os.environ.copy()
         env["PIPELINE_PHASE"] = Path(phase_script).stem
-        cmd = [sys.executable, phase_script] + clean_args
+        cmd = [sys.executable, phase_script] + _scope_args(phase_script, clean_args)
         sync2 = BackgroundSync(SYNC_INTERVAL)
         sync2.start()
         result = subprocess.run(cmd, cwd="/app", env=env, check=False)
@@ -3175,7 +3247,7 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     env = os.environ.copy()
     env["SKIP_RETRY"] = "1"
     env["PIPELINE_PHASE"] = Path(phase_script).stem
-    cmd = [sys.executable, phase_script] + clean_args
+    cmd = [sys.executable, phase_script] + _scope_args(phase_script, clean_args)
     logger.info("Re-running with cached results: %s", " ".join(cmd))
     result = subprocess.run(cmd, cwd="/app", env=env, check=False)
 
