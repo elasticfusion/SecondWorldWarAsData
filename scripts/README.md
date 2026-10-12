@@ -42,6 +42,7 @@ Utility scripts for pipeline operations, data management, and maintenance.
 | `deploy_all.sh` | Full deploy (container rebuild + Lambda + CFn) |
 | `deploy_aws.py` | Python deploy helper |
 | `update_lambdas.sh` | Lambda-only deploy (fast) |
+| `e2e_reset.sh` | One-command clean slate for an E2E run: pause reconcile backstops, stop tasks + OpenSERP + NAT, sweep DynamoDB run-state (title#/pending#/manifest#) + S3 manifest, verify idle, re-enable backstops. `--wipe-title T` also clears a title's content+output; `--keep-backstops-off` for a single uncontended upload. |
 | `monitor_logs.sh` | Tail CloudWatch logs + task status |
 | `pipeline_status.py` | Pipeline status dashboard |
 | `pipeline_status.sh` | Quick CLI status check |
