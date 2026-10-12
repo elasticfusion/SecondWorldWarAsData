@@ -126,6 +126,7 @@ Resources:
         OpenSerpManagerFunctionArn: !GetAtt ComputeStack.Outputs.OpenSerpManagerFunctionArn
         NotificationEmail: !Ref NotificationEmail
         OcrMergeFunctionArn: !GetAtt ComputeStack.Outputs.OcrMergeFunctionArn
+        LambdaExecutionRoleArn: !GetAtt IAMStack.Outputs.LambdaExecutionRoleArn
 
   # M4.3 concurrency dispatcher (SFN Map). Deployed but NOT invoked while the
   # multi_doc kill-switch is off; start at MaxConcurrency=1 before raising the

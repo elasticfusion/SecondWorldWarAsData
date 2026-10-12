@@ -601,22 +601,24 @@ custom-notification schema (emoji triage, phase-aware "View logs" deep link,
 financial amount/Cost-Explorer links), republishing to the Slack topic
 (`cloudformation/events.yaml` `SlackFormatterSubscription`). This closed the
 original "free-form text silently dropped by Chatbot" gap.
-**OPEN — refinement (per owner 2026-10-01):** the formatting/UX needs another
-pass. Specifics TBD — candidate areas: clearer success-vs-failure-vs-review
-distinction (a dedup-gate `needs-review` block currently reads like a failure —
-see the "pipeline failure email" false-alarm), richer actionable links/structure,
-noise reduction, and live-render verification against a deployed stack. Scope the
-exact refinements with the owner before implementing.
-*Source: St. Vith 2026-09-27; mechanism verified + refinement flagged 2026-10-01*
+**Refinement (per owner 2026-10-01) — DONE except live-render check:**
+- ✅ **Detail parity (PR #347):** Slack now carries the SAME full body email does
+  (both subscribe to `phase2-complete`; the formatter preserves the whole body in
+  `description`, structures JSON bodies, surfaces a distinct Subject as a bold lead).
+- ✅ **Success-vs-failure-vs-review distinction (PR pending):** the emoji triage now
+  checks review/gate BEFORE failure, so a dedup gate "HOLD"/needs-review renders as
+  an action item (:warning:) instead of a failure (:x:) — the owner-flagged
+  false-alarm. Genuine failures (fail/error/denied/not-authorized/exception) still :x:.
+- **OPEN:** live-render verification against a deployed stack (confirm the card renders
+  as intended in the actual Slack channel) + any further noise-reduction the owner wants.
+*Source: St. Vith 2026-09-27; mechanism verified + refinement flagged 2026-10-01; detail+triage done 2026-10-12*
 
-#### ECS task role missing `SNS:ListSubscriptionsByTopic` (notification preflight always warns)
-The new `_preflight_notification_subscriptions` (non-blocking) hits
-`AuthorizationError` — `dev-wwii-ecs-task-role` lacks `SNS:ListSubscriptionsByTopic`
-on the notification topic, so the preflight can't actually verify subscriptions
-and always logs its warning (then correctly continues). Add the read permission
-to the task role (`cloudformation/iam.yaml`) so the preflight does its job.
-Non-blocking; the run proceeds regardless.
-*Source: St. Vith verification run 2026-09-27 log*
+#### ✅ DONE — ECS task role missing `SNS:ListSubscriptionsByTopic` (notification preflight)
+`_preflight_notification_subscriptions` (non-blocking) was hitting `AuthorizationError`
+because `dev-wwii-ecs-task-role` lacked `SNS:ListSubscriptionsByTopic`. Added the read
+permission to the task-role SNSPublish statement (`cloudformation/iam.yaml`) so the
+preflight can actually verify subscriptions instead of always warning.
+*Source: St. Vith verification run 2026-09-27 log; fixed 2026-10-12*
 
 #### Misleading "0 processed, N failed" log in batch mode
 In batch mode, the synchronous core-extraction step does **not** process inline —
