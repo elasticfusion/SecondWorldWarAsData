@@ -101,15 +101,14 @@ def _title_registry_put(title: str, checksum: str) -> bool:
 
 
 def _title_checksum(s3, keys: list) -> str:
-    """One stable checksum over ALL of a title's content keys (not per-file), so a
-    normal multi-file/multi-chapter upload is ONE title identity. Streams each body
-    in 1MiB chunks (no full in-memory read) and closes the stream."""
+    """Stable sha256 over ALL of a title's content keys (single-file identity:
+    exact byte identity of the one file; also used as the stored marker). Streams
+    each body in 1MiB chunks (bounded memory) and closes the stream."""
     import contextlib as _cl
     import hashlib as _hl
 
     h = _hl.sha256()
-    for key in sorted(keys):  # sorted => order-independent identity
-        h.update(key.encode("utf-8"))  # include name so renames differ
+    for key in sorted(keys):
         obj = s3.get_object(Bucket=BUCKET, Key=key)
         with _cl.closing(obj["Body"]) as body:
             while True:
@@ -120,27 +119,142 @@ def _title_checksum(s3, keys: list) -> str:
     return "sha256:" + h.hexdigest()
 
 
-def _enforce_title_uniqueness(keys: list) -> list:
-    """Titles must be unique. Returns the keys to PROCEED with.
+def _multi_fingerprint(s3, keys: list) -> str:
+    """Compact human/LLM-readable fingerprint of a multi-file submission: sorted
+    filenames + sizes + a small head sample of each, for the LLM sameness judge."""
+    parts = []
+    for key in sorted(keys):
+        try:
+            obj = s3.get_object(Bucket=BUCKET, Key=key, Range="bytes=0-600")
+            head = obj["Body"].read().decode("utf-8", "replace")
+        except Exception:  # noqa: BLE001
+            head = ""
+        parts.append(f"{key.rsplit('/', 1)[-1]}:\n{head.strip()[:400]}")
+    return "\n---\n".join(parts)
 
-    Decision is made PER TITLE (not per file) over all of a title's keys:
-      * new title            -> claim (conditional) + proceed with all its keys.
-      * same title + content -> REPEAT: drop + reject-to-review (no reprocess).
-      * same title, diff body -> COLLISION: drop + reject-to-review with a suggested
-        unique title (auto-renaming S3 is deferred to the operator; never a silent
-        overwrite of a different item under one title).
 
-    NOTE (migration): the registry is forward-only. Titles ingested BEFORE this
-    gate existed are not registered, so the first post-deploy re-upload of a legacy
-    title is seen as 'new' and reprocesses once. A one-time backfill of existing
-    contentrepository/{TITLE}/ prefixes is a follow-up.
+def _grok_api_key() -> str:
+    secret_id = os.environ.get("SECRETS_ID", "")
+    if not secret_id:
+        return os.getenv("GROK_API_KEY", "")
+    try:
+        sm = boto3.client(
+            "secretsmanager",
+            region_name=os.environ.get("AWS_REGION", "us-east-1"),
+        )
+        return sm.get_secret_value(SecretId=secret_id)["SecretString"]
+    except Exception as e:  # noqa: BLE001
+        logger.warning("grok key fetch failed: %s", e)
+        return ""
+
+
+def _llm_same_work(title: str, existing_fp: str, new_fp: str) -> bool:
+    """Ask Grok whether two multi-file submissions under the same title are the
+    SAME work. Fail-safe: on ANY error return False (treat as DIFFERENT -> rename,
+    never silently merge two different works under one title)."""
+    key = _grok_api_key()
+    if not key:
+        logger.warning("no grok key for multi-file sameness — treating as different")
+        return False
+    try:
+        import json as _json
+        import urllib.request as _ur
+
+        prompt = (
+            "Two document submissions share the title "
+            f"'{title}'. Decide if they are the SAME underlying work (same book/"
+            "document, possibly re-uploaded) or DIFFERENT works that merely share a "
+            "title. Answer with ONLY 'SAME' or 'DIFFERENT'.\n\n"
+            f"=== EXISTING ===\n{existing_fp[:4000]}\n\n=== NEW ===\n{new_fp[:4000]}"
+        )
+        body = _json.dumps(
+            {
+                "model": os.getenv("GROK_MODEL", "grok-2-latest"),
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0,
+                "max_tokens": 4,
+            }
+        ).encode()
+        req = _ur.Request(
+            "https://api.x.ai/v1/chat/completions",
+            data=body,
+            headers={
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json",
+            },
+        )
+        with _ur.urlopen(req, timeout=30) as resp:  # nosec B310 - fixed https host
+            out = _json.loads(resp.read().decode("utf-8"))
+        answer = out["choices"][0]["message"]["content"].strip().upper()
+        return answer.startswith("SAME")
+    except Exception as e:  # noqa: BLE001 - fail-safe: different
+        logger.warning("multi-file sameness LLM failed (%s) — treating as different", e)
+        return False
+
+
+def _resolve_title_identity(s3, title: str, tkeys: list):
+    """Decide one title's identity (single=checksum, multi=LLM) and return
+    (proceed: bool, reject_reason, reject_category). Closures bind to THIS
+    function's params, not loop vars."""
+    from src.ingestion.title_uniqueness import decide_identity
+
+    single = len(tkeys) == 1
+    checksum = _title_checksum(s3, tkeys) if single else ""
+    new_fp = "" if single else _multi_fingerprint(s3, tkeys)
+    marker = checksum if single else ("llm:" + new_fp[:4000])
+
+    def _ck() -> str:
+        return checksum
+
+    def _same() -> bool:
+        # Compare against the EXISTING stored fingerprint (read once here).
+        existing = _title_registry_get(title) or ""
+        return _llm_same_work(title, existing[4:], new_fp)
+
+    decision = decide_identity(
+        title, tkeys, lookup=_title_registry_get, single_checksum=_ck, multi_same=_same
+    )
+    if decision.action == "new":
+        if _title_registry_put(title, marker):
+            return True, "", ""
+        decision = decide_identity(
+            title,
+            tkeys,
+            lookup=_title_registry_get,
+            single_checksum=_ck,
+            multi_same=_same,
+        )
+        if decision.action == "new":
+            return True, "", ""  # transient write error -> fail-open once
+
+    if decision.action == "repeat":
+        logger.info("Duplicate submission (same work), rejecting title %r", title)
+        return False, "duplicate: same title + same work already ingested", "duplicate"
+    logger.warning(
+        "Title collision (different work) %r -> suggest %r (method=%s)",
+        title,
+        decision.title,
+        decision.method,
+    )
+    reason = (
+        f"title collision: '{title}' already holds a different work; "
+        f"re-upload under a unique title (suggested: '{decision.title}')"
+    )
+    return False, reason, "title-collision"
+
+
+def _enforce_title_uniqueness_at_launch(keys: list) -> list:
+    """Title-uniqueness gate run at Phase-1 LAUNCH, over the FULL accumulated key
+    set for each title (so concurrent partial S3->SNS deliveries don't cause false
+    collisions). Title is the first duplicate indicator; identity method matches
+    the submission SHAPE: single-file -> checksum, multi-file -> LLM.
+
+    Returns the keys to PROCEED with (repeats/collisions dropped + rejected-to-review).
+    Forward-only registry (dev: a legacy title reprocesses once on first re-upload).
     """
-    from src.ingestion.title_uniqueness import decide_title
     from src.ingestion.review_reject import reject_to_review
 
     s3 = boto3.client("s3")
-
-    # Group keys by title; untitled keys (validated-out elsewhere) pass through.
     by_title: dict = {}
     proceed: list = []
     for k in keys:
@@ -152,42 +266,14 @@ def _enforce_title_uniqueness(keys: list) -> list:
 
     for title, tkeys in by_title.items():
         try:
-            checksum = _title_checksum(s3, tkeys)
+            ok, reason, category = _resolve_title_identity(s3, title, tkeys)
         except Exception as e:  # noqa: BLE001 - fail-open: let the title proceed
-            logger.warning("checksum failed for title %r (%s) — proceeding", title, e)
+            logger.warning("identity resolve failed for %r (%s) — proceeding", title, e)
             proceed.extend(tkeys)
             continue
-        decision = decide_title(title, checksum, _title_registry_get)
-
-        if decision.action == "new":
-            # Conditional claim; if a concurrent upload won, re-decide to classify
-            # this one as repeat/collision instead of double-processing.
-            if _title_registry_put(title, checksum):
-                proceed.extend(tkeys)
-                continue
-            decision = decide_title(title, checksum, _title_registry_get)
-            if decision.action == "new":
-                # Registry still says unused (transient write error) — proceed
-                # fail-open rather than block a legitimate upload.
-                proceed.extend(tkeys)
-                continue
-
-        if decision.action == "repeat":
-            logger.info("Duplicate upload (same title+content), rejecting: %s", title)
-            reason = "duplicate upload: identical title and content already ingested"
-            category = "duplicate"
-        else:  # collision (same title, different content) or any other -> reject
-            logger.warning(
-                "Title collision (different content) for %r -> suggest %r; "
-                "rejecting to review (no silent overwrite)",
-                title,
-                decision.title,
-            )
-            reason = (
-                f"title collision: '{title}' already holds different content; "
-                f"re-upload under a unique title (suggested: '{decision.title}')"
-            )
-            category = "title-collision"
+        if ok:
+            proceed.extend(tkeys)
+            continue
         for k in tkeys:
             try:
                 reject_to_review(s3, BUCKET, k, title, reason, category=category)
@@ -810,12 +896,6 @@ def handler(event, _context):
             if not content:
                 logger.info("No processable content in upload batch — nothing to do")
                 continue
-            # Titles must be unique: drop exact-duplicate re-uploads (reject) and
-            # title collisions with different content (reject w/ suggested name).
-            content = _enforce_title_uniqueness(content)
-            if not content:
-                logger.info("All uploads were duplicates/collisions — nothing to do")
-                continue
             ocr_keys, convert_keys, video_keys, parse_keys = _split_by_media(content)
             # AV gate (demand-launched, binary-only): scan pdf/image/video/office
             # BEFORE any parser (fitz/ffmpeg/torch/pandoc) touches the bytes.
@@ -1408,6 +1488,43 @@ def _launch_phase1_if_idle():
     try:
         resp = dynamo.get_item(Key={"cache_key": "pending#content"})
         keys = resp.get("Item", {}).get("keys", [])
+        if keys:
+            # Title-uniqueness gate over the FULL accumulated set (not per-
+            # invocation): single-file -> checksum, multi-file -> LLM. Drops
+            # repeats/collisions. Only runs when there ARE pending keys; an empty
+            # pending set keeps the prior launch behavior (manifest-driven).
+            proceed = _enforce_title_uniqueness_at_launch(keys)
+            if set(proceed) != set(keys):
+                # CONDITIONAL rewrite (optimistic lock on the exact list we read):
+                # if a concurrent _queue_pending appended a key between our read and
+                # here, the condition fails and we SKIP the rewrite rather than
+                # clobber that append — the dropped keys will simply be re-gated on
+                # the next launch cycle. Never a blind full-list overwrite.
+                # (Relies on pending#content being APPEND-ONLY/ordered via
+                # list_append, so "#k = :read" reliably detects a concurrent change.)
+                try:
+                    dynamo.put_item(
+                        Item={"cache_key": "pending#content", "keys": proceed},
+                        ConditionExpression="#k = :read",
+                        ExpressionAttributeNames={"#k": "keys"},
+                        ExpressionAttributeValues={":read": keys},
+                    )
+                    logger.info(
+                        "Uniqueness gate: %d of %d content keys proceed",
+                        len(proceed),
+                        len(keys),
+                    )
+                except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
+                    logger.info(
+                        "pending#content changed concurrently — skipping rewrite "
+                        "(dropped keys will be re-gated next cycle)"
+                    )
+            if not proceed:
+                logger.info(
+                    "All pending content were duplicates/collisions — no launch"
+                )
+                return
+            keys = proceed
         books = {_title_from_key(k) for k in keys if k}
         books.discard("")
         if len(books) == 1:
