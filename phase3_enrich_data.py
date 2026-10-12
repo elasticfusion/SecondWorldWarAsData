@@ -448,6 +448,27 @@ def main():
                 args.max_items,
             ),
         )
+        # External maps via live web search — MOVED FROM PHASE 2 so OpenSERP/NAT
+        # come up exactly once (here). Imports map images for places via OpenSERP;
+        # the LOCAL external_maps.yaml corpus import stays in Phase 2.
+        ext_config = config.get("external_maps", {})
+        if ext_config.get("enabled", False):
+            from src.extraction.openserp_maps import import_openserp_maps
+
+            total_enriched += _run_step(
+                "openserp_external_maps",
+                lambda: import_openserp_maps(
+                    places_dir=args.output_dir / "places",
+                    output_dir=args.output_dir / "external_maps",
+                    grok_client=grok_client,
+                    max_places=ext_config.get("max_places") or args.max_items,
+                    search_limit=ext_config.get("search_limit", 50),
+                    openserp_url=openserp_url,
+                    page_timeout=ext_config.get("page_download_timeout", 10),
+                    image_timeout=ext_config.get("image_download_timeout", 30),
+                    image_storage_path=ext_config.get("image_storage_path"),
+                ),
+            )
         # Durable OpenSERP effectiveness/health metrics -> output/metrics/openserp_metrics.json
         _write_openserp_metrics(args.output_dir)
 

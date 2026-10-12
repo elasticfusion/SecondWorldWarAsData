@@ -193,7 +193,7 @@ supplemental_material:
   llm_search: true                 # Phase 2: Use LLM for search (first pass)
   search_gutenberg: true           # Phase 2: Search Gutenberg.org for books/periodicals
   search_archive_org: true         # Phase 2: Search Archive.org
-  use_openserp: true               # Phase 2: Use OpenSERP for web search
+  use_openserp: true               # Phase 3 ONLY: OpenSERP live web search (Phase 2 is Grok/Wikipedia + local corpus)
   verify_archive_urls: true        # Phase 3: Verify archive URLs
   extract_isbn: true               # Phase 3: Extract ISBN for books (post-1966)
   determine_copyright: true        # Phase 3: Determine copyright status
@@ -208,7 +208,7 @@ supplemental_material:
 - `llm_search` - Use Grok to search for online versions of cited works
 - `search_gutenberg` - Search Project Gutenberg
 - `search_archive_org` - Search Internet Archive
-- `use_openserp` - Use OpenSERP for broader web search (Phase 2: supplemental search, Phase 3: images, academic sources, event content)
+- `use_openserp` - Use OpenSERP for live web search (**Phase 3 ONLY**: images, academic sources, event content, external maps). Phase 2 never uses OpenSERP (Grokipedia/Wikipedia + local corpus only).
 
 **Phase 3 (Advanced):**
 - `verify_archive_urls` - Verify that discovered archive URLs are still accessible

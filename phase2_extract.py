@@ -351,56 +351,22 @@ def _extract_images(output_root, config, logger):
 
 
 def _extract_external_maps(base_dir, grok_client, paths, config, logger):
-    """Search for and import external maps."""
+    """Import external maps from the LOCAL corpus (external_maps.yaml).
+
+    OpenSERP (live web map search) is NOT done here — it is Phase 3 only, so that
+    OpenSERP/NAT come up exactly once (in Phase 3) and Phase 2 stays limited to
+    Grokipedia/Wikipedia + local-corpus work. This step imports only the
+    local-file maps that are part of the imported corpus.
+    """
     if not config.get("external_maps", {}).get("enabled", False):
         return
 
-    logger.info("[phase2 step 3/5] Searching for external maps (OpenSERP)")
-
-    # Check OpenSERP availability
-    openserp_available = False
-    try:
-        import requests
-
-        logger.info("Checking OpenSERP availability (may take 30-60 seconds)...")
-        response = requests.get(
-            "http://localhost:7001/mega/search?text=test&limit=1", timeout=60
-        )
-        openserp_available = response.status_code == 200
-        if openserp_available:
-            logger.info("✓ OpenSERP detected on port 7001")
-    except requests.ConnectionError:
-        logger.warning("  OpenSERP not available - skipping external map search")
-        logger.warning("  To enable: cd openserp && ./openserp serve -p 7001 &")
-    except requests.Timeout:
-        logger.warning("  OpenSERP timeout - skipping external map search")
-    except Exception as e:
-        logger.warning("  OpenSERP check failed: %s", e)
-
-    if openserp_available:
-        try:
-            from src.extraction.openserp_maps import import_openserp_maps
-
-            ext_config = config.get("external_maps", {})
-            imported = import_openserp_maps(
-                places_dir=paths["output_root"] / "places",
-                output_dir=paths["output_root"] / "external_maps",
-                grok_client=grok_client,
-                max_places=ext_config.get("max_places"),
-                search_limit=ext_config.get("search_limit", 50),
-                openserp_url=ext_config.get("openserp_url", "http://localhost:7001"),
-                page_timeout=ext_config.get("page_download_timeout", 10),
-                image_timeout=ext_config.get("image_download_timeout", 30),
-                image_storage_path=ext_config.get("image_storage_path"),
-            )
-            logger.info("  ✓ Imported %d maps via OpenSERP", imported)
-        except Exception as e:
-            logger.error("  Error with OpenSERP: %s", e)
-
-    # Import from YAML if it exists
+    # Import from the local corpus YAML if it exists (no internet / no OpenSERP).
     yaml_path = base_dir / "external_maps.yaml"
     if yaml_path.exists():
-        logger.info("\n  Importing from external_maps.yaml...")
+        logger.info(
+            "[phase2 step 3/5] Importing local corpus maps (external_maps.yaml)"
+        )
         try:
             yaml_imported = import_maps(
                 yaml_path=yaml_path,
@@ -414,7 +380,7 @@ def _extract_external_maps(base_dir, grok_client, paths, config, logger):
                     "allowed_licenses"
                 ),
             )
-            logger.info("  ✓ Imported %d maps from YAML", yaml_imported)
+            logger.info("  ✓ Imported %d maps from local corpus YAML", yaml_imported)
         except Exception as e:
             logger.error("  Error importing from YAML: %s", e)
 

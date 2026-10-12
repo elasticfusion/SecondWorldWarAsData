@@ -18,7 +18,6 @@ def handler(event, _context):
     from src.grok_client import GrokClient
     from src.utils.backends import create_cache_backend, create_storage
     from src.utils.config import load_config
-    from src.utils.openserp_client import get_openserp_url
 
     config = load_config()
     storage = create_storage(config, Path("."))
@@ -28,9 +27,8 @@ def handler(event, _context):
     api_key = _get_api_key(config)
     grok_client = GrokClient(cache, api_key=api_key)
 
-    # Ensure OpenSERP is available if needed
-    openserp_url = get_openserp_url(config)
-    config["external_maps"]["openserp_url"] = openserp_url
+    # NOTE: Phase 2 does NOT use OpenSERP — it is Phase-3 only (Phase 2 is limited
+    # to Grokipedia/Wikipedia + local-corpus work, so it never brings up NAT).
 
     records = _extract_s3_records(event)
     results = {"processed": 0, "failed": 0}

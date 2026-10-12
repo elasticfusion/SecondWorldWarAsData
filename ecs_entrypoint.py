@@ -373,8 +373,14 @@ def _get_openserp_alb_dns() -> str:
 
 
 def _start_openserp_if_needed(phase_script: str) -> None:
-    """Scale OpenSERP service to 1 for Phase 2/3 and discover its IP."""
-    if "phase0" in phase_script or "phase1" in phase_script:
+    """Scale OpenSERP service to 1 and discover its IP — PHASE 3 ONLY.
+
+    OpenSERP (live web search) is a Phase-3-only dependency: Phase 2 is limited to
+    Grokipedia/Wikipedia + local-corpus work and must NOT bring up OpenSERP/NAT.
+    Starting it only for phase3 means OpenSERP/NAT come up exactly once and never
+    bounce between phases.
+    """
+    if "phase3" not in phase_script:
         return
     try:
         env = os.environ.get("ENV_NAME", "dev")
