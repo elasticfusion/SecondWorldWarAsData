@@ -24,6 +24,49 @@ from scripts.find_related_groups import generate_related_groups_report
 # ---------------------------------------------------------------------------
 
 
+def _apply_scope_guard(parsed_files, book, expected_count, content_root, logger):
+    """Scope ``parsed_files`` by book, then enforce the shared run-scope contract.
+
+    The ``--book`` filter restricts to one book (unknown book is a hard error).
+    Count/ceiling enforcement is delegated to the shared, UNOVERRIDABLE
+    :func:`src.utils.run_scope_guard.enforce_scope` so Phase 2 and Phase 3 share
+    one rule that no local flag can disable.
+
+    Returns the (possibly filtered) list. Raises SystemExit on mismatch.
+    """
+    from src.utils.run_scope_guard import ScopeMismatchError, enforce_scope
+
+    total = len(parsed_files)
+
+    if book:
+        book_dir = content_root / book
+        scoped = [p for p in parsed_files if p.is_relative_to(book_dir)]
+        if not scoped:
+            logger.error(
+                "--book %r matched 0 of %d parsed files under %s — aborting "
+                "(refusing to fall through to a whole-corpus run).",
+                book,
+                total,
+                content_root,
+            )
+            raise SystemExit(2)
+        logger.info(
+            "Scoped to book %r: %d of %d parsed files", book, len(scoped), total
+        )
+        parsed_files = scoped
+
+    try:
+        enforce_scope(
+            actual=len(parsed_files),
+            expected=expected_count,
+            label="Phase 2 chapters",
+            logger=logger,
+        )
+    except ScopeMismatchError as e:
+        raise SystemExit(e.exit_code) from e
+    return parsed_files
+
+
 def _complete_metadata(base_dir, paths, logger, batch_mode=False):
     """Step 0: Complete any incomplete metadata."""
     try:
@@ -570,11 +613,19 @@ def _run_core_extraction(
     )
 
     if any_optional and not skip_optional:
-        from src.utils.config import get_content_root
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
-        content_root = get_content_root(paths)
-        event_files = sorted(content_root.rglob("*-event.json"))
+        # Scope to the SAME set the run was guarded for: derive each event file
+        # from the in-scope parsed_files, never a fresh whole-corpus rglob. This
+        # keeps --book / --expected-count honest for the optional extractors too
+        # (CFN security review: a scoped run must not touch other books here).
+        event_files = sorted(
+            {
+                pf.parent / pf.name.replace("-parsed.json", "-event.json")
+                for pf in parsed_files
+            }
+        )
+        event_files = [e for e in event_files if e.exists()]
         max_workers = config.get("concurrency", {}).get("max_event_files", 3)
 
         def _process_event(event_file):
@@ -614,6 +665,20 @@ def main():
         "--batch",
         action="store_true",
         help="Use xAI Batch API (50%% cost reduction, async processing)",
+    )
+    parser.add_argument(
+        "--book",
+        default=None,
+        help="Scope extraction to a single book (output book dir name). Without "
+        "it, ALL parsed chapters in the corpus are processed.",
+    )
+    parser.add_argument(
+        "--expected-count",
+        type=int,
+        default=None,
+        help="Expected number of chapters to process. If the actual number of "
+        "parsed files to be processed differs, ABORT (fail-loud scope guard "
+        "against an unintended whole-corpus run).",
     )
     args = parser.parse_args()
 
@@ -677,6 +742,13 @@ def main():
         logger.error("No parsed files found in %s", content_root)
         logger.error("Please run phase1_parse.py first")
         sys.exit(1)
+
+    # Scope + fail-loud guard: a scoped intent must not silently become a
+    # whole-corpus run. Apply the optional --book filter, then abort if the
+    # actual count disagrees with the operator-declared --expected-count.
+    parsed_files = _apply_scope_guard(
+        parsed_files, args.book, args.expected_count, content_root, logger
+    )
 
     logger.info("Found %d parsed file(s)", len(parsed_files))
 
@@ -812,10 +884,15 @@ def main():
                 grok_client._batch_collector = BatchCollector()
                 logger.info("\nCollecting optional extractor requests for batch...")
 
-                from src.utils.config import get_content_root
-
-                content_root = get_content_root(paths)
-                event_files = sorted(content_root.rglob("*-event.json"))
+                # Same scope as the guarded run — derive from parsed_files, not a
+                # whole-corpus rglob (keeps --book/--expected-count honest).
+                event_files = sorted(
+                    {
+                        pf.parent / pf.name.replace("-parsed.json", "-event.json")
+                        for pf in parsed_files
+                    }
+                )
+                event_files = [e for e in event_files if e.exists()]
                 for event_file in event_files:
                     current_book.set(event_file.parent.name)
                     parsed_file = event_file.parent / event_file.name.replace(

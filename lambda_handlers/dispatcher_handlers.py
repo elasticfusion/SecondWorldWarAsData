@@ -81,32 +81,89 @@ def enumerate_pending(_event, _context):
     advances the doc on completion (Option 1 — SFN owns lifecycle).
     """
     table = _table()
-    items = []
+
+    # SINGLE scan: snapshot the READY (dispatchable) docs ONCE into memory. We
+    # guard on this exact snapshot and then claim ONLY from it — so the set we may
+    # dispatch can never exceed the set the guard approved (closes the TOCTOU where
+    # a second scan could pick up docs that became READY after the count), and we
+    # avoid a second full-table scan (RCU/latency). Nothing is claimed yet.
+    candidates = []
     kwargs = {
         "FilterExpression": "begins_with(cache_key, :p)",
         "ExpressionAttributeValues": {":p": "doc#"},
     }
     while True:
         resp = table.scan(**kwargs)
-        for it in resp.get("Items", []):
-            status = it.get("status", "")
-            if status not in _READY:
-                continue
-            if not _claim_doc(table, it["cache_key"], status):
-                continue  # another drain claimed it — skip (no double-dispatch)
-            phase = it.get("next_phase", "phase1")
-            items.append(
-                {
-                    "doc_id": it["cache_key"].split("#", 1)[-1],
-                    "book": it.get("book", ""),
-                    "phase": phase,
-                    "task_def": _PHASE_TASK_DEF.get(phase, _PHASE_TASK_DEF["phase1"]),
-                }
-            )
+        candidates.extend(
+            it for it in resp.get("Items", []) if it.get("status", "") in _READY
+        )
         lek = resp.get("LastEvaluatedKey")
         if not lek:
             break
         kwargs["ExclusiveStartKey"] = lek
+
+    # Shared run-scope safeguard over the DYNAMODB-QUEUED work set (the
+    # authoritative AWS work count — NOT an S3 file count). This guards against an
+    # UNINTENDED whole-backlog fan-out; it is NOT a concurrency cap. Parallelism
+    # (how many batches run at once) is governed separately by clamp_pool /
+    # MaxConcurrency. A large INTENTIONAL drain — including many batches in
+    # parallel — is supported: declare DISPATCH_EXPECTED_COUNT = the backlog size.
+    # The guard only aborts a large backlog that was NOT declared, and because we
+    # claim strictly from the guarded snapshot, the dispatched set is bounded by
+    # the approved count. Fail-loud but structured (never raise in the SFN task,
+    # nothing claimed yet): on violation return 0 items. Not overridable.
+    from src.utils.run_scope_guard import (
+        LARGE_RUN_CEILING,
+        ScopeMismatchError,
+        enforce_scope,
+    )
+
+    _declared = os.environ.get("DISPATCH_EXPECTED_COUNT")
+    try:
+        _expected = int(_declared) if _declared not in (None, "") else None
+    except ValueError:
+        logger.error(
+            "DISPATCH ABORTED: DISPATCH_EXPECTED_COUNT=%r is not an integer", _declared
+        )
+        return {
+            "count": 0,
+            "items": [],
+            "aborted": True,
+            "reason": "invalid DISPATCH_EXPECTED_COUNT (not an integer)",
+        }
+    try:
+        enforce_scope(
+            actual=len(candidates),
+            expected=_expected,
+            label="dispatcher queued docs",
+            logger=logger,
+        )
+    except ScopeMismatchError as e:
+        logger.error("DISPATCH ABORTED by scope guard: %s", e)
+        return {"count": 0, "items": [], "aborted": True, "reason": str(e)}
+
+    # A sanctioned LARGE run (explicitly declared above the ceiling) must not be
+    # silent — alert so a declared whole-backlog drain is always auditable.
+    if _expected is not None and len(candidates) > LARGE_RUN_CEILING:
+        _notify_large_dispatch(len(candidates))
+
+    # Scope approved — claim ONLY from the guarded snapshot, atomically
+    # (status -> running). A doc a concurrent drain already claimed fails the
+    # conditional and is skipped (no double-dispatch); the dispatched set is a
+    # SUBSET of the approved snapshot, never a superset.
+    items = []
+    for it in candidates:
+        if not _claim_doc(table, it["cache_key"], it.get("status", "")):
+            continue
+        phase = it.get("next_phase", "phase1")
+        items.append(
+            {
+                "doc_id": it["cache_key"].split("#", 1)[-1],
+                "book": it.get("book", ""),
+                "phase": phase,
+                "task_def": _PHASE_TASK_DEF.get(phase, _PHASE_TASK_DEF["phase1"]),
+            }
+        )
     # FIFO by doc_id (arrival/enumeration order); stable + predictable (§8).
     items.sort(key=lambda x: x["doc_id"])
     logger.info("enumerate_pending: %d dispatchable docs", len(items))
@@ -172,6 +229,27 @@ def _notify_quota_ceiling(message: str) -> None:
         )
     except Exception as e:  # pragma: no cover - defensive
         logger.warning("quota-ceiling notify failed: %s", e)
+
+
+def _notify_large_dispatch(count: int) -> None:
+    """Best-effort SNS alert when a DECLARED large dispatch (above the scope
+    ceiling) is approved — so a sanctioned whole-backlog drain is never silent
+    (security review 2026-10-12). Counts only; no secrets/PII."""
+    topic = os.getenv("NOTIFICATION_TOPIC_ARN", "")
+    if not topic:
+        return
+    try:
+        boto3.client("sns", region_name=REGION).publish(
+            TopicArn=topic,
+            Subject="WWII Pipeline: large dispatch approved",
+            Message=(
+                f"Scope guard APPROVED a declared large dispatch of {count} docs "
+                f"(DISPATCH_EXPECTED_COUNT matched the ready backlog). This is a "
+                f"sanctioned whole-backlog/large drain; alerting for auditability."
+            ),
+        )
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("large-dispatch notify failed: %s", e)
 
 
 def human_gate(event, _context):

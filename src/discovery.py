@@ -154,7 +154,12 @@ def _flat_book_chapter(book_dir: Path, book_name: str) -> Optional[ChapterGroup]
     md_files = [
         p
         for p in book_dir.glob("*.md")
-        if not p.name.endswith("-meta.md") and not p.name.startswith(".")
+        # Must be a FILE: a directory named "*.md" (e.g. an OCR output dir
+        # like ETO_Order_of_Battle_chandra.md) would otherwise be fed to
+        # read_text() and abort the entire parse phase (IsADirectoryError).
+        if p.is_file()
+        and not p.name.endswith("-meta.md")
+        and not p.name.startswith(".")
     ]
     if not md_files:
         return None
