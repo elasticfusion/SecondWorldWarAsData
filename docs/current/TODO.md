@@ -44,13 +44,24 @@ bottom); what remains is ranked here. Current ordered priority:
    share the broad LambdaExecutionRole. MED = entity-table PITR, deploy-role GetSecretValue,
    TriggerQueue SSE+DLQ, OcrSpotController `batch:*` on `*`, public dedup/metrics APIs,
    constant-time auth compare.
-7. **[MED] data-quality follow-ups** (validation_stats time-series, fail-open-allow counter,
+7. **[HIGH · sourcing] Source qualification** — derived qualifier on the bibliography record so a
+   reader (and RAG/UI) can judge how a source qualifies for an asserted fact (qualification, NOT
+   veracity): `source_type` (primary/secondary/tertiary/reference) + `proximity` + `evidentiary_support`,
+   each with method/basis/confidence. Additive bibliography schema bump (no new schema, no reprocess);
+   derived from signals already captured (NARA archive ref, document_type, footnote density);
+   read-through `event→mentions[].BibliographyID→bibliography`. Dublin Core documented as an option
+   (direct DCMI profile vs. derivation/crosswalk). Design agreed 2026-10-12 — see
+   `dataquality/SOURCE_QUALIFICATION_DESIGN.md`; pending owner sign-off on DCMI direct-vs-derivation.
+8. **[MED] data-quality follow-ups** (validation_stats time-series, fail-open-allow counter,
    persisted corpus_quality_report dashboard, dedup precision/recall, catcher per-book dimension)
    + observability (Slack refinement, misleading batch log, SNS IAM) + bibliography/Archive.org UIs.
-8. **[LOW] external_maps license config exposure; code-quality refactors; mypy --strict on new
+9. **[LOW] external_maps license config exposure; code-quality refactors; mypy --strict on new
    files; doc-hygiene pass (see docs/archive/2026-10-11/UNVALIDATED_CLAIMS_FOR_REVIEW.md).**
-9. **[FUTURE] Postgres/pgvector + RAG layer, DynamoDB-removal, true multi-job concurrency, Step
-    Functions, new entity types — gated on the post-ingestion RAG phase.**
+10. **[FUTURE] Postgres/pgvector + RAG layer, DynamoDB-removal, true multi-job concurrency, Step
+    Functions, new entity types — gated on the post-ingestion RAG phase.** RAG + the eventual UI
+    MUST expose `bibliography.source_qualification` (source_type/proximity/evidentiary_support +
+    basis/confidence) as a queryable facet/ranking signal, read through
+    `event→mentions[].BibliographyID→bibliography` (see `dataquality/SOURCE_QUALIFICATION_DESIGN.md`).
 
 Detail for each item follows in the sections below (grouped by original theme; status markers are
 authoritative where they conflict with this index).
