@@ -1,6 +1,56 @@
 # Bibliography Resolution: End-to-End Process
 
-**Date:** 2026-06-05
+**Date:** 2026-06-05 · **Updated:** 2026-10-13
+
+---
+
+## ⚠️ Known prerequisite gap (2026-10-13) — citation text is not captured
+
+Verified on a clean RoerDams (green-book) run: `output/bibliography/` came out EMPTY
+even though the chapters have real endnotes. Root cause is UPSTREAM of this
+resolver, in the parser:
+
+- `src/parser.py::extract_footnotes` matches ONLY the in-text marker
+  `<sup>[N](...#fnN)</sup>` and captures `(number, url)`. The `Footnote` model has
+  no `text` field.
+- The actual citation text lives in the END-OF-CHAPTER definition block
+  (`> [N](...#cnN). <citation text>`), e.g.
+  `[1]. 12th A Gp and FUSA G-1 Daily Summaries, 12 Sep 44, FUSA G-2 TAC Misc file,
+  Sep 44.` — a NARA-resolvable archival reference. **This text is never parsed.**
+- Consequence chain: parser drops citation text → Phase 2 has nothing to classify →
+  **zero bibliography entries** → this resolver (NARA/Archive.org) has nothing to act
+  on → NARA/Archive.org appear to "do nothing" but are actually starved of input.
+
+**FIX (TODO HIGH #2 — blocks all bibliography work):** pair each `#fnN` in-text
+marker with its `#cnN` definition, add a `text` field to the footnote/endnote model,
+carry it into `endnotes.json`, and have Phase 2's bibliography extractor consume it.
+Discern footnotes vs endnotes and read the end-of-unit reference block generically
+(not only the ibiblio HyperWar `#fn`/`#cn` convention).
+
+## Planned extension (2026-10-13) — resolve-then-DOWNLOAD (TODO HIGH #3)
+
+The current resolver STOPS at recording a source URL (`resource_urls`). Intended
+additions:
+
+1. **Check existing holdings FIRST** (strengthen the current skip-if-resolved):
+   if `archive_reference_number` / a NARA record / local holdings already present →
+   do NOT search again.
+2. **NARA** = primary/military records. A NARA reference is NORMALLY physical-only;
+   record the Record Group + College Park location even when no digital copy exists
+   (that is a valid "resolved" — reference available on a visit).
+3. **Archive.org** = mostly NON-NARA material (books, articles). Books may be public
+   domain or not.
+4. **DOWNLOAD** any available copy for further processing, with format preference
+   **EPUB > PDF > text**. Gate downloads on `copyright_status`: public-domain books
+   download; non-PD → note-only (do not download).
+5. If NO download is available, record a DISTINCT status
+   (e.g. `available_on_visit` / `queued_for_future_inclusion`) — not plain
+   `not_found` — so it can be revisited.
+6. Open design points: download destination (`sources/` vs `contentrepository/`),
+   and whether a downloaded PD book feeds back into Phase 0/1 as new source material.
+7. Wire the NARA + NOAA API keys into runtime config (secrets exist:
+   `dev-wwii-pipeline/{nara,noaa}-api-key`; `_load_secrets` currently loads only
+   Grok; `config.py` maps `NARA_API_KEY`→`api.nara_api_key` but has NO NOAA mapping).
 
 ---
 

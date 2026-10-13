@@ -17,7 +17,34 @@ bottom); what remains is ranked here. Current ordered priority:
    progress signal; force-teardown + SNS alert only after 2 consecutive no-progress hours with NAT
    up + no lock/lease; fail-safe). CFN + schedule + update_lambdas wired; code-complete, NOT yet
    deployed. Code-reviewed; full gate PASS. (§ "Fix idle-infra teardown + hourly backstop reaper".)
-2. **[HIGH · corrective] (a) Remediate pre-existing invalid S3 fragments + (b2) corrective
+2. **[HIGH · parser/bibliography PREREQUISITE] Capture endnote/footnote CITATION TEXT.** The parser
+   (`src/parser.py::extract_footnotes`, `Footnote` model) captures only the in-text marker
+   `<sup>[N](...#fnN)</sup>` -> `(number, url)` and DROPS the actual citation text in the
+   end-of-chapter definition block (`> [N](...#cnN). <citation text>`, e.g. "12th A Gp and FUSA
+   G-1 Daily Summaries, 12 Sep 44, FUSA G-2 TAC Misc file, Sep 44."). Result: Phase 2 gets no
+   citation text -> creates ZERO bibliography entries -> Phase 3 NARA/Archive.org has nothing to
+   resolve. FIX: pair each `#fnN` marker with its `#cnN` definition, add a `text` field to the
+   footnote/endnote model, carry it into `endnotes.json`, and have Phase 2's bibliography
+   extractor consume it. Confirm the `#fn`/`#cn` ibiblio HyperWar convention + handle other source
+   endnote conventions generically. THIS BLOCKS all bibliography/NARA/Archive.org work. (Verified
+   2026-10-13 live: RoerDams ch2 endnotes.json held only {number,url}; source had the real
+   citations; output/bibliography/ empty.)
+3. **[HIGH · bibliography enrichment] Resolve + DOWNLOAD bibliographic sources.** Extends
+   `bibliography_resolver` (spec: docs/current/dataquality/bibliography_resolution_process.md).
+   Beyond the existing find-URL behavior: (a) CHECK EXISTING holdings/`resource_urls`/
+   `archive_reference_number` before any search (partly done — strengthen); if a NARA record is
+   already present, do NOT re-search. (b) NARA for primary/military records (reference usually
+   physical-only — record the RG/location even with no digital copy); Archive.org for non-NARA
+   (books, articles). (c) When a copy IS downloadable, DOWNLOAD it for further processing with
+   format preference EPUB > PDF > text; gate downloads on copyright_status (public-domain books
+   download; non-PD note-only). (d) If no download available, record a distinct
+   "available-on-visit / queued-for-future-inclusion" status (not plain not_found). Decide
+   download destination (new `sources/` prefix vs `contentrepository/` for re-ingestion) + whether
+   a downloaded PD book feeds back into Phase 0/1. Depends on #2 (no citations => nothing to
+   resolve/download). Also wire the NARA + NOAA secrets into runtime config (secrets exist:
+   `dev-wwii-pipeline/{nara,noaa}-api-key`; `_load_secrets` loads only Grok; `config.py` maps
+   NARA_API_KEY->api.nara_api_key but has NO NOAA mapping; add both + load both for Phase 3).
+   NOTE: the shared NOAA key was exposed in chat 2026-10-13 — ROTATE it.
    reprocessor** — the LAST data-quality layer (prevention + detection are done). Build the
    no-human-gate reprocessor in CORE (resolve-before-write, re-extract the whole source unit,
    deterministic) and run it as the (a) remediation. Highest-risk (first thing to MUTATE the live
