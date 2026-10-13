@@ -173,3 +173,48 @@ def test_any_pipeline_lock_held_assumes_locked_on_error():
         ecs_entrypoint, "_held_lock_keys", side_effect=RuntimeError("boom")
     ):
         assert ecs_entrypoint._any_pipeline_lock_held() is True
+
+
+def test_openserp_demand_false_when_only_current_task_running():
+    """SELF-EXCLUSION: the finishing task calls teardown while still RUNNING; it
+    must NOT count ITSELF as demand (the 'didn't shut down when done' bug). When
+    the only serp task is the current ECS_TASK_ID, demand is False -> tear down."""
+    fake_ecs = type(
+        "E",
+        (),
+        {
+            "list_tasks": staticmethod(
+                lambda **k: {"taskArns": ["arn:aws:ecs:...:task/cluster/mytask123"]}
+            )
+        },
+    )()
+    with patch.object(ecs_entrypoint, "_held_lock_keys", return_value=[]):
+        with patch.object(ecs_entrypoint.boto3, "client", return_value=fake_ecs):
+            with patch.dict(
+                os.environ, {"ENV_NAME": "dev", "ECS_TASK_ID": "mytask123"}
+            ):
+                assert ecs_entrypoint._openserp_demand_present() is False
+
+
+def test_openserp_demand_true_when_another_task_running_besides_self():
+    """A DIFFERENT serp task (not the current one) still counts as demand."""
+    fake_ecs = type(
+        "E",
+        (),
+        {
+            "list_tasks": staticmethod(
+                lambda **k: {
+                    "taskArns": [
+                        "arn:aws:ecs:...:task/cluster/mytask123",
+                        "arn:aws:ecs:...:task/cluster/othertask456",
+                    ]
+                }
+            )
+        },
+    )()
+    with patch.object(ecs_entrypoint, "_held_lock_keys", return_value=[]):
+        with patch.object(ecs_entrypoint.boto3, "client", return_value=fake_ecs):
+            with patch.dict(
+                os.environ, {"ENV_NAME": "dev", "ECS_TASK_ID": "mytask123"}
+            ):
+                assert ecs_entrypoint._openserp_demand_present() is True

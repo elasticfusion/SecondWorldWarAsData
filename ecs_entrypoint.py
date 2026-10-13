@@ -2460,15 +2460,24 @@ def _openserp_demand_present() -> bool:
             if any(suf in held for suf in serp_suffixes):
                 return True
         # 2) Any running/pending serp-phase task (covers the window before a lock
-        #    is written or after it's cleared but the task still runs).
+        #    is written or after it's cleared but the task still runs) — EXCLUDING
+        #    the current task. _stop_openserp_if_running is called from WITHIN a
+        #    finishing phase2/3 task that is itself still RUNNING; without this
+        #    self-exclusion the task counts ITSELF as demand and never tears
+        #    OpenSERP down ("didn't shut down when done"). Mirrors NAT's lease model
+        #    where the finishing task releases its own demand before teardown.
         cluster = f"{env_name}-wwii-pipeline"
         ecs = boto3.client("ecs", region_name=REGION)
+        self_task_id = os.environ.get("ECS_TASK_ID", "")
         for suf in serp_suffixes:
             family = f"{env_name}-wwii-{suf}"
             for status in ("RUNNING", "PENDING"):
-                if ecs.list_tasks(
+                arns = ecs.list_tasks(
                     cluster=cluster, family=family, desiredStatus=status
-                ).get("taskArns"):
+                ).get("taskArns", [])
+                # Exclude the current task (ARN ends in /{taskId}).
+                others = [a for a in arns if a.rsplit("/", 1)[-1] != self_task_id]
+                if others:
                     return True
     except Exception as e:
         logger.warning("OpenSERP demand check failed (keeping OpenSERP up): %s", e)
