@@ -101,7 +101,6 @@ def test_run_task_does_not_clear_lock_when_task_provisioning(dynamodb_table):
     with (
         patch.object(th.ecs, "list_tasks", side_effect=fake_list_tasks),
         patch.object(th.ecs, "run_task") as run_task,
-        patch.object(th, "_wait_for_networking"),
     ):
         th._run_task(th.PHASE1_TASK_DEF, "test")
     # Must NOT have launched a second task (lock respected, task is starting)
@@ -379,7 +378,6 @@ def test_run_task_fresh_lock_no_task_is_not_reclaimed(dynamodb_table):
             th.ecs, "list_tasks", return_value={"taskArns": []}
         ),  # no live task
         patch.object(th.ecs, "run_task") as run_task,
-        patch.object(th, "_wait_for_networking"),
     ):
         th._run_task(th.PHASE1_TASK_DEF, "second-invocation")
 
@@ -409,107 +407,11 @@ def test_run_task_genuinely_stale_lock_is_reclaimed(dynamodb_table):
     with (
         patch.object(th.ecs, "list_tasks", return_value={"taskArns": []}),
         patch.object(th.ecs, "run_task") as run_task,
-        patch.object(th, "_wait_for_networking"),
         patch.object(th, "_notify_launch"),
     ):
         th._run_task(th.PHASE1_TASK_DEF, "recovery")
 
     run_task.assert_called_once()  # stale lock reclaimed, task relaunched
-
-
-def test_wait_for_networking_requires_active_route(monkeypatch):
-    """NAT state=available is NOT enough — the private route table must have an
-    ACTIVE 0.0.0.0/0 -> nat route for networking to be considered ready."""
-    import lambda_handlers.trigger_handler as th
-
-    monkeypatch.setenv("NAT_WAIT_SECONDS", "10")
-
-    class _EC2:
-        def describe_nat_gateways(self, **_k):
-            return {"NatGateways": [{"NatGatewayId": "nat-123", "State": "available"}]}
-
-        def describe_route_tables(self, **_k):
-            return {
-                "RouteTables": [
-                    {
-                        "Routes": [
-                            {
-                                "DestinationCidrBlock": "0.0.0.0/0",
-                                "NatGatewayId": "nat-123",
-                                "State": "active",
-                            }
-                        ]
-                    }
-                ]
-            }
-
-    monkeypatch.setattr(th.boto3, "client", lambda _s, **_k: _EC2())
-    monkeypatch.setattr(th.time, "sleep", lambda _s: None)
-    assert th._wait_for_networking() is True
-
-
-def test_wait_for_networking_fails_closed_without_active_route(monkeypatch):
-    """NAT available but NO active default route -> returns False (fail-closed)."""
-    import lambda_handlers.trigger_handler as th
-
-    monkeypatch.setenv("NAT_WAIT_SECONDS", "10")
-
-    class _EC2:
-        def describe_nat_gateways(self, **_k):
-            return {"NatGateways": [{"NatGatewayId": "nat-123", "State": "available"}]}
-
-        def describe_route_tables(self, **_k):
-            return {"RouteTables": [{"Routes": []}]}  # no default route yet
-
-    monkeypatch.setattr(th.boto3, "client", lambda _s, **_k: _EC2())
-    monkeypatch.setattr(th.time, "sleep", lambda _s: None)
-    assert th._wait_for_networking() is False
-
-
-def test_run_task_fails_closed_when_networking_not_confirmed(monkeypatch):
-    """If _wait_for_networking returns False, _run_task must release its lock and
-    NOT launch a task (regression: launching into a dead network -> the task fails
-    its ECR pull with ResourceInitializationError and strands the lock)."""
-    import lambda_handlers.trigger_handler as th
-
-    monkeypatch.setattr(th, "_wait_for_networking", lambda: False)
-    monkeypatch.setattr(th, "_cancel_delayed_teardown", lambda: None)
-    monkeypatch.setattr(
-        th.boto3,
-        "client",
-        lambda _s, **_k: type("L", (), {"invoke": lambda *a, **k: None})(),
-    )
-    monkeypatch.setattr(th.ecs, "list_tasks", lambda **_k: {"taskArns": []})
-
-    deleted = {"keys": []}
-    put = {"n": 0}
-
-    class _Dyn:
-        class meta:
-            class client:
-                class exceptions:
-                    class ConditionalCheckFailedException(Exception):
-                        pass
-
-        def put_item(self, **_k):
-            put["n"] += 1
-
-        def delete_item(self, Key=None, **_k):
-            deleted["keys"].append(Key["cache_key"])
-
-        def get_item(self, **_k):
-            return {}
-
-    ran = {"n": 0}
-    monkeypatch.setattr(th, "dynamo", _Dyn())
-    monkeypatch.setattr(
-        th.ecs, "run_task", lambda **_k: ran.__setitem__("n", ran["n"] + 1)
-    )
-
-    th._run_task(th.PHASE1_TASK_DEF, "test", book_name="BookX")
-
-    assert ran["n"] == 0  # did NOT launch
-    assert any("lock#" in k for k in deleted["keys"])  # released the lock
 
 
 def test_launch_phase2_skips_when_no_book_resolvable(monkeypatch):

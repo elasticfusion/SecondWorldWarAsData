@@ -453,44 +453,77 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
     """
     if "phase2" not in phase_script and "phase3" not in phase_script:
         return
-    try:
-        env = os.environ.get("ENV_NAME", "dev")
-        resp = boto3.client("lambda", region_name=REGION).invoke(
-            FunctionName=f"{env}-wwii-nat-manager",
-            InvocationType="RequestResponse",
-            Payload=b'{"action": "create"}',
-        )
-        # Fail LOUD on any create problem: this is the single gate that gives
-        # phase2/3 their internet egress (Grok/Wiki/geocoding). A swallowed
-        # failure would surface later as an opaque mass-failure of every network
-        # call, so escalate to ERROR here where the root cause is visible.
-        if resp.get("FunctionError"):
-            body = resp.get("Payload").read().decode("utf-8", "replace")[:500]
-            logger.error(
-                "NAT create FAILED (nat_manager FunctionError) for %s: %s",
-                Path(phase_script).stem,
-                body,
-            )
-            return
-        payload = {}
+    # READINESS CONTRACT: Phase 2/3 need public egress (Grok/Wiki/geocode). Invoke
+    # the nat-manager and WAIT until it reports status=ready (NAT available + ACTIVE
+    # route + endpoints). nat-manager itself blocks on route-active, but a cold NAT
+    # can exceed one Lambda's budget, so retry here until ready or a generous
+    # deadline. The long-lived ECS task can afford this wait (unlike the old 240s
+    # trigger Lambda that fail-closed/livelocked). Phase 3 self-heals this way too:
+    # if NAT was torn down during the human dedup wait, this brings it back up.
+    stem = Path(phase_script).stem
+    max_attempts = int(os.environ.get("NAT_READY_MAX_ATTEMPTS", "6"))  # ~6 x ~2min
+    env = os.environ.get("ENV_NAME", "dev")
+    for attempt in range(1, max_attempts + 1):
         try:
-            payload = json.loads(resp.get("Payload").read().decode("utf-8"))
-        except Exception:  # noqa: BLE001 - defensive parse
+            resp = boto3.client("lambda", region_name=REGION).invoke(
+                FunctionName=f"{env}-wwii-nat-manager",
+                InvocationType="RequestResponse",
+                Payload=b'{"action": "create"}',
+            )
+            if resp.get("FunctionError"):
+                body = resp.get("Payload").read().decode("utf-8", "replace")[:500]
+                logger.error(
+                    "NAT create FAILED (nat_manager FunctionError) for %s "
+                    "(attempt %d/%d): %s",
+                    stem,
+                    attempt,
+                    max_attempts,
+                    body,
+                )
+                continue
             payload = {}
-        status = payload.get("status")
-        if status and status != "ready":
-            logger.error(
-                "NAT NOT READY for %s (status=%s, missing=%s) — phase egress may "
-                "fail; investigate before Grok/Wiki calls.",
-                Path(phase_script).stem,
+            try:
+                payload = json.loads(resp.get("Payload").read().decode("utf-8"))
+            except Exception:  # noqa: BLE001 - defensive parse
+                payload = {}
+            status = payload.get("status")
+            if status == "ready":
+                logger.info("NAT ready for %s (attempt %d)", stem, attempt)
+                return
+            logger.warning(
+                "NAT NOT READY for %s (status=%s, missing=%s) — retrying "
+                "(attempt %d/%d)",
+                stem,
                 status,
                 payload.get("missing"),
+                attempt,
+                max_attempts,
             )
-            return
-        logger.info("Ensured NAT gateway is up for %s", Path(phase_script).stem)
-    except Exception as e:
-        # Fail LOUD: without NAT, every phase2/3 network call fails downstream.
-        logger.error("NAT create invoke FAILED for %s: %s", phase_script, e)
+        except Exception as e:  # noqa: BLE001
+            logger.error(
+                "NAT create invoke FAILED for %s (attempt %d/%d): %s",
+                stem,
+                attempt,
+                max_attempts,
+                e,
+            )
+        time.sleep(10)
+    # Exhausted retries: fail LOUD. Proceeding guarantees a mass egress failure.
+    logger.error(
+        "NAT NEVER became ready for %s after %d attempts — egress will fail; "
+        "aborting the phase so it can be retried cleanly.",
+        stem,
+        max_attempts,
+    )
+    # Release the phase lock the trigger holds BEFORE exiting so a sibling can
+    # relaunch immediately instead of waiting out the stale-lock grace window
+    # (~5 min) or the 2h lock TTL. Queued work (pending#*) is untouched and the
+    # reconcile/poll backstop re-drives it. Best-effort — never mask the exit.
+    try:
+        _remove_lock(_current_phase_script or phase_script)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Failed to release lock before NAT-abort exit: %s", e)
+    sys.exit(1)
 
 
 def _start_openserp_if_needed(phase_script: str) -> None:
@@ -2988,6 +3021,26 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
         logger.info("Non-batch entity run complete.")
         return
 
+    # BUG #4 FIX (phase2): if the Grok batch completed IN-TASK (small input — the
+    # batch is retrieved + entities extracted in-task, "Re-running with cached
+    # results"), there is NO pending batch for the poller, so the dedup gate +
+    # phase2-complete notification + Phase 3 trigger would never fire. Run
+    # _post_process NOW (same work the poller's --retrieve-only task would do).
+    # IMPORTANT: do this BEFORE tearing down networking — _post_process publishes
+    # SNS + invokes the trigger Lambda, which egress via NAT (there is no SNS/Lambda
+    # interface endpoint). Tear down only after.
+    if "phase2" in phase_script and _entities_materialized_in_task():
+        logger.info(
+            "[step] %s: batch completed in-task — running post-process "
+            "(dedup gate + notify + Phase 3) before teardown",
+            phase_name,
+        )
+        _post_process(phase_script, os.environ.copy())
+        logger.info("[step] %s: tearing down networking", phase_name)
+        _teardown_networking()
+        logger.info("Submit-only phase2 completed in-task — post-process done.")
+        return
+
     # Tear down networking (NAT + VPC endpoints) — Lambda poller will recreate on completion
     logger.info("[step] %s: tearing down networking", phase_name)
     _teardown_networking()
@@ -2997,6 +3050,22 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
         _notify_complete(phase_script)
 
     logger.info("Submit-only complete — batch enqueued, infra torn down, exiting.")
+
+
+def _entities_materialized_in_task() -> bool:
+    """True if Phase 2 produced event files for the in-scope book IN THIS TASK —
+    i.e. the batch completed in-task and there is nothing pending for the poller.
+    Scoped to BOOK_NAME when set so a stale corpus doesn't false-positive."""
+    book = os.environ.get("BOOK_NAME", "").strip()
+    base = WORKDIR / "output" / "content"
+    try:
+        search = (base / book) if book else base
+        if not search.exists():
+            return False
+        return any(search.rglob("*-event.json"))
+    except Exception as e:  # noqa: BLE001 - defensive
+        logger.warning("Could not check in-task materialization: %s", e)
+        return False
 
 
 def _enqueue_from_metrics(phase_script: str) -> bool:
@@ -3199,6 +3268,13 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     WORKDIR.mkdir(parents=True, exist_ok=True)
     _load_secrets()
     _patch_config()
+
+    # READINESS GATE: the retrieve task makes Grok egress (retrieve_results) and runs
+    # _post_process (SNS + trigger Lambda) — all NAT-only. Validate NAT is ready
+    # (available + ACTIVE route + endpoints) with self-heal, the SAME contract as
+    # run_phase/run_submit_only. Previously this path trusted the batch-poller's
+    # state-only NAT wait (no route-active check) → the "available != routable" race.
+    _ensure_nat_if_needed(phase_script)
 
     job = get_job(batch_id)
     if not job:
