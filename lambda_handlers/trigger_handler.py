@@ -1022,6 +1022,12 @@ def handler(event, _context):
         elif topic_name == DEDUP_COMPLETE_TOPIC:
             logger.info("Dedup complete, launching phase3")
             _stop_phase2_tasks()
+            # NOTE (fail-closed strand, dev-acceptable): this launches enrichment for
+            # ALL dedup-passed books (no single book_name), so there is no per-book
+            # pending#enrich# queue to seed for a retry. If _run_task fails closed here
+            # (NAT not routable at dedup-approval time — rare, NAT is usually warm by
+            # now), the lock is released but reconcile's per-book phase3 branch won't
+            # auto-retry; the operator simply re-triggers "dedup complete" in the UI.
             _run_task(PHASE3_TASK_DEF, topic_name)
         else:
             logger.warning("Unknown topic: %s", topic_name)
@@ -1422,7 +1428,24 @@ def _run_task(task_def, source, book_name="", extra_env=None):
         )
     except Exception as e:
         logger.warning("NAT create invoke failed: %s", e)
-    _wait_for_networking()
+    if not _wait_for_networking():
+        # Networking could not be confirmed. FAIL CLOSED: release the lock we hold and
+        # do NOT launch — a task started now would fail its ECR pull / in-phase internet
+        # calls and strand the lock. The scheduled reconcile backstop retries once NAT is
+        # routable (the content stays queued in pending#content).
+        logger.error(
+            "Networking not confirmed for %s — releasing lock %s, not launching "
+            "(backstop will retry)",
+            family,
+            lock_key,
+        )
+        try:
+            dynamo.delete_item(Key={"cache_key": lock_key})
+        except Exception as e:  # noqa: BLE001
+            logger.error(
+                "Failed to release lock %s after networking abort: %s", lock_key, e
+            )
+        return
 
     # Launch task
     logger.info(
@@ -1492,10 +1515,17 @@ def _notify_launch(family: str, book_name: str, source: str) -> None:
 
 
 def _wait_for_networking():
-    """Poll for NAT gateway to be available."""
+    """Wait until the private subnets can actually route to the internet via NAT.
+
+    Returns True only when a NAT gateway is ``available`` AND the private route table
+    carries an ACTIVE ``0.0.0.0/0 -> nat-...`` route (NAT ``available`` != routable:
+    the route must also be present+active, and there is a propagation lag). Returns
+    False on timeout so the caller can FAIL-CLOSED (do not launch a task into a network
+    that cannot reach the internet). ECS task STARTUP (ECR/secrets/logs) rides the VPC
+    interface endpoints and does not need this; NAT is for in-phase internet calls."""
     max_seconds = int(os.environ.get("NAT_WAIT_SECONDS", "180"))
     ec2 = boto3.client("ec2")
-    for _ in range(max_seconds // 10):
+    for _ in range(max(1, max_seconds // 10)):
         try:
             resp = ec2.describe_nat_gateways(
                 Filters=[
@@ -1503,16 +1533,63 @@ def _wait_for_networking():
                     {"Name": "state", "Values": ["available", "pending"]},
                 ]
             )
-            gateways = resp.get("NatGateways", [])
-            if any(g["State"] == "available" for g in gateways):
-                logger.info("Networking ready (NAT available)")
-                return
-            if gateways:
-                logger.info("NAT gateway pending, waiting...")
+            nat_ids = {
+                g["NatGatewayId"]
+                for g in resp.get("NatGateways", [])
+                if g.get("State") == "available"
+            }
+            if nat_ids and _private_route_active(ec2, nat_ids):
+                logger.info("Networking ready (NAT available + active default route)")
+                return True
+            if resp.get("NatGateways"):
+                logger.info("NAT present but default route not active yet, waiting...")
+            else:
+                # Zero NAT matches on the tag filter. Because we now FAIL CLOSED, a tag
+                # drift (nat-manager not tagging {ENV}-nat) would stall forever — log it
+                # so the misconfig is diagnosable instead of a silent permanent abort.
+                logger.warning(
+                    "No NAT gateway matched tag:Name=%s-nat (available/pending) — "
+                    "if this persists, check the nat-manager Name tag",
+                    ENV_NAME,
+                )
         except Exception as e:
             logger.debug("Networking check error: %s", e)
         time.sleep(10)
-    logger.warning("NAT not available after %ds — launching task anyway", max_seconds)
+    logger.error(
+        "Networking NOT confirmed after %ds (no active NAT default route) — "
+        "failing closed (task will NOT be launched)",
+        max_seconds,
+    )
+    return False
+
+
+def _private_route_active(ec2, nat_ids: set) -> bool:
+    """True if the env's private route table has an ACTIVE 0.0.0.0/0 route to one of
+    the given NAT gateways (confirms data-path routability, not just NAT state)."""
+    try:
+        rts = ec2.describe_route_tables(
+            Filters=[{"Name": "tag:Name", "Values": [f"{ENV_NAME}-private-rt"]}]
+        ).get("RouteTables", [])
+        if not rts:
+            # Fails closed below; surface the likely cause (route table not tagged,
+            # e.g. a pre-existing RT from an older deploy) rather than a silent stall.
+            logger.warning(
+                "No route table matched tag:Name=%s-private-rt — networking cannot "
+                "be confirmed (check the private route table Name tag)",
+                ENV_NAME,
+            )
+            return False
+        for rt in rts:
+            for r in rt.get("Routes", []):
+                if (
+                    r.get("DestinationCidrBlock") == "0.0.0.0/0"
+                    and r.get("NatGatewayId") in nat_ids
+                    and r.get("State") == "active"
+                ):
+                    return True
+    except Exception as e:  # noqa: BLE001
+        logger.debug("Route-table check error: %s", e)
+    return False
 
 
 def _queue_pending(keys):
