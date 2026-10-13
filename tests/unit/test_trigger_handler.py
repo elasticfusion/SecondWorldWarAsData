@@ -510,3 +510,51 @@ def test_run_task_fails_closed_when_networking_not_confirmed(monkeypatch):
 
     assert ran["n"] == 0  # did NOT launch
     assert any("lock#" in k for k in deleted["keys"])  # released the lock
+
+
+def test_launch_phase2_skips_when_no_book_resolvable(monkeypatch):
+    """BUG FIX: never launch Phase 2 unscoped. If no pending book resolves, SKIP
+    (reconcile re-drives later) instead of running book=all over the whole corpus
+    and tripping the scope guard."""
+    import lambda_handlers.trigger_handler as th
+
+    monkeypatch.setattr(th.ecs, "list_tasks", lambda **_k: {"taskArns": []})
+    monkeypatch.setattr(th, "_get_pending_books", lambda: [])  # nothing resolvable
+    ran = {"n": 0, "book": None}
+    monkeypatch.setattr(
+        th,
+        "_run_task",
+        lambda td, src, book_name="", **_k: ran.update(n=ran["n"] + 1, book=book_name),
+    )
+    th._launch_phase2_if_idle()  # no book_name
+    assert ran["n"] == 0  # did NOT launch unscoped
+
+
+def test_launch_phase2_runs_scoped_when_book_resolvable(monkeypatch):
+    """When a pending book resolves, Phase 2 launches scoped to that book."""
+    import lambda_handlers.trigger_handler as th
+
+    monkeypatch.setattr(th.ecs, "list_tasks", lambda **_k: {"taskArns": []})
+    monkeypatch.setattr(th, "_get_pending_books", lambda: ["RoerDams"])
+    ran = {"n": 0, "book": None}
+    monkeypatch.setattr(
+        th,
+        "_run_task",
+        lambda td, src, book_name="", **_k: ran.update(n=ran["n"] + 1, book=book_name),
+    )
+    th._launch_phase2_if_idle()
+    assert ran["n"] == 1 and ran["book"] == "RoerDams"
+
+
+def test_run_task_rejects_unsafe_book_name(monkeypatch):
+    """_run_task must reject a book_name outside the safe charset (e.g. '..') before
+    it reaches the BOOK_NAME env / S3 prefix / DynamoDB key / cache rmtree."""
+    import lambda_handlers.trigger_handler as th
+
+    ran = {"n": 0}
+    monkeypatch.setattr(
+        th, "_cancel_delayed_teardown", lambda: ran.__setitem__("n", -999)
+    )
+    th._run_task(th.PHASE1_TASK_DEF, "manual", book_name="..")
+    # Rejected before even cancelling teardown (returned immediately)
+    assert ran["n"] == 0

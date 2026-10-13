@@ -1020,6 +1020,38 @@ def _download_phase0_inputs() -> None:
 
 def _download_phase1_inputs() -> None:
     """Download content files for Phase 1 (incremental or full)."""
+    book_name = os.environ.get("BOOK_NAME", "").strip()
+
+    # BOOK-SCOPED run: sync the ENTIRE book prefix from S3, NOT the manifest. The
+    # manifest (manifests/pending.json) is written by a read-merge-write in the
+    # trigger that LOSES updates when SNS fans a single upload out to several
+    # concurrent invocations (each sees a key subset) — so a 3-chapter book can end
+    # up with only 1-2 chapters in the manifest, and Phase 1 would parse an
+    # INCOMPLETE book. Since the whole book is in S3 under one prefix and we are
+    # scoped to it, listing the prefix is the authoritative, race-free source.
+    if book_name:
+        prefix = f"contentrepository/{book_name}/"
+        n = s3_sync_down(prefix, Path("/app"))
+        if n == 0:
+            alt = _find_book_prefix_case_insensitive(book_name)
+            if alt and alt != prefix:
+                prefix = alt
+                n = s3_sync_down(prefix, Path("/app"))
+        if n == 0:
+            # Fail LOUD: a book-scoped run that downloaded nothing would parse an
+            # EMPTY book and silently "succeed" — the exact incomplete-parse class
+            # this fix exists to prevent. Exit non-zero so reconcile/operator notice.
+            logger.error(
+                "Book-scoped Phase 1 downloaded 0 files for BOOK_NAME=%s (prefix=%s) "
+                "— aborting (would parse an empty book)",
+                book_name,
+                prefix,
+            )
+            sys.exit(1)
+        logger.info("Downloaded %d content files (book-scoped, prefix=%s)", n, prefix)
+        os.environ["_PHASE1_MODE"] = f"Book-scoped full parse: {n} files ({book_name})"
+        return
+
     keys = _read_s3_manifest("contentrepository/")
     if keys:
         n = _download_keys(keys, Path("/app"))
@@ -1027,19 +1059,9 @@ def _download_phase1_inputs() -> None:
         os.environ["_PHASE1_MODE"] = f"Incremental: {n} new files"
         return
 
-    book_name = os.environ.get("BOOK_NAME", "")
-    prefix = f"contentrepository/{book_name}/" if book_name else "contentrepository/"
-    if not book_name:
-        logger.warning("No manifest and no BOOK_NAME — downloading ALL content")
-
+    prefix = "contentrepository/"
+    logger.warning("No manifest and no BOOK_NAME — downloading ALL content")
     n = s3_sync_down(prefix, Path("/app"))
-
-    # Case-insensitive fallback if exact prefix found nothing
-    if n == 0 and book_name:
-        prefix = _find_book_prefix_case_insensitive(book_name) or prefix
-        if prefix != f"contentrepository/{book_name}/":
-            n = s3_sync_down(prefix, Path("/app"))
-
     logger.info("Downloaded %d content files (full, prefix=%s)", n, prefix)
     os.environ["_PHASE1_MODE"] = f"Full re-parse: {n} files"
 
