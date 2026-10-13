@@ -1347,6 +1347,18 @@ def _run_task(task_def, source, book_name="", extra_env=None):
 
     extra_env: optional list of {"name","value"} container env overrides (e.g.
     CONVERT_KEY for the Phase-0 convert task)."""
+    # Defense-in-depth: book_name becomes the BOOK_NAME env -> an S3 prefix, a
+    # DynamoDB key, a --book arg, and a per-title cache rmtree target. The S3-event
+    # path already validates via _title_from_key, but the manual-trigger path passes
+    # a raw "book" field straight through. Reject anything outside the safe charset
+    # (blocks "", "..", "/", traversal) BEFORE it reaches any of those sinks.
+    if book_name and (
+        book_name in (".", "..") or not _SAFE_TITLE_RE.fullmatch(book_name)
+    ):
+        logger.error(
+            "Rejecting unsafe book_name %r for %s (not launching)", book_name, source
+        )
+        return
     # Cancel any pending delayed teardown
     _cancel_delayed_teardown()
 
@@ -1746,7 +1758,13 @@ def _get_pending_books() -> list:
 
 
 def _launch_phase2_if_idle(book_name=""):
-    """Launch Phase 2 only if no pipeline tasks are running."""
+    """Launch Phase 2 only if no pipeline tasks are running — and ONLY scoped to a
+    specific book. An unscoped (book_name="") launch makes the ECS task run Phase 2
+    over the WHOLE corpus (no BOOK_NAME), which trips the fail-loud scope guard and
+    aborts; it also races _queue_parsed (the pending#parsed#<book> item may not be
+    written yet when a chapter-parsed event fires). So if no book can be resolved we
+    SKIP — the reconcile backstop / next phase-complete event re-drives Phase 2 once
+    the pending queue is consistent."""
     for fam in TASK_FAMILIES.values():
         running = ecs.list_tasks(
             cluster=CLUSTER, family=fam, desiredStatus="RUNNING"
@@ -1761,6 +1779,14 @@ def _launch_phase2_if_idle(book_name=""):
     if not book_name:
         pending = _get_pending_books()
         book_name = pending[0] if pending else ""
+    if not book_name:
+        # No resolvable book: do NOT launch unscoped (would scan the whole corpus and
+        # trip the scope guard). Reconcile will drive Phase 2 when the queue is ready.
+        logger.info(
+            "No pending book resolved for Phase 2 — skipping launch "
+            "(reconcile will re-drive once pending#parsed#<book> is written)"
+        )
+        return
     logger.info("Pipeline idle, launching Phase 2 for book=%s", book_name)
     _run_task(PHASE2_TASK_DEF, "pending-parsed", book_name=book_name)
 

@@ -201,3 +201,58 @@ def test_enqueue_or_alert_resolves_job_queue_names(entrypoint):
     eq.assert_called_once()
     job = eq.call_args.args[0]
     assert job.batch_id == "batch-123" and job.phase == "phase2"
+
+
+def test_phase1_book_scoped_syncs_full_prefix_not_manifest(entrypoint, monkeypatch):
+    """BUG FIX: a book-scoped Phase 1 must sync the FULL book prefix from S3, NOT a
+    partial manifest. The manifest is a read-merge-write that loses updates under
+    concurrent SNS fan-out (a 3-chapter book can land with 1-2 chapters), which
+    caused Phase 1 to parse an incomplete book. With BOOK_NAME set we must list the
+    whole prefix and must NOT consult the (racy) manifest."""
+    monkeypatch.setenv("BOOK_NAME", "RoerDams")
+
+    calls = {"manifest": 0, "sync_prefix": None}
+
+    def _fake_manifest(_prefix=""):
+        calls["manifest"] += 1
+        return ["contentrepository/RoerDams/chapter2/chapter2a-content.md"]  # partial
+
+    def _fake_sync(prefix, _local):
+        calls["sync_prefix"] = prefix
+        return 6  # 3 chapters x 2 files
+
+    monkeypatch.setattr(entrypoint, "_read_s3_manifest", _fake_manifest)
+    monkeypatch.setattr(entrypoint, "s3_sync_down", _fake_sync)
+
+    entrypoint._download_phase1_inputs()
+
+    assert calls["sync_prefix"] == "contentrepository/RoerDams/"  # full book prefix
+    assert calls["manifest"] == 0  # the racy manifest was NOT consulted
+    assert "Book-scoped" in os.environ.get("_PHASE1_MODE", "")
+
+
+def test_phase1_unscoped_still_uses_manifest(entrypoint, monkeypatch):
+    """No BOOK_NAME: the incremental manifest path is preserved (unchanged)."""
+    monkeypatch.delenv("BOOK_NAME", raising=False)
+    monkeypatch.setattr(
+        entrypoint, "_read_s3_manifest", lambda _p="": ["contentrepository/X/c1/a.md"]
+    )
+    got = {"n": 0}
+    monkeypatch.setattr(
+        entrypoint,
+        "_download_keys",
+        lambda keys, _d: got.__setitem__("n", len(keys)) or len(keys),
+    )
+    entrypoint._download_phase1_inputs()
+    assert got["n"] == 1  # used the manifest/_download_keys path
+
+
+def test_phase1_book_scoped_zero_download_fails_loud(entrypoint, monkeypatch):
+    """A book-scoped run that downloads 0 files must FAIL LOUD (sys.exit non-zero),
+    not silently parse an empty book."""
+    monkeypatch.setenv("BOOK_NAME", "RoerDams")
+    monkeypatch.setattr(entrypoint, "s3_sync_down", lambda _p, _l: 0)
+    monkeypatch.setattr(entrypoint, "_find_book_prefix_case_insensitive", lambda _b: "")
+    with pytest.raises(SystemExit) as exc:
+        entrypoint._download_phase1_inputs()
+    assert exc.value.code != 0

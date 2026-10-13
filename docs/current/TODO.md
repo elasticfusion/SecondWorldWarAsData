@@ -63,6 +63,14 @@ bottom); what remains is ranked here. Current ordered priority:
    existing reference). Needs durable index + change-detection; design-first (own task).
 9. **[LOW] external_maps license config exposure; code-quality refactors; mypy --strict on new
    files; doc-hygiene pass (see docs/archive/2026-10-11/UNVALIDATED_CLAIMS_FOR_REVIEW.md).**
+   + **atomic _update_manifest**: `lambda_handlers/trigger_handler.py::_update_manifest`
+   is a read-merge-write (get -> set(existing+new) -> put) that LOSES updates under
+   concurrent SNS fan-out. Book-scoped Phase 1 now bypasses it (syncs the full book
+   prefix), but any non-book-scoped/manifest path is still vulnerable. Make it atomic
+   (DynamoDB list_append / conditional write) or drop the manifest for per-book queues.
+   + **s3 skip-existing for book-scoped Phase 1**: `_download_phase1_inputs` now
+   re-downloads the WHOLE book prefix each run (correctness over cost); add an
+   etag/mtime skip to avoid re-fetching unchanged chapters on retries.
 10. **[FUTURE] Postgres/pgvector + RAG layer, DynamoDB-removal, true multi-job concurrency, Step
     Functions, new entity types — gated on the post-ingestion RAG phase.** RAG + the eventual UI
     MUST expose `bibliography.source_qualification` (source_type/proximity/evidentiary_support +
