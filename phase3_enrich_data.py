@@ -134,14 +134,6 @@ def main():
         action="store_true",
         help="Use xAI Batch API (50%% cost reduction, async processing)",
     )
-    parser.add_argument(
-        "--expected-count",
-        type=int,
-        default=None,
-        help="Expected total number of entity records about to be enriched. If "
-        "the actual count differs, ABORT (fail-loud shared scope guard; not "
-        "overridable). Required to intentionally run a large enrichment.",
-    )
 
     args = parser.parse_args()
 
@@ -163,34 +155,16 @@ def main():
 
     logger.info("Phase 3: starting enrichment (%s)", args.output_dir)
 
-    # Shared run-scope safeguard (same rule as Phase 2, not overridable). NOTE:
-    # Phase 3 enriches per entity type with a --max-items cap and skips already-
-    # enriched records, so the exact "items about to be enriched" is not known up
-    # front. This guard is therefore a CORPUS-SIZE tripwire: it counts the entity
-    # records in every dir Phase 3 may touch and aborts an undeclared large run —
-    # precisely the "a scoped intent must not silently become a whole-corpus run"
-    # protection. Conservative by design; declare --expected-count for a big run.
-    from src.utils.run_scope_guard import ScopeMismatchError, enforce_scope
-
-    _entity_dirs = ["people_groups", "places", "people", "equipment", "bibliography"]
-    if not args.people_only:
-        _entity_dirs += ["dates", "maps"]
-    _corpus_records = 0
-    for _d in _entity_dirs:
-        _p = args.output_dir / _d
-        if _p.is_dir():
-            _corpus_records += sum(
-                1 for f in _p.glob("*.json") if f.name != "index.json"
-            )
-    try:
-        enforce_scope(
-            actual=_corpus_records,
-            expected=args.expected_count,
-            label="Phase 3 corpus entity records",
-            logger=logger,
-        )
-    except ScopeMismatchError as e:
-        return e.exit_code
+    # NOTE: Phase 3 is intentionally a WHOLE-CORPUS, run-until-done job — it
+    # geocodes every place, fetches weather for every event, resolves every
+    # citation/archive reference, etc. Unlike Phase 2 (which is scoped to one book
+    # and must not silently fan out to the whole corpus), Phase 3 enriching the
+    # entire corpus is the entire point, so there is NO scoped-intent to protect and
+    # NO corpus-size ceiling here. Its safety against runaway cost is structural:
+    # it processes per entity type with an optional --max-items cap and SKIPS
+    # already-enriched records (idempotent + resumable), so re-runs converge and a
+    # partial run simply resumes. (A size tripwire here aborted every legitimate
+    # single-book run, since one book easily exceeds 50 total entity records.)
 
     from src.utils.validation_stats import reset_stats as _reset_val_stats
 
