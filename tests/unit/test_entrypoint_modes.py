@@ -100,6 +100,7 @@ def test_submit_only_adds_batch_flag(entrypoint):
     """run_submit_only adds --batch if not present."""
     with (
         patch.object(entrypoint, "_load_secrets"),
+        patch.object(entrypoint, "_ensure_nat_if_needed"),
         patch.object(entrypoint, "_patch_config"),
         patch.object(entrypoint, "_start_openserp_if_needed"),
         patch.object(entrypoint, "_download_inputs"),
@@ -108,6 +109,7 @@ def test_submit_only_adds_batch_flag(entrypoint):
         patch.object(entrypoint, "_stop_openserp_if_running"),
         patch.object(entrypoint, "_teardown_networking"),
         patch.object(entrypoint, "_enqueue_from_metrics"),
+        patch.object(entrypoint, "_notify_complete"),
         patch("subprocess.run") as mock_run,
         patch("src.utils.batch_api.poll_batch"),
         patch("src.utils.batch_api.retrieve_results"),
@@ -256,3 +258,57 @@ def test_phase1_book_scoped_zero_download_fails_loud(entrypoint, monkeypatch):
     with pytest.raises(SystemExit) as exc:
         entrypoint._download_phase1_inputs()
     assert exc.value.code != 0
+
+
+def test_entities_materialized_in_task_detects_event_files(
+    entrypoint, monkeypatch, tmp_path
+):
+    """BUG #4: _entities_materialized_in_task is True iff the scoped book has event
+    files on disk (batch completed in-task -> run _post_process, don't defer)."""
+    monkeypatch.setattr(entrypoint, "WORKDIR", tmp_path)
+    book = "RoerDams"
+    monkeypatch.setenv("BOOK_NAME", book)
+    # No event files yet
+    assert entrypoint._entities_materialized_in_task() is False
+    # Create an event file for the book
+    d = tmp_path / "output" / "content" / book
+    d.mkdir(parents=True)
+    (d / "chapter2a-event.json").write_text("{}")
+    assert entrypoint._entities_materialized_in_task() is True
+
+
+def test_phase1_ensure_nat_is_noop(entrypoint, monkeypatch):
+    """Phase 1 needs no internet: _ensure_nat_if_needed returns immediately (the
+    async warm-up is fired by the trigger, not here)."""
+    called = {"invoke": 0}
+
+    class _L:
+        def invoke(self, **_k):
+            called["invoke"] += 1
+            return {}
+
+    monkeypatch.setattr(entrypoint.boto3, "client", lambda *a, **k: _L())
+    entrypoint._ensure_nat_if_needed("phase1_parse.py")
+    assert called["invoke"] == 0  # Phase 1 does NOT invoke nat-manager
+
+
+def test_retrieve_only_validates_nat_readiness(entrypoint, monkeypatch):
+    """BLOCKER fix: run_retrieve_only must validate NAT readiness (the same
+    _ensure_nat_if_needed gate as run_phase/run_submit_only) before its Grok egress
+    — previously it relied on the batch-poller's weaker state-only wait."""
+    calls = {"ensure_nat": 0}
+    monkeypatch.setattr(entrypoint, "_load_secrets", lambda: None)
+    monkeypatch.setattr(entrypoint, "_patch_config", lambda: None)
+    monkeypatch.setattr(
+        entrypoint,
+        "_ensure_nat_if_needed",
+        lambda ps: calls.__setitem__("ensure_nat", calls["ensure_nat"] + 1),
+    )
+    # get_job returns None -> function sys.exits right after the gate; that's fine,
+    # we only assert the readiness gate ran first.
+    monkeypatch.setattr("src.utils.job_queue.get_job", lambda _b: None)
+    import pytest as _pytest
+
+    with _pytest.raises(SystemExit):
+        entrypoint.run_retrieve_only("phase2_extract.py", [], "batch_x")
+    assert calls["ensure_nat"] == 1  # readiness gate invoked before processing

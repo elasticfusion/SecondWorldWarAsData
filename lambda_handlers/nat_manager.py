@@ -117,9 +117,47 @@ def _nat_demand_present() -> bool:
         if _ocr_jobs_in_flight():
             logger.info("NAT demand: OCR Batch job(s) in flight — keeping NAT")
             return True
+        # 4) PENDING Grok batch jobs — a submitted batch awaiting the poller keeps
+        # NAT UP (operator directive). This avoids tearing NAT down and immediately
+        # recreating it for the --retrieve-only task, and guarantees the retrieve
+        # has egress the moment the batch completes (no cold-start race).
+        if _grok_batch_pending():
+            logger.info("NAT demand: pending Grok batch job(s) — keeping NAT")
+            return True
         return False
     except Exception as e:  # pragma: no cover - defensive
         logger.warning("NAT demand check failed (%s) — assuming demand, keeping NAT", e)
+        return True
+
+
+def _grok_batch_pending() -> bool:
+    """True if any Grok batch job still needs NAT: status 'pending' (awaiting the
+    poller) OR 'ready' (completed at Grok but the --retrieve-only task has not run
+    yet — the completion->retrieve window). Counting 'ready' prevents tearing NAT
+    down exactly as the retrieve task is launched. Age-capped: a zombie job older
+    than NAT_BATCH_DEMAND_MAX_HOURS no longer pins NAT (cost tail guard). Fails SAFE
+    (assume demand) on error."""
+    try:
+        from src.utils.job_queue import _get_table
+
+        now = int(time.time())
+        max_age = int(os.getenv("NAT_BATCH_DEMAND_MAX_HOURS", "8")) * 3600
+        resp = _get_table().scan(
+            FilterExpression="begins_with(cache_key, :p) AND #s IN (:pending, :ready)",
+            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeValues={
+                ":p": "batch_job#",
+                ":pending": "pending",
+                ":ready": "ready",
+            },
+        )
+        for item in resp.get("Items", []):
+            submitted = int(item.get("submitted_at", now))
+            if now - submitted <= max_age:
+                return True  # a live (non-zombie) batch needs NAT
+        return False
+    except Exception as e:  # pragma: no cover - defensive, fail safe
+        logger.warning("Grok batch demand check failed (%s) — assuming demand", e)
         return True
 
 
@@ -204,6 +242,9 @@ def _verify_ready(ec2, region):
         )
     if not nat_ok:
         missing.append("nat")
+    # NAT 'available' != routable — the default route must also be ACTIVE.
+    elif not _route_active(ec2, nat_id):
+        missing.append("route")
     # All required interface endpoints available?
     available = {
         e["ServiceName"].split(".")[-1]
@@ -292,6 +333,23 @@ def _create_all(ec2, region):
 
         if not already_existed:
             _notify("Networking UP — NAT, VPC endpoints ready")
+        # Stamp a NAT lease FLOOR: a gateway-level lease with a 4h TTL so the
+        # scheduled teardown won't reclaim NAT for at least NAT_LEASE_HOURS even
+        # across the brief Phase1->Phase2 gap or the human dedup wait before Phase
+        # 3 re-requests. Per-task leases still add demand on top; this is only a
+        # minimum floor. TTL self-expires so a crashed run can't pin NAT forever.
+        try:
+            lease_hours = int(os.getenv("NAT_LEASE_HOURS", "4"))
+            table.put_item(
+                Item={
+                    "cache_key": "nat#lease#gateway",
+                    "response": str(int(time.time())),
+                    "ttl": int(time.time()) + lease_hours * 3600,
+                }
+            )
+            logger.info("Stamped %dh NAT gateway lease floor", lease_hours)
+        except Exception as e:  # pragma: no cover - defensive
+            logger.warning("Failed to stamp NAT gateway lease: %s", e)
         # Return ACCURATE readiness — never blind 'ready'. Compute must not be
         # requested until egress is verified (NAT available + all required
         # endpoints available), else GPU instances boot but can't register.
@@ -452,6 +510,43 @@ def _update_route(ec2, nat_id):
                 NatGatewayId=nat_id,
             )
         logger.info("Route updated: %s", rtb["RouteTableId"])
+    # NAT 'available' != routable: the 0.0.0.0/0 route must also become ACTIVE
+    # (there is a short propagation lag). Block here, inside the Lambda, until the
+    # route is active so callers that get status=ready can actually egress. This
+    # is where the readiness wait belongs — a long-lived Lambda/task, NOT the
+    # trigger's 240s launch path (the old fail-closed livelock).
+    _wait_route_active(ec2, nat_id)
+
+
+def _route_active(ec2, nat_id) -> bool:
+    """True if the env's private route table has an ACTIVE 0.0.0.0/0 route to nat_id."""
+    try:
+        rtbs = ec2.describe_route_tables(
+            Filters=[{"Name": "tag:Name", "Values": [f"{ENV_NAME}-private-rt"]}]
+        ).get("RouteTables", [])
+        for rtb in rtbs:
+            for r in rtb.get("Routes", []):
+                if (
+                    r.get("DestinationCidrBlock") == "0.0.0.0/0"
+                    and r.get("NatGatewayId") == nat_id
+                    and r.get("State") == "active"
+                ):
+                    return True
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("Route-active check error: %s", e)
+    return False
+
+
+def _wait_route_active(ec2, nat_id, max_seconds: int = 120) -> bool:
+    """Poll until the default route to nat_id is ACTIVE (propagation lag after NAT
+    becomes available). Returns True when active, False on timeout (caller logs)."""
+    for _ in range(max(1, max_seconds // 5)):
+        if _route_active(ec2, nat_id):
+            logger.info("Default route active -> %s", nat_id)
+            return True
+        time.sleep(5)
+    logger.warning("Default route to %s not active after %ds", nat_id, max_seconds)
+    return False
 
 
 def _wait_for_nat(ec2):

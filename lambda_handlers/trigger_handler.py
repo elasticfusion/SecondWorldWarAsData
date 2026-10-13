@@ -394,9 +394,10 @@ def _lock_key(family: str, book_name: str) -> str:
     return f"lock#{family}"
 
 
-# NAT-gateway cold-start wait budget (mirrors _wait_for_networking's env default). Used to
-# size the launch grace window so a lock held by an invocation still in NAT-wait is never
-# reclaimed as "stale".
+# Stale-lock reclaim grace window. The trigger no longer waits on NAT (the phase
+# task validates its own readiness via nat-manager); this budget now only sizes how
+# long a just-acquired lock is presumed held by an invocation still spinning up its
+# task before a sibling may reclaim it as "stale" (prevents a double-launch race).
 NAT_WAIT_SECONDS = int(os.environ.get("NAT_WAIT_SECONDS", "180"))
 
 
@@ -1430,34 +1431,27 @@ def _run_task(task_def, source, book_name="", extra_env=None):
                     _queue_pending_parsed_book(book_name)
             return
 
-    # Lock is HELD. Now ensure networking (NAT) and wait — inside the lock, so a second
-    # invocation blocks on the lock above rather than racing us here.
+    # Lock is HELD. Kick off an ASYNC NAT warm-up (fire-and-forget) and launch
+    # immediately — do NOT block the launch on NAT readiness. Phase 1 needs no
+    # internet (reads/writes S3 via the gateway endpoint) and is fast; firing the
+    # warm-up here means NAT provisions IN PARALLEL with the parse and is ready by
+    # the time Phase 2 (which immediately follows) validates readiness. Phase 2/3
+    # themselves INVOKE the nat-manager and WAIT for readiness before any egress
+    # (ecs_entrypoint._ensure_nat_if_needed), so NAT is never on this launch's
+    # critical path. This removes the old synchronous wait + fail-closed livelock
+    # (NAT route activating ~1s after the 240s Lambda timeout stranded every run).
+    # Task STARTUP (ECR/secrets/logs) rides the VPC interface endpoints, not NAT.
     try:
         boto3.client("lambda").invoke(
             FunctionName=NAT_MANAGER_FN,
-            InvocationType="Event",
+            InvocationType="Event",  # async — do not wait
             Payload=json.dumps({"action": "create"}).encode(),
         )
+        logger.info("Fired async NAT warm-up for %s (non-blocking)", family)
     except Exception as e:
-        logger.warning("NAT create invoke failed: %s", e)
-    if not _wait_for_networking():
-        # Networking could not be confirmed. FAIL CLOSED: release the lock we hold and
-        # do NOT launch — a task started now would fail its ECR pull / in-phase internet
-        # calls and strand the lock. The scheduled reconcile backstop retries once NAT is
-        # routable (the content stays queued in pending#content).
-        logger.error(
-            "Networking not confirmed for %s — releasing lock %s, not launching "
-            "(backstop will retry)",
-            family,
-            lock_key,
-        )
-        try:
-            dynamo.delete_item(Key={"cache_key": lock_key})
-        except Exception as e:  # noqa: BLE001
-            logger.error(
-                "Failed to release lock %s after networking abort: %s", lock_key, e
-            )
-        return
+        # A failed warm-up is non-fatal here: the phase will invoke nat-manager
+        # itself before egress. Log and proceed (do NOT fail the launch).
+        logger.warning("Async NAT warm-up invoke failed (phase will retry): %s", e)
 
     # Launch task
     logger.info(
@@ -1524,84 +1518,6 @@ def _notify_launch(family: str, book_name: str, source: str) -> None:
         )
     except Exception as e:
         logger.warning("Failed to send notification: %s", e)
-
-
-def _wait_for_networking():
-    """Wait until the private subnets can actually route to the internet via NAT.
-
-    Returns True only when a NAT gateway is ``available`` AND the private route table
-    carries an ACTIVE ``0.0.0.0/0 -> nat-...`` route (NAT ``available`` != routable:
-    the route must also be present+active, and there is a propagation lag). Returns
-    False on timeout so the caller can FAIL-CLOSED (do not launch a task into a network
-    that cannot reach the internet). ECS task STARTUP (ECR/secrets/logs) rides the VPC
-    interface endpoints and does not need this; NAT is for in-phase internet calls."""
-    max_seconds = int(os.environ.get("NAT_WAIT_SECONDS", "180"))
-    ec2 = boto3.client("ec2")
-    for _ in range(max(1, max_seconds // 10)):
-        try:
-            resp = ec2.describe_nat_gateways(
-                Filters=[
-                    {"Name": "tag:Name", "Values": [f"{ENV_NAME}-nat"]},
-                    {"Name": "state", "Values": ["available", "pending"]},
-                ]
-            )
-            nat_ids = {
-                g["NatGatewayId"]
-                for g in resp.get("NatGateways", [])
-                if g.get("State") == "available"
-            }
-            if nat_ids and _private_route_active(ec2, nat_ids):
-                logger.info("Networking ready (NAT available + active default route)")
-                return True
-            if resp.get("NatGateways"):
-                logger.info("NAT present but default route not active yet, waiting...")
-            else:
-                # Zero NAT matches on the tag filter. Because we now FAIL CLOSED, a tag
-                # drift (nat-manager not tagging {ENV}-nat) would stall forever — log it
-                # so the misconfig is diagnosable instead of a silent permanent abort.
-                logger.warning(
-                    "No NAT gateway matched tag:Name=%s-nat (available/pending) — "
-                    "if this persists, check the nat-manager Name tag",
-                    ENV_NAME,
-                )
-        except Exception as e:
-            logger.debug("Networking check error: %s", e)
-        time.sleep(10)
-    logger.error(
-        "Networking NOT confirmed after %ds (no active NAT default route) — "
-        "failing closed (task will NOT be launched)",
-        max_seconds,
-    )
-    return False
-
-
-def _private_route_active(ec2, nat_ids: set) -> bool:
-    """True if the env's private route table has an ACTIVE 0.0.0.0/0 route to one of
-    the given NAT gateways (confirms data-path routability, not just NAT state)."""
-    try:
-        rts = ec2.describe_route_tables(
-            Filters=[{"Name": "tag:Name", "Values": [f"{ENV_NAME}-private-rt"]}]
-        ).get("RouteTables", [])
-        if not rts:
-            # Fails closed below; surface the likely cause (route table not tagged,
-            # e.g. a pre-existing RT from an older deploy) rather than a silent stall.
-            logger.warning(
-                "No route table matched tag:Name=%s-private-rt — networking cannot "
-                "be confirmed (check the private route table Name tag)",
-                ENV_NAME,
-            )
-            return False
-        for rt in rts:
-            for r in rt.get("Routes", []):
-                if (
-                    r.get("DestinationCidrBlock") == "0.0.0.0/0"
-                    and r.get("NatGatewayId") in nat_ids
-                    and r.get("State") == "active"
-                ):
-                    return True
-    except Exception as e:  # noqa: BLE001
-        logger.debug("Route-table check error: %s", e)
-    return False
 
 
 def _queue_pending(keys):

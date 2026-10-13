@@ -97,8 +97,21 @@ Parameters:
     Description: How often the stale lock / reconciliation check runs
   NatWaitSeconds:
     Type: Number
-    Default: 180
-    Description: Max seconds to wait for NAT gateway availability
+    Default: 270
+    Description: >
+      Base for the trigger's stale-lock reclaim grace window and the batch-poller's
+      NAT wait. NOTE: the trigger no longer SYNCHRONOUSLY waits for NAT before
+      launch (it fires an async warm-up); Phase 2/3 validate NAT readiness
+      themselves via nat-manager (NAT available + ACTIVE route + endpoints), retried
+      up to NatReadyMaxAttempts. Kept generous so the stale-lock grace covers a cold
+      NAT + task start.
+  NatReadyMaxAttempts:
+    Type: Number
+    Default: 6
+    Description: >
+      Phase 2/3 readiness retries: how many times a phase task invokes nat-manager
+      (each a RequestResponse that itself waits for route-active) before failing
+      loud (sys.exit) and releasing its lock for a clean retry.
   TeardownDelayMinutes:
     Type: Number
     Default: 30
@@ -459,6 +472,8 @@ Resources:
               Value: !Ref TeardownDelayMinutes
             - Name: NAT_WAIT_SECONDS
               Value: !Ref NatWaitSeconds
+            - Name: NAT_READY_MAX_ATTEMPTS
+              Value: !Ref NatReadyMaxAttempts
             - Name: MULTI_DOC_ENABLED
               Value: !Ref MultiDocEnabled
           LogConfiguration:
@@ -493,6 +508,8 @@ Resources:
               Value: !Ref MultiDocEnabled
             - Name: SECRETS_ID
               Value: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
+            - Name: NAT_READY_MAX_ATTEMPTS
+              Value: !Ref NatReadyMaxAttempts
             - Name: NOTIFICATION_TOPIC_ARN
               Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
           LogConfiguration:
@@ -537,7 +554,11 @@ Resources:
       FunctionName: !Sub ${EnvironmentName}-wwii-trigger
       Runtime: python3.12
       Handler: lambda_handlers.trigger_handler.handler
-      Timeout: 240
+      Timeout: 300
+      # Generous timeout for the launch handler. NOTE: the trigger NO LONGER waits
+      # for NAT (it fires an async warm-up and launches immediately); Phase 2/3
+      # validate NAT readiness themselves. 300s is headroom for S3/DynamoDB
+      # bookkeeping + RunTask, not a NAT wait.
       # 128MB OOM-killed the handler mid-execution (used 127/128MB) AFTER writing
       # an OCR claim but BEFORE submitting the job — a silent doc drop (B401). The
       # handler reads the manifest + creates boto3 clients (batch/ecs/sns/ec2/dynamo)

@@ -125,9 +125,10 @@ def test_entrypoint_ensures_nat_for_phase2_and_phase3_not_phase01():
 
 
 def test_ensure_nat_fail_loud_on_not_ready(caplog):
-    """A not_ready nat-manager result must be surfaced LOUDLY (ERROR), not
-    swallowed — otherwise phase egress failure shows up only as opaque downstream
-    Grok/Wiki errors."""
+    """A persistently not_ready nat-manager result must be surfaced LOUDLY and the
+    phase must ABORT (sys.exit) rather than proceed into guaranteed egress failure
+    — the readiness contract: Phase 2/3 wait for NAT, and fail loud if it never
+    becomes ready."""
     import os
     import io
     import json as _json
@@ -135,17 +136,24 @@ def test_ensure_nat_fail_loud_on_not_ready(caplog):
 
     os.environ.setdefault("S3_BUCKET", "test-bucket")
     os.environ.setdefault("ENV_NAME", "test")
+    os.environ["NAT_READY_MAX_ATTEMPTS"] = "1"  # fail fast in the test
     import ecs_entrypoint as ee
 
-    with patch.object(ee, "boto3") as b3:
-        b3.client.return_value.invoke.return_value = {
-            "Payload": io.BytesIO(
-                _json.dumps({"status": "not_ready", "missing": ["nat"]}).encode()
-            )
-        }
+    with patch.object(ee, "boto3") as b3, patch.object(ee.time, "sleep"):
+
+        def _invoke(**_k):
+            return {
+                "Payload": io.BytesIO(
+                    _json.dumps({"status": "not_ready", "missing": ["route"]}).encode()
+                )
+            }
+
+        b3.client.return_value.invoke.side_effect = _invoke
         with caplog.at_level(logging.ERROR):
-            ee._ensure_nat_if_needed("phase2_extract.py")
-    assert any("NAT NOT READY" in r.message for r in caplog.records)
+            with __import__("pytest").raises(SystemExit):
+                ee._ensure_nat_if_needed("phase2_extract.py")
+    assert any("NAT NEVER became ready" in r.message for r in caplog.records)
+    os.environ.pop("NAT_READY_MAX_ATTEMPTS", None)
 
 
 def test_phase2_handler_has_no_openserp_startup():

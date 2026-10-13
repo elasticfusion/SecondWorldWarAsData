@@ -16,8 +16,9 @@ os.environ.setdefault("ENV_NAME", "dev")
 from lambda_handlers import nat_manager as nm
 
 
-def _ec2(nat_state=None, available_endpoints=None):
-    """Mock ec2: nat_state (None=no NAT) + set of endpoint svc short-names available."""
+def _ec2(nat_state=None, available_endpoints=None, route_active=True):
+    """Mock ec2: nat_state (None=no NAT) + set of endpoint svc short-names available
+    + whether the private route table has an ACTIVE 0.0.0.0/0 -> nat route."""
     available_endpoints = available_endpoints or set()
     ec2 = MagicMock()
 
@@ -27,8 +28,12 @@ def _ec2(nat_state=None, available_endpoints=None):
         else {"NatGateways": []}
     )
 
+    def _dispatch(**kw):
+        # describe_vpc_endpoints vs describe_route_tables share no args here; the
+        # route-table call is made by _route_active via describe_route_tables.
+        return _find_eps(**kw)
+
     def _find_eps(Filters=None):
-        # _find_endpoints (tag-based) returns available ones
         return {
             "VpcEndpoints": [
                 {"ServiceName": f"com.amazonaws.us-east-1.{svc}", "State": "available"}
@@ -37,6 +42,19 @@ def _ec2(nat_state=None, available_endpoints=None):
         }
 
     ec2.describe_vpc_endpoints.side_effect = lambda **kw: _find_eps(**kw)
+    ec2.describe_route_tables.return_value = {
+        "RouteTables": [
+            {
+                "Routes": [
+                    {
+                        "DestinationCidrBlock": "0.0.0.0/0",
+                        "NatGatewayId": "nat-1",
+                        "State": "active" if route_active else "blackhole",
+                    }
+                ]
+            }
+        ]
+    }
     return ec2
 
 
@@ -224,3 +242,84 @@ def test_ocr_jobs_in_flight_true_when_job_listed():
 
     with patch.object(boto3, "client", return_value=fake_batch):
         assert nm._ocr_jobs_in_flight() is True
+
+
+def test_not_ready_when_route_not_active():
+    """NAT available + all endpoints available but the default route is NOT active
+    (propagation lag / blackhole) -> not ready, 'route' missing."""
+    ec2 = _ec2(
+        nat_state="available",
+        available_endpoints=set(nm.INTERFACE_ENDPOINTS),
+        route_active=False,
+    )
+    with patch.object(nm, "_find_nat", return_value="nat-1"):
+        ready, missing = nm._verify_ready(ec2, "us-east-1")
+    assert ready is False and "route" in missing
+
+
+def test_ready_requires_active_route():
+    """Readiness requires NAT available AND endpoints AND an ACTIVE default route."""
+    ec2 = _ec2(
+        nat_state="available",
+        available_endpoints=set(nm.INTERFACE_ENDPOINTS),
+        route_active=True,
+    )
+    with patch.object(nm, "_find_nat", return_value="nat-1"):
+        ready, missing = nm._verify_ready(ec2, "us-east-1")
+    assert ready is True and missing == []
+
+
+def test_pending_grok_batch_keeps_nat_up(monkeypatch):
+    """Operator directive: a pending Grok batch job is NAT demand (NAT stays up)."""
+    # No leases, no running tasks, no OCR jobs, but a pending batch exists.
+    monkeypatch.setattr(nm, "_ocr_jobs_in_flight", lambda: False)
+    monkeypatch.setattr(nm, "_grok_batch_pending", lambda: True)
+    fake_table = MagicMock()
+    fake_table.scan.return_value = {"Items": []}  # no leases
+    monkeypatch.setattr(nm, "_lease_table", lambda: fake_table)
+    fake_ecs = MagicMock()
+    fake_ecs.list_tasks.return_value = {"taskArns": []}
+    monkeypatch.setattr(nm, "_ecs_client", lambda: fake_ecs)
+    assert nm._nat_demand_present() is True
+
+
+def test_no_demand_when_nothing_pending(monkeypatch):
+    """All demand sources empty -> teardown allowed (demand False)."""
+    monkeypatch.setattr(nm, "_ocr_jobs_in_flight", lambda: False)
+    monkeypatch.setattr(nm, "_grok_batch_pending", lambda: False)
+    fake_table = MagicMock()
+    fake_table.scan.return_value = {"Items": []}
+    monkeypatch.setattr(nm, "_lease_table", lambda: fake_table)
+    fake_ecs = MagicMock()
+    fake_ecs.list_tasks.return_value = {"taskArns": []}
+    monkeypatch.setattr(nm, "_ecs_client", lambda: fake_ecs)
+    assert nm._nat_demand_present() is False
+
+
+def test_grok_batch_ready_state_keeps_nat(monkeypatch):
+    """A batch in 'ready' (completed at Grok, not yet retrieved) still needs NAT —
+    the completion->retrieve window must not tear NAT down."""
+    import time as _t
+
+    now = int(_t.time())
+    fake = MagicMock()
+    fake.scan.return_value = {
+        "Items": [{"cache_key": "batch_job#x", "status": "ready", "submitted_at": now}]
+    }
+    monkeypatch.setattr("src.utils.job_queue._get_table", lambda: fake)
+    assert nm._grok_batch_pending() is True
+
+
+def test_grok_batch_zombie_age_capped(monkeypatch):
+    """A 'pending' job older than the age cap no longer pins NAT (cost-tail guard)."""
+    import time as _t
+
+    old = int(_t.time()) - 50 * 3600  # 50h old, cap default 8h
+    fake = MagicMock()
+    fake.scan.return_value = {
+        "Items": [
+            {"cache_key": "batch_job#z", "status": "pending", "submitted_at": old}
+        ]
+    }
+    monkeypatch.setattr("src.utils.job_queue._get_table", lambda: fake)
+    assert nm._grok_batch_pending() is False
