@@ -496,7 +496,7 @@ Resources:
       ContainerDefinitions:
         - Name: pipeline
           Image: !Ref PipelineImageUri
-          Command: ['phase3_enrich_data.py', '--batch']
+          Command: ['phase3_enrich_data.py']
           Environment:
             - Name: AWS_DEFAULT_REGION
               Value: !Ref AWS::Region
