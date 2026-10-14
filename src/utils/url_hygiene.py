@@ -102,15 +102,51 @@ def _host_is_safe(host: str) -> bool:
                     False  # numeric-but-not-a-parseable-IP -> reject (never a DNS name)
                 )
     if ip is not None:
-        return not (
-            ip.is_private
-            or ip.is_loopback
-            or ip.is_link_local
-            or ip.is_reserved
-            or ip.is_multicast
-            or ip.is_unspecified
-        )
+        return ip_is_safe(ip)
     return True  # a DNS hostname (has alphabetic chars) — allowed (see CAVEAT)
+
+
+def ip_is_safe(ip) -> bool:
+    """True iff ``ip`` (an ipaddress object or string) is a PUBLIC address — not
+    private/loopback/link-local/reserved/multicast/unspecified/metadata. Shared by the
+    host-string check and the fetcher's resolved-IP (DNS-rebinding) check."""
+    try:
+        if not isinstance(ip, (ipaddress.IPv4Address, ipaddress.IPv6Address)):
+            ip = ipaddress.ip_address(str(ip))
+    except ValueError:
+        return False
+    if str(ip) == "169.254.169.254":  # cloud metadata (also caught by link_local)
+        return False
+    return not (
+        ip.is_private
+        or ip.is_loopback
+        or ip.is_link_local
+        or ip.is_reserved
+        or ip.is_multicast
+        or ip.is_unspecified
+    )
+
+
+def resolved_host_is_safe(host: str):
+    """DNS-rebinding defense (the FETCHER's responsibility per clean_url's caveat):
+    resolve ``host`` and require EVERY resolved address to be public (ip_is_safe).
+    Returns the list of resolved IP strings if ALL are safe, else None (unsafe or
+    unresolvable). The caller should PIN the connection to one of these vetted IPs so a
+    rebind between check and connect cannot slip through."""
+    import socket
+
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except Exception:  # noqa: BLE001 - unresolvable -> treat as unsafe/transient
+        return None
+    ips = []
+    for info in infos:
+        addr = str(info[4][0])
+        ip = addr.split("%", 1)[0]  # strip IPv6 zone id
+        if not ip_is_safe(ip):
+            return None
+        ips.append(ip)
+    return ips or None
 
 
 def is_clean_url(url: str) -> bool:
