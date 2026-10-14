@@ -104,6 +104,27 @@ Resources:
             Transitions:
               - StorageClass: GLACIER_IR
                 TransitionInDays: 1
+          # Durable artifact store (ARTIFACT_STORE_DESIGN.md): raw masters under
+          # artifacts/<source>/<id>/original/ are archival — write-once, read only
+          # if an artifact is reprocessed. A FUTURE (M1) processing step will tag a
+          # master object artifact-tier=deep-archive once its artifact is PROCESSED;
+          # this rule then transitions it to Glacier DEEP ARCHIVE (~$1/TB-mo). The
+          # rule is intentionally INERT until that producer exists (M0 writes masters
+          # but sets no S3 tag — the manifest "status" field is NOT this S3 tag).
+          # TAG-based (not prefix): original/ is nested per-artifact so a literal
+          # Prefix can't target it, and TagFilters ARE supported by this schema.
+          # Deep Archive (restore-before-read) is acceptable here BECAUSE the master
+          # is only touched on an explicit reprocess, never on serving — contrast
+          # NaraSourcePdfsToGlacierIR, which stays instantly readable for auto re-OCR.
+          # derived/ (processable output) is NOT tagged, so it stays in STANDARD.
+          - Id: ArtifactMastersToDeepArchive
+            Status: Enabled
+            TagFilters:
+              - Key: artifact-tier
+                Value: deep-archive
+            Transitions:
+              - StorageClass: DEEP_ARCHIVE
+                TransitionInDays: 1
           # Expire the EICAR/AV test artifacts + any scratch under av-test/ fast.
           - Id: CleanupAvTest
             Prefix: av-test/

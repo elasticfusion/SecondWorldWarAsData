@@ -222,7 +222,7 @@ class BackgroundSync:
     def _sync(self):
         try:
             _heartbeat_nat_lease()  # M3: keep NAT lease alive while task runs
-            for name, prefix in [("output", "output")]:
+            for name, prefix in [("output", "output"), ("artifacts", "artifacts")]:
                 d = WORKDIR / name
                 if d.exists():
                     n = self._sync_changed(d, prefix)
@@ -2206,6 +2206,15 @@ def _final_sync(phase_script: str = ""):
                 total += n
                 all_uploaded.extend(keys)
         logger.info("Final sync: uploaded %d entity files", total)
+
+        # Durable artifact store (patches, documents, ...) — persist to S3 so the
+        # downloaded masters are not lost when the task exits (artifacts/ is NOT
+        # under output/). Rides the same final flush. (ARTIFACT_STORE_DESIGN.md)
+        art = WORKDIR / "artifacts"
+        if art.exists():
+            n_art, _ = s3_sync_up(art, "artifacts")
+            if n_art:
+                logger.info("Final sync: uploaded %d artifact files", n_art)
 
         # Delete merged/removed files from S3
         if _deleted_keys:
