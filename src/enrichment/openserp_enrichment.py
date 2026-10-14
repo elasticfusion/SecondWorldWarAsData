@@ -1474,7 +1474,9 @@ def enrich_groups_with_openserp(
             if searched_at and (_time.time() - searched_at) < 90 * 86400:
                 continue
 
-        changed = enrich_one_group(data, openserp_url, grok_client)
+        changed = enrich_one_group(
+            data, openserp_url, grok_client, output_root=groups_dir.parent
+        )
 
         data["openserp_searched"] = True
         _metric("entities_searched")
@@ -1498,13 +1500,14 @@ def enrich_one_group(
     f: Any = None,  # noqa: ARG001 - signature parity with enrich_one_person
     max_images: Optional[int] = None,  # noqa: ARG001 - unused
     max_web: Optional[int] = None,  # noqa: ARG001 - unused
+    output_root: Optional[Path] = None,
 ) -> bool:
     """Enrich ONE already-loaded people_groups record in place (search + verify + apply).
 
-    Returns True if images / web_results / veterans_associations were added. Mirrors
-    enrich_one_person: shared per-entity unit for the batch driver (above) and the SQS worker;
-    it does NOT read/write files or set openserp_searched. entities_enriched/entities_searched +
-    persistence stay in the driver."""
+    Returns True if images / web_results / veterans_associations / a unit_patch were
+    added. Mirrors enrich_one_person: shared per-entity unit for the batch driver (above)
+    and the SQS worker; it does NOT read/write files or set openserp_searched.
+    entities_enriched/entities_searched + persistence stay in the driver."""
     name = data.get("group_name", "")
     if not name or len(name) < 3:
         return False
@@ -1527,7 +1530,68 @@ def enrich_one_group(
             data[field] = existing + added
             _metric("items_added", len(added))
             changed = True
+
+    # Unit patch (ARTIFACT_STORE_DESIGN.md M0): download + VISION-verify + durably
+    # store the SINGLE highest-resolution shoulder-sleeve insignia for this unit.
+    # Only run once (null-over-fake: absent until a patch is confirmed). Fail-safe.
+    if not data.get("unit_patch"):
+        try:
+            patch = _acquire_group_unit_patch(
+                name,
+                nationality,
+                data.get("GroupID", ""),
+                openserp_url,
+                grok_client,
+                output_root,
+            )
+            if patch:
+                data["unit_patch"] = patch
+                _metric("items_added", 1)
+                changed = True
+        except Exception as e:  # noqa: BLE001 - never block group enrichment
+            logger.debug("unit patch acquisition failed for %s: %s", name, e)
     return changed
+
+
+def _acquire_group_unit_patch(
+    name: str,
+    nationality: str,
+    group_id: str,
+    openserp_url: str,
+    grok_client: Any,
+    output_root: Optional[Path],
+) -> Optional[Dict[str, Any]]:
+    """Gather patch/insignia image candidates (OpenSERP) and hand them to the
+    vision-verifying single-largest-patch acquirer. Returns the unit_patch record
+    or None."""
+    if not group_id or not grok_client:
+        return None
+    from src.enrichment import unit_patch
+    from src.utils.search_query_loader import render_search_queries
+
+    # Patch-ONLY queries (not generic photographs): insignia + unit patch.
+    candidates: List[Dict[str, str]] = []
+    seen: set = set()
+    for query in render_search_queries(
+        "people_groups", "images", name=name, nationality=nationality
+    ):
+        if "insignia" not in query.lower() and "patch" not in query.lower():
+            continue  # patch-only per decision (drop the generic photograph query)
+        for r in _search_openserp(query, openserp_url):
+            url = r.get("url", "")
+            if url and url not in seen:
+                seen.add(url)
+                candidates.append({"url": url, "title": r.get("title", "")})
+    if not candidates:
+        return None
+    return unit_patch.acquire_unit_patch(
+        candidates,
+        group_id=group_id,
+        unit_name=name,
+        nationality=nationality,
+        grok_client=grok_client,
+        output_root=output_root,
+    )
 
 
 def place_name_variants(place: Dict) -> List[str]:

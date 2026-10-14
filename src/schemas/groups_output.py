@@ -41,6 +41,23 @@ GROUPS_OUTPUT_SCHEMA = {
         "military_hierarchy": {"type": ["object", "array", "string", "null"]},
         "enrichment_data": {"type": ["object", "null"]},
         "images": {"type": ["array", "null"], "items": {"type": ["object", "string"]}},
+        # Single highest-resolution, Grok-vision-confirmed unit patch / insignia,
+        # downloaded + durably stored (ARTIFACT_STORE_DESIGN.md M0). Null until one
+        # is confirmed (null-over-fake). local_path is relative to the artifacts/ store.
+        "unit_patch": {
+            "type": ["object", "null"],
+            "additionalProperties": False,
+            "properties": {
+                "url": make_nullable("string"),
+                "local_path": make_nullable("string"),
+                "source": make_nullable("string"),
+                "caption": make_nullable("string"),
+                "vision_verified": {"type": ["boolean", "null"]},
+                "width": {"type": ["integer", "null"]},
+                "height": {"type": ["integer", "null"]},
+                "sha256": make_nullable("string"),
+            },
+        },
         "wikipedia_url": make_nullable("string"),
         "wikipedia_extract": make_nullable("string"),
         "wikipedia_checked_at": make_nullable("string"),
