@@ -157,21 +157,47 @@ def extract_maps(text: str) -> List[Tuple[str, str]]:
     return maps
 
 
-def extract_footnotes(text: str) -> List[Tuple[int, str]]:
+def extract_footnotes(text: str) -> List[Tuple[int, str, str]]:
     """
-    Extract footnote references.
+    Extract footnote references AND their citation text.
 
-    Returns:
-        List of (number, url)
+    Two markdown forms (HyperWar/ibiblio convention) are paired by number:
+      * in-text marker:    ``<sup>[N](url#fnN)</sup>`` — gives the number + url.
+      * end-of-chapter def: ``[N](url#cnN). <citation text>`` (under a "Footnotes"
+        heading, usually block-quoted) — gives the citation TEXT.
+
+    Returns a list of ``(number, url, text)`` ordered by first appearance. The
+    citation text was previously DROPPED, leaving the bibliography resolver nothing
+    to search; it is now captured. ``text`` is "" when no definition is present;
+    ``url`` falls back to the #cn url if a number appears only in a definition.
     """
-    footnotes = []
+    marker_url: Dict[int, str] = {}
+    order: List[int] = []
 
-    # Footnotes: <sup>[1](url)</sup> or <sup>[1](url")</sup>
+    # In-text marker: <sup>[N](url#fnN)</sup> (or url without the fragment).
     for match in re.finditer(r'<sup>\[(\d+)\]\((https?://[^\)"]+)', text):
         number = int(match.group(1))
-        url = match.group(2)
-        footnotes.append((number, url))
+        if number not in marker_url:
+            marker_url[number] = match.group(2)
+            order.append(number)
 
+    # End-of-chapter definition: [N](url#cnN). <citation text up to end of line>
+    # The anchor is #cn (definition) vs #fn (marker). Capture the trailing text.
+    def_text: Dict[int, str] = {}
+    def_url: Dict[int, str] = {}
+    for match in re.finditer(r'\[(\d+)\]\((https?://[^\)"]*#cn\d+)\)\.?\s*(.*)', text):
+        number = int(match.group(1))
+        if number in def_text:
+            continue
+        def_url[number] = match.group(2)
+        def_text[number] = match.group(3).strip()
+        if number not in marker_url:
+            order.append(number)  # definition-only footnote (no in-text marker)
+
+    footnotes: List[Tuple[int, str, str]] = []
+    for number in order:
+        url = marker_url.get(number) or def_url.get(number, "")
+        footnotes.append((number, url, def_text.get(number, "")))
     return footnotes
 
 
@@ -318,8 +344,8 @@ def _add_maps_to_doc(doc: MarkdownDocument, content: str) -> None:
 
 def _add_footnotes_to_doc(doc: MarkdownDocument, content: str) -> None:
     """Extract and add footnotes to document."""
-    for number, url in extract_footnotes(content):
-        footnote = Footnote(number=number, url=url, paragraph_number=0)
+    for number, url, text in extract_footnotes(content):
+        footnote = Footnote(number=number, url=url, paragraph_number=0, text=text)
         doc.footnotes.append(footnote)
 
 

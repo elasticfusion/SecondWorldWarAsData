@@ -52,7 +52,9 @@ def _doc_to_dict(doc):
             {"url": m.url, "description": m.description, "map_id": m.map_id}
             for m in doc.maps
         ],
-        "footnotes": [{"number": f.number, "url": f.url} for f in doc.footnotes],
+        "footnotes": [
+            {"number": f.number, "url": f.url, "text": f.text} for f in doc.footnotes
+        ],
         **({"table_hints": doc.table_hints} if doc.table_hints else {}),
     }
 
@@ -176,7 +178,9 @@ def _save_endnote_refs(doc, section_suffix, book_output, logger):
         "book": doc.book,
         "chapter_number": doc.chapter_number,
         "chapter_title": doc.chapter_title,
-        "endnotes": [{"number": f.number, "url": f.url} for f in doc.footnotes],
+        "endnotes": [
+            {"number": f.number, "url": f.url, "text": f.text} for f in doc.footnotes
+        ],
     }
     with open(endnotes_file, "w", encoding="utf-8") as f:
         json.dump(endnotes_data, f, indent=2, ensure_ascii=False)

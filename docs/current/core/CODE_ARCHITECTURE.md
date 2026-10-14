@@ -397,7 +397,7 @@ def parse_metadata(meta_file: Path) -> Metadata
 def split_into_paragraphs(text: str) -> List[str]
     # Split on double newlines
 
-def extract_footnotes(text: str) -> List[Tuple[int, str]]
+def extract_footnotes(text: str) -> List[Tuple[int, str, str]]  # (number, url, citation_text)
     # Extract [^1]: footnotes
 
 def extract_maps(text: str) -> List[Tuple[str, str]]
