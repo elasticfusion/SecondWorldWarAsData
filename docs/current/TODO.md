@@ -157,6 +157,36 @@ bottom); what remains is ranked here. Current ordered priority:
        cached. Cost is bounded (not-found is small, ~3% hard-miss; one-time per place, idempotent).
        Pairs with the Phase-2 native-names item above (that captures names upstream; this recovers
        when they're still missing at geocode time).
+   - **[HIGH · extraction+geocoding] Capture CO-REFERENCED place aliases from surrounding text.**
+     Verified gap (2026-10-14): the places extractor (`src/extraction/places.py::PlaceMention`) has
+     `current_name` + a SINGLE optional `historical_name` — it cannot keep the full alias set a
+     source gives in one phrase. Example: "Bogeyman Hill (Hill 697, the Schwarzer Mann)" names the
+     SAME place three ways — a GI nickname (ungeocodable), the military grid designation "Hill 697"
+     (geocodable from WWII map refs), and the NATIVE German toponym "Schwarzer Mann" (almost
+     certainly in OSM). We keep "Bogeyman Hill" and dead-end at `geocode_not_found`, even though the
+     geocodable aliases are RIGHT THERE in the source text. (Bonus: "Bogeyman" is literally a
+     translation of "Schwarzer Mann" — the nickname itself hints the native name.) TWO parts:
+     (A) **Extraction model is the real array change (NOT the output schema's shape).** The
+       OUTPUT schema already HAS `historical_names` (array; items `string|object`) and `aliases`
+       (array of strings) — the persisted record can hold the full set today, and richer alias
+       OBJECTS already validate (items permit `object`). The gap is the Pydantic EXTRACTION model
+       `src/extraction/places.py::PlaceMention`, whose `historical_name: Optional[str]` is SINGULAR
+       — that's what limits Grok to one alternate name. FIX: change the extraction model's singular
+       `historical_name` → an ALIAS ARRAY (+ prompt) capturing ALL co-referenced forms in patterns
+       like "X (Y, the Z)" / "X, also called Y", each tagged by type
+       (`nickname` | `hill_designation` | `native` | `former`) + language; populate
+       `historical_names[]`/`aliases` so the EXISTING Nominatim alias-retry + Phase-3 name-variant
+       search use them. OPTIONAL (recommended) output-schema change: tighten `historical_names`
+       items from the permissive `string|object` to a documented object
+       `{name, type, language}` with `additionalProperties:false` — THAT change needs a
+       `people`-style version bump (`ENTITY_SCHEMA_VERSIONS["places"]`) + fingerprint re-pin in
+       `tests/test_schema_fingerprint.py`. Without the tightening, no output-schema bump is required
+       — only the extraction model + prompt.
+     (B) **Geocode recovery (cheapest tier — no web/API):** on a geocode miss, RE-READ the place's
+       own `original_text` (+ neighboring sentences from the parsed source) and extract alternate
+       names via Grok, then retry the cascade. The alias is already in OUR source text — this
+       should run BEFORE the web-search/translate tiers above. Cross-linked to the geocode
+       miss-recovery item (a/b/b2/c) and the Phase-2 native-names item.
 6. **[HIGH · security hardening] CloudFormation review follow-ups** (full review 2026-10-11,
    0 crit / 3 high / 6 med — see `CFN_SECURITY_REVIEW_2026-10-11.md`): HIGH = ~~Chatbot channel
    `GuardrailPolicies` (defaults to AdminAccess)~~ ✅ DONE PR #347; remaining HIGH = GitHub-deploy-role
