@@ -820,6 +820,33 @@ def extract_supplemental(
     )
     endnote_texts = fetch_endnote_texts(parsed_file)
 
+    # OBSERV (bibliography chain): what does supplemental actually see for this event?
+    try:
+        subs = event_data.get("Event", {}).get("Sub-events", [])
+        n_with_refs = sum(
+            1
+            for s in subs
+            if isinstance(s, dict)
+            and (s.get("Footnote_References") or s.get("Endnote_References"))
+        )
+        total_refs = sum(
+            len(s.get("Footnote_References") or [])
+            + len(s.get("Endnote_References") or [])
+            for s in subs
+            if isinstance(s, dict)
+        )
+        logger.info(
+            "OBSERV supplemental.input %s: sub_events=%d with_refs=%d total_refs=%d "
+            "endnote_texts=%d",
+            event_file.name,
+            len(subs),
+            n_with_refs,
+            total_refs,
+            len(endnote_texts),
+        )
+    except Exception:  # noqa: BLE001 - observability must never break extraction
+        pass
+
     # Create prompts
     prompts = create_supplemental_prompt(event_data, endnote_texts)
     if not prompts:
@@ -833,6 +860,38 @@ def extract_supplemental(
         response = _extract_with_retry(prompt, sub_event_id, grok_client)
         if response:
             all_supplemental.append(response)
+
+    # OBSERV: how many sub-event prompts returned materials (post-batch answers).
+    try:
+        mat_total = sum(
+            len(r.get("Supplemental_Material", []) or [])
+            for r in all_supplemental
+            if isinstance(r, dict)
+        )
+        classes: Dict[str, int] = {}
+        for r in all_supplemental:
+            for m in r.get("Supplemental_Material", []) or []:
+                # Sanitize + bound the (Grok-derived) class label: strip newlines to
+                # prevent log-forging, truncate, and cap distinct keys to avoid a
+                # log blowup if the model returns many junk labels.
+                c = (
+                    str((m or {}).get("content_class", "?"))
+                    .replace("\n", " ")
+                    .replace("\r", " ")[:40]
+                )
+                if c in classes or len(classes) < 50:
+                    classes[c] = classes.get(c, 0) + 1
+        logger.info(
+            "OBSERV supplemental.extract %s: prompts=%d responses=%d materials=%d "
+            "content_classes=%s",
+            event_file.name,
+            len(prompts),
+            len(all_supplemental),
+            mat_total,
+            classes,
+        )
+    except Exception:  # noqa: BLE001 - observability must never break extraction
+        pass
 
     if not all_supplemental:
         logger.info("No supplemental material extracted from %s", event_file.name)

@@ -575,6 +575,25 @@ def extract_events(
         # so Phase-2 supplemental extraction can attach the citation text (Blocker C).
         _populate_footnote_refs(response, parsed_data)
 
+        # OBSERV (bibliography chain): did we actually populate refs on the sub-events?
+        try:
+            subs = response.get("Event", {}).get("Sub-events", [])
+            with_refs = sum(
+                1
+                for s in subs
+                if isinstance(s, dict)
+                and (s.get("Footnote_References") or s.get("Endnote_References"))
+            )
+            logger.info(
+                "OBSERV events.refs %s: sub_events=%d with_refs=%d parsed_footnotes=%d",
+                parsed_file.name,
+                len(subs),
+                with_refs,
+                len(parsed_data.get("footnotes", [])),
+            )
+        except Exception:  # noqa: BLE001 - observability must never break extraction
+            pass
+
         # Replace LLM-supplied event ids with deterministic, content-derived ids (idempotent
         # across re-runs → no cross-reference ripple; the model's id is derived, not trusted).
         _apply_deterministic_ids(response, parsed_data)
