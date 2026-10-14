@@ -211,9 +211,29 @@ substantive source material worth capturing-and-processing, or just a reference 
 summarize?" Only capture-worthy sources enter the CAPTURE path; the rest stay ENRICH
 snippets. (OWNER INPUT WANTED on the threshold — see §7.)
 
-**Websites are multi-page sources,** not single documents — capture may enumerate
-in-scope pages (same-domain, WWII-82nd-relevant) rather than one URL. Scope of
-crawl/enumeration is an M1 open question.
+**Do we need a web crawler to tell relevant pages from not?** NO — not a general
+(frontier/BFS whole-site) crawler. A unit-dedicated site often spans ALL the unit's
+wars (an 82nd Airborne site covers WWII AND Korea, Vietnam, Grenada, Iraq); a naive
+crawler would pull the out-of-scope eras and pollute the ETO-1944/45 corpus. Instead:
+
+- **Primary (mostly EXISTS): targeted search + per-page Grok IN-SCOPE gate.** We don't
+  crawl a site to FIND its WWII pages — OpenSERP already surfaces them via WWII-scoped,
+  nationality-disambiguated queries, and `_verify_result`/`url_content_verdict` Grok-gate
+  each hit. Add a required **in-scope-era** verdict dimension (is this page about the
+  WWII/ETO 1944-45 unit, NOT its Korea/Vietnam history?) so an out-of-era page on the
+  right unit's site is REJECTED per-URL, before any capture. This handles the common case
+  with ZERO crawling.
+- **Secondary (optional, M1+): a BOUNDED same-domain enumerator, not a crawler.** Only to
+  catch sibling pages of an ALREADY-confirmed multi-part source (a movement history whose
+  "Part 2 →" link search didn't surface). Strictly leashed: start only from a
+  relevance-confirmed page; same-domain links only; shallow depth (1-2 hops); hard page
+  cap; **Grok in-scope-gate EVERY candidate** (Korea/Vietnam pages rejected here); reuse
+  the SSRF-safe fetch + URL registry (dedup + per-domain politeness) so it cannot runaway
+  or re-fetch. Explicitly NOT a general crawler (no frontier, no whole-site BFS, no
+  robots-scale politeness engine).
+
+The Korea/Vietnam problem is solved by the per-page in-scope VERDICT, not by pre-mapping
+site structure.
 
 ---
 
@@ -263,9 +283,12 @@ linked to the discovering `GroupID`.
    a Grok capture-worthiness verdict (default conservative — only clearly substantive
    primary/secondary material), vs a size/structure heuristic. False-capture wastes
    OCR + re-ingestion cost; false-skip loses a unit history.
-5. **Website crawl scope (§5a).** A unit-dedicated website is multi-page. Capture one
-   discovered URL only, or enumerate same-domain in-scope pages (and how deep)? Politeness
-   + the URL registry (dedup, per-domain cooldown) already exist to bound this.
+5. **Website scope (§5a) — RESOLVED: no general crawler.** Primary = targeted search +
+   a per-page Grok **in-scope-era** verdict (rejects Korea/Vietnam pages on the right
+   unit's site). Secondary = a bounded same-domain enumerator (depth 1-2, hard page cap,
+   in-scope-gated, registry-deduped) only for sibling pages of a confirmed multi-part
+   source. Remaining tuning: the depth/page-cap numbers, and whether the in-scope-era
+   verdict is a new dimension on `url_content_verdict` (lean: yes) or a separate check.
 4. **Reject-compressed UX.** Confirm the reject message/alert wording ("archive
    rejected — please decompress and upload the individual files"), and that this
    intentionally supersedes today's silent ignore.
