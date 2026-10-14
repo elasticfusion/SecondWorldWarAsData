@@ -183,6 +183,40 @@ use either adapter. Compressed files are rejected up front (user decompresses).
 
 ---
 
+## 5a. Phase-3-discovered source material: ENRICH vs CAPTURE
+
+When Phase 3 discovers people_groups source material — e.g. a website dedicated to
+the 82nd Airborne in WWII, or a unit-movement history for the Bulge/Normandy — do we
+CAPTURE the source material for processing, or just reference it? Today we only do the
+former-weak case: `web_results`/`veterans_associations` run through
+`_summarize_url_page` → a 1-2 sentence summary + `{url,title,summary}` on the group
+record. The page content is NOT durably stored and does NOT re-enter Phase 1/2/3. A
+rich 82nd-Airborne movement history is reduced to one sentence + a link.
+
+**Two different intents on the same discovered URL:**
+- **ENRICH (exists):** "summarize this page to annotate the group record." Cheap, a
+  snippet, not re-ingested. Right for a stub bio / thin reference page.
+- **CAPTURE (M1):** "this is substantive primary/secondary material — store it durably
+  and PROCESS it for entities." The discovered URL becomes an ONLINE-origin artifact:
+  Grok relevance gate → store `original/` → OCR/convert → `derived/` → promote to the
+  front door → Phase 1/2/3 extracts events (movements), dates, places, people → all
+  linked to the discovering group's `GroupID`. Deep-archive the master. This is the raw
+  material for the future "map of where the unit was" (the unit-level analogue of the
+  Joe-Smith map).
+
+**Decision needed → a capture-worthiness gate.** Not every `web_results` URL deserves
+full capture+processing. Add a *capture-worthiness* axis to the Grok content-verdict
+(`url_content_verdict` already judges relevance / fact-confirmed / opinion): "is this
+substantive source material worth capturing-and-processing, or just a reference to
+summarize?" Only capture-worthy sources enter the CAPTURE path; the rest stay ENRICH
+snippets. (OWNER INPUT WANTED on the threshold — see §7.)
+
+**Websites are multi-page sources,** not single documents — capture may enumerate
+in-scope pages (same-domain, WWII-82nd-relevant) rather than one URL. Scope of
+crawl/enumeration is an M1 open question.
+
+---
+
 ## 6. Milestones (agreed sequence)
 
 **M0 (tiny, first) — unit-patch image.** End-to-end proof of the image sub-path
@@ -202,7 +236,10 @@ TB-scale WWIIArchives load is likely a **one-time operator `aws s3 sync`** into
 `artifacts/.../original/` (NOT through ECS ephemeral disk) + a cataloguing pass.
 
 **Then:** online acquisition adapters (web/EPUB/PDF/object + NARA) — the SAME
-path with a streaming download in front.
+path with a streaming download in front. **This includes Phase-3-discovered source
+material (§5a):** a capture-worthy `web_results`/`veterans_associations` URL (e.g. an
+82nd-Airborne movement history) is an online-origin artifact captured + processed +
+linked to the discovering `GroupID`.
 
 ---
 
@@ -221,6 +258,14 @@ path with a streaming download in front.
    written to `filestore/` never reach S3. The new store must live under a synced
    prefix (`artifacts/` added to the sync, or under `output/`). M0 must pick the
    synced location. Migrating equipment/maps off `filestore/` is a follow-up.
+4. **Capture-worthiness threshold (§5a).** For a Phase-3-discovered URL, when is it
+   substantive enough to CAPTURE+process vs just ENRICH-summarize? Owner input wanted:
+   a Grok capture-worthiness verdict (default conservative — only clearly substantive
+   primary/secondary material), vs a size/structure heuristic. False-capture wastes
+   OCR + re-ingestion cost; false-skip loses a unit history.
+5. **Website crawl scope (§5a).** A unit-dedicated website is multi-page. Capture one
+   discovered URL only, or enumerate same-domain in-scope pages (and how deep)? Politeness
+   + the URL registry (dedup, per-domain cooldown) already exist to bound this.
 4. **Reject-compressed UX.** Confirm the reject message/alert wording ("archive
    rejected — please decompress and upload the individual files"), and that this
    intentionally supersedes today's silent ignore.
