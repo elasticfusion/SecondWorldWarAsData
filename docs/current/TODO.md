@@ -60,6 +60,28 @@ bottom); what remains is ranked here. Current ordered priority:
      citations as document_reference at all, or returning empty?). The parser fix (text capture) and
      the marker-hygiene are confirmed; the remaining gap is the batch-mode supplemental→bibliography
      persistence/classification. (Also fix e2e_reset to clear the markers so this doesn't recur.)
+     ✅ BLOCKER B FIXED 2026-10-14 (PR #383): the batch-COLLECT pass swallowed `BatchModeCollecting`
+     in `_extract_with_retry` → event got `_mark_processed` during collection → the batch RE-RUN
+     skipped it. Fix re-raises `BatchModeCollecting` so collect leaves it unprocessed and the re-run
+     reprocesses. VERIFIED on the next rerun: supplemental now FULLY ROUTES on the re-run — logs
+     `chapter{2,3,14}a-event.json: 0 bibliography, 0 factual, 0 ambiguous` (was "No supplemental
+     material extracted" / early-exit before). So the batch path now works end-to-end.
+   - **[HIGH · bibliography BLOCKER C — the current one] Sub-events carry NO `Footnote_References`/
+     `Endnote_References`, so supplemental has no footnotes to classify → 0 bibliography.** After B,
+     supplemental routes but gets `0 bibliography, 0 factual, 0 ambiguous` for every chapter.
+     ROOT CAUSE (verified 2026-10-14): `create_supplemental_prompt` reads
+     `sub_event.get("Endnote_References")`/`get("Footnote_References")` to attach the endnote text to
+     the Grok prompt — but the EVENTS extractor (`src/extraction/events.py` + its prompt) NEVER
+     populates those arrays (grep: no `Footnote_References`/`Endnote_References` produced there). So
+     every sub-event has empty refs → `_build_ref_context` yields an empty endnote block → Grok is
+     asked to extract supplemental material with NO footnotes → correctly returns 0. The raw
+     material IS present and connectable: the parsed paragraph text RETAINS the `[1]/[3]/[18]/[21]`
+     markers (verified: 8 marker occurrences in ch2 paragraphs) and `footnotes[]` has all 4 with
+     text. FIX: carry the footnote-number references onto each sub-event during event extraction
+     (populate `Footnote_References`/`Endnote_References` from the `[N]` markers in the sub-event's
+     own fulltext), so `create_supplemental_prompt` can hand Grok the right footnotes → classify
+     document_reference → write bibliography → NARA finally has inputs. This is now THE blocker for
+     a real NARA success rate.
    - **[HIGH · infra reliability] NAT-manager orphaned-lock deadlock.** `_create_networking`
      acquires `lock#nat-manager` with ONLY `attribute_not_exists` (no stale-takeover); if a holder
      times out/crashes without the `delete_item` release (observed: a 300s Lambda timeout), the lock
