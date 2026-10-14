@@ -17,18 +17,57 @@ bottom); what remains is ranked here. Current ordered priority:
    progress signal; force-teardown + SNS alert only after 2 consecutive no-progress hours with NAT
    up + no lock/lease; fail-safe). CFN + schedule + update_lambdas wired; code-complete, NOT yet
    deployed. Code-reviewed; full gate PASS. (§ "Fix idle-infra teardown + hourly backstop reaper".)
-2. **[HIGH · parser/bibliography PREREQUISITE] Capture endnote/footnote CITATION TEXT.** The parser
-   (`src/parser.py::extract_footnotes`, `Footnote` model) captures only the in-text marker
-   `<sup>[N](...#fnN)</sup>` -> `(number, url)` and DROPS the actual citation text in the
-   end-of-chapter definition block (`> [N](...#cnN). <citation text>`, e.g. "12th A Gp and FUSA
-   G-1 Daily Summaries, 12 Sep 44, FUSA G-2 TAC Misc file, Sep 44."). Result: Phase 2 gets no
-   citation text -> creates ZERO bibliography entries -> Phase 3 NARA/Archive.org has nothing to
-   resolve. FIX: pair each `#fnN` marker with its `#cnN` definition, add a `text` field to the
-   footnote/endnote model, carry it into `endnotes.json`, and have Phase 2's bibliography
-   extractor consume it. Confirm the `#fn`/`#cn` ibiblio HyperWar convention + handle other source
-   endnote conventions generically. THIS BLOCKS all bibliography/NARA/Archive.org work. (Verified
-   2026-10-13 live: RoerDams ch2 endnotes.json held only {number,url}; source had the real
-   citations; output/bibliography/ empty.)
+2. **~~[HIGH · parser/bibliography PREREQUISITE] Capture endnote/footnote CITATION TEXT~~ ✅ DONE
+   2026-10-14 (PR #381).** `extract_footnotes` now pairs the in-text `#fnN` marker with its
+   end-of-chapter `#cnN` definition and returns `(number, url, text)`; `Footnote.text` added;
+   serializers (phase1_parse ×2 + phase1_handler) carry it; `fetch_endnote_texts` PREFERS the
+   parsed `footnotes[].text` and skips the fragile ibiblio HTML re-fetch. VERIFIED LIVE on a clean
+   RoerDams rerun: all 4 ch2 footnotes now carry real citation text in `-parsed.json`/`-endnotes.json`
+   (was `{number,url}` only). HOWEVER this unblocked only the first step — see 2b (the NEW blocker).
+   - **[HIGH · bibliography BLOCKER] Phase 2 still produces ZERO `output/bibliography/` despite
+     citation text now present.** Verified 2026-10-14: after PR #381, the RoerDams rerun's Phase 3
+     bibliography step logged `Bibliography directory not found: output/bibliography` /
+     `0 resolved, 0 not found` — so NARA success rate is still unmeasurable (0 of 0). Traced:
+     `phase2_extract._extract_optional_entities` runs `_extract_supplemental` PER event file IN-TASK
+     (events written to `output/content/{book}/*-event.json`, processed before the entity-only
+     sync), and `extract_supplemental` → `fetch_endnote_texts(parsed)` now DOES return the citation
+     text (confirmed in a local repro against the real RoerDams parsed file). Yet 0 bibliography and
+     NO "Supplemental" log lines appeared. CANDIDATE CAUSES to check (in order): (i) STALE
+     `output/supplemental/.processed_events.json` marker surviving the e2e_reset wipe → `_is_processed`
+     makes `_extract_supplemental` early-return silently for every event (strongest candidate — the
+     marker was present in S3; e2e_reset should also clear `.processed_events.json` under
+     output/{supplemental,casualties,logistics,maps}); (ii) Grok supplemental extraction classified
+     nothing as `document_reference` (→ nothing routed to `store_bibliography_entry`); (iii) events
+     lacked `Endnote_References`/`Footnote_References` so `create_supplemental_prompt` built no
+     prompts. FIX: confirm which, then make e2e_reset clear the supplemental processed-markers and/or
+     fix the classification. This is now THE blocker for any NARA measurement.
+     ✅ CAUSE CONFIRMED 2026-10-14 = (i): `output/supplemental/.processed_events.json` held exactly
+     `["chapter14a-event.json","chapter2a-event.json","chapter3a-event.json"]` (stale from the
+     pre-wipe run) → `_is_processed` true for all 3 → `_extract_supplemental` early-returned silently
+     for every event (hence 0 bibliography + no "Supplemental" log lines). NOT a parser/supplemental
+     logic bug — a RESET-HYGIENE gap. FIX: `scripts/e2e_reset.sh` (+ `--wipe-title`) must delete
+     `.processed_events.json` under output/{supplemental,casualties,logistics,maps,weather} when
+     wiping a title, so a re-ingest re-runs the optional extractors.
+     ✅ MARKERS CLEARED + RERUN 2026-10-14: after deleting the stale markers, supplemental DID run
+     ("Extracting supplemental material from chapter{2,3,14}a-event.json") and batched 10 supplemental
+     requests ({'supplemental':10,'logistics':3,'casualties':1}); the batch completed 14/14 success
+     and "Optional batch complete! Re-running with cached results". ❗ YET STILL 0 bibliography.
+     So there is a SECOND, deeper blocker (candidate ii now active): in BATCH mode the supplemental
+     re-run yields no `document_reference` persisted to `output/bibliography/`. NARROWED next step:
+     inspect (a) whether the batch re-run path actually re-invokes `extract_supplemental` →
+     `_route_by_content_class` → `store_bibliography_entry` (vs only re-running core entities), and
+     (b) an actual Grok supplemental batch response for a RoerDams sub-event (is it classifying the
+     citations as document_reference at all, or returning empty?). The parser fix (text capture) and
+     the marker-hygiene are confirmed; the remaining gap is the batch-mode supplemental→bibliography
+     persistence/classification. (Also fix e2e_reset to clear the markers so this doesn't recur.)
+   - **[HIGH · infra reliability] NAT-manager orphaned-lock deadlock.** `_create_networking`
+     acquires `lock#nat-manager` with ONLY `attribute_not_exists` (no stale-takeover); if a holder
+     times out/crashes without the `delete_item` release (observed: a 300s Lambda timeout), the lock
+     orphans past its own `ttl` until DynamoDB's sweeper lags, and EVERY subsequent invocation logs
+     "Another instance running, waiting..." and times out → NO NAT ever provisions → Phase 2/3 stuck
+     with a lease but no egress. Had to manually delete the stale `lock#nat-manager` to recover the
+     2026-10-14 RoerDams run. FIX: stale-lock takeover on acquire (reclaim when the stored
+     timestamp/ttl is expired), mirroring the url_registry observed-bytes optimistic-lock pattern.
 3. **[HIGH · bibliography enrichment] Resolve + DOWNLOAD bibliographic sources.** Extends
    `bibliography_resolver` (spec: docs/current/dataquality/bibliography_resolution_process.md).
    Beyond the existing find-URL behavior: (a) CHECK EXISTING holdings/`resource_urls`/
