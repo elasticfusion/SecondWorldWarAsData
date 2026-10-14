@@ -106,6 +106,24 @@ Centralized function(s):
 - `src/utils/result_dedup.py::dedup_entity(data, entity)` — pure; applies the entity's
   DEDUP_FIELDS declaration (collapse same-URL, refresh checked_at). Called from the
   central write path so NO enricher has to remember to dedup.
+
+## IMPLEMENTED 2026-10-13 (PR TBD)
+- `src/utils/result_dedup.py` built: DEDUP_FIELDS for places/people/people_groups/
+  equipment/bibliography/source_section; URL-identity upsert, safe-merge
+  (fill-only/upgrade-only/never-downgrade), list-union, mention-by-ID, free-form by
+  canonical hash, capped `history[]`, idempotent. 8 tests.
+- WIRED at the central write path (`file_lock._validate_entity`, additive + fail-safe,
+  alongside `_annotate_semantic_flags`) so it runs for EVERY entity write.
+- SCHEMA DECISION (supersedes the earlier "cut the 6-schema change once"): the
+  result-list ITEM objects have NO `additionalProperties:false`, so the recheck/claim
+  fields (`history`, `checked_at`, `claim_type`, `confirmed`, `source`, `archived_url`)
+  are ALREADY schema-permitted-additive — they validate today with NO version bump /
+  fingerprint re-pin. Verified: a deduped people record with history/checked_at on an
+  image still passes `_validate_entity`. So the only schema-side change needed was
+  adding `checked_at`/`history` to `validation_stats._NONCONTENT_FIELDS` (#7 — exclude
+  from the future content hash). If a schema is later tightened to
+  additionalProperties:false on a result item, THEN document these fields + bump that
+  entity.
 - The field->identity declaration lives with the schemas (one source of truth), so a new
   result array is deduped the moment it's declared.
 
