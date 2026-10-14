@@ -197,6 +197,19 @@ def _validate_entity(
     # content fields and never change this guard's allow/block decision.
     _annotate_semantic_flags(filepath, data)
 
+    # Centralized, schema-consistent result de-duplication (RESULT_DEDUP_DESIGN.md):
+    # collapse duplicate result-list entries by SOURCE-URL identity (upsert: refresh
+    # checked_at + safe-merge, never downgrade; different URLs preserved = corroboration)
+    # uniformly for every entity. Additive + fail-safe (never raises, leaves data intact
+    # on error) — so "don't repeat JSON results" behaves identically across all schemas.
+    try:
+        from src.utils.result_dedup import dedup_entity as _dedup_entity
+
+        if entity_type:
+            _dedup_entity(data, entity_type)
+    except Exception:  # noqa: BLE001 - dedup must never block a write
+        pass
+
     schema = _schema_for_entity(entity_type, filepath, data)
     if schema is None:
         return (

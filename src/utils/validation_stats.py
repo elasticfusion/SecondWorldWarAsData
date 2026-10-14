@@ -62,6 +62,14 @@ _NONCONTENT_FIELDS = {
     "quality_flags",
     "enrichment_status",
     "last_enrichment_search",
+    # Recheck-tracking (RESULT_DEDUP_DESIGN.md #7): "we looked again" is metadata, not
+    # content. These change on every 90-day recheck even when the actual facts don't, so
+    # they MUST be excluded from change-detection (the future content hash) or a pure
+    # recheck would needlessly re-publish/re-embed the entity. (checked_at/history live
+    # on result-list ENTRIES; listed here as the convention anchor so the loader's
+    # content hash excludes them wherever they appear.)
+    "checked_at",
+    "history",
 }
 
 
