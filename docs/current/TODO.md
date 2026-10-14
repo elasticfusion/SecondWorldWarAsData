@@ -166,11 +166,22 @@ bottom); what remains is ranked here. Current ordered priority:
      certainly in OSM). We keep "Bogeyman Hill" and dead-end at `geocode_not_found`, even though the
      geocodable aliases are RIGHT THERE in the source text. (Bonus: "Bogeyman" is literally a
      translation of "Schwarzer Mann" — the nickname itself hints the native name.) TWO parts:
-     (A) **Extraction:** replace the singular `historical_name` with an ALIAS ARRAY capturing ALL
-       co-referenced forms in patterns like "X (Y, the Z)" / "X, also called Y" — each tagged by
-       type (`nickname` | `hill_designation` | `native` | `former`) + language. Merge into
+     (A) **Extraction model is the real array change (NOT the output schema's shape).** The
+       OUTPUT schema already HAS `historical_names` (array; items `string|object`) and `aliases`
+       (array of strings) — the persisted record can hold the full set today, and richer alias
+       OBJECTS already validate (items permit `object`). The gap is the Pydantic EXTRACTION model
+       `src/extraction/places.py::PlaceMention`, whose `historical_name: Optional[str]` is SINGULAR
+       — that's what limits Grok to one alternate name. FIX: change the extraction model's singular
+       `historical_name` → an ALIAS ARRAY (+ prompt) capturing ALL co-referenced forms in patterns
+       like "X (Y, the Z)" / "X, also called Y", each tagged by type
+       (`nickname` | `hill_designation` | `native` | `former`) + language; populate
        `historical_names[]`/`aliases` so the EXISTING Nominatim alias-retry + Phase-3 name-variant
-       search use them.
+       search use them. OPTIONAL (recommended) output-schema change: tighten `historical_names`
+       items from the permissive `string|object` to a documented object
+       `{name, type, language}` with `additionalProperties:false` — THAT change needs a
+       `people`-style version bump (`ENTITY_SCHEMA_VERSIONS["places"]`) + fingerprint re-pin in
+       `tests/test_schema_fingerprint.py`. Without the tightening, no output-schema bump is required
+       — only the extraction model + prompt.
      (B) **Geocode recovery (cheapest tier — no web/API):** on a geocode miss, RE-READ the place's
        own `original_text` (+ neighboring sentences from the parsed source) and extract alternate
        names via Grok, then retry the cascade. The alias is already in OUR source text — this
