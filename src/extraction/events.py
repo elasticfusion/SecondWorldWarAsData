@@ -140,6 +140,18 @@ def _populate_footnote_refs(response: dict, parsed_data: dict) -> dict:
             # marker from hitting Python's int-string digit limit or building a huge array.
             marks = {int(m) for m in _re.findall(r"<sup>\[(\d{1,6})\]", text)}
             if not marks:
+                # OBSERV (one-time sample): why did we find no markers? Show whether
+                # <sup>/[ appear + a short repr of the fulltext actually seen.
+                if not getattr(_populate_footnote_refs, "_sampled", False):
+                    _populate_footnote_refs._sampled = True  # type: ignore[attr-defined]
+                    logger.info(
+                        "OBSERV events.refs.sample no-marks: has_sup=%s has_bracket=%s "
+                        "len=%d head=%r",
+                        "<sup" in text,
+                        "[" in text,
+                        len(text),
+                        text[:160],
+                    )
                 continue
             # Classify: known endnote numbers -> Endnote_References; everything else
             # (incl. the common footnote case where no endnotes array exists) -> Footnote.
