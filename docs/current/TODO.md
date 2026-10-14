@@ -141,12 +141,22 @@ bottom); what remains is ranked here. Current ordered priority:
        extract an EXISTENCE + LOCATION hint (region/country, or coordinates) from titles/snippets via
        Grok, then re-run Nominatim/Grok geocode with that enriched context. This is the OPPOSITE of
        the normal relevance-gated OpenSERP use.
+     (b2) **EXIF-GPS from a discovered PHOTO** — when the web-search rescue (b) surfaces an IMAGE of
+       the site (e.g. a photo of the Weisser Weh road), opportunistically read its EXIF GPS IFD
+       (PIL `Image.getexif()` → GPSLatitude/GPSLongitude → decimal) as a HIGH-PRECISION coordinate
+       candidate, tried BEFORE the text-hint parse. CAVEATS (treat as a hint, guard hard):
+       (i) social-media platforms (Instagram/Facebook/X) STRIP EXIF on upload — an Instagram-hosted
+       image almost always has NO GPS; don't rely on it, fall through to (b). EXIF survives mainly on
+       archive/museum/Flickr originals + some blogs. (ii) GPS is where the photo was TAKEN, not
+       necessarily the subject (usually close enough for a place). (iii) SANITY-GUARD: accept only a
+       valid-range coordinate that is plausible vs the country hint; else discard. A modern photo of a
+       still-existing feature gives the right modern coordinate (fine for geocoding).
      (c) **Persist back:** store the discovered native name as a `historical_name` and the
        region/country into `hierarchy`, tagged with provenance (`geocode_source: web_rescue` /
-       `translate`), so retries + the Phase-3 name-variant search compound and it's cached. Cost is
-       bounded (not-found is small, ~3% hard-miss; one-time per place, idempotent). Pairs with the
-       Phase-2 native-names item above (that captures names upstream; this recovers when they're
-       still missing at geocode time).
+       `translate` / `photo_exif`), so retries + the Phase-3 name-variant search compound and it's
+       cached. Cost is bounded (not-found is small, ~3% hard-miss; one-time per place, idempotent).
+       Pairs with the Phase-2 native-names item above (that captures names upstream; this recovers
+       when they're still missing at geocode time).
 6. **[HIGH · security hardening] CloudFormation review follow-ups** (full review 2026-10-11,
    0 crit / 3 high / 6 med — see `CFN_SECURITY_REVIEW_2026-10-11.md`): HIGH = ~~Chatbot channel
    `GuardrailPolicies` (defaults to AdminAccess)~~ ✅ DONE PR #347; remaining HIGH = GitHub-deploy-role
