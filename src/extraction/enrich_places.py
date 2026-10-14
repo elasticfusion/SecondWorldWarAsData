@@ -64,6 +64,16 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
     Requests categories alongside the extract/image so the Phase-2 place Wikipedia fetch
     also yields the {country, continent, region} hierarchy — Phase 3 no longer makes a
     second Wikipedia call for that."""
+    # URL-keyed dedup (NOT entity-keyed): if the canonical article URL for this name was
+    # already fetched within the 90-day window (any entity / either phase), skip.
+    _canon = f"https://en.wikipedia.org/wiki/{name.replace(' ', '_')}"
+    try:
+        from src.utils import url_registry
+
+        if not url_registry.should_fetch_content(_canon):
+            return None
+    except Exception:  # noqa: BLE001
+        pass
     try:
         resp = requests.get(
             _WIKI_API,
@@ -93,8 +103,20 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
             if img_url:
                 filename = img_url.rsplit("/", 1)[-1]
                 license_info = _fetch_image_license(filename)
+            resolved_url = (
+                f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}"
+            )
+            # Record the fetch (resolved URL) so a duplicate is skipped for 90 days.
+            try:
+                from src.utils import url_registry as _reg
+
+                _reg.finalize_searched(
+                    resolved_url, relevant=True, context="wikipedia", source="wikipedia"
+                )
+            except Exception:  # noqa: BLE001
+                pass
             return {
-                "wikipedia_url": f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}",
+                "wikipedia_url": resolved_url,
                 "image": img_url,
                 "license": license_info or "unknown",
                 # Structured hierarchy parsed from the SAME fetch (categories) — this is
