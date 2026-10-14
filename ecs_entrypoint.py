@@ -1742,10 +1742,20 @@ def _notify_dedup_gate(action: str, reason: str) -> None:
         else "WWII Pipeline: dedup review needed"
     )
     try:
+        message = f"Dedup gate: {action}\nReason: {reason}\nBucket: {BUCKET}"
+        # Make the alert ACTIONABLE: when the gate BLOCKS (human review needed), include
+        # the Dedup Review UI deep link so the operator can act without hunting for it.
+        if action != "auto_proceed":
+            dedup_url = os.environ.get("DEDUP_REVIEW_URL", "")
+            if dedup_url:
+                message += (
+                    f"\n\nPhase 3 is blocked until you review duplicates."
+                    f"\nDedup Review UI: {dedup_url}"
+                )
         boto3.client("sns", region_name=REGION).publish(
             TopicArn=topic_arn,
             Subject=subject,
-            Message=f"Dedup gate: {action}\nReason: {reason}\nBucket: {BUCKET}",
+            Message=message,
         )
     except Exception as e:
         logger.warning("Failed to send dedup gate notification: %s", e)
