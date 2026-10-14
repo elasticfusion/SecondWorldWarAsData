@@ -97,6 +97,63 @@ def _reconstruct_fulltext(response: dict, parsed_data: dict) -> dict:
     return response
 
 
+def _populate_footnote_refs(response: dict, parsed_data: dict) -> dict:
+    """Populate each sub-event's ``Footnote_References`` / ``Endnote_References`` from the
+    ``<sup>[N]</sup>`` markers in its own fulltext (Blocker C fix).
+
+    Phase-2 supplemental extraction (`create_supplemental_prompt`) needs these per-sub-event
+    note references to attach the endnote text to the Grok prompt; without them Grok gets no
+    footnotes and classifies 0 document_references → 0 bibliography. The markers are already
+    present in the reconstructed fulltext and the parsed `footnotes[]`/`endnotes` arrays tell
+    us which numbers are footnotes vs endnotes. Additive, idempotent, fail-safe (never raises).
+    """
+    import re as _re
+
+    fn_nums = set()
+    en_nums = set()
+    try:
+        fn_nums = {
+            int(f.get("number"))
+            for f in parsed_data.get("footnotes", [])
+            if isinstance(f, dict) and isinstance(f.get("number"), int)
+        }
+        en_nums = {
+            int(e.get("number"))
+            for e in parsed_data.get("endnotes", [])
+            if isinstance(e, dict) and isinstance(e.get("number"), int)
+        }
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - bad parsed arrays -> no classification context
+        logger.debug("footnote-ref parse of parsed_data skipped: %s", e)
+
+    for se in response.get("Event", {}).get("Sub-events", []):
+        # Per-sub-event isolation: one malformed sub-event must not drop refs for the rest.
+        try:
+            if not isinstance(se, dict):
+                continue
+            text = " ".join(
+                str(v) for v in (se.get("Sub-event_fulltext") or {}).values()
+            )
+            # In-text references appear as <sup>[N](...)</sup>. Bound N to 1-6 digits:
+            # real footnote numbers are small, and this prevents a garbage/oversized
+            # marker from hitting Python's int-string digit limit or building a huge array.
+            marks = {int(m) for m in _re.findall(r"<sup>\[(\d{1,6})\]", text)}
+            if not marks:
+                continue
+            # Classify: known endnote numbers -> Endnote_References; everything else
+            # (incl. the common footnote case where no endnotes array exists) -> Footnote.
+            fnotes = sorted(n for n in marks if n not in en_nums or n in fn_nums)
+            enotes = sorted(n for n in marks if n in en_nums and n not in fn_nums)
+            if fnotes:
+                se["Footnote_References"] = fnotes
+            if enotes:
+                se["Endnote_References"] = enotes
+        except Exception as e:  # noqa: BLE001 - additive; never block extraction
+            logger.debug("footnote-ref population skipped for a sub-event: %s", e)
+    return response
+
+
 def _subevent_para_range(se: dict) -> tuple:
     """Recover a sub-event's (start, end) paragraph numbers from its reconstructed fulltext keys
     (``Paragraph_N``) so a deterministic Sub-eventID can key on an objective paragraph range.
@@ -513,6 +570,10 @@ def extract_events(
 
         # Reconstruct fulltext from parsed data before validation
         _reconstruct_fulltext(response, parsed_data)
+
+        # Populate per-sub-event footnote/endnote references from the fulltext markers
+        # so Phase-2 supplemental extraction can attach the citation text (Blocker C).
+        _populate_footnote_refs(response, parsed_data)
 
         # Replace LLM-supplied event ids with deterministic, content-derived ids (idempotent
         # across re-runs → no cross-reference ripple; the model's id is derived, not trusted).
