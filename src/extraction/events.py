@@ -142,37 +142,40 @@ def _populate_footnote_refs(response: dict, parsed_data: dict) -> dict:
         try:
             if not isinstance(se, dict):
                 continue
-            # Scan the RAW parsed paragraphs assigned to this sub-event (which retain the
-            # <sup>[N]</sup> markers) — NOT Sub-event_fulltext, which is LLM-summarized
-            # prose with the markers stripped (confirmed via OBSERV: has_sup=False). Use the
-            # sub-event's 'paragraphs' number array; must run BEFORE _reconstruct_fulltext
-            # pops it. Fall back to the fulltext values only if no paragraph assignment.
-            nums = se.get("paragraphs")
-            if isinstance(nums, list) and nums:
-                text = " ".join(
-                    str(para_lookup.get(n, "")) for n in nums if isinstance(n, int)
-                )
-            else:
-                text = " ".join(
-                    str(v) for v in (se.get("Sub-event_fulltext") or {}).values()
-                )
-            # In-text references appear as <sup>[N](...)</sup>. Bound N to 1-6 digits:
-            # real footnote numbers are small, and this prevents a garbage/oversized
-            # marker from hitting Python's int-string digit limit or building a huge array.
-            marks = {int(m) for m in _re.findall(r"<sup>\[(\d{1,6})\]", text)}
+            # PRIMARY: the events LLM already emits per-sub-event footnote numbers in
+            # `references` (e.g. [1, 7, 8]) — use them directly. (OBSERV proved the markers
+            # are NOT in Sub-event_fulltext, which is summarized prose.) FALLBACK: scan the
+            # RAW parsed paragraphs assigned via `paragraph_numbers` for <sup>[N]> markers.
+            marks: set = set()
+            refs = se.get("references")
+            if isinstance(refs, list):
+                marks = {
+                    int(r)
+                    for r in refs
+                    if isinstance(r, int) or (isinstance(r, str) and r.isdigit())
+                }
             if not marks:
-                # OBSERV (one-time sample): why did we find no markers? Show whether
-                # <sup>/[ appear + a short repr of the text actually scanned.
+                nums = se.get("paragraph_numbers") or se.get("paragraphs")
+                if isinstance(nums, list) and nums:
+                    text = " ".join(
+                        str(para_lookup.get(n, "")) for n in nums if isinstance(n, int)
+                    )
+                else:
+                    text = " ".join(
+                        str(v) for v in (se.get("Sub-event_fulltext") or {}).values()
+                    )
+                # <sup>[N](...)</sup>; bound N to 1-6 digits (guards int-digit-limit + blowup).
+                marks = {int(m) for m in _re.findall(r"<sup>\[(\d{1,6})\]", text)}
+            if not marks:
+                # OBSERV (one-time sample): why no refs? show what fields were present.
                 if not getattr(_populate_footnote_refs, "_sampled", False):
                     _populate_footnote_refs._sampled = True  # type: ignore[attr-defined]
                     logger.info(
-                        "OBSERV events.refs.sample no-marks: paras=%s has_sup=%s "
-                        "has_bracket=%s len=%d head=%r",
-                        nums if isinstance(nums, list) else None,
-                        "<sup" in text,
-                        "[" in text,
-                        len(text),
-                        text[:160],
+                        "OBSERV events.refs.sample no-refs: keys=%s references=%r "
+                        "paragraph_numbers=%r",
+                        sorted(se.keys()),
+                        se.get("references"),
+                        se.get("paragraph_numbers"),
                     )
                 continue
             # Classify: known endnote numbers -> Endnote_References; everything else

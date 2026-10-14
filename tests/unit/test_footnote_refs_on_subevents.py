@@ -106,3 +106,27 @@ def test_oversized_marker_ignored_good_refs_survive():
     resp = _resp([1])
     _populate_footnote_refs(resp, parsed)
     assert resp["Event"]["Sub-events"][0]["Footnote_References"] == [7]
+
+
+def test_uses_llm_references_field_directly():
+    """Primary path: the events LLM emits per-sub-event footnote numbers in `references`;
+    use them directly (markers are NOT in the summarized fulltext). This is the real fix.
+    """
+    from src.extraction.events import _populate_footnote_refs
+
+    resp = {
+        "Event": {
+            "Sub-events": [
+                {
+                    "Sub-eventID": "01SE",
+                    "Sub-event_summary": "s",
+                    "paragraph_numbers": [1, 2],
+                    "references": [1, 7, 8],
+                }
+            ]
+        }
+    }
+    _populate_footnote_refs(
+        resp, {"paragraphs": [], "footnotes": [{"number": n} for n in (1, 7, 8)]}
+    )
+    assert resp["Event"]["Sub-events"][0]["Footnote_References"] == [1, 7, 8]
