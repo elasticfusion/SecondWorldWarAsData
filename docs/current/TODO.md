@@ -10,6 +10,19 @@ Ranking reflects the project goal: *finish unattended ETO ingestion, then build 
 Most of the 2026-10-09 data-quality program is now DONE (see "Completed data-quality program" at the
 bottom); what remains is ranked here. Current ordered priority:
 
+> **LONG-TERM GOAL · end-to-end observability on EVERY component (owner, 2026-10-14).** Be able to
+> WATCH a document flow through the whole system — from "a new document is added" → Phase 0 ingest/
+> media-detect → Phase 1 parse → Phase 2 each LLM extraction (events/dates/places/people/groups/
+> equipment/supplemental) → dedup → Phase 3 each enrichment (geocode/openserp/nara/weather) → feature
+> JSON outputs — and see exactly what each stage received and emitted (incl. the LLM prompt/response
+> shape + counts). Approach: a consistent structured log convention (the `OBSERV <stage>.<event> ...`
+> lines started in the bibliography chain — events.refs / supplemental.input / supplemental.extract /
+> bib.resolved) carrying a per-document CORRELATION/trace id (book+chapter, and ideally a run id) so a
+> single CloudWatch Insights query reconstructs one document's full journey; counts at every
+> hand-off (N in → N out, with the drop reason when N shrinks). Build it incrementally stage-by-stage;
+> each new feature should emit its OBSERV line. This is the generalization of the ad-hoc tracing added
+> while debugging the bibliography→NARA chain (where missing visibility cost several blind reruns).
+
 1. **~~[HIGH · cost/correctness] Idle-infra teardown backstop reaper~~ ✅ DONE 2026-10-11** —
    (a) root cause fixed: `openserp_manager` now excludes OpenSERP's OWN tasks from the active-work
    count (an idle openserp task no longer blocks its own teardown); (b) new HOURLY

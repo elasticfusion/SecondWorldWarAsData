@@ -912,7 +912,25 @@ def _process_bib_file(
     from src.utils.file_lock import write_json_with_lock
 
     write_json_with_lock(f, data, entity="bibliography")
-    return (data.get("search_status") or "not_found", cached is not None)
+    status = data.get("search_status") or "not_found"
+    # OBSERV (bibliography chain): attribute each resolution to its source so the
+    # NARA vs archive_org vs local-holding breakdown (and NARA success rate) is visible.
+    if status == "resolved":
+        try:
+            src = (
+                str(data.get("search_source", "?"))
+                .replace("\n", " ")
+                .replace("\r", " ")[:40]
+            )
+            logger.info(
+                "OBSERV bib.resolved %s: source=%s urls=%d",
+                f.name,
+                src,
+                len(data.get("resource_urls") or []),
+            )
+        except Exception:  # noqa: BLE001 - observability must never break the resolver
+            pass
+    return (status, cached is not None)
 
 
 def _account_bib_status(stats: Dict[str, int], status: str, was_deduped: bool) -> bool:
