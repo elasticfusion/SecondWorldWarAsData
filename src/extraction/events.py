@@ -99,19 +99,29 @@ def _reconstruct_fulltext(response: dict, parsed_data: dict) -> dict:
 
 def _populate_footnote_refs(response: dict, parsed_data: dict) -> dict:
     """Populate each sub-event's ``Footnote_References`` / ``Endnote_References`` from the
-    ``<sup>[N]</sup>`` markers in its own fulltext (Blocker C fix).
+    ``<sup>[N]</sup>`` markers in the RAW parsed paragraphs assigned to it (Blocker C fix).
 
     Phase-2 supplemental extraction (`create_supplemental_prompt`) needs these per-sub-event
     note references to attach the endnote text to the Grok prompt; without them Grok gets no
-    footnotes and classifies 0 document_references → 0 bibliography. The markers are already
-    present in the reconstructed fulltext and the parsed `footnotes[]`/`endnotes` arrays tell
-    us which numbers are footnotes vs endnotes. Additive, idempotent, fail-safe (never raises).
+    footnotes and classifies 0 document_references → 0 bibliography. The markers live in the
+    RAW parsed paragraph text (``parsed_data["paragraphs"][].text``), NOT in
+    ``Sub-event_fulltext`` (which is LLM-summarized prose with the markers stripped — proven
+    via OBSERV: has_sup=False). So we map each sub-event via its ``paragraphs`` number array
+    to the raw text and scan THAT. MUST run BEFORE ``_reconstruct_fulltext`` pops
+    ``paragraphs``. The parsed ``footnotes[]``/``endnotes`` arrays classify footnote vs
+    endnote. Additive, idempotent, fail-safe (never raises).
     """
     import re as _re
 
+    para_lookup = {}
     fn_nums = set()
     en_nums = set()
     try:
+        para_lookup = {
+            p["absolute_number"]: p.get("text", "")
+            for p in parsed_data.get("paragraphs", [])
+            if isinstance(p, dict) and "absolute_number" in p
+        }
         fn_nums = {
             int(f.get("number"))
             for f in parsed_data.get("footnotes", [])
@@ -132,21 +142,33 @@ def _populate_footnote_refs(response: dict, parsed_data: dict) -> dict:
         try:
             if not isinstance(se, dict):
                 continue
-            text = " ".join(
-                str(v) for v in (se.get("Sub-event_fulltext") or {}).values()
-            )
+            # Scan the RAW parsed paragraphs assigned to this sub-event (which retain the
+            # <sup>[N]</sup> markers) — NOT Sub-event_fulltext, which is LLM-summarized
+            # prose with the markers stripped (confirmed via OBSERV: has_sup=False). Use the
+            # sub-event's 'paragraphs' number array; must run BEFORE _reconstruct_fulltext
+            # pops it. Fall back to the fulltext values only if no paragraph assignment.
+            nums = se.get("paragraphs")
+            if isinstance(nums, list) and nums:
+                text = " ".join(
+                    str(para_lookup.get(n, "")) for n in nums if isinstance(n, int)
+                )
+            else:
+                text = " ".join(
+                    str(v) for v in (se.get("Sub-event_fulltext") or {}).values()
+                )
             # In-text references appear as <sup>[N](...)</sup>. Bound N to 1-6 digits:
             # real footnote numbers are small, and this prevents a garbage/oversized
             # marker from hitting Python's int-string digit limit or building a huge array.
             marks = {int(m) for m in _re.findall(r"<sup>\[(\d{1,6})\]", text)}
             if not marks:
                 # OBSERV (one-time sample): why did we find no markers? Show whether
-                # <sup>/[ appear + a short repr of the fulltext actually seen.
+                # <sup>/[ appear + a short repr of the text actually scanned.
                 if not getattr(_populate_footnote_refs, "_sampled", False):
                     _populate_footnote_refs._sampled = True  # type: ignore[attr-defined]
                     logger.info(
-                        "OBSERV events.refs.sample no-marks: has_sup=%s has_bracket=%s "
-                        "len=%d head=%r",
+                        "OBSERV events.refs.sample no-marks: paras=%s has_sup=%s "
+                        "has_bracket=%s len=%d head=%r",
+                        nums if isinstance(nums, list) else None,
                         "<sup" in text,
                         "[" in text,
                         len(text),
@@ -425,6 +447,10 @@ def _extract_chunk(
     )
     if "EventID" in result and "Event" not in result:
         result = {"Event": result}
+    # Blocker C (both paths): populate footnote refs from the chunk's raw paragraphs
+    # BEFORE _reconstruct_fulltext pops them. Without this, auto-split chapters yield
+    # sub-events with no Footnote_References -> 0 bibliography for split documents.
+    _populate_footnote_refs(result, chunk_data)
     _reconstruct_fulltext(result, chunk_data)
     _apply_deterministic_ids(result, chunk_data)
     validate_event_json(result)
@@ -580,12 +606,13 @@ def extract_events(
         if "Chapter" not in response:
             response["Chapter"] = parsed_data.get("chapter_title", "")
 
+        # Populate per-sub-event footnote/endnote refs from the RAW parsed paragraphs
+        # assigned to each sub-event (Blocker C). MUST run BEFORE _reconstruct_fulltext,
+        # which POPS the sub-event 'paragraphs' number arrays this derivation needs.
+        _populate_footnote_refs(response, parsed_data)
+
         # Reconstruct fulltext from parsed data before validation
         _reconstruct_fulltext(response, parsed_data)
-
-        # Populate per-sub-event footnote/endnote references from the fulltext markers
-        # so Phase-2 supplemental extraction can attach the citation text (Blocker C).
-        _populate_footnote_refs(response, parsed_data)
 
         # OBSERV (bibliography chain): did we actually populate refs on the sub-events?
         try:
