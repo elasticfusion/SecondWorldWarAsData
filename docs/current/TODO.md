@@ -125,6 +125,28 @@ bottom); what remains is ranked here. Current ordered priority:
      ones, and native WWII names (e.g. German "Pfalz" for Palatinate) are first-class per the project
      model — they feed Phase-3 OpenSERP name-variant search + geocoding context. Additive; dedup
      against existing historical_names by name.
+   - **[HIGH · geocoding] Phase 3 geocode MISS-RECOVERY (translate + web-search hint).** Today the
+     geocode cascade is Nominatim → hill → Grok; a miss stamps `geocode_not_found` with NO further
+     recovery (`src/enrichment/places_grok_geocode.py` + `nominatim_geocode.py`). The existing
+     `_alias_names` retry only reuses names ALREADY on the record. Two recovery tiers to add,
+     tried only on a not-found, scoped by the record's country hint:
+     (a) **Native-language toponym retry** — anglicized WWII toponyms miss because the gazetteer
+       knows the native form ("Berange Farm" → "Berange Ferme"/"Ferme de Béranger"; Château-/Schloss-,
+       Bois/Wald, Mont/Berg, etc.). Do cheap deterministic generic-token substitution
+       (Farm→Ferme/Hof, Castle→Château/Schloss/Burg, Wood→Bois/Wald, Hill→Mont/Berg, River→Rivière/Fluss)
+       + a Grok translate-to-native fallback, then re-query Nominatim.
+     (b) **Web-search location-hint rescue (OpenSERP)** — for real-but-obscure toponyms (e.g.
+       "Bliesgersviller" → a vacation-rentals page revealing "Bliesgersviller, Lorraine, France").
+       CRITICAL: do NOT WWII-relevance-gate here — the page's WWII relevance is irrelevant; we only
+       extract an EXISTENCE + LOCATION hint (region/country, or coordinates) from titles/snippets via
+       Grok, then re-run Nominatim/Grok geocode with that enriched context. This is the OPPOSITE of
+       the normal relevance-gated OpenSERP use.
+     (c) **Persist back:** store the discovered native name as a `historical_name` and the
+       region/country into `hierarchy`, tagged with provenance (`geocode_source: web_rescue` /
+       `translate`), so retries + the Phase-3 name-variant search compound and it's cached. Cost is
+       bounded (not-found is small, ~3% hard-miss; one-time per place, idempotent). Pairs with the
+       Phase-2 native-names item above (that captures names upstream; this recovers when they're
+       still missing at geocode time).
 6. **[HIGH · security hardening] CloudFormation review follow-ups** (full review 2026-10-11,
    0 crit / 3 high / 6 med — see `CFN_SECURITY_REVIEW_2026-10-11.md`): HIGH = ~~Chatbot channel
    `GuardrailPolicies` (defaults to AdminAccess)~~ ✅ DONE PR #347; remaining HIGH = GitHub-deploy-role
