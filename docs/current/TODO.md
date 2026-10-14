@@ -157,6 +157,25 @@ bottom); what remains is ranked here. Current ordered priority:
        cached. Cost is bounded (not-found is small, ~3% hard-miss; one-time per place, idempotent).
        Pairs with the Phase-2 native-names item above (that captures names upstream; this recovers
        when they're still missing at geocode time).
+   - **[HIGH · extraction+geocoding] Capture CO-REFERENCED place aliases from surrounding text.**
+     Verified gap (2026-10-14): the places extractor (`src/extraction/places.py::PlaceMention`) has
+     `current_name` + a SINGLE optional `historical_name` — it cannot keep the full alias set a
+     source gives in one phrase. Example: "Bogeyman Hill (Hill 697, the Schwarzer Mann)" names the
+     SAME place three ways — a GI nickname (ungeocodable), the military grid designation "Hill 697"
+     (geocodable from WWII map refs), and the NATIVE German toponym "Schwarzer Mann" (almost
+     certainly in OSM). We keep "Bogeyman Hill" and dead-end at `geocode_not_found`, even though the
+     geocodable aliases are RIGHT THERE in the source text. (Bonus: "Bogeyman" is literally a
+     translation of "Schwarzer Mann" — the nickname itself hints the native name.) TWO parts:
+     (A) **Extraction:** replace the singular `historical_name` with an ALIAS ARRAY capturing ALL
+       co-referenced forms in patterns like "X (Y, the Z)" / "X, also called Y" — each tagged by
+       type (`nickname` | `hill_designation` | `native` | `former`) + language. Merge into
+       `historical_names[]`/`aliases` so the EXISTING Nominatim alias-retry + Phase-3 name-variant
+       search use them.
+     (B) **Geocode recovery (cheapest tier — no web/API):** on a geocode miss, RE-READ the place's
+       own `original_text` (+ neighboring sentences from the parsed source) and extract alternate
+       names via Grok, then retry the cascade. The alias is already in OUR source text — this
+       should run BEFORE the web-search/translate tiers above. Cross-linked to the geocode
+       miss-recovery item (a/b/b2/c) and the Phase-2 native-names item.
 6. **[HIGH · security hardening] CloudFormation review follow-ups** (full review 2026-10-11,
    0 crit / 3 high / 6 med — see `CFN_SECURITY_REVIEW_2026-10-11.md`): HIGH = ~~Chatbot channel
    `GuardrailPolicies` (defaults to AdminAccess)~~ ✅ DONE PR #347; remaining HIGH = GitHub-deploy-role
