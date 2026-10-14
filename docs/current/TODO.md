@@ -95,6 +95,20 @@ bottom); what remains is ranked here. Current ordered priority:
      own fulltext), so `create_supplemental_prompt` can hand Grok the right footnotes → classify
      document_reference → write bibliography → NARA finally has inputs. This is now THE blocker for
      a real NARA success rate.
+     ❌ FIRST FIX ATTEMPT (PR #385) INSUFFICIENT — observability (PR #386/#387) proved why
+     (2026-10-14): `_populate_footnote_refs` scans each sub-event's `Sub-event_fulltext` for
+     `<sup>[N]</sup>` markers, but the OBSERV run showed `events.refs with_refs=0` for EVERY
+     sub-event (while `parsed_footnotes>0`, `endnote_texts=4` available), and the decisive sample
+     `OBSERV events.refs.sample no-marks: has_sup=False has_bracket=False head='The First U.S. Army
+     advanced ~750 miles from St. Lô...'` — i.e. the reconstructed `Sub-event_fulltext` is CLEAN
+     LLM-SUMMARIZED PROSE with NO `<sup>` markers at all. The markers live in
+     `parsed_data["paragraphs"][].text` (raw), NOT in the summarized fulltext. CORRECT FIX: in
+     `_populate_footnote_refs`, derive each sub-event's refs from the PARSED PARAGRAPHS ASSIGNED to
+     it — i.e. use the sub-event's `paragraphs` number array (the same one `_reconstruct_fulltext`
+     consumes/pops) to look up the raw paragraph text in `para_lookup` and scan THAT for `<sup>[N]`.
+     Must run BEFORE `_reconstruct_fulltext` pops `paragraphs`, or capture the mapping first.
+     (The downstream chain — supplemental.input→extract→route→bibliography→NARA — is otherwise ready;
+     OBSERV confirmed endnote_texts arrive. This is the last code change before a non-zero NARA.)
    - **[HIGH · infra reliability] NAT-manager orphaned-lock deadlock.** `_create_networking`
      acquires `lock#nat-manager` with ONLY `attribute_not_exists` (no stale-takeover); if a holder
      times out/crashes without the `delete_item` release (observed: a 300s Lambda timeout), the lock
