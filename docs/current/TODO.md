@@ -110,6 +110,21 @@ bottom); what remains is ranked here. Current ordered priority:
    search; `time.sleep(1)` on cache hits; HallOfValor name-match recall. (The earlier "verifiers
    fail-OPEN" + "phase3_handler double-enrich" items are DONE — verified: `_verify_result` is now
    fail-CLOSED and the Phase-3 people path is OpenSERP-only / phase3_handler is unwired.)
+   - **[HIGH · enrichment] Phase 2 should capture place HISTORICAL NAMES / ALIASES from
+     Grokipedia/Wikipedia.** Verified gap (2026-10-14): the Phase-2 place enricher
+     (`src/extraction/enrich_places.py::enrich_place_from_wikipedia`) writes only
+     `wikipedia_url` + a lead image + `hierarchy` (continent/country, from `_parse_wiki_page`
+     categories). It does NOT extract native-language / former / alternate place names, even
+     when the article has them; `enrich_place_from_grokipedia` only stores the URL. Today
+     `historical_names[]` is populated ONLY in Phase 3 from Grok KNOWLEDGE (`_merge_historical_names`)
+     — model-recalled, not source-cited. FIX: have the Phase-2 Wikipedia fetch
+     (`_fetch_place_wikipedia_full`, already pulling extract+categories) ALSO pull the infobox /
+     former-name / native-name fields (e.g. `prop=pageprops` + a Wikidata `P1448`/`P1705`/native-label
+     lookup, or infobox parse), and the Grokipedia article body, and merge them into
+     `historical_names[]` tagged `source: wikipedia|grokipedia`. SOURCE-GROUNDED aliases > Grok-recalled
+     ones, and native WWII names (e.g. German "Pfalz" for Palatinate) are first-class per the project
+     model — they feed Phase-3 OpenSERP name-variant search + geocoding context. Additive; dedup
+     against existing historical_names by name.
 6. **[HIGH · security hardening] CloudFormation review follow-ups** (full review 2026-10-11,
    0 crit / 3 high / 6 med — see `CFN_SECURITY_REVIEW_2026-10-11.md`): HIGH = ~~Chatbot channel
    `GuardrailPolicies` (defaults to AdminAccess)~~ ✅ DONE PR #347; remaining HIGH = GitHub-deploy-role
