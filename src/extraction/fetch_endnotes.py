@@ -156,9 +156,24 @@ def fetch_endnote_texts(
     if not footnotes_meta:
         return {}
 
-    pages = _group_by_page(footnotes_meta)
+    # Prefer citation text already captured by the parser (src/parser.extract_footnotes
+    # now pairs the in-text #fn marker with its end-of-chapter #cn definition). When the
+    # parsed footnotes carry `text`, use it directly and SKIP the fragile HTML re-fetch
+    # (no network/NAT dependency, no link-rot). Only numbers whose parsed text is empty
+    # fall back to the HTML fetch below (legacy parses that predate the text capture).
     all_footnotes: Dict[int, str] = {}
+    need_fetch: List[dict] = []
+    for fn in footnotes_meta:
+        if not isinstance(fn, dict):
+            continue  # malformed entry — no number/url/text to use or fetch; skip
+        num = fn.get("number")
+        txt = (fn.get("text") or "").strip()
+        if isinstance(num, int) and txt:
+            all_footnotes[num] = txt
+        else:
+            need_fetch.append(fn)
 
+    pages = _group_by_page(need_fetch)
     for base_url, numbers in pages.items():
         html = _fetch_page(base_url)
         if not html:
@@ -174,10 +189,12 @@ def fetch_endnote_texts(
     if all_footnotes:
         all_footnotes = _resolve_cross_references(all_footnotes)
         logger.info(
-            "Fetched %d/%d endnote texts for %s",
+            "Fetched %d/%d endnote texts for %s (%d from parsed text, %d via HTML)",
             len(all_footnotes),
             len(footnotes_meta),
             parsed_file.name,
+            len(footnotes_meta) - len(need_fetch),
+            len(need_fetch),
         )
 
     return all_footnotes

@@ -121,7 +121,8 @@ def _run_parse(tmpdir: Path, book_name: str, storage) -> None:
                     for m in doc.maps
                 ],
                 "footnotes": [
-                    {"number": f.number, "url": f.url} for f in doc.footnotes
+                    {"number": f.number, "url": f.url, "text": f.text}
+                    for f in doc.footnotes
                 ],
             }
             dest = f"output/content/{book_name}/{filename}"

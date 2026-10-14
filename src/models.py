@@ -50,6 +50,9 @@ class Footnote:
     number: int
     url: str
     paragraph_number: int = 0
+    text: str = (
+        ""  # the citation text from the end-of-chapter #cn definition (if present)
+    )
 
 
 @dataclass
