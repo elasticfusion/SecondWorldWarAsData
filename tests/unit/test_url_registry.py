@@ -243,3 +243,28 @@ def test_finalize_captures_http_status(monkeypatch):
     reg.finalize_searched("https://ex.com/s", True, "ctx", "grok", http_status=200)
     rec = reg.lookup("https://ex.com/s")
     assert rec is not None and rec.http_status == 200
+
+
+def test_should_fetch_content_is_url_keyed(monkeypatch):
+    """URL-keyed (NOT entity-keyed) dedup: a URL already searched -> skip; unknown -> fetch."""
+    import src.utils.url_registry as reg
+
+    monkeypatch.setattr(reg, "decide", lambda url: (reg.SKIP_KNOWN, None))
+    assert (
+        reg.should_fetch_content("https://en.wikipedia.org/wiki/George_Patton") is False
+    )
+    monkeypatch.setattr(reg, "decide", lambda url: (reg.GO, None))
+    assert (
+        reg.should_fetch_content("https://en.wikipedia.org/wiki/George_Patton") is True
+    )
+
+
+def test_should_fetch_content_failsafe(monkeypatch):
+    """Any error in decide() -> True (prefer a fetch over silently dropping enrichment)."""
+    import src.utils.url_registry as reg
+
+    def _boom(url):
+        raise RuntimeError("dynamo down")
+
+    monkeypatch.setattr(reg, "decide", _boom)
+    assert reg.should_fetch_content("https://x") is True

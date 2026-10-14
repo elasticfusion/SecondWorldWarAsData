@@ -315,6 +315,25 @@ def finalize_searched(
     return clean
 
 
+def should_fetch_content(url: str) -> bool:
+    """Lightweight cross-entity / cross-phase dedup gate for first-party CONTENT fetches
+    (Grokipedia Playwright render, Wikipedia API) that don't go through url_fetch.fetch().
+
+    Returns False only when the URL was ALREADY searched (or is dead) within the 90-day
+    window (decide() -> SKIP_KNOWN) — so e.g. two UNMERGED "George Patton" person records
+    don't each re-render the same Grokipedia page; the second is skipped. Returns True on
+    GO or any DEFER/error (fail-safe: prefer a fetch over silently dropping enrichment —
+    DEFER politeness cooldown does not apply to these stable first-party endpoints).
+
+    Callers that fetch should call finalize_searched(url, ...) afterwards so the next
+    duplicate is skipped."""
+    try:
+        action, _rec = decide(url)
+        return action != SKIP_KNOWN
+    except Exception:  # noqa: BLE001 - never block enrichment
+        return True
+
+
 def record_dns_failure(url: str) -> str:
     """Record one DNS/unreachable failure for a URL (#3/#9). Does NOT mark dead on its
     own; increments a counter. Returns the current status: 'dead' once failures reach

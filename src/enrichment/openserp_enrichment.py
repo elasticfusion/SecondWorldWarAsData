@@ -467,6 +467,12 @@ _URL_FETCH_RETENTION_DAYS = (
     90  # matches DEFAULT_RECHECK_SECONDS / openserp_searched gate
 )
 
+# Sentinel returned by _summarize_url_page when the central registry says SKIP (already
+# searched -> reuse) or DEFERRED (retry later). The caller must NOT cache REJECT for these
+# (unlike a genuine fetch-miss which returns None): REJECT would poison cross-entity
+# positive reuse / permanently deny a legitimate deferred retry.
+_SKIP_SENTINEL = "\x00__SKIP__\x00"
+
 
 def _summarize_url_page(
     url: str,
@@ -487,21 +493,30 @@ def _summarize_url_page(
     archive retrieval alongside the original URL in the bibliographical record."""
     if not grok_client or not url:
         return None
-    from src.utils.search_cache import _get_backend, _make_key
+    # Route through the CENTRAL fetch (url_fetch): go/no-go on the shared DynamoDB
+    # registry (cross-phase dedup — a URL Phase 2 already fetched is skipped here),
+    # SSRF-safe per-hop redirects + DNS-rebinding, per-domain politeness, and
+    # live->Wayback fallback. Replaces the ad-hoc _fetch_url_content + bespoke
+    # search_cache (URL_SOURCED_ENRICHMENT_DESIGN.md).
+    from src.utils import url_fetch, url_registry
 
-    backend = _get_backend()
-    key = _make_key("openserp_url_summary", url)
-    cached = backend.get(key)
-    if cached is not None:
-        # Already processed within the retention window (summary or sentinel "") -> skip fetch.
-        return cached or None
-
+    result = url_fetch.fetch(url)
+    if result.source in (url_fetch.SKIP, url_fetch.DEFERRED):
+        # SKIP = already searched (reuse the shared verdict); DEFERRED = in-progress
+        # elsewhere / domain cooldown (retry later). Neither is a negative — signal the
+        # caller NOT to cache REJECT (that would poison cross-entity positive reuse or
+        # permanently deny a legitimate deferred retry).
+        return _SKIP_SENTINEL
+    if result.source in (
+        url_fetch.DEAD,
+        url_fetch.BLOCKED_NO_ARCHIVE,
+        url_fetch.RATE_LIMITED,
+    ):
+        # gone / walled-with-no-archive / rate-limited -> no content this run.
+        return None
+    html = result.content
     summary: Optional[str] = None
     try:
-        from src.extraction.enrich_biographies import _fetch_url_content
-
-        prov: Dict[str, Any] = {}
-        html = _fetch_url_content(url, provenance=prov)
         if html:
             import re as _re
 
@@ -519,24 +534,25 @@ def _summarize_url_page(
                     cache_type="openserp_url_summary",
                 )
                 summary = (resp or "").strip() or None
-                # If recovered via the Wayback Machine, surface the archive provenance
-                # (structured) so the caller records original URL + archive retrieval.
-                if (
-                    summary
-                    and prov.get("source") == "wayback"
-                    and provenance is not None
-                ):
-                    provenance["archived_url"] = prov.get("archived_url", "")
-                    provenance["wayback_capture_timestamp"] = prov.get(
-                        "wayback_capture_timestamp", ""
-                    )
+                # Surface Wayback archive provenance from the central FetchResult.
+                if result.source == url_fetch.WAYBACK and provenance is not None:
+                    provenance["archived_url"] = result.archived_url or ""
+                    provenance["wayback_capture_timestamp"] = result.wayback_ts or ""
     except Exception as e:  # noqa: BLE001 - best-effort; never block enrichment
         logger.debug("URL summarize failed for %s: %s", url, e)
 
-    # Record the URL as processed (store "" sentinel on a miss) with 90-day retention so it is
-    # not re-fetched for the retention period.
+    # Finalize the registry entry AFTER summarizing (finalize-after-write #2): searched,
+    # 90-day TTL, with the HTTP status for future filter decisions. relevant = we got a
+    # usable summary.
     try:
-        backend.put(key, summary or "", ttl_days=_URL_FETCH_RETENTION_DAYS)
+        url_registry.finalize_searched(
+            result.final_url or url,
+            relevant=bool(summary),
+            context=context[:200],
+            source="openserp",
+            first_wayback_ts=(result.wayback_ts or ""),
+            http_status=result.http_status,
+        )
     except Exception:  # noqa: BLE001
         pass
     return summary
@@ -624,6 +640,11 @@ def process_positive_url(
 
     prov: Dict[str, Any] = {}
     summary = _summarize_url_page(url, context, grok_client, provenance=prov)
+    if summary == _SKIP_SENTINEL:
+        # Already searched (reuse) or deferred (retry later) — NOT a negative. Do not
+        # cache REJECT; a prior/positive summary (if any) is served from the shared
+        # url-keyed verdict cache above, or a later run resolves the deferral.
+        return None
     if not summary:
         # Verified-relevant but the page could not be fetched/summarized: still a negative for
         # reprocessing purposes -> cache REJECT so we don't retry the fetch for 90 days.

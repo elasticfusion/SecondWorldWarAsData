@@ -33,12 +33,19 @@ def backend():
 def test_positive_url_fetched_summarized_and_cached(backend):
     gc = MagicMock()
     gc.chat_completion.return_value = "Summary of the page."
+    from src.utils import url_fetch
+
+    live = url_fetch.FetchResult(
+        url="http://good",
+        source=url_fetch.LIVE,
+        content="<p>Content.</p>",
+        final_url="http://good",
+        http_status=200,
+    )
     with (
         patch.object(oe, "_verify_result", return_value=True),
-        patch(
-            "src.extraction.enrich_biographies._fetch_url_content",
-            return_value="<p>Content.</p>",
-        ),
+        patch("src.utils.url_fetch.fetch", return_value=live),
+        patch("src.utils.url_registry.finalize_searched", return_value="http://good"),
     ):
         r = oe.process_positive_url("http://good", "T", "snip", "ctx", gc)
     assert r["url"] == "http://good"
@@ -79,12 +86,47 @@ def test_rejected_rerun_skips_reprocessing(backend):
 
 def test_dead_page_after_verify_is_negative_cached(backend):
     gc = MagicMock()
+    from src.utils import url_fetch
+
+    dead = url_fetch.FetchResult(url="http://dead", source=url_fetch.DEAD)
     with (
         patch.object(oe, "_verify_result", return_value=True),
-        patch(
-            "src.extraction.enrich_biographies._fetch_url_content", return_value=None
-        ),
+        patch("src.utils.url_fetch.fetch", return_value=dead),
     ):
         r = oe.process_positive_url("http://dead", "T", "snip", "ctx", gc)
     assert r is None  # verified but unfetchable -> no result
     assert backend.store["openserp_url_verdict:http://dead"] == "REJECT"
+
+
+def test_skip_known_url_not_negative_cached(backend):
+    """IMPORTANT regression: url_fetch SKIP (already searched -> reuse) must NOT be cached
+    as REJECT — otherwise a second unmerged entity hitting the same URL is permanently
+    denied the summary the URL actually has."""
+    gc = MagicMock()
+    from src.utils import url_fetch
+
+    skip = url_fetch.FetchResult(url="http://seen", source=url_fetch.SKIP)
+    with (
+        patch.object(oe, "_verify_result", return_value=True),
+        patch("src.utils.url_fetch.fetch", return_value=skip),
+    ):
+        r = oe.process_positive_url("http://seen", "T", "snip", "ctx", gc)
+    assert r is None  # no summary THIS run
+    assert (
+        "openserp_url_verdict:http://seen" not in backend.store
+    )  # NOT negative-cached
+
+
+def test_deferred_url_not_negative_cached(backend):
+    """DEFERRED (in-progress/cooldown -> retry later) must also NOT be cached as REJECT."""
+    gc = MagicMock()
+    from src.utils import url_fetch
+
+    deferred = url_fetch.FetchResult(url="http://later", source=url_fetch.DEFERRED)
+    with (
+        patch.object(oe, "_verify_result", return_value=True),
+        patch("src.utils.url_fetch.fetch", return_value=deferred),
+    ):
+        r = oe.process_positive_url("http://later", "T", "snip", "ctx", gc)
+    assert r is None
+    assert "openserp_url_verdict:http://later" not in backend.store

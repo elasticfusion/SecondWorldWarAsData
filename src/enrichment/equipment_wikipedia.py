@@ -65,6 +65,15 @@ def search_equipment_wikipedia(name: str) -> Optional[dict]:
 
 def _lookup_equipment(title: str) -> Optional[dict]:
     """Direct Wikipedia lookup for equipment page."""
+    # URL-keyed dedup (not entity-keyed): skip if this article URL was fetched <90d ago.
+    _canon = f"https://en.wikipedia.org/wiki/{title.replace(' ', '_')}"
+    try:
+        from src.utils import url_registry
+
+        if not url_registry.should_fetch_content(_canon):
+            return None
+    except Exception:  # noqa: BLE001
+        pass
     try:
         resp = requests.get(
             "https://en.wikipedia.org/w/api.php",
@@ -131,9 +140,18 @@ def _lookup_equipment(title: str) -> Optional[dict]:
                 license_info = _fetch_license(filename)
 
             page_title = page_data.get("title", title)
+            _resolved = f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}"
+            try:
+                from src.utils import url_registry as _reg
+
+                _reg.finalize_searched(
+                    _resolved, relevant=True, context="wikipedia", source="wikipedia"
+                )
+            except Exception:  # noqa: BLE001
+                pass
             return {
                 "extract": extract,
-                "wikipedia_url": f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}",
+                "wikipedia_url": _resolved,
                 "image": img_url,
                 "license": license_info or "unknown",
             }

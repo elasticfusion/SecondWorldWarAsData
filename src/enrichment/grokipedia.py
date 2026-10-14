@@ -87,6 +87,19 @@ def fetch_grokipedia_rendered(url: str, timeout_ms: int = 30000) -> Optional[str
     behavior. Bounded to _MAX_RENDERED_CHARS."""
     if not url:
         return None
+    # Cross-entity / cross-phase dedup: if this exact Grokipedia page was already
+    # fetched within the 90-day window (e.g. a different, unmerged person record for the
+    # same name already rendered it), skip the expensive Playwright render.
+    try:
+        from src.utils import url_registry
+
+        if not url_registry.should_fetch_content(url):
+            logger.debug(
+                "Grokipedia page already searched (<90d) — skip render: %s", url
+            )
+            return None
+    except Exception:  # noqa: BLE001 - never block enrichment
+        pass
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -124,4 +137,14 @@ def fetch_grokipedia_rendered(url: str, timeout_ms: int = 30000) -> Optional[str
     for prefix in _CHROME_PREFIXES:
         if cleaned.startswith(prefix):
             cleaned = cleaned[len(prefix) :].strip()
-    return cleaned[:_MAX_RENDERED_CHARS] or None
+    result = cleaned[:_MAX_RENDERED_CHARS] or None
+    # Record the fetch so a duplicate (another entity / phase) is skipped for 90 days.
+    try:
+        from src.utils import url_registry
+
+        url_registry.finalize_searched(
+            url, relevant=bool(result), context="grokipedia", source="grokipedia"
+        )
+    except Exception:  # noqa: BLE001
+        pass
+    return result
