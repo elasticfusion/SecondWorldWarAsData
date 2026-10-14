@@ -44,7 +44,44 @@ bottom); what remains is ranked here. Current ordered priority:
    resolve/download). Also wire the NARA + NOAA secrets into runtime config (secrets exist:
    `dev-wwii-pipeline/{nara,noaa}-api-key`; `_load_secrets` loads only Grok; `config.py` maps
    NARA_API_KEY->api.nara_api_key but has NO NOAA mapping; add both + load both for Phase 3).
-   NOTE: the shared NOAA key was exposed in chat 2026-10-13 — ROTATE it.
+   NOTE: NOAA key is stored at Secrets Manager `dev-wwii-pipeline/noaa-api-key`.
+4. **[HIGH · data-quality/provenance] URL-sourced enrichment + 90-day URL registry.** Design:
+   docs/current/dataquality/URL_SOURCED_ENRICHMENT_DESIGN.md. Phase 3 step 1 (people_groups,
+   enrich_groups.py) and step 2 (places, enrich_places.py `_try_grok`) currently accept Grok's
+   GENERATED facts directly with NO source URL + NO verification. Change the trust model: Grok
+   facts are UNTRUSTED; Grok must CITE source URLs; each URL is queued + Grok EVALUATES its
+   relevance (correct unit/place + WWII era), fail-closed; URL-sourced (Grok-evaluated) data gets
+   SOME trust + provenance. Persist examined URLs + verdicts in DynamoDB (`dev-wwii-api-cache`,
+   key `url#{sha256}`, native TTL = 90 days — owner-confirmed) so subsequent Grok/OpenSERP
+   searches REUSE within 90 days and re-examine after. Reuse should_re_search / the 90-day
+   openserp_searched gate / _URL_FETCH_RETENTION_DAYS rather than duplicating. OPEN: fetch-then-
+   evaluate (recommended — Grok-claimed URLs can be hallucinated, cf. the 48%-bad-URL 2026-06-05
+   bibliography reset) vs judge-URL-string; places same change vs follow-up; drop vs flag
+   (`source: grok_unverified`) facts with no cited URL. people_groups first.
+   DONE 2026-10-13 (modules; wiring remains): `src/utils/url_hygiene.py` (clean_url: https-only,
+   SSRF-safe, normalize + option-2 query = drop args after `?` EXCEPT identity allowlist
+   id/q/page/naid/... so distinct NARA/viewer docs stay distinct) + `src/utils/url_registry.py`
+   (DynamoDB `url#{sha256(clean_url)}`, 90-day TTL, register/lookup/should_examine, REJECTS
+   non-clean URLs). 13 tests, gated; JSON linter added to gate+CI. DECISIONS: (1) fetch-then-
+   evaluate the URL content [resolved]; (2) people_groups AND places same change [resolved];
+   (3) OPEN: drop vs flag grok_unverified for no-URL facts; (4) DEFERRED: leave per-entity date
+   markers. CENTRALIZED (owner): the registry is SHARED code used by BOTH Phase 2 (Grokipedia/
+   Wikipedia) AND Phase 3 (OpenSERP + Grok-cited) to stop repeated lookups pipeline-wide —
+   complementary to the query-keyed search_cache (keep both). REMAINING: wire grok/wiki/openserp
+   to register/should_examine + require Grok-cited URLs + Grok relevance-eval (fetch-then-eval).
+5. **[HIGH · data-quality] Centralized JSON result de-duplication (schema-consistent).** Design:
+   docs/current/dataquality/RESULT_DEDUP_DESIGN.md. Owner directive: don't repeat JSON results;
+   dedup must behave IDENTICALLY across ALL schemas via centralized function(s), not per-entity
+   ad-hoc (today ~20 enrichers each `list.append` with no shared dedup; only mentions have a
+   local key). Add `src/utils/result_dedup.py::dedup_entity(data, entity)` applied at the ONE
+   central write path (`file_lock.write_json_with_lock`/`_validate_entity`,
+   `json_validator.validate_and_write_json`), driven by a per-schema DEDUP_FIELDS declaration
+   (field -> identity key): URL-bearing result arrays (images/sources/awards/resource_urls/
+   primary_sources) dedup on `url_hygiene.clean_url` (SAME normalizer as the URL registry so
+   "searched once" and "stored once" agree); mentions on MentionID; free-form on canonical hash.
+   First-writer-wins, order-preserved, idempotent. Behavior-only (no schema version bump); lazy
+   clean on write-through + optional at-rest sweep. This is the "different function" split out of
+   the URL-registry work (not re-SEARCHING a URL != not WRITING a duplicate result).
    reprocessor** — the LAST data-quality layer (prevention + detection are done). Build the
    no-human-gate reprocessor in CORE (resolve-before-write, re-extract the whole source unit,
    deterministic) and run it as the (a) remediation. Highest-risk (first thing to MUTATE the live

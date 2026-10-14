@@ -66,6 +66,48 @@ BIBLIOGRAPHY_OUTPUT_SCHEMA = {
                 "jurisdiction": make_nullable("string"),
             },
         },
+        "source_qualification": {
+            "type": ["object", "null"],
+            "additionalProperties": False,
+            "description": (
+                "QUALIFICATION (how a source qualifies for an asserted fact), NOT "
+                "veracity. Two orthogonal axes + derivation provenance. Rating ladder: "
+                "NARA/archival -> primary/contemporaneous = HIGH; densely-footnoted "
+                "secondary -> secondary/dense = MED-HIGH; book w/ bibliography, few "
+                "footnotes -> secondary/light = MED; bare web citing nothing -> "
+                "secondary|tertiary/none = LOW; Grok fact with no cited URL -> unknown "
+                "(flagged, untrusted) = LOWEST. See SOURCE_QUALIFICATION_DESIGN.md + "
+                "URL_SOURCED_ENRICHMENT_DESIGN.md."
+            ),
+            "properties": {
+                # Axis 1 — relationship to the event.
+                "source_type": enum_field(
+                    ["primary", "secondary", "tertiary", "reference", "unknown"],
+                    nullable=True,
+                ),
+                # Axis 2a — proximity (meaningful for primary).
+                "proximity": enum_field(
+                    [
+                        "participant",
+                        "witness",
+                        "contemporaneous",
+                        "recollection",
+                        "n/a",
+                    ],
+                    nullable=True,
+                ),
+                # Axis 2b — evidentiary support / footnote-apparatus (secondary/tertiary).
+                "evidentiary_support": enum_field(
+                    ["dense", "light", "none", "n/a"], nullable=True
+                ),
+                # Derivation provenance — so the qualifier signal is itself trustworthy.
+                "method": enum_field(
+                    ["derived", "llm_assisted", "manual"], nullable=True
+                ),
+                "basis": make_nullable("string"),
+                "confidence": enum_field(["high", "medium", "low"], nullable=True),
+            },
+        },
         "search_status": enum_field(
             ["resolved", "not_found", "pending", "unresolved"], nullable=True
         ),
