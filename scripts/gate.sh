@@ -61,6 +61,37 @@ run_radon() {
 run_radon
 run "vulture"  python -m vulture src/ lambda_handlers/ .vulture_whitelist.py --min-confidence 80
 run "cfn-lint" bash -c 'cfn-lint cloudformation/*.yaml'
+# JSON lint: strict-parse every PROJECT-OWNED *.json (stdlib json, no new dep). Excludes
+# vendored/third-party trees (aws/ bundled CLI = ~1500 files, .venv, node_modules, dist,
+# build, .git). A malformed JSON (schema fixture, agent config, prompt, test fixture) fails
+# the gate instead of surfacing only at runtime. Prefers git-tracked files so untracked
+# scratch JSON is ignored.
+run "json-lint" python - <<'PYJSON'
+import json, subprocess, sys
+_EXCL = ("aws/", ".venv/", "node_modules/", "dist/", "build/", ".git/", "contentrepository/", "logs/")
+try:
+    files = subprocess.check_output(["git", "ls-files", "*.json"], text=True).split()
+except Exception:
+    import glob
+    files = glob.glob("**/*.json", recursive=True)
+bad = []
+checked = 0
+for f in files:
+    if any(f.startswith(p) or ("/" + p) in f for p in _EXCL):
+        continue
+    checked += 1
+    try:
+        with open(f, encoding="utf-8") as fh:
+            json.load(fh)
+    except Exception as e:  # noqa: BLE001
+        bad.append(f"{f}: {e}")
+if bad:
+    print("Malformed JSON:")
+    for b in bad:
+        print("  " + b)
+    sys.exit(1)
+print(f"json-lint: {checked} project JSON files parse OK")
+PYJSON
 run "pip-audit" bash -c 'pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-2447 && pip-audit -r requirements-lambda.txt --ignore-vuln PYSEC-2026-2447'
 # Data-quality bypass guard: no NEW raw json.dump/write_text that could skip the central write guard.
 if bash scripts/check_raw_writes.sh >/tmp/gate_rawwrites 2>&1; then

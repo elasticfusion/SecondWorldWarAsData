@@ -50,6 +50,30 @@ jobs:
       - name: CloudFormation lint
         run: cfn-lint cloudformation/*.yaml
 
+      - name: JSON lint (project-owned *.json)
+        run: |
+          python - <<'PYJSON'
+          import json, subprocess, sys
+          _EXCL = ("aws/", ".venv/", "node_modules/", "dist/", "build/", ".git/", "contentrepository/", "logs/")
+          files = subprocess.check_output(["git", "ls-files", "*.json"], text=True).split()
+          bad, checked = [], 0
+          for f in files:
+              if any(f.startswith(p) or ("/" + p) in f for p in _EXCL):
+                  continue
+              checked += 1
+              try:
+                  with open(f, encoding="utf-8") as fh:
+                      json.load(fh)
+              except Exception as e:
+                  bad.append(f"{f}: {e}")
+          if bad:
+              print("Malformed JSON:")
+              for b in bad:
+                  print("  " + b)
+              sys.exit(1)
+          print(f"json-lint: {checked} project JSON files parse OK")
+          PYJSON
+
       - name: pip-audit (dependency vulnerabilities)
         run: |
           pip install pip-audit
