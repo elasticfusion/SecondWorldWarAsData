@@ -233,3 +233,13 @@ def test_b1_two_tasks_cannot_both_reclaim_same_stale_claim(monkeypatch):
         except ClientError:
             results.append(False)
     assert results.count(True) == 1, "exactly one task may reclaim a stale claim"
+
+
+def test_finalize_captures_http_status(monkeypatch):
+    import src.utils.url_registry as reg
+
+    t = _store_table()
+    monkeypatch.setattr(reg, "_table", lambda: t)
+    reg.finalize_searched("https://ex.com/s", True, "ctx", "grok", http_status=200)
+    rec = reg.lookup("https://ex.com/s")
+    assert rec is not None and rec.http_status == 200

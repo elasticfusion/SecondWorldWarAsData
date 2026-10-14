@@ -71,6 +71,7 @@ class UrlRecord:
     first_wayback_ts: str = (
         ""  # earliest Wayback capture ts we recorded (archive-stable check #9)
     )
+    http_status: Optional[int] = None  # last live/terminal HTTP code (future filtering)
 
 
 def _url_key(clean: str) -> str:
@@ -129,6 +130,7 @@ def _load_raw(table, clean: str) -> Tuple[Optional[UrlRecord], str]:
             claimed_at=int(p.get("claimed_at", 0) or 0),
             dns_failures=int(p.get("dns_failures", 0) or 0),
             first_wayback_ts=p.get("first_wayback_ts", ""),
+            http_status=p.get("http_status"),
         ),
         raw,
     )
@@ -276,9 +278,12 @@ def finalize_searched(
     context: str,
     source: str,
     first_wayback_ts: str = "",
+    http_status: Optional[int] = None,
 ) -> Optional[str]:
     """Finalize a claimed URL as `searched` (90-day TTL) AFTER the result write
-    confirms (#2 — searched always implies data landed). Returns the clean URL."""
+    confirms (#2 — searched always implies data landed). Captures http_status for
+    future filter decisions (e.g. report only 200s, flag 403s). Returns the clean URL.
+    """
     clean = clean_url(url)
     if not clean:
         return None
@@ -294,6 +299,7 @@ def finalize_searched(
         "source": (source or "")[:50],
         "examined_at": now,
         "first_wayback_ts": (first_wayback_ts or "")[:32],
+        "http_status": int(http_status) if http_status is not None else None,
     }
     try:
         table.put_item(

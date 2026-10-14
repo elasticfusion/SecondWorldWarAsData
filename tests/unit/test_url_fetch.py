@@ -161,3 +161,16 @@ def test_skip_known_returns_without_fetch(monkeypatch):
 def test_non_clean_url_skip(monkeypatch):
     r = uf.fetch("http://169.254.169.254/latest/")
     assert r.source == uf.SKIP
+
+
+def test_http_status_captured_live_and_gone(monkeypatch):
+    _go(monkeypatch)
+    sess = MagicMock()
+    sess.get.return_value = _Resp(200, "<html>x</html>")
+    monkeypatch.setattr(uf, "_session", lambda: sess)
+    with patch("src.enrichment.wayback.is_block_page", return_value=False):
+        assert uf.fetch("https://ex.com/a").http_status == 200
+    sess.get.return_value = _Resp(404, "")
+    monkeypatch.setattr(reg, "record_dns_failure", lambda u: "retry")
+    with patch("src.enrichment.wayback.fetch_archived", return_value=None):
+        assert uf.fetch("https://ex.com/b").http_status == 404
