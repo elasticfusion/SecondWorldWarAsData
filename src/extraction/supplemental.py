@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 import ulid
 from jsonschema import ValidationError, validate
 
-from src.grok_client import GrokClient
+from src.grok_client import BatchModeCollecting, GrokClient
 from src.utils.json_validator import _fix_invalid_ulids
 from src.json_schemas import SUPPLEMENTAL_SCHEMA
 
@@ -415,6 +415,12 @@ def _extract_with_retry(
 
             return response
 
+        except BatchModeCollecting:
+            # Batch COLLECT pass: the request was queued, not answered. Must NOT be
+            # swallowed as a failure (that let the caller mark the event "processed"
+            # during collection, so the batch RE-RUN then skipped it and never wrote
+            # bibliography — Blocker B). Propagate so the caller leaves it unprocessed.
+            raise
         except Exception as e:  # pylint: disable=broad-exception-caught
             if attempt < max_retries - 1:
                 logger.warning(
