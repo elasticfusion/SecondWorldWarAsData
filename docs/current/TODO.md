@@ -94,6 +94,15 @@ bottom); what remains is ranked here. Current ordered priority:
    remain.)
 4. **[HIGH · cost] AWS budget reset + CloudWatch reduction pass** — reset the stale $75 limit
    (S3 alone exceeds it); trim CloudWatch log retention/ingestion. Not a runaway.
+   - **[MEDIUM · dedup UX] Human dedup-review UI should SHOW the mention TEXT for context.**
+     Entity resolution for people is increasingly an *educated guess* (service number is in
+     personal/service records but NOT in book/website mentions, so common-name links rest on the
+     weaker name+unit+rank+date compound). The reviewer in `dev-wwii-dedup-ui` currently sees
+     entity fields but not the actual sentence(s) each mention came from. Surface the mention
+     `original_text`/`verbatim_reference` (via the `mentions`/`event_mentions` junction →
+     `output/content/<book>/<chapter>-parsed.json`) in the duplicate-group detail view so a human
+     can judge "same Smith?" against real context. Pairs with the person-disambiguation design
+     (service# auto-link / unit+rank+date review / bare-name unresolved). Not a priority now.
 5. **[HIGH · enrichment] SourceRechecker into People enrichment** (source-first gap-fill of
    `nationality` etc. in `enrich_person_biography`, mirroring people_groups) + Grokipedia should
    fetch the real `/page/<slug>` article instead of caching raw search-results HTML
