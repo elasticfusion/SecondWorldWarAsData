@@ -78,3 +78,39 @@ def test_notify_is_non_blocking(tmp_path, monkeypatch):
     # No NOTIFICATION_TOPIC_ARN set → must return without error.
     monkeypatch.delenv("NOTIFICATION_TOPIC_ARN", raising=False)
     ecs_entrypoint._notify_dedup_gate("auto_proceed", "test")
+
+
+def test_block_alert_includes_dedup_review_url(monkeypatch):
+    """The dedup-gate BLOCK alert must carry the Dedup Review UI deep link so the operator
+    can act on it (previously the email said 'blocked' with no URL)."""
+    import ecs_entrypoint
+    from unittest.mock import MagicMock, patch
+
+    monkeypatch.setenv("NOTIFICATION_TOPIC_ARN", "arn:aws:sns:us-east-1:1:t")
+    monkeypatch.setenv(
+        "DEDUP_REVIEW_URL", "https://abc.execute-api.us-east-1.amazonaws.com/app/dedup"
+    )
+    sns = MagicMock()
+    with patch("ecs_entrypoint.boto3.client", return_value=sns):
+        ecs_entrypoint._notify_dedup_gate("block", "duplicate groups pending review")
+    msg = sns.publish.call_args.kwargs["Message"]
+    assert (
+        "Dedup Review UI: https://abc.execute-api.us-east-1.amazonaws.com/app/dedup"
+        in msg
+    )
+
+
+def test_auto_proceed_alert_omits_url(monkeypatch):
+    """Auto-proceed needs no action link (nothing to review)."""
+    import ecs_entrypoint
+    from unittest.mock import MagicMock, patch
+
+    monkeypatch.setenv("NOTIFICATION_TOPIC_ARN", "arn:aws:sns:us-east-1:1:t")
+    monkeypatch.setenv(
+        "DEDUP_REVIEW_URL", "https://abc.execute-api.us-east-1.amazonaws.com/app/dedup"
+    )
+    sns = MagicMock()
+    with patch("ecs_entrypoint.boto3.client", return_value=sns):
+        ecs_entrypoint._notify_dedup_gate("auto_proceed", "clean")
+    msg = sns.publish.call_args.kwargs["Message"]
+    assert "Dedup Review UI" not in msg
