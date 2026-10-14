@@ -61,6 +61,8 @@ class FetchResult:
     )
     archived_url: Optional[str] = None  # Wayback snapshot url (WAYBACK)
     wayback_ts: Optional[str] = None  # Wayback capture timestamp (WAYBACK)
+    http_status: Optional[int] = None  # the live/terminal HTTP code observed (None if
+    #                                    never reached: transient / DNS-blocked / skip)
     detail: str = ""  # human-readable reason
     registry_record: object = field(default=None)  # the UrlRecord for SKIP/DEFERRED
 
@@ -127,26 +129,26 @@ def _follow_live(session, clean: str, timeout: int):
     for _hop in range(_MAX_REDIRECT_HOPS + 1):
         resp = _one_hop(session, current, timeout)
         if resp is None:
-            return None, None, "transient"
+            return None, None, "transient", None
         if resp.status_code in (404, 410):
-            return None, None, "gone"
+            return None, None, "gone", resp.status_code
         if resp.status_code in (429, 503):
-            return resp, current, "rate_limited"
+            return resp, current, "rate_limited", resp.status_code
         if resp.is_redirect or resp.status_code in (301, 302, 303, 307, 308):
             loc = resp.headers.get("Location")
             if not loc:
-                return resp, current, "ok"
+                return resp, current, "ok", resp.status_code
             nxt_clean = clean_url(urljoin(current, loc))  # SSRF/scheme/host re-check
             if not nxt_clean:
                 logger.warning(
                     "unsafe/invalid redirect target blocked: %s -> %s", current, loc
                 )
-                return None, None, "transient"
+                return None, None, "transient", resp.status_code
             current = nxt_clean
             continue
-        return resp, current, "ok"
+        return resp, current, "ok", resp.status_code
     logger.warning("redirect hop cap exceeded starting at %s", clean)
-    return None, None, "transient"
+    return None, None, "transient", None
 
 
 def fetch(url: str, timeout: int = _DEFAULT_TIMEOUT) -> FetchResult:
@@ -183,7 +185,7 @@ def _do_fetch(clean: str, timeout: int) -> FetchResult:
     from src.enrichment import wayback
 
     session = _session()
-    resp, final_url, outcome = _follow_live(session, clean, timeout)
+    resp, final_url, outcome, code = _follow_live(session, clean, timeout)
     # Live success + not a block page -> use it.
     text = _hop_text(resp) if resp is not None else ""
     if outcome == "ok" and resp is not None and resp.status_code == 200 and text:
@@ -193,6 +195,7 @@ def _do_fetch(clean: str, timeout: int) -> FetchResult:
                 source=LIVE,
                 content=text,
                 final_url=final_url or clean,
+                http_status=code,
                 detail="live 200",
             )
         detail = (
@@ -215,6 +218,7 @@ def _do_fetch(clean: str, timeout: int) -> FetchResult:
             content=html,
             archived_url=archived_url,
             wayback_ts=ts,
+            http_status=code,
             detail=f"wayback ({detail})",
         )
 
@@ -227,6 +231,7 @@ def _do_fetch(clean: str, timeout: int) -> FetchResult:
         return FetchResult(
             url=clean,
             source=(DEAD if status == "dead" else BLOCKED_NO_ARCHIVE),
+            http_status=code,
             detail=f"gone + no archive ({status})",
         )
     if outcome == "rate_limited":
@@ -238,14 +243,21 @@ def _do_fetch(clean: str, timeout: int) -> FetchResult:
         return FetchResult(
             url=clean,
             source=RATE_LIMITED,
+            http_status=code,
             detail=f"rate-limited (Retry-After={retry_after or 'n/a'}) + no archive",
         )
     if detail.startswith("live block"):
         # walled + no snapshot -> retryable (the wall may lift / a snapshot may appear).
         return FetchResult(
-            url=clean, source=BLOCKED_NO_ARCHIVE, detail="walled + no archive"
+            url=clean,
+            source=BLOCKED_NO_ARCHIVE,
+            http_status=code,
+            detail="walled + no archive",
         )
     # transient + no archive -> IGNORE: no verdict recorded, retried next run (#3).
     return FetchResult(
-        url=clean, source=BLOCKED_NO_ARCHIVE, detail="transient + no archive (ignored)"
+        url=clean,
+        source=BLOCKED_NO_ARCHIVE,
+        http_status=code,
+        detail="transient + no archive (ignored)",
     )
