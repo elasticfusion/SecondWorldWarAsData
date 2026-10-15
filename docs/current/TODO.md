@@ -133,6 +133,28 @@ bottom); what remains is ranked here. Current ordered priority:
      resolution runs and fills `resource_urls` with the real NARA/archive locator. (Alternatively, the
      resolver short-circuit must not treat a provenance/source URL as a resolution.) This is the next
      change needed before a real NARA resolution is possible.
+   - **[HIGH · bibliography — resolver rejects MILITARY/ARCHIVAL citations as 'not-citation', so NARA
+     never runs on the most-resolvable records. VERIFIED LIVE 2026-10-15.]** Phase 3 ran on the 16
+     records (NARA key loaded ✓, resource_urls empty ✓) but logged `0 resolved, 0 not found, 16
+     not-citation`. Root cause: `_verbatim_looks_citational` (bibliography_resolver.py) requires
+     book-style structure — `RG\d+` / `pp?\.\d+` / box|folder|file|vol|no + \d / a published "Last,
+     First" + 4-digit year. The green-book footnotes are ARCHIVAL/MILITARY references whose structure
+     is different and are EXACTLY the NARA-resolvable ones, so they're filtered out. Tested our actual
+     verbatims: "MS # B-810, …Schmidt, Kaempfe im Rheinland" → False; "VII Corps Opns Memo 101, 1 Oct"
+     → False; "Ltr, Hodges to Gerow, 11 Sep 44, FUSA G-3 file" → False; "Interv with Collins, 25 Jan
+     54" → False; only the book-like "V Corps Operations in the ETO, p. 256." → True. FIX: add military/
+     archival citation signals to `_STRUCT_PATTERNS` — `MS\s*#?\s*[A-Z]-?\d+` (manuscript series),
+     `\bLtr\b`/`\bMemo\b`/`\bInterv\b`/`\bRpt\b`/`\bJnl\b`/`\bOpns?\b` (doc types), "X to Y"
+     correspondence, military dates `\b\d{1,2}\s+[A-Z][a-z]{2}\s+\d{2}\b`, unit+number (`Corps|Div|Army
+     \w* \d+`), `G-\d` staff files. These are MORE citational than a book ref (primary archival
+     sources). This is the final blocker to an actual NARA hit; do after the current run + download.
+   - **[HIGH · infra — NAT FLAPPING (owner, revisit after this run 2026-10-15).]** NAT keeps being torn
+     down then needing re-creation between phases/tasks (pre-warm → run → idle teardown → next task
+     stalls waiting for NAT; I've had to hand-invoke nat-manager create repeatedly this session). This
+     is the Priority-1 NAT-architecture refactor: consolidate NAT lifecycle into ONE Lambda owning
+     up-on-demand + a 4-hour demand-check teardown (no in-progress AND none pending → down; in-progress
+     → wait 4h recheck), remove per-phase/ECS hand-management, and fix the orphaned-lock + poller-wedge
+     flapping. Deal with this next.
    - **[MED · DQ alarm triage — `bibliography citation_unresolvable 16/32 (50%)`, owner-forwarded
      2026-10-15.] NOT an upstream data defect** (despite the alert's "likely CODE defect" wording).
      Root cause understood: `semantic_flags._citation_flags` sets `citation_unresolvable` when a record
