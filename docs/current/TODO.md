@@ -109,6 +109,26 @@ bottom); what remains is ranked here. Current ordered priority:
      Must run BEFORE `_reconstruct_fulltext` pops `paragraphs`, or capture the mapping first.
      (The downstream chain — supplemental.input→extract→route→bibliography→NARA — is otherwise ready;
      OBSERV confirmed endnote_texts arrive. This is the last code change before a non-zero NARA.)
+     ✅ REFS FIXED (PR #390, verified live: every sub-event has Footnote_References from the LLM
+     `references` field). ✅ BATCH RESULT MAPPING FIXED (PR #393/#395): the xAI results API omits
+     custom_id, so retrieve now maps results to OUR cache keys by submission order via
+     BatchMetrics.submitted_request_ids. OFFLINE-VALIDATED against the persisted batch
+     (9a96241f...c47504c396f8, valid 9/9): zip(submitted_request_ids, retrieve_results_ordered) maps
+     the supplemental results to OUR keys (f7bb3e00.., aa8e8793..) and 2/3 carry real
+     Supplemental_Materials with document_reference content → `Populated 9 cache entries` on the
+     live retrieve. ❗ STILL 0 BIBLIOGRAPHY — the LIVE retrieve re-run's supplemental logs
+     `OBSERV supplemental.extract prompts=N responses=0 materials=0`, i.e. the subprocess
+     supplemental's `extract_json` does NOT hit the cache the retrieve just populated. Both parent
+     (retrieve) and subprocess use DynamoCacheBackend (aws.enabled) + the same cache_type sub-caches,
+     so it is NOT a backend split. REMAINING ROOT CAUSE (next session starting point): a cache-KEY
+     mismatch between the SUBMIT-time key (stored as submitted_request_ids = request_id passed to
+     BatchRequest at collect time) and the key the RE-RUN computes for the same sub-event. `_make_cache_key`
+     = sha256(f"{system_prompt}:{prompt}:{temperature}:{model}"). Suspects to trace with ONE run (OBSERV
+     the computed key on both sides): (a) the supplemental PROMPT differs submit-vs-rerun (e.g. endnote
+     text block ordering / sub-event fulltext reconstructed differently), (b) model string differs
+     (_get_model(cache_type) vs what was stored), (c) system_prompt differs. FIX likely: log/compare the
+     key at collect vs re-run, align the differing input. The submission-order MAPPING itself is proven
+     correct; the final gap is key composition identity across the two phase2 invocations.
    - **[HIGH · infra reliability] NAT-manager orphaned-lock deadlock.** `_create_networking`
      acquires `lock#nat-manager` with ONLY `attribute_not_exists` (no stale-takeover); if a holder
      times out/crashes without the `delete_item` release (observed: a 300s Lambda timeout), the lock
