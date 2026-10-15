@@ -48,6 +48,54 @@ bottom); what remains is ranked here. Current ordered priority:
    parsed `footnotes[].text` and skips the fragile ibiblio HTML re-fetch. VERIFIED LIVE on a clean
    RoerDams rerun: all 4 ch2 footnotes now carry real citation text in `-parsed.json`/`-endnotes.json`
    (was `{number,url}` only). HOWEVER this unblocked only the first step — see 2b (the NEW blocker).
+   - **[HIGH · architecture — owner directive 2026-10-15] Promote footnote/endnote extraction to a
+     DETERMINISTIC PRIMARY pass (not a secondary batch step).** The entire 0-bibliography fragility
+     comes from bibliography being a SECONDARY optional-batch extractor that depends on the
+     event→supplemental→batch→cache chain (volatile prompt key, submission-order mapping, cross-process
+     cache visibility, batch completeness — every failure this session). But the citation CONTENT is
+     ALREADY captured deterministically in Phase 1: `src.parser.extract_footnotes` returns
+     `(number, url, text)` and persists it in `*-parsed.json` (verified on real RoerDams data:
+     6/6 footnotes with real text, e.g. `1 → "See Interv with Collins, 25 Jan 54."`, `need_fetch=0`).
+     DIRECTIVE: make a PRIMARY deterministic pass that walks the parsed footnotes/endnotes and writes a
+     bibliography-candidate record per citation IMMEDIATELY — `verbatim_reference` = parsed text,
+     `reference_type` (footnote/endnote), source `resource_urls`, chapter/event linkage — with NO LLM,
+     NO batch, NO cache. The LLM classification/structuring (document_reference vs factual vs ambiguous;
+     author/title/publisher parsing) then runs as an ENRICHMENT OVERLAY on records that already exist,
+     not as their gatekeeper. Benefits: (a) bibliography existence no longer depends on the batch/cache
+     at all — the record exists the moment Phase 1 parses the citation; (b) graceful degradation by
+     construction (this SUBSUMES the retrieve-only live-fallback item / PR #403 — a missed/failed LLM
+     classification leaves the deterministic record intact with full verbatim provenance); (c) aligns
+     with the deterministic-first / LLM-as-enrichment architecture principle. Wire: new primary step in
+     phase2 (or late phase1) emitting to `output/bibliography/` via `store_bibliography_entry`
+     (schema `src/schemas/bibliography_output.py`: BibliographyID+title required, reference_type,
+     verbatim_reference, resource_urls all present); supplemental's `_route_by_content_class` becomes an
+     update-in-place classifier on those records.
+   - **[CONTEXT — the 5 SECONDARY (second-batch-cycle) extractors, owner Q 2026-10-15.]** The Phase-2
+     optional pass `_extract_optional_entities` (phase2_extract.py:146–150) runs FIVE secondary
+     batch-collected extractors sharing the same fragile submit→batch→retrieve-cache pattern:
+     **weather, equipment, logistics, casualties, supplemental_material(→bibliography).** All five are
+     subject to the cache-key / `__contains__` / batch-mapping risks (now fixed PR #401/#402/#393/#395).
+     Only SUPPLEMENTAL manifested as total-silent-failure because it is terminal-ROUTED with no own
+     entity file (the others write weather/equipment/… files and degrade to a re-extraction on a miss).
+     Of the five, ONLY bibliography can be promoted to deterministic-primary (above) because only its
+     source content (citation text) is already parsed deterministically — weather needs an API,
+     equipment/logistics/casualties need genuine LLM reading of narrative, so those legitimately stay
+     secondary. Phase 3's secondary SEARCHES (OpenSERP / NARA / archive.org / geocode / NOAA·Open-Meteo)
+     are a DIFFERENT, more-resilient class: enrichment lookups keyed on already-persisted entities, not
+     batch-cache-dependent extraction.
+   - **[EMPIRICAL CORRECTION — "why do the others work but bibliography doesn't?" owner Q 2026-10-15.]**
+     The premise is partly an ILLUSION. Real RoerDams run output (the 165-file mirror) was:
+     casualties=13–16, equipment=1, **weather=0, logistics=0**, supplemental=0, bibliography=0. So
+     bibliography is NOT uniquely failing — weather and logistics are ALSO at zero. Why it LOOKED
+     unique: (a) it has a LOUD downstream consumer (Phase 3 NARA resolution logs "Bibliography
+     directory not found"), (b) we were actively driving/watching it. Why casualties/equipment DO
+     produce files while supplemental doesn't, despite identical batch/cache plumbing: their output
+     IS the raw LLM response written directly to their own entity file — a cache hit becomes a file
+     with no further gates. Supplemental is TERMINAL-ROUTED: after the cache hit, the response must be
+     classified as `document_reference` AND then routed to a SEPARATE `store_bibliography_entry` — two
+     extra post-cache failure points. weather/logistics at 0 are indistinguishable between "legitimately
+     empty for these chapters" and "same cache fragility" — exactly the silent-degradation the
+     deterministic-primary redesign eliminates for bibliography.
    - **[HIGH · bibliography BLOCKER] Phase 2 still produces ZERO `output/bibliography/` despite
      citation text now present.** Verified 2026-10-14: after PR #381, the RoerDams rerun's Phase 3
      bibliography step logged `Bibliography directory not found: output/bibliography` /
