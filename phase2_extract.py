@@ -578,6 +578,31 @@ def _run_core_extraction(
         ]
     )
 
+    # PRIMARY deterministic bibliography pass — writes a citable record per parsed
+    # footnote/endnote with NO LLM/batch/cache, so bibliography exists the moment Phase 1
+    # parses the chapter (independent of the fragile supplemental batch→cache→retrieve
+    # chain). Gated ONLY on supplemental_material.enabled — NOT on the optional-batch gate
+    # — because its whole purpose is to run as a primary step every pass; it is idempotent
+    # (dedups by title/verbatim), so safe in the batch-collect submit pass AND the retrieve
+    # re-run. The LLM supplemental step (optional block below) is an enrichment overlay on
+    # these records. Scoped to the in-run parsed_files (never a whole-corpus rglob).
+    if config.get("supplemental_material", {}).get("enabled", False):
+        from src.extraction.bibliography import extract_bibliography_deterministic
+
+        for pf in sorted(parsed_files):
+            try:
+                current_book.set(pf.parent.name)
+                extract_bibliography_deterministic(
+                    pf,
+                    paths["output_root"],
+                    book=pf.parent.name,
+                    chapter=pf.name.replace("-parsed.json", ""),
+                )
+            except Exception as e:  # pylint: disable=broad-except
+                logger.warning(
+                    "Deterministic bibliography pass failed for %s: %s", pf.name, e
+                )
+
     if any_optional and not skip_optional:
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
