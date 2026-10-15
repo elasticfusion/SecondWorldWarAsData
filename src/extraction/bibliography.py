@@ -11,6 +11,115 @@ import ulid
 
 logger = logging.getLogger(__name__)
 
+# Citation fragments that are cross-references / stubs, not real document references —
+# never worth a bibliography record on their own (they point AT another note).
+_STUB_RE = re.compile(
+    r"^\s*(ibid\.?|op\.?\s*cit\.?|loc\.?\s*cit\.?|see\s+(above|below|n\.?\s*\d+)"
+    r"|cited\s+(in\s+)?n\.?\s*\d+)(\s*,?\s*(above|below))?\s*\.?\s*$",
+    re.IGNORECASE,
+)
+
+
+def _is_stub_citation(text: str) -> bool:
+    """A citation fragment that is a bare cross-reference/stub (e.g. 'Ibid.',
+    'See n. 5, above.') carries no standalone document identity — skip it."""
+    t = (text or "").strip()
+    if len(t) < 4:
+        return True
+    return bool(_STUB_RE.match(t))
+
+
+def extract_bibliography_deterministic(
+    parsed_file: Path,
+    output_root: Path,
+    book: str,
+    chapter: str,
+) -> int:
+    """PRIMARY, deterministic bibliography pass — NO LLM / batch / cache.
+
+    Reads the Phase-1-parsed footnotes/endnotes (``*-parsed.json`` / ``*-endnotes.json``,
+    each carrying ``{number, url, text}`` captured deterministically by
+    ``src.parser.extract_footnotes``) and writes ONE bibliography-candidate record per
+    distinct citation via :func:`store_bibliography_entry`. The record's
+    ``verbatim_reference`` is the parsed citation text and ``resource_urls`` is the source
+    URL — real, citable provenance that EXISTS the moment Phase 1 parses the chapter,
+    independent of the fragile event→supplemental→batch→cache→retrieve chain.
+
+    The LLM supplemental step is now an ENRICHMENT OVERLAY (parse author/title/publisher,
+    classify document-vs-factual) on these existing records, not their creator — so a
+    missed/failed LLM pass degrades gracefully instead of yielding zero bibliography.
+
+    Idempotent: :func:`store_bibliography_entry` dedups by title/verbatim, so re-running
+    (submit pass, retrieve re-run, reconcile) only appends mentions, never duplicates.
+
+    Returns the number of citations stored (new or mention-appended).
+    """
+    if not parsed_file or not parsed_file.exists():
+        return 0
+    try:
+        data = json.loads(parsed_file.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:  # malformed parse must not break the pass
+        logger.warning("Deterministic bibliography: unreadable %s: %s", parsed_file, e)
+        return 0
+
+    # Accept either key — footnotes (same-page) or endnotes (end-of-chapter).
+    notes: List[Dict[str, Any]] = []
+    for key, ref_type in (("footnotes", "footnote"), ("endnotes", "endnote")):
+        for n in data.get(key, []) or []:
+            if isinstance(n, dict):
+                notes.append({**n, "_ref_type": ref_type})
+
+    bib_dir = output_root / "bibliography"
+    stored = 0
+    skipped_stub = 0
+    for note in notes:
+        text = (note.get("text") or "").strip()
+        if not text or _is_stub_citation(text):
+            skipped_stub += 1
+            continue
+        url = note.get("url") or ""
+        # Defense-in-depth: only keep http(s) source URLs — a crafted source doc could
+        # inject javascript:/data:/file: URLs that would surface downstream in UI/export.
+        if not (
+            isinstance(url, str) and url.lower().startswith(("http://", "https://"))
+        ):
+            url = ""
+        number = note.get("number")
+        material: Dict[str, Any] = {
+            "verbatim_reference": text,
+            "reference_type": note.get("_ref_type", "footnote"),
+            "reference_number": str(number) if number is not None else "",
+            "content_class": "document_reference",
+            # Title/author left for the LLM enrichment overlay; store_bibliography_entry
+            # falls back to verbatim_reference for the title/dedup key when title=Unknown.
+            "citation": {"title": "Unknown"},
+            "resource_urls": [url] if url else [],
+        }
+        try:
+            if store_bibliography_entry(bib_dir, material, book=book, chapter=chapter):
+                stored += 1
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - one bad citation must not abort the pass
+            logger.warning(
+                "Deterministic bibliography: store failed for %s fn%s: %s",
+                chapter,
+                number,
+                e,
+            )
+
+    try:
+        logger.info(
+            "OBSERV bib.deterministic %s: notes=%d stored=%d skipped_stub=%d",
+            parsed_file.name,
+            len(notes),
+            stored,
+            skipped_stub,
+        )
+    except Exception:  # noqa: BLE001 - observability never breaks the pass
+        pass
+    return stored
+
 
 def _slugify(title: str) -> str:
     """Convert title to filename slug."""

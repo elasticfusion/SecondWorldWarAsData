@@ -70,6 +70,48 @@ bottom); what remains is ranked here. Current ordered priority:
      (schema `src/schemas/bibliography_output.py`: BibliographyID+title required, reference_type,
      verbatim_reference, resource_urls all present); supplemental's `_route_by_content_class` becomes an
      update-in-place classifier on those records.
+   - **[HIGH · remove divergent logic — follow-up to the deterministic pass, owner Q 2026-10-15].** The
+     deterministic pass now CREATES bibliography records; the old supplemental `document_reference`
+     branch in `_route_by_content_class` STILL calls `store_bibliography_entry` to create records too.
+     MEASURED convergence/divergence (local repro): when the LLM did NOT parse a real title (title stays
+     "Unknown"), the supplemental record shares the verbatim dedup key and CONVERGES into the
+     deterministic record (1 file — safe). But when the LLM parses a REAL distinct title, dedup keys on
+     the parsed title, so it creates a SECOND file = a DUPLICATE of the same citation (deterministic
+     "Unknown" + enriched real-title). This is the previous-logic to remove: supplemental's
+     document_reference branch must UPDATE THE DETERMINISTIC RECORD IN PLACE (enrichment overlay —
+     fill title/author/classification on the existing record), NOT create a parallel one. Mechanism:
+     add a `verbatim` match-key category to the dedup index (alongside titles/refs/authors) in BOTH the
+     local-file index AND the DynamoEntityStore title-index path, so a record created with title=verbatim
+     and later enriched with a real title still resolves to the SAME entry by its stable verbatim key;
+     then make the supplemental branch pass the deterministic record's identity (or match by verbatim)
+     and merge fields instead of inserting. Scoped as its OWN change (touches the shared dedup across
+     local + Dynamo stores) with its own review — NOT folded into the additive deterministic-pass PR,
+     where the Unknown-title case already converges safely.
+     ✅ FOOTNOTE/ENDNOTE source IMPLEMENTED 2026-10-15: `extract_bibliography_deterministic`
+     (src/extraction/bibliography.py) reads parsed `footnotes`/`endnotes` and emits one record per
+     citation (verbatim_reference + resource_urls), wired as a PRIMARY step in phase2 `_process_event`
+     (runs regardless of batch_mode; idempotent; skips ibid/op.cit/see-n. stubs). Proven: 16 records
+     from RoerDams with zero LLM/batch/cache.
+   - **[HIGH · bibliography — owner Q 2026-10-15: capture the ACTUAL bibliography section + abbreviations
+     decoder, not just footnotes/endnotes].** These CMH green books (verified against the real source
+     ToC, ibiblio hyperwar USA-E-Siegfried) have BACK-MATTER the pipeline does NOT yet capture: a
+     **"Bibliographical Note"/"Note on Sources"** (full, already-resolved source citations — a BETTER
+     NARA-resolution input than cryptic footnotes) and a **"List of Abbreviations"/Code Names** that
+     DECODES the footnote shorthand (FUSA=First U.S. Army, AAR=After Action Report, "A Gp", "G-2 Per
+     Rpt", MS #B-810, …). The parser has NO detector for these sections today (grep: no
+     bibliography/works-cited/abbreviations section handling in src/parser.py or src/ingestion), and the
+     current RoerDams test material is only 3 content chapters (no back-matter), so this is untested.
+     DESIGN: deterministic bibliography should ingest from THREE deterministic sources in quality order
+     — (1) the actual Bibliography/"Bibliographical Note" section (full citations) → highest-quality
+     records; (2) footnotes/endnotes (DONE — complete coverage but cryptic); (3) the Abbreviations list
+     as a DECODER applied to #2's verbatim text to EXPAND shorthand before NARA resolution (e.g.
+     "12th A Gp and FUSA G-1 Daily Summaries" → "12th Army Group and First U.S. Army G-1 Daily
+     Summaries"). WORK: add a parser back-matter section-detector (titles/first-para match on
+     "bibliograph*", "works cited", "note on sources", "abbreviations", "code names"); emit
+     `*-bibliography.json` / `*-abbreviations.json` under the book output; have
+     `extract_bibliography_deterministic` prefer the bibliography-section entries and apply the
+     abbreviations map to footnote verbatims. The LLM/NARA resolution then runs on richer, decoded
+     citations.
    - **[CONTEXT — the 5 SECONDARY (second-batch-cycle) extractors, owner Q 2026-10-15.]** The Phase-2
      optional pass `_extract_optional_entities` (phase2_extract.py:146–150) runs FIVE secondary
      batch-collected extractors sharing the same fragile submit→batch→retrieve-cache pattern:
