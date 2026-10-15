@@ -99,3 +99,35 @@ class TestDynamoCacheBackend:
         dynamo_cache["x"] = "val"
         dynamo_cache._preloaded = True
         assert "x" in dynamo_cache
+
+    def test_contains_falls_through_after_preload(self, dynamo_cache):
+        """REGRESSION (0-bibliography root cause): an entry written to Dynamo AFTER
+        preload (e.g. by a separate process's batch populate) is not in this process's
+        snapshot, but __contains__ must still find it via Dynamo fall-through — otherwise
+        a cross-process cache populate is invisible and the lookup falsely misses.
+
+        Simulates the real topology: a SECOND backend instance (the retrieve subprocess)
+        that preloaded an empty snapshot while the FIRST (the populate) writes the entry.
+        """
+        populater = dynamo_cache  # process A: writes the batch result
+        consumer = DynamoCacheBackend(
+            table_name="test-cache", prefix="test", region="us-east-1"
+        )
+        consumer._local = {}  # process B preloaded an empty snapshot BEFORE the write
+        consumer._preloaded = True
+        populater["written_by_other_proc"] = "the-answer"
+        pk = consumer._pk("written_by_other_proc")
+        assert "written_by_other_proc" in consumer
+        assert consumer["written_by_other_proc"] == "the-answer"
+        # fetched value is memoized into _local (no second read on __getitem__)
+        assert pk in consumer._local
+
+    def test_subcache_contains_falls_through_after_preload(self, dynamo_cache):
+        """Same guarantee through a sub-cache (supplemental routes to a book-scoped
+        sub-cache that shares the preloaded _local)."""
+        dynamo_cache._local = {}
+        dynamo_cache._preloaded = True
+        sub = dynamo_cache.get_sub_cache("supplemental")
+        pk = sub._pk("sk")
+        sub._table.put_item(Item={"cache_key": pk, "response": "{}"})
+        assert "sk" in sub
