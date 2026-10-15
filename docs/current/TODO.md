@@ -48,6 +48,18 @@ bottom); what remains is ranked here. Current ordered priority:
    parsed `footnotes[].text` and skips the fragile ibiblio HTML re-fetch. VERIFIED LIVE on a clean
    RoerDams rerun: all 4 ch2 footnotes now carry real citation text in `-parsed.json`/`-endnotes.json`
    (was `{number,url}` only). HOWEVER this unblocked only the first step — see 2b (the NEW blocker).
+   - **[MED · security/architecture — centralize + make secrets dynamic, owner Q 2026-10-15.]** API
+     keys are loaded STATICALLY AT STARTUP into `os.environ` and scattered across 7 sites (ecs_entrypoint
+     `_load_secrets` for GROK_API_KEY + the new NARA_API_KEY, plus duplicated `get_secret_value` in
+     lambda_handlers phase2/phase3/batch_poller/trigger/nat_manager). The NARA load I added deliberately
+     MATCHED this existing pattern (consistency > divergence). But a startup-cached key in env for a
+     long-lived task (batches up to 24h) is: (a) rotation-unsafe (a mid-run rotation makes the cached
+     key stale → failure), (b) higher-exposure (readable by subprocesses/crash dumps/env for the whole
+     run). DIRECTION: introduce ONE centralized accessor `secrets.get(name)` with a short-TTL cache +
+     rotation-awareness (re-fetch on auth failure), out of the ambient env, and replace ALL 7 scattered
+     loads uniformly — Grok, NARA, NOAA, future keys. Do it as one cross-cutting refactor, NOT per-key
+     (per-key dynamic for NARA only would be exactly the divergent dual-logic to avoid). Weigh SM call
+     cost/latency/throttling + NAT/VPC-endpoint egress for the fetch. Until then, startup-load stands.
    - **[RADON COMPLEXITY TRIAGE — all bibliography-path C+ blocks, owner directive 2026-10-15.]**
      Reviewed every radon C-grade-or-worse function across bibliography code; simplified accidental
      complexity (behavior-identical, gate 2189, PR #407), listed the inherently-complex below.
