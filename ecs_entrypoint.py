@@ -3366,7 +3366,11 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     ordered_results = retrieve_results_ordered(api_key, batch_id)
     logger.info("Retrieved %d ordered results", len(ordered_results))
 
-    # Load the submission-ordered (request_id = OUR cache key, cache_type) list.
+    # Load the submission-ordered (OUR cache key, cache_type) list. Prefer the new
+    # submitted_request_ids (authoritative — our custom_ids in order); fall back to
+    # request_details only for older metrics that predate that field. (The xAI results
+    # API omits custom_id, so request_details[].request_id may be the server id — not
+    # our cache key — which is why submitted_request_ids is preferred.)
     submitted: list = []  # [(our_request_id, cache_type), ...] in submission order
     metrics_dir = WORKDIR / "output" / "metrics"
     for mf in sorted(
@@ -3375,8 +3379,21 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
         with open(mf) as f:
             metrics = json.load(f)
         if metrics.get("batch_id") == batch_id:
-            for d in metrics.get("request_details", []):
-                submitted.append((d["request_id"], d.get("cache_type", "default")))
+            sri = metrics.get("submitted_request_ids") or []
+            if sri:
+                for pair in sri:
+                    if isinstance(pair, (list, tuple)):
+                        if not pair:
+                            continue  # malformed empty pair — skip
+                        rid = pair[0]
+                        ct = pair[1] if len(pair) > 1 else "default"
+                    else:
+                        rid, ct = pair, "default"
+                    if rid:
+                        submitted.append((rid, ct))
+            else:
+                for d in metrics.get("request_details", []):
+                    submitted.append((d["request_id"], d.get("cache_type", "default")))
             break
 
     from src.grok_client import GrokClient
