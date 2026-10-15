@@ -48,6 +48,30 @@ bottom); what remains is ranked here. Current ordered priority:
    parsed `footnotes[].text` and skips the fragile ibiblio HTML re-fetch. VERIFIED LIVE on a clean
    RoerDams rerun: all 4 ch2 footnotes now carry real citation text in `-parsed.json`/`-endnotes.json`
    (was `{number,url}` only). HOWEVER this unblocked only the first step — see 2b (the NEW blocker).
+   - **[RADON COMPLEXITY TRIAGE — all bibliography-path C+ blocks, owner directive 2026-10-15.]**
+     Reviewed every radon C-grade-or-worse function across bibliography code; simplified accidental
+     complexity (behavior-identical, gate 2189, PR #407), listed the inherently-complex below.
+     SIMPLIFIED (before→after): `events._populate_footnote_refs` C(38)→B(7); `extraction/
+     bibliography.extract_bibliography_deterministic` C(20)→A(3) (my new code — note: its C-warning
+     was HIDDEN by my own grep filter on gate output; the gate DID surface it); `config._validate_config`
+     C(16)→A(4); `supplemental._normalize_citation` C(11)→B(6); `supplemental_search.
+     _search_archive_org_api` C(15)→A(5). INHERENTLY COMPLEX — leave as-is (essential logic; splitting
+     scatters an invariant or hurts readability): `entity_store.DynamoEntityStore.store_bibliography`
+     C(12) — optimistic-CAS cross-host race safety (DO NOT refactor); `events._apply_deterministic_ids`
+     C(11) — ID-stability invariant; `events.extract_events` C(18) + `_reconstruct_fulltext` C(11) —
+     retry/normalize/auto-split state machine; `bibliography_resolver._search_online_sources` C(20),
+     `_search_openserp_archive` C(17), `_search_nara` C(12), `resolve_bibliography_dir` C(13),
+     `resolve_bibliography_entry` C(12) — resolver hot path, MED-risk (OpenSERP global-disable + cache
+     keys, NARA rate-limit state); a staged simplification (extract `_try_nara`/`_try_openserp` query
+     builders) is possible but deferred to its own reviewed change; `phase3_enrich_data.main` E(32) +
+     `phase2.main` D(24) + `_run_core_extraction` C(19) — sequential phase orchestration (top-level
+     scripts, OUTSIDE the gate's radon scope); `referential_integrity.audit` C(19) — single-read
+     O(records) design (nesting IS the optimization); dedup_ui_handler `_merge_generic_files`/
+     `_rename_to_match_content`/`_handle_action`/`handler` — HIGH-risk dual local+Dynamo write path, do
+     NOT refactor casually (also a LATENT BUG flagged: `_rename_to_match_content` has
+     `name.lower().replace(" ", " ")` — a space→space no-op, likely meant `"_"`; preserve behavior,
+     fix separately). `extract_supplemental` E(33) — simplifiable by lifting the 2 OBSERV telemetry
+     blocks + endnote-url-map into helpers (MED, on the batch/cache path), deferred.
    - **[HIGH · architecture — owner directive 2026-10-15] Promote footnote/endnote extraction to a
      DETERMINISTIC PRIMARY pass (not a secondary batch step).** The entire 0-bibliography fragility
      comes from bibliography being a SECONDARY optional-batch extractor that depends on the
