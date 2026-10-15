@@ -86,6 +86,9 @@ class BatchMetrics:  # pylint: disable=too-many-instance-attributes
     retry_failed: int = 0
     poll_seconds: float = 0.0
     request_details: List["RequestDetail"] = field(default_factory=list)
+    # Ordered [our_cache_key, cache_type] pairs in SUBMISSION ORDER. The xAI results
+    # API does not echo custom_id, so retrieve maps results to these by position.
+    submitted_request_ids: List[Any] = field(default_factory=list)
 
     def add_detail(self, detail: "RequestDetail") -> None:
         """Append a per-request detail record."""

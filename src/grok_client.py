@@ -453,6 +453,11 @@ class GrokClient:
             total_requests=count,
             poll_seconds=batch_state.get("_poll_seconds", 0.0),
         )
+        # Record OUR cache keys in SUBMISSION ORDER (results API omits custom_id, so
+        # retrieve maps results to these by position).
+        metrics.submitted_request_ids = [
+            [r.request_id, r.cache_type] for r in self._batch_collector.requests
+        ]
         state = batch_state.get("state", {})
         metrics.api_successes = state.get("num_success", 0)
         metrics.api_errors = state.get("num_error", 0)
