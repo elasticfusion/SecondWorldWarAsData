@@ -87,6 +87,16 @@ bottom); what remains is ranked here. Current ordered priority:
      and merge fields instead of inserting. Scoped as its OWN change (touches the shared dedup across
      local + Dynamo stores) with its own review — NOT folded into the additive deterministic-pass PR,
      where the Unknown-title case already converges safely.
+     ↳ **[MED · data-quality, surfaced by the PR #405 re-review of the merged code].** The
+     deterministic path attaches NO EventID/Sub-eventID, so `_has_mention` dedups on
+     `reference_number` alone WITHIN a matched bib entry. Two DIFFERENT chapters citing the same
+     source and reusing the same footnote number (both "fn 1") match the same entry on verbatim and
+     then collapse on reference_number="1" → the 2nd chapter's mention is silently dropped (latent
+     cross-chapter mention-loss, not a crash; re-running the SAME chapter is already safe — verified by
+     test_idempotent). FIX: include `book`+`chapter` in the mention identity so a mention is unique per
+     (book, chapter, reference_number) when EventID is absent; add a test for the cross-chapter
+     same-number case. Fold into the same enrichment-overlay change above (both touch mention/dedup
+     identity).
      ✅ FOOTNOTE/ENDNOTE source IMPLEMENTED 2026-10-15: `extract_bibliography_deterministic`
      (src/extraction/bibliography.py) reads parsed `footnotes`/`endnotes` and emits one record per
      citation (verbatim_reference + resource_urls), wired as a PRIMARY step in phase2 `_process_event`
