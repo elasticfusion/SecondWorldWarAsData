@@ -52,14 +52,16 @@ bottom); what remains is ranked here. Current ordered priority:
      keys are loaded STATICALLY AT STARTUP into `os.environ` and scattered across 7 sites (ecs_entrypoint
      `_load_secrets` for GROK_API_KEY + the new NARA_API_KEY, plus duplicated `get_secret_value` in
      lambda_handlers phase2/phase3/batch_poller/trigger/nat_manager). The NARA load I added deliberately
-     MATCHED this existing pattern (consistency > divergence). But a startup-cached key in env for a
-     long-lived task (batches up to 24h) is: (a) rotation-unsafe (a mid-run rotation makes the cached
-     key stale → failure), (b) higher-exposure (readable by subprocesses/crash dumps/env for the whole
-     run). DIRECTION: introduce ONE centralized accessor `secrets.get(name)` with a short-TTL cache +
-     rotation-awareness (re-fetch on auth failure), out of the ambient env, and replace ALL 7 scattered
-     loads uniformly — Grok, NARA, NOAA, future keys. Do it as one cross-cutting refactor, NOT per-key
-     (per-key dynamic for NARA only would be exactly the divergent dual-logic to avoid). Weigh SM call
-     cost/latency/throttling + NAT/VPC-endpoint egress for the fetch. Until then, startup-load stands.
+     MATCHED this existing pattern (consistency > divergence). ★ OWNER (2026-10-15, decisive): startup
+     load DEFEATS THE PURPOSE of Secrets Manager — a key ROTATED IN SECRETS MANAGER BETWEEN BUILDS is
+     NOT picked up until the image is rebuilt/redeployed. The whole point of SM is to decouple secret
+     rotation from deploys; caching at startup re-couples them. Also: (a) rotation-unsafe mid-run
+     (24h batch tasks), (b) higher-exposure (env readable by subprocesses/crash dumps for the whole run).
+     DIRECTION: ONE centralized accessor `secrets.get(name)` with a short-TTL cache + rotation-awareness
+     (re-fetch on auth failure / TTL expiry), out of the ambient env, replacing ALL 7 scattered startup
+     loads uniformly — Grok, NARA, NOAA, future keys. Cross-cutting refactor, NOT per-key. Weigh SM
+     call cost/latency/throttling + NAT/VPC-endpoint egress. Until then, startup-load stands as the
+     consistent interim.
    - **[RADON COMPLEXITY TRIAGE — all bibliography-path C+ blocks, owner directive 2026-10-15.]**
      Reviewed every radon C-grade-or-worse function across bibliography code; simplified accidental
      complexity (behavior-identical, gate 2189, PR #407), listed the inherently-complex below.
@@ -131,6 +133,24 @@ bottom); what remains is ranked here. Current ordered priority:
      resolution runs and fills `resource_urls` with the real NARA/archive locator. (Alternatively, the
      resolver short-circuit must not treat a provenance/source URL as a resolution.) This is the next
      change needed before a real NARA resolution is possible.
+   - **[MED · DQ alarm triage — `bibliography citation_unresolvable 16/32 (50%)`, owner-forwarded
+     2026-10-15.] NOT an upstream data defect** (despite the alert's "likely CODE defect" wording).
+     Root cause understood: `semantic_flags._citation_flags` sets `citation_unresolvable` when a record
+     has neither `archive_reference_number` NOR `resource_urls`. My source-url/resource-url split
+     intentionally leaves `resource_urls=[]` on the deterministic record (so Phase 3 runs NARA), so
+     every as-yet-unresolved record correctly carries the flag. It is a TRANSIENT PRE-RESOLUTION state:
+     verified `flags_for('bibliography', {...resource_urls:[...]})` and `{...archive_reference_number}`
+     both return `[]`, so **Phase 3 resolution CLEARS the flag** (the flag is recomputed+replaced on
+     every annotate). So 16/16 unresolved-at-Phase-2 is EXPECTED, not a defect. TWO defensible fixes:
+     (1) the "32" is a DOUBLE-COUNT — `_record_record_quality` fires on BOTH the deterministic
+     `store_bibliography_entry` write AND the `materialize_bibliography_to_local` mirror-write (same 16
+     records written twice through the central guard). The mirror-write is a pure Dynamo→S3 copy and
+     should NOT re-record quality telemetry (pass a flag to skip `_record_record_quality`, or mirror
+     without going through the quality path). (2) `citation_unresolvable` BEFORE Phase 3 has run is
+     expected; it should not trigger the "systematic validation failure / upstream CODE defect" alarm
+     at the Phase-2 stage — either exclude it from that specific alarm, or only alarm on it POST-Phase-3
+     (when a still-unresolved citation IS meaningful). Neither is a data-correctness bug; both reduce
+     false-alarm noise.
    - **[HIGH · DURABILITY BUG — deterministic bibliography is Dynamo-first, but S3 is the SYSTEM OF
      RECORD. owner directive 2026-10-15.]** ARCHITECTURE (owner, authoritative): **S3 is the definitive,
      durable store; DynamoDB is a DERIVED, rebuildable, cost-incurring working index** — S3 can
