@@ -142,7 +142,7 @@ bottom); what remains is ranked here. Current ordered priority:
      format/license/access independently. FIX: replace `resource_urls: [string]` with a
      `sources: [object]` array (keep `resource_urls` as a derived/compat view or deprecate), each
      entry carrying its OWN: `url`, `source`
-     (nara|archive_org|hathitrust|gutenberg|loc|reprint|openserp|...),
+     (nara|nara_physical|archive_org|hathitrust|gutenberg|loc|reprint|openserp|...),
      `format` (scan|pdf|epub|text|djvu), `license` + `copyright_status` (per-COPY, since a PD
      original scan and an in-copyright reprint of the same title differ), `access`
      (free|paywalled|physical_only), `archive_reference_number`/`archive_physical_address`
@@ -169,6 +169,19 @@ bottom); what remains is ranked here. Current ordered priority:
      (the central solution already wired for Phase-3 web results) — NOT trusting Grok to assert the
      URL. Unlike the registry/NARA sources, an OpenSERP-discovered copy is lower-qualification (bare
      web) and should carry that in its per-source `source_qualification`.
+     **ALSO (owner, 2026-10-14): direct archive.org search is a first-class repo source.** Query
+     the archive.org API directly (`advancedsearch`/metadata) for a copy — a hit becomes a
+     `source=archive_org` entry with its item URL + format (scan/pdf/epub/txt) + the item's license.
+     **RESOLUTION PRECEDENCE (owner): try ONLINE repos first, physical NARA visit as LAST RESORT.**
+     Order per citation: (1) already-held local holding; (2) online repos — archive.org direct,
+     HathiTrust/LOC/Gutenberg, NARA catalog API (digital copy), OpenSERP-discovered web copy; (3)
+     if NO online copy exists, emit a `source=nara_physical` (or `archive`) entry with
+     `access=physical_only` + `availability=offline` recording EVERYTHING NARA staff need to pull it
+     in person: Record Group, series/entry, box/folder, microfilm roll, and finding-aid reference
+     (from the catalog API, never Grok-guessed). That physical-visit entry is a legitimate
+     `resolved`-with-location outcome (not `not_found`) — "available on visit", queued for future
+     retrieval. Each tier is one `sources[]` object; a document may have several (online copy AND a
+     physical NARA locator).
 4. **[HIGH · data-quality/provenance] URL-sourced enrichment + 90-day URL registry.** Design:
    docs/current/dataquality/URL_SOURCED_ENRICHMENT_DESIGN.md. Phase 3 step 1 (people_groups,
    enrich_groups.py) and step 2 (places, enrich_places.py `_try_grok`) currently accept Grok's
