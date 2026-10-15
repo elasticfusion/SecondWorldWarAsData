@@ -141,7 +141,8 @@ bottom); what remains is ranked here. Current ordered priority:
      in-copyright) can list the URLs but CANNOT record which source gave which URL, nor each copy's
      format/license/access independently. FIX: replace `resource_urls: [string]` with a
      `sources: [object]` array (keep `resource_urls` as a derived/compat view or deprecate), each
-     entry carrying its OWN: `url`, `source` (nara|archive_org|hathitrust|gutenberg|loc|reprint|...),
+     entry carrying its OWN: `url`, `source`
+     (nara|archive_org|hathitrust|gutenberg|loc|reprint|openserp|...),
      `format` (scan|pdf|epub|text|djvu), `license` + `copyright_status` (per-COPY, since a PD
      original scan and an in-copyright reprint of the same title differ), `access`
      (free|paywalled|physical_only), `archive_reference_number`/`archive_physical_address`
@@ -161,6 +162,13 @@ bottom); what remains is ranked here. Current ordered priority:
      Grok may only help FORM the search query; drop/neuter the Grok-identify path so a Grok "RG…"
      answer can never become a stored reference. Same rule generalizes to any authoritative-registry
      source (NARA/LOC/ISBN): API-grounded existence + ID, Grok limited to query shaping.
+     **EVENTUALLY (owner, 2026-10-14): OpenSERP as a discovery source too.** Beyond NARA/archive.org,
+     use OpenSERP web search to FIND candidate copies/pages for a citation; each relevance-verified
+     hit becomes a `sources[]` entry (`source=openserp` or the resolved host), fetched through the
+     existing SSRF-safe `url_fetch.fetch()` + `url_content_verdict.evaluate()` + URL-registry dedup
+     (the central solution already wired for Phase-3 web results) — NOT trusting Grok to assert the
+     URL. Unlike the registry/NARA sources, an OpenSERP-discovered copy is lower-qualification (bare
+     web) and should carry that in its per-source `source_qualification`.
 4. **[HIGH · data-quality/provenance] URL-sourced enrichment + 90-day URL registry.** Design:
    docs/current/dataquality/URL_SOURCED_ENRICHMENT_DESIGN.md. Phase 3 step 1 (people_groups,
    enrich_groups.py) and step 2 (places, enrich_places.py `_try_grok`) currently accept Grok's
