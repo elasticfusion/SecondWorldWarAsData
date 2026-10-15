@@ -137,9 +137,21 @@ bottom); what remains is ranked here. Current ordered priority:
      = sha256(f"{system_prompt}:{prompt}:{temperature}:{model}"). Suspects to trace with ONE run (OBSERV
      the computed key on both sides): (a) the supplemental PROMPT differs submit-vs-rerun (e.g. endnote
      text block ordering / sub-event fulltext reconstructed differently), (b) model string differs
-     (_get_model(cache_type) vs what was stored), (c) system_prompt differs. FIX likely: log/compare the
-     key at collect vs re-run, align the differing input. The submission-order MAPPING itself is proven
-     correct; the final gap is key composition identity across the two phase2 invocations.
+     (_get_model(cache_type) vs what was stored), (c) system_prompt differs.
+     ✅ TRACED 2026-10-15 via the new `OBSERV cachekey.submit|lookup` (PR #399): comparing submit-pass
+     vs retrieve-rerun for supplemental — model=grok-4.3, temp=0.1, sys=64:f02baf8b are IDENTICAL on
+     both sides; the **prompt fingerprint DIFFERS** (e.g. submit prompt=2205:e1643790 vs lookup
+     prompt=2040:1235bd03; different length AND sha). So the SUPPLEMENTAL PROMPT is NON-DETERMINISTIC
+     across the two phase-2 invocations → different `_make_cache_key` → cache miss → responses=0 →
+     0 bibliography. (A couple of prompts DID match — b5039f5a/1cb63f2b appear on both sides — so it's
+     partial, pointing to per-sub-event non-determinism, not a global difference.) ROOT CAUSE to fix
+     next: make `create_supplemental_prompt`'s inputs deterministic across runs — prime suspects are
+     `event_id`/`sub_event_id` (if `_apply_deterministic_ids` yields different ULIDs submit-vs-rerun,
+     or the submit pass used the LLM's raw IDs while the rerun used deterministic ones) and the
+     `text` fulltext reconstruction (dict value ordering / paragraph_numbers). Either make the prompt
+     INDEPENDENT of volatile ids (don't embed event_id/sub_event_id in the cached prompt), or ensure
+     ids + fulltext are byte-identical across invocations. The submission-order MAPPING (#393/#395) is
+     proven correct; THIS prompt-determinism fix is the final step to a non-zero bibliography.
    - **[HIGH · infra reliability] NAT-manager orphaned-lock deadlock.** `_create_networking`
      acquires `lock#nat-manager` with ONLY `attribute_not_exists` (no stale-takeover); if a holder
      times out/crashes without the `delete_item` release (observed: a 300s Lambda timeout), the lock
