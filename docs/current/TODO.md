@@ -152,6 +152,15 @@ bottom); what remains is ranked here. Current ordered priority:
      (`bibliography_resolver`) + the OBSERV `bib.resolved` line should then record EACH source, and
      the download step (#3) gate per-source on that copy's copyright_status. Pairs with the artifact
      store (ARTIFACT_STORE_DESIGN.md) — each stored copy is one of these source entries.
+     **CAPTURE HERE (owner, 2026-10-14): a NARA source entry is API-authoritative only.** Grok is
+     NOT reliable for NARA records — `_identify_nara_record` currently asks Grok for the Record
+     Group and trusts a reply containing "RG", which yields plausible-but-wrong/fabricated RG/NAID
+     (worse than not_found for a citable corpus; violates the trust model). As part of this
+     multi-repo change, a `source=nara` entry may ONLY be created from a REAL
+     `catalog.archives.gov/api/v2` hit (`_search_nara`) — store the catalog-returned NAID + URL.
+     Grok may only help FORM the search query; drop/neuter the Grok-identify path so a Grok "RG…"
+     answer can never become a stored reference. Same rule generalizes to any authoritative-registry
+     source (NARA/LOC/ISBN): API-grounded existence + ID, Grok limited to query shaping.
 4. **[HIGH · data-quality/provenance] URL-sourced enrichment + 90-day URL registry.** Design:
    docs/current/dataquality/URL_SOURCED_ENRICHMENT_DESIGN.md. Phase 3 step 1 (people_groups,
    enrich_groups.py) and step 2 (places, enrich_places.py `_try_grok`) currently accept Grok's
