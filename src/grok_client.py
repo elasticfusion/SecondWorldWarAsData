@@ -331,6 +331,40 @@ class GrokClient:
         content = f"{system_prompt}:{prompt}:{temperature}:{model or self.model}"
         return hashlib.sha256(content.encode()).hexdigest()
 
+    def _observe_cache_key(
+        self,
+        event: str,
+        cache_type: str,
+        cache_key: str,
+        model: str,
+        temperature: float,
+        system_prompt: str,
+        prompt: str,
+    ) -> None:
+        """OBSERV traceability: log the cache key + a fingerprint of EACH key input, so a
+        submit-time key (`event=submit`) and a re-run lookup key (`event=lookup`) for the
+        same logical request can be diffed to pinpoint which input diverged (prompt / model
+        / system_prompt / temperature). Logs lengths + short sha of each input, never the
+        content. Fail-safe (never raises)."""
+        try:
+            import hashlib as _h
+
+            def _fp(s: str) -> str:
+                return f"{len(s)}:{_h.sha256(s.encode()).hexdigest()[:8]}"
+
+            logger.info(
+                "OBSERV cachekey.%s type=%s key=%s model=%s temp=%s sys=%s prompt=%s",
+                event,
+                cache_type,
+                cache_key[:16],
+                model or self.model,
+                temperature,
+                _fp(system_prompt),
+                _fp(prompt),
+            )
+        except Exception:  # noqa: BLE001 - traceability must never break a call
+            pass
+
     def clear_cache_entry(
         self, prompt: str, cache_type: str = "default", temperature: float = 0.1
     ) -> bool:
@@ -893,9 +927,25 @@ class GrokClient:
         cache = self._get_cache(cache_type)
 
         # Check cache
+        model_used = self._get_model(cache_type)
         cache_key = self._make_cache_key(
-            prompt, temperature, self._get_model(cache_type), system_prompt or ""
+            prompt, temperature, model_used, system_prompt or ""
         )
+
+        # OBSERV cachekey (traceability): log the key + a fingerprint of its INPUTS so a
+        # submit-time key and a re-run lookup key for the SAME logical request can be
+        # compared to pinpoint any divergence (prompt / model / system_prompt / temp).
+        # Lightweight: logs lengths + short sha of each input, not the content itself.
+        if use_cache:
+            self._observe_cache_key(
+                "lookup",
+                cache_type,
+                cache_key,
+                model_used,
+                temperature,
+                system_prompt or "",
+                prompt,
+            )
 
         if use_cache and cache_key in cache:
             logger.debug("[API] CACHE HIT | type=%s key=%s", cache_type, cache_key[:16])
@@ -918,11 +968,20 @@ class GrokClient:
             if system_prompt:
                 messages.append({"role": "system", "content": system_prompt})
             messages.append({"role": "user", "content": prompt})
+            self._observe_cache_key(
+                "submit",
+                cache_type,
+                cache_key,
+                model_used,
+                temperature,
+                system_prompt or "",
+                prompt,
+            )
             self._batch_collector.add(  # type: ignore[union-attr]
                 BatchRequest(
                     request_id=cache_key,
                     messages=messages,
-                    model=self._get_model(cache_type),
+                    model=model_used,
                     temperature=temperature,
                     cache_type=cache_type,
                 )
