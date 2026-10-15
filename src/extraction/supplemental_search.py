@@ -101,41 +101,7 @@ def _search_archive_org_api(
 ) -> Optional[str]:
     """Execute archive.org API search."""
     try:
-        # Build query — use parenthesized keywords, not exact quotes
-        # (Archive.org metadata titles often differ from citation titles)
-        query_parts = []
-        if title:
-            # Strip punctuation that breaks search, keep meaningful words
-            words = " ".join(w for w in title.split() if len(w) > 2)
-            query_parts.append(f"title:({words})")
-        if author:
-            # Use last name for personal names, full string for corporate authors
-            if any(
-                kw in author.lower()
-                for kw in [
-                    "department",
-                    "division",
-                    "admiralty",
-                    "office",
-                    "command",
-                    "staff",
-                ]
-            ):
-                query_parts.append(f"creator:({author})")
-            else:
-                # Handle "LastName, FirstName" and "FirstName LastName" formats
-                if "," in author:
-                    last_name = author.split(",")[0].strip()
-                else:
-                    parts = author.split()
-                    last_name = parts[-1] if len(parts[-1]) > 2 else parts[0]
-                query_parts.append(f"creator:({last_name})")
-        if periodical:
-            query_parts.append(f'"{periodical}"')
-
-        query = " AND ".join(query_parts) if query_parts else title
-        query += " AND mediatype:texts"
-
+        query = _build_archive_query(title, author, periodical)
         # Search API
         url = f"https://archive.org/advancedsearch.php?q={quote(query)}&fl[]=identifier&fl[]=title&output=json&rows=5"
 
@@ -156,6 +122,44 @@ def _search_archive_org_api(
         logger.debug("Archive.org search failed: %s", e)
 
     return None
+
+
+_CORPORATE_AUTHOR_KW = (
+    "department",
+    "division",
+    "admiralty",
+    "office",
+    "command",
+    "staff",
+)
+
+
+def _author_search_term(author: str) -> str:
+    """archive.org creator: term — full string for corporate authors, last name for
+    personal names ('LastName, First' or 'First LastName')."""
+    if any(kw in author.lower() for kw in _CORPORATE_AUTHOR_KW):
+        return author
+    if "," in author:
+        return author.split(",")[0].strip()
+    parts = author.split()
+    return parts[-1] if len(parts[-1]) > 2 else parts[0]
+
+
+def _build_archive_query(
+    title: str, author: Optional[str], periodical: Optional[str]
+) -> str:
+    """Build the archive.org advancedsearch query. Parenthesized keywords (not exact
+    quotes) because Archive.org metadata titles often differ from citation titles."""
+    query_parts = []
+    if title:
+        words = " ".join(w for w in title.split() if len(w) > 2)
+        query_parts.append(f"title:({words})")
+    if author:
+        query_parts.append(f"creator:({_author_search_term(author)})")
+    if periodical:
+        query_parts.append(f'"{periodical}"')
+    query = " AND ".join(query_parts) if query_parts else title
+    return query + " AND mediatype:texts"
 
 
 def fetch_archive_org_metadata(identifier: str) -> Optional[Dict]:

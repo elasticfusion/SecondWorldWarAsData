@@ -54,60 +54,11 @@ def extract_bibliography_deterministic(
 
     Returns the number of citations stored (new or mention-appended).
     """
-    if not parsed_file or not parsed_file.exists():
+    notes = _collect_parsed_notes(parsed_file)
+    if notes is None:
         return 0
-    try:
-        data = json.loads(parsed_file.read_text(encoding="utf-8"))
-    except (OSError, ValueError) as e:  # malformed parse must not break the pass
-        logger.warning("Deterministic bibliography: unreadable %s: %s", parsed_file, e)
-        return 0
-
-    # Accept either key — footnotes (same-page) or endnotes (end-of-chapter).
-    notes: List[Dict[str, Any]] = []
-    for key, ref_type in (("footnotes", "footnote"), ("endnotes", "endnote")):
-        for n in data.get(key, []) or []:
-            if isinstance(n, dict):
-                notes.append({**n, "_ref_type": ref_type})
-
     bib_dir = output_root / "bibliography"
-    stored = 0
-    skipped_stub = 0
-    for note in notes:
-        text = (note.get("text") or "").strip()
-        if not text or _is_stub_citation(text):
-            skipped_stub += 1
-            continue
-        url = note.get("url") or ""
-        # Defense-in-depth: only keep http(s) source URLs — a crafted source doc could
-        # inject javascript:/data:/file: URLs that would surface downstream in UI/export.
-        if not (
-            isinstance(url, str) and url.lower().startswith(("http://", "https://"))
-        ):
-            url = ""
-        number = note.get("number")
-        material: Dict[str, Any] = {
-            "verbatim_reference": text,
-            "reference_type": note.get("_ref_type", "footnote"),
-            "reference_number": str(number) if number is not None else "",
-            "content_class": "document_reference",
-            # Title/author left for the LLM enrichment overlay; store_bibliography_entry
-            # falls back to verbatim_reference for the title/dedup key when title=Unknown.
-            "citation": {"title": "Unknown"},
-            "resource_urls": [url] if url else [],
-        }
-        try:
-            if store_bibliography_entry(bib_dir, material, book=book, chapter=chapter):
-                stored += 1
-        except (
-            Exception
-        ) as e:  # noqa: BLE001 - one bad citation must not abort the pass
-            logger.warning(
-                "Deterministic bibliography: store failed for %s fn%s: %s",
-                chapter,
-                number,
-                e,
-            )
-
+    stored, skipped_stub = _store_notes(notes, bib_dir, book, chapter)
     try:
         logger.info(
             "OBSERV bib.deterministic %s: notes=%d stored=%d skipped_stub=%d",
@@ -119,6 +70,78 @@ def extract_bibliography_deterministic(
     except Exception:  # noqa: BLE001 - observability never breaks the pass
         pass
     return stored
+
+
+def _collect_parsed_notes(parsed_file: Path) -> Optional[List[Dict[str, Any]]]:
+    """Read the parsed file and return tagged footnote/endnote dicts, or ``None`` if the
+    file is absent/unreadable (so the caller returns 0 without raising)."""
+    if not parsed_file or not parsed_file.exists():
+        return None
+    try:
+        data = json.loads(parsed_file.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:  # malformed parse must not break the pass
+        logger.warning("Deterministic bibliography: unreadable %s: %s", parsed_file, e)
+        return None
+    # Accept either key — footnotes (same-page) or endnotes (end-of-chapter).
+    notes: List[Dict[str, Any]] = []
+    for key, ref_type in (("footnotes", "footnote"), ("endnotes", "endnote")):
+        for n in data.get(key, []) or []:
+            if isinstance(n, dict):
+                notes.append({**n, "_ref_type": ref_type})
+    return notes
+
+
+def _store_notes(
+    notes: List[Dict[str, Any]], bib_dir: Path, book: str, chapter: str
+) -> tuple:
+    """Store a bibliography record per usable note. Returns (stored, skipped_stub)."""
+    stored = 0
+    skipped_stub = 0
+    for note in notes:
+        material = _note_to_material(note)
+        if material is None:  # empty text or cross-reference stub
+            skipped_stub += 1
+            continue
+        try:
+            if store_bibliography_entry(bib_dir, material, book=book, chapter=chapter):
+                stored += 1
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - one bad citation must not abort the pass
+            logger.warning(
+                "Deterministic bibliography: store failed for %s fn%s: %s",
+                chapter,
+                note.get("number"),
+                e,
+            )
+    return stored, skipped_stub
+
+
+def _note_to_material(note: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Build a deterministic bibliography material from a parsed footnote/endnote.
+
+    Returns ``None`` when the note has no usable text or is a bare cross-reference stub
+    (``ibid``/``see n. N``) that carries no standalone document identity.
+    """
+    text = (note.get("text") or "").strip()
+    if not text or _is_stub_citation(text):
+        return None
+    # Defense-in-depth: only keep http(s) source URLs — a crafted source doc could inject
+    # javascript:/data:/file: URLs that would surface downstream in UI/export.
+    url = note.get("url") or ""
+    if not (isinstance(url, str) and url.lower().startswith(("http://", "https://"))):
+        url = ""
+    number = note.get("number")
+    return {
+        "verbatim_reference": text,
+        "reference_type": note.get("_ref_type", "footnote"),
+        "reference_number": str(number) if number is not None else "",
+        "content_class": "document_reference",
+        # Title/author left for the LLM enrichment overlay; store_bibliography_entry
+        # falls back to verbatim_reference for the title/dedup key when title=Unknown.
+        "citation": {"title": "Unknown"},
+        "resource_urls": [url] if url else [],
+    }
 
 
 def _slugify(title: str) -> str:
