@@ -174,7 +174,7 @@ def _note_to_material(note: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     if not (isinstance(url, str) and url.lower().startswith(("http://", "https://"))):
         url = ""
     number = note.get("number")
-    return {
+    material = {
         "verbatim_reference": text,
         "reference_type": note.get("_ref_type", "footnote"),
         "reference_number": str(number) if number is not None else "",
@@ -183,6 +183,34 @@ def _note_to_material(note: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         # falls back to verbatim_reference for the title/dedup key when title=Unknown.
         "citation": {"title": "Unknown"},
         "resource_urls": [url] if url else [],
+    }
+    # DETERMINISTIC license: anything sourced from ibiblio/hyperwar (the US Army CMH
+    # "green books" and material hosted there) is a US Government work -> PUBLIC DOMAIN.
+    # Knowable at parse time from the source domain, so set it here (not deferred to the
+    # Phase-3 resolver / LLM).
+    material.update(_public_domain_fields(url))
+    return material
+
+
+# ibiblio hyperwar hosts the US Army Center of Military History "green books" (US Gov
+# works) + related public-domain material. A citation sourced from there is public domain.
+_PUBLIC_DOMAIN_HOSTS = ("ibiblio.org/hyperwar", "hyperwar")
+
+
+def _public_domain_fields(url: str) -> Dict[str, Any]:
+    """Deterministic public-domain license fields for a US-Gov/ibiblio-hyperwar source
+    URL; empty dict otherwise (left for Phase-3 resolution / LLM)."""
+    u = (url or "").lower()
+    if not any(h in u for h in _PUBLIC_DOMAIN_HOSTS):
+        return {}
+    return {
+        "license": "public_domain",
+        "license_notes": "US Government work (US Army CMH / ibiblio hyperwar); public domain.",
+        "copyright_status": {
+            "status": "public_domain",
+            "determination_basis": "US Government work hosted on ibiblio hyperwar (CMH green books).",
+            "jurisdiction": "US",
+        },
     }
 
 
@@ -346,6 +374,7 @@ def _build_bib_entry(material: Dict[str, Any]) -> Dict[str, Any]:
         "archive_physical_address": material.get("archive_physical_address"),
         "license": material.get("license", "unknown"),
         "license_notes": material.get("license_notes"),
+        "copyright_status": material.get("copyright_status"),
         "mentions": [],
     }
 

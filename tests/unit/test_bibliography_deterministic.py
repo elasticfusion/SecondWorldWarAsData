@@ -132,3 +132,31 @@ def test_materialize_local_mode_noop(tmp_path, monkeypatch):
         "src.utils.entity_store.get_entity_store", lambda: None, raising=False
     )
     assert bib.materialize_bibliography_to_local(tmp_path / "out") == 0
+
+
+def test_ibiblio_source_is_public_domain(tmp_path):
+    """Owner rule: anything derived from ibiblio/hyperwar (US Army CMH green books) is a
+    US Government work -> public domain, set deterministically at parse time."""
+    out = tmp_path / "out"
+    pf = _write_parsed(
+        out,
+        "footnotes",
+        [
+            {
+                "number": 1,
+                "url": "https://www.ibiblio.org/hyperwar/USA/x.html#fn1",
+                "text": "Interv, Collins.",
+            },
+            {"number": 2, "url": "https://example.com/x", "text": "Non-gov source."},
+        ],
+    )
+    extract_bibliography_deterministic(pf, out, book="RoerDams", chapter="chapter3a")
+    by_url = {}
+    for f in _bib_files(out):
+        d = json.loads(f.read_text())
+        by_url[(d.get("resource_urls") or [""])[0]] = d
+    pub = next(d for u, d in by_url.items() if "ibiblio" in u)
+    assert pub["license"] == "public_domain"
+    assert (pub.get("copyright_status") or {}).get("status") == "public_domain"
+    other = next(d for u, d in by_url.items() if "example.com" in u)
+    assert other["license"] == "unknown"  # left for Phase 3 resolution
