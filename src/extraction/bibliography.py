@@ -182,7 +182,14 @@ def _note_to_material(note: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         # Title/author left for the LLM enrichment overlay; store_bibliography_entry
         # falls back to verbatim_reference for the title/dedup key when title=Unknown.
         "citation": {"title": "Unknown"},
-        "resource_urls": [url] if url else [],
+        # SOURCE URL = provenance (where the citation TEXT appeared, e.g. the ibiblio
+        # hyperwar page) -> carried on the mention. Deliberately NOT `resource_urls`:
+        # resource_urls means "where the CITED document is obtainable" (NARA/archive.org),
+        # filled by Phase-3 resolution. Putting the source URL in resource_urls would trip
+        # the resolver's "has resource_urls -> already resolved" short-circuit and PREVENT
+        # NARA resolution. So resource_urls starts EMPTY.
+        "source_url": url,
+        "resource_urls": [],
     }
     # DETERMINISTIC license: anything sourced from ibiblio/hyperwar (the US Army CMH
     # "green books" and material hosted there) is a US Government work -> PUBLIC DOMAIN.
@@ -357,6 +364,12 @@ def _build_mention(
         mention["pages"] = citation["pages"]
     if citation.get("volume"):
         mention["volume"] = citation["volume"]
+    # Provenance: the SOURCE URL where the citation TEXT appeared (e.g. the ibiblio
+    # hyperwar page). Distinct from the entry's `resource_urls` (where the CITED document
+    # is obtainable — filled by Phase-3 resolution). Kept on the mention so it does not
+    # trip the resolver's "has resource_urls -> already resolved" short-circuit.
+    if material.get("source_url"):
+        mention["source_url"] = material["source_url"]
     return mention
 
 
