@@ -133,6 +133,25 @@ bottom); what remains is ranked here. Current ordered priority:
    `dev-wwii-pipeline/{nara,noaa}-api-key`; `_load_secrets` loads only Grok; `config.py` maps
    NARA_API_KEY->api.nara_api_key but has NO NOAA mapping; add both + load both for Phase 3).
    NOTE: NOAA key is stored at Secrets Manager `dev-wwii-pipeline/noaa-api-key`.
+   - **[HIGH · bibliography schema/provenance] A document must support MULTIPLE DISTINCT SOURCE
+     ENTRIES, each with independent provenance / format / license (owner, 2026-10-14).** Today the
+     bibliography schema (`src/schemas/bibliography_output.py`) flattens this: `resource_urls` is a
+     bare `array[string]` (no per-URL metadata) and `search_source` is a SINGLE string — so a work
+     resolved at e.g. NARA (scan, gov-PD) AND archive.org (EPUB) AND a modern reprint (PDF,
+     in-copyright) can list the URLs but CANNOT record which source gave which URL, nor each copy's
+     format/license/access independently. FIX: replace `resource_urls: [string]` with a
+     `sources: [object]` array (keep `resource_urls` as a derived/compat view or deprecate), each
+     entry carrying its OWN: `url`, `source` (nara|archive_org|hathitrust|gutenberg|loc|reprint|...),
+     `format` (scan|pdf|epub|text|djvu), `license` + `copyright_status` (per-COPY, since a PD
+     original scan and an in-copyright reprint of the same title differ), `access`
+     (free|paywalled|physical_only), `archive_reference_number`/`archive_physical_address`
+     (per-source), `download_status`/`download_path` (per-source), and `source_qualification` MAY
+     stay document-level or move per-source if copies differ in evidentiary weight. Keep it additive
+     + nullable; bump `bibliography` in `ENTITY_SCHEMA_VERSIONS` + re-pin
+     `tests/test_schema_fingerprint.py` (same pattern as groups unit_patch). The resolver
+     (`bibliography_resolver`) + the OBSERV `bib.resolved` line should then record EACH source, and
+     the download step (#3) gate per-source on that copy's copyright_status. Pairs with the artifact
+     store (ARTIFACT_STORE_DESIGN.md) — each stored copy is one of these source entries.
 4. **[HIGH · data-quality/provenance] URL-sourced enrichment + 90-day URL registry.** Design:
    docs/current/dataquality/URL_SOURCED_ENRICHMENT_DESIGN.md. Phase 3 step 1 (people_groups,
    enrich_groups.py) and step 2 (places, enrich_places.py `_try_grok`) currently accept Grok's
