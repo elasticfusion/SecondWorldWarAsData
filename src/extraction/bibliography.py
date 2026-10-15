@@ -72,6 +72,48 @@ def extract_bibliography_deterministic(
     return stored
 
 
+def materialize_bibliography_to_local(output_root: Path) -> int:
+    """Mirror Dynamo-backed bibliography entries to local ``output/bibliography/*.json``
+    so the Phase-2 S3 sync persists them to the DURABLE system of record (S3 is
+    authoritative; DynamoDB is a derived, rebuildable index). In local-file mode (no
+    entity store) this is a no-op — the records are already on disk. Fail-safe; returns
+    the number of files written.
+
+    Rationale (owner): S3 is the definitive store and can rebuild Dynamo; the reverse
+    is not guaranteed and Dynamo is costlier. The deterministic pass must therefore make
+    bibliography durable in S3 within Phase 2, independent of the later dedup-phase
+    materialization (an interrupted run must not lose records from the durable store).
+    """
+    try:
+        from src.utils.entity_store import get_entity_store
+
+        store = get_entity_store()
+    except Exception:  # noqa: BLE001 - import/availability guard
+        store = None
+    if store is None:
+        return 0  # local-file mode: entries are already written to disk by the store
+    bib_dir = output_root / "bibliography"
+    bib_dir.mkdir(parents=True, exist_ok=True)
+    written = 0
+    try:
+        from src.utils.file_lock import write_json_with_lock
+
+        for item in store.list_all("bibliography"):
+            entry = item.get("data") or {}
+            fname = (
+                item.get("filename") or f"{entry.get('BibliographyID', 'unknown')}.json"
+            )
+            try:
+                if write_json_with_lock(bib_dir / fname, entry, entity="bibliography"):
+                    written += 1
+            except OSError as e:
+                logger.warning("materialize bibliography %s failed: %s", fname, e)
+    except Exception as e:  # noqa: BLE001 - never break the pass on a store read error
+        logger.warning("materialize_bibliography_to_local failed: %s", e)
+    logger.info("OBSERV bib.materialized local_files=%d (for S3 durability)", written)
+    return written
+
+
 def _collect_parsed_notes(parsed_file: Path) -> Optional[List[Dict[str, Any]]]:
     """Read the parsed file and return tagged footnote/endnote dicts, or ``None`` if the
     file is absent/unreadable (so the caller returns 0 without raising)."""

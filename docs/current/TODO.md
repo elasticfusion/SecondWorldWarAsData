@@ -94,6 +94,45 @@ bottom); what remains is ranked here. Current ordered priority:
      (schema `src/schemas/bibliography_output.py`: BibliographyID+title required, reference_type,
      verbatim_reference, resource_urls all present); supplemental's `_route_by_content_class` becomes an
      update-in-place classifier on those records.
+   - **[HIGH · DURABILITY BUG — deterministic bibliography is Dynamo-first, but S3 is the SYSTEM OF
+     RECORD. owner directive 2026-10-15.]** ARCHITECTURE (owner, authoritative): **S3 is the definitive,
+     durable store; DynamoDB is a DERIVED, rebuildable, cost-incurring working index** — S3 can
+     rebuild Dynamo, not vice-versa, and Dynamo is more expensive. So the write dependency must be
+     S3-authoritative, Dynamo-derived. CURRENT (wrong) behavior, PROVEN in the e2e: in AWS mode
+     `store_bibliography_entry` → `DynamoEntityStore`, so the deterministic pass wrote the 16 RoerDams
+     records to the Dynamo cache (`entity#bibliography#…` in dev-wwii-api-cache) and the Phase-2 submit
+     task logged `Skipping bibliography/supplemental bulk download (Dynamo-backed dedup)` — leaving
+     `s3://…/output/bibliography/` EMPTY (0 files). The Dynamo→S3 materialization only runs later in the
+     DEDUP phase (`_materialize_from_dynamo`, ecs_entrypoint:931/1849). So if the batch/retrieve/dedup
+     chain stalls or is interrupted (as it did repeatedly this session), the records NEVER reach the
+     durable store — exactly the fragility the deterministic-primary pass was meant to ELIMINATE. I had
+     to materialize+`aws s3 cp` the 16 records to S3 BY HAND to make them durable (verified: 16
+     well-formed `output/bibliography/*.json` with verbatim_reference + resource_urls + mention
+     provenance). FIX: the deterministic pass (and the bibliography write path generally) must persist
+     to S3 as the AUTHORITATIVE write within Phase 2 — either write `output/bibliography/*.json` locally
+     + background/final-sync in the submit task (so it's durable the moment Phase 1 parse + the primary
+     pass complete, no dedup/batch dependency), with the Dynamo index written as a DERIVED copy; or run
+     `_materialize_from_dynamo`+sync for bibliography at end of the submit pass. Also reconsider the
+     "Skipping bibliography bulk download (Dynamo-backed dedup)" optimization under the S3-authoritative
+     model. This is the last correctness gap before bibliography is truly robust.
+     ✅ BRIDGE IMPLEMENTED 2026-10-15: `materialize_bibliography_to_local(output_root)` (bibliography.py)
+     mirrors the Dynamo-backed entries to local `output/bibliography/*.json`, called in phase2 right
+     after the deterministic pass, so the Phase-2 background/final sync persists them to S3 within the
+     submit pass (no dedup/batch dependency). Forward-compatible with Dynamo deprecation: when the
+     entity store is removed, `get_entity_store()` returns None → the helper is a no-op and the
+     file-based `store_bibliography_entry` path already writes `output/bibliography/*.json` directly.
+   - **[DIRECTION · owner 2026-10-15: DynamoDB will likely be DEPRECATED ENTIRELY from JSON storage.]**
+     S3 is the definitive, durable, cheaper store and can rebuild Dynamo; Dynamo is a derived index and
+     costs more. PLAN accordingly: do NOT deepen the Dynamo write/dedup path. The reason Dynamo was
+     introduced for bibliography (store_bibliography_entry docstring) was concurrency-safe cross-Fargate
+     writes + avoiding a 13,566-file bulk download — so DEPRECATION REQUIRES first solving those in an
+     S3-native way: (a) a concurrency-safe S3 write/dedup scheme for the bibliography dir (e.g.
+     per-record immutable files keyed by a deterministic content hash so concurrent books never collide,
+     + a periodically-rebuilt index object, instead of a single flock-guarded index.json), and (b) keep
+     Phase 2 from bulk-downloading the whole bib dir (scoped/manifest reads). Until then, the file path
+     + the materialize bridge above keep S3 authoritative. When ready, remove DynamoEntityStore from the
+     JSON entity path entirely (people/places/… too, not just bibliography) and derive any needed index
+     from S3.
    - **[HIGH · remove divergent logic — follow-up to the deterministic pass, owner Q 2026-10-15].** The
      deterministic pass now CREATES bibliography records; the old supplemental `document_reference`
      branch in `_route_by_content_class` STILL calls `store_bibliography_entry` to create records too.
@@ -103,10 +142,10 @@ bottom); what remains is ranked here. Current ordered priority:
      the parsed title, so it creates a SECOND file = a DUPLICATE of the same citation (deterministic
      "Unknown" + enriched real-title). This is the previous-logic to remove: supplemental's
      document_reference branch must UPDATE THE DETERMINISTIC RECORD IN PLACE (enrichment overlay —
-     fill title/author/classification on the existing record), NOT create a parallel one. Mechanism:
-     add a `verbatim` match-key category to the dedup index (alongside titles/refs/authors) in BOTH the
-     local-file index AND the DynamoEntityStore title-index path, so a record created with title=verbatim
-     and later enriched with a real title still resolves to the SAME entry by its stable verbatim key;
+     fill title/author/classification on the existing record), NOT create a parallel one. Mechanism
+     (REVISED for Dynamo deprecation — do NOT invest in the Dynamo index): put the convergence in the
+     S3/FILE layer — a stable `verbatim` match-key in the FILE-based bibliography index so a record
+     created with title=verbatim and later enriched with a real title resolves to the SAME file entry;
      then make the supplemental branch pass the deterministic record's identity (or match by verbatim)
      and merge fields instead of inserting. Scoped as its OWN change (touches the shared dedup across
      local + Dynamo stores) with its own review — NOT folded into the additive deterministic-pass PR,

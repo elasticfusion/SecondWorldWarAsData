@@ -603,6 +603,18 @@ def _run_core_extraction(
                     "Deterministic bibliography pass failed for %s: %s", pf.name, e
                 )
 
+        # Durability: in AWS mode store_bibliography_entry writes to the Dynamo index
+        # only; mirror the records to local output/bibliography/*.json so the Phase-2 S3
+        # sync persists them to the DURABLE system of record (S3 is authoritative, Dynamo
+        # is a derived rebuildable index). This makes bibliography durable within Phase 2,
+        # NOT dependent on the later dedup-phase materialization (interrupted-run safe).
+        try:
+            from src.extraction.bibliography import materialize_bibliography_to_local
+
+            materialize_bibliography_to_local(paths["output_root"])
+        except Exception as e:  # pylint: disable=broad-except
+            logger.warning("Bibliography S3-materialize failed: %s", e)
+
     if any_optional and not skip_optional:
         from concurrent.futures import ThreadPoolExecutor, as_completed
 

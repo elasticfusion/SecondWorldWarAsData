@@ -121,3 +121,14 @@ def test_non_http_url_dropped(tmp_path):
         urls += json.loads(f.read_text()).get("resource_urls", [])
     assert "javascript:alert(1)" not in urls
     assert "https://x/#fn2" in urls
+
+
+def test_materialize_local_mode_noop(tmp_path, monkeypatch):
+    """In local-file mode (no entity store) materialize is a no-op — records are
+    already on disk; returns 0 without error."""
+    import src.extraction.bibliography as bib
+
+    monkeypatch.setattr(
+        "src.utils.entity_store.get_entity_store", lambda: None, raising=False
+    )
+    assert bib.materialize_bibliography_to_local(tmp_path / "out") == 0
