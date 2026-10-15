@@ -151,6 +151,19 @@ Resources:
       ToPort: 443
       SourceSecurityGroupId: !Ref LambdaSG
 
+  # Container status API (option 3): the in-VPC nat_teardown Lambda polls each pipeline
+  # task's /status on 8077. Lambdas + phase tasks share LambdaSG, so allow 8077 from the
+  # same SG (self-ingress), mirroring the 443 rule above.
+  LambdaSGStatusIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref LambdaSG
+      IpProtocol: tcp
+      FromPort: 8077
+      ToPort: 8077
+      SourceSecurityGroupId: !Ref LambdaSG
+      Description: nat_teardown Lambda -> container /status API
+
   OpenSerpSG:
     Type: AWS::EC2::SecurityGroup
     Properties:

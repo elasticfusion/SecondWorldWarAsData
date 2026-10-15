@@ -198,16 +198,29 @@ class BackgroundSync:
         self._thread = None
         self._uploaded_mtimes: dict = {}  # key → mtime of last upload
         self._last_activity_time = time.time()
+        # Shared forward-progress clock exposed by the in-container /status API (the
+        # authoritative "ongoing task?" signal the nat_teardown Lambda polls). Marked on
+        # every real upload below — true progress, not mere liveness.
+        from ecs_modules.container_status import ProgressState
+
+        self.progress = ProgressState()
 
     def ping(self):
         """Signal activity to the watchdog (call from heartbeat or any progress)."""
         self._last_activity_time = time.time()
+        self.progress.mark()
 
     def start(self):
-        """Start the background sync thread."""
+        """Start the background sync thread + the in-container status API."""
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
         logger.info("Background S3 sync started (every %ds)", self._interval)
+        try:
+            from ecs_modules.container_status import start_status_server
+
+            start_status_server(self.progress)
+        except Exception as e:  # noqa: BLE001 - status API is best-effort
+            logger.warning("Status API not started: %s", e)
 
     def stop(self):
         """Stop the background sync thread."""
@@ -228,6 +241,7 @@ class BackgroundSync:
                     n = self._sync_changed(d, prefix)
                     if n:
                         self._last_activity_time = time.time()
+                        self.progress.mark()
                         logger.info("Background sync: uploaded %d %s files", n, name)
             # Watchdog: self-terminate if no activity for too long
             idle = time.time() - self._last_activity_time

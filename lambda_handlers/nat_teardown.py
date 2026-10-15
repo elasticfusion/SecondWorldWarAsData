@@ -43,6 +43,100 @@ def _nat_present(ec2) -> bool:
     return bool(resp.get("NatGateways", []))
 
 
+STATUS_PORT = int(os.getenv("STATUS_PORT", "8077"))
+STATUS_HTTP_TIMEOUT = int(os.getenv("STATUS_HTTP_TIMEOUT", "3"))
+
+
+def _is_private_ipv4(ip: str) -> bool:
+    """True only for RFC1918 private IPv4 (task ENIs live in the VPC CIDR). Guards the
+    /status poll so we never urlopen a public/unexpected address."""
+    import ipaddress
+
+    try:
+        return ipaddress.ip_address(ip).is_private
+    except ValueError:
+        return False
+
+
+def _running_pipeline_task_ips() -> list:
+    """Private IPs of RUNNING pipeline tasks (exclude the openserp browser SERVICE, which
+    runs no entrypoint/status API). Returns [(task_id, ip)]."""
+    import boto3
+
+    ecs = boto3.client("ecs", region_name=REGION)
+    cluster = f"{ENV_NAME}-wwii-pipeline"
+    browser_group = f"service:{ENV_NAME}-wwii-openserp"
+    arns = ecs.list_tasks(cluster=cluster, desiredStatus="RUNNING").get("taskArns", [])
+    if not arns:
+        return []
+    out = []
+    for t in ecs.describe_tasks(cluster=cluster, tasks=arns).get("tasks", []):
+        if (t.get("group", "") or "") == browser_group:
+            continue
+        task_id = (t.get("taskArn", "") or "").split("/")[-1]
+        ip = ""
+        for att in t.get("attachments", []):
+            for d in att.get("details", []):
+                if d.get("name") == "privateIPv4Address":
+                    ip = d.get("value", "")
+        if ip:
+            out.append((task_id, ip))
+    return out
+
+
+def _containers_busy() -> bool:
+    """Poll each RUNNING pipeline container's /status HTTP API (option 3 — a REAL
+    on-container 'ongoing task?' endpoint). Returns True (keep NAT) if ANY container
+    reports busy OR is UNREACHABLE (fail-safe: an unreachable container might be mid-work
+    with a wedged status thread — never tear down on uncertainty). False only when every
+    running pipeline container answered and all reported idle. No running tasks -> False
+    (the DynamoDB demand check still covers queue work with no container, e.g. a pending
+    Grok batch)."""
+    import json as _json
+    import urllib.request
+
+    try:
+        tasks = _running_pipeline_task_ips()
+    except Exception as e:  # noqa: BLE001 - fail safe
+        logger.warning(
+            "container status: task discovery failed (%s) — assuming busy", e
+        )
+        return True
+    for task_id, ip in tasks:
+        if not _is_private_ipv4(ip):
+            logger.warning(
+                "container status: %s has non-private IP %s — assuming busy",
+                task_id,
+                ip,
+            )
+            return True
+        # URL is our own fixed http:// to a validated RFC1918 task IP — not
+        # attacker-controlled and not a user-supplied scheme (bandit B310 N/A here).
+        url = f"http://{ip}:{STATUS_PORT}/status"
+        try:
+            with urllib.request.urlopen(
+                url, timeout=STATUS_HTTP_TIMEOUT
+            ) as r:  # nosec B310
+                data = _json.loads(r.read().decode("utf-8"))
+            if data.get("busy"):
+                logger.info(
+                    "container status: %s busy (idle_seconds=%s) — keeping NAT",
+                    task_id,
+                    data.get("idle_seconds"),
+                )
+                return True
+            logger.info("container status: %s idle", task_id)
+        except Exception as e:  # noqa: BLE001 - unreachable == uncertain == keep NAT
+            logger.warning(
+                "container status: %s (%s) unreachable (%s) — assuming busy",
+                task_id,
+                ip,
+                e,
+            )
+            return True
+    return False
+
+
 def _schedule_recheck() -> None:
     """Self-schedule a ONE-SHOT recheck in RECHECK_MINUTES via EventBridge Scheduler, so
     while a container is still processing we poll at 10-min cadence (not the 4h cron) and
@@ -134,6 +228,16 @@ def handler(event, _context=None):
             )
             _schedule_recheck()
             return {"action": "recheck", "reason": "nat demand present"}
+
+        # Authoritative on-container check (option 3): poll each running pipeline
+        # container's /status HTTP API. A busy/unreachable container keeps NAT up.
+        if _containers_busy():
+            logger.info(
+                "NAT-teardown: a container reports an ongoing task — rechecking in %d min",
+                RECHECK_MINUTES,
+            )
+            _schedule_recheck()
+            return {"action": "recheck", "reason": "container busy (status API)"}
 
         # Queue empty AND no container processing -> tear down.
         return _teardown()

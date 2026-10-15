@@ -803,13 +803,25 @@ Resources:
         S3Bucket: !Ref LambdaCodeBucket
         S3Key: !Ref LambdaCodeKey
       MemorySize: 128
-      Timeout: 120
+      Timeout: 300
       Role: !Ref LambdaExecutionRoleArn
+      # IN-VPC so it can reach each pipeline task's private-IP /status endpoint on 8077
+      # (option 3 — the real on-container 'ongoing task?' API). Its own AWS-API calls
+      # (ec2/ecs/lambda/sts/scheduler/dynamodb) egress via the RUNNING NAT: nat_teardown
+      # only does real work when NAT is UP (if NAT is down, _nat_present()==False and it
+      # exits before any egress), so a running NAT is always available for those calls.
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSGId
+        SubnetIds:
+          - !Ref PrivateSubnet1Id
+          - !Ref PrivateSubnet2Id
       Environment:
         Variables:
           ENV_NAME: !Ref EnvironmentName
           CACHE_TABLE: !Ref CacheTableName
           NAT_TEARDOWN_RECHECK_MINUTES: "10"
+          STATUS_PORT: "8077"
           SCHEDULER_ROLE_ARN: !Sub arn:aws:iam::${AWS::AccountId}:role/${EnvironmentName}-wwii-scheduler-role
 
   NatTeardownSchedule:
