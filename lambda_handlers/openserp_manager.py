@@ -218,23 +218,17 @@ def _networking_already_down():
 
 
 def _teardown(ecs, cluster, service, region):
-    """Scale OpenSERP to 0 and delete dynamic networking stack."""
-    import boto3
+    """Scale the OpenSERP support service to 0. Does NOT touch NAT/endpoints.
 
-    # 1. Scale OpenSERP to 0
+    NAT/endpoint teardown is owned EXCLUSIVELY by the nat_teardown cron Lambda (the sole
+    decider, demand-gated via nat_manager._nat_demand_present). This manager used to also
+    invoke nat_manager action=delete, which made it a SECOND, demand-UNAWARE decider that
+    could tear NAT down under a running OCR/Grok batch — removed to honor the single-owner
+    model."""
     try:
         ecs.update_service(cluster=cluster, service=service, desiredCount=0)
-        logger.info("Scaled OpenSERP service to 0")
+        logger.info(
+            "Scaled OpenSERP service to 0 (NAT teardown owned by nat_teardown cron)"
+        )
     except Exception as e:
         logger.warning("Failed to scale service: %s", e)
-
-    # 2. Delete networking stack (NAT, ALB, VPC endpoints)
-    try:
-        boto3.client("lambda", region_name=region).invoke(
-            FunctionName=f"{ENV_NAME}-wwii-nat-manager",
-            InvocationType="RequestResponse",
-            Payload=b'{"action": "delete"}',
-        )
-        logger.info("Networking stack delete invoked")
-    except Exception as e:
-        logger.warning("Failed to invoke networking delete: %s", e)

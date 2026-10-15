@@ -271,24 +271,18 @@ def _endpoint_available_untagged(ec2, region, svc):
 
 
 def _handle_sns_records(event) -> dict:
-    """Handle SNS records: on a pipeline-completion message, tear down NAT — but
-    only if cluster NAT demand is zero (M3 §4 — fixes the Phase1->Phase2 churn)."""
-    import boto3
+    """SNS records (e.g. pipeline-completion) NO LONGER drive teardown.
 
-    for record in event.get("Records", []):
-        if record.get("EventSource") != "aws:sns":
-            continue
-        message = record.get("Sns", {}).get("Message", "")
-        if "completed successfully" not in message:
-            logger.info("Ignoring SNS (not completion): %s", message[:80])
-            return {"action": "none", "reason": "not pipeline completion"}
-        if _nat_demand_present():
-            logger.info("Completion message, but NAT demand remains — NOT tearing down")
-            return {"action": "none", "reason": "nat demand present"}
-        logger.info("Pipeline completion — tearing down networking")
-        region = os.getenv("AWS_REGION", "us-east-1")
-        return _delete_all(boto3.client("ec2", region_name=region), region)
-    return {"action": "none", "reason": "no sns record"}
+    Per the NAT lifecycle model: phases/phase-completion events NEVER tear down NAT or
+    endpoints — the dedicated `nat_teardown` cron Lambda is the SOLE teardown decider
+    (fires every 4h; tears down only when the DynamoDB queue is empty AND no container is
+    processing, rechecking every 10 min while work is ongoing). This handler is retained
+    only so a stray SNS subscription cannot error; it is now a no-op.
+    """
+    logger.info(
+        "SNS record received — teardown is owned by the nat_teardown cron; no-op"
+    )
+    return {"action": "none", "reason": "teardown owned by nat_teardown cron Lambda"}
 
 
 def _status(ec2):

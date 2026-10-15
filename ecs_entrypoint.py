@@ -331,17 +331,6 @@ def _setup_symlinks():
         link.symlink_to(target)
 
 
-def _cancel_stale_teardown() -> None:
-    """Cancel any pending delayed networking teardown from a previous task."""
-    try:
-        env = os.environ.get("ENV_NAME", "dev")
-        scheduler = boto3.client("scheduler", region_name=REGION)
-        scheduler.delete_schedule(Name=f"{env}-wwii-delayed-teardown")
-        logger.info("Cancelled stale delayed teardown")
-    except Exception:
-        pass  # No schedule exists — normal
-
-
 def _patch_config():
     """Enable AWS mode in config.yaml so scripts use DynamoDB cache."""
     import yaml  # pylint: disable=import-outside-toplevel
@@ -714,9 +703,6 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     os.environ["PIPELINE_PHASE"] = phase_name
     if not os.environ.get("BOOK_NAME"):
         os.environ["BOOK_NAME"] = ""
-
-    # Cancel any stale delayed teardown from a previous task
-    _cancel_stale_teardown()
 
     # Bring NAT (+ VPC endpoints) up FIRST, before any egress-dependent step:
     # _load_secrets needs the Secrets Manager interface endpoint (created by
@@ -1560,8 +1546,10 @@ def _post_process(phase_script: str, env: dict) -> None:
                     )
                 except Exception as e:
                     logger.warning("Failed to auto-trigger Phase 3: %s", e)
-            else:
-                _schedule_delayed_teardown()
+            # NOTE: dedup gate blocked (awaiting human review) — do NOT schedule
+            # teardown here. The nat_teardown cron Lambda will tear NAT down once the
+            # queue is empty + no container is running; a pending dedup review simply
+            # means NAT may idle until the cron's demand check next finds it idle.
 
             # Check for other books in the per-book queue — trigger next, skip teardown
             next_book = _get_next_pending_book()
@@ -2466,14 +2454,6 @@ def _other_phase_locked(current_phase_script: str) -> bool:
     return False
 
 
-def _any_pipeline_lock_held() -> bool:
-    """Check if ANY pipeline lock exists (Phase 1, 2, or 3; any book)."""
-    try:
-        return len(_held_lock_keys()) > 0
-    except Exception:
-        return True  # Assume locked on error — don't tear down
-
-
 def _openserp_demand_present() -> bool:
     """Aggregate OpenSERP demand across ALL jobs (operator rule: if multiple jobs
     are in play OpenSERP must NOT shut down; shut down only when NO job needs it).
@@ -2714,30 +2694,6 @@ def _release_nat_lease() -> None:
         logger.warning("NAT lease release failed: %s", e)
 
 
-def _nat_demand_present() -> bool:
-    """Cluster-wide NAT demand (M3, §4): live leases OR running pipeline tasks.
-
-    Cross-checks the lease count against the ECS running-task list (ground truth)
-    so a dropped lease can't wrongly tear NAT down while a book is still running.
-    Returns True (demand present) on any error — never tear down on uncertainty.
-    """
-    try:
-        env = os.environ.get("ENV_NAME", "dev")
-        ecs = boto3.client("ecs", region_name=REGION)
-        running = ecs.list_tasks(
-            cluster=f"{env}-wwii-pipeline", desiredStatus="RUNNING"
-        ).get("taskArns", [])
-        # Exclude openserp (support service) and our own task from "pipeline demand"
-        own = os.environ.get("ECS_TASK_ID", "")
-        pipeline = [t for t in running if "openserp" not in t and own not in t]
-        from src.utils import nat_lease
-
-        return nat_lease.has_nat_demand(running_task_count=len(pipeline))
-    except Exception as e:  # pragma: no cover - defensive
-        logger.warning("NAT demand check failed: %s — assuming demand", e)
-        return True
-
-
 def _multi_doc_enabled() -> bool:
     """True if multi-document concurrency is switched on (kill-switch).
 
@@ -2866,110 +2822,6 @@ def _clear_all_locks() -> None:
         pass
 
 
-def _schedule_delayed_teardown(delay_minutes: int = None) -> None:
-    """Schedule networking teardown after a delay via EventBridge Scheduler.
-
-    If Phase 3 launches before the delay expires, the trigger Lambda
-    cancels this schedule. Avoids churn when dedup review is fast.
-    """
-    if delay_minutes is None:
-        delay_minutes = int(os.environ.get("TEARDOWN_DELAY_MINUTES", "30"))
-    import datetime
-
-    env = os.environ.get("ENV_NAME", "dev")
-    schedule_name = f"{env}-wwii-delayed-teardown"
-    run_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-        minutes=delay_minutes
-    )
-    nat_fn_arn = (
-        f"arn:aws:lambda:{REGION}:{_get_account_id()}:function:{env}-wwii-nat-manager"
-    )
-    role_arn = os.environ.get(
-        "SCHEDULER_ROLE_ARN",
-        f"arn:aws:iam::{_get_account_id()}:role/{env}-wwii-scheduler-role",
-    )
-    try:
-        scheduler = boto3.client("scheduler", region_name=REGION)
-    except Exception as e:
-        logger.warning("Failed to create scheduler client: %s", e)
-        return
-    try:
-        scheduler.create_schedule(
-            Name=schedule_name,
-            ScheduleExpression=f"at({run_at.strftime('%Y-%m-%dT%H:%M:%S')})",
-            ScheduleExpressionTimezone="UTC",
-            FlexibleTimeWindow={"Mode": "OFF"},
-            Target={
-                "Arn": nat_fn_arn,
-                "RoleArn": role_arn,
-                "Input": '{"action": "delete"}',
-            },
-            ActionAfterCompletion="DELETE",
-        )
-        logger.info("Scheduled networking teardown in %d minutes", delay_minutes)
-    except scheduler.exceptions.ConflictException:
-        # Schedule already exists — update it
-        try:
-            scheduler.update_schedule(
-                Name=schedule_name,
-                ScheduleExpression=f"at({run_at.strftime('%Y-%m-%dT%H:%M:%S')})",
-                ScheduleExpressionTimezone="UTC",
-                FlexibleTimeWindow={"Mode": "OFF"},
-                Target={
-                    "Arn": nat_fn_arn,
-                    "RoleArn": role_arn,
-                    "Input": '{"action": "delete"}',
-                },
-                ActionAfterCompletion="DELETE",
-            )
-            logger.info(
-                "Updated delayed teardown schedule to %d minutes", delay_minutes
-            )
-        except Exception as e:
-            logger.warning("Failed to update delayed teardown: %s", e)
-    except Exception as e:
-        logger.warning("Failed to schedule delayed teardown: %s", e)
-
-
-def _teardown_networking() -> None:
-    """Scale down OpenSERP and invoke nat_manager to delete NAT + VPC endpoints.
-    Skipped if another phase has an active lock OR any NAT demand remains
-    (per-task leases / running tasks) — prevents killing networking that a
-    concurrent book still needs (M3, §4).
-    """
-    # M3: this task no longer needs the network — drop its lease first, then
-    # decide teardown from cluster-wide demand (not this task's state alone).
-    _release_nat_lease()
-    if _any_pipeline_lock_held():
-        logger.info("Skipping network teardown — another phase lock is active")
-        return
-    if _nat_demand_present():
-        logger.info("Skipping network teardown — NAT demand remains (leases/tasks)")
-        return
-    try:
-        env = os.environ.get("ENV_NAME", "dev")
-        ecs = boto3.client("ecs", region_name=REGION)
-        ecs.update_service(
-            cluster=f"{env}-wwii-pipeline",
-            service=f"{env}-wwii-openserp",
-            desiredCount=0,
-        )
-        logger.info("Scaled OpenSERP to 0")
-    except Exception as e:
-        logger.warning("Failed to scale OpenSERP: %s", e)
-    try:
-        env = os.environ.get("ENV_NAME", "dev")
-        lam = boto3.client("lambda", region_name=REGION)
-        lam.invoke(
-            FunctionName=f"{env}-wwii-nat-manager",
-            InvocationType="RequestResponse",
-            Payload=json.dumps({"action": "delete"}).encode(),
-        )
-        logger.info("Networking torn down (NAT + VPC endpoints)")
-    except Exception as e:
-        logger.warning("Failed to tear down networking: %s", e)
-
-
 def run_submit_only(phase_script: str, extra_args: list) -> None:
     """Run phase in batch mode, submit to Grok, enqueue job, then exit immediately."""
     global _current_phase_script
@@ -3070,28 +2922,31 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     # _post_process NOW (same work the poller's --retrieve-only task would do).
     # IMPORTANT: do this BEFORE tearing down networking — _post_process publishes
     # SNS + invokes the trigger Lambda, which egress via NAT (there is no SNS/Lambda
-    # interface endpoint). Tear down only after.
+    # interface endpoint). The 4h cron nat_teardown Lambda owns teardown.
     if "phase2" in phase_script and _entities_materialized_in_task():
         logger.info(
             "[step] %s: batch completed in-task — running post-process "
-            "(dedup gate + notify + Phase 3) before teardown",
+            "(dedup gate + notify + Phase 3)",
             phase_name,
         )
         _post_process(phase_script, os.environ.copy())
-        logger.info("[step] %s: tearing down networking", phase_name)
-        _teardown_networking()
+        # NOTE: phases NEVER tear down NAT/endpoints. The dedicated nat_teardown cron
+        # Lambda is the sole teardown decider (queue empty + no running container).
         logger.info("Submit-only phase2 completed in-task — post-process done.")
         return
 
-    # Tear down networking (NAT + VPC endpoints) — Lambda poller will recreate on completion
-    logger.info("[step] %s: tearing down networking", phase_name)
-    _teardown_networking()
+    # NOTE: phases NEVER tear down networking. The 4h-cron nat_teardown Lambda tears
+    # NAT/endpoints down only when the DynamoDB queue is empty AND no container is
+    # processing (10-min recheck while a container is still working). A submitted batch
+    # keeps NAT demand present until it is retrieved.
 
     # Phase 3 does real work in submit-only mode — notify on completion
     if "phase3" in phase_script:
         _notify_complete(phase_script)
 
-    logger.info("Submit-only complete — batch enqueued, infra torn down, exiting.")
+    logger.info(
+        "Submit-only complete — batch enqueued, exiting (teardown owned by cron)."
+    )
 
 
 def _entities_materialized_in_task() -> bool:

@@ -32,9 +32,12 @@ def test_has_retrieve_only_function(entrypoint):
     assert callable(entrypoint.run_retrieve_only)
 
 
-def test_has_teardown_networking(entrypoint):
-    assert hasattr(entrypoint, "_teardown_networking")
-    assert callable(entrypoint._teardown_networking)
+def test_phases_do_not_tear_down_networking(entrypoint):
+    """Phases NEVER tear down NAT/endpoints — the teardown functions were removed from
+    the ECS entrypoint; the dedicated nat_teardown cron Lambda is the sole decider."""
+    assert not hasattr(entrypoint, "_teardown_networking")
+    assert not hasattr(entrypoint, "_schedule_delayed_teardown")
+    assert not hasattr(entrypoint, "_cancel_stale_teardown")
 
 
 @patch("ecs_entrypoint.run_submit_only")
@@ -107,7 +110,6 @@ def test_submit_only_adds_batch_flag(entrypoint):
         patch.object(entrypoint, "_setup_symlinks"),
         patch.object(entrypoint, "_final_sync"),
         patch.object(entrypoint, "_stop_openserp_if_running"),
-        patch.object(entrypoint, "_teardown_networking"),
         patch.object(entrypoint, "_enqueue_from_metrics"),
         patch.object(entrypoint, "_notify_complete"),
         patch("subprocess.run") as mock_run,
