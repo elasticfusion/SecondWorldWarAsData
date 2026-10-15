@@ -401,3 +401,56 @@ def retrieve_results(api_key: str, batch_id: str) -> Dict[str, BatchResult]:
 
     logger.info("Retrieved %d results from batch %s", len(results), batch_id)
     return results
+
+
+def retrieve_results_ordered(api_key: str, batch_id: str) -> List["BatchResult"]:
+    """Retrieve all batch results as a LIST in API (= submission) order.
+
+    The xAI batch results API does NOT echo our submitted ``custom_id`` — each
+    result item carries only a server-assigned ``batch_request_id`` (verified
+    2026-10-14 against the live API). So results cannot be mapped back to our
+    cache keys by id; the only reliable mapping is by POSITION, since the API
+    returns results in submission order. Callers zip this list with the submitted
+    request ids (recorded in metrics ``request_details`` in submission order) to
+    populate the cache under OUR keys. Order is preserved across pagination."""
+    headers = {"Authorization": f"Bearer {api_key}"}
+    ordered: List["BatchResult"] = []
+    pagination_token: Optional[str] = None
+    while True:
+        params: Dict[str, Any] = {"page_size": 100}
+        if pagination_token:
+            params["pagination_token"] = pagination_token
+        resp = requests.get(
+            f"{API_BASE}/batches/{batch_id}/results",
+            headers=headers,
+            params=params,
+            timeout=60,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        for item in data.get("results", []):
+            rid = item.get("batch_request_id", "")
+            batch_result = item.get("batch_result", {})
+            error_msg = batch_result.get("error", "")
+            completion = batch_result.get("response", {}).get("chat_get_completion", {})
+            choices = completion.get("choices", [])
+            if choices:
+                ordered.append(
+                    BatchResult(
+                        request_id=rid,
+                        content=choices[0].get("message", {}).get("content", ""),
+                        finish_reason=choices[0].get("finish_reason", "unknown"),
+                        error=error_msg,
+                    )
+                )
+            else:
+                ordered.append(
+                    BatchResult(
+                        request_id=rid, error=error_msg or "no choices returned"
+                    )
+                )
+        pagination_token = data.get("pagination_token")
+        if not pagination_token:
+            break
+    logger.info("Retrieved %d ordered results from batch %s", len(ordered), batch_id)
+    return ordered

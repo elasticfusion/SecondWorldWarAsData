@@ -3286,11 +3286,39 @@ def _notify_batch_submitted(
         logger.warning("Failed to send batch submitted notification: %s", e)
 
 
+def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
+    """Map batch results to OUR cache keys by POSITION (the xAI results API does not
+    echo our custom_id — only a server batch_request_id). ``submitted`` is the
+    submission-ordered list of (our_request_id, cache_type); ``ordered_results`` is
+    the API-ordered list of BatchResult. Returns {cache_type: {our_id: cleaned_content}}.
+
+    Fail-safe: if the counts differ we CANNOT safely index-map, so return {} and log an
+    error (never silently mis-key — that produced 0 bibliography before this fix). Only
+    finish_reason=='stop' with content is cached; an errored entry is skipped WITHOUT
+    shifting the index (positional zip)."""
+    import re as _re
+
+    if not submitted or len(submitted) != len(ordered_results):
+        logger.error(
+            "Batch %s: result count (%d) != submitted request count (%d) — cannot "
+            "index-map results to cache keys; cache NOT populated. Investigate.",
+            batch_id,
+            len(ordered_results),
+            len(submitted),
+        )
+        return {}
+    out: "dict" = {}
+    for (our_id, cache_type), br in zip(submitted, ordered_results):
+        if getattr(br, "finish_reason", "") == "stop" and getattr(br, "content", ""):
+            cleaned = _re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", br.content)
+            out.setdefault(cache_type or "default", {})[our_id] = cleaned
+    return out
+
+
 def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> None:
     """Retrieve completed batch results and re-run phase with cached data."""
     import re as _re
 
-    from src.utils.batch_api import retrieve_results
     from src.utils.job_queue import get_job, update_job_status
 
     WORKDIR.mkdir(parents=True, exist_ok=True)
@@ -3329,13 +3357,17 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     if "phase3" in phase_script:
         _stamp_schema_versions()
 
-    # Retrieve and populate cache
+    # Retrieve results in SUBMISSION ORDER. The xAI results API does NOT echo our
+    # custom_id (only a server-assigned batch_request_id), so we map results to OUR
+    # cache keys by POSITION against the submission-ordered request_details in metrics.
     api_key = os.environ.get("GROK_API_KEY", "")
-    results = retrieve_results(api_key, batch_id)
-    logger.info("Retrieved %d results", len(results))
+    from src.utils.batch_api import retrieve_results_ordered
 
-    # Load cache_type mapping from metrics
-    cache_type_map = {}
+    ordered_results = retrieve_results_ordered(api_key, batch_id)
+    logger.info("Retrieved %d ordered results", len(ordered_results))
+
+    # Load the submission-ordered (request_id = OUR cache key, cache_type) list.
+    submitted: list = []  # [(our_request_id, cache_type), ...] in submission order
     metrics_dir = WORKDIR / "output" / "metrics"
     for mf in sorted(
         metrics_dir.glob("batch_*.json"), key=lambda f: f.stat().st_mtime, reverse=True
@@ -3344,26 +3376,23 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
             metrics = json.load(f)
         if metrics.get("batch_id") == batch_id:
             for d in metrics.get("request_details", []):
-                cache_type_map[d["request_id"]] = d.get("cache_type", "default")
+                submitted.append((d["request_id"], d.get("cache_type", "default")))
             break
 
-    # Populate cache
     from src.grok_client import GrokClient
 
     cache_dir = Path("/app/cache/api")
     cache_dir.mkdir(parents=True, exist_ok=True)
     grok_client = GrokClient(cache_dir)
 
+    mapped = _map_batch_results_by_index(submitted, ordered_results, batch_id)
     populated = 0
-    for request_id, br in results.items():
-        if br.finish_reason == "stop" and br.content:
-            cache_type = cache_type_map.get(request_id, "default")
-            cache = grok_client._get_cache(cache_type)
-            cache[request_id] = _re.sub(
-                r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", br.content
-            )
+    for cache_type, entries in mapped.items():
+        cache = grok_client._get_cache(cache_type)
+        for our_id, content in entries.items():
+            cache[our_id] = content
             populated += 1
-    logger.info("Populated %d cache entries", populated)
+    logger.info("Populated %d cache entries from batch %s", populated, batch_id)
 
     # Re-run phase without --batch (hits cache, skip retry since batch results are authoritative)
     clean_args = [a for a in extra_args if a != "--batch"]
