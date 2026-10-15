@@ -152,6 +152,31 @@ bottom); what remains is ranked here. Current ordered priority:
      INDEPENDENT of volatile ids (don't embed event_id/sub_event_id in the cached prompt), or ensure
      ids + fulltext are byte-identical across invocations. The submission-order MAPPING (#393/#395) is
      proven correct; THIS prompt-determinism fix is the final step to a non-zero bibliography.
+     ✅ RESOLVED 2026-10-15 by THREE fixes (keys now match live + cache populated + visible):
+     (1) PR #401 stable supplemental cache key (decoupled from the volatile fulltext — ids+refs only);
+     (2) PR #393/#395 submission-order result mapping; (3) PR #402 the ACTUAL final layer —
+     `DynamoCacheBackend.__contains__` was treating the preloaded in-memory snapshot as authoritative
+     for ABSENCE, so a cache entry written by the PARENT (batch populate) was invisible to the retrieve
+     SUBPROCESS's `key in cache` test (its preload predated the write). Verified the entry existed in
+     Dynamo under `books/RoerDams/supplemental#` with real `Supplemental_Materials` while the lookup
+     reported `responses=0`. __contains__ now falls through to Dynamo on a snapshot miss. This was a
+     GENERAL cross-process cache-correctness bug; it manifested only for bibliography because
+     supplemental is the one extractor whose output is terminal-ROUTED with no live fallback AND had a
+     non-deterministic key — a miss there wrote NO file, whereas equipment/people silently re-extract
+     on a miss and still write a record.
+   - **[HIGH · robustness] Supplemental retrieve-only LIVE FALLBACK (graceful degradation).**
+     Even with the cache fixes above, a GENUINELY missing batch answer for a supplemental sub-event
+     (batch partially failed; a request returned `finish_reason != "stop"`; or
+     `_map_batch_results_by_index` count-mismatch → `{}`) still writes NO bibliography for that
+     sub-event on the retrieve re-run (`SKIP_RETRY=1`, `batch_mode=False`) — silent total loss, the
+     same failure class as the original 0-bibliography bug. Equipment/people tolerate the same miss
+     because their output degrades to a re-extraction that still writes a record. FIX: on the
+     RETRIEVE RE-RUN ONLY (never in the batch-COLLECT pass — a live call there would re-break Blocker B
+     / PR #383, which deliberately re-raises BatchModeCollecting so collection leaves the event
+     unprocessed), if a sub-event HAS refs but got no cached batch answer, make a single bounded live
+     Grok call for just that sub-event and route it. Gate the fallback on `SKIP_RETRY`/`batch_mode is
+     False` + presence of refs; log an OBSERV `supplemental.fallback` so it's observable. Makes
+     bibliography degrade gracefully like the other features instead of failing silent-and-total.
    - **[HIGH · infra reliability] NAT-manager orphaned-lock deadlock.** `_create_networking`
      acquires `lock#nat-manager` with ONLY `attribute_not_exists` (no stale-takeover); if a holder
      times out/crashes without the `delete_item` release (observed: a 300s Lambda timeout), the lock
