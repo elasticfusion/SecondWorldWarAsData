@@ -22,6 +22,17 @@ bottom); what remains is ranked here. Current ordered priority:
 > hand-off (N in → N out, with the drop reason when N shrinks). Build it incrementally stage-by-stage;
 > each new feature should emit its OBSERV line. This is the generalization of the ad-hoc tracing added
 > while debugging the bibliography→NARA chain (where missing visibility cost several blind reruns).
+>
+> **OBSERV TRACEABILITY PATTERN (owner, 2026-10-15 — the convention for the above).** Every stage
+> emits greppable, structured `OBSERV <stage>.<event> key=value ...` INFO lines, fail-safe (a logging
+> error never breaks the call), COUNTS/FINGERPRINTS only (never raw content/PII). To compare the SAME
+> logical item across stages/processes, log a FINGERPRINT of each relevant input — `len:sha8` (length
+> + first 8 hex of sha256), not the content — so two sides can be diffed to find exactly what diverged.
+> Instances so far: `events.refs`, `supplemental.input|extract`, `bib.resolved`, and `cachekey.submit|lookup`
+> (grok_client — logs the cache key + per-input fingerprints: cache_type/model/temp/system_prompt/prompt,
+> so a submit-time batch key and a re-run lookup key for the same request can be compared to pinpoint
+> cache-key divergence). As the end-to-end trace is built, add a per-document CORRELATION id to every
+> OBSERV line so one CloudWatch Insights query reconstructs a document's whole journey.
 
 1. **~~[HIGH · cost/correctness] Idle-infra teardown backstop reaper~~ ✅ DONE 2026-10-11** —
    (a) root cause fixed: `openserp_manager` now excludes OpenSERP's OWN tasks from the active-work
