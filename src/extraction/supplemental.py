@@ -2,6 +2,7 @@
 
 import json
 import logging
+import hashlib
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import ulid
@@ -124,7 +125,34 @@ def create_supplemental_prompt(
             endnote_block=endnote_block,
             ref_type_hint=ref_type_hint,
         )
-        prompts.append((sub_event_id, prompt))
+        # Deterministic identity for cache keying — DELIBERATELY excludes the volatile
+        # `text` (Sub-event_fulltext is regenerated/summarized differently between a
+        # batch submit and the retrieve re-run) AND the endnote_block (same volatility
+        # class — must not reintroduce a submit-vs-rerun mismatch). The event/sub-event
+        # ids are deterministic content-derived ULIDs and, with the sorted reference
+        # numbers, uniquely identify the sub-event, so a submit and its retrieve resolve
+        # to the SAME supplemental cache entry.
+        stable_material = "|".join(
+            [
+                str(event_id),
+                str(sub_event_id),
+                "e:"
+                + ",".join(
+                    str(n)
+                    for n in sorted(
+                        r for r in (endnote_refs or []) if isinstance(r, int)
+                    )
+                ),
+                "f:"
+                + ",".join(
+                    str(n)
+                    for n in sorted(
+                        r for r in (footnote_refs or []) if isinstance(r, int)
+                    )
+                ),
+            ]
+        )
+        prompts.append((sub_event_id, prompt, stable_material))
 
     return prompts
 
@@ -387,9 +415,30 @@ def _load_event_data(event_file: Path) -> Optional[Dict[str, Any]]:
 
 
 def _extract_with_retry(
-    prompt: str, sub_event_id: str, grok_client: GrokClient, max_retries: int = 3
+    prompt: str,
+    sub_event_id: str,
+    grok_client: GrokClient,
+    max_retries: int = 3,
+    stable_key_material: str = "",
 ) -> Optional[Dict[str, Any]]:
-    """Extract supplemental material with retry logic."""
+    """Extract supplemental material with retry logic.
+
+    ``stable_key_material`` (optional) is a deterministic string identifying the request
+    independently of the volatile prompt text (the supplemental prompt embeds regenerated
+    sub-event fulltext/ids that differ between a batch submit and the later retrieve
+    re-run). When provided it is hashed into the cache key so submit and retrieve resolve
+    to the SAME cache entry — the fix for 0-bibliography (prompt-non-determinism cache miss).
+    """
+    cache_key = None
+    if stable_key_material:
+        # Fold the resolved model + temperature into the key so a model/temperature
+        # change auto-invalidates stale entries (the volatile prompt text is excluded
+        # by design; model/temp are the only non-prompt knobs that affect the answer).
+        model = grok_client._get_model(
+            "supplemental"
+        )  # pylint: disable=protected-access
+        key_input = f"supplemental:v1:{model}:0.1:{stable_key_material}"
+        cache_key = hashlib.sha256(key_input.encode("utf-8")).hexdigest()
     for attempt in range(max_retries):
         try:
             response = grok_client.extract_json(
@@ -398,6 +447,7 @@ def _extract_with_retry(
                 temperature=0.1,
                 use_cache=(attempt == 0),
                 cache_type="supplemental",
+                cache_key=cache_key,
             )
 
             response = generate_ulids(response)
@@ -855,9 +905,11 @@ def extract_supplemental(
 
     # Extract from API
     all_supplemental = []
-    for sub_event_id, prompt in prompts:
+    for sub_event_id, prompt, stable_material in prompts:
         logger.debug("Processing sub-event %s", sub_event_id)
-        response = _extract_with_retry(prompt, sub_event_id, grok_client)
+        response = _extract_with_retry(
+            prompt, sub_event_id, grok_client, stable_key_material=stable_material
+        )
         if response:
             all_supplemental.append(response)
 

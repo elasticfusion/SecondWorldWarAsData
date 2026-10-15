@@ -906,6 +906,7 @@ class GrokClient:
         temperature: float = 0.1,
         use_cache: bool = True,
         cache_type: str = "default",
+        cache_key: Optional[str] = None,
     ) -> str:
         """
         Get chat completion from Grok API.
@@ -916,6 +917,11 @@ class GrokClient:
             temperature: Sampling temperature (0-1)
             use_cache: Whether to use cache
             cache_type: Cache type (events, dates, places, people, etc.)
+            cache_key: Optional STABLE cache key override. When provided, the cache
+                identity is this value instead of a hash of the prompt — use it when
+                the prompt text contains non-deterministic context (e.g. regenerated
+                fulltext/ids) but the request's logical identity is stable, so a batch
+                submit and a later retrieve re-run resolve to the SAME cache entry.
 
         Returns:
             Response text from API
@@ -928,7 +934,10 @@ class GrokClient:
 
         # Check cache
         model_used = self._get_model(cache_type)
-        cache_key = self._make_cache_key(
+        # Stable key override (decouples cache identity from volatile prompt text, e.g.
+        # supplemental, whose prompt embeds regenerated fulltext/ids that differ between a
+        # batch submit and the later retrieve re-run); otherwise hash the prompt.
+        cache_key = cache_key or self._make_cache_key(
             prompt, temperature, model_used, system_prompt or ""
         )
 
@@ -1441,6 +1450,7 @@ class GrokClient:
         use_cache: bool = True,
         cache_type: str = "default",
         _retried: bool = False,
+        cache_key: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Get JSON response from Grok API.
@@ -1451,12 +1461,15 @@ class GrokClient:
             temperature: Sampling temperature
             use_cache: Whether to use cache
             cache_type: Cache type (events, dates, places, people, etc.)
+            cache_key: Optional STABLE cache key override (see chat_completion) — used
+                when the prompt carries non-deterministic context but the request's
+                logical identity is stable (e.g. supplemental across submit/retrieve).
 
         Returns:
             Parsed JSON response
         """
         response = self.chat_completion(
-            prompt, system_prompt, temperature, use_cache, cache_type
+            prompt, system_prompt, temperature, use_cache, cache_type, cache_key
         )
 
         # Detect poisoned cache: if response is clearly not JSON, clear and retry
@@ -1469,12 +1482,21 @@ class GrokClient:
                     stripped[:20],
                 )
                 cache = self._get_cache(cache_type)
-                cache_key = self._make_cache_key(
-                    prompt, temperature, self._get_model(cache_type)
+                evict_key = cache_key or self._make_cache_key(
+                    prompt,
+                    temperature,
+                    self._get_model(cache_type),
+                    system_prompt or "",
                 )
-                cache.pop(cache_key, None)
+                cache.pop(evict_key, None)
                 return self.extract_json(
-                    prompt, system_prompt, temperature, False, cache_type, _retried=True
+                    prompt,
+                    system_prompt,
+                    temperature,
+                    False,
+                    cache_type,
+                    _retried=True,
+                    cache_key=cache_key,
                 )
 
         # Auto-retry short responses, but accept valid short JSON ([], {}, "null")
@@ -1487,12 +1509,21 @@ class GrokClient:
                     len(response),
                 )
                 cache = self._get_cache(cache_type)
-                cache_key = self._make_cache_key(
-                    prompt, temperature, self._get_model(cache_type)
+                evict_key = cache_key or self._make_cache_key(
+                    prompt,
+                    temperature,
+                    self._get_model(cache_type),
+                    system_prompt or "",
                 )
-                cache.pop(cache_key, None)
+                cache.pop(evict_key, None)
                 return self.extract_json(
-                    prompt, system_prompt, temperature, False, cache_type, _retried=True
+                    prompt,
+                    system_prompt,
+                    temperature,
+                    False,
+                    cache_type,
+                    _retried=True,
+                    cache_key=cache_key,
                 )
 
         # Clean and sanitize response
