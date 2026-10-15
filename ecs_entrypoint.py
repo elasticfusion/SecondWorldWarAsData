@@ -278,19 +278,33 @@ class BackgroundSync:
 
 
 def _load_secrets():
-    """Fetch GROK_API_KEY from Secrets Manager if not already set."""
-    if os.environ.get("GROK_API_KEY"):
-        return
-    secret_id = os.environ.get("SECRETS_ID", "")
-    if not secret_id:
-        return
-    try:
-        sm = boto3.client("secretsmanager", region_name=REGION)
-        resp = sm.get_secret_value(SecretId=secret_id)
-        os.environ["GROK_API_KEY"] = resp["SecretString"]
-        logger.info("Loaded API key from Secrets Manager")
-    except Exception as e:
-        logger.error("Failed to load secret %s: %s", secret_id, e)
+    """Fetch GROK_API_KEY (+ NARA_API_KEY) from Secrets Manager if not already set."""
+    sm = None
+    if not os.environ.get("GROK_API_KEY"):
+        secret_id = os.environ.get("SECRETS_ID", "")
+        if secret_id:
+            try:
+                sm = boto3.client("secretsmanager", region_name=REGION)
+                resp = sm.get_secret_value(SecretId=secret_id)
+                os.environ["GROK_API_KEY"] = resp["SecretString"]
+                logger.info("Loaded API key from Secrets Manager")
+            except Exception as e:
+                logger.error("Failed to load secret %s: %s", secret_id, e)
+    # NARA catalog API key (plain-string secret) -> NARA_API_KEY, which config.py maps to
+    # api.nara_api_key for the Phase-3 bibliography resolver. Independent + fail-safe: a
+    # missing NARA key must not block Grok/the run (resolver just skips NARA).
+    if not os.environ.get("NARA_API_KEY"):
+        env = os.environ.get("ENV_NAME", "dev")
+        nara_secret = os.environ.get(
+            "NARA_SECRET_ID", f"{env}-wwii-pipeline/nara-api-key"
+        )
+        try:
+            sm = sm or boto3.client("secretsmanager", region_name=REGION)
+            resp = sm.get_secret_value(SecretId=nara_secret)
+            os.environ["NARA_API_KEY"] = resp["SecretString"].strip()
+            logger.info("Loaded NARA API key from Secrets Manager")
+        except Exception as e:  # noqa: BLE001 - NARA key optional; never block the run
+            logger.warning("NARA API key not loaded (%s): %s", nara_secret, e)
 
 
 def _setup_symlinks():
