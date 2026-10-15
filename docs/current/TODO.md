@@ -117,6 +117,20 @@ bottom); what remains is ranked here. Current ordered priority:
      with a lease but no egress. Had to manually delete the stale `lock#nat-manager` to recover the
      2026-10-14 RoerDams run. FIX: stale-lock takeover on acquire (reclaim when the stored
      timestamp/ttl is expired), mirroring the url_registry observed-bytes optimistic-lock pattern.
+   - **[HIGH · infra reliability] Batch-poller retrieve-claim wedge (same lock class).**
+     `batch_poller._trigger_retrieve` does `_claim_retrieve(batch_id)` (writes `retrieve#<id>`) and
+     THEN synchronously invokes nat_manager + `_wait_for_nat()` (up to ~2min) before `run_task`. If
+     the poller Lambda hits its 5-min timeout while waiting for NAT (observed 2026-10-15: a 300000ms
+     TIMEOUT invocation), the claim is left HELD with NO retrieve task launched, and every later poll
+     logs "Retrieve already claimed, skipping" → the completed batch is PERMANENTLY wedged at
+     `ready` (bibliography/entities never produced) until the `retrieve#` claim is manually deleted.
+     In unattended batch mode this silently strands batches that Grok already completed. FIX (two
+     parts): (1) give the `retrieve#` claim a TTL / release-on-failure (stale-takeover) so a dead
+     launcher can't wedge the batch; (2) either claim AFTER a successful `run_task` (not before), or
+     drop the long synchronous `_wait_for_nat()` in the poller and rely on the ECS task's own
+     `_ensure_nat_if_needed` readiness gate. Same lesson as the NAT-manager lock: never hold a
+     coordination lock across a slow/failure-prone op without TTL/takeover. (Workaround until fixed:
+     delete the stale `retrieve#<batch_id>` key, or launch the `--retrieve-only` task directly.)
 3. **[HIGH · bibliography enrichment] Resolve + DOWNLOAD bibliographic sources.** Extends
    `bibliography_resolver` (spec: docs/current/dataquality/bibliography_resolution_process.md).
    Beyond the existing find-URL behavior: (a) CHECK EXISTING holdings/`resource_urls`/
