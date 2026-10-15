@@ -141,7 +141,8 @@ bottom); what remains is ranked here. Current ordered priority:
      in-copyright) can list the URLs but CANNOT record which source gave which URL, nor each copy's
      format/license/access independently. FIX: replace `resource_urls: [string]` with a
      `sources: [object]` array (keep `resource_urls` as a derived/compat view or deprecate), each
-     entry carrying its OWN: `url`, `source` (nara|archive_org|hathitrust|gutenberg|loc|reprint|...),
+     entry carrying its OWN: `url`, `source`
+     (nara|nara_physical|archive_org|hathitrust|gutenberg|loc|reprint|openserp|...),
      `format` (scan|pdf|epub|text|djvu), `license` + `copyright_status` (per-COPY, since a PD
      original scan and an in-copyright reprint of the same title differ), `access`
      (free|paywalled|physical_only), `archive_reference_number`/`archive_physical_address`
@@ -152,6 +153,35 @@ bottom); what remains is ranked here. Current ordered priority:
      (`bibliography_resolver`) + the OBSERV `bib.resolved` line should then record EACH source, and
      the download step (#3) gate per-source on that copy's copyright_status. Pairs with the artifact
      store (ARTIFACT_STORE_DESIGN.md) — each stored copy is one of these source entries.
+     **CAPTURE HERE (owner, 2026-10-14): a NARA source entry is API-authoritative only.** Grok is
+     NOT reliable for NARA records — `_identify_nara_record` currently asks Grok for the Record
+     Group and trusts a reply containing "RG", which yields plausible-but-wrong/fabricated RG/NAID
+     (worse than not_found for a citable corpus; violates the trust model). As part of this
+     multi-repo change, a `source=nara` entry may ONLY be created from a REAL
+     `catalog.archives.gov/api/v2` hit (`_search_nara`) — store the catalog-returned NAID + URL.
+     Grok may only help FORM the search query; drop/neuter the Grok-identify path so a Grok "RG…"
+     answer can never become a stored reference. Same rule generalizes to any authoritative-registry
+     source (NARA/LOC/ISBN): API-grounded existence + ID, Grok limited to query shaping.
+     **EVENTUALLY (owner, 2026-10-14): OpenSERP as a discovery source too.** Beyond NARA/archive.org,
+     use OpenSERP web search to FIND candidate copies/pages for a citation; each relevance-verified
+     hit becomes a `sources[]` entry (`source=openserp` or the resolved host), fetched through the
+     existing SSRF-safe `url_fetch.fetch()` + `url_content_verdict.evaluate()` + URL-registry dedup
+     (the central solution already wired for Phase-3 web results) — NOT trusting Grok to assert the
+     URL. Unlike the registry/NARA sources, an OpenSERP-discovered copy is lower-qualification (bare
+     web) and should carry that in its per-source `source_qualification`.
+     **ALSO (owner, 2026-10-14): direct archive.org search is a first-class repo source.** Query
+     the archive.org API directly (`advancedsearch`/metadata) for a copy — a hit becomes a
+     `source=archive_org` entry with its item URL + format (scan/pdf/epub/txt) + the item's license.
+     **RESOLUTION PRECEDENCE (owner): try ONLINE repos first, physical NARA visit as LAST RESORT.**
+     Order per citation: (1) already-held local holding; (2) online repos — archive.org direct,
+     HathiTrust/LOC/Gutenberg, NARA catalog API (digital copy), OpenSERP-discovered web copy; (3)
+     if NO online copy exists, emit a `source=nara_physical` (or `archive`) entry with
+     `access=physical_only` + `availability=offline` recording EVERYTHING NARA staff need to pull it
+     in person: Record Group, series/entry, box/folder, microfilm roll, and finding-aid reference
+     (from the catalog API, never Grok-guessed). That physical-visit entry is a legitimate
+     `resolved`-with-location outcome (not `not_found`) — "available on visit", queued for future
+     retrieval. Each tier is one `sources[]` object; a document may have several (online copy AND a
+     physical NARA locator).
 4. **[HIGH · data-quality/provenance] URL-sourced enrichment + 90-day URL registry.** Design:
    docs/current/dataquality/URL_SOURCED_ENRICHMENT_DESIGN.md. Phase 3 step 1 (people_groups,
    enrich_groups.py) and step 2 (places, enrich_places.py `_try_grok`) currently accept Grok's
