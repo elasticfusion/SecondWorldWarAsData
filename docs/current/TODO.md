@@ -10,6 +10,28 @@ Ranking reflects the project goal: *finish unattended ETO ingestion, then build 
 Most of the 2026-10-09 data-quality program is now DONE (see "Completed data-quality program" at the
 bottom); what remains is ranked here. Current ordered priority:
 
+> **NEXT-UP PRIORITIES (owner, 2026-10-15) — do these once the in-flight bibliography/batch
+> work lands:**
+>
+> **PRIORITY 1 · Fix NAT on/off + restore the intended NAT-control architecture.** Control over the
+> NAT gateway + VPC endpoints was supposed to be REMOVED from the phase/ECS code entirely, EXCEPT a
+> single signal: a phase that needs egress emits **"I need a NAT"** (a demand request to a Lambda).
+> The Lambda OWNS the NAT lifecycle: it brings NAT up on demand, then MONITORS every 4 hours — if NO
+> jobs are in progress AND none pending, it tears NAT down; if a job IS in progress, it waits another
+> 4 hours and re-checks for pending jobs. Phase code must NOT create/wait-on/tear-down NAT itself
+> (today it does via `_ensure_nat_if_needed`, in-task NAT-readiness gates, leases, etc. — remove
+> those; keep only the demand signal). This also fixes the recurring NAT failures seen this session:
+> the NAT-manager orphaned-lock deadlock and the batch-poller retrieve-claim wedge (both HIGH items
+> below) are symptoms of NAT lifecycle logic being spread across phase code + poller + manager with
+> locks held across slow NAT bring-ups. Consolidate ALL NAT lifecycle into the one Lambda with the
+> 4-hour demand-check teardown; phase/poller code only ever says "I need a NAT".
+>
+> **PRIORITY 2 · Instrument ALL Phase code with observability (end-to-end document trace).** After
+> the NAT refactor, extend the `OBSERV <stage>.<event>` convention (started in the bibliography chain)
+> across EVERY phase step so a document can be watched end-to-end: new document → Phase 0 → Phase 1 →
+> each Phase 2 extractor → dedup → each Phase 3 enricher → feature JSON. Per-document correlation id +
+> in/out counts at every hand-off (see the LONG-TERM GOAL note below, which this fulfils).
+
 > **LONG-TERM GOAL · end-to-end observability on EVERY component (owner, 2026-10-14).** Be able to
 > WATCH a document flow through the whole system — from "a new document is added" → Phase 0 ingest/
 > media-detect → Phase 1 parse → Phase 2 each LLM extraction (events/dates/places/people/groups/
