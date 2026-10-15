@@ -94,6 +94,31 @@ bottom); what remains is ranked here. Current ordered priority:
      (schema `src/schemas/bibliography_output.py`: BibliographyID+title required, reference_type,
      verbatim_reference, resource_urls all present); supplemental's `_route_by_content_class` becomes an
      update-in-place classifier on those records.
+   - **[PHASE 2 & 3 FIELD OWNERSHIP + the resolver short-circuit interaction, owner review 2026-10-15.]**
+     Field population plan for the deterministic bibliography records (which currently carry only
+     verbatim_reference + resource_urls + public_domain license):
+     • `license`/`copyright_status` → ✅ DONE deterministically in Phase 2 (ibiblio/hyperwar = US-Gov
+       public domain, from the source domain).
+     • `citation.title`/`alt_title`/`author`/`publisher`/`document_type`/… → PHASE 2 LLM OVERLAY. The
+       supplemental prompt already extracts these (prompts/supplemental.yaml: title/alt_title with the
+       edited-volume rule book-title→title, chapter-title→alt_title). The overlay must UPDATE the
+       deterministic record in place (see the remove-divergent-logic item) rather than create a
+       parallel record, and parse them from `verbatim_reference`.
+     • `availability`/real `resource_urls`/`archive_reference_number` → PHASE 3 RESOLUTION (NARA /
+       archive.org / LOC). NARA key IS wired (NARA_API_KEY→api.nara_api_key→resolver), but config.yaml
+       has it empty — load the `dev-wwii-pipeline/nara-api-key` secret for a real NARA attempt.
+     ❗ CRITICAL INTERACTION (blocks the ultimate NARA goal): `resolve_bibliography_entry`
+     (bibliography_resolver.py:117) SHORT-CIRCUITS to `search_status=resolved` whenever
+     `entry.resource_urls` is non-empty — AND the deterministic pass puts the ibiblio `#fnN` SOURCE
+     page URL into top-level `resource_urls`. So all 16 records would be marked "resolved" and Phase 3
+     would NEVER search NARA. But the ibiblio `#fnN` link is the PROVENANCE page where the citation
+     TEXT appeared, NOT a resolvable copy of the CITED document ("MS # B-810, Schmidt, Kaempfe im
+     Rheinland" is a NARA/archival doc). FIX (source-URL vs resource-URL, a distinction the prompt
+     already names): the deterministic pass should put the ibiblio source URL on the MENTION as
+     provenance (e.g. mention.source_url) and leave top-level `resource_urls` EMPTY, so Phase 3
+     resolution runs and fills `resource_urls` with the real NARA/archive locator. (Alternatively, the
+     resolver short-circuit must not treat a provenance/source URL as a resolution.) This is the next
+     change needed before a real NARA resolution is possible.
    - **[HIGH · DURABILITY BUG — deterministic bibliography is Dynamo-first, but S3 is the SYSTEM OF
      RECORD. owner directive 2026-10-15.]** ARCHITECTURE (owner, authoritative): **S3 is the definitive,
      durable store; DynamoDB is a DERIVED, rebuildable, cost-incurring working index** — S3 can
