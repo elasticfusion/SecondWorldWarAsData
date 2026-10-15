@@ -233,24 +233,29 @@ def _normalize_citation(material: Dict[str, Any]) -> None:
     material["citation"] = citation
 
     if citation.get("title") is None or _is_cross_reference(citation.get("title", "")):
-        mentions = material.get("mentions") or []
-        verbatim = ""
-        for m in mentions:
-            v = m.get("verbatim_reference", "")
-            if v and not _is_cross_reference(v):
-                verbatim = v
-                break
-        if verbatim:
-            import re
-
-            title = re.sub(r"^\d+[\.\:\)]\s*", "", verbatim)
-            title = re.sub(r"^[\*\†\‡\§\¶\#]+\s*", "", title).strip()[:200]
-            citation["title"] = title if title else "Unknown"
-        else:
-            citation["title"] = "Unknown"
+        citation["title"] = _derive_title_from_mentions(material.get("mentions") or [])
 
     if citation.get("author") is None:
         citation["author"] = []
+
+
+def _derive_title_from_mentions(mentions: list) -> str:
+    """Derive a citation title from the first non-cross-reference verbatim mention,
+    stripping leading note-number / marker prefixes. Returns 'Unknown' if none usable.
+    """
+    verbatim = ""
+    for m in mentions:
+        v = m.get("verbatim_reference", "")
+        if v and not _is_cross_reference(v):
+            verbatim = v
+            break
+    if not verbatim:
+        return "Unknown"
+    import re
+
+    title = re.sub(r"^\d+[\.\:\)]\s*", "", verbatim)
+    title = re.sub(r"^[\*\†\‡\§\¶\#]+\s*", "", title).strip()[:200]
+    return title if title else "Unknown"
 
 
 def sanitize_supplemental_data(data: Dict[str, Any]) -> Dict[str, Any]:
