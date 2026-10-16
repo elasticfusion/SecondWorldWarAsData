@@ -93,3 +93,6 @@ tmp/
 
 # Auto-generated learned equipment aliases (runtime state, not curated source)
 config/equipment_aliases_learned.yaml
+
+# Local sync target for AWS pipeline results (aws s3 sync .../output -> outputs/) — not committed
+outputs/
