@@ -1,5 +1,5 @@
 # CI/CD tool dependencies — pinned for reproducible builds
-black==26.3.1
+black==26.5.1
 pylint==4.0.5
 mypy==1.20.1
 bandit==1.9.4
