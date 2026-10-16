@@ -612,6 +612,49 @@ def _identify_nara_record(verbatim: str, grok_client: Any) -> Optional[str]:
     return None
 
 
+# NARA's q parser treats citation punctuation (#, commas, trailing periods) as an
+# *invalid query* and then returns 200 OK with the single-page-app HTML shell instead
+# of a JSON error (documented failure mode). Sanitize to plain keywords: keep letters,
+# digits and spaces, collapse whitespace. Quote/operator syntax is deliberately dropped
+# because the raw citation is not a hand-crafted boolean query.
+_NARA_Q_STRIP = re.compile(r"[^0-9A-Za-z\u00c0-\u024f ]+")
+
+
+def _sanitize_nara_query(query: str) -> str:
+    """Reduce a raw citation to a NARA-safe keyword query (avoids the 200-HTML shell)."""
+    cleaned = _NARA_Q_STRIP.sub(" ", query or "")
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def _is_html_shell(resp: Any) -> bool:
+    """True if NARA returned its SPA HTML shell (its documented invalid-query / rate-limit
+    failure mode: 200 OK + text/html), rather than a JSON API response."""
+    ctype = (resp.headers.get("Content-Type") or "").lower()
+    if "html" in ctype:
+        return True
+    body = (resp.text or "").lstrip()[:16].lower()
+    return body.startswith("<!doctype") or body.startswith("<html")
+
+
+def _extract_na_id(hit: Dict[str, Any]) -> str:
+    """Pull the naId from a search hit across the known response shapes.
+
+    Per the API docs the record lives at _source.record and the naId may appear as the
+    hit _id, record.naId, or metadata.controlGroup.naId."""
+    source = hit.get("_source", {}) or {}
+    record = source.get("record", source) or {}
+    control = (source.get("metadata", {}) or {}).get("controlGroup", {}) or {}
+    for candidate in (
+        hit.get("_id"),
+        record.get("naId"),
+        source.get("naId"),
+        control.get("naId"),
+    ):
+        if candidate:
+            return str(candidate)
+    return ""
+
+
 def _search_nara(
     query: str, api_key: str, grok_client: Any, verbatim: str
 ) -> Optional[str]:
@@ -636,28 +679,67 @@ def _search_nara(
 
     try:
         session = get_session()
-        logger.debug("NARA query: %s", query[:100])
+        safe_q = _sanitize_nara_query(query)
+        if not safe_q:
+            logger.info(
+                "OBSERV nara.query skipped=empty_after_sanitize raw=%r", query[:60]
+            )
+            cache_result("nara", query, None)
+            return None
         resp = session.get(
             "https://catalog.archives.gov/api/v2/records/search",
-            params={"q": query, "limit": "5"},
-            headers={"x-api-key": api_key, "Content-Type": "application/json"},
+            params={"q": safe_q, "limit": "5"},
+            headers={"x-api-key": api_key, "Accept": "application/json"},
             timeout=30,
         )
         if resp.status_code == 429:
             logger.warning("NARA API rate limited (429) — backing off 60s")
             time.sleep(60)
             return None  # Don't cache — retry next run
+        ctype = (resp.headers.get("Content-Type") or "").split(";")[0]
         if resp.status_code != 200:
-            logger.debug("NARA API returned %d", resp.status_code)
+            logger.info(
+                "OBSERV nara.query status=%d content_type=%s q=%r",
+                resp.status_code,
+                ctype,
+                safe_q[:60],
+            )
             return None
-
-        results = resp.json().get("body", {}).get("hits", {}).get("hits", [])
-        logger.debug("NARA returned %d results", len(results))
+        # NARA's documented failure mode: 200 OK + HTML SPA shell on an invalid query or
+        # rate-limit. That is NOT a real not_found — surface it distinctly and do NOT
+        # negative-cache it (so a fixed query/retry can still succeed next run).
+        if _is_html_shell(resp):
+            logger.warning(
+                "OBSERV nara.query html_shell=1 status=200 content_type=%s q=%r "
+                "(invalid-query/rate-limit shell, not a real not_found)",
+                ctype,
+                safe_q[:60],
+            )
+            return None
+        try:
+            payload = resp.json()
+        except ValueError:
+            logger.warning(
+                "OBSERV nara.query json_parse_error=1 content_type=%s q=%r",
+                ctype,
+                safe_q[:60],
+            )
+            return None
+        results = payload.get("body", {}).get("hits", {}).get("hits", [])
+        total = payload.get("body", {}).get("hits", {}).get("total", {})
+        total_val = total.get("value") if isinstance(total, dict) else total
+        logger.info(
+            "OBSERV nara.query status=200 content_type=%s hits=%s returned=%d q=%r",
+            ctype,
+            total_val,
+            len(results),
+            safe_q[:60],
+        )
         for hit in results:
             source = hit.get("_source", {})
             record = source.get("record", source)
             title = record.get("title", source.get("title", ""))
-            nara_id = record.get("naId", source.get("naId", ""))
+            nara_id = _extract_na_id(hit)
             logger.debug("  Candidate: %s (naId=%s)", title[:80], nara_id)
             if not nara_id:
                 continue
