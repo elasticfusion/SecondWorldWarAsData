@@ -83,6 +83,13 @@ bottom); what remains is ranked here. Current ordered priority:
 >   Scope confirmed by user: "a shortened reference always refers to something in that chapter"; and
 >   note 9 being first-in-chapter anchors fresh even though General Irwin (the person) appears in
 >   earlier chapters — the resolver keys on the document short-title, never on a person/other chapter.
+>   DOMAIN FACT (user, 2026-10-16): a senior commander's "X Diary" (Irwin/Hodges/Patton/Sylvan Diary)
+>   is an OFFICIAL RECORD SERIES kept as part of the unit records, NOT a personal item — so it is a
+>   single coherent document (short-title merge is right) and is genuinely NARA-resolvable (RG 407
+>   unit records), cited alongside the G-3 Journal. VERIFIED the citation detector + NARA-searchable
+>   gate already recognize a bare "Irwin Diary." via the `Diary` token in `_STRUCT_PATTERNS` (not
+>   dropped as prose, routed to NARA). This also means cross-chapter "same Irwin Diary" identity
+>   (the deferred dedup item) is meaningful and worth doing.
 
 > REMAINING Phase-3 bugs still OPEN (see items below): military/archival citation detector rejects
 > NARA-resolvable refs as not-citation; geocoding skipped all 27 (reason now observable); the
