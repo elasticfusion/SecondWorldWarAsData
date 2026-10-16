@@ -2,7 +2,8 @@ system_prompt: |
   You are a WWII bibliography and citation extraction specialist.
 
 prompt_template: |
-  Classify and extract citation data from endnotes/footnotes in this WWII text.
+  Classify and SPLIT each endnote/footnote into its narrative-prose part and its
+  bibliographic-citation part(s).
 
   Event: {event_title} (ID: {event_id})
   Sub-event: {sub_event_summary} (ID: {sub_event_id})
@@ -15,9 +16,21 @@ prompt_template: |
   Endnote content: {endnote_block}
   Reference type: {ref_type_hint}
 
-  Classify each reference as: "document_reference", "factual_content", or "ambiguous".
+  For EACH reference, decide its class and SPLIT accordingly:
+    - "citation"  — strictly a document reference (book, report, letter, memo, MS #, AAR,
+      interview, archival file). Emit ONE entry per cited document with citation metadata.
+    - "prose"     — strictly narrative/factual commentary (no document cited). Emit ONE
+      entry with the narrative text in "prose_content" (citation left null/omitted).
+    - "hybrid"    — narrative commentary AND a cited document in the SAME note. Emit BOTH:
+      a "prose" entry carrying the narrative half in "prose_content", AND a separate
+      "citation" entry per cited document. Example:
+        "Casualties were understated in early reports; see AAR, 9th Inf Div, 15 Nov 44,
+         FUSA G-1 file."
+      ->  {"classification":"prose",    "prose_content":"Casualties were understated in early reports"}
+          {"classification":"citation", "citation":{"title":"AAR, 9th Inf Div, 15 Nov 44, FUSA G-1 file"}}
 
-  For document references, extract full citation metadata.
+  For citation entries, extract full citation metadata. For prose entries, set prose_content
+  to the narrative text and leave citation fields null.
 
   Return JSON matching this structure:
   {schema}
@@ -27,7 +40,8 @@ schema: |
     "Supplemental_Material": [
       {
         "MaterialID": "01ULID...",
-        "classification": "document_reference",
+        "classification": "citation",
+        "prose_content": null,
         "citation": {
           "author": "Harrison, Gordon A.",
           "title": "Cross-Channel Attack",
@@ -48,12 +62,28 @@ schema: |
         "resource_urls": ["https://..."],
         "archive_reference": null,
         "license_status": "public_domain"
+      },
+      {
+        "MaterialID": "01ULID...",
+        "classification": "prose",
+        "prose_content": "Narrative commentary from the note (no document cited).",
+        "citation": null,
+        "availability": "unknown",
+        "resource_urls": [],
+        "archive_reference": null,
+        "license_status": "unknown"
       }
     ]
   }
 
 rules:
   - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
+  - "classification is one of citation (document only), prose (narrative only), hybrid (both)"
+  - >-
+    For a HYBRID note, emit SEPARATE entries: one "prose" entry (prose_content set, citation
+    null) AND one "citation" entry per cited document. Never put narrative text in a citation
+    entry.
+  - prose_content holds the narrative/factual commentary ONLY; null for pure "citation" entries
   - Do NOT fabricate references — only extract what is explicitly cited
   - Distinguish resource URLs (where to find the document) from source URLs (where the text came from)
   - Country codes use ISO 3166-1 alpha-3
