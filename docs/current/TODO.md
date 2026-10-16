@@ -48,6 +48,33 @@ bottom); what remains is ranked here. Current ordered priority:
    parsed `footnotes[].text` and skips the fragile ibiblio HTML re-fetch. VERIFIED LIVE on a clean
    RoerDams rerun: all 4 ch2 footnotes now carry real citation text in `-parsed.json`/`-endnotes.json`
    (was `{number,url}` only). HOWEVER this unblocked only the first step — see 2b (the NEW blocker).
+   - **[MED · scaling — queue-size-driven Phase 2 concurrency: enable the dispatcher, NOT an ASG.
+     owner Q 2026-10-16.]** Question: should Phase 2 autoscale on the size of the pending queue, and
+     does AWS ASG support that? VALIDATED against code:
+     • CURRENT (serial, `MULTI_DOC_ENABLED` off): `_launch_phase2_if_idle` (trigger_handler.py:1683)
+       returns early if ANY pipeline task is RUNNING, so additional books queued while Phase 2 runs
+       are PARKED in `pending#parsed#{book}` and run ONE CONTAINER AT A TIME after the current task
+       exits (reconcile backstop re-drives). Phase tasks are ONE-SHOT, book-scoped Fargate `run-task`
+       (not a Service); the running container is never reused across books. NO autoscaling on phase
+       tasks. The only autoscaling in-repo is the OpenSERP WORKER ECS Service (openserp-worker-
+       autoscaler, "backlog per worker" target) — the correct ECS pattern for interchangeable
+       queue-draining workers.
+     • AWS support: YES — ECS Service Application Auto Scaling target-tracking on a backlog-per-task
+       custom metric (ApproximateNumberOfMessagesVisible ÷ runningTaskCount), and EC2 ASG step/target
+       policies on an SQS metric. BUT ASG scales EC2 INSTANCES — wrong primitive here (this is
+       Fargate/serverless; no instances). And the Phase 2 extractors are NOT queue-draining workers:
+       one-shot, book-scoped, Grok-Batch-API-bound (not CPU/request-bound), so naive Service/ASG
+       autoscaling on queue depth would also IGNORE the Fargate vCPU quota and cause run-task
+       throttling.
+     • RIGHT ANSWER (already built, gated off): the M4.3 dispatcher (Step Functions Map + clamp_pool,
+       dispatcher.yaml:257, dispatcher_handlers.enumerate_pending) ALREADY scales Phase 2 concurrency
+       on the pending queue — `enumerate_pending` scans READY `doc#` records and the Map runs them at
+       `MaxConcurrency = pool.effective = min(pool_max, Fargate-vCPU-quota-cap)`. That IS queue-driven
+       scaling, quota-aware, one container per doc. DISABLED today (MULTI_DOC_ENABLED=false, starts at
+       MaxConcurrency=1 == serial). RECOMMENDATION: do NOT add an ASG. For queue-driven Phase 2
+       concurrency, ENABLE + mature the dispatcher (MULTI_DOC_ENABLED=true, tune pool_min/pool_max) as
+       a deliberate, separately-tested enablement. The pool already runs min(backlog, pool_max), so it
+       effectively scales with backlog up to the quota-clamped cap.
    - **[MED · security/architecture — centralize + make secrets dynamic, owner Q 2026-10-15.]** API
      keys are loaded STATICALLY AT STARTUP into `os.environ` and scattered across 7 sites (ecs_entrypoint
      `_load_secrets` for GROK_API_KEY + the new NARA_API_KEY, plus duplicated `get_secret_value` in
