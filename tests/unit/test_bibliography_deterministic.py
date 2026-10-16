@@ -214,9 +214,13 @@ def test_new_bare_stub_forms_skipped():
 
 
 def test_chapter_backref_merges_short_title_repeat(tmp_path):
-    """User's canonical case: note 9 cites 'Irwin Diary; ...'; note 17 = 'Irwin Diary.'
-    The short-title repeat must MERGE into note 9's entry (2 mentions), not create a 2nd
-    record. 'Ibid., p. 47' must merge into the immediately-preceding full citation."""
+    """User's canonical cases combined:
+    - note 9 cites THREE documents ('Irwin Diary; Ltr, Gen Walker...; 5th Div G-3 Jnl...')
+      -> splits into 3 records (semicolon delimiter).
+    - note 17 = 'Irwin Diary.' -> MERGES into note 9's Irwin Diary record (2 mentions).
+    - note 16 'Ibid., p. 47' -> merges into note 15's MS # B-810.
+    So 4 distinct documents total: Irwin Diary (2 mentions), Ltr Gen Walker, 5th Div G-3
+    Jnl, MS # B-810 (2 mentions)."""
     from src.extraction.bibliography import _store_notes
     import glob
     import json
@@ -234,12 +238,9 @@ def test_chapter_backref_merges_short_title_repeat(tmp_path):
     bib = tmp_path / "bibliography"
     _store_notes(notes, bib, book="RoerDams", chapter="chapter5")
     files = [f for f in glob.glob(str(bib / "*.json")) if "index" not in f]
-    assert len(files) == 2, f"expected 2 distinct records, got {len(files)}"
+    assert len(files) == 4, f"expected 4 distinct records, got {len(files)}"
     recs = [json.load(open(f)) for f in files]
-    by_mentions = {len(r.get("mentions", [])): r for r in recs}
-    # both entries carry exactly 2 mentions (the full + its back-reference)
-    assert sorted(len(r.get("mentions", [])) for r in recs) == [2, 2]
-    # the Irwin Diary entry merged notes 9 and 17
+    # the Irwin Diary entry merged notes 9 and 17 (short-title repeat)
     irwin = next(
         r
         for r in recs
@@ -249,6 +250,13 @@ def test_chapter_backref_merges_short_title_repeat(tmp_path):
     )
     refs = sorted(m.get("reference_number") for m in irwin["mentions"])
     assert refs == ["17", "9"], refs
+    # MS # B-810 merged note 15 + the 'Ibid., p. 47' of note 16
+    ms = next(
+        r
+        for r in recs
+        if any("B-810" in (m.get("verbatim_reference") or "") for m in r["mentions"])
+    )
+    assert len(ms["mentions"]) == 2, ms["mentions"]
 
 
 def test_first_in_chapter_citation_is_not_a_backref(tmp_path):
@@ -267,3 +275,43 @@ def test_first_in_chapter_citation_is_not_a_backref(tmp_path):
     # a person-only antecedent (different short-title) must not trigger a merge
     works = [{"title": "Patton Papers", "short": "patton papers", "author": "patton"}]
     assert _resolve_back_reference("Irwin Diary.", works) is None
+
+
+def test_expand_multidoc_notes_splits_on_semicolon_not_comma():
+    """Green-book footnotes separate documents with ';' (comma is intra-citation). A
+    multi-doc note splits into one sub-note per document (number suffixed 3 -> 3b); a
+    single document with internal commas is NOT split."""
+    from src.extraction.bibliography import _expand_multidoc_notes
+
+    out = _expand_multidoc_notes(
+        [
+            {
+                "number": 3,
+                "url": "http://x/#fn3",
+                "_ref_type": "footnote",
+                "text": "Interv with Thorson, former G-3, FUSA, 12 Sep 56; Sylvan Diary, passim.",
+            }
+        ]
+    )
+    assert [n["number"] for n in out] == [3, "3b"]
+    assert out[0]["text"].startswith("Interv with Thorson")
+    assert out[1]["text"] == "Sylvan Diary, passim."
+    # a single citation with internal commas must pass through unchanged (NOT split)
+    single = _expand_multidoc_notes(
+        [{"number": 4, "text": "MS # B-810, Schmidt, Kaempfe im Rheinland."}]
+    )
+    assert len(single) == 1 and single[0]["number"] == 4
+
+
+def test_expand_multidoc_delimiter_is_configurable():
+    """The delimiter is corpus-scoped (green-book ';' default); other corpora may override.
+    Comma is NOT a universal separator."""
+    from src.extraction.bibliography import _expand_multidoc_notes
+
+    # default (;): comma does not split
+    assert len(_expand_multidoc_notes([{"number": 1, "text": "A, B, C."}])) == 1
+    # explicit override for a hypothetical comma-delimited corpus
+    assert (
+        len(_expand_multidoc_notes([{"number": 1, "text": "A, B, C."}], delimiter=","))
+        == 3
+    )

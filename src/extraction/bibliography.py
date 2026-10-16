@@ -186,6 +186,45 @@ def _collect_parsed_notes(parsed_file: Path) -> Optional[List[Dict[str, Any]]]:
     return notes
 
 
+# Multi-document citation delimiter. GREEN BOOKS separate distinct documents in a single
+# footnote with a SEMICOLON; the COMMA is intra-citation there ("Thorson, former G-3, FUSA,
+# 12 Sep 56") and must NOT split. This is corpus-specific: OTHER source families may delimit
+# differently (a comma CAN be a document separator elsewhere), so the delimiter is a
+# parameter, not a baked-in universal rule — keep green-book semantics as the default and
+# override per corpus when that work is done.
+_GREENBOOK_DOC_DELIMITER = ";"
+
+
+def _expand_multidoc_notes(
+    notes: List[Dict[str, Any]],
+    delimiter: str = _GREENBOOK_DOC_DELIMITER,
+) -> List[Dict[str, Any]]:
+    """Split notes that cite MULTIPLE documents into one sub-note per document.
+
+    ``delimiter`` defaults to the green-book semicolon (safe: comma is intra-citation in
+    that corpus). Other corpora may pass a different delimiter — do NOT assume comma splits
+    universally. Single-document notes pass through unchanged. Sub-notes keep the same
+    number/url/ref_type; reference_number is suffixed (e.g. "3", "3b", "3c") so each is a
+    distinct mention.
+    """
+    out: List[Dict[str, Any]] = []
+    for note in notes:
+        text = (note.get("text") or "").strip()
+        parts = [p.strip() for p in text.split(delimiter) if p.strip()]
+        if len(parts) <= 1:
+            out.append(note)
+            continue
+        base_num = note.get("number")
+        for i, part in enumerate(parts):
+            sub = dict(note)
+            sub["text"] = part if part.endswith(".") else part + "."
+            if i > 0 and base_num is not None:
+                # disambiguate the sub-document so it is a separate mention/record
+                sub["number"] = f"{base_num}{chr(ord('b') + i - 1)}"
+            out.append(sub)
+    return out
+
+
 def _store_notes(
     notes: List[Dict[str, Any]], bib_dir: Path, book: str, chapter: str
 ) -> tuple:
@@ -201,7 +240,7 @@ def _store_notes(
     stored = 0
     skipped_stub = 0
     works_so_far: List[Dict[str, str]] = []
-    for note in notes:
+    for note in _expand_multidoc_notes(notes):
         material = _note_to_material(note)
         if material is None:  # empty text or bare cross-reference stub
             skipped_stub += 1
