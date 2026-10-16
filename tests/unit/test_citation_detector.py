@@ -64,3 +64,64 @@ def test_deterministic_record_verbatim_on_mention_recognized():
     # prose on the mention must still be rejected (no over-match)
     prose = dict(rec, mentions=[{"verbatim_reference": "The attack began at dawn."}])
     assert _looks_like_citation(prose) is False
+
+
+def test_nara_query_sanitized_to_keywords():
+    """Raw citation punctuation (#, commas, trailing periods) triggers NARA's
+    invalid-query -> 200 HTML shell failure mode. The query must be reduced to plain
+    keywords (accented letters preserved for German names)."""
+    from src.enrichment.bibliography_resolver import _sanitize_nara_query
+
+    out = _sanitize_nara_query(
+        "MS # B-810, Generalleutnant Schmidt, Kaempfe im Rheinland 275. Division."
+    )
+    assert "#" not in out and "," not in out
+    assert "MS" in out and "B 810" in out and "Schmidt" in out
+    assert "  " not in out  # whitespace collapsed
+
+
+def test_nara_html_shell_detected():
+    """NARA's documented failure mode (200 OK + SPA HTML) must be detected so it is not
+    silently treated as a real not_found."""
+    from src.enrichment.bibliography_resolver import _is_html_shell
+
+    class _R:
+        def __init__(self, ct, txt):
+            self.headers = {"Content-Type": ct}
+            self.text = txt
+
+    assert _is_html_shell(_R("text/html; charset=utf-8", "<!doctype html>")) is True
+    assert _is_html_shell(_R("application/json", '{"body":{}}')) is False
+    # content-type lies but body is HTML -> still detected
+    assert _is_html_shell(_R("application/json", "  <html>")) is True
+
+
+def test_nara_naid_extracted_across_shapes():
+    from src.enrichment.bibliography_resolver import _extract_na_id
+
+    assert (
+        _extract_na_id({"_id": "417180915", "_source": {"record": {}}}) == "417180915"
+    )
+    assert (
+        _extract_na_id(
+            {"_source": {"metadata": {"controlGroup": {"naId": 597542}}, "record": {}}}
+        )
+        == "597542"
+    )
+    assert _extract_na_id({"_source": {"record": {"naId": 123}}}) == "123"
+    assert _extract_na_id({"_source": {"record": {}}}) == ""
+
+
+def test_nara_html_shell_widened_sniff():
+    """A shell prefixed by an edge comment/BOM (content-type lies) is still detected."""
+    from src.enrichment.bibliography_resolver import _is_html_shell
+
+    class _R:
+        def __init__(self, ct, txt):
+            self.headers = {"Content-Type": ct}
+            self.text = txt
+
+    assert (
+        _is_html_shell(_R("application/json", "<!-- edge -->\n<!doctype html>")) is True
+    )
+    assert _is_html_shell(_R("application/json", '{"body":{"hits":{}}}')) is False
