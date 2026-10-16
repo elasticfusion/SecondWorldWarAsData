@@ -632,8 +632,10 @@ def _is_html_shell(resp: Any) -> bool:
     ctype = (resp.headers.get("Content-Type") or "").lower()
     if "html" in ctype:
         return True
-    body = (resp.text or "").lstrip()[:16].lower()
-    return body.startswith("<!doctype") or body.startswith("<html")
+    # Secondary sniff (content-type may lie): widen the window so a BOM, XML prolog, or
+    # leading comment before the SPA's <!doctype/<html> is still caught.
+    body = (resp.text or "").lstrip().lower()[:256]
+    return "<!doctype" in body or "<html" in body
 
 
 def _extract_na_id(hit: Dict[str, Any]) -> str:
@@ -661,6 +663,8 @@ def _search_nara(
     """Search NARA catalog API v2."""
     from src.utils.search_cache import cache_result, get_cached
 
+    # Cache is keyed on the RAW query (not safe_q) consistently on read and write. If the
+    # sanitizer changes, bump this intentionally — stale negatives key on the raw input.
     cached = get_cached("nara", query)
     if cached == "NOT_FOUND":
         return None
@@ -682,7 +686,8 @@ def _search_nara(
         safe_q = _sanitize_nara_query(query)
         if not safe_q:
             logger.info(
-                "OBSERV nara.query skipped=empty_after_sanitize raw=%r", query[:60]
+                "OBSERV nara.query skipped=empty_after_sanitize raw=%r",
+                _CTRL.sub(" ", query or "")[:60],
             )
             cache_result("nara", query, None)
             return None

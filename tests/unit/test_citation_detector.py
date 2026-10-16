@@ -110,3 +110,18 @@ def test_nara_naid_extracted_across_shapes():
     )
     assert _extract_na_id({"_source": {"record": {"naId": 123}}}) == "123"
     assert _extract_na_id({"_source": {"record": {}}}) == ""
+
+
+def test_nara_html_shell_widened_sniff():
+    """A shell prefixed by an edge comment/BOM (content-type lies) is still detected."""
+    from src.enrichment.bibliography_resolver import _is_html_shell
+
+    class _R:
+        def __init__(self, ct, txt):
+            self.headers = {"Content-Type": ct}
+            self.text = txt
+
+    assert (
+        _is_html_shell(_R("application/json", "<!-- edge -->\n<!doctype html>")) is True
+    )
+    assert _is_html_shell(_R("application/json", '{"body":{"hits":{}}}')) is False
