@@ -203,3 +203,67 @@ def test_note_to_material_sets_alt_title():
     assert m is not None
     assert m["citation"]["title"] == "Unknown"
     assert m["citation"]["alt_title"] == "Interv with Collins, 25 Jan 54"
+
+
+def test_new_bare_stub_forms_skipped():
+    """idem/id./supra/passim/q.v./ante are bare back-references -> skipped like ibid."""
+    from src.extraction.bibliography import _is_stub_citation
+
+    for s in ["Idem.", "Id.", "Supra.", "Passim.", "q.v.", "Ante."]:
+        assert _is_stub_citation(s) is True, s
+
+
+def test_chapter_backref_merges_short_title_repeat(tmp_path):
+    """User's canonical case: note 9 cites 'Irwin Diary; ...'; note 17 = 'Irwin Diary.'
+    The short-title repeat must MERGE into note 9's entry (2 mentions), not create a 2nd
+    record. 'Ibid., p. 47' must merge into the immediately-preceding full citation."""
+    from src.extraction.bibliography import _store_notes
+    import glob
+    import json
+
+    notes = [
+        {
+            "number": 9,
+            "url": "http://x/#fn9",
+            "text": "Irwin Diary; Ltr, Gen Walker to Hist Div, 8 Oct 47; 5th Div G-3 Jnl, 9 Nov 44.",
+        },
+        {"number": 15, "url": "http://x/#fn15", "text": "MS # B-810, Schmidt."},
+        {"number": 16, "url": "http://x/#fn16", "text": "Ibid., p. 47."},
+        {"number": 17, "url": "http://x/#fn17", "text": "Irwin Diary."},
+    ]
+    bib = tmp_path / "bibliography"
+    _store_notes(notes, bib, book="RoerDams", chapter="chapter5")
+    files = [f for f in glob.glob(str(bib / "*.json")) if "index" not in f]
+    assert len(files) == 2, f"expected 2 distinct records, got {len(files)}"
+    recs = [json.load(open(f)) for f in files]
+    by_mentions = {len(r.get("mentions", [])): r for r in recs}
+    # both entries carry exactly 2 mentions (the full + its back-reference)
+    assert sorted(len(r.get("mentions", [])) for r in recs) == [2, 2]
+    # the Irwin Diary entry merged notes 9 and 17
+    irwin = next(
+        r
+        for r in recs
+        if any(
+            "Irwin Diary" in (m.get("verbatim_reference") or "") for m in r["mentions"]
+        )
+    )
+    refs = sorted(m.get("reference_number") for m in irwin["mentions"])
+    assert refs == ["17", "9"], refs
+
+
+def test_first_in_chapter_citation_is_not_a_backref(tmp_path):
+    """Edge case (user): note 9's 'Irwin Diary; ...' is the FIRST reference to the Irwin
+    Diary document in this chapter (even though 'General Irwin' the person appears in
+    earlier chapters). It must anchor as a NEW full citation, not resolve as a back-ref.
+    The resolver keys on the document short-title within THIS chapter, never on a person
+    or on other chapters."""
+    from src.extraction.bibliography import _resolve_back_reference
+
+    n9 = (
+        "Irwin Diary; Ltr, Gen Walker to Hist Div, 8 Oct 47; 5th Div G-3 Jnl, 9 Nov 44."
+    )
+    # empty chapter table => first occurrence => NOT a back-reference
+    assert _resolve_back_reference(n9, []) is None
+    # a person-only antecedent (different short-title) must not trigger a merge
+    works = [{"title": "Patton Papers", "short": "patton papers", "author": "patton"}]
+    assert _resolve_back_reference("Irwin Diary.", works) is None

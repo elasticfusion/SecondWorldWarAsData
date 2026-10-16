@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 # Citation fragments that are cross-references / stubs, not real document references —
 # never worth a bibliography record on their own (they point AT another note).
 _STUB_RE = re.compile(
-    r"^\s*(ibid\.?|op\.?\s*cit\.?|loc\.?\s*cit\.?|see\s+(above|below|n\.?\s*\d+)"
+    r"^\s*(ibid\.?|op\.?\s*cit\.?|loc\.?\s*cit\.?|idem|id\.|supra|passim|q\.?\s*v\.?"
+    r"|ante|see\s+(above|below|n\.?\s*\d+)"
     r"|cited\s+(in\s+)?n\.?\s*\d+)(\s*,?\s*(above|below))?\s*\.?\s*$",
     re.IGNORECASE,
 )
@@ -27,6 +28,58 @@ def _is_stub_citation(text: str) -> bool:
     if len(t) < 4:
         return True
     return bool(_STUB_RE.match(t))
+
+
+# `ibid`/`op. cit.` WITH trailing content (e.g. "Ibid., p. 47." or "Hodges, op. cit., 112.")
+# are NOT bare stubs — they point back to a fuller citation EARLIER IN THE SAME CHAPTER
+# (per the corpus rule: a shortened reference always refers to something in that chapter).
+_IBID_CONTENT_RE = re.compile(r"^\s*ibid\.?\s*[,.]", re.IGNORECASE)
+_OPCIT_CONTENT_RE = re.compile(
+    r"^\s*(?P<author>.+?),\s*op\.?\s*cit\.?\b", re.IGNORECASE
+)
+
+
+def _short_title(verbatim: str) -> str:
+    """The leading short-title segment of a citation (text before the first comma or
+    semicolon), normalized for matching. 'Irwin Diary; Ltr, ...' -> 'irwin diary'."""
+    head = re.split(r"[;,]", (verbatim or "").strip(), maxsplit=1)[0]
+    return _normalize_title(head)
+
+
+def _resolve_back_reference(
+    verbatim: str, works_so_far: List[Dict[str, str]]
+) -> Optional[str]:
+    """If ``verbatim`` is a chapter-local back-reference, return the TITLE of the
+    antecedent full citation it points to (so title-dedup merges it as a mention);
+    otherwise None. ``works_so_far`` is the ordered list of full citations already seen in
+    THIS chapter, each ``{'title':..., 'short':..., 'author':...}``.
+    """
+    if not works_so_far:
+        return None
+    t = (verbatim or "").strip()
+
+    # 1. "Ibid., p. 47." -> the immediately preceding full citation in this chapter.
+    if _IBID_CONTENT_RE.match(t):
+        return works_so_far[-1]["title"]
+
+    # 2. "Hodges, op. cit., 112." -> most recent full citation by that author.
+    m = _OPCIT_CONTENT_RE.match(t)
+    if m:
+        author = _normalize_title(m.group("author"))
+        for w in reversed(works_so_far):
+            if author and (author in w["author"] or author in w["short"]):
+                return w["title"]
+        return works_so_far[-1]["title"]  # fallback: previous work
+
+    # 3. Short-title repeat (e.g. "Irwin Diary.") -> an earlier full citation whose
+    #    short-title matches. Only when the repeat is itself short (a single segment);
+    #    a long multi-clause citation is a new work, not a repeat.
+    norm = _short_title(t)
+    if norm and _normalize_title(t) == norm:  # single-segment => candidate repeat
+        for w in works_so_far:
+            if w["short"] and w["short"] == norm:
+                return w["title"]
+    return None
 
 
 def extract_bibliography_deterministic(
@@ -136,14 +189,39 @@ def _collect_parsed_notes(parsed_file: Path) -> Optional[List[Dict[str, Any]]]:
 def _store_notes(
     notes: List[Dict[str, Any]], bib_dir: Path, book: str, chapter: str
 ) -> tuple:
-    """Store a bibliography record per usable note. Returns (stored, skipped_stub)."""
+    """Store a bibliography record per usable note. Returns (stored, skipped_stub).
+
+    Sequence-aware within the chapter: a back-reference (ibid/op.cit. with trailing
+    content, or a short-title repeat like a second 'Irwin Diary.') is resolved to the
+    TITLE of its antecedent full citation earlier in THIS chapter and stored under that
+    title, so the existing title-dedup merges it as another mention instead of creating a
+    duplicate, unresolvable record. (Per the corpus rule: a shortened reference always
+    points to something in the same chapter.)
+    """
     stored = 0
     skipped_stub = 0
+    works_so_far: List[Dict[str, str]] = []
     for note in notes:
         material = _note_to_material(note)
-        if material is None:  # empty text or cross-reference stub
+        if material is None:  # empty text or bare cross-reference stub
             skipped_stub += 1
             continue
+        verbatim = material.get("verbatim_reference", "")
+        antecedent_title = _resolve_back_reference(verbatim, works_so_far)
+        if antecedent_title:
+            # Back-reference: store under the antecedent's title so dedup merges the mention.
+            material.setdefault("citation", {})["title"] = antecedent_title
+        else:
+            # New full citation: remember it for later back-references in this chapter.
+            works_so_far.append(
+                {
+                    "title": verbatim,  # title falls back to verbatim in store_*
+                    "short": _short_title(verbatim),
+                    "author": _normalize_title(
+                        (material.get("citation") or {}).get("author") or ""
+                    ),
+                }
+            )
         try:
             if store_bibliography_entry(bib_dir, material, book=book, chapter=chapter):
                 stored += 1

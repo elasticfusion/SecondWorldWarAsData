@@ -62,6 +62,35 @@ bottom); what remains is ranked here. Current ordered priority:
 > - **Phase 3 observability: DONE (PR #412).** All 6 steps emit OBSERV counts + drop-reasons
 >   (geocode skip-reasons, bib.resolve not-citation samples, phase3.step per source).
 > - **Radon complexity + lint-scope + queue-scaling analysis: addressed/recorded** (#407/#408/#410).
+
+> **[HIGH · correctness] Back-reference / short-title / multi-document citation resolution
+> (noted 2026-10-16, user-raised). WITHIN-CHAPTER resolution DONE (PR pending); two sub-items
+> remain.** Canonical corpus examples + status:
+>   - ✅ SHORT-TITLE REPEAT (DONE): note 17 = `Irwin Diary.` now MERGES into note 9's entry as a
+>     mention (chapter-scoped `_resolve_back_reference` keyed on the leading document short-title),
+>     not a duplicate record.
+>   - ✅ `ibid`/`op. cit.` WITH content (DONE): `Ibid., p. 47.`→previous full citation; `Author,
+>     op. cit., 112.`→most recent full citation by that author. Both merge as mentions.
+>   - ✅ MISSING BARE STUBS (DONE): `idem`/`id.`, `supra`, `passim`, `q.v.`, `ante` added to
+>     `_STUB_RE`.
+>   - ⏳ MULTI-DOC NOTE (OPEN): note 9 = `Irwin Diary; Ltr...; 5th Div G-3 Jnl...` is still stored as
+>     ONE combined record. Splitting into three documents is the LLM overlay's semantic job (the
+>     prompt asks for it); the deterministic pass intentionally does NOT guess the `;` split.
+>   - ⏳ CROSS-CHAPTER DOCUMENT IDENTITY (OPEN, deferred to dedup): per the corpus rule a shortened
+>     ref always points WITHIN its chapter, so the resolver is chapter-scoped. Recognizing that
+>     chapter 3's "Irwin Diary" and chapter 5's are the SAME physical document is a book-level merge
+>     — the dedup pass's job (it has author/title parsed), NOT the deterministic per-chapter pass.
+>   Scope confirmed by user: "a shortened reference always refers to something in that chapter"; and
+>   note 9 being first-in-chapter anchors fresh even though General Irwin (the person) appears in
+>   earlier chapters — the resolver keys on the document short-title, never on a person/other chapter.
+>   DOMAIN FACT (user, 2026-10-16): a senior commander's "X Diary" (Irwin/Hodges/Patton/Sylvan Diary)
+>   is an OFFICIAL RECORD SERIES kept as part of the unit records, NOT a personal item — so it is a
+>   single coherent document (short-title merge is right) and is genuinely NARA-resolvable (RG 407
+>   unit records), cited alongside the G-3 Journal. VERIFIED the citation detector + NARA-searchable
+>   gate already recognize a bare "Irwin Diary." via the `Diary` token in `_STRUCT_PATTERNS` (not
+>   dropped as prose, routed to NARA). This also means cross-chapter "same Irwin Diary" identity
+>   (the deferred dedup item) is meaningful and worth doing.
+
 > REMAINING Phase-3 bugs still OPEN (see items below): military/archival citation detector rejects
 > NARA-resolvable refs as not-citation; geocoding skipped all 27 (reason now observable); the
 > supplemental→enrichment overlay convergence + per-doc correlation id.

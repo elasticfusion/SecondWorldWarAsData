@@ -187,3 +187,28 @@ def test_deterministic_record_routes_to_archive_resolver():
     assert (
         _pick_resolver("", "", _is_nara_searchable(prose, pv)) is not _resolve_archive
     )
+
+
+def test_official_commander_diary_is_citation_and_nara_searchable():
+    """A senior commander's 'X Diary' is an OFFICIAL record series (NARA RG 407 unit
+    records), not a personal item. A bare 'Irwin Diary.' must be recognized as a citation
+    and routed to NARA — not dropped as prose."""
+    from src.enrichment.bibliography_resolver import (
+        _looks_like_citation,
+        _is_nara_searchable,
+    )
+
+    for v in (
+        "Irwin Diary.",
+        "Sylvan Diary, passim.",
+        "Hodges Diary, 12 Nov 44.",
+        "Patton Diary.",
+    ):
+        rec = {
+            "citation": {"title": "Unknown"},
+            "verbatim_reference": None,
+            "resource_urls": [],
+            "mentions": [{"verbatim_reference": v}],
+        }
+        assert _looks_like_citation(rec) is True, v
+        assert _is_nara_searchable(rec, v) is True, v
