@@ -275,6 +275,7 @@ SUPPLEMENTAL_SCHEMA = {
                     },
                     "reference_number": {"type": ["string", "integer", "null"]},
                     "verbatim_reference": {"type": "string"},
+                    "prose_content": {"type": ["string", "null"]},
                     "material_category": {
                         "type": "string",
                         "enum": ["referenced_material", "supplemental_information"],
@@ -282,6 +283,15 @@ SUPPLEMENTAL_SCHEMA = {
                     "content_class": {
                         "type": "string",
                         "enum": [
+                            # 3-class model (owner 2026-10-16): citation = strictly a
+                            # document reference (-> bibliography/Phase-3); prose =
+                            # strictly narrative (-> Phase-2 notes-event); hybrid =
+                            # BOTH (prose_content + citation). Legacy names kept for
+                            # back-compat (document_reference≈citation,
+                            # factual_content≈prose, ambiguous→human review).
+                            "citation",
+                            "prose",
+                            "hybrid",
                             "document_reference",
                             "factual_content",
                             "ambiguous",
