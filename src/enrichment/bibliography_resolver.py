@@ -39,6 +39,15 @@ def _looks_like_citation(entry: Dict[str, Any]) -> bool:
     citation = entry.get("citation") or {}
     verbatim = str(entry.get("verbatim_reference") or citation.get("verbatim") or "")
     if not verbatim.strip():
+        # Deterministic-pass records (the source-url/provenance split) carry the verbatim
+        # on the MENTION, not at top level — fall back to it so the citation detector sees
+        # the real text (otherwise every deterministic record is wrongly "not_citation").
+        for m in entry.get("mentions") or []:
+            mv = str(m.get("verbatim_reference") or "")
+            if mv.strip():
+                verbatim = mv
+                break
+    if not verbatim.strip():
         # Nothing structured and no text → nothing to resolve; don't send to NARA.
         return False
     return _verbatim_looks_citational(verbatim)

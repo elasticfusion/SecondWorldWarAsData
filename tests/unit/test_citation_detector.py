@@ -42,3 +42,25 @@ def test_military_archival_citations_recognized(v):
 @pytest.mark.parametrize("v", _PROSE)
 def test_prose_and_stubs_rejected(v):
     assert cit(v) is False
+
+
+def test_deterministic_record_verbatim_on_mention_recognized():
+    """Deterministic bibliography records (source-url split) carry the verbatim on the
+    MENTION, not top-level. _looks_like_citation must read it there — else every
+    deterministic record is wrongly not_citation and NARA never runs."""
+    from src.enrichment.bibliography_resolver import _looks_like_citation
+
+    rec = {
+        "BibliographyID": "01X",
+        "title": "Unknown",
+        "citation": {"title": "Unknown"},
+        "verbatim_reference": None,
+        "resource_urls": [],
+        "mentions": [
+            {"verbatim_reference": "MS # B-810, Schmidt, Kaempfe im Rheinland."}
+        ],
+    }
+    assert _looks_like_citation(rec) is True
+    # prose on the mention must still be rejected (no over-match)
+    prose = dict(rec, mentions=[{"verbatim_reference": "The attack began at dawn."}])
+    assert _looks_like_citation(prose) is False

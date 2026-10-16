@@ -84,7 +84,10 @@ def test_bib_resolve_captures_not_citation_samples(tmp_path, caplog):
                 "BibliographyID": "01X",
                 "title": "Unknown",
                 "mentions": [
-                    {"verbatim_reference": "MS # B-810, Schmidt, Kaempfe im Rheinland."}
+                    # Genuine PROSE (no citation structure) -> correctly not_citation.
+                    {
+                        "verbatim_reference": "The attack began at dawn and continued all day."
+                    }
                 ],
             }
         )
@@ -95,8 +98,9 @@ def test_bib_resolve_captures_not_citation_samples(tmp_path, caplog):
     assert obs, "no OBSERV bib.resolve line emitted"
     assert "not_citation_samples=" in obs[0]
     assert "in=1" in obs[0]
+    assert "not_citation=1" in obs[0]  # prose correctly classified not_citation
     assert "not_citation_samples=[]" not in obs[0]  # the sample WAS captured
-    assert "B-810" in obs[0]  # the actual rejected verbatim is visible
+    assert "attack began at dawn" in obs[0]  # the actual rejected prose is visible
 
 
 def test_bib_resolve_sample_scrubs_control_chars(tmp_path, caplog):
