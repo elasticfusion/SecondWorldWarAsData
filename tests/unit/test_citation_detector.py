@@ -149,3 +149,41 @@ def test_nara_searchable_greenbook_forms():
         "The urbane colonel charged across a large bridge in an organized group.",
     ):
         assert _is_nara_searchable(e, v) is False, v
+
+
+def test_deterministic_record_routes_to_archive_resolver():
+    """A deterministic record (no document_type, archival verbatim on the mention) must
+    route to the ARCHIVE resolver (which queries NARA), not the generic fallback that
+    never touches NARA."""
+    from src.enrichment.bibliography_resolver import (
+        _pick_resolver,
+        _entry_verbatim,
+        _is_nara_searchable,
+        _resolve_archive,
+    )
+
+    rec = {
+        "title": "Unknown",
+        "citation": {"title": "Unknown"},
+        "verbatim_reference": None,
+        "mentions": [
+            {"verbatim_reference": "MS # B-810, Schmidt, Kaempfe im Rheinland."}
+        ],
+    }
+    v = _entry_verbatim(rec)
+    assert v == "MS # B-810, Schmidt, Kaempfe im Rheinland."
+    assert _pick_resolver("", "", _is_nara_searchable(rec, v)) is _resolve_archive
+    # prose must NOT route to archive
+    prose = {
+        "title": "Unknown",
+        "citation": {"title": "Unknown"},
+        "mentions": [
+            {
+                "verbatim_reference": "An American heavy tank did not reach the theater until 1945."
+            }
+        ],
+    }
+    pv = _entry_verbatim(prose)
+    assert (
+        _pick_resolver("", "", _is_nara_searchable(prose, pv)) is not _resolve_archive
+    )
