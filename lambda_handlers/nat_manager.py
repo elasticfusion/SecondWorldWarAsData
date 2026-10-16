@@ -36,6 +36,14 @@ INTERFACE_ENDPOINTS = [
     "ecs",
     "ecs-agent",
     "ecs-telemetry",
+    # Control-plane endpoints for the IN-VPC nat_teardown decider. Created with NAT and
+    # deleted with NAT (owner directive: endpoints are part of the NAT spin-up/tear-down
+    # cycle, NOT always-on). The decider only needs these WHILE NAT is up (to decide
+    # teardown / poll containers); when NAT is down it detects that from the free
+    # DynamoDB-gateway-backed queue/lease state and exits before any endpoint call.
+    "ec2",
+    "lambda",
+    "scheduler",
 ]
 
 

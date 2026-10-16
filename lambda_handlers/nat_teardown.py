@@ -206,6 +206,52 @@ def _teardown() -> dict:
     return {"action": "delete", "nat_manager_status": resp.get("StatusCode")}
 
 
+def _ddb_networking_signal() -> bool:
+    """Cheap NAT-state probe over the FREE DynamoDB gateway endpoint (always reachable, no
+    interface endpoint / NAT needed). Returns True if ANY of these suggest NAT is (or
+    should be) UP: a live nat#lease#, a pending/ready batch_job#, or a pipeline lock#.
+
+    This is the gate that lets the decider run endpoint-free when NAT is down: the control-
+    plane interface endpoints (ec2/ecs/lambda/scheduler) are created WITH NAT and deleted
+    WITH NAT (owner directive), so when NAT is down those calls would time out. If this DDB
+    signal is False (nothing up), we exit 'nothing to do' WITHOUT any endpoint-dependent
+    call. Fail-safe: on error return True (proceed to the authoritative EC2 check)."""
+    import time as _t
+
+    import boto3
+
+    now = int(_t.time())
+    try:
+        tbl = boto3.resource("dynamodb", region_name=REGION).Table(
+            os.getenv("CACHE_TABLE", f"{ENV_NAME}-wwii-api-cache")
+        )
+        for prefix, live in (
+            ("nat#lease#", True),
+            ("batch_job#", False),
+            ("lock#", False),
+        ):
+            resp = tbl.scan(
+                FilterExpression="begins_with(cache_key, :p)",
+                ExpressionAttributeValues={":p": prefix},
+                ProjectionExpression="cache_key, #t, #s",
+                ExpressionAttributeNames={"#t": "ttl", "#s": "status"},
+            )
+            for item in resp.get("Items", []):
+                if prefix == "nat#lease#":
+                    ttl = item.get("ttl")
+                    if ttl is None or int(ttl) > now:
+                        return True
+                elif prefix == "batch_job#":
+                    if item.get("status") in ("pending", "ready"):
+                        return True
+                else:  # lock#
+                    return True
+        return False
+    except Exception as e:  # noqa: BLE001 - fail safe: proceed to the EC2 check
+        logger.warning("DDB networking signal failed (%s) — proceeding to EC2 check", e)
+        return True
+
+
 def handler(event, _context=None):
     """4h cron (and 10-min self-recheck) teardown decider. Fail-safe: never tears down on
     uncertainty/error."""
@@ -224,6 +270,15 @@ def handler(event, _context=None):
         except (IndexError, AttributeError):
             account_id = ""
         account_id = account_id or os.getenv("AWS_ACCOUNT_ID", "")
+
+        # Cheap FREE-endpoint pre-gate: if DynamoDB shows no leases/batches/locks, NAT is
+        # down/idle and its dynamic control-plane endpoints are gone — exit WITHOUT an EC2
+        # call (which would otherwise time out ~90s with the endpoints torn down).
+        if not _ddb_networking_signal():
+            logger.info(
+                "NAT-teardown: DDB shows no networking demand/lease — nothing to do"
+            )
+            return {"action": "none", "reason": "no networking signal (ddb)"}
 
         ec2 = boto3.client("ec2", region_name=REGION)
         if not _nat_present(ec2):

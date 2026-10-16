@@ -24,7 +24,10 @@ def _ec2_with_nat(present: bool):
 
 
 def test_no_nat_does_nothing():
-    with patch("boto3.client", return_value=_ec2_with_nat(False)):
+    with (
+        patch("boto3.client", return_value=_ec2_with_nat(False)),
+        patch.object(nt, "_ddb_networking_signal", return_value=True),
+    ):
         out = nt.handler({})
     assert out["action"] == "none"
     assert "already down" in out["reason"]
@@ -34,6 +37,7 @@ def test_demand_present_reschedules_recheck_not_teardown():
     """Queue work / running container present -> recheck in 10 min, NEVER delete."""
     with (
         patch("boto3.client", return_value=_ec2_with_nat(True)),
+        patch.object(nt, "_ddb_networking_signal", return_value=True),
         patch("lambda_handlers.nat_manager._nat_demand_present", return_value=True),
         patch.object(nt, "_schedule_recheck") as sched,
         patch.object(nt, "_teardown") as teardown,
@@ -48,7 +52,9 @@ def test_idle_tears_down():
     """Queue empty AND no container -> tear down (invoke nat_manager delete)."""
     with (
         patch("boto3.client", return_value=_ec2_with_nat(True)),
+        patch.object(nt, "_ddb_networking_signal", return_value=True),
         patch("lambda_handlers.nat_manager._nat_demand_present", return_value=False),
+        patch.object(nt, "_containers_busy", return_value=False),
         patch.object(nt, "_teardown", return_value={"action": "delete"}) as teardown,
         patch.object(nt, "_schedule_recheck") as sched,
     ):
@@ -56,6 +62,20 @@ def test_idle_tears_down():
     assert out["action"] == "delete"
     teardown.assert_called_once()
     sched.assert_not_called()
+
+
+def test_ddb_signal_false_exits_without_ec2():
+    """Free-endpoint pre-gate: when DynamoDB shows no lease/batch/lock, exit BEFORE any
+    EC2 call (the dynamic ec2 endpoint is gone while NAT is down)."""
+    ec2 = MagicMock()
+    with (
+        patch("boto3.client", return_value=ec2),
+        patch.object(nt, "_ddb_networking_signal", return_value=False),
+    ):
+        out = nt.handler({})
+    assert out["action"] == "none"
+    assert "ddb" in out["reason"]
+    ec2.describe_nat_gateways.assert_not_called()  # never touched EC2
 
 
 def test_error_is_failsafe_no_teardown():
