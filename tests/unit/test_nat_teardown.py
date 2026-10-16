@@ -82,7 +82,7 @@ def test_schedule_recheck_rearms_on_conflict():
         return {"scheduler": sched, "sts": sts}[name]
 
     with patch("boto3.client", side_effect=_client):
-        nt._schedule_recheck()
+        nt._schedule_recheck("123456789012")
     # Conflict -> must re-arm via update_schedule (deterministic chain), not silently leave it.
     sched.update_schedule.assert_called_once()
     assert "nat-teardown-recheck" in sched.update_schedule.call_args.kwargs["Name"]

@@ -137,16 +137,17 @@ def _containers_busy() -> bool:
     return False
 
 
-def _schedule_recheck() -> None:
+def _schedule_recheck(account_id: str) -> None:
     """Self-schedule a ONE-SHOT recheck in RECHECK_MINUTES via EventBridge Scheduler, so
     while a container is still processing we poll at 10-min cadence (not the 4h cron) and
     tear down promptly once idle. ActionAfterCompletion=DELETE cleans the one-shot up.
+    ``account_id`` comes from the Lambda context ARN (no STS call -> no sts VPC endpoint).
     """
     import datetime
 
     import boto3
 
-    account = boto3.client("sts", region_name=REGION).get_caller_identity()["Account"]
+    account = account_id
     fn_arn = f"arn:aws:lambda:{REGION}:{account}:function:{ENV_NAME}-wwii-nat-teardown"
     role_arn = os.environ.get(
         "SCHEDULER_ROLE_ARN",
@@ -213,6 +214,17 @@ def handler(event, _context=None):
 
         from lambda_handlers.nat_manager import _nat_demand_present
 
+        # Account id from the Lambda context ARN (arn:aws:lambda:region:ACCOUNT:function:..)
+        # — avoids an STS call (so no sts VPC endpoint needed); env fallback for local tests.
+        account_id = ""
+        try:
+            account_id = (getattr(_context, "invoked_function_arn", "") or "").split(
+                ":"
+            )[4]
+        except (IndexError, AttributeError):
+            account_id = ""
+        account_id = account_id or os.getenv("AWS_ACCOUNT_ID", "")
+
         ec2 = boto3.client("ec2", region_name=REGION)
         if not _nat_present(ec2):
             logger.info("NAT-teardown: no NAT present — nothing to do")
@@ -226,7 +238,7 @@ def handler(event, _context=None):
                 "rechecking in %d min",
                 RECHECK_MINUTES,
             )
-            _schedule_recheck()
+            _schedule_recheck(account_id)
             return {"action": "recheck", "reason": "nat demand present"}
 
         # Authoritative on-container check (option 3): poll each running pipeline
@@ -236,7 +248,7 @@ def handler(event, _context=None):
                 "NAT-teardown: a container reports an ongoing task — rechecking in %d min",
                 RECHECK_MINUTES,
             )
-            _schedule_recheck()
+            _schedule_recheck(account_id)
             return {"action": "recheck", "reason": "container busy (status API)"}
 
         # Queue empty AND no container processing -> tear down.

@@ -162,7 +162,7 @@ Resources:
       FromPort: 8077
       ToPort: 8077
       SourceSecurityGroupId: !Ref LambdaSG
-      Description: nat_teardown Lambda -> container /status API
+      Description: nat_teardown Lambda to container status API (port 8077)
 
   OpenSerpSG:
     Type: AWS::EC2::SecurityGroup
@@ -330,6 +330,65 @@ Resources:
               - secretsmanager:DescribeSecret
             Resource:
               - !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${EnvironmentName}-wwii-pipeline/*
+
+  # --- Always-on interface endpoints for the IN-VPC nat_teardown decider's control
+  # plane. It must call ec2:DescribeNatGateways FIRST to decide whether NAT exists —
+  # a call that cannot route through NAT (which may be down). Without these it times out
+  # (~90s) on every run when NAT is idle. ecs (task/demand check), lambda (invoke
+  # nat-manager delete), and scheduler (10-min self-recheck) likewise need a private
+  # path. STS is intentionally avoided in code (account id read from the Lambda context),
+  # so no sts endpoint is needed.
+  Ec2Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.ec2
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      SecurityGroupIds:
+        - !Ref VpcEndpointSG
+
+  EcsEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.ecs
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      SecurityGroupIds:
+        - !Ref VpcEndpointSG
+
+  LambdaEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.lambda
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      SecurityGroupIds:
+        - !Ref VpcEndpointSG
+
+  SchedulerEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.scheduler
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      SecurityGroupIds:
+        - !Ref VpcEndpointSG
 
   # SSM Parameters for dynamic networking stack
   SSMVpcId:
