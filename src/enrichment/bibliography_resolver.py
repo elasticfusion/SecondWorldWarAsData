@@ -71,8 +71,26 @@ _STRUCT_PATTERNS = (
     r"\bRG\s*\d+",
     r"\b(?:pp?\.|p\.)\s*\d+",
     r"\b(?:box|folder|file|vol\.?|no\.?)\s*\d+",
+    # --- Military / archival citation forms (US Army CMH "green book" footnotes). These
+    # are unambiguously citational (archival document references) and are precisely the
+    # NARA-resolvable ones, yet they carry none of the book-citation signals above — so
+    # without these they were wrongly rejected as "not_citation" and NARA never ran.
+    r"\bMS\s*#?\s*[A-Z]-?\d+",  # manuscript series, e.g. "MS # B-810"
+    # military document-type abbreviations, each a strong citational signal
+    r"\b(?:Ltr|Memo|Interv|Rpt|Jnl|Diary|Telecon|Telg|Msg|Cbl|Cable|Opns?|Per\s+Rpt|"
+    r"AAR|FO|GO|SO|TWX|Ltr\s+of\s+Instrs?)\b",
+    # unit + number designation (e.g. "VII Corps Opns Memo 101", "5th Armd Div G-2")
+    r"\b(?:Corps|Div|Army|Gp|Regt|Bn|Co)\b.*\b(?:G-?\d|S-?\d|Memo|Rpt|Order|file)\b",
 )
-_WEAK_PATTERNS = (r"\b(1[89]\d{2}|20\d{2})\b", r"[A-Z][a-z]+,\s+[A-Z]")
+# Weak = corroborating, not establishing. A military short date ("12 Sep 44") appears
+# PERVASIVELY in WWII narrative prose, so on its own it is NOT a citation (that caused
+# ~36% false positives on prose) — it only counts toward the 2-signal threshold alongside
+# another signal (a doc-type, a file ref, etc.).
+_WEAK_PATTERNS = (
+    r"\b(1[89]\d{2}|20\d{2})\b",
+    r"[A-Z][a-z]+,\s+[A-Z]",
+    r"\b\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b",  # military short date
+)
 
 
 def _verbatim_looks_citational(verbatim: str) -> bool:

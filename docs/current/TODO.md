@@ -175,6 +175,27 @@ bottom); what remains is ranked here. Current ordered priority:
      correspondence, military dates `\b\d{1,2}\s+[A-Z][a-z]{2}\s+\d{2}\b`, unit+number (`Corps|Div|Army
      \w* \d+`), `G-\d` staff files. These are MORE citational than a book ref (primary archival
      sources). This is the final blocker to an actual NARA hit; do after the current run + download.
+     ✅ CITATION DETECTOR FIXED 2026-10-16: added military/archival STRONG signals to
+     `_STRUCT_PATTERNS` (MS#, Ltr/Memo/Interv/Rpt/Jnl/Opns/AAR/FO/…, unit+G-N/file) and — after a
+     false-positive deep-dive (owner) — DEMOTED the military short-date to a WEAK/corroborating signal
+     (it appears pervasively in WWII prose; as a strong signal it mis-flagged ~36% of narrative prose
+     like "On 6 Jun the division attacked"). Verified: all 7 real green-book citations → True, 0 false
+     positives across 14 adversarial prose lines. Tests: tests/unit/test_citation_detector.py.
+   - **[HIGH · bibliography — THREE footnote/endnote CLASSES (owner directive 2026-10-16), hybrid
+     SPLIT is the gap.]** Authoritative taxonomy (docs/current/features/supplemental/
+     SUPPLEMENTAL_COMPLETE.md:9-15): a footnote/endnote is one of THREE kinds —
+     (1) STRICTLY CITATIONAL → `document_reference` → bibliography → Phase-3 NARA/archive resolution;
+     (2) STRICTLY PROSE → `factual_content` → treated like a Phase-2 EVENT (`{chapter}-notes-event.json`,
+     entities extracted); the Phase-3 resolver MUST skip these (correctly "not_citation" — the detector
+     fix above keeps class-2 prose out of NARA);
+     (3) HYBRID prose+citation → doc line 15 says "Mixed entries (factual statement + citation) are
+     SPLIT into separate entries" — i.e. must produce BOTH a notes-event (the prose) AND a
+     document_reference (the citation), NOT dumped into `ambiguous`/review_queue.
+     The 3-way split is the PHASE-2 supplemental LLM's job (`content_class` + prompt), NOT the Phase-3
+     binary gate (which is only the safety filter keeping class-2 out of NARA). OPEN WORK: verify the
+     supplemental classifier actually (a) routes class-2 `factual_content` to a notes-event, and
+     (b) SPLITS class-3 hybrids into both a notes-event and a bibliography record (prompt line 71-ish +
+     `_route_by_content_class`), rather than today's ambiguous→review dead-end for mixed entries.
    - **[HIGH · infra — NAT FLAPPING (owner, revisit after this run 2026-10-15).]** NAT keeps being torn
      down then needing re-creation between phases/tasks (pre-warm → run → idle teardown → next task
      stalls waiting for NAT; I've had to hand-invoke nat-manager create repeatedly this session). This
