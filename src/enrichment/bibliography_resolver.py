@@ -1062,10 +1062,23 @@ _REUSE_FIELDS = (
 
 
 def _citation_key(d: Dict[str, Any]) -> str:
-    """Dedup key: verbatim text, else author|title (lowercased)."""
+    """Dedup key: verbatim text, else alt_title, else author|title (lowercased).
+
+    Deterministic bibliography records (source-url split) store the verbatim on the
+    MENTION with top-level verbatim_reference=None and title='Unknown' — so without the
+    mention/alt_title fallback EVERY such record keys to '|unknown' and 15/16 wrongly
+    collapse in the resolver dedup (only one ever reaches NARA)."""
     cit = d.get("citation") or {}
+    verbatim = str(d.get("verbatim_reference") or cit.get("verbatim") or "").strip()
+    if not verbatim:
+        for m in d.get("mentions") or []:
+            mv = str(m.get("verbatim_reference") or "").strip()
+            if mv:
+                verbatim = mv
+                break
     return (
-        str(d.get("verbatim_reference") or cit.get("verbatim") or "").strip()
+        verbatim
+        or str(cit.get("alt_title") or "").strip()
         or f"{cit.get('author', '')}|{cit.get('title', '')}".strip()
     ).lower()
 

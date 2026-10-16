@@ -212,3 +212,30 @@ def test_official_commander_diary_is_citation_and_nara_searchable():
         }
         assert _looks_like_citation(rec) is True, v
         assert _is_nara_searchable(rec, v) is True, v
+
+
+def test_citation_key_distinct_for_deterministic_records():
+    """Deterministic records (top-level verbatim=None, title='Unknown') must key on the
+    MENTION verbatim / alt_title so they don't all collapse to '|unknown' and wrongly dedup
+    to one in the resolver (the deduped=15/16 bug)."""
+    from src.enrichment.bibliography_resolver import _citation_key
+
+    mk = lambda v, at: {
+        "verbatim_reference": None,
+        "citation": {"title": "Unknown", "alt_title": at},
+        "mentions": [{"verbatim_reference": v}],
+    }
+    keys = [
+        _citation_key(mk("See Interv with Collins, 25 Jan 54.", "Interv with Collins")),
+        _citation_key(mk("MS # B-810, Schmidt.", "MS # B-810")),
+        _citation_key(mk("VII Corps Opns Memo 101, 1 Oct.", "VII Corps Opns Memo 101")),
+    ]
+    assert len(set(keys)) == 3, keys
+    assert "|unknown" not in keys
+    # alt_title fallback when no mention verbatim either
+    only_alt = {
+        "verbatim_reference": None,
+        "citation": {"title": "Unknown", "alt_title": "Sylvan Diary"},
+        "mentions": [],
+    }
+    assert _citation_key(only_alt) == "sylvan diary"
