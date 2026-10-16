@@ -179,9 +179,12 @@ def _note_to_material(note: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         "reference_type": note.get("_ref_type", "footnote"),
         "reference_number": str(number) if number is not None else "",
         "content_class": "document_reference",
-        # Title/author left for the LLM enrichment overlay; store_bibliography_entry
-        # falls back to verbatim_reference for the title/dedup key when title=Unknown.
-        "citation": {"title": "Unknown"},
+        # Title left for the LLM enrichment overlay (store_bibliography_entry falls back
+        # to verbatim_reference for the title/dedup key when title=Unknown). alt_title is
+        # the deterministic human-readable, searchable form of the verbatim (abbreviations
+        # expanded) — never null, used by the Phase-3 resolver's alt_title search path and
+        # as a seed the LLM may later upgrade (e.g. surname -> full name).
+        "citation": {"title": "Unknown", "alt_title": _derive_alt_title(text)},
         # SOURCE URL = provenance (where the citation TEXT appeared, e.g. the ibiblio
         # hyperwar page) -> carried on the mention. Deliberately NOT `resource_urls`:
         # resource_urls means "where the CITED document is obtainable" (NARA/archive.org),
@@ -219,6 +222,22 @@ def _public_domain_fields(url: str) -> Dict[str, Any]:
             "jurisdiction": "US",
         },
     }
+
+
+# The deterministic pass sets a MINIMAL, non-semantic alt_title (the raw verbatim with a
+# leading "See "/"Cf." and trailing period stripped) purely so the field is never null and
+# each record is unique. It deliberately does NOT try to expand the Green Books' vast,
+# idiosyncratic abbreviation vocabulary (Interv, Opns, Per Rpt, KTB, OB WEST, Hist Div,
+# unit designations, German terms, ...) — a hand-maintained regex map can never cover the
+# corpus and risks word-boundary false positives. That semantic expansion (e.g.
+# "Interv with Collins" -> "Interview with J. Lawton Collins") is the LLM enrichment
+# overlay's job; this baseline is just the seed it upgrades.
+def _derive_alt_title(verbatim: str) -> str:
+    """Minimal, non-semantic searchable alt_title from the raw verbatim (never empty when
+    the verbatim is non-empty). Semantic abbreviation expansion is left to the LLM."""
+    t = (verbatim or "").strip()
+    t = re.sub(r"^(?:See also|See|Cf\.?)\s+", "", t, flags=re.IGNORECASE)
+    return t.rstrip(".").strip()
 
 
 def _slugify(title: str) -> str:

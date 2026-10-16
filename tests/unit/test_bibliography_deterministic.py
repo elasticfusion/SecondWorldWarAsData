@@ -168,3 +168,38 @@ def test_ibiblio_source_is_public_domain(tmp_path):
     assert pub.get("resource_urls") == []  # left empty for Phase 3 resolution
     other = next(d for u, d in by_url.items() if "example.com" in u)
     assert other["license"] == "unknown"  # left for Phase 3 resolution
+
+
+def test_derive_alt_title_strips_but_does_not_expand():
+    """alt_title is a MINIMAL non-semantic baseline: strip leading 'See'/trailing period,
+    but do NOT regex-expand abbreviations (that semantic work is the LLM's job — the Green
+    Books' abbreviation vocabulary is too large/idiosyncratic for a static map).
+    """
+    from src.extraction.bibliography import _derive_alt_title
+
+    assert (
+        _derive_alt_title("See Interv with Collins, 25 Jan 54.")
+        == "Interv with Collins, 25 Jan 54"
+    )
+    assert (
+        _derive_alt_title("Cf. Ltr, Craig to OCMH, 20 Apr 56.")
+        == "Ltr, Craig to OCMH, 20 Apr 56"
+    )
+    assert _derive_alt_title("MS # B-810, Schmidt.") == "MS # B-810, Schmidt"
+    assert _derive_alt_title("") == ""
+
+
+def test_note_to_material_sets_alt_title():
+    """The deterministic material must carry a non-null alt_title (not just title=Unknown)."""
+    from src.extraction.bibliography import _note_to_material
+
+    m = _note_to_material(
+        {
+            "text": "See Interv with Collins, 25 Jan 54.",
+            "number": 1,
+            "_ref_type": "endnote",
+        }
+    )
+    assert m is not None
+    assert m["citation"]["title"] == "Unknown"
+    assert m["citation"]["alt_title"] == "Interv with Collins, 25 Jan 54"
