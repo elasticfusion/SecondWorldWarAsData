@@ -95,8 +95,32 @@ bottom); what remains is ranked here. Current ordered priority:
 > NARA-resolvable refs as not-citation; geocoding skipped all 27 (reason now observable); the
 > supplemental→enrichment overlay convergence + per-doc correlation id.
 
-> **⚠️ [MED · scalability] NARA-searchability is a hand-maintained regex allowlist — won't scale
-> across corpora (noted 2026-10-16).** `_is_nara_searchable` / `_NARA_INDICATORS` /
+> **⚠️ [HIGH · correctness] NARA resolution redesign — STOP using Grok to determine Record Groups
+> (user-directed 2026-10-16; "Grok's ability to determine record groups is poor; rely on Grok only
+> for semantic evaluation").** Live proof: with the corrected key all 16 records now query NARA and
+> return JSON (deduped=0, resolved=2) BUT zero actual catalog records/naIds were surfaced — the raw
+> verbatim is keyword-soup (hits 47→98,551) so Grok-verify rejects every hit, and the 2 "resolved"
+> are Grok-GUESSED record groups (the archive_reference_number field even contains Grok's prose
+> rationale — a parsing bug too). REDESIGN:
+>   1. RG determination = DETERMINISTIC lookup against NARA's authoritative Record Group Explorer
+>      (https://www.archives.gov/findingaid/record-group-explorer). Build a static alias→RG map for
+>      the ETO corpus: unit records (AAR, G-2/G-3 Jnl, Per Rpt, Div/Corps) → RG 407 (Adjutant
+>      General's Office); Foreign Military Studies / "MS #" → RG 549 (US Army Europe); Army
+>      operational/tactical WWII → RG 338 (ancestorNaId=692); HQ ETO USA → RG 498; Allied HQ → RG
+>      331; War Dept staffs → RG 165; seized German records/KTB → RG 242. NOT Grok.
+>   2. QUERY = use the catalog API's STRUCTURED filters discovered from the Explorer's own links:
+>      `ancestorNaId=<RG naId>` (scope to that record group's hierarchy) + `levelOfDescription=series`
+>      (then file-unit) + a few keywords — instead of dumping the whole verbatim as `q`. This bounds
+>      the 98k-hit soup to the right RG so a specific naId can actually verify.
+>   3. GROK = SEMANTIC ONLY — expand abbreviations (alt_title) and verify a returned candidate matches
+>      the citation. Never to pick the RG or invent a reference number.
+>   Replace `_identify_record_group`/`_identify_nara_record` (current Grok RG guess) with the lookup.
+>   Also fix: `archive_reference_number` currently stores Grok's multi-sentence rationale ("RG 407\n\n
+>   The citation references...") instead of just "RG 407" — parse to the bare RG.
+
+> **[superseded by the item above] [MED · scalability] NARA-searchability is a hand-maintained regex
+> allowlist — won't scale across corpora (noted 2026-10-16).** `_is_nara_searchable` /
+> `_NARA_INDICATORS` /
 > `_verbatim_looks_citational` in `src/enrichment/bibliography_resolver.py` gate whether a citation
 > reaches `_search_nara` via a hardcoded list of US-Army green-book / OCMH shorthand (MS #, Interv,
 > AAR, corps, G-3, Ltr, Jnl, ...). This is correct for the current corpus (RoerDams, ETO green
