@@ -45,6 +45,27 @@ bottom); what remains is ranked here. Current ordered priority:
 > on every OBSERV line (cross-cutting — touches how records flow through enrichment); do it as its
 > own change so one CloudWatch Insights query reconstructs a single document's full journey.
 
+> **✅ RESOLVED THIS SESSION (2026-10-15/16) — merged to main.** Marking the big-ticket items
+> fixed so the backlog reflects reality:
+> - **0-bibliography (the central multi-session blocker): FIXED.** Three root causes landed —
+>   stable supplemental cache key (PR #401), `DynamoCacheBackend.__contains__` Dynamo fall-through
+>   (#402), submission-order batch result mapping (#393/#395) — PLUS the architecture fix:
+>   bibliography is now a DETERMINISTIC PRIMARY pass from parsed footnotes/endnotes (#405), durable
+>   in S3 within Phase 2 (#413), with deterministic public_domain license + source/resource-url
+>   split (#413). Verified live: 16 RoerDams records in S3, automatic, no batch/cache dependency.
+> - **NAT flapping: FIXED (PR #409, deployed).** Single-decider model — phases NEVER tear down;
+>   a 4h-cron `nat_teardown` Lambda is the sole decider (demand-gated via DynamoDB free endpoint +
+>   per-container `/status` HTTP API / option 3; 10-min recheck; endpoints created/deleted WITH NAT).
+>   SNS-completion teardown + openserp second-decider removed.
+> - **Operator email alerts: FIXED.** `dev-wwii-phase2-complete` now has a confirmed email
+>   subscription (was Slack-only); config documented (#411).
+> - **Phase 3 observability: DONE (PR #412).** All 6 steps emit OBSERV counts + drop-reasons
+>   (geocode skip-reasons, bib.resolve not-citation samples, phase3.step per source).
+> - **Radon complexity + lint-scope + queue-scaling analysis: addressed/recorded** (#407/#408/#410).
+> REMAINING Phase-3 bugs still OPEN (see items below): military/archival citation detector rejects
+> NARA-resolvable refs as not-citation; geocoding skipped all 27 (reason now observable); the
+> supplemental→enrichment overlay convergence + per-doc correlation id.
+
 1. **~~[HIGH · cost/correctness] Idle-infra teardown backstop reaper~~ ✅ DONE 2026-10-11** —
    (a) root cause fixed: `openserp_manager` now excludes OpenSERP's OWN tasks from the active-work
    count (an idle openserp task no longer blocks its own teardown); (b) new HOURLY
