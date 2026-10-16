@@ -66,6 +66,21 @@ bottom); what remains is ranked here. Current ordered priority:
 > NARA-resolvable refs as not-citation; geocoding skipped all 27 (reason now observable); the
 > supplemental→enrichment overlay convergence + per-doc correlation id.
 
+> **⚠️ [MED · scalability] NARA-searchability is a hand-maintained regex allowlist — won't scale
+> across corpora (noted 2026-10-16).** `_is_nara_searchable` / `_NARA_INDICATORS` /
+> `_verbatim_looks_citational` in `src/enrichment/bibliography_resolver.py` gate whether a citation
+> reaches `_search_nara` via a hardcoded list of US-Army green-book / OCMH shorthand (MS #, Interv,
+> AAR, corps, G-3, Ltr, Jnl, ...). This is correct for the current corpus (RoerDams, ETO green
+> books) and now word-boundary-anchored (so "rg" no longer matches "argues"), BUT it is a per-corpus
+> allowlist: a different source family (German KTBs, RAF/ONI naval, French archives) uses different
+> shorthand → unmatched citational refs silently fall through to `not_found` — the SAME class of bug
+> just fixed, recurring per corpus. Every expansion also re-risks substring false positives.
+> **DESIRED:** stop regex-GATING NARA-searchability. Keep the regex as a cheap fast-path ACCEPT, but
+> route citational-but-unmatched refs to the LLM (we already have `_identify_record_group` /
+> `_identify_nara_record` Grok helpers in this file) to decide NARA-searchable + extract the record
+> group — aligning with the standing "LLM does the semantic classification, not regex" guidance. The
+> regex stays only as the safety filter keeping obvious prose out of NARA.
+
 1. **~~[HIGH · cost/correctness] Idle-infra teardown backstop reaper~~ ✅ DONE 2026-10-11** —
    (a) root cause fixed: `openserp_manager` now excludes OpenSERP's OWN tasks from the active-work
    count (an idle openserp task no longer blocks its own teardown); (b) new HOURLY
