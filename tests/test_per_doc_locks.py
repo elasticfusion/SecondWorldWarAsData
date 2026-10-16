@@ -100,13 +100,6 @@ def test_other_phase_locked_serial_singleton_same_phase():
                 assert ecs_entrypoint._other_phase_locked("phase2_extract.py") is False
 
 
-def test_any_pipeline_lock_held_true_when_any():
-    with patch.object(
-        ecs_entrypoint, "_held_lock_keys", return_value=["lock#dev-wwii-phase1-parse"]
-    ):
-        assert ecs_entrypoint._any_pipeline_lock_held() is True
-
-
 # --- _openserp_demand_present: operator rule — multiple jobs in play => keep up;
 #     no jobs => allow shutdown (aggregate demand, not single-job completion) ---
 
@@ -160,19 +153,6 @@ def test_openserp_demand_failsafe_true_on_error():
     ):
         with patch.dict(os.environ, {"ENV_NAME": "dev"}):
             assert ecs_entrypoint._openserp_demand_present() is True
-
-
-def test_any_pipeline_lock_held_false_when_none():
-    with patch.object(ecs_entrypoint, "_held_lock_keys", return_value=[]):
-        assert ecs_entrypoint._any_pipeline_lock_held() is False
-
-
-def test_any_pipeline_lock_held_assumes_locked_on_error():
-    """On scan error, must assume locked (don't tear down NAT prematurely)."""
-    with patch.object(
-        ecs_entrypoint, "_held_lock_keys", side_effect=RuntimeError("boom")
-    ):
-        assert ecs_entrypoint._any_pipeline_lock_held() is True
 
 
 def test_openserp_demand_false_when_only_current_task_running():

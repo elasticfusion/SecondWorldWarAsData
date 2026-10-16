@@ -174,12 +174,16 @@ def test_demand_check_error_assumes_present():
         assert nm._nat_demand_present() is True  # never tear down on uncertainty
 
 
-def test_sns_completion_skips_teardown_when_demand():
-    with patch.object(nm, "_nat_demand_present", return_value=True):
-        with patch.object(nm, "_delete_all") as del_all:
-            out = nm.handler(_sns_completion_event(), None)
-    assert out["reason"] == "nat demand present"
-    del_all.assert_not_called()  # NAT NOT torn down — the churn fix
+def test_sns_completion_never_tears_down():
+    """Phase-completion SNS is now a NO-OP: teardown is owned exclusively by the
+    nat_teardown cron Lambda. SNS never tears down, regardless of demand."""
+    for demand in (True, False):
+        with patch.object(nm, "_nat_demand_present", return_value=demand):
+            with patch.object(nm, "_delete_all") as del_all:
+                out = nm.handler(_sns_completion_event(), None)
+        assert out["action"] == "none"
+        assert "nat_teardown cron" in out["reason"]
+        del_all.assert_not_called()  # phase completion NEVER tears down
 
 
 # NOTE: the "teardown proceeds when no demand" path is exercised by the existing

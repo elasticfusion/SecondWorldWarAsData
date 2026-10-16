@@ -116,8 +116,55 @@ def test_non_http_url_dropped(tmp_path):
         ],
     )
     extract_bibliography_deterministic(pf, out, book="RoerDams", chapter="chapter3a")
-    urls = []
+    source_urls = []
     for f in _bib_files(out):
-        urls += json.loads(f.read_text()).get("resource_urls", [])
-    assert "javascript:alert(1)" not in urls
-    assert "https://x/#fn2" in urls
+        d = json.loads(f.read_text())
+        # resource_urls stays EMPTY (filled by Phase-3 resolution); the parsed source
+        # URL is provenance on the mention.
+        assert d.get("resource_urls") == []
+        for m in d.get("mentions") or []:
+            if m.get("source_url"):
+                source_urls.append(m["source_url"])
+    assert "javascript:alert(1)" not in source_urls  # non-http dropped
+    assert "https://x/#fn2" in source_urls  # http(s) kept as provenance
+
+
+def test_materialize_local_mode_noop(tmp_path, monkeypatch):
+    """In local-file mode (no entity store) materialize is a no-op — records are
+    already on disk; returns 0 without error."""
+    import src.extraction.bibliography as bib
+
+    monkeypatch.setattr(
+        "src.utils.entity_store.get_entity_store", lambda: None, raising=False
+    )
+    assert bib.materialize_bibliography_to_local(tmp_path / "out") == 0
+
+
+def test_ibiblio_source_is_public_domain(tmp_path):
+    """Owner rule: anything derived from ibiblio/hyperwar (US Army CMH green books) is a
+    US Government work -> public domain, set deterministically at parse time."""
+    out = tmp_path / "out"
+    pf = _write_parsed(
+        out,
+        "footnotes",
+        [
+            {
+                "number": 1,
+                "url": "https://www.ibiblio.org/hyperwar/USA/x.html#fn1",
+                "text": "Interv, Collins.",
+            },
+            {"number": 2, "url": "https://example.com/x", "text": "Non-gov source."},
+        ],
+    )
+    extract_bibliography_deterministic(pf, out, book="RoerDams", chapter="chapter3a")
+    by_url = {}
+    for f in _bib_files(out):
+        d = json.loads(f.read_text())
+        src = ((d.get("mentions") or [{}])[0]).get("source_url", "")
+        by_url[src] = d
+    pub = next(d for u, d in by_url.items() if "ibiblio" in u)
+    assert pub["license"] == "public_domain"
+    assert (pub.get("copyright_status") or {}).get("status") == "public_domain"
+    assert pub.get("resource_urls") == []  # left empty for Phase 3 resolution
+    other = next(d for u, d in by_url.items() if "example.com" in u)
+    assert other["license"] == "unknown"  # left for Phase 3 resolution

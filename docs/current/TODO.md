@@ -48,6 +48,47 @@ bottom); what remains is ranked here. Current ordered priority:
    parsed `footnotes[].text` and skips the fragile ibiblio HTML re-fetch. VERIFIED LIVE on a clean
    RoerDams rerun: all 4 ch2 footnotes now carry real citation text in `-parsed.json`/`-endnotes.json`
    (was `{number,url}` only). HOWEVER this unblocked only the first step — see 2b (the NEW blocker).
+   - **[MED · scaling — queue-size-driven Phase 2 concurrency: enable the dispatcher, NOT an ASG.
+     owner Q 2026-10-16.]** Question: should Phase 2 autoscale on the size of the pending queue, and
+     does AWS ASG support that? VALIDATED against code:
+     • CURRENT (serial, `MULTI_DOC_ENABLED` off): `_launch_phase2_if_idle` (trigger_handler.py:1683)
+       returns early if ANY pipeline task is RUNNING, so additional books queued while Phase 2 runs
+       are PARKED in `pending#parsed#{book}` and run ONE CONTAINER AT A TIME after the current task
+       exits (reconcile backstop re-drives). Phase tasks are ONE-SHOT, book-scoped Fargate `run-task`
+       (not a Service); the running container is never reused across books. NO autoscaling on phase
+       tasks. The only autoscaling in-repo is the OpenSERP WORKER ECS Service (openserp-worker-
+       autoscaler, "backlog per worker" target) — the correct ECS pattern for interchangeable
+       queue-draining workers.
+     • AWS support: YES — ECS Service Application Auto Scaling target-tracking on a backlog-per-task
+       custom metric (ApproximateNumberOfMessagesVisible ÷ runningTaskCount), and EC2 ASG step/target
+       policies on an SQS metric. BUT ASG scales EC2 INSTANCES — wrong primitive here (this is
+       Fargate/serverless; no instances). And the Phase 2 extractors are NOT queue-draining workers:
+       one-shot, book-scoped, Grok-Batch-API-bound (not CPU/request-bound), so naive Service/ASG
+       autoscaling on queue depth would also IGNORE the Fargate vCPU quota and cause run-task
+       throttling.
+     • RIGHT ANSWER (already built, gated off): the M4.3 dispatcher (Step Functions Map + clamp_pool,
+       dispatcher.yaml:257, dispatcher_handlers.enumerate_pending) ALREADY scales Phase 2 concurrency
+       on the pending queue — `enumerate_pending` scans READY `doc#` records and the Map runs them at
+       `MaxConcurrency = pool.effective = min(pool_max, Fargate-vCPU-quota-cap)`. That IS queue-driven
+       scaling, quota-aware, one container per doc. DISABLED today (MULTI_DOC_ENABLED=false, starts at
+       MaxConcurrency=1 == serial). RECOMMENDATION: do NOT add an ASG. For queue-driven Phase 2
+       concurrency, ENABLE + mature the dispatcher (MULTI_DOC_ENABLED=true, tune pool_min/pool_max) as
+       a deliberate, separately-tested enablement. The pool already runs min(backlog, pool_max), so it
+       effectively scales with backlog up to the quota-clamped cap.
+   - **[MED · security/architecture — centralize + make secrets dynamic, owner Q 2026-10-15.]** API
+     keys are loaded STATICALLY AT STARTUP into `os.environ` and scattered across 7 sites (ecs_entrypoint
+     `_load_secrets` for GROK_API_KEY + the new NARA_API_KEY, plus duplicated `get_secret_value` in
+     lambda_handlers phase2/phase3/batch_poller/trigger/nat_manager). The NARA load I added deliberately
+     MATCHED this existing pattern (consistency > divergence). ★ OWNER (2026-10-15, decisive): startup
+     load DEFEATS THE PURPOSE of Secrets Manager — a key ROTATED IN SECRETS MANAGER BETWEEN BUILDS is
+     NOT picked up until the image is rebuilt/redeployed. The whole point of SM is to decouple secret
+     rotation from deploys; caching at startup re-couples them. Also: (a) rotation-unsafe mid-run
+     (24h batch tasks), (b) higher-exposure (env readable by subprocesses/crash dumps for the whole run).
+     DIRECTION: ONE centralized accessor `secrets.get(name)` with a short-TTL cache + rotation-awareness
+     (re-fetch on auth failure / TTL expiry), out of the ambient env, replacing ALL 7 scattered startup
+     loads uniformly — Grok, NARA, NOAA, future keys. Cross-cutting refactor, NOT per-key. Weigh SM
+     call cost/latency/throttling + NAT/VPC-endpoint egress. Until then, startup-load stands as the
+     consistent interim.
    - **[RADON COMPLEXITY TRIAGE — all bibliography-path C+ blocks, owner directive 2026-10-15.]**
      Reviewed every radon C-grade-or-worse function across bibliography code; simplified accidental
      complexity (behavior-identical, gate 2189, PR #407), listed the inherently-complex below.
@@ -94,6 +135,110 @@ bottom); what remains is ranked here. Current ordered priority:
      (schema `src/schemas/bibliography_output.py`: BibliographyID+title required, reference_type,
      verbatim_reference, resource_urls all present); supplemental's `_route_by_content_class` becomes an
      update-in-place classifier on those records.
+   - **[PHASE 2 & 3 FIELD OWNERSHIP + the resolver short-circuit interaction, owner review 2026-10-15.]**
+     Field population plan for the deterministic bibliography records (which currently carry only
+     verbatim_reference + resource_urls + public_domain license):
+     • `license`/`copyright_status` → ✅ DONE deterministically in Phase 2 (ibiblio/hyperwar = US-Gov
+       public domain, from the source domain).
+     • `citation.title`/`alt_title`/`author`/`publisher`/`document_type`/… → PHASE 2 LLM OVERLAY. The
+       supplemental prompt already extracts these (prompts/supplemental.yaml: title/alt_title with the
+       edited-volume rule book-title→title, chapter-title→alt_title). The overlay must UPDATE the
+       deterministic record in place (see the remove-divergent-logic item) rather than create a
+       parallel record, and parse them from `verbatim_reference`.
+     • `availability`/real `resource_urls`/`archive_reference_number` → PHASE 3 RESOLUTION (NARA /
+       archive.org / LOC). NARA key IS wired (NARA_API_KEY→api.nara_api_key→resolver), but config.yaml
+       has it empty — load the `dev-wwii-pipeline/nara-api-key` secret for a real NARA attempt.
+     ❗ CRITICAL INTERACTION (blocks the ultimate NARA goal): `resolve_bibliography_entry`
+     (bibliography_resolver.py:117) SHORT-CIRCUITS to `search_status=resolved` whenever
+     `entry.resource_urls` is non-empty — AND the deterministic pass puts the ibiblio `#fnN` SOURCE
+     page URL into top-level `resource_urls`. So all 16 records would be marked "resolved" and Phase 3
+     would NEVER search NARA. But the ibiblio `#fnN` link is the PROVENANCE page where the citation
+     TEXT appeared, NOT a resolvable copy of the CITED document ("MS # B-810, Schmidt, Kaempfe im
+     Rheinland" is a NARA/archival doc). FIX (source-URL vs resource-URL, a distinction the prompt
+     already names): the deterministic pass should put the ibiblio source URL on the MENTION as
+     provenance (e.g. mention.source_url) and leave top-level `resource_urls` EMPTY, so Phase 3
+     resolution runs and fills `resource_urls` with the real NARA/archive locator. (Alternatively, the
+     resolver short-circuit must not treat a provenance/source URL as a resolution.) This is the next
+     change needed before a real NARA resolution is possible.
+   - **[HIGH · bibliography — resolver rejects MILITARY/ARCHIVAL citations as 'not-citation', so NARA
+     never runs on the most-resolvable records. VERIFIED LIVE 2026-10-15.]** Phase 3 ran on the 16
+     records (NARA key loaded ✓, resource_urls empty ✓) but logged `0 resolved, 0 not found, 16
+     not-citation`. Root cause: `_verbatim_looks_citational` (bibliography_resolver.py) requires
+     book-style structure — `RG\d+` / `pp?\.\d+` / box|folder|file|vol|no + \d / a published "Last,
+     First" + 4-digit year. The green-book footnotes are ARCHIVAL/MILITARY references whose structure
+     is different and are EXACTLY the NARA-resolvable ones, so they're filtered out. Tested our actual
+     verbatims: "MS # B-810, …Schmidt, Kaempfe im Rheinland" → False; "VII Corps Opns Memo 101, 1 Oct"
+     → False; "Ltr, Hodges to Gerow, 11 Sep 44, FUSA G-3 file" → False; "Interv with Collins, 25 Jan
+     54" → False; only the book-like "V Corps Operations in the ETO, p. 256." → True. FIX: add military/
+     archival citation signals to `_STRUCT_PATTERNS` — `MS\s*#?\s*[A-Z]-?\d+` (manuscript series),
+     `\bLtr\b`/`\bMemo\b`/`\bInterv\b`/`\bRpt\b`/`\bJnl\b`/`\bOpns?\b` (doc types), "X to Y"
+     correspondence, military dates `\b\d{1,2}\s+[A-Z][a-z]{2}\s+\d{2}\b`, unit+number (`Corps|Div|Army
+     \w* \d+`), `G-\d` staff files. These are MORE citational than a book ref (primary archival
+     sources). This is the final blocker to an actual NARA hit; do after the current run + download.
+   - **[HIGH · infra — NAT FLAPPING (owner, revisit after this run 2026-10-15).]** NAT keeps being torn
+     down then needing re-creation between phases/tasks (pre-warm → run → idle teardown → next task
+     stalls waiting for NAT; I've had to hand-invoke nat-manager create repeatedly this session). This
+     is the Priority-1 NAT-architecture refactor: consolidate NAT lifecycle into ONE Lambda owning
+     up-on-demand + a 4-hour demand-check teardown (no in-progress AND none pending → down; in-progress
+     → wait 4h recheck), remove per-phase/ECS hand-management, and fix the orphaned-lock + poller-wedge
+     flapping. Deal with this next.
+   - **[MED · DQ alarm triage — `bibliography citation_unresolvable 16/32 (50%)`, owner-forwarded
+     2026-10-15.] NOT an upstream data defect** (despite the alert's "likely CODE defect" wording).
+     Root cause understood: `semantic_flags._citation_flags` sets `citation_unresolvable` when a record
+     has neither `archive_reference_number` NOR `resource_urls`. My source-url/resource-url split
+     intentionally leaves `resource_urls=[]` on the deterministic record (so Phase 3 runs NARA), so
+     every as-yet-unresolved record correctly carries the flag. It is a TRANSIENT PRE-RESOLUTION state:
+     verified `flags_for('bibliography', {...resource_urls:[...]})` and `{...archive_reference_number}`
+     both return `[]`, so **Phase 3 resolution CLEARS the flag** (the flag is recomputed+replaced on
+     every annotate). So 16/16 unresolved-at-Phase-2 is EXPECTED, not a defect. TWO defensible fixes:
+     (1) the "32" is a DOUBLE-COUNT — `_record_record_quality` fires on BOTH the deterministic
+     `store_bibliography_entry` write AND the `materialize_bibliography_to_local` mirror-write (same 16
+     records written twice through the central guard). The mirror-write is a pure Dynamo→S3 copy and
+     should NOT re-record quality telemetry (pass a flag to skip `_record_record_quality`, or mirror
+     without going through the quality path). (2) `citation_unresolvable` BEFORE Phase 3 has run is
+     expected; it should not trigger the "systematic validation failure / upstream CODE defect" alarm
+     at the Phase-2 stage — either exclude it from that specific alarm, or only alarm on it POST-Phase-3
+     (when a still-unresolved citation IS meaningful). Neither is a data-correctness bug; both reduce
+     false-alarm noise.
+   - **[HIGH · DURABILITY BUG — deterministic bibliography is Dynamo-first, but S3 is the SYSTEM OF
+     RECORD. owner directive 2026-10-15.]** ARCHITECTURE (owner, authoritative): **S3 is the definitive,
+     durable store; DynamoDB is a DERIVED, rebuildable, cost-incurring working index** — S3 can
+     rebuild Dynamo, not vice-versa, and Dynamo is more expensive. So the write dependency must be
+     S3-authoritative, Dynamo-derived. CURRENT (wrong) behavior, PROVEN in the e2e: in AWS mode
+     `store_bibliography_entry` → `DynamoEntityStore`, so the deterministic pass wrote the 16 RoerDams
+     records to the Dynamo cache (`entity#bibliography#…` in dev-wwii-api-cache) and the Phase-2 submit
+     task logged `Skipping bibliography/supplemental bulk download (Dynamo-backed dedup)` — leaving
+     `s3://…/output/bibliography/` EMPTY (0 files). The Dynamo→S3 materialization only runs later in the
+     DEDUP phase (`_materialize_from_dynamo`, ecs_entrypoint:931/1849). So if the batch/retrieve/dedup
+     chain stalls or is interrupted (as it did repeatedly this session), the records NEVER reach the
+     durable store — exactly the fragility the deterministic-primary pass was meant to ELIMINATE. I had
+     to materialize+`aws s3 cp` the 16 records to S3 BY HAND to make them durable (verified: 16
+     well-formed `output/bibliography/*.json` with verbatim_reference + resource_urls + mention
+     provenance). FIX: the deterministic pass (and the bibliography write path generally) must persist
+     to S3 as the AUTHORITATIVE write within Phase 2 — either write `output/bibliography/*.json` locally
+     + background/final-sync in the submit task (so it's durable the moment Phase 1 parse + the primary
+     pass complete, no dedup/batch dependency), with the Dynamo index written as a DERIVED copy; or run
+     `_materialize_from_dynamo`+sync for bibliography at end of the submit pass. Also reconsider the
+     "Skipping bibliography bulk download (Dynamo-backed dedup)" optimization under the S3-authoritative
+     model. This is the last correctness gap before bibliography is truly robust.
+     ✅ BRIDGE IMPLEMENTED 2026-10-15: `materialize_bibliography_to_local(output_root)` (bibliography.py)
+     mirrors the Dynamo-backed entries to local `output/bibliography/*.json`, called in phase2 right
+     after the deterministic pass, so the Phase-2 background/final sync persists them to S3 within the
+     submit pass (no dedup/batch dependency). Forward-compatible with Dynamo deprecation: when the
+     entity store is removed, `get_entity_store()` returns None → the helper is a no-op and the
+     file-based `store_bibliography_entry` path already writes `output/bibliography/*.json` directly.
+   - **[DIRECTION · owner 2026-10-15: DynamoDB will likely be DEPRECATED ENTIRELY from JSON storage.]**
+     S3 is the definitive, durable, cheaper store and can rebuild Dynamo; Dynamo is a derived index and
+     costs more. PLAN accordingly: do NOT deepen the Dynamo write/dedup path. The reason Dynamo was
+     introduced for bibliography (store_bibliography_entry docstring) was concurrency-safe cross-Fargate
+     writes + avoiding a 13,566-file bulk download — so DEPRECATION REQUIRES first solving those in an
+     S3-native way: (a) a concurrency-safe S3 write/dedup scheme for the bibliography dir (e.g.
+     per-record immutable files keyed by a deterministic content hash so concurrent books never collide,
+     + a periodically-rebuilt index object, instead of a single flock-guarded index.json), and (b) keep
+     Phase 2 from bulk-downloading the whole bib dir (scoped/manifest reads). Until then, the file path
+     + the materialize bridge above keep S3 authoritative. When ready, remove DynamoEntityStore from the
+     JSON entity path entirely (people/places/… too, not just bibliography) and derive any needed index
+     from S3.
    - **[HIGH · remove divergent logic — follow-up to the deterministic pass, owner Q 2026-10-15].** The
      deterministic pass now CREATES bibliography records; the old supplemental `document_reference`
      branch in `_route_by_content_class` STILL calls `store_bibliography_entry` to create records too.
@@ -103,10 +248,10 @@ bottom); what remains is ranked here. Current ordered priority:
      the parsed title, so it creates a SECOND file = a DUPLICATE of the same citation (deterministic
      "Unknown" + enriched real-title). This is the previous-logic to remove: supplemental's
      document_reference branch must UPDATE THE DETERMINISTIC RECORD IN PLACE (enrichment overlay —
-     fill title/author/classification on the existing record), NOT create a parallel one. Mechanism:
-     add a `verbatim` match-key category to the dedup index (alongside titles/refs/authors) in BOTH the
-     local-file index AND the DynamoEntityStore title-index path, so a record created with title=verbatim
-     and later enriched with a real title still resolves to the SAME entry by its stable verbatim key;
+     fill title/author/classification on the existing record), NOT create a parallel one. Mechanism
+     (REVISED for Dynamo deprecation — do NOT invest in the Dynamo index): put the convergence in the
+     S3/FILE layer — a stable `verbatim` match-key in the FILE-based bibliography index so a record
+     created with title=verbatim and later enriched with a real title resolves to the SAME file entry;
      then make the supplemental branch pass the deterministic record's identity (or match by verbatim)
      and merge fields instead of inserting. Scoped as its OWN change (touches the shared dedup across
      local + Dynamo stores) with its own review — NOT folded into the additive deterministic-pass PR,

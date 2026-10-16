@@ -72,6 +72,48 @@ def extract_bibliography_deterministic(
     return stored
 
 
+def materialize_bibliography_to_local(output_root: Path) -> int:
+    """Mirror Dynamo-backed bibliography entries to local ``output/bibliography/*.json``
+    so the Phase-2 S3 sync persists them to the DURABLE system of record (S3 is
+    authoritative; DynamoDB is a derived, rebuildable index). In local-file mode (no
+    entity store) this is a no-op — the records are already on disk. Fail-safe; returns
+    the number of files written.
+
+    Rationale (owner): S3 is the definitive store and can rebuild Dynamo; the reverse
+    is not guaranteed and Dynamo is costlier. The deterministic pass must therefore make
+    bibliography durable in S3 within Phase 2, independent of the later dedup-phase
+    materialization (an interrupted run must not lose records from the durable store).
+    """
+    try:
+        from src.utils.entity_store import get_entity_store
+
+        store = get_entity_store()
+    except Exception:  # noqa: BLE001 - import/availability guard
+        store = None
+    if store is None:
+        return 0  # local-file mode: entries are already written to disk by the store
+    bib_dir = output_root / "bibliography"
+    bib_dir.mkdir(parents=True, exist_ok=True)
+    written = 0
+    try:
+        from src.utils.file_lock import write_json_with_lock
+
+        for item in store.list_all("bibliography"):
+            entry = item.get("data") or {}
+            fname = (
+                item.get("filename") or f"{entry.get('BibliographyID', 'unknown')}.json"
+            )
+            try:
+                if write_json_with_lock(bib_dir / fname, entry, entity="bibliography"):
+                    written += 1
+            except OSError as e:
+                logger.warning("materialize bibliography %s failed: %s", fname, e)
+    except Exception as e:  # noqa: BLE001 - never break the pass on a store read error
+        logger.warning("materialize_bibliography_to_local failed: %s", e)
+    logger.info("OBSERV bib.materialized local_files=%d (for S3 durability)", written)
+    return written
+
+
 def _collect_parsed_notes(parsed_file: Path) -> Optional[List[Dict[str, Any]]]:
     """Read the parsed file and return tagged footnote/endnote dicts, or ``None`` if the
     file is absent/unreadable (so the caller returns 0 without raising)."""
@@ -132,7 +174,7 @@ def _note_to_material(note: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     if not (isinstance(url, str) and url.lower().startswith(("http://", "https://"))):
         url = ""
     number = note.get("number")
-    return {
+    material = {
         "verbatim_reference": text,
         "reference_type": note.get("_ref_type", "footnote"),
         "reference_number": str(number) if number is not None else "",
@@ -140,7 +182,42 @@ def _note_to_material(note: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         # Title/author left for the LLM enrichment overlay; store_bibliography_entry
         # falls back to verbatim_reference for the title/dedup key when title=Unknown.
         "citation": {"title": "Unknown"},
-        "resource_urls": [url] if url else [],
+        # SOURCE URL = provenance (where the citation TEXT appeared, e.g. the ibiblio
+        # hyperwar page) -> carried on the mention. Deliberately NOT `resource_urls`:
+        # resource_urls means "where the CITED document is obtainable" (NARA/archive.org),
+        # filled by Phase-3 resolution. Putting the source URL in resource_urls would trip
+        # the resolver's "has resource_urls -> already resolved" short-circuit and PREVENT
+        # NARA resolution. So resource_urls starts EMPTY.
+        "source_url": url,
+        "resource_urls": [],
+    }
+    # DETERMINISTIC license: anything sourced from ibiblio/hyperwar (the US Army CMH
+    # "green books" and material hosted there) is a US Government work -> PUBLIC DOMAIN.
+    # Knowable at parse time from the source domain, so set it here (not deferred to the
+    # Phase-3 resolver / LLM).
+    material.update(_public_domain_fields(url))
+    return material
+
+
+# ibiblio hyperwar hosts the US Army Center of Military History "green books" (US Gov
+# works) + related public-domain material. A citation sourced from there is public domain.
+_PUBLIC_DOMAIN_HOSTS = ("ibiblio.org/hyperwar", "hyperwar")
+
+
+def _public_domain_fields(url: str) -> Dict[str, Any]:
+    """Deterministic public-domain license fields for a US-Gov/ibiblio-hyperwar source
+    URL; empty dict otherwise (left for Phase-3 resolution / LLM)."""
+    u = (url or "").lower()
+    if not any(h in u for h in _PUBLIC_DOMAIN_HOSTS):
+        return {}
+    return {
+        "license": "public_domain",
+        "license_notes": "US Government work (US Army CMH / ibiblio hyperwar); public domain.",
+        "copyright_status": {
+            "status": "public_domain",
+            "determination_basis": "US Government work hosted on ibiblio hyperwar (CMH green books).",
+            "jurisdiction": "US",
+        },
     }
 
 
@@ -287,6 +364,12 @@ def _build_mention(
         mention["pages"] = citation["pages"]
     if citation.get("volume"):
         mention["volume"] = citation["volume"]
+    # Provenance: the SOURCE URL where the citation TEXT appeared (e.g. the ibiblio
+    # hyperwar page). Distinct from the entry's `resource_urls` (where the CITED document
+    # is obtainable — filled by Phase-3 resolution). Kept on the mention so it does not
+    # trip the resolver's "has resource_urls -> already resolved" short-circuit.
+    if material.get("source_url"):
+        mention["source_url"] = material["source_url"]
     return mention
 
 
@@ -304,6 +387,7 @@ def _build_bib_entry(material: Dict[str, Any]) -> Dict[str, Any]:
         "archive_physical_address": material.get("archive_physical_address"),
         "license": material.get("license", "unknown"),
         "license_notes": material.get("license_notes"),
+        "copyright_status": material.get("copyright_status"),
         "mentions": [],
     }
 
