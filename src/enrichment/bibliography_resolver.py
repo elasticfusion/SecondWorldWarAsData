@@ -488,24 +488,28 @@ def _search_online_sources(
     config: Dict,
 ) -> Optional[Tuple[str, str]]:
     """Search NARA, OpenSERP, Archive.org, LOC for online copies."""
-    # 1. NARA catalog
+    # 1. NARA catalog — scope by the DETERMINISTIC record group (not Grok) so the query is
+    #    bounded to the right RG instead of matching tens of thousands of unrelated records.
     nara_key = config.get("nara_api_key")
     if nara_key and _is_nara_searchable(entry, verbatim):
-        ref = entry.get("archive_reference_number") or ""
-        if ref and ref != "None":
-            # Extract just the RG number (e.g., "RG 407, Entry 427") — strip Grok commentary
-            rg_short = ref.split("\n")[0].strip()[:50]
-            # Combine RG with verbatim for specific search
-            query = f"{verbatim[:60]} {rg_short}" if verbatim else rg_short
-        else:
-            query = verbatim[:100] or title
-        url = _search_nara(query, nara_key, grok_client, verbatim)
+        rg = _lookup_record_group(verbatim or search_text or title)
+        rg_num = rg[1] if rg else None
+        query = verbatim[:100] or title
+        url = _search_nara(
+            query, nara_key, grok_client, verbatim, record_group_number=rg_num
+        )
         if url:
             return (url, "nara_catalog")
-        # Retry with alt_title if available
+        # Retry with the expanded alt_title (LLM semantic expansion) if available
         alt_title = (entry.get("citation") or {}).get("alt_title") or ""
         if alt_title and alt_title != query:
-            url = _search_nara(alt_title[:100], nara_key, grok_client, verbatim)
+            url = _search_nara(
+                alt_title[:100],
+                nara_key,
+                grok_client,
+                verbatim,
+                record_group_number=rg_num,
+            )
             if url:
                 return (url, "nara_catalog")
 
@@ -669,27 +673,138 @@ Return ONLY "YES" or "NO"."""
         return False
 
 
-def _identify_nara_record(verbatim: str, grok_client: Any) -> Optional[str]:
-    """Use Grok to identify the NARA Record Group for a citation."""
-    from src.utils.prompt_loader import render_prompt
+# Authoritative Record Group lookup (NARA Record Group Explorer,
+# https://www.archives.gov/findingaid/record-group-explorer). DETERMINISTIC — Grok is NOT
+# used to determine record groups (its RG guesses are unreliable); Grok is limited to
+# semantic work (alt_title expansion + match verification). Each entry maps a word-boundary
+# citation signal to the authoritative (RG label, record-group number).
+#
+# Coverage spans all service branches (the project is not ground-army-only): Army ground,
+# Army Air Forces, Navy, Marine Corps, Coast Guard, plus theater/allied/occupation HQ,
+# strategic/intel, and seized foreign records. Order matters: SERVICE-SPECIFIC and
+# distinctive signals first, generic Army unit-record signals LAST (so a naval or air
+# "G-3"/journal is not mis-bucketed into RG 407). A miss returns None (unscoped, best-effort
+# search) — never blocks the pipeline.
+_RG_LOOKUP: List[Tuple["re.Pattern[str]", Tuple[str, int]]] = [
+    # --- Foreign / seized / theater-specific (most distinctive) ---
+    # German Report Series / Foreign Military Studies ("MS # B-810", "MS P-...").
+    (
+        re.compile(r"\bMS\s*#|\bMS\s+[A-Z]-\d|Foreign Military Studies", re.I),
+        ("RG 549", 549),
+    ),
+    # Seized German/foreign records / Kriegstagebuch (war diary), OB WEST, OKW/OKH.
+    (
+        re.compile(r"Kriegstagebuch|\bKTB\b|OB\s+WEST|\bOKW\b|\bOKH\b", re.I),
+        ("RG 242", 242),
+    ),
+    # --- Air (Army Air Forces / USAF) ---
+    # Numbered/strategic air forces, bomb/fighter groups & squadrons, mission/combat reports.
+    (
+        re.compile(
+            r"\bAAF\b|Army Air Force|\b(?:Eighth|Ninth|Twelfth|Fifteenth)\s+Air\s+Force"
+            r"|\bBomb(?:ardment)?\s+(?:Gp|Group|Sqdn|Squadron)\b|Fighter\s+(?:Gp|Group|Sqdn)"
+            r"|Mission Report|\bINTOPS\b",
+            re.I,
+        ),
+        ("RG 18", 18),
+    ),
+    # USAF commands/activities/organizations (post-1947 + historical studies).
+    (re.compile(r"\bUSAF\b|Air Force Historical|AFHRA", re.I), ("RG 342", 342)),
+    # --- Navy ---
+    # Chief of Naval Operations, war diaries of ships/task forces, action reports (naval),
+    # COMINCH, fleet/task force.
+    (
+        re.compile(
+            r"\bCNO\b|Chief of Naval Operations|\bCOMINCH\b|War Diary,?\s+(?:USS|Task|Fleet)"
+            r"|Action Report,?\s+USS|\bUSS\b|Task\s+(?:Force|Group)\s+\d|\bCTF\b",
+            re.I,
+        ),
+        ("RG 38", 38),
+    ),
+    # General records of the Department of the Navy / SecNav.
+    (
+        re.compile(r"Department of the Navy|SecNav|Secretary of the Navy", re.I),
+        ("RG 80", 80),
+    ),
+    # Office of Naval Records & Library / ONI.
+    (
+        re.compile(
+            r"Naval Records (?:and|&) Library|\bONI\b|Office of Naval Intelligence",
+            re.I,
+        ),
+        ("RG 45", 45),
+    ),
+    # --- Marine Corps ---
+    (
+        re.compile(
+            r"Marine\s+(?:Div|Division|Regt|Regiment|Bn|Battalion)|\bUSMC\b|Fleet Marine Force"
+            r"|\bFMF\b|Marine Corps",
+            re.I,
+        ),
+        ("RG 127", 127),
+    ),
+    # --- Coast Guard ---
+    (re.compile(r"Coast Guard|\bUSCG\b", re.I), ("RG 26", 26)),
+    # --- Theater / Allied / occupation HQ ---
+    (
+        re.compile(r"\bETOUSA\b|Hq\s+ETO|European Theater of Operations", re.I),
+        ("RG 498", 498),
+    ),
+    (
+        re.compile(r"\bSHAEF\b|Allied\s+Force|\bAFHQ\b|Allied Expeditionary", re.I),
+        ("RG 331", 331),
+    ),
+    (
+        re.compile(r"US Occupation|Military Government|\bUSFET\b|\bOMGUS\b", re.I),
+        ("RG 260", 260),
+    ),
+    # --- Strategic / intelligence / War Dept ---
+    (re.compile(r"Strategic Bombing Survey|\bUSSBS\b", re.I), ("RG 243", 243)),
+    (re.compile(r"\bOSS\b|Office of Strategic Services", re.I), ("RG 226", 226)),
+    (
+        re.compile(
+            r"\bWDGS\b|War Department General|\bOPD\b|\bJCS\b|Joint Chiefs", re.I
+        ),
+        ("RG 165", 165),
+    ),
+    # --- Army ground unit records (GENERIC — must stay LAST so service-specific wins) ---
+    # AAR, G-1..G-4 journals, periodic reports, field orders, corps/division operational
+    # records -> Adjutant General's Office.
+    (
+        re.compile(
+            r"\bAAR\b|\bJnl\b|Per\s+Rpt|\bG-[1-4]\b|\bFO\b|\bOpns?\b|Corps|\bDiv\b"
+            r"|Field Order|After Action|Journal",
+            re.I,
+        ),
+        ("RG 407", 407),
+    ),
+]
 
-    prompt = render_prompt("nara_identify", verbatim=verbatim)
 
-    try:
-        response = grok_client.chat_completion(
-            prompt=prompt,
-            system_prompt="You are a NARA archivist specializing in WWII military records.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="bibliography_nara",
+def _lookup_record_group(verbatim: str) -> Optional[Tuple[str, int]]:
+    """Deterministic (RG label, RG number) for a citation, via the authoritative Record
+    Group Explorer alias map; None if no confident match. NO LLM."""
+    text = verbatim or ""
+    for pattern, rg in _RG_LOOKUP:
+        if pattern.search(text):
+            return rg
+    return None
+
+
+def _identify_nara_record(verbatim: str, grok_client: Any = None) -> Optional[str]:
+    """The NARA Record Group for a citation — DETERMINISTIC lookup (not Grok).
+
+    Returns the bare 'RG N' label (e.g. 'RG 407'), never a free-form rationale.
+    ``grok_client`` is accepted for signature compatibility but unused: record-group
+    determination is a lookup against NARA's authoritative Record Group Explorer, not a
+    semantic judgement. Fail-safe: a miss returns None and the pipeline continues."""
+    rg = _lookup_record_group(verbatim)
+    if rg:
+        logger.info(
+            "NARA identify: %s (deterministic) | citation=%s", rg[0], verbatim[:80]
         )
-        ref = response.strip().strip('"')
-        if ref and ref != "UNKNOWN" and "RG" in ref:
-            logger.info("NARA identify: FOUND %s | citation=%s", ref, verbatim[:80])
-            return ref
-        logger.info("NARA identify: NOT FOUND | citation=%s", verbatim[:80])
-    except Exception as e:
-        logger.debug("NARA identification failed: %s", e)
+        return rg[0]
+    logger.info("NARA identify: NOT FOUND (no RG alias) | citation=%s", verbatim[:80])
     return None
 
 
@@ -739,14 +854,23 @@ def _extract_na_id(hit: Dict[str, Any]) -> str:
 
 
 def _search_nara(
-    query: str, api_key: str, grok_client: Any, verbatim: str
+    query: str,
+    api_key: str,
+    grok_client: Any,
+    verbatim: str,
+    record_group_number: Optional[int] = None,
 ) -> Optional[str]:
-    """Search NARA catalog API v2."""
+    """Search NARA catalog API v2.
+
+    When ``record_group_number`` is known (deterministic RG lookup), the search is scoped
+    with ``recordGroupNumber=N`` so the query is bounded to the right record group instead
+    of matching tens of thousands of unrelated records (which defeats verification)."""
     from src.utils.search_cache import cache_result, get_cached
 
-    # Cache is keyed on the RAW query (not safe_q) consistently on read and write. If the
-    # sanitizer changes, bump this intentionally — stale negatives key on the raw input.
-    cached = get_cached("nara", query)
+    # Cache is keyed on the RAW query + RG scope (so scoped vs unscoped don't collide). If
+    # the sanitizer changes, bump intentionally — stale negatives key on the raw input.
+    cache_q = f"{query}|rg={record_group_number}" if record_group_number else query
+    cached = get_cached("nara", cache_q)
     if cached == "NOT_FOUND":
         return None
     if cached:
@@ -770,11 +894,14 @@ def _search_nara(
                 "OBSERV nara.query skipped=empty_after_sanitize raw=%r",
                 _CTRL.sub(" ", query or "")[:60],
             )
-            cache_result("nara", query, None)
+            cache_result("nara", cache_q, None)
             return None
+        params: Dict[str, str] = {"q": safe_q, "limit": "5"}
+        if record_group_number:
+            params["recordGroupNumber"] = str(record_group_number)
         resp = session.get(
             "https://catalog.archives.gov/api/v2/records/search",
-            params={"q": safe_q, "limit": "5"},
+            params=params,
             headers={"x-api-key": api_key, "Accept": "application/json"},
             timeout=30,
         )
@@ -838,11 +965,11 @@ def _search_nara(
                 )
                 continue
             logger.debug("  ✓ Accepted: %s", url)
-            cache_result("nara", query, url)
+            cache_result("nara", cache_q, url)
             return url
     except Exception as e:
         logger.debug("NARA search failed: %s", e)
-    cache_result("nara", query, None)
+    cache_result("nara", cache_q, None)
     return None
 
 

@@ -239,3 +239,39 @@ def test_citation_key_distinct_for_deterministic_records():
         "mentions": [],
     }
     assert _citation_key(only_alt) == "sylvan diary"
+
+
+def test_record_group_lookup_is_deterministic_not_grok():
+    """Record groups are a DETERMINISTIC lookup against NARA's Record Group Explorer, not a
+    Grok guess, and cover ALL service branches (not just ground army). _identify_nara_record
+    returns a bare 'RG N' (no prose rationale)."""
+    from src.enrichment.bibliography_resolver import (
+        _lookup_record_group,
+        _identify_nara_record,
+    )
+
+    expect = {
+        "MS # B-810, Schmidt.": "RG 549",
+        "VII Corps Opns Memo 101, 1 Oct.": "RG 407",
+        "5th Armd Div G-2 Per Rpt 85.": "RG 407",
+        "Kriegstagebuch, OB WEST, 16 Nov 44.": "RG 242",
+        "SHAEF G-3 Summary.": "RG 331",
+        "398th Bomb Gp Mission Report, 8th Air Force, 14 Nov 44.": "RG 18",
+        "War Diary, USS Texas, 6 Jun 44.": "RG 38",
+        "4th Marine Division AAR, Iwo Jima.": "RG 127",
+        "USCG cutter patrol report.": "RG 26",
+        "USSBS European Report 3.": "RG 243",
+        "OSS London mission file.": "RG 226",
+    }
+    for v, rg in expect.items():
+        got = _lookup_record_group(v)
+        assert got is not None and got[0] == rg, (v, got)
+    # service-specific must win over the generic Army unit-record rule
+    assert _lookup_record_group("4th Marine Division AAR, Iwo Jima.")[0] == "RG 127"
+    assert _lookup_record_group("War Diary, USS Texas, 6 Jun 44.")[0] == "RG 38"
+    assert _lookup_record_group("Just some narrative prose.") is None
+    # bare RG string, no Grok call, no rationale
+    ref = _identify_nara_record("MS # B-810, Schmidt.", grok_client=None)
+    assert ref == "RG 549"
+    assert "\n" not in ref and "references" not in ref.lower()
+    assert _identify_nara_record("Just some narrative prose.", grok_client=None) is None
