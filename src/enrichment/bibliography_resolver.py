@@ -338,7 +338,56 @@ _NARA_INDICATORS = {
     "recon",
     "bn",
     "regt",
+    # German Report Series / Foreign Military Studies (the "MS #/MS No" manuscripts) —
+    # NARA RG 549 / OCMH. A major, individually-catalogued NARA holding.
+    "ms #",
+    "ms no",
+    "ms. ",
+    "ms b-",
+    "ms p-",
+    "ms t-",
+    "ms d-",
+    # Combat Interviews (NARA RG 407) — cited as "Interv", "Combat Interv".
+    "interv",
+    "combat interview",
+    # Corps / operations shorthand pervasive in the green books (NARA RG 407 unit records).
+    "corps",
+    "opns",
+    "operations memorandum",
+    "opns memo",
+    "memo",
+    "ltr",
+    "rpt",
+    "msg",
+    "sitrep",
+    "overlay",
+    "ftp file",
+    "go ",
+    "so ",
 }
+
+
+def _build_indicator_regex() -> "re.Pattern[str]":
+    """Compile the indicators into one word-boundary alternation.
+
+    Bare-substring matching mis-fired on short indicators ("rg" inside "argues", "bn"
+    inside "urbane"). Each indicator is anchored so it only matches at token edges: a
+    non-alnum (or string edge) must precede/follow. Manual space padding in the set (e.g.
+    " inf ", "go ") is stripped since the boundary anchors now encode that intent.
+    """
+    alts = sorted(
+        {ind.strip() for ind in _NARA_INDICATORS if ind.strip()}, key=len, reverse=True
+    )
+    body = "|".join(re.escape(a) for a in alts)
+    return re.compile(rf"(?<![0-9a-z])(?:{body})(?![0-9a-z])", re.IGNORECASE)
+
+
+_NARA_INDICATOR_RE = _build_indicator_regex()
+
+
+def _nara_indicator_match(text: str) -> bool:
+    """True if any NARA indicator appears as a bounded token in text."""
+    return bool(_NARA_INDICATOR_RE.search(text))
 
 
 def _is_nara_searchable(entry: Dict, verbatim: str) -> bool:
@@ -358,7 +407,15 @@ def _is_nara_searchable(entry: Dict, verbatim: str) -> bool:
     ).lower()
     if not text.strip():
         return False
-    return any(indicator in text for indicator in _NARA_INDICATORS)
+    # Word-boundary match (not bare substring): a bare "rg" would otherwise match prose like
+    # "argues"/"charge", and "bn"/"go" similarly. \b anchors each indicator to a token edge.
+    if _nara_indicator_match(text):
+        return True
+    # Consistency with the citation detector: if the verbatim already carries military/
+    # archival citation STRUCTURE (STRONG signal), it is a NARA candidate even if it uses a
+    # shorthand not in the indicator list. Prevents a record that passed _looks_like_citation
+    # from being silently dropped here before _search_nara ever runs.
+    return _verbatim_looks_citational(verbatim)
 
 
 def _resolve_archive_record(

@@ -125,3 +125,27 @@ def test_nara_html_shell_widened_sniff():
         _is_html_shell(_R("application/json", "<!-- edge -->\n<!doctype html>")) is True
     )
     assert _is_html_shell(_R("application/json", '{"body":{"hits":{}}}')) is False
+
+
+def test_nara_searchable_greenbook_forms():
+    """Green-book/OCMH citation forms (MS #, Interv, Opns Memo, corps) must be NARA-
+    searchable so _search_nara actually runs; plain prose must not (incl. substrings like
+    'rg' in 'argues' that a bare-substring match wrongly accepted)."""
+    from src.enrichment.bibliography_resolver import _is_nara_searchable
+
+    e = {"citation": {"title": "Unknown"}}
+    for v in (
+        "MS # B-810, Generalleutnant Schmidt, Kaempfe im Rheinland.",
+        "VII Corps Opns Memo 101, 1 Oct.",
+        "See Interv with Collins, 25 Jan 54.",
+        "AAR, 30th Inf Div, Oct 44.",
+        "Ltr, Hodges to Bradley, 12 Nov 44.",
+        "Jnl, 1st Inf Div G-3, 16 Nov 44.",
+    ):
+        assert _is_nara_searchable(e, v) is True, v
+    for v in (
+        "The attack began at dawn and continued all day.",
+        "Smith argues the decision was premature.",
+        "The urbane colonel charged across a large bridge in an organized group.",
+    ):
+        assert _is_nara_searchable(e, v) is False, v
