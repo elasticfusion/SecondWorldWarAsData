@@ -33,6 +33,17 @@ bottom); what remains is ranked here. Current ordered priority:
 > so a submit-time batch key and a re-run lookup key for the same request can be compared to pinpoint
 > cache-key divergence). As the end-to-end trace is built, add a per-document CORRELATION id to every
 > OBSERV line so one CloudWatch Insights query reconstructs a document's whole journey.
+>
+> **✅ PHASE 3 INSTRUMENTED 2026-10-16 (owner: observability first).** All 6 Phase-3 steps now emit
+> OBSERV (PR pending): `OBSERV geocode.dir` (attempted/geocoded/not_found/low_conf/errors/skipped +
+> a SKIP-REASON breakdown no_name/non_geocodable/has_coords/already_attempted — "skipped 27" is no
+> longer a black box); `OBSERV bib.resolve` (in/resolved/not_found/not_citation/deduped/queued/held/
+> skipped/errors + up to 5 truncated not_citation_samples — surfaces the military-citation pattern
+> gap instantly); `OBSERV phase3.step name=.. enriched=.. status=ok|error [error=..]` for EVERY
+> source via the `_run_step` wrapper (people_groups/places/bibliography/bibliography_resolve/
+> openserp_*/noaa/external_maps). All fail-safe. DEFERRED FOLLOW-UP: the per-document CORRELATION id
+> on every OBSERV line (cross-cutting — touches how records flow through enrichment); do it as its
+> own change so one CloudWatch Insights query reconstructs a single document's full journey.
 
 1. **~~[HIGH · cost/correctness] Idle-infra teardown backstop reaper~~ ✅ DONE 2026-10-11** —
    (a) root cause fixed: `openserp_manager` now excludes OpenSERP's OWN tasks from the active-work
