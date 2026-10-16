@@ -9,6 +9,7 @@ by searching external sources and merging additional data.
 import argparse
 import json
 import os
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -23,6 +24,10 @@ from src.utils.logger import setup_logging
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Strip C0 controls (\n, \r, etc.) from exception text before it enters a log line or the
+# operator-facing source_stats error — prevents OBSERV log-line forging (repo convention).
+_CTRL = re.compile(r"[\x00-\x1f\x7f]")
 
 
 def _notify_enrichment_started() -> None:
@@ -347,7 +352,8 @@ def main():
     def _run_step(name: str, fn) -> int:
         """Run one enrichment source; record enriched/status/error. Returns the
         enriched count (0 on error). Never raises — a failed source is captured,
-        logged, and surfaced, not swallowed."""
+        logged, and surfaced, not swallowed. Emits OBSERV phase3.step per source so the
+        whole Phase-3 hand-off (N enriched / status / error) is visible in one query."""
         try:
             result = fn()
             count = (
@@ -356,14 +362,28 @@ def main():
                 else getattr(result, "geocoded", 0) or 0
             )
             source_stats[name] = {"enriched": count, "status": "ok"}
+            try:
+                logger.info(
+                    "OBSERV phase3.step name=%s enriched=%d status=ok", name, count
+                )
+            except Exception:  # noqa: BLE001 - observability never breaks the step
+                pass
             return count
         except Exception as e:  # noqa: BLE001 - capture + surface, don't abort Phase 3
             logger.error("Enrichment source '%s' FAILED: %s", name, e, exc_info=True)
             source_stats[name] = {
                 "enriched": 0,
                 "status": "error",
-                "error": str(e)[:300],
+                "error": _CTRL.sub(" ", str(e))[:300],
             }
+            try:
+                logger.info(
+                    "OBSERV phase3.step name=%s enriched=0 status=error error=%s",
+                    name,
+                    _CTRL.sub(" ", str(e))[:120],
+                )
+            except Exception:  # noqa: BLE001
+                pass
             return 0
 
     # Enrich people — MOVED TO PHASE 2. All Grokipedia/Wikipedia people enrichment

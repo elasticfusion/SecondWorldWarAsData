@@ -20,6 +20,10 @@ from src.enrichment.local_holdings import build_holdings_index, find_local_holdi
 
 logger = logging.getLogger(__name__)
 
+# Strip C0 controls (incl. \n AND \r) from any untrusted-at-rest text before it enters a
+# log line — prevents OBSERV log-line forging (repo convention; matches grok_client).
+_CTRL = re.compile(r"[\x00-\x1f\x7f]")
+
 
 def _looks_like_citation(entry: Dict[str, Any]) -> bool:
     """Heuristic: does this entry look like a bibliographic citation vs. narrative?
@@ -995,6 +999,7 @@ def resolve_bibliography_dir(
     skip_files = {"index.json", "review_queue.json"}
     resolved_by_key: Dict[str, Dict[str, Any]] = {}
     review_queue: List[Dict[str, Any]] = []
+    not_citation_samples: List[str] = []
     processed = 0
 
     # Build the local-holdings index ONCE and inject it so each entry can be
@@ -1021,6 +1026,16 @@ def resolve_bibliography_dir(
             continue
 
         status, was_deduped = result
+        if status == "not_citation" and len(not_citation_samples) < 5:
+            try:
+                _d = json.loads(f.read_text(encoding="utf-8"))
+                _v = (_d.get("verbatim_reference") or "") or (
+                    (_d.get("mentions") or [{}])[0].get("verbatim_reference", "")
+                )
+                if _v:
+                    not_citation_samples.append(_CTRL.sub(" ", _v)[:80])
+            except (OSError, json.JSONDecodeError, ValueError, IndexError):
+                pass
         if _account_bib_status(stats, status, was_deduped):
             # Real citation, unresolved online → human disposition.
             data = json.loads(f.read_text(encoding="utf-8"))
@@ -1047,4 +1062,21 @@ def resolve_bibliography_dir(
         stats["skipped"],
         stats["errors"],
     )
+    try:
+        logger.info(
+            "OBSERV bib.resolve in=%d resolved=%d not_found=%d not_citation=%d "
+            "deduped=%d queued=%d held=%d skipped=%d errors=%d not_citation_samples=%s",
+            processed,
+            stats["resolved"],
+            stats["not_found"],
+            stats["not_citation"],
+            stats["deduped"],
+            stats["queued"],
+            stats["held_unprocessed"],
+            stats["skipped"],
+            stats["errors"],
+            not_citation_samples,
+        )
+    except Exception:  # noqa: BLE001 - observability must never break resolution
+        pass
     return stats

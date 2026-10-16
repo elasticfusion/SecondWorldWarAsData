@@ -107,6 +107,12 @@ class GeocodeRunReport:
     low_confidence: int = 0
     skipped: int = 0
     errors: int = 0
+    # Skip-reason breakdown (OBSERV): why a place was skipped, so "skipped N" is never
+    # a black box. Sums to `skipped`.
+    skip_no_name: int = 0
+    skip_non_geocodable: int = 0  # unit-relative area ("5th Division sector"), etc.
+    skip_has_coords: int = 0  # already geocoded (doesn't need it)
+    skip_already_attempted: int = 0  # prior attempt recorded (not forced)
     details: List[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -118,6 +124,10 @@ class GeocodeRunReport:
             "low_confidence": self.low_confidence,
             "skipped": self.skipped,
             "errors": self.errors,
+            "skip_no_name": self.skip_no_name,
+            "skip_non_geocodable": self.skip_non_geocodable,
+            "skip_has_coords": self.skip_has_coords,
+            "skip_already_attempted": self.skip_already_attempted,
             "details": self.details,
         }
 
@@ -292,6 +302,24 @@ def geocode_places_dir(
         report.skipped,
         report.errors,
     )
+    try:
+        logger.info(
+            "OBSERV geocode.dir attempted=%d geocoded=%d not_found=%d low_conf=%d "
+            "errors=%d skipped=%d skip_reasons={no_name:%d,non_geocodable:%d,"
+            "has_coords:%d,already_attempted:%d}",
+            report.attempted,
+            report.geocoded,
+            report.not_found,
+            report.low_confidence,
+            report.errors,
+            report.skipped,
+            report.skip_no_name,
+            report.skip_non_geocodable,
+            report.skip_has_coords,
+            report.skip_already_attempted,
+        )
+    except Exception:  # noqa: BLE001 - observability must never break the pass
+        pass
     return report
 
 
@@ -335,13 +363,22 @@ def _geocode_one_file(
         return
 
     name = _place_name(place)
-    if (
-        not name
-        or not is_geocodable_name(name)
-        or not _needs_geocode(place)
-        or (_already_attempted(place) and not force)
-    ):
+    # Attribute each skip to a reason (OBSERV) instead of a black-box "skipped".
+    if not name:
         report.skipped += 1
+        report.skip_no_name += 1
+        return
+    if not is_geocodable_name(name):
+        report.skipped += 1
+        report.skip_non_geocodable += 1
+        return
+    if not _needs_geocode(place):
+        report.skipped += 1
+        report.skip_has_coords += 1
+        return
+    if _already_attempted(place) and not force:
+        report.skipped += 1
+        report.skip_already_attempted += 1
         return
 
     report.attempted += 1
