@@ -189,21 +189,45 @@ def resolve_bibliography_entry(
     availability = (entry.get("availability") or "").lower()
     cfg = config or {}
 
-    resolver = _pick_resolver(doc_type, availability)
+    # Deterministic bibliography records carry no document_type (title="Unknown"), so they
+    # would default to the generic resolver (no NARA). Route by NARA-searchability of the
+    # verbatim when the type is unknown, so archival refs reach _resolve_archive -> NARA.
+    nara_ok = _is_nara_searchable(entry, _entry_verbatim(entry))
+    resolver = _pick_resolver(doc_type, availability, nara_ok)
     result = resolver(entry, citation, grok_client, cfg)
 
     _apply_result(entry, result)
     return entry
 
 
-def _pick_resolver(doc_type: str, availability: str):
-    """Select resolver function by document type."""
+def _entry_verbatim(entry: Dict[str, Any]) -> str:
+    """The citation text: top-level verbatim_reference, else the first mention's (the
+    deterministic/source-url split stores it on the mention)."""
+    citation = entry.get("citation") or {}
+    verbatim = str(entry.get("verbatim_reference") or citation.get("verbatim") or "")
+    if verbatim.strip():
+        return verbatim
+    for m in entry.get("mentions") or []:
+        mv = str(m.get("verbatim_reference") or "")
+        if mv.strip():
+            return mv
+    return ""
+
+
+def _pick_resolver(doc_type: str, availability: str, nara_searchable: bool = False):
+    """Select resolver function by document type.
+
+    ``nara_searchable`` lets an untyped-but-archival record (no document_type, e.g. a
+    deterministic bibliography record) route to the archive/NARA resolver instead of the
+    generic fallback that never queries NARA."""
     if doc_type in ARCHIVE_TYPES or availability == "archive":
         return _resolve_archive
     if doc_type in BOOK_TYPES or availability == "offline":
         return _resolve_book
     if doc_type in ARTICLE_TYPES:
         return _resolve_article
+    if not doc_type and nara_searchable:
+        return _resolve_archive
     return _resolve_generic_entry
 
 
