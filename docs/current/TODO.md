@@ -175,6 +175,48 @@ bottom); what remains is ranked here. Current ordered priority:
      correspondence, military dates `\b\d{1,2}\s+[A-Z][a-z]{2}\s+\d{2}\b`, unit+number (`Corps|Div|Army
      \w* \d+`), `G-\d` staff files. These are MORE citational than a book ref (primary archival
      sources). This is the final blocker to an actual NARA hit; do after the current run + download.
+     ✅ CITATION DETECTOR FIXED 2026-10-16: added military/archival STRONG signals to
+     `_STRUCT_PATTERNS` (MS#, Ltr/Memo/Interv/Rpt/Jnl/Opns/AAR/FO/…, unit+G-N/file) and — after a
+     false-positive deep-dive (owner) — DEMOTED the military short-date to a WEAK/corroborating signal
+     (it appears pervasively in WWII prose; as a strong signal it mis-flagged ~36% of narrative prose
+     like "On 6 Jun the division attacked"). Verified: all 7 real green-book citations → True, 0 false
+     positives across 14 adversarial prose lines. Tests: tests/unit/test_citation_detector.py.
+   - **[HIGH · bibliography — THREE footnote/endnote CLASSES (owner directive 2026-10-16), hybrid
+     SPLIT is the gap.]** Authoritative taxonomy (docs/current/features/supplemental/
+     SUPPLEMENTAL_COMPLETE.md:9-15): a footnote/endnote is one of THREE kinds —
+     (1) STRICTLY CITATIONAL → `document_reference` → bibliography → Phase-3 NARA/archive resolution;
+     (2) STRICTLY PROSE → `factual_content` → treated like a Phase-2 EVENT (`{chapter}-notes-event.json`,
+     entities extracted); the Phase-3 resolver MUST skip these (correctly "not_citation" — the detector
+     fix above keeps class-2 prose out of NARA);
+     (3) HYBRID prose+citation → doc line 15 says "Mixed entries (factual statement + citation) are
+     SPLIT into separate entries" — i.e. must produce BOTH a notes-event (the prose) AND a
+     document_reference (the citation), NOT dumped into `ambiguous`/review_queue.
+     The 3-way split is the PHASE-2 supplemental LLM's job (`content_class` + prompt), NOT the Phase-3
+     binary gate (which is only the safety filter keeping class-2 out of NARA). OPEN WORK: verify the
+     supplemental classifier actually (a) routes class-2 `factual_content` to a notes-event, and
+     (b) SPLITS class-3 hybrids into both a notes-event and a bibliography record (prompt line 71-ish +
+     `_route_by_content_class`), rather than today's ambiguous→review dead-end for mixed entries.
+     ★ CONCRETE DESIGN (owner Q 2026-10-16 "why can't the LLM split prose vs citation?"): it CAN —
+     splitting is a SEMANTIC judgment regex cannot do (why `_verbatim_looks_citational` both under- and
+     over-matched). The current `prompts/supplemental.yaml` only splits MULTIPLE CITATIONS within one
+     endnote ("…Ltr…; Telecon…; Diary…" → 3 entries); it NEVER separates the PROSE portion from the
+     CITATION portion of a single hybrid, and there is no field for the prose half to reach Phase 2.
+     FIX (prompt + schema + routing, one scoped change):
+       1. SCHEMA: add per-entry `prose_content` (narrative text, nullable) + widen `classification`/
+          `content_class` to {citation, prose, hybrid}.
+       2. PROMPT: instruct the LLM — for each endnote, SEPARATE narrative prose from bibliographic
+          citation(s); emit the prose as a prose/hybrid entry (prose_content set) AND each citation as
+          a citation/hybrid entry (citation metadata). Example hybrid: "casualties were understated in
+          early reports; see AAR, 9th Inf Div, 15 Nov 44, FUSA G-1 file." → prose entry
+          ("casualties were understated…") + citation entry ("AAR, 9th Inf Div, 15 Nov 44, …").
+       3. ROUTING (`_route_by_content_class`): prose_content → `{chapter}-notes-event.json`
+          (Phase-2-style event, entity extraction); each citation → `store_bibliography_entry`
+          (Phase-3 NARA). A HYBRID produces BOTH. The regex detector (`_verbatim_looks_citational`,
+          now military/archival-aware, 0 prose FPs) becomes a non-decisional SAFETY BACKSTOP only.
+       NOTE: changes the supplemental output shape → re-touches `sanitize_supplemental_data`, the
+       deterministic bibliography overlay, and the cache-key stable_material; test the 3 classes +
+       hybrid-produces-both. This is the right architecture and SUPERSEDES the regex-gate approach as
+       the decision-maker.
    - **[HIGH · infra — NAT FLAPPING (owner, revisit after this run 2026-10-15).]** NAT keeps being torn
      down then needing re-creation between phases/tasks (pre-warm → run → idle teardown → next task
      stalls waiting for NAT; I've had to hand-invoke nat-manager create repeatedly this session). This
