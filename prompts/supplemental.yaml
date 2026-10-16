@@ -106,12 +106,18 @@ rules:
   - >-
     For ARCHIVAL / primary-source citations written in military shorthand (US Army "Green Book"
     footnotes), expand the abbreviations into a full, human-readable "alt_title" that a catalog
-    search could match. Expand unit, document-type, and organizational abbreviations, and where
-    you confidently know the person, give their full name. This is semantic interpretation — do
-    NOT invent facts; if unsure, expand only what is certain. Examples:
-    "See Interv with Collins, 25 Jan 54." → alt_title: "Interview with J. Lawton Collins, 25
-    January 1954"; "VII Corps Opns Memo 101, 1 Oct" → "VII Corps Operations Memorandum 101, 1
-    October"; "Ltr, Hodges to Gerow, 11 Sep 44, FUSA G-3 file" → "Letter, Courtney Hodges to
-    Leonard Gerow, 11 September 1944, First U.S. Army G-3 file"; "MS # B-810" → "Foreign Military
-    Studies Manuscript B-810". Keep "title" as the work/series when identifiable, else leave the
+    search could match. Expand (a) UNIT / ORGANIZATION designations — e.g. Inf→Infantry,
+    Armd→Armored, Div→Division, Regt→Regiment, Bn→Battalion, FA→Field Artillery, Cav→Cavalry,
+    Engr→Engineer, A Gp→Army Group, FUSA→First U.S. Army, keeping the ordinal/number (379th Inf →
+    379th Infantry); (b) DOCUMENT-TYPE abbreviations — AAR→After Action Report, Ltr→Letter,
+    Memo→Memorandum, Rpt→Report, Jnl→Journal, Opns→Operations, FO→Field Order, Interv→Interview,
+    KTB→Kriegstagebuch (war diary); and (c) where you confidently know the PERSON, give their full
+    name. This is semantic interpretation — do NOT invent facts; if unsure, expand only what is
+    certain. Examples:
+    "379th Inf AAR, 14 Nov 44." → alt_title: "379th Infantry After Action Report, 14 November
+    1944"; "See Interv with Collins, 25 Jan 54." → "Interview with J. Lawton Collins, 25 January
+    1954"; "VII Corps Opns Memo 101, 1 Oct" → "VII Corps Operations Memorandum 101, 1 October";
+    "Ltr, Hodges to Gerow, 11 Sep 44, FUSA G-3 file" → "Letter, Courtney Hodges to Leonard Gerow,
+    11 September 1944, First U.S. Army G-3 file"; "MS # B-810" → "Foreign Military Studies
+    Manuscript B-810". Keep "title" as the work/series when identifiable, else leave the
     deterministic value; the expanded shorthand goes in "alt_title".
