@@ -2036,3 +2036,24 @@ _Moved from the HIGH blocks above once merged. Prevention + detection layers com
   record-shape validation and is out of scope for this read-vs-write reconciliation. (The write-path
   duplicate in `openserp_enrichment._validate_before_write` was already removed — it delegates to the
   central `_validate_entity`.)
+
+> **[HIGH · correctness] Phase-3 bibliography resolution does not re-attempt + races on concurrent
+> runs (diagnosed 2026-10-16).** Two coupled findings from the RG-lookup verification:
+>   1. RE-ATTEMPT: the RG-lookup fix (#424) demonstrably works — a run logged resolved=9 (up from 2)
+>      with RG-scoped queries (hits 165k->7k). BUT the resolver SKIPS records that already carry a
+>      terminal search_status: _process_bib_file returns ("skipped") when search_status=="resolved",
+>      and once a record is persisted "not_found" a later (improved) run re-attempts only those — yet
+>      a subsequent clean run logged skipped=11, i.e. records are getting stuck at a prior status so
+>      the improved resolver never re-runs on them. FIX: treat not_found as NON-terminal (re-attempt
+>      on each run until resolved), and only skip records that are genuinely resolved (have a
+>      resource_url / archive_reference_number). Consider a resolver-version stamp so a code bump
+>      forces re-resolution.
+>   2. CONCURRENCY RACE: multiple Phase-3 tasks ran overlapping (5 task IDs in one window; THREE
+>      "Phase complete" lines, durations 5281s/2271s/4599s) because manual `aws ecs run-task`
+>      launches are NOT guarded by lock#dev-wwii-phase3-enrich the way the event-driven path is. They
+>      race on the same output/bibliography/*.json S3 objects — last-writer-wins, and the last writer
+>      had the stale resolved=2, clobbering the resolved=9. FIX: guard manual phase launches with the
+>      same Dynamo lock (or refuse to start if a phase3 task is already running). Operationally: only
+>      ever run ONE phase3 at a time and let it fully STOP before re-reading S3.
+>   The RG-lookup code itself is correct + merged; these are the operational/persistence blockers to
+>   SEEING resolved=9 land durably in S3.
