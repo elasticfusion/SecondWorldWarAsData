@@ -2101,6 +2101,12 @@ _Moved from the HIGH blocks above once merged. Prevention + detection layers com
 > re-spend an API query per document; downloads then hit only the public media URLs (no quota, no
 > key). Add an OBSERV counter for NARA API calls to watch the monthly budget. Keep a courtesy delay
 > on downloads but no hard NARA ceiling.
+> QUOTA INCREASE: the 10k/month is a SOFT default — NARA's README states most needs fit it and a
+> higher limit can be REQUESTED (email Catalog_API@nara.gov, same contact as key requests). So the
+> quota is an escape valve, not a hard ceiling, if corpus-scale search+acquisition approaches it.
+> We still DEFAULT to minimizing API calls (persist-at-resolve, OBSERV counter) — good-citizen +
+> not dependent on an approved bump + lower latency — and request a bump only if the counter shows
+> we're trending toward the limit.
 
 
 > duplicated + schema doesn't enforce consistency (user-found 2026-10-16).** Three coupled issues:
