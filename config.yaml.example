@@ -216,6 +216,11 @@ storage:
 aws:
   enabled: false
   region: "us-east-1"
+  # Operator alert email. deploy_aws.py passes this as the CFN NotificationEmail param,
+  # which subscribes it to the {env}-wwii-phase2-complete SNS topic so dedup-gate review
+  # alerts + pipeline/cost notifications reach EMAIL as well as Slack (alerts go to BOTH;
+  # email is the redundancy leg). Leave empty to skip the email subscription.
+  notification_email: ""
 
 logging:
   level: "INFO"

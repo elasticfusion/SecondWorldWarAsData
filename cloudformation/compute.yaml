@@ -788,6 +788,71 @@ Resources:
       Principal: events.amazonaws.com
       SourceArn: !GetAtt IdleBackstopReaperSchedule.Arn
 
+  # --- NAT teardown decider (SOLE owner of networking teardown) ---
+  # Fires every 4h. If the DynamoDB queue has work OR a container is processing -> does
+  # nothing and self-schedules a 10-min recheck (via scheduler role). Only when the queue
+  # is empty AND no container is running does it invoke nat_manager action=delete. Phases
+  # NEVER tear down; this is the single teardown decider.
+  NatTeardownFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-nat-teardown
+      Runtime: python3.12
+      Handler: lambda_handlers.nat_teardown.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      MemorySize: 128
+      Timeout: 300
+      Role: !Ref LambdaExecutionRoleArn
+      # IN-VPC so it can reach each pipeline task's private-IP /status endpoint on 8077
+      # (option 3 — the real on-container 'ongoing task?' API). Its own AWS-API calls
+      # (ec2/ecs/lambda/sts/scheduler/dynamodb) egress via the RUNNING NAT: nat_teardown
+      # only does real work when NAT is UP (if NAT is down, _nat_present()==False and it
+      # exits before any egress), so a running NAT is always available for those calls.
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSGId
+        SubnetIds:
+          - !Ref PrivateSubnet1Id
+          - !Ref PrivateSubnet2Id
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          CACHE_TABLE: !Ref CacheTableName
+          NAT_TEARDOWN_RECHECK_MINUTES: "10"
+          STATUS_PORT: "8077"
+          SCHEDULER_ROLE_ARN: !Sub arn:aws:iam::${AWS::AccountId}:role/${EnvironmentName}-wwii-scheduler-role
+
+  NatTeardownSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-nat-teardown-schedule
+      Description: Every 4h — the SOLE NAT/endpoint teardown decider (queue empty + no container -> delete; else 10-min recheck)
+      ScheduleExpression: rate(4 hours)
+      State: ENABLED
+      Targets:
+        - Id: NatTeardownTarget
+          Arn: !GetAtt NatTeardownFunction.Arn
+
+  NatTeardownPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref NatTeardownFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt NatTeardownSchedule.Arn
+
+  # Allow the EventBridge Scheduler (10-min self-reschedule one-shots) to invoke it,
+  # scoped to the nat-teardown-recheck schedule only (least privilege).
+  NatTeardownSchedulerPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref NatTeardownFunction
+      Action: lambda:InvokeFunction
+      Principal: scheduler.amazonaws.com
+      SourceArn: !Sub arn:aws:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/default/${EnvironmentName}-wwii-nat-teardown-recheck
+
   MetricsFunction:
     Type: AWS::Lambda::Function
     Properties:

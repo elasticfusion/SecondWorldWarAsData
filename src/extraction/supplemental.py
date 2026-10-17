@@ -2,6 +2,7 @@
 
 import json
 import logging
+import hashlib
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import ulid
@@ -124,7 +125,34 @@ def create_supplemental_prompt(
             endnote_block=endnote_block,
             ref_type_hint=ref_type_hint,
         )
-        prompts.append((sub_event_id, prompt))
+        # Deterministic identity for cache keying — DELIBERATELY excludes the volatile
+        # `text` (Sub-event_fulltext is regenerated/summarized differently between a
+        # batch submit and the retrieve re-run) AND the endnote_block (same volatility
+        # class — must not reintroduce a submit-vs-rerun mismatch). The event/sub-event
+        # ids are deterministic content-derived ULIDs and, with the sorted reference
+        # numbers, uniquely identify the sub-event, so a submit and its retrieve resolve
+        # to the SAME supplemental cache entry.
+        stable_material = "|".join(
+            [
+                str(event_id),
+                str(sub_event_id),
+                "e:"
+                + ",".join(
+                    str(n)
+                    for n in sorted(
+                        r for r in (endnote_refs or []) if isinstance(r, int)
+                    )
+                ),
+                "f:"
+                + ",".join(
+                    str(n)
+                    for n in sorted(
+                        r for r in (footnote_refs or []) if isinstance(r, int)
+                    )
+                ),
+            ]
+        )
+        prompts.append((sub_event_id, prompt, stable_material))
 
     return prompts
 
@@ -158,11 +186,21 @@ def _apply_defaults(material: Dict[str, Any]) -> None:
     strict ULID pattern."""
     import ulid
 
+    # The LLM emits the class as "classification" (prompt); routing reads "content_class".
+    # Reconcile BEFORE defaulting so the LLM's real class (citation/prose/hybrid) actually
+    # drives the split — otherwise content_class is always absent -> always defaulted ->
+    # every endnote (incl. hybrids) misroutes to the bibliography and the prose half is lost.
+    if material.get("content_class") is None and material.get("classification"):
+        material["content_class"] = material["classification"]
+
     defaults = {
         "MaterialID": lambda: str(ulid.new()),
         "EventID": lambda: str(ulid.new()),
         "Sub-eventID": lambda: str(ulid.new()),
-        "content_class": lambda: "document_reference",
+        # Unknown class -> human review (NOT document_reference: silently storing an
+        # unclassified endnote as a citation, or dropping a prose one, is worse than a
+        # review-queue entry).
+        "content_class": lambda: "ambiguous",
         "reference_type": lambda: "bibliography",
         "verbatim_reference": lambda: "",
         "availability": lambda: "unknown",
@@ -174,9 +212,16 @@ def _apply_defaults(material: Dict[str, Any]) -> None:
 
 def _normalize_enums(material: Dict[str, Any]) -> None:
     """Validate enum fields to allowed values."""
-    valid_classes = {"document_reference", "factual_content", "ambiguous"}
+    valid_classes = {
+        "citation",
+        "prose",
+        "hybrid",
+        "document_reference",
+        "factual_content",
+        "ambiguous",
+    }
     if material.get("content_class") not in valid_classes:
-        material["content_class"] = "document_reference"
+        material["content_class"] = "citation"
 
     ref_type = material.get("reference_type", "")
     if ref_type == "map":
@@ -205,24 +250,29 @@ def _normalize_citation(material: Dict[str, Any]) -> None:
     material["citation"] = citation
 
     if citation.get("title") is None or _is_cross_reference(citation.get("title", "")):
-        mentions = material.get("mentions") or []
-        verbatim = ""
-        for m in mentions:
-            v = m.get("verbatim_reference", "")
-            if v and not _is_cross_reference(v):
-                verbatim = v
-                break
-        if verbatim:
-            import re
-
-            title = re.sub(r"^\d+[\.\:\)]\s*", "", verbatim)
-            title = re.sub(r"^[\*\†\‡\§\¶\#]+\s*", "", title).strip()[:200]
-            citation["title"] = title if title else "Unknown"
-        else:
-            citation["title"] = "Unknown"
+        citation["title"] = _derive_title_from_mentions(material.get("mentions") or [])
 
     if citation.get("author") is None:
         citation["author"] = []
+
+
+def _derive_title_from_mentions(mentions: list) -> str:
+    """Derive a citation title from the first non-cross-reference verbatim mention,
+    stripping leading note-number / marker prefixes. Returns 'Unknown' if none usable.
+    """
+    verbatim = ""
+    for m in mentions:
+        v = m.get("verbatim_reference", "")
+        if v and not _is_cross_reference(v):
+            verbatim = v
+            break
+    if not verbatim:
+        return "Unknown"
+    import re
+
+    title = re.sub(r"^\d+[\.\:\)]\s*", "", verbatim)
+    title = re.sub(r"^[\*\†\‡\§\¶\#]+\s*", "", title).strip()[:200]
+    return title if title else "Unknown"
 
 
 def sanitize_supplemental_data(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -387,9 +437,30 @@ def _load_event_data(event_file: Path) -> Optional[Dict[str, Any]]:
 
 
 def _extract_with_retry(
-    prompt: str, sub_event_id: str, grok_client: GrokClient, max_retries: int = 3
+    prompt: str,
+    sub_event_id: str,
+    grok_client: GrokClient,
+    max_retries: int = 3,
+    stable_key_material: str = "",
 ) -> Optional[Dict[str, Any]]:
-    """Extract supplemental material with retry logic."""
+    """Extract supplemental material with retry logic.
+
+    ``stable_key_material`` (optional) is a deterministic string identifying the request
+    independently of the volatile prompt text (the supplemental prompt embeds regenerated
+    sub-event fulltext/ids that differ between a batch submit and the later retrieve
+    re-run). When provided it is hashed into the cache key so submit and retrieve resolve
+    to the SAME cache entry — the fix for 0-bibliography (prompt-non-determinism cache miss).
+    """
+    cache_key = None
+    if stable_key_material:
+        # Fold the resolved model + temperature into the key so a model/temperature
+        # change auto-invalidates stale entries (the volatile prompt text is excluded
+        # by design; model/temp are the only non-prompt knobs that affect the answer).
+        model = grok_client._get_model(
+            "supplemental"
+        )  # pylint: disable=protected-access
+        key_input = f"supplemental:v1:{model}:0.1:{stable_key_material}"
+        cache_key = hashlib.sha256(key_input.encode("utf-8")).hexdigest()
     for attempt in range(max_retries):
         try:
             response = grok_client.extract_json(
@@ -398,6 +469,7 @@ def _extract_with_retry(
                 temperature=0.1,
                 use_cache=(attempt == 0),
                 cache_type="supplemental",
+                cache_key=cache_key,
             )
 
             response = generate_ulids(response)
@@ -627,6 +699,29 @@ def _filter_anachronistic_citations(
     return groups
 
 
+def _has_document(material: Dict[str, Any]) -> bool:
+    """True if the material carries an actual cited document (so the citation half of a
+    hybrid is stored, but a pure-prose entry with an empty citation is NOT written as a
+    bogus bibliography record). A document is present when the citation has a real title/
+    author or an archive reference, OR (deterministic-pass records) a verbatim_reference
+    with no prose_content."""
+    citation = material.get("citation") or {}
+    if any(
+        (citation.get(k) or "")
+        for k in ("title", "author", "publisher")
+        if str(citation.get(k) or "").strip().lower() not in ("", "unknown", "none")
+    ):
+        return True
+    if material.get("archive_reference_number"):
+        return True
+    # No parsed citation yet, but a verbatim with no separated prose -> treat as a citation
+    # (the deterministic/legacy path where the whole verbatim IS the document reference).
+    return bool(
+        (material.get("verbatim_reference") or "").strip()
+        and not (material.get("prose_content") or "").strip()
+    )
+
+
 def _route_by_content_class(
     all_supplemental: List[Dict[str, Any]],
     bib_dir: Path,
@@ -646,30 +741,50 @@ def _route_by_content_class(
         sub_event_name = sub_event_data.get("Sub-event_Name", "")
 
         for material in sub_event_data.get("Supplemental_Material", []):
-            content_class = material.get("content_class", "document_reference")
+            content_class = material.get("content_class", "ambiguous")
 
-            if content_class == "document_reference":
+            # 3-class model (owner 2026-10-16) + legacy back-compat. A HYBRID is routed to
+            # BOTH the bibliography (its citation) AND the notes-event (its prose).
+            is_citation = content_class in ("citation", "document_reference", "hybrid")
+            is_prose = content_class in ("prose", "factual_content", "hybrid")
+            routed = False
+
+            # CITATION half -> bibliography (Phase-3 resolves it). Skip if the citation is
+            # empty (a pure prose entry carries no document to store).
+            if is_citation and _has_document(material):
                 if enrich:
                     _enrich_material(material, grok_client)
                 from src.extraction.bibliography import store_bibliography_entry
 
                 store_bibliography_entry(bib_dir, material, book, chapter)
                 bib_count += 1
+                routed = True
 
-            elif content_class == "factual_content":
-                factual_items.append(
-                    {
-                        "verbatim_reference": material.get("verbatim_reference", ""),
-                        "reference_type": material.get("reference_type", ""),
-                        "reference_number": material.get("reference_number", ""),
-                        "source_EventID": event_id,
-                        "source_Sub-eventID": sub_event_id,
-                        "source_Sub-event_Name": sub_event_name,
-                        "BibliographyID": material.get("_BibliographyID"),
-                    }
+            # PROSE half -> Phase-2-style notes-event (entities extracted downstream).
+            if is_prose:
+                prose = (
+                    material.get("prose_content")
+                    or material.get("verbatim_reference", "")
+                    or ""
                 )
+                if prose.strip():
+                    factual_items.append(
+                        {
+                            "verbatim_reference": prose,
+                            "reference_type": material.get("reference_type", ""),
+                            "reference_number": material.get("reference_number", ""),
+                            "source_EventID": event_id,
+                            "source_Sub-eventID": sub_event_id,
+                            "source_Sub-event_Name": sub_event_name,
+                            "BibliographyID": material.get("_BibliographyID"),
+                        }
+                    )
+                    routed = True
 
-            elif content_class == "ambiguous":
+            # Human review when explicitly ambiguous OR when the material routed to
+            # NEITHER bibliography nor notes-event (no-silent-drop: a bare cross-reference
+            # / empty-citation-empty-prose entry must not vanish).
+            if content_class == "ambiguous" or not routed:
                 ambiguous_items.append(
                     {
                         "book": book,
@@ -855,9 +970,11 @@ def extract_supplemental(
 
     # Extract from API
     all_supplemental = []
-    for sub_event_id, prompt in prompts:
+    for sub_event_id, prompt, stable_material in prompts:
         logger.debug("Processing sub-event %s", sub_event_id)
-        response = _extract_with_retry(prompt, sub_event_id, grok_client)
+        response = _extract_with_retry(
+            prompt, sub_event_id, grok_client, stable_key_material=stable_material
+        )
         if response:
             all_supplemental.append(response)
 

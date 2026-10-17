@@ -46,3 +46,76 @@ def test_search_iterates_non_nara_repositories():
     # broadened beyond a single 'digitized document' query -> multiple repository-targeted ones
     assert len(issued) >= 2
     assert any("HathiTrust" in q for q in issued)
+
+
+def test_collect_verified_candidates_filters_and_caps():
+    """Shared NARA-style helper: verify each candidate, keep verified ones, cap at max_findings."""
+    cands = [
+        ("https://archive.org/details/a", "Match One"),
+        ("https://archive.org/details/b", "Irrelevant"),
+        ("https://archive.org/details/c", "Match Two"),
+        ("https://archive.org/details/d", "Match Three"),
+    ]
+
+    def verify(query, title, url, grok_client, entry=None):
+        return "Match" in title
+
+    with patch.object(br, "_verify_openserp_match", side_effect=verify):
+        out = br._collect_verified_candidates(
+            "q", cands, grok_client=object(), max_findings=2
+        )
+    # 'Irrelevant' rejected; capped at 2 even though 3 match
+    assert out == [
+        "https://archive.org/details/a",
+        "https://archive.org/details/c",
+    ]
+
+
+def test_collect_verified_candidates_no_grok_accepts_all():
+    cands = [
+        ("https://archive.org/details/a", "x"),
+        ("https://archive.org/details/b", "y"),
+    ]
+    out = br._collect_verified_candidates("q", cands, grok_client=None, max_findings=5)
+    assert out == ["https://archive.org/details/a", "https://archive.org/details/b"]
+
+
+def test_search_online_sources_aggregates_multiple_findings():
+    """multiple findings per entry is OK: archive.org + gutenberg verified hits BOTH land in
+    resource_urls + source_metadata.findings (not first-source short-circuit)."""
+    entry = {"citation": {"title": "The Lorraine Campaign", "author": "Cole"}}
+    config = {
+        "nara_api_key": "",  # NARA off
+        "use_openserp": True,
+        "search_gutenberg": True,
+        "openserp_url": "http://x",
+    }
+    with (
+        patch.object(br, "_is_nara_searchable", return_value=False),
+        patch.object(br, "_search_openserp_archive", return_value=None),
+        patch(
+            "src.extraction.supplemental_search.search_archive_org_candidates",
+            return_value=[("https://archive.org/details/a", "The Lorraine Campaign")],
+        ),
+        patch(
+            "src.extraction.supplemental_search.search_gutenberg_candidates",
+            return_value=[("https://gutenberg.org/ebooks/1", "Lorraine")],
+        ),
+        patch.object(br, "_verify_openserp_match", return_value=True),
+    ):
+        primary = br._search_online_sources(
+            entry,
+            "The Lorraine Campaign",
+            "",
+            "The Lorraine Campaign",
+            object(),
+            config,
+        )
+
+    assert primary == ("https://archive.org/details/a", "archive_org")
+    assert entry["resource_urls"] == [
+        "https://archive.org/details/a",
+        "https://gutenberg.org/ebooks/1",
+    ]
+    findings = entry["source_metadata"]["findings"]
+    assert {f["source"] for f in findings} == {"archive_org", "gutenberg"}

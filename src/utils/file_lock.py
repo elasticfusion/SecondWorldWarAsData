@@ -374,6 +374,19 @@ def _run_schema_validation(
 
     try:
         jsonschema.validate(data, schema)
+        # Cross-field consistency jsonschema can't express: bibliography alt_title must be
+        # identical at top-level and inside citation (the two copies must never drift).
+        if entity_type == "bibliography" and isinstance(data, dict):
+            cit = data.get("citation")
+            if isinstance(cit, dict) and data.get("alt_title") != cit.get("alt_title"):
+                logger.error(
+                    "BLOCKED %s write (%s): const at alt_title (top-level != citation.alt_title)",
+                    entity_type,
+                    filepath.name,
+                )
+                if record_stats:
+                    _record_stat(entity_type, "block", "const", status)
+                return False
         if record_stats:
             _record_stat(entity_type, "allow", None, status)
             _record_record_quality(entity_type, data, status)
@@ -585,25 +598,10 @@ _ID_FIELDS: Dict[str, str] = {
 
 
 def _dual_write_dynamo(filepath: Path, data: Dict[str, Any]) -> None:
-    """Write entity to DynamoDB if dual-write is enabled. Non-blocking on failure."""
-    entity_type = filepath.parent.name
-    id_field = _ID_FIELDS.get(entity_type)
-    if not id_field:
-        return
-    entity_id = data.get(id_field)
-    if not entity_id:
-        return
-    try:
-        from src.utils.entity_store import get_entity_store
-
-        store = get_entity_store()
-        if store:
-            store.put(entity_type, entity_id, data, filename=filepath.name)
-    except Exception as e:
-        logger.warning(
-            "Dual-write to DynamoDB failed for %s/%s: %s", entity_type, entity_id, e
-        )
-        _track_failed_write(entity_type, entity_id, filepath)
+    """No-op. The DynamoDB entity (JSON) store was removed — the file write to S3 is the
+    sole authoritative persistence. Retained as a no-op so the call site is undisturbed.
+    (DynamoDB is kept only for queue/coordination, not JSON storage.)"""
+    return None
 
 
 # Track failed dual-writes for reconciliation at Phase 3 start

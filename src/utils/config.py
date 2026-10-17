@@ -80,29 +80,34 @@ def _validate_config(config: Dict[str, Any], path: Path) -> None:
         raise ValueError(f"Config at {path} is not a valid YAML mapping")
 
     # Required top-level sections
-    required = ["paths", "api"]
-    for section in required:
+    for section in ("paths", "api"):
         if section not in config:
             raise ValueError(f"Config missing required section: '{section}'")
 
-    # API config
-    api = config.get("api", {})
+    _validate_api_section(config.get("api", {}))
+    _validate_batch_section(config.get("batch", {}))
+    _validate_concurrency_section(config.get("concurrency", {}))
+
+
+def _validate_api_section(api: Dict[str, Any]) -> None:
+    """Validate the api.* config section."""
     grok = api.get("grok", {})
     if grok.get("model") and not isinstance(grok["model"], str):
         raise ValueError("api.grok.model must be a string")
-
     rpm = api.get("calls_per_minute", 30)
     if not isinstance(rpm, int) or rpm < 1 or rpm > 200:
         raise ValueError(f"api.calls_per_minute must be 1-200, got: {rpm}")
 
-    # Batch config
-    batch = config.get("batch", {})
+
+def _validate_batch_section(batch: Dict[str, Any]) -> None:
+    """Validate the batch.* config section."""
     for key in ("phase2", "phase3"):
         if key in batch and not isinstance(batch[key], bool):
             raise ValueError(f"batch.{key} must be true or false, got: {batch[key]}")
 
-    # Concurrency
-    conc = config.get("concurrency", {})
+
+def _validate_concurrency_section(conc: Dict[str, Any]) -> None:
+    """Validate the concurrency.* config section."""
     for key in ("max_event_files", "max_extraction_group", "max_enrichment_workers"):
         val = conc.get(key)
         if val is not None and (not isinstance(val, int) or val < 1):

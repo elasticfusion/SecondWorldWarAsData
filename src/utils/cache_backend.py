@@ -123,9 +123,20 @@ class DynamoCacheBackend:
 
     def __contains__(self, key: str) -> bool:
         pk = self._pk(key)
-        if self._preloaded:
-            return pk in self._local
-        # Fetch full item so __getitem__ won't need a second read
+        # The preloaded snapshot is a WARM cache of entries that existed at init — it is
+        # NOT authoritative for ABSENCE. Entries written AFTER preload (e.g. a separate
+        # process's batch result populate, as in supplemental submit→retrieve) live in
+        # Dynamo but not in this process's _local. A hit in _local short-circuits; a miss
+        # MUST fall through to Dynamo (not return False), else a cross-process populate is
+        # invisible and the cache "misses" despite the entry existing.
+        if self._preloaded and pk in self._local:
+            return True
+        # Fetch full item so __getitem__ won't need a second read. NOTE: a miss is
+        # deliberately NOT negative-memoized — a negative cache would re-introduce the
+        # false-absence bug for entries written by another process after preload. The
+        # call pattern is one membership check per key, so the extra get_item on a miss
+        # is acceptable; revisit with a short-TTL negative cache only if a repeated-miss
+        # hot loop is ever profiled.
         resp = self._table.get_item(Key={"cache_key": pk})
         item = resp.get("Item")
         if item and "response" in item:

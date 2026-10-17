@@ -20,6 +20,10 @@ from src.enrichment.local_holdings import build_holdings_index, find_local_holdi
 
 logger = logging.getLogger(__name__)
 
+# Strip C0 controls (incl. \n AND \r) from any untrusted-at-rest text before it enters a
+# log line — prevents OBSERV log-line forging (repo convention; matches grok_client).
+_CTRL = re.compile(r"[\x00-\x1f\x7f]")
+
 
 def _looks_like_citation(entry: Dict[str, Any]) -> bool:
     """Heuristic: does this entry look like a bibliographic citation vs. narrative?
@@ -34,6 +38,15 @@ def _looks_like_citation(entry: Dict[str, Any]) -> bool:
         return True
     citation = entry.get("citation") or {}
     verbatim = str(entry.get("verbatim_reference") or citation.get("verbatim") or "")
+    if not verbatim.strip():
+        # Deterministic-pass records (the source-url/provenance split) carry the verbatim
+        # on the MENTION, not at top level — fall back to it so the citation detector sees
+        # the real text (otherwise every deterministic record is wrongly "not_citation").
+        for m in entry.get("mentions") or []:
+            mv = str(m.get("verbatim_reference") or "")
+            if mv.strip():
+                verbatim = mv
+                break
     if not verbatim.strip():
         # Nothing structured and no text → nothing to resolve; don't send to NARA.
         return False
@@ -71,8 +84,26 @@ _STRUCT_PATTERNS = (
     r"\bRG\s*\d+",
     r"\b(?:pp?\.|p\.)\s*\d+",
     r"\b(?:box|folder|file|vol\.?|no\.?)\s*\d+",
+    # --- Military / archival citation forms (US Army CMH "green book" footnotes). These
+    # are unambiguously citational (archival document references) and are precisely the
+    # NARA-resolvable ones, yet they carry none of the book-citation signals above — so
+    # without these they were wrongly rejected as "not_citation" and NARA never ran.
+    r"\bMS\s*#?\s*[A-Z]-?\d+",  # manuscript series, e.g. "MS # B-810"
+    # military document-type abbreviations, each a strong citational signal
+    r"\b(?:Ltr|Memo|Interv|Rpt|Jnl|Diary|Telecon|Telg|Msg|Cbl|Cable|Opns?|Per\s+Rpt|"
+    r"AAR|FO|GO|SO|TWX|Ltr\s+of\s+Instrs?)\b",
+    # unit + number designation (e.g. "VII Corps Opns Memo 101", "5th Armd Div G-2")
+    r"\b(?:Corps|Div|Army|Gp|Regt|Bn|Co)\b.*\b(?:G-?\d|S-?\d|Memo|Rpt|Order|file)\b",
 )
-_WEAK_PATTERNS = (r"\b(1[89]\d{2}|20\d{2})\b", r"[A-Z][a-z]+,\s+[A-Z]")
+# Weak = corroborating, not establishing. A military short date ("12 Sep 44") appears
+# PERVASIVELY in WWII narrative prose, so on its own it is NOT a citation (that caused
+# ~36% false positives on prose) — it only counts toward the 2-signal threshold alongside
+# another signal (a doc-type, a file ref, etc.).
+_WEAK_PATTERNS = (
+    r"\b(1[89]\d{2}|20\d{2})\b",
+    r"[A-Z][a-z]+,\s+[A-Z]",
+    r"\b\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b",  # military short date
+)
 
 
 def _verbatim_looks_citational(verbatim: str) -> bool:
@@ -158,21 +189,45 @@ def resolve_bibliography_entry(
     availability = (entry.get("availability") or "").lower()
     cfg = config or {}
 
-    resolver = _pick_resolver(doc_type, availability)
+    # Deterministic bibliography records carry no document_type (title="Unknown"), so they
+    # would default to the generic resolver (no NARA). Route by NARA-searchability of the
+    # verbatim when the type is unknown, so archival refs reach _resolve_archive -> NARA.
+    nara_ok = _is_nara_searchable(entry, _entry_verbatim(entry))
+    resolver = _pick_resolver(doc_type, availability, nara_ok)
     result = resolver(entry, citation, grok_client, cfg)
 
     _apply_result(entry, result)
     return entry
 
 
-def _pick_resolver(doc_type: str, availability: str):
-    """Select resolver function by document type."""
+def _entry_verbatim(entry: Dict[str, Any]) -> str:
+    """The citation text: top-level verbatim_reference, else the first mention's (the
+    deterministic/source-url split stores it on the mention)."""
+    citation = entry.get("citation") or {}
+    verbatim = str(entry.get("verbatim_reference") or citation.get("verbatim") or "")
+    if verbatim.strip():
+        return verbatim
+    for m in entry.get("mentions") or []:
+        mv = str(m.get("verbatim_reference") or "")
+        if mv.strip():
+            return mv
+    return ""
+
+
+def _pick_resolver(doc_type: str, availability: str, nara_searchable: bool = False):
+    """Select resolver function by document type.
+
+    ``nara_searchable`` lets an untyped-but-archival record (no document_type, e.g. a
+    deterministic bibliography record) route to the archive/NARA resolver instead of the
+    generic fallback that never queries NARA."""
     if doc_type in ARCHIVE_TYPES or availability == "archive":
         return _resolve_archive
     if doc_type in BOOK_TYPES or availability == "offline":
         return _resolve_book
     if doc_type in ARTICLE_TYPES:
         return _resolve_article
+    if not doc_type and nara_searchable:
+        return _resolve_archive
     return _resolve_generic_entry
 
 
@@ -307,7 +362,56 @@ _NARA_INDICATORS = {
     "recon",
     "bn",
     "regt",
+    # German Report Series / Foreign Military Studies (the "MS #/MS No" manuscripts) —
+    # NARA RG 549 / OCMH. A major, individually-catalogued NARA holding.
+    "ms #",
+    "ms no",
+    "ms. ",
+    "ms b-",
+    "ms p-",
+    "ms t-",
+    "ms d-",
+    # Combat Interviews (NARA RG 407) — cited as "Interv", "Combat Interv".
+    "interv",
+    "combat interview",
+    # Corps / operations shorthand pervasive in the green books (NARA RG 407 unit records).
+    "corps",
+    "opns",
+    "operations memorandum",
+    "opns memo",
+    "memo",
+    "ltr",
+    "rpt",
+    "msg",
+    "sitrep",
+    "overlay",
+    "ftp file",
+    "go ",
+    "so ",
 }
+
+
+def _build_indicator_regex() -> "re.Pattern[str]":
+    """Compile the indicators into one word-boundary alternation.
+
+    Bare-substring matching mis-fired on short indicators ("rg" inside "argues", "bn"
+    inside "urbane"). Each indicator is anchored so it only matches at token edges: a
+    non-alnum (or string edge) must precede/follow. Manual space padding in the set (e.g.
+    " inf ", "go ") is stripped since the boundary anchors now encode that intent.
+    """
+    alts = sorted(
+        {ind.strip() for ind in _NARA_INDICATORS if ind.strip()}, key=len, reverse=True
+    )
+    body = "|".join(re.escape(a) for a in alts)
+    return re.compile(rf"(?<![0-9a-z])(?:{body})(?![0-9a-z])", re.IGNORECASE)
+
+
+_NARA_INDICATOR_RE = _build_indicator_regex()
+
+
+def _nara_indicator_match(text: str) -> bool:
+    """True if any NARA indicator appears as a bounded token in text."""
+    return bool(_NARA_INDICATOR_RE.search(text))
 
 
 def _is_nara_searchable(entry: Dict, verbatim: str) -> bool:
@@ -327,7 +431,15 @@ def _is_nara_searchable(entry: Dict, verbatim: str) -> bool:
     ).lower()
     if not text.strip():
         return False
-    return any(indicator in text for indicator in _NARA_INDICATORS)
+    # Word-boundary match (not bare substring): a bare "rg" would otherwise match prose like
+    # "argues"/"charge", and "bn"/"go" similarly. \b anchors each indicator to a token edge.
+    if _nara_indicator_match(text):
+        return True
+    # Consistency with the citation detector: if the verbatim already carries military/
+    # archival citation STRUCTURE (STRONG signal), it is a NARA candidate even if it uses a
+    # shorthand not in the indicator list. Prevents a record that passed _looks_like_citation
+    # from being silently dropped here before _search_nara ever runs.
+    return _verbatim_looks_citational(verbatim)
 
 
 def _resolve_archive_record(
@@ -375,45 +487,122 @@ def _search_online_sources(
     grok_client: Any,
     config: Dict,
 ) -> Optional[Tuple[str, str]]:
-    """Search NARA, OpenSERP, Archive.org, LOC for online copies."""
-    # 1. NARA catalog
+    """Search NARA, OpenSERP, Archive.org, Gutenberg for online copies and AGGREGATE every
+    verified finding (multiple findings per entry is expected/OK — a document can legitimately
+    be available in several repositories). All verified (url, source) findings are written to
+    ``entry['resource_urls']`` + ``entry['source_metadata']['findings']``; the FIRST finding is
+    also returned as the primary ``(url, source)`` for backward-compat with ``_apply_result``.
+
+    Every source uses the same NARA-style pattern — fetch candidates, Grok-verify each against
+    the citation, keep the verified ones — rather than blindly taking a source's first hit.
+    """
+    findings: "list[Tuple[str, str]]" = []
+
+    # 1. NARA catalog — scoped by the DETERMINISTIC record group (not Grok) so the query is
+    #    bounded to the right RG instead of matching tens of thousands of unrelated records.
+    #    (_search_nara already iterates + Grok-verifies its candidates internally.)
     nara_key = config.get("nara_api_key")
     if nara_key and _is_nara_searchable(entry, verbatim):
-        ref = entry.get("archive_reference_number") or ""
-        if ref and ref != "None":
-            # Extract just the RG number (e.g., "RG 407, Entry 427") — strip Grok commentary
-            rg_short = ref.split("\n")[0].strip()[:50]
-            # Combine RG with verbatim for specific search
-            query = f"{verbatim[:60]} {rg_short}" if verbatim else rg_short
-        else:
-            query = verbatim[:100] or title
-        url = _search_nara(query, nara_key, grok_client, verbatim)
+        rg = _lookup_record_group(verbatim or search_text or title)
+        rg_num = rg[1] if rg else None
+        query = verbatim[:100] or title
+        url = _search_nara(
+            query, nara_key, grok_client, verbatim, record_group_number=rg_num
+        )
+        if not url:
+            # Retry with the expanded alt_title (LLM semantic expansion) if available.
+            alt_title = (entry.get("citation") or {}).get("alt_title") or ""
+            if alt_title and alt_title != query:
+                url = _search_nara(
+                    alt_title[:100],
+                    nara_key,
+                    grok_client,
+                    verbatim,
+                    record_group_number=rg_num,
+                )
         if url:
-            return (url, "nara_catalog")
-        # Retry with alt_title if available
-        alt_title = (entry.get("citation") or {}).get("alt_title") or ""
-        if alt_title and alt_title != query:
-            url = _search_nara(alt_title[:100], nara_key, grok_client, verbatim)
-            if url:
-                return (url, "nara_catalog")
+            findings.append((url, "nara_catalog"))
 
-    # 2. OpenSERP for digitized copies (HathiTrust, university sites, etc.)
+    # 2. OpenSERP for digitized copies (HathiTrust, university sites, etc.) — already iterates
+    #    candidates across repository-targeted query templates + Grok-verifies each internally.
     if config.get("use_openserp"):
         openserp_url = config.get("openserp_url", "http://localhost:7001")
         current_ref = entry.get("archive_reference_number") or ""
         ref = current_ref if current_ref and current_ref != "None" else title
         url = _search_openserp_archive(ref, openserp_url, grok_client, entry)
         if url:
-            return (url, "openserp_archive")
+            findings.append((url, "openserp_archive"))
 
-    # 3. Archive.org
-    from src.extraction.supplemental_search import search_archive_org
+    # 3. Archive.org — NOW iterates + verifies candidates (was: blind first-hit). Replicates the
+    #    NARA pattern via the shared _collect_verified_candidates helper.
+    from src.extraction.supplemental_search import (
+        search_archive_org_candidates,
+        search_gutenberg_candidates,
+    )
 
-    url = search_archive_org(title)
-    if url:
-        return (url, "archive_org")
+    query = verbatim[:300] or title
+    author = (entry.get("citation") or {}).get("author") or ""
+    if isinstance(author, list):
+        author = ", ".join(a for a in author if a)
+    ao_cands = search_archive_org_candidates(title, author or None)
+    for url in _collect_verified_candidates(query, ao_cands, grok_client, entry):
+        findings.append((url, "archive_org"))
 
-    return None
+    # 4. Gutenberg — same candidate-iterate-verify pattern. Low hit expectation (out-of-copyright
+    #    literary texts, not WWII operational records) but cheap to include when OpenSERP is up.
+    if config.get("search_gutenberg", True) and config.get("use_openserp"):
+        openserp_url = config.get("openserp_url", "http://localhost:7001")
+        g_cands = search_gutenberg_candidates(title, author or None, openserp_url)
+        for url in _collect_verified_candidates(query, g_cands, grok_client, entry):
+            findings.append((url, "gutenberg"))
+
+    if not findings:
+        return None
+
+    # Aggregate: dedup-preserving-order into resource_urls + a structured findings list.
+    seen = set(entry.get("resource_urls") or [])
+    for url, source in findings:
+        if url and url not in seen:
+            entry.setdefault("resource_urls", []).append(url)
+            seen.add(url)
+    entry.setdefault("source_metadata", {}).setdefault("findings", []).extend(
+        {"url": u, "source": s} for u, s in findings
+    )
+    logger.info(
+        "OBSERV bib.findings count=%d sources=%s",
+        len(findings),
+        ",".join(sorted({s for _, s in findings})),
+    )
+    # Primary finding keeps the existing single-tuple contract (_apply_result appends it too,
+    # which the dedup above already guards against).
+    return findings[0]
+
+
+def _collect_verified_candidates(
+    query: str,
+    candidates: "list[Tuple[str, str]]",
+    grok_client: Any,
+    entry: Optional[Dict] = None,
+    max_findings: int = 3,
+) -> "list[str]":
+    """Shared NARA-style multi-finding core: iterate ``(url, title)`` candidates, Grok-verify
+    each against ``query`` (via ``_verify_openserp_match``, the general citation-relevance
+    check), and return UP TO ``max_findings`` verified URLs. Reused by the archive.org and
+    Gutenberg paths so all sources share one candidate-iterate-verify implementation. When no
+    grok_client is available, candidates are accepted unverified (test/offline mode)."""
+    out: "list[str]" = []
+    for url, cand_title in candidates:
+        if not url:
+            continue
+        if grok_client and not _verify_openserp_match(
+            query, cand_title, url, grok_client, entry
+        ):
+            logger.debug("  ✗ rejected candidate: %s (%s)", cand_title[:60], url)
+            continue
+        out.append(url)
+        if len(out) >= max_findings:
+            break
+    return out
 
 
 _openserp_down = False
@@ -557,37 +746,499 @@ Return ONLY "YES" or "NO"."""
         return False
 
 
-def _identify_nara_record(verbatim: str, grok_client: Any) -> Optional[str]:
-    """Use Grok to identify the NARA Record Group for a citation."""
-    from src.utils.prompt_loader import render_prompt
+# Authoritative Record Group lookup (NARA Record Group Explorer,
+# https://www.archives.gov/findingaid/record-group-explorer). DETERMINISTIC — Grok is NOT
+# used to determine record groups (its RG guesses are unreliable); Grok is limited to
+# semantic work (alt_title expansion + match verification). Each entry maps a word-boundary
+# citation signal to the authoritative (RG label, record-group number).
+#
+# Coverage spans all service branches (the project is not ground-army-only): Army ground,
+# Army Air Forces, Navy, Marine Corps, Coast Guard, plus theater/allied/occupation HQ,
+# strategic/intel, and seized foreign records. Order matters: SERVICE-SPECIFIC and
+# distinctive signals first, generic Army unit-record signals LAST (so a naval or air
+# "G-3"/journal is not mis-bucketed into RG 407). A miss returns None (unscoped, best-effort
+# search) — never blocks the pipeline.
+_RG_LOOKUP: List[Tuple["re.Pattern[str]", Tuple[str, int]]] = [
+    # --- Foreign / seized / theater-specific (most distinctive) ---
+    # German Report Series / Foreign Military Studies ("MS # B-810", "MS P-...").
+    (
+        re.compile(r"\bMS\s*#|\bMS\s+[A-Z]-\d|Foreign Military Studies", re.I),
+        ("RG 549", 549),
+    ),
+    # Seized German/foreign records / Kriegstagebuch (war diary), OB WEST, OKW/OKH.
+    (
+        re.compile(r"Kriegstagebuch|\bKTB\b|OB\s+WEST|\bOKW\b|\bOKH\b", re.I),
+        ("RG 242", 242),
+    ),
+    # --- Air (Army Air Forces / USAF) ---
+    # Numbered/strategic air forces, bomb/fighter groups & squadrons, mission/combat reports.
+    (
+        re.compile(
+            r"\bAAF\b|Army Air Force|\b(?:Eighth|Ninth|Twelfth|Fifteenth)\s+Air\s+Force"
+            r"|\bBomb(?:ardment)?\s+(?:Gp|Group|Sqdn|Squadron)\b|Fighter\s+(?:Gp|Group|Sqdn)"
+            r"|Mission Report|\bINTOPS\b",
+            re.I,
+        ),
+        ("RG 18", 18),
+    ),
+    # USAF commands/activities/organizations (post-1947 + historical studies).
+    (re.compile(r"\bUSAF\b|Air Force Historical|AFHRA", re.I), ("RG 342", 342)),
+    # HQ U.S. Air Force / Air Staff.
+    (
+        re.compile(r"Air Staff|Hq\s+USAF|Headquarters,?\s+U\.?S\.? Air Force", re.I),
+        ("RG 341", 341),
+    ),
+    # --- Navy (by subject matter) ---
+    # Operating forces: war diaries/action reports of ships & task forces, COMINCH, fleets.
+    (
+        re.compile(
+            r"\bCNO\b|Chief of Naval Operations|\bCOMINCH\b|War Diary,?\s+(?:USS|Task|Fleet)"
+            r"|Action Report,?\s+USS|\bUSS\b|Task\s+(?:Force|Group)\s+\d|\bCTF\b"
+            r"|Naval Operating Forces|\bComNav|Amphibious",
+            re.I,
+        ),
+        ("RG 38", 38),
+    ),
+    # Naval Operating Forces command records (RG 313) — shore/fleet command establishments.
+    (
+        re.compile(r"Naval Operating Forces|Naval District|Shore Establishment", re.I),
+        ("RG 313", 313),
+    ),
+    # Bureau of Naval Personnel (muster rolls, personnel, casualties).
+    (re.compile(r"Bureau of Naval Personnel|BuPers|muster roll", re.I), ("RG 24", 24)),
+    # Bureau of Ordnance (naval ordnance/weapons design).
+    (re.compile(r"Bureau of Ordnance|BuOrd", re.I), ("RG 74", 74)),
+    # Bureau of Yards and Docks (naval construction, Seabees facilities).
+    (re.compile(r"Yards and Docks|BuDocks|Seabee", re.I), ("RG 71", 71)),
+    # General records of the Department of the Navy / SecNav (1798-1947 = RG 80; 1947- = RG 428).
+    (
+        re.compile(
+            r"Department of the Navy, 194[7-9]|194[7-9].*Department of the Navy", re.I
+        ),
+        ("RG 428", 428),
+    ),
+    (
+        re.compile(r"Department of the Navy|SecNav|Secretary of the Navy", re.I),
+        ("RG 80", 80),
+    ),
+    # Office of Naval Records & Library / ONI.
+    (
+        re.compile(
+            r"Naval Records (?:and|&) Library|\bONI\b|Office of Naval Intelligence",
+            re.I,
+        ),
+        ("RG 45", 45),
+    ),
+    # --- Marine Corps ---
+    (
+        re.compile(
+            r"Marine\s+(?:Div|Division|Regt|Regiment|Bn|Battalion)|\bUSMC\b|Fleet Marine Force"
+            r"|\bFMF\b|Marine Corps",
+            re.I,
+        ),
+        ("RG 127", 127),
+    ),
+    # --- Coast Guard ---
+    (re.compile(r"Coast Guard|\bUSCG\b", re.I), ("RG 26", 26)),
+    # --- Theaters of war (by named theater in the subject matter) ---
+    # Mediterranean Theater (MTOUSA, NATOUSA, Italy/North Africa campaigns).
+    (
+        re.compile(
+            r"\bMTOUSA\b|\bNATOUSA\b|Mediterranean Theater|Fifth Army.*Italy|Italian Campaign",
+            re.I,
+        ),
+        ("RG 492", 492),
+    ),
+    # China-Burma-India (CBI).
+    (
+        re.compile(r"\bCBI\b|China-Burma-India|China Burma India|Burma|Stilwell", re.I),
+        ("RG 493", 493),
+    ),
+    # Middle Pacific / Pacific Ocean Areas (POA, CINCPAC/Nimitz area).
+    (
+        re.compile(
+            r"Middle Pacific|Pacific Ocean Areas?|\bPOA\b|\bCINCPAC\b|Central Pacific",
+            re.I,
+        ),
+        ("RG 494", 494),
+    ),
+    # Africa-Middle East Theater.
+    (
+        re.compile(
+            r"Africa-Middle East|Middle East Theater|Persian Gulf Command", re.I
+        ),
+        ("RG 497", 497),
+    ),
+    # U.S. Army Forces in Alaska (Aleutians).
+    (
+        re.compile(r"Alaska Defense|U\.?S\.? Army.*Alaska|Aleutian", re.I),
+        ("RG 547", 547),
+    ),
+    # Far East Command / SWPA / SCAP / GHQ (MacArthur Pacific HQ, occupation of Japan).
+    (
+        re.compile(
+            r"\bSWPA\b|\bSCAP\b|Far East Command|\bGHQ\b.*(?:Pacific|Far East)|MacArthur HQ|USAFFE",
+            re.I,
+        ),
+        ("RG 554", 554),
+    ),
+    # Generic "U.S. theaters of war, WWII" when a theater is implied but unspecified.
+    (re.compile(r"Theater of War|Theaters of War", re.I), ("RG 332", 332)),
+    # Army operational/tactical/support orgs (WWII & after) — armies/corps HQ as orgs.
+    (
+        re.compile(
+            r"Army Ground Forces|\bAGF\b|Replacement.*Training|Operational.*Tactical",
+            re.I,
+        ),
+        ("RG 338", 338),
+    ),
+    # --- Theater / Allied / occupation HQ (ETO) ---
+    (
+        re.compile(r"\bETOUSA\b|Hq\s+ETO|European Theater of Operations", re.I),
+        ("RG 498", 498),
+    ),
+    (
+        re.compile(r"\bSHAEF\b|Allied\s+Force|\bAFHQ\b|Allied Expeditionary", re.I),
+        ("RG 331", 331),
+    ),
+    (
+        re.compile(r"US Occupation|Military Government|\bUSFET\b|\bOMGUS\b", re.I),
+        ("RG 260", 260),
+    ),
+    # --- Strategic / intelligence ---
+    (re.compile(r"Strategic Bombing Survey|\bUSSBS\b", re.I), ("RG 243", 243)),
+    (re.compile(r"\bOSS\b|Office of Strategic Services", re.I), ("RG 226", 226)),
+    # --- High command / staff ---
+    # Joint Chiefs of Staff.
+    (
+        re.compile(r"\bJCS\b|Joint Chiefs of Staff|Combined Chiefs|\bCCS\b", re.I),
+        ("RG 218", 218),
+    ),
+    # Office of the Secretary of Defense (post-1947).
+    (re.compile(r"Secretary of Defense|\bOSD\b", re.I), ("RG 330", 330)),
+    # Office of the Secretary of War.
+    (re.compile(r"Secretary of War|\bOSW\b|Stimson", re.I), ("RG 107", 107)),
+    # Army Staff (post-1947 successor to WDGS).
+    (
+        re.compile(r"Army Staff|\bGSUSA\b|Chief of Staff.*Army, 194[7-9]", re.I),
+        ("RG 319", 319),
+    ),
+    # War Department General & Special Staffs (WWII G-2/OPD at War-Dept level).
+    (
+        re.compile(
+            r"\bWDGS\b|War Department General|\bOPD\b|Operations Division.*War Department",
+            re.I,
+        ),
+        ("RG 165", 165),
+    ),
+    # --- Army technical services / bureaus (by service in the subject matter) ---
+    # Chief Signal Officer (signals, communications, photography).
+    (re.compile(r"Chief Signal Officer|Signal Corps|\bSigC\b", re.I), ("RG 111", 111)),
+    # Chief of Ordnance (Army ordnance/materiel development).
+    (
+        re.compile(r"Chief of Ordnance|Ordnance Department|Ordnance Dept", re.I),
+        ("RG 156", 156),
+    ),
+    # Chemical Warfare Service.
+    (re.compile(r"Chemical Warfare|\bCWS\b", re.I), ("RG 175", 175)),
+    # Surgeon General (Army) — medical.
+    (
+        re.compile(r"Surgeon General|Medical Department.*Army|Army Medical", re.I),
+        ("RG 112", 112),
+    ),
+    # Judge Advocate General (Army) — courts-martial, war crimes trials.
+    (
+        re.compile(
+            r"Judge Advocate General|\bJAG\b|court-martial|courts-martial", re.I
+        ),
+        ("RG 153", 153),
+    ),
+    # Inspector General (Army).
+    (re.compile(r"Inspector General", re.I), ("RG 159", 159)),
+    # --- Army commands/units (continental & regular-army mobile) ---
+    (
+        re.compile(
+            r"Continental Command|Army Service Forces|\bASF\b|Service Command", re.I
+        ),
+        ("RG 393", 393),
+    ),
+    (
+        re.compile(
+            r"Regular Army.*(?:Regiment|Mobile)|coast artillery|\bRA\b regiment", re.I
+        ),
+        ("RG 391", 391),
+    ),
+    # --- State / diplomatic / other agencies (by subject) ---
+    (
+        re.compile(r"Department of State|State Department|\bFRUS\b|diplomatic", re.I),
+        ("RG 59", 59),
+    ),
+    (
+        re.compile(r"Foreign Service Post|Embassy|Consulate|Legation", re.I),
+        ("RG 84", 84),
+    ),
+    (
+        re.compile(
+            r"War Relocation Authority|\bWRA\b|Japanese.*internment|relocation center",
+            re.I,
+        ),
+        ("RG 210", 210),
+    ),
+    (re.compile(r"Panama Canal", re.I), ("RG 185", 185)),
+    (
+        re.compile(r"Defense Mapping|Army Map Service|\bAMS\b map|topographic", re.I),
+        ("RG 456", 456),
+    ),
+    (
+        re.compile(
+            r"Manhattan (?:Project|Engineer)|\bMED\b.*atomic|Department of Energy", re.I
+        ),
+        ("RG 434", 434),
+    ),
+    (re.compile(r"National War Labor Board|War Labor Board", re.I), ("RG 202", 202)),
+    # --- Army ground unit records (GENERIC — must stay LAST so everything above wins) ---
+    # AAR, G-1..G-4 journals, periodic reports, field orders, corps/division operational
+    # records -> Adjutant General's Office.
+    (
+        re.compile(
+            r"\bAAR\b|\bJnl\b|Per\s+Rpt|\bG-[1-4]\b|\bFO\b|\bOpns?\b|Corps|\bDiv\b"
+            r"|Field Order|After Action|Journal",
+            re.I,
+        ),
+        ("RG 407", 407),
+    ),
+]
 
-    prompt = render_prompt("nara_identify", verbatim=verbatim)
 
-    try:
-        response = grok_client.chat_completion(
-            prompt=prompt,
-            system_prompt="You are a NARA archivist specializing in WWII military records.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="bibliography_nara",
-        )
-        ref = response.strip().strip('"')
-        if ref and ref != "UNKNOWN" and "RG" in ref:
-            logger.info("NARA identify: FOUND %s | citation=%s", ref, verbatim[:80])
-            return ref
-        logger.info("NARA identify: NOT FOUND | citation=%s", verbatim[:80])
-    except Exception as e:
-        logger.debug("NARA identification failed: %s", e)
+def _lookup_record_group(verbatim: str) -> Optional[Tuple[str, int]]:
+    """Deterministic (RG label, RG number) for a citation, via the authoritative Record
+    Group Explorer alias map; None if no confident match. NO LLM."""
+    text = verbatim or ""
+    for pattern, rg in _RG_LOOKUP:
+        if pattern.search(text):
+            return rg
     return None
 
 
+def _identify_nara_record(verbatim: str, grok_client: Any = None) -> Optional[str]:
+    """The NARA Record Group for a citation — DETERMINISTIC lookup (not Grok).
+
+    Returns the bare 'RG N' label (e.g. 'RG 407'), never a free-form rationale.
+    ``grok_client`` is accepted for signature compatibility but unused: record-group
+    determination is a lookup against NARA's authoritative Record Group Explorer, not a
+    semantic judgement. Fail-safe: a miss returns None and the pipeline continues."""
+    rg = _lookup_record_group(verbatim)
+    if rg:
+        logger.info(
+            "NARA identify: %s (deterministic) | citation=%s", rg[0], verbatim[:80]
+        )
+        return rg[0]
+    logger.info("NARA identify: NOT FOUND (no RG alias) | citation=%s", verbatim[:80])
+    return None
+
+
+# NARA's q parser treats citation punctuation (#, commas, trailing periods) as an
+# *invalid query* and then returns 200 OK with the single-page-app HTML shell instead
+# of a JSON error (documented failure mode). Sanitize to plain keywords: keep letters,
+# digits and spaces, collapse whitespace. Quote/operator syntax is deliberately dropped
+# because the raw citation is not a hand-crafted boolean query.
+_NARA_Q_STRIP = re.compile(r"[^0-9A-Za-z\u00c0-\u024f ]+")
+
+
+def _sanitize_nara_query(query: str) -> str:
+    """Reduce a raw citation to a NARA-safe keyword query (avoids the 200-HTML shell)."""
+    cleaned = _NARA_Q_STRIP.sub(" ", query or "")
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def _is_html_shell(resp: Any) -> bool:
+    """True if NARA returned its SPA HTML shell (its documented invalid-query / rate-limit
+    failure mode: 200 OK + text/html), rather than a JSON API response."""
+    ctype = (resp.headers.get("Content-Type") or "").lower()
+    if "html" in ctype:
+        return True
+    # Secondary sniff (content-type may lie): widen the window so a BOM, XML prolog, or
+    # leading comment before the SPA's <!doctype/<html> is still caught.
+    body = (resp.text or "").lstrip().lower()[:256]
+    return "<!doctype" in body or "<html" in body
+
+
+def _extract_na_id(hit: Dict[str, Any]) -> str:
+    """Pull the naId from a search hit across the known response shapes.
+
+    Per the API docs the record lives at _source.record and the naId may appear as the
+    hit _id, record.naId, or metadata.controlGroup.naId."""
+    source = hit.get("_source", {}) or {}
+    record = source.get("record", source) or {}
+    control = (source.get("metadata", {}) or {}).get("controlGroup", {}) or {}
+    for candidate in (
+        hit.get("_id"),
+        record.get("naId"),
+        source.get("naId"),
+        control.get("naId"),
+    ):
+        if candidate:
+            return str(candidate)
+    return ""
+
+
+def _nara_digital_object_count(record: Dict[str, Any]) -> int:
+    """How many digitized objects (page scans) are attached to a NARA record. >0 means the
+    record is ALREADY ONLINE. We deliberately COUNT rather than return the object URLs: an
+    objectUrl is a single PAGE image (e.g. '...A3840-02-0001.tif') — a multi-page document
+    would be misrepresented by page 1 and its other pages missed. The resource we surface
+    is the catalog RECORD page (/id/<naId>), which presents ALL pages + the description.
+    """
+    n = 0
+    for obj in record.get("digitalObjects") or []:
+        if isinstance(obj, dict) and obj.get("objectUrl"):
+            n += 1
+    return n
+
+
+_MATCH_STOPWORDS = frozenset(
+    {
+        "the",
+        "a",
+        "an",
+        "and",
+        "or",
+        "of",
+        "to",
+        "in",
+        "on",
+        "for",
+        "with",
+        "by",
+        "from",
+        "see",
+        "also",
+        "cf",
+        "no",
+        "nos",
+        "vol",
+        "vols",
+        "pt",
+        "fn",
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "may",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "sept",
+        "oct",
+        "nov",
+        "dec",
+        "january",
+        "february",
+        "march",
+        "april",
+        "june",
+        "july",
+        "august",
+        "september",
+        "october",
+        "november",
+        "december",
+        # generic archival / military filler that appears everywhere -> not discriminating
+        "records",
+        "record",
+        "report",
+        "reports",
+        "file",
+        "files",
+        "collection",
+        "series",
+        "world",
+        "war",
+        "wwii",
+        "army",
+        "military",
+        "united",
+        "states",
+        "office",
+        "general",
+        "headquarters",
+        "misc",
+        "miscellaneous",
+        "papers",
+        "document",
+        "documents",
+        "folder",
+        "box",
+        "level",
+        "scope",
+        "path",
+        "fileunit",
+    }
+)
+
+
+def _match_tokens(text: str) -> set:
+    """Lowercase content tokens (>=3 chars, not a stopword/pure number) for overlap check."""
+    out = set()
+    for tok in re.findall(r"[A-Za-z0-9]+", (text or "").lower()):
+        if len(tok) >= 3 and tok not in _MATCH_STOPWORDS and not tok.isdigit():
+            out.add(tok)
+    return out
+
+
+def _title_token_overlap(citation: str, candidate: str) -> bool:
+    """True if the citation and the candidate record share >=1 MEANINGFUL token. A cheap
+    deterministic relevance pre-gate: no shared content word -> cannot be the cited
+    document, so reject before spending a Grok verify call. Fail-safe: if either side has
+    NO meaningful tokens (can't judge), return True so Grok still decides."""
+    c = _match_tokens(citation)
+    d = _match_tokens(candidate)
+    if not c or not d:
+        return True
+    return bool(c & d)
+
+
+def _nara_match_context(record: Dict[str, Any]) -> str:
+    """A compact context string for match verification: the series/ancestors path, the
+    level of description, and the scope note. A green-book citation matches at the
+    series/unit level, so this context (e.g. 'World War II Operations Reports') is what
+    lets the verifier recognize a correct record behind a cryptic file-unit title."""
+    parts: List[str] = []
+    lod = record.get("levelOfDescription")
+    if lod:
+        parts.append(f"level: {lod}")
+    anc = record.get("ancestors")
+    if isinstance(anc, list):
+        names = [
+            a.get("title", "") for a in anc if isinstance(a, dict) and a.get("title")
+        ]
+        if names:
+            parts.append("series path: " + " > ".join(names[:5]))
+    scope = record.get("scopeAndContentNote") or record.get("scopeContentNote") or ""
+    if scope:
+        parts.append("scope: " + str(scope)[:300])
+    return " | ".join(parts)
+
+
 def _search_nara(
-    query: str, api_key: str, grok_client: Any, verbatim: str
+    query: str,
+    api_key: str,
+    grok_client: Any,
+    verbatim: str,
+    record_group_number: Optional[int] = None,
 ) -> Optional[str]:
-    """Search NARA catalog API v2."""
+    """Search NARA catalog API v2.
+
+    When ``record_group_number`` is known (deterministic RG lookup), the search is scoped
+    with ``recordGroupNumber=N`` so the query is bounded to the right record group instead
+    of matching tens of thousands of unrelated records (which defeats verification)."""
     from src.utils.search_cache import cache_result, get_cached
 
-    cached = get_cached("nara", query)
+    # Cache is keyed on the RAW query + RG scope (so scoped vs unscoped don't collide). If
+    # the sanitizer changes, bump intentionally — stale negatives key on the raw input.
+    cache_q = f"{query}|rg={record_group_number}" if record_group_number else query
+    cached = get_cached("nara", cache_q)
     if cached == "NOT_FOUND":
         return None
     if cached:
@@ -605,33 +1256,97 @@ def _search_nara(
 
     try:
         session = get_session()
-        logger.debug("NARA query: %s", query[:100])
+        safe_q = _sanitize_nara_query(query)
+        if not safe_q:
+            logger.info(
+                "OBSERV nara.query skipped=empty_after_sanitize raw=%r",
+                _CTRL.sub(" ", query or "")[:60],
+            )
+            cache_result("nara", cache_q, None)
+            return None
+        params: Dict[str, str] = {"q": safe_q, "limit": "5"}
+        if record_group_number:
+            params["recordGroupNumber"] = str(record_group_number)
         resp = session.get(
             "https://catalog.archives.gov/api/v2/records/search",
-            params={"q": query, "limit": "5"},
-            headers={"x-api-key": api_key, "Content-Type": "application/json"},
+            params=params,
+            headers={"x-api-key": api_key, "Accept": "application/json"},
             timeout=30,
         )
         if resp.status_code == 429:
             logger.warning("NARA API rate limited (429) — backing off 60s")
             time.sleep(60)
             return None  # Don't cache — retry next run
+        ctype = (resp.headers.get("Content-Type") or "").split(";")[0]
         if resp.status_code != 200:
-            logger.debug("NARA API returned %d", resp.status_code)
+            logger.info(
+                "OBSERV nara.query status=%d content_type=%s q=%r",
+                resp.status_code,
+                ctype,
+                safe_q[:60],
+            )
             return None
-
-        results = resp.json().get("body", {}).get("hits", {}).get("hits", [])
-        logger.debug("NARA returned %d results", len(results))
+        # NARA's documented failure mode: 200 OK + HTML SPA shell on an invalid query or
+        # rate-limit. That is NOT a real not_found — surface it distinctly and do NOT
+        # negative-cache it (so a fixed query/retry can still succeed next run).
+        if _is_html_shell(resp):
+            logger.warning(
+                "OBSERV nara.query html_shell=1 status=200 content_type=%s q=%r "
+                "(invalid-query/rate-limit shell, not a real not_found)",
+                ctype,
+                safe_q[:60],
+            )
+            return None
+        try:
+            payload = resp.json()
+        except ValueError:
+            logger.warning(
+                "OBSERV nara.query json_parse_error=1 content_type=%s q=%r",
+                ctype,
+                safe_q[:60],
+            )
+            return None
+        results = payload.get("body", {}).get("hits", {}).get("hits", [])
+        total = payload.get("body", {}).get("hits", {}).get("total", {})
+        total_val = total.get("value") if isinstance(total, dict) else total
+        logger.info(
+            "OBSERV nara.query status=200 content_type=%s hits=%s returned=%d q=%r",
+            ctype,
+            total_val,
+            len(results),
+            safe_q[:60],
+        )
         for hit in results:
             source = hit.get("_source", {})
             record = source.get("record", source)
             title = record.get("title", source.get("title", ""))
-            nara_id = record.get("naId", source.get("naId", ""))
+            nara_id = _extract_na_id(hit)
             logger.debug("  Candidate: %s (naId=%s)", title[:80], nara_id)
             if not nara_id:
                 continue
             url = f"https://catalog.archives.gov/id/{nara_id}"
-            if grok_client and not _verify_nara_match(query, title, grok_client):
+            # Give the verifier the record's CONTEXT (series/ancestors path + scope note +
+            # level) — a green-book citation matches at the series/unit level, and the
+            # cryptic file-unit title alone (e.g. "XIV Corps: 4-004") is not enough for the
+            # LLM to judge. The ancestors carry the series ("World War II Operations
+            # Reports") and the unit discriminator.
+            nara_context = _nara_match_context(record)
+            # Deterministic pre-gate before spending a Grok call: the citation and the
+            # candidate (title + context) must share at least one MEANINGFUL token (noun-
+            # like content word). No shared content word -> cannot be the cited document
+            # (e.g. 'Letter, Craig to OCMH' vs 'Flags, Colors and Standards') -> reject
+            # cheaply. Only lexically-overlapping candidates are escalated to Grok to
+            # validate relevance.
+            if not _title_token_overlap(verbatim or query, f"{title} {nara_context}"):
+                logger.debug(
+                    "  ✗ Rejected (no token overlap): '%s' vs query '%s'",
+                    title[:60],
+                    (verbatim or query)[:60],
+                )
+                continue
+            if grok_client and not _verify_nara_match(
+                query, title, grok_client, context=nara_context
+            ):
                 logger.debug(
                     "  ✗ Rejected: '%s' does not match query '%s'",
                     title[:60],
@@ -639,11 +1354,26 @@ def _search_nara(
                 )
                 continue
             logger.debug("  ✓ Accepted: %s", url)
-            cache_result("nara", query, url)
-            return url
+            # Record whether the matched NARA record is ALREADY ONLINE (digitized) and how
+            # many page-scans it has — but ALWAYS return the catalog RECORD page (/id/<naId>)
+            # as the resource, NOT a bare page-level objectUrl: a .tif objectUrl is a single
+            # page, and a multi-page document (e.g. a letter spanning several pages, or a
+            # whole file unit) would be misrepresented by page 1 and its other pages missed.
+            # The /id page presents ALL pages + the description together.
+            n_objs = _nara_digital_object_count(record)
+            logger.info(
+                "OBSERV nara.match naId=%s online=%d digital_objects=%d q=%r",
+                nara_id,
+                1 if n_objs else 0,
+                n_objs,
+                safe_q[:50],
+            )
+            resolved_url = url
+            cache_result("nara", cache_q, resolved_url)
+            return resolved_url
     except Exception as e:
         logger.debug("NARA search failed: %s", e)
-    cache_result("nara", query, None)
+    cache_result("nara", cache_q, None)
     return None
 
 
@@ -716,16 +1446,19 @@ def _resolve_generic(
     return None
 
 
-def _verify_nara_match(query: str, nara_title: str, grok_client: Any) -> bool:
+def _verify_nara_match(
+    query: str, nara_title: str, grok_client: Any, context: str = ""
+) -> bool:
     """Verify a NARA catalog result actually matches the searched citation.
 
-    Checks that the specific unit, document type, and time period align.
-    A generic WWII document from the wrong unit is NOT a match.
+    Checks that the specific unit, document type, and time period align, using the record's
+    series/ancestors CONTEXT (not just the terse file-unit title) so a correct series-level
+    match is recognized. A generic WWII document from the wrong unit is NOT a match.
     """
     from src.utils.prompt_loader import render_prompt as _rp
 
     prompt = _rp(
-        "nara_verify", citation=query, nara_title=nara_title, nara_description=""
+        "nara_verify", citation=query, nara_title=nara_title, nara_description=context
     )
 
     try:
@@ -863,10 +1596,23 @@ _REUSE_FIELDS = (
 
 
 def _citation_key(d: Dict[str, Any]) -> str:
-    """Dedup key: verbatim text, else author|title (lowercased)."""
+    """Dedup key: verbatim text, else alt_title, else author|title (lowercased).
+
+    Deterministic bibliography records (source-url split) store the verbatim on the
+    MENTION with top-level verbatim_reference=None and title='Unknown' — so without the
+    mention/alt_title fallback EVERY such record keys to '|unknown' and 15/16 wrongly
+    collapse in the resolver dedup (only one ever reaches NARA)."""
     cit = d.get("citation") or {}
+    verbatim = str(d.get("verbatim_reference") or cit.get("verbatim") or "").strip()
+    if not verbatim:
+        for m in d.get("mentions") or []:
+            mv = str(m.get("verbatim_reference") or "").strip()
+            if mv:
+                verbatim = mv
+                break
     return (
-        str(d.get("verbatim_reference") or cit.get("verbatim") or "").strip()
+        verbatim
+        or str(cit.get("alt_title") or "").strip()
         or f"{cit.get('author', '')}|{cit.get('title', '')}".strip()
     ).lower()
 
@@ -977,6 +1723,7 @@ def resolve_bibliography_dir(
     skip_files = {"index.json", "review_queue.json"}
     resolved_by_key: Dict[str, Dict[str, Any]] = {}
     review_queue: List[Dict[str, Any]] = []
+    not_citation_samples: List[str] = []
     processed = 0
 
     # Build the local-holdings index ONCE and inject it so each entry can be
@@ -1003,6 +1750,16 @@ def resolve_bibliography_dir(
             continue
 
         status, was_deduped = result
+        if status == "not_citation" and len(not_citation_samples) < 5:
+            try:
+                _d = json.loads(f.read_text(encoding="utf-8"))
+                _v = (_d.get("verbatim_reference") or "") or (
+                    (_d.get("mentions") or [{}])[0].get("verbatim_reference", "")
+                )
+                if _v:
+                    not_citation_samples.append(_CTRL.sub(" ", _v)[:80])
+            except (OSError, json.JSONDecodeError, ValueError, IndexError):
+                pass
         if _account_bib_status(stats, status, was_deduped):
             # Real citation, unresolved online → human disposition.
             data = json.loads(f.read_text(encoding="utf-8"))
@@ -1029,4 +1786,21 @@ def resolve_bibliography_dir(
         stats["skipped"],
         stats["errors"],
     )
+    try:
+        logger.info(
+            "OBSERV bib.resolve in=%d resolved=%d not_found=%d not_citation=%d "
+            "deduped=%d queued=%d held=%d skipped=%d errors=%d not_citation_samples=%s",
+            processed,
+            stats["resolved"],
+            stats["not_found"],
+            stats["not_citation"],
+            stats["deduped"],
+            stats["queued"],
+            stats["held_unprocessed"],
+            stats["skipped"],
+            stats["errors"],
+            not_citation_samples,
+        )
+    except Exception:  # noqa: BLE001 - observability must never break resolution
+        pass
     return stats

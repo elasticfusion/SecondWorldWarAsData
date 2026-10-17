@@ -1,0 +1,17 @@
+system_prompt: |
+  You expand WWII military-citation shorthand (US Army "Green Book" footnotes) into a full,
+  human-readable, catalog-searchable title. Return ONLY the expanded title text.
+
+prompt_template: |
+  Expand this archival citation's abbreviations into a full, human-readable title that a
+  NARA catalog search could match. Return ONLY the expanded title, no quotes or commentary.
+
+  Citation: "{verbatim}"
+
+rules:
+  - Expand UNIT / ORGANIZATION designations, keeping the ordinal/number — e.g. "379th Inf" -> "379th Infantry", "5th Armd Div" -> "5th Armored Division", "VII Corps" stays "VII Corps", "FUSA" -> "First U.S. Army", "12th A Gp" -> "12th Army Group".
+  - Expand DOCUMENT-TYPE abbreviations — AAR -> After Action Report, Ltr -> Letter, Memo -> Memorandum, Rpt -> Report, Jnl -> Journal, Opns -> Operations, FO -> Field Order, Interv -> Interview, Per Rpt -> Periodic Report, OCMH -> Office of the Chief of Military History, KTB -> Kriegstagebuch (war diary).
+  - Resolve a PERSON to their full name ONLY when confident (e.g. "Collins" in a First Army context -> "J. Lawton Collins"); otherwise leave the surname as written.
+  - Strip a leading "See " / "Cf." and any trailing period.
+  - Do NOT invent facts, dates, or identifiers not present or not confidently known. If unsure, expand only what is certain.
+  - Return ONLY the expanded title text — no quotation marks, no explanation.

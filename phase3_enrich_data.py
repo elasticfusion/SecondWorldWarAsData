@@ -9,6 +9,7 @@ by searching external sources and merging additional data.
 import argparse
 import json
 import os
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -23,6 +24,10 @@ from src.utils.logger import setup_logging
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Strip C0 controls (\n, \r, etc.) from exception text before it enters a log line or the
+# operator-facing source_stats error — prevents OBSERV log-line forging (repo convention).
+_CTRL = re.compile(r"[\x00-\x1f\x7f]")
 
 
 def _notify_enrichment_started() -> None:
@@ -91,8 +96,8 @@ def enrich_groups_data(
     return enriched
 
 
-def main():
-    """Main entry point."""
+def _parse_phase3_args() -> argparse.Namespace:
+    """Parse Phase 3 CLI arguments."""
     parser = argparse.ArgumentParser(
         description="Enrich extracted data from external sources"
     )
@@ -134,8 +139,157 @@ def main():
         action="store_true",
         help="Use xAI Batch API (50%% cost reduction, async processing)",
     )
+    return parser.parse_args()
 
-    args = parser.parse_args()
+
+def _enrich_places_and_geocode(
+    args, grok_client, max_workers, run_step, source_stats
+) -> int:
+    """Enrich places (hierarchy/names) then geocode coordinates (Nominatim -> hill ->
+    Grok cascade). Geocoding is wrapped so it never aborts Phase 3. Returns enriched."""
+    places_dir = args.output_dir / "places"
+    enriched = run_step(
+        "places",
+        lambda: enrich_all_places(
+            places_dir, grok_client, max_places=args.max_items, max_workers=max_workers
+        ),
+    )
+    # Link parent_place_id after enrichment populates hierarchy
+    link_parent_place_ids(places_dir)
+
+    logger.info("[phase3 step 3/6] Geocoding places (coordinates)")
+    _update_lock_status("step 3/6: geocoding places")
+    try:
+        from src.enrichment.hill_geocode import make_hill_geocoder
+        from src.enrichment.nominatim_geocode import make_nominatim_geocoder
+        from src.enrichment.places_grok_geocode import (
+            cascade_geocoder,
+            geocode_place,
+            geocode_places_dir,
+        )
+
+        geo_cache = args.cache_dir / "geocode"
+        cascade = cascade_geocoder(
+            make_nominatim_geocoder(geo_cache / "nominatim"),
+            make_hill_geocoder(geo_cache / "elevation"),
+            geocode_place,  # Grok fallback for misses
+        )
+        geo_report = geocode_places_dir(
+            places_dir,
+            grok_client,
+            write=True,
+            limit=args.max_items or None,
+            geocoder=cascade,
+        )
+        logger.info(
+            "Geocoding: attempted %d, geocoded %d, not-found %d, low-conf %d, errors %d",
+            geo_report.attempted,
+            geo_report.geocoded,
+            geo_report.not_found,
+            geo_report.low_confidence,
+            geo_report.errors,
+        )
+        source_stats["geocode"] = {
+            "enriched": geo_report.geocoded,
+            "status": "error" if geo_report.errors else "ok",
+            "attempted": geo_report.attempted,
+            "not_found": geo_report.not_found,
+            "low_confidence": geo_report.low_confidence,
+            "errors": geo_report.errors,
+        }
+        return enriched + geo_report.geocoded
+    except Exception as e:  # noqa: BLE001 - geocoding must not abort Phase 3
+        logger.error(
+            "Geocoding step FAILED (places left un-geocoded): %s", e, exc_info=True
+        )
+        source_stats["geocode"] = {
+            "enriched": 0,
+            "status": "error",
+            "error": str(e)[:300],
+        }
+        return enriched
+
+
+def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
+    """Run the OpenSERP enrichment step-group (people/equipment/groups/places/
+    source-sections + optional external maps + metrics). Returns total enriched."""
+    logger.info("[phase3 step 5/6] OpenSERP enrichment (people + equipment)")
+    _update_lock_status("step 5/6: enriching openserp")
+    from src.enrichment.openserp_enrichment import (
+        enrich_equipment_with_openserp,
+        enrich_groups_with_openserp,
+        enrich_people_with_openserp,
+        enrich_places_with_openserp,
+        enrich_source_sections_with_openserp,
+        reset_metrics as _reset_openserp_metrics,
+        write_metrics as _write_openserp_metrics,
+    )
+
+    _reset_openserp_metrics()
+    openserp_url = config.get("external_maps", {}).get(
+        "openserp_url", "http://localhost:7001"
+    )
+    out = args.output_dir
+    enriched = 0
+    enriched += run_step(
+        "openserp_people",
+        lambda: enrich_people_with_openserp(
+            out / "people", openserp_url, grok_client, args.max_items
+        ),
+    )
+    enriched += run_step(
+        "openserp_equipment",
+        lambda: enrich_equipment_with_openserp(
+            out / "equipment", openserp_url, grok_client, args.max_items
+        ),
+    )
+    enriched += run_step(
+        "openserp_groups",
+        lambda: enrich_groups_with_openserp(
+            out / "people_groups", openserp_url, grok_client, args.max_items
+        ),
+    )
+    enriched += run_step(
+        "openserp_places",
+        lambda: enrich_places_with_openserp(
+            out / "places", openserp_url, grok_client, args.max_items
+        ),
+    )
+    enriched += run_step(
+        "openserp_source_sections",
+        lambda: enrich_source_sections_with_openserp(
+            out / "source_section", openserp_url, grok_client, args.max_items
+        ),
+    )
+    # External maps via live web search — MOVED FROM PHASE 2 so OpenSERP/NAT come up
+    # exactly once (here). Imports map images for places via OpenSERP; the LOCAL
+    # external_maps.yaml corpus import stays in Phase 2.
+    ext_config = config.get("external_maps", {})
+    if ext_config.get("enabled", False):
+        from src.extraction.openserp_maps import import_openserp_maps
+
+        enriched += run_step(
+            "openserp_external_maps",
+            lambda: import_openserp_maps(
+                places_dir=out / "places",
+                output_dir=out / "external_maps",
+                grok_client=grok_client,
+                max_places=ext_config.get("max_places") or args.max_items,
+                search_limit=ext_config.get("search_limit", 50),
+                openserp_url=openserp_url,
+                page_timeout=ext_config.get("page_download_timeout", 10),
+                image_timeout=ext_config.get("image_download_timeout", 30),
+                image_storage_path=ext_config.get("image_storage_path"),
+            ),
+        )
+    # Durable OpenSERP effectiveness/health metrics -> output/metrics/openserp_metrics.json
+    _write_openserp_metrics(out)
+    return enriched
+
+
+def main():
+    """Main entry point."""
+    args = _parse_phase3_args()
 
     # Load config for logging settings
     base_dir = Path(__file__).parent
@@ -198,7 +352,8 @@ def main():
     def _run_step(name: str, fn) -> int:
         """Run one enrichment source; record enriched/status/error. Returns the
         enriched count (0 on error). Never raises — a failed source is captured,
-        logged, and surfaced, not swallowed."""
+        logged, and surfaced, not swallowed. Emits OBSERV phase3.step per source so the
+        whole Phase-3 hand-off (N enriched / status / error) is visible in one query."""
         try:
             result = fn()
             count = (
@@ -207,14 +362,28 @@ def main():
                 else getattr(result, "geocoded", 0) or 0
             )
             source_stats[name] = {"enriched": count, "status": "ok"}
+            try:
+                logger.info(
+                    "OBSERV phase3.step name=%s enriched=%d status=ok", name, count
+                )
+            except Exception:  # noqa: BLE001 - observability never breaks the step
+                pass
             return count
         except Exception as e:  # noqa: BLE001 - capture + surface, don't abort Phase 3
             logger.error("Enrichment source '%s' FAILED: %s", name, e, exc_info=True)
             source_stats[name] = {
                 "enriched": 0,
                 "status": "error",
-                "error": str(e)[:300],
+                "error": _CTRL.sub(" ", str(e))[:300],
             }
+            try:
+                logger.info(
+                    "OBSERV phase3.step name=%s enriched=0 status=error error=%s",
+                    name,
+                    _CTRL.sub(" ", str(e))[:120],
+                )
+            except Exception:  # noqa: BLE001
+                pass
             return 0
 
     # Enrich people — MOVED TO PHASE 2. All Grokipedia/Wikipedia people enrichment
@@ -246,82 +415,9 @@ def main():
 
     # Enrich places
     if not args.people_only:
-        logger.info("[phase3 step 2/6] Enriching places")
-        _update_lock_status("step 2/6: enriching places")
-        places_dir = args.output_dir / "places"
-        total_enriched += _run_step(
-            "places",
-            lambda: enrich_all_places(
-                places_dir,
-                grok_client,
-                max_places=args.max_items,
-                max_workers=max_workers,
-            ),
+        total_enriched += _enrich_places_and_geocode(
+            args, grok_client, max_workers, _run_step, source_stats
         )
-
-        # Link parent_place_id after enrichment populates hierarchy
-        link_parent_place_ids(places_dir)
-
-        # Geocode places (C1 fix): enrich_all_places sets hierarchy/names but NOT
-        # coordinates — the geocoding cascade was built + tested but never wired in,
-        # leaving every place at lat/long=0.0 with empty country. Wire it here:
-        # Nominatim first (free, cached, policy-compliant) -> hill/terrain geocoder
-        # for height features -> Grok default for the rest. Writes coordinates +
-        # geocode provenance; low-confidence hits are surfaced + flagged, not
-        # fabricated.
-        logger.info("[phase3 step 3/6] Geocoding places (coordinates)")
-        _update_lock_status("step 3/6: geocoding places")
-        try:
-            from src.enrichment.hill_geocode import make_hill_geocoder
-            from src.enrichment.nominatim_geocode import make_nominatim_geocoder
-            from src.enrichment.places_grok_geocode import (
-                cascade_geocoder,
-                geocode_place,
-                geocode_places_dir,
-            )
-
-            geo_cache = args.cache_dir / "geocode"
-            cascade = cascade_geocoder(
-                make_nominatim_geocoder(geo_cache / "nominatim"),
-                make_hill_geocoder(geo_cache / "elevation"),
-                geocode_place,  # Grok fallback for misses
-            )
-            geo_report = geocode_places_dir(
-                places_dir,
-                grok_client,
-                write=True,
-                limit=args.max_items or None,
-                geocoder=cascade,
-            )
-            logger.info(
-                "Geocoding: attempted %d, geocoded %d, not-found %d, low-conf %d, "
-                "errors %d",
-                geo_report.attempted,
-                geo_report.geocoded,
-                geo_report.not_found,
-                geo_report.low_confidence,
-                geo_report.errors,
-            )
-            total_enriched += geo_report.geocoded
-            # C3: record the full geo breakdown (attempted/geocoded/not_found/
-            # low_confidence/errors) so partial geocoding success is visible.
-            source_stats["geocode"] = {
-                "enriched": geo_report.geocoded,
-                "status": "error" if geo_report.errors else "ok",
-                "attempted": geo_report.attempted,
-                "not_found": geo_report.not_found,
-                "low_confidence": geo_report.low_confidence,
-                "errors": geo_report.errors,
-            }
-        except Exception as e:  # noqa: BLE001 - geocoding must not abort Phase 3
-            logger.error(
-                "Geocoding step FAILED (places left un-geocoded): %s", e, exc_info=True
-            )
-            source_stats["geocode"] = {
-                "enriched": 0,
-                "status": "error",
-                "error": str(e)[:300],
-            }
 
     # Enrich bibliography (ISBN, copyright, archive URLs)
     if not args.people_only:
@@ -367,84 +463,7 @@ def main():
     if not args.people_only and config.get("supplemental_material", {}).get(
         "use_openserp", False
     ):
-        logger.info("[phase3 step 5/6] OpenSERP enrichment (people + equipment)")
-        _update_lock_status("step 5/6: enriching openserp")
-        from src.enrichment.openserp_enrichment import (
-            enrich_equipment_with_openserp,
-            enrich_groups_with_openserp,
-            enrich_people_with_openserp,
-            enrich_places_with_openserp,
-            enrich_source_sections_with_openserp,
-            reset_metrics as _reset_openserp_metrics,
-            write_metrics as _write_openserp_metrics,
-        )
-
-        _reset_openserp_metrics()
-        openserp_url = config.get("external_maps", {}).get(
-            "openserp_url", "http://localhost:7001"
-        )
-        total_enriched += _run_step(
-            "openserp_people",
-            lambda: enrich_people_with_openserp(
-                args.output_dir / "people", openserp_url, grok_client, args.max_items
-            ),
-        )
-        total_enriched += _run_step(
-            "openserp_equipment",
-            lambda: enrich_equipment_with_openserp(
-                args.output_dir / "equipment", openserp_url, grok_client, args.max_items
-            ),
-        )
-        total_enriched += _run_step(
-            "openserp_groups",
-            lambda: enrich_groups_with_openserp(
-                args.output_dir / "people_groups",
-                openserp_url,
-                grok_client,
-                args.max_items,
-            ),
-        )
-        total_enriched += _run_step(
-            "openserp_places",
-            lambda: enrich_places_with_openserp(
-                args.output_dir / "places",
-                openserp_url,
-                grok_client,
-                args.max_items,
-            ),
-        )
-        total_enriched += _run_step(
-            "openserp_source_sections",
-            lambda: enrich_source_sections_with_openserp(
-                args.output_dir / "source_section",
-                openserp_url,
-                grok_client,
-                args.max_items,
-            ),
-        )
-        # External maps via live web search — MOVED FROM PHASE 2 so OpenSERP/NAT
-        # come up exactly once (here). Imports map images for places via OpenSERP;
-        # the LOCAL external_maps.yaml corpus import stays in Phase 2.
-        ext_config = config.get("external_maps", {})
-        if ext_config.get("enabled", False):
-            from src.extraction.openserp_maps import import_openserp_maps
-
-            total_enriched += _run_step(
-                "openserp_external_maps",
-                lambda: import_openserp_maps(
-                    places_dir=args.output_dir / "places",
-                    output_dir=args.output_dir / "external_maps",
-                    grok_client=grok_client,
-                    max_places=ext_config.get("max_places") or args.max_items,
-                    search_limit=ext_config.get("search_limit", 50),
-                    openserp_url=openserp_url,
-                    page_timeout=ext_config.get("page_download_timeout", 10),
-                    image_timeout=ext_config.get("image_download_timeout", 30),
-                    image_storage_path=ext_config.get("image_storage_path"),
-                ),
-            )
-        # Durable OpenSERP effectiveness/health metrics -> output/metrics/openserp_metrics.json
-        _write_openserp_metrics(args.output_dir)
+        total_enriched += _run_openserp_enrichment(args, config, grok_client, _run_step)
 
     # NOAA weather enrichment (observed data to supplement Open-Meteo)
     noaa_token = config.get("api", {}).get("noaa_api_token", "")

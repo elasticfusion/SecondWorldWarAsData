@@ -97,6 +97,89 @@ def _reconstruct_fulltext(response: dict, parsed_data: dict) -> dict:
     return response
 
 
+def _int_number_set(items) -> set:
+    """Collect the integer ``number`` fields from a list of parsed note dicts."""
+    return {
+        int(x.get("number"))
+        for x in (items or [])
+        if isinstance(x, dict) and isinstance(x.get("number"), int)
+    }
+
+
+def _parse_note_context(parsed_data: dict) -> tuple:
+    """Return ``(para_lookup, fn_nums, en_nums)`` from the parsed chapter data: a map of
+    absolute paragraph number -> raw text, and the sets of known footnote/endnote numbers.
+    Fail-safe: on malformed arrays returns empty structures (no classification context).
+    """
+    try:
+        para_lookup = {
+            p["absolute_number"]: p.get("text", "")
+            for p in parsed_data.get("paragraphs", [])
+            if isinstance(p, dict) and "absolute_number" in p
+        }
+        return (
+            para_lookup,
+            _int_number_set(parsed_data.get("footnotes")),
+            _int_number_set(parsed_data.get("endnotes")),
+        )
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - bad parsed arrays -> no classification context
+        logger.debug("footnote-ref parse of parsed_data skipped: %s", e)
+        return {}, set(), set()
+
+
+def _marks_from_refs(refs) -> set:
+    """Integer marker numbers from the LLM's per-sub-event ``references`` list."""
+    if not isinstance(refs, list):
+        return set()
+    return {
+        int(r)
+        for r in refs
+        if isinstance(r, int) or (isinstance(r, str) and r.isdigit())
+    }
+
+
+def _subevent_marks(se: dict, para_lookup: dict) -> set:
+    """Derive a sub-event's note-marker numbers. PRIMARY: the LLM's per-sub-event
+    ``references`` list. FALLBACK: scan the RAW parsed paragraphs assigned via
+    ``paragraph_numbers`` (or the summarized fulltext) for ``<sup>[N]</sup>`` markers.
+    """
+    import re as _re
+
+    marks = _marks_from_refs(se.get("references"))
+    if marks:
+        return marks
+    nums = se.get("paragraph_numbers") or se.get("paragraphs")
+    if isinstance(nums, list) and nums:
+        text = " ".join(str(para_lookup.get(n, "")) for n in nums if isinstance(n, int))
+    else:
+        text = " ".join(str(v) for v in (se.get("Sub-event_fulltext") or {}).values())
+    # <sup>[N](...)</sup>; bound N to 1-6 digits (guards int-digit-limit + blowup).
+    return {int(m) for m in _re.findall(r"<sup>\[(\d{1,6})\]", text)}
+
+
+def _classify_marks(marks: set, fn_nums: set, en_nums: set) -> tuple:
+    """Split marker numbers into ``(footnotes, endnotes)``: known endnote numbers go to
+    endnotes; everything else (incl. the common no-endnotes-array footnote case) to
+    footnotes."""
+    fnotes = sorted(n for n in marks if n not in en_nums or n in fn_nums)
+    enotes = sorted(n for n in marks if n in en_nums and n not in fn_nums)
+    return fnotes, enotes
+
+
+def _sample_norefs(se: dict) -> None:
+    """One-time OBSERV sample explaining why a sub-event yielded no marks."""
+    if not getattr(_populate_footnote_refs, "_sampled", False):
+        _populate_footnote_refs._sampled = True  # type: ignore[attr-defined]
+        logger.info(
+            "OBSERV events.refs.sample no-refs: keys=%s references=%r paragraph_numbers=%r",
+            sorted(se.keys()),
+            se.get("references"),
+            se.get("paragraph_numbers"),
+        )
+
+
 def _populate_footnote_refs(response: dict, parsed_data: dict) -> dict:
     """Populate each sub-event's ``Footnote_References`` / ``Endnote_References`` from the
     ``<sup>[N]</sup>`` markers in the RAW parsed paragraphs assigned to it (Blocker C fix).
@@ -111,77 +194,18 @@ def _populate_footnote_refs(response: dict, parsed_data: dict) -> dict:
     ``paragraphs``. The parsed ``footnotes[]``/``endnotes`` arrays classify footnote vs
     endnote. Additive, idempotent, fail-safe (never raises).
     """
-    import re as _re
-
-    para_lookup = {}
-    fn_nums = set()
-    en_nums = set()
-    try:
-        para_lookup = {
-            p["absolute_number"]: p.get("text", "")
-            for p in parsed_data.get("paragraphs", [])
-            if isinstance(p, dict) and "absolute_number" in p
-        }
-        fn_nums = {
-            int(f.get("number"))
-            for f in parsed_data.get("footnotes", [])
-            if isinstance(f, dict) and isinstance(f.get("number"), int)
-        }
-        en_nums = {
-            int(e.get("number"))
-            for e in parsed_data.get("endnotes", [])
-            if isinstance(e, dict) and isinstance(e.get("number"), int)
-        }
-    except (
-        Exception
-    ) as e:  # noqa: BLE001 - bad parsed arrays -> no classification context
-        logger.debug("footnote-ref parse of parsed_data skipped: %s", e)
+    para_lookup, fn_nums, en_nums = _parse_note_context(parsed_data)
 
     for se in response.get("Event", {}).get("Sub-events", []):
         # Per-sub-event isolation: one malformed sub-event must not drop refs for the rest.
         try:
             if not isinstance(se, dict):
                 continue
-            # PRIMARY: the events LLM already emits per-sub-event footnote numbers in
-            # `references` (e.g. [1, 7, 8]) — use them directly. (OBSERV proved the markers
-            # are NOT in Sub-event_fulltext, which is summarized prose.) FALLBACK: scan the
-            # RAW parsed paragraphs assigned via `paragraph_numbers` for <sup>[N]> markers.
-            marks: set = set()
-            refs = se.get("references")
-            if isinstance(refs, list):
-                marks = {
-                    int(r)
-                    for r in refs
-                    if isinstance(r, int) or (isinstance(r, str) and r.isdigit())
-                }
+            marks = _subevent_marks(se, para_lookup)
             if not marks:
-                nums = se.get("paragraph_numbers") or se.get("paragraphs")
-                if isinstance(nums, list) and nums:
-                    text = " ".join(
-                        str(para_lookup.get(n, "")) for n in nums if isinstance(n, int)
-                    )
-                else:
-                    text = " ".join(
-                        str(v) for v in (se.get("Sub-event_fulltext") or {}).values()
-                    )
-                # <sup>[N](...)</sup>; bound N to 1-6 digits (guards int-digit-limit + blowup).
-                marks = {int(m) for m in _re.findall(r"<sup>\[(\d{1,6})\]", text)}
-            if not marks:
-                # OBSERV (one-time sample): why no refs? show what fields were present.
-                if not getattr(_populate_footnote_refs, "_sampled", False):
-                    _populate_footnote_refs._sampled = True  # type: ignore[attr-defined]
-                    logger.info(
-                        "OBSERV events.refs.sample no-refs: keys=%s references=%r "
-                        "paragraph_numbers=%r",
-                        sorted(se.keys()),
-                        se.get("references"),
-                        se.get("paragraph_numbers"),
-                    )
+                _sample_norefs(se)
                 continue
-            # Classify: known endnote numbers -> Endnote_References; everything else
-            # (incl. the common footnote case where no endnotes array exists) -> Footnote.
-            fnotes = sorted(n for n in marks if n not in en_nums or n in fn_nums)
-            enotes = sorted(n for n in marks if n in en_nums and n not in fn_nums)
+            fnotes, enotes = _classify_marks(marks, fn_nums, en_nums)
             if fnotes:
                 se["Footnote_References"] = fnotes
             if enotes:
