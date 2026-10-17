@@ -1021,6 +1021,28 @@ def _nara_digital_objects(record: Dict[str, Any]) -> List[str]:
     return urls
 
 
+def _nara_match_context(record: Dict[str, Any]) -> str:
+    """A compact context string for match verification: the series/ancestors path, the
+    level of description, and the scope note. A green-book citation matches at the
+    series/unit level, so this context (e.g. 'World War II Operations Reports') is what
+    lets the verifier recognize a correct record behind a cryptic file-unit title."""
+    parts: List[str] = []
+    lod = record.get("levelOfDescription")
+    if lod:
+        parts.append(f"level: {lod}")
+    anc = record.get("ancestors")
+    if isinstance(anc, list):
+        names = [
+            a.get("title", "") for a in anc if isinstance(a, dict) and a.get("title")
+        ]
+        if names:
+            parts.append("series path: " + " > ".join(names[:5]))
+    scope = record.get("scopeAndContentNote") or record.get("scopeContentNote") or ""
+    if scope:
+        parts.append("scope: " + str(scope)[:300])
+    return " | ".join(parts)
+
+
 def _search_nara(
     query: str,
     api_key: str,
@@ -1125,7 +1147,15 @@ def _search_nara(
             if not nara_id:
                 continue
             url = f"https://catalog.archives.gov/id/{nara_id}"
-            if grok_client and not _verify_nara_match(query, title, grok_client):
+            # Give the verifier the record's CONTEXT (series/ancestors path + scope note +
+            # level) — a green-book citation matches at the series/unit level, and the
+            # cryptic file-unit title alone (e.g. "XIV Corps: 4-004") is not enough for the
+            # LLM to judge. The ancestors carry the series ("World War II Operations
+            # Reports") and the unit discriminator.
+            nara_context = _nara_match_context(record)
+            if grok_client and not _verify_nara_match(
+                query, title, grok_client, context=nara_context
+            ):
                 logger.debug(
                     "  ✗ Rejected: '%s' does not match query '%s'",
                     title[:60],
@@ -1222,16 +1252,19 @@ def _resolve_generic(
     return None
 
 
-def _verify_nara_match(query: str, nara_title: str, grok_client: Any) -> bool:
+def _verify_nara_match(
+    query: str, nara_title: str, grok_client: Any, context: str = ""
+) -> bool:
     """Verify a NARA catalog result actually matches the searched citation.
 
-    Checks that the specific unit, document type, and time period align.
-    A generic WWII document from the wrong unit is NOT a match.
+    Checks that the specific unit, document type, and time period align, using the record's
+    series/ancestors CONTEXT (not just the terse file-unit title) so a correct series-level
+    match is recognized. A generic WWII document from the wrong unit is NOT a match.
     """
     from src.utils.prompt_loader import render_prompt as _rp
 
     prompt = _rp(
-        "nara_verify", citation=query, nara_title=nara_title, nara_description=""
+        "nara_verify", citation=query, nara_title=nara_title, nara_description=context
     )
 
     try:

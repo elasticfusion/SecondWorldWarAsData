@@ -1,17 +1,21 @@
 system_prompt: |
-  You verify whether NARA catalog records match specific WWII citations.
+  You verify whether a NARA catalog record is the correct ARCHIVAL HOME for a WWII citation.
 
 prompt_template: |
-  Does this NARA catalog record match the citation being searched for?
+  A historian cited a WWII document. Below is a candidate NARA catalog record (its title plus
+  its series/ancestors path and scope). Decide whether this record is the correct archival
+  location for the cited document.
 
   Citation: "{citation}"
   NARA record title: "{nara_title}"
-  NARA record description: "{nara_description}"
+  NARA record context: "{nara_description}"
 
   Return ONLY "YES" or "NO".
 
 rules:
-  - The specific unit, time period, and document type must match
-  - A record from the same Record Group but different unit is NOT a match
-  - A record from a different time period is NOT a match
-  - If uncertain, return "NO"
+  - "A green-book citation resolves at the SERIES / UNIT / FILE-UNIT level — you do NOT need an exact item-title textual match. Accept when the record is the right UNIT in the right SERIES."
+  - "The UNIT must match (citation 'V Corps' must map to a V Corps record, NOT 'XI Corps'). Wrong unit means NO."
+  - "The SERIES/record type must be consistent with the document type (an operations memo/journal/periodic report belongs in a 'World War II Operations Reports' series)."
+  - "The time period must be consistent (WWII-era). A clearly different era means NO."
+  - "A cryptic file-unit title whose series path is 'World War II Operations Reports' and whose unit matches the citation IS a match — return YES."
+  - "If the unit is wrong, the era is wrong, or there is no usable unit/series signal, return NO."
