@@ -712,9 +712,16 @@ def _search_openserp_archive(
         author = ""
         if entry:
             citation = entry.get("citation") or {}
-            title = citation.get("title") or ref
+            # NEVER search on the 'Unknown' placeholder (deterministic records' title) — it makes
+            # OpenSERP literally query for "Unknown" and return junk. Prefer the Grok-expanded
+            # alt_title, then a real title, then the archive ref.
+            alt = citation.get("alt_title") or ""
+            real_title = citation.get("title") or ""
+            title = next(
+                (t for t in (alt, real_title, ref) if t and t != "Unknown"), ref
+            )
             author = citation.get("author") or ""
-        if not title:
+        if not title or title == "Unknown":
             title = ref
         queries = render_search_queries(
             "bibliography", "openserp", title=title, author=author
@@ -1257,6 +1264,17 @@ _MATCH_STOPWORDS = frozenset(
         "scope",
         "path",
         "fileunit",
+        # Placeholder + junk-web-result tokens: 'unknown' is the deterministic-record title
+        # placeholder (leaks into queries + matches junk like "Address Unknown"); the rest are
+        # generic web-result noise. Excluding them stops false token-overlap on garbage results.
+        "unknown",
+        "pdf",
+        "download",
+        "free",
+        "ebook",
+        "online",
+        "document",
+        "documents",
     }
 )
 
