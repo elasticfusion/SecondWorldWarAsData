@@ -13,7 +13,17 @@ cd "$PROJECT_DIR"
 
 echo "=== Building Lambda package ==="
 rm -rf lambda_package lambda-code.zip
+# Pass 1: install everything (pure-Python deps resolve normally).
 pip install -r requirements-lambda.txt -t lambda_package/ -q
+# Pass 2: OVERLAY Lambda-runtime-correct binary wheels for packages with NATIVE extensions.
+# The Lambda runtime is Linux x86_64 / CPython 3.12; a wheel built for the BUILD host (e.g. a
+# different arch or glibc) fails at import time — this is what broke the validation backstop:
+# jsonschema -> referencing -> rpds, where rpds ships a compiled .so and the wrong-platform wheel
+# raised "ModuleNotFoundError: No module named 'rpds.rpds'" on every invocation. Force the
+# manylinux2014 x86_64 / cp312 wheels so native extensions match the runtime.
+pip install -r requirements-lambda.txt -t lambda_package/ -q \
+  --platform manylinux2014_x86_64 --implementation cp --python-version 3.12 \
+  --only-binary=:all: --upgrade
 cp -r src/ lambda_handlers/ config.yaml lambda_package/
 # Only include scripts that Lambda handlers import
 mkdir -p lambda_package/scripts
