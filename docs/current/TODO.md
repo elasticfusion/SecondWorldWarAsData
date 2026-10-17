@@ -2058,7 +2058,41 @@ _Moved from the HIGH blocks above once merged. Prevention + detection layers com
 >   The RG-lookup code itself is correct + merged; these are the operational/persistence blockers to
 >   SEEING resolved=9 land durably in S3.
 
-> **[HIGH · correctness] alt_title: LLM expansion never runs on deterministic records + field is
+> **[HIGH · feature] Acquire + process positively-verified source documents (NARA / archive.org /
+> OpenSERP / future), user-designed 2026-10-17.** Resolution currently yields a URL; this feature
+> downloads the actual document, preserves the original, and feeds the text through the pipeline.
+> Same goal for EVERY positively-identified document:
+>   (a) ORIGINAL -> low-use repository: the EXISTING mechanism. Land acquired originals under the
+>       ``source/`` prefix (e.g. source/<search_source>/<id>/, mirroring the existing
+>       contentrepository/NARA/ precedent of 92 scanned PDFs). The live lifecycle rule
+>       ``SourcePdfsToGlacierIR`` (cloudformation/storage.yaml) already transitions source/ ->
+>       Glacier Instant Retrieval at 30 days (ms re-read for re-OCR, ~83% cheaper, no restore). NO
+>       new bucket/policy needed.
+>   (b) CONVERT original -> text via the existing Phase-0 ingestion front-end (media detect / OCR /
+>       PDF->markdown), landing under contentrepository/{SOURCE_ID}/{TITLE}/... (SOURCE_ID=_system
+>       for platform-acquired; user-/contrib-/org- for uploads — scheme already built).
+>   (c) PROCESS the text through Phase 1 -> 2 -> 3 like any narrative source; the bibliography record
+>       flips held_unprocessed -> resolved/local and new entities carry provenance to the citation.
+> DESIGN DECISIONS (user):
+>   - SOURCES: NARA + archive.org + OpenSERP now, but PLUGGABLE — a fetcher REGISTRY keyed by
+>     search_source (not hardcoded if/else) so future sources register one fetcher. NARA uses
+>     digitalObjects[].objectUrl; archive.org uses /download/<id>/; OpenSERP only when the verified
+>     result is a direct document (PDF), not an HTML landing page.
+>   - HUMAN-REVIEW GATE scaled by FORMAT + SIZE (image-based = expensive/uncertain -> low threshold):
+>       * NARA page-image sets >= 50 objects/pages -> REVIEW (reuse digital_objects count already
+>         captured in OBSERV nara.match).
+>       * PDFs -> REVIEW by default (frequently image/scanned), low threshold.
+>       * Text formats (EPUB, DOC/DOCX, CSV, TXT, HTML) -> MUCH higher threshold -> auto-process.
+>     Reuse the existing review_queue.json / held_unprocessed mechanism — do NOT build a new one.
+>   - ACQUISITION is a SEPARATE opt-in pass (config-gated like use_openserp), not inline on resolve:
+>     resolution stays fast/side-effect-free; acquisition is network/storage-heavy. Idempotent: key
+>     by naId/item-id so a document cited by multiple footnotes downloads once.
+>   - LICENSING: only auto-acquire when copyright_status=public_domain (NARA/gov works, already
+>     determined); otherwise queue for review.
+> OPEN QUESTIONS to settle at build time: whether to keep NARA page TIFs or a derived PDF as the
+> stored "original"; per-run acquisition cap (count/pages).
+
+
 > duplicated + schema doesn't enforce consistency (user-found 2026-10-16).** Three coupled issues:
 >   1. NO RUNNING EXPANSION PATH: the alt_title abbreviation-expansion rule added to
 >      prompts/supplemental.yaml (#421/#425) drives the Phase-2 supplemental BATCH extraction, which
