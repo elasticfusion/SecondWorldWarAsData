@@ -1149,12 +1149,15 @@ def _download_phase2_inputs() -> int:
     ):
         _download_s3_file(s3, f"output/{_etype}/.processed_events.json")
 
-    # Bibliography/supplemental: S3 is the authoritative store (DynamoDB entity store
-    # removed). There is no Dynamo title-index to read in lieu of the files, so Phase 2
-    # downloads these dirs from S3. (Scoped/manifest-driven reads to avoid bulk-downloading
-    # the whole bibliography dir under concurrency are a separate follow-up optimization.)
-    for p in ["output/bibliography/", "output/supplemental/"]:
-        _download_s3_prefix(s3, p)
+    # Bibliography/supplemental: SCOPED READS — Phase 2 no longer bulk-downloads these dirs
+    # (the 13k+ file bibliography prefix caused N*2 download thrash under concurrent per-book
+    # Fargate tasks). Concurrent-write safety comes from the per-writer SHARD scheme: each task
+    # writes bib_<hash>__<writer>.json, so two tasks citing the same source never write the same
+    # key (an additive last-writer-wins sync cannot drop a mention). A writer only ever touches
+    # its OWN shard, so it needs no shared-dir read. The per-task reconcile folds that task's own
+    # shards; the FULL-CORPUS reconcile in the dedup phase (_reconcile_bibliography_full_corpus,
+    # runs once after all Phase-2 tasks) downloads the whole dir and unions mentions across every
+    # task's shards into the canonical bib_<hash>.json. Phase 3 enrichment still full-downloads.
 
     return new_parsed
 
@@ -1690,6 +1693,7 @@ def _run_dedup_detection(env: dict) -> None:
     _cleanup_entity_indexes()
     _migrate_exclusions_to_dynamo()
     _download_dedup_data()
+    _reconcile_bibliography_full_corpus()
     _execute_dedup_scripts()
     _maybe_generate_surname_report()
 
@@ -1798,6 +1802,60 @@ def _download_dedup_data() -> None:
         d,
         s,
     )
+
+
+def _reconcile_bibliography_full_corpus() -> None:
+    """Full-corpus bibliography reconcile — runs ONCE after all Phase-2 book tasks finish.
+
+    Phase-2 tasks write per-writer shards ``bib_<hash>__<writer>.json`` (concurrent-safe on the
+    shared ``output/bibliography/`` S3 prefix) and only reconcile their OWN local shards. The
+    mentions produced by DIFFERENT concurrent tasks for the same citation live in separate shards
+    on S3 and are not unioned until something sees the WHOLE dir. The dedup phase is that moment:
+    download the complete bibliography dir, collapse every shard into the canonical
+    ``bib_<hash>.json`` (union mentions + fuzzy near-title dedup), and upload the result. This is
+    the rebuild-time step the deterministic-shard scheme (Option B) depends on for correctness —
+    without it, scoped reads would drop cross-task mentions. Fail-safe: never breaks dedup.
+    """
+    try:
+        s3 = _s3_client()
+        n = _download_s3_prefix(s3, "output/bibliography/")
+        logger.info("Full-corpus bibliography reconcile: downloaded %d files", n)
+        from src.extraction.bibliography import reconcile_bibliography_dir
+
+        bib_dir = WORKDIR / "output" / "bibliography"
+        merged_away = reconcile_bibliography_dir(bib_dir)
+        # Upload the collapsed canonical files; shards were unlinked locally by reconcile, but
+        # their S3 copies still exist — remove them so the prefix reflects the canonical set.
+        up, _ = s3_sync_up(bib_dir, "output/bibliography")
+        _delete_orphaned_bibliography_shards(s3, bib_dir)
+        logger.info(
+            "Full-corpus bibliography reconcile: merged_away=%d, uploaded %d canonical files",
+            merged_away,
+            up,
+        )
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - reconcile is best-effort, never blocks dedup
+        logger.warning("Full-corpus bibliography reconcile failed: %s", e)
+
+
+def _delete_orphaned_bibliography_shards(s3, bib_dir: Path) -> None:
+    """Delete S3 bibliography shard objects (``bib_<hash>__<writer>.json``) that reconcile has
+    collapsed away — i.e. any S3 key whose basename is not present in the reconciled local dir.
+    Keeps the S3 prefix in sync with the canonical set. Fail-safe per key."""
+    local_names = {p.name for p in bib_dir.glob("*.json")}
+    for page in s3.get_paginator("list_objects_v2").paginate(
+        Bucket=BUCKET, Prefix="output/bibliography/"
+    ):
+        for obj in page.get("Contents", []):
+            key = obj["Key"]
+            name = key.rsplit("/", 1)[-1]
+            # Only ever delete shard-form orphans, never a canonical/other file.
+            if "__" in name and name not in local_names:
+                try:
+                    s3.delete_object(Bucket=BUCKET, Key=key)
+                except Exception as e:  # noqa: BLE001
+                    logger.debug("shard cleanup skip %s: %s", key, e)
 
 
 def _auto_merge_exact_duplicates() -> None:

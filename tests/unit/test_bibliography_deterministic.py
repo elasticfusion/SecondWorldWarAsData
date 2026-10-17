@@ -468,3 +468,132 @@ def test_reconcile_merges_duplicate_records(tmp_path):
     assert len(rec["mentions"]) == 2  # unioned
     assert rec["alt_title"] == "Interview with Collins"  # enriched field carried
     assert rec["resource_urls"] == ["https://catalog.archives.gov/id/1"]
+
+
+def _material(verb, title="Unknown", reference_number=""):
+    return {
+        "verbatim_reference": verb,
+        "reference_number": reference_number,
+        "citation": {"title": title},
+    }
+
+
+def test_write_produces_shard_without_prepopulated_dir(tmp_path, monkeypatch):
+    """Scoped-read write path: with NO pre-downloaded dir, store_bibliography_entry writes a
+    per-writer shard bib_<hash>__<writer>.json (never needs the whole dir)."""
+    import re
+    import src.extraction.bibliography as bib
+
+    bib._WRITER_ID = None
+    monkeypatch.setenv("ECS_TASK_ID", "taskA")
+    bib_dir = tmp_path / "bibliography"  # does NOT exist yet
+    bib.store_bibliography_entry(bib_dir, _material("V Corps Ops, p. 256."), "B", "c1")
+    files = [f.name for f in bib_dir.glob("*.json")]
+    assert len(files) == 1
+    assert re.match(r"^bib_[0-9a-f]{16}__taskA\.json$", files[0]), files[0]
+
+
+def test_same_citation_one_writer_unions_into_one_shard(tmp_path, monkeypatch):
+    """Two mentions of the SAME citation by ONE writer land in ONE shard with 2 mentions."""
+    import src.extraction.bibliography as bib
+
+    bib._WRITER_ID = None
+    monkeypatch.setenv("ECS_TASK_ID", "taskA")
+    bib_dir = tmp_path / "bibliography"
+    verb = "Ltr, Hodges to Gerow, 11 Sep 44."
+    bib.store_bibliography_entry(
+        bib_dir, _material(verb, reference_number="1"), "B", "c1"
+    )
+    bib.store_bibliography_entry(
+        bib_dir, _material(verb, reference_number="2"), "B", "c2"
+    )
+    files = list(bib_dir.glob("*.json"))
+    assert len(files) == 1
+    rec = json.loads(files[0].read_text())
+    assert len(rec["mentions"]) == 2
+
+
+def test_reconcile_collapses_shards_from_two_writers(tmp_path, monkeypatch):
+    """CONCURRENCY CRUX: two different writers (tasks) each write their own shard for the SAME
+    citation (no clobber). Full-corpus reconcile collapses both shards into ONE canonical
+    bib_<hash>.json, unioning mentions across writers."""
+    import glob
+    import src.extraction.bibliography as bib
+    from src.extraction.bibliography import reconcile_bibliography_dir
+
+    bib_dir = tmp_path / "bibliography"
+    verb = "Interv with Collins, 25 Jan 54."
+
+    # writer A
+    bib._WRITER_ID = None
+    monkeypatch.setenv("ECS_TASK_ID", "taskA")
+    bib.store_bibliography_entry(
+        bib_dir, _material(verb, reference_number="1"), "B", "c1"
+    )
+    # writer B (distinct id) — must NOT clobber A's shard
+    bib._WRITER_ID = None
+    monkeypatch.setenv("ECS_TASK_ID", "taskB")
+    bib.store_bibliography_entry(
+        bib_dir, _material(verb, reference_number="2"), "B", "c9"
+    )
+
+    shards = [f for f in bib_dir.glob("*.json") if "__" in f.name]
+    assert len(shards) == 2, "each writer must have its own shard (no clobber)"
+
+    merged_away = reconcile_bibliography_dir(bib_dir)
+    files = [f for f in glob.glob(str(bib_dir / "*.json")) if "index" not in f]
+    assert merged_away == 2  # two shards folded into one canonical file
+    assert len(files) == 1
+    assert files[0].endswith(".json") and "__" not in Path(files[0]).name  # canonical
+    rec = json.loads(open(files[0]).read())
+    assert len(rec["mentions"]) == 2  # mentions unioned across writers
+
+
+def test_reconcile_fuzzy_collapses_near_titles(tmp_path):
+    """reconcile folds near-title duplicates (>=0.85) that exact-hash grouping misses."""
+    import glob
+    from src.extraction.bibliography import reconcile_bibliography_dir
+
+    bib_dir = tmp_path / "bibliography"
+    bib_dir.mkdir()
+    base = {
+        "resource_urls": [],
+    }
+    (bib_dir / "p1_01A.json").write_text(
+        json.dumps(
+            {
+                **base,
+                "BibliographyID": "01A",
+                "title": "The Siegfried Line Campaign",
+                "mentions": [
+                    {
+                        "MentionID": "01JQKV6Z9F0000000000000001",
+                        "book": "B",
+                        "reference_number": "1",
+                    }
+                ],
+            }
+        )
+    )
+    (bib_dir / "p2_01B.json").write_text(
+        json.dumps(
+            {
+                **base,
+                "BibliographyID": "01B",
+                "title": "The Siegfried Line Campain",  # typo -> fuzzy match
+                "mentions": [
+                    {
+                        "MentionID": "01JQKV6Z9F0000000000000002",
+                        "book": "B",
+                        "reference_number": "2",
+                    }
+                ],
+            }
+        )
+    )
+    merged_away = reconcile_bibliography_dir(bib_dir)
+    files = [f for f in glob.glob(str(bib_dir / "*.json")) if "index" not in f]
+    # canonical bib_<hash>.json differs from both p1_/p2_ names -> both unlinked
+    assert merged_away == 2 and len(files) == 1
+    rec = json.loads(open(files[0]).read())
+    assert len(rec["mentions"]) == 2  # unioned across the near-title duplicate
