@@ -170,27 +170,10 @@ def test_ibiblio_source_is_public_domain(tmp_path):
     assert other["license"] == "unknown"  # left for Phase 3 resolution
 
 
-def test_derive_alt_title_strips_but_does_not_expand():
-    """alt_title is a MINIMAL non-semantic baseline: strip leading 'See'/trailing period,
-    but do NOT regex-expand abbreviations (that semantic work is the LLM's job — the Green
-    Books' abbreviation vocabulary is too large/idiosyncratic for a static map).
-    """
-    from src.extraction.bibliography import _derive_alt_title
-
-    assert (
-        _derive_alt_title("See Interv with Collins, 25 Jan 54.")
-        == "Interv with Collins, 25 Jan 54"
-    )
-    assert (
-        _derive_alt_title("Cf. Ltr, Craig to OCMH, 20 Apr 56.")
-        == "Ltr, Craig to OCMH, 20 Apr 56"
-    )
-    assert _derive_alt_title("MS # B-810, Schmidt.") == "MS # B-810, Schmidt"
-    assert _derive_alt_title("") == ""
-
-
-def test_note_to_material_sets_alt_title():
-    """The deterministic material must carry a non-null alt_title (not just title=Unknown)."""
+def test_note_to_material_leaves_alt_title_for_grok():
+    """Per the agreed design, alt_title is SEMANTIC (Grok's job), NOT deterministic. The
+    deterministic material leaves it None; the dedup/resolver key falls back to the mention
+    verbatim so null is safe."""
     from src.extraction.bibliography import _note_to_material
 
     m = _note_to_material(
@@ -202,7 +185,35 @@ def test_note_to_material_sets_alt_title():
     )
     assert m is not None
     assert m["citation"]["title"] == "Unknown"
-    assert m["citation"]["alt_title"] == "Interv with Collins, 25 Jan 54"
+    assert m["citation"]["alt_title"] is None
+
+
+def test_grok_enrich_alt_title_expands_and_syncs_both_levels():
+    """Grok expands green-book shorthand into a full alt_title and writes it to BOTH the
+    top-level and citation.alt_title in lockstep (no drift). Idempotent."""
+    from src.extraction.supplemental_advanced import _enrich_alt_title
+
+    class _G:
+        def chat_completion(self, **k):
+            return "Letter, Craig to Office of the Chief of Military History, 20 April 1956"
+
+    data = {
+        "alt_title": None,
+        "citation": {"title": "Unknown", "alt_title": None},
+        "mentions": [{"verbatim_reference": "See Ltr, Craig to OCMH, 20 Apr 56."}],
+    }
+    assert _enrich_alt_title(data, data["citation"], {}, _G()) is True
+    assert data["alt_title"] == data["citation"]["alt_title"]
+    assert "Letter" in data["alt_title"] and "Ltr" not in data["alt_title"]
+    # idempotent: already expanded -> no change
+    assert _enrich_alt_title(data, data["citation"], {}, _G()) is False
+    # no grok client -> fail-safe no change
+    d2 = {
+        "alt_title": None,
+        "citation": {"alt_title": None},
+        "mentions": [{"verbatim_reference": "Ltr x."}],
+    }
+    assert _enrich_alt_title(d2, d2["citation"], {}, None) is False
 
 
 def test_new_bare_stub_forms_skipped():
@@ -315,3 +326,29 @@ def test_expand_multidoc_delimiter_is_configurable():
         len(_expand_multidoc_notes([{"number": 1, "text": "A, B, C."}], delimiter=","))
         == 3
     )
+
+
+def test_alt_title_consistency_validation_blocks_drift(tmp_path):
+    """JSON validation: a bibliography record whose top-level alt_title disagrees with
+    citation.alt_title must be BLOCKED (the two copies must never drift)."""
+    from src.utils.file_lock import write_json_with_lock
+
+    bib = tmp_path / "bibliography"
+    bib.mkdir()
+    base = {
+        "BibliographyID": "01JQKV6Z9F0000000000000000",
+        "title": "Unknown",
+        "mentions": [],
+    }
+    # consistent -> allowed
+    ok = dict(
+        base,
+        alt_title="Letter X",
+        citation={"title": "Unknown", "alt_title": "Letter X"},
+    )
+    assert write_json_with_lock(bib / "ok.json", ok, entity="bibliography") is True
+    # drifted -> blocked
+    bad = dict(
+        base, alt_title="Letter X", citation={"title": "Unknown", "alt_title": "Ltr X"}
+    )
+    assert write_json_with_lock(bib / "bad.json", bad, entity="bibliography") is False
