@@ -2101,6 +2101,17 @@ _Moved from the HIGH blocks above once merged. Prevention + detection layers com
 > re-spend an API query per document; downloads then hit only the public media URLs (no quota, no
 > key). Add an OBSERV counter for NARA API calls to watch the monthly budget. Keep a courtesy delay
 > on downloads but no hard NARA ceiling.
+> DYNAMO-DEPRECATION ALIGNMENT (owner direction; Dynamo will likely be removed from JSON storage —
+> S3 is authoritative): the acquisition feature must be S3-NATIVE, not Dynamo-backed.
+>   - IDEMPOTENCY / "already acquired?" = presence of the deterministic S3 location
+>     source/<search_source>/<id>/ (head/list before download). Immutable per-id prefix -> concurrent
+>     runs can't collide; needs ZERO Dynamo. Skip the download AND the by-naId API call when present.
+>   - "Already resolved?" stays the record's own search_status/resource_urls in output/bibliography/
+>     *.json (already S3-authoritative).
+>   - Cross-run NARA search-result cache: prefer the S3/file-native cache backend (search_cache
+>     already has a _LocalBackend path under cache/, a durable lifecycle-managed prefix) over the
+>     Dynamo backend, so the quota-saving cache survives Dynamo removal.
+>   Do NOT add new Dynamo writes for acquisition.
 > QUOTA INCREASE: the 10k/month is a SOFT default — NARA's README states most needs fit it and a
 > higher limit can be REQUESTED (email Catalog_API@nara.gov, same contact as key requests). The
 > bump ceiling is HIGH — up to 150,000 queries/month (15x default), which effectively removes the
