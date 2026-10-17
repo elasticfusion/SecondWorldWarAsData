@@ -136,3 +136,23 @@ def test_generic_categories_work_across_volumes():
     for url in (_SIEG, _XCHAN, _LOG2):
         r = resolve_from_biblio_note("MS # B-810, Schmidt.", url)
         assert r and r["biblio_category"] == "archival" and "OCMH" in r["holding"]
+
+
+# --- Generated per-volume biblio-URL data file (handles -Biblio/-Bib/-B naming) ---
+def test_generated_biblio_url_used_for_nonstandard_naming():
+    # Guadalcanal's note is USA-P-Guadalcanal-Bib.html (NOT -Biblio.html); the data file must
+    # drive the correct URL rather than the guessed -Biblio.html.
+    url = "https://www.ibiblio.org/hyperwar/USA/USA-P-Guadalcanal/USA-P-Guadalcanal-5.html#fn1"
+    r = resolve_from_biblio_note("Interv with a participant.", url)
+    assert r and r["biblio_note_url"].endswith("USA-P-Guadalcanal-Bib.html")
+
+
+def test_pacific_volume_archival_category_resolves():
+    # A Pacific volume with no hand-curated published works still resolves archival citations
+    # via the generic category layer + gets a correct biblio URL.
+    url = (
+        "https://www.ibiblio.org/hyperwar/USA/USA-P-Marianas/USA-P-Marianas-7.html#fn2"
+    )
+    r = resolve_from_biblio_note("25th Div G-3 Journal, 15 Jun 44.", url)
+    assert r and r["biblio_category"] == "archival"
+    assert "USA-P-Marianas" in r["biblio_note_url"]

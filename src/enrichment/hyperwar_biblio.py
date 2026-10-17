@@ -34,18 +34,35 @@ _HYPERWAR_URL = re.compile(
     re.I,
 )
 
+# Generated map volume -> {"biblio_url": ...}, built by scripts/build_hyperwar_biblio_index.py by
+# FOLLOWING each volume index's "Bibliograph…" link (the filename varies per volume:
+# -Biblio.html / -Bib.html / -B.html). Loaded once; the authoritative biblio URL beats guessing.
+import json as _json
+from pathlib import Path as _Path
+
+_DATA_FILE = _Path(__file__).with_name("data") / "hyperwar_biblio.json"
+_VOLUME_BIBLIO_URLS: Dict[str, str] = {}
+try:
+    _raw = _json.loads(_DATA_FILE.read_text(encoding="utf-8"))
+    _VOLUME_BIBLIO_URLS = {
+        k: v["biblio_url"] for k, v in _raw.items() if v.get("biblio_url")
+    }
+except Exception:  # noqa: BLE001 - data file optional; fall back to URL derivation
+    _VOLUME_BIBLIO_URLS = {}
+
 
 def _parse_volume(source_url: str) -> Optional[Tuple[str, str]]:
     """From a citation source_url return (volume_key, biblio_note_url), or None if not a
-    recognizable HyperWar volume page. The note URL is the volume's ``<vol>-Biblio.html``.
-    """
+    recognizable HyperWar volume page. Uses the generated per-volume biblio URL (authoritative,
+    handles the -Biblio/-Bib/-B naming variation); falls back to the conventional
+    ``<vol>-Biblio.html`` for any hyperwar volume not in the generated map."""
     if not source_url:
         return None
     m = _HYPERWAR_URL.search(source_url)
     if not m:
         return None
     vol = m.group("vol")
-    note_url = f"{m.group('base')}/{vol}-Biblio.html"
+    note_url = _VOLUME_BIBLIO_URLS.get(vol) or f"{m.group('base')}/{vol}-Biblio.html"
     return vol, note_url
 
 
