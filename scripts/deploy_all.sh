@@ -260,11 +260,13 @@ from pathlib import Path
 
 REQUIRED = ['events', 'events_batch', 'people', 'places', 'dates', 'equipment',
             'equipment_vision', 'equipment_urls', 'equipment_enrichment',
-            'weather', 'weather_batch', 'casualties', 'logistics',
+            'weather_batch', 'casualties', 'logistics',
             'supplemental', 'supplemental_narrative', 'people_groups', 'biography',
             'people_consolidation', 'map_search', 'map_vision', 'license_check',
             'isbn_lookup', 'author_death_date', 'publication_search',
-            'bibliography_verify', 'nara_identify', 'nara_verify']
+            'bibliography_verify', 'bibliography_alt_title', 'nara_identify',
+            'nara_verify', 'date_summary', 'equipment_disambiguation',
+            'language_detect', 'source_section', 'translation']
 errors = []
 for name in REQUIRED:
     p = Path(f'prompts/{name}.yaml')
@@ -292,7 +294,7 @@ python3 -c "
 import yaml, sys
 from pathlib import Path
 
-REQUIRED = ['people', 'equipment', 'events', 'bibliography', 'maps', 'nara']
+REQUIRED = ['people', 'equipment', 'events', 'bibliography', 'maps', 'nara', 'people_groups', 'places']
 errors = []
 for name in REQUIRED:
     p = Path(f'search_queries/{name}.yaml')
