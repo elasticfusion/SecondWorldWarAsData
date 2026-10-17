@@ -710,18 +710,40 @@ _RG_LOOKUP: List[Tuple["re.Pattern[str]", Tuple[str, int]]] = [
     ),
     # USAF commands/activities/organizations (post-1947 + historical studies).
     (re.compile(r"\bUSAF\b|Air Force Historical|AFHRA", re.I), ("RG 342", 342)),
-    # --- Navy ---
-    # Chief of Naval Operations, war diaries of ships/task forces, action reports (naval),
-    # COMINCH, fleet/task force.
+    # HQ U.S. Air Force / Air Staff.
+    (
+        re.compile(r"Air Staff|Hq\s+USAF|Headquarters,?\s+U\.?S\.? Air Force", re.I),
+        ("RG 341", 341),
+    ),
+    # --- Navy (by subject matter) ---
+    # Operating forces: war diaries/action reports of ships & task forces, COMINCH, fleets.
     (
         re.compile(
             r"\bCNO\b|Chief of Naval Operations|\bCOMINCH\b|War Diary,?\s+(?:USS|Task|Fleet)"
-            r"|Action Report,?\s+USS|\bUSS\b|Task\s+(?:Force|Group)\s+\d|\bCTF\b",
+            r"|Action Report,?\s+USS|\bUSS\b|Task\s+(?:Force|Group)\s+\d|\bCTF\b"
+            r"|Naval Operating Forces|\bComNav|Amphibious",
             re.I,
         ),
         ("RG 38", 38),
     ),
-    # General records of the Department of the Navy / SecNav.
+    # Naval Operating Forces command records (RG 313) — shore/fleet command establishments.
+    (
+        re.compile(r"Naval Operating Forces|Naval District|Shore Establishment", re.I),
+        ("RG 313", 313),
+    ),
+    # Bureau of Naval Personnel (muster rolls, personnel, casualties).
+    (re.compile(r"Bureau of Naval Personnel|BuPers|muster roll", re.I), ("RG 24", 24)),
+    # Bureau of Ordnance (naval ordnance/weapons design).
+    (re.compile(r"Bureau of Ordnance|BuOrd", re.I), ("RG 74", 74)),
+    # Bureau of Yards and Docks (naval construction, Seabees facilities).
+    (re.compile(r"Yards and Docks|BuDocks|Seabee", re.I), ("RG 71", 71)),
+    # General records of the Department of the Navy / SecNav (1798-1947 = RG 80; 1947- = RG 428).
+    (
+        re.compile(
+            r"Department of the Navy, 194[7-9]|194[7-9].*Department of the Navy", re.I
+        ),
+        ("RG 428", 428),
+    ),
     (
         re.compile(r"Department of the Navy|SecNav|Secretary of the Navy", re.I),
         ("RG 80", 80),
@@ -745,7 +767,59 @@ _RG_LOOKUP: List[Tuple["re.Pattern[str]", Tuple[str, int]]] = [
     ),
     # --- Coast Guard ---
     (re.compile(r"Coast Guard|\bUSCG\b", re.I), ("RG 26", 26)),
-    # --- Theater / Allied / occupation HQ ---
+    # --- Theaters of war (by named theater in the subject matter) ---
+    # Mediterranean Theater (MTOUSA, NATOUSA, Italy/North Africa campaigns).
+    (
+        re.compile(
+            r"\bMTOUSA\b|\bNATOUSA\b|Mediterranean Theater|Fifth Army.*Italy|Italian Campaign",
+            re.I,
+        ),
+        ("RG 492", 492),
+    ),
+    # China-Burma-India (CBI).
+    (
+        re.compile(r"\bCBI\b|China-Burma-India|China Burma India|Burma|Stilwell", re.I),
+        ("RG 493", 493),
+    ),
+    # Middle Pacific / Pacific Ocean Areas (POA, CINCPAC/Nimitz area).
+    (
+        re.compile(
+            r"Middle Pacific|Pacific Ocean Areas?|\bPOA\b|\bCINCPAC\b|Central Pacific",
+            re.I,
+        ),
+        ("RG 494", 494),
+    ),
+    # Africa-Middle East Theater.
+    (
+        re.compile(
+            r"Africa-Middle East|Middle East Theater|Persian Gulf Command", re.I
+        ),
+        ("RG 497", 497),
+    ),
+    # U.S. Army Forces in Alaska (Aleutians).
+    (
+        re.compile(r"Alaska Defense|U\.?S\.? Army.*Alaska|Aleutian", re.I),
+        ("RG 547", 547),
+    ),
+    # Far East Command / SWPA / SCAP / GHQ (MacArthur Pacific HQ, occupation of Japan).
+    (
+        re.compile(
+            r"\bSWPA\b|\bSCAP\b|Far East Command|\bGHQ\b.*(?:Pacific|Far East)|MacArthur HQ|USAFFE",
+            re.I,
+        ),
+        ("RG 554", 554),
+    ),
+    # Generic "U.S. theaters of war, WWII" when a theater is implied but unspecified.
+    (re.compile(r"Theater of War|Theaters of War", re.I), ("RG 332", 332)),
+    # Army operational/tactical/support orgs (WWII & after) — armies/corps HQ as orgs.
+    (
+        re.compile(
+            r"Army Ground Forces|\bAGF\b|Replacement.*Training|Operational.*Tactical",
+            re.I,
+        ),
+        ("RG 338", 338),
+    ),
+    # --- Theater / Allied / occupation HQ (ETO) ---
     (
         re.compile(r"\bETOUSA\b|Hq\s+ETO|European Theater of Operations", re.I),
         ("RG 498", 498),
@@ -758,16 +832,98 @@ _RG_LOOKUP: List[Tuple["re.Pattern[str]", Tuple[str, int]]] = [
         re.compile(r"US Occupation|Military Government|\bUSFET\b|\bOMGUS\b", re.I),
         ("RG 260", 260),
     ),
-    # --- Strategic / intelligence / War Dept ---
+    # --- Strategic / intelligence ---
     (re.compile(r"Strategic Bombing Survey|\bUSSBS\b", re.I), ("RG 243", 243)),
     (re.compile(r"\bOSS\b|Office of Strategic Services", re.I), ("RG 226", 226)),
+    # --- High command / staff ---
+    # Joint Chiefs of Staff.
+    (
+        re.compile(r"\bJCS\b|Joint Chiefs of Staff|Combined Chiefs|\bCCS\b", re.I),
+        ("RG 218", 218),
+    ),
+    # Office of the Secretary of Defense (post-1947).
+    (re.compile(r"Secretary of Defense|\bOSD\b", re.I), ("RG 330", 330)),
+    # Office of the Secretary of War.
+    (re.compile(r"Secretary of War|\bOSW\b|Stimson", re.I), ("RG 107", 107)),
+    # Army Staff (post-1947 successor to WDGS).
+    (
+        re.compile(r"Army Staff|\bGSUSA\b|Chief of Staff.*Army, 194[7-9]", re.I),
+        ("RG 319", 319),
+    ),
+    # War Department General & Special Staffs (WWII G-2/OPD at War-Dept level).
     (
         re.compile(
-            r"\bWDGS\b|War Department General|\bOPD\b|\bJCS\b|Joint Chiefs", re.I
+            r"\bWDGS\b|War Department General|\bOPD\b|Operations Division.*War Department",
+            re.I,
         ),
         ("RG 165", 165),
     ),
-    # --- Army ground unit records (GENERIC — must stay LAST so service-specific wins) ---
+    # --- Army technical services / bureaus (by service in the subject matter) ---
+    # Chief Signal Officer (signals, communications, photography).
+    (re.compile(r"Chief Signal Officer|Signal Corps|\bSigC\b", re.I), ("RG 111", 111)),
+    # Chief of Ordnance (Army ordnance/materiel development).
+    (
+        re.compile(r"Chief of Ordnance|Ordnance Department|Ordnance Dept", re.I),
+        ("RG 156", 156),
+    ),
+    # Chemical Warfare Service.
+    (re.compile(r"Chemical Warfare|\bCWS\b", re.I), ("RG 175", 175)),
+    # Surgeon General (Army) — medical.
+    (
+        re.compile(r"Surgeon General|Medical Department.*Army|Army Medical", re.I),
+        ("RG 112", 112),
+    ),
+    # Judge Advocate General (Army) — courts-martial, war crimes trials.
+    (
+        re.compile(
+            r"Judge Advocate General|\bJAG\b|court-martial|courts-martial", re.I
+        ),
+        ("RG 153", 153),
+    ),
+    # Inspector General (Army).
+    (re.compile(r"Inspector General", re.I), ("RG 159", 159)),
+    # --- Army commands/units (continental & regular-army mobile) ---
+    (
+        re.compile(
+            r"Continental Command|Army Service Forces|\bASF\b|Service Command", re.I
+        ),
+        ("RG 393", 393),
+    ),
+    (
+        re.compile(
+            r"Regular Army.*(?:Regiment|Mobile)|coast artillery|\bRA\b regiment", re.I
+        ),
+        ("RG 391", 391),
+    ),
+    # --- State / diplomatic / other agencies (by subject) ---
+    (
+        re.compile(r"Department of State|State Department|\bFRUS\b|diplomatic", re.I),
+        ("RG 59", 59),
+    ),
+    (
+        re.compile(r"Foreign Service Post|Embassy|Consulate|Legation", re.I),
+        ("RG 84", 84),
+    ),
+    (
+        re.compile(
+            r"War Relocation Authority|\bWRA\b|Japanese.*internment|relocation center",
+            re.I,
+        ),
+        ("RG 210", 210),
+    ),
+    (re.compile(r"Panama Canal", re.I), ("RG 185", 185)),
+    (
+        re.compile(r"Defense Mapping|Army Map Service|\bAMS\b map|topographic", re.I),
+        ("RG 456", 456),
+    ),
+    (
+        re.compile(
+            r"Manhattan (?:Project|Engineer)|\bMED\b.*atomic|Department of Energy", re.I
+        ),
+        ("RG 434", 434),
+    ),
+    (re.compile(r"National War Labor Board|War Labor Board", re.I), ("RG 202", 202)),
+    # --- Army ground unit records (GENERIC — must stay LAST so everything above wins) ---
     # AAR, G-1..G-4 journals, periodic reports, field orders, corps/division operational
     # records -> Adjutant General's Office.
     (
@@ -851,6 +1007,18 @@ def _extract_na_id(hit: Dict[str, Any]) -> str:
         if candidate:
             return str(candidate)
     return ""
+
+
+def _nara_digital_objects(record: Dict[str, Any]) -> List[str]:
+    """Direct URLs of digitized/online objects attached to a NARA record (empty if the
+    record is description-only / not yet online). Answers 'is this already online?'."""
+    urls: List[str] = []
+    for obj in record.get("digitalObjects") or []:
+        if isinstance(obj, dict):
+            u = obj.get("objectUrl")
+            if isinstance(u, str) and u.lower().startswith(("http://", "https://")):
+                urls.append(u)
+    return urls
 
 
 def _search_nara(
@@ -965,8 +1133,20 @@ def _search_nara(
                 )
                 continue
             logger.debug("  ✓ Accepted: %s", url)
-            cache_result("nara", cache_q, url)
-            return url
+            # Is the matched NARA record ALREADY ONLINE (digitized)? If so, prefer the
+            # direct object (scan) URL so the historian gets the document itself, not just
+            # the catalog description. Otherwise return the description URL.
+            online = _nara_digital_objects(record)
+            logger.info(
+                "OBSERV nara.match naId=%s online=%d digital_objects=%d q=%r",
+                nara_id,
+                1 if online else 0,
+                len(online),
+                safe_q[:50],
+            )
+            resolved_url = online[0] if online else url
+            cache_result("nara", cache_q, resolved_url)
+            return resolved_url
     except Exception as e:
         logger.debug("NARA search failed: %s", e)
     cache_result("nara", cache_q, None)
