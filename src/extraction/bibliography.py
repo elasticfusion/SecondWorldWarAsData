@@ -1,5 +1,6 @@
 """Bibliography management — deduplicated document/book reference storage."""
 
+import hashlib
 import json
 import logging
 import re
@@ -346,6 +347,17 @@ def _public_domain_fields(url: str) -> Dict[str, Any]:
 # in the Phase-3 enrichment step (_enrich_bib_file). The deterministic pass leaves it None.
 
 
+def _deterministic_bib_filename(keys: Dict[str, str]) -> str:
+    """Stable per-record filename derived from the match key, so the SAME citation always
+    maps to the SAME file regardless of which concurrent Fargate task writes it (no random
+    ULID -> no cross-task duplicate files for one citation). Primary key is the normalized
+    title (= verbatim for deterministic records where title='Unknown' falls back to the
+    verbatim), then archive-ref, then author. Returns 'bib_<16-hex>.json'."""
+    primary = keys.get("title") or keys.get("ref") or keys.get("author") or ""
+    h = hashlib.sha256(primary.encode("utf-8")).hexdigest()[:16]
+    return f"bib_{h}.json"
+
+
 def _slugify(title: str) -> str:
     """Convert title to filename slug."""
     slug = re.sub(r"[^\w\s-]", "", title.lower().strip())
@@ -576,17 +588,23 @@ def store_bibliography_entry(
             mention_exists=lambda mentions: _has_mention(mentions, mention),
         )
 
-    # --- Local-file fallback (no Dynamo store: local/test mode) ---
+    # --- Local-file fallback (no Dynamo store: local/test mode / S3-authoritative) ---
     bib_dir.mkdir(parents=True, exist_ok=True)
+    from src.utils.file_lock import write_json_with_lock
+
+    # PRIMARY dedup = the DETERMINISTIC filename (concurrency-safe: same citation -> same
+    # file across tasks, no shared-index race on the write path). Fall back to the legacy
+    # index match so pre-existing random-ULID files are still found + merged.
+    det_name = _deterministic_bib_filename(keys)
     index = _load_index(bib_dir)
-    existing_file = _find_match(keys, index)
+    existing_file = (
+        det_name if (bib_dir / det_name).exists() else _find_match(keys, index)
+    )
     if existing_file and (bib_dir / existing_file).exists():
         with open(bib_dir / existing_file, "r", encoding="utf-8") as f:
             bib_data = json.load(f)
         if not _has_mention(bib_data.get("mentions", []), mention):
             bib_data.setdefault("mentions", []).append(mention)
-            from src.utils.file_lock import write_json_with_lock
-
             write_json_with_lock(
                 bib_dir / existing_file, bib_data, entity="bibliography"
             )
@@ -594,11 +612,101 @@ def store_bibliography_entry(
 
     bib_data = _build_bib_entry(material)
     bib_data["mentions"].append(mention)
-    filename = f"{_slugify(title)}_{bib_data['BibliographyID']}.json"
+    write_json_with_lock(bib_dir / det_name, bib_data, entity="bibliography")
+    # The index is now a DERIVED/legacy convenience (rebuildable from the dir); best-effort
+    # update, never the authority — concurrent writers no longer race on it for dedup.
+    _index_entry(index, keys, det_name)
+    _save_index(bib_dir, index)
+    logger.debug("New bibliography entry: %s", det_name)
+    return bib_data["BibliographyID"]
+
+
+def _merge_bib_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Merge records that share a match key into one: union mentions (by _has_mention),
+    and prefer the most-enriched base fields (a real title over 'Unknown', non-empty
+    alt_title/author/resource_urls). Deterministic: records sorted by BibliographyID so the
+    outcome is stable regardless of listing order."""
+    records = sorted(records, key=lambda r: str(r.get("BibliographyID") or ""))
+    base = dict(records[0])
+    merged_mentions: List[Dict[str, Any]] = []
+    for rec in records:
+        # prefer a real title / populated fields from any record
+        if base.get("title", "Unknown") in ("", "Unknown") and rec.get("title") not in (
+            "",
+            "Unknown",
+            None,
+        ):
+            base["title"] = rec["title"]
+        for fld in ("alt_title", "archive_reference_number"):
+            if not base.get(fld) and rec.get(fld):
+                base[fld] = rec[fld]
+        if not base.get("resource_urls") and rec.get("resource_urls"):
+            base["resource_urls"] = rec["resource_urls"]
+        for m in rec.get("mentions") or []:
+            if not _has_mention(merged_mentions, m):
+                merged_mentions.append(m)
+    base["mentions"] = merged_mentions
+    return base
+
+
+def reconcile_bibliography_dir(bib_dir: Path) -> int:
+    """Rebuild-time reconcile (Option B): union mentions across any bibliography records that
+    share a match key, collapsing transient cross-task duplicates AND legacy random-ULID
+    duplicates into one canonical deterministic file (bib_<hash>.json). Rebuilds the derived
+    index. Idempotent + fail-safe (never raises). Returns the number of duplicate files merged
+    away. Run at end-of-run / reconcile phase — S3-authoritative, no Dynamo."""
+    bib_dir = Path(bib_dir)
+    if not bib_dir.exists():
+        return 0
     from src.utils.file_lock import write_json_with_lock
 
-    write_json_with_lock(bib_dir / filename, bib_data, entity="bibliography")
-    _index_entry(index, keys, filename)
-    _save_index(bib_dir, index)
-    logger.debug("New bibliography entry: %s", filename)
-    return bib_data["BibliographyID"]
+    # group record files by their canonical deterministic key
+    groups: Dict[str, List[tuple]] = {}
+    for f in sorted(bib_dir.glob("*.json")):
+        if f.name in ("index.json", "review_queue.json"):
+            continue
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(data, dict) or "BibliographyID" not in data:
+            continue
+        title = data.get("title", "") or ""
+        if not title or title == "Unknown":
+            title = data.get("verbatim_reference", "") or (
+                (data.get("mentions") or [{}])[0].get("verbatim_reference", "")
+            )
+        keys = _match_keys(data, title)
+        groups.setdefault(_deterministic_bib_filename(keys), []).append((f, data))
+
+    merged_away = 0
+    new_index: Dict[str, Dict[str, str]] = {"titles": {}, "refs": {}, "authors": {}}
+    for canon_name, items in groups.items():
+        files = [f for f, _ in items]
+        records = [d for _, d in items]
+        merged = _merge_bib_records(records) if len(records) > 1 else records[0]
+        canon_path = bib_dir / canon_name
+        try:
+            write_json_with_lock(canon_path, merged, entity="bibliography")
+            # remove any non-canonical files in this group
+            for f in files:
+                if f.name != canon_name:
+                    try:
+                        f.unlink()
+                        merged_away += 1
+                    except OSError:
+                        pass
+        except Exception as e:  # noqa: BLE001 - reconcile must never break the run
+            logger.warning("reconcile bibliography %s failed: %s", canon_name, e)
+            continue
+        # rebuild the derived index from the canonical record
+        title = merged.get("title", "") or merged.get("verbatim_reference", "") or ""
+        _index_entry(new_index, _match_keys(merged, title), canon_name)
+    try:
+        _save_index(bib_dir, new_index)
+    except OSError:
+        pass
+    logger.info(
+        "OBSERV bib.reconcile groups=%d merged_away=%d", len(groups), merged_away
+    )
+    return merged_away

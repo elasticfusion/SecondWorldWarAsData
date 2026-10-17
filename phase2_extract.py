@@ -615,6 +615,17 @@ def _run_core_extraction(
         except Exception as e:  # pylint: disable=broad-except
             logger.warning("Bibliography S3-materialize failed: %s", e)
 
+        # Reconcile (Option B / Dynamo-deprecation): collapse any duplicate bibliography
+        # records that share a match key — transient cross-Fargate writes of the same
+        # citation AND legacy random-ULID files — into one canonical deterministic file,
+        # unioning mentions. S3-native, no Dynamo. Fail-safe.
+        try:
+            from src.extraction.bibliography import reconcile_bibliography_dir
+
+            reconcile_bibliography_dir(paths["output_root"] / "bibliography")
+        except Exception as e:  # pylint: disable=broad-except
+            logger.warning("Bibliography reconcile failed: %s", e)
+
     if any_optional and not skip_optional:
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
