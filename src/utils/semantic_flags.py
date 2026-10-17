@@ -131,6 +131,15 @@ def _citation_flags(record: Dict[str, Any]) -> List[str]:
     low = title.lower()
     if low in _CITATION_STUBS or _BARE_NUMBER.match(low):
         return ["citation_stub"]
+    # citation_unresolvable is a POST-RESOLUTION signal. archive_reference_number and
+    # resource_urls are populated by the Phase-3 resolver; a freshly-EXTRACTED record (written
+    # at the Phase-2 perimeter, before resolution can have run) necessarily lacks both and is
+    # merely NOT-YET-RESOLVED, not unresolvable. Flag only once resolution was ATTEMPTED —
+    # signalled by a resolver-set ``search_status`` — and still produced no archive ref / URL.
+    # (Without this guard every extracted citation trips the flag -> ~50% false-positive rate
+    # that fired the data-quality alert; the condition evaluated a Phase-3 field at Phase-2 time.)
+    if not record.get("search_status"):
+        return []
     has_archive = bool(record.get("archive_reference_number"))
     has_url = bool(record.get("resource_urls"))
     if not has_archive and not has_url:

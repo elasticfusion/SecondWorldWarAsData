@@ -82,9 +82,23 @@ def test_citation_stub_flagged():
 
 
 def test_citation_unresolvable_when_no_archive_no_url():
+    # Only flagged AFTER resolution was attempted (search_status set by the Phase-3 resolver).
     assert sf.flags_for(
-        "bibliography", {"title": "A Real Book Title", "resource_urls": []}
+        "bibliography",
+        {"title": "A Real Book Title", "resource_urls": [], "search_status": "not_found"},
     ) == ["citation_unresolvable"]
+
+
+def test_citation_not_flagged_before_resolution():
+    # A freshly-EXTRACTED record (no search_status, written in Phase 2 before the resolver
+    # runs) is NOT-YET-RESOLVED, not unresolvable — must NOT be flagged (phase-ordering fix:
+    # previously tripped ~50% of bibliography writes with a false positive).
+    assert (
+        sf.flags_for(
+            "bibliography", {"title": "A Real Book Title", "resource_urls": []}
+        )
+        == []
+    )
 
 
 def test_citation_resolvable_with_archive_or_url():
