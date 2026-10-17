@@ -188,3 +188,46 @@ def test_token_gate_rejects_irrelevant_candidates_without_grok_call():
     # Only the relevant candidate reached the Grok verifier (3 junk ones gated out for free).
     assert calls["n"] == 1
     assert out == ["https://x/4"]
+
+
+def test_openserp_verify_budget_caps_grok_calls():
+    """Perf guard: OpenSERP caps total Grok verify attempts per citation (<=5) across all query
+    templates, so topically-relevant-but-wrong candidates can't accumulate dozens of 3s calls.
+    """
+    calls = {"n": 0}
+
+    def verify(query, title, url, grok_client, entry=None):
+        calls["n"] += 1
+        return False  # all rejected -> exhausts the budget rather than returning early
+
+    def fake_get(u, params=None, timeout=None):
+        r = MagicMock()
+        r.status_code = 200
+        # 5 topically-relevant results (share 'corps/operations' -> pass token-gate) per query
+        r.json.return_value = {
+            "results": [
+                {"url": f"http://x/{i}", "title": f"V Corps Operations variant {i}"}
+                for i in range(5)
+            ]
+        }
+        return r
+
+    br._openserp_down = False
+    with (
+        patch(
+            "src.enrichment.bibliography_resolver.get_session",
+            return_value=MagicMock(get=fake_get),
+        ),
+        patch("src.utils.search_cache.get_cached", return_value=None),
+        patch("src.utils.search_cache.cache_result"),
+        patch("time.sleep"),
+        patch.object(br, "_verify_openserp_match", side_effect=verify),
+    ):
+        entry = {"citation": {"title": "V Corps Operations in the ETO"}}
+        br._search_openserp_archive(
+            "V Corps Operations in the ETO",
+            "http://x",
+            grok_client=object(),
+            entry=entry,
+        )
+    assert calls["n"] <= 5, f"verify budget exceeded: {calls['n']} calls"

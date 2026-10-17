@@ -730,7 +730,14 @@ def _search_openserp_archive(
             queries = [f"{ref} digitized document"]
 
         session = get_session()
+        # Grok-verify budget per citation: topically-relevant-but-wrong candidates (e.g. "VIII
+        # Corps in ETO" for a "V Corps Operations" citation) pass the cheap token-gate and can
+        # only be rejected by Grok. Cap total verify attempts across ALL query templates so one
+        # citation can't accumulate dozens of 3s Grok calls (the Phase-3 slowdown). 0 = done.
+        verify_budget = 5
         for query in queries:
+            if verify_budget <= 0:
+                break
             time.sleep(5)
             resp = session.get(
                 f"{openserp_url}/mega/search",
@@ -747,6 +754,8 @@ def _search_openserp_archive(
             data = resp.json()
             results = data.get("results", [])
             for r in results:
+                if verify_budget <= 0:
+                    break
                 url = r.get("url", "")
                 if not url:
                     continue
@@ -758,6 +767,8 @@ def _search_openserp_archive(
                 if grok_client and not _title_token_overlap(query, result_title):
                     logger.debug("  ✗ OpenSERP token-gate: '%s'", result_title[:60])
                     continue
+                if grok_client:
+                    verify_budget -= 1  # a real Grok verify is about to be spent
                 if grok_client and not _verify_openserp_match(
                     ref, result_title, url, grok_client, entry
                 ):
