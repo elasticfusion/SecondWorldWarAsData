@@ -2057,3 +2057,23 @@ _Moved from the HIGH blocks above once merged. Prevention + detection layers com
 >      ever run ONE phase3 at a time and let it fully STOP before re-reading S3.
 >   The RG-lookup code itself is correct + merged; these are the operational/persistence blockers to
 >   SEEING resolved=9 land durably in S3.
+
+> **[HIGH · correctness] alt_title: LLM expansion never runs on deterministic records + field is
+> duplicated + schema doesn't enforce consistency (user-found 2026-10-16).** Three coupled issues:
+>   1. NO RUNNING EXPANSION PATH: the alt_title abbreviation-expansion rule added to
+>      prompts/supplemental.yaml (#421/#425) drives the Phase-2 supplemental BATCH extraction, which
+>      (a) was skipped this run ("no batch submitted — all cached") and (b) is not clearly wired to
+>      UPDATE the existing deterministic bibliography records' alt_title. The Phase-3 step 4/6
+>      enricher `_enrich_bib_file` (NOT batch-gated) only does ISBN/copyright/archive_url — it does
+>      NOT touch alt_title. Net: "Ltr, Craig to OCMH" never becomes "Letter, Craig to Office of the
+>      Chief of Military History" because no executing code applies the expansion. FIX: add alt_title
+>      expansion as a direct per-record Grok call in `_enrich_bib_file` (semantic = Grok's job; runs
+>      every Phase 3, no batch dependency). Guard idempotently (don't re-expand an already-expanded
+>      title).
+>   2. DUPLICATE alt_title: `_build_bib_entry` lifts title+alt_title to TOP-LEVEL and ALSO keeps the
+>      full `citation` sub-object (which contains alt_title) — so alt_title exists twice and can
+>      DRIFT (e.g. an expander updates one copy). Decide the canonical home (top-level for query/
+>      display is fine) and either stop duplicating or keep them in lockstep.
+>   3. SCHEMA DOESN'T VALIDATE CONSISTENCY: src/schemas/bibliography_output.py allows alt_title at
+>      both levels (lines 24 + 31) but does not enforce they match — so drift is not caught. Add a
+>      consistency check (or collapse to one field).
