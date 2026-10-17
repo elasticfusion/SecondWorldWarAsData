@@ -544,15 +544,18 @@ def _search_online_sources(
     author = (entry.get("citation") or {}).get("author") or ""
     if isinstance(author, list):
         author = ", ".join(a for a in author if a)
-    ao_cands = search_archive_org_candidates(title, author or None)
-    for url in _collect_verified_candidates(query, ao_cands, grok_client, entry):
-        findings.append((url, "archive_org"))
+    # Archive.org is an independent source (its own advancedsearch API) — gated ONLY on its
+    # own flag, never on use_openserp.
+    if config.get("search_archive_org", True):
+        ao_cands = search_archive_org_candidates(title, author or None)
+        for url in _collect_verified_candidates(query, ao_cands, grok_client, entry):
+            findings.append((url, "archive_org"))
 
-    # 4. Gutenberg — same candidate-iterate-verify pattern. Low hit expectation (out-of-copyright
-    #    literary texts, not WWII operational records) but cheap to include when OpenSERP is up.
-    if config.get("search_gutenberg", True) and config.get("use_openserp"):
-        openserp_url = config.get("openserp_url", "http://localhost:7001")
-        g_cands = search_gutenberg_candidates(title, author or None, openserp_url)
+    # 4. Gutenberg — independent native source (Gutendex API, NOT OpenSERP). Same
+    #    candidate-iterate-verify pattern. Gated ONLY on its own flag, never on use_openserp.
+    #    Low hit expectation (out-of-copyright literary texts, not WWII operational records).
+    if config.get("search_gutenberg", True):
+        g_cands = search_gutenberg_candidates(title, author or None)
         for url in _collect_verified_candidates(query, g_cands, grok_client, entry):
             findings.append((url, "gutenberg"))
 

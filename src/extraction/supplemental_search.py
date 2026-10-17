@@ -181,36 +181,40 @@ def search_archive_org_candidates(
 def search_gutenberg_candidates(
     title: str,
     author: Optional[str] = None,
-    openserp_url: str = "http://localhost:7001",
+    openserp_url: str = "http://localhost:7001",  # kept for signature compat; unused
 ) -> "list[Tuple[str, str]]":
-    """Return Project Gutenberg candidates as ``(url, title)`` pairs for iterate + verify.
-    Mirrors ``search_archive_org_candidates`` so the resolver treats every source uniformly.
-    Expectations of hits are low (Gutenberg is mostly out-of-copyright literary texts, not
-    WWII operational records), but it is cheap to include. Never raises."""
+    """Return Project Gutenberg candidates as ``(url, title)`` pairs for iterate + verify, via
+    the NATIVE Gutendex API (https://gutendex.com) — NOT OpenSERP. Gutenberg is an independent
+    source and must not depend on the OpenSERP service being enabled/running. Mirrors
+    ``search_archive_org_candidates`` so the resolver treats every source uniformly. Low hit
+    expectation (out-of-copyright literary texts, not WWII operational records) but cheap and
+    self-contained. Never raises."""
     out: "list[Tuple[str, str]]" = []
+    if not title or len(title) < 4:
+        return out
     try:
-        from src.utils.search_query_loader import render_search_queries
-
-        queries = render_search_queries(
-            "bibliography", "gutenberg", title=title, author=author or ""
-        )
-        query = (
-            queries[0]
-            if queries
-            else f"{title} {author or ''} site:gutenberg.org".strip()
-        )
-        response = requests.post(
-            f"{openserp_url}/search",
-            json={"query": query, "engines": ["google"]},
+        search_term = title if not author else f"{title} {author}"
+        response = requests.get(
+            "https://gutendex.com/books",
+            params={"search": search_term},
             timeout=30.0,
         )
         if response.status_code == 200:
-            for result in response.json().get("results", []):
-                url = result.get("url", "")
-                if "gutenberg.org" in url:
-                    out.append((url, result.get("title") or ""))
+            for book in response.json().get("results", [])[:5]:
+                gid = book.get("id")
+                btitle = book.get("title") or ""
+                # Prefer the canonical ebook page; fall back to any text/html format URL.
+                url = f"https://www.gutenberg.org/ebooks/{gid}" if gid else ""
+                if not url:
+                    fmts = book.get("formats") or {}
+                    url = next(
+                        (u for k, u in fmts.items() if "text/html" in k),
+                        next(iter(fmts.values()), ""),
+                    )
+                if url:
+                    out.append((url, btitle))
     except Exception as e:
-        logger.debug("Gutenberg candidate search failed: %s", e)
+        logger.debug("Gutenberg (gutendex) candidate search failed: %s", e)
     return out
 
 

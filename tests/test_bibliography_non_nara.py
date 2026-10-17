@@ -82,13 +82,16 @@ def test_collect_verified_candidates_no_grok_accepts_all():
 
 def test_search_online_sources_aggregates_multiple_findings():
     """multiple findings per entry is OK: archive.org + gutenberg verified hits BOTH land in
-    resource_urls + source_metadata.findings (not first-source short-circuit)."""
+    resource_urls + source_metadata.findings (not first-source short-circuit).
+
+    Also proves DECOUPLING: with use_openserp=False, archive.org AND gutenberg still run
+    (they are independent of OpenSERP) and both produce findings."""
     entry = {"citation": {"title": "The Lorraine Campaign", "author": "Cole"}}
     config = {
         "nara_api_key": "",  # NARA off
-        "use_openserp": True,
+        "use_openserp": False,  # OpenSERP OFF — archive.org + gutenberg must still run
         "search_gutenberg": True,
-        "openserp_url": "http://x",
+        "search_archive_org": True,
     }
     with (
         patch.object(br, "_is_nara_searchable", return_value=False),
