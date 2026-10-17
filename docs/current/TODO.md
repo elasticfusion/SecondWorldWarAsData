@@ -2091,6 +2091,16 @@ _Moved from the HIGH blocks above once merged. Prevention + detection layers com
 >     determined); otherwise queue for review.
 > OPEN QUESTIONS to settle at build time: whether to keep NARA page TIFs or a derived PDF as the
 > stored "original"; per-run acquisition cap (count/pages).
+> NARA RATE LIMITS (verified from NARA Catalog API README 2026-10-17): the published limit is a
+> MONTHLY API QUOTA — 10,000 queries/month per API key; exceeding it temporarily blocks the key
+> until the 1st of next month. There is NO published per-second/minute throttle, and FILE/digital-
+> object DOWNLOADS are NOT rate-limited or key-gated (public CDN; verified 200 w/ no key). Design
+> consequence: the binding budget is the 10k/month API quota, SHARED by Phase-3 search + the
+> acquisition by-naId lookup. To avoid doubling API usage, PERSIST the digitalObjects list (or count
+> + the naId needed to rebuild it) onto the record AT RESOLVE TIME so the acquisition pass does not
+> re-spend an API query per document; downloads then hit only the public media URLs (no quota, no
+> key). Add an OBSERV counter for NARA API calls to watch the monthly budget. Keep a courtesy delay
+> on downloads but no hard NARA ceiling.
 
 
 > duplicated + schema doesn't enforce consistency (user-found 2026-10-16).** Three coupled issues:
