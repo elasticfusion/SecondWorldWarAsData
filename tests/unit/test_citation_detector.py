@@ -319,3 +319,25 @@ def test_nara_digital_objects_detects_online():
     )
     assert online == ["https://catalog.archives.gov/media/x.pdf"]
     assert _nara_digital_objects({"title": "desc only"}) == []
+
+
+def test_nara_match_context_includes_series_and_unit():
+    """Verification context carries the series/ancestors path + level + scope so a correct
+    series/unit match is recognizable behind a cryptic file-unit title."""
+    from src.enrichment.bibliography_resolver import _nara_match_context
+
+    ctx = _nara_match_context(
+        {
+            "levelOfDescription": "fileUnit",
+            "title": "V Corps: 3-011",
+            "ancestors": [
+                {"title": "Records of the Adjutant General's Office"},
+                {"title": "World War II Operations Reports"},
+            ],
+            "scopeAndContentNote": "G-2 periodic reports.",
+        }
+    )
+    assert "World War II Operations Reports" in ctx
+    assert "fileUnit" in ctx
+    assert "G-2 periodic reports" in ctx
+    assert _nara_match_context({}) == ""
