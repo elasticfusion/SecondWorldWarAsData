@@ -1064,19 +1064,70 @@ def _download_phase3_from_s3() -> None:
     if book_name:
         logger.info("Scoped download for book: %s", book_name)
         referenced = _get_book_entity_files(s3, book_name)
+        # Cross-book, NOT per-book-manifested: bibliography + supplemental records are shared
+        # across books (written by the deterministic pass, keyed bib_<hash>.json), so the
+        # book-scoped manifest filter would drop ALL of them — leaving the Phase-3 resolver
+        # with zero input. Always pull these two prefixes in full.
+        cross_book = {"bibliography", "supplemental"}
         for subdir in entity_dirs:
             (WORKDIR / "output" / subdir).mkdir(parents=True, exist_ok=True)
             _download_s3_file(s3, f"output/{subdir}/index.json")
+            if subdir in cross_book:
+                d, _ = _download_s3_prefix_skip_existing(s3, f"output/{subdir}/")
+                total += d
+                continue
             subdir_files = [f for f in referenced if f.startswith(f"output/{subdir}/")]
             for key in subdir_files:
                 _download_s3_file(s3, key)
             total += len(subdir_files)
         logger.info("Downloaded %d entity files (scoped to %s)", total, book_name)
+        _observe_bibliography_download_coverage(s3)
     else:
         for subdir in entity_dirs:
             d, s = _download_s3_prefix_skip_existing(s3, f"output/{subdir}/")
             total += d
         logger.info("Downloaded %d entity files for Phase 3 (full)", total)
+        _observe_bibliography_download_coverage(s3)
+
+
+def _observe_bibliography_download_coverage(s3) -> None:
+    """Observability guard (both items): cross-check the number of bibliography records in S3
+    against what landed locally for Phase 3. A mismatch means the resolver will silently run on
+    a partial/empty corpus (the exact 'bib.resolve in=0 while S3 has N files' blind spot a scoped
+    download can introduce). Emits an OBSERV line and WARNs loudly on any shortfall. Fail-safe."""
+    try:
+        s3_count = 0
+        for page in s3.get_paginator("list_objects_v2").paginate(
+            Bucket=BUCKET, Prefix="output/bibliography/"
+        ):
+            for obj in page.get("Contents", []):
+                name = obj["Key"].rsplit("/", 1)[-1]
+                if name.endswith(".json") and name != "index.json":
+                    s3_count += 1
+        local_dir = WORKDIR / "output" / "bibliography"
+        local_count = (
+            len([p for p in local_dir.glob("*.json") if p.name != "index.json"])
+            if local_dir.exists()
+            else 0
+        )
+        status = "ok" if local_count >= s3_count else "SHORTFALL"
+        logger.info(
+            "OBSERV phase3.bib_download s3=%d local=%d status=%s",
+            s3_count,
+            local_count,
+            status,
+        )
+        if local_count < s3_count:
+            logger.warning(
+                "Phase 3 bibliography download SHORTFALL: %d/%d records present locally — the "
+                "resolver will run on a PARTIAL corpus (missing %d). Likely a scoped-download "
+                "filter dropping cross-book bibliography files.",
+                local_count,
+                s3_count,
+                s3_count - local_count,
+            )
+    except Exception as e:  # noqa: BLE001 - observability must never break the download
+        logger.debug("bibliography download coverage check failed: %s", e)
 
 
 def _download_phase2_inputs() -> int:
