@@ -146,7 +146,12 @@ def resolve_bibliography_entry(
     config: Optional[Dict] = None,
 ) -> Dict[str, Any]:
     """Resolve a single bibliography entry to its source. Modifies in place."""
-    if entry.get("search_status") == "resolved" or entry.get("resource_urls"):
+    # Short-circuit ONLY when we actually have an online copy (resource_urls). A prior run may
+    # have set search_status="resolved" via NARA RG-IDENTIFY alone (archive_reference_number but
+    # ZERO resource_urls) — that is a record-group LABEL, not a digitized copy, and must NOT
+    # block the online-copy search (OpenSERP/archive.org/Gutenberg). Re-running Phase 3 should
+    # therefore re-attempt those. A genuinely resolved entry carries resource_urls.
+    if entry.get("resource_urls"):
         entry["search_status"] = "resolved"
         return entry
 
@@ -252,11 +257,16 @@ def _apply_result(entry: Dict, result: Optional[Tuple]) -> None:
             entry.setdefault("source_metadata", {}).update(extra)
     elif extra:
         entry.update(extra)
+    # No online URL found. If the entry carries an archive_reference_number (already held, or
+    # just added via extra), the RECORD GROUP is identified but there is no digitized copy ->
+    # "reference_identified" (honest; a later run still retries the online sources). Only a
+    # record with neither a URL nor an archive reference is genuinely "not_found".
+    if not entry.get("resource_urls"):
         entry["search_status"] = (
-            "resolved" if extra.get("archive_reference_number") else "not_found"
+            "reference_identified"
+            if entry.get("archive_reference_number")
+            else "not_found"
         )
-    else:
-        entry["search_status"] = "not_found"
 
 
 def _resolve_archive(entry, citation, grok_client, config):
@@ -498,6 +508,18 @@ def _search_online_sources(
     """
     findings: "list[Tuple[str, str]]" = []
 
+    # Deterministic bibliography records carry title="Unknown" (real citation text lives on the
+    # mention/verbatim; Grok fills alt_title). Compute a MEANINGFUL search string once for all
+    # sources: Grok-expanded alt_title -> real title -> verbatim. Passing "Unknown" previously
+    # made archive.org/Gutenberg return empty candidates (short-length guard).
+    alt_title = (entry.get("citation") or {}).get("alt_title") or ""
+    search_title = next(
+        (t for t in (alt_title, title, verbatim) if t and t != "Unknown"), verbatim
+    )
+    author = (entry.get("citation") or {}).get("author") or ""
+    if isinstance(author, list):
+        author = ", ".join(a for a in author if a)
+
     # 1. NARA catalog — scoped by the DETERMINISTIC record group (not Grok) so the query is
     #    bounded to the right RG instead of matching tens of thousands of unrelated records.
     #    (_search_nara already iterates + Grok-verifies its candidates internally.)
@@ -528,7 +550,7 @@ def _search_online_sources(
     if config.get("use_openserp"):
         openserp_url = config.get("openserp_url", "http://localhost:7001")
         current_ref = entry.get("archive_reference_number") or ""
-        ref = current_ref if current_ref and current_ref != "None" else title
+        ref = current_ref if current_ref and current_ref != "None" else search_title
         url = _search_openserp_archive(ref, openserp_url, grok_client, entry)
         if url:
             findings.append((url, "openserp_archive"))
@@ -540,14 +562,11 @@ def _search_online_sources(
         search_gutenberg_candidates,
     )
 
-    query = verbatim[:300] or title
-    author = (entry.get("citation") or {}).get("author") or ""
-    if isinstance(author, list):
-        author = ", ".join(a for a in author if a)
+    query = verbatim[:300] or search_title
     # Archive.org is an independent source (its own advancedsearch API) — gated ONLY on its
     # own flag, never on use_openserp.
     if config.get("search_archive_org", True):
-        ao_cands = search_archive_org_candidates(title, author or None)
+        ao_cands = search_archive_org_candidates(search_title, author or None)
         for url in _collect_verified_candidates(query, ao_cands, grok_client, entry):
             findings.append((url, "archive_org"))
 
@@ -555,7 +574,7 @@ def _search_online_sources(
     #    candidate-iterate-verify pattern. Gated ONLY on its own flag, never on use_openserp.
     #    Low hit expectation (out-of-copyright literary texts, not WWII operational records).
     if config.get("search_gutenberg", True):
-        g_cands = search_gutenberg_candidates(title, author or None)
+        g_cands = search_gutenberg_candidates(search_title, author or None)
         for url in _collect_verified_candidates(query, g_cands, grok_client, entry):
             findings.append((url, "gutenberg"))
 
@@ -1530,7 +1549,11 @@ def _process_bib_file(
     """Resolve one bibliography file in place. Returns (status, was_deduped) or
     None if the file should be skipped/errored (caller records the stat)."""
     data = json.loads(f.read_text(encoding="utf-8"))
-    if data.get("search_status") == "resolved":
+    # Skip only records with an actual online copy (resource_urls). A record marked
+    # "resolved" by a prior RG-IDENTIFY pass but with ZERO resource_urls has no digitized
+    # copy yet — re-process it so the online sources (NARA catalog / OpenSERP / archive.org /
+    # Gutenberg) get a chance to find one.
+    if data.get("search_status") == "resolved" and data.get("resource_urls"):
         return ("skipped", False)
 
     key = _citation_key(data)
@@ -1605,6 +1628,7 @@ def resolve_bibliography_dir(
             "queued",
             "deduped",
             "held_unprocessed",
+            "reference_identified",
         )
     }
     skip_files = {"index.json", "review_queue.json"}
@@ -1675,10 +1699,11 @@ def resolve_bibliography_dir(
     )
     try:
         logger.info(
-            "OBSERV bib.resolve in=%d resolved=%d not_found=%d not_citation=%d "
+            "OBSERV bib.resolve in=%d resolved=%d ref_identified=%d not_found=%d not_citation=%d "
             "deduped=%d queued=%d held=%d skipped=%d errors=%d not_citation_samples=%s",
             processed,
             stats["resolved"],
+            stats["reference_identified"],
             stats["not_found"],
             stats["not_citation"],
             stats["deduped"],
