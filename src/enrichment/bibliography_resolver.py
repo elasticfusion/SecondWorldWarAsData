@@ -194,6 +194,13 @@ def resolve_bibliography_entry(
     availability = (entry.get("availability") or "").lower()
     cfg = config or {}
 
+    # Green-book bibliographical note (authoritative, free): if this citation comes from a
+    # HyperWar volume we cover, enrich from that volume's own Bibliographical Note before any
+    # online search. A PUBLISHED WORK gets a canonical title/author (so the downstream
+    # Archive.org/Gutenberg search can actually find a copy); an ARCHIVAL citation gets the
+    # authoritative holding institution + provenance from the note.
+    _enrich_from_biblio_note(entry, citation)
+
     # Deterministic bibliography records carry no document_type (title="Unknown"), so they
     # would default to the generic resolver (no NARA). Route by NARA-searchability of the
     # verbatim when the type is unknown, so archival refs reach _resolve_archive -> NARA.
@@ -203,6 +210,46 @@ def resolve_bibliography_entry(
 
     _apply_result(entry, result)
     return entry
+
+
+def _enrich_from_biblio_note(entry: Dict[str, Any], citation: Dict[str, Any]) -> None:
+    """Attach provenance from the source volume's HyperWar Bibliographical Note (if covered).
+    Mutates entry/citation in place; fail-safe. Published works gain a canonical title/author
+    that feeds the online-copy search; archival citations gain the holding institution.
+    """
+    try:
+        from src.enrichment.hyperwar_biblio import resolve_from_biblio_note
+
+        verbatim = _entry_verbatim(entry)
+        source_url = ""
+        for m in entry.get("mentions") or []:
+            if m.get("source_url"):
+                source_url = m["source_url"]
+                break
+        prov = resolve_from_biblio_note(verbatim, source_url)
+        if not prov:
+            return
+        entry.setdefault("source_metadata", {}).update(prov)
+        if prov.get("biblio_category") == "published_work":
+            # Give the online-copy search a real, findable title/author.
+            if not citation.get("alt_title"):
+                citation["alt_title"] = prov["canonical_title"]
+            if citation.get("title", "Unknown") in ("", "Unknown"):
+                citation["title"] = prov["canonical_title"]
+            if not citation.get("author"):
+                citation["author"] = prov["canonical_author"]
+            entry["citation"] = citation
+        else:
+            # Archival: record the authoritative holding as provenance (not an online copy).
+            entry.setdefault("archive_physical_address", prov.get("holding", ""))
+        logger.debug(
+            "Biblio-note enrich: category=%s for %s",
+            prov.get("biblio_category"),
+            verbatim[:60],
+        )
+    except Exception as e:  # noqa: BLE001 - enrichment must never break resolution
+        logger.debug("biblio-note enrich skipped: %s", e)
+    return
 
 
 def _entry_verbatim(entry: Dict[str, Any]) -> str:
