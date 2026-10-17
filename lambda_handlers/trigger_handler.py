@@ -357,18 +357,55 @@ def _enforce_title_uniqueness_at_launch(keys: list) -> list:
     return proceed
 
 
+# Content-source path scheme (see src/utils/content_source.py — mirrored here because the
+# Lambda is deployed standalone and cannot import src). Primary sources carry a SOURCE id in
+# the path: contentrepository/{SOURCE_ID}/{TITLE}/... . The reserved id for platform/operator
+# material is "_system"; contributor uploads use user-/contrib-/org- namespaces. Legacy
+# unprefixed paths (contentrepository/{TITLE}/...) are treated as system-provided.
+SYSTEM_SOURCE_ID = "_system"
+_SOURCE_PREFIXES = ("user-", "contrib-", "org-")
+
+
+def _is_source_segment(segment: str) -> bool:
+    """True if a path segment denotes a SOURCE id (reserved system id or contributor
+    namespace) rather than a legacy title segment."""
+    return segment == SYSTEM_SOURCE_ID or segment.lower().startswith(_SOURCE_PREFIXES)
+
+
+def _source_from_key(key: str) -> str:
+    """The SOURCE identifier for a content key: an explicit source segment when present,
+    else the reserved system id (legacy/operator-ingested)."""
+    parts = [p for p in (key or "").split("/") if p]
+    if (
+        len(parts) >= 2
+        and parts[0] == "contentrepository"
+        and _is_source_segment(parts[1])
+    ):
+        return parts[1]
+    return SYSTEM_SOURCE_ID
+
+
 def _title_from_key(key: str) -> str:
     """Derive a content item's TITLE from an S3 key, with a filename fallback.
 
     Not everything is a 'book', but every content item has a title. Prefer the
-    content-repository folder: ``contentrepository/{TITLE}/...`` -> TITLE. If the
-    item is a loose file with no title folder (``contentrepository/Foo.md`` or any
-    other shape), fall back to the FILENAME STEM so the item still gets a stable,
-    non-empty title and never falls through to a whole-corpus run.
+    content-repository folder: ``contentrepository/{TITLE}/...`` -> TITLE, OR the
+    source-prefixed form ``contentrepository/{SOURCE_ID}/{TITLE}/...`` -> TITLE (the
+    leading SOURCE segment is skipped). If the item is a loose file with no title folder
+    (``contentrepository/Foo.md`` or any other shape), fall back to the FILENAME STEM so
+    the item still gets a stable, non-empty title and never falls through to a whole-corpus
+    run.
     """
     parts = [p for p in key.split("/") if p]
-    if len(parts) >= 3 and parts[0] == "contentrepository":
-        candidate = parts[1]  # titled folder
+    if parts and parts[0] == "contentrepository":
+        rest = parts[1:]
+        # Skip a leading SOURCE segment so the TITLE is parsed from the right position.
+        if rest and _is_source_segment(rest[0]):
+            rest = rest[1:]
+        if len(rest) >= 2:
+            candidate = rest[0]  # titled folder
+        else:
+            candidate = rest[-1].rsplit(".", 1)[0] if rest else ""
     else:
         # Loose file (or no title folder) -> filename stem.
         candidate = parts[-1].rsplit(".", 1)[0] if parts else ""

@@ -369,6 +369,34 @@ bottom); what remains is ranked here. Current ordered priority:
      submit pass (no dedup/batch dependency). Forward-compatible with Dynamo deprecation: when the
      entity store is removed, `get_entity_store()` returns None → the helper is a no-op and the
      file-based `store_bibliography_entry` path already writes `output/bibliography/*.json` directly.
+   - **[DECISION CONFIRMED 2026-10-17 · owner] DELETE + DEPRECATE DynamoDB for JSON/entity storage;
+     KEEP DynamoDB for QUEUE/COORDINATION.** The `dev-wwii-api-cache` table is SHARED: it holds both
+     entity-JSON (entity#/doc#/bibindex) AND coordination keys (lock#, pending, nat#lease#,
+     batch_job#, dedup_run#, reaper#, manifest#). Deprecation removes ONLY the JSON role — the table
+     and ALL coordination keys STAY. Scope:
+       * REMOVE (JSON store): DynamoEntityStore.{get,list_all,store_bibliography,get_bibliography_index,
+         _index_bib_keys}; the get_entity_store() entity path; the materialize bridge; the
+         _skip_bib_download Dynamo gate. Callers already have a store-is-None S3/file fallback:
+         src/extraction/{bibliography,people,supplemental}.py, src/dedup/merge.py, src/utils/file_lock.py,
+         ecs_entrypoint.py:951/1244, lambda_handlers/dedup_ui_handler.py.
+       * KEEP (coordination): src/utils/locks.py, trigger_handler queue/pending, nat_lease, batch
+         tracking, dedup-run claims, reaper, manifest — all continue on the same table.
+       * The search_cache Dynamo backend: move to the S3/file-native backend (cache/ prefix) so the
+         cross-run quota-saver survives (it is JSON-ish caching, not coordination).
+     PREREQUISITES (the two reasons Dynamo was introduced — must be solved S3-natively FIRST, else
+     flipping entity_backend off reintroduces the bugs):
+       (1) CONCURRENCY-SAFE S3 bibliography writes: replace the single flock-guarded index.json with
+           per-record immutable files keyed by a deterministic content/verbatim hash (concurrent books
+           never collide) + a periodically-rebuilt index object derived from S3.
+       (2) SCOPED READS: keep Phase 2/3 from bulk-downloading the whole bib dir (manifest/scoped reads),
+           replacing the "skip bulk download because Dynamo" optimization.
+     CUTOVER SEQUENCE (phased, each its own gated PR): (a) build the S3-native concurrency-safe
+     write+index for bibliography; (b) move search_cache default to the file/S3 backend; (c) flip
+     storage.entity_backend to filesystem everywhere incl. the deployed task env / Lambda CACHE_TABLE
+     entity path, verify runs stay S3-authoritative; (d) delete DynamoEntityStore + the entity# code
+     paths; (e) one-time purge of entity#/doc#/bibindex keys from the table (coordination keys retained).
+     Already forward-compatible: entity_backend defaults to "filesystem"; the file path writes
+     output/bibliography/*.json directly today.
    - **[DIRECTION · owner 2026-10-15: DynamoDB will likely be DEPRECATED ENTIRELY from JSON storage.]**
      S3 is the definitive, durable, cheaper store and can rebuild Dynamo; Dynamo is a derived index and
      costs more. PLAN accordingly: do NOT deepen the Dynamo write/dedup path. The reason Dynamo was
@@ -2091,6 +2119,34 @@ _Moved from the HIGH blocks above once merged. Prevention + detection layers com
 >     determined); otherwise queue for review.
 > OPEN QUESTIONS to settle at build time: whether to keep NARA page TIFs or a derived PDF as the
 > stored "original"; per-run acquisition cap (count/pages).
+> NARA RATE LIMITS (verified from NARA Catalog API README 2026-10-17): the published limit is a
+> MONTHLY API QUOTA — 10,000 queries/month per API key; exceeding it temporarily blocks the key
+> until the 1st of next month. There is NO published per-second/minute throttle, and FILE/digital-
+> object DOWNLOADS are NOT rate-limited or key-gated (public CDN; verified 200 w/ no key). Design
+> consequence: the binding budget is the 10k/month API quota, SHARED by Phase-3 search + the
+> acquisition by-naId lookup. To avoid doubling API usage, PERSIST the digitalObjects list (or count
+> + the naId needed to rebuild it) onto the record AT RESOLVE TIME so the acquisition pass does not
+> re-spend an API query per document; downloads then hit only the public media URLs (no quota, no
+> key). Add an OBSERV counter for NARA API calls to watch the monthly budget. Keep a courtesy delay
+> on downloads but no hard NARA ceiling.
+> DYNAMO-DEPRECATION ALIGNMENT (owner direction; Dynamo will likely be removed from JSON storage —
+> S3 is authoritative): the acquisition feature must be S3-NATIVE, not Dynamo-backed.
+>   - IDEMPOTENCY / "already acquired?" = presence of the deterministic S3 location
+>     source/<search_source>/<id>/ (head/list before download). Immutable per-id prefix -> concurrent
+>     runs can't collide; needs ZERO Dynamo. Skip the download AND the by-naId API call when present.
+>   - "Already resolved?" stays the record's own search_status/resource_urls in output/bibliography/
+>     *.json (already S3-authoritative).
+>   - Cross-run NARA search-result cache: prefer the S3/file-native cache backend (search_cache
+>     already has a _LocalBackend path under cache/, a durable lifecycle-managed prefix) over the
+>     Dynamo backend, so the quota-saving cache survives Dynamo removal.
+>   Do NOT add new Dynamo writes for acquisition.
+> QUOTA INCREASE: the 10k/month is a SOFT default — NARA's README states most needs fit it and a
+> higher limit can be REQUESTED (email Catalog_API@nara.gov, same contact as key requests). The
+> bump ceiling is HIGH — up to 150,000 queries/month (15x default), which effectively removes the
+> API quota as a practical constraint for this project's scale (corpus-wide search + acquisition).
+> So the quota is an escape valve, not a hard ceiling. We still DEFAULT to minimizing API calls
+> (persist-at-resolve, OBSERV counter) — good-citizen + not dependent on an approved bump + lower
+> latency — and request the bump (toward 150k) if the counter shows we're trending toward 10k.
 
 
 > duplicated + schema doesn't enforce consistency (user-found 2026-10-16).** Three coupled issues:

@@ -1165,6 +1165,109 @@ def _nara_digital_object_count(record: Dict[str, Any]) -> int:
     return n
 
 
+_MATCH_STOPWORDS = frozenset(
+    {
+        "the",
+        "a",
+        "an",
+        "and",
+        "or",
+        "of",
+        "to",
+        "in",
+        "on",
+        "for",
+        "with",
+        "by",
+        "from",
+        "see",
+        "also",
+        "cf",
+        "no",
+        "nos",
+        "vol",
+        "vols",
+        "pt",
+        "fn",
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "may",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "sept",
+        "oct",
+        "nov",
+        "dec",
+        "january",
+        "february",
+        "march",
+        "april",
+        "june",
+        "july",
+        "august",
+        "september",
+        "october",
+        "november",
+        "december",
+        # generic archival / military filler that appears everywhere -> not discriminating
+        "records",
+        "record",
+        "report",
+        "reports",
+        "file",
+        "files",
+        "collection",
+        "series",
+        "world",
+        "war",
+        "wwii",
+        "army",
+        "military",
+        "united",
+        "states",
+        "office",
+        "general",
+        "headquarters",
+        "misc",
+        "miscellaneous",
+        "papers",
+        "document",
+        "documents",
+        "folder",
+        "box",
+        "level",
+        "scope",
+        "path",
+        "fileunit",
+    }
+)
+
+
+def _match_tokens(text: str) -> set:
+    """Lowercase content tokens (>=3 chars, not a stopword/pure number) for overlap check."""
+    out = set()
+    for tok in re.findall(r"[A-Za-z0-9]+", (text or "").lower()):
+        if len(tok) >= 3 and tok not in _MATCH_STOPWORDS and not tok.isdigit():
+            out.add(tok)
+    return out
+
+
+def _title_token_overlap(citation: str, candidate: str) -> bool:
+    """True if the citation and the candidate record share >=1 MEANINGFUL token. A cheap
+    deterministic relevance pre-gate: no shared content word -> cannot be the cited
+    document, so reject before spending a Grok verify call. Fail-safe: if either side has
+    NO meaningful tokens (can't judge), return True so Grok still decides."""
+    c = _match_tokens(citation)
+    d = _match_tokens(candidate)
+    if not c or not d:
+        return True
+    return bool(c & d)
+
+
 def _nara_match_context(record: Dict[str, Any]) -> str:
     """A compact context string for match verification: the series/ancestors path, the
     level of description, and the scope note. A green-book citation matches at the
@@ -1297,6 +1400,19 @@ def _search_nara(
             # LLM to judge. The ancestors carry the series ("World War II Operations
             # Reports") and the unit discriminator.
             nara_context = _nara_match_context(record)
+            # Deterministic pre-gate before spending a Grok call: the citation and the
+            # candidate (title + context) must share at least one MEANINGFUL token (noun-
+            # like content word). No shared content word -> cannot be the cited document
+            # (e.g. 'Letter, Craig to OCMH' vs 'Flags, Colors and Standards') -> reject
+            # cheaply. Only lexically-overlapping candidates are escalated to Grok to
+            # validate relevance.
+            if not _title_token_overlap(verbatim or query, f"{title} {nara_context}"):
+                logger.debug(
+                    "  ✗ Rejected (no token overlap): '%s' vs query '%s'",
+                    title[:60],
+                    (verbatim or query)[:60],
+                )
+                continue
             if grok_client and not _verify_nara_match(
                 query, title, grok_client, context=nara_context
             ):
