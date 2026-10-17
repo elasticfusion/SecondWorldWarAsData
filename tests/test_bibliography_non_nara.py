@@ -122,3 +122,41 @@ def test_search_online_sources_aggregates_multiple_findings():
     ]
     findings = entry["source_metadata"]["findings"]
     assert {f["source"] for f in findings} == {"archive_org", "gutenberg"}
+
+
+def test_unknown_title_feeds_verbatim_not_placeholder_to_sources():
+    """Deterministic records have title='Unknown'; archive.org/Gutenberg must receive the
+    alt_title/verbatim citation text, NOT the 'Unknown' placeholder (which their length guard
+    would reject -> empty candidates -> sources never really queried)."""
+    captured = {}
+
+    def fake_archive(t, a=None):
+        captured["archive_title"] = t
+        return []
+
+    def fake_gutenberg(t, a=None):
+        captured["gutenberg_title"] = t
+        return []
+
+    entry = {
+        "citation": {"title": "Unknown", "alt_title": "The Lorraine Campaign (Cole)"},
+    }
+    config = {"nara_api_key": "", "search_archive_org": True, "search_gutenberg": True}
+    with (
+        patch.object(br, "_is_nara_searchable", return_value=False),
+        patch(
+            "src.extraction.supplemental_search.search_archive_org_candidates",
+            side_effect=fake_archive,
+        ),
+        patch(
+            "src.extraction.supplemental_search.search_gutenberg_candidates",
+            side_effect=fake_gutenberg,
+        ),
+    ):
+        br._search_online_sources(
+            entry, "Ltr, Cole to OCMH, 1954", "", "Unknown", None, config
+        )
+
+    # alt_title preferred over the 'Unknown' placeholder
+    assert captured["archive_title"] == "The Lorraine Campaign (Cole)"
+    assert captured["gutenberg_title"] == "The Lorraine Campaign (Cole)"
