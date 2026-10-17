@@ -250,23 +250,20 @@ class TestDoMerge:
 
 
 class TestDynamoMergeSync:
-    """#9: dedup merges must update DynamoDB (delete secondary + put primary)."""
+    """Dedup merges operate on the S3-authoritative JSON files. The DynamoDB entity store
+    was removed, so merges must NOT attempt any Dynamo sync (no delete/put)."""
 
-    def test_do_merge_syncs_dynamo(self, output_root, two_people):
+    def test_do_merge_no_dynamo_sync(self, output_root, two_people):
         from unittest.mock import MagicMock, patch
         from src.dedup import merge as m
 
         store = MagicMock()
         people_dir = output_root / "people"
+        # Even if a store were somehow returned, merge must not call it (sync removed).
         with patch("src.utils.entity_store.get_entity_store", return_value=store):
             m.do_merge(people_dir, two_people, primary_idx=0)
-        # secondary deleted from Dynamo
-        store.delete.assert_any_call("people", "01HX7YZABCDEFGHJKMNPQRSTVX")
-        # merged primary put to Dynamo
-        assert store.put.called
-        args = store.put.call_args
-        assert args[0][0] == "people"
-        assert args[0][1] == "01HX7YZABCDEFGHJKMNPQRSTVW"
+        assert not store.delete.called
+        assert not store.put.called
 
     def test_do_merge_noop_without_store(self, output_root, two_people):
         from unittest.mock import patch
@@ -279,7 +276,7 @@ class TestDynamoMergeSync:
         assert result == "Omar Bradley"
         assert not (people_dir / "omar n bradley.json").exists()  # secondary removed
 
-    def test_merge_generic_syncs_dynamo(self, output_root):
+    def test_merge_generic_no_dynamo_sync(self, output_root):
         from unittest.mock import MagicMock, patch
         from src.dedup import merge as m
 
@@ -306,6 +303,9 @@ class TestDynamoMergeSync:
         store = MagicMock()
         with patch("src.utils.entity_store.get_entity_store", return_value=store):
             m.merge_generic(places_dir, people, 0, id_field="PlaceID")
-        store.delete.assert_any_call("places", "01HX7YZABCDEFGHJKMNPQRSTVT")
-        put_args = store.put.call_args[0]
-        assert put_args[0] == "places" and put_args[1] == "01HX7YZABCDEFGHJKMNPQRSTVS"
+        # No Dynamo sync — the file merge is authoritative.
+        assert not store.delete.called
+        assert not store.put.called
+        # Secondary file removed, primary retained (file merge happened).
+        assert not (places_dir / "bastonge.json").exists()
+        assert (places_dir / "bastogne.json").exists()

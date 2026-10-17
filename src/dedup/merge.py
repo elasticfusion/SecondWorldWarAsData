@@ -80,24 +80,9 @@ def _dynamo_merge_sync(
     failure must not block the (already-completed) file merge; the Phase-3 start
     reconciliation / next incremental dedup will re-sync. No-op when no store
     (local/file mode)."""
-    try:
-        from src.utils.entity_store import get_entity_store
-
-        store = get_entity_store()
-        if not store:
-            return
-        if secondary_id:
-            store.delete(entity_type, secondary_id)
-        if primary_id:
-            store.put(entity_type, primary_id, primary_data)
-    except Exception as e:  # pragma: no cover - defensive
-        logger.warning(
-            "Dynamo merge-sync failed (%s primary=%s secondary=%s): %s",
-            entity_type,
-            primary_id,
-            secondary_id,
-            e,
-        )
+    # DynamoDB entity store removed — merges are applied to the S3-authoritative JSON files;
+    # there is no Dynamo copy to sync. No-op (kept so the call site is undisturbed).
+    return
 
 
 def load_person(people_dir: Path, filename: str) -> Dict:

@@ -359,7 +359,9 @@ def _patch_config():
     cache_table = os.environ.get("CACHE_TABLE", "")
     if cache_table:
         config["aws"]["cache_table"] = cache_table
-    config.setdefault("storage", {})["entity_backend"] = "dynamodb"
+    # Entity JSON is S3-authoritative (DynamoDB deprecated for JSON storage; Dynamo kept
+    # only for queue/coordination). Filesystem backend -> output/*.json synced to S3.
+    config.setdefault("storage", {})["entity_backend"] = "filesystem"
 
     with open(config_path, "w", encoding="utf-8") as f:
         yaml.dump(config, f, default_flow_style=False)
@@ -943,96 +945,11 @@ def _get_book_entity_files(s3, book_name: str) -> list:
 
 
 def _materialize_from_dynamo() -> bool:
-    """Materialize entities from DynamoDB to local files. Returns True if successful."""
-    try:
-        from src.utils.entity_store import get_entity_store
-        from src.utils.file_lock import get_failed_writes, clear_failed_writes
-
-        store = get_entity_store()
-        if not store:
-            return False
-
-        # Reconcile any failed dual-writes before reading
-        failed = get_failed_writes()
-        if failed:
-            logger.info(
-                "Reconciling %d failed dual-writes before materialization", len(failed)
-            )
-            reconciled = 0
-            for entry in failed:
-                try:
-                    filepath = Path(entry["path"])
-                    if filepath.exists():
-                        import json as _json
-
-                        data = _json.loads(filepath.read_text(encoding="utf-8"))
-                        store.put(
-                            entry["type"], entry["id"], data, filename=filepath.name
-                        )
-                        reconciled += 1
-                except Exception as e:
-                    logger.warning(
-                        "Reconcile failed for %s/%s: %s", entry["type"], entry["id"], e
-                    )
-            clear_failed_writes()
-            logger.info("Reconciled %d/%d failed writes", reconciled, len(failed))
-
-        entity_types = [
-            "people",
-            "people_groups",
-            "places",
-            "dates",
-            "equipment",
-            "weather",
-            "logistics",
-            "casualties",
-            "maps",
-            "supplemental",
-            "bibliography",
-        ]
-
-        total = 0
-        for entity_type in entity_types:
-            entities = store.list_all(entity_type)
-            if not entities:
-                continue
-            local_dir = WORKDIR / "output" / entity_type
-            local_dir.mkdir(parents=True, exist_ok=True)
-            for item in entities:
-                entity = item["data"]
-                filename = item.get("filename")
-                if not filename:
-                    # Fallback: use entity ID as filename (no collisions)
-                    id_fields = {
-                        "people": "PersonID",
-                        "people_groups": "GroupID",
-                        "places": "PlaceID",
-                        "dates": "DateID",
-                        "equipment": "EquipmentID",
-                        "weather": "WeatherID",
-                        "logistics": "LogisticsID",
-                        "casualties": "CasualtyID",
-                        "maps": "MapID",
-                        "supplemental": "BibliographyID",
-                        "bibliography": "BibliographyID",
-                    }
-                    eid = entity.get(id_fields.get(entity_type, ""), "unknown")
-                    filename = f"{eid}.json"
-                filepath = local_dir / filename
-                filepath.write_text(
-                    json.dumps(entity, indent=2, ensure_ascii=False), encoding="utf-8"
-                )
-                total += 1
-
-        if total > 0:
-            logger.info(
-                "Materialized %d entities from DynamoDB (skipped S3 download)", total
-            )
-            return True
-        return False
-    except Exception as e:
-        logger.warning("DynamoDB materialization failed, falling back to S3: %s", e)
-        return False
+    """Deprecated no-op. The DynamoDB entity (JSON) store was removed — S3 is the sole
+    authoritative entity store — so there is nothing to materialize from Dynamo. Always
+    returns False, so callers fall through to the S3 download path. (DynamoDB is retained
+    only for queue/coordination, not JSON storage.)"""
+    return False
 
 
 def _download_inputs(phase_script: str) -> None:
@@ -1232,25 +1149,12 @@ def _download_phase2_inputs() -> int:
     ):
         _download_s3_file(s3, f"output/{_etype}/.processed_events.json")
 
-    # Bibliography/supplemental: Dynamo-backed dedup (G3) reads the title index
-    # from DynamoEntityStore, so Phase 2 no longer bulk-downloads the (13k+ file)
-    # bibliography dir — the source of N*2 download thrash under concurrency. Only
-    # download the dirs when there's NO entity store (local/file mode). Phase 3
-    # enrichment still downloads them (it iterates every file).
-    _skip_bib_download = False
-    try:
-        from src.utils.entity_store import get_entity_store
-
-        _skip_bib_download = get_entity_store() is not None
-    except Exception:
-        _skip_bib_download = False
-    if not _skip_bib_download:
-        for p in ["output/bibliography/", "output/supplemental/"]:
-            _download_s3_prefix(s3, p)
-    else:
-        logger.info(
-            "Skipping bibliography/supplemental bulk download (Dynamo-backed dedup)"
-        )
+    # Bibliography/supplemental: S3 is the authoritative store (DynamoDB entity store
+    # removed). There is no Dynamo title-index to read in lieu of the files, so Phase 2
+    # downloads these dirs from S3. (Scoped/manifest-driven reads to avoid bulk-downloading
+    # the whole bibliography dir under concurrency are a separate follow-up optimization.)
+    for p in ["output/bibliography/", "output/supplemental/"]:
+        _download_s3_prefix(s3, p)
 
     return new_parsed
 
