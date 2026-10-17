@@ -46,14 +46,8 @@ def _sync_entity_to_dynamo(entity_type: str, data: dict) -> None:
     entity_id = data.get(id_field)
     if not entity_id:
         return
-    try:
-        from src.utils.entity_store import get_entity_store
-
-        store = get_entity_store()
-        if store:
-            store.put(entity_type, entity_id, data)
-    except Exception as e:
-        logger.debug("DynamoDB entity sync failed: %s", e)
+    # DynamoDB entity store removed — S3 JSON is authoritative; nothing to sync. No-op.
+    return
 
 
 def _append_to_manifest(keys: list) -> None:
