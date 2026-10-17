@@ -1094,7 +1094,8 @@ def _observe_bibliography_download_coverage(s3) -> None:
     """Observability guard (both items): cross-check the number of bibliography records in S3
     against what landed locally for Phase 3. A mismatch means the resolver will silently run on
     a partial/empty corpus (the exact 'bib.resolve in=0 while S3 has N files' blind spot a scoped
-    download can introduce). Emits an OBSERV line and WARNs loudly on any shortfall. Fail-safe."""
+    download can introduce). Emits an OBSERV line and WARNs loudly on any shortfall. Fail-safe.
+    """
     try:
         s3_count = 0
         for page in s3.get_paginator("list_objects_v2").paginate(

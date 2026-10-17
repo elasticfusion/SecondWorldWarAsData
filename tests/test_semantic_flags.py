@@ -85,7 +85,11 @@ def test_citation_unresolvable_when_no_archive_no_url():
     # Only flagged AFTER resolution was attempted (search_status set by the Phase-3 resolver).
     assert sf.flags_for(
         "bibliography",
-        {"title": "A Real Book Title", "resource_urls": [], "search_status": "not_found"},
+        {
+            "title": "A Real Book Title",
+            "resource_urls": [],
+            "search_status": "not_found",
+        },
     ) == ["citation_unresolvable"]
 
 
