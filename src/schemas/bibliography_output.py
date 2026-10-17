@@ -131,6 +131,7 @@ BIBLIOGRAPHY_OUTPUT_SCHEMA = {
                     "reference_type": make_nullable("string"),
                     "reference_number": make_nullable("string"),
                     "verbatim_reference": make_nullable("string"),
+                    "source_url": make_nullable("string"),
                     "volume": make_nullable("string"),
                     "pages": make_nullable("string"),
                 },

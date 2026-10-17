@@ -101,41 +101,7 @@ def _search_archive_org_api(
 ) -> Optional[str]:
     """Execute archive.org API search."""
     try:
-        # Build query — use parenthesized keywords, not exact quotes
-        # (Archive.org metadata titles often differ from citation titles)
-        query_parts = []
-        if title:
-            # Strip punctuation that breaks search, keep meaningful words
-            words = " ".join(w for w in title.split() if len(w) > 2)
-            query_parts.append(f"title:({words})")
-        if author:
-            # Use last name for personal names, full string for corporate authors
-            if any(
-                kw in author.lower()
-                for kw in [
-                    "department",
-                    "division",
-                    "admiralty",
-                    "office",
-                    "command",
-                    "staff",
-                ]
-            ):
-                query_parts.append(f"creator:({author})")
-            else:
-                # Handle "LastName, FirstName" and "FirstName LastName" formats
-                if "," in author:
-                    last_name = author.split(",")[0].strip()
-                else:
-                    parts = author.split()
-                    last_name = parts[-1] if len(parts[-1]) > 2 else parts[0]
-                query_parts.append(f"creator:({last_name})")
-        if periodical:
-            query_parts.append(f'"{periodical}"')
-
-        query = " AND ".join(query_parts) if query_parts else title
-        query += " AND mediatype:texts"
-
+        query = _build_archive_query(title, author, periodical)
         # Search API
         url = f"https://archive.org/advancedsearch.php?q={quote(query)}&fl[]=identifier&fl[]=title&output=json&rows=5"
 
@@ -156,6 +122,134 @@ def _search_archive_org_api(
         logger.debug("Archive.org search failed: %s", e)
 
     return None
+
+
+def search_archive_org_candidates(
+    title: str,
+    author: Optional[str] = None,
+    periodical: Optional[str] = None,
+    rows: int = 5,
+) -> "list[Tuple[str, str]]":
+    """Return UP TO ``rows`` archive.org candidates as ``(url, title)`` pairs for the caller
+    to iterate + verify (the NARA-style multi-finding pattern), instead of blindly taking the
+    first hit. Applies the same citation-shape guards as ``search_archive_org``. Never raises.
+    """
+    if not title or len(title) < 10 or title.strip().isdigit():
+        return []
+    if any(
+        kw in title.lower()
+        for kw in [
+            "memo,",
+            "ltr,",
+            "msg,",
+            "jnl,",
+            "aar,",
+            "tel conv",
+            "file ",
+            "telecon,",
+            "sitrep",
+            "rpt,",
+            "instrs,",
+        ]
+    ):
+        return []
+    out: "list[Tuple[str, str]]" = []
+    try:
+        query = _build_archive_query(title, author, periodical)
+        url = (
+            f"https://archive.org/advancedsearch.php?q={quote(query)}"
+            f"&fl[]=identifier&fl[]=title&output=json&rows={rows}"
+        )
+        response = requests.get(url, timeout=30.0, allow_redirects=True)
+        if response.status_code == 200:
+            docs = response.json().get("response", {}).get("docs", [])
+            for doc in docs:
+                identifier = doc.get("identifier")
+                if not identifier:
+                    continue
+                cand_title = doc.get("title") or ""
+                if isinstance(cand_title, list):  # archive.org may return a list
+                    cand_title = cand_title[0] if cand_title else ""
+                out.append(
+                    (f"https://archive.org/details/{identifier}", str(cand_title))
+                )
+    except Exception as e:
+        logger.debug("Archive.org candidate search failed: %s", e)
+    return out
+
+
+def search_gutenberg_candidates(
+    title: str,
+    author: Optional[str] = None,
+    openserp_url: str = "http://localhost:7001",
+) -> "list[Tuple[str, str]]":
+    """Return Project Gutenberg candidates as ``(url, title)`` pairs for iterate + verify.
+    Mirrors ``search_archive_org_candidates`` so the resolver treats every source uniformly.
+    Expectations of hits are low (Gutenberg is mostly out-of-copyright literary texts, not
+    WWII operational records), but it is cheap to include. Never raises."""
+    out: "list[Tuple[str, str]]" = []
+    try:
+        from src.utils.search_query_loader import render_search_queries
+
+        queries = render_search_queries(
+            "bibliography", "gutenberg", title=title, author=author or ""
+        )
+        query = (
+            queries[0]
+            if queries
+            else f"{title} {author or ''} site:gutenberg.org".strip()
+        )
+        response = requests.post(
+            f"{openserp_url}/search",
+            json={"query": query, "engines": ["google"]},
+            timeout=30.0,
+        )
+        if response.status_code == 200:
+            for result in response.json().get("results", []):
+                url = result.get("url", "")
+                if "gutenberg.org" in url:
+                    out.append((url, result.get("title") or ""))
+    except Exception as e:
+        logger.debug("Gutenberg candidate search failed: %s", e)
+    return out
+
+
+_CORPORATE_AUTHOR_KW = (
+    "department",
+    "division",
+    "admiralty",
+    "office",
+    "command",
+    "staff",
+)
+
+
+def _author_search_term(author: str) -> str:
+    """archive.org creator: term — full string for corporate authors, last name for
+    personal names ('LastName, First' or 'First LastName')."""
+    if any(kw in author.lower() for kw in _CORPORATE_AUTHOR_KW):
+        return author
+    if "," in author:
+        return author.split(",")[0].strip()
+    parts = author.split()
+    return parts[-1] if len(parts[-1]) > 2 else parts[0]
+
+
+def _build_archive_query(
+    title: str, author: Optional[str], periodical: Optional[str]
+) -> str:
+    """Build the archive.org advancedsearch query. Parenthesized keywords (not exact
+    quotes) because Archive.org metadata titles often differ from citation titles."""
+    query_parts = []
+    if title:
+        words = " ".join(w for w in title.split() if len(w) > 2)
+        query_parts.append(f"title:({words})")
+    if author:
+        query_parts.append(f"creator:({_author_search_term(author)})")
+    if periodical:
+        query_parts.append(f'"{periodical}"')
+    query = " AND ".join(query_parts) if query_parts else title
+    return query + " AND mediatype:texts"
 
 
 def fetch_archive_org_metadata(identifier: str) -> Optional[Dict]:

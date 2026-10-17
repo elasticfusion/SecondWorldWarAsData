@@ -578,6 +578,54 @@ def _run_core_extraction(
         ]
     )
 
+    # PRIMARY deterministic bibliography pass — writes a citable record per parsed
+    # footnote/endnote with NO LLM/batch/cache, so bibliography exists the moment Phase 1
+    # parses the chapter (independent of the fragile supplemental batch→cache→retrieve
+    # chain). Gated ONLY on supplemental_material.enabled — NOT on the optional-batch gate
+    # — because its whole purpose is to run as a primary step every pass; it is idempotent
+    # (dedups by title/verbatim), so safe in the batch-collect submit pass AND the retrieve
+    # re-run. The LLM supplemental step (optional block below) is an enrichment overlay on
+    # these records. Scoped to the in-run parsed_files (never a whole-corpus rglob).
+    if config.get("supplemental_material", {}).get("enabled", False):
+        from src.extraction.bibliography import extract_bibliography_deterministic
+
+        for pf in sorted(parsed_files):
+            try:
+                current_book.set(pf.parent.name)
+                extract_bibliography_deterministic(
+                    pf,
+                    paths["output_root"],
+                    book=pf.parent.name,
+                    chapter=pf.name.replace("-parsed.json", ""),
+                )
+            except Exception as e:  # pylint: disable=broad-except
+                logger.warning(
+                    "Deterministic bibliography pass failed for %s: %s", pf.name, e
+                )
+
+        # Durability: in AWS mode store_bibliography_entry writes to the Dynamo index
+        # only; mirror the records to local output/bibliography/*.json so the Phase-2 S3
+        # sync persists them to the DURABLE system of record (S3 is authoritative, Dynamo
+        # is a derived rebuildable index). This makes bibliography durable within Phase 2,
+        # NOT dependent on the later dedup-phase materialization (interrupted-run safe).
+        try:
+            from src.extraction.bibliography import materialize_bibliography_to_local
+
+            materialize_bibliography_to_local(paths["output_root"])
+        except Exception as e:  # pylint: disable=broad-except
+            logger.warning("Bibliography S3-materialize failed: %s", e)
+
+        # Reconcile (Option B / Dynamo-deprecation): collapse any duplicate bibliography
+        # records that share a match key — transient cross-Fargate writes of the same
+        # citation AND legacy random-ULID files — into one canonical deterministic file,
+        # unioning mentions. S3-native, no Dynamo. Fail-safe.
+        try:
+            from src.extraction.bibliography import reconcile_bibliography_dir
+
+            reconcile_bibliography_dir(paths["output_root"] / "bibliography")
+        except Exception as e:  # pylint: disable=broad-except
+            logger.warning("Bibliography reconcile failed: %s", e)
+
     if any_optional and not skip_optional:
         from concurrent.futures import ThreadPoolExecutor, as_completed
 

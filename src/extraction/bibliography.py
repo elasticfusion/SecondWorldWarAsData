@@ -1,7 +1,9 @@
 """Bibliography management — deduplicated document/book reference storage."""
 
+import hashlib
 import json
 import logging
+import os
 import re
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -10,6 +12,356 @@ from typing import Any, Dict, List, Optional
 import ulid
 
 logger = logging.getLogger(__name__)
+
+# Memoized per-process writer id (ECS task id or per-process ULID) used as the bibliography
+# shard-filename suffix so concurrent tasks never clobber each other on the shared S3 prefix.
+_WRITER_ID: Optional[str] = None
+
+# Citation fragments that are cross-references / stubs, not real document references —
+# never worth a bibliography record on their own (they point AT another note).
+_STUB_RE = re.compile(
+    r"^\s*(ibid\.?|op\.?\s*cit\.?|loc\.?\s*cit\.?|idem|id\.|supra|passim|q\.?\s*v\.?"
+    r"|ante|see\s+(above|below|n\.?\s*\d+)"
+    r"|cited\s+(in\s+)?n\.?\s*\d+)(\s*,?\s*(above|below))?\s*\.?\s*$",
+    re.IGNORECASE,
+)
+
+
+def _is_stub_citation(text: str) -> bool:
+    """A citation fragment that is a bare cross-reference/stub (e.g. 'Ibid.',
+    'See n. 5, above.') carries no standalone document identity — skip it."""
+    t = (text or "").strip()
+    if len(t) < 4:
+        return True
+    return bool(_STUB_RE.match(t))
+
+
+# `ibid`/`op. cit.` WITH trailing content (e.g. "Ibid., p. 47." or "Hodges, op. cit., 112.")
+# are NOT bare stubs — they point back to a fuller citation EARLIER IN THE SAME CHAPTER
+# (per the corpus rule: a shortened reference always refers to something in that chapter).
+_IBID_CONTENT_RE = re.compile(r"^\s*ibid\.?\s*[,.]", re.IGNORECASE)
+_OPCIT_CONTENT_RE = re.compile(
+    r"^\s*(?P<author>.+?),\s*op\.?\s*cit\.?\b", re.IGNORECASE
+)
+
+
+def _short_title(verbatim: str) -> str:
+    """The leading short-title segment of a citation (text before the first comma or
+    semicolon), normalized for matching. 'Irwin Diary; Ltr, ...' -> 'irwin diary'."""
+    head = re.split(r"[;,]", (verbatim or "").strip(), maxsplit=1)[0]
+    return _normalize_title(head)
+
+
+def _resolve_back_reference(
+    verbatim: str, works_so_far: List[Dict[str, str]]
+) -> Optional[str]:
+    """If ``verbatim`` is a chapter-local back-reference, return the TITLE of the
+    antecedent full citation it points to (so title-dedup merges it as a mention);
+    otherwise None. ``works_so_far`` is the ordered list of full citations already seen in
+    THIS chapter, each ``{'title':..., 'short':..., 'author':...}``.
+    """
+    if not works_so_far:
+        return None
+    t = (verbatim or "").strip()
+
+    # 1. "Ibid., p. 47." -> the immediately preceding full citation in this chapter.
+    if _IBID_CONTENT_RE.match(t):
+        return works_so_far[-1]["title"]
+
+    # 2. "Hodges, op. cit., 112." -> most recent full citation by that author.
+    m = _OPCIT_CONTENT_RE.match(t)
+    if m:
+        author = _normalize_title(m.group("author"))
+        for w in reversed(works_so_far):
+            if author and (author in w["author"] or author in w["short"]):
+                return w["title"]
+        return works_so_far[-1]["title"]  # fallback: previous work
+
+    # 3. Short-title repeat (e.g. "Irwin Diary.") -> an earlier full citation whose
+    #    short-title matches. Only when the repeat is itself short (a single segment);
+    #    a long multi-clause citation is a new work, not a repeat.
+    norm = _short_title(t)
+    if norm and _normalize_title(t) == norm:  # single-segment => candidate repeat
+        for w in works_so_far:
+            if w["short"] and w["short"] == norm:
+                return w["title"]
+    return None
+
+
+def extract_bibliography_deterministic(
+    parsed_file: Path,
+    output_root: Path,
+    book: str,
+    chapter: str,
+) -> int:
+    """PRIMARY, deterministic bibliography pass — NO LLM / batch / cache.
+
+    Reads the Phase-1-parsed footnotes/endnotes (``*-parsed.json`` / ``*-endnotes.json``,
+    each carrying ``{number, url, text}`` captured deterministically by
+    ``src.parser.extract_footnotes``) and writes ONE bibliography-candidate record per
+    distinct citation via :func:`store_bibliography_entry`. The record's
+    ``verbatim_reference`` is the parsed citation text and ``resource_urls`` is the source
+    URL — real, citable provenance that EXISTS the moment Phase 1 parses the chapter,
+    independent of the fragile event→supplemental→batch→cache→retrieve chain.
+
+    The LLM supplemental step is now an ENRICHMENT OVERLAY (parse author/title/publisher,
+    classify document-vs-factual) on these existing records, not their creator — so a
+    missed/failed LLM pass degrades gracefully instead of yielding zero bibliography.
+
+    Idempotent: :func:`store_bibliography_entry` dedups by title/verbatim, so re-running
+    (submit pass, retrieve re-run, reconcile) only appends mentions, never duplicates.
+
+    Returns the number of citations stored (new or mention-appended).
+    """
+    notes = _collect_parsed_notes(parsed_file)
+    if notes is None:
+        return 0
+    bib_dir = output_root / "bibliography"
+    stored, skipped_stub = _store_notes(notes, bib_dir, book, chapter)
+    try:
+        logger.info(
+            "OBSERV bib.deterministic %s: notes=%d stored=%d skipped_stub=%d",
+            parsed_file.name,
+            len(notes),
+            stored,
+            skipped_stub,
+        )
+    except Exception:  # noqa: BLE001 - observability never breaks the pass
+        pass
+    return stored
+
+
+def materialize_bibliography_to_local(output_root: Path) -> int:
+    """No-op (DynamoDB entity store removed). The deterministic pass + store_bibliography_entry
+    now write ``output/bibliography/*.json`` directly to the S3-authoritative store, so there
+    is nothing to mirror from Dynamo. Retained so the Phase-2 call site is undisturbed. Returns 0.
+    """
+    return 0
+
+
+def _collect_parsed_notes(parsed_file: Path) -> Optional[List[Dict[str, Any]]]:
+    """Read the parsed file and return tagged footnote/endnote dicts, or ``None`` if the
+    file is absent/unreadable (so the caller returns 0 without raising)."""
+    if not parsed_file or not parsed_file.exists():
+        return None
+    try:
+        data = json.loads(parsed_file.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:  # malformed parse must not break the pass
+        logger.warning("Deterministic bibliography: unreadable %s: %s", parsed_file, e)
+        return None
+    # Accept either key — footnotes (same-page) or endnotes (end-of-chapter).
+    notes: List[Dict[str, Any]] = []
+    for key, ref_type in (("footnotes", "footnote"), ("endnotes", "endnote")):
+        for n in data.get(key, []) or []:
+            if isinstance(n, dict):
+                notes.append({**n, "_ref_type": ref_type})
+    return notes
+
+
+# Multi-document citation delimiter. GREEN BOOKS separate distinct documents in a single
+# footnote with a SEMICOLON; the COMMA is intra-citation there ("Thorson, former G-3, FUSA,
+# 12 Sep 56") and must NOT split. This is corpus-specific: OTHER source families may delimit
+# differently (a comma CAN be a document separator elsewhere), so the delimiter is a
+# parameter, not a baked-in universal rule — keep green-book semantics as the default and
+# override per corpus when that work is done.
+_GREENBOOK_DOC_DELIMITER = ";"
+
+
+def _expand_multidoc_notes(
+    notes: List[Dict[str, Any]],
+    delimiter: str = _GREENBOOK_DOC_DELIMITER,
+) -> List[Dict[str, Any]]:
+    """Split notes that cite MULTIPLE documents into one sub-note per document.
+
+    ``delimiter`` defaults to the green-book semicolon (safe: comma is intra-citation in
+    that corpus). Other corpora may pass a different delimiter — do NOT assume comma splits
+    universally. Single-document notes pass through unchanged. Sub-notes keep the same
+    number/url/ref_type; reference_number is suffixed (e.g. "3", "3b", "3c") so each is a
+    distinct mention.
+    """
+    out: List[Dict[str, Any]] = []
+    for note in notes:
+        text = (note.get("text") or "").strip()
+        parts = [p.strip() for p in text.split(delimiter) if p.strip()]
+        if len(parts) <= 1:
+            out.append(note)
+            continue
+        base_num = note.get("number")
+        for i, part in enumerate(parts):
+            sub = dict(note)
+            sub["text"] = part if part.endswith(".") else part + "."
+            if i > 0 and base_num is not None:
+                # disambiguate the sub-document so it is a separate mention/record
+                sub["number"] = f"{base_num}{chr(ord('b') + i - 1)}"
+            out.append(sub)
+    return out
+
+
+def _store_notes(
+    notes: List[Dict[str, Any]], bib_dir: Path, book: str, chapter: str
+) -> tuple:
+    """Store a bibliography record per usable note. Returns (stored, skipped_stub).
+
+    Sequence-aware within the chapter: a back-reference (ibid/op.cit. with trailing
+    content, or a short-title repeat like a second 'Irwin Diary.') is resolved to the
+    TITLE of its antecedent full citation earlier in THIS chapter and stored under that
+    title, so the existing title-dedup merges it as another mention instead of creating a
+    duplicate, unresolvable record. (Per the corpus rule: a shortened reference always
+    points to something in the same chapter.)
+    """
+    stored = 0
+    skipped_stub = 0
+    works_so_far: List[Dict[str, str]] = []
+    for note in _expand_multidoc_notes(notes):
+        material = _note_to_material(note)
+        if material is None:  # empty text or bare cross-reference stub
+            skipped_stub += 1
+            continue
+        verbatim = material.get("verbatim_reference", "")
+        antecedent_title = _resolve_back_reference(verbatim, works_so_far)
+        if antecedent_title:
+            # Back-reference: store under the antecedent's title so dedup merges the mention.
+            material.setdefault("citation", {})["title"] = antecedent_title
+        else:
+            # New full citation: remember it for later back-references in this chapter.
+            works_so_far.append(
+                {
+                    "title": verbatim,  # title falls back to verbatim in store_*
+                    "short": _short_title(verbatim),
+                    "author": _normalize_title(
+                        (material.get("citation") or {}).get("author") or ""
+                    ),
+                }
+            )
+        try:
+            if store_bibliography_entry(bib_dir, material, book=book, chapter=chapter):
+                stored += 1
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - one bad citation must not abort the pass
+            logger.warning(
+                "Deterministic bibliography: store failed for %s fn%s: %s",
+                chapter,
+                note.get("number"),
+                e,
+            )
+    return stored, skipped_stub
+
+
+def _note_to_material(note: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Build a deterministic bibliography material from a parsed footnote/endnote.
+
+    Returns ``None`` when the note has no usable text or is a bare cross-reference stub
+    (``ibid``/``see n. N``) that carries no standalone document identity.
+    """
+    text = (note.get("text") or "").strip()
+    if not text or _is_stub_citation(text):
+        return None
+    # Defense-in-depth: only keep http(s) source URLs — a crafted source doc could inject
+    # javascript:/data:/file: URLs that would surface downstream in UI/export.
+    url = note.get("url") or ""
+    if not (isinstance(url, str) and url.lower().startswith(("http://", "https://"))):
+        url = ""
+    number = note.get("number")
+    material = {
+        "verbatim_reference": text,
+        "reference_type": note.get("_ref_type", "footnote"),
+        "reference_number": str(number) if number is not None else "",
+        "content_class": "document_reference",
+        # Title + alt_title are BOTH left for Grok (the LLM enrichment step): per the
+        # agreed design, alt_title is SEMANTIC (expand green-book shorthand -> full,
+        # searchable form, resolve names where known) and is therefore Grok's job, NOT a
+        # deterministic derivation. The dedup/resolver key falls back to the MENTION
+        # verbatim (always present), so a null alt_title here is safe.
+        "citation": {"title": "Unknown", "alt_title": None},
+        # SOURCE URL = provenance (where the citation TEXT appeared, e.g. the ibiblio
+        # hyperwar page) -> carried on the mention. Deliberately NOT `resource_urls`:
+        # resource_urls means "where the CITED document is obtainable" (NARA/archive.org),
+        # filled by Phase-3 resolution. Putting the source URL in resource_urls would trip
+        # the resolver's "has resource_urls -> already resolved" short-circuit and PREVENT
+        # NARA resolution. So resource_urls starts EMPTY.
+        "source_url": url,
+        "resource_urls": [],
+    }
+    # DETERMINISTIC license: anything sourced from ibiblio/hyperwar (the US Army CMH
+    # "green books" and material hosted there) is a US Government work -> PUBLIC DOMAIN.
+    # Knowable at parse time from the source domain, so set it here (not deferred to the
+    # Phase-3 resolver / LLM).
+    material.update(_public_domain_fields(url))
+    return material
+
+
+# ibiblio hyperwar hosts the US Army Center of Military History "green books" (US Gov
+# works) + related public-domain material. A citation sourced from there is public domain.
+_PUBLIC_DOMAIN_HOSTS = ("ibiblio.org/hyperwar", "hyperwar")
+
+
+def _public_domain_fields(url: str) -> Dict[str, Any]:
+    """Deterministic public-domain license fields for a US-Gov/ibiblio-hyperwar source
+    URL; empty dict otherwise (left for Phase-3 resolution / LLM)."""
+    u = (url or "").lower()
+    if not any(h in u for h in _PUBLIC_DOMAIN_HOSTS):
+        return {}
+    return {
+        "license": "public_domain",
+        "license_notes": "US Government work (US Army CMH / ibiblio hyperwar); public domain.",
+        "copyright_status": {
+            "status": "public_domain",
+            "determination_basis": "US Government work hosted on ibiblio hyperwar (CMH green books).",
+            "jurisdiction": "US",
+        },
+    }
+
+
+# NOTE: alt_title is intentionally NOT derived deterministically. It is a SEMANTIC field
+# (expand green-book shorthand -> full searchable title, resolve names) and is set by Grok
+# in the Phase-3 enrichment step (_enrich_bib_file). The deterministic pass leaves it None.
+
+
+def _deterministic_bib_filename(keys: Dict[str, str]) -> str:
+    """Stable CANONICAL per-citation filename derived from the match key: ``bib_<16-hex>.json``.
+    The same citation always maps to the same canonical name regardless of which Fargate task
+    produced it. This is the name RECONCILE collapses to; concurrent WRITERS use
+    ``_bib_shard_filename`` (a unique shard) to avoid clobbering each other, and reconcile folds
+    the shards into this canonical file. Primary key is the normalized title (= verbatim when
+    title='Unknown'), then archive-ref, then author."""
+    return f"bib_{_bib_hash(keys)}.json"
+
+
+def _bib_hash(keys: Dict[str, str]) -> str:
+    """16-hex grouping hash for a citation's match key (title -> ref -> author)."""
+    primary = keys.get("title") or keys.get("ref") or keys.get("author") or ""
+    return hashlib.sha256(primary.encode("utf-8")).hexdigest()[:16]
+
+
+def _bib_shard_filename(keys: Dict[str, str]) -> str:
+    """Unique per-WRITER shard filename ``bib_<hash>__<writer_id>.json``. The ``<hash>`` groups
+    the shard with every other write of the same citation; the ``<writer_id>`` suffix is stable
+    for the lifetime of THIS task/process (ECS task id, else a per-process ULID) so two
+    concurrent Fargate tasks — which share the single ``output/bibliography/`` S3 prefix — NEVER
+    write the same key (an additive last-writer-wins S3 sync cannot drop a mention), while
+    repeated writes of the SAME citation WITHIN one task resolve to the SAME shard and union in
+    place. ``reconcile_bibliography_dir`` later groups shards by ``<hash>`` and collapses them to
+    the canonical ``bib_<hash>.json``."""
+    return f"bib_{_bib_hash(keys)}__{_writer_id()}.json"
+
+
+def _writer_id() -> str:
+    """Stable identifier for the current writer (task/process). Memoized so every write in this
+    process shares one shard suffix. Prefers the Fargate ECS task id; falls back to a ULID
+    generated once per process."""
+    global _WRITER_ID
+    if _WRITER_ID is None:
+        _WRITER_ID = os.environ.get("ECS_TASK_ID") or str(ulid.new())
+    return _WRITER_ID
+
+
+def _hash_from_bib_filename(name: str) -> Optional[str]:
+    """Extract the grouping ``<hash>`` from a canonical ``bib_<hash>.json`` or a shard
+    ``bib_<hash>__<ulid>.json`` filename. Returns None for non-conforming names (e.g. legacy
+    random-ULID files), which reconcile then groups by recomputed match key instead."""
+    m = re.match(r"^bib_([0-9a-f]{16})(?:__[^.]+)?\.json$", name)
+    return m.group(1) if m else None
 
 
 def _slugify(title: str) -> str:
@@ -155,6 +507,12 @@ def _build_mention(
         mention["pages"] = citation["pages"]
     if citation.get("volume"):
         mention["volume"] = citation["volume"]
+    # Provenance: the SOURCE URL where the citation TEXT appeared (e.g. the ibiblio
+    # hyperwar page). Distinct from the entry's `resource_urls` (where the CITED document
+    # is obtainable — filled by Phase-3 resolution). Kept on the mention so it does not
+    # trip the resolver's "has resource_urls -> already resolved" short-circuit.
+    if material.get("source_url"):
+        mention["source_url"] = material["source_url"]
     return mention
 
 
@@ -172,6 +530,7 @@ def _build_bib_entry(material: Dict[str, Any]) -> Dict[str, Any]:
         "archive_physical_address": material.get("archive_physical_address"),
         "license": material.get("license", "unknown"),
         "license_notes": material.get("license_notes"),
+        "copyright_status": material.get("copyright_status"),
         "mentions": [],
     }
 
@@ -211,53 +570,187 @@ def store_bibliography_entry(
         title = material.get("verbatim_reference", "Unknown")
     mention = _build_mention(material, book, chapter)
 
-    store = None
-    try:
-        from src.utils.entity_store import get_entity_store
-
-        store = get_entity_store()
-    except Exception:  # pragma: no cover - import guard
-        store = None
-
     keys = _match_keys(material, title)
 
-    if store is not None:
-        new_id = str(ulid.new())
-
-        def _build():
-            return _build_bib_entry(material)
-
-        return store.store_bibliography(
-            keys=keys,
-            bib_id=new_id,
-            entry_builder=_build,
-            mention=mention,
-            mention_exists=lambda mentions: _has_mention(mentions, mention),
-        )
-
-    # --- Local-file fallback (no Dynamo store: local/test mode) ---
+    # --- S3-authoritative file write (DynamoDB entity store removed) ---
     bib_dir.mkdir(parents=True, exist_ok=True)
-    index = _load_index(bib_dir)
-    existing_file = _find_match(keys, index)
-    if existing_file and (bib_dir / existing_file).exists():
-        with open(bib_dir / existing_file, "r", encoding="utf-8") as f:
+    from src.utils.file_lock import write_json_with_lock
+
+    # CONCURRENT-SAFE SHARDED WRITE (scoped reads): the single ``output/bibliography/`` S3
+    # prefix is shared by all concurrently-running per-book Fargate tasks, so a writer must
+    # NOT touch a filename another task could also write — an additive last-writer-wins S3
+    # sync would otherwise silently drop the loser's mention. Each task therefore writes to
+    # its OWN shard ``bib_<hash>__<writer_id>.json`` (writer_id = this task/process). The
+    # ``<hash>`` groups the shard with every other write of the same citation; reconcile folds
+    # all shards into the canonical ``bib_<hash>.json``, unioning mentions. Because the shard
+    # is per-writer-stable, the write path never needs the whole (13k+ file) dir — only its own
+    # shard — so Phase 2 can skip the bulk bibliography download. In-task same-citation mentions
+    # union into the one local shard here; cross-task union happens in the full-corpus reconcile.
+    shard_name = _bib_shard_filename(keys)
+    shard_path = bib_dir / shard_name
+    if shard_path.exists():
+        with open(shard_path, "r", encoding="utf-8") as f:
             bib_data = json.load(f)
         if not _has_mention(bib_data.get("mentions", []), mention):
             bib_data.setdefault("mentions", []).append(mention)
-            from src.utils.file_lock import write_json_with_lock
-
-            write_json_with_lock(
-                bib_dir / existing_file, bib_data, entity="bibliography"
-            )
+            write_json_with_lock(shard_path, bib_data, entity="bibliography")
         return bib_data.get("BibliographyID")
 
     bib_data = _build_bib_entry(material)
     bib_data["mentions"].append(mention)
-    filename = f"{_slugify(title)}_{bib_data['BibliographyID']}.json"
+    write_json_with_lock(shard_path, bib_data, entity="bibliography")
+    logger.debug("New bibliography shard: %s", shard_name)
+    return bib_data["BibliographyID"]
+
+
+def _merge_bib_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Merge records that share a match key into one: union mentions (by _has_mention),
+    and prefer the most-enriched base fields (a real title over 'Unknown', non-empty
+    alt_title/author/resource_urls). Deterministic: records sorted by BibliographyID so the
+    outcome is stable regardless of listing order."""
+    records = sorted(records, key=lambda r: str(r.get("BibliographyID") or ""))
+    base = dict(records[0])
+    merged_mentions: List[Dict[str, Any]] = []
+    for rec in records:
+        # prefer a real title / populated fields from any record
+        if base.get("title", "Unknown") in ("", "Unknown") and rec.get("title") not in (
+            "",
+            "Unknown",
+            None,
+        ):
+            base["title"] = rec["title"]
+        for fld in ("alt_title", "archive_reference_number"):
+            if not base.get(fld) and rec.get(fld):
+                base[fld] = rec[fld]
+        if not base.get("resource_urls") and rec.get("resource_urls"):
+            base["resource_urls"] = rec["resource_urls"]
+        for m in rec.get("mentions") or []:
+            if not _has_mention(merged_mentions, m):
+                merged_mentions.append(m)
+    base["mentions"] = merged_mentions
+    return base
+
+
+def _group_title(items: List[tuple]) -> str:
+    """Representative normalized title for a reconcile group (first record with a real
+    title; falls back to verbatim). Empty string when the group is not title-bearing."""
+    for _f, data in items:
+        title = data.get("title", "") or ""
+        if title and title != "Unknown":
+            return _normalize_title(title)
+    # fall back to a verbatim-derived normalized title
+    for _f, data in items:
+        verb = data.get("verbatim_reference", "") or (
+            (data.get("mentions") or [{}])[0].get("verbatim_reference", "")
+        )
+        if verb:
+            return _normalize_title(verb)
+    return ""
+
+
+def _fuzzy_collapse_groups(groups: Dict[str, List[tuple]]) -> None:
+    """Fold deterministic groups whose representative titles fuzzy-match (>=0.85) into one
+    canonical group, mutating ``groups`` in place. This preserves the near-title dedup that
+    used to run per-write in ``_find_match`` (0.85 SequenceMatcher), now done once per run.
+
+    Only title-bearing groups participate; each merge target is the lexicographically-smallest
+    group key so the collapse is deterministic regardless of iteration order. Fail-safe.
+    """
+    from difflib import SequenceMatcher
+
+    titled = [(k, _group_title(v)) for k, v in list(groups.items())]
+    titled = [(k, t) for k, t in titled if t]
+    titled.sort(key=lambda kt: kt[0])  # stable canonical selection
+
+    absorbed: Dict[str, str] = {}  # key -> canonical key it was merged into
+    for i, (key_i, title_i) in enumerate(titled):
+        if key_i in absorbed:
+            continue
+        for key_j, title_j in titled[i + 1 :]:
+            if key_j in absorbed or key_j == key_i:
+                continue
+            if SequenceMatcher(None, title_i, title_j).ratio() >= 0.85:
+                groups[key_i].extend(groups.get(key_j, []))
+                groups.pop(key_j, None)
+                absorbed[key_j] = key_i
+
+
+def reconcile_bibliography_dir(bib_dir: Path) -> int:
+    """Rebuild-time reconcile (Option B): union mentions across all bibliography records that
+    belong to the same citation, collapsing per-writer shards (``bib_<hash>__<writer>.json``),
+    cross-task duplicates, AND legacy random-ULID duplicates into ONE canonical deterministic
+    file (``bib_<hash>.json``). Groups primarily by the ``<hash>`` embedded in the filename
+    (stable across shards even if one shard's title got enriched differently), falling back to a
+    hash recomputed from the record's match key for legacy/non-conforming names; then a fuzzy
+    near-title pass folds typo-level duplicates. Rebuilds the derived index. Idempotent +
+    fail-safe (never raises). Returns the number of duplicate files merged away. Run at
+    end-of-run / full-corpus reconcile phase — S3-authoritative, no Dynamo."""
+    bib_dir = Path(bib_dir)
+    if not bib_dir.exists():
+        return 0
     from src.utils.file_lock import write_json_with_lock
 
-    write_json_with_lock(bib_dir / filename, bib_data, entity="bibliography")
-    _index_entry(index, keys, filename)
-    _save_index(bib_dir, index)
-    logger.debug("New bibliography entry: %s", filename)
-    return bib_data["BibliographyID"]
+    # Group record files by citation hash. Prefer the hash embedded in the filename (shards and
+    # the canonical file all carry the same <hash>); fall back to a hash recomputed from the
+    # record's match key for legacy random-ULID filenames. Group key is the canonical filename.
+    groups: Dict[str, List[tuple]] = {}
+    for f in sorted(bib_dir.glob("*.json")):
+        if f.name in ("index.json", "review_queue.json"):
+            continue
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(data, dict) or "BibliographyID" not in data:
+            continue
+        file_hash = _hash_from_bib_filename(f.name)
+        if file_hash:
+            canon = f"bib_{file_hash}.json"
+        else:
+            title = data.get("title", "") or ""
+            if not title or title == "Unknown":
+                title = data.get("verbatim_reference", "") or (
+                    (data.get("mentions") or [{}])[0].get("verbatim_reference", "")
+                )
+            canon = _deterministic_bib_filename(_match_keys(data, title))
+        groups.setdefault(canon, []).append((f, data))
+
+    # Fuzzy near-title collapse (moved here from the per-write hot path): exact deterministic
+    # keys catch case/punctuation/whitespace variants, but NOT typo-level fuzz ("Bastogne" vs
+    # "Bastonge"). Fold groups whose canonical titles fuzzy-match (>=0.85) into the
+    # lexicographically-smallest canonical key so the choice is deterministic regardless of
+    # listing order. Only title-bearing groups participate (ref/author-keyed groups are left
+    # exact to avoid over-merging distinct sources by a weak key).
+    _fuzzy_collapse_groups(groups)
+
+    merged_away = 0
+    new_index: Dict[str, Dict[str, str]] = {"titles": {}, "refs": {}, "authors": {}}
+    for canon_name, items in groups.items():
+        files = [f for f, _ in items]
+        records = [d for _, d in items]
+        merged = _merge_bib_records(records) if len(records) > 1 else records[0]
+        canon_path = bib_dir / canon_name
+        try:
+            write_json_with_lock(canon_path, merged, entity="bibliography")
+            # remove any non-canonical files in this group
+            for f in files:
+                if f.name != canon_name:
+                    try:
+                        f.unlink()
+                        merged_away += 1
+                    except OSError:
+                        pass
+        except Exception as e:  # noqa: BLE001 - reconcile must never break the run
+            logger.warning("reconcile bibliography %s failed: %s", canon_name, e)
+            continue
+        # rebuild the derived index from the canonical record
+        title = merged.get("title", "") or merged.get("verbatim_reference", "") or ""
+        _index_entry(new_index, _match_keys(merged, title), canon_name)
+    try:
+        _save_index(bib_dir, new_index)
+    except OSError:
+        pass
+    logger.info(
+        "OBSERV bib.reconcile groups=%d merged_away=%d", len(groups), merged_away
+    )
+    return merged_away

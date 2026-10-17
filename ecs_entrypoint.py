@@ -198,16 +198,29 @@ class BackgroundSync:
         self._thread = None
         self._uploaded_mtimes: dict = {}  # key → mtime of last upload
         self._last_activity_time = time.time()
+        # Shared forward-progress clock exposed by the in-container /status API (the
+        # authoritative "ongoing task?" signal the nat_teardown Lambda polls). Marked on
+        # every real upload below — true progress, not mere liveness.
+        from ecs_modules.container_status import ProgressState
+
+        self.progress = ProgressState()
 
     def ping(self):
         """Signal activity to the watchdog (call from heartbeat or any progress)."""
         self._last_activity_time = time.time()
+        self.progress.mark()
 
     def start(self):
-        """Start the background sync thread."""
+        """Start the background sync thread + the in-container status API."""
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
         logger.info("Background S3 sync started (every %ds)", self._interval)
+        try:
+            from ecs_modules.container_status import start_status_server
+
+            start_status_server(self.progress)
+        except Exception as e:  # noqa: BLE001 - status API is best-effort
+            logger.warning("Status API not started: %s", e)
 
     def stop(self):
         """Stop the background sync thread."""
@@ -228,6 +241,7 @@ class BackgroundSync:
                     n = self._sync_changed(d, prefix)
                     if n:
                         self._last_activity_time = time.time()
+                        self.progress.mark()
                         logger.info("Background sync: uploaded %d %s files", n, name)
             # Watchdog: self-terminate if no activity for too long
             idle = time.time() - self._last_activity_time
@@ -278,19 +292,33 @@ class BackgroundSync:
 
 
 def _load_secrets():
-    """Fetch GROK_API_KEY from Secrets Manager if not already set."""
-    if os.environ.get("GROK_API_KEY"):
-        return
-    secret_id = os.environ.get("SECRETS_ID", "")
-    if not secret_id:
-        return
-    try:
-        sm = boto3.client("secretsmanager", region_name=REGION)
-        resp = sm.get_secret_value(SecretId=secret_id)
-        os.environ["GROK_API_KEY"] = resp["SecretString"]
-        logger.info("Loaded API key from Secrets Manager")
-    except Exception as e:
-        logger.error("Failed to load secret %s: %s", secret_id, e)
+    """Fetch GROK_API_KEY (+ NARA_API_KEY) from Secrets Manager if not already set."""
+    sm = None
+    if not os.environ.get("GROK_API_KEY"):
+        secret_id = os.environ.get("SECRETS_ID", "")
+        if secret_id:
+            try:
+                sm = boto3.client("secretsmanager", region_name=REGION)
+                resp = sm.get_secret_value(SecretId=secret_id)
+                os.environ["GROK_API_KEY"] = resp["SecretString"]
+                logger.info("Loaded API key from Secrets Manager")
+            except Exception as e:
+                logger.error("Failed to load secret %s: %s", secret_id, e)
+    # NARA catalog API key (plain-string secret) -> NARA_API_KEY, which config.py maps to
+    # api.nara_api_key for the Phase-3 bibliography resolver. Independent + fail-safe: a
+    # missing NARA key must not block Grok/the run (resolver just skips NARA).
+    if not os.environ.get("NARA_API_KEY"):
+        env = os.environ.get("ENV_NAME", "dev")
+        nara_secret = os.environ.get(
+            "NARA_SECRET_ID", f"{env}-wwii-pipeline/nara-api-key"
+        )
+        try:
+            sm = sm or boto3.client("secretsmanager", region_name=REGION)
+            resp = sm.get_secret_value(SecretId=nara_secret)
+            os.environ["NARA_API_KEY"] = resp["SecretString"].strip()
+            logger.info("Loaded NARA API key from Secrets Manager")
+        except Exception as e:  # noqa: BLE001 - NARA key optional; never block the run
+            logger.warning("NARA API key not loaded (%s): %s", nara_secret, e)
 
 
 def _setup_symlinks():
@@ -317,17 +345,6 @@ def _setup_symlinks():
         link.symlink_to(target)
 
 
-def _cancel_stale_teardown() -> None:
-    """Cancel any pending delayed networking teardown from a previous task."""
-    try:
-        env = os.environ.get("ENV_NAME", "dev")
-        scheduler = boto3.client("scheduler", region_name=REGION)
-        scheduler.delete_schedule(Name=f"{env}-wwii-delayed-teardown")
-        logger.info("Cancelled stale delayed teardown")
-    except Exception:
-        pass  # No schedule exists — normal
-
-
 def _patch_config():
     """Enable AWS mode in config.yaml so scripts use DynamoDB cache."""
     import yaml  # pylint: disable=import-outside-toplevel
@@ -342,7 +359,9 @@ def _patch_config():
     cache_table = os.environ.get("CACHE_TABLE", "")
     if cache_table:
         config["aws"]["cache_table"] = cache_table
-    config.setdefault("storage", {})["entity_backend"] = "dynamodb"
+    # Entity JSON is S3-authoritative (DynamoDB deprecated for JSON storage; Dynamo kept
+    # only for queue/coordination). Filesystem backend -> output/*.json synced to S3.
+    config.setdefault("storage", {})["entity_backend"] = "filesystem"
 
     with open(config_path, "w", encoding="utf-8") as f:
         yaml.dump(config, f, default_flow_style=False)
@@ -701,9 +720,6 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     if not os.environ.get("BOOK_NAME"):
         os.environ["BOOK_NAME"] = ""
 
-    # Cancel any stale delayed teardown from a previous task
-    _cancel_stale_teardown()
-
     # Bring NAT (+ VPC endpoints) up FIRST, before any egress-dependent step:
     # _load_secrets needs the Secrets Manager interface endpoint (created by
     # nat-manager) and _preflight_credit_check hits api.x.ai over NAT. phase2/3
@@ -929,96 +945,11 @@ def _get_book_entity_files(s3, book_name: str) -> list:
 
 
 def _materialize_from_dynamo() -> bool:
-    """Materialize entities from DynamoDB to local files. Returns True if successful."""
-    try:
-        from src.utils.entity_store import get_entity_store
-        from src.utils.file_lock import get_failed_writes, clear_failed_writes
-
-        store = get_entity_store()
-        if not store:
-            return False
-
-        # Reconcile any failed dual-writes before reading
-        failed = get_failed_writes()
-        if failed:
-            logger.info(
-                "Reconciling %d failed dual-writes before materialization", len(failed)
-            )
-            reconciled = 0
-            for entry in failed:
-                try:
-                    filepath = Path(entry["path"])
-                    if filepath.exists():
-                        import json as _json
-
-                        data = _json.loads(filepath.read_text(encoding="utf-8"))
-                        store.put(
-                            entry["type"], entry["id"], data, filename=filepath.name
-                        )
-                        reconciled += 1
-                except Exception as e:
-                    logger.warning(
-                        "Reconcile failed for %s/%s: %s", entry["type"], entry["id"], e
-                    )
-            clear_failed_writes()
-            logger.info("Reconciled %d/%d failed writes", reconciled, len(failed))
-
-        entity_types = [
-            "people",
-            "people_groups",
-            "places",
-            "dates",
-            "equipment",
-            "weather",
-            "logistics",
-            "casualties",
-            "maps",
-            "supplemental",
-            "bibliography",
-        ]
-
-        total = 0
-        for entity_type in entity_types:
-            entities = store.list_all(entity_type)
-            if not entities:
-                continue
-            local_dir = WORKDIR / "output" / entity_type
-            local_dir.mkdir(parents=True, exist_ok=True)
-            for item in entities:
-                entity = item["data"]
-                filename = item.get("filename")
-                if not filename:
-                    # Fallback: use entity ID as filename (no collisions)
-                    id_fields = {
-                        "people": "PersonID",
-                        "people_groups": "GroupID",
-                        "places": "PlaceID",
-                        "dates": "DateID",
-                        "equipment": "EquipmentID",
-                        "weather": "WeatherID",
-                        "logistics": "LogisticsID",
-                        "casualties": "CasualtyID",
-                        "maps": "MapID",
-                        "supplemental": "BibliographyID",
-                        "bibliography": "BibliographyID",
-                    }
-                    eid = entity.get(id_fields.get(entity_type, ""), "unknown")
-                    filename = f"{eid}.json"
-                filepath = local_dir / filename
-                filepath.write_text(
-                    json.dumps(entity, indent=2, ensure_ascii=False), encoding="utf-8"
-                )
-                total += 1
-
-        if total > 0:
-            logger.info(
-                "Materialized %d entities from DynamoDB (skipped S3 download)", total
-            )
-            return True
-        return False
-    except Exception as e:
-        logger.warning("DynamoDB materialization failed, falling back to S3: %s", e)
-        return False
+    """Deprecated no-op. The DynamoDB entity (JSON) store was removed — S3 is the sole
+    authoritative entity store — so there is nothing to materialize from Dynamo. Always
+    returns False, so callers fall through to the S3 download path. (DynamoDB is retained
+    only for queue/coordination, not JSON storage.)"""
+    return False
 
 
 def _download_inputs(phase_script: str) -> None:
@@ -1218,25 +1149,15 @@ def _download_phase2_inputs() -> int:
     ):
         _download_s3_file(s3, f"output/{_etype}/.processed_events.json")
 
-    # Bibliography/supplemental: Dynamo-backed dedup (G3) reads the title index
-    # from DynamoEntityStore, so Phase 2 no longer bulk-downloads the (13k+ file)
-    # bibliography dir — the source of N*2 download thrash under concurrency. Only
-    # download the dirs when there's NO entity store (local/file mode). Phase 3
-    # enrichment still downloads them (it iterates every file).
-    _skip_bib_download = False
-    try:
-        from src.utils.entity_store import get_entity_store
-
-        _skip_bib_download = get_entity_store() is not None
-    except Exception:
-        _skip_bib_download = False
-    if not _skip_bib_download:
-        for p in ["output/bibliography/", "output/supplemental/"]:
-            _download_s3_prefix(s3, p)
-    else:
-        logger.info(
-            "Skipping bibliography/supplemental bulk download (Dynamo-backed dedup)"
-        )
+    # Bibliography/supplemental: SCOPED READS — Phase 2 no longer bulk-downloads these dirs
+    # (the 13k+ file bibliography prefix caused N*2 download thrash under concurrent per-book
+    # Fargate tasks). Concurrent-write safety comes from the per-writer SHARD scheme: each task
+    # writes bib_<hash>__<writer>.json, so two tasks citing the same source never write the same
+    # key (an additive last-writer-wins sync cannot drop a mention). A writer only ever touches
+    # its OWN shard, so it needs no shared-dir read. The per-task reconcile folds that task's own
+    # shards; the FULL-CORPUS reconcile in the dedup phase (_reconcile_bibliography_full_corpus,
+    # runs once after all Phase-2 tasks) downloads the whole dir and unions mentions across every
+    # task's shards into the canonical bib_<hash>.json. Phase 3 enrichment still full-downloads.
 
     return new_parsed
 
@@ -1546,8 +1467,10 @@ def _post_process(phase_script: str, env: dict) -> None:
                     )
                 except Exception as e:
                     logger.warning("Failed to auto-trigger Phase 3: %s", e)
-            else:
-                _schedule_delayed_teardown()
+            # NOTE: dedup gate blocked (awaiting human review) — do NOT schedule
+            # teardown here. The nat_teardown cron Lambda will tear NAT down once the
+            # queue is empty + no container is running; a pending dedup review simply
+            # means NAT may idle until the cron's demand check next finds it idle.
 
             # Check for other books in the per-book queue — trigger next, skip teardown
             next_book = _get_next_pending_book()
@@ -1770,6 +1693,7 @@ def _run_dedup_detection(env: dict) -> None:
     _cleanup_entity_indexes()
     _migrate_exclusions_to_dynamo()
     _download_dedup_data()
+    _reconcile_bibliography_full_corpus()
     _execute_dedup_scripts()
     _maybe_generate_surname_report()
 
@@ -1878,6 +1802,60 @@ def _download_dedup_data() -> None:
         d,
         s,
     )
+
+
+def _reconcile_bibliography_full_corpus() -> None:
+    """Full-corpus bibliography reconcile — runs ONCE after all Phase-2 book tasks finish.
+
+    Phase-2 tasks write per-writer shards ``bib_<hash>__<writer>.json`` (concurrent-safe on the
+    shared ``output/bibliography/`` S3 prefix) and only reconcile their OWN local shards. The
+    mentions produced by DIFFERENT concurrent tasks for the same citation live in separate shards
+    on S3 and are not unioned until something sees the WHOLE dir. The dedup phase is that moment:
+    download the complete bibliography dir, collapse every shard into the canonical
+    ``bib_<hash>.json`` (union mentions + fuzzy near-title dedup), and upload the result. This is
+    the rebuild-time step the deterministic-shard scheme (Option B) depends on for correctness —
+    without it, scoped reads would drop cross-task mentions. Fail-safe: never breaks dedup.
+    """
+    try:
+        s3 = _s3_client()
+        n = _download_s3_prefix(s3, "output/bibliography/")
+        logger.info("Full-corpus bibliography reconcile: downloaded %d files", n)
+        from src.extraction.bibliography import reconcile_bibliography_dir
+
+        bib_dir = WORKDIR / "output" / "bibliography"
+        merged_away = reconcile_bibliography_dir(bib_dir)
+        # Upload the collapsed canonical files; shards were unlinked locally by reconcile, but
+        # their S3 copies still exist — remove them so the prefix reflects the canonical set.
+        up, _ = s3_sync_up(bib_dir, "output/bibliography")
+        _delete_orphaned_bibliography_shards(s3, bib_dir)
+        logger.info(
+            "Full-corpus bibliography reconcile: merged_away=%d, uploaded %d canonical files",
+            merged_away,
+            up,
+        )
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - reconcile is best-effort, never blocks dedup
+        logger.warning("Full-corpus bibliography reconcile failed: %s", e)
+
+
+def _delete_orphaned_bibliography_shards(s3, bib_dir: Path) -> None:
+    """Delete S3 bibliography shard objects (``bib_<hash>__<writer>.json``) that reconcile has
+    collapsed away — i.e. any S3 key whose basename is not present in the reconciled local dir.
+    Keeps the S3 prefix in sync with the canonical set. Fail-safe per key."""
+    local_names = {p.name for p in bib_dir.glob("*.json")}
+    for page in s3.get_paginator("list_objects_v2").paginate(
+        Bucket=BUCKET, Prefix="output/bibliography/"
+    ):
+        for obj in page.get("Contents", []):
+            key = obj["Key"]
+            name = key.rsplit("/", 1)[-1]
+            # Only ever delete shard-form orphans, never a canonical/other file.
+            if "__" in name and name not in local_names:
+                try:
+                    s3.delete_object(Bucket=BUCKET, Key=key)
+                except Exception as e:  # noqa: BLE001
+                    logger.debug("shard cleanup skip %s: %s", key, e)
 
 
 def _auto_merge_exact_duplicates() -> None:
@@ -2452,14 +2430,6 @@ def _other_phase_locked(current_phase_script: str) -> bool:
     return False
 
 
-def _any_pipeline_lock_held() -> bool:
-    """Check if ANY pipeline lock exists (Phase 1, 2, or 3; any book)."""
-    try:
-        return len(_held_lock_keys()) > 0
-    except Exception:
-        return True  # Assume locked on error — don't tear down
-
-
 def _openserp_demand_present() -> bool:
     """Aggregate OpenSERP demand across ALL jobs (operator rule: if multiple jobs
     are in play OpenSERP must NOT shut down; shut down only when NO job needs it).
@@ -2700,30 +2670,6 @@ def _release_nat_lease() -> None:
         logger.warning("NAT lease release failed: %s", e)
 
 
-def _nat_demand_present() -> bool:
-    """Cluster-wide NAT demand (M3, §4): live leases OR running pipeline tasks.
-
-    Cross-checks the lease count against the ECS running-task list (ground truth)
-    so a dropped lease can't wrongly tear NAT down while a book is still running.
-    Returns True (demand present) on any error — never tear down on uncertainty.
-    """
-    try:
-        env = os.environ.get("ENV_NAME", "dev")
-        ecs = boto3.client("ecs", region_name=REGION)
-        running = ecs.list_tasks(
-            cluster=f"{env}-wwii-pipeline", desiredStatus="RUNNING"
-        ).get("taskArns", [])
-        # Exclude openserp (support service) and our own task from "pipeline demand"
-        own = os.environ.get("ECS_TASK_ID", "")
-        pipeline = [t for t in running if "openserp" not in t and own not in t]
-        from src.utils import nat_lease
-
-        return nat_lease.has_nat_demand(running_task_count=len(pipeline))
-    except Exception as e:  # pragma: no cover - defensive
-        logger.warning("NAT demand check failed: %s — assuming demand", e)
-        return True
-
-
 def _multi_doc_enabled() -> bool:
     """True if multi-document concurrency is switched on (kill-switch).
 
@@ -2852,110 +2798,6 @@ def _clear_all_locks() -> None:
         pass
 
 
-def _schedule_delayed_teardown(delay_minutes: int = None) -> None:
-    """Schedule networking teardown after a delay via EventBridge Scheduler.
-
-    If Phase 3 launches before the delay expires, the trigger Lambda
-    cancels this schedule. Avoids churn when dedup review is fast.
-    """
-    if delay_minutes is None:
-        delay_minutes = int(os.environ.get("TEARDOWN_DELAY_MINUTES", "30"))
-    import datetime
-
-    env = os.environ.get("ENV_NAME", "dev")
-    schedule_name = f"{env}-wwii-delayed-teardown"
-    run_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-        minutes=delay_minutes
-    )
-    nat_fn_arn = (
-        f"arn:aws:lambda:{REGION}:{_get_account_id()}:function:{env}-wwii-nat-manager"
-    )
-    role_arn = os.environ.get(
-        "SCHEDULER_ROLE_ARN",
-        f"arn:aws:iam::{_get_account_id()}:role/{env}-wwii-scheduler-role",
-    )
-    try:
-        scheduler = boto3.client("scheduler", region_name=REGION)
-    except Exception as e:
-        logger.warning("Failed to create scheduler client: %s", e)
-        return
-    try:
-        scheduler.create_schedule(
-            Name=schedule_name,
-            ScheduleExpression=f"at({run_at.strftime('%Y-%m-%dT%H:%M:%S')})",
-            ScheduleExpressionTimezone="UTC",
-            FlexibleTimeWindow={"Mode": "OFF"},
-            Target={
-                "Arn": nat_fn_arn,
-                "RoleArn": role_arn,
-                "Input": '{"action": "delete"}',
-            },
-            ActionAfterCompletion="DELETE",
-        )
-        logger.info("Scheduled networking teardown in %d minutes", delay_minutes)
-    except scheduler.exceptions.ConflictException:
-        # Schedule already exists — update it
-        try:
-            scheduler.update_schedule(
-                Name=schedule_name,
-                ScheduleExpression=f"at({run_at.strftime('%Y-%m-%dT%H:%M:%S')})",
-                ScheduleExpressionTimezone="UTC",
-                FlexibleTimeWindow={"Mode": "OFF"},
-                Target={
-                    "Arn": nat_fn_arn,
-                    "RoleArn": role_arn,
-                    "Input": '{"action": "delete"}',
-                },
-                ActionAfterCompletion="DELETE",
-            )
-            logger.info(
-                "Updated delayed teardown schedule to %d minutes", delay_minutes
-            )
-        except Exception as e:
-            logger.warning("Failed to update delayed teardown: %s", e)
-    except Exception as e:
-        logger.warning("Failed to schedule delayed teardown: %s", e)
-
-
-def _teardown_networking() -> None:
-    """Scale down OpenSERP and invoke nat_manager to delete NAT + VPC endpoints.
-    Skipped if another phase has an active lock OR any NAT demand remains
-    (per-task leases / running tasks) — prevents killing networking that a
-    concurrent book still needs (M3, §4).
-    """
-    # M3: this task no longer needs the network — drop its lease first, then
-    # decide teardown from cluster-wide demand (not this task's state alone).
-    _release_nat_lease()
-    if _any_pipeline_lock_held():
-        logger.info("Skipping network teardown — another phase lock is active")
-        return
-    if _nat_demand_present():
-        logger.info("Skipping network teardown — NAT demand remains (leases/tasks)")
-        return
-    try:
-        env = os.environ.get("ENV_NAME", "dev")
-        ecs = boto3.client("ecs", region_name=REGION)
-        ecs.update_service(
-            cluster=f"{env}-wwii-pipeline",
-            service=f"{env}-wwii-openserp",
-            desiredCount=0,
-        )
-        logger.info("Scaled OpenSERP to 0")
-    except Exception as e:
-        logger.warning("Failed to scale OpenSERP: %s", e)
-    try:
-        env = os.environ.get("ENV_NAME", "dev")
-        lam = boto3.client("lambda", region_name=REGION)
-        lam.invoke(
-            FunctionName=f"{env}-wwii-nat-manager",
-            InvocationType="RequestResponse",
-            Payload=json.dumps({"action": "delete"}).encode(),
-        )
-        logger.info("Networking torn down (NAT + VPC endpoints)")
-    except Exception as e:
-        logger.warning("Failed to tear down networking: %s", e)
-
-
 def run_submit_only(phase_script: str, extra_args: list) -> None:
     """Run phase in batch mode, submit to Grok, enqueue job, then exit immediately."""
     global _current_phase_script
@@ -3056,28 +2898,31 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     # _post_process NOW (same work the poller's --retrieve-only task would do).
     # IMPORTANT: do this BEFORE tearing down networking — _post_process publishes
     # SNS + invokes the trigger Lambda, which egress via NAT (there is no SNS/Lambda
-    # interface endpoint). Tear down only after.
+    # interface endpoint). The 4h cron nat_teardown Lambda owns teardown.
     if "phase2" in phase_script and _entities_materialized_in_task():
         logger.info(
             "[step] %s: batch completed in-task — running post-process "
-            "(dedup gate + notify + Phase 3) before teardown",
+            "(dedup gate + notify + Phase 3)",
             phase_name,
         )
         _post_process(phase_script, os.environ.copy())
-        logger.info("[step] %s: tearing down networking", phase_name)
-        _teardown_networking()
+        # NOTE: phases NEVER tear down NAT/endpoints. The dedicated nat_teardown cron
+        # Lambda is the sole teardown decider (queue empty + no running container).
         logger.info("Submit-only phase2 completed in-task — post-process done.")
         return
 
-    # Tear down networking (NAT + VPC endpoints) — Lambda poller will recreate on completion
-    logger.info("[step] %s: tearing down networking", phase_name)
-    _teardown_networking()
+    # NOTE: phases NEVER tear down networking. The 4h-cron nat_teardown Lambda tears
+    # NAT/endpoints down only when the DynamoDB queue is empty AND no container is
+    # processing (10-min recheck while a container is still working). A submitted batch
+    # keeps NAT demand present until it is retrieved.
 
     # Phase 3 does real work in submit-only mode — notify on completion
     if "phase3" in phase_script:
         _notify_complete(phase_script)
 
-    logger.info("Submit-only complete — batch enqueued, infra torn down, exiting.")
+    logger.info(
+        "Submit-only complete — batch enqueued, exiting (teardown owned by cron)."
+    )
 
 
 def _entities_materialized_in_task() -> bool:

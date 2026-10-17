@@ -37,6 +37,7 @@ COPY prompts/ prompts/
 COPY search_queries/ search_queries/
 COPY config.yaml .
 COPY ecs_entrypoint.py .
+COPY ecs_modules/ ecs_modules/
 COPY phase0_ingest.py phase0_convert.py \
      phase1_parse.py phase2_extract.py phase2_retry.py \
      phase3_enrich_data.py phase3_retry.py \

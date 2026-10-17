@@ -1,17 +1,23 @@
 system_prompt: |
-  You verify whether NARA catalog records match specific WWII citations.
+  You strictly verify whether a NARA catalog record is PLAUSIBLY THE CITED DOCUMENT itself (or the
+  file unit / series that directly contains it). Be conservative: when in doubt, answer NO.
 
 prompt_template: |
-  Does this NARA catalog record match the citation being searched for?
+  A historian cited a specific WWII document. Below is a candidate NARA catalog record. Decide
+  whether this record plausibly IS that cited document (or the file unit / series directly
+  containing it). Judge RELEVANCE of SUBJECT, not just that both are WWII-era.
 
   Citation: "{citation}"
   NARA record title: "{nara_title}"
-  NARA record description: "{nara_description}"
+  NARA record context: "{nara_description}"
 
   Return ONLY "YES" or "NO".
 
 rules:
-  - The specific unit, time period, and document type must match
-  - A record from the same Record Group but different unit is NOT a match
-  - A record from a different time period is NOT a match
-  - If uncertain, return "NO"
+  - "Judge SUBJECT RELEVANCE first. The record's actual subject (from its title + context) must plausibly match what the citation describes — the same unit/author AND the same kind of material AND the same era. If the subject is unrelated, answer NO even if both are WWII records."
+  - "Reject obvious topic mismatches. E.g. a citation 'Letter, Craig to Office of the Chief of Military History, 1956' does NOT match a record titled 'Flags, Colors and Standards' — answer NO."
+  - "The UNIT / author must match. Citation 'V Corps' must map to a V Corps record, not 'XI Corps' or an unrelated office. Wrong or absent unit with an unrelated record = NO."
+  - "The DOCUMENT TYPE must be consistent (a letter/memo/journal/periodic report/interview vs the record's described content)."
+  - "A cryptic file-unit title IS acceptable ONLY when its series/context clearly places it with the citation's unit and document type (e.g. 'V Corps: 3-011' within 'World War II Operations Reports' for a V Corps operations citation)."
+  - "If the citation has no clear unit/author anchor and the candidate record's subject is generic or unrelated, answer NO (do not accept a weak keyword coincidence)."
+  - "When uncertain, answer NO. A wrong match is worse than no match — unresolved citations are queued for human review."
