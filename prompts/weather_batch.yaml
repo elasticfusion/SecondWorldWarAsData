@@ -14,15 +14,21 @@ prompt_template: |
   - WeatherMentionID: 26-character ULID
   - place_name, PlaceMentionID (from available places above)
   - date (YYYY-MM-DD exact only), DateMentionID (from available dates above)
-  - weather_description, temperature, temperature_unit, measurement_system
-  - precipitation_text (verbatim, e.g. "3 inches of snow"), and IF the source states a
-    number: precipitation_amount, precipitation_unit ("in"/"cm"/"mm"),
-    precipitation_type ("snow"/"rain"/"sleet"/"hail"/"mixed"). If no number is stated,
-    give precipitation_text only and leave amount/unit null — do NOT invent a number.
-  - notable_impact, original_text
+  - weather_description: what the SOURCE TEXT says about the weather (e.g. "heavy snow",
+    "dense fog", "driving rain"), in the document's own terms
+  - temperature, temperature_unit: ONLY if the text explicitly states a temperature
+    (e.g. "the thermometer read 20 degrees" -> temperature 20). Leave null otherwise.
+  - precipitation_text: the verbatim precipitation phrase if stated (e.g. "3 inches of
+    snow on the ground"); precipitation_amount/unit/type ONLY if the text states a number
+  - notable_impact: the operational impact the text describes (e.g. "grounded air support")
+  - original_text: the exact sentence/phrase from the document
 
-  temperature_unit MUST be exactly "C" (Celsius) or "F" (Fahrenheit) — not "celsius"/
-  "fahrenheit". measurement_system is "metric" or "imperial".
+  CRITICAL RULE — EXTRACT, NEVER INFER: report a weather specific (temperature, precipitation
+  amount, snow-on-the-ground, etc.) ONLY when the source text explicitly states it. Copy what
+  the document says; do NOT guess, convert units, average, or invent any value the text does
+  not give. Unstated quantitative specifics are supplied separately by the deterministic
+  weather APIs (Open-Meteo / NOAA) — you are NOT responsible for them. If the text gives no
+  number, leave the numeric fields null and keep only the words.
 
   CRITICAL: Only extract EXACT dates. Skip approximate dates.
 
@@ -30,10 +36,13 @@ prompt_template: |
   {schema}
 
 schema: |
-  {"<Sub-eventID>": [{"WeatherMentionID": "01ULID...", "place_name": "Bastogne", "PlaceMentionID": "01ULID...", "date": "1944-12-22", "DateMentionID": "01ULID...", "weather_description": "Heavy snowfall", "temperature": -5, "temperature_unit": "C", "measurement_system": "metric", "notable_impact": "Limited visibility for air support", "original_text": "Heavy snow blanketed the region"}]}
+  {"<Sub-eventID>": [{"WeatherMentionID": "01ULID...", "place_name": "Bastogne", "PlaceMentionID": "01ULID...", "date": "1944-12-22", "DateMentionID": "01ULID...", "weather_description": "Heavy snowfall", "temperature": -5, "temperature_unit": "C", "measurement_system": "metric", "precipitation_text": "3 inches of snow", "precipitation_amount": 3, "precipitation_unit": "in", "precipitation_type": "snow", "notable_impact": "Limited visibility for air support", "original_text": "Heavy snow blanketed the region"}]}
 
 rules:
   - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
   - Only extract EXACT dates (YYYY-MM-DD), skip "early December", "mid-winter"
   - Link PlaceMentionID and DateMentionID from available lists in sub-event headers
+  - EXTRACT specifics only when the TEXT STATES them (verbatim-grounded); NEVER infer,
+    convert, or invent a number — unstated specifics come from the weather APIs
+  - temperature_unit is "C" or "F"; measurement_system is "metric" or "imperial"
   - Return empty arrays for sub-events with no weather mentions

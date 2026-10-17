@@ -539,7 +539,10 @@ def _add_event_mention(
                 )
                 return
 
-            # Add extracted data if not present
+            # Add extracted data if not present. Specifics (temperature, precipitation
+            # amount/unit/type) are populated ONLY when the SOURCE TEXT states them — the
+            # prompt forbids inferring/inventing numbers. Unstated quantitative values come
+            # from the deterministic weather APIs in `api_data` (Open-Meteo/NOAA).
             if not weather_data.get("extracted_data"):
                 weather_data["extracted_data"] = {
                     "description": mention.get("weather_description", ""),
@@ -677,6 +680,7 @@ Return JSON matching this structure:
       "temperature": 15,
       "temperature_unit": "C",
       "measurement_system": "metric",
+      "precipitation_text": null,
       "notable_impact": "Fog delayed H-Hour",
       "original_text": "The morning fog lifted by 0600 hours"
     }}
@@ -686,7 +690,10 @@ Return JSON matching this structure:
 IMPORTANT:
 - Link PlaceMentionID and DateMentionID from the available lists above
 - Only extract EXACT dates (YYYY-MM-DD). Skip "early June", "mid-summer", etc.
-- Generate 26-character ULIDs using: 0-9 A-H J-K M-N P-T V-Z"""
+- Generate 26-character ULIDs using: 0-9 A-H J-K M-N P-T V-Z
+- EXTRACT a weather specific (temperature, precipitation amount, snow on the ground) ONLY
+  when the TEXT explicitly states it; never infer, convert, or invent a value. Unstated
+  quantitative specifics are supplied by the weather APIs, not you."""
 
     return prompt
 
