@@ -369,6 +369,34 @@ bottom); what remains is ranked here. Current ordered priority:
      submit pass (no dedup/batch dependency). Forward-compatible with Dynamo deprecation: when the
      entity store is removed, `get_entity_store()` returns None → the helper is a no-op and the
      file-based `store_bibliography_entry` path already writes `output/bibliography/*.json` directly.
+   - **[DECISION CONFIRMED 2026-10-17 · owner] DELETE + DEPRECATE DynamoDB for JSON/entity storage;
+     KEEP DynamoDB for QUEUE/COORDINATION.** The `dev-wwii-api-cache` table is SHARED: it holds both
+     entity-JSON (entity#/doc#/bibindex) AND coordination keys (lock#, pending, nat#lease#,
+     batch_job#, dedup_run#, reaper#, manifest#). Deprecation removes ONLY the JSON role — the table
+     and ALL coordination keys STAY. Scope:
+       * REMOVE (JSON store): DynamoEntityStore.{get,list_all,store_bibliography,get_bibliography_index,
+         _index_bib_keys}; the get_entity_store() entity path; the materialize bridge; the
+         _skip_bib_download Dynamo gate. Callers already have a store-is-None S3/file fallback:
+         src/extraction/{bibliography,people,supplemental}.py, src/dedup/merge.py, src/utils/file_lock.py,
+         ecs_entrypoint.py:951/1244, lambda_handlers/dedup_ui_handler.py.
+       * KEEP (coordination): src/utils/locks.py, trigger_handler queue/pending, nat_lease, batch
+         tracking, dedup-run claims, reaper, manifest — all continue on the same table.
+       * The search_cache Dynamo backend: move to the S3/file-native backend (cache/ prefix) so the
+         cross-run quota-saver survives (it is JSON-ish caching, not coordination).
+     PREREQUISITES (the two reasons Dynamo was introduced — must be solved S3-natively FIRST, else
+     flipping entity_backend off reintroduces the bugs):
+       (1) CONCURRENCY-SAFE S3 bibliography writes: replace the single flock-guarded index.json with
+           per-record immutable files keyed by a deterministic content/verbatim hash (concurrent books
+           never collide) + a periodically-rebuilt index object derived from S3.
+       (2) SCOPED READS: keep Phase 2/3 from bulk-downloading the whole bib dir (manifest/scoped reads),
+           replacing the "skip bulk download because Dynamo" optimization.
+     CUTOVER SEQUENCE (phased, each its own gated PR): (a) build the S3-native concurrency-safe
+     write+index for bibliography; (b) move search_cache default to the file/S3 backend; (c) flip
+     storage.entity_backend to filesystem everywhere incl. the deployed task env / Lambda CACHE_TABLE
+     entity path, verify runs stay S3-authoritative; (d) delete DynamoEntityStore + the entity# code
+     paths; (e) one-time purge of entity#/doc#/bibindex keys from the table (coordination keys retained).
+     Already forward-compatible: entity_backend defaults to "filesystem"; the file path writes
+     output/bibliography/*.json directly today.
    - **[DIRECTION · owner 2026-10-15: DynamoDB will likely be DEPRECATED ENTIRELY from JSON storage.]**
      S3 is the definitive, durable, cheaper store and can rebuild Dynamo; Dynamo is a derived index and
      costs more. PLAN accordingly: do NOT deepen the Dynamo write/dedup path. The reason Dynamo was
