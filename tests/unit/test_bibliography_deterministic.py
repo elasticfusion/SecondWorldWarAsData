@@ -382,3 +382,89 @@ def test_enrich_bib_file_wires_alt_title_expansion(tmp_path):
     out = json.loads(f.read_text())
     assert out["alt_title"] == out["citation"]["alt_title"]
     assert "Letter" in out["alt_title"] and "Ltr" not in out["alt_title"]
+
+
+def test_deterministic_bib_filename_stable_and_keyed():
+    """Same citation -> same deterministic filename (concurrency-safe: concurrent tasks
+    writing the same citation target ONE file, not two random-ULID files)."""
+    from src.extraction.bibliography import _deterministic_bib_filename, _match_keys
+
+    k1 = _match_keys(
+        {"citation": {"title": "Unknown"}}, "See Interv with Collins, 25 Jan 54"
+    )
+    k2 = _match_keys(
+        {"citation": {"title": "Unknown"}}, "See Interv with Collins, 25 Jan 54"
+    )
+    assert _deterministic_bib_filename(k1) == _deterministic_bib_filename(k2)
+    assert _deterministic_bib_filename(k1).startswith(
+        "bib_"
+    ) and _deterministic_bib_filename(k1).endswith(".json")
+    other = _match_keys({"citation": {"title": "Unknown"}}, "MS # B-810, Schmidt")
+    assert _deterministic_bib_filename(other) != _deterministic_bib_filename(k1)
+
+
+def test_reconcile_merges_duplicate_records(tmp_path):
+    """Option B rebuild-reconcile: records sharing a match key (a legacy random-ULID file +
+    the deterministic file) collapse into ONE canonical bib_<hash>.json, unioning mentions
+    and carrying enriched fields. S3-native, no Dynamo."""
+    import glob
+    import json
+    from src.extraction.bibliography import (
+        reconcile_bibliography_dir,
+        _deterministic_bib_filename,
+        _match_keys,
+    )
+
+    bib = tmp_path / "bibliography"
+    bib.mkdir()
+    verb = "See Interv with Collins, 25 Jan 54."
+    canon = _deterministic_bib_filename(
+        _match_keys({"citation": {"title": "Unknown"}}, verb)
+    )
+    # deterministic file (no alt_title) + legacy random-ULID dup (enriched alt_title), same citation
+    (bib / canon).write_text(
+        json.dumps(
+            {
+                "BibliographyID": "01AAA",
+                "title": "Unknown",
+                "alt_title": None,
+                "resource_urls": [],
+                "mentions": [
+                    {
+                        "MentionID": "01JQKV6Z9F0000000000000001",
+                        "book": "R",
+                        "chapter": "c2",
+                        "reference_number": "3",
+                        "verbatim_reference": verb,
+                    }
+                ],
+            }
+        )
+    )
+    (bib / "interv_01LEGACY.json").write_text(
+        json.dumps(
+            {
+                "BibliographyID": "01BBB",
+                "title": "Unknown",
+                "alt_title": "Interview with Collins",
+                "resource_urls": ["https://catalog.archives.gov/id/1"],
+                "mentions": [
+                    {
+                        "MentionID": "01JQKV6Z9F0000000000000002",
+                        "book": "R",
+                        "chapter": "c9",
+                        "reference_number": "99",
+                        "verbatim_reference": verb,
+                    }
+                ],
+            }
+        )
+    )
+    merged_away = reconcile_bibliography_dir(bib)
+    files = [f for f in glob.glob(str(bib / "*.json")) if "index" not in f]
+    assert merged_away == 1
+    assert len(files) == 1 and files[0].endswith(canon)
+    rec = json.loads(open(files[0]).read())
+    assert len(rec["mentions"]) == 2  # unioned
+    assert rec["alt_title"] == "Interview with Collins"  # enriched field carried
+    assert rec["resource_urls"] == ["https://catalog.archives.gov/id/1"]
