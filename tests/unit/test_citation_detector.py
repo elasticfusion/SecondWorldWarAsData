@@ -346,3 +346,36 @@ def test_nara_match_context_includes_series_and_unit():
     assert "fileUnit" in ctx
     assert "G-2 periodic reports" in ctx
     assert _nara_match_context({}) == ""
+
+
+def test_title_token_overlap_pre_gate():
+    """Deterministic relevance pre-gate before Grok: citation & candidate must share a
+    meaningful content token. Unrelated subjects are rejected cheaply (the 'Flags, Colors
+    and Standards' vs Craig-letter false positive); genuine overlaps escalate to Grok.
+    """
+    from src.enrichment.bibliography_resolver import _title_token_overlap
+
+    # the reported false positive -> rejected (no shared content noun)
+    assert (
+        _title_token_overlap(
+            "Letter, Craig to Office of the Chief of Military History, 20 Apr 56",
+            "Flags, Colors and Standards",
+        )
+        is False
+    )
+    # genuine unit/subject overlap -> escalate
+    assert (
+        _title_token_overlap(
+            "V Corps G-2 Estimate II, 10 Sep 44",
+            "V Corps: 3-011 | World War II Operations Reports",
+        )
+        is True
+    )
+    assert _title_token_overlap("Sylvan Diary", "Sylvan Diary, First Army") is True
+    # generic filler alone must NOT create overlap (records/report/war are stopwords)
+    assert (
+        _title_token_overlap("After Action Report", "World War II Operations Reports")
+        is False
+    )
+    # fail-safe: empty candidate -> defer to Grok (True)
+    assert _title_token_overlap("Sylvan Diary", "") is True
