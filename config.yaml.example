@@ -71,9 +71,9 @@ supplemental_material:
   extract_citations: true
   enrich_with_searches: true
   llm_search: true
-  search_gutenberg: true               # Free
-  search_archive_org: true             # Free
-  use_openserp: false                  # Disable — requires running OpenSERP service ($)
+  search_gutenberg: true               # Free (native Gutendex API — independent of OpenSERP)
+  search_archive_org: true             # Free (archive.org API — independent of OpenSERP)
+  use_openserp: true                   # Enabled — Phase 3 scales the OpenSERP service on demand
   verify_archive_urls: false           # Skip verification pass
   extract_isbn: false                  # Skip — uses API calls
   determine_copyright: false           # Skip — uses API calls
