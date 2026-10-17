@@ -374,6 +374,19 @@ def _run_schema_validation(
 
     try:
         jsonschema.validate(data, schema)
+        # Cross-field consistency jsonschema can't express: bibliography alt_title must be
+        # identical at top-level and inside citation (the two copies must never drift).
+        if entity_type == "bibliography" and isinstance(data, dict):
+            cit = data.get("citation")
+            if isinstance(cit, dict) and data.get("alt_title") != cit.get("alt_title"):
+                logger.error(
+                    "BLOCKED %s write (%s): const at alt_title (top-level != citation.alt_title)",
+                    entity_type,
+                    filepath.name,
+                )
+                if record_stats:
+                    _record_stat(entity_type, "block", "const", status)
+                return False
         if record_stats:
             _record_stat(entity_type, "allow", None, status)
             _record_record_quality(entity_type, data, status)

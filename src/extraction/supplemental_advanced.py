@@ -380,6 +380,79 @@ def enrich_bibliography(
     return enriched_count
 
 
+def _set_alt_title(data: dict, citation: dict, value: str) -> None:
+    """Write alt_title to the ONE canonical place (top-level) and keep citation.alt_title
+    in lockstep so the two copies never drift (validated by the output schema check)."""
+    data["alt_title"] = value
+    citation["alt_title"] = value
+
+
+def _alt_title_looks_expanded(text: str) -> bool:
+    """Heuristic: already-expanded titles have no bare green-book shorthand tokens, so we
+    don't re-spend a Grok call. Conservative — only skips when clearly already full words.
+    """
+    if not text:
+        return False
+    shorthand = re.compile(
+        r"\b(Interv|Ltr|Memo|Rpt|Jnl|Opns?|Div|Regt|Bn|Gp|Hq|AAR|FO|OCMH|FUSA|MS)\b"
+    )
+    return not shorthand.search(text)
+
+
+def _enrich_alt_title(
+    data: dict, citation: dict, config: dict, grok_client: Any
+) -> bool:
+    """Grok-expand the citation's verbatim shorthand into a full, searchable alt_title
+    (SEMANTIC — Grok's job, not deterministic). Idempotent: skips if already expanded or if
+    no Grok client. Returns True if alt_title changed."""
+    if grok_client is None:
+        return False
+    # The verbatim lives on the mention for deterministic records; fall back to it.
+    verbatim = citation.get("verbatim") or data.get("verbatim_reference") or ""
+    if not verbatim:
+        for m in data.get("mentions") or []:
+            if m.get("verbatim_reference"):
+                verbatim = m["verbatim_reference"]
+                break
+    verbatim = (verbatim or "").strip()
+    if not verbatim:
+        return False
+    current = data.get("alt_title") or citation.get("alt_title") or ""
+    if _alt_title_looks_expanded(current) and current:
+        return False  # already expanded — don't re-spend a call
+
+    from src.utils.prompt_loader import render_prompt
+
+    try:
+        prompt = render_prompt("bibliography_alt_title", verbatim=verbatim)
+    except Exception:
+        # Prompt template missing -> fail safe (leave alt_title as-is, never crash).
+        return False
+    try:
+        resp = grok_client.chat_completion(
+            prompt=prompt,
+            system_prompt=(
+                "You expand WWII military-citation shorthand (US Army Green Book "
+                "footnotes) into a full, human-readable, catalog-searchable title. Expand "
+                "unit/document-type abbreviations and resolve a person to their full name "
+                "only when you are confident. Do NOT invent facts. Return ONLY the expanded "
+                "title text, no quotes or commentary."
+            ),
+            temperature=0.0,
+            use_cache=True,
+            cache_type="bibliography_alt_title",
+        )
+        expanded = (resp or "").strip().strip('"').strip()
+    except Exception as e:  # noqa: BLE001 - enrichment must never crash the pass
+        logger.debug("alt_title expansion failed: %s", e)
+        return False
+    if expanded and expanded != current:
+        _set_alt_title(data, citation, expanded)
+        logger.info("alt_title expanded: %r -> %r", verbatim[:50], expanded[:60])
+        return True
+    return False
+
+
 def _enrich_bib_file(bib_file: Path, config: Dict[str, Any], grok_client: Any) -> bool:
     """Enrich a single bibliography file. Returns True if changed."""
     data = _load_supplemental_data(bib_file)
@@ -391,7 +464,8 @@ def _enrich_bib_file(bib_file: Path, config: Dict[str, Any], grok_client: Any) -
         return False
 
     changed = (
-        _enrich_isbn(data, citation, config, grok_client)
+        _enrich_alt_title(data, citation, config, grok_client)
+        | _enrich_isbn(data, citation, config, grok_client)
         | _enrich_copyright(data, citation, config, grok_client)
         | _enrich_archive_url(data, config)
     )
