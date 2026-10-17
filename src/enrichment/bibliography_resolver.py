@@ -487,9 +487,20 @@ def _search_online_sources(
     grok_client: Any,
     config: Dict,
 ) -> Optional[Tuple[str, str]]:
-    """Search NARA, OpenSERP, Archive.org, LOC for online copies."""
-    # 1. NARA catalog — scope by the DETERMINISTIC record group (not Grok) so the query is
+    """Search NARA, OpenSERP, Archive.org, Gutenberg for online copies and AGGREGATE every
+    verified finding (multiple findings per entry is expected/OK — a document can legitimately
+    be available in several repositories). All verified (url, source) findings are written to
+    ``entry['resource_urls']`` + ``entry['source_metadata']['findings']``; the FIRST finding is
+    also returned as the primary ``(url, source)`` for backward-compat with ``_apply_result``.
+
+    Every source uses the same NARA-style pattern — fetch candidates, Grok-verify each against
+    the citation, keep the verified ones — rather than blindly taking a source's first hit.
+    """
+    findings: "list[Tuple[str, str]]" = []
+
+    # 1. NARA catalog — scoped by the DETERMINISTIC record group (not Grok) so the query is
     #    bounded to the right RG instead of matching tens of thousands of unrelated records.
+    #    (_search_nara already iterates + Grok-verifies its candidates internally.)
     nara_key = config.get("nara_api_key")
     if nara_key and _is_nara_searchable(entry, verbatim):
         rg = _lookup_record_group(verbatim or search_text or title)
@@ -498,38 +509,100 @@ def _search_online_sources(
         url = _search_nara(
             query, nara_key, grok_client, verbatim, record_group_number=rg_num
         )
+        if not url:
+            # Retry with the expanded alt_title (LLM semantic expansion) if available.
+            alt_title = (entry.get("citation") or {}).get("alt_title") or ""
+            if alt_title and alt_title != query:
+                url = _search_nara(
+                    alt_title[:100],
+                    nara_key,
+                    grok_client,
+                    verbatim,
+                    record_group_number=rg_num,
+                )
         if url:
-            return (url, "nara_catalog")
-        # Retry with the expanded alt_title (LLM semantic expansion) if available
-        alt_title = (entry.get("citation") or {}).get("alt_title") or ""
-        if alt_title and alt_title != query:
-            url = _search_nara(
-                alt_title[:100],
-                nara_key,
-                grok_client,
-                verbatim,
-                record_group_number=rg_num,
-            )
-            if url:
-                return (url, "nara_catalog")
+            findings.append((url, "nara_catalog"))
 
-    # 2. OpenSERP for digitized copies (HathiTrust, university sites, etc.)
+    # 2. OpenSERP for digitized copies (HathiTrust, university sites, etc.) — already iterates
+    #    candidates across repository-targeted query templates + Grok-verifies each internally.
     if config.get("use_openserp"):
         openserp_url = config.get("openserp_url", "http://localhost:7001")
         current_ref = entry.get("archive_reference_number") or ""
         ref = current_ref if current_ref and current_ref != "None" else title
         url = _search_openserp_archive(ref, openserp_url, grok_client, entry)
         if url:
-            return (url, "openserp_archive")
+            findings.append((url, "openserp_archive"))
 
-    # 3. Archive.org
-    from src.extraction.supplemental_search import search_archive_org
+    # 3. Archive.org — NOW iterates + verifies candidates (was: blind first-hit). Replicates the
+    #    NARA pattern via the shared _collect_verified_candidates helper.
+    from src.extraction.supplemental_search import (
+        search_archive_org_candidates,
+        search_gutenberg_candidates,
+    )
 
-    url = search_archive_org(title)
-    if url:
-        return (url, "archive_org")
+    query = verbatim[:300] or title
+    author = (entry.get("citation") or {}).get("author") or ""
+    if isinstance(author, list):
+        author = ", ".join(a for a in author if a)
+    ao_cands = search_archive_org_candidates(title, author or None)
+    for url in _collect_verified_candidates(query, ao_cands, grok_client, entry):
+        findings.append((url, "archive_org"))
 
-    return None
+    # 4. Gutenberg — same candidate-iterate-verify pattern. Low hit expectation (out-of-copyright
+    #    literary texts, not WWII operational records) but cheap to include when OpenSERP is up.
+    if config.get("search_gutenberg", True) and config.get("use_openserp"):
+        openserp_url = config.get("openserp_url", "http://localhost:7001")
+        g_cands = search_gutenberg_candidates(title, author or None, openserp_url)
+        for url in _collect_verified_candidates(query, g_cands, grok_client, entry):
+            findings.append((url, "gutenberg"))
+
+    if not findings:
+        return None
+
+    # Aggregate: dedup-preserving-order into resource_urls + a structured findings list.
+    seen = set(entry.get("resource_urls") or [])
+    for url, source in findings:
+        if url and url not in seen:
+            entry.setdefault("resource_urls", []).append(url)
+            seen.add(url)
+    entry.setdefault("source_metadata", {}).setdefault("findings", []).extend(
+        {"url": u, "source": s} for u, s in findings
+    )
+    logger.info(
+        "OBSERV bib.findings count=%d sources=%s",
+        len(findings),
+        ",".join(sorted({s for _, s in findings})),
+    )
+    # Primary finding keeps the existing single-tuple contract (_apply_result appends it too,
+    # which the dedup above already guards against).
+    return findings[0]
+
+
+def _collect_verified_candidates(
+    query: str,
+    candidates: "list[Tuple[str, str]]",
+    grok_client: Any,
+    entry: Optional[Dict] = None,
+    max_findings: int = 3,
+) -> "list[str]":
+    """Shared NARA-style multi-finding core: iterate ``(url, title)`` candidates, Grok-verify
+    each against ``query`` (via ``_verify_openserp_match``, the general citation-relevance
+    check), and return UP TO ``max_findings`` verified URLs. Reused by the archive.org and
+    Gutenberg paths so all sources share one candidate-iterate-verify implementation. When no
+    grok_client is available, candidates are accepted unverified (test/offline mode)."""
+    out: "list[str]" = []
+    for url, cand_title in candidates:
+        if not url:
+            continue
+        if grok_client and not _verify_openserp_match(
+            query, cand_title, url, grok_client, entry
+        ):
+            logger.debug("  ✗ rejected candidate: %s (%s)", cand_title[:60], url)
+            continue
+        out.append(url)
+        if len(out) >= max_findings:
+            break
+    return out
 
 
 _openserp_down = False

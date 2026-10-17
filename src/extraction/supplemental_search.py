@@ -124,6 +124,96 @@ def _search_archive_org_api(
     return None
 
 
+def search_archive_org_candidates(
+    title: str,
+    author: Optional[str] = None,
+    periodical: Optional[str] = None,
+    rows: int = 5,
+) -> "list[Tuple[str, str]]":
+    """Return UP TO ``rows`` archive.org candidates as ``(url, title)`` pairs for the caller
+    to iterate + verify (the NARA-style multi-finding pattern), instead of blindly taking the
+    first hit. Applies the same citation-shape guards as ``search_archive_org``. Never raises.
+    """
+    if not title or len(title) < 10 or title.strip().isdigit():
+        return []
+    if any(
+        kw in title.lower()
+        for kw in [
+            "memo,",
+            "ltr,",
+            "msg,",
+            "jnl,",
+            "aar,",
+            "tel conv",
+            "file ",
+            "telecon,",
+            "sitrep",
+            "rpt,",
+            "instrs,",
+        ]
+    ):
+        return []
+    out: "list[Tuple[str, str]]" = []
+    try:
+        query = _build_archive_query(title, author, periodical)
+        url = (
+            f"https://archive.org/advancedsearch.php?q={quote(query)}"
+            f"&fl[]=identifier&fl[]=title&output=json&rows={rows}"
+        )
+        response = requests.get(url, timeout=30.0, allow_redirects=True)
+        if response.status_code == 200:
+            docs = response.json().get("response", {}).get("docs", [])
+            for doc in docs:
+                identifier = doc.get("identifier")
+                if not identifier:
+                    continue
+                cand_title = doc.get("title") or ""
+                if isinstance(cand_title, list):  # archive.org may return a list
+                    cand_title = cand_title[0] if cand_title else ""
+                out.append(
+                    (f"https://archive.org/details/{identifier}", str(cand_title))
+                )
+    except Exception as e:
+        logger.debug("Archive.org candidate search failed: %s", e)
+    return out
+
+
+def search_gutenberg_candidates(
+    title: str,
+    author: Optional[str] = None,
+    openserp_url: str = "http://localhost:7001",
+) -> "list[Tuple[str, str]]":
+    """Return Project Gutenberg candidates as ``(url, title)`` pairs for iterate + verify.
+    Mirrors ``search_archive_org_candidates`` so the resolver treats every source uniformly.
+    Expectations of hits are low (Gutenberg is mostly out-of-copyright literary texts, not
+    WWII operational records), but it is cheap to include. Never raises."""
+    out: "list[Tuple[str, str]]" = []
+    try:
+        from src.utils.search_query_loader import render_search_queries
+
+        queries = render_search_queries(
+            "bibliography", "gutenberg", title=title, author=author or ""
+        )
+        query = (
+            queries[0]
+            if queries
+            else f"{title} {author or ''} site:gutenberg.org".strip()
+        )
+        response = requests.post(
+            f"{openserp_url}/search",
+            json={"query": query, "engines": ["google"]},
+            timeout=30.0,
+        )
+        if response.status_code == 200:
+            for result in response.json().get("results", []):
+                url = result.get("url", "")
+                if "gutenberg.org" in url:
+                    out.append((url, result.get("title") or ""))
+    except Exception as e:
+        logger.debug("Gutenberg candidate search failed: %s", e)
+    return out
+
+
 _CORPORATE_AUTHOR_KW = (
     "department",
     "division",
