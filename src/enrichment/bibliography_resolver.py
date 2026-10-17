@@ -663,6 +663,13 @@ def _collect_verified_candidates(
     for url, cand_title in candidates:
         if not url:
             continue
+        # Cheap deterministic pre-gate: if the candidate title shares NO meaningful token with
+        # the citation, it cannot be the cited document — reject for FREE before spending a Grok
+        # verify call. This is what keeps a garbage web-search result set ("The Unknown :
+        # Flammarion", "Address Unknown", ...) from triggering dozens of serialized Grok calls.
+        if grok_client and not _title_token_overlap(query, cand_title):
+            logger.debug("  ✗ token-gate rejected: %s", cand_title[:60])
+            continue
         if grok_client and not _verify_openserp_match(
             query, cand_title, url, grok_client, entry
         ):
@@ -737,6 +744,13 @@ def _search_openserp_archive(
                 if not url:
                     continue
                 result_title = r.get("title", "")
+                # Cheap deterministic pre-gate before the Grok verify: a result sharing NO
+                # meaningful token with the query is not the cited document — reject free. The
+                # query string (repository-targeted, carries the citation terms) is the overlap
+                # basis. Prevents the per-result Grok-call storm on junk web results.
+                if grok_client and not _title_token_overlap(query, result_title):
+                    logger.debug("  ✗ OpenSERP token-gate: '%s'", result_title[:60])
+                    continue
                 if grok_client and not _verify_openserp_match(
                     ref, result_title, url, grok_client, entry
                 ):

@@ -160,3 +160,31 @@ def test_unknown_title_feeds_verbatim_not_placeholder_to_sources():
     # alt_title preferred over the 'Unknown' placeholder
     assert captured["archive_title"] == "The Lorraine Campaign (Cole)"
     assert captured["gutenberg_title"] == "The Lorraine Campaign (Cole)"
+
+
+def test_token_gate_rejects_irrelevant_candidates_without_grok_call():
+    """Perf-regression guard: _collect_verified_candidates must reject candidates sharing NO
+    meaningful token with the query via the cheap deterministic gate, WITHOUT calling the Grok
+    verifier (the per-result Grok-call storm on junk web results made Phase 3 take hours).
+    """
+    calls = {"n": 0}
+
+    def verify(query, title, url, grok_client, entry=None):
+        calls["n"] += 1
+        return True
+
+    cands = [
+        ("https://x/1", "The Unknown : Flammarion, Camille : Free Download"),
+        ("https://x/2", "Address Unknown"),
+        ("https://x/3", "The Nine Unknown"),
+        ("https://x/4", "V Corps Operations in the ETO"),  # real -> should reach grok
+    ]
+    with patch.object(br, "_verify_openserp_match", side_effect=verify):
+        out = br._collect_verified_candidates(
+            "V Corps Operations in the European Theater of Operations, p. 256",
+            cands,
+            grok_client=object(),
+        )
+    # Only the relevant candidate reached the Grok verifier (3 junk ones gated out for free).
+    assert calls["n"] == 1
+    assert out == ["https://x/4"]
