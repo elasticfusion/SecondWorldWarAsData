@@ -275,3 +275,47 @@ def test_record_group_lookup_is_deterministic_not_grok():
     assert ref == "RG 549"
     assert "\n" not in ref and "references" not in ref.lower()
     assert _identify_nara_record("Just some narrative prose.", grok_client=None) is None
+
+
+def test_rg_lookup_multi_theater_and_service_categories():
+    """RG lookup covers all WWII service branches + theaters + technical services by
+    subject matter (not ETO-only), and existing corpus citations don't regress."""
+    from src.enrichment.bibliography_resolver import _lookup_record_group
+
+    cases = {
+        "MS # B-810, Schmidt.": "RG 549",
+        "VII Corps Opns Memo 101.": "RG 407",
+        "398th Bomb Gp Mission Report, 8th Air Force.": "RG 18",
+        "War Diary, USS Texas.": "RG 38",
+        "4th Marine Division AAR.": "RG 127",
+        "CBI Theater, Stilwell.": "RG 493",
+        "CINCPAC, Pacific Ocean Areas.": "RG 494",
+        "GHQ SWPA, MacArthur HQ.": "RG 554",
+        "Joint Chiefs of Staff, CCS 94.": "RG 218",
+        "Chief Signal Officer photo file.": "RG 111",
+        "Chemical Warfare Service report.": "RG 175",
+        "Judge Advocate General court-martial.": "RG 153",
+        "Department of State, FRUS 1944.": "RG 59",
+        "War Relocation Authority center.": "RG 210",
+    }
+    for v, rg in cases.items():
+        got = _lookup_record_group(v)
+        assert got is not None and got[0] == rg, (v, got)
+    assert _lookup_record_group("Just narrative prose.") is None
+
+
+def test_nara_digital_objects_detects_online():
+    """A NARA record with digitalObjects is ALREADY ONLINE -> return direct (http) scan URLs;
+    a description-only record returns none. Non-http object URLs are dropped."""
+    from src.enrichment.bibliography_resolver import _nara_digital_objects
+
+    online = _nara_digital_objects(
+        {
+            "digitalObjects": [
+                {"objectUrl": "https://catalog.archives.gov/media/x.pdf"},
+                {"objectUrl": "ftp://bad"},
+            ]
+        }
+    )
+    assert online == ["https://catalog.archives.gov/media/x.pdf"]
+    assert _nara_digital_objects({"title": "desc only"}) == []
