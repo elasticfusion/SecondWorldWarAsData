@@ -304,21 +304,26 @@ def test_rg_lookup_multi_theater_and_service_categories():
     assert _lookup_record_group("Just narrative prose.") is None
 
 
-def test_nara_digital_objects_detects_online():
-    """A NARA record with digitalObjects is ALREADY ONLINE -> return direct (http) scan URLs;
-    a description-only record returns none. Non-http object URLs are dropped."""
-    from src.enrichment.bibliography_resolver import _nara_digital_objects
+def test_nara_digital_object_count_detects_online():
+    """A NARA record with digitalObjects is ALREADY ONLINE (count>0). We COUNT page-scans
+    (not return bare page URLs): the resource surfaced is the catalog /id record page that
+    shows ALL pages, so a multi-page document is not misrepresented by a single-page .tif.
+    """
+    from src.enrichment.bibliography_resolver import _nara_digital_object_count
 
-    online = _nara_digital_objects(
-        {
-            "digitalObjects": [
-                {"objectUrl": "https://catalog.archives.gov/media/x.pdf"},
-                {"objectUrl": "ftp://bad"},
-            ]
-        }
+    assert (
+        _nara_digital_object_count(
+            {
+                "digitalObjects": [
+                    {"objectUrl": "https://x/p1.tif"},
+                    {"objectUrl": "https://x/p2.tif"},
+                ]
+            }
+        )
+        == 2
     )
-    assert online == ["https://catalog.archives.gov/media/x.pdf"]
-    assert _nara_digital_objects({"title": "desc only"}) == []
+    assert _nara_digital_object_count({"title": "desc only"}) == 0
+    assert _nara_digital_object_count({"digitalObjects": [{"noUrl": 1}]}) == 0
 
 
 def test_nara_match_context_includes_series_and_unit():

@@ -1009,16 +1009,18 @@ def _extract_na_id(hit: Dict[str, Any]) -> str:
     return ""
 
 
-def _nara_digital_objects(record: Dict[str, Any]) -> List[str]:
-    """Direct URLs of digitized/online objects attached to a NARA record (empty if the
-    record is description-only / not yet online). Answers 'is this already online?'."""
-    urls: List[str] = []
+def _nara_digital_object_count(record: Dict[str, Any]) -> int:
+    """How many digitized objects (page scans) are attached to a NARA record. >0 means the
+    record is ALREADY ONLINE. We deliberately COUNT rather than return the object URLs: an
+    objectUrl is a single PAGE image (e.g. '...A3840-02-0001.tif') — a multi-page document
+    would be misrepresented by page 1 and its other pages missed. The resource we surface
+    is the catalog RECORD page (/id/<naId>), which presents ALL pages + the description.
+    """
+    n = 0
     for obj in record.get("digitalObjects") or []:
-        if isinstance(obj, dict):
-            u = obj.get("objectUrl")
-            if isinstance(u, str) and u.lower().startswith(("http://", "https://")):
-                urls.append(u)
-    return urls
+        if isinstance(obj, dict) and obj.get("objectUrl"):
+            n += 1
+    return n
 
 
 def _nara_match_context(record: Dict[str, Any]) -> str:
@@ -1163,18 +1165,21 @@ def _search_nara(
                 )
                 continue
             logger.debug("  ✓ Accepted: %s", url)
-            # Is the matched NARA record ALREADY ONLINE (digitized)? If so, prefer the
-            # direct object (scan) URL so the historian gets the document itself, not just
-            # the catalog description. Otherwise return the description URL.
-            online = _nara_digital_objects(record)
+            # Record whether the matched NARA record is ALREADY ONLINE (digitized) and how
+            # many page-scans it has — but ALWAYS return the catalog RECORD page (/id/<naId>)
+            # as the resource, NOT a bare page-level objectUrl: a .tif objectUrl is a single
+            # page, and a multi-page document (e.g. a letter spanning several pages, or a
+            # whole file unit) would be misrepresented by page 1 and its other pages missed.
+            # The /id page presents ALL pages + the description together.
+            n_objs = _nara_digital_object_count(record)
             logger.info(
                 "OBSERV nara.match naId=%s online=%d digital_objects=%d q=%r",
                 nara_id,
-                1 if online else 0,
-                len(online),
+                1 if n_objs else 0,
+                n_objs,
                 safe_q[:50],
             )
-            resolved_url = online[0] if online else url
+            resolved_url = url
             cache_result("nara", cache_q, resolved_url)
             return resolved_url
     except Exception as e:
