@@ -352,3 +352,33 @@ def test_alt_title_consistency_validation_blocks_drift(tmp_path):
         base, alt_title="Letter X", citation={"title": "Unknown", "alt_title": "Ltr X"}
     )
     assert write_json_with_lock(bib / "bad.json", bad, entity="bibliography") is False
+
+
+def test_enrich_bib_file_wires_alt_title_expansion(tmp_path):
+    """End-to-end wiring guard: _enrich_bib_file (the Phase-3 step) must actually RUN the
+    alt_title expansion over a deterministic record and persist the expanded, level-synced
+    result. Protects against the expansion existing but not being wired to execute."""
+    import json
+    from src.extraction.supplemental_advanced import _enrich_bib_file
+
+    bib = tmp_path / "bibliography"
+    bib.mkdir()
+    rec = {
+        "BibliographyID": "01JQKV6Z9F0000000000000001",
+        "title": "Unknown",
+        "alt_title": None,
+        "citation": {"title": "Unknown", "alt_title": None},
+        "mentions": [{"verbatim_reference": "See Ltr, Craig to OCMH, 20 Apr 56."}],
+    }
+    f = bib / "rec.json"
+    f.write_text(json.dumps(rec))
+
+    class _G:
+        def chat_completion(self, **k):
+            return "Letter, Craig to Office of the Chief of Military History, 20 April 1956"
+
+    changed = _enrich_bib_file(f, {}, _G())
+    assert changed is True
+    out = json.loads(f.read_text())
+    assert out["alt_title"] == out["citation"]["alt_title"]
+    assert "Letter" in out["alt_title"] and "Ltr" not in out["alt_title"]
