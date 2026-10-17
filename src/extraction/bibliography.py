@@ -3,6 +3,7 @@
 import hashlib
 import json
 import logging
+import os
 import re
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -11,6 +12,10 @@ from typing import Any, Dict, List, Optional
 import ulid
 
 logger = logging.getLogger(__name__)
+
+# Memoized per-process writer id (ECS task id or per-process ULID) used as the bibliography
+# shard-filename suffix so concurrent tasks never clobber each other on the shared S3 prefix.
+_WRITER_ID: Optional[str] = None
 
 # Citation fragments that are cross-references / stubs, not real document references —
 # never worth a bibliography record on their own (they point AT another note).
@@ -314,14 +319,49 @@ def _public_domain_fields(url: str) -> Dict[str, Any]:
 
 
 def _deterministic_bib_filename(keys: Dict[str, str]) -> str:
-    """Stable per-record filename derived from the match key, so the SAME citation always
-    maps to the SAME file regardless of which concurrent Fargate task writes it (no random
-    ULID -> no cross-task duplicate files for one citation). Primary key is the normalized
-    title (= verbatim for deterministic records where title='Unknown' falls back to the
-    verbatim), then archive-ref, then author. Returns 'bib_<16-hex>.json'."""
+    """Stable CANONICAL per-citation filename derived from the match key: ``bib_<16-hex>.json``.
+    The same citation always maps to the same canonical name regardless of which Fargate task
+    produced it. This is the name RECONCILE collapses to; concurrent WRITERS use
+    ``_bib_shard_filename`` (a unique shard) to avoid clobbering each other, and reconcile folds
+    the shards into this canonical file. Primary key is the normalized title (= verbatim when
+    title='Unknown'), then archive-ref, then author."""
+    return f"bib_{_bib_hash(keys)}.json"
+
+
+def _bib_hash(keys: Dict[str, str]) -> str:
+    """16-hex grouping hash for a citation's match key (title -> ref -> author)."""
     primary = keys.get("title") or keys.get("ref") or keys.get("author") or ""
-    h = hashlib.sha256(primary.encode("utf-8")).hexdigest()[:16]
-    return f"bib_{h}.json"
+    return hashlib.sha256(primary.encode("utf-8")).hexdigest()[:16]
+
+
+def _bib_shard_filename(keys: Dict[str, str]) -> str:
+    """Unique per-WRITER shard filename ``bib_<hash>__<writer_id>.json``. The ``<hash>`` groups
+    the shard with every other write of the same citation; the ``<writer_id>`` suffix is stable
+    for the lifetime of THIS task/process (ECS task id, else a per-process ULID) so two
+    concurrent Fargate tasks — which share the single ``output/bibliography/`` S3 prefix — NEVER
+    write the same key (an additive last-writer-wins S3 sync cannot drop a mention), while
+    repeated writes of the SAME citation WITHIN one task resolve to the SAME shard and union in
+    place. ``reconcile_bibliography_dir`` later groups shards by ``<hash>`` and collapses them to
+    the canonical ``bib_<hash>.json``."""
+    return f"bib_{_bib_hash(keys)}__{_writer_id()}.json"
+
+
+def _writer_id() -> str:
+    """Stable identifier for the current writer (task/process). Memoized so every write in this
+    process shares one shard suffix. Prefers the Fargate ECS task id; falls back to a ULID
+    generated once per process."""
+    global _WRITER_ID
+    if _WRITER_ID is None:
+        _WRITER_ID = os.environ.get("ECS_TASK_ID") or str(ulid.new())
+    return _WRITER_ID
+
+
+def _hash_from_bib_filename(name: str) -> Optional[str]:
+    """Extract the grouping ``<hash>`` from a canonical ``bib_<hash>.json`` or a shard
+    ``bib_<hash>__<ulid>.json`` filename. Returns None for non-conforming names (e.g. legacy
+    random-ULID files), which reconcile then groups by recomputed match key instead."""
+    m = re.match(r"^bib_([0-9a-f]{16})(?:__[^.]+)?\.json$", name)
+    return m.group(1) if m else None
 
 
 def _slugify(title: str) -> str:
@@ -536,32 +576,30 @@ def store_bibliography_entry(
     bib_dir.mkdir(parents=True, exist_ok=True)
     from src.utils.file_lock import write_json_with_lock
 
-    # PRIMARY dedup = the DETERMINISTIC filename (concurrency-safe: same citation -> same
-    # file across tasks, no shared-index race on the write path). Fall back to the legacy
-    # index match so pre-existing random-ULID files are still found + merged.
-    det_name = _deterministic_bib_filename(keys)
-    index = _load_index(bib_dir)
-    existing_file = (
-        det_name if (bib_dir / det_name).exists() else _find_match(keys, index)
-    )
-    if existing_file and (bib_dir / existing_file).exists():
-        with open(bib_dir / existing_file, "r", encoding="utf-8") as f:
+    # CONCURRENT-SAFE SHARDED WRITE (scoped reads): the single ``output/bibliography/`` S3
+    # prefix is shared by all concurrently-running per-book Fargate tasks, so a writer must
+    # NOT touch a filename another task could also write — an additive last-writer-wins S3
+    # sync would otherwise silently drop the loser's mention. Each task therefore writes to
+    # its OWN shard ``bib_<hash>__<writer_id>.json`` (writer_id = this task/process). The
+    # ``<hash>`` groups the shard with every other write of the same citation; reconcile folds
+    # all shards into the canonical ``bib_<hash>.json``, unioning mentions. Because the shard
+    # is per-writer-stable, the write path never needs the whole (13k+ file) dir — only its own
+    # shard — so Phase 2 can skip the bulk bibliography download. In-task same-citation mentions
+    # union into the one local shard here; cross-task union happens in the full-corpus reconcile.
+    shard_name = _bib_shard_filename(keys)
+    shard_path = bib_dir / shard_name
+    if shard_path.exists():
+        with open(shard_path, "r", encoding="utf-8") as f:
             bib_data = json.load(f)
         if not _has_mention(bib_data.get("mentions", []), mention):
             bib_data.setdefault("mentions", []).append(mention)
-            write_json_with_lock(
-                bib_dir / existing_file, bib_data, entity="bibliography"
-            )
+            write_json_with_lock(shard_path, bib_data, entity="bibliography")
         return bib_data.get("BibliographyID")
 
     bib_data = _build_bib_entry(material)
     bib_data["mentions"].append(mention)
-    write_json_with_lock(bib_dir / det_name, bib_data, entity="bibliography")
-    # The index is now a DERIVED/legacy convenience (rebuildable from the dir); best-effort
-    # update, never the authority — concurrent writers no longer race on it for dedup.
-    _index_entry(index, keys, det_name)
-    _save_index(bib_dir, index)
-    logger.debug("New bibliography entry: %s", det_name)
+    write_json_with_lock(shard_path, bib_data, entity="bibliography")
+    logger.debug("New bibliography shard: %s", shard_name)
     return bib_data["BibliographyID"]
 
 
@@ -593,18 +631,68 @@ def _merge_bib_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
     return base
 
 
+def _group_title(items: List[tuple]) -> str:
+    """Representative normalized title for a reconcile group (first record with a real
+    title; falls back to verbatim). Empty string when the group is not title-bearing."""
+    for _f, data in items:
+        title = data.get("title", "") or ""
+        if title and title != "Unknown":
+            return _normalize_title(title)
+    # fall back to a verbatim-derived normalized title
+    for _f, data in items:
+        verb = data.get("verbatim_reference", "") or (
+            (data.get("mentions") or [{}])[0].get("verbatim_reference", "")
+        )
+        if verb:
+            return _normalize_title(verb)
+    return ""
+
+
+def _fuzzy_collapse_groups(groups: Dict[str, List[tuple]]) -> None:
+    """Fold deterministic groups whose representative titles fuzzy-match (>=0.85) into one
+    canonical group, mutating ``groups`` in place. This preserves the near-title dedup that
+    used to run per-write in ``_find_match`` (0.85 SequenceMatcher), now done once per run.
+
+    Only title-bearing groups participate; each merge target is the lexicographically-smallest
+    group key so the collapse is deterministic regardless of iteration order. Fail-safe.
+    """
+    from difflib import SequenceMatcher
+
+    titled = [(k, _group_title(v)) for k, v in list(groups.items())]
+    titled = [(k, t) for k, t in titled if t]
+    titled.sort(key=lambda kt: kt[0])  # stable canonical selection
+
+    absorbed: Dict[str, str] = {}  # key -> canonical key it was merged into
+    for i, (key_i, title_i) in enumerate(titled):
+        if key_i in absorbed:
+            continue
+        for key_j, title_j in titled[i + 1 :]:
+            if key_j in absorbed or key_j == key_i:
+                continue
+            if SequenceMatcher(None, title_i, title_j).ratio() >= 0.85:
+                groups[key_i].extend(groups.get(key_j, []))
+                groups.pop(key_j, None)
+                absorbed[key_j] = key_i
+
+
 def reconcile_bibliography_dir(bib_dir: Path) -> int:
-    """Rebuild-time reconcile (Option B): union mentions across any bibliography records that
-    share a match key, collapsing transient cross-task duplicates AND legacy random-ULID
-    duplicates into one canonical deterministic file (bib_<hash>.json). Rebuilds the derived
-    index. Idempotent + fail-safe (never raises). Returns the number of duplicate files merged
-    away. Run at end-of-run / reconcile phase — S3-authoritative, no Dynamo."""
+    """Rebuild-time reconcile (Option B): union mentions across all bibliography records that
+    belong to the same citation, collapsing per-writer shards (``bib_<hash>__<writer>.json``),
+    cross-task duplicates, AND legacy random-ULID duplicates into ONE canonical deterministic
+    file (``bib_<hash>.json``). Groups primarily by the ``<hash>`` embedded in the filename
+    (stable across shards even if one shard's title got enriched differently), falling back to a
+    hash recomputed from the record's match key for legacy/non-conforming names; then a fuzzy
+    near-title pass folds typo-level duplicates. Rebuilds the derived index. Idempotent +
+    fail-safe (never raises). Returns the number of duplicate files merged away. Run at
+    end-of-run / full-corpus reconcile phase — S3-authoritative, no Dynamo."""
     bib_dir = Path(bib_dir)
     if not bib_dir.exists():
         return 0
     from src.utils.file_lock import write_json_with_lock
 
-    # group record files by their canonical deterministic key
+    # Group record files by citation hash. Prefer the hash embedded in the filename (shards and
+    # the canonical file all carry the same <hash>); fall back to a hash recomputed from the
+    # record's match key for legacy random-ULID filenames. Group key is the canonical filename.
     groups: Dict[str, List[tuple]] = {}
     for f in sorted(bib_dir.glob("*.json")):
         if f.name in ("index.json", "review_queue.json"):
@@ -615,13 +703,25 @@ def reconcile_bibliography_dir(bib_dir: Path) -> int:
             continue
         if not isinstance(data, dict) or "BibliographyID" not in data:
             continue
-        title = data.get("title", "") or ""
-        if not title or title == "Unknown":
-            title = data.get("verbatim_reference", "") or (
-                (data.get("mentions") or [{}])[0].get("verbatim_reference", "")
-            )
-        keys = _match_keys(data, title)
-        groups.setdefault(_deterministic_bib_filename(keys), []).append((f, data))
+        file_hash = _hash_from_bib_filename(f.name)
+        if file_hash:
+            canon = f"bib_{file_hash}.json"
+        else:
+            title = data.get("title", "") or ""
+            if not title or title == "Unknown":
+                title = data.get("verbatim_reference", "") or (
+                    (data.get("mentions") or [{}])[0].get("verbatim_reference", "")
+                )
+            canon = _deterministic_bib_filename(_match_keys(data, title))
+        groups.setdefault(canon, []).append((f, data))
+
+    # Fuzzy near-title collapse (moved here from the per-write hot path): exact deterministic
+    # keys catch case/punctuation/whitespace variants, but NOT typo-level fuzz ("Bastogne" vs
+    # "Bastonge"). Fold groups whose canonical titles fuzzy-match (>=0.85) into the
+    # lexicographically-smallest canonical key so the choice is deterministic regardless of
+    # listing order. Only title-bearing groups participate (ref/author-keyed groups are left
+    # exact to avoid over-merging distinct sources by a weak key).
+    _fuzzy_collapse_groups(groups)
 
     merged_away = 0
     new_index: Dict[str, Dict[str, str]] = {"titles": {}, "refs": {}, "authors": {}}
