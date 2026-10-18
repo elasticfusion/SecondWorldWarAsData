@@ -42,6 +42,29 @@ def _register_entity(book: str, entity_type: str, filename: str) -> None:
 
 logger = logging.getLogger(__name__)
 
+
+def _normalize_ulid(value: str) -> str:
+    """Normalize a (possibly LLM-mangled) ULID for near-match recovery: lowercase + drop any
+    non-alphanumeric chars. Recovers only COSMETIC noise (case, stray dashes/spaces/quotes a model
+    may introduce); it does NOT fuzzy-match distinct ids, so a near-match is used only when it maps
+    to exactly one real Sub-eventID."""
+    return re.sub(r"[^a-z0-9]", "", (value or "").lower())
+
+
+def _safe_entity_filename(filename: str, entity_id: str) -> str:
+    """Path-traversal guard for entity filenames derived from untrusted LLM output. Reduces to the
+    basename, keeps only a safe charset, preserves a .json extension, and falls back to the entity
+    ULID when nothing safe remains. Ensures the write stays inside entity_dir."""
+    import os as _os
+
+    base = _os.path.basename((filename or "").replace("\\", "/"))
+    stem = base[:-5] if base.lower().endswith(".json") else base
+    safe = re.sub(r"[^A-Za-z0-9 ._-]", "", stem).strip().strip(".").strip()
+    if not safe:
+        safe = entity_id
+    return f"{safe}.json"
+
+
 # Schema version this module targets — derived from the central per-entity map.
 # This writer emits event-mention records, so it targets the 'events' entity version.
 from src.schemas import entity_version as _entity_version
@@ -225,6 +248,11 @@ def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positi
             record[id_field] = entity_id
             record["event_mentions"] = []
         filename = make_filename(key, entity_id) if make_filename else f"{key}.json"
+        # Harden against path traversal: the key/filename derives from untrusted LLM output (an
+        # entity NAME), and the default f"{key}.json" does not strip "/" or ".." — a name like
+        # "/abs/x" or "../../x" would escape entity_dir. Reduce to the basename, whitelist chars,
+        # and fall back to the ULID if nothing safe remains.
+        filename = _safe_entity_filename(filename, entity_id)
         entity_file = entity_dir / filename
         try:
             write_json_with_lock(entity_file, record)
@@ -386,11 +414,35 @@ def _process_batch_response(  # pylint: disable=too-many-arguments,too-many-posi
     """Process API response: create entities, add mentions, collect links."""
     count = 0
     links: Dict[str, list] = {}
+    # Resolve the LLM-echoed sub_event_id back to a REAL event Sub-eventID. The prompt embeds each
+    # real Sub-eventID, so a faithful echo hits the exact path; but the LLM does not reliably
+    # reproduce a 26-char ULID (it mangles/hallucinates/reuses them), which produced 100% dangling
+    # entity->event Sub-eventID refs. We do NOT guess by response position: the LLM frequently omits
+    # entity-less sub-events, so position is not a reliable index and a positional guess would
+    # SILENTLY mis-attribute an entity to the WRONG (but real) sub-event — undetectable corruption,
+    # strictly worse than a dangling ref. Instead: exact match -> UNIQUE normalized near-match
+    # (recovers only cosmetic ULID noise, and only when it maps to exactly ONE real id) -> else DROP.
+    real_ids = list(se_by_id.keys())
+    norm_index: Dict[str, list] = {}
+    for rid in real_ids:
+        norm_index.setdefault(_normalize_ulid(rid), []).append(rid)
+    seid_stats = {"exact": 0, "recovered": 0, "dropped": 0}
 
     for item in response.get(response_key, []):
         if not isinstance(item, dict):
             continue
-        seid = item.get("sub_event_id", "")
+        raw_seid = item.get("sub_event_id", "")
+        if raw_seid in se_by_id:
+            seid = raw_seid
+            seid_stats["exact"] += 1
+        else:
+            cand = norm_index.get(_normalize_ulid(raw_seid), [])
+            if len(cand) == 1:  # unambiguous cosmetic-noise recovery only
+                seid = cand[0]
+                seid_stats["recovered"] += 1
+            else:
+                seid_stats["dropped"] += 1
+                continue  # ambiguous/unknown -> drop rather than write a dangling/mis-attributed mention
         se_name = se_by_id.get(seid, {}).get("Sub-event_summary", "")
 
         for obj in item.get(inner_key, []):
@@ -413,6 +465,17 @@ def _process_batch_response(  # pylint: disable=too-many-arguments,too-many-posi
             ):
                 count += 1
 
+    try:
+        logger.info(
+            "OBSERV xref.seid entity=%s event=%s exact=%d recovered=%d dropped=%d",
+            response_key,
+            event_id,
+            seid_stats["exact"],
+            seid_stats["recovered"],
+            seid_stats["dropped"],
+        )
+    except Exception:  # noqa: BLE001 - observability must never break extraction
+        pass
     return {"count": count, "links": links}
 
 

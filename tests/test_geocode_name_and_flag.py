@@ -46,3 +46,31 @@ def test_geocode_writes_top_level_coords_and_clears_flag():
     assert place["coordinates"]["latitude"] == 50.66
     # The geo flag now clears (reads top-level).
     assert flags_for("places", place) == []
+
+
+def test_place_name_rejects_sentence_verbatim():
+    from src.enrichment.places_grok_geocode import _place_name
+
+    # A full sentence verbatim must NOT be used as a geocoder name.
+    assert (
+        _place_name(
+            {
+                "event_mentions": [
+                    {"original_text": "The Germans held Schmidt until November."}
+                ]
+            }
+        )
+        is None
+    )
+    # A short bare name is fine.
+    assert _place_name({"event_mentions": [{"original_text": "Schmidt"}]}) == "Schmidt"
+
+
+def test_safe_entity_filename_blocks_traversal():
+    from src.extraction.batch_parallel import _safe_entity_filename as sf
+
+    assert sf("/abs/evil.json", "01U") == "evil.json"
+    assert sf("../../x.json", "01U") == "x.json"
+    assert sf("..", "01UFALLBACK") == "01UFALLBACK.json"
+    assert sf("normal place.json", "01U") == "normal place.json"
+    assert "/" not in sf("a/b/c", "01U")
