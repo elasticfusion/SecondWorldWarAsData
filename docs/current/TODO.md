@@ -49,11 +49,16 @@ bottom); what remains is ranked here. Current ordered priority:
 >    `entity_dir/<name>.json` pointing outside the tree, nor the check-vs-use race. Requires prior
 >    local FS compromise (LOW). If desired later: `Path.resolve()` containment assertion
 >    (real path within `entity_dir.resolve()`) and/or `O_NOFOLLOW` on open.
-> 4. **[HIGH · destructive-op safety] Narrative-relocation S3 delete needs verify-before-delete +
->    shard cleanup.** `_relocate_narrative_note` deletes the S3 `output/bibliography/<name>` object
->    without confirming the `narrative_notes/` write succeeded, and does not delete sibling
->    `bib_<hash>__<writer>.json` shards (the full-corpus reconcile could resurrect them). Add
->    read-back confirmation + shard cleanup; log the delete at INFO (it is destructive).
+> 4. **~~[HIGH · destructive-op safety] Narrative-relocation S3 delete~~ ✅ DONE 2026-10-18 (PR #451).**
+>    Now (a) VERIFIES the `narrative_notes/` write (read-back) before removing the source; (b) MOVES
+>    the stale S3 object to `relocated/bibliography/` (copy-then-delete) instead of deleting it, so a
+>    mis-relocation is RECONSTRUCTABLE (owner guidance); (c) 60-day expiration lifecycle on the
+>    `relocated/` prefix (cloudformation ExpireRelocatedArchive) auto-expires the archive; (d) cleans
+>    sibling per-writer shards scoped to this record's hash. Security + code-review PASS; cfn-lint clean.
+>    ↳ **[ACTION REQUIRED · deploy] The lifecycle rule only takes effect after a StorageStack deploy**
+>    (`cloudformation/storage.yaml` changed). Until deployed, archived objects in `relocated/` will NOT
+>    auto-expire — they just accumulate (harmless, recoverable). Deploy the storage stack to activate
+>    the 60-day expiration.
 > 5. **[HIGH · orchestration timing] Phase-2→Phase-3 handoff misses late-arriving bibliography
 >    records.** This run left 16 records unprocessed by Phase 3 (they arrived via the full-corpus
 >    reconcile AFTER Phase 3's scoped-download snapshot → stayed misfiled in `bibliography/` as
