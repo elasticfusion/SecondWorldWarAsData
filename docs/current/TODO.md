@@ -1,6 +1,6 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-10-11 (reprioritized index refreshed after the data-quality program + doc audit)
+**Last Updated:** 2026-10-18 (HIGH follow-ups from session review findings added at top)
 
 ---
 
@@ -9,6 +9,46 @@
 Ranking reflects the project goal: *finish unattended ETO ingestion, then build RAG/search*.
 Most of the 2026-10-09 data-quality program is now DONE (see "Completed data-quality program" at the
 bottom); what remains is ranked here. Current ordered priority:
+
+> **NEW HIGH TO-DOS (owner, 2026-10-18) — from security/code-review sub-agent findings on the
+> session's bibliography/xref/geocode work + data-quality alerts. #447 (xref Sub-eventID fix) and
+> the earlier fixes #439–#446 are MERGED; these are the remaining follow-ups:**
+>
+> 1. **[HIGH · data-loss interaction — review finding] `_fix_invalid_ulids` neutralizes the xref
+>    recovery branch.** `_fix_invalid_ulids(response)` runs in `batch_parallel` BEFORE
+>    `_process_batch_response`, rewriting any mangled `sub_event_id` (ends in `_id`) to a FRESH RANDOM
+>    ULID. So the resolver never sees the mangled-but-recoverable id → the unique-cosmetic-recovery
+>    branch can't fire → behavior collapses to exact-match-or-DROP. Safe (drops, never mis-attributes)
+>    but mangled-recoverable ids are DROPPED instead of recovered = avoidable mention loss. FIX:
+>    exclude `sub_event_id` from the pre-pass ULID fix, or resolve before `_fix_invalid_ulids`.
+> 2. **[HIGH · DQ — geocode from prose] `_looks_like_place_name` still accepts short (≤5-word)
+>    declarative clauses** ("They attacked Aachen at dawn", "Schmidt was taken") → can geocode a place
+>    off incidental prose. Tighten: reject leading lowercase verbs / require title-case, or a verb
+>    stop-word check. (`src/enrichment/places_grok_geocode.py`.)
+> 3. **[HIGH · path-traversal hardening — read side] Pre-fix `index.json` may hold unsanitized
+>    filenames.** `_safe_entity_filename` guards NEW writes, but `_get_or_create_entity`'s
+>    existing-entity branch uses `entity_dir / index[key]` verbatim — an index written by pre-fix code
+>    could still carry an unsafe stored path. Defensively basename-guard the read side too.
+> 4. **[HIGH · destructive-op safety] Narrative-relocation S3 delete needs verify-before-delete +
+>    shard cleanup.** `_relocate_narrative_note` deletes the S3 `output/bibliography/<name>` object
+>    without confirming the `narrative_notes/` write succeeded, and does not delete sibling
+>    `bib_<hash>__<writer>.json` shards (the full-corpus reconcile could resurrect them). Add
+>    read-back confirmation + shard cleanup; log the delete at INFO (it is destructive).
+> 5. **[HIGH · orchestration timing] Phase-2→Phase-3 handoff misses late-arriving bibliography
+>    records.** This run left 16 records unprocessed by Phase 3 (they arrived via the full-corpus
+>    reconcile AFTER Phase 3's scoped-download snapshot → stayed misfiled in `bibliography/` as
+>    narrative zombies). Harden so Phase 3 does not start until the full-corpus reconcile is finalized,
+>    or have Phase 3 re-read the bib dir after reconcile completes.
+> 6. **[MED→HIGH-for-destructive · SSRF, build-time] HyperWar generator follows unconstrained absolute
+>    hrefs.** `scripts/build_hyperwar_biblio_index.py:discover_biblio_url` stores any absolute `href`
+>    parsed from fetched ibiblio HTML verbatim. Add an `ibiblio.org` host allowlist + HTTPS-only + no
+>    cross-host redirects before fetching/storing.
+>
+> **VALIDATED THIS SESSION (2026-10-18):** published-works resolution 6/6 (Siegfried ch1);
+> narrative-footnote relocation to `output/narrative_notes/`; Phase-3 perf hang fixed (token-gate +
+> OpenSERP placeholder + verify-budget); `citation_unresolvable` false-positives fixed (post-resolution
+> + identified-works exempt); geocode name-from-mention + top-level-coord-write (Schmidt resolves);
+> xref Sub-eventID dangling-ref root cause fixed (exact/unique-recover/drop, no positional guessing).
 
 > **NEXT-UP PRIORITIES (owner, 2026-10-15) — do these once the in-flight bibliography/batch
 > work lands:**
