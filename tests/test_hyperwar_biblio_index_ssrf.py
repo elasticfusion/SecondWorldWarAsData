@@ -89,3 +89,40 @@ def test_build_distinguishes_guard_block_from_no_link(monkeypatch, capsys):
     combined = out.out + out.err
     assert "REJECTED by SSRF guard" in combined
     assert "SSRF guard blocked a bibliography href for 1 volume" in combined
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://www.ibiblio.org\\@evil.com/x",  # backslash host confusion
+        "https:evil.com",  # no // — classic bypass
+        "https://www.ibiblio.org:8080@evil.com/x",
+    ],
+)
+def test_guard_rejects_confusion_bypasses(url):
+    assert bh._is_safe_biblio_url(url) is False
+
+
+def test_redirect_to_offhost_is_blocked():
+    """WARNING fix: the redirect handler re-validates the target; an off-host 302 is refused."""
+    import urllib.error
+
+    h = bh._AllowlistRedirectHandler()
+    with pytest.raises(urllib.error.HTTPError):
+        h.redirect_request(
+            req=None,
+            fp=None,
+            code=302,
+            msg="Found",
+            headers={},
+            newurl="http://169.254.169.254/latest/meta-data/",
+        )
+
+
+def test_get_fails_safe_when_open_raises(monkeypatch):
+    monkeypatch.setattr(
+        bh._OPENER,
+        "open",
+        lambda *a, **k: (_ for _ in ()).throw(Exception("boom")),
+    )
+    assert bh._get("https://www.ibiblio.org/x") is None

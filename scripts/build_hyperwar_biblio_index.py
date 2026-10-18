@@ -19,6 +19,7 @@ import argparse
 import json
 import re
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -55,6 +56,27 @@ def _is_safe_biblio_url(url: str) -> bool:
     if "@" in p.netloc:
         return False
     return True
+
+
+class _AllowlistRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Re-validate EVERY redirect target against the allowlist. Closes the SSRF residual where a
+    guard-approved ibiblio URL 302-redirects to an internal/off-host address — urlopen would
+    otherwise follow it blindly. A disallowed target raises, aborting the fetch."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
+        if not _is_safe_biblio_url(newurl):
+            print(
+                f"  ! refusing redirect to non-allowlisted URL: {newurl}",
+                file=sys.stderr,
+            )
+            raise urllib.error.HTTPError(
+                newurl, code, "redirect to non-allowlisted URL blocked", headers, fp
+            )
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+# Opener whose ONLY redirect handler re-checks the allowlist (no proxy/auth handlers added).
+_OPENER = urllib.request.build_opener(_AllowlistRedirectHandler())
 
 
 # Full green-book volume set (index pages). Keyed by volume id.
@@ -102,9 +124,9 @@ def _get(url: str, timeout: int = 30) -> Optional[str]:
         req = urllib.request.Request(
             url, headers={"User-Agent": "wwii-pipeline/biblio-index"}
         )
-        with urllib.request.urlopen(
+        with _OPENER.open(
             req, timeout=timeout
-        ) as r:  # noqa: S310 - allowlisted https host (see _is_safe_biblio_url)
+        ) as r:  # noqa: S310 - allowlisted https host + redirect targets re-validated
             return r.read().decode("utf-8", "replace")
     except Exception as e:  # noqa: BLE001
         print(f"  ! fetch failed {url}: {e}", file=sys.stderr)
