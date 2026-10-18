@@ -134,11 +134,23 @@ class GeocodeRunReport:
 
 def _place_name(place: dict) -> Optional[str]:
     """Return the best display name for a place, or None."""
-    return (
+    name = (
         place.get("current_name")
+        or place.get("name")
         or place.get("place_name")
         or place.get("identified_as")
     )
+    if name:
+        return name
+    # Fallback: some place records carry the name only inside their mentions'
+    # ``original_text`` (e.g. a record with no top-level current_name — "Schmidt" lives in
+    # event_mentions[].original_text). Use the first non-empty verbatim so the place is still
+    # geocodable rather than skipped as no_name.
+    for m in (place.get("event_mentions") or []) + (place.get("mentions") or []):
+        ot = (m or {}).get("original_text")
+        if ot and ot.strip():
+            return ot.strip()
+    return None
 
 
 def _needs_geocode(place: dict) -> bool:
@@ -229,6 +241,11 @@ def _apply_result(place: dict, result: GeocodeResult) -> str:
         "precision": "approximate",
         "confidence": round(result.confidence, 2),
     }
+    # Mirror to the top-level latitude/longitude the schema also carries at the root — the
+    # semantic quality-flag check (_geo_flags) reads the TOP-LEVEL fields, so without this a
+    # successfully-geocoded place would still be flagged geo_missing_coords.
+    place["latitude"] = result.latitude
+    place["longitude"] = result.longitude
     if result.country:
         place["country"] = result.country
     place["geocode_source"] = result.source
