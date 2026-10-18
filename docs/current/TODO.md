@@ -14,13 +14,16 @@ bottom); what remains is ranked here. Current ordered priority:
 > session's bibliography/xref/geocode work + data-quality alerts. #447 (xref Sub-eventID fix) and
 > the earlier fixes #439–#446 are MERGED; these are the remaining follow-ups:**
 >
-> 1. **[HIGH · data-loss interaction — review finding] `_fix_invalid_ulids` neutralizes the xref
->    recovery branch.** `_fix_invalid_ulids(response)` runs in `batch_parallel` BEFORE
->    `_process_batch_response`, rewriting any mangled `sub_event_id` (ends in `_id`) to a FRESH RANDOM
->    ULID. So the resolver never sees the mangled-but-recoverable id → the unique-cosmetic-recovery
->    branch can't fire → behavior collapses to exact-match-or-DROP. Safe (drops, never mis-attributes)
->    but mangled-recoverable ids are DROPPED instead of recovered = avoidable mention loss. FIX:
->    exclude `sub_event_id` from the pre-pass ULID fix, or resolve before `_fix_invalid_ulids`.
+> 1. **~~[HIGH · data-loss interaction] `_fix_invalid_ulids` neutralizes the xref recovery branch~~
+>    ✅ DONE 2026-10-18 (PR #448).** Added `skip_keys` to `_fix_invalid_ulids`; batch passes
+>    `skip_keys={'sub_event_id'}` so the LLM-echoed reference survives to `_process_batch_response`
+>    (recovery path restored). OBSERV `xref.seid_preserved`. Security + code-review PASS.
+>    ↳ **[HIGH · FOLLOW-UP from the #448 review] Audit the OTHER `_fix_invalid_ulids` callers** that
+>    still randomize `sub_event_id` via the default path (supplemental.py:476, weather_central.py:823,
+>    equipment.py:2084, places.py:251 non-batch, people.py:891, casualties.py:286, people_groups.py).
+>    If any use `sub_event_id` as a CROSS-REFERENCE the way batch_parallel did, they share the same
+>    latent dangling-xref bug (NOT a regression — behavior unchanged). Determine per-caller whether
+>    sub_event_id is a reference (then skip it) or a to-be-minted id, and apply skip_keys accordingly.
 > 2. **[HIGH · DQ — geocode from prose] `_looks_like_place_name` still accepts short (≤5-word)
 >    declarative clauses** ("They attacked Aachen at dawn", "Schmidt was taken") → can geocode a place
 >    off incidental prose. Tighten: reject leading lowercase verbs / require title-case, or a verb
