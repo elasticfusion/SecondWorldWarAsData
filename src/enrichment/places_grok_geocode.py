@@ -26,6 +26,7 @@ Only places whose name looks like a real settlement/feature are attempted
 
 from __future__ import annotations
 
+import re
 import json
 import logging
 from dataclasses import dataclass, field
@@ -132,8 +133,16 @@ class GeocodeRunReport:
         }
 
 
-def _place_name(place: dict) -> Optional[str]:
-    """Return the best display name for a place, or None."""
+def _place_name(place: dict, stem: Optional[str] = None) -> Optional[str]:
+    """Return the best display name for a place, or None.
+
+    Primary source is an explicit name field; next the FILE STEM (the deterministic entity key is
+    the already-resolved place name, e.g. ``berlin.json`` -> "berlin" / ``ulm.json`` -> "ulm"), which
+    is clean by construction and must NOT be rejected for being short. Only as a last resort — a
+    record carrying no name anywhere, with the toponym trapped inside a mention's prose
+    ``original_text`` — do we try to recover a name from that prose, and then only a capitalized
+    toponym corroborated by context (never the whole clause).
+    """
     name = (
         place.get("current_name")
         or place.get("name")
@@ -142,31 +151,160 @@ def _place_name(place: dict) -> Optional[str]:
     )
     if name:
         return name
-    # Fallback: some place records carry the name only inside their mentions' ``original_text``
-    # (e.g. a record with no top-level current_name — "Schmidt" lives in
-    # event_mentions[].original_text). Use it ONLY when it is short and name-like: a full verbatim
-    # SENTENCE must not be fed to the geocoder (it would geocode the record from incidental prose).
-    # A long/sentence verbatim -> None, so the record stays ungeocoded (flagged) rather than
-    # mis-located.
+    # The file stem IS the place name (entity key). Clean, already-resolved — short is fine.
+    if stem:
+        s = stem.strip()
+        if s and s.lower() not in ("index", "duplicate_report"):
+            return s
+    # Last resort: recover a toponym from a mention's prose original_text, using mid-sentence
+    # capitalization + context corroboration (the stem). Never feed a whole prose clause to the
+    # geocoder — that geocodes the record off incidental prose.
     for m in (place.get("event_mentions") or []) + (place.get("mentions") or []):
         ot = ((m or {}).get("original_text") or "").strip()
-        if ot and _looks_like_place_name(ot):
-            return ot
+        cand = _toponym_from_prose(ot, corroborate=stem)
+        if cand:
+            return cand
     return None
 
 
-def _looks_like_place_name(text: str) -> bool:
-    """Heuristic: is ``text`` a bare place name (safe to geocode) rather than a prose sentence?
-    Name-like = short (<=5 words), no sentence-ending punctuation, no clause commas/semicolons.
+# Common function/connective words that are not part of a place name. This set is deliberately
+# SMALL: its only job is to bound a capitalized phrase (so "They attacked Aachen" yields "Aachen",
+# not "They ... Aachen"). It intentionally does NOT try to classify proper nouns — two capitalized
+# words in a row do NOT disqualify a place ("New York City", "New Jersey", "Monte Cassino"), and a
+# codename/surname phrase ("Operation Cobra", "General Patton") is extracted INTACT and handed to the
+# Grok geocoder, which quickly returns not-found for a non-place. Over-stripping here would fragment
+# real multi-word toponyms, so we keep the list to genuine function words only.
+_PROSE_CAP_STOPWORDS = frozenset(
+    {
+        "the",
+        "a",
+        "an",
+        "they",
+        "we",
+        "he",
+        "she",
+        "it",
+        "his",
+        "her",
+        "their",
+        "our",
+        "this",
+        "that",
+        "these",
+        "those",
+        "and",
+        "but",
+        "or",
+        "nor",
+        "for",
+        "so",
+        "yet",
+        "on",
+        "in",
+        "at",
+        "by",
+        "to",
+        "of",
+        "german",
+        "germans",
+        "american",
+        "americans",
+        "british",
+        "allied",
+        "allies",
+        "enemy",
+        "when",
+        "while",
+        "after",
+        "before",
+        "during",
+        "then",
+        "now",
+        "two",
+        "three",
+        "first",
+        "second",
+    }
+)
+
+
+def _toponym_from_prose(text: str, corroborate: Optional[str] = None) -> Optional[str]:
+    """Recover a place name from a prose ``original_text`` using capitalization + context.
+
+    Mid-sentence capitalization is the signal: a capitalized token that is NOT sentence-initial and
+    NOT a prose stopword is very likely a proper noun. We extract the longest run of such capitalized
+    tokens (handles "Monte Cassino", "Saint-Lô", "Hürtgen Forest"). To guard the hard
+    sentence-initial case ("Ulm was on fire." — "Ulm" is capitalized only because it starts the
+    sentence), a sentence-initial single capitalized token is accepted ONLY if ``corroborate`` (the
+    file stem) matches it. Returns None when nothing qualifies (record stays ungeocoded + flagged,
+    rather than geocoded off prose).
     """
-    t = text.strip().rstrip(".")
-    if not t or len(t) > 60:
-        return False
-    if any(ch in t for ch in (";", ":")) or "," in t:
-        return False
-    if t.count(".") > 0:  # abbreviations/sentences
-        return False
-    return len(t.split()) <= 5
+    t = (text or "").strip()
+    if not t or len(t) > 200:
+        return None
+    # Token stream with position; a token is "name-like capitalized" if it starts with an
+    # uppercase/accented-uppercase letter and is not a stopword.
+    tokens = re.findall(r"[^\s]+", t)
+
+    def _norm(tok: str) -> str:
+        return re.sub(r"[^0-9A-Za-zÀ-ÿ'’-]", "", tok)
+
+    def _is_cap(tok: str) -> bool:
+        w = _norm(tok)
+        if not w or w.lower() in _PROSE_CAP_STOPWORDS:
+            return False
+        return w[0].isupper() or (len(w) == 1 and w.isalpha() and w.isupper())
+
+    def _ends_sentence(tok: str) -> bool:
+        # A sentence terminator may be followed by closing wrappers ("Aachen." / (Metz.) / 'Caen.');
+        # strip trailing wrapping chars before testing so a quoted/parenthesized boundary still
+        # closes the run (otherwise adjacent-sentence cities could fuse).
+        return tok.rstrip("\"'”’)]}»").endswith((".", "!", "?"))
+
+    # Find the longest consecutive run of capitalized name-like tokens, tracking whether the run
+    # begins at sentence start (index 0, or right after sentence-ending punctuation). A run STOPS at
+    # a sentence boundary: a token ending in . ! ? (possibly wrapped in closing quotes/brackets)
+    # closes the current run (so "Aachen. Cologne" does not fuse into a fake "Aachen Cologne" — they
+    # are two separate runs, each subject to the sentence-initial corroboration guard below).
+    best: list = []
+    best_sentence_initial = True
+    i = 0
+    prev_ended_sentence = True  # position 0 is sentence-initial
+    while i < len(tokens):
+        if _is_cap(tokens[i]):
+            run = [tokens[i]]
+            run_initial = prev_ended_sentence
+            # If this very token ends a sentence, the run is just this token.
+            ends_sentence = _ends_sentence(tokens[i])
+            j = i + 1
+            while not ends_sentence and j < len(tokens) and _is_cap(tokens[j]):
+                run.append(tokens[j])
+                ends_sentence = _ends_sentence(tokens[j])
+                j += 1
+            if len(run) > len(best):
+                best = run
+                best_sentence_initial = run_initial
+            prev_ended_sentence = _ends_sentence(tokens[j - 1])
+            i = j
+        else:
+            prev_ended_sentence = _ends_sentence(tokens[i])
+            i += 1
+
+    if not best:
+        return None
+    cand = " ".join(_norm(x) for x in best).strip()
+    if not cand:
+        return None
+    # A capitalized run that BEGINS a sentence is ambiguous — the leading token may be capitalized
+    # only because it starts the sentence ("Ulm was on fire." / "Monte Cassino fell."). A
+    # sentence-initial run (single OR multi-token) is therefore accepted only when the file stem
+    # corroborates its first token. A run that is NOT sentence-initial is a confident mid-sentence
+    # proper-noun phrase and is accepted as-is.
+    if best_sentence_initial:
+        if corroborate and _norm(best[0]).lower() == corroborate.strip().lower():
+            return cand
+        return None
+    return cand
 
 
 def _needs_geocode(place: dict) -> bool:
@@ -395,7 +533,7 @@ def _geocode_one_file(
     if not isinstance(place, dict):
         return
 
-    name = _place_name(place)
+    name = _place_name(place, stem=path.stem)
     # Attribute each skip to a reason (OBSERV) instead of a black-box "skipped".
     if not name:
         report.skipped += 1
