@@ -1845,31 +1845,73 @@ def _relocate_narrative_note(f: Path, data: Dict[str, Any]) -> None:
         # Deterministic filename: reuse the bib file's stem so re-runs are idempotent.
         out = notes_dir / f.name
         write_json_with_lock(out, note, entity="narrative_notes")
+        # VERIFY the narrative note landed before removing the bibliography source — never delete
+        # the only copy on an unconfirmed write (HIGH#4).
+        if not _narrative_note_written(out):
+            logger.warning(
+                "narrative relocate ABORTED for %s: narrative_notes write unconfirmed",
+                f.name,
+            )
+            return
         f.unlink(missing_ok=True)
-        _delete_s3_bibliography_object(f.name)
-        logger.info("OBSERV bib.relocated_narrative %s -> narrative_notes/", f.name)
+        # MOVE (not delete) the stale S3 object to a recoverable archive path, and clean sibling
+        # per-writer shards so the additive full-corpus reconcile cannot resurrect the zombie.
+        _archive_s3_bibliography_object(f.name)
+        _cleanup_bibliography_shards(f)
+        logger.info(
+            "OBSERV bib.relocated_narrative %s -> narrative_notes/ (archived)", f.name
+        )
     except Exception as e:  # noqa: BLE001 - relocation must never break the resolver
         logger.warning("narrative relocate failed for %s: %s", f.name, e)
 
 
-def _delete_s3_bibliography_object(filename: str) -> None:
-    """Delete the stale ``output/bibliography/<filename>`` object from S3 after a narrative
-    record is relocated. The local file is unlinked, but the Phase-3 final sync is ADDITIVE
-    (no --delete), so without this the misfiled bibliography object persists in S3 and
-    re-downloads as a zombie duplicate of the narrative_notes record. No-op outside S3 mode;
-    best-effort and fail-safe."""
+def _narrative_note_written(out: Path) -> bool:
+    """Confirm the relocated narrative note exists + is valid JSON (verify-before-delete)."""
+    try:
+        return out.is_file() and isinstance(
+            json.loads(out.read_text(encoding="utf-8")), dict
+        )
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _cleanup_bibliography_shards(f: Path) -> None:
+    """Remove sibling per-writer shards (``bib_<hash>__<writer>.json``) that also carry this
+    misfiled record, locally and in the archive, so the additive full-corpus reconcile cannot
+    re-materialize the relocated narrative note as a bibliography zombie. Best-effort/fail-safe.
+    """
+    try:
+        for shard in f.parent.glob("bib_*__*.json"):
+            shard.unlink(missing_ok=True)
+            _archive_s3_bibliography_object(shard.name)
+    except Exception as e:  # noqa: BLE001
+        logger.debug("bib shard cleanup skipped near %s: %s", f.name, e)
+
+
+def _archive_s3_bibliography_object(filename: str) -> None:
+    """MOVE the stale ``output/bibliography/<filename>`` S3 object to ``relocated/bibliography/``
+    (copy-then-delete) rather than deleting it, so a mis-relocation can be reconstructed. The
+    ``relocated/`` prefix has a 60-day expiration lifecycle (see cloudformation/storage.yaml) and is
+    outside ``output/`` so the additive output sync cannot pull it back as a zombie. No-op outside
+    S3 mode; best-effort and fail-safe."""
     bucket = os.environ.get("S3_BUCKET") or os.environ.get("DATA_BUCKET")
     if not bucket:
-        return  # local/test mode — nothing in S3 to remove
+        return  # local/test mode — nothing in S3 to move
+    src_key = f"output/bibliography/{filename}"
+    dst_key = f"relocated/bibliography/{filename}"
     try:
         import boto3
 
-        boto3.client(
-            "s3", region_name=os.environ.get("AWS_REGION", "us-east-1")
-        ).delete_object(Bucket=bucket, Key=f"output/bibliography/{filename}")
-        logger.debug("Deleted stale S3 bibliography object: %s", filename)
-    except Exception as e:  # noqa: BLE001 - S3 cleanup is best-effort
-        logger.debug("S3 bibliography delete skipped for %s: %s", filename, e)
+        s3 = boto3.client("s3", region_name=os.environ.get("AWS_REGION", "us-east-1"))
+        # Copy to the archive path first; only delete the source if the copy succeeds (a move that
+        # never loses the object on a partial failure).
+        s3.copy_object(
+            Bucket=bucket, CopySource={"Bucket": bucket, "Key": src_key}, Key=dst_key
+        )
+        s3.delete_object(Bucket=bucket, Key=src_key)
+        logger.debug("Archived stale S3 bibliography object %s -> %s", src_key, dst_key)
+    except Exception as e:  # noqa: BLE001 - S3 archive is best-effort
+        logger.debug("S3 bibliography archive skipped for %s: %s", filename, e)
 
 
 def _account_bib_status(stats: Dict[str, int], status: str, was_deduped: bool) -> bool:

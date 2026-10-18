@@ -56,6 +56,16 @@ Resources:
                 TransitionInDays: 30
               - StorageClass: GLACIER_IR
                 TransitionInDays: 90
+          # relocated/ holds objects MOVED out of output/ (not deleted) so later
+          # reconstruction is possible — currently narrative footnotes that the
+          # bibliography capture pass misfiled as citations. A 60-day window is
+          # ample to catch a mis-relocation + re-run, after which they auto-expire.
+          # Prefix is OUTSIDE output/ so it is neither IA-transitioned nor pulled
+          # back by the additive output sync (which would resurrect the zombie).
+          - Id: ExpireRelocatedArchive
+            Prefix: relocated/
+            Status: Enabled
+            ExpirationInDays: 60
           # source/ holds the original scanned PDFs (write-once, read-rarely —
           # kept only for citation + re-OCR). Glacier Instant Retrieval keeps
           # millisecond access for the occasional re-OCR at ~1/4 the STANDARD cost.
