@@ -69,10 +69,15 @@ bottom); what remains is ranked here. Current ordered priority:
 >    hangs. Observability is end-to-end + CORRELATED: `phase3.bib_download … barrier=<status>` and the
 >    SHORTFALL warning names the cause (drain-timeout vs scoped-download filter). Security +
 >    code-review PASS (two WARNINGs — stale-barrier + cross-book scope — fixed + re-reviewed clean).
-> 6. **[MED→HIGH-for-destructive · SSRF, build-time] HyperWar generator follows unconstrained absolute
->    hrefs.** `scripts/build_hyperwar_biblio_index.py:discover_biblio_url` stores any absolute `href`
->    parsed from fetched ibiblio HTML verbatim. Add an `ibiblio.org` host allowlist + HTTPS-only + no
->    cross-host redirects before fetching/storing.
+> 6. **~~[SSRF, build-time] HyperWar generator follows unconstrained absolute hrefs~~
+>    ✅ DONE 2026-10-18 (PR #453).** `_is_safe_biblio_url` allowlist (HTTPS-only + host in
+>    {ibiblio.org, www.ibiblio.org}; rejects metadata IP / localhost / private / external /
+>    suffix-spoof / userinfo / backslash-confusion / `https:evil.com` / file / ftp), gating BOTH the
+>    stored href (`discover_biblio_url`) AND every fetch (`_get`), PLUS `_AllowlistRedirectHandler`
+>    that re-validates every 3xx redirect target per-hop (no cross-host redirects). Observability:
+>    build summary distinguishes "guard blocked a link" from "no link". Combined review + DEDICATED
+>    security review both PASS. Accepted LOW residuals (build-time, operator-run): DNS-rebinding and
+>    an alternate port on the allowlisted host.
 >
 > **VALIDATED THIS SESSION (2026-10-18):** published-works resolution 6/6 (Siegfried ch1);
 > narrative-footnote relocation to `output/narrative_notes/`; Phase-3 perf hang fixed (token-gate +
