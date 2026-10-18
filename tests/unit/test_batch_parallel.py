@@ -315,3 +315,37 @@ def test_get_or_create_entity_read_refuses_symlink_escape(tmp_path):
         id_field="PlaceID",
     )
     assert record.get("stolen") is not True  # out-of-dir secret NOT read
+
+
+def test_process_entity_obj_blocks_symlink_write_through(tmp_path):
+    """#450 CRITICAL regression: a symlinked index entry must NOT be read OR written-through by the
+    follow-on event-mention write. The out-of-dir target stays untouched."""
+    import json as _json
+    from src.extraction import batch_parallel as bp
+
+    ed = tmp_path / "places"
+    ed.mkdir()
+    secret = tmp_path / "secret.json"
+    secret.write_text(_json.dumps({"PlaceID": "X", "stolen": True}))
+    (ed / "aachen.json").symlink_to(secret)
+    index = {"Aachen": "aachen.json"}
+
+    processed = bp._process_entity_obj(
+        obj={"name": "Aachen"},
+        make_key=lambda o: "Aachen",
+        make_record=lambda o: {},
+        entity_dir=ed,
+        index=index,
+        id_field="PlaceID",
+        seid="01HX7YZABCDEFGHJKMNPQRSTVW",
+        se_name="s",
+        event_id="01EV7YZABCDEFGHJKMNPQRSTVW",
+        event_name="e",
+        meta={"book": "b"},
+        sub_event_key="places",
+        links={},
+    )
+    assert processed is False  # containment blocked -> skipped
+    after = _json.loads(secret.read_text())
+    assert after.get("stolen") is True
+    assert "event_mentions" not in after  # NOT written-through the symlink

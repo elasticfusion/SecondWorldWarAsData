@@ -327,7 +327,7 @@ def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positi
             safe_name,
             entity_dir.name,
         )
-        return entity_dir / safe_name, "", {}
+        return None, "", {}
     try:
         with open(entity_file, "r", encoding="utf-8") as fh:
             record = json.load(fh)
@@ -435,6 +435,11 @@ def _process_entity_obj(  # pylint: disable=too-many-arguments,too-many-position
     entity_file, entity_id, record = _get_or_create_entity(
         key, obj, index, entity_dir, make_record, id_field, make_filename
     )
+    # Containment guard (#450): _get_or_create_entity returns entity_file=None when the resolved
+    # path escaped entity_dir (symlink). Skip ALL downstream read/modify/write — never follow the
+    # symlink via the mention write-through, never crash on a None path.
+    if entity_file is None:
+        return False
 
     if id_field and seid and event_id:
         _add_event_mention_batch(
