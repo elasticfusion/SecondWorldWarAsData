@@ -37,10 +37,18 @@ bottom); what remains is ranked here. Current ordered priority:
 >    ↳ **[MED · FOLLOW-UP] Entity-context disambiguation** — a bare proper noun after a title
 >    ("General Patton", "Operation Cobra") is sent to Grok as-is; a future pass could cross-check
 >    nearby Person/Operation entities to pre-filter before the geocode call.
-> 3. **[HIGH · path-traversal hardening — read side] Pre-fix `index.json` may hold unsanitized
->    filenames.** `_safe_entity_filename` guards NEW writes, but `_get_or_create_entity`'s
->    existing-entity branch uses `entity_dir / index[key]` verbatim — an index written by pre-fix code
->    could still carry an unsafe stored path. Defensively basename-guard the read side too.
+> 3. **~~[HIGH · path-traversal — read side] Pre-fix `index.json` unsanitized on read~~
+>    ✅ DONE 2026-10-18 (PR #450).** Basename-guarded BOTH read-side sinks that joined a stored
+>    index value to entity_dir verbatim: `_get_or_create_entity` (arbitrary read) AND
+>    `_process_place_relationships`/`_add_relationship` (arbitrary read+write outside entity_dir — the
+>    security review caught this second sink as CRITICAL). Both sanitize via `_safe_entity_filename` +
+>    self-heal the index (OBSERV `entity.index_sanitized`). Also hardened the helper's fallback (the
+>    read path passes the untrusted entity key as fallback). Security + code-review PASS.
+>    ↳ **[LOW · defense-in-depth FOLLOW-UP] TOCTOU / symlink containment.** `_safe_entity_filename`
+>    is a lexical basename guard; it does not defend against a pre-existing symlink at
+>    `entity_dir/<name>.json` pointing outside the tree, nor the check-vs-use race. Requires prior
+>    local FS compromise (LOW). If desired later: `Path.resolve()` containment assertion
+>    (real path within `entity_dir.resolve()`) and/or `O_NOFOLLOW` on open.
 > 4. **[HIGH · destructive-op safety] Narrative-relocation S3 delete needs verify-before-delete +
 >    shard cleanup.** `_relocate_narrative_note` deletes the S3 `output/bibliography/<name>` object
 >    without confirming the `narrative_notes/` write succeeded, and does not delete sibling
