@@ -24,10 +24,19 @@ bottom); what remains is ranked here. Current ordered priority:
 >    If any use `sub_event_id` as a CROSS-REFERENCE the way batch_parallel did, they share the same
 >    latent dangling-xref bug (NOT a regression — behavior unchanged). Determine per-caller whether
 >    sub_event_id is a reference (then skip it) or a to-be-minted id, and apply skip_keys accordingly.
-> 2. **[HIGH · DQ — geocode from prose] `_looks_like_place_name` still accepts short (≤5-word)
->    declarative clauses** ("They attacked Aachen at dawn", "Schmidt was taken") → can geocode a place
->    off incidental prose. Tighten: reject leading lowercase verbs / require title-case, or a verb
->    stop-word check. (`src/enrichment/places_grok_geocode.py`.)
+> 2. **~~[HIGH · DQ — geocode from prose] `_looks_like_place_name` accepts short prose clauses~~
+>    ✅ DONE 2026-10-18 (PR #449).** Replaced the length heuristic entirely (real ETO place names are
+>    often 1–5 letters — Y, Eu, Ulm, Köln, Metz, Caen, Düren, Spa, Mons — so length is the wrong
+>    signal). New `_toponym_from_prose`: (1) file STEM is the primary name (already-resolved entity
+>    key); (2) prose fallback extracts the capitalized phrase via mid-sentence capitalization,
+>    stopping at sentence boundaries (incl. quoted/paren terminators); (3) sentence-initial runs
+>    require stem corroboration ("Ulm was on fire."). Multi-word phrases kept INTACT (New York City,
+>    Monte Cassino, Operation Cobra) for Grok to arbitrate non-places (owner guidance: two capitalized
+>    words don't disqualify a place; Grok clears it up). Security + code-review PASS (CRITICAL
+>    cross-sentence fusion + WARNING wrapped-terminator both fixed).
+>    ↳ **[MED · FOLLOW-UP] Entity-context disambiguation** — a bare proper noun after a title
+>    ("General Patton", "Operation Cobra") is sent to Grok as-is; a future pass could cross-check
+>    nearby Person/Operation entities to pre-filter before the geocode call.
 > 3. **[HIGH · path-traversal hardening — read side] Pre-fix `index.json` may hold unsanitized
 >    filenames.** `_safe_entity_filename` guards NEW writes, but `_get_or_create_entity`'s
 >    existing-entity branch uses `entity_dir / index[key]` verbatim — an index written by pre-fix code
