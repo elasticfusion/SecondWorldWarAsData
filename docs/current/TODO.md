@@ -27,19 +27,27 @@ bottom); what remains is ranked here. Current ordered priority:
 >    protected, mention-level ids (PersonID/DateMentionID/…) are still fixed. No per-caller edits
 >    needed.
 >
-> 7. **[HIGH · identity integrity — raised by owner 2026-10-18] Code should MINT every id server-side
->    and IGNORE the LLM's ULID output entirely.** The prompts still instruct the LLM to "Generate
->    26-character ULIDs" and emit `01ULID…` placeholders for mention ids (PersonID, DateMentionID,
->    WeatherMentionID, MentionID, …). EventID/Sub-eventID are already overridden deterministically, but
->    mention ids are INCONSISTENT: `dates.py` mints server-side (`str(ulid.new())`, correct), while
->    `people.py` trusts `person["PersonID"]` and `places.py` uses `mention["PlaceMentionID"]` from the
->    LLM. A hallucinated/colliding-but-valid LLM ULID is therefore trusted (dedup is by normalized
->    name, so bounded, but still a cross-reference-target hazard + wasted tokens). FIX: mint ALL ids
->    server-side (overwrite the LLM value like dates.py), remove the ULID-generation instructions +
->    `01ULID…` fields from the prompts, and shrink `_fix_invalid_ulids` to a validator (it should
->    rarely/never fire once nothing LLM-supplied is trusted). Scope: ~9 extractors + prompts + the
->    schema Field descriptions. Observability: count how often a server-minted id REPLACED a
->    differing LLM value (quantifies how much the LLM output was being trusted).
+> 7. **[HIGH · identity integrity — owner-clarified 2026-10-18] Two-part id discipline: mint NEW ids
+>    server-side; for EMBEDDED ids, verify Grok HONORED them (inbound==outbound).**
+>    Context: prompts both (i) EMBED known ids for the LLM to echo — Sub-eventID at
+>    `batch_parallel.py:538` and `prompts/{dates,people,places,supplemental}.yaml (ID: {sub_event_id})`
+>    — and (ii) instruct "Generate 26-character ULIDs" + `01ULID…` placeholders for NEW entity/mention
+>    ids. The two must be handled oppositely:
+>    - **(a) NEW entity/mention ids** (PersonID, DateMentionID, PlaceMentionID, MaterialID, …):
+>      strip the "Generate ULID" instruction + `01ULID…` fields from the prompts and MINT them
+>      SERVER-SIDE. Today this is INCONSISTENT — `dates.py` mints (`str(ulid.new())`, correct) but
+>      `people.py` trusts `person["PersonID"]` and `places.py` uses `mention["PlaceMentionID"]`. Make
+>      all extractors mint (overwrite the LLM value).
+>    - **(b) EMBEDDED reference ids** (the Sub-eventID/EventID/known PersonID we put INTO the prompt):
+>      Grok MUST HONOR them (echo unchanged). Add an INBOUND→OUTBOUND equality check: for every id we
+>      embedded, verify the echo equals it; on mismatch RESTORE the known-correct embedded id
+>      (DETERMINISTIC recovery — we already know the right value), never a random ULID. This supersedes
+>      the "fix malformed ULID" approach: we don't guess, we snap back to what we sent. The batch path
+>      approximates this (`_process_batch_response` exact/unique-recover/drop); generalize it + apply
+>      uniformly, and flag any mismatch as an OBSERV/quality signal (measures Grok's honor rate).
+>    Observability: count (per entity type) embedded-id echo mismatches restored, and server-minted
+>    ids that overwrote a differing LLM value. `_fix_invalid_ulids` then shrinks toward a validator.
+>    Scope: ~9 extractors + prompts + schema Field descriptions.
 > 2. **~~[HIGH · DQ — geocode from prose] `_looks_like_place_name` accepts short prose clauses~~
 >    ✅ DONE 2026-10-18 (PR #449).** Replaced the length heuristic entirely (real ETO place names are
 >    often 1–5 letters — Y, Eu, Ulm, Köln, Metz, Caen, Düren, Spa, Mons — so length is the wrong
