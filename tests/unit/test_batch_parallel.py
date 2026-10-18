@@ -206,3 +206,38 @@ class TestProcessEntityObj:
             links=links,
         )
         assert result is False
+
+
+def test_read_side_index_traversal_guard(tmp_path):
+    """HIGH#3: a pre-fix/tampered index[key] containing '../' or an absolute path must NOT escape
+    entity_dir on read, and the index entry self-heals to a safe basename."""
+    from pathlib import Path
+    from src.extraction.batch_parallel import (
+        _get_or_create_entity,
+        _safe_entity_filename,
+    )
+
+    entity_dir = tmp_path / "places"
+    entity_dir.mkdir()
+    # Plant a would-be target OUTSIDE entity_dir that a traversal could reach.
+    outside = tmp_path / "secret.json"
+    outside.write_text('{"stolen": true}', encoding="utf-8")
+
+    # Pre-fix index maps a key to a traversal path.
+    index = {"Aachen": "../secret.json"}
+    entity_file, entity_id, record = _get_or_create_entity(
+        key="Aachen",
+        obj={},
+        index=index,
+        entity_dir=entity_dir,
+        make_record=lambda o: {},
+        id_field="PlaceID",
+    )
+    # Resolved path must stay inside entity_dir (no escape to ../secret.json).
+    assert Path(entity_file).resolve().parent == entity_dir.resolve()
+    assert ".." not in str(entity_file)
+    # The out-of-dir secret was never read as the entity record.
+    assert record.get("stolen") is not True
+    # Index self-healed to a safe basename.
+    assert index["Aachen"] == _safe_entity_filename("../secret.json", "Aachen")
+    assert "/" not in index["Aachen"]

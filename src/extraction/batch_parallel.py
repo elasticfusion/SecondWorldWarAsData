@@ -61,7 +61,12 @@ def _safe_entity_filename(filename: str, entity_id: str) -> str:
     stem = base[:-5] if base.lower().endswith(".json") else base
     safe = re.sub(r"[^A-Za-z0-9 ._-]", "", stem).strip().strip(".").strip()
     if not safe:
-        safe = entity_id
+        # Sanitize the fallback too — callers may pass an untrusted value (e.g. the entity key/name
+        # on the read path), so the fallback must not be able to reintroduce "/" or "..".
+        fb = _os.path.basename((entity_id or "").replace("\\", "/"))
+        safe = re.sub(r"[^A-Za-z0-9 ._-]", "", fb).strip().strip(".").strip()
+    if not safe:
+        safe = "entity"
     return f"{safe}.json"
 
 
@@ -266,7 +271,23 @@ def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positi
             _register_entity(book, entity_dir.name, filename)
         return entity_file, entity_id, record
 
-    entity_file = entity_dir / index[key]
+    # Read-side path-traversal guard (HIGH#3): index[key] may have been written by PRE-FIX code (or
+    # tampered with) and could contain "../" or an absolute path, which would escape entity_dir on
+    # read and on any subsequent relationship-write. Reduce the stored value to a safe basename the
+    # same way the write path does. If the stored value was unsafe, self-heal the index entry so the
+    # bad path is not propagated.
+    stored = index[key]
+    safe_name = _safe_entity_filename(str(stored), key)
+    if safe_name != str(stored):
+        logger.warning(
+            "OBSERV entity.index_sanitized dir=%s key=%s stored=%r -> %s",
+            entity_dir.name,
+            key,
+            str(stored)[:80],
+            safe_name,
+        )
+        index[key] = safe_name
+    entity_file = entity_dir / safe_name
     try:
         with open(entity_file, "r", encoding="utf-8") as fh:
             record = json.load(fh)
