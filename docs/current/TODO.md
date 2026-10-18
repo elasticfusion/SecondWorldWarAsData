@@ -71,9 +71,13 @@ bottom); what remains is ranked here. Current ordered priority:
 >    Monte Cassino, Operation Cobra) for Grok to arbitrate non-places (owner guidance: two capitalized
 >    words don't disqualify a place; Grok clears it up). Security + code-review PASS (CRITICAL
 >    cross-sentence fusion + WARNING wrapped-terminator both fixed).
->    ↳ **[MED · FOLLOW-UP] Entity-context disambiguation** — a bare proper noun after a title
->    ("General Patton", "Operation Cobra") is sent to Grok as-is; a future pass could cross-check
->    nearby Person/Operation entities to pre-filter before the geocode call.
+>    ↳ **~~[MED · FOLLOW-UP] Entity-context disambiguation~~ ✅ DONE 2026-10-18 (PR #456).** The
+>    geocode prose-fallback now cross-checks a recovered toponym against KNOWN person names (from the
+>    sibling people/index.json, normalized with the same text_utils.normalize_name the index was built
+>    with) and rejects a candidate that is a known person — title-aware ("General Patton") so a real
+>    place sharing a surname ("Patton Ridge") is not over-rejected. OBSERV loaded/unavailable/rejected
+>    +matched_person. Concurrent independent code + security reviews both PASS. (Operation/codename
+>    disambiguation remains deferred — only person cross-check implemented.)
 > 3. **~~[HIGH · path-traversal — read side] Pre-fix `index.json` unsanitized on read~~
 >    ✅ DONE 2026-10-18 (PR #450).** Basename-guarded BOTH read-side sinks that joined a stored
 >    index value to entity_dir verbatim: `_get_or_create_entity` (arbitrary read) AND
