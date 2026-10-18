@@ -311,11 +311,11 @@ def _apply_result(entry: Dict, result: Optional[Tuple]) -> None:
     # "reference_identified" (honest; a later run still retries the online sources). Only a
     # record with neither a URL nor an archive reference is genuinely "not_found".
     if not entry.get("resource_urls"):
-        entry["search_status"] = (
-            "reference_identified"
-            if entry.get("archive_reference_number")
-            else "not_found"
+        _sm = entry.get("source_metadata") or {}
+        identified = bool(entry.get("archive_reference_number")) or bool(
+            _sm.get("canonical_title")
         )
+        entry["search_status"] = "reference_identified" if identified else "not_found"
 
 
 def _resolve_archive(entry, citation, grok_client, config):

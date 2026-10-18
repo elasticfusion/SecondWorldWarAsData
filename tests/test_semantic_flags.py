@@ -169,3 +169,44 @@ def test_foreign_flags_preserved_when_recomputing():
     }
     sf.annotate("places", rec)
     assert rec["quality_flags"] == ["some_other_subsystem_flag"]
+
+
+def test_identified_published_work_not_unresolvable():
+    """A biblio-note-identified published work (canonical title) with no online copy is NOT
+    citation_unresolvable — it's a known book, merely not located online."""
+    rec = {
+        "title": "Unknown",
+        "search_status": "reference_identified",
+        "resource_urls": [],
+        "source_metadata": {
+            "biblio_category": "published_work",
+            "canonical_title": "Crusade in Europe",
+        },
+    }
+    assert sf.flags_for("bibliography", rec) == []
+
+
+def test_reference_identified_status_not_unresolvable():
+    rec = {
+        "title": "Unknown",
+        "archive_reference_number": "RG 407",
+        "search_status": "reference_identified",
+    }
+    assert sf.flags_for("bibliography", rec) == []
+
+
+def test_genuinely_unidentified_still_unresolvable():
+    rec = {
+        "title": "A real prose fragment",
+        "search_status": "not_found",
+        "resource_urls": [],
+    }
+    assert sf.flags_for("bibliography", rec) == ["citation_unresolvable"]
+
+
+def test_citation_flags_no_crash_on_empty_title_with_citation_dict():
+    """Regression: title fallback must read citation['title'], not the citation dict (which
+    would crash on .strip())."""
+    rec = {"title": "", "citation": {"title": "Ibid."}, "search_status": "not_found"}
+    # 'Ibid.' -> stub; the key point is it does not raise.
+    assert sf.flags_for("bibliography", rec) == ["citation_stub"]
