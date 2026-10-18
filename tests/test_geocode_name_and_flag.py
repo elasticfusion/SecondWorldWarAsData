@@ -132,3 +132,13 @@ def test_toponym_extracts_capitalized_phrase_intact_for_grok_to_arbitrate():
     )
     # Function words still bound the phrase (so a whole clause is never sent).
     assert _toponym_from_prose("the attack entered Trier") == "Trier"
+
+
+def test_toponym_sentence_boundary_with_closing_wrappers():
+    """Review WARNING: a sentence terminator wrapped in a closing quote/paren ('Aachen.' / (Metz.))
+    must still close the run so adjacent-sentence cities do not fuse."""
+    from src.enrichment.places_grok_geocode import _toponym_from_prose
+
+    assert _toponym_from_prose('took "Aachen." Cologne fell.') == "Aachen"
+    assert "Cologne" not in (_toponym_from_prose('took "Aachen." Cologne fell.') or "")
+    assert _toponym_from_prose("(Metz.) Caen held.") is None

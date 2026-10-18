@@ -255,11 +255,17 @@ def _toponym_from_prose(text: str, corroborate: Optional[str] = None) -> Optiona
             return False
         return w[0].isupper() or (len(w) == 1 and w.isalpha() and w.isupper())
 
+    def _ends_sentence(tok: str) -> bool:
+        # A sentence terminator may be followed by closing wrappers ("Aachen." / (Metz.) / 'Caen.');
+        # strip trailing wrapping chars before testing so a quoted/parenthesized boundary still
+        # closes the run (otherwise adjacent-sentence cities could fuse).
+        return tok.rstrip("\"'”’)]}»").endswith((".", "!", "?"))
+
     # Find the longest consecutive run of capitalized name-like tokens, tracking whether the run
     # begins at sentence start (index 0, or right after sentence-ending punctuation). A run STOPS at
-    # a sentence boundary: a token ending in . ! ? closes the current run (so "Aachen. Cologne" does
-    # not fuse into a fake "Aachen Cologne" — they are two separate single-token runs, each subject
-    # to the sentence-initial corroboration guard below).
+    # a sentence boundary: a token ending in . ! ? (possibly wrapped in closing quotes/brackets)
+    # closes the current run (so "Aachen. Cologne" does not fuse into a fake "Aachen Cologne" — they
+    # are two separate runs, each subject to the sentence-initial corroboration guard below).
     best: list = []
     best_sentence_initial = True
     i = 0
@@ -269,19 +275,19 @@ def _toponym_from_prose(text: str, corroborate: Optional[str] = None) -> Optiona
             run = [tokens[i]]
             run_initial = prev_ended_sentence
             # If this very token ends a sentence, the run is just this token.
-            ends_sentence = tokens[i].endswith((".", "!", "?"))
+            ends_sentence = _ends_sentence(tokens[i])
             j = i + 1
             while not ends_sentence and j < len(tokens) and _is_cap(tokens[j]):
                 run.append(tokens[j])
-                ends_sentence = tokens[j].endswith((".", "!", "?"))
+                ends_sentence = _ends_sentence(tokens[j])
                 j += 1
             if len(run) > len(best):
                 best = run
                 best_sentence_initial = run_initial
-            prev_ended_sentence = tokens[j - 1].endswith((".", "!", "?"))
+            prev_ended_sentence = _ends_sentence(tokens[j - 1])
             i = j
         else:
-            prev_ended_sentence = tokens[i].endswith((".", "!", "?"))
+            prev_ended_sentence = _ends_sentence(tokens[i])
             i += 1
 
     if not best:
@@ -289,11 +295,11 @@ def _toponym_from_prose(text: str, corroborate: Optional[str] = None) -> Optiona
     cand = " ".join(_norm(x) for x in best).strip()
     if not cand:
         return None
-    # A multi-token mid-sentence capitalized run is a confident proper-noun phrase. A capitalized
-    # run that BEGINS a sentence is ambiguous — the leading token may be capitalized only because it
-    # starts the sentence ("Ulm was on fire." / "Monte Cassino fell."). Accept a sentence-initial run
-    # only when the file stem corroborates its first token; otherwise require it to be multi-token
-    # AND corroborated. Non-sentence-initial runs are accepted as-is.
+    # A capitalized run that BEGINS a sentence is ambiguous — the leading token may be capitalized
+    # only because it starts the sentence ("Ulm was on fire." / "Monte Cassino fell."). A
+    # sentence-initial run (single OR multi-token) is therefore accepted only when the file stem
+    # corroborates its first token. A run that is NOT sentence-initial is a confident mid-sentence
+    # proper-noun phrase and is accepted as-is.
     if best_sentence_initial:
         if corroborate and _norm(best[0]).lower() == corroborate.strip().lower():
             return cand
