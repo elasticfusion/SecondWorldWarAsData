@@ -231,3 +231,43 @@ def test_openserp_verify_budget_caps_grok_calls():
             entry=entry,
         )
     assert calls["n"] <= 5, f"verify budget exceeded: {calls['n']} calls"
+
+
+def test_not_citation_relocates_to_narrative_notes(tmp_path):
+    """A not_citation record (narrative footnote) is moved out of output/bibliography/ into
+    output/narrative_notes/ — bib file removed, note written with text + provenance."""
+    import json
+
+    bib = tmp_path / "output" / "bibliography"
+    bib.mkdir(parents=True)
+    f = bib / "bib_deadbeef00000000.json"
+    f.write_text(
+        json.dumps(
+            {
+                "BibliographyID": "01NOTE",
+                "title": "Unknown",
+                "alt_title": "An American heavy tank did not reach the theater until 1945",
+                "search_status": "not_citation",
+                "mentions": [
+                    {
+                        "MentionID": "01M",
+                        "book": "RoerDams",
+                        "chapter": "chapter2a",
+                        "reference_type": "footnote",
+                        "reference_number": "21",
+                        "verbatim_reference": "An American heavy tank did not reach the theater until 1945.",
+                        "source_url": "https://www.ibiblio.org/hyperwar/USA/USA-E-Siegfried/USA-E-Siegfried-2.html#fn21",
+                    }
+                ],
+            }
+        )
+    )
+    br._relocate_narrative_note(f, json.loads(f.read_text()))
+    assert not f.exists()  # removed from bibliography
+    out = tmp_path / "output" / "narrative_notes" / "bib_deadbeef00000000.json"
+    assert out.exists()
+    note = json.loads(out.read_text())
+    assert note["text"].startswith("An American heavy tank")
+    assert note["book"] == "RoerDams" and note["reference_number"] == "21"
+    assert "ibiblio.org" in note["source_url"]
+    assert note["origin"] == "footnote_narrative"
