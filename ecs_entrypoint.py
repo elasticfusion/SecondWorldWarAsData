@@ -1056,6 +1056,7 @@ def _download_phase3_from_s3() -> None:
         "maps",
         "supplemental",
         "bibliography",
+        "narrative_notes",
     ]
     s3 = _s3_client()
     book_name = os.environ.get("BOOK_NAME", "")
@@ -2223,6 +2224,7 @@ def _final_sync(phase_script: str = ""):
             "maps",
             "supplemental",
             "bibliography",
+            "narrative_notes",
             "metrics",
         ]
         total = 0

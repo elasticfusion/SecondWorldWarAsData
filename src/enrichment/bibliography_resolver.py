@@ -15,6 +15,8 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+import ulid
+
 from src.utils.http_pool import get_session
 from src.enrichment.local_holdings import build_holdings_index, find_local_holding
 
@@ -1751,7 +1753,7 @@ def _process_bib_file(
     grok_client: Any,
     config: Optional[Dict],
     resolved_by_key: Dict[str, Dict[str, Any]],
-) -> Optional[Tuple[str, bool]]:
+) -> Optional[Tuple[str, bool, str]]:
     """Resolve one bibliography file in place. Returns (status, was_deduped) or
     None if the file should be skipped/errored (caller records the stat)."""
     data = json.loads(f.read_text(encoding="utf-8"))
@@ -1760,7 +1762,7 @@ def _process_bib_file(
     # copy yet — re-process it so the online sources (NARA catalog / OpenSERP / archive.org /
     # Gutenberg) get a chance to find one.
     if data.get("search_status") == "resolved" and data.get("resource_urls"):
-        return ("skipped", False)
+        return ("skipped", False, "")
 
     key = _citation_key(data)
     cached = resolved_by_key.get(key) if key else None
@@ -1773,8 +1775,23 @@ def _process_bib_file(
 
     from src.utils.file_lock import write_json_with_lock
 
-    write_json_with_lock(f, data, entity="bibliography")
     status = data.get("search_status") or "not_found"
+
+    # Narrative footnote, not a bibliographic reference: the deterministic pass captures every
+    # non-stub footnote as a bibliography candidate, but the resolver recognizes some as
+    # narrative/factual prose ("An American heavy tank did not reach the theater until 1945").
+    # Those do not belong in output/bibliography/ — relocate the content (verbatim text +
+    # provenance) to output/narrative_notes/ and remove the misfiled bibliography file. Return
+    # the verbatim so the caller can still log it in the not_citation_samples OBSERV (the file
+    # is gone after relocation, so the caller must not re-read it).
+    if status == "not_citation":
+        sample = (data.get("mentions") or [{}])[0].get("verbatim_reference", "") or (
+            data.get("verbatim_reference") or ""
+        )
+        _relocate_narrative_note(f, data)
+        return (status, cached is not None, sample)
+
+    write_json_with_lock(f, data, entity="bibliography")
     # OBSERV (bibliography chain): attribute each resolution to its source so the
     # NARA vs archive_org vs local-holding breakdown (and NARA success rate) is visible.
     if status == "resolved":
@@ -1792,7 +1809,45 @@ def _process_bib_file(
             )
         except Exception:  # noqa: BLE001 - observability must never break the resolver
             pass
-    return (status, cached is not None)
+    return (status, cached is not None, "")
+
+
+def _relocate_narrative_note(f: Path, data: Dict[str, Any]) -> None:
+    """Move a not_citation record out of output/bibliography/ into output/narrative_notes/.
+
+    These are narrative/factual footnotes (not bibliographic references) that the deterministic
+    capture pass stored as bibliography candidates. We preserve the footnote text + provenance
+    (book/chapter/footnote + source_url) as a narrative note and delete the misfiled bibliography
+    file. Fail-safe: a relocation error must never break resolution (the record stays put).
+    """
+    try:
+        from src.utils.file_lock import write_json_with_lock
+
+        mention = (data.get("mentions") or [{}])[0]
+        note = {
+            "NarrativeNoteID": data.get("BibliographyID") or str(ulid.new()),
+            "text": mention.get("verbatim_reference")
+            or (data.get("citation") or {}).get("alt_title")
+            or data.get("alt_title")
+            or "",
+            "book": mention.get("book"),
+            "chapter": mention.get("chapter"),
+            "reference_type": mention.get("reference_type"),
+            "reference_number": mention.get("reference_number"),
+            "source_url": mention.get("source_url"),
+            "mentions": data.get("mentions") or [],
+            "origin": "footnote_narrative",
+            "_last_updated": data.get("_last_updated"),
+        }
+        notes_dir = f.parent.parent / "narrative_notes"
+        notes_dir.mkdir(parents=True, exist_ok=True)
+        # Deterministic filename: reuse the bib file's stem so re-runs are idempotent.
+        out = notes_dir / f.name
+        write_json_with_lock(out, note, entity="narrative_notes")
+        f.unlink(missing_ok=True)
+        logger.info("OBSERV bib.relocated_narrative %s -> narrative_notes/", f.name)
+    except Exception as e:  # noqa: BLE001 - relocation must never break the resolver
+        logger.warning("narrative relocate failed for %s: %s", f.name, e)
 
 
 def _account_bib_status(stats: Dict[str, int], status: str, was_deduped: bool) -> bool:
@@ -1866,17 +1921,9 @@ def resolve_bibliography_dir(
             stats["errors"] += 1
             continue
 
-        status, was_deduped = result
-        if status == "not_citation" and len(not_citation_samples) < 5:
-            try:
-                _d = json.loads(f.read_text(encoding="utf-8"))
-                _v = (_d.get("verbatim_reference") or "") or (
-                    (_d.get("mentions") or [{}])[0].get("verbatim_reference", "")
-                )
-                if _v:
-                    not_citation_samples.append(_CTRL.sub(" ", _v)[:80])
-            except (OSError, json.JSONDecodeError, ValueError, IndexError):
-                pass
+        status, was_deduped, nc_sample = result
+        if status == "not_citation" and nc_sample and len(not_citation_samples) < 5:
+            not_citation_samples.append(_CTRL.sub(" ", nc_sample)[:80])
         if _account_bib_status(stats, status, was_deduped):
             # Real citation, unresolved online → human disposition.
             data = json.loads(f.read_text(encoding="utf-8"))
