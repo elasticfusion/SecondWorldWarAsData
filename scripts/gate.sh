@@ -6,6 +6,10 @@
 #   bash scripts/gate.sh            # full gate
 #   bash scripts/gate.sh --no-tests # linters only (faster)
 #
+# Companion (NON-deterministic, opt-in): scripts/ai_review.sh runs the independent
+# code-review + security sub-agents on the diff. Run it on significant changes / in CI on PRs;
+# it is intentionally NOT part of this gate (an LLM check can't be a reliable commit blocker).
+#
 # Exits non-zero on the first failure. No partial gates.
 
 set -uo pipefail

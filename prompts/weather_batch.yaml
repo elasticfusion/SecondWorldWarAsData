@@ -11,7 +11,6 @@ prompt_template: |
   {sub_event_blocks}
 
   For each weather mention provide:
-  - WeatherMentionID: 26-character ULID
   - place_name, PlaceMentionID (from available places above)
   - date (YYYY-MM-DD exact only), DateMentionID (from available dates above)
   - weather_description: what the SOURCE TEXT says about the weather (e.g. "heavy snow",

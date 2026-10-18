@@ -826,6 +826,15 @@ def _process_person(
         logger.info(
             "OBSERV id.minted entity=person field=PersonID replaced_llm_value=1"
         )
+    # HIGH#7a: mint the per-mention MentionID server-side too (consistent with places/dates/weather).
+    for _m in person.get("event_mentions", []) or []:
+        if isinstance(_m, dict):
+            _llm_mid = _m.get("MentionID")
+            _m["MentionID"] = str(ulid.new())
+            if _llm_mid and _llm_mid != _m["MentionID"]:
+                logger.info(
+                    "OBSERV id.minted entity=person field=MentionID replaced_llm_value=1"
+                )
     name_key = _normalize_name(name)
 
     # Check in-memory index for existing person
