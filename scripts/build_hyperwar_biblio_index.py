@@ -19,12 +19,65 @@ import argparse
 import json
 import re
 import sys
+import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Dict, List, Optional
 
 BASE = "https://www.ibiblio.org/hyperwar/USA"
 OUT = Path(__file__).resolve().parents[1] / "src/enrichment/data/hyperwar_biblio.json"
+
+# SSRF guard: this build-time generator scrapes hrefs out of fetched (untrusted) HTML and would
+# otherwise follow/store ANY absolute URL it finds. Constrain every fetched/stored URL to HTTPS on
+# the known HyperWar host, so a tampered/MITM'd source page cannot redirect the generator at an
+# internal address (cloud metadata 169.254.169.254, localhost, private ranges) or an arbitrary site.
+_SAFE_HOSTS = frozenset({"ibiblio.org", "www.ibiblio.org"})
+
+# Count of URLs rejected by the SSRF guard this run (observability: lets the build summary tell
+# "no bibliography link" apart from "guard blocked a non-allowlisted link").
+_guard_rejections = 0
+
+
+def _is_safe_biblio_url(url: str) -> bool:
+    """True only for an https:// URL whose host is in the HyperWar allowlist (no credentials, no
+    alternate scheme). Used to gate both outbound fetches and stored biblio_urls."""
+    try:
+        p = urllib.parse.urlparse(url)
+    except (ValueError, TypeError):
+        return False
+    if p.scheme != "https":
+        return False
+    # urlparse puts any user:pass@ in netloc; .hostname strips it (and the port) for the check.
+    host = (p.hostname or "").lower()
+    if host not in _SAFE_HOSTS:
+        return False
+    # Reject embedded credentials / explicit alternate port shenanigans.
+    if "@" in p.netloc:
+        return False
+    return True
+
+
+class _AllowlistRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Re-validate EVERY redirect target against the allowlist. Closes the SSRF residual where a
+    guard-approved ibiblio URL 302-redirects to an internal/off-host address — urlopen would
+    otherwise follow it blindly. A disallowed target raises, aborting the fetch."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
+        if not _is_safe_biblio_url(newurl):
+            print(
+                f"  ! refusing redirect to non-allowlisted URL: {newurl}",
+                file=sys.stderr,
+            )
+            raise urllib.error.HTTPError(
+                newurl, code, "redirect to non-allowlisted URL blocked", headers, fp
+            )
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+# Opener whose ONLY redirect handler re-checks the allowlist (no proxy/auth handlers added).
+_OPENER = urllib.request.build_opener(_AllowlistRedirectHandler())
+
 
 # Full green-book volume set (index pages). Keyed by volume id.
 VOLUMES = [
@@ -63,13 +116,17 @@ _BIB_TEXT = re.compile(r"bibliograph", re.I)
 
 
 def _get(url: str, timeout: int = 30) -> Optional[str]:
+    # Defense-in-depth: never fetch a URL outside the HTTPS HyperWar allowlist.
+    if not _is_safe_biblio_url(url):
+        print(f"  ! refusing to fetch non-allowlisted URL: {url}", file=sys.stderr)
+        return None
     try:
         req = urllib.request.Request(
             url, headers={"User-Agent": "wwii-pipeline/biblio-index"}
         )
-        with urllib.request.urlopen(
+        with _OPENER.open(
             req, timeout=timeout
-        ) as r:  # noqa: S310 - fixed host
+        ) as r:  # noqa: S310 - allowlisted https host + redirect targets re-validated
             return r.read().decode("utf-8", "replace")
     except Exception as e:  # noqa: BLE001
         print(f"  ! fetch failed {url}: {e}", file=sys.stderr)
@@ -89,18 +146,41 @@ def discover_biblio_url(volume: str) -> Optional[str]:
             or re.search(r"-Bib\b", href)
         ):
             if href.startswith("http"):
-                return href
+                # Absolute href scraped from untrusted HTML — only follow/store it if it is on the
+                # HTTPS HyperWar allowlist; otherwise ignore it (SSRF guard) and keep scanning.
+                if _is_safe_biblio_url(href):
+                    return href
+                global _guard_rejections
+                _guard_rejections += 1
+                print(
+                    f"  ! skipping non-allowlisted bibliography href: {href}",
+                    file=sys.stderr,
+                )
+                continue
+            # Relative href — pinned under the fixed BASE host (safe by construction).
             return f"{BASE}/{volume}/{href.lstrip('./')}"
     return None
 
 
 def build(volumes: List[str]) -> Dict[str, Dict]:
     index: Dict[str, Dict] = {}
+    guard_blocked: List[str] = (
+        []
+    )  # volumes whose only biblio href was rejected by the SSRF guard
     for vol in volumes:
         print(f"[{vol}]")
+        before = _guard_rejections
         bib_url = discover_biblio_url(vol)
         if not bib_url:
-            print("  no bibliography link found")
+            if _guard_rejections > before:
+                # A candidate href WAS found but the SSRF allowlist rejected it — distinct from
+                # "no bibliography exists". Surface it so a tampered/changed source page is visible.
+                print(
+                    "  ! bibliography link REJECTED by SSRF guard (non-allowlisted host/scheme)"
+                )
+                guard_blocked.append(vol)
+            else:
+                print("  no bibliography link found")
             index[vol] = {"biblio_url": None}
             continue
         print(f"  biblio: {bib_url}")
@@ -110,6 +190,12 @@ def build(volumes: List[str]) -> Dict[str, Dict]:
         # volumes that have been verified. The generic archival-category layer + this correct
         # per-volume provenance URL cover every volume regardless.
         index[vol] = {"biblio_url": bib_url}
+    if guard_blocked:
+        print(
+            f"\n  ! SSRF guard blocked a bibliography href for {len(guard_blocked)} volume(s): "
+            f"{', '.join(guard_blocked)} — verify the source pages are not tampered/changed",
+            file=sys.stderr,
+        )
     return index
 
 
