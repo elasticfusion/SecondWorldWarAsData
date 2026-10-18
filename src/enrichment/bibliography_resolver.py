@@ -11,6 +11,7 @@ Each search result is verified by Grok before acceptance.
 
 import json
 import logging
+import os
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -1845,9 +1846,30 @@ def _relocate_narrative_note(f: Path, data: Dict[str, Any]) -> None:
         out = notes_dir / f.name
         write_json_with_lock(out, note, entity="narrative_notes")
         f.unlink(missing_ok=True)
+        _delete_s3_bibliography_object(f.name)
         logger.info("OBSERV bib.relocated_narrative %s -> narrative_notes/", f.name)
     except Exception as e:  # noqa: BLE001 - relocation must never break the resolver
         logger.warning("narrative relocate failed for %s: %s", f.name, e)
+
+
+def _delete_s3_bibliography_object(filename: str) -> None:
+    """Delete the stale ``output/bibliography/<filename>`` object from S3 after a narrative
+    record is relocated. The local file is unlinked, but the Phase-3 final sync is ADDITIVE
+    (no --delete), so without this the misfiled bibliography object persists in S3 and
+    re-downloads as a zombie duplicate of the narrative_notes record. No-op outside S3 mode;
+    best-effort and fail-safe."""
+    bucket = os.environ.get("S3_BUCKET") or os.environ.get("DATA_BUCKET")
+    if not bucket:
+        return  # local/test mode — nothing in S3 to remove
+    try:
+        import boto3
+
+        boto3.client(
+            "s3", region_name=os.environ.get("AWS_REGION", "us-east-1")
+        ).delete_object(Bucket=bucket, Key=f"output/bibliography/{filename}")
+        logger.debug("Deleted stale S3 bibliography object: %s", filename)
+    except Exception as e:  # noqa: BLE001 - S3 cleanup is best-effort
+        logger.debug("S3 bibliography delete skipped for %s: %s", filename, e)
 
 
 def _account_bib_status(stats: Dict[str, int], status: str, was_deduped: bool) -> bool:

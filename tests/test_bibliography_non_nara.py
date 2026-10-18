@@ -271,3 +271,70 @@ def test_not_citation_relocates_to_narrative_notes(tmp_path):
     assert note["book"] == "RoerDams" and note["reference_number"] == "21"
     assert "ibiblio.org" in note["source_url"]
     assert note["origin"] == "footnote_narrative"
+
+
+def test_relocate_narrative_deletes_s3_object(tmp_path, monkeypatch):
+    """Relocation must also delete the stale S3 bibliography object (the additive Phase-3 sync
+    never removes it), not just the local file — else the narrative record zombies in S3.
+    """
+    import json
+    from unittest.mock import MagicMock
+
+    bib = tmp_path / "output" / "bibliography"
+    bib.mkdir(parents=True)
+    f = bib / "bib_cafebabe00000000.json"
+    f.write_text(
+        json.dumps(
+            {
+                "BibliographyID": "01N",
+                "search_status": "not_citation",
+                "mentions": [
+                    {
+                        "verbatim_reference": "A narrative aside.",
+                        "book": "B",
+                        "chapter": "c1",
+                    }
+                ],
+            }
+        )
+    )
+    monkeypatch.setenv("S3_BUCKET", "test-bucket")
+    s3 = MagicMock()
+    import boto3
+
+    monkeypatch.setattr(boto3, "client", lambda *a, **k: s3)
+    br._relocate_narrative_note(f, json.loads(f.read_text()))
+    assert not f.exists()
+    assert (
+        tmp_path / "output" / "narrative_notes" / "bib_cafebabe00000000.json"
+    ).exists()
+    s3.delete_object.assert_called_once_with(
+        Bucket="test-bucket", Key="output/bibliography/bib_cafebabe00000000.json"
+    )
+
+
+def test_relocate_narrative_noop_s3_without_bucket(tmp_path, monkeypatch):
+    """No S3_BUCKET (local mode) -> relocation still works, no S3 call attempted."""
+    import json
+    from unittest.mock import MagicMock
+
+    monkeypatch.delenv("S3_BUCKET", raising=False)
+    monkeypatch.delenv("DATA_BUCKET", raising=False)
+    bib = tmp_path / "output" / "bibliography"
+    bib.mkdir(parents=True)
+    f = bib / "bib_00.json"
+    f.write_text(
+        json.dumps(
+            {
+                "BibliographyID": "01N",
+                "mentions": [{"verbatim_reference": "x", "book": "B", "chapter": "c"}],
+            }
+        )
+    )
+    s3 = MagicMock()
+    import boto3
+
+    monkeypatch.setattr(boto3, "client", lambda *a, **k: s3)
+    br._relocate_narrative_note(f, json.loads(f.read_text()))
+    assert not f.exists()
+    s3.delete_object.assert_not_called()
