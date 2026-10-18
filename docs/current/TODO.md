@@ -85,11 +85,13 @@ bottom); what remains is ranked here. Current ordered priority:
 >    security review caught this second sink as CRITICAL). Both sanitize via `_safe_entity_filename` +
 >    self-heal the index (OBSERV `entity.index_sanitized`). Also hardened the helper's fallback (the
 >    read path passes the untrusted entity key as fallback). Security + code-review PASS.
->    ↳ **[LOW · defense-in-depth FOLLOW-UP] TOCTOU / symlink containment.** `_safe_entity_filename`
->    is a lexical basename guard; it does not defend against a pre-existing symlink at
->    `entity_dir/<name>.json` pointing outside the tree, nor the check-vs-use race. Requires prior
->    local FS compromise (LOW). If desired later: `Path.resolve()` containment assertion
->    (real path within `entity_dir.resolve()`) and/or `O_NOFOLLOW` on open.
+>    ↳ **~~[LOW · defense-in-depth FOLLOW-UP] TOCTOU / symlink containment~~ ✅ DONE 2026-10-18
+>    (PR #457).** Added `_contained_entity_path` — resolves `entity_dir/<name>` and uses it only if
+>    the real (symlink-resolved) path stays within the resolved `entity_dir`, else fail-closed with
+>    OBSERV `entity.path_escape_blocked`. Applied at all sinks (create-write, read, both relationship
+>    paths); `_process_entity_obj` skips when blocked (no read, no mention write-through, no crash).
+>    Concurrent code+security reviews PASS (a CRITICAL read-branch write-through found + fixed).
+>    Residual: the `open(r+)` TOCTOU window requires prior local-FS write access (accepted).
 > 4. **~~[HIGH · destructive-op safety] Narrative-relocation S3 delete~~ ✅ DONE 2026-10-18 (PR #451).**
 >    Now (a) VERIFIES the `narrative_notes/` write (read-back) before removing the source; (b) MOVES
 >    the stale S3 object to `relocated/bibliography/` (copy-then-delete) instead of deleting it, so a
