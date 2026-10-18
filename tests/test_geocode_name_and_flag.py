@@ -142,3 +142,61 @@ def test_toponym_sentence_boundary_with_closing_wrappers():
     assert _toponym_from_prose('took "Aachen." Cologne fell.') == "Aachen"
     assert "Cologne" not in (_toponym_from_prose('took "Aachen." Cologne fell.') or "")
     assert _toponym_from_prose("(Metz.) Caen held.") is None
+
+
+def test_person_crosscheck_rejects_person_toponym():
+    """#449 follow-up: a prose toponym that is actually a PERSON (optionally titled) is rejected,
+    while a real place that merely shares a surname token is NOT."""
+    from src.enrichment.places_grok_geocode import _matches_known_person as m
+
+    people = {"patton", "courtney h hodges", "model"}
+    assert m("General Patton", people)  # matched key truthy
+    assert m("Patton", people)
+    assert m("Field Marshal Model", people)
+    assert not m("Patton Ridge", people)  # real place sharing a surname
+    assert not m("Monte Cassino", people)
+    assert not m("Washington", people)  # no such person -> not rejected
+
+
+def test_place_name_prose_rejects_person_via_crosscheck():
+    from src.enrichment.places_grok_geocode import _place_name
+
+    people = {"patton"}
+    # Mid-sentence titled person in prose -> extracted then rejected by cross-check -> None.
+    rec = {
+        "event_mentions": [{"original_text": "We saw General Patton. Bastogne held."}]
+    }
+    assert _place_name(rec, person_names=people) is None
+    # A real place in prose still resolves.
+    rec2 = {"event_mentions": [{"original_text": "the attack reached Trier"}]}
+    assert _place_name(rec2, person_names=people) == "Trier"
+
+
+def test_known_person_names_loads_from_sibling_index(tmp_path):
+    import json
+    from src.enrichment.places_grok_geocode import _known_person_names
+
+    (tmp_path / "people").mkdir()
+    (tmp_path / "people" / "index.json").write_text(
+        json.dumps(
+            {"courtney h hodges": "x.json", "cota": "y.json", "_schema_version": "2.24"}
+        )
+    )
+    (tmp_path / "places").mkdir()
+    names = _known_person_names(tmp_path / "places")
+    assert "courtney h hodges" in names and "cota" in names
+    assert not any(n.startswith("_") for n in names)  # metadata keys excluded
+
+
+def test_person_crosscheck_handles_accented_and_hyphenated_names():
+    """WARNING#1 regression: normalization must match the index normalizer (ASCII-fold + punct
+    strip) so accented/hyphenated/apostrophe people are matched, not slipped through."""
+    from src.enrichment.places_grok_geocode import (
+        _matches_known_person as m,
+        _norm_person_name,
+    )
+
+    # index keys as text_utils.normalize_name would produce them
+    people = {_norm_person_name("Saint-Lô"), _norm_person_name("O'Brien")}
+    assert m("Saint-Lô", people)
+    assert m("General O'Brien", people)  # title + accented/apostrophe surname
