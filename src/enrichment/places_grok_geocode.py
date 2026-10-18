@@ -134,9 +134,16 @@ class GeocodeRunReport:
 
 
 def _norm_person_name(text: str) -> str:
-    """Normalize a name for person cross-check: lowercase, drop punctuation, collapse whitespace —
-    matching how the people index keys are normalized."""
-    return " ".join(re.sub(r"[^0-9a-z]+", " ", (text or "").lower()).split())
+    """Normalize a name for the person cross-check using the SAME normalizer the people index was
+    built with (``text_utils.normalize_name``: case-fold + ASCII-fold accents + punctuation strip),
+    so hyphenated/accented/apostrophe names (Saint-Lô, O'Brien) match their index keys. Fail-safe to
+    a simple lowering if the import is unavailable."""
+    try:
+        from src.utils.text_utils import normalize_name
+
+        return normalize_name(text or "")
+    except Exception:  # noqa: BLE001
+        return " ".join(re.sub(r"[^0-9a-z]+", " ", (text or "").lower()).split())
 
 
 def _known_person_names(places_dir: Path) -> set:
@@ -196,34 +203,41 @@ def _place_name(
         # be a PERSON, not a place ("We saw General Patton" -> "General Patton"). If the candidate
         # matches a known person name (allowing a leading title like "General"/"Gen."), reject it
         # rather than geocode a person as a place.
-        if person_names and _matches_known_person(cand, person_names):
-            logger.info("OBSERV geocode.prose_candidate_is_person rejected=%r", cand)
-            continue
+        if person_names:
+            matched = _matches_known_person(cand, person_names)
+            if matched:
+                logger.info(
+                    "OBSERV geocode.prose_candidate_is_person rejected=%r matched_person=%r",
+                    cand,
+                    matched,
+                )
+                continue
         return cand
     return None
 
 
-def _matches_known_person(candidate: str, person_names: set) -> bool:
-    """True if ``candidate`` is a known person name, optionally with a leading military TITLE
-    ("General Patton", "Gen. Patton", "Field Marshal Model") vs the bare index key ("patton",
-    "model"). To avoid over-rejecting a real place that merely shares a surname token (e.g. "Patton
-    Ridge"), the match is title-aware rather than a generic superset: after stripping any leading
-    title tokens, the REMAINDER must equal a known person name exactly."""
+def _matches_known_person(candidate: str, person_names: set):
+    """Return the matched person key if ``candidate`` is a known person name (optionally with a
+    leading military TITLE), else None. Title-aware: after stripping a leading run of title tokens
+    the remainder must EQUAL a known person key, so a place sharing a trailing surname ("Patton
+    Ridge") is not rejected. KNOWN LIMITATION (accepted): a place whose LEADING words are title
+    tokens and whose remainder equals a person surname ("Field Marshal Ridge" + person "ridge")
+    would be rejected — rare, and the only cost is the place stays ungeocoded+flagged (not
+    mis-located). The matched key is returned so a rejection is debuggable."""
     norm = _norm_person_name(candidate)
     if not norm:
-        return False
+        return None
     if norm in person_names:
-        return True
+        return norm
     tokens = norm.split()
-    # Strip a leading run of title tokens, then require an exact person-name match on the remainder.
     i = 0
     while i < len(tokens) and tokens[i] in _MILITARY_TITLE_TOKENS:
         i += 1
     if i > 0:
         remainder = " ".join(tokens[i:])
         if remainder and remainder in person_names:
-            return True
-    return False
+            return remainder
+    return None
 
 
 # Leading title tokens that may prefix a person's name in prose (normalized, punctuation-stripped).

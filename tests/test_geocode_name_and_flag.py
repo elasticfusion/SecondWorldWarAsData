@@ -150,12 +150,12 @@ def test_person_crosscheck_rejects_person_toponym():
     from src.enrichment.places_grok_geocode import _matches_known_person as m
 
     people = {"patton", "courtney h hodges", "model"}
-    assert m("General Patton", people) is True
-    assert m("Patton", people) is True
-    assert m("Field Marshal Model", people) is True
-    assert m("Patton Ridge", people) is False  # real place sharing a surname
-    assert m("Monte Cassino", people) is False
-    assert m("Washington", people) is False  # no such person -> not rejected
+    assert m("General Patton", people)  # matched key truthy
+    assert m("Patton", people)
+    assert m("Field Marshal Model", people)
+    assert not m("Patton Ridge", people)  # real place sharing a surname
+    assert not m("Monte Cassino", people)
+    assert not m("Washington", people)  # no such person -> not rejected
 
 
 def test_place_name_prose_rejects_person_via_crosscheck():
@@ -186,3 +186,17 @@ def test_known_person_names_loads_from_sibling_index(tmp_path):
     names = _known_person_names(tmp_path / "places")
     assert "courtney h hodges" in names and "cota" in names
     assert not any(n.startswith("_") for n in names)  # metadata keys excluded
+
+
+def test_person_crosscheck_handles_accented_and_hyphenated_names():
+    """WARNING#1 regression: normalization must match the index normalizer (ASCII-fold + punct
+    strip) so accented/hyphenated/apostrophe people are matched, not slipped through."""
+    from src.enrichment.places_grok_geocode import (
+        _matches_known_person as m,
+        _norm_person_name,
+    )
+
+    # index keys as text_utils.normalize_name would produce them
+    people = {_norm_person_name("Saint-Lô"), _norm_person_name("O'Brien")}
+    assert m("Saint-Lô", people)
+    assert m("General O'Brien", people)  # title + accented/apostrophe surname
