@@ -39,7 +39,6 @@ schema: |
   {"<Sub-eventID>": [{"WeatherMentionID": "01ULID...", "place_name": "Bastogne", "PlaceMentionID": "01ULID...", "date": "1944-12-22", "DateMentionID": "01ULID...", "weather_description": "Heavy snowfall", "temperature": -5, "temperature_unit": "C", "measurement_system": "metric", "precipitation_text": "3 inches of snow", "precipitation_amount": 3, "precipitation_unit": "in", "precipitation_type": "snow", "notable_impact": "Limited visibility for air support", "original_text": "Heavy snow blanketed the region"}]}
 
 rules:
-  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
   - Only extract EXACT dates (YYYY-MM-DD), skip "early December", "mid-winter"
   - Link PlaceMentionID and DateMentionID from available lists in sub-event headers
   - EXTRACT specifics only when the TEXT STATES them (verbatim-grounded); NEVER infer,

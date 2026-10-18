@@ -29,7 +29,10 @@ SCHEMA_TARGET = _entity_version("weather")
 class WeatherMention(BaseModel):
     """Weather mention from document."""
 
-    WeatherMentionID: str = Field(description="26-character ULID")
+    WeatherMentionID: Optional[str] = Field(
+        default=None,
+        description="server-minted (required on the stored record); LLM must NOT supply it",
+    )
     place_name: str = Field(description="Place name")
     PlaceMentionID: Optional[str] = Field(default=None, description="Link to place")
     date: str = Field(description="ISO date YYYY-MM-DD")
@@ -940,6 +943,13 @@ def _process_weather_mentions(
 ) -> int:
     """Create/update weather files + mentions for a batch result. Returns count updated."""
     event_name, event_id, book, author, series = meta
+    # HIGH#7b: the batch result is keyed by the LLM-ECHOED Sub-eventID. Reconcile those keys to the
+    # KNOWN sub-event ids so a mangled echoed key no longer silently drops this sub-event's weather.
+    from src.utils.deterministic_ids import reconcile_echoed_keys
+
+    batch_results = reconcile_echoed_keys(
+        [se.get("Sub-eventID", "") for se in sub_events], batch_results, "weather"
+    )
     updated = 0
     for sub_event in sub_events:
         sub_event_id = sub_event.get("Sub-eventID", "")

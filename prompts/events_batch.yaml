@@ -35,7 +35,6 @@ schema: |
   }
 
 rules:
-  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
   - Each sub-event must have a concise summary
   - Include all mentioned dates, places, and people in each sub-event
   - Maintain chronological order within each chapter

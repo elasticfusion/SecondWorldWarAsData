@@ -18,7 +18,6 @@ schema: |
   {
     "Date_Mentions": [
       {
-        "DateMentionID": "01ULID...",
         "date_start": "1944-06-06",
         "date_end": null,
         "time_start": "06:30",
@@ -31,7 +30,6 @@ schema: |
   }
 
 rules:
-  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
   - Use ISO format for exact dates: YYYY-MM-DD
   - Use prefix format for approximate dates: mid-1944-07, summer-1942, early-1944
   - Precision values: exact, early, mid, late, seasonal, approximate

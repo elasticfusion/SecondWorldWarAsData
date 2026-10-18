@@ -43,7 +43,6 @@ schema: |
   }
 
 rules:
-  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
   - All places MUST have latitude/longitude coordinates
   - If no places found, return empty Place_Mentions array
   - Do NOT extract military units, divisions, corps, armies, or organizations as places

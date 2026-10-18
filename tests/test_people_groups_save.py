@@ -44,12 +44,17 @@ def test_empty_string_groupid_replaced(tmp_path):
     jsonschema.validate(rec, S)
 
 
-def test_provided_groupid_preserved(tmp_path):
+def test_groupid_minted_server_side(tmp_path):
+    # HIGH#7a: a GroupID supplied by the LLM is OVERWRITTEN with a server-minted valid ULID
+    # (NEW entity id — not trusted from the model).
+    import re
+
     gid = "01HX7YZABCDEFGHJKMNPQRSTVW"
     rec = _saved(
         tmp_path, {"group_name": "7th Armored", "GroupID": gid, "event_mentions": []}
     )
-    assert rec["GroupID"] == gid
+    assert rec["GroupID"] != gid  # LLM value not trusted
+    assert re.match(r"^[0-9A-HJKMNP-TV-Z]{26}$", rec["GroupID"])  # valid server ULID
 
 
 def test_schema_accepts_member_countries_and_members():

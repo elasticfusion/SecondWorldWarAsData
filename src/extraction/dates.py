@@ -29,7 +29,10 @@ SCHEMA_TARGET = _entity_version("dates")
 class DateMention(BaseModel):
     """Date mention extracted from event text."""
 
-    DateMentionID: str = Field(description="26-character ULID")
+    DateMentionID: Optional[str] = Field(
+        default=None,
+        description="server-minted (required on the stored record); LLM must NOT supply it",
+    )
     date_start: str = Field(
         description="ISO format (YYYY-MM-DD) or approximate (mid-1944-07, summer-1942)"
     )
@@ -392,6 +395,12 @@ def _extract_dates_for_sub_event(
                 continue
 
             date_dict = _filter_invalid_dates(fixed_dict)
+
+            # HIGH#7b: the prompt EMBEDDED this sub-event's Sub-eventID; verify Grok honored the
+            # echo (observability only — the write below uses the trusted local sub_event_id).
+            from src.utils.deterministic_ids import observe_embedded_ulid
+
+            observe_embedded_ulid(sub_event_id, date_dict.get("Sub-eventID"), "dates")
 
             # Process each date mention
             count = 0

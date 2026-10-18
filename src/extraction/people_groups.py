@@ -176,11 +176,16 @@ def _save_group(
 ):
     """Save or merge a group file."""
     group_name = group.get("group_name", "Unknown")
-    # Treat a missing OR empty-string GroupID as absent -> mint one. The computed id MUST be
-    # written into the record (not just used for the filename) or the group has no primary
-    # key and is invisible to every cross-reference (casualties/logistics/maps resolve to it).
-    group_id = group.get("GroupID") or str(new_ulid())
+    # HIGH#7a: GroupID is a NEW entity id — MINT it server-side, never trust the LLM's value. The
+    # computed id MUST be written into the record (not just the filename) or the group has no
+    # primary key and is invisible to every cross-reference (casualties/logistics/maps resolve to it).
+    llm_group_id = group.get("GroupID")
+    group_id = str(new_ulid())
     group["GroupID"] = group_id
+    if llm_group_id and llm_group_id != group_id:
+        logger.info(
+            "OBSERV id.minted entity=people_group field=GroupID replaced_llm_value=1"
+        )
 
     # Add book metadata to event mentions
     for mention in group.get("event_mentions", []):

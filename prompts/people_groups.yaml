@@ -40,7 +40,6 @@ schema: |
   {
     "People_Groups": [
       {
-        "GroupID": "01ULID...",
         "group_name": "2nd Infantry Division",
         "group_type": "military_unit",
         "military_hierarchy": "division",
@@ -54,7 +53,6 @@ schema: |
         "common_name": "Indianhead Division",
         "members": [
           {
-            "PersonID": "01ULID...",
             "name": "Maj. Gen. Walter M. Robertson",
             "role": "Commander",
             "date_range": "1943-1945"
@@ -62,13 +60,11 @@ schema: |
         ],
         "event_mentions": [
           {
-            "MentionID": "01ULID...",
             "Event_Name": "Battle of the Bulge",
             "EventID": "01ULID...",
             "Sub-event_Name": "Defense of Elsenborn Ridge",
             "Sub-eventID": "01ULID...",
             "date": "1944-12-17",
-            "DateMentionID": "01ULID...",
             "context": "defending_force",
             "original_text": "The 2nd Infantry Division held its positions on Elsenborn Ridge"
           }
@@ -78,7 +74,6 @@ schema: |
   }
 
 rules:
-  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
   - group_type values: country, alliance, military_unit, political_party, government_organization, anti_government_organization, religious_organization
   - military_hierarchy values: squad, platoon, company, battalion, regiment, brigade, division, corps, army, army_group
   - Country codes use ISO 3166-1 alpha-3 (USA, GBR, DEU, FRA, ITA, JPN, etc.)

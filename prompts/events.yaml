@@ -36,7 +36,6 @@ schema: |
   }
 
 rules:
-  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
   - Paragraph numbers must be integers, not strings
   - Group related paragraphs into coherent sub-events
   - Each paragraph should belong to exactly one sub-event

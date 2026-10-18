@@ -98,6 +98,13 @@ def extract_casualties(
     )
 
     # Process results for each sub-event
+    # HIGH#7b: batch_results is keyed by the LLM-ECHOED Sub-eventID; reconcile to the KNOWN ids so a
+    # mangled echoed key does not silently drop a sub-event's casualties.
+    from src.utils.deterministic_ids import reconcile_echoed_keys
+
+    batch_results = reconcile_echoed_keys(
+        [se.get("Sub-eventID") for se in sub_events], batch_results, "casualties"
+    )
     for sub_event in sub_events:
         sub_event_id = sub_event.get("Sub-eventID")
         casualties_data = batch_results.get(sub_event_id, [])
