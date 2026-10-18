@@ -13,8 +13,6 @@ def test_geocode_skip_reasons_attributed(tmp_path):
     """Every skip is attributed to a reason (no black-box 'skipped N')."""
     pd = tmp_path / "places"
     pd.mkdir()
-    # no usable name
-    _write(pd, "noname", {"PlaceID": "01A", "coordinates": {}})
     # non-geocodable (unit-relative area)
     _write(
         pd,
@@ -47,8 +45,10 @@ def test_geocode_skip_reasons_attributed(tmp_path):
     report = geocode_places_dir(pd, grok_client=None, write=False)
 
     assert report.attempted == 0
-    assert report.skipped == 4
-    assert report.skip_no_name == 1
+    assert report.skipped == 3
+    # Stem-primary naming: a normally-named file always yields a name, so skip_no_name does not
+    # fire here (it is reserved for reserved-stem/truly-nameless records).
+    assert report.skip_no_name == 0
     assert report.skip_non_geocodable == 1
     assert report.skip_has_coords == 1
     assert report.skip_already_attempted == 1
@@ -60,6 +60,22 @@ def test_geocode_skip_reasons_attributed(tmp_path):
         + report.skip_already_attempted
     )
     assert total_reasons == report.skipped
+
+
+def test_place_name_none_for_reserved_stem_keeps_skip_no_name_reachable():
+    """skip_no_name remains reachable: _place_name returns None for a reserved stem with no name
+    field and only prose (no capitalized toponym) in its mentions."""
+    from src.enrichment.places_grok_geocode import _place_name
+
+    rec = {
+        "PlaceID": "01A",
+        "coordinates": {},
+        "event_mentions": [{"original_text": "it was taken"}],
+    }
+    assert _place_name(rec, stem="index") is None
+    assert _place_name(rec, stem="duplicate_report") is None
+    # A real stem (even short) IS a name -> not a no-name skip.
+    assert _place_name(rec, stem="ulm") == "ulm"
 
 
 def test_geocode_observability_never_raises(tmp_path):
