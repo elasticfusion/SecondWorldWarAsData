@@ -462,7 +462,14 @@ def _scope_args(phase_script: str, args: list) -> list:
         return args
     if "--book" in args:
         return args
-    return args + ["--book", book]
+    scoped = args + ["--book", book]
+    # Authorize a declared large-volume run: if EXPECTED_COUNT is set (from the trigger payload),
+    # pass it to Phase 2 so the unoverridable run-scope guard is satisfied by an explicit matching
+    # declaration (expected == actual). Omitted -> the <=50 ceiling still applies (fail-loud).
+    exp = os.environ.get("EXPECTED_COUNT", "").strip()
+    if exp.isdigit() and "--expected-count" not in args:
+        scoped += ["--expected-count", exp]
+    return scoped
 
 
 def _ensure_nat_if_needed(phase_script: str) -> None:
@@ -934,7 +941,7 @@ def _get_book_entity_files(s3, book_name: str) -> list:
         if index_path.exists():
             try:
                 index = json.loads(index_path.read_text(encoding="utf-8"))
-                for name, filename in index.items():
+                for _name, filename in index.items():
                     if isinstance(filename, str):
                         referenced.add(f"output/{subdir}/{filename}")
             except Exception:
