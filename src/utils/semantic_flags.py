@@ -127,7 +127,9 @@ def _date_flags(record: Dict[str, Any]) -> List[str]:
 
 
 def _citation_flags(record: Dict[str, Any]) -> List[str]:
-    title = (record.get("title") or record.get("citation") or "").strip()
+    _cit = record.get("citation")
+    _cit_title = _cit.get("title") if isinstance(_cit, dict) else _cit
+    title = (record.get("title") or _cit_title or "").strip()
     low = title.lower()
     if low in _CITATION_STUBS or _BARE_NUMBER.match(low):
         return ["citation_stub"]
@@ -142,7 +144,18 @@ def _citation_flags(record: Dict[str, Any]) -> List[str]:
         return []
     has_archive = bool(record.get("archive_reference_number"))
     has_url = bool(record.get("resource_urls"))
-    if not has_archive and not has_url:
+    # A record positively IDENTIFIED is not "unresolvable" even without an online copy: a
+    # biblio-note published work carries a canonical title/author, and reference_identified means
+    # the record group / source is known. Only a post-resolution record with NO identity at all
+    # (no archive ref, no URL, no canonical identity, not reference_identified) is unresolvable.
+    sm = record.get("source_metadata") or {}
+    identified = (
+        has_archive
+        or has_url
+        or bool(sm.get("canonical_title"))
+        or record.get("search_status") == "reference_identified"
+    )
+    if not identified:
         return ["citation_unresolvable"]
     return []
 
