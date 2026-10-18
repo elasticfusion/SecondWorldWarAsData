@@ -87,24 +87,37 @@ def _is_ulid_field(key: str, value: Any) -> bool:
     return not _ULID_PATTERN.match(value)
 
 
-def _fix_invalid_ulids(data: Any) -> Any:
+def _fix_invalid_ulids(data: Any, skip_keys=None) -> Any:
     """
     Fix invalid ULIDs in data recursively.
 
     Replaces any ID field with invalid ULID format with a valid ULID.
     Same invalid value gets the same replacement (preserves internal cross-references).
     Returns a new structure; does not mutate the input.
+
+    ``skip_keys``: field names to LEAVE AS-IS rather than mint a fresh ULID. Use for REFERENCE ids
+    (e.g. ``sub_event_id``) that point at another record's key — randomizing such a field does not
+    "fix" a missing id, it DESTROYS the reference. The downstream resolver validates/recovers those.
     """
     import copy
 
     replacement_map: dict = {}
-    return _fix_ulids_recursive(copy.deepcopy(data), replacement_map)
+    return _fix_ulids_recursive(
+        copy.deepcopy(data), replacement_map, skip_keys or frozenset()
+    )
 
 
-def _fix_ulids_recursive(data: Any, replacement_map: dict) -> Any:
+def _fix_ulids_recursive(
+    data: Any, replacement_map: dict, skip_keys=frozenset()
+) -> Any:
     """Recursively fix ULIDs in place on an already-copied structure."""
     if isinstance(data, dict):
         for key, value in data.items():
+            if key in skip_keys:
+                # Reference-id field: never randomize (that would break the cross-reference).
+                if isinstance(value, (dict, list)):
+                    data[key] = _fix_ulids_recursive(value, replacement_map, skip_keys)
+                continue
             if _is_ulid_field(key, value):
                 if value not in replacement_map:
                     import ulid
@@ -116,9 +129,9 @@ def _fix_ulids_recursive(data: Any, replacement_map: dict) -> Any:
                     f"Fixed invalid ULID in {key}: {value[:20]}... → {new_ulid}"
                 )
             elif isinstance(value, (dict, list)):
-                data[key] = _fix_ulids_recursive(value, replacement_map)
+                data[key] = _fix_ulids_recursive(value, replacement_map, skip_keys)
     elif isinstance(data, list):
-        return [_fix_ulids_recursive(item, replacement_map) for item in data]
+        return [_fix_ulids_recursive(item, replacement_map, skip_keys) for item in data]
 
     return data
 
