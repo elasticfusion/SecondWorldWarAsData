@@ -133,7 +133,35 @@ class GeocodeRunReport:
         }
 
 
-def _place_name(place: dict, stem: Optional[str] = None) -> Optional[str]:
+def _norm_person_name(text: str) -> str:
+    """Normalize a name for person cross-check: lowercase, drop punctuation, collapse whitespace —
+    matching how the people index keys are normalized."""
+    return " ".join(re.sub(r"[^0-9a-z]+", " ", (text or "").lower()).split())
+
+
+def _known_person_names(places_dir: Path) -> set:
+    """Set of normalized person names from the sibling ``people/index.json`` (keys ARE normalized
+    names). Used to reject a prose-fallback toponym that is actually a PERSON ("General Patton" ->
+    "Patton"). Empty set if unavailable. Best-effort."""
+    try:
+        idx = places_dir.parent / "people" / "index.json"
+        if not idx.is_file():
+            return set()
+        data = json.loads(idx.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            return set()
+        return {
+            _norm_person_name(k)
+            for k in data
+            if not k.startswith("_")  # skip _schema_version/_last_updated
+        }
+    except Exception:  # noqa: BLE001 - cross-check is best-effort
+        return set()
+
+
+def _place_name(
+    place: dict, stem: Optional[str] = None, person_names: Optional[set] = None
+) -> Optional[str]:
     """Return the best display name for a place, or None.
 
     Primary source is an explicit name field; next the FILE STEM (the deterministic entity key is
@@ -162,9 +190,81 @@ def _place_name(place: dict, stem: Optional[str] = None) -> Optional[str]:
     for m in (place.get("event_mentions") or []) + (place.get("mentions") or []):
         ot = ((m or {}).get("original_text") or "").strip()
         cand = _toponym_from_prose(ot, corroborate=stem)
-        if cand:
-            return cand
+        if not cand:
+            continue
+        # Entity-context cross-check (#449 follow-up): a bare proper noun recovered from prose may
+        # be a PERSON, not a place ("We saw General Patton" -> "General Patton"). If the candidate
+        # matches a known person name (allowing a leading title like "General"/"Gen."), reject it
+        # rather than geocode a person as a place.
+        if person_names and _matches_known_person(cand, person_names):
+            logger.info("OBSERV geocode.prose_candidate_is_person rejected=%r", cand)
+            continue
+        return cand
     return None
+
+
+def _matches_known_person(candidate: str, person_names: set) -> bool:
+    """True if ``candidate`` is a known person name, optionally with a leading military TITLE
+    ("General Patton", "Gen. Patton", "Field Marshal Model") vs the bare index key ("patton",
+    "model"). To avoid over-rejecting a real place that merely shares a surname token (e.g. "Patton
+    Ridge"), the match is title-aware rather than a generic superset: after stripping any leading
+    title tokens, the REMAINDER must equal a known person name exactly."""
+    norm = _norm_person_name(candidate)
+    if not norm:
+        return False
+    if norm in person_names:
+        return True
+    tokens = norm.split()
+    # Strip a leading run of title tokens, then require an exact person-name match on the remainder.
+    i = 0
+    while i < len(tokens) and tokens[i] in _MILITARY_TITLE_TOKENS:
+        i += 1
+    if i > 0:
+        remainder = " ".join(tokens[i:])
+        if remainder and remainder in person_names:
+            return True
+    return False
+
+
+# Leading title tokens that may prefix a person's name in prose (normalized, punctuation-stripped).
+_MILITARY_TITLE_TOKENS = frozenset(
+    {
+        "general",
+        "gen",
+        "lieutenant",
+        "lt",
+        "colonel",
+        "col",
+        "major",
+        "maj",
+        "captain",
+        "capt",
+        "sergeant",
+        "sgt",
+        "corporal",
+        "cpl",
+        "private",
+        "pvt",
+        "field",
+        "marshal",
+        "admiral",
+        "adm",
+        "brigadier",
+        "brig",
+        "commander",
+        "cmdr",
+        "commodore",
+        "president",
+        "prime",
+        "minister",
+        "generalmajor",
+        "generaloberst",
+        "oberst",
+        "hauptmann",
+        "leutnant",
+        "feldmarschall",
+    }
+)
 
 
 # Common function/connective words that are not part of a place name. This set is deliberately
@@ -456,12 +556,26 @@ def geocode_places_dir(
     if not places_dir.is_dir():
         return report
 
+    # Build the known-person-names set ONCE for the run (entity-context cross-check, #449 follow-up).
+    person_names = _known_person_names(places_dir)
+    if person_names:
+        logger.info(
+            "OBSERV geocode.person_crosscheck_loaded names=%d", len(person_names)
+        )
+    else:
+        logger.info(
+            "OBSERV geocode.person_crosscheck_unavailable (no people index) — prose "
+            "toponym person-disambiguation disabled this pass"
+        )
+
     for path in sorted(places_dir.glob("*.json")):
         if path.name in _SKIP_FILES:
             continue
         if limit is not None and report.attempted >= limit:
             break
-        _geocode_one_file(path, grok_client, write, force, report, resolve)
+        _geocode_one_file(
+            path, grok_client, write, force, report, resolve, person_names
+        )
 
     logger.info(
         "Geocoding: attempted %d, geocoded %d, not-found %d, low-conf %d, "
@@ -524,6 +638,7 @@ def _geocode_one_file(
     force: bool,
     report: GeocodeRunReport,
     resolve: Any,
+    person_names: Optional[set] = None,
 ) -> None:
     """Geocode a single place file, updating ``report`` (and file if ``write``)."""
     try:
@@ -533,7 +648,7 @@ def _geocode_one_file(
     if not isinstance(place, dict):
         return
 
-    name = _place_name(place, stem=path.stem)
+    name = _place_name(place, stem=path.stem, person_names=person_names)
     # Attribute each skip to a reason (OBSERV) instead of a black-box "skipped".
     if not name:
         report.skipped += 1
