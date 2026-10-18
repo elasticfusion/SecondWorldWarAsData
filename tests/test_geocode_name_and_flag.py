@@ -93,3 +93,42 @@ def test_safe_entity_filename_blocks_traversal():
     assert sf("..", "01UFALLBACK") == "01UFALLBACK.json"
     assert sf("normal place.json", "01U") == "normal place.json"
     assert "/" not in sf("a/b/c", "01U")
+
+
+def test_toponym_no_cross_sentence_fusion():
+    """C1 (review CRITICAL): a capitalized run must STOP at a sentence boundary — two cities in
+    adjacent sentences must never fuse into a fabricated multi-town name."""
+    from src.enrichment.places_grok_geocode import _toponym_from_prose
+
+    # 'Aachen' ends a sentence; 'Cologne' starts the next. Neither should fuse; both are
+    # sentence-adjacent single tokens -> sentence-initial 'Cologne' needs corroboration, and
+    # 'Aachen' (mid-sentence after 'took') is the mid-sentence toponym returned.
+    assert _toponym_from_prose("We took Aachen. Cologne burned.") == "Aachen"
+    assert "Cologne" not in (
+        _toponym_from_prose("We took Aachen. Cologne burned.") or ""
+    )
+    # Pure two-sentence, each city sentence-initial -> no mid-sentence toponym, no corroboration.
+    assert _toponym_from_prose("Metz fell. Caen held.") is None
+
+
+def test_toponym_extracts_capitalized_phrase_intact_for_grok_to_arbitrate():
+    """Per design: the heuristic does NOT classify proper nouns. Two capitalized words in a row do
+    NOT disqualify a place (New York City, New Jersey), so a capitalized phrase is extracted INTACT
+    and handed to the Grok geocoder, which returns not-found for a non-place. The stopword set only
+    bounds the phrase against function words.
+    """
+    from src.enrichment.places_grok_geocode import _toponym_from_prose
+
+    # Multi-word real toponyms kept intact.
+    assert _toponym_from_prose("the drive on Monte Cassino") == "Monte Cassino"
+    assert _toponym_from_prose("they shipped it from New York City") == "New York City"
+    assert (
+        _toponym_from_prose("fighting raged in the Hürtgen Forest") == "Hürtgen Forest"
+    )
+    # Codename / person phrases are extracted INTACT (not fragmented) and left for Grok to reject.
+    assert (
+        _toponym_from_prose("the attack was called Operation Cobra")
+        == "Operation Cobra"
+    )
+    # Function words still bound the phrase (so a whole clause is never sent).
+    assert _toponym_from_prose("the attack entered Trier") == "Trier"
