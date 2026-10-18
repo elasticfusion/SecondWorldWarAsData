@@ -273,3 +273,45 @@ def test_relationship_index_traversal_guard(tmp_path):
     assert _json.loads(outside.read_text())["untouched"] is True
     # Index self-healed to a safe basename (no traversal propagated).
     assert index["koln"] == "victim.json" and "/" not in index["koln"]
+
+
+def test_contained_entity_path_blocks_symlink_escape(tmp_path):
+    """HIGH#3 #450 follow-up: a symlink at entity_dir/<name>.json pointing OUTSIDE the tree must be
+    refused (fail-closed), even though the name itself is lexically safe."""
+    from src.extraction.batch_parallel import _contained_entity_path
+
+    ed = tmp_path / "places"
+    ed.mkdir()
+    outside = tmp_path / "secret.json"
+    outside.write_text("{}")
+    (ed / "evil.json").symlink_to(outside)  # lexically-safe name, symlink escapes
+    assert _contained_entity_path(ed, "evil.json") is None
+    # A normal (non-symlink) in-dir file is allowed.
+    (ed / "berlin.json").write_text("{}")
+    assert _contained_entity_path(ed, "berlin.json") is not None
+    # An in-dir symlink (stays inside) is allowed.
+    (ed / "real.json").write_text("{}")
+    (ed / "alias.json").symlink_to(ed / "real.json")
+    assert _contained_entity_path(ed, "alias.json") is not None
+
+
+def test_get_or_create_entity_read_refuses_symlink_escape(tmp_path):
+    """The read path must not follow a symlinked index entry out of entity_dir."""
+    import json as _json
+    from src.extraction.batch_parallel import _get_or_create_entity
+
+    ed = tmp_path / "places"
+    ed.mkdir()
+    secret = tmp_path / "secret.json"
+    secret.write_text(_json.dumps({"stolen": True, "PlaceID": "X"}))
+    (ed / "aachen.json").symlink_to(secret)  # index points to a symlink escaping ed
+    index = {"Aachen": "aachen.json"}
+    entity_file, eid, record = _get_or_create_entity(
+        key="Aachen",
+        obj={},
+        index=index,
+        entity_dir=ed,
+        make_record=lambda o: {},
+        id_field="PlaceID",
+    )
+    assert record.get("stolen") is not True  # out-of-dir secret NOT read
