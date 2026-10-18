@@ -370,22 +370,29 @@ def test_relocate_narrative_cleans_sibling_shards(tmp_path, monkeypatch):
             }
         )
     )
-    # Two sibling shards that also carry this record.
-    shard1 = bib / "bib_abcdef00__writerA.json"
-    shard2 = bib / "bib_abcdef00__writerB.json"
+    # Two sibling shards for THIS record's stem (bib_abcdef0000000000__<writer>.json).
+    shard1 = bib / "bib_abcdef0000000000__writerA.json"
+    shard2 = bib / "bib_abcdef0000000000__writerB.json"
     shard1.write_text("{}")
     shard2.write_text("{}")
+    # An UNRELATED record's shard must NOT be collaterally removed (scoped glob).
+    unrelated = bib / "bib_9999999999999999__writerA.json"
+    unrelated.write_text("{}")
     monkeypatch.setenv("S3_BUCKET", "test-bucket")
     s3 = MagicMock()
     import boto3
 
     monkeypatch.setattr(boto3, "client", lambda *a, **k: s3)
     br._relocate_narrative_note(f, json.loads(f.read_text()))
-    assert not shard1.exists() and not shard2.exists()  # shards removed locally
-    # Each shard archived (moved) in S3 too.
+    assert (
+        not shard1.exists() and not shard2.exists()
+    )  # this record's shards removed locally
+    assert unrelated.exists()  # unrelated record's shard preserved (scoped cleanup)
+    # Each of this record's shards archived (moved) in S3 too.
     archived = {c.kwargs["Key"] for c in s3.copy_object.call_args_list}
-    assert "relocated/bibliography/bib_abcdef00__writerA.json" in archived
-    assert "relocated/bibliography/bib_abcdef00__writerB.json" in archived
+    assert "relocated/bibliography/bib_abcdef0000000000__writerA.json" in archived
+    assert "relocated/bibliography/bib_abcdef0000000000__writerB.json" in archived
+    assert "relocated/bibliography/bib_9999999999999999__writerA.json" not in archived
 
 
 def test_relocate_narrative_noop_s3_without_bucket(tmp_path, monkeypatch):

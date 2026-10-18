@@ -1876,16 +1876,19 @@ def _narrative_note_written(out: Path) -> bool:
 
 
 def _cleanup_bibliography_shards(f: Path) -> None:
-    """Remove sibling per-writer shards (``bib_<hash>__<writer>.json``) that also carry this
-    misfiled record, locally and in the archive, so the additive full-corpus reconcile cannot
-    re-materialize the relocated narrative note as a bibliography zombie. Best-effort/fail-safe.
+    """Remove sibling per-writer shards for THIS record's hash (``<stem>__<writer>.json``) that also
+    carry the misfiled record, locally and in the archive, so the additive full-corpus reconcile
+    cannot re-materialize the relocated narrative note as a bibliography zombie. Scoped to this
+    record's stem so unrelated citations' shards are never collaterally removed. Best-effort, run
+    post-verify; a failure is logged at WARNING because a surviving shard can silently resurrect the
+    note on the next reconcile.
     """
     try:
-        for shard in f.parent.glob("bib_*__*.json"):
+        for shard in f.parent.glob(f"{f.stem}__*.json"):
             shard.unlink(missing_ok=True)
             _archive_s3_bibliography_object(shard.name)
     except Exception as e:  # noqa: BLE001
-        logger.debug("bib shard cleanup skipped near %s: %s", f.name, e)
+        logger.warning("bib shard cleanup failed near %s: %s", f.name, e)
 
 
 def _archive_s3_bibliography_object(filename: str) -> None:
@@ -1897,6 +1900,11 @@ def _archive_s3_bibliography_object(filename: str) -> None:
     bucket = os.environ.get("S3_BUCKET") or os.environ.get("DATA_BUCKET")
     if not bucket:
         return  # local/test mode — nothing in S3 to move
+    # Defense-in-depth: reduce to a basename so a future/less-trusted caller cannot inject "/" or
+    # ".." into the S3 key (today callers always pass a Path.name, which is already safe).
+    filename = os.path.basename(str(filename))
+    if not filename:
+        return
     src_key = f"output/bibliography/{filename}"
     dst_key = f"relocated/bibliography/{filename}"
     try:
