@@ -2,7 +2,7 @@ pydantic>=2.0
 pyyaml
 python-frontmatter
 markdown
-requests>=2.32.0
+requests>=2.34.2
 tenacity
 diskcache
 python-dotenv
