@@ -27,7 +27,20 @@ bottom); what remains is ranked here. Current ordered priority:
 >    protected, mention-level ids (PersonID/DateMentionID/…) are still fixed. No per-caller edits
 >    needed.
 >
-> 7. **[HIGH · identity integrity — owner-clarified 2026-10-18] Two-part id discipline: mint NEW ids
+> 7. **~~[HIGH · identity integrity] Two-part id discipline~~ ✅ DONE 2026-10-18 (PR #455).** (a) NEW
+>    entity/mention ids MINTED SERVER-SIDE — people (PersonID + MentionID), places (PlaceID, fixed the
+>    PlaceMentionID-as-PlaceID conflation), people_groups (GroupID) now overwrite any LLM value with
+>    OBSERV id.minted; the "Generate 26-character ULID" instruction + NEW-id placeholders were stripped
+>    from prompts; response-parse NEW-id fields are Optional while STORED-record schemas keep ids
+>    REQUIRED (two-schema distinction — stored ids always present). (b) EMBEDDED reference ids HONORED +
+>    verified inbound==outbound: deterministic_ids.verify_embedded_ulid/observe_embedded_ulid
+>    (dates/people/places, OBSERV xref.embedded_ulid outcome=exact/restored_*) snap back to the KNOWN id
+>    (never guess), and reconcile_echoed_keys re-keys batch results (weather/casualties) onto known ids
+>    — fixing the #448-class mangled-echoed-KEY silent drop. EventID/Sub-eventID response fields stay
+>    REQUIRED so the echo is present. Two INDEPENDENT reviews (code + security) PASS. Also added
+>    scripts/ai_review.sh (opt-in AI-review companion, separate from the deterministic gate).
+>
+> 7-ORIG. **[superseded by the DONE entry above] Two-part id discipline: mint NEW ids
 >    server-side; for EMBEDDED ids, verify Grok HONORED them (inbound==outbound).**
 >    Context: prompts both (i) EMBED known ids for the LLM to echo — Sub-eventID at
 >    `batch_parallel.py:538` and `prompts/{dates,people,places,supplemental}.yaml (ID: {sub_event_id})`
