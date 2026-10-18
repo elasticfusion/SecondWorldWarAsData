@@ -115,3 +115,40 @@ def test_normalize_ulid_cosmetic_only():
     assert bp._normalize_ulid("ReAl-0000_0000 0001") == "real000000000001"
     # distinct ids stay distinct (no fuzzy collapse)
     assert bp._normalize_ulid(_R1) != bp._normalize_ulid(_R2)
+
+
+def test_fix_invalid_ulids_skip_keys_preserves_reference():
+    """HIGH#1: _fix_invalid_ulids must NOT randomize a skipped reference id (sub_event_id) — doing so
+    destroys the cross-reference before the resolver can recover it. Other invalid ids still fixed.
+    """
+    from src.utils.json_validator import _fix_invalid_ulids
+
+    data = {
+        "places": [
+            {
+                "sub_event_id": "BOGUSmangled",
+                "places": [{"name": "X", "PlaceID": "bad-id"}],
+            }
+        ]
+    }
+    out = _fix_invalid_ulids(data, skip_keys={"sub_event_id"})
+    it = out["places"][0]
+    assert it["sub_event_id"] == "BOGUSmangled"  # preserved
+    assert it["places"][0]["PlaceID"] != "bad-id"  # other invalid id still fixed
+    # default (no skip) still randomizes sub_event_id -> unchanged for other callers
+    out2 = _fix_invalid_ulids(data)
+    assert out2["places"][0]["sub_event_id"] != "BOGUSmangled"
+
+
+def test_cosmetic_mangle_recovers_end_to_end(tmp_path):
+    """HIGH#1 end-to-end: a sub_event_id echoed with cosmetic lowercase noise survives the fix pass
+    (skip_keys) AND recovers to the real Sub-eventID in _process_batch_response (recovery path live).
+    """
+    from src.utils.json_validator import _fix_invalid_ulids
+
+    real = "REAL0000000000000000000001"
+    resp = {"places": [{"sub_event_id": real.lower(), "places": [{"name": "Schmidt"}]}]}
+    resp = _fix_invalid_ulids(resp, skip_keys={"sub_event_id"})  # preserve
+    assert resp["places"][0]["sub_event_id"] == real.lower()
+    _, recs = _run(tmp_path, resp)  # resolver recovers via _normalize_ulid unique match
+    assert recs.get("Schmidt") == [real]

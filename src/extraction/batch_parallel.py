@@ -12,7 +12,7 @@ import ulid as ulid_mod
 
 from src.grok_client import GrokClient, BatchModeCollecting, current_book
 from src.utils.file_lock import write_json_with_lock
-from src.utils.json_validator import _fix_invalid_ulids
+from src.utils.json_validator import _fix_invalid_ulids, _ULID_PATTERN
 
 _book_manifest = None
 
@@ -536,7 +536,27 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
         logger.error("%s batch extraction failed: %s", entity_type, e)
         return empty
 
-    response = _fix_invalid_ulids(response)
+    # Preserve sub_event_id (a REFERENCE to an event's Sub-eventID) through the ULID-fix pass:
+    # randomizing it would destroy the cross-reference, and the LLM-mangled form is exactly what
+    # _process_batch_response needs to resolve (exact/unique-recover/drop). Count how many invalid
+    # ones we preserved so the ULID-mangling rate is visible.
+    try:
+        preserved = sum(
+            1
+            for it in response.get(response_key, [])
+            if isinstance(it, dict)
+            and (sid := it.get("sub_event_id"))
+            and not _ULID_PATTERN.match(str(sid))
+        )
+        if preserved:
+            logger.info(
+                "OBSERV xref.seid_preserved entity=%s invalid_echoed=%d (kept for resolver)",
+                response_key,
+                preserved,
+            )
+    except Exception:  # noqa: BLE001 - observability must never break extraction
+        pass
+    response = _fix_invalid_ulids(response, skip_keys={"sub_event_id"})
 
     # Process response
     entity_dir = output_root / entity_type
