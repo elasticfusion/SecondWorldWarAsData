@@ -59,11 +59,16 @@ bottom); what remains is ranked here. Current ordered priority:
 >    (`cloudformation/storage.yaml` changed). Until deployed, archived objects in `relocated/` will NOT
 >    auto-expire — they just accumulate (harmless, recoverable). Deploy the storage stack to activate
 >    the 60-day expiration.
-> 5. **[HIGH · orchestration timing] Phase-2→Phase-3 handoff misses late-arriving bibliography
->    records.** This run left 16 records unprocessed by Phase 3 (they arrived via the full-corpus
->    reconcile AFTER Phase 3's scoped-download snapshot → stayed misfiled in `bibliography/` as
->    narrative zombies). Harden so Phase 3 does not start until the full-corpus reconcile is finalized,
->    or have Phase 3 re-read the bib dir after reconcile completes.
+> 5. **~~[HIGH · orchestration timing] Phase-2→Phase-3 handoff misses late-arriving records~~
+>    ✅ DONE 2026-10-18 (PR #452).** NOT a queue problem — the entity DATA handoff is S3-snapshot
+>    driven and S3 is authoritative (steering); the fix is a DRAIN/ordering gate. The Phase-2
+>    full-corpus reconcile clears+publishes a completion barrier (`manifests/reconcile_complete/{book|_all}.json`)
+>    ONLY after the canonical upload + orphan-shard cleanup; Phase 3's `_download_phase3_from_s3`
+>    WAITS for a FRESH barrier (freshness guard rejects a stale prior-run signal) before snapshotting.
+>    Bounded + FAIL-OPEN (`RECONCILE_BARRIER_WAIT_SECS`, default 300s; 0 disables) so Phase 3 never
+>    hangs. Observability is end-to-end + CORRELATED: `phase3.bib_download … barrier=<status>` and the
+>    SHORTFALL warning names the cause (drain-timeout vs scoped-download filter). Security +
+>    code-review PASS (two WARNINGs — stale-barrier + cross-book scope — fixed + re-reviewed clean).
 > 6. **[MED→HIGH-for-destructive · SSRF, build-time] HyperWar generator follows unconstrained absolute
 >    hrefs.** `scripts/build_hyperwar_biblio_index.py:discover_biblio_url` stores any absolute `href`
 >    parsed from fetched ibiblio HTML verbatim. Add an `ibiblio.org` host allowlist + HTTPS-only + no
