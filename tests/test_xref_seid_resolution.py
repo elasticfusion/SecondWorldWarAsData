@@ -135,9 +135,13 @@ def test_fix_invalid_ulids_skip_keys_preserves_reference():
     it = out["places"][0]
     assert it["sub_event_id"] == "BOGUSmangled"  # preserved
     assert it["places"][0]["PlaceID"] != "bad-id"  # other invalid id still fixed
-    # default (no skip) still randomizes sub_event_id -> unchanged for other callers
+    # #448: sub_event_id is now preserved BY DEFAULT too (identity-id invariant) — every caller is
+    # protected, not just those passing skip_keys.
     out2 = _fix_invalid_ulids(data)
-    assert out2["places"][0]["sub_event_id"] != "BOGUSmangled"
+    assert out2["places"][0]["sub_event_id"] == "BOGUSmangled"
+    assert (
+        out2["places"][0]["places"][0]["PlaceID"] != "bad-id"
+    )  # mention id still fixed
 
 
 def test_cosmetic_mangle_recovers_end_to_end(tmp_path):
@@ -152,3 +156,31 @@ def test_cosmetic_mangle_recovers_end_to_end(tmp_path):
     assert resp["places"][0]["sub_event_id"] == real.lower()
     _, recs = _run(tmp_path, resp)  # resolver recovers via _normalize_ulid unique match
     assert recs.get("Schmidt") == [real]
+
+
+def test_identity_ids_never_randomized_by_default():
+    """#448 invariant: _fix_invalid_ulids NEVER randomizes EventID/Sub-eventID (any spelling) —
+    they are deterministic/derived or references, per the centralized-ID source of truth. Mention
+    ids (PersonID, DateMentionID, …) ARE still fixed."""
+    from src.utils.json_validator import _fix_invalid_ulids
+
+    data = {
+        "Event": {
+            "EventID": "BOGUS",
+            "Sub-events": [
+                {
+                    "Sub-eventID": "MANGLED",
+                    "people": [{"PersonID": "bad", "Sub_eventID": "ref2"}],
+                }
+            ],
+        },
+        "sub_event_id": "ref3",
+    }
+    out = _fix_invalid_ulids(data)
+    se = out["Event"]["Sub-events"][0]
+    assert out["Event"]["EventID"] == "BOGUS"
+    assert se["Sub-eventID"] == "MANGLED"
+    assert se["people"][0]["Sub_eventID"] == "ref2"
+    assert out["sub_event_id"] == "ref3"
+    assert se["people"][0]["PersonID"] != "bad"  # mention id still fixed
+    assert len(se["people"][0]["PersonID"]) == 26

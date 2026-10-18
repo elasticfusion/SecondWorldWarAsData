@@ -18,12 +18,36 @@ bottom); what remains is ranked here. Current ordered priority:
 >    ✅ DONE 2026-10-18 (PR #448).** Added `skip_keys` to `_fix_invalid_ulids`; batch passes
 >    `skip_keys={'sub_event_id'}` so the LLM-echoed reference survives to `_process_batch_response`
 >    (recovery path restored). OBSERV `xref.seid_preserved`. Security + code-review PASS.
->    ↳ **[HIGH · FOLLOW-UP from the #448 review] Audit the OTHER `_fix_invalid_ulids` callers** that
->    still randomize `sub_event_id` via the default path (supplemental.py:476, weather_central.py:823,
->    equipment.py:2084, places.py:251 non-batch, people.py:891, casualties.py:286, people_groups.py).
->    If any use `sub_event_id` as a CROSS-REFERENCE the way batch_parallel did, they share the same
->    latent dangling-xref bug (NOT a regression — behavior unchanged). Determine per-caller whether
->    sub_event_id is a reference (then skip it) or a to-be-minted id, and apply skip_keys accordingly.
+>    ↳ **~~[HIGH · FOLLOW-UP] Audit the OTHER `_fix_invalid_ulids` callers~~ ✅ DONE 2026-10-18.**
+>    Audit outcome: in the non-batch live extractors the Sub-eventID the LLM echoes is a REFERENCE
+>    (the trusted local from the authoritative sub-event is what gets persisted), and EventID/
+>    Sub-eventID are always deterministically derived via `src.utils.deterministic_ids` (the single
+>    source of truth). So the correct, uniform fix is: `_fix_invalid_ulids` now UNCONDITIONALLY skips
+>    EventID/Sub-eventID/Sub_eventID/sub_event_id by DEFAULT (identity-id invariant) — every caller is
+>    protected, mention-level ids (PersonID/DateMentionID/…) are still fixed. No per-caller edits
+>    needed.
+>
+> 7. **[HIGH · identity integrity — owner-clarified 2026-10-18] Two-part id discipline: mint NEW ids
+>    server-side; for EMBEDDED ids, verify Grok HONORED them (inbound==outbound).**
+>    Context: prompts both (i) EMBED known ids for the LLM to echo — Sub-eventID at
+>    `batch_parallel.py:538` and `prompts/{dates,people,places,supplemental}.yaml (ID: {sub_event_id})`
+>    — and (ii) instruct "Generate 26-character ULIDs" + `01ULID…` placeholders for NEW entity/mention
+>    ids. The two must be handled oppositely:
+>    - **(a) NEW entity/mention ids** (PersonID, DateMentionID, PlaceMentionID, MaterialID, …):
+>      strip the "Generate ULID" instruction + `01ULID…` fields from the prompts and MINT them
+>      SERVER-SIDE. Today this is INCONSISTENT — `dates.py` mints (`str(ulid.new())`, correct) but
+>      `people.py` trusts `person["PersonID"]` and `places.py` uses `mention["PlaceMentionID"]`. Make
+>      all extractors mint (overwrite the LLM value).
+>    - **(b) EMBEDDED reference ids** (the Sub-eventID/EventID/known PersonID we put INTO the prompt):
+>      Grok MUST HONOR them (echo unchanged). Add an INBOUND→OUTBOUND equality check: for every id we
+>      embedded, verify the echo equals it; on mismatch RESTORE the known-correct embedded id
+>      (DETERMINISTIC recovery — we already know the right value), never a random ULID. This supersedes
+>      the "fix malformed ULID" approach: we don't guess, we snap back to what we sent. The batch path
+>      approximates this (`_process_batch_response` exact/unique-recover/drop); generalize it + apply
+>      uniformly, and flag any mismatch as an OBSERV/quality signal (measures Grok's honor rate).
+>    Observability: count (per entity type) embedded-id echo mismatches restored, and server-minted
+>    ids that overwrote a differing LLM value. `_fix_invalid_ulids` then shrinks toward a validator.
+>    Scope: ~9 extractors + prompts + schema Field descriptions.
 > 2. **~~[HIGH · DQ — geocode from prose] `_looks_like_place_name` accepts short prose clauses~~
 >    ✅ DONE 2026-10-18 (PR #449).** Replaced the length heuristic entirely (real ETO place names are
 >    often 1–5 letters — Y, Eu, Ulm, Köln, Metz, Caen, Düren, Spa, Mons — so length is the wrong

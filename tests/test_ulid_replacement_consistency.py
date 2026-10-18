@@ -10,8 +10,10 @@ from src.utils.json_validator import _fix_invalid_ulids
 
 
 def test_same_invalid_ulid_gets_same_replacement_across_nesting():
+    # NOTE: EventID/Sub-eventID are now preserved by default (identity-id invariant, #448), so this
+    # consistency test uses MENTION-level ids (still fixed) as the repeated-invalid-value sample.
     data = {
-        "EventID": "bad-id-XYZ",
+        "MentionID": "bad-id-XYZ",
         "children": [
             {"ref_id": "bad-id-XYZ"},
             {"ref_id": "bad-id-XYZ"},
@@ -22,17 +24,17 @@ def test_same_invalid_ulid_gets_same_replacement_across_nesting():
 
     # All occurrences of the SAME invalid value collapse to one replacement.
     replaced = {
-        out["EventID"],
+        out["MentionID"],
         out["children"][0]["ref_id"],
         out["children"][1]["ref_id"],
     }
     assert len(replaced) == 1, f"expected one consistent replacement, got {replaced}"
 
     # A DIFFERENT invalid value gets its own distinct replacement.
-    assert out["PersonID"] != out["EventID"]
+    assert out["PersonID"] != out["MentionID"]
 
     # Input is not mutated.
-    assert data["EventID"] == "bad-id-XYZ"
+    assert data["MentionID"] == "bad-id-XYZ"
 
 
 def test_valid_ulids_are_left_unchanged():

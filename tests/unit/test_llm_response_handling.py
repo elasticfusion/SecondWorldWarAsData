@@ -135,15 +135,24 @@ class TestUlidValidation:
         assert result["EventID"] == valid
 
     def test_fix_handles_nested_ulids(self):
+        # #448: EventID/Sub-eventID are identity ids — now PRESERVED (not randomized); nested
+        # MENTION ids are still fixed.
         data = {
             "Event": {
                 "EventID": "BAD_ULID",
-                "Sub-events": [{"Sub-eventID": "ALSO_BAD"}],
+                "Sub-events": [
+                    {"Sub-eventID": "ALSO_BAD", "DateMentionID": "BAD_MENTION"}
+                ],
             }
         }
         result = _fix_invalid_ulids(data)
-        assert len(result["Event"]["EventID"]) == 26
-        assert len(result["Event"]["Sub-events"][0]["Sub-eventID"]) == 26
+        assert result["Event"]["EventID"] == "BAD_ULID"  # identity id preserved
+        assert (
+            result["Event"]["Sub-events"][0]["Sub-eventID"] == "ALSO_BAD"
+        )  # preserved
+        assert (
+            len(result["Event"]["Sub-events"][0]["DateMentionID"]) == 26
+        )  # mention id fixed
 
     def test_fix_handles_list_of_dicts(self):
         data = [{"PersonID": "SHORT"}, {"PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW"}]
