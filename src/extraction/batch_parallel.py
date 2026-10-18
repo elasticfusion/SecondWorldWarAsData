@@ -70,6 +70,32 @@ def _safe_entity_filename(filename: str, entity_id: str) -> str:
     return f"{safe}.json"
 
 
+def _contained_entity_path(entity_dir: Path, safe_name: str):
+    """Return ``entity_dir/safe_name`` only if its REAL (symlink-resolved) path stays inside the
+    real ``entity_dir`` — else None (#450 defense-in-depth). ``_safe_entity_filename`` already blocks
+    lexical traversal, but a pre-existing SYMLINK at ``entity_dir/<name>.json`` pointing outside the
+    tree would still be followed by open()/write. Resolving both paths and asserting containment
+    closes that (and the check-vs-use gap, since the same resolved path is what gets used). The
+    directory itself is resolved once; a missing leaf is fine (resolve() still yields its intended
+    location under the dir). Fail-closed on any error."""
+    try:
+        base = entity_dir.resolve()
+        target = (entity_dir / safe_name).resolve()
+        # target must be the dir itself's child: base must be an ancestor of target.
+        if base == target or base in target.parents:
+            return entity_dir / safe_name
+        logger.warning(
+            "OBSERV entity.path_escape_blocked dir=%s name=%s resolved_outside=%s",
+            entity_dir.name,
+            safe_name,
+            str(target),
+        )
+        return None
+    except Exception as e:  # noqa: BLE001 - fail-closed
+        logger.warning("entity path containment check failed for %s: %s", safe_name, e)
+        return None
+
+
 # Schema version this module targets — derived from the central per-entity map.
 # This writer emits event-mention records, so it targets the 'events' entity version.
 from src.schemas import entity_version as _entity_version
@@ -258,7 +284,14 @@ def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positi
         # "/abs/x" or "../../x" would escape entity_dir. Reduce to the basename, whitelist chars,
         # and fall back to the ULID if nothing safe remains.
         filename = _safe_entity_filename(filename, entity_id)
-        entity_file = entity_dir / filename
+        entity_file = _contained_entity_path(entity_dir, filename)
+        if entity_file is None:
+            logger.error(
+                "Refusing to write entity %s: path escapes %s (symlink?)",
+                filename,
+                entity_dir.name,
+            )
+            return None, None, None
         try:
             write_json_with_lock(entity_file, record)
         except Exception as e:
@@ -287,7 +320,14 @@ def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positi
             safe_name,
         )
         index[key] = safe_name
-    entity_file = entity_dir / safe_name
+    entity_file = _contained_entity_path(entity_dir, safe_name)
+    if entity_file is None:
+        logger.error(
+            "Refusing to read entity %s: path escapes %s (symlink?)",
+            safe_name,
+            entity_dir.name,
+        )
+        return None, "", {}
     try:
         with open(entity_file, "r", encoding="utf-8") as fh:
             record = json.load(fh)
@@ -395,6 +435,11 @@ def _process_entity_obj(  # pylint: disable=too-many-arguments,too-many-position
     entity_file, entity_id, record = _get_or_create_entity(
         key, obj, index, entity_dir, make_record, id_field, make_filename
     )
+    # Containment guard (#450): _get_or_create_entity returns entity_file=None when the resolved
+    # path escaped entity_dir (symlink). Skip ALL downstream read/modify/write — never follow the
+    # symlink via the mention write-through, never crash on a None path.
+    if entity_file is None:
+        return False
 
     if id_field and seid and event_id:
         _add_event_mention_batch(
@@ -1059,7 +1104,17 @@ def _process_place_relationships(response, entity_dir, index):
                     safe_to,
                 )
                 index[to_key] = safe_to
-            _add_relationship(entity_dir / safe_from, entity_dir / safe_to, rel_type)
+            from_path = _contained_entity_path(entity_dir, safe_from)
+            to_path = _contained_entity_path(entity_dir, safe_to)
+            if from_path is None or to_path is None:
+                logger.error(
+                    "Skipping relationship %s->%s: path escapes %s (symlink?)",
+                    from_key,
+                    to_key,
+                    entity_dir.name,
+                )
+                continue
+            _add_relationship(from_path, to_path, rel_type)
 
 
 def _add_relationship(from_path, to_path, rel_type):
