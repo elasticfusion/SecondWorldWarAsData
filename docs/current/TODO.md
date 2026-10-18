@@ -18,12 +18,28 @@ bottom); what remains is ranked here. Current ordered priority:
 >    ✅ DONE 2026-10-18 (PR #448).** Added `skip_keys` to `_fix_invalid_ulids`; batch passes
 >    `skip_keys={'sub_event_id'}` so the LLM-echoed reference survives to `_process_batch_response`
 >    (recovery path restored). OBSERV `xref.seid_preserved`. Security + code-review PASS.
->    ↳ **[HIGH · FOLLOW-UP from the #448 review] Audit the OTHER `_fix_invalid_ulids` callers** that
->    still randomize `sub_event_id` via the default path (supplemental.py:476, weather_central.py:823,
->    equipment.py:2084, places.py:251 non-batch, people.py:891, casualties.py:286, people_groups.py).
->    If any use `sub_event_id` as a CROSS-REFERENCE the way batch_parallel did, they share the same
->    latent dangling-xref bug (NOT a regression — behavior unchanged). Determine per-caller whether
->    sub_event_id is a reference (then skip it) or a to-be-minted id, and apply skip_keys accordingly.
+>    ↳ **~~[HIGH · FOLLOW-UP] Audit the OTHER `_fix_invalid_ulids` callers~~ ✅ DONE 2026-10-18.**
+>    Audit outcome: in the non-batch live extractors the Sub-eventID the LLM echoes is a REFERENCE
+>    (the trusted local from the authoritative sub-event is what gets persisted), and EventID/
+>    Sub-eventID are always deterministically derived via `src.utils.deterministic_ids` (the single
+>    source of truth). So the correct, uniform fix is: `_fix_invalid_ulids` now UNCONDITIONALLY skips
+>    EventID/Sub-eventID/Sub_eventID/sub_event_id by DEFAULT (identity-id invariant) — every caller is
+>    protected, mention-level ids (PersonID/DateMentionID/…) are still fixed. No per-caller edits
+>    needed.
+>
+> 7. **[HIGH · identity integrity — raised by owner 2026-10-18] Code should MINT every id server-side
+>    and IGNORE the LLM's ULID output entirely.** The prompts still instruct the LLM to "Generate
+>    26-character ULIDs" and emit `01ULID…` placeholders for mention ids (PersonID, DateMentionID,
+>    WeatherMentionID, MentionID, …). EventID/Sub-eventID are already overridden deterministically, but
+>    mention ids are INCONSISTENT: `dates.py` mints server-side (`str(ulid.new())`, correct), while
+>    `people.py` trusts `person["PersonID"]` and `places.py` uses `mention["PlaceMentionID"]` from the
+>    LLM. A hallucinated/colliding-but-valid LLM ULID is therefore trusted (dedup is by normalized
+>    name, so bounded, but still a cross-reference-target hazard + wasted tokens). FIX: mint ALL ids
+>    server-side (overwrite the LLM value like dates.py), remove the ULID-generation instructions +
+>    `01ULID…` fields from the prompts, and shrink `_fix_invalid_ulids` to a validator (it should
+>    rarely/never fire once nothing LLM-supplied is trusted). Scope: ~9 extractors + prompts + the
+>    schema Field descriptions. Observability: count how often a server-minted id REPLACED a
+>    differing LLM value (quantifies how much the LLM output was being trusted).
 > 2. **~~[HIGH · DQ — geocode from prose] `_looks_like_place_name` accepts short prose clauses~~
 >    ✅ DONE 2026-10-18 (PR #449).** Replaced the length heuristic entirely (real ETO place names are
 >    often 1–5 letters — Y, Eu, Ulm, Köln, Metz, Caen, Düren, Spa, Mons — so length is the wrong

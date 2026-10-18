@@ -95,16 +95,27 @@ def _fix_invalid_ulids(data: Any, skip_keys=None) -> Any:
     Same invalid value gets the same replacement (preserves internal cross-references).
     Returns a new structure; does not mutate the input.
 
-    ``skip_keys``: field names to LEAVE AS-IS rather than mint a fresh ULID. Use for REFERENCE ids
-    (e.g. ``sub_event_id``) that point at another record's key — randomizing such a field does not
-    "fix" a missing id, it DESTROYS the reference. The downstream resolver validates/recovers those.
+    ``skip_keys``: extra field names to LEAVE AS-IS rather than mint a fresh ULID.
+
+    IDENTITY-ID INVARIANT (HIGH#1/#448): ``EventID`` and ``Sub-eventID`` are NEVER the LLM's to mint
+    — they are content-derived through the single source of truth
+    (:mod:`src.utils.deterministic_ids`) or are REFERENCES to such ids. Randomizing one here does not
+    "fix" a missing id, it fabricates a wrong identity / destroys a cross-reference. So these are
+    skipped UNCONDITIONALLY (all spellings: EventID, Sub-eventID, Sub_eventID, sub_event_id),
+    regardless of ``skip_keys``. Mention-level ids (PersonID, DateMentionID, …) are still fixed.
     """
     import copy
 
+    skip = _ALWAYS_SKIP_ULID_KEYS | frozenset(skip_keys or ())
     replacement_map: dict = {}
-    return _fix_ulids_recursive(
-        copy.deepcopy(data), replacement_map, skip_keys or frozenset()
-    )
+    return _fix_ulids_recursive(copy.deepcopy(data), replacement_map, skip)
+
+
+# EventID / Sub-eventID in every spelling: identity ids that must come from deterministic_ids or be
+# a reference — never randomized by the ULID-fixer. (See the IDENTITY-ID INVARIANT above.)
+_ALWAYS_SKIP_ULID_KEYS = frozenset(
+    {"EventID", "Sub-eventID", "Sub_eventID", "sub_event_id", "sub-event_id"}
+)
 
 
 def _fix_ulids_recursive(
@@ -114,7 +125,8 @@ def _fix_ulids_recursive(
     if isinstance(data, dict):
         for key, value in data.items():
             if key in skip_keys:
-                # Reference-id field: never randomize (that would break the cross-reference).
+                # Reference/identity id: never randomize (would break the cross-reference or
+                # fabricate a wrong identity). Still descend into nested structures.
                 if isinstance(value, (dict, list)):
                     data[key] = _fix_ulids_recursive(value, replacement_map, skip_keys)
                 continue

@@ -557,10 +557,11 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
         logger.error("%s batch extraction failed: %s", entity_type, e)
         return empty
 
-    # Preserve sub_event_id (a REFERENCE to an event's Sub-eventID) through the ULID-fix pass:
-    # randomizing it would destroy the cross-reference, and the LLM-mangled form is exactly what
-    # _process_batch_response needs to resolve (exact/unique-recover/drop). Count how many invalid
-    # ones we preserved so the ULID-mangling rate is visible.
+    # sub_event_id is a REFERENCE to an event's Sub-eventID — _fix_invalid_ulids now skips it (and
+    # all EventID/Sub-eventID spellings) BY DEFAULT per the identity-id invariant, so the mangled
+    # echo survives for _process_batch_response to resolve (exact/unique-recover/drop). We still pass
+    # it explicitly (self-documenting) and count how many invalid ones were preserved so the
+    # LLM ULID-mangling rate is observable.
     try:
         preserved = sum(
             1
