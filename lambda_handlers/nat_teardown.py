@@ -225,7 +225,7 @@ def _ddb_networking_signal() -> bool:
         tbl = boto3.resource("dynamodb", region_name=REGION).Table(
             os.getenv("CACHE_TABLE", f"{ENV_NAME}-wwii-api-cache")
         )
-        for prefix, live in (
+        for prefix, _live in (
             ("nat#lease#", True),
             ("batch_job#", False),
             ("lock#", False),

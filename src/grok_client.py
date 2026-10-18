@@ -845,11 +845,11 @@ class GrokClient:
             future = pool.submit(_do_post)
             try:
                 return future.result(timeout=self.timeout)
-            except concurrent.futures.TimeoutError:
+            except concurrent.futures.TimeoutError as err:
                 future.cancel()
                 raise GrokAPIError(
                     f"API call exceeded {self.timeout}s wall-clock deadline"
-                )
+                ) from err
 
     @retry(
         stop=stop_after_attempt(5),
@@ -1191,7 +1191,7 @@ class GrokClient:
             )
 
         except Exception as e:
-            raise GrokAPIError(f"Failed to download image from {image_url}: {e}")
+            raise GrokAPIError(f"Failed to download image from {image_url}: {e}") from e
 
         # Build messages with image
         messages = []
@@ -1235,7 +1235,7 @@ class GrokClient:
             logger.error(f"💡 Clear cache: {clear_cmd}")
             raise GrokAPIError(
                 f"Failed to parse JSON response: {e}\nContent: {content[:500]}"
-            )
+            ) from e
 
         # Cache result
         if use_cache:

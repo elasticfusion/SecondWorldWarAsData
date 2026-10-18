@@ -9,3 +9,4 @@ cfn-lint==1.48.1
 moto[dynamodb,s3,ecs,lambda]==5.2.1
 types-requests==2.33.0.20260518
 types-PyYAML==6.0.12.20260518
+ruff==0.6.9

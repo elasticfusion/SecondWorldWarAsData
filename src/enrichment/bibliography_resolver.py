@@ -633,7 +633,7 @@ def _search_online_sources(
 
     # Aggregate: dedup-preserving-order into resource_urls + a structured findings list.
     seen = set(entry.get("resource_urls") or [])
-    for url, source in findings:
+    for url, _source in findings:
         if url and url not in seen:
             entry.setdefault("resource_urls", []).append(url)
             seen.add(url)
@@ -1287,8 +1287,6 @@ _MATCH_STOPWORDS = frozenset(
         "free",
         "ebook",
         "online",
-        "document",
-        "documents",
     }
 )
 

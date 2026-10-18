@@ -41,6 +41,9 @@ jobs:
       - name: Bandit (security)
         run: python -m bandit -r src/ lambda_handlers/ -ll -q
 
+      - name: Ruff (bugbear B rules)
+        run: python -m ruff check src/ lambda_handlers/ --select B
+
       - name: Radon (complexity)
         run: python -m radon cc src/ lambda_handlers/ --min C --show-complexity --total-average
 

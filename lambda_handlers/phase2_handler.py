@@ -33,7 +33,7 @@ def handler(event, _context):
     records = _extract_s3_records(event)
     results = {"processed": 0, "failed": 0}
 
-    for bucket, key in records:
+    for _bucket, key in records:
         if not key.endswith("-parsed.json"):
             continue
         try:
