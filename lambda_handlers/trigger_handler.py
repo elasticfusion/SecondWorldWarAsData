@@ -983,7 +983,7 @@ def handler(event, _context):
         # unoverridable run-scope guard is satisfied by an explicit matching declaration.
         extra_env = None
         exp = event.get("expected_count")
-        if isinstance(exp, int) and exp > 0:
+        if isinstance(exp, int) and not isinstance(exp, bool) and exp > 0:
             extra_env = [{"name": "EXPECTED_COUNT", "value": str(exp)}]
         _run_task(task_def, "manual", book_name=book, extra_env=extra_env)
         return {"status": "launched", "book": book, "phase": phase}
