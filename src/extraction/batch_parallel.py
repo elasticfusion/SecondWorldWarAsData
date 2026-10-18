@@ -42,6 +42,15 @@ def _register_entity(book: str, entity_type: str, filename: str) -> None:
 
 logger = logging.getLogger(__name__)
 
+
+def _normalize_ulid(value: str) -> str:
+    """Normalize a (possibly LLM-mangled) ULID for near-match recovery: lowercase + drop any
+    non-alphanumeric chars. Recovers only COSMETIC noise (case, stray dashes/spaces/quotes a model
+    may introduce); it does NOT fuzzy-match distinct ids, so a near-match is used only when it maps
+    to exactly one real Sub-eventID."""
+    return re.sub(r"[^a-z0-9]", "", (value or "").lower())
+
+
 # Schema version this module targets — derived from the central per-entity map.
 # This writer emits event-mention records, so it targets the 'events' entity version.
 from src.schemas import entity_version as _entity_version
@@ -386,11 +395,35 @@ def _process_batch_response(  # pylint: disable=too-many-arguments,too-many-posi
     """Process API response: create entities, add mentions, collect links."""
     count = 0
     links: Dict[str, list] = {}
+    # Resolve the LLM-echoed sub_event_id back to a REAL event Sub-eventID. The prompt embeds each
+    # real Sub-eventID, so a faithful echo hits the exact path; but the LLM does not reliably
+    # reproduce a 26-char ULID (it mangles/hallucinates/reuses them), which produced 100% dangling
+    # entity->event Sub-eventID refs. We do NOT guess by response position: the LLM frequently omits
+    # entity-less sub-events, so position is not a reliable index and a positional guess would
+    # SILENTLY mis-attribute an entity to the WRONG (but real) sub-event — undetectable corruption,
+    # strictly worse than a dangling ref. Instead: exact match -> UNIQUE normalized near-match
+    # (recovers only cosmetic ULID noise, and only when it maps to exactly ONE real id) -> else DROP.
+    real_ids = list(se_by_id.keys())
+    norm_index: Dict[str, list] = {}
+    for rid in real_ids:
+        norm_index.setdefault(_normalize_ulid(rid), []).append(rid)
+    seid_stats = {"exact": 0, "recovered": 0, "dropped": 0}
 
     for item in response.get(response_key, []):
         if not isinstance(item, dict):
             continue
-        seid = item.get("sub_event_id", "")
+        raw_seid = item.get("sub_event_id", "")
+        if raw_seid in se_by_id:
+            seid = raw_seid
+            seid_stats["exact"] += 1
+        else:
+            cand = norm_index.get(_normalize_ulid(raw_seid), [])
+            if len(cand) == 1:  # unambiguous cosmetic-noise recovery only
+                seid = cand[0]
+                seid_stats["recovered"] += 1
+            else:
+                seid_stats["dropped"] += 1
+                continue  # ambiguous/unknown -> drop rather than write a dangling/mis-attributed mention
         se_name = se_by_id.get(seid, {}).get("Sub-event_summary", "")
 
         for obj in item.get(inner_key, []):
@@ -413,6 +446,17 @@ def _process_batch_response(  # pylint: disable=too-many-arguments,too-many-posi
             ):
                 count += 1
 
+    try:
+        logger.info(
+            "OBSERV xref.seid entity=%s event=%s exact=%d recovered=%d dropped=%d",
+            response_key,
+            event_id,
+            seid_stats["exact"],
+            seid_stats["recovered"],
+            seid_stats["dropped"],
+        )
+    except Exception:  # noqa: BLE001 - observability must never break extraction
+        pass
     return {"count": count, "links": links}
 
 
