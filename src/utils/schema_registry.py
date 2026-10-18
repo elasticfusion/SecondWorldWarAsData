@@ -86,7 +86,7 @@ class SchemaRegistry:
         remain resolvable via ``get_schema``/``get_validator``."""
         canonical: list = []
         seen = set()
-        for name, entity in _NAME_TO_ENTITY.items():
+        for _name, entity in _NAME_TO_ENTITY.items():
             if entity in self._schema_map and entity not in seen:
                 # prefer the canonical (plural/registry) name, which is always a key in the map
                 canonical.append(entity)

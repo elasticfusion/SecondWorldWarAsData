@@ -118,7 +118,7 @@ def _resolve_commons_image(file_title: str, timeout: int) -> Optional[Dict[str, 
                 continue
             meta = ii.get("extmetadata") or {}
 
-            def _m(key: str) -> Optional[str]:
+            def _m(key: str, meta=meta) -> Optional[str]:
                 v = meta.get(key) or {}
                 val = v.get("value")
                 return (

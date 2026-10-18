@@ -37,6 +37,11 @@ run "pylint"   python -m pylint --disable=$PYLINT_DISABLE --fail-under=5.0 $SCOP
 # shellcheck disable=SC2086
 run "mypy"     python -m mypy $SCOPE --ignore-missing-imports --no-strict-optional
 run "bandit"   python -m bandit -r src/ lambda_handlers/ -ll -q
+# Ruff: high-value bug-pattern rules (flake8-bugbear 'B') only — e.g. raise-without-from,
+# loop-var-closure, mutable-default. Deliberately NOT the logging/style groups (the project uses
+# f-string logging by design; pylint W1203 is disabled for the same reason), so this adds real
+# bug detection without 100s of style-noise findings.
+run "ruff(B)"  python -m ruff check src/ lambda_handlers/ --select B --quiet
 # shellcheck disable=SC2086
 # Radon complexity: a C-grade block (moderate complexity) must BUBBLE UP for evaluation
 # (listed, not silently tolerated); a D-or-worse block HARD-FAILS the gate.

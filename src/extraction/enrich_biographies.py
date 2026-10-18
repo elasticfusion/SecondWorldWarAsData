@@ -308,7 +308,7 @@ def _fetch_image_license(filename: str) -> Optional[str]:
         )
         if resp.status_code == 200:
             pages = resp.json().get("query", {}).get("pages", {})
-            for page_id, page_data in pages.items():
+            for _page_id, page_data in pages.items():
                 ii = page_data.get("imageinfo", [])
                 if ii:
                     meta = ii[0].get("extmetadata", {})
