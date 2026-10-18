@@ -241,3 +241,35 @@ def test_read_side_index_traversal_guard(tmp_path):
     # Index self-healed to a safe basename.
     assert index["Aachen"] == _safe_entity_filename("../secret.json", "Aachen")
     assert "/" not in index["Aachen"]
+
+
+def test_relationship_index_traversal_guard(tmp_path):
+    """HIGH#3 (security follow-up): _process_place_relationships must not join a tampered index
+    value verbatim — that would read+write a file OUTSIDE entity_dir. Sanitize to a safe basename.
+    """
+    import json as _json
+    from src.extraction.batch_parallel import _process_place_relationships
+
+    entity_dir = tmp_path / "places"
+    entity_dir.mkdir()
+    # An out-of-dir file a traversal relationship would try to read AND overwrite.
+    outside = tmp_path / "victim.json"
+    outside.write_text('{"PlaceID": "VICTIM", "untouched": true}', encoding="utf-8")
+    # Legit in-dir place the relationship points from.
+    (entity_dir / "aachen.json").write_text(
+        _json.dumps({"PlaceID": "01A", "related_places": []}), encoding="utf-8"
+    )
+
+    # Pre-fix/tampered index: 'koln' maps to a traversal path to the out-of-dir victim.
+    index = {"aachen": "aachen.json", "koln": "../victim.json"}
+    response = {
+        "places": [
+            {"relationships": [{"type": "near", "from": "aachen", "to": "koln"}]}
+        ]
+    }
+    _process_place_relationships(response, entity_dir, index)
+
+    # The out-of-dir victim must be neither read-as-target nor overwritten.
+    assert _json.loads(outside.read_text())["untouched"] is True
+    # Index self-healed to a safe basename (no traversal propagated).
+    assert index["koln"] == "victim.json" and "/" not in index["koln"]

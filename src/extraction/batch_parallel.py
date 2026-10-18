@@ -1034,7 +1034,31 @@ def _process_place_relationships(response, entity_dir, index):
             to_file = index.get(to_key)
             if not from_file or not to_file:
                 continue
-            _add_relationship(entity_dir / from_file, entity_dir / to_file, rel_type)
+            # Read-side path-traversal guard (HIGH#3): index values may be pre-fix/tampered and
+            # contain "../" or an absolute path. Joining them verbatim to entity_dir and then
+            # reading+writing would be an arbitrary-file read/write outside entity_dir. Sanitize to a
+            # safe basename (same guard as _get_or_create_entity) and self-heal the index.
+            safe_from = _safe_entity_filename(str(from_file), from_key)
+            safe_to = _safe_entity_filename(str(to_file), to_key)
+            if safe_from != str(from_file):
+                logger.warning(
+                    "OBSERV entity.index_sanitized dir=%s key=%s stored=%r -> %s",
+                    entity_dir.name,
+                    from_key,
+                    str(from_file)[:80],
+                    safe_from,
+                )
+                index[from_key] = safe_from
+            if safe_to != str(to_file):
+                logger.warning(
+                    "OBSERV entity.index_sanitized dir=%s key=%s stored=%r -> %s",
+                    entity_dir.name,
+                    to_key,
+                    str(to_file)[:80],
+                    safe_to,
+                )
+                index[to_key] = safe_to
+            _add_relationship(entity_dir / safe_from, entity_dir / safe_to, rel_type)
 
 
 def _add_relationship(from_path, to_path, rel_type):
