@@ -20,7 +20,6 @@ schema: |
   {
     "SUB_EVENT_ID": [
       {
-        "CasualtyID": "01ULID...",
         "type": "casualties",
         "side": "allied",
         "description": "Heavy losses during assault on Hill 192",
@@ -42,7 +41,6 @@ schema: |
         "impacted_equipment": [{"name": "M4 Sherman", "EquipmentID": "<COPY from Available entities > Equipment, or null>", "relation": "causative"}]
       },
       {
-        "CasualtyID": "01ULID...",
         "type": "non_battle",
         "cause": "weather_exposure",
         "description": "45 men suffered trench foot and frostbite",
@@ -53,7 +51,6 @@ schema: |
         "impacted_places": [{"name": "Bastogne", "PlaceID": "<COPY ...>"}]
       },
       {
-        "CasualtyID": "01ULID...",
         "type": "non_battle",
         "cause": "weather_exposure",
         "description": "frostbite",
@@ -67,7 +64,6 @@ schema: |
   }
 
 rules:
-  - Generate 26-character ULIDs ONLY for CasualtyID
   - CRITICAL: For PeopleGroupID, match the organization name to "Available entities > Organizations" and COPY the ID. If no exact match, try partial match (e.g., "80th Division" matches "80th Infantry Division"). If no match, use null.
   - CRITICAL: For PersonID, match the person name to "Available entities > People" and COPY the ID. If no match, use null.
   - CRITICAL: For PlaceID, match the place name to "Available entities > Places" and COPY the ID. If no match, use null.

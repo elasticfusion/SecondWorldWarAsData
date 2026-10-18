@@ -486,7 +486,10 @@ class BiographicalProfile(BaseModel):
 class PersonEventMention(BaseModel):
     """Event mention linking a person to a specific event."""
 
-    MentionID: str = Field(description="26-character ULID")
+    MentionID: Optional[str] = Field(
+        default=None,
+        description="server-minted (required on the stored record); LLM must NOT supply it",
+    )
     Event_Name: str
     EventID: str = Field(description="26-character ULID")
     Sub_event_Name: str = Field(alias="Sub-event_Name")
@@ -506,7 +509,10 @@ class PersonEventMention(BaseModel):
 class Person(BaseModel):
     """Person entity with biographical information and event mentions."""
 
-    PersonID: str = Field(description="26-character ULID")
+    PersonID: Optional[str] = Field(
+        default=None,
+        description="server-minted (required on the stored record); LLM must NOT supply it",
+    )
     name: str
     source_language: str = "English"
     biographical_profile: Optional[BiographicalProfile] = None
@@ -810,7 +816,25 @@ def _process_person(
 ) -> tuple[bool, bool]:
     """Process a single person. Returns (is_new, is_updated)."""
     name = person["name"]
-    person_id = person["PersonID"]
+    # HIGH#7a: PersonID is a NEW entity id — MINT it server-side, never trust the LLM's value.
+    # (A PersonID is not embedded in the prompt as a reference, so there is nothing to honor; a
+    # hallucinated/colliding LLM id would otherwise become a cross-reference target.)
+    llm_person_id = person.get("PersonID")
+    person_id = str(ulid.new())
+    person["PersonID"] = person_id
+    if llm_person_id and llm_person_id != person_id:
+        logger.info(
+            "OBSERV id.minted entity=person field=PersonID replaced_llm_value=1"
+        )
+    # HIGH#7a: mint the per-mention MentionID server-side too (consistent with places/dates/weather).
+    for _m in person.get("event_mentions", []) or []:
+        if isinstance(_m, dict):
+            _llm_mid = _m.get("MentionID")
+            _m["MentionID"] = str(ulid.new())
+            if _llm_mid and _llm_mid != _m["MentionID"]:
+                logger.info(
+                    "OBSERV id.minted entity=person field=MentionID replaced_llm_value=1"
+                )
     name_key = _normalize_name(name)
 
     # Check in-memory index for existing person
@@ -889,6 +913,13 @@ def _extract_people_for_sub_event(
 
             people_dict: Dict[str, Any] = people_output.model_dump(by_alias=True)
             people_dict = _fix_invalid_ulids(people_dict)  # type: ignore
+
+            # HIGH#7b: verify Grok honored the embedded Sub-eventID echo (observability only).
+            from src.utils.deterministic_ids import observe_embedded_ulid
+
+            observe_embedded_ulid(
+                sub_event_id, people_dict.get("Sub-eventID"), "people"
+            )
 
             extracted_people = people_dict.get("People", [])
             logger.info("  ✓ Processed %d people", len(extracted_people))

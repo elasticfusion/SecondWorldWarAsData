@@ -152,7 +152,10 @@ class MediaItem(BaseModel):
 class EquipmentMention(BaseModel):
     """Equipment mention in event."""
 
-    MentionID: str = Field(description="26-character ULID")
+    MentionID: Optional[str] = Field(
+        default=None,
+        description="server-minted (required on the stored record); LLM must NOT supply it",
+    )
     book: Optional[str] = None
     author: Optional[str] = None
     series: Optional[str] = None

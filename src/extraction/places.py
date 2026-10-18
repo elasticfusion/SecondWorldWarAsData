@@ -34,7 +34,10 @@ class MapUrls(BaseModel):
 class PlaceMention(BaseModel):
     """Individual place mention."""
 
-    PlaceMentionID: str = Field(description="26-character ULID")
+    PlaceMentionID: Optional[str] = Field(
+        default=None,
+        description="server-minted (required on the stored record); LLM must NOT supply it",
+    )
     current_name: str = Field(description="Current name of the place")
     historical_name: Optional[str] = Field(
         default=None, description="Historical name if different"
@@ -250,6 +253,11 @@ def _extract_place_for_sub_event(
             place_dict = _fix_null_fields(place_dict)  # type: ignore
             place_dict = _fix_invalid_ulids(place_dict)  # type: ignore
 
+            # HIGH#7b: verify Grok honored the embedded Sub-eventID echo (observability only).
+            from src.utils.deterministic_ids import observe_embedded_ulid
+
+            observe_embedded_ulid(sub_event_id, place_dict.get("Sub-eventID"), "places")
+
             return place_dict
 
         except Exception as e:
@@ -369,7 +377,12 @@ def _find_or_create_place(
         return places_dir / index[place_key]
 
     # New place - create file
-    place_id = mention.get("PlaceMentionID", str(ulid.new()))
+    # HIGH#7a: PlaceID is a NEW entity id — MINT it server-side. Previously this reused the LLM's
+    # PlaceMentionID (both trusting an LLM id AND conflating a per-mention id with the entity id).
+    llm_place_id = mention.get("PlaceMentionID")
+    place_id = str(ulid.new())
+    if llm_place_id and llm_place_id != place_id:
+        logger.info("OBSERV id.minted entity=place field=PlaceID replaced_llm_value=1")
     safe_name = place_name.replace(" ", "_").replace("/", "_")
     filename = f"{safe_name}_{place_id[:8]}.json"
 

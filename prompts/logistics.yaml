@@ -15,7 +15,6 @@ schema: |
   {
     "SUB_EVENT_ID": [
       {
-        "LogisticsID": "01ULID...",
         "type": "supply_shortage",
         "category": "ammunition",
         "description": "Ammunition supplies critically low for VII Corps",
@@ -36,7 +35,6 @@ schema: |
   }
 
 rules:
-  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
   - Type values: supply_shortage, supply_excess, delivery_delay, transport_disruption, capacity_constraint, production_delay
   - Severity values: critical, high, medium, low
   - DEFAULT TO MEDIUM. Only use high/critical when text explicitly states operations were halted, postponed, or impossible.

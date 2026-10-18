@@ -39,7 +39,6 @@ schema: |
   {
     "Supplemental_Material": [
       {
-        "MaterialID": "01ULID...",
         "classification": "citation",
         "prose_content": null,
         "citation": {
@@ -64,7 +63,6 @@ schema: |
         "license_status": "public_domain"
       },
       {
-        "MaterialID": "01ULID...",
         "classification": "prose",
         "prose_content": "Narrative commentary from the note (no document cited).",
         "citation": null,
@@ -77,7 +75,6 @@ schema: |
   }
 
 rules:
-  - Generate 26-character ULIDs using only: 0-9 A-H J-K M-N P-T V-Z
   - "classification is one of citation (document only), prose (narrative only), hybrid (both)"
   - >-
     For a HYBRID note, emit SEPARATE entries: one "prose" entry (prose_content set, citation
