@@ -36,6 +36,10 @@ BUCKET = os.environ["S3_BUCKET"]
 REGION = os.environ.get("AWS_DEFAULT_REGION", os.environ.get("AWS_REGION", "us-east-1"))
 WORKDIR = Path("/tmp/pipeline")
 SYNC_INTERVAL = int(os.environ.get("SYNC_INTERVAL", "120"))  # seconds
+# Outcome of the Phase-2 reconcile -> Phase-3 drain barrier wait ("seen" | "timeout" | "disabled" |
+# "unknown"), set by _wait_for_reconcile_barrier and read by the bibliography coverage check so a
+# download shortfall can be correlated with the barrier state (HIGH#5 observability).
+_RECONCILE_BARRIER_STATUS = "unknown"
 # Paths used by _clear_title_cache_if_reprocess (module constants so tests can
 # redirect them to a temp dir without patching Path globally).
 _CONFIG_PATH = Path("/app/config.yaml")
@@ -1042,8 +1046,73 @@ def _find_book_prefix_case_insensitive(book_name: str) -> str:
     return ""
 
 
+def _wait_for_reconcile_barrier() -> None:
+    """Block until the Phase-2 dedup/reconcile barrier is present (bibliography fully published), or
+    a bounded timeout elapses. Fail-OPEN: on timeout Phase 3 proceeds anyway (same as pre-barrier
+    behavior) but logs a WARNING so the missed drain is observable. Timeout is configurable via
+    RECONCILE_BARRIER_WAIT_SECS (default 300s); 0 disables the wait entirely.
+
+    Records the outcome in the module-level ``_RECONCILE_BARRIER_STATUS`` so the downstream
+    bibliography coverage check can CORRELATE a download shortfall with the barrier state (seen vs
+    timed-out vs disabled) — the single most useful signal for diagnosing this specific issue.
+    """
+    global _RECONCILE_BARRIER_STATUS
+    try:
+        timeout = int(os.environ.get("RECONCILE_BARRIER_WAIT_SECS", "300"))
+    except (TypeError, ValueError):
+        timeout = 300
+    if timeout <= 0:
+        _RECONCILE_BARRIER_STATUS = "disabled"
+        return
+    key = _reconcile_barrier_key()
+    s3 = _s3_client()
+    deadline = time.time() + timeout
+    interval = 5
+    waited = 0
+    while time.time() < deadline:
+        try:
+            obj = s3.get_object(Bucket=BUCKET, Key=key)
+            # Barrier is present — log its freshness + how far AHEAD of this snapshot the reconcile
+            # finished (a positive gap proves the ordering we wanted: producer done, then consumer).
+            body = {}
+            try:
+                body = json.loads(obj["Body"].read().decode())
+            except Exception:  # noqa: BLE001
+                pass
+            completed_at = body.get("completed_at")
+            age = (time.time() - completed_at) if completed_at else -1
+            _RECONCILE_BARRIER_STATUS = "seen"
+            logger.info(
+                "OBSERV reconcile.barrier_seen key=%s waited=%ds barrier_age=%.1fs "
+                "canonical_count=%s ordering=%s",
+                key,
+                waited,
+                age,
+                body.get("canonical_count"),
+                "ok" if age >= 0 else "unknown",
+            )
+            return
+        except (
+            Exception
+        ):  # noqa: BLE001 - not present yet (404) or transient; keep polling
+            time.sleep(interval)
+            waited += interval
+    _RECONCILE_BARRIER_STATUS = "timeout"
+    logger.warning(
+        "OBSERV reconcile.barrier_timeout key=%s waited=%ds — proceeding (Phase 3 may snapshot "
+        "before reconcile finished; a late bibliography record could be missed this run)",
+        key,
+        waited,
+    )
+
+
 def _download_phase3_from_s3() -> None:
     """Fallback: download entity files from S3 for Phase 3."""
+    # Drain/ordering barrier: wait for the Phase-2 dedup/reconcile step to finish PUBLISHING the
+    # canonical bibliography before we snapshot it. Without this, Phase 3's download could precede
+    # the reconcile upload and miss just-reconciled records (the HIGH#5 late-arrival gap). This is
+    # an ordering signal only — S3 remains the authoritative store, not a data queue.
+    _wait_for_reconcile_barrier()
     entity_dirs = [
         "people",
         "people_groups",
@@ -1114,19 +1183,37 @@ def _observe_bibliography_download_coverage(s3) -> None:
         )
         status = "ok" if local_count >= s3_count else "SHORTFALL"
         logger.info(
-            "OBSERV phase3.bib_download s3=%d local=%d status=%s",
+            "OBSERV phase3.bib_download s3=%d local=%d status=%s barrier=%s",
             s3_count,
             local_count,
             status,
+            _RECONCILE_BARRIER_STATUS,
         )
         if local_count < s3_count:
+            # Correlate with the drain barrier so the root cause is unambiguous.
+            if _RECONCILE_BARRIER_STATUS == "timeout":
+                cause = (
+                    "the reconcile barrier TIMED OUT, so Phase 3 snapshotted before reconcile "
+                    "finished publishing (HIGH#5 drain miss — raise RECONCILE_BARRIER_WAIT_SECS "
+                    "or investigate why reconcile is slow/failed)"
+                )
+            elif _RECONCILE_BARRIER_STATUS == "seen":
+                cause = (
+                    "the reconcile barrier was SEEN (ordering held), so this shortfall is NOT the "
+                    "drain race — likely a scoped-download filter dropping cross-book files"
+                )
+            else:
+                cause = (
+                    f"barrier status={_RECONCILE_BARRIER_STATUS}; likely a scoped-download filter "
+                    "dropping cross-book bibliography files"
+                )
             logger.warning(
-                "Phase 3 bibliography download SHORTFALL: %d/%d records present locally — the "
-                "resolver will run on a PARTIAL corpus (missing %d). Likely a scoped-download "
-                "filter dropping cross-book bibliography files.",
+                "Phase 3 bibliography download SHORTFALL: %d/%d records present locally "
+                "(missing %d). Cause: %s.",
                 local_count,
                 s3_count,
                 s3_count - local_count,
+                cause,
             )
     except Exception as e:  # noqa: BLE001 - observability must never break the download
         logger.debug("bibliography download coverage check failed: %s", e)
@@ -1871,6 +1958,9 @@ def _reconcile_bibliography_full_corpus() -> None:
     """
     try:
         s3 = _s3_client()
+        # Clear any stale barrier from a previous run FIRST, so Phase 3 cannot observe an old
+        # completion signal and snapshot before THIS run's reconcile finishes.
+        _clear_reconcile_barrier(s3)
         n = _download_s3_prefix(s3, "output/bibliography/")
         logger.info("Full-corpus bibliography reconcile: downloaded %d files", n)
         from src.extraction.bibliography import reconcile_bibliography_dir
@@ -1886,10 +1976,60 @@ def _reconcile_bibliography_full_corpus() -> None:
             merged_away,
             up,
         )
+        # Publish a completion BARRIER only after the canonical set is fully uploaded + orphan
+        # shards removed. Phase 3 waits on this before snapshotting output/bibliography/, closing
+        # the race where Phase 3's download preceded the reconcile upload and missed late-arriving
+        # (just-reconciled) records. S3 is still the authoritative store — this is a drain/ordering
+        # signal, NOT a data queue.
+        canonical_count = len(
+            [p for p in bib_dir.glob("*.json") if p.name != "index.json"]
+        )
+        _publish_reconcile_barrier(s3, canonical_count=canonical_count)
     except (
         Exception
     ) as e:  # noqa: BLE001 - reconcile is best-effort, never blocks dedup
         logger.warning("Full-corpus bibliography reconcile failed: %s", e)
+
+
+# S3 key for the "Phase-2 dedup/reconcile finished publishing bibliography" barrier. Book-scoped so
+# concurrent books don't clobber each other's signal.
+def _reconcile_barrier_key() -> str:
+    book = os.environ.get("BOOK_NAME", "_all")
+    return f"manifests/reconcile_complete/{book}.json"
+
+
+def _clear_reconcile_barrier(s3) -> None:
+    """Delete any stale barrier from a previous run (so Phase 3 cannot observe an old signal)."""
+    try:
+        s3.delete_object(Bucket=BUCKET, Key=_reconcile_barrier_key())
+    except Exception as e:  # noqa: BLE001 - best-effort
+        logger.debug("reconcile barrier clear skipped: %s", e)
+
+
+def _publish_reconcile_barrier(s3, canonical_count: int = -1) -> None:
+    """Write the reconcile-complete barrier (records how many canonical files were published so it
+    is comparable with Phase 3's download coverage). Best-effort; a failure here must not break
+    dedup (Phase 3 falls back to its bounded wait timing out, then proceeds)."""
+    try:
+        s3.put_object(
+            Bucket=BUCKET,
+            Key=_reconcile_barrier_key(),
+            Body=json.dumps(
+                {
+                    "book": os.environ.get("BOOK_NAME", "_all"),
+                    "completed_at": time.time(),
+                    "canonical_count": canonical_count,
+                    "_schema": "reconcile_barrier_v1",
+                }
+            ).encode(),
+        )
+        logger.info(
+            "OBSERV reconcile.barrier_published key=%s canonical_count=%d",
+            _reconcile_barrier_key(),
+            canonical_count,
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("reconcile barrier publish failed: %s", e)
 
 
 def _delete_orphaned_bibliography_shards(s3, bib_dir: Path) -> None:
