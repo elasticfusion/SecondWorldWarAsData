@@ -142,15 +142,31 @@ def _place_name(place: dict) -> Optional[str]:
     )
     if name:
         return name
-    # Fallback: some place records carry the name only inside their mentions'
-    # ``original_text`` (e.g. a record with no top-level current_name — "Schmidt" lives in
-    # event_mentions[].original_text). Use the first non-empty verbatim so the place is still
-    # geocodable rather than skipped as no_name.
+    # Fallback: some place records carry the name only inside their mentions' ``original_text``
+    # (e.g. a record with no top-level current_name — "Schmidt" lives in
+    # event_mentions[].original_text). Use it ONLY when it is short and name-like: a full verbatim
+    # SENTENCE must not be fed to the geocoder (it would geocode the record from incidental prose).
+    # A long/sentence verbatim -> None, so the record stays ungeocoded (flagged) rather than
+    # mis-located.
     for m in (place.get("event_mentions") or []) + (place.get("mentions") or []):
-        ot = (m or {}).get("original_text")
-        if ot and ot.strip():
-            return ot.strip()
+        ot = ((m or {}).get("original_text") or "").strip()
+        if ot and _looks_like_place_name(ot):
+            return ot
     return None
+
+
+def _looks_like_place_name(text: str) -> bool:
+    """Heuristic: is ``text`` a bare place name (safe to geocode) rather than a prose sentence?
+    Name-like = short (<=5 words), no sentence-ending punctuation, no clause commas/semicolons.
+    """
+    t = text.strip().rstrip(".")
+    if not t or len(t) > 60:
+        return False
+    if any(ch in t for ch in (";", ":")) or "," in t:
+        return False
+    if t.count(".") > 0:  # abbreviations/sentences
+        return False
+    return len(t.split()) <= 5
 
 
 def _needs_geocode(place: dict) -> bool:

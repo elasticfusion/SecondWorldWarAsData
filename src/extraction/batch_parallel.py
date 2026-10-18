@@ -51,6 +51,20 @@ def _normalize_ulid(value: str) -> str:
     return re.sub(r"[^a-z0-9]", "", (value or "").lower())
 
 
+def _safe_entity_filename(filename: str, entity_id: str) -> str:
+    """Path-traversal guard for entity filenames derived from untrusted LLM output. Reduces to the
+    basename, keeps only a safe charset, preserves a .json extension, and falls back to the entity
+    ULID when nothing safe remains. Ensures the write stays inside entity_dir."""
+    import os as _os
+
+    base = _os.path.basename((filename or "").replace("\\", "/"))
+    stem = base[:-5] if base.lower().endswith(".json") else base
+    safe = re.sub(r"[^A-Za-z0-9 ._-]", "", stem).strip().strip(".").strip()
+    if not safe:
+        safe = entity_id
+    return f"{safe}.json"
+
+
 # Schema version this module targets — derived from the central per-entity map.
 # This writer emits event-mention records, so it targets the 'events' entity version.
 from src.schemas import entity_version as _entity_version
@@ -234,6 +248,11 @@ def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positi
             record[id_field] = entity_id
             record["event_mentions"] = []
         filename = make_filename(key, entity_id) if make_filename else f"{key}.json"
+        # Harden against path traversal: the key/filename derives from untrusted LLM output (an
+        # entity NAME), and the default f"{key}.json" does not strip "/" or ".." — a name like
+        # "/abs/x" or "../../x" would escape entity_dir. Reduce to the basename, whitelist chars,
+        # and fall back to the ULID if nothing safe remains.
+        filename = _safe_entity_filename(filename, entity_id)
         entity_file = entity_dir / filename
         try:
             write_json_with_lock(entity_file, record)
