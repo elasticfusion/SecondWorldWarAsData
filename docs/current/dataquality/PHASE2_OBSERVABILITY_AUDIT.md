@@ -23,6 +23,9 @@ skipped (with reason), errors** — enough to answer "did this step do its job?"
 
 ## Prioritized gap list
 
+### P1 — SILENT steps — ✅ DONE 2026-10-19 (PR #464): maps/images/source_section now emit
+### outcome OBSERV on every exit path. Original items below.
+
 ### P1 — SILENT steps (no outcome visible at all; a zero/failure is invisible)
 1. **maps** (`src/extraction/maps.py`) — logs "Starting maps extraction" then nothing about
    results. Add `OBSERV maps.extract attempted=N found=N persisted=N skipped=N errors=N`.
