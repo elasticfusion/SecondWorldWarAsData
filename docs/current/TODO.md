@@ -6,6 +6,17 @@
 
 ## Current Priority (reprioritized index)
 
+> **[DESIGN · 2026-10-19, operator-directed] OpenSERP scope reduction — PDF/EPUB source discovery +
+> human-gated acquisition. DOC: docs/current/design/OPENSERP_SCOPE_REDUCTION.md.** Reduce Phase-3
+> OpenSERP from broad 5-entity web+image enrichment to ONE job: find acquirable PDF/EPUB sources on a
+> topic + Grok-proposed candidate links, routed through a human CONFIRM/DISCARD review before
+> incorporation. KEY FIX surfaced in review: _openserp_fetcher currently REJECTS HTML landing pages
+> (suffix-only), which discards most real sources (archive.org/HathiTrust/Gutenberg item pages) and
+> is asymmetric with _archive_org_fetcher (which accepts landing pages + resolves the download). The
+> redesign must RESOLVE landing pages to the document, not reject them (doc §5a). Reuses: Grok-verify,
+> SSRF guard (#453), dedup-UI review pattern, acquisition fetchers. Open question: are place/person
+> IMAGES user-facing today? measure before dropping image search (doc §7.1). Addresses the measured
+> openserp CPU bottleneck (98.7%).
 > **[PERF DATA · 2026-10-19, 48h Container Insights] Phase-2 is NOT CPU/mem-bound; it is
 > over-provisioned.** Across 186 phase2-extract Task samples (48h): CPU peak 30.0% / avg 1.2%; mem
 > peak 10.2% (~208 MB) / avg 8.6% — on a 1 vCPU / 2 GB reservation (the LARGEST of any family). The
