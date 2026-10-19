@@ -850,14 +850,16 @@ def _enrich_person_phase2(person_data: dict, grok_client) -> None:
     try:
         from src.extraction.enrich_biographies import enrich_person_from_sources
 
-        enrich_person_from_sources(person_data, grok_client)
+        enriched_now = enrich_person_from_sources(person_data, grok_client)
         # enrich.persisted counterpart to enrich.collecting (symmetry asked for): make the RETRIEVE
-        # outcome visible — has_bio=0 means the fetch returned but produced no biographical_profile.
+        # outcome visible. enriched_now distinguishes "this call populated it" from a short-circuit
+        # (already-enriched / fresh not-found); has_bio=0 means fetched/returned but no profile.
         bio = person_data.get("biographical_profile") or {}
         n_sources = len(bio.get("biography_sources", []) or []) if bio else 0
         logger.info(
-            "OBSERV enrich.persisted entity=person name=%s has_bio=%d sources=%d",
+            "OBSERV enrich.persisted entity=person name=%s enriched_now=%d has_bio=%d sources=%d",
             person_data.get("name", "?"),
+            1 if enriched_now else 0,
             1 if bio else 0,
             n_sources,
         )
