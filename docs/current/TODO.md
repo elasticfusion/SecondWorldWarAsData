@@ -56,25 +56,19 @@
 >    (the majority of green-book citations) was never given a title-promotion path. Fix: promote
 >    alt_title/verbatim -> both top-level `title` and `citation.title` for archival/military refs.
 
-> A0000. **[HIGH · DATA HYGIENE — cross-book contamination] e2e_reset --wipe-title does NOT clear the
->    shared cross-book prefixes `output/bibliography/` + `output/narrative_notes/`.** After wiping
->    XChannel, the Task-6 inspection found those dirs still 100% RoerDams (57 bib + 16 narrative, all
->    book=RoerDams) — the XChannel biblio/narrative review was reading the wrong book's data. Because
->    bibliography is intentionally cross-book (hash-keyed, shared), a per-title wipe can't just delete
->    the prefix; needs a book-scoped filter (delete only records whose mentions are all the wiped
->    book) OR an explicit "--wipe-shared" option for a clean single-book E2E. Until fixed, a
->    single-book E2E's bibliography/narrative output is polluted by prior books.
-
-> A0. **[HIGH · perf — Phase-3 bottleneck] Bound + parallelize OpenSERP place-IMAGE enrichment.**
->    On the full XChannel volume, Phase 3 ran ~15h and was dominated by a serial, live
->    web-search-per-place image enrichment (`src/enrichment/openserp_enrichment.py`): for EACH of
->    ~189 places it OpenSERP-searches "Photo of <place> (WWII place)" then Grok-verifies each result,
->    serially, chasing low-quality hits across flaky external hosts (nytimesanswers.com dead-host
->    retries, niehorster.org SSL mismatches). Geocoding (92/106) + bibliography resolution finished
->    early; the image tail was the whole overnight runtime. Fixes: (a) parallelize (bounded
->    concurrency / batch); (b) SKIP image search for low-value/huge-area places (Russia, Hungary,
->    Soviet Union — not a bespoke town photo); (c) cap retries + host-allowlist so dead/junk domains
->    don't burn minutes; (d) a per-place time/attempt budget. Same class as A below.
+> A0000. **[MED · TEST ISOLATION, re-scoped — intermingling is BY DESIGN] Give a single-book E2E a
+>    way to see that book's OWN bibliography contribution.** Clarified with owner: the bibliography is
+>    INTENTIONALLY cross-book/shared — citations are hash-keyed (`bib_<hash>.json`) so multiple green
+>    books citing the same source (Pogue, SHAEF records, German MS studies, A Soldier's Story)
+>    CONVERGE on one record whose `mentions[]` carry per-book provenance. That is the desired
+>    production end-state (a cross-corpus citation graph), NOT a bug. The only real problem was
+>    TEST isolation: a clean single-book E2E (validating XChannel's BIBLIOGRAPHICAL NOTE) couldn't
+>    distinguish XChannel's output from pre-existing RoerDams records, because `e2e_reset
+>    --wipe-title` (correctly) doesn't touch the shared prefix. Fix is a verification affordance, NOT
+>    de-intermingling: (a) inspect "book X's bibliography" by filtering records with >=1 mention where
+>    mentions[].book == X (works WITH intermingling); and/or (b) an OPT-IN `e2e_reset --wipe-shared`
+>    flag that clears output/bibliography/ + output/narrative_notes/ only for a deliberate clean-room
+>    single-book test (default leaves them intermingled). Do NOT change the production data model.
 
 > A. **[HIGH · perf — Phase-2 bottleneck on large volumes] Parallelize the OPTIONAL-entity
 >    extractors (supplemental, equipment, weather, casualties) via the Grok BATCH API.** The events
