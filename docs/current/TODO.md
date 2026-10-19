@@ -25,6 +25,17 @@
 
 > **XChannel E2E FINDINGS (2026-10-18/19) — surfaced by the full Cross-Channel Attack volume run:**
 >
+> A0. **[HIGH · perf — Phase-3 bottleneck] Bound + parallelize OpenSERP place-IMAGE enrichment.**
+>    On the full XChannel volume, Phase 3 ran ~15h and was dominated by a serial, live
+>    web-search-per-place image enrichment (`src/enrichment/openserp_enrichment.py`): for EACH of
+>    ~189 places it OpenSERP-searches "Photo of <place> (WWII place)" then Grok-verifies each result,
+>    serially, chasing low-quality hits across flaky external hosts (nytimesanswers.com dead-host
+>    retries, niehorster.org SSL mismatches). Geocoding (92/106) + bibliography resolution finished
+>    early; the image tail was the whole overnight runtime. Fixes: (a) parallelize (bounded
+>    concurrency / batch); (b) SKIP image search for low-value/huge-area places (Russia, Hungary,
+>    Soviet Union — not a bespoke town photo); (c) cap retries + host-allowlist so dead/junk domains
+>    don't burn minutes; (d) a per-place time/attempt budget. Same class as A below.
+
 > A. **[HIGH · perf — Phase-2 bottleneck on large volumes] Parallelize the OPTIONAL-entity
 >    extractors (supplemental, equipment, weather, casualties) via the Grok BATCH API.** The events
 >    extractor already uses the async Batch API (the XChannel run submitted 80 + 324 reqs with high
