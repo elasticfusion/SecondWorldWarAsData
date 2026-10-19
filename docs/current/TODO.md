@@ -6,6 +6,25 @@
 
 ## Current Priority (reprioritized index)
 
+> **CRITICAL E2E BUG (XChannel, 2026-10-19) — ALL optional-entity types extract ZERO:**
+>
+> **[CRITICAL · data-loss] equipment, weather, casualties, logistics, maps, supplemental all produced
+> 0 records on the full XChannel run, while the BATCH-path types are healthy (people 55, places 187,
+> dates 62, people_groups 75, images 80, source_section 84).** This is ONE systemic break in the
+> optional-entity extraction/persist path, not six separate bugs. Durable evidence (not aged logs):
+> (a) the SOURCE TEXT contains the content — across the 80 event files, 7 mention casualties, 19
+> mention equipment/tanks/landing-craft, 18 mention weather; (b) the extractors RAN (processed-events
+> markers list all 80; many Grok batches submitted: 53/52/19/17/... requests); (c) yet 0 records
+> persisted for every one of these types. Earlier live-sweep logs (now expired) showed "No equipment
+> extracted", "Updated 0 weather mentions", and recurring supplemental `'reference_number' is a
+> required property` validation errors. LEADING HYPOTHESIS: the batch-result dict for the optional
+> types is keyed by the LLM-echoed Sub-eventID and `batch_results.get(real_sub_event_id)` misses for
+> every sub-event (the #448/HIGH#7 mangled-echoed-KEY class) — note reconcile_echoed_keys was only
+> wired into weather+casualties, and even there it may not cover this path; OR a shared
+> validation/schema reject drops them. NEXT: reproduce deterministically in a test (feed a known
+> batch response through the optional-entity result-processing) — do NOT rely on expiring logs. This
+> supersedes the earlier C (reference_number) + A (parallelize) items in priority; correctness first.
+
 > **DEDUP-UI canonical-name editor (owner, 2026-10-18, surfaced during the XChannel dedup):**
 >
 > **[HIGH · dedup UX] Add a real "edit canonical name" tool to the dedup UI.** Today "Fix name"
