@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import ulid
 from pydantic import BaseModel, Field, field_validator
 
-from src.grok_client import GrokClient
+from src.grok_client import GrokClient, BatchModeCollecting
 from src.utils.http_pool import get_session
 from src.utils.json_validator import _fix_invalid_ulids
 
@@ -2088,6 +2088,8 @@ def _extract_equipment_with_llm(
 
             return None
 
+        except BatchModeCollecting:
+            raise  # collect pass: propagate so the event is NOT marked processed
         except Exception as e:
             if attempt < max_retries - 1:
                 logger.warning("  ⚠ Attempt %s failed: %s", attempt + 1, e)
