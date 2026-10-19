@@ -6,6 +6,23 @@
 
 ## Current Priority (reprioritized index)
 
+> **[ARCH/PERF · found 2026-10-19, live evidence] Phase-2 "submit-only" decoupling is DEFEATED by the
+> subprocess boundary — the container blocks the entire batch wait.** run_submit_only
+> (ecs_entrypoint) monkey-patches src.utils.batch_api.poll_batch/retrieve_results to no-ops so the
+> batch is submit-and-exit + enqueued (batch_job#) for the batch-poller Lambda to drive the retrieve.
+> BUT phase2_extract.py runs as a SUBPROCESS (subprocess.run), which does NOT inherit the parent
+> process's monkey-patch — so the inner grok_client.submit_batch() calls the REAL blocking poll
+> ("Waiting for batch to complete ... minutes to hours") and does the retrieve IN-PROCESS. Observed on
+> the XChannel clean run: task eaeb9a26 held RUNNING polling "0/80 complete" for 10+ min with
+> batch_job# count = 0 (never enqueued; enqueue only runs after the blocking subprocess returns).
+> IMPACT: Fargate billed for the whole multi-hour batch wait; the batch-poller path is dead code for
+> Phase 2; a container death mid-wait loses the run. This IS the inefficiency the Phase-2
+> segmentation question targeted — now with evidence. FIX options: (a) pass the submit-only intent
+> INTO the subprocess via env (e.g. BATCH_SUBMIT_ONLY=1) so phase2_extract.py itself returns after
+> submit + the parent enqueues; or (b) the Step-Functions split (collect+submit stage exits ->
+> poller -> retrieve stage). FUNCTIONALLY the current run still completes correctly (it retrieves +
+> persists + dedups in-process), just inefficiently.
+
 > **[DESIGN · 2026-10-19, user-proposed] Replace the magic-50 scope ceiling with a source-vs-actual
 > reconciliation (HIGH or LOW = issue).** Instead of "fail if >50 undeclared", DERIVE the expected
 > section count from an INDEPENDENT upstream source of truth (recorded at Phase 1: e.g. a
