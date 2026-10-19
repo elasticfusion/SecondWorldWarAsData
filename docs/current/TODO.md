@@ -6,6 +6,20 @@
 
 ## Current Priority (reprioritized index)
 
+> **[DESIGN · 2026-10-19, user-proposed] Replace the magic-50 scope ceiling with a source-vs-actual
+> reconciliation (HIGH or LOW = issue).** Instead of "fail if >50 undeclared", DERIVE the expected
+> section count from an INDEPENDENT upstream source of truth (recorded at Phase 1: e.g. a
+> run_scope#<book> DynamoDB record / book-manifest field = count of ingested *-content.md or produced
+> *-parsed.json), then have each phase compare its scoped ACTUAL work-set to that recorded expected
+> and FAIL LOUD on ANY drift — high (unintended fan-out: dropped --book, bad glob, reconcile
+> re-drive) OR low (silent drop: missing sync, skipped/partial chapter — which the fixed ceiling is
+> totally blind to, and which is the more dangerous under-production case). KEY subtlety: expected
+> must NOT be a re-glob of the same dir being processed (that validates the set against itself);
+> independence is what gives the check teeth. BENEFITS: no arbitrary threshold; catches
+> under-production; self-declares intent from the source so the human expected_count AND the Phase
+> 1->2 chaining-drop bug (below) both disappear. Magic-50 becomes a FALLBACK only when no upstream
+> count was recorded (ad-hoc runs). This supersedes the hand-carried expected_count approach.
+
 > **[BUG · found 2026-10-19] Phase 1->2 chaining drops expected_count — any >50-item book dies at the
 > handoff.** The run-scope guard (ceiling 50) requires a declared expected_count for large runs. The
 > MANUAL trigger path threads EXPECTED_COUNT (trigger_handler ~L985), but the event-driven
