@@ -17,7 +17,8 @@ tool strength: **OpenSERP finds acquirable source DOCUMENTS (PDF/EPUB)** on a to
 authoritative HTML REFERENCE links** on the same topic. Route BOTH into one human review that **ADDs or DISCARDs** each candidate — ADD imports the page(s)
 (confirmed documents fetched into the corpus; confirmed HTML references stored as citation links,
 **no snapshot**, UI renders a **clickable link** to investigate); DISCARD rejects and suppresses
-re-presentation for **at least 90 days**.
+re-presentation for **at least 90 days**; NEVER permanently blocks clickbait/junk pages (url- or
+host-keyed).
 
 ---
 
@@ -109,18 +110,24 @@ entities that need a citation, e.g. a unit like "US 4th Infantry Division"):
 - Lists pending candidate records; **each candidate renders as a CLICKABLE LINK** (open in new tab) so
   the reviewer can investigate the actual page/document before deciding. Show kind (document vs
   reference), source (openserp/grok), title, description, and live-check status.
-- Two buttons per candidate (or per selected group of pages): **ADD** and **DISCARD**.
+- Three actions per candidate (or per selected group of pages): **ADD**, **DISCARD**, **NEVER**.
   - **ADD** → imports the page(s):
     - a **document** candidate → queued for acquisition (ingest the PDF/EPUB into the corpus);
     - a **reference** candidate → stored as a citation/reference link (URL + title + description),
       NOT fetched.
-  - **DISCARD** → rejects the page(s) and **suppresses re-presentation for at least 90 days.** Write
-    a TTL'd exclusion record (e.g. `source_discard#{topic}#{url_hash}` with
-    `ttl = now + 90*86400`), so the discovery step skips any candidate whose (topic, url) has a live
-    discard record. This is a "not now," NOT a permanent block — after 90 days the candidate MAY be
-    re-surfaced (a document may have appeared since, a dead link may have recovered, Grok may propose
-    a better rationale). (Distinct from a permanent block, which we could add later if needed.)
-- Operate on single pages or multi-select (ADD/DISCARD a group at once) to keep the queue manageable.
+  - **DISCARD** ("not now") → rejects the page(s) and **suppresses re-presentation for at least 90
+    days.** Write a TTL'd exclusion record (e.g. `source_discard#{topic}#{url_hash}` with
+    `ttl = now + 90*86400`); the discovery step skips any candidate whose (topic, url) has a live
+    discard record. After 90 days the candidate MAY re-surface (a document may have appeared since, a
+    dead link recovered, Grok may propose a better rationale).
+  - **NEVER** ("permanent block") → for clickbait / junk / spam pages that should never return. Write
+    a **non-TTL'd** block record (e.g. `source_block#{url_hash}` with a reason + reviewer + timestamp;
+    **url-keyed, not topic-keyed**, so a junk page is blocked across ALL topics, not just this one).
+    The discovery step hard-skips any blocked url and never re-presents it. Optionally allow a
+    **host-level** block (`source_block#host#{host}`) for a domain that is repeatedly clickbait, so the
+    whole domain is filtered out of future results.
+- Operate on single pages or multi-select (apply an action to a group at once) to keep the queue
+  manageable.
 - Auth + stage pattern reused from the dedup UI (the `app` stage + `dedup-auth` secret model).
 
 ### Stage 3 — Incorporate on ADD (two paths)
@@ -190,12 +197,11 @@ the sources the operator wants.
    OpenSERP doc hits can fail to resolve. Pre-filter BEFORE the review queue: Grok references →
    SSRF-allowlist + liveness/HEAD check (so every reference the UI shows is a live, clickable link);
    OpenSERP docs → must resolve to a reachable PDF/EPUB (§5a). Reviewers never see dead links.
-4. **Re-proposal churn / discard window.** Discards are TTL'd (≥90 days), not permanent — a
-   discarded (topic, url) must be suppressed until its TTL expires, then MAY re-surface (intentional:
-   a document may have since appeared, a dead link recovered). Ensure the discovery step reads live
-   discard records and skips matching candidates; after 90 days re-surfacing is expected, not a bug.
-   (If a reviewer wants to *never* see an item again, offer a separate explicit permanent-block action
-   — out of scope for v1.)
+4. **Re-proposal churn / two exclusion tiers.** DISCARD is TTL'd (≥90 days) then may re-surface
+   (intentional). NEVER is a permanent, non-TTL'd block for clickbait/junk — url-keyed (across all
+   topics), optionally host-keyed. The discovery step must read BOTH tiers and skip matches: a live
+   discard (topic,url) or any block (url / host). After a discard's 90 days expire, re-surfacing is
+   expected, not a bug; a NEVER'd url/host must never re-surface.
 
 ## 8. Non-goals
 - Not changing Phase-1/Phase-2.
@@ -210,8 +216,8 @@ the sources the operator wants.
    relief, reversible, no new code.
 3. **Promote PDF/EPUB discovery + Grok-propose** into a candidate-writing step (reuse
    `_openserp_fetcher` + `_verify_openserp_match` + SSRF guard) → `needs-review/sources/`.
-4. **Build the ADD/DISCARD review UI** (fork dedup_ui) with clickable per-candidate links + the
-   TTL'd (≥90-day) discard-exclusion record.
+4. **Build the ADD / DISCARD / NEVER review UI** (fork dedup_ui) with clickable per-candidate links,
+   the TTL'd (≥90-day) discard-exclusion record, and the non-TTL'd url/host block record.
 5. **Wire incorporate-on-confirm** to the acquisition pass.
 6. **Remove** the broad per-entity OpenSERP enrichment once the new flow is validated.
 
