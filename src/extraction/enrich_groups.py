@@ -280,9 +280,19 @@ def _apply_group_enrichment(
     (The wrong-article guard already ran in enrich_group.)"""
     from src.enrichment.enrichment_gate import diff_enrichment
 
+    # Compare only the real facts — exclude the "_source" provenance meta so a stored record
+    # (which carries _source) doesn't always diff as "changed" vs a fresh Grok result (which does
+    # not yet), which would churn rewrites + move retrieved_at on every re-enrich.
+    def _facts_only(ed):
+        return (
+            {k: v for k, v in ed.items() if not k.startswith("_")}
+            if isinstance(ed, dict)
+            else ed
+        )
+
     unchanged = not diff_enrichment(
-        {"enrichment_data": data.get("enrichment_data")},
-        {"enrichment_data": enrichment},
+        {"enrichment_data": _facts_only(data.get("enrichment_data"))},
+        {"enrichment_data": _facts_only(enrichment)},
     )
     data["enrichment_status"] = "enriched"
     data["last_enrichment_search"] = _today()
@@ -294,6 +304,29 @@ def _apply_group_enrichment(
         logger.debug("  = Enrichment unchanged for %s (stamp refreshed only)", name)
         return
     data["enrichment_data"] = enrichment
+    # Provenance: stamp the SOURCE of these derived facts so a historian can cite them (owner
+    # 2026-10-19 — enrichment_data was previously unsourced). The group enrichment is produced by
+    # the Grok model (cache_type=group_enrichment), grounded on its WWII/Grokipedia knowledge.
+    try:
+        from datetime import datetime, timezone
+
+        if isinstance(enrichment, dict) and "_source" not in enrichment:
+            enrichment["_source"] = {
+                "type": "grok",
+                "query": name,
+                "retrieved_at": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            }
+        logger.info(
+            "OBSERV enrich.persisted entity=people_group name=%s source=grok fields=%d",
+            name,
+            (
+                len([k for k in enrichment if not k.startswith("_")])
+                if isinstance(enrichment, dict)
+                else 0
+            ),
+        )
+    except Exception:  # noqa: BLE001 - attribution/OBSERV must never block the write
+        pass
     _promote_enrichment(data)
     inject_metadata(data, entity="people_groups")
     write_json_with_lock(group_file, data, entity="people_groups")
