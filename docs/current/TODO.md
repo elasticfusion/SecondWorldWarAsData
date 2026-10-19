@@ -6,6 +6,19 @@
 
 ## Current Priority (reprioritized index)
 
+> **[PERF DATA · 2026-10-19, 48h Container Insights] Phase-2 is NOT CPU/mem-bound; it is
+> over-provisioned.** Across 186 phase2-extract Task samples (48h): CPU peak 30.0% / avg 1.2%; mem
+> peak 10.2% (~208 MB) / avg 8.6% — on a 1 vCPU / 2 GB reservation (the LARGEST of any family). The
+> 30% CPU peak is the ~4s collection burst; the rest is the idle batch wait. CONCLUSION: Phase-2's
+> bottleneck is wall-clock (external batch wait), not compute — confirms the container-split value is
+> releasing idle compute, not relieving a resource ceiling. QUICK WIN (independent of the split):
+> right-size phase2-extract to ~512 MB / 0.25-0.5 vCPU (task-def change) — cuts idle-wait Fargate
+> cost ~4x. The REAL CPU bottleneck in the pipeline is dev-wwii-openserp: CPU peak 98.7% / avg 30.6%
+> (pegged near its 1-vCPU ceiling, 695 samples) — a PHASE-3 component, reinforcing the A00 OpenSERP
+> redesign as the actual hot path. phase3-enrich and phase1-parse are also light (CPU peak <27%, mem
+> <23%). Tool: scripts/batch_metrics.py for batch counts; these numbers from Container Insights
+> /aws/ecs/containerinsights/dev-wwii-pipeline/performance.
+
 > **[ARCH/PERF · found 2026-10-19, live evidence] Phase-2 "submit-only" decoupling is DEFEATED by the
 > subprocess boundary — the container blocks the entire batch wait.** run_submit_only
 > (ecs_entrypoint) monkey-patches src.utils.batch_api.poll_batch/retrieve_results to no-ops so the
