@@ -12,10 +12,12 @@ A0/A0+ (parallelize enrichment). **Author:** pipeline agent.
 
 ## 1. The change in one sentence
 
-Stop using OpenSERP to broadly enrich five entity types with web pages + images; instead use it for
-**one focused job — finding acquirable source documents (PDF/EPUB) on a topic — pair each hit with
-Grok-proposed candidate links, and route BOTH into a human review that confirms (incorporate into the
-dataset) or discards.**
+Stop using OpenSERP to broadly enrich five entity types with web pages + images. Split the job by
+tool strength: **OpenSERP finds acquirable source DOCUMENTS (PDF/EPUB)** on a topic; **Grok proposes
+authoritative HTML REFERENCE links** on the same topic. Route BOTH into one human review that
+**confirms or discards** each candidate — confirmed documents are fetched into the corpus, confirmed
+HTML references are stored as citation links (URL + title/description, **no snapshot**; the review UI
+renders a **clickable link** for the human to open and investigate).
 
 ---
 
@@ -27,46 +29,50 @@ searches serially (`rate_limit_seconds: 5`, `max_images_per_entity: 3`, `max_web
 are auto-incorporated as enrichment. Fan-out = 5 types × N entities × up to 6 queries × 5s spacing →
 hours; CPU-pegged; no human gate.
 
-### Proposed
+### Proposed — split by tool strength
 ```
-  TOPIC (per bibliography entry / unresolved source / entity needing a citation)
+  TOPIC (e.g. "US 4th Infantry Division"; per bibliography entry / unresolved source / entity)
         │
-        ├── OpenSERP  → PDF/EPUB DOCUMENTS ONLY  (reuse _openserp_fetcher: already rejects HTML,
-        │                                          accepts .pdf/.epub/.doc/.txt/... direct docs)
+        ├── OpenSERP → ACQUIRABLE DOCUMENTS (PDF/EPUB)         ── search-engine strength: "find the file"
+        │              accept item/landing pages + RESOLVE to the
+        │              document (§5a); HTML-with-no-document is OUT of scope (that is Grok's lane)
         │
-        └── Grok      → candidate links on the topic (titles + URLs it believes address it)
+        └── Grok     → AUTHORITATIVE HTML REFERENCES            ── knowledge strength: "who is authoritative"
+                       e.g. the 4th Inf Div Association history site (4thinfantry.org)
+                       → URL + title + description (NO fetch, NO snapshot)
                                    │
                                    ▼
-                     ┌───────────────────────────────┐
-                     │ HUMAN REVIEW QUEUE             │  (mirror dedup_ui / mdreview_ui)
-                     │  • OpenSERP PDFs (verified)    │
-                     │  • Grok-proposed candidates    │
-                     │  → per item: CONFIRM / DISCARD │
-                     └───────────────────────────────┘
-                                   │ confirmed
-                                   ▼
-                   acquire + incorporate into the dataset
-                   (bibliography entry resolved → resource_urls + acquisition target;
-                    the existing acquisition pass fetches the confirmed doc)
+                     ┌─────────────────────────────────────────────┐
+                     │ HUMAN REVIEW QUEUE  (mirror dedup_ui)        │
+                     │  • OpenSERP document candidates (resolved)   │
+                     │  • Grok HTML reference candidates            │
+                     │  UI renders a CLICKABLE LINK per candidate   │
+                     │  → per item: CONFIRM / DISCARD               │
+                     └─────────────────────────────────────────────┘
+                           │ confirmed                 │ confirmed
+                           ▼ (document)                ▼ (HTML reference)
+                 acquire + ingest PDF/EPUB     store as reference/citation link
+                 (AcquisitionTarget →          (resource_urls / reference entry;
+                  acquisition pass fetches)     URL + description, NOT fetched)
 ```
 
-**Net effect:** OpenSERP's role shrinks from "enrich everything" to "propose source documents for a
-human to accept." No auto-incorporation; nothing enters the dataset without a confirm.
+**Net effect:** OpenSERP shrinks from "enrich everything" to "propose acquirable documents"; Grok
+owns the HTML-reference lane; nothing enters the dataset without a human confirm. The 4th-Division
+association website IS surfaced — via Grok, as a reference link the reviewer can click — rather than
+missed (it would never be an OpenSERP PDF/EPUB hit).
 
 ---
 
 ## 3. What already exists (this is mostly consolidation, not new build)
 
-- **`_openserp_fetcher`** (`acquisition_fetchers.py`) currently accepts ONLY bare
-  `.pdf/.epub/.doc/...`-suffixed URLs and **REJECTS HTML landing pages** — ⚠️ **this is a FLAW to
-  FIX, not a feature to reuse.** It is asymmetric with `_archive_org_fetcher`, which *accepts* an
-  item/details landing page and lets the download pass resolve the concrete file via the `/download/`
-  listing. Most real source hits (archive.org / HathiTrust / Google Books / Gutenberg item pages,
-  PDFs served via query-string or `Content-Disposition` rather than a `.pdf` suffix) ARE landing
-  pages — the current rule discards the majority of acquirable sources. The redesigned discovery step
-  must **accept landing pages and resolve them to the document** (follow the archive.org pattern:
-  parse the page / download listing / `og:`/`<link rel>` metadata / `Content-Disposition` to find the
-  real PDF/EPUB), not require a bare file-suffix URL. See §5a.
+- **`_openserp_fetcher`** (`acquisition_fetchers.py`) accepts only bare `.pdf/.epub/...`-suffixed URLs.
+  Under this split, **rejecting a pure-HTML reference site is now CORRECT** (HTML is Grok's lane, §1).
+  The ONLY remaining fix is narrower: it must still accept an **item/landing page that DOES lead to a
+  downloadable PDF/EPUB** (archive.org / HathiTrust / Google Books item pages) and **resolve it to the
+  file** — today the suffix-only rule wrongly drops those, and it is asymmetric with
+  `_archive_org_fetcher` (which accepts an item page + resolves via the `/download/` listing). So:
+  resolve item→document (§5a); drop only hits that resolve to no fetchable document. A plain HTML
+  reference with no document is correctly NOT an OpenSERP result (Grok proposes it instead).
 - **`bibliography_resolver._search_openserp_archive`** ALREADY runs an OpenSERP archive search +
   **Grok verification** (`_verify_openserp_match`) of each candidate's relevance to the citation.
 - **Grok candidate proposal** — the HyperWar biblio generator + bibliography_resolver already have the
@@ -86,36 +92,48 @@ confirm/discard review UI + the incorporate-on-confirm wiring.
 
 ### Stage 1 — Candidate discovery (replaces step 5/6)
 For each **topic** (start with bibliography entries lacking a resolved online copy; optionally
-entities that need a citation):
-1. **OpenSERP** search scoped to documents. Accept result pages AND landing pages, then **resolve to
-   a concrete PDF/EPUB** (see §5a) — do NOT require a bare `.pdf` suffix. Keep only hits that resolve
-   to a fetchable document.
-2. **Grok** proposal: ask for candidate source links addressing the topic (title + URL + why).
-   Validate URLs through the existing SSRF allowlist (#453); keep only PDF/EPUB-resolvable ones.
-3. Write a **candidate record** per topic to a review queue (S3 `needs-review/sources/{topic}.json`):
-   `{topic, candidates:[{source:openserp|grok, url, title, fmt, grok_rationale?, verify_score?}]}`.
+entities that need a citation, e.g. a unit like "US 4th Infantry Division"):
+1. **OpenSERP → documents.** Search scoped to documents; accept result/landing pages and **resolve to
+   a concrete PDF/EPUB** (§5a). Keep only hits that resolve to a fetchable document. (A pure-HTML page
+   with no document is NOT an OpenSERP candidate — Grok handles that.)
+2. **Grok → HTML references.** Ask Grok for authoritative links on the topic (title + URL +
+   description/why). These are the HTML references (association sites, unit histories, archives'
+   landing pages). Validate URLs through the SSRF allowlist (#453) + a liveness/HEAD check so dead
+   links don't reach the reviewer. **Not fetched, not snapshotted** — stored as reference candidates.
+3. Write a **candidate record** per topic to the review queue (S3 `needs-review/sources/{topic}.json`):
+   `{topic, candidates:[{kind: "document"|"reference", source: openserp|grok, url, title,
+   description?, fmt?, resolved_doc_url?, verify_score?, live: bool}]}`.
 4. OpenSERP runs **once per topic for documents only** — far fewer queries than 5-entity × images.
 
 ### Stage 2 — Human review (new UI, mirrors dedup_ui)
-- Lists pending candidate records; per candidate: **Confirm** (incorporate) or **Discard**.
-- Confirm writes the decision (e.g. `confirmed_sources#{topic}` + the chosen url/fmt); Discard records
-  a `not_a_source` exclusion so it isn't re-proposed (mirror the dedup `not_*` exclusion pattern).
+- Lists pending candidate records; **each candidate renders as a CLICKABLE LINK** (open in new tab) so
+  the reviewer can investigate the actual page/document before deciding. Show kind (document vs
+  reference), source (openserp/grok), title, description, and live-check status.
+- Per candidate: **Confirm** or **Discard**.
+  - Confirm **document** → queue for acquisition (ingest the PDF/EPUB).
+  - Confirm **reference** → store as a citation/reference link (URL + description), NOT fetched.
+  - Discard → write a `not_a_source` exclusion so it isn't re-proposed (mirror the dedup `not_*`
+    pattern), keyed by topic+url.
 - Auth + stage pattern reused from the dedup UI (the `app` stage + `dedup-auth` secret model).
 
-### Stage 3 — Incorporate on confirm
-- A confirmed candidate becomes an `AcquisitionTarget` (fmt=pdf/epub, object_urls=[confirmed url]);
-  the existing acquisition pass fetches it and attaches it to the bibliography entry
-  (`resource_urls`, `search_status=resolved`, provenance of the human decision + source=openserp|grok).
+### Stage 3 — Incorporate on confirm (two paths)
+- **Document (OpenSERP):** confirmed candidate → `AcquisitionTarget` (fmt=pdf/epub,
+  object_urls=[resolved_doc_url]); the existing acquisition pass fetches it and attaches it to the
+  bibliography entry (`resource_urls`, `search_status=resolved`).
+- **Reference (Grok):** confirmed candidate → appended as a reference/citation link on the entry (URL
+  + title + description), **never fetched**. The link lives in the dataset for the site/API to surface.
+- Both record provenance: `source=openserp|grok`, the human decision + reviewer + timestamp.
 
 ---
 
-## 5a. LANDING-PAGE RESOLUTION — correcting the HTML-rejection flaw (the key fix)
+## 5a. ITEM/LANDING-PAGE → DOCUMENT RESOLUTION (the OpenSERP fix)
 
-The single most important behavior change. The current `_openserp_fetcher` rejects any hit that
-isn't a bare `.pdf/.epub` URL — which discards archive.org / HathiTrust / Google Books / Gutenberg
-**item pages** (the normal shape of a real source) and PDFs served via query-string or
-`Content-Disposition`. The discovery step must instead treat an **HTML landing page as a lead to a
-document, not a reject**:
+Within OpenSERP's **document lane**, the fix is to resolve item/landing pages that DO lead to a
+PDF/EPUB — not to require a bare file suffix. (This is NOT about accepting HTML reference sites; those
+are Grok's lane, §1.) The current `_openserp_fetcher` rejects anything that isn't a bare `.pdf/.epub`
+URL, which wrongly discards archive.org / HathiTrust / Google Books / Gutenberg **item pages** that
+resolve to a real document, and PDFs served via query-string or `Content-Disposition`. The discovery
+step must treat such an **item page as a lead to a document**:
 
 1. Accept the hit (item/result page, or direct file).
 2. **Resolve** it to a concrete PDF/EPUB, in order of preference:
@@ -161,9 +179,10 @@ the sources the operator wants.
 2. **Human-review throughput.** A confirm/discard gate adds human latency to source acquisition. Scope
    it to topics that actually need a source (unresolved bibliography entries), not every entity, or the
    queue is unmanageable. Batch the UI (confirm many at once).
-3. **Grok link quality.** Grok-proposed URLs can hallucinate/404; the PDF/EPUB-resolvable + SSRF-
-   allowlist + (optional) liveness-check gate must run BEFORE a candidate reaches the human, so
-   reviewers don't waste time on dead links.
+3. **Candidate quality before the human.** Grok-proposed HTML references can hallucinate/404 and
+   OpenSERP doc hits can fail to resolve. Pre-filter BEFORE the review queue: Grok references →
+   SSRF-allowlist + liveness/HEAD check (so every reference the UI shows is a live, clickable link);
+   OpenSERP docs → must resolve to a reachable PDF/EPUB (§5a). Reviewers never see dead links.
 4. **Re-proposal churn.** Discards must persist (exclusion record) so the next run doesn't re-surface
    the same rejected candidate.
 
