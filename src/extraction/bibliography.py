@@ -516,12 +516,33 @@ def _build_mention(
     return mention
 
 
+def _derive_bib_title(citation: Dict[str, Any], material: Dict[str, Any]) -> str:
+    """Best available title for a bibliography record (A000 fix).
+
+    Published works resolve to a real ``citation.title``. UNPUBLISHED archival/military citations
+    (interviews, letters, German MS studies, corps memoranda) have no clean title — their identity
+    lives in ``alt_title`` or the mention's ``verbatim_reference``. Promote the first non-empty,
+    non-"Unknown" of: citation.title -> citation.alt_title -> material.verbatim_reference. Returns
+    "Unknown" only when nothing usable exists. Pure/idempotent so it can both build new records and
+    backfill existing ones in place.
+    """
+    for cand in (
+        citation.get("title"),
+        citation.get("alt_title"),
+        material.get("verbatim_reference"),
+    ):
+        c = str(cand).strip() if cand is not None else ""
+        if c and c != "Unknown":
+            return c
+    return "Unknown"
+
+
 def _build_bib_entry(material: Dict[str, Any]) -> Dict[str, Any]:
     """Build a new bibliography entry from a material."""
     citation = material.get("citation") or {}
     return {
         "BibliographyID": str(ulid.new()),
-        "title": citation.get("title", "Unknown"),
+        "title": _derive_bib_title(citation, material),
         "alt_title": citation.get("alt_title"),
         "citation": citation,
         "availability": material.get("availability", "unknown"),
@@ -533,6 +554,60 @@ def _build_bib_entry(material: Dict[str, Any]) -> Dict[str, Any]:
         "copyright_status": material.get("copyright_status"),
         "mentions": [],
     }
+
+
+def backfill_bib_titles(bib_dir: Path) -> tuple:
+    """Backfill titles on EXISTING bibliography records in place (A000 repair).
+
+    Reuses the exact same :func:`_derive_bib_title` as the write path, so repaired records are
+    identical to freshly-extracted ones. For each ``bib_*.json`` whose top-level ``title`` is
+    missing/"Unknown", recompute from its ``citation`` + the first mention's ``verbatim_reference``
+    (stored records keep the verbatim on the mention). Writes only when the title actually changes.
+    Returns ``(scanned, fixed)``. Fail-safe per file.
+    """
+    import glob as _glob
+
+    scanned = fixed = 0
+    for f in _glob.glob(str(bib_dir / "*.json")):
+        name = Path(f).name
+        if not name.startswith("bib_"):
+            continue
+        try:
+            with open(f, "r", encoding="utf-8") as fh:
+                rec = json.load(fh)
+            if not isinstance(rec, dict):
+                continue
+            scanned += 1
+            cur = rec.get("title")
+            if cur and cur != "Unknown":
+                continue  # already has a real title
+            citation = rec.get("citation") or {}
+            mention = (rec.get("mentions") or [{}])[0] or {}
+            material = {"verbatim_reference": mention.get("verbatim_reference")}
+            new_title = _derive_bib_title(citation, material)
+            if new_title and new_title != "Unknown" and new_title != cur:
+                rec["title"] = new_title
+                if not citation.get("title") or citation.get("title") == "Unknown":
+                    citation["title"] = new_title
+                    rec["citation"] = citation
+                # Atomic write (tempfile + os.replace) so an interrupted write (e.g. ECS SIGTERM)
+                # can never leave a truncated/corrupt bibliography record.
+                import tempfile
+
+                d = os.path.dirname(f)
+                fd, tmp = tempfile.mkstemp(dir=d, suffix=".tmp")
+                try:
+                    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                        json.dump(rec, fh, indent=2, ensure_ascii=False)
+                    os.replace(tmp, f)
+                finally:
+                    if os.path.exists(tmp):
+                        os.unlink(tmp)
+                fixed += 1
+        except Exception as e:  # noqa: BLE001 - per-file best-effort
+            logger.debug("bib title backfill skipped %s: %s", f, e)
+    logger.info("OBSERV bib.title_backfill scanned=%d fixed=%d", scanned, fixed)
+    return scanned, fixed
 
 
 def _has_mention(mentions: List[Dict], mention: Dict) -> bool:
@@ -565,9 +640,7 @@ def store_bibliography_entry(
     Returns the BibliographyID of the stored/updated entry, or None on error.
     """
     citation = material.get("citation") or {}
-    title = citation.get("title", "")
-    if not title or title == "Unknown":
-        title = material.get("verbatim_reference", "Unknown")
+    title = _derive_bib_title(citation, material)
     mention = _build_mention(material, book, chapter)
 
     keys = _match_keys(material, title)
