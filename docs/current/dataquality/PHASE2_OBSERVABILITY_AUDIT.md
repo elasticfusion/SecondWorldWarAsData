@@ -36,6 +36,9 @@ skipped (with reason), errors** — enough to answer "did this step do its job?"
 3. **source_section** (`src/extraction/source_section.py`) — only `enriched %d` + error warns.
    Add `OBSERV source_section.enrich attempted=N enriched=N skipped=N errors=N` with skip reasons.
 
+### P2 — THIN steps — ✅ DONE 2026-10-19 (PR #465): dates/places/events OBSERV *.extract
+### roll-ups + places.parent_link + people enrich.persisted (enriched_now/has_bio/sources). Items below.
+
 ### P2 — THIN steps (outcome logged per-call but not aggregatable / no OBSERV schema)
 4. **dates / places** — have `✓ Extracted N` per sub-event but no run-level OBSERV roll-up. Add
    `OBSERV dates.extract` / `OBSERV places.extract` with totals + geocodable/low-content skips.
