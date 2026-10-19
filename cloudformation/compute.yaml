@@ -1114,20 +1114,35 @@ Resources:
         ZipFile: |
           import base64
           import os
+          def _wildcard(method_arn):
+              # Grant the WHOLE API/stage (all methods + paths). API Gateway token-CACHES the
+              # authorizer policy and reuses it across routes, so a per-methodArn grant would only
+              # authorize the FIRST path hit after cache-expiry and Deny every other route
+              # (groups worked but detail/rename got re-prompted). Wildcard fixes that.
+              try:
+                  parts = method_arn.split(':')
+                  api, stage = parts[5].split('/')[:2]
+                  return ':'.join(parts[:5]) + ':' + api + '/' + stage + '/*/*'
+              except Exception:
+                  return method_arn
           def handler(event, context):
               token = event.get('authorizationToken', '')
               expected = os.environ.get('AUTH_TOKEN', '')
+              arn = event.get('methodArn', '')
               if token.startswith('Basic '):
-                  decoded = base64.b64decode(token[6:]).decode()
-                  if decoded == expected:
+                  try:
+                      decoded = base64.b64decode(token[6:]).decode()
+                  except Exception:
+                      decoded = None
+                  if decoded is not None and decoded == expected:
                       return {'principalId': 'user', 'policyDocument': {
                           'Version': '2012-10-17',
                           'Statement': [{'Action': 'execute-api:Invoke', 'Effect': 'Allow',
-                                         'Resource': event['methodArn']}]}}
+                                         'Resource': _wildcard(arn)}]}}
               return {'principalId': 'user', 'policyDocument': {
                   'Version': '2012-10-17',
                   'Statement': [{'Action': 'execute-api:Invoke', 'Effect': 'Deny',
-                                 'Resource': event['methodArn']}]}}
+                                 'Resource': arn}]}}
       MemorySize: 128
       Timeout: 5
       Role: !Ref LambdaExecutionRoleArn
