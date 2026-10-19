@@ -294,6 +294,29 @@ def _apply_group_enrichment(
         logger.debug("  = Enrichment unchanged for %s (stamp refreshed only)", name)
         return
     data["enrichment_data"] = enrichment
+    # Provenance: stamp the SOURCE of these derived facts so a historian can cite them (owner
+    # 2026-10-19 — enrichment_data was previously unsourced). The group enrichment is produced by
+    # the Grok model (cache_type=group_enrichment), grounded on its WWII/Grokipedia knowledge.
+    try:
+        from datetime import datetime, timezone
+
+        if isinstance(enrichment, dict) and "_source" not in enrichment:
+            enrichment["_source"] = {
+                "type": "grok",
+                "query": name,
+                "retrieved_at": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            }
+        logger.info(
+            "OBSERV enrich.persisted entity=people_group name=%s source=grok fields=%d",
+            name,
+            (
+                len([k for k in enrichment if not k.startswith("_")])
+                if isinstance(enrichment, dict)
+                else 0
+            ),
+        )
+    except Exception:  # noqa: BLE001 - attribution/OBSERV must never block the write
+        pass
     _promote_enrichment(data)
     inject_metadata(data, entity="people_groups")
     write_json_with_lock(group_file, data, entity="people_groups")
