@@ -120,7 +120,7 @@ def extract_bibliography_deterministic(
     stored, skipped_stub = _store_notes(notes, bib_dir, book, chapter)
     try:
         logger.info(
-            "OBSERV bib.deterministic %s: notes=%d stored=%d skipped_stub=%d",
+            "OBSERV bib.deterministic file=%s notes=%d stored=%d skipped_stub=%d",
             parsed_file.name,
             len(notes),
             stored,

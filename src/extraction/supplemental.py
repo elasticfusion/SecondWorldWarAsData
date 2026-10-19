@@ -951,7 +951,7 @@ def extract_supplemental(
             if isinstance(s, dict)
         )
         logger.info(
-            "OBSERV supplemental.input %s: sub_events=%d with_refs=%d total_refs=%d "
+            "OBSERV supplemental.input file=%s sub_events=%d with_refs=%d total_refs=%d "
             "endnote_texts=%d",
             event_file.name,
             len(subs),
@@ -999,7 +999,7 @@ def extract_supplemental(
                 if c in classes or len(classes) < 50:
                     classes[c] = classes.get(c, 0) + 1
         logger.info(
-            "OBSERV supplemental.extract %s: prompts=%d responses=%d materials=%d "
+            "OBSERV supplemental.extract file=%s prompts=%d responses=%d materials=%d "
             "content_classes=%s",
             event_file.name,
             len(prompts),
