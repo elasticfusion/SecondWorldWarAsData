@@ -14,10 +14,10 @@ A0/A0+ (parallelize enrichment). **Author:** pipeline agent.
 
 Stop using OpenSERP to broadly enrich five entity types with web pages + images. Split the job by
 tool strength: **OpenSERP finds acquirable source DOCUMENTS (PDF/EPUB)** on a topic; **Grok proposes
-authoritative HTML REFERENCE links** on the same topic. Route BOTH into one human review that
-**confirms or discards** each candidate — confirmed documents are fetched into the corpus, confirmed
-HTML references are stored as citation links (URL + title/description, **no snapshot**; the review UI
-renders a **clickable link** for the human to open and investigate).
+authoritative HTML REFERENCE links** on the same topic. Route BOTH into one human review that **ADDs or DISCARDs** each candidate — ADD imports the page(s)
+(confirmed documents fetched into the corpus; confirmed HTML references stored as citation links,
+**no snapshot**, UI renders a **clickable link** to investigate); DISCARD rejects and suppresses
+re-presentation for **at least 90 days**.
 
 ---
 
@@ -109,20 +109,27 @@ entities that need a citation, e.g. a unit like "US 4th Infantry Division"):
 - Lists pending candidate records; **each candidate renders as a CLICKABLE LINK** (open in new tab) so
   the reviewer can investigate the actual page/document before deciding. Show kind (document vs
   reference), source (openserp/grok), title, description, and live-check status.
-- Per candidate: **Confirm** or **Discard**.
-  - Confirm **document** → queue for acquisition (ingest the PDF/EPUB).
-  - Confirm **reference** → store as a citation/reference link (URL + description), NOT fetched.
-  - Discard → write a `not_a_source` exclusion so it isn't re-proposed (mirror the dedup `not_*`
-    pattern), keyed by topic+url.
+- Two buttons per candidate (or per selected group of pages): **ADD** and **DISCARD**.
+  - **ADD** → imports the page(s):
+    - a **document** candidate → queued for acquisition (ingest the PDF/EPUB into the corpus);
+    - a **reference** candidate → stored as a citation/reference link (URL + title + description),
+      NOT fetched.
+  - **DISCARD** → rejects the page(s) and **suppresses re-presentation for at least 90 days.** Write
+    a TTL'd exclusion record (e.g. `source_discard#{topic}#{url_hash}` with
+    `ttl = now + 90*86400`), so the discovery step skips any candidate whose (topic, url) has a live
+    discard record. This is a "not now," NOT a permanent block — after 90 days the candidate MAY be
+    re-surfaced (a document may have appeared since, a dead link may have recovered, Grok may propose
+    a better rationale). (Distinct from a permanent block, which we could add later if needed.)
+- Operate on single pages or multi-select (ADD/DISCARD a group at once) to keep the queue manageable.
 - Auth + stage pattern reused from the dedup UI (the `app` stage + `dedup-auth` secret model).
 
-### Stage 3 — Incorporate on confirm (two paths)
-- **Document (OpenSERP):** confirmed candidate → `AcquisitionTarget` (fmt=pdf/epub,
+### Stage 3 — Incorporate on ADD (two paths)
+- **Document (OpenSERP):** added candidate → `AcquisitionTarget` (fmt=pdf/epub,
   object_urls=[resolved_doc_url]); the existing acquisition pass fetches it and attaches it to the
   bibliography entry (`resource_urls`, `search_status=resolved`).
-- **Reference (Grok):** confirmed candidate → appended as a reference/citation link on the entry (URL
+- **Reference (Grok):** added candidate → appended as a reference/citation link on the entry (URL
   + title + description), **never fetched**. The link lives in the dataset for the site/API to surface.
-- Both record provenance: `source=openserp|grok`, the human decision + reviewer + timestamp.
+- Both record provenance: `source=openserp|grok`, the human decision (ADD) + reviewer + timestamp.
 
 ---
 
@@ -183,8 +190,12 @@ the sources the operator wants.
    OpenSERP doc hits can fail to resolve. Pre-filter BEFORE the review queue: Grok references →
    SSRF-allowlist + liveness/HEAD check (so every reference the UI shows is a live, clickable link);
    OpenSERP docs → must resolve to a reachable PDF/EPUB (§5a). Reviewers never see dead links.
-4. **Re-proposal churn.** Discards must persist (exclusion record) so the next run doesn't re-surface
-   the same rejected candidate.
+4. **Re-proposal churn / discard window.** Discards are TTL'd (≥90 days), not permanent — a
+   discarded (topic, url) must be suppressed until its TTL expires, then MAY re-surface (intentional:
+   a document may have since appeared, a dead link recovered). Ensure the discovery step reads live
+   discard records and skips matching candidates; after 90 days re-surfacing is expected, not a bug.
+   (If a reviewer wants to *never* see an item again, offer a separate explicit permanent-block action
+   — out of scope for v1.)
 
 ## 8. Non-goals
 - Not changing Phase-1/Phase-2.
@@ -199,7 +210,8 @@ the sources the operator wants.
    relief, reversible, no new code.
 3. **Promote PDF/EPUB discovery + Grok-propose** into a candidate-writing step (reuse
    `_openserp_fetcher` + `_verify_openserp_match` + SSRF guard) → `needs-review/sources/`.
-4. **Build the confirm/discard review UI** (fork dedup_ui) + the exclusion-on-discard record.
+4. **Build the ADD/DISCARD review UI** (fork dedup_ui) with clickable per-candidate links + the
+   TTL'd (≥90-day) discard-exclusion record.
 5. **Wire incorporate-on-confirm** to the acquisition pass.
 6. **Remove** the broad per-entity OpenSERP enrichment once the new flow is validated.
 
