@@ -531,8 +531,9 @@ def _derive_bib_title(citation: Dict[str, Any], material: Dict[str, Any]) -> str
         citation.get("alt_title"),
         material.get("verbatim_reference"),
     ):
-        if cand and str(cand).strip() and cand != "Unknown":
-            return str(cand).strip()
+        c = str(cand).strip() if cand is not None else ""
+        if c and c != "Unknown":
+            return c
     return "Unknown"
 
 
@@ -589,8 +590,19 @@ def backfill_bib_titles(bib_dir: Path) -> tuple:
                 if not citation.get("title") or citation.get("title") == "Unknown":
                     citation["title"] = new_title
                     rec["citation"] = citation
-                with open(f, "w", encoding="utf-8") as fh:
-                    json.dump(rec, fh, indent=2, ensure_ascii=False)
+                # Atomic write (tempfile + os.replace) so an interrupted write (e.g. ECS SIGTERM)
+                # can never leave a truncated/corrupt bibliography record.
+                import tempfile
+
+                d = os.path.dirname(f)
+                fd, tmp = tempfile.mkstemp(dir=d, suffix=".tmp")
+                try:
+                    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                        json.dump(rec, fh, indent=2, ensure_ascii=False)
+                    os.replace(tmp, f)
+                finally:
+                    if os.path.exists(tmp):
+                        os.unlink(tmp)
                 fixed += 1
         except Exception as e:  # noqa: BLE001 - per-file best-effort
             logger.debug("bib title backfill skipped %s: %s", f, e)
