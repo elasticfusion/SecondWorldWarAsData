@@ -37,13 +37,18 @@
 >    MANDATORY, never trust proposed URLs blind. Likely keep a real search only where the LLM
 >    genuinely won't know (specific archival PDFs); for place-images + general "find a source", the
 >    propose+verify+audit path is better. Supersedes/absorbs A0 for the image case.
-> A000. **[HIGH · DQ — bibliography titles] Military/archival citations get title="Unknown".** Every
->    XChannel-era bib record (and the RoerDams set) has `title: "Unknown"` with the real citation only
->    in `citation.alt_title` (e.g. "V Corps Operations in the ETO, p. 256", "FUSA G-2 Estimate 24...",
->    "MS # T-122 Geschichte des Oberbefehlshaber West..."). The extractor captures the verbatim ref
->    into alt_title but never promotes/derives a `title`, so citations are not display/sort-usable.
->    Fix: for military/archival references (no clean book title), set `title` from alt_title/verbatim
->    (or a derived short form) instead of leaving "Unknown".
+> A000. **[HIGH · DQ — bibliography titles, NOT a regression; a never-covered class] Archival/military
+>    citations + the TOP-LEVEL title get no title.** Verified on today's run (57 records, _last_updated
+>    2026-10-19): the published-works promotion we shipped (canonical_title -> citation.title, biblio
+>    resolver ~L241) DOES work — 9/57 have a real `citation.title`. The gaps: (a) the TOP-LEVEL `title`
+>    is "Unknown" on ALL 57 — the `bibliography.py:569` verbatim->title fallback isn't reaching the
+>    persisted top-level field; (b) the 48 UNPUBLISHED archival/military refs (interviews, letters,
+>    German MS studies, corps memoranda — e.g. "Letter, Eisenhower to Montgomery 24 Aug 44",
+>    "MS # B-810...", "VII Corps Operations Memorandum 101") get no title anywhere, only `alt_title`.
+>    Our prior title work targeted PUBLISHED works + NARA record groups; this archival/military class
+>    (the majority of green-book citations) was never given a title-promotion path. Fix: promote
+>    alt_title/verbatim -> both top-level `title` and `citation.title` for archival/military refs.
+
 > A0000. **[HIGH · DATA HYGIENE — cross-book contamination] e2e_reset --wipe-title does NOT clear the
 >    shared cross-book prefixes `output/bibliography/` + `output/narrative_notes/`.** After wiping
 >    XChannel, the Task-6 inspection found those dirs still 100% RoerDams (57 bib + 16 narrative, all
