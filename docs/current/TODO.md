@@ -8,7 +8,16 @@
 
 > **E2E ENRICHMENT FINDINGS (XChannel, 2026-10-19):**
 >
-> **[HIGH · provenance/schema — owner 2026-10-19] Enrichment data has NO source attribution.**
+> **~~[HIGH · provenance/schema] Enrichment data has NO source attribution~~ ✅ DONE 2026-10-19
+> (PR #462).** Group enrichment_data now carries `_source`={type:grok,query,retrieved_at} stamped at
+> the write; OBSERV enrich.persisted entity=people_group source=grok fields=N; _source excluded from
+> the enrichment diff (no re-stamp churn). Schema already permitted it (open object). Concurrent
+> code+security reviews PASS; observability validated. FOLLOW-UPS: (a) verify/stamp people
+> `biographical_profile` attribution after the #461 bio-enrichment re-run repopulates it (0/55 until
+> a new run); (b) existing pre-fix 0/74 unsourced group records only back-fill on a forced re-enrich
+> (the already-enriched short-circuit skips them) — add a one-time backfill if needed.
+>
+> **[superseded ✅] Enrichment data has NO source attribution.**
 > people_groups enrichment WORKS (33/74 have rich `enrichment_data`: full_name, branch,
 > commanding_officers, notable_operations, formed/disbanded, description) — but every derived fact is
 > UNSOURCED: `grokipedia_url`/`wikipedia_url`/`wikipedia_extract`/`wikipedia_checked_at` are populated
