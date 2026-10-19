@@ -37,7 +37,14 @@
 >    MANDATORY, never trust proposed URLs blind. Likely keep a real search only where the LLM
 >    genuinely won't know (specific archival PDFs); for place-images + general "find a source", the
 >    propose+verify+audit path is better. Supersedes/absorbs A0 for the image case.
-> A000. **[HIGH · DQ — bibliography titles, NOT a regression; a never-covered class] Archival/military
+> A000. **~~[HIGH · DQ — bibliography titles] Archival/military citations get no title~~ ✅ DONE
+>    2026-10-19 (PR #460).** `_derive_bib_title` (citation.title -> alt_title -> verbatim) now used by
+>    both the write path (_build_bib_entry + store_bibliography_entry) AND `backfill_bib_titles()`
+>    which repaired EXISTING records in place with the SAME code (atomic write). Verified 57/57 live
+>    S3 records titled (archival "MS # B-810...", "Letter, Eisenhower to Montgomery...", "VII Corps
+>    Operations Memorandum 101" + published "A Soldier's Story"). Concurrent code+security reviews PASS.
+>
+> A000-ORIG. **[superseded by the DONE entry above] Archival/military
 >    citations + the TOP-LEVEL title get no title.** Verified on today's run (57 records, _last_updated
 >    2026-10-19): the published-works promotion we shipped (canonical_title -> citation.title, biblio
 >    resolver ~L241) DOES work — 9/57 have a real `citation.title`. The gaps: (a) the TOP-LEVEL `title`
