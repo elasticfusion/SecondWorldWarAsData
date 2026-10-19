@@ -605,8 +605,9 @@ def backfill_people_identity(people_dir: Path) -> tuple:
     only records that were missing a field, via the locked save path. Returns (scanned, fixed).
     """
     import glob as _glob
+    from src.utils.file_lock import write_json_with_lock
 
-    scanned = fixed = 0
+    scanned = fixed = blocked = 0
     for f in _glob.glob(str(people_dir / "*.json")):
         name = Path(f).stem
         if name in ("index", "duplicate_report") or name.startswith("."):
@@ -627,11 +628,24 @@ def backfill_people_identity(people_dir: Path) -> tuple:
                 changed = True
                 logger.info("OBSERV person.repaired field=PersonID name=%s", name)
             if changed:
-                _save_person_file(Path(f), rec)
-                fixed += 1
+                # entity="people" stamps the correct schema version; honor the return so a
+                # schema-BLOCKED write is NOT counted as fixed (would leave a still-broken record).
+                if write_json_with_lock(Path(f), rec, entity="people"):
+                    fixed += 1
+                else:
+                    blocked += 1
+                    logger.warning(
+                        "OBSERV person.repair_blocked name=%s (schema guard rejected write)",
+                        name,
+                    )
         except Exception as e:  # noqa: BLE001 - per-file best-effort
             logger.debug("people identity backfill skipped %s: %s", f, e)
-    logger.info("OBSERV person.identity_backfill scanned=%d fixed=%d", scanned, fixed)
+    logger.info(
+        "OBSERV person.identity_backfill scanned=%d fixed=%d blocked=%d",
+        scanned,
+        fixed,
+        blocked,
+    )
     return scanned, fixed
 
 
