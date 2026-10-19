@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional
 import ulid
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from src.grok_client import GrokClient
+from src.grok_client import GrokClient, BatchModeCollecting
 from src.utils.json_validator import _fix_invalid_ulids
 from src.utils.text_utils import normalize_name
 
@@ -798,6 +798,16 @@ def _enrich_person_phase2(person_data: dict, grok_client) -> None:
         from src.extraction.enrich_biographies import enrich_person_from_sources
 
         enrich_person_from_sources(person_data, grok_client)
+    except BatchModeCollecting:
+        # Batch COLLECT pass: the enrichment request was queued, not answered. MUST propagate so the
+        # person is NOT saved as "done"/un-enriched — the RETRIEVE pass then applies the batch result
+        # and persists biographical_profile. Swallowing this (broad except below) was why people bio
+        # enrichment was 0/N (same class as the optional-entity-zero bug).
+        logger.info(
+            "OBSERV enrich.collecting entity=person name=%s",
+            person_data.get("name", "?"),
+        )
+        raise
     except (
         Exception
     ) as e:  # noqa: BLE001 - enrichment is additive; never block extraction

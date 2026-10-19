@@ -74,3 +74,19 @@ def test_chunk_halving_reraises_collecting():
 
     with pytest.raises(BatchModeCollecting):
         extract_with_chunk_halving([[1, 2, 3]], _fn, "test")
+
+
+def test_people_phase2_enrich_reraises_collecting(monkeypatch):
+    """People bio enrichment must propagate BatchModeCollecting on the collect pass (same bug class):
+    _enrich_person_phase2 wrapped enrich_person_from_sources in a broad except that swallowed it,
+    causing biographical_profile to never persist."""
+    from src.extraction import people as _people
+
+    def _raise(*a, **k):
+        raise BatchModeCollecting("queued")
+
+    import src.extraction.enrich_biographies as eb
+
+    monkeypatch.setattr(eb, "enrich_person_from_sources", _raise)
+    with pytest.raises(BatchModeCollecting):
+        _people._enrich_person_phase2({"name": "Omar Bradley"}, object())
