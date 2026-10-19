@@ -596,6 +596,59 @@ def _save_person_file(person_file: Path, person_data: Dict[str, Any]) -> None:
     write_json_with_lock(person_file, person_data)
 
 
+def backfill_people_identity(people_dir: Path) -> tuple:
+    """Repair EXISTING person records missing `name`/`PersonID` in place (MED fix companion).
+
+    Legacy records (pre-HIGH#7 server-side mint) were persisted without a top-level name or
+    PersonID — a commander-level entity with no primary key won't resolve in any cross-reference.
+    Recover `name` from the filename stem (which IS the normalized name) and MINT a PersonID. Writes
+    only records that were missing a field, via the locked save path. Returns (scanned, fixed).
+    """
+    import glob as _glob
+    from src.utils.file_lock import write_json_with_lock
+
+    scanned = fixed = blocked = 0
+    for f in _glob.glob(str(people_dir / "*.json")):
+        name = Path(f).stem
+        if name in ("index", "duplicate_report") or name.startswith("."):
+            continue
+        try:
+            with open(f, encoding="utf-8") as fh:
+                rec = json.load(fh)
+            if not isinstance(rec, dict):
+                continue
+            scanned += 1
+            changed = False
+            if not rec.get("name"):
+                rec["name"] = name
+                changed = True
+                logger.info("OBSERV person.repaired field=name name=%s", name)
+            if not rec.get("PersonID"):
+                rec["PersonID"] = str(ulid.new())
+                changed = True
+                logger.info("OBSERV person.repaired field=PersonID name=%s", name)
+            if changed:
+                # entity="people" stamps the correct schema version; honor the return so a
+                # schema-BLOCKED write is NOT counted as fixed (would leave a still-broken record).
+                if write_json_with_lock(Path(f), rec, entity="people"):
+                    fixed += 1
+                else:
+                    blocked += 1
+                    logger.warning(
+                        "OBSERV person.repair_blocked name=%s (schema guard rejected write)",
+                        name,
+                    )
+        except Exception as e:  # noqa: BLE001 - per-file best-effort
+            logger.debug("people identity backfill skipped %s: %s", f, e)
+    logger.info(
+        "OBSERV person.identity_backfill scanned=%d fixed=%d blocked=%d",
+        scanned,
+        fixed,
+        blocked,
+    )
+    return scanned, fixed
+
+
 def _update_index(index_file: Path, name: str, filename: str) -> None:
     """Update the people index atomically."""
     if index_file.exists():
@@ -866,6 +919,18 @@ def _process_person(
                 )
                 if not skip:
                     merged = _merge_person(existing_person, person)
+                    # Integrity guard (MED fix): a person record MUST have name + PersonID. Legacy
+                    # records (pre-HIGH#7) and the merge path could leave the survivor without them
+                    # (merge keeps `existing`, which may predate the server-side mint). Backfill from
+                    # the known name + minted id so no nameless/ID-less person persists.
+                    if not merged.get("name"):
+                        merged["name"] = name
+                        logger.info("OBSERV person.repaired field=name name=%s", name)
+                    if not merged.get("PersonID"):
+                        merged["PersonID"] = person_id
+                        logger.info(
+                            "OBSERV person.repaired field=PersonID name=%s", name
+                        )
                     # Phase-2 Grokipedia/Wikipedia enrichment on the merged dict BEFORE
                     # save, so the native people save path commits the enriched record.
                     _enrich_person_phase2(merged, grok_client)
