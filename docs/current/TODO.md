@@ -6,6 +6,17 @@
 
 ## Current Priority (reprioritized index)
 
+> **[BUG · found 2026-10-19] Phase 1->2 chaining drops expected_count — any >50-item book dies at the
+> handoff.** The run-scope guard (ceiling 50) requires a declared expected_count for large runs. The
+> MANUAL trigger path threads EXPECTED_COUNT (trigger_handler ~L985), but the event-driven
+> phase-complete chain (_drive_next_phase -> _launch_next_from_pending -> _run_task(PHASE2,
+> "pending-parsed")) does NOT, so a chained Phase 2 on an 80-section book aborts with
+> EXIT_UNDECLARED_LARGE_RUN (exit 4). Confirmed live on the XChannel clean run (had to relaunch Phase
+> 2 manually with expected_count=80). FIX: persist the declared expected_count (e.g. a
+> run-scope#<book> DynamoDB record or manifest field written at Phase-1 launch) and have the chain
+> re-read + thread it into the Phase-2 task env. NOTE the guard behaved correctly (caught an
+> undeclared large run) — the bug is that the declaration isn't carried across the phase boundary.
+
 > **[ARCH · raised 2026-10-19] Phase-2 container segmentation (evaluate).** Phase 2 is one long-lived
 > ECS task that runs core-extract -> batch collect/submit -> BLOCK on Grok Batch wait -> retrieve ->
 > optional 2nd cycle -> source-section enrich -> maps/images -> dedup, all serially. Candidate split
