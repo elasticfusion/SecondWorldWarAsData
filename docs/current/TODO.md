@@ -6,6 +6,14 @@
 
 ## Current Priority (reprioritized index)
 
+> **[OBSERVABILITY · owner 2026-10-19] Phase-2 observability audit — see
+> docs/current/dataquality/PHASE2_OBSERVABILITY_AUDIT.md.** Prioritized gaps: P1 SILENT steps (maps,
+> images, source_section — no attempted/found/persisted/skipped outcome, so a 0/failure is invisible,
+> the exact class that hid the optional-entity-zero bug); P2 THIN (dates/places/events lack an OBSERV
+> run roll-up; people enrich.persisted); P3 standardize OBSERV schema + add a Phase-2 end-of-run
+> per-type persisted-count summary line. Core extraction + xref + optional entities + group
+> enrichment + bibliography are already well-observed.
+
 > **E2E ENRICHMENT FINDINGS (XChannel, 2026-10-19):**
 >
 > **~~[HIGH · provenance/schema] Enrichment data has NO source attribution~~ ✅ DONE 2026-10-19
