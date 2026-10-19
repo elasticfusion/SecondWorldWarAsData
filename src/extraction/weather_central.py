@@ -11,7 +11,7 @@ import requests
 import ulid
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.grok_client import GrokClient
+from src.grok_client import GrokClient, BatchModeCollecting
 from src.utils.file_lock import write_json_with_lock
 from src.utils.http_pool import get_session
 from src.utils.json_validator import _fix_invalid_ulids
@@ -800,6 +800,8 @@ def _call_and_parse_weather(
             if isinstance(response, dict):
                 return _parse_weather_response(response)
             return {}
+        except BatchModeCollecting:
+            raise  # collect pass: propagate so the event is NOT marked processed
         except Exception as e:
             if attempt < max_retries - 1:
                 logger.warning(

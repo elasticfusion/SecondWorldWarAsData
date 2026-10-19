@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import ulid
 
-from src.grok_client import GrokClient
+from src.grok_client import GrokClient, BatchModeCollecting
 from src.json_schemas import CASUALTY_ITEM_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
 
@@ -261,6 +261,11 @@ def _call_and_parse_casualties(
                 prompt, use_cache=(attempt == 0), cache_type="casualties"
             )
             return _parse_casualty_response(response)
+        except BatchModeCollecting:
+            # Batch COLLECT pass: the request was queued, not answered. MUST propagate so the
+            # caller does NOT mark the event processed (else the RETRIEVE pass skips it and the
+            # batch result is never persisted — the optional-entity-zero bug).
+            raise
         except Exception as e:
             if attempt < max_retries - 1:
                 logger.warning(

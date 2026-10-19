@@ -167,12 +167,19 @@ def _extract_weather(event_file, parsed_file, grok_client, output_root, config, 
         )
         if result:
             logger.info("    ✓ Weather updated")
+        logger.info(
+            "OBSERV optional.persisted entity=weather event=%s persisted=%s",
+            event_file.name,
+            bool(result),
+        )
     except ValueError as e:
         logger.error("    Weather config error for %s: %s", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Weather file I/O error for %s: %s", event_file.name, e)
     except BatchModeCollecting:
-        logger.debug("    Batch collecting (weather): %s", event_file.name)
+        logger.info(
+            "OBSERV optional.collecting entity=weather event=%s", event_file.name
+        )
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting weather from %s: %s", event_file.name, e)
 
@@ -197,12 +204,19 @@ def _extract_equipment(event_file, grok_client, output_root, config, logger):
         )
         if equipment_files:
             logger.info("    ✓ Equipment: %d file(s)", len(equipment_files))
+        logger.info(
+            "OBSERV optional.persisted entity=equipment event=%s count=%d",
+            event_file.name,
+            len(equipment_files or []),
+        )
     except json.JSONDecodeError as e:
         logger.error("    Equipment JSON parse error for %s: %s", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Equipment file I/O error for %s: %s", event_file.name, e)
     except BatchModeCollecting:
-        logger.debug("    Batch collecting (equipment): %s", event_file.name)
+        logger.info(
+            "OBSERV optional.collecting entity=equipment event=%s", event_file.name
+        )
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting equipment from %s: %s", event_file.name, e)
 
@@ -226,13 +240,20 @@ def _extract_logistics(event_file, grok_client, output_root, config, logger):
         )
         if result:
             logger.info("    ✓ Logistics updated")
+        logger.info(
+            "OBSERV optional.persisted entity=logistics event=%s count=%d",
+            event_file.name,
+            len(result) if hasattr(result, "__len__") else (1 if result else 0),
+        )
         _mark_processed(output_root, "logistics", event_file.name)
     except json.JSONDecodeError as e:
         logger.error("    Logistics JSON parse error for %s: %s", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Logistics file I/O error for %s: %s", event_file.name, e)
     except BatchModeCollecting:
-        logger.debug("    Batch collecting (logistics): %s", event_file.name)
+        logger.info(
+            "OBSERV optional.collecting entity=logistics event=%s", event_file.name
+        )
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting logistics from %s: %s", event_file.name, e)
 
@@ -256,13 +277,20 @@ def _extract_casualties(event_file, grok_client, output_root, config, logger):
         )
         if casualties:
             logger.info("    ✓ Casualties: %d record(s)", len(casualties))
+        logger.info(
+            "OBSERV optional.persisted entity=casualties event=%s count=%d",
+            event_file.name,
+            len(casualties or []),
+        )
         _mark_processed(output_root, "casualties", event_file.name)
     except json.JSONDecodeError as e:
         logger.error("    Casualties JSON parse error for %s: %s", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Casualties file I/O error for %s: %s", event_file.name, e)
     except BatchModeCollecting:
-        logger.debug("    Batch collecting (casualties): %s", event_file.name)
+        logger.info(
+            "OBSERV optional.collecting entity=casualties event=%s", event_file.name
+        )
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting casualties from %s: %s", event_file.name, e)
 

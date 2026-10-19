@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 import ulid
 from pydantic import BaseModel, Field
 
-from src.grok_client import GrokClient
+from src.grok_client import GrokClient, BatchModeCollecting
 
 logger = logging.getLogger(__name__)
 
@@ -309,6 +309,8 @@ Return empty logistics arrays for sub-events with no issues."""
             use_cache=True,
             cache_type="logistics",
         )
+    except BatchModeCollecting:
+        raise  # collect pass: propagate so the event is NOT marked processed
     except Exception as e:
         logger.error("Batch logistics extraction failed: %s", e)
         return {}
