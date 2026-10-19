@@ -6,6 +6,23 @@
 
 ## Current Priority (reprioritized index)
 
+> **DEDUP-UI canonical-name editor (owner, 2026-10-18, surfaced during the XChannel dedup):**
+>
+> **[HIGH · dedup UX] Add a real "edit canonical name" tool to the dedup UI.** Today "Fix name"
+> (`_rename_to_match_content` in `lambda_handlers/dedup_ui_handler.py`) only syncs the FILENAME to the
+> record's existing `name` field — it CANNOT set a new canonical name, so trying to upgrade e.g.
+> "Bernard Montgomery" -> "Bernard L. Montgomery" returns "Filename already matches content" and does
+> nothing. Historians need to set the authoritative display name during review (proper casing,
+> middle initials, accents). Add an action that: takes an operator-supplied name, writes it to the
+> record's `name`/`current_name`, re-derives the filename, updates `index.json` (remove old key, add
+> new) + the duplicate_report references, and is covered by the API-GW basic-auth authorizer.
+> Supporting bug to fix in the same change: `new_filename = name.lower().replace(" ", " ")`
+> (dedup_ui_handler.py ~line 489) replaces a space WITH a space (no-op) — almost certainly meant
+> `" " -> "_"` or a strip; filenames with spaces are being produced where they shouldn't be. Also
+> note the dedup API stage is `app` (not `dev`) and the authorizer must grant a WILDCARD resource
+> (apiId/app/*/*) because API Gateway token-caches the policy across routes (fixed live this session;
+> keep it in the CFN).
+
 > **XChannel E2E FINDINGS (2026-10-18/19) — surfaced by the full Cross-Channel Attack volume run:**
 >
 > A. **[HIGH · perf — Phase-2 bottleneck on large volumes] Parallelize the OPTIONAL-entity
