@@ -35,7 +35,15 @@
 > in any cross-reference. Check how a nameless/ID-less person file gets written (ties to the HIGH#7
 > mint-server-side discipline — a record reaching disk without a PersonID should be impossible).
 
-> **CRITICAL E2E BUG (XChannel, 2026-10-19) — ALL optional-entity types extract ZERO:**
+> **~~CRITICAL E2E BUG — ALL optional-entity types extract ZERO~~ ✅ FIXED 2026-10-19 (PR #461).**
+> Root cause: _call_and_parse_* swallowed BatchModeCollecting on the batch COLLECT pass -> extractor
+> returned empty -> _mark_processed ran on collect -> RETRIEVE pass skipped -> 0 persisted. Fixed:
+> re-raise BatchModeCollecting before the broad except in casualties/weather/equipment/logistics +
+> chunked_extract defense-in-depth; added OBSERV optional.persisted/optional.collecting; 4 tests;
+> concurrent code+security reviews PASS. **REQUIRES image rebuild + a re-run to actually repopulate
+> equipment/weather/casualties/logistics/maps for XChannel (the merged fix only takes effect on a new run).**
+>
+> **CRITICAL E2E BUG (XChannel, 2026-10-19) — ALL optional-entity types extract ZERO (superseded, see above):**
 >
 > **[CRITICAL · data-loss] equipment, weather, casualties, logistics, maps, supplemental all produced
 > 0 records on the full XChannel run, while the BATCH-path types are healthy (people 55, places 187,
