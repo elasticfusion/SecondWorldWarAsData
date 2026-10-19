@@ -6,6 +6,19 @@
 
 ## Current Priority (reprioritized index)
 
+> **[ARCH · raised 2026-10-19] Phase-2 container segmentation (evaluate).** Phase 2 is one long-lived
+> ECS task that runs core-extract -> batch collect/submit -> BLOCK on Grok Batch wait -> retrieve ->
+> optional 2nd cycle -> source-section enrich -> maps/images -> dedup, all serially. Candidate split
+> (Step Functions): Stage A collect+submit (exits, releases Fargate during the batch wait — the
+> biggest win, idle-blocking dwarfs entity-type parallelism); batch-poller Lambda (exists) fires
+> Stage B retrieve+persist+optional-2nd-cycle; Stage C enrich/maps/images+dedup as a parallel
+> fan-out. CAUTION: this moves load-bearing invariants across process boundaries — the #452 reconcile
+> drain barrier, the collect->retrieve re-run contract, the expected_count scope guard, and the new
+> P2/P3 observability (incl. the end-of-run phase2.summary) all assume the single-process flow and
+> must be re-established per-stage. RECOMMENDATION: do NOT do it now — finish the current clean E2E to
+> get a stable data-quality baseline first. Umbrella for existing A00 (OpenSERP redesign) + A0/A0+
+> (parallelize optional-entity + place-image enrichment) perf items.
+
 > **[OBSERVABILITY · owner 2026-10-19] Phase-2 observability audit — see
 > docs/current/dataquality/PHASE2_OBSERVABILITY_AUDIT.md.** Prioritized gaps: P1 SILENT steps (maps,
 > images, source_section — no attempted/found/persisted/skipped outcome, so a 0/failure is invisible,
