@@ -47,6 +47,11 @@ skipped (with reason), errors** — enough to answer "did this step do its job?"
 6. **people enrichment persisted** — `enrich.collecting` exists but no `enrich.persisted` for people
    (groups has it). Add on the retrieve/persist path once #461 bio enrichment repopulates.
 
+### P3 — ✅ DONE 2026-10-19 (PR #466): OBSERV phase2.summary end-of-run per-type persisted
+### counts (CORE zero=LOUD WARNING, optional zero=INFO) + all colon-format lines standardized to
+### key=val. Covers all 13 record-producing Phase-2 entity types; 'supplemental' intentionally
+### excluded (no own record dir — persists into bibliography + event sub-events). Items below.
+
 ### P3 — Consistency / standardization (not missing, but inconsistent)
 7. Standardize the OBSERV schema: all should be `OBSERV <stage>.<event> key=val ...` with a
    consistent attempted/produced/skipped/errors vocabulary, so a single log query compares steps.
