@@ -3,7 +3,7 @@
 import logging
 from typing import Any, Callable, Dict, List, TypeVar
 
-from src.grok_client import GrokTruncationError
+from src.grok_client import GrokTruncationError, BatchModeCollecting
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +42,8 @@ def extract_with_chunk_halving(
                     try:
                         results = extract_fn(half)
                         all_results.update(results)
+                    except BatchModeCollecting:
+                        raise  # never swallow the batch-collect signal (optional-entity-zero bug)
                     except Exception:
                         logger.error(
                             "  %s half-chunk also failed, skipping", entity_type

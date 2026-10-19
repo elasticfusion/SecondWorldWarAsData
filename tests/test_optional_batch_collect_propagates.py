@@ -32,3 +32,45 @@ def test_weather_call_reraises_collecting():
 
     with pytest.raises(BatchModeCollecting):
         _call_and_parse_weather(_CollectingClient(), "prompt", 3)
+
+
+def test_equipment_extract_reraises_collecting():
+    from src.extraction.equipment import extract_equipment_from_event
+    import tempfile, json, pathlib
+
+    d = pathlib.Path(tempfile.mkdtemp())
+    ev = d / "chapter1a-event.json"
+    ev.write_text(
+        json.dumps(
+            {
+                "Event": {
+                    "EventID": "01E",
+                    "Sub-events": [
+                        {
+                            "Sub-eventID": "01S",
+                            "Sub-event_fulltext": {
+                                "Paragraph_1": "The M4 Sherman tank advanced."
+                            },
+                        }
+                    ],
+                }
+            }
+        )
+    )
+    with pytest.raises(BatchModeCollecting):
+        extract_equipment_from_event(
+            event_file=ev,
+            output_dir=d / "equipment",
+            grok_client=_CollectingClient(),
+            output_root=d,
+        )
+
+
+def test_chunk_halving_reraises_collecting():
+    from src.utils.chunked_extract import extract_with_chunk_halving
+
+    def _fn(chunk):
+        raise BatchModeCollecting("queued")
+
+    with pytest.raises(BatchModeCollecting):
+        extract_with_chunk_halving([[1, 2, 3]], _fn, "test")
