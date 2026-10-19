@@ -42,6 +42,16 @@
 >    property` validation errors** across many sub-events → those supplemental items are DROPPED.
 >    Either the prompt isn't reliably eliciting reference_number or the schema over-requires it;
 >    reconcile the prompt/schema so legitimate supplemental refs aren't lost.
+> E. **[MED · HIGH#5 refinement — surfaced by the human-dedup pause] Phase-3 reconcile-barrier wait
+>    burns the full timeout (+ OBSERV spam) after a long dedup.** When dedup is human-gated, reconcile
+>    runs long BEFORE Phase 3 starts, so Phase 3 correctly IGNORES the now-stale `_all` barrier
+>    (freshness guard working) but then polls every 5s for the full RECONCILE_BARRIER_WAIT_SECS (300s)
+>    logging `reconcile.barrier_stale ... ignoring` ~60x before fail-opening. Benign (fail-open +
+>    enrich), but wasteful + noisy. Fix options: (a) have the dedup/gate-complete step RE-PUBLISH a
+>    fresh barrier so Phase 3 sees it immediately; (b) log the stale-ignore ONCE, not every poll;
+>    (c) skip the wait when Phase 3 is triggered directly post-dedup (dedup completion is the
+>    freshness anchor).
+
 > D. **[LOW · ingestion] The 21 `chapterN-meta.yaml` sidecars are rejected by the Phase-0 ingestion
 >    type-gate** ("unrecognized file type") → 21 needs-review markers. Non-blocking (the `.md`
 >    content parses + the parser reads meta directly), but the type-gate should recognize `.yaml`
