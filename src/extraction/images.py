@@ -322,23 +322,30 @@ def extract_images(
 
     extracted = 0
     downloaded = 0
+    files_scanned = 0
+    images_seen = 0
+    skipped = 0
 
     for parsed_file in sorted(output_dir.rglob("*-parsed.json")):
         parsed = json.loads(parsed_file.read_text())
         imgs = parsed.get("images", [])
         if not imgs:
             continue
+        files_scanned += 1
 
         book = parsed.get("book", "")
         event_data = _load_event_data(parsed_file)
 
         for img in imgs:
+            images_seen += 1
             url = img.get("url", "")
             alt = img.get("alt_text", "")
 
             if url and url in existing_urls:
+                skipped += 1
                 continue
             if _classify_content_type(alt, url) == "map":
+                skipped += 1
                 continue
 
             record, local_copy = _process_single_image(
@@ -376,5 +383,14 @@ def extract_images(
 
     logger.info(
         "Image extraction complete: %d extracted, %d downloaded", extracted, downloaded
+    )
+    logger.info(
+        "OBSERV images.extract files_scanned=%d images_seen=%d extracted=%d "
+        "downloaded=%d skipped=%d",
+        files_scanned,
+        images_seen,
+        extracted,
+        downloaded,
+        skipped,
     )
     return extracted

@@ -714,6 +714,7 @@ def extract_maps(
     maps_config = config.get("maps", {})
     if not maps_config.get("enabled", False):
         logger.info("Maps extraction disabled in config")
+        logger.info("OBSERV maps.extract status=disabled found=0 persisted_new=0")
         return
 
     logger.info("Starting maps extraction from source material")
@@ -792,3 +793,11 @@ def extract_maps(
         logger.info(
             "Maps extraction complete: %d new maps (total: %d)", new_maps, total_maps
         )
+    # Structured outcome so a 0-map run is visible in logs (P1 observability): maps.extract was a
+    # SILENT step — it logged "Starting" but never a machine-parseable result.
+    logger.info(
+        "OBSERV maps.extract found=%d persisted_new=%d images_downloaded=%d",
+        total_maps,
+        new_maps,
+        downloaded,
+    )

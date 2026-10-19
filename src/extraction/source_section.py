@@ -263,14 +263,20 @@ def enrich_all_source_sections(
     import json as _json
 
     enriched = 0
+    attempted = 0
+    skipped = 0
+    errors = 0
     for event_file in _iter_event_files(output_dir):
+        attempted += 1
         try:
             event_data = _json.loads(event_file.read_text())
         except Exception as e:  # noqa: BLE001
             logger.warning("source_section: cannot read %s: %s", event_file, e)
+            errors += 1
             continue
         event_id = (event_data.get("Event") or {}).get("EventID")
         if not event_id:
+            skipped += 1
             continue
         rec_path = _find_section_record_by_event_id(output_dir, event_id)
         if rec_path is not None:
@@ -299,6 +305,7 @@ def enrich_all_source_sections(
             )
         except Exception as e:  # noqa: BLE001
             logger.warning("source_section derive failed for %s: %s", event_id, e)
+            errors += 1
             continue
         # Fetch Grokipedia + Wikipedia reference articles (gated on wikipedia_checked_at).
         try:
@@ -320,4 +327,11 @@ def enrich_all_source_sections(
             _save_source_section(output_dir, record)
             enriched += 1
     logger.info("source_section: enriched %d section(s)", enriched)
+    logger.info(
+        "OBSERV source_section.enrich attempted=%d enriched=%d skipped_no_eventid=%d errors=%d",
+        attempted,
+        enriched,
+        skipped,
+        errors,
+    )
     return enriched
