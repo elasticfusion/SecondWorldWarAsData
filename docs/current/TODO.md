@@ -5,6 +5,31 @@
 ---
 
 ## Current Priority (reprioritized index)
+
+> **XChannel E2E FINDINGS (2026-10-18/19) — surfaced by the full Cross-Channel Attack volume run:**
+>
+> A. **[HIGH · perf — Phase-2 bottleneck on large volumes] Parallelize the OPTIONAL-entity
+>    extractors (supplemental, equipment, weather, casualties) via the Grok BATCH API.** The events
+>    extractor already uses the async Batch API (the XChannel run submitted 80 + 324 reqs with high
+>    concurrency), but the optional-entity sweep runs LIVE + SERIAL — one Grok call per sub-event at
+>    ~10–15s each, hundreds of sub-events across 80 files → a ~30–40 min single-threaded tail that
+>    dominated Phase 2. Diagnosed as PER-RECORD LLM latency, NOT S3 retrieval (entity data loaded
+>    once; S3 pulls are one-shot seconds). These extractions are independent (embarrassingly
+>    parallel). Convert them to the same submit-batch/poller model as events (supplemental already
+>    has batch scaffolding to finish wiring), or at minimum bound-concurrency them.
+> B. **[MED · observability] Add an N-of-total progress counter to the optional-entity sweep.** It
+>    emits per-call OBSERV (cachekey.lookup/api_usage) + per-file supplemental.input, but NO
+>    "file N/80" / "sub-event X/Y" progress — so "how far along is the sweep" is not answerable at a
+>    glance (the batch path HAS "316/324"; the live sweep does not). Add `OBSERV optional_sweep.progress`.
+> C. **[MED · DQ] Supplemental extraction logs persistent `'reference_number' is a required
+>    property` validation errors** across many sub-events → those supplemental items are DROPPED.
+>    Either the prompt isn't reliably eliciting reference_number or the schema over-requires it;
+>    reconcile the prompt/schema so legitimate supplemental refs aren't lost.
+> D. **[LOW · ingestion] The 21 `chapterN-meta.yaml` sidecars are rejected by the Phase-0 ingestion
+>    type-gate** ("unrecognized file type") → 21 needs-review markers. Non-blocking (the `.md`
+>    content parses + the parser reads meta directly), but the type-gate should recognize `.yaml`
+>    meta sidecars to avoid the false-reject noise.
+
 **Reprioritized 2026-10-11** (after the data-quality program + documentation audit landed).
 Ranking reflects the project goal: *finish unattended ETO ingestion, then build RAG/search*.
 Most of the 2026-10-09 data-quality program is now DONE (see "Completed data-quality program" at the
