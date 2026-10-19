@@ -8,6 +8,20 @@
 
 > **E2E ENRICHMENT FINDINGS (XChannel, 2026-10-19):**
 >
+> **[HIGH · provenance/schema — owner 2026-10-19] Enrichment data has NO source attribution.**
+> people_groups enrichment WORKS (33/74 have rich `enrichment_data`: full_name, branch,
+> commanding_officers, notable_operations, formed/disbanded, description) — but every derived fact is
+> UNSOURCED: `grokipedia_url`/`wikipedia_url`/`wikipedia_extract`/`wikipedia_checked_at` are populated
+> on 0/74, and `enrichment_data` carries no source/url sub-field. For the professional-historian
+> audience a claim like "FUSAG was a fictional army group" MUST cite its origin. Two-part fix:
+> (1) SCHEMA — add a source-attribution field: a `source`/`source_url`/`source_type`
+> ("grokipedia"|"wikipedia") INSIDE the enrichment_data object, and/or a top-level
+> `enrichment_sources` provenance array (groups_output.py + people_output.py). (2) CODE — the
+> enrichment WRITER must populate the source URL+type when it writes enrichment_data/description
+> (today it keeps the facts, discards the origin). The existing top-level grokipedia_url/wikipedia_url
+> slots already exist but are never written — same population gap. Applies to people AND groups
+> (ties to the people biographical_profile gap above).
+>
 > **[HIGH · enrichment gap] People `biographical_profile` (Grokipedia/Wikipedia bio TEXT) never
 > populated — 0/55.** IMAGE enrichment works (44/55 people have images; 5/55 military_awards) and the
 > people schema permits `biographical_profile` + `grokipedia_url` (people_output.py:30,:122), but NO
