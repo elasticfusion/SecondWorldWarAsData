@@ -504,4 +504,10 @@ def extract_dates(
     write_json_with_lock(index_file, index)
 
     logger.info("Updated %d date mentions in central repository", dates_updated)
+    logger.info(
+        "OBSERV dates.extract event_id=%s sub_events=%d dates_updated=%d",
+        event_id or "?",
+        len(sub_events),
+        dates_updated,
+    )
     return dates_dir if dates_updated > 0 else None

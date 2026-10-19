@@ -360,6 +360,12 @@ def extract_places(
     write_json_with_lock(index_file, index)
 
     logger.info(f"  Updated {places_updated} place(s) in central repository")
+    logger.info(
+        "OBSERV places.extract event_id=%s sub_events=%d places_updated=%d",
+        event_id or "?",
+        len(sub_events),
+        places_updated,
+    )
     return places_dir if places_updated > 0 else None
 
 
@@ -509,6 +515,7 @@ def link_parent_place_ids(places_dir: Path) -> int:
             updated += 1
 
     logger.info("Linked parent_place_id for %d places", updated)
+    logger.info("OBSERV places.parent_link linked=%d", updated)
     return updated
 
 

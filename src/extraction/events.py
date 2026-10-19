@@ -359,11 +359,22 @@ def _save_event_output(response: dict, parsed_file: Path, output_dir: Path) -> P
     # a schema-invalid event; emitting the source_section anyway would create a source_section that
     # references an EventID with no event record — a dangling cross-reference born at write time.
     if write_json_with_lock(output_file, response, entity="events"):
+        event_obj = response.get("Event", {}) or {}
+        n_subs = len(event_obj.get("Sub-events", []) or [])
+        logger.info(
+            "OBSERV events.extract event_id=%s sub_events=%d persisted=1",
+            event_obj.get("EventID") or "?",
+            n_subs,
+        )
         _emit_source_section_safe(response, parsed_file, output_dir)
     else:
         logger.warning(
             "Event write BLOCKED for %s — skipping its source_section to avoid a dangling ref",
             output_file.name,
+        )
+        logger.info(
+            "OBSERV events.extract event_id=%s status=blocked persisted=0",
+            (response.get("Event", {}) or {}).get("EventID") or "?",
         )
     return output_file
 
