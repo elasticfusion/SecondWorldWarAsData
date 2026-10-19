@@ -24,6 +24,72 @@ from scripts.find_related_groups import generate_related_groups_report
 # ---------------------------------------------------------------------------
 
 
+def _count_entity_dir(d: Path) -> int:
+    """Count persisted record files in an entity dir, excluding index/report/hidden files.
+    Fail-safe: returns 0 if the dir is missing/unreadable."""
+    try:
+        if not d.is_dir():
+            return 0
+        n = 0
+        for f in d.glob("*.json"):
+            stem = f.stem
+            if stem in ("index", "duplicate_report") or stem.startswith("."):
+                continue
+            n += 1
+        return n
+    except Exception:  # noqa: BLE001 - counting must never break the run
+        return 0
+
+
+def _log_phase2_summary(output_root: Path, logger) -> dict:
+    """Emit ONE end-of-run OBSERV line with the persisted record count per entity type, so a
+    zero-output bug (the optional-entity-zero / people-bio-zero class) is visible immediately
+    instead of via log archaeology. Fail-safe: a summary error must never abort Phase 2.
+
+    Returns the counts dict (also used by tests)."""
+    try:
+        output_root = Path(output_root)
+        counts: dict[str, int] = {}
+        # Events live per-chapter under content/<book>/*-event.json (not a flat dir).
+        try:
+            counts["events"] = sum(
+                1 for _ in (output_root / "content").rglob("*-event.json")
+            )
+        except Exception:  # noqa: BLE001
+            counts["events"] = 0
+        # File-per-record entity dirs (singular source_section dir name is intentional).
+        for name in (
+            "people",
+            "places",
+            "dates",
+            "people_groups",
+            "maps",
+            "images",
+            "bibliography",
+            "source_section",
+            "casualties",
+            "weather",
+            "equipment",
+            "logistics",
+            "supplemental",
+        ):
+            counts[name] = _count_entity_dir(output_root / name)
+
+        summary = " ".join(f"{k}={v}" for k, v in counts.items())
+        logger.info("OBSERV phase2.summary %s", summary)
+        # Make a zero LOUD: any core entity type at 0 is almost always a bug or an empty run.
+        zeros = [k for k, v in counts.items() if v == 0]
+        if zeros:
+            logger.warning(
+                "OBSERV phase2.summary.zero entity_types=%s (0 persisted — verify expected)",
+                ",".join(zeros),
+            )
+        return counts
+    except Exception as e:  # noqa: BLE001 - summary must never break the run
+        logger.warning("OBSERV phase2.summary status=error reason=%s", type(e).__name__)
+        return {}
+
+
 def _apply_scope_guard(parsed_files, book, expected_count, content_root, logger):
     """Scope ``parsed_files`` by book, then enforce the shared run-scope contract.
 
@@ -1035,6 +1101,13 @@ def _write_phase_results(output_root, processed, failed):
                 "⚠ All optional extractors produced 0 entities with %d events — possible extraction failure",
                 event_count,
             )
+
+    # End-of-run per-entity-type persisted-count summary (OBSERV phase2.summary + a LOUD
+    # phase2.summary.zero for any type at 0). Emitted HERE because this is the single final point
+    # reached by ALL modes (incl. the batch retrieve re-run), so counts reflect the final corpus.
+    import logging as _logging
+
+    _log_phase2_summary(output_root, _logging.getLogger("phase2_extract"))
 
     # End-of-phase referential-integrity enforcement — AFTER all extraction (incl. any batch
     # re-run), so references are checked against the final corpus. Must never crash the phase.

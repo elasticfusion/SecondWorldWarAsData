@@ -662,7 +662,7 @@ def extract_events(
                 and (s.get("Footnote_References") or s.get("Endnote_References"))
             )
             logger.info(
-                "OBSERV events.refs %s: sub_events=%d with_refs=%d parsed_footnotes=%d",
+                "OBSERV events.refs file=%s sub_events=%d with_refs=%d parsed_footnotes=%d",
                 parsed_file.name,
                 len(subs),
                 with_refs,
