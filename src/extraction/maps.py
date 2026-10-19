@@ -714,7 +714,9 @@ def extract_maps(
     maps_config = config.get("maps", {})
     if not maps_config.get("enabled", False):
         logger.info("Maps extraction disabled in config")
-        logger.info("OBSERV maps.extract status=disabled found=0 persisted_new=0")
+        logger.info(
+            "OBSERV maps.extract status=disabled found=0 persisted_new=0 images_downloaded=0"
+        )
         return
 
     logger.info("Starting maps extraction from source material")
@@ -749,6 +751,10 @@ def extract_maps(
         maps_config, output_dir
     )
     if storage_backend == "s3" and not s3_bucket:
+        logger.info(
+            "OBSERV maps.extract status=error reason=missing_s3_bucket "
+            "found=0 persisted_new=0 images_downloaded=0"
+        )
         return  # Error already logged
 
     # Setup image download
