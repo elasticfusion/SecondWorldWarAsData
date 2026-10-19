@@ -25,15 +25,28 @@ from scripts.find_related_groups import generate_related_groups_report
 
 
 def _count_entity_dir(d: Path) -> int:
-    """Count persisted record files in an entity dir, excluding index/report/hidden files.
+    """Count persisted record files in an entity dir, excluding index/report/queue/hidden files.
     Fail-safe: returns 0 if the dir is missing/unreadable."""
+    # Non-record artifacts written into entity dirs by the analysis (step 5/5) and the later dedup
+    # pass — must NOT be counted as records (they inflate the count, WARNING-2 from review).
+    _skip_stems = {
+        "index",
+        "duplicate_report",
+        "related_groups_report",
+        "not_duplicates",
+        "not_related",
+        "not_people",
+        "review_queue",
+        "coords",
+        "surname_frequency_suggestions",
+    }
     try:
         if not d.is_dir():
             return 0
         n = 0
         for f in d.glob("*.json"):
             stem = f.stem
-            if stem in ("index", "duplicate_report") or stem.startswith("."):
+            if stem in _skip_stems or stem.startswith(".") or stem.endswith("_report"):
                 continue
             n += 1
         return n
@@ -58,6 +71,10 @@ def _log_phase2_summary(output_root: Path, logger) -> dict:
         except Exception:  # noqa: BLE001
             counts["events"] = 0
         # File-per-record entity dirs (singular source_section dir name is intentional).
+        # NOTE: 'supplemental' is intentionally NOT counted — supplemental material persists into
+        # bibliography + event sub-events, never its own record dir, so it is structurally always 0
+        # (WARNING-1 from review: flagging it as a zero cried wolf every run).
+        core_types = ("events", "people", "places", "dates")
         for name in (
             "people",
             "places",
@@ -71,18 +88,30 @@ def _log_phase2_summary(output_root: Path, logger) -> dict:
             "weather",
             "equipment",
             "logistics",
-            "supplemental",
         ):
             counts[name] = _count_entity_dir(output_root / name)
 
         summary = " ".join(f"{k}={v}" for k, v in counts.items())
         logger.info("OBSERV phase2.summary %s", summary)
-        # Make a zero LOUD: any core entity type at 0 is almost always a bug or an empty run.
-        zeros = [k for k, v in counts.items() if v == 0]
-        if zeros:
+        # Make a zero LOUD only for CORE types (events/people/places/dates) that should essentially
+        # never be 0 on a real run — this is the "zero = probable bug" signal. Optional types
+        # (maps/images/casualties/weather/equipment/logistics/people_groups) are legitimately 0 for
+        # many chapters, so their zeros are reported at INFO to avoid crying wolf (SUGGESTION-1).
+        core_zeros = [k for k in core_types if counts.get(k, 0) == 0]
+        if core_zeros:
             logger.warning(
-                "OBSERV phase2.summary.zero entity_types=%s (0 persisted — verify expected)",
-                ",".join(zeros),
+                "OBSERV phase2.summary.zero scope=core entity_types=%s "
+                "(0 persisted — probable bug, verify)",
+                ",".join(core_zeros),
+            )
+        optional_zeros = [
+            k for k, v in counts.items() if v == 0 and k not in core_types
+        ]
+        if optional_zeros:
+            logger.info(
+                "OBSERV phase2.summary.zero scope=optional entity_types=%s "
+                "(0 persisted — expected for some chapters)",
+                ",".join(optional_zeros),
             )
         return counts
     except Exception as e:  # noqa: BLE001 - summary must never break the run
@@ -1107,7 +1136,7 @@ def _write_phase_results(output_root, processed, failed):
     # reached by ALL modes (incl. the batch retrieve re-run), so counts reflect the final corpus.
     import logging as _logging
 
-    _log_phase2_summary(output_root, _logging.getLogger("phase2_extract"))
+    _log_phase2_summary(output_root, _logging.getLogger(__name__))
 
     # End-of-phase referential-integrity enforcement — AFTER all extraction (incl. any batch
     # re-run), so references are checked against the final corpus. Must never crash the phase.

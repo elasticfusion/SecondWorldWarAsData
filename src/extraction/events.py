@@ -173,7 +173,7 @@ def _sample_norefs(se: dict) -> None:
     if not getattr(_populate_footnote_refs, "_sampled", False):
         _populate_footnote_refs._sampled = True  # type: ignore[attr-defined]
         logger.info(
-            "OBSERV events.refs.sample no-refs: keys=%s references=%r paragraph_numbers=%r",
+            "OBSERV events.refs.sample case=no_refs keys=%s references=%r paragraph_numbers=%r",
             sorted(se.keys()),
             se.get("references"),
             se.get("paragraph_numbers"),
