@@ -6,6 +6,21 @@
 
 ## Current Priority (reprioritized index)
 
+> **E2E ENRICHMENT FINDINGS (XChannel, 2026-10-19):**
+>
+> **[HIGH · enrichment gap] People `biographical_profile` (Grokipedia/Wikipedia bio TEXT) never
+> populated — 0/55.** IMAGE enrichment works (44/55 people have images; 5/55 military_awards) and the
+> people schema permits `biographical_profile` + `grokipedia_url` (people_output.py:30,:122), but NO
+> person got biographical text. README says this is a Phase-2 step (`_enrich_person_phase2`). So the
+> image/award path works while the bio-text path produces/persists nothing — investigate whether
+> _enrich_person_phase2 runs, returns empty, or silently errors. (Observed: Omar Bradley — a top US
+> commander — has zero bio enrichment.)
+> **[MED · DQ] Malformed person record `omar n bradley.json` has NO `name` and NO `PersonID`** — keys
+> are only rank/nationality/event_mentions/_schema_version/_last_updated. A degenerate record
+> (likely a merge/extraction artifact); a commander-level entity with no primary key won't resolve
+> in any cross-reference. Check how a nameless/ID-less person file gets written (ties to the HIGH#7
+> mint-server-side discipline — a record reaching disk without a PersonID should be impossible).
+
 > **CRITICAL E2E BUG (XChannel, 2026-10-19) — ALL optional-entity types extract ZERO:**
 >
 > **[CRITICAL · data-loss] equipment, weather, casualties, logistics, maps, supplemental all produced
