@@ -25,6 +25,34 @@
 
 > **XChannel E2E FINDINGS (2026-10-18/19) — surfaced by the full Cross-Channel Attack volume run:**
 >
+> A00. **[HIGH · DESIGN — owner 2026-10-19] Replace OpenSERP browser-search with Grok-proposes +
+>    liveness-check + HUMAN AUDIT.** The current OpenSERP flow (live browser search per entity ->
+>    parse -> Grok-verify each result) is slow, serial, and returns low-quality hits over flaky hosts
+>    (observed: crossword sites, "15 Best Things to Do in Chartres", dead-host/SSL retries). Proposed
+>    redesign: (1) ask GROK to propose candidate source sites/URLs for the SAME query we send
+>    OpenSERP; (2) a CHEAP liveness/validation pass (HTTP HEAD + host-allowlist + short timeout +
+>    optional title match) to drop hallucinated/dead URLs — this replaces OpenSERP's role far more
+>    lightly (no browser, no crawl); (3) a HUMAN AUDIT gate (reuse the dedup-style review UI) so a
+>    historian approves the provenance. CAVEAT: Grok will hallucinate URLs, so step (2) liveness is
+>    MANDATORY, never trust proposed URLs blind. Likely keep a real search only where the LLM
+>    genuinely won't know (specific archival PDFs); for place-images + general "find a source", the
+>    propose+verify+audit path is better. Supersedes/absorbs A0 for the image case.
+> A000. **[HIGH · DQ — bibliography titles] Military/archival citations get title="Unknown".** Every
+>    XChannel-era bib record (and the RoerDams set) has `title: "Unknown"` with the real citation only
+>    in `citation.alt_title` (e.g. "V Corps Operations in the ETO, p. 256", "FUSA G-2 Estimate 24...",
+>    "MS # T-122 Geschichte des Oberbefehlshaber West..."). The extractor captures the verbatim ref
+>    into alt_title but never promotes/derives a `title`, so citations are not display/sort-usable.
+>    Fix: for military/archival references (no clean book title), set `title` from alt_title/verbatim
+>    (or a derived short form) instead of leaving "Unknown".
+> A0000. **[HIGH · DATA HYGIENE — cross-book contamination] e2e_reset --wipe-title does NOT clear the
+>    shared cross-book prefixes `output/bibliography/` + `output/narrative_notes/`.** After wiping
+>    XChannel, the Task-6 inspection found those dirs still 100% RoerDams (57 bib + 16 narrative, all
+>    book=RoerDams) — the XChannel biblio/narrative review was reading the wrong book's data. Because
+>    bibliography is intentionally cross-book (hash-keyed, shared), a per-title wipe can't just delete
+>    the prefix; needs a book-scoped filter (delete only records whose mentions are all the wiped
+>    book) OR an explicit "--wipe-shared" option for a clean single-book E2E. Until fixed, a
+>    single-book E2E's bibliography/narrative output is polluted by prior books.
+
 > A0. **[HIGH · perf — Phase-3 bottleneck] Bound + parallelize OpenSERP place-IMAGE enrichment.**
 >    On the full XChannel volume, Phase 3 ran ~15h and was dominated by a serial, live
 >    web-search-per-place image enrichment (`src/enrichment/openserp_enrichment.py`): for EACH of
