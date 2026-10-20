@@ -326,13 +326,57 @@ def _parse_logistics_response(
         return {}
     result: Dict[str, List[LogisticsExtraction]] = {}
     for seid, data in response.items():
-        items = data.get("logistics", []) if isinstance(data, dict) else []
+        # Accept BOTH shapes the LLM may return: a bare list of items, OR a
+        # {"logistics": [...]} wrapper. Requiring the wrapper silently dropped bare-list
+        # responses (a cause of logistics persisting 0 despite a successful batch).
+        if isinstance(data, list):
+            items = data
+        elif isinstance(data, dict):
+            items = data.get("logistics", [])
+        else:
+            items = []
         validated = []
         for item in items:
+            if not isinstance(item, dict):
+                continue
+            # Uniform floor: require some descriptive content (an empty description is not a
+            # usable logistics record) on BOTH the strict and coerce paths.
+            if not str(item.get("description") or "").strip():
+                continue
             try:
                 validated.append(LogisticsExtraction.model_validate(item))
             except Exception as e:
-                logger.debug("Skipping invalid logistics item: %s", e)
+                # Best-effort: an item with real descriptive content should persist even if
+                # it omits a required enum field — coerce defaults rather than drop it
+                # (resolved specifics are enrichment, not a gating precondition).
+                desc = str(item.get("description") or "").strip()
+                if not desc:
+                    logger.debug("Skipping empty logistics item: %s", e)
+                    continue
+                try:
+                    validated.append(
+                        LogisticsExtraction.model_validate(
+                            {
+                                "type": item.get("type") or "capacity_constraint",
+                                "category": item.get("category") or "general",
+                                "description": desc,
+                                "severity": item.get("severity") or "medium",
+                                **{
+                                    k: v
+                                    for k, v in item.items()
+                                    if k
+                                    not in (
+                                        "type",
+                                        "category",
+                                        "description",
+                                        "severity",
+                                    )
+                                },
+                            }
+                        )
+                    )
+                except Exception as e2:  # noqa: BLE001 - truly unusable
+                    logger.debug("Skipping unusable logistics item: %s", e2)
         if validated:
             result[seid] = validated
     return result
