@@ -100,7 +100,11 @@ def extract_images(text: str) -> List[Tuple[str, str, str, str]]:
         List of (type, resource_id_or_url, alt_text, external_url)
     """
     images = []
-    seen_alts = set()
+    seen: set[str] = (
+        set()
+    )  # dedupe on image IDENTITY (resource_id/url), NOT alt_text: source
+    # images frequently share an empty/identical alt, which previously collapsed many
+    # distinct images into one.
 
     # Combined format: [![alt](:/resource-id)](https://url)
     # This is a clickable image with both Joplin resource and external URL
@@ -108,27 +112,42 @@ def extract_images(text: str) -> List[Tuple[str, str, str, str]]:
         alt_text = match.group(1)
         resource_id = match.group(2)
         url = match.group(3)
-        if alt_text not in seen_alts:
+        key = f"combined:{resource_id}:{url}"
+        if key not in seen:
             images.append(("combined", resource_id, alt_text, url))
-            seen_alts.add(alt_text)
+            seen.add(key)
 
     # Embedded images only: ![alt](:/resource-id) - standalone Joplin resource
     # Use negative lookahead to exclude those followed by ](url)
     for match in re.finditer(r"!\[(.*?)\]\(:(.*?)\)(?!\]\()", text):
         alt_text = match.group(1)
         resource_id = match.group(2)
-        if alt_text not in seen_alts:
+        key = f"embedded:{resource_id}"
+        if key not in seen:
             images.append(("embedded", resource_id, alt_text, ""))
-            seen_alts.add(alt_text)
+            seen.add(key)
+
+    # HTML-derived combined: [![alt](IMG_URL)](LINK_URL) — produced when an <img> is wrapped
+    # in an <a> (ibiblio thumbnail-linked-to-full-res). The inner IMG_URL is the image the
+    # importer selected (full-res); LINK_URL (often <...>) is ignored. Must run BEFORE the
+    # external branch, whose (?<!\[) lookbehind would otherwise skip these.
+    for match in re.finditer(r"\[!\[(.*?)\]\((https?://[^\)]+)\)\]\(<?[^)]*>?\)", text):
+        alt_text = match.group(1)
+        url = match.group(2)
+        key = f"external:{url}"
+        if key not in seen:
+            images.append(("external", url, alt_text, ""))
+            seen.add(key)
 
     # External images only: ![alt](https://url) - standalone external image
     # Must NOT be preceded by [![ (which would make it part of combined format)
     for match in re.finditer(r"(?<!\[)!\[(.*?)\]\((https?://[^\)]+)\)(?!\])", text):
         alt_text = match.group(1)
         url = match.group(2)
-        if alt_text not in seen_alts:
+        key = f"external:{url}"
+        if key not in seen:
             images.append(("external", url, alt_text, ""))
-            seen_alts.add(alt_text)
+            seen.add(key)
 
     return images
 
