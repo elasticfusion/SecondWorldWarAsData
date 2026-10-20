@@ -206,3 +206,92 @@ def clean_url(url: str) -> Optional[str]:
     # Drop RFC-3986 path params (the ';' segment, e.g. ';jsessionid=') — session
     # tracking lives there and would otherwise leak into the dedup key. Fragment dropped.
     return urlunparse((scheme, netloc, path, "", query, ""))
+
+
+# --- SSRF-safe FETCH layer -------------------------------------------------------
+# clean_url / resolved_host_is_safe are PURE validators (no I/O). The functions below
+# are the fetch layer that the caveat in _host_is_safe demands: they clean the URL,
+# re-resolve the host and reject non-public IPs (DNS-rebinding), and REFUSE redirects
+# (a redirect can bounce a clean host to 169.254.169.254 / an internal address). Every
+# untrusted-URL GET in the pipeline MUST route through here (or images.fetch_image_bytes
+# for image bytes) rather than calling requests.get directly.
+
+_SAFE_FETCH_TIMEOUT = 30
+_SAFE_FETCH_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+)
+_SAFE_FETCH_MAX_BYTES = 10 * 1024 * 1024  # 10MB cap on a fetched page/body
+
+
+def safe_get(url, *, timeout=None, headers=None, max_bytes=_SAFE_FETCH_MAX_BYTES):
+    """SSRF-safe HTTP GET of an UNTRUSTED URL. Returns a ``requests.Response`` whose
+    ``.content``/``.text`` is already bounded to ``max_bytes``, or ``None`` if the URL
+    is blocked (bad scheme/host, host resolves to a non-public IP) or the request fails.
+
+    Guards (same discipline as images.fetch_image_bytes):
+      1. clean_url -> http(s) only, reject loopback/private/link-local/metadata host,
+         reject credentials-in-URL, normalize.
+      2. resolved_host_is_safe -> resolve the host, reject if ANY resolved IP is
+         non-public (DNS-rebinding defense).
+      3. allow_redirects=False -> a redirect could bounce a clean host to an internal
+         address, so redirects are refused (surfaced as the 3xx response, not followed).
+      4. streamed read with a hard byte cap (defends against decompression/size abuse).
+
+    Callers that only need HTML text should prefer ``fetch_text_safe``.
+    """
+    import requests  # lazy: keep the pure-validator import path light
+
+    cleaned = clean_url(url)
+    if not cleaned:
+        logger.debug("safe_get blocked (scheme/host): %s", url)
+        return None
+    host = (urlparse(cleaned).hostname or "").lower()
+    if resolved_host_is_safe(host) is None:
+        logger.warning("safe_get blocked (host resolves non-public): %s", host)
+        return None
+    req_headers = {"User-Agent": _SAFE_FETCH_UA}
+    if headers:
+        req_headers.update(headers)
+    eff_timeout = timeout or _SAFE_FETCH_TIMEOUT
+    try:
+        resp = requests.get(
+            cleaned,
+            timeout=eff_timeout,
+            headers=req_headers,
+            allow_redirects=False,  # redirects reopen SSRF
+            stream=True,
+        )
+        body = b""
+        for chunk in resp.iter_content(8192):
+            body += chunk
+            if len(body) > max_bytes:
+                logger.warning(
+                    "safe_get body exceeded %d bytes, truncating: %s",
+                    max_bytes,
+                    cleaned,
+                )
+                break
+        # Materialize the bounded body back onto the response so .text/.content work.
+        resp._content = body  # noqa: SLF001 - intentional: cap the body
+        return resp
+    except Exception as exc:  # noqa: BLE001 - any network failure -> None (fail-closed)
+        logger.debug("safe_get failed for %s: %s", cleaned, exc)
+        return None
+
+
+def fetch_text_safe(
+    url, *, timeout=None, headers=None, max_bytes=_SAFE_FETCH_MAX_BYTES
+):
+    """SSRF-safe fetch returning (text, status_code) for a 200 response, else (None, status)
+    or (None, None) if blocked/failed. Convenience wrapper over ``safe_get`` for the common
+    'grab the HTML of an untrusted page' case."""
+    resp = safe_get(url, timeout=timeout, headers=headers, max_bytes=max_bytes)
+    if resp is None:
+        return None, None
+    if resp.status_code != 200:
+        return None, resp.status_code
+    try:
+        return resp.text, 200
+    except Exception:  # noqa: BLE001
+        return None, resp.status_code

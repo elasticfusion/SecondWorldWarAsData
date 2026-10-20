@@ -14,7 +14,6 @@ from datetime import datetime
 from urllib.parse import urlparse
 
 import ulid
-import requests
 
 from src.grok_client import GrokClient
 from src.extraction.search_external_maps import _verify_map_relevance
@@ -47,10 +46,10 @@ def _find_license_link(
             if not link.startswith("http"):
                 link = f"{base_url}/{link.lstrip('/')}"
             try:
-                response = requests.get(
-                    link, timeout=page_timeout, headers=headers, allow_redirects=True
-                )
-                if response.status_code == 200:
+                from src.utils.url_hygiene import safe_get
+
+                response = safe_get(link, timeout=page_timeout, headers=headers)
+                if response is not None and response.status_code == 200:
                     logger.info(f"   📄 Found license page via link: {link}")
                     return response.text[:10000], link
             except Exception:  # nosec B112
@@ -75,13 +74,12 @@ def _try_common_license_paths(
 
     for path in license_paths:
         try:
-            response = requests.get(
-                f"{base_url}{path}",
-                timeout=page_timeout,
-                headers=headers,
-                allow_redirects=True,
+            from src.utils.url_hygiene import safe_get
+
+            response = safe_get(
+                f"{base_url}{path}", timeout=page_timeout, headers=headers
             )
-            if response.status_code == 200:
+            if response is not None and response.status_code == 200:
                 logger.info(f"   📄 Found license page: {path}")
                 return response.text[:10000], f"{base_url}{path}"
         except Exception:  # nosec B112
@@ -146,10 +144,10 @@ def _find_license_text(url: str, page_timeout: int, headers: dict) -> tuple:
 
     # Try license page via links on the page
     try:
-        response = requests.get(
-            url, timeout=page_timeout, headers=headers, allow_redirects=True
-        )
-        if response.status_code == 200:
+        from src.utils.url_hygiene import safe_get
+
+        response = safe_get(url, timeout=page_timeout, headers=headers)
+        if response is not None and response.status_code == 200:
             text, found_url = _find_license_link(
                 response.text, base_url, page_timeout, headers
             )
@@ -165,10 +163,10 @@ def _find_license_text(url: str, page_timeout: int, headers: dict) -> tuple:
 
     # Check main page footer
     try:
-        response = requests.get(
-            url, timeout=page_timeout, headers=headers, allow_redirects=True
-        )
-        if response.status_code == 200:
+        from src.utils.url_hygiene import safe_get
+
+        response = safe_get(url, timeout=page_timeout, headers=headers)
+        if response is not None and response.status_code == 200:
             text = _extract_footer_license(response.text)
             if text:
                 return text, url
@@ -348,41 +346,42 @@ def _download_map_image(
 ) -> tuple[bool, Optional[str]]:
     """Download map image to storage. Returns (success, image_path)."""
     try:
-        import requests
         from src.extraction.search_external_maps import _extract_map_images
 
         storage_dir = Path(image_storage_path)
         storage_dir.mkdir(parents=True, exist_ok=True)
 
-        headers = {"User-Agent": USER_AGENT}
-        page_response = requests.get(
-            url, timeout=page_timeout, headers=headers, allow_redirects=True
-        )
+        from src.utils.url_hygiene import safe_get
+        from src.extraction.images import fetch_image_bytes
 
-        if page_response.status_code != 200:
+        headers = {"User-Agent": USER_AGENT}
+        page_response = safe_get(url, timeout=page_timeout, headers=headers)
+
+        if page_response is None or page_response.status_code != 200:
+            logger.info(
+                "   ⚠ map page fetch yielded no content (blocked/non-200): %s", url
+            )
             return False, None
 
         map_images = _extract_map_images(
             page_response.text, url, page_has_map_keyword=True
         )
         if not map_images:
+            logger.info("   ⚠ no map images found on page: %s", url)
             return False, None
 
         img_url = map_images[0]["url"]
-        img_response = requests.get(
-            img_url, timeout=image_timeout, headers=headers, allow_redirects=True
-        )
-        img_response.raise_for_status()
-
-        # Determine extension
-        content_type = img_response.headers.get("content-type", "image/jpeg")
-        ext = content_type.split("/")[-1].split(";")[0]
+        # SSRF-safe image fetch (clean_url + resolved-host + no-redirect + size/content checks).
+        img_bytes, ext = fetch_image_bytes(img_url)
+        if not img_bytes:
+            return False, None
+        ext = (ext or "jpg").lstrip(".")
         if ext not in ["jpg", "jpeg", "png", "gif"]:
             ext = "jpg"
 
         image_filename = f"{map_id}.{ext}"
         image_file_path = storage_dir / image_filename
-        image_file_path.write_bytes(img_response.content)
+        image_file_path.write_bytes(img_bytes)
 
         logger.info(f"   💾 Saved image: {image_filename}")
         return True, str(image_file_path)
