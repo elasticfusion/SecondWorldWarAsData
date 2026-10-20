@@ -327,7 +327,29 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
 
 ## 4. INFRA / SECURITY / COST
 
-- **[SEC FOLLOW-UP] DNS-rebind TOCTOU in image/url fetchers (codebase-wide).** `fetch_image_bytes`
+- **[DEPS · prod-install hygiene, 2026-10-20] Sync + pin the remaining dependency surfaces.** The
+  top-level `requirements.txt` was hardened (pillow 12.3.0→13.0.0 PR #478; certifi pinned 2026.10.19 +
+  urllib3 declared 2.8.0 + full-env pip-audit PR #479). STILL OUT OF SYNC / loose:
+  - `requirements-lambda.txt` — REAL deploy surface (scripts/update_lambdas.sh + .github/workflows/
+    deploy.yml package Lambdas from it; gate.sh + lint.yml audit it). Uses `requests>=2.32.0` (range)
+    + UNPINNED `diskcache` → non-reproducible Lambda builds + can resolve a vulnerable transitive
+    certifi/urllib3. FIX: hard-pin to match requirements.txt (requests==2.33.1, certifi==2026.10.19,
+    urllib3==2.8.0, diskcache==5.6.3) or switch to pip-compile.
+  - `Dockerfile.paddle:44` installs `pillow>=12.3.0` (range) — bump to `==13.0.0` to match the CVE fix
+    + the standardized pin (12.3.0 has the 8 CVEs #478 fixed).
+  - Confirmed FINE: main Dockerfile + Dockerfile.video install from requirements.txt (inherit fixes);
+    requirements-ci.txt (type stubs only) + requirements-test.txt (no runtime deps) need nothing;
+    Dockerfile.chandra/.clamav carry no own pillow/pip-from-reqs.
+  - The one accepted ignore is documented in gate.sh: PYSEC-2026-2447 (diskcache pickle RCE, NO fix
+    exists, low exposure); remove + bump when a fix ships.
+- **[DEPS · openserp submodule upgrade, 2026-10-20] Bump the vendored openserp Go submodule.** User
+  received an upstream upgrade notice. `openserp/` is a git SUBMODULE (github.com/karust/openserp, a Go
+  search service we run at :7001 — NOT in our Python import graph), so this is a `git submodule update
+  --remote openserp` + rebuild of its container, SEPARATE from the Python deps above. Check the
+  upstream release notes for breaking API/flag changes to the `/mega/search` endpoint our enrichment
+  calls before bumping. (openserp/examples/*/requirements.txt are the upstream author's samples — NOT
+  our surface, do not edit.)
+
   (and `src/utils/url_fetch.py`) validate the resolved IP then let `requests.get` RE-RESOLVE DNS and
   connect — a hostile resolver can answer public at check, private/metadata at connect. Mitigated (no
   redirects; literal-IP + metadata blocked; needs authoritative DNS + a race) → WARNING, accepted
