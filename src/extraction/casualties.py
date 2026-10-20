@@ -270,7 +270,7 @@ Return empty arrays for sub-events with no casualties."""
 
 
 def _call_and_parse_casualties(
-    grok_client: GrokClient, prompt: str, cache_key: str = None
+    grok_client: GrokClient, prompt: str, cache_key: Optional[str] = None
 ) -> Dict[str, List[Dict[str, Any]]]:
     """Call Grok API and parse batched casualty response."""
     max_retries = 3
