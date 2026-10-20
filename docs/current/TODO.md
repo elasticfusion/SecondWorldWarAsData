@@ -10,6 +10,60 @@ are ordered: (1) **Phase 2 — open**, (2) Phase 3 / enrichment — open, (3) ar
 
 ## 1. PHASE 2 — OPEN (current priority)
 
+### 1.0 Phase-2 code+security review findings (2026-10-20) — full doc: docs/current/PHASE2_REVIEW_2026-10-20.md
+
+Audit of ALL Phase-2 code (8 concurrent code+security sub-agents, synthesized to 5 root patterns).
+bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
+
+- **[CRITICAL · PATTERN 1 — batch 0-persist] In-task `submit_batch` maps results by xAI SERVER id,
+  not our cache key.** ✅ verified. `batch_api.retrieve_results` keys by `batch_request_id`; `submit_batch`
+  looks up by our sha256 key → valid content cached under unread keys → classified "missing" → 0
+  persisted. Live-path sibling of the equipment=0 / optional-entity-zero family. FIX: use
+  `retrieve_results_ordered()` positional mapping (like `ecs_entrypoint._map_batch_results_by_index`).
+  SUB-ITEMS: (a) casualties.py:184-216,261 still has the non-deterministic-prompt cache-key bug
+  (unsorted/sliced entity_context, no stable cache_key) → likely persists 0 next run; (b) ⚠️ VERIFY the
+  `batch_result["response"]["chat_get_completion"]` field name against a live payload (if wrong, ALL
+  batch retrieval yields 0) — the PR #474 synced cache can now confirm it.
+
+- **[HIGH · PATTERN 2 — SSRF] 12 unguarded `requests.get(allow_redirects=True)` on untrusted URLs**
+  across openserp_maps (50,78,149,168,358,372), search_external_maps (98,138,317), grok_search_maps (99),
+  validate_supplemental_urls (22), supplemental_advanced (231), fetch_endnotes (75-92,178) — bypass the
+  repo's own `clean_url`+`resolved_host_is_safe`+`allow_redirects=False` guard (used correctly in
+  maps.py/images.py). Reachable over NAT → metadata/internal hosts. FIX: one shared SSRF-safe fetch
+  helper across all 12 (also closes the map-module duplication + image-bomb DoS).
+
+- **[HIGH · PATTERN 3 — path traversal] In-process entity writers skip the hardened sanitizer.**
+  dates.py:228-243 (worst — doesn't even strip `/`), equipment.py:~1975,2674, places.py:392 build
+  filenames from LLM values via ad-hoc `.replace()`; `write_json_with_lock` mkdir(parents=True) on any
+  path. FIX: route all through `batch_parallel._safe_entity_filename`+`_contained_entity_path` (#450/#457).
+
+- **[HIGH · trigger Lambda] key-derived book bypasses `_SAFE_TITLE_RE`** (_seed_docs/_reconcile_pending/
+  _queue_pending write unvalidated book to DynamoDB/S3 keys); **no SNS ARN/signature trust** (trust from
+  topic-name suffix only); **manual `expected_count` is an unauthenticated scope-bypass**; **prompt-
+  injection via uploaded file head flips the dedup decision**; **`_update_manifest` lost-update race**
+  (get→union→put on pending.json). FIX per the doc.
+
+- **[HIGH · PATTERN 4 — silent drops] over-strict filters + swallowed errors:** dates year-veto
+  (<1919/>1955, dup in batch_parallel:221); casualties keyword pre-filter misses losses/fell/wiped out;
+  people_groups wrapper-key assumption; supplemental `_append_to_file` re-appends narrative every pass
+  (dedup on absent reference_source); supplemental `_has_document` drops hybrid citation half;
+  supplemental_info_pipeline passes dict where Path expected → 100%% dead (always 0); write_json_with_lock
+  return ignored in date_summary/people_consolidation.
+
+- **[HIGH · orchestration] credit reservation leaks on poll/retrieve failure** (only released on submit
+  failure); **weather+equipment lack the `_is_processed` gate** (re-extract every retrieve pass);
+  **partial-failure batches silently drop the failed fraction** (no alert unless error>=total);
+  **unbounded batch size**; **image decompression-bomb DoS** (equipment/grok_search_maps, no MAX_IMAGE_PIXELS).
+
+- **[MED] concurrency/crash-safety:** grok_client `self.caches`/counters mutated without a lock;
+  `locked_json.save()` truncates-in-place (not crash-atomic); write-guard is opt-in (some plain
+  open()+json.dump bypass it); run-scope caller fail-open downgrades to magic-50 on read error (debug
+  not warn).
+
+- **[MED · PATTERN 5] dead code + duplication:** 5 overlapping map-search modules; concurrent.py dead
+  (+ latent wrong-kwarg); dead Dynamo dual-write in file_lock; duplicated max_tokens / ignored timeout params.
+
+
 ### 1.1 Data-quality from the clean XChannel run
 
 - **[FIX MERGED · PR #472 — VERIFY on next re-run] equipment extraction persisted 0.** Root cause
