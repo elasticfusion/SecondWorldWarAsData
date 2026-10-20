@@ -584,8 +584,15 @@ def _search_online_sources(
 
     if not findings:
         return None
+    _aggregate_findings(entry, findings)
+    # Primary finding keeps the existing single-tuple contract (_apply_result appends it too,
+    # which the dedup above already guards against).
+    return findings[0]
 
-    # Aggregate: dedup-preserving-order into resource_urls + a structured findings list.
+
+def _aggregate_findings(entry: Dict, findings: "list[Tuple[str, str]]") -> None:
+    """Dedup-preserving-order the verified findings into entry['resource_urls'] + a structured
+    entry['source_metadata']['findings'] list, and OBSERV the count/sources."""
     seen = set(entry.get("resource_urls") or [])
     for url, _source in findings:
         if url and url not in seen:
@@ -599,9 +606,6 @@ def _search_online_sources(
         len(findings),
         ",".join(sorted({s for _, s in findings})),
     )
-    # Primary finding keeps the existing single-tuple contract (_apply_result appends it too,
-    # which the dedup above already guards against).
-    return findings[0]
 
 
 def _find_in_nara(
@@ -1395,6 +1399,47 @@ def _nara_match_context(record: Dict[str, Any]) -> str:
     return " | ".join(parts)
 
 
+def _interpret_nara_response(resp, safe_q: str) -> Optional[Dict]:
+    """Interpret a NARA search HTTP response into a parsed payload, or None for every non-usable
+    outcome (429 rate-limit w/ 60s backoff, non-200, the documented 200+HTML-shell invalid-query
+    mode, json-parse failure). None is NOT negative-cached by the caller so a fixed query/retry can
+    still succeed next run."""
+    import time
+
+    if resp.status_code == 429:
+        logger.warning("NARA API rate limited (429) — backing off 60s")
+        time.sleep(60)
+        return None  # Don't cache — retry next run
+    ctype = (resp.headers.get("Content-Type") or "").split(";")[0]
+    if resp.status_code != 200:
+        logger.info(
+            "OBSERV nara.query status=%d content_type=%s q=%r",
+            resp.status_code,
+            ctype,
+            safe_q[:60],
+        )
+        return None
+    # NARA's documented failure mode: 200 OK + HTML SPA shell on an invalid query or rate-limit.
+    # NOT a real not_found — surface distinctly, do NOT negative-cache.
+    if _is_html_shell(resp):
+        logger.warning(
+            "OBSERV nara.query html_shell=1 status=200 content_type=%s q=%r "
+            "(invalid-query/rate-limit shell, not a real not_found)",
+            ctype,
+            safe_q[:60],
+        )
+        return None
+    try:
+        return resp.json()
+    except ValueError:
+        logger.warning(
+            "OBSERV nara.query json_parse_error=1 content_type=%s q=%r",
+            ctype,
+            safe_q[:60],
+        )
+        return None
+
+
 def _search_nara(
     query: str,
     api_key: str,
@@ -1447,38 +1492,8 @@ def _search_nara(
             headers={"x-api-key": api_key, "Accept": "application/json"},
             timeout=30,
         )
-        if resp.status_code == 429:
-            logger.warning("NARA API rate limited (429) — backing off 60s")
-            time.sleep(60)
-            return None  # Don't cache — retry next run
-        ctype = (resp.headers.get("Content-Type") or "").split(";")[0]
-        if resp.status_code != 200:
-            logger.info(
-                "OBSERV nara.query status=%d content_type=%s q=%r",
-                resp.status_code,
-                ctype,
-                safe_q[:60],
-            )
-            return None
-        # NARA's documented failure mode: 200 OK + HTML SPA shell on an invalid query or
-        # rate-limit. That is NOT a real not_found — surface it distinctly and do NOT
-        # negative-cache it (so a fixed query/retry can still succeed next run).
-        if _is_html_shell(resp):
-            logger.warning(
-                "OBSERV nara.query html_shell=1 status=200 content_type=%s q=%r "
-                "(invalid-query/rate-limit shell, not a real not_found)",
-                ctype,
-                safe_q[:60],
-            )
-            return None
-        try:
-            payload = resp.json()
-        except ValueError:
-            logger.warning(
-                "OBSERV nara.query json_parse_error=1 content_type=%s q=%r",
-                ctype,
-                safe_q[:60],
-            )
+        payload = _interpret_nara_response(resp, safe_q)
+        if payload is None:
             return None
         results = payload.get("body", {}).get("hits", {}).get("hits", [])
         total = payload.get("body", {}).get("hits", {}).get("total", {})
@@ -1998,6 +2013,38 @@ def _account_bib_status(stats: Dict[str, int], status: str, was_deduped: bool) -
     )
 
 
+def _resolve_one_bib_file(
+    f,
+    grok_client: Any,
+    config: Dict,
+    resolved_by_key: Dict,
+    stats: Dict,
+    not_citation_samples: List,
+    review_queue: List,
+) -> None:
+    """Resolve one bibliography file (fail-safe): count errors, collect not_citation samples, and
+    queue a real-but-unresolved citation for human review. Mutates stats/samples/queue in place.
+    """
+    try:
+        result = _process_bib_file(f, grok_client, config, resolved_by_key)
+    except (json.JSONDecodeError, OSError):
+        stats["errors"] += 1
+        return
+    except Exception as e:  # resolver failure — count, keep going
+        logger.warning("Failed to resolve %s: %s", f.name, e)
+        stats["errors"] += 1
+        return
+
+    status, was_deduped, nc_sample = result
+    if status == "not_citation" and nc_sample and len(not_citation_samples) < 5:
+        not_citation_samples.append(_CTRL.sub(" ", nc_sample)[:80])
+    if _account_bib_status(stats, status, was_deduped):
+        # Real citation, unresolved online → human disposition.
+        data = json.loads(f.read_text(encoding="utf-8"))
+        review_queue.append(_queue_entry(f.name, data))
+        stats["queued"] += 1
+
+
 def resolve_bibliography_dir(
     bib_dir: Path,
     grok_client: Any = None,
@@ -2047,24 +2094,15 @@ def resolve_bibliography_dir(
         if max_items and processed >= max_items:
             break
         processed += 1
-        try:
-            result = _process_bib_file(f, grok_client, config, resolved_by_key)
-        except (json.JSONDecodeError, OSError):
-            stats["errors"] += 1
-            continue
-        except Exception as e:  # resolver failure — count, keep going
-            logger.warning("Failed to resolve %s: %s", f.name, e)
-            stats["errors"] += 1
-            continue
-
-        status, was_deduped, nc_sample = result
-        if status == "not_citation" and nc_sample and len(not_citation_samples) < 5:
-            not_citation_samples.append(_CTRL.sub(" ", nc_sample)[:80])
-        if _account_bib_status(stats, status, was_deduped):
-            # Real citation, unresolved online → human disposition.
-            data = json.loads(f.read_text(encoding="utf-8"))
-            review_queue.append(_queue_entry(f.name, data))
-            stats["queued"] += 1
+        _resolve_one_bib_file(
+            f,
+            grok_client,
+            config,
+            resolved_by_key,
+            stats,
+            not_citation_samples,
+            review_queue,
+        )
 
     if review_queue:
         try:
