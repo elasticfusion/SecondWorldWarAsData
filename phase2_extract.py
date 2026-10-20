@@ -133,6 +133,7 @@ def _apply_scope_guard(parsed_files, book, expected_count, content_root, logger)
 
     total = len(parsed_files)
 
+    recorded_expected = None
     if book:
         book_dir = content_root / book
         scoped = [p for p in parsed_files if p.is_relative_to(book_dir)]
@@ -150,10 +151,28 @@ def _apply_scope_guard(parsed_files, book, expected_count, content_root, logger)
         )
         parsed_files = scoped
 
+        # INDEPENDENT source-of-truth: the count Phase 1 recorded for this book (NOT a re-glob
+        # of what we just scoped). enforce_scope reconciles our ACTUAL work-set against it and
+        # fails loud on drift in EITHER direction. None (not recorded) → magic-50 fallback.
+        try:
+            from src.utils.run_scope import read_scope
+
+            output_root = content_root.parent  # output/content -> output
+            recorded_expected = read_scope(output_root, book)
+            if recorded_expected is not None:
+                logger.info(
+                    "Run-scope: recorded Phase-1 section_count=%d for book %r",
+                    recorded_expected,
+                    book,
+                )
+        except Exception as _e:  # noqa: BLE001 - never block on the read
+            logger.debug("run_scope read skipped for %r: %s", book, _e)
+
     try:
         enforce_scope(
             actual=len(parsed_files),
             expected=expected_count,
+            recorded_expected=recorded_expected,
             label="Phase 2 chapters",
             logger=logger,
         )

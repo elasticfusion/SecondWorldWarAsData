@@ -300,6 +300,18 @@ def main():
                 _process_document(doc, book_output, logger)
             parsed += 1
 
+        # Record the AUTHORITATIVE section count for this book = the number of parse artifacts
+        # Phase 1 actually PRODUCED. This is the independent source of truth the run-scope guard
+        # reconciles Phase 2's work-set against (Phase 1 reports its own output; Phase 2 does NOT
+        # re-glob to derive the expectation). See src/utils/run_scope.py.
+        try:
+            from src.utils.run_scope import record_scope
+
+            produced = sum(1 for _ in book_output.glob("*-parsed.json"))
+            record_scope(output_root, book_name, produced, phase="phase1")
+        except Exception as _e:  # noqa: BLE001 - recording must never crash the phase
+            logger.debug("run_scope record skipped for %s: %s", book_name, _e)
+
     logger.info("Phase 1 complete: %d chapters parsed", parsed)
     try:
         from src.utils.referential_integrity import run_for_phase as _ref_enforce
