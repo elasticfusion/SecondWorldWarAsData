@@ -67,6 +67,11 @@ def _safe_entity_filename(filename: str, entity_id: str) -> str:
         safe = re.sub(r"[^A-Za-z0-9 ._-]", "", fb).strip().strip(".").strip()
     if not safe:
         safe = "entity"
+    # Length cap: a too-long LLM-derived name raises OSError (ENAMETOOLONG) on write. Bound the
+    # stem well under the 255-byte filesystem limit (room left for ".json"); a truncated stem is
+    # fine — uniqueness lives in the ULID the callers append, not this display name.
+    if len(safe) > 150:
+        safe = safe[:150].strip().strip(".").strip() or "entity"
     return f"{safe}.json"
 
 

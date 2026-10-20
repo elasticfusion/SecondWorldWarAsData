@@ -1977,8 +1977,20 @@ def _create_new_equipment(
     equipment_data["extracted_date"] = datetime.now(timezone.utc).isoformat()
     equipment_data["_last_updated"] = datetime.now(timezone.utc).date().isoformat()
 
-    safe_name = common_name.replace(" ", "_").replace("/", "_")
-    eq_file = equipment_dir / f"{safe_name}_{equipment_id[:8]}.json"
+    # Path-traversal guard (common_name is LLM-derived): harden + contain (write does
+    # mkdir(parents=True)); fall back to the equipment ULID.
+    from src.extraction.batch_parallel import (
+        _safe_entity_filename,
+        _contained_entity_path,
+    )
+
+    safe_name = common_name.replace(" ", "_").replace("/", "_")[:120]
+    _eqname = _safe_entity_filename(
+        f"{safe_name}_{equipment_id[:8]}.json", f"equipment_{equipment_id[:12]}"
+    )
+    eq_file = _contained_entity_path(equipment_dir, _eqname)
+    if eq_file is None:
+        eq_file = equipment_dir / f"equipment_{equipment_id[:12]}.json"
 
     from src.utils.file_lock import write_json_with_lock
 
@@ -2676,8 +2688,19 @@ def _autocreate_minimal_equipment(
         }
         # Enrich the stub on identity (no Sub_eventID -> no date context).
         _enrich_on_identity(record, grok_client, verify_media_with_vision, None, None)
-        safe_name = name.replace(" ", "_").replace("/", "_")
-        eq_file = output_dir / f"{safe_name}_{equipment_id[:8]}.json"
+        # Path-traversal guard (name is LLM-derived): harden + contain; fall back to the ULID.
+        from src.extraction.batch_parallel import (
+            _safe_entity_filename,
+            _contained_entity_path,
+        )
+
+        safe_name = name.replace(" ", "_").replace("/", "_")[:120]
+        _eqname = _safe_entity_filename(
+            f"{safe_name}_{equipment_id[:8]}.json", f"equipment_{equipment_id[:12]}"
+        )
+        eq_file = _contained_entity_path(output_dir, _eqname)
+        if eq_file is None:
+            eq_file = output_dir / f"equipment_{equipment_id[:12]}.json"
         from src.utils.file_lock import write_json_with_lock
 
         write_json_with_lock(eq_file, record, entity="equipment")

@@ -237,13 +237,29 @@ def _find_or_create_date(
         .replace("autumn", "AU")
         .replace("winter", "WI")
     )
+    # Cap the human (LLM-derived) portion BEFORE appending the id so the id — which provides
+    # uniqueness — is NEVER truncated away (a too-long name would otherwise collide distinct entities).
+    safe_date = safe_date[:80]
     if time_start:
-        safe_time = time_start.replace(":", "")
+        safe_time = time_start.replace(":", "")[:20]
         filename = f"{safe_date}_{safe_time}_{date_id[:8]}.json"
     else:
         filename = f"{safe_date}_{date_id[:8]}.json"
 
-    date_file = dates_dir / filename
+    # Path-traversal guard: date_start/time_start are LLM-derived, so the cosmetic replaces above do
+    # NOT block "/", "..", backslash, NUL, etc. Route through the hardened sanitizer + symlink-resolved
+    # containment (write_json_with_lock does mkdir(parents=True), so an unsanitized name could escape
+    # dates_dir). Fall back to the deterministic ULID name if nothing safe/contained remains.
+    from src.extraction.batch_parallel import (
+        _safe_entity_filename,
+        _contained_entity_path,
+    )
+
+    filename = _safe_entity_filename(filename, f"date_{date_id[:12]}")
+    date_file = _contained_entity_path(dates_dir, filename)
+    if date_file is None:
+        filename = f"date_{date_id[:12]}.json"
+        date_file = dates_dir / filename
 
     # Initialize date file
     date_data = {
