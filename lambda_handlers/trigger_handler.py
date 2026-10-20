@@ -1365,12 +1365,13 @@ def _update_manifest(s3_keys):
             if isinstance(resp_err, dict):
                 code = resp_err.get("Error", {}).get("Code", "")
             if code not in ("PreconditionFailed", "ConditionalRequestConflict", ""):
+                # A non-retryable error (e.g. AccessDenied) — surface immediately, don't burn the
+                # retry budget on it.
                 logger.warning("Manifest conditional write failed (%s): %s", code, e)
+                raise
             if attempt == 7:
                 raise
-            import time as _t
-
-            _t.sleep(0.1 * (attempt + 1))
+            time.sleep(0.1 * (attempt + 1))
     logger.error("Manifest update exhausted retries for %d keys", len(s3_keys))
 
 
