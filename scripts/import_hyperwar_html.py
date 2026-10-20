@@ -201,9 +201,32 @@ def convert_html_to_markdown(soup: BeautifulSoup, source_url: str) -> str:
     def _is_image_path(u: str) -> bool:
         return u.lower().split("?")[0].split("#")[0].endswith(_IMG_EXTS)
 
+    def _alt_sanitize(s: str) -> str:
+        # Markdown alt text can't contain ']' or newlines; strip control chars too.
+        s = re.sub(r"[\x00-\x1f\x7f]", " ", s or "")
+        s = s.replace("]", ")").replace("[", "(")
+        return re.sub(r"\s+", " ", s).strip()
+
+    def _caption_for(img, chosen_url: str) -> str:
+        """The descriptive caption adjacent to the image (ibiblio puts it as the text of the
+        parent <p>/<center>/<td>/<div>, e.g. 'Map 4: German Counterattack on Carentan' or
+        'TROOPS ON UTAH BEACH UNDER ARTILLERY FIRE'). Prefer it over the filename stem.
+        """
+        parent = img.find_parent(["p", "center", "td", "div"])
+        if parent is not None:
+            cap = _alt_sanitize(parent.get_text(" ", strip=True))
+            # Reject degenerate/non-caption text (empty, just a number, or absurdly long).
+            if cap and not cap.isdigit() and 2 < len(cap) <= 300:
+                return cap
+        # fallback: filename stem (e.g. USA-E-XChannel-4) as a stable, non-empty label
+        from pathlib import PurePosixPath
+
+        stem = PurePosixPath(chosen_url.split("?")[0].split("#")[0]).stem
+        return _alt_sanitize(stem)
+
     for img in body.find_all("img"):
         src = img.get("src", "")
-        alt = img.get("alt", "") or ""
+        alt = _alt_sanitize(img.get("alt", "") or "")
         if not src:
             continue
         chosen = src
@@ -215,15 +238,9 @@ def convert_html_to_markdown(soup: BeautifulSoup, source_url: str) -> str:
         full = _safe_url(urljoin(source_url, chosen))
         if not full:
             continue
-        if not alt.strip():
-            # filename stem (e.g. USA-E-XChannel-4) as a stable, non-empty label.
-            # Sanitize: strip control chars + collapse whitespace so a crafted URL path
-            # segment can't inject NUL/newline/tab into the alt text / emitted markdown.
-            from pathlib import PurePosixPath
-
-            stem = PurePosixPath(full.split("?")[0].split("#")[0]).stem
-            alt = re.sub(r"[\x00-\x1f\x7f]", "", stem)
-            alt = re.sub(r"\s+", " ", alt).strip()
+        if not alt:
+            # Prefer the adjacent CAPTION (real descriptive title) over the filename stem.
+            alt = _caption_for(img, full)
         img.replace_with(f"![{alt}]({full})")
 
     # Ensure paragraph breaks inside blockquotes survive html2text conversion.

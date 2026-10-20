@@ -75,7 +75,10 @@ def test_download_writes_under_given_storage_dir(tmp_path, monkeypatch):
     storage = tmp_path / "output" / "images" / "files"
     path, ext = _download_image("https://ex.org/a.jpg", "01IMGID", storage)
     assert ext == "jpg"
-    assert path and (storage / "01IMGID.jpg").exists()
+    assert (storage / "01IMGID.jpg").exists()  # bytes written
+    # local_copy is RELATIVE (portable), not an absolute /.../ path, and rooted at output/
+    assert path == "images/files/01IMGID.jpg"
+    assert not path.startswith("/")
 
 
 def test_rejects_non_image_body_masquerade(monkeypatch):
