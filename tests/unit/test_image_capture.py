@@ -84,3 +84,40 @@ def test_importer_prefers_fullres_href_over_thumbnail_src():
     assert any(u.endswith("/img/USA-E-XChannel-62.jpg") for u in urls)
     assert not any("m.jpg" in u and "/maps/" in u for u in urls)
     assert not any("/icn/" in u for u in urls)
+
+
+def test_joplin_combined_resource_not_double_counted():
+    """A Joplin combined shape [![alt](:/res)](https://url) must yield ONE combined row, not
+    also a spurious embedded row (the embedded capture stops at the first ')')."""
+    md = "[![cap](:/res123)](https://link.org/full.jpg)"
+    imgs = extract_images(md)
+    assert len(imgs) == 1  # ONE combined row, no spurious embedded duplicate
+    assert imgs[0][0] == "combined"
+    assert imgs[0][2] == "cap"
+
+
+def test_importer_alt_stem_strips_control_chars():
+    """Filename-stem alt derivation must strip control chars (no NUL/newline injection)."""
+    import importlib.util
+    import sys
+
+    import pytest
+
+    BeautifulSoup = pytest.importorskip("bs4").BeautifulSoup
+    spec = importlib.util.spec_from_file_location(
+        "imp_img2", "scripts/import_hyperwar_html.py"
+    )
+    imp = importlib.util.module_from_spec(spec)
+    sys.modules["imp_img2"] = imp
+    try:
+        spec.loader.exec_module(imp)
+    except SystemExit:
+        pass
+    # relative image with no alt -> stem-derived alt; ensure no control chars leak
+    url = "https://ex.org/USA-E-XChannel/USA-E-XChannel-9.html"
+    html = '<html><body><img src="img/USA-E-XChannel-4.jpg"></body></html>'
+    md = imp.convert_html_to_markdown(BeautifulSoup(html, "html.parser"), url)
+    imgs = extract_images(md)
+    assert imgs, "image should be captured"
+    alt = imgs[0][2]
+    assert "\x00" not in alt and "\n" not in alt and "\t" not in alt

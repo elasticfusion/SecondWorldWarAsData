@@ -105,6 +105,11 @@ def extract_images(text: str) -> List[Tuple[str, str, str, str]]:
     )  # dedupe on image IDENTITY (resource_id/url), NOT alt_text: source
     # images frequently share an empty/identical alt, which previously collapsed many
     # distinct images into one.
+    # Defensive bound: the branches below are lazy-regex scans over UNTRUSTED imported
+    # markdown; cap the scanned length so a pathological page can't pin CPU (quadratic
+    # worst case). A few hundred KB is far above any real chapter's markdown.
+    if text and len(text) > 500_000:
+        text = text[:500_000]
 
     # Combined format: [![alt](:/resource-id)](https://url)
     # This is a clickable image with both Joplin resource and external URL
@@ -118,8 +123,10 @@ def extract_images(text: str) -> List[Tuple[str, str, str, str]]:
             seen.add(key)
 
     # Embedded images only: ![alt](:/resource-id) - standalone Joplin resource
-    # Use negative lookahead to exclude those followed by ](url)
-    for match in re.finditer(r"!\[(.*?)\]\(:(.*?)\)(?!\]\()", text):
+    # Use negative lookahead to exclude those followed by ](url). The resource capture is
+    # `[^)]*?` (not `.*?`) so a Joplin COMBINED shape `[![a](:/r)](url)` is NOT re-matched
+    # here as a spurious embedded row (the capture stops at the first ')').
+    for match in re.finditer(r"!\[(.*?)\]\(:([^)]*?)\)(?!\]\()", text):
         alt_text = match.group(1)
         resource_id = match.group(2)
         key = f"embedded:{resource_id}"

@@ -216,10 +216,14 @@ def convert_html_to_markdown(soup: BeautifulSoup, source_url: str) -> str:
         if not full:
             continue
         if not alt.strip():
-            # filename stem (e.g. USA-E-XChannel-4) as a stable, non-empty label
+            # filename stem (e.g. USA-E-XChannel-4) as a stable, non-empty label.
+            # Sanitize: strip control chars + collapse whitespace so a crafted URL path
+            # segment can't inject NUL/newline/tab into the alt text / emitted markdown.
             from pathlib import PurePosixPath
 
-            alt = PurePosixPath(full.split("?")[0].split("#")[0]).stem
+            stem = PurePosixPath(full.split("?")[0].split("#")[0]).stem
+            alt = re.sub(r"[\x00-\x1f\x7f]", "", stem)
+            alt = re.sub(r"\s+", " ", alt).strip()
         img.replace_with(f"![{alt}]({full})")
 
     # Ensure paragraph breaks inside blockquotes survive html2text conversion.
