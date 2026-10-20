@@ -214,16 +214,25 @@ def convert_html_to_markdown(soup: BeautifulSoup, source_url: str) -> str:
         """
         parent = img.find_parent(["p", "center", "td", "div"])
         if parent is not None:
-            cap = _alt_sanitize(parent.get_text(" ", strip=True))
-            # Reject degenerate/non-caption text (empty, just a number, or absurdly long).
-            if cap and not cap.isdigit() and 2 < len(cap) <= 300:
-                return cap
+            # ibiblio places each image in its OWN <center>/<p> block with the caption as the
+            # block text (<a><img></a><br> CAPTION), so whole-block text is the caption.
+            # Guard: if a block ever holds >1 image, whole-block text would merge captions —
+            # skip the caption in that case and fall back to the stem rather than mis-label.
+            if len(parent.find_all("img")) <= 1:
+                cap = _alt_sanitize(parent.get_text(" ", strip=True))
+                # Reject degenerate text (empty, just a number, or absurdly long).
+                if cap and not cap.isdigit() and 2 < len(cap) <= 300:
+                    return cap
         # fallback: filename stem (e.g. USA-E-XChannel-4) as a stable, non-empty label
         from pathlib import PurePosixPath
 
         stem = PurePosixPath(chosen_url.split("?")[0].split("#")[0]).stem
         return _alt_sanitize(stem)
 
+    # Two passes: compute every image's url+caption on the PRISTINE tree first, THEN replace.
+    # (replace_with mutates the tree; doing it inline corrupts later images' sibling/caption
+    # walks and find_parent lookups.)
+    _img_plan = []  # (img_tag, markdown_str)
     for img in body.find_all("img"):
         src = img.get("src", "")
         alt = _alt_sanitize(img.get("alt", "") or "")
@@ -241,7 +250,9 @@ def convert_html_to_markdown(soup: BeautifulSoup, source_url: str) -> str:
         if not alt:
             # Prefer the adjacent CAPTION (real descriptive title) over the filename stem.
             alt = _caption_for(img, full)
-        img.replace_with(f"![{alt}]({full})")
+        _img_plan.append((img, f"![{alt}]({full})"))
+    for img, md_str in _img_plan:
+        img.replace_with(md_str)
 
     # Ensure paragraph breaks inside blockquotes survive html2text conversion.
     # HyperWar HTML uses <blockquote> with <p>/<center> children that html2text

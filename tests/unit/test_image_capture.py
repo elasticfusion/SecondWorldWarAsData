@@ -154,3 +154,38 @@ def test_importer_captures_adjacent_caption_as_alt():
     alts = {u.split("/")[-1]: alt for _t, u, alt, _e in extract_images(md)}
     assert alts["USA-E-XChannel-4.jpg"] == "Map 4: German Counterattack on Carentan"
     assert alts["USA-E-XChannel-62.jpg"] == "TROOPS ON UTAH BEACH UNDER ARTILLERY FIRE"
+
+
+def test_caption_not_cross_assigned_in_shared_parent_block():
+    """Two images in ONE parent block must each get their OWN caption, not the merged text."""
+    import importlib.util
+    import sys
+
+    import pytest
+
+    BeautifulSoup = pytest.importorskip("bs4").BeautifulSoup
+    spec = importlib.util.spec_from_file_location(
+        "imp_x2", "scripts/import_hyperwar_html.py"
+    )
+    imp = importlib.util.module_from_spec(spec)
+    sys.modules["imp_x2"] = imp
+    try:
+        spec.loader.exec_module(imp)
+    except SystemExit:
+        pass
+    url = "https://ex.org/USA-E-XChannel/USA-E-XChannel-9.html"
+    html = (
+        "<html><body><td>"
+        '<a href="img/USA-E-XChannel-66.jpg"><img src="icn/USA-E-XChannel-66.jpg"></a>'
+        " CARENTAN CAUSEWAY "
+        '<a href="img/USA-E-XChannel-67.jpg"><img src="icn/USA-E-XChannel-67.jpg"></a>'
+        " CARENTAN AND HILL 30 AREA"
+        "</td></body></html>"
+    )
+    md = imp.convert_html_to_markdown(BeautifulSoup(html, "html.parser"), url)
+    alts = {u.split("/")[-1]: alt for _t, u, alt, _e in extract_images(md)}
+    # Defensive: a block with >1 image falls back to the filename stem rather than merging
+    # both captions onto each image (no cross-assignment). Real ibiblio uses one image per
+    # <center> block, so this guard rarely fires — but it must never mis-label.
+    assert alts["USA-E-XChannel-66.jpg"] == "USA-E-XChannel-66"
+    assert alts["USA-E-XChannel-67.jpg"] == "USA-E-XChannel-67"
