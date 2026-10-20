@@ -53,7 +53,7 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
   filenames from LLM values via ad-hoc `.replace()`; `write_json_with_lock` mkdir(parents=True) on any
   path. FIX: route all through `batch_parallel._safe_entity_filename`+`_contained_entity_path` (#450/#457).
 
-- **[HIGH · trigger Lambda] key-derived book bypasses `_SAFE_TITLE_RE`** (_seed_docs/_reconcile_pending/
+- **[DONE · PR #482] [HIGH · trigger Lambda] key-derived book bypasses `_SAFE_TITLE_RE`** (_seed_docs/_reconcile_pending/
   _queue_pending write unvalidated book to DynamoDB/S3 keys); **no SNS ARN/signature trust** (trust from
   topic-name suffix only); **manual `expected_count` is an unauthenticated scope-bypass**; **prompt-
   injection via uploaded file head flips the dedup decision**; **`_update_manifest` lost-update race**
