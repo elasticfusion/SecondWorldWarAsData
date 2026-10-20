@@ -15,15 +15,20 @@ are ordered: (1) **Phase 2 — open**, (2) Phase 3 / enrichment — open, (3) ar
 Audit of ALL Phase-2 code (8 concurrent code+security sub-agents, synthesized to 5 root patterns).
 bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
 
-- **[NEW · GATE BUG found 2026-10-20] radon D+ hard-fail is a silent no-op.** `scripts/gate.sh`
-  run_radon greps `' - [D-F] '` (trailing space) but `radon cc --min C` (no --show-complexity)
-  emits `- D` with NO trailing space -> the grep NEVER matches -> neither the D+ hard-fail NOR the
-  C+ 'surface for review' ever fires. The radon step always reports ✓. Fix: add --show-complexity
-  to the radon call (or grep `' - [D-F]( |$)'`). WARNING: enabling it will immediately HARD-FAIL on
-  ~15 pre-existing D/E/F blocks (incl. F(42) bibliography_resolver._search_online_sources, E(33)
-  supplemental.extract_supplemental, D grok_client.extract_json / url_hygiene.clean_url /
-  trigger_handler.handler / merge.merge_generic). Needs a grandfather-list or a refactor campaign —
-  scope decision for the user. (~130 C blocks also exist, non-blocking by policy.)
+- **[DONE · PR #477 + #480] radon gate was a silent no-op + complexity debt cleared.** `scripts/gate.sh`
+  run_radon grepped `' - [D-F] '` (trailing space) but `radon cc --min C` emits `- D` (no trailing
+  space) → NEITHER the D+ hard-fail NOR the C+ surfacing ever fired. FIXED: add `--show-complexity`.
+  Then cleared the debt it had been hiding — **ALL 15 D+ blocks simplified below D** (#477: incl.
+  F(42) bibliography_resolver._search_online_sources, E(33) supplemental.extract_supplemental, and
+  D grok_client.extract_json / url_hygiene.clean_url / trigger_handler.handler+_run_task /
+  merge.merge_generic / bibliography.reconcile_bibliography_dir / …) and **all 27 high-C(16-20)
+  evaluated** (#480: 24 simplified below C16; 3 kept INHERENT — group_resolver.resolve_group_id,
+  url_fetch._do_fetch, places_grok_geocode._toponym_from_prose — documented in-code). Gate now
+  surfaces C PROMINENTLY (D+ listed+hard-fail; high-C listed w/count; C11-15 count-only) and has an
+  INHERENT **resurface mechanism** (`scripts/radon_inherent.py` AST-body-hash + `scripts/.radon_inherent`):
+  a listed INHERENT block is suppressed ONLY while unchanged; a logic edit changes its hash → it
+  resurfaces for re-eval. Standing policy: **C is non-blocking** (surfaced, not hard-fail); ~130 C11-15
+  blocks remain surfaced by design. Behavior-preserving refactors; 2399 tests green.
 
 - **[DONE · PR #475] [CRITICAL · PATTERN 1 — batch 0-persist] In-task `submit_batch` maps results by
   xAI SERVER id, not our cache key.** ✅ FIXED (positional mapping via retrieve_results_ordered +
@@ -459,6 +464,19 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
 ---
 
 ## 7. COMPLETED
+
+### Radon complexity + dependency hardening (2026-10-20)
+- **~~radon gate silent no-op + complexity debt~~ ✅ #477 + #480** — fixed BOTH no-op greps
+  (`--show-complexity`); simplified all **15 D+** blocks below D (#477) and evaluated all **27
+  high-C(16-20)** (#480: 24 simplified <C16; 3 INHERENT documented). Prominent C surfacing + the
+  INHERENT content-hash **resurface mechanism** (`scripts/radon_inherent.py` + `.radon_inherent`:
+  suppress-unless-modified). C stays non-blocking. Behavior-preserving; 2399 tests. Also fixed an
+  orphaned `ctype` NameError surfaced in `_search_nara` during the refactor.
+- **~~pillow CVEs~~ ✅ #478** — bump pillow 12.3.0→13.0.0 (8 CVEs); usage is stable core API only.
+- **~~certifi CVE + urllib3 undeclared + audit gap~~ ✅ #479** — pin certifi==2026.10.19 (fixes
+  PYSEC-2026-4320), declare urllib3==2.8.0 (imported directly in http_pool.py), add a FULL-ENV
+  pip-audit (catches vulnerable transitive deps the `-r` audits missed), and document the one
+  accepted ignore (PYSEC-2026-2447 diskcache pickle RCE — no fix exists, low exposure, remove-on-fix).
 
 ### Clean-XChannel-E2E data-quality fixes (2026-10-19 / 2026-10-20)
 - **~~CRITICAL optional-entity-zero~~ ✅ #461** — `_call_and_parse_*` swallowed `BatchModeCollecting`
