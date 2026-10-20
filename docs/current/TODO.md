@@ -59,9 +59,15 @@ are ordered: (1) **Phase 2 — open**, (2) Phase 3 / enrichment — open, (3) ar
   CloudWatch Insights query reconstructs a single document's full journey (Phase 0 → 1 → each Phase-2
   extractor → dedup → each Phase-3 enricher). Build incrementally.
 
-- **[INFRA] CloudWatch log retention too short.** The XChannel run's OBSERV lines (incl.
-  `phase2.summary`, `optional.persisted`) aged out overnight, forcing data-level forensics. Raise
-  `/ecs/dev-wwii-pipeline` retention so a run is diagnosable the next morning.
+- **[INFRA · CORRECTED 2026-10-20] CloudWatch retention is fine (14 days); the real gap is offline
+  replay.** `/ecs/dev-wwii-pipeline` (all phase OBSERV) = 14-day retention — ample. The earlier
+  "OBSERV aged out overnight" note was WRONG: it was a flaky stream-list query, not expiry; the
+  lines were retained. The genuine diagnosability gap is that the Grok **api-cache is not synced to
+  S3** (see §1.3), so batch RESPONSES can't be replayed offline after a run — that, not log
+  retention, forced the code-level repro. INVERSE issue for the cost pass: ~12 Lambda log groups
+  (incl. phase2-extract ~11MB, s3-validation-backstop ~14MB) have NEVER-EXPIRE retention
+  (unbounded growth) + containerinsights perf = 1 day — set sane retention in the §4 CloudWatch
+  reduction pass.
 
 - **[OBSERVABILITY] Sync the Grok api-cache to S3 (or at least optional-batch responses).** Only
   `output/dedup/manifests` sync to S3, so after a run the cached batch responses are gone and
