@@ -4,6 +4,11 @@ pyyaml==6.0.3
 python-frontmatter==1.1.0
 markdown==3.10.2
 requests==2.33.1
+# certifi + urllib3 are transitive via requests/boto3 but PINNED EXPLICITLY: certifi is the CA
+# trust bundle (pin the CVE-fixed build + keep the install reproducible), and urllib3 is imported
+# DIRECTLY by src/utils/http_pool.py (urllib3.util.retry.Retry) so it must be a declared dependency.
+certifi==2026.10.19
+urllib3==2.8.0
 tenacity==9.1.4
 diskcache==5.6.3
 python-dotenv==1.2.2
