@@ -1498,6 +1498,7 @@ def _search_nara(
         results = payload.get("body", {}).get("hits", {}).get("hits", [])
         total = payload.get("body", {}).get("hits", {}).get("total", {})
         total_val = total.get("value") if isinstance(total, dict) else total
+        ctype = (resp.headers.get("Content-Type") or "").split(";")[0]
         logger.info(
             "OBSERV nara.query status=200 content_type=%s hits=%s returned=%d q=%r",
             ctype,

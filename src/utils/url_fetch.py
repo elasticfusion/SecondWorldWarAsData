@@ -182,6 +182,10 @@ def fetch(url: str, timeout: int = _DEFAULT_TIMEOUT) -> FetchResult:
 
 
 def _do_fetch(clean: str, timeout: int) -> FetchResult:
+    # RADON-INHERENT (C18): an irreducible outcome-classification state machine — live-ok / block /
+    # gone / rate-limited / transient, each crossed with archive-hit/miss, producing a distinct
+    # FetchResult + registry side-effect. The branches must stay co-located to reason about the
+    # live->wayback->dead fallthrough ordering; extracting them would scatter one cohesive decision.
     from src.enrichment import wayback
 
     session = _session()

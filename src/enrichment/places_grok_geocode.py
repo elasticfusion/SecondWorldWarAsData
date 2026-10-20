@@ -357,6 +357,10 @@ def _toponym_from_prose(text: str, corroborate: Optional[str] = None) -> Optiona
     file stem) matches it. Returns None when nothing qualifies (record stays ungeocoded + flagged,
     rather than geocoded off prose).
     """
+    # RADON-INHERENT (C16): a single stateful scanner — the while-loop maintains run state
+    # (sentence-initial tracking, run extension, boundary close) + a final corroboration guard, all
+    # sharing mutable locals. Pulling the scan into a helper would pass that state bundle back and
+    # forth and obscure the algorithm; the _norm/_is_cap/_ends_sentence closures are already split.
     t = (text or "").strip()
     if not t or len(t) > 200:
         return None

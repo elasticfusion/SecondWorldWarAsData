@@ -67,10 +67,37 @@ run_radon() {
     echo "$dworse" | sed 's/^/        /'
     fail=1
   fi
-  # High-C (16-20): list in full — the band to EVALUATE (simplify vs inherently-complex).
+  # High-C (16-20): the band to EVALUATE. Split into INHERENT-suppressed (accepted debt, body
+  # unchanged per scripts/.radon_inherent) vs the rest. A modified INHERENT block's body hash no
+  # longer matches -> it falls out of 'suppressed' and RESURFACES here (steer-343779fe).
   if [ -n "$highc" ]; then
-    echo "  ⚠ radon: ${n_hi} high-C block(s) C16-20 to EVALUATE (non-blocking):"
-    echo "$highc" | sed 's/^/        /'
+    local cur_file hi_show hi_suppressed n_show n_supp sym key
+    cur_file=""
+    hi_show=""
+    n_supp=0
+    # Re-walk the full radon output so we can track each block's FILE header (radon prints the
+    # file once above its blocks; the block lines carry only the symbol).
+    while IFS= read -r line; do
+      case "$line" in
+        [A-Za-z]*) cur_file="$line" ;;  # a file header (no leading space)
+        *" - C ("1[6-9]*|*" - C (20)"*)
+          sym="$(echo "$line" | sed -E 's/^\s*[A-Z] +[0-9]+:[0-9]+ +([A-Za-z_][A-Za-z0-9_.]*) +- C \([0-9]+\)/\1/')"
+          if python scripts/radon_inherent.py suppressed "$cur_file" "$sym" 2>/dev/null; then
+            n_supp=$((n_supp + 1))
+          else
+            hi_show="${hi_show}${line}"$'\n'
+          fi
+          ;;
+      esac
+    done <<< "$out"
+    n_show=$(printf '%s' "$hi_show" | grep -cE ' - C \(' || true)
+    if [ "$n_show" -gt 0 ]; then
+      echo "  ⚠ radon: ${n_show} high-C block(s) C16-20 to EVALUATE (non-blocking):"
+      printf '%s' "$hi_show" | sed 's/^/        /'
+    fi
+    if [ "$n_supp" -gt 0 ]; then
+      echo "  · radon: ${n_supp} INHERENT high-C block(s) suppressed (unchanged; see scripts/.radon_inherent)"
+    fi
   fi
   # C11-15: count only (ordinary moderate complexity, surfaced not listed).
   if [ -n "$midc" ]; then
