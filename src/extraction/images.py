@@ -173,10 +173,25 @@ def _find_linked_date(
     return None, None
 
 
+def _relativize(filepath: Path) -> str:
+    """Return ``filepath`` relative to its ``output/`` ancestor (e.g. 'images/files/X.jpg'),
+    so stored local_copy paths are portable, never absolute '/app/...'. Falls back to the
+    last 3 path components if there is no 'output' ancestor."""
+    parts = filepath.parts
+    if "output" in parts:
+        i = len(parts) - 1 - parts[::-1].index("output")
+        return str(Path(*parts[i + 1 :]))
+    return str(Path(*parts[-3:])) if len(parts) >= 3 else filepath.name
+
+
 def _download_image(
     url: str, image_id: str, storage_dir: Path
 ) -> Tuple[Optional[str], Optional[str]]:
-    """Download image (SSRF-safe). Returns (local_path, file_format) or (None, None)."""
+    """Download image (SSRF-safe). Returns (relative_local_path, file_format) or (None, None).
+
+    local_copy is stored RELATIVE (to the ``output/`` root, e.g. ``images/files/<id>.jpg``) so
+    records are portable across containers/hosts (never an absolute ``/app/...`` path).
+    """
     body, ext = fetch_image_bytes(url)
     if body is None:
         return None, None
@@ -184,7 +199,7 @@ def _download_image(
         storage_dir.mkdir(parents=True, exist_ok=True)
         filepath = storage_dir / f"{image_id}.{ext}"
         filepath.write_bytes(body)
-        return str(filepath), ext
+        return _relativize(filepath), ext
     except Exception as exc:  # noqa: BLE001 - write failure must be non-fatal
         logger.debug("Failed to save %s: %s", url, exc)
         return None, None
@@ -300,7 +315,9 @@ def _process_single_image(
     # local bytes to look at. Captioner never raises / never fabricates.
     if captioner is not None and local_copy:
         try:
-            image_bytes = Path(local_copy).read_bytes()
+            # local_copy is RELATIVE (stored portably); read the bytes from the actual
+            # storage_dir (which _download_image wrote to) rather than the relative string.
+            image_bytes = (storage_dir / Path(local_copy).name).read_bytes()
         except OSError:
             image_bytes = None
         caption = captioner.caption(
