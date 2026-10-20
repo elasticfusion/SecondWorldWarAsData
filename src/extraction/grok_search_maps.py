@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 
-import requests
 import ulid
 import yaml
 
@@ -77,41 +76,15 @@ def search_maps_with_grok(
 
 
 def download_image(image_url: str, timeout: int = 30) -> Optional[bytes]:
-    """Download image from URL."""
-    import requests
+    """Download image from URL (SSRF-safe). image_url comes from LLM/search output, so this
+    routes through images.fetch_image_bytes: clean_url + resolved-host (DNS-rebinding) check +
+    allow_redirects=False + byte cap + image content-type/magic-byte verification."""
+    from src.extraction.images import fetch_image_bytes
 
-    try:
-        # Use appropriate User-Agent based on domain
-        if any(
-            domain in image_url
-            for domain in ["wikimedia.org", "wikipedia.org", "grokipedia.com"]
-        ):
-            # Sites requiring bot identification
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-            }
-        else:
-            # Standard modern browser User-Agent for other sites
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            }
-
-        response = requests.get(
-            image_url, timeout=timeout, headers=headers, allow_redirects=True
-        )
-
-        if response.status_code != 200:
-            return None
-
-        content_type = response.headers.get("content-type", "")
-        if not content_type.startswith("image/"):
-            return None
-
-        return response.content
-
-    except Exception as e:
-        logger.debug(f"Failed to download {image_url}: {e}")
-        return None
+    data, _ext = fetch_image_bytes(image_url)
+    if not data:
+        logger.debug("Failed to download (blocked/non-image): %s", image_url)
+    return data
 
 
 def verify_map_with_vision(

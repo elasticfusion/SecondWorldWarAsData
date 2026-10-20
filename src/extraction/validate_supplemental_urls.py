@@ -19,7 +19,12 @@ def validate_url(url: str, timeout: float = 10.0) -> tuple[str, Optional[str]]:
         status: "validated", "broken", "timeout", "invalid"
     """
     try:
-        response = requests.get(url, timeout=timeout, allow_redirects=True)
+        from src.utils.url_hygiene import safe_get
+
+        response = safe_get(url, timeout=timeout)
+        if response is None:
+            # Blocked by SSRF guard (bad scheme/host, resolves non-public) or fetch failed.
+            return ("invalid", "blocked or unreachable")
         if response.status_code == 200:
             return ("validated", None)
         return ("broken", f"HTTP {response.status_code}")

@@ -60,33 +60,31 @@ class TestExtractEntityType:
 
 
 class TestValidateUrl:
-    @patch("src.extraction.validate_supplemental_urls.requests.get")
+    @patch("src.utils.url_hygiene.safe_get")
     def test_valid_url(self, mock_get):
         mock_get.return_value = Mock(status_code=200)
         status, error = validate_url("http://example.com")
         assert status == "validated"
         assert error is None
 
-    @patch("src.extraction.validate_supplemental_urls.requests.get")
+    @patch("src.utils.url_hygiene.safe_get")
     def test_broken_url(self, mock_get):
         mock_get.return_value = Mock(status_code=404)
         status, error = validate_url("http://example.com/missing")
         assert status == "broken"
         assert "404" in error
 
-    @patch("src.extraction.validate_supplemental_urls.requests.get")
+    @patch("src.utils.url_hygiene.safe_get")
     def test_timeout(self, mock_get):
-        import requests
-
-        mock_get.side_effect = requests.Timeout()
+        # safe_get swallows network errors (incl. timeout) and returns None (fail-closed);
+        # validate_url maps an unreachable/blocked URL to "invalid".
+        mock_get.return_value = None
         status, error = validate_url("http://slow.example.com")
-        assert status == "timeout"
+        assert status == "invalid"
 
-    @patch("src.extraction.validate_supplemental_urls.requests.get")
+    @patch("src.utils.url_hygiene.safe_get")
     def test_connection_error(self, mock_get):
-        import requests
-
-        mock_get.side_effect = requests.ConnectionError("refused")
+        mock_get.return_value = None
         status, error = validate_url("http://down.example.com")
         assert status == "invalid"
 

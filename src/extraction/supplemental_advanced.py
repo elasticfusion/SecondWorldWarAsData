@@ -228,7 +228,13 @@ def verify_archive_url(url: str, timeout: int = 10) -> Dict[str, Any]:
     }
 
     try:
-        response = requests.get(url, allow_redirects=True, timeout=timeout)
+        from src.utils.url_hygiene import safe_get
+
+        response = safe_get(url, timeout=timeout)
+        if response is None:
+            result["verification_notes"] = "blocked or unreachable"
+            logger.debug("Archive URL blocked/unreachable: %s", url)
+            return result
         response.raise_for_status()
 
         result["verified"] = True

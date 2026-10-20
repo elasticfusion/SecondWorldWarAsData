@@ -17,8 +17,6 @@ from typing import Dict, List, Optional
 
 import requests
 
-from src.utils.http_pool import get_session
-
 logger = logging.getLogger(__name__)
 
 CACHE_DIR = Path("cache/endnote_pages")
@@ -84,10 +82,15 @@ def _fetch_page(url: str) -> Optional[str]:
         return cache_file.read_text(encoding="utf-8")
 
     try:
-        session = get_session()
-        resp = session.get(url, timeout=30)
-        resp.raise_for_status()
-        html = resp.text
+        from src.utils.url_hygiene import fetch_text_safe
+
+        html, status = fetch_text_safe(url, timeout=30)
+        if html is None:
+            if status not in (None, 200):
+                logger.warning("Failed to fetch %s: HTTP %s", url, status)
+            else:
+                logger.warning("Failed to fetch %s: blocked or unreachable", url)
+            return None
         cache_file.write_text(html, encoding="utf-8")
         return html
     except requests.RequestException as exc:

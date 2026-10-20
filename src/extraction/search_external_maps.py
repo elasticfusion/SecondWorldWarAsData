@@ -11,7 +11,6 @@ import json
 import logging
 from pathlib import Path
 from typing import Optional, Dict, Any, List
-import requests
 import re
 
 from src.grok_client import GrokClient
@@ -92,15 +91,16 @@ def _validate_image_url(url: Optional[str]) -> bool:
         return False
 
     try:
-        headers = {"User-Agent": USER_AGENT}
+        from src.utils.url_hygiene import safe_get
 
-        # Try GET with range to check content
-        response = requests.get(
+        # SSRF-safe GET (untrusted map image URL). safe_get caps the body; pass Range as a hint.
+        response = safe_get(
             url,
             timeout=IMAGE_VALIDATION_TIMEOUT,
-            allow_redirects=True,
-            headers={**headers, "Range": "bytes=0-1023"},
+            headers={"User-Agent": USER_AGENT, "Range": "bytes=0-1023"},
         )
+        if response is None:
+            return False
 
         # Check status
         if response.status_code not in (200, 206):
@@ -134,10 +134,11 @@ def _extract_loc_image_url(catalog_url: str) -> Optional[str]:
         return None
 
     try:
-        headers = {"User-Agent": USER_AGENT}
-        response = requests.get(
-            catalog_url, timeout=10, headers=headers, allow_redirects=True
-        )
+        from src.utils.url_hygiene import safe_get
+
+        response = safe_get(catalog_url, timeout=10, headers={"User-Agent": USER_AGENT})
+        if response is None:
+            return None
 
         if response.status_code != 200:
             return None
@@ -313,16 +314,16 @@ def _extract_map_images(
 def _download_page(map_url: str, page_timeout: int) -> Optional[str]:
     """Download page content. Returns HTML or None if failed."""
     try:
-        headers = {"User-Agent": USER_AGENT}
-        response = requests.get(
-            map_url, timeout=page_timeout, headers=headers, allow_redirects=True
+        from src.utils.url_hygiene import fetch_text_safe
+
+        text, status = fetch_text_safe(
+            map_url, timeout=page_timeout, headers={"User-Agent": USER_AGENT}
         )
-
-        if response.status_code != 200:
-            logger.info(f"   ⚠ URL returned {response.status_code}")
+        if text is None:
+            if status not in (None, 200):
+                logger.info(f"   ⚠ URL returned {status}")
             return None
-
-        return response.text
+        return text
     except Exception as e:
         logger.warning(f"   ⚠ Page download failed: {e}")
         return None
