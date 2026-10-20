@@ -17,6 +17,82 @@ logger = logging.getLogger(__name__)
 
 _DOWNLOAD_TIMEOUT = 30
 _USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+_MAX_IMAGE_BYTES = 25 * 1024 * 1024  # 25MB cap per image
+
+
+def fetch_image_bytes(url: str) -> Tuple[Optional[bytes], Optional[str]]:
+    """SSRF-safe fetch of an image URL. Returns (bytes, ext) or (None, None).
+
+    Image URLs originate from UNTRUSTED source HTML (ibiblio), so this must NOT be a bare
+    requests.get: (1) clean_url enforces http(s) + rejects loopback/private/link-local/cloud-
+    metadata hosts; (2) resolved_host_is_safe re-checks every RESOLVED IP (DNS-rebinding);
+    (3) allow_redirects=False — a redirect can send a clean host to an internal address
+    (169.254.169.254), so redirects are refused rather than blindly followed; (4) the body is
+    byte-capped and must be image/* content.
+    """
+    from src.utils.url_hygiene import clean_url, resolved_host_is_safe
+
+    cleaned = clean_url(url)
+    if not cleaned:
+        logger.debug("image fetch blocked (scheme/host): %s", url)
+        return None, None
+    from urllib.parse import urlparse
+
+    host = (urlparse(cleaned).hostname or "").lower()
+    if resolved_host_is_safe(host) is None:
+        logger.warning("image fetch blocked (host resolves non-public): %s", host)
+        return None, None
+    try:
+        resp = requests.get(
+            cleaned,
+            timeout=_DOWNLOAD_TIMEOUT,
+            headers={"User-Agent": _USER_AGENT},
+            allow_redirects=False,  # redirects reopen SSRF
+            stream=True,
+        )
+        if resp.status_code != 200:
+            return None, None
+        content_type = resp.headers.get("content-type", "").lower()
+        body = b""
+        for chunk in resp.iter_content(8192):
+            body += chunk
+            if len(body) > _MAX_IMAGE_BYTES:
+                logger.warning(
+                    "image exceeded %d bytes, skipping: %s", _MAX_IMAGE_BYTES, cleaned
+                )
+                return None, None
+        if "image" not in content_type and len(body) < 1000:
+            return None, None
+        # Must be an image: trust an image/* content-type, else require a known image
+        # magic-byte signature — blocks a non-image body (HTML error page, PDF, zip) from
+        # being saved under an image extension.
+        _MAGIC = (
+            b"\xff\xd8\xff",  # jpeg
+            b"\x89PNG\r\n\x1a\n",  # png
+            b"GIF87a",
+            b"GIF89a",  # gif
+            b"II*\x00",
+            b"MM\x00*",  # tiff
+            b"RIFF",  # webp (RIFF....WEBP)
+        )
+        if not content_type.startswith("image/") and not any(
+            body.startswith(sig) for sig in _MAGIC
+        ):
+            logger.debug(
+                "rejected non-image content (ct=%s): %s", content_type, cleaned
+            )
+            return None, None
+        ext = "jpg"
+        if "png" in content_type or cleaned.lower().endswith(".png"):
+            ext = "png"
+        elif "tif" in content_type or cleaned.lower().endswith((".tif", ".tiff")):
+            ext = "tif"
+        elif "gif" in content_type or cleaned.lower().endswith(".gif"):
+            ext = "gif"
+        return body, ext
+    except Exception as exc:  # noqa: BLE001 - fetch failure must be non-fatal
+        logger.debug("Failed to download %s: %s", cleaned, exc)
+        return None, None
 
 
 def _classify_content_type(alt_text: str, url: str) -> str:
@@ -100,39 +176,17 @@ def _find_linked_date(
 def _download_image(
     url: str, image_id: str, storage_dir: Path
 ) -> Tuple[Optional[str], Optional[str]]:
-    """Download image. Returns (local_path, file_format) or (None, None)."""
+    """Download image (SSRF-safe). Returns (local_path, file_format) or (None, None)."""
+    body, ext = fetch_image_bytes(url)
+    if body is None:
+        return None, None
     try:
-        headers = {"User-Agent": _USER_AGENT}
-        resp = requests.get(
-            url, timeout=_DOWNLOAD_TIMEOUT, headers=headers, allow_redirects=True
-        )
-        if resp.status_code != 200:
-            return None, None
-
-        content_type = resp.headers.get("content-type", "")
-        if "image" not in content_type and len(resp.content) < 1000:
-            return None, None
-
-        # Determine extension
-        ext = "jpg"
-        if "png" in content_type:
-            ext = "png"
-        elif "tif" in content_type:
-            ext = "tif"
-        elif "gif" in content_type:
-            ext = "gif"
-        elif url.lower().endswith(".png"):
-            ext = "png"
-        elif url.lower().endswith(".tif") or url.lower().endswith(".tiff"):
-            ext = "tif"
-
         storage_dir.mkdir(parents=True, exist_ok=True)
         filepath = storage_dir / f"{image_id}.{ext}"
-        filepath.write_bytes(resp.content)
+        filepath.write_bytes(body)
         return str(filepath), ext
-
-    except Exception as exc:  # pylint: disable=broad-exception-caught
-        logger.debug("Failed to download %s: %s", url, exc)
+    except Exception as exc:  # noqa: BLE001 - write failure must be non-fatal
+        logger.debug("Failed to save %s: %s", url, exc)
         return None, None
 
 
@@ -301,7 +355,9 @@ def extract_images(
     """
     images_dir = output_dir / "images"
     images_dir.mkdir(parents=True, exist_ok=True)
-    storage_dir = image_storage_path or Path("cache/images")
+    # Default UNDER output/ (synced to S3). The old cache/images default was ephemeral —
+    # downloaded bytes would die with the container if a config omitted the path.
+    storage_dir = image_storage_path or (output_dir / "images" / "files")
 
     if captioner is None:
         try:
