@@ -12,13 +12,25 @@ are ordered: (1) **Phase 2 — open**, (2) Phase 3 / enrichment — open, (3) ar
 
 ### 1.1 Data-quality from the clean XChannel run
 
-- **[HIGH · likely BUG] equipment extraction persists 0.** The optional 2nd batch succeeded
-  (XChannel-optional: 325/325, 0 error) and weather+logistics were fixed (PR #468), but **equipment
-  still persists 0** despite source tank(39)/artillery(35) mentions. Its parser is ROBUST (handles
-  `{equipment:[...]}` wrapper + bare list, no over-strict per-item filter) — a DIFFERENT cause than
-  the weather/logistics parse-filter bug: likely the equipment prompt extracting nothing for these
-  sub-events, or an optional-batch wiring gap specific to equipment. Needs its own repro on the next
-  run with equipment OBSERV.
+- **[HIGH · likely BUG — STILL OPEN; diagnosis sharpened 2026-10-20 by code review] equipment
+  extraction persists 0.** The optional 2nd batch succeeded (XChannel-optional 325/325) but equipment
+  persists 0. CODE REVIEW RULED OUT the two earlier hypotheses: wiring is CORRECT (equipment is in
+  `_extract_optional_entities` → `extract_equipment_from_event`, requests go to the batch with
+  `cache_type="equipment"`), and the #461 collect→retrieve re-raise is INTACT
+  (`_extract_equipment_with_llm` re-raises `BatchModeCollecting`, which propagates cleanly so
+  `_finalize_extraction` is NOT reached on collect → the event is not marked processed → retrieve
+  reprocesses it). LEADING SUSPECT (checkable): **cache-key non-determinism.** Equipment is the ONLY
+  optional extractor that embeds the ENTIRE `event_data` into its cached prompt —
+  `render_prompt("equipment", event_data=json.dumps(event_data, indent=2))` at equipment.py:2072,
+  WITHOUT `sort_keys=True`, and after possibly mutating `event_data["Event"]["EventID"]` (2060). If the
+  serialized event differs at all between the collect pass and the retrieve pass, `_make_cache_key`
+  differs → retrieve cache-MISS → `equipment_list` empty → "No equipment extracted" → 0 persisted.
+  This is the SAME class as the supplemental prompt-determinism bug (#399/#401) that caused
+  0-bibliography. FIX to try: `json.dumps(event_data, indent=2, sort_keys=True)` (deterministic
+  serialization) and/or make the equipment prompt independent of volatile ids; then confirm with
+  `OBSERV cachekey.submit|lookup` on a re-run that the equipment submit-key == retrieve-key. Secondary
+  (only if keys match): the prompt genuinely elicits nothing for these sub-events. REQUIRES a re-run
+  (the run's api-cache wasn't synced to S3, so the exact responses can't be replayed offline).
 
 - **[MED · verify on re-run] maps/images coverage.** The capture/caption/download fixes
   (#469/#470/#471) only take effect on a NEW image build + re-run. Verify: maps persist (was 0; real
