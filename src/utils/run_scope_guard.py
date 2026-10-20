@@ -63,6 +63,7 @@ def enforce_scope(
     actual: int,
     expected: Optional[int],
     label: str,
+    recorded_expected: Optional[int] = None,
     logger: Optional[logging.Logger] = None,
     ceiling: int = LARGE_RUN_CEILING,
 ) -> int:
@@ -72,18 +73,63 @@ def enforce_scope(
     Args:
         actual: number of items about to be processed (known now; the
             authoritative work set for the mode — see module docstring).
-        expected: operator-declared expected count, or ``None`` if undeclared.
+        expected: operator-declared expected count, or ``None`` if undeclared
+            (legacy hand-carried declaration; the recorded source count supersedes it).
+        recorded_expected: the INDEPENDENT upstream count recorded by the producing
+            phase (``run_scope#<book>`` / ``run_scope.read_scope``) — the count of
+            source sections Phase 1 produced, NOT a re-glob of the dir being
+            processed. When provided, it is the PRIMARY check: ``actual`` must equal
+            it exactly (fail loud on drift in EITHER direction — high = unintended
+            fan-out, low = silent under-production). ``None`` = not recorded → fall
+            back to the declared-expected + magic-50 ceiling (legacy behaviour).
         label: phase/entity label for the message.
-        ceiling: absolute size above which an explicit declaration is required.
+        ceiling: absolute size above which an explicit declaration is required
+            (fallback only, when there is no recorded_expected).
     """
     log = logger or logging.getLogger(__name__)
 
     # Defensive: counts come from len()/scan (>=0) and int inputs (may be
     # negative). A negative on either side is a miswired caller — fail loud.
-    if actual < 0 or (expected is not None and expected < 0):
-        msg = f"INVALID SCOPE ({label}): negative count (actual={actual}, expected={expected})."
+    if (
+        actual < 0
+        or (expected is not None and expected < 0)
+        or (recorded_expected is not None and recorded_expected < 0)
+    ):
+        msg = (
+            f"INVALID SCOPE ({label}): negative count (actual={actual}, "
+            f"expected={expected}, recorded_expected={recorded_expected})."
+        )
         log.error(msg)
         raise ScopeMismatchError(msg, EXIT_SCOPE_MISMATCH)
+
+    # 0. SOURCE-VS-ACTUAL reconciliation (PRIMARY, when an independent upstream count exists).
+    #    RULE: the consuming phase must NEVER EXCEED the count the producing phase recorded. Phase 1
+    #    recorded how many sections it emitted; processing MORE than that is always a defect — an
+    #    unintended fan-out (a dropped --book filter / bad glob / reconcile re-drive). Processing
+    #    FEWER is legitimate (a full run == recorded; an INCREMENTAL resume processes only the
+    #    pending subset < recorded), so a low count is NOT failed — it is ambiguous (a legit resume
+    #    vs a silent drop can't be told apart here without extra state, and failing legit resumes is
+    #    worse than the miss). Not overridable; supersedes the ceiling AND the hand-carried `expected`.
+    if recorded_expected is not None:
+        if actual > recorded_expected:
+            msg = (
+                f"SCOPE FAN-OUT ({label}): {actual} items are about to be processed but the "
+                f"recorded source count is only {recorded_expected}. Processing MORE than the "
+                f"upstream phase produced is never legitimate (dropped --book filter / bad glob / "
+                f"reconcile re-drive). Aborting (fail-loud; not overridable). Investigate the "
+                f"{actual - recorded_expected} extra item(s)."
+            )
+            log.error(msg)
+            raise ScopeMismatchError(msg, EXIT_SCOPE_MISMATCH)
+        log.info(
+            "OBSERV run_scope.reconciled %s actual=%d recorded_expected=%d within=1",
+            label,
+            actual,
+            recorded_expected,
+        )
+        return actual
+
+    # --- No recorded upstream count: FALL BACK to the legacy declared-expected + ceiling. ---
 
     # 1. Declared-scope mismatch — the explicit known-vs-actual check.
     if expected is not None and actual != expected:
@@ -103,9 +149,9 @@ def enforce_scope(
         msg = (
             f"UNDECLARED LARGE RUN ({label}): the number of items to process "
             f"exceeds the ceiling of {ceiling} and no matching expected-count was "
-            f"declared. Aborting (fail-loud; not overridable). Determine the "
-            f"intended scope and, if a large run is truly intended, declare that "
-            f"exact count explicitly."
+            f"declared, and no recorded source count was found. Aborting (fail-loud; "
+            f"not overridable). Determine the intended scope and, if a large run is "
+            f"truly intended, declare that exact count explicitly."
         )
         log.error(msg)
         raise ScopeMismatchError(msg, EXIT_UNDECLARED_LARGE_RUN)

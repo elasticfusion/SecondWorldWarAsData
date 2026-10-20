@@ -1299,6 +1299,21 @@ def _download_phase2_inputs() -> int:
     for key in index_prefixes:
         _download_s3_file(s3, key)
 
+    # Download the run-scope record Phase 1 wrote (authoritative per-book section count) so the
+    # Phase-2 run-scope guard can reconcile its ACTUAL work-set against the INDEPENDENT upstream
+    # count (source-vs-actual). Without this pull the record stays in S3 and Phase 2's read_scope
+    # returns None → falls back to the magic-50 ceiling (the old Phase1→2 chaining failure). Scoped
+    # to this book.
+    _rs_book = os.environ.get("BOOK_NAME", "")
+    if _rs_book:
+        # Validate the book token before building the key (symmetry with run_scope._safe_book;
+        # read_scope re-validates on the consuming side, so a bad name is already safe — this just
+        # avoids issuing a malformed GET).
+        import re as _re_rs
+
+        if _re_rs.fullmatch(r"[A-Za-z0-9._-]+", _rs_book) and ".." not in _rs_book:
+            _download_s3_file(s3, f"output/manifests/run_scope/{_rs_book}.json")
+
     # Download the per-entity processed-events markers so the optional-entity
     # skip logic (_is_processed) can fire. WITHOUT these, every Phase-2 retrieve
     # re-run re-extracts weather/equipment/logistics/casualties/supplemental LIVE
