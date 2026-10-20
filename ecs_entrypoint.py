@@ -2436,6 +2436,37 @@ def _final_sync(phase_script: str = ""):
             if n_art:
                 logger.info("Final sync: uploaded %d artifact files", n_art)
 
+        # DIAGNOSTICS: persist the Grok api-cache (batch_requests.jsonl + the per-type cached
+        # request/response entries the retrieve pass wrote) so a run is replayable offline
+        # post-hoc — e.g. to re-run the optional-entity extract-vs-persist without re-calling Grok
+        # (the gap that forced code-level repro of equipment=0). The cache is at /app/cache/api
+        # (NOT under WORKDIR), so point at it explicitly. Book-scoped so concurrent per-book tasks
+        # don't collide and a book's responses are retrievable on their own. Bounded by corpus
+        # (~hundreds of small JSON files / book); fail-safe — a diagnostics upload must never break
+        # the phase.
+        try:
+            from pathlib import Path as _P
+
+            cache_api = _P("/app/cache/api")
+            if cache_api.exists():
+                _book = os.environ.get("BOOK_NAME", "").strip()
+                # Validate the book token (reuse run_scope._safe_book) so a crafted BOOK_NAME
+                # can't write the S3 key outside diagnostics/cache/; fall back to _all.
+                from src.utils.run_scope import _safe_book as _rs_safe_book
+
+                _safe = _rs_safe_book(_book) if _book else None
+                _cache_prefix = (
+                    f"diagnostics/cache/{_safe}" if _safe else "diagnostics/cache/_all"
+                )
+                n_cache, _ = s3_sync_up(cache_api, _cache_prefix)
+                logger.info(
+                    "OBSERV cache.synced files=%d prefix=%s", n_cache, _cache_prefix
+                )
+        except Exception as _e:  # noqa: BLE001 - diagnostics upload is best-effort
+            logger.warning(
+                "OBSERV cache.synced status=error reason=%s", type(_e).__name__
+            )
+
         # Delete merged/removed files from S3
         if _deleted_keys:
             s3 = _s3_client()
