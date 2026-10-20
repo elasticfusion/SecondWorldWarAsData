@@ -2069,7 +2069,14 @@ def _extract_equipment_with_llm(
     """Extract equipment using LLM with retry logic."""
     from src.utils.prompt_loader import render_prompt
 
-    prompt = render_prompt("equipment", event_data=json.dumps(event_data, indent=2))
+    # Serialize CANONICALLY (sort_keys=True): the full event_data is embedded in the cached
+    # prompt, and _make_cache_key hashes the prompt string. Without sort_keys, any dict-ordering
+    # difference between the batch COLLECT pass and the RETRIEVE re-run yields a different cache
+    # key -> retrieve cache-MISS -> empty equipment_list -> 0 persisted (the supplemental
+    # prompt-determinism bug class, #399/#401). sort_keys makes collect-key == retrieve-key.
+    prompt = render_prompt(
+        "equipment", event_data=json.dumps(event_data, indent=2, sort_keys=True)
+    )
 
     for attempt in range(max_retries):
         try:
