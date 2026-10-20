@@ -202,10 +202,18 @@ openserp:
 maps:
   enabled: true
   extract_during_phase1: true
-  download_images: false               # Don't download images (saves bandwidth/storage)
+  # Download map image bytes into the corpus (durability/provenance: the source host can
+  # change/vanish; a citable historical corpus should hold the actual bytes). Storage MUST be
+  # under output/ — BackgroundSync only syncs output/ + artifacts/ to S3; filestore/ is ephemeral.
+  download_images: true
   storage_backend: "filesystem"
   storage_path: "output/maps/"
-  image_storage_path: "filestore/maps/"
+  image_storage_path: "output/maps/files/"
+
+images:
+  enabled: true
+  download: true                       # fetch image bytes into output/ (synced to S3)
+  image_storage_path: "output/images/files/"
 
 external_maps:
   enabled: false                       # Disable external map search (expensive: OpenSERP + vision)
