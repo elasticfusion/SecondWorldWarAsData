@@ -190,7 +190,13 @@ def extract_footnotes(text: str) -> List[Tuple[int, str, str]]:
         if number in def_text:
             continue
         def_url[number] = match.group(2)
-        def_text[number] = match.group(3).strip()
+        # The ibiblio definition markup wraps the anchor in literal brackets:
+        # ``[<a name=fnN href=#cnN>N</a>] text`` -> after link conversion the captured
+        # trailing text begins with the stray closing ``]``. Strip a single leading
+        # bracket + surrounding punctuation/space so the stored citation text is clean.
+        raw = match.group(3).strip()
+        raw = re.sub(r"^\]\s*", "", raw).strip()
+        def_text[number] = raw
         if number not in marker_url:
             order.append(number)  # definition-only footnote (no in-text marker)
 

@@ -150,12 +150,28 @@ def convert_html_to_markdown(soup: BeautifulSoup, source_url: str) -> str:
         # Navigation bars are typically before the first hr
         pass
 
-    # Convert footnote links to superscript markdown format
+    # Convert footnote links to markdown. Two DISTINCT ibiblio forms must be handled:
+    #   1. in-text MARKER:  <a href="...#fnN">N</a>  -> <sup>[N](url#fnN)</sup>  (number + url)
+    #   2. definition ANCHOR in the <h3>Footnotes</h3> block:
+    #        <p>[<a name="fnN" href="#cnN">N</a>] <citation text>
+    #      -> [N](source_url#cnN) <citation text>   (so html2text emits the
+    #      parser-recognized definition form `[N](url#cnN). text` and the citation TEXT
+    #      is captured into Footnote.text — without this the text is dropped and the
+    #      deterministic bibliography stores nothing). The anchor's own href is the
+    #      relative fragment "#cnN"; urljoin makes it absolute so the parser regex
+    #      (which requires an http(s) url containing #cnN) matches.
     for link in body.find_all("a", href=True):
         href = link.get("href", "")
+        name = link.get("name", "") or ""
         text = link.get_text(strip=True)
-        # Footnote pattern: links to fn*.html with numeric text
-        if "fn" in href and re.match(r"^\d+$", text):
+        if not re.match(r"^\d+$", text):
+            continue
+        # Definition anchor: name="fnN" + href="#cnN" (fragment). Emit the def form.
+        if name.lower().startswith("fn") and href.lower().startswith("#cn"):
+            def_url = urljoin(source_url, href)  # -> source_url#cnN (absolute)
+            link.replace_with(f"[{text}]({def_url}) ")
+        # In-text marker: href points at a footnote (contains 'fn').
+        elif "fn" in href.lower():
             fn_url = urljoin(source_url, href)
             link.replace_with(f"<sup>[{text}]({fn_url})</sup>")
 
