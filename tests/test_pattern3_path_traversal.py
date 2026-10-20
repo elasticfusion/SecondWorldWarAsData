@@ -107,6 +107,26 @@ def test_place_file_normal_name_still_readable(tmp_path):
 
 
 # --- the shared sanitizer directly (covers the equipment path, same helper) ----------------
+def test_long_name_does_not_truncate_the_appended_id(tmp_path):
+    """The reviewer-found bug: capping the WHOLE filename (stem+id) truncated the uniqueness id away.
+    The stem is now capped BEFORE the id is appended, so the id suffix always survives. Assert a
+    >cap-length place name yields a BOUNDED filename that still ENDS with the appended id segment.
+    """
+    places_dir = tmp_path / "places"
+    places_dir.mkdir()
+    shared = "Longplace" * 20  # 180 chars, exceeds the 120-char stem cap
+    out = _find_or_create_place(
+        shared, {"PlaceMentionID": "01PMENTIONA000000000000000"}, places_dir, {}
+    )
+    assert out.exists() and out.parent.resolve() == places_dir.resolve()
+    stem = out.name[:-5]  # drop .json
+    # the id segment (8 hex-ish ULID chars after the final '_') must be intact, not truncated
+    assert "_" in stem, out.name
+    id_seg = stem.rsplit("_", 1)[1]
+    assert len(id_seg) == 8, f"id suffix truncated by the length cap: {out.name!r}"
+    assert len(out.name) <= 160  # bounded (no ENAMETOOLONG)
+
+
 def test_safe_entity_filename_neutralizes_all_hostile_inputs():
     from src.extraction.batch_parallel import (
         _safe_entity_filename,

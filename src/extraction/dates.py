@@ -237,8 +237,11 @@ def _find_or_create_date(
         .replace("autumn", "AU")
         .replace("winter", "WI")
     )
+    # Cap the human (LLM-derived) portion BEFORE appending the id so the id — which provides
+    # uniqueness — is NEVER truncated away (a too-long name would otherwise collide distinct entities).
+    safe_date = safe_date[:80]
     if time_start:
-        safe_time = time_start.replace(":", "")
+        safe_time = time_start.replace(":", "")[:20]
         filename = f"{safe_date}_{safe_time}_{date_id[:8]}.json"
     else:
         filename = f"{safe_date}_{date_id[:8]}.json"
@@ -252,10 +255,10 @@ def _find_or_create_date(
         _contained_entity_path,
     )
 
-    filename = _safe_entity_filename(filename, f"date_{date_id[:8]}")
+    filename = _safe_entity_filename(filename, f"date_{date_id[:12]}")
     date_file = _contained_entity_path(dates_dir, filename)
     if date_file is None:
-        filename = f"date_{date_id[:8]}.json"
+        filename = f"date_{date_id[:12]}.json"
         date_file = dates_dir / filename
 
     # Initialize date file

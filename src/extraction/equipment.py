@@ -1984,13 +1984,13 @@ def _create_new_equipment(
         _contained_entity_path,
     )
 
-    safe_name = common_name.replace(" ", "_").replace("/", "_")
+    safe_name = common_name.replace(" ", "_").replace("/", "_")[:120]
     _eqname = _safe_entity_filename(
-        f"{safe_name}_{equipment_id[:8]}.json", f"equipment_{equipment_id[:8]}"
+        f"{safe_name}_{equipment_id[:8]}.json", f"equipment_{equipment_id[:12]}"
     )
     eq_file = _contained_entity_path(equipment_dir, _eqname)
     if eq_file is None:
-        eq_file = equipment_dir / f"equipment_{equipment_id[:8]}.json"
+        eq_file = equipment_dir / f"equipment_{equipment_id[:12]}.json"
 
     from src.utils.file_lock import write_json_with_lock
 
@@ -2694,13 +2694,13 @@ def _autocreate_minimal_equipment(
             _contained_entity_path,
         )
 
-        safe_name = name.replace(" ", "_").replace("/", "_")
+        safe_name = name.replace(" ", "_").replace("/", "_")[:120]
         _eqname = _safe_entity_filename(
-            f"{safe_name}_{equipment_id[:8]}.json", f"equipment_{equipment_id[:8]}"
+            f"{safe_name}_{equipment_id[:8]}.json", f"equipment_{equipment_id[:12]}"
         )
         eq_file = _contained_entity_path(output_dir, _eqname)
         if eq_file is None:
-            eq_file = output_dir / f"equipment_{equipment_id[:8]}.json"
+            eq_file = output_dir / f"equipment_{equipment_id[:12]}.json"
         from src.utils.file_lock import write_json_with_lock
 
         write_json_with_lock(eq_file, record, entity="equipment")

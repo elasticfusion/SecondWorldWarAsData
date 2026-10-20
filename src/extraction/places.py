@@ -397,13 +397,13 @@ def _find_or_create_place(
         _contained_entity_path,
     )
 
-    safe_name = place_name.replace(" ", "_").replace("/", "_")
+    safe_name = place_name.replace(" ", "_").replace("/", "_")[:120]
     filename = _safe_entity_filename(
-        f"{safe_name}_{place_id[:8]}.json", f"place_{place_id[:8]}"
+        f"{safe_name}_{place_id[:8]}.json", f"place_{place_id[:12]}"
     )
     place_file = _contained_entity_path(places_dir, filename)
     if place_file is None:
-        filename = f"place_{place_id[:8]}.json"
+        filename = f"place_{place_id[:12]}.json"
         place_file = places_dir / filename
 
     # Initialize place data
