@@ -1,0 +1,173 @@
+"""Regression: Phase-2 review PATTERN 1 — batch 0-persist.
+
+(a) casualties cache-key non-determinism (the equipment=0 / optional-entity-zero class, #472):
+    the casualties prompt embeds `entity_context` built from the people/places/groups indexes, which
+    GROW between the batch COLLECT and RETRIEVE passes. A prompt-hash cache key therefore differs
+    across passes -> retrieve cache-MISS -> 0 persisted. The fix keys the cache on the chunk's
+    DETERMINISTIC sub-event ids, so collect-key == retrieve-key regardless of index growth.
+
+(b) in-task submit_batch result mapping: the xAI results API does NOT echo our custom_id (only a
+    server batch_request_id), so results MUST be mapped POSITIONALLY to our cache keys. The prior code
+    cached content under the SERVER id -> a key no lookup uses -> every in-task batch result lost.
+    This asserts content lands under OUR request_id.
+"""
+
+from unittest import mock
+
+
+# ---------------------------------------------------------------------------
+# (a) casualties stable cache_key across index growth
+# ---------------------------------------------------------------------------
+def _capture_casualties_cache_keys(people_index):
+    """Drive the real _batch_extract_casualties and capture the cache_key(s) passed to
+    chat_completion, under a given (growing) people_index."""
+    from src.extraction import casualties as cas
+    from src.grok_client import BatchModeCollecting
+
+    captured = []
+
+    client = mock.Mock()
+    client._get_model.return_value = "grok-4-fast-non-reasoning"
+
+    def fake_chat_completion(prompt, **kwargs):
+        captured.append(kwargs.get("cache_key"))
+        raise BatchModeCollecting("queued")  # simulate the COLLECT pass
+
+    client.chat_completion.side_effect = fake_chat_completion
+
+    sub_events = [
+        {
+            "Sub-eventID": "01SUBAAAA0000000000000000AA",
+            "description": "The battalion suffered heavy casualties; 40 killed.",
+        }
+    ]
+    try:
+        cas._batch_extract_casualties(
+            sub_events,
+            client,
+            dates_index={},
+            places_index={},
+            people_index=people_index,
+            people_groups_index={},
+        )
+    except BatchModeCollecting:
+        pass
+    return captured
+
+
+def test_casualties_cache_key_stable_across_entity_index_growth():
+    """The cache_key MUST be identical whether the people_index is small (COLLECT pass) or has
+    grown (RETRIEVE pass) — otherwise the retrieve re-run misses the cache and persists 0.
+    """
+    small = {"Eisenhower": "01PXX000000000000000000001"}
+    grown = {
+        "Eisenhower": "01PXX000000000000000000001",
+        "Bradley": "01PXX000000000000000000002",
+        "Montgomery": "01PXX000000000000000000003",
+    }
+    keys_collect = _capture_casualties_cache_keys(small)
+    keys_retrieve = _capture_casualties_cache_keys(grown)
+
+    assert keys_collect and all(k for k in keys_collect), "a cache_key must be set"
+    assert (
+        keys_collect == keys_retrieve
+    ), f"cache_key changed with index growth: {keys_collect} != {keys_retrieve}"
+
+
+def test_casualties_cache_key_tracks_subevent_ids():
+    """Different sub-event id sets must produce different cache keys (correct partitioning)."""
+    from src.extraction import casualties as cas
+    from src.grok_client import BatchModeCollecting
+
+    def _keys_for(seid):
+        captured = []
+        client = mock.Mock()
+        client._get_model.return_value = "m"
+        client.chat_completion.side_effect = lambda p, **k: (
+            captured.append(k.get("cache_key")),
+            (_ for _ in ()).throw(BatchModeCollecting("q")),
+        )[1]
+        try:
+            cas._batch_extract_casualties(
+                [{"Sub-eventID": seid, "description": "20 men were killed in action."}],
+                client,
+                {},
+                {},
+                {},
+                {},
+            )
+        except BatchModeCollecting:
+            pass
+        return captured
+
+    a = _keys_for("01SUBAAAA0000000000000000AA")
+    b = _keys_for("01SUBBBBB0000000000000000BB")
+    assert a and b and a != b
+
+
+# ---------------------------------------------------------------------------
+# (b) positional mapping lands content under OUR request_id, not the server id
+# ---------------------------------------------------------------------------
+def test_submit_batch_maps_results_to_our_keys_positionally(tmp_path):
+    """Drive the REAL GrokClient.submit_batch: retrieve_results_ordered returns BatchResults
+    carrying the SERVER batch_request_id, and submit_batch must map them POSITIONALLY to OUR
+    submitted request_ids and cache the content under OUR key (never the server id). A revert to
+    id-keyed caching (the bug) would fail this test."""
+    import src.grok_client as gc
+    from src.utils.batch_api import BatchResult, BatchCollector, BatchRequest
+
+    client = gc.GrokClient.__new__(gc.GrokClient)  # bypass __init__/network
+    client.api_key = "k"
+    client.caches = {}
+    client._batch_meta = {}
+    client.batch_mode = True
+    client.cache_dir = tmp_path
+    client._config = {}
+    # dict-backed cache + passthrough sanitize (test the mapping, not the cache backend)
+    client._get_cache = lambda ct: client.caches.setdefault(ct, {})
+    client._sanitize_content = lambda c: c
+    client._estimate_batch_cost = lambda: 0.0
+    client._batch_prompt_preview = lambda rid, rbi: ""
+
+    # two real submitted requests (OUR cache keys) in submission order
+    collector = BatchCollector()
+    collector.add(
+        BatchRequest(
+            "ourkey-events-1", [{"role": "user", "content": "p1"}], "m", 0.1, "events"
+        )
+    )
+    collector.add(
+        BatchRequest(
+            "ourkey-casualties-1",
+            [{"role": "user", "content": "p2"}],
+            "m",
+            0.1,
+            "casualties",
+        )
+    )
+    client._batch_collector = collector
+
+    # server returns results in submission ORDER, each with a SERVER id (not our key)
+    ordered = [
+        BatchResult("srv-zzz-1", '{"ok":1}', "stop", ""),
+        BatchResult("srv-zzz-2", '{"ok":2}', "stop", ""),
+    ]
+
+    with (
+        mock.patch("src.utils.batch_api.submit_batch", return_value="batch-123"),
+        mock.patch("src.utils.batch_api.poll_batch", return_value={"state": {}}),
+        mock.patch(
+            "src.utils.batch_api.retrieve_results_ordered", return_value=ordered
+        ),
+        mock.patch("src.utils.credit_gate.reserve", return_value=True),
+        mock.patch("src.utils.credit_gate.release"),
+        mock.patch("src.grok_client._save_metrics"),
+    ):
+        returned = client.submit_batch(batch_name="t")
+
+    assert returned == "batch-123"
+    # content cached under OUR keys, NEVER under the server id
+    assert client.caches["events"]["ourkey-events-1"] == '{"ok":1}'
+    assert client.caches["casualties"]["ourkey-casualties-1"] == '{"ok":2}'
+    assert "srv-zzz-1" not in client.caches.get("events", {})
+    assert "srv-zzz-2" not in client.caches.get("casualties", {})

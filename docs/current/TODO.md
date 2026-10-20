@@ -22,8 +22,8 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
   `retrieve_results_ordered()` positional mapping (like `ecs_entrypoint._map_batch_results_by_index`).
   SUB-ITEMS: (a) casualties.py:184-216,261 still has the non-deterministic-prompt cache-key bug
   (unsorted/sliced entity_context, no stable cache_key) → likely persists 0 next run; (b) ⚠️ VERIFY the
-  `batch_result["response"]["chat_get_completion"]` field name against a live payload (if wrong, ALL
-  batch retrieval yields 0) — the PR #474 synced cache can now confirm it.
+  `chat_get_completion` field — RESOLVED: verified correct (the successful XChannel AWS retrieval reads
+  it as the only content path and produced real entities; a wrong name would have yielded 0 for all).
 
 - **[HIGH · PATTERN 2 — SSRF] 12 unguarded `requests.get(allow_redirects=True)` on untrusted URLs**
   across openserp_maps (50,78,149,168,358,372), search_external_maps (98,138,317), grok_search_maps (99),

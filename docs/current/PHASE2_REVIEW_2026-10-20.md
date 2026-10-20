@@ -48,14 +48,14 @@ distinct mechanisms, same symptom (a successful batch persists nothing):
   FIX: give casualties a stable `cache_key = sha256("casualties:v1:{model}:{event_id}:{chunk}")`
   (mirror equipment) and/or sort+don't-slice the entity_context.
 
-- ⚠️ **[HIGH · NEEDS-VERIFICATION] Possible wrong response field name breaks ALL batch retrieval.**
+- ✅ **[RESOLVED — field name is CORRECT] `chat_get_completion` response field.**
   `batch_api.py:356,419` reads `batch_result.get("response", {}).get("chat_get_completion", {})`. If
   xAI's field is actually `chat.completion`/`chat_completion`, `choices` is always empty → every
-  result is "no choices returned" → total batch loss. A single string, shared by both retrieve
-  functions. I could NOT confirm the correct field without a live batch payload (the api-cache wasn't
-  synced — now fixed by PR #474, so the NEXT run's cache can confirm it).
-  FIX: verify against a live `/batches/{id}/results` payload; read defensively
-  (`get("chat_completion") or get("chat.completion") or get("chat_get_completion")`).
+  VERIFIED empirically: the successful clean XChannel AWS run retrieved via `run_retrieve_only` →
+  `retrieve_results_ordered`, which reads `response.chat_get_completion.choices` as the ONLY content
+  path. That run produced real entities (bibliography 0→1387, events/people/places all persisted) — if
+  the field were wrong it would have yielded 0 for everything. So the field name matches the live xAI
+  API. No change needed.
 
 ### PATTERN 2 — Unguarded outbound fetch (SSRF) — 12 sites / 6 modules  ⭐ HIGHEST SECURITY IMPACT
 ✅ Verified: **12 bare `requests.get/post(..., allow_redirects=True)` calls on URLs sourced from
