@@ -35,21 +35,20 @@ are ordered: (1) **Phase 2 — open**, (2) Phase 3 / enrichment — open, (3) ar
 
 ### 1.2 Phase-2 run-scope + chaining
 
-- **[DESIGN · user-proposed] Replace the magic-50 scope ceiling with source-vs-actual reconciliation
-  (fail loud HIGH **or** LOW).** Derive the expected section count from an INDEPENDENT upstream source
-  of truth recorded at Phase 1 (a `run_scope#<book>` record / book-manifest field = count of ingested
-  `*-content.md` or produced `*-parsed.json`); each phase compares its scoped ACTUAL work-set to that
-  recorded expected and fails loud on ANY drift — high (unintended fan-out) OR low (silent drop, which
-  the fixed ceiling is blind to). KEY subtlety: expected must NOT be a re-glob of the dir being
-  processed (independence gives the check teeth). Magic-50 becomes a FALLBACK only when no upstream
-  count was recorded. Supersedes the hand-carried expected_count AND fixes the chaining bug below.
-
-- **[BUG] Phase 1→2 chaining drops expected_count — any >50-item book dies at the handoff.** The
-  MANUAL trigger threads `EXPECTED_COUNT` (trigger_handler ~L985), but the event-driven
-  phase-complete chain (`_drive_next_phase` → `_launch_next_from_pending` → `_run_task(PHASE2,
-  "pending-parsed")`) does NOT, so a chained Phase 2 on an 80-section book aborts with
-  `EXIT_UNDECLARED_LARGE_RUN` (exit 4). Confirmed live on XChannel (relaunched Phase 2 manually with
-  expected_count=80). The source-vs-actual design above subsumes the fix.
+- **[✅ DONE · PR #473 — VERIFY on next re-run] Source-vs-actual reconciliation replaced the
+  magic-50-only ceiling + fixed the Phase 1→2 chaining bug.** Phase 1 now records the authoritative
+  per-book section count it PRODUCED (`output/manifests/run_scope/<book>.json`, S3-native,
+  independent — not a re-glob of Phase 2's input); `enforce_scope` fails loud only on FAN-OUT
+  (actual > recorded — never legitimate to process more than Phase 1 produced), while a full run
+  (== recorded) OR an incremental resume (< recorded) passes. The recorded count AUTHORIZES a >50
+  run, so the chained Phase 2 no longer aborts at the handoff with EXIT_UNDECLARED_LARGE_RUN — the
+  hand-carried expected_count is no longer required. ecs_entrypoint downloads the manifest so it
+  survives the AWS handoff; magic-50 remains the FALLBACK when nothing was recorded. Rule chosen
+  per operator guidance ("don't exceed") over the initial exact-match design (which would have
+  false-positived on AWS incremental resumes). Accepted residual: a tamper-UP recorded count is
+  inherent to any declared-expectation model (trust boundary = output-bucket write access). 13+7
+  tests. VERIFY on the next clean E2E that the chained Phase 2 proceeds without a manual
+  expected_count and OBSERV `run_scope.record`/`run_scope.reconciled` appear.
 
 ### 1.3 Phase-2 observability
 
