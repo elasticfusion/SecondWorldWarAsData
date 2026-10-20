@@ -339,6 +339,10 @@ def _parse_logistics_response(
         for item in items:
             if not isinstance(item, dict):
                 continue
+            # Uniform floor: require some descriptive content (an empty description is not a
+            # usable logistics record) on BOTH the strict and coerce paths.
+            if not str(item.get("description") or "").strip():
+                continue
             try:
                 validated.append(LogisticsExtraction.model_validate(item))
             except Exception as e:

@@ -146,3 +146,36 @@ def test_logistics_accepts_bare_list_and_partial_items():
     # no descriptive content -> dropped
     empty = {"SE1": [{"description": ""}]}
     assert sum(len(v) for v in _parse_logistics_response(empty).values()) == 0
+
+
+def test_weather_whitespace_only_content_dropped_and_condition_carried():
+    from src.extraction.weather_central import _parse_weather_response
+
+    resp = {
+        "SE1": [{"weather_description": "   "}],  # whitespace-only -> drop
+        "SE2": [
+            {"condition": "fog"}
+        ],  # kept; condition carried into weather_description
+    }
+    out = _parse_weather_response(resp)
+    assert len(out.get("SE1", [])) == 0
+    assert len(out.get("SE2", [])) == 1
+    assert out["SE2"][0]["weather_description"] == "fog"
+    assert out["SE2"][0]["original_text"] == "fog"
+
+
+def test_logistics_strict_path_empty_description_dropped():
+    from src.extraction.logistics import _parse_logistics_response
+
+    # all required enums present but description empty -> must NOT persist (uniform floor)
+    resp = {
+        "SE1": [
+            {
+                "type": "supply_shortage",
+                "category": "fuel",
+                "description": "   ",
+                "severity": "high",
+            }
+        ]
+    }
+    assert sum(len(v) for v in _parse_logistics_response(resp).values()) == 0

@@ -817,6 +817,18 @@ def _call_and_parse_weather(
     return {}
 
 
+# Descriptive-content keys: a weather mention is kept if ANY is non-empty (resolved date/place
+# are enrichment, not gating). Keep the canonical weather_description first.
+_WEATHER_CONTENT_KEYS = (
+    "weather_description",
+    "description",
+    "condition",
+    "original_text",
+    "notable_impact",
+    "precipitation_text",
+)
+
+
 def _parse_weather_response(
     response: Dict[str, Any],
 ) -> Dict[str, List[Dict[str, Any]]]:
@@ -828,25 +840,29 @@ def _parse_weather_response(
         fixed = _fix_invalid_ulids(mentions)
         if isinstance(fixed, list):
             mentions = fixed
-        # Keep any mention that carries DESCRIPTIVE weather content. A resolved date/place is
-        # ENRICHMENT, not a gating precondition — requiring BOTH silently dropped most real
-        # narrative weather (e.g. "overcast and stormy with high winds" with no pinned
-        # date/place), which is why weather persisted 0 despite a successful batch. Drop only
-        # mentions with no descriptive signal at all.
-        _CONTENT_KEYS = (
-            "weather_description",
-            "description",
-            "condition",
-            "original_text",
-            "notable_impact",
-            "precipitation_text",
-        )
-        result[seid] = [
-            m
-            for m in mentions
-            if isinstance(m, dict)
-            and any(str(m.get(k) or "").strip() for k in _CONTENT_KEYS)
-        ]
+        kept = []
+        for m in mentions:
+            if not isinstance(m, dict):
+                continue
+            # Normalize descriptive content into the canonical fields so the downstream
+            # guard (_find_or_create rejects null weather_description/original_text) and the
+            # persisted record carry the text that justified keeping this mention.
+            desc = next(
+                (
+                    str(m.get(k)).strip()
+                    for k in _WEATHER_CONTENT_KEYS
+                    if str(m.get(k) or "").strip()
+                ),
+                "",
+            )
+            if not desc:
+                continue  # no descriptive signal at all -> drop
+            if not str(m.get("weather_description") or "").strip():
+                m["weather_description"] = desc
+            if not str(m.get("original_text") or "").strip():
+                m["original_text"] = desc
+            kept.append(m)
+        result[seid] = kept
     return result
 
 
