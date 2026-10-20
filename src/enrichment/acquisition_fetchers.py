@@ -50,22 +50,8 @@ def _nara_fetcher(
     if payload is None:
         return None
 
-    # Record may be at body.hits.hits[0]._source.record OR a single-record shape.
-    record: Dict[str, Any] = {}
-    hits = (payload.get("body", {}).get("hits", {}) or {}).get("hits", [])
-    if hits:
-        src = hits[0].get("_source", {}) or {}
-        record = src.get("record", src) or {}
-    else:
-        record = payload.get("record", payload) or {}
-
-    objs = _http_only(
-        [
-            o["objectUrl"]
-            for o in (record.get("digitalObjects") or [])
-            if isinstance(o, dict) and isinstance(o.get("objectUrl"), str)
-        ]
-    )
+    record = _record_from_nara_payload(payload)
+    objs = _nara_object_urls(record)
     # NOTE: the api_key is needed ONLY for the metadata lookup above. The objectUrl byte-
     # downloads are PUBLIC (verified: NARA media URLs return 200 with no key) — the download
     # pass must NOT send the key on the high-volume byte requests.
@@ -80,6 +66,27 @@ def _nara_fetcher(
         pages=len(objs),
         object_urls=objs,
         detail=f"NARA naId {naid}, {len(objs)} digital objects",
+    )
+
+
+def _record_from_nara_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract the record dict from a NARA payload — either the search shape
+    (body.hits.hits[0]._source.record) or a single-record shape."""
+    hits = (payload.get("body", {}).get("hits", {}) or {}).get("hits", [])
+    if hits:
+        src = hits[0].get("_source", {}) or {}
+        return src.get("record", src) or {}
+    return payload.get("record", payload) or {}
+
+
+def _nara_object_urls(record: Dict[str, Any]) -> "list":
+    """Collect the http(s) digitalObjects objectUrls from a NARA record."""
+    return _http_only(
+        [
+            o["objectUrl"]
+            for o in (record.get("digitalObjects") or [])
+            if isinstance(o, dict) and isinstance(o.get("objectUrl"), str)
+        ]
     )
 
 

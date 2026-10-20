@@ -84,6 +84,26 @@ def _reject(reason: str) -> ContentVerdict:
     return ContentVerdict(relevant=False, false_lead=False, false_lead_reason=reason)
 
 
+def _parse_claims(raw_claims: list) -> "List[Claim]":
+    """Parse the raw Grok claims array into Claim objects: require text, normalize claim_type to
+    fact|opinion (default fact), carry the confirmed flag. Malformed entries are skipped.
+    """
+    claims: List[Claim] = []
+    for c in raw_claims:
+        if not isinstance(c, dict) or not c.get("text"):
+            continue
+        ct = c.get("claim_type", "fact")
+        ct = ct if ct in ("fact", "opinion") else "fact"
+        claims.append(
+            Claim(
+                text=str(c["text"])[:2000],
+                claim_type=ct,
+                confirmed=bool(c.get("confirmed", False)),
+            )
+        )
+    return claims
+
+
 def evaluate(
     content: Optional[str],
     entity: str,
@@ -124,19 +144,7 @@ def evaluate(
             false_lead_reason=str(raw.get("false_lead_reason", ""))[:300],
         )
 
-    claims: List[Claim] = []
-    for c in raw.get("claims", []) or []:
-        if not isinstance(c, dict) or not c.get("text"):
-            continue
-        ct = c.get("claim_type", "fact")
-        ct = ct if ct in ("fact", "opinion") else "fact"
-        claims.append(
-            Claim(
-                text=str(c["text"])[:2000],
-                claim_type=ct,
-                confirmed=bool(c.get("confirmed", False)),
-            )
-        )
+    claims = _parse_claims(raw.get("claims", []) or [])
     # Writable: opinions (tagged) + facts ONLY if confirmed against the source.
     writable = [c for c in claims if c.claim_type == "opinion" or c.confirmed]
 

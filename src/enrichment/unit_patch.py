@@ -157,6 +157,49 @@ def _ext_for(url: str, content_type: str) -> str:
     return suffix if suffix in {".jpg", ".jpeg", ".png", ".webp", ".gif"} else ".jpg"
 
 
+def _select_best_patch(
+    candidates: List[Dict[str, str]],
+    unit_name: str,
+    nationality: str,
+    grok_client: Any,
+) -> Optional[Dict[str, Any]]:
+    """Pick the highest-resolution VISION-CONFIRMED patch among candidates. SSRF-gates each URL
+    (clean + public-resolving host) BEFORE any fetch/vision call, dedups, and skips bytes that
+    aren't a readable/safe image. Returns {url,title,data,width,height} or None."""
+    best: Optional[Dict[str, Any]] = None
+    best_area = -1
+    seen: set = set()
+    for cand in candidates:
+        raw = (cand or {}).get("url", "")
+        if not raw:
+            continue
+        # SSRF gate FIRST: clean + require public-resolving host before ANY fetch (the vision call
+        # downloads the URL too). Reject private/metadata/rebind.
+        url = _safe_url(raw)
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        if not _vision_is_patch(url, unit_name, nationality, grok_client):
+            continue
+        data = _download(url)
+        if not data:
+            continue
+        dims = _dimensions(data)
+        if not dims:  # vision said patch but bytes aren't a readable/safe image -> skip
+            continue
+        area = dims[0] * dims[1]
+        if area > best_area:
+            best_area = area
+            best = {
+                "url": url,
+                "title": (cand or {}).get("title", ""),
+                "data": data,
+                "width": dims[0],
+                "height": dims[1],
+            }
+    return best
+
+
 def acquire_unit_patch(
     candidates: List[Dict[str, str]],
     *,
@@ -181,37 +224,7 @@ def acquire_unit_patch(
         logger.debug("unit patch skipped: no synced artifact root (output_root=None)")
         return None
 
-    best: Optional[Dict[str, Any]] = None  # highest-resolution confirmed patch
-    best_area = -1
-    seen: set = set()
-    for cand in candidates:
-        raw = (cand or {}).get("url", "")
-        if not raw:
-            continue
-        # SSRF gate FIRST: clean + require public-resolving host before ANY fetch
-        # (the vision call downloads the URL too). Reject private/metadata/rebind.
-        url = _safe_url(raw)
-        if not url or url in seen:
-            continue
-        seen.add(url)
-        if not _vision_is_patch(url, unit_name, nationality, grok_client):
-            continue
-        data = _download(url)
-        if not data:
-            continue
-        dims = _dimensions(data)
-        if not dims:  # vision said patch but bytes aren't a readable/safe image -> skip
-            continue
-        area = dims[0] * dims[1]
-        if area > best_area:
-            best_area = area
-            best = {
-                "url": url,
-                "title": (cand or {}).get("title", ""),
-                "data": data,
-                "width": dims[0],
-                "height": dims[1],
-            }
+    best = _select_best_patch(candidates, unit_name, nationality, grok_client)
 
     if not best:
         return None  # null-over-fake: no confirmed patch -> store nothing

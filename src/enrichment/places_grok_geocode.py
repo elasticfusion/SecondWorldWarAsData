@@ -191,18 +191,22 @@ def _place_name(
         s = stem.strip()
         if s and s.lower() not in ("index", "duplicate_report"):
             return s
-    # Last resort: recover a toponym from a mention's prose original_text, using mid-sentence
-    # capitalization + context corroboration (the stem). Never feed a whole prose clause to the
-    # geocoder — that geocodes the record off incidental prose.
+    # Last resort: recover a toponym from a mention's prose.
+    return _recover_name_from_mentions(place, stem, person_names)
+
+
+def _recover_name_from_mentions(
+    place: dict, stem: Optional[str], person_names: Optional[set]
+) -> Optional[str]:
+    """Last-resort name recovery: scan each mention's prose ``original_text`` for a capitalized
+    toponym corroborated by the stem (never a whole clause). Rejects a candidate that matches a
+    known PERSON name (a bare proper noun from prose may be a person, not a place). Returns the
+    first accepted toponym or None."""
     for m in (place.get("event_mentions") or []) + (place.get("mentions") or []):
         ot = ((m or {}).get("original_text") or "").strip()
         cand = _toponym_from_prose(ot, corroborate=stem)
         if not cand:
             continue
-        # Entity-context cross-check (#449 follow-up): a bare proper noun recovered from prose may
-        # be a PERSON, not a place ("We saw General Patton" -> "General Patton"). If the candidate
-        # matches a known person name (allowing a leading title like "General"/"Gen."), reject it
-        # rather than geocode a person as a place.
         if person_names:
             matched = _matches_known_person(cand, person_names)
             if matched:
