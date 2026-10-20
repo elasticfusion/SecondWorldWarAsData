@@ -518,10 +518,18 @@ class GrokClient:
         else:
             # Positional zip: each result maps to OUR request_id + cache_type at the same index.
             for (our_id, cache_type), br in zip(submitted, ordered):
+                ct = cache_type or "default"
                 if br.status == "valid":
                     metrics.valid += 1
-                    self._get_cache(cache_type or "default")[our_id] = (
-                        self._sanitize_content(br.content)
+                    self._get_cache(ct)[our_id] = self._sanitize_content(br.content)
+                    metrics.add_detail(
+                        RequestDetail(
+                            request_id=our_id,
+                            cache_type=ct,
+                            status="valid",
+                            finish_reason=br.finish_reason,
+                            content_length=len(br.content),
+                        )
                     )
                 else:
                     counter = {
@@ -531,14 +539,36 @@ class GrokClient:
                     }.get(br.status, "empty")
                     setattr(metrics, counter, getattr(metrics, counter) + 1)
                     failed_ids.append(our_id)
+                    prompt_preview = self._batch_prompt_preview(our_id, requests_by_id)
+                    logger.warning(
+                        "Batch result failed: %s [%s] %s (%d chars)",
+                        our_id,
+                        ct,
+                        br.status,
+                        len(br.content),
+                        extra={
+                            "extra_fields": {
+                                "event": "batch_result_failed",
+                                "request_id": our_id,
+                                "cache_type": ct,
+                                "status": br.status,
+                                "finish_reason": br.finish_reason,
+                                "content_length": len(br.content),
+                                "content_tail": br.content[-200:] if br.content else "",
+                                "error": br.error[:500] if br.error else "",
+                                "prompt_preview": prompt_preview,
+                            }
+                        },
+                    )
                     metrics.add_detail(
                         RequestDetail(
                             request_id=our_id,
-                            cache_type=cache_type or "default",
+                            cache_type=ct,
                             status=br.status,
-                            prompt_preview=self._batch_prompt_preview(
-                                our_id, requests_by_id
-                            ),
+                            finish_reason=br.finish_reason,
+                            content_length=len(br.content),
+                            error=br.error if br.status == "error" else "",
+                            prompt_preview=prompt_preview,
                         )
                     )
 

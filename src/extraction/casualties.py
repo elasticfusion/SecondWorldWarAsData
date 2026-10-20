@@ -216,9 +216,15 @@ def _batch_extract_casualties(
 
         _get_model = getattr(grok_client, "_get_model", None)
         _model = _get_model("casualties") if callable(_get_model) else "default"
-        _seids = ",".join(seid for seid, _ in chunk)
+        _seids = ",".join(seid for seid, _ in chunk if seid)
+        # Fold a short hash of the (stable) chunk text so chunks with missing/empty Sub-eventIDs
+        # cannot collide across events (seids alone could repeat as ""). Chunk text is identical
+        # across the COLLECT and RETRIEVE passes, so the key stays deterministic.
+        _chunk_sig = hashlib.sha256(
+            "\x1e".join(f"{seid}\x1f{text}" for seid, text in chunk).encode("utf-8")
+        ).hexdigest()[:16]
         _cache_key = hashlib.sha256(
-            f"casualties:v1:{_model}:0.1:{_seids}".encode("utf-8")
+            f"casualties:v1:{_model}:0.1:{_seids}:{_chunk_sig}".encode("utf-8")
         ).hexdigest()
         return _call_and_parse_casualties(grok_client, prompt, cache_key=_cache_key)
 

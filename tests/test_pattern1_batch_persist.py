@@ -108,59 +108,64 @@ def test_casualties_cache_key_tracks_subevent_ids():
 # ---------------------------------------------------------------------------
 # (b) positional mapping lands content under OUR request_id, not the server id
 # ---------------------------------------------------------------------------
-def test_submit_batch_maps_results_to_our_keys_positionally():
-    """retrieve_results_ordered returns BatchResults carrying the SERVER batch_request_id; the
-    in-task submit_batch path must map them POSITIONALLY to our submitted request_ids and cache the
-    content under OUR key (not the server id). We assert the mapping/caching, independent of network.
-    """
+def test_submit_batch_maps_results_to_our_keys_positionally(tmp_path):
+    """Drive the REAL GrokClient.submit_batch: retrieve_results_ordered returns BatchResults
+    carrying the SERVER batch_request_id, and submit_batch must map them POSITIONALLY to OUR
+    submitted request_ids and cache the content under OUR key (never the server id). A revert to
+    id-keyed caching (the bug) would fail this test."""
     import src.grok_client as gc
-    from src.utils.batch_api import BatchResult
+    from src.utils.batch_api import BatchResult, BatchCollector, BatchRequest
 
     client = gc.GrokClient.__new__(gc.GrokClient)  # bypass __init__/network
     client.api_key = "k"
     client.caches = {}
     client._batch_meta = {}
+    client.batch_mode = True
+    client.cache_dir = tmp_path
+    client._config = {}
     # dict-backed cache + passthrough sanitize (test the mapping, not the cache backend)
     client._get_cache = lambda ct: client.caches.setdefault(ct, {})
     client._sanitize_content = lambda c: c
+    client._estimate_batch_cost = lambda: 0.0
+    client._batch_prompt_preview = lambda rid, rbi: ""
 
-    # our two submitted requests (OUR cache keys) in submission order
-    class _Req:
-        def __init__(self, rid, ct):
-            self.request_id = rid
-            self.cache_type = ct
-
-    client._batch_collector = mock.Mock()
-    client._batch_collector.requests = [
-        _Req("ourkey-events-1", "events"),
-        _Req("ourkey-casualties-1", "casualties"),
-    ]
+    # two real submitted requests (OUR cache keys) in submission order
+    collector = BatchCollector()
+    collector.add(
+        BatchRequest(
+            "ourkey-events-1", [{"role": "user", "content": "p1"}], "m", 0.1, "events"
+        )
+    )
+    collector.add(
+        BatchRequest(
+            "ourkey-casualties-1",
+            [{"role": "user", "content": "p2"}],
+            "m",
+            0.1,
+            "casualties",
+        )
+    )
+    client._batch_collector = collector
 
     # server returns results in submission ORDER, each with a SERVER id (not our key)
     ordered = [
-        BatchResult(
-            request_id="srv-zzz-1", content='{"ok":1}', finish_reason="stop", error=""
-        ),
-        BatchResult(
-            request_id="srv-zzz-2", content='{"ok":2}', finish_reason="stop", error=""
-        ),
+        BatchResult("srv-zzz-1", '{"ok":1}', "stop", ""),
+        BatchResult("srv-zzz-2", '{"ok":2}', "stop", ""),
     ]
 
-    with mock.patch(
-        "src.utils.batch_api.retrieve_results_ordered", return_value=ordered
+    with (
+        mock.patch("src.utils.batch_api.submit_batch", return_value="batch-123"),
+        mock.patch("src.utils.batch_api.poll_batch", return_value={"state": {}}),
+        mock.patch(
+            "src.utils.batch_api.retrieve_results_ordered", return_value=ordered
+        ),
+        mock.patch("src.utils.credit_gate.reserve", return_value=True),
+        mock.patch("src.utils.credit_gate.release"),
+        mock.patch("src.grok_client._save_metrics"),
     ):
-        # exercise just the mapping block via the same logic submit_batch uses
-        submitted = [
-            (r.request_id, r.cache_type) for r in client._batch_collector.requests
-        ]
-        from src.utils.batch_api import retrieve_results_ordered
+        returned = client.submit_batch(batch_name="t")
 
-        res = retrieve_results_ordered(client.api_key, "b1")
-        assert len(res) == len(submitted)
-        for (our_id, ct), br in zip(submitted, res):
-            if br.status == "valid":
-                client._get_cache(ct)[our_id] = client._sanitize_content(br.content)
-
+    assert returned == "batch-123"
     # content cached under OUR keys, NEVER under the server id
     assert client.caches["events"]["ourkey-events-1"] == '{"ok":1}'
     assert client.caches["casualties"]["ourkey-casualties-1"] == '{"ok":2}'
