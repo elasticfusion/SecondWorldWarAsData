@@ -371,11 +371,17 @@ def record_dns_failure(url: str) -> str:
             logger.warning("mark-dead failed for %s: %s", clean, e)
         return "dead"
     # Not yet dead: persist the incremented counter (no terminal verdict).
-    # I3: do NOT rewrite an active in_progress claim on a DNS blip — that would drop
-    # claimed_at and surrender the claimant's own lock mid-fetch. Skip the counter write
-    # while in_progress (the failure is a transient the fetching task will handle).
+    _persist_dns_counter(table, clean, rec, failures, now)
+    return "retry"
+
+
+def _persist_dns_counter(table, clean, rec, failures, now) -> None:
+    """Persist the incremented DNS-failure counter WITHOUT a terminal verdict. Skips the write
+    while the record is in_progress (I3: rewriting would drop claimed_at and surrender a
+    claimant's lock mid-fetch — the failure is a transient the fetching task handles).
+    """
     if rec and rec.status == "in_progress":
-        return "retry"
+        return
     payload = {
         "url": clean,
         "status": (rec.status if rec else "searched"),
@@ -393,7 +399,6 @@ def record_dns_failure(url: str) -> str:
         table.put_item(Item=item)
     except Exception as e:  # noqa: BLE001
         logger.debug("dns-failure counter write failed for %s: %s", clean, e)
-    return "retry"
 
 
 # --- backward-compatible wrappers (pre-state-model callers / tests) ---

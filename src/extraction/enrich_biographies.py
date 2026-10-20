@@ -149,22 +149,12 @@ def search_grokipedia(
 
     for attempt in range(max_retries):
         try:
-            # Try full name first, then last name fallback
-            name_parts = [
-                p for p in person_name.split() if len(p) > 2 and not p.endswith(".")
-            ]
-            last_name = name_parts[-1] if name_parts else person_name
-            first_initial = ""
-            for p in person_name.split():
-                if p[0].isupper():
-                    first_initial = p[0].lower()
-                    break
-
+            last_name, first_initial = _name_match_tokens(person_name)
+            first_initial = first_initial.lower()
             search_queries = [
                 f"{person_name} World War",
                 f"{last_name} World War",
             ]
-
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
             }
@@ -174,36 +164,12 @@ def search_grokipedia(
                 response = requests.get(
                     search_url, headers=headers, timeout=timeout, allow_redirects=True
                 )
-
-                if response.status_code != 200:
+                if response.status_code != 200 or "/page/" not in response.text:
                     continue
-
-                if "/page/" not in response.text:
-                    continue
-
-                # Find matching page links with snippets
-                import re as _re
-
-                # Extract link + snippet pairs
-                results = _re.findall(
-                    r'data-slug="([^"]+)"[^>]*data-search-result-link="true"[^>]*data-scroll-anchor-text="([^"]*)"',
-                    response.text,
+                slug = _match_grokipedia_page(
+                    response.text, last_name.lower(), first_initial
                 )
-
-                last_name_lower = last_name.lower()
-                for slug, snippet in results:
-                    slug_lower = slug.lower().replace("_", " ")
-                    # Last name must be in slug
-                    if last_name_lower not in slug_lower:
-                        continue
-                    # First initial must match first word of slug
-                    if first_initial and slug_lower.split()[0][0] != first_initial:
-                        continue
-                    # Military relevance check on snippet
-                    # Short snippets may lack context — only enforce for longer ones
-                    if len(snippet) > 50 and not _is_military_relevant(snippet):
-                        continue
-                    # Passed all checks
+                if slug:
                     cache_result("grokipedia", person_name, response.text)
                     _grokipedia_slugs[person_name] = slug
                     return response.text
@@ -226,6 +192,31 @@ def search_grokipedia(
             logger.debug("Grokipedia search failed for %s: %s", person_name, e)
             return None
 
+    return None
+
+
+def _match_grokipedia_page(
+    html: str, last_name_lower: str, first_initial: str
+) -> Optional[str]:
+    """Scan Grokipedia search-result HTML for a slug whose name matches (last name present +
+    first-initial agreement) and whose snippet is military-relevant. Returns the slug or None.
+    """
+    import re as _re
+
+    results = _re.findall(
+        r'data-slug="([^"]+)"[^>]*data-search-result-link="true"[^>]*data-scroll-anchor-text="([^"]*)"',
+        html,
+    )
+    for slug, snippet in results:
+        slug_lower = slug.lower().replace("_", " ")
+        if last_name_lower not in slug_lower:
+            continue
+        if first_initial and slug_lower.split()[0][0] != first_initial:
+            continue
+        # Short snippets may lack context — only enforce military relevance for longer ones.
+        if len(snippet) > 50 and not _is_military_relevant(snippet):
+            continue
+        return slug
     return None
 
 
@@ -457,11 +448,7 @@ def _search_wikipedia_fallback(
 ) -> Optional[str]:
     """Fall back to Wikipedia search API when direct title lookup misses."""
     try:
-        # Try exact name first, then last name only
-        name_parts = [
-            p for p in person_name.split() if len(p) > 2 and not p.endswith(".")
-        ]
-        last_name = name_parts[-1] if name_parts else person_name
+        last_name, first_initial = _name_match_tokens(person_name)
         search_queries = [
             f'"{person_name}" "World War"',
             f'{last_name} "World War" {" ".join(p[0] for p in person_name.split() if p[0].isupper() and len(p) <= 2)}',
@@ -488,47 +475,68 @@ def _search_wikipedia_fallback(
             results = resp.json().get("query", {}).get("search", [])
             if not results:
                 continue
-
-            # Check each result — last name and first initial must match
-            first_initial = ""
-            for p in person_name.split():
-                if p[0].isupper():
-                    first_initial = p[0]
-                    break
-
-            for result in results:
-                title = result.get("title", "")
-                if not last_name or last_name.lower() not in title.lower():
-                    continue
-                # First initial must match
-                if first_initial:
-                    title_words = title.split()
-                    if title_words and title_words[0][0].upper() != first_initial:
-                        continue
-                # Fetch extract
-                resp2 = requests.get(
-                    "https://en.wikipedia.org/w/api.php",
-                    params={
-                        "action": "query",
-                        "format": "json",
-                        "titles": result["title"],
-                        "prop": "extracts|pageimages",
-                        "exintro": "True",
-                        "explaintext": "True",
-                        "redirects": "1",
-                        "piprop": "original",
-                    },
-                    headers=headers,
-                    timeout=timeout,
-                )
-                if resp2.status_code == 200:
-                    content = _extract_page_content(resp2.json())
-                    if content and _is_military_relevant(content):
-                        # Store image + license + preserve the photo itself.
-                        _store_wikipedia_image(person_name, resp2.json())
-                        return content
+            content = _wiki_fallback_match(
+                results, person_name, last_name, first_initial, headers, timeout
+            )
+            if content:
+                return content
     except Exception as e:
         logger.debug("Wikipedia search fallback failed for %s: %s", person_name, e)
+    return None
+
+
+def _name_match_tokens(person_name: str) -> "tuple[str, str]":
+    """Return (last_name, first_initial) used to match a candidate title/slug to the person.
+    last_name = last 'real' name part (len>2, not an abbreviation); first_initial = first
+    capitalized token's initial."""
+    name_parts = [p for p in person_name.split() if len(p) > 2 and not p.endswith(".")]
+    last_name = name_parts[-1] if name_parts else person_name
+    first_initial = ""
+    for p in person_name.split():
+        if p and p[0].isupper():
+            first_initial = p[0]
+            break
+    return last_name, first_initial
+
+
+def _wiki_fallback_match(
+    results: "list",
+    person_name: str,
+    last_name: str,
+    first_initial: str,
+    headers: dict,
+    timeout: int,
+) -> Optional[str]:
+    """For each Wikipedia search hit, require last-name + first-initial agreement, then fetch the
+    intro extract and keep it if military-relevant. Returns the content or None."""
+    for result in results:
+        title = result.get("title", "")
+        if not last_name or last_name.lower() not in title.lower():
+            continue
+        if first_initial:
+            title_words = title.split()
+            if title_words and title_words[0][0].upper() != first_initial.upper():
+                continue
+        resp2 = requests.get(
+            "https://en.wikipedia.org/w/api.php",
+            params={
+                "action": "query",
+                "format": "json",
+                "titles": result["title"],
+                "prop": "extracts|pageimages",
+                "exintro": "True",
+                "explaintext": "True",
+                "redirects": "1",
+                "piprop": "original",
+            },
+            headers=headers,
+            timeout=timeout,
+        )
+        if resp2.status_code == 200:
+            content = _extract_page_content(resp2.json())
+            if content and _is_military_relevant(content):
+                _store_wikipedia_image(person_name, resp2.json())
+                return content
     return None
 
 

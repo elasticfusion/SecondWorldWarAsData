@@ -179,33 +179,39 @@ def clean_url(url: str) -> Optional[str]:
         return None
     if not _host_is_safe(p.hostname):
         return None
-
-    # Rebuild netloc: lowercase host, keep userinfo out (reject it — credentials in a
-    # URL are an anti-pattern + a dedup hazard), drop default ports.
+    # Reject credentials-in-URL (an anti-pattern + a dedup hazard) BEFORE rebuilding netloc.
     if p.username or p.password:
         return None
+
+    netloc = _normalize_netloc(scheme, p)
+    query = _filter_identity_query(p.query)
+    path = p.path or "/"
+    # Drop RFC-3986 path params (the ';' segment, e.g. ';jsessionid=') — session tracking lives
+    # there and would otherwise leak into the dedup key. Fragment dropped.
+    return urlunparse((scheme, netloc, path, "", query, ""))
+
+
+def _normalize_netloc(scheme: str, p) -> str:
+    """Lowercase host + drop a default port (80/443). Caller has already rejected userinfo."""
     host = p.hostname.lower()
-    netloc = host
     if p.port and not (
         (scheme == "http" and p.port == 80) or (scheme == "https" and p.port == 443)
     ):
-        netloc = f"{host}:{p.port}"
+        return f"{host}:{p.port}"
+    return host
 
-    # Drop the query EXCEPT resource-identity params (option 2): everything after '?'
-    # is ignored unless it's an identity param, so tracking/session noise collapses but
-    # distinct documents (NARA ?id=, catalog ?q=, viewer ?page=) stay distinct. Kept
-    # params are sorted for a stable key.
-    query = urlencode(
+
+def _filter_identity_query(raw_query: str) -> str:
+    """Drop the query EXCEPT resource-identity params (id/q/page/...): tracking/session noise
+    collapses but distinct documents (NARA ?id=, catalog ?q=, viewer ?page=) stay distinct.
+    Kept params are lowercased + sorted for a stable dedup key."""
+    return urlencode(
         sorted(
             (k.lower(), v)
-            for k, v in parse_qsl(p.query, keep_blank_values=True)
+            for k, v in parse_qsl(raw_query, keep_blank_values=True)
             if k.lower() in _IDENTITY_PARAMS
         )
     )
-    path = p.path or "/"
-    # Drop RFC-3986 path params (the ';' segment, e.g. ';jsessionid=') — session
-    # tracking lives there and would otherwise leak into the dedup key. Fragment dropped.
-    return urlunparse((scheme, netloc, path, "", query, ""))
 
 
 # --- SSRF-safe FETCH layer -------------------------------------------------------

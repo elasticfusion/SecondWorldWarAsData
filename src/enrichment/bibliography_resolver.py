@@ -569,64 +569,18 @@ def _search_online_sources(
     author = (entry.get("citation") or {}).get("author") or ""
     if isinstance(author, list):
         author = ", ".join(a for a in author if a)
-
-    # 1. NARA catalog — scoped by the DETERMINISTIC record group (not Grok) so the query is
-    #    bounded to the right RG instead of matching tens of thousands of unrelated records.
-    #    (_search_nara already iterates + Grok-verifies its candidates internally.)
-    nara_key = config.get("nara_api_key")
-    if nara_key and _is_nara_searchable(entry, verbatim):
-        rg = _lookup_record_group(verbatim or search_text or title)
-        rg_num = rg[1] if rg else None
-        query = verbatim[:100] or title
-        url = _search_nara(
-            query, nara_key, grok_client, verbatim, record_group_number=rg_num
-        )
-        if not url:
-            # Retry with the expanded alt_title (LLM semantic expansion) if available.
-            alt_title = (entry.get("citation") or {}).get("alt_title") or ""
-            if alt_title and alt_title != query:
-                url = _search_nara(
-                    alt_title[:100],
-                    nara_key,
-                    grok_client,
-                    verbatim,
-                    record_group_number=rg_num,
-                )
-        if url:
-            findings.append((url, "nara_catalog"))
-
-    # 2. OpenSERP for digitized copies (HathiTrust, university sites, etc.) — already iterates
-    #    candidates across repository-targeted query templates + Grok-verifies each internally.
-    if config.get("use_openserp"):
-        openserp_url = config.get("openserp_url", "http://localhost:7001")
-        current_ref = entry.get("archive_reference_number") or ""
-        ref = current_ref if current_ref and current_ref != "None" else search_title
-        url = _search_openserp_archive(ref, openserp_url, grok_client, entry)
-        if url:
-            findings.append((url, "openserp_archive"))
-
-    # 3. Archive.org — NOW iterates + verifies candidates (was: blind first-hit). Replicates the
-    #    NARA pattern via the shared _collect_verified_candidates helper.
-    from src.extraction.supplemental_search import (
-        search_archive_org_candidates,
-        search_gutenberg_candidates,
-    )
-
     query = verbatim[:300] or search_title
-    # Archive.org is an independent source (its own advancedsearch API) — gated ONLY on its
-    # own flag, never on use_openserp.
-    if config.get("search_archive_org", True):
-        ao_cands = search_archive_org_candidates(search_title, author or None)
-        for url in _collect_verified_candidates(query, ao_cands, grok_client, entry):
-            findings.append((url, "archive_org"))
 
-    # 4. Gutenberg — independent native source (Gutendex API, NOT OpenSERP). Same
-    #    candidate-iterate-verify pattern. Gated ONLY on its own flag, never on use_openserp.
-    #    Low hit expectation (out-of-copyright literary texts, not WWII operational records).
-    if config.get("search_gutenberg", True):
-        g_cands = search_gutenberg_candidates(search_title, author or None)
-        for url in _collect_verified_candidates(query, g_cands, grok_client, entry):
-            findings.append((url, "gutenberg"))
+    # Each source uses the same pattern (fetch candidates -> Grok-verify -> keep verified),
+    # extracted into its own helper so this aggregator stays flat. Order = source priority.
+    findings += _find_in_nara(entry, verbatim, search_text, title, grok_client, config)
+    findings += _find_in_openserp(entry, search_title, grok_client, config)
+    findings += _find_in_archive_org(
+        entry, query, search_title, author, grok_client, config
+    )
+    findings += _find_in_gutenberg(
+        entry, query, search_title, author, grok_client, config
+    )
 
     if not findings:
         return None
@@ -648,6 +602,97 @@ def _search_online_sources(
     # Primary finding keeps the existing single-tuple contract (_apply_result appends it too,
     # which the dedup above already guards against).
     return findings[0]
+
+
+def _find_in_nara(
+    entry: Dict,
+    verbatim: str,
+    search_text: str,
+    title: str,
+    grok_client: Any,
+    config: Dict,
+) -> "list[Tuple[str, str]]":
+    """NARA catalog — scoped by the DETERMINISTIC record group (not Grok) so the query is bounded
+    to the right RG. Retries with the expanded alt_title. (_search_nara iterates + verifies.)
+    """
+    nara_key = config.get("nara_api_key")
+    if not (nara_key and _is_nara_searchable(entry, verbatim)):
+        return []
+    rg = _lookup_record_group(verbatim or search_text or title)
+    rg_num = rg[1] if rg else None
+    query = verbatim[:100] or title
+    url = _search_nara(
+        query, nara_key, grok_client, verbatim, record_group_number=rg_num
+    )
+    if not url:
+        alt_title = (entry.get("citation") or {}).get("alt_title") or ""
+        if alt_title and alt_title != query:
+            url = _search_nara(
+                alt_title[:100],
+                nara_key,
+                grok_client,
+                verbatim,
+                record_group_number=rg_num,
+            )
+    return [(url, "nara_catalog")] if url else []
+
+
+def _find_in_openserp(
+    entry: Dict, search_title: str, grok_client: Any, config: Dict
+) -> "list[Tuple[str, str]]":
+    """OpenSERP for digitized copies (HathiTrust, university sites). Iterates candidates across
+    repository-targeted query templates + Grok-verifies each internally."""
+    if not config.get("use_openserp"):
+        return []
+    openserp_url = config.get("openserp_url", "http://localhost:7001")
+    current_ref = entry.get("archive_reference_number") or ""
+    ref = current_ref if current_ref and current_ref != "None" else search_title
+    url = _search_openserp_archive(ref, openserp_url, grok_client, entry)
+    return [(url, "openserp_archive")] if url else []
+
+
+def _find_in_archive_org(
+    entry: Dict,
+    query: str,
+    search_title: str,
+    author: str,
+    grok_client: Any,
+    config: Dict,
+) -> "list[Tuple[str, str]]":
+    """Archive.org — independent source (its own advancedsearch API), gated ONLY on its own flag.
+    Iterates + verifies candidates via the shared _collect_verified_candidates helper.
+    """
+    if not config.get("search_archive_org", True):
+        return []
+    from src.extraction.supplemental_search import search_archive_org_candidates
+
+    cands = search_archive_org_candidates(search_title, author or None)
+    return [
+        (url, "archive_org")
+        for url in _collect_verified_candidates(query, cands, grok_client, entry)
+    ]
+
+
+def _find_in_gutenberg(
+    entry: Dict,
+    query: str,
+    search_title: str,
+    author: str,
+    grok_client: Any,
+    config: Dict,
+) -> "list[Tuple[str, str]]":
+    """Gutenberg — independent native source (Gutendex API), gated ONLY on its own flag. Same
+    candidate-iterate-verify pattern; low hit expectation (literary texts, not WWII records).
+    """
+    if not config.get("search_gutenberg", True):
+        return []
+    from src.extraction.supplemental_search import search_gutenberg_candidates
+
+    cands = search_gutenberg_candidates(search_title, author or None)
+    return [
+        (url, "gutenberg")
+        for url in _collect_verified_candidates(query, cands, grok_client, entry)
+    ]
 
 
 def _collect_verified_candidates(
@@ -711,21 +756,7 @@ def _search_openserp_archive(
         # Broadened beyond a single 'digitized document' query: iterate repository-targeted
         # templates (HathiTrust, Internet Archive, university libraries, Google Books, general
         # full-text/pdf) so non-NARA digitized copies are found too.
-        title = ""
-        author = ""
-        if entry:
-            citation = entry.get("citation") or {}
-            # NEVER search on the 'Unknown' placeholder (deterministic records' title) — it makes
-            # OpenSERP literally query for "Unknown" and return junk. Prefer the Grok-expanded
-            # alt_title, then a real title, then the archive ref.
-            alt = citation.get("alt_title") or ""
-            real_title = citation.get("title") or ""
-            title = next(
-                (t for t in (alt, real_title, ref) if t and t != "Unknown"), ref
-            )
-            author = citation.get("author") or ""
-        if not title or title == "Unknown":
-            title = ref
+        title, author = _openserp_search_title(entry, ref)
         queries = render_search_queries(
             "bibliography", "openserp", title=title, author=author
         )
@@ -754,33 +785,11 @@ def _search_openserp_archive(
             )
             if resp.status_code != 200:
                 continue
-            data = resp.json()
-            results = data.get("results", [])
-            for r in results:
-                if verify_budget <= 0:
-                    break
-                url = r.get("url", "")
-                if not url:
-                    continue
-                result_title = r.get("title", "")
-                # Cheap deterministic pre-gate before the Grok verify: a result sharing NO
-                # meaningful token with the query is not the cited document — reject free. The
-                # query string (repository-targeted, carries the citation terms) is the overlap
-                # basis. Prevents the per-result Grok-call storm on junk web results.
-                if grok_client and not _title_token_overlap(query, result_title):
-                    logger.debug("  ✗ OpenSERP token-gate: '%s'", result_title[:60])
-                    continue
-                if grok_client:
-                    verify_budget -= 1  # a real Grok verify is about to be spent
-                if grok_client and not _verify_openserp_match(
-                    ref, result_title, url, grok_client, entry
-                ):
-                    logger.debug(
-                        "  ✗ OpenSERP rejected: '%s' for query '%s'",
-                        result_title[:60],
-                        query[:60],
-                    )
-                    continue
+            results = resp.json().get("results", [])
+            url, verify_budget = _verify_openserp_results(
+                query, results, ref, grok_client, entry, verify_budget
+            )
+            if url:
                 cache_result("openserp_archive", ref, url)
                 logger.info("Found online copy: %s", url)
                 return url
@@ -791,6 +800,58 @@ def _search_openserp_archive(
 
     cache_result("openserp_archive", ref, None)
     return None
+
+
+def _openserp_search_title(entry: Optional[Dict], ref: str) -> "Tuple[str, str]":
+    """Pick a meaningful (title, author) for the OpenSERP query. NEVER the 'Unknown' placeholder
+    (deterministic records' title) — prefer the Grok-expanded alt_title, then a real title, then
+    the archive ref."""
+    if not entry:
+        return ref, ""
+    citation = entry.get("citation") or {}
+    alt = citation.get("alt_title") or ""
+    real_title = citation.get("title") or ""
+    title = next((t for t in (alt, real_title, ref) if t and t != "Unknown"), ref)
+    if not title or title == "Unknown":
+        title = ref
+    return title, (citation.get("author") or "")
+
+
+def _verify_openserp_results(
+    query: str,
+    results: "list",
+    ref: str,
+    grok_client: Any,
+    entry: Optional[Dict],
+    verify_budget: int,
+) -> "Tuple[Optional[str], int]":
+    """Iterate one query's OpenSERP results: cheap token-gate, then a budgeted Grok verify.
+    Returns (first_verified_url_or_None, remaining_budget)."""
+    for r in results:
+        if verify_budget <= 0:
+            break
+        url = r.get("url", "")
+        if not url:
+            continue
+        result_title = r.get("title", "")
+        # Cheap deterministic pre-gate before the Grok verify: a result sharing NO meaningful
+        # token with the query is not the cited document — reject free.
+        if grok_client and not _title_token_overlap(query, result_title):
+            logger.debug("  ✗ OpenSERP token-gate: '%s'", result_title[:60])
+            continue
+        if grok_client:
+            verify_budget -= 1  # a real Grok verify is about to be spent
+        if grok_client and not _verify_openserp_match(
+            ref, result_title, url, grok_client, entry
+        ):
+            logger.debug(
+                "  ✗ OpenSERP rejected: '%s' for query '%s'",
+                result_title[:60],
+                query[:60],
+            )
+            continue
+        return url, verify_budget
+    return None, verify_budget
 
 
 def _verify_openserp_match(
@@ -1429,64 +1490,69 @@ def _search_nara(
             len(results),
             safe_q[:60],
         )
-        for hit in results:
-            source = hit.get("_source", {})
-            record = source.get("record", source)
-            title = record.get("title", source.get("title", ""))
-            nara_id = _extract_na_id(hit)
-            logger.debug("  Candidate: %s (naId=%s)", title[:80], nara_id)
-            if not nara_id:
-                continue
-            url = f"https://catalog.archives.gov/id/{nara_id}"
-            # Give the verifier the record's CONTEXT (series/ancestors path + scope note +
-            # level) — a green-book citation matches at the series/unit level, and the
-            # cryptic file-unit title alone (e.g. "XIV Corps: 4-004") is not enough for the
-            # LLM to judge. The ancestors carry the series ("World War II Operations
-            # Reports") and the unit discriminator.
-            nara_context = _nara_match_context(record)
-            # Deterministic pre-gate before spending a Grok call: the citation and the
-            # candidate (title + context) must share at least one MEANINGFUL token (noun-
-            # like content word). No shared content word -> cannot be the cited document
-            # (e.g. 'Letter, Craig to OCMH' vs 'Flags, Colors and Standards') -> reject
-            # cheaply. Only lexically-overlapping candidates are escalated to Grok to
-            # validate relevance.
-            if not _title_token_overlap(verbatim or query, f"{title} {nara_context}"):
-                logger.debug(
-                    "  ✗ Rejected (no token overlap): '%s' vs query '%s'",
-                    title[:60],
-                    (verbatim or query)[:60],
-                )
-                continue
-            if grok_client and not _verify_nara_match(
-                query, title, grok_client, context=nara_context
-            ):
-                logger.debug(
-                    "  ✗ Rejected: '%s' does not match query '%s'",
-                    title[:60],
-                    query[:60],
-                )
-                continue
-            logger.debug("  ✓ Accepted: %s", url)
-            # Record whether the matched NARA record is ALREADY ONLINE (digitized) and how
-            # many page-scans it has — but ALWAYS return the catalog RECORD page (/id/<naId>)
-            # as the resource, NOT a bare page-level objectUrl: a .tif objectUrl is a single
-            # page, and a multi-page document (e.g. a letter spanning several pages, or a
-            # whole file unit) would be misrepresented by page 1 and its other pages missed.
-            # The /id page presents ALL pages + the description together.
-            n_objs = _nara_digital_object_count(record)
-            logger.info(
-                "OBSERV nara.match naId=%s online=%d digital_objects=%d q=%r",
-                nara_id,
-                1 if n_objs else 0,
-                n_objs,
-                safe_q[:50],
-            )
-            resolved_url = url
+        resolved_url = _verify_nara_hits(results, query, verbatim, safe_q, grok_client)
+        if resolved_url:
             cache_result("nara", cache_q, resolved_url)
             return resolved_url
     except Exception as e:
         logger.debug("NARA search failed: %s", e)
     cache_result("nara", cache_q, None)
+    return None
+
+
+def _verify_nara_hits(
+    results: "list",
+    query: str,
+    verbatim: str,
+    safe_q: str,
+    grok_client: Any,
+) -> Optional[str]:
+    """Iterate NARA search hits: cheap token-gate, then a Grok relevance verify, returning the
+    catalog RECORD page (/id/<naId>) of the first accepted hit (NOT a page-level objectUrl — the
+    /id page presents ALL pages + the description). Returns None if nothing verifies."""
+    for hit in results:
+        source = hit.get("_source", {})
+        record = source.get("record", source)
+        title = record.get("title", source.get("title", ""))
+        nara_id = _extract_na_id(hit)
+        logger.debug("  Candidate: %s (naId=%s)", title[:80], nara_id)
+        if not nara_id:
+            continue
+        url = f"https://catalog.archives.gov/id/{nara_id}"
+        # Give the verifier the record's CONTEXT (series/ancestors path + scope note + level) —
+        # a green-book citation matches at the series/unit level, and the cryptic file-unit title
+        # alone (e.g. "XIV Corps: 4-004") is not enough for the LLM to judge.
+        nara_context = _nara_match_context(record)
+        # Deterministic pre-gate before spending a Grok call: the citation and the candidate
+        # (title + context) must share at least one MEANINGFUL token — else it cannot be the
+        # cited document, reject cheaply.
+        if not _title_token_overlap(verbatim or query, f"{title} {nara_context}"):
+            logger.debug(
+                "  ✗ Rejected (no token overlap): '%s' vs query '%s'",
+                title[:60],
+                (verbatim or query)[:60],
+            )
+            continue
+        if grok_client and not _verify_nara_match(
+            query, title, grok_client, context=nara_context
+        ):
+            logger.debug(
+                "  ✗ Rejected: '%s' does not match query '%s'", title[:60], query[:60]
+            )
+            continue
+        logger.debug("  ✓ Accepted: %s", url)
+        # Record whether the matched record is ALREADY ONLINE + its page-scan count, but ALWAYS
+        # return the /id record page (a .tif objectUrl is a single page; a multi-page document
+        # would be misrepresented by page 1 and its other pages missed).
+        n_objs = _nara_digital_object_count(record)
+        logger.info(
+            "OBSERV nara.match naId=%s online=%d digital_objects=%d q=%r",
+            nara_id,
+            1 if n_objs else 0,
+            n_objs,
+            safe_q[:50],
+        )
+        return url
     return None
 
 

@@ -936,6 +936,68 @@ def extract_supplemental(
     endnote_texts = fetch_endnote_texts(parsed_file)
 
     # OBSERV (bibliography chain): what does supplemental actually see for this event?
+    _observe_supplemental_input(event_file, event_data, endnote_texts)
+
+    # Create prompts
+    prompts = create_supplemental_prompt(event_data, endnote_texts)
+    if not prompts:
+        logger.info("No sub-events found in %s", event_file.name)
+        return None
+
+    # Extract from API
+    all_supplemental = []
+    for sub_event_id, prompt, stable_material in prompts:
+        logger.debug("Processing sub-event %s", sub_event_id)
+        response = _extract_with_retry(
+            prompt, sub_event_id, grok_client, stable_key_material=stable_material
+        )
+        if response:
+            all_supplemental.append(response)
+
+    # OBSERV: how many sub-event prompts returned materials (post-batch answers).
+    _observe_supplemental_extract(event_file, prompts, all_supplemental)
+
+    if not all_supplemental:
+        logger.info("No supplemental material extracted from %s", event_file.name)
+        return None
+
+    # Sanitize and generate ULIDs
+    for sub_event_data in all_supplemental:
+        sanitize_supplemental_data(sub_event_data)
+    all_supplemental = generate_ulids(all_supplemental)
+
+    # Route by content class
+    book = event_file.parent.name
+    chapter = event_file.name.replace("-event.json", "")
+    bib_dir = output_root / "bibliography"
+
+    factual, ambiguous, bib_count = _route_by_content_class(
+        all_supplemental, bib_dir, book, chapter, grok_client, enrich
+    )
+
+    # Write factual content as notes-event file (URL map from the parsed file's footnotes).
+    endnote_urls = _build_endnote_url_map(event_file)
+    notes_file = _write_notes_event(event_file, factual, endnote_urls)
+
+    # Queue ambiguous items for human review
+    _append_to_review_queue(bib_dir, ambiguous)
+
+    logger.info(
+        "  %s: %d bibliography, %d factual, %d ambiguous",
+        event_file.name,
+        bib_count,
+        len(factual),
+        len(ambiguous),
+    )
+
+    return notes_file or (bib_dir if bib_count > 0 else None)
+
+
+def _observe_supplemental_input(
+    event_file: Path, event_data: Dict, endnote_texts: Dict
+) -> None:
+    """OBSERV: log what supplemental sees for this event (sub-events, ref counts, endnote texts).
+    Observability must never break extraction, so all failures are swallowed."""
     try:
         subs = event_data.get("Event", {}).get("Sub-events", [])
         n_with_refs = sum(
@@ -962,23 +1024,11 @@ def extract_supplemental(
     except Exception:  # noqa: BLE001 - observability must never break extraction
         pass
 
-    # Create prompts
-    prompts = create_supplemental_prompt(event_data, endnote_texts)
-    if not prompts:
-        logger.info("No sub-events found in %s", event_file.name)
-        return None
 
-    # Extract from API
-    all_supplemental = []
-    for sub_event_id, prompt, stable_material in prompts:
-        logger.debug("Processing sub-event %s", sub_event_id)
-        response = _extract_with_retry(
-            prompt, sub_event_id, grok_client, stable_key_material=stable_material
-        )
-        if response:
-            all_supplemental.append(response)
-
-    # OBSERV: how many sub-event prompts returned materials (post-batch answers).
+def _observe_supplemental_extract(
+    event_file: Path, prompts: "list", all_supplemental: "list"
+) -> None:
+    """OBSERV: log post-batch materials + a bounded, sanitized content-class histogram."""
     try:
         mat_total = sum(
             len(r.get("Supplemental_Material", []) or [])
@@ -988,9 +1038,8 @@ def extract_supplemental(
         classes: Dict[str, int] = {}
         for r in all_supplemental:
             for m in r.get("Supplemental_Material", []) or []:
-                # Sanitize + bound the (Grok-derived) class label: strip newlines to
-                # prevent log-forging, truncate, and cap distinct keys to avoid a
-                # log blowup if the model returns many junk labels.
+                # Sanitize + bound the (Grok-derived) class label: strip newlines (log-forging),
+                # truncate, cap distinct keys so junk labels can't blow up the log.
                 c = (
                     str((m or {}).get("content_class", "?"))
                     .replace("\n", " ")
@@ -1010,27 +1059,10 @@ def extract_supplemental(
     except Exception:  # noqa: BLE001 - observability must never break extraction
         pass
 
-    if not all_supplemental:
-        logger.info("No supplemental material extracted from %s", event_file.name)
-        return None
 
-    # Sanitize and generate ULIDs
-    for sub_event_data in all_supplemental:
-        sanitize_supplemental_data(sub_event_data)
-    all_supplemental = generate_ulids(all_supplemental)
-
-    # Route by content class
-    book = event_file.parent.name
-    chapter = event_file.name.replace("-event.json", "")
-    bib_dir = output_root / "bibliography"
-
-    factual, ambiguous, bib_count = _route_by_content_class(
-        all_supplemental, bib_dir, book, chapter, grok_client, enrich
-    )
-
-    # Write factual content as notes-event file
-    # Build URL mapping from parsed file's footnotes
-    endnote_urls = {}
+def _build_endnote_url_map(event_file: Path) -> Dict:
+    """Build {footnote_number: url} from the event's sibling -parsed.json footnotes."""
+    endnote_urls: Dict = {}
     try:
         parsed_file = event_file.with_name(
             event_file.name.replace("-event.json", "-parsed.json")
@@ -1042,17 +1074,4 @@ def extract_supplemental(
                     endnote_urls[fn["number"]] = fn["url"]
     except Exception as e:
         logger.warning("Supplemental extraction step failed: %s", e)
-    notes_file = _write_notes_event(event_file, factual, endnote_urls)
-
-    # Queue ambiguous items for human review
-    _append_to_review_queue(bib_dir, ambiguous)
-
-    logger.info(
-        "  %s: %d bibliography, %d factual, %d ambiguous",
-        event_file.name,
-        bib_count,
-        len(factual),
-        len(ambiguous),
-    )
-
-    return notes_file or (bib_dir if bib_count > 0 else None)
+    return endnote_urls

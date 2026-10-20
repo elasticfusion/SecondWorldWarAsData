@@ -761,11 +761,31 @@ def reconcile_bibliography_dir(bib_dir: Path) -> int:
     bib_dir = Path(bib_dir)
     if not bib_dir.exists():
         return 0
-    from src.utils.file_lock import write_json_with_lock
 
-    # Group record files by citation hash. Prefer the hash embedded in the filename (shards and
-    # the canonical file all carry the same <hash>); fall back to a hash recomputed from the
-    # record's match key for legacy random-ULID filenames. Group key is the canonical filename.
+    # Group record files by citation hash (filename hash preferred; recomputed match-key hash as
+    # a legacy fallback). Then a fuzzy near-title pass folds typo-level duplicates.
+    groups = _group_bib_files_by_hash(bib_dir)
+    _fuzzy_collapse_groups(groups)
+
+    merged_away = 0
+    new_index: Dict[str, Dict[str, str]] = {"titles": {}, "refs": {}, "authors": {}}
+    for canon_name, items in groups.items():
+        merged_away += _reconcile_bib_group(bib_dir, canon_name, items, new_index)
+    try:
+        _save_index(bib_dir, new_index)
+    except OSError:
+        pass
+    logger.info(
+        "OBSERV bib.reconcile groups=%d merged_away=%d", len(groups), merged_away
+    )
+    return merged_away
+
+
+def _group_bib_files_by_hash(bib_dir: Path) -> "Dict[str, List[tuple]]":
+    """Group bibliography record files by their canonical citation filename. Prefer the <hash>
+    embedded in the filename (shards + canonical share it); fall back to a hash recomputed from
+    the record's match key for legacy random-ULID names. Skips index/queue + non-records.
+    """
     groups: Dict[str, List[tuple]] = {}
     for f in sorted(bib_dir.glob("*.json")):
         if f.name in ("index.json", "review_queue.json"):
@@ -787,43 +807,36 @@ def reconcile_bibliography_dir(bib_dir: Path) -> int:
                 )
             canon = _deterministic_bib_filename(_match_keys(data, title))
         groups.setdefault(canon, []).append((f, data))
+    return groups
 
-    # Fuzzy near-title collapse (moved here from the per-write hot path): exact deterministic
-    # keys catch case/punctuation/whitespace variants, but NOT typo-level fuzz ("Bastogne" vs
-    # "Bastonge"). Fold groups whose canonical titles fuzzy-match (>=0.85) into the
-    # lexicographically-smallest canonical key so the choice is deterministic regardless of
-    # listing order. Only title-bearing groups participate (ref/author-keyed groups are left
-    # exact to avoid over-merging distinct sources by a weak key).
-    _fuzzy_collapse_groups(groups)
 
+def _reconcile_bib_group(
+    bib_dir: Path,
+    canon_name: str,
+    items: "List[tuple]",
+    new_index: "Dict[str, Dict[str, str]]",
+) -> int:
+    """Merge one citation group's records into the canonical file, delete the non-canonical ones,
+    and index the result. Returns the count merged away. Fail-safe (never raises)."""
+    from src.utils.file_lock import write_json_with_lock
+
+    files = [f for f, _ in items]
+    records = [d for _, d in items]
+    merged = _merge_bib_records(records) if len(records) > 1 else records[0]
+    canon_path = bib_dir / canon_name
     merged_away = 0
-    new_index: Dict[str, Dict[str, str]] = {"titles": {}, "refs": {}, "authors": {}}
-    for canon_name, items in groups.items():
-        files = [f for f, _ in items]
-        records = [d for _, d in items]
-        merged = _merge_bib_records(records) if len(records) > 1 else records[0]
-        canon_path = bib_dir / canon_name
-        try:
-            write_json_with_lock(canon_path, merged, entity="bibliography")
-            # remove any non-canonical files in this group
-            for f in files:
-                if f.name != canon_name:
-                    try:
-                        f.unlink()
-                        merged_away += 1
-                    except OSError:
-                        pass
-        except Exception as e:  # noqa: BLE001 - reconcile must never break the run
-            logger.warning("reconcile bibliography %s failed: %s", canon_name, e)
-            continue
-        # rebuild the derived index from the canonical record
-        title = merged.get("title", "") or merged.get("verbatim_reference", "") or ""
-        _index_entry(new_index, _match_keys(merged, title), canon_name)
     try:
-        _save_index(bib_dir, new_index)
-    except OSError:
-        pass
-    logger.info(
-        "OBSERV bib.reconcile groups=%d merged_away=%d", len(groups), merged_away
-    )
+        write_json_with_lock(canon_path, merged, entity="bibliography")
+        for f in files:
+            if f.name != canon_name:
+                try:
+                    f.unlink()
+                    merged_away += 1
+                except OSError:
+                    pass
+    except Exception as e:  # noqa: BLE001 - reconcile must never break the run
+        logger.warning("reconcile bibliography %s failed: %s", canon_name, e)
+        return 0
+    title = merged.get("title", "") or merged.get("verbatim_reference", "") or ""
+    _index_entry(new_index, _match_keys(merged, title), canon_name)
     return merged_away

@@ -1427,6 +1427,32 @@ class GrokClient:
 
         return None
 
+    def _evict_and_retry_json(
+        self,
+        prompt: str,
+        system_prompt: Optional[str],
+        temperature: float,
+        cache_type: str,
+        cache_key: Optional[str],
+    ) -> Dict[str, Any]:
+        """Evict the (poisoned/short) cached entry and re-run extract_json fresh (use_cache=False,
+        _retried=True so it can't recurse again). Shared by the poisoned-cache + short-response
+        guards."""
+        cache = self._get_cache(cache_type)
+        evict_key = cache_key or self._make_cache_key(
+            prompt, temperature, self._get_model(cache_type), system_prompt or ""
+        )
+        cache.pop(evict_key, None)
+        return self.extract_json(
+            prompt,
+            system_prompt,
+            temperature,
+            False,
+            cache_type,
+            _retried=True,
+            cache_key=cache_key,
+        )
+
     def extract_json(
         self,
         prompt: str,
@@ -1466,22 +1492,8 @@ class GrokClient:
                     len(response),
                     stripped[:20],
                 )
-                cache = self._get_cache(cache_type)
-                evict_key = cache_key or self._make_cache_key(
-                    prompt,
-                    temperature,
-                    self._get_model(cache_type),
-                    system_prompt or "",
-                )
-                cache.pop(evict_key, None)
-                return self.extract_json(
-                    prompt,
-                    system_prompt,
-                    temperature,
-                    False,
-                    cache_type,
-                    _retried=True,
-                    cache_key=cache_key,
+                return self._evict_and_retry_json(
+                    prompt, system_prompt, temperature, cache_type, cache_key
                 )
 
         # Auto-retry short responses, but accept valid short JSON ([], {}, "null")
@@ -1493,22 +1505,8 @@ class GrokClient:
                     "Short response (%d chars), clearing cache and retrying",
                     len(response),
                 )
-                cache = self._get_cache(cache_type)
-                evict_key = cache_key or self._make_cache_key(
-                    prompt,
-                    temperature,
-                    self._get_model(cache_type),
-                    system_prompt or "",
-                )
-                cache.pop(evict_key, None)
-                return self.extract_json(
-                    prompt,
-                    system_prompt,
-                    temperature,
-                    False,
-                    cache_type,
-                    _retried=True,
-                    cache_key=cache_key,
+                return self._evict_and_retry_json(
+                    prompt, system_prompt, temperature, cache_type, cache_key
                 )
 
         # Clean and sanitize response

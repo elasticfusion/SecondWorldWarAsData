@@ -47,7 +47,10 @@ run "ruff(B)"  python -m ruff check src/ lambda_handlers/ --select B --quiet
 # (listed, not silently tolerated); a D-or-worse block HARD-FAILS the gate.
 run_radon() {
   local out
-  out="$(python -m radon cc $SCOPE --min C 2>&1)"
+  # --show-complexity is REQUIRED: without it radon emits "- D" (no trailing space) and the
+  # ' - [D-F] ' / ' - [C-F] ' greps below never match (the D+ hard-fail was a silent no-op).
+  # With it, lines read "- D (21)" so the greps fire. NO allowlist — a D+ block MUST be refactored.
+  out="$(python -m radon cc $SCOPE --min C --show-complexity 2>&1)"
   local dworse cblocks allcplus
   dworse="$(echo "$out" | grep -E ' - [D-F] ' || true)"
   cblocks="$(echo "$out" | grep -E ' - C ' || true)"
