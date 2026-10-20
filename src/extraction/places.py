@@ -389,10 +389,22 @@ def _find_or_create_place(
     place_id = str(ulid.new())
     if llm_place_id and llm_place_id != place_id:
         logger.info("OBSERV id.minted entity=place field=PlaceID replaced_llm_value=1")
-    safe_name = place_name.replace(" ", "_").replace("/", "_")
-    filename = f"{safe_name}_{place_id[:8]}.json"
+    # Path-traversal guard: place_name is LLM-derived; the cosmetic replaces below do NOT block
+    # "..", backslash, NUL, leading dots. Route through the hardened sanitizer + symlink-resolved
+    # containment (write_json_with_lock does mkdir(parents=True)); fall back to the minted ULID.
+    from src.extraction.batch_parallel import (
+        _safe_entity_filename,
+        _contained_entity_path,
+    )
 
-    place_file = places_dir / filename
+    safe_name = place_name.replace(" ", "_").replace("/", "_")
+    filename = _safe_entity_filename(
+        f"{safe_name}_{place_id[:8]}.json", f"place_{place_id[:8]}"
+    )
+    place_file = _contained_entity_path(places_dir, filename)
+    if place_file is None:
+        filename = f"place_{place_id[:8]}.json"
+        place_file = places_dir / filename
 
     # Initialize place data
     place_data = {
