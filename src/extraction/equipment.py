@@ -2085,7 +2085,8 @@ def _extract_equipment_with_llm(
     import hashlib
 
     _event_id = (event_data.get("Event") or {}).get("EventID", "")
-    _model = grok_client._get_model("equipment")  # pylint: disable=protected-access
+    _get_model = getattr(grok_client, "_get_model", None)
+    _model = _get_model("equipment") if callable(_get_model) else "default"
     _cache_key = (
         hashlib.sha256(
             f"equipment:v1:{_model}:0.1:{_event_id}".encode("utf-8")
