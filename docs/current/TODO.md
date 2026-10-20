@@ -68,10 +68,11 @@ are ordered: (1) **Phase 2 — open**, (2) Phase 3 / enrichment — open, (3) ar
   (unbounded growth) + containerinsights perf = 1 day — set sane retention in the §4 CloudWatch
   reduction pass.
 
-- **[OBSERVABILITY] Sync the Grok api-cache to S3 (or at least optional-batch responses).** Only
-  `output/dedup/manifests` sync to S3, so after a run the cached batch responses are gone and
-  optional-entity extract-vs-persist can't be replayed offline (forced code-level repro). Syncing
-  `cache/api` makes a run diagnosable post-hoc (same spirit as the log-retention item).
+- **[✅ DONE · PR #474] Sync the Grok api-cache to S3 for offline replay.** Phase 2/3 _final_sync
+  now uploads /app/cache/api -> s3://.../diagnostics/cache/<book>/ (the whole cache: batch_requests
+  + the per-type cached request/RESPONSE entries). scripts/replay_cache.py downloads a book's cache
+  for offline GrokClient replay (no Grok calls). Makes a run diagnosable post-hoc — e.g. the
+  equipment=0 class could now be replayed offline instead of code-level repro. OBSERV cache.synced.
 
 ### 1.4 Dedup-UI (surfaced during XChannel dedup)
 
