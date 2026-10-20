@@ -224,7 +224,9 @@ live in several places:
 2. ~~**PATTERN 2 — SSRF: one safe-fetch helper across the 12 sites**~~ ✅ DONE (PR #476):
    url_hygiene.safe_get/fetch_text_safe; all 12 sites routed; routing-guard test. Residual follow-up:
    pin the connection to the vetted IP (DNS-rebinding TOCTOU, pre-existing in fetch_image_bytes too).
-3. **PATTERN 3 — path-traversal: adopt the hardened sanitizer in dates/places/equipment** (HIGH; `dates.py` worst).
+3. ~~**PATTERN 3 — path-traversal: adopt the hardened sanitizer in dates/places/equipment**~~ ✅ DONE
+   (PR #481): routed dates/places/equipment through _safe_entity_filename + _contained_entity_path;
+   stem length-capped before id; +ULID[:8] same-ms filename weakness tracked as a separate TODO.
 4. **Trigger-Lambda key sanitization + SNS-ARN trust + manual-expected_count auth** (HIGH external surface).
 5. **Credit-leak + weather/equipment processed-gate** (HIGH cost/correctness).
 6. **PATTERN 4 remaining silent-drops** (dates year-veto, casualties filter, supplemental dedup/hybrid,

@@ -48,7 +48,7 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
   maps.py/images.py). Reachable over NAT → metadata/internal hosts. FIX: one shared SSRF-safe fetch
   helper across all 12 (also closes the map-module duplication + image-bomb DoS).
 
-- **[HIGH · PATTERN 3 — path traversal] In-process entity writers skip the hardened sanitizer.**
+- **[DONE · PR #481] [HIGH · PATTERN 3 — path traversal] In-process entity writers skip the hardened sanitizer.**
   dates.py:228-243 (worst — doesn't even strip `/`), equipment.py:~1975,2674, places.py:392 build
   filenames from LLM values via ad-hoc `.replace()`; `write_json_with_lock` mkdir(parents=True) on any
   path. FIX: route all through `batch_parallel._safe_entity_filename`+`_contained_entity_path` (#450/#457).
