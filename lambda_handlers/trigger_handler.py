@@ -1011,50 +1011,7 @@ def handler(event, _context):
     # Route by topic
     for topic_name in topics:
         if topic_name == CONTENT_TOPIC:
-            # Option B: fire on ALL contentrepository/ uploads; route by media.
-            content = _content_keys(s3_keys)
-            if not content:
-                logger.info("No processable content in upload batch — nothing to do")
-                continue
-            ocr_keys, convert_keys, video_keys, parse_keys = _split_by_media(content)
-            # AV gate (demand-launched, binary-only): scan pdf/image/video/office
-            # BEFORE any parser (fitz/ffmpeg/torch/pandoc) touches the bytes.
-            # Infected/unscannable -> quarantine + alert + freeze-submitter hook
-            # (fail-closed); only clean binaries proceed. Text/md skip AV entirely
-            # (never launches the scan container). See AV_SCANNING_DESIGN.md.
-            ocr_keys, convert_keys, video_keys = _av_gate(
-                ocr_keys, convert_keys, video_keys
-            )
-            # Raw PDFs/images -> Chandra OCR (Phase 0). OCR output later
-            # re-triggers the parse path via its own upload.
-            if ocr_keys:
-                # GPU Batch instances launch into the private GPU subnets whose
-                # 0.0.0.0/0 route points at the dynamic NAT — they need egress to
-                # register with ECS + pull the Chandra image + read/write S3.
-                # Without NAT up, instances boot but never join the cluster and
-                # jobs sit RUNNABLE forever. Ensure NAT is up at OCR submit.
-                _ensure_nat_for_ocr()
-            for k in ocr_keys:
-                _submit_ocr(k)
-            # EPUB/DOCX -> Phase-0 convert task (pandoc). It writes the chapter
-            # structure, whose upload re-triggers parse (like OCR output).
-            for k in convert_keys:
-                _submit_convert(k)
-            # Video -> Phase-0 video task (transcribe + speaker-id) -> chapter
-            # structure -> parse. Demand-launched; never silently dropped.
-            for k in video_keys:
-                _submit_video(k)
-            if not parse_keys:
-                continue
-            parse_keys = _validate_parse_keys(parse_keys)
-            if not parse_keys:
-                continue
-            _queue_pending(parse_keys)
-            if _multi_doc_active():
-                _seed_docs(parse_keys, "phase1")
-                if _start_dispatcher("content-uploaded"):
-                    continue
-            _launch_phase1_if_idle()
+            _handle_content_topic(s3_keys)
         elif topic_name == PARSED_TOPIC:
             _queue_parsed(s3_keys)
             if _multi_doc_active():
@@ -1076,6 +1033,46 @@ def handler(event, _context):
             _run_task(PHASE3_TASK_DEF, topic_name)
         else:
             logger.warning("Unknown topic: %s", topic_name)
+
+
+def _handle_content_topic(s3_keys: list) -> None:
+    """Handle a CONTENT_TOPIC upload batch: fire on ALL contentrepository/ uploads and route by
+    media. OCR/convert/video go to their Phase-0 tasks (whose output re-triggers parse); parseable
+    keys are queued + Phase-1 launched (or seeded to the multi-doc dispatcher)."""
+    content = _content_keys(s3_keys)
+    if not content:
+        logger.info("No processable content in upload batch — nothing to do")
+        return
+    ocr_keys, convert_keys, video_keys, parse_keys = _split_by_media(content)
+    # AV gate (demand-launched, binary-only): scan pdf/image/video/office BEFORE any parser
+    # (fitz/ffmpeg/torch/pandoc) touches the bytes. Infected/unscannable -> quarantine + alert +
+    # freeze-submitter (fail-closed); only clean binaries proceed. Text/md skip AV entirely.
+    ocr_keys, convert_keys, video_keys = _av_gate(ocr_keys, convert_keys, video_keys)
+    # Raw PDFs/images -> Chandra OCR (Phase 0). OCR output later re-triggers the parse path.
+    if ocr_keys:
+        # GPU Batch instances launch into the private GPU subnets whose 0.0.0.0/0 route points at
+        # the dynamic NAT — they need egress to register with ECS + pull the image + S3. Without
+        # NAT up, jobs sit RUNNABLE forever. Ensure NAT is up at OCR submit.
+        _ensure_nat_for_ocr()
+    for k in ocr_keys:
+        _submit_ocr(k)
+    # EPUB/DOCX -> Phase-0 convert task (pandoc); its chapter-structure upload re-triggers parse.
+    for k in convert_keys:
+        _submit_convert(k)
+    # Video -> Phase-0 video task (transcribe + speaker-id) -> chapter structure -> parse.
+    for k in video_keys:
+        _submit_video(k)
+    if not parse_keys:
+        return
+    parse_keys = _validate_parse_keys(parse_keys)
+    if not parse_keys:
+        return
+    _queue_pending(parse_keys)
+    if _multi_doc_active():
+        _seed_docs(parse_keys, "phase1")
+        if _start_dispatcher("content-uploaded"):
+            return
+    _launch_phase1_if_idle()
 
 
 def _drive_next_phase(completed_phase: str) -> dict:
@@ -1387,6 +1384,64 @@ def _submit_convert(key: str) -> None:
     )
 
 
+def _acquire_task_lock(task_def, family, lock_key, book_name, now) -> bool:
+    """Atomically claim the per-task (per-book under multi-doc) launch lock. Returns True if this
+    invocation now HOLDS the lock and should launch; False if another live/recent invocation holds
+    it (in which case a per-book request is queued for later). Reclaims a lock only if there is no
+    live task AND it is older than the launch-grace window (so a holder mid-NAT-wait, not yet
+    RUNNING, is never stolen — the G1 double-launch race)."""
+    # A lock younger than this is presumed held by an invocation still in NAT-wait.
+    LAUNCH_GRACE_S = NAT_WAIT_SECONDS + 120
+    item = {
+        "cache_key": lock_key,
+        "book": book_name or "all",
+        "response": str(now),
+        "ttl": now + 7200,
+    }
+    try:
+        dynamo.put_item(
+            Item=item, ConditionExpression="attribute_not_exists(cache_key)"
+        )
+        return True
+    except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
+        pass
+
+    live = ecs.list_tasks(cluster=CLUSTER, family=family, desiredStatus="RUNNING").get(
+        "taskArns", []
+    )
+    lock_age = _lock_age_seconds(lock_key, now)
+    if not live and lock_age is not None and lock_age > LAUNCH_GRACE_S:
+        logger.info(
+            "Stale lock for %s (no live task, age %ds > %ds), clearing",
+            lock_key,
+            lock_age,
+            LAUNCH_GRACE_S,
+        )
+        dynamo.delete_item(Key={"cache_key": lock_key})
+        try:
+            dynamo.put_item(
+                Item=item, ConditionExpression="attribute_not_exists(cache_key)"
+            )
+            return True
+        except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
+            logger.info("Another invocation claimed lock for %s, skipping", lock_key)
+            return False
+
+    logger.info(
+        "Task %s already locked (live=%s, age=%ss), skipping",
+        lock_key,
+        bool(live),
+        lock_age,
+    )
+    # Queue per-book requests for later processing.
+    if book_name:
+        if task_def == PHASE3_TASK_DEF:
+            _queue_pending_enrich(book_name)
+        elif task_def == PHASE2_TASK_DEF:
+            _queue_pending_parsed_book(book_name)
+    return False
+
+
 def _run_task(task_def, source, book_name="", extra_env=None):
     """Create networking, acquire lock, launch ECS task.
 
@@ -1407,73 +1462,13 @@ def _run_task(task_def, source, book_name="", extra_env=None):
     # Cancel any pending delayed teardown
     _cancel_delayed_teardown()
 
-    # Atomic lock FIRST — BEFORE waiting for networking. The old order (NAT wait, then
-    # lock) opened a ~180s window where two concurrent invocations were both alive but
-    # neither held the lock; the second's "stale lock" check saw no RUNNING task (the
-    # first was still in NAT-wait, not yet launched) and cleared the lock -> DOUBLE LAUNCH.
-    # Locking first makes the lock the single serialization point; NAT-wait happens inside it.
-    # Per-book under multi-doc (G1); singleton in serial mode (unchanged).
+    # Atomic lock FIRST — BEFORE waiting for networking. Locking first makes the lock the single
+    # serialization point (the old NAT-wait-then-lock order opened a double-launch race).
     family = TASK_FAMILIES.get(task_def, "unknown")
     lock_key = _lock_key(family, book_name)
     now = int(time.time())
-    # A lock younger than this is presumed held by an invocation still in NAT-wait, so it
-    # must NOT be reclaimed as "stale" even if no task is RUNNING yet (that was the race).
-    LAUNCH_GRACE_S = NAT_WAIT_SECONDS + 120
-    try:
-        dynamo.put_item(
-            Item={
-                "cache_key": lock_key,
-                "book": book_name or "all",
-                "response": str(now),
-                "ttl": now + 7200,
-            },
-            ConditionExpression="attribute_not_exists(cache_key)",
-        )
-    except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
-        # Lock exists. Only reclaim it if BOTH (a) no live task AND (b) the lock is OLDER
-        # than the launch grace window (so we never clear a lock whose holder is mid-NAT-wait
-        # and hasn't launched its task yet — the G1/double-launch race).
-        live = ecs.list_tasks(
-            cluster=CLUSTER, family=family, desiredStatus="RUNNING"
-        ).get("taskArns", [])
-        lock_age = _lock_age_seconds(lock_key, now)
-        if not live and lock_age is not None and lock_age > LAUNCH_GRACE_S:
-            logger.info(
-                "Stale lock for %s (no live task, age %ds > %ds), clearing",
-                lock_key,
-                lock_age,
-                LAUNCH_GRACE_S,
-            )
-            dynamo.delete_item(Key={"cache_key": lock_key})
-            try:
-                dynamo.put_item(
-                    Item={
-                        "cache_key": lock_key,
-                        "book": book_name or "all",
-                        "response": str(now),
-                        "ttl": now + 7200,
-                    },
-                    ConditionExpression="attribute_not_exists(cache_key)",
-                )
-            except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
-                logger.info(
-                    "Another invocation claimed lock for %s, skipping", lock_key
-                )
-                return
-        else:
-            logger.info(
-                "Task %s already locked (live=%s, age=%ss), skipping",
-                lock_key,
-                bool(live),
-                lock_age,
-            )
-            # Queue per-book requests for later processing
-            if book_name:
-                if task_def == PHASE3_TASK_DEF:
-                    _queue_pending_enrich(book_name)
-                elif task_def == PHASE2_TASK_DEF:
-                    _queue_pending_parsed_book(book_name)
-            return
+    if not _acquire_task_lock(task_def, family, lock_key, book_name, now):
+        return  # lock held by a live/recent invocation (request queued if per-book)
 
     # Lock is HELD. Kick off an ASYNC NAT warm-up (fire-and-forget) and launch
     # immediately — do NOT block the launch on NAT readiness. Phase 1 needs no

@@ -39,45 +39,15 @@ def _nara_fetcher(
     digitalObjects list. The resolved entry stores only the /id/<naId> catalog URL, so we
     look up the objects (page scans) + their count here."""
     urls = entry.get("resource_urls") or []
-    naid = ""
-    for u in urls:
-        m = _NAID_RE.search(str(u))
-        if m:
-            naid = m.group(1)
-            break
+    naid = _nara_naid_from_urls(urls)
     if not naid:
         return None
     api_key = config.get("nara_api_key")
     if not api_key:
         logger.debug("NARA fetcher: no api key -> cannot build target")
         return None
-    try:
-        from src.utils.http_pool import get_session
-
-        session = get_session()
-        resp = session.get(
-            f"https://catalog.archives.gov/api/v2/records/{naid}",
-            headers={"x-api-key": api_key, "Accept": "application/json"},
-            timeout=30,
-        )
-        if resp.status_code != 200:
-            resp = session.get(
-                "https://catalog.archives.gov/api/v2/records/search",
-                params={"naId": naid, "limit": "1"},
-                headers={"x-api-key": api_key, "Accept": "application/json"},
-                timeout=30,
-            )
-        if (
-            resp.status_code != 200
-            or "html" in (resp.headers.get("Content-Type") or "").lower()
-        ):
-            logger.info(
-                "NARA fetcher: naId=%s lookup status=%s (skip)", naid, resp.status_code
-            )
-            return None
-        payload = resp.json()
-    except Exception as e:  # noqa: BLE001
-        logger.debug("NARA fetcher lookup failed for naId=%s: %s", naid, e)
+    payload = _fetch_nara_record(naid, api_key)
+    if payload is None:
         return None
 
     # Record may be at body.hits.hits[0]._source.record OR a single-record shape.
@@ -111,6 +81,50 @@ def _nara_fetcher(
         object_urls=objs,
         detail=f"NARA naId {naid}, {len(objs)} digital objects",
     )
+
+
+def _nara_naid_from_urls(urls: "list") -> str:
+    """Extract the first naId found in the entry's resource_urls (the resolved entry stores only
+    the /id/<naId> catalog URL)."""
+    for u in urls:
+        m = _NAID_RE.search(str(u))
+        if m:
+            return m.group(1)
+    return ""
+
+
+def _fetch_nara_record(naid: str, api_key: str) -> Optional[Dict[str, Any]]:
+    """Look up a NARA record by naId (direct records/{naId}, falling back to the search API).
+    Returns the parsed JSON payload, or None on non-200 / HTML-shell / parse failure."""
+    try:
+        from src.utils.http_pool import get_session
+
+        session = get_session()
+        headers = {"x-api-key": api_key, "Accept": "application/json"}
+        resp = session.get(
+            f"https://catalog.archives.gov/api/v2/records/{naid}",
+            headers=headers,
+            timeout=30,
+        )
+        if resp.status_code != 200:
+            resp = session.get(
+                "https://catalog.archives.gov/api/v2/records/search",
+                params={"naId": naid, "limit": "1"},
+                headers=headers,
+                timeout=30,
+            )
+        if (
+            resp.status_code != 200
+            or "html" in (resp.headers.get("Content-Type") or "").lower()
+        ):
+            logger.info(
+                "NARA fetcher: naId=%s lookup status=%s (skip)", naid, resp.status_code
+            )
+            return None
+        return resp.json()
+    except Exception as e:  # noqa: BLE001
+        logger.debug("NARA fetcher lookup failed for naId=%s: %s", naid, e)
+        return None
 
 
 # --- archive.org ---------------------------------------------------------------------------

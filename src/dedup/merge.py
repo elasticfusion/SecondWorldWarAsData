@@ -276,43 +276,17 @@ def merge_generic(
     for i, p in enumerate(people):
         if i == primary_idx:
             continue
-        f = entity_dir / p["filename"]
-        if not f.exists():
-            continue
-        try:
-            secondary = json.loads(f.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-
-        # Dedup event mentions by Sub_eventID
-        for m in secondary.get("event_mentions", []):
-            sub_id = m.get("Sub_eventID")
-            if not sub_id or sub_id not in seen_sub_events:
-                primary_mentions.append(m)
-                if sub_id:
-                    seen_sub_events.add(sub_id)
-
-        # Add secondary name as alias
-        for field in name_fields:
-            sec_name = secondary.get(field, "")
-            if sec_name and sec_name not in aliases:
-                aliases.append(sec_name)
-                break
-
-        # Update event files: replace old ID with primary ID
-        old_id = secondary.get(id_field, "")
-        new_id = primary_data.get(id_field, "")
-        if old_id and new_id and old_id != new_id:
-            output_root = entity_dir.parent
-            update_event_refs(output_root, old_id, new_id, id_field)
-
-        _backup_before_delete(f)
-        f.unlink()
-        _notify_deletion(f)
-        # #9: remove the merged-away secondary from DynamoDB too.
-        if old_id:
-            _dynamo_merge_sync(entity_dir.name, "", {}, old_id)
-        merged_any = True
+        if _merge_one_secondary(
+            entity_dir,
+            p,
+            primary_data,
+            primary_mentions,
+            aliases,
+            seen_sub_events,
+            id_field,
+            name_fields,
+        ):
+            merged_any = True
 
     primary_data["event_mentions"] = primary_mentions
     primary_data["aliases"] = aliases
@@ -326,3 +300,54 @@ def merge_generic(
     primary_name = primary.get("name", primary.get("filename", ""))
     logger.info("✓ Merged %d into %s", len(people) - 1, primary_name)
     return primary_name
+
+
+def _merge_one_secondary(
+    entity_dir: Path,
+    p: Dict,
+    primary_data: Dict,
+    primary_mentions: List,
+    aliases: List,
+    seen_sub_events: set,
+    id_field: str,
+    name_fields: tuple,
+) -> bool:
+    """Merge one secondary entity file into the primary (in place): union its event_mentions
+    (dedup by Sub_eventID), add its name as an alias, repoint event refs old->primary id, then
+    delete + Dynamo-sync the secondary. Returns True if the secondary was merged."""
+    f = entity_dir / p["filename"]
+    if not f.exists():
+        return False
+    try:
+        secondary = json.loads(f.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+
+    # Dedup event mentions by Sub_eventID
+    for m in secondary.get("event_mentions", []):
+        sub_id = m.get("Sub_eventID")
+        if not sub_id or sub_id not in seen_sub_events:
+            primary_mentions.append(m)
+            if sub_id:
+                seen_sub_events.add(sub_id)
+
+    # Add secondary name as alias
+    for field in name_fields:
+        sec_name = secondary.get(field, "")
+        if sec_name and sec_name not in aliases:
+            aliases.append(sec_name)
+            break
+
+    # Update event files: replace old ID with primary ID
+    old_id = secondary.get(id_field, "")
+    new_id = primary_data.get(id_field, "")
+    if old_id and new_id and old_id != new_id:
+        update_event_refs(entity_dir.parent, old_id, new_id, id_field)
+
+    _backup_before_delete(f)
+    f.unlink()
+    _notify_deletion(f)
+    # #9: remove the merged-away secondary from DynamoDB too.
+    if old_id:
+        _dynamo_merge_sync(entity_dir.name, "", {}, old_id)
+    return True

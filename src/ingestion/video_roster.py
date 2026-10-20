@@ -79,52 +79,56 @@ def build_roster(
 
     # 1) IMDB/Wikipedia episode cast (strongest), if the work is identifiable.
     if title and appearance_lookup is not None:
-        try:
-            for a in appearance_lookup.lookup(title) or []:
-                pid = a.get("person_id") or f"name::{a.get('name', '').strip()}"
-                name = a.get("name", "").strip()
-                if not name:
-                    continue
-                src = (
-                    RosterSource.IMDB_CAST
-                    if a.get("source") == "imdb"
-                    else RosterSource.WIKIPEDIA
-                )
-                _merge(
-                    roster,
-                    RosterCandidate(
-                        pid, name, src, list(a.get("image_urls", []) or [])
-                    ),
-                )
-        except Exception as e:  # pragma: no cover - lookups are best-effort
-            logger.warning("Appearance lookup failed for %r: %s", title, e)
+        _merge_appearance_tier(roster, appearance_lookup, title)
 
     # 2) transcript-extracted People (always available).
-    for p in transcript_people or []:
-        pid, name = p.get("person_id"), (p.get("name") or "").strip()
-        if pid and name:
-            _merge(
-                roster,
-                RosterCandidate(
-                    pid,
-                    name,
-                    RosterSource.TRANSCRIPT,
-                    list(p.get("image_urls", []) or []),
-                ),
-            )
+    _merge_people_tier(roster, transcript_people, RosterSource.TRANSCRIPT)
 
     # 3) topic/campaign roster (widening fallback).
-    for p in topic_people or []:
+    _merge_people_tier(roster, topic_people, RosterSource.TOPIC)
+
+    return list(roster.values())
+
+
+def _merge_appearance_tier(
+    roster: "Dict[str, RosterCandidate]",
+    appearance_lookup: "AppearanceLookup",
+    title: str,
+) -> None:
+    """Merge the IMDB/Wikipedia cast tier (strongest). Best-effort: a failed lookup is logged
+    and skipped (never aborts roster assembly)."""
+    try:
+        for a in appearance_lookup.lookup(title) or []:
+            name = a.get("name", "").strip()
+            if not name:
+                continue
+            pid = a.get("person_id") or f"name::{name}"
+            src = (
+                RosterSource.IMDB_CAST
+                if a.get("source") == "imdb"
+                else RosterSource.WIKIPEDIA
+            )
+            _merge(
+                roster,
+                RosterCandidate(pid, name, src, list(a.get("image_urls", []) or [])),
+            )
+    except Exception as e:  # pragma: no cover - lookups are best-effort
+        logger.warning("Appearance lookup failed for %r: %s", title, e)
+
+
+def _merge_people_tier(
+    roster: "Dict[str, RosterCandidate]",
+    people: "Optional[List[dict]]",
+    source: "RosterSource",
+) -> None:
+    """Merge a People-entity tier (transcript-derived or topic/campaign spine) into the roster."""
+    for p in people or []:
         pid, name = p.get("person_id"), (p.get("name") or "").strip()
         if pid and name:
             _merge(
                 roster,
-                RosterCandidate(
-                    pid, name, RosterSource.TOPIC, list(p.get("image_urls", []) or [])
-                ),
+                RosterCandidate(pid, name, source, list(p.get("image_urls", []) or [])),
             )
-
-    return list(roster.values())
 
 
 # --- live Wikipedia appearance lookup (opportunistic) ------------------------
