@@ -146,30 +146,27 @@ def _determine_map_extension(response, url: str) -> str:
 def _download_map_image(
     url: str, output_path: Path, timeout: int = 30
 ) -> Optional[str]:
-    """Download map image from URL."""
-    import requests
+    """Download map image from URL (SSRF-safe)."""
+    from src.extraction.images import fetch_image_bytes
 
     # Check if already downloaded
     existing = _check_existing_download(output_path)
     if existing:
         return existing
 
+    body, ext = fetch_image_bytes(
+        url
+    )  # SSRF-safe (clean_url + resolved IP + no redirect)
+    if body is None:
+        return None
     try:
-        response = requests.get(url, timeout=timeout, allow_redirects=True)
-        response.raise_for_status()
-
-        # Determine file extension and save
-        ext = _determine_map_extension(response, url)
         output_file = output_path.with_suffix(f".{ext}")
-
         with open(output_file, "wb") as f:
-            f.write(response.content)
-
+            f.write(body)
         logger.debug("    Downloaded: %s", output_file.name)
         return str(output_file.relative_to(output_file.parents[2]))
-
-    except requests.RequestException as e:
-        logger.warning("    Failed to download %s: %s", url, e)
+    except Exception as e:  # noqa: BLE001 - write failure must be non-fatal
+        logger.warning("    Failed to save %s: %s", url, e)
         return None
 
 
@@ -263,40 +260,26 @@ def _download_image_to_s3(
     map_ulid: str,
     timeout: int,
 ) -> tuple[Optional[str], Optional[str]]:
-    """Download image and upload to S3. Returns (s3_path, file_format)."""
-    import requests
+    """Download image (SSRF-safe) and upload to S3. Returns (s3_path, file_format)."""
+    from src.extraction.images import fetch_image_bytes
 
+    # SSRF-safe fetch (clean_url + resolved-IP check + no redirects) — map image URLs come
+    # from untrusted source HTML, so never a bare requests.get.
+    image_data, file_format = fetch_image_bytes(url)
+    if image_data is None:
+        return None, None
+    content_type = {
+        "jpg": "image/jpeg",
+        "png": "image/png",
+        "tif": "image/tiff",
+        "gif": "image/gif",
+    }.get(file_format or "jpg", "image/jpeg")
     try:
-        response = requests.get(url, timeout=timeout, allow_redirects=True)
-        response.raise_for_status()
-        image_data = response.content
-
-        # Determine format
-        content_type = response.headers.get("content-type", "")
-        if "jpeg" in content_type or "jpg" in content_type:
-            file_format = "jpg"
-            content_type = "image/jpeg"
-        elif "png" in content_type:
-            file_format = "png"
-            content_type = "image/png"
-        elif "tiff" in content_type or "tif" in content_type:
-            file_format = "tif"
-            content_type = "image/tiff"
-        elif "pdf" in content_type:
-            file_format = "pdf"
-            content_type = "application/pdf"
-        else:
-            file_format = "jpg"
-            content_type = "image/jpeg"
-
-        # Save to S3
         s3_key = f"{s3_key_prefix}images/{map_ulid}.{file_format}"
         _save_to_s3(s3_client, s3_bucket, s3_key, image_data, content_type)
-        s3_path = f"s3://{s3_bucket}/{s3_key}"
-        return s3_path, file_format
-
-    except requests.RequestException as e:
-        logger.warning("    Failed to download %s: %s", url, e)
+        return f"s3://{s3_bucket}/{s3_key}", file_format
+    except Exception as e:  # noqa: BLE001 - upload failure must be non-fatal
+        logger.warning("    Failed to upload %s: %s", url, e)
         return None, None
 
 
