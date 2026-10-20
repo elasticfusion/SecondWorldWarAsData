@@ -63,36 +63,45 @@ def fetch_image_bytes(url: str) -> Tuple[Optional[bytes], Optional[str]]:
                 return None, None
         if "image" not in content_type and len(body) < 1000:
             return None, None
-        # Must be an image: trust an image/* content-type, else require a known image
-        # magic-byte signature — blocks a non-image body (HTML error page, PDF, zip) from
-        # being saved under an image extension.
-        _MAGIC = (
-            b"\xff\xd8\xff",  # jpeg
-            b"\x89PNG\r\n\x1a\n",  # png
-            b"GIF87a",
-            b"GIF89a",  # gif
-            b"II*\x00",
-            b"MM\x00*",  # tiff
-            b"RIFF",  # webp (RIFF....WEBP)
-        )
-        if not content_type.startswith("image/") and not any(
-            body.startswith(sig) for sig in _MAGIC
-        ):
+        if not _is_valid_image_body(body, content_type):
             logger.debug(
                 "rejected non-image content (ct=%s): %s", content_type, cleaned
             )
             return None, None
-        ext = "jpg"
-        if "png" in content_type or cleaned.lower().endswith(".png"):
-            ext = "png"
-        elif "tif" in content_type or cleaned.lower().endswith((".tif", ".tiff")):
-            ext = "tif"
-        elif "gif" in content_type or cleaned.lower().endswith(".gif"):
-            ext = "gif"
-        return body, ext
+        return body, _ext_for(content_type, cleaned)
     except Exception as exc:  # noqa: BLE001 - fetch failure must be non-fatal
         logger.debug("Failed to download %s: %s", cleaned, exc)
         return None, None
+
+
+def _is_valid_image_body(body: bytes, content_type: str) -> bool:
+    """Accept only a real image: trust an image/* content-type, else require a known image
+    magic-byte signature — blocks a non-image body (HTML error page, PDF, zip) from being saved
+    under an image extension."""
+    _MAGIC = (
+        b"\xff\xd8\xff",  # jpeg
+        b"\x89PNG\r\n\x1a\n",  # png
+        b"GIF87a",
+        b"GIF89a",  # gif
+        b"II*\x00",
+        b"MM\x00*",  # tiff
+        b"RIFF",  # webp (RIFF....WEBP)
+    )
+    return content_type.startswith("image/") or any(
+        body.startswith(sig) for sig in _MAGIC
+    )
+
+
+def _ext_for(content_type: str, cleaned: str) -> str:
+    """Pick the file extension from content-type (preferred) or the URL suffix."""
+    low = cleaned.lower()
+    if "png" in content_type or low.endswith(".png"):
+        return "png"
+    if "tif" in content_type or low.endswith((".tif", ".tiff")):
+        return "tif"
+    if "gif" in content_type or low.endswith(".gif"):
+        return "gif"
+    return "jpg"
 
 
 def _classify_content_type(alt_text: str, url: str) -> str:
@@ -411,17 +420,7 @@ def extract_images(
 
         for img in imgs:
             images_seen += 1
-            url = img.get("url", "")
-            alt = img.get("alt_text", "")
-
-            if url and url in existing_urls:
-                skipped += 1
-                continue
-            if _classify_content_type(alt, url) == "map":
-                skipped += 1
-                continue
-
-            record, local_copy = _process_single_image(
+            e_d, d_d, s_d = _extract_one_image(
                 img,
                 event_data,
                 book,
@@ -430,25 +429,13 @@ def extract_images(
                 download,
                 storage_dir,
                 captioner,
+                images_dir,
+                index,
+                existing_urls,
             )
-
-            out_file = images_dir / f"{record['ImageID']}.json"
-            from src.utils.file_lock import write_json_with_lock
-
-            write_json_with_lock(out_file, record)
-
-            index[record["ImageID"]] = out_file.name
-            if url:
-                existing_urls.add(url)
-            extracted += 1
-            if local_copy:
-                downloaded += 1
-
-            logger.info(
-                "  ✓ %s — %s",
-                alt[:50] or "Untitled",
-                "linked" if record.get("EventID") else "unlinked",
-            )
+            extracted += e_d
+            downloaded += d_d
+            skipped += s_d
 
     # Save index
     with open(index_path, "w", encoding="utf-8") as fh:
@@ -467,3 +454,44 @@ def extract_images(
         skipped,
     )
     return extracted
+
+
+def _extract_one_image(
+    img,
+    event_data,
+    book,
+    places_dir,
+    dates_dir,
+    download,
+    storage_dir,
+    captioner,
+    images_dir,
+    index,
+    existing_urls,
+) -> "Tuple[int, int, int]":
+    """Process one parsed image: skip if already-seen or a map, else build+write the entity, update
+    the index/existing_urls (by reference), and download the file. Returns (extracted, downloaded,
+    skipped) deltas (each 0 or 1)."""
+    url = img.get("url", "")
+    alt = img.get("alt_text", "")
+    if url and url in existing_urls:
+        return 0, 0, 1
+    if _classify_content_type(alt, url) == "map":
+        return 0, 0, 1
+
+    record, local_copy = _process_single_image(
+        img, event_data, book, places_dir, dates_dir, download, storage_dir, captioner
+    )
+    out_file = images_dir / f"{record['ImageID']}.json"
+    from src.utils.file_lock import write_json_with_lock
+
+    write_json_with_lock(out_file, record)
+    index[record["ImageID"]] = out_file.name
+    if url:
+        existing_urls.add(url)
+    logger.info(
+        "  ✓ %s — %s",
+        alt[:50] or "Untitled",
+        "linked" if record.get("EventID") else "unlinked",
+    )
+    return 1, (1 if local_copy else 0), 0
