@@ -93,11 +93,14 @@ def _validate_image_url(url: Optional[str]) -> bool:
     try:
         from src.utils.url_hygiene import safe_get
 
-        # SSRF-safe GET (untrusted map image URL). safe_get caps the body; pass Range as a hint.
+        # SSRF-safe GET (untrusted map image URL). safe_get caps the body; pass Range as a hint
+        # and a small max_bytes so a server that ignores Range doesn't trigger a full read on a
+        # validation-only probe.
         response = safe_get(
             url,
             timeout=IMAGE_VALIDATION_TIMEOUT,
             headers={"User-Agent": USER_AGENT, "Range": "bytes=0-1023"},
+            max_bytes=65536,
         )
         if response is None:
             return False

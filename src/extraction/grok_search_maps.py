@@ -78,7 +78,10 @@ def search_maps_with_grok(
 def download_image(image_url: str, timeout: int = 30) -> Optional[bytes]:
     """Download image from URL (SSRF-safe). image_url comes from LLM/search output, so this
     routes through images.fetch_image_bytes: clean_url + resolved-host (DNS-rebinding) check +
-    allow_redirects=False + byte cap + image content-type/magic-byte verification."""
+    allow_redirects=False + byte cap + image content-type/magic-byte verification.
+
+    ``timeout`` is retained for signature compatibility but ignored — fetch_image_bytes uses
+    its own download timeout."""
     from src.extraction.images import fetch_image_bytes
 
     data, _ext = fetch_image_bytes(image_url)

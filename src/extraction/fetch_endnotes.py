@@ -15,8 +15,6 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Dict, List, Optional
 
-import requests
-
 logger = logging.getLogger(__name__)
 
 CACHE_DIR = Path("cache/endnote_pages")
@@ -81,21 +79,17 @@ def _fetch_page(url: str) -> Optional[str]:
     if cache_file.exists():
         return cache_file.read_text(encoding="utf-8")
 
-    try:
-        from src.utils.url_hygiene import fetch_text_safe
+    from src.utils.url_hygiene import fetch_text_safe
 
-        html, status = fetch_text_safe(url, timeout=30)
-        if html is None:
-            if status not in (None, 200):
-                logger.warning("Failed to fetch %s: HTTP %s", url, status)
-            else:
-                logger.warning("Failed to fetch %s: blocked or unreachable", url)
-            return None
-        cache_file.write_text(html, encoding="utf-8")
-        return html
-    except requests.RequestException as exc:
-        logger.warning("Failed to fetch %s: %s", url, exc)
+    html, status = fetch_text_safe(url, timeout=30)
+    if html is None:
+        if status not in (None, 200):
+            logger.warning("Failed to fetch %s: HTTP %s", url, status)
+        else:
+            logger.warning("Failed to fetch %s: blocked or unreachable", url)
         return None
+    cache_file.write_text(html, encoding="utf-8")
+    return html
 
 
 def _parse_footnotes_from_html(html: str) -> Dict[int, str]:

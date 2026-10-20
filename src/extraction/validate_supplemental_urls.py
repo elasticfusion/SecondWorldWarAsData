@@ -5,18 +5,18 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import requests
-
 logger = logging.getLogger(__name__)
 
 
 def validate_url(url: str, timeout: float = 10.0) -> tuple[str, Optional[str]]:
     """
-    Validate a single URL.
+    Validate a single URL (SSRF-safe via url_hygiene.safe_get).
 
     Returns:
         tuple: (status, error_message)
-        status: "validated", "broken", "timeout", "invalid"
+        status: "validated", "broken", "invalid"
+        NOTE: an SSRF-blocked, timed-out, or otherwise unreachable URL reports
+        "invalid" (safe_get fails closed to None — it does not distinguish timeout).
     """
     try:
         from src.utils.url_hygiene import safe_get
@@ -28,11 +28,7 @@ def validate_url(url: str, timeout: float = 10.0) -> tuple[str, Optional[str]]:
         if response.status_code == 200:
             return ("validated", None)
         return ("broken", f"HTTP {response.status_code}")
-    except requests.Timeout:
-        return ("timeout", "Request timed out")
-    except requests.RequestException as e:
-        return ("invalid", str(e))
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - defensive; safe_get already fails closed
         return ("invalid", str(e))
 
 

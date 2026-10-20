@@ -93,6 +93,25 @@ def test_safe_get_network_error_is_non_fatal(monkeypatch):
 
 
 # --- routing guard: the cluster modules carry no bare unguarded requests.get ------
+def test_safe_get_materializes_real_body_for_text(monkeypatch):
+    """Feed bytes through iter_content on a real requests.Response and assert the materialized
+    _content decodes via .text (locks in the resp._content = body path, not a mocked .text).
+    """
+    import requests as _requests
+
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda host: ["93.184.216.34"]
+    )
+    real = _requests.Response()
+    real.status_code = 200
+    real.headers["Content-Type"] = "text/html; charset=utf-8"
+    real.iter_content = lambda n: [b"<html>", "caf\u00e9".encode("utf-8"), b"</html>"]
+    with mock.patch("requests.get", return_value=real):
+        out = safe_get("https://ex.org/p")
+        assert out is not None
+        assert out.text == "<html>café</html>"  # decoded from the capped _content
+
+
 def test_ssrf_cluster_modules_have_no_unguarded_requests_get():
     import re
 
