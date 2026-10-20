@@ -142,7 +142,9 @@ def _build_extraction_prompt(event_data: dict) -> str:
     """Build prompt for people groups extraction from YAML template."""
     from src.utils.prompt_loader import render_prompt
 
-    text = json.dumps(event_data, indent=2)
+    # Canonical serialization (sort_keys=True) so the cached-prompt key is stable across
+    # collect/retrieve passes regardless of dict ordering (see equipment.py / #399/#401).
+    text = json.dumps(event_data, indent=2, sort_keys=True)
     return render_prompt("people_groups", text=text)
 
 
