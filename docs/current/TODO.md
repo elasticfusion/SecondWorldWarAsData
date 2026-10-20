@@ -15,6 +15,16 @@ are ordered: (1) **Phase 2 — open**, (2) Phase 3 / enrichment — open, (3) ar
 Audit of ALL Phase-2 code (8 concurrent code+security sub-agents, synthesized to 5 root patterns).
 bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
 
+- **[NEW · GATE BUG found 2026-10-20] radon D+ hard-fail is a silent no-op.** `scripts/gate.sh`
+  run_radon greps `' - [D-F] '` (trailing space) but `radon cc --min C` (no --show-complexity)
+  emits `- D` with NO trailing space -> the grep NEVER matches -> neither the D+ hard-fail NOR the
+  C+ 'surface for review' ever fires. The radon step always reports ✓. Fix: add --show-complexity
+  to the radon call (or grep `' - [D-F]( |$)'`). WARNING: enabling it will immediately HARD-FAIL on
+  ~15 pre-existing D/E/F blocks (incl. F(42) bibliography_resolver._search_online_sources, E(33)
+  supplemental.extract_supplemental, D grok_client.extract_json / url_hygiene.clean_url /
+  trigger_handler.handler / merge.merge_generic). Needs a grandfather-list or a refactor campaign —
+  scope decision for the user. (~130 C blocks also exist, non-blocking by policy.)
+
 - **[DONE · PR #475] [CRITICAL · PATTERN 1 — batch 0-persist] In-task `submit_batch` maps results by
   xAI SERVER id, not our cache key.** ✅ FIXED (positional mapping via retrieve_results_ordered +
   casualties stable cache_key + chat_get_completion verified correct). NOTE: only regenerates on a NEW run. `batch_api.retrieve_results` keys by `batch_request_id`; `submit_batch`
@@ -26,7 +36,7 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
   `chat_get_completion` field — RESOLVED: verified correct (the successful XChannel AWS retrieval reads
   it as the only content path and produced real entities; a wrong name would have yielded 0 for all).
 
-- **[HIGH · PATTERN 2 — SSRF] 12 unguarded `requests.get(allow_redirects=True)` on untrusted URLs**
+- **[DONE · PR #476] [HIGH · PATTERN 2 — SSRF] 12 unguarded `requests.get(allow_redirects=True)` on untrusted URLs**
   across openserp_maps (50,78,149,168,358,372), search_external_maps (98,138,317), grok_search_maps (99),
   validate_supplemental_urls (22), supplemental_advanced (231), fetch_endnotes (75-92,178) — bypass the
   repo's own `clean_url`+`resolved_host_is_safe`+`allow_redirects=False` guard (used correctly in

@@ -221,7 +221,9 @@ live in several places:
 1. ~~**PATTERN 1 — in-task `submit_batch` positional mapping + casualties stable cache_key**~~ ✅ DONE
    (PR #475): positional mapping via retrieve_results_ordered; casualties stable cache_key;
    chat_get_completion verified correct. Regenerates only on a NEW run.
-2. **PATTERN 2 — SSRF: one safe-fetch helper across the 12 sites** (HIGH security; exploitable over NAT).
+2. ~~**PATTERN 2 — SSRF: one safe-fetch helper across the 12 sites**~~ ✅ DONE (PR #476):
+   url_hygiene.safe_get/fetch_text_safe; all 12 sites routed; routing-guard test. Residual follow-up:
+   pin the connection to the vetted IP (DNS-rebinding TOCTOU, pre-existing in fetch_image_bytes too).
 3. **PATTERN 3 — path-traversal: adopt the hardened sanitizer in dates/places/equipment** (HIGH; `dates.py` worst).
 4. **Trigger-Lambda key sanitization + SNS-ARN trust + manual-expected_count auth** (HIGH external surface).
 5. **Credit-leak + weather/equipment processed-gate** (HIGH cost/correctness).
