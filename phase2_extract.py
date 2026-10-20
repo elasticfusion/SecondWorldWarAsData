@@ -153,7 +153,9 @@ def _apply_scope_guard(parsed_files, book, expected_count, content_root, logger)
 
         # INDEPENDENT source-of-truth: the count Phase 1 recorded for this book (NOT a re-glob
         # of what we just scoped). enforce_scope reconciles our ACTUAL work-set against it and
-        # fails loud on drift in EITHER direction. None (not recorded) → magic-50 fallback.
+        # fails loud only on FAN-OUT (actual > recorded; processing more than Phase 1 produced).
+        # A full run == recorded and an incremental resume < recorded both pass. None (not
+        # recorded) → magic-50 fallback.
         try:
             from src.utils.run_scope import read_scope
 
