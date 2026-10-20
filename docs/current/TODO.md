@@ -6,6 +6,24 @@
 
 ## Current Priority (reprioritized index)
 
+> **[BUG · found 2026-10-20, clean XChannel run] bibliography=0 — footnote citation TEXT is dropped
+> in the import->markdown->parse chain (Phase-1/import bug, NOT a Phase-2 bibliography bug).** On the
+> clean run every chapter logged `bib.deterministic ... stored=0 skipped_stub=N`; inspection of the
+> parsed files shows every footnote = `{number, url, text:""}` — text is EMPTY, so _note_to_material
+> correctly returns None (empty text) and every note is counted skipped_stub. The bibliography code is
+> behaving correctly on hollow input. ROOT CAUSE: the ibiblio HTML carries the definition text on the
+> SAME page in an `<h3>Footnotes</h3>` block as `<p>[<a name=fnN href=#cnN>N</a>] <citation text>`.
+> But (1) scripts/import_hyperwar_html.py's footnote-link converter only rewrites anchors whose HREF
+> contains "fn" — the DEFINITION anchors have `name=fnN href=#cnN` (href is #cn, not #fn), so they are
+> not handled; and (2) html2text then flattens the `[<a name=fnN href=#cnN>N</a>] text` block into a
+> form that src/parser.py:extract_footnotes (which expects `[N](url#cnN). text`) cannot associate, so
+> Footnote.text stays "". Net: markers captured (number+url via #fn), definitions lost -> text="".
+> FIX OPTIONS: (a) at import, explicitly parse the `<h3>Footnotes</h3>` block and emit each definition
+> as a parser-recognizable `[N](url#cnN). text` line (preferred — keeps text in the markdown source of
+> truth); (b) wire the existing src/extraction/fetch_endnotes.fetch_endnote_texts() backfill (already
+> re-fetches footnote text from ibiblio HTML) into the deterministic bibliography path — it is
+> currently only used by supplemental.py and is SKIPPED when text is already set. Recommend (a).
+> Blocks: bibliography titles (#460) + any citation/provenance downstream are empty until fixed.
 > **[DESIGN · 2026-10-19, operator-directed] OpenSERP scope reduction — PDF/EPUB source discovery +
 > human-gated acquisition. DOC: docs/current/design/OPENSERP_SCOPE_REDUCTION.md.** Reduce Phase-3
 > OpenSERP from broad 5-entity web+image enrichment to ONE job: find acquirable PDF/EPUB sources on a
