@@ -104,7 +104,21 @@ if bad:
     sys.exit(1)
 print(f"json-lint: {checked} project JSON files parse OK")
 PYJSON
-run "pip-audit" bash -c 'pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-2447 && pip-audit -r requirements-lambda.txt --ignore-vuln PYSEC-2026-2447'
+run "pip-audit" bash -c 'pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-2447 && pip-audit -r requirements-lambda.txt --ignore-vuln PYSEC-2026-2447 && pip-audit --ignore-vuln PYSEC-2026-2447'
+# The final `pip-audit` (no -r) audits the FULL installed environment — it catches a vulnerable
+# TRANSITIVE dependency (e.g. certifi, pulled in by requests) that the per-file audits would miss
+# when it isn't explicitly declared.
+#
+# IGNORED VULN (exactly one, justified — NOT a blanket suppression):
+#   PYSEC-2026-2447 / CVE-2025-69872 — diskcache <=5.6.3 unsafe pickle deserialization: an attacker
+#   with WRITE ACCESS TO THE CACHE DIRECTORY can achieve RCE when the app reads the cache.
+#   - NO FIX EXISTS: 5.6.3 is the latest diskcache release (advisory last_affected=5.6.3, no fixed
+#     version). There is nothing to upgrade to.
+#   - LOW EXPOSURE here: diskcache backs our OWN Grok API-response cache (DiskCacheBackend) in a
+#     pipeline-controlled, non-untrusted-writable dir; the RCE vector needs a local writer who would
+#     already have code execution.
+#   REMOVE this --ignore (and bump diskcache) the moment a fixed release ships. Any OTHER vuln fails
+#   the gate — this is the only accepted exception.
 # Data-quality bypass guard: no NEW raw json.dump/write_text that could skip the central write guard.
 if bash scripts/check_raw_writes.sh >/tmp/gate_rawwrites 2>&1; then
   grep '✓' /tmp/gate_rawwrites | tail -1
