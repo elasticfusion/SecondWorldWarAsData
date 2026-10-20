@@ -1,10 +1,13 @@
 """Regression: equipment=0 — the equipment extractor embeds the full event_data into its cached
-prompt; without canonical (sort_keys) serialization, a dict-ordering difference between the batch
-COLLECT pass and the RETRIEVE re-run changes the prompt -> _make_cache_key differs -> retrieve
-cache-MISS -> empty equipment_list -> 0 persisted (the supplemental #399/#401 bug class).
-
-These assert the prompt (hence the cache key) is IDENTICAL for two key-orderings of the same
-event_data, for both json.dumps(event_data) prompt sites (equipment + people_groups).
+prompt. Two between-pass divergences made the RETRIEVE re-run miss the cache (→ empty → 0 persisted,
+the supplemental #399/#401 class):
+  (1) dict-key ORDERING differences across a reload;
+  (2) ADDED keys — `_stamp_schema_versions` rewrites `*-event.json` between the COLLECT and RETRIEVE
+      passes, injecting `_schema_version`/`_metadata`.
+The fix: (a) `sort_keys=True` canonical serialization (handles ordering), AND (b) a STABLE
+content-independent `cache_key` derived from the DETERMINISTIC EventID (handles added keys too).
+These tests prove the equipment cache_key is identical across BOTH divergences, and that the
+people_groups prompt builder is canonical.
 """
 
 import json
@@ -12,7 +15,6 @@ from unittest import mock
 
 
 def _event_two_orderings():
-    """Same logical event_data, two different dict key orders."""
     a = {
         "Event": {
             "EventID": "01EVENT00000000000000000000",
@@ -24,7 +26,6 @@ def _event_two_orderings():
         "Chapter": "9",
         "book": "XChannel",
     }
-    # rebuild with keys inserted in a different order (simulates a reload/re-serialize diff)
     b = {
         "book": "XChannel",
         "Chapter": "9",
@@ -44,51 +45,63 @@ def test_canonical_serialization_is_order_independent():
     assert json.dumps(a, indent=2, sort_keys=True) == json.dumps(
         b, indent=2, sort_keys=True
     )
-    # sanity: WITHOUT sort_keys they differ (this is the bug the fix prevents)
+    # sanity: WITHOUT sort_keys they differ (the ordering half of the bug)
     assert json.dumps(a, indent=2) != json.dumps(b, indent=2)
 
 
-def test_equipment_prompt_identical_across_event_ordering():
+def _capture_equipment_cache_key(event_data):
+    """Drive the real _extract_equipment_with_llm and capture the cache_key it passes."""
     from src.extraction.equipment import _extract_equipment_with_llm
     from src.grok_client import BatchModeCollecting
 
-    a, b = _event_two_orderings()
-    captured = []
+    captured = {}
 
     def fake_extract_json(prompt, **kwargs):
-        captured.append(prompt)
-        raise BatchModeCollecting()  # collect-pass behaviour; we only need the prompt
-
-    gc = mock.Mock()
-    gc.extract_json.side_effect = fake_extract_json
-
-    for ev in (a, b):
-        try:
-            _extract_equipment_with_llm(ev, gc, max_retries=1)
-        except BatchModeCollecting:
-            pass
-    assert len(captured) == 2
-    assert (
-        captured[0] == captured[1]
-    ), "equipment prompt must be identical across event dict ordering"
-
-
-def test_people_groups_prompt_identical_across_event_ordering():
-    from src.extraction import people_groups as pg
-    from src.grok_client import BatchModeCollecting
-
-    a, b = _event_two_orderings()
-    captured = []
-
-    def fake_extract_json(prompt, **kwargs):
-        captured.append(prompt)
+        captured["prompt"] = prompt
+        captured["cache_key"] = kwargs.get("cache_key")
         raise BatchModeCollecting()
 
     gc = mock.Mock()
+    gc._get_model.return_value = "grok-4.3"
     gc.extract_json.side_effect = fake_extract_json
+    try:
+        _extract_equipment_with_llm(event_data, gc, max_retries=1)
+    except BatchModeCollecting:
+        pass
+    return captured
 
-    # people_groups builds the prompt inside its extract fn; call the prompt builder path
-    # via the same json.dumps used at people_groups.py:145.
-    p_a = json.dumps(a, indent=2, sort_keys=True)
-    p_b = json.dumps(b, indent=2, sort_keys=True)
-    assert p_a == p_b
+
+def test_equipment_cache_key_stable_across_ordering():
+    a, b = _event_two_orderings()
+    ka = _capture_equipment_cache_key(a)
+    kb = _capture_equipment_cache_key(b)
+    assert (
+        ka["prompt"] == kb["prompt"]
+    ), "prompt must be identical across event dict ordering"
+    assert ka["cache_key"] and ka["cache_key"] == kb["cache_key"]
+
+
+def test_equipment_cache_key_stable_across_ADDED_keys():
+    """The decisive case: schema-stamp ADDS keys between passes. A prompt-hash key would still
+    differ; the EventID-derived cache_key must be IDENTICAL so the retrieve hits the cache.
+    """
+    a, _ = _event_two_orderings()
+    collect = _capture_equipment_cache_key(a)
+    # simulate the RETRIEVE-pass event file after _stamp_schema_versions injected metadata
+    stamped = dict(a)
+    stamped["_schema_version"] = "2.6"
+    stamped["_metadata"] = {"stamped_at": "2026-10-20T00:00:00Z"}
+    stamped["Event"] = dict(a["Event"])
+    stamped["Event"]["_schema_version"] = "2.6"
+    retrieve = _capture_equipment_cache_key(stamped)
+    # the PROMPT differs (added keys) — that's exactly why the prompt-hash key was insufficient
+    assert collect["prompt"] != retrieve["prompt"]
+    # but the stable EventID-derived cache_key is IDENTICAL → retrieve cache HIT
+    assert collect["cache_key"] == retrieve["cache_key"]
+
+
+def test_people_groups_prompt_identical_across_event_ordering():
+    from src.extraction.people_groups import _build_extraction_prompt
+
+    a, b = _event_two_orderings()
+    assert _build_extraction_prompt(a) == _build_extraction_prompt(b)

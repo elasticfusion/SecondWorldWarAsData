@@ -2070,12 +2070,28 @@ def _extract_equipment_with_llm(
     from src.utils.prompt_loader import render_prompt
 
     # Serialize CANONICALLY (sort_keys=True): the full event_data is embedded in the cached
-    # prompt, and _make_cache_key hashes the prompt string. Without sort_keys, any dict-ordering
-    # difference between the batch COLLECT pass and the RETRIEVE re-run yields a different cache
-    # key -> retrieve cache-MISS -> empty equipment_list -> 0 persisted (the supplemental
-    # prompt-determinism bug class, #399/#401). sort_keys makes collect-key == retrieve-key.
+    # prompt and _make_cache_key hashes the prompt string, so key ordering must be stable.
     prompt = render_prompt(
         "equipment", event_data=json.dumps(event_data, indent=2, sort_keys=True)
+    )
+
+    # STABLE, content-independent cache_key (the complete fix). sort_keys alone is NOT enough:
+    # _stamp_schema_versions rewrites *-event.json BETWEEN the batch COLLECT pass and the
+    # RETRIEVE re-run (injects _schema_version/_metadata), so the retrieve loads event_data with
+    # ADDED keys -> a prompt-derived key would still differ -> retrieve cache-MISS -> empty
+    # equipment_list -> 0 persisted (the supplemental #399/#401 bug class). Keying on the
+    # DETERMINISTIC EventID (stable across passes) + cache_type + model makes collect-key ==
+    # retrieve-key regardless of any event_data content/ordering drift. Mirrors supplemental.
+    import hashlib
+
+    _event_id = (event_data.get("Event") or {}).get("EventID", "")
+    _model = grok_client._get_model("equipment")  # pylint: disable=protected-access
+    _cache_key = (
+        hashlib.sha256(
+            f"equipment:v1:{_model}:0.1:{_event_id}".encode("utf-8")
+        ).hexdigest()
+        if _event_id
+        else None  # no stable id -> fall back to the prompt-hash key (still sort_keys-canonical)
     )
 
     for attempt in range(max_retries):
@@ -2085,6 +2101,7 @@ def _extract_equipment_with_llm(
                 temperature=0.1,
                 use_cache=(attempt == 0),
                 cache_type="equipment",
+                cache_key=_cache_key,
             )
 
             if isinstance(equipment_list, dict) and "equipment" in equipment_list:
