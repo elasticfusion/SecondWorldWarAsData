@@ -144,11 +144,32 @@ def _merge_duplicates(people_list: list, duplicates: list) -> list:
     return merged_people
 
 
-def _save_consolidated_data(output_file: Path, merged_people: list) -> None:
-    """Save consolidated people data to file."""
+def _save_consolidated_data(output_file: Path, merged_people: list) -> bool:
+    """Save consolidated people data to file. ATOMIC (tempfile + os.replace) so a mid-write crash
+    can't truncate the consolidated index; returns True on success. (This is a {People:[...]} INDEX,
+    not a per-entity record, so the per-entity write_json_with_lock schema guard does not apply.)
+    """
+    import os
+    import tempfile
+
     output_data = {"People": merged_people}
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(output_data, f, indent=2, ensure_ascii=False)
+    d = os.path.dirname(str(output_file)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(output_data, f, indent=2, ensure_ascii=False)
+        os.replace(tmp, output_file)
+        logger.info(
+            "OBSERV people_consolidation.save file=%s people=%d",
+            getattr(output_file, "name", output_file),
+            len(merged_people),
+        )
+        return True
+    except Exception as e:  # noqa: BLE001
+        logger.error("people_consolidation save failed for %s: %s", output_file, e)
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+        return False
 
 
 def consolidate_people(

@@ -406,6 +406,23 @@ def _has_casualty_mention(text: str) -> bool:
         "kia",
         "wia",
         "missing in action",
+        # Narrative casualty language the LLM recognizes but the old set missed → silent 0 on
+        # casualty-bearing sub-events (PATTERN 4). Broadened per review.
+        "loss",  # losses / loss of life (also 'heavy losses')
+        "fell",  # "the battalion fell" / "fell in action"
+        "wiped out",
+        "annihilat",
+        "decimat",
+        "overrun",
+        "overran",
+        "slain",
+        "perished",
+        "fatalit",
+        "died",
+        "wounds",
+        "surrender",
+        "men lost",
+        "lost men",
     ]
     text_lower = text.lower()
     return any(keyword in text_lower for keyword in keywords)

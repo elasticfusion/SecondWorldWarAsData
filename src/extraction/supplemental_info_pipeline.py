@@ -49,31 +49,65 @@ def _extract_entity_type(
     if not enabled:
         return None
 
+    import json as _json
+    import tempfile
+
+    # The extractors take a PATH to an *-event.json (they open() it), NOT a dict. Passing the
+    # pseudo_event dict raised TypeError that the broad except swallowed -> this whole supplemental
+    # entity-extraction path produced 0 every run (PATTERN 4, 100% dead). Materialize the dict to a
+    # temp event.json and pass its Path.
+    tmp_dir = output_root / "_supplemental_tmp"
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    seid = (pseudo_event.get("Event", {}).get("Sub-events") or [{}])[0].get(
+        "Sub-eventID", "x"
+    )
+    fd, tmp_name = tempfile.mkstemp(
+        dir=str(tmp_dir), prefix=f"{seid[:12]}_", suffix="-event.json"
+    )
+    event_file = Path(tmp_name)
     try:
+        import os as _os
+
+        with _os.fdopen(fd, "w", encoding="utf-8") as fh:
+            _json.dump(pseudo_event, fh, ensure_ascii=False)
+        result: Optional[Any] = None
         if entity_type == "dates":
             from src.extraction.dates import extract_dates
 
-            return extract_dates(pseudo_event, grok_client, output_root / "dates")  # type: ignore[arg-type]
+            result = extract_dates(event_file, grok_client, output_root / "dates")
         elif entity_type == "places":
             from src.extraction.places import extract_places
 
-            return extract_places(pseudo_event, grok_client, output_root / "places")  # type: ignore[arg-type]
+            result = extract_places(event_file, grok_client, output_root / "places")
         elif entity_type == "people":
             from src.extraction.people import extract_people
 
-            return extract_people(pseudo_event, grok_client, output_root / "people")  # type: ignore[arg-type]
+            result = extract_people(event_file, grok_client, output_root / "people")
         elif entity_type == "people_groups":
             from src.extraction.people_groups import extract_people_groups
 
-            return extract_people_groups(pseudo_event, grok_client, output_root / "people_groups")  # type: ignore[arg-type]
+            result = extract_people_groups(
+                event_file, grok_client, output_root / "people_groups"
+            )
         elif entity_type == "equipment":
-            from src.extraction.equipment import extract_equipment_from_event  # type: ignore[attr-defined]
+            from src.extraction.equipment import extract_equipment_from_event
 
-            return extract_equipment_from_event(pseudo_event, grok_client, output_root / "equipment")  # type: ignore[arg-type,misc,call-arg]
+            # NB: equipment's signature is (event_file, output_dir, grok_client) — different arg
+            # ORDER than dates/places/people. The old dead code passed them in the wrong order.
+            result = extract_equipment_from_event(
+                event_file, output_root / "equipment", grok_client
+            )
+        logger.info(
+            "OBSERV supplemental_info.extract type=%s result=%s",
+            entity_type,
+            "ok" if result else "none",
+        )
+        return result
     except Exception as e:
         logger.error("Failed to extract %s from supplemental: %s", entity_type, e)
-
-    return None
+        return None
+    finally:
+        event_file.unlink(missing_ok=True)
 
 
 def extract_from_supplemental_info(

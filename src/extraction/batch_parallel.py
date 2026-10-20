@@ -219,11 +219,16 @@ def _make_date_key(obj: dict) -> str:
     key = obj.get("date_start") or obj.get("date", "")
     if not key:
         return ""
-    # Extract year — reject dates outside 1919-1955 (WWII era + context)
+    # Extract year — drop only CLEARLY-GARBAGE years (OCR/LLM noise). The WWII window (1919-1955)
+    # is ADVISORY, not a veto: legit dates fall outside it (WWI background, publication/interview
+    # dates) and must not be silently dropped (mirrors dates._is_valid_date_mention).
     year_match = re.search(r"\d{4}", key)
     if year_match:
         year = int(year_match.group())
-        if year < 1919 or year > 1955:
+        if year < 1700 or year > 2100:
+            logger.warning(
+                "OBSERV dates.filter dropped=garbage_year year=%d key=%s", year, key
+            )
             return ""
     time_start = obj.get("time_start")
     if time_start:

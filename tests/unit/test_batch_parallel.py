@@ -110,11 +110,15 @@ class TestHelpers:
 
         assert _make_date_key({}) == ""
 
-    def test_make_date_key_rejects_non_wwii(self):
+    def test_make_date_key_rejects_only_garbage_years(self):
         from src.extraction.batch_parallel import _make_date_key
 
-        assert _make_date_key({"date_start": "2024-01-01"}) == ""
-        assert _make_date_key({"date_start": "1800-01-01"}) == ""
+        # PATTERN 4: the WWII window is now ADVISORY — out-of-window but plausible years are KEPT
+        # (publication/background dates), only clearly-garbage years are rejected.
+        assert _make_date_key({"date_start": "2024-01-01"}) != ""  # kept (advisory)
+        assert _make_date_key({"date_start": "1800-01-01"}) != ""  # kept (advisory)
+        assert _make_date_key({"date_start": "0101-01-01"}) == ""  # garbage rejected
+        assert _make_date_key({"date_start": "9999-01-01"}) == ""  # garbage rejected
 
     def test_load_index(self, tmp_path):
         from src.extraction.batch_parallel import _load_index

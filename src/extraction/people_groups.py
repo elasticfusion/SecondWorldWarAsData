@@ -156,7 +156,36 @@ def _parse_groups_response(response: str) -> list:
         if match:
             response_clean = match.group(1)
     data = json.loads(response_clean)
-    return data.get("People_Groups", [])
+    # Accept BOTH shapes the LLM may return: a {wrapper: [...]} dict (key variants) OR a bare list.
+    # Requiring the exact 'People_Groups' key silently returned [] for a whole chapter when the model
+    # used a variant key or a bare list (PATTERN 4 silent-drop).
+    if isinstance(data, list):
+        groups = data
+        shape = "bare_list"
+    elif isinstance(data, dict):
+        shape = "wrapper"
+        for k in (
+            "People_Groups",
+            "people_groups",
+            "groups",
+            "Groups",
+            "units",
+            "Units",
+        ):
+            if isinstance(data.get(k), list):
+                groups, shape = data[k], f"wrapper:{k}"
+                break
+        else:
+            groups = []
+    else:
+        groups, shape = [], "unknown"
+    if not groups:
+        logger.info(
+            "OBSERV people_groups.parse shape=%s groups=0 (keys=%s)",
+            shape,
+            list(data.keys()) if isinstance(data, dict) else type(data).__name__,
+        )
+    return groups
 
 
 def _validate_group_items(items: list) -> list:
