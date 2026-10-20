@@ -422,7 +422,6 @@ class GrokClient:
             RequestDetail,
             submit_batch,
             poll_batch,
-            retrieve_results,
         )
 
         # Write JSONL
@@ -478,8 +477,19 @@ class GrokClient:
         logger.info("Waiting for batch to complete (may take minutes to hours)...")
         batch_state = poll_batch(self.api_key, batch_id, submitted_count=count)
 
-        # Retrieve rich results
-        results = retrieve_results(self.api_key, batch_id)
+        # Retrieve results as an ORDERED list. The xAI results API does NOT echo our submitted
+        # custom_id (only a server-assigned batch_request_id), so results MUST be mapped to our
+        # cache keys by POSITION (submission order), NOT by id. The prior code used
+        # retrieve_results() (keyed by the server id) + _classify_batch_results(), which cached
+        # content under the SERVER id — a key no lookup ever uses — so every in-task batch result
+        # was effectively lost (classified "missing" → 0 persisted). This now mirrors the correct
+        # AWS retrieve-only path (ecs_entrypoint._map_batch_results_by_index / retrieve_results_ordered).
+        from src.utils.batch_api import retrieve_results_ordered
+
+        ordered = retrieve_results_ordered(self.api_key, batch_id)
+        submitted = [
+            (r.request_id, r.cache_type) for r in self._batch_collector.requests
+        ]
 
         # Build metrics
         metrics = BatchMetrics(
@@ -487,36 +497,50 @@ class GrokClient:
             total_requests=count,
             poll_seconds=batch_state.get("_poll_seconds", 0.0),
         )
-        # Record OUR cache keys in SUBMISSION ORDER (results API omits custom_id, so
-        # retrieve maps results to these by position).
-        metrics.submitted_request_ids = [
-            [r.request_id, r.cache_type] for r in self._batch_collector.requests
-        ]
+        metrics.submitted_request_ids = [[rid, ct] for rid, ct in submitted]
         state = batch_state.get("state", {})
         metrics.api_successes = state.get("num_success", 0)
         metrics.api_errors = state.get("num_error", 0)
 
-        # Validate and classify results
-        failed_ids = self._classify_batch_results(
-            results, requests_by_id, metrics, RequestDetail
-        )
-
-        # Flag requests that were submitted but got no result
-        for request_id in requests_by_id:
-            if request_id not in results:
-                metrics.empty += 1
-                logger.warning("Batch result %s missing from response", request_id)
-                failed_ids.append(request_id)
-                metrics.add_detail(
-                    RequestDetail(
-                        request_id=request_id,
-                        cache_type=self._batch_meta.get(request_id, "default"),
-                        status="missing",
-                        prompt_preview=self._batch_prompt_preview(
-                            request_id, requests_by_id
-                        ),
+        failed_ids: list = []
+        if len(ordered) != len(submitted):
+            # Count mismatch → we CANNOT safely index-map (never silently mis-key). Treat every
+            # request as failed → real-time retry fallback. Fail loud.
+            logger.error(
+                "Batch %s: result count (%d) != submitted (%d) — cannot positionally map; "
+                "falling back to real-time retry for all.",
+                batch_id,
+                len(ordered),
+                len(submitted),
+            )
+            failed_ids = [rid for rid, _ in submitted]
+            metrics.empty += len(submitted)
+        else:
+            # Positional zip: each result maps to OUR request_id + cache_type at the same index.
+            for (our_id, cache_type), br in zip(submitted, ordered):
+                if br.status == "valid":
+                    metrics.valid += 1
+                    self._get_cache(cache_type or "default")[our_id] = (
+                        self._sanitize_content(br.content)
                     )
-                )
+                else:
+                    counter = {
+                        "truncated": "truncated",
+                        "error": "empty",
+                        "other_finish": "other_finish",
+                    }.get(br.status, "empty")
+                    setattr(metrics, counter, getattr(metrics, counter) + 1)
+                    failed_ids.append(our_id)
+                    metrics.add_detail(
+                        RequestDetail(
+                            request_id=our_id,
+                            cache_type=cache_type or "default",
+                            status=br.status,
+                            prompt_preview=self._batch_prompt_preview(
+                                our_id, requests_by_id
+                            ),
+                        )
+                    )
 
         # Retry failed requests via real-time API
         if failed_ids:
@@ -550,75 +574,6 @@ class GrokClient:
         content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
         content = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r"\\\\", content)
         return content
-
-    def _classify_batch_results(
-        self, results, requests_by_id, metrics, RequestDetail
-    ) -> list:
-        """Validate each batch result, cache valid ones, return failed IDs."""
-        failed_ids: list = []
-        populated = 0
-
-        for request_id, br in results.items():
-            cache_type = self._batch_meta.get(request_id, "default")
-            status = br.status
-
-            # Cache valid results
-            if status == "valid":
-                metrics.valid += 1
-                cache = self._get_cache(cache_type)
-                cache[request_id] = self._sanitize_content(br.content)
-                populated += 1
-            else:
-                # Increment the appropriate counter
-                counter_map = {
-                    "truncated": "truncated",
-                    "error": "empty",
-                    "other_finish": "other_finish",
-                }
-                setattr(
-                    metrics,
-                    counter_map.get(status, "empty"),
-                    getattr(metrics, counter_map.get(status, "empty")) + 1,
-                )
-                prompt_preview = self._batch_prompt_preview(request_id, requests_by_id)
-                logger.warning(
-                    "Batch result failed: %s [%s] %s (%d chars)",
-                    request_id,
-                    cache_type,
-                    status,
-                    len(br.content),
-                    extra={
-                        "extra_fields": {
-                            "event": "batch_result_failed",
-                            "request_id": request_id,
-                            "cache_type": cache_type,
-                            "status": status,
-                            "finish_reason": br.finish_reason,
-                            "content_length": len(br.content),
-                            "content_tail": br.content[-200:] if br.content else "",
-                            "error": br.error[:500] if br.error else "",
-                            "prompt_preview": prompt_preview,
-                        }
-                    },
-                )
-                failed_ids.append(request_id)
-
-            metrics.add_detail(
-                RequestDetail(
-                    request_id=request_id,
-                    cache_type=cache_type,
-                    status=status,
-                    finish_reason=br.finish_reason,
-                    content_length=len(br.content),
-                    error=br.error if status == "error" else "",
-                    prompt_preview=self._batch_prompt_preview(
-                        request_id, requests_by_id
-                    ),
-                )
-            )
-
-        logger.info("Populated %d cache entries from batch results", populated)
-        return failed_ids
 
     def _retry_failed_batch(
         self, failed_ids: list, requests_by_id: dict, metrics, count: int

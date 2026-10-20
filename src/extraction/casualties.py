@@ -207,7 +207,20 @@ def _batch_extract_casualties(
             f"--- Sub-event [{seid}] ---\n{text}" for seid, text in chunk
         )
         prompt = _build_casualties_prompt(entity_context, sub_event_block)
-        return _call_and_parse_casualties(grok_client, prompt)
+        # STABLE cache_key: the prompt embeds entity_context built from the people/places/groups
+        # indexes, which GROW between the batch COLLECT and RETRIEVE passes -> the prompt (and thus
+        # the default prompt-hash cache key) would differ -> retrieve cache-MISS -> 0 persisted
+        # (the equipment=0 / optional-entity-zero class, #472). Key on the chunk's DETERMINISTIC
+        # sub-event ids instead, so collect-key == retrieve-key regardless of index growth.
+        import hashlib
+
+        _get_model = getattr(grok_client, "_get_model", None)
+        _model = _get_model("casualties") if callable(_get_model) else "default"
+        _seids = ",".join(seid for seid, _ in chunk)
+        _cache_key = hashlib.sha256(
+            f"casualties:v1:{_model}:0.1:{_seids}".encode("utf-8")
+        ).hexdigest()
+        return _call_and_parse_casualties(grok_client, prompt, cache_key=_cache_key)
 
     return extract_with_chunk_halving(chunks, _extract_chunk, "casualties")
 
@@ -251,14 +264,17 @@ Return empty arrays for sub-events with no casualties."""
 
 
 def _call_and_parse_casualties(
-    grok_client: GrokClient, prompt: str
+    grok_client: GrokClient, prompt: str, cache_key: str = None
 ) -> Dict[str, List[Dict[str, Any]]]:
     """Call Grok API and parse batched casualty response."""
     max_retries = 3
     for attempt in range(max_retries):
         try:
             response = grok_client.chat_completion(
-                prompt, use_cache=(attempt == 0), cache_type="casualties"
+                prompt,
+                use_cache=(attempt == 0),
+                cache_type="casualties",
+                cache_key=cache_key,
             )
             return _parse_casualty_response(response)
         except BatchModeCollecting:
