@@ -332,6 +332,11 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
 
 ## 4. INFRA / SECURITY / COST
 
+- **[LOW · found 2026-10-20, out of trigger-hardening scope] _submit_ocr derives pdf_name with a
+  raw rsplit.** It feeds a DynamoDB claim key (ocr#{pdf_name}), S3 keys (ocr-output/{pdf_name}/...),
+  and Batch job commands. PRE-EXISTING; low blast radius (flat S3 keys, not a filesystem-rmtree/--book
+  sink). Route through _safe_stem_from_key for consistency with the trigger-Lambda hardening (PR #482).
+
 - **[MED · latent, found 2026-10-20 during PATTERN 3] Entity filename id-suffix `[:8]` is
   timestamp-only → same-ms collisions.** Entity writers compose `{name}_{ULID[:8]}.json`, but a
   ULID's first 8 chars are the millisecond timestamp — two entities minted in the same ms share the
