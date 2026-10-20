@@ -103,3 +103,50 @@ def test_replay_empty_result_exits_nonzero(tmp_path, monkeypatch):
     )
     with pytest.raises(SystemExit):
         rc.main()
+
+
+def test_replay_skips_key_escaping_dest(tmp_path, monkeypatch):
+    rc = _load_replay()
+    prefix = "diagnostics/cache/XChannel/"
+    objs = [
+        {"Key": prefix + "../../etc/evil.json"},  # crafted escape
+        {"Key": prefix + "events/ok.json"},  # legit
+    ]
+
+    class _Pag:
+        def paginate(self, **kw):
+            yield {"Contents": objs}
+
+    fake_s3 = mock.Mock()
+    fake_s3.get_paginator.return_value = _Pag()
+    written = []
+
+    def _dl(bucket, key, target):
+        written.append(target)
+        Path(target).write_text("{}", encoding="utf-8")
+
+    fake_s3.download_file.side_effect = _dl
+    import boto3 as _b
+
+    monkeypatch.setattr(_b, "client", lambda *a, **k: fake_s3)
+    dest = tmp_path / "cache" / "api"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["replay_cache.py", "--book", "XChannel", "--dest", str(dest), "--bucket", "b"],
+    )
+    rc.main()
+    # only the legit key was written; nothing escaped dest
+    assert (dest / "events" / "ok.json").exists()
+    assert all(str(dest.resolve()) in str(Path(t).resolve()) for t in written)
+    assert not (tmp_path / "etc" / "evil.json").exists()
+
+
+def test_producer_prefix_safe_book_fallback():
+    """The sync prefix must use run_scope._safe_book so an unsafe BOOK_NAME falls back to _all,
+    symmetric with the replay consumer's guard."""
+    from src.utils.run_scope import _safe_book
+
+    assert _safe_book("XChannel") == "XChannel"
+    assert _safe_book("../evil") is None  # -> producer uses diagnostics/cache/_all
+    assert _safe_book("a/b") is None

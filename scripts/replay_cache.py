@@ -64,6 +64,13 @@ def main() -> None:
             if not rel:
                 continue
             target = dest / rel
+            # Containment: a crafted S3 key must not escape --dest (pathlib does not normalize
+            # '..'); skip anything that resolves outside the destination dir.
+            try:
+                target.resolve().relative_to(dest.resolve())
+            except ValueError:
+                print(f"skip unsafe key (escapes dest): {key}", file=sys.stderr)
+                continue
             target.parent.mkdir(parents=True, exist_ok=True)
             s3.download_file(args.bucket, key, str(target))
             n += 1

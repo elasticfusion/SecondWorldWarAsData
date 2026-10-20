@@ -2450,8 +2450,13 @@ def _final_sync(phase_script: str = ""):
             cache_api = _P("/app/cache/api")
             if cache_api.exists():
                 _book = os.environ.get("BOOK_NAME", "").strip()
+                # Validate the book token (reuse run_scope._safe_book) so a crafted BOOK_NAME
+                # can't write the S3 key outside diagnostics/cache/; fall back to _all.
+                from src.utils.run_scope import _safe_book as _rs_safe_book
+
+                _safe = _rs_safe_book(_book) if _book else None
                 _cache_prefix = (
-                    f"diagnostics/cache/{_book}" if _book else "diagnostics/cache/_all"
+                    f"diagnostics/cache/{_safe}" if _safe else "diagnostics/cache/_all"
                 )
                 n_cache, _ = s3_sync_up(cache_api, _cache_prefix)
                 logger.info(
