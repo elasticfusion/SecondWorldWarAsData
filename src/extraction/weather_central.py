@@ -828,10 +828,24 @@ def _parse_weather_response(
         fixed = _fix_invalid_ulids(mentions)
         if isinstance(fixed, list):
             mentions = fixed
+        # Keep any mention that carries DESCRIPTIVE weather content. A resolved date/place is
+        # ENRICHMENT, not a gating precondition — requiring BOTH silently dropped most real
+        # narrative weather (e.g. "overcast and stormy with high winds" with no pinned
+        # date/place), which is why weather persisted 0 despite a successful batch. Drop only
+        # mentions with no descriptive signal at all.
+        _CONTENT_KEYS = (
+            "weather_description",
+            "description",
+            "condition",
+            "original_text",
+            "notable_impact",
+            "precipitation_text",
+        )
         result[seid] = [
             m
             for m in mentions
-            if isinstance(m, dict) and m.get("date") and m.get("place_name")
+            if isinstance(m, dict)
+            and any(str(m.get(k) or "").strip() for k in _CONTENT_KEYS)
         ]
     return result
 

@@ -90,3 +90,59 @@ def test_people_phase2_enrich_reraises_collecting(monkeypatch):
     monkeypatch.setattr(eb, "enrich_person_from_sources", _raise)
     with pytest.raises(BatchModeCollecting):
         _people._enrich_person_phase2({"name": "Omar Bradley"}, object())
+
+
+# --- Persist-side regression (optional-entity under-persist, 2026-10-20) ---------------
+# The optional 2nd batch succeeded (325/325) yet weather/logistics persisted 0 because the
+# parse-filters silently dropped extracted mentions: weather required BOTH date AND place_name;
+# logistics required a {"logistics":[...]} wrapper AND strict model_validate. Resolved
+# date/place/enum specifics are ENRICHMENT, not gating. These assert content-bearing mentions
+# survive the parser.
+
+
+def test_weather_keeps_content_without_resolved_date_or_place():
+    from src.extraction.weather_central import _parse_weather_response
+
+    resp = {
+        "SE1": [
+            {
+                "weather_description": "Overcast and stormy with high winds"
+            },  # no date/place
+            {
+                "weather_description": "Fog cleared",
+                "date": "1944-06-06",
+                "place_name": "Normandy",
+            },
+        ],
+        "SE2": [{"date": "1944-06-05"}],  # no descriptive content -> drop
+    }
+    out = _parse_weather_response(resp)
+    assert len(out.get("SE1", [])) == 2  # both kept — date/place optional
+    assert len(out.get("SE2", [])) == 0  # empty descriptive content dropped
+
+
+def test_logistics_accepts_bare_list_and_partial_items():
+    from src.extraction.logistics import _parse_logistics_response
+
+    # bare list (no {"logistics":[...]} wrapper) must be accepted
+    bare = {
+        "SE1": [
+            {
+                "type": "supply_shortage",
+                "category": "fuel",
+                "description": "fuel ran low",
+                "severity": "high",
+            }
+        ]
+    }
+    assert sum(len(v) for v in _parse_logistics_response(bare).values()) == 1
+    # wrapped but missing required enum fields -> coerced + kept (has a description)
+    partial = {
+        "SE1": {
+            "logistics": [{"description": "ammunition shortage delayed the attack"}]
+        }
+    }
+    assert sum(len(v) for v in _parse_logistics_response(partial).values()) == 1
+    # no descriptive content -> dropped
+    empty = {"SE1": [{"description": ""}]}
+    assert sum(len(v) for v in _parse_logistics_response(empty).values()) == 0

@@ -6,6 +6,16 @@
 
 ## Current Priority (reprioritized index)
 
+> **[FOLLOW-UP · 2026-10-20] equipment=0 is NOT a parse-filter bug + api-cache observability gap.**
+> Fixed weather+logistics over-strict parse filters (branch fix/optional-entity-underpersist). EQUIPMENT
+> still 0 but its parser is robust (handles {equipment:[...]} wrapper + bare list, no per-item drop) —
+> so equipment=0 is a DIFFERENT cause (likely the equipment prompt extracting nothing for these
+> sub-events, or an optional-batch wiring gap specific to equipment). Needs its own repro on the next
+> run with equipment OBSERV. ALSO: the Grok api-cache is NOT synced to S3 (only output/dedup/manifests
+> are), so after a run the cached batch responses are gone and optional-entity extract-vs-persist can't
+> be replayed offline — forced code-level repro this time. Consider syncing cache/api (or at least the
+> optional batch responses) to S3 so a run is diagnosable post-hoc, same spirit as the log-retention
+> item.
 > **[AUDIT · 2026-10-20] Remaining issues from the clean XChannel Phase-2 run (post bib fix).**
 > FIXED/VERIFIED on clean data: person identity 59/0/0 (#463); xref exact, 0 dropped (#448/#455);
 > bibliography now 0->1387 stored (PR #467, offline-verified).
