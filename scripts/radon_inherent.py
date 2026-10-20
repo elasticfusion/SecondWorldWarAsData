@@ -27,29 +27,43 @@ _ALLOWLIST = pathlib.Path(__file__).with_name(".radon_inherent")
 
 
 def _body_hash(file: str, symbol: str) -> str | None:
-    """sha256 of the AST-unparsed body of top-level (or one-level-nested) function ``symbol`` in
-    ``file``. None if not found / unparseable. AST-based so comments + formatting don't churn it.
+    """sha256 of the AST-unparsed body of function ``symbol`` in ``file``. ``symbol`` may be a bare
+    name (matched only at MODULE top level) or a dotted ``Class.method`` / ``Outer.inner`` path
+    (resolved by walking the named owners). Returns None if not found, AMBIGUOUS (>1 match — never
+    silently pick one), or unparseable. AST-based so comments + formatting don't churn the hash.
     """
     try:
         tree = ast.parse(pathlib.Path(file).read_text(encoding="utf-8"))
     except (OSError, SyntaxError):
         return None
-    target = symbol.split(".")[-1]  # accept Class.method or bare name
-    found: list[ast.AST] = []
 
-    class _V(ast.NodeVisitor):
-        def visit_FunctionDef(self, node):  # noqa: N802
-            if node.name == target:
-                found.append(node)
-            self.generic_visit(node)
+    _FUNC = (ast.FunctionDef, ast.AsyncFunctionDef)
+    parts = symbol.split(".")
 
-        visit_AsyncFunctionDef = visit_FunctionDef  # noqa: N815
+    # Walk the dotted owner path down to the container of the final name, then match the final name
+    # among that container's DIRECT children only (no recursion -> no cross-scope collision). A bare
+    # name matches module-level defs only.
+    containers: list = [tree]
+    for owner in parts[:-1]:
+        nxt = [
+            n
+            for c in containers
+            for n in getattr(c, "body", [])
+            if isinstance(n, (ast.ClassDef, *_FUNC)) and n.name == owner
+        ]
+        if len(nxt) != 1:
+            return None  # ambiguous/missing owner
+        containers = nxt
 
-    _V().visit(tree)
-    if not found:
-        return None
-    # Unparse the body only (ignore the signature/decorators/docstring-position noise is fine —
-    # the body carries the logic that drives complexity).
+    target = parts[-1]
+    found = [
+        n
+        for c in containers
+        for n in getattr(c, "body", [])
+        if isinstance(n, _FUNC) and n.name == target
+    ]
+    if len(found) != 1:
+        return None  # not found, or AMBIGUOUS (same-name collision) -> fail closed
     try:
         body_src = "\n".join(ast.unparse(n) for n in found[0].body)
     except Exception:  # noqa: BLE001
