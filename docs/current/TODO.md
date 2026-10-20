@@ -332,6 +332,15 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
 
 ## 4. INFRA / SECURITY / COST
 
+- **[MED · latent, found 2026-10-20 during PATTERN 3] Entity filename id-suffix `[:8]` is
+  timestamp-only → same-ms collisions.** Entity writers compose `{name}_{ULID[:8]}.json`, but a
+  ULID's first 8 chars are the millisecond timestamp — two entities minted in the same ms share the
+  suffix and (if names also match/truncate) can collide to one file. Pervasive: batch_parallel:267,
+  dates, equipment, logistics. The full ULID inside the record is the real PK, so this is a filename
+  disambiguation weakness, not an identity bug. PATTERN 3 bumped only the NEW fallback paths to
+  `[:12]` (adds random bits); the main composed names still use `[:8]`. FIX: standardize on
+  `[:12]`+ (or a short random token) for the filename suffix across all entity writers.
+
 - **[DEPS · prod-install hygiene, 2026-10-20] Sync + pin the remaining dependency surfaces.** The
   top-level `requirements.txt` was hardened (pillow 12.3.0→13.0.0 PR #478; certifi pinned 2026.10.19 +
   urllib3 declared 2.8.0 + full-env pip-audit PR #479). STILL OUT OF SYNC / loose:
