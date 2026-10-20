@@ -63,6 +63,25 @@ def fetch_image_bytes(url: str) -> Tuple[Optional[bytes], Optional[str]]:
                 return None, None
         if "image" not in content_type and len(body) < 1000:
             return None, None
+        # Must be an image: trust an image/* content-type, else require a known image
+        # magic-byte signature — blocks a non-image body (HTML error page, PDF, zip) from
+        # being saved under an image extension.
+        _MAGIC = (
+            b"\xff\xd8\xff",  # jpeg
+            b"\x89PNG\r\n\x1a\n",  # png
+            b"GIF87a",
+            b"GIF89a",  # gif
+            b"II*\x00",
+            b"MM\x00*",  # tiff
+            b"RIFF",  # webp (RIFF....WEBP)
+        )
+        if not content_type.startswith("image/") and not any(
+            body.startswith(sig) for sig in _MAGIC
+        ):
+            logger.debug(
+                "rejected non-image content (ct=%s): %s", content_type, cleaned
+            )
+            return None, None
         ext = "jpg"
         if "png" in content_type or cleaned.lower().endswith(".png"):
             ext = "png"
@@ -336,7 +355,9 @@ def extract_images(
     """
     images_dir = output_dir / "images"
     images_dir.mkdir(parents=True, exist_ok=True)
-    storage_dir = image_storage_path or Path("cache/images")
+    # Default UNDER output/ (synced to S3). The old cache/images default was ephemeral —
+    # downloaded bytes would die with the container if a config omitted the path.
+    storage_dir = image_storage_path or (output_dir / "images" / "files")
 
     if captioner is None:
         try:

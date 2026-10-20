@@ -76,3 +76,31 @@ def test_download_writes_under_given_storage_dir(tmp_path, monkeypatch):
     path, ext = _download_image("https://ex.org/a.jpg", "01IMGID", storage)
     assert ext == "jpg"
     assert path and (storage / "01IMGID.jpg").exists()
+
+
+def test_rejects_non_image_body_masquerade(monkeypatch):
+    """A large text/html body must NOT be saved as an image (content-type gate + magic-byte)."""
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda host: ["93.184.216.34"]
+    )
+    resp = mock.Mock()
+    resp.status_code = 200
+    resp.headers = {"content-type": "text/html"}
+    resp.iter_content = lambda n: [b"<html>" + b"x" * 5000 + b"</html>"]
+    with mock.patch("src.extraction.images.requests.get", return_value=resp):
+        body, ext = fetch_image_bytes("https://ex.org/not-really.jpg")
+        assert body is None and ext is None
+
+
+def test_accepts_image_magic_bytes_with_odd_content_type(monkeypatch):
+    """A real JPEG with a missing/odd content-type is still accepted (magic-byte fallback)."""
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda host: ["93.184.216.34"]
+    )
+    resp = mock.Mock()
+    resp.status_code = 200
+    resp.headers = {"content-type": "application/octet-stream"}
+    resp.iter_content = lambda n: [b"\xff\xd8\xff" + b"\x00" * 3000]
+    with mock.patch("src.extraction.images.requests.get", return_value=resp):
+        body, ext = fetch_image_bytes("https://ex.org/x.jpg")
+        assert body and ext == "jpg"

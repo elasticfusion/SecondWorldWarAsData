@@ -6,6 +6,17 @@
 
 ## Current Priority (reprioritized index)
 
+> **[SEC FOLLOW-UP · 2026-10-20] DNS-rebind TOCTOU in image/url fetchers + download dead-code.**
+> fetch_image_bytes (and the sibling src/utils/url_fetch.py) validate the resolved IP via
+> resolved_host_is_safe but then let requests.get RE-RESOLVE DNS and connect — a hostile resolver can
+> answer public at check, private/169.254.169.254 at connect. Mitigated (no redirects; literal-IP +
+> metadata hosts blocked; attacker needs authoritative DNS + a race) so WARNING not CRITICAL, and it
+> is a codebase-wide accepted pattern (not new here). Proper fix is shared: resolve once + PIN the
+> connection to a vetted IP (custom adapter / pinned getaddrinfo) across ALL fetchers. ALSO cleanup:
+> maps._determine_map_extension is now dead (fetch centralized), and the timeout params on
+> _download_map_image/_download_image_to_s3 are ignored (fetch_image_bytes uses a module const). ALSO:
+> config.yaml is gitignored but baked into the image via Dockerfile COPY — consider generating it from
+> the tracked example in CI or asserting download flags + output/-rooted paths at startup.
 > **[FOLLOW-UP · 2026-10-20] equipment=0 is NOT a parse-filter bug + api-cache observability gap.**
 > Fixed weather+logistics over-strict parse filters (branch fix/optional-entity-underpersist). EQUIPMENT
 > still 0 but its parser is robust (handles {equipment:[...]} wrapper + bare list, no per-item drop) —
