@@ -190,14 +190,41 @@ def convert_html_to_markdown(soup: BeautifulSoup, source_url: str) -> str:
             if fn_url:
                 link.replace_with(f"<sup>[{text}]({fn_url})</sup>")
 
-    # Convert images to markdown
+    # Convert images to markdown. ibiblio wraps each THUMBNAIL <img> in a link to the
+    # FULL-RESOLUTION image: <a href="img/X-62.jpg"><img src="icn/X-62.jpg"></a> (photo) or
+    # <a href="maps/X-4.jpg"><img src="maps/X-4m.jpg"></a> (map, 'm'=thumb). Prefer the href
+    # (7-13x larger) when it points to an image file; fall back to src otherwise. Also derive
+    # a non-empty alt from the chosen filename when the source alt is empty (every ibiblio
+    # <img> has alt="") so downstream capture/dedup has a stable label.
+    _IMG_EXTS = (".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg")
+
+    def _is_image_path(u: str) -> bool:
+        return u.lower().split("?")[0].split("#")[0].endswith(_IMG_EXTS)
+
     for img in body.find_all("img"):
         src = img.get("src", "")
-        alt = img.get("alt", "")
-        if src:
-            full_src = _safe_url(urljoin(source_url, src))
-            if full_src:
-                img.replace_with(f"![{alt}]({full_src})")
+        alt = img.get("alt", "") or ""
+        if not src:
+            continue
+        chosen = src
+        parent_a = img.find_parent("a")
+        if parent_a:
+            href = parent_a.get("href", "") or ""
+            if href and _is_image_path(href):
+                chosen = href  # full-resolution asset, not the thumbnail
+        full = _safe_url(urljoin(source_url, chosen))
+        if not full:
+            continue
+        if not alt.strip():
+            # filename stem (e.g. USA-E-XChannel-4) as a stable, non-empty label.
+            # Sanitize: strip control chars + collapse whitespace so a crafted URL path
+            # segment can't inject NUL/newline/tab into the alt text / emitted markdown.
+            from pathlib import PurePosixPath
+
+            stem = PurePosixPath(full.split("?")[0].split("#")[0]).stem
+            alt = re.sub(r"[\x00-\x1f\x7f]", "", stem)
+            alt = re.sub(r"\s+", " ", alt).strip()
+        img.replace_with(f"![{alt}]({full})")
 
     # Ensure paragraph breaks inside blockquotes survive html2text conversion.
     # HyperWar HTML uses <blockquote> with <p>/<center> children that html2text
