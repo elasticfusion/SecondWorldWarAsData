@@ -6,6 +6,30 @@
 
 ## Current Priority (reprioritized index)
 
+> **[AUDIT · 2026-10-20] Remaining issues from the clean XChannel Phase-2 run (post bib fix).**
+> FIXED/VERIFIED on clean data: person identity 59/0/0 (#463); xref exact, 0 dropped (#448/#455);
+> bibliography now 0->1387 stored (PR #467, offline-verified).
+> STILL OPEN:
+> 1. **[HIGH — likely BUG] optional entities under-persist.** The optional 2nd batch RAN and SUCCEEDED
+>    (phase2-XChannel-...-optional: 325 requests, 325 success, 0 error) but only casualties=3 persisted;
+>    weather=0, equipment=0, logistics=0 — despite source having weather(26)/tank(39)/artillery(35)/
+>    ration(58) mentions. 325 successful requests -> ~3 records is a persist/parse gap (distinct from the
+>    fixed #461 batch-swallow; casualties partially works so it is per-type or a retrieve-apply gap).
+>    NEEDS focused repro: replay the cached optional batch results offline (Grok api-cache from the run)
+>    against extract_weather_central/equipment/logistics to see extract-count vs persist-count. Logs for
+>    the run have aged out of CloudWatch retention, so code-level repro (not log archaeology).
+> 2. **[MED] maps=0, images per-chapter sparse.** maps dir has only index.json (0 maps); images=89 total
+>    but chapter9b had 0 images. Maps extract in Phase 1 (extract_during_phase1=true); 0 maps for a
+>    narrative green-book MAY be correct (few inline map images) but verify the Phase-1 map/image
+>    extraction against the source's actual <img>/map links (the volume has plates/maps pages).
+> 3. **[EXPECTED — not a bug] places geocoding placeholder.** 183/183 places have latitude/longitude=0.0
+>    and empty country. This is CORRECT for Phase-2-only — geocoding is Phase 3, which was intentionally
+>    not run. Will populate on a Phase-3 run.
+> 4. **[EXPECTED] people biographical_profile=0.** Confirmed earlier: people bio enrichment is not a
+>    Phase-2 deliverable in this config (Grokipedia/Wikipedia fetch, moved out of the standard path).
+> 5. **[INFRA] CloudWatch log retention** too short — the run's OBSERV lines (incl. phase2.summary,
+>    optional.persisted) aged out overnight, forcing data-level forensics. Consider raising the
+>    /ecs/dev-wwii-pipeline retention so a run is diagnosable the next morning.
 > **[BUG · found 2026-10-20, clean XChannel run] bibliography=0 — footnote citation TEXT is dropped
 > in the import->markdown->parse chain (Phase-1/import bug, NOT a Phase-2 bibliography bug).** On the
 > clean run every chapter logged `bib.deterministic ... stored=0 skipped_stub=N`; inspection of the
