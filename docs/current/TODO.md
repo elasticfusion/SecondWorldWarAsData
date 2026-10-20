@@ -15,8 +15,9 @@ are ordered: (1) **Phase 2 — open**, (2) Phase 3 / enrichment — open, (3) ar
 Audit of ALL Phase-2 code (8 concurrent code+security sub-agents, synthesized to 5 root patterns).
 bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
 
-- **[CRITICAL · PATTERN 1 — batch 0-persist] In-task `submit_batch` maps results by xAI SERVER id,
-  not our cache key.** ✅ verified. `batch_api.retrieve_results` keys by `batch_request_id`; `submit_batch`
+- **[DONE · PR #475] [CRITICAL · PATTERN 1 — batch 0-persist] In-task `submit_batch` maps results by
+  xAI SERVER id, not our cache key.** ✅ FIXED (positional mapping via retrieve_results_ordered +
+  casualties stable cache_key + chat_get_completion verified correct). NOTE: only regenerates on a NEW run. `batch_api.retrieve_results` keys by `batch_request_id`; `submit_batch`
   looks up by our sha256 key → valid content cached under unread keys → classified "missing" → 0
   persisted. Live-path sibling of the equipment=0 / optional-entity-zero family. FIX: use
   `retrieve_results_ordered()` positional mapping (like `ecs_entrypoint._map_batch_results_by_index`).

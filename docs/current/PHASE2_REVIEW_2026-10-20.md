@@ -218,9 +218,9 @@ live in several places:
 ---
 
 ## Recommended priority order
-1. **PATTERN 1 — in-task `submit_batch` positional mapping + casualties stable cache_key** (CRITICAL;
-   it's silently losing extracted data on every in-task batch run; verify the `chat_get_completion`
-   field on the next run).
+1. ~~**PATTERN 1 — in-task `submit_batch` positional mapping + casualties stable cache_key**~~ ✅ DONE
+   (PR #475): positional mapping via retrieve_results_ordered; casualties stable cache_key;
+   chat_get_completion verified correct. Regenerates only on a NEW run.
 2. **PATTERN 2 — SSRF: one safe-fetch helper across the 12 sites** (HIGH security; exploitable over NAT).
 3. **PATTERN 3 — path-traversal: adopt the hardened sanitizer in dates/places/equipment** (HIGH; `dates.py` worst).
 4. **Trigger-Lambda key sanitization + SNS-ARN trust + manual-expected_count auth** (HIGH external surface).
