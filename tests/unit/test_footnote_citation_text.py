@@ -56,7 +56,9 @@ def test_import_to_parse_chain_captures_definition_text():
     import importlib.util
     import sys
 
-    from bs4 import BeautifulSoup
+    import pytest
+
+    BeautifulSoup = pytest.importorskip("bs4").BeautifulSoup
 
     spec = importlib.util.spec_from_file_location(
         "imp_hw", "scripts/import_hyperwar_html.py"
@@ -134,3 +136,36 @@ def test_fetch_endnote_texts_skips_non_dict_entries(tmp_path):
     )
     # Non-dict skipped; the valid parsed-text entry still returned; no crash, no network.
     assert fetch_endnote_texts(p) == {1: "Real citation."}
+
+
+def test_importer_drops_dangerous_scheme_footnote_url():
+    """Security: a crafted javascript:/data: href in untrusted source HTML must NOT be emitted
+    as a markdown link; the legitimate footnote is still captured."""
+    import importlib.util
+    import sys
+
+    import pytest
+
+    BeautifulSoup = pytest.importorskip("bs4").BeautifulSoup
+    spec = importlib.util.spec_from_file_location(
+        "imp_hw2", "scripts/import_hyperwar_html.py"
+    )
+    imp = importlib.util.module_from_spec(spec)
+    sys.modules["imp_hw2"] = imp
+    try:
+        spec.loader.exec_module(imp)
+    except SystemExit:
+        pass
+    url = "https://ex.org/USA-E-XChannel/USA-E-XChannel-1.html"
+    html = (
+        "<html><body><p>Text"
+        '<a href="javascript:alert(1)#fn9">9</a></p>'
+        "<center><h3>Footnotes</h3></center>"
+        '<p>[<a name="fn9" href="#cn9">9</a>] Legit citation text.</body></html>'
+    )
+    md = imp.convert_html_to_markdown(BeautifulSoup(html, "html.parser"), url)
+    assert "javascript:alert(1)" not in md  # dangerous marker url dropped
+    from src.parser import extract_footnotes
+
+    by_num = {n: (u, t) for n, u, t in extract_footnotes(md)}
+    assert by_num[9][1] == "Legit citation text."  # def-anchor text still captured

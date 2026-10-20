@@ -160,6 +160,17 @@ def convert_html_to_markdown(soup: BeautifulSoup, source_url: str) -> str:
     #      deterministic bibliography stores nothing). The anchor's own href is the
     #      relative fragment "#cnN"; urljoin makes it absolute so the parser regex
     #      (which requires an http(s) url containing #cnN) matches.
+    # Security: only emit http(s) or same-page fragment/relative URLs into the markdown.
+    # Untrusted source HTML could carry javascript:/data:/file: hrefs that urljoin passes
+    # through unchanged; emitting them as markdown links would be a latent XSS vector if the
+    # markdown is later rendered as HTML. Downstream guards exist, but neutralize at emission.
+    def _safe_url(u: str) -> str:
+        u = (u or "").strip()
+        low = u.lower()
+        if low.startswith(("http://", "https://")) or u.startswith(("#", "/", ".")):
+            return u
+        return ""  # dangerous/unknown scheme -> drop
+
     for link in body.find_all("a", href=True):
         href = link.get("href", "")
         name = link.get("name", "") or ""
@@ -168,20 +179,25 @@ def convert_html_to_markdown(soup: BeautifulSoup, source_url: str) -> str:
             continue
         # Definition anchor: name="fnN" + href="#cnN" (fragment). Emit the def form.
         if name.lower().startswith("fn") and href.lower().startswith("#cn"):
-            def_url = urljoin(source_url, href)  # -> source_url#cnN (absolute)
-            link.replace_with(f"[{text}]({def_url}) ")
+            def_url = _safe_url(
+                urljoin(source_url, href)
+            )  # -> source_url#cnN (absolute)
+            if def_url:
+                link.replace_with(f"[{text}]({def_url}) ")
         # In-text marker: href points at a footnote (contains 'fn').
         elif "fn" in href.lower():
-            fn_url = urljoin(source_url, href)
-            link.replace_with(f"<sup>[{text}]({fn_url})</sup>")
+            fn_url = _safe_url(urljoin(source_url, href))
+            if fn_url:
+                link.replace_with(f"<sup>[{text}]({fn_url})</sup>")
 
     # Convert images to markdown
     for img in body.find_all("img"):
         src = img.get("src", "")
         alt = img.get("alt", "")
         if src:
-            full_src = urljoin(source_url, src)
-            img.replace_with(f"![{alt}]({full_src})")
+            full_src = _safe_url(urljoin(source_url, src))
+            if full_src:
+                img.replace_with(f"![{alt}]({full_src})")
 
     # Ensure paragraph breaks inside blockquotes survive html2text conversion.
     # HyperWar HTML uses <blockquote> with <p>/<center> children that html2text
