@@ -269,25 +269,31 @@ def scan_and_gate(
 
     outcome.results = results
     for r in results:
-        if r.verdict is Verdict.CLEAN:
-            outcome.clean_keys.append(r.key)
-            continue
-        # INFECTED or ERROR -> quarantine (fail-closed), never advance.
-        outcome.quarantined_keys.append(r.key)
-        reason = (
-            f"av-infected: {r.signature or r.detail}"
-            if r.verdict is Verdict.INFECTED
-            else f"av-unscannable (fail-closed): {r.detail}"
-        )
-        _quarantine(s3_client, bucket, r.key, reason=reason, region=region)
-        if r.verdict is Verdict.INFECTED:
-            identity = _submitter_identity(s3_client, bucket, r.key)
-            freeze_submitter(
-                s3_client,
-                bucket,
-                identity,
-                key=r.key,
-                signature=r.signature or "unknown",
-                region=region,
-            )
+        _gate_result(r, outcome, s3_client, bucket, region)
     return outcome
+
+
+def _gate_result(r, outcome, s3_client, bucket: str, region: str) -> None:
+    """Gate one scan result: CLEAN -> clear; INFECTED or ERROR -> quarantine (fail-closed) and,
+    for INFECTED, freeze the submitter. Mutates ``outcome`` in place."""
+    if r.verdict is Verdict.CLEAN:
+        outcome.clean_keys.append(r.key)
+        return
+    # INFECTED or ERROR -> quarantine (fail-closed), never advance.
+    outcome.quarantined_keys.append(r.key)
+    reason = (
+        f"av-infected: {r.signature or r.detail}"
+        if r.verdict is Verdict.INFECTED
+        else f"av-unscannable (fail-closed): {r.detail}"
+    )
+    _quarantine(s3_client, bucket, r.key, reason=reason, region=region)
+    if r.verdict is Verdict.INFECTED:
+        identity = _submitter_identity(s3_client, bucket, r.key)
+        freeze_submitter(
+            s3_client,
+            bucket,
+            identity,
+            key=r.key,
+            signature=r.signature or "unknown",
+            region=region,
+        )

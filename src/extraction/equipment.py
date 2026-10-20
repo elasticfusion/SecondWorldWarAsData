@@ -1304,6 +1304,33 @@ def _extract_media_with_openserp(
         return []
 
 
+def _filter_wikipedia_image_titles(pages: dict) -> list:
+    """From a Wikipedia API 'pages' payload, keep only real image file titles — drop icons/logos/
+    commons chrome and non-image extensions."""
+    _SKIP = (
+        "icon",
+        "logo",
+        "flag",
+        "symbol",
+        "commons-",
+        "edit-",
+        "question_book",
+        "wikiproject",
+        "padlock",
+        "ambox",
+    )
+    titles = []
+    for page in pages.values():
+        for img in page.get("images", []):
+            title = img.get("title", "")
+            low = title.lower()
+            if any(skip in low for skip in _SKIP):
+                continue
+            if low.endswith((".jpg", ".jpeg", ".png", ".svg")):
+                titles.append(title)
+    return titles
+
+
 def _extract_media_from_wikipedia(
     common_name: str,
     technical_identifier: Optional[str],
@@ -1358,29 +1385,7 @@ def _extract_media_from_wikipedia(
         )
         img_resp.raise_for_status()
         pages = img_resp.json().get("query", {}).get("pages", {})
-        image_titles = []
-        for page in pages.values():
-            for img in page.get("images", []):
-                title = img.get("title", "")
-                # Skip icons/logos/commons junk
-                if any(
-                    skip in title.lower()
-                    for skip in [
-                        "icon",
-                        "logo",
-                        "flag",
-                        "symbol",
-                        "commons-",
-                        "edit-",
-                        "question_book",
-                        "wikiproject",
-                        "padlock",
-                        "ambox",
-                    ]
-                ):
-                    continue
-                if title.lower().endswith((".jpg", ".jpeg", ".png", ".svg")):
-                    image_titles.append(title)
+        image_titles = _filter_wikipedia_image_titles(pages)
 
         if not image_titles:
             logger.debug("No images on Wikipedia page for %s", identifier)

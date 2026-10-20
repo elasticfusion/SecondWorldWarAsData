@@ -268,64 +268,15 @@ def enrich_all_source_sections(
     errors = 0
     for event_file in _iter_event_files(output_dir):
         attempted += 1
-        try:
-            event_data = _json.loads(event_file.read_text())
-        except Exception as e:  # noqa: BLE001
-            logger.warning("source_section: cannot read %s: %s", event_file, e)
-            errors += 1
-            continue
-        event_id = (event_data.get("Event") or {}).get("EventID")
-        if not event_id:
-            skipped += 1
-            continue
-        rec_path = _find_section_record_by_event_id(output_dir, event_id)
-        if rec_path is not None:
-            record = _json.loads(rec_path.read_text())
-        else:
-            source = None
-            parsed = event_file.parent / event_file.name.replace(
-                "-event.json", "-parsed.json"
-            )
-            if parsed.exists():
-                try:
-                    pd = _json.loads(parsed.read_text()) or {}
-                    source = {
-                        "book": pd.get("book"),
-                        "author": pd.get("author"),
-                        "series": pd.get("series"),
-                    }
-                except Exception:  # noqa: BLE001
-                    source = None
-            record = build_source_section(event_data, source=source)
-            if record is None:
-                continue
-        try:
-            changed = derive_summary_and_operation(
-                record, event_data, grok_client, confidence_threshold
-            )
-        except Exception as e:  # noqa: BLE001
-            logger.warning("source_section derive failed for %s: %s", event_id, e)
-            errors += 1
-            continue
-        # Fetch Grokipedia + Wikipedia reference articles (gated on wikipedia_checked_at).
-        try:
-            fetched = fetch_section_articles(record)
-        except Exception as e:  # noqa: BLE001
-            logger.warning(
-                "source_section article fetch failed for %s: %s", event_id, e
-            )
-            fetched = False
-        # Fetch Wikipedia media (photos/maps) -> first-class images records cross-linked.
-        try:
-            from src.extraction.source_section_media import fetch_section_media
-
-            media_written = fetch_section_media(record, output_dir)
-        except Exception as e:  # noqa: BLE001
-            logger.warning("source_section media fetch failed for %s: %s", event_id, e)
-            media_written = 0
-        if changed or fetched or media_written:
-            _save_source_section(output_dir, record)
+        status = _enrich_one_section(
+            event_file, output_dir, grok_client, confidence_threshold
+        )
+        if status == "enriched":
             enriched += 1
+        elif status == "skipped":
+            skipped += 1
+        elif status == "error":
+            errors += 1
     logger.info("source_section: enriched %d section(s)", enriched)
     logger.info(
         "OBSERV source_section.enrich attempted=%d enriched=%d skipped_no_eventid=%d errors=%d",
@@ -335,3 +286,71 @@ def enrich_all_source_sections(
         errors,
     )
     return enriched
+
+
+def _enrich_one_section(
+    event_file: Path,
+    output_dir: Path,
+    grok_client: Any,
+    confidence_threshold: float,
+) -> str:
+    """Enrich one event's source_section (fail-safe): find-or-build the record, derive
+    summary+operation, fetch reference articles + Wikipedia media, native-commit if anything
+    changed. Returns a status: 'enriched' | 'skipped' (no EventID) | 'error' | 'noop'.
+    """
+    import json as _json
+
+    try:
+        event_data = _json.loads(event_file.read_text())
+    except Exception as e:  # noqa: BLE001
+        logger.warning("source_section: cannot read %s: %s", event_file, e)
+        return "error"
+    event_id = (event_data.get("Event") or {}).get("EventID")
+    if not event_id:
+        return "skipped"
+    rec_path = _find_section_record_by_event_id(output_dir, event_id)
+    if rec_path is not None:
+        record = _json.loads(rec_path.read_text())
+    else:
+        source = None
+        parsed = event_file.parent / event_file.name.replace(
+            "-event.json", "-parsed.json"
+        )
+        if parsed.exists():
+            try:
+                pd = _json.loads(parsed.read_text()) or {}
+                source = {
+                    "book": pd.get("book"),
+                    "author": pd.get("author"),
+                    "series": pd.get("series"),
+                }
+            except Exception:  # noqa: BLE001
+                source = None
+        record = build_source_section(event_data, source=source)
+        if record is None:
+            return "noop"
+    try:
+        changed = derive_summary_and_operation(
+            record, event_data, grok_client, confidence_threshold
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("source_section derive failed for %s: %s", event_id, e)
+        return "error"
+    # Fetch Grokipedia + Wikipedia reference articles (gated on wikipedia_checked_at).
+    try:
+        fetched = fetch_section_articles(record)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("source_section article fetch failed for %s: %s", event_id, e)
+        fetched = False
+    # Fetch Wikipedia media (photos/maps) -> first-class images records cross-linked.
+    try:
+        from src.extraction.source_section_media import fetch_section_media
+
+        media_written = fetch_section_media(record, output_dir)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("source_section media fetch failed for %s: %s", event_id, e)
+        media_written = 0
+    if changed or fetched or media_written:
+        _save_source_section(output_dir, record)
+        return "enriched"
+    return "noop"

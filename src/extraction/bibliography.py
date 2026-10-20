@@ -556,6 +556,22 @@ def _build_bib_entry(material: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _atomic_write_json(path: str, rec: dict) -> None:
+    """Write ``rec`` as JSON to ``path`` atomically (tempfile + os.replace) so an interrupted
+    write (e.g. ECS SIGTERM) can never leave a truncated/corrupt record."""
+    import tempfile
+
+    d = os.path.dirname(path)
+    fd, tmp = tempfile.mkstemp(dir=d, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(rec, fh, indent=2, ensure_ascii=False)
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+
+
 def backfill_bib_titles(bib_dir: Path) -> tuple:
     """Backfill titles on EXISTING bibliography records in place (A000 repair).
 
@@ -590,19 +606,7 @@ def backfill_bib_titles(bib_dir: Path) -> tuple:
                 if not citation.get("title") or citation.get("title") == "Unknown":
                     citation["title"] = new_title
                     rec["citation"] = citation
-                # Atomic write (tempfile + os.replace) so an interrupted write (e.g. ECS SIGTERM)
-                # can never leave a truncated/corrupt bibliography record.
-                import tempfile
-
-                d = os.path.dirname(f)
-                fd, tmp = tempfile.mkstemp(dir=d, suffix=".tmp")
-                try:
-                    with os.fdopen(fd, "w", encoding="utf-8") as fh:
-                        json.dump(rec, fh, indent=2, ensure_ascii=False)
-                    os.replace(tmp, f)
-                finally:
-                    if os.path.exists(tmp):
-                        os.unlink(tmp)
+                _atomic_write_json(f, rec)
                 fixed += 1
         except Exception as e:  # noqa: BLE001 - per-file best-effort
             logger.debug("bib title backfill skipped %s: %s", f, e)

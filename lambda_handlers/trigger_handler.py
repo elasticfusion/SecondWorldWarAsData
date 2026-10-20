@@ -1008,7 +1008,13 @@ def handler(event, _context):
     if s3_keys:
         _update_manifest(s3_keys)
 
-    # Route by topic
+    _route_topics(topics, s3_keys)
+
+
+def _route_topics(topics, s3_keys) -> None:
+    """Route each SNS/SQS topic to its handler: content uploads -> media routing; parsed chapters
+    -> Phase 2; dedup-complete -> Phase 3. (ENTITY_TOPIC is a dead path; unknown topics warn.)
+    """
     for topic_name in topics:
         if topic_name == CONTENT_TOPIC:
             _handle_content_topic(s3_keys)

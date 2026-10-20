@@ -337,49 +337,49 @@ def _parse_logistics_response(
             items = []
         validated = []
         for item in items:
-            if not isinstance(item, dict):
-                continue
-            # Uniform floor: require some descriptive content (an empty description is not a
-            # usable logistics record) on BOTH the strict and coerce paths.
-            if not str(item.get("description") or "").strip():
-                continue
-            try:
-                validated.append(LogisticsExtraction.model_validate(item))
-            except Exception as e:
-                # Best-effort: an item with real descriptive content should persist even if
-                # it omits a required enum field — coerce defaults rather than drop it
-                # (resolved specifics are enrichment, not a gating precondition).
-                desc = str(item.get("description") or "").strip()
-                if not desc:
-                    logger.debug("Skipping empty logistics item: %s", e)
-                    continue
-                try:
-                    validated.append(
-                        LogisticsExtraction.model_validate(
-                            {
-                                "type": item.get("type") or "capacity_constraint",
-                                "category": item.get("category") or "general",
-                                "description": desc,
-                                "severity": item.get("severity") or "medium",
-                                **{
-                                    k: v
-                                    for k, v in item.items()
-                                    if k
-                                    not in (
-                                        "type",
-                                        "category",
-                                        "description",
-                                        "severity",
-                                    )
-                                },
-                            }
-                        )
-                    )
-                except Exception as e2:  # noqa: BLE001 - truly unusable
-                    logger.debug("Skipping unusable logistics item: %s", e2)
+            parsed = _validate_logistics_item(item)
+            if parsed is not None:
+                validated.append(parsed)
         if validated:
             result[seid] = validated
     return result
+
+
+def _validate_logistics_item(item: Any) -> Optional[LogisticsExtraction]:
+    """Validate one logistics item: require some descriptive content, try strict validation, then
+    coerce required enum defaults rather than drop an item that has real content. Returns the
+    LogisticsExtraction or None if unusable."""
+    if not isinstance(item, dict):
+        return None
+    # Uniform floor: an empty description is not a usable logistics record.
+    if not str(item.get("description") or "").strip():
+        return None
+    try:
+        return LogisticsExtraction.model_validate(item)
+    except Exception as e:
+        # Best-effort: an item with real descriptive content should persist even if it omits a
+        # required enum field — coerce defaults (resolved specifics are enrichment, not gating).
+        desc = str(item.get("description") or "").strip()
+        if not desc:
+            logger.debug("Skipping empty logistics item: %s", e)
+            return None
+        try:
+            return LogisticsExtraction.model_validate(
+                {
+                    "type": item.get("type") or "capacity_constraint",
+                    "category": item.get("category") or "general",
+                    "description": desc,
+                    "severity": item.get("severity") or "medium",
+                    **{
+                        k: v
+                        for k, v in item.items()
+                        if k not in ("type", "category", "description", "severity")
+                    },
+                }
+            )
+        except Exception as e2:  # noqa: BLE001 - truly unusable
+            logger.debug("Skipping unusable logistics item: %s", e2)
+            return None
 
 
 def _extract_logistics_with_llm(

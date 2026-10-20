@@ -96,7 +96,15 @@ def resolve_logistics(
     by_group = index.get("by_group", {})
     out: Dict[str, Dict[str, Any]] = {}
 
-    # Tier 1: explicit references.
+    _resolve_explicit_refs(refs, by_id, out)
+    _resolve_cooccurring(group_ids, by_group, out, supply_only, date_id, date_iso)
+    return list(out.values())
+
+
+def _resolve_explicit_refs(refs: List[Any], by_id: Dict, out: Dict) -> None:
+    """Tier 1: explicit LLM-provided logistics references. A resolved LogisticsID links directly;
+    an unresolved ref keeps a null LogisticsID keyed by its description. Mutates ``out``.
+    """
     for ref in refs or []:
         if isinstance(ref, str):
             ref = {"description": ref}
@@ -116,7 +124,18 @@ def resolve_logistics(
                 "association": "explicit",
             }
 
-    # Tier 2: inferred co-occurring candidates (shared GroupID + co-occurrence in time).
+
+def _resolve_cooccurring(
+    group_ids: List[str],
+    by_group: Dict,
+    out: Dict,
+    supply_only: bool,
+    date_id: Optional[str],
+    date_iso: Optional[str],
+) -> None:
+    """Tier 2: inferred co-occurring candidates — a logistics record sharing a GroupID AND
+    co-occurring in time (shared DateID or ISO date within the logistics interval). Mutates
+    ``out`` (skips ids already linked explicitly; optionally supply-types only)."""
     for gid in group_ids or []:
         for entry in by_group.get(gid, []):
             lid = entry["LogisticsID"]
@@ -133,4 +152,3 @@ def resolve_logistics(
                     "logistics_type": entry["logistics_type"],
                     "association": "co_occurring",
                 }
-    return list(out.values())

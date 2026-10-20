@@ -636,44 +636,7 @@ def extract_events(
                 return split_result
             raise
 
-        # Wrap flat response (AI returns {EventID, Sub-events} instead of {Event: {...}})
-        if "EventID" in response and "Event" not in response:
-            response = {"Event": response}
-
-        # Ensure Chapter is present (required by schema, may not be in AI response)
-        if "Chapter" not in response:
-            response["Chapter"] = parsed_data.get("chapter_title", "")
-
-        # Populate per-sub-event footnote/endnote refs from the RAW parsed paragraphs
-        # assigned to each sub-event (Blocker C). MUST run BEFORE _reconstruct_fulltext,
-        # which POPS the sub-event 'paragraphs' number arrays this derivation needs.
-        _populate_footnote_refs(response, parsed_data)
-
-        # Reconstruct fulltext from parsed data before validation
-        _reconstruct_fulltext(response, parsed_data)
-
-        # OBSERV (bibliography chain): did we actually populate refs on the sub-events?
-        try:
-            subs = response.get("Event", {}).get("Sub-events", [])
-            with_refs = sum(
-                1
-                for s in subs
-                if isinstance(s, dict)
-                and (s.get("Footnote_References") or s.get("Endnote_References"))
-            )
-            logger.info(
-                "OBSERV events.refs file=%s sub_events=%d with_refs=%d parsed_footnotes=%d",
-                parsed_file.name,
-                len(subs),
-                with_refs,
-                len(parsed_data.get("footnotes", [])),
-            )
-        except Exception:  # noqa: BLE001 - observability must never break extraction
-            pass
-
-        # Replace LLM-supplied event ids with deterministic, content-derived ids (idempotent
-        # across re-runs → no cross-reference ripple; the model's id is derived, not trusted).
-        _apply_deterministic_ids(response, parsed_data)
+        response = _normalize_event_response(response, parsed_data, parsed_file)
 
         # Validate against schema
         try:
@@ -692,25 +655,77 @@ def extract_events(
             return output_file
 
         except ValidationError as e:
-            # Try to fix ULID errors automatically
-            fixed_output = _try_fix_ulid_errors(response, e, parsed_file, output_dir)
+            fixed_output, prompt = _handle_validation_failure(
+                response, e, parsed_file, output_dir, prompt, attempt, max_retries
+            )
             if fixed_output:
                 return fixed_output
 
-            error_msg = f"Validation error: {e.message}\nPath: {e.json_path}"
-            logger.warning(f"  Attempt {attempt + 1}/{max_retries} failed: {e.message}")
-
-            if attempt < max_retries - 1:
-                logger.info("  Retrying with validation feedback...")
-                ulid_error = "does not match '^[0-9A-HJKMNP-TV-Z]{26}$'" in e.message
-                prompt = _build_retry_prompt(prompt, error_msg, ulid_error)
-            else:
-                # Final attempt failed
-                logger.error(f"  Validation failed after {max_retries} attempts")
-                logger.error(f"  Final error: {e.message}")
-                raise ValueError(
-                    f"JSON validation failed after {max_retries} attempts: {e.message}"
-                ) from e
-
     # Should never reach here — all loop paths return or raise
     raise ValueError("Unexpected error in validation loop")
+
+
+def _normalize_event_response(response, parsed_data, parsed_file):
+    """Normalize a raw events response before schema validation: flat-wrap ({EventID,...} ->
+    {Event:{...}}), ensure Chapter, populate per-sub-event footnote/endnote refs (BEFORE
+    _reconstruct_fulltext, which pops the paragraph arrays it needs), reconstruct fulltext, OBSERV
+    the ref population, then swap LLM ids for deterministic content-derived ids. Returns response.
+    """
+    # Wrap flat response (AI returns {EventID, Sub-events} instead of {Event: {...}}).
+    if "EventID" in response and "Event" not in response:
+        response = {"Event": response}
+    # Ensure Chapter is present (required by schema, may not be in AI response).
+    if "Chapter" not in response:
+        response["Chapter"] = parsed_data.get("chapter_title", "")
+    # Populate refs BEFORE _reconstruct_fulltext (which pops the 'paragraphs' arrays it needs).
+    _populate_footnote_refs(response, parsed_data)
+    _reconstruct_fulltext(response, parsed_data)
+    # OBSERV (bibliography chain): did we actually populate refs on the sub-events?
+    try:
+        subs = response.get("Event", {}).get("Sub-events", [])
+        with_refs = sum(
+            1
+            for s in subs
+            if isinstance(s, dict)
+            and (s.get("Footnote_References") or s.get("Endnote_References"))
+        )
+        logger.info(
+            "OBSERV events.refs file=%s sub_events=%d with_refs=%d parsed_footnotes=%d",
+            parsed_file.name,
+            len(subs),
+            with_refs,
+            len(parsed_data.get("footnotes", [])),
+        )
+    except Exception:  # noqa: BLE001 - observability must never break extraction
+        pass
+    # Replace LLM-supplied event ids with deterministic, content-derived ids (idempotent across
+    # re-runs → no cross-reference ripple; the model's id is derived, not trusted).
+    _apply_deterministic_ids(response, parsed_data)
+    return response
+
+
+def _handle_validation_failure(
+    response, e, parsed_file, output_dir, prompt, attempt, max_retries
+):
+    """Handle a schema ValidationError inside the extract retry loop. Returns
+    (output_path_or_None, next_prompt): a non-None output means a ULID-autofix recovered it;
+    otherwise builds the validation-feedback retry prompt, or raises on the final attempt.
+    """
+    # Try to fix ULID errors automatically.
+    fixed_output = _try_fix_ulid_errors(response, e, parsed_file, output_dir)
+    if fixed_output:
+        return fixed_output, prompt
+
+    error_msg = f"Validation error: {e.message}\nPath: {e.json_path}"
+    logger.warning(f"  Attempt {attempt + 1}/{max_retries} failed: {e.message}")
+
+    if attempt < max_retries - 1:
+        logger.info("  Retrying with validation feedback...")
+        ulid_error = "does not match '^[0-9A-HJKMNP-TV-Z]{26}$'" in e.message
+        return None, _build_retry_prompt(prompt, error_msg, ulid_error)
+
+    logger.error(f"  Validation failed after {max_retries} attempts")
+    logger.error(f"  Final error: {e.message}")
+    raise ValueError(
+        f"JSON validation failed after {max_retries} attempts: {e.message}"
+    ) from e

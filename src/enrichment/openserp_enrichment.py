@@ -320,6 +320,63 @@ def _verify_result(
         return False
 
 
+def _prefilter_verify_cache(
+    results: "List[Dict[str, Any]]",
+    expected_context: str,
+    title_key: str,
+    url_key: str,
+    verdicts: "List[bool]",
+) -> "tuple[List[str], List[int]]":
+    """Compute per-result cache keys (EXACTLY as _verify_result) and consult the cache. Fills
+    ``verdicts`` for already-decided results and returns (cache_keys, indices_still_needing_Grok).
+    """
+    from src.utils.search_cache import get_cached
+
+    cache_keys: List[str] = []
+    to_verify: List[int] = []
+    for i, r in enumerate(results):
+        title = str(r.get(title_key, "") or "")
+        url = str(r.get(url_key, "") or "")
+        cache_key = f"{expected_context[:50]}|{title[:50]}|{url[:60]}"
+        cache_keys.append(cache_key)
+        cached = get_cached("openserp_verify", cache_key)
+        if cached == "YES":
+            verdicts[i] = True
+        elif cached in ("NO", "NOT_FOUND"):
+            verdicts[i] = False
+        else:
+            to_verify.append(i)
+    return cache_keys, to_verify
+
+
+def _build_batch_verify_prompt(
+    results: "List[Dict[str, Any]]",
+    to_verify: "List[int]",
+    expected_context: str,
+    title_key: str,
+    snippet_key: str,
+    url_key: str,
+) -> str:
+    """Build the single prompt enumerating the uncached results; expects a YES/NO array back."""
+    lines = []
+    for n, idx in enumerate(to_verify):
+        r = results[idx]
+        title = str(r.get(title_key, "") or "")
+        snippet = str(r.get(snippet_key, "") or "")
+        url = str(r.get(url_key, "") or "")
+        lines.append(
+            f'[{n}] title: "{title[:200]}" | snippet: "{snippet[:300]}" | url: {url[:200]}'
+        )
+    return (
+        "For EACH numbered search result below, decide if it is relevant to the context.\n"
+        f'Context: "{expected_context[:200]}"\n\n'
+        "Results:\n" + "\n".join(lines) + "\n\n"
+        f'Return ONLY a JSON array of exactly {len(to_verify)} strings, each "YES" or "NO", '
+        "in the same order as the numbered results (index 0 first). "
+        'Example for 2 results: ["YES", "NO"]'
+    )
+
+
 def _verify_results_batch(
     expected_context: str,
     results: List[Dict[str, Any]],
@@ -359,41 +416,16 @@ def _verify_results_batch(
 
     # Pre-compute per-result cache keys (EXACTLY as _verify_result) and consult the cache so
     # already-decided results stay free (no Grok call) on repeat runs.
-    cache_keys: List[str] = []
-    to_verify: List[int] = []  # indices still needing a Grok verdict
-    for i, r in enumerate(results):
-        title = str(r.get(title_key, "") or "")
-        url = str(r.get(url_key, "") or "")
-        cache_key = f"{expected_context[:50]}|{title[:50]}|{url[:60]}"
-        cache_keys.append(cache_key)
-        cached = get_cached("openserp_verify", cache_key)
-        if cached == "YES":
-            verdicts[i] = True
-        elif cached in ("NO", "NOT_FOUND"):
-            verdicts[i] = False
-        else:
-            to_verify.append(i)
+    cache_keys, to_verify = _prefilter_verify_cache(
+        results, expected_context, title_key, url_key, verdicts
+    )
 
     if not to_verify:
         return verdicts  # fully served from cache — no Grok call
 
     # Build ONE prompt enumerating the uncached results; expect a YES/NO per line/index.
-    lines = []
-    for n, idx in enumerate(to_verify):
-        r = results[idx]
-        title = str(r.get(title_key, "") or "")
-        snippet = str(r.get(snippet_key, "") or "")
-        url = str(r.get(url_key, "") or "")
-        lines.append(
-            f'[{n}] title: "{title[:200]}" | snippet: "{snippet[:300]}" | url: {url[:200]}'
-        )
-    prompt = (
-        "For EACH numbered search result below, decide if it is relevant to the context.\n"
-        f'Context: "{expected_context[:200]}"\n\n'
-        "Results:\n" + "\n".join(lines) + "\n\n"
-        f'Return ONLY a JSON array of exactly {len(to_verify)} strings, each "YES" or "NO", '
-        "in the same order as the numbered results (index 0 first). "
-        'Example for 2 results: ["YES", "NO"]'
+    prompt = _build_batch_verify_prompt(
+        results, to_verify, expected_context, title_key, snippet_key, url_key
     )
 
     try:
@@ -474,6 +506,41 @@ _URL_FETCH_RETENTION_DAYS = (
 _SKIP_SENTINEL = "\x00__SKIP__\x00"
 
 
+def _grok_summarize_html(
+    html: str,
+    url: str,
+    context: str,
+    grok_client: Any,
+    result: Any,
+    provenance: Optional[Dict[str, Any]],
+) -> Optional[str]:
+    """Strip HTML to text and Grok-summarize it (1-2 sentences, cached). Surfaces Wayback archive
+    provenance from the central FetchResult into ``provenance`` when the content was archived.
+    """
+    import re as _re
+    from src.utils import url_fetch
+
+    text = _re.sub(r"<[^>]+>", " ", html)
+    text = _re.sub(r"\s+", " ", text).strip()[:6000]
+    if not text:
+        return None
+    resp = grok_client.chat_completion(
+        prompt=(
+            f"Summarize this web page in 1-2 sentences, focused on its relevance "
+            f'to: "{context[:150]}".\n\nURL: {url}\n\nContent:\n{text}'
+        ),
+        system_prompt="You summarize web pages concisely.",
+        temperature=0.1,
+        use_cache=True,
+        cache_type="openserp_url_summary",
+    )
+    summary = (resp or "").strip() or None
+    if result.source == url_fetch.WAYBACK and provenance is not None:
+        provenance["archived_url"] = result.archived_url or ""
+        provenance["wayback_capture_timestamp"] = result.wayback_ts or ""
+    return summary
+
+
 def _summarize_url_page(
     url: str,
     context: str,
@@ -518,26 +585,9 @@ def _summarize_url_page(
     summary: Optional[str] = None
     try:
         if html:
-            import re as _re
-
-            text = _re.sub(r"<[^>]+>", " ", html)
-            text = _re.sub(r"\s+", " ", text).strip()[:6000]
-            if text:
-                resp = grok_client.chat_completion(
-                    prompt=(
-                        f"Summarize this web page in 1-2 sentences, focused on its relevance "
-                        f'to: "{context[:150]}".\n\nURL: {url}\n\nContent:\n{text}'
-                    ),
-                    system_prompt="You summarize web pages concisely.",
-                    temperature=0.1,
-                    use_cache=True,
-                    cache_type="openserp_url_summary",
-                )
-                summary = (resp or "").strip() or None
-                # Surface Wayback archive provenance from the central FetchResult.
-                if result.source == url_fetch.WAYBACK and provenance is not None:
-                    provenance["archived_url"] = result.archived_url or ""
-                    provenance["wayback_capture_timestamp"] = result.wayback_ts or ""
+            summary = _grok_summarize_html(
+                html, url, context, grok_client, result, provenance
+            )
     except Exception as e:  # noqa: BLE001 - best-effort; never block enrichment
         logger.debug("URL summarize failed for %s: %s", url, e)
 
@@ -953,13 +1003,19 @@ def _verify_and_apply(
     max_web: int,
 ) -> bool:
     """Verify OpenSERP results with Grok and apply to entity data."""
-    changed = False
+    img_changed = _apply_verified_images(candidate, data, name, grok_client, max_images)
+    web_changed = _apply_verified_web(candidate, data, name, grok_client, max_web)
+    return img_changed or web_changed
+
+
+def _apply_verified_images(
+    candidate: Dict, data: Dict, name: str, grok_client: Any, max_images: int
+) -> bool:
+    """Verify each image result (name-initial gate + Grok) and append up to max_images."""
     existing_image_urls = {
         i.get("url") for i in (data.get("images") or []) if isinstance(i, dict)
     }
-    existing_award_urls = {
-        a.get("url") for a in (data.get("military_awards") or []) if isinstance(a, dict)
-    }
+    changed = False
     for r in candidate.get("image_results", []):
         url = r.get("url", "")
         title = r.get("title", "")
@@ -978,6 +1034,17 @@ def _verify_and_apply(
             changed = True
             if len(data.get("images", [])) >= max_images:
                 break
+    return changed
+
+
+def _apply_verified_web(
+    candidate: Dict, data: Dict, name: str, grok_client: Any, max_web: int
+) -> bool:
+    """Fetch + summarize each web result (name-initial gate) and append up to max_web awards."""
+    existing_award_urls = {
+        a.get("url") for a in (data.get("military_awards") or []) if isinstance(a, dict)
+    }
+    changed = False
     for r in candidate.get("web_results", []):
         url = r.get("url", "")
         title = r.get("title", "")
@@ -1693,12 +1760,24 @@ def enrich_one_place(
     if not variants:
         return False
     primary = variants[0]
-    changed = False
+    changed = _enrich_place_images(data, variants, primary, openserp_url, grok_client)
+    changed = (
+        _enrich_place_sources(data, variants, primary, openserp_url, grok_client)
+        or changed
+    )
+    return changed
 
-    # Images (verify-only) — search each name variant.
+
+def _enrich_place_images(
+    data: Dict, variants: list, primary: str, openserp_url: str, grok_client: Any
+) -> bool:
+    """Images (verify-only): search each name variant, Grok-verify each hit, append new ones."""
+    from src.utils.search_query_loader import render_search_queries
+
     existing_img_urls = {
         i.get("url") for i in (data.get("images") or []) if isinstance(i, dict)
     }
+    changed = False
     for variant in variants:
         for q in render_search_queries("places", "images", name=variant):
             for r in _search_openserp(q, openserp_url):
@@ -1713,19 +1792,23 @@ def enrich_one_place(
                     url=url,
                 ):
                     data.setdefault("images", []).append(
-                        {
-                            "url": url,
-                            "title": r.get("title", ""),
-                            "source": "openserp",
-                        }
+                        {"url": url, "title": r.get("title", ""), "source": "openserp"}
                     )
                     existing_img_urls.add(url)
                     changed = True
+    return changed
 
-    # Textual sources — fetched + summarized + pos/neg URL cached.
+
+def _enrich_place_sources(
+    data: Dict, variants: list, primary: str, openserp_url: str, grok_client: Any
+) -> bool:
+    """Textual sources: search each variant, fetch + summarize + pos/neg-cache each hit."""
+    from src.utils.search_query_loader import render_search_queries
+
     existing_src_urls = {
         s.get("url") for s in (data.get("web_results") or []) if isinstance(s, dict)
     }
+    changed = False
     for variant in variants:
         for q in render_search_queries("places", "sources", name=variant):
             for r in _search_openserp(q, openserp_url):

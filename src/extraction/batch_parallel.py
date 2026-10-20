@@ -545,6 +545,18 @@ def _process_batch_response(  # pylint: disable=too-many-arguments,too-many-posi
     return {"count": count, "links": links}
 
 
+def _count_preserved_seids(response: dict, response_key: str) -> int:
+    """Count items whose echoed sub_event_id is NOT a valid ULID (the LLM mangled it but we keep
+    it for the resolver). Makes the LLM ULID-mangling rate observable."""
+    return sum(
+        1
+        for it in response.get(response_key, [])
+        if isinstance(it, dict)
+        and (sid := it.get("sub_event_id"))
+        and not _ULID_PATTERN.match(str(sid))
+    )
+
+
 async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     event_data: Dict[str, Any],
     grok_client: GrokClient,
@@ -608,13 +620,7 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     # it explicitly (self-documenting) and count how many invalid ones were preserved so the
     # LLM ULID-mangling rate is observable.
     try:
-        preserved = sum(
-            1
-            for it in response.get(response_key, [])
-            if isinstance(it, dict)
-            and (sid := it.get("sub_event_id"))
-            and not _ULID_PATTERN.match(str(sid))
-        )
+        preserved = _count_preserved_seids(response, response_key)
         if preserved:
             logger.info(
                 "OBSERV xref.seid_preserved entity=%s invalid_echoed=%d (kept for resolver)",

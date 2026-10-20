@@ -1,0 +1,14 @@
+# Radon INHERENT allowlist — high-C blocks judged INHERENTLY complex (accepted debt).
+#
+# Format:  <file>::<symbol>  <sha256-of-AST-body>  # reason
+# A listed block is SUPPRESSED from the gate's high-C "to EVALUATE" list ONLY while its body hash
+# matches (unchanged). If the function body is MODIFIED, the hash changes, it falls off, and it
+# RESURFACES for re-evaluation (steer-343779fe). The hash is AST-based (scripts/radon_inherent.py),
+# so comment/formatting churn does NOT trigger a resurface — only a real logic edit does.
+#
+# To re-bless a block after an intentional edit: rerun `python scripts/radon_inherent.py hash <f> <s>`
+# and paste the new hash here WITH an updated reason.
+#
+src/extraction/group_resolver.py::resolve_group_id 7a097b0758e96ca0f64603a2dee6fe84507f0a6b354e3c6d096d35d7d8f88c02  # C19: ordered disambiguation ladder over shared cand/gids/keys/k locals; extraction scatters one decision
+src/utils/url_fetch.py::_do_fetch 004cd9e667d44d6c0ec79a9ab3bc83bb3a8e9364dbecb71af49e0d3baa2bc224  # C18: live/block/gone/rate-limited x archive-hit/miss outcome state machine; branches must stay co-located
+src/enrichment/places_grok_geocode.py::_toponym_from_prose 30cf7de6df8c1332424f0dc17046a01ad3e5ee02134ba529178c854aa2af1290  # C16: single stateful scanner (run-state + corroboration guard) over shared mutable locals

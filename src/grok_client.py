@@ -502,75 +502,9 @@ class GrokClient:
         metrics.api_successes = state.get("num_success", 0)
         metrics.api_errors = state.get("num_error", 0)
 
-        failed_ids: list = []
-        if len(ordered) != len(submitted):
-            # Count mismatch → we CANNOT safely index-map (never silently mis-key). Treat every
-            # request as failed → real-time retry fallback. Fail loud.
-            logger.error(
-                "Batch %s: result count (%d) != submitted (%d) — cannot positionally map; "
-                "falling back to real-time retry for all.",
-                batch_id,
-                len(ordered),
-                len(submitted),
-            )
-            failed_ids = [rid for rid, _ in submitted]
-            metrics.empty += len(submitted)
-        else:
-            # Positional zip: each result maps to OUR request_id + cache_type at the same index.
-            for (our_id, cache_type), br in zip(submitted, ordered):
-                ct = cache_type or "default"
-                if br.status == "valid":
-                    metrics.valid += 1
-                    self._get_cache(ct)[our_id] = self._sanitize_content(br.content)
-                    metrics.add_detail(
-                        RequestDetail(
-                            request_id=our_id,
-                            cache_type=ct,
-                            status="valid",
-                            finish_reason=br.finish_reason,
-                            content_length=len(br.content),
-                        )
-                    )
-                else:
-                    counter = {
-                        "truncated": "truncated",
-                        "error": "empty",
-                        "other_finish": "other_finish",
-                    }.get(br.status, "empty")
-                    setattr(metrics, counter, getattr(metrics, counter) + 1)
-                    failed_ids.append(our_id)
-                    prompt_preview = self._batch_prompt_preview(our_id, requests_by_id)
-                    logger.warning(
-                        "Batch result failed: %s [%s] %s (%d chars)",
-                        our_id,
-                        ct,
-                        br.status,
-                        len(br.content),
-                        extra={
-                            "extra_fields": {
-                                "event": "batch_result_failed",
-                                "request_id": our_id,
-                                "cache_type": ct,
-                                "status": br.status,
-                                "finish_reason": br.finish_reason,
-                                "content_length": len(br.content),
-                                "content_tail": br.content[-200:] if br.content else "",
-                                "error": br.error[:500] if br.error else "",
-                                "prompt_preview": prompt_preview,
-                            }
-                        },
-                    )
-                    metrics.add_detail(
-                        RequestDetail(
-                            request_id=our_id,
-                            cache_type=ct,
-                            status=br.status,
-                            finish_reason=br.finish_reason,
-                            content_length=len(br.content),
-                            error=br.error if br.status == "error" else "",
-                            prompt_preview=prompt_preview,
-                        )
-                    )
+        failed_ids = self._map_ordered_results(
+            submitted, ordered, metrics, requests_by_id, batch_id
+        )
 
         # Retry failed requests via real-time API
         if failed_ids:
@@ -604,6 +538,92 @@ class GrokClient:
         content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
         content = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r"\\\\", content)
         return content
+
+    def _map_ordered_results(
+        self, submitted, ordered, metrics, requests_by_id, batch_id
+    ) -> list:
+        """Map API-ordered batch results POSITIONALLY to OUR submitted (request_id, cache_type),
+        caching valid content and recording per-request detail. Returns the failed request_ids.
+        On a count mismatch we CANNOT safely index-map (never silently mis-key) -> all fail -> the
+        caller's real-time retry fallback handles them."""
+        from src.utils.batch_api import RequestDetail
+
+        if len(ordered) != len(submitted):
+            logger.error(
+                "Batch %s: result count (%d) != submitted (%d) — cannot positionally map; "
+                "falling back to real-time retry for all.",
+                batch_id,
+                len(ordered),
+                len(submitted),
+            )
+            metrics.empty += len(submitted)
+            return [rid for rid, _ in submitted]
+
+        failed_ids: list = []
+        for (our_id, cache_type), br in zip(submitted, ordered):
+            ct = cache_type or "default"
+            if br.status == "valid":
+                metrics.valid += 1
+                self._get_cache(ct)[our_id] = self._sanitize_content(br.content)
+                metrics.add_detail(
+                    RequestDetail(
+                        request_id=our_id,
+                        cache_type=ct,
+                        status="valid",
+                        finish_reason=br.finish_reason,
+                        content_length=len(br.content),
+                    )
+                )
+            else:
+                self._record_failed_result(
+                    our_id, ct, br, metrics, requests_by_id, RequestDetail
+                )
+                failed_ids.append(our_id)
+        return failed_ids
+
+    def _record_failed_result(
+        self, our_id, ct, br, metrics, requests_by_id, RequestDetail
+    ) -> None:
+        """Account one non-valid batch result: bump the status counter, emit the per-failure
+        WARNING (with structured diagnostic fields), and record the RequestDetail."""
+        counter = {
+            "truncated": "truncated",
+            "error": "empty",
+            "other_finish": "other_finish",
+        }.get(br.status, "empty")
+        setattr(metrics, counter, getattr(metrics, counter) + 1)
+        prompt_preview = self._batch_prompt_preview(our_id, requests_by_id)
+        logger.warning(
+            "Batch result failed: %s [%s] %s (%d chars)",
+            our_id,
+            ct,
+            br.status,
+            len(br.content),
+            extra={
+                "extra_fields": {
+                    "event": "batch_result_failed",
+                    "request_id": our_id,
+                    "cache_type": ct,
+                    "status": br.status,
+                    "finish_reason": br.finish_reason,
+                    "content_length": len(br.content),
+                    "content_tail": br.content[-200:] if br.content else "",
+                    "error": br.error[:500] if br.error else "",
+                    "prompt_preview": prompt_preview,
+                }
+            },
+        )
+        metrics.add_detail(
+            RequestDetail(
+                request_id=our_id,
+                cache_type=ct,
+                status=br.status,
+                finish_reason=br.finish_reason,
+                content_length=len(br.content),
+                error=br.error if br.status == "error" else "",
+                prompt_preview=prompt_preview,
+            )
+        )
 
     def _retry_failed_batch(
         self, failed_ids: list, requests_by_id: dict, metrics, count: int
@@ -1523,36 +1543,45 @@ class GrokClient:
                 self._json_clean += 1
             return result
         except json.JSONDecodeError as e:
-            error_msg = str(e)
+            return self._handle_json_decode_error(
+                response, e, cache_type, prompt, temperature, _retried
+            )
 
-            # Handle short responses (auto-clear cache)
-            if len(response) < 500 and not _retried:
-                self._handle_short_response_error(
-                    response, error_msg, cache_type, prompt, temperature
-                )
+    def _handle_json_decode_error(
+        self, response, e, cache_type, prompt, temperature, _retried
+    ) -> Dict[str, Any]:
+        """Handle a JSON parse failure: account short/truncated responses (auto-clearing cache),
+        attempt a repair, and if nothing works clear the entry + raise GrokAPIError."""
+        error_msg = str(e)
 
-            # Handle truncated responses (auto-clear cache)
-            if "Unterminated string" in error_msg or "Expecting" in error_msg:
-                self._json_truncated += 1
-                self._handle_truncation_error(
-                    response, error_msg, cache_type, prompt, temperature
-                )
+        # Handle short responses (auto-clear cache)
+        if len(response) < 500 and not _retried:
+            self._handle_short_response_error(
+                response, error_msg, cache_type, prompt, temperature
+            )
 
-            # Try to repair JSON
-            repaired = self._try_repair_json(response, error_msg)
-            if repaired is not None:
-                self._json_repaired += 1
-                return repaired
+        # Handle truncated responses (auto-clear cache)
+        if "Unterminated string" in error_msg or "Expecting" in error_msg:
+            self._json_truncated += 1
+            self._handle_truncation_error(
+                response, error_msg, cache_type, prompt, temperature
+            )
 
-            # All repair attempts failed — auto-clear so retry gets fresh response
-            self._json_failed += 1
-            self.clear_cache_entry(prompt, cache_type, temperature)
-            raise GrokAPIError(
-                f"Failed to parse JSON response: {e}\n"
-                f"Response length: {len(response)} chars\n"
-                f"First 500 chars: {response[:500]}\n"
-                f"Last 500 chars: {response[-500:]}"
-            ) from e
+        # Try to repair JSON
+        repaired = self._try_repair_json(response, error_msg)
+        if repaired is not None:
+            self._json_repaired += 1
+            return repaired
+
+        # All repair attempts failed — auto-clear so retry gets fresh response
+        self._json_failed += 1
+        self.clear_cache_entry(prompt, cache_type, temperature)
+        raise GrokAPIError(
+            f"Failed to parse JSON response: {e}\n"
+            f"Response length: {len(response)} chars\n"
+            f"First 500 chars: {response[:500]}\n"
+            f"Last 500 chars: {response[-500:]}"
+        ) from e
 
     def extract_structured(
         self,

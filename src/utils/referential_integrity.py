@@ -223,32 +223,48 @@ def audit(storage: Any, include_samples: bool = False) -> Dict[str, Any]:
 
     results: List[Dict[str, Any]] = []
     for src, field, target, _nullable in EDGES:
-        total = dangling = 0
-        samples: List[str] = []
-        valid = pk_sets.get(target, set())
-        for data in buffered.get(src, []):
-            for val in resolve_path(data, field):
-                if not isinstance(val, str) or not val:
-                    continue  # null/absent reference is allowed
-                total += 1
-                if val not in valid:
-                    dangling += 1
-                    if include_samples and len(samples) < 3:
-                        samples.append(val)
         results.append(
-            {
-                "edge": f"{src}.{field} -> {target}",
-                "total_refs": total,
-                "dangling": dangling,
-                "rate": round(dangling / total, 4) if total else 0.0,
-                "sample_dangling": samples,
-            }
+            _resolve_edge(
+                buffered.get(src, []), field, src, target, pk_sets, include_samples
+            )
         )
     results.sort(key=lambda r: r["dangling"], reverse=True)
     return {
         "pk_counts": {k: len(v) for k, v in pk_sets.items()},
         "edges": results,
         "total_dangling": sum(r["dangling"] for r in results),
+    }
+
+
+def _resolve_edge(
+    src_records: "List[Dict[str, Any]]",
+    field: str,
+    src: str,
+    target: str,
+    pk_sets: "Dict[str, Set[str]]",
+    include_samples: bool,
+) -> "Dict[str, Any]":
+    """Resolve one edge against the in-memory buffer: count total vs dangling references (a ref
+    whose value is absent from the target PK set), with up to 3 sample dangling IDs when asked.
+    """
+    total = dangling = 0
+    samples: List[str] = []
+    valid = pk_sets.get(target, set())
+    for data in src_records:
+        for val in resolve_path(data, field):
+            if not isinstance(val, str) or not val:
+                continue  # null/absent reference is allowed
+            total += 1
+            if val not in valid:
+                dangling += 1
+                if include_samples and len(samples) < 3:
+                    samples.append(val)
+    return {
+        "edge": f"{src}.{field} -> {target}",
+        "total_refs": total,
+        "dangling": dangling,
+        "rate": round(dangling / total, 4) if total else 0.0,
+        "sample_dangling": samples,
     }
 
 

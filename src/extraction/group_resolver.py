@@ -51,6 +51,9 @@ def resolve_group_id(name: str, index: List[Tuple[str, str, UnitKey]]) -> Option
     4. otherwise genuinely ambiguous -> None (never guessed).
     Unnumbered/underspecified queries -> None.
     """
+    # RADON-INHERENT (C19): an ordered disambiguation ladder (collapse -> same-key -> exact-key
+    # preference -> ambiguous) whose arms all read the same cand/gids/keys/k locals. Extracting a
+    # tier would just pass that whole state bundle back and forth and scatter the single decision.
     if not name:
         return None
     k = derive_unit_key(name)

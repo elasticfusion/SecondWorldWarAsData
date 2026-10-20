@@ -239,42 +239,8 @@ def enrich_weather_with_noaa(weather_dir: Path, token: str, max_items: int = 0) 
             continue
         if max_items and enriched >= max_items:
             break
-
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-
-        # Skip if already has NOAA data
-        if data.get("noaa_observed"):
-            continue
-
-        loc = data.get("location", {})
-        lat = loc.get("latitude", 0.0)
-        lon = loc.get("longitude", 0.0)
-        if lat == 0.0 and lon == 0.0:
-            continue
-
-        # Weather files store the date under "date" (not "date_start"); tolerate legacy.
-        date = data.get("date") or data.get("date_start") or ""
-        if not date or date < "1940-01-01":
-            continue
-
-        station = find_nearest_station(lat, lon, date, token)
-        if not station:
-            continue
-
-        obs = fetch_noaa_weather(station, date, token, place_lat=lat, place_lon=lon)
-        if obs:
-            data["noaa_observed"] = obs
-            from src.schemas import inject_metadata
-
-            inject_metadata(data)
-            f.write_text(
-                json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
-            )
+        if _enrich_weather_file(f, token):
             enriched += 1
-            logger.info("  NOAA enriched: %s (%s)", f.name, station.get("id"))
 
     logger.info(
         "NOAA weather enrichment: %d files enriched (API calls: %d)",
@@ -282,3 +248,37 @@ def enrich_weather_with_noaa(weather_dir: Path, token: str, max_items: int = 0) 
         _request_count,
     )
     return enriched
+
+
+def _enrich_weather_file(f, token) -> bool:
+    """Enrich one weather file with NOAA observed data. Returns True iff it was enriched; all skip
+    conditions (parse-fail, already-noaa, zero-coords, pre-1940/missing date, no station, no obs)
+    return False."""
+    try:
+        data = json.loads(f.read_text(encoding="utf-8"))
+    except Exception:
+        return False
+    if data.get("noaa_observed"):  # already has NOAA data
+        return False
+    loc = data.get("location", {})
+    lat = loc.get("latitude", 0.0)
+    lon = loc.get("longitude", 0.0)
+    if lat == 0.0 and lon == 0.0:
+        return False
+    # Weather files store the date under "date" (not "date_start"); tolerate legacy.
+    date = data.get("date") or data.get("date_start") or ""
+    if not date or date < "1940-01-01":
+        return False
+    station = find_nearest_station(lat, lon, date, token)
+    if not station:
+        return False
+    obs = fetch_noaa_weather(station, date, token, place_lat=lat, place_lon=lon)
+    if not obs:
+        return False
+    data["noaa_observed"] = obs
+    from src.schemas import inject_metadata
+
+    inject_metadata(data)
+    f.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    logger.info("  NOAA enriched: %s (%s)", f.name, station.get("id"))
+    return True

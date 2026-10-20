@@ -1299,6 +1299,15 @@ def _link_person_to_groups(person_file: Path, people_groups_dir: Path) -> int:
     with open(index_file, "r", encoding="utf-8") as f:
         group_index = json.load(f)
 
+    linked = _link_units(units, group_index, people_groups_dir, person_id, person_name)
+    linked += _link_affiliations(
+        affiliations, group_index, people_groups_dir, person_id, person_name
+    )
+    return linked
+
+
+def _link_units(units, group_index, people_groups_dir, person_id, person_name) -> int:
+    """Link a person to each matching military-unit group (by unit key). Returns count linked."""
     linked = 0
     for unit in units:
         unit_name = unit.get("unit", "")
@@ -1310,10 +1319,16 @@ def _link_person_to_groups(person_file: Path, people_groups_dir: Path) -> int:
         if _add_member_to_group(group_file, person_id, person_name, unit):
             linked += 1
             logger.info("  Linked %s → %s", person_name, unit_name)
+    return linked
 
-    # Civilian group memberships (legislature/state/party), incl. title-implied. The
-    # membership's date_verified flag TRAVELS onto the group member record, so an
-    # unverified title membership shows up as a PROVISIONAL member (not a confirmed one).
+
+def _link_affiliations(
+    affiliations, group_index, people_groups_dir, person_id, person_name
+) -> int:
+    """Link a person to civilian group memberships (legislature/state/party, incl. title-implied).
+    The membership's date_verified flag travels onto the member record (unverified title
+    membership -> PROVISIONAL member). Returns count linked."""
+    linked = 0
     for aff in affiliations:
         if not isinstance(aff, dict):
             continue
@@ -1334,7 +1349,6 @@ def _link_person_to_groups(person_file: Path, people_groups_dir: Path) -> int:
             linked += 1
             tag = "verified" if member["date_verified"] else "provisional"
             logger.info("  Linked %s → %s [%s]", person_name, gname, tag)
-
     return linked
 
 
