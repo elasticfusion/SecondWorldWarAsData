@@ -103,28 +103,26 @@ def enforce_scope(
         raise ScopeMismatchError(msg, EXIT_SCOPE_MISMATCH)
 
     # 0. SOURCE-VS-ACTUAL reconciliation (PRIMARY, when an independent upstream count exists).
-    #    The producing phase recorded how many sections it emitted; the consuming phase's ACTUAL
-    #    work-set must match EXACTLY. Any drift is a defect: HIGH = unintended fan-out (a dropped
-    #    --book filter / bad glob / reconcile re-drive); LOW = silent under-production (a missing
-    #    sync / skipped or partial section) — which the magic-50 ceiling is totally blind to.
-    #    Not overridable; this supersedes the ceiling AND the hand-carried `expected`.
+    #    RULE: the consuming phase must NEVER EXCEED the count the producing phase recorded. Phase 1
+    #    recorded how many sections it emitted; processing MORE than that is always a defect — an
+    #    unintended fan-out (a dropped --book filter / bad glob / reconcile re-drive). Processing
+    #    FEWER is legitimate (a full run == recorded; an INCREMENTAL resume processes only the
+    #    pending subset < recorded), so a low count is NOT failed — it is ambiguous (a legit resume
+    #    vs a silent drop can't be told apart here without extra state, and failing legit resumes is
+    #    worse than the miss). Not overridable; supersedes the ceiling AND the hand-carried `expected`.
     if recorded_expected is not None:
-        if actual != recorded_expected:
-            direction = (
-                "HIGH (unintended fan-out)"
-                if actual > recorded_expected
-                else "LOW (silent drop / under-production)"
-            )
+        if actual > recorded_expected:
             msg = (
-                f"SCOPE DRIFT ({label}): the recorded source count is {recorded_expected} "
-                f"but {actual} are about to be processed — {direction}. Aborting (fail-loud; "
-                f"not overridable). The actual work-set must match the count the upstream phase "
-                f"produced; investigate the {'extra' if actual > recorded_expected else 'missing'} items."
+                f"SCOPE FAN-OUT ({label}): {actual} items are about to be processed but the "
+                f"recorded source count is only {recorded_expected}. Processing MORE than the "
+                f"upstream phase produced is never legitimate (dropped --book filter / bad glob / "
+                f"reconcile re-drive). Aborting (fail-loud; not overridable). Investigate the "
+                f"{actual - recorded_expected} extra item(s)."
             )
             log.error(msg)
             raise ScopeMismatchError(msg, EXIT_SCOPE_MISMATCH)
         log.info(
-            "OBSERV run_scope.reconciled %s actual=%d recorded_expected=%d match=1",
+            "OBSERV run_scope.reconciled %s actual=%d recorded_expected=%d within=1",
             label,
             actual,
             recorded_expected,

@@ -12,6 +12,11 @@ Phase 1 actually PRODUCED for a book — and lets later phases read it as the ex
 from the same directory the consuming phase is about to process (that would validate the set against
 itself and catch nothing).
 
+Reconciliation rule ("don't exceed"): the consuming phase must never process MORE than the recorded
+count (fan-out = always a defect → fail loud). Processing FEWER is allowed — a full run equals the
+recorded count; an incremental resume legitimately processes only the pending subset. See
+``run_scope_guard.enforce_scope``.
+
 Storage: ``output/manifests/run_scope/<book>.json`` (S3-native; lands under ``output/`` so the
 existing Phase background/final sync persists it — aligns with the DynamoDB-for-JSON deprecation).
 Reads are fail-safe: a missing/unreadable record returns ``None``, so the guard falls back to the

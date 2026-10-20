@@ -1,12 +1,12 @@
-"""Source-vs-actual run-scope reconciliation (replaces the magic-50-only ceiling).
+"""Source-vs-actual run-scope reconciliation ("don't exceed" rule).
 
 Phase 1 records an INDEPENDENT authoritative per-book section count; the run-scope guard reconciles
-each phase's ACTUAL work-set against it and fails loud on ANY drift — HIGH (unintended fan-out) OR
-LOW (silent under-production, which the fixed ceiling was blind to). Magic-50 is the FALLBACK only
+each phase's ACTUAL work-set against it. RULE: the consuming phase must never process MORE than the
+recorded count (fan-out = always a defect → fail loud). Processing FEWER is legitimate (a full run
+== recorded; an incremental resume processes only the pending subset). Magic-50 is the FALLBACK only
 when no count was recorded.
 """
 
-import logging
 from pathlib import Path
 
 import pytest
@@ -18,8 +18,6 @@ from src.utils.run_scope_guard import (
     ScopeMismatchError,
     enforce_scope,
 )
-
-_LOG = logging.getLogger("test")
 
 
 # --- run_scope record/read ---------------------------------------------------------------
@@ -41,7 +39,7 @@ def test_record_rejects_bad_count(tmp_path: Path):
     assert run_scope.record_scope(tmp_path, "Book", -1) is False
 
 
-# --- enforce_scope with recorded_expected (the primary, source-vs-actual path) -----------
+# --- enforce_scope with recorded_expected ("don't exceed") -------------------------------
 def test_recorded_match_passes_even_above_ceiling():
     # 80 > magic-50, but it EQUALS the recorded source count -> authorized, no declaration needed.
     assert (
@@ -49,29 +47,32 @@ def test_recorded_match_passes_even_above_ceiling():
     )
 
 
-def test_recorded_high_drift_fails_loud():
+def test_recorded_fanout_fails_loud():
+    # Processing MORE than Phase 1 produced is never legitimate (dropped --book / bad glob / re-drive).
     with pytest.raises(ScopeMismatchError) as ei:
         enforce_scope(actual=85, expected=None, recorded_expected=80, label="P2")
     assert ei.value.exit_code == EXIT_SCOPE_MISMATCH
-    assert "HIGH" in str(ei.value)
+    assert "FAN-OUT" in str(ei.value)
 
 
-def test_recorded_low_drift_fails_loud():
-    # The case the magic-50 ceiling could NOT catch: fewer than produced == silent drop.
-    with pytest.raises(ScopeMismatchError) as ei:
-        enforce_scope(actual=73, expected=None, recorded_expected=80, label="P2")
-    assert ei.value.exit_code == EXIT_SCOPE_MISMATCH
-    assert "LOW" in str(ei.value)
+def test_recorded_fewer_passes_legit_resume():
+    # Processing FEWER than recorded is a legit full/resume subset, NOT an error.
+    assert (
+        enforce_scope(actual=73, expected=None, recorded_expected=80, label="P2") == 73
+    )
+    assert enforce_scope(actual=0, expected=None, recorded_expected=80, label="P2") == 0
 
 
 def test_recorded_takes_precedence_over_declared_expected():
-    # recorded is authoritative; a (wrong) hand-declared expected is ignored in favor of it.
-    with pytest.raises(ScopeMismatchError):
-        enforce_scope(actual=80, expected=80, recorded_expected=79, label="P2")
-    # and a matching recorded passes regardless of a stale declared value
+    # recorded is authoritative; a hand-declared `expected` is ignored when recorded is present,
+    # as long as actual <= recorded.
+    assert enforce_scope(actual=80, expected=79, recorded_expected=80, label="P2") == 80
     assert (
-        enforce_scope(actual=80, expected=999, recorded_expected=80, label="P2") == 80
+        enforce_scope(actual=50, expected=999, recorded_expected=80, label="P2") == 50
     )
+    # but exceeding recorded still fails regardless of the declared value.
+    with pytest.raises(ScopeMismatchError):
+        enforce_scope(actual=81, expected=81, recorded_expected=80, label="P2")
 
 
 # --- fallback (no recorded count) = legacy magic-50 behaviour -----------------------------
