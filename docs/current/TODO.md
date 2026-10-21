@@ -17,13 +17,6 @@ campaign + PRs #487–#496. NEW/missed gaps (analyzer-invisible; bandit still 0H
 priority order; fix each via branch→gate→concurrent code+security reviews (both PASS)→CI→merge→sync.
 (The DNS-rebinding CRITICAL is DONE — #497 — and moved to §7 COMPLETED.) Ranked:
 
-- **[WARNING · PARTIAL — follow-up] transient-error → permanent-negative cache poisoning (remaining sites).**
-  The shared TRANSIENT sentinel + the 4 highest-impact fetchers (grokipedia, equipment_wikipedia,
-  groups_wikipedia, noaa_weather) are DONE (PR #501). REMAINING: situational_geocode (grokipedia/wiki
-  context — best-effort), bibliography_resolver._search_openserp_archive (503-from-scaling path), and
-  nominatim/places_grok_geocode (persists a terminal 'not_found' record status with NO TTL — only --force
-  recovers; needs a distinct fix from the search_cache sentinel). Route each via search_cache.TRANSIENT /
-  a non-terminal geocode_error status.
 - **[WARNING · follow-up, found in #507 review] clean_url unicode/IDNA homograph hosts.** The standalone
   validator (url_registry keys / bibliography+source_retrieval pre-fetch gates) accepts ①②⑦.0.0.1 /
   127。0。0。1 (ideographic dots) / fullwidth digits, which NFKC/IDNA-normalize to 127.0.0.1. Backstopped at
@@ -595,6 +588,11 @@ Not-code (deferred): SHAEF OB map gaps (NARA acquisition). Full historical detai
 item is in git history + the dated design docs under `docs/current/` and `docs/archive/`.
 
 ### Phase-2 FRESH RE-REVIEW (2026-10-20b) — DONE items (moved from §1.0c)
+- **[DONE · PR #509] [WARNING] transient-error → permanent-negative cache poisoning (remaining 3 sites).**
+  Completes the class after #501: situational_geocode (TRANSIENT sentinel on grokipedia/wiki),
+  bibliography_resolver._search_openserp_archive (saw_200 gate — only negative-cache a real 200-miss, not a
+  503-while-scaling outage), and nominatim/places_grok_geocode (GeocodeResult.transient -> non-terminal
+  geocode_error status, RETRIED on non-force re-run, instead of a permanent no-TTL not_found). +OBSERV.
 - **[DONE · PR #508] [SUGGESTION batch]** weather_central._add_event_mention hard-indexes m["Sub_eventID"] (KeyError on legacy —
   places got the #495 fix, weather missed); enrich_groups.enrich_group reads `name` but schema stores
   `group_name` → never enriches a schema-valid record; openserp_maps downloads map_images[0] not the vision-
