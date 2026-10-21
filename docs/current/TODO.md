@@ -20,12 +20,23 @@ safe-book hardening. Fix order (CRITICAL → HIGH → WARNING → NIT); each via
 security reviews (both PASS)→CI→merge→sync→move to §7. bandit still 0H/0M.
 
 - **[CRITICAL] dedup merge deletes the secondary entity file but fails to REBASE its references — 3 broken paths:**
-  (1) people_groups auto-merge uses the wrong id_field (PeopleGroupID vs real PK GroupID) → rebase never runs,
-  file deleted → mass dangling GroupID refs; (2) merge_generic passes the PK field-NAME as the sub-event ref_key
-  so se.get("PlaceID"/"EquipmentID"/"PeopleGroupID") is always empty → sub-event places[]/equipment[]/groups[]
-  never repointed for ANY generic entity on the ecs auto-merge path; (3) Lambda dedup-UI _merge_generic_files
-  rebases nothing (+ _merge_people_files runs do_merge on a people-only tmpdir so even people UI merges don't
-  rebase). referential_integrity ALERTs on the dangling refs but doesn't fix them. (code_schemas_dedup + sec_schemas_dedup)
+- **[CRITICAL] ✅ DONE (PR #514) — dedup merge deletes the secondary entity file but fails to REBASE its references:**
+  all 3 paths fixed — (1) people_groups now resolves the real PK GroupID (not the PeopleGroupID alias) via
+  _record_id/_ENTITY_DIR_PK + ecs passes GroupID; (2) merge_generic now maps the PK field to the real ON-DISK
+  sub-event ref key (group array is "peoplegroups" per batch_parallel key_map, not "groups") + repoints every
+  occurrence + OBSERV on noid/unknown/zero; (3) the Lambda dedup-UI generic + people merges now rebase the event
+  corpus via storage (correct output/content listing, rebase-before-delete). Equipment handled as no-sub-event-array
+  (still rebases cross-entity EquipmentID). Tests: test_dedup_rebase_subevent_refs.py (6) + test_dedup_ui_rebase_refs.py
+  (3). Gate PASS 2536 tests; concurrent code+security reviews both PASS. Moved to §7.
+  Follow-ups surfaced by the review (pre-existing, NOT regressions from #514):
+  - **[WARNING] UI equipment merge does not rebase cross-entity EquipmentID refs** held in OTHER entity records
+    (logistics/casualties/weather) — the ECS/merge.py path does (entity-dir scan), the dedup_ui storage path does
+    not. Give the UI path a cross-entity scan.
+  - **[NIT] update_event_refs entity-dir scan omits the `places/` dir** — a merge won't rebase cross-refs stored
+    inside places/*.json. Add "places" to the scanned subdirs.
+  - **[NIT] UI event-write goes through the schema write-guard** (S3Storage/LocalStorage.write_json → _validate_entity
+    classifies *-event.json as "events" and silently drops a schema-invalid rebased write + logs), whereas the local
+    merge.py path uses raw json.dump. Low risk (a ULID swap won't change validity) — note the inconsistency.
 - **[HIGH] mdreview_ui_handler path traversal → arbitrary S3 write / Phase-1 content injection** — _save_snippet/
   _get_page use an unvalidated `book` in the S3 key; validate with the shared safe-token regex (the trigger_handler
   hardening wasn't propagated). (corroborated)
@@ -513,6 +524,16 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
 ---
 
 ## 7. COMPLETED
+
+### §1.0d CRITICAL — dedup reference-rebase (PR #514, 2026-10-21)
+dedup merges deleted the secondary entity file but failed to rebase its event sub-event refs (3 paths:
+wrong id_field for groups, PK-name-as-ref_key for generic merges, no-rebase in the Lambda UI). Fixed in
+src/dedup/merge.py (real-PK resolution + on-disk ref_key map where the group array is "peoplegroups" per
+batch_parallel key_map + OBSERV on noid/unknown/zero + equipment cross-entity-only rebase), ecs_entrypoint.py
+(people_groups id_field→GroupID), lambda_handlers/dedup_ui_handler.py (storage-based corpus rebase,
+output/content listing, rebase-before-delete). 9 new tests; pruned 5 stale radon grandfathers. Gate PASS
+(2536 tests); concurrent code+security reviews both PASS (1 NEEDS_CHANGES round caught the groups→peoplegroups
+on-disk key + the empty-prefix listing). Follow-ups (pre-existing) tracked in §1.0d.
 
 ### Phase-2 code+security review program (2026-10-20) — ALL findings merged
 8 concurrent sub-agents -> 5 root patterns (docs/current/PHASE2_REVIEW_2026-10-20.md). Every finding
