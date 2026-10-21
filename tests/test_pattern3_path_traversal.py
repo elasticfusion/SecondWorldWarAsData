@@ -143,3 +143,46 @@ def test_safe_entity_filename_neutralizes_all_hostile_inputs():
     d = Path("/tmp/pattern3_contain_probe")
     # a plain safe name resolves inside
     assert _contained_entity_path(d, "ok.json") == d / "ok.json"
+
+
+# --- §1.0b follow-up: weather + casualties writers now route through the sanitizer ----------
+def test_weather_create_file_contains_hostile_place(tmp_path):
+    """weather_central._create_new_weather_file must not let a hostile place_name escape
+    weather_dir (place_name is LLM-extracted)."""
+    from src.extraction import weather_central as wc
+
+    weather_dir = tmp_path / "weather"
+    weather_dir.mkdir()
+    places_dir = tmp_path / "places"
+    places_dir.mkdir()
+    for hostile in ("../../etc/evil", "/etc/passwd", "a/b/c", "foo\x00bar"):
+        wf, fname = wc._create_new_weather_file(
+            {"PlaceMentionID": None},
+            "1944-06-06",
+            hostile,
+            weather_dir,
+            places_dir,
+            fetch_api=False,
+        )
+        # the resolved file must stay inside weather_dir, and the name carries no separators
+        assert weather_dir.resolve() in wf.resolve().parents, hostile
+        assert "/" not in fname and "\\" not in fname and "\x00" not in fname
+
+
+def test_casualty_save_clamps_type_and_contains(tmp_path):
+    """_save_casualty clamps a hostile/unknown 'type' to the enum and never writes outside dir."""
+    from src.extraction import casualties
+
+    out = tmp_path / "casualties"
+    out.mkdir()
+    cid = "01J000000000000000000CAS0"
+    # hostile type -> clamped to 'casualties', filename sanitized + contained
+    with mock.patch("src.utils.file_lock.write_json_with_lock") as w:
+        casualties._save_casualty({"CasualtyID": cid, "type": "../../etc/passwd"}, out)
+        written_path = w.call_args.args[0]
+        assert out.resolve() in Path(written_path).resolve().parents
+        assert "/" not in Path(written_path).name
+    # a valid enum type is preserved in the name
+    with mock.patch("src.utils.file_lock.write_json_with_lock") as w:
+        casualties._save_casualty({"CasualtyID": cid, "type": "killed"}, out)
+        assert Path(w.call_args.args[0]).name == f"killed_{cid}.json"
