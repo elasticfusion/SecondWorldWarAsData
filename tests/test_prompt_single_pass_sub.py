@@ -23,3 +23,11 @@ def test_render_prompt_unknown_placeholder_intact(monkeypatch):
     )
     out = PL.render_prompt("x", a="X")
     assert "{nested}" in out and out.endswith("X")  # unknown braces preserved
+
+
+def test_render_search_queries_single_pass(monkeypatch):
+    import src.utils.search_query_loader as SQ
+
+    monkeypatch.setattr(SQ, "load_search_queries", lambda qf: {"cat": ["{a} then {b}"]})
+    out = SQ.render_search_queries("x", "cat", a="val-{b}", b="BVAL")
+    assert out == ["val-{b} then BVAL"]  # a's literal {b} not re-substituted

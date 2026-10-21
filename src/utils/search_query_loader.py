@@ -1,5 +1,6 @@
 """Search query template loader — externalizes third-party search patterns."""
 
+import re
 import logging
 from functools import lru_cache
 from pathlib import Path
@@ -41,8 +42,6 @@ def render_search_queries(query_file: str, category: str, **kwargs) -> List[str]
     if not query_templates:
         logger.warning("No search queries for %s/%s", query_file, category)
         return []
-    import re as _re
-
     subs = {k: str(v) for k, v in kwargs.items()}
 
     def _sub(m):
@@ -53,5 +52,5 @@ def render_search_queries(query_file: str, category: str, **kwargs) -> List[str]
     for tmpl in query_templates:
         # Single-pass (see prompt_loader.render_prompt): an already-substituted value containing a
         # literal {otherkey} is not re-substituted.
-        rendered.append(_re.sub(r"\{([A-Za-z_][A-Za-z0-9_]*)\}", _sub, tmpl))
+        rendered.append(re.sub(r"\{([A-Za-z_][A-Za-z0-9_]*)\}", _sub, tmpl))
     return rendered
