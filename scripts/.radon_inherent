@@ -16,7 +16,6 @@ src/enrichment/places_grok_geocode.py::_toponym_from_prose 30cf7de6df8c1332424f0
 # --- bulk-seeded C+ backlog (2026-10-20) ---
 lambda_handlers/batch_poller.py::handler  6598ba0dec1696901a1fb08220dd333faa19b9b368d270cc688888a60cd3b374  # grandfathered C(11) C+ backlog 2026-10-20
 lambda_handlers/dedup_ui_handler.py::_handle_action  7a1c9a7e5ef6438f259f78416a17fc0c878fd5b163fa3a6a0cffd58a643fc5ab  # grandfathered C(11) C+ backlog 2026-10-20
-lambda_handlers/dedup_ui_handler.py::_merge_generic_files  a3086129873b1e646765e89a56a2b84951bf94e1908f89257dc171061dd105a0  # grandfathered C(14) C+ backlog 2026-10-20
 lambda_handlers/dedup_ui_handler.py::_rename_to_match_content  162acc4989eeca93f9c636d260ff4ac5c9c7e92042d6f0f8e3b3a49cd28483c4  # grandfathered C(15) C+ backlog 2026-10-20
 lambda_handlers/dedup_ui_handler.py::handler  4ad6e5293926268200e800f3b2f5c78e955a3995d63f0528731865107d574f0a  # grandfathered C(12) C+ backlog 2026-10-20
 lambda_handlers/dispatcher_handlers.py::enumerate_pending  124cf32ccf8a590060967baf7bfbd0e9623c0c9f6471005f915faa8e8eb4f0fd  # grandfathered C(12) C+ backlog 2026-10-20
@@ -32,10 +31,8 @@ lambda_handlers/trigger_handler.py::_reconcile_pending  6c1ff13c8501bba53cec43f5
 lambda_handlers/trigger_handler.py::_run_task  78afb1417c47bca7c8000910ead508ae26e7a9d68369a48d2cecbaff2b1f8f89  # grandfathered C(12) C+ backlog 2026-10-20
 lambda_handlers/trigger_handler.py::_split_by_media  8e51d8b1a164c37f83436a125dd9d76d12a47acd90814ab35ec60dc4d0589994  # grandfathered C(11) C+ backlog 2026-10-20
 lambda_handlers/trigger_handler.py::_title_from_key  9221b5b892989f6ed9923f6036f59e94032a17cc1cfdfe036cbecfc424131196  # grandfathered C(12) C+ backlog 2026-10-20
-src/dedup/merge.py::_merge_one_secondary  2782aa37e88cd5d2fa157f868e61345d472a1cf3aa8a19bd0660ce7bb2ea6880  # grandfathered C(14) C+ backlog 2026-10-20
 src/dedup/merge.py::_replace_id_in_obj  ce6bddb0d9aa102fa299594bf20eed50c6afcdad9c1285e59348aae68a9b9225  # grandfathered C(13) C+ backlog 2026-10-20
 src/dedup/merge.py::do_merge  0a88af42e38b7a78a5173c8c251ae495168fd594b8a08737c8e6d833618054be  # grandfathered C(11) C+ backlog 2026-10-20
-src/dedup/merge.py::update_event_refs  2a7745478af6974265d508c158e556dd65ac822c69f83793eeb507d29d868747  # grandfathered C(13) C+ backlog 2026-10-20
 src/dedup/surname_report.py::build_suggestions  9a23529ed56bbfe366e046fa735c13c5572576629a39ed6615004f934931d895  # grandfathered C(14) C+ backlog 2026-10-20
 src/dedup/surname_report.py::maybe_generate  6ab4cd7e070e7e8dea2f28630fa6d98d613f9aadeadeb1795d810f2ed76ae7de  # grandfathered C(11) C+ backlog 2026-10-20
 src/dedup/unit_key.py::unit_keys_match  e94eaecb65d52d365c90fd4e044945bb6a21d6574af43e2fa1f7f11acad75164  # grandfathered C(15) C+ backlog 2026-10-20
@@ -100,7 +97,6 @@ src/extraction/fetch_endnotes.py::fetch_endnote_texts  fcaeb59c4699ac157fe2d1066
 src/extraction/grok_search_maps.py::verify_map_with_vision  e60faebe89293f86b34e127649581f4011c35372a1797726ad42adf93c54c97a  # grandfathered C(11) C+ backlog 2026-10-20
 src/extraction/images.py::_find_sub_event_for_image  10d614c047e3452276d6706187e6f25a117549df768896bacee2398d2d312078  # grandfathered C(11) C+ backlog 2026-10-20
 src/extraction/images.py::_process_single_image  5276043d0687c3db720f6fade9634d645a55ce71323f7598db14d406678abc98  # grandfathered C(13) C+ backlog 2026-10-20
-src/extraction/images.py::fetch_image_bytes  5d9c2dfe981e24ff7c59067b77007d60a2cb60047213e634fb8a39c9eac80fbb  # grandfathered C(11) C+ backlog 2026-10-20
 src/extraction/logistics.py::_validate_logistics_item  5fd9ef52efc54f4e3ba4be5e0098d0eca18c0ba77ec5444e8010edc6eda383be  # grandfathered C(13) C+ backlog 2026-10-20
 src/extraction/logistics_resolver.py::_resolve_cooccurring  73a25da564bb8428eddb638385b7010ef30094ae5675aa63fbf00890402ac93a  # grandfathered C(11) C+ backlog 2026-10-20
 src/extraction/logistics_resolver.py::build_logistics_index  1203815d8adf3a597e23e3aa0fa67d4bdf26f6cf87442ea716609fa349f5e007  # grandfathered C(15) C+ backlog 2026-10-20
@@ -138,7 +134,6 @@ src/utils/run_scope_guard.py::enforce_scope  8a727cd91b623eb90f6d9c28a509eb7da8d
 src/utils/semantic_flags.py::_citation_flags  096ffc3eb9bbafa0d314046076082c67653b3acfd137a4b089118e343c08253b  # grandfathered C(12) C+ backlog 2026-10-20
 src/utils/semantic_flags.py::_load_date_window  8307110e158a969003faaa1fe2100abd56bb649b47686f293293865e210170aa  # grandfathered C(13) C+ backlog 2026-10-20
 src/utils/url_content_verdict.py::evaluate  06d2a3db2c484c51e777a0b7fcf96a0e65af83b7b4c9f6eaf281d33fb89eaf4b  # grandfathered C(14) C+ backlog 2026-10-20
-src/utils/url_fetch.py::_one_hop  cd7af0eefc7c3f29da60df6f02ea3867e848a4b3f71bc2b72a149af4d70b0ab1  # grandfathered C(11) C+ backlog 2026-10-20
 src/utils/url_hygiene.py::clean_url  d407d948ffe25dc45c8abf7c5d8b742853b79bdb576fb13041e439f772e77640  # grandfathered C(14) C+ backlog 2026-10-20
 src/utils/url_registry.py::_persist_dns_counter  78843f3751890300b9a74662a14ad24ed8b008366eb23d8ef74b83f3696ec0b3  # grandfathered C(13) C+ backlog 2026-10-20
 
