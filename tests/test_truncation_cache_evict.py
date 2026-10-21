@@ -44,3 +44,27 @@ def test_batch_collector_logs_duplicate_request_id(caplog):
         c.add(r2)
     assert len(c) == 1  # dup dropped (unchanged)
     assert any("duplicate_request_id_dropped" in r.message for r in caplog.records)
+
+
+def test_truncation_evicts_the_stable_override_key():
+    """The latent edge both reviewers flagged: eviction must target the SAME key chat_completion
+    stored. When a stable cache_key override is passed, _handle_truncation_error must evict THAT key,
+    not a 3-arg recompute."""
+    cache = {
+        "STABLE-OVERRIDE": "x" * 150_000
+    }  # supplemental-style stable key, >100K truncated
+    client = gc.GrokClient.__new__(gc.GrokClient)
+    client._get_cache = lambda ct: cache
+    # a DIFFERENT recompute than the override, to prove the override (not the recompute) is used
+    client._make_cache_key = lambda *a: "RECOMPUTE-WOULD-MISS"
+    client._get_model = lambda ct: "m"
+    with pytest.raises(gc.GrokTruncationError):
+        client._handle_truncation_error(
+            "x" * 150_000,
+            "Unterminated",
+            "supplemental",
+            "prompt",
+            0.1,
+            cache_key="STABLE-OVERRIDE",
+        )
+    assert "STABLE-OVERRIDE" not in cache  # the override entry was evicted (fix)
