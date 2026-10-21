@@ -113,10 +113,11 @@ def test_archived_snapshot_itself_a_block_page_rejected(monkeypatch):
 def test_fetch_url_content_falls_back_on_block(monkeypatch):
     from src.extraction import enrich_biographies as eb
 
-    # Live fetch returns an Incapsula block page (HTTP 200).
-    blocked = MagicMock(status_code=200)
-    blocked.text = "Request unsuccessful. Incapsula incident ID: 42"
-    monkeypatch.setattr(eb.requests, "get", lambda *a, **k: blocked)
+    # Live fetch (now via url_hygiene.fetch_text_safe) returns an Incapsula block page (HTTP 200).
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.fetch_text_safe",
+        lambda url, **k: ("Request unsuccessful. Incapsula incident ID: 42", 200),
+    )
     # Wayback recovers real content.
     monkeypatch.setattr(
         wayback,
@@ -137,9 +138,10 @@ def test_fetch_url_content_falls_back_on_block(monkeypatch):
 def test_fetch_url_content_live_ok_no_fallback(monkeypatch):
     from src.extraction import enrich_biographies as eb
 
-    good = MagicMock(status_code=200)
-    good.text = "<html>" + ("Real content. " * 400) + "</html>"
-    monkeypatch.setattr(eb.requests, "get", lambda *a, **k: good)
+    good_text = "<html>" + ("Real content. " * 400) + "</html>"
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.fetch_text_safe", lambda url, **k: (good_text, 200)
+    )
     # If this were called, the test would fail (we assert it is not needed).
     called = {"n": 0}
 

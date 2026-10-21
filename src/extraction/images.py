@@ -10,7 +10,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
-import requests
 import ulid as ulid_mod
 
 logger = logging.getLogger(__name__)
@@ -30,28 +29,16 @@ def fetch_image_bytes(url: str) -> Tuple[Optional[bytes], Optional[str]]:
     (169.254.169.254), so redirects are refused rather than blindly followed; (4) the body is
     byte-capped and must be image/* content.
     """
-    from src.utils.url_hygiene import clean_url, resolved_host_is_safe
+    from src.utils.url_hygiene import clean_url
 
     cleaned = clean_url(url)
     if not cleaned:
         logger.debug("image fetch blocked (scheme/host): %s", url)
         return None, None
-    from urllib.parse import urlparse
-
-    host = (urlparse(cleaned).hostname or "").lower()
-    if resolved_host_is_safe(host) is None:
-        logger.warning("image fetch blocked (host resolves non-public): %s", host)
+    resp = _safe_image_response(cleaned)
+    if resp is None:
         return None, None
     try:
-        resp = requests.get(
-            cleaned,
-            timeout=_DOWNLOAD_TIMEOUT,
-            headers={"User-Agent": _USER_AGENT},
-            allow_redirects=False,  # redirects reopen SSRF
-            stream=True,
-        )
-        if resp.status_code != 200:
-            return None, None
         content_type = resp.headers.get("content-type", "").lower()
         body = b""
         for chunk in resp.iter_content(8192):
@@ -72,6 +59,35 @@ def fetch_image_bytes(url: str) -> Tuple[Optional[bytes], Optional[str]]:
     except Exception as exc:  # noqa: BLE001 - fetch failure must be non-fatal
         logger.debug("Failed to download %s: %s", cleaned, exc)
         return None, None
+
+
+def _safe_image_response(cleaned: str):
+    """SSRF-safe GET of an already-clean_url'd image URL: resolve+vet the host (DNS-rebinding) and
+    PIN the connection to a vetted IP (keeps Host + TLS SNI = host, allow_redirects=False). Returns
+    a streamed 200 ``requests.Response``, or None if blocked/non-200/failed."""
+    from urllib.parse import urlparse
+
+    from src.utils.url_hygiene import resolved_host_is_safe, _pinned_get
+
+    host = (urlparse(cleaned).hostname or "").lower()
+    vetted = resolved_host_is_safe(host)
+    if vetted is None:
+        logger.warning("image fetch blocked (host resolves non-public): %s", host)
+        return None
+    try:
+        resp = _pinned_get(
+            cleaned,
+            host,
+            vetted,
+            timeout=_DOWNLOAD_TIMEOUT,
+            headers={"User-Agent": _USER_AGENT},
+        )
+    except Exception as exc:  # noqa: BLE001 - fetch failure must be non-fatal
+        logger.debug("Failed to download %s: %s", cleaned, exc)
+        return None
+    if resp.status_code != 200:
+        return None
+    return resp
 
 
 def _is_valid_image_body(body: bytes, content_type: str) -> bool:

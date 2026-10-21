@@ -33,11 +33,16 @@ def _go(monkeypatch, resolves_safe=True):
     )
 
 
+def _pin(monkeypatch, resp):
+    """Pin the fetch seam: _one_hop now calls url_hygiene._pinned_get (IP-pinned). Return `resp`."""
+    pg = MagicMock(return_value=resp)
+    monkeypatch.setattr("src.utils.url_hygiene._pinned_get", pg)
+    return pg
+
+
 def test_live_200_used(monkeypatch):
     _go(monkeypatch)
-    sess = MagicMock()
-    sess.get.return_value = _Resp(200, "<html>real content</html>")
-    monkeypatch.setattr(uf, "_session", lambda: sess)
+    _pin(monkeypatch, _Resp(200, "<html>real content</html>"))
     with patch("src.enrichment.wayback.is_block_page", return_value=False):
         r = uf.fetch("https://en.wikipedia.org/wiki/X")
     assert r.source == uf.LIVE and "real content" in r.content
@@ -48,22 +53,18 @@ def test_dns_rebinding_host_resolving_private_blocked(monkeypatch):
     """A host that passes clean_url (string) but RESOLVES to a private/metadata IP is
     blocked at fetch time (BLOCKER-1 DNS-rebinding)."""
     _go(monkeypatch, resolves_safe=False)
-    sess = MagicMock()
-    sess.get.return_value = _Resp(200, "secret internal page")
-    monkeypatch.setattr(uf, "_session", lambda: sess)
+    pg = _pin(monkeypatch, _Resp(200, "secret internal page"))
     with patch("src.enrichment.wayback.fetch_archived", return_value=None):
         r = uf.fetch("https://rebind.example.com/a")
     assert r.source != uf.LIVE
-    sess.get.assert_not_called()  # never even issued the GET
+    pg.assert_not_called()  # never even issued the GET
 
 
 def test_ssrf_redirect_to_metadata_blocked(monkeypatch):
     _go(monkeypatch)
-    sess = MagicMock()
-    sess.get.return_value = _Resp(
-        302, "", location="http://169.254.169.254/latest/meta-data/"
+    _pin(
+        monkeypatch, _Resp(302, "", location="http://169.254.169.254/latest/meta-data/")
     )
-    monkeypatch.setattr(uf, "_session", lambda: sess)
     with patch("src.enrichment.wayback.fetch_archived", return_value=None):
         r = uf.fetch("https://evil.example.com/a")
     assert r.source != uf.LIVE
@@ -71,9 +72,7 @@ def test_ssrf_redirect_to_metadata_blocked(monkeypatch):
 
 def test_404_falls_out_to_wayback(monkeypatch):
     _go(monkeypatch)
-    sess = MagicMock()
-    sess.get.return_value = _Resp(404, "")
-    monkeypatch.setattr(uf, "_session", lambda: sess)
+    _pin(monkeypatch, _Resp(404, ""))
     with patch(
         "src.enrichment.wayback.fetch_archived",
         return_value=("<archived/>", "https://web.archive.org/x", "20200101000000"),
@@ -84,9 +83,7 @@ def test_404_falls_out_to_wayback(monkeypatch):
 
 def test_block_page_falls_out_to_wayback(monkeypatch):
     _go(monkeypatch)
-    sess = MagicMock()
-    sess.get.return_value = _Resp(200, "verifying you are human")
-    monkeypatch.setattr(uf, "_session", lambda: sess)
+    _pin(monkeypatch, _Resp(200, "verifying you are human"))
     with (
         patch("src.enrichment.wayback.is_block_page", return_value=True),
         patch(
@@ -100,9 +97,7 @@ def test_block_page_falls_out_to_wayback(monkeypatch):
 
 def test_gone_no_archive_counts_toward_dead(monkeypatch):
     _go(monkeypatch)
-    sess = MagicMock()
-    sess.get.return_value = _Resp(404, "")
-    monkeypatch.setattr(uf, "_session", lambda: sess)
+    _pin(monkeypatch, _Resp(404, ""))
     calls = {"n": 0}
     monkeypatch.setattr(
         reg,
@@ -117,9 +112,7 @@ def test_gone_no_archive_counts_toward_dead(monkeypatch):
 def test_rate_limited_never_counts_toward_dead(monkeypatch):
     """429/503 must NOT call record_dns_failure (never age toward dead)."""
     _go(monkeypatch)
-    sess = MagicMock()
-    sess.get.return_value = _Resp(429, "slow down")
-    monkeypatch.setattr(uf, "_session", lambda: sess)
+    _pin(monkeypatch, _Resp(429, "slow down"))
     called = {"dead": 0}
     monkeypatch.setattr(
         reg, "record_dns_failure", lambda u: called.__setitem__("dead", 1) or "retry"
@@ -132,9 +125,10 @@ def test_rate_limited_never_counts_toward_dead(monkeypatch):
 def test_transient_never_counts_toward_dead(monkeypatch):
     """A transport error (transient) + no archive = IGNORE, never record_dns_failure."""
     _go(monkeypatch)
-    sess = MagicMock()
-    sess.get.side_effect = Exception("DNS timeout")
-    monkeypatch.setattr(uf, "_session", lambda: sess)
+    monkeypatch.setattr(
+        "src.utils.url_hygiene._pinned_get",
+        MagicMock(side_effect=Exception("DNS timeout")),
+    )
     called = {"dead": 0}
     monkeypatch.setattr(
         reg, "record_dns_failure", lambda u: called.__setitem__("dead", 1) or "retry"
@@ -165,12 +159,10 @@ def test_non_clean_url_skip(monkeypatch):
 
 def test_http_status_captured_live_and_gone(monkeypatch):
     _go(monkeypatch)
-    sess = MagicMock()
-    sess.get.return_value = _Resp(200, "<html>x</html>")
-    monkeypatch.setattr(uf, "_session", lambda: sess)
+    _pin(monkeypatch, _Resp(200, "<html>x</html>"))
     with patch("src.enrichment.wayback.is_block_page", return_value=False):
         assert uf.fetch("https://ex.com/a").http_status == 200
-    sess.get.return_value = _Resp(404, "")
+    _pin(monkeypatch, _Resp(404, ""))
     monkeypatch.setattr(reg, "record_dns_failure", lambda u: "retry")
     with patch("src.enrichment.wayback.fetch_archived", return_value=None):
         assert uf.fetch("https://ex.com/b").http_status == 404

@@ -38,7 +38,7 @@ def test_safe_get_blocks_host_resolving_to_private_ip(monkeypatch):
     monkeypatch.setattr(
         "src.utils.url_hygiene.resolved_host_is_safe", lambda host: None
     )
-    with mock.patch("requests.get") as g:
+    with mock.patch("requests.Session.get") as g:
         assert safe_get("https://evil.example.org/x") is None
         g.assert_not_called()
 
@@ -50,7 +50,7 @@ def test_safe_get_disables_redirects_and_caps_body(monkeypatch):
     resp = mock.Mock()
     resp.status_code = 200
     resp.iter_content = lambda n: [b"x" * 1000, b"y" * 1000]
-    with mock.patch("requests.get", return_value=resp) as g:
+    with mock.patch("requests.Session.get", return_value=resp) as g:
         out = safe_get("https://ex.org/page", max_bytes=1500)
         assert out is not None
         # redirects MUST be disabled (a redirect reopens SSRF)
@@ -67,7 +67,7 @@ def test_fetch_text_safe_returns_text_and_status(monkeypatch):
     resp.status_code = 200
     resp.iter_content = lambda n: [b"<html>hi</html>"]
     resp.text = "<html>hi</html>"
-    with mock.patch("requests.get", return_value=resp):
+    with mock.patch("requests.Session.get", return_value=resp):
         text, status = fetch_text_safe("https://ex.org/page")
         assert status == 200 and "hi" in text
 
@@ -79,7 +79,7 @@ def test_fetch_text_safe_non_200_returns_status_no_text(monkeypatch):
     resp = mock.Mock()
     resp.status_code = 404
     resp.iter_content = lambda n: [b""]
-    with mock.patch("requests.get", return_value=resp):
+    with mock.patch("requests.Session.get", return_value=resp):
         text, status = fetch_text_safe("https://ex.org/missing")
         assert text is None and status == 404
 
@@ -88,7 +88,7 @@ def test_safe_get_network_error_is_non_fatal(monkeypatch):
     monkeypatch.setattr(
         "src.utils.url_hygiene.resolved_host_is_safe", lambda host: ["93.184.216.34"]
     )
-    with mock.patch("requests.get", side_effect=OSError("boom")):
+    with mock.patch("requests.Session.get", side_effect=OSError("boom")):
         assert safe_get("https://ex.org/x") is None  # swallowed
 
 
@@ -106,7 +106,7 @@ def test_safe_get_materializes_real_body_for_text(monkeypatch):
     real.status_code = 200
     real.headers["Content-Type"] = "text/html; charset=utf-8"
     real.iter_content = lambda n: [b"<html>", "caf\u00e9".encode("utf-8"), b"</html>"]
-    with mock.patch("requests.get", return_value=real):
+    with mock.patch("requests.Session.get", return_value=real):
         out = safe_get("https://ex.org/p")
         assert out is not None
         assert out.text == "<html>café</html>"  # decoded from the capped _content
@@ -132,3 +132,33 @@ def test_ssrf_cluster_modules_have_no_unguarded_requests_get():
         for mo in re.finditer(r"requests\.(get|post)\(", src):
             offenders.append(f"{m}: {mo.group(0)}")
     assert not offenders, "unguarded requests.get/post remain: " + "; ".join(offenders)
+
+
+# --- DNS-rebinding pin (round-b CRITICAL): connect to the VETTED IP, not a re-resolved host ---
+def test_safe_get_pins_connection_to_vetted_ip(monkeypatch):
+    """resolved_host_is_safe vets IPs; the actual TCP connection MUST go to a vetted IP (so a
+    short-TTL rebind to 127.0.0.1/169.254.169.254 between check and connect can't slip through).
+    Assert the URL handed to the transport uses the vetted IP as host + sends the real Host header.
+    """
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda host: ["93.184.216.34"]
+    )
+    captured = {}
+
+    def _fake_session_get(self, url, **kw):
+        captured["url"] = url
+        captured["host_header"] = (kw.get("headers") or {}).get("Host")
+        captured["allow_redirects"] = kw.get("allow_redirects")
+        r = mock.Mock()
+        r.status_code = 200
+        r.iter_content = lambda n: [b"ok"]
+        return r
+
+    with mock.patch("requests.Session.get", _fake_session_get):
+        out = safe_get("https://victim.example.org/p")
+        assert out is not None
+    # connection pinned to the vetted IP, Host preserved, redirects off
+    assert "93.184.216.34" in captured["url"]
+    assert "victim.example.org" not in captured["url"]
+    assert captured["host_header"] == "victim.example.org"
+    assert captured["allow_redirects"] is False
