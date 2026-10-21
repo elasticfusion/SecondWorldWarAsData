@@ -29,15 +29,10 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
   127。0。0。1 (ideographic dots) / fullwidth digits, which NFKC/IDNA-normalize to 127.0.0.1. Backstopped at
   the FETCH layer (resolved_host_is_safe blocks them), so NOT a live fetch SSRF — but the standalone gate
   should NFKC-normalize + host.encode('idna') before classification. (sec_batch_core #507 adversarial probe.)
-- **[SUGGESTION batch]** weather_central._add_event_mention hard-indexes m["Sub_eventID"] (KeyError on legacy —
-  places got the #495 fix, weather missed); enrich_groups.enrich_group reads `name` but schema stores
-  `group_name` → never enriches a schema-valid record; openserp_maps downloads map_images[0] not the vision-
-  APPROVED image + _check_duplicate_map lacks the sibling try/except json.load guard (a malformed file drops a
-  whole place); supplemental _normalize_enums coerces an INVALID content_class to "citation" (should be
-  "ambiguous"); award_polite_source.polite_get / wayback.fetch_archived lack a byte cap / resolved-IP recheck;
-  prompt_loader & search_query_loader order-dependent str.replace (untrusted `{token}` re-substitution);
-  storage.LocalStorage._resolve returns the UNRESOLVED path; _submit_ocr skips _SAFE_TITLE_RE; write_json_with_lock
-  omits fsync. Batch the cheap ones.
+- **[SUGGESTION · remaining] larger NITs deferred from the #508 batch:** award_polite_source.polite_get /
+  wayback.fetch_archived byte-cap + resolved-IP recheck (route via safe_get); prompt_loader & search_query_loader
+  single-pass substitution (untrusted `{token}` re-sub); _submit_ocr _SAFE_TITLE_RE; openserp_maps download the
+  vision-APPROVED image (not map_images[0]).
 
 ### 1.1 Data-quality from the clean XChannel run
 
@@ -600,6 +595,16 @@ Not-code (deferred): SHAEF OB map gaps (NARA acquisition). Full historical detai
 item is in git history + the dated design docs under `docs/current/` and `docs/archive/`.
 
 ### Phase-2 FRESH RE-REVIEW (2026-10-20b) — DONE items (moved from §1.0c)
+- **[DONE · PR #508] [SUGGESTION batch]** weather_central._add_event_mention hard-indexes m["Sub_eventID"] (KeyError on legacy —
+  places got the #495 fix, weather missed); enrich_groups.enrich_group reads `name` but schema stores
+  `group_name` → never enriches a schema-valid record; openserp_maps downloads map_images[0] not the vision-
+  APPROVED image + _check_duplicate_map lacks the sibling try/except json.load guard (a malformed file drops a
+  whole place); supplemental _normalize_enums coerces an INVALID content_class to "citation" (should be
+  "ambiguous"); award_polite_source.polite_get / wayback.fetch_archived lack a byte cap / resolved-IP recheck;
+  prompt_loader & search_query_loader order-dependent str.replace (untrusted `{token}` re-substitution);
+  storage.LocalStorage._resolve returns the UNRESOLVED path; _submit_ocr skips _SAFE_TITLE_RE; write_json_with_lock
+  omits fsync. Batch the cheap ones.
+
 - **[DONE · PR #507] [WARNING] clean_url accepts dotted-hex/mixed-radix IP encodings** (`0x7f.0x0.0x0.0x1`, `127.0.0.0x1`) →
   True, contradicting its docstring; backstopped at fetch by resolved_host_is_safe but clean_url is ALSO a
   standalone registry-key/pre-fetch-gate validator. Detect any hex/mixed-radix numeric host and coerce via
