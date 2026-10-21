@@ -230,8 +230,9 @@ live in several places:
 4. ~~**Trigger-Lambda key sanitization + SNS-ARN trust + manual-expected_count auth**~~ ✅ DONE (PR #482):
    + prompt-injection hardening + _update_manifest optimistic-concurrency race fix + observability.
 5. **Credit-leak + weather/equipment processed-gate** (HIGH cost/correctness).
-6. **PATTERN 4 remaining silent-drops** (dates year-veto, casualties filter, supplemental dedup/hybrid,
-   supplemental_info_pipeline dead path).
+6. ~~**PATTERN 4 silent-drops**~~ ✅ DONE (PR #483): dates year-veto relaxed, casualties keywords
+   broadened, people_groups wrapper-key, supplemental dedup/hybrid, supplemental_info_pipeline
+   dict->Path (+ equipment arg-order), write-return honored + atomic people_consolidation. +OBSERV each.
 7. **PATTERN 5 dead code/dup + the crash-safety/concurrency MEDs** (hardening).
 
 Nothing here changes the bandit 0H/0M baseline — these are logic/architecture issues bandit can't see.

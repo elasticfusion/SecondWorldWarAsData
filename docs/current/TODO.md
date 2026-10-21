@@ -59,7 +59,7 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
   injection via uploaded file head flips the dedup decision**; **`_update_manifest` lost-update race**
   (get→union→put on pending.json). FIX per the doc.
 
-- **[HIGH · PATTERN 4 — silent drops] over-strict filters + swallowed errors:** dates year-veto
+- **[DONE · PR #483] [HIGH · PATTERN 4 — silent drops] over-strict filters + swallowed errors:** dates year-veto
   (<1919/>1955, dup in batch_parallel:221); casualties keyword pre-filter misses losses/fell/wiped out;
   people_groups wrapper-key assumption; supplemental `_append_to_file` re-appends narrative every pass
   (dedup on absent reference_source); supplemental `_has_document` drops hybrid citation half;
