@@ -897,9 +897,33 @@ def _find_person_id(name: str, index: Dict[str, str]) -> Optional[str]:
 def _save_casualty(casualty: Dict[str, Any], output_dir: Path) -> None:
     """Save casualty to JSON file."""
     casualty_id = casualty["CasualtyID"]
-    casualty_type = casualty["type"]
-    filename = f"{casualty_type}_{casualty_id}.json"
-    filepath = output_dir / filename
+    # 'type' is UNTRUSTED LLM output used in the filename ({type}_{id}.json) — clamp it to the schema
+    # enum so neither a traversal payload nor a junk value reaches the path, then sanitize+contain.
+    _CASUALTY_TYPES = {"wounded", "killed", "casualties", "pow", "missing"}
+    raw_type = str(casualty.get("type", "") or "").strip().lower()
+    casualty_type = raw_type if raw_type in _CASUALTY_TYPES else "casualties"
+    if casualty_type != raw_type:
+        logger.info(
+            "OBSERV casualties.type_clamped raw=%r -> %s id=%s",
+            raw_type[:40],
+            casualty_type,
+            casualty_id,
+        )
+
+    from src.extraction.batch_parallel import (
+        _safe_entity_filename,
+        _contained_entity_path,
+    )
+
+    proposed = f"{casualty_type}_{casualty_id}.json"
+    filename = _safe_entity_filename(proposed, casualty_id)
+    filepath = _contained_entity_path(output_dir, filename)
+    if filepath is None:
+        logger.warning(
+            "OBSERV casualties.filename_contained_fallback id=%s", casualty_id
+        )
+        filename = f"{casualty_id}.json"
+        filepath = output_dir / filename
 
     from src.utils.file_lock import write_json_with_lock
 

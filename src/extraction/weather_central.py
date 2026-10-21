@@ -396,8 +396,26 @@ def _create_new_weather_file(
     weather_id = str(ulid.new())
     safe_date = date.replace("-", "")
     safe_place = place_name.replace(" ", "_").replace(",", "")
-    filename = f"{safe_date}_{safe_place}_{weather_id[:8]}.json"
-    weather_file = weather_dir / filename
+    # place_name is UNTRUSTED (LLM-extracted) — a '/' or '..' survives the .replace() above and would
+    # escape weather_dir. Route the composed name through the shared path-traversal sanitizer +
+    # symlink-containment guard (same discipline as the other entity writers).
+    from src.extraction.batch_parallel import (
+        _safe_entity_filename,
+        _contained_entity_path,
+    )
+
+    proposed = f"{safe_date}_{safe_place}_{weather_id[:8]}.json"
+    filename = _safe_entity_filename(proposed, weather_id)
+    weather_file = _contained_entity_path(weather_dir, filename)
+    if weather_file is None:
+        # Containment blocked (symlink escape) — fall back to a pure-ULID name under the dir.
+        logger.warning(
+            "OBSERV weather.filename_contained_fallback place=%r weather_id=%s",
+            str(place_name)[:60],
+            weather_id,
+        )
+        filename = f"{weather_id}.json"
+        weather_file = weather_dir / filename
 
     # Look up coordinates
     latitude, longitude, place_id, _country = _lookup_coordinates(
