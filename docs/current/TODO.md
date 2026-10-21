@@ -20,6 +20,9 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
 > 3 (#481), 4 (#483); trigger-Lambda (#482); orchestration (#484); concurrency/crash-safety (#485);
 > PATTERN 5 dead-code (#486); + the radon-gate/complexity campaign (#477/#480). Caveat: data fixes
 > only take effect on a NEW run. Follow-ups spun out to §4 (deps/openserp/ULID[:8]/write-guard
+- **[DONE · PR #496] Radon gate threshold D->C** — run_radon now HARD-FAILS any non-allowlisted C-or-worse block
+  (was D+ only). The 139-block C+ backlog is grandfathered in scripts/.radon_inherent (body-hash) via a new
+  radon_inherent.py `seed` subcommand; only NEW/MODIFIED C+ fails; D+ never suppressible; +fail-closed if radon absent.
 > blind-spots/_submit_ocr) + a minor housekeeping item (stale `concurrent.py` string literals in
 > scripts/archive/qa/, dead cruft, optional cleanup).
 
