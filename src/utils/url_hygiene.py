@@ -18,6 +18,7 @@ from __future__ import annotations
 import ipaddress
 import logging
 import re
+import unicodedata
 from typing import Optional
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
@@ -70,9 +71,7 @@ def _host_is_safe(host: str) -> bool:
     # host like '127。0。0。1' / '１２７.0.0.1' (which getaddrinfo resolves to 127.0.0.1) is caught by
     # the numeric detection below instead of passing as a DNS name. A legitimate IDN (münchen.de)
     # still passes via its punycode/decoded ASCII. Fail-safe: on an IDNA error keep the NFKC form.
-    import unicodedata as _ud
-
-    host = _ud.normalize("NFKC", host)
+    host = unicodedata.normalize("NFKC", host)
     try:
         host = host.encode("idna").decode("ascii")
     except (
