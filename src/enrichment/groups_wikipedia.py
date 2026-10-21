@@ -99,61 +99,69 @@ def _lookup_group(title: str):  # -> dict | None | search_cache.TRANSIENT sentin
         for page_id, page_data in pages.items():
             if page_id == "-1":
                 continue
-            extract = page_data.get("extract", "")
-            if not extract:
-                continue
-            # Must be about a military unit/organization
-            lower = extract.lower()
-            if not any(
-                kw in lower
-                for kw in [
-                    "division",
-                    "regiment",
-                    "brigade",
-                    "corps",
-                    "army",
-                    "battalion",
-                    "infantry",
-                    "armored",
-                    "armoured",
-                    "airborne",
-                    "panzer",
-                    "military",
-                    "forces",
-                    "command",
-                    "group",
-                ]
-            ):
-                continue
-
-            img_url = page_data.get("original", {}).get("source", "")
-            license_info = None
-            if img_url:
-                filename = img_url.rsplit("/", 1)[-1]
-                license_info = _fetch_license(filename)
-
-            page_title = page_data.get("title", title)
-            _resolved = f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}"
-            try:
-                from src.utils import url_registry as _reg
-
-                _reg.finalize_searched(
-                    _resolved, relevant=True, context="wikipedia", source="wikipedia"
-                )
-            except Exception:  # noqa: BLE001
-                pass
-            return {
-                "extract": extract,
-                "wikipedia_url": _resolved,
-                "image": img_url,
-                "license": license_info or "unknown",
-            }
+            result = _extract_group_page(page_data, title)
+            if result is not None:
+                return result
     except Exception as e:
         logger.debug("Wikipedia group lookup failed for %s: %s", title, e)
         from src.utils.search_cache import TRANSIENT
 
         return TRANSIENT  # network/transient failure -> don't negative-cache
     return None
+
+
+# Keywords that mark a Wikipedia extract as a military UNIT/organization.
+_GROUP_KEYWORDS = (
+    "division",
+    "regiment",
+    "brigade",
+    "corps",
+    "army",
+    "battalion",
+    "infantry",
+    "armored",
+    "armoured",
+    "airborne",
+    "panzer",
+    "military",
+    "forces",
+    "command",
+    "group",
+)
+
+
+def _extract_group_page(page_data: dict, title: str) -> Optional[dict]:
+    """Build the group result dict from one Wikipedia page, or None if it has no usable extract or
+    isn't about a military unit. Extracted from _lookup_group to keep it below the C gate.
+    """
+    extract = page_data.get("extract", "")
+    if not extract:
+        return None
+    lower = extract.lower()
+    if not any(kw in lower for kw in _GROUP_KEYWORDS):
+        return None  # not a military unit/organization
+
+    img_url = page_data.get("original", {}).get("source", "")
+    license_info = None
+    if img_url:
+        license_info = _fetch_license(img_url.rsplit("/", 1)[-1])
+
+    page_title = page_data.get("title", title)
+    _resolved = f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}"
+    try:
+        from src.utils import url_registry as _reg
+
+        _reg.finalize_searched(
+            _resolved, relevant=True, context="wikipedia", source="wikipedia"
+        )
+    except Exception:  # noqa: BLE001
+        pass
+    return {
+        "extract": extract,
+        "wikipedia_url": _resolved,
+        "image": img_url,
+        "license": license_info or "unknown",
+    }
 
 
 def _fetch_license(filename: str) -> Optional[str]:
