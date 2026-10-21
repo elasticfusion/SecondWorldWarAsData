@@ -55,3 +55,51 @@ def test_geocode_transient_sets_retryable_status():
         place2, GeocodeResult(found=False, note="no OSM match", source="osm")
     )
     assert st2 == _STATUS_NOT_FOUND and _already_attempted(place2)
+
+
+def test_run_openserp_queries_saw_200_flag(monkeypatch):
+    import src.enrichment.bibliography_resolver as BR
+
+    monkeypatch.setattr("time.sleep", lambda *a: None)
+    sess = mock.Mock()
+    # all queries 503 -> no url, saw_200 False (caller must NOT negative-cache)
+    sess.get.return_value = mock.Mock(status_code=503)
+    url, saw = BR._run_openserp_queries(
+        sess, "http://osrp", ["q1", "q2"], "ref", None, None
+    )
+    assert url is None and saw is False
+    # a 200 with no usable result -> saw_200 True (genuine miss, caller negative-caches)
+    sess.get.return_value = mock.Mock(status_code=200, json=lambda: {"results": []})
+    url2, saw2 = BR._run_openserp_queries(
+        sess, "http://osrp", ["q1"], "ref", None, None
+    )
+    assert url2 is None and saw2 is True
+
+
+def test_situational_wiki_mixed_transient_then_hit(monkeypatch):
+    import src.enrichment.situational_geocode as SG
+
+    cached_val = {}
+    monkeypatch.setattr(
+        "src.utils.search_cache.cache_result", lambda s, q, r: cached_val.update({q: r})
+    )
+    monkeypatch.setattr("src.utils.search_cache.get_cached", lambda s, q: None)
+    # first title (bare term) transient 503; second title (WWII) real 200 hit
+    calls = {"n": 0}
+
+    def _get(url, **k):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return mock.Mock(status_code=503)
+        return mock.Mock(
+            status_code=200,
+            json=lambda: {"query": {"pages": {"1": {"extract": "A real place."}}}},
+        )
+
+    sess = mock.Mock()
+    sess.get = _get
+    out = SG.wikipedia_context("Aachen Gap", sess)
+    assert (
+        out == "A real place."
+    )  # the second (hit) wins despite the first being transient
+    assert cached_val.get("Aachen Gap") == "A real place."  # positive-cached

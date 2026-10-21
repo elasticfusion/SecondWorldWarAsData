@@ -752,6 +752,7 @@ def _search_openserp_archive(
     if cached:
         return cached
 
+    saw_200 = False  # bound before the try so a future non-returning except can't leave it unbound
     try:
         import time
 
