@@ -89,7 +89,6 @@ src/extraction/enrich_biographies.py::search_grokipedia  e84815fe84ef7d5849dd51e
 src/extraction/enrich_biographies.py::search_wikipedia  7ff0709d1325346d606ff840b5377ad0325f5e8f9ac9ddad9d88a10ac22de371  # grandfathered C(13) C+ backlog 2026-10-20
 src/extraction/enrich_groups.py::_enrichment_agrees  961d6e27dceb9a1a3ef8172dc793322e938928b954ba73dca681f1bdc06c976c  # grandfathered C(12) C+ backlog 2026-10-20
 src/extraction/enrich_groups.py::enrich_all_groups  827bc3c091452d1e9525cc69221ec1331536b13b7384fc7dd4fecb193dcf0a07  # grandfathered C(11) C+ backlog 2026-10-20
-src/extraction/enrich_groups.py::enrich_group  1650080ea094fe20416e0e0c0d2c941354d99131cb213715cd89b89ab94d054a  # grandfathered C(13) C+ backlog 2026-10-20
 src/extraction/enrich_places.py::_fetch_place_wikipedia_full  da5140001b7f7c583ce95c5bec438817010f2c148f6da4331b286415ee33cc01  # grandfathered C(11) C+ backlog 2026-10-20
 src/extraction/enrich_places.py::enrich_all_places  75dfb4025efa1814f07435214f6cdd180f0a7a92ec98ea1c50b988e00d20dde4  # grandfathered C(11) C+ backlog 2026-10-20
 src/extraction/enrich_places.py::enrich_place  c147499c7f4cdfd34868d9f348d5eece7890ddfe5e0792a48e1e312547a458f0  # grandfathered C(11) C+ backlog 2026-10-20
@@ -122,7 +121,6 @@ src/extraction/supplemental_info_pipeline.py::_extract_entity_type  81b176c0d47e
 src/extraction/supplemental_search.py::search_archive_org_candidates  783ef2cd39a3cea1dbb9e239d364e68c9adafb5f126be382526364a9b488ca2e  # grandfathered C(13) C+ backlog 2026-10-20
 src/extraction/supplemental_search.py::search_gutenberg_candidates  2b3b80b7d4f0aeb135b93982b78353ead1987556509be7589dc4c68b405b5833  # grandfathered C(14) C+ backlog 2026-10-20
 src/extraction/title_memberships.py::validate_membership_dates  93c019d198781714a82ccbbc084f3b5983fde3c3ac6547e3046b2f75c077f20a  # grandfathered C(15) C+ backlog 2026-10-20
-src/extraction/weather_central.py::_add_event_mention  92dcfa34aad80eaca6d70d581c5be118000b9a62286998324d74c04828f618dd  # grandfathered C(11) C+ backlog 2026-10-20
 src/extraction/weather_central.py::_parse_weather_response  674574bee70e02853864cba68769252955a9a28fed4e701c7179ee7a9bd97bfa  # grandfathered C(14) C+ backlog 2026-10-20
 src/grok_client.py::GrokClient._log_api_response  7ac03352b1a2d00d51b7ff589b3634b5dd9bdfadc784f8f99062045c1236269c  # grandfathered C(12) C+ backlog 2026-10-20
 src/grok_client.py::GrokClient.chat_completion  f36de5dc4084f95cc7f91d93dded5d99bf5c8efd064753fba82c3e06dce4b1b4  # grandfathered C(14) C+ backlog 2026-10-20

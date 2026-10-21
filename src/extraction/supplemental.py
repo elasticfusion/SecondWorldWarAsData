@@ -221,7 +221,9 @@ def _normalize_enums(material: Dict[str, Any]) -> None:
         "ambiguous",
     }
     if material.get("content_class") not in valid_classes:
-        material["content_class"] = "citation"
+        # An invalid/unknown class -> 'ambiguous' (human-review queue), NOT 'citation' — coercing a
+        # typo/garbage class to 'citation' misroutes it to the bibliography as a real document.
+        material["content_class"] = "ambiguous"
 
     ref_type = material.get("reference_type", "")
     if ref_type == "map":

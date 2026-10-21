@@ -330,8 +330,13 @@ def _check_duplicate_map(url: str, output_dir: Path) -> bool:
     """Check if map URL already exists in output. Returns True if duplicate."""
     existing = list(output_dir.glob("*.json"))
     for existing_file in existing:
-        with open(existing_file) as f:
-            existing_data = json.load(f)
+        if existing_file.name in ("index.json", "duplicate_report.json"):
+            continue
+        try:
+            with open(existing_file) as f:
+                existing_data = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            continue  # malformed/non-record file -> skip (don't drop the whole place)
         if existing_data.get("external_source_url") == url:
             return True
     return False

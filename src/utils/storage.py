@@ -26,16 +26,22 @@ class LocalStorage:
     """Filesystem-backed storage."""
 
     def __init__(self, base_dir: Path):
-        self.base_dir = Path(base_dir)
+        # Resolve ONCE so _resolve()/list_files operate on a single canonical base — _resolve returns
+        # symlink-resolved paths, and list_files does relative_to(self.base_dir), so a symlinked/
+        # relative base_dir (e.g. /tmp -> /private/tmp on macOS) would otherwise mismatch.
+        self.base_dir = Path(base_dir).resolve()
 
     def _resolve(self, path: str) -> Path:
         # Defense in depth: never resolve outside base_dir (path-traversal guard). Callers that
         # accept untrusted paths (e.g. the SQS worker) validate too, but this is the backstop.
-        base = self.base_dir.resolve()
+        base = self.base_dir
         resolved = (self.base_dir / path).resolve()
         if base != resolved and base not in resolved.parents:
             raise ValueError(f"path escapes storage base: {path!r}")
-        return self.base_dir / path
+        # Return the RESOLVED path we actually validated (not a re-joined unresolved path) so a
+        # symlink swapped between check and open can't be followed (TOCTOU) and the validated object
+        # is the one used.
+        return resolved
 
     def read_json(self, path: str) -> dict[str, Any]:
         return json.loads(self._resolve(path).read_text(encoding="utf-8"))

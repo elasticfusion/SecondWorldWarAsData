@@ -525,6 +525,18 @@ def _find_or_create_weather(
     return weather_file
 
 
+def _mention_exists(mentions, sub_event_id) -> bool:
+    """True if any existing event_mention is for ``sub_event_id``. Legacy mentions may predate the
+    Sub_eventID field, so use .get() (no KeyError) + OBSERV the legacy one (mirrors places.py #495).
+    """
+    for m in mentions:
+        if "Sub_eventID" not in m:
+            logger.info("OBSERV weather.legacy_mention_no_subevent")
+        if m.get("Sub_eventID") == sub_event_id:
+            return True
+    return False
+
+
 def _add_event_mention(
     weather_file: Path,
     mention: Dict[str, Any],
@@ -548,13 +560,7 @@ def _add_event_mention(
             weather_data, SCHEMA_TARGET, logger, weather_file.name
         )
         if not skip:
-            # Check for duplicate mention
-            existing = [
-                m
-                for m in weather_data.get("event_mentions", [])
-                if m["Sub_eventID"] == sub_event_id
-            ]
-            if existing:
+            if _mention_exists(weather_data.get("event_mentions", []), sub_event_id):
                 logger.info(
                     "    Weather already has mention from this sub-event, skipping"
                 )
