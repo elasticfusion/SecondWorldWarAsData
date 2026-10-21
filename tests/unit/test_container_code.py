@@ -34,10 +34,15 @@ class TestBatchResult:
         assert not r.ok
         assert r.status == "error"
 
-    def test_other_finish(self):
+    def test_content_first_valid_on_nonstop_reason(self):
+        # Re-review HIGH fix: a completed choice WITH content but a non-'stop' terminal reason
+        # (e.g. the 'unknown' default retrieve_results_ordered uses when the API omits it) is now
+        # VALID — not discarded as 'other_finish'. Only 'length' (truncated) or error/empty is not.
         r = BatchResult(request_id="r1", content="data", finish_reason="unknown")
-        assert not r.ok
-        assert r.status == "other_finish"
+        assert r.ok
+        assert r.status == "valid"
+        # empty content with a non-stop reason is still an error (nothing to cache)
+        assert BatchResult(request_id="r1", finish_reason="unknown").status == "error"
 
 
 class TestBatchCollector:
