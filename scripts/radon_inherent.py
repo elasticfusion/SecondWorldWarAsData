@@ -13,12 +13,14 @@ trigger a resurface — only a real logic edit does).
 Usage:
   python scripts/radon_inherent.py hash <file> <symbol>     # print the current body hash
   python scripts/radon_inherent.py suppressed <file> <symbol>  # exit 0 if listed+hash matches
+  python scripts/radon_inherent.py seed [scope...]          # grandfather all current C+ blocks
 Both are tiny; the gate shells out per high-C block.
 """
 
 from __future__ import annotations
 
 import ast
+import re
 import hashlib
 import pathlib
 import sys
@@ -86,6 +88,18 @@ def _load_allowlist() -> dict[str, str]:
 
 
 def main(argv: list[str]) -> int:
+    if len(argv) < 2:
+        print(__doc__)
+        return 2
+    cmd = argv[1]
+
+    if cmd == "seed":
+        # Bulk-grandfather the CURRENT C+ backlog: parse `radon cc <scope> --min C`, hash each block,
+        # and APPEND new entries (preserving existing hand-curated ones). Only NEW/MODIFIED C+ blocks
+        # will fail the gate afterward. Usage: radon_inherent.py seed [scope...]  (default: src lambda_handlers)
+        scope = argv[2:] or ["src/", "lambda_handlers/"]
+        return _seed(scope)
+
     if len(argv) < 4:
         print(__doc__)
         return 2
@@ -104,6 +118,76 @@ def main(argv: list[str]) -> int:
         return 0 if (listed is not None and cur == listed) else 1
     print(f"unknown command: {cmd}")
     return 2
+
+
+# Parse a radon `cc --show-complexity` line into (symbol, grade, score). Mirrors the gate's awk/sed:
+# "    M 923:4 GrokClient.chat_completion - C (14)" -> ("GrokClient.chat_completion", "C", 14).
+_RADON_LINE = re.compile(
+    r"^\s*[A-Z] +\d+:\d+ +([A-Za-z_][A-Za-z0-9_.]*) +- ([A-F]) \((\d+)\)"
+)
+
+
+def _iter_c_plus_blocks(scope: list[str]):
+    """Yield (file, symbol, grade, score) for every C-or-worse block under ``scope``, tracking the
+    file header radon prints above each file's blocks."""
+    import subprocess
+
+    out = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "radon",
+            "cc",
+            *scope,
+            "--min",
+            "C",
+            "--show-complexity",
+        ],
+        capture_output=True,
+        text=True,
+    ).stdout
+    cur_file = None
+    for line in out.splitlines():
+        if line and not line[0].isspace():  # file header (no leading whitespace)
+            cur_file = line.strip()
+            continue
+        m = _RADON_LINE.match(line)
+        if m and cur_file:
+            yield cur_file, m.group(1), m.group(2), int(m.group(3))
+
+
+def _seed(scope: list[str]) -> int:
+    """Append allowlist entries for every current C+ block not already listed. Returns 0."""
+    import datetime
+
+    existing = _load_allowlist()
+    added = 0
+    skipped = 0
+    lines_to_add: list[str] = []
+    today = datetime.date.today().isoformat()
+    for file, symbol, grade, score in _iter_c_plus_blocks(scope):
+        key = f"{file}::{symbol}"
+        if key in existing:
+            skipped += 1
+            continue
+        h = _body_hash(file, symbol)
+        if h is None:
+            print(
+                f"  ! could not hash {key} (ambiguous/missing) — SKIPPED",
+                file=sys.stderr,
+            )
+            skipped += 1
+            continue
+        lines_to_add.append(
+            f"{key}  {h}  # grandfathered {grade}({score}) C+ backlog {today}"
+        )
+        added += 1
+    if lines_to_add:
+        with _ALLOWLIST.open("a", encoding="utf-8") as fh:
+            fh.write(f"\n# --- bulk-seeded C+ backlog ({today}) ---\n")
+            fh.write("\n".join(sorted(lines_to_add)) + "\n")
+    print(f"seed: added={added} skipped_existing_or_unhashable={skipped}")
+    return 0
 
 
 if __name__ == "__main__":
