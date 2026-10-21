@@ -205,12 +205,9 @@ def test_pinned_get_falls_back_to_second_vetted_ip(monkeypatch):
 
     def _get(self, url, **k):
         seen.append(url)
-        if "10.0.0.0" in url or seen.count(url) == 0:
-            pass
         if len(seen) == 1:
-            raise OSError("first IP unreachable")
-        r = mock.Mock(status_code=200, iter_content=lambda n: [b"ok"])
-        return r
+            raise OSError("first IP unreachable")  # first vetted IP down
+        return mock.Mock(status_code=200, iter_content=lambda n: [b"ok"])
 
     monkeypatch.setattr("requests.Session.get", _get)
     resp = uh._pinned_get(
