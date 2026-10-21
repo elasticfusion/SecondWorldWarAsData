@@ -44,8 +44,12 @@ def test_ordered_preserves_submission_order_across_pages():
 
 
 class _BR:
-    def __init__(self, content="", finish_reason="stop"):
-        self.content, self.finish_reason = content, finish_reason
+    """Thin wrapper over the real BatchResult so .ok uses production content-first semantics."""
+
+    def __new__(cls, content="", finish_reason="stop"):
+        return batch_api.BatchResult(
+            request_id="r", content=content, finish_reason=finish_reason
+        )
 
 
 def test_map_count_match_populates_under_our_keys():
@@ -55,6 +59,41 @@ def test_map_count_match_populates_under_our_keys():
     ordered = [_BR('{"x":1}'), _BR('{"y":2}')]
     out = e._map_batch_results_by_index(submitted, ordered, "b1")
     assert out == {"events": {"key_a": '{"x":1}'}, "supplemental": {"key_b": '{"y":2}'}}
+
+
+def test_map_caches_content_bearing_unknown_finish_reason():
+    """Re-review HIGH: retrieve_results_ordered defaults finish_reason to 'unknown' when the API
+    omits it. The ECS retrieve-only mapping must cache such content (content-first br.ok) — it
+    previously hardcoded finish_reason=='stop' and silently dropped it (0-record async bug).
+    """
+    import ecs_entrypoint as e
+
+    submitted = [("key_a", "events"), ("key_b", "supplemental")]
+    ordered = [
+        _BR('{"x":1}', finish_reason="unknown"),
+        _BR('{"y":2}', finish_reason=""),
+    ]
+    out = e._map_batch_results_by_index(submitted, ordered, "b1")
+    assert out == {"events": {"key_a": '{"x":1}'}, "supplemental": {"key_b": '{"y":2}'}}
+
+
+def test_map_skips_truncated_and_errored():
+    """A 'length' truncation (still routed to halving) and an empty/errored entry are NOT cached,
+    without shifting the positional index."""
+    import ecs_entrypoint as e
+
+    submitted = [("k1", "events"), ("k2", "events"), ("k3", "events")]
+    ordered = [
+        _BR('{"ok":1}', finish_reason="length"),  # truncated -> skip
+        batch_api.BatchResult(
+            "r", content="", finish_reason="unknown"
+        ),  # empty -> skip
+        _BR(
+            '{"ok":3}', finish_reason="unknown"
+        ),  # valid -> cached under k3 (no index shift)
+    ]
+    out = e._map_batch_results_by_index(submitted, ordered, "b1")
+    assert out == {"events": {"k3": '{"ok":3}'}}
 
 
 def test_map_count_mismatch_populates_nothing():

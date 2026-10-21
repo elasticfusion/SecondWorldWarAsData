@@ -40,8 +40,15 @@ class BatchResult:
 
     @property
     def ok(self) -> bool:
-        """True if request completed successfully."""
-        return self.finish_reason == "stop" and not self.error
+        """True if the request produced usable content and was not truncated or errored.
+
+        Content-first: a completed choice with real content is OK regardless of the exact terminal
+        reason. retrieve_results_ordered defaults finish_reason to 'unknown' when the xAI API omits
+        it, and providers vary the terminal token ('stop'/'end_turn'/'eos'/...), so gating strictly
+        on =='stop' discarded valid content (re-billed via realtime retry + counted as a partial
+        failure). Only a genuine truncation ('length') or an error/empty body is NOT ok.
+        """
+        return bool(self.content) and self.finish_reason != "length" and not self.error
 
     @property
     def truncated(self) -> bool:
@@ -50,14 +57,12 @@ class BatchResult:
 
     @property
     def status(self) -> str:
-        """Classify result status."""
-        if self.finish_reason == "stop" and not self.error:
-            return "valid"
-        if self.finish_reason == "length":
-            return "truncated"
+        """Classify result status (content-first; see ``ok``)."""
         if self.error or not self.content:
             return "error"
-        return "other_finish"
+        if self.finish_reason == "length":
+            return "truncated"
+        return "valid"
 
 
 @dataclass
