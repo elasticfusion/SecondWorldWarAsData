@@ -24,10 +24,6 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
   nominatim/places_grok_geocode (persists a terminal 'not_found' record status with NO TTL — only --force
   recovers; needs a distinct fix from the search_cache sentinel). Route each via search_cache.TRANSIENT /
   a non-terminal geocode_error status.
-- **[WARNING] truncated >100K response not evicted from cache** → permanent GrokTruncationError on re-run
-  (_handle_truncation_error pops only in the <100K else-branch; the >100K path raises without eviction). Move
-  the cache.pop out so both branches evict. + BatchCollector.add silently drops a request_id(=cache_key)
-  collision → OBSERV at WARNING (latent optional-entity-zero).
 - **[WARNING] write-guard blind spot: locked_json.save() bypasses _validate_entity.** The schema guard runs
   only in write_json_with_lock/write_parsed_with_guard; ALL merge paths persist via locked_json (equipment/
   people/places/people_groups/dates/weather/enrich_write/batch_parallel) which only annotates → a merge that
@@ -608,6 +604,10 @@ Not-code (deferred): SHAEF OB map gaps (NARA acquisition). Full historical detai
 item is in git history + the dated design docs under `docs/current/` and `docs/archive/`.
 
 ### Phase-2 FRESH RE-REVIEW (2026-10-20b) — DONE items (moved from §1.0c)
+- **[DONE · PR #505] [WARNING] truncated >100K response not evicted from cache** → permanent GrokTruncationError on re-run
+  (_handle_truncation_error pops only in the <100K else-branch; the >100K path raises without eviction). Move
+  the cache.pop out so both branches evict. + BatchCollector.add silently drops a request_id(=cache_key)
+  collision → OBSERV at WARNING (latent optional-entity-zero).
 - **[DONE · PR #504] [WARNING] trigger_handler** — topic-trust gate bypassed for S3 keys (_extract_records appends a record's
   keys to s3_keys BEFORE/independent of _trusted_topic_name → untrusted-topic keys reach manifests + _route_topics);
   move the append inside the trust gate. + _acquire_task_lock stale-reclaim TOCTOU (two invocations both reclaim
