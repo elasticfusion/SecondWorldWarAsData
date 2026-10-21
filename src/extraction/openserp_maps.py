@@ -348,34 +348,40 @@ def _download_map_image(
     image_storage_path: str,
     page_timeout: int,
     image_timeout: int,
+    approved_image_url: Optional[str] = None,
 ) -> tuple[bool, Optional[str]]:
-    """Download map image to storage. Returns (success, image_path)."""
+    """Download map image to storage. Returns (success, image_path).
+
+    ``approved_image_url`` is the exact image the vision verifier approved — download THAT (not a
+    re-extracted map_images[0], which could be a different/unverified image on the page). Only
+    re-extract (and take the first) when no approved url is threaded (back-compat)."""
     try:
-        from src.extraction.search_external_maps import _extract_map_images
+        from src.extraction.images import fetch_image_bytes
 
         storage_dir = Path(image_storage_path)
         storage_dir.mkdir(parents=True, exist_ok=True)
 
-        from src.utils.url_hygiene import safe_get
-        from src.extraction.images import fetch_image_bytes
+        if approved_image_url:
+            img_url = approved_image_url
+        else:
+            from src.extraction.search_external_maps import _extract_map_images
+            from src.utils.url_hygiene import safe_get
 
-        headers = {"User-Agent": USER_AGENT}
-        page_response = safe_get(url, timeout=page_timeout, headers=headers)
-
-        if page_response is None or page_response.status_code != 200:
-            logger.info(
-                "   ⚠ map page fetch yielded no content (blocked/non-200): %s", url
+            headers = {"User-Agent": USER_AGENT}
+            page_response = safe_get(url, timeout=page_timeout, headers=headers)
+            if page_response is None or page_response.status_code != 200:
+                logger.info(
+                    "   ⚠ map page fetch yielded no content (blocked/non-200): %s", url
+                )
+                return False, None
+            map_images = _extract_map_images(
+                page_response.text, url, page_has_map_keyword=True
             )
-            return False, None
+            if not map_images:
+                logger.info("   ⚠ no map images found on page: %s", url)
+                return False, None
+            img_url = map_images[0]["url"]
 
-        map_images = _extract_map_images(
-            page_response.text, url, page_has_map_keyword=True
-        )
-        if not map_images:
-            logger.info("   ⚠ no map images found on page: %s", url)
-            return False, None
-
-        img_url = map_images[0]["url"]
         # SSRF-safe image fetch (clean_url + resolved-host + no-redirect + size/content checks).
         img_bytes, ext = fetch_image_bytes(img_url)
         if not img_bytes:
@@ -478,7 +484,7 @@ def _process_search_result(
     logger.info(f"   🔍 Verifying: {title[:60]}...")
 
     # Verify with Grok
-    is_relevant, is_government_map = _verify_map_relevance(
+    is_relevant, is_government_map, approved_image_url = _verify_map_relevance(
         map_url=url,
         map_title=title,
         map_description=description,
@@ -518,7 +524,12 @@ def _process_search_result(
     image_path = None
     if image_storage_path:
         image_downloaded, image_path = _download_map_image(
-            url, map_id, image_storage_path, page_timeout, image_timeout
+            url,
+            map_id,
+            image_storage_path,
+            page_timeout,
+            image_timeout,
+            approved_image_url=approved_image_url,
         )
 
     # Create and save map record
