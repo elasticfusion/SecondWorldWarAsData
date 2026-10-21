@@ -21,6 +21,9 @@ REGION = os.getenv("AWS_REGION", "us-east-1")
 CLUSTER = os.getenv("ECS_CLUSTER", f"{ENV_NAME}-wwii-pipeline")
 CACHE_TABLE = os.getenv("CACHE_TABLE", f"{ENV_NAME}-wwii-api-cache")
 NOTIFICATION_TOPIC_ARN = os.getenv("NOTIFICATION_TOPIC_ARN", "")
+# A completed batch with an error fraction >= this % triggers an operator alert (the batch still
+# proceeds on its successful fraction, but the lost fraction must not vanish silently).
+_PARTIAL_FAILURE_ALERT_PCT = float(os.getenv("BATCH_PARTIAL_FAILURE_ALERT_PCT", "10"))
 
 
 def handler(event, _context):
@@ -198,9 +201,24 @@ def _check_batch_status(api_key: str, batch_id: str, submitted_at: int = 0) -> s
         )
 
         if total > 0 and success + error >= total:
-            # All errors = failed; otherwise complete
+            # All errors = failed; otherwise complete.
             if error >= total:
                 return "failed"
+            # Partial failure: the batch proceeds (we keep the successful fraction), but a
+            # non-trivial error fraction was SILENTLY dropped before. Surface it: OBSERV + an
+            # operator alert when the error rate exceeds the threshold, so the lost fraction is
+            # visible instead of vanishing.
+            if error > 0:
+                err_pct = 100.0 * error / total
+                logger.warning(
+                    "OBSERV batch.partial_failure batch=%s error=%d/%d (%.0f%%)",
+                    batch_id[:12],
+                    error,
+                    total,
+                    err_pct,
+                )
+                if err_pct >= _PARTIAL_FAILURE_ALERT_PCT:
+                    _alert_partial_batch_failure(batch_id, success, error, total)
             return "complete"
 
         # Timeout: if >24h old and has some successes, treat as complete
@@ -447,6 +465,20 @@ def _check_stalled(job: dict, api_key: str) -> None:
         f"Book: {job.get('book', '?')}\n"
         f"Progress: {completed} of {total} requests completed\n"
         f"Remaining: {total - completed}"
+    )
+
+
+def _alert_partial_batch_failure(
+    batch_id: str, success: int, error: int, total: int
+) -> None:
+    """Operator alert for a batch that completed with a significant error FRACTION. The batch still
+    proceeds on its successful fraction; this makes the dropped fraction visible (publishes to the
+    phase2-complete SNS topic, which fans out to Slack + email)."""
+    _notify(
+        f"Batch {batch_id[:12]} completed with PARTIAL FAILURE: "
+        f"{error}/{total} requests errored ({100.0 * error / total:.0f}%), "
+        f"{success} succeeded. The pipeline proceeds on the successful fraction — "
+        f"investigate the errored fraction (it will NOT be auto-retried)."
     )
 
 

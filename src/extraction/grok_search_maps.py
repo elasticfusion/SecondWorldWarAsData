@@ -108,9 +108,16 @@ def verify_map_with_vision(
 
     # Validate and convert image if needed
     try:
-        img = Image.open(BytesIO(image_data))
-        img.verify()
-        img = Image.open(BytesIO(image_data))  # Reload after verify
+        # Decompression-bomb defense: cap decoded pixels so a crafted file that expands to a huge
+        # raster raises DecompressionBombError at verify() instead of exhausting memory.
+        _prev_max = Image.MAX_IMAGE_PIXELS
+        Image.MAX_IMAGE_PIXELS = 50_000_000
+        try:
+            img = Image.open(BytesIO(image_data))
+            img.verify()
+            img = Image.open(BytesIO(image_data))  # Reload after verify
+        finally:
+            Image.MAX_IMAGE_PIXELS = _prev_max
 
         # Convert unsupported formats to PNG
         if img.format not in ["PNG", "JPEG", "JPG", "GIF"]:
