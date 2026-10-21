@@ -219,19 +219,7 @@ def fetch_noaa_weather(
         )  # genuine no-observations -> negative-cache
         return None
 
-    obs = {}
-    raw_elements: Dict[str, Any] = {}
-    for r in data["results"]:
-        dtype = r.get("datatype", "")
-        value = r.get("value")
-        # Named canonical field for the common/queryable elements...
-        if dtype in DATATYPE_MAP:
-            obs[DATATYPE_MAP[dtype]] = value
-        # ...AND absorb EVERY element NOAA returns (nothing dropped), keyed by its
-        # raw GHCND datatype code. Elements we don't pre-map are still preserved here.
-        if dtype:
-            raw_elements[dtype] = value
-    obs["raw_elements"] = raw_elements
+    obs = _parse_noaa_observations(data["results"])
     obs["station_id"] = station_id  # GHCND code, preserved
     obs["station_name"] = station_name  # resolved human-readable place
     obs["station_latitude"] = station_lat
@@ -248,6 +236,23 @@ def fetch_noaa_weather(
     obs["data_type"] = "observed"
 
     cache_result("noaa_data", cache_key, json.dumps(obs))
+    return obs
+
+
+def _parse_noaa_observations(results) -> Dict[str, Any]:
+    """Turn a NOAA CDO data 'results' list into the obs dict: named canonical fields for mapped
+    datatypes, plus ALL raw elements preserved under raw_elements. Extracted to keep
+    fetch_noaa_weather below the C gate."""
+    obs: Dict[str, Any] = {}
+    raw_elements: Dict[str, Any] = {}
+    for r in results:
+        dtype = r.get("datatype", "")
+        value = r.get("value")
+        if dtype in DATATYPE_MAP:
+            obs[DATATYPE_MAP[dtype]] = value  # named canonical field
+        if dtype:
+            raw_elements[dtype] = value  # absorb EVERY element (nothing dropped)
+    obs["raw_elements"] = raw_elements
     return obs
 
 

@@ -109,70 +109,77 @@ def _lookup_equipment(title: str):  # -> dict | None | search_cache.TRANSIENT se
         for page_id, page_data in pages.items():
             if page_id == "-1":
                 continue
-            extract = page_data.get("extract", "")
-            if not extract:
-                continue
-            # Must be about military equipment (not a person/place)
-            lower = extract.lower()
-            if not any(
-                kw in lower
-                for kw in [
-                    "tank",
-                    "gun",
-                    "aircraft",
-                    "rifle",
-                    "weapon",
-                    "vehicle",
-                    "armored",
-                    "armoured",
-                    "artillery",
-                    "bomber",
-                    "fighter",
-                    "caliber",
-                    "calibre",
-                    "cannon",
-                    "machine gun",
-                    "mortar",
-                    "self-propelled",
-                    "howitzer",
-                    "anti-aircraft",
-                    "ship",
-                ]
-            ):
-                continue
-
-            img_url = page_data.get("original", {}).get("source", "")
-            license_info = None
-            if img_url:
-                # Wikipedia appends tracking params (?utm_source=…) to image URLs; strip
-                # the query/fragment so the Commons File: title is valid for license
-                # lookup. (Caught by a live run — hermetic stubs never see these params.)
-                clean_url = img_url.split("?", 1)[0].split("#", 1)[0]
-                filename = clean_url.rsplit("/", 1)[-1]
-                license_info = _fetch_license(filename)
-
-            page_title = page_data.get("title", title)
-            _resolved = f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}"
-            try:
-                from src.utils import url_registry as _reg
-
-                _reg.finalize_searched(
-                    _resolved, relevant=True, context="wikipedia", source="wikipedia"
-                )
-            except Exception:  # noqa: BLE001
-                pass
-            return {
-                "extract": extract,
-                "wikipedia_url": _resolved,
-                "image": img_url,
-                "license": license_info or "unknown",
-            }
+            result = _extract_equipment_page(page_data, title)
+            if result is not None:
+                return result
     except Exception as e:
         logger.debug("Wikipedia equipment lookup failed for %s: %s", title, e)
         from src.utils.search_cache import TRANSIENT
 
         return TRANSIENT  # network/transient failure -> don't negative-cache
     return None
+
+
+# Keywords that mark a Wikipedia extract as military EQUIPMENT (not a person/place).
+_EQUIPMENT_KEYWORDS = (
+    "tank",
+    "gun",
+    "aircraft",
+    "rifle",
+    "weapon",
+    "vehicle",
+    "armored",
+    "armoured",
+    "artillery",
+    "bomber",
+    "fighter",
+    "caliber",
+    "calibre",
+    "cannon",
+    "machine gun",
+    "mortar",
+    "self-propelled",
+    "howitzer",
+    "anti-aircraft",
+    "ship",
+)
+
+
+def _extract_equipment_page(page_data: dict, title: str) -> Optional[dict]:
+    """Build the equipment result dict from one Wikipedia page, or None if it has no usable extract
+    or isn't about equipment. Extracted from _lookup_equipment to keep it below the C gate.
+    """
+    extract = page_data.get("extract", "")
+    if not extract:
+        return None
+    lower = extract.lower()
+    if not any(kw in lower for kw in _EQUIPMENT_KEYWORDS):
+        return None  # not military equipment (a person/place article)
+
+    img_url = page_data.get("original", {}).get("source", "")
+    license_info = None
+    if img_url:
+        # Wikipedia appends tracking params (?utm_source=…); strip query/fragment so the Commons
+        # File: title is valid for license lookup.
+        clean_url = img_url.split("?", 1)[0].split("#", 1)[0]
+        license_info = _fetch_license(clean_url.rsplit("/", 1)[-1])
+
+    page_title = page_data.get("title", title)
+    _resolved = f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}"
+    try:
+        from src.utils import url_registry as _reg
+
+        _reg.finalize_searched(
+            _resolved, relevant=True, context="wikipedia", source="wikipedia"
+        )
+    except Exception:  # noqa: BLE001
+        pass
+    return {
+        "extract": extract,
+        "wikipedia_url": _resolved,
+        "image": img_url,
+        "license": license_info or "unknown",
+    }
 
 
 def _fetch_license(filename: str) -> Optional[str]:
