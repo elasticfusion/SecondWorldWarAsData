@@ -24,11 +24,6 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
   nominatim/places_grok_geocode (persists a terminal 'not_found' record status with NO TTL — only --force
   recovers; needs a distinct fix from the search_cache sentinel). Route each via search_cache.TRANSIENT /
   a non-terminal geocode_error status.
-- **[WARNING] batch_poller** — _check_stalled stall-alert rate-limit assumes a 5-min poll cadence
-  (`int(age_hours)==int(age_hours-5/60)`) but the schedule is 15–30 min → hourly ">4h stalled" alert
-  silently skipped; persist last_stall_notify_at. + 24h-stuck force-complete returns "complete" with
-  success+error<total → ecs mapper count-mismatches → discards the completed fraction → full LIVE re-cost;
-  map available results by position / alert N/total.
 - **[WARNING] trigger_handler** — topic-trust gate bypassed for S3 keys (_extract_records appends a record's
   keys to s3_keys BEFORE/independent of _trusted_topic_name → untrusted-topic keys reach manifests + _route_topics);
   move the append inside the trust gate. + _acquire_task_lock stale-reclaim TOCTOU (two invocations both reclaim
@@ -617,6 +612,11 @@ Not-code (deferred): SHAEF OB map gaps (NARA acquisition). Full historical detai
 item is in git history + the dated design docs under `docs/current/` and `docs/archive/`.
 
 ### Phase-2 FRESH RE-REVIEW (2026-10-20b) — DONE items (moved from §1.0c)
+- **[DONE · PR #503] [WARNING] batch_poller** — _check_stalled stall-alert rate-limit assumes a 5-min poll cadence
+  (`int(age_hours)==int(age_hours-5/60)`) but the schedule is 15–30 min → hourly ">4h stalled" alert
+  silently skipped; persist last_stall_notify_at. + 24h-stuck force-complete returns "complete" with
+  success+error<total → ecs mapper count-mismatches → discards the completed fraction → full LIVE re-cost;
+  map available results by position / alert N/total.
 - **[DONE · PR #501] [WARNING] transient-error → permanent-negative cache poisoning (systemic) — tranche 1.**
   search_cache.TRANSIENT sentinel (cache_result no-ops on it) threaded through grokipedia, equipment_wikipedia,
   groups_wikipedia, noaa_weather so a transient timeout/5xx/429/exception is no longer negative-cached for 7d
