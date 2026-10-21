@@ -66,7 +66,7 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
   supplemental_info_pipeline passes dict where Path expected → 100%% dead (always 0); write_json_with_lock
   return ignored in date_summary/people_consolidation.
 
-- **[HIGH · orchestration] credit reservation leaks on poll/retrieve failure** (only released on submit
+- **[DONE · PR #484] [HIGH · orchestration] credit reservation leaks on poll/retrieve failure** (only released on submit
   failure); **weather+equipment lack the `_is_processed` gate** (re-extract every retrieve pass);
   **partial-failure batches silently drop the failed fraction** (no alert unless error>=total);
   **unbounded batch size**; **image decompression-bomb DoS** (equipment/grok_search_maps, no MAX_IMAGE_PIXELS).
