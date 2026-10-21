@@ -24,10 +24,6 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
   nominatim/places_grok_geocode (persists a terminal 'not_found' record status with NO TTL — only --force
   recovers; needs a distinct fix from the search_cache sentinel). Route each via search_cache.TRANSIENT /
   a non-terminal geocode_error status.
-- **[WARNING] write-guard blind spot: locked_json.save() bypasses _validate_entity.** The schema guard runs
-  only in write_json_with_lock/write_parsed_with_guard; ALL merge paths persist via locked_json (equipment/
-  people/places/people_groups/dates/weather/enrich_write/batch_parallel) which only annotates → a merge that
-  drops a required field is written unguarded. Call _validate_entity in save() + reconcile version stamping.
 - **[WARNING] clean_url accepts dotted-hex/mixed-radix IP encodings** (`0x7f.0x0.0x0.0x1`, `127.0.0.0x1`) →
   True, contradicting its docstring; backstopped at fetch by resolved_host_is_safe but clean_url is ALSO a
   standalone registry-key/pre-fetch-gate validator. Detect any hex/mixed-radix numeric host and coerce via
@@ -604,6 +600,10 @@ Not-code (deferred): SHAEF OB map gaps (NARA acquisition). Full historical detai
 item is in git history + the dated design docs under `docs/current/` and `docs/archive/`.
 
 ### Phase-2 FRESH RE-REVIEW (2026-10-20b) — DONE items (moved from §1.0c)
+- **[DONE · PR #506] [WARNING] write-guard blind spot: locked_json.save() bypasses _validate_entity.** The schema guard runs
+  only in write_json_with_lock/write_parsed_with_guard; ALL merge paths persist via locked_json (equipment/
+  people/places/people_groups/dates/weather/enrich_write/batch_parallel) which only annotates → a merge that
+  drops a required field is written unguarded. Call _validate_entity in save() + reconcile version stamping.
 - **[DONE · PR #505] [WARNING] truncated >100K response not evicted from cache** → permanent GrokTruncationError on re-run
   (_handle_truncation_error pops only in the <100K else-branch; the >100K path raises without eviction). Move
   the cache.pop out so both branches evict. + BatchCollector.add silently drops a request_id(=cache_key)
