@@ -278,6 +278,20 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
 
 ## 3. ARCHITECTURE & DESIGN
 
+- **[DOCS/SCHEMA] Schema version CHANGELOG + drift-proof current-schema doc.** Two gaps found while
+  auditing the schema-stamping bug: (1) there is NO per-entity schema version HISTORY anywhere except git
+  — `ENTITY_SCHEMA_VERSIONS` (src/schemas/__init__.py) gives the CURRENT number per entity but nothing
+  records what changed at 2.24→2.25→2.26→2.27→2.28, when, or why. The `_schema_version`/`needs_migration`/
+  write-guard ("old=lenient, current=strict") machinery is a migration system with no changelog. Add a
+  lightweight `docs/current/SCHEMA_CHANGELOG.md`: per entity, per version, a one-line "what changed +
+  migration note" (e.g. "places 2.27: added `historical_names[]`; back-compat, nullable"). Most valuable
+  BEFORE the RAG/embedding layer (a silent field-semantics change would poison embeddings). (2)
+  `docs/current/SCHEMA_REFERENCE.md` is hand-maintained + DRIFTING (dated 2026-10-06; quotes stale version
+  numbers inline) — it already punts to ENTITY_SCHEMA_VERSIONS as source-of-truth but has no single
+  rendered "entity → current version" table. Auto-GENERATE that table (and ideally field lists) from
+  `ENTITY_SCHEMA_VERSIONS` + `src/schemas/*_output.py`, and add a gate check that fails if the rendered
+  table ≠ code, so the doc can never go stale again.
+
 - **[ARCH/PERF] Phase-2 container split — fix submit-only subprocess gap first.** DOC:
   `docs/current/design/PHASE2_CONTAINER_SPLIT.md`. The "submit-only" decoupling is DEFEATED by the
   subprocess boundary: `run_submit_only` monkey-patches `poll_batch`, but `phase2_extract.py` runs as
