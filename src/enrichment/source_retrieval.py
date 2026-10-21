@@ -149,10 +149,27 @@ def _download_to_quarantine(
     Polite + human-like: identifies as a browser, paces per-domain, and honors a
     429 Retry-After before giving up (does not hammer).
     """
+    # url originates from bibliography resource_urls (web/LLM-derived) -> UNTRUSTED. SSRF-VALIDATE
+    # before streaming: clean_url (http(s) + reject loopback/private/link-local/metadata host) +
+    # resolved_host_is_safe (resolve + reject non-public IPs, DNS-rebinding). We do NOT rewrite url
+    # to the normalized form (clean_url strips query params for dedup; a resource URL's query can be
+    # significant). Redirects refused on the GETs below (a redirect can bounce to an internal addr).
+    from src.utils.url_hygiene import clean_url, resolved_host_is_safe
+
+    if clean_url(url) is None:
+        logger.warning("OBSERV source.download_blocked ssrf=1 url=%s", str(url)[:120])
+        return {"status": "error", "url": url, "reason": "ssrf-blocked (scheme/host)"}
     host = (urlparse(url).hostname or "").lower()
+    if resolved_host_is_safe(host) is None:
+        logger.warning("OBSERV source.download_blocked ssrf=1 resolve=1 host=%s", host)
+        return {
+            "status": "error",
+            "url": url,
+            "reason": "ssrf-blocked (resolves non-public)",
+        }
     _PACER.wait(host)  # courteous per-domain spacing
     resp = sess.get(
-        url, timeout=60, stream=True, allow_redirects=True, headers=BROWSER_HEADERS
+        url, timeout=60, stream=True, allow_redirects=False, headers=BROWSER_HEADERS
     )
     if resp.status_code == 429:
         # Rate-limited: wait the server-requested delay once, then retry.
@@ -160,7 +177,7 @@ def _download_to_quarantine(
         logger.info("429 from %s — honoring Retry-After=%.0fs", host, retry_after)
         time.sleep(retry_after)
         resp = sess.get(
-            url, timeout=60, stream=True, allow_redirects=True, headers=BROWSER_HEADERS
+            url, timeout=60, stream=True, allow_redirects=False, headers=BROWSER_HEADERS
         )
     if resp.status_code != 200:
         return {"status": "error", "url": url, "reason": f"HTTP {resp.status_code}"}

@@ -349,14 +349,21 @@ def _preserve_person_photo(person_name: str, img_url: str) -> Optional[str]:
     """Fetch the portrait bytes (polite UA) and store them to the configured storage
     backend as a retained record under person_photos/. Returns the stored path."""
     from src.enrichment.award_source_pages import preserve_page
-    from src.utils.http_pool import browser_headers, get_session
+    from src.utils.http_pool import browser_headers
 
     storage = _award_storage()  # reuse the configured storage backend (local/S3)
     if storage is None:
         return None
-    resp = get_session().get(
-        img_url, headers=browser_headers(), timeout=30, allow_redirects=True
-    )
+    # img_url is UNTRUSTED (Grokipedia/Wikipedia response), so route through safe_get (SSRF-safe:
+    # clean_url + DNS-rebind resolve-check + no redirects + byte cap), preserving .content/.headers.
+    from src.utils.url_hygiene import safe_get
+
+    resp = safe_get(img_url, headers=browser_headers(), timeout=30)
+    if resp is None:
+        logger.info(
+            "OBSERV bio.photo_blocked ssrf_or_fetch_fail url=%s", str(img_url)[:120]
+        )
+        return None
     if resp.status_code != 200 or not resp.content:
         logger.debug("photo fetch %s -> HTTP %s", img_url, resp.status_code)
         return None
@@ -739,17 +746,18 @@ def _fetch_url_content(
 
     live_html: Optional[str] = None
     status: Optional[int] = None
-    try:
-        resp = requests.get(
-            url, headers=_URL_HEADERS, timeout=timeout, allow_redirects=True
-        )
-        status = resp.status_code
-        if status == 200:
-            live_html = resp.text
-        else:
-            logger.debug("  URL returned %d: %s", status, url)
-    except requests.RequestException as exc:
-        logger.debug("  URL fetch failed (%s): %s", exc, url)
+    # url is UNTRUSTED (Grok-derived source_urls), so route the LIVE fetch through fetch_text_safe
+    # (SSRF-safe: clean_url + DNS-rebind resolve-check + no redirects + byte cap) rather than a bare
+    # requests.get(allow_redirects=True). A blocked/failed live fetch falls through to the Wayback
+    # fallback (archive.org, a trusted literal host) exactly as a WAF-block/unreachable did before.
+    from src.utils.url_hygiene import fetch_text_safe
+
+    live_html, status = fetch_text_safe(url, timeout=timeout, headers=_URL_HEADERS)
+    if status is None and live_html is None:
+        logger.info("OBSERV bio.url_blocked ssrf_or_fetch_fail url=%s", str(url)[:120])
+    elif status is not None and status != 200:
+        logger.debug("  URL returned %d: %s", status, url)
+        live_html = None
 
     # Live content is good only if it is not a WAF/bot-block page.
     if live_html is not None and not wayback.is_block_page(live_html, status):

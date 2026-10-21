@@ -1722,21 +1722,36 @@ Return ONLY "YES" or "NO"."""
 
 
 def _verify_url_content(url: str, citation: str, grok_client: Any) -> bool:
-    """Fetch first ~2000 chars of a URL and ask Grok if it matches the citation."""
-    try:
-        session = get_session()
-        resp = session.get(
-            url,
-            timeout=10,
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-            },
+    """Fetch first ~2000 chars of a URL and ask Grok if it matches the citation.
+
+    The URL is UNTRUSTED (a web-search / LLM-returned result), so the fetch is routed through
+    fetch_text_safe (SSRF-safe: clean_url + DNS-rebinding resolve-check + no redirects + byte cap)
+    rather than a raw session.get. A URL BLOCKED by the SSRF guard is a hard REJECT (not the lenient
+    accept-on-transient-failure below) — an unfetchable/blocked URL can't be verified as a match.
+    """
+    from src.utils.url_hygiene import fetch_text_safe, clean_url
+
+    if clean_url(url) is None:
+        logger.warning(
+            "OBSERV bib.verify_url_blocked ssrf=1 url=%s citation=%s",
+            _CTRL.sub(" ", url)[:100],
+            _CTRL.sub(" ", citation)[:80],
         )
-        if resp.status_code != 200:
+        return False  # unsafe/malformed host -> cannot verify -> reject
+    try:
+        text, status = fetch_text_safe(url, timeout=10)
+        if status != 200 or text is None:
+            # status is None when the SSRF guard blocked the host at resolve time (DNS-rebind) —
+            # distinguish that from an ordinary non-200 so a blocked host is a visible reject.
+            if status is None:
+                logger.warning(
+                    "OBSERV bib.verify_url_blocked ssrf=1 resolve=1 url=%s",
+                    _CTRL.sub(" ", url)[:100],
+                )
             return False
 
         # Extract text content (strip HTML if needed)
-        content = resp.text[:4000]
+        content = text[:4000]
         if "<html" in content.lower():
             from html2text import html2text
 
@@ -1773,7 +1788,7 @@ Return ONLY "YES" or "NO". Answer "NO" if the page is unrelated, a generic searc
         return match
     except Exception as e:
         logger.debug("URL content verification failed for %s: %s", url[:80], e)
-        return True  # Accept on failure to avoid blocking
+        return True  # Accept on transient failure to avoid blocking
 
 
 # --- Batch Processing ---

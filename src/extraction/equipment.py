@@ -1063,13 +1063,28 @@ def _download_media_file(
     equipment_dir = media_dir / media_id
 
     try:
-        # Download file with User-Agent header
+        # Download file with User-Agent header. The media URL is UNTRUSTED (LLM/search-derived),
+        # so route through safe_get (SSRF-safe: clean_url + DNS-rebind resolve-check + no redirects
+        # + byte cap) rather than a bare session.get. Returns None if blocked/failed.
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
         }
-        session = get_session()
-        response = session.get(url, timeout=30, headers=headers, allow_redirects=True)
-        response.raise_for_status()
+        from src.utils.url_hygiene import safe_get
+
+        response = safe_get(url, timeout=30, headers=headers)
+        if response is None:
+            logger.warning(
+                "OBSERV equipment.media_blocked ssrf_or_fetch_fail url=%s",
+                str(url)[:120],
+            )
+            return None
+        if response.status_code != 200:
+            logger.info(
+                "OBSERV equipment.media_skipped status=%d url=%s",
+                response.status_code,
+                str(url)[:120],
+            )
+            return None
 
         # Determine file extension and generate filename
         ext = _determine_file_extension(response, url)
@@ -1154,9 +1169,8 @@ def _extract_image_urls_from_page(
         List of direct image URLs
     """
     try:
-        # Fetch page content with standard browser headers
-        import requests
-
+        # Fetch page content. page_url is UNTRUSTED (wiki/search-derived), so route through
+        # fetch_text_safe (SSRF-safe: clean_url + DNS-rebind resolve-check + no redirects + cap).
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -1167,12 +1181,16 @@ def _extract_image_urls_from_page(
             "Upgrade-Insecure-Requests": "1",
         }
 
-        session = get_session()
-        response = session.get(
-            page_url, timeout=30, headers=headers, allow_redirects=True
-        )
-        response.raise_for_status()
-        page_content = response.text
+        from src.utils.url_hygiene import fetch_text_safe
+
+        page_content, status = fetch_text_safe(page_url, timeout=30, headers=headers)
+        if page_content is None:
+            logger.warning(
+                "OBSERV equipment.page_blocked ssrf_or_fetch_fail status=%s url=%s",
+                status,
+                str(page_url)[:120],
+            )
+            return []
 
         # Ask Grok to extract image URLs
         from src.utils.prompt_loader import render_prompt
