@@ -190,11 +190,23 @@ class BatchCollector:
         self._lock = threading.Lock()
 
     def add(self, req: BatchRequest) -> None:
-        """Add request if not already queued (thread-safe)."""
+        """Add request if not already queued (thread-safe).
+
+        request_id IS the cache_key, so a collision drops the second request. That is correct for a
+        true duplicate, but if two LOGICALLY-DISTINCT requests ever resolve to one stable cache_key,
+        the second is silently lost -> never submitted -> never cached -> that unit extracts 0 on
+        retrieve with no diagnostic (latent optional-entity-zero). Log the drop so it's visible.
+        """
         with self._lock:
             if req.request_id not in self._seen:
                 self.requests.append(req)
                 self._seen.add(req.request_id)
+            else:
+                logger.warning(
+                    "OBSERV batch.duplicate_request_id_dropped cache_type=%s key=%s",
+                    getattr(req, "cache_type", "?"),
+                    str(req.request_id)[:40],
+                )
 
     def __len__(self) -> int:
         return len(self.requests)

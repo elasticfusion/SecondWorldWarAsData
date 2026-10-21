@@ -1395,27 +1395,39 @@ class GrokClient:
         cache_type: str,
         prompt: str,
         temperature: float,
+        cache_key: Optional[str] = None,
+        system_prompt: Optional[str] = None,
     ) -> None:
         """Handle truncated response errors with auto-clear."""
         response_len = len(response)
+        # ALWAYS evict the poisoned cache entry before raising — chat_completion caches `response`
+        # BEFORE extract_json parses it, so a cached truncated response would cache-HIT on a re-run
+        # (same stable cache_key) and re-truncate forever. The >100K case needs eviction MORE, not
+        # less: previously cache.pop lived only in the <100K else-branch, so a large truncated
+        # response was never evicted and its event could never be re-extracted.
+        cache = self._get_cache(cache_type)
+        cache_key = cache_key or self._make_cache_key(
+            prompt, temperature, self._get_model(cache_type), system_prompt or ""
+        )
+        evicted = cache.pop(cache_key, None) is not None
         if response_len > 100000:
             logger.error(
-                "Response truncated at %d chars — likely hit max_tokens limit (manual split needed)",
+                "Response truncated at %d chars — likely hit max_tokens limit (manual split needed); "
+                "poisoned cache entry evicted=%s",
                 response_len,
+                evicted,
             )
         else:
             logger.error(
-                "Response truncated at %d chars — transient API error, cache cleared, will retry",
+                "Response truncated at %d chars — transient API error, cache cleared (%s), will retry",
                 response_len,
+                evicted,
             )
-
-            # Auto-clear corrupted cache entry
-            cache = self._get_cache(cache_type)
-            cache_key = self._make_cache_key(
-                prompt, temperature, self._get_model(cache_type)
-            )
-            if cache_key in cache:
-                cache.pop(cache_key, None)
+        logger.info(
+            "OBSERV grok.truncation_cache_evicted len=%d evicted=%s",
+            response_len,
+            evicted,
+        )
 
         logger.debug("JSON error: %s", error_msg)
         logger.debug("Last 200 chars: ...%s", response[-200:])
@@ -1529,31 +1541,11 @@ class GrokClient:
             prompt, system_prompt, temperature, use_cache, cache_type, cache_key
         )
 
-        # Detect poisoned cache: if response is clearly not JSON, clear and retry
-        if use_cache and not _retried:
-            stripped = response.strip()
-            if stripped and not stripped[0] in '{["' and "```" not in stripped[:10]:
-                logger.warning(
-                    "Poisoned cache entry detected (%d chars, starts with '%s'), clearing",
-                    len(response),
-                    stripped[:20],
-                )
-                return self._evict_and_retry_json(
-                    prompt, system_prompt, temperature, cache_type, cache_key
-                )
-
-        # Auto-retry short responses, but accept valid short JSON ([], {}, "null")
-        if not _retried and len(response) < 500:
-            try:
-                json.loads(response)
-            except (json.JSONDecodeError, ValueError):
-                logger.warning(
-                    "Short response (%d chars), clearing cache and retrying",
-                    len(response),
-                )
-                return self._evict_and_retry_json(
-                    prompt, system_prompt, temperature, cache_type, cache_key
-                )
+        # Poisoned-cache / short-response guard: evict + retry once on a non-JSON or too-short body.
+        if self._should_evict_and_retry(response, use_cache, _retried):
+            return self._evict_and_retry_json(
+                prompt, system_prompt, temperature, cache_type, cache_key
+            )
 
         # Clean and sanitize response
         had_markdown = response.startswith("```")
@@ -1570,15 +1562,66 @@ class GrokClient:
             return result
         except json.JSONDecodeError as e:
             return self._handle_json_decode_error(
-                response, e, cache_type, prompt, temperature, _retried
+                response,
+                e,
+                cache_type,
+                prompt,
+                temperature,
+                _retried,
+                cache_key=cache_key,
+                system_prompt=system_prompt,
             )
 
+    def _should_evict_and_retry(
+        self, response: str, use_cache: bool, _retried: bool
+    ) -> bool:
+        """True if ``response`` looks poisoned (non-JSON) or suspiciously short (invalid JSON) and a
+        retry hasn't already been attempted — the caller then evicts + re-fetches once. Extracted
+        from extract_json to keep it below the C gate."""
+        if _retried:
+            return False
+        if use_cache:
+            stripped = response.strip()
+            if stripped and stripped[0] not in '{["' and "```" not in stripped[:10]:
+                logger.warning(
+                    "Poisoned cache entry detected (%d chars, starts with '%s'), clearing",
+                    len(response),
+                    stripped[:20],
+                )
+                return True
+        if len(response) < 500:
+            try:
+                json.loads(response)
+            except (json.JSONDecodeError, ValueError):
+                logger.warning(
+                    "Short response (%d chars), clearing cache and retrying",
+                    len(response),
+                )
+                return True
+        return False
+
     def _handle_json_decode_error(
-        self, response, e, cache_type, prompt, temperature, _retried
+        self,
+        response,
+        e,
+        cache_type,
+        prompt,
+        temperature,
+        _retried,
+        cache_key=None,
+        system_prompt=None,
     ) -> Dict[str, Any]:
         """Handle a JSON parse failure: account short/truncated responses (auto-clearing cache),
-        attempt a repair, and if nothing works clear the entry + raise GrokAPIError."""
+        attempt a repair, and if nothing works clear the entry + raise GrokAPIError. ``cache_key`` /
+        ``system_prompt`` are threaded so eviction targets the SAME key chat_completion stored (the
+        stable-key override, or the system_prompt-inclusive hash) — not a plain 3-arg recompute.
+        """
         error_msg = str(e)
+        # Resolve the SAME cache key chat_completion stored (stable override, else system_prompt-
+        # inclusive hash) so every eviction below targets the right entry.
+        resolved_key = cache_key or self._make_cache_key(
+            prompt, temperature, self._get_model(cache_type), system_prompt or ""
+        )
 
         # Handle short responses (auto-clear cache)
         if len(response) < 500 and not _retried:
@@ -1590,7 +1633,7 @@ class GrokClient:
         if "Unterminated string" in error_msg or "Expecting" in error_msg:
             self._json_truncated += 1
             self._handle_truncation_error(
-                response, error_msg, cache_type, prompt, temperature
+                response, error_msg, cache_type, prompt, temperature, resolved_key
             )
 
         # Try to repair JSON
@@ -1599,8 +1642,10 @@ class GrokClient:
             self._json_repaired += 1
             return repaired
 
-        # All repair attempts failed — auto-clear so retry gets fresh response
+        # All repair attempts failed — auto-clear so retry gets fresh response. Evict the RESOLVED
+        # key (stable-override/system_prompt-inclusive) in addition to the legacy 2-arg clear.
         self._json_failed += 1
+        self._get_cache(cache_type).pop(resolved_key, None)
         self.clear_cache_entry(prompt, cache_type, temperature)
         raise GrokAPIError(
             f"Failed to parse JSON response: {e}\n"

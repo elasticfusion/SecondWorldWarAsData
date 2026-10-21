@@ -126,7 +126,6 @@ src/extraction/weather_central.py::_add_event_mention  92dcfa34aad80eaca6d70d581
 src/extraction/weather_central.py::_parse_weather_response  674574bee70e02853864cba68769252955a9a28fed4e701c7179ee7a9bd97bfa  # grandfathered C(14) C+ backlog 2026-10-20
 src/grok_client.py::GrokClient._log_api_response  7ac03352b1a2d00d51b7ff589b3634b5dd9bdfadc784f8f99062045c1236269c  # grandfathered C(12) C+ backlog 2026-10-20
 src/grok_client.py::GrokClient.chat_completion  f36de5dc4084f95cc7f91d93dded5d99bf5c8efd064753fba82c3e06dce4b1b4  # grandfathered C(14) C+ backlog 2026-10-20
-src/grok_client.py::GrokClient.extract_json  3a9b36e675c736b2d7d6519fcfa97c3744291d53598901710e63c403f5f6b520  # grandfathered C(12) C+ backlog 2026-10-20
 src/grok_client.py::GrokClient.extract_json_with_image  3cd300544499f5cdc8481cc05794f4123a3cd4f5f01d47c5c4c5679a9e57f9dc  # grandfathered C(11) C+ backlog 2026-10-20
 src/grok_client.py::GrokClient.submit_batch  8fecd8f6e05b7db66512d15c3f2fa1bec96032226c808f8a485c663f04844c26  # grandfathered C(12) C+ backlog 2026-10-20
 src/ingestion/av_scan.py::scan_and_gate  1a61cd8fba06cf5588265cd3ad3c5546e2c8940ba58b4f14a9c60d92012cb903  # grandfathered C(11) C+ backlog 2026-10-20
