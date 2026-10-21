@@ -76,13 +76,14 @@ def _guarded_save(filepath: Path, new_data: Any) -> bool:
         return False
     # Stamp metadata ONLY for a KNOWN entity record (a non-entity bookkeeping/index file must
     # round-trip unchanged — the pre-guard save() never stamped). _resolve_entity_type returns the
-    # parent dir name for ANY path, so gate on membership in ENTITY_SCHEMA_VERSIONS (also avoids a
-    # min-version mis-stamp for an unknown dir, cf. the #498 unknown-entity guard).
+    # parent dir name for ANY path, so gate on membership in ENTITY_SCHEMA_VERSIONS AND exclude
+    # non-entity files (index.json/duplicate_report.json/dotfiles) that live inside an entity dir
+    # (also avoids a min-version mis-stamp for an unknown dir, cf. the #498 unknown-entity guard).
     entity = _resolve_entity_type(filepath)
     try:
         from src.schemas import ENTITY_SCHEMA_VERSIONS, inject_metadata
 
-        if entity in ENTITY_SCHEMA_VERSIONS:
+        if entity in ENTITY_SCHEMA_VERSIONS and not _is_non_entity_file(filepath):
             inject_metadata(new_data, entity=entity)
     except Exception as e:  # noqa: BLE001 - stamping must never block a validated write
         logger.debug("locked_json metadata stamp skipped for %s: %s", filepath, e)

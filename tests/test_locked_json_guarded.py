@@ -41,3 +41,18 @@ def test_locked_json_save_persists_valid(tmp_path):
     written = json.loads(p.read_text())
     assert written["DateID"] == _VALID_ULID
     assert "_schema_version" in written  # metadata stamped (like write_json_with_lock)
+
+
+def test_locked_json_save_does_not_stamp_non_entity_file(tmp_path):
+    """A non-entity bookkeeping file inside an entity dir (index.json) must round-trip UNCHANGED —
+    _resolve_entity_type returns 'people' for it, so the stamp gate must also exclude non-entity
+    files (regression for the stamping bug the round-1 review caught)."""
+    p = tmp_path / "output" / "people" / "index.json"
+    p.parent.mkdir(parents=True)
+    payload = {"some": "index", "entries": [1, 2, 3]}
+    with locked_json(p) as (data, save):
+        ok = save(dict(payload))
+    assert ok is True
+    written = json.loads(p.read_text())
+    assert written == payload  # no _schema_version / _last_updated injected
+    assert "_schema_version" not in written
