@@ -92,6 +92,25 @@ class PoliteSource:
             return key.read_text(encoding="utf-8", errors="replace")
 
         host = urlparse(url).netloc or self._source_id
+
+        # The source url is UNTRUSTED (award-citation / search-derived). SSRF-gate before fetch.
+        from src.utils.url_hygiene import clean_url, resolved_host_is_safe
+
+        cleaned = clean_url(url)
+        if cleaned is None:
+            self.last_error = f"ssrf-blocked (scheme/host) [url={url}]"
+            logger.warning("OBSERV award.source_blocked ssrf=1 url=%s", str(url)[:120])
+            return None
+        resolve_host = (urlparse(url).hostname or "").lower()
+        if resolved_host_is_safe(resolve_host) is None:
+            self.last_error = (
+                f"ssrf-blocked (resolves non-public) [host={resolve_host}]"
+            )
+            logger.warning(
+                "OBSERV award.source_blocked ssrf=1 resolve=1 host=%s", resolve_host
+            )
+            return None
+
         _throttle_host(host, self._crawl_delay)
 
         try:
@@ -101,7 +120,7 @@ class PoliteSource:
                 url,
                 headers=browser_headers(extra_headers),
                 timeout=30,
-                allow_redirects=True,
+                allow_redirects=False,
             )
         except Exception as e:  # noqa: BLE001 - transient; caller tries next source
             msg = f"{type(e).__name__}: {e} [url={url}]"

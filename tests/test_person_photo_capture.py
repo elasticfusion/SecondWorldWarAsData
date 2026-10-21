@@ -2,7 +2,6 @@
 not just the URL)."""
 
 import src.extraction.enrich_biographies as EB
-import src.utils.http_pool as HP
 
 
 class _FakeStorage:
@@ -21,6 +20,9 @@ class _Resp:
     content = b"\xff\xd8\xffREALJPEGBYTES"
     headers = {"Content-Type": "image/jpeg"}
 
+    def iter_content(self, n):  # safe_get streams the body
+        return [self.content]
+
 
 class _Session:
     def get(self, url, **kw):
@@ -30,8 +32,15 @@ class _Session:
 def test_store_wikipedia_image_preserves_photo_bytes(monkeypatch):
     fs = _FakeStorage()
     monkeypatch.setattr(EB, "_award_storage", lambda: fs)
-    monkeypatch.setattr(HP, "get_session", lambda: _Session())
     monkeypatch.setattr(EB, "_fetch_image_license", lambda fn: "Public domain")
+    # _preserve_person_photo now routes through url_hygiene.safe_get (SSRF-safe). Mock the
+    # resolve-check (public host, deterministic offline) + the underlying requests.get it calls.
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda host: ["93.184.216.34"]
+    )
+    resp = _Resp()
+    resp._content = _Resp.content  # safe_get materializes the capped body here
+    monkeypatch.setattr("requests.get", lambda *a, **k: resp)
 
     resp_json = {
         "query": {

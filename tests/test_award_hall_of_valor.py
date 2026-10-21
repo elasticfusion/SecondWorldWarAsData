@@ -6,7 +6,20 @@ valor.militarytimes.com pages — search listing + recipient citation prose).
 
 from pathlib import Path
 
+import pytest
+
 from src.enrichment.award_hall_of_valor import HallOfValorSource
+
+
+@pytest.fixture(autouse=True)
+def _allow_public_host(monkeypatch):
+    # PoliteSource.polite_get now SSRF-gates the url (clean_url + resolved_host_is_safe) before the
+    # session GET. valor.militarytimes.com is a real public host; stub the resolve-check so these
+    # hermetic tests don't do real DNS (and the injected _FakeSession still serves the content).
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda host: ["93.184.216.34"]
+    )
+
 
 _SEARCH_HTML = """
 <html><body>

@@ -25,9 +25,16 @@ class URLExtractor:
         self.html2text.body_width = 0  # No wrapping
 
     def fetch_url(self, url: str) -> str:
-        """Fetch HTML content from URL."""
+        """Fetch HTML content from URL (SSRF-safe: the URL is untrusted)."""
         logger.info(f"Fetching: {url}")
-        response = requests.get(url, allow_redirects=True, timeout=self.timeout)
+        from src.utils.url_hygiene import safe_get
+
+        response = safe_get(url, timeout=self.timeout)
+        if response is None:
+            logger.warning(
+                "OBSERV url_extractor.blocked ssrf_or_fetch_fail url=%s", str(url)[:120]
+            )
+            raise ValueError(f"URL blocked or unreachable (SSRF-safe fetch): {url}")
         response.raise_for_status()
         return response.text
 

@@ -349,14 +349,21 @@ def _preserve_person_photo(person_name: str, img_url: str) -> Optional[str]:
     """Fetch the portrait bytes (polite UA) and store them to the configured storage
     backend as a retained record under person_photos/. Returns the stored path."""
     from src.enrichment.award_source_pages import preserve_page
-    from src.utils.http_pool import browser_headers, get_session
+    from src.utils.http_pool import browser_headers
 
     storage = _award_storage()  # reuse the configured storage backend (local/S3)
     if storage is None:
         return None
-    resp = get_session().get(
-        img_url, headers=browser_headers(), timeout=30, allow_redirects=True
-    )
+    # img_url is UNTRUSTED (Grokipedia/Wikipedia response), so route through safe_get (SSRF-safe:
+    # clean_url + DNS-rebind resolve-check + no redirects + byte cap), preserving .content/.headers.
+    from src.utils.url_hygiene import safe_get
+
+    resp = safe_get(img_url, headers=browser_headers(), timeout=30)
+    if resp is None:
+        logger.info(
+            "OBSERV bio.photo_blocked ssrf_or_fetch_fail url=%s", str(img_url)[:120]
+        )
+        return None
     if resp.status_code != 200 or not resp.content:
         logger.debug("photo fetch %s -> HTTP %s", img_url, resp.status_code)
         return None
