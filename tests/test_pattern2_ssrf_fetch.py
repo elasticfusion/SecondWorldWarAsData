@@ -162,3 +162,64 @@ def test_safe_get_pins_connection_to_vetted_ip(monkeypatch):
     assert "victim.example.org" not in captured["url"]
     assert captured["host_header"] == "victim.example.org"
     assert captured["allow_redirects"] is False
+
+
+def test_pinned_https_sets_tls_hostname_to_original_host(monkeypatch):
+    """TLS-pin seam: the mounted adapter must set server_hostname+assert_hostname = the ORIGINAL
+    host (not the IP), so cert validation binds to the real name. Intercept init_poolmanager kwargs.
+    """
+    from src.utils import url_hygiene as uh
+
+    captured = {}
+    orig_init = __import__("requests").adapters.HTTPAdapter.init_poolmanager
+
+    def _spy(self, *a, **kw):
+        captured.update(kw)
+        return orig_init(self, *a, **kw)
+
+    monkeypatch.setattr("requests.adapters.HTTPAdapter.init_poolmanager", _spy)
+    # stop before an actual socket: make the session.get raise after mount
+    monkeypatch.setattr(
+        "requests.Session.get",
+        lambda self, *a, **k: (_ for _ in ()).throw(OSError("stop")),
+    )
+    try:
+        uh._pinned_get(
+            "https://victim.example.org/p",
+            "victim.example.org",
+            ["93.184.216.34"],
+            timeout=5,
+            headers={},
+        )
+    except OSError:
+        pass
+    assert captured.get("server_hostname") == "victim.example.org"
+    assert captured.get("assert_hostname") == "victim.example.org"
+
+
+def test_pinned_get_falls_back_to_second_vetted_ip(monkeypatch):
+    """Robustness: if the first vetted IP is unreachable, try the next (all are vetted/public)."""
+    from src.utils import url_hygiene as uh
+
+    seen = []
+
+    def _get(self, url, **k):
+        seen.append(url)
+        if "10.0.0.0" in url or seen.count(url) == 0:
+            pass
+        if len(seen) == 1:
+            raise OSError("first IP unreachable")
+        r = mock.Mock(status_code=200, iter_content=lambda n: [b"ok"])
+        return r
+
+    monkeypatch.setattr("requests.Session.get", _get)
+    resp = uh._pinned_get(
+        "http://h.example.org/p",
+        "h.example.org",
+        ["203.0.113.1", "198.51.100.2"],
+        timeout=5,
+        headers={},
+    )
+    assert resp is not None and resp.status_code == 200
+    assert len(seen) == 2  # fell back to the second vetted IP
+    assert "198.51.100.2" in seen[1]
