@@ -81,3 +81,15 @@ def test_stamp_entity_dir_skips_all_current(tmp_path):
     (p / "one.json").write_text(json.dumps({"_schema_version": "2.27"}))
     n = E._stamp_entity_dir(p, "places", set(), needs_migration, inject_metadata)
     assert n == 0  # all current -> fast-path skip
+
+
+def test_stamp_entity_dir_refuses_unknown_entity(tmp_path):
+    """A typo'd/unknown dir name must NOT silently fall back to the MIN version — refuse + log."""
+    p = tmp_path / "plases"  # typo
+    p.mkdir()
+    (p / "one.json").write_text(json.dumps({"_schema_version": "2.0"}))
+    n = E._stamp_entity_dir(p, "plases", set(), needs_migration, inject_metadata)
+    assert n == 0  # refused
+    assert (
+        json.loads((p / "one.json").read_text())["_schema_version"] == "2.0"
+    )  # untouched

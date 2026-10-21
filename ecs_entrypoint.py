@@ -2549,6 +2549,18 @@ def _stamp_entity_dir(p, entity, skip, needs_migration, inject_metadata) -> int:
     """Stamp every file in entity-dir ``p`` to ``entity``'s current schema version. Per-dir fast-path
     (skip the whole dir iff ALL files are already current for THIS entity — not a global weather
     sample). Returns the number stamped. +OBSERV skip/stamped."""
+    # Guard: a dir name that isn't a known entity would make entity_version() fall back to the MIN
+    # version — the exact silent-downgrade bug this function was fixed to prevent. Refuse + log loud
+    # rather than stamp wrong.
+    from src.schemas import ENTITY_SCHEMA_VERSIONS
+
+    if entity not in ENTITY_SCHEMA_VERSIONS:
+        logger.error(
+            "OBSERV schema.stamp_unknown_entity entity=%s — not in ENTITY_SCHEMA_VERSIONS; "
+            "skipping to avoid a MIN-version mis-stamp",
+            entity,
+        )
+        return 0
     files = [f for f in p.glob("*.json") if f.name not in skip]
     if files and _dir_all_current(files, entity, needs_migration):
         logger.info(
