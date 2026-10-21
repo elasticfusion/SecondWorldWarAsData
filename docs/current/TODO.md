@@ -94,7 +94,7 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
 Fresh 8-agent re-review of the merged state. Merged fixes validated correct+complete in-scope; these
 are NEW gaps (analyzer-invisible; bandit still 0H/0M). Ranked:
 
-- **[CRITICAL · SSRF] grok_client.extract_json_with_image fetches an untrusted image URL unguarded.**
+- **[DONE · PR #487] [CRITICAL · SSRF] grok_client.extract_json_with_image fetched an untrusted image URL unguarded.**
   session.get(image_url, allow_redirects=True) + unbounded .content; reachable LIVE in Phase 3 via
   search_external_maps._verify_single_image (img url from scraped page HTML). Pattern-2 + its grep
   test missed it (fetch is in grok_client via session.get, not a cluster-module requests.get). FIX:
@@ -111,9 +111,13 @@ are NEW gaps (analyzer-invisible; bandit still 0H/0M). Ranked:
 - **[WARNING] Decompression-bomb guard scoped too narrowly** — equipment convert/resize + grok_search_maps
   restore MAX_IMAGE_PIXELS before the rasterizing convert/resize; equipment._compute_image_hash has no
   cap. Hold the cap across the whole decode block (mirror unit_patch).
-- **[WARNING] SSRF via url_hygiene bypass (enrichment)** — bibliography_resolver._verify_url_content
-  (LIVE) + source_retrieval._download_to_quarantine (latent) session.get a DISCOVERED URL w/
-  allow_redirects=True; route through fetch_text_safe/clean_url.
+- **[WARNING] SSRF via url_hygiene bypass (codebase-wide follow-up)** — bibliography_resolver.
+  _verify_url_content (LIVE) + source_retrieval._download_to_quarantine (latent) + (flagged by the
+  #487 security review) enrich_biographies:358, equipment:1071/1172, supplemental_search:108/163,
+  award_polite_source, grokipedia, situational_geocode, wayback, url_extractor — all session.get/
+  requests.get a DISCOVERED/external URL with allow_redirects=True, bypassing url_hygiene. Route each
+  through fetch_text_safe/fetch_image_bytes/clean_url+resolved_host_is_safe. (The CRITICAL vision
+  path is fixed in #487; these are the remaining untrusted-fetch sites.)
 - **[WARNING] logistics** — _save_extraction poisons dedup key on write-fail (data loss);
   _rebuild_index key collapses distinct sub-events; _build_weather_impact bare-substring WeatherID.
 - **[WARNING] core nits** — places._add_event_mention hard-indexes m['Sub_eventID'] (KeyError on

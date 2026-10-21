@@ -10,7 +10,7 @@ agents confirmed the specific Pattern 1–5 / trigger / orchestration / concurre
 the re-review surfaced **1 CRITICAL** the Pattern-2 pass structurally missed + several real correctness
 WARNINGs. Ranked, de-duplicated across the 3 agents that converged on the SSRF:
 
-## CRITICAL (new — fix first)
+## CRITICAL (✅ DONE · PR #487)
 - **SSRF: `grok_client.extract_json_with_image` fetches an untrusted image URL with no guard.**
   `session.get(image_url, allow_redirects=True)` + unbounded `.content`, no `clean_url` /
   `resolved_host_is_safe`. Reachable (LIVE, Phase 3): `openserp_maps.import_openserp_maps` →
