@@ -19,6 +19,44 @@ ENV_NAME = os.getenv("ENV_NAME", "dev")
 IDLE_MINUTES = int(os.getenv("IDLE_MINUTES", "30"))
 
 
+def _force_teardown_if_nat_too_old(ecs, cluster, service, region):
+    """Guardrail: if NAT has been up >2h with NO pipeline tasks, force teardown (unless a lock is
+    held, meaning a task is likely starting). Returns the action dict, or None to continue the
+    normal idle-check path. Preserves every route + log line exactly."""
+    if not _nat_too_old(max_hours=2):
+        return None
+    running = ecs.list_tasks(cluster=cluster, desiredStatus="RUNNING")
+    task_arns = running.get("taskArns", [])
+    # Only openserp or nothing — no pipeline work happening
+    pipeline_tasks = [t for t in task_arns if "openserp" not in t]
+    if not pipeline_tasks:
+        # Double-check: is a lock held? (task may be starting or between PROVISIONING/RUNNING)
+        if _any_lock_held():
+            logger.info(
+                "NAT >2h but lock held — task likely starting, skipping teardown"
+            )
+            return {"action": "none", "reason": "lock held"}
+        logger.warning("NAT has been up >2h with no pipeline tasks — force teardown")
+        _teardown(ecs, cluster, service, region)
+        return {"action": "force_teardown", "reason": "NAT age exceeded 2h"}
+    return None
+
+
+def _handle_service_at_zero(ecs, cluster, service, region):
+    """Service already at desiredCount 0: skip if NAT just created (task may be starting) or if
+    networking is already down, else teardown + cleanup. Returns the action dict. Preserves
+    every route + log line exactly."""
+    # Check if NAT was recently created (task may be starting)
+    if _nat_recently_created():
+        logger.info("NAT created recently — task may be starting, skipping teardown")
+        return {"action": "none", "reason": "nat recently created"}
+    if _networking_already_down():
+        return {"action": "none", "reason": "already down"}
+    _teardown(ecs, cluster, service, region)
+    logger.info("Idle: no tasks, service at 0 — cleaned up NAT/ALB")
+    return {"action": "cleanup", "reason": "already idle, cleaned resources"}
+
+
 def handler(event, _context):
     """Check cluster activity and tear down if idle."""
     import boto3
@@ -30,23 +68,9 @@ def handler(event, _context):
     ecs = boto3.client("ecs", region_name=region)
 
     # Guardrail: force teardown if NAT has been up >2h with no pipeline tasks
-    if _nat_too_old(max_hours=2):
-        running = ecs.list_tasks(cluster=cluster, desiredStatus="RUNNING")
-        task_arns = running.get("taskArns", [])
-        # Only openserp or nothing — no pipeline work happening
-        pipeline_tasks = [t for t in task_arns if "openserp" not in t]
-        if not pipeline_tasks:
-            # Double-check: is a lock held? (task may be starting or between PROVISIONING/RUNNING)
-            if _any_lock_held():
-                logger.info(
-                    "NAT >2h but lock held — task likely starting, skipping teardown"
-                )
-                return {"action": "none", "reason": "lock held"}
-            logger.warning(
-                "NAT has been up >2h with no pipeline tasks — force teardown"
-            )
-            _teardown(ecs, cluster, service, region)
-            return {"action": "force_teardown", "reason": "NAT age exceeded 2h"}
+    forced = _force_teardown_if_nat_too_old(ecs, cluster, service, region)
+    if forced is not None:
+        return forced
 
     # Check for running PIPELINE tasks in the cluster. CRITICAL: exclude OpenSERP's OWN service
     # tasks — otherwise an idle openserp task counts as "active work" and the service perpetually
@@ -69,17 +93,7 @@ def handler(event, _context):
     resp = ecs.describe_services(cluster=cluster, services=[service])
     services = resp.get("services", [])
     if not services or services[0].get("desiredCount", 0) == 0:
-        # Check if NAT was recently created (task may be starting)
-        if _nat_recently_created():
-            logger.info(
-                "NAT created recently — task may be starting, skipping teardown"
-            )
-            return {"action": "none", "reason": "nat recently created"}
-        if _networking_already_down():
-            return {"action": "none", "reason": "already down"}
-        _teardown(ecs, cluster, service, region)
-        logger.info("Idle: no tasks, service at 0 — cleaned up NAT/ALB")
-        return {"action": "cleanup", "reason": "already idle, cleaned resources"}
+        return _handle_service_at_zero(ecs, cluster, service, region)
 
     # Service is up but no tasks — check if it's been idle long enough
     # Use the last task stop time as the idle marker

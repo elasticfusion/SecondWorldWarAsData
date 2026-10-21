@@ -253,6 +253,18 @@ def scan_and_gate(
     if not binaries:
         return outcome  # text-only -> no scan, no container launch
 
+    results = _scan_binaries_failclosed(scanner, bucket, binaries)
+
+    outcome.results = results
+    for r in results:
+        _gate_result(r, outcome, s3_client, bucket, region)
+    return outcome
+
+
+def _scan_binaries_failclosed(scanner: Scanner, bucket: str, binaries: list) -> list:
+    """Scan the binaries; fail closed (Verdict.ERROR) if the scanner raises AND for any binary
+    the scanner did not report on. Preserves the fail-closed security contract exactly.
+    """
     try:
         results = scanner.scan(bucket, binaries)
     except Exception as e:  # noqa: BLE001 - scanner must not, but fail closed
@@ -266,11 +278,7 @@ def scan_and_gate(
     for k in binaries:
         if k not in reported:
             results.append(ScanResult(k, Verdict.ERROR, detail="no scan result"))
-
-    outcome.results = results
-    for r in results:
-        _gate_result(r, outcome, s3_client, bucket, region)
-    return outcome
+    return results
 
 
 def _gate_result(r, outcome, s3_client, bucket: str, region: str) -> None:

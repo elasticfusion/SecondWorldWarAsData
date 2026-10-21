@@ -87,20 +87,7 @@ def enumerate_pending(_event, _context):
     # dispatch can never exceed the set the guard approved (closes the TOCTOU where
     # a second scan could pick up docs that became READY after the count), and we
     # avoid a second full-table scan (RCU/latency). Nothing is claimed yet.
-    candidates = []
-    kwargs = {
-        "FilterExpression": "begins_with(cache_key, :p)",
-        "ExpressionAttributeValues": {":p": "doc#"},
-    }
-    while True:
-        resp = table.scan(**kwargs)
-        candidates.extend(
-            it for it in resp.get("Items", []) if it.get("status", "") in _READY
-        )
-        lek = resp.get("LastEvaluatedKey")
-        if not lek:
-            break
-        kwargs["ExclusiveStartKey"] = lek
+    candidates = _scan_ready_candidates(table)
 
     # Shared run-scope safeguard over the DYNAMODB-QUEUED work set (the
     # authoritative AWS work count — NOT an S3 file count). This guards against an
@@ -151,6 +138,38 @@ def enumerate_pending(_event, _context):
     # (status -> running). A doc a concurrent drain already claimed fails the
     # conditional and is skipped (no double-dispatch); the dispatched set is a
     # SUBSET of the approved snapshot, never a superset.
+    items = _claim_from_snapshot(table, candidates)
+    # FIFO by doc_id (arrival/enumeration order); stable + predictable (§8).
+    items.sort(key=lambda x: x["doc_id"])
+    logger.info("enumerate_pending: %d dispatchable docs", len(items))
+    return {"count": len(items), "items": items}
+
+
+def _scan_ready_candidates(table) -> list:
+    """Single paginated scan of doc# lifecycle records; keep only READY (dispatchable) items.
+    Nothing is claimed here — this snapshot is what the scope guard approves against."""
+    candidates: list = []
+    kwargs = {
+        "FilterExpression": "begins_with(cache_key, :p)",
+        "ExpressionAttributeValues": {":p": "doc#"},
+    }
+    while True:
+        resp = table.scan(**kwargs)
+        candidates.extend(
+            it for it in resp.get("Items", []) if it.get("status", "") in _READY
+        )
+        lek = resp.get("LastEvaluatedKey")
+        if not lek:
+            break
+        kwargs["ExclusiveStartKey"] = lek
+    return candidates
+
+
+def _claim_from_snapshot(table, candidates: list) -> list:
+    """Atomically claim (status -> running) each doc in the guarded snapshot and build its routed
+    work item. A doc another drain already claimed fails the conditional and is skipped. The
+    dispatched set is a SUBSET of the approved snapshot — never a superset. Preserves exactly.
+    """
     items = []
     for it in candidates:
         if not _claim_doc(table, it["cache_key"], it.get("status", "")):
@@ -164,10 +183,7 @@ def enumerate_pending(_event, _context):
                 "task_def": _PHASE_TASK_DEF.get(phase, _PHASE_TASK_DEF["phase1"]),
             }
         )
-    # FIFO by doc_id (arrival/enumeration order); stable + predictable (§8).
-    items.sort(key=lambda x: x["doc_id"])
-    logger.info("enumerate_pending: %d dispatchable docs", len(items))
-    return {"count": len(items), "items": items}
+    return items
 
 
 def clamp_pool(event, _context):

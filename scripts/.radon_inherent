@@ -14,12 +14,7 @@ src/utils/url_fetch.py::_do_fetch 004cd9e667d44d6c0ec79a9ab3bc83bb3a8e9364dbecb7
 src/enrichment/places_grok_geocode.py::_toponym_from_prose 30cf7de6df8c1332424f0dc17046a01ad3e5ee02134ba529178c854aa2af1290  # C16: single stateful scanner (run-state + corroboration guard) over shared mutable locals
 
 # --- bulk-seeded C+ backlog (2026-10-20) ---
-lambda_handlers/batch_poller.py::handler  6598ba0dec1696901a1fb08220dd333faa19b9b368d270cc688888a60cd3b374  # grandfathered C(11) C+ backlog 2026-10-20
-lambda_handlers/dispatcher_handlers.py::enumerate_pending  124cf32ccf8a590060967baf7bfbd0e9623c0c9f6471005f915faa8e8eb4f0fd  # grandfathered C(12) C+ backlog 2026-10-20
-lambda_handlers/openserp_manager.py::handler  9c84d60eb355c5bf66771e871646093ef5626bb5f9319985190218fd20f40a0d  # grandfathered C(15) C+ backlog 2026-10-20
-lambda_handlers/slack_formatter.py::_coerce_body  3a3321f482b0ad088bf6016d831637ee08efb2b2e9d1d5931b2e3367a9a4bdd9  # grandfathered C(11) C+ backlog 2026-10-20
 src/dedup/unit_key.py::unit_keys_match  e94eaecb65d52d365c90fd4e044945bb6a21d6574af43e2fa1f7f11acad75164  # grandfathered C(15) C+ backlog 2026-10-20
-src/discovery.py::discover_content_structure  390dfe31158b3b5bcfcd1770c24f689c4d3bcd2ffd4cf204a2ba26d6d8cb12a4  # grandfathered C(12) C+ backlog 2026-10-20
 src/enrichment/award_hall_of_valor.py::HallOfValorSource.lookup  1d690e08db00caa66c2e6f12b6fd1801e9daf21b40175ccb2bbabf9e1db7abb8  # grandfathered C(11) C+ backlog 2026-10-20
 src/enrichment/award_source_pages.py::persist_sourcing_errors  182ffb31bf8d2b7eba5894a2a6a6169e70afca50f7ace36bd19e8022bd7dc6c5  # grandfathered C(12) C+ backlog 2026-10-20
 src/enrichment/equipment_wikipedia.py::enrich_all_equipment_wikipedia  2c31c49fb8dcefe7e66a8c11417375d6041c8585b16707014796a5ed1a4b232a  # grandfathered C(11) C+ backlog 2026-10-20
@@ -38,19 +33,5 @@ src/extraction/source_section_articles.py::fetch_wikipedia_article  aa1d65db4f53
 src/extraction/supplemental_info_pipeline.py::_extract_entity_type  81b176c0d47e7d0914b9be1c457d18743524e31e5da5b0ef98581ea0ca810fe9  # grandfathered C(11) C+ backlog 2026-10-20
 src/extraction/title_memberships.py::validate_membership_dates  93c019d198781714a82ccbbc084f3b5983fde3c3ac6547e3046b2f75c077f20a  # grandfathered C(15) C+ backlog 2026-10-20
 src/extraction/weather_central.py::_parse_weather_response  674574bee70e02853864cba68769252955a9a28fed4e701c7179ee7a9bd97bfa  # grandfathered C(14) C+ backlog 2026-10-20
-src/ingestion/av_scan.py::scan_and_gate  1a61cd8fba06cf5588265cd3ad3c5546e2c8940ba58b4f14a9c60d92012cb903  # grandfathered C(11) C+ backlog 2026-10-20
-src/ingestion/speaker_id.py::_resolve_one  137d23e8f2c3289717fda0339206616dda56a8dd2efdf5dd149a651c203af2a9  # grandfathered C(15) C+ backlog 2026-10-20
-src/ingestion/translation.py::normalize_markdown_to_english  b9eb73d6b85a18e1c225bef436cd03fe953e4d6d84c7555bbf9dc9343a2bfd86  # grandfathered C(11) C+ backlog 2026-10-20
-src/ingestion/video_perception.py::perceive_segment  81a8b1a2fc14ff992d1afdd4baf5662100926ed29425597c960f449648c468d5  # grandfathered C(13) C+ backlog 2026-10-20
-src/parser.py::extract_images  1eb4fd279d97cd60323e1834b38bcbb7f3fb0278403a29cdfe6ff763a075f751  # grandfathered C(11) C+ backlog 2026-10-20
-src/utils/content_source.py::parse_content_key  70ff64b15041514b0a92bff6300bb2a4303754abd60d913f45060449957f1baa  # grandfathered C(13) C+ backlog 2026-10-20
-src/utils/deterministic_ids.py::reconcile_echoed_keys  2d403dc685a1d40898561d3cab88e9ce15958589b4aa13007446d720831506b6  # grandfathered C(12) C+ backlog 2026-10-20
-src/utils/failure_taxonomy.py::_classify_http  0c1df7a616077d415f2341bb1cc84ed378ccd26e043313463666691d87c5aff4  # grandfathered C(11) C+ backlog 2026-10-20
-src/utils/file_lock.py::_run_schema_validation  9bc19acf6b750fdeb6ade94b8dab6108bbe2efb8e3b8b9a247661e4e5a5d2c41  # grandfathered C(15) C+ backlog 2026-10-20
-src/utils/referential_integrity.py::audit  6b12842db7a6dd6aed23b1e12587bedf31d693718ef48a432a064b8f04cc368e  # grandfathered C(11) C+ backlog 2026-10-20
-src/utils/run_scope_guard.py::enforce_scope  8a727cd91b623eb90f6d9c28a509eb7da8d4dfc74814e1564bba71a30ab9ffa7  # grandfathered C(13) C+ backlog 2026-10-20
-src/utils/url_content_verdict.py::evaluate  06d2a3db2c484c51e777a0b7fcf96a0e65af83b7b4c9f6eaf281d33fb89eaf4b  # grandfathered C(14) C+ backlog 2026-10-20
-src/utils/url_hygiene.py::clean_url  d407d948ffe25dc45c8abf7c5d8b742853b79bdb576fb13041e439f772e77640  # grandfathered C(14) C+ backlog 2026-10-20
-src/utils/url_registry.py::_persist_dns_counter  78843f3751890300b9a74662a14ad24ed8b008366eb23d8ef74b83f3696ec0b3  # grandfathered C(13) C+ backlog 2026-10-20
 
 # --- bulk-seeded C+ backlog (2026-10-20) ---

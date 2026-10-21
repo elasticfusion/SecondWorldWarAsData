@@ -99,7 +99,7 @@ def extract_images(text: str) -> List[Tuple[str, str, str, str]]:
     Returns:
         List of (type, resource_id_or_url, alt_text, external_url)
     """
-    images = []
+    images: List[Tuple[str, str, str, str]] = []
     seen: set[str] = (
         set()
     )  # dedupe on image IDENTITY (resource_id/url), NOT alt_text: source
@@ -111,6 +111,15 @@ def extract_images(text: str) -> List[Tuple[str, str, str, str]]:
     if text and len(text) > 500_000:
         text = text[:500_000]
 
+    _extract_combined_images(text, images, seen)
+    _extract_embedded_images(text, images, seen)
+    _extract_html_combined_images(text, images, seen)
+    _extract_external_images(text, images, seen)
+
+    return images
+
+
+def _extract_combined_images(text: str, images: list, seen: "set[str]") -> None:
     # Combined format: [![alt](:/resource-id)](https://url)
     # This is a clickable image with both Joplin resource and external URL
     for match in re.finditer(r"!\[(.*?)\]\(:(.*?)\)\]\((https?://[^\)]+)\)", text):
@@ -122,6 +131,8 @@ def extract_images(text: str) -> List[Tuple[str, str, str, str]]:
             images.append(("combined", resource_id, alt_text, url))
             seen.add(key)
 
+
+def _extract_embedded_images(text: str, images: list, seen: "set[str]") -> None:
     # Embedded images only: ![alt](:/resource-id) - standalone Joplin resource
     # Use negative lookahead to exclude those followed by ](url). The resource capture is
     # `[^)]*?` (not `.*?`) so a Joplin COMBINED shape `[![a](:/r)](url)` is NOT re-matched
@@ -134,6 +145,8 @@ def extract_images(text: str) -> List[Tuple[str, str, str, str]]:
             images.append(("embedded", resource_id, alt_text, ""))
             seen.add(key)
 
+
+def _extract_html_combined_images(text: str, images: list, seen: "set[str]") -> None:
     # HTML-derived combined: [![alt](IMG_URL)](LINK_URL) — produced when an <img> is wrapped
     # in an <a> (ibiblio thumbnail-linked-to-full-res). The inner IMG_URL is the image the
     # importer selected (full-res); LINK_URL (often <...>) is ignored. Must run BEFORE the
@@ -146,6 +159,8 @@ def extract_images(text: str) -> List[Tuple[str, str, str, str]]:
             images.append(("external", url, alt_text, ""))
             seen.add(key)
 
+
+def _extract_external_images(text: str, images: list, seen: "set[str]") -> None:
     # External images only: ![alt](https://url) - standalone external image
     # Must NOT be preceded by [![ (which would make it part of combined format)
     for match in re.finditer(r"(?<!\[)!\[(.*?)\]\((https?://[^\)]+)\)(?!\])", text):
@@ -155,8 +170,6 @@ def extract_images(text: str) -> List[Tuple[str, str, str, str]]:
         if key not in seen:
             images.append(("external", url, alt_text, ""))
             seen.add(key)
-
-    return images
 
 
 def extract_maps(text: str) -> List[Tuple[str, str]]:

@@ -116,35 +116,42 @@ def discover_content_structure(content_root: Path) -> Dict[str, List[ChapterGrou
             continue
 
         book_name = book_dir.name
-        chapters = []
 
         # Check for PDF files
         pdf_files_found.extend(_find_pdf_files(book_dir))
 
-        # Process each chapter directory
-        for chapter_dir in book_dir.iterdir():
-            if not chapter_dir.is_dir() or chapter_dir.name.startswith("."):
-                continue
-            if chapter_dir.name == "sourcedocument":
-                continue
-
-            chapter = _process_chapter_dir(chapter_dir, book_name)
-            if chapter:
-                chapters.append(chapter)
-
-        # A2 defense-in-depth: if no chapter dirs yielded a chapter but the book has
-        # a flat top-level markdown ({book}/*.md, e.g. {book}/{book}.md), treat it as
-        # a single-chapter book so it still parses (no chapter subdir required).
-        if not chapters:
-            flat = _flat_book_chapter(book_dir, book_name)
-            if flat:
-                chapters.append(flat)
+        chapters = _discover_book_chapters(book_dir, book_name)
 
         if chapters:
             structure[book_name] = sorted(chapters, key=lambda c: c.chapter_number)
 
     _warn_about_pdfs(pdf_files_found, content_root)
     return structure
+
+
+def _discover_book_chapters(book_dir: Path, book_name: str) -> list:
+    """Discover the chapters in one book dir (skipping dotfiles + sourcedocument). Falls back
+    to a flat single-chapter book ({book}/*.md) when no chapter dir yielded one (A2)."""
+    chapters = []
+    # Process each chapter directory
+    for chapter_dir in book_dir.iterdir():
+        if not chapter_dir.is_dir() or chapter_dir.name.startswith("."):
+            continue
+        if chapter_dir.name == "sourcedocument":
+            continue
+
+        chapter = _process_chapter_dir(chapter_dir, book_name)
+        if chapter:
+            chapters.append(chapter)
+
+    # A2 defense-in-depth: if no chapter dirs yielded a chapter but the book has
+    # a flat top-level markdown ({book}/*.md, e.g. {book}/{book}.md), treat it as
+    # a single-chapter book so it still parses (no chapter subdir required).
+    if not chapters:
+        flat = _flat_book_chapter(book_dir, book_name)
+        if flat:
+            chapters.append(flat)
+    return chapters
 
 
 def _flat_book_chapter(book_dir: Path, book_name: str) -> Optional[ChapterGroup]:

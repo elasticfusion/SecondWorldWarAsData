@@ -357,19 +357,27 @@ def normalize_markdown_to_english(
         except Exception:  # noqa: BLE001
             pass
         if per_page:
-            page_res = normalize_pages_to_english(
-                markdown, 1, grok, model_name=model_name
-            )
-            if page_res.translated:
-                logger.info(
-                    "Translated non-English markdown (%s) to English",
-                    ", ".join(page_res.source_languages),
-                )
-            return page_res.english_markdown
-        doc_res = normalize_to_english(markdown, grok, model_name=model_name)
-        if doc_res.translated:
-            logger.info("Translated %s markdown to English", doc_res.source_language)
-        return doc_res.english_markdown
+            return _normalize_per_page(markdown, grok, model_name)
+        return _normalize_whole_doc(markdown, grok, model_name)
     except Exception as e:  # noqa: BLE001 - fail-safe: keep original on any error
         logger.warning("Translation normalization skipped (keeping original): %s", e)
         return markdown
+
+
+def _normalize_per_page(markdown: str, grok, model_name) -> str:
+    """Per-page (Chandra multi-page OCR) normalization branch. Preserves log + return exactly."""
+    page_res = normalize_pages_to_english(markdown, 1, grok, model_name=model_name)
+    if page_res.translated:
+        logger.info(
+            "Translated non-English markdown (%s) to English",
+            ", ".join(page_res.source_languages),
+        )
+    return page_res.english_markdown
+
+
+def _normalize_whole_doc(markdown: str, grok, model_name) -> str:
+    """Whole-document normalization branch. Preserves log + return exactly."""
+    doc_res = normalize_to_english(markdown, grok, model_name=model_name)
+    if doc_res.translated:
+        logger.info("Translated %s markdown to English", doc_res.source_language)
+    return doc_res.english_markdown
