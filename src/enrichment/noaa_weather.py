@@ -57,7 +57,9 @@ def _rate_limit():
         _request_count += 1
 
 
-def _get(endpoint: str, token: str, params: Dict) -> Optional[Dict]:
+def _get(
+    endpoint: str, token: str, params: Dict
+):  # -> dict | None | TRANSIENT sentinel
     """Make rate-limited GET request to NOAA CDO API."""
     _rate_limit()
     try:
@@ -70,14 +72,21 @@ def _get(endpoint: str, token: str, params: Dict) -> Optional[Dict]:
         )
         if resp.status_code == 200:
             return resp.json()
+        from src.utils.search_cache import TRANSIENT
+
         if resp.status_code == 429:
             logger.warning("NOAA rate limit hit, pausing 60s")
             time.sleep(60)
-            return None
-        logger.debug("NOAA %s returned %d", endpoint, resp.status_code)
+            return TRANSIENT
+        logger.info(
+            "OBSERV noaa.transient endpoint=%s status=%d", endpoint, resp.status_code
+        )
+        return TRANSIENT
     except Exception as e:
-        logger.debug("NOAA request failed: %s", e)
-    return None
+        logger.info("OBSERV noaa.transient endpoint=%s err=%s", endpoint, str(e)[:80])
+        from src.utils.search_cache import TRANSIENT
+
+        return TRANSIENT
 
 
 def _station_from_results(data: Optional[Dict]) -> Optional[Dict[str, Any]]:
@@ -121,7 +130,7 @@ def find_nearest_station(
     code) so St.-Vith-sourced-from-Antwerp records can preserve BOTH the GHCND code
     and the human-readable station place. Cached as JSON.
     """
-    from src.utils.search_cache import cache_result, get_cached
+    from src.utils.search_cache import cache_result, get_cached, TRANSIENT
 
     cache_key = f"{lat:.1f},{lon:.1f},{date[:7]}"
     cached = get_cached("noaa_station", cache_key)
@@ -130,16 +139,24 @@ def find_nearest_station(
     if cached:
         return json.loads(cached)
 
-    # ~50km box, then broaden to ~100km.
-    station = _station_from_results(
-        _search_stations_box(lat, lon, 0.5, date, token)
-    ) or _station_from_results(_search_stations_box(lat, lon, 1.0, date, token))
+    # ~50km box, then broaden to ~100km. A TRANSIENT box result (NOAA outage/429) must NOT be
+    # negative-cached as a genuine "no station" for 7d.
+    transient = False
+    station = None
+    for half in (0.5, 1.0):
+        data = _search_stations_box(lat, lon, half, date, token)
+        if data is TRANSIENT:
+            transient = True
+            continue
+        station = _station_from_results(data)
+        if station:
+            break
 
     if station:
         cache_result("noaa_station", cache_key, json.dumps(station))
         return station
-
-    cache_result("noaa_station", cache_key, None)
+    if not transient:
+        cache_result("noaa_station", cache_key, None)  # genuine miss -> negative-cache
     return None
 
 
@@ -192,8 +209,14 @@ def fetch_noaa_weather(
             "limit": 1000,
         },
     )
+    from src.utils.search_cache import TRANSIENT
+
+    if data is TRANSIENT:
+        return None  # NOAA outage/429 — don't negative-cache the station-date
     if not data or not data.get("results"):
-        cache_result("noaa_data", cache_key, None)
+        cache_result(
+            "noaa_data", cache_key, None
+        )  # genuine no-observations -> negative-cache
         return None
 
     obs = {}

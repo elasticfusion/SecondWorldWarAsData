@@ -48,3 +48,31 @@ def test_grokipedia_genuine_miss_is_negative_cached(monkeypatch):
     monkeypatch.setattr("requests.get", lambda *a, **k: resp)
     assert G.resolve_grokipedia_url("Nonexistent Thing") is None
     assert calls and calls[0][1] is None  # negative-cached
+
+
+def test_noaa_station_transient_not_negative_cached(monkeypatch):
+    import src.enrichment.noaa_weather as N
+
+    calls = []
+    monkeypatch.setattr(
+        "src.utils.search_cache.cache_result", lambda s, q, r: calls.append((q, r))
+    )
+    monkeypatch.setattr("src.utils.search_cache.get_cached", lambda s, q: None)
+    # both station-box queries hit a transient (503) -> station None, but NO negative cache written
+    monkeypatch.setattr(N, "_search_stations_box", lambda *a, **k: SC.TRANSIENT)
+    assert N.find_nearest_station(50.0, 6.0, "1944-12-16", "tok") is None
+    assert calls == []  # no negative-cache on transient
+
+
+def test_noaa_station_genuine_miss_is_negative_cached(monkeypatch):
+    import src.enrichment.noaa_weather as N
+
+    calls = []
+    monkeypatch.setattr(
+        "src.utils.search_cache.cache_result", lambda s, q, r: calls.append((q, r))
+    )
+    monkeypatch.setattr("src.utils.search_cache.get_cached", lambda s, q: None)
+    # a real empty 200 (no stations) -> negative-cache
+    monkeypatch.setattr(N, "_search_stations_box", lambda *a, **k: {"results": []})
+    assert N.find_nearest_station(50.0, 6.0, "1944-12-16", "tok") is None
+    assert calls and calls[0][1] is None

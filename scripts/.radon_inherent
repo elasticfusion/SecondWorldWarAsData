@@ -62,7 +62,7 @@ src/enrichment/grokipedia.py::fetch_grokipedia_rendered  ee72b746528ea9da938005e
 src/enrichment/groups_wikipedia.py::_lookup_group  c11203332c8f70abdcb3388a3bacac0f3ead75696391930ad6f2010fbbc7f41c  # grandfathered C(13) inherent Wikipedia parser; +TRANSIENT-signal edit (#WARNING3)
 src/enrichment/groups_wikipedia.py::enrich_all_groups_wikipedia  eaa1b42a3502ebbf02ba2c1f695c3c406fef8a801d0bdff741ff7dde26df33fe  # grandfathered C(11) C+ backlog 2026-10-20
 src/enrichment/noaa_weather.py::_enrich_weather_file  92ed652c63c9f1077ae88a8a514c6295a019140c116258474a6b0650da6e1db9  # grandfathered C(11) C+ backlog 2026-10-20
-src/enrichment/noaa_weather.py::fetch_noaa_weather  ae95af1d5eafa34e25b48fa9a711b9bbb3a72849b5aba5eace5bdc83c3ac9d18  # grandfathered C(11) C+ backlog 2026-10-20
+src/enrichment/noaa_weather.py::fetch_noaa_weather  f428bc257abbea59e1c3d23fc931a11a660cdd5e87ec94a58fe3298b5ed2d2a9  # grandfathered inherent NOAA fetch+parse; +TRANSIENT-signal edit (C11->12, #WARNING3)
 src/enrichment/openserp_enrichment.py::_classify_source  1a656fa5efa88790e5880d2717587c9e6aaf0d2ab30f8b5a609b7ddd4f91c3b9  # grandfathered C(13) C+ backlog 2026-10-20
 src/enrichment/openserp_enrichment.py::_name_initial_matches  4b20fc8b23e2ac392636d4c03cd35bd16f45247185ce078532444953a6475bf9  # grandfathered C(13) C+ backlog 2026-10-20
 src/enrichment/openserp_enrichment.py::_person_query_terms  e10affcd333d038dd2caf397ea573fd18ec9609a81f9183e3377181fd1a9e049  # grandfathered C(11) C+ backlog 2026-10-20
