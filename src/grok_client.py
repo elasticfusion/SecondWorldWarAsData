@@ -1398,24 +1398,34 @@ class GrokClient:
     ) -> None:
         """Handle truncated response errors with auto-clear."""
         response_len = len(response)
+        # ALWAYS evict the poisoned cache entry before raising — chat_completion caches `response`
+        # BEFORE extract_json parses it, so a cached truncated response would cache-HIT on a re-run
+        # (same stable cache_key) and re-truncate forever. The >100K case needs eviction MORE, not
+        # less: previously cache.pop lived only in the <100K else-branch, so a large truncated
+        # response was never evicted and its event could never be re-extracted.
+        cache = self._get_cache(cache_type)
+        cache_key = self._make_cache_key(
+            prompt, temperature, self._get_model(cache_type)
+        )
+        evicted = cache.pop(cache_key, None) is not None
         if response_len > 100000:
             logger.error(
-                "Response truncated at %d chars — likely hit max_tokens limit (manual split needed)",
+                "Response truncated at %d chars — likely hit max_tokens limit (manual split needed); "
+                "poisoned cache entry evicted=%s",
                 response_len,
+                evicted,
             )
         else:
             logger.error(
-                "Response truncated at %d chars — transient API error, cache cleared, will retry",
+                "Response truncated at %d chars — transient API error, cache cleared (%s), will retry",
                 response_len,
+                evicted,
             )
-
-            # Auto-clear corrupted cache entry
-            cache = self._get_cache(cache_type)
-            cache_key = self._make_cache_key(
-                prompt, temperature, self._get_model(cache_type)
-            )
-            if cache_key in cache:
-                cache.pop(cache_key, None)
+        logger.info(
+            "OBSERV grok.truncation_cache_evicted len=%d evicted=%s",
+            response_len,
+            evicted,
+        )
 
         logger.debug("JSON error: %s", error_msg)
         logger.debug("Last 200 chars: ...%s", response[-200:])
