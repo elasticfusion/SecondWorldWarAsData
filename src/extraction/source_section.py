@@ -115,19 +115,19 @@ def _truncate_to_two_sentences(text: Optional[str]) -> Optional[str]:
     return " ".join(parts[:2]).strip() or None
 
 
-def gather_section_signal(event_data: Dict[str, Any]) -> Dict[str, Any]:
-    """Collect the CUMULATIVE-SUMMARY signal for an event section: title, event name, the
-    distilled sub-event summaries, and aggregated place/date references. Does NOT read the
-    raw chapter (cheaper, no token-limit risk). Rolls up sub-events if the list is oversized.
-    """
-    event = event_data.get("Event") or {}
-    subs = event.get("Sub-events") or []
-    summaries = [s.get("Sub-event_summary") for s in subs if s.get("Sub-event_summary")]
+def _rollup_summaries(summaries: list) -> list:
+    """Roll up an oversized sub-event summary list to a bounded head+tail (with an ellipsis
+    marker) so the prompt stays bounded but representative."""
     if len(summaries) > _MAX_SUBEVENTS_INLINE:
         # Rolling reduction: keep head + tail so the prompt stays bounded but representative.
         head = summaries[: _MAX_SUBEVENTS_INLINE // 2]
         tail = summaries[-_MAX_SUBEVENTS_INLINE // 2 :]
         summaries = head + ["…"] + tail
+    return summaries
+
+
+def _aggregate_place_date_refs(subs: list) -> tuple:
+    """Aggregate de-duplicated place/date references across sub-events, preserving order."""
     places: list = []
     dates: list = []
     for s in subs:
@@ -137,6 +137,19 @@ def gather_section_signal(event_data: Dict[str, Any]) -> Dict[str, Any]:
         for d in s.get("dates") or []:
             if d not in dates:
                 dates.append(d)
+    return places, dates
+
+
+def gather_section_signal(event_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Collect the CUMULATIVE-SUMMARY signal for an event section: title, event name, the
+    distilled sub-event summaries, and aggregated place/date references. Does NOT read the
+    raw chapter (cheaper, no token-limit risk). Rolls up sub-events if the list is oversized.
+    """
+    event = event_data.get("Event") or {}
+    subs = event.get("Sub-events") or []
+    summaries = [s.get("Sub-event_summary") for s in subs if s.get("Sub-event_summary")]
+    summaries = _rollup_summaries(summaries)
+    places, dates = _aggregate_place_date_refs(subs)
     return {
         "section_title": _coerce_section_title(event_data.get("Chapter")),
         "event_name": event.get("Event_Name"),
@@ -168,6 +181,23 @@ def _normalize_operation(op: Any, threshold: float) -> Optional[Dict[str, Any]]:
     }
 
 
+def _build_section_prompt(signal: Dict[str, Any], src: Dict[str, Any]) -> str:
+    """Render the source_section LLM prompt from the gathered signal + source metadata."""
+    from src.utils.prompt_loader import render_prompt
+
+    return render_prompt(
+        "source_section",
+        section_title=signal["section_title"] or "",
+        event_name=signal["event_name"] or "",
+        book=src.get("book") or "",
+        series=src.get("series") or "",
+        sub_event_summaries="\n".join(f"- {s}" for s in signal["sub_event_summaries"])
+        or "(none)",
+        places=", ".join(signal["places"]) or "(none)",
+        dates=", ".join(signal["dates"]) or "(none)",
+    )
+
+
 def derive_summary_and_operation(
     record: Dict[str, Any],
     event_data: Dict[str, Any],
@@ -181,19 +211,9 @@ def derive_summary_and_operation(
         return False
     signal = gather_section_signal(event_data)
     src = record.get("source") or {}
-    from src.utils.prompt_loader import get_system_prompt, render_prompt
+    from src.utils.prompt_loader import get_system_prompt
 
-    prompt = render_prompt(
-        "source_section",
-        section_title=signal["section_title"] or "",
-        event_name=signal["event_name"] or "",
-        book=src.get("book") or "",
-        series=src.get("series") or "",
-        sub_event_summaries="\n".join(f"- {s}" for s in signal["sub_event_summaries"])
-        or "(none)",
-        places=", ".join(signal["places"]) or "(none)",
-        dates=", ".join(signal["dates"]) or "(none)",
-    )
+    prompt = _build_section_prompt(signal, src)
     result = grok_client.extract_json(
         prompt,
         system_prompt=get_system_prompt("source_section"),
@@ -288,6 +308,55 @@ def enrich_all_source_sections(
     return enriched
 
 
+def _load_or_build_section_record(
+    event_file: Path,
+    output_dir: Path,
+    event_id: str,
+    event_data: Dict[str, Any],
+):
+    """Find the existing source_section record for ``event_id``, or build a new one from the
+    event (pulling book/author/series from the sibling -parsed.json when present). Returns the
+    record dict, or None if no record could be built."""
+    import json as _json
+
+    rec_path = _find_section_record_by_event_id(output_dir, event_id)
+    if rec_path is not None:
+        return _json.loads(rec_path.read_text())
+    source = None
+    parsed = event_file.parent / event_file.name.replace("-event.json", "-parsed.json")
+    if parsed.exists():
+        try:
+            pd = _json.loads(parsed.read_text()) or {}
+            source = {
+                "book": pd.get("book"),
+                "author": pd.get("author"),
+                "series": pd.get("series"),
+            }
+        except Exception:  # noqa: BLE001
+            source = None
+    return build_source_section(event_data, source=source)
+
+
+def _fetch_section_extras(record: Dict[str, Any], output_dir: Path, event_id: str):
+    """Run the two fail-safe post-derive fetch steps (reference articles + Wikipedia media).
+    Returns ``(fetched, media_written)``."""
+    # Fetch Grokipedia + Wikipedia reference articles (gated on wikipedia_checked_at).
+    try:
+        fetched = fetch_section_articles(record)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("source_section article fetch failed for %s: %s", event_id, e)
+        fetched = False
+    # Fetch Wikipedia media (photos/maps) -> first-class images records cross-linked.
+    try:
+        from src.extraction.source_section_media import fetch_section_media
+
+        media_written = fetch_section_media(record, output_dir)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("source_section media fetch failed for %s: %s", event_id, e)
+        media_written = 0
+    return fetched, media_written
+
+
 def _enrich_one_section(
     event_file: Path,
     output_dir: Path,
@@ -308,27 +377,9 @@ def _enrich_one_section(
     event_id = (event_data.get("Event") or {}).get("EventID")
     if not event_id:
         return "skipped"
-    rec_path = _find_section_record_by_event_id(output_dir, event_id)
-    if rec_path is not None:
-        record = _json.loads(rec_path.read_text())
-    else:
-        source = None
-        parsed = event_file.parent / event_file.name.replace(
-            "-event.json", "-parsed.json"
-        )
-        if parsed.exists():
-            try:
-                pd = _json.loads(parsed.read_text()) or {}
-                source = {
-                    "book": pd.get("book"),
-                    "author": pd.get("author"),
-                    "series": pd.get("series"),
-                }
-            except Exception:  # noqa: BLE001
-                source = None
-        record = build_source_section(event_data, source=source)
-        if record is None:
-            return "noop"
+    record = _load_or_build_section_record(event_file, output_dir, event_id, event_data)
+    if record is None:
+        return "noop"
     try:
         changed = derive_summary_and_operation(
             record, event_data, grok_client, confidence_threshold
@@ -336,20 +387,7 @@ def _enrich_one_section(
     except Exception as e:  # noqa: BLE001
         logger.warning("source_section derive failed for %s: %s", event_id, e)
         return "error"
-    # Fetch Grokipedia + Wikipedia reference articles (gated on wikipedia_checked_at).
-    try:
-        fetched = fetch_section_articles(record)
-    except Exception as e:  # noqa: BLE001
-        logger.warning("source_section article fetch failed for %s: %s", event_id, e)
-        fetched = False
-    # Fetch Wikipedia media (photos/maps) -> first-class images records cross-linked.
-    try:
-        from src.extraction.source_section_media import fetch_section_media
-
-        media_written = fetch_section_media(record, output_dir)
-    except Exception as e:  # noqa: BLE001
-        logger.warning("source_section media fetch failed for %s: %s", event_id, e)
-        media_written = 0
+    fetched, media_written = _fetch_section_extras(record, output_dir, event_id)
     if changed or fetched or media_written:
         _save_source_section(output_dir, record)
         return "enriched"

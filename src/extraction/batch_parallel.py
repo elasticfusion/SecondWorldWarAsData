@@ -567,6 +567,36 @@ def _count_preserved_seids(response: dict, response_key: str) -> int:
     )
 
 
+def _build_batch_prompt(
+    prompt_header: str, sub_events: list, include_fulltext: bool
+) -> str:
+    """Build the numbered sub-event prompt (positional 1-based index -> Sub-eventID + summary,
+    optionally appending the sorted fulltext paragraphs)."""
+    prompt = prompt_header
+    for i, se in enumerate(sub_events, 1):
+        prompt += f"\n{i}. [{se.get('Sub-eventID')}] {se.get('Sub-event_summary', '')}"
+        if include_fulltext:
+            ft = se.get("Sub-event_fulltext", {})
+            for pk in sorted(ft.keys()):
+                prompt += f"\n   {ft[pk]}"
+    return prompt
+
+
+def _observe_preserved_seids(response, response_key: str) -> None:
+    """Observability: count + log invalid Sub-eventID echoes preserved for the resolver. Never
+    breaks extraction."""
+    try:
+        preserved = _count_preserved_seids(response, response_key)
+        if preserved:
+            logger.info(
+                "OBSERV xref.seid_preserved entity=%s invalid_echoed=%d (kept for resolver)",
+                response_key,
+                preserved,
+            )
+    except Exception:  # noqa: BLE001 - observability must never break extraction
+        pass
+
+
 async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     event_data: Dict[str, Any],
     grok_client: GrokClient,
@@ -600,13 +630,7 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     se_by_id = {se.get("Sub-eventID", ""): se for se in sub_events}
 
     # Build prompt
-    prompt = prompt_header
-    for i, se in enumerate(sub_events, 1):
-        prompt += f"\n{i}. [{se.get('Sub-eventID')}] {se.get('Sub-event_summary', '')}"
-        if include_fulltext:
-            ft = se.get("Sub-event_fulltext", {})
-            for pk in sorted(ft.keys()):
-                prompt += f"\n   {ft[pk]}"
+    prompt = _build_batch_prompt(prompt_header, sub_events, include_fulltext)
 
     # API call
     # NOTE: Entity extraction follows a hierarchical order within each book:
@@ -629,16 +653,7 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     # echo survives for _process_batch_response to resolve (exact/unique-recover/drop). We still pass
     # it explicitly (self-documenting) and count how many invalid ones were preserved so the
     # LLM ULID-mangling rate is observable.
-    try:
-        preserved = _count_preserved_seids(response, response_key)
-        if preserved:
-            logger.info(
-                "OBSERV xref.seid_preserved entity=%s invalid_echoed=%d (kept for resolver)",
-                response_key,
-                preserved,
-            )
-    except Exception:  # noqa: BLE001 - observability must never break extraction
-        pass
+    _observe_preserved_seids(response, response_key)
     response = _fix_invalid_ulids(response, skip_keys={"sub_event_id"})
 
     # Process response
@@ -1077,60 +1092,65 @@ _VALID_RELATIONSHIPS = frozenset(
 )
 
 
+def _sanitize_rel_index_entry(entity_dir, index, key, stored_file):
+    """Read-side path-traversal guard (HIGH#3): sanitize a (possibly tampered) index value to a
+    safe basename, self-heal the index (logging the change), and return the safe basename.
+    """
+    safe = _safe_entity_filename(str(stored_file), key)
+    if safe != str(stored_file):
+        logger.warning(
+            "OBSERV entity.index_sanitized dir=%s key=%s stored=%r -> %s",
+            entity_dir.name,
+            key,
+            str(stored_file)[:80],
+            safe,
+        )
+        index[key] = safe
+    return safe
+
+
+def _process_one_relationship(rel, entity_dir, index):
+    """Resolve + write a single place relationship (containment-guarded). No-op on invalid
+    type, missing endpoints, or a path that escapes ``entity_dir``."""
+    if not isinstance(rel, dict):
+        return
+    rel_type = rel.get("type", "")
+    if rel_type not in _VALID_RELATIONSHIPS:
+        return
+    from_key = rel.get("from", "").lower().replace(" ", "_")
+    to_key = rel.get("to", "").lower().replace(" ", "_")
+    if not from_key or not to_key:
+        return
+    from_file = index.get(from_key)
+    to_file = index.get(to_key)
+    if not from_file or not to_file:
+        return
+    # Read-side path-traversal guard (HIGH#3): index values may be pre-fix/tampered and
+    # contain "../" or an absolute path. Joining them verbatim to entity_dir and then
+    # reading+writing would be an arbitrary-file read/write outside entity_dir. Sanitize to a
+    # safe basename (same guard as _get_or_create_entity) and self-heal the index.
+    safe_from = _sanitize_rel_index_entry(entity_dir, index, from_key, from_file)
+    safe_to = _sanitize_rel_index_entry(entity_dir, index, to_key, to_file)
+    from_path = _contained_entity_path(entity_dir, safe_from)
+    to_path = _contained_entity_path(entity_dir, safe_to)
+    if from_path is None or to_path is None:
+        logger.error(
+            "Skipping relationship %s->%s: path escapes %s (symlink?)",
+            from_key,
+            to_key,
+            entity_dir.name,
+        )
+        return
+    _add_relationship(from_path, to_path, rel_type)
+
+
 def _process_place_relationships(response, entity_dir, index):
     """Write related_places from LLM response into place files."""
     for item in response.get("places", []):
         if not isinstance(item, dict):
             continue
         for rel in item.get("relationships", []):
-            if not isinstance(rel, dict):
-                continue
-            rel_type = rel.get("type", "")
-            if rel_type not in _VALID_RELATIONSHIPS:
-                continue
-            from_key = rel.get("from", "").lower().replace(" ", "_")
-            to_key = rel.get("to", "").lower().replace(" ", "_")
-            if not from_key or not to_key:
-                continue
-            from_file = index.get(from_key)
-            to_file = index.get(to_key)
-            if not from_file or not to_file:
-                continue
-            # Read-side path-traversal guard (HIGH#3): index values may be pre-fix/tampered and
-            # contain "../" or an absolute path. Joining them verbatim to entity_dir and then
-            # reading+writing would be an arbitrary-file read/write outside entity_dir. Sanitize to a
-            # safe basename (same guard as _get_or_create_entity) and self-heal the index.
-            safe_from = _safe_entity_filename(str(from_file), from_key)
-            safe_to = _safe_entity_filename(str(to_file), to_key)
-            if safe_from != str(from_file):
-                logger.warning(
-                    "OBSERV entity.index_sanitized dir=%s key=%s stored=%r -> %s",
-                    entity_dir.name,
-                    from_key,
-                    str(from_file)[:80],
-                    safe_from,
-                )
-                index[from_key] = safe_from
-            if safe_to != str(to_file):
-                logger.warning(
-                    "OBSERV entity.index_sanitized dir=%s key=%s stored=%r -> %s",
-                    entity_dir.name,
-                    to_key,
-                    str(to_file)[:80],
-                    safe_to,
-                )
-                index[to_key] = safe_to
-            from_path = _contained_entity_path(entity_dir, safe_from)
-            to_path = _contained_entity_path(entity_dir, safe_to)
-            if from_path is None or to_path is None:
-                logger.error(
-                    "Skipping relationship %s->%s: path escapes %s (symlink?)",
-                    from_key,
-                    to_key,
-                    entity_dir.name,
-                )
-                continue
-            _add_relationship(from_path, to_path, rel_type)
+            _process_one_relationship(rel, entity_dir, index)
 
 
 def _add_relationship(from_path, to_path, rel_type):

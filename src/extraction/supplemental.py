@@ -747,6 +747,81 @@ def _has_document(material: Dict[str, Any]) -> bool:
     return len(verbatim) >= 8
 
 
+def _route_one_material(
+    material: Dict[str, Any],
+    event_id: str,
+    sub_event_id: str,
+    sub_event_name: str,
+    bib_dir: Path,
+    book: str,
+    chapter: str,
+    grok_client: Any,
+    enrich: bool,
+    factual_items: list,
+    ambiguous_items: list,
+) -> int:
+    """Route one supplemental material by content_class. Appends to ``factual_items`` /
+    ``ambiguous_items`` in place; returns the bibliography-count delta (0 or 1)."""
+    content_class = material.get("content_class", "ambiguous")
+
+    # 3-class model (owner 2026-10-16) + legacy back-compat. A HYBRID is routed to
+    # BOTH the bibliography (its citation) AND the notes-event (its prose).
+    is_citation = content_class in ("citation", "document_reference", "hybrid")
+    is_prose = content_class in ("prose", "factual_content", "hybrid")
+    routed = False
+    bib_delta = 0
+
+    # CITATION half -> bibliography (Phase-3 resolves it). Skip if the citation is
+    # empty (a pure prose entry carries no document to store).
+    if is_citation and _has_document(material):
+        if enrich:
+            _enrich_material(material, grok_client)
+        from src.extraction.bibliography import store_bibliography_entry
+
+        store_bibliography_entry(bib_dir, material, book, chapter)
+        bib_delta = 1
+        routed = True
+
+    # PROSE half -> Phase-2-style notes-event (entities extracted downstream).
+    if is_prose:
+        prose = (
+            material.get("prose_content")
+            or material.get("verbatim_reference", "")
+            or ""
+        )
+        if prose.strip():
+            factual_items.append(
+                {
+                    "verbatim_reference": prose,
+                    "reference_type": material.get("reference_type", ""),
+                    "reference_number": material.get("reference_number", ""),
+                    "source_EventID": event_id,
+                    "source_Sub-eventID": sub_event_id,
+                    "source_Sub-event_Name": sub_event_name,
+                    "BibliographyID": material.get("_BibliographyID"),
+                }
+            )
+            routed = True
+
+    # Human review when explicitly ambiguous OR when the material routed to
+    # NEITHER bibliography nor notes-event (no-silent-drop: a bare cross-reference
+    # / empty-citation-empty-prose entry must not vanish).
+    if content_class == "ambiguous" or not routed:
+        ambiguous_items.append(
+            {
+                "book": book,
+                "chapter": chapter,
+                "reference_type": material.get("reference_type", ""),
+                "reference_number": material.get("reference_number", ""),
+                "verbatim_reference": material.get("verbatim_reference", ""),
+                "EventID": event_id,
+                "Sub-eventID": sub_event_id,
+            }
+        )
+
+    return bib_delta
+
+
 def _route_by_content_class(
     all_supplemental: List[Dict[str, Any]],
     bib_dir: Path,
@@ -756,8 +831,8 @@ def _route_by_content_class(
     enrich: bool = False,
 ) -> tuple:
     """Route materials by content_class. Returns (factual_items, ambiguous_items, bib_count)."""
-    factual_items = []
-    ambiguous_items = []
+    factual_items: list = []
+    ambiguous_items: list = []
     bib_count = 0
 
     for sub_event_data in all_supplemental:
@@ -766,61 +841,19 @@ def _route_by_content_class(
         sub_event_name = sub_event_data.get("Sub-event_Name", "")
 
         for material in sub_event_data.get("Supplemental_Material", []):
-            content_class = material.get("content_class", "ambiguous")
-
-            # 3-class model (owner 2026-10-16) + legacy back-compat. A HYBRID is routed to
-            # BOTH the bibliography (its citation) AND the notes-event (its prose).
-            is_citation = content_class in ("citation", "document_reference", "hybrid")
-            is_prose = content_class in ("prose", "factual_content", "hybrid")
-            routed = False
-
-            # CITATION half -> bibliography (Phase-3 resolves it). Skip if the citation is
-            # empty (a pure prose entry carries no document to store).
-            if is_citation and _has_document(material):
-                if enrich:
-                    _enrich_material(material, grok_client)
-                from src.extraction.bibliography import store_bibliography_entry
-
-                store_bibliography_entry(bib_dir, material, book, chapter)
-                bib_count += 1
-                routed = True
-
-            # PROSE half -> Phase-2-style notes-event (entities extracted downstream).
-            if is_prose:
-                prose = (
-                    material.get("prose_content")
-                    or material.get("verbatim_reference", "")
-                    or ""
-                )
-                if prose.strip():
-                    factual_items.append(
-                        {
-                            "verbatim_reference": prose,
-                            "reference_type": material.get("reference_type", ""),
-                            "reference_number": material.get("reference_number", ""),
-                            "source_EventID": event_id,
-                            "source_Sub-eventID": sub_event_id,
-                            "source_Sub-event_Name": sub_event_name,
-                            "BibliographyID": material.get("_BibliographyID"),
-                        }
-                    )
-                    routed = True
-
-            # Human review when explicitly ambiguous OR when the material routed to
-            # NEITHER bibliography nor notes-event (no-silent-drop: a bare cross-reference
-            # / empty-citation-empty-prose entry must not vanish).
-            if content_class == "ambiguous" or not routed:
-                ambiguous_items.append(
-                    {
-                        "book": book,
-                        "chapter": chapter,
-                        "reference_type": material.get("reference_type", ""),
-                        "reference_number": material.get("reference_number", ""),
-                        "verbatim_reference": material.get("verbatim_reference", ""),
-                        "EventID": event_id,
-                        "Sub-eventID": sub_event_id,
-                    }
-                )
+            bib_count += _route_one_material(
+                material,
+                event_id,
+                sub_event_id,
+                sub_event_name,
+                bib_dir,
+                book,
+                chapter,
+                grok_client,
+                enrich,
+                factual_items,
+                ambiguous_items,
+            )
 
     return factual_items, ambiguous_items, bib_count
 
@@ -1050,6 +1083,25 @@ def _observe_supplemental_input(
         pass
 
 
+def _content_class_histogram(all_supplemental: "list") -> Dict[str, int]:
+    """Build a bounded, sanitized histogram of (Grok-derived) content_class labels: strip
+    newlines (log-forging), truncate, and cap distinct keys so junk labels can't blow up the log.
+    """
+    classes: Dict[str, int] = {}
+    for r in all_supplemental:
+        for m in r.get("Supplemental_Material", []) or []:
+            # Sanitize + bound the (Grok-derived) class label: strip newlines (log-forging),
+            # truncate, cap distinct keys so junk labels can't blow up the log.
+            c = (
+                str((m or {}).get("content_class", "?"))
+                .replace("\n", " ")
+                .replace("\r", " ")[:40]
+            )
+            if c in classes or len(classes) < 50:
+                classes[c] = classes.get(c, 0) + 1
+    return classes
+
+
 def _observe_supplemental_extract(
     event_file: Path, prompts: "list", all_supplemental: "list"
 ) -> None:
@@ -1060,18 +1112,7 @@ def _observe_supplemental_extract(
             for r in all_supplemental
             if isinstance(r, dict)
         )
-        classes: Dict[str, int] = {}
-        for r in all_supplemental:
-            for m in r.get("Supplemental_Material", []) or []:
-                # Sanitize + bound the (Grok-derived) class label: strip newlines (log-forging),
-                # truncate, cap distinct keys so junk labels can't blow up the log.
-                c = (
-                    str((m or {}).get("content_class", "?"))
-                    .replace("\n", " ")
-                    .replace("\r", " ")[:40]
-                )
-                if c in classes or len(classes) < 50:
-                    classes[c] = classes.get(c, 0) + 1
+        classes = _content_class_histogram(all_supplemental)
         logger.info(
             "OBSERV supplemental.extract file=%s prompts=%d responses=%d materials=%d "
             "content_classes=%s",

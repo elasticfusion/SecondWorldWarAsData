@@ -58,6 +58,37 @@ _CONTINENT_KEYWORDS = {
 }
 
 
+def _build_wiki_place_result(name: str, page_data: dict) -> dict:
+    """Build the Wikipedia place result dict from one page: resolve URL, image + license, and
+    the {country, continent, region} hierarchy (parsed from the SAME fetch's categories).
+    Records the resolved URL in the url_registry so a duplicate is skipped for 90 days.
+    """
+    page_title = page_data.get("title", name)
+    img_url = page_data.get("original", {}).get("source", "")
+    license_info = None
+    if img_url:
+        filename = img_url.rsplit("/", 1)[-1]
+        license_info = _fetch_image_license(filename)
+    resolved_url = f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}"
+    # Record the fetch (resolved URL) so a duplicate is skipped for 90 days.
+    try:
+        from src.utils import url_registry as _reg
+
+        _reg.finalize_searched(
+            resolved_url, relevant=True, context="wikipedia", source="wikipedia"
+        )
+    except Exception:  # noqa: BLE001
+        pass
+    return {
+        "wikipedia_url": resolved_url,
+        "image": img_url,
+        "license": license_info or "unknown",
+        # Structured hierarchy parsed from the SAME fetch (categories) — this is
+        # what Phase 3 used to make a second Wikipedia call for.
+        "hierarchy": _parse_wiki_page(page_data),
+    }
+
+
 def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
     """Fetch Wikipedia URL + image + structured hierarchy for a place in ONE request.
 
@@ -97,32 +128,7 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
         for page_id, page_data in pages.items():
             if page_id == "-1" or page_data.get("missing") is not None:
                 continue
-            page_title = page_data.get("title", name)
-            img_url = page_data.get("original", {}).get("source", "")
-            license_info = None
-            if img_url:
-                filename = img_url.rsplit("/", 1)[-1]
-                license_info = _fetch_image_license(filename)
-            resolved_url = (
-                f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}"
-            )
-            # Record the fetch (resolved URL) so a duplicate is skipped for 90 days.
-            try:
-                from src.utils import url_registry as _reg
-
-                _reg.finalize_searched(
-                    resolved_url, relevant=True, context="wikipedia", source="wikipedia"
-                )
-            except Exception:  # noqa: BLE001
-                pass
-            return {
-                "wikipedia_url": resolved_url,
-                "image": img_url,
-                "license": license_info or "unknown",
-                # Structured hierarchy parsed from the SAME fetch (categories) — this is
-                # what Phase 3 used to make a second Wikipedia call for.
-                "hierarchy": _parse_wiki_page(page_data),
-            }
+            return _build_wiki_place_result(name, page_data)
     except Exception:
         pass
     return None
@@ -370,6 +376,30 @@ def _try_grok(name, grok_client):
         raise  # M3: transient error must NOT be recorded as a clean not_found
 
 
+def _stamp_place_status(
+    data: dict, name: str, changed: bool, errored: bool
+) -> Optional[bool]:
+    """Apply the enrichment outcome to ``data`` (in place) and decide the return value.
+
+    - changed  -> stamp enriched + search date, return True.
+    - errored  -> TRANSIENT: do NOT stamp (so it retries), return False (caller returns early).
+    - neither  -> clean negative: stamp not_found + search date, return None (continue to write).
+    """
+    if changed:
+        data["enrichment_status"] = "enriched"
+        data["last_enrichment_search"] = _today()
+        return True
+    if errored:
+        # M3: a transient source error is NOT a clean negative — do NOT stamp
+        # not_found/last_enrichment_search (that would suppress retries for the
+        # whole re-search window). Leave the entity unstamped so it retries.
+        logger.warning("Place '%s' enrichment errored — leaving for retry", name)
+        return False
+    data["enrichment_status"] = "not_found"
+    data["last_enrichment_search"] = _today()
+    return None
+
+
 def enrich_place(place_file: Path, grok_client: GrokClient) -> bool:
     """Enrich a single place file. Returns True if enriched."""
     try:
@@ -393,18 +423,9 @@ def enrich_place(place_file: Path, grok_client: GrokClient) -> bool:
         changed, errored = _enrich_place_data(data, name, grok_client)
     except BatchModeCollecting:
         return False
-    if changed:
-        data["enrichment_status"] = "enriched"
-        data["last_enrichment_search"] = _today()
-    elif errored:
-        # M3: a transient source error is NOT a clean negative — do NOT stamp
-        # not_found/last_enrichment_search (that would suppress retries for the
-        # whole re-search window). Leave the entity unstamped so it retries.
-        logger.warning("Place '%s' enrichment errored — leaving for retry", name)
+    status = _stamp_place_status(data, name, changed, errored)
+    if status is False:
         return False
-    else:
-        data["enrichment_status"] = "not_found"
-        data["last_enrichment_search"] = _today()
     inject_metadata(data, entity="places")
     write_json_with_lock(place_file, data, entity="places")
     if changed:
@@ -435,6 +456,30 @@ def _enrich_place_data(data, name, grok_client):
     return changed, errored
 
 
+def _collect_place_enrichments(pool, futures, total: int) -> int:
+    """Drain the place-enrichment futures, counting successes + logging progress. Returns the
+    enriched count."""
+    from concurrent.futures import as_completed
+
+    enriched = 0
+    processed = 0
+    for future in as_completed(futures):
+        processed += 1
+        try:
+            if future.result():
+                enriched += 1
+        except Exception as e:
+            logger.warning("Failed to enrich place %s: %s", futures[future].stem, e)
+        if processed % 10 == 0 or processed == total:
+            logger.info(
+                "  Places progress: %d/%d done (%d enriched)",
+                processed,
+                total,
+                enriched,
+            )
+    return enriched
+
+
 def enrich_all_places(
     places_dir: Path,
     grok_client: GrokClient,
@@ -452,27 +497,12 @@ def enrich_all_places(
 
     logger.info("Enriching %d places...", len(files))
 
-    from concurrent.futures import ThreadPoolExecutor, as_completed
+    from concurrent.futures import ThreadPoolExecutor
 
-    enriched = 0
-    processed = 0
     total = len(files)
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
         futures = {pool.submit(enrich_place, f, grok_client): f for f in files}
-        for future in as_completed(futures):
-            processed += 1
-            try:
-                if future.result():
-                    enriched += 1
-            except Exception as e:
-                logger.warning("Failed to enrich place %s: %s", futures[future].stem, e)
-            if processed % 10 == 0 or processed == total:
-                logger.info(
-                    "  Places progress: %d/%d done (%d enriched)",
-                    processed,
-                    total,
-                    enriched,
-                )
+        enriched = _collect_place_enrichments(pool, futures, total)
 
     logger.info("Place enrichment complete: %d/%d enriched", enriched, len(files))
     return enriched
