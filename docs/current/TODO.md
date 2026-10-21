@@ -525,6 +525,27 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
 
 ## 7. COMPLETED
 
+### Radon grandfather reduction campaign (PRs #515–#521, 2026-10-21)
+Per §1.0d steering ("genuinely grandfather intrinsically complex, fix other"): the radon allowlist
+held 125 entries but only 3 carried a substantive intrinsic-complexity reason; the other 122 were a
+dated bulk "C+ backlog 2026-10-20" bless. Reduced ALL 122 below radon C via behavior-preserving
+helper extraction (NOT re-grandfathering), in 7 file-clustered PRs — each gate-green + concurrent
+code+security review (both PASS) + CI + merge:
+- #515 wave1: openserp_enrichment(10) + bibliography_resolver(10) [review caught + fixed a NARA
+  transient-cache-poison regression; +tests/test_nara_transient_cache.py]
+- #516 wave2a: grok_client(4) + casualties(4) + bibliography(4)
+- #517 wave2b: trigger_handler(6) + equipment(4) + enrich_biographies(4) [review caught + fixed a
+  phase1 no-launch→launch-all collapse; +tests/test_trigger_phase1_no_launch.py]
+- #518 wave3a: 10 extraction modules (23 fns); #519 wave3b: dedup_ui/semantic_flags/award/surname/
+  merge/nat/reaper (15 fns); #520 wave4a: 19 utils/ingestion/lambda singles; #521 wave4b: final 19
+  extraction/enrichment singles.
+Allowlist drained 125 → 3. The 3 remaining are genuinely intrinsic (documented): group_resolver
+.resolve_group_id C19, url_fetch._do_fetch C18, places_grok_geocode._toponym_from_prose C16.
+Two real regressions were caught by the concurrent-review discipline (proving blind extraction is
+unsafe) — both fixed with regression tests before merge. Gate green throughout (2542 tests, bandit
+0H/0M). The C+ gate now fails any NEW C+ unless it is deliberately added to the 3-entry intrinsic
+allowlist with a reason.
+
 ### §1.0d CRITICAL — dedup reference-rebase (PR #514, 2026-10-21)
 dedup merges deleted the secondary entity file but failed to rebase its event sub-event refs (3 paths:
 wrong id_field for groups, PK-name-as-ref_key for generic merges, no-rebase in the Lambda UI). Fixed in
