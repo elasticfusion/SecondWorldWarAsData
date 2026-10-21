@@ -17,9 +17,6 @@ campaign + PRs #487–#496. NEW/missed gaps (analyzer-invisible; bandit still 0H
 priority order; fix each via branch→gate→concurrent code+security reviews (both PASS)→CI→merge→sync.
 (The DNS-rebinding CRITICAL is DONE — #497 — and moved to §7 COMPLETED.) Ranked:
 
-- **[WARNING] logistics weather-impact link DEAD.** _build_entity_index reads TOP-LEVEL `description`,
-  but weather stores it under `extracted_data.description` → weather_index is ALWAYS {} → _build_weather_impact
-  never links (the new OBSERV weather_unmatched candidates=0 fires every time). Fix the index builder.
 - **[WARNING] transient-error → permanent-negative cache poisoning (systemic).** Fetchers collapse "miss"
   and "timeout/5xx/429/exception" into None then negative-cache 7d / persist a terminal status:
   nominatim+places_grok_geocode (persists not_found, no TTL re-search → only --force recovers), noaa_weather,
@@ -618,6 +615,9 @@ Not-code (deferred): SHAEF OB map gaps (NARA acquisition). Full historical detai
 item is in git history + the dated design docs under `docs/current/` and `docs/archive/`.
 
 ### Phase-2 FRESH RE-REVIEW (2026-10-20b) — DONE items (moved from §1.0c)
+- **[DONE · PR #500] [WARNING] logistics weather-impact link DEAD.** _build_entity_index reads TOP-LEVEL `description`,
+  but weather stores it under `extracted_data.description` → weather_index is ALWAYS {} → _build_weather_impact
+  never links (the new OBSERV weather_unmatched candidates=0 fires every time). Fix the index builder.
 - **[DONE · PR #499] [WARNING] logistics _save_extraction path traversal via LLM date_start** — the ONE date-in-filename
   writer the Pattern-3 campaign (#492) missed. `date_str = extraction.date_start.replace("-","")` leaves
   `/`,`..`. Route through _safe_entity_filename + _contained_entity_path. +test.
