@@ -3411,9 +3411,11 @@ def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
     the API-ordered list of BatchResult. Returns {cache_type: {our_id: cleaned_content}}.
 
     Fail-safe: if the counts differ we CANNOT safely index-map, so return {} and log an
-    error (never silently mis-key — that produced 0 bibliography before this fix). Only
-    finish_reason=='stop' with content is cached; an errored entry is skipped WITHOUT
-    shifting the index (positional zip)."""
+    error (never silently mis-key — that produced 0 bibliography before this fix). A result is
+    cached iff it is content-first OK (BatchResult.ok: non-empty content, not truncated, no error) —
+    NOT a hardcoded finish_reason=='stop', because retrieve_results_ordered defaults finish_reason to
+    'unknown' when the xAI API omits it, which was silently dropping valid content here too. An
+    errored/truncated entry is skipped WITHOUT shifting the index (positional zip)."""
     import re as _re
 
     if not submitted or len(submitted) != len(ordered_results):
@@ -3427,7 +3429,7 @@ def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
         return {}
     out: "dict" = {}
     for (our_id, cache_type), br in zip(submitted, ordered_results):
-        if getattr(br, "finish_reason", "") == "stop" and getattr(br, "content", ""):
+        if getattr(br, "ok", False) and getattr(br, "content", ""):
             cleaned = _re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", br.content)
             out.setdefault(cache_type or "default", {})[our_id] = cleaned
     return out
