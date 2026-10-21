@@ -11,7 +11,7 @@ import requests
 import ulid
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.grok_client import GrokClient, BatchModeCollecting
+from src.grok_client import GrokClient, BatchModeCollecting, GrokTruncationError
 from src.utils.file_lock import write_json_with_lock
 from src.utils.http_pool import get_session
 from src.utils.json_validator import _fix_invalid_ulids
@@ -802,6 +802,14 @@ def _call_and_parse_weather(
             return {}
         except BatchModeCollecting:
             raise  # collect pass: propagate so the event is NOT marked processed
+        except GrokTruncationError:
+            # Propagate to extract_with_chunk_halving (recursive halving, #488) instead of
+            # swallowing to {} (which dropped the whole chunk on truncation).
+            logger.warning(
+                "OBSERV weather.truncated -> propagating to chunk halver (attempt %d)",
+                attempt + 1,
+            )
+            raise
         except Exception as e:
             if attempt < max_retries - 1:
                 logger.warning(
