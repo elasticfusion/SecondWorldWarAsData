@@ -17,11 +17,6 @@ campaign + PRs #487–#496. NEW/missed gaps (analyzer-invisible; bandit still 0H
 priority order; fix each via branch→gate→concurrent code+security reviews (both PASS)→CI→merge→sync.
 (The DNS-rebinding CRITICAL is DONE — #497 — and moved to §7 COMPLETED.) Ranked:
 
-- **[WARNING · follow-up, found in #507 review] clean_url unicode/IDNA homograph hosts.** The standalone
-  validator (url_registry keys / bibliography+source_retrieval pre-fetch gates) accepts ①②⑦.0.0.1 /
-  127。0。0。1 (ideographic dots) / fullwidth digits, which NFKC/IDNA-normalize to 127.0.0.1. Backstopped at
-  the FETCH layer (resolved_host_is_safe blocks them), so NOT a live fetch SSRF — but the standalone gate
-  should NFKC-normalize + host.encode('idna') before classification. (sec_batch_core #507 adversarial probe.)
 - **[SUGGESTION · remaining] larger NITs deferred from the #508 batch:** award_polite_source.polite_get /
   wayback.fetch_archived byte-cap + resolved-IP recheck (route via safe_get); prompt_loader & search_query_loader
   single-pass substitution (untrusted `{token}` re-sub); _submit_ocr _SAFE_TITLE_RE; openserp_maps download the
@@ -588,6 +583,13 @@ Not-code (deferred): SHAEF OB map gaps (NARA acquisition). Full historical detai
 item is in git history + the dated design docs under `docs/current/` and `docs/archive/`.
 
 ### Phase-2 FRESH RE-REVIEW (2026-10-20b) — DONE items (moved from §1.0c)
+- **[DONE · PR #510] [WARNING · follow-up] clean_url unicode/IDNA homograph hosts.** FIXED: _host_is_safe now
+  NFKC-normalizes + IDNA-encodes the host before classification (ideographic-dot/fullwidth loopback caught; legit
+  IDNs pass via punycode). Original: The standalone
+  validator (url_registry keys / bibliography+source_retrieval pre-fetch gates) accepts ①②⑦.0.0.1 /
+  127。0。0。1 (ideographic dots) / fullwidth digits, which NFKC/IDNA-normalize to 127.0.0.1. Backstopped at
+  the FETCH layer (resolved_host_is_safe blocks them), so NOT a live fetch SSRF — but the standalone gate
+  should NFKC-normalize + host.encode('idna') before classification. (sec_batch_core #507 adversarial probe.)
 - **[DONE · PR #509] [WARNING] transient-error → permanent-negative cache poisoning (remaining 3 sites).**
   Completes the class after #501: situational_geocode (TRANSIENT sentinel on grokipedia/wiki),
   bibliography_resolver._search_openserp_archive (saw_200 gate — only negative-cache a real 200-miss, not a
