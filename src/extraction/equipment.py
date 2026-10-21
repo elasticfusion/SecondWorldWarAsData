@@ -549,43 +549,48 @@ def _verify_media_with_vision(
     # Validate and convert image if needed
     try:
         # Decompression-bomb defense: cap decoded pixels so a crafted tiny file that expands to a
-        # huge raster raises DecompressionBombError at verify()/decode instead of exhausting memory.
+        # huge raster raises DecompressionBombError. The cap MUST be held across the ENTIRE decode —
+        # verify() AND the rasterizing convert()/resize() below (those fully decode pixels). Restoring
+        # it right after verify() (the old bug) left convert/resize running at Pillow's default cap.
         _prev_max = Image.MAX_IMAGE_PIXELS
         Image.MAX_IMAGE_PIXELS = 50_000_000
         try:
             img = Image.open(BytesIO(image_data))
             img.verify()
             img = Image.open(BytesIO(image_data))  # Reload after verify
+
+            # Convert unsupported formats to PNG
+            if img.format not in ["PNG", "JPEG", "JPG", "GIF"]:
+                logger.debug("Converting %s to PNG", img.format)
+                buffer = BytesIO()
+                img.convert("RGB").save(buffer, format="PNG")
+                image_data = buffer.getvalue()
+
+            # Resize if too large
+            size_mb = len(image_data) / (1024 * 1024)
+            if size_mb > 5:
+                logger.debug("Resizing image (%.1fMB → target <5MB)", size_mb)
+                img = Image.open(BytesIO(image_data))
+
+                scale = 0.7
+                while size_mb > 5 and scale > 0.1:
+                    new_size = (int(img.width * scale), int(img.height * scale))
+                    resized = img.resize(new_size, Image.Resampling.LANCZOS)
+
+                    buffer = BytesIO()
+                    resized.save(buffer, format="PNG", optimize=True)
+                    image_data = buffer.getvalue()
+                    size_mb = len(image_data) / (1024 * 1024)
+                    scale -= 0.1
+
+                if size_mb > 5:
+                    return False, f"Image too large ({size_mb:.1f}MB)"
         finally:
             Image.MAX_IMAGE_PIXELS = _prev_max
 
-        # Convert unsupported formats to PNG
-        if img.format not in ["PNG", "JPEG", "JPG", "GIF"]:
-            logger.debug("Converting %s to PNG", img.format)
-            buffer = BytesIO()
-            img.convert("RGB").save(buffer, format="PNG")
-            image_data = buffer.getvalue()
-
-        # Resize if too large
-        size_mb = len(image_data) / (1024 * 1024)
-        if size_mb > 5:
-            logger.debug("Resizing image (%.1fMB → target <5MB)", size_mb)
-            img = Image.open(BytesIO(image_data))
-
-            scale = 0.7
-            while size_mb > 5 and scale > 0.1:
-                new_size = (int(img.width * scale), int(img.height * scale))
-                resized = img.resize(new_size, Image.Resampling.LANCZOS)
-
-                buffer = BytesIO()
-                resized.save(buffer, format="PNG", optimize=True)
-                image_data = buffer.getvalue()
-                size_mb = len(image_data) / (1024 * 1024)
-                scale -= 0.1
-
-            if size_mb > 5:
-                return False, f"Image too large ({size_mb:.1f}MB)"
-
+    except Image.DecompressionBombError as e:
+        logger.warning("OBSERV equipment.image_bomb_rejected err=%s", str(e)[:120])
+        return False, f"Image rejected (decompression bomb): {e}"
     except Exception as e:
         return False, f"Invalid image: {e}"
 
@@ -955,10 +960,29 @@ def _compute_image_hash(image_path: Path) -> Optional[str]:
         from PIL import Image
         import imagehash
 
-        with Image.open(image_path) as img:
-            # Use average hash (fast and effective for duplicates)
-            return str(imagehash.average_hash(img))
+        # Decompression-bomb defense: imagehash.average_hash fully decodes the raster, so cap decoded
+        # pixels (a bomb file on disk would otherwise expand uncapped here).
+        _prev_max = Image.MAX_IMAGE_PIXELS
+        Image.MAX_IMAGE_PIXELS = 50_000_000
+        try:
+            with Image.open(image_path) as img:
+                # Use average hash (fast and effective for duplicates)
+                return str(imagehash.average_hash(img))
+        finally:
+            Image.MAX_IMAGE_PIXELS = _prev_max
     except Exception as e:
+        try:
+            from PIL import Image as _Img
+
+            if isinstance(e, _Img.DecompressionBombError):
+                logger.warning(
+                    "OBSERV equipment.hash_image_bomb_rejected file=%s err=%s",
+                    image_path.name,
+                    str(e)[:120],
+                )
+                return None
+        except Exception:  # noqa: BLE001
+            pass
         logger.debug("Failed to compute hash for %s: %s", image_path.name, e)
         return None
 
