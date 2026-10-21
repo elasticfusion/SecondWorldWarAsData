@@ -168,7 +168,15 @@ def _apply_scope_guard(parsed_files, book, expected_count, content_root, logger)
                     book,
                 )
         except Exception as _e:  # noqa: BLE001 - never block on the read
-            logger.debug("run_scope read skipped for %r: %s", book, _e)
+            # A corrupt/unreadable run_scope record silently DOWNGRADES the scope guard to the
+            # weaker magic-50 fallback (recorded_expected stays None). That must be VISIBLE — a
+            # downgraded guard is exactly when a fan-out bug could slip through unnoticed.
+            logger.warning(
+                "OBSERV run_scope.read_failed book=%r err=%s — scope guard DOWNGRADED to the "
+                "magic-50 fallback (recorded Phase-1 count unavailable)",
+                book,
+                _e,
+            )
 
     try:
         enforce_scope(

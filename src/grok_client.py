@@ -212,6 +212,11 @@ class GrokClient:
             config.get("api", {}).get("grok", {}).get("model_map", {}) or {}
         )
         self.caches: Dict[str, Any] = {}  # Cache per extraction type
+        # Guards shared cache STATE (self.caches sub-cache creation + the _cache_hits/_cache_misses
+        # counters) against the asyncio + ThreadPoolExecutor concurrency in batch_parallel: a
+        # sub-cache could be created twice (last writer wins -> a dropped backend) and counter
+        # increments could be lost. Scoped to the fast state mutations only — NOT the API call.
+        self._cache_lock = threading.Lock()
         self.timeout = 600.0  # 10 minutes for large chapters
         self._deprecation_alerted = False
         self.debug_msg_chars = config.get("logging", {}).get(
@@ -284,7 +289,13 @@ class GrokClient:
             cache_key = cache_type
 
         if cache_key not in self.caches:
-            self.caches[cache_key] = self._cache_backend.get_sub_cache(cache_key)
+            # Lock the create-if-absent so concurrent workers don't each build a sub-cache and
+            # clobber one another (last writer wins -> a live backend silently dropped).
+            with self._cache_lock:
+                if cache_key not in self.caches:
+                    self.caches[cache_key] = self._cache_backend.get_sub_cache(
+                        cache_key
+                    )
         return self.caches[cache_key]
 
     def _get_model(self, cache_type: str = "default") -> str:
@@ -966,8 +977,10 @@ class GrokClient:
 
         if use_cache and cache_key in cache:
             logger.debug("[API] CACHE HIT | type=%s key=%s", cache_type, cache_key[:16])
-            self._cache_hits += 1
-            if self._cache_hits % 100 == 0:
+            with self._cache_lock:
+                self._cache_hits += 1
+                hits = self._cache_hits
+            if hits % 100 == 0:
                 logger.info(
                     "Cache: %d hits so far (%d misses)",
                     self._cache_hits,
@@ -975,7 +988,8 @@ class GrokClient:
                 )
             return cache[cache_key]
 
-        self._cache_misses += 1
+        with self._cache_lock:
+            self._cache_misses += 1
 
         # Batch mode: queue request instead of calling API
         if self.batch_mode:

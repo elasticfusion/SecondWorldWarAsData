@@ -74,9 +74,30 @@ def locked_json(filepath: Path):
 
                 def save(new_data):
                     _annotate_semantic_flags(filepath, new_data)
-                    f.seek(0)
-                    f.truncate()
-                    json.dump(new_data, f, indent=2, ensure_ascii=False)
+                    # Crash-atomic: serialize fully, write a temp file in the same dir, fsync, then
+                    # os.replace (atomic swap). Truncate-in-place previously left a corrupt/truncated
+                    # file if the process died mid-json.dump while holding the lock.
+                    import os as _os
+                    import tempfile as _tf
+
+                    payload = json.dumps(new_data, indent=2, ensure_ascii=False)
+                    d = _os.path.dirname(str(filepath)) or "."
+                    tfd, tname = _tf.mkstemp(dir=d, suffix=".tmp")
+                    try:
+                        with _os.fdopen(tfd, "w", encoding="utf-8") as tf:
+                            tf.write(payload)
+                            tf.flush()
+                            _os.fsync(tf.fileno())
+                        _os.replace(tname, filepath)
+                    except BaseException as _se:
+                        if _os.path.exists(tname):
+                            _os.unlink(tname)
+                        logger.warning(
+                            "OBSERV locked_json.save_failed file=%s err=%s",
+                            filepath,
+                            _se,
+                        )
+                        raise
 
                 yield data, save
             finally:
@@ -91,8 +112,27 @@ def locked_json(filepath: Path):
 
             def save(new_data):
                 _annotate_semantic_flags(filepath, new_data)
-                with open(filepath, "w", encoding="utf-8") as f:
-                    json.dump(new_data, f, indent=2, ensure_ascii=False)
+                # Crash-atomic (same as the flock variant): temp + os.replace, not open('w') which
+                # truncates-in-place and would corrupt the file on a mid-write crash.
+                import os as _os
+                import tempfile as _tf
+
+                payload = json.dumps(new_data, indent=2, ensure_ascii=False)
+                d = _os.path.dirname(str(filepath)) or "."
+                tfd, tname = _tf.mkstemp(dir=d, suffix=".tmp")
+                try:
+                    with _os.fdopen(tfd, "w", encoding="utf-8") as tf:
+                        tf.write(payload)
+                        tf.flush()
+                        _os.fsync(tf.fileno())
+                    _os.replace(tname, filepath)
+                except BaseException as _se:
+                    if _os.path.exists(tname):
+                        _os.unlink(tname)
+                    logger.warning(
+                        "OBSERV locked_json.save_failed file=%s err=%s", filepath, _se
+                    )
+                    raise
 
             yield data, save
     finally:
