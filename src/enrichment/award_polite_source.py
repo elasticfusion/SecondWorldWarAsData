@@ -55,22 +55,27 @@ def _throttle_host(host: str, min_interval: float) -> None:
 _CAP_MAX_BYTES = 10 * 1024 * 1024  # 10MB cap on a fetched (untrusted) source page
 
 
-def _cap_body(resp, name: str, url: str) -> None:
+def _cap_body(resp, name: str, url: str) -> bool:
     """Materialize a BYTE-CAPPED body onto a streamed response so .text is bounded (an untrusted
     award source must not OOM the task with a multi-GB response). 10MB is ample for source HTML.
     """
     body = b""
-    for chunk in resp.iter_content(8192):
-        body += chunk
-        if len(body) > _CAP_MAX_BYTES:
-            logger.warning(
-                "%s body exceeded %d bytes, truncating [url=%s]",
-                name,
-                _CAP_MAX_BYTES,
-                url,
-            )
-            break
+    try:
+        for chunk in resp.iter_content(8192):
+            body += chunk
+            if len(body) > _CAP_MAX_BYTES:
+                logger.warning(
+                    "%s body exceeded %d bytes, truncating [url=%s]",
+                    name,
+                    _CAP_MAX_BYTES,
+                    url,
+                )
+                break
+    except Exception as exc:  # noqa: BLE001 - mid-stream transport error -> transient
+        logger.warning("%s body read failed [url=%s]: %s", name, url, exc)
+        return False
     resp._content = body  # noqa: SLF001 - intentional: cap the body
+    return True
 
 
 class PoliteSource:
@@ -163,7 +168,9 @@ class PoliteSource:
             return None
 
         # Byte-cap the body (untrusted award source — a multi-GB response must not OOM the task).
-        _cap_body(resp, self.name, url)
+        if not _cap_body(resp, self.name, url):
+            self.last_error = f"body read failed [url={url}]"
+            return None
         text = resp.text
         try:
             key.write_text(text, encoding="utf-8")
