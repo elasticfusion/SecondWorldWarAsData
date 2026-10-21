@@ -889,11 +889,13 @@ class GrokClient:
             "Content-Type": "application/json",
         }
 
+        from src.utils.batch_api import GROK_MAX_TOKENS
+
         payload = {
             "model": model or self.model,
             "messages": messages,
             "temperature": temperature,
-            "max_tokens": 131072,
+            "max_tokens": GROK_MAX_TOKENS,
             "stream": False,
         }
 

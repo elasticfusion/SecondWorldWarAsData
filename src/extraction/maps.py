@@ -146,7 +146,8 @@ def _determine_map_extension(response, url: str) -> str:
 def _download_map_image(
     url: str, output_path: Path, timeout: int = 30
 ) -> Optional[str]:
-    """Download map image from URL (SSRF-safe)."""
+    """Download map image from URL (SSRF-safe). ``timeout`` is retained for signature
+    compatibility but ignored — fetch_image_bytes owns its own download timeout."""
     from src.extraction.images import fetch_image_bytes
 
     # Check if already downloaded

@@ -13,6 +13,10 @@ logger = logging.getLogger(__name__)
 
 API_BASE = "https://api.x.ai/v1"
 
+# Single source of truth for the Grok completion token ceiling, shared by the batch body here and
+# the realtime path in grok_client (was duplicated as a literal in both).
+GROK_MAX_TOKENS = 131072
+
 # Grace period for xAI to asynchronously ingest an uploaded JSONL file before we
 # treat "submitted N but num_requests=0" as a rejection (file validation is
 # usually near-instant; this is a safety margin).
@@ -162,7 +166,7 @@ class BatchRequest:
                     "model": self.model,
                     "messages": self.messages,
                     "temperature": self.temperature,
-                    "max_tokens": 131072,
+                    "max_tokens": GROK_MAX_TOKENS,
                     "stream": False,
                 },
             },
