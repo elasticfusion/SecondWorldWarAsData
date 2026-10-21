@@ -399,6 +399,23 @@ def _verify_single_image(
     alt_text = img.get("alt", "")
     caption = img.get("caption", "")
 
+    # SSRF gate FIRST: img_url is built from scraped page HTML (untrusted) and the vision call
+    # downloads it. Require a clean http(s) URL whose host resolves to ONLY public IPs
+    # (reject loopback/private/link-local/cloud-metadata + DNS-rebinding) before any fetch.
+    # Defense-in-depth: extract_json_with_image also routes through the SSRF-safe fetcher.
+    from src.utils.url_hygiene import clean_url, resolved_host_is_safe
+    from urllib.parse import urlparse
+
+    cleaned = clean_url(img_url)
+    host = (urlparse(cleaned).hostname or "") if cleaned else ""
+    if not cleaned or not host or resolved_host_is_safe(host) is None:
+        logger.info(
+            "   ⚠ OBSERV maps.image_skipped reason=ssrf_unsafe_url url=%s",
+            img_url[:120],
+        )
+        return None
+    img_url = cleaned
+
     logger.info(f"   🔍 Analyzing image: {alt_text[:50] or img_url[-50:]}")
 
     prompt = _build_verification_prompt(
