@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import ipaddress
 import logging
+import re
 from typing import Optional
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
@@ -76,34 +77,40 @@ def _host_is_safe(host: str) -> bool:
         ip = ipaddress.ip_address(host)
     except ValueError:
         ip = None
-    # Non-canonical IPv4 (decimal/hex/octal/short-form) that ipaddress rejects but the
-    # socket layer resolves: a host with NO alphabetic char is a would-be IP, never a
-    # DNS name -> try to coerce to IPv4 and re-check; reject if uncoercible-but-numeric.
+    # Non-canonical numeric host (decimal/hex/dotted-hex/mixed-radix/octal/short-form) that
+    # ipaddress rejects but the socket layer still resolves to loopback/metadata.
     if ip is None:
-        # Non-canonical numeric host that ipaddress rejects but the socket layer still
-        # resolves to loopback/metadata: hex (0x7f000001), decimal (2130706433), octal
-        # / short-form (0177.0.0.1, 127.1). Detect "looks numeric, not a DNS name".
-        import re as _re
-
-        _hex = _re.fullmatch(r"0x[0-9a-f]+", host)
-        _numeric = _re.fullmatch(r"[0-9.]+", host) or _re.fullmatch(
-            r"0x[0-9a-f.]+", host
-        )
-        if _hex or _numeric:
-            try:
-                import socket
-
-                if _hex:
-                    ip = ipaddress.ip_address(int(host, 16) & 0xFFFFFFFF)
-                else:
-                    ip = ipaddress.ip_address(socket.inet_aton(host))
-            except (OSError, ValueError):
-                return (
-                    False  # numeric-but-not-a-parseable-IP -> reject (never a DNS name)
-                )
+        ip = _coerce_numeric_host(host)
+        if ip is False:  # looked numeric but uncoercible -> reject (never a DNS name)
+            return False
     if ip is not None:
         return ip_is_safe(ip)
     return True  # a DNS hostname (has alphabetic chars) — allowed (see CAVEAT)
+
+
+# A numeric host LABEL: a 0x-hex literal, OR all digits (decimal; a leading-zero form like '0177'
+# is read as OCTAL by inet_aton). A label with any other alpha char is a real DNS name.
+_NUM_HOST_LABEL = re.compile(r"^(0[xX][0-9a-fA-F]+|[0-9]+)$")
+
+
+def _coerce_numeric_host(host: str):
+    """If ``host`` is a would-be numeric IPv4 in ANY non-canonical encoding (hex 0x7f000001, dotted-
+    hex 0x7f.0x0.0x0.0x1, mixed-radix 127.0.0.0x1, decimal 2130706433, octal 0177.0.0.1, short-form
+    127.1), return its ipaddress object; return None if it's a genuine DNS name (has a non-numeric
+    label); return False if it LOOKS numeric but can't be coerced (reject — never a DNS name).
+    """
+    import socket
+
+    labels = host.split(".")
+    if not (labels and all(_NUM_HOST_LABEL.match(lbl) for lbl in labels)):
+        return None  # a real DNS name
+    try:
+        return ipaddress.ip_address(socket.inet_aton(host))
+    except (OSError, ValueError):
+        try:  # inet_aton rejects a single bare 0x… ; try a plain int coerce
+            return ipaddress.ip_address(int(host, 0) & 0xFFFFFFFF)
+        except (OSError, ValueError):
+            return False
 
 
 def ip_is_safe(ip) -> bool:
@@ -329,22 +336,42 @@ def safe_get(url, *, timeout=None, headers=None, max_bytes=_SAFE_FETCH_MAX_BYTES
             timeout=eff_timeout,
             headers=req_headers,
         )
-        body = b""
-        for chunk in resp.iter_content(8192):
-            body += chunk
-            if len(body) > max_bytes:
-                logger.warning(
-                    "safe_get body exceeded %d bytes, truncating: %s",
-                    max_bytes,
-                    cleaned,
-                )
-                break
-        # Materialize the bounded body back onto the response so .text/.content work.
-        resp._content = body  # noqa: SLF001 - intentional: cap the body
+        resp._content = _read_capped_body(
+            resp, max_bytes, cleaned
+        )  # noqa: SLF001 - cap the body
         return resp
     except Exception as exc:  # noqa: BLE001 - any network failure -> None (fail-closed)
         logger.debug("safe_get failed for %s: %s", cleaned, exc)
         return None
+
+
+def _read_capped_body(resp, max_bytes, cleaned) -> bytes:
+    """Stream resp with BOTH a decompressed cap (bounds memory) and a COMPRESSED-read cap (bounds the
+    wire read + CPU, so a small highly-compressing gzip body can't force max_bytes of decompression —
+    the gzip-bomb guard). resp.raw.tell() is bytes read off the socket (pre-decode)."""
+    body = b""
+    raw = getattr(resp, "raw", None)
+    for chunk in resp.iter_content(8192):
+        body += chunk
+        try:
+            compressed = int(raw.tell()) if raw is not None else 0
+        except (
+            Exception
+        ):  # noqa: BLE001 - raw not tell-able/int-able -> rely on the decompressed cap
+            compressed = 0
+        if compressed > max_bytes:
+            logger.warning(
+                "safe_get compressed body exceeded %d bytes (gzip-bomb guard): %s",
+                max_bytes,
+                cleaned,
+            )
+            break
+        if len(body) > max_bytes:
+            logger.warning(
+                "safe_get body exceeded %d bytes, truncating: %s", max_bytes, cleaned
+            )
+            break
+    return body
 
 
 def fetch_text_safe(

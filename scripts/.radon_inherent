@@ -143,7 +143,6 @@ src/utils/semantic_flags.py::_citation_flags  096ffc3eb9bbafa0d314046076082c6765
 src/utils/semantic_flags.py::_load_date_window  8307110e158a969003faaa1fe2100abd56bb649b47686f293293865e210170aa  # grandfathered C(13) C+ backlog 2026-10-20
 src/utils/url_content_verdict.py::evaluate  06d2a3db2c484c51e777a0b7fcf96a0e65af83b7b4c9f6eaf281d33fb89eaf4b  # grandfathered C(14) C+ backlog 2026-10-20
 src/utils/url_fetch.py::_one_hop  cd7af0eefc7c3f29da60df6f02ea3867e848a4b3f71bc2b72a149af4d70b0ab1  # grandfathered C(11) C+ backlog 2026-10-20
-src/utils/url_hygiene.py::_host_is_safe  59c23e42c060f78f24fbfaba2b3a9e92e058fd1b8fa7b9efd12384f3baa0f369  # grandfathered C(13) C+ backlog 2026-10-20
 src/utils/url_hygiene.py::clean_url  d407d948ffe25dc45c8abf7c5d8b742853b79bdb576fb13041e439f772e77640  # grandfathered C(14) C+ backlog 2026-10-20
 src/utils/url_registry.py::_persist_dns_counter  78843f3751890300b9a74662a14ad24ed8b008366eb23d8ef74b83f3696ec0b3  # grandfathered C(13) C+ backlog 2026-10-20
 

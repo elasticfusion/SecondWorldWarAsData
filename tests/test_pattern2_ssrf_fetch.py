@@ -220,3 +220,41 @@ def test_pinned_get_falls_back_to_second_vetted_ip(monkeypatch):
     assert resp is not None and resp.status_code == 200
     assert len(seen) == 2  # fell back to the second vetted IP
     assert "198.51.100.2" in seen[1]
+
+
+# --- §1.0c: clean_url rejects non-canonical numeric loopback/metadata encodings ---
+def test_clean_url_rejects_hex_and_mixed_radix_loopback():
+    from src.utils.url_hygiene import clean_url, _host_is_safe
+
+    for h in (
+        "0x7f.0x0.0x0.0x1",  # dotted-hex 127.0.0.1
+        "127.0.0.0x1",  # mixed-radix 127.0.0.1
+        "0x7f000001",  # bare hex 127.0.0.1
+        "2130706433",  # decimal 127.0.0.1
+        "0177.0.0.1",  # octal 127.0.0.1
+        "127.1",  # short-form
+        "0xA9FEA9FE",  # hex 169.254.169.254 (metadata)
+    ):
+        assert _host_is_safe(h) is False, h
+        assert clean_url(f"http://{h}/x") is None, h
+    # legitimate DNS names + public IPs still pass
+    for h in ("en.wikipedia.org", "8.8.8.8", "a1.b2.c3.net", "3com.com"):
+        assert _host_is_safe(h) is True, h
+
+
+def test_safe_get_caps_compressed_body_gzip_bomb(monkeypatch):
+    """A small highly-compressing body (huge resp.raw.tell()) must bail on the COMPRESSED cap, not
+    only after decompressing to max_bytes."""
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda host: ["93.184.216.34"]
+    )
+    resp = mock.Mock()
+    resp.status_code = 200
+    # small decompressed chunks, but resp.raw.tell() reports a huge compressed read
+    resp.iter_content = lambda n: [b"x" * 100, b"y" * 100]
+    resp.raw = mock.Mock()
+    resp.raw.tell = lambda: 99_999_999  # far over the cap
+    with mock.patch("requests.Session.get", return_value=resp):
+        out = safe_get("https://ex.org/p", max_bytes=1500)
+        assert out is not None
+        assert len(out._content) <= 200  # bailed early on the compressed cap
