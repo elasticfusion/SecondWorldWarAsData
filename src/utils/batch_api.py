@@ -191,12 +191,40 @@ class BatchCollector:
         return len(self.requests)
 
     def write_jsonl(self, path: Path) -> int:
-        """Write all requests to JSONL file. Returns count."""
+        """Write all requests to JSONL file. Returns count.
+
+        Fails LOUD on an absolute request-count or byte ceiling (independent of the default-off
+        credit gate) so a runaway batch can't be submitted unbounded."""
+        import os as _os
+
+        max_reqs = int(_os.environ.get("BATCH_MAX_REQUESTS", "20000"))
+        max_bytes = int(_os.environ.get("BATCH_MAX_BYTES", str(512 * 1024 * 1024)))
+        n = len(self.requests)
+        if n > max_reqs:
+            raise BatchSubmissionError(
+                f"Batch size {n} exceeds BATCH_MAX_REQUESTS={max_reqs} — refusing to submit an "
+                f"unbounded batch (raise the limit explicitly if this is intended)."
+            )
         path.parent.mkdir(parents=True, exist_ok=True)
+        total_bytes = 0
         with open(path, "w", encoding="utf-8") as f:
             for req in self.requests:
-                f.write(req.to_jsonl() + "\n")
-        return len(self.requests)
+                line = req.to_jsonl() + "\n"
+                total_bytes += len(line.encode("utf-8"))
+                if total_bytes > max_bytes:
+                    raise BatchSubmissionError(
+                        f"Batch JSONL exceeds BATCH_MAX_BYTES={max_bytes} at request "
+                        f"~{len(self.requests)} — refusing to submit (raise the limit explicitly)."
+                    )
+                f.write(line)
+        logger.info(
+            "OBSERV batch.size requests=%d bytes=%d (cap %d/%d)",
+            n,
+            total_bytes,
+            max_reqs,
+            max_bytes,
+        )
+        return n
 
 
 def submit_batch(api_key: str, jsonl_path: Path, batch_name: str = "pipeline") -> str:

@@ -466,27 +466,30 @@ class GrokClient:
                 f"Top up credit / raise cost.budget_usd and resubmit."
             )
 
-        # Submit and poll
+        # Submit + poll + retrieve under ONE try: a failure in ANY post-reserve step must release
+        # the reservation, else the budget is permanently consumed by a batch that didn't complete
+        # (the old code released only on submit failure, leaking on poll/retrieve failure).
         try:
             batch_id = submit_batch(self.api_key, jsonl_path, batch_name)
-        except Exception:
-            # Submission never happened — release the reservation so the budget
-            # isn't permanently consumed by a batch that didn't run.
+            logger.info("Waiting for batch to complete (may take minutes to hours)...")
+            batch_state = poll_batch(self.api_key, batch_id, submitted_count=count)
+
+            # Retrieve results as an ORDERED list. The xAI results API does NOT echo our submitted
+            # custom_id (only a server-assigned batch_request_id), so results MUST be mapped to our
+            # cache keys by POSITION (submission order), NOT by id — mirrors the AWS retrieve-only
+            # path (ecs_entrypoint._map_batch_results_by_index / retrieve_results_ordered).
+            from src.utils.batch_api import retrieve_results_ordered
+
+            ordered = retrieve_results_ordered(self.api_key, batch_id)
+        except Exception as _batch_exc:
             credit_gate.release(est_cost, config=self._config)
+            logger.warning(
+                "OBSERV credit.released reason=batch_failed est_cost=%.4f err=%s "
+                "(reservation returned to budget)",
+                est_cost,
+                _batch_exc,
+            )
             raise
-        logger.info("Waiting for batch to complete (may take minutes to hours)...")
-        batch_state = poll_batch(self.api_key, batch_id, submitted_count=count)
-
-        # Retrieve results as an ORDERED list. The xAI results API does NOT echo our submitted
-        # custom_id (only a server-assigned batch_request_id), so results MUST be mapped to our
-        # cache keys by POSITION (submission order), NOT by id. The prior code used
-        # retrieve_results() (keyed by the server id) + _classify_batch_results(), which cached
-        # content under the SERVER id — a key no lookup ever uses — so every in-task batch result
-        # was effectively lost (classified "missing" → 0 persisted). This now mirrors the correct
-        # AWS retrieve-only path (ecs_entrypoint._map_batch_results_by_index / retrieve_results_ordered).
-        from src.utils.batch_api import retrieve_results_ordered
-
-        ordered = retrieve_results_ordered(self.api_key, batch_id)
         submitted = [
             (r.request_id, r.cache_type) for r in self._batch_collector.requests
         ]

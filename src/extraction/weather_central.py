@@ -892,6 +892,22 @@ def extract_weather_central(
     """
     weather_dir.mkdir(parents=True, exist_ok=True)
 
+    # Processed-gate: skip an event whose weather was already extracted, unless should_reprocess is
+    # on. Without this, a --retrieve-only re-run re-extracted weather from scratch every pass (cost +
+    # latency). Mirrors equipment. The mark (end of this fn) only runs on the ANSWERED pass — the
+    # batch COLLECT pass re-raises BatchModeCollecting before reaching it, so the event stays unmarked
+    # until its results are actually retrieved.
+    _processed = _load_weather_processed(weather_dir)
+    if str(event_file) in _processed:
+        from src.utils.config import should_reprocess
+
+        if not should_reprocess("weather"):
+            logger.info(
+                "OBSERV weather.extract skipped=already_processed event_file=%s",
+                getattr(event_file, "name", event_file),
+            )
+            return None
+
     # Load index
     index = _load_weather_index(weather_dir)
 
@@ -947,8 +963,34 @@ def extract_weather_central(
     index_file = weather_dir / "index.json"
     write_json_with_lock(index_file, index)
 
+    # Mark processed (ANSWERED pass only — collect re-raises before here). Idempotent.
+    _processed[str(event_file)] = True
+    _save_weather_processed(weather_dir, _processed)
+
     logger.info("Updated %d weather mentions in central repository", weather_updated)
     return weather_dir if weather_updated > 0 else None
+
+
+def _load_weather_processed(weather_dir: Path) -> Dict[str, bool]:
+    """Load the weather processed-events registry (mirrors equipment)."""
+    reg = weather_dir / ".processed_events.json"
+    if reg.exists():
+        try:
+            with open(reg, encoding="utf-8") as f:
+                return json.load(f)
+        except (OSError, ValueError):
+            return {}
+    return {}
+
+
+def _save_weather_processed(weather_dir: Path, processed: Dict[str, bool]) -> None:
+    """Persist the weather processed-events registry."""
+    reg = weather_dir / ".processed_events.json"
+    try:
+        with open(reg, "w", encoding="utf-8") as f:
+            json.dump(processed, f, indent=2)
+    except OSError as e:
+        logger.warning("weather processed-registry write failed: %s", e)
 
 
 def _build_places_name_index(places_dir: Path) -> Dict[str, str]:
