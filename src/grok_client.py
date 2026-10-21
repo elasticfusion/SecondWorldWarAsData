@@ -1190,32 +1190,39 @@ class GrokClient:
             logger.info(f"Cache hit for image analysis")
             return cache[cache_key]  # type: ignore[return-value]
 
-        # Download image and convert to base64
+        # Download image and convert to base64.
         import base64
 
-        try:
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-            }
-            session = get_session()
-            img_response = session.get(
-                image_url, timeout=image_timeout, headers=headers, allow_redirects=True
+        # SSRF-safe fetch: image_url is UNTRUSTED (built from scraped page HTML / LLM / search
+        # results), so it MUST NOT be a raw session.get. Route through images.fetch_image_bytes:
+        # clean_url (http(s) + reject loopback/private/link-local/cloud-metadata hosts) +
+        # resolved_host_is_safe (DNS-rebinding) + allow_redirects=False (a redirect could bounce a
+        # clean host to 169.254.169.254) + byte cap + image content-type/magic-byte validation.
+        from src.extraction.images import fetch_image_bytes
+
+        img_bytes, ext = fetch_image_bytes(image_url)
+        if not img_bytes:
+            logger.warning(
+                "OBSERV vision.image_blocked reason=ssrf_or_invalid url=%s "
+                "(fetch refused by images.fetch_image_bytes)",
+                str(image_url)[:120],
             )
-            img_response.raise_for_status()
-
-            # Get content type
-            content_type = img_response.headers.get("content-type", "image/jpeg")
-
-            # Encode to base64
-            img_base64 = base64.b64encode(img_response.content).decode("utf-8")
-            image_data_url = f"data:{content_type};base64,{img_base64}"
-
-            logger.debug(
-                f"Downloaded image: {len(img_response.content)} bytes, type: {content_type}"
+            raise GrokAPIError(
+                f"Image fetch blocked or not a valid image (SSRF-safe): {image_url}"
             )
-
-        except Exception as e:
-            raise GrokAPIError(f"Failed to download image from {image_url}: {e}") from e
+        content_type = {
+            "jpg": "image/jpeg",
+            "jpeg": "image/jpeg",
+            "tif": "image/tiff",
+            "tiff": "image/tiff",
+            "png": "image/png",
+            "gif": "image/gif",
+        }.get((ext or "jpeg").lstrip(".").lower(), "image/jpeg")
+        img_base64 = base64.b64encode(img_bytes).decode("utf-8")
+        image_data_url = f"data:{content_type};base64,{img_base64}"
+        logger.debug(
+            "Downloaded image: %d bytes, type: %s", len(img_bytes), content_type
+        )
 
         # Build messages with image
         messages = []
