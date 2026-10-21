@@ -111,3 +111,33 @@ def test_build_weather_impact_exact_and_bounded_match():
         "it was heavy rain today", "high", {"heavy rain": "01WEA000000000000000HRAIN"}
     )
     assert out and out["WeatherID"] == "01WEA000000000000000HRAIN"
+
+
+def test_build_entity_index_reads_weather_nested_description(tmp_path):
+    """WARNING: weather stores its description under extracted_data.description (no top-level
+    'description'), so the index must read the nested path — else weather_index is always {} and the
+    logistics weather-impact link is dead."""
+    wdir = tmp_path / "weather"
+    wdir.mkdir()
+    (wdir / "w1.json").write_text(
+        json.dumps(
+            {
+                "WeatherID": "01WEA0000000000000000001",
+                "extracted_data": {"description": "heavy rain"},
+            }
+        )
+    )
+    # top-level-only read (old behavior) -> empty
+    assert L._build_entity_index(tmp_path, "weather", "WeatherID", "description") == {}
+    # nested read (fix) -> populated
+    idx = L._build_entity_index(
+        tmp_path,
+        "weather",
+        "WeatherID",
+        "description",
+        nested_path="extracted_data.description",
+    )
+    assert idx == {"heavy rain": "01WEA0000000000000000001"}
+    # and the link now works end-to-end
+    out = L._build_weather_impact("heavy rain", "high", idx)
+    assert out and out["WeatherID"] == "01WEA0000000000000000001"

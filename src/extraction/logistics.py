@@ -189,28 +189,63 @@ class LogisticsExtractionList(BaseModel):
 
 
 def _build_entity_index(
-    output_root: Path, entity_type: str, id_field: str, name_field: str
+    output_root: Path,
+    entity_type: str,
+    id_field: str,
+    name_field: str,
+    nested_path: Optional[str] = None,
 ) -> Dict[str, str]:
-    """Build entity name -> ID index."""
+    """Build entity name -> ID index.
+
+    ``nested_path`` (dotted, e.g. "extracted_data.description") is read when the top-level
+    ``name_field`` is absent — needed for weather, whose human description is stored under
+    ``extracted_data.description`` (NOT a top-level ``description``). Without it the weather index
+    was ALWAYS empty, so the logistics weather-impact link never fired.
+    """
     entity_dir = output_root / entity_type
     if not entity_dir.exists():
         return {}
 
-    index = {}
+    index: Dict[str, str] = {}
     for json_file in entity_dir.glob("*.json"):
         if json_file.name in ["index.json", "duplicate_report.json"]:
             continue
-        try:
-            with open(json_file, encoding="utf-8") as f:
-                data = json.load(f)
-                entity_id = data.get(id_field)
-                name = data.get(name_field)
-                if entity_id and name:
-                    index[name] = entity_id
-        except Exception as e:
-            logger.debug("Skipping %s: %s", json_file.name, e)
+        _index_one_file(json_file, id_field, name_field, nested_path, index)
 
+    if not index:
+        logger.info(
+            "OBSERV logistics.entity_index_empty entity=%s name_field=%s nested=%s",
+            entity_type,
+            name_field,
+            nested_path or "-",
+        )
     return index
+
+
+def _index_one_file(json_file, id_field, name_field, nested_path, index) -> None:
+    """Read one entity file and add its (name -> id) to ``index`` (fail-safe skip on error)."""
+    try:
+        with open(json_file, encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:  # noqa: BLE001
+        logger.debug("Skipping %s: %s", json_file.name, e)
+        return
+    entity_id = data.get(id_field)
+    name = data.get(name_field) or (
+        _nested_get(data, nested_path) if nested_path else None
+    )
+    if entity_id and name:
+        index[name] = entity_id
+
+
+def _nested_get(d, dotted):
+    """Read a dotted nested key from a dict (e.g. 'extracted_data.description'); None if absent."""
+    cur = d
+    for part in dotted.split("."):
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(part)
+    return cur
 
 
 def _get_sub_event_text(sub_event: Dict[str, Any]) -> str:
@@ -771,7 +806,11 @@ def extract_logistics_from_event(
         output_root / "equipment", "EquipmentID", "common_name"
     )
     weather_index = _build_entity_index(
-        output_root, "weather", "WeatherID", "description"
+        output_root,
+        "weather",
+        "WeatherID",
+        "description",
+        nested_path="extracted_data.description",
     )
     dates_index = _build_date_id_lookup(output_root / "dates")
 
