@@ -104,8 +104,9 @@ are NEW gaps (analyzer-invisible; bandit still 0H/0M). Ranked:
 - **[DONE · PR #488] [HIGH] chunked_extract.extract_with_chunk_halving halving not recursive** — now
   recurses to size-1 (base case drops only the oversized item); +OBSERV. FOLLOW-UP found by #488
   review (NEW HIGH, below): the halving is currently LATENT in production.
-- **[HIGH · NEW, found in #488 review] Inner extract_fns swallow GrokTruncationError -> halving never
-  engages + whole chunk drops to {}.** casualties._call_and_parse_casualties / weather._call_and_parse_weather
+- **[DONE · PR #489] [HIGH · found in #488 review] Inner extract_fns swallowed GrokTruncationError -> halving
+  never engaged + whole chunk dropped to {}.** FIXED: casualties/weather/logistics inner fns now re-raise
+  GrokTruncationError before the broad except, so the #488 recursive halving engages. Original (stale): casualties._call_and_parse_casualties / weather._call_and_parse_weather
   / logistics._extract_* catch `except Exception` (which includes GrokTruncationError) and return {}
   after retries, so GrokTruncationError never reaches extract_with_chunk_halving — a truncated chunk
   silently yields {} (worse than the ~half-drop just fixed). FIX: re-raise GrokTruncationError from
