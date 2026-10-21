@@ -490,16 +490,18 @@ NAT_WAIT_SECONDS = int(os.environ.get("NAT_WAIT_SECONDS", "180"))
 
 
 def _lock_age_seconds(lock_key: str, now: int):
-    """Age (seconds) of an existing lock from its stored acquire timestamp (`response`),
-    or None if it can't be read. Used to avoid reclaiming a just-acquired lock whose holder
-    is still waiting on NAT (the double-launch race)."""
+    """Return (age_seconds, observed_ts) of an existing lock from its stored acquire timestamp
+    (`response`), or (None, None) if it can't be read. ``observed_ts`` lets a reclaimer delete ONLY
+    the exact stale lock it saw (conditional delete), closing the stale-reclaim double-launch race.
+    Used to avoid reclaiming a just-acquired lock whose holder is still waiting on NAT.
+    """
     try:
         item = dynamo.get_item(Key={"cache_key": lock_key}).get("Item", {})
         ts = int(item.get("response", 0))
-        return now - ts if ts else None
+        return (now - ts, ts) if ts else (None, None)
     except Exception as e:  # noqa: BLE001
         logger.warning("lock-age read failed for %s: %s", lock_key, e)
-        return None
+        return (None, None)
 
 
 # Content suffixes the pipeline processes (Option B). Zips are IGNORED — the
@@ -1271,6 +1273,7 @@ def _extract_records(event):
     topics = set()
     s3_keys = []
     for record in event.get("Records", []):
+        rec_keys = []  # keys from THIS record — kept ONLY if its topic is trusted
         if "body" in record:
             # SQS format
             try:
@@ -1287,7 +1290,7 @@ def _extract_records(event):
                             # otherwise OCR/parse download the wrong (nonexistent)
                             # path. unquote_plus handles both '+' and %XX.
                             raw_key = s3_rec["s3"]["object"]["key"]
-                            s3_keys.append(urllib.parse.unquote_plus(raw_key))
+                            rec_keys.append(urllib.parse.unquote_plus(raw_key))
                     except Exception as e:
                         logger.warning("Failed to parse S3 event: %s", e)
             except Exception:
@@ -1298,6 +1301,16 @@ def _extract_records(event):
         name = _trusted_topic_name(topic_arn)
         if name:
             topics.add(name)
+            # Only a TRUSTED-topic record's keys are honored. Collecting them unconditionally (the
+            # old bug) let an untrusted/cross-account topic's attacker-chosen keys reach the manifest
+            # + _route_topics — defeating the _trusted_topic_name gate for the key path.
+            s3_keys.extend(rec_keys)
+        elif rec_keys:
+            logger.warning(
+                "OBSERV trigger.untrusted_keys_dropped topic=%s n=%d",
+                str(topic_arn)[:120],
+                len(rec_keys),
+            )
     return topics, s3_keys
 
 
@@ -1521,6 +1534,39 @@ def _submit_convert(key: str) -> None:
     )
 
 
+def _reclaim_stale_lock(lock_key, item, observed_ts, lock_age, grace_s) -> bool:
+    """Reclaim a stale launch lock (no live task, age>grace). Returns True if THIS invocation won the
+    reclaim and should launch, False if it lost the race. Conditional delete (response==observed_ts)
+    so two invocations can't both reclaim -> the G1 double-launch race is closed."""
+    logger.info(
+        "Stale lock for %s (no live task, age %ds > %ds), clearing",
+        lock_key,
+        lock_age,
+        grace_s,
+    )
+    try:
+        dynamo.delete_item(
+            Key={"cache_key": lock_key},
+            ConditionExpression="#r = :observed",
+            ExpressionAttributeNames={"#r": "response"},
+            ExpressionAttributeValues={":observed": str(observed_ts)},
+        )
+    except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
+        logger.info(
+            "Stale-lock reclaim lost the race for %s (lock changed under us), skipping",
+            lock_key,
+        )
+        return False
+    try:
+        dynamo.put_item(
+            Item=item, ConditionExpression="attribute_not_exists(cache_key)"
+        )
+        return True
+    except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
+        logger.info("Another invocation claimed lock for %s, skipping", lock_key)
+        return False
+
+
 def _acquire_task_lock(task_def, family, lock_key, book_name, now) -> bool:
     """Atomically claim the per-task (per-book under multi-doc) launch lock. Returns True if this
     invocation now HOLDS the lock and should launch; False if another live/recent invocation holds
@@ -1546,23 +1592,11 @@ def _acquire_task_lock(task_def, family, lock_key, book_name, now) -> bool:
     live = ecs.list_tasks(cluster=CLUSTER, family=family, desiredStatus="RUNNING").get(
         "taskArns", []
     )
-    lock_age = _lock_age_seconds(lock_key, now)
+    lock_age, observed_ts = _lock_age_seconds(lock_key, now)
     if not live and lock_age is not None and lock_age > LAUNCH_GRACE_S:
-        logger.info(
-            "Stale lock for %s (no live task, age %ds > %ds), clearing",
-            lock_key,
-            lock_age,
-            LAUNCH_GRACE_S,
+        return _reclaim_stale_lock(
+            lock_key, item, observed_ts, lock_age, LAUNCH_GRACE_S
         )
-        dynamo.delete_item(Key={"cache_key": lock_key})
-        try:
-            dynamo.put_item(
-                Item=item, ConditionExpression="attribute_not_exists(cache_key)"
-            )
-            return True
-        except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
-            logger.info("Another invocation claimed lock for %s, skipping", lock_key)
-            return False
 
     logger.info(
         "Task %s already locked (live=%s, age=%ss), skipping",

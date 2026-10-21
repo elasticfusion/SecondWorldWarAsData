@@ -248,3 +248,57 @@ def test_update_manifest_retries_on_precondition_failed():
         th._update_manifest(["b.md"])
     assert len(state["puts"]) == 2
     assert set(state["body"]) == {"a.md", "b.md"}
+
+
+def test_extract_records_drops_untrusted_topic_keys():
+    """§1.0c: an untrusted/foreign-topic record's S3 keys must NOT be collected (the trust gate
+    previously only filtered `topics`, letting attacker keys through to the manifest/_route_topics).
+    """
+    from lambda_handlers import trigger_handler as th
+
+    foreign = "arn:aws:sns:us-east-1:999999999999:dev-wwii-content-uploaded"  # foreign ACCOUNT
+    ev = {
+        "Records": [
+            {
+                "body": json.dumps(
+                    {
+                        "TopicArn": foreign,
+                        "Message": json.dumps(
+                            {
+                                "Records": [
+                                    {"s3": {"object": {"key": "evil/payload.pdf"}}}
+                                ]
+                            }
+                        ),
+                    }
+                )
+            }
+        ]
+    }
+    with mock.patch.object(th, "NOTIFY_TOPIC", _OWN_TOPIC):
+        topics, keys = th._extract_records(ev)
+    assert topics == set()  # foreign topic dropped
+    assert keys == []  # and its keys dropped too (the fix)
+
+
+def test_reclaim_stale_lock_loses_race_returns_false():
+    """§1.0c: the conditional stale-reclaim delete fails when another invocation already changed the
+    lock -> this invocation returns False (does NOT double-launch)."""
+    from lambda_handlers import trigger_handler as th
+
+    class _CCF(Exception):
+        pass
+
+    fake_dynamo = mock.Mock()
+    fake_dynamo.meta.client.exceptions.ConditionalCheckFailedException = _CCF
+    fake_dynamo.delete_item.side_effect = _CCF()  # someone changed the lock under us
+    with mock.patch.object(th, "dynamo", fake_dynamo):
+        out = th._reclaim_stale_lock(
+            "task_lock#b",
+            {"cache_key": "task_lock#b"},
+            observed_ts=100,
+            lock_age=9999,
+            grace_s=300,
+        )
+    assert out is False  # lost the race -> must not launch
+    fake_dynamo.put_item.assert_not_called()  # never re-claimed after a lost delete
