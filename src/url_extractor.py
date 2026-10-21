@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import html2text
-import requests
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)

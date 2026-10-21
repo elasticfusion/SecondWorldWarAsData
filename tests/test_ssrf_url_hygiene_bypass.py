@@ -98,6 +98,19 @@ def test_url_extractor_fetch_url_blocks_loopback(tmp_path):
         ex.fetch_url("http://169.254.169.254/x")
 
 
+# --- enrich_biographies._fetch_url_content (live source-url fetch; found in review) ------
+def test_bio_fetch_url_content_blocks_loopback_then_wayback(monkeypatch):
+    from src.extraction import enrich_biographies as eb
+
+    # the UNTRUSTED live url is SSRF-blocked -> no raw requests.get; falls through to wayback
+    # (archive.org, trusted). Stub wayback to None so we assert the live path was refused.
+    monkeypatch.setattr("src.enrichment.wayback.fetch_archived", lambda *a, **k: None)
+    with mock.patch("requests.get") as g:
+        out = eb._fetch_url_content("http://169.254.169.254/latest/meta-data/")
+        assert out is None
+        g.assert_not_called()  # live fetch routed via fetch_text_safe, blocked pre-request
+
+
 # --- static guard: the newly-routed modules carry no bare unguarded requests.get ----------
 def test_newly_routed_modules_have_no_unguarded_requests_get():
     import pathlib

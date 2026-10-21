@@ -746,17 +746,18 @@ def _fetch_url_content(
 
     live_html: Optional[str] = None
     status: Optional[int] = None
-    try:
-        resp = requests.get(
-            url, headers=_URL_HEADERS, timeout=timeout, allow_redirects=True
-        )
-        status = resp.status_code
-        if status == 200:
-            live_html = resp.text
-        else:
-            logger.debug("  URL returned %d: %s", status, url)
-    except requests.RequestException as exc:
-        logger.debug("  URL fetch failed (%s): %s", exc, url)
+    # url is UNTRUSTED (Grok-derived source_urls), so route the LIVE fetch through fetch_text_safe
+    # (SSRF-safe: clean_url + DNS-rebind resolve-check + no redirects + byte cap) rather than a bare
+    # requests.get(allow_redirects=True). A blocked/failed live fetch falls through to the Wayback
+    # fallback (archive.org, a trusted literal host) exactly as a WAF-block/unreachable did before.
+    from src.utils.url_hygiene import fetch_text_safe
+
+    live_html, status = fetch_text_safe(url, timeout=timeout, headers=_URL_HEADERS)
+    if status is None and live_html is None:
+        logger.info("OBSERV bio.url_blocked ssrf_or_fetch_fail url=%s", str(url)[:120])
+    elif status is not None and status != 200:
+        logger.debug("  URL returned %d: %s", status, url)
+        live_html = None
 
     # Live content is good only if it is not a WAF/bot-block page.
     if live_html is not None and not wayback.is_block_page(live_html, status):
