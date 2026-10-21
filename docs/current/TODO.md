@@ -17,11 +17,13 @@ campaign + PRs #487–#496. NEW/missed gaps (analyzer-invisible; bandit still 0H
 priority order; fix each via branch→gate→concurrent code+security reviews (both PASS)→CI→merge→sync.
 (The DNS-rebinding CRITICAL is DONE — #497 — and moved to §7 COMPLETED.) Ranked:
 
-- **[WARNING] transient-error → permanent-negative cache poisoning (systemic).** Fetchers collapse "miss"
-  and "timeout/5xx/429/exception" into None then negative-cache 7d / persist a terminal status:
-  nominatim+places_grok_geocode (persists not_found, no TTL re-search → only --force recovers), noaa_weather,
-  grokipedia+situational_geocode+equipment_wikipedia+groups_wikipedia, bibliography_resolver
-  _search_openserp_archive (503-from-scaling path). Only negative-cache on a real 200-empty.
+- **[WARNING · PARTIAL — follow-up] transient-error → permanent-negative cache poisoning (remaining sites).**
+  The shared TRANSIENT sentinel + the 4 highest-impact fetchers (grokipedia, equipment_wikipedia,
+  groups_wikipedia, noaa_weather) are DONE (PR #501). REMAINING: situational_geocode (grokipedia/wiki
+  context — best-effort), bibliography_resolver._search_openserp_archive (503-from-scaling path), and
+  nominatim/places_grok_geocode (persists a terminal 'not_found' record status with NO TTL — only --force
+  recovers; needs a distinct fix from the search_cache sentinel). Route each via search_cache.TRANSIENT /
+  a non-terminal geocode_error status.
 - **[WARNING] batch_poller** — _check_stalled stall-alert rate-limit assumes a 5-min poll cadence
   (`int(age_hours)==int(age_hours-5/60)`) but the schedule is 15–30 min → hourly ">4h stalled" alert
   silently skipped; persist last_stall_notify_at. + 24h-stuck force-complete returns "complete" with
@@ -615,6 +617,10 @@ Not-code (deferred): SHAEF OB map gaps (NARA acquisition). Full historical detai
 item is in git history + the dated design docs under `docs/current/` and `docs/archive/`.
 
 ### Phase-2 FRESH RE-REVIEW (2026-10-20b) — DONE items (moved from §1.0c)
+- **[DONE · PR #501] [WARNING] transient-error → permanent-negative cache poisoning (systemic) — tranche 1.**
+  search_cache.TRANSIENT sentinel (cache_result no-ops on it) threaded through grokipedia, equipment_wikipedia,
+  groups_wikipedia, noaa_weather so a transient timeout/5xx/429/exception is no longer negative-cached for 7d
+  (grokipedia is corpus-wide). +OBSERV *.transient. 3 remaining sites tracked as a §1.0c follow-up.
 - **[DONE · PR #500] [WARNING] logistics weather-impact link DEAD.** _build_entity_index reads TOP-LEVEL `description`,
   but weather stores it under `extracted_data.description` → weather_index is ALWAYS {} → _build_weather_impact
   never links (the new OBSERV weather_unmatched candidates=0 fires every time). Fix the index builder.
