@@ -40,7 +40,7 @@ def test_store_wikipedia_image_preserves_photo_bytes(monkeypatch):
     )
     resp = _Resp()
     resp._content = _Resp.content  # safe_get materializes the capped body here
-    monkeypatch.setattr("requests.get", lambda *a, **k: resp)
+    monkeypatch.setattr("requests.Session.get", lambda *a, **k: resp)
 
     resp_json = {
         "query": {

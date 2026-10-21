@@ -33,7 +33,7 @@ def test_blocks_host_resolving_to_private_ip(monkeypatch):
     monkeypatch.setattr(
         "src.utils.url_hygiene.resolved_host_is_safe", lambda host: None
     )
-    with mock.patch("src.extraction.images.requests.get") as g:
+    with mock.patch("requests.Session.get") as g:
         body, _ = fetch_image_bytes("https://evil.example.org/map.jpg")
         assert body is None
         g.assert_not_called()  # never fetched
@@ -47,7 +47,7 @@ def test_successful_fetch_returns_bytes_and_disables_redirects(monkeypatch):
     resp.status_code = 200
     resp.headers = {"content-type": "image/jpeg"}
     resp.iter_content = lambda n: [b"\xff\xd8\xff" + b"x" * 2000]
-    with mock.patch("src.extraction.images.requests.get", return_value=resp) as g:
+    with mock.patch("requests.Session.get", return_value=resp) as g:
         body, ext = fetch_image_bytes(
             "https://www.ibiblio.org/hyperwar/x/maps/USA-4.jpg"
         )
@@ -60,7 +60,7 @@ def test_fetch_error_is_non_fatal(monkeypatch):
     monkeypatch.setattr(
         "src.utils.url_hygiene.resolved_host_is_safe", lambda host: ["93.184.216.34"]
     )
-    with mock.patch("src.extraction.images.requests.get", side_effect=OSError("boom")):
+    with mock.patch("requests.Session.get", side_effect=OSError("boom")):
         body, ext = fetch_image_bytes("https://www.ibiblio.org/x.jpg")
         assert body is None and ext is None  # swallowed, no raise
 
@@ -90,7 +90,7 @@ def test_rejects_non_image_body_masquerade(monkeypatch):
     resp.status_code = 200
     resp.headers = {"content-type": "text/html"}
     resp.iter_content = lambda n: [b"<html>" + b"x" * 5000 + b"</html>"]
-    with mock.patch("src.extraction.images.requests.get", return_value=resp):
+    with mock.patch("requests.Session.get", return_value=resp):
         body, ext = fetch_image_bytes("https://ex.org/not-really.jpg")
         assert body is None and ext is None
 
@@ -104,6 +104,6 @@ def test_accepts_image_magic_bytes_with_odd_content_type(monkeypatch):
     resp.status_code = 200
     resp.headers = {"content-type": "application/octet-stream"}
     resp.iter_content = lambda n: [b"\xff\xd8\xff" + b"\x00" * 3000]
-    with mock.patch("src.extraction.images.requests.get", return_value=resp):
+    with mock.patch("requests.Session.get", return_value=resp):
         body, ext = fetch_image_bytes("https://ex.org/x.jpg")
         assert body and ext == "jpg"

@@ -230,6 +230,66 @@ _SAFE_FETCH_UA = (
 _SAFE_FETCH_MAX_BYTES = 10 * 1024 * 1024  # 10MB cap on a fetched page/body
 
 
+def _pinned_get(cleaned_url, host, vetted_ips, *, timeout, headers):
+    """SSRF-safe GET that PINS the TCP connection to a VETTED resolved IP, closing the DNS-rebinding
+    TOCTOU: ``resolved_host_is_safe`` vetted the IPs, but a plain ``requests.get(hostname_url)``
+    re-resolves at connect time, so a short-TTL attacker name could answer public on the check and
+    loopback/metadata on the connect. We instead connect to one of the already-vetted IPs while
+    keeping the ``Host`` header (and, for https, the TLS SNI + cert hostname) = the original host.
+
+    Always allow_redirects=False (a redirect re-opens SSRF) and streamed (caller caps the body).
+    Tries each vetted IP in turn (all are public/safe) so a single unreachable address (e.g. an
+    unroutable IPv6 first record) doesn't fail the fetch the way a hard first-IP pin would.
+    """
+    import ipaddress
+
+    import requests
+    from requests.adapters import HTTPAdapter
+
+    scheme = urlparse(cleaned_url).scheme
+    parts = urlparse(cleaned_url)
+    port = parts.port
+    req_headers = dict(headers or {})
+    req_headers["Host"] = parts.netloc  # preserve vhost routing + logging
+
+    class _PinnedHTTPSAdapter(HTTPAdapter):
+        """Open the pool against the vetted IP but keep TLS SNI + cert check against ``host``."""
+
+        def init_poolmanager(self, *a, **kw):
+            kw["server_hostname"] = host  # TLS SNI + cert hostname = original host
+            kw["assert_hostname"] = host
+            return super().init_poolmanager(*a, **kw)
+
+    def _attempt(ip):
+        is_v6 = ":" in ip and isinstance(
+            ipaddress.ip_address(ip), ipaddress.IPv6Address
+        )
+        ip_hostpart = f"[{ip}]" if is_v6 else ip
+        netloc_ip = f"{ip_hostpart}:{port}" if port else ip_hostpart
+        ip_url = parts._replace(netloc=netloc_ip).geturl()
+        sess = requests.Session()
+        if scheme == "https":
+            sess.mount("https://", _PinnedHTTPSAdapter())
+        try:
+            return sess.get(
+                ip_url,
+                timeout=timeout,
+                headers=req_headers,
+                allow_redirects=False,
+                stream=True,
+            )
+        finally:
+            sess.close()
+
+    last_exc = None
+    for ip in vetted_ips:
+        try:
+            return _attempt(ip)
+        except Exception as exc:  # noqa: BLE001 - try the next vetted IP
+            last_exc = exc
+    raise last_exc if last_exc else RuntimeError("no vetted IPs to connect")
+
+
 def safe_get(url, *, timeout=None, headers=None, max_bytes=_SAFE_FETCH_MAX_BYTES):
     """SSRF-safe HTTP GET of an UNTRUSTED URL. Returns a ``requests.Response`` whose
     ``.content``/``.text`` is already bounded to ``max_bytes``, or ``None`` if the URL
@@ -253,7 +313,8 @@ def safe_get(url, *, timeout=None, headers=None, max_bytes=_SAFE_FETCH_MAX_BYTES
         logger.debug("safe_get blocked (scheme/host): %s", url)
         return None
     host = (urlparse(cleaned).hostname or "").lower()
-    if resolved_host_is_safe(host) is None:
+    vetted = resolved_host_is_safe(host)
+    if vetted is None:
         logger.warning("safe_get blocked (host resolves non-public): %s", host)
         return None
     req_headers = {"User-Agent": _SAFE_FETCH_UA}
@@ -261,12 +322,12 @@ def safe_get(url, *, timeout=None, headers=None, max_bytes=_SAFE_FETCH_MAX_BYTES
         req_headers.update(headers)
     eff_timeout = timeout or _SAFE_FETCH_TIMEOUT
     try:
-        resp = requests.get(
+        resp = _pinned_get(
             cleaned,
+            host,
+            vetted,
             timeout=eff_timeout,
             headers=req_headers,
-            allow_redirects=False,  # redirects reopen SSRF
-            stream=True,
         )
         body = b""
         for chunk in resp.iter_content(8192):

@@ -81,36 +81,50 @@ def _one_hop(session, url: str, timeout: int):
     the host STRING). Streams the body with a byte cap. Returns the Response (body in
     ._wwii_text up to the cap) or None on a transport/SSRF-resolve error."""
     host = (urlparse(url).hostname or "").lower()
-    if resolved_host_is_safe(host) is None:
+    vetted = resolved_host_is_safe(host)
+    if vetted is None:
         logger.warning(
             "blocked fetch: host resolves to a non-public/invalid address: %s", host
         )
         return None
     try:
-        resp = session.get(url, timeout=timeout, allow_redirects=False, stream=True)
+        # Pin the connection to a vetted IP (DNS-rebind defense); per-hop (no auto-redirect).
+        from src.utils.url_hygiene import _pinned_get
+
+        resp = _pinned_get(
+            url,
+            host,
+            vetted,
+            timeout=timeout,
+            headers=dict(session.headers),
+        )
     except Exception as e:  # noqa: BLE001 - transport error = transient/unreachable
         logger.debug("live hop error for %s: %s", url, e)
         return None
+    if not (resp.is_redirect or resp.status_code in (301, 302, 303, 307, 308)):
+        resp._wwii_text = _read_hop_text(resp, url)
     try:
-        if not (resp.is_redirect or resp.status_code in (301, 302, 303, 307, 308)):
-            body = b""
-            for chunk in resp.iter_content(8192):
-                body += chunk
-                if len(body) > _MAX_BYTES:
-                    logger.warning(
-                        "response exceeded %d bytes, truncating: %s", _MAX_BYTES, url
-                    )
-                    break
-            resp._wwii_text = body.decode(resp.encoding or "utf-8", "replace")
+        resp.close()
+    except Exception:  # noqa: BLE001
+        pass
+    return resp
+
+
+def _read_hop_text(resp, url: str) -> str:
+    """Stream a terminal hop's body with a hard byte cap; decode to text. Fail-safe to ''."""
+    try:
+        body = b""
+        for chunk in resp.iter_content(8192):
+            body += chunk
+            if len(body) > _MAX_BYTES:
+                logger.warning(
+                    "response exceeded %d bytes, truncating: %s", _MAX_BYTES, url
+                )
+                break
+        return body.decode(resp.encoding or "utf-8", "replace")
     except Exception as e:  # noqa: BLE001
         logger.debug("body read error for %s: %s", url, e)
-        resp._wwii_text = ""
-    finally:
-        try:
-            resp.close()
-        except Exception:  # noqa: BLE001
-            pass
-    return resp
+        return ""
 
 
 def _hop_text(resp) -> str:
