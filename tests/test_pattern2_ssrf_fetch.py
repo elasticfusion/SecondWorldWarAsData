@@ -258,3 +258,21 @@ def test_safe_get_caps_compressed_body_gzip_bomb(monkeypatch):
         out = safe_get("https://ex.org/p", max_bytes=1500)
         assert out is not None
         assert len(out._content) <= 200  # bailed early on the compressed cap
+
+
+def test_clean_url_rejects_unicode_homograph_loopback():
+    """§1.0c follow-up (#507 probe): NFKC/IDNA-normalizing unicode homograph hosts that resolve to
+    loopback (ideographic dots 127。0。0。1, fullwidth １２７.0.0.1, fullwidth localhost) must be rejected
+    by the STANDALONE validator, not only backstopped at the fetch layer."""
+    from src.utils.url_hygiene import _host_is_safe, clean_url
+
+    for h in (
+        "127\u30020\u30020\u30021",
+        "\uff11\uff12\uff17.0.0.1",
+        "\uff4c\uff4f\uff43\uff41\uff4c\uff48\uff4f\uff53\uff54",
+    ):  # fullwidth 'localhost'
+        assert _host_is_safe(h) is False, h
+        assert clean_url(f"http://{h}/x") is None, h
+    # a legitimate IDN (münchen.de) + ASCII DNS still pass
+    assert _host_is_safe("m\u00fcnchen.de") is True
+    assert _host_is_safe("en.wikipedia.org") is True
