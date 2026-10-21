@@ -59,7 +59,9 @@ def get_cached(source: str, query: str) -> Optional[str]:
     return backend.get(key)
 
 
-def cache_result(source: str, query: str, result: Optional[str]) -> None:
+def cache_result(
+    source: str, query: str, result
+) -> None:  # result: str | None | TRANSIENT
     """Cache a search result.
 
     - a truthy string -> positive cache (POSITIVE_TTL_DAYS)

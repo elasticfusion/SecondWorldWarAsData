@@ -76,3 +76,31 @@ def test_noaa_station_genuine_miss_is_negative_cached(monkeypatch):
     monkeypatch.setattr(N, "_search_stations_box", lambda *a, **k: {"results": []})
     assert N.find_nearest_station(50.0, 6.0, "1944-12-16", "tok") is None
     assert calls and calls[0][1] is None
+
+
+def test_wikipedia_suffix_loop_transient_skips_negative_cache(monkeypatch):
+    import src.enrichment.equipment_wikipedia as EW
+
+    calls = []
+    monkeypatch.setattr(
+        "src.utils.search_cache.cache_result", lambda s, q, r: calls.append((q, r))
+    )
+    monkeypatch.setattr("src.utils.search_cache.get_cached", lambda s, q: None)
+    # every lookup (primary + suffixes) is transient -> no result, NO negative cache
+    monkeypatch.setattr(EW, "_lookup_equipment", lambda t: SC.TRANSIENT)
+    assert EW.search_equipment_wikipedia("Panther") is None
+    assert calls == []
+
+
+def test_fetch_noaa_data_transient_guard(monkeypatch):
+    import src.enrichment.noaa_weather as N
+
+    calls = []
+    monkeypatch.setattr(
+        "src.utils.search_cache.cache_result", lambda s, q, r: calls.append((q, r))
+    )
+    monkeypatch.setattr("src.utils.search_cache.get_cached", lambda s, q: None)
+    monkeypatch.setattr(N, "_get", lambda *a, **k: SC.TRANSIENT)  # data query transient
+    out = N.fetch_noaa_weather({"id": "GHCND:X", "name": "n"}, "1944-12-16", "tok")
+    assert out is None
+    assert calls == []  # no negative-cache on transient data fetch
