@@ -201,43 +201,70 @@ def _check_batch_status(api_key: str, batch_id: str, submitted_at: int = 0) -> s
         )
 
         if total > 0 and success + error >= total:
-            # All errors = failed; otherwise complete.
-            if error >= total:
-                return "failed"
-            # Partial failure: the batch proceeds (we keep the successful fraction), but a
-            # non-trivial error fraction was SILENTLY dropped before. Surface it: OBSERV + an
-            # operator alert when the error rate exceeds the threshold, so the lost fraction is
-            # visible instead of vanishing.
-            if error > 0:
-                err_pct = 100.0 * error / total
-                logger.warning(
-                    "OBSERV batch.partial_failure batch=%s error=%d/%d (%.0f%%)",
-                    batch_id[:12],
-                    error,
-                    total,
-                    err_pct,
-                )
-                if err_pct >= _PARTIAL_FAILURE_ALERT_PCT:
-                    _alert_partial_batch_failure(batch_id, success, error, total)
-            return "complete"
+            return _classify_complete_batch(batch_id, success, error, total)
 
-        # Timeout: if >24h old and has some successes, treat as complete
-        if submitted_at and success > 0:
-            age_hours = (time.time() - submitted_at) / 3600
-            if age_hours > 24:
-                logger.warning(
-                    "Batch %s stuck for %.0fh (%d/%d), treating as complete",
-                    batch_id[:12],
-                    age_hours,
-                    success + error,
-                    total,
-                )
-                return "complete"
-
+        stuck = _force_complete_if_stuck(batch_id, submitted_at, success, error, total)
+        if stuck:
+            return stuck
         return "pending"
     except Exception as e:
         logger.error("Failed to check batch %s: %s", batch_id, e)
         return "pending"  # don't mark failed on transient errors
+
+
+def _classify_complete_batch(
+    batch_id: str, success: int, error: int, total: int
+) -> str:
+    """All requests accounted for (success+error>=total): 'failed' if all errored, else 'complete'
+    (+ OBSERV & an operator alert when the error FRACTION is non-trivial, so a partial failure is
+    visible instead of vanishing)."""
+    if error >= total:
+        return "failed"
+    if error > 0:
+        err_pct = 100.0 * error / total
+        logger.warning(
+            "OBSERV batch.partial_failure batch=%s error=%d/%d (%.0f%%)",
+            batch_id[:12],
+            error,
+            total,
+            err_pct,
+        )
+        if err_pct >= _PARTIAL_FAILURE_ALERT_PCT:
+            _alert_partial_batch_failure(batch_id, success, error, total)
+    return "complete"
+
+
+def _force_complete_if_stuck(
+    batch_id: str, submitted_at: int, success: int, error: int, total: int
+):
+    """If a batch is >24h old with some successes but NOT fully done, force it 'complete' so the
+    pipeline proceeds — with a LOUD alert, because the ecs retrieve mapper count-mismatches the
+    partial result set and discards it (falling back to a full LIVE re-extract), so the missing
+    fraction + wasted batch work must not be silent. Returns 'complete' or None."""
+    import time
+
+    if not (submitted_at and success > 0):
+        return None
+    age_hours = (time.time() - submitted_at) / 3600
+    if age_hours <= 24:
+        return None
+    missing = max(total - (success + error), 0)
+    logger.warning(
+        "OBSERV batch.force_complete_stuck batch=%s age=%.0fh got=%d/%d missing=%d",
+        batch_id[:12],
+        age_hours,
+        success + error,
+        total,
+        missing,
+    )
+    if missing > 0:
+        _notify(
+            f"⚠️ Batch {batch_id[:12]} force-completed after {age_hours:.0f}h STUCK: "
+            f"{success + error}/{total} done, {missing} MISSING. The retrieve will fall "
+            f"back to a live re-extract for this book (paid batch work partially wasted) "
+            f"— investigate the stuck batch."
+        )
+    return "complete"
 
 
 def _mark_ready(batch_id: str) -> bool:
@@ -440,9 +467,14 @@ def _check_stalled(job: dict, api_key: str) -> None:
     age_hours = (time.time() - submitted_at) / 3600
     if age_hours < 4:
         return
-    # Rate-limit: only notify on whole-hour boundaries (once per hour, not every 5 min)
-    if int(age_hours) == int(age_hours - 5 / 60):
-        return  # Same hour as 5 min ago — skip
+    # Rate-limit to once per whole elapsed-hour, robust to the poll cadence (the old
+    # `int(age_hours)==int(age_hours-5/60)` assumed a 5-min poll; the real schedule is 15-30 min, so
+    # the hour boundary often fell BETWEEN polls and the alert was silently skipped). Track the last
+    # notified whole-hour on the job item and only notify when the current hour is newer.
+    cur_hour = int(age_hours)
+    last_hour = int(job.get("last_stall_notify_hour", 0))
+    if cur_hour <= last_hour:
+        return  # already notified for this (or a later) elapsed-hour
 
     # Get current progress from API
     total = int(job.get("request_count", 0))
@@ -466,6 +498,17 @@ def _check_stalled(job: dict, api_key: str) -> None:
         f"Progress: {completed} of {total} requests completed\n"
         f"Remaining: {total - completed}"
     )
+    # Record the notified hour so a different poll cadence can't re-alert within the same hour.
+    try:
+        boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE).update_item(
+            Key={"cache_key": f"batch_job#{job['batch_id']}"},
+            UpdateExpression="SET last_stall_notify_hour = :h",
+            ExpressionAttributeValues={":h": cur_hour},
+        )
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - best-effort; a missed persist only risks a dup alert
+        logger.debug("could not persist last_stall_notify_hour: %s", e)
 
 
 def _alert_partial_batch_failure(
