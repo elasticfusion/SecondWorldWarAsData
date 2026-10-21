@@ -117,7 +117,9 @@ are NEW gaps (analyzer-invisible; bandit still 0H/0M). Ranked:
   treat non-empty content as valid unless finish_reason=='length' (truncated) or error/empty. Applied to BOTH
   retrieve paths (_map_ordered_results AND ecs_entrypoint._map_batch_results_by_index — the latter still hardcoded
   'stop', the identical bug on the async retrieve-only path, caught in review). Original (stale):
-- **[WARNING] Pattern-3 path-traversal INCOMPLETE** — weather_central._create_new_weather_file +
+- **[DONE · PR #492] [WARNING] Pattern-3 path-traversal INCOMPLETE** — FIXED: weather_central._create_new_weather_file
+  (place_name) + casualties._save_casualty (type clamped to enum) now route through _safe_entity_filename +
+  _contained_entity_path + OBSERV. Original (stale): weather_central._create_new_weather_file +
   casualties._save_casualty build filenames from LLM values without _safe_entity_filename/_contained
   (same class fixed elsewhere). Route both; clamp casualties 'type' to its enum.
 - **[WARNING] Decompression-bomb guard scoped too narrowly** — equipment convert/resize + grok_search_maps
