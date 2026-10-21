@@ -9,6 +9,7 @@ import logging
 import os
 import time
 import urllib.parse
+from typing import Optional
 
 import boto3
 
@@ -417,25 +418,33 @@ def _title_from_key(key: str) -> str:
     run.
     """
     parts = [p for p in key.split("/") if p]
-    if parts and parts[0] == "contentrepository":
-        rest = parts[1:]
-        # Skip a leading SOURCE segment so the TITLE is parsed from the right position.
-        if rest and _is_source_segment(rest[0]):
-            rest = rest[1:]
-        if len(rest) >= 2:
-            candidate = rest[0]  # titled folder
-        else:
-            candidate = rest[-1].rsplit(".", 1)[0] if rest else ""
-    else:
-        # Loose file (or no title folder) -> filename stem.
-        candidate = parts[-1].rsplit(".", 1)[0] if parts else ""
-    candidate = candidate.replace(" ", "_")
+    candidate = _derive_title_candidate(parts).replace(" ", "_")
     # SECURITY: a title flows into a filesystem path (per-title cache rmtree), a
     # subprocess --book arg, and a DynamoDB key. Reject path-traversal / unsafe
     # chars — a title must be a plain safe token or we treat it as untitled ("").
     if candidate in ("", ".", "..") or not _SAFE_TITLE_RE.fullmatch(candidate):
         return ""
     return candidate
+
+
+def _derive_title_candidate(parts: list) -> str:
+    """Derive the RAW (unvalidated) title candidate from pre-split key segments.
+
+    Pure path-shape logic ONLY — no security validation (the caller
+    ``_title_from_key`` owns the _SAFE_TITLE_RE check, unchanged). Prefer the
+    content-repository titled folder (skipping a leading SOURCE segment), else
+    the filename stem.
+    """
+    if parts and parts[0] == "contentrepository":
+        rest = parts[1:]
+        # Skip a leading SOURCE segment so the TITLE is parsed from the right position.
+        if rest and _is_source_segment(rest[0]):
+            rest = rest[1:]
+        if len(rest) >= 2:
+            return rest[0]  # titled folder
+        return rest[-1].rsplit(".", 1)[0] if rest else ""
+    # Loose file (or no title folder) -> filename stem.
+    return parts[-1].rsplit(".", 1)[0] if parts else ""
 
 
 def _book_from_key(key: str) -> str:
@@ -646,14 +655,25 @@ def _split_by_media(keys: list) -> tuple:
     ocr_keys = [k for k in keys if k.lower().endswith(ocr_suffixes)]
     convert_keys = [k for k in keys if k.lower().endswith(convert_suffixes)]
     video_keys = [k for k in keys if k.lower().endswith(_VIDEO_SUFFIXES)]
-    parse_keys = [
+    parse_keys = _parse_keys_excluding(keys, ocr_suffixes, convert_suffixes)
+    return ocr_keys, convert_keys, video_keys, parse_keys
+
+
+def _parse_keys_excluding(
+    keys: list, ocr_suffixes: tuple, convert_suffixes: tuple
+) -> list:
+    """Keys that are NOT ocr/convert/video binaries -> go straight to parse.
+
+    Byte-identical to the inline comprehension it replaces (same suffix sets,
+    same `.lower().endswith` checks, same ordering).
+    """
+    return [
         k
         for k in keys
         if not k.lower().endswith(ocr_suffixes)
         and not k.lower().endswith(convert_suffixes)
         and not k.lower().endswith(_VIDEO_SUFFIXES)
     ]
-    return ocr_keys, convert_keys, video_keys, parse_keys
 
 
 def _batch_client():
@@ -1185,50 +1205,17 @@ def _reconcile_pending(reason: str) -> list:
             return launched
 
         # 1) Content parked for Phase 1 (parse).
-        pending_content = dynamo.get_item(Key={"cache_key": "pending#content"}).get(
-            "Item", {}
-        )
-        if pending_content.get("keys"):
-            books = set()
-            for k in pending_content["keys"]:
-                parts = k.split("/")
-                if len(parts) >= 2 and parts[0] == "contentrepository":
-                    books.add(parts[1])
-            book_name = books.pop() if len(books) == 1 else ""
-            logger.info(
-                "Reconcile (%s): %d content key(s) parked -> launching Phase 1 (book=%s)",
-                reason,
-                len(pending_content["keys"]),
-                book_name or "all",
-            )
-            _run_task(PHASE1_TASK_DEF, f"reconcile-{reason}", book_name=book_name)
+        if _reconcile_phase1(reason):
             launched.append("1")
             return launched
 
         # 2) Parsed books parked for Phase 2 (extract).
-        pending_books = _get_pending_books()
-        if pending_books:
-            logger.info(
-                "Reconcile (%s): parsed queue for %d book(s) -> launching Phase 2 (%s)",
-                reason,
-                len(pending_books),
-                pending_books[0],
-            )
-            _launch_phase2_if_idle(book_name=pending_books[0])
+        if _reconcile_phase2(reason):
             launched.append("2")
             return launched
 
         # 3) Books parked for Phase 3 (enrich).
-        pending_enrich = _get_pending_books_for_enrich()
-        if pending_enrich:
-            logger.info(
-                "Reconcile (%s): enrich queue for %s -> launching Phase 3",
-                reason,
-                pending_enrich[0],
-            )
-            _run_task(
-                PHASE3_TASK_DEF, f"reconcile-{reason}", book_name=pending_enrich[0]
-            )
+        if _reconcile_phase3(reason):
             launched.append("3")
             return launched
 
@@ -1237,6 +1224,62 @@ def _reconcile_pending(reason: str) -> list:
         # WAS logger.debug -> silently swallowed the B460 strand. Now WARNING.
         logger.warning("Reconcile (%s) failed: %s", reason, e)
     return launched
+
+
+def _reconcile_phase1(reason: str) -> bool:
+    """Phase-1 drain branch of _reconcile_pending: launch parse over parked
+    content if any. Returns True if launched (byte-identical logic/logging to the
+    inline branch it replaces)."""
+    pending_content = dynamo.get_item(Key={"cache_key": "pending#content"}).get(
+        "Item", {}
+    )
+    if not pending_content.get("keys"):
+        return False
+    books = set()
+    for k in pending_content["keys"]:
+        parts = k.split("/")
+        if len(parts) >= 2 and parts[0] == "contentrepository":
+            books.add(parts[1])
+    book_name = books.pop() if len(books) == 1 else ""
+    logger.info(
+        "Reconcile (%s): %d content key(s) parked -> launching Phase 1 (book=%s)",
+        reason,
+        len(pending_content["keys"]),
+        book_name or "all",
+    )
+    _run_task(PHASE1_TASK_DEF, f"reconcile-{reason}", book_name=book_name)
+    return True
+
+
+def _reconcile_phase2(reason: str) -> bool:
+    """Phase-2 drain branch of _reconcile_pending: launch extract over the parsed
+    queue if any. Returns True if launched."""
+    pending_books = _get_pending_books()
+    if not pending_books:
+        return False
+    logger.info(
+        "Reconcile (%s): parsed queue for %d book(s) -> launching Phase 2 (%s)",
+        reason,
+        len(pending_books),
+        pending_books[0],
+    )
+    _launch_phase2_if_idle(book_name=pending_books[0])
+    return True
+
+
+def _reconcile_phase3(reason: str) -> bool:
+    """Phase-3 drain branch of _reconcile_pending: launch enrich over the enrich
+    queue if any. Returns True if launched."""
+    pending_enrich = _get_pending_books_for_enrich()
+    if not pending_enrich:
+        return False
+    logger.info(
+        "Reconcile (%s): enrich queue for %s -> launching Phase 3",
+        reason,
+        pending_enrich[0],
+    )
+    _run_task(PHASE3_TASK_DEF, f"reconcile-{reason}", book_name=pending_enrich[0])
+    return True
 
 
 def _handle_scheduled_check():
@@ -1423,30 +1466,40 @@ def _av_gate(ocr_keys, convert_keys, video_keys):
     if not AV_SCAN_ENABLED or not binaries:
         return ocr_keys, convert_keys, video_keys
     try:
-        from src.ingestion.av_scan import scan_and_gate
-
-        outcome = scan_and_gate(
-            s3,
-            BUCKET,
-            binaries,
-            EcsClamavScanner(),
-            region=os.getenv("AWS_DEFAULT_REGION", "us-east-1"),
-        )
-        clean = set(outcome.clean_keys)
-        if outcome.quarantined_keys:
-            logger.warning(
-                "AV gate quarantined %d of %d binaries",
-                len(outcome.quarantined_keys),
-                len(binaries),
-            )
-        return (
-            [k for k in ocr_keys if k in clean],
-            [k for k in convert_keys if k in clean],
-            [k for k in video_keys if k in clean],
-        )
+        return _av_scan_and_filter(ocr_keys, convert_keys, video_keys, binaries)
     except Exception as e:  # noqa: BLE001 - fail closed: do not advance unscanned
         logger.error("AV gate failed (failing closed, binaries held): %s", e)
         return [], [], []
+
+
+def _av_scan_and_filter(ocr_keys, convert_keys, video_keys, binaries):
+    """Run the ClamAV scan over ``binaries`` and return the clean subsets.
+
+    Success path of _av_gate, extracted verbatim. Any exception propagates to the
+    caller's fail-closed handler (which drops the binaries) — this helper does NOT
+    swallow errors, preserving the fail-closed gate.
+    """
+    from src.ingestion.av_scan import scan_and_gate
+
+    outcome = scan_and_gate(
+        s3,
+        BUCKET,
+        binaries,
+        EcsClamavScanner(),
+        region=os.getenv("AWS_DEFAULT_REGION", "us-east-1"),
+    )
+    clean = set(outcome.clean_keys)
+    if outcome.quarantined_keys:
+        logger.warning(
+            "AV gate quarantined %d of %d binaries",
+            len(outcome.quarantined_keys),
+            len(binaries),
+        )
+    return (
+        [k for k in ocr_keys if k in clean],
+        [k for k in convert_keys if k in clean],
+        [k for k in video_keys if k in clean],
+    )
 
 
 class EcsClamavScanner:
@@ -1648,6 +1701,14 @@ def _run_task(task_def, source, book_name="", extra_env=None):
     # critical path. This removes the old synchronous wait + fail-closed livelock
     # (NAT route activating ~1s after the 240s Lambda timeout stranded every run).
     # Task STARTUP (ECR/secrets/logs) rides the VPC interface endpoints, not NAT.
+    _fire_nat_warmup(family)
+
+    _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family)
+
+
+def _fire_nat_warmup(family: str) -> None:
+    """Fire-and-forget async NAT warm-up invoke. A failed warm-up is non-fatal
+    (the phase invokes nat-manager itself before egress); log and proceed."""
     try:
         boto3.client("lambda").invoke(
             FunctionName=NAT_MANAGER_FN,
@@ -1660,6 +1721,12 @@ def _run_task(task_def, source, book_name="", extra_env=None):
         # itself before egress. Log and proceed (do NOT fail the launch).
         logger.warning("Async NAT warm-up invoke failed (phase will retry): %s", e)
 
+
+def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
+    """Build container overrides and run the ECS task; on launch failure release
+    the (already-held) lock then re-raise. Extracted verbatim from _run_task — the
+    ecs.run_task args, the lock-release-on-failure path, and _notify_launch are
+    unchanged."""
     # Launch task
     logger.info(
         "Launching ECS task %s from %s (book=%s)", family, source, book_name or "all"
@@ -1758,19 +1825,36 @@ def _launch_phase1_if_idle():
                 cluster=CLUSTER, family=fam, desiredStatus=status
             ).get("taskArns", [])
         if active:
-            logger.info(
-                "Pipeline busy (%s active), Phase 1 will run after completion", fam
-            )
-            try:
-                boto3.client("sns").publish(
-                    TopicArn=NOTIFY_TOPIC,
-                    Subject="WWII Pipeline: Content queued",
-                    Message="Pipeline is busy. Content queued for processing when current run completes.",
-                )
-            except Exception as e:
-                logger.warning("Failed to send queued notification: %s", e)
+            _notify_phase1_busy(fam)
             return
     logger.info("Pipeline idle, launching Phase 1 to process queued content")
+    book_name = _resolve_pending_launch_book()
+    if book_name is None:
+        # All pending content were duplicates/collisions — do NOT launch (preserves the
+        # original bare-return behavior; "" would wrongly launch a "process all" task).
+        return
+    _run_task(PHASE1_TASK_DEF, "pending-queue", book_name=book_name)
+
+
+def _notify_phase1_busy(fam: str) -> None:
+    """Log + SNS-notify that the pipeline is busy so Phase 1 is deferred."""
+    logger.info("Pipeline busy (%s active), Phase 1 will run after completion", fam)
+    try:
+        boto3.client("sns").publish(
+            TopicArn=NOTIFY_TOPIC,
+            Subject="WWII Pipeline: Content queued",
+            Message="Pipeline is busy. Content queued for processing when current run completes.",
+        )
+    except Exception as e:
+        logger.warning("Failed to send queued notification: %s", e)
+
+
+def _resolve_pending_launch_book() -> Optional[str]:
+    """Resolve what Phase 1 should launch against from the parked pending#content queue,
+    applying the title-uniqueness gate. Returns None to signal DO-NOT-LAUNCH (all pending
+    content were duplicates/collisions), "" to launch ALL books (empty/multi-book pending or
+    an error), or a single book_name. Extracted from _launch_phase1_if_idle; all logging and
+    the CONDITIONAL rewrite (optimistic lock) are unchanged."""
     book_name = ""
     try:
         resp = dynamo.get_item(Key={"cache_key": "pending#content"})
@@ -1810,7 +1894,9 @@ def _launch_phase1_if_idle():
                 logger.info(
                     "All pending content were duplicates/collisions — no launch"
                 )
-                return
+                # None = DO NOT LAUNCH (distinct from "" = launch all books). Collapsing
+                # these two onto "" caused a spurious Phase-1 launch over "all".
+                return None
             keys = proceed
         books = {_title_from_key(k) for k in keys if k}
         books.discard("")
@@ -1818,7 +1904,7 @@ def _launch_phase1_if_idle():
             book_name = books.pop()
     except Exception as e:
         logger.warning("Failed to extract book name from pending queue: %s", e)
-    _run_task(PHASE1_TASK_DEF, "pending-queue", book_name=book_name)
+    return book_name
 
 
 def _queue_parsed(keys):

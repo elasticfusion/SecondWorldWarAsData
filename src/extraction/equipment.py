@@ -1457,28 +1457,7 @@ def _extract_media_from_wikipedia(
         file_resp.raise_for_status()
         file_pages = file_resp.json().get("query", {}).get("pages", {})
 
-        media_list = []
-        for fp in file_pages.values():
-            info = (fp.get("imageinfo") or [{}])[0]
-            mime = info.get("mime", "")
-            if not mime.startswith("image/"):
-                continue
-            url = info.get("thumburl") or info.get("url")
-            if not url:
-                continue
-            meta = info.get("extmetadata", {})
-            media_list.append(
-                {
-                    "media_type": "photo",
-                    "url": url,
-                    "title": fp.get("title", "").replace("File:", ""),
-                    "source": "commons",
-                    "license": meta.get("LicenseShortName", {}).get("value", "Unknown"),
-                    "description": (
-                        meta.get("ImageDescription", {}).get("value", "") or ""
-                    )[:200],
-                }
-            )
+        media_list = _build_wikipedia_media_list(file_pages)
 
         logger.debug(
             "Found %s images from Wikipedia article '%s'", len(media_list), page_title
@@ -1487,6 +1466,36 @@ def _extract_media_from_wikipedia(
     except Exception as e:
         logger.warning("Wikipedia media lookup failed for %s: %s", common_name, e)
         return []
+
+
+def _build_wikipedia_media_list(file_pages: dict) -> list:
+    """Build the media-entry list from Commons imageinfo pages. Extracted verbatim
+    from _extract_media_from_wikipedia — same image/* mime filter, same thumburl→url
+    fallback, same field shapes and truncation. No network I/O (operates on already-
+    fetched API JSON), so the SSRF-safe fetch boundary is unchanged."""
+    media_list = []
+    for fp in file_pages.values():
+        info = (fp.get("imageinfo") or [{}])[0]
+        mime = info.get("mime", "")
+        if not mime.startswith("image/"):
+            continue
+        url = info.get("thumburl") or info.get("url")
+        if not url:
+            continue
+        meta = info.get("extmetadata", {})
+        media_list.append(
+            {
+                "media_type": "photo",
+                "url": url,
+                "title": fp.get("title", "").replace("File:", ""),
+                "source": "commons",
+                "license": meta.get("LicenseShortName", {}).get("value", "Unknown"),
+                "description": (
+                    meta.get("ImageDescription", {}).get("value", "") or ""
+                )[:200],
+            }
+        )
+    return media_list
 
 
 def _enrich_equipment_data(
@@ -1643,16 +1652,25 @@ def _merge_environmental_performance(existing: dict, equipment_data: dict) -> No
     if not incoming:
         return
     merged = list(existing.get("environmental_performance") or [])
-    seen = {
-        ((e.get("condition") or "").lower(), e.get("original_text") or "")
-        for e in merged
-    }
-    for ep in incoming:
-        k = ((ep.get("condition") or "").lower(), ep.get("original_text") or "")
-        if k not in seen:
-            merged.append(ep)
-            seen.add(k)
+    _accumulate_deduped(
+        merged,
+        incoming,
+        lambda e: ((e.get("condition") or "").lower(), e.get("original_text") or ""),
+    )
     existing["environmental_performance"] = merged
+
+
+def _accumulate_deduped(merged: list, incoming: list, key_fn) -> None:
+    """Append items from ``incoming`` into ``merged`` in order, skipping any whose
+    ``key_fn(item)`` already appears (seed the seen-set from ``merged``). Mutates
+    ``merged`` in place — byte-identical dedup semantics to the inline loops it
+    replaces (same ordering, same first-wins collapse, conflicts kept)."""
+    seen = {key_fn(item) for item in merged}
+    for item in incoming:
+        k = key_fn(item)
+        if k not in seen:
+            merged.append(item)
+            seen.add(k)
 
 
 def _merge_crew_accounts(existing: dict, equipment_data: dict) -> None:
@@ -1663,15 +1681,11 @@ def _merge_crew_accounts(existing: dict, equipment_data: dict) -> None:
     if not incoming:
         return
     merged = list(existing.get("crew_accounts") or [])
-    seen = {
-        ((a.get("person_name") or "").lower(), a.get("original_text") or "")
-        for a in merged
-    }
-    for acc in incoming:
-        k = ((acc.get("person_name") or "").lower(), acc.get("original_text") or "")
-        if k not in seen:
-            merged.append(acc)
-            seen.add(k)
+    _accumulate_deduped(
+        merged,
+        incoming,
+        lambda a: ((a.get("person_name") or "").lower(), a.get("original_text") or ""),
+    )
     existing["crew_accounts"] = merged
 
 
@@ -2148,18 +2162,7 @@ def _extract_equipment_with_llm(
     # equipment_list -> 0 persisted (the supplemental #399/#401 bug class). Keying on the
     # DETERMINISTIC EventID (stable across passes) + cache_type + model makes collect-key ==
     # retrieve-key regardless of any event_data content/ordering drift. Mirrors supplemental.
-    import hashlib
-
-    _event_id = (event_data.get("Event") or {}).get("EventID", "")
-    _get_model = getattr(grok_client, "_get_model", None)
-    _model = _get_model("equipment") if callable(_get_model) else "default"
-    _cache_key = (
-        hashlib.sha256(
-            f"equipment:v1:{_model}:0.1:{_event_id}".encode("utf-8")
-        ).hexdigest()
-        if _event_id
-        else None  # no stable id -> fall back to the prompt-hash key (still sort_keys-canonical)
-    )
+    _cache_key = _equipment_cache_key(event_data, grok_client)
 
     for attempt in range(max_retries):
         try:
@@ -2196,6 +2199,27 @@ def _extract_equipment_with_llm(
                     logger.error("  ✗ All %s attempts failed: %s", max_retries, e)
 
     return None
+
+
+def _equipment_cache_key(
+    event_data: Dict[str, Any], grok_client: GrokClient
+) -> Optional[str]:
+    """Derive the STABLE, content-independent equipment cache_key (or None to fall
+    back to the prompt-hash key). Extracted verbatim from _extract_equipment_with_llm
+    — same sha256 over ``equipment:v1:{model}:0.1:{event_id}``, same None-when-no-id
+    fallback. Cache-key semantics are unchanged."""
+    import hashlib
+
+    _event_id = (event_data.get("Event") or {}).get("EventID", "")
+    _get_model = getattr(grok_client, "_get_model", None)
+    _model = _get_model("equipment") if callable(_get_model) else "default"
+    return (
+        hashlib.sha256(
+            f"equipment:v1:{_model}:0.1:{_event_id}".encode("utf-8")
+        ).hexdigest()
+        if _event_id
+        else None  # no stable id -> fall back to the prompt-hash key (still sort_keys-canonical)
+    )
 
 
 def _find_sub_event(

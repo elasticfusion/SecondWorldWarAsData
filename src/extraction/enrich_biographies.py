@@ -95,22 +95,35 @@ def _persist_award_errors(person_data: Dict[str, Any], storage) -> None:
     if storage is None:
         return
     try:
-        from src.enrichment.award_source_pages import persist_sourcing_errors
-
-        bp = person_data.get("biographical_profile") or {}
-        awards = bp.get("military_awards") or person_data.get("military_awards") or []
-        pid = person_data.get("PersonID") or person_data.get("person_id") or ""
-        pname = person_data.get("name") or person_data.get("current_name") or ""
-        for award in awards:
-            if not isinstance(award, dict):
-                continue
-            attempts = award.get("sourcing_attempts")
-            if attempts:
-                persist_sourcing_errors(
-                    storage, pid, pname, award.get("award", ""), attempts
-                )
+        _persist_award_attempts(person_data, storage)
     except Exception as e:  # noqa: BLE001
         logger.debug("award error persistence skipped: %s", e)
+
+
+def _persist_award_attempts(person_data: Dict[str, Any], storage) -> None:
+    """Persist each award's sourcing_attempts to the durable error log. Extracted
+    verbatim from _persist_award_errors' try-body — same field fallbacks (get-based,
+    no hard index), same skip of non-dict awards, same persist call. Exceptions
+    propagate to the caller's fail-safe handler (unchanged)."""
+    from src.enrichment.award_source_pages import persist_sourcing_errors
+
+    bp = person_data.get("biographical_profile") or {}
+    awards = bp.get("military_awards") or person_data.get("military_awards") or []
+    pid = person_data.get("PersonID") or person_data.get("person_id") or ""
+    pname = person_data.get("name") or person_data.get("current_name") or ""
+    for award in awards:
+        _persist_one_award_attempt(persist_sourcing_errors, storage, pid, pname, award)
+
+
+def _persist_one_award_attempt(persist_sourcing_errors, storage, pid, pname, award):
+    """Persist a single award's sourcing_attempts (skip non-dict awards / empty
+    attempts). Extracted verbatim from _persist_award_attempts' loop body — same
+    get-based field access (no hard index), same skip semantics."""
+    if not isinstance(award, dict):
+        return
+    attempts = award.get("sourcing_attempts")
+    if attempts:
+        persist_sourcing_errors(storage, pid, pname, award.get("award", ""), attempts)
 
 
 def _award_storage():
@@ -139,7 +152,7 @@ def search_grokipedia(
     person_name: str, timeout: int = 30, max_retries: int = 2
 ) -> Optional[str]:
     """Search Grokipedia for person biographical data."""
-    from src.utils.search_cache import cache_result, get_cached
+    from src.utils.search_cache import get_cached
 
     cached = get_cached("grokipedia", person_name)
     if cached == "NOT_FOUND":
@@ -149,34 +162,8 @@ def search_grokipedia(
 
     for attempt in range(max_retries):
         try:
-            last_name, first_initial = _name_match_tokens(person_name)
-            first_initial = first_initial.lower()
-            search_queries = [
-                f"{person_name} World War",
-                f"{last_name} World War",
-            ]
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-            }
-
-            for search_q in search_queries:
-                search_url = f"https://grokipedia.com/search?q={search_q}"
-                response = requests.get(
-                    search_url, headers=headers, timeout=timeout, allow_redirects=True
-                )
-                if response.status_code != 200 or "/page/" not in response.text:
-                    continue
-                slug = _match_grokipedia_page(
-                    response.text, last_name.lower(), first_initial
-                )
-                if slug:
-                    cache_result("grokipedia", person_name, response.text)
-                    _grokipedia_slugs[person_name] = slug
-                    return response.text
-
-            # No match found in any search query
-            cache_result("grokipedia", person_name, None)
-            return None
+            result = _grokipedia_query_scan(person_name, timeout)
+            return result
 
         except requests.Timeout as e:
             if attempt < max_retries - 1:
@@ -192,6 +179,42 @@ def search_grokipedia(
             logger.debug("Grokipedia search failed for %s: %s", person_name, e)
             return None
 
+    return None
+
+
+def _grokipedia_query_scan(person_name: str, timeout: int) -> Optional[str]:
+    """Run the Grokipedia search queries for one attempt; on a name-matched result
+    write the positive cache + slug and return the page HTML, else write the NEGATIVE
+    cache and return None. Extracted verbatim from search_grokipedia's try-body —
+    requests.Timeout / other exceptions are NOT caught here so the caller preserves
+    the TRANSIENT (no cache, retry) vs NEGATIVE (cache_result None) distinction."""
+    from src.utils.search_cache import cache_result
+
+    last_name, first_initial = _name_match_tokens(person_name)
+    first_initial = first_initial.lower()
+    search_queries = [
+        f"{person_name} World War",
+        f"{last_name} World War",
+    ]
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    }
+
+    for search_q in search_queries:
+        search_url = f"https://grokipedia.com/search?q={search_q}"
+        response = requests.get(
+            search_url, headers=headers, timeout=timeout, allow_redirects=True
+        )
+        if response.status_code != 200 or "/page/" not in response.text:
+            continue
+        slug = _match_grokipedia_page(response.text, last_name.lower(), first_initial)
+        if slug:
+            cache_result("grokipedia", person_name, response.text)
+            _grokipedia_slugs[person_name] = slug
+            return response.text
+
+    # No match found in any search query
+    cache_result("grokipedia", person_name, None)
     return None
 
 
@@ -551,20 +574,9 @@ def search_wikipedia(
     person_name: str, timeout: int = 30, max_retries: int = 2
 ) -> Optional[str]:
     """Search Wikipedia for person biographical data."""
-    import threading
-    import time
+    _wikipedia_rate_limit()
 
-    # Rate limit: max 1 request per 5 seconds across all threads
-    if not hasattr(search_wikipedia, "_lock"):
-        search_wikipedia._lock = threading.Lock()  # type: ignore[attr-defined]
-        search_wikipedia._last_call = 0.0  # type: ignore[attr-defined]
-    with search_wikipedia._lock:  # type: ignore[attr-defined]
-        elapsed = time.time() - search_wikipedia._last_call  # type: ignore[attr-defined]
-        if elapsed < 5:
-            time.sleep(5 - elapsed)
-        search_wikipedia._last_call = time.time()  # type: ignore[attr-defined]
-
-    from src.utils.search_cache import cache_result, get_cached
+    from src.utils.search_cache import get_cached
 
     cached = get_cached("wikipedia", person_name)
     if cached == "NOT_FOUND":
@@ -593,16 +605,7 @@ def search_wikipedia(
             )
 
             if response.status_code == 200:
-                content = _extract_page_content(response.json())
-                # Store image + license + preserve the photo itself.
-                _store_wikipedia_image(person_name, response.json())
-                if content:
-                    cache_result("wikipedia", person_name, content)
-                    return content
-                # Direct title miss — try search API
-                content = _search_wikipedia_fallback(person_name, headers, timeout)
-                cache_result("wikipedia", person_name, content)
-                return content
+                return _handle_wikipedia_200(person_name, response, timeout)
 
             if response.status_code == 429:
                 import time
@@ -636,6 +639,43 @@ def search_wikipedia(
 
     # Exhausted retries without success — don't cache (likely rate limited)
     return None
+
+
+def _wikipedia_rate_limit() -> None:
+    """Global rate limit: max 1 Wikipedia request per 5 seconds across all threads.
+    Extracted verbatim from search_wikipedia's prelude (same lock/_last_call attrs
+    on search_wikipedia, same 5s window)."""
+    import threading
+    import time
+
+    if not hasattr(search_wikipedia, "_lock"):
+        search_wikipedia._lock = threading.Lock()  # type: ignore[attr-defined]
+        search_wikipedia._last_call = 0.0  # type: ignore[attr-defined]
+    with search_wikipedia._lock:  # type: ignore[attr-defined]
+        elapsed = time.time() - search_wikipedia._last_call  # type: ignore[attr-defined]
+        if elapsed < 5:
+            time.sleep(5 - elapsed)
+        search_wikipedia._last_call = time.time()  # type: ignore[attr-defined]
+
+
+def _handle_wikipedia_200(person_name: str, response, timeout: int) -> Optional[str]:
+    """Handle a 200 Wikipedia API response: extract content, preserve the photo
+    (image + license), cache, and fall back to the search API on a direct-title
+    miss. Extracted verbatim from search_wikipedia — the photo-preserve path
+    (_store_wikipedia_image) and BOTH cache_result writes are unchanged."""
+    from src.utils.search_cache import cache_result
+
+    _, _, headers = _build_wikipedia_request(person_name)
+    content = _extract_page_content(response.json())
+    # Store image + license + preserve the photo itself.
+    _store_wikipedia_image(person_name, response.json())
+    if content:
+        cache_result("wikipedia", person_name, content)
+        return content
+    # Direct title miss — try search API
+    content = _search_wikipedia_fallback(person_name, headers, timeout)
+    cache_result("wikipedia", person_name, content)
+    return content
 
 
 def extract_biographical_data(
@@ -1405,6 +1445,30 @@ def enrich_all_people(
 
     logger.info("Enriching %d people from external sources...", len(person_files))
 
+    enriched = _enrich_people_parallel(
+        person_files, grok_client, search_references_flag, max_workers
+    )
+
+    # Link enriched people to people groups
+    _link_people_to_groups(person_files, people_dir)
+
+    logger.info("=" * 60)
+    logger.info(
+        "Enrichment complete: %d/%d people enriched", enriched, len(person_files)
+    )
+
+    return enriched
+
+
+def _enrich_people_parallel(
+    person_files: list,
+    grok_client: GrokClient,
+    search_references_flag: bool,
+    max_workers: int,
+) -> int:
+    """Enrich all person files in a thread pool; return the enriched count.
+    Extracted verbatim from enrich_all_people — same Heartbeat lifecycle, same
+    per-future error handling and progress logging."""
     from src.utils.heartbeat import Heartbeat
 
     heartbeat = Heartbeat(timeout=300, label="Phase 3")
@@ -1439,8 +1503,12 @@ def enrich_all_people(
             heartbeat.ping(f"{pf.stem} ({enriched} enriched)")
 
     heartbeat.stop()
+    return enriched
 
-    # Link enriched people to people groups
+
+def _link_people_to_groups(person_files: list, people_dir: Path) -> None:
+    """Link enriched people to people-group files (if the dir exists). Extracted
+    verbatim from enrich_all_people — same path, same logging."""
     people_groups_dir = people_dir.parent / "people_groups"
     if people_groups_dir.exists():
         logger.info("Linking people to groups...")
@@ -1449,13 +1517,6 @@ def enrich_all_people(
             groups_linked += _link_person_to_groups(person_file, people_groups_dir)
         if groups_linked:
             logger.info("Linked %d person-group membership(s)", groups_linked)
-
-    logger.info("=" * 60)
-    logger.info(
-        "Enrichment complete: %d/%d people enriched", enriched, len(person_files)
-    )
-
-    return enriched
 
 
 if __name__ == "__main__":
