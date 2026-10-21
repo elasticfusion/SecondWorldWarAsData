@@ -1,5 +1,6 @@
 """Prompt template loader — S3 override with local fallback."""
 
+import re
 import logging
 import os
 from functools import lru_cache
@@ -62,9 +63,17 @@ def render_prompt(name: str, **kwargs: Any) -> str:
         rules_text = "\n".join(f"- {r}" for r in rules)
         prompt = prompt.rstrip() + "\n\n" + rules_text
 
-    # Safe substitution: replace {var} without breaking JSON braces
-    for key, value in kwargs.items():
-        prompt = prompt.replace("{" + key + "}", str(value))
+    # SINGLE-PASS substitution: replace each {name} placeholder exactly once, left-to-right, so an
+    # already-substituted value that happens to contain a literal '{otherkey}' is NOT re-scanned and
+    # re-substituted (prompt-mutation hardening — untrusted source text flows in via some kwargs). An
+    # unknown {name} (not a kwarg) is left intact, preserving JSON braces + unreferenced vars.
+    subs = {k: str(v) for k, v in kwargs.items()}
+
+    def _sub(m):
+        key = m.group(1)
+        return subs[key] if key in subs else m.group(0)
+
+    prompt = re.sub(r"\{([A-Za-z_][A-Za-z0-9_]*)\}", _sub, prompt)
     return prompt
 
 

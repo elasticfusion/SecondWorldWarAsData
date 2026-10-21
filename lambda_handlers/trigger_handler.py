@@ -836,13 +836,44 @@ def _is_structured_reference(key: str) -> bool:
         return False
 
 
+def _claim_or_reclaim_ocr(claim_key: str, pdf_name: str) -> bool:
+    """Atomically claim the per-book OCR lock. Returns True to PROCEED (claimed, or reclaimed a
+    dropped claim), False to SKIP (a duplicate with an OCR job actually in flight). A claim with NO
+    in-flight job is a silent drop (B401: claim written, submit never happened) — ALERT + reclaim,
+    never silently skip forever."""
+    now = int(time.time())
+    item = {"cache_key": claim_key, "response": str(now), "ttl": now + 86400}
+    try:
+        dynamo.put_item(
+            Item=item, ConditionExpression="attribute_not_exists(cache_key)"
+        )
+        return True
+    except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
+        pass
+    if _ocr_job_in_flight(pdf_name):
+        logger.info(
+            "OCR intake denied: %s already claimed (job in flight) — skipping", pdf_name
+        )
+        return False
+    _alert_anomaly(
+        "ocr-claim-without-job",
+        f"OCR claim for {pdf_name} exists but NO OCR job is in flight — a prior submission was "
+        f"dropped (claim written, job never launched). Reclaiming and re-submitting.",
+    )
+    dynamo.put_item(Item=item)  # reclaim the stale claim
+    return True
+
+
 def _submit_ocr(pdf_key: str) -> bool:
     """Submit Chandra GPU OCR for a raw PDF/image (Option B: -> Phase 0), with
     best-guess page-range chunking so a SPOT reclaim loses one chunk, not the whole
     doc. One atomic per-book claim (ocr#{book}) guards the WHOLE set of chunk jobs.
     Output lands at ocr-output/{book}/[chunk-{range}/] for the downstream merge."""
     try:
-        pdf_name = pdf_key.split("/")[-1].rsplit(".", 1)[0]
+        # Validate the key-derived stem (SAFE_TITLE, 'unknown' fallback) like the convert/video
+        # intake paths — _submit_ocr bypasses _run_task's guard, so without this a malformed/space/
+        # unicode stem would flow into S3 prefixes, the DynamoDB claim key, and the Batch job name.
+        pdf_name = _safe_stem_from_key(pdf_key)
         # Reject a misassigned file (declared extension != actual bytes) BEFORE
         # spending a GPU OCR job: a .pdf/.jpg that is really a zip/html/garbage
         # OCRs to nothing. Off-ramp to needs-review for more extensive evaluation
@@ -851,44 +882,10 @@ def _submit_ocr(pdf_key: str) -> bool:
         # to OCR (don't block a legit doc on a transient S3 read).
         if _ocr_media_mismatch(pdf_key, pdf_name):
             return False
-        # G4 (§8) — deny redundant submissions AT INTAKE (per book, covering all its
-        # chunks). A duplicate ObjectCreated must not re-launch the chunk set.
+        # G4 (§8) — deny redundant submissions AT INTAKE (per book, covering all its chunks).
         claim_key = f"ocr#{pdf_name}"
-        try:
-            dynamo.put_item(
-                Item={
-                    "cache_key": claim_key,
-                    "response": str(int(time.time())),
-                    "ttl": int(time.time()) + 86400,
-                },
-                ConditionExpression="attribute_not_exists(cache_key)",
-            )
-        except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
-            # A claim exists. Per the no-silent-failure principle, verify a job is
-            # ACTUALLY in flight. A claim with NO running/queued OCR job is a silent
-            # drop (B401: the claim was written but submission never happened / the
-            # invocation died before submit) — it must ALERT and be reclaimed, not
-            # silently skipped forever.
-            if _ocr_job_in_flight(pdf_name):
-                logger.info(
-                    "OCR intake denied: %s already claimed (job in flight) — skipping",
-                    pdf_name,
-                )
-                return False
-            _alert_anomaly(
-                "ocr-claim-without-job",
-                f"OCR claim for {pdf_name} exists but NO OCR job is in flight — "
-                f"a prior submission was dropped (claim written, job never launched). "
-                f"Reclaiming and re-submitting.",
-            )
-            # Reclaim: overwrite the stale claim and proceed to submit.
-            dynamo.put_item(
-                Item={
-                    "cache_key": claim_key,
-                    "response": str(int(time.time())),
-                    "ttl": int(time.time()) + 86400,
-                }
-            )
+        if not _claim_or_reclaim_ocr(claim_key, pdf_name):
+            return False
         s3_input = f"s3://{BUCKET}/{pdf_key}"
         # Declarative structured-reference signal: a doc uploaded under the
         # reserved _oob/ path is a structured/tabular reference (e.g. the ETO
