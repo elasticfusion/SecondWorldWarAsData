@@ -10,6 +10,77 @@ are ordered: (1) **Phase 2 — open**, (2) Phase 3 / enrichment — open, (3) ar
 
 ## 1. PHASE 2 — OPEN (current priority)
 
+### 1.0d Phase-2 THIRD RE-REVIEW findings (2026-10-21d) — full doc: docs/current/PHASE2_REREVIEW_2026-10-21d.md
+
+A THIRD independent 14-agent review (7 slices × code+security) after §1.0b/§1.0c (#475–#513), tasked
+to find what both prior rounds MISSED + regressions + bugs in the largely-unreviewed areas (ingestion/
+Phase-0, schemas, DEDUP, concurrency/orchestration, lambda handlers). The biggest new surface is DEDUP
+reference-rebase (unreviewed before) + sibling lambda handlers that never got trigger_handler's topic-trust/
+safe-book hardening. Fix order (CRITICAL → HIGH → WARNING → NIT); each via branch→gate→concurrent code+
+security reviews (both PASS)→CI→merge→sync→move to §7. bandit still 0H/0M.
+
+- **[CRITICAL] dedup merge deletes the secondary entity file but fails to REBASE its references — 3 broken paths:**
+  (1) people_groups auto-merge uses the wrong id_field (PeopleGroupID vs real PK GroupID) → rebase never runs,
+  file deleted → mass dangling GroupID refs; (2) merge_generic passes the PK field-NAME as the sub-event ref_key
+  so se.get("PlaceID"/"EquipmentID"/"PeopleGroupID") is always empty → sub-event places[]/equipment[]/groups[]
+  never repointed for ANY generic entity on the ecs auto-merge path; (3) Lambda dedup-UI _merge_generic_files
+  rebases nothing (+ _merge_people_files runs do_merge on a people-only tmpdir so even people UI merges don't
+  rebase). referential_integrity ALERTs on the dangling refs but doesn't fix them. (code_schemas_dedup + sec_schemas_dedup)
+- **[HIGH] mdreview_ui_handler path traversal → arbitrary S3 write / Phase-1 content injection** — _save_snippet/
+  _get_page use an unvalidated `book` in the S3 key; validate with the shared safe-token regex (the trigger_handler
+  hardening wasn't propagated). (corroborated)
+- **[HIGH] dedup_gate_handler trusts SNS Message with no topic-ARN check → human-review-gate bypass** (fan-out
+  ungates Phase 3). Port trigger_handler._trusted_topic_name. (corroborated)
+- **[HIGH] unit_patch._download DNS-rebind SSRF** — vets host then does a plain re-resolving get on an OpenSERP
+  (attacker-influenceable) url, storing bytes as the patch master; route through fetch_image_bytes/_pinned_get.
+  (+ source_retrieval._download_to_quarantine same gap, dead/test-only — fix together.) (corroborated)
+- **[HIGH] supplemental enrichment stores UNVERIFIED urls** (approved≠saved, no gate; validate_url only checks
+  200) → silent wrong-source attribution. Route through the Grok verify gate bibliography uses.
+- **[HIGH] locked_json atomic-write breaks the cross-process flock** (os.replace commits a new inode nobody
+  locks → lost-update race reappears; regression from #1.0c) + create-path "w+" truncates before the flock.
+  Flock a stable sidecar lockfile; open create-path without O_TRUNC. (corroborated)
+- **[HIGH] ecs.run_task failures[] unchecked + retrieve-only crash/SIGTERM stalls** — placement failure (common
+  on FARGATE_SPOT) holds lock/retrieve-claim to TTL with nothing running (6h for retrieve, counted "complete");
+  a crashed --retrieve-only leaves job="ready"+claim held (~6h stall); _handle_sigterm is a no-op for
+  --retrieve-only (never sets _current_phase_script). Check failures[]; scope/heartbeat the claim; set
+  _current_phase_script + release in SIGTERM/finally.
+- **[WARNING] grok_client batch count-mismatch discards 100% with zero retry** (all-fail → >20% systemic guard
+  skips retry) — a single dropped/extra results page → every event in the batch extracts 0. Route a mismatch to
+  real-time retry / page-reconcile. (corroborated)
+- **[WARNING] search_cache._DynamoBackend.get treats a transient Dynamo error as a MISS** → read blip → 7d
+  negative suppression (symmetric to the #1.0c TRANSIENT fix, on the read side).
+- **[WARNING] wayback _get_with_courtesy re-resolving GET (DNS-rebind pin missing)** — same pin-gap family as
+  unit_patch/source_retrieval; route through _pinned_get.
+- **[WARNING] credit reservation leaked on batch failure** (poller never releases on _mark_failed/stuck) →
+  credit#spend saturates → silent halt when gating is on.
+- **[WARNING] dedup merge not crash-atomic** (secondary unlink + ref-repoint BEFORE the primary write/validate)
+  → crash/blocked-write → lost mentions or dangling refs. Write+validate primary FIRST.
+- **[WARNING] non-idempotent OCR chunk submission** → partial-failure retry resubmits ALL chunks (duplicate GPU
+  jobs). + failed phase3 leaks its lock; run_phase terminal cleanup not in finally.
+- **[WARNING] batch_poller unvalidated `book` + no event-source auth**; EcsClamavScanner AV run-id uses builtin
+  hash() (per-process-salted) → result-key collision.
+- **[WARNING] _write_entity_guarded infers 'blocked' from mtime** instead of the bool return (spurious blocks).
+- **[WARNING] merges dedup mentions by Sub_eventID only** → distinct per-sub-event mentions collapsed (junction loss).
+- **[WARNING] dedup exclusions Dynamo key '#'-delimited but names not '#'-sanitized** → a '#' name silently drops
+  the not-duplicate decision → re-merge. + people._save_person_file omits entity="people" (latent downgrade).
+- **[WARNING] ingestion/Phase-0:** STATISTICS merge drops rows by metric-alone vs (category,metric) upsert key →
+  silent row loss; campaigns table rowspan misread → campaign dropped; detect_scanned front-matter sampling bias;
+  zip/rar member extracted with NO decompression cap (zip-bomb OOM) + extracted members BYPASS the AV gate +
+  basename-collision silent overwrite.
+- **[WARNING] supplemental_info_pipeline.process_supplemental_information iterates a dict as a list** (crashes on
+  the phase1 endnotes/footnotes shape). + equipment merge hard-indexes event_mentions/variant_name on legacy data
+  (silent mention drop). + equipment/grok_search_maps mutate the PROCESS-GLOBAL Image.MAX_IMAGE_PIXELS under
+  ThreadPool(3) → bomb cap weakened mid-decode (concurrency).
+- **[NIT batch]** events retry-cache orphaned key + paragraphs[0] IndexError; people_groups enrichment dropped on
+  merge; grok_client _validate_prompt content-DoS (raises on {token} in rendered prompt) + quadratic-ReDoS +
+  weaker detector regex; json_validator/custom_validators ID-heuristic disagreement + _fix_invalid_ulids silent
+  randomization (latent); search_cache 64-bit key; result_dedup keep-first vs documented union; bibliography
+  _aggregate_findings double-append primary url; supplemental mentioned-people/orgs unbounded substring;
+  images.py offline-illustration re-run duplicates; maps.py marks processed before extracting; groups_output
+  event_mentions additionalProperties:false; nat_manager concurrent-create loser returns 'ready' unverified;
+  award_source_pages Content-Type ext (backstopped); HTML sniff leading-whitespace/BOM; pandoc output no size
+  cap; dead code (_acquire_lock, external_maps.main arg order).
+
 ### 1.0c Phase-2 FRESH RE-REVIEW findings (2026-10-20b) — full doc: docs/current/PHASE2_REREVIEW_2026-10-20b.md
 
 A SECOND independent 12-agent re-review (6 slices × code+security) of the merged state after the 1.0b
