@@ -39,6 +39,57 @@ def _annotate_semantic_flags(filepath: Path, data: Any) -> None:
         pass
 
 
+def _atomic_write_json(filepath: Path, data: Any) -> None:
+    """Crash-atomic JSON write: serialize fully, temp file in the same dir, fsync, os.replace. Never
+    truncate-in-place (a mid-write crash would corrupt the file)."""
+    import os as _os
+    import tempfile as _tf
+
+    payload = json.dumps(data, indent=2, ensure_ascii=False)
+    d = _os.path.dirname(str(filepath)) or "."
+    tfd, tname = _tf.mkstemp(dir=d, suffix=".tmp")
+    try:
+        with _os.fdopen(tfd, "w", encoding="utf-8") as tf:
+            tf.write(payload)
+            tf.flush()
+            _os.fsync(tf.fileno())
+        _os.replace(tname, filepath)
+    except BaseException as _se:
+        if _os.path.exists(tname):
+            _os.unlink(tname)
+        logger.warning("OBSERV locked_json.save_failed file=%s err=%s", filepath, _se)
+        raise
+
+
+def _guarded_save(filepath: Path, new_data: Any) -> bool:
+    """Shared save() body for locked_json: run the SAME central write-guard as write_json_with_lock
+    (_validate_entity blocks a schema-invalid record), then stamp metadata at the record's REAL
+    per-entity version, then crash-atomic write. Returns False (and does NOT write) on a block — the
+    read-modify-write merge paths (equipment/people/places/people_groups/dates/weather/enrich_write/
+    batch_parallel) previously called only _annotate_semantic_flags here, bypassing validation so a
+    merge that dropped a required field was persisted unguarded."""
+    if not _validate_entity(filepath, new_data):
+        logger.warning(
+            "OBSERV locked_json.blocked_schema_invalid file=%s — merge NOT persisted",
+            filepath,
+        )
+        return False
+    # Stamp metadata ONLY for a KNOWN entity record (a non-entity bookkeeping/index file must
+    # round-trip unchanged — the pre-guard save() never stamped). _resolve_entity_type returns the
+    # parent dir name for ANY path, so gate on membership in ENTITY_SCHEMA_VERSIONS (also avoids a
+    # min-version mis-stamp for an unknown dir, cf. the #498 unknown-entity guard).
+    entity = _resolve_entity_type(filepath)
+    try:
+        from src.schemas import ENTITY_SCHEMA_VERSIONS, inject_metadata
+
+        if entity in ENTITY_SCHEMA_VERSIONS:
+            inject_metadata(new_data, entity=entity)
+    except Exception as e:  # noqa: BLE001 - stamping must never block a validated write
+        logger.debug("locked_json metadata stamp skipped for %s: %s", filepath, e)
+    _atomic_write_json(filepath, new_data)
+    return True
+
+
 @contextmanager
 def locked_json(filepath: Path):
     """Context manager that holds an exclusive lock across read-modify-write.
@@ -73,31 +124,7 @@ def locked_json(filepath: Path):
                 data = json.loads(content) if content.strip() else {}
 
                 def save(new_data):
-                    _annotate_semantic_flags(filepath, new_data)
-                    # Crash-atomic: serialize fully, write a temp file in the same dir, fsync, then
-                    # os.replace (atomic swap). Truncate-in-place previously left a corrupt/truncated
-                    # file if the process died mid-json.dump while holding the lock.
-                    import os as _os
-                    import tempfile as _tf
-
-                    payload = json.dumps(new_data, indent=2, ensure_ascii=False)
-                    d = _os.path.dirname(str(filepath)) or "."
-                    tfd, tname = _tf.mkstemp(dir=d, suffix=".tmp")
-                    try:
-                        with _os.fdopen(tfd, "w", encoding="utf-8") as tf:
-                            tf.write(payload)
-                            tf.flush()
-                            _os.fsync(tf.fileno())
-                        _os.replace(tname, filepath)
-                    except BaseException as _se:
-                        if _os.path.exists(tname):
-                            _os.unlink(tname)
-                        logger.warning(
-                            "OBSERV locked_json.save_failed file=%s err=%s",
-                            filepath,
-                            _se,
-                        )
-                        raise
+                    return _guarded_save(filepath, new_data)
 
                 yield data, save
             finally:
@@ -111,28 +138,7 @@ def locked_json(filepath: Path):
                     data = json.load(f)
 
             def save(new_data):
-                _annotate_semantic_flags(filepath, new_data)
-                # Crash-atomic (same as the flock variant): temp + os.replace, not open('w') which
-                # truncates-in-place and would corrupt the file on a mid-write crash.
-                import os as _os
-                import tempfile as _tf
-
-                payload = json.dumps(new_data, indent=2, ensure_ascii=False)
-                d = _os.path.dirname(str(filepath)) or "."
-                tfd, tname = _tf.mkstemp(dir=d, suffix=".tmp")
-                try:
-                    with _os.fdopen(tfd, "w", encoding="utf-8") as tf:
-                        tf.write(payload)
-                        tf.flush()
-                        _os.fsync(tf.fileno())
-                    _os.replace(tname, filepath)
-                except BaseException as _se:
-                    if _os.path.exists(tname):
-                        _os.unlink(tname)
-                    logger.warning(
-                        "OBSERV locked_json.save_failed file=%s err=%s", filepath, _se
-                    )
-                    raise
+                return _guarded_save(filepath, new_data)
 
             yield data, save
     finally:
