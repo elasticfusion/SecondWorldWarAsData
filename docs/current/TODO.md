@@ -332,6 +332,15 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
 
 ## 4. INFRA / SECURITY / COST
 
+- **[LOW · PATTERN-concurrency #3, found 2026-10-20] Write-guard tripwire blind spots.** The
+  raw-write gate (scripts/check_raw_writes.sh, baseline 65) matches only `json.dump(` / `.write_text(`
+  and VERIFIES 0 raw writes target an entity-record path today — so the opt-in bypass is governed. But
+  it misses equivalent sinks: `f.write(json.dumps(rec))`, `open(path,'w').write(...)`,
+  `path.write_bytes(json.dumps(rec).encode())`. A future per-entity write via those idioms would slip
+  through. FIX (separate audit): extend the detector to the file-write forms (excluding boto
+  Payload/Body=...encode() which are not file writes) + classify the ~14 current matches. The 4
+  concurrency/crash-safety MEDs #1/#2/#4 are fixed; #3 is this tripwire-hardening follow-up.
+
 - **[LOW · found 2026-10-20, out of trigger-hardening scope] _submit_ocr derives pdf_name with a
   raw rsplit.** It feeds a DynamoDB claim key (ocr#{pdf_name}), S3 keys (ocr-output/{pdf_name}/...),
   and Batch job commands. PRE-EXISTING; low blast radius (flat S3 keys, not a filesystem-rmtree/--book
