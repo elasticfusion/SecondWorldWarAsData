@@ -24,6 +24,54 @@ from typing import Any, Dict, List, Optional
 SUPPLY_TYPES = {"supply_shortage", "delivery_delay", "transport_disruption"}
 
 
+def _index_logistics_record(
+    d: Any,
+    by_id: Dict[str, Dict[str, Any]],
+    by_group: Dict[str, List[Dict[str, Any]]],
+) -> None:
+    """Index a single logistics record into ``by_id`` + ``by_group`` (mutated in place). No-op
+    for a non-dict record or one with no LogisticsID."""
+    if not isinstance(d, dict):
+        return
+    lid = d.get("LogisticsID")
+    if not lid:
+        return
+    temporal = d.get("temporal") if isinstance(d.get("temporal"), dict) else {}
+    entry = {
+        "LogisticsID": lid,
+        "logistics_type": d.get("logistics_type"),
+        "date_start": temporal.get("date_start"),
+        "date_end": temporal.get("date_end") or temporal.get("date_start"),
+        "date_ids": [
+            temporal.get("DateID_start"),
+            temporal.get("DateID_end"),
+        ],
+    }
+    by_id[lid] = entry
+    for org in d.get("impacted_organizations", []) or []:
+        gid = org.get("PeopleGroupID") if isinstance(org, dict) else None
+        if gid:
+            by_group.setdefault(gid, []).append(entry)
+
+
+def _index_logistics_file(
+    f: Path,
+    by_id: Dict[str, Dict[str, Any]],
+    by_group: Dict[str, List[Dict[str, Any]]],
+) -> None:
+    """Read one logistics JSON file (single record dict OR a list of records) and index each
+    record into ``by_id`` + ``by_group`` (mutated in place). Fail-safe on unreadable JSON.
+    """
+    try:
+        data = json.loads(f.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return
+    # A logistics file may hold a single record (dict) OR a list of records.
+    records = data if isinstance(data, list) else [data]
+    for d in records:
+        _index_logistics_record(d, by_id, by_group)
+
+
 def build_logistics_index(logistics_dir: Path) -> Dict[str, Any]:
     """Build join indexes over logistics records:
     {'by_group': {GroupID: [entry]}, 'by_id': {LogisticsID: entry}} where entry carries
@@ -35,34 +83,7 @@ def build_logistics_index(logistics_dir: Path) -> Dict[str, Any]:
     for f in logistics_dir.glob("*.json"):
         if f.name in ("index.json",):
             continue
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        # A logistics file may hold a single record (dict) OR a list of records.
-        records = data if isinstance(data, list) else [data]
-        for d in records:
-            if not isinstance(d, dict):
-                continue
-            lid = d.get("LogisticsID")
-            if not lid:
-                continue
-            temporal = d.get("temporal") if isinstance(d.get("temporal"), dict) else {}
-            entry = {
-                "LogisticsID": lid,
-                "logistics_type": d.get("logistics_type"),
-                "date_start": temporal.get("date_start"),
-                "date_end": temporal.get("date_end") or temporal.get("date_start"),
-                "date_ids": [
-                    temporal.get("DateID_start"),
-                    temporal.get("DateID_end"),
-                ],
-            }
-            by_id[lid] = entry
-            for org in d.get("impacted_organizations", []) or []:
-                gid = org.get("PeopleGroupID") if isinstance(org, dict) else None
-                if gid:
-                    by_group.setdefault(gid, []).append(entry)
+        _index_logistics_file(f, by_id, by_group)
     return {"by_group": by_group, "by_id": by_id}
 
 
@@ -125,6 +146,32 @@ def _resolve_explicit_refs(refs: List[Any], by_id: Dict, out: Dict) -> None:
             }
 
 
+def _try_link_cooccurring(
+    entry: Dict,
+    out: Dict,
+    supply_only: bool,
+    date_id: Optional[str],
+    date_iso: Optional[str],
+) -> None:
+    """Link a single candidate logistics ``entry`` into ``out`` (mutated) if it is not already
+    linked, passes the optional supply-type filter, and co-occurs in time (shared DateID or ISO
+    date within the logistics interval)."""
+    lid = entry["LogisticsID"]
+    if lid in out:
+        return
+    if supply_only and entry["logistics_type"] not in SUPPLY_TYPES:
+        return
+    co_time = (
+        date_id is not None and date_id in (entry.get("date_ids") or [])
+    ) or _date_overlaps(date_iso, entry["date_start"], entry["date_end"])
+    if co_time:
+        out[lid] = {
+            "LogisticsID": lid,
+            "logistics_type": entry["logistics_type"],
+            "association": "co_occurring",
+        }
+
+
 def _resolve_cooccurring(
     group_ids: List[str],
     by_group: Dict,
@@ -138,17 +185,4 @@ def _resolve_cooccurring(
     ``out`` (skips ids already linked explicitly; optionally supply-types only)."""
     for gid in group_ids or []:
         for entry in by_group.get(gid, []):
-            lid = entry["LogisticsID"]
-            if lid in out:
-                continue
-            if supply_only and entry["logistics_type"] not in SUPPLY_TYPES:
-                continue
-            co_time = (
-                date_id is not None and date_id in (entry.get("date_ids") or [])
-            ) or _date_overlaps(date_iso, entry["date_start"], entry["date_end"])
-            if co_time:
-                out[lid] = {
-                    "LogisticsID": lid,
-                    "logistics_type": entry["logistics_type"],
-                    "association": "co_occurring",
-                }
+            _try_link_cooccurring(entry, out, supply_only, date_id, date_iso)

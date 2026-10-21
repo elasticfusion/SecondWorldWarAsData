@@ -67,6 +67,31 @@ def validate_event_json(data: Dict[str, Any]) -> None:
             seen_ids.add(seid)
 
 
+def _build_subevent_fulltext(se: dict, para_lookup: dict) -> None:
+    """Replace one sub-event's 'paragraphs' number array with a 'Sub-event_fulltext' dict,
+    looking up paragraph text from ``para_lookup``. Falls back to the summary when the fulltext
+    would otherwise be empty. Mutates ``se`` in place; no-op if fulltext is already present.
+    """
+    nums = se.pop("paragraphs", None)
+    if nums is None and "Sub-event_fulltext" in se:
+        return  # Already has fulltext (cached old-format response)
+    fulltext = {}
+    for n in nums or []:
+        if isinstance(n, int) and n in para_lookup:
+            fulltext[f"Paragraph_{n}"] = para_lookup[n]
+        else:
+            logger.warning("  Paragraph %s not found in parsed data, skipping", n)
+    se["Sub-event_fulltext"] = fulltext
+
+    # Fallback: if fulltext is empty but summary exists, use summary as text
+    if not fulltext and se.get("Sub-event_summary"):
+        logger.debug(
+            "Sub-event %s has summary but no fulltext — using summary as fallback",
+            se.get("Sub-eventID"),
+        )
+        se["Sub-event_fulltext"] = {"summary": se["Sub-event_summary"]}
+
+
 def _reconstruct_fulltext(response: dict, parsed_data: dict) -> dict:
     """Replace 'paragraphs' number arrays with 'Sub-event_fulltext' dicts.
 
@@ -76,24 +101,7 @@ def _reconstruct_fulltext(response: dict, parsed_data: dict) -> dict:
         p["absolute_number"]: p["text"] for p in parsed_data.get("paragraphs", [])
     }
     for se in response.get("Event", {}).get("Sub-events", []):
-        nums = se.pop("paragraphs", None)
-        if nums is None and "Sub-event_fulltext" in se:
-            continue  # Already has fulltext (cached old-format response)
-        fulltext = {}
-        for n in nums or []:
-            if isinstance(n, int) and n in para_lookup:
-                fulltext[f"Paragraph_{n}"] = para_lookup[n]
-            else:
-                logger.warning("  Paragraph %s not found in parsed data, skipping", n)
-        se["Sub-event_fulltext"] = fulltext
-
-        # Fallback: if fulltext is empty but summary exists, use summary as text
-        if not fulltext and se.get("Sub-event_summary"):
-            logger.debug(
-                "Sub-event %s has summary but no fulltext — using summary as fallback",
-                se.get("Sub-eventID"),
-            )
-            se["Sub-event_fulltext"] = {"summary": se["Sub-event_summary"]}
+        _build_subevent_fulltext(se, para_lookup)
     return response
 
 
@@ -231,28 +239,14 @@ def _subevent_para_range(se: dict) -> tuple:
     return (min(nums), max(nums))
 
 
-def _apply_deterministic_ids(response: dict, parsed_data: dict) -> dict:
-    """Replace the LLM-supplied EventID/Sub-eventIDs with DETERMINISTIC, content-derived ids so a
-    re-extraction of the same source unit yields identical ids (no cross-reference ripple), and the
-    model's id is derived/validated rather than trusted. Central: ids come from
-    ``src.utils.deterministic_ids``. Called after fulltext reconstruction, before validation.
-    """
-    from src.utils.deterministic_ids import event_id as _event_id
+def _assign_subevent_ids(event: dict, eid: str) -> None:
+    """Derive DETERMINISTIC Sub-eventIDs for each sub-event of ``event`` from the parent EventID
+    + the sub-event's paragraph range and name (central derivation in
+    ``src.utils.deterministic_ids``). Mutates each sub-event in place. Preserves the ordinal
+    fall-back for a sub-event with neither a paragraph range nor a name (so sub_event_id never
+    raises before schema validation)."""
     from src.utils.deterministic_ids import sub_event_id as _sub_event_id
 
-    event = response.get("Event")
-    if not isinstance(event, dict):
-        return response
-    # Real parsed-data key is "section_id" (chunk-split files set "<base>-<chunk>"); the legacy
-    # "section" key does not exist. Using the wrong key collapses every section of a chapter onto
-    # one EventID (over-merge), so read section_id explicitly.
-    section = parsed_data.get("section_id") or parsed_data.get("section") or "full"
-    eid = _event_id(
-        parsed_data.get("book"),
-        parsed_data.get("chapter_title"),
-        section,
-    )
-    event["EventID"] = eid
     for index, se in enumerate(event.get("Sub-events", []) or []):
         if not isinstance(se, dict):
             continue
@@ -269,6 +263,30 @@ def _apply_deterministic_ids(response: dict, parsed_data: dict) -> dict:
             para_end=end,
             name=name,
         )
+
+
+def _apply_deterministic_ids(response: dict, parsed_data: dict) -> dict:
+    """Replace the LLM-supplied EventID/Sub-eventIDs with DETERMINISTIC, content-derived ids so a
+    re-extraction of the same source unit yields identical ids (no cross-reference ripple), and the
+    model's id is derived/validated rather than trusted. Central: ids come from
+    ``src.utils.deterministic_ids``. Called after fulltext reconstruction, before validation.
+    """
+    from src.utils.deterministic_ids import event_id as _event_id
+
+    event = response.get("Event")
+    if not isinstance(event, dict):
+        return response
+    # Real parsed-data key is "section_id" (chunk-split files set "<base>-<chunk>"); the legacy
+    # "section" key does not exist. Using the wrong key collapses every section of a chapter onto
+    # one EventID (over-merge), so read section_id explicitly.
+    section = parsed_data.get("section_id") or parsed_data.get("section") or "full"
+    eid = _event_id(
+        parsed_data.get("book"),
+        parsed_data.get("chapter_title"),
+        section,
+    )
+    event["EventID"] = eid
+    _assign_subevent_ids(event, eid)
     return response
 
 

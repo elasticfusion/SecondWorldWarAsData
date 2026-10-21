@@ -120,29 +120,41 @@ def _build_enrichment_query(data: dict) -> tuple[str, str]:
     return query, canonical
 
 
+def _nationality_contradiction(data: dict, enrich: dict) -> Optional[str]:
+    """Return a reason string if record + enrichment nationalities are BOTH known and differ,
+    else None (unknown on either side is permissive)."""
+    rec_nat = (
+        (data.get("nationality") or data.get("country_of_origin") or "").strip().upper()
+    )
+    got_nat = (enrich.get("nationality") or "").strip().upper()
+    if rec_nat and got_nat and rec_nat != got_nat:
+        return f"nationality contradiction (record {rec_nat} vs enrichment {got_nat})"
+    return None
+
+
+def _echelon_contradiction(data: dict, enrich: dict) -> Optional[str]:
+    """Return a reason string if record echelon/hierarchy + enrichment unit_type are BOTH known
+    and differ, else None (unknown on either side is permissive)."""
+    rec_ech = (data.get("military_hierarchy") or "").strip().lower()
+    got_ech = (enrich.get("unit_type") or "").strip().lower()
+    if rec_ech and got_ech and rec_ech != got_ech:
+        return f"echelon contradiction (record {rec_ech} vs enrichment {got_ech})"
+    return None
+
+
 def _enrichment_agrees(data: dict, enrich: dict) -> tuple[bool, str]:
     """Wrong-article GUARD: reject enrichment that CONTRADICTS the record's known facts
     (the hallmark of a mis-resolved Wikipedia disambiguation). Checks nationality and
     echelon/hierarchy; a mismatch where BOTH sides are known -> reject. Unknown on
     either side is permissive. Returns (ok, reason)."""
     # Nationality agreement
-    rec_nat = (
-        (data.get("nationality") or data.get("country_of_origin") or "").strip().upper()
-    )
-    got_nat = (enrich.get("nationality") or "").strip().upper()
-    if rec_nat and got_nat and rec_nat != got_nat:
-        return (
-            False,
-            f"nationality contradiction (record {rec_nat} vs enrichment {got_nat})",
-        )
+    reason = _nationality_contradiction(data, enrich)
+    if reason:
+        return (False, reason)
     # Echelon / hierarchy agreement
-    rec_ech = (data.get("military_hierarchy") or "").strip().lower()
-    got_ech = (enrich.get("unit_type") or "").strip().lower()
-    if rec_ech and got_ech and rec_ech != got_ech:
-        return (
-            False,
-            f"echelon contradiction (record {rec_ech} vs enrichment {got_ech})",
-        )
+    reason = _echelon_contradiction(data, enrich)
+    if reason:
+        return (False, reason)
     return True, "agrees"
 
 
@@ -345,6 +357,30 @@ def _apply_group_enrichment(
     logger.info("  ✓ Enriched %s", name)
 
 
+def _collect_group_enrichments(futures, total: int) -> int:
+    """Drain the group-enrichment futures, counting successes + logging progress. Returns the
+    enriched count."""
+    from concurrent.futures import as_completed
+
+    enriched = 0
+    processed = 0
+    for future in as_completed(futures):
+        processed += 1
+        try:
+            if future.result():
+                enriched += 1
+        except Exception as e:
+            logger.warning("Failed to enrich group %s: %s", futures[future].stem, e)
+        if processed % 10 == 0 or processed == total:
+            logger.info(
+                "  Groups progress: %d/%d done (%d enriched)",
+                processed,
+                total,
+                enriched,
+            )
+    return enriched
+
+
 def enrich_all_groups(
     groups_dir: Path,
     grok_client: GrokClient,
@@ -366,28 +402,13 @@ def enrich_all_groups(
 
     logger.info("Enriching %d people groups...", len(group_files))
 
-    enriched = 0
-    processed = 0
     total = len(group_files)
 
-    from concurrent.futures import ThreadPoolExecutor, as_completed
+    from concurrent.futures import ThreadPoolExecutor
 
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
         futures = {pool.submit(enrich_group, gf, grok_client): gf for gf in group_files}
-        for future in as_completed(futures):
-            processed += 1
-            try:
-                if future.result():
-                    enriched += 1
-            except Exception as e:
-                logger.warning("Failed to enrich group %s: %s", futures[future].stem, e)
-            if processed % 10 == 0 or processed == total:
-                logger.info(
-                    "  Groups progress: %d/%d done (%d enriched)",
-                    processed,
-                    total,
-                    enriched,
-                )
+        enriched = _collect_group_enrichments(futures, total)
 
     logger.info("Group enrichment complete: %d/%d enriched", enriched, len(group_files))
     return enriched

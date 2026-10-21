@@ -130,6 +130,17 @@ def _classify_content_type(alt_text: str, url: str) -> str:
     return "photograph"
 
 
+def _image_matches_sub_event(se: dict, url: str, resource_id: str, alt: str) -> bool:
+    """True if the image (by url / resource_id / sufficiently-long alt text) appears in the
+    sub-event's serialized fulltext."""
+    fulltext = json.dumps(se.get("Sub-event_fulltext", {}))
+    return bool(
+        (url and url in fulltext)
+        or (resource_id and resource_id in fulltext)
+        or (alt and len(alt) > 10 and alt in fulltext)
+    )
+
+
 def _find_sub_event_for_image(img: dict, event_data: dict) -> Optional[Dict[str, str]]:
     """Find which sub-event contains this image. Returns event context dict."""
     url = img.get("url", "")
@@ -141,13 +152,7 @@ def _find_sub_event_for_image(img: dict, event_data: dict) -> Optional[Dict[str,
     event_name = event_data.get("Chapter", "")
 
     for se in event.get("Sub-events", []):
-        fulltext = json.dumps(se.get("Sub-event_fulltext", {}))
-        matched = (
-            (url and url in fulltext)
-            or (resource_id and resource_id in fulltext)
-            or (alt and len(alt) > 10 and alt in fulltext)
-        )
-        if matched:
+        if _image_matches_sub_event(se, url, resource_id, alt):
             return {
                 "EventID": event_id,
                 "Event_Name": event_name,
@@ -289,6 +294,45 @@ def _load_event_data(parsed_file: Path) -> Optional[dict]:
         return None
 
 
+def _apply_vision_caption(
+    record: Dict[str, Any],
+    captioner: Any,
+    local_copy: str,
+    storage_dir: Path,
+    img: dict,
+    event_ctx: Optional[dict],
+    place_name: Optional[str],
+    date_val: Optional[str],
+    book: str,
+) -> None:
+    """VISION step: identify the image (don't OCR it). Only when enabled + we have local bytes
+    to look at. Captioner never raises / never fabricates. Mutates ``record`` in place.
+    """
+    try:
+        # local_copy is RELATIVE (stored portably); read the bytes from the actual
+        # storage_dir (which _download_image wrote to) rather than the relative string.
+        image_bytes = (storage_dir / Path(local_copy).name).read_bytes()
+    except OSError:
+        image_bytes = None
+    caption = captioner.caption(
+        image_bytes,
+        {
+            "alt_text": img.get("alt_text", ""),
+            "sub_event_name": (event_ctx or {}).get("Sub-event_Name", ""),
+            "place_name": place_name or "",
+            "date": date_val or "",
+            "book": book,
+            "classification": record.get("content_type", "unknown"),
+        },
+    )
+    cap = caption.to_dict()
+    if cap["description"]:
+        record["description"] = cap["description"]
+    record["caption_confidence"] = cap["caption_confidence"]
+    record["caption_method"] = cap["caption_method"]
+    record["needs_review"] = cap["needs_review"]
+
+
 def _process_single_image(
     img: dict,
     event_data: Optional[dict],
@@ -339,29 +383,17 @@ def _process_single_image(
     # VISION step: identify the image (don't OCR it). Only when enabled + we have
     # local bytes to look at. Captioner never raises / never fabricates.
     if captioner is not None and local_copy:
-        try:
-            # local_copy is RELATIVE (stored portably); read the bytes from the actual
-            # storage_dir (which _download_image wrote to) rather than the relative string.
-            image_bytes = (storage_dir / Path(local_copy).name).read_bytes()
-        except OSError:
-            image_bytes = None
-        caption = captioner.caption(
-            image_bytes,
-            {
-                "alt_text": img.get("alt_text", ""),
-                "sub_event_name": (event_ctx or {}).get("Sub-event_Name", ""),
-                "place_name": place_name or "",
-                "date": date_val or "",
-                "book": book,
-                "classification": record.get("content_type", "unknown"),
-            },
+        _apply_vision_caption(
+            record,
+            captioner,
+            local_copy,
+            storage_dir,
+            img,
+            event_ctx,
+            place_name,
+            date_val,
+            book,
         )
-        cap = caption.to_dict()
-        if cap["description"]:
-            record["description"] = cap["description"]
-        record["caption_confidence"] = cap["caption_confidence"]
-        record["caption_method"] = cap["caption_method"]
-        record["needs_review"] = cap["needs_review"]
 
     return record, local_copy
 

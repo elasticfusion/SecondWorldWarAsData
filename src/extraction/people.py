@@ -145,15 +145,8 @@ def _normalize_unit(unit: str) -> str:
     return unit_map.get(unit, unit)
 
 
-def _deduplicate_units(units: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
-    """Deduplicate and normalize units.
-
-    Priority: Unit with dates > Unit with partial dates > Unit no dates
-    """
-    if not units:
-        return []
-
-    # Normalize all units (carry the structured affiliation fields through)
+def _normalize_units(units: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
+    """Normalize unit names and carry the structured affiliation fields through."""
     normalized = []
     for u in units:
         norm_unit = _normalize_unit(u.get("unit", ""))
@@ -168,6 +161,48 @@ def _deduplicate_units(units: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
                 "unit_number": u.get("unit_number"),
             }
         )
+    return normalized
+
+
+def _pick_best_unit(entries: list[Dict[str, Any]]) -> Dict[str, Any]:
+    """Pick the richest unit entry from a group of duplicates: prefer the one with both
+    dates, then preserve any structured affiliation field present on ANY duplicate, then drop
+    None keys so records stay clean (migration-safe)."""
+
+    # Sort by priority: both dates > one date > no dates
+    def priority(x):
+        has_from = x["from"] is not None
+        has_to = x["to"] is not None
+        return (
+            has_from and has_to,
+            has_from or has_to,
+            x["from"] or "",
+            x["to"] or "",
+        )
+
+    best = max(entries, key=priority)
+    # Preserve the richest structured affiliation across duplicates: a GroupID
+    # or designation present on ANY duplicate should survive onto the kept one.
+    for field in ("GroupID", "designation", "echelon", "unit_number"):
+        if not best.get(field):
+            for e in entries:
+                if e.get(field):
+                    best[field] = e[field]
+                    break
+    # Drop keys that are None so records stay clean (migration-safe).
+    return {k: v for k, v in best.items() if v is not None}
+
+
+def _deduplicate_units(units: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
+    """Deduplicate and normalize units.
+
+    Priority: Unit with dates > Unit with partial dates > Unit no dates
+    """
+    if not units:
+        return []
+
+    # Normalize all units (carry the structured affiliation fields through)
+    normalized = _normalize_units(units)
 
     # Group by unit name
     groups: Dict[str, list[Dict[str, Any]]] = {}
@@ -180,28 +215,7 @@ def _deduplicate_units(units: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
     # For each group, keep best entry
     result = []
     for entries in groups.values():
-        # Sort by priority: both dates > one date > no dates
-        def priority(x):
-            has_from = x["from"] is not None
-            has_to = x["to"] is not None
-            return (
-                has_from and has_to,
-                has_from or has_to,
-                x["from"] or "",
-                x["to"] or "",
-            )
-
-        best = max(entries, key=priority)
-        # Preserve the richest structured affiliation across duplicates: a GroupID
-        # or designation present on ANY duplicate should survive onto the kept one.
-        for field in ("GroupID", "designation", "echelon", "unit_number"):
-            if not best.get(field):
-                for e in entries:
-                    if e.get(field):
-                        best[field] = e[field]
-                        break
-        # Drop keys that are None so records stay clean (migration-safe).
-        result.append({k: v for k, v in best.items() if v is not None})
+        result.append(_pick_best_unit(entries))
 
     return result
 
@@ -720,11 +734,8 @@ def _update_missing_fields(
             existing_bio[field] = new_bio[field]
 
 
-def _merge_person(
-    existing: Dict[str, Any], new_person: Dict[str, Any]
-) -> Dict[str, Any]:
-    """Merge new person data into existing person record."""
-    # Add new event mentions (deduplicate by Sub_eventID)
+def _merge_event_mentions(existing: Dict[str, Any], new_person: Dict[str, Any]) -> None:
+    """Append new event mentions onto ``existing`` in place, deduplicating by Sub_eventID."""
     existing_mentions = existing.get("event_mentions", [])
     new_mentions = new_person.get("event_mentions", [])
     seen_sub_events = {
@@ -738,44 +749,57 @@ def _merge_person(
                 seen_sub_events.add(sub_id)
     existing["event_mentions"] = existing_mentions
 
+
+def _merge_bio_lists(existing_bio: Dict[str, Any], new_bio: Dict[str, Any]) -> None:
+    """Merge the deduplicated list fields + family + missing scalars of a biographical
+    profile, mutating ``existing_bio`` in place (both bios known to be present)."""
+    existing_bio["military_awards"] = _merge_list_field(
+        existing_bio.get("military_awards", []),
+        new_bio.get("military_awards", []),
+        _deduplicate_awards,
+    )
+    existing_bio["ranks"] = _merge_list_field(
+        existing_bio.get("ranks", []), new_bio.get("ranks", []), _deduplicate_ranks
+    )
+    existing_bio["units_served"] = _merge_list_field(
+        existing_bio.get("units_served", []),
+        new_bio.get("units_served", []),
+        _deduplicate_units,
+    )
+    existing_bio["education"] = _merge_list_field(
+        existing_bio.get("education", []), new_bio.get("education", [])
+    )
+    existing_bio["aliases"] = _merge_list_field(
+        existing_bio.get("aliases", []), new_bio.get("aliases", [])
+    )
+    existing_bio["biography_sources"] = _merge_list_field(
+        existing_bio.get("biography_sources", []),
+        new_bio.get("biography_sources", []),
+    )
+
+    # Merge family
+    new_family = new_bio.get("family")
+    if new_family:
+        existing_family = existing_bio.get("family", {})
+        existing_bio["family"] = _merge_family(existing_family, new_family)
+
+    # Update missing fields
+    _update_missing_fields(existing_bio, new_bio)
+
+
+def _merge_person(
+    existing: Dict[str, Any], new_person: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Merge new person data into existing person record."""
+    # Add new event mentions (deduplicate by Sub_eventID)
+    _merge_event_mentions(existing, new_person)
+
     # Merge biographical profile if new data is more complete
     new_bio = new_person.get("biographical_profile")
     existing_bio = existing.get("biographical_profile")
 
     if new_bio and existing_bio:
-        # Merge with deduplication
-        existing_bio["military_awards"] = _merge_list_field(
-            existing_bio.get("military_awards", []),
-            new_bio.get("military_awards", []),
-            _deduplicate_awards,
-        )
-        existing_bio["ranks"] = _merge_list_field(
-            existing_bio.get("ranks", []), new_bio.get("ranks", []), _deduplicate_ranks
-        )
-        existing_bio["units_served"] = _merge_list_field(
-            existing_bio.get("units_served", []),
-            new_bio.get("units_served", []),
-            _deduplicate_units,
-        )
-        existing_bio["education"] = _merge_list_field(
-            existing_bio.get("education", []), new_bio.get("education", [])
-        )
-        existing_bio["aliases"] = _merge_list_field(
-            existing_bio.get("aliases", []), new_bio.get("aliases", [])
-        )
-        existing_bio["biography_sources"] = _merge_list_field(
-            existing_bio.get("biography_sources", []),
-            new_bio.get("biography_sources", []),
-        )
-
-        # Merge family
-        new_family = new_bio.get("family")
-        if new_family:
-            existing_family = existing_bio.get("family", {})
-            existing_bio["family"] = _merge_family(existing_family, new_family)
-
-        # Update missing fields
-        _update_missing_fields(existing_bio, new_bio)
+        _merge_bio_lists(existing_bio, new_bio)
     elif new_bio:
         existing["biographical_profile"] = new_bio
 
@@ -882,19 +906,10 @@ def _enrich_person_phase2(person_data: dict, grok_client) -> None:
         )
 
 
-def _process_person(
-    person: dict,
-    people_dir: Path,
-    index: dict,
-    grok_client: Optional[GrokClient] = None,
-) -> tuple[bool, bool]:
-    """Process a single person. Returns (is_new, is_updated)."""
-    name = person["name"]
-    # HIGH#7a: PersonID is a NEW entity id — MINT it server-side, never trust the LLM's value.
-    # (A PersonID is not embedded in the prompt as a reference, so there is nothing to honor; a
-    # hallucinated/colliding LLM id would otherwise become a cross-reference target.)
+def _mint_person_ids(person: dict, person_id: str) -> None:
+    """Mint server-side PersonID + per-mention MentionIDs (HIGH#7a), logging when an LLM-supplied
+    value was replaced. Mutates ``person`` in place."""
     llm_person_id = person.get("PersonID")
-    person_id = str(ulid.new())
     person["PersonID"] = person_id
     if llm_person_id and llm_person_id != person_id:
         logger.info(
@@ -909,6 +924,77 @@ def _process_person(
                 logger.info(
                     "OBSERV id.minted entity=person field=MentionID replaced_llm_value=1"
                 )
+
+
+def _update_existing_person(
+    person_file: Path,
+    person: dict,
+    name: str,
+    person_id: str,
+    grok_client: Optional[GrokClient],
+) -> None:
+    """Merge ``person`` into the existing locked record, backfill integrity fields, enrich,
+    validate, and save (native people save path)."""
+    from src.utils.file_lock import locked_json
+    from src.schemas.schema_contract import read_for_update
+
+    with locked_json(person_file) as (existing_person, save):
+        # Read the historical record under this module's schema contract: a
+        # FUTURE-schema record is skipped gracefully (code not built for it);
+        # older records merge best-effort (upgrade case-by-case if registered).
+        existing_person, skip = read_for_update(
+            existing_person, SCHEMA_TARGET, logger, name
+        )
+        if not skip:
+            merged = _merge_person(existing_person, person)
+            # Integrity guard (MED fix): a person record MUST have name + PersonID. Legacy
+            # records (pre-HIGH#7) and the merge path could leave the survivor without them
+            # (merge keeps `existing`, which may predate the server-side mint). Backfill from
+            # the known name + minted id so no nameless/ID-less person persists.
+            if not merged.get("name"):
+                merged["name"] = name
+                logger.info("OBSERV person.repaired field=name name=%s", name)
+            if not merged.get("PersonID"):
+                merged["PersonID"] = person_id
+                logger.info("OBSERV person.repaired field=PersonID name=%s", name)
+            # Phase-2 Grokipedia/Wikipedia enrichment on the merged dict BEFORE
+            # save, so the native people save path commits the enriched record.
+            _enrich_person_phase2(merged, grok_client)
+            Person(**merged)  # Validate
+            save(merged)
+
+
+def _create_new_person(
+    person: dict,
+    people_dir: Path,
+    index: dict,
+    name: str,
+    name_key: str,
+    person_id: str,
+    grok_client: Optional[GrokClient],
+) -> None:
+    """Create a brand-new person file + index entry (enrich before save). Mutates ``index``."""
+    filename = _name_to_filename(name, person_id)
+    person_file = people_dir / filename
+    _enrich_person_phase2(person, grok_client)
+    _save_person_file(person_file, person)
+    index[name_key] = filename
+    logger.debug("  Created: %s", name)
+
+
+def _process_person(
+    person: dict,
+    people_dir: Path,
+    index: dict,
+    grok_client: Optional[GrokClient] = None,
+) -> tuple[bool, bool]:
+    """Process a single person. Returns (is_new, is_updated)."""
+    name = person["name"]
+    # HIGH#7a: PersonID is a NEW entity id — MINT it server-side, never trust the LLM's value.
+    # (A PersonID is not embedded in the prompt as a reference, so there is nothing to honor; a
+    # hallucinated/colliding LLM id would otherwise become a cross-reference target.)
+    person_id = str(ulid.new())
+    _mint_person_ids(person, person_id)
     name_key = _normalize_name(name)
 
     # Check in-memory index for existing person
@@ -918,54 +1004,20 @@ def _process_person(
         # Update existing person
         person_file = people_dir / existing_filename
         if person_file.exists():
-            from src.utils.file_lock import locked_json
-            from src.schemas.schema_contract import read_for_update
-
-            with locked_json(person_file) as (existing_person, save):
-                # Read the historical record under this module's schema contract: a
-                # FUTURE-schema record is skipped gracefully (code not built for it);
-                # older records merge best-effort (upgrade case-by-case if registered).
-                existing_person, skip = read_for_update(
-                    existing_person, SCHEMA_TARGET, logger, name
-                )
-                if not skip:
-                    merged = _merge_person(existing_person, person)
-                    # Integrity guard (MED fix): a person record MUST have name + PersonID. Legacy
-                    # records (pre-HIGH#7) and the merge path could leave the survivor without them
-                    # (merge keeps `existing`, which may predate the server-side mint). Backfill from
-                    # the known name + minted id so no nameless/ID-less person persists.
-                    if not merged.get("name"):
-                        merged["name"] = name
-                        logger.info("OBSERV person.repaired field=name name=%s", name)
-                    if not merged.get("PersonID"):
-                        merged["PersonID"] = person_id
-                        logger.info(
-                            "OBSERV person.repaired field=PersonID name=%s", name
-                        )
-                    # Phase-2 Grokipedia/Wikipedia enrichment on the merged dict BEFORE
-                    # save, so the native people save path commits the enriched record.
-                    _enrich_person_phase2(merged, grok_client)
-                    Person(**merged)  # Validate
-                    save(merged)
+            _update_existing_person(person_file, person, name, person_id, grok_client)
             logger.debug("  Updated: %s", name)
             return False, True
         else:
             # Index points to missing file, create new
-            filename = _name_to_filename(name, person_id)
-            person_file = people_dir / filename
-            _enrich_person_phase2(person, grok_client)
-            _save_person_file(person_file, person)
-            index[name_key] = filename
-            logger.debug("  Created: %s", name)
+            _create_new_person(
+                person, people_dir, index, name, name_key, person_id, grok_client
+            )
             return True, False
     else:
         # New person
-        filename = _name_to_filename(name, person_id)
-        person_file = people_dir / filename
-        _enrich_person_phase2(person, grok_client)
-        _save_person_file(person_file, person)
-        index[name_key] = filename
-        logger.debug("  Created: %s", name)
+        _create_new_person(
+            person, people_dir, index, name, name_key, person_id, grok_client
+        )
         return True, False
 
 

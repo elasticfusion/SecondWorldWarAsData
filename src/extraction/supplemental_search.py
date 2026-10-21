@@ -124,6 +124,39 @@ def _search_archive_org_api(
     return None
 
 
+_ARCHIVE_TITLE_REJECT_KW = [
+    "memo,",
+    "ltr,",
+    "msg,",
+    "jnl,",
+    "aar,",
+    "tel conv",
+    "file ",
+    "telecon,",
+    "sitrep",
+    "rpt,",
+    "instrs,",
+]
+
+
+def _archive_title_rejected(title: str) -> bool:
+    """True if the title matches a citation-shape keyword (not a real book/periodical title)
+    and must be rejected before an archive.org search."""
+    return any(kw in title.lower() for kw in _ARCHIVE_TITLE_REJECT_KW)
+
+
+def _append_archive_candidate(doc: dict, out: "list[Tuple[str, str]]") -> None:
+    """Append one archive.org result as a (url, title) pair, normalizing a list-valued title.
+    Skips docs with no identifier. Mutates ``out`` in place."""
+    identifier = doc.get("identifier")
+    if not identifier:
+        return
+    cand_title = doc.get("title") or ""
+    if isinstance(cand_title, list):  # archive.org may return a list
+        cand_title = cand_title[0] if cand_title else ""
+    out.append((f"https://archive.org/details/{identifier}", str(cand_title)))
+
+
 def search_archive_org_candidates(
     title: str,
     author: Optional[str] = None,
@@ -136,22 +169,7 @@ def search_archive_org_candidates(
     """
     if not title or len(title) < 10 or title.strip().isdigit():
         return []
-    if any(
-        kw in title.lower()
-        for kw in [
-            "memo,",
-            "ltr,",
-            "msg,",
-            "jnl,",
-            "aar,",
-            "tel conv",
-            "file ",
-            "telecon,",
-            "sitrep",
-            "rpt,",
-            "instrs,",
-        ]
-    ):
+    if _archive_title_rejected(title):
         return []
     out: "list[Tuple[str, str]]" = []
     try:
@@ -164,18 +182,28 @@ def search_archive_org_candidates(
         if response.status_code == 200:
             docs = response.json().get("response", {}).get("docs", [])
             for doc in docs:
-                identifier = doc.get("identifier")
-                if not identifier:
-                    continue
-                cand_title = doc.get("title") or ""
-                if isinstance(cand_title, list):  # archive.org may return a list
-                    cand_title = cand_title[0] if cand_title else ""
-                out.append(
-                    (f"https://archive.org/details/{identifier}", str(cand_title))
-                )
+                _append_archive_candidate(doc, out)
     except Exception as e:
         logger.debug("Archive.org candidate search failed: %s", e)
     return out
+
+
+def _append_gutenberg_candidate(book: dict, out: "list[Tuple[str, str]]") -> None:
+    """Append one Gutendex result as a (url, title) pair: prefer the canonical ebook page, else
+    fall back to any text/html format URL (then any format). Skips entries with no URL. Mutates
+    ``out`` in place."""
+    gid = book.get("id")
+    btitle = book.get("title") or ""
+    # Prefer the canonical ebook page; fall back to any text/html format URL.
+    url = f"https://www.gutenberg.org/ebooks/{gid}" if gid else ""
+    if not url:
+        fmts = book.get("formats") or {}
+        url = next(
+            (u for k, u in fmts.items() if "text/html" in k),
+            next(iter(fmts.values()), ""),
+        )
+    if url:
+        out.append((url, btitle))
 
 
 def search_gutenberg_candidates(
@@ -201,18 +229,7 @@ def search_gutenberg_candidates(
         )
         if response.status_code == 200:
             for book in response.json().get("results", [])[:5]:
-                gid = book.get("id")
-                btitle = book.get("title") or ""
-                # Prefer the canonical ebook page; fall back to any text/html format URL.
-                url = f"https://www.gutenberg.org/ebooks/{gid}" if gid else ""
-                if not url:
-                    fmts = book.get("formats") or {}
-                    url = next(
-                        (u for k, u in fmts.items() if "text/html" in k),
-                        next(iter(fmts.values()), ""),
-                    )
-                if url:
-                    out.append((url, btitle))
+                _append_gutenberg_candidate(book, out)
     except Exception as e:
         logger.debug("Gutenberg (gutendex) candidate search failed: %s", e)
     return out
