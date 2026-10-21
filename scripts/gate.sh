@@ -43,70 +43,76 @@ run "bandit"   python -m bandit -r src/ lambda_handlers/ -ll -q
 # bug detection without 100s of style-noise findings.
 run "ruff(B)"  python -m ruff check src/ lambda_handlers/ --select B --quiet
 # shellcheck disable=SC2086
-# Radon complexity: a C-grade block (moderate complexity) must BUBBLE UP for evaluation
-# (listed, not silently tolerated); a D-or-worse block HARD-FAILS the gate.
+# C+ is the GATE THRESHOLD: any C-or-worse block HARD-FAILS unless it is INHERENT-allowlisted
+# (scripts/.radon_inherent, body-hash unchanged). The existing C+ backlog was grandfathered via
+# `radon_inherent.py seed`, so only a NEW or MODIFIED C+ block fails. D+ is NEVER suppressible.
 run_radon() {
   local out
-  # --show-complexity is REQUIRED: without it radon emits "- D" (no trailing space) and the
-  # grade greps below never match (the D+ hard-fail + C surfacing were a silent no-op for months).
-  # With it, lines read "- D (21)" so the greps fire. NO allowlist — a D+ block MUST be refactored.
+  # Fail-closed if radon is absent: otherwise `python -m radon` errors, the output matches no case
+  # arm, and the gate would silently report green (false PASS) — unacceptable for a hard gate.
+  if ! python -m radon --version >/dev/null 2>&1; then
+    echo "  ✗ radon: not installed (python -m radon unavailable) — cannot evaluate complexity gate"
+    fail=1
+    return
+  fi
+  # --show-complexity is REQUIRED: without it radon emits "- D" (no trailing space) and the grade
+  # match below never fires. With it, lines read "- C (14)" / "- D (21)".
   out="$(python -m radon cc $SCOPE --min C --show-complexity 2>&1)"
-  local dworse highc midc n_d n_hi n_mid
-  dworse="$(echo "$out"   | grep -E ' - [D-F] ' || true)"
-  # Split C into an ACTIONABLE high band (C16-20, closest to regressing to D) and the ordinary
-  # C11-15 band (surfaced as a count only — listing all ~116 would bury the signal).
-  highc="$(echo "$out"    | grep -E ' - C \((1[6-9]|20)\)' || true)"
-  midc="$(echo "$out"     | grep -E ' - C \(1[0-5]\)'      || true)"
-  n_d="$(echo "$out"   | grep -cE ' - [D-F] ')"
-  n_hi="$(echo "$out"  | grep -cE ' - C \((1[6-9]|20)\)')"
-  n_mid="$(echo "$out" | grep -cE ' - C \(1[0-5]\)')"
 
-  # D+ : list in full + HARD FAIL.
-  if [ -n "$dworse" ]; then
-    echo "  ✗ radon: ${n_d} D-or-worse block(s) — MUST refactor below D:"
-    echo "$dworse" | sed 's/^/        /'
+  local cur_file sym grade
+  local d_show c_show n_d n_cfail n_supp
+  cur_file=""
+  d_show=""     # D+ offenders (always fail)
+  c_show=""     # non-suppressed C offenders (now fail)
+  n_d=0; n_cfail=0; n_supp=0
+
+  # Walk the output tracking the FILE header (radon prints it once above each file's blocks; block
+  # lines carry only the symbol). Partition every C+ block into: D+ (always fail), non-suppressed C
+  # (fail), or INHERENT-suppressed C (green). A modified allowlisted block's body hash no longer
+  # matches -> it falls out of 'suppressed' and RESURFACES as a non-suppressed C failure.
+  while IFS= read -r line; do
+    case "$line" in
+      [A-Za-z]*) cur_file="$line" ;;  # file header (no leading space)
+      *" - "[C-F]" ("*)
+        grade="$(echo "$line" | sed -E 's/.* - ([C-F]) \([0-9]+\)$/\1/')"
+        if [ "$grade" != "C" ]; then
+          d_show="${d_show}${line}"$'\n'
+          n_d=$((n_d + 1))
+          continue
+        fi
+        sym="$(echo "$line" | sed -E 's/^\s*[A-Z] +[0-9]+:[0-9]+ +([A-Za-z_][A-Za-z0-9_.]*) +- C \([0-9]+\)/\1/')"
+        if python scripts/radon_inherent.py suppressed "$cur_file" "$sym" 2>/dev/null; then
+          n_supp=$((n_supp + 1))
+        else
+          c_show="${c_show}${line}"$'\n'
+          n_cfail=$((n_cfail + 1))
+        fi
+        ;;
+    esac
+  done <<< "$out"
+
+  # D+ : always HARD FAIL (never suppressible).
+  if [ -n "$d_show" ]; then
+    echo "  ✗ radon: ${n_d} D-or-worse block(s) — MUST refactor below C:"
+    printf '%s' "$d_show" | sed 's/^/        /'
     fail=1
   fi
-  # High-C (16-20): the band to EVALUATE. Split into INHERENT-suppressed (accepted debt, body
-  # unchanged per scripts/.radon_inherent) vs the rest. A modified INHERENT block's body hash no
-  # longer matches -> it falls out of 'suppressed' and RESURFACES here (steer-343779fe).
-  if [ -n "$highc" ]; then
-    local cur_file hi_show hi_suppressed n_show n_supp sym key
-    cur_file=""
-    hi_show=""
-    n_supp=0
-    # Re-walk the full radon output so we can track each block's FILE header (radon prints the
-    # file once above its blocks; the block lines carry only the symbol).
-    while IFS= read -r line; do
-      case "$line" in
-        [A-Za-z]*) cur_file="$line" ;;  # a file header (no leading space)
-        *" - C ("1[6-9]*|*" - C (20)"*)
-          sym="$(echo "$line" | sed -E 's/^\s*[A-Z] +[0-9]+:[0-9]+ +([A-Za-z_][A-Za-z0-9_.]*) +- C \([0-9]+\)/\1/')"
-          if python scripts/radon_inherent.py suppressed "$cur_file" "$sym" 2>/dev/null; then
-            n_supp=$((n_supp + 1))
-          else
-            hi_show="${hi_show}${line}"$'\n'
-          fi
-          ;;
-      esac
-    done <<< "$out"
-    n_show=$(printf '%s' "$hi_show" | grep -cE ' - C \(' || true)
-    if [ "$n_show" -gt 0 ]; then
-      echo "  ⚠ radon: ${n_show} high-C block(s) C16-20 to EVALUATE (non-blocking):"
-      printf '%s' "$hi_show" | sed 's/^/        /'
-    fi
+  # Non-suppressed C : NEW or MODIFIED C+ -> HARD FAIL. Reduce complexity below C, or (if genuinely
+  # inherent) grandfather it: `python scripts/radon_inherent.py seed` then add a real reason.
+  if [ -n "$c_show" ]; then
+    echo "  ✗ radon: ${n_cfail} non-allowlisted C block(s) — reduce below C, or allowlist in scripts/.radon_inherent:"
+    printf '%s' "$c_show" | sed 's/^/        /'
+    fail=1
+  fi
+  if [ "$n_supp" -gt 0 ]; then
+    echo "  · radon: ${n_supp} INHERENT C+ block(s) suppressed (unchanged; see scripts/.radon_inherent)"
+  fi
+  if [ -z "$d_show" ] && [ -z "$c_show" ]; then
     if [ "$n_supp" -gt 0 ]; then
-      echo "  · radon: ${n_supp} INHERENT high-C block(s) suppressed (unchanged; see scripts/.radon_inherent)"
+      echo "  ✓ radon (0 new/modified C+; ${n_supp} grandfathered)"
+    else
+      echo "  ✓ radon (no C+ blocks)"
     fi
-  fi
-  # C11-15: count only (ordinary moderate complexity, surfaced not listed).
-  if [ -n "$midc" ]; then
-    echo "  · radon: ${n_mid} C11-15 block(s) (moderate; surfaced, not listed)"
-  fi
-  if [ -z "$dworse" ] && [ -z "$highc" ] && [ -z "$midc" ]; then
-    echo "  ✓ radon (no C+ blocks)"
-  elif [ -z "$dworse" ]; then
-    echo "  ✓ radon (0 D+, C surfaced above for review)"
   fi
 }
 run_radon
