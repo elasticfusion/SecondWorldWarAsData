@@ -17,11 +17,6 @@ campaign + PRs #487–#496. NEW/missed gaps (analyzer-invisible; bandit still 0H
 priority order; fix each via branch→gate→concurrent code+security reviews (both PASS)→CI→merge→sync.
 (The DNS-rebinding CRITICAL is DONE — #497 — and moved to §7 COMPLETED.) Ranked:
 
-- **[CRITICAL] Schema-version stamping ignores entity type.** ecs_entrypoint._stamp_file calls
-  needs_migration/inject_metadata with NO entity → stamps the MIN version (2.24) → records permanently
-  "needs_upgrade" + genuine current-schema violations ride the lenient write-guard path; the fast-path
-  samples only a weather file (==min) so higher-versioned dirs are never stamped. Thread the entity
-  through; make the fast-path per-entity (or drop it). +test.
 - **[WARNING] logistics _save_extraction path traversal via LLM date_start** — the ONE date-in-filename
   writer the Pattern-3 campaign (#492) missed. `date_str = extraction.date_start.replace("-","")` leaves
   `/`,`..`. Route through _safe_entity_filename + _contained_entity_path. +test.
@@ -626,6 +621,11 @@ Not-code (deferred): SHAEF OB map gaps (NARA acquisition). Full historical detai
 item is in git history + the dated design docs under `docs/current/` and `docs/archive/`.
 
 ### Phase-2 FRESH RE-REVIEW (2026-10-20b) — DONE items (moved from §1.0c)
+- **[DONE · PR #498] [CRITICAL] Schema-version stamping ignored entity type.** ecs_entrypoint._stamp_file calls
+  needs_migration/inject_metadata with NO entity → stamps the MIN version (2.24) → records permanently
+  "needs_upgrade" + genuine current-schema violations ride the lenient write-guard path; the fast-path
+  samples only a weather file (==min) so higher-versioned dirs are never stamped. Thread the entity
+  through; make the fast-path per-entity (or drop it). +test.
 - **[DONE · PR #497] [CRITICAL · corroborated] DNS-rebinding TOCTOU in the SSRF fetch layer.** safe_get /
   images.fetch_image_bytes / url_fetch._one_hop vetted the RESOLVED IPs via resolved_host_is_safe but
   then handed the HOSTNAME url to requests, which re-resolves at connect → a short-TTL rebind to
