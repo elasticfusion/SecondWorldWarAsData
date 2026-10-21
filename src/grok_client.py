@@ -436,25 +436,7 @@ class GrokClient:
         )
 
         # Write JSONL
-        if not self.cache_dir:
-            raise GrokAPIError("cache_dir required for batch mode")
-        jsonl_path = self.cache_dir / "batch_requests.jsonl"
-        count = self._batch_collector.write_jsonl(jsonl_path)
-        from collections import Counter
-
-        type_counts = Counter(r.cache_type for r in self._batch_collector.requests)
-        logger.info(
-            "Wrote %d requests to %s — breakdown: %s",
-            count,
-            jsonl_path,
-            dict(type_counts),
-            extra={
-                "extra_fields": {
-                    "event": "batch_breakdown",
-                    "type_counts": dict(type_counts),
-                }
-            },
-        )
+        jsonl_path, count = self._write_batch_jsonl()
 
         # Index requests by id for retry lookup
         requests_by_id = {r.request_id: r for r in self._batch_collector.requests}
@@ -480,27 +462,9 @@ class GrokClient:
         # Submit + poll + retrieve under ONE try: a failure in ANY post-reserve step must release
         # the reservation, else the budget is permanently consumed by a batch that didn't complete
         # (the old code released only on submit failure, leaking on poll/retrieve failure).
-        try:
-            batch_id = submit_batch(self.api_key, jsonl_path, batch_name)
-            logger.info("Waiting for batch to complete (may take minutes to hours)...")
-            batch_state = poll_batch(self.api_key, batch_id, submitted_count=count)
-
-            # Retrieve results as an ORDERED list. The xAI results API does NOT echo our submitted
-            # custom_id (only a server-assigned batch_request_id), so results MUST be mapped to our
-            # cache keys by POSITION (submission order), NOT by id — mirrors the AWS retrieve-only
-            # path (ecs_entrypoint._map_batch_results_by_index / retrieve_results_ordered).
-            from src.utils.batch_api import retrieve_results_ordered
-
-            ordered = retrieve_results_ordered(self.api_key, batch_id)
-        except Exception as _batch_exc:
-            credit_gate.release(est_cost, config=self._config)
-            logger.warning(
-                "OBSERV credit.released reason=batch_failed est_cost=%.4f err=%s "
-                "(reservation returned to budget)",
-                est_cost,
-                _batch_exc,
-            )
-            raise
+        batch_id, batch_state, ordered = self._submit_poll_retrieve(
+            jsonl_path, batch_name, count, est_cost
+        )
         submitted = [
             (r.request_id, r.cache_type) for r in self._batch_collector.requests
         ]
@@ -533,6 +497,59 @@ class GrokClient:
         self.batch_mode = False
 
         return batch_id
+
+    def _write_batch_jsonl(self) -> tuple[Any, int]:
+        """Write collected batch requests to JSONL and log the type breakdown."""
+        if not self.cache_dir:
+            raise GrokAPIError("cache_dir required for batch mode")
+        jsonl_path = self.cache_dir / "batch_requests.jsonl"
+        count = self._batch_collector.write_jsonl(jsonl_path)  # type: ignore[union-attr]
+        from collections import Counter
+
+        type_counts = Counter(r.cache_type for r in self._batch_collector.requests)  # type: ignore[union-attr]
+        logger.info(
+            "Wrote %d requests to %s — breakdown: %s",
+            count,
+            jsonl_path,
+            dict(type_counts),
+            extra={
+                "extra_fields": {
+                    "event": "batch_breakdown",
+                    "type_counts": dict(type_counts),
+                }
+            },
+        )
+        return jsonl_path, count
+
+    def _submit_poll_retrieve(
+        self, jsonl_path: Any, batch_name: str, count: int, est_cost: float
+    ) -> tuple[str, Dict[str, Any], list]:
+        """Submit, poll, and retrieve a batch; release the credit reservation on any failure."""
+        from src.utils.batch_api import submit_batch, poll_batch
+        from src.utils import credit_gate
+
+        try:
+            batch_id = submit_batch(self.api_key, jsonl_path, batch_name)
+            logger.info("Waiting for batch to complete (may take minutes to hours)...")
+            batch_state = poll_batch(self.api_key, batch_id, submitted_count=count)
+
+            # Retrieve results as an ORDERED list. The xAI results API does NOT echo our submitted
+            # custom_id (only a server-assigned batch_request_id), so results MUST be mapped to our
+            # cache keys by POSITION (submission order), NOT by id — mirrors the AWS retrieve-only
+            # path (ecs_entrypoint._map_batch_results_by_index / retrieve_results_ordered).
+            from src.utils.batch_api import retrieve_results_ordered
+
+            ordered = retrieve_results_ordered(self.api_key, batch_id)
+        except Exception as _batch_exc:
+            credit_gate.release(est_cost, config=self._config)
+            logger.warning(
+                "OBSERV credit.released reason=batch_failed est_cost=%.4f err=%s "
+                "(reservation returned to budget)",
+                est_cost,
+                _batch_exc,
+            )
+            raise
+        return batch_id, batch_state, ordered
 
     @staticmethod
     def _batch_prompt_preview(rid: str, requests_by_id: dict) -> str:
@@ -754,23 +771,7 @@ class GrokClient:
         logger.debug(f"Full API response keys: {result.keys()}")
 
         # Log token usage
-        usage = result.get("usage", {})
-        if usage:
-            logger.info(
-                "API tokens: %d prompt, %d completion, %d total",
-                usage.get("prompt_tokens", 0),
-                usage.get("completion_tokens", 0),
-                usage.get("total_tokens", 0),
-                extra={
-                    "extra_fields": {
-                        "event": "api_usage",
-                        "prompt_tokens": usage.get("prompt_tokens", 0),
-                        "completion_tokens": usage.get("completion_tokens", 0),
-                        "total_tokens": usage.get("total_tokens", 0),
-                        "model": self.model,
-                    }
-                },
-            )
+        self._log_token_usage(result)
 
         # Log response content
         if "choices" in result and len(result["choices"]) > 0:
@@ -779,21 +780,7 @@ class GrokClient:
             logger.info(
                 f"Response: {len(content)} chars, finish_reason: {finish_reason}"
             )
-
-            # Warn about issues
-            if finish_reason == "length":
-                logger.error("API response truncated due to max_tokens limit!")
-            elif finish_reason != "stop":
-                logger.warning(f"Unexpected finish_reason: {finish_reason}")
-
-            if len(content) < 200:
-                try:
-                    json.loads(content)
-                except (json.JSONDecodeError, ValueError):
-                    logger.warning(
-                        f"API returned very short response: {len(content)} chars"
-                    )
-                    logger.warning(f"Content: {content}")
+            self._log_response_warnings(content, finish_reason)
 
         # Check for model deprecation (redirect to different model)
         served_model = result.get("model", "")
@@ -815,6 +802,43 @@ class GrokClient:
             if len(content) > self.debug_resp_chars:
                 preview += "..."
             logger.debug(f"  {preview}")
+
+    def _log_token_usage(self, result: Dict[str, Any]) -> None:
+        """Log prompt/completion/total token counts from a response."""
+        usage = result.get("usage", {})
+        if usage:
+            logger.info(
+                "API tokens: %d prompt, %d completion, %d total",
+                usage.get("prompt_tokens", 0),
+                usage.get("completion_tokens", 0),
+                usage.get("total_tokens", 0),
+                extra={
+                    "extra_fields": {
+                        "event": "api_usage",
+                        "prompt_tokens": usage.get("prompt_tokens", 0),
+                        "completion_tokens": usage.get("completion_tokens", 0),
+                        "total_tokens": usage.get("total_tokens", 0),
+                        "model": self.model,
+                    }
+                },
+            )
+
+    @staticmethod
+    def _log_response_warnings(content: str, finish_reason: str) -> None:
+        """Warn on truncation, unexpected finish_reason, or suspiciously short JSON."""
+        if finish_reason == "length":
+            logger.error("API response truncated due to max_tokens limit!")
+        elif finish_reason != "stop":
+            logger.warning(f"Unexpected finish_reason: {finish_reason}")
+
+        if len(content) < 200:
+            try:
+                json.loads(content)
+            except (json.JSONDecodeError, ValueError):
+                logger.warning(
+                    f"API returned very short response: {len(content)} chars"
+                )
+                logger.warning(f"Content: {content}")
 
     def _send_deprecation_alert(self, served_model: str) -> None:
         """Send SNS email alert when configured model is deprecated/redirected."""
@@ -978,58 +1002,19 @@ class GrokClient:
             )
 
         if use_cache and cache_key in cache:
-            logger.debug("[API] CACHE HIT | type=%s key=%s", cache_type, cache_key[:16])
-            with self._cache_lock:
-                self._cache_hits += 1
-                hits = self._cache_hits
-            if hits % 100 == 0:
-                logger.info(
-                    "Cache: %d hits so far (%d misses)",
-                    self._cache_hits,
-                    self._cache_misses,
-                )
-            return cache[cache_key]
+            return self._handle_cache_hit(cache, cache_key, cache_type)
 
         with self._cache_lock:
             self._cache_misses += 1
 
         # Batch mode: queue request instead of calling API
         if self.batch_mode:
-            from src.utils.batch_api import BatchRequest
-
-            messages = []
-            if system_prompt:
-                messages.append({"role": "system", "content": system_prompt})
-            messages.append({"role": "user", "content": prompt})
-            self._observe_cache_key(
-                "submit",
-                cache_type,
-                cache_key,
-                model_used,
-                temperature,
-                system_prompt or "",
-                prompt,
+            self._queue_batch_request(
+                prompt, system_prompt, temperature, cache_type, cache_key, model_used
             )
-            self._batch_collector.add(  # type: ignore[union-attr]
-                BatchRequest(
-                    request_id=cache_key,
-                    messages=messages,
-                    model=model_used,
-                    temperature=temperature,
-                    cache_type=cache_type,
-                )
-            )
-            raise BatchModeCollecting(cache_key)
 
         # Log API call
-        logger.debug(
-            "[API] CALL | type=%s key=%s temp=%.1f",
-            cache_type,
-            cache_key[:16],
-            temperature,
-        )
-        if hasattr(logger, "trace"):
-            logger.trace("[API] Prompt (%s): %s", cache_type, prompt[:500])  # type: ignore[attr-defined]
+        self._log_api_call(cache_type, cache_key, temperature, prompt)
 
         # Build messages
         messages = []
@@ -1044,6 +1029,81 @@ class GrokClient:
         content = response["choices"][0]["message"]["content"]
 
         # Sanitize control characters and invalid escapes BEFORE caching
+        content = self._sanitize_completion_content(content)
+
+        # Cache result
+        if use_cache:
+            cache[cache_key] = content
+
+        return content
+
+    @staticmethod
+    def _log_api_call(
+        cache_type: str, cache_key: str, temperature: float, prompt: str
+    ) -> None:
+        """Log the outbound API call (debug line + optional trace of the prompt)."""
+        logger.debug(
+            "[API] CALL | type=%s key=%s temp=%.1f",
+            cache_type,
+            cache_key[:16],
+            temperature,
+        )
+        if hasattr(logger, "trace"):
+            logger.trace("[API] Prompt (%s): %s", cache_type, prompt[:500])  # type: ignore[attr-defined]
+
+    def _handle_cache_hit(self, cache: Any, cache_key: str, cache_type: str) -> str:
+        """Return a cached completion, updating hit counters/logging."""
+        logger.debug("[API] CACHE HIT | type=%s key=%s", cache_type, cache_key[:16])
+        with self._cache_lock:
+            self._cache_hits += 1
+            hits = self._cache_hits
+        if hits % 100 == 0:
+            logger.info(
+                "Cache: %d hits so far (%d misses)",
+                self._cache_hits,
+                self._cache_misses,
+            )
+        return cache[cache_key]
+
+    def _queue_batch_request(
+        self,
+        prompt: str,
+        system_prompt: Optional[str],
+        temperature: float,
+        cache_type: str,
+        cache_key: str,
+        model_used: str,
+    ) -> None:
+        """Queue a request for batch submission. Always raises BatchModeCollecting."""
+        from src.utils.batch_api import BatchRequest
+
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+        self._observe_cache_key(
+            "submit",
+            cache_type,
+            cache_key,
+            model_used,
+            temperature,
+            system_prompt or "",
+            prompt,
+        )
+        self._batch_collector.add(  # type: ignore[union-attr]
+            BatchRequest(
+                request_id=cache_key,
+                messages=messages,
+                model=model_used,
+                temperature=temperature,
+                cache_type=cache_type,
+            )
+        )
+        raise BatchModeCollecting(cache_key)
+
+    @staticmethod
+    def _sanitize_completion_content(content: str) -> str:
+        """Strip control chars + fix invalid escapes before caching."""
         import re
 
         # Remove control characters (0x00-0x1f except whitespace)
@@ -1052,11 +1112,6 @@ class GrokClient:
         # Valid JSON escapes: \" \\ \/ \b \f \n \r \t \uXXXX
         # Replace any backslash not followed by valid escape with double backslash
         content = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r"\\\\", content)
-
-        # Cache result
-        if use_cache:
-            cache[cache_key] = content
-
         return content
 
     def _detect_image_type(self, image_base64: str) -> str:
@@ -1191,6 +1246,46 @@ class GrokClient:
             return cache[cache_key]  # type: ignore[return-value]
 
         # Download image and convert to base64.
+        image_data_url = self._fetch_image_as_data_url(image_url)
+
+        # Build messages with image
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+
+        # User message with image (base64 data URL)
+        messages.append(
+            {
+                "role": "user",
+                "content": [  # type: ignore[dict-item]
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": image_data_url}},
+                ],
+            }
+        )
+
+        # Call API
+        response = self._call_api(messages, temperature, self._get_model(cache_type))
+
+        # Extract content
+        content = response["choices"][0]["message"]["content"]
+
+        # Parse JSON
+        content = self._strip_markdown_wrapper(content)
+
+        # Sanitize
+        content = self._sanitize_json_response(content)
+
+        result = self._parse_image_json(content, cache_type, prompt, temperature)
+
+        # Cache result
+        if use_cache:
+            cache[cache_key] = result
+
+        return result
+
+    def _fetch_image_as_data_url(self, image_url: str) -> str:
+        """SSRF-safe download of an image, returned as a base64 data URL."""
         import base64
 
         # SSRF-safe fetch: image_url is UNTRUSTED (built from scraped page HTML / LLM / search
@@ -1223,42 +1318,12 @@ class GrokClient:
         logger.debug(
             "Downloaded image: %d bytes, type: %s", len(img_bytes), content_type
         )
+        return image_data_url
 
-        # Build messages with image
-        messages = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-
-        # User message with image (base64 data URL)
-        messages.append(
-            {
-                "role": "user",
-                "content": [  # type: ignore[dict-item]
-                    {"type": "text", "text": prompt},
-                    {"type": "image_url", "image_url": {"url": image_data_url}},
-                ],
-            }
-        )
-
-        # Call API
-        response = self._call_api(messages, temperature, self._get_model(cache_type))
-
-        # Extract content
-        content = response["choices"][0]["message"]["content"]
-
-        # Parse JSON
-        content = content.strip()
-        if content.startswith("```json"):
-            content = content[7:]
-        if content.startswith("```"):
-            content = content[3:]
-        if content.endswith("```"):
-            content = content[:-3]
-        content = content.strip()
-
-        # Sanitize
-        content = self._sanitize_json_response(content)
-
+    def _parse_image_json(
+        self, content: str, cache_type: str, prompt: str, temperature: float
+    ) -> Any:
+        """Parse a sanitized vision JSON response, logging a cache-clear hint on error."""
         try:
             result = json.loads(content)
         except json.JSONDecodeError as e:
@@ -1267,11 +1332,6 @@ class GrokClient:
             raise GrokAPIError(
                 f"Failed to parse JSON response: {e}\nContent: {content[:500]}"
             ) from e
-
-        # Cache result
-        if use_cache:
-            cache[cache_key] = result
-
         return result
 
     def _strip_markdown_wrapper(self, response: str) -> str:
