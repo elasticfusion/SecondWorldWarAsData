@@ -148,7 +148,9 @@ are NEW gaps (analyzer-invisible; bandit still 0H/0M). Ranked:
   sub-events); _build_weather_impact uses normalized exact / word-bounded match (was bare substring -> 'rain' matched
   'terrain'). +OBSERV on each. Original (stale): _save_extraction poisons dedup key on write-fail (data loss);
   _rebuild_index key collapses distinct sub-events; _build_weather_impact bare-substring WeatherID.
-- **[WARNING] core nits** — places._add_event_mention hard-indexes m['Sub_eventID'] (KeyError on
+- **[DONE · PR #495] [WARNING] core nits** — FIXED: places._add_event_mention uses m.get('Sub_eventID') (was KeyError on
+  legacy mentions) + OBSERV; people._normalize_name collapsed to a single @lru_cache (dead inner removed). Original (stale):
+  places._add_event_mention hard-indexes m['Sub_eventID'] (KeyError on
   legacy); people._normalize_name stacked double-lru_cache (inner dead).
 
 ### 1.1 Data-quality from the clean XChannel run
