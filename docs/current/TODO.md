@@ -15,6 +15,15 @@ are ordered: (1) **Phase 2 — open**, (2) Phase 3 / enrichment — open, (3) ar
 Audit of ALL Phase-2 code (8 concurrent code+security sub-agents, synthesized to 5 root patterns).
 bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
 
+> ✅ **§1.0 COMPLETE (2026-10-20):** every review finding fixed + merged, each with concurrent
+> code+security review PASS + CI green, each with added OBSERV. Patterns 1 (#475), 2 (#476),
+> 3 (#481), 4 (#483); trigger-Lambda (#482); orchestration (#484); concurrency/crash-safety (#485);
+> PATTERN 5 dead-code (#486); + the radon-gate/complexity campaign (#477/#480). Caveat: data fixes
+> only take effect on a NEW run. Follow-ups spun out to §4 (deps/openserp/ULID[:8]/write-guard
+> blind-spots/_submit_ocr) + a minor housekeeping item (stale `concurrent.py` string literals in
+> scripts/archive/qa/, dead cruft, optional cleanup).
+
+
 - **[DONE · PR #477 + #480] radon gate was a silent no-op + complexity debt cleared.** `scripts/gate.sh`
   run_radon grepped `' - [D-F] '` (trailing space) but `radon cc --min C` emits `- D` (no trailing
   space) → NEITHER the D+ hard-fail NOR the C+ surfacing ever fired. FIXED: add `--show-complexity`.
@@ -76,7 +85,7 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
   open()+json.dump bypass it); run-scope caller fail-open downgrades to magic-50 on read error (debug
   not warn).
 
-- **[MED · PATTERN 5] dead code + duplication:** 5 overlapping map-search modules; concurrent.py dead
+- **[DONE · PR #486] [MED · PATTERN 5] dead code + duplication:** 5 overlapping map-search modules; concurrent.py dead
   (+ latent wrong-kwarg); dead Dynamo dual-write in file_lock; duplicated max_tokens / ignored timeout params.
 
 
@@ -332,6 +341,10 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
 
 ## 4. INFRA / SECURITY / COST
 
+- **[TRIVIAL · housekeeping, found 2026-10-20 in #486 review] Stale `concurrent.py` string literals
+  in scripts/archive/qa/.** Dead archived one-off QA scripts reference the now-deleted module; never
+  imported/CI'd. Optional cleanup in a future housekeeping pass.
+
 - **[LOW · PATTERN-concurrency #3, found 2026-10-20] Write-guard tripwire blind spots.** The
   raw-write gate (scripts/check_raw_writes.sh, baseline 65) matches only `json.dump(` / `.write_text(`
   and VERIFIES 0 raw writes target an entity-record path today — so the opt-in bypass is governed. But
@@ -487,6 +500,26 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
 ---
 
 ## 7. COMPLETED
+
+### Phase-2 code+security review program (2026-10-20) — ALL findings merged
+8 concurrent sub-agents -> 5 root patterns (docs/current/PHASE2_REVIEW_2026-10-20.md). Every finding
+fixed on its own branch -> concurrent code+security review (both PASS) -> CI -> squash-merge, each
+with added OBSERV; data fixes regenerate only on a NEW run:
+- #475 PATTERN 1 (batch 0-persist: in-task positional mapping + casualties stable cache_key)
+- #476 PATTERN 2 (SSRF: 12 sites -> url_hygiene.safe_get/fetch_text_safe/fetch_image_bytes)
+- #481 PATTERN 3 (path traversal: dates/places/equipment -> hardened sanitizer + stem length cap)
+- #483 PATTERN 4 (silent drops: dates year-veto/casualties keywords/people_groups wrapper/supplemental
+  dedup+hybrid/supplemental_info dict->Path/write-return honored)
+- #482 trigger-Lambda (key SAFE_TITLE / SNS full-ARN trust / expected_count gate / dedup prompt-
+  injection / _update_manifest optimistic-concurrency race)
+- #484 orchestration (credit-leak release-on-any-failure / weather processed-gate / partial-failure
+  alert / unbounded-batch cap / image decompression-bomb guard)
+- #485 concurrency/crash-safety (grok_client cache lock / atomic locked_json.save both variants /
+  run_scope corrupt-record visible downgrade)
+- #486 PATTERN 5 (dead-code: delete concurrent.py + combined_map_search.py orphans + file_lock dead
+  Dynamo machinery; dedup max_tokens -> GROK_MAX_TOKENS; 456 lines removed)
+- #477/#480 radon gate no-op fix + simplified ALL 15 D+ and 24 of 27 high-C(16-20) blocks (+3 INHERENT
+  documented w/ content-hash resurface mechanism)
 
 ### Radon complexity + dependency hardening (2026-10-20)
 - **~~radon gate silent no-op + complexity debt~~ ✅ #477 + #480** — fixed BOTH no-op greps

@@ -234,7 +234,7 @@ live in several places:
 6. ~~**PATTERN 4 silent-drops**~~ ✅ DONE (PR #483): dates year-veto relaxed, casualties keywords
    broadened, people_groups wrapper-key, supplemental dedup/hybrid, supplemental_info_pipeline
    dict->Path (+ equipment arg-order), write-return honored + atomic people_consolidation. +OBSERV each.
-7. **PATTERN 5 dead code/dup** (hardening) — crash-safety/concurrency MEDs ✅ DONE (PR #485:
+7. ~~**PATTERN 5 dead code/dup**~~ ✅ DONE (PR #486) — ALL review priorities now complete. **PATTERN 5 dead code/dup** (hardening) — crash-safety/concurrency MEDs ✅ DONE (PR #485:
    cache-lock + atomic locked_json.save + visible scope-downgrade; #3 write-guard blind-spot TODO'd).
 
 Nothing here changes the bandit 0H/0M baseline — these are logic/architecture issues bandit can't see.
