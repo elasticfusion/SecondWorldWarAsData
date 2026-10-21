@@ -1210,7 +1210,14 @@ class GrokClient:
             raise GrokAPIError(
                 f"Image fetch blocked or not a valid image (SSRF-safe): {image_url}"
             )
-        content_type = f"image/{(ext or 'jpeg').lstrip('.')}"
+        content_type = {
+            "jpg": "image/jpeg",
+            "jpeg": "image/jpeg",
+            "tif": "image/tiff",
+            "tiff": "image/tiff",
+            "png": "image/png",
+            "gif": "image/gif",
+        }.get((ext or "jpeg").lstrip(".").lower(), "image/jpeg")
         img_base64 = base64.b64encode(img_bytes).decode("utf-8")
         image_data_url = f"data:{content_type};base64,{img_base64}"
         logger.debug(
