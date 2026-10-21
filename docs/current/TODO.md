@@ -101,8 +101,16 @@ are NEW gaps (analyzer-invisible; bandit still 0H/0M). Ranked:
   gate img_url in _verify_single_image (clean_url+resolved_host_is_safe like unit_patch._safe_url) +
   harden extract_json_with_image to route bytes via images.fetch_image_bytes; + a bytes-level
   regression test (not a source grep).
-- **[HIGH] chunked_extract.extract_with_chunk_halving halving not recursive** — a half-chunk that
-  still truncates is silently DROPPED (~half items lost). Recurse per half (keep BatchModeCollecting re-raise).
+- **[DONE · PR #488] [HIGH] chunked_extract.extract_with_chunk_halving halving not recursive** — now
+  recurses to size-1 (base case drops only the oversized item); +OBSERV. FOLLOW-UP found by #488
+  review (NEW HIGH, below): the halving is currently LATENT in production.
+- **[HIGH · NEW, found in #488 review] Inner extract_fns swallow GrokTruncationError -> halving never
+  engages + whole chunk drops to {}.** casualties._call_and_parse_casualties / weather._call_and_parse_weather
+  / logistics._extract_* catch `except Exception` (which includes GrokTruncationError) and return {}
+  after retries, so GrokTruncationError never reaches extract_with_chunk_halving — a truncated chunk
+  silently yields {} (worse than the ~half-drop just fixed). FIX: re-raise GrokTruncationError from
+  those inner fns (before/bypassing the broad except) so the recursive halving actually runs. Pre-
+  existing (the old halving was equally never-triggered); #488 made the halving correct + ready.
 - **[HIGH] batch_api.retrieve_results_ordered valid-gate too strict** — requires finish_reason=='stop'
   but default is 'unknown' -> valid content discarded + re-billed. Accept finish_reason!='length'.
 - **[WARNING] Pattern-3 path-traversal INCOMPLETE** — weather_central._create_new_weather_file +

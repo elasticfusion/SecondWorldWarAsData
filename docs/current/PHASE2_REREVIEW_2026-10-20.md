@@ -27,7 +27,8 @@ WARNINGs. Ranked, de-duplicated across the 3 agents that converged on the SSRF:
   regression test (not a source grep) asserting a metadata/loopback URL is refused.
 
 ## HIGH (new correctness)
-- **`chunked_extract.extract_with_chunk_halving` halving is NOT recursive** — a half-chunk that still
+- ✅ **DONE #488** (+ NEW follow-up: inner extract_fns swallow GrokTruncationError so halving is latent)
+  **`chunked_extract.extract_with_chunk_halving` halving is NOT recursive** — a half-chunk that still
   truncates is caught by `except Exception` and silently DROPPED (~half the items lost, error-logged
   only). FIX: recurse per half (keep the `BatchModeCollecting` re-raise).
 - **`batch_api.retrieve_results_ordered` status gate too strict** — `valid` requires
