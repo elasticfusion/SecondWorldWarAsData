@@ -71,15 +71,29 @@ def _resolve_back_reference(
     # 2. "Hodges, op. cit., 112." -> most recent full citation by that author.
     m = _OPCIT_CONTENT_RE.match(t)
     if m:
-        author = _normalize_title(m.group("author"))
-        for w in reversed(works_so_far):
-            if author and (author in w["author"] or author in w["short"]):
-                return w["title"]
-        return works_so_far[-1]["title"]  # fallback: previous work
+        return _resolve_opcit(m.group("author"), works_so_far)
 
     # 3. Short-title repeat (e.g. "Irwin Diary.") -> an earlier full citation whose
     #    short-title matches. Only when the repeat is itself short (a single segment);
     #    a long multi-clause citation is a new work, not a repeat.
+    return _resolve_short_title_repeat(t, works_so_far)
+
+
+def _resolve_opcit(
+    author_raw: str, works_so_far: List[Dict[str, str]]
+) -> Optional[str]:
+    """Resolve an 'op. cit.' back-reference to the most recent work by that author."""
+    author = _normalize_title(author_raw)
+    for w in reversed(works_so_far):
+        if author and (author in w["author"] or author in w["short"]):
+            return w["title"]
+    return works_so_far[-1]["title"]  # fallback: previous work
+
+
+def _resolve_short_title_repeat(
+    t: str, works_so_far: List[Dict[str, str]]
+) -> Optional[str]:
+    """Resolve a single-segment short-title repeat to the earlier full citation it matches."""
     norm = _short_title(t)
     if norm and _normalize_title(t) == norm:  # single-segment => candidate repeat
         for w in works_so_far:
@@ -588,30 +602,51 @@ def backfill_bib_titles(bib_dir: Path) -> tuple:
         name = Path(f).name
         if not name.startswith("bib_"):
             continue
-        try:
-            with open(f, "r", encoding="utf-8") as fh:
-                rec = json.load(fh)
-            if not isinstance(rec, dict):
-                continue
-            scanned += 1
-            cur = rec.get("title")
-            if cur and cur != "Unknown":
-                continue  # already has a real title
-            citation = rec.get("citation") or {}
-            mention = (rec.get("mentions") or [{}])[0] or {}
-            material = {"verbatim_reference": mention.get("verbatim_reference")}
-            new_title = _derive_bib_title(citation, material)
-            if new_title and new_title != "Unknown" and new_title != cur:
-                rec["title"] = new_title
-                if not citation.get("title") or citation.get("title") == "Unknown":
-                    citation["title"] = new_title
-                    rec["citation"] = citation
-                _atomic_write_json(f, rec)
-                fixed += 1
-        except Exception as e:  # noqa: BLE001 - per-file best-effort
-            logger.debug("bib title backfill skipped %s: %s", f, e)
+        scanned_inc, fixed_inc = _backfill_one_bib_file(f)
+        scanned += scanned_inc
+        fixed += fixed_inc
     logger.info("OBSERV bib.title_backfill scanned=%d fixed=%d", scanned, fixed)
     return scanned, fixed
+
+
+def _backfill_one_bib_file(f: str) -> tuple:
+    """Backfill the title of one bib record file. Returns (scanned_inc, fixed_inc).
+
+    Mirrors the original inline body exactly: ``scanned`` is counted once the record parses
+    as a dict; ``fixed`` only when the title actually changes (and the record is rewritten).
+    Fail-safe per file.
+    """
+    scanned = fixed = 0
+    try:
+        with open(f, "r", encoding="utf-8") as fh:
+            rec = json.load(fh)
+        if not isinstance(rec, dict):
+            return scanned, fixed
+        scanned += 1
+        cur = rec.get("title")
+        if cur and cur != "Unknown":
+            return scanned, fixed  # already has a real title
+        fixed += _repair_bib_title(f, rec, cur)
+    except Exception as e:  # noqa: BLE001 - per-file best-effort
+        logger.debug("bib title backfill skipped %s: %s", f, e)
+    return scanned, fixed
+
+
+def _repair_bib_title(f: str, rec: Dict[str, Any], cur: Any) -> int:
+    """Recompute a bib record's title from its citation + first mention; rewrite in place
+    when it actually changes. Returns 1 if the record was rewritten, else 0."""
+    citation = rec.get("citation") or {}
+    mention = (rec.get("mentions") or [{}])[0] or {}
+    material = {"verbatim_reference": mention.get("verbatim_reference")}
+    new_title = _derive_bib_title(citation, material)
+    if new_title and new_title != "Unknown" and new_title != cur:
+        rec["title"] = new_title
+        if not citation.get("title") or citation.get("title") == "Unknown":
+            citation["title"] = new_title
+            rec["citation"] = citation
+        _atomic_write_json(f, rec)
+        return 1
+    return 0
 
 
 def _has_mention(mentions: List[Dict], mention: Dict) -> bool:
@@ -689,23 +724,28 @@ def _merge_bib_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
     base = dict(records[0])
     merged_mentions: List[Dict[str, Any]] = []
     for rec in records:
-        # prefer a real title / populated fields from any record
-        if base.get("title", "Unknown") in ("", "Unknown") and rec.get("title") not in (
-            "",
-            "Unknown",
-            None,
-        ):
-            base["title"] = rec["title"]
-        for fld in ("alt_title", "archive_reference_number"):
-            if not base.get(fld) and rec.get(fld):
-                base[fld] = rec[fld]
-        if not base.get("resource_urls") and rec.get("resource_urls"):
-            base["resource_urls"] = rec["resource_urls"]
+        _merge_bib_fields(base, rec)
         for m in rec.get("mentions") or []:
             if not _has_mention(merged_mentions, m):
                 merged_mentions.append(m)
     base["mentions"] = merged_mentions
     return base
+
+
+def _merge_bib_fields(base: Dict[str, Any], rec: Dict[str, Any]) -> None:
+    """Prefer the most-enriched base fields from ``rec`` (real title, populated fields)."""
+    # prefer a real title / populated fields from any record
+    if base.get("title", "Unknown") in ("", "Unknown") and rec.get("title") not in (
+        "",
+        "Unknown",
+        None,
+    ):
+        base["title"] = rec["title"]
+    for fld in ("alt_title", "archive_reference_number"):
+        if not base.get(fld) and rec.get(fld):
+            base[fld] = rec[fld]
+    if not base.get("resource_urls") and rec.get("resource_urls"):
+        base["resource_urls"] = rec["resource_urls"]
 
 
 def _group_title(items: List[tuple]) -> str:
@@ -800,18 +840,23 @@ def _group_bib_files_by_hash(bib_dir: Path) -> "Dict[str, List[tuple]]":
             continue
         if not isinstance(data, dict) or "BibliographyID" not in data:
             continue
-        file_hash = _hash_from_bib_filename(f.name)
-        if file_hash:
-            canon = f"bib_{file_hash}.json"
-        else:
-            title = data.get("title", "") or ""
-            if not title or title == "Unknown":
-                title = data.get("verbatim_reference", "") or (
-                    (data.get("mentions") or [{}])[0].get("verbatim_reference", "")
-                )
-            canon = _deterministic_bib_filename(_match_keys(data, title))
+        canon = _canonical_bib_name(f, data)
         groups.setdefault(canon, []).append((f, data))
     return groups
+
+
+def _canonical_bib_name(f: Path, data: Dict[str, Any]) -> str:
+    """Canonical ``bib_<hash>.json`` name for a record: prefer the filename hash; else
+    recompute from the record's match key (title, falling back to verbatim)."""
+    file_hash = _hash_from_bib_filename(f.name)
+    if file_hash:
+        return f"bib_{file_hash}.json"
+    title = data.get("title", "") or ""
+    if not title or title == "Unknown":
+        title = data.get("verbatim_reference", "") or (
+            (data.get("mentions") or [{}])[0].get("verbatim_reference", "")
+        )
+    return _deterministic_bib_filename(_match_keys(data, title))
 
 
 def _reconcile_bib_group(

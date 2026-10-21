@@ -465,6 +465,17 @@ def _resolve_casualty_date(
     return None
 
 
+def _resolve_direct_anchor(
+    explicit_id: Optional[str], items: List[Dict[str, Any]], id_key: str
+) -> Optional[str]:
+    """Prefer an explicit LLM id; else hoist the sole resolved item's id (single-item only)."""
+    if explicit_id:
+        return explicit_id
+    if len(items) == 1 and items[0].get(id_key):
+        return items[0][id_key]
+    return None
+
+
 def _set_direct_anchors(
     casualty: Dict[str, Any], casualty_data: Dict[str, Any]
 ) -> None:
@@ -472,19 +483,19 @@ def _set_direct_anchors(
     explicit LLM-provided ID; else, for a single-person / single-place casualty, hoist the
     sole resolved impacted person/place so the anchor doesn't require parsing the lists.
     """
-    person_id = casualty_data.get("PersonID")
-    if not person_id:
-        people = casualty.get("impacted_people") or []
-        if len(people) == 1 and people[0].get("PersonID"):
-            person_id = people[0]["PersonID"]
+    person_id = _resolve_direct_anchor(
+        casualty_data.get("PersonID"),
+        casualty.get("impacted_people") or [],
+        "PersonID",
+    )
     if person_id:
         casualty["PersonID"] = person_id
 
-    place_id = casualty_data.get("PlaceID")
-    if not place_id:
-        places = casualty.get("impacted_places") or []
-        if len(places) == 1 and places[0].get("PlaceID"):
-            place_id = places[0]["PlaceID"]
+    place_id = _resolve_direct_anchor(
+        casualty_data.get("PlaceID"),
+        casualty.get("impacted_places") or [],
+        "PlaceID",
+    )
     if place_id:
         casualty["PlaceID"] = place_id
 
@@ -544,23 +555,16 @@ def _resolve_equipment(
     return resolved
 
 
-def _build_casualty(
+def _init_casualty_record(
     casualty_data: Dict[str, Any],
     event_id: str,
     sub_event_id: Optional[str],
     book: str,
     chapter: str,
     paragraph_number: Optional[int],
-    dates_index: Dict[str, Any],
-    places_index: Dict[str, Any],
-    people_index: Dict[str, Any],
-    people_groups_index: GroupUnitKeyIndex,
-    equipment_index: Optional[Dict[str, Any]] = None,
-    fallback_year: Optional[int] = None,
-    logistics_index: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """Build casualty JSON structure."""
-    casualty = {
+    """Build the base casualty record (id, clamped side, source) before enrichment."""
+    return {
         "CasualtyID": str(ulid.new()),
         "type": casualty_data.get("type", "casualties"),
         "side": (
@@ -577,6 +581,56 @@ def _build_casualty(
             "paragraph_number": paragraph_number,
         },
     }
+
+
+def _attach_logistics(
+    casualty: Dict[str, Any],
+    casualty_data: Dict[str, Any],
+    logistics_index: Dict[str, Any],
+) -> None:
+    """Resolve + attach logistics cross-refs (explicit links + co-occurring candidates)."""
+    from src.extraction.logistics_resolver import resolve_logistics
+
+    group_ids = [
+        o.get("PeopleGroupID")
+        for o in casualty.get("impacted_organizations", []) or []
+        if isinstance(o, dict) and o.get("PeopleGroupID")
+    ]
+    date_iso = None
+    date_id = None
+    if isinstance(casualty.get("date"), dict):
+        date_iso = casualty["date"].get("iso_date")
+        date_id = casualty["date"].get("DateID")
+    links = resolve_logistics(
+        casualty_data.get("impacted_logistics", []),
+        group_ids,
+        date_iso,
+        logistics_index,
+        date_id=date_id,
+    )
+    if links:
+        casualty["impacted_logistics"] = links
+
+
+def _build_casualty(
+    casualty_data: Dict[str, Any],
+    event_id: str,
+    sub_event_id: Optional[str],
+    book: str,
+    chapter: str,
+    paragraph_number: Optional[int],
+    dates_index: Dict[str, Any],
+    places_index: Dict[str, Any],
+    people_index: Dict[str, Any],
+    people_groups_index: GroupUnitKeyIndex,
+    equipment_index: Optional[Dict[str, Any]] = None,
+    fallback_year: Optional[int] = None,
+    logistics_index: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Build casualty JSON structure."""
+    casualty = _init_casualty_record(
+        casualty_data, event_id, sub_event_id, book, chapter, paragraph_number
+    )
 
     # event_context.EventID is a NON-nullable ULID in the schema, so only attach event_context
     # when we actually have a real event ULID (it is an optional top-level field).
@@ -620,27 +674,7 @@ def _build_casualty(
     # Logistics cross-ref (Phase B): explicit text-asserted links + inferred co-occurring
     # candidates (shared GroupID + overlapping date), honestly labeled by association.
     if logistics_index is not None:
-        from src.extraction.logistics_resolver import resolve_logistics
-
-        group_ids = [
-            o.get("PeopleGroupID")
-            for o in casualty.get("impacted_organizations", []) or []
-            if isinstance(o, dict) and o.get("PeopleGroupID")
-        ]
-        date_iso = None
-        date_id = None
-        if isinstance(casualty.get("date"), dict):
-            date_iso = casualty["date"].get("iso_date")
-            date_id = casualty["date"].get("DateID")
-        links = resolve_logistics(
-            casualty_data.get("impacted_logistics", []),
-            group_ids,
-            date_iso,
-            logistics_index,
-            date_id=date_id,
-        )
-        if links:
-            casualty["impacted_logistics"] = links
+        _attach_logistics(casualty, casualty_data, logistics_index)
 
     return casualty
 
@@ -699,23 +733,28 @@ def _event_year_lookup(dates_dir: Path) -> Dict[str, Optional[int]]:
     for f in dates_dir.glob("*.json"):
         if f.name == "index.json":
             continue
-        try:
-            d = json.loads(f.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        ds = d.get("date_start") or ""
-        m = re.match(r"(\d{4})", ds)
-        if not m:
-            continue
-        yr = int(m.group(1))
-        for em in d.get("event_mentions", []) or []:
-            eid = em.get("EventID")
-            if eid:
-                years.setdefault(eid, set()).add(yr)
+        _collect_event_years(f, years)
     # single-year events -> that year; multi-year -> None (ambiguous, don't guess)
     return {
         eid: (next(iter(ys)) if len(ys) == 1 else None) for eid, ys in years.items()
     }
+
+
+def _collect_event_years(f: Path, years: Dict[str, set]) -> None:
+    """Add the year of one date record to each EventID it is mentioned in."""
+    try:
+        d = json.loads(f.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return
+    ds = d.get("date_start") or ""
+    m = re.match(r"(\d{4})", ds)
+    if not m:
+        return
+    yr = int(m.group(1))
+    for em in d.get("event_mentions", []) or []:
+        eid = em.get("EventID")
+        if eid:
+            years.setdefault(eid, set()).add(yr)
 
 
 def _parse_date_string(
@@ -752,14 +791,20 @@ def _parse_date_string(
             pass
     # Year-LESS forms ('9 August', 'August', '9 Aug') — infer the year from context.
     if fallback_year and not re.search(r"\b\d{4}\b", date_str):
-        for fmt in ("%d %B", "%d %b", "%B", "%b"):
-            try:
-                dt = datetime.strptime(date_str, fmt).replace(year=fallback_year)
-                return (
-                    dt.strftime("%Y-%m-%d") if "%d" in fmt else dt.strftime("%Y-%m-01")
-                )
-            except ValueError:
-                continue
+        return _parse_year_less(date_str, fallback_year)
+    return None
+
+
+def _parse_year_less(date_str: str, fallback_year: int) -> Optional[str]:
+    """Parse a year-less date form, substituting the inferred fallback year."""
+    from datetime import datetime
+
+    for fmt in ("%d %B", "%d %b", "%B", "%b"):
+        try:
+            dt = datetime.strptime(date_str, fmt).replace(year=fallback_year)
+            return dt.strftime("%Y-%m-%d") if "%d" in fmt else dt.strftime("%Y-%m-01")
+        except ValueError:
+            continue
     return None
 
 

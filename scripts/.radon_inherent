@@ -48,14 +48,6 @@ src/enrichment/noaa_weather.py::_enrich_weather_file  92ed652c63c9f1077ae88a8a51
 src/enrichment/unit_patch.py::_select_best_patch  2ffaed6d8dd5139493b3c9add8cf129c0a3138162ffe17a70a78fa6b81a4101f  # grandfathered C(11) C+ backlog 2026-10-20
 src/extraction/batch_parallel.py::_batch_extract  22d211b464c2497dc0bc1cacb9cf07dcfaddc750411e70595bc2ecfa971e0d92  # grandfathered C(12) C+ backlog 2026-10-20
 src/extraction/batch_parallel.py::_process_place_relationships  cf27d9546720461a3ba806b3c840f673a8f952df53f8e026647e0320698e8362  # grandfathered C(14) C+ backlog 2026-10-20
-src/extraction/bibliography.py::_group_bib_files_by_hash  b993bc9109122dc04918db13bf583b0a5271079da735e3ce3b5c01ac0545ad62  # grandfathered C(12) C+ backlog 2026-10-20
-src/extraction/bibliography.py::_merge_bib_records  c71544964266b441442f694c94d17ba4d2d5459e3858ecd82d60890c1f32406d  # grandfathered C(13) C+ backlog 2026-10-20
-src/extraction/bibliography.py::_resolve_back_reference  f73c4772e2b3ee92a5dddf0cc74a32098a289c98fb4cdbcf222167a911a6a9b2  # grandfathered C(14) C+ backlog 2026-10-20
-src/extraction/bibliography.py::backfill_bib_titles  d8b40ed1a4955a474efa8296163688e936ee731cc40c96d77dc11900633f7d0c  # grandfathered C(15) C+ backlog 2026-10-20
-src/extraction/casualties.py::_build_casualty  3ffd931f87413504b0c3120bec6fd39922e0a266e6f248cdeea78a8bbad89d65  # grandfathered C(15) C+ backlog 2026-10-20
-src/extraction/casualties.py::_event_year_lookup  0c961eeb5bb2f298e0da5068fec326b9c4f25cfce4f24f968ff5359c6756f9b9  # grandfathered C(12) C+ backlog 2026-10-20
-src/extraction/casualties.py::_parse_date_string  cf8faf83996a268f05352b16bf8d49526997a65826dbe710d9aaa7f961fb2f2e  # grandfathered C(11) C+ backlog 2026-10-20
-src/extraction/casualties.py::_set_direct_anchors  8a35ba4a5f8b2c54d77b5b0c913de40b51051f4b8a3665f042adeb01e23d0bb6  # grandfathered C(11) C+ backlog 2026-10-20
 src/extraction/date_resolution.py::resolve_date_interval  bdaa6694c85bd4c9f0d5c21c8bfdf30a64cb214fecaf4730f88352a355423475  # grandfathered C(11) C+ backlog 2026-10-20
 src/extraction/date_summary.py::_render_mentions  8aa127f26f8ecf785b5f1a00a847197fd4eb1d5de8dca8a950fa0ba3af376ad9  # grandfathered C(13) C+ backlog 2026-10-20
 src/extraction/enrich_biographies.py::_persist_award_errors  d5c7de1341dd883b74aaf325b60d8319e81c5bfc11e3337dd70fd38ff9f1f9a1  # grandfathered C(13) C+ backlog 2026-10-20
@@ -96,10 +88,6 @@ src/extraction/supplemental_search.py::search_archive_org_candidates  783ef2cd39
 src/extraction/supplemental_search.py::search_gutenberg_candidates  2b3b80b7d4f0aeb135b93982b78353ead1987556509be7589dc4c68b405b5833  # grandfathered C(14) C+ backlog 2026-10-20
 src/extraction/title_memberships.py::validate_membership_dates  93c019d198781714a82ccbbc084f3b5983fde3c3ac6547e3046b2f75c077f20a  # grandfathered C(15) C+ backlog 2026-10-20
 src/extraction/weather_central.py::_parse_weather_response  674574bee70e02853864cba68769252955a9a28fed4e701c7179ee7a9bd97bfa  # grandfathered C(14) C+ backlog 2026-10-20
-src/grok_client.py::GrokClient._log_api_response  7ac03352b1a2d00d51b7ff589b3634b5dd9bdfadc784f8f99062045c1236269c  # grandfathered C(12) C+ backlog 2026-10-20
-src/grok_client.py::GrokClient.chat_completion  f36de5dc4084f95cc7f91d93dded5d99bf5c8efd064753fba82c3e06dce4b1b4  # grandfathered C(14) C+ backlog 2026-10-20
-src/grok_client.py::GrokClient.extract_json_with_image  3cd300544499f5cdc8481cc05794f4123a3cd4f5f01d47c5c4c5679a9e57f9dc  # grandfathered C(11) C+ backlog 2026-10-20
-src/grok_client.py::GrokClient.submit_batch  8fecd8f6e05b7db66512d15c3f2fa1bec96032226c808f8a485c663f04844c26  # grandfathered C(12) C+ backlog 2026-10-20
 src/ingestion/av_scan.py::scan_and_gate  1a61cd8fba06cf5588265cd3ad3c5546e2c8940ba58b4f14a9c60d92012cb903  # grandfathered C(11) C+ backlog 2026-10-20
 src/ingestion/speaker_id.py::_resolve_one  137d23e8f2c3289717fda0339206616dda56a8dd2efdf5dd149a651c203af2a9  # grandfathered C(15) C+ backlog 2026-10-20
 src/ingestion/translation.py::normalize_markdown_to_english  b9eb73d6b85a18e1c225bef436cd03fe953e4d6d84c7555bbf9dc9343a2bfd86  # grandfathered C(11) C+ backlog 2026-10-20
