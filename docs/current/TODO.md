@@ -71,7 +71,7 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
   **partial-failure batches silently drop the failed fraction** (no alert unless error>=total);
   **unbounded batch size**; **image decompression-bomb DoS** (equipment/grok_search_maps, no MAX_IMAGE_PIXELS).
 
-- **[MED] concurrency/crash-safety:** grok_client `self.caches`/counters mutated without a lock;
+- **[DONE · PR #485] [MED] concurrency/crash-safety:** grok_client `self.caches`/counters mutated without a lock;
   `locked_json.save()` truncates-in-place (not crash-atomic); write-guard is opt-in (some plain
   open()+json.dump bypass it); run-scope caller fail-open downgrades to magic-50 on read error (debug
   not warn).
