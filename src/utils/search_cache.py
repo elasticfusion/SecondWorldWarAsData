@@ -17,6 +17,10 @@ logger = logging.getLogger(__name__)
 POSITIVE_TTL_DAYS = 30
 NEGATIVE_TTL_DAYS = 7
 
+# Sentinel a fetcher returns to signal "transient failure, do NOT negative-cache" (distinct from a
+# genuine miss, which IS negative-cached). See cache_result().
+TRANSIENT = object()
+
 _cache_backend = None
 
 
@@ -56,7 +60,16 @@ def get_cached(source: str, query: str) -> Optional[str]:
 
 
 def cache_result(source: str, query: str, result: Optional[str]) -> None:
-    """Cache a search result. Pass None or empty string for negative cache."""
+    """Cache a search result.
+
+    - a truthy string -> positive cache (POSITIVE_TTL_DAYS)
+    - None / "" -> NEGATIVE cache ("NOT_FOUND", NEGATIVE_TTL_DAYS) — a genuine miss
+    - ``TRANSIENT`` -> DO NOT CACHE. A transient failure (timeout / 5xx / 429 / network
+      exception) must NOT be negative-cached, else a one-off outage suppresses a genuinely-available
+      resource for NEGATIVE_TTL_DAYS. Callers pass TRANSIENT when the fetch errored vs. truly missed.
+    """
+    if result is TRANSIENT:
+        return  # never persist a transient failure as a negative
     backend = _get_backend()
     key = _make_key(source, query)
     if result:
