@@ -752,6 +752,7 @@ def _search_openserp_archive(
     if cached:
         return cached
 
+    saw_200 = False  # bound before the try so a future non-returning except can't leave it unbound
     try:
         import time
 
@@ -768,42 +769,64 @@ def _search_openserp_archive(
             queries = [f"{ref} digitized document"]
 
         session = get_session()
-        # Grok-verify budget per citation: topically-relevant-but-wrong candidates (e.g. "VIII
-        # Corps in ETO" for a "V Corps Operations" citation) pass the cheap token-gate and can
-        # only be rejected by Grok. Cap total verify attempts across ALL query templates so one
-        # citation can't accumulate dozens of 3s Grok calls (the Phase-3 slowdown). 0 = done.
-        verify_budget = 5
-        for query in queries:
-            if verify_budget <= 0:
-                break
-            time.sleep(5)
-            resp = session.get(
-                f"{openserp_url}/mega/search",
-                params={
-                    "text": query,
-                    "limit": "5",
-                    "mode": "any",
-                    "engines": "google,bing,duckduckgo",
-                },
-                timeout=15,
-            )
-            if resp.status_code != 200:
-                continue
-            results = resp.json().get("results", [])
-            url, verify_budget = _verify_openserp_results(
-                query, results, ref, grok_client, entry, verify_budget
-            )
-            if url:
-                cache_result("openserp_archive", ref, url)
-                logger.info("Found online copy: %s", url)
-                return url
+        url, saw_200 = _run_openserp_queries(
+            session, openserp_url, queries, ref, grok_client, entry
+        )
+        if url:
+            cache_result("openserp_archive", ref, url)
+            logger.info("Found online copy: %s", url)
+            return url
     except Exception as e:
         logger.warning("OpenSERP unreachable, disabling for this run: %s", e)
         _openserp_down = True
         return None
 
-    cache_result("openserp_archive", ref, None)
+    # Only negative-cache a GENUINE miss (at least one query returned 200 with no usable result).
+    # If every query was non-200 (e.g. 503 while OpenSERP scales 0->1), that's TRANSIENT — don't
+    # poison the negative cache for 7d.
+    if saw_200:
+        cache_result("openserp_archive", ref, None)
+    else:
+        logger.info(
+            "OBSERV bib.openserp_all_transient ref=%s (no 200, not negative-cached)",
+            str(ref)[:60],
+        )
     return None
+
+
+def _run_openserp_queries(session, openserp_url, queries, ref, grok_client, entry):
+    """Run the OpenSERP query templates (budgeted Grok-verify). Returns (first_verified_url_or_None,
+    saw_200) where saw_200 is True iff at least one query actually returned HTTP 200 (so the caller
+    can distinguish a genuine miss from an all-transient outage). Extracted to keep
+    _search_openserp_archive below the C gate."""
+    import time
+
+    verify_budget = 5
+    saw_200 = False
+    for query in queries:
+        if verify_budget <= 0:
+            break
+        time.sleep(5)
+        resp = session.get(
+            f"{openserp_url}/mega/search",
+            params={
+                "text": query,
+                "limit": "5",
+                "mode": "any",
+                "engines": "google,bing,duckduckgo",
+            },
+            timeout=15,
+        )
+        if resp.status_code != 200:
+            continue
+        saw_200 = True
+        results = resp.json().get("results", [])
+        url, verify_budget = _verify_openserp_results(
+            query, results, ref, grok_client, entry, verify_budget
+        )
+        if url:
+            return url, saw_200
+    return None, saw_200
 
 
 def _openserp_search_title(entry: Optional[Dict], ref: str) -> "Tuple[str, str]":

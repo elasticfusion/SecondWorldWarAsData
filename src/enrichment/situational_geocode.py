@@ -78,12 +78,20 @@ def grokipedia_context(term: str, session: Any) -> Optional[str]:
         return cached
 
     extract = _grokipedia_fetch(term, session)
+    from src.utils.search_cache import TRANSIENT
+
+    if extract is TRANSIENT:
+        return None  # transient: don't negative-cache
     cache_result("grokipedia_place", term, extract or None)
     return extract
 
 
-def _grokipedia_fetch(term: str, session: Any) -> Optional[str]:
-    """Search Grokipedia for ``term`` and return prose from the top page."""
+def _grokipedia_fetch(term: str, session: Any):
+    """Search Grokipedia for ``term`` and return prose from the top page, None on a genuine no-match,
+    or search_cache.TRANSIENT on a non-200/exception (so the caller does NOT negative-cache a one-off
+    outage for 7d)."""
+    from src.utils.search_cache import TRANSIENT
+
     try:
         resp = session.get(
             _GROKIPEDIA_SEARCH,
@@ -92,17 +100,33 @@ def _grokipedia_fetch(term: str, session: Any) -> Optional[str]:
             timeout=20,
             allow_redirects=True,
         )
-        if resp.status_code != 200 or "/page/" not in resp.text:
-            return None
+        if resp.status_code != 200:
+            logger.info(
+                "OBSERV situational.grokipedia_transient status=%d term=%r",
+                resp.status_code,
+                term[:60],
+            )
+            return TRANSIENT
+        if "/page/" not in resp.text:
+            return None  # genuine no-match
         slugs = _SLUG_RE.findall(resp.text)
         if not slugs:
             return None
         page = session.get(_GROKIPEDIA_PAGE + slugs[0], headers=_BROWSER_UA, timeout=20)
         if page.status_code != 200:
-            return None
+            logger.info(
+                "OBSERV situational.grokipedia_transient page_status=%d term=%r",
+                page.status_code,
+                term[:60],
+            )
+            return TRANSIENT
     except Exception as exc:  # noqa: BLE001 - best-effort lookup
-        logger.warning("Grokipedia lookup failed for %s: %s", term, exc)
-        return None
+        logger.info(
+            "OBSERV situational.grokipedia_transient err=%s term=%r",
+            str(exc)[:80],
+            term[:60],
+        )
+        return TRANSIENT
     text = _TAG_RE.sub(" ", page.text)
     text = re.sub(r"\s+", " ", text).strip()
     return text[:800] if text else None
@@ -122,11 +146,24 @@ def wikipedia_context(term: str, session: Any) -> Optional[str]:
     if cached:
         return cached
 
-    extract = _wiki_extract(term, session) or _wiki_extract(
-        f"{term} (World War II)", session
-    )
-    cache_result("wikipedia_situational", term, extract or None)
-    return extract
+    from src.utils.search_cache import TRANSIENT
+
+    extract = None
+    transient = False
+    for title in (term, f"{term} (World War II)"):
+        r = _wiki_extract(title, session)
+        if r is TRANSIENT:
+            transient = True
+            continue
+        if r:
+            extract = r
+            break
+    if extract:
+        cache_result("wikipedia_situational", term, extract)
+        return extract
+    if not transient:
+        cache_result("wikipedia_situational", term, None)  # genuine miss
+    return None
 
 
 def encyclopedia_context(term: str, session: Any) -> tuple[Optional[str], str]:
@@ -192,8 +229,11 @@ def _lookup_terms(term: str) -> List[str]:
     return terms
 
 
-def _wiki_extract(title: str, session: Any) -> Optional[str]:
-    """Fetch the intro extract of a Wikipedia page, or None."""
+def _wiki_extract(title: str, session: Any):
+    """Fetch the intro extract of a Wikipedia page, None on a genuine miss, or search_cache.TRANSIENT
+    on a non-200/exception (so the caller does NOT negative-cache a one-off outage)."""
+    from src.utils.search_cache import TRANSIENT
+
     try:
         resp = session.get(
             _WIKI_ENDPOINT,
@@ -210,11 +250,20 @@ def _wiki_extract(title: str, session: Any) -> Optional[str]:
             timeout=15,
         )
         if resp.status_code != 200:
-            return None
+            logger.info(
+                "OBSERV situational.wiki_transient status=%d title=%r",
+                resp.status_code,
+                title[:60],
+            )
+            return TRANSIENT
         pages = resp.json().get("query", {}).get("pages", {})
     except Exception as exc:  # noqa: BLE001 - lookup is best-effort
-        logger.warning("Wikipedia lookup failed for %s: %s", title, exc)
-        return None
+        logger.info(
+            "OBSERV situational.wiki_transient err=%s title=%r",
+            str(exc)[:80],
+            title[:60],
+        )
+        return TRANSIENT
     for page_id, page_data in pages.items():
         if page_id == "-1":
             continue

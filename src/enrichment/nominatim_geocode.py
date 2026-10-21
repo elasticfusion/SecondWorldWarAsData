@@ -263,10 +263,18 @@ def make_nominatim_geocoder(cache_dir: Path, session: Any = None):
                 pass
         try:
             raw = _query_nominatim(query, session, country_code)
-        except Exception as exc:  # noqa: BLE001 - record as a miss, keep batch alive
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 - TRANSIENT (outage/timeout), not a genuine miss
             logger.warning("Nominatim query failed for %s: %s", query, exc)
+            # transient=True -> caller records a NON-terminal geocode_error (retried next run), and
+            # we do NOT cache it (a cached transient would suppress retries).
             return GeocodeResult(
-                found=False, confidence=0.0, note=f"error: {exc}", source="osm"
+                found=False,
+                confidence=0.0,
+                note=f"error: {exc}",
+                source="osm",
+                transient=True,
             )
         result = _to_result(raw)
         try:
