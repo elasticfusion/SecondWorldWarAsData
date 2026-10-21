@@ -17,10 +17,10 @@ campaign + PRs #487–#496. NEW/missed gaps (analyzer-invisible; bandit still 0H
 priority order; fix each via branch→gate→concurrent code+security reviews (both PASS)→CI→merge→sync.
 (The DNS-rebinding CRITICAL is DONE — #497 — and moved to §7 COMPLETED.) Ranked:
 
-- **[SUGGESTION · remaining] larger NITs deferred from the #508 batch:** award_polite_source.polite_get /
-  wayback.fetch_archived byte-cap + resolved-IP recheck (route via safe_get); prompt_loader & search_query_loader
-  single-pass substitution (untrusted `{token}` re-sub); _submit_ocr _SAFE_TITLE_RE; openserp_maps download the
-  vision-APPROVED image (not map_images[0]).
+- **[SUGGESTION · remaining] non-security NITs (lowest priority):** prompt_loader & search_query_loader single-pass
+  substitution (an untrusted value containing a `{token}` can be re-substituted — prompt mutation, not RCE);
+  _submit_ocr skips the _SAFE_TITLE_RE validation the other intake paths apply; openserp_maps downloads
+  map_images[0] not the vision-APPROVED image. (award/wayback byte-cap + resolve-recheck DONE in #511.)
 
 ### 1.1 Data-quality from the clean XChannel run
 
@@ -583,6 +583,9 @@ Not-code (deferred): SHAEF OB map gaps (NARA acquisition). Full historical detai
 item is in git history + the dated design docs under `docs/current/` and `docs/archive/`.
 
 ### Phase-2 FRESH RE-REVIEW (2026-10-20b) — DONE items (moved from §1.0c)
+- **[DONE · PR #511] [SUGGESTION] award/wayback untrusted-fetch byte-cap + wayback archived-host recheck.**
+  award_polite_source.polite_get streams + 10MB-caps the body; wayback.fetch_archived SSRF-rechecks the
+  archived_url host + allow_redirects=False + caps the body. +fail-safe on mid-stream read error.
 - **[DONE · PR #510] [WARNING · follow-up] clean_url unicode/IDNA homograph hosts.** FIXED: _host_is_safe now
   NFKC-normalizes + IDNA-encodes the host before classification (ideographic-dot/fullwidth loopback caught; legit
   IDNs pass via punycode). Original: The standalone
