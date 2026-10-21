@@ -10,100 +10,13 @@ are ordered: (1) **Phase 2 — open**, (2) Phase 3 / enrichment — open, (3) ar
 
 ## 1. PHASE 2 — OPEN (current priority)
 
-### 1.0 Phase-2 code+security review findings (2026-10-20) — full doc: docs/current/PHASE2_REVIEW_2026-10-20.md
-
-Audit of ALL Phase-2 code (8 concurrent code+security sub-agents, synthesized to 5 root patterns).
-bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
-
-> ✅ **§1.0 COMPLETE (2026-10-20):** every review finding fixed + merged, each with concurrent
-> code+security review PASS + CI green, each with added OBSERV. Patterns 1 (#475), 2 (#476),
-> 3 (#481), 4 (#483); trigger-Lambda (#482); orchestration (#484); concurrency/crash-safety (#485);
-> PATTERN 5 dead-code (#486); + the radon-gate/complexity campaign (#477/#480). Caveat: data fixes
-> only take effect on a NEW run. Follow-ups spun out to §4 (deps/openserp/ULID[:8]/write-guard
-- **[DONE · PR #496] Radon gate threshold D->C** — run_radon now HARD-FAILS any non-allowlisted C-or-worse block
-  (was D+ only). The 139-block C+ backlog is grandfathered in scripts/.radon_inherent (body-hash) via a new
-  radon_inherent.py `seed` subcommand; only NEW/MODIFIED C+ fails; D+ never suppressible; +fail-closed if radon absent.
-> blind-spots/_submit_ocr) + a minor housekeeping item (stale `concurrent.py` string literals in
-> scripts/archive/qa/, dead cruft, optional cleanup).
-
-
-- **[DONE · PR #477 + #480] radon gate was a silent no-op + complexity debt cleared.** `scripts/gate.sh`
-  run_radon grepped `' - [D-F] '` (trailing space) but `radon cc --min C` emits `- D` (no trailing
-  space) → NEITHER the D+ hard-fail NOR the C+ surfacing ever fired. FIXED: add `--show-complexity`.
-  Then cleared the debt it had been hiding — **ALL 15 D+ blocks simplified below D** (#477: incl.
-  F(42) bibliography_resolver._search_online_sources, E(33) supplemental.extract_supplemental, and
-  D grok_client.extract_json / url_hygiene.clean_url / trigger_handler.handler+_run_task /
-  merge.merge_generic / bibliography.reconcile_bibliography_dir / …) and **all 27 high-C(16-20)
-  evaluated** (#480: 24 simplified below C16; 3 kept INHERENT — group_resolver.resolve_group_id,
-  url_fetch._do_fetch, places_grok_geocode._toponym_from_prose — documented in-code). Gate now
-  surfaces C PROMINENTLY (D+ listed+hard-fail; high-C listed w/count; C11-15 count-only) and has an
-  INHERENT **resurface mechanism** (`scripts/radon_inherent.py` AST-body-hash + `scripts/.radon_inherent`):
-  a listed INHERENT block is suppressed ONLY while unchanged; a logic edit changes its hash → it
-  resurfaces for re-eval. Standing policy: **C is non-blocking** (surfaced, not hard-fail); ~130 C11-15
-  blocks remain surfaced by design. Behavior-preserving refactors; 2399 tests green.
-
-- **[DONE · PR #475] [CRITICAL · PATTERN 1 — batch 0-persist] In-task `submit_batch` maps results by
-  xAI SERVER id, not our cache key.** ✅ FIXED (positional mapping via retrieve_results_ordered +
-  casualties stable cache_key + chat_get_completion verified correct). NOTE: only regenerates on a NEW run. `batch_api.retrieve_results` keys by `batch_request_id`; `submit_batch`
-  looks up by our sha256 key → valid content cached under unread keys → classified "missing" → 0
-  persisted. Live-path sibling of the equipment=0 / optional-entity-zero family. FIX: use
-  `retrieve_results_ordered()` positional mapping (like `ecs_entrypoint._map_batch_results_by_index`).
-  SUB-ITEMS: (a) casualties.py:184-216,261 still has the non-deterministic-prompt cache-key bug
-  (unsorted/sliced entity_context, no stable cache_key) → likely persists 0 next run; (b) ⚠️ VERIFY the
-  `chat_get_completion` field — RESOLVED: verified correct (the successful XChannel AWS retrieval reads
-  it as the only content path and produced real entities; a wrong name would have yielded 0 for all).
-
-- **[DONE · PR #476] [HIGH · PATTERN 2 — SSRF] 12 unguarded `requests.get(allow_redirects=True)` on untrusted URLs**
-  across openserp_maps (50,78,149,168,358,372), search_external_maps (98,138,317), grok_search_maps (99),
-  validate_supplemental_urls (22), supplemental_advanced (231), fetch_endnotes (75-92,178) — bypass the
-  repo's own `clean_url`+`resolved_host_is_safe`+`allow_redirects=False` guard (used correctly in
-  maps.py/images.py). Reachable over NAT → metadata/internal hosts. FIX: one shared SSRF-safe fetch
-  helper across all 12 (also closes the map-module duplication + image-bomb DoS).
-
-- **[DONE · PR #481] [HIGH · PATTERN 3 — path traversal] In-process entity writers skip the hardened sanitizer.**
-  dates.py:228-243 (worst — doesn't even strip `/`), equipment.py:~1975,2674, places.py:392 build
-  filenames from LLM values via ad-hoc `.replace()`; `write_json_with_lock` mkdir(parents=True) on any
-  path. FIX: route all through `batch_parallel._safe_entity_filename`+`_contained_entity_path` (#450/#457).
-
-- **[DONE · PR #482] [HIGH · trigger Lambda] key-derived book bypasses `_SAFE_TITLE_RE`** (_seed_docs/_reconcile_pending/
-  _queue_pending write unvalidated book to DynamoDB/S3 keys); **no SNS ARN/signature trust** (trust from
-  topic-name suffix only); **manual `expected_count` is an unauthenticated scope-bypass**; **prompt-
-  injection via uploaded file head flips the dedup decision**; **`_update_manifest` lost-update race**
-  (get→union→put on pending.json). FIX per the doc.
-
-- **[DONE · PR #483] [HIGH · PATTERN 4 — silent drops] over-strict filters + swallowed errors:** dates year-veto
-  (<1919/>1955, dup in batch_parallel:221); casualties keyword pre-filter misses losses/fell/wiped out;
-  people_groups wrapper-key assumption; supplemental `_append_to_file` re-appends narrative every pass
-  (dedup on absent reference_source); supplemental `_has_document` drops hybrid citation half;
-  supplemental_info_pipeline passes dict where Path expected → 100%% dead (always 0); write_json_with_lock
-  return ignored in date_summary/people_consolidation.
-
-- **[DONE · PR #484] [HIGH · orchestration] credit reservation leaks on poll/retrieve failure** (only released on submit
-  failure); **weather+equipment lack the `_is_processed` gate** (re-extract every retrieve pass);
-  **partial-failure batches silently drop the failed fraction** (no alert unless error>=total);
-  **unbounded batch size**; **image decompression-bomb DoS** (equipment/grok_search_maps, no MAX_IMAGE_PIXELS).
-
-- **[DONE · PR #485] [MED] concurrency/crash-safety:** grok_client `self.caches`/counters mutated without a lock;
-  `locked_json.save()` truncates-in-place (not crash-atomic); write-guard is opt-in (some plain
-  open()+json.dump bypass it); run-scope caller fail-open downgrades to magic-50 on read error (debug
-  not warn).
-
-- **[DONE · PR #486] [MED · PATTERN 5] dead code + duplication:** 5 overlapping map-search modules; concurrent.py dead
-  (+ latent wrong-kwarg); dead Dynamo dual-write in file_lock; duplicated max_tokens / ignored timeout params.
-
-
 ### 1.0c Phase-2 FRESH RE-REVIEW findings (2026-10-20b) — full doc: docs/current/PHASE2_REREVIEW_2026-10-20b.md
 
 A SECOND independent 12-agent re-review (6 slices × code+security) of the merged state after the 1.0b
-campaign + PRs #487–#496. NEW/missed gaps (analyzer-invisible; bandit still 0H/0M). Each fixed via
-branch→gate→concurrent code+security reviews (both PASS)→CI→merge→sync. Ranked:
+campaign + PRs #487–#496. NEW/missed gaps (analyzer-invisible; bandit still 0H/0M). OPEN items below in
+priority order; fix each via branch→gate→concurrent code+security reviews (both PASS)→CI→merge→sync.
+(The DNS-rebinding CRITICAL is DONE — #497 — and moved to §7 COMPLETED.) Ranked:
 
-- **[DONE · PR #497] [CRITICAL · corroborated] DNS-rebinding TOCTOU in the SSRF fetch layer.** safe_get /
-  images.fetch_image_bytes / url_fetch._one_hop vetted the RESOLVED IPs via resolved_host_is_safe but
-  then handed the HOSTNAME url to requests, which re-resolves at connect → a short-TTL rebind to
-  127.0.0.1/169.254.169.254/RFC1918 slips through. FIXED: new url_hygiene._pinned_get pins the
-  connection to a vetted IP (iterates the vetted list) while keeping Host + TLS SNI/cert = the original
-  host; allow_redirects=False. +TLS-pin-seam + IP-fallback tests.
 - **[CRITICAL] Schema-version stamping ignores entity type.** ecs_entrypoint._stamp_file calls
   needs_migration/inject_metadata with NO entity → stamps the MIN version (2.24) → records permanently
   "needs_upgrade" + genuine current-schema violations ride the lenient write-guard path; the fast-path
@@ -151,70 +64,6 @@ branch→gate→concurrent code+security reviews (both PASS)→CI→merge→sync
   prompt_loader & search_query_loader order-dependent str.replace (untrusted `{token}` re-substitution);
   storage.LocalStorage._resolve returns the UNRESOLVED path; _submit_ocr skips _SAFE_TITLE_RE; write_json_with_lock
   omits fsync. Batch the cheap ones.
-
-### 1.0b Phase-2 RE-REVIEW findings (2026-10-20) — full doc: docs/current/PHASE2_REREVIEW_2026-10-20.md
-
-Fresh 8-agent re-review of the merged state. Merged fixes validated correct+complete in-scope; these
-are NEW gaps (analyzer-invisible; bandit still 0H/0M). Ranked:
-
-- **[DONE · PR #487] [CRITICAL · SSRF] grok_client.extract_json_with_image fetched an untrusted image URL unguarded.**
-  session.get(image_url, allow_redirects=True) + unbounded .content; reachable LIVE in Phase 3 via
-  search_external_maps._verify_single_image (img url from scraped page HTML). Pattern-2 + its grep
-  test missed it (fetch is in grok_client via session.get, not a cluster-module requests.get). FIX:
-  gate img_url in _verify_single_image (clean_url+resolved_host_is_safe like unit_patch._safe_url) +
-  harden extract_json_with_image to route bytes via images.fetch_image_bytes; + a bytes-level
-  regression test (not a source grep).
-- **[DONE · PR #488] [HIGH] chunked_extract.extract_with_chunk_halving halving not recursive** — now
-  recurses to size-1 (base case drops only the oversized item); +OBSERV. FOLLOW-UP found by #488
-  review (NEW HIGH, below): the halving is currently LATENT in production.
-- **[DONE · PR #489] [HIGH · found in #488 review] Inner extract_fns swallowed GrokTruncationError -> halving
-  never engaged + whole chunk dropped to {}.** FIXED: casualties/weather/logistics inner fns now re-raise
-  GrokTruncationError before the broad except, so the #488 recursive halving engages. Original (stale): casualties._call_and_parse_casualties / weather._call_and_parse_weather
-  / logistics._extract_* catch `except Exception` (which includes GrokTruncationError) and return {}
-  after retries, so GrokTruncationError never reaches extract_with_chunk_halving — a truncated chunk
-  silently yields {} (worse than the ~half-drop just fixed). FIX: re-raise GrokTruncationError from
-  those inner fns (before/bypassing the broad except) so the recursive halving actually runs. Pre-
-  existing (the old halving was equally never-triggered); #488 made the halving correct + ready.
-- **[DONE · PR #490] [HIGH] batch_api.retrieve_results_ordered valid-gate too strict** — required finish_reason=='stop'
-  but default is 'unknown' -> valid content discarded + re-billed. FIXED content-first: BatchResult.ok/status
-  treat non-empty content as valid unless finish_reason=='length' (truncated) or error/empty. Applied to BOTH
-  retrieve paths (_map_ordered_results AND ecs_entrypoint._map_batch_results_by_index — the latter still hardcoded
-  'stop', the identical bug on the async retrieve-only path, caught in review). Original (stale):
-- **[DONE · PR #492] [WARNING] Pattern-3 path-traversal INCOMPLETE** — FIXED: weather_central._create_new_weather_file
-  (place_name) + casualties._save_casualty (type clamped to enum) now route through _safe_entity_filename +
-  _contained_entity_path + OBSERV. Original (stale): weather_central._create_new_weather_file +
-  casualties._save_casualty build filenames from LLM values without _safe_entity_filename/_contained
-  (same class fixed elsewhere). Route both; clamp casualties 'type' to its enum.
-- **[DONE · PR #493] [WARNING] Decompression-bomb guard scoped too narrowly** — FIXED: hold MAX_IMAGE_PIXELS across
-  the WHOLE decode (verify+convert+resize) in equipment._verify_media_with_vision + grok_search_maps.verify_map_with_vision;
-  cap _compute_image_hash's average_hash decode; DecompressionBombError now caught->reject+OBSERV. Original (stale): equipment convert/resize + grok_search_maps
-  restore MAX_IMAGE_PIXELS before the rasterizing convert/resize; equipment._compute_image_hash has no
-  cap. Hold the cap across the whole decode block (mirror unit_patch).
-- **[DONE · PR #491] [WARNING] SSRF via url_hygiene bypass (codebase-wide follow-up)** — FIXED. Routed every
-  UNTRUSTED-host fetch through url_hygiene: bibliography_resolver._verify_url_content (LIVE, ->fetch_text_safe,
-  block=hard-reject), enrich_biographies._preserve_person_photo (->safe_get) + _fetch_url_content (->fetch_text_safe,
-  the live source-url fetch the #491 security review caught as MISSED; falls through to the wayback/archive.org
-  fallback on block), equipment._download_media_file (->safe_get) + _extract_image_urls_from_page (->fetch_text_safe),
-  source_retrieval._download_to_quarantine + award_polite_source.polite_get (validate-only clean_url+resolved_host_is_safe
-  + allow_redirects=False, fetch ORIGINAL url so a significant query isn't stripped), url_extractor.fetch_url (->safe_get).
-  Trusted-LITERAL-host fetches (archive.org/gutendex/grokipedia-search/commons/wikipedia-API/NARA/nominatim/open-meteo/
-  wayback->archive.org) are NOT SSRF and left as-is (host is a hardcoded literal, review-confirmed). +OBSERV on every
-  block. Security re-audit: ZERO untrusted-host fetches remain unrouted across src/. Original (stale):
-  _verify_url_content (LIVE) + source_retrieval._download_to_quarantine (latent) + (flagged by the
-  #487 security review) enrich_biographies:358, equipment:1071/1172, supplemental_search:108/163,
-  award_polite_source, grokipedia, situational_geocode, wayback, url_extractor — all session.get/
-  requests.get a DISCOVERED/external URL with allow_redirects=True, bypassing url_hygiene. Route each
-  through fetch_text_safe/fetch_image_bytes/clean_url+resolved_host_is_safe. (The CRITICAL vision
-  path is fixed in #487; these are the remaining untrusted-fetch sites.)
-- **[DONE · PR #494] [WARNING] logistics** — FIXED: _save_extraction adds the dedup key only AFTER a confirmed write
-  (was poisoning on write-fail -> silent drop); _rebuild_index keys on the full ULID-unique stem (was collapsing distinct
-  sub-events); _build_weather_impact uses normalized exact / word-bounded match (was bare substring -> 'rain' matched
-  'terrain'). +OBSERV on each. Original (stale): _save_extraction poisons dedup key on write-fail (data loss);
-  _rebuild_index key collapses distinct sub-events; _build_weather_impact bare-substring WeatherID.
-- **[DONE · PR #495] [WARNING] core nits** — FIXED: places._add_event_mention uses m.get('Sub_eventID') (was KeyError on
-  legacy mentions) + OBSERV; people._normalize_name collapsed to a single @lru_cache (dead inner removed). Original (stale):
-  places._add_event_mention hard-indexes m['Sub_eventID'] (KeyError on
-  legacy); people._normalize_name stacked double-lru_cache (inner dead).
 
 ### 1.1 Data-quality from the clean XChannel run
 
@@ -761,3 +610,159 @@ with added OBSERV; data fixes regenerate only on a NEW run:
 
 Not-code (deferred): SHAEF OB map gaps (NARA acquisition). Full historical detail for any collapsed
 item is in git history + the dated design docs under `docs/current/` and `docs/archive/`.
+
+### Phase-2 FRESH RE-REVIEW (2026-10-20b) — DONE items (moved from §1.0c)
+- **[DONE · PR #497] [CRITICAL · corroborated] DNS-rebinding TOCTOU in the SSRF fetch layer.** safe_get /
+  images.fetch_image_bytes / url_fetch._one_hop vetted the RESOLVED IPs via resolved_host_is_safe but
+  then handed the HOSTNAME url to requests, which re-resolves at connect → a short-TTL rebind to
+  127.0.0.1/169.254.169.254/RFC1918 slips through. FIXED: new url_hygiene._pinned_get pins the
+  connection to a vetted IP (iterates the vetted list) while keeping Host + TLS SNI/cert = the original
+  host; allow_redirects=False. +TLS-pin-seam + IP-fallback tests.
+
+### 1.0b Phase-2 RE-REVIEW (2026-10-20) — ALL findings merged (moved from §1; was OPEN)
+
+Fresh 8-agent re-review of the merged state. Merged fixes validated correct+complete in-scope; these
+are NEW gaps (analyzer-invisible; bandit still 0H/0M). Ranked:
+
+- **[DONE · PR #487] [CRITICAL · SSRF] grok_client.extract_json_with_image fetched an untrusted image URL unguarded.**
+  session.get(image_url, allow_redirects=True) + unbounded .content; reachable LIVE in Phase 3 via
+  search_external_maps._verify_single_image (img url from scraped page HTML). Pattern-2 + its grep
+  test missed it (fetch is in grok_client via session.get, not a cluster-module requests.get). FIX:
+  gate img_url in _verify_single_image (clean_url+resolved_host_is_safe like unit_patch._safe_url) +
+  harden extract_json_with_image to route bytes via images.fetch_image_bytes; + a bytes-level
+  regression test (not a source grep).
+- **[DONE · PR #488] [HIGH] chunked_extract.extract_with_chunk_halving halving not recursive** — now
+  recurses to size-1 (base case drops only the oversized item); +OBSERV. FOLLOW-UP found by #488
+  review (NEW HIGH, below): the halving is currently LATENT in production.
+- **[DONE · PR #489] [HIGH · found in #488 review] Inner extract_fns swallowed GrokTruncationError -> halving
+  never engaged + whole chunk dropped to {}.** FIXED: casualties/weather/logistics inner fns now re-raise
+  GrokTruncationError before the broad except, so the #488 recursive halving engages. Original (stale): casualties._call_and_parse_casualties / weather._call_and_parse_weather
+  / logistics._extract_* catch `except Exception` (which includes GrokTruncationError) and return {}
+  after retries, so GrokTruncationError never reaches extract_with_chunk_halving — a truncated chunk
+  silently yields {} (worse than the ~half-drop just fixed). FIX: re-raise GrokTruncationError from
+  those inner fns (before/bypassing the broad except) so the recursive halving actually runs. Pre-
+  existing (the old halving was equally never-triggered); #488 made the halving correct + ready.
+- **[DONE · PR #490] [HIGH] batch_api.retrieve_results_ordered valid-gate too strict** — required finish_reason=='stop'
+  but default is 'unknown' -> valid content discarded + re-billed. FIXED content-first: BatchResult.ok/status
+  treat non-empty content as valid unless finish_reason=='length' (truncated) or error/empty. Applied to BOTH
+  retrieve paths (_map_ordered_results AND ecs_entrypoint._map_batch_results_by_index — the latter still hardcoded
+  'stop', the identical bug on the async retrieve-only path, caught in review). Original (stale):
+- **[DONE · PR #492] [WARNING] Pattern-3 path-traversal INCOMPLETE** — FIXED: weather_central._create_new_weather_file
+  (place_name) + casualties._save_casualty (type clamped to enum) now route through _safe_entity_filename +
+  _contained_entity_path + OBSERV. Original (stale): weather_central._create_new_weather_file +
+  casualties._save_casualty build filenames from LLM values without _safe_entity_filename/_contained
+  (same class fixed elsewhere). Route both; clamp casualties 'type' to its enum.
+- **[DONE · PR #493] [WARNING] Decompression-bomb guard scoped too narrowly** — FIXED: hold MAX_IMAGE_PIXELS across
+  the WHOLE decode (verify+convert+resize) in equipment._verify_media_with_vision + grok_search_maps.verify_map_with_vision;
+  cap _compute_image_hash's average_hash decode; DecompressionBombError now caught->reject+OBSERV. Original (stale): equipment convert/resize + grok_search_maps
+  restore MAX_IMAGE_PIXELS before the rasterizing convert/resize; equipment._compute_image_hash has no
+  cap. Hold the cap across the whole decode block (mirror unit_patch).
+- **[DONE · PR #491] [WARNING] SSRF via url_hygiene bypass (codebase-wide follow-up)** — FIXED. Routed every
+  UNTRUSTED-host fetch through url_hygiene: bibliography_resolver._verify_url_content (LIVE, ->fetch_text_safe,
+  block=hard-reject), enrich_biographies._preserve_person_photo (->safe_get) + _fetch_url_content (->fetch_text_safe,
+  the live source-url fetch the #491 security review caught as MISSED; falls through to the wayback/archive.org
+  fallback on block), equipment._download_media_file (->safe_get) + _extract_image_urls_from_page (->fetch_text_safe),
+  source_retrieval._download_to_quarantine + award_polite_source.polite_get (validate-only clean_url+resolved_host_is_safe
+  + allow_redirects=False, fetch ORIGINAL url so a significant query isn't stripped), url_extractor.fetch_url (->safe_get).
+  Trusted-LITERAL-host fetches (archive.org/gutendex/grokipedia-search/commons/wikipedia-API/NARA/nominatim/open-meteo/
+  wayback->archive.org) are NOT SSRF and left as-is (host is a hardcoded literal, review-confirmed). +OBSERV on every
+  block. Security re-audit: ZERO untrusted-host fetches remain unrouted across src/. Original (stale):
+  _verify_url_content (LIVE) + source_retrieval._download_to_quarantine (latent) + (flagged by the
+  #487 security review) enrich_biographies:358, equipment:1071/1172, supplemental_search:108/163,
+  award_polite_source, grokipedia, situational_geocode, wayback, url_extractor — all session.get/
+  requests.get a DISCOVERED/external URL with allow_redirects=True, bypassing url_hygiene. Route each
+  through fetch_text_safe/fetch_image_bytes/clean_url+resolved_host_is_safe. (The CRITICAL vision
+  path is fixed in #487; these are the remaining untrusted-fetch sites.)
+- **[DONE · PR #494] [WARNING] logistics** — FIXED: _save_extraction adds the dedup key only AFTER a confirmed write
+  (was poisoning on write-fail -> silent drop); _rebuild_index keys on the full ULID-unique stem (was collapsing distinct
+  sub-events); _build_weather_impact uses normalized exact / word-bounded match (was bare substring -> 'rain' matched
+  'terrain'). +OBSERV on each. Original (stale): _save_extraction poisons dedup key on write-fail (data loss);
+  _rebuild_index key collapses distinct sub-events; _build_weather_impact bare-substring WeatherID.
+- **[DONE · PR #495] [WARNING] core nits** — FIXED: places._add_event_mention uses m.get('Sub_eventID') (was KeyError on
+  legacy mentions) + OBSERV; people._normalize_name collapsed to a single @lru_cache (dead inner removed). Original (stale):
+  places._add_event_mention hard-indexes m['Sub_eventID'] (KeyError on
+  legacy); people._normalize_name stacked double-lru_cache (inner dead).
+
+
+### 1.0 Phase-2 code+security review findings (2026-10-20) — ALL merged (moved from §1; was OPEN)
+
+Audit of ALL Phase-2 code (8 concurrent code+security sub-agents, synthesized to 5 root patterns).
+bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
+
+> ✅ **§1.0 COMPLETE (2026-10-20):** every review finding fixed + merged, each with concurrent
+> code+security review PASS + CI green, each with added OBSERV. Patterns 1 (#475), 2 (#476),
+> 3 (#481), 4 (#483); trigger-Lambda (#482); orchestration (#484); concurrency/crash-safety (#485);
+> PATTERN 5 dead-code (#486); + the radon-gate/complexity campaign (#477/#480). Caveat: data fixes
+> only take effect on a NEW run. Follow-ups spun out to §4 (deps/openserp/ULID[:8]/write-guard
+- **[DONE · PR #496] Radon gate threshold D->C** — run_radon now HARD-FAILS any non-allowlisted C-or-worse block
+  (was D+ only). The 139-block C+ backlog is grandfathered in scripts/.radon_inherent (body-hash) via a new
+  radon_inherent.py `seed` subcommand; only NEW/MODIFIED C+ fails; D+ never suppressible; +fail-closed if radon absent.
+> blind-spots/_submit_ocr) + a minor housekeeping item (stale `concurrent.py` string literals in
+> scripts/archive/qa/, dead cruft, optional cleanup).
+
+
+- **[DONE · PR #477 + #480] radon gate was a silent no-op + complexity debt cleared.** `scripts/gate.sh`
+  run_radon grepped `' - [D-F] '` (trailing space) but `radon cc --min C` emits `- D` (no trailing
+  space) → NEITHER the D+ hard-fail NOR the C+ surfacing ever fired. FIXED: add `--show-complexity`.
+  Then cleared the debt it had been hiding — **ALL 15 D+ blocks simplified below D** (#477: incl.
+  F(42) bibliography_resolver._search_online_sources, E(33) supplemental.extract_supplemental, and
+  D grok_client.extract_json / url_hygiene.clean_url / trigger_handler.handler+_run_task /
+  merge.merge_generic / bibliography.reconcile_bibliography_dir / …) and **all 27 high-C(16-20)
+  evaluated** (#480: 24 simplified below C16; 3 kept INHERENT — group_resolver.resolve_group_id,
+  url_fetch._do_fetch, places_grok_geocode._toponym_from_prose — documented in-code). Gate now
+  surfaces C PROMINENTLY (D+ listed+hard-fail; high-C listed w/count; C11-15 count-only) and has an
+  INHERENT **resurface mechanism** (`scripts/radon_inherent.py` AST-body-hash + `scripts/.radon_inherent`):
+  a listed INHERENT block is suppressed ONLY while unchanged; a logic edit changes its hash → it
+  resurfaces for re-eval. Standing policy: **C is non-blocking** (surfaced, not hard-fail); ~130 C11-15
+  blocks remain surfaced by design. Behavior-preserving refactors; 2399 tests green.
+
+- **[DONE · PR #475] [CRITICAL · PATTERN 1 — batch 0-persist] In-task `submit_batch` maps results by
+  xAI SERVER id, not our cache key.** ✅ FIXED (positional mapping via retrieve_results_ordered +
+  casualties stable cache_key + chat_get_completion verified correct). NOTE: only regenerates on a NEW run. `batch_api.retrieve_results` keys by `batch_request_id`; `submit_batch`
+  looks up by our sha256 key → valid content cached under unread keys → classified "missing" → 0
+  persisted. Live-path sibling of the equipment=0 / optional-entity-zero family. FIX: use
+  `retrieve_results_ordered()` positional mapping (like `ecs_entrypoint._map_batch_results_by_index`).
+  SUB-ITEMS: (a) casualties.py:184-216,261 still has the non-deterministic-prompt cache-key bug
+  (unsorted/sliced entity_context, no stable cache_key) → likely persists 0 next run; (b) ⚠️ VERIFY the
+  `chat_get_completion` field — RESOLVED: verified correct (the successful XChannel AWS retrieval reads
+  it as the only content path and produced real entities; a wrong name would have yielded 0 for all).
+
+- **[DONE · PR #476] [HIGH · PATTERN 2 — SSRF] 12 unguarded `requests.get(allow_redirects=True)` on untrusted URLs**
+  across openserp_maps (50,78,149,168,358,372), search_external_maps (98,138,317), grok_search_maps (99),
+  validate_supplemental_urls (22), supplemental_advanced (231), fetch_endnotes (75-92,178) — bypass the
+  repo's own `clean_url`+`resolved_host_is_safe`+`allow_redirects=False` guard (used correctly in
+  maps.py/images.py). Reachable over NAT → metadata/internal hosts. FIX: one shared SSRF-safe fetch
+  helper across all 12 (also closes the map-module duplication + image-bomb DoS).
+
+- **[DONE · PR #481] [HIGH · PATTERN 3 — path traversal] In-process entity writers skip the hardened sanitizer.**
+  dates.py:228-243 (worst — doesn't even strip `/`), equipment.py:~1975,2674, places.py:392 build
+  filenames from LLM values via ad-hoc `.replace()`; `write_json_with_lock` mkdir(parents=True) on any
+  path. FIX: route all through `batch_parallel._safe_entity_filename`+`_contained_entity_path` (#450/#457).
+
+- **[DONE · PR #482] [HIGH · trigger Lambda] key-derived book bypasses `_SAFE_TITLE_RE`** (_seed_docs/_reconcile_pending/
+  _queue_pending write unvalidated book to DynamoDB/S3 keys); **no SNS ARN/signature trust** (trust from
+  topic-name suffix only); **manual `expected_count` is an unauthenticated scope-bypass**; **prompt-
+  injection via uploaded file head flips the dedup decision**; **`_update_manifest` lost-update race**
+  (get→union→put on pending.json). FIX per the doc.
+
+- **[DONE · PR #483] [HIGH · PATTERN 4 — silent drops] over-strict filters + swallowed errors:** dates year-veto
+  (<1919/>1955, dup in batch_parallel:221); casualties keyword pre-filter misses losses/fell/wiped out;
+  people_groups wrapper-key assumption; supplemental `_append_to_file` re-appends narrative every pass
+  (dedup on absent reference_source); supplemental `_has_document` drops hybrid citation half;
+  supplemental_info_pipeline passes dict where Path expected → 100%% dead (always 0); write_json_with_lock
+  return ignored in date_summary/people_consolidation.
+
+- **[DONE · PR #484] [HIGH · orchestration] credit reservation leaks on poll/retrieve failure** (only released on submit
+  failure); **weather+equipment lack the `_is_processed` gate** (re-extract every retrieve pass);
+  **partial-failure batches silently drop the failed fraction** (no alert unless error>=total);
+  **unbounded batch size**; **image decompression-bomb DoS** (equipment/grok_search_maps, no MAX_IMAGE_PIXELS).
+
+- **[DONE · PR #485] [MED] concurrency/crash-safety:** grok_client `self.caches`/counters mutated without a lock;
+  `locked_json.save()` truncates-in-place (not crash-atomic); write-guard is opt-in (some plain
+  open()+json.dump bypass it); run-scope caller fail-open downgrades to magic-50 on read error (debug
+  not warn).
+
+- **[DONE · PR #486] [MED · PATTERN 5] dead code + duplication:** 5 overlapping map-search modules; concurrent.py dead
+  (+ latent wrong-kwarg); dead Dynamo dual-write in file_lock; duplicated max_tokens / ignored timeout params.
+
+
