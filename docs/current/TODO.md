@@ -92,6 +92,66 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
   (+ latent wrong-kwarg); dead Dynamo dual-write in file_lock; duplicated max_tokens / ignored timeout params.
 
 
+### 1.0c Phase-2 FRESH RE-REVIEW findings (2026-10-20b) — full doc: docs/current/PHASE2_REREVIEW_2026-10-20b.md
+
+A SECOND independent 12-agent re-review (6 slices × code+security) of the merged state after the 1.0b
+campaign + PRs #487–#496. NEW/missed gaps (analyzer-invisible; bandit still 0H/0M). Each fixed via
+branch→gate→concurrent code+security reviews (both PASS)→CI→merge→sync. Ranked:
+
+- **[DONE · PR #497] [CRITICAL · corroborated] DNS-rebinding TOCTOU in the SSRF fetch layer.** safe_get /
+  images.fetch_image_bytes / url_fetch._one_hop vetted the RESOLVED IPs via resolved_host_is_safe but
+  then handed the HOSTNAME url to requests, which re-resolves at connect → a short-TTL rebind to
+  127.0.0.1/169.254.169.254/RFC1918 slips through. FIXED: new url_hygiene._pinned_get pins the
+  connection to a vetted IP (iterates the vetted list) while keeping Host + TLS SNI/cert = the original
+  host; allow_redirects=False. +TLS-pin-seam + IP-fallback tests.
+- **[CRITICAL] Schema-version stamping ignores entity type.** ecs_entrypoint._stamp_file calls
+  needs_migration/inject_metadata with NO entity → stamps the MIN version (2.24) → records permanently
+  "needs_upgrade" + genuine current-schema violations ride the lenient write-guard path; the fast-path
+  samples only a weather file (==min) so higher-versioned dirs are never stamped. Thread the entity
+  through; make the fast-path per-entity (or drop it). +test.
+- **[WARNING] logistics _save_extraction path traversal via LLM date_start** — the ONE date-in-filename
+  writer the Pattern-3 campaign (#492) missed. `date_str = extraction.date_start.replace("-","")` leaves
+  `/`,`..`. Route through _safe_entity_filename + _contained_entity_path. +test.
+- **[WARNING] logistics weather-impact link DEAD.** _build_entity_index reads TOP-LEVEL `description`,
+  but weather stores it under `extracted_data.description` → weather_index is ALWAYS {} → _build_weather_impact
+  never links (the new OBSERV weather_unmatched candidates=0 fires every time). Fix the index builder.
+- **[WARNING] transient-error → permanent-negative cache poisoning (systemic).** Fetchers collapse "miss"
+  and "timeout/5xx/429/exception" into None then negative-cache 7d / persist a terminal status:
+  nominatim+places_grok_geocode (persists not_found, no TTL re-search → only --force recovers), noaa_weather,
+  grokipedia+situational_geocode+equipment_wikipedia+groups_wikipedia, bibliography_resolver
+  _search_openserp_archive (503-from-scaling path). Only negative-cache on a real 200-empty.
+- **[WARNING] batch_poller** — _check_stalled stall-alert rate-limit assumes a 5-min poll cadence
+  (`int(age_hours)==int(age_hours-5/60)`) but the schedule is 15–30 min → hourly ">4h stalled" alert
+  silently skipped; persist last_stall_notify_at. + 24h-stuck force-complete returns "complete" with
+  success+error<total → ecs mapper count-mismatches → discards the completed fraction → full LIVE re-cost;
+  map available results by position / alert N/total.
+- **[WARNING] trigger_handler** — topic-trust gate bypassed for S3 keys (_extract_records appends a record's
+  keys to s3_keys BEFORE/independent of _trusted_topic_name → untrusted-topic keys reach manifests + _route_topics);
+  move the append inside the trust gate. + _acquire_task_lock stale-reclaim TOCTOU (two invocations both reclaim
+  → double-launch); make the delete conditional on the observed timestamp.
+- **[WARNING] truncated >100K response not evicted from cache** → permanent GrokTruncationError on re-run
+  (_handle_truncation_error pops only in the <100K else-branch; the >100K path raises without eviction). Move
+  the cache.pop out so both branches evict. + BatchCollector.add silently drops a request_id(=cache_key)
+  collision → OBSERV at WARNING (latent optional-entity-zero).
+- **[WARNING] write-guard blind spot: locked_json.save() bypasses _validate_entity.** The schema guard runs
+  only in write_json_with_lock/write_parsed_with_guard; ALL merge paths persist via locked_json (equipment/
+  people/places/people_groups/dates/weather/enrich_write/batch_parallel) which only annotates → a merge that
+  drops a required field is written unguarded. Call _validate_entity in save() + reconcile version stamping.
+- **[WARNING] clean_url accepts dotted-hex/mixed-radix IP encodings** (`0x7f.0x0.0x0.0x1`, `127.0.0.0x1`) →
+  True, contradicting its docstring; backstopped at fetch by resolved_host_is_safe but clean_url is ALSO a
+  standalone registry-key/pre-fetch-gate validator. Detect any hex/mixed-radix numeric host and coerce via
+  inet_aton. + safe_get byte cap runs AFTER gzip auto-decompression (small highly-compressing body → 10MB in
+  memory per concurrent fetch); cap compressed bytes (resp.raw.decode_content=False) / check Content-Length.
+- **[SUGGESTION batch]** weather_central._add_event_mention hard-indexes m["Sub_eventID"] (KeyError on legacy —
+  places got the #495 fix, weather missed); enrich_groups.enrich_group reads `name` but schema stores
+  `group_name` → never enriches a schema-valid record; openserp_maps downloads map_images[0] not the vision-
+  APPROVED image + _check_duplicate_map lacks the sibling try/except json.load guard (a malformed file drops a
+  whole place); supplemental _normalize_enums coerces an INVALID content_class to "citation" (should be
+  "ambiguous"); award_polite_source.polite_get / wayback.fetch_archived lack a byte cap / resolved-IP recheck;
+  prompt_loader & search_query_loader order-dependent str.replace (untrusted `{token}` re-substitution);
+  storage.LocalStorage._resolve returns the UNRESOLVED path; _submit_ocr skips _SAFE_TITLE_RE; write_json_with_lock
+  omits fsync. Batch the cheap ones.
+
 ### 1.0b Phase-2 RE-REVIEW findings (2026-10-20) — full doc: docs/current/PHASE2_REREVIEW_2026-10-20.md
 
 Fresh 8-agent re-review of the merged state. Merged fixes validated correct+complete in-scope; these
