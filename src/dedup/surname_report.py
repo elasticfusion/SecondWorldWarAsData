@@ -81,44 +81,13 @@ def build_suggestions(
     distinct: Dict[tuple, set] = defaultdict(set)
     mentions: Dict[tuple, int] = defaultdict(int)
     for p in people:
-        name = p.get("name") or ""
-        if not name:
-            continue
-        bp = p.get("biographical_profile") or {}
-        nat = _canonical_nationality(
-            bp.get("nationality")
-            or p.get("nationality")
-            or bp.get("nationality_served")
-        )
-        if not nat:
-            continue  # commonness is nationality-conditioned; skip unknown nationality
-        surname = _extract_last_name(name)
-        if not surname:
-            continue
-        key = (nat, surname)
-        pid = p.get("PersonID") or name.strip().lower()
-        distinct[key].add(pid)
-        mentions[key] += 1
+        _tally_person(p, distinct, mentions)
 
     suggestions = []
     for (nat, surname), persons in sorted(distinct.items()):
-        distinct_count = len(persons)
-        observed_band = _band_for(distinct_count)
-        curated_band = (curated.get(nat, {}) or {}).get(surname)
-        # Suggest when absent, or when the observed band differs from the curated one.
-        if curated_band == observed_band:
-            continue
-        suggestions.append(
-            {
-                "nationality": nat,
-                "surname": surname,
-                "distinct_people": distinct_count,  # skew-safe signal
-                "mentions": mentions[(nat, surname)],  # shown for context only
-                "observed_band": observed_band,
-                "curated_band": curated_band,  # None if not yet in the table
-                "action": "add" if curated_band is None else "review_change",
-            }
-        )
+        suggestion = _suggestion_for_key(nat, surname, persons, mentions, curated)
+        if suggestion is not None:
+            suggestions.append(suggestion)
 
     return {
         "_note": (
@@ -128,6 +97,48 @@ def build_suggestions(
         "total_people": len(people),
         "suggestion_count": len(suggestions),
         "suggestions": suggestions,
+    }
+
+
+def _tally_person(
+    p: dict, distinct: Dict[tuple, set], mentions: Dict[tuple, int]
+) -> None:
+    """Fold one person into the (nat, surname) distinct-person + mention tallies."""
+    name = p.get("name") or ""
+    if not name:
+        return
+    bp = p.get("biographical_profile") or {}
+    nat = _canonical_nationality(
+        bp.get("nationality") or p.get("nationality") or bp.get("nationality_served")
+    )
+    if not nat:
+        return  # commonness is nationality-conditioned; skip unknown nationality
+    surname = _extract_last_name(name)
+    if not surname:
+        return
+    key = (nat, surname)
+    pid = p.get("PersonID") or name.strip().lower()
+    distinct[key].add(pid)
+    mentions[key] += 1
+
+
+def _suggestion_for_key(nat, surname, persons, mentions, curated):
+    """Build one suggestion dict for a (nat, surname) key, or None when the observed band
+    already matches the curated table."""
+    distinct_count = len(persons)
+    observed_band = _band_for(distinct_count)
+    curated_band = (curated.get(nat, {}) or {}).get(surname)
+    # Suggest when absent, or when the observed band differs from the curated one.
+    if curated_band == observed_band:
+        return None
+    return {
+        "nationality": nat,
+        "surname": surname,
+        "distinct_people": distinct_count,  # skew-safe signal
+        "mentions": mentions[(nat, surname)],  # shown for context only
+        "observed_band": observed_band,
+        "curated_band": curated_band,  # None if not yet in the table
+        "action": "add" if curated_band is None else "review_change",
     }
 
 
@@ -149,6 +160,22 @@ def _write_state(people_dir: Path, count: int) -> None:
         logger.debug("surname-report state write failed: %s", e)
 
 
+def _list_people_files(people_dir: Path) -> list[Path]:
+    """List the person JSON files under people_dir, excluding index/report/dot files."""
+    return [
+        f
+        for f in people_dir.glob("*.json")
+        if f.name
+        not in (
+            "index.json",
+            "duplicate_report.json",
+            "not_duplicates.json",
+            SUGGESTIONS_FILENAME,
+        )
+        and not f.name.startswith(".")
+    ]
+
+
 def maybe_generate(people_dir: Path, config: Optional[dict] = None) -> Optional[Path]:
     """Growth-triggered entry point. Regenerate the suggestion report ONLY when the
     people corpus has grown by >= min_new_people since the last report. Returns the
@@ -167,18 +194,7 @@ def maybe_generate(people_dir: Path, config: Optional[dict] = None) -> Optional[
             return None
         min_new = int(rep.get("min_new_people", 50))
 
-        files = [
-            f
-            for f in people_dir.glob("*.json")
-            if f.name
-            not in (
-                "index.json",
-                "duplicate_report.json",
-                "not_duplicates.json",
-                SUGGESTIONS_FILENAME,
-            )
-            and not f.name.startswith(".")
-        ]
+        files = _list_people_files(people_dir)
         current_count = len(files)
         last_count = _read_state(people_dir)
         if current_count - last_count < min_new:

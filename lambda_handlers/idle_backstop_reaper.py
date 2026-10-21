@@ -72,6 +72,16 @@ def _lock_or_lease_held(table) -> bool:
         "ExpressionAttributeNames": {"#ttl": "ttl"},
     }
     # Locks (short TTL, deleted on task exit) — any present means work in flight.
+    if _any_lock_present(table, paginator_kwargs):
+        return True
+    # NAT leases — count only NON-expired (ttl missing or in the future).
+    if _any_live_lease_present(table, paginator_kwargs, now):
+        return True
+    return False
+
+
+def _any_lock_present(table, paginator_kwargs) -> bool:
+    """Paginate the full lock# keyspace (NO scan Limit); any lock row means work in flight."""
     start_key = None
     while True:
         kw = dict(
@@ -87,7 +97,12 @@ def _lock_or_lease_held(table) -> bool:
         start_key = resp.get("LastEvaluatedKey")
         if not start_key:
             break
-    # NAT leases — count only NON-expired (ttl missing or in the future).
+    return False
+
+
+def _any_live_lease_present(table, paginator_kwargs, now: int) -> bool:
+    """Paginate the full nat#lease# keyspace (NO scan Limit); any NON-expired lease (ttl missing
+    or in the future) means work in flight."""
     start_key = None
     while True:
         kw = dict(
@@ -163,6 +178,30 @@ def _force_teardown(ecs, cluster, service) -> None:
         logger.error("reaper: nat delete invoke failed: %s", e)
 
 
+def _too_soon_response(table, strikes, last_updated, count):
+    """Anti-double-count gate: if a strike is active and < ~50 min elapsed since the last
+    observation, record the count (refresh updated_at) WITHOUT advancing the strike and return the
+    early 'too soon' response; otherwise return None to let the caller advance the strike.
+    Fail-safe: a malformed timestamp is treated as 'too soon' (do NOT advance)."""
+    if strikes > 0 and last_updated:
+        try:
+            age_s = (
+                datetime.now(timezone.utc) - datetime.fromisoformat(last_updated)
+            ).total_seconds()
+        except ValueError:
+            age_s = 0  # malformed timestamp -> treat as "too soon", do NOT advance (fail-safe)
+        if age_s < 50 * 60:
+            _save_state(
+                table, strikes, count
+            )  # keeps updated_at fresh, strike unchanged
+            return {
+                "action": "none",
+                "reason": "too soon since last strike (anti-double-count)",
+                "strikes": strikes,
+            }
+    return None
+
+
 def handler(event, _context=None):
     """Hourly backstop. Fail-safe: never tears down on uncertainty/error."""
     try:
@@ -195,25 +234,9 @@ def handler(event, _context=None):
         # Time-bound the strike: EventBridge is at-least-once and manual invokes happen, so only let
         # a strike count toward the "2 consecutive HOURS" rule if >= ~50 min elapsed since the last
         # observation. Otherwise record the count but do NOT advance the strike (anti-double-count).
-        import datetime as _dt
-
-        if strikes > 0 and last_updated:
-            try:
-                age_s = (
-                    _dt.datetime.now(timezone.utc)
-                    - _dt.datetime.fromisoformat(last_updated)
-                ).total_seconds()
-            except ValueError:
-                age_s = 0  # malformed timestamp -> treat as "too soon", do NOT advance (fail-safe)
-            if age_s < 50 * 60:
-                _save_state(
-                    table, strikes, count
-                )  # keeps updated_at fresh, strike unchanged
-                return {
-                    "action": "none",
-                    "reason": "too soon since last strike (anti-double-count)",
-                    "strikes": strikes,
-                }
+        too_soon = _too_soon_response(table, strikes, last_updated, count)
+        if too_soon is not None:
+            return too_soon
 
         strikes += 1
         if strikes < _STRIKES_TO_REAP:

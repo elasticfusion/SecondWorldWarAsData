@@ -43,6 +43,30 @@ _DEFAULT_DATE_WINDOW_START = "1930-01-01"
 _DEFAULT_DATE_WINDOW_END = "1950-12-31"
 
 
+def _window_from_cfg(cfg: dict, start, end) -> tuple:
+    """Pick window values from a loaded config dict, env override first, then default."""
+    win = cfg.get("processing", {}).get("date_window") or cfg.get("date_window") or {}
+    return (
+        start or win.get("start") or _DEFAULT_DATE_WINDOW_START,
+        end or win.get("end") or _DEFAULT_DATE_WINDOW_END,
+    )
+
+
+def _load_date_window_from_config(start, end) -> tuple:
+    """Resolve window from config, falling back to defaults. Fail-safe: any error returns the
+    generous default (a validator must never crash a write)."""
+    try:
+        from src.utils.config import load_config
+
+        cfg = load_config() or {}
+        return _window_from_cfg(cfg, start, end)
+    except Exception:  # noqa: BLE001
+        return (
+            start or _DEFAULT_DATE_WINDOW_START,
+            end or _DEFAULT_DATE_WINDOW_END,
+        )
+
+
 def _load_date_window() -> tuple:
     """Resolve the plausibility window from env > config > default. Fail-safe: any error returns
     the generous default (a validator must never crash a write)."""
@@ -52,22 +76,7 @@ def _load_date_window() -> tuple:
     end = os.environ.get("DATE_WINDOW_END")
     if start and end:
         return start, end
-    try:
-        from src.utils.config import load_config
-
-        cfg = load_config() or {}
-        win = (
-            cfg.get("processing", {}).get("date_window") or cfg.get("date_window") or {}
-        )
-        return (
-            start or win.get("start") or _DEFAULT_DATE_WINDOW_START,
-            end or win.get("end") or _DEFAULT_DATE_WINDOW_END,
-        )
-    except Exception:  # noqa: BLE001
-        return (
-            start or _DEFAULT_DATE_WINDOW_START,
-            end or _DEFAULT_DATE_WINDOW_END,
-        )
+    return _load_date_window_from_config(start, end)
 
 
 DATE_WINDOW_START, DATE_WINDOW_END = _load_date_window()
@@ -126,6 +135,21 @@ def _date_flags(record: Dict[str, Any]) -> List[str]:
     return out
 
 
+def _citation_identified(record: Dict[str, Any]) -> bool:
+    """Post-resolution: True if the record has ANY identity (archive ref, URL, canonical title,
+    or reference_identified). A record positively IDENTIFIED is not "unresolvable" even without an
+    online copy."""
+    has_archive = bool(record.get("archive_reference_number"))
+    has_url = bool(record.get("resource_urls"))
+    sm = record.get("source_metadata") or {}
+    return (
+        has_archive
+        or has_url
+        or bool(sm.get("canonical_title"))
+        or record.get("search_status") == "reference_identified"
+    )
+
+
 def _citation_flags(record: Dict[str, Any]) -> List[str]:
     _cit = record.get("citation")
     _cit_title = _cit.get("title") if isinstance(_cit, dict) else _cit
@@ -142,20 +166,11 @@ def _citation_flags(record: Dict[str, Any]) -> List[str]:
     # that fired the data-quality alert; the condition evaluated a Phase-3 field at Phase-2 time.)
     if not record.get("search_status"):
         return []
-    has_archive = bool(record.get("archive_reference_number"))
-    has_url = bool(record.get("resource_urls"))
     # A record positively IDENTIFIED is not "unresolvable" even without an online copy: a
     # biblio-note published work carries a canonical title/author, and reference_identified means
     # the record group / source is known. Only a post-resolution record with NO identity at all
     # (no archive ref, no URL, no canonical identity, not reference_identified) is unresolvable.
-    sm = record.get("source_metadata") or {}
-    identified = (
-        has_archive
-        or has_url
-        or bool(sm.get("canonical_title"))
-        or record.get("search_status") == "reference_identified"
-    )
-    if not identified:
+    if not _citation_identified(record):
         return ["citation_unresolvable"]
     return []
 

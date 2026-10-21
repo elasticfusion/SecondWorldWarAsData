@@ -95,27 +95,13 @@ def handler(event, context):
     }
 
     # Handle parameterized routes
-    if path.startswith("/dedup/api/detail/"):
-        from urllib.parse import unquote
+    detail_resp = _route_detail(storage, path)
+    if detail_resp is not None:
+        return detail_resp
 
-        decoded_path = unquote(path)
-        parts = decoded_path.split("/")
-        if len(parts) >= 6:
-            filename = parts[5]
-            if ".." in filename or "/" in filename:
-                return _json_response(400, {"error": "invalid filename"})
-            return _get_detail(storage, parts[4], filename)
-
-    if path.startswith("/dedup/api/search/"):
-        from urllib.parse import unquote
-
-        decoded_path = unquote(path)
-        parts = decoded_path.split("/")
-        if len(parts) >= 6:
-            query = parts[5]
-            if ".." in query:
-                return _json_response(400, {"error": "invalid query"})
-            return _search_entities(storage, parts[4], query)
+    search_resp = _route_search(storage, path)
+    if search_resp is not None:
+        return search_resp
 
     if route_key == "POST /dedup/api/reclassify":
         return _reclassify(event, storage)
@@ -127,6 +113,40 @@ def handler(event, context):
         return _rename_to_match_content(event, storage)
 
     return routes.get(route_key, lambda: _json_response(404, {"error": "not found"}))()
+
+
+def _route_detail(storage, path):
+    """Parameterized GET /dedup/api/detail/<entity>/<filename> route. Returns a response, or None
+    if the path is not a detail route. Preserves the exact filename validation."""
+    if not path.startswith("/dedup/api/detail/"):
+        return None
+    from urllib.parse import unquote
+
+    decoded_path = unquote(path)
+    parts = decoded_path.split("/")
+    if len(parts) >= 6:
+        filename = parts[5]
+        if ".." in filename or "/" in filename:
+            return _json_response(400, {"error": "invalid filename"})
+        return _get_detail(storage, parts[4], filename)
+    return None
+
+
+def _route_search(storage, path):
+    """Parameterized GET /dedup/api/search/<entity>/<query> route. Returns a response, or None if
+    the path is not a search route. Preserves the exact query validation."""
+    if not path.startswith("/dedup/api/search/"):
+        return None
+    from urllib.parse import unquote
+
+    decoded_path = unquote(path)
+    parts = decoded_path.split("/")
+    if len(parts) >= 6:
+        query = parts[5]
+        if ".." in query:
+            return _json_response(400, {"error": "invalid query"})
+        return _search_entities(storage, parts[4], query)
+    return None
 
 
 ENTITY_PREFIXES = {
@@ -323,6 +343,23 @@ def _handle_action(event, storage, config):
     excluded_indices = set(body.get("excluded_indices", []))
 
     # Find group index in the raw report by matching filenames
+    group_index = _resolve_group_index(storage, entity_type, group_filenames, body)
+
+    if action == "merge":
+        return _do_merge(
+            entity_type, group_index, primary_index, excluded_indices, storage, config
+        )
+    elif action == "exclude":
+        return _do_exclude(entity_type, group_index, storage)
+    elif action == "skip":
+        return _do_skip(entity_type, group_index, storage)
+    return _json_response(400, {"error": f"unknown action: {action}"})
+
+
+def _resolve_group_index(storage, entity_type, group_filenames, body):
+    """Find the group index in the raw report by matching filenames; fall back to the
+    body-provided ``group_index``. Preserves the original best-effort behavior (DynamoDB sync
+    warning on error)."""
     group_index = body.get("group_index", 0)  # fallback
     try:
         rpt = storage.read_json(_report_path(entity_type))
@@ -337,27 +374,24 @@ def _handle_action(event, storage, config):
                     break
     except Exception as e:
         logger.warning("DynamoDB sync failed: %s", e)
+    return group_index
 
-    if action == "merge":
-        return _do_merge(
-            entity_type, group_index, primary_index, excluded_indices, storage, config
+
+def _do_skip(entity_type, group_index, storage):
+    """Record 'reviewed but no action' state so the pair is suppressed on the next run, then
+    remove the group from the report."""
+    try:
+        rpt = storage.read_json(_report_path(entity_type))
+        grps = rpt.get("duplicates", rpt.get("related", []))
+        grp_people = (
+            grps[group_index].get("people", []) if group_index < len(grps) else []
         )
-    elif action == "exclude":
-        return _do_exclude(entity_type, group_index, storage)
-    elif action == "skip":
-        try:
-            rpt = storage.read_json(_report_path(entity_type))
-            grps = rpt.get("duplicates", rpt.get("related", []))
-            grp_people = (
-                grps[group_index].get("people", []) if group_index < len(grps) else []
-            )
-        except Exception:
-            grp_people = []
-        # Record "reviewed but no action" state so pair is suppressed on next run
-        _record_reviewed(entity_type, grp_people)
-        _remove_group_from_report(entity_type, group_index, storage, grp_people)
-        return _json_response(200, {"result": "skipped"})
-    return _json_response(400, {"error": f"unknown action: {action}"})
+    except Exception:
+        grp_people = []
+    # Record "reviewed but no action" state so pair is suppressed on next run
+    _record_reviewed(entity_type, grp_people)
+    _remove_group_from_report(entity_type, group_index, storage, grp_people)
+    return _json_response(200, {"result": "skipped"})
 
 
 def _dedupe_groups(groups):
@@ -615,57 +649,71 @@ def _rename_to_match_content(event, storage):
         new_filename = name.lower().replace(" ", " ") + ".json"
         if new_filename == filename:
             # Filename matches content — but fix any stale index entries
-            try:
-                index = storage.read_json(f"{prefix}/index.json")
-                stale = [
-                    k for k, v in index.items() if v == filename and k != name.lower()
-                ]
-                for k in stale:
-                    del index[k]
-                if stale:
-                    index[name.lower()] = filename
-                    storage.write_json(f"{prefix}/index.json", index)
-                    _remove_entry_from_report(entity_type, filename, storage)
-                    return _json_response(
-                        200,
-                        {
-                            "result": "fixed_index",
-                            "old": filename,
-                            "new": filename,
-                            "removed_aliases": stale,
-                        },
-                    )
-            except Exception as e:
-                logger.warning("DynamoDB entity sync failed: %s", e)
-            return _json_response(200, {"result": "unchanged", "filename": filename})
+            return _rename_fix_stale_index(storage, entity_type, prefix, filename, name)
 
-        # Copy to new key, delete old
-        storage.write_json(f"{prefix}/{new_filename}", data)
-        storage.delete(f"{prefix}/{filename}")
-        _sync_entity_to_dynamo(entity_type, data)
-        _append_to_manifest([f"{prefix}/{new_filename}"])
-
-        # Update index.json
-        try:
-            index = storage.read_json(f"{prefix}/index.json")
-            # Remove old entry, add new
-            for k, v in list(index.items()):
-                if v == filename:
-                    del index[k]
-            index[name.lower()] = new_filename
-            storage.write_json(f"{prefix}/index.json", index)
-        except Exception as e:
-            logger.warning("Index update failed: %s", e)
-
-        # Update duplicate report references
-        _update_filename_in_report(entity_type, filename, new_filename, storage)
-
-        logger.info("Renamed %s → %s", filename, new_filename)
-        return _json_response(
-            200, {"result": "renamed", "old": filename, "new": new_filename}
+        return _rename_apply(
+            storage, entity_type, prefix, filename, new_filename, name, data
         )
     except Exception as e:
         return _json_response(500, {"error": str(e)})
+
+
+def _rename_fix_stale_index(storage, entity_type, prefix, filename, name):
+    """Content already matches the filename — remove any stale index aliases pointing at this
+    file, re-add the canonical entry, and drop the record from the report. Returns the response.
+    """
+    try:
+        index = storage.read_json(f"{prefix}/index.json")
+        stale = [k for k, v in index.items() if v == filename and k != name.lower()]
+        for k in stale:
+            del index[k]
+        if stale:
+            index[name.lower()] = filename
+            storage.write_json(f"{prefix}/index.json", index)
+            _remove_entry_from_report(entity_type, filename, storage)
+            return _json_response(
+                200,
+                {
+                    "result": "fixed_index",
+                    "old": filename,
+                    "new": filename,
+                    "removed_aliases": stale,
+                },
+            )
+    except Exception as e:
+        logger.warning("DynamoDB entity sync failed: %s", e)
+    return _json_response(200, {"result": "unchanged", "filename": filename})
+
+
+def _rename_apply(storage, entity_type, prefix, filename, new_filename, name, data):
+    """Copy the record to the new key, delete the old, sync/manifest, update the index, and update
+    report references. Preserves the exact storage calls + order. Returns the response.
+    """
+    # Copy to new key, delete old
+    storage.write_json(f"{prefix}/{new_filename}", data)
+    storage.delete(f"{prefix}/{filename}")
+    _sync_entity_to_dynamo(entity_type, data)
+    _append_to_manifest([f"{prefix}/{new_filename}"])
+
+    # Update index.json
+    try:
+        index = storage.read_json(f"{prefix}/index.json")
+        # Remove old entry, add new
+        for k, v in list(index.items()):
+            if v == filename:
+                del index[k]
+        index[name.lower()] = new_filename
+        storage.write_json(f"{prefix}/index.json", index)
+    except Exception as e:
+        logger.warning("Index update failed: %s", e)
+
+    # Update duplicate report references
+    _update_filename_in_report(entity_type, filename, new_filename, storage)
+
+    logger.info("Renamed %s → %s", filename, new_filename)
+    return _json_response(
+        200, {"result": "renamed", "old": filename, "new": new_filename}
+    )
 
 
 def _update_filename_in_report(entity_type, old_filename, new_filename, storage):

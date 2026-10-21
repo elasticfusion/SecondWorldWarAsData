@@ -7,7 +7,7 @@ import json
 import logging
 import shutil
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -247,26 +247,81 @@ def update_event_refs(output_root: Path, old_id: str, new_id: str, ref_key: str)
     return event_refs_changed
 
 
+def _replace_id_in_dict(obj: dict, old_id: str, new_id: str, id_fields: set) -> bool:
+    """Dict branch of _replace_id_in_obj. Returns True if changed."""
+    changed = False
+    for key, val in obj.items():
+        if key in id_fields and val == old_id:
+            obj[key] = new_id
+            changed = True
+        elif isinstance(val, (dict, list)):
+            if _replace_id_in_obj(val, old_id, new_id, id_fields):
+                changed = True
+    return changed
+
+
+def _replace_id_in_list(obj: list, old_id: str, new_id: str, id_fields: set) -> bool:
+    """List branch of _replace_id_in_obj. Returns True if changed."""
+    changed = False
+    for i, item in enumerate(obj):
+        if isinstance(item, str) and item == old_id:
+            obj[i] = new_id
+            changed = True
+        elif isinstance(item, (dict, list)):
+            if _replace_id_in_obj(item, old_id, new_id, id_fields):
+                changed = True
+    return changed
+
+
 def _replace_id_in_obj(obj, old_id: str, new_id: str, id_fields: set) -> bool:
     """Recursively replace old_id with new_id only in known ID fields. Returns True if changed."""
-    changed = False
     if isinstance(obj, dict):
-        for key, val in obj.items():
-            if key in id_fields and val == old_id:
-                obj[key] = new_id
-                changed = True
-            elif isinstance(val, (dict, list)):
-                if _replace_id_in_obj(val, old_id, new_id, id_fields):
-                    changed = True
+        return _replace_id_in_dict(obj, old_id, new_id, id_fields)
     elif isinstance(obj, list):
-        for i, item in enumerate(obj):
-            if isinstance(item, str) and item == old_id:
-                obj[i] = new_id
-                changed = True
-            elif isinstance(item, (dict, list)):
-                if _replace_id_in_obj(item, old_id, new_id, id_fields):
-                    changed = True
-    return changed
+        return _replace_id_in_list(obj, old_id, new_id, id_fields)
+    return False
+
+
+def _merge_one_person_secondary(
+    people_dir: Path,
+    person: Dict,
+    primary_data: Dict,
+    primary_id: str,
+    primary_person: Dict,
+    output_root: Path,
+) -> Tuple[Dict, bool]:
+    """Process one secondary person merge into primary_data.
+
+    Returns (updated_primary_data, merged) preserving the exact storage ordering:
+    merge_people -> update_index -> backup -> unlink -> notify -> update_event_refs
+    -> dynamo sync.
+    """
+    secondary_file = people_dir / person["filename"]
+    if not secondary_file.exists():
+        logger.info("Skipping %s: file already merged/deleted", person["name"])
+        return primary_data, False
+    try:
+        secondary_data = load_person(people_dir, person["filename"])
+    except (OSError, json.JSONDecodeError):
+        logger.warning("Failed to load %s, skipping", person["filename"])
+        return primary_data, False
+
+    secondary_id = secondary_data.get("PersonID", "")
+    primary_data = merge_people(primary_data, secondary_data)
+
+    index_path = people_dir / "index.json"
+    update_index(index_path, person["name"], primary_person["filename"])
+
+    _backup_before_delete(secondary_file)
+    secondary_file.unlink()
+    _notify_deletion(secondary_file)
+
+    if secondary_id and primary_id:
+        update_event_refs(output_root, secondary_id, primary_id, "people")
+    # #9: remove the merged-away secondary from DynamoDB too.
+    if secondary_id:
+        _dynamo_merge_sync("people", "", {}, secondary_id)
+    return primary_data, True
 
 
 def do_merge(people_dir: Path, people: List[Dict], primary_idx: int) -> Optional[str]:
@@ -285,32 +340,11 @@ def do_merge(people_dir: Path, people: List[Dict], primary_idx: int) -> Optional
     for i, person in enumerate(people):
         if i == primary_idx:
             continue
-        secondary_file = people_dir / person["filename"]
-        if not secondary_file.exists():
-            logger.info("Skipping %s: file already merged/deleted", person["name"])
-            continue
-        try:
-            secondary_data = load_person(people_dir, person["filename"])
-        except (OSError, json.JSONDecodeError):
-            logger.warning("Failed to load %s, skipping", person["filename"])
-            continue
-
-        secondary_id = secondary_data.get("PersonID", "")
-        primary_data = merge_people(primary_data, secondary_data)
-
-        index_path = people_dir / "index.json"
-        update_index(index_path, person["name"], primary_person["filename"])
-
-        _backup_before_delete(secondary_file)
-        secondary_file.unlink()
-        _notify_deletion(secondary_file)
-        merged_count += 1
-
-        if secondary_id and primary_id:
-            update_event_refs(output_root, secondary_id, primary_id, "people")
-        # #9: remove the merged-away secondary from DynamoDB too.
-        if secondary_id:
-            _dynamo_merge_sync("people", "", {}, secondary_id)
+        primary_data, merged = _merge_one_person_secondary(
+            people_dir, person, primary_data, primary_id, primary_person, output_root
+        )
+        if merged:
+            merged_count += 1
 
     _write_entity_guarded(people_dir / primary_person["filename"], primary_data)
 

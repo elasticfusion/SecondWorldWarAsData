@@ -418,23 +418,36 @@ def enrich_person_awards(
     """
     if not should_source_awards(person):
         return 0
-    bp = person.setdefault("biographical_profile", {})
-    awards = bp.get("military_awards") or person.get("military_awards") or []
-    name = person.get("name") or person.get("current_name") or ""
+    awards, name = _gather_person_awards(person)
     if not name or not awards:
         return 0
 
     selector = sources if callable(sources) else None
     filled = 0
     for award in awards:
-        if not isinstance(award, dict) or award.get("citation_text"):
-            continue  # keep existing provenance; only fill gaps
-        srcs = _resolve_award_sources(award, person, selector, sources)
-        if not srcs:
-            continue
-        if _source_one_award(award, name, srcs):
+        if _process_one_award(award, person, name, selector, sources):
             filled += 1
     return filled
+
+
+def _gather_person_awards(person: dict):
+    """Resolve (awards, name) for a person, setting up the biographical_profile. Mirrors the
+    original field-precedence (biographical_profile first, then top-level)."""
+    bp = person.setdefault("biographical_profile", {})
+    awards = bp.get("military_awards") or person.get("military_awards") or []
+    name = person.get("name") or person.get("current_name") or ""
+    return awards, name
+
+
+def _process_one_award(award, person, name, selector, sources) -> bool:
+    """Resolve + attach a citation for one award (skipping awards that already have
+    provenance or no applicable sources). Returns True if a citation was filled."""
+    if not isinstance(award, dict) or award.get("citation_text"):
+        return False  # keep existing provenance; only fill gaps
+    srcs = _resolve_award_sources(award, person, selector, sources)
+    if not srcs:
+        return False
+    return _source_one_award(award, name, srcs)
 
 
 def _resolve_award_sources(award, person, selector, sources):
@@ -510,45 +523,57 @@ def _first_match(sources: List[AwardCitationSource], name: str, award_hint: str)
     attempts: List[dict] = []
     for src in sources:
         src_name = getattr(src, "name", str(src))
-        try:
-            results = src.lookup(name, award_hint)
-        except Exception as e:  # noqa: BLE001 - try next source; not a durable fail
-            # Prefer the source's URL-tagged fetch error if it has one.
-            detail = getattr(src, "last_error", None) or str(e)[:200]
-            logger.warning(
-                "Award source '%s' errored for %s: %s", src_name, name, detail
-            )
-            attempts.append(
-                {
-                    "source": src_name,
-                    "outcome": "error",
-                    "error": detail,
-                    "attempted_date": today_iso(),
-                }
-            )
+        results, error_attempt = _lookup_source(src, src_name, name, award_hint)
+        if error_attempt is not None:
+            attempts.append(error_attempt)
             continue
-        matched = None
-        for c in results:
-            # Accept the first VERIFIED citation whose award matches (or the source
-            # didn't specify an award).
-            if c.verified and (not award_hint or not c.award or c.award == award_hint):
-                matched = c
-                break
-        record = {
-            "source": src_name,
-            "outcome": "match" if matched else "no_match",
-            "attempted_date": today_iso(),
-        }
-        # If no match AND the source recorded a URL-tagged fetch failure, surface it
-        # (a 'no_match' that was really a blocked/failed fetch is diagnostic signal).
-        src_last_error = getattr(src, "last_error", None)
-        if not matched and src_last_error:
-            record["outcome"] = "error"
-            record["error"] = src_last_error
+        matched, record = _scan_source_results(src, src_name, results, award_hint)
         attempts.append(record)
         if matched:
             return matched, attempts
     return None, attempts
+
+
+def _lookup_source(src, src_name: str, name: str, award_hint: str):
+    """Run one source lookup. Returns (results, None) on success or (None, error_attempt)
+    when the source errored (logged + recorded; try next source, not a durable fail)."""
+    try:
+        results = src.lookup(name, award_hint)
+    except Exception as e:  # noqa: BLE001 - try next source; not a durable fail
+        # Prefer the source's URL-tagged fetch error if it has one.
+        detail = getattr(src, "last_error", None) or str(e)[:200]
+        logger.warning("Award source '%s' errored for %s: %s", src_name, name, detail)
+        return None, {
+            "source": src_name,
+            "outcome": "error",
+            "error": detail,
+            "attempted_date": today_iso(),
+        }
+    return results, None
+
+
+def _scan_source_results(src, src_name: str, results, award_hint: str):
+    """Scan one source's results for the first matching VERIFIED citation. Returns
+    (matched_or_None, attempt_record)."""
+    matched = None
+    for c in results:
+        # Accept the first VERIFIED citation whose award matches (or the source
+        # didn't specify an award).
+        if c.verified and (not award_hint or not c.award or c.award == award_hint):
+            matched = c
+            break
+    record = {
+        "source": src_name,
+        "outcome": "match" if matched else "no_match",
+        "attempted_date": today_iso(),
+    }
+    # If no match AND the source recorded a URL-tagged fetch failure, surface it
+    # (a 'no_match' that was really a blocked/failed fetch is diagnostic signal).
+    src_last_error = getattr(src, "last_error", None)
+    if not matched and src_last_error:
+        record["outcome"] = "error"
+        record["error"] = src_last_error
+    return matched, record
 
 
 def today_iso() -> str:
