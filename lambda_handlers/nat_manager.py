@@ -77,46 +77,10 @@ def _nat_demand_present() -> bool:
     now = int(time.time())
     try:
         # 1) live leases
-        resp = _lease_table().scan(
-            FilterExpression="begins_with(cache_key, :p)",
-            ExpressionAttributeValues={":p": "nat#lease#"},
-            ProjectionExpression="cache_key, #t",
-            ExpressionAttributeNames={"#t": "ttl"},
-        )
-        for item in resp.get("Items", []):
-            ttl = item.get("ttl")
-            if ttl is None or int(ttl) > now:
-                logger.info("NAT demand: live lease present — keeping NAT")
-                return True
+        if _nat_live_lease_present(now):
+            return True
         # 2) running pipeline tasks (exclude the openserp support SERVICE).
-        # NOTE: the openserp exclusion must inspect each task's GROUP
-        # (service:{env}-wwii-openserp), NOT the task ARN — the ARN is
-        # .../task/{cluster}/{taskId} and never contains 'openserp', so an
-        # ARN-substring check silently counted openserp as a pipeline task and
-        # pinned NAT up forever. describe_tasks to read the group.
-        #
-        # Exclude ONLY the browser support service group EXACTLY
-        # (service:{env}-wwii-openserp). A substring 'openserp' match is too broad:
-        # it also excluded the SQS worker (service:{env}-wwii-openserp-worker), which
-        # DOES need NAT (ECR/S3/Grok/search egress) — so a running worker was invisible
-        # to the demand check and NAT got torn down under it (ECR pull i/o timeout).
-        ecs = _ecs_client()
-        browser_group = f"service:{ENV_NAME}-wwii-openserp"
-        running = ecs.list_tasks(
-            cluster=f"{ENV_NAME}-wwii-pipeline", desiredStatus="RUNNING"
-        ).get("taskArns", [])
-        pipeline = []
-        if running:
-            described = ecs.describe_tasks(
-                cluster=f"{ENV_NAME}-wwii-pipeline", tasks=running
-            ).get("tasks", [])
-            pipeline = [
-                t for t in described if (t.get("group", "") or "") != browser_group
-            ]
-        if pipeline:
-            logger.info(
-                "NAT demand: %d running pipeline task(s) — keeping NAT", len(pipeline)
-            )
+        if _nat_pipeline_task_present():
             return True
         # 3) OCR Batch jobs in flight — GPU instances need egress to register with
         # ECS + pull the image + S3. Batch jobs aren't ECS tasks and hold no nat
@@ -136,6 +100,56 @@ def _nat_demand_present() -> bool:
     except Exception as e:  # pragma: no cover - defensive
         logger.warning("NAT demand check failed (%s) — assuming demand, keeping NAT", e)
         return True
+
+
+def _nat_live_lease_present(now: int) -> bool:
+    """Demand check 1: any live nat#lease# entry (filtering expired TTLs). Raises on error so
+    the caller's fail-safe (keep NAT on uncertainty) applies."""
+    resp = _lease_table().scan(
+        FilterExpression="begins_with(cache_key, :p)",
+        ExpressionAttributeValues={":p": "nat#lease#"},
+        ProjectionExpression="cache_key, #t",
+        ExpressionAttributeNames={"#t": "ttl"},
+    )
+    for item in resp.get("Items", []):
+        ttl = item.get("ttl")
+        if ttl is None or int(ttl) > now:
+            logger.info("NAT demand: live lease present — keeping NAT")
+            return True
+    return False
+
+
+def _nat_pipeline_task_present() -> bool:
+    """Demand check 2: any running non-openserp pipeline ECS task. Raises on error so the
+    caller's fail-safe (keep NAT on uncertainty) applies."""
+    # NOTE: the openserp exclusion must inspect each task's GROUP
+    # (service:{env}-wwii-openserp), NOT the task ARN — the ARN is
+    # .../task/{cluster}/{taskId} and never contains 'openserp', so an
+    # ARN-substring check silently counted openserp as a pipeline task and
+    # pinned NAT up forever. describe_tasks to read the group.
+    #
+    # Exclude ONLY the browser support service group EXACTLY
+    # (service:{env}-wwii-openserp). A substring 'openserp' match is too broad:
+    # it also excluded the SQS worker (service:{env}-wwii-openserp-worker), which
+    # DOES need NAT (ECR/S3/Grok/search egress) — so a running worker was invisible
+    # to the demand check and NAT got torn down under it (ECR pull i/o timeout).
+    ecs = _ecs_client()
+    browser_group = f"service:{ENV_NAME}-wwii-openserp"
+    running = ecs.list_tasks(
+        cluster=f"{ENV_NAME}-wwii-pipeline", desiredStatus="RUNNING"
+    ).get("taskArns", [])
+    pipeline = []
+    if running:
+        described = ecs.describe_tasks(
+            cluster=f"{ENV_NAME}-wwii-pipeline", tasks=running
+        ).get("tasks", [])
+        pipeline = [t for t in described if (t.get("group", "") or "") != browser_group]
+    if pipeline:
+        logger.info(
+            "NAT demand: %d running pipeline task(s) — keeping NAT", len(pipeline)
+        )
+        return True
+    return False
 
 
 def _grok_batch_pending() -> bool:
@@ -387,27 +401,7 @@ def _delete_all(ec2, region, force=False):
     deleted = False
 
     # 1. NAT Gateway
-    nat_id = _find_nat(ec2)
-    if nat_id:
-        # Get EIP allocation before deleting NAT
-        nat_info = ec2.describe_nat_gateways(NatGatewayIds=[nat_id])
-        eip_alloc_ids = [
-            addr["AllocationId"]
-            for gw in nat_info.get("NatGateways", [])
-            for addr in gw.get("NatGatewayAddresses", [])
-            if addr.get("AllocationId")
-        ]
-        ec2.delete_nat_gateway(NatGatewayId=nat_id)
-        logger.info("Deleted NAT: %s", nat_id)
-        # Release EIPs after NAT is deleted (wait for disassociation)
-        if eip_alloc_ids:
-            time.sleep(5)  # Brief wait for NAT to release EIP
-            for alloc_id in eip_alloc_ids:
-                try:
-                    ec2.release_address(AllocationId=alloc_id)
-                    logger.info("Released EIP: %s", alloc_id)
-                except Exception as e:
-                    logger.warning("Failed to release EIP %s: %s", alloc_id, e)
+    if _delete_nat_gateway(ec2):
         deleted = True
 
     # 2. VPC Endpoints
@@ -423,6 +417,34 @@ def _delete_all(ec2, region, force=False):
     else:
         logger.info("Nothing to delete — networking already down")
     return {"status": "deleted"}
+
+
+def _delete_nat_gateway(ec2) -> bool:
+    """Delete the NAT gateway (if present) and release its EIPs. Returns True if a NAT was
+    deleted. Preserves the exact order: delete NAT -> wait -> release EIPs."""
+    nat_id = _find_nat(ec2)
+    if not nat_id:
+        return False
+    # Get EIP allocation before deleting NAT
+    nat_info = ec2.describe_nat_gateways(NatGatewayIds=[nat_id])
+    eip_alloc_ids = [
+        addr["AllocationId"]
+        for gw in nat_info.get("NatGateways", [])
+        for addr in gw.get("NatGatewayAddresses", [])
+        if addr.get("AllocationId")
+    ]
+    ec2.delete_nat_gateway(NatGatewayId=nat_id)
+    logger.info("Deleted NAT: %s", nat_id)
+    # Release EIPs after NAT is deleted (wait for disassociation)
+    if eip_alloc_ids:
+        time.sleep(5)  # Brief wait for NAT to release EIP
+        for alloc_id in eip_alloc_ids:
+            try:
+                ec2.release_address(AllocationId=alloc_id)
+                logger.info("Released EIP: %s", alloc_id)
+            except Exception as e:
+                logger.warning("Failed to release EIP %s: %s", alloc_id, e)
+    return True
 
 
 # === NAT Gateway ===
