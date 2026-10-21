@@ -43,7 +43,6 @@ run "bandit"   python -m bandit -r src/ lambda_handlers/ -ll -q
 # bug detection without 100s of style-noise findings.
 run "ruff(B)"  python -m ruff check src/ lambda_handlers/ --select B --quiet
 # shellcheck disable=SC2086
-# Radon complexity: C+ is the gate THRESHOLD. A non-allowlisted C-or-worse block HARD-FAILS;
 # C+ is the GATE THRESHOLD: any C-or-worse block HARD-FAILS unless it is INHERENT-allowlisted
 # (scripts/.radon_inherent, body-hash unchanged). The existing C+ backlog was grandfathered via
 # `radon_inherent.py seed`, so only a NEW or MODIFIED C+ block fails. D+ is NEVER suppressible.
