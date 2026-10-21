@@ -123,7 +123,16 @@ are NEW gaps (analyzer-invisible; bandit still 0H/0M). Ranked:
 - **[WARNING] Decompression-bomb guard scoped too narrowly** — equipment convert/resize + grok_search_maps
   restore MAX_IMAGE_PIXELS before the rasterizing convert/resize; equipment._compute_image_hash has no
   cap. Hold the cap across the whole decode block (mirror unit_patch).
-- **[WARNING] SSRF via url_hygiene bypass (codebase-wide follow-up)** — bibliography_resolver.
+- **[DONE · PR #491] [WARNING] SSRF via url_hygiene bypass (codebase-wide follow-up)** — FIXED. Routed every
+  UNTRUSTED-host fetch through url_hygiene: bibliography_resolver._verify_url_content (LIVE, ->fetch_text_safe,
+  block=hard-reject), enrich_biographies._preserve_person_photo (->safe_get) + _fetch_url_content (->fetch_text_safe,
+  the live source-url fetch the #491 security review caught as MISSED; falls through to the wayback/archive.org
+  fallback on block), equipment._download_media_file (->safe_get) + _extract_image_urls_from_page (->fetch_text_safe),
+  source_retrieval._download_to_quarantine + award_polite_source.polite_get (validate-only clean_url+resolved_host_is_safe
+  + allow_redirects=False, fetch ORIGINAL url so a significant query isn't stripped), url_extractor.fetch_url (->safe_get).
+  Trusted-LITERAL-host fetches (archive.org/gutendex/grokipedia-search/commons/wikipedia-API/NARA/nominatim/open-meteo/
+  wayback->archive.org) are NOT SSRF and left as-is (host is a hardcoded literal, review-confirmed). +OBSERV on every
+  block. Security re-audit: ZERO untrusted-host fetches remain unrouted across src/. Original (stale):
   _verify_url_content (LIVE) + source_retrieval._download_to_quarantine (latent) + (flagged by the
   #487 security review) enrich_biographies:358, equipment:1071/1172, supplemental_search:108/163,
   award_polite_source, grokipedia, situational_geocode, wayback, url_extractor — all session.get/
