@@ -157,6 +157,46 @@ def _ext_for(url: str, content_type: str) -> str:
     return suffix if suffix in {".jpg", ".jpeg", ".png", ".webp", ".gif"} else ".jpg"
 
 
+def _evaluate_patch_candidate(
+    cand: Dict[str, str],
+    unit_name: str,
+    nationality: str,
+    grok_client: Any,
+    seen: set,
+) -> Optional[Dict[str, Any]]:
+    """SSRF-gate, vision-confirm, download, and measure one candidate.
+
+    Preserves the exact call order (_safe_url -> _vision_is_patch -> _download -> _dimensions)
+    and mutates `seen` for dedup. Returns {url,title,data,width,height,area} or None to skip.
+    """
+    raw = (cand or {}).get("url", "")
+    if not raw:
+        return None
+    # SSRF gate FIRST: clean + require public-resolving host before ANY fetch (the vision call
+    # downloads the URL too). Reject private/metadata/rebind.
+    url = _safe_url(raw)
+    if not url or url in seen:
+        return None
+    seen.add(url)
+    if not _vision_is_patch(url, unit_name, nationality, grok_client):
+        return None
+    data = _download(url)
+    if not data:
+        return None
+    dims = _dimensions(data)
+    if not dims:  # vision said patch but bytes aren't a readable/safe image -> skip
+        return None
+    area = dims[0] * dims[1]
+    return {
+        "url": url,
+        "title": (cand or {}).get("title", ""),
+        "data": data,
+        "width": dims[0],
+        "height": dims[1],
+        "area": area,
+    }
+
+
 def _select_best_patch(
     candidates: List[Dict[str, str]],
     unit_name: str,
@@ -170,32 +210,20 @@ def _select_best_patch(
     best_area = -1
     seen: set = set()
     for cand in candidates:
-        raw = (cand or {}).get("url", "")
-        if not raw:
+        evaluated = _evaluate_patch_candidate(
+            cand, unit_name, nationality, grok_client, seen
+        )
+        if evaluated is None:
             continue
-        # SSRF gate FIRST: clean + require public-resolving host before ANY fetch (the vision call
-        # downloads the URL too). Reject private/metadata/rebind.
-        url = _safe_url(raw)
-        if not url or url in seen:
-            continue
-        seen.add(url)
-        if not _vision_is_patch(url, unit_name, nationality, grok_client):
-            continue
-        data = _download(url)
-        if not data:
-            continue
-        dims = _dimensions(data)
-        if not dims:  # vision said patch but bytes aren't a readable/safe image -> skip
-            continue
-        area = dims[0] * dims[1]
+        area = evaluated["area"]
         if area > best_area:
             best_area = area
             best = {
-                "url": url,
-                "title": (cand or {}).get("title", ""),
-                "data": data,
-                "width": dims[0],
-                "height": dims[1],
+                "url": evaluated["url"],
+                "title": evaluated["title"],
+                "data": evaluated["data"],
+                "width": evaluated["width"],
+                "height": evaluated["height"],
             }
     return best
 

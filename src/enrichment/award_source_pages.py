@@ -76,6 +76,29 @@ def today_iso() -> str:
 ERRORS_PREFIX = "award_sourcing_errors"
 
 
+def _build_sourcing_error_record(
+    person_id: str,
+    person_name: str,
+    award_name: str,
+    errored: list,
+) -> tuple[str, dict]:
+    """Build the (path, record) for a set of errored sourcing attempts."""
+    slug = "".join(
+        c if c.isalnum() or c in "-_" else "_" for c in (award_name or "award")
+    )[:40]
+    pid = person_id or "unknown"
+    path = f"{ERRORS_PREFIX}/{pid}/{slug}-{today_iso()}.json"
+    record = {
+        "person_id": person_id,
+        "person_name": person_name,
+        "award": award_name,
+        "errors": errored,
+        "logged_date": today_iso(),
+        "status": "needs_retry",  # a retry job / UI can flip this
+    }
+    return path, record
+
+
 def persist_sourcing_errors(
     storage,
     person_id: str,
@@ -96,19 +119,9 @@ def persist_sourcing_errors(
     errored = [a for a in attempts if a.get("outcome") == "error"]
     if not errored:
         return None
-    slug = "".join(
-        c if c.isalnum() or c in "-_" else "_" for c in (award_name or "award")
-    )[:40]
-    pid = person_id or "unknown"
-    path = f"{ERRORS_PREFIX}/{pid}/{slug}-{today_iso()}.json"
-    record = {
-        "person_id": person_id,
-        "person_name": person_name,
-        "award": award_name,
-        "errors": errored,
-        "logged_date": today_iso(),
-        "status": "needs_retry",  # a retry job / UI can flip this
-    }
+    path, record = _build_sourcing_error_record(
+        person_id, person_name, award_name, errored
+    )
     try:
         import json
 

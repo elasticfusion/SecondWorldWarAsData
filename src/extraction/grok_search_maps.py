@@ -90,6 +90,64 @@ def download_image(image_url: str, timeout: int = 30) -> Optional[bytes]:
     return data
 
 
+def _prepare_map_image(image_data: bytes) -> tuple[bool, bytes, str]:
+    """Validate/convert/resize a map image under a held decompression-bomb cap.
+
+    Returns (ok, image_data, reason). When ok is False the image is too large even after
+    resize and `reason` carries the message. Raises Image.DecompressionBombError /
+    other exceptions to the caller (the cap restore runs first via finally)."""
+    from PIL import Image
+    from io import BytesIO
+
+    # Decompression-bomb defense: cap decoded pixels so a crafted file that expands to a huge
+    # raster raises DecompressionBombError. The cap MUST be held across the ENTIRE decode —
+    # verify() AND the rasterizing convert()/resize() below — not restored right after verify()
+    # (the old bug left convert/resize decoding at Pillow's default cap).
+    _prev_max = Image.MAX_IMAGE_PIXELS
+    Image.MAX_IMAGE_PIXELS = 50_000_000
+    try:
+        img = Image.open(BytesIO(image_data))
+        img.verify()
+        img = Image.open(BytesIO(image_data))  # Reload after verify
+
+        # Convert unsupported formats to PNG
+        if img.format not in ["PNG", "JPEG", "JPG", "GIF"]:
+            logger.info(f"Converting {img.format} to PNG")
+            buffer = BytesIO()
+            img.convert("RGB").save(buffer, format="PNG")
+            image_data = buffer.getvalue()
+
+        # Resize if too large
+        size_mb = len(image_data) / (1024 * 1024)
+        if size_mb > 5:
+            logger.info(f"Resizing image ({size_mb:.1f}MB → target <5MB)")
+            img = Image.open(BytesIO(image_data))
+
+            # Calculate new dimensions (reduce by 50% iteratively)
+            scale = 0.7
+            while size_mb > 5 and scale > 0.1:
+                new_size = (int(img.width * scale), int(img.height * scale))
+                resized = img.resize(new_size, Image.Resampling.LANCZOS)
+
+                buffer = BytesIO()
+                resized.save(buffer, format="PNG", optimize=True)
+                image_data = buffer.getvalue()
+                size_mb = len(image_data) / (1024 * 1024)
+                scale -= 0.1
+
+            if size_mb > 5:
+                return (
+                    False,
+                    image_data,
+                    f"Image still too large after resize ({size_mb:.1f}MB)",
+                )
+
+            logger.info(f"Resized to {size_mb:.1f}MB")
+    finally:
+        Image.MAX_IMAGE_PIXELS = _prev_max
+    return True, image_data, ""
+
+
 def verify_map_with_vision(
     image_data: bytes,
     place_name: str,
@@ -104,56 +162,12 @@ def verify_map_with_vision(
     """
     import base64
     from PIL import Image
-    from io import BytesIO
 
     # Validate and convert image if needed
     try:
-        # Decompression-bomb defense: cap decoded pixels so a crafted file that expands to a huge
-        # raster raises DecompressionBombError. The cap MUST be held across the ENTIRE decode —
-        # verify() AND the rasterizing convert()/resize() below — not restored right after verify()
-        # (the old bug left convert/resize decoding at Pillow's default cap).
-        _prev_max = Image.MAX_IMAGE_PIXELS
-        Image.MAX_IMAGE_PIXELS = 50_000_000
-        try:
-            img = Image.open(BytesIO(image_data))
-            img.verify()
-            img = Image.open(BytesIO(image_data))  # Reload after verify
-
-            # Convert unsupported formats to PNG
-            if img.format not in ["PNG", "JPEG", "JPG", "GIF"]:
-                logger.info(f"Converting {img.format} to PNG")
-                buffer = BytesIO()
-                img.convert("RGB").save(buffer, format="PNG")
-                image_data = buffer.getvalue()
-
-            # Resize if too large
-            size_mb = len(image_data) / (1024 * 1024)
-            if size_mb > 5:
-                logger.info(f"Resizing image ({size_mb:.1f}MB → target <5MB)")
-                img = Image.open(BytesIO(image_data))
-
-                # Calculate new dimensions (reduce by 50% iteratively)
-                scale = 0.7
-                while size_mb > 5 and scale > 0.1:
-                    new_size = (int(img.width * scale), int(img.height * scale))
-                    resized = img.resize(new_size, Image.Resampling.LANCZOS)
-
-                    buffer = BytesIO()
-                    resized.save(buffer, format="PNG", optimize=True)
-                    image_data = buffer.getvalue()
-                    size_mb = len(image_data) / (1024 * 1024)
-                    scale -= 0.1
-
-                if size_mb > 5:
-                    return (
-                        False,
-                        f"Image still too large after resize ({size_mb:.1f}MB)",
-                    )
-
-                logger.info(f"Resized to {size_mb:.1f}MB")
-        finally:
-            Image.MAX_IMAGE_PIXELS = _prev_max
-
+        ok, image_data, reason = _prepare_map_image(image_data)
+        if not ok:
+            return False, reason
     except Image.DecompressionBombError as e:
         logger.warning("OBSERV maps.image_bomb_rejected err=%s", str(e)[:120])
         return False, f"Image rejected (decompression bomb): {e}"

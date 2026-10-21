@@ -278,25 +278,37 @@ def enrich_weather_with_noaa(weather_dir: Path, token: str, max_items: int = 0) 
     return enriched
 
 
-def _enrich_weather_file(f, token) -> bool:
-    """Enrich one weather file with NOAA observed data. Returns True iff it was enriched; all skip
-    conditions (parse-fail, already-noaa, zero-coords, pre-1940/missing date, no station, no obs)
-    return False."""
+def _load_enrichable_weather(f):
+    """Load + gate a weather file. Returns (data, lat, lon, date) or None when it must be skipped.
+
+    Mirrors the original skip conditions exactly: parse-fail, already-noaa, zero-coords,
+    pre-1940/missing date -> skip (None)."""
     try:
         data = json.loads(f.read_text(encoding="utf-8"))
     except Exception:
-        return False
+        return None
     if data.get("noaa_observed"):  # already has NOAA data
-        return False
+        return None
     loc = data.get("location", {})
     lat = loc.get("latitude", 0.0)
     lon = loc.get("longitude", 0.0)
     if lat == 0.0 and lon == 0.0:
-        return False
+        return None
     # Weather files store the date under "date" (not "date_start"); tolerate legacy.
     date = data.get("date") or data.get("date_start") or ""
     if not date or date < "1940-01-01":
+        return None
+    return data, lat, lon, date
+
+
+def _enrich_weather_file(f, token) -> bool:
+    """Enrich one weather file with NOAA observed data. Returns True iff it was enriched; all skip
+    conditions (parse-fail, already-noaa, zero-coords, pre-1940/missing date, no station, no obs)
+    return False."""
+    loaded = _load_enrichable_weather(f)
+    if loaded is None:
         return False
+    data, lat, lon, date = loaded
     station = find_nearest_station(lat, lon, date, token)
     if not station:
         return False

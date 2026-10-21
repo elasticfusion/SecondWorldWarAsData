@@ -67,6 +67,32 @@ def needs_summary(date_data: Dict[str, Any]) -> bool:
     return (count - since) >= _MIN_MENTION_GROWTH
 
 
+def _select_representative_mentions(
+    mentions: List[Dict[str, Any]], limit: int
+) -> List[Dict[str, Any]]:
+    """Pick one per distinct (Event, Sub-event) first, then fill up to `limit`."""
+    seen: set = set()
+    primary: List[Dict[str, Any]] = []
+    rest: List[Dict[str, Any]] = []
+    for m in mentions:
+        k = (m.get("Event_Name"), m.get("Sub_event_Name"))
+        (primary if k not in seen else rest).append(m)
+        seen.add(k)
+    return (primary + rest)[:limit]
+
+
+def _format_mention_lines(chosen: List[Dict[str, Any]]) -> str:
+    """Render chosen mentions into the compact bullet body."""
+    lines: List[str] = []
+    for m in chosen:
+        ev = m.get("Event_Name") or ""
+        se = m.get("Sub_event_Name") or ""
+        ot = (m.get("original_text") or "").strip()
+        label = " / ".join([p for p in (ev, se) if p])
+        lines.append(f"- {label}: {ot}" if label else f"- {ot}")
+    return "\n".join(lines)
+
+
 def _render_mentions(date_data: Dict[str, Any], limit: int = 60) -> str:
     """Compact, source-grounded view of the date's mentions for the prompt.
 
@@ -79,26 +105,11 @@ def _render_mentions(date_data: Dict[str, Any], limit: int = 60) -> str:
 
     if total > limit:
         # representative: first occurrence of each distinct (Event, Sub-event), then fill
-        seen: set = set()
-        primary: List[Dict[str, Any]] = []
-        rest: List[Dict[str, Any]] = []
-        for m in mentions:
-            k = (m.get("Event_Name"), m.get("Sub_event_Name"))
-            (primary if k not in seen else rest).append(m)
-            seen.add(k)
-        chosen = (primary + rest)[:limit]
+        chosen = _select_representative_mentions(mentions, limit)
     else:
         chosen = mentions
 
-    lines: List[str] = []
-    for m in chosen:
-        ev = m.get("Event_Name") or ""
-        se = m.get("Sub_event_Name") or ""
-        ot = (m.get("original_text") or "").strip()
-        label = " / ".join([p for p in (ev, se) if p])
-        lines.append(f"- {label}: {ot}" if label else f"- {ot}")
-
-    body = "\n".join(lines)
+    body = _format_mention_lines(chosen)
     if total > limit:
         return (
             f"(PARTIAL VIEW: showing {len(chosen)} representative of {total} total "

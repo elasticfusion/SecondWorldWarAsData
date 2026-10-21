@@ -138,11 +138,10 @@ def _analyze_license_with_grok(
     return False, url
 
 
-def _find_license_text(url: str, page_timeout: int, headers: dict) -> tuple:
-    """Try to find license text from a URL. Returns (text, license_url)."""
-    base_url = f"{urlparse(url).scheme}://{urlparse(url).netloc}"
-
-    # Try license page via links on the page
+def _license_from_page_links(
+    url: str, base_url: str, page_timeout: int, headers: dict
+) -> tuple:
+    """Try license page via links on the page. Returns (text, license_url) or ("", "")."""
     try:
         from src.utils.url_hygiene import safe_get
 
@@ -155,13 +154,11 @@ def _find_license_text(url: str, page_timeout: int, headers: dict) -> tuple:
                 return text, found_url
     except Exception:  # nosec B110
         pass
+    return "", ""
 
-    # Try common paths
-    text, found_url = _try_common_license_paths(base_url, page_timeout, headers)
-    if text:
-        return text, found_url or url
 
-    # Check main page footer
+def _license_from_footer(url: str, page_timeout: int, headers: dict) -> tuple:
+    """Check main page footer for license text. Returns (text, url) or ("", "")."""
     try:
         from src.utils.url_hygiene import safe_get
 
@@ -172,6 +169,27 @@ def _find_license_text(url: str, page_timeout: int, headers: dict) -> tuple:
                 return text, url
     except Exception:  # nosec B110
         pass
+    return "", ""
+
+
+def _find_license_text(url: str, page_timeout: int, headers: dict) -> tuple:
+    """Try to find license text from a URL. Returns (text, license_url)."""
+    base_url = f"{urlparse(url).scheme}://{urlparse(url).netloc}"
+
+    # Try license page via links on the page
+    text, found_url = _license_from_page_links(url, base_url, page_timeout, headers)
+    if text:
+        return text, found_url
+
+    # Try common paths
+    text, found_url = _try_common_license_paths(base_url, page_timeout, headers)
+    if text:
+        return text, found_url or url
+
+    # Check main page footer
+    text, found_url = _license_from_footer(url, page_timeout, headers)
+    if text:
+        return text, found_url
 
     return "", url
 
