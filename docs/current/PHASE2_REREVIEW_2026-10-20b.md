@@ -8,7 +8,7 @@ Severity order for the fix queue. "Corroborated" = found by >1 agent independent
 
 ## CRITICAL
 
-- **[CRITICAL · corroborated: sec_batch_core] DNS-rebinding TOCTOU — SSRF fetch layer vets resolved
+- **[DONE · PR #497] [CRITICAL · corroborated] DNS-rebinding TOCTOU — SSRF fetch layer vets resolved
   IPs but does NOT pin the connection to them.** `url_hygiene.safe_get`, `images.fetch_image_bytes`,
   and `url_fetch._one_hop` call `resolved_host_is_safe(host)` then hand the HOSTNAME url to
   requests, which re-resolves at connect time. A short-TTL attacker DNS name that answers public on
