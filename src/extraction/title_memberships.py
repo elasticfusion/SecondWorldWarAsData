@@ -188,6 +188,29 @@ def enrich_title_memberships(person: Dict) -> int:
         return 0
 
 
+def _validate_one_membership(aff: Any, name: str, grok_client: Any) -> int:
+    """Validate one affiliation in place; return 1 if newly verified true, else 0."""
+    if not isinstance(aff, dict) or aff.get("date_verified"):
+        return 0
+    if not aff.get("implied_from_title"):
+        return 0
+    year = aff.get("as_of_source_date")
+    group = aff.get("group")
+    if not (name and group and year):
+        return 0
+    try:
+        answer = _ask_membership(grok_client, name, group, year)
+    except Exception as e:  # noqa: BLE001 - leave unverified on error
+        logger.warning("membership temporal-validation skipped (%s): %s", group, e)
+        return 0
+    if answer is True:
+        aff["date_verified"] = True
+        return 1
+    elif answer is False:
+        aff["date_verified"] = False  # explicit negative; keep flagged, not asserted
+    return 0
+
+
 def validate_membership_dates(person: Dict, grok_client: Any) -> int:
     """DELIBERATE temporal-validation step: for each date-unverified title membership,
     ask Grok whether the person held that membership in the source timeframe, and flip
@@ -200,26 +223,7 @@ def validate_membership_dates(person: Dict, grok_client: Any) -> int:
     affs = bp.get("group_affiliations") or []
     verified = 0
     for aff in affs:
-        if not isinstance(aff, dict) or aff.get("date_verified"):
-            continue
-        if not aff.get("implied_from_title"):
-            continue
-        year = aff.get("as_of_source_date")
-        group = aff.get("group")
-        if not (name and group and year):
-            continue
-        try:
-            answer = _ask_membership(grok_client, name, group, year)
-        except Exception as e:  # noqa: BLE001 - leave unverified on error
-            logger.warning("membership temporal-validation skipped (%s): %s", group, e)
-            continue
-        if answer is True:
-            aff["date_verified"] = True
-            verified += 1
-        elif answer is False:
-            aff["date_verified"] = (
-                False  # explicit negative; keep flagged, not asserted
-            )
+        verified += _validate_one_membership(aff, name, grok_client)
     return verified
 
 

@@ -33,6 +33,43 @@ def _create_pseudo_event(
     }
 
 
+def _dispatch_extractor(
+    entity_type: str,
+    event_file: Path,
+    grok_client: GrokClient,
+    output_root: Path,
+) -> Optional[Any]:
+    """Route a single entity type to its extractor. Returns the extractor result or None."""
+    result: Optional[Any] = None
+    if entity_type == "dates":
+        from src.extraction.dates import extract_dates
+
+        result = extract_dates(event_file, grok_client, output_root / "dates")
+    elif entity_type == "places":
+        from src.extraction.places import extract_places
+
+        result = extract_places(event_file, grok_client, output_root / "places")
+    elif entity_type == "people":
+        from src.extraction.people import extract_people
+
+        result = extract_people(event_file, grok_client, output_root / "people")
+    elif entity_type == "people_groups":
+        from src.extraction.people_groups import extract_people_groups
+
+        result = extract_people_groups(
+            event_file, grok_client, output_root / "people_groups"
+        )
+    elif entity_type == "equipment":
+        from src.extraction.equipment import extract_equipment_from_event
+
+        # NB: equipment's signature is (event_file, output_dir, grok_client) — different arg
+        # ORDER than dates/places/people. The old dead code passed them in the wrong order.
+        result = extract_equipment_from_event(
+            event_file, output_root / "equipment", grok_client
+        )
+    return result
+
+
 def _extract_entity_type(
     entity_type: str,
     pseudo_event: dict,
@@ -75,33 +112,7 @@ def _extract_entity_type(
 
         with _os.fdopen(fd, "w", encoding="utf-8") as fh:
             _json.dump(pseudo_event, fh, ensure_ascii=False)
-        result: Optional[Any] = None
-        if entity_type == "dates":
-            from src.extraction.dates import extract_dates
-
-            result = extract_dates(event_file, grok_client, output_root / "dates")
-        elif entity_type == "places":
-            from src.extraction.places import extract_places
-
-            result = extract_places(event_file, grok_client, output_root / "places")
-        elif entity_type == "people":
-            from src.extraction.people import extract_people
-
-            result = extract_people(event_file, grok_client, output_root / "people")
-        elif entity_type == "people_groups":
-            from src.extraction.people_groups import extract_people_groups
-
-            result = extract_people_groups(
-                event_file, grok_client, output_root / "people_groups"
-            )
-        elif entity_type == "equipment":
-            from src.extraction.equipment import extract_equipment_from_event
-
-            # NB: equipment's signature is (event_file, output_dir, grok_client) — different arg
-            # ORDER than dates/places/people. The old dead code passed them in the wrong order.
-            result = extract_equipment_from_event(
-                event_file, output_root / "equipment", grok_client
-            )
+        result = _dispatch_extractor(entity_type, event_file, grok_client, output_root)
         logger.info(
             "OBSERV supplemental_info.extract type=%s result=%s",
             entity_type,

@@ -98,16 +98,8 @@ _MAX_RENDERED_CHARS = 8000  # bound the captured article text
 _CHROME_PREFIXES = ("⌘K", "Suggest edit", "Sign in", "Contents")
 
 
-def fetch_grokipedia_rendered(url: str, timeout_ms: int = 30000) -> Optional[str]:
-    """Render a Grokipedia page with headless Chromium (Playwright) and return the article
-    text. Grokipedia is a client-side SPA, so a plain HTTP GET returns an empty shell — the
-    article text only exists after JavaScript executes, which is what this does.
-
-    GRACEFUL FALLBACK: returns None (never raises) if Playwright or the Chromium browser is
-    not installed, or if the render fails/ times out — callers then keep their URL-only
-    behavior. Bounded to _MAX_RENDERED_CHARS."""
-    if not url:
-        return None
+def _grokipedia_dedup_skip(url: str) -> bool:
+    """Return True if this page was fetched within the 90-day window (skip the render)."""
     # Cross-entity / cross-phase dedup: if this exact Grokipedia page was already
     # fetched within the 90-day window (e.g. a different, unmerged person record for the
     # same name already rendered it), skip the expensive Playwright render.
@@ -118,9 +110,14 @@ def fetch_grokipedia_rendered(url: str, timeout_ms: int = 30000) -> Optional[str
             logger.debug(
                 "Grokipedia page already searched (<90d) — skip render: %s", url
             )
-            return None
+            return True
     except Exception:  # noqa: BLE001 - never block enrichment
         pass
+    return False
+
+
+def _render_grokipedia_text(url: str, timeout_ms: int) -> Optional[str]:
+    """Render the page with headless Chromium and return raw article text (or None)."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -150,6 +147,35 @@ def fetch_grokipedia_rendered(url: str, timeout_ms: int = 30000) -> Optional[str
     ) as e:  # noqa: BLE001 - render is best-effort; never block enrichment
         logger.warning("Grokipedia headless render failed for %s: %s", url, e)
         return None
+    return text
+
+
+def _finalize_grokipedia(url: str, result: Optional[str]) -> None:
+    """Record the fetch so a duplicate (another entity / phase) is skipped for 90 days."""
+    try:
+        from src.utils import url_registry
+
+        url_registry.finalize_searched(
+            url, relevant=bool(result), context="grokipedia", source="grokipedia"
+        )
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def fetch_grokipedia_rendered(url: str, timeout_ms: int = 30000) -> Optional[str]:
+    """Render a Grokipedia page with headless Chromium (Playwright) and return the article
+    text. Grokipedia is a client-side SPA, so a plain HTTP GET returns an empty shell — the
+    article text only exists after JavaScript executes, which is what this does.
+
+    GRACEFUL FALLBACK: returns None (never raises) if Playwright or the Chromium browser is
+    not installed, or if the render fails/ times out — callers then keep their URL-only
+    behavior. Bounded to _MAX_RENDERED_CHARS."""
+    if not url:
+        return None
+    if _grokipedia_dedup_skip(url):
+        return None
+
+    text = _render_grokipedia_text(url, timeout_ms)
 
     if not text:
         return None
@@ -159,13 +185,5 @@ def fetch_grokipedia_rendered(url: str, timeout_ms: int = 30000) -> Optional[str
         if cleaned.startswith(prefix):
             cleaned = cleaned[len(prefix) :].strip()
     result = cleaned[:_MAX_RENDERED_CHARS] or None
-    # Record the fetch so a duplicate (another entity / phase) is skipped for 90 days.
-    try:
-        from src.utils import url_registry
-
-        url_registry.finalize_searched(
-            url, relevant=bool(result), context="grokipedia", source="grokipedia"
-        )
-    except Exception:  # noqa: BLE001
-        pass
+    _finalize_grokipedia(url, result)
     return result

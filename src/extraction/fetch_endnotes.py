@@ -134,6 +134,42 @@ def _group_by_page(footnotes_meta: List[Dict]) -> Dict[str, List[int]]:
     return pages
 
 
+def _partition_footnotes(
+    footnotes_meta: List[dict],
+) -> tuple[Dict[int, str], List[dict]]:
+    """Split parsed footnotes into (already-have-text, need-HTML-fetch)."""
+    all_footnotes: Dict[int, str] = {}
+    need_fetch: List[dict] = []
+    for fn in footnotes_meta:
+        if not isinstance(fn, dict):
+            continue  # malformed entry — no number/url/text to use or fetch; skip
+        num = fn.get("number")
+        txt = (fn.get("text") or "").strip()
+        if isinstance(num, int) and txt:
+            all_footnotes[num] = txt
+        else:
+            need_fetch.append(fn)
+    return all_footnotes, need_fetch
+
+
+def _fetch_footnotes_via_html(
+    need_fetch: List[dict], all_footnotes: Dict[int, str]
+) -> None:
+    """Fetch remaining footnotes from their source HTML pages, mutating all_footnotes."""
+    pages = _group_by_page(need_fetch)
+    for base_url, numbers in pages.items():
+        html = _fetch_page(base_url)
+        if not html:
+            continue
+
+        page_fns = _parse_footnotes_from_html(html)
+        for num in numbers:
+            if num in page_fns:
+                all_footnotes[num] = page_fns[num]
+            else:
+                logger.debug("Footnote %d not found on %s", num, base_url)
+
+
 def fetch_endnote_texts(
     parsed_file: Path,
 ) -> Dict[int, str]:
@@ -158,30 +194,9 @@ def fetch_endnote_texts(
     # parsed footnotes carry `text`, use it directly and SKIP the fragile HTML re-fetch
     # (no network/NAT dependency, no link-rot). Only numbers whose parsed text is empty
     # fall back to the HTML fetch below (legacy parses that predate the text capture).
-    all_footnotes: Dict[int, str] = {}
-    need_fetch: List[dict] = []
-    for fn in footnotes_meta:
-        if not isinstance(fn, dict):
-            continue  # malformed entry — no number/url/text to use or fetch; skip
-        num = fn.get("number")
-        txt = (fn.get("text") or "").strip()
-        if isinstance(num, int) and txt:
-            all_footnotes[num] = txt
-        else:
-            need_fetch.append(fn)
+    all_footnotes, need_fetch = _partition_footnotes(footnotes_meta)
 
-    pages = _group_by_page(need_fetch)
-    for base_url, numbers in pages.items():
-        html = _fetch_page(base_url)
-        if not html:
-            continue
-
-        page_fns = _parse_footnotes_from_html(html)
-        for num in numbers:
-            if num in page_fns:
-                all_footnotes[num] = page_fns[num]
-            else:
-                logger.debug("Footnote %d not found on %s", num, base_url)
+    _fetch_footnotes_via_html(need_fetch, all_footnotes)
 
     if all_footnotes:
         all_footnotes = _resolve_cross_references(all_footnotes)

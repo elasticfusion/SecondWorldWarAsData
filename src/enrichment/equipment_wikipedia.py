@@ -209,6 +209,66 @@ def _fetch_license(filename: str) -> Optional[str]:
     return None
 
 
+def _apply_equipment_wikipedia(rec, result):
+    """Stamp last-checked marker always; fold in result fields on a hit (negative-cache on miss)."""
+    # Stamp a last-checked marker even on a miss, so we don't re-pull next run.
+    from datetime import date
+
+    rec["wikipedia_checked_at"] = date.today().isoformat()
+    if result:
+        rec["wikipedia_url"] = result["wikipedia_url"]
+        rec["wikipedia_extract"] = result["extract"][:500]
+        if result.get("image"):
+            rec.setdefault("images", []).insert(
+                0,
+                {
+                    "url": result["image"],
+                    "license": result["license"],
+                    "source": "wikipedia",
+                },
+            )
+        rec["enrichment_status"] = "enriched"
+    return rec
+
+
+def _enrich_one_equipment_file(f: Path) -> tuple[bool, bool]:
+    """Process one equipment file. Returns (did_lookup, enriched).
+
+    `did_lookup` is True only when the file passed all gates and a Wikipedia lookup ran
+    (the point at which the original applies its 1s rate-limit sleep). Preserves skip
+    conditions (parse-fail, already-checked, missing/short name)."""
+    try:
+        data = json.loads(f.read_text(encoding="utf-8"))
+    except Exception:
+        return False, False
+
+    # Gate: skip if already enriched (has a wikipedia_url) OR checked recently. Avoids
+    # redundant Wikipedia re-pulls on every Phase-3 run.
+    if data.get("wikipedia_url") or data.get("wikipedia_checked_at"):
+        return False, False
+
+    name = data.get("common_name", "")
+    if not name or len(name) < 3:
+        return False, False
+
+    result = search_equipment_wikipedia(name)
+
+    def _apply(rec, _result=result):
+        return _apply_equipment_wikipedia(rec, _result)
+
+    from src.enrichment.enrich_write import update_enriched
+
+    update_enriched(f, "equipment", _apply)
+    if result:
+        logger.info(
+            "  ✓ Wikipedia enriched equipment: %s → %s",
+            name,
+            result["wikipedia_url"],
+        )
+        return True, True
+    return True, False
+
+
 def enrich_all_equipment_wikipedia(
     equipment_dir: Path, max_items: Optional[int] = None
 ) -> int:
@@ -221,53 +281,11 @@ def enrich_all_equipment_wikipedia(
             continue
         if max_items and enriched >= max_items:
             break
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-
-        # Gate: skip if already enriched (has a wikipedia_url) OR checked recently. Avoids
-        # redundant Wikipedia re-pulls on every Phase-3 run.
-        if data.get("wikipedia_url") or data.get("wikipedia_checked_at"):
-            continue
-
-        name = data.get("common_name", "")
-        if not name or len(name) < 3:
-            continue
-
-        result = search_equipment_wikipedia(name)
-
-        def _apply(rec, _result=result):
-            # Stamp a last-checked marker even on a miss, so we don't re-pull next run.
-            from datetime import date
-
-            rec["wikipedia_checked_at"] = date.today().isoformat()
-            if _result:
-                rec["wikipedia_url"] = _result["wikipedia_url"]
-                rec["wikipedia_extract"] = _result["extract"][:500]
-                if _result.get("image"):
-                    rec.setdefault("images", []).insert(
-                        0,
-                        {
-                            "url": _result["image"],
-                            "license": _result["license"],
-                            "source": "wikipedia",
-                        },
-                    )
-                rec["enrichment_status"] = "enriched"
-            return rec
-
-        from src.enrichment.enrich_write import update_enriched
-
-        update_enriched(f, "equipment", _apply)
-        if result:
+        did_lookup, was_enriched = _enrich_one_equipment_file(f)
+        if was_enriched:
             enriched += 1
-            logger.info(
-                "  ✓ Wikipedia enriched equipment: %s → %s",
-                name,
-                result["wikipedia_url"],
-            )
-        time.sleep(1)  # Rate limit
+        if did_lookup:
+            time.sleep(1)  # Rate limit
 
     logger.info("Equipment Wikipedia enrichment: %d enriched", enriched)
     return enriched

@@ -430,21 +430,37 @@ def _resolve_arm(arm, expanded, service, echelon, is_cc, infantry_default):
     return None
 
 
-def unit_keys_match(k1: UnitKey, k2: UnitKey) -> tuple[bool, str]:
-    """Apply the match rule. Returns (match, reason)."""
+def _unit_key_attr_mismatch(k1: UnitKey, k2: UnitKey) -> Optional[str]:
+    """Return an arm/echelon mismatch reason (both sides specified + differing), else None."""
+    if k1.arm and k2.arm and k1.arm != k2.arm:
+        return f"arm mismatch ({k1.arm} vs {k2.arm})"
+    if k1.echelon and k2.echelon and k1.echelon != k2.echelon:
+        return f"echelon mismatch ({k1.echelon} vs {k2.echelon})"
+    return None
+
+
+def _unit_key_mismatch_reason(k1: UnitKey, k2: UnitKey) -> Optional[str]:
+    """Return the first disqualifying reason (in priority order), or None if the keys match.
+
+    Order is significant: earlier checks short-circuit later ones (identity semantics).
+    """
     if k1.numbers != k2.numbers:
-        return False, "number mismatch"
+        return "number mismatch"
     if not k1.numbers:
-        return False, "no unit number"
+        return "no unit number"
     # A bare Combat Command (letter, no parent division) is underspecified — can't match.
     if _is_bare_combat_command(k1.numbers):
-        return False, "combat command without parent division (underspecified)"
+        return "combat command without parent division (underspecified)"
     if k1.service != k2.service:
-        return False, f"service mismatch ({k1.service} vs {k2.service})"
-    if k1.arm and k2.arm and k1.arm != k2.arm:
-        return False, f"arm mismatch ({k1.arm} vs {k2.arm})"
-    if k1.echelon and k2.echelon and k1.echelon != k2.echelon:
-        return False, f"echelon mismatch ({k1.echelon} vs {k2.echelon})"
+        return f"service mismatch ({k1.service} vs {k2.service})"
+    return _unit_key_attr_mismatch(k1, k2)
+
+
+def unit_keys_match(k1: UnitKey, k2: UnitKey) -> tuple[bool, str]:
+    """Apply the match rule. Returns (match, reason)."""
+    reason = _unit_key_mismatch_reason(k1, k2)
+    if reason is not None:
+        return False, reason
     arm = k1.arm or k2.arm or "unspecified"
     ech = k1.echelon or k2.echelon or "unspecified"
     return (

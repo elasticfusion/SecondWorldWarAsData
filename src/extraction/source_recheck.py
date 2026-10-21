@@ -111,24 +111,29 @@ class SourceRechecker:
             f"guess):\n{{{asks}}}\n\nPassage:\n{source}\n\nReturn ONLY valid JSON."
         )
 
+    def _apply_field(self, record: Dict[str, Any], f: str, val: Any) -> bool:
+        """Attempt to fill one field on the record; return True if stored."""
+        sval = str(val).strip() if val is not None else ""
+        if not (sval and sval.lower() != "null" and not record.get(f)):
+            return False
+        stored: Any = sval
+        if f in self.spec.coerce:
+            try:
+                stored = self.spec.coerce[f](sval)
+            except (ValueError, TypeError):
+                return False  # unparseable for this field -> skip, don't store
+        record[f] = stored
+        record.setdefault("_provenance", {})[f] = {
+            "sourced_from": "original_text",
+            "confidence": self.spec.confidence,
+        }
+        return True
+
     def _apply(self, record: Dict[str, Any], res, needed: List[str]) -> int:
         filled: List[str] = []
         if isinstance(res, dict):
             for f in needed:
-                val = res.get(f)
-                sval = str(val).strip() if val is not None else ""
-                if sval and sval.lower() != "null" and not record.get(f):
-                    stored: Any = sval
-                    if f in self.spec.coerce:
-                        try:
-                            stored = self.spec.coerce[f](sval)
-                        except (ValueError, TypeError):
-                            continue  # unparseable for this field -> skip, don't store
-                    record[f] = stored
-                    record.setdefault("_provenance", {})[f] = {
-                        "sourced_from": "original_text",
-                        "confidence": self.spec.confidence,
-                    }
+                if self._apply_field(record, f, res.get(f)):
                     filled.append(f)
         extra = 0
         if self.spec.post_hook:

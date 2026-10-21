@@ -861,6 +861,42 @@ _WEATHER_CONTENT_KEYS = (
 )
 
 
+def _normalize_weather_mention(m: Any) -> Optional[Dict[str, Any]]:
+    """Normalize one mention into canonical fields; return it, or None to drop."""
+    if not isinstance(m, dict):
+        return None
+    # Normalize descriptive content into the canonical fields so the downstream
+    # guard (_find_or_create rejects null weather_description/original_text) and the
+    # persisted record carry the text that justified keeping this mention.
+    desc = next(
+        (
+            str(m.get(k)).strip()
+            for k in _WEATHER_CONTENT_KEYS
+            if str(m.get(k) or "").strip()
+        ),
+        "",
+    )
+    if not desc:
+        return None  # no descriptive signal at all -> drop
+    if not str(m.get("weather_description") or "").strip():
+        m["weather_description"] = desc
+    if not str(m.get("original_text") or "").strip():
+        m["original_text"] = desc
+    return m
+
+
+def _normalize_weather_mentions(
+    mentions: List[Any],
+) -> List[Dict[str, Any]]:
+    """Normalize descriptive content into canonical fields, dropping signal-less mentions."""
+    kept = []
+    for m in mentions:
+        normalized = _normalize_weather_mention(m)
+        if normalized is not None:
+            kept.append(normalized)
+    return kept
+
+
 def _parse_weather_response(
     response: Dict[str, Any],
 ) -> Dict[str, List[Dict[str, Any]]]:
@@ -872,29 +908,7 @@ def _parse_weather_response(
         fixed = _fix_invalid_ulids(mentions)
         if isinstance(fixed, list):
             mentions = fixed
-        kept = []
-        for m in mentions:
-            if not isinstance(m, dict):
-                continue
-            # Normalize descriptive content into the canonical fields so the downstream
-            # guard (_find_or_create rejects null weather_description/original_text) and the
-            # persisted record carry the text that justified keeping this mention.
-            desc = next(
-                (
-                    str(m.get(k)).strip()
-                    for k in _WEATHER_CONTENT_KEYS
-                    if str(m.get(k) or "").strip()
-                ),
-                "",
-            )
-            if not desc:
-                continue  # no descriptive signal at all -> drop
-            if not str(m.get("weather_description") or "").strip():
-                m["weather_description"] = desc
-            if not str(m.get("original_text") or "").strip():
-                m["original_text"] = desc
-            kept.append(m)
-        result[seid] = kept
+        result[seid] = _normalize_weather_mentions(mentions)
     return result
 
 

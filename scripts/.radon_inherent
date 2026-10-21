@@ -14,24 +14,5 @@ src/utils/url_fetch.py::_do_fetch 004cd9e667d44d6c0ec79a9ab3bc83bb3a8e9364dbecb7
 src/enrichment/places_grok_geocode.py::_toponym_from_prose 30cf7de6df8c1332424f0dc17046a01ad3e5ee02134ba529178c854aa2af1290  # C16: single stateful scanner (run-state + corroboration guard) over shared mutable locals
 
 # --- bulk-seeded C+ backlog (2026-10-20) ---
-src/dedup/unit_key.py::unit_keys_match  e94eaecb65d52d365c90fd4e044945bb6a21d6574af43e2fa1f7f11acad75164  # grandfathered C(15) C+ backlog 2026-10-20
-src/enrichment/award_hall_of_valor.py::HallOfValorSource.lookup  1d690e08db00caa66c2e6f12b6fd1801e9daf21b40175ccb2bbabf9e1db7abb8  # grandfathered C(11) C+ backlog 2026-10-20
-src/enrichment/award_source_pages.py::persist_sourcing_errors  182ffb31bf8d2b7eba5894a2a6a6169e70afca50f7ace36bd19e8022bd7dc6c5  # grandfathered C(12) C+ backlog 2026-10-20
-src/enrichment/equipment_wikipedia.py::enrich_all_equipment_wikipedia  2c31c49fb8dcefe7e66a8c11417375d6041c8585b16707014796a5ed1a4b232a  # grandfathered C(11) C+ backlog 2026-10-20
-src/enrichment/grokipedia.py::fetch_grokipedia_rendered  ee72b746528ea9da938005e25750df805e1d255d18070249cca4d7ef1d97bc55  # grandfathered C(14) C+ backlog 2026-10-20
-src/enrichment/groups_wikipedia.py::enrich_all_groups_wikipedia  eaa1b42a3502ebbf02ba2c1f695c3c406fef8a801d0bdff741ff7dde26df33fe  # grandfathered C(11) C+ backlog 2026-10-20
-src/enrichment/noaa_weather.py::_enrich_weather_file  92ed652c63c9f1077ae88a8a514c6295a019140c116258474a6b0650da6e1db9  # grandfathered C(11) C+ backlog 2026-10-20
-src/enrichment/unit_patch.py::_select_best_patch  2ffaed6d8dd5139493b3c9add8cf129c0a3138162ffe17a70a78fa6b81a4101f  # grandfathered C(11) C+ backlog 2026-10-20
-src/extraction/date_resolution.py::resolve_date_interval  bdaa6694c85bd4c9f0d5c21c8bfdf30a64cb214fecaf4730f88352a355423475  # grandfathered C(11) C+ backlog 2026-10-20
-src/extraction/date_summary.py::_render_mentions  8aa127f26f8ecf785b5f1a00a847197fd4eb1d5de8dca8a950fa0ba3af376ad9  # grandfathered C(13) C+ backlog 2026-10-20
-src/extraction/fetch_endnotes.py::fetch_endnote_texts  fcaeb59c4699ac157fe2d10662674dabd2f6d7c1cc880a9ceb3cecafe9c7eeac  # grandfathered C(13) C+ backlog 2026-10-20
-src/extraction/grok_search_maps.py::verify_map_with_vision  e60faebe89293f86b34e127649581f4011c35372a1797726ad42adf93c54c97a  # grandfathered C(11) C+ backlog 2026-10-20
-src/extraction/logistics.py::_validate_logistics_item  5fd9ef52efc54f4e3ba4be5e0098d0eca18c0ba77ec5444e8010edc6eda383be  # grandfathered C(13) C+ backlog 2026-10-20
-src/extraction/openserp_maps.py::_find_license_text  7ba975e5264bc07fb5b15d62cacf105b1074b8272e7329910ae4997a73d21293  # grandfathered C(11) C+ backlog 2026-10-20
-src/extraction/source_recheck.py::SourceRechecker._apply  b42f8cb144ef1765154c1792d05d84cab0334b060ee5243e1eec4e735bfd5597  # grandfathered C(12) C+ backlog 2026-10-20
-src/extraction/source_section_articles.py::fetch_wikipedia_article  aa1d65db4f5374fbaec3a7dbc7cdd259c2ff3eaf6df8e01702b76d660ca13618  # grandfathered C(14) C+ backlog 2026-10-20
-src/extraction/supplemental_info_pipeline.py::_extract_entity_type  81b176c0d47e7d0914b9be1c457d18743524e31e5da5b0ef98581ea0ca810fe9  # grandfathered C(11) C+ backlog 2026-10-20
-src/extraction/title_memberships.py::validate_membership_dates  93c019d198781714a82ccbbc084f3b5983fde3c3ac6547e3046b2f75c077f20a  # grandfathered C(15) C+ backlog 2026-10-20
-src/extraction/weather_central.py::_parse_weather_response  674574bee70e02853864cba68769252955a9a28fed4e701c7179ee7a9bd97bfa  # grandfathered C(14) C+ backlog 2026-10-20
 
 # --- bulk-seeded C+ backlog (2026-10-20) ---

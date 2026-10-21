@@ -130,6 +130,33 @@ def _resolve_season(prefix: str, rest: str) -> Optional[Tuple[str, str]]:
     return _iso(y, sm, sd), _iso(y, em, ed)
 
 
+def _resolve_bounds(
+    ds: str, date_end: Optional[str]
+) -> Tuple[Optional[Tuple[str, str]], str]:
+    """Mechanically bound a stated date form. Returns (bounds, method)."""
+    bounds: Optional[Tuple[str, str]] = None
+    method = "unresolved"
+
+    # A stated range (date_start..date_end), both plain ISO -> span the two.
+    if date_end:
+        start = _resolve_exact(ds)
+        end = _resolve_exact(date_end.strip().lower())
+        if start and end:
+            bounds, method = (start[0], end[1]), "range"
+
+    if bounds is None:
+        exact = _resolve_exact(ds)
+        if exact:
+            bounds, method = exact, "precision_rule"
+
+    if bounds is None:
+        approx = _resolve_approximate(ds)
+        if approx:
+            bounds, method = approx, "precision_rule"
+
+    return bounds, method
+
+
 def resolve_date_interval(
     date_start: Optional[str],
     date_end: Optional[str] = None,
@@ -155,25 +182,7 @@ def resolve_date_interval(
         return None, None, "unresolved"
     ds = date_start.strip().lower()
 
-    bounds: Optional[Tuple[str, str]] = None
-    method = "unresolved"
-
-    # A stated range (date_start..date_end), both plain ISO -> span the two.
-    if date_end:
-        start = _resolve_exact(ds)
-        end = _resolve_exact(date_end.strip().lower())
-        if start and end:
-            bounds, method = (start[0], end[1]), "range"
-
-    if bounds is None:
-        exact = _resolve_exact(ds)
-        if exact:
-            bounds, method = exact, "precision_rule"
-
-    if bounds is None:
-        approx = _resolve_approximate(ds)
-        if approx:
-            bounds, method = approx, "precision_rule"
+    bounds, method = _resolve_bounds(ds, date_end)
 
     if bounds is None:
         return None, None, "unresolved"

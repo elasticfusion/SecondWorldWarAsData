@@ -103,6 +103,34 @@ class HallOfValorSource(PoliteSource):
                 out.append(u)
         return out[:5]
 
+    def _citations_from_page(
+        self, url: str, html: str, want_name: str, want_award: str
+    ) -> List[AwardCitation]:
+        """Build matching AwardCitations from one recipient page (name/award/WWII filtered)."""
+        page_name = self._page_name(html)
+        if page_name and not _names_match(want_name, _norm(page_name)):
+            return []  # wrong recipient — do not attach
+        results: List[AwardCitation] = []
+        for award_name, citation in self._parse_awards(html):
+            if want_award and _canonical_award(award_name) != want_award:
+                continue
+            if not citation:
+                continue
+            if not _is_wwii_citation(citation):
+                continue  # not a WWII award (e.g. a same-name recipient's 1898 MoH)
+            results.append(
+                AwardCitation(
+                    citation_text=citation,
+                    source_name=self.name,
+                    source_url=url,
+                    retrieved_date=today_iso(),
+                    award=_canonical_award(award_name),
+                    # Name matched the recipient page + (optional) award matched.
+                    verified=True,
+                )
+            )
+        return results
+
     def lookup(self, person_name: str, award_hint: str = "") -> List[AwardCitation]:
         want_award = _canonical_award(award_hint) if award_hint else ""
         want_name = _norm(person_name)
@@ -111,27 +139,7 @@ class HallOfValorSource(PoliteSource):
             html = self._get(url)
             if not html:
                 continue
-            page_name = self._page_name(html)
-            if page_name and not _names_match(want_name, _norm(page_name)):
-                continue  # wrong recipient — do not attach
-            for award_name, citation in self._parse_awards(html):
-                if want_award and _canonical_award(award_name) != want_award:
-                    continue
-                if not citation:
-                    continue
-                if not _is_wwii_citation(citation):
-                    continue  # not a WWII award (e.g. a same-name recipient's 1898 MoH)
-                results.append(
-                    AwardCitation(
-                        citation_text=citation,
-                        source_name=self.name,
-                        source_url=url,
-                        retrieved_date=today_iso(),
-                        award=_canonical_award(award_name),
-                        # Name matched the recipient page + (optional) award matched.
-                        verified=True,
-                    )
-                )
+            results.extend(self._citations_from_page(url, html, want_name, want_award))
         return results
 
     @staticmethod

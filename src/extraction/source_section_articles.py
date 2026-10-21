@@ -52,6 +52,33 @@ def _strip_html(html: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def _build_wiki_article_record(
+    parse: Dict[str, Any], title: str
+) -> Optional[Dict[str, Any]]:
+    """Build the article record from a parsed API payload, or None on empty HTML."""
+    resolved_title = parse.get("title") or title
+    html = (parse.get("text") or {}).get("*", "")
+    if not html:
+        return None
+    extract = _strip_html(html)[:_MAX_WIKI_TEXT] or None
+    # externallinks is the article's cited external URLs — the reference list, raw.
+    ext_links = parse.get("externallinks") or []
+    references: List[Dict[str, Any]] = [
+        {"source": "wikipedia-reference", "url": u}
+        for u in ext_links[:_MAX_REFERENCES]
+        if isinstance(u, str)
+    ]
+    return {
+        "source": "wikipedia",
+        "title": resolved_title,
+        "url": f"https://en.wikipedia.org/wiki/{resolved_title.replace(' ', '_')}",
+        "extract": extract,
+        "references": references or None,
+        "license": _WIKI_LICENSE,
+        "retrieved_at": _today(),
+    }
+
+
 def fetch_wikipedia_article(title: str, timeout: int = 20) -> Optional[Dict[str, Any]]:
     """Fetch a Wikipedia article's bounded text + reference list via action=parse.
 
@@ -78,27 +105,7 @@ def fetch_wikipedia_article(title: str, timeout: int = 20) -> Optional[Dict[str,
         if "error" in data:
             return None
         parse = data.get("parse") or {}
-        resolved_title = parse.get("title") or title
-        html = (parse.get("text") or {}).get("*", "")
-        if not html:
-            return None
-        extract = _strip_html(html)[:_MAX_WIKI_TEXT] or None
-        # externallinks is the article's cited external URLs — the reference list, raw.
-        ext_links = parse.get("externallinks") or []
-        references: List[Dict[str, Any]] = [
-            {"source": "wikipedia-reference", "url": u}
-            for u in ext_links[:_MAX_REFERENCES]
-            if isinstance(u, str)
-        ]
-        return {
-            "source": "wikipedia",
-            "title": resolved_title,
-            "url": f"https://en.wikipedia.org/wiki/{resolved_title.replace(' ', '_')}",
-            "extract": extract,
-            "references": references or None,
-            "license": _WIKI_LICENSE,
-            "retrieved_at": _today(),
-        }
+        return _build_wiki_article_record(parse, title)
     except (requests.RequestException, ValueError) as e:
         logger.debug("wikipedia article fetch failed for %r: %s", title, e)
         return None

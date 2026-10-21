@@ -246,6 +246,63 @@ def enrich_group_from_wikipedia(group: dict) -> bool:
     return True
 
 
+def _apply_group_wikipedia(rec, result):
+    """Stamp wikipedia_checked_at always; fold in result fields when present."""
+    from datetime import date
+
+    rec["wikipedia_checked_at"] = date.today().isoformat()
+    if result:
+        rec["wikipedia_url"] = result["wikipedia_url"]
+        rec["wikipedia_extract"] = result["extract"][:500]
+        if result.get("image"):
+            rec.setdefault("images", []).insert(
+                0,
+                {
+                    "url": result["image"],
+                    "license": result["license"],
+                    "source": "wikipedia",
+                },
+            )
+        rec["enrichment_status"] = "enriched"
+    return rec
+
+
+def _enrich_one_group_file(f: Path) -> tuple[bool, bool]:
+    """Process one group file. Returns (did_lookup, enriched).
+
+    `did_lookup` is True only when the file passed all gates and a Wikipedia lookup ran
+    (the point at which the original code applies its 1s rate-limit sleep). `enriched` is
+    True iff a result was found. Preserves skip conditions (parse-fail, already-checked,
+    missing/short name) and always stamps via update_enriched (negative-cache) on lookup.
+    """
+    try:
+        data = json.loads(f.read_text(encoding="utf-8"))
+    except Exception:
+        return False, False
+
+    if data.get("wikipedia_url") or data.get("wikipedia_checked_at"):
+        return False, False
+
+    name = data.get("group_name", "")
+    if not name or len(name) < 3:
+        return False, False
+
+    result = search_group_wikipedia(name)
+
+    def _apply(rec, _result=result):
+        return _apply_group_wikipedia(rec, _result)
+
+    from src.enrichment.enrich_write import update_enriched
+
+    update_enriched(f, "people_groups", _apply)
+    if result:
+        logger.info(
+            "  ✓ Wikipedia enriched group: %s → %s", name, result["wikipedia_url"]
+        )
+        return True, True
+    return True, False
+
+
 def enrich_all_groups_wikipedia(
     groups_dir: Path, max_items: Optional[int] = None
 ) -> int:
@@ -258,48 +315,11 @@ def enrich_all_groups_wikipedia(
             continue
         if max_items and enriched >= max_items:
             break
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-
-        if data.get("wikipedia_url") or data.get("wikipedia_checked_at"):
-            continue
-
-        name = data.get("group_name", "")
-        if not name or len(name) < 3:
-            continue
-
-        result = search_group_wikipedia(name)
-
-        def _apply(rec, _result=result):
-            from datetime import date
-
-            rec["wikipedia_checked_at"] = date.today().isoformat()
-            if _result:
-                rec["wikipedia_url"] = _result["wikipedia_url"]
-                rec["wikipedia_extract"] = _result["extract"][:500]
-                if _result.get("image"):
-                    rec.setdefault("images", []).insert(
-                        0,
-                        {
-                            "url": _result["image"],
-                            "license": _result["license"],
-                            "source": "wikipedia",
-                        },
-                    )
-                rec["enrichment_status"] = "enriched"
-            return rec
-
-        from src.enrichment.enrich_write import update_enriched
-
-        update_enriched(f, "people_groups", _apply)
-        if result:
+        did_lookup, was_enriched = _enrich_one_group_file(f)
+        if was_enriched:
             enriched += 1
-            logger.info(
-                "  ✓ Wikipedia enriched group: %s → %s", name, result["wikipedia_url"]
-            )
-        time.sleep(1)
+        if did_lookup:
+            time.sleep(1)
 
     logger.info("Groups Wikipedia enrichment: %d enriched", enriched)
     return enriched
