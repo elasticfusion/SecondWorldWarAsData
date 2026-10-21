@@ -122,7 +122,9 @@ are NEW gaps (analyzer-invisible; bandit still 0H/0M). Ranked:
   _contained_entity_path + OBSERV. Original (stale): weather_central._create_new_weather_file +
   casualties._save_casualty build filenames from LLM values without _safe_entity_filename/_contained
   (same class fixed elsewhere). Route both; clamp casualties 'type' to its enum.
-- **[WARNING] Decompression-bomb guard scoped too narrowly** — equipment convert/resize + grok_search_maps
+- **[DONE · PR #493] [WARNING] Decompression-bomb guard scoped too narrowly** — FIXED: hold MAX_IMAGE_PIXELS across
+  the WHOLE decode (verify+convert+resize) in equipment._verify_media_with_vision + grok_search_maps.verify_map_with_vision;
+  cap _compute_image_hash's average_hash decode; DecompressionBombError now caught->reject+OBSERV. Original (stale): equipment convert/resize + grok_search_maps
   restore MAX_IMAGE_PIXELS before the rasterizing convert/resize; equipment._compute_image_hash has no
   cap. Hold the cap across the whole decode block (mirror unit_patch).
 - **[DONE · PR #491] [WARNING] SSRF via url_hygiene bypass (codebase-wide follow-up)** — FIXED. Routed every
