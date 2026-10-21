@@ -108,12 +108,32 @@ def read_scope(output_root: Path, book: str) -> Optional[int]:
     try:
         path = _record_path(output_root, book)
         if path is None or not path.is_file():
+            return None  # legitimately not recorded (e.g. first run) — caller uses the ceiling
+        # The file EXISTS: a parse/validation failure here is a CORRUPT record, which silently
+        # downgrades the scope guard to the weaker magic-50 fallback. Surface it loudly (vs the
+        # benign missing-file case above).
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            n = data.get("section_count")
+            if isinstance(n, int) and n >= 0:
+                return n
+            logger.warning(
+                "OBSERV run_scope.read_corrupt book=%s path=%s section_count=%r — scope guard "
+                "DOWNGRADED to the magic-50 fallback",
+                book,
+                path,
+                n,
+            )
             return None
-        data = json.loads(path.read_text(encoding="utf-8"))
-        n = data.get("section_count")
-        if isinstance(n, int) and n >= 0:
-            return n
-        return None
+        except Exception as e:  # noqa: BLE001 - corrupt existing record
+            logger.warning(
+                "OBSERV run_scope.read_corrupt book=%s path=%s err=%s — scope guard DOWNGRADED "
+                "to the magic-50 fallback",
+                book,
+                path,
+                e,
+            )
+            return None
     except (
         Exception
     ) as e:  # noqa: BLE001 - a bad record must not break the consuming phase
