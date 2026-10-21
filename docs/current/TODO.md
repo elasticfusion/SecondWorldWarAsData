@@ -112,8 +112,11 @@ are NEW gaps (analyzer-invisible; bandit still 0H/0M). Ranked:
   silently yields {} (worse than the ~half-drop just fixed). FIX: re-raise GrokTruncationError from
   those inner fns (before/bypassing the broad except) so the recursive halving actually runs. Pre-
   existing (the old halving was equally never-triggered); #488 made the halving correct + ready.
-- **[HIGH] batch_api.retrieve_results_ordered valid-gate too strict** — requires finish_reason=='stop'
-  but default is 'unknown' -> valid content discarded + re-billed. Accept finish_reason!='length'.
+- **[DONE · PR #490] [HIGH] batch_api.retrieve_results_ordered valid-gate too strict** — required finish_reason=='stop'
+  but default is 'unknown' -> valid content discarded + re-billed. FIXED content-first: BatchResult.ok/status
+  treat non-empty content as valid unless finish_reason=='length' (truncated) or error/empty. Applied to BOTH
+  retrieve paths (_map_ordered_results AND ecs_entrypoint._map_batch_results_by_index — the latter still hardcoded
+  'stop', the identical bug on the async retrieve-only path, caught in review). Original (stale):
 - **[WARNING] Pattern-3 path-traversal INCOMPLETE** — weather_central._create_new_weather_file +
   casualties._save_casualty build filenames from LLM values without _safe_entity_filename/_contained
   (same class fixed elsewhere). Route both; clamp casualties 'type' to its enum.
