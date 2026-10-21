@@ -17,12 +17,6 @@ campaign + PRs #487–#496. NEW/missed gaps (analyzer-invisible; bandit still 0H
 priority order; fix each via branch→gate→concurrent code+security reviews (both PASS)→CI→merge→sync.
 (The DNS-rebinding CRITICAL is DONE — #497 — and moved to §7 COMPLETED.) Ranked:
 
-- **[SUGGESTION · remaining, last §1.0c item] openserp_maps verification-gate image mismatch:**
-  _process_search_result verifies via _verify_map_relevance (which approves an image among map_images[:3])
-  then _download_map_image independently saves map_images[0] — may save an UNVERIFIED image. Thread the
-  vision-APPROVED url from _verify_map_relevance into the download. (prompt single-pass + _submit_ocr
-  validation DONE in #512; award/wayback byte-cap in #511.)
-
 ### 1.1 Data-quality from the clean XChannel run
 
 - **[FIX MERGED · PR #472 — VERIFY on next re-run] equipment extraction persisted 0.** Root cause
@@ -584,6 +578,9 @@ Not-code (deferred): SHAEF OB map gaps (NARA acquisition). Full historical detai
 item is in git history + the dated design docs under `docs/current/` and `docs/archive/`.
 
 ### Phase-2 FRESH RE-REVIEW (2026-10-20b) — DONE items (moved from §1.0c)
+- **[DONE · PR #513] [SUGGESTION] openserp verification-gate image mismatch.** _verify_single_image returns the
+  APPROVED image url; threaded through _verify_map_relevance -> _process_search_result -> _download_map_image,
+  which downloads THAT exact vision-approved image (SSRF-safe) instead of a re-extracted map_images[0].
 - **[DONE · PR #512] [SUGGESTION] prompt single-pass substitution + _submit_ocr SAFE_TITLE validation.**
   render_prompt/render_search_queries single-pass regex (untrusted {token} in a value no longer re-substituted);
   _submit_ocr derives the name via _safe_stem_from_key (intake-invariant). Both below C.
