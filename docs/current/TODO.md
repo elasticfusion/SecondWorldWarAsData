@@ -143,7 +143,10 @@ are NEW gaps (analyzer-invisible; bandit still 0H/0M). Ranked:
   requests.get a DISCOVERED/external URL with allow_redirects=True, bypassing url_hygiene. Route each
   through fetch_text_safe/fetch_image_bytes/clean_url+resolved_host_is_safe. (The CRITICAL vision
   path is fixed in #487; these are the remaining untrusted-fetch sites.)
-- **[WARNING] logistics** — _save_extraction poisons dedup key on write-fail (data loss);
+- **[DONE · PR #494] [WARNING] logistics** — FIXED: _save_extraction adds the dedup key only AFTER a confirmed write
+  (was poisoning on write-fail -> silent drop); _rebuild_index keys on the full ULID-unique stem (was collapsing distinct
+  sub-events); _build_weather_impact uses normalized exact / word-bounded match (was bare substring -> 'rain' matched
+  'terrain'). +OBSERV on each. Original (stale): _save_extraction poisons dedup key on write-fail (data loss);
   _rebuild_index key collapses distinct sub-events; _build_weather_impact bare-substring WeatherID.
 - **[WARNING] core nits** — places._add_event_mention hard-indexes m['Sub_eventID'] (KeyError on
   legacy); people._normalize_name stacked double-lru_cache (inner dead).
