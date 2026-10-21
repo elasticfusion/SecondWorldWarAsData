@@ -230,6 +230,10 @@ def _index_one_file(json_file, id_field, name_field, nested_path, index) -> None
     except Exception as e:  # noqa: BLE001
         logger.debug("Skipping %s: %s", json_file.name, e)
         return
+    if not isinstance(
+        data, dict
+    ):  # a non-dict top-level file -> skip (don't abort the build)
+        return
     entity_id = data.get(id_field)
     name = data.get(name_field) or (
         _nested_get(data, nested_path) if nested_path else None
