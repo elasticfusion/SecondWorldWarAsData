@@ -726,9 +726,11 @@ def process_positive_url(
 # --- Image Search ---
 
 
-def _name_initial_matches(person_name: str, result_title: str) -> bool:
-    """Pre-filter: check if result title could be about this person (first initial + last name)."""
-    # Extract last name and first initial from person
+def _name_last_and_initial(person_name: str) -> "tuple[str, str]":
+    """Extract (last_name, first_initial) — both lowercased — from a person name.
+
+    last_name = last token longer than 2 chars that is not an abbreviation ("J."); first_initial
+    = first letter of the first capitalized token. Either may be "" when absent."""
     parts = person_name.split()
     name_parts = [p for p in parts if len(p) > 2 and not p.endswith(".")]
     last_name = name_parts[-1].lower() if name_parts else ""
@@ -737,6 +739,12 @@ def _name_initial_matches(person_name: str, result_title: str) -> bool:
         if p and p[0].isupper():
             first_initial = p[0].lower()
             break
+    return last_name, first_initial
+
+
+def _name_initial_matches(person_name: str, result_title: str) -> bool:
+    """Pre-filter: check if result title could be about this person (first initial + last name)."""
+    last_name, first_initial = _name_last_and_initial(person_name)
     if not last_name:
         return True  # Can't filter, allow through
     title_lower = result_title.lower()
@@ -869,26 +877,51 @@ def search_academic_sources(
     return sources
 
 
+def _is_oral_history_source(url_lower: str, title_lower: str) -> bool:
+    return "oral history" in title_lower or "interview" in title_lower
+
+
+def _is_video_source(url_lower: str, title_lower: str) -> bool:
+    return (
+        "youtube.com" in url_lower
+        or "video" in title_lower
+        or "documentary" in title_lower
+    )
+
+
+def _is_academic_source(url_lower: str, title_lower: str) -> bool:
+    return (
+        ".edu" in url_lower or "university" in title_lower or "journal" in title_lower
+    )
+
+
+def _is_archive_source(url_lower: str, title_lower: str) -> bool:
+    return "archive" in url_lower or "museum" in url_lower
+
+
+def _is_military_award_source(url_lower: str, title_lower: str) -> bool:
+    return any(
+        s in url_lower for s in ("valor.militarytimes", "homeofheroes", "cmohs.org")
+    )
+
+
+# Ordered (predicate -> label) rules; first match wins, mirroring the original if-chain.
+_SOURCE_CLASSIFIERS = (
+    (_is_oral_history_source, "oral_history"),
+    (_is_video_source, "video"),
+    (_is_academic_source, "academic"),
+    (_is_archive_source, "archive"),
+    (_is_military_award_source, "military_award"),
+)
+
+
 def _classify_source(url: str, title: str) -> str:
     """Classify a source by URL/title patterns."""
     url_lower = url.lower()
     title_lower = title.lower()
-    if "oral history" in title_lower or "interview" in title_lower:
-        return "oral_history"
-    if (
-        "youtube.com" in url_lower
-        or "video" in title_lower
-        or "documentary" in title_lower
-    ):
-        return "video"
-    if ".edu" in url_lower or "university" in title_lower or "journal" in title_lower:
-        return "academic"
-    if "archive" in url_lower or "museum" in url_lower:
-        return "archive"
-    if any(
-        s in url_lower for s in ("valor.militarytimes", "homeofheroes", "cmohs.org")
-    ):
-        return "military_award"
+    for predicate, label in _SOURCE_CLASSIFIERS:
+        if predicate(url_lower, title_lower):
+            return label
     return "other"
 
 
@@ -901,14 +934,9 @@ _AWARD_SITES = {
 }
 
 
-def search_military_awards(
-    person_name: str,
-    openserp_url: str,
-    grok_client: Any = None,
-    facts: str = "",
-) -> List[Dict[str, str]]:
-    """Search the web for military award citations and biographical data."""
-    from src.utils.search_cache import cache_result, get_cached
+def _cached_awards(person_name: str) -> "Optional[List[Dict[str, str]]]":
+    """Return cached awards list for a person, [] for a cached NOT_FOUND, or None if uncached."""
+    from src.utils.search_cache import get_cached
 
     cached = get_cached("openserp_awards", person_name)
     if cached == "NOT_FOUND":
@@ -917,8 +945,25 @@ def search_military_awards(
         import json as _json
 
         return _json.loads(cached)
+    return None
 
-    queries = _render_queries("people", "web_results", name=person_name, facts=facts)
+
+def _store_awards(person_name: str, awards: "List[Dict[str, str]]") -> None:
+    """Persist (or negative-cache) the awards result for a person."""
+    from src.utils.search_cache import cache_result
+
+    if awards:
+        import json as _json
+
+        cache_result("openserp_awards", person_name, _json.dumps(awards))
+    else:
+        cache_result("openserp_awards", person_name, None)
+
+
+def _collect_award_results(
+    person_name: str, queries: "List[str]", openserp_url: str, grok_client: Any
+) -> "List[Dict[str, str]]":
+    """Run award queries, name-gate + Grok-verify hits, and collect up to 5 awards."""
     awards: List[Dict[str, str]] = []
     seen: set = set()
     for query in queries:
@@ -939,13 +984,23 @@ def search_military_awards(
                     break
         if len(awards) >= 5:
             break
+    return awards
 
-    if awards:
-        import json as _json
 
-        cache_result("openserp_awards", person_name, _json.dumps(awards))
-    else:
-        cache_result("openserp_awards", person_name, None)
+def search_military_awards(
+    person_name: str,
+    openserp_url: str,
+    grok_client: Any = None,
+    facts: str = "",
+) -> List[Dict[str, str]]:
+    """Search the web for military award citations and biographical data."""
+    cached = _cached_awards(person_name)
+    if cached is not None:
+        return cached
+
+    queries = _render_queries("people", "web_results", name=person_name, facts=facts)
+    awards = _collect_award_results(person_name, queries, openserp_url, grok_client)
+    _store_awards(person_name, awards)
     return awards
 
 
@@ -1090,19 +1145,25 @@ def _skip_result(url: str) -> bool:
     return is_award_domain(url)
 
 
+def _primary_unit_designation(units: Any) -> str:
+    """First unit designation from a units_served list (designation or unit), "" if none."""
+    for u in units or []:
+        if isinstance(u, dict):
+            desig = u.get("designation") or u.get("unit")
+            if desig:
+                return str(desig)
+    return ""
+
+
 def _person_query_terms(data: Dict) -> str:
     """Build extra query terms from People-JSON facts to sharpen the OpenSERP search:
     primary unit designation + rank + nationality. Keeps the query specific without flooding
     it (one unit, one rank, one nationality)."""
     bp = data.get("biographical_profile") or {}
     terms: List[str] = []
-    units = bp.get("units_served") or []
-    for u in units:
-        if isinstance(u, dict):
-            desig = u.get("designation") or u.get("unit")
-            if desig:
-                terms.append(str(desig))
-                break
+    desig = _primary_unit_designation(bp.get("units_served"))
+    if desig:
+        terms.append(desig)
     rank = bp.get("rank") or data.get("rank")
     if rank:
         terms.append(str(rank))
@@ -1191,6 +1252,42 @@ def enrich_one_person(
     return _verify_and_apply(c, data, name, grok_client, max_images, max_web)
 
 
+def _openserp_recently_searched(data: Dict) -> bool:
+    """True if this record was OpenSERP-searched within the 90-day retention window (so the
+    driver should skip it this run). Mirrors the inline gate each driver used."""
+    if not data.get("openserp_searched"):
+        return False
+    import time as _time
+
+    searched_at = data.get("openserp_searched_at", 0)
+    return bool(searched_at and (_time.time() - searched_at) < 90 * 86400)
+
+
+def _mark_openserp_searched(data: Dict) -> None:
+    """Stamp the record as searched (sets marker + timestamp, increments entities_searched).
+    Behaviour identical to the inline block each driver used."""
+    data["openserp_searched"] = True
+    _metric("entities_searched")
+    import time as _time
+
+    data["openserp_searched_at"] = int(_time.time())
+
+
+def _iter_loadable_records(directory: Path):
+    """Yield (file, parsed_data) for each non-SKIP *.json file in ``directory`` (sorted) that
+    parses as JSON; silently skips the index/skip files and any file that fails to parse.
+    Mirrors the per-file load/skip preamble the drivers shared (the max_items break, which
+    depends on the running enriched count, stays in each driver)."""
+    for f in sorted(directory.glob("*.json")):
+        if f.name in SKIP_FILES:
+            continue
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        yield f, data
+
+
 def enrich_people_with_openserp(
     people_dir: Path,
     openserp_url: str,
@@ -1210,31 +1307,7 @@ def enrich_people_with_openserp(
         return 0
 
     # Pass 1: Collect candidates from OpenSERP
-    candidates: List[Dict] = []
-    for f in sorted(people_dir.glob("*.json")):
-        if f.name in SKIP_FILES:
-            continue
-        if max_items and len(candidates) >= max_items:
-            break
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-
-        if data.get("openserp_searched"):
-            import time as _time
-
-            searched_at = data.get("openserp_searched_at", 0)
-            if searched_at and (_time.time() - searched_at) < 90 * 86400:
-                continue
-
-        name = data.get("name", "")
-        if not name:
-            continue
-
-        person_candidates = _collect_person_candidates(f, name, data, openserp_url)
-
-        candidates.append(person_candidates)
+    candidates = _collect_people_candidates(people_dir, openserp_url, max_items)
 
     logger.info(
         "OpenSERP people: %d candidates collected, verifying with Grok...",
@@ -1254,11 +1327,7 @@ def enrich_people_with_openserp(
         name = c["name"]
         changed = _verify_and_apply(c, data, name, grok_client, max_images, max_web)
 
-        data["openserp_searched"] = True
-        _metric("entities_searched")
-        import time as _time
-
-        data["openserp_searched_at"] = int(_time.time())
+        _mark_openserp_searched(data)
         if write_json_with_lock(c["file"], data, entity="people"):
             if changed:
                 enriched += 1
@@ -1267,6 +1336,33 @@ def enrich_people_with_openserp(
 
     logger.info("OpenSERP people enrichment: %d enriched", enriched)
     return enriched
+
+
+def _collect_people_candidates(
+    people_dir: Path, openserp_url: str, max_items: Optional[int]
+) -> List[Dict]:
+    """Pass 1 of people enrichment: iterate people files, skip the index/recently-searched/
+    nameless ones, and build an OpenSERP candidate bundle per eligible person."""
+    candidates: List[Dict] = []
+    for f in sorted(people_dir.glob("*.json")):
+        if f.name in SKIP_FILES:
+            continue
+        if max_items and len(candidates) >= max_items:
+            break
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+
+        if _openserp_recently_searched(data):
+            continue
+
+        name = data.get("name", "")
+        if not name:
+            continue
+
+        candidates.append(_collect_person_candidates(f, name, data, openserp_url))
+    return candidates
 
 
 def enrich_equipment_with_openserp(
@@ -1292,12 +1388,8 @@ def enrich_equipment_with_openserp(
         except Exception:
             continue
 
-        if data.get("openserp_searched"):
-            import time as _time
-
-            searched_at = data.get("openserp_searched_at", 0)
-            if searched_at and (_time.time() - searched_at) < 90 * 86400:
-                continue
+        if _openserp_recently_searched(data):
+            continue
 
         name = data.get("common_name", data.get("name", ""))
         if not name:
@@ -1309,11 +1401,7 @@ def enrich_equipment_with_openserp(
             _metric("entities_enriched")
             logger.info("  ✓ OpenSERP enriched: %s", name)
 
-        data["openserp_searched"] = True
-        _metric("entities_searched")
-        import time as _time
-
-        data["openserp_searched_at"] = int(_time.time())
+        _mark_openserp_searched(data)
         write_json_with_lock(f, data, entity="equipment")
 
     logger.info("OpenSERP equipment enrichment: %d enriched", enriched)
@@ -1370,46 +1458,41 @@ def enrich_source_sections_with_openserp(
         return 0
 
     enriched = 0
-    for f in sorted(source_section_dir.glob("*.json")):
-        if f.name in SKIP_FILES:
-            continue
+    for f, data in _iter_loadable_records(source_section_dir):
         if max_items and enriched >= max_items:
             break
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-
-        operation = data.get("operation")
-        if not operation or not operation.get("name"):
-            continue  # null-over-fake: no operation -> nothing to search
-
-        if data.get("openserp_searched"):
-            import time as _time
-
-            searched_at = data.get("openserp_searched_at", 0)
-            if searched_at and (_time.time() - searched_at) < 90 * 86400:
-                continue
-
-        op_name = operation["name"]
-        before = len(data.get("primary_sources") or [])
-        changed = enrich_one_source_section(data, openserp_url, grok_client)
-        if changed:
-            added_count = len(data.get("primary_sources") or []) - before
+        if _process_one_source_section(f, data, openserp_url, grok_client):
             enriched += 1
-            _metric("entities_enriched")
-            logger.info(
-                "  ✓ OpenSERP primary sources for %s: +%d", op_name, added_count
-            )
-
-        data["openserp_searched"] = True
-        _metric("entities_searched")
-        import time as _time
-
-        data["openserp_searched_at"] = int(_time.time())
-        write_json_with_lock(f, data, entity="source_section")
 
     logger.info("OpenSERP source_section enrichment: %d enriched", enriched)
+    return enriched
+
+
+def _process_one_source_section(
+    f: Path, data: Dict, openserp_url: str, grok_client: Any
+) -> bool:
+    """Gate + enrich + persist one source_section record. Returns True if it was enriched
+    (so the driver increments its count). Records with no operation / recently searched are
+    skipped (persisted unchanged only when searched)."""
+    operation = data.get("operation")
+    if not operation or not operation.get("name"):
+        return False  # null-over-fake: no operation -> nothing to search
+
+    if _openserp_recently_searched(data):
+        return False
+
+    op_name = operation["name"]
+    before = len(data.get("primary_sources") or [])
+    changed = enrich_one_source_section(data, openserp_url, grok_client)
+    enriched = False
+    if changed:
+        added_count = len(data.get("primary_sources") or []) - before
+        enriched = True
+        _metric("entities_enriched")
+        logger.info("  ✓ OpenSERP primary sources for %s: +%d", op_name, added_count)
+
+    _mark_openserp_searched(data)
+    write_json_with_lock(f, data, entity="source_section")
     return enriched
 
 
@@ -1520,36 +1603,22 @@ def enrich_groups_with_openserp(
         return 0
 
     enriched = 0
-    for f in sorted(groups_dir.glob("*.json")):
-        if f.name in SKIP_FILES:
-            continue
+    for f, data in _iter_loadable_records(groups_dir):
         if max_items and enriched >= max_items:
             break
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:
-            continue
 
         name = data.get("group_name", "")
         if not name or len(name) < 3:
             continue
 
-        if data.get("openserp_searched"):
-            import time as _time
-
-            searched_at = data.get("openserp_searched_at", 0)
-            if searched_at and (_time.time() - searched_at) < 90 * 86400:
-                continue
+        if _openserp_recently_searched(data):
+            continue
 
         changed = enrich_one_group(
             data, openserp_url, grok_client, output_root=groups_dir.parent
         )
 
-        data["openserp_searched"] = True
-        _metric("entities_searched")
-        import time as _time
-
-        data["openserp_searched_at"] = int(_time.time())
+        _mark_openserp_searched(data)
         if write_json_with_lock(f, data, entity="people_groups"):
             if changed:
                 enriched += 1
@@ -1579,6 +1648,29 @@ def enrich_one_group(
     if not name or len(name) < 3:
         return False
     nationality = data.get("nationality") or ""
+    changed = _apply_group_categories(
+        data, name, nationality, openserp_url, grok_client
+    )
+    # Unit patch (ARTIFACT_STORE_DESIGN.md M0): download + VISION-verify + durably
+    # store the SINGLE highest-resolution shoulder-sleeve insignia for this unit.
+    # Only run once (null-over-fake: absent until a patch is confirmed). Fail-safe.
+    if _apply_group_unit_patch(
+        data, name, nationality, openserp_url, grok_client, output_root
+    ):
+        changed = True
+    return changed
+
+
+def _apply_group_categories(
+    data: Dict,
+    name: str,
+    nationality: str,
+    openserp_url: str,
+    grok_client: Any,
+) -> bool:
+    """Run each people_groups query category (images/web_results/veterans_association), dedup
+    against existing entries, and append new findings. Returns True if anything was added.
+    """
     changed = False
     for category, field in (
         ("images", "images"),
@@ -1597,27 +1689,37 @@ def enrich_one_group(
             data[field] = existing + added
             _metric("items_added", len(added))
             changed = True
-
-    # Unit patch (ARTIFACT_STORE_DESIGN.md M0): download + VISION-verify + durably
-    # store the SINGLE highest-resolution shoulder-sleeve insignia for this unit.
-    # Only run once (null-over-fake: absent until a patch is confirmed). Fail-safe.
-    if not data.get("unit_patch"):
-        try:
-            patch = _acquire_group_unit_patch(
-                name,
-                nationality,
-                data.get("GroupID", ""),
-                openserp_url,
-                grok_client,
-                output_root,
-            )
-            if patch:
-                data["unit_patch"] = patch
-                _metric("items_added", 1)
-                changed = True
-        except Exception as e:  # noqa: BLE001 - never block group enrichment
-            logger.debug("unit patch acquisition failed for %s: %s", name, e)
     return changed
+
+
+def _apply_group_unit_patch(
+    data: Dict,
+    name: str,
+    nationality: str,
+    openserp_url: str,
+    grok_client: Any,
+    output_root: Optional[Path],
+) -> bool:
+    """Acquire + store a unit patch if the record has none yet. Returns True if one was added.
+    Fail-safe: a patch-acquisition error never blocks group enrichment."""
+    if data.get("unit_patch"):
+        return False
+    try:
+        patch = _acquire_group_unit_patch(
+            name,
+            nationality,
+            data.get("GroupID", ""),
+            openserp_url,
+            grok_client,
+            output_root,
+        )
+        if patch:
+            data["unit_patch"] = patch
+            _metric("items_added", 1)
+            return True
+    except Exception as e:  # noqa: BLE001 - never block group enrichment
+        logger.debug("unit patch acquisition failed for %s: %s", name, e)
+    return False
 
 
 def _acquire_group_unit_patch(
@@ -1699,35 +1801,21 @@ def enrich_places_with_openserp(
         return 0
 
     enriched = 0
-    for f in sorted(places_dir.glob("*.json")):
-        if f.name in SKIP_FILES:
-            continue
+    for f, data in _iter_loadable_records(places_dir):
         if max_items and enriched >= max_items:
             break
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:
-            continue
 
         variants = place_name_variants(data)
         if not variants:
             continue
 
-        if data.get("openserp_searched"):
-            import time as _time
-
-            searched_at = data.get("openserp_searched_at", 0)
-            if searched_at and (_time.time() - searched_at) < 90 * 86400:
-                continue
+        if _openserp_recently_searched(data):
+            continue
 
         primary = variants[0]
         changed = enrich_one_place(data, openserp_url, grok_client)
 
-        data["openserp_searched"] = True
-        _metric("entities_searched")
-        import time as _time
-
-        data["openserp_searched_at"] = int(_time.time())
+        _mark_openserp_searched(data)
         if write_json_with_lock(f, data, entity="places"):
             if changed:
                 enriched += 1

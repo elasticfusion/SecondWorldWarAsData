@@ -39,17 +39,7 @@ def _looks_like_citation(entry: Dict[str, Any]) -> bool:
     """
     if _has_structured_citation_fields(entry):
         return True
-    citation = entry.get("citation") or {}
-    verbatim = str(entry.get("verbatim_reference") or citation.get("verbatim") or "")
-    if not verbatim.strip():
-        # Deterministic-pass records (the source-url/provenance split) carry the verbatim
-        # on the MENTION, not at top level — fall back to it so the citation detector sees
-        # the real text (otherwise every deterministic record is wrongly "not_citation").
-        for m in entry.get("mentions") or []:
-            mv = str(m.get("verbatim_reference") or "")
-            if mv.strip():
-                verbatim = mv
-                break
+    verbatim = _entry_verbatim(entry)
     if not verbatim.strip():
         # Nothing structured and no text → nothing to resolve; don't send to NARA.
         return False
@@ -143,6 +133,31 @@ BOOK_TYPES = {"book", "monograph", "unit history"}
 ARTICLE_TYPES = {"journal article", "periodical", "newspaper article"}
 
 
+def _apply_local_holding(entry: Dict[str, Any], holdings: Any) -> bool:
+    """Short-circuit to a locally-held source, if any. Returns True if the entry was resolved
+    here (caller should return immediately). PROCESSED holdings -> resolved; raw UNPROCESSED
+    staging files -> held_unprocessed (NOT a clean resolution)."""
+    if not holdings:
+        return False
+    hit = find_local_holding(entry, holdings)
+    if not hit:
+        return False
+    local_path, kind = hit
+    entry["local_source_path"] = local_path
+    if kind == "processed":
+        entry["search_status"] = "resolved"
+        entry["search_source"] = "local_holding"
+        entry["availability"] = "local"
+        logger.debug("Resolved from processed local holding: %s", local_path)
+    else:
+        # Raw source on hand but not ingested — flag for the processing
+        # queue rather than claiming resolution.
+        entry["search_status"] = "held_unprocessed"
+        entry["search_source"] = "local_holding_unprocessed"
+        logger.debug("Held but unprocessed: %s", local_path)
+    return True
+
+
 def resolve_bibliography_entry(
     entry: Dict[str, Any],
     grok_client: Any = None,
@@ -163,24 +178,8 @@ def resolve_bibliography_entry(
     # holdings (ingested content exists -> resolved) from raw UNPROCESSED staging
     # files (we have the source but it still needs the pipeline -> held_unprocessed,
     # NOT a clean resolution).
-    holdings = (config or {}).get("holdings_index")
-    if holdings:
-        hit = find_local_holding(entry, holdings)
-        if hit:
-            local_path, kind = hit
-            entry["local_source_path"] = local_path
-            if kind == "processed":
-                entry["search_status"] = "resolved"
-                entry["search_source"] = "local_holding"
-                entry["availability"] = "local"
-                logger.debug("Resolved from processed local holding: %s", local_path)
-            else:
-                # Raw source on hand but not ingested — flag for the processing
-                # queue rather than claiming resolution.
-                entry["search_status"] = "held_unprocessed"
-                entry["search_source"] = "local_holding_unprocessed"
-                logger.debug("Held but unprocessed: %s", local_path)
-            return entry
+    if _apply_local_holding(entry, (config or {}).get("holdings_index")):
+        return entry
 
     # Guard: narrative prose misclassified as a document reference should not be
     # sent to NARA/online resolvers. Mark it distinctly (not "not_found", which
@@ -293,18 +292,7 @@ def _apply_result(entry: Dict, result: Optional[Tuple]) -> None:
         return
     url, source, extra = result
     if url:
-        entry.setdefault("resource_urls", []).append(url)
-        # Add PDF URL from metadata if available
-        if extra and extra.get("pdf_url"):
-            pdf_url = extra.pop("pdf_url")
-            if pdf_url not in entry.get("resource_urls", []):
-                entry["resource_urls"].append(pdf_url)
-        entry["search_source"] = source
-        entry["availability"] = "online"
-        entry["search_status"] = "resolved"
-        # Merge additional metadata
-        if extra:
-            entry.setdefault("source_metadata", {}).update(extra)
+        _apply_resolved_url(entry, url, source, extra)
     elif extra:
         entry.update(extra)
     # No online URL found. If the entry carries an archive_reference_number (already held, or
@@ -317,6 +305,25 @@ def _apply_result(entry: Dict, result: Optional[Tuple]) -> None:
             _sm.get("canonical_title")
         )
         entry["search_status"] = "reference_identified" if identified else "not_found"
+
+
+def _apply_resolved_url(
+    entry: Dict, url: str, source: str, extra: Optional[Dict]
+) -> None:
+    """Record a resolved online URL (+ optional PDF url from metadata) onto the entry and merge
+    any additional source metadata. Sets availability/status to online/resolved."""
+    entry.setdefault("resource_urls", []).append(url)
+    # Add PDF URL from metadata if available
+    if extra and extra.get("pdf_url"):
+        pdf_url = extra.pop("pdf_url")
+        if pdf_url not in entry.get("resource_urls", []):
+            entry["resource_urls"].append(pdf_url)
+    entry["search_source"] = source
+    entry["availability"] = "online"
+    entry["search_status"] = "resolved"
+    # Merge additional metadata
+    if extra:
+        entry.setdefault("source_metadata", {}).update(extra)
 
 
 def _resolve_archive(entry, citation, grok_client, config):
@@ -558,18 +565,7 @@ def _search_online_sources(
     """
     findings: "list[Tuple[str, str]]" = []
 
-    # Deterministic bibliography records carry title="Unknown" (real citation text lives on the
-    # mention/verbatim; Grok fills alt_title). Compute a MEANINGFUL search string once for all
-    # sources: Grok-expanded alt_title -> real title -> verbatim. Passing "Unknown" previously
-    # made archive.org/Gutenberg return empty candidates (short-length guard).
-    alt_title = (entry.get("citation") or {}).get("alt_title") or ""
-    search_title = next(
-        (t for t in (alt_title, title, verbatim) if t and t != "Unknown"), verbatim
-    )
-    author = (entry.get("citation") or {}).get("author") or ""
-    if isinstance(author, list):
-        author = ", ".join(a for a in author if a)
-    query = verbatim[:300] or search_title
+    search_title, author, query = _online_search_params(entry, verbatim, title)
 
     # Each source uses the same pattern (fetch candidates -> Grok-verify -> keep verified),
     # extracted into its own helper so this aggregator stays flat. Order = source priority.
@@ -588,6 +584,29 @@ def _search_online_sources(
     # Primary finding keeps the existing single-tuple contract (_apply_result appends it too,
     # which the dedup above already guards against).
     return findings[0]
+
+
+def _online_search_params(
+    entry: Dict, verbatim: str, title: str
+) -> "Tuple[str, str, str]":
+    """Compute (search_title, author, query) for the online-copy aggregator.
+
+    Deterministic bibliography records carry title="Unknown" (real citation text lives on the
+    mention/verbatim; Grok fills alt_title). search_title = Grok-expanded alt_title -> real
+    title -> verbatim (never "Unknown"). author is comma-joined if a list. query = verbatim
+    (capped) or the search_title fallback."""
+    alt_title = (entry.get("citation") or {}).get("alt_title") or ""
+    search_title = _pick_meaningful_title(alt_title, title, verbatim)
+    author = _joined_author((entry.get("citation") or {}).get("author") or "")
+    query = verbatim[:300] or search_title
+    return search_title, author, query
+
+
+def _joined_author(author: Any) -> str:
+    """Comma-join a list author into a single string; pass through a non-list unchanged."""
+    if isinstance(author, list):
+        return ", ".join(a for a in author if a)
+    return author
 
 
 def _aggregate_findings(entry: Dict, findings: "list[Tuple[str, str]]") -> None:
@@ -629,16 +648,32 @@ def _find_in_nara(
         query, nara_key, grok_client, verbatim, record_group_number=rg_num
     )
     if not url:
-        alt_title = (entry.get("citation") or {}).get("alt_title") or ""
-        if alt_title and alt_title != query:
-            url = _search_nara(
-                alt_title[:100],
-                nara_key,
-                grok_client,
-                verbatim,
-                record_group_number=rg_num,
-            )
+        url = _retry_nara_alt_title(
+            entry, query, nara_key, grok_client, verbatim, rg_num
+        )
     return [(url, "nara_catalog")] if url else []
+
+
+def _retry_nara_alt_title(
+    entry: Dict,
+    query: str,
+    nara_key: str,
+    grok_client: Any,
+    verbatim: str,
+    rg_num: Optional[int],
+) -> Optional[str]:
+    """Retry the NARA catalog search with the Grok-expanded alt_title (when it differs from the
+    first query). Returns the resolved URL or None."""
+    alt_title = (entry.get("citation") or {}).get("alt_title") or ""
+    if alt_title and alt_title != query:
+        return _search_nara(
+            alt_title[:100],
+            nara_key,
+            grok_client,
+            verbatim,
+            record_group_number=rg_num,
+        )
+    return None
 
 
 def _find_in_openserp(
@@ -836,12 +871,18 @@ def _openserp_search_title(entry: Optional[Dict], ref: str) -> "Tuple[str, str]"
     if not entry:
         return ref, ""
     citation = entry.get("citation") or {}
-    alt = citation.get("alt_title") or ""
-    real_title = citation.get("title") or ""
+    title = _pick_meaningful_title(
+        citation.get("alt_title") or "", citation.get("title") or "", ref
+    )
+    return title, (citation.get("author") or "")
+
+
+def _pick_meaningful_title(alt: str, real_title: str, ref: str) -> str:
+    """First non-empty, non-'Unknown' of (alt_title, real_title, ref); falls back to ref."""
     title = next((t for t in (alt, real_title, ref) if t and t != "Unknown"), ref)
     if not title or title == "Unknown":
         title = ref
-    return title, (citation.get("author") or "")
+    return title
 
 
 def _verify_openserp_results(
@@ -1486,7 +1527,30 @@ def _search_nara(
     if cached:
         return cached
 
-    # Rate limit: NARA API allows ~10 requests/minute
+    _nara_rate_limit()
+
+    try:
+        resolved_url, transient = _execute_nara_query(
+            query, api_key, grok_client, verbatim, record_group_number, cache_q
+        )
+        if resolved_url:
+            cache_result("nara", cache_q, resolved_url)
+            return resolved_url
+        # Negative-cache ONLY a genuine not-found. A transient outcome (429 / non-200 /
+        # HTML-shell invalid-query / JSON-parse error — all signalled by transient=True) must
+        # NOT be negative-cached, so a retry can still succeed next run.
+        if not transient:
+            cache_result("nara", cache_q, None)
+        return None
+    except Exception as e:
+        logger.debug("NARA search failed: %s", e)
+        cache_result("nara", cache_q, None)
+        return None
+
+
+def _nara_rate_limit() -> None:
+    """Throttle NARA calls to ~10/min via a function-attribute last-call timestamp on
+    _search_nara (behaviour identical to the prior inline block)."""
     import time
 
     if not hasattr(_search_nara, "_last_call"):
@@ -1496,47 +1560,54 @@ def _search_nara(
         time.sleep(6 - elapsed)
     _search_nara._last_call = time.time()  # type: ignore[attr-defined]
 
-    try:
-        session = get_session()
-        safe_q = _sanitize_nara_query(query)
-        if not safe_q:
-            logger.info(
-                "OBSERV nara.query skipped=empty_after_sanitize raw=%r",
-                _CTRL.sub(" ", query or "")[:60],
-            )
-            cache_result("nara", cache_q, None)
-            return None
-        params: Dict[str, str] = {"q": safe_q, "limit": "5"}
-        if record_group_number:
-            params["recordGroupNumber"] = str(record_group_number)
-        resp = session.get(
-            "https://catalog.archives.gov/api/v2/records/search",
-            params=params,
-            headers={"x-api-key": api_key, "Accept": "application/json"},
-            timeout=30,
-        )
-        payload = _interpret_nara_response(resp, safe_q)
-        if payload is None:
-            return None
-        results = payload.get("body", {}).get("hits", {}).get("hits", [])
-        total = payload.get("body", {}).get("hits", {}).get("total", {})
-        total_val = total.get("value") if isinstance(total, dict) else total
-        ctype = (resp.headers.get("Content-Type") or "").split(";")[0]
+
+def _execute_nara_query(
+    query: str,
+    api_key: str,
+    grok_client: Any,
+    verbatim: str,
+    record_group_number: Optional[int],
+    cache_q: str,
+) -> Tuple[Optional[str], bool]:
+    """Issue the NARA catalog HTTP request, interpret the response, OBSERV-log, and verify hits.
+    Returns ``(resolved_url, transient)``: ``resolved_url`` is the catalog URL or None, and
+    ``transient`` is True when the None result is a TRANSIENT/invalid-query outcome (429 /
+    non-200 / HTML-shell / JSON-parse error) that the caller must NOT negative-cache. An empty-
+    after-sanitize query is a genuine (non-transient) no-result and returns (None, False).
+    """
+    session = get_session()
+    safe_q = _sanitize_nara_query(query)
+    if not safe_q:
         logger.info(
-            "OBSERV nara.query status=200 content_type=%s hits=%s returned=%d q=%r",
-            ctype,
-            total_val,
-            len(results),
-            safe_q[:60],
+            "OBSERV nara.query skipped=empty_after_sanitize raw=%r",
+            _CTRL.sub(" ", query or "")[:60],
         )
-        resolved_url = _verify_nara_hits(results, query, verbatim, safe_q, grok_client)
-        if resolved_url:
-            cache_result("nara", cache_q, resolved_url)
-            return resolved_url
-    except Exception as e:
-        logger.debug("NARA search failed: %s", e)
-    cache_result("nara", cache_q, None)
-    return None
+        return None, False
+    params: Dict[str, str] = {"q": safe_q, "limit": "5"}
+    if record_group_number:
+        params["recordGroupNumber"] = str(record_group_number)
+    resp = session.get(
+        "https://catalog.archives.gov/api/v2/records/search",
+        params=params,
+        headers={"x-api-key": api_key, "Accept": "application/json"},
+        timeout=30,
+    )
+    payload = _interpret_nara_response(resp, safe_q)
+    if payload is None:
+        # Transient / invalid-query — do NOT negative-cache (retry can succeed next run).
+        return None, True
+    results = payload.get("body", {}).get("hits", {}).get("hits", [])
+    total = payload.get("body", {}).get("hits", {}).get("total", {})
+    total_val = total.get("value") if isinstance(total, dict) else total
+    ctype = (resp.headers.get("Content-Type") or "").split(";")[0]
+    logger.info(
+        "OBSERV nara.query status=200 content_type=%s hits=%s returned=%d q=%r",
+        ctype,
+        total_val,
+        len(results),
+        safe_q[:60],
+    )
+    return _verify_nara_hits(results, query, verbatim, safe_q, grok_client)
 
 
 def _verify_nara_hits(
@@ -1545,10 +1616,12 @@ def _verify_nara_hits(
     verbatim: str,
     safe_q: str,
     grok_client: Any,
-) -> Optional[str]:
+) -> Tuple[Optional[str], bool]:
     """Iterate NARA search hits: cheap token-gate, then a Grok relevance verify, returning the
     catalog RECORD page (/id/<naId>) of the first accepted hit (NOT a page-level objectUrl — the
-    /id page presents ALL pages + the description). Returns None if nothing verifies."""
+    /id page presents ALL pages + the description). Returns ``(url, False)`` on a verified match
+    and ``(None, False)`` when nothing verifies (a genuine not-found — non-transient).
+    """
     for hit in results:
         source = hit.get("_source", {})
         record = source.get("record", source)
@@ -1591,8 +1664,8 @@ def _verify_nara_hits(
             n_objs,
             safe_q[:50],
         )
-        return url
-    return None
+        return url, False
+    return None, False
 
 
 # --- Books ---
@@ -1836,18 +1909,25 @@ def _citation_key(d: Dict[str, Any]) -> str:
     mention/alt_title fallback EVERY such record keys to '|unknown' and 15/16 wrongly
     collapse in the resolver dedup (only one ever reaches NARA)."""
     cit = d.get("citation") or {}
-    verbatim = str(d.get("verbatim_reference") or cit.get("verbatim") or "").strip()
-    if not verbatim:
-        for m in d.get("mentions") or []:
-            mv = str(m.get("verbatim_reference") or "").strip()
-            if mv:
-                verbatim = mv
-                break
+    verbatim = _stripped_verbatim(d, cit)
     return (
         verbatim
         or str(cit.get("alt_title") or "").strip()
         or f"{cit.get('author', '')}|{cit.get('title', '')}".strip()
     ).lower()
+
+
+def _stripped_verbatim(d: Dict[str, Any], cit: Dict[str, Any]) -> str:
+    """Stripped verbatim text for the dedup key: top-level verbatim_reference / citation.verbatim,
+    else the first non-empty mention verbatim_reference, else ""."""
+    verbatim = str(d.get("verbatim_reference") or cit.get("verbatim") or "").strip()
+    if verbatim:
+        return verbatim
+    for m in d.get("mentions") or []:
+        mv = str(m.get("verbatim_reference") or "").strip()
+        if mv:
+            return mv
+    return ""
 
 
 def _reuse_cached_resolution(data: Dict[str, Any], cached: Dict[str, Any]) -> None:
@@ -1883,14 +1963,7 @@ def _process_bib_file(
     if data.get("search_status") == "resolved" and data.get("resource_urls"):
         return ("skipped", False, "")
 
-    key = _citation_key(data)
-    cached = resolved_by_key.get(key) if key else None
-    if cached is not None:
-        _reuse_cached_resolution(data, cached)
-    else:
-        resolve_bibliography_entry(data, grok_client, config)
-        if key:
-            resolved_by_key[key] = data
+    cached = _resolve_or_reuse(data, grok_client, config, resolved_by_key)
 
     from src.utils.file_lock import write_json_with_lock
 
@@ -1914,21 +1987,45 @@ def _process_bib_file(
     # OBSERV (bibliography chain): attribute each resolution to its source so the
     # NARA vs archive_org vs local-holding breakdown (and NARA success rate) is visible.
     if status == "resolved":
-        try:
-            src = (
-                str(data.get("search_source", "?"))
-                .replace("\n", " ")
-                .replace("\r", " ")[:40]
-            )
-            logger.info(
-                "OBSERV bib.resolved %s: source=%s urls=%d",
-                f.name,
-                src,
-                len(data.get("resource_urls") or []),
-            )
-        except Exception:  # noqa: BLE001 - observability must never break the resolver
-            pass
+        _observe_resolved(f, data)
     return (status, cached is not None, "")
+
+
+def _resolve_or_reuse(
+    data: Dict[str, Any],
+    grok_client: Any,
+    config: Optional[Dict],
+    resolved_by_key: Dict[str, Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    """Reuse a prior identical citation's resolution if cached, else resolve in place and cache
+    it. Returns the cached record used (or None if this was a fresh resolution)."""
+    key = _citation_key(data)
+    cached = resolved_by_key.get(key) if key else None
+    if cached is not None:
+        _reuse_cached_resolution(data, cached)
+    else:
+        resolve_bibliography_entry(data, grok_client, config)
+        if key:
+            resolved_by_key[key] = data
+    return cached
+
+
+def _observe_resolved(f: Path, data: Dict[str, Any]) -> None:
+    """OBSERV-log a resolved bibliography record (source + resource-url count). Fail-safe."""
+    try:
+        src = (
+            str(data.get("search_source", "?"))
+            .replace("\n", " ")
+            .replace("\r", " ")[:40]
+        )
+        logger.info(
+            "OBSERV bib.resolved %s: source=%s urls=%d",
+            f.name,
+            src,
+            len(data.get("resource_urls") or []),
+        )
+    except Exception:  # noqa: BLE001 - observability must never break the resolver
+        pass
 
 
 def _relocate_narrative_note(f: Path, data: Dict[str, Any]) -> None:
@@ -2143,15 +2240,28 @@ def resolve_bibliography_dir(
             review_queue,
         )
 
-    if review_queue:
-        try:
-            (bib_dir / "review_queue.json").write_text(
-                json.dumps(review_queue, indent=2, ensure_ascii=False),
-                encoding="utf-8",
-            )
-        except OSError as e:
-            logger.warning("Failed to write bibliography review_queue.json: %s", e)
+    _write_review_queue(bib_dir, review_queue)
+    _log_bib_resolution_summary(stats, processed, not_citation_samples)
+    return stats
 
+
+def _write_review_queue(bib_dir: Path, review_queue: List[Dict[str, Any]]) -> None:
+    """Write the human-disposition review queue, if any entries were queued. Fail-safe."""
+    if not review_queue:
+        return
+    try:
+        (bib_dir / "review_queue.json").write_text(
+            json.dumps(review_queue, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+    except OSError as e:
+        logger.warning("Failed to write bibliography review_queue.json: %s", e)
+
+
+def _log_bib_resolution_summary(
+    stats: Dict[str, int], processed: int, not_citation_samples: List[str]
+) -> None:
+    """Emit the human-readable resolution summary + the OBSERV bib.resolve line (fail-safe)."""
     logger.info(
         "Bibliography resolution: %d resolved, %d not found (%d queued for review), "
         "%d not-citation, %d deduped, %d skipped, %d errors",
@@ -2181,4 +2291,3 @@ def resolve_bibliography_dir(
         )
     except Exception:  # noqa: BLE001 - observability must never break resolution
         pass
-    return stats
