@@ -44,13 +44,18 @@ run "bandit"   python -m bandit -r src/ lambda_handlers/ -ll -q
 run "ruff(B)"  python -m ruff check src/ lambda_handlers/ --select B --quiet
 # shellcheck disable=SC2086
 # Radon complexity: C+ is the gate THRESHOLD. A non-allowlisted C-or-worse block HARD-FAILS;
-# the existing C+ backlog is grandfathered in scripts/.radon_inherent (body-hash), so only NEW or
-# MODIFIED C+ blocks fail. D+ is never suppressible.
 # C+ is the GATE THRESHOLD: any C-or-worse block HARD-FAILS unless it is INHERENT-allowlisted
 # (scripts/.radon_inherent, body-hash unchanged). The existing C+ backlog was grandfathered via
 # `radon_inherent.py seed`, so only a NEW or MODIFIED C+ block fails. D+ is NEVER suppressible.
 run_radon() {
   local out
+  # Fail-closed if radon is absent: otherwise `python -m radon` errors, the output matches no case
+  # arm, and the gate would silently report green (false PASS) — unacceptable for a hard gate.
+  if ! python -m radon --version >/dev/null 2>&1; then
+    echo "  ✗ radon: not installed (python -m radon unavailable) — cannot evaluate complexity gate"
+    fail=1
+    return
+  fi
   # --show-complexity is REQUIRED: without it radon emits "- D" (no trailing space) and the grade
   # match below never fires. With it, lines read "- C (14)" / "- D (21)".
   out="$(python -m radon cc $SCOPE --min C --show-complexity 2>&1)"
