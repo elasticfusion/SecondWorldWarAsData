@@ -2532,12 +2532,53 @@ def _reset_openserp_searched() -> None:
         )
 
 
-def _stamp_file(filepath: Path, needs_migration, inject_metadata) -> int:
-    """Stamp a single file if it needs migration. Returns 1 if stamped, 0 otherwise."""
+def _dir_all_current(files, entity, needs_migration) -> bool:
+    """True iff EVERY file in ``files`` is already at ``entity``'s current schema version. Fail-safe:
+    an unreadable/unparseable file returns False (so stamping still runs — never skip on doubt).
+    """
+    for f in files:
+        try:
+            if needs_migration(json.loads(f.read_text(encoding="utf-8")), entity):
+                return False
+        except Exception:
+            return False
+    return True
+
+
+def _stamp_entity_dir(p, entity, skip, needs_migration, inject_metadata) -> int:
+    """Stamp every file in entity-dir ``p`` to ``entity``'s current schema version. Per-dir fast-path
+    (skip the whole dir iff ALL files are already current for THIS entity — not a global weather
+    sample). Returns the number stamped. +OBSERV skip/stamped."""
+    files = [f for f in p.glob("*.json") if f.name not in skip]
+    if files and _dir_all_current(files, entity, needs_migration):
+        logger.info(
+            "OBSERV schema.stamp_skip entity=%s already_current n=%d",
+            entity,
+            len(files),
+        )
+        return 0
+    d_updated = 0
+    for f in files:
+        d_updated += _stamp_file(f, needs_migration, inject_metadata, entity)
+    if d_updated:
+        logger.info(
+            "OBSERV schema.stamped entity=%s stamped=%d of=%d",
+            entity,
+            d_updated,
+            len(files),
+        )
+    return d_updated
+
+
+def _stamp_file(filepath: Path, needs_migration, inject_metadata, entity=None) -> int:
+    """Stamp a single file if it needs migration. ``entity`` selects the correct per-entity schema
+    version (CRITICAL: without it, needs_migration/inject_metadata fall back to the MIN version
+    (2.24), which re-stamps a higher-versioned record DOWN and leaves it permanently 'needs_upgrade'
+    on the write-guard's lenient path). Returns 1 if stamped, 0 otherwise."""
     try:
         data = json.loads(filepath.read_text(encoding="utf-8"))
-        if needs_migration(data):
-            inject_metadata(data)
+        if needs_migration(data, entity):
+            inject_metadata(data, entity)
             import tempfile
 
             tmp_fd, tmp_path = tempfile.mkstemp(dir=filepath.parent, suffix=".tmp")
@@ -2556,21 +2597,15 @@ def _stamp_file(filepath: Path, needs_migration, inject_metadata) -> int:
 
 
 def _stamp_schema_versions() -> None:
-    """Stamp _schema_version on all output files that need migration."""
-    from src.schemas import SCHEMA_VERSION, inject_metadata, needs_migration
+    """Stamp _schema_version on all output files that need migration.
 
-    # Quick check: if first file already has current version, skip entirely
-    output = Path("/app/output")
-    sample = next((output / "weather").glob("*.json"), None)
-    if sample and sample.name != "index.json":
-        try:
-            if not needs_migration(json.loads(sample.read_text(encoding="utf-8"))):
-                logger.info(
-                    "Schema migration: already at v%s, skipping", SCHEMA_VERSION
-                )
-                return
-        except Exception:
-            pass
+    Each entity has its OWN target version (src/schemas.ENTITY_SCHEMA_VERSIONS); the directory name
+    IS the entity, so we thread it through so needs_migration/inject_metadata compare+stamp against
+    the RIGHT version. (Previously called with no entity -> MIN version 2.24 -> higher-versioned
+    records re-stamped DOWN + left permanently 'needs_upgrade'; and a single global weather-only
+    fast-path early-returned because weather's version == the min, so higher-versioned dirs were
+    never stamped at all.)"""
+    from src.schemas import SCHEMA_VERSION, inject_metadata, needs_migration
 
     env = os.environ.get("ENV_NAME", "dev")
     trigger_fn = f"{env}-wwii-trigger"
@@ -2612,17 +2647,16 @@ def _stamp_schema_versions() -> None:
             p = output / d
             if not p.exists():
                 continue
-            for f in p.glob("*.json"):
-                if f.name in skip:
-                    continue
-                updated += _stamp_file(f, needs_migration, inject_metadata)
-        # Event files
+            updated += _stamp_entity_dir(p, d, skip, needs_migration, inject_metadata)
+        # Event files -> entity 'events'
         content = output / "content"
         if content.exists():
             for f in content.rglob("*-event.json"):
-                updated += _stamp_file(f, needs_migration, inject_metadata)
+                updated += _stamp_file(f, needs_migration, inject_metadata, "events")
         logger.info(
-            "Schema migration: stamped %d files to v%s", updated, SCHEMA_VERSION
+            "Schema migration: stamped %d files (per-entity versions; max v%s)",
+            updated,
+            SCHEMA_VERSION,
         )
 
     finally:
