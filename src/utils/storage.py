@@ -35,7 +35,10 @@ class LocalStorage:
         resolved = (self.base_dir / path).resolve()
         if base != resolved and base not in resolved.parents:
             raise ValueError(f"path escapes storage base: {path!r}")
-        return self.base_dir / path
+        # Return the RESOLVED path we actually validated (not a re-joined unresolved path) so a
+        # symlink swapped between check and open can't be followed (TOCTOU) and the validated object
+        # is the one used.
+        return resolved
 
     def read_json(self, path: str) -> dict[str, Any]:
         return json.loads(self._resolve(path).read_text(encoding="utf-8"))

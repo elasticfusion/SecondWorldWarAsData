@@ -531,24 +531,10 @@ def write_json_with_lock(
                 f"Low disk space ({free // 1024 // 1024}MB free) — aborting write to {filepath.name}"
             )
 
-    # Atomic write: write to temp file, then replace (crash-safe)
-    import tempfile
-
-    tmp_fd, tmp_path = tempfile.mkstemp(
-        dir=filepath.parent, suffix=".tmp", prefix=filepath.stem
-    )
-    try:
-        import os as _os
-
-        with _os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
-        _os.replace(tmp_path, filepath)
-    except Exception:
-        try:
-            Path(tmp_path).unlink(missing_ok=True)
-        except Exception:
-            pass
-        raise
+    # Crash-atomic + durable write (temp + fsync + os.replace). Shared with locked_json via
+    # _atomic_write_json — the previous inline block omitted fsync, so a host crash between replace
+    # and the OS data flush could leave a zero-length/partial renamed file.
+    _atomic_write_json(filepath, data)
 
     return True
 

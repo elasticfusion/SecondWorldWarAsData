@@ -184,47 +184,59 @@ def _promote_enrichment(data):
         data["source_language"] = "English"
 
 
-def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
-    """Enrich a single people_group file. Returns True if enriched."""
+def _maybe_source_recheck(data, grok_client) -> None:
+    """SOURCE-FIRST gap-fill (env-gated, fail-safe): recover missing critical fields (nationality, CC
+    parent division) from the RETAINED source text BEFORE the external lookup, so Wikipedia/Grok can
+    disambiguate (e.g. '9th Division (United States)'). Makes a Grok call; gap-fill-only.
+    """
+    import os as _os
+
+    if _os.getenv("GROUP_SOURCE_RECHECK", "true").lower() != "true":
+        return
+    try:
+        from src.extraction.group_source_recheck import recheck_group_from_source
+
+        n = recheck_group_from_source(data, grok_client)
+        if n:
+            logger.info("  ✓ Source-recheck recovered %d critical field(s)", n)
+    except Exception as e:  # noqa: BLE001 - never block enrichment
+        logger.warning("source-recheck skipped: %s", e)
+
+
+def _load_enrichable_group(group_file: Path):
+    """Load a people_group file + decide whether it should be enriched. Returns (data, name) to
+    proceed, or None to skip (unreadable, no name — resolved from name OR group_name — already
+    enriched, or a still-fresh not_found). Fail-safe."""
     try:
         with open(group_file, encoding="utf-8") as f:
             data = json.load(f)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.debug("Failed to load %s: %s", group_file.name, e)
-        return False
-
-    name = data.get("name", "")
+        return None
+    name = data.get("name") or data.get("group_name") or ""
     if not name:
-        return False
-
-    # Skip if already enriched
+        logger.info("OBSERV groups.enrich_skip_no_name file=%s", group_file.name)
+        return None
     if data.get("enrichment_data"):
         logger.debug("Already enriched: %s", name)
-        return False
-
+        return None
     if data.get("enrichment_status") == "not_found":
         if not _should_re_search(data):
             logger.debug("Previously searched, not found: %s", name)
-            return False
+            return None
         logger.info("Re-searching (stale not_found): %s", name)
+    return data, name
+
+
+def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
+    """Enrich a single people_group file. Returns True if enriched."""
+    loaded = _load_enrichable_group(group_file)
+    if loaded is None:
+        return False
+    data, name = loaded
 
     logger.info("Enriching: %s", name)
-
-    # SOURCE-FIRST gap-fill: recover missing critical fields (nationality, CC parent
-    # division) from the RETAINED source text BEFORE the external lookup — Wikipedia
-    # can't disambiguate (e.g. '9th Division (United States)') without nationality.
-    # Gated (makes a Grok call), gap-fill-only, fail-safe.
-    import os as _os
-
-    if _os.getenv("GROUP_SOURCE_RECHECK", "true").lower() == "true":
-        try:
-            from src.extraction.group_source_recheck import recheck_group_from_source
-
-            n = recheck_group_from_source(data, grok_client)
-            if n:
-                logger.info("  ✓ Source-recheck recovered %d critical field(s)", n)
-        except Exception as e:  # noqa: BLE001 - never block enrichment
-            logger.warning("source-recheck skipped: %s", e)
+    _maybe_source_recheck(data, grok_client)
 
     # Build a DISAMBIGUATED query from the record's identity (nickname-resolved +
     # '(Country)' suffix) so Wikipedia/Grok resolves the correct article, not a
