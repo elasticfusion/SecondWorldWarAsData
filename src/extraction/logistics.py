@@ -2,6 +2,7 @@
 
 import json
 import logging
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -533,16 +534,48 @@ def _link_equipment(
 def _build_weather_impact(
     weather_desc: Optional[str], severity: str, weather_index: Dict[str, str]
 ) -> Optional[Dict[str, Any]]:
-    """Build weather impact if matching weather found."""
+    """Build weather impact if matching weather found.
+
+    Matches the extraction's weather text to an indexed weather record by NORMALIZED EQUALITY (not a
+    bare ``desc in weather_desc`` substring — a short index description like "rain" would falsely link
+    to any text containing that word, attaching the wrong WeatherID). Normalization lowercases +
+    collapses whitespace so trivial formatting differences still match.
+    """
     if not weather_desc:
         return None
+
+    def _norm(s: str) -> str:
+        return " ".join((s or "").lower().split())
+
+    target = _norm(weather_desc)
+    if not target:
+        return None
     for desc, weather_id in weather_index.items():
-        if desc in weather_desc:
+        nd = _norm(desc)
+        if not nd:
+            continue
+        # Exact normalized match, or a WHOLE-phrase containment bounded by word edges (so "rain"
+        # doesn't match "terrain" / "drainage"). Require the indexed desc to be reasonably specific
+        # (>=4 chars) before allowing containment, so a 1-2 char key can't over-match.
+        if nd == target or (
+            len(nd) >= 4
+            and re.search(rf"(?<![a-z0-9]){re.escape(nd)}(?![a-z0-9])", target)
+        ):
+            logger.info(
+                "OBSERV logistics.weather_linked weather_id=%s desc=%r",
+                weather_id,
+                nd[:40],
+            )
             return {
                 "WeatherID": weather_id,
                 "impact_description": weather_desc,
                 "severity": severity,
             }
+    logger.info(
+        "OBSERV logistics.weather_unmatched desc=%r candidates=%d",
+        target[:40],
+        len(weather_index),
+    )
     return None
 
 
@@ -651,7 +684,6 @@ def _save_extraction(
     )
     if dedup_key in existing_keys:
         return False
-    existing_keys.add(dedup_key)
 
     try:
         people_idx, groups_idx, places_idx, equip_idx, weather_idx, dates_idx = indexes
@@ -679,10 +711,15 @@ def _save_extraction(
         write_json_with_lock(
             logistics_dir / filename, validated.model_dump(exclude_none=True)
         )
+        # Mark deduped ONLY after a confirmed write — adding before the write poisoned the key on a
+        # validate/write failure, so a later identical extraction was silently dropped (data loss).
+        existing_keys.add(dedup_key)
         logger.info("Extracted: %s", filename)
         return True
     except Exception as e:
-        logger.error("Failed to process extraction: %s", e)
+        logger.error(
+            "OBSERV logistics.save_failed key=%s err=%s", dedup_key, str(e)[:160]
+        )
         return False
 
 
@@ -780,13 +817,21 @@ def extract_logistics_from_event(
 
 def _rebuild_index(logistics_dir: Path) -> None:
     """Build index.json mapping key → filename."""
-    index = {}
+    index: Dict[str, str] = {}
     for f in sorted(logistics_dir.glob("*.json")):
         if f.name == "index.json":
             continue
-        # Key is filename without the ULID suffix
-        parts = f.stem.rsplit("_", 1)
-        if len(parts) == 2:
-            index[parts[0]] = f.name
+        # Key on the FULL stem (includes the unique LogisticsID[:8] suffix). Stripping the ULID
+        # (rsplit('_',1)[0]) collapsed DISTINCT sub-events that share category_type_date into one
+        # index entry, so only the last survived -> the rest were unreachable via the index.
+        key = f.stem
+        if key in index:
+            logger.warning(
+                "OBSERV logistics.index_key_collision key=%s existing=%s new=%s",
+                key,
+                index[key],
+                f.name,
+            )
+        index[key] = f.name
     with open(logistics_dir / "index.json", "w", encoding="utf-8") as fh:
         json.dump(index, fh, indent=2)
