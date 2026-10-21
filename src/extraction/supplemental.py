@@ -372,21 +372,39 @@ def _append_to_file(
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        # Get existing reference sources
-        existing_sources = {
-            se.get("reference_source")
-            for se in data["Event"]["Sub-events"]
-            if se.get("reference_source")
-        }
+        def _dedup_key(se: dict) -> str:
+            # Deterministic identity: prefer the Sub-eventID; else reference_source; else a stable
+            # hash of the content. The old key was reference_source ALONE — narrative sub-events
+            # don't set it, so `None not in {...}` was always True and they re-appended every
+            # submit/retrieve/reconcile pass (unbounded duplication, PATTERN 4).
+            sid = se.get("Sub-eventID") or se.get("Sub_eventID")
+            if sid:
+                return f"sid:{sid}"
+            rs = se.get("reference_source")
+            if rs:
+                return f"rs:{rs}"
+            import hashlib as _h
 
-        # Filter out duplicates
-        to_add = [
-            se
-            for se in new_subevents
-            if se.get("reference_source") not in existing_sources
-        ]
+            blob = json.dumps(
+                {
+                    "s": se.get("Sub-event_summary") or se.get("summary"),
+                    "v": se.get("verbatim_reference"),
+                    "t": se.get("Sub-event_fulltext"),
+                },
+                sort_keys=True,
+                ensure_ascii=False,
+            )
+            return "h:" + _h.sha256(blob.encode("utf-8")).hexdigest()[:16]
+
+        existing_keys = {_dedup_key(se) for se in data["Event"]["Sub-events"]}
+        to_add = [se for se in new_subevents if _dedup_key(se) not in existing_keys]
 
         if not to_add:
+            logger.info(
+                "OBSERV supplemental.append file=%s candidates=%d added=0 (all dupes)",
+                file_path.name,
+                len(new_subevents),
+            )
             return
 
         # Append and write
@@ -395,7 +413,12 @@ def _append_to_file(
 
         write_json_with_lock(file_path, data, entity="events")
 
-        logger.info("Appended %d sub-event(s) to %s", len(to_add), file_path.name)
+        logger.info(
+            "OBSERV supplemental.append file=%s candidates=%d added=%d",
+            file_path.name,
+            len(new_subevents),
+            len(to_add),
+        )
 
     except Exception as e:
         logger.error("Error updating %s file: %s", file_type, e)
@@ -703,8 +726,8 @@ def _has_document(material: Dict[str, Any]) -> bool:
     """True if the material carries an actual cited document (so the citation half of a
     hybrid is stored, but a pure-prose entry with an empty citation is NOT written as a
     bogus bibliography record). A document is present when the citation has a real title/
-    author or an archive reference, OR (deterministic-pass records) a verbatim_reference
-    with no prose_content."""
+    author or an archive reference, OR a real verbatim_reference (hybrid prose+citation records
+    keep their citation half regardless of prose_content)."""
     citation = material.get("citation") or {}
     if any(
         (citation.get(k) or "")
@@ -714,12 +737,12 @@ def _has_document(material: Dict[str, Any]) -> bool:
         return True
     if material.get("archive_reference_number"):
         return True
-    # No parsed citation yet, but a verbatim with no separated prose -> treat as a citation
-    # (the deterministic/legacy path where the whole verbatim IS the document reference).
-    return bool(
-        (material.get("verbatim_reference") or "").strip()
-        and not (material.get("prose_content") or "").strip()
-    )
+    # A real verbatim_reference IS a document reference — store it REGARDLESS of prose_content.
+    # The old gate required "verbatim AND NOT prose", so a HYBRID (prose + a cited document) dropped
+    # its citation half (PATTERN 4). The prose half is routed to notes separately; the citation half
+    # must still be stored. (A trivial fragment is excluded by a small length floor.)
+    verbatim = (material.get("verbatim_reference") or "").strip()
+    return len(verbatim) >= 8
 
 
 def _route_by_content_class(

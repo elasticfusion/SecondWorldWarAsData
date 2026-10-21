@@ -182,8 +182,15 @@ def summarize_dates(
             data.get("mention_count"),
         )
         if after != before:
-            write_json_with_lock(f, data)
-            return True
+            # Honor the write result: a schema-BLOCKED write returns False and must NOT be counted
+            # as 'updated' (PATTERN 4 — ignored return masked a silently-failed write).
+            ok = write_json_with_lock(f, data)
+            if not ok:
+                logger.warning(
+                    "OBSERV date_summary.write blocked file=%s (not counted as updated)",
+                    getattr(f, "name", f),
+                )
+            return bool(ok)
         return False
 
     updated = 0

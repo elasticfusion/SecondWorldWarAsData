@@ -84,9 +84,22 @@ def _is_valid_date_mention(mention: Any) -> bool:
     year_match = re.search(r"\d{4}", mention["date_start"])
     if year_match:
         year = int(year_match.group())
-        if year < 1919 or year > 1955:
-            logger.warning("  Filtered non-WWII date: %s", mention["date_start"])
+        # Only drop CLEARLY-GARBAGE years (OCR/LLM noise). The WWII window is ADVISORY, not a veto:
+        # legitimate dates fall outside 1919-1955 (WWI background, publication/interview dates like
+        # "12 Sep 56" pervasive in Green Book footnotes) and must NOT be silently discarded.
+        if year < 1700 or year > 2100:
+            logger.warning(
+                "OBSERV dates.filter dropped=garbage_year year=%d date=%s",
+                year,
+                mention["date_start"],
+            )
             return False
+        if year < 1919 or year > 1955:
+            logger.info(
+                "OBSERV dates.filter kept=out_of_window year=%d date=%s (advisory, not dropped)",
+                year,
+                mention["date_start"],
+            )
     return True
 
 
