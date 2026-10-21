@@ -54,6 +54,71 @@ def test_credit_released_on_poll_or_retrieve_failure():
     ), "credit reservation was NOT released on poll failure (leak)"
 
 
+def _mk_batch_client():
+    import src.grok_client as gc
+    import tempfile
+    from pathlib import Path
+    from src.utils.batch_api import BatchCollector, BatchRequest
+
+    client = gc.GrokClient.__new__(gc.GrokClient)
+    client.api_key = "k"
+    client.cache_dir = Path(tempfile.mkdtemp())
+    client._config = {}
+    client._estimate_batch_cost = lambda: 1.0
+    coll = BatchCollector()
+    coll.add(BatchRequest("r1", [{"role": "user", "content": "p"}], "m", 0.1, "events"))
+    client._batch_collector = coll
+    client.batch_mode = True
+    return client
+
+
+def test_credit_released_on_retrieve_failure():
+    client = _mk_batch_client()
+    released = {"n": 0}
+    with (
+        mock.patch("src.utils.credit_gate.reserve", return_value=True),
+        mock.patch(
+            "src.utils.credit_gate.release",
+            side_effect=lambda *a, **k: released.__setitem__("n", released["n"] + 1),
+        ),
+        mock.patch("src.utils.batch_api.submit_batch", return_value="b1"),
+        mock.patch("src.utils.batch_api.poll_batch", return_value={"state": {}}),
+        mock.patch(
+            "src.utils.batch_api.retrieve_results_ordered",
+            side_effect=RuntimeError("retrieve boom"),
+        ),
+    ):
+        with pytest.raises(RuntimeError):
+            client.submit_batch(batch_name="t")
+    assert released["n"] == 1, "reservation not released on RETRIEVE failure (leak)"
+
+
+def test_credit_not_released_on_success():
+    client = _mk_batch_client()
+    client._get_cache = lambda ct: {}
+    client._sanitize_content = lambda c: c
+    client._batch_prompt_preview = lambda rid, rbi: ""
+    released = {"n": 0}
+    from src.utils.batch_api import BatchResult
+
+    with (
+        mock.patch("src.utils.credit_gate.reserve", return_value=True),
+        mock.patch(
+            "src.utils.credit_gate.release",
+            side_effect=lambda *a, **k: released.__setitem__("n", released["n"] + 1),
+        ),
+        mock.patch("src.utils.batch_api.submit_batch", return_value="b1"),
+        mock.patch("src.utils.batch_api.poll_batch", return_value={"state": {}}),
+        mock.patch(
+            "src.utils.batch_api.retrieve_results_ordered",
+            return_value=[BatchResult("srv", '{"ok":1}', "stop", "")],
+        ),
+        mock.patch("src.grok_client._save_metrics"),
+    ):
+        client.submit_batch(batch_name="t")
+    assert released["n"] == 0, "reservation was double-released / released on SUCCESS"
+
+
 # --- #2 weather processed-gate -------------------------------------------------------------
 def test_weather_skips_already_processed(tmp_path):
     from src.extraction import weather_central as wc
