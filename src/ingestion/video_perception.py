@@ -86,7 +86,14 @@ def perceive_segment(
         return signals  # no frame -> no visual signal (resolver: unknown/review)
 
     result = vision.analyze_frame(frame, roster, transcript_context) or {}
+    _apply_vision_result(signals, result)
+    return signals
 
+
+def _apply_vision_result(signals: SpeakerSignals, result: dict) -> None:
+    """Fold a vision analyze_frame result into ``signals`` (role hint, caption, headshots).
+    Mutates in place. Preserves the exact parsing/coercion + 'unknown'-yields-nothing behavior.
+    """
     # Role signals: did the frame show a talking person on camera (-> interviewee)
     # or is this voice-over footage (-> narrator)? Perception may also hint a role.
     if "on_screen_person" in result:
@@ -107,6 +114,11 @@ def perceive_segment(
             person_id=result.get("caption_person_id"),
             confidence=float(result.get("caption_confidence", 0.0) or 0.0),
         )
+    _append_headshots(signals, result)
+
+
+def _append_headshots(signals: SpeakerSignals, result: dict) -> None:
+    """Append each roster-matched headshot (skipping any without a person_id) to signals."""
     for h in result.get("headshots", []) or []:
         pid = h.get("person_id")
         if not pid:
@@ -118,7 +130,6 @@ def perceive_segment(
                 confidence=float(h.get("confidence", 0.0) or 0.0),
             )
         )
-    return signals
 
 
 def perceive_video(

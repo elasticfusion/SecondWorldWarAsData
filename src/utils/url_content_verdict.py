@@ -135,6 +135,13 @@ def evaluate(
     if not isinstance(raw, dict):
         return _reject("unparseable verdict")
 
+    return _verdict_from_raw(raw, source_url)
+
+
+def _verdict_from_raw(raw: Dict[str, Any], source_url: str) -> ContentVerdict:
+    """Build the ContentVerdict from Grok's parsed dict: short-circuit on false_lead / not
+    relevant, else keep writable claims (opinions + confirmed facts). Preserves exactly.
+    """
     relevant = bool(raw.get("relevant", False))
     false_lead = bool(raw.get("false_lead", False))
     if false_lead or not relevant:

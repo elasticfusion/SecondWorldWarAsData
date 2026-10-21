@@ -382,7 +382,21 @@ def _persist_dns_counter(table, clean, rec, failures, now) -> None:
     """
     if rec and rec.status == "in_progress":
         return
-    payload = {
+    payload = _dns_counter_payload(clean, rec, failures, now)
+    try:
+        item: dict = {"cache_key": _url_key(clean), "response": json.dumps(payload)}
+        if rec and rec.status == "searched" and rec.examined_at:
+            item["ttl"] = rec.examined_at + RETENTION_DAYS * 86400
+        table.put_item(Item=item)
+    except Exception as e:  # noqa: BLE001
+        logger.debug("dns-failure counter write failed for %s: %s", clean, e)
+
+
+def _dns_counter_payload(clean, rec, failures, now) -> dict:
+    """Build the persisted payload for a DNS-failure counter write (no terminal verdict).
+    Falls back to searched/empty defaults when there is no existing record. Preserves exactly.
+    """
+    return {
         "url": clean,
         "status": (rec.status if rec else "searched"),
         "relevant": bool(rec.relevant) if rec else False,
@@ -392,13 +406,6 @@ def _persist_dns_counter(table, clean, rec, failures, now) -> None:
         "dns_failures": failures,
         "first_wayback_ts": (rec.first_wayback_ts if rec else ""),
     }
-    try:
-        item: dict = {"cache_key": _url_key(clean), "response": json.dumps(payload)}
-        if rec and rec.status == "searched" and rec.examined_at:
-            item["ttl"] = rec.examined_at + RETENTION_DAYS * 86400
-        table.put_item(Item=item)
-    except Exception as e:  # noqa: BLE001
-        logger.debug("dns-failure counter write failed for %s: %s", clean, e)
 
 
 # --- backward-compatible wrappers (pre-state-model callers / tests) ---

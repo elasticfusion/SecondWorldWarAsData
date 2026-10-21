@@ -174,18 +174,24 @@ def is_clean_url(url: str) -> bool:
     return clean_url(url) is not None
 
 
-def clean_url(url: str) -> Optional[str]:
-    """Validate + NORMALIZE a URL. Returns the canonical form, or None if the URL is
-    malformed, uses a disallowed scheme, targets an unsafe host, or is over-long.
-
-    Normalization: lowercase scheme+host, drop a default port (80/443), strip the
-    fragment, DROP the query EXCEPT resource-identity params (id/q/page/... — kept so
-    distinct archival documents don't collapse), remaining identity params sorted.
-    Path case preserved (can be significant)."""
+def _prevalidate_url_string(url):
+    """clean_url's STRING-level guards (fail-closed, in order): non-str/empty, over-length.
+    Returns the stripped URL string, or None to reject."""
     if not url or not isinstance(url, str):
         return None
     url = url.strip()
     if not url or len(url) > _MAX_URL_LEN:
+        return None
+    return url
+
+
+def _parse_and_validate_url(url):
+    """Parse + run clean_url's reject guards in order; return ``(scheme, parsed)`` or None.
+    Preserves EXACTLY clean_url's fail-closed sequence: non-str/empty, over-length, parse
+    failure, disallowed scheme, missing netloc/hostname, unsafe host, credentials-in-URL.
+    """
+    url = _prevalidate_url_string(url)
+    if url is None:
         return None
     try:
         p = urlparse(url)
@@ -202,6 +208,21 @@ def clean_url(url: str) -> Optional[str]:
     # Reject credentials-in-URL (an anti-pattern + a dedup hazard) BEFORE rebuilding netloc.
     if p.username or p.password:
         return None
+    return scheme, p
+
+
+def clean_url(url: str) -> Optional[str]:
+    """Validate + NORMALIZE a URL. Returns the canonical form, or None if the URL is
+    malformed, uses a disallowed scheme, targets an unsafe host, or is over-long.
+
+    Normalization: lowercase scheme+host, drop a default port (80/443), strip the
+    fragment, DROP the query EXCEPT resource-identity params (id/q/page/... — kept so
+    distinct archival documents don't collapse), remaining identity params sorted.
+    Path case preserved (can be significant)."""
+    validated = _parse_and_validate_url(url)
+    if validated is None:
+        return None
+    scheme, p = validated
 
     netloc = _normalize_netloc(scheme, p)
     query = _filter_identity_query(p.query)

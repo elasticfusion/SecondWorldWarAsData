@@ -58,14 +58,21 @@ def parse_content_key(key: str) -> Tuple[str, str]:
         return SYSTEM_SOURCE_ID, stem
     rest = parts[1:]
     if rest and is_source_segment(rest[0]):
-        source_id = rest[0]
-        title = (
-            rest[1]
-            if len(rest) >= 2
-            else (rest[-1].rsplit(".", 1)[0] if rest[1:] else "")
-        )
-        return source_id, title
-    # legacy: no source segment -> system-provided
+        return _parse_with_source_segment(rest)
+    return _parse_legacy_content_key(rest)
+
+
+def _parse_with_source_segment(rest):
+    """``contentrepository/{SOURCE_ID}/{TITLE}/...``: explicit source segment present."""
+    source_id = rest[0]
+    title = (
+        rest[1] if len(rest) >= 2 else (rest[-1].rsplit(".", 1)[0] if rest[1:] else "")
+    )
+    return source_id, title
+
+
+def _parse_legacy_content_key(rest):
+    """Legacy ``contentrepository/{TITLE}/...`` (no source segment) -> (_system, title)."""
     if len(rest) >= 2:
         return SYSTEM_SOURCE_ID, rest[0]  # {TITLE}/...
     stem = rest[-1].rsplit(".", 1)[0] if rest else ""

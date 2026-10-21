@@ -134,10 +134,18 @@ def _coerce_body(message: str) -> str:
             parsed = json.loads(body)
         except (ValueError, TypeError):
             return body
-        if isinstance(parsed, dict):
-            return "\n".join(f"*{k}:* {v}" for k, v in parsed.items()) or body
-        if isinstance(parsed, list):
-            return "\n".join(f"• {item}" for item in parsed) or body
+        return _render_parsed_body(parsed, body)
+    return body
+
+
+def _render_parsed_body(parsed, body: str) -> str:
+    """Render a parsed JSON dict/list as readable ``key: value`` / bullet lines (falling back to
+    the raw ``body`` when empty or not a dict/list). Preserves the formatting exactly.
+    """
+    if isinstance(parsed, dict):
+        return "\n".join(f"*{k}:* {v}" for k, v in parsed.items()) or body
+    if isinstance(parsed, list):
+        return "\n".join(f"• {item}" for item in parsed) or body
     return body
 
 

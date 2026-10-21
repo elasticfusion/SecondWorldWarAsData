@@ -143,20 +143,7 @@ def reconcile_echoed_keys(known_ids, keyed: dict, entity: str) -> dict:
         known = [k for k in known_ids if k]
         if not known or not isinstance(keyed, dict):
             return keyed
-        norm_index: dict = {}
-        for k in keyed:
-            norm_index.setdefault(_normalize_ulid(k), []).append(k)
-        reconciled: dict = {}
-        exact = recovered = 0
-        for real in known:
-            if real in keyed:
-                reconciled[real] = keyed[real]
-                exact += 1
-                continue
-            cand = norm_index.get(_normalize_ulid(real), [])
-            if len(cand) == 1:
-                reconciled[real] = keyed[cand[0]]
-                recovered += 1
+        reconciled, exact, recovered = _reconcile_known_against_keyed(known, keyed)
         if recovered:
             logger.info(
                 "OBSERV xref.embedded_ulid entity=%s exact=%d recovered=%d known=%d",
@@ -168,3 +155,24 @@ def reconcile_echoed_keys(known_ids, keyed: dict, entity: str) -> dict:
         return reconciled or keyed
     except Exception:  # noqa: BLE001 - reconciliation must never break extraction
         return keyed
+
+
+def _reconcile_known_against_keyed(known: list, keyed: dict):
+    """Core re-key: for each known id take its value by EXACT key, else by a UNIQUE cosmetic-
+    normalized match (ambiguous matches skipped). Returns (reconciled, exact, recovered).
+    Identity-critical — preserves the match rules EXACTLY."""
+    norm_index: dict = {}
+    for k in keyed:
+        norm_index.setdefault(_normalize_ulid(k), []).append(k)
+    reconciled: dict = {}
+    exact = recovered = 0
+    for real in known:
+        if real in keyed:
+            reconciled[real] = keyed[real]
+            exact += 1
+            continue
+        cand = norm_index.get(_normalize_ulid(real), [])
+        if len(cand) == 1:
+            reconciled[real] = keyed[cand[0]]
+            recovered += 1
+    return reconciled, exact, recovered

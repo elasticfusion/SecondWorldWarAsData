@@ -52,35 +52,41 @@ def handler(event, _context):
     results = {"checked": len(jobs), "complete": 0, "pending": 0, "failed": 0}
 
     for job in jobs:
-        # "ready" jobs already confirmed complete — just retry retrieve
-        if job.get("status") == "ready":
-            if _trigger_retrieve(job):
-                results["complete"] += 1
-            else:
-                results["pending"] += 1
-            continue
-        status = _check_batch_status(
-            api_key, job["batch_id"], int(job.get("submitted_at", 0))
-        )
-        if status == "complete":
-            if _mark_ready(job["batch_id"]):
-                if _trigger_retrieve(job):
-                    results["complete"] += 1
-                else:
-                    results["pending"] += 1  # retrieve failed, will retry next poll
-            else:
-                results["pending"] += 1  # another invocation handling it
-        elif status == "failed":
-            _mark_failed(job["batch_id"])
-            _notify(f"Batch {job['batch_id']} FAILED ({job.get('book', '?')})")
-            results["failed"] += 1
-        else:
-            results["pending"] += 1
-            # Notify if batch has been pending >4h
-            _check_stalled(job, api_key)
+        _poll_one_job(job, api_key, results)
 
     logger.info("Results: %s", results)
     return results
+
+
+def _poll_one_job(job: dict, api_key: str, results: dict) -> None:
+    """Poll one pending batch job and update ``results`` in place. Preserves the ready/complete/
+    failed/pending dispatch + the _mark_ready claim semantics exactly."""
+    # "ready" jobs already confirmed complete — just retry retrieve
+    if job.get("status") == "ready":
+        if _trigger_retrieve(job):
+            results["complete"] += 1
+        else:
+            results["pending"] += 1
+        return
+    status = _check_batch_status(
+        api_key, job["batch_id"], int(job.get("submitted_at", 0))
+    )
+    if status == "complete":
+        if _mark_ready(job["batch_id"]):
+            if _trigger_retrieve(job):
+                results["complete"] += 1
+            else:
+                results["pending"] += 1  # retrieve failed, will retry next poll
+        else:
+            results["pending"] += 1  # another invocation handling it
+    elif status == "failed":
+        _mark_failed(job["batch_id"])
+        _notify(f"Batch {job['batch_id']} FAILED ({job.get('book', '?')})")
+        results["failed"] += 1
+    else:
+        results["pending"] += 1
+        # Notify if batch has been pending >4h
+        _check_stalled(job, api_key)
 
 
 def _handle_submit(event: dict) -> dict:

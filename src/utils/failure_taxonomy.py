@@ -81,18 +81,26 @@ def _is_model_not_found(body: str) -> bool:
 def _classify_http(status: int, body: str) -> Optional[Cause]:
     """Map an HTTP status (+ body hint) to a cause via a rule table."""
     b = (body or "").lower()
+    if status in (400, 404) and _is_model_not_found(b):
+        return Cause.MODEL_TRANSITION
+    rule_cause = _match_http_rule(status, b)
+    if rule_cause is not None:
+        return rule_cause
+    if status >= 500 or status == 408:
+        return Cause.TRANSIENT
+    return None
+
+
+def _match_http_rule(status: int, b: str) -> Optional[Cause]:
+    """Match status+body against the status/keyword rule table; first hit wins, else None."""
     rules = (
         ((402, 403), ("credit", "quota", "insufficient"), Cause.FUNDING),
         ((429,), (), Cause.RATE_LIMIT),
         ((400, 413), ("too large", "exceed", "limit", "too many"), Cause.SIZE_LIMIT),
     )
-    if status in (400, 404) and _is_model_not_found(b):
-        return Cause.MODEL_TRANSITION
     for statuses, keywords, cause in rules:
         if status in statuses and (not keywords or any(k in b for k in keywords)):
             return cause
-    if status >= 500 or status == 408:
-        return Cause.TRANSIENT
     return None
 
 

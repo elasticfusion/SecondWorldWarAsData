@@ -90,17 +90,7 @@ def enforce_scope(
 
     # Defensive: counts come from len()/scan (>=0) and int inputs (may be
     # negative). A negative on either side is a miswired caller — fail loud.
-    if (
-        actual < 0
-        or (expected is not None and expected < 0)
-        or (recorded_expected is not None and recorded_expected < 0)
-    ):
-        msg = (
-            f"INVALID SCOPE ({label}): negative count (actual={actual}, "
-            f"expected={expected}, recorded_expected={recorded_expected})."
-        )
-        log.error(msg)
-        raise ScopeMismatchError(msg, EXIT_SCOPE_MISMATCH)
+    _reject_negative_scope(actual, expected, recorded_expected, label, log)
 
     # 0. SOURCE-VS-ACTUAL reconciliation (PRIMARY, when an independent upstream count exists).
     #    RULE: the consuming phase must NEVER EXCEED the count the producing phase recorded. Phase 1
@@ -111,23 +101,7 @@ def enforce_scope(
     #    vs a silent drop can't be told apart here without extra state, and failing legit resumes is
     #    worse than the miss). Not overridable; supersedes the ceiling AND the hand-carried `expected`.
     if recorded_expected is not None:
-        if actual > recorded_expected:
-            msg = (
-                f"SCOPE FAN-OUT ({label}): {actual} items are about to be processed but the "
-                f"recorded source count is only {recorded_expected}. Processing MORE than the "
-                f"upstream phase produced is never legitimate (dropped --book filter / bad glob / "
-                f"reconcile re-drive). Aborting (fail-loud; not overridable). Investigate the "
-                f"{actual - recorded_expected} extra item(s)."
-            )
-            log.error(msg)
-            raise ScopeMismatchError(msg, EXIT_SCOPE_MISMATCH)
-        log.info(
-            "OBSERV run_scope.reconciled %s actual=%d recorded_expected=%d within=1",
-            label,
-            actual,
-            recorded_expected,
-        )
-        return actual
+        return _reconcile_recorded_expected(actual, recorded_expected, label, log)
 
     # --- No recorded upstream count: FALL BACK to the legacy declared-expected + ceiling. ---
 
@@ -156,4 +130,52 @@ def enforce_scope(
         log.error(msg)
         raise ScopeMismatchError(msg, EXIT_UNDECLARED_LARGE_RUN)
 
+    return actual
+
+
+def _reject_negative_scope(
+    actual: int,
+    expected: Optional[int],
+    recorded_expected: Optional[int],
+    label: str,
+    log: logging.Logger,
+) -> None:
+    """Fail loud on a negative count from any source (a miswired caller). Preserves exactly."""
+    if (
+        actual < 0
+        or (expected is not None and expected < 0)
+        or (recorded_expected is not None and recorded_expected < 0)
+    ):
+        msg = (
+            f"INVALID SCOPE ({label}): negative count (actual={actual}, "
+            f"expected={expected}, recorded_expected={recorded_expected})."
+        )
+        log.error(msg)
+        raise ScopeMismatchError(msg, EXIT_SCOPE_MISMATCH)
+
+
+def _reconcile_recorded_expected(
+    actual: int,
+    recorded_expected: int,
+    label: str,
+    log: logging.Logger,
+) -> int:
+    """PRIMARY reconciliation vs the independent upstream count: fail loud on fan-out
+    (actual > recorded), else log the OBSERV line + return actual. Preserves exactly."""
+    if actual > recorded_expected:
+        msg = (
+            f"SCOPE FAN-OUT ({label}): {actual} items are about to be processed but the "
+            f"recorded source count is only {recorded_expected}. Processing MORE than the "
+            f"upstream phase produced is never legitimate (dropped --book filter / bad glob / "
+            f"reconcile re-drive). Aborting (fail-loud; not overridable). Investigate the "
+            f"{actual - recorded_expected} extra item(s)."
+        )
+        log.error(msg)
+        raise ScopeMismatchError(msg, EXIT_SCOPE_MISMATCH)
+    log.info(
+        "OBSERV run_scope.reconciled %s actual=%d recorded_expected=%d within=1",
+        label,
+        actual,
+        recorded_expected,
+    )
     return actual

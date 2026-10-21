@@ -205,21 +205,10 @@ def audit(storage: Any, include_samples: bool = False) -> Dict[str, Any]:
     attached per edge. Raw IDs are record identifiers; keep them OFF on any alerting/sync path
     (aggregate counts only) and enable only for a local operator diagnosis."""
     # One read per source dir referenced by any edge (plus PK dirs). Buffer records.
-    src_dirs = {src for src, _f, _t, _n in EDGES} | set(PK_FIELD)
-    buffered: Dict[str, List[Dict[str, Any]]] = {}
-    for name in src_dirs:
-        buffered[name] = [
-            data for _k, data in _iter_records(storage, _DIR.get(name, name))
-        ]
+    buffered = _buffer_edge_records(storage)
 
     # PK sets from the SAME buffered records (no second read) + event key-space.
-    pk_sets: Dict[str, Set[str]] = defaultdict(set)
-    for name, pk in PK_FIELD.items():
-        for data in buffered.get(name, []):
-            v = data.get(pk)
-            if isinstance(v, str) and v:
-                pk_sets[name].add(v)
-    _add_event_pks(storage, pk_sets)
+    pk_sets = _build_pk_sets(storage, buffered)
 
     results: List[Dict[str, Any]] = []
     for src, field, target, _nullable in EDGES:
@@ -234,6 +223,31 @@ def audit(storage: Any, include_samples: bool = False) -> Dict[str, Any]:
         "edges": results,
         "total_dangling": sum(r["dangling"] for r in results),
     }
+
+
+def _buffer_edge_records(storage: Any) -> "Dict[str, List[Dict[str, Any]]]":
+    """Single-read buffer: one GET per source dir referenced by any edge (plus PK dirs)."""
+    src_dirs = {src for src, _f, _t, _n in EDGES} | set(PK_FIELD)
+    buffered: Dict[str, List[Dict[str, Any]]] = {}
+    for name in src_dirs:
+        buffered[name] = [
+            data for _k, data in _iter_records(storage, _DIR.get(name, name))
+        ]
+    return buffered
+
+
+def _build_pk_sets(
+    storage: Any, buffered: "Dict[str, List[Dict[str, Any]]]"
+) -> "Dict[str, Set[str]]":
+    """PK sets from the already-buffered records (no second read) + the event key-space."""
+    pk_sets: Dict[str, Set[str]] = defaultdict(set)
+    for name, pk in PK_FIELD.items():
+        for data in buffered.get(name, []):
+            v = data.get(pk)
+            if isinstance(v, str) and v:
+                pk_sets[name].add(v)
+    _add_event_pks(storage, pk_sets)
+    return pk_sets
 
 
 def _resolve_edge(

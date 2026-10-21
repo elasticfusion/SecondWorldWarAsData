@@ -162,6 +162,42 @@ def _infer_role(signals: "SpeakerSignals") -> "SpeakerRole":
     return SpeakerRole.UNKNOWN
 
 
+def _resolve_caption_with_pid(
+    signals: SpeakerSignals,
+    roster: Dict[str, RosterCandidate],
+    caption,
+    cap_pid,
+    head_pid,
+    top_head,
+    agree: bool,
+) -> ResolvedSpeaker:
+    """Branch 1 of _resolve_one: a caption that resolved to a PersonID (PRIMARY). Boost on
+    headshot agreement, slight penalty + note on disagreement. Preserves scoring exactly.
+    """
+    base = 0.7 + 0.25 * caption.confidence  # a clear caption is strong on its own
+    base *= _roster_trust(roster.get(cap_pid))
+    method = "caption"
+    notes = f"caption='{caption.text}'"
+    if agree:
+        base = min(1.0, base + 0.15)  # caption+headshot agreement -> boost
+        method = "caption+headshot"
+        notes += " (headshot agrees)"
+    elif head_pid and not agree:
+        base = max(0.0, base - 0.1)  # disagreement -> slight penalty + note
+        notes += f" (headshot disagrees: {top_head.name})"
+    conf = min(1.0, base)
+    return ResolvedSpeaker(
+        speaker_label=signals.speaker_label,
+        timecode=signals.timecode,
+        person_id=cap_pid,
+        name=(roster.get(cap_pid).name if cap_pid in roster else caption.text),
+        confidence=conf,
+        method=method,
+        needs_review=conf < AUTO_ASSERT_THRESHOLD,
+        notes=notes,
+    )
+
+
 def _resolve_one(
     signals: SpeakerSignals,
     roster: Dict[str, RosterCandidate],
@@ -176,27 +212,8 @@ def _resolve_one(
 
     # 1) Caption present (PRIMARY). High trust, especially if the headshot agrees.
     if caption and caption.text and cap_pid:
-        base = 0.7 + 0.25 * caption.confidence  # a clear caption is strong on its own
-        base *= _roster_trust(roster.get(cap_pid))
-        method = "caption"
-        notes = f"caption='{caption.text}'"
-        if agree:
-            base = min(1.0, base + 0.15)  # caption+headshot agreement -> boost
-            method = "caption+headshot"
-            notes += " (headshot agrees)"
-        elif head_pid and not agree:
-            base = max(0.0, base - 0.1)  # disagreement -> slight penalty + note
-            notes += f" (headshot disagrees: {top_head.name})"
-        conf = min(1.0, base)
-        return ResolvedSpeaker(
-            speaker_label=signals.speaker_label,
-            timecode=signals.timecode,
-            person_id=cap_pid,
-            name=(roster.get(cap_pid).name if cap_pid in roster else caption.text),
-            confidence=conf,
-            method=method,
-            needs_review=conf < AUTO_ASSERT_THRESHOLD,
-            notes=notes,
+        return _resolve_caption_with_pid(
+            signals, roster, caption, cap_pid, head_pid, top_head, agree
         )
 
     # 2) A caption with TEXT but no roster resolution — read a name we can't yet
@@ -213,6 +230,22 @@ def _resolve_one(
             notes=f"caption='{caption.text}' unmatched to a known person",
         )
 
+    # 3) Headshot only (FALLBACK). ALWAYS review-gated regardless of confidence —
+    # a face match from one documentary frame is a suggestion, not an assertion.
+    # 4) No visual signal -> unknown for this segment (diarization continuity may
+    # still name it later via _propagate). Unknown -> review.
+    return _resolve_headshot_or_unknown(signals, roster, top_head, head_pid)
+
+
+def _resolve_headshot_or_unknown(
+    signals: SpeakerSignals,
+    roster: Dict[str, RosterCandidate],
+    top_head,
+    head_pid,
+) -> ResolvedSpeaker:
+    """Branches 3+4 of _resolve_one: headshot-only fallback (always review-gated), else no
+    visual signal -> unknown (review). Preserves scoring + notes + review flags exactly.
+    """
     # 3) Headshot only (FALLBACK). ALWAYS review-gated regardless of confidence —
     # a face match from one documentary frame is a suggestion, not an assertion.
     if top_head:

@@ -423,50 +423,82 @@ def _run_schema_validation(
         jsonschema.validate(data, schema)
         # Cross-field consistency jsonschema can't express: bibliography alt_title must be
         # identical at top-level and inside citation (the two copies must never drift).
-        if entity_type == "bibliography" and isinstance(data, dict):
-            cit = data.get("citation")
-            if isinstance(cit, dict) and data.get("alt_title") != cit.get("alt_title"):
-                logger.error(
-                    "BLOCKED %s write (%s): const at alt_title (top-level != citation.alt_title)",
-                    entity_type,
-                    filepath.name,
-                )
-                if record_stats:
-                    _record_stat(entity_type, "block", "const", status)
-                return False
+        if not _bibliography_alt_title_ok(
+            data, entity_type, filepath, status, record_stats
+        ):
+            return False
         if record_stats:
             _record_stat(entity_type, "allow", None, status)
             _record_record_quality(entity_type, data, status)
         return True
     except jsonschema.ValidationError as e:
-        loc = "/".join(str(p) for p in e.absolute_path) or "<root>"
-        reason = f"{e.validator} at {loc}"
-        if status == "needs_upgrade" and _has_identity_floor(entity_type, data):
-            logger.warning(
-                "Allowing pre-%s %s write (%s) despite current-schema violation (%s): "
-                "no registered upgrader — needs targeted reprocess/upgrade",
-                target,
+        return _handle_schema_validation_error(
+            e, data, entity_type, filepath, status, target, record_stats
+        )
+    except Exception:  # noqa: BLE001 - validator error -> fail-safe allow
+        return True
+
+
+def _bibliography_alt_title_ok(
+    data: Dict[str, Any],
+    entity_type: str,
+    filepath: Path,
+    status: str,
+    record_stats: bool,
+) -> bool:
+    """Bibliography cross-field const check: top-level alt_title must equal citation.alt_title.
+    Returns False (and logs/records the block) on drift; True otherwise. Preserves exactly.
+    """
+    if entity_type == "bibliography" and isinstance(data, dict):
+        cit = data.get("citation")
+        if isinstance(cit, dict) and data.get("alt_title") != cit.get("alt_title"):
+            logger.error(
+                "BLOCKED %s write (%s): const at alt_title (top-level != citation.alt_title)",
                 entity_type,
                 filepath.name,
-                reason,
             )
             if record_stats:
-                _record_stat(
-                    entity_type, "allow_warn", str(e.validator), "needs_upgrade"
-                )
-                _record_record_quality(entity_type, data, "needs_upgrade")
-            return True
-        logger.error(
-            "BLOCKED schema-invalid %s write (%s): %s",
+                _record_stat(entity_type, "block", "const", status)
+            return False
+    return True
+
+
+def _handle_schema_validation_error(
+    e: Any,
+    data: Dict[str, Any],
+    entity_type: str,
+    filepath: Path,
+    status: str,
+    target: str,
+    record_stats: bool,
+) -> bool:
+    """Handle a jsonschema.ValidationError: allow a needs_upgrade record that has its identity
+    floor (warn), else BLOCK. Preserves exactly the original log text/levels + stat calls.
+    """
+    loc = "/".join(str(p) for p in e.absolute_path) or "<root>"
+    reason = f"{e.validator} at {loc}"
+    if status == "needs_upgrade" and _has_identity_floor(entity_type, data):
+        logger.warning(
+            "Allowing pre-%s %s write (%s) despite current-schema violation (%s): "
+            "no registered upgrader — needs targeted reprocess/upgrade",
+            target,
             entity_type,
             filepath.name,
             reason,
         )
         if record_stats:
-            _record_stat(entity_type, "block", str(e.validator), status)
-        return False
-    except Exception:  # noqa: BLE001 - validator error -> fail-safe allow
+            _record_stat(entity_type, "allow_warn", str(e.validator), "needs_upgrade")
+            _record_record_quality(entity_type, data, "needs_upgrade")
         return True
+    logger.error(
+        "BLOCKED schema-invalid %s write (%s): %s",
+        entity_type,
+        filepath.name,
+        reason,
+    )
+    if record_stats:
+        _record_stat(entity_type, "block", str(e.validator), status)
+    return False
 
 
 def _legacy_required_check(filepath: Path, data: Dict[str, Any]) -> None:
