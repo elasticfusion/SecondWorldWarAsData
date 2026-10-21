@@ -111,3 +111,58 @@ def test_build_weather_impact_exact_and_bounded_match():
         "it was heavy rain today", "high", {"heavy rain": "01WEA000000000000000HRAIN"}
     )
     assert out and out["WeatherID"] == "01WEA000000000000000HRAIN"
+
+
+def test_build_entity_index_reads_weather_nested_description(tmp_path):
+    """WARNING: weather stores its description under extracted_data.description (no top-level
+    'description'), so the index must read the nested path — else weather_index is always {} and the
+    logistics weather-impact link is dead."""
+    wdir = tmp_path / "weather"
+    wdir.mkdir()
+    (wdir / "w1.json").write_text(
+        json.dumps(
+            {
+                "WeatherID": "01WEA0000000000000000001",
+                "extracted_data": {"description": "heavy rain"},
+            }
+        )
+    )
+    # top-level-only read (old behavior) -> empty
+    assert L._build_entity_index(tmp_path, "weather", "WeatherID", "description") == {}
+    # nested read (fix) -> populated
+    idx = L._build_entity_index(
+        tmp_path,
+        "weather",
+        "WeatherID",
+        "description",
+        nested_path="extracted_data.description",
+    )
+    assert idx == {"heavy rain": "01WEA0000000000000000001"}
+    # and the link now works end-to-end
+    out = L._build_weather_impact("heavy rain", "high", idx)
+    assert out and out["WeatherID"] == "01WEA0000000000000000001"
+
+
+def test_build_entity_index_skips_non_dict_file(tmp_path):
+    """A non-dict top-level JSON in the dir must be SKIPPED, not abort the whole index build."""
+    wdir = tmp_path / "weather"
+    wdir.mkdir()
+    (wdir / "bad.json").write_text(json.dumps(["not", "a", "dict"]))
+    (wdir / "good.json").write_text(
+        json.dumps(
+            {
+                "WeatherID": "01WEA0000000000000000002",
+                "extracted_data": {"description": "fog"},
+            }
+        )
+    )
+    idx = L._build_entity_index(
+        tmp_path,
+        "weather",
+        "WeatherID",
+        "description",
+        nested_path="extracted_data.description",
+    )
+    assert idx == {
+        "fog": "01WEA0000000000000000002"
+    }  # good one indexed; bad one skipped
