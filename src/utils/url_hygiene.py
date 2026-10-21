@@ -18,6 +18,7 @@ from __future__ import annotations
 import ipaddress
 import logging
 import re
+import unicodedata
 from typing import Optional
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
@@ -65,6 +66,18 @@ def _host_is_safe(host: str) -> bool:
     before connecting — clean_url alone does not make a URL fetch-safe."""
     if not host:
         return False
+    # Normalize UNICODE homographs BEFORE classification: NFKC collapses ideographic dots (。 U+3002)
+    # and fullwidth digits (１２７) to ASCII, and IDNA maps a unicode label to its ASCII form — so a
+    # host like '127。0。0。1' / '１２７.0.0.1' (which getaddrinfo resolves to 127.0.0.1) is caught by
+    # the numeric detection below instead of passing as a DNS name. A legitimate IDN (münchen.de)
+    # still passes via its punycode/decoded ASCII. Fail-safe: on an IDNA error keep the NFKC form.
+    host = unicodedata.normalize("NFKC", host)
+    try:
+        host = host.encode("idna").decode("ascii")
+    except (
+        Exception
+    ):  # noqa: BLE001 - not IDNA-encodable (e.g. an IP literal) -> use NFKC form
+        pass
     host = host.lower().strip("[]").rstrip(".")  # strip IPv6 brackets + trailing dot
     if not host:
         return False
