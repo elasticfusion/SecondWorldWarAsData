@@ -19,7 +19,7 @@ from src.utils.batch_api import BatchCollector, BatchRequest
 def _client_with_cache(cache: dict):
     c = gc.GrokClient.__new__(gc.GrokClient)
     c._get_cache = lambda ct: cache
-    c._make_cache_key = lambda prompt, temp, model: "KEY"
+    c._make_cache_key = lambda prompt, temp, model, sysp="": "KEY"
     c._get_model = lambda ct: "m"
     return c
 

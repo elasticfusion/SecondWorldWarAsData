@@ -1396,6 +1396,7 @@ class GrokClient:
         prompt: str,
         temperature: float,
         cache_key: Optional[str] = None,
+        system_prompt: Optional[str] = None,
     ) -> None:
         """Handle truncated response errors with auto-clear."""
         response_len = len(response)
@@ -1406,7 +1407,7 @@ class GrokClient:
         # response was never evicted and its event could never be re-extracted.
         cache = self._get_cache(cache_type)
         cache_key = cache_key or self._make_cache_key(
-            prompt, temperature, self._get_model(cache_type)
+            prompt, temperature, self._get_model(cache_type), system_prompt or ""
         )
         evicted = cache.pop(cache_key, None) is not None
         if response_len > 100000:
