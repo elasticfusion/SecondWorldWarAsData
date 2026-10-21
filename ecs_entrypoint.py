@@ -2103,7 +2103,7 @@ def _auto_merge_exact_duplicates() -> None:
     """Auto-merge entity pairs with identical normalized names (no human review needed)."""
     entity_configs = [
         ("people", "PersonID"),
-        ("people_groups", "PeopleGroupID"),
+        ("people_groups", "GroupID"),
         ("places", "PlaceID"),
         ("equipment", "EquipmentID"),
     ]

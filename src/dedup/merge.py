@@ -12,6 +12,61 @@ from typing import Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 
+# Map an entity's PRIMARY-KEY field (or a referrer-side alias of it) to the key that event
+# sub-events actually store the ref list under. These are the keys the extractor
+# (batch_parallel.py:952 key_map + the sub_event_key args) writes into each sub-event:
+# dates / places / peoplegroups / people. NOTE the group ref array is "peoplegroups" (one
+# word) ON DISK — the events_output schema's "groups" property is NOT what the extractor
+# writes. update_event_refs reads se.get(ref_key), so ref_key MUST match the on-disk key
+# exactly — passing the PK field-name ("PlaceID"/"GroupID") or the wrong spelling ("groups")
+# silently matched nothing and left every sub-event ref array dangling on a generic
+# auto-merge (§1.0d CRITICAL). Both the PK and the referrer alias map to the same key.
+# (Equipment is deliberately absent: equipment is not written into a sub-event ref array by
+# the extractor — it links via its own mention records — so an equipment merge has no
+# sub-event refs to repoint.)
+_ID_FIELD_TO_REF_KEY = {
+    "PersonID": "people",
+    "PlaceID": "places",
+    "PeopleGroupID": "peoplegroups",
+    "GroupID": "peoplegroups",
+    "DateID": "dates",
+}
+
+# An entity record's own PRIMARY-KEY field, per entity-dir name. people_groups records are
+# keyed on GroupID (PeopleGroupID is only the referrer-side alias OTHER entities point with),
+# so reading secondary.get("PeopleGroupID") returned "" and skipped the rebase entirely.
+_ENTITY_DIR_PK = {
+    "people": "PersonID",
+    "places": "PlaceID",
+    "people_groups": "GroupID",
+    "equipment": "EquipmentID",
+    "dates": "DateID",
+}
+
+# Entity dirs that the extractor does NOT write into any event sub-event ref array (they link
+# via their own mention records instead). A merge of one of these has no sub-event refs to
+# repoint — cross-entity mention refs are still handled by update_event_refs' entity-dir scan.
+_NO_SUBEVENT_REFS = {"equipment"}
+
+
+def _ref_key_for(id_field: str) -> Optional[str]:
+    """Return the plural sub-event ref key for a PK field/alias (None if unknown)."""
+    return _ID_FIELD_TO_REF_KEY.get(id_field)
+
+
+def _record_id(record: Dict, entity_dir_name: str, id_field: str) -> str:
+    """Resolve a record's REAL primary-key value. Prefer the entity-dir's canonical PK
+    (so people_groups reads GroupID even when the caller passed the PeopleGroupID alias),
+    then the passed id_field, then the alias — whichever is actually present."""
+    pk = _ENTITY_DIR_PK.get(entity_dir_name)
+    for field in (pk, id_field):
+        if field:
+            val = record.get(field, "")
+            if val:
+                return val
+    return ""
+
+
 def _write_entity_guarded(filepath: Path, data: Dict) -> bool:
     """Write an ENTITY record through the central schema write-guard.
 
@@ -107,26 +162,44 @@ def update_index(index_path: Path, old_name: str, new_filename: str) -> None:
         json.dump(index, f, indent=2, ensure_ascii=False)
 
 
-def update_event_refs(
-    output_root: Path, old_id: str, new_id: str, ref_key: str
-) -> None:
-    """Replace old entity ID with new ID in all event and entity files."""
-    for f in sorted(output_root.rglob("*-event.json")):
-        try:
-            with open(f, "r", encoding="utf-8") as fh:
-                d = json.load(fh)
-        except (OSError, json.JSONDecodeError):
+def _rebase_event_file(f: Path, old_id: str, new_id: str, ref_key: str) -> int:
+    """Repoint every old_id->new_id in one event file's sub-event ref arrays (under ref_key).
+    Returns the number of refs changed; writes the file back only if something changed.
+    """
+    try:
+        with open(f, "r", encoding="utf-8") as fh:
+            d = json.load(fh)
+    except (OSError, json.JSONDecodeError):
+        return 0
+    event = d.get("Event", d)
+    changed = 0
+    sub_events = event.get("Sub-events", []) if isinstance(event, dict) else []
+    for se in sub_events if isinstance(sub_events, list) else []:
+        if not isinstance(se, dict):
             continue
-        event = d.get("Event", d)
-        changed = False
-        for se in event.get("Sub-events", []):
-            refs = se.get(ref_key, [])
-            if old_id in refs:
-                refs[refs.index(old_id)] = new_id
-                changed = True
-        if changed:
-            with open(f, "w", encoding="utf-8") as fh:
-                json.dump(d, fh, indent=2, ensure_ascii=False)
+        refs = se.get(ref_key, [])
+        if not isinstance(refs, list):
+            continue
+        # Repoint EVERY occurrence (an entity can appear more than once in a list).
+        for idx, val in enumerate(refs):
+            if val == old_id:
+                refs[idx] = new_id
+                changed += 1
+    if changed:
+        with open(f, "w", encoding="utf-8") as fh:
+            json.dump(d, fh, indent=2, ensure_ascii=False)
+    return changed
+
+
+def update_event_refs(output_root: Path, old_id: str, new_id: str, ref_key: str) -> int:
+    """Replace old entity ID with new ID in all event and entity files.
+
+    ``ref_key`` MUST be the PLURAL sub-event key (places/people/groups/equipment/dates) —
+    NOT the PK field-name. Returns the number of event sub-event refs repointed, so callers
+    can OBSERV a rebase that matched nothing (a sign of a ref_key/PK mismatch)."""
+    event_refs_changed = 0
+    for f in sorted(output_root.rglob("*-event.json")):
+        event_refs_changed += _rebase_event_file(f, old_id, new_id, ref_key)
 
     # Update entity files that reference the old ID (targeted field replacement)
     id_fields = {
@@ -171,6 +244,7 @@ def update_event_refs(
                 continue
             if _replace_id_in_obj(data, old_id, new_id, id_fields):
                 _write_entity_guarded(f, data)
+    return event_refs_changed
 
 
 def _replace_id_in_obj(obj, old_id: str, new_id: str, id_fields: set) -> bool:
@@ -323,26 +397,18 @@ def _merge_one_secondary(
     except (OSError, json.JSONDecodeError):
         return False
 
-    # Dedup event mentions by Sub_eventID
-    for m in secondary.get("event_mentions", []):
-        sub_id = m.get("Sub_eventID")
-        if not sub_id or sub_id not in seen_sub_events:
-            primary_mentions.append(m)
-            if sub_id:
-                seen_sub_events.add(sub_id)
+    # Union mentions (dedup by Sub_eventID) + record the secondary name as an alias.
+    _absorb_secondary_fields(
+        secondary, primary_mentions, aliases, seen_sub_events, name_fields
+    )
 
-    # Add secondary name as alias
-    for field in name_fields:
-        sec_name = secondary.get(field, "")
-        if sec_name and sec_name not in aliases:
-            aliases.append(sec_name)
-            break
-
-    # Update event files: replace old ID with primary ID
-    old_id = secondary.get(id_field, "")
-    new_id = primary_data.get(id_field, "")
-    if old_id and new_id and old_id != new_id:
-        update_event_refs(entity_dir.parent, old_id, new_id, id_field)
+    # Update event files: replace old ID with primary ID. Derive both ids from the record's
+    # REAL primary key (people_groups -> GroupID, not the PeopleGroupID alias), and rebase the
+    # sub-event arrays under the PLURAL ref key (places/groups/equipment/...), NOT the PK
+    # field-name — the two §1.0d CRITICAL bugs lived here.
+    old_id = _record_id(secondary, entity_dir.name, id_field)
+    new_id = _record_id(primary_data, entity_dir.name, id_field)
+    _rebase_refs_for_merge(entity_dir, old_id, new_id, id_field)
 
     _backup_before_delete(f)
     f.unlink()
@@ -351,3 +417,74 @@ def _merge_one_secondary(
     if old_id:
         _dynamo_merge_sync(entity_dir.name, "", {}, old_id)
     return True
+
+
+def _absorb_secondary_fields(
+    secondary: Dict,
+    primary_mentions: List,
+    aliases: List,
+    seen_sub_events: set,
+    name_fields: tuple,
+) -> None:
+    """Union the secondary's event_mentions into primary_mentions (dedup by Sub_eventID) and
+    append its first available name field to aliases."""
+    for m in secondary.get("event_mentions", []):
+        sub_id = m.get("Sub_eventID")
+        if not sub_id or sub_id not in seen_sub_events:
+            primary_mentions.append(m)
+            if sub_id:
+                seen_sub_events.add(sub_id)
+    for field in name_fields:
+        sec_name = secondary.get(field, "")
+        if sec_name and sec_name not in aliases:
+            aliases.append(sec_name)
+            break
+
+
+def _rebase_refs_for_merge(
+    entity_dir: Path, old_id: str, new_id: str, id_field: str
+) -> None:
+    """Repoint event sub-event refs old_id->new_id for a generic merge, resolving the on-disk
+    ref_key from the PK field and OBSERV-logging an unknown-ref-key or 0-ref rebase."""
+    if not (old_id and new_id):
+        logger.info(
+            "OBSERV dedup.rebase.noid entity=%s id_field=%s old=%r new=%r — could not "
+            "resolve both ids, sub-event refs NOT repointed",
+            entity_dir.name,
+            id_field,
+            old_id,
+            new_id,
+        )
+        return
+    if old_id == new_id:
+        return
+    # Equipment has NO sub-event ref array (it links via its own mention records), but a merge
+    # still must rebase EquipmentID cross-refs held inside OTHER entity records. Run the rebase
+    # with an empty ref_key (the sub-event loop matches nothing; the entity-dir scan still runs)
+    # and do NOT warn on zero sub-event refs — that's expected for equipment.
+    if entity_dir.name in _NO_SUBEVENT_REFS:
+        update_event_refs(entity_dir.parent, old_id, new_id, "")
+        return
+    ref_key = _ref_key_for(id_field) or _ref_key_for(
+        _ENTITY_DIR_PK.get(entity_dir.name, "")
+    )
+    if not ref_key:
+        logger.warning(
+            "OBSERV dedup.rebase.skip reason=unknown_ref_key entity=%s id_field=%s "
+            "old=%s — sub-event refs NOT repointed",
+            entity_dir.name,
+            id_field,
+            old_id,
+        )
+        return
+    n = update_event_refs(entity_dir.parent, old_id, new_id, ref_key)
+    if n == 0:
+        logger.warning(
+            "OBSERV dedup.rebase.zero entity=%s ref_key=%s old=%s new=%s — merged a "
+            "secondary but repointed 0 event sub-event refs (possible ref_key/PK "
+            "mismatch or no referencing events)",
+            entity_dir.name,
+            ref_key,
+            old_id,
+            new_id,
+        )

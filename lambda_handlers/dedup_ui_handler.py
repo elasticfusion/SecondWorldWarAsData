@@ -136,6 +136,122 @@ ENTITY_PREFIXES = {
     "equipment": "output/equipment",
 }
 
+# For each dedup-UI entity_type: the record's REAL primary-key field and the key that event
+# sub-events store the ref list under (the ON-DISK key the extractor writes — batch_parallel
+# key_map: dates/places/peoplegroups/people; the group array is "peoplegroups", NOT "groups").
+# A UI merge must repoint these refs across the event corpus or every reference to the deleted
+# secondary dangles (§1.0d CRITICAL path 3). Equipment is intentionally omitted: it has no
+# sub-event ref array (links via its own mention records), so there is nothing to repoint.
+ENTITY_PK_AND_REFKEY = {
+    "people": ("PersonID", "people"),
+    "places": ("PlaceID", "places"),
+    "groups": ("GroupID", "peoplegroups"),  # people_groups records keyed on GroupID
+    "equipment": ("EquipmentID", ""),
+}
+
+
+def _list_event_files(storage):
+    """List every event file key via storage. The dedup-UI handler builds S3Storage with an
+    EMPTY prefix, so event files are at the full key ``output/content/<book>/<ch>-event.json``.
+    S3Storage.list_files is recursive; LocalStorage.glob is not, so (mirroring
+    referential_integrity._event_files) try a nested pattern first, then fall back. Returns a
+    de-duplicated list of keys ending in ``-event.json``."""
+    seen = []
+    for pattern in ("*/*-event.json", "*-event.json", "*.json"):
+        try:
+            for rel in storage.list_files("output/content", pattern):
+                if rel.endswith("-event.json") and rel not in seen:
+                    seen.append(rel)
+        except Exception:  # noqa: BLE001
+            continue
+        if seen:
+            break
+    return seen
+
+
+def _rebase_event_refs_storage(storage, old_id, new_id, ref_key):
+    """Repoint old_id->new_id in every event file's sub-event ``ref_key`` array, via the storage
+    backend (S3/local). Returns the number of refs repointed; OBSERV-logs the result so a rebase
+    that matches nothing (ref_key/PK mismatch) is visible. Best-effort per file — a single
+    unreadable event file never aborts the merge."""
+    if not (old_id and new_id):
+        logger.info(
+            "OBSERV dedup.rebase.noid ref_key=%s old=%r new=%r — missing id, refs NOT repointed",
+            ref_key,
+            old_id,
+            new_id,
+        )
+        return 0
+    if old_id == new_id or not ref_key:
+        # ref_key="" is the equipment case (no sub-event ref array) — nothing to repoint.
+        return 0
+    total = 0
+    try:
+        event_files = _list_event_files(storage)
+    except Exception as e:  # noqa: BLE001
+        logger.error(
+            "OBSERV dedup.rebase.list_failed ref_key=%s old=%s err=%s — refs NOT repointed",
+            ref_key,
+            old_id,
+            e,
+        )
+        return 0
+    for rel in event_files:
+        total += _rebase_one_event_file(storage, rel, old_id, new_id, ref_key)
+    if total == 0:
+        logger.warning(
+            "OBSERV dedup.rebase.zero ref_key=%s old=%s new=%s — UI merge repointed 0 event "
+            "sub-event refs (ref_key/PK mismatch or no referencing events)",
+            ref_key,
+            old_id,
+            new_id,
+        )
+    else:
+        logger.info(
+            "OBSERV dedup.rebase.ok ref_key=%s old=%s new=%s refs=%d",
+            ref_key,
+            old_id,
+            new_id,
+            total,
+        )
+    return total
+
+
+def _rebase_one_event_file(storage, rel, old_id, new_id, ref_key):
+    """Repoint old_id->new_id in one event file's sub-event ``ref_key`` arrays via storage.
+    Returns the count changed; writes back only on a change. Best-effort (never raises).
+    """
+    try:
+        d = storage.read_json(rel)
+    except Exception:
+        return 0
+    changed = _repoint_subevents(d.get("Event", d), old_id, new_id, ref_key)
+    if changed:
+        try:
+            storage.write_json(rel, d)
+        except Exception as e:
+            logger.error("OBSERV dedup.rebase.write_failed file=%s err=%s", rel, e)
+            return 0
+    return changed
+
+
+def _repoint_subevents(event, old_id, new_id, ref_key):
+    """Repoint old_id->new_id in an event's sub-event ``ref_key`` arrays (in place). Returns the
+    count changed. Defensive against non-dict/non-list shapes."""
+    changed = 0
+    sub_events = event.get("Sub-events", []) if isinstance(event, dict) else []
+    for se in sub_events if isinstance(sub_events, list) else []:
+        if not isinstance(se, dict):
+            continue
+        refs = se.get(ref_key, [])
+        if not isinstance(refs, list):
+            continue
+        for idx, val in enumerate(refs):
+            if val == old_id:
+                refs[idx] = new_id
+                changed += 1
+    return changed
+
 
 def _get_detail(storage, entity_type, filename):
     """Return sanitized JSON for a specific entity file."""
@@ -407,6 +523,7 @@ def _merge_generic_files(entity_type, people, primary_index, storage):
     prefix = ENTITY_PREFIXES.get(entity_type, "")
     if not prefix:
         return
+    pk_field, ref_key = ENTITY_PK_AND_REFKEY.get(entity_type, ("", ""))
     primary = people[primary_index]
     try:
         primary_data = storage.read_json(f"{prefix}/{primary['filename']}")
@@ -414,6 +531,7 @@ def _merge_generic_files(entity_type, people, primary_index, storage):
         return
     primary_mentions = primary_data.get("event_mentions", [])
     aliases = primary_data.get("aliases", []) or []
+    primary_id = primary_data.get(pk_field, "") if pk_field else ""
 
     for i, p in enumerate(people):
         if i == primary_index:
@@ -422,44 +540,56 @@ def _merge_generic_files(entity_type, people, primary_index, storage):
         if _lambda_context and _lambda_context.get_remaining_time_in_millis() < 10000:
             logger.warning("Lambda timeout approaching — saving partial merge")
             break
-        try:
-            secondary = storage.read_json(f"{prefix}/{p['filename']}")
-            secondary_mentions = secondary.get("event_mentions", [])
-            seen = {
-                (
-                    m.get("Sub_eventID", ""),
-                    m.get("event_id", ""),
-                    m.get("Event_Name", ""),
-                )
-                for m in primary_mentions
-            }
-            for m in secondary_mentions:
-                mention_key = (
-                    m.get("Sub_eventID", ""),
-                    m.get("event_id", ""),
-                    m.get("Event_Name", ""),
-                )
-                if mention_key not in seen:
-                    primary_mentions.append(m)
-                    seen.add(mention_key)
-            sec_name = secondary.get(
-                "name",
-                secondary.get(
-                    "current_name",
-                    secondary.get("group_name", secondary.get("common_name", "")),
-                ),
-            )
-            if sec_name and sec_name not in aliases:
-                aliases.append(sec_name)
-            storage.delete(f"{prefix}/{p['filename']}")
-        except Exception as e:
-            logger.warning("Could not delete %s: %s", p.get("filename"), e)
+        _absorb_secondary_generic(
+            storage, prefix, p, primary_mentions, aliases, primary_id, pk_field, ref_key
+        )
 
     primary_data["event_mentions"] = primary_mentions
     primary_data["aliases"] = aliases
     storage.write_json(f"{prefix}/{primary['filename']}", primary_data)
     _sync_entity_to_dynamo(prefix.split("/")[-1], primary_data)
     _append_to_manifest([f"{prefix}/{primary['filename']}"])
+
+
+def _absorb_secondary_generic(
+    storage, prefix, p, primary_mentions, aliases, primary_id, pk_field, ref_key
+):
+    """Union one secondary's mentions/alias into the primary lists, rebase its event refs to the
+    primary id (BEFORE delete so nothing is orphaned), then delete the secondary file.
+    """
+    try:
+        secondary = storage.read_json(f"{prefix}/{p['filename']}")
+    except Exception as e:
+        logger.warning("Could not read %s: %s", p.get("filename"), e)
+        return
+    seen = {
+        (m.get("Sub_eventID", ""), m.get("event_id", ""), m.get("Event_Name", ""))
+        for m in primary_mentions
+    }
+    for m in secondary.get("event_mentions", []):
+        mention_key = (
+            m.get("Sub_eventID", ""),
+            m.get("event_id", ""),
+            m.get("Event_Name", ""),
+        )
+        if mention_key not in seen:
+            primary_mentions.append(m)
+            seen.add(mention_key)
+    sec_name = secondary.get(
+        "name",
+        secondary.get(
+            "current_name",
+            secondary.get("group_name", secondary.get("common_name", "")),
+        ),
+    )
+    if sec_name and sec_name not in aliases:
+        aliases.append(sec_name)
+    secondary_id = secondary.get(pk_field, "") if pk_field else ""
+    _rebase_event_refs_storage(storage, secondary_id, primary_id, ref_key)
+    try:
+        storage.delete(f"{prefix}/{p['filename']}")
+    except Exception as e:
+        logger.warning("Could not delete %s: %s", p.get("filename"), e)
 
 
 def _rename_to_match_content(event, storage):
@@ -576,17 +706,40 @@ def _merge_people_files(people, primary_index, storage):
         )
         (tmpdir / "output").mkdir(exist_ok=True)
 
+        # Capture the real PersonIDs BEFORE the merge deletes the secondary files, so we can
+        # rebase the event corpus ourselves — do_merge's own update_event_refs runs against the
+        # people-only tmpdir and finds NO event files, so it never actually rebases (§1.0d).
+        prim_idx = min(primary_index, len(available) - 1)
+        primary_id = _person_id_from_dir(people_dir, available[prim_idx]["filename"])
+        secondary_ids = [
+            _person_id_from_dir(people_dir, p["filename"])
+            for i, p in enumerate(available)
+            if i != prim_idx
+        ]
+
         from src.dedup.merge import do_merge as do_merge_people
 
         try:
-            do_merge_people(
-                people_dir, available, min(primary_index, len(available) - 1)
-            )
+            do_merge_people(people_dir, available, prim_idx)
         except Exception as e:
             logger.error("Merge failed: %s", e)
             return _json_response(500, {"error": f"Merge failed: {e}"})
+        # Rebase every event sub-event people[] ref from each merged-away PersonID -> primary
+        # BEFORE _upload_merged deletes the secondary S3 files (rebase-before-delete, matching
+        # the generic path — no window where an event ref points at a deleted person).
+        for old_id in secondary_ids:
+            _rebase_event_refs_storage(storage, old_id, primary_id, "people")
         _upload_merged(people, primary_index, people_dir, storage)
     return None
+
+
+def _person_id_from_dir(people_dir, filename):
+    """Read a downloaded person file's PersonID (empty string if unreadable)."""
+    try:
+        data = json.loads((people_dir / filename).read_text(encoding="utf-8"))
+        return data.get("PersonID", "")
+    except (OSError, json.JSONDecodeError):
+        return ""
 
 
 def _download_people(people, people_dir, storage):
