@@ -31,7 +31,7 @@ def get_group_wikipedia_image(name: str) -> Optional[dict]:
 
 def search_group_wikipedia(name: str) -> Optional[dict]:
     """Search Wikipedia for a military unit/group. Returns {extract, url, image, license} or None."""
-    from src.utils.search_cache import cache_result, get_cached
+    from src.utils.search_cache import cache_result, get_cached, TRANSIENT
 
     cached = get_cached("wikipedia_group", name)
     if cached == "NOT_FOUND":
@@ -39,10 +39,17 @@ def search_group_wikipedia(name: str) -> Optional[dict]:
     if cached:
         return json.loads(cached)
 
+    transient = False
     result = _lookup_group(name)
+    if result is TRANSIENT:
+        transient = True
+        result = None
     if not result:
-        # Try adding "World War II" suffix for disambiguation
-        result = _lookup_group(f"{name} (World War II)")
+        r = _lookup_group(f"{name} (World War II)")
+        if r is TRANSIENT:
+            transient = True
+        elif r:
+            result = r
 
     if result:
         cache_result("wikipedia_group", name, json.dumps(result))
@@ -51,12 +58,12 @@ def search_group_wikipedia(name: str) -> Optional[dict]:
                 "url": result.get("image", ""),
                 "license": result.get("license", "unknown"),
             }
-    else:
-        cache_result("wikipedia_group", name, None)
+    elif not transient:
+        cache_result("wikipedia_group", name, None)  # genuine miss -> negative-cache
     return result
 
 
-def _lookup_group(title: str) -> Optional[dict]:
+def _lookup_group(title: str):  # -> dict | None | search_cache.TRANSIENT sentinel
     """Direct Wikipedia lookup for a military unit page."""
     # URL-keyed dedup (not entity-keyed): skip if this article URL was fetched <90d ago.
     _canon = f"https://en.wikipedia.org/wiki/{title.replace(' ', '_')}"
@@ -84,7 +91,9 @@ def _lookup_group(title: str) -> Optional[dict]:
             timeout=15,
         )
         if resp.status_code != 200:
-            return None
+            from src.utils.search_cache import TRANSIENT
+
+            return TRANSIENT  # transient server error, not a genuine miss
 
         pages = resp.json().get("query", {}).get("pages", {})
         for page_id, page_data in pages.items():
@@ -141,6 +150,9 @@ def _lookup_group(title: str) -> Optional[dict]:
             }
     except Exception as e:
         logger.debug("Wikipedia group lookup failed for %s: %s", title, e)
+        from src.utils.search_cache import TRANSIENT
+
+        return TRANSIENT  # network/transient failure -> don't negative-cache
     return None
 
 

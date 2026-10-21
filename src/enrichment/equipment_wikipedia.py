@@ -34,7 +34,7 @@ def get_equipment_wikipedia_image(name: str) -> Optional[dict]:
 
 def search_equipment_wikipedia(name: str) -> Optional[dict]:
     """Search Wikipedia for an equipment article. Returns {extract, url, image, license} or None."""
-    from src.utils.search_cache import cache_result, get_cached
+    from src.utils.search_cache import cache_result, get_cached, TRANSIENT
 
     cached = get_cached("wikipedia_equipment", name)
     if cached == "NOT_FOUND":
@@ -42,13 +42,21 @@ def search_equipment_wikipedia(name: str) -> Optional[dict]:
     if cached:
         return json.loads(cached)
 
-    # Direct title lookup
+    # Direct title lookup, then common suffixes. Track whether any attempt hit a TRANSIENT failure
+    # (non-200 / network) so a Wikipedia outage is not negative-cached as a genuine miss for 7d.
+    transient = False
     result = _lookup_equipment(name)
+    if result is TRANSIENT:
+        transient = True
+        result = None
     if not result:
-        # Try with common suffixes
         for suffix in [" tank", " aircraft", " gun", " rifle", " vehicle", " ship"]:
-            result = _lookup_equipment(name + suffix)
-            if result:
+            r = _lookup_equipment(name + suffix)
+            if r is TRANSIENT:
+                transient = True
+                continue
+            if r:
+                result = r
                 break
 
     if result:
@@ -58,12 +66,14 @@ def search_equipment_wikipedia(name: str) -> Optional[dict]:
                 "url": result.get("image", ""),
                 "license": result.get("license", "unknown"),
             }
-    else:
-        cache_result("wikipedia_equipment", name, None)
+    elif not transient:
+        cache_result(
+            "wikipedia_equipment", name, None
+        )  # genuine miss -> negative-cache
     return result
 
 
-def _lookup_equipment(title: str) -> Optional[dict]:
+def _lookup_equipment(title: str):  # -> dict | None | search_cache.TRANSIENT sentinel
     """Direct Wikipedia lookup for equipment page."""
     # URL-keyed dedup (not entity-keyed): skip if this article URL was fetched <90d ago.
     _canon = f"https://en.wikipedia.org/wiki/{title.replace(' ', '_')}"
@@ -91,7 +101,9 @@ def _lookup_equipment(title: str) -> Optional[dict]:
             timeout=15,
         )
         if resp.status_code != 200:
-            return None
+            from src.utils.search_cache import TRANSIENT
+
+            return TRANSIENT  # transient server error, not a genuine miss
 
         pages = resp.json().get("query", {}).get("pages", {})
         for page_id, page_data in pages.items():
@@ -157,6 +169,9 @@ def _lookup_equipment(title: str) -> Optional[dict]:
             }
     except Exception as e:
         logger.debug("Wikipedia equipment lookup failed for %s: %s", title, e)
+        from src.utils.search_cache import TRANSIENT
+
+        return TRANSIENT  # network/transient failure -> don't negative-cache
     return None
 
 

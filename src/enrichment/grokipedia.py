@@ -45,11 +45,23 @@ def resolve_grokipedia_url(name: str, timeout: int = 20) -> Optional[str]:
         return cached
 
     url = _scrape_grokipedia_url(name, timeout)
+    from src.utils.search_cache import TRANSIENT
+
+    if url is TRANSIENT:
+        return (
+            None  # transient failure: don't negative-cache, don't return the sentinel
+        )
     cache_result("grokipedia_url", name, url if url else None)
     return url
 
 
-def _scrape_grokipedia_url(name: str, timeout: int) -> Optional[str]:
+def _scrape_grokipedia_url(name: str, timeout: int):
+    """Return a clean /page/ URL, None on a genuine no-match (200 with no match), or
+    search_cache.TRANSIENT on a transient failure (non-200 / network error) so the caller does NOT
+    negative-cache a one-off outage for 7 days (which would suppress this name corpus-wide).
+    """
+    from src.utils.search_cache import TRANSIENT
+
     try:
         resp = requests.get(
             f"https://grokipedia.com/search?q={name}",
@@ -57,8 +69,15 @@ def _scrape_grokipedia_url(name: str, timeout: int) -> Optional[str]:
             timeout=timeout,
             allow_redirects=True,
         )
-        if resp.status_code != 200 or "/page/" not in resp.text:
-            return None
+        if resp.status_code != 200:
+            logger.info(
+                "OBSERV grokipedia.transient status=%d name=%r",
+                resp.status_code,
+                name[:60],
+            )
+            return TRANSIENT
+        if "/page/" not in resp.text:
+            return None  # genuine no-match -> OK to negative-cache
         candidates = re.findall(r'data-slug="([^"]+)"', resp.text)
         candidates += re.findall(r"/page/([A-Za-z0-9_\-]+)", resp.text)
         for slug in candidates:
@@ -66,8 +85,10 @@ def _scrape_grokipedia_url(name: str, timeout: int) -> Optional[str]:
                 return f"https://grokipedia.com/page/{slug}"
         return None
     except (requests.RequestException, ValueError) as e:
-        logger.debug("grokipedia resolve failed for %r: %s", name, e)
-        return None
+        logger.info(
+            "OBSERV grokipedia.transient err=%s name=%r", str(e)[:80], name[:60]
+        )
+        return TRANSIENT
 
 
 # --- Headless-rendered article text --------------------------------------------------------
