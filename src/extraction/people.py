@@ -565,7 +565,6 @@ def create_people_prompt(
 
 
 @lru_cache(maxsize=5000)
-@lru_cache(maxsize=1000)
 def _normalize_name(name: str) -> str:
     """Normalize person name for matching (deprecated - use text_utils.normalize_name)."""
     return normalize_name(name)

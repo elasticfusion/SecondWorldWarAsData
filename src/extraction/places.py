@@ -612,12 +612,18 @@ def _add_event_mention(
                 "original_text": mention.get("original_text", ""),
             }
 
-            # Check for duplicate mention (same sub-event)
-            existing = [
-                m
-                for m in place_data.get("event_mentions", [])
-                if m["Sub_eventID"] == sub_event_id
-            ]
+            # Check for duplicate mention (same sub-event). Legacy mentions may predate the
+            # Sub_eventID field — use .get() so a missing key doesn't KeyError (a legacy mention
+            # with no Sub_eventID simply doesn't match and is observably noted, not crashed on).
+            existing = []
+            for m in place_data.get("event_mentions", []):
+                if "Sub_eventID" not in m:
+                    logger.info(
+                        "OBSERV places.legacy_mention_no_subevent file=%s",
+                        place_file.name,
+                    )
+                if m.get("Sub_eventID") == sub_event_id:
+                    existing.append(m)
 
             if not existing:
                 place_data.setdefault("event_mentions", []).append(event_mention)
