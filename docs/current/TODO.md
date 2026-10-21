@@ -89,6 +89,36 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
   (+ latent wrong-kwarg); dead Dynamo dual-write in file_lock; duplicated max_tokens / ignored timeout params.
 
 
+### 1.0b Phase-2 RE-REVIEW findings (2026-10-20) — full doc: docs/current/PHASE2_REREVIEW_2026-10-20.md
+
+Fresh 8-agent re-review of the merged state. Merged fixes validated correct+complete in-scope; these
+are NEW gaps (analyzer-invisible; bandit still 0H/0M). Ranked:
+
+- **[CRITICAL · SSRF] grok_client.extract_json_with_image fetches an untrusted image URL unguarded.**
+  session.get(image_url, allow_redirects=True) + unbounded .content; reachable LIVE in Phase 3 via
+  search_external_maps._verify_single_image (img url from scraped page HTML). Pattern-2 + its grep
+  test missed it (fetch is in grok_client via session.get, not a cluster-module requests.get). FIX:
+  gate img_url in _verify_single_image (clean_url+resolved_host_is_safe like unit_patch._safe_url) +
+  harden extract_json_with_image to route bytes via images.fetch_image_bytes; + a bytes-level
+  regression test (not a source grep).
+- **[HIGH] chunked_extract.extract_with_chunk_halving halving not recursive** — a half-chunk that
+  still truncates is silently DROPPED (~half items lost). Recurse per half (keep BatchModeCollecting re-raise).
+- **[HIGH] batch_api.retrieve_results_ordered valid-gate too strict** — requires finish_reason=='stop'
+  but default is 'unknown' -> valid content discarded + re-billed. Accept finish_reason!='length'.
+- **[WARNING] Pattern-3 path-traversal INCOMPLETE** — weather_central._create_new_weather_file +
+  casualties._save_casualty build filenames from LLM values without _safe_entity_filename/_contained
+  (same class fixed elsewhere). Route both; clamp casualties 'type' to its enum.
+- **[WARNING] Decompression-bomb guard scoped too narrowly** — equipment convert/resize + grok_search_maps
+  restore MAX_IMAGE_PIXELS before the rasterizing convert/resize; equipment._compute_image_hash has no
+  cap. Hold the cap across the whole decode block (mirror unit_patch).
+- **[WARNING] SSRF via url_hygiene bypass (enrichment)** — bibliography_resolver._verify_url_content
+  (LIVE) + source_retrieval._download_to_quarantine (latent) session.get a DISCOVERED URL w/
+  allow_redirects=True; route through fetch_text_safe/clean_url.
+- **[WARNING] logistics** — _save_extraction poisons dedup key on write-fail (data loss);
+  _rebuild_index key collapses distinct sub-events; _build_weather_impact bare-substring WeatherID.
+- **[WARNING] core nits** — places._add_event_mention hard-indexes m['Sub_eventID'] (KeyError on
+  legacy); people._normalize_name stacked double-lru_cache (inner dead).
+
 ### 1.1 Data-quality from the clean XChannel run
 
 - **[FIX MERGED · PR #472 — VERIFY on next re-run] equipment extraction persisted 0.** Root cause
