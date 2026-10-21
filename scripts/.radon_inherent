@@ -31,7 +31,6 @@ lambda_handlers/trigger_handler.py::_launch_phase1_if_idle  8430e9508d16547b63e3
 lambda_handlers/trigger_handler.py::_reconcile_pending  6c1ff13c8501bba53cec43f5ba74eab18ed8466443faba8c22f0881e8ef00cee  # grandfathered C(12) C+ backlog 2026-10-20
 lambda_handlers/trigger_handler.py::_run_task  78afb1417c47bca7c8000910ead508ae26e7a9d68369a48d2cecbaff2b1f8f89  # grandfathered C(12) C+ backlog 2026-10-20
 lambda_handlers/trigger_handler.py::_split_by_media  8e51d8b1a164c37f83436a125dd9d76d12a47acd90814ab35ec60dc4d0589994  # grandfathered C(11) C+ backlog 2026-10-20
-lambda_handlers/trigger_handler.py::_submit_ocr  a1ee2dc9aab98755f8065e0784c5bdc239a750a8e8c5f90218514121212fecbd  # grandfathered C(11) C+ backlog 2026-10-20
 lambda_handlers/trigger_handler.py::_title_from_key  9221b5b892989f6ed9923f6036f59e94032a17cc1cfdfe036cbecfc424131196  # grandfathered C(12) C+ backlog 2026-10-20
 src/dedup/merge.py::_merge_one_secondary  2782aa37e88cd5d2fa157f868e61345d472a1cf3aa8a19bd0660ce7bb2ea6880  # grandfathered C(14) C+ backlog 2026-10-20
 src/dedup/merge.py::_replace_id_in_obj  ce6bddb0d9aa102fa299594bf20eed50c6afcdad9c1285e59348aae68a9b9225  # grandfathered C(13) C+ backlog 2026-10-20
