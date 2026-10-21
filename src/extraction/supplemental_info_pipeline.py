@@ -58,11 +58,16 @@ def _extract_entity_type(
     # temp event.json and pass its Path.
     tmp_dir = output_root / "_supplemental_tmp"
     tmp_dir.mkdir(parents=True, exist_ok=True)
-    seid = (pseudo_event.get("Event", {}).get("Sub-events") or [{}])[0].get(
+    _seid_raw = (pseudo_event.get("Event", {}).get("Sub-events") or [{}])[0].get(
         "Sub-eventID", "x"
     )
+    # Sanitize before using as a tempfile PREFIX: mkstemp does NOT strip "/" or ".." from the
+    # prefix, and Sub-eventID is read raw from (LLM/source) JSON. Keep only a safe alnum token.
+    import re as _re
+
+    seid = _re.sub(r"[^A-Za-z0-9]", "", str(_seid_raw))[:12] or "x"
     fd, tmp_name = tempfile.mkstemp(
-        dir=str(tmp_dir), prefix=f"{seid[:12]}_", suffix="-event.json"
+        dir=str(tmp_dir), prefix=f"{seid}_", suffix="-event.json"
     )
     event_file = Path(tmp_name)
     try:

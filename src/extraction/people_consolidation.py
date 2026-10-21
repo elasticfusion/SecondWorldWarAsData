@@ -205,5 +205,7 @@ def consolidate_people(
     logger.info(f"Consolidated {len(people_list)} → {len(merged_people)} people")
 
     # Save consolidated file
-    _save_consolidated_data(output_file, merged_people)
-    logger.info(f"Saved consolidated file: {output_file}")
+    if _save_consolidated_data(output_file, merged_people):
+        logger.info(f"Saved consolidated file: {output_file}")
+    else:
+        logger.error("Consolidated save FAILED for %s (not written)", output_file)

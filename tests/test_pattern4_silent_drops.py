@@ -117,6 +117,33 @@ def test_has_document_hybrid_keeps_citation():
     assert _has_document({"verbatim_reference": "ibid"}) is False
 
 
+# --- #6 supplemental_info_pipeline: temp event.json path is contained (no prefix traversal) -----
+def test_supplemental_info_tempfile_prefix_cannot_escape(tmp_path, monkeypatch):
+    from src.extraction import supplemental_info_pipeline as sip
+
+    seen = {}
+
+    def _fake_extract_dates(event_file, grok_client, dates_dir):
+        # the extractor receives a PATH (not the old dict) and it must live under the temp dir
+        seen["event_file"] = event_file
+        return None
+
+    monkeypatch.setattr(
+        "src.extraction.dates.extract_dates", _fake_extract_dates, raising=True
+    )
+    pseudo = {
+        "Event": {
+            "EventID": "01HZXAAAAAAAAAAAAAAAAAAAAA",
+            "Sub-events": [{"Sub-eventID": "../../../../etc/evil"}],  # hostile
+        }
+    }
+    sip._extract_entity_type("dates", pseudo, object(), tmp_path, {})
+    ef = seen["event_file"]
+    # the written temp file stays contained under tmp_path/_supplemental_tmp (prefix sanitized)
+    assert str(ef.resolve()).startswith(str((tmp_path / "_supplemental_tmp").resolve()))
+    assert not (tmp_path.parent / "etc" / "evil").exists()
+
+
 # --- #7 people_consolidation save is atomic + returns bool ---------------------------------
 def test_save_consolidated_is_atomic_and_returns_true(tmp_path):
     from src.extraction.people_consolidation import _save_consolidated_data
