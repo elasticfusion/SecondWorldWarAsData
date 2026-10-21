@@ -186,3 +186,36 @@ def test_casualty_save_clamps_type_and_contains(tmp_path):
     with mock.patch("src.utils.file_lock.write_json_with_lock") as w:
         casualties._save_casualty({"CasualtyID": cid, "type": "killed"}, out)
         assert Path(w.call_args.args[0]).name == f"killed_{cid}.json"
+
+
+def test_logistics_save_contains_hostile_date_start(tmp_path):
+    """logistics._save_extraction must not let a hostile LLM date_start escape logistics_dir."""
+    from unittest import mock
+    from src.extraction import logistics as L
+
+    out = tmp_path / "logistics"
+    out.mkdir()
+    ext = mock.Mock()
+    ext.category = "general"
+    ext.type = "supply_shortage"
+    ext.date_start = "../../../../tmp/evil"  # hostile
+    sub_event = {"Sub-eventID": "01SUB0000000000000000000A0"}
+    data = {
+        "category": "general",
+        "logistics_type": "supply_shortage",
+        "LogisticsID": "01LOG0000000000000000000A0",
+    }
+    with (
+        mock.patch.object(L, "_build_logistics_data", return_value=data),
+        mock.patch.object(
+            L.Logistics, "model_validate", lambda d: mock.Mock(model_dump=lambda **k: d)
+        ),
+        mock.patch("src.utils.file_lock.write_json_with_lock") as w,
+    ):
+        ok = L._save_extraction(
+            ext, {"EventID": "E"}, sub_event, ({}, {}, {}, {}, {}, {}), out, set()
+        )
+    assert ok is True
+    written = Path(w.call_args.args[0])
+    assert out.resolve() in written.resolve().parents  # stayed inside logistics_dir
+    assert "/" not in written.name and ".." not in written.name

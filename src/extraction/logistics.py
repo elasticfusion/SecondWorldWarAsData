@@ -705,12 +705,29 @@ def _save_extraction(
             if extraction.date_start
             else "UNKNOWN"
         )
-        filename = f"{data['category']}_{data['logistics_type']}_{date_str}_{data['LogisticsID'][:8]}.json"
+        # date_start is UNTRUSTED LLM free-text (category/logistics_type are enum-clamped, but
+        # date_str is not) and the cosmetic .replace('-','') does NOT strip '/' or '..' — route the
+        # composed name through the shared path-traversal sanitizer + symlink-containment guard
+        # (mirrors dates.py/weather_central.py/casualties.py; the one date-in-filename writer the
+        # Pattern-3 campaign missed).
+        from src.extraction.batch_parallel import (
+            _safe_entity_filename,
+            _contained_entity_path,
+        )
+
+        proposed = f"{data['category']}_{data['logistics_type']}_{date_str}_{data['LogisticsID'][:8]}.json"
+        filename = _safe_entity_filename(proposed, data["LogisticsID"])
+        target = _contained_entity_path(logistics_dir, filename)
+        if target is None:
+            logger.warning(
+                "OBSERV logistics.filename_contained_fallback id=%s",
+                data["LogisticsID"],
+            )
+            filename = f"{data['LogisticsID']}.json"
+            target = logistics_dir / filename
         from src.utils.file_lock import write_json_with_lock
 
-        write_json_with_lock(
-            logistics_dir / filename, validated.model_dump(exclude_none=True)
-        )
+        write_json_with_lock(target, validated.model_dump(exclude_none=True))
         # Mark deduped ONLY after a confirmed write — adding before the write poisoned the key on a
         # validate/write failure, so a later identical extraction was silently dropped (data loss).
         existing_keys.add(dedup_key)
