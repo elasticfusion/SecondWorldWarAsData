@@ -44,15 +44,26 @@ heroism in connection with military operations against an armed enemy.</p>
 
 class _FakeResp:
     def __init__(self, text, status=200):
-        self.text = text
+        self._text = text
         self.status_code = status
+        self._content = None
+
+    @property
+    def text(self):
+        # polite_get streams + sets _content (capped); mirror requests' .text behavior
+        if self._content is not None:
+            return self._content.decode("utf-8", "replace")
+        return self._text
+
+    def iter_content(self, n):
+        yield self._text.encode("utf-8")
 
 
 class _FakeSession:
     def __init__(self):
         self.calls = []
 
-    def get(self, url, headers=None, timeout=None, allow_redirects=True):
+    def get(self, url, headers=None, timeout=None, allow_redirects=True, stream=False):
         self.calls.append(url)
         if "?s=" in url:
             return _FakeResp(_SEARCH_HTML)

@@ -52,6 +52,27 @@ def _throttle_host(host: str, min_interval: float) -> None:
         _host_last[host] = time.monotonic()
 
 
+_CAP_MAX_BYTES = 10 * 1024 * 1024  # 10MB cap on a fetched (untrusted) source page
+
+
+def _cap_body(resp, name: str, url: str) -> None:
+    """Materialize a BYTE-CAPPED body onto a streamed response so .text is bounded (an untrusted
+    award source must not OOM the task with a multi-GB response). 10MB is ample for source HTML.
+    """
+    body = b""
+    for chunk in resp.iter_content(8192):
+        body += chunk
+        if len(body) > _CAP_MAX_BYTES:
+            logger.warning(
+                "%s body exceeded %d bytes, truncating [url=%s]",
+                name,
+                _CAP_MAX_BYTES,
+                url,
+            )
+            break
+    resp._content = body  # noqa: SLF001 - intentional: cap the body
+
+
 class PoliteSource:
     """Base class: enforces rate-limit + cache + headers + preservation."""
 
@@ -79,6 +100,26 @@ class PoliteSource:
         self._storage = storage
         self.last_error: Optional[str] = None  # URL-tagged last fetch error, if any
 
+    def _ssrf_ok(self, url: str) -> bool:
+        """SSRF-validate an untrusted source url (clean_url + resolved_host_is_safe). Sets
+        self.last_error + logs OBSERV on a block. Returns True if safe to fetch."""
+        from src.utils.url_hygiene import clean_url, resolved_host_is_safe
+
+        if clean_url(url) is None:
+            self.last_error = f"ssrf-blocked (scheme/host) [url={url}]"
+            logger.warning("OBSERV award.source_blocked ssrf=1 url=%s", str(url)[:120])
+            return False
+        resolve_host = (urlparse(url).hostname or "").lower()
+        if resolved_host_is_safe(resolve_host) is None:
+            self.last_error = (
+                f"ssrf-blocked (resolves non-public) [host={resolve_host}]"
+            )
+            logger.warning(
+                "OBSERV award.source_blocked ssrf=1 resolve=1 host=%s", resolve_host
+            )
+            return False
+        return True
+
     def polite_get(
         self, url: str, *, extra_headers: Optional[dict] = None
     ) -> Optional[str]:
@@ -94,21 +135,7 @@ class PoliteSource:
         host = urlparse(url).netloc or self._source_id
 
         # The source url is UNTRUSTED (award-citation / search-derived). SSRF-gate before fetch.
-        from src.utils.url_hygiene import clean_url, resolved_host_is_safe
-
-        cleaned = clean_url(url)
-        if cleaned is None:
-            self.last_error = f"ssrf-blocked (scheme/host) [url={url}]"
-            logger.warning("OBSERV award.source_blocked ssrf=1 url=%s", str(url)[:120])
-            return None
-        resolve_host = (urlparse(url).hostname or "").lower()
-        if resolved_host_is_safe(resolve_host) is None:
-            self.last_error = (
-                f"ssrf-blocked (resolves non-public) [host={resolve_host}]"
-            )
-            logger.warning(
-                "OBSERV award.source_blocked ssrf=1 resolve=1 host=%s", resolve_host
-            )
+        if not self._ssrf_ok(url):
             return None
 
         _throttle_host(host, self._crawl_delay)
@@ -121,6 +148,7 @@ class PoliteSource:
                 headers=browser_headers(extra_headers),
                 timeout=30,
                 allow_redirects=False,
+                stream=True,  # bounded read below (don't materialize an unbounded body)
             )
         except Exception as e:  # noqa: BLE001 - transient; caller tries next source
             msg = f"{type(e).__name__}: {e} [url={url}]"
@@ -134,6 +162,8 @@ class PoliteSource:
             self.last_error = msg
             return None
 
+        # Byte-cap the body (untrusted award source — a multi-GB response must not OOM the task).
+        _cap_body(resp, self.name, url)
         text = resp.text
         try:
             key.write_text(text, encoding="utf-8")

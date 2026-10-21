@@ -213,3 +213,26 @@ def test_wayback_ts_to_iso():
     assert oe._wayback_ts_to_iso("20230101120000") == "2023-01-01T12:00:00+00:00"
     assert oe._wayback_ts_to_iso("") == ""
     assert oe._wayback_ts_to_iso("bad") == ""
+
+
+def test_wayback_rejects_archived_host_that_resolves_private(monkeypatch):
+    """§1.0c follow-up: fetch_archived SSRF-rechecks the archived_url host + refuses redirects."""
+    from src.enrichment import wayback
+
+    monkeypatch.setattr(
+        wayback,
+        "find_snapshot",
+        lambda url, timeout=15: ("http://evil.internal/x", "20200101000000"),
+    )
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda host: None
+    )  # resolves private
+    called = {"n": 0}
+    monkeypatch.setattr(
+        wayback,
+        "_get_with_courtesy",
+        lambda *a, **k: called.__setitem__("n", called["n"] + 1),
+    )
+    out = wayback.fetch_archived("https://x.com", timeout=5)
+    assert out is None  # archived host blocked
+    assert called["n"] == 0  # never fetched

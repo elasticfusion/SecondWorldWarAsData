@@ -120,7 +120,9 @@ def _get_with_courtesy(url: str, timeout: int, **kwargs) -> Optional[requests.Re
     for attempt in range(_MAX_RETRIES):
         _throttle(host)
         try:
-            resp = requests.get(url, headers=_HEADERS, timeout=timeout, **kwargs)
+            resp = requests.get(
+                url, headers=_HEADERS, timeout=timeout, stream=True, **kwargs
+            )
         except requests.RequestException as exc:
             logger.debug("wayback GET failed (%s): %s", exc, url)
             return None
@@ -140,6 +142,23 @@ def _get_with_courtesy(url: str, timeout: int, **kwargs) -> Optional[requests.Re
             )
             time.sleep(min(delay, 30.0))
             continue
+        # Byte-cap the archived body (stream=True) so a large snapshot can't OOM the task.
+        _MAX = 10 * 1024 * 1024
+        body = b""
+        try:
+            for chunk in resp.iter_content(8192):
+                body += chunk
+                if len(body) > _MAX:
+                    logger.debug(
+                        "wayback body exceeded %d bytes, truncating: %s", _MAX, url
+                    )
+                    break
+            resp._content = (
+                body  # noqa: SLF001 - materialize the capped body so .text works
+            )
+        except Exception as exc:  # noqa: BLE001 - read error -> treat as transient
+            logger.debug("wayback body read failed (%s): %s", exc, url)
+            return None
         return resp
     logger.debug("wayback gave up after %d throttled attempts: %s", _MAX_RETRIES, url)
     return None
@@ -175,7 +194,17 @@ def fetch_archived(url: str, timeout: int = 20) -> Optional[Tuple[str, str, str]
         logger.debug("no wayback snapshot for %s", url)
         return None
     archived_url, ts = snap
-    resp = _get_with_courtesy(archived_url, timeout=timeout, allow_redirects=True)
+    # The archived_url comes from the availability-API response (normally web.archive.org, but vet
+    # it): SSRF-recheck the resolved host + refuse redirects (a redirect off the archive host could
+    # bounce to an internal address). The body is byte-capped in _get_with_courtesy.
+    from urllib.parse import urlparse
+    from src.utils.url_hygiene import resolved_host_is_safe
+
+    arch_host = (urlparse(archived_url).hostname or "").lower()
+    if resolved_host_is_safe(arch_host) is None:
+        logger.warning("OBSERV wayback.archived_host_blocked host=%s", arch_host)
+        return None
+    resp = _get_with_courtesy(archived_url, timeout=timeout, allow_redirects=False)
     if resp is None or resp.status_code != 200 or not resp.text:
         return None
     # The crawler may itself have archived a block page — reject that too.
