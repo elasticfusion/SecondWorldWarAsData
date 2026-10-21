@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 import ulid
 from pydantic import BaseModel, Field
 
-from src.grok_client import GrokClient, BatchModeCollecting
+from src.grok_client import GrokClient, BatchModeCollecting, GrokTruncationError
 
 logger = logging.getLogger(__name__)
 
@@ -311,6 +311,11 @@ Return empty logistics arrays for sub-events with no issues."""
         )
     except BatchModeCollecting:
         raise  # collect pass: propagate so the event is NOT marked processed
+    except GrokTruncationError:
+        # Propagate to extract_with_chunk_halving (recursive halving, #488) instead of swallowing
+        # to {} (which dropped the whole chunk on truncation).
+        logger.warning("OBSERV logistics.truncated -> propagating to chunk halver")
+        raise
     except Exception as e:
         logger.error("Batch logistics extraction failed: %s", e)
         return {}

@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import ulid
 
-from src.grok_client import GrokClient, BatchModeCollecting
+from src.grok_client import GrokClient, BatchModeCollecting, GrokTruncationError
 from src.json_schemas import CASUALTY_ITEM_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
 
@@ -287,6 +287,15 @@ def _call_and_parse_casualties(
             # Batch COLLECT pass: the request was queued, not answered. MUST propagate so the
             # caller does NOT mark the event processed (else the RETRIEVE pass skips it and the
             # batch result is never persisted — the optional-entity-zero bug).
+            raise
+        except GrokTruncationError:
+            # Do NOT retry a truncation in-place or swallow it to {} — propagate to
+            # extract_with_chunk_halving, which recovers by recursively halving the chunk (#488).
+            # Swallowing here dropped the WHOLE chunk silently.
+            logger.warning(
+                "OBSERV casualties.truncated -> propagating to chunk halver (attempt %d)",
+                attempt + 1,
+            )
             raise
         except Exception as e:
             if attempt < max_retries - 1:
