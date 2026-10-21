@@ -42,7 +42,6 @@ src/dedup/surname_report.py::maybe_generate  6ab4cd7e070e7e8dea2f28630fa6d98d613
 src/dedup/unit_key.py::unit_keys_match  e94eaecb65d52d365c90fd4e044945bb6a21d6574af43e2fa1f7f11acad75164  # grandfathered C(15) C+ backlog 2026-10-20
 src/discovery.py::discover_content_structure  390dfe31158b3b5bcfcd1770c24f689c4d3bcd2ffd4cf204a2ba26d6d8cb12a4  # grandfathered C(12) C+ backlog 2026-10-20
 src/enrichment/award_hall_of_valor.py::HallOfValorSource.lookup  1d690e08db00caa66c2e6f12b6fd1801e9daf21b40175ccb2bbabf9e1db7abb8  # grandfathered C(11) C+ backlog 2026-10-20
-src/enrichment/award_polite_source.py::PoliteSource.polite_get  25bdd42c67b7b33551d0fd9a2650d7cb856712aaba05c1b57d3201790476428e  # grandfathered C(11) C+ backlog 2026-10-20
 src/enrichment/award_source_pages.py::persist_sourcing_errors  182ffb31bf8d2b7eba5894a2a6a6169e70afca50f7ace36bd19e8022bd7dc6c5  # grandfathered C(12) C+ backlog 2026-10-20
 src/enrichment/award_sources.py::_first_match  75fa0c2244aac541e37e08113be6c79ee50ddd0968874a7904adaaebcce97fec  # grandfathered C(13) C+ backlog 2026-10-20
 src/enrichment/award_sources.py::enrich_person_awards  8373d0927262a5e0b5aee718917b164fbbe20008d6302962be769eb718ee68e9  # grandfathered C(14) C+ backlog 2026-10-20
