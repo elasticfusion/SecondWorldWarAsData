@@ -50,6 +50,10 @@ MIN_GEOCODE_CONFIDENCE = 0.5
 _STATUS_GEOCODED = "geocoded"
 _STATUS_NOT_FOUND = "geocode_not_found"
 _STATUS_LOW_CONF = "geocode_low_confidence"
+# Transient geocode failure (API outage) — NON-terminal: deliberately NOT in _already_attempted, so
+# a normal (non-force) re-run RETRIES it (a one-off Nominatim/Grok outage must not permanently mark a
+# real place not_found).
+_STATUS_ERROR = "geocode_error"
 
 _SKIP_FILES = frozenset(
     {
@@ -95,6 +99,12 @@ class GeocodeResult(BaseModel):
     source: str = Field(
         default="grok",
         description="Geocoder that produced this result (e.g. grok, osm)",
+    )
+    transient: bool = Field(
+        default=False,
+        description="True if this is a transient failure (API timeout/5xx/exception), NOT a genuine "
+        "not-found — the caller must NOT persist a terminal not_found status (which would "
+        "permanently skip the place on non-force re-runs).",
     )
 
 
@@ -500,6 +510,17 @@ def _apply_result(place: dict, result: GeocodeResult) -> str:
     low-confidence result records a status note and leaves the place un-geocoded
     (never a guessed coordinate).
     """
+    if getattr(result, "transient", False):
+        # Transient API failure — non-terminal so a non-force re-run retries (never permanently
+        # mark a real place not_found on a one-off outage).
+        place["enrichment_status"] = _STATUS_ERROR
+        place["geocode_source"] = result.source
+        logger.info(
+            "OBSERV geocode.transient_error place=%s note=%s",
+            str(place.get("PlaceID") or place.get("name") or "?")[:40],
+            str(result.note)[:80],
+        )
+        return _STATUS_ERROR
     if not result.found or result.latitude is None or result.longitude is None:
         place["enrichment_status"] = _STATUS_NOT_FOUND
         place["geocode_source"] = result.source
