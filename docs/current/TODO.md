@@ -24,11 +24,11 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
   nominatim/places_grok_geocode (persists a terminal 'not_found' record status with NO TTL — only --force
   recovers; needs a distinct fix from the search_cache sentinel). Route each via search_cache.TRANSIENT /
   a non-terminal geocode_error status.
-- **[WARNING] clean_url accepts dotted-hex/mixed-radix IP encodings** (`0x7f.0x0.0x0.0x1`, `127.0.0.0x1`) →
-  True, contradicting its docstring; backstopped at fetch by resolved_host_is_safe but clean_url is ALSO a
-  standalone registry-key/pre-fetch-gate validator. Detect any hex/mixed-radix numeric host and coerce via
-  inet_aton. + safe_get byte cap runs AFTER gzip auto-decompression (small highly-compressing body → 10MB in
-  memory per concurrent fetch); cap compressed bytes (resp.raw.decode_content=False) / check Content-Length.
+- **[WARNING · follow-up, found in #507 review] clean_url unicode/IDNA homograph hosts.** The standalone
+  validator (url_registry keys / bibliography+source_retrieval pre-fetch gates) accepts ①②⑦.0.0.1 /
+  127。0。0。1 (ideographic dots) / fullwidth digits, which NFKC/IDNA-normalize to 127.0.0.1. Backstopped at
+  the FETCH layer (resolved_host_is_safe blocks them), so NOT a live fetch SSRF — but the standalone gate
+  should NFKC-normalize + host.encode('idna') before classification. (sec_batch_core #507 adversarial probe.)
 - **[SUGGESTION batch]** weather_central._add_event_mention hard-indexes m["Sub_eventID"] (KeyError on legacy —
   places got the #495 fix, weather missed); enrich_groups.enrich_group reads `name` but schema stores
   `group_name` → never enriches a schema-valid record; openserp_maps downloads map_images[0] not the vision-
@@ -600,6 +600,11 @@ Not-code (deferred): SHAEF OB map gaps (NARA acquisition). Full historical detai
 item is in git history + the dated design docs under `docs/current/` and `docs/archive/`.
 
 ### Phase-2 FRESH RE-REVIEW (2026-10-20b) — DONE items (moved from §1.0c)
+- **[DONE · PR #507] [WARNING] clean_url accepts dotted-hex/mixed-radix IP encodings** (`0x7f.0x0.0x0.0x1`, `127.0.0.0x1`) →
+  True, contradicting its docstring; backstopped at fetch by resolved_host_is_safe but clean_url is ALSO a
+  standalone registry-key/pre-fetch-gate validator. Detect any hex/mixed-radix numeric host and coerce via
+  inet_aton. + safe_get byte cap runs AFTER gzip auto-decompression (small highly-compressing body → 10MB in
+  memory per concurrent fetch); cap compressed bytes (resp.raw.decode_content=False) / check Content-Length.
 - **[DONE · PR #506] [WARNING] write-guard blind spot: locked_json.save() bypasses _validate_entity.** The schema guard runs
   only in write_json_with_lock/write_parsed_with_guard; ALL merge paths persist via locked_json (equipment/
   people/places/people_groups/dates/weather/enrich_write/batch_parallel) which only annotates → a merge that
