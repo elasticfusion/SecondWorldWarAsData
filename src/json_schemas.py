@@ -796,6 +796,7 @@ CASUALTY_ITEM_SCHEMA = {
             "type": "string",
             "enum": ["allied", "axis", "civilian", "unknown"],
         },
+        "nationality": {"type": ["string", "null"]},
         "count": {"type": "object"},
         "date_string": {"type": ["string", "null"]},
         "impacted_organizations": {"type": "array"},

@@ -22,6 +22,7 @@ schema: |
       {
         "type": "casualties",
         "side": "allied",
+        "nationality": "USA",
         "description": "Heavy losses during assault on Hill 192",
         "count": {
           "killed": {"value": 45, "qualifier": "exact"},
@@ -80,6 +81,17 @@ rules:
     Set original_text to the VERBATIM passage (traceability). Set PlaceID + date when stated
     so the casualty can be joined to weather/location.
   - Side values: allied, axis, civilian, unknown — reflects who SUFFERED the casualties
+  - >-
+    nationality: the ISO 3166-1 alpha-3 code of WHO suffered the casualties when the text names
+    a specific country ("200 Americans killed" -> "USA"; "400 Germans" -> "DEU"). This is the
+    primary attribution; side is the coarse fallback. If only a coalition is identifiable
+    ("Allied losses") leave nationality null and set side. If neither is stated, leave both
+    null/unknown.
+  - >-
+    ONE casualty record PER side/nationality. If a single sub-event reports BOTH sides' losses
+    (e.g. "200 Americans were killed as compared to 400 Germans"), emit TWO separate records —
+    one (nationality "USA", side "allied", killed 200) and one (nationality "DEU", side "axis",
+    killed 400) — never combine opposing losses into one record.
   - POW entries MUST include both "captured" (the prisoners) and "captor" (who captured them) organizations
   - Country codes use ISO 3166-1 alpha-3
   - If no casualties found for a sub-event, return empty array for that key
