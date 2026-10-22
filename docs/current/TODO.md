@@ -47,8 +47,7 @@ security reviews (both PASS)→CI→merge→sync→move to §7. bandit still 0H/
   bypass** — added _is_trusted_dedup_topic() (structured ARN match vs DEDUP_COMPLETE_TOPIC_ARN) gating the Phase-3
   fan-out; CFN wires the ARN onto DedupGateFunction; +10 tests. Gate PASS, both reviewers PASS. Moved to §7.
 - **[HIGH] ✅ DONE (PR #524) — unit_patch._download + source_retrieval._download_to_quarantine DNS-rebind SSRF** — both now pin the fetch to a vetted IP via url_hygiene._pinned_get (capture IPs from resolved_host_is_safe, keep Host+SNI=host, refuse redirects). +tests. Gate PASS, both reviewers PASS. Moved to §7.
-- **[HIGH] supplemental enrichment stores UNVERIFIED urls** (approved≠saved, no gate; validate_url only checks
-  200) → silent wrong-source attribution. Route through the Grok verify gate bibliography uses.
+- **[HIGH] ✅ DONE (PR #525) — supplemental enrichment stored UNVERIFIED urls** — _enrich_material now routes the sequential_search hit through _supplemental_url_verified -> bibliography_resolver._verify_match (SSRF-safe content fetch + Grok match) before storing resource_urls; non-matching hit DROPPED +OBSERV. +4 tests. Gate PASS, both reviewers PASS. Moved to §7.
 - **[HIGH] locked_json atomic-write breaks the cross-process flock** (os.replace commits a new inode nobody
   locks → lost-update race reappears; regression from #1.0c) + create-path "w+" truncates before the flock.
   Flock a stable sidecar lockfile; open create-path without O_TRUNC. (corroborated)
@@ -526,6 +525,9 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
 ---
 
 ## 7. COMPLETED
+
+### §1.0d HIGH — supplemental unverified-url store (PR #525, 2026-10-21)
+supplemental._enrich_material now content-verifies a sequential_search hit (via bibliography_resolver._verify_match -> _verify_url_content: SSRF-safe fetch + Grok page match) before writing resource_urls; a non-matching hit is dropped with OBSERV supplemental.url_rejected. Fail-open only when no grok_client. +4 regression tests. Gate PASS (2570 tests, bandit 0H/0M); both reviewers PASS.
 
 ### §1.0d HIGH — DNS-rebind SSRF unit_patch + source_retrieval (PR #524, 2026-10-21)
 Both download sites vetted the host then re-resolved on a plain get (rebind TOCTOU). Now capture the vetted IPs from resolved_host_is_safe and fetch via _pinned_get (pin to vetted IP, Host+TLS SNI=host, redirects off). unit_patch re-vets+pins at fetch time (keeps 15MB cap); source_retrieval pins both the GET and the 429-retry, passes the original query-preserving url, drops the dead session param. +tests (unit_patch 3, source_retrieval reworked 12, loopback regression updated). Gate PASS (2566 tests, bandit 0H/0M); both reviewers PASS.
