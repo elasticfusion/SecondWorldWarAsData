@@ -101,20 +101,74 @@ def _generate_map_urls(lat: float, lon: float) -> Dict[str, str]:
 
 
 def _is_valid_place_mention(mention: Dict[str, Any]) -> bool:
-    """Check if place mention has required fields."""
+    """Check if place mention has required fields.
+
+    A place with NULL coordinates is normally dropped (a settlement with no coordinate is an
+    extraction miss). EXCEPTIONS that are KEPT with null coords so the Phase-3 geocoders can
+    resolve them from context (they are designed to): a ``route``; a named-HEIGHT feature
+    ("Hill 555" / "Côte 192" — hill_geocode locates it by elevation + proximity anchors); and a
+    SITUATIONAL/RELATIVE feature ("east bank of the Loire", "Aachen Gap", a ridge/corridor/
+    bridgehead/sector — resolved to an approximate centroid from its reference place). Phase 2
+    must NOT fabricate coordinates for these; it emits them with null lat/long + context and
+    Phase 3 geocodes them.
+    """
     if mention.get("current_name") is None:
         logger.debug("Removed place mention with null current_name")
         return False
 
-    # Skip places without coordinates (unless they're routes)
-    if "route" not in mention:
-        if mention.get("latitude") is None or mention.get("longitude") is None:
-            logger.debug(
-                "Removed place '%s' with null coordinates", mention.get("current_name")
-            )
-            return False
+    has_coords = (
+        mention.get("latitude") is not None and mention.get("longitude") is not None
+    )
+    if has_coords or "route" in mention:
+        return True
 
-    return True
+    # Null coordinates: keep ONLY if it is a Phase-3-geocodable landmark (height/situational),
+    # otherwise drop (a null-coord settlement/region is a genuine extraction miss).
+    if _is_phase3_geocodable_landmark(mention):
+        logger.info(
+            "OBSERV places.landmark_kept name=%r geography_type=%r — null coords, "
+            "deferred to Phase-3 geocoding",
+            mention.get("current_name"),
+            mention.get("geography_type"),
+        )
+        return True
+
+    logger.debug(
+        "Removed place '%s' with null coordinates", mention.get("current_name")
+    )
+    return False
+
+
+# geography_type values (substring, case-insensitive) that denote a SITUATIONAL/RELATIVE feature
+# resolvable by Phase-3 from a reference place rather than a gazetteer point.
+_SITUATIONAL_GEO_TYPES = (
+    "situational",
+    "relative",
+    "ridge",
+    "gap",
+    "corridor",
+    "bridgehead",
+    "beachhead",
+    "sector",
+    "bank",
+    "landmark",
+)
+
+
+def _is_phase3_geocodable_landmark(mention: Dict[str, Any]) -> bool:
+    """True if a null-coordinate mention is a named-height or situational/relative feature that
+    the Phase-3 geocoders (hill_geocode / situational + Grok fallback) can locate from context.
+    """
+    name = mention.get("current_name") or ""
+    try:
+        from src.enrichment.hill_geocode import is_height_feature
+
+        if is_height_feature(name):
+            return True
+    except Exception:  # noqa: BLE001 - never block extraction on an import issue
+        pass
+    gtype = (mention.get("geography_type") or "").lower()
+    return any(t in gtype for t in _SITUATIONAL_GEO_TYPES)
 
 
 def _add_geo_data(mention: Dict[str, Any], lat: float, lon: float) -> None:
