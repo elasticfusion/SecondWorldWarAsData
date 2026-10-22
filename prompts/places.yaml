@@ -42,6 +42,12 @@ prompt_template: |
     "Hürtgen", "Aix-la-Chapelle" -> "Aachen", "Marne Road" -> "Rue de la Marne". If context does
     not let you derive the native form confidently, keep the source's form. Do not guess a
     foreign name that is not supported by the text/context.
+  - historical_name: a FORMER/period name for this place that DIFFERS from current_name, ONLY
+    when the text or clear historical context supports it — e.g. a town whose name later changed,
+    or a place now in a different country that carried another name during the war (e.g. the
+    German "Breslau" for present-day "Wrocław"). This is the WARTIME/historical toponym, distinct
+    from both the verbatim original_text and the canonical current_name. Leave null if there is no
+    distinct historical name (do NOT just repeat current_name or original_text here).
   - source_language: the language of the TOPONYM itself (e.g. "German", "French"), not the
     document language.
 

@@ -35,7 +35,27 @@ prompt_template: |
   {schema}
 
 schema: |
-  {"<Sub-eventID>": [{"WeatherMentionID": "01ULID...", "place_name": "Bastogne", "PlaceMentionID": "01ULID...", "date": "1944-12-22", "DateMentionID": "01ULID...", "weather_description": "Heavy snowfall", "temperature": -5, "temperature_unit": "C", "measurement_system": "metric", "precipitation_text": "3 inches of snow", "precipitation_amount": 3, "precipitation_unit": "in", "precipitation_type": "snow", "notable_impact": "Limited visibility for air support", "original_text": "Heavy snow blanketed the region"}]}
+  {
+    "<Sub-eventID>": [
+      {
+        "WeatherMentionID": "01ULID...",
+        "place_name": "Bastogne",
+        "PlaceMentionID": "01ULID...",
+        "date": "1944-12-22",
+        "DateMentionID": "01ULID...",
+        "weather_description": "Heavy snowfall",
+        "temperature": -5,
+        "temperature_unit": "C",
+        "measurement_system": "metric",
+        "precipitation_text": "3 inches of snow",
+        "precipitation_amount": 3,
+        "precipitation_unit": "in",
+        "precipitation_type": "snow",
+        "notable_impact": "Limited visibility for air support",
+        "original_text": "Heavy snow blanketed the region"
+      }
+    ]
+  }
 
 rules:
   - Only extract EXACT dates (YYYY-MM-DD), skip "early December", "mid-winter"
