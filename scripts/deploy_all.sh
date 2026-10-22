@@ -290,6 +290,10 @@ if errors:
     sys.exit(1)
 print(f'  Prompts OK ({len(REQUIRED)} validated)')
 " || { echo "  ✗ Prompt check failed — aborting deploy"; exit 1; }
+# Hard stop if a prompt's {schema} EXAMPLE drifts from the authoritative output schema (a prompt
+# that tells the model to emit a field the validator would reject, or that omits a new required
+# shape). Fail-closed: a misalignment aborts the deploy.
+python3 scripts/check_prompt_schema_alignment.py || { echo "  ✗ Prompt↔schema alignment check failed — aborting deploy"; exit 1; }
 python3 -c "
 import yaml, sys
 from pathlib import Path

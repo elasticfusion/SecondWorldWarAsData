@@ -40,7 +40,7 @@ ENTITY_SCHEMA_VERSIONS: Dict[str, str] = {
     "events": "2.24",
     "dates": "2.25",
     "places": "2.27",
-    "people": "2.24",
+    "people": "2.25",
     "people_groups": "2.28",
     "equipment": "2.25",
     "weather": "2.24",
@@ -156,6 +156,19 @@ EVENT_MENTIONS_SCHEMA = {
             "Sub-eventID": ulid_field(),
             "book": {"type": ["string", "null"]},
             "chapter": {"type": ["string", "null"]},
+            # Fields the extractors actually emit on a mention (previously accepted only
+            # because this object has no additionalProperties:false — now declared so the
+            # schema describes reality and the fingerprint guard tracks them). All nullable.
+            "MentionID": ulid_field(nullable=True),
+            "Event_Name": {"type": ["string", "null"]},
+            "Sub-event_Name": {"type": ["string", "null"]},
+            "author": {"type": ["string", "null"]},
+            "series": {"type": ["string", "null"]},
+            "date": {"type": ["string", "null"]},
+            "DateMentionID": {"type": ["string", "null"]},
+            "position_at_event": {"type": ["string", "null"]},
+            "life_event": {"type": ["string", "null"]},
+            "original_text": {"type": ["string", "null"]},
         },
     },
 }

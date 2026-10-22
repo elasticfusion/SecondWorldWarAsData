@@ -433,6 +433,13 @@ class BiographySource(BaseModel):
         default_factory=list,
         description="List of biographical fields sourced from this reference",
     )
+    # Provenance links (schema 2.25): the sub-event this bio fact came from (filled at
+    # extraction) + the backing bibliography entry (resolved in Phase 3 from the footnote).
+    EventID: Optional[str] = None
+    Sub_eventID: Optional[str] = None
+    BibliographyID: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
 
     @field_validator("page", mode="before")
     @classmethod

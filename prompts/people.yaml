@@ -34,6 +34,10 @@ prompt_template: |
   - page: Page number if mentioned
   - confidence: 0.0-1.0 (how certain the extraction is)
   - fields_sourced: List of field names extracted from this source
+  - EventID: use "{event_id}" — the event this biographical fact was extracted from
+  - Sub_eventID: use "{sub_event_id}" — the sub-event it was extracted from
+  (Do NOT emit a BibliographyID — it is linked later in Phase 3 from the footnote/endnote that
+  backs the source; you do not see footnote markers here.)
 
 schema: |
   {
@@ -71,7 +75,9 @@ schema: |
               "source": "Book Title",
               "page": null,
               "confidence": 0.9,
-              "fields_sourced": ["birth_date", "nationality", "ranks", "biographical_details"]
+              "fields_sourced": ["birth_date", "nationality", "ranks", "biographical_details"],
+              "EventID": "event_id",
+              "Sub_eventID": "sub_event_id"
             }
           ],
           "biographical_details": "Supreme Commander of Allied Forces in Europe"

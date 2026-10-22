@@ -67,7 +67,12 @@ def test_people_merge_success_still_merges_and_deletes(tmp_path):
             {
                 "PersonID": "01" + "B" * 24,
                 "name": "A.",
-                "event_mentions": [{"MentionID": "01M", "Sub_eventID": "01S"}],
+                "event_mentions": [
+                    {
+                        "MentionID": "01M1AAAAAAAAAAAAAAAAAAAAAA",
+                        "Sub_eventID": "01S1AAAAAAAAAAAAAAAAAAAAAA",
+                    }
+                ],
             }
         )
     )
