@@ -40,6 +40,11 @@ CASUALTIES_OUTPUT_SCHEMA = {
         "side": enum_field(
             ["allied", "axis", "neutral", "civilian", "unknown"], nullable=True
         ),
+        # Record-level nationality of who SUFFERED these casualties, as an ISO 3166-1 alpha-3
+        # code ("USA", "DEU") when the text identifies a specific country ("200 Americans
+        # killed" -> "USA"). `side` is the coarse coalition fallback when only a coalition is
+        # identifiable. Null when neither is stated.
+        "nationality": make_nullable("string"),
         "source": {"type": ["object", "string", "null"]},
         "event_context": {
             "type": ["object", "null"],
