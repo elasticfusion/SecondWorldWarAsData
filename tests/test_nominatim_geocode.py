@@ -50,8 +50,9 @@ def test_to_result_non_european_not_flagged() -> None:
 
 
 class _FakeResp:
-    def __init__(self, payload):
+    def __init__(self, payload, status_code=200):
         self._payload = payload
+        self.status_code = status_code
 
     def raise_for_status(self):
         pass
@@ -65,7 +66,7 @@ class _FakeSession:
         self._payload = payload
         self.calls = 0
 
-    def get(self, url, params=None, headers=None, timeout=None):
+    def request(self, method, url, params=None, headers=None, timeout=None, **kwargs):
         self.calls += 1
         # Policy: a descriptive User-Agent must be sent.
         assert headers and "User-Agent" in headers
@@ -97,7 +98,7 @@ class _QueryAwareSession:
         self._hits = hits  # {query_lower: result_dict}
         self.params_seen = []
 
-    def get(self, url, params=None, headers=None, timeout=None):
+    def request(self, method, url, params=None, headers=None, timeout=None, **kwargs):
         assert headers and "User-Agent" in headers
         self.params_seen.append(params or {})
         q = (params or {}).get("q", "").lower()
@@ -213,3 +214,34 @@ def test_cascade_returns_best_when_none_confident() -> None:
     r = cascade("X", {}, None)
     # Neither is above threshold; the higher-confidence one is surfaced.
     assert r.confidence == 0.45
+
+
+def test_geocode_emits_fetch_provenance_record(tmp_path, monkeypatch):
+    """Regression (fetch-provenance migration): a nominatim geocode now emits a traceable
+    fetch-provenance event (provider/endpoint/params/queried_at/status/outcome/kind=structured).
+    """
+    import json as _json
+
+    from src.enrichment.nominatim_geocode import make_nominatim_geocoder
+    from src.utils import fetch_provenance as fp
+
+    store = tmp_path / "_fetch_events"
+    monkeypatch.setattr(fp, "_table", lambda: None)  # force local JSONL
+    monkeypatch.setattr(fp, "_LOCAL_DIR", store)
+
+    session = _FakeSession(
+        [{"lat": "50.0", "lon": "5.7", "importance": 0.7, "address": {}}]
+    )
+    geocode = make_nominatim_geocoder(tmp_path / "cache", session=session)
+    geocode("Bastogne", {}, None)
+
+    f = store / "nominatim.jsonl"
+    assert f.exists(), "no fetch-provenance record emitted for the geocode"
+    ev = _json.loads(f.read_text().splitlines()[0])
+    assert ev["provider"] == "nominatim"
+    assert ev["kind"] == "structured"
+    assert ev["review_status"] is None
+    assert ev["request_params"]["q"] == "Bastogne"
+    assert ev["outcome"] == "hit"
+    assert ev["result_summary"] and "lat=50.0" in ev["result_summary"]
+    assert ev["queried_at"] and ev["fetch_event_id"]

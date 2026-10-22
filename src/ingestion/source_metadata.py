@@ -24,7 +24,9 @@ MediaType = Literal[
 ]
 
 # Acquisition provenance: how the original was obtained.
-AcquisitionMethod = Literal["download", "local", "unknown"]
+# "web_archive_affirmed": a positive textual fetch-provenance find (e.g. a Wayback snapshot) that a
+# human reviewer AFFIRMED, promoted into ingestion like an uploaded book (src/enrichment/fetch_review).
+AcquisitionMethod = Literal["download", "local", "unknown", "web_archive_affirmed"]
 
 _CHECKSUM_CHUNK = 1 << 20  # 1 MiB
 
