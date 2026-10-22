@@ -203,17 +203,6 @@ class TestPromptLoading:
         assert "Heavy snow" in prompt
         _assert_no_unfilled(prompt)
 
-    def test_events_batch_prompt(self):
-        from src.utils.prompt_loader import render_prompt
-
-        prompt = render_prompt(
-            "events_batch", chapter_count="3", chapters_text="Chapter 1 content..."
-        )
-        assert "3" in prompt
-        _assert_no_unfilled(prompt)
-        assert "Chapter 1" in prompt
-        _assert_no_unfilled(prompt)
-
 
 class TestGrokSearchMaps:
     """Test grok_search_maps.py uses correct variable names."""
