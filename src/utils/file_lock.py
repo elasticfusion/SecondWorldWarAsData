@@ -227,6 +227,42 @@ def _repair_primary_key(entity_type: str, data: Dict[str, Any], filepath: Path) 
         pass
 
 
+def _repair_schema_version(
+    entity_type: str, data: Dict[str, Any], filepath: Path
+) -> None:
+    """Validate + fix an IMPOSSIBLE ``_schema_version`` (treat it like a ULID: detect-and-repair).
+
+    A record being written cannot legitimately carry a version NEWER than its entity's current
+    target — that is either corruption or an LLM hallucination on a fresh extraction. Left alone,
+    such a "future" version makes the version-aware guard skip schema validation ("allow AS-IS").
+    So repair any present version that is strictly greater than the target down to the target,
+    forcing real schema validation. A missing/empty version (handled as strict "ok") and a
+    legitimately-OLD version (<= target, the real upgrade path) are left untouched. Fail-safe.
+    """
+    try:
+        from src.schemas import ENTITY_SCHEMA_VERSIONS, _version_tuple, entity_version
+
+        if entity_type not in ENTITY_SCHEMA_VERSIONS:
+            return
+        declared = str(data.get("_schema_version", "")).strip()
+        if not declared:
+            return  # no version -> handled as strict "ok"; don't invent one here
+        target = entity_version(entity_type)
+        if _version_tuple(declared) > _version_tuple(target):
+            data["_schema_version"] = target
+            logger.warning(
+                "Auto-repaired %s _schema_version (%s): %r is NEWER than target %s — "
+                "impossible for a write (hallucinated/corrupt); reset to target so the record "
+                "is actually schema-validated",
+                entity_type,
+                filepath.name,
+                declared,
+                target,
+            )
+    except Exception:  # noqa: BLE001 - best-effort; never block on the repair itself
+        pass
+
+
 def _validate_entity(
     filepath: Path, data: Dict[str, Any], record_stats: bool = True
 ) -> bool:
@@ -282,6 +318,13 @@ def _validate_entity(
     # are deliberately NOT regenerated here (that would orphan the link) — only the entity's own
     # required_id primary key.
     _repair_primary_key(entity_type, data, filepath)
+    # Treat _schema_version like a ULID: validate + fix. An LLM can hallucinate a version on a
+    # freshly-extracted record (never legitimate — the writer stamps the real one), and a version
+    # STRICTLY NEWER than this entity's target would hit the "future -> allow AS-IS" branch below
+    # and BYPASS schema validation entirely. So repair an impossible (future / malformed-but-high)
+    # version to the real target BEFORE the version-status check, forcing real validation. A
+    # legitimately-OLD version (<= target) is left intact so the real upgrade/old-record path runs.
+    _repair_schema_version(entity_type, data, filepath)
 
     status, target = _version_status(data, entity_type)
     if status == "future":
