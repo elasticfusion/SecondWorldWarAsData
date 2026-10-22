@@ -25,8 +25,6 @@ from urllib.parse import urlparse
 
 import yaml
 
-from src.utils.http_pool import get_session
-
 logger = logging.getLogger(__name__)
 
 DEFAULT_BLACKLIST = Path("config/domain_blacklist.yaml")
@@ -106,7 +104,6 @@ def retrieve_source(
     entry: Dict[str, Any],
     dest_dir: Path,
     blacklist: Optional[List[str]] = None,
-    session: Any = None,
     max_bytes: int = 200 * 1024 * 1024,
 ) -> Dict[str, Any]:
     """Download a resolved entry's content into a quarantine dir for human review.
@@ -129,9 +126,8 @@ def retrieve_source(
         entry["retrieval_status"] = "blacklisted"
         return {"status": "blacklisted", "url": url, "reason": "domain blacklisted"}
 
-    sess = session or get_session()
     try:
-        return _download_to_quarantine(entry, url, dest_dir, sess, max_bytes)
+        return _download_to_quarantine(entry, url, dest_dir, max_bytes)
     except Exception as e:  # pylint: disable=broad-exception-caught
         # network/IO — never block the pipeline
         return {"status": "error", "url": url, "reason": str(e)[:200]}
@@ -141,7 +137,6 @@ def _download_to_quarantine(
     entry: Dict[str, Any],
     url: str,
     dest_dir: Path,
-    sess: Any,
     max_bytes: int,
 ) -> Dict[str, Any]:
     """Stream a URL to the quarantine dir; mark entry retrieved_pending_review.
@@ -154,13 +149,14 @@ def _download_to_quarantine(
     # resolved_host_is_safe (resolve + reject non-public IPs, DNS-rebinding). We do NOT rewrite url
     # to the normalized form (clean_url strips query params for dedup; a resource URL's query can be
     # significant). Redirects refused on the GETs below (a redirect can bounce to an internal addr).
-    from src.utils.url_hygiene import clean_url, resolved_host_is_safe
+    from src.utils.url_hygiene import clean_url, resolved_host_is_safe, _pinned_get
 
     if clean_url(url) is None:
         logger.warning("OBSERV source.download_blocked ssrf=1 url=%s", str(url)[:120])
         return {"status": "error", "url": url, "reason": "ssrf-blocked (scheme/host)"}
     host = (urlparse(url).hostname or "").lower()
-    if resolved_host_is_safe(host) is None:
+    vetted = resolved_host_is_safe(host)
+    if vetted is None:
         logger.warning("OBSERV source.download_blocked ssrf=1 resolve=1 host=%s", host)
         return {
             "status": "error",
@@ -168,17 +164,17 @@ def _download_to_quarantine(
             "reason": "ssrf-blocked (resolves non-public)",
         }
     _PACER.wait(host)  # courteous per-domain spacing
-    resp = sess.get(
-        url, timeout=60, stream=True, allow_redirects=False, headers=BROWSER_HEADERS
-    )
+    # PIN the connection to a vetted IP (keeps Host + TLS SNI = host, redirects refused) so a
+    # DNS rebind between the resolved_host_is_safe check and connect cannot reach an internal
+    # address (§1.0d). Pass the ORIGINAL url (not clean_url's normalized form) so a significant
+    # query string is preserved — _pinned_get only rewrites the netloc to the vetted IP.
+    resp = _pinned_get(url, host, vetted, timeout=60, headers=BROWSER_HEADERS)
     if resp.status_code == 429:
         # Rate-limited: wait the server-requested delay once, then retry.
         retry_after = _parse_retry_after(resp.headers.get("Retry-After"))
         logger.info("429 from %s — honoring Retry-After=%.0fs", host, retry_after)
         time.sleep(retry_after)
-        resp = sess.get(
-            url, timeout=60, stream=True, allow_redirects=False, headers=BROWSER_HEADERS
-        )
+        resp = _pinned_get(url, host, vetted, timeout=60, headers=BROWSER_HEADERS)
     if resp.status_code != 200:
         return {"status": "error", "url": url, "reason": f"HTTP {resp.status_code}"}
     dest_dir.mkdir(parents=True, exist_ok=True)
