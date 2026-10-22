@@ -112,25 +112,36 @@ def locked_json(filepath: Path):
         if system in ("Linux", "Darwin"):
             import fcntl
 
-            # Open in r+ if exists, else create
-            if filepath.exists():
-                f = open(filepath, "r+", encoding="utf-8")
-            else:
-                f = open(filepath, "w+", encoding="utf-8")
-
+            # Cross-process mutual exclusion is held on a STABLE sidecar lockfile (<path>.lock)
+            # that is NEVER renamed or unlinked — NOT on the data file's fd. The data write goes
+            # through _atomic_write_json (temp + os.replace), which swaps in a NEW inode; a flock
+            # held on the data fd would protect only the old, now-unlinked inode, so a second
+            # process could acquire an UNCONTENDED lock on the freshly-replaced file and the
+            # read-modify-write lost-update race would reappear (§1.0d regression from the
+            # atomic-write change). Locking the sidecar keeps the lock identity stable across the
+            # replace. We also NEVER open the data file with a truncating mode (the old "w+"
+            # create path zeroed a concurrently-created file BEFORE the lock was held).
+            lock_path = filepath.with_name(filepath.name + ".lock")
+            lf = open(lock_path, "a+", encoding="utf-8")  # O_CREAT, no truncate
             try:
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                f.seek(0)
-                content = f.read()
-                data = json.loads(content) if content.strip() else {}
+                fcntl.flock(lf.fileno(), fcntl.LOCK_EX)
+                # Read the current data ONLY after the exclusive lock is held (no truncation).
+                data: Dict[str, Any] = {}
+                if filepath.exists():
+                    try:
+                        with open(filepath, encoding="utf-8") as df:
+                            content = df.read()
+                        data = json.loads(content) if content.strip() else {}
+                    except (OSError, json.JSONDecodeError):
+                        data = {}
 
                 def save(new_data):
                     return _guarded_save(filepath, new_data)
 
                 yield data, save
             finally:
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-                f.close()
+                fcntl.flock(lf.fileno(), fcntl.LOCK_UN)
+                lf.close()
         else:
             # Fallback: threading lock only (no cross-process safety)
             data = {}
