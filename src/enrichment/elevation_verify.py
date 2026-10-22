@@ -82,10 +82,18 @@ def terrain_elevation(
 
         session = get_session()
     try:
-        resp = session.post(
+        from src.utils.fetch_provenance import STRUCTURED, recorded_fetch
+
+        resp = recorded_fetch(
+            "open-elevation",
             _ENDPOINT,
+            kind=STRUCTURED,
+            method="POST",
+            params={"lat": lat, "lon": lon},
+            session=session,
             json={"locations": [{"latitude": lat, "longitude": lon}]},
             timeout=30,
+            result_summary_fn=lambda r: f"status={r.status_code}",
         )
         resp.raise_for_status()
         elevation = resp.json()["results"][0]["elevation"]

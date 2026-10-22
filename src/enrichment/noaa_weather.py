@@ -63,12 +63,17 @@ def _get(
     """Make rate-limited GET request to NOAA CDO API."""
     _rate_limit()
     try:
-        session = get_session()
-        resp = session.get(
+        from src.utils.fetch_provenance import STRUCTURED, recorded_fetch
+
+        resp = recorded_fetch(
+            "noaa",
             f"{BASE_URL}/{endpoint}",
-            headers={"token": token},
+            kind=STRUCTURED,
+            method="GET",
             params=params,
+            headers={"token": token},
             timeout=30,
+            result_summary_fn=lambda r: f"status={r.status_code} endpoint={endpoint}",
         )
         if resp.status_code == 200:
             return resp.json()
