@@ -21,7 +21,7 @@ prompt_template: |
   For each member, include:
   - PersonID: ULID of the person (if mentioned in events)
   - name: Person's name
-  - role: Their role/position in the group (e.g., "Commander", "Member", "Leader")
+  - role: Their role/position/rank in the group (e.g., "Commander", "Member", "Leader", "Major", "General")
   - date_range: When they held this position (if mentioned)
 
   For each mention, include:
