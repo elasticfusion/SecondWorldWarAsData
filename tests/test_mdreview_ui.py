@@ -194,3 +194,58 @@ def test_handler_no_bucket_500(monkeypatch):
     monkeypatch.delenv("S3_BUCKET", raising=False)
     resp = h.handler(_event("GET", "/mdreview"), None)
     assert resp["statusCode"] == 500
+
+
+# --- §1.0d HIGH: path-traversal via unvalidated `book` (arbitrary S3 write / content injection) ---
+
+
+def test_save_rejects_path_traversal_book():
+    """A traversal `book` must be rejected (400) and MUST NOT write any key — otherwise it could
+    inject attacker markdown into the Phase-1 parse path (content/<book>/<ch>-content.md).
+    """
+    s3 = _s3_with_two_pages()
+    before = set(s3.store)
+    evil = "../contentrepository/Book/chapter1/chapter1-content"
+    body = json.dumps({"book": evil, "page": 1, "markdown": "<injected>"})
+    resp = h._save_snippet(_event("POST", "/mdreview/api/save", body=body), s3, "b")
+    assert resp["statusCode"] == 400
+    assert set(s3.store) == before  # nothing written anywhere
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "../evil",
+        "a/b",
+        "a/../b",
+        "..",
+        "book with space",  # space is not in the safe-token set
+        "book/",
+        "\\evil",
+    ],
+)
+def test_save_rejects_unsafe_book_variants(bad):
+    s3 = _s3_with_two_pages()
+    before = set(s3.store)
+    body = json.dumps({"book": bad, "page": 1, "markdown": "x"})
+    resp = h._save_snippet(_event("POST", "/mdreview/api/save", body=body), s3, "b")
+    assert resp["statusCode"] == 400
+    assert set(s3.store) == before
+
+
+def test_get_page_rejects_path_traversal_book():
+    s3 = _s3_with_two_pages()
+    evil = "../../etc/some"
+    resp = h._get_page(
+        _event("GET", "/mdreview/api/page", {"book": evil, "page": "1"}), s3, "b"
+    )
+    assert resp["statusCode"] == 400
+
+
+def test_save_still_accepts_valid_book():
+    """Legitimate single-segment book tokens (letters/digits/._-) still work."""
+    s3 = _s3_with_two_pages()
+    body = json.dumps({"book": "B460", "page": 7, "markdown": "| a |"})
+    resp = h._save_snippet(_event("POST", "/mdreview/api/save", body=body), s3, "b")
+    assert resp["statusCode"] == 200
+    assert s3.store["ocr-output/B460/reviewed/p7.md"] == b"| a |"
