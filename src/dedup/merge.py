@@ -3,6 +3,7 @@
 Handles people merge, generic entity merge, event ref updates, and index updates.
 """
 
+import copy
 import json
 import logging
 import shutil
@@ -290,11 +291,14 @@ def _merge_one_person_secondary(
     primary_person: Dict,
     output_root: Path,
 ) -> Tuple[Dict, bool]:
-    """Process one secondary person merge into primary_data.
+    """Process one secondary person merge into primary_data — CRASH-ATOMIC ordering.
 
-    Returns (updated_primary_data, merged) preserving the exact storage ordering:
-    merge_people -> update_index -> backup -> unlink -> notify -> update_event_refs
-    -> dynamo sync.
+    Returns (updated_primary_data, merged). The merged primary is WRITTEN + VALIDATED FIRST;
+    only on a confirmed write is the secondary deleted + its event refs repointed. Previously the
+    secondary was unlinked BEFORE the (end-of-loop) primary write, so a crash or a schema-blocked
+    primary write between the two lost the secondary's mentions permanently / left dangling refs
+    (§1.0d WARNING). If the guarded write is BLOCKED, the secondary is left intact and the merge
+    is skipped (merged=False) rather than destroying data.
     """
     secondary_file = people_dir / person["filename"]
     if not secondary_file.exists():
@@ -307,7 +311,21 @@ def _merge_one_person_secondary(
         return primary_data, False
 
     secondary_id = secondary_data.get("PersonID", "")
-    primary_data = merge_people(primary_data, secondary_data)
+    # Merge into a COPY: merge_people/_merge_person mutate the primary IN PLACE, so a blocked write
+    # would otherwise leave this secondary's data in primary_data and a LATER secondary's successful
+    # write would persist it while this secondary's file still exists (a double-count). Only adopt
+    # the merged copy as the new primary_data on a CONFIRMED write.
+    candidate = merge_people(copy.deepcopy(primary_data), secondary_data)
+
+    # Persist the merged primary FIRST (validated + crash-atomic). Only if it actually lands do we
+    # destroy the secondary / repoint refs — so a blocked/crashed write never loses the secondary.
+    if not _write_entity_guarded(people_dir / primary_person["filename"], candidate):
+        logger.error(
+            "Merge write BLOCKED for primary %s — keeping secondary %s intact (not merged)",
+            primary_person["filename"],
+            person["filename"],
+        )
+        return primary_data, False
 
     index_path = people_dir / "index.json"
     update_index(index_path, person["name"], primary_person["filename"])
@@ -321,7 +339,7 @@ def _merge_one_person_secondary(
     # #9: remove the merged-away secondary from DynamoDB too.
     if secondary_id:
         _dynamo_merge_sync("people", "", {}, secondary_id)
-    return primary_data, True
+    return candidate, True
 
 
 def do_merge(people_dir: Path, people: List[Dict], primary_idx: int) -> Optional[str]:
@@ -346,7 +364,9 @@ def do_merge(people_dir: Path, people: List[Dict], primary_idx: int) -> Optional
         if merged:
             merged_count += 1
 
-    _write_entity_guarded(people_dir / primary_person["filename"], primary_data)
+    # NOTE: the merged primary is already persisted crash-atomically INSIDE the loop (before each
+    # secondary is deleted), so no end-of-loop write is needed. If merged_count==0 the primary was
+    # never modified. This ordering is what makes the merge safe against a mid-loop crash.
 
     # #9: mirror the merged primary into DynamoDB (put, not delete).
     if primary_id and merged_count:
@@ -379,6 +399,7 @@ def merge_generic(
     seen_sub_events = {
         m.get("Sub_eventID") for m in primary_mentions if m.get("Sub_eventID")
     }
+    primary_file = entity_dir / primary["filename"]
     merged_any = False
 
     for i, p in enumerate(people):
@@ -388,6 +409,7 @@ def merge_generic(
             entity_dir,
             p,
             primary_data,
+            primary_file,
             primary_mentions,
             aliases,
             seen_sub_events,
@@ -396,9 +418,8 @@ def merge_generic(
         ):
             merged_any = True
 
-    primary_data["event_mentions"] = primary_mentions
-    primary_data["aliases"] = aliases
-    _write_entity_guarded(entity_dir / primary["filename"], primary_data)
+    # The merged primary is persisted crash-atomically INSIDE the loop (before each secondary is
+    # deleted), so no end-of-loop write is needed. If merged_any is False the primary was unchanged.
 
     # #9: mirror the merged primary into DynamoDB (put, not delete).
     primary_id = primary_data.get(id_field, "")
@@ -414,15 +435,20 @@ def _merge_one_secondary(
     entity_dir: Path,
     p: Dict,
     primary_data: Dict,
+    primary_file: Path,
     primary_mentions: List,
     aliases: List,
     seen_sub_events: set,
     id_field: str,
     name_fields: tuple,
 ) -> bool:
-    """Merge one secondary entity file into the primary (in place): union its event_mentions
-    (dedup by Sub_eventID), add its name as an alias, repoint event refs old->primary id, then
-    delete + Dynamo-sync the secondary. Returns True if the secondary was merged."""
+    """Merge one secondary entity file into the primary — CRASH-ATOMIC ordering: union its
+    event_mentions (dedup by Sub_eventID) + alias, WRITE+VALIDATE the primary FIRST, and only on a
+    confirmed write repoint event refs old->primary id + delete the secondary. Previously the
+    secondary was unlinked BEFORE the (end-of-loop) primary write, so a crash or a schema-blocked
+    primary write lost the secondary's mentions / left dangling refs (§1.0d WARNING). Returns True
+    iff the secondary was merged; on a blocked write the secondary is left intact (merged=False).
+    """
     f = entity_dir / p["filename"]
     if not f.exists():
         return False
@@ -431,15 +457,41 @@ def _merge_one_secondary(
     except (OSError, json.JSONDecodeError):
         return False
 
-    # Union mentions (dedup by Sub_eventID) + record the secondary name as an alias.
+    # Union mentions (dedup by Sub_eventID) + record the secondary name as an alias. Snapshot the
+    # shared accumulation state FIRST so a blocked write can roll back — otherwise this secondary's
+    # mentions would linger in primary_mentions and get persisted by a LATER secondary's successful
+    # write while this secondary's file still exists (a double-count). Lists are shared refs mutated
+    # in place by callers, so snapshot/restore CONTENTS (not rebind).
+    _mentions_snapshot = list(primary_mentions)
+    _aliases_snapshot = list(aliases)
+    _seen_snapshot = set(seen_sub_events)
     _absorb_secondary_fields(
         secondary, primary_mentions, aliases, seen_sub_events, name_fields
     )
 
+    # Persist the merged primary FIRST (validated + crash-atomic). Only if it lands do we repoint
+    # refs / delete the secondary — a blocked or crashed write must never lose the secondary.
+    primary_data["event_mentions"] = primary_mentions
+    primary_data["aliases"] = aliases
+    if not _write_entity_guarded(primary_file, primary_data):
+        logger.error(
+            "Merge write BLOCKED for primary %s — keeping secondary %s intact (not merged)",
+            primary_file.name,
+            p["filename"],
+        )
+        # Roll back the in-place accumulation so a later secondary's write doesn't persist THIS
+        # (unmerged, still-on-disk) secondary's mentions.
+        primary_mentions[:] = _mentions_snapshot
+        aliases[:] = _aliases_snapshot
+        seen_sub_events.clear()
+        seen_sub_events.update(_seen_snapshot)
+        primary_data["event_mentions"] = primary_mentions
+        primary_data["aliases"] = aliases
+        return False
+
     # Update event files: replace old ID with primary ID. Derive both ids from the record's
     # REAL primary key (people_groups -> GroupID, not the PeopleGroupID alias), and rebase the
-    # sub-event arrays under the PLURAL ref key (places/groups/equipment/...), NOT the PK
-    # field-name — the two §1.0d CRITICAL bugs lived here.
+    # sub-event arrays under the on-disk ref key — the two §1.0d CRITICAL bugs lived here.
     old_id = _record_id(secondary, entity_dir.name, id_field)
     new_id = _record_id(primary_data, entity_dir.name, id_field)
     _rebase_refs_for_merge(entity_dir, old_id, new_id, id_field)
