@@ -1322,7 +1322,9 @@ def _add_member_to_group(
     return True
 
 
-def _link_person_to_groups(person_file: Path, people_groups_dir: Path) -> int:
+def _link_person_to_groups(
+    person_file: Path, people_groups_dir: Path, grok_client: Any = None
+) -> int:
     """Add person as member to matching people groups based on units_served."""
     if not people_groups_dir.exists():
         return 0
@@ -1347,24 +1349,255 @@ def _link_person_to_groups(person_file: Path, people_groups_dir: Path) -> int:
     with open(index_file, "r", encoding="utf-8") as f:
         group_index = json.load(f)
 
-    linked = _link_units(units, group_index, people_groups_dir, person_id, person_name)
+    linked = _link_units(
+        units,
+        group_index,
+        people_groups_dir,
+        person_id,
+        person_name,
+        grok_client=grok_client,
+        person_data=person_data,
+    )
     linked += _link_affiliations(
         affiliations, group_index, people_groups_dir, person_id, person_name
     )
     return linked
 
 
-def _link_units(units, group_index, people_groups_dir, person_id, person_name) -> int:
-    """Link a person to each matching military-unit group (by unit key). Returns count linked."""
+def _validate_and_canonicalize_unit(
+    grok_client: Any, unit_name: str
+) -> Optional[Dict[str, str]]:
+    """LLM validity + canonicalization gate before minting a group from a person's unit.
+
+    A person's ``units_served`` entry is a free-text string ("4th Division"); we only create a
+    group for it if Grok confirms it is a REAL, identifiable military formation and returns a
+    canonical name. Returns ``{"canonical": <name>, "echelon": <echelon|"">}`` or ``None`` when
+    unverifiable / unknown (fail-safe: on any error or UNKNOWN we do NOT create — null-over-fake).
+    """
+    try:
+        prompt = (
+            "You are validating a World War II military unit reference for a database. "
+            f'Is "{unit_name}" a real, identifiable military formation (not a vague/garbled '
+            "fragment)? If YES, reply with exactly one line of JSON: "
+            '{"valid": true, "canonical_name": "<full canonical unit name>", '
+            '"echelon": "<division|regiment|battalion|company|corps|army|brigade|"">"}. '
+            'If it is NOT a real identifiable unit, reply exactly: {"valid": false}. '
+            "Reply with ONLY the JSON, no prose."
+        )
+        raw = grok_client.chat_completion(prompt).strip()
+        start, end = raw.find("{"), raw.rfind("}")
+        if start == -1 or end == -1:
+            return None
+        parsed = json.loads(raw[start : end + 1])
+        if not isinstance(parsed, dict) or not parsed.get("valid"):
+            return None
+        canonical = str(parsed.get("canonical_name") or "").strip()
+        if not canonical:
+            return None
+        return {
+            "canonical": canonical,
+            "echelon": str(parsed.get("echelon") or "").strip(),
+        }
+    except Exception:  # noqa: BLE001 - validation is best-effort; never block linking
+        return None
+
+
+def _provisional_group_event_mentions(person_data: Dict[str, Any]) -> list:
+    """Carry the person's event/source lineage onto a minted group so the group is traceable
+    back to WHERE it came from ("track the event source"). Fresh MentionID per item; the
+    EventID/Sub_eventID references are preserved verbatim (never re-minted)."""
+    from ulid import new as new_ulid
+
+    out = []
+    for em in person_data.get("event_mentions", []) or []:
+        if not isinstance(em, dict):
+            continue
+        # Build omitting falsy keys: the GROUPS event_mentions schema makes EventID NON-nullable,
+        # while a person's EventID is nullable — so a None/absent reference must be OMITTED, never
+        # written as null (the item has no `required` list, so omission is schema-valid).
+        item: Dict[str, Any] = {
+            "MentionID": str(new_ulid()),
+            "context": "Unit membership derived from a person's service record",
+        }
+        for key in (
+            "EventID",
+            "Event_Name",
+            "Sub_eventID",
+            "Sub_event_Name",
+            "book",
+            "author",
+            "series",
+        ):
+            val = em.get(key)
+            if val:
+                item[key] = val
+        out.append(item)
+    return out
+
+
+def _create_provisional_group(
+    unit_name: str,
+    canon: Dict[str, str],
+    group_index: Dict[str, str],
+    people_groups_dir: Path,
+    person_data: Dict[str, Any],
+) -> Optional[Path]:
+    """Mint a PROVISIONAL military-unit people_group derived from a person's unit affiliation.
+
+    Born ``enrichment_status="ambiguous"`` with an ``enrichment_ambiguity_reason`` recording that
+    it was bootstrapped from a single person (not independently extracted), and carrying the
+    person's event/source lineage in ``event_mentions`` so dedup/Phase-3 can confirm + enrich it.
+    Persistence (GroupID mint, merge-vs-create, index.json, write_json_with_lock) is delegated to
+    the shared ``people_groups._save_group`` — this helper only assembles the provisional record.
+    Returns the new/merged file path (or None on failure).
+    """
+    try:
+        from src.extraction.people_groups import (
+            _name_to_filename,
+            _normalize_name,
+            _save_group,
+        )
+
+        canonical = canon["canonical"]
+        person_name = person_data.get("name", "")
+        ems = _provisional_group_event_mentions(person_data)
+        first_em = ems[0] if ems else {}
+        group: Dict[str, Any] = {
+            "group_name": canonical,
+            "name": canonical,
+            "group_type": "military_unit",
+            "description": (
+                f"Military unit, provisionally created from the service record of "
+                f"{person_name or 'a person'} (source reference: \"{unit_name}\"). "
+                "Not yet independently extracted from a narrative source."
+            ),
+            "members": [],
+            "event_mentions": ems,
+            "enrichment_status": "ambiguous",
+            "enrichment_ambiguity_reason": (
+                "provisional: bootstrapped from a person's units_served (LLM-validated as a real "
+                f'formation, canonicalized from "{unit_name}"); awaiting narrative extraction / '
+                "dedup confirmation"
+            ),
+        }
+        if canon.get("echelon"):
+            group["military_hierarchy"] = {"echelon": canon["echelon"]}
+
+        index_file = people_groups_dir / "index.json"
+        # Reuse the canonical persist path (mints GroupID, merges-or-creates, updates index,
+        # schema-validated write, stamps book/author/series onto event_mentions from the source).
+        _save_group(
+            people_groups_dir,
+            index_file,
+            group,
+            first_em.get("book") or "",
+            first_em.get("author") or "",
+            first_em.get("series") or "",
+        )
+        # Resolve the file _save_group wrote/merged, and keep this run's in-memory index hot.
+        return _resolve_saved_group_path(
+            canonical, group, group_index, people_groups_dir, unit_name, person_data
+        )
+    except Exception as e:  # noqa: BLE001 - best-effort; never block linking
+        logger.debug("provisional group create skipped for %r: %s", unit_name, e)
+        return None
+
+
+def _resolve_saved_group_path(
+    canonical, group, group_index, people_groups_dir, unit_name, person_data
+) -> Optional[Path]:
+    """Resolve the path _save_group wrote (via index.json), update the in-memory index, and
+    verify the file actually exists (a blocked write must NOT yield a phantom path)."""
+    from src.extraction.people_groups import _name_to_filename, _normalize_name
+
+    index_file = people_groups_dir / "index.json"
+    norm = _normalize_name(canonical)
+    filename = None
+    if index_file.exists():
+        with open(index_file, "r", encoding="utf-8") as f:
+            filename = json.load(f).get(norm)
+    if not filename:
+        filename = _name_to_filename(canonical, str(group.get("GroupID", "")))
+    group_index[norm] = filename
+    created_path = people_groups_dir / filename
+    if not created_path.exists():
+        # _save_group's write was blocked (schema guard). Do NOT hand back a phantom path —
+        # that would make _add_member_to_group open() a nonexistent file and crash linking.
+        logger.warning(
+            "OBSERV group.provisional_create_blocked unit=%r (write not persisted)",
+            unit_name,
+        )
+        return None
+    logger.info(
+        "OBSERV group.provisional_created unit=%r canonical=%r derived_from_person=%s",
+        unit_name,
+        canonical,
+        person_data.get("PersonID", ""),
+    )
+    return created_path
+
+
+def _resolve_or_create_group_file(
+    unit_name, group_index, people_groups_dir, grok_client, person_data
+):
+    """Find the matching group file; if none and creation is enabled (grok_client+person_data
+    both present), LLM-validate the unit and mint a provisional group. Returns a path or None.
+    """
+    group_file = _find_group_file(unit_name, group_index, people_groups_dir)
+    if group_file or grok_client is None or person_data is None:
+        return group_file
+    canon = _validate_and_canonicalize_unit(grok_client, unit_name)
+    if not canon:
+        return None
+    return _create_provisional_group(
+        unit_name, canon, group_index, people_groups_dir, person_data
+    )
+
+
+def _link_units(
+    units,
+    group_index,
+    people_groups_dir,
+    person_id,
+    person_name,
+    grok_client=None,
+    person_data=None,
+) -> int:
+    """Link a person to each matching military-unit group (by unit key). Returns count linked.
+
+    When no group matches AND provisional creation is enabled (env ``PROVISIONAL_GROUPS=true``)
+    and a grok_client is available, LLM-validate the unit and mint a provisional group, then link
+    into it — so a person's stated unit no longer silently fails to connect (coverage gap close).
+    """
+    import os
+
+    create_missing = (
+        os.getenv("PROVISIONAL_GROUPS", "false").lower() == "true"
+        and grok_client is not None
+        and person_data is not None
+    )
     linked = 0
     for unit in units:
         unit_name = unit.get("unit", "")
         if not unit_name:
             continue
-        group_file = _find_group_file(unit_name, group_index, people_groups_dir)
+        group_file = _resolve_or_create_group_file(
+            unit_name,
+            group_index,
+            people_groups_dir,
+            grok_client if create_missing else None,
+            person_data if create_missing else None,
+        )
         if not group_file:
             continue
-        if _add_member_to_group(group_file, person_id, person_name, unit):
+        try:
+            added = _add_member_to_group(group_file, person_id, person_name, unit)
+        except (
+            Exception
+        ):  # noqa: BLE001 - one bad group file must not abort linking others
+            logger.debug("skip member-link for %r (group read/write failed)", unit_name)
+            continue
+        if added:
             linked += 1
             logger.info("  Linked %s → %s", person_name, unit_name)
     return linked
@@ -1450,7 +1683,7 @@ def enrich_all_people(
     )
 
     # Link enriched people to people groups
-    _link_people_to_groups(person_files, people_dir)
+    _link_people_to_groups(person_files, people_dir, grok_client)
 
     logger.info("=" * 60)
     logger.info(
@@ -1506,7 +1739,9 @@ def _enrich_people_parallel(
     return enriched
 
 
-def _link_people_to_groups(person_files: list, people_dir: Path) -> None:
+def _link_people_to_groups(
+    person_files: list, people_dir: Path, grok_client: Any = None
+) -> None:
     """Link enriched people to people-group files (if the dir exists). Extracted
     verbatim from enrich_all_people — same path, same logging."""
     people_groups_dir = people_dir.parent / "people_groups"
@@ -1514,7 +1749,9 @@ def _link_people_to_groups(person_files: list, people_dir: Path) -> None:
         logger.info("Linking people to groups...")
         groups_linked = 0
         for person_file in person_files:
-            groups_linked += _link_person_to_groups(person_file, people_groups_dir)
+            groups_linked += _link_person_to_groups(
+                person_file, people_groups_dir, grok_client
+            )
         if groups_linked:
             logger.info("Linked %d person-group membership(s)", groups_linked)
 

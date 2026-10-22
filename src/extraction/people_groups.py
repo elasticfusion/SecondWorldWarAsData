@@ -108,6 +108,18 @@ def _merge_group(existing: Dict, new_group: Dict) -> Dict:
             merged.get("members", []), new_group["members"], "PersonID"
         )
 
+    # PROMOTION: a provisional group (bootstrapped from a person's units_served) that is now
+    # confirmed by a REAL narrative extraction is no longer ambiguous — clear the provisional
+    # markers so it reads as a normally-extracted group. (The incoming extraction is "real" when
+    # it does NOT carry the provisional ambiguity reason.)
+    existing_reason = existing.get("enrichment_ambiguity_reason") or ""
+    incoming_reason = new_group.get("enrichment_ambiguity_reason") or ""
+    if "provisional" in existing_reason and "provisional" not in incoming_reason:
+        merged["enrichment_status"] = new_group.get("enrichment_status")
+        merged["enrichment_ambiguity_reason"] = new_group.get(
+            "enrichment_ambiguity_reason"
+        )
+
     return merged
 
 
@@ -258,9 +270,12 @@ def _save_group(
         from src.schemas import inject_metadata
 
         inject_metadata(group)
-        write_json_with_lock(filepath, group)
-        _update_index(index_file, group_name, filename)
-        logger.info("    Created: %s", group_name)
+        if write_json_with_lock(filepath, group):
+            _update_index(index_file, group_name, filename)
+            logger.info("    Created: %s", group_name)
+        else:
+            # Write blocked (schema guard): do NOT index a file that was never written.
+            logger.warning("    Create blocked (schema guard rejected): %s", group_name)
 
 
 def extract_people_groups(
