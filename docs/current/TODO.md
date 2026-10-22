@@ -38,8 +38,11 @@ security reviews (both PASS)→CI→merge→sync→move to §7. bandit still 0H/
     classifies *-event.json as "events" and silently drops a schema-invalid rebased write + logs), whereas the local
     merge.py path uses raw json.dump. Low risk (a ULID swap won't change validity) — note the inconsistency.
 - **[HIGH] mdreview_ui_handler path traversal → arbitrary S3 write / Phase-1 content injection** — _save_snippet/
-  _get_page use an unvalidated `book` in the S3 key; validate with the shared safe-token regex (the trigger_handler
-  hardening wasn't propagated). (corroborated)
+- **[HIGH] ✅ DONE (PR #522) — mdreview_ui_handler path traversal → arbitrary S3 write / Phase-1 content
+  injection** — _save_snippet/_get_page used an unvalidated `book` in the S3 key. Fixed: added _safe_book()
+  (mirrors run_scope._safe_book / trigger_handler _SAFE_TITLE_RE: fullmatch [A-Za-z0-9._-], reject empty/../ / \\)
+  applied in BOTH entrypoints before any key build, 400 + OBSERV on reject; +10 regression tests. Gate PASS,
+  concurrent code+security reviews both PASS. Moved to §7.
 - **[HIGH] dedup_gate_handler trusts SNS Message with no topic-ARN check → human-review-gate bypass** (fan-out
   ungates Phase 3). Port trigger_handler._trusted_topic_name. (corroborated)
 - **[HIGH] unit_patch._download DNS-rebind SSRF** — vets host then does a plain re-resolving get on an OpenSERP
@@ -524,6 +527,9 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
 ---
 
 ## 7. COMPLETED
+
+### §1.0d HIGH — mdreview path traversal (PR #522, 2026-10-21)
+mdreview_ui_handler _save_snippet/_get_page validated `book` via a new _safe_book() (canonical safe-token: fullmatch [A-Za-z0-9._-], reject ../ / \) before any S3 key build (400+OBSERV on reject), closing an arbitrary-S3-write / Phase-1 content-injection path. +10 regression tests. Gate PASS (2552 tests, bandit 0H/0M); both reviewers PASS.
 
 ### Radon grandfather reduction campaign (PRs #515–#521, 2026-10-21)
 Per §1.0d steering ("genuinely grandfather intrinsically complex, fix other"): the radon allowlist
