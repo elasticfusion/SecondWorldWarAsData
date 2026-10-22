@@ -51,9 +51,8 @@ security reviews (both PASS)→CI→merge→sync→move to §7. bandit still 0H/
 - **[HIGH] ✅ DONE (PR #526) — locked_json atomic-write broke the cross-process flock + create-path truncate-before-lock** — now flocks a STABLE sidecar <path>.lock (never renamed) across the read-modify-write so the lock survives os.replace; reads the data file read-only after the lock (no truncating open). +2 cross-process regression tests (fail against main, pass with fix). Gate PASS, both reviewers PASS. Moved to §7.
 - **[HIGH] ✅ DONE (PR #527) — ecs.run_task placement failures unchecked + retrieve-only crash/SIGTERM stalls** — all 3 run_task callers now detect {tasks:[],failures:[...]} (FARGATE_SPOT placement failure, run_task doesn't raise): trigger raises+releases lock, poller submit returns error, _trigger_retrieve releases the retrieve-claim + returns False (not counted complete); run_retrieve_only sets _current_phase_script so SIGTERM sync+lock-release fire. +3 tests. Gate PASS, both reviewers PASS. Moved to §7.
   - **[WARNING follow-up] ocr_merge_handler._route_to_oob has the same unguarded run_task pattern** (lower risk: FARGATE not SPOT, no lock/claim) — add the same failures[]/empty-tasks check.
-- **[WARNING] grok_client batch count-mismatch discards 100% with zero retry** (all-fail → >20% systemic guard
-  skips retry) — a single dropped/extra results page → every event in the batch extracts 0. Route a mismatch to
-  real-time retry / page-reconcile. (corroborated)
+- **[WARNING] ✅ DONE (PR #529) — grok_client batch count-mismatch discards 100% with zero retry** — _map_ordered_results returns (failed_ids, count_mismatch); _retry_failed_batch gains force=True that bypasses the 20%-systemic guard on a count mismatch (envelope problem, not model failure) so a dropped results page no longer zeros the batch. +3 tests. Both reviewers PASS.
+  - **[WARNING follow-up] ecs_entrypoint._map_batch_results_by_index (AWS --retrieve-only path) has the SAME count-mismatch-zeros-batch class** (returns {} on mismatch, re-run with SKIP_RETRY=1 -> no retry) — carry count_mismatch through the ECS retrieve path. (both reviewers)
 - **[WARNING] search_cache._DynamoBackend.get treats a transient Dynamo error as a MISS** → read blip → 7d
   negative suppression (symmetric to the #1.0c TRANSIENT fix, on the read side).
 - **[WARNING] wayback _get_with_courtesy re-resolving GET (DNS-rebind pin missing)** — same pin-gap family as
@@ -519,6 +518,9 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
 ---
 
 ## 7. COMPLETED
+
+### §1.0d WARNING — batch count-mismatch retry (PR #529, 2026-10-21)
+A batch result count-mismatch marked all requests failed, then the 20%-systemic guard skipped retry -> whole batch zeroed. _map_ordered_results now returns (failed_ids, count_mismatch) and _retry_failed_batch's force=True bypasses the guard on a mismatch (it's a pagination/envelope problem, not model failure). Genuine-systemic guard unchanged for force=False. +3 tests. Gate PASS (2581 tests, bandit 0H/0M); both reviewers PASS. Follow-up: the AWS --retrieve-only path (ecs_entrypoint._map_batch_results_by_index) has the same class (SKIP_RETRY=1).
 
 ### §1.0d WARNING — dedup merge crash-atomic (PR #528, 2026-10-21)
 do_merge (people) + merge_generic (generic) now persist the merged primary (validated, crash-atomic) BEFORE deleting each secondary; a blocked/crashed primary write keeps the secondary intact (no mention loss). People merges into a deepcopy candidate (adopt only on success); generic snapshots + rolls back the shared mentions/aliases/seen state on block (no cross-iteration double-count). +4 regression tests (block tests fail against main, pass with fix). Gate PASS (2579 tests, bandit 0H/0M); both reviewers PASS round 2.
