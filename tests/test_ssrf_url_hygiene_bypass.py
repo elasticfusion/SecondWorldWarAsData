@@ -62,13 +62,17 @@ def test_equipment_extract_image_urls_blocks_loopback():
 # --- source_retrieval._download_to_quarantine --------------------------------------------
 def test_source_retrieval_download_blocks_loopback():
     from src.enrichment import source_retrieval as sr
+    from src.utils import url_hygiene as uh
 
-    sess = mock.Mock()
-    res = sr._download_to_quarantine(
-        {}, "http://127.0.0.1/secret", __import__("pathlib").Path("/tmp/q"), sess, 1024
-    )
+    # _download_to_quarantine now PINS the fetch (no injected session); a loopback host must be
+    # rejected by clean_url/resolved_host_is_safe BEFORE any _pinned_get call.
+    pinned = mock.Mock()
+    with mock.patch.object(uh, "_pinned_get", pinned):
+        res = sr._download_to_quarantine(
+            {}, "http://127.0.0.1/secret", __import__("pathlib").Path("/tmp/q"), 1024
+        )
     assert res["status"] == "error" and "ssrf" in res["reason"]
-    sess.get.assert_not_called()
+    pinned.assert_not_called()
 
 
 # --- award_polite_source fetch ------------------------------------------------------------

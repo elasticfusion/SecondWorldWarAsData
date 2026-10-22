@@ -83,23 +83,24 @@ def _vision_is_patch(
 
 
 def _download(image_url: str) -> Optional[bytes]:
-    """Download image bytes (capped, streamed, NO redirects). Caller must pass an
-    already-SSRF-validated URL. Redirects are disabled because a redirect reopens
-    SSRF (a clean host can 302 -> 169.254.169.254). None on any error."""
-    try:
-        from src.utils.http_pool import get_session  # type: ignore
-    except Exception:  # noqa: BLE001 - fall back to requests
-        import requests as _requests
+    """Download image bytes (capped, streamed, NO redirects), PINNED to a vetted IP. Caller must
+    pass an already-clean_url'd URL. Redirects are disabled because a redirect reopens SSRF (a
+    clean host can 302 -> 169.254.169.254). We re-resolve+vet the host HERE and pin the connection
+    to a vetted IP (keeping Host + TLS SNI = host) so a DNS rebind between _safe_url's earlier check
+    and this fetch cannot reach an internal address (§1.0d). None on any error / unsafe host.
+    """
+    from urllib.parse import urlparse
 
-        def get_session():  # type: ignore
-            return _requests
+    from src.utils.url_hygiene import _pinned_get, resolved_host_is_safe
 
     try:
-        session = get_session()
+        host = (urlparse(image_url).hostname or "").lower()
+        vetted = resolved_host_is_safe(host)
+        if not host or vetted is None:
+            logger.debug("patch download blocked (host resolves non-public): %s", host)
+            return None
         headers = {"User-Agent": "WWII-DataPipeline/1.0 (+research; contact in repo)"}
-        resp = session.get(
-            image_url, timeout=30, headers=headers, stream=True, allow_redirects=False
-        )
+        resp = _pinned_get(image_url, host, vetted, timeout=30, headers=headers)
         if resp.status_code != 200:
             logger.debug("patch download non-200 (%s): %s", resp.status_code, image_url)
             return None
