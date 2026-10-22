@@ -517,6 +517,25 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
 ---
 ---
 
+### Prompt / schema quality follow-ups (from the 2026-10-22 prompt review)
+- **[ENHANCEMENT] Biography provenance linkage** — people `biography_sources` ties only to a
+  free-text book title: no `Sub_eventID`/`MentionID` link to the event/mention it was extracted
+  from, and no `BibliographyID` when the source is a footnote/endnote (footnotes→bibliography DO
+  carry a `BibliographyID` ULID). Add those refs so bio claims join the event + bibliography graph.
+  Also tighten the shared `EVENT_MENTIONS_SCHEMA` + `units_served` — they're under-specified vs what
+  the prompt emits (extra fields pass only because there's no `additionalProperties:false`).
+  Requires a `people` schema version bump + migration. (steer: biography provenance)
+- **[WARNING] Wire situational_geocode into the Phase-3 cascade** — `src/enrichment/situational_geocode.py`
+  exists (handles "Aachen Gap"/ridge/bridgehead relative features) but is NOT in the
+  nominatim→hill→grok cascade; situational places currently resolve via the generic Grok fallback.
+- **[NIT] Bump black → 26.10.1** (CVE-2026-114134) in requirements-ci.txt; review any reformatting.
+- **[NIT] Add a general yaml-lint step to gate.sh** — the gate validates CFN (cfn-lint) + JSON
+  (json-lint) but NOT general YAML; prompt/config/search_queries YAML is only safe_load-checked at
+  deploy + in tests, so a malformed prompt YAML (e.g. a colon-in-list-item) passes the gate's lint
+  phase. Add safe_load over prompts/*.yaml + search_queries/*.yaml + config*.yaml.
+- **[NIT] places.yaml / source_section.yaml task-line** still say "WWII text" after the system
+  prompt was de-scoped to any-theater — drop the residual era label for full consistency.
+
 ## 7. COMPLETED
 
 ### §1.0d WARNING — batch count-mismatch retry (PR #529, 2026-10-21)
