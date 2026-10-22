@@ -48,9 +48,7 @@ security reviews (both PASS)→CI→merge→sync→move to §7. bandit still 0H/
   fan-out; CFN wires the ARN onto DedupGateFunction; +10 tests. Gate PASS, both reviewers PASS. Moved to §7.
 - **[HIGH] ✅ DONE (PR #524) — unit_patch._download + source_retrieval._download_to_quarantine DNS-rebind SSRF** — both now pin the fetch to a vetted IP via url_hygiene._pinned_get (capture IPs from resolved_host_is_safe, keep Host+SNI=host, refuse redirects). +tests. Gate PASS, both reviewers PASS. Moved to §7.
 - **[HIGH] ✅ DONE (PR #525) — supplemental enrichment stored UNVERIFIED urls** — _enrich_material now routes the sequential_search hit through _supplemental_url_verified -> bibliography_resolver._verify_match (SSRF-safe content fetch + Grok match) before storing resource_urls; non-matching hit DROPPED +OBSERV. +4 tests. Gate PASS, both reviewers PASS. Moved to §7.
-- **[HIGH] locked_json atomic-write breaks the cross-process flock** (os.replace commits a new inode nobody
-  locks → lost-update race reappears; regression from #1.0c) + create-path "w+" truncates before the flock.
-  Flock a stable sidecar lockfile; open create-path without O_TRUNC. (corroborated)
+- **[HIGH] ✅ DONE (PR #526) — locked_json atomic-write broke the cross-process flock + create-path truncate-before-lock** — now flocks a STABLE sidecar <path>.lock (never renamed) across the read-modify-write so the lock survives os.replace; reads the data file read-only after the lock (no truncating open). +2 cross-process regression tests (fail against main, pass with fix). Gate PASS, both reviewers PASS. Moved to §7.
 - **[HIGH] ecs.run_task failures[] unchecked + retrieve-only crash/SIGTERM stalls** — placement failure (common
   on FARGATE_SPOT) holds lock/retrieve-claim to TTL with nothing running (6h for retrieve, counted "complete");
   a crashed --retrieve-only leaves job="ready"+claim held (~6h stall); _handle_sigterm is a no-op for
@@ -525,6 +523,9 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
 ---
 
 ## 7. COMPLETED
+
+### §1.0d HIGH — locked_json sidecar flock (PR #526, 2026-10-21)
+locked_json held flock on the data fd, but save()'s os.replace committed a new inode nobody locked -> cross-process lost-update race (regression from the §1.0c atomic-write) [H1]; create path 'w+' truncated before the flock [H2]. Fixed by flocking a stable sidecar <path>.lock (never renamed, survives os.replace) + reading the data file read-only after the lock. +2 real-process regression tests (fail against main, pass with fix). Gate PASS (2572 tests, bandit 0H/0M); both reviewers PASS.
 
 ### §1.0d HIGH — supplemental unverified-url store (PR #525, 2026-10-21)
 supplemental._enrich_material now content-verifies a sequential_search hit (via bibliography_resolver._verify_match -> _verify_url_content: SSRF-safe fetch + Grok page match) before writing resource_urls; a non-matching hit is dropped with OBSERV supplemental.url_rejected. Fail-open only when no grok_client. +4 regression tests. Gate PASS (2570 tests, bandit 0H/0M); both reviewers PASS.
