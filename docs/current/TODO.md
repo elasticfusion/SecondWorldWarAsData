@@ -49,11 +49,8 @@ security reviews (both PASS)→CI→merge→sync→move to §7. bandit still 0H/
 - **[HIGH] ✅ DONE (PR #524) — unit_patch._download + source_retrieval._download_to_quarantine DNS-rebind SSRF** — both now pin the fetch to a vetted IP via url_hygiene._pinned_get (capture IPs from resolved_host_is_safe, keep Host+SNI=host, refuse redirects). +tests. Gate PASS, both reviewers PASS. Moved to §7.
 - **[HIGH] ✅ DONE (PR #525) — supplemental enrichment stored UNVERIFIED urls** — _enrich_material now routes the sequential_search hit through _supplemental_url_verified -> bibliography_resolver._verify_match (SSRF-safe content fetch + Grok match) before storing resource_urls; non-matching hit DROPPED +OBSERV. +4 tests. Gate PASS, both reviewers PASS. Moved to §7.
 - **[HIGH] ✅ DONE (PR #526) — locked_json atomic-write broke the cross-process flock + create-path truncate-before-lock** — now flocks a STABLE sidecar <path>.lock (never renamed) across the read-modify-write so the lock survives os.replace; reads the data file read-only after the lock (no truncating open). +2 cross-process regression tests (fail against main, pass with fix). Gate PASS, both reviewers PASS. Moved to §7.
-- **[HIGH] ecs.run_task failures[] unchecked + retrieve-only crash/SIGTERM stalls** — placement failure (common
-  on FARGATE_SPOT) holds lock/retrieve-claim to TTL with nothing running (6h for retrieve, counted "complete");
-  a crashed --retrieve-only leaves job="ready"+claim held (~6h stall); _handle_sigterm is a no-op for
-  --retrieve-only (never sets _current_phase_script). Check failures[]; scope/heartbeat the claim; set
-  _current_phase_script + release in SIGTERM/finally.
+- **[HIGH] ✅ DONE (PR #527) — ecs.run_task placement failures unchecked + retrieve-only crash/SIGTERM stalls** — all 3 run_task callers now detect {tasks:[],failures:[...]} (FARGATE_SPOT placement failure, run_task doesn't raise): trigger raises+releases lock, poller submit returns error, _trigger_retrieve releases the retrieve-claim + returns False (not counted complete); run_retrieve_only sets _current_phase_script so SIGTERM sync+lock-release fire. +3 tests. Gate PASS, both reviewers PASS. Moved to §7.
+  - **[WARNING follow-up] ocr_merge_handler._route_to_oob has the same unguarded run_task pattern** (lower risk: FARGATE not SPOT, no lock/claim) — add the same failures[]/empty-tasks check.
 - **[WARNING] grok_client batch count-mismatch discards 100% with zero retry** (all-fail → >20% systemic guard
   skips retry) — a single dropped/extra results page → every event in the batch extracts 0. Route a mismatch to
   real-time retry / page-reconcile. (corroborated)
@@ -523,6 +520,9 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
 ---
 
 ## 7. COMPLETED
+
+### §1.0d HIGH — ecs run_task placement failures + retrieve-only SIGTERM (PR #527, 2026-10-21)
+All 3 ECS launch paths now detect a FARGATE_SPOT placement failure ({tasks:[],failures:[...]}; run_task doesn't raise): trigger _launch_ecs_task raises+releases the lock, batch_poller _handle_submit returns an error, _trigger_retrieve releases the retrieve-claim + returns False (not counted complete, no ~6h stall). run_retrieve_only sets _current_phase_script so a --retrieve-only spot-reclaim SIGTERM runs the emergency sync + lock release instead of a no-op. +3 regression tests. Gate PASS (2575 tests, bandit 0H/0M); both reviewers PASS. Follow-up: ocr_merge_handler._route_to_oob same pattern (lower risk).
 
 ### §1.0d HIGH — locked_json sidecar flock (PR #526, 2026-10-21)
 locked_json held flock on the data fd, but save()'s os.replace committed a new inode nobody locked -> cross-process lost-update race (regression from the §1.0c atomic-write) [H1]; create path 'w+' truncated before the flock [H2]. Fixed by flocking a stable sidecar <path>.lock (never renamed, survives os.replace) + reading the data file read-only after the lock. +2 real-process regression tests (fail against main, pass with fix). Gate PASS (2572 tests, bandit 0H/0M); both reviewers PASS.
