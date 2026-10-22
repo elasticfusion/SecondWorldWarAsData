@@ -43,8 +43,9 @@ security reviews (both PASS)→CI→merge→sync→move to §7. bandit still 0H/
   (mirrors run_scope._safe_book / trigger_handler _SAFE_TITLE_RE: fullmatch [A-Za-z0-9._-], reject empty/../ / \\)
   applied in BOTH entrypoints before any key build, 400 + OBSERV on reject; +10 regression tests. Gate PASS,
   concurrent code+security reviews both PASS. Moved to §7.
-- **[HIGH] dedup_gate_handler trusts SNS Message with no topic-ARN check → human-review-gate bypass** (fan-out
-  ungates Phase 3). Port trigger_handler._trusted_topic_name. (corroborated)
+- **[HIGH] ✅ DONE (PR #523) — dedup_gate_handler trusts SNS Message with no topic-ARN check → human-review-gate
+  bypass** — added _is_trusted_dedup_topic() (structured ARN match vs DEDUP_COMPLETE_TOPIC_ARN) gating the Phase-3
+  fan-out; CFN wires the ARN onto DedupGateFunction; +10 tests. Gate PASS, both reviewers PASS. Moved to §7.
 - **[HIGH] unit_patch._download DNS-rebind SSRF** — vets host then does a plain re-resolving get on an OpenSERP
   (attacker-influenceable) url, storing bytes as the patch master; route through fetch_image_bytes/_pinned_get.
   (+ source_retrieval._download_to_quarantine same gap, dead/test-only — fix together.) (corroborated)
@@ -527,6 +528,9 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
 ---
 
 ## 7. COMPLETED
+
+### §1.0d HIGH — dedup_gate SNS topic-trust (PR #523, 2026-10-21)
+dedup_gate_handler now validates each SNS record's TopicArn against DEDUP_COMPLETE_TOPIC_ARN (structured partition/service/region/account/name match) before honoring a dedup_complete signal, closing a human-review-gate bypass (spoofed/cross-account SNS could force-ungate Phase 3). CFN wires the ARN onto DedupGateFunction. +10 regression tests. Gate PASS (2562 tests, bandit 0H/0M, cfn-lint); both reviewers PASS.
 
 ### §1.0d HIGH — mdreview path traversal (PR #522, 2026-10-21)
 mdreview_ui_handler _save_snippet/_get_page validated `book` via a new _safe_book() (canonical safe-token: fullmatch [A-Za-z0-9._-], reject ../ / \) before any S3 key build (400+OBSERV on reject), closing an arbitrary-S3-write / Phase-1 content-injection path. +10 regression tests. Gate PASS (2552 tests, bandit 0H/0M); both reviewers PASS.
