@@ -64,12 +64,14 @@ rules:
   - 'Do NOT use equipment-specific names as category (e.g., "Medium Tank" is WRONG — use "armor")'
   - "Country codes use ISO 3166-1 alpha-3 (USA, GBR, DEU, FRA, ITA, JPN; use SUN for the WWII USSR, NOT USSR/RUS)"
   - |
-    country_of_origin = the country that DESIGNED/MANUFACTURED the equipment type.
+    country_of_origin = the country that DESIGNED/MANUFACTURED the equipment type,
+    as an ISO 3166-1 alpha-3 code (see the country-code rule above; e.g. "USA", "DEU").
     This is a STABLE identity of the equipment, NOT who is using it. A Sherman is
     always country_of_origin "USA" even when a British unit operates it. A Panther
     is always "DEU".
   - |
-    operating_country = who was USING the equipment in THIS specific mention. It MAY
+    operating_country = who was USING the equipment in THIS specific mention, as an
+    ISO 3166-1 alpha-3 code (see the country-code rule above). It MAY
     differ from country_of_origin. Set captured=true only when the operator is using
     it AGAINST its origin (captured gear). Examples:
     - British unit using US Shermans: country_of_origin "USA", operating_country "GBR", captured false
