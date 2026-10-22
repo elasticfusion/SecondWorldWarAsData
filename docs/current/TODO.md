@@ -60,8 +60,7 @@ security reviews (both PASS)→CI→merge→sync→move to §7. bandit still 0H/
   unit_patch/source_retrieval; route through _pinned_get.
 - **[WARNING] credit reservation leaked on batch failure** (poller never releases on _mark_failed/stuck) →
   credit#spend saturates → silent halt when gating is on.
-- **[WARNING] dedup merge not crash-atomic** (secondary unlink + ref-repoint BEFORE the primary write/validate)
-  → crash/blocked-write → lost mentions or dangling refs. Write+validate primary FIRST.
+- **[WARNING] ✅ DONE (PR #528) — dedup merge not crash-atomic** — do_merge/merge_generic now write+validate the primary BEFORE deleting each secondary (deepcopy-candidate for people, snapshot/rollback of the shared mention/alias state for generic), so a blocked/crashed write keeps the secondary intact with no mention loss or cross-iteration double-count. +4 tests. Both reviewers PASS.
 - **[WARNING] non-idempotent OCR chunk submission** → partial-failure retry resubmits ALL chunks (duplicate GPU
   jobs). + failed phase3 leaks its lock; run_phase terminal cleanup not in finally.
 - **[WARNING] batch_poller unvalidated `book` + no event-source auth**; EcsClamavScanner AV run-id uses builtin
@@ -520,6 +519,9 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
 ---
 
 ## 7. COMPLETED
+
+### §1.0d WARNING — dedup merge crash-atomic (PR #528, 2026-10-21)
+do_merge (people) + merge_generic (generic) now persist the merged primary (validated, crash-atomic) BEFORE deleting each secondary; a blocked/crashed primary write keeps the secondary intact (no mention loss). People merges into a deepcopy candidate (adopt only on success); generic snapshots + rolls back the shared mentions/aliases/seen state on block (no cross-iteration double-count). +4 regression tests (block tests fail against main, pass with fix). Gate PASS (2579 tests, bandit 0H/0M); both reviewers PASS round 2.
 
 ### §1.0d HIGH — ecs run_task placement failures + retrieve-only SIGTERM (PR #527, 2026-10-21)
 All 3 ECS launch paths now detect a FARGATE_SPOT placement failure ({tasks:[],failures:[...]}; run_task doesn't raise): trigger _launch_ecs_task raises+releases the lock, batch_poller _handle_submit returns an error, _trigger_retrieve releases the retrieve-claim + returns False (not counted complete, no ~6h stall). run_retrieve_only sets _current_phase_script so a --retrieve-only spot-reclaim SIGTERM runs the emergency sync + lock release instead of a no-op. +3 regression tests. Gate PASS (2575 tests, bandit 0H/0M); both reviewers PASS. Follow-up: ocr_merge_handler._route_to_oob same pattern (lower risk).
