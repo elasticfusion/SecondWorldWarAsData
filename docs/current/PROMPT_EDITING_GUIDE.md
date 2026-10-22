@@ -18,7 +18,6 @@ All LLM prompts are externalized to YAML files. There are NO inline prompts in P
 | File | What it extracts |
 |------|-----------------|
 | `events.yaml` | Battles, operations, sub-events |
-| `events_batch.yaml` | Multi-chapter event extraction |
 | `dates.yaml` | Temporal mentions (exact and approximate) |
 | `places.yaml` | Geographic locations with coordinates |
 | `people.yaml` | Biographical profiles |
