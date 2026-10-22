@@ -480,13 +480,16 @@ class GrokClient:
         metrics.api_successes = state.get("num_success", 0)
         metrics.api_errors = state.get("num_error", 0)
 
-        failed_ids = self._map_ordered_results(
+        failed_ids, count_mismatch = self._map_ordered_results(
             submitted, ordered, metrics, requests_by_id, batch_id
         )
 
-        # Retry failed requests via real-time API
+        # Retry failed requests via real-time API. A count mismatch forces retry past the
+        # 20%-systemic guard (it's an envelope problem, not per-request model failure).
         if failed_ids:
-            self._retry_failed_batch(failed_ids, requests_by_id, metrics, count)
+            self._retry_failed_batch(
+                failed_ids, requests_by_id, metrics, count, force=count_mismatch
+            )
 
         metrics.log_summary()
         _save_metrics(metrics)
@@ -572,23 +575,26 @@ class GrokClient:
 
     def _map_ordered_results(
         self, submitted, ordered, metrics, requests_by_id, batch_id
-    ) -> list:
+    ) -> tuple:
         """Map API-ordered batch results POSITIONALLY to OUR submitted (request_id, cache_type),
-        caching valid content and recording per-request detail. Returns the failed request_ids.
-        On a count mismatch we CANNOT safely index-map (never silently mis-key) -> all fail -> the
-        caller's real-time retry fallback handles them."""
+        caching valid content and recording per-request detail. Returns ``(failed_ids,
+        count_mismatch)``. On a count mismatch we CANNOT safely index-map (never silently mis-key)
+        so ALL are marked failed — but ``count_mismatch=True`` signals the caller to FORCE a
+        real-time retry (bypassing the 20%-systemic guard): a count mismatch is an envelope/
+        pagination problem, NOT the per-request model failure the guard is meant to suppress.
+        """
         from src.utils.batch_api import RequestDetail
 
         if len(ordered) != len(submitted):
             logger.error(
                 "Batch %s: result count (%d) != submitted (%d) — cannot positionally map; "
-                "falling back to real-time retry for all.",
+                "forcing real-time retry for all (count mismatch, not systemic model failure).",
                 batch_id,
                 len(ordered),
                 len(submitted),
             )
             metrics.empty += len(submitted)
-            return [rid for rid, _ in submitted]
+            return [rid for rid, _ in submitted], True
 
         failed_ids: list = []
         for (our_id, cache_type), br in zip(submitted, ordered):
@@ -610,7 +616,7 @@ class GrokClient:
                     our_id, ct, br, metrics, requests_by_id, RequestDetail
                 )
                 failed_ids.append(our_id)
-        return failed_ids
+        return failed_ids, False
 
     def _record_failed_result(
         self, our_id, ct, br, metrics, requests_by_id, RequestDetail
@@ -657,13 +663,21 @@ class GrokClient:
         )
 
     def _retry_failed_batch(
-        self, failed_ids: list, requests_by_id: dict, metrics, count: int
+        self,
+        failed_ids: list,
+        requests_by_id: dict,
+        metrics,
+        count: int,
+        force: bool = False,
     ) -> None:
-        """Retry failed batch requests via real-time API."""
+        """Retry failed batch requests via real-time API. ``force`` bypasses the 20%-systemic
+        guard — used for a result COUNT MISMATCH, where all requests are 'failed' only because we
+        can't positionally map, not because the model systemically failed (so suppressing retry
+        would needlessly zero the whole batch)."""
         failure_pct = len(failed_ids) / count * 100
         metrics.retried = len(failed_ids)
 
-        if failure_pct > 20:
+        if failure_pct > 20 and not force:
             logger.error(
                 "Batch failure rate %.0f%% (%d/%d) exceeds 20%% threshold — "
                 "skipping real-time retry, likely systemic issue",
@@ -675,9 +689,10 @@ class GrokClient:
             return
 
         logger.info(
-            "Retrying %d failed batch requests via real-time API (%.0f%%)",
+            "Retrying %d failed batch requests via real-time API (%.0f%%%s)",
             len(failed_ids),
             failure_pct,
+            ", forced: count mismatch" if force else "",
         )
         self.batch_mode = False
         for rid in failed_ids:
