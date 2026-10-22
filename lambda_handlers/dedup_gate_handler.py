@@ -16,6 +16,45 @@ logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 STATUS_KEY = "dedup/review_status.json"
 
 
+def _dedup_complete_topic_arn() -> str:
+    """The ARN of OUR dedup-complete SNS topic (the only trusted source of a dedup_complete
+    signal). Set by CloudFormation (DEDUP_COMPLETE_TOPIC_ARN). Empty in local/test."""
+    return os.environ.get("DEDUP_COMPLETE_TOPIC_ARN", "")
+
+
+def _is_trusted_dedup_topic(topic_arn: str) -> bool:
+    """True iff ``topic_arn`` is OUR dedup-complete topic — partition:service:region:account AND
+    name must all match DEDUP_COMPLETE_TOPIC_ARN (service 'sns'). This stops a spoofed / cross-
+    account / misconfigured-subscription SNS record from force-ungating the human dedup review
+    (§1.0d HIGH): the dedup_complete signal fans out Phase 3 over the WHOLE corpus, so its source
+    must be authenticated. Returns False on any parse failure. If the env ARN is unset (local/test),
+    fall back to trusting the record so non-AWS runs still work (mirrors trigger_handler's
+    NOTIFY_TOPIC fallback)."""
+    want = _dedup_complete_topic_arn()
+    if not want:
+        return True  # local/test: no ARN configured, legacy behavior
+    if not topic_arn:
+        return False
+    got = topic_arn.split(":")
+    exp = want.split(":")
+    # arn:partition:service:region:account:resource — require sns + full account/region/name match.
+    if len(got) < 6 or len(exp) < 6 or got[2] != "sns":
+        return False
+    if (got[0], got[1], got[3], got[4], got[5]) != (
+        exp[0],
+        exp[1],
+        exp[3],
+        exp[4],
+        exp[5],
+    ):
+        logger.warning(
+            "OBSERV dedup_gate.untrusted_topic rejected=%s — refusing to ungate Phase 3",
+            str(topic_arn)[:160],
+        )
+        return False
+    return True
+
+
 def handler(event, _context):
     """Check dedup gate and conditionally invoke Phase 3."""
     import os
@@ -59,6 +98,16 @@ def handler(event, _context):
         msg = json.loads(message) if isinstance(message, str) else message
 
         if msg.get("dedup_complete"):
+            # SECURITY (§1.0d HIGH): the dedup_complete signal fans out Phase 3 over the WHOLE
+            # corpus (bypassing human review), so it MUST originate from OUR dedup-complete topic.
+            # Drop a record from any untrusted / cross-account / spoofed topic.
+            topic_arn = record.get("Sns", {}).get("TopicArn", "")
+            if not _is_trusted_dedup_topic(topic_arn):
+                logger.warning(
+                    "Dropping dedup_complete from untrusted topic=%s",
+                    str(topic_arn)[:160],
+                )
+                continue
             # Trigger Phase 3 for all entity types
             count = _trigger_phase3_for_all(
                 storage, lambda_client, phase3_function, aws

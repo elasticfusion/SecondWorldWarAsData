@@ -1103,6 +1103,7 @@ Resources:
         Variables:
           S3_BUCKET: !Ref DataBucketName
           PHASE3_FUNCTION_NAME: !Sub ${EnvironmentName}-wwii-phase3-enrich
+          DEDUP_COMPLETE_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-dedup-complete
 
   DedupAuthFunction:
     Type: AWS::Lambda::Function
