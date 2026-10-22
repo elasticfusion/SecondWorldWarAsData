@@ -159,3 +159,26 @@ class TestOutputSchemaAlignment:
             item_schema = EQUIPMENT_SCHEMA["properties"]["equipment"]["items"]
             for req in item_schema.get("required", []):
                 assert req in item, f"Equipment prompt missing required field: {req}"
+
+
+class TestPromptSchemaAlignmentGate:
+    """The runnable deploy-gate alignment check (scripts/check_prompt_schema_alignment.py) passes.
+
+    This is the SAME check deploy_all.sh runs as a hard stop, so a prompt whose example drifts from
+    its authoritative output schema fails here (and blocks deploy) instead of silently shipping.
+    """
+
+    def test_all_structured_prompts_aligned(self):
+        import importlib.util
+        from pathlib import Path
+
+        spec = importlib.util.spec_from_file_location(
+            "check_prompt_schema_alignment",
+            Path(__file__).parent.parent
+            / "scripts"
+            / "check_prompt_schema_alignment.py",
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        errors = mod.check()
+        assert errors == [], "prompt↔schema misalignment:\n" + "\n".join(errors)

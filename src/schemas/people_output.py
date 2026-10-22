@@ -76,6 +76,16 @@ PEOPLE_OUTPUT_SCHEMA = {
                             "page": make_nullable("string"),
                             "confidence": {"type": ["number", "string", "null"]},
                             "fields_sourced": {"type": ["array", "null"]},
+                            # Provenance: the sub-event this biographical fact was extracted from,
+                            # so a bio claim traces into the event graph (filled at extraction).
+                            "EventID": ulid_field(nullable=True),
+                            "Sub_eventID": ulid_field(nullable=True),
+                            # The bibliography entry backing this source WHEN it is a
+                            # footnote/endnote citation — resolved in Phase 3 (join on
+                            # Sub_eventID + the footnote reference_number to a bibliography
+                            # mention). NOT filled at extraction: the extractor sees no footnote
+                            # markers, so the model must not guess a BibliographyID.
+                            "BibliographyID": ulid_field(nullable=True),
                         },
                     },
                 },
@@ -88,6 +98,11 @@ PEOPLE_OUTPUT_SCHEMA = {
                             "from": make_nullable("string"),
                             "to": make_nullable("string"),
                             "GroupID": make_nullable("string"),
+                            # Structured unit fields the prompt emits (for later entity
+                            # resolution); nullable/additive.
+                            "designation": make_nullable("string"),
+                            "echelon": make_nullable("string"),
+                            "unit_number": make_nullable("string"),
                         },
                     },
                 },
