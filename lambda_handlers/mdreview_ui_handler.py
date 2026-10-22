@@ -28,6 +28,7 @@ import base64
 import json
 import logging
 import os
+import re
 from typing import Any, Dict, List, Optional, Tuple
 
 import boto3
@@ -44,6 +45,23 @@ def _s3():
 def _bucket() -> str:
     """Return the data bucket name from the environment."""
     return os.environ.get("S3_BUCKET", "")
+
+
+# A ``book`` value flows into S3 keys (ocr-output/{book}/reviewed/pN.md etc.), so it MUST be a
+# single safe path segment — an unvalidated book could escape the prefix (e.g.
+# "../contentrepository/Book/chapter1/chapter1-content") and write/read ARBITRARY keys, injecting
+# attacker markdown straight into the Phase-1 parse path (§1.0d HIGH). Mirror the canonical
+# safe-book token used across the pipeline (src/utils/run_scope._safe_book / trigger_handler
+# _SAFE_TITLE_RE): reject empty, "..", "/", "\\", or any char outside [A-Za-z0-9._-].
+_SAFE_BOOK_RE = re.compile(r"[A-Za-z0-9._-]+")
+
+
+def _safe_book(book) -> Optional[str]:
+    """Return the validated single-segment book token, or None if it is unsafe for a key."""
+    b = (book or "").strip() if isinstance(book, str) else ""
+    if not b or ".." in b or "/" in b or "\\" in b or not _SAFE_BOOK_RE.fullmatch(b):
+        return None
+    return b
 
 
 def _json(status: int, body: Any) -> Dict[str, Any]:
@@ -177,7 +195,14 @@ def _save_snippet(event, s3, bucket: str) -> Dict[str, Any]:
     markdown = payload.get("markdown")
     if not book or not isinstance(page_num, int) or markdown is None:
         return _json(400, {"error": "book, page (int), and markdown are required"})
-    key = f"ocr-output/{book}/reviewed/p{page_num}.md"
+    safe = _safe_book(book)
+    if safe is None:
+        logger.warning(
+            "OBSERV mdreview.save rejected=unsafe_book book=%r — refusing arbitrary-key write",
+            str(book)[:80],
+        )
+        return _json(400, {"error": "invalid book"})
+    key = f"ocr-output/{safe}/reviewed/p{page_num}.md"
     s3.put_object(Bucket=bucket, Key=key, Body=markdown.encode("utf-8"))
     logger.info(
         "Saved reviewed snippet: s3://%s/%s (%d chars)", bucket, key, len(markdown)
@@ -192,11 +217,18 @@ def _get_page(event, s3, bucket: str) -> Dict[str, Any]:
     page_raw = params.get("page") or ""
     if not book or not page_raw.isdigit():
         return _json(400, {"error": "book and numeric page are required"})
+    safe = _safe_book(book)
+    if safe is None:
+        logger.warning(
+            "OBSERV mdreview.page rejected=unsafe_book book=%r — refusing arbitrary-key read",
+            str(book)[:80],
+        )
+        return _json(400, {"error": "invalid book"})
     page_num = int(page_raw)
     img = None
     try:
         raw = s3.get_object(
-            Bucket=bucket, Key=f"ocr-output/{book}/recovery/p{page_num}.png"
+            Bucket=bucket, Key=f"ocr-output/{safe}/recovery/p{page_num}.png"
         )["Body"].read()
         img = base64.b64encode(raw).decode("ascii")
     except Exception:  # pragma: no cover - image optional
@@ -204,10 +236,10 @@ def _get_page(event, s3, bucket: str) -> Dict[str, Any]:
     return _json(
         200,
         {
-            "book": book,
+            "book": safe,
             "page": page_num,
             "image_b64": img,
-            "snippet": _page_snippet(s3, bucket, book, page_num),
+            "snippet": _page_snippet(s3, bucket, safe, page_num),
         },
     )
 
