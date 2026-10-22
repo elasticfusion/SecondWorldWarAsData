@@ -3487,6 +3487,12 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
 
     from src.utils.job_queue import get_job, update_job_status
 
+    # Register the phase for the SIGTERM handler. Without this, a spot reclaim of a --retrieve-only
+    # task hit _handle_sigterm with _current_phase_script="" → _final_sync("")/_remove_lock("") were
+    # no-ops, so in-task entities were lost and the lock leaked (§1.0d H3).
+    global _current_phase_script
+    _current_phase_script = phase_script
+
     WORKDIR.mkdir(parents=True, exist_ok=True)
     _load_secrets()
     _patch_config()

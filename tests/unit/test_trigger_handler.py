@@ -406,12 +406,48 @@ def test_run_task_genuinely_stale_lock_is_reclaimed(dynamodb_table):
 
     with (
         patch.object(th.ecs, "list_tasks", return_value={"taskArns": []}),
-        patch.object(th.ecs, "run_task") as run_task,
+        patch.object(
+            th.ecs,
+            "run_task",
+            return_value={
+                "tasks": [{"taskArn": "arn:aws:ecs:...:task/x"}],
+                "failures": [],
+            },
+        ) as run_task,
         patch.object(th, "_notify_launch"),
     ):
         th._run_task(th.PHASE1_TASK_DEF, "recovery")
 
     run_task.assert_called_once()  # stale lock reclaimed, task relaunched
+
+
+def test_run_task_placement_failure_releases_lock(dynamodb_table):
+    """§1.0d H1: ECS run_task does NOT raise on a placement failure (FARGATE_SPOT capacity) — it
+    returns {tasks:[], failures:[...]}. _run_task must treat that as a launch failure: release the
+    lock (so content isn't stuck behind a held lock to TTL) and raise (not silently 'succeed').
+    """
+    from lambda_handlers import trigger_handler as th
+    import boto3 as _b
+    import pytest as _pytest
+
+    table = _b.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    placement_fail = {
+        "tasks": [],
+        "failures": [{"reason": "Capacity is unavailable", "arn": ""}],
+    }
+    with (
+        patch.object(th.ecs, "list_tasks", return_value={"taskArns": []}),
+        patch.object(th.ecs, "run_task", return_value=placement_fail),
+        patch.object(th, "_notify_launch"),
+    ):
+        with _pytest.raises(Exception):
+            th._run_task(th.PHASE1_TASK_DEF, "placement-fail")
+
+    # The lock must have been released (not left held to the 2h TTL with no task running).
+    item = table.get_item(Key={"cache_key": "lock#test-wwii-phase1-parse"}).get("Item")
+    assert item is None, "lock leaked after a placement failure"
 
 
 def test_launch_phase2_skips_when_no_book_resolvable(monkeypatch):

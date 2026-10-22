@@ -1747,7 +1747,7 @@ def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
             ]
         }
     try:
-        ecs.run_task(
+        resp = ecs.run_task(
             cluster=CLUSTER,
             taskDefinition=task_def,
             count=1,
@@ -1764,6 +1764,14 @@ def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
             },
             overrides=overrides,
         )
+        # ECS run_task does NOT raise on a PLACEMENT failure (capacity/quota — common with
+        # FARGATE_SPOT): it returns {"tasks":[], "failures":[...]}. Treat an empty tasks list /
+        # any failure as a launch failure so we don't hold the lock with no task running
+        # (§1.0d H1).
+        if not resp.get("tasks") or resp.get("failures"):
+            raise RuntimeError(
+                f"ECS run_task placed no task (failures={resp.get('failures')})"
+            )
     except Exception as e:
         # Launch failed AFTER we took the lock — release it so the content isn't stuck
         # behind a held lock until the 2h TTL (that would need manual intervention).
