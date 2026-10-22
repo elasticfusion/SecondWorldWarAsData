@@ -290,3 +290,40 @@ def test_trigger_retrieve_launches_and_claims(mock_client, _n, _w, dynamodb_tabl
     ecs.run_task.assert_called_once()
     # claim now held -> a second attempt is denied
     assert bp._claim_retrieve("batch-new") is False
+
+
+@patch("lambda_handlers.batch_poller._notify")
+@patch("lambda_handlers.batch_poller._wait_for_nat", lambda: None)
+@patch("lambda_handlers.batch_poller.boto3.client")
+def test_trigger_retrieve_placement_failure_releases_claim(
+    mock_boto_client, _mock_notify, dynamodb_table
+):
+    """§1.0d H2: a retrieve run_task that places NO task (FARGATE_SPOT capacity -> {tasks:[],
+    failures:[...]}, no exception) must NOT be counted complete: _trigger_retrieve releases the
+    per-batch claim (so a later poll re-claims) and returns False. Otherwise the batch stalls
+    ~6h with the claim held and nothing running."""
+    from lambda_handlers import batch_poller as bp
+
+    mock_ecs = MagicMock()
+    mock_ecs.run_task.return_value = {
+        "tasks": [],
+        "failures": [{"reason": "Capacity is unavailable"}],
+    }
+    mock_lambda = MagicMock()
+    mock_lambda.invoke.return_value = {"Payload": MagicMock(read=lambda: b"{}")}
+
+    def client_factory(service, **_kw):
+        return mock_ecs if service == "ecs" else mock_lambda
+
+    mock_boto_client.side_effect = client_factory
+
+    job = {"batch_id": "batch-xyz", "phase": "phase3", "book": "TestBook"}
+    result = bp._trigger_retrieve(job)
+
+    assert result is False  # NOT counted retrieved/complete
+    # The per-batch claim must be released so a later poll re-claims + retries.
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(
+        "test-wwii-api-cache"
+    )
+    claim = table.get_item(Key={"cache_key": "retrieve#batch-xyz"}).get("Item")
+    assert claim is None, "retrieve claim leaked after a placement failure"

@@ -314,3 +314,24 @@ def test_retrieve_only_validates_nat_readiness(entrypoint, monkeypatch):
     with _pytest.raises(SystemExit):
         entrypoint.run_retrieve_only("phase2_extract.py", [], "batch_x")
     assert calls["ensure_nat"] == 1  # readiness gate invoked before processing
+
+
+def test_retrieve_only_registers_phase_for_sigterm(entrypoint):
+    """§1.0d H3: run_retrieve_only must set _current_phase_script early so a SIGTERM (spot reclaim)
+    runs _final_sync(phase)/_remove_lock(phase) instead of the ""-phase no-op. Patch the first
+    heavy step (_ensure_nat_if_needed) to raise right after the global-set, then assert the global
+    was registered."""
+    entrypoint._current_phase_script = ""  # reset
+
+    def _boom(_phase):
+        raise RuntimeError("stop after the global-set")
+
+    with (
+        patch.object(entrypoint, "_ensure_nat_if_needed", side_effect=_boom),
+        patch.object(entrypoint, "_load_secrets", lambda: None),
+        patch.object(entrypoint, "_patch_config", lambda: None),
+    ):
+        with pytest.raises(RuntimeError):
+            entrypoint.run_retrieve_only("phase3_enrich_data.py", [], "batch-xyz")
+
+    assert entrypoint._current_phase_script == "phase3_enrich_data.py"

@@ -141,7 +141,13 @@ def _handle_submit(event: dict) -> dict:
                 ]
             },
         )
-        task_arn = resp["tasks"][0]["taskArn"] if resp.get("tasks") else "unknown"
+        if not resp.get("tasks") or resp.get("failures"):
+            # ECS placement failure (FARGATE_SPOT capacity/quota) — run_task does not raise.
+            logger.error(
+                "Submit task placed no task (failures=%s)", resp.get("failures")
+            )
+            return {"error": f"run_task placed no task: {resp.get('failures')}"}
+        task_arn = resp["tasks"][0]["taskArn"]
         logger.info("Started submit task %s (%s/%s)", task_arn, phase, book)
         return {"task_arn": task_arn, "phase": phase, "book": book}
     except Exception as e:
@@ -409,7 +415,22 @@ def _trigger_retrieve(job: dict) -> bool:
                 ]
             },
         )
-        task_arn = resp["tasks"][0]["taskArn"] if resp.get("tasks") else "unknown"
+        if not resp.get("tasks") or resp.get("failures"):
+            # ECS placement failure (FARGATE_SPOT capacity) — run_task does not raise. Release the
+            # claim so a later poll re-claims + retries, and return False so the batch is NOT
+            # counted retrieved/complete with nothing actually running (§1.0d H1/H2).
+            logger.error(
+                "Retrieve task placed no task for %s (failures=%s) — releasing claim",
+                batch_id,
+                resp.get("failures"),
+            )
+            _release_retrieve(batch_id)
+            _notify(
+                f"Batch {batch_id} complete but retrieve task FAILED to place "
+                f"(capacity); will retry next poll."
+            )
+            return False
+        task_arn = resp["tasks"][0]["taskArn"]
         logger.info("Started retrieve task %s for batch %s", task_arn, batch_id)
         _notify(
             f"Batch {batch_id} complete ({job.get('book', '?')}, "
