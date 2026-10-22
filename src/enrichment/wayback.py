@@ -171,15 +171,76 @@ def find_snapshot(url: str, timeout: int = 15) -> Optional[Tuple[str, str]]:
         return None
     resp = _get_with_courtesy(_AVAILABILITY_API, timeout=timeout, params={"url": url})
     if resp is None or resp.status_code != 200:
+        _record_wayback_fetch(
+            url,
+            None,
+            None,
+            error=f"availability API status={getattr(resp, 'status_code', None)}",
+        )
         return None
     try:
         data = resp.json()
     except ValueError:
+        _record_wayback_fetch(
+            url, None, None, error="availability API non-JSON response"
+        )
         return None
     closest = (data.get("archived_snapshots") or {}).get("closest") or {}
     if not closest.get("available") or not closest.get("url"):
+        _record_wayback_fetch(url, None, None)
         return None
-    return str(closest["url"]), str(closest.get("timestamp", ""))
+    archived_url, ts = str(closest["url"]), str(closest.get("timestamp", ""))
+    _record_wayback_fetch(url, archived_url, ts)
+    return archived_url, ts
+
+
+def _record_wayback_fetch(url, archived_url, ts, error=None) -> None:
+    """Record a textual fetch-provenance event for a Wayback lookup. Positive snapshot -> a
+    hit enqueued for human review (review_status=pending); no snapshot -> a miss; an availability
+    API transport/non-200/parse failure -> an error (API misbehavior stays walk-backable). Fail-safe.
+    """
+    try:
+        from src.utils.fetch_provenance import (
+            ERROR,
+            HIT,
+            MISS,
+            TEXTUAL,
+            record_fetch_event,
+        )
+
+        if error is not None:
+            record_fetch_event(
+                provider="wayback",
+                endpoint=_AVAILABILITY_API,
+                kind=TEXTUAL,
+                request_params={"url": url},
+                http_status=None,
+                outcome=ERROR,
+                result_summary="availability lookup failed",
+                error=str(error),
+            )
+        elif archived_url:
+            record_fetch_event(
+                provider="wayback",
+                endpoint=_AVAILABILITY_API,
+                kind=TEXTUAL,
+                request_params={"url": url},
+                http_status=200,
+                outcome=HIT,
+                result_summary=f"snapshot {ts} -> {archived_url}",
+            )
+        else:
+            record_fetch_event(
+                provider="wayback",
+                endpoint=_AVAILABILITY_API,
+                kind=TEXTUAL,
+                request_params={"url": url},
+                http_status=200,
+                outcome=MISS,
+                result_summary="no snapshot",
+            )
+    except Exception:  # noqa: BLE001 - telemetry must never block the lookup
+        pass
 
 
 def fetch_archived(url: str, timeout: int = 20) -> Optional[Tuple[str, str, str]]:

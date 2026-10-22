@@ -169,11 +169,31 @@ def _query_nominatim(
     }
     if country_code:
         params["countrycodes"] = country_code
-    resp = session.get(
+
+    def _summ(r):
+        try:
+            data = r.json()
+            if data:
+                top = data[0]
+                return (
+                    f"lat={top.get('lat')},lon={top.get('lon')},type={top.get('type')}"
+                )
+        except Exception:  # noqa: BLE001
+            pass
+        return "no match"
+
+    from src.utils.fetch_provenance import STRUCTURED, recorded_fetch
+
+    resp = recorded_fetch(
+        "nominatim",
         _ENDPOINT,
+        kind=STRUCTURED,
+        method="GET",
         params=params,
+        session=session,
         headers={"User-Agent": _USER_AGENT},
         timeout=30,
+        result_summary_fn=_summ,
     )
     resp.raise_for_status()
     results = resp.json()
