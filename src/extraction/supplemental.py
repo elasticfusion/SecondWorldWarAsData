@@ -538,6 +538,24 @@ def _extract_with_retry(
     return None
 
 
+def _supplemental_url_verified(title: str, url: str, grok_client: Any) -> bool:
+    """Content-verify a search-found URL against the citation before it is stored as a supplemental
+    resource_url. Reuses bibliography_resolver._verify_match (Grok fetches the page + confirms it
+    matches), so the supplemental path gets the SAME verification gate the bibliography path has.
+    Fail-open ONLY when there is no grok_client (offline/test) — matching _verify_match's own
+    no-client behavior; any verifier error inside _verify_match is already caught there.
+    """
+    try:
+        from src.enrichment.bibliography_resolver import _verify_match
+
+        return _verify_match(title or "", url, grok_client)
+    except Exception as e:  # noqa: BLE001 - verification must never crash enrichment
+        logger.debug("supplemental url verify errored for %s: %s", url, e)
+        # Fail-CLOSED on an unexpected verifier import/call error when a client WAS available:
+        # better to drop an unverified url than to store a possibly-wrong source.
+        return grok_client is None
+
+
 def _enrich_material(
     material: Dict[str, Any],
     grok_client: Any,
@@ -570,10 +588,22 @@ def _enrich_material(
             search_gutenberg=True,
         )
 
-        if url:
+        if url and _supplemental_url_verified(title, url, grok_client):
             material["resource_urls"] = [url]
             material["search_source"] = source
             logger.info("Found URL via %s: %s", source, url)
+        elif url:
+            # A search hit that does NOT verify against the citation is DROPPED — sequential_search
+            # returns the FIRST hit per source with no content-match, so storing it unchecked
+            # silently attributes a wrong source to the citation (§1.0d HIGH). Mirror the
+            # bibliography_resolver verify gate.
+            logger.warning(
+                "OBSERV supplemental.url_rejected source=%s title=%r url=%s — "
+                "search hit did not verify against the citation; not stored",
+                source,
+                str(title)[:80],
+                str(url)[:120],
+            )
 
     # Calculate copyright
     license_status, license_notes = determine_license(material)
