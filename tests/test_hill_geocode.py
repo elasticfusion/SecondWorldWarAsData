@@ -30,6 +30,7 @@ def test_elevation_extracted_from_names() -> None:
 class _FakeElevResp:
     def __init__(self, elevation):
         self._e = elevation
+        self.status_code = 200
 
     def raise_for_status(self):
         pass
@@ -42,7 +43,7 @@ class _FakeElevSession:
     def __init__(self, elevation):
         self._e = elevation
 
-    def post(self, url, json=None, timeout=None):
+    def request(self, method, url, json=None, timeout=None, **kwargs):
         return _FakeElevResp(self._e)
 
 
@@ -65,7 +66,7 @@ def test_check_gross_mismatch_flagged(tmp_path: Path) -> None:
 
 def test_check_unavailable_when_api_fails(tmp_path: Path) -> None:
     class _Boom:
-        def post(self, **_):
+        def request(self, *a, **_):
             raise RuntimeError("down")
 
     chk = check_designation(300, 49.0, 6.0, tmp_path, session=_Boom())
@@ -126,7 +127,7 @@ def test_hill_geocoder_rejects_wrong_location(tmp_path: Path) -> None:
 
 def test_hill_geocoder_unverified_capped(tmp_path: Path) -> None:
     class _Boom:
-        def post(self, **_):
+        def request(self, *a, **_):
             raise RuntimeError("down")
 
     grok = _FakeGrok(
