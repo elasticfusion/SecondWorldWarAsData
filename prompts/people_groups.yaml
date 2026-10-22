@@ -46,7 +46,7 @@ schema: |
         "country_of_origin": "USA",
         "alliance_membership": ["Allied Powers"],
         "source_language": "English",
-        "description": "US Army infantry division in ETO",
+        "description": "US Army infantry division",
         "parent_organization": "V Corps",
         "member_countries": null,
         "sub_organizations": [],
