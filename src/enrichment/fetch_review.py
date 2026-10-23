@@ -59,6 +59,65 @@ def list_pending() -> List[Dict[str, Any]]:
     return [e for e in _load_events() if e.get("review_status") == fp.PENDING]
 
 
+def set_review_status(fetch_event_id: str, status: str) -> bool:
+    """Persist a reviewer's decision (affirmed/rejected) onto a stored fetch-provenance event.
+    DynamoDB in AWS mode (overwrite the item), else rewrite the local JSONL line. Fail-safe.
+    """
+    import json
+
+    from src.utils import fetch_provenance as fp
+
+    try:
+        table = fp._table()  # noqa: SLF001 - reuse the configured store
+        if table is not None:
+            key = f"{fp._KEY_PREFIX}{fetch_event_id}"  # noqa: SLF001
+            item = table.get_item(Key={"cache_key": key}).get("Item")
+            if not item:
+                return False
+            rec = json.loads(item.get("response", "{}"))
+            rec["review_status"] = status
+            table.put_item(Item={"cache_key": key, "response": json.dumps(rec)})
+            return True
+        # Local JSONL: rewrite the matching line in place.
+        d: Path = fp._LOCAL_DIR  # noqa: SLF001
+        if not d.exists():
+            return False
+        updated = False
+        for jf in d.glob("*.jsonl"):
+            lines = jf.read_text(encoding="utf-8").splitlines()
+            out = []
+            changed = False
+            for line in lines:
+                if not line.strip():
+                    continue
+                rec = json.loads(line)
+                if rec.get("fetch_event_id") == fetch_event_id:
+                    rec["review_status"] = status
+                    changed = True
+                out.append(json.dumps(rec))
+            if changed:
+                jf.write_text("\n".join(out) + "\n", encoding="utf-8")
+                updated = True
+        return updated
+    except Exception as e:  # noqa: BLE001 - a review action must never crash
+        logger.debug("set_review_status skipped for %s: %s", fetch_event_id, e)
+        return False
+
+
+def reject_fetch_find(fetch_event: Dict[str, Any]) -> bool:
+    """Mark a textual find REJECTED (reviewer declined it as a source). Returns True if persisted."""
+    from src.utils import fetch_provenance as fp
+
+    ok = set_review_status(fetch_event.get("fetch_event_id", ""), fp.REJECTED)
+    if ok:
+        logger.info(
+            "OBSERV fetch_find.rejected provider=%s fetch_event_id=%s",
+            fetch_event.get("provider"),
+            fetch_event.get("fetch_event_id"),
+        )
+    return ok
+
+
 def affirm_fetch_find(
     fetch_event: Dict[str, Any], quarantine_path: Path, *, media_type: str = "html"
 ) -> Optional["SourceMetadata"]:  # type: ignore[name-defined] # noqa: F821
@@ -98,6 +157,9 @@ def affirm_fetch_find(
             fetch_event.get("fetch_event_id"),
             src.source_id,
         )
+        from src.utils import fetch_provenance as _fp
+
+        set_review_status(fetch_event.get("fetch_event_id", ""), _fp.AFFIRMED)
         return src
     except Exception as e:  # noqa: BLE001 - promotion must never crash a review action
         logger.warning(

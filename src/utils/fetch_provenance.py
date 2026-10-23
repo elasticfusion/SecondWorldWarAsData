@@ -42,6 +42,32 @@ PENDING = "pending"
 AFFIRMED = "affirmed"
 REJECTED = "rejected"
 
+# ENQUEUE POLICY (owner-confirmed): which TEXTUAL providers represent a NEW, citable PRIMARY-SOURCE
+# document that should be enqueued for human review and, on affirm, promoted into ingestion like an
+# uploaded book — vs. an entity-ENRICHMENT lookup that merely attaches a fact/snippet (provenance
+# only). The test: "would a historian want this in the bibliography?" Archive/library/government
+# sources qualify; encyclopedia blurbs, image-license metadata, and search-result pointers do NOT.
+# Narrow + explicit so it is easy to adjust; a provider NOT listed is recorded with no review.
+_ENQUEUE_PROVIDERS = frozenset(
+    {
+        "wayback",  # recovered archived primary document
+        "archive-org",  # archive.org item (book/document)
+        "archive-solr",  # archive.org advancedsearch hit -> acquirable item
+        "gutendex",  # Project Gutenberg full text
+        "nara",  # National Archives record (archival primary source)
+    }
+)
+
+
+def _initial_review_status(provider: str, kind: str, outcome: str) -> Optional[str]:
+    """A fetch is enqueued for human review only when it is a TEXTUAL hit from an enqueue-eligible
+    primary-source provider; everything else records provenance with no review (review_status=None).
+    """
+    if kind == TEXTUAL and outcome == HIT and provider in _ENQUEUE_PROVIDERS:
+        return PENDING
+    return None
+
+
 _KEY_PREFIX = "fetchevent#"
 _LOCAL_DIR = Path("output/_fetch_events")
 
@@ -149,7 +175,7 @@ def record_fetch_event(
         "error": error,
         "url_key": _url_key(endpoint),
         "kind": kind,
-        "review_status": PENDING if kind == TEXTUAL else None,
+        "review_status": _initial_review_status(provider, kind, outcome),
     }
     _persist(record)
     return fetch_event_id
