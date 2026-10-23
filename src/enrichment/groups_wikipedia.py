@@ -173,8 +173,13 @@ def _extract_group_page(page_data: dict, title: str) -> Optional[dict]:
 def _fetch_license(filename: str) -> Optional[str]:
     """Fetch license from Wikimedia Commons."""
     try:
-        resp = requests.get(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        resp = recorded_fetch(
+            "wikimedia-commons",
             "https://commons.wikimedia.org/w/api.php",
+            kind=TEXTUAL,
+            method="GET",
             params={
                 "action": "query",
                 "format": "json",
@@ -184,6 +189,7 @@ def _fetch_license(filename: str) -> Optional[str]:
             },
             headers=_HEADERS,
             timeout=10,
+            result_summary_fn=lambda r: f"license status={r.status_code}",
         )
         if resp.status_code == 200:
             pages = resp.json().get("query", {}).get("pages", {})

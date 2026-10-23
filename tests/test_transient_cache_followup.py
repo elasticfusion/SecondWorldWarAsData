@@ -63,13 +63,13 @@ def test_run_openserp_queries_saw_200_flag(monkeypatch):
     monkeypatch.setattr("time.sleep", lambda *a: None)
     sess = mock.Mock()
     # all queries 503 -> no url, saw_200 False (caller must NOT negative-cache)
-    sess.get.return_value = mock.Mock(status_code=503)
+    sess.request.return_value = mock.Mock(status_code=503)
     url, saw = BR._run_openserp_queries(
         sess, "http://osrp", ["q1", "q2"], "ref", None, None
     )
     assert url is None and saw is False
     # a 200 with no usable result -> saw_200 True (genuine miss, caller negative-caches)
-    sess.get.return_value = mock.Mock(status_code=200, json=lambda: {"results": []})
+    sess.request.return_value = mock.Mock(status_code=200, json=lambda: {"results": []})
     url2, saw2 = BR._run_openserp_queries(
         sess, "http://osrp", ["q1"], "ref", None, None
     )

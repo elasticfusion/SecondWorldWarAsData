@@ -27,7 +27,7 @@ def _run_search(resp):
     cache_result calls (so we can assert whether a negative entry was written)."""
     cache_calls = []
     session = MagicMock()
-    session.get.return_value = resp
+    session.request.return_value = resp
     with (
         patch.object(br, "get_session", return_value=session),
         patch.object(br, "_nara_rate_limit", lambda: None),
