@@ -106,8 +106,13 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
     except Exception:  # noqa: BLE001
         pass
     try:
-        resp = requests.get(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        resp = recorded_fetch(
+            "wikipedia",
             _WIKI_API,
+            kind=TEXTUAL,
+            method="GET",
             params={  # type: ignore[arg-type]
                 "action": "query",
                 "format": "json",
@@ -121,6 +126,7 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
             },
             headers=_WIKI_HEADERS,
             timeout=15,
+            result_summary_fn=lambda r: f"status={r.status_code} place={name[:40]!r}",
         )
         if resp.status_code != 200:
             return None
@@ -137,8 +143,13 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
 def _fetch_image_license(filename: str) -> Optional[str]:
     """Fetch license from Wikimedia Commons."""
     try:
-        resp = requests.get(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        resp = recorded_fetch(
+            "wikimedia-commons",
             "https://commons.wikimedia.org/w/api.php",
+            kind=TEXTUAL,
+            method="GET",
             params={
                 "action": "query",
                 "format": "json",
@@ -148,6 +159,7 @@ def _fetch_image_license(filename: str) -> Optional[str]:
             },
             headers=_WIKI_HEADERS,
             timeout=10,
+            result_summary_fn=lambda r: f"status={r.status_code}",
         )
         if resp.status_code == 200:
             pages = resp.json().get("query", {}).get("pages", {})
@@ -257,10 +269,16 @@ def _search_grokipedia_place(name: str) -> Optional[str]:
         return cached
 
     try:
-        resp = requests.get(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        resp = recorded_fetch(
+            "grokipedia",
             f"https://grokipedia.com/search?q={name} World War",
+            kind=TEXTUAL,
+            method="GET",
             headers=_WIKI_HEADERS,
             timeout=15,
+            result_summary_fn=lambda r: f"status={r.status_code} place={name[:40]!r}",
         )
         if resp.status_code == 200 and "/page/" in resp.text:
             # Find page links matching the place name

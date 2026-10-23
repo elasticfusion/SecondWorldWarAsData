@@ -1399,8 +1399,14 @@ def _extract_media_from_wikipedia(
 
     try:
         # Step 1: Find the Wikipedia article
-        search_resp = session.get(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        search_resp = recorded_fetch(
+            "wikipedia",
             "https://en.wikipedia.org/w/api.php",
+            kind=TEXTUAL,
+            method="GET",
+            session=session,
             params={
                 "action": "query",
                 "format": "json",
@@ -1410,6 +1416,7 @@ def _extract_media_from_wikipedia(
             },
             timeout=15,
             headers=headers,
+            result_summary_fn=lambda r: f"equip-search status={r.status_code}",
         )
         search_resp.raise_for_status()
         results = search_resp.json().get("query", {}).get("search", [])
@@ -1420,8 +1427,12 @@ def _extract_media_from_wikipedia(
         page_title = results[0]["title"]
 
         # Step 2: Get images from that article
-        img_resp = session.get(
+        img_resp = recorded_fetch(
+            "wikipedia",
             "https://en.wikipedia.org/w/api.php",
+            kind=TEXTUAL,
+            method="GET",
+            session=session,
             params={
                 "action": "query",
                 "format": "json",
@@ -1431,6 +1442,7 @@ def _extract_media_from_wikipedia(
             },
             timeout=15,
             headers=headers,
+            result_summary_fn=lambda r: f"equip-images status={r.status_code}",
         )
         img_resp.raise_for_status()
         pages = img_resp.json().get("query", {}).get("pages", {})
@@ -1441,8 +1453,12 @@ def _extract_media_from_wikipedia(
             return []
 
         # Step 3: Get actual file URLs from Commons (batch up to 5)
-        file_resp = session.get(
+        file_resp = recorded_fetch(
+            "wikimedia-commons",
             "https://commons.wikimedia.org/w/api.php",
+            kind=TEXTUAL,
+            method="GET",
+            session=session,
             params={
                 "action": "query",
                 "format": "json",
@@ -1453,6 +1469,7 @@ def _extract_media_from_wikipedia(
             },
             timeout=15,
             headers=headers,
+            result_summary_fn=lambda r: f"equip-commons status={r.status_code}",
         )
         file_resp.raise_for_status()
         file_pages = file_resp.json().get("query", {}).get("pages", {})

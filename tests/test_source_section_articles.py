@@ -21,7 +21,12 @@ def test_wikipedia_article_parses_text_and_references():
             "externallinks": ["http://a.example", "http://b.example"],
         }
     }
-    with patch.object(ssa.requests, "get", return_value=_resp(json_data=parse_json)):
+    with patch(
+        "src.utils.http_pool.get_session",
+        return_value=MagicMock(
+            request=MagicMock(return_value=_resp(json_data=parse_json))
+        ),
+    ):
         art = ssa.fetch_wikipedia_article("Battle of the Bulge")
     assert art["source"] == "wikipedia"
     assert "Ardennes" in art["extract"]
@@ -33,10 +38,13 @@ def test_wikipedia_article_parses_text_and_references():
 
 
 def test_wikipedia_missing_page_returns_none():
-    with patch.object(
-        ssa.requests,
-        "get",
-        return_value=_resp(json_data={"error": {"code": "missingtitle"}}),
+    with patch(
+        "src.utils.http_pool.get_session",
+        return_value=MagicMock(
+            request=MagicMock(
+                return_value=_resp(json_data={"error": {"code": "missingtitle"}})
+            )
+        ),
     ):
         assert ssa.fetch_wikipedia_article("Nonexistent Thing") is None
 
