@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from src.grok_client import GrokClient, BatchModeCollecting, GrokTruncationError
 from src.utils.file_lock import write_json_with_lock
-from src.utils.http_pool import get_session
+from src.utils.fetch_provenance import STRUCTURED, recorded_fetch
 from src.utils.json_validator import _fix_invalid_ulids
 
 from src.utils.prompt_loader import get_system_prompt
@@ -120,8 +120,15 @@ def _fetch_weather_from_api(
     }
 
     try:
-        session = get_session()
-        response = session.get(url, params=params, timeout=timeout)
+        response = recorded_fetch(
+            "open-meteo",
+            url,
+            kind=STRUCTURED,
+            method="GET",
+            params=params,
+            timeout=timeout,
+            result_summary_fn=lambda r: f"status={r.status_code}",
+        )
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:

@@ -325,10 +325,47 @@ def _pinned_get(cleaned_url, host, vetted_ips, *, timeout, headers):
     last_exc = None
     for ip in vetted_ips:
         try:
-            return _attempt(ip)
+            resp = _attempt(ip)
+            _record_pinned_fetch(cleaned_url, getattr(resp, "status_code", None), None)
+            return resp
         except Exception as exc:  # noqa: BLE001 - try the next vetted IP
             last_exc = exc
+    _record_pinned_fetch(cleaned_url, None, last_exc)
     raise last_exc if last_exc else RuntimeError("no vetted IPs to connect")
+
+
+def _record_pinned_fetch(cleaned_url, status, exc) -> None:
+    """Record a fetch-provenance event for an SSRF-pinned untrusted-source GET. Fail-safe;
+    status only (the body is streamed/byte-capped by the caller, never consumed here).
+    """
+    try:
+        from urllib.parse import urlparse as _up
+
+        from src.utils.fetch_provenance import (
+            ERROR,
+            HIT,
+            MISS,
+            TEXTUAL,
+            record_fetch_event,
+        )
+
+        if exc is not None:
+            outcome, summary = ERROR, None
+        elif status is not None and 200 <= status < 300:
+            outcome, summary = HIT, f"status={status}"
+        else:
+            outcome, summary = MISS, f"status={status}"
+        record_fetch_event(
+            provider=f"pinned:{(_up(cleaned_url).hostname or '')[:60]}",
+            endpoint=cleaned_url,
+            kind=TEXTUAL,
+            http_status=status,
+            outcome=outcome,
+            result_summary=summary,
+            error=(f"{type(exc).__name__}: {exc}" if exc is not None else None),
+        )
+    except Exception:  # noqa: BLE001 - telemetry must never affect the SSRF fetch
+        pass
 
 
 def safe_get(url, *, timeout=None, headers=None, max_bytes=_SAFE_FETCH_MAX_BYTES):
