@@ -146,14 +146,22 @@ class PoliteSource:
         _throttle_host(host, self._crawl_delay)
 
         try:
+            from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
             from src.utils.http_pool import browser_headers
 
-            resp = self._session.get(
+            resp = recorded_fetch(
+                self.name,
                 url,
+                kind=TEXTUAL,
+                method="GET",
+                session=self._session,
                 headers=browser_headers(extra_headers),
                 timeout=30,
                 allow_redirects=False,
                 stream=True,  # bounded read below (don't materialize an unbounded body)
+                # NOTE: summary must NOT read the streamed body (that would consume it before
+                # _cap_body); status only.
+                result_summary_fn=lambda r: f"status={r.status_code}",
             )
         except Exception as e:  # noqa: BLE001 - transient; caller tries next source
             msg = f"{type(e).__name__}: {e} [url={url}]"

@@ -202,8 +202,17 @@ def _grokipedia_query_scan(person_name: str, timeout: int) -> Optional[str]:
 
     for search_q in search_queries:
         search_url = f"https://grokipedia.com/search?q={search_q}"
-        response = requests.get(
-            search_url, headers=headers, timeout=timeout, allow_redirects=True
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        response = recorded_fetch(
+            "grokipedia",
+            search_url,
+            kind=TEXTUAL,
+            method="GET",
+            headers=headers,
+            timeout=timeout,
+            allow_redirects=True,
+            result_summary_fn=lambda r: f"status={r.status_code}",
         )
         if response.status_code != 200 or "/page/" not in response.text:
             continue
@@ -306,8 +315,13 @@ def _extract_page_image_filename(response_data: dict) -> Optional[str]:
 def _fetch_image_license(filename: str) -> Optional[str]:
     """Fetch license info for a Wikipedia/Commons image file."""
     try:
-        resp = requests.get(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        resp = recorded_fetch(
+            "wikimedia-commons",
             "https://commons.wikimedia.org/w/api.php",
+            kind=TEXTUAL,
+            method="GET",
             params={
                 "action": "query",
                 "format": "json",
@@ -319,6 +333,7 @@ def _fetch_image_license(filename: str) -> Optional[str]:
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
             },
             timeout=10,
+            result_summary_fn=lambda r: f"status={r.status_code} file={filename[:40]!r}",
         )
         if resp.status_code == 200:
             pages = resp.json().get("query", {}).get("pages", {})
@@ -488,8 +503,13 @@ def _search_wikipedia_fallback(
             import time as _time
 
             _time.sleep(3)  # Rate limit between Wikipedia API calls
-            resp = requests.get(
+            from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+            resp = recorded_fetch(
+                "wikipedia",
                 "https://en.wikipedia.org/w/api.php",
+                kind=TEXTUAL,
+                method="GET",
                 params={
                     "action": "query",
                     "format": "json",
@@ -499,6 +519,7 @@ def _search_wikipedia_fallback(
                 },
                 headers=headers,
                 timeout=timeout,
+                result_summary_fn=lambda r: f"search status={r.status_code}",
             )
             if resp.status_code != 200:
                 return None
@@ -547,8 +568,13 @@ def _wiki_fallback_match(
             title_words = title.split()
             if title_words and title_words[0][0].upper() != first_initial.upper():
                 continue
-        resp2 = requests.get(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        resp2 = recorded_fetch(
+            "wikipedia",
             "https://en.wikipedia.org/w/api.php",
+            kind=TEXTUAL,
+            method="GET",
             params={
                 "action": "query",
                 "format": "json",
@@ -561,6 +587,7 @@ def _wiki_fallback_match(
             },
             headers=headers,
             timeout=timeout,
+            result_summary_fn=lambda r: f"extract status={r.status_code}",
         )
         if resp2.status_code == 200:
             content = _extract_page_content(resp2.json())
@@ -600,8 +627,17 @@ def search_wikipedia(
 
     for attempt in range(max_retries):
         try:
-            response = requests.get(
-                api_url, params=params, headers=headers, timeout=timeout
+            from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+            response = recorded_fetch(
+                "wikipedia",
+                api_url,
+                kind=TEXTUAL,
+                method="GET",
+                params=params,
+                headers=headers,
+                timeout=timeout,
+                result_summary_fn=lambda r: f"status={r.status_code}",
             )
 
             if response.status_code == 200:
