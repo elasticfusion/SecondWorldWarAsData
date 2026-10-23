@@ -215,19 +215,24 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
 
         cfg = load_config().get("openserp", {})
         time.sleep(cfg.get("rate_limit_seconds", 5))
-        session = get_session()
         # Browser-mode OpenSERP (headless Chromium across several engines) can be slow;
         # the per-request timeout is config-driven so it can absorb browser latency
         # without tripping the breaker on a slow-but-valid query.
         req_timeout = cfg.get("request_timeout_seconds", 60)
-        resp = session.get(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        resp = recorded_fetch(
+            "openserp",
             f"{openserp_url}/mega/search",
+            kind=TEXTUAL,
+            method="GET",
             params={
                 "text": query,
                 "limit": str(limit),
                 "mode": "any",
             },
             timeout=req_timeout,
+            result_summary_fn=lambda r: f"status={r.status_code} q={query[:40]!r}",
         )
         if resp.status_code == 200:
             data = resp.json()

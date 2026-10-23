@@ -25,10 +25,13 @@ def test_resolve_returns_clean_url(monkeypatch):
     with (
         patch("src.utils.search_cache.get_cached", return_value=None),
         patch("src.utils.search_cache.cache_result"),
-        patch.object(
-            gk.requests,
-            "get",
-            return_value=_resp(text='<a href="/page/M4_Sherman">x</a>'),
+        patch(
+            "src.utils.http_pool.get_session",
+            return_value=MagicMock(
+                request=MagicMock(
+                    return_value=_resp(text='<a href="/page/M4_Sherman">x</a>')
+                )
+            ),
         ),
     ):
         url = gk.resolve_grokipedia_url("M4 Sherman")
@@ -39,10 +42,13 @@ def test_resolve_rejects_js_fragment_returns_none():
     with (
         patch("src.utils.search_cache.get_cached", return_value=None),
         patch("src.utils.search_cache.cache_result"),
-        patch.object(
-            gk.requests,
-            "get",
-            return_value=_resp(text="/page/' + escHtml(s.slug) + '"),
+        patch(
+            "src.utils.http_pool.get_session",
+            return_value=MagicMock(
+                request=MagicMock(
+                    return_value=_resp(text="/page/' + escHtml(s.slug) + '")
+                )
+            ),
         ),
     ):
         assert gk.resolve_grokipedia_url("Weird Thing") is None

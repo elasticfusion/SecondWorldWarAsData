@@ -104,21 +104,28 @@ def _fetch_nara_record(naid: str, api_key: str) -> Optional[Dict[str, Any]]:
     """Look up a NARA record by naId (direct records/{naId}, falling back to the search API).
     Returns the parsed JSON payload, or None on non-200 / HTML-shell / parse failure."""
     try:
-        from src.utils.http_pool import get_session
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
 
-        session = get_session()
         headers = {"x-api-key": api_key, "Accept": "application/json"}
-        resp = session.get(
+        resp = recorded_fetch(
+            "nara",
             f"https://catalog.archives.gov/api/v2/records/{naid}",
+            kind=TEXTUAL,
+            method="GET",
             headers=headers,
             timeout=30,
+            result_summary_fn=lambda r: f"naid={naid} status={r.status_code}",
         )
         if resp.status_code != 200:
-            resp = session.get(
+            resp = recorded_fetch(
+                "nara",
                 "https://catalog.archives.gov/api/v2/records/search",
+                kind=TEXTUAL,
+                method="GET",
                 params={"naId": naid, "limit": "1"},
                 headers=headers,
                 timeout=30,
+                result_summary_fn=lambda r: f"naid-search={naid} status={r.status_code}",
             )
         if (
             resp.status_code != 200

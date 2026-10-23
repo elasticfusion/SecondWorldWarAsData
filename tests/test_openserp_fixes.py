@@ -91,17 +91,17 @@ def test_search_timeout_is_config_driven():
         def json(self):
             return {"results": [{"url": "u", "title": "t", "snippet": "s"}]}
 
-    def fake_get(url, params=None, timeout=None, **k):
+    def fake_request(method, url, params=None, timeout=None, **k):
         captured["timeout"] = timeout
         return _Resp()
 
     sess = MagicMock()
-    sess.get.side_effect = fake_get
+    sess.request.side_effect = fake_request
 
     # Explicit config value is honored.
     with (
         patch.object(oe, "_breaker_is_open", lambda: False),
-        patch.object(oe, "get_session", lambda: sess),
+        patch("src.utils.http_pool.get_session", lambda: sess),
         patch.object(oe, "_breaker_record_success", lambda: None),
         patch(
             "src.utils.config.load_config",
@@ -116,7 +116,7 @@ def test_search_timeout_is_config_driven():
     # Default when the key is absent is 60 (not the old hardcoded 30).
     with (
         patch.object(oe, "_breaker_is_open", lambda: False),
-        patch.object(oe, "get_session", lambda: sess),
+        patch("src.utils.http_pool.get_session", lambda: sess),
         patch.object(oe, "_breaker_record_success", lambda: None),
         patch(
             "src.utils.config.load_config",
