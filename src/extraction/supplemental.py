@@ -320,49 +320,6 @@ def generate_ulids(data: Any) -> Any:
     return data
 
 
-def extract_narrative_from_references(
-    event_data: Dict[str, Any], grok_client: GrokClient
-) -> list[Dict[str, Any]]:
-    """Extract narrative content from footnotes/endnotes to create new sub-events."""
-    event = event_data.get("Event", {})
-    event_name = event.get("Event_Name", "")
-    event_id = event.get("EventID", "")
-
-    # Collect all footnote/endnote text
-    footnotes = []
-    for se in event.get("Sub-events", []):
-        for ref in se.get("Endnote_References", []):
-            footnotes.append(f"[{ref}]")
-        for ref in se.get("Footnote_References", []):
-            footnotes.append(f"[{ref}]")
-    footnote_text = "\n".join(footnotes) if footnotes else "None"
-
-    from src.utils.prompt_loader import get_system_prompt, render_prompt
-
-    prompt = render_prompt(
-        "supplemental_narrative",
-        event_name=event_name,
-        event_id=event_id,
-        footnote_text=footnote_text,
-    )
-
-    try:
-        response = grok_client.extract_json(
-            prompt=prompt,
-            system_prompt="Extract narrative content from references.",
-            temperature=0.1,
-            use_cache=True,
-            cache_type="supplemental_narrative",
-        )
-
-        if isinstance(response, list):
-            return response
-        return []
-    except Exception as e:
-        logger.debug("Error extracting narrative from references: %s", e)
-        return []
-
-
 def _append_to_file(
     file_path: Path, new_subevents: list[Dict[str, Any]], file_type: str
 ) -> None:

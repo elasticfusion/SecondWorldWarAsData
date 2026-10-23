@@ -261,7 +261,7 @@ from pathlib import Path
 REQUIRED = ['events', 'people', 'places', 'dates', 'equipment',
             'equipment_vision', 'equipment_urls', 'equipment_enrichment',
             'weather_batch', 'casualties', 'logistics',
-            'supplemental', 'supplemental_narrative', 'people_groups', 'biography',
+            'supplemental', 'people_groups', 'biography',
             'people_consolidation', 'map_search', 'map_vision', 'license_check',
             'isbn_lookup', 'author_death_date', 'publication_search',
             'bibliography_verify', 'bibliography_alt_title', 'nara_identify',

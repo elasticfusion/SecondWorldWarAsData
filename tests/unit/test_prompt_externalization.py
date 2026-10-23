@@ -175,20 +175,6 @@ class TestPromptLoading:
         assert "Lorraine" in prompt
         _assert_no_unfilled(prompt)
 
-    def test_supplemental_narrative_prompt(self):
-        from src.utils.prompt_loader import render_prompt
-
-        prompt = render_prompt(
-            "supplemental_narrative",
-            event_name="Operation Cobra",
-            event_id="01ABC",
-            footnote_text="[12] The 2nd Division attacked",
-        )
-        assert "Operation Cobra" in prompt
-        _assert_no_unfilled(prompt)
-        assert "2nd Division" in prompt
-        _assert_no_unfilled(prompt)
-
     def test_weather_batch_prompt(self):
         from src.utils.prompt_loader import render_prompt
 
