@@ -63,7 +63,16 @@ class _FakeSession:
     def __init__(self):
         self.calls = []
 
-    def get(self, url, headers=None, timeout=None, allow_redirects=True, stream=False):
+    def request(
+        self,
+        method,
+        url,
+        headers=None,
+        timeout=None,
+        allow_redirects=True,
+        stream=False,
+        **kwargs,
+    ):
         self.calls.append(url)
         if "?s=" in url:
             return _FakeResp(_SEARCH_HTML)
