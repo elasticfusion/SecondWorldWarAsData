@@ -87,8 +87,13 @@ def fetch_wikipedia_article(title: str, timeout: int = 20) -> Optional[Dict[str,
     if not title:
         return None
     try:
-        resp = requests.get(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        resp = recorded_fetch(
+            "wikipedia",
             _WIKI_API,
+            kind=TEXTUAL,
+            method="GET",
             params={
                 "action": "parse",
                 "format": "json",
@@ -98,6 +103,7 @@ def fetch_wikipedia_article(title: str, timeout: int = 20) -> Optional[Dict[str,
             },
             headers=_HEADERS,
             timeout=timeout,
+            result_summary_fn=lambda r: f"parse-text status={r.status_code}",
         )
         if resp.status_code != 200:
             return None
