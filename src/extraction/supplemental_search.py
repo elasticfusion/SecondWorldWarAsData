@@ -32,10 +32,16 @@ def search_gutenberg_openserp(
             else f"{title} {author or ''} site:gutenberg.org".strip()
         )
 
-        response = requests.post(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        response = recorded_fetch(
+            "openserp",
             f"{openserp_url}/search",
+            kind=TEXTUAL,
+            method="POST",
             json={"query": query, "engines": ["google"]},
             timeout=30.0,
+            result_summary_fn=lambda r: f"status={r.status_code}",
         )
 
         if response.status_code == 200:
@@ -105,7 +111,17 @@ def _search_archive_org_api(
         # Search API
         url = f"https://archive.org/advancedsearch.php?q={quote(query)}&fl[]=identifier&fl[]=title&output=json&rows=5"
 
-        response = requests.get(url, timeout=30.0, allow_redirects=True)
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        response = recorded_fetch(
+            "archive-solr",
+            url,
+            kind=TEXTUAL,
+            method="GET",
+            timeout=30.0,
+            allow_redirects=True,
+            result_summary_fn=lambda r: f"status={r.status_code}",
+        )
 
         if response.status_code == 200:
             data = response.json()
@@ -178,7 +194,17 @@ def search_archive_org_candidates(
             f"https://archive.org/advancedsearch.php?q={quote(query)}"
             f"&fl[]=identifier&fl[]=title&output=json&rows={rows}"
         )
-        response = requests.get(url, timeout=30.0, allow_redirects=True)
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        response = recorded_fetch(
+            "archive-solr",
+            url,
+            kind=TEXTUAL,
+            method="GET",
+            timeout=30.0,
+            allow_redirects=True,
+            result_summary_fn=lambda r: f"status={r.status_code}",
+        )
         if response.status_code == 200:
             docs = response.json().get("response", {}).get("docs", [])
             for doc in docs:
@@ -222,10 +248,16 @@ def search_gutenberg_candidates(
         return out
     try:
         search_term = title if not author else f"{title} {author}"
-        response = requests.get(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        response = recorded_fetch(
+            "gutendex",
             "https://gutendex.com/books",
+            kind=TEXTUAL,
+            method="GET",
             params={"search": search_term},
             timeout=30.0,
+            result_summary_fn=lambda r: f"status={r.status_code}",
         )
         if response.status_code == 200:
             for book in response.json().get("results", [])[:5]:
@@ -276,7 +308,16 @@ def _build_archive_query(
 def fetch_archive_org_metadata(identifier: str) -> Optional[Dict]:
     """Fetch metadata and PDF link from Archive.org for a given identifier."""
     try:
-        resp = requests.get(f"https://archive.org/metadata/{identifier}", timeout=30.0)
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        resp = recorded_fetch(
+            "archive-org",
+            f"https://archive.org/metadata/{identifier}",
+            kind=TEXTUAL,
+            method="GET",
+            timeout=30.0,
+            result_summary_fn=lambda r: f"metadata status={r.status_code}",
+        )
         if resp.status_code != 200:
             return None
 
@@ -410,10 +451,16 @@ def search_openserp(
     try:
         query = f'"{title}" {author or ""}'.strip()
 
-        response = requests.post(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        response = recorded_fetch(
+            "openserp",
             f"{openserp_url}/search",
+            kind=TEXTUAL,
+            method="POST",
             json={"query": query, "engines": ["google", "bing"]},
             timeout=30.0,
+            result_summary_fn=lambda r: f"status={r.status_code}",
         )
 
         if response.status_code == 200:

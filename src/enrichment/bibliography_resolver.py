@@ -842,8 +842,14 @@ def _run_openserp_queries(session, openserp_url, queries, ref, grok_client, entr
         if verify_budget <= 0:
             break
         time.sleep(5)
-        resp = session.get(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        resp = recorded_fetch(
+            "openserp",
             f"{openserp_url}/mega/search",
+            kind=TEXTUAL,
+            method="GET",
+            session=session,
             params={
                 "text": query,
                 "limit": "5",
@@ -851,6 +857,7 @@ def _run_openserp_queries(session, openserp_url, queries, ref, grok_client, entr
                 "engines": "google,bing,duckduckgo",
             },
             timeout=15,
+            result_summary_fn=lambda r: f"status={r.status_code}",
         )
         if resp.status_code != 200:
             continue
@@ -1586,11 +1593,18 @@ def _execute_nara_query(
     params: Dict[str, str] = {"q": safe_q, "limit": "5"}
     if record_group_number:
         params["recordGroupNumber"] = str(record_group_number)
-    resp = session.get(
+    from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+    resp = recorded_fetch(
+        "nara",
         "https://catalog.archives.gov/api/v2/records/search",
+        kind=TEXTUAL,
+        method="GET",
+        session=session,
         params=params,
         headers={"x-api-key": api_key, "Accept": "application/json"},
         timeout=30,
+        result_summary_fn=lambda r: f"nara-search status={r.status_code}",
     )
     payload = _interpret_nara_response(resp, safe_q)
     if payload is None:

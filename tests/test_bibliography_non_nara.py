@@ -8,7 +8,7 @@ import src.enrichment.bibliography_resolver as br
 def test_search_iterates_non_nara_repositories():
     issued = []
 
-    def fake_get(u, params=None, timeout=None):
+    def fake_get(method, u, params=None, timeout=None, **k):
         issued.append(params["text"])
         r = MagicMock()
         r.status_code = 200
@@ -30,7 +30,7 @@ def test_search_iterates_non_nara_repositories():
     with (
         patch(
             "src.enrichment.bibliography_resolver.get_session",
-            return_value=MagicMock(get=fake_get),
+            return_value=MagicMock(request=fake_get),
         ),
         patch("src.utils.search_cache.get_cached", return_value=None),
         patch("src.utils.search_cache.cache_result"),
@@ -200,7 +200,7 @@ def test_openserp_verify_budget_caps_grok_calls():
         calls["n"] += 1
         return False  # all rejected -> exhausts the budget rather than returning early
 
-    def fake_get(u, params=None, timeout=None):
+    def fake_get(method, u, params=None, timeout=None, **k):
         r = MagicMock()
         r.status_code = 200
         # 5 topically-relevant results (share 'corps/operations' -> pass token-gate) per query
@@ -216,7 +216,7 @@ def test_openserp_verify_budget_caps_grok_calls():
     with (
         patch(
             "src.enrichment.bibliography_resolver.get_session",
-            return_value=MagicMock(get=fake_get),
+            return_value=MagicMock(request=fake_get),
         ),
         patch("src.utils.search_cache.get_cached", return_value=None),
         patch("src.utils.search_cache.cache_result"),
