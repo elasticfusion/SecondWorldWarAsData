@@ -27,7 +27,6 @@ All LLM prompts are externalized to YAML files. There are NO inline prompts in P
 | `casualties.yaml` | Personnel casualty data |
 | `logistics.yaml` | Supply chain issues |
 | `supplemental.yaml` | Bibliography/citation extraction |
-| `supplemental_narrative.yaml` | Narrative content from footnotes |
 | `biography.yaml` | Phase 3 biographical enrichment |
 
 ### Verification/Utility Prompts

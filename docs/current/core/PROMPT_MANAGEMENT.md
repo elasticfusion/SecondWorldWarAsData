@@ -106,7 +106,7 @@ Short valid JSON (`[]`, `{}`) passes step 3 and is returned without retry.
 - **Multi-source instruction:** Split semicolon/period-delimited sources into separate entries
 - **Schema:** `SUPPLEMENTAL_SCHEMA`
 - **Method:** `extract_json` → temperature 0.1
-- **Cache:** `supplemental`, `supplemental_narrative` (both book-scoped)
+- **Cache:** `supplemental` (book-scoped)
 
 #### supplemental_search.py
 - **System prompt:** Inline — "You are a research librarian. Only provide URLs you are certain about."
@@ -190,7 +190,7 @@ Not present in: events, places, people, logistics, casualties, equipment. These 
 
 Book-scoped types (under `cache/api/books/{BookName}/`):
 - events, weather, equipment, logistics, casualties
-- supplemental, supplemental_narrative, supplemental_search, supplemental_advanced
+- supplemental, supplemental_search, supplemental_advanced
 
 Global types (under `cache/api/`):
 - dates, places, people, peoplegroups

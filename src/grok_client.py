@@ -245,7 +245,6 @@ class GrokClient:
             "logistics",
             "casualties",
             "supplemental",
-            "supplemental_narrative",
             "supplemental_search",
             "supplemental_advanced",
         }
