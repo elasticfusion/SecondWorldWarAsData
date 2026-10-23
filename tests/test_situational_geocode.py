@@ -27,7 +27,7 @@ class _FakeSession:
         self._wiki = wiki
         self.urls = []
 
-    def get(self, url, params=None, headers=None, timeout=None, allow_redirects=False):
+    def request(self, method, url, params=None, headers=None, timeout=None, **kwargs):
         self.urls.append(url)
         if "grokipedia.com/search" in url:
             return _Resp(self._grok_search or "", 200 if self._grok_search else 404)
@@ -48,8 +48,8 @@ def test_grokipedia_strictly_preferred_over_wikipedia(monkeypatch) -> None:
     monkeypatch.setattr(sc, "cache_result", lambda *_a, **_k: None)
 
     class _PickySession:
-        def get(
-            self, url, params=None, headers=None, timeout=None, allow_redirects=False
+        def request(
+            self, method, url, params=None, headers=None, timeout=None, **kwargs
         ):
             q = (params or {}).get("q", "")
             if "grokipedia.com/search" in url:
@@ -168,3 +168,32 @@ def test_situational_geocode_not_found_passthrough(monkeypatch) -> None:
     r = geocode("Unknowable Sector", {"current_name": "Unknowable Sector"}, grok)
     assert r.found is False
     assert r.source == "situational"
+
+
+def test_situational_grokipedia_emits_structured_provenance(
+    tmp_path, monkeypatch
+) -> None:
+    """Batch B: a Grokipedia lookup via situational_geocode now emits a traceable structured
+    fetch-provenance event."""
+    import json as _json
+
+    import src.utils.search_cache as sc
+    from src.utils import fetch_provenance as fp
+
+    monkeypatch.setattr(sc, "get_cached", lambda *_a, **_k: None)
+    monkeypatch.setattr(sc, "cache_result", lambda *_a, **_k: None)
+    monkeypatch.setattr(fp, "_table", lambda: None)
+    store = tmp_path / "_fe"
+    monkeypatch.setattr(fp, "_LOCAL_DIR", store)
+
+    session = _FakeSession(
+        grok_search='<a data-slug="aachen">Aachen</a> /page/aachen',
+        grok_page="<html><body>Aachen is a German border city.</body></html>",
+    )
+    encyclopedia_context("Aachen", session)
+
+    f = store / "grokipedia.jsonl"
+    assert f.exists(), "no fetch-provenance record for the grokipedia lookup"
+    evs = [_json.loads(x) for x in f.read_text().splitlines()]
+    assert all(e["kind"] == fp.STRUCTURED for e in evs)
+    assert any(e["provider"] == "grokipedia" and e["outcome"] == fp.HIT for e in evs)
