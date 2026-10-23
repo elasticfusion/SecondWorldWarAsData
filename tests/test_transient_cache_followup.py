@@ -14,7 +14,7 @@ def test_situational_grokipedia_transient_not_cached(monkeypatch):
     )
     monkeypatch.setattr("src.utils.search_cache.get_cached", lambda s, q: None)
     sess = mock.Mock()
-    sess.get.return_value = mock.Mock(status_code=503, text="")
+    sess.request.return_value = mock.Mock(status_code=503, text="")
     assert SG.grokipedia_context("Aachen Gap", sess) is None
     assert calls == []  # transient -> no negative cache
 
@@ -28,7 +28,7 @@ def test_situational_wiki_transient_not_cached(monkeypatch):
     )
     monkeypatch.setattr("src.utils.search_cache.get_cached", lambda s, q: None)
     sess = mock.Mock()
-    sess.get.return_value = mock.Mock(status_code=503)
+    sess.request.return_value = mock.Mock(status_code=503)
     assert SG.wikipedia_context("Aachen Gap", sess) is None
     assert calls == []  # both title attempts transient -> no negative cache
 
@@ -87,7 +87,7 @@ def test_situational_wiki_mixed_transient_then_hit(monkeypatch):
     # first title (bare term) transient 503; second title (WWII) real 200 hit
     calls = {"n": 0}
 
-    def _get(url, **k):
+    def _request(method, url, **k):
         calls["n"] += 1
         if calls["n"] == 1:
             return mock.Mock(status_code=503)
@@ -97,7 +97,7 @@ def test_situational_wiki_mixed_transient_then_hit(monkeypatch):
         )
 
     sess = mock.Mock()
-    sess.get = _get
+    sess.request = _request
     out = SG.wikipedia_context("Aachen Gap", sess)
     assert (
         out == "A real place."

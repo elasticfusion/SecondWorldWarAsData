@@ -93,12 +93,19 @@ def _grokipedia_fetch(term: str, session: Any):
     from src.utils.search_cache import TRANSIENT
 
     try:
-        resp = session.get(
+        from src.utils.fetch_provenance import STRUCTURED, recorded_fetch
+
+        resp = recorded_fetch(
+            "grokipedia",
             _GROKIPEDIA_SEARCH,
+            kind=STRUCTURED,
+            method="GET",
             params={"q": f"{term} World War II"},
+            session=session,
             headers=_BROWSER_UA,
             timeout=20,
             allow_redirects=True,
+            result_summary_fn=lambda r: f"status={r.status_code} term={term[:40]!r}",
         )
         if resp.status_code != 200:
             logger.info(
@@ -112,7 +119,16 @@ def _grokipedia_fetch(term: str, session: Any):
         slugs = _SLUG_RE.findall(resp.text)
         if not slugs:
             return None
-        page = session.get(_GROKIPEDIA_PAGE + slugs[0], headers=_BROWSER_UA, timeout=20)
+        page = recorded_fetch(
+            "grokipedia",
+            _GROKIPEDIA_PAGE + slugs[0],
+            kind=STRUCTURED,
+            method="GET",
+            session=session,
+            headers=_BROWSER_UA,
+            timeout=20,
+            result_summary_fn=lambda r: f"page status={r.status_code}",
+        )
         if page.status_code != 200:
             logger.info(
                 "OBSERV situational.grokipedia_transient page_status=%d term=%r",
@@ -235,8 +251,13 @@ def _wiki_extract(title: str, session: Any):
     from src.utils.search_cache import TRANSIENT
 
     try:
-        resp = session.get(
+        from src.utils.fetch_provenance import STRUCTURED, recorded_fetch
+
+        resp = recorded_fetch(
+            "wikipedia",
             _WIKI_ENDPOINT,
+            kind=STRUCTURED,
+            method="GET",
             params={
                 "action": "query",
                 "format": "json",
@@ -246,8 +267,10 @@ def _wiki_extract(title: str, session: Any):
                 "explaintext": "True",
                 "redirects": "1",
             },
+            session=session,
             headers=_HEADERS,
             timeout=15,
+            result_summary_fn=lambda r: f"status={r.status_code} title={title[:40]!r}",
         )
         if resp.status_code != 200:
             logger.info(
