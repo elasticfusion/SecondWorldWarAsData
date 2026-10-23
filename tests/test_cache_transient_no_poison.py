@@ -30,7 +30,10 @@ def test_grokipedia_transient_not_negative_cached(monkeypatch):
     monkeypatch.setattr("src.utils.search_cache.get_cached", lambda s, q: None)
     # non-200 -> TRANSIENT -> resolve returns None, and cache_result NOT called with a negative
     resp = mock.Mock(status_code=503, text="")
-    monkeypatch.setattr("requests.get", lambda *a, **k: resp)
+    monkeypatch.setattr(
+        "src.utils.http_pool.get_session",
+        lambda: mock.Mock(request=lambda *a, **k: resp),
+    )
     assert G.resolve_grokipedia_url("Some Unit Name") is None
     assert calls == []  # no cache write on transient
 
@@ -45,7 +48,10 @@ def test_grokipedia_genuine_miss_is_negative_cached(monkeypatch):
     monkeypatch.setattr("src.utils.search_cache.get_cached", lambda s, q: None)
     # 200 with no /page/ -> genuine miss -> negative-cached (None)
     resp = mock.Mock(status_code=200, text="<html>no results</html>")
-    monkeypatch.setattr("requests.get", lambda *a, **k: resp)
+    monkeypatch.setattr(
+        "src.utils.http_pool.get_session",
+        lambda: mock.Mock(request=lambda *a, **k: resp),
+    )
     assert G.resolve_grokipedia_url("Nonexistent Thing") is None
     assert calls and calls[0][1] is None  # negative-cached
 

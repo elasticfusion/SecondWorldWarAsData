@@ -63,11 +63,17 @@ def _scrape_grokipedia_url(name: str, timeout: int):
     from src.utils.search_cache import TRANSIENT
 
     try:
-        resp = requests.get(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        resp = recorded_fetch(
+            "grokipedia",
             f"https://grokipedia.com/search?q={name}",
+            kind=TEXTUAL,
+            method="GET",
             headers=_HEADERS,
             timeout=timeout,
             allow_redirects=True,
+            result_summary_fn=lambda r: f"status={r.status_code} name={name[:40]!r}",
         )
         if resp.status_code != 200:
             logger.info(

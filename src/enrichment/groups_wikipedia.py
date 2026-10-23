@@ -75,8 +75,13 @@ def _lookup_group(title: str):  # -> dict | None | search_cache.TRANSIENT sentin
     except Exception:  # noqa: BLE001
         pass
     try:
-        resp = requests.get(
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
+        resp = recorded_fetch(
+            "wikipedia",
             "https://en.wikipedia.org/w/api.php",
+            kind=TEXTUAL,
+            method="GET",
             params={
                 "action": "query",
                 "format": "json",
@@ -89,6 +94,7 @@ def _lookup_group(title: str):  # -> dict | None | search_cache.TRANSIENT sentin
             },
             headers=_HEADERS,
             timeout=15,
+            result_summary_fn=lambda r: f"status={r.status_code} title={title[:40]!r}",
         )
         if resp.status_code != 200:
             from src.utils.search_cache import TRANSIENT

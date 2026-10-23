@@ -36,7 +36,10 @@ def test_license_filename_strips_utm_query():
         return "CC BY-SA 2.0"
 
     with (
-        patch.object(w.requests, "get", return_value=_Resp()),
+        patch(
+            "src.utils.http_pool.get_session",
+            return_value=type("S", (), {"request": lambda self, *a, **k: _Resp()})(),
+        ),
         patch.object(w, "_fetch_license", fake_fetch_license),
     ):
         res = w._lookup_equipment("M4 Sherman")
