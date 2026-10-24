@@ -11,6 +11,10 @@ certifi==2026.10.19
 urllib3==2.8.0
 tenacity==9.1.4
 diskcache==5.6.3
+# filelock is transitive (via virtualenv/huggingface tooling) but PINNED EXPLICITLY to the
+# CVE-fixed build: 4.0.12 carries CVE-2026-112907/112913/112940 (SQLite-backed Read/Write/Soft
+# lock local multi-user attacks), all fixed in 4.2.1. 4.2.4 is the current fixed release.
+filelock==4.2.4
 python-dotenv==1.2.2
 ulid-py==1.1.0
 jsonschema==4.26.0
