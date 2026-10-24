@@ -3,6 +3,7 @@
 import json
 import logging
 import re
+from contextvars import ContextVar
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -870,6 +871,58 @@ def _save_people_index(index_file: Path, index: dict) -> None:
     temp_file.replace(index_file)
 
 
+# Phase-2 people-enrichment coverage counters (observability). A wholesale no-op (0 of N people
+# enriched) previously produced ZERO aggregate signal — only per-person lines when the path ran —
+# so an enrichment regression was invisible. Emitted as an `enrich.summary` rollup per run with a
+# 0-of-N anomaly warning. Both the sync (_process_person) and batch (_enrich_person_batch_apply)
+# paths funnel through _enrich_person_phase2, so counting there covers both.
+#
+# TASK-LOCAL via ContextVar (mirrors grok_client.current_book): chapters run CONCURRENTLY
+# (asyncio.gather, max_parallel=3), so a shared module dict would interleave — one chapter's reset
+# zeroing another's in-flight counts. A ContextVar gives each async task (and the sync path) its own
+# counter dict, so resets/summaries never cross chapters.
+_enrich_counts: ContextVar[Dict[str, int]] = ContextVar("enrich_counts")
+
+
+def _reset_enrich_counts() -> None:
+    _enrich_counts.set(
+        {"total": 0, "enriched": 0, "skipped": 0, "collecting": 0, "errors": 0}
+    )
+
+
+def _bump_enrich(key: str) -> None:
+    """Increment a task-local enrichment counter (fail-safe: a missing/unset context is a no-op)."""
+    c = _enrich_counts.get(None)
+    if c is not None and key in c:
+        c[key] += 1
+
+
+def _emit_enrich_summary(path: str) -> None:
+    """Emit the phase-level people-enrichment coverage rollup + a 0-of-N anomaly warning."""
+    c = _enrich_counts.get(None)
+    if c is None:  # summary called without a prior reset — nothing to report
+        return
+    logger.info(
+        "OBSERV enrich.summary entity=person path=%s total=%d enriched=%d skipped_already=%d "
+        "collecting=%d errors=%d",
+        path,
+        c["total"],
+        c["enriched"],
+        c["skipped"],
+        c["collecting"],
+        c["errors"],
+    )
+    # Anomaly: people were extracted but NONE enriched and NONE merely collecting/skipped-as-fresh
+    # -> the enrichment path is effectively dead (the class of bug that hid before). Flag loudly.
+    if c["total"] > 0 and c["enriched"] == 0 and c["collecting"] == 0:
+        logger.warning(
+            "OBSERV enrich.anomaly entity=person path=%s: %d people extracted but 0 enriched "
+            "(0 collecting) — enrichment may be disabled/broken (fix upstream)",
+            path,
+            c["total"],
+        )
+
+
 def _enrich_person_phase2(person_data: dict, grok_client) -> None:
     """Phase-2 Grokipedia/Wikipedia enrichment of a person dict IN PLACE, before the
     native people save path commits it. Fail-safe: a fetch error (or batch-mode
@@ -877,10 +930,12 @@ def _enrich_person_phase2(person_data: dict, grok_client) -> None:
     still saves and Phase 2 proceeds."""
     if grok_client is None:
         return
+    _bump_enrich("total")
     try:
         from src.extraction.enrich_biographies import enrich_person_from_sources
 
         enriched_now = enrich_person_from_sources(person_data, grok_client)
+        _bump_enrich("enriched" if enriched_now else "skipped")
         # enrich.persisted counterpart to enrich.collecting (symmetry asked for): make the RETRIEVE
         # outcome visible. enriched_now distinguishes "this call populated it" from a short-circuit
         # (already-enriched / fresh not-found); has_bio=0 means fetched/returned but no profile.
@@ -898,6 +953,7 @@ def _enrich_person_phase2(person_data: dict, grok_client) -> None:
         # person is NOT saved as "done"/un-enriched — the RETRIEVE pass then applies the batch result
         # and persists biographical_profile. Swallowing this (broad except below) was why people bio
         # enrichment was 0/N (same class as the optional-entity-zero bug).
+        _bump_enrich("collecting")
         logger.info(
             "OBSERV enrich.collecting entity=person name=%s",
             person_data.get("name", "?"),
@@ -906,6 +962,7 @@ def _enrich_person_phase2(person_data: dict, grok_client) -> None:
     except (
         Exception
     ) as e:  # noqa: BLE001 - enrichment is additive; never block extraction
+        _bump_enrich("errors")
         logger.warning(
             "  Phase-2 enrichment skipped for %s: %s",
             person_data.get("name", "?"),
@@ -1186,6 +1243,8 @@ def extract_people(
     if _check_if_processed(event_file, people_dir):
         return people_dir
 
+    _reset_enrich_counts()  # per-event people-enrichment coverage (summary emitted before return)
+
     with open(event_file, "r", encoding="utf-8") as f:
         event_data = json.load(f)
 
@@ -1229,6 +1288,8 @@ def extract_people(
 
     # Save index
     _save_people_index(index_file, index)
+
+    _emit_enrich_summary("sync")
 
     # Mark as processed
     _mark_event_processed(
