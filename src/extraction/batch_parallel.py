@@ -1188,11 +1188,17 @@ async def extract_people_batch_async(
     book_meta: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
     """Extract people in batch — includes fulltext for complete coverage."""
-    from src.extraction.people import _normalize_name, _enrich_person_batch_apply
+    from src.extraction.people import (
+        _normalize_name,
+        _enrich_person_batch_apply,
+        _reset_enrich_counts,
+        _emit_enrich_summary,
+    )
 
     _load_people_exclusions(output_root / "people")
+    _reset_enrich_counts()  # batch-path people-enrichment coverage (summary after the apply pass)
     n = len(event_data.get("Event", {}).get("Sub-events", []))
-    return await _batch_extract(
+    result = await _batch_extract(
         event_data,
         grok_client,
         output_root,
@@ -1242,3 +1248,5 @@ async def extract_people_batch_async(
             entity_file, grok_client
         ),
     )
+    _emit_enrich_summary("batch")
+    return result
