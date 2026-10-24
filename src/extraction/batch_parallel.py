@@ -436,6 +436,7 @@ def _process_entity_obj(  # pylint: disable=too-many-arguments,too-many-position
     links: Dict[str, list],
     make_filename: Optional[Callable[[str, str], str]] = None,
     date_id_lookup: Optional[Dict[str, str]] = None,
+    enrich_record: Optional[Callable[[Path], None]] = None,
 ) -> bool:
     """Process a single entity object. Returns True if processed."""
     key = make_key(obj)
@@ -464,6 +465,13 @@ def _process_entity_obj(  # pylint: disable=too-many-arguments,too-many-position
             date_id_lookup=date_id_lookup,
         )
 
+    # Phase-2 entity enrichment hook (people only): the record is now FINALIZED on the
+    # batch apply path. The synchronous (non-batch) extractor enriches before save; the
+    # generic batch path has no such hook, so without this people extracted in --batch
+    # mode were persisted un-enriched. Fail-safe inside the callback — never aborts here.
+    if enrich_record is not None:
+        enrich_record(entity_file)
+
     if sub_event_key and seid and entity_id:
         links.setdefault(seid, []).append(entity_id)
 
@@ -486,6 +494,7 @@ def _process_batch_response(  # pylint: disable=too-many-arguments,too-many-posi
     sub_event_key: str,
     make_filename: Optional[Callable[[str, str], str]] = None,
     date_id_lookup: Optional[Dict[str, str]] = None,
+    enrich_record: Optional[Callable[[Path], None]] = None,
 ) -> Dict[str, Any]:
     """Process API response: create entities, add mentions, collect links."""
     count = 0
@@ -538,6 +547,7 @@ def _process_batch_response(  # pylint: disable=too-many-arguments,too-many-posi
                 links,
                 make_filename,
                 date_id_lookup,
+                enrich_record,
             ):
                 count += 1
 
@@ -614,6 +624,7 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     include_fulltext: bool = False,
     make_filename: Optional[Callable[[str, str], str]] = None,
     post_process: Optional[Callable] = None,
+    enrich_record: Optional[Callable[[Path], None]] = None,
 ) -> Dict[str, Any]:
     """Generic batch extraction with cross-referencing.
 
@@ -686,6 +697,7 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
             sub_event_key,
             make_filename,
             date_id_lookup,
+            enrich_record,
         )
 
         write_json_with_lock(index_file, index)
@@ -1176,7 +1188,7 @@ async def extract_people_batch_async(
     book_meta: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
     """Extract people in batch — includes fulltext for complete coverage."""
-    from src.extraction.people import _normalize_name
+    from src.extraction.people import _normalize_name, _enrich_person_batch_apply
 
     _load_people_exclusions(output_root / "people")
     n = len(event_data.get("Event", {}).get("Sub-events", []))
@@ -1226,4 +1238,7 @@ async def extract_people_batch_async(
         sub_event_key="people",
         book_meta=book_meta,
         include_fulltext=True,
+        enrich_record=lambda entity_file: _enrich_person_batch_apply(
+            entity_file, grok_client
+        ),
     )

@@ -913,6 +913,54 @@ def _enrich_person_phase2(person_data: dict, grok_client) -> None:
         )
 
 
+def _enrich_person_batch_apply(
+    entity_file: Path, grok_client: Optional[GrokClient]
+) -> None:
+    """Phase-2 Grokipedia/Wikipedia enrichment for a person FINALIZED on the batch
+    RETRIEVE/apply path (batch_parallel._process_entity_obj). The generic batch path
+    creates/saves the person record without enrichment — unlike the synchronous
+    ``_process_person`` path which enriches via ``_enrich_person_phase2`` before save.
+    This re-reads the just-persisted record under the central write guard, enriches it
+    IN PLACE (reusing ``_enrich_person_phase2`` / ``enrich_person_from_sources`` — no
+    duplicated logic, same ``_is_already_enriched`` gate so a person is never enriched
+    twice), re-validates, and commits via ``write_json_with_lock``.
+
+    Fail-safe: any enrichment error (including a batch-mode collect) must NEVER abort
+    extraction — the already-saved (un-enriched) record is left intact.
+    """
+    if grok_client is None:
+        return
+    from src.utils.file_lock import locked_json
+    from src.schemas.schema_contract import read_for_update
+
+    try:
+        with locked_json(entity_file) as (data, save):
+            data, skip = read_for_update(data, SCHEMA_TARGET, logger, entity_file.name)
+            if skip or not data.get("name"):
+                return
+            # _enrich_person_phase2 is itself fail-safe (swallows fetch errors) and
+            # re-raises BatchModeCollecting; catch that here so a collect never aborts
+            # the batch apply — the un-enriched record stays saved.
+            try:
+                _enrich_person_phase2(data, grok_client)
+            except BatchModeCollecting:
+                logger.info(
+                    "OBSERV enrich.collecting entity=person path=batch name=%s",
+                    data.get("name", "?"),
+                )
+                return
+            Person(**data)  # Validate before committing the enriched record.
+            save(data)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - enrichment is additive; never block extraction
+        logger.warning(
+            "  Phase-2 batch enrichment skipped for %s: %s",
+            entity_file.name,
+            e,
+        )
+
+
 def _mint_person_ids(person: dict, person_id: str) -> None:
     """Mint server-side PersonID + per-mention MentionIDs (HIGH#7a), logging when an LLM-supplied
     value was replaced. Mutates ``person`` in place."""
