@@ -1108,6 +1108,17 @@ def main():
 
     close_session()
 
+    # Post-Phase-2 data validation (docs/current/PHASE2_DATA_VALIDATION.md). Runs on the FULLY
+    # FINALIZED corpus (after any --batch re-run). Fail-safe: logs the LOUD result + surfaces
+    # failures but never aborts the phase here (the standalone CLI / CI can hard-gate on exit code).
+    try:
+        from scripts.validate_phase2 import run as _validate_phase2
+
+        rc = _validate_phase2(str(output_root), strict_enrichment=False)
+        logger.info("Post-Phase-2 validation exit=%d (0=pass, 1=fail)", rc)
+    except Exception as e:  # noqa: BLE001 - validation must not crash the phase
+        logger.warning("Post-Phase-2 validation skipped: %s", e)
+
     # Write results for entrypoint notification
     _write_phase_results(output_root, processed, failed)
 
