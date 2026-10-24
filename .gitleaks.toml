@@ -2,6 +2,11 @@
 title = "WWII Pipeline Gitleaks Config"
 
 [allowlist]
+# EXCLUDE large data/generated/vendored trees from the secret scan. `gitleaks detect --source .
+# --no-git` walks the WHOLE working tree; without these it ballooned to ~20 GB RSS and was
+# OOM-killed by systemd-oomd mid-deploy (unprocesseddocs 5 GB + contentrepository 4.5 GB were the
+# bulk). These are .gitignore'd data / build artifacts / vendored code, never project source, so
+# scanning them for secrets is both wrong and the cause of the OOM.
 paths = [
     '''.venv/''',
     '''node_modules/''',
@@ -9,4 +14,13 @@ paths = [
     '''output/''',
     '''htmlcov/''',
     '''.env''',
+    '''unprocesseddocs/''',   # ~5 GB raw source documents (data, not code)
+    '''contentrepository/''', # ~4.5 GB ingested source content (data, not code)
+    '''aws/''',               # vendored AWS CLI/tooling
+    '''tmp/''',               # scratch
+    '''\.mypy_cache/''',
+    '''logs/''',
+    '''filestore/''',
+    '''\.git/''',
+    '''openserp/''',          # vendored Go submodule (upstream code, audited separately)
 ]
