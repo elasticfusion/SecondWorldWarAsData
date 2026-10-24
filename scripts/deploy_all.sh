@@ -196,6 +196,8 @@ EMAIL="dchristian@cirrusnine.com"
 
 # Preflight: warn (or fail, if STRICT_COMPONENTS=1) when vendored components/base images are
 # stale vs upstream — catches the kind of drift that broke OpenSERP (78 commits behind).
+# Set COMPONENT_UPGRADE_PROMPT=1 to be interactively offered a submodule upgrade when one is behind
+# (TTY only; Enter = skip; stages the new gitlink for you to review+commit — never auto-pulls).
 if [ "${SKIP_COMPONENT_CHECK:-0}" != "1" ]; then
   if [ "${STRICT_COMPONENTS:-0}" = "1" ]; then
     bash "$(dirname "$0")/check_component_versions.sh" --strict || {
