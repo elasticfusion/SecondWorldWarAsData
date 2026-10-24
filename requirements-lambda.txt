@@ -5,6 +5,8 @@ markdown
 requests>=2.32.0
 tenacity
 diskcache
+# filelock pinned to the CVE-fixed build (4.0.12 -> CVE-2026-112907/112913/112940, fixed 4.2.1)
+filelock==4.2.4
 python-dotenv
 ulid-py
 jsonschema
