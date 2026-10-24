@@ -13,12 +13,16 @@
 # Usage:
 #   bash scripts/check_component_versions.sh            # warn-only (exit 0)
 #   bash scripts/check_component_versions.sh --strict   # exit 1 if anything is behind
+#   COMPONENT_UPGRADE_PROMPT=1 bash scripts/check_component_versions.sh   # interactively offer to
+#     upgrade a stale submodule to its latest release tag (TTY only; Enter = skip; never auto-pulls;
+#     stages the new gitlink for you to review + commit, then rebuild/push the image). Non-interactive
+#     runs (CI) ignore the prompt and stay warn-only, so this never blocks a pipeline.
 #
 # Network: needs git fetch (submodules) + `docker/podman manifest inspect` or `skopeo`
 # (base images). Gracefully skips a check it can't perform (prints a notice).
 
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 STRICT=0
 [ "${1:-}" = "--strict" ] && STRICT=1
@@ -28,6 +32,32 @@ say_ok()   { echo "  ✓ $*"; }
 say_warn() { echo "  ⚠ $*"; behind=1; }
 say_skip() { echo "  — $* (skipped)"; }
 
+# Optional interactive upgrade of a stale submodule. OFF unless COMPONENT_UPGRADE_PROMPT=1, and it
+# only ever prompts on a real TTY — so CI / non-interactive runs NEVER hang and stay warn-only.
+# Default answer is NO (Enter = skip). On "y" it checks out the target tag in the submodule and
+# STAGES the new gitlink in the superproject; the user still reviews/commits + rebuilds the image.
+# Never auto-pulls: an unreviewed upstream bump is the exact failure this guard exists to prevent.
+_maybe_prompt_upgrade() {
+  local path="$1" tag="$2"
+  [ "${COMPONENT_UPGRADE_PROMPT:-0}" = "1" ] || return 0
+  [ -t 0 ] || { echo "    (non-interactive; skipping upgrade prompt for $path)"; return 0; }
+  printf "    Upgrade %s to %s now? [y/N] " "$path" "$tag"
+  local ans; read -r ans
+  case "$ans" in
+    y | Y | yes | YES)
+      if git -C "$path" checkout --quiet "$tag" 2>/dev/null; then
+        git add "$path" 2>/dev/null || true
+        echo "    ✓ $path checked out at $tag and staged. Review, commit the gitlink, then rebuild/push the image."
+      else
+        echo "    ✗ checkout of $tag failed in $path — upgrade manually (git -C $path checkout $tag)."
+      fi
+      ;;
+    *)
+      echo "    → left $path unchanged (upgrade later: git -C $path checkout $tag && git add $path)."
+      ;;
+  esac
+}
+
 echo "=== Component version check ==="
 
 # --- 1. Submodules vs upstream latest tag ---
@@ -36,28 +66,31 @@ if [ -f .gitmodules ]; then
   while read -r path; do
     [ -z "$path" ] && continue
     [ -d "$path/.git" ] || [ -f "$path/.git" ] || { say_skip "$path (not initialized)"; continue; }
-    (
+    latest_tag_out="$(
       cd "$path" || exit 0
-      git fetch --tags --quiet origin 2>/dev/null || { echo "  — $path (fetch failed)"; exit 0; }
+      git fetch --tags --quiet origin 2>/dev/null || { echo "  — $path (fetch failed)" >&2; exit 0; }
       pinned="$(git rev-parse HEAD)"
       pinned_desc="$(git describe --tags --always 2>/dev/null || echo "$pinned")"
       latest_tag="$(git tag --sort=-creatordate 2>/dev/null | head -1)"
       if [ -z "$latest_tag" ]; then
-        echo "  — $path (no upstream tags)"; exit 0
+        echo "  — $path (no upstream tags)" >&2; exit 0
       fi
       latest_commit="$(git rev-list -n1 "$latest_tag" 2>/dev/null)"
       if [ "$pinned" = "$latest_commit" ]; then
-        echo "  ✓ $path @ $pinned_desc (latest: $latest_tag)"
+        echo "  ✓ $path @ $pinned_desc (latest: $latest_tag)" >&2
       elif git merge-base --is-ancestor "$latest_commit" HEAD 2>/dev/null; then
         # HEAD already CONTAINS the latest tag (local patches on top) -> current, not behind.
-        echo "  ✓ $path @ $pinned_desc (contains latest release $latest_tag + local patches)"
+        echo "  ✓ $path @ $pinned_desc (contains latest release $latest_tag + local patches)" >&2
       else
         n="$(git rev-list --count "HEAD..$latest_tag" 2>/dev/null || echo "?")"
-        echo "  ⚠ $path @ $pinned_desc is BEHIND latest release $latest_tag ($n commits)"
-        exit 7
+        echo "  ⚠ $path @ $pinned_desc is BEHIND latest release $latest_tag ($n commits)" >&2
+        echo "$latest_tag"  # stdout: signal 'behind' + the target tag to the parent
       fi
-    )
-    [ "$?" = "7" ] && behind=1
+    )"
+    if [ -n "$latest_tag_out" ]; then
+      behind=1
+      _maybe_prompt_upgrade "$path" "$latest_tag_out"
+    fi
   done < <(grep -E '^\s*path\s*=' .gitmodules | sed -E 's/.*=\s*//')
 else
   say_skip "no .gitmodules"
