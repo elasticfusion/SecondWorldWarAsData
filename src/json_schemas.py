@@ -251,9 +251,7 @@ SUPPLEMENTAL_SCHEMA = {
                     "EventID",
                     "Sub-eventID",
                     "reference_type",
-                    "reference_number",
                     "verbatim_reference",
-                    "citation",
                     "availability",
                 ],
                 "properties": {
@@ -298,7 +296,7 @@ SUPPLEMENTAL_SCHEMA = {
                         ],
                     },
                     "citation": {
-                        "type": "object",
+                        "type": ["object", "null"],
                         "required": ["title"],
                         "properties": {
                             "author": {"type": "array", "items": {"type": "string"}},

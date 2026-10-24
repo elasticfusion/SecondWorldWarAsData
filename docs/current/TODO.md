@@ -482,7 +482,30 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
   precision/recall vs a labelled set; catcher per-book dimension; incremental referential-integrity
   audit (persist PK index + `_source_hash`, re-read only changed records).
 
+- **[HIGH · data loss] supplemental prompt↔schema drift + silent drop** (found by the 2026-10-24
+  RoerDams Phase-1+2 validation run). `extract_supplemental` validates each LLM response against
+  the single-shape `SUPPLEMENTAL_SCHEMA`; on a `ValidationError` it logs ERROR, `break`s, and
+  returns nothing → the sub-event's supplemental/bibliography is SILENTLY DROPPED (no OBSERV
+  count of dropped sub-events — same blind-spot class as the enrichment no-op). Three drifts seen:
+  (1) some responses are keyed-by-Sub-eventID (`{"<ULID>": {...}}`) but the schema is the flat
+  `{Event_Name,EventID,Sub-event_Name,Sub-eventID,Supplemental_Material}` with
+  `additionalProperties:false` → ULID keys rejected as "do not match '^_'"; (2) schema REQUIRES
+  `Supplemental_Material[].reference_number` but the `supplemental.yaml` prompt example never emits
+  it → "reference_number is a required property"; (3) prompt emits `classification` while the schema
+  enum field is `content_class` (reconciled downstream, but still drift). Fix: reconcile prompt↔
+  schema (align required fields + the keyed/flat shape + classification/content_class), and add a
+  `supplemental.dropped` OBSERV counter so a drop is LOUD. Caught live; captured not fixed (run was
+  in flight).
+
 ---
+
+
+- **[LOW · alert noise] `*-meta.yaml` sidecars rejected-to-review on every upload.** The trigger's
+  content-type split treats per-chapter `chapter*-meta.yaml` as "unrecognized type" -> writes a
+  `needs-review/unrecognized-type/<book>.json` marker + sends an alert EMAIL every run (observed on
+  the RoerDams runs). Harmless to extraction (the `.md` content parses; Phase 1 completes), but it
+  spams the operator. Fix: recognize `*-meta.yaml` as a known metadata sidecar in the trigger and
+  skip it QUIETLY (no needs-review marker, no alert).
 
 ## 6. LOWER-PRIORITY / FUTURE
 

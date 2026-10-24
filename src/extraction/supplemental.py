@@ -277,8 +277,35 @@ def _derive_title_from_mentions(mentions: list) -> str:
     return title if title else "Unknown"
 
 
+def _unwrap_keyed_supplemental(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Some LLM responses wrap output as a dict KEYED BY Sub-eventID ({"<ULID>": {...}, ...})
+    instead of the flat single-sub-event shape. Flatten/merge into the flat shape so it validates
+    (previously rejected as "<ULID> do not match '^_'" -> the sub-event's supplemental was dropped).
+    Returns the (possibly rewritten) data unchanged when it is already flat."""
+    if not isinstance(data, dict) or "Supplemental_Material" in data:
+        return data
+    inner = [
+        v for v in data.values() if isinstance(v, dict) and "Supplemental_Material" in v
+    ]
+    if not inner:
+        return data
+    merged: list = []
+    base: Dict[str, Any] = {}
+    for v in inner:
+        merged.extend(v.get("Supplemental_Material") or [])
+        for k in ("Event_Name", "EventID", "Sub-event_Name", "Sub-eventID"):
+            base.setdefault(k, v.get(k))
+    # NOTE: if multiple sub-events are wrapped together, their materials are MERGED and the
+    # event-level ids collapse to the FIRST sub-event's. The caller extracts per sub-event, so a
+    # multi-sub-event wrapper is itself the anomaly; materials are preserved (not lost), provenance
+    # is best-effort. A per-material EventID/Sub-eventID still rides on each material item.
+    return {**base, "Supplemental_Material": merged}
+
+
 def sanitize_supplemental_data(data: Dict[str, Any]) -> Dict[str, Any]:
     """Sanitize supplemental data to ensure schema compliance."""
+    data = _unwrap_keyed_supplemental(data)
+
     # Normalize plural key variant (LLM sometimes returns "Supplemental_Materials")
     if "Supplemental_Materials" in data and "Supplemental_Material" not in data:
         data["Supplemental_Material"] = data.pop("Supplemental_Materials")
@@ -1100,15 +1127,29 @@ def _observe_supplemental_extract(
             if isinstance(r, dict)
         )
         classes = _content_class_histogram(all_supplemental)
+        dropped = max(0, len(prompts) - len(all_supplemental))
         logger.info(
-            "OBSERV supplemental.extract file=%s prompts=%d responses=%d materials=%d "
+            "OBSERV supplemental.extract file=%s prompts=%d responses=%d dropped=%d materials=%d "
             "content_classes=%s",
             event_file.name,
             len(prompts),
             len(all_supplemental),
+            dropped,
             mat_total,
             classes,
         )
+        # A dropped sub-event = _extract_with_retry returned None (validation error / exhausted
+        # retries) and its supplemental/bibliography was silently discarded. Make it LOUD so a
+        # prompt↔schema drift (the 2026-10-24 class) can't hide as a quiet gap between prompts and
+        # responses.
+        if dropped > 0:
+            logger.warning(
+                "OBSERV supplemental.anomaly file=%s: %d/%d sub-event(s) DROPPED "
+                "(validation error / retries exhausted — bibliography data lost; check prompt↔schema)",
+                event_file.name,
+                dropped,
+                len(prompts),
+            )
     except Exception:  # noqa: BLE001 - observability must never break extraction
         pass
 
