@@ -502,14 +502,38 @@ def _parse_geocode_reply(raw: str) -> GeocodeResult:
     return GeocodeResult.model_validate(data)
 
 
-def _apply_result(place: dict, result: GeocodeResult) -> str:
-    """Fold a geocode result into ``place``; return the enrichment_status set.
+def _valid_wgs84(lat, lon) -> bool:
+    """True if (lat, lon) are within WGS84 range. Guards against an LLM returning an
+    impossible coordinate (e.g. lat=999) that must never be persisted as a geocode."""
+    return (
+        lat is not None
+        and lon is not None
+        and -90.0 <= lat <= 90.0
+        and -180.0 <= lon <= 180.0
+    )
 
-    A confident hit writes nested ``coordinates`` (with precision/confidence) and
-    derives bounding box / map URLs via the offline enricher. A not-found or
-    low-confidence result records a status note and leaves the place un-geocoded
-    (never a guessed coordinate).
-    """
+
+def _reject_out_of_range(place: dict, result: GeocodeResult) -> str:
+    """Record a confident-but-impossible coordinate as not-found (never persist garbage)."""
+    logger.warning(
+        "OBSERV geocode.out_of_range place=%s lat=%s lon=%s source=%s — rejected",
+        str(place.get("PlaceID") or place.get("name") or "?")[:40],
+        result.latitude,
+        result.longitude,
+        result.source,
+    )
+    place["enrichment_status"] = _STATUS_NOT_FOUND
+    place["geocode_source"] = result.source
+    place["geo_review"] = (
+        f"rejected out-of-range coordinates ({result.latitude}, {result.longitude})"
+    )
+    return _STATUS_NOT_FOUND
+
+
+def _non_geocoded_status(place: dict, result: GeocodeResult) -> Optional[str]:
+    """Handle the non-happy-path geocode outcomes (transient outage / not-found / low-confidence),
+    folding the status into ``place``. Returns the status set, or None if the result is a confident
+    hit that ``_apply_result`` should persist as coordinates."""
     if getattr(result, "transient", False):
         # Transient API failure — non-terminal so a non-force re-run retries (never permanently
         # mark a real place not_found on a one-off outage).
@@ -531,6 +555,25 @@ def _apply_result(place: dict, result: GeocodeResult) -> str:
         if result.note:
             place["geo_review"] = f"low-confidence geocode: {result.note}"
         return _STATUS_LOW_CONF
+    return None
+
+
+def _apply_result(place: dict, result: GeocodeResult) -> str:
+    """Fold a geocode result into ``place``; return the enrichment_status set.
+
+    A confident hit writes nested ``coordinates`` (with precision/confidence) and
+    derives bounding box / map URLs via the offline enricher. A not-found or
+    low-confidence result records a status note and leaves the place un-geocoded
+    (never a guessed coordinate).
+    """
+    early = _non_geocoded_status(place, result)
+    if early is not None:
+        return early
+
+    # WGS84 range guard: a confident result with impossible coordinates (e.g. an LLM returning
+    # lat=999) must NOT be persisted as a valid geocode. Reject as not-found.
+    if not _valid_wgs84(result.latitude, result.longitude):
+        return _reject_out_of_range(place, result)
 
     place["coordinates"] = {
         "latitude": result.latitude,
@@ -663,12 +706,22 @@ def cascade_geocoder(*geocoders: Any) -> Any:
 
     def geocode(name: str, place: dict, client: Any) -> GeocodeResult:
         best: Optional[GeocodeResult] = None
+        transient_seen: Optional[GeocodeResult] = None
         for geocoder in geocoders:
             result = geocoder(name, place, client)
             if result.found and result.confidence > MIN_GEOCODE_CONFIDENCE:
                 return result
+            if getattr(result, "transient", False) and transient_seen is None:
+                transient_seen = result
             if best is None or result.confidence > best.confidence:
                 best = result
+        # No confident hit. If ANY geocoder failed transiently (outage/timeout/5xx), prefer that
+        # transient result over a genuine miss — otherwise a one-off outage masked by another
+        # geocoder's low-confidence miss would be persisted as a TERMINAL geocode_not_found and
+        # never retried (_already_attempted skips it on a non-force re-run). A transient must stay
+        # retriable.
+        if transient_seen is not None and not (best and best.found):
+            return transient_seen
         return best if best is not None else GeocodeResult(found=False)
 
     return geocode
