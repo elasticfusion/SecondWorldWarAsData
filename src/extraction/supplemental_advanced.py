@@ -406,7 +406,23 @@ def enrich_bibliography(
         if _enrich_bib_file(bib_file, config, grok_client):
             enriched_count += 1
 
-    logger.info("Enriched %d of %d bibliography files", enriched_count, len(bib_files))
+    total = len(bib_files)
+    logger.info("Enriched %d of %d bibliography files", enriched_count, total)
+    # Q2 coverage observability: a machine-parseable rollup + a 0-of-N anomaly (mirrors
+    # enrich.summary / supplemental.anomaly). 0 enriched when records exist usually means the
+    # resolver services (NARA/archive.org/OpenSERP) were unreachable or all records were skipped.
+    logger.info(
+        "OBSERV bibliography.summary total=%d enriched=%d skipped=%d",
+        total,
+        enriched_count,
+        total - enriched_count,
+    )
+    if total > 0 and enriched_count == 0:
+        logger.warning(
+            "OBSERV bibliography.anomaly 0-of-%d enriched "
+            "(resolver services down, or all records already enriched/not-found?)",
+            total,
+        )
     return enriched_count
 
 
