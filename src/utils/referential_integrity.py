@@ -282,6 +282,102 @@ def _resolve_edge(
     }
 
 
+_SUBEVENT_FIELDS = ("Sub_eventID", "Sub-eventID")
+# Registry entities whose records carry event_mentions with a sub-event reference that can go stale
+# when events are re-extracted (LLM segmentation can mint different deterministic Sub-eventIDs).
+_MENTION_REPAIR_ENTITIES = ("places", "people_groups", "dates", "people", "equipment")
+
+
+def repair_dangling_subevents(storage: Any) -> int:
+    """DOWN-BIND repair: for an entity's event_mention whose sub-event reference (Sub_eventID /
+    Sub-eventID) is STALE (not in the current event key-space) BUT whose parent EventID still
+    RESOLVES, blank the stale sub-event id — keeping the valid event-level link instead of leaving a
+    dangling reference. This handles the common re-extraction drift where events were regenerated
+    with different deterministic Sub-eventIDs while the entity still points at the old generation.
+
+    Only repairs when the EventID resolves (a mention with NO resolvable EventID is a real orphan,
+    left for the audit/alert — not silently down-bound). Read-modify-write per changed record via
+    the storage backend (write_json). Fail-safe: never raises; returns the number of mentions
+    repaired."""
+    try:
+        valid = build_pk_sets(storage).get("events", set())
+    except Exception as e:  # noqa: BLE001
+        logger.warning("subevent repair skipped (pk-set build failed): %s", e)
+        return 0
+    if not valid:
+        # No event key-space -> cannot distinguish stale from valid; do NOT blank anything.
+        return 0
+
+    repaired = 0
+    for entity in _MENTION_REPAIR_ENTITIES:
+        try:
+            for rel, data in _iter_records(storage, _DIR.get(entity, entity)):
+                n = _repair_record_subevents(data, valid)
+                if not n:
+                    continue
+                # Count ONLY after a CONFIRMED schema-valid write. The storage write-guard silently
+                # blocks a schema-invalid record (returns without raising), so pre-validate here and
+                # skip (do NOT count) a record the guard would refuse — otherwise the repaired count
+                # would be inflated + non-idempotent (re-claimed every run) when the blanked field
+                # is not schema-legal for that entity.
+                if not _repaired_record_is_writable(rel, data):
+                    logger.warning(
+                        "subevent repair SKIPPED (blanked record would be schema-blocked): %s",
+                        rel,
+                    )
+                    continue
+                try:
+                    storage.write_json(rel, data)
+                    repaired += n
+                except Exception as e:  # noqa: BLE001
+                    logger.warning("subevent repair write failed for %s: %s", rel, e)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("subevent repair skipped for %s: %s", entity, e)
+    if repaired:
+        logger.info(
+            "OBSERV referential.subevent_repair repaired=%d (stale sub-event refs down-bound to "
+            "their resolving parent EventID)",
+            repaired,
+        )
+    return repaired
+
+
+def _repaired_record_is_writable(rel: str, data: Dict[str, Any]) -> bool:
+    """True if the repaired record would pass the central write-guard (so the storage write will
+    actually persist). Fail-safe: on any guard-import/validation error, assume writable (the real
+    write still runs — this pre-check only prevents counting a write the guard would silently drop).
+    """
+    try:
+        from pathlib import Path as _P
+
+        from src.utils.file_lock import _validate_entity
+
+        return _validate_entity(_P(rel), data, record_stats=False)
+    except Exception:  # noqa: BLE001
+        return True
+
+
+def _repair_record_subevents(data: Dict[str, Any], valid: Set[str]) -> int:
+    """Blank stale sub-event refs in one record's event_mentions when the parent EventID resolves.
+    Returns the count blanked. Mutates ``data`` in place."""
+    mentions = data.get("event_mentions")
+    if not isinstance(mentions, list):
+        return 0
+    n = 0
+    for m in mentions:
+        if not isinstance(m, dict):
+            continue
+        event_id = m.get("EventID")
+        if not (isinstance(event_id, str) and event_id in valid):
+            continue  # no resolvable parent -> a real orphan, leave for the audit (don't mask)
+        for fld in _SUBEVENT_FIELDS:
+            sid = m.get(fld)
+            if isinstance(sid, str) and sid and sid not in valid:
+                m[fld] = None  # down-bind to event level (keep the valid EventID)
+                n += 1
+    return n
+
+
 def enforce(
     storage: Any, alert_topic_arn: str = "", region: str = "us-east-1"
 ) -> Dict[str, Any]:
@@ -289,6 +385,15 @@ def enforce(
     any dangling references exist — ALERT the operator (email/Slack via SNS). Returns the report.
     Order-independent + all-objects (the detective/enforcement complement to the write guard).
     Fail-safe: never raises into the pipeline."""
+    # First DOWN-BIND any stale sub-event refs whose parent EventID still resolves (re-extraction
+    # drift), so the audit/alert below reflects the true residual (real orphans only), not
+    # re-extraction noise that we can safely repair.
+    try:
+        repair_dangling_subevents(storage)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - repair is best-effort; never block enforcement
+        logger.warning("subevent down-bind repair skipped: %s", e)
     try:
         report = audit(storage)
     except Exception as e:  # noqa: BLE001
