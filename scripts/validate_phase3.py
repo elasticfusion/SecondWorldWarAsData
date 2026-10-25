@@ -36,14 +36,35 @@ from pathlib import Path
 from typing import Any, Dict
 
 # Reuse the Phase-2 validator wholesale (same repo, same semantics).
+import jsonschema
+
 from scripts.validate_phase2 import (  # type: ignore[import-not-found]
     Report,
     _entity_files,
+    _iter_mentions,
     _load,
+    _resolve_schema,
     check_referential_integrity,
     check_schema_and_version,
     check_source_traceback,
 )
+from src.schemas import ENTITY_SCHEMA_VERSIONS
+from src.schemas import entity_registry as _er
+
+
+# entity name -> (schema dict, target version) for the P3-A5 full-compliance check. Built lazily
+# from the registry so it can never drift from A1/A2.
+def _entity_schema(entity: str):
+    for e in _er.ENTITY_REGISTRY:
+        if e.name == entity:
+            try:
+                return _resolve_schema(e.schema_import), ENTITY_SCHEMA_VERSIONS.get(
+                    entity
+                )
+            except Exception:  # noqa: BLE001
+                return None, ENTITY_SCHEMA_VERSIONS.get(entity)
+    return None, None
+
 
 # --- P3-A5: enriched-record source linkage -----------------------------------------------------
 # Fields that signal an external-source LINK; checked at top level and inside biographical_profile.
@@ -81,30 +102,85 @@ def _has_link(rec: Dict[str, Any]) -> bool:
             if isinstance(src, dict) and src.get("url"):
                 return True
     urls = rec.get("resource_urls")
-    return bool(isinstance(urls, list) and urls)
+    if isinstance(urls, list) and urls:
+        return True
+    # Structured-facts enrichment (e.g. groups via the Grok group_enrichment prompt) records its
+    # provenance under enrichment_data._source = {type, query, retrieved_at} rather than a
+    # descriptive top-level URL. A populated _source IS traceable attribution.
+    ed = rec.get("enrichment_data")
+    if isinstance(ed, dict):
+        src = ed.get("_source")
+        if isinstance(src, dict) and src.get("type"):
+            return True
+    return False
+
+
+def _check_enriched_record_compliance(entity, f, rec, schema, target_ver, rep) -> None:
+    """P3-A5 full compliance for ONE enriched record — the same rigor as A1/A2/A3, asserted at the
+    point of enrichment so an enrichment that corrupted/under-populated the record is caught here:
+      • schema-valid + mandatory fields (jsonschema required + additionalProperties),
+      • version-matched (_schema_version == target),
+      • source-linked (attribution: a resolvable wiki/grok/archive/source URL),
+      • origin-traceable (>=1 event_mention carrying an EventID back to the source event).
+    """
+    # (a) source link — the enrichment must be attributable.
+    if not _has_link(rec):
+        rep.fail(
+            "P3-A5",
+            f"{entity}/{f.name}: enrichment_status=enriched but no source link "
+            f"(top-level/biographical_profile/external_data) — un-attributable enrichment",
+        )
+    # (b) schema + mandatory-field validity of the enriched record.
+    if schema is not None:
+        for err in sorted(
+            jsonschema.Draft7Validator(schema).iter_errors(rec),
+            key=lambda x: list(x.path),
+        )[:3]:
+            loc = "/".join(map(str, err.path)) or "(root)"
+            rep.fail(
+                "P3-A5",
+                f"{entity}/{f.name} @ {loc}: enriched record schema-invalid: {err.message[:110]}",
+            )
+    # (c) schema-version match.
+    sv = str(rec.get("_schema_version", "")).strip()
+    if target_ver and sv != target_ver:
+        rep.fail(
+            "P3-A5",
+            f"{entity}/{f.name}: enriched record _schema_version={sv!r} != target {target_ver!r}",
+        )
+    # (d) traceability back to the original source event(s): >=1 event_mention with an EventID.
+    mentions = _iter_mentions(rec)
+    if not mentions:
+        rep.fail(
+            "P3-A5",
+            f"{entity}/{f.name}: enriched but no event_mentions — enrichment not traceable to source",
+        )
+    elif not any(
+        isinstance(m, dict) and str(m.get("EventID", "")).strip() for m in mentions
+    ):
+        rep.fail(
+            "P3-A5",
+            f"{entity}/{f.name}: enriched but no event_mention carries an EventID (untraceable)",
+        )
 
 
 def check_enriched_source_linkage(root: Path, rep: Report) -> None:
-    """P3-A5: a record stamped enrichment_status=='enriched' must carry a resolvable source link.
-
-    A record enriched from Wikipedia/Grokipedia/NARA/archive.org but with no stored link is
-    un-attributable (we cannot show the user WHERE the fact came from) — a hard failure. Scoped to
-    the descriptive-enrichment entities in ``_ENRICHED_ENTITIES`` (places/bibliography/weather are
-    intentionally not gated here — see that map's comment).
+    """P3-A5: every record stamped enrichment_status=='enriched' (people/people_groups/equipment)
+    must be fully compliant — schema-valid + mandatory-complete + version-matched + source-linked +
+    traceable to its origin event(s). This gives enriched records the SAME rigor A1/A2/A3 apply to
+    the corpus, asserted specifically where enrichment mutated the record. (places/bibliography/
+    weather are not gated here — see _ENRICHED_ENTITIES — but are still covered by A1/A2/A3 +
+    the A3/B1 referential audit, which resolves EventID AND Sub_eventID edges to the events.)
     """
     for entity, glob in _ENRICHED_ENTITIES.items():
+        schema, target_ver = _entity_schema(entity)
         for f in _entity_files(root, glob):
             rec = _load(f)
             if not isinstance(rec, dict):
                 continue
             if str(rec.get("enrichment_status", "")).strip() != "enriched":
                 continue
-            if not _has_link(rec):
-                rep.fail(
-                    "P3-A5",
-                    f"{entity}/{f.name}: enrichment_status=enriched but no source link "
-                    f"(top-level/biographical_profile/external_data) — un-attributable enrichment",
-                )
+            _check_enriched_record_compliance(entity, f, rec, schema, target_ver, rep)
 
 
 # --- P3-B4: coverage floors (WARN unless --strict-coverage) ------------------------------------
