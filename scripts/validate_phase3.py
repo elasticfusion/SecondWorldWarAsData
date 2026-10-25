@@ -207,20 +207,33 @@ def check_coverage_floors(root: Path, rep: Report, strict: bool) -> None:
             f"{total_places} places but 0 have coordinates after Phase 3 "
             "(geocoder cascade down / step skipped?)",
         )
-    for entity, glob, marker in (
-        ("bibliography", "output/bibliography/*.json", "isbn"),
-        ("weather", "output/weather/*.json", "noaa_observed"),
+
+    # Per-entity "was this record enriched/resolved?" predicate. NOTE: bibliography's resolution
+    # signal is search_status=='resolved' (or resource_urls populated) — NOT a top-level 'isbn'
+    # (isbn lives nested under citation, so a top-level r.get('isbn') is ALWAYS falsy and would
+    # raise a permanent false coverage warning / hard-fail under --strict-coverage).
+    def _bib_resolved(r: Dict[str, Any]) -> bool:
+        return r.get("search_status") == "resolved" or bool(r.get("resource_urls"))
+
+    for entity, glob, label, predicate in (
+        ("bibliography", "output/bibliography/*.json", "resolved", _bib_resolved),
+        (
+            "weather",
+            "output/weather/*.json",
+            "noaa_observed",
+            lambda r: bool(r.get("noaa_observed")),
+        ),
     ):
         files = _entity_files(root, glob)
         if not files:
             continue
         enriched = sum(
-            1 for f in files if isinstance((r := _load(f)), dict) and r.get(marker)
+            1 for f in files if isinstance((r := _load(f)), dict) and predicate(r)
         )
         if enriched == 0:
             emit(
                 "P3-B4",
-                f"{len(files)} {entity} records but 0 carry '{marker}' "
+                f"{len(files)} {entity} records but 0 are {label} "
                 "(enrichment source down / not run?)",
             )
 
