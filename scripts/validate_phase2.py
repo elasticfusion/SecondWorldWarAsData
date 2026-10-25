@@ -43,6 +43,10 @@ _SKIP_NAMES = {
     "related_groups_report.json",
     "surname_frequency_suggestions.json",
     "not_people.json",
+    # Non-entity sidecar files that live in entity dirs (lists/reports, not schema records):
+    "review_queue.json",
+    "not_related.json",
+    "not_citation.json",
 }
 
 
@@ -111,6 +115,13 @@ def _check_one_record(entity, f, validator, target_ver, rep) -> None:
     if rec is None:
         rep.fail("A2", f"{entity}/{f.name}: unreadable JSON")
         return
+    if not isinstance(rec, dict):
+        # A non-dict (e.g. a list-shaped sidecar that slipped past _SKIP_NAMES) is not a schema
+        # record — fail cleanly rather than crashing the whole check on .get()/iter_errors.
+        rep.fail(
+            "A2", f"{entity}/{f.name}: not a JSON object (got {type(rec).__name__})"
+        )
+        return
     sv = str(rec.get("_schema_version", "")).strip()
     if target_ver and not sv:
         rep.fail(
@@ -145,8 +156,15 @@ def check_source_traceback(root: Path, rep: Report) -> None:
             continue
         for f in _entity_files(root, e.output_glob):
             rec = _load(f)
-            if rec is not None:
-                _check_record_mentions(e.name, f, rec, rep)
+            if rec is None:
+                continue
+            if not isinstance(rec, dict):
+                rep.fail(
+                    "A3",
+                    f"{e.name}/{f.name}: not a JSON object (got {type(rec).__name__})",
+                )
+                continue
+            _check_record_mentions(e.name, f, rec, rep)
 
 
 def _check_record_mentions(entity, f, rec, rep: Report) -> None:
@@ -232,7 +250,7 @@ def check_people_enrichment(root: Path, rep: Report, strict: bool) -> None:
     total = enriched = 0
     for f in people:
         rec = _load(f)
-        if rec is None:
+        if not isinstance(rec, dict):
             continue
         total += 1
         if _check_one_person_enrichment(f, rec, rep):
