@@ -630,6 +630,17 @@ def main():
     except Exception as _e:  # enforcement must never crash a phase
         logger.warning("referential-integrity enforcement skipped: %s", _e)
 
+    # Post-Phase-3 data validation (docs/current/PHASE3_DATA_VALIDATION.md). Runs on the fully
+    # enriched tree; asserts enriched records are still schema/version-clean, source-linked, and
+    # 0-dangling. Fail-safe: validation must never crash the phase (the exit code is logged).
+    try:
+        from scripts.validate_phase3 import run as _validate_phase3
+
+        rc = _validate_phase3(str(args.output_dir), strict_coverage=False)
+        logger.info("Post-Phase-3 validation exit=%d (0=pass, 1=fail)", rc)
+    except Exception as _e:  # noqa: BLE001 - validation must not crash the phase
+        logger.warning("Post-Phase-3 validation skipped: %s", _e)
+
     return 0
 
 
