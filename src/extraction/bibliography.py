@@ -867,15 +867,35 @@ def _reconcile_bib_group(
 ) -> int:
     """Merge one citation group's records into the canonical file, delete the non-canonical ones,
     and index the result. Returns the count merged away. Fail-safe (never raises)."""
-    from src.utils.file_lock import write_json_with_lock
-
     files = [f for f, _ in items]
     records = [d for _, d in items]
     merged = _merge_bib_records(records) if len(records) > 1 else records[0]
     canon_path = bib_dir / canon_name
+    merged_away = _persist_merged_bib(canon_path, canon_name, merged, files)
+    if merged_away < 0:
+        return 0  # canonical write blocked/failed — shards kept (no data loss)
+    title = merged.get("title", "") or merged.get("verbatim_reference", "") or ""
+    _index_entry(new_index, _match_keys(merged, title), canon_name)
+    return merged_away
+
+
+def _persist_merged_bib(canon_path, canon_name, merged, files) -> int:
+    """Write the canonical record, then (only on a CONFIRMED write) unlink the non-canonical source
+    shards. Returns the count merged away, or -1 if the write was blocked/failed (caller keeps the
+    shards — never unlink on an unconfirmed canonical write = no silent data loss). Fail-safe.
+    """
+    from src.utils.file_lock import write_json_with_lock
+
     merged_away = 0
     try:
-        write_json_with_lock(canon_path, merged, entity="bibliography")
+        if not write_json_with_lock(canon_path, merged, entity="bibliography"):
+            logger.error(
+                "OBSERV bib.reconcile_blocked canon=%s shards=%d — canonical write refused by "
+                "schema guard; keeping all source shards (merge aborted, no data deleted)",
+                canon_name,
+                len(files),
+            )
+            return -1
         for f in files:
             if f.name != canon_name:
                 try:
@@ -885,7 +905,5 @@ def _reconcile_bib_group(
                     pass
     except Exception as e:  # noqa: BLE001 - reconcile must never break the run
         logger.warning("reconcile bibliography %s failed: %s", canon_name, e)
-        return 0
-    title = merged.get("title", "") or merged.get("verbatim_reference", "") or ""
-    _index_entry(new_index, _match_keys(merged, title), canon_name)
+        return -1
     return merged_away
