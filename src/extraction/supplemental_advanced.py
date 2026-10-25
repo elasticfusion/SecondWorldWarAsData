@@ -337,10 +337,34 @@ def _enrich_archive_url(material: dict, config: dict) -> bool:
 
 
 def _save_enriched_data(
-    supplemental_file: Path, data: Any, enriched_count: int
+    supplemental_file: Path,
+    data: Any,
+    enriched_count: int,
+    entity: Optional[str] = None,
 ) -> bool:
-    """Save enriched data to file. Returns True if successful."""
+    """Save enriched data to file. Returns True if successful.
+
+    When ``entity`` is given (e.g. "bibliography"), the write goes through the central write-guard
+    (schema + mandatory-field validation + validation_stats alert on a block) instead of a raw
+    write. Left as a raw write when ``entity`` is None (the supplemental-container file, which is
+    not a single schema-governed output entity)."""
     if enriched_count == 0:
+        return True
+
+    if entity:
+        # NOTE: the guard validates against the schema resolved from the FILE PATH
+        # (parent-dir name), not this entity arg — entity only version-stamps metadata.
+        # Pass an entity whose name matches the output dir (bibliography -> output/bibliography/).
+        from src.utils.file_lock import write_json_with_lock
+
+        if not write_json_with_lock(supplemental_file, data, entity=entity):
+            logger.warning(
+                "%s enrichment write BLOCKED by schema guard: %s",
+                entity,
+                supplemental_file.name,
+            )
+            return False
+        logger.info("Enriched %d materials with advanced features", enriched_count)
         return True
 
     try:
@@ -487,7 +511,7 @@ def _enrich_bib_file(bib_file: Path, config: Dict[str, Any], grok_client: Any) -
     )
 
     if changed:
-        _save_enriched_data(bib_file, data, 1)
+        _save_enriched_data(bib_file, data, 1, entity="bibliography")
     return changed
 
 
