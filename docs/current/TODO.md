@@ -973,3 +973,15 @@ bandit baseline 0H/0M/23L unaffected — all logic/design. Ranked:
   (+ latent wrong-kwarg); dead Dynamo dual-write in file_lock; duplicated max_tokens / ignored timeout params.
 
 
+
+## [LOW·data-hygiene] people index/duplicate_report count drift (observed 2026-10-24, overlapping-rerun artifact)
+On the clean RoerDams rerun, output/people/ had **6 real person files** (Hodges, Brooks, Gerow,
+Keppler, Cota, Wegelein — all distinct individuals), but `duplicate_report.json.total_people=7` and
+`index.json` listed **8** entries. The dedup DECISION (0 duplicate_groups) is CORRECT — no two files
+share an identity; cross-chapter recurrences were already merged at write time by
+`_find_or_create`/`_merge_person`. The 6/7/8 drift is stale index/report entries left by the two
+OVERLAPPING reruns (a record written by run-1 was merged/removed by run-2's write-time merge but its
+index entry wasn't pruned). NOT a dedup bug. Follow-up: (a) confirm on a SINGLE clean run the counts
+reconcile (6/6/6); (b) if index can outlive its file generally, add an index-prune or a
+validate_phaseN check that `index entries == existing files` (B-level warn). Low priority — cosmetic
+count only; no data loss, no false merge.
