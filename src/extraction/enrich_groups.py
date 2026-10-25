@@ -411,4 +411,21 @@ def enrich_all_groups(
         enriched = _collect_group_enrichments(futures, total)
 
     logger.info("Group enrichment complete: %d/%d enriched", enriched, len(group_files))
+    # Canonical coverage rollup + anomaly. Gate the anomaly on how many files actually NEEDED
+    # enrichment (not already-enriched / fresh-not_found) so a benign re-run of an already-enriched
+    # corpus — where every enrich_group returns False legitimately — does NOT raise a false anomaly.
+    needed = sum(1 for gf in group_files if _load_enrichable_group(gf) is not None)
+    logger.info(
+        "OBSERV groups.summary total=%d needed=%d enriched=%d skipped=%d",
+        total,
+        needed,
+        enriched,
+        total - enriched,
+    )
+    if needed > 0 and enriched == 0:
+        logger.warning(
+            "OBSERV groups.anomaly 0-of-%d enrichable groups enriched "
+            "(Grok/Wikipedia enrichment failed/unreachable?)",
+            needed,
+        )
     return enriched
