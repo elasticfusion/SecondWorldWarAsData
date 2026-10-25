@@ -383,7 +383,11 @@ def _process_search_result(
     json_path = output_dir / f"{map_id}.json"
     from src.utils.file_lock import write_json_with_lock
 
-    write_json_with_lock(json_path, map_json)
+    if not write_json_with_lock(json_path, map_json, entity="maps"):
+        logger.warning(
+            "OBSERV external_maps.write_blocked map=%s — schema guard refused", map_id
+        )
+        return False
 
     logger.info(f"   ✅ Imported: {map_id}")
     return True

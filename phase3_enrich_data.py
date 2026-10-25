@@ -310,6 +310,70 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
     return enriched
 
 
+def _run_batch_rerun(args, config, grok_client) -> int:
+    """Re-run the batch-cached enrichers after a batch submission completes. Each enricher is
+    wrapped per-source fail-safe (mirroring main()'s _run_step) so one raising enricher can neither
+    abort the re-run nor the phase teardown. People enrichment moved to Phase 2 (not re-run here).
+    Returns the count enriched in this re-run pass."""
+    if args.people_only:
+        return 0
+
+    def _step(name: str, fn) -> int:
+        try:
+            n = fn()
+            logger.info(
+                "OBSERV phase3.batch_step name=%s enriched=%d status=ok", name, n
+            )
+            return n
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - a failing batch step must not abort the re-run
+            logger.error(
+                "OBSERV phase3.batch_step name=%s enriched=0 status=error error=%s",
+                name,
+                str(e)[:120],
+            )
+            return 0
+
+    groups_dir = args.output_dir / "people_groups"
+    places_dir = args.output_dir / "places"
+    bib_dir = args.output_dir / "bibliography"
+    supplemental_config = config.get("supplemental_material", {})
+    total = 0
+    total += _step(
+        "people_groups",
+        lambda: enrich_groups_data(groups_dir, grok_client, max_items=args.max_items),
+    )
+    total += _step(
+        "places",
+        lambda: enrich_all_places(places_dir, grok_client, max_places=args.max_items),
+    )
+    _step("link_parent_place_ids", lambda: link_parent_place_ids(places_dir) or 0)
+    total += _step(
+        "bibliography",
+        lambda: enrich_bibliography(bib_dir, supplemental_config, grok_client),
+    )
+
+    from src.enrichment.bibliography_resolver import resolve_bibliography_dir
+
+    resolve_config = {
+        "nara_api_key": config.get("api", {}).get("nara_api_key"),
+        "search_gutenberg": supplemental_config.get("search_gutenberg", True),
+        "search_archive_org": supplemental_config.get("search_archive_org", True),
+        "use_openserp": supplemental_config.get("use_openserp", False),
+        "openserp_url": config.get("external_maps", {}).get(
+            "openserp_url", "http://localhost:7001"
+        ),
+    }
+    total += _step(
+        "bibliography_resolve",
+        lambda: resolve_bibliography_dir(
+            bib_dir, grok_client, resolve_config, max_items=args.max_items
+        ).get("resolved", 0),
+    )
+    return total
+
+
 def main():
     """Main entry point."""
     args = _parse_phase3_args()
@@ -524,51 +588,23 @@ def main():
         if batch_id:
             logger.info("Batch complete! Re-running enrichment with cached results...")
             grok_client.batch_mode = False
-            total_enriched = 0
-
-            # People enrichment MOVED TO PHASE 2 (not re-run here).
-
-            if not args.people_only:
-                groups_dir = args.output_dir / "people_groups"
-                places_dir = args.output_dir / "places"
-                bib_dir = args.output_dir / "bibliography"
-                supplemental_config = config.get("supplemental_material", {})
-                total_enriched += enrich_groups_data(
-                    groups_dir, grok_client, max_items=args.max_items
+            # Accumulate the re-run into a SEPARATE counter (do NOT reset total_enriched — that
+            # discarded the first-pass tally and misreported completion). Wrap the whole re-run in
+            # a fail-safe so a raised enricher can never skip close_session / results-write /
+            # validation / referential-integrity below (the H3 fail-safety gap).
+            batch_enriched = 0
+            try:
+                batch_enriched = _run_batch_rerun(args, config, grok_client)
+            except (
+                Exception
+            ) as e:  # noqa: BLE001 - batch re-run must never abort the phase teardown
+                logger.error(
+                    "Batch re-run FAILED (continuing to teardown): %s", e, exc_info=True
                 )
-                total_enriched += enrich_all_places(
-                    places_dir, grok_client, max_places=args.max_items
-                )
-                link_parent_place_ids(places_dir)
-                total_enriched += enrich_bibliography(
-                    bib_dir, supplemental_config, grok_client
-                )
-
-                # Resolve bibliography sources (NARA, Archive.org, LOC)
-                from src.enrichment.bibliography_resolver import (
-                    resolve_bibliography_dir,
-                )
-
-                resolve_config = {
-                    "nara_api_key": config.get("api", {}).get("nara_api_key"),
-                    "search_gutenberg": supplemental_config.get(
-                        "search_gutenberg", True
-                    ),
-                    "search_archive_org": supplemental_config.get(
-                        "search_archive_org", True
-                    ),
-                    "use_openserp": supplemental_config.get("use_openserp", False),
-                    "openserp_url": config.get("external_maps", {}).get(
-                        "openserp_url", "http://localhost:7001"
-                    ),
-                }
-                resolve_stats = resolve_bibliography_dir(
-                    bib_dir, grok_client, resolve_config, max_items=args.max_items
-                )
-                total_enriched += resolve_stats["resolved"]
-
+            total_enriched += batch_enriched
             logger.info(
-                "[phase3] Batch re-run complete: %d total items enriched",
+                "[phase3] Batch re-run complete: %d items enriched (phase total %d)",
+                batch_enriched,
                 total_enriched,
             )
 

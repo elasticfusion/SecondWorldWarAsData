@@ -568,7 +568,17 @@ def _process_search_result(
     output_file = output_dir / f"{map_record['MapID']}.json"
     from src.utils.file_lock import write_json_with_lock
 
-    write_json_with_lock(output_file, map_record)
+    # external_maps records ARE maps records (MapID + MAPS_OUTPUT_SCHEMA). The guard resolves the
+    # entity from the PATH and now ALIASES output/external_maps/ -> the 'maps' schema (see
+    # _resolve_entity_type), so this write is schema-validated + counted by validation_stats under
+    # 'maps'; entity="maps" additionally stamps the correct version. Honor the return: a blocked
+    # write must not silently persist-nothing-while-reporting-success.
+    if not write_json_with_lock(output_file, map_record, entity="maps"):
+        logger.warning(
+            "OBSERV external_maps.write_blocked map=%s — schema guard refused",
+            map_record.get("MapID"),
+        )
+        return False, 0
 
     logger.info(f"   ✅ Imported: {title[:60]}")
     downloaded_urls.add(url)

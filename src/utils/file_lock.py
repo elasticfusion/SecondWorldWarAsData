@@ -388,7 +388,14 @@ def _resolve_entity_type(filepath: Path) -> str:
     '-event.json' filename suffix rather than the parent dir."""
     if filepath.name.endswith("-event.json"):
         return "events"
-    return filepath.parent.name
+    parent = filepath.parent.name
+    # output/external_maps/ records ARE maps records (MapID + MAPS_OUTPUT_SCHEMA) written by the
+    # Phase-3 live-web map import; alias to the registered 'maps' entity so they are schema-
+    # validated + version-stamped + counted by validation_stats instead of silently bypassing the
+    # guard (an unregistered dir name resolves to no schema -> fail-safe allow = unvalidated write).
+    if parent == "external_maps":
+        return "maps"
+    return parent
 
 
 def _schema_for_entity(entity_type: str, filepath: Path, data: Dict[str, Any]):
