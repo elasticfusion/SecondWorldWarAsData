@@ -143,7 +143,10 @@ def _apply_local_holding(entry: Dict[str, Any], holdings: Any) -> bool:
     if not hit:
         return False
     local_path, kind = hit
-    entry["local_source_path"] = local_path
+    # Use the schema-allowed field name (download_path). The prior name "local_source_path" is NOT
+    # in BIBLIOGRAPHY_OUTPUT_SCHEMA (additionalProperties:false), so it was blocked at write time —
+    # silently losing the resolution for every locally-held archival record.
+    entry["download_path"] = local_path
     if kind == "processed":
         entry["search_status"] = "resolved"
         entry["search_source"] = "local_holding"

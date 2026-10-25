@@ -127,3 +127,23 @@ Traced every people_groups/places record-CREATION site (not update):
   wiki/grok enrichment, like people are enriched in place). After that, no record misses Phase-2
   enrichment and the Phase-3 steps are safely removable (stronger than the "targeted backstop"
   above, which is the fallback if provisional-mint enrichment proves impractical).
+
+## Q2 OBSERVABILITY AUDIT (live run 027c, 2026-10-25) — coverage is INCONSISTENT
+Per-step audit of whether each Phase-3 step emits a CANONICAL `OBSERV <name>.summary` + `.anomaly`
+on the REALLY-executed code path:
+- 1/6 groups (enrich_all_groups): GAP — only per-record `enrich.persisted`/`groups.enrich_skip`; NO coverage summary, NO anomaly.
+- 2/6 places (enrich_all_places): GAP (worst) — NO OBSERV coverage line at all.
+- 3/6 geocode (phase3 inline, #560): OK — geocode.summary + anomaly.
+- 4/6a bibliography-enrich (supplemental_advanced.enrich_bibliography, #560): OK — bibliography.summary + anomaly. (ISBN/copyright/alt_title sub-step.)
+- 4/6b bibliography-resolve (bibliography_resolver.resolve_bibliography_dir): PARTIAL — rich `bib.resolve` line but NON-CANONICAL name + NO `.anomaly`. The systemic local_source_path block (14/17) produced only per-record ERRORs, NO anomaly rollup.
+- 5/6 openserp (write_metrics): PARTIAL — rich `OpenSERP metrics` line but NOT `OBSERV *.summary`, NO `.anomaly` (breaker_opened counted but no anomaly emitted even when the breaker OPENS).
+- 6/6 weather (noaa, #560): OK — weather.summary + anomaly.
+- wrapper `_run_step`: OK — `OBSERV phase3.step name=... enriched=... status=ok|error` per step + status=error path.
+CONCLUSION (confirms owner's 'hit or miss'): #560 standardized the 3 steps it touched; groups+places
+have no rollup; resolve+openserp are non-canonical and anomaly-less. FIX PLAN: (a) add
+`OBSERV groups.summary`/`places.summary` + anomaly (mirror enrich.summary); (b) add a canonical
+`OBSERV bibliography.resolve_summary` alias + a `.anomaly` on high block/not-found rate; (c) rename
+openserp `OpenSERP metrics` to also emit `OBSERV openserp.summary` + `.anomaly` on breaker-open /
+0-of-N; (d) CROSS-CUTTING: emit an anomaly when the write-guard BLOCKS at scale (the 14 blocked
+bibliography writes should raise one loud `OBSERV <entity>.write_blocked count=N` anomaly, not just
+N silent per-record ERRORs) — this is the single highest-value observability fix.

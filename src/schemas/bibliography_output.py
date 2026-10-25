@@ -109,7 +109,17 @@ BIBLIOGRAPHY_OUTPUT_SCHEMA = {
             },
         },
         "search_status": enum_field(
-            ["resolved", "not_found", "pending", "unresolved"], nullable=True
+            [
+                "resolved",
+                "not_found",
+                "pending",
+                "unresolved",
+                # Statuses the resolver legitimately produces (were missing -> blocked at write):
+                "held_unprocessed",  # raw source on hand, not yet ingested
+                "not_citation",  # the "citation" was prose, not a real source reference
+                "reference_identified",  # archival ref resolved (e.g. NARA RG) but no online URL yet
+            ],
+            nullable=True,
         ),
         "search_source": make_nullable("string"),
         "download_status": enum_field(

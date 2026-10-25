@@ -985,3 +985,56 @@ index entry wasn't pruned). NOT a dedup bug. Follow-up: (a) confirm on a SINGLE 
 reconcile (6/6/6); (b) if index can outlive its file generally, add an index-prune or a
 validate_phaseN check that `index entries == existing files` (B-level warn). Low priority — cosmetic
 count only; no data loss, no false merge.
+
+## [HIGH·data-loss] bibliography enrichment writes a schema-rejected top-level key (live 2026-10-25)
+During the RoerDams Phase-3 run, the #559 write-guard correctly BLOCKED a bibliography write:
+`BLOCKED schema-invalid bibliography write (bib_01deabb179f1a2fd.json): additionalProperties at <root>`.
+The guard is working as intended (pre-#559 this would have been a silent raw-write of an invalid
+record); but a block means that record LOSES its enrichment. BIBLIOGRAPHY_OUTPUT_SCHEMA has
+additionalProperties:false at root; the in-memory enriched dict carries an extra top-level key the
+schema doesn't allow (the PERSISTED S3 copy is clean because the block prevented the bad write, so
+the offending key is added+removed or added-then-blocked mid-enrichment). Allowed set includes
+BibliographyID/alt_title/archive_*/availability/citation/copyright_status/license*/mentions/
+resource_urls/title/download_*/quality_flags/search_*/source_qualification. Fix: find the enrich_*
+helper (or bibliography_resolver apply) that stamps a non-allowed top-level key and either add it to
+the schema (version bump + re-pin fingerprint) or write it to the correct nested location. Reproduce
+by running enrich_bibliography on bib_01deabb179f1a2fd locally and diffing keys vs the schema.
+
+### ROOT CAUSE (narrowed, same run): local_source_path not in schema
+Both blocked bib records (bib_01deabb179f1a2fd, bib_165468029a181376) hit the LOCAL-HOLDING
+archival resolver path, which sets `entry["local_source_path"]` (bibliography_resolver.py
+_short_circuit_local_holding). BIBLIOGRAPHY_OUTPUT_SCHEMA (additionalProperties:false) allows
+`download_path` but NOT `local_source_path` -> every locally-held archival bib record is blocked and
+loses enrichment. 2 of 17 records in RoerDams. FIX (pick one): (a) rename entry["local_source_path"]
+-> entry["download_path"] (likely the intended field; check consumers of local_source_path first), or
+(b) add local_source_path to the schema (additive -> version bump + re-pin fingerprint). Prefer (a) if
+download_path is semantically the same (a local file path to the resolved holding). Verify no reader
+depends on the local_source_path name before renaming.
+
+## [MED·referential-integrity] dangling entity->Sub-eventID refs (live run 027c, 2026-10-25)
+DATA-QUALITY alert: 14 dangling event_mentions[].Sub_eventID -> events (places 8, people_groups 4,
+dates 2). INVESTIGATED (evidence, not assumption):
+- The referenced EventIDs DO exist in the surviving events (parent resolves); only the Sub-eventIDs
+  dangle. Surviving events have 12 Sub-eventIDs across 3 events; entities reference other IDs.
+- Sub-eventIDs are DETERMINISTIC content-derived ULIDs: _sub_event_id(EventID, para_start, para_end,
+  name) (events.py:260). Same source + same segmentation => same ID.
+- Event files written 19:50 (earlier run); entity files written 21:38-22:50 (this run). The two
+  OVERLAPPING RoerDams reruns segmented events slightly differently (LLM variance in sub-event
+  paragraph boundaries / names => different deterministic Sub-eventIDs), so run-A entities reference
+  run-A sub-events while run-B events survived -> cross-generation mismatch.
+VERDICT: PRIMARY cause = overlapping-reruns artifact (a single clean run would not exhibit this).
+But it EXPOSES a genuine latent fragility worth fixing: because event segmentation is LLM-driven
+(non-deterministic across extractions), ANY re-extraction can orphan entity->Sub-eventID refs, and
+nothing repoints or down-binds them. FIX OPTIONS: (a) referential-integrity enforcement should, on a
+dangling Sub_eventID whose EventID still resolves, DOWN-BIND the mention to event-level (drop/blank
+Sub_eventID, keep EventID) rather than leave it dangling; (b) OR a reconcile step that re-resolves
+entity Sub-eventIDs against the current events by (para-range,name) match; (c) at minimum, the
+validation should DISTINGUISH 'EventID missing' (real orphan) from 'EventID ok, Sub_eventID stale'
+(re-extraction drift) so the alert severity is right. Confirm on a SINGLE clean run that danglers=0.
+
+## places geo_missing_coords / below_floor (same alert) — likely MID-RUN, confirm after
+The alert's places geo_missing_coords 13/38 + below_floor 12/38 fired from POST-PHASE-2 validation
+while Phase 3 (geocoding step 3/6) was still running / had not populated coords for all places. Must
+re-read validation_stats.json AFTER Phase 3 completes to see the TRUE residual (my #560 geocode.summary
++ the P3-B4 floor check are the right post-Phase-3 signal). If coords are still missing for >0 places
+after a full clean Phase 3, THEN it's a geocoder-coverage issue to chase; otherwise it's mid-run noise.

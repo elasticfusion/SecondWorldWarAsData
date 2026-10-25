@@ -111,4 +111,4 @@ class TestResolveDir:
             brm._pick_resolver = original
         assert entry["search_status"] == "resolved"
         assert entry["search_source"] == "local_holding"
-        assert entry["local_source_path"].endswith("B405.pdf")
+        assert entry["download_path"].endswith("B405.pdf")
