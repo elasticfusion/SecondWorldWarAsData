@@ -267,11 +267,13 @@ def enrich_weather_with_noaa(weather_dir: Path, token: str, max_items: int = 0) 
         return 0
 
     enriched = 0
+    scanned = 0
     for f in sorted(weather_dir.glob("*.json")):
         if f.name == "index.json":
             continue
         if max_items and enriched >= max_items:
             break
+        scanned += 1
         if _enrich_weather_file(f, token):
             enriched += 1
 
@@ -280,6 +282,23 @@ def enrich_weather_with_noaa(weather_dir: Path, token: str, max_items: int = 0) 
         enriched,
         _request_count,
     )
+    # Q2 coverage observability: machine-parseable rollup + anomaly. Weather is heavily gated
+    # (skips already-noaa / zero-coords / pre-1940), so enriched < scanned is NORMAL; the anomaly
+    # fires only when files were scanned but zero enriched AND the API was exercised (a sign the
+    # NOAA endpoint/station lookup is failing rather than every file being legitimately skipped).
+    logger.info(
+        "OBSERV weather.summary scanned=%d enriched=%d api_calls=%d",
+        scanned,
+        enriched,
+        _request_count,
+    )
+    if scanned > 0 and enriched == 0 and _request_count > 0:
+        logger.warning(
+            "OBSERV weather.anomaly 0-of-%d enriched despite %d NOAA API calls "
+            "(station lookup / observation fetch failing?)",
+            scanned,
+            _request_count,
+        )
     return enriched
 
 

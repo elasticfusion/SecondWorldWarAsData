@@ -189,6 +189,29 @@ def _enrich_places_and_geocode(
             geo_report.low_confidence,
             geo_report.errors,
         )
+        # Q2 coverage observability: canonical machine-parseable rollup + anomalies (geocoder
+        # service down = 0-of-N; a high error rate signals a degraded cascade).
+        logger.info(
+            "OBSERV geocode.summary attempted=%d geocoded=%d not_found=%d low_conf=%d errors=%d",
+            geo_report.attempted,
+            geo_report.geocoded,
+            geo_report.not_found,
+            geo_report.low_confidence,
+            geo_report.errors,
+        )
+        if geo_report.attempted > 0 and geo_report.geocoded == 0:
+            logger.warning(
+                "OBSERV geocode.anomaly 0-of-%d geocoded (geocoder cascade unreachable?)",
+                geo_report.attempted,
+            )
+        elif geo_report.errors and geo_report.errors >= max(
+            1, geo_report.attempted // 2
+        ):
+            logger.warning(
+                "OBSERV geocode.anomaly high-error-rate errors=%d of attempted=%d",
+                geo_report.errors,
+                geo_report.attempted,
+            )
         source_stats["geocode"] = {
             "enriched": geo_report.geocoded,
             "status": "error" if geo_report.errors else "ok",
