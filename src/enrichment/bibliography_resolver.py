@@ -2000,7 +2000,17 @@ def _process_bib_file(
         _relocate_narrative_note(f, data)
         return (status, cached is not None, sample)
 
-    write_json_with_lock(f, data, entity="bibliography")
+    written = write_json_with_lock(f, data, entity="bibliography")
+    if not written:
+        # The schema guard BLOCKED the write (schema-invalid record). The resolution did NOT persist,
+        # so it must NOT be reported as resolved — that is silent data loss masked as success (the
+        # exact failure mode that hid the availability/source_metadata schema drift). Raise so the
+        # caller's existing error channel (_resolve_one_bib_file: except -> stats["errors"] += 1)
+        # counts it as an error and does NOT re-queue it (a schema block is a code defect, not a
+        # human-review item).
+        raise RuntimeError(
+            f"schema guard refused bibliography write for {f.name} (status={status})"
+        )
     # OBSERV (bibliography chain): attribute each resolution to its source so the
     # NARA vs archive_org vs local-holding breakdown (and NARA success rate) is visible.
     if status == "resolved":

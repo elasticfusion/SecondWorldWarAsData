@@ -1038,3 +1038,13 @@ while Phase 3 (geocoding step 3/6) was still running / had not populated coords 
 re-read validation_stats.json AFTER Phase 3 completes to see the TRUE residual (my #560 geocode.summary
 + the P3-B4 floor check are the right post-Phase-3 signal). If coords are still missing for >0 places
 after a full clean Phase 3, THEN it's a geocoder-coverage issue to chase; otherwise it's mid-run noise.
+
+## [HIGH·data-loss] bibliography.py merge ignores write-guard return THEN unlinks shards (review-found)
+Found by the Phase-3 security review while fixing the resolver B3 (same class, DIFFERENT module —
+Phase-2 extraction reconcile, not the Phase-3 resolver, so out of scope of PR #566): 
+src/extraction/bibliography.py:877-883 does `write_json_with_lock(canon_path, merged, entity="bibliography")`
+IGNORING the bool return, then a loop `f.unlink()` deletes ALL source shard files. If the guard
+BLOCKS the canonical write (returns False, no exception), the canonical file is never written AND every
+shard is unlinked => total silent loss of that citation. Also :708 and :713 ignore the return (lower
+risk, no delete-after). FIX: capture the return; on False, do NOT unlink the shards (abort the merge,
+keep the sources) + surface an error. Mirror the resolver B3 discipline. Add a real-write-path test.
