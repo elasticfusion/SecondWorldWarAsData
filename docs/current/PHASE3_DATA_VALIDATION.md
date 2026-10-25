@@ -89,21 +89,25 @@ Each step: gate + concurrent code+security review + PR.
 2. OpenSERP depends on an external service; its 0-coverage must be WARN (service-down) not FAIL.
 3. Per-enhancer "expected floor" for the coverage anomaly (absolute 0-of-N, or a ratio?).
 
-## REDUNDANCY FINDING — steps 1/6 (groups) + 2/6 (places) overlap Phase 2 (owner-flagged)
-Phase 2 ALREADY does the Wikipedia/Grokipedia enrichment for groups + places, in place, per the
-extractors' own comments: `people_groups.py:342` ("Phase 2 owns ALL Grokipedia/Wikipedia
-enrichment" → `enrich_group_from_wikipedia`) and `places.py:488` (→ `enrich_place_from_grokipedia/
-_wikipedia`). Phase-3 steps 1/6 + 2/6 call the SAME functions over the WHOLE corpus — so for a
-record Phase 2 already enriched, Phase 3 re-scans and skips (wasted pass, not new data).
-- **Not pure dead code (≠ supplemental_narrative):** the Phase-3 sweep is a legitimate BACKSTOP for
-  group/place records that did NOT exist during Phase 2 and so were never enriched — provisional
-  groups (`_create_provisional_group`, #536), dedup-merged, or OOB-emitted entities. Removing the
-  steps outright would leave those permanently un-enriched.
-- **Recommended simplification:** make steps 1/6 + 2/6 **targeted** — enrich only records with
-  `enrichment_status` unset/absent (the Phase-2 misses), instead of a full-corpus re-scan. Preserves
-  the backstop, removes the wasteful re-pass, and resolves the contradiction with "Phase 2 owns ALL
-  enrichment." (people enrichment already moved fully to Phase 2; openserp step 5/6 is a DISTINCT
-  enhancement — images/resource_urls — not redundant.)
+## REDUNDANCY QUESTION (owner-flagged) — RESOLVED: steps 1/6 + 2/6 are NOT redundant
+Initial read suspected steps 1/6 (groups) + 2/6 (places) duplicated Phase-2 Wikipedia/Grokipedia
+enrichment (both mention "wiki/grok"). **On reading the actual enrichment bodies, they are NOT
+duplicates — they populate DIFFERENT fields (complementary layers):**
+- **Phase 2** (`groups_wikipedia.enrich_group_from_wikipedia`, `enrich_places.enrich_place_from_*`):
+  DESCRIPTIVE — sets `wikipedia_url` / `grokipedia_url` + images/description.
+- **Phase 3 step 1/6** (`enrich_groups.enrich_group`): STRUCTURED FACTS via a dedicated
+  `group_enrichment` Grok prompt, with nickname-resolution + nationality/echelon DISAMBIGUATION +
+  a wrong-article guard (`_enrichment_agrees`). Different data, different safeguards.
+- **Phase 3 step 2/6** (`enrich_places.enrich_place` / `_enrich_place_data`): STRUCTURED GEOGRAPHIC
+  data — `hierarchy` (country/region/continent) + `historical_names` (per-language former names).
+  Phase 2 does NOT produce these.
+- **Verdict: KEEP both steps — they are load-bearing, not a re-run of Phase-2 work.** (The earlier
+  "all records created in Phase 2 → delete the steps" reasoning was correct about creation timing
+  but IRRELEVANT: the steps aren't re-doing creation-time enrichment, they add structured fields.
+  Deleting them would lose hierarchy, historical_names, and disambiguated group facts.) The
+  `enrichment_status` idempotency gate already prevents re-enriching an already-structured record,
+  so the only cost is a cheap skip-scan — acceptable. NO consolidation; Task withdrawn.
+- OpenSERP step 5/6 (images/resource_urls) remains a DISTINCT enhancement (also not redundant).
 
 ### VERIFIED (2026-10-24): ALL group/place records are CREATED in Phase 2 → consolidate, don't backstop
 Traced every people_groups/places record-CREATION site (not update):
