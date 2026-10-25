@@ -40,7 +40,7 @@ ENTITY_SCHEMA_VERSIONS: Dict[str, str] = {
     "events": "2.24",
     "dates": "2.25",
     "places": "2.28",
-    "people": "2.25",
+    "people": "2.26",
     "people_groups": "2.28",
     "equipment": "2.25",
     "weather": "2.24",
@@ -153,7 +153,11 @@ EVENT_MENTIONS_SCHEMA = {
         "type": "object",
         "properties": {
             "EventID": ulid_field(),
-            "Sub-eventID": ulid_field(),
+            # Nullable: a mention may be DOWN-BOUND to event level (Sub-eventID blanked) when a
+            # stale sub-event ref is repaired against re-extracted events — the valid EventID is
+            # kept, the unresolvable Sub-eventID becomes null (mirrors the per-entity inline
+            # event_mention schemas, which already allow null here).
+            "Sub-eventID": ulid_field(nullable=True),
             "book": {"type": ["string", "null"]},
             "chapter": {"type": ["string", "null"]},
             # Fields the extractors actually emit on a mention (previously accepted only
