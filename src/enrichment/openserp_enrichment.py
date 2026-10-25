@@ -158,6 +158,34 @@ def write_metrics(output_dir: Any) -> Dict[str, Any]:
             snap["breaker_opened"],
             snap["items_added"],
         )
+        # Canonical, greppable rollup + anomaly (the human "OpenSERP metrics" line above is not
+        # OBSERV-keyed). Rates as int permille to keep the line int-only (no log-forging surface).
+        logger.info(
+            "OBSERV openserp.summary searched=%d enriched=%d queries=%d results=%d zero=%d "
+            "verify_yes=%d verify_no=%d breaker_opened=%d items_added=%d hit_permille=%d",
+            snap["entities_searched"],
+            snap["entities_enriched"],
+            snap["queries_issued"],
+            snap["results_returned"],
+            snap["zero_result_queries"],
+            snap["verify_yes"],
+            snap["verify_no"],
+            snap["breaker_opened"],
+            snap["items_added"],
+            int(snap["enrichment_rate"] * 1000),
+        )
+        if snap["breaker_opened"]:
+            logger.warning(
+                "OBSERV openserp.anomaly circuit_breaker_opened=%d "
+                "(consecutive empty/failed searches — OpenSERP degraded/unreachable)",
+                snap["breaker_opened"],
+            )
+        elif snap["entities_searched"] > 0 and snap["entities_enriched"] == 0:
+            logger.warning(
+                "OBSERV openserp.anomaly 0-of-%d entities enriched "
+                "(service down, or every result rejected by verify?)",
+                snap["entities_searched"],
+            )
     except Exception as e:  # noqa: BLE001 - metrics are best-effort
         logger.debug("Could not write OpenSERP metrics: %s", e)
     return snap

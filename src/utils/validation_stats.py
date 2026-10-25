@@ -275,6 +275,18 @@ def write_validation_stats(output_dir: Any) -> Dict[str, Any]:
         t.get(OUTCOME_FLAGGED, 0),
         snap["block_rate"] * 100,
     )
+    # Canonical, greppable OBSERV rollup (the human "Validation stats:" line above is not matched by
+    # OBSERV-keyed monitors). block_rate is *1000 as an int permille to keep the line int-only (no
+    # float-format log-forging surface, per repo convention).
+    logger.info(
+        "OBSERV validation.summary allow=%d block=%d warn=%d empty=%d flagged=%d block_permille=%d",
+        t.get(OUTCOME_ALLOW, 0),
+        t.get(OUTCOME_BLOCK, 0),
+        t.get(OUTCOME_WARN, 0),
+        t.get(OUTCOME_EMPTY, 0),
+        t.get(OUTCOME_FLAGGED, 0),
+        int(snap["block_rate"] * 1000),
+    )
     for c in snap["systematic_clusters"]:
         logger.warning(
             "SYSTEMATIC %s cluster (likely a CODE defect — reprocess cannot fix): "
@@ -285,6 +297,20 @@ def write_validation_stats(output_dir: Any) -> Dict[str, Any]:
             c.get("count", c.get("blocks", 0)),
             c["entity_total"],
             c["rate"] * 100,
+        )
+        # Canonical anomaly line per systematic cluster — so a scaled write-block (e.g. the
+        # bibliography local_source_path drift that blocked ~15/17 records as N silent per-record
+        # ERRORs) raises ONE greppable OBSERV anomaly. entity/outcome/keyword are bounded vocab
+        # (entity names, OUTCOME_* constants, jsonschema validator keywords / known flag codes) —
+        # no record-derived text, so this is log-forging/PII safe.
+        logger.warning(
+            "OBSERV validation.systematic entity=%s outcome=%s keyword=%s count=%d total=%d permille=%d",
+            c["entity"],
+            c.get("outcome", OUTCOME_BLOCK),
+            c["keyword"],
+            c.get("count", c.get("blocks", 0)),
+            c["entity_total"],
+            int(c["rate"] * 1000),
         )
     # Systematic clusters are an UPSTREAM-CODE-BUG signal — alert the operator, don't just log.
     # Publish free-form text to the {env}-wwii-phase2-complete SNS topic, which fans out to

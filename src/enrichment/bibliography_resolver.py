@@ -2308,3 +2308,40 @@ def _log_bib_resolution_summary(
         )
     except Exception:  # noqa: BLE001 - observability must never break resolution
         pass
+    # Canonical alias + anomaly (the pre-existing bib.resolve line is kept for back-compat but is a
+    # non-standard name and had no anomaly; a high not-found/error rate is the signal to surface).
+    try:
+        logger.info(
+            "OBSERV bibliography.resolve_summary in=%d resolved=%d ref_identified=%d "
+            "not_found=%d not_citation=%d queued=%d held=%d errors=%d",
+            processed,
+            stats["resolved"],
+            stats["reference_identified"],
+            stats["not_found"],
+            stats["not_citation"],
+            stats["queued"],
+            stats["held_unprocessed"],
+            stats["errors"],
+        )
+        # A real citation is one we could plausibly resolve: exclude not_citation (prose) from the
+        # denominator. 0 of those resolved/identified, or any errors, is the anomaly.
+        resolvable = processed - stats["not_citation"]
+        got = (
+            stats["resolved"]
+            + stats["reference_identified"]
+            + stats["held_unprocessed"]
+        )
+        if resolvable > 0 and got == 0:
+            logger.warning(
+                "OBSERV bibliography.resolve_anomaly 0-of-%d resolvable citations resolved "
+                "(resolver services down / all queued-for-review?)",
+                resolvable,
+            )
+        elif stats["errors"] > 0:
+            logger.warning(
+                "OBSERV bibliography.resolve_anomaly errors=%d of in=%d",
+                stats["errors"],
+                processed,
+            )
+    except Exception:  # noqa: BLE001 - observability must never break resolution
+        pass

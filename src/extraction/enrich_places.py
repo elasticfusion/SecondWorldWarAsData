@@ -418,6 +418,23 @@ def _stamp_place_status(
     return None
 
 
+def _place_needs_work(place_file: Path) -> bool:
+    """Cheap pre-scan mirroring enrich_place's gates: True if this place would actually attempt
+    enrichment (readable + named + needs hierarchy + not a fresh not_found). Used to gate the
+    coverage anomaly so a benign re-run of an already-enriched corpus doesn't false-fire.
+    """
+    try:
+        data = json.loads(place_file.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return False
+    name = data.get("current_name") or data.get("name", "")
+    if not name or not _needs_enrichment(data):
+        return False
+    if data.get("enrichment_status") == "not_found" and not _should_re_search(data):
+        return False
+    return True
+
+
 def enrich_place(place_file: Path, grok_client: GrokClient) -> bool:
     """Enrich a single place file. Returns True if enriched."""
     try:
@@ -523,4 +540,20 @@ def enrich_all_places(
         enriched = _collect_place_enrichments(pool, futures, total)
 
     logger.info("Place enrichment complete: %d/%d enriched", enriched, len(files))
+    # Canonical coverage rollup + anomaly, gated on how many places actually NEEDED work (so a
+    # benign re-run of an already-enriched corpus does not false-fire).
+    needed = sum(1 for f in files if _place_needs_work(f))
+    logger.info(
+        "OBSERV places.summary total=%d needed=%d enriched=%d skipped=%d",
+        total,
+        needed,
+        enriched,
+        total - enriched,
+    )
+    if needed > 0 and enriched == 0:
+        logger.warning(
+            "OBSERV places.anomaly 0-of-%d enrichable places enriched "
+            "(hierarchy/historical-name enrichment failed/unreachable?)",
+            needed,
+        )
     return enriched
