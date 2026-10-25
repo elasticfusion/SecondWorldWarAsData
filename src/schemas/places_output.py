@@ -31,8 +31,8 @@ PLACES_OUTPUT_SCHEMA = {
         "geography_type": make_nullable("string"),
         # Top-level coordinates (geocode cascade also writes these at the root, not only
         # under the nested "coordinates" object).
-        "latitude": {"type": ["number", "null"]},
-        "longitude": {"type": ["number", "null"]},
+        "latitude": {"type": ["number", "null"], "minimum": -90, "maximum": 90},
+        "longitude": {"type": ["number", "null"], "minimum": -180, "maximum": 180},
         # Geocoding-enrichment outputs (places_grok_geocode cascade) + identity fields.
         "country": make_nullable("string"),
         "geocode_source": make_nullable("string"),
@@ -61,8 +61,8 @@ PLACES_OUTPUT_SCHEMA = {
             "type": ["object", "null"],
             "additionalProperties": False,
             "properties": {
-                "latitude": {"type": "number"},
-                "longitude": {"type": "number"},
+                "latitude": {"type": "number", "minimum": -90, "maximum": 90},
+                "longitude": {"type": "number", "minimum": -180, "maximum": 180},
                 "precision": enum_field(
                     ["exact", "approximate", "estimated"], nullable=True
                 ),
