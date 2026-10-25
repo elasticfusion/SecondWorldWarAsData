@@ -1048,3 +1048,11 @@ BLOCKS the canonical write (returns False, no exception), the canonical file is 
 shard is unlinked => total silent loss of that citation. Also :708 and :713 ignore the return (lower
 risk, no delete-after). FIX: capture the return; on False, do NOT unlink the shards (abort the merge,
 keep the sources) + surface an error. Mirror the resolver B3 discipline. Add a real-write-path test.
+
+## [LOW·ci-flake] test_validation_performance perf tests use absolute wall-clock thresholds
+test_hook_overhead_single_validation asserts `overhead < 1.0` (ms/validation) — an ABSOLUTE
+wall-clock threshold that spuriously fails on a loaded/slow CI runner (observed 2.15ms in CI run
+40245487333 while passing 3/3 locally at ~0.2s). Unrelated to any logic. Fix: make these perf
+asserts RELATIVE (vs a measured baseline, like test_hook_overhead_batch's `batch < individual*1.5`)
+or mark them @pytest.mark.perf / skip-in-CI, so CI isn't red on timing noise. Several asserts in
+that file share the pattern (lines ~201, plus the elapsed-based ones).
