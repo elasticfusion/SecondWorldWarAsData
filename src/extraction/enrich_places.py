@@ -352,7 +352,11 @@ def _merge_historical_names(data, enrichment):
     hist = enrichment.get("historical_names")
     if not isinstance(hist, list) or not hist:
         return False
-    existing = {h["name"] for h in data.get("historical_names", [])}
+    existing = {
+        h["name"]
+        for h in data.get("historical_names", [])
+        if isinstance(h, dict) and "name" in h
+    }
     changed = False
     for entry in hist:
         if isinstance(entry, dict) and entry.get("name") not in existing:
