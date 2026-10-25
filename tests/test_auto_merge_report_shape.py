@@ -69,3 +69,34 @@ def test_auto_merge_legacy_groups_key_still_works(tmp_path):
 def test_auto_merge_no_report_returns_zero(tmp_path):
     """No report file -> 0, no error."""
     assert ee._auto_merge_entity_type(tmp_path / "nope", "PersonID") == 0
+
+
+def test_auto_merge_recomputes_duplicate_groups_count(tmp_path, monkeypatch):
+    """Regression: after auto-merging the only exact-dup group, the INT 'duplicate_groups'
+    count MUST be recomputed to 0 (len of the pruned list) — otherwise the dedup GATE (reads the
+    int) blocks Phase 3 forever while the review UI (reads the empty list) shows nothing. This was
+    the live stuck-gate: people_groups report had duplicate_groups=1, duplicates=[]."""
+    entity_dir = tmp_path / "people_groups"
+    _write_report(
+        entity_dir,
+        {
+            "total_groups": 2,
+            "duplicate_groups": 1,
+            "duplicates": [
+                {"people": [{"name": "28th Division"}, {"name": "28th Division"}]}
+            ],
+        },
+    )
+    # merge_generic is the real merger; stub it so the test is hermetic (we only assert the
+    # report-count bookkeeping, not the merge mechanics).
+    monkeypatch.setattr(ee, "merge_generic", lambda *a, **k: None, raising=False)
+    import src.dedup.merge as _m
+
+    monkeypatch.setattr(_m, "merge_generic", lambda *a, **k: None, raising=False)
+    merged = ee._auto_merge_entity_type(entity_dir, "GroupID")
+    report = json.loads((entity_dir / "duplicate_report.json").read_text())
+    assert merged == 1
+    assert report["duplicates"] == []
+    assert (
+        report["duplicate_groups"] == 0
+    )  # count tracked the pruned list (was stale=1)

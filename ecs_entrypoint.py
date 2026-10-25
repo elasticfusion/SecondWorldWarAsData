@@ -2163,6 +2163,13 @@ def _auto_merge_entity_type(entity_dir: Path, id_field: str) -> int:
             remaining.append(group)
 
     report[groups_key] = remaining
+    # Keep the INT summary count in lock-step with the pruned list. The dedup GATE
+    # (_dedup_has_no_pending) reads the "duplicate_groups" INT, while the review UI reads the
+    # "duplicates" LIST. If auto-merge empties the list but leaves a stale count > 0, the gate
+    # blocks Phase 3 forever while the UI shows nothing to review (an unresolvable stuck gate).
+    # Recompute the count from what actually remains so the two can never diverge.
+    if isinstance(report.get("duplicate_groups"), int):
+        report["duplicate_groups"] = len(remaining)
     report_file.write_text(
         json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
     )
