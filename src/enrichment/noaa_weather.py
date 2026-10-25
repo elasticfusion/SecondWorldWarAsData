@@ -321,9 +321,14 @@ def _enrich_weather_file(f, token) -> bool:
     if not obs:
         return False
     data["noaa_observed"] = obs
-    from src.schemas import inject_metadata
+    # Route through the central write-guard (schema + mandatory-field validation + validation_stats
+    # alert on a block) instead of a raw write that bypassed all of it.
+    # Guard validates against the schema resolved from the file PATH (output/weather/); the
+    # entity arg here only version-stamps metadata. f lives under output/weather/, so they agree.
+    from src.utils.file_lock import write_json_with_lock
 
-    inject_metadata(data)
-    f.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    if not write_json_with_lock(f, data, entity="weather"):
+        logger.warning("  NOAA enrichment write BLOCKED by schema guard: %s", f.name)
+        return False
     logger.info("  NOAA enriched: %s (%s)", f.name, station.get("id"))
     return True
