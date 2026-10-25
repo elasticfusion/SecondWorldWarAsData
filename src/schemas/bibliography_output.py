@@ -47,8 +47,15 @@ BIBLIOGRAPHY_OUTPUT_SCHEMA = {
             },
         },
         "availability": enum_field(
-            ["online", "offline", "archive", "unknown"], nullable=True
+            ["online", "offline", "archive", "local", "unknown"], nullable=True
         ),
+        # Free-form provenance bag written by the resolver: prov keys from the biblio-note resolver
+        # + a structured findings list ({url, source}). additionalProperties:true because the prov
+        # keys vary by source type; this is internal provenance metadata, not user-facing content.
+        "source_metadata": {
+            "type": ["object", "null"],
+            "additionalProperties": True,
+        },
         "resource_urls": {
             "type": ["array", "null"],
             "items": {"type": "string"},
