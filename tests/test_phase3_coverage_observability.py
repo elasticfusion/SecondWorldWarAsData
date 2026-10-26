@@ -18,14 +18,18 @@ def test_bibliography_summary_and_anomaly(tmp_path, monkeypatch, caplog):
 
     _mk(tmp_path, "bib_1.json", {"BibliographyID": "a", "title": "A"})
     _mk(tmp_path, "bib_2.json", {"BibliographyID": "b", "title": "B"})
-    # nothing enriches -> 0-of-2 anomaly
+    # 0-of-N ISBN/copyright enrichment is NORMAL (most records have no derivable ISBN/copyright),
+    # NOT a failure -> summary is emitted but NO anomaly (the real failure signal is the separate
+    # bibliography_resolver.resolve_bibliography_dir -> bibliography.resolve_anomaly).
     monkeypatch.setattr(S, "_enrich_bib_file", lambda *a, **k: False)
     with caplog.at_level(logging.INFO):
         n = S.enrich_bibliography(tmp_path, {}, object())
     assert n == 0
     msgs = "\n".join(r.getMessage() for r in caplog.records)
     assert "OBSERV bibliography.summary total=2 enriched=0 skipped=2" in msgs
-    assert "OBSERV bibliography.anomaly 0-of-2" in msgs
+    assert (
+        "bibliography.anomaly" not in msgs
+    )  # 0-of-N is NOT an anomaly here (was a false alarm)
 
 
 def test_bibliography_summary_no_anomaly_when_enriched(tmp_path, monkeypatch, caplog):

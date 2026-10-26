@@ -403,6 +403,9 @@ def enrich_all_groups(
     logger.info("Enriching %d people groups...", len(group_files))
 
     total = len(group_files)
+    # Snapshot how many groups NEED enrichment BEFORE the loop — _load_enrichable_group returns None
+    # for a just-enriched record, so counting it AFTER the loop always yields ~0 (misleading summary).
+    needed = sum(1 for gf in group_files if _load_enrichable_group(gf) is not None)
 
     from concurrent.futures import ThreadPoolExecutor
 
@@ -414,7 +417,6 @@ def enrich_all_groups(
     # Canonical coverage rollup + anomaly. Gate the anomaly on how many files actually NEEDED
     # enrichment (not already-enriched / fresh-not_found) so a benign re-run of an already-enriched
     # corpus — where every enrich_group returns False legitimately — does NOT raise a false anomaly.
-    needed = sum(1 for gf in group_files if _load_enrichable_group(gf) is not None)
     logger.info(
         "OBSERV groups.summary total=%d needed=%d enriched=%d skipped=%d",
         total,

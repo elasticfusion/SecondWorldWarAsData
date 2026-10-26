@@ -408,21 +408,17 @@ def enrich_bibliography(
 
     total = len(bib_files)
     logger.info("Enriched %d of %d bibliography files", enriched_count, total)
-    # Q2 coverage observability: a machine-parseable rollup + a 0-of-N anomaly (mirrors
-    # enrich.summary / supplemental.anomaly). 0 enriched when records exist usually means the
-    # resolver services (NARA/archive.org/OpenSERP) were unreachable or all records were skipped.
+    # Q2 coverage observability: a machine-parseable rollup. NOTE: this is the ISBN/copyright/alt_title
+    # enrichment step — finding nothing to add for a record is NORMAL (most records have no derivable
+    # ISBN/copyright), so a 0-of-N here is NOT a failure and must NOT raise an anomaly (that was a
+    # false alarm: the actual resolution + its genuine-failure anomaly live in
+    # bibliography_resolver.resolve_bibliography_dir -> OBSERV bibliography.resolve_summary/anomaly).
     logger.info(
         "OBSERV bibliography.summary total=%d enriched=%d skipped=%d",
         total,
         enriched_count,
         total - enriched_count,
     )
-    if total > 0 and enriched_count == 0:
-        logger.warning(
-            "OBSERV bibliography.anomaly 0-of-%d enriched "
-            "(resolver services down, or all records already enriched/not-found?)",
-            total,
-        )
     return enriched_count
 
 

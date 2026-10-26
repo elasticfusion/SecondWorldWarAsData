@@ -1178,3 +1178,23 @@ survives; (b) point validate_phase3 at the S3 store (S3Storage prefix=output) wh
 mirroring run_for_phase, so it audits reality. Net effect today: 23 real Sub_eventID danglers persist
 on S3 (down-bind lost to the sync) + a false-FAIL validation. Ties to the SCHEMA_TARGET bug which
 CREATES these danglers in Phase 2 (fix both: stop creating them + make the repair durable).
+
+## [MED·observability-flaw] places.summary `needed` is computed POST-enrichment -> always ~0 (clean rerun 5d3173e6)
+OBSERV places.summary reported `total=17 needed=0 enriched=17` — internally inconsistent (enriched 17
+but "needed" 0). enrich_places.py:549 computes `needed = sum(_place_needs_work(f) for f in files)`
+AFTER the enrichment loop already ran, so _place_needs_work now returns False for the just-enriched
+records -> needed=0 always. The `needed`-gated ANOMALY still works (fires only if needed>0 & enriched==0
+BEFORE... no — it's also post-hoc), but the summary NUMBER is meaningless. FIX: snapshot `needed`
+BEFORE the enrichment loop (count enrollable files up front), then report that. Same pattern likely in
+enrich_groups.py groups.summary. Low data impact (observability only) but misleading operator signal.
+
+## [MED·observability-flaw] bibliography.anomaly is a FALSE ALARM when only ISBN-enrich finds nothing (clean rerun 5d3173e6)
+OBSERV bibliography.summary total=15 enriched=0 skipped=15 + WARN OBSERV bibliography.anomaly
+"0-of-15 enriched (resolver services down...)" — BUT the SEPARATE bibliography_resolve sub-step then
+reported resolved=11. The two bibliography sub-steps (supplemental_advanced.enrich_bibliography =
+ISBN/copyright/alt_title; bibliography_resolver.resolve = NARA/archive/openserp) emit INDEPENDENT
+summaries, and the first's 0-of-N anomaly implies total bibliography failure when resolve actually
+succeeded (11/15). FALSE operator alarm. FIX: either (a) don't anomaly-fire bibliography.summary when
+ISBN/copyright legitimately has nothing to add (it's not a failure signal), or (b) unify the two
+bibliography sub-step summaries so the anomaly reflects the COMBINED outcome (resolved+ref_identified+
+enriched), not just the ISBN sub-step. Ties to the fragmented-bibliography-observability note.
