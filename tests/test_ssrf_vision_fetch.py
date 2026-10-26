@@ -68,8 +68,8 @@ def test_extract_json_with_image_accepts_safe_image(monkeypatch):
     c._call_api = lambda *a, **k: {"choices": [{"message": {"content": '{"ok": 1}'}}]}
     # Route the validated-bytes fetch to return a real JPEG without network.
     monkeypatch.setattr(
-        "src.extraction.images.fetch_image_bytes",
-        lambda url: (b"\xff\xd8\xff" + b"x" * 2000, "jpg"),
+        "src.extraction.images.fetch_image_bytes_with_reason",
+        lambda url: (b"\xff\xd8\xff" + b"x" * 2000, "jpg", "ok"),
     )
     out = c.extract_json_with_image(
         prompt="p", image_url="https://www.ibiblio.org/x/map.jpg", use_cache=False

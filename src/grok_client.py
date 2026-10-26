@@ -1307,17 +1307,20 @@ class GrokClient:
         # clean_url (http(s) + reject loopback/private/link-local/cloud-metadata hosts) +
         # resolved_host_is_safe (DNS-rebinding) + allow_redirects=False (a redirect could bounce a
         # clean host to 169.254.169.254) + byte cap + image content-type/magic-byte validation.
-        from src.extraction.images import fetch_image_bytes
+        from src.extraction.images import fetch_image_bytes_with_reason
 
-        img_bytes, ext = fetch_image_bytes(image_url)
+        img_bytes, ext, reason = fetch_image_bytes_with_reason(image_url)
         if not img_bytes:
+            # Specific reason (ssrf_blocked / not_an_image / fetch_error / too_large / bad_status)
+            # instead of the old conflated 'ssrf_or_invalid' — so a real SSRF block is
+            # distinguishable from a benign not-an-image page URL (the common OpenSERP case).
             logger.warning(
-                "OBSERV vision.image_blocked reason=ssrf_or_invalid url=%s "
-                "(fetch refused by images.fetch_image_bytes)",
+                "OBSERV vision.image_blocked reason=%s url=%s",
+                reason,
                 str(image_url)[:120],
             )
             raise GrokAPIError(
-                f"Image fetch blocked or not a valid image (SSRF-safe): {image_url}"
+                f"Image fetch blocked or not a valid image (reason={reason}): {image_url}"
             )
         content_type = {
             "jpg": "image/jpeg",

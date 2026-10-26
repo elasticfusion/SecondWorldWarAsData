@@ -31,13 +31,25 @@ def fetch_image_bytes(url: str) -> Tuple[Optional[bytes], Optional[str]]:
     """
     from src.utils.url_hygiene import clean_url
 
+    body, ext, _reason = fetch_image_bytes_with_reason(url)
+    return body, ext
+
+
+def fetch_image_bytes_with_reason(url: str):
+    """Like ``fetch_image_bytes`` but ALSO returns a specific ``reason`` string on failure so the
+    caller's OBSERV line can distinguish a real SSRF block from a benign not-an-image rejection
+    (the single ``ssrf_or_invalid`` reason previously conflated: ssrf_blocked / not_an_image /
+    fetch_error / too_large). Returns (bytes, ext, "ok") on success, (None, None, <reason>) on
+    failure."""
+    from src.utils.url_hygiene import clean_url
+
     cleaned = clean_url(url)
     if not cleaned:
         logger.debug("image fetch blocked (scheme/host): %s", url)
-        return None, None
-    resp = _safe_image_response(cleaned)
+        return None, None, "ssrf_blocked"
+    resp, resp_reason = _safe_image_response_with_reason(cleaned)
     if resp is None:
-        return None, None
+        return None, None, resp_reason
     try:
         content_type = resp.headers.get("content-type", "").lower()
         body = b""
@@ -47,24 +59,31 @@ def fetch_image_bytes(url: str) -> Tuple[Optional[bytes], Optional[str]]:
                 logger.warning(
                     "image exceeded %d bytes, skipping: %s", _MAX_IMAGE_BYTES, cleaned
                 )
-                return None, None
+                return None, None, "too_large"
         if "image" not in content_type and len(body) < 1000:
-            return None, None
+            return None, None, "not_an_image"
         if not _is_valid_image_body(body, content_type):
             logger.debug(
                 "rejected non-image content (ct=%s): %s", content_type, cleaned
             )
-            return None, None
-        return body, _ext_for(content_type, cleaned)
+            return None, None, "not_an_image"
+        return body, _ext_for(content_type, cleaned), "ok"
     except Exception as exc:  # noqa: BLE001 - fetch failure must be non-fatal
         logger.debug("Failed to download %s: %s", cleaned, exc)
-        return None, None
+        return None, None, "fetch_error"
 
 
 def _safe_image_response(cleaned: str):
     """SSRF-safe GET of an already-clean_url'd image URL: resolve+vet the host (DNS-rebinding) and
     PIN the connection to a vetted IP (keeps Host + TLS SNI = host, allow_redirects=False). Returns
     a streamed 200 ``requests.Response``, or None if blocked/non-200/failed."""
+    resp, _reason = _safe_image_response_with_reason(cleaned)
+    return resp
+
+
+def _safe_image_response_with_reason(cleaned: str):
+    """Reason-aware variant of ``_safe_image_response``. Returns (response, "ok") or
+    (None, <ssrf_blocked|fetch_error|bad_status>)."""
     from urllib.parse import urlparse
 
     from src.utils.url_hygiene import resolved_host_is_safe, _pinned_get
@@ -73,7 +92,7 @@ def _safe_image_response(cleaned: str):
     vetted = resolved_host_is_safe(host)
     if vetted is None:
         logger.warning("image fetch blocked (host resolves non-public): %s", host)
-        return None
+        return None, "ssrf_blocked"
     try:
         resp = _pinned_get(
             cleaned,
@@ -84,10 +103,10 @@ def _safe_image_response(cleaned: str):
         )
     except Exception as exc:  # noqa: BLE001 - fetch failure must be non-fatal
         logger.debug("Failed to download %s: %s", cleaned, exc)
-        return None
+        return None, "fetch_error"
     if resp.status_code != 200:
-        return None
-    return resp
+        return None, "bad_status"
+    return resp, "ok"
 
 
 def _is_valid_image_body(body: bytes, content_type: str) -> bool:
