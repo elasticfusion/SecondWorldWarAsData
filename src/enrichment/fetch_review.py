@@ -23,14 +23,80 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 
-def _load_events() -> List[Dict[str, Any]]:
-    """Load local textual fetch-provenance events pending review (local JSONL mode).
+def _resolve_table(fp: Any) -> Any:
+    """DynamoDB cache-table handle for the current runtime, or None (local/test).
 
-    AWS mode (DynamoDB) scanning is intentionally out of scope for the minimal CLI; the local
-    JSONL is the reference surface. Returns [] on any error (fail-safe)."""
+    In the review Lambda there is NO config.aws.enabled flag (that is only flipped on inside ECS by
+    ecs_entrypoint), so fp._table() would return None and the UI would see an empty list. When we
+    are genuinely in Lambda (AWS reserved env AWS_LAMBDA_FUNCTION_NAME is set) resolve the table
+    directly from CACHE_TABLE, mirroring dedup_ui_handler. Otherwise defer to the config-driven
+    fp._table() (ECS/CLI/tests), which correctly returns None in local/test mode. Fail-safe -> None.
+    """
+    import os
+
+    in_lambda = bool(os.environ.get("AWS_LAMBDA_FUNCTION_NAME"))
+    table_name = os.environ.get("CACHE_TABLE", "").strip()
+    if in_lambda and table_name:
+        try:
+            import boto3
+
+            region = os.environ.get("AWS_REGION", "us-east-1")
+            return boto3.resource("dynamodb", region_name=region).Table(table_name)
+        except Exception as e:  # noqa: BLE001
+            logger.debug("fetch_review CACHE_TABLE resolve failed: %s", e)
+            return None
+    try:
+        return fp._table()  # noqa: SLF001 - config-driven (ECS/CLI/test) resolution
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _load_events() -> List[Dict[str, Any]]:
+    """Load TEXTUAL fetch-provenance events. In AWS mode (a DynamoDB cache table is configured —
+    e.g. inside the review Lambda) SCAN the store for ``fetchevent#`` items; otherwise read the
+    local JSONL reference surface. Returns [] on any error (fail-safe)."""
+    from src.utils import fetch_provenance as fp
+
+    table = _resolve_table(fp)
+    if table is not None:
+        return _load_events_dynamo(table, fp)
+    return _load_events_local(fp)
+
+
+def _load_events_dynamo(table: Any, fp: Any) -> List[Dict[str, Any]]:
+    """Scan the DynamoDB cache table for fetch-provenance TEXTUAL events (paginated). Fail-safe."""
     import json
 
-    from src.utils import fetch_provenance as fp
+    from boto3.dynamodb.conditions import Attr
+
+    out: List[Dict[str, Any]] = []
+    try:
+        kwargs: Dict[str, Any] = {
+            "FilterExpression": Attr("cache_key").begins_with(
+                fp._KEY_PREFIX
+            ),  # noqa: SLF001
+        }
+        while True:
+            resp = table.scan(**kwargs)
+            for item in resp.get("Items", []):
+                try:
+                    rec = json.loads(item.get("response", "{}"))
+                except Exception:  # noqa: BLE001
+                    continue
+                if isinstance(rec, dict) and rec.get("kind") == fp.TEXTUAL:
+                    out.append(rec)
+            lek = resp.get("LastEvaluatedKey")
+            if not lek:
+                break
+            kwargs["ExclusiveStartKey"] = lek
+    except Exception as e:  # noqa: BLE001
+        logger.debug("fetch_review dynamo scan skipped: %s", e)
+    return out
+
+
+def _load_events_local(fp: Any) -> List[Dict[str, Any]]:
+    """Load local textual fetch-provenance events (JSONL reference surface). Fail-safe."""
+    import json
 
     out: List[Dict[str, Any]] = []
     try:
@@ -68,7 +134,7 @@ def set_review_status(fetch_event_id: str, status: str) -> bool:
     from src.utils import fetch_provenance as fp
 
     try:
-        table = fp._table()  # noqa: SLF001 - reuse the configured store
+        table = _resolve_table(fp)  # env-aware (Lambda CACHE_TABLE) or config-driven
         if table is not None:
             key = f"{fp._KEY_PREFIX}{fetch_event_id}"  # noqa: SLF001
             item = table.get_item(Key={"cache_key": key}).get("Item")
@@ -116,6 +182,92 @@ def reject_fetch_find(fetch_event: Dict[str, Any]) -> bool:
             fetch_event.get("fetch_event_id"),
         )
     return ok
+
+
+# Exclusion scopes returned by decide_exclude_scope / exclude_fetch_find.
+SCOPE_SITE = (
+    "site"  # exclude the ENTIRE domain from search + re-search (registry denylist)
+)
+SCOPE_URL = (
+    "url"  # exclude only THIS url (won't-do / REJECTED), the conservative default
+)
+
+
+def decide_exclude_scope(fetch_event: Dict[str, Any], grok_client: Any = None) -> str:
+    """Ask Grok whether the ENTIRE site should be excluded, or only this URL.
+
+    Returns SCOPE_SITE or SCOPE_URL. FAIL-CLOSED to SCOPE_URL (the narrow, reversible choice) when
+    there is no grok_client or on any Grok error — we never widen to a whole-site ban without a
+    positive, confident signal."""
+    if grok_client is None:
+        return SCOPE_URL
+    url = fetch_event.get("endpoint", "")
+    summary = fetch_event.get("result_summary", "")
+    try:
+        response = grok_client.chat_completion(
+            prompt=(
+                "A human reviewer is excluding a search result as not useful for a WWII history "
+                "corpus. Should the ENTIRE website (domain) be excluded from all future searches, "
+                "or ONLY this single URL?\n"
+                "Answer SITE only if the whole domain is categorically low-value or off-topic for "
+                "WWII primary/secondary sources (e.g. spam, shopping, unrelated wiki mirrors). "
+                "Answer URL if only this particular page is unsuitable but the domain may hold "
+                "other useful material.\n"
+                f"URL: {url[:300]}\n"
+                f"Result summary: {summary[:300]}\n"
+                'Return ONLY "SITE" or "URL".'
+            ),
+            system_prompt="You decide the scope of a search-source exclusion.",
+            temperature=0.0,
+            use_cache=True,
+            cache_type="exclude_scope",
+        )
+        return (
+            SCOPE_SITE
+            if str(response).strip().upper().startswith("SITE")
+            else SCOPE_URL
+        )
+    except Exception as e:  # noqa: BLE001 - fail closed to the narrow URL-only scope
+        logger.debug("decide_exclude_scope errored (fail-closed to url): %s", e)
+        return SCOPE_URL
+
+
+def exclude_fetch_find(
+    fetch_event: Dict[str, Any], grok_client: Any = None
+) -> Dict[str, Any]:
+    """Reviewer EXCLUDE action. Ask Grok the scope, then persist at that scope:
+      * SCOPE_SITE -> url_registry.exclude_domain (the whole domain is skipped on search/re-search,
+        cross-run) AND mark this find REJECTED (won't-do).
+      * SCOPE_URL  -> reject_fetch_find only (this URL is won't-do; the domain stays searchable).
+    Returns {scope, ok, host}. Fail-safe: never raises."""
+    scope = decide_exclude_scope(fetch_event, grok_client)
+    host = ""
+    ok = True
+    if scope == SCOPE_SITE:
+        try:
+            from src.utils.url_registry import _host_of, exclude_domain
+
+            url = fetch_event.get("endpoint", "")
+            host = _host_of(url)
+            ok = exclude_domain(
+                url,
+                reason="reviewer excluded whole site (Grok scope=SITE)",
+                source=f"urlreview:{fetch_event.get('provider', '')}",
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.warning("exclude_fetch_find site persist failed: %s", e)
+            ok = False
+    # In BOTH scopes, this specific find is done (won't resurface for review).
+    rejected = reject_fetch_find(fetch_event)
+    logger.info(
+        "OBSERV fetch_find.excluded scope=%s host=%s provider=%s fetch_event_id=%s ok=%s",
+        scope,
+        host,
+        fetch_event.get("provider"),
+        fetch_event.get("fetch_event_id"),
+        ok and rejected,
+    )
+    return {"scope": scope, "ok": bool(ok and rejected), "host": host}
 
 
 def affirm_fetch_find(
