@@ -57,7 +57,7 @@ def test_submit_batch_empty_is_noop(monkeypatch):
         FR, "_s3_client_and_bucket", lambda: (called.setdefault("c", True), "b")
     )
     out = FR.submit_affirmed_batch()
-    assert out == {"submitted": 0, "source_ids": [], "skipped": 0}
+    assert out == {"submitted": 0, "source_ids": [], "skipped": 0, "deduped": 0}
     assert "c" not in called  # never even resolves S3 on an empty batch
 
 
@@ -133,3 +133,106 @@ def test_unconfirmed_status_write_counts_as_skip(monkeypatch):
     assert (
         len(s3.puts) == 1
     )  # content WAS uploaded (deterministic key -> safe re-click overwrite)
+
+
+def test_duplicate_content_is_deduped_not_reuploaded(monkeypatch):
+    """GLOBAL content-hash dedup: identical bytes already submitted -> skip upload, mark SUBMITTED,
+    count as deduped (not submitted)."""
+    monkeypatch.setattr(
+        FR,
+        "list_affirmed",
+        lambda: [{"fetch_event_id": "dup1", "endpoint": "http://a.example/x"}],
+    )
+    s3 = _S3()
+    monkeypatch.setattr(FR, "_s3_client_and_bucket", lambda: (s3, "b"))
+    monkeypatch.setattr(
+        FR, "_register_content_hash_if_new", lambda digest, sid: False
+    )  # already seen
+    marked = []
+    monkeypatch.setattr(
+        FR, "set_review_status", lambda fid, st: marked.append((fid, st)) or True
+    )
+    out = FR.submit_affirmed_batch()
+    assert out["deduped"] == 1 and out["submitted"] == 0
+    assert len(s3.puts) == 0  # NOT re-uploaded
+    from src.utils import fetch_provenance as fp
+
+    assert marked == [("dup1", fp.SUBMITTED)]  # terminal: known duplicate
+
+
+def test_new_content_proceeds(monkeypatch):
+    monkeypatch.setattr(
+        FR,
+        "list_affirmed",
+        lambda: [{"fetch_event_id": "new1", "endpoint": "http://a.example/x"}],
+    )
+    s3 = _S3()
+    monkeypatch.setattr(FR, "_s3_client_and_bucket", lambda: (s3, "b"))
+    monkeypatch.setattr(
+        FR, "_register_content_hash_if_new", lambda digest, sid: True
+    )  # new
+    monkeypatch.setattr(FR, "set_review_status", lambda fid, st: True)
+    out = FR.submit_affirmed_batch()
+    assert out["submitted"] == 1 and out["deduped"] == 0 and len(s3.puts) == 1
+
+
+def test_content_hash_failopen_without_table(monkeypatch):
+    """No table (local/test) -> _register_content_hash_if_new fail-OPENS (True) so dedup never
+    blocks a real submit."""
+    from src.utils import fetch_provenance as fp
+
+    monkeypatch.setattr(FR, "_resolve_table", lambda _fp: None)
+    assert FR._register_content_hash_if_new("sha256:abc", "fetchfind-x") is True
+
+
+def test_content_hash_duplicate_on_conditional_failure(monkeypatch):
+    """A ConditionalCheckFailed on the claim put -> content already registered -> returns False."""
+
+    class _T:
+        def put_item(self, **k):
+            raise RuntimeError("ConditionalCheckFailedException: exists")
+
+    monkeypatch.setattr(FR, "_resolve_table", lambda _fp: _T())
+    assert FR._register_content_hash_if_new("sha256:abc", "fetchfind-x") is False
+
+
+def test_content_hash_new_on_successful_put(monkeypatch):
+    class _T:
+        def put_item(self, **k):
+            return {}
+
+    monkeypatch.setattr(FR, "_resolve_table", lambda _fp: _T())
+    assert FR._register_content_hash_if_new("sha256:abc", "fetchfind-x") is True
+
+
+def test_content_hash_duplicate_via_botocore_error_code(monkeypatch):
+    """A botocore-style ClientError (response['Error']['Code']=ConditionalCheckFailedException)
+    is classified as a duplicate (False)."""
+
+    class _Err(Exception):
+        def __init__(self):
+            self.response = {"Error": {"Code": "ConditionalCheckFailedException"}}
+
+    class _T:
+        def put_item(self, **k):
+            raise _Err()
+
+    monkeypatch.setattr(FR, "_resolve_table", lambda _fp: _T())
+    assert FR._register_content_hash_if_new("sha256:abc", "fetchfind-x") is False
+
+
+def test_content_hash_transient_error_failopen(monkeypatch):
+    """A non-conditional (transient) error -> fail-OPEN (True), never blocks a real submit."""
+
+    class _Err(Exception):
+        def __init__(self):
+            self.response = {
+                "Error": {"Code": "ProvisionedThroughputExceededException"}
+            }
+
+    class _T:
+        def put_item(self, **k):
+            raise _Err()
+
+    monkeypatch.setattr(FR, "_resolve_table", lambda _fp: _T())
+    assert FR._register_content_hash_if_new("sha256:abc", "fetchfind-x") is True

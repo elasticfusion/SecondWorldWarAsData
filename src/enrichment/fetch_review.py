@@ -401,6 +401,107 @@ def _s3_client_and_bucket():
         return None, ""
 
 
+_CONTENT_HASH_PREFIX = "contenthash#"
+
+
+def _content_sha256(data: bytes) -> str:
+    """sha256 of the content bytes (matches trigger_handler._title_checksum's digest format)."""
+    import hashlib
+
+    return "sha256:" + hashlib.sha256(data).hexdigest()
+
+
+def _register_content_hash_if_new(digest: str, source_id: str) -> bool:
+    """GLOBAL exact-content dedup: atomically claim ``contenthash#<sha>`` across ALL sources,
+    regardless of domain/title. Returns True if this is NEW content (claim won -> proceed), False
+    if the identical bytes were already submitted (skip the duplicate ingestion).
+
+    Fail-SAFE but fail-OPEN: if there is no table (local/test) or any error, return True (proceed) —
+    dedup must never block a legitimate submission. Uses a conditional put so two concurrent batches
+    cannot both win the same hash.
+    """
+    from src.utils import fetch_provenance as fp
+
+    table = _resolve_table(fp)
+    if table is None:
+        return True
+    try:
+        import json
+        import time
+
+        table.put_item(
+            Item={
+                "cache_key": f"{_CONTENT_HASH_PREFIX}{digest}",
+                "response": json.dumps(
+                    {"source_id": source_id, "registered_at": int(time.time())}
+                ),
+            },
+            ConditionExpression="attribute_not_exists(cache_key)",
+        )
+        return True  # claim won -> new content
+    except Exception as e:  # noqa: BLE001
+        # Duplicate iff the conditional put failed because the item already exists. Prefer the
+        # precise botocore Error.Code; fall back to a class-name/message substring so the helper
+        # stays import-light and still classifies correctly if botocore isn't the raiser.
+        code = ""
+        resp = getattr(e, "response", None)
+        if isinstance(resp, dict):
+            code = (resp.get("Error", {}) or {}).get("Code", "")
+        haystack = f"{code} {type(e).__name__} {e}"
+        if "ConditionalCheckFailed" in haystack:
+            return False  # identical content already registered -> duplicate
+        # Transient/other error: fail-open (proceed) so dedup never blocks a real submit.
+        logger.debug("content-hash claim errored (fail-open): %s", e)
+        return True
+
+
+def _submit_one_find(
+    find: Dict[str, Any], client: Any, bucket: str, result: Dict[str, Any]
+) -> None:
+    """Submit one affirmed find (mutates ``result``). GLOBAL content-hash dedup first: identical
+    bytes already submitted under ANY domain/title are skipped (counted ``deduped``) and the find is
+    marked SUBMITTED (terminal). New content is uploaded to the contentrepository/ front door and
+    marked SUBMITTED. Fail-safe: one bad find never sinks the batch."""
+    from src.utils import fetch_provenance as fp
+
+    fid = find.get("fetch_event_id", "")
+    source_id = f"fetchfind-{fid}"
+    try:
+        body = _find_content_bytes(find)
+        digest = _content_sha256(body)
+        # (a) GLOBAL exact-content dedup across all sources/domains/titles.
+        if not _register_content_hash_if_new(digest, source_id):
+            logger.info(
+                "OBSERV fetch_find.batch_submit.deduped fetch_event_id=%s %s "
+                "— identical content already submitted; skipping re-ingestion",
+                fid,
+                digest[:20],
+            )
+            set_review_status(fid, fp.SUBMITTED)  # terminal: a known duplicate, done
+            result["deduped"] += 1
+            return
+        key = f"contentrepository/_system/{_find_title(find)}/{_safe_token(source_id, 'fetchfind')}.html"
+        client.put_object(
+            Bucket=bucket, Key=key, Body=body, ContentType="text/html; charset=utf-8"
+        )
+        # Only count a submission once the SUBMITTED transition is CONFIRMED; otherwise the content
+        # is uploaded but the find stays AFFIRMED (deterministic key -> safe re-click overwrite;
+        # launch is idle-gated + title-deduped downstream, so a redundant attempt is harmless).
+        if set_review_status(fid, fp.SUBMITTED):
+            result["submitted"] += 1
+            result["source_ids"].append(source_id)
+        else:
+            logger.warning(
+                "submit_affirmed_batch: %s uploaded but SUBMITTED status unconfirmed "
+                "(stays AFFIRMED for the next batch)",
+                fid,
+            )
+            result["skipped"] += 1
+    except Exception as e:  # noqa: BLE001 - one bad find must not sink the batch
+        logger.warning("submit_affirmed_batch: failed to submit %s: %s", fid, e)
+        result["skipped"] += 1
+
+
 def submit_affirmed_batch() -> Dict[str, Any]:
     """BATCH-submit all AFFIRMED-not-yet-submitted finds to Phase 1 in ONE shot.
 
@@ -415,7 +516,12 @@ def submit_affirmed_batch() -> Dict[str, Any]:
     from src.utils import fetch_provenance as fp
 
     affirmed = list_affirmed()
-    result: Dict[str, Any] = {"submitted": 0, "source_ids": [], "skipped": 0}
+    result: Dict[str, Any] = {
+        "submitted": 0,
+        "source_ids": [],
+        "skipped": 0,
+        "deduped": 0,
+    }
     if not affirmed:
         logger.info("OBSERV fetch_find.batch_submit affirmed=0 — nothing to submit")
         return result
@@ -427,39 +533,14 @@ def submit_affirmed_batch() -> Dict[str, Any]:
         return result
 
     for find in affirmed:
-        fid = find.get("fetch_event_id", "")
-        source_id = f"fetchfind-{fid}"
-        key = f"contentrepository/_system/{_find_title(find)}/{_safe_token(source_id, 'fetchfind')}.html"
-        try:
-            client.put_object(
-                Bucket=bucket,
-                Key=key,
-                Body=_find_content_bytes(find),
-                ContentType="text/html; charset=utf-8",
-            )
-            # Only count a submission once the SUBMITTED state transition is CONFIRMED. If the
-            # status write isn't confirmed, the content is uploaded but the find stays AFFIRMED;
-            # the deterministic key means a re-click overwrites (no duplicate), and the launch is
-            # idle-gated + title-deduped downstream, so a redundant attempt is harmless.
-            if set_review_status(fid, fp.SUBMITTED):
-                result["submitted"] += 1
-                result["source_ids"].append(source_id)
-            else:
-                logger.warning(
-                    "submit_affirmed_batch: %s uploaded but SUBMITTED status unconfirmed "
-                    "(stays AFFIRMED for the next batch)",
-                    fid,
-                )
-                result["skipped"] += 1
-        except Exception as e:  # noqa: BLE001 - one bad find must not sink the batch
-            logger.warning("submit_affirmed_batch: failed to submit %s: %s", fid, e)
-            result["skipped"] += 1
+        _submit_one_find(find, client, bucket, result)
 
     logger.info(
-        "OBSERV fetch_find.batch_submit.summary affirmed=%d submitted=%d skipped=%d "
+        "OBSERV fetch_find.batch_submit.summary affirmed=%d submitted=%d deduped=%d skipped=%d "
         "bucket=%s front_door=content-uploaded launches=1",
         len(affirmed),
         result["submitted"],
+        result["deduped"],
         result["skipped"],
         bucket,
     )

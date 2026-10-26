@@ -281,7 +281,9 @@ async function submit() {{
     const r = await fetch(base + "/api/submit", {{method:"POST"}});
     const d = await r.json();
     document.getElementById("msg").textContent =
-      "submitted " + (d.submitted||0) + " to Phase 1" + (d.skipped ? (" (" + d.skipped + " skipped)") : "");
+      "submitted " + (d.submitted||0) + " to Phase 1"
+      + (d.deduped ? (" (" + d.deduped + " duplicate" + (d.deduped>1?"s":"") + " skipped)") : "")
+      + (d.skipped ? (" (" + d.skipped + " failed)") : "");
   }} catch (err) {{ document.getElementById("msg").textContent = "submit failed: " + err; }}
   load();
 }}
