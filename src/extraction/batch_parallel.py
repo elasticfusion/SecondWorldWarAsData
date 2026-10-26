@@ -102,10 +102,27 @@ def _contained_entity_path(entity_dir: Path, safe_name: str):
 
 
 # Schema version this module targets — derived from the central per-entity map.
-# This writer emits event-mention records, so it targets the 'events' entity version.
 from src.schemas import entity_version as _entity_version
 
+# This writer EMITS event-mention records, so its own output contract targets the 'events' entity
+# version (asserted by tests/test_schema_target_guard.py). NOTE: when READING an existing record of
+# ANOTHER entity to add a mention, use _entity_target_for(file) below — NOT this constant — because
+# the record belongs to that other entity (places 2.29, groups 2.28, ...), and gating it on the
+# events version (2.24) wrongly classified it 'future' and skipped it -> dangling cross-references.
 SCHEMA_TARGET = _entity_version("events")
+
+
+def _entity_target_for(entity_file: Path) -> str:
+    """The schema-version target for the entity that OWNS this file, from its output/<entity>/ dir
+    (same dir->entity resolution the write-guard uses). Falls back to the events version if the
+    entity is unknown (keeps the prior conservative behavior for unrecognized dirs)."""
+    try:
+        from src.utils.file_lock import _resolve_entity_type
+
+        return _entity_version(_resolve_entity_type(entity_file))
+    except Exception:  # noqa: BLE001 - never block a mention-add on target resolution
+        return _entity_version("events")
+
 
 _RANK_PREFIX = re.compile(
     r"^(?:(?:Field\s+)?Marshal|Gen(?:eral)?|Lt\.?\s*Gen(?:eral)?|"
@@ -386,10 +403,13 @@ def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-pos
     from src.schemas.schema_contract import read_for_update
 
     with locked_json(entity_file) as (data, save):
-        # Read the historical record under this module's schema contract: a FUTURE-schema
-        # record is skipped gracefully (code not built for it); older records merge
-        # best-effort (upgrade case-by-case if registered).
-        data, skip = read_for_update(data, SCHEMA_TARGET, logger, entity_file.name)
+        # Read the historical record under ITS OWN entity's schema contract. Previously this used a
+        # single module-level SCHEMA_TARGET = events-version (2.24) for every entity, so a record of
+        # a newer entity (places 2.29, people_groups 2.28, ...) was wrongly seen as "future schema"
+        # and SKIPPED -> its event_mention backlink was never added -> dangling cross-references.
+        # Resolve the target from the record's own directory (output/<entity>/) instead.
+        _target = _entity_target_for(entity_file)
+        data, skip = read_for_update(data, _target, logger, entity_file.name)
         if not skip:
             mentions = data.get("event_mentions", [])
             book = meta.get("book", "")

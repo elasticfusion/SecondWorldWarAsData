@@ -659,24 +659,30 @@ def main():
     from src.utils.validation_stats import write_validation_stats as _write_val_stats
 
     _write_val_stats(args.output_dir)
-    try:
-        from src.utils.referential_integrity import run_for_phase as _ref_enforce
+    # Referential-integrity repair + validate_phase3:
+    #   • ECS/S3 run (S3_BUCKET set): do NOT run here. The local tree is synced to S3 AFTER this
+    #     process exits (ecs_entrypoint._final_sync), which would clobber any S3-side repair, and
+    #     this process's local tree lacks output/content (events) -> false EventID danglers. It runs
+    #     DURABLY post-sync in ecs_entrypoint._phase3_durable_referential_fix (complete S3 corpus).
+    #   • Pure-local/direct run (no S3_BUCKET): run it HERE — the local output tree is complete and
+    #     authoritative (no trailing sync to clobber it), so a developer invoking the script directly
+    #     still gets enforcement + validation.
+    import os as _os
 
-        _ref_enforce(args.output_dir, phase="Phase 3")
-    except Exception as _e:  # enforcement must never crash a phase
-        logger.warning("referential-integrity enforcement skipped: %s", _e)
+    if not _os.environ.get("S3_BUCKET"):
+        try:
+            from src.utils.referential_integrity import run_for_phase as _ref_enforce
 
-    # Post-Phase-3 data validation (docs/current/PHASE3_DATA_VALIDATION.md). Runs on the fully
-    # enriched tree; asserts enriched records are still schema/version-clean, source-linked, and
-    # 0-dangling. Fail-safe: validation must never crash the phase (the exit code is logged).
-    try:
-        from scripts.validate_phase3 import run as _validate_phase3
+            _ref_enforce(args.output_dir, phase="Phase 3 (local)")
+        except Exception as _e:  # noqa: BLE001 - enforcement must never crash a phase
+            logger.warning("referential-integrity enforcement skipped: %s", _e)
+        try:
+            from scripts.validate_phase3 import run as _validate_phase3
 
-        rc = _validate_phase3(str(args.output_dir), strict_coverage=False)
-        logger.info("Post-Phase-3 validation exit=%d (0=pass, 1=fail)", rc)
-    except Exception as _e:  # noqa: BLE001 - validation must not crash the phase
-        logger.warning("Post-Phase-3 validation skipped: %s", _e)
-
+            rc = _validate_phase3(str(args.output_dir), strict_coverage=False)
+            logger.info("Post-Phase-3 validation exit=%d (0=pass, 1=fail)", rc)
+        except Exception as _e:  # noqa: BLE001 - validation must not crash a phase
+            logger.warning("Post-Phase-3 validation skipped: %s", _e)
     return 0
 
 

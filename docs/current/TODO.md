@@ -1056,3 +1056,125 @@ wall-clock threshold that spuriously fails on a loaded/slow CI runner (observed 
 asserts RELATIVE (vs a measured baseline, like test_hook_overhead_batch's `batch < individual*1.5`)
 or mark them @pytest.mark.perf / skip-in-CI, so CI isn't red on timing noise. Several asserts in
 that file share the pattern (lines ~201, plus the elapsed-based ones).
+
+## [HIGH·xref-loss] batch_parallel SCHEMA_TARGET is events-only -> skips newer-entity records (clean rerun 602ee29e/e4b22d9)
+batch_parallel.py:108 `SCHEMA_TARGET = _entity_version("events")` (=2.24, the MIN). _add_event_mention_batch
+(~388-392) calls read_for_update(data, SCHEMA_TARGET) on ARBITRARY entity records (places/groups/
+people/...) and treats any record whose version > 2.24 as a "future schema" -> skip=True -> the
+entity->event cross-reference mention is NOT added. The clean rerun (post version bumps: places 2.29,
+people_groups 2.28, people 2.26, bibliography 2.29) is SKIPPING places/groups records live:
+"Skipping german border.json: record schema 2.29 is NEWER than this code's target 2.24". Result:
+missing event_mentions / dangling-ish xrefs for every entity newer than events=2.24 — a cross-reference
+DATA-LOSS, ironically re-creating the kind of gap #571 fixed. Latent before (entities were near 2.24);
+my version bumps widened the gap and made it fire broadly. FIX: SCHEMA_TARGET must be PER-ENTITY — pass
+the version of the ENTITY being read (entity_version(entity_name) from the dir), not a single
+events-version threshold, into read_for_update. (The module comment "targets events because it emits
+event-mention records" is wrong for the READ path — it reads the target entity's own record.) Add a
+test: a places record at the CURRENT places version is NOT skipped by _add_event_mention_batch.
+
+## [HIGH·data-loss] supplemental sub-event drop: keyed-by-ULID / content-class response not unwrapped (clean rerun e4b22d9)
+Clean RoerDams rerun dropped 1 supplemental sub-event PER chapter (3/3): "Validation error for
+sub-event <ULID>: '<ULID>','<ULID>' do not match any of the regexes: '^_'" and "'Equipment' does not
+match any of the regexes: '^_'". The supplemental-extract LLM response is keyed by sub-event ULID (or
+by a content-class name like 'Equipment') but the validated schema only permits ^_ metadata keys ->
+retries exhausted -> sub-event's bibliography DROPPED. This is the #556 prompt↔schema drift class:
+_unwrap_keyed_supplemental flattens keyed-by-Sub-eventID responses but is NOT catching (a) these
+bare-ULID top-level keys and/or (b) a content-class key like 'Equipment'. OBSERV supplemental.anomaly
+correctly surfaced it ("bibliography data lost; check prompt↔schema"). FIX: extend
+_unwrap_keyed_supplemental to recognize + flatten these shapes (bare ULID keys + content-class keys),
+OR relax the prompt to emit the flat shape. Add a regression test with the exact dropped shapes.
+
+## [MED] source_section derive failed for 2 sections (clean rerun e4b22d9)
+"[phase2 step 1/5] Core extraction complete: 4 processed, 2 failed" + source_section.enrich errors=2:
+"source_section derive failed for 0GDW2A077AXSFWX53MGV5VTT6G: <hash>" and 7EQS9MD8QY861A2VB8B0NZEYKX.
+The error payload is an opaque hash (looks like a cache key / exception fingerprint, not a message) —
+investigate what source_section derive raises for those 2 sections. Also benign: "Status server
+failed to bind 10.0.22.19:8077 (Address already in use) — continuing" (port reuse, non-fatal).
+
+## [MED·dedup-false-positive] place dedup is string-only at the Phase-2 gate (no coords) — Roscheid/Schmidt (deferred fix #2)
+Clean RoerDams rerun flagged Roscheid vs Schmidt as a duplicate ("name similarity 67%") and gated
+Phase 3 on it. It is NOT a duplicate — difflib.SequenceMatcher("roscheid","schmidt")=0.667 clears the
+>=0.65 threshold by over-crediting scattered shared runs (sch, d). INHERENTLY string-ambiguous: the
+SAME 0.667 is scored by the REAL variant pair "St. Vith"/"Saint Vith" (and St Lô/Saint-Lô is a real
+dup at 0.43) — so NO string threshold/metric separates the false positive from real variants
+(verified: bigram-Jaccard veto and threshold-raise each kill real dups too). ROOT CAUSE: the one
+disambiguating signal — COORDINATES (Roscheid and Schmidt are ~40km apart; St.Vith/Saint-Vith are the
+same point) — does not exist at the Phase-2 dedup gate because geocoding runs in Phase 3 (13/18 places
+had geo_missing_coords). DURABLE FIX OPTIONS (pick when we tackle it): (a) run/augment place dedup
+AFTER Phase-3 geocoding so the haversine distance check can confirm/veto; (b) add an LLM adjudication
+step for name-only matches that lack coordinates (ask Grok "same place?", mirroring the group
+enrichment disambiguation); (c) partial cheap: raise threshold to ~0.72 + add 'st./saint' to the
+geo-prefix strip (still misses St Lô/Saint-Lô). Interim (done 2026-10-26): rejected in the dedup UI as
+not-a-duplicate to unblock Phase 3. Two prior heuristic attempts were REVERTED (each introduced false
+negatives) — do NOT re-attempt a string-only fix; use coords or LLM.
+
+## [LOW·yield] OpenSERP group-image search returns HTML page URLs, not direct images (clean rerun 96c86bef)
+During Phase-3 OpenSERP group enrichment, 28 image candidate URLs were vision.image_blocked
+(reason=ssrf_or_invalid) and 0 images added — because OpenSERP returned SEARCH-RESULT PAGE URLs
+(wikipedia.org/wiki/..., commons/wiki/Category:..., army.mil/*.aspx, ebay/itm, militaria product
+pages), NOT direct image files. The image-fetch guard CORRECTLY rejects non-image content (not a bug —
+SSRF/content-type guard working). But group-image yield is ~0. Follow-up (quality, not correctness):
+tune the group image-search query templates / result parsing to prefer direct image URLs (e.g. target
+commons File: / upload.wikimedia.org thumb URLs, or add an image-extraction step that resolves a page
+URL to its og:image). Low priority.
+
+## [HIGH·discovery] What happens end-to-end when OpenSERP discovers a URL?
+Owner-requested discovery (prompted by the clean RoerDams rerun 96c86bef, which logged 60+
+`OBSERV vision.image_blocked reason=ssrf_or_invalid` and ~0 images actually added). Trace and
+DOCUMENT the complete lifecycle of a single URL returned by OpenSERP's /mega/search, across every
+entity type (people/equipment/groups/places/source_sections) and the maps path, answering:
+
+1. SEARCH -> RESULT: what shape does OpenSERP return ({url,title,snippet})? Which field becomes a
+   candidate, and is it a direct resource (image/pdf) or a search-result PAGE URL? (Observed: mostly
+   HTML PAGE urls — wikipedia /wiki/, commons /wiki/Category:, army.mil .aspx, ebay /itm, militaria
+   product pages, and junk from poorly-disambiguated short queries like "2d"/"5th" -> crazygames,
+   fifth-third bank, Amazon sign-in.)
+2. RELEVANCE GATE: how/when is Grok _verify_result applied (title+snippet+url), fail-closed? What
+   fraction pass? (Observed verify REJECTs on obvious junk — working.)
+3. CLASSIFY: how does the code decide a URL is an IMAGE vs a resource_url vs discard? Is there any
+   attempt to resolve a PAGE url to its underlying image (og:image / commons File: /
+   upload.wikimedia.org thumb)? (Observed: NONE — a page URL is handed straight to
+   images.fetch_image_bytes, which SSRF-cleans it, GETs it, sees content-type text/html (not image)
+   -> rejects as non-image. So page URLs can NEVER yield an image. This is the ~0-image-yield root.)
+4. FETCH + SSRF: fetch_image_bytes -> url_hygiene.clean_url (scheme/loopback/private/link-local/
+   metadata) -> resolved_host_is_safe (DNS-rebind) -> _pinned_get (IP-pin, no-redirect) -> magic-byte
+   + bomb caps. Confirm which rejections are SSRF (security) vs content-type (not-an-image) vs
+   invalid, because the single OBSERV reason "ssrf_or_invalid" CONFLATES all three (operators can't
+   tell a real SSRF block from a benign not-an-image). FINDING: split the reason into
+   ssrf_blocked / not_an_image / fetch_error so the signal is actionable.
+5. PERSIST: for a URL that PASSES, where does it land (images[] vs resource_urls[]), under which
+   entity, through write_json_with_lock(entity=...)? Is the source/provenance (recorded_fetch)
+   captured? Is the review-enqueue policy applied?
+6. YIELD / EFFECTIVENESS: per entity type, how many searched vs enriched vs blocked? (openserp_people
+   enriched=4, equipment=0, groups ~0 images. The write_metrics / openserp.summary already track
+   this — summarize what "good" looks like and whether the query TEMPLATES (search_queries/*.yaml)
+   should target direct-image sources.)
+
+DELIVERABLE: a doc (docs/current/OPENSERP_URL_LIFECYCLE.md) mapping the path with file:line, plus a
+findings list — at minimum (a) resolve page-URL -> image (og:image/commons) so yield isn't ~0, and
+(b) split the conflated ssrf_or_invalid OBSERV reason. Ties to the existing LOW "OpenSERP group-image
+search returns HTML page URLs" note — fold that in.
+
+## [HIGH·durability] dangling-repair (#571) is clobbered by the trailing local->S3 _final_sync; validate_phase3 audits the wrong tree (clean rerun 96c86bef)
+Clean RoerDams Phase-3 run showed THREE different dangling counts for the SAME corpus at the end:
+  - in-task enforcement (run_for_phase, S3Storage prefix=output): repaired=28 -> "0 dangling" ✅
+  - in-task validate_phase3: "FAIL 82 dangling" (incl. EventID danglers)
+  - post-run S3 audit (authoritative): 23 dangling, all Sub_eventID.
+ROOT CAUSES (verified):
+  1) DURABILITY: run_for_phase/repair_dangling_subevents write the repaired records to S3 directly
+     (S3Storage, since S3_BUCKET is set) and re-audit S3 -> 0. BUT ecs_entrypoint._final_sync (runs
+     AFTER phase3 main() returns, line 56) uploads the LOCAL output/ dir to S3 — and the LOCAL copies
+     still carry the stale Sub_eventIDs (the repair never touched the local tree). The trailing sync
+     CLOBBERS the S3-side repair. Proven: wallendorf.json S3 LastModified=14:37:56 (7s AFTER the
+     14:37:49 repair/enforce) and still shows the stale Sub_eventID 6QGWBY1B... So #571's repair is
+     real but NON-DURABLE in the S3/ECS model.
+  2) VALIDATOR TREE MISMATCH: phase3 main calls validate_phase3(args.output_dir) = the LOCAL dir,
+     while enforcement used S3. The local tree is partial/stale (events not fully local) so even
+     EventIDs look dangling -> the 82 (incl. EventID) false count. validate_phase3 must audit the
+     SAME storage the pipeline persists to (S3 when S3_BUCKET set), not the local path.
+FIX: (a) make the repair + enforcement operate on the tree that _final_sync will upload (repair the
+LOCAL dir, OR run the repair AFTER the final sync / against the authoritative store), so the repair
+survives; (b) point validate_phase3 at the S3 store (S3Storage prefix=output) when S3_BUCKET is set,
+mirroring run_for_phase, so it audits reality. Net effect today: 23 real Sub_eventID danglers persist
+on S3 (down-bind lost to the sync) + a false-FAIL validation. Ties to the SCHEMA_TARGET bug which
+CREATES these danglers in Phase 2 (fix both: stop creating them + make the repair durable).
