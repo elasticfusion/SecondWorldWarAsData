@@ -1561,6 +1561,35 @@ def _offramp_doc_needs_review(reason: str) -> None:
         logger.warning("Failed to off-ramp doc %s to needs-review: %s", book, e)
 
 
+def _phase3_durable_referential_fix() -> None:
+    """Post-_final_sync referential repair + validation for Phase 3, run against the AUTHORITATIVE,
+    COMPLETE corpus (S3 when S3_BUCKET is set) AFTER the local->S3 sync — so (a) the stale-sub-event
+    down-bind repair is DURABLE (nothing clobbers it, unlike the in-main() repair which the sync
+    overwrote) and (b) validation audits the real state (the in-task validator saw a local tree
+    lacking output/content -> false EventID danglers). Fail-safe: never raises into the pipeline.
+    """
+    try:
+        from src.utils.referential_integrity import run_for_phase as _ref_enforce
+
+        # Repairs + re-audits S3 directly (S3Storage has the complete corpus incl. content/events).
+        _ref_enforce(WORKDIR / "output", phase="Phase 3 (post-sync)")
+    except Exception as e:  # noqa: BLE001 - enforcement must never crash teardown
+        logger.warning("post-sync referential enforcement skipped: %s", e)
+    try:
+        # validate_phase3 needs a LOCAL tree with the events key-space; output/content (events) is
+        # NOT in the Phase-3 input download, so pull it (skip-existing) before validating, else every
+        # EventID looks dangling. Then validate the now-complete local tree.
+        if os.environ.get("S3_BUCKET"):
+            s3 = _s3_client()
+            _download_s3_prefix_skip_existing(s3, "output/content/")
+        from scripts.validate_phase3 import run as _validate_phase3
+
+        rc = _validate_phase3(str(WORKDIR / "output"), strict_coverage=False)
+        logger.info("Post-sync Phase-3 validation exit=%d (0=pass, 1=fail)", rc)
+    except Exception as e:  # noqa: BLE001 - validation must never crash teardown
+        logger.warning("post-sync Phase-3 validation skipped: %s", e)
+
+
 def _post_process(phase_script: str, env: dict) -> None:
     """Run post-processing steps after a successful phase."""
     if "phase1" in phase_script:
@@ -1680,6 +1709,12 @@ def _post_process(phase_script: str, env: dict) -> None:
     if "phase3" in phase_script:
         # Phase 3 complete — release lock and check for next book in enrich queue
         _remove_lock(phase_script)
+        # DURABLE referential repair + validation: run it HERE (after _final_sync, against S3) — NOT
+        # only inside phase3 main(). The in-main() enforcement ran before the final local->S3 sync,
+        # so its S3-side down-bind repair was clobbered by the sync and it audited a local tree that
+        # lacks output/content (events) -> false EventID danglers. Post-sync S3 is the authoritative,
+        # complete corpus; repairing it now makes the fix durable and the audit truthful.
+        _phase3_durable_referential_fix()
         _advance_doc_lifecycle("3")  # doc# -> done (multi-doc; terminal)
         next_enrich = _get_next_pending_enrich()
         if next_enrich:
