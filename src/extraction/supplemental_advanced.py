@@ -527,7 +527,11 @@ def _enrich_bib_file(bib_file: Path, config: Dict[str, Any], grok_client: Any) -
     )
 
     if changed:
-        _save_enriched_data(bib_file, data, 1, entity="bibliography")
+        # Honor the write-guard return: a schema-blocked write did NOT persist, so do not report
+        # this record as enriched (which would inflate OBSERV bibliography.summary — the same
+        # silent-success class fixed in the resolver/reconcile paths).
+        if not _save_enriched_data(bib_file, data, 1, entity="bibliography"):
+            return False
     return changed
 
 

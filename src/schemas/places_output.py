@@ -126,6 +126,10 @@ PLACES_OUTPUT_SCHEMA = {
                 "geocoded",
                 "geocode_low_confidence",
                 "geocode_not_found",
+                # Transient geocoder outage (API timeout/5xx/exception): a NON-terminal, retriable
+                # status set by places_grok_geocode._apply_result. Must be schema-legal or the
+                # write-guard blocks it, silently defeating the transient-retry guarantee.
+                "geocode_error",
             ],
             nullable=True,
         ),
