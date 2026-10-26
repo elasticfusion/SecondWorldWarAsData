@@ -125,6 +125,15 @@ def list_pending() -> List[Dict[str, Any]]:
     return [e for e in _load_events() if e.get("review_status") == fp.PENDING]
 
 
+def list_affirmed() -> List[Dict[str, Any]]:
+    """Affirmed finds NOT yet submitted to Phase 1 (review_status == affirmed). These accumulate as
+    the reviewer approves individual URLs; submit_affirmed_batch() hands them to Phase 1 together.
+    """
+    from src.utils import fetch_provenance as fp
+
+    return [e for e in _load_events() if e.get("review_status") == fp.AFFIRMED]
+
+
 def set_review_status(fetch_event_id: str, status: str) -> bool:
     """Persist a reviewer's decision (affirmed/rejected) onto a stored fetch-provenance event.
     DynamoDB in AWS mode (overwrite the item), else rewrite the local JSONL line. Fail-safe.
@@ -222,13 +231,22 @@ def decide_exclude_scope(fetch_event: Dict[str, Any], grok_client: Any = None) -
             use_cache=True,
             cache_type="exclude_scope",
         )
-        return (
+        scope = (
             SCOPE_SITE
             if str(response).strip().upper().startswith("SITE")
             else SCOPE_URL
         )
+        logger.info(
+            "OBSERV fetch_find.exclude_scope decided=%s source=grok url=%s",
+            scope,
+            url[:120],
+        )
+        return scope
     except Exception as e:  # noqa: BLE001 - fail closed to the narrow URL-only scope
-        logger.debug("decide_exclude_scope errored (fail-closed to url): %s", e)
+        logger.warning(
+            "OBSERV fetch_find.exclude_scope decided=url source=failclosed reason=%s",
+            str(e)[:80],
+        )
         return SCOPE_URL
 
 
@@ -320,3 +338,136 @@ def affirm_fetch_find(
             e,
         )
         return None
+
+
+def _safe_token(value: str, fallback: str) -> str:
+    """Reduce a string to a safe path/key token ([A-Za-z0-9._-]+); fallback if nothing survives."""
+    import re
+
+    cleaned = re.sub(r"[^A-Za-z0-9._-]+", "-", (value or "").strip()).strip("-.")
+    return cleaned[:80] or fallback
+
+
+def _find_title(fetch_event: Dict[str, Any]) -> str:
+    """A safe TITLE segment for the content key, derived from the find's URL host + id."""
+    from urllib.parse import urlparse
+
+    host = (urlparse(fetch_event.get("endpoint", "")).hostname or "source").lower()
+    fid = fetch_event.get("fetch_event_id", "") or "find"
+    return _safe_token(f"{host}-{fid}", "fetchfind")
+
+
+def _find_content_bytes(fetch_event: Dict[str, Any]) -> bytes:
+    """The bytes to submit for a find: the quarantined file if present locally, else a provenance
+    HTML stub (the source URL + metadata) so Phase 1 can ingest it like any uploaded source.
+    """
+    import html as _html
+    from pathlib import Path as _Path
+
+    qp = fetch_event.get("quarantine_path") or fetch_event.get("retrieved_path") or ""
+    try:
+        if qp and _Path(qp).is_file():
+            return _Path(qp).read_bytes()
+    except Exception:  # noqa: BLE001
+        pass
+    url = _html.escape(fetch_event.get("endpoint", ""))
+    provider = _html.escape(str(fetch_event.get("provider", "")))
+    summary = _html.escape(str(fetch_event.get("result_summary", "")))
+    stub = (
+        "<!doctype html><html><head><meta charset='utf-8'>"
+        f"<title>Affirmed source: {url}</title></head><body>"
+        f"<h1>Affirmed primary-source find</h1>"
+        f"<p>Source URL: <a href='{url}'>{url}</a></p>"
+        f"<p>Provider: {provider}</p><p>Provenance: {summary}</p>"
+        "</body></html>"
+    )
+    return stub.encode("utf-8")
+
+
+def _s3_client_and_bucket():
+    """(boto3 s3 client, bucket) from S3_BUCKET env, or (None, '') if unavailable. Fail-safe."""
+    import os
+
+    bucket = os.environ.get("S3_BUCKET", "").strip()
+    if not bucket:
+        return None, ""
+    try:
+        import boto3
+
+        region = os.environ.get("AWS_REGION", "us-east-1")
+        return boto3.client("s3", region_name=region), bucket
+    except Exception as e:  # noqa: BLE001
+        logger.debug("submit_affirmed_batch s3 client unavailable: %s", e)
+        return None, ""
+
+
+def submit_affirmed_batch() -> Dict[str, Any]:
+    """BATCH-submit all AFFIRMED-not-yet-submitted finds to Phase 1 in ONE shot.
+
+    Uploads each find's content to ``contentrepository/_system/<title>/fetchfind-<id>.html`` in the
+    data bucket. The S3 uploads fan out to the ONE ``content-uploaded`` front door
+    (_handle_content_topic), which queues them together and launches Phase 1 ONCE — so the pipeline
+    infrastructure spins up a single time for the whole approved batch, not per URL. Each submitted
+    find is marked SUBMITTED so it is never re-submitted. Fail-safe: returns a summary, never raises.
+
+    Returns ``{"submitted": N, "source_ids": [...], "skipped": M}``.
+    """
+    from src.utils import fetch_provenance as fp
+
+    affirmed = list_affirmed()
+    result: Dict[str, Any] = {"submitted": 0, "source_ids": [], "skipped": 0}
+    if not affirmed:
+        logger.info("OBSERV fetch_find.batch_submit affirmed=0 — nothing to submit")
+        return result
+
+    client, bucket = _s3_client_and_bucket()
+    if client is None:
+        logger.warning("submit_affirmed_batch: no S3 bucket configured — cannot submit")
+        result["skipped"] = len(affirmed)
+        return result
+
+    for find in affirmed:
+        fid = find.get("fetch_event_id", "")
+        source_id = f"fetchfind-{fid}"
+        key = f"contentrepository/_system/{_find_title(find)}/{_safe_token(source_id, 'fetchfind')}.html"
+        try:
+            client.put_object(
+                Bucket=bucket,
+                Key=key,
+                Body=_find_content_bytes(find),
+                ContentType="text/html; charset=utf-8",
+            )
+            # Only count a submission once the SUBMITTED state transition is CONFIRMED. If the
+            # status write isn't confirmed, the content is uploaded but the find stays AFFIRMED;
+            # the deterministic key means a re-click overwrites (no duplicate), and the launch is
+            # idle-gated + title-deduped downstream, so a redundant attempt is harmless.
+            if set_review_status(fid, fp.SUBMITTED):
+                result["submitted"] += 1
+                result["source_ids"].append(source_id)
+            else:
+                logger.warning(
+                    "submit_affirmed_batch: %s uploaded but SUBMITTED status unconfirmed "
+                    "(stays AFFIRMED for the next batch)",
+                    fid,
+                )
+                result["skipped"] += 1
+        except Exception as e:  # noqa: BLE001 - one bad find must not sink the batch
+            logger.warning("submit_affirmed_batch: failed to submit %s: %s", fid, e)
+            result["skipped"] += 1
+
+    logger.info(
+        "OBSERV fetch_find.batch_submit.summary affirmed=%d submitted=%d skipped=%d "
+        "bucket=%s front_door=content-uploaded launches=1",
+        len(affirmed),
+        result["submitted"],
+        result["skipped"],
+        bucket,
+    )
+    if result["skipped"]:
+        logger.warning(
+            "OBSERV fetch_find.batch_submit.anomaly %d-of-%d affirmed find(s) failed to submit "
+            "(see prior warnings) — they remain AFFIRMED for the next batch",
+            result["skipped"],
+            len(affirmed),
+        )
+    return result

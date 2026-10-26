@@ -52,8 +52,12 @@ def handler(event, _context):
             return _serve_ui()
         if route == "GET /urlreview/api/pending":
             return _get_pending()
+        if route == "GET /urlreview/api/affirmed":
+            return _get_affirmed()
         if route == "POST /urlreview/api/action":
             return _handle_action(event)
+        if route == "POST /urlreview/api/submit":
+            return _handle_submit()
         return _json(404, {"error": "not found", "route": route})
     except Exception as e:  # noqa: BLE001 - a review UI must never 500 unhandled
         logger.exception("urlreview handler error")
@@ -79,6 +83,26 @@ def _get_pending() -> dict:
     return _json(200, {"count": len(items), "pending": items})
 
 
+def _get_affirmed() -> dict:
+    """Count of AFFIRMED-not-yet-submitted finds (drives the 'Submit N to Phase 1' batch bar)."""
+    from src.enrichment.fetch_review import list_affirmed
+
+    return _json(200, {"count": len(list_affirmed())})
+
+
+def _handle_submit() -> dict:
+    """Submit ALL affirmed finds to Phase 1 as ONE batch (single infra spin-up)."""
+    from src.enrichment.fetch_review import submit_affirmed_batch
+
+    result = submit_affirmed_batch()
+    logger.info(
+        "OBSERV urlreview.submit submitted=%d skipped=%d",
+        result.get("submitted", 0),
+        result.get("skipped", 0),
+    )
+    return _json(200, result)
+
+
 def _handle_action(event) -> dict:
     """Affirm (→ stage for Phase-0/1 ingestion) or reject (→ won't-do) one find."""
     from src.enrichment.fetch_review import list_pending
@@ -91,7 +115,14 @@ def _handle_action(event) -> dict:
     find = next((f for f in list_pending() if f.get("fetch_event_id") == fid), None)
     if find is None:
         return _json(404, {"error": f"no pending find {fid}"})
-    return _apply_decision(find, fid, decision)
+    resp = _apply_decision(find, fid, decision)
+    logger.info(
+        "OBSERV urlreview.action decision=%s fetch_event_id=%s status=%d",
+        decision,
+        fid,
+        resp.get("statusCode", 0),
+    )
+    return resp
 
 
 def _parse_action(event):
@@ -196,16 +227,24 @@ def _serve_ui() -> dict:
  .affirm{{background:#2a7;color:#fff;border:0;border-radius:4px}} .reject{{background:#a33;color:#fff;border:0;border-radius:4px}}
  .exclude{{background:#555;color:#fff;border:0;border-radius:4px}}
  .empty{{color:#777}} .msg{{margin:.5rem 0;color:#06a}}
+ .bar{{position:sticky;top:0;background:#eef;padding:.6rem .8rem;border-radius:6px;margin:.5rem 0;display:flex;align-items:center;gap:1rem}}
+ .submit{{background:#15c;color:#fff;border:0;border-radius:4px;padding:.45rem 1rem}} .submit:disabled{{background:#aab;cursor:not-allowed}}
 </style></head><body>
 <h1>{title}</h1>
-<p>Textual finds awaiting review — affirmed URLs are promoted into Phase-0/1 ingestion (like an
-uploaded source); rejected URLs are marked "won't do" and never ingested. "Exclude" asks Grok
-whether to skip just this URL or the whole site, then persists that scope so future searches skip it.</p>
+<p>Approve URLs individually — "Approve" just marks a find approved (it does NOT start the pipeline).
+When you've approved a set, click "Submit batch to Phase 1" ONCE: all approved URLs are handed to
+Phase 1 together in a single run, so the pipeline spins up once for the whole batch, not per URL.
+Reject marks a find "won't do"; "Exclude" asks Grok whether to skip just this URL or the whole site.</p>
+<div class="bar">
+  <span>Approved &amp; ready: <b id="acount">0</b></span>
+  <button id="submit" class="submit" disabled>Submit batch to Phase 1</button>
+</div>
 <div id="msg" class="msg"></div>
 <div id="list"><p class="empty">loading…</p></div>
 <script>
 const base = location.pathname.replace(/\\/$/, "");
 async function load() {{
+  await loadAffirmedCount();
   const r = await fetch(base + "/api/pending");
   const d = await r.json();
   const list = document.getElementById("list");
@@ -216,7 +255,7 @@ async function load() {{
     const u = document.createElement("div"); u.className = "u"; u.textContent = f.url || "(no url)";
     const p = document.createElement("div"); p.className = "prov";
     p.textContent = "provider=" + (f.provider||"") + "  •  " + (f.summary||"") + "  •  " + (f.queried_at||"");
-    const a = document.createElement("button"); a.className="affirm"; a.textContent="Affirm → ingest";
+    const a = document.createElement("button"); a.className="affirm"; a.textContent="Approve";
     const x = document.createElement("button"); x.className="reject"; x.textContent="Reject (won't do)";
     const e = document.createElement("button"); e.className="exclude"; e.textContent="Exclude (ask Grok: site?)";
     a.onclick = () => act(f.fetch_event_id, "affirm");
@@ -224,6 +263,27 @@ async function load() {{
     e.onclick = () => act(f.fetch_event_id, "exclude");
     div.append(u, p, a, x, e); list.append(div);
   }}
+}}
+async function loadAffirmedCount() {{
+  try {{
+    const r = await fetch(base + "/api/affirmed");
+    const d = await r.json();
+    const n = d.count || 0;
+    document.getElementById("acount").textContent = n;
+    document.getElementById("submit").disabled = (n === 0);
+  }} catch (err) {{ /* leave bar as-is on error */ }}
+}}
+document.getElementById("submit").onclick = submit;
+async function submit() {{
+  const btn = document.getElementById("submit"); btn.disabled = true;
+  document.getElementById("msg").textContent = "submitting batch to Phase 1…";
+  try {{
+    const r = await fetch(base + "/api/submit", {{method:"POST"}});
+    const d = await r.json();
+    document.getElementById("msg").textContent =
+      "submitted " + (d.submitted||0) + " to Phase 1" + (d.skipped ? (" (" + d.skipped + " skipped)") : "");
+  }} catch (err) {{ document.getElementById("msg").textContent = "submit failed: " + err; }}
+  load();
 }}
 async function act(id, decision) {{
   document.getElementById("msg").textContent = "…";

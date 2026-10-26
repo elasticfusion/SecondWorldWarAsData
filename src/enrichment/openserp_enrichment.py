@@ -252,7 +252,9 @@ def _drop_excluded_domains(results: List[Dict]) -> List[Dict]:
         kept.append(r)
     if dropped:
         _metric("results_site_excluded", dropped)
-        logger.info("OpenSERP: dropped %d result(s) on site denylist", dropped)
+        logger.info(
+            "OBSERV openserp.site_excluded dropped=%d kept=%d", dropped, len(kept)
+        )
     return kept
 
 
