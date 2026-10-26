@@ -183,3 +183,72 @@ def test_unwrap_merges_multiple_keyed_subevents_without_loss():
     out = sanitize_supplemental_data(copy.deepcopy(keyed))
     validate_supplemental_json(out)
     assert len(out["Supplemental_Material"]) == 2  # both materials preserved
+
+
+def test_keyed_by_ulid_list_shape_is_flattened_not_dropped():
+    """Regression (clean rerun): the supplemental LLM returned responses keyed by Sub-eventID OR a
+    content-class name mapping DIRECTLY to a LIST of materials ({"<ULID>": [..]} / {"Equipment": [..]}),
+    which _unwrap_keyed_supplemental missed -> validation '<key> does not match ^_' -> the sub-event's
+    bibliography was DROPPED. Now flattened + preserved."""
+    import json
+    from src.extraction.supplemental import (
+        sanitize_supplemental_data,
+        validate_supplemental_json,
+    )
+
+    U = "01HX7YZABCDEFGHJKMNPQRSTVW"
+    for shape, expect_n in (
+        ({U: [{"title": "A"}]}, 1),  # keyed-by-ULID -> list
+        ({"Equipment": [{"title": "B"}]}, 1),  # content-class key -> list
+        ({U: [{"title": "a"}], "Equipment": [{"title": "b"}]}, 2),  # mixed
+        (
+            {"Equipment": {"Supplemental_Material": [{"title": "C"}]}},
+            1,
+        ),  # key -> {SM:[..]} (prior)
+    ):
+        san = sanitize_supplemental_data(json.loads(json.dumps(shape)))
+        validate_supplemental_json(san)  # must NOT raise
+        assert len(san["Supplemental_Material"]) == expect_n
+
+
+def test_metadata_only_dict_not_falsely_flattened():
+    """A dict with only _metadata keys has nothing to extract -> stays invalid (required SM), NOT a
+    silent empty flatten."""
+    import pytest
+    from jsonschema import ValidationError
+    from src.extraction.supplemental import (
+        sanitize_supplemental_data,
+        validate_supplemental_json,
+    )
+
+    san = sanitize_supplemental_data({"_schema_version": "1.0"})
+    with pytest.raises(ValidationError):
+        validate_supplemental_json(san)
+
+
+def test_ulid_key_provenance_preserved_on_flatten():
+    """The {ULID:[..]} shape must keep its Sub-eventID linkage (the key IS the real Sub-eventID),
+    NOT a random one -> otherwise the material would dangle."""
+    import json
+    from src.extraction.supplemental import sanitize_supplemental_data
+
+    U = "01HX7YZABCDEFGHJKMNPQRSTVW"
+    san = sanitize_supplemental_data(json.loads(json.dumps({U: [{"title": "Y"}]})))
+    assert san["Supplemental_Material"][0]["Sub-eventID"] == U
+    assert san.get("Sub-eventID") == U
+
+
+def test_over_flatten_guards():
+    """Scalar lists, mixed non-dict lists, empty lists, and _-prefixed keys are NOT swept into
+    materials (no invented data)."""
+    import json
+    from src.extraction.supplemental import _flatten_keyed_lists
+
+    for bad in (
+        {"junk": [1, 2, 3]},
+        {"mix": [{"a": 1}, "x"]},
+        {"Equipment": []},
+        {"_meta": [{"a": 1}]},
+    ):
+        mats, seid = _flatten_keyed_lists(json.loads(json.dumps(bad)))
+        assert mats == [] and seid is None, f"{bad} wrongly flattened -> {mats}"

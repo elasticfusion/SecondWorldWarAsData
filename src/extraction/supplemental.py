@@ -277,6 +277,54 @@ def _derive_title_from_mentions(mentions: list) -> str:
     return title if title else "Unknown"
 
 
+def _merge_inner_wrappers(inner: list):
+    """Merge the Supplemental_Material from each keyed inner wrapper ({"<key>": {Supplemental_
+    Material:[..]}}) + carry the first wrapper's event-level ids. Returns (base, merged).
+    """
+    merged: list = []
+    base: Dict[str, Any] = {}
+    for v in inner:
+        merged.extend(v.get("Supplemental_Material") or [])
+        for k in ("Event_Name", "EventID", "Sub-event_Name", "Sub-eventID"):
+            base.setdefault(k, v.get(k))
+    return base, merged
+
+
+def _is_keyed_material_list(k, v) -> bool:
+    """True if (k, v) is a keyed material-list wrapper entry: a non-metadata string key
+    mapping to a non-empty list of dict items."""
+    if not isinstance(k, str) or k.startswith("_"):
+        return False
+    return isinstance(v, list) and bool(v) and all(isinstance(it, dict) for it in v)
+
+
+def _flatten_keyed_lists(data: Dict[str, Any]) -> "tuple[list, Optional[str]]":
+    """Collect material items from the key->LIST wrapper shape: a response keyed by a
+    Sub-eventID OR a content-class name (e.g. {"Equipment": [..]} / {"<ULID>": [..]}) mapping
+    directly to a list of dict material items. Skips metadata keys (``_*``). These shapes were
+    previously rejected ('<key> does not match ^_') and the sub-event's bibliography DROPPED.
+
+    PROVENANCE: when a key is itself a ULID it IS the real Sub-eventID — stamp it onto each of its
+    materials' 'Sub-eventID' (unless already set) and return it as a detected base Sub-eventID, so
+    the flattened materials keep their true sub-event linkage instead of being defaulted to a random
+    ULID (which would dangle). A content-class key (e.g. 'Equipment') carries no ID and is dropped.
+    """
+    import re as _re
+
+    _ULID = _re.compile(r"^[0-9A-HJKMNP-TV-Z]{26}$")
+    out: list = []
+    detected_seid: Optional[str] = None
+    for k, v in data.items():
+        if not _is_keyed_material_list(k, v):
+            continue
+        if _ULID.match(k):  # k is a str here (guaranteed by _is_keyed_material_list)
+            detected_seid = detected_seid or k
+            for it in v:
+                it.setdefault("Sub-eventID", k)
+        out.extend(v)
+    return out, detected_seid
+
+
 def _unwrap_keyed_supplemental(data: Dict[str, Any]) -> Dict[str, Any]:
     """Some LLM responses wrap output as a dict KEYED BY Sub-eventID ({"<ULID>": {...}, ...})
     instead of the flat single-sub-event shape. Flatten/merge into the flat shape so it validates
@@ -287,18 +335,22 @@ def _unwrap_keyed_supplemental(data: Dict[str, Any]) -> Dict[str, Any]:
     inner = [
         v for v in data.values() if isinstance(v, dict) and "Supplemental_Material" in v
     ]
-    if not inner:
+    # Also handle the key->LIST shape (keyed by Sub-eventID OR content-class name mapping directly
+    # to a list of material items, no inner Supplemental_Material wrapper) — previously dropped.
+    list_materials, detected_seid = _flatten_keyed_lists(data)
+    if not inner and not list_materials:
         return data
-    merged: list = []
-    base: Dict[str, Any] = {}
-    for v in inner:
-        merged.extend(v.get("Supplemental_Material") or [])
-        for k in ("Event_Name", "EventID", "Sub-event_Name", "Sub-eventID"):
-            base.setdefault(k, v.get(k))
+    base, merged = _merge_inner_wrappers(inner)
+    merged.extend(list_materials)
+    # Preserve the sub-event linkage when a ULID key carried it (provenance): use the detected
+    # Sub-eventID as the base unless an inner wrapper already supplied one.
+    if detected_seid and not base.get("Sub-eventID"):
+        base["Sub-eventID"] = detected_seid
     # NOTE: if multiple sub-events are wrapped together, their materials are MERGED and the
-    # event-level ids collapse to the FIRST sub-event's. The caller extracts per sub-event, so a
-    # multi-sub-event wrapper is itself the anomaly; materials are preserved (not lost), provenance
-    # is best-effort. A per-material EventID/Sub-eventID still rides on each material item.
+    # event-level ids collapse to the FIRST sub-event's — the caller extracts per sub-event, so a
+    # multi-sub-event wrapper is itself the anomaly. Materials are preserved (not lost). A ULID key
+    # is stamped onto its materials' Sub-eventID (provenance kept); a content-class key carries no
+    # id, so those materials fall back to the base/defaulted ids (best-effort).
     return {**base, "Supplemental_Material": merged}
 
 
