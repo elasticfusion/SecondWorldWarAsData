@@ -229,7 +229,7 @@ def _check_license_terms(
 
 def _add_to_blacklist(domain: str, url: str = "") -> None:
     """Add domain to blacklist file with comment showing the URL."""
-    blacklist_file = Path("domain_blacklist.yaml")
+    blacklist_file = Path("config/domain_blacklist.yaml")
 
     try:
         # Read entire file

@@ -797,4 +797,9 @@ def _write_place(path: Path, place: dict) -> None:
     from src.utils.file_lock import write_json_with_lock
 
     inject_metadata(place, entity="places")
-    write_json_with_lock(path, place, entity="places")
+    if not write_json_with_lock(path, place, entity="places"):
+        logger.warning(
+            "OBSERV geocode.write_blocked place=%s status=%s — schema guard refused the write",
+            str(place.get("PlaceID") or place.get("name") or "?")[:40],
+            place.get("enrichment_status"),
+        )

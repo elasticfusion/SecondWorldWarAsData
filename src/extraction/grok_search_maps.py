@@ -399,7 +399,7 @@ def import_grok_search_maps(
     image_storage_path: Path,
     grok_client: GrokClient,
     max_places: Optional[int] = None,
-    blacklist_file: Path = Path("domain_blacklist.yaml"),
+    blacklist_file: Path = Path("config/domain_blacklist.yaml"),
 ) -> int:
     """Search and import maps using Grok search + vision verification.
 
