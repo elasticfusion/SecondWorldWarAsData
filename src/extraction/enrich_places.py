@@ -539,6 +539,10 @@ def enrich_all_places(
     from concurrent.futures import ThreadPoolExecutor
 
     total = len(files)
+    # Snapshot how many places NEED work BEFORE the enrichment loop — _place_needs_work returns
+    # False for a just-enriched record, so counting it AFTER the loop always yields ~0 (a misleading
+    # summary). Measuring up-front gives a truthful "needed" and a correct anomaly gate.
+    needed = sum(1 for f in files if _place_needs_work(f))
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
         futures = {pool.submit(enrich_place, f, grok_client): f for f in files}
         enriched = _collect_place_enrichments(pool, futures, total)
@@ -546,7 +550,6 @@ def enrich_all_places(
     logger.info("Place enrichment complete: %d/%d enriched", enriched, len(files))
     # Canonical coverage rollup + anomaly, gated on how many places actually NEEDED work (so a
     # benign re-run of an already-enriched corpus does not false-fire).
-    needed = sum(1 for f in files if _place_needs_work(f))
     logger.info(
         "OBSERV places.summary total=%d needed=%d enriched=%d skipped=%d",
         total,
