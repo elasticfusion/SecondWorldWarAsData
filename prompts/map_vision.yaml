@@ -43,12 +43,16 @@ prompt_template: |
     if attributable, and the objective (e.g. "US 28th Div attacks SE toward Schmidt via Vossenack").
   - description: a factual 1-3 sentence prose summary of WHAT THE MAP SHOWS, grounded only in
     legible content — the text a historian would write captioning this map.
+  - legibility_confidence: a number 0.0-1.0 for how LEGIBLE/readable the map is — how confidently a
+    staff officer could read its labels, unit symbols, and lines. A crisp, sharp map ~0.9; a blurry,
+    low-resolution, or faint photographic reproduction where little is readable ~0.2. Report honestly
+    — a low score when the image is hard to read is correct and expected.
 
   Return JSON matching this structure:
   {schema}
 
 schema: |
-  {"is_relevant": true, "is_government_map": false, "reason": "Tactical map showing US 28th and German 116th Panzer positions near Schmidt, Nov 1944", "depicted": {"units": ["28th Infantry Division", "116th Panzer Division"], "places": ["Schmidt", "Vossenack", "Kall trail"], "front_line_or_sector": "Hürtgen Forest, Roer sector", "date_or_window": "2-3 November 1944", "operation": "First attack on Schmidt", "movements": ["US 28th Div attacks SE toward Schmidt via Vossenack"], "description": "Tactical map of the first attack on Schmidt in the Hürtgen Forest, showing US 28th Infantry Division positions and the German 116th Panzer Division counterattack, early November 1944."}}
+  {"is_relevant": true, "is_government_map": false, "reason": "Tactical map showing US 28th and German 116th Panzer positions near Schmidt, Nov 1944", "depicted": {"units": ["28th Infantry Division", "116th Panzer Division"], "places": ["Schmidt", "Vossenack", "Kall trail"], "front_line_or_sector": "Hürtgen Forest, Roer sector", "date_or_window": "2-3 November 1944", "operation": "First attack on Schmidt", "movements": ["US 28th Div attacks SE toward Schmidt via Vossenack"], "description": "Tactical map of the first attack on Schmidt in the Hürtgen Forest, showing US 28th Infantry Division positions and the German 116th Panzer Division counterattack, early November 1944.", "legibility_confidence": 0.85}}
 
 rules:
   - Must be a MAP (cartographic representation), not a photo, painting, diagram, or document
@@ -57,4 +61,5 @@ rules:
   - depicted is populated ONLY when is_relevant is true; otherwise depicted is null
   - depicted contains ONLY legibly-shown content — never inferred, guessed, or from outside knowledge
   - Unknown/illegible fields are null (scalars) or [] (lists); an empty honest answer is REQUIRED over a fabricated one
+  - legibility_confidence reflects how READABLE the map is (0.0-1.0); a faint/blurry/low-resolution map that cannot be read reliably should score low — a too-illegible map is dropped rather than deriving a low-confidence event
   - Expand standard military abbreviations only when the expansion is unambiguous from the label
