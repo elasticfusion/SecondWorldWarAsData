@@ -560,7 +560,7 @@ _COMPRESSED_SUFFIXES = (
 
 
 def _validate_parse_keys(keys: list) -> list:
-    """Filter standalone text keys (.md/.txt/.html) headed to parse: a file with
+    """Filter standalone text keys (.md/.txt) headed to parse: a file with
     no usable content is off-ramped to needs-review instead of queuing a doomed
     parse (previously it reached Phase 1 and only produced a parse error). Keeps
     usable files. Fail-open: a fetch/read error keeps the key (let parse try) —
@@ -645,13 +645,15 @@ def _split_by_media(keys: list) -> tuple:
 
     OCR (Chandra GPU, Phase 0): PDFs AND images (.jpg/.png/.tif/... incl scanned
     maps) — Chandra reads both.
-    Convert (pandoc, Phase-0 convert task): .epub/.docx — binary text documents
-    that must be converted to markdown before parse.
+    Convert (pandoc, Phase-0 convert task): .epub/.docx AND .html/.htm/.xhtml —
+    documents that must be converted to markdown before parse. HTML in particular
+    is boilerplate-stripped + pandoc-converted (web pages are NOT valid markdown;
+    routing raw HTML to the parser produced tag-soup — this normalizes it first).
     Video (Phase-0 video task): .mp4/.mkv/... — transcribe + speaker-id -> markdown.
-    Parse: already-textual content (.md/.txt/.html) goes straight to parse.
+    Parse: already-textual content (.md/.txt) goes straight to parse.
     """
     ocr_suffixes = (".pdf",) + _IMAGE_SUFFIXES
-    convert_suffixes = (".epub", ".docx")
+    convert_suffixes = (".epub", ".docx", ".html", ".htm", ".xhtml")
     ocr_keys = [k for k in keys if k.lower().endswith(ocr_suffixes)]
     convert_keys = [k for k in keys if k.lower().endswith(convert_suffixes)]
     video_keys = [k for k in keys if k.lower().endswith(_VIDEO_SUFFIXES)]

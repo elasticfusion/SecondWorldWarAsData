@@ -142,6 +142,99 @@ def epub_to_markdown(path: Path) -> str:
     return _run_pandoc(Path(path), "epub")
 
 
+# Non-content HTML elements whose text is page chrome (navigation, scripts, styling,
+# sidebars) — stripped before conversion so web-page boilerplate never pollutes the corpus.
+_HTML_BOILERPLATE_TAGS = (
+    "script",
+    "style",
+    "nav",
+    "header",
+    "footer",
+    "aside",
+    "form",
+    "noscript",
+    "iframe",
+    "svg",
+)
+
+
+def _strip_html_boilerplate(html: str) -> str:
+    """Remove non-content chrome (scripts/styles/nav/header/footer/aside/...) from an HTML
+    document, returning the cleaned HTML. Fail-safe: if BeautifulSoup is unavailable or parsing
+    fails, return the original HTML unchanged (pandoc still converts it, just with more chrome).
+    """
+    try:
+        from bs4 import BeautifulSoup  # pinned dependency (beautifulsoup4)
+
+        soup = BeautifulSoup(html, "html.parser")
+        for tag in soup(list(_HTML_BOILERPLATE_TAGS)):
+            tag.decompose()
+        # Prefer the main content region when the page marks one; else the whole (cleaned) doc.
+        main = soup.find("main") or soup.find("article") or soup
+        return str(main)
+    except Exception as e:  # noqa: BLE001 - never let cleaning block conversion
+        logger.debug("HTML boilerplate strip skipped: %s", e)
+        return html
+
+
+def html_to_markdown(path: Path) -> str:
+    """Convert an ``.html`` document to markdown (GFM).
+
+    Robustness: web pages carry chrome (nav/scripts/sidebars) that would otherwise leak into the
+    corpus as noise. We first strip boilerplate with BeautifulSoup, then convert the cleaned HTML
+    to GFM via pandoc (``--sandbox`` hardened, tables/headings/lists preserved — far better than a
+    raw markdown pass-through, which the old ingest path did by routing .html straight to the
+    parser). Fail-safe: a cleaning error falls back to converting the raw HTML.
+
+    Raises ConverterUnavailable/ConverterError consistent with the other converters.
+    """
+    path = Path(path)
+    if not path.is_file():
+        raise ConverterError(f"input file does not exist: {path}")
+    raw = path.read_text(encoding="utf-8", errors="replace")
+    cleaned = _strip_html_boilerplate(raw)
+    return _run_pandoc_text(cleaned, "html")
+
+
+def _run_pandoc_text(text: str, from_format: str) -> str:
+    """Convert an in-memory string from ``from_format`` to markdown via pandoc (stdin).
+
+    Mirrors _run_pandoc (same --sandbox hardening, GFM, --wrap=none, timeout) but feeds content on
+    stdin so a cleaned/transformed document need not be re-written to disk first."""
+    if not pandoc_available():
+        raise ConverterUnavailable(
+            f"pandoc is required to convert {from_format} but was not found on PATH. "
+            "Install pandoc (https://pandoc.org/installing.html)."
+        )
+    cmd = [
+        "pandoc",
+        "--sandbox",
+        "--from",
+        from_format,
+        "--to",
+        _PANDOC_TO,
+        _PANDOC_WRAP,
+    ]
+    try:
+        proc = subprocess.run(
+            cmd,
+            input=text,
+            capture_output=True,
+            text=True,
+            timeout=_PANDOC_TIMEOUT,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:  # pragma: no cover - env dependent
+        raise ConverterError(
+            f"pandoc timed out after {_PANDOC_TIMEOUT}s converting {from_format}"
+        ) from exc
+    if proc.returncode != 0:
+        raise ConverterError(
+            f"pandoc failed ({from_format} -> markdown): {proc.stderr.strip()[:500]}"
+        )
+    return proc.stdout.rstrip() + "\n"
+
+
 # Dispatch by media type, mirroring the source_format handler table. Callers
 # resolve the media type first (media_detection), then convert.
 def convert_to_markdown(path: Path, media_type: str) -> str:
@@ -149,7 +242,7 @@ def convert_to_markdown(path: Path, media_type: str) -> str:
 
     Args:
         path: Input document path.
-        media_type: One of "text", "docx", "epub".
+        media_type: One of "text", "docx", "epub", "html".
 
     Raises:
         ValueError: media_type is not a text-producing format handled here.
@@ -161,7 +254,9 @@ def convert_to_markdown(path: Path, media_type: str) -> str:
         return docx_to_markdown(path)
     if media_type == "epub":
         return epub_to_markdown(path)
+    if media_type == "html":
+        return html_to_markdown(path)
     raise ValueError(
         f"convert_to_markdown does not handle media_type={media_type!r}; "
-        "expected one of: text, docx, epub"
+        "expected one of: text, docx, epub, html"
     )

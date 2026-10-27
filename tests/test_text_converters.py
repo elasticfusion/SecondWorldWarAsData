@@ -139,3 +139,49 @@ def test_pandoc_invoked_with_sandbox(tmp_path: Path, monkeypatch) -> None:
     cmd = run.call_args.args[0]
     assert cmd[0] == "pandoc"
     assert "--sandbox" in cmd
+
+
+# --- HTML -> Markdown (web-page ingestion robustness) ---
+from src.ingestion.text_converters import html_to_markdown, _strip_html_boilerplate
+
+_SRC_HTML = (
+    "<!doctype html><html><head><title>T</title>"
+    "<style>.x{color:red}</style><script>evil()</script></head>"
+    "<body><nav>HOME | ABOUT</nav>"
+    "<main><h1>Roer Dams</h1><p>The attack on the <b>Roer</b> dams.</p>"
+    "<ul><li>Schwammenauel</li><li>Urft</li></ul></main>"
+    "<footer>copyright 2026</footer></body></html>"
+)
+
+
+def test_strip_boilerplate_removes_chrome():
+    cleaned = _strip_html_boilerplate(_SRC_HTML)
+    low = cleaned.lower()
+    assert "evil()" not in low and "color:red" not in low  # script/style gone
+    assert "home | about" not in low and "copyright 2026" not in low  # nav/footer gone
+    assert "roer dams" in low and "schwammenauel" in low  # main content kept
+
+
+@_needs_pandoc
+def test_html_to_markdown_structure(tmp_path: Path):
+    p = tmp_path / "page.html"
+    p.write_text(_SRC_HTML, encoding="utf-8")
+    md = html_to_markdown(p)
+    assert "# Roer Dams" in md  # heading preserved
+    assert "Schwammenauel" in md and "Urft" in md  # list items preserved
+    assert "**Roer**" in md  # bold preserved
+    assert "evil()" not in md and "HOME | ABOUT" not in md  # chrome stripped
+
+
+@_needs_pandoc
+def test_convert_to_markdown_html_branch(tmp_path: Path):
+    p = tmp_path / "page.html"
+    p.write_text(_SRC_HTML, encoding="utf-8")
+    md = convert_to_markdown(p, "html")
+    assert "# Roer Dams" in md
+
+
+def test_strip_boilerplate_failsafe_on_garbage():
+    # Non-HTML / malformed input must not raise — returns something usable.
+    out = _strip_html_boilerplate("not really <html")
+    assert isinstance(out, str)
