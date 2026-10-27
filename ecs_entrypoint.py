@@ -1576,12 +1576,34 @@ def _phase3_durable_referential_fix() -> None:
     except Exception as e:  # noqa: BLE001 - enforcement must never crash teardown
         logger.warning("post-sync referential enforcement skipped: %s", e)
     try:
-        # validate_phase3 needs a LOCAL tree with the events key-space; output/content (events) is
-        # NOT in the Phase-3 input download, so pull it (skip-existing) before validating, else every
-        # EventID looks dangling. Then validate the now-complete local tree.
+        # validate_phase3 audits a LOCAL tree. Two staleness hazards to close so it reflects the
+        # AUTHORITATIVE post-repair S3 state (else it false-FAILs):
+        #   1. output/content (events key-space) is NOT in the Phase-3 input download -> pull it
+        #      (skip-existing is fine; events are not mutated by the repair).
+        #   2. The entity records (places/people_groups/dates/people/equipment) WERE downloaded as
+        #      Phase-3 input BEFORE the S3-side down-bind repair above ran, so the local copies still
+        #      carry the pre-repair dangling Sub_eventID. Re-download the repaired entity dirs with
+        #      OVERWRITE so validate audits the repaired records, not the stale input snapshot.
+        #      (Root cause of the observed "repair=0 dangling but validate_phase3 FAIL 26" split.)
         if os.environ.get("S3_BUCKET"):
             s3 = _s3_client()
             _download_s3_prefix_skip_existing(s3, "output/content/")
+            # Use the SAME entity set the repair mutates (single source of truth — so the overwrite
+            # refresh can never drift from what repair_dangling_subevents actually touches).
+            try:
+                from src.utils.referential_integrity import _MENTION_REPAIR_ENTITIES
+            except (
+                Exception
+            ):  # noqa: BLE001 - fall back to the known set if import changes
+                _MENTION_REPAIR_ENTITIES = (
+                    "places",
+                    "people_groups",
+                    "dates",
+                    "people",
+                    "equipment",
+                )
+            for _ent in _MENTION_REPAIR_ENTITIES:
+                _download_s3_prefix(s3, f"output/{_ent}/")
         from scripts.validate_phase3 import run as _validate_phase3
 
         rc = _validate_phase3(str(WORKDIR / "output"), strict_coverage=False)
