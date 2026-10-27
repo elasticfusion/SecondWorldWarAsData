@@ -72,13 +72,41 @@ def render_map_meta_yaml(map_id: str, map_title: str, source_url: str = "") -> s
     return yaml.safe_dump(meta, sort_keys=False, allow_unicode=True)
 
 
+# Below this vision-reported legibility confidence, a map is too illegible to derive a trustworthy
+# event from — the shared map-as-source choke point skips it (M7: so a low-quality inline map does
+# not inject low-confidence events). This is the map-wide confidence gate the spec deferred. A map
+# whose vision result omits the field (older prompt / external callers) is NOT gated — only an
+# explicit, confidently-low score is.
+_MIN_LEGIBILITY_CONFIDENCE = 0.35
+
+
+def _legibility_confidence(depicted: Dict[str, Any]) -> Optional[float]:
+    """The vision-reported legibility_confidence (0.0-1.0) if present + parseable, else None."""
+    if not isinstance(depicted, dict) or "legibility_confidence" not in depicted:
+        return None
+    try:
+        return float(depicted.get("legibility_confidence"))
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
 def _render_depicted_text(depicted: Dict[str, Any]) -> str:
     """Render the vision ``depicted`` block into factual prose paragraphs for event extraction.
 
     Grounded ONLY in the provided fields (the vision step is instructed to include only legibly-shown
-    content). Empty/absent fields are skipped — never fabricated.
+    content). Empty/absent fields are skipped — never fabricated. A map whose vision legibility
+    confidence is explicitly below ``_MIN_LEGIBILITY_CONFIDENCE`` renders to "" (the shared M7 gate:
+    too illegible to trust — skip rather than inject a low-confidence event).
     """
     if not isinstance(depicted, dict):
+        return ""
+    conf = _legibility_confidence(depicted)
+    if conf is not None and conf < _MIN_LEGIBILITY_CONFIDENCE:
+        logger.info(
+            "OBSERV map_source.skipped reason=low_legibility confidence=%.2f threshold=%.2f",
+            conf,
+            _MIN_LEGIBILITY_CONFIDENCE,
+        )
         return ""
     parts: List[str] = []
     desc = (depicted.get("description") or "").strip()
@@ -149,10 +177,15 @@ def build_map_parsed_source(
             map_id, map_title, approved_image_url, author, text, source_url
         )
         logger.info(
-            "OBSERV map_source.built map=%s paragraphs=1 units=%d places=%d",
+            "OBSERV map_source.built map=%s paragraphs=1 units=%d places=%d legibility=%s",
             map_id,
             len(_clean_str_list(depicted.get("units"))),
             len(_clean_str_list(depicted.get("places"))),
+            (
+                f"{_legibility_confidence(depicted):.2f}"
+                if _legibility_confidence(depicted) is not None
+                else "n/a"
+            ),
         )
         return parsed
     except Exception as e:  # noqa: BLE001 - adapter must never crash the map path
