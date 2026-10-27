@@ -549,7 +549,22 @@ def _event_file_needs_retry(event_file: Path) -> bool:
 
 
 def _retry_missing_events(parsed_files, grok_client, logger):
-    """Retry any parsed files that are missing or empty event files."""
+    """Retry any parsed files that are missing or empty event files.
+
+    NO-OP in batch (submit-only) mode: after the collection pass every chapter legitimately has no
+    event file yet — the results arrive only after ``submit_batch`` + the batch re-run. Re-calling
+    ``extract_events`` here would re-add the identical request_ids to the BatchCollector (dropped as
+    duplicates -> ``OBSERV batch.duplicate_request_id_dropped`` + a false ``✗ Retry failed`` ERROR on
+    a perfectly healthy run) and can never succeed pre-submit. The live (non-batch) path, where a
+    cache-clear-and-retry can actually recover a transient miss, is unchanged.
+    """
+    if getattr(grok_client, "batch_mode", False):
+        logger.debug(
+            "Skipping missing-event retry in batch mode "
+            "(events are fulfilled by submit_batch + re-run, not an inline retry)"
+        )
+        return 0, 0
+
     missing_events = []
     for parsed_file in sorted(parsed_files):
         event_file = parsed_file.parent / parsed_file.name.replace(
