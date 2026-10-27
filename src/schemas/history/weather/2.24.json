@@ -1,0 +1,400 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "DateID": {
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "WeatherID": {
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "type": "string"
+    },
+    "_last_updated": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": "string"
+    },
+    "_schema_version": {
+      "type": "string"
+    },
+    "api_data": {
+      "additionalProperties": false,
+      "properties": {
+        "cloud_cover_percent": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "data_type": {
+          "enum": [
+            "reanalysis"
+          ],
+          "type": "string"
+        },
+        "precipitation_mm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "provider": {
+          "enum": [
+            "open-meteo"
+          ],
+          "type": "string"
+        },
+        "raw_response": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "retrieved_at": {
+          "type": "string"
+        },
+        "temperature_max_c": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "temperature_min_c": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "windspeed_max_kmh": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "date": {
+      "type": "string"
+    },
+    "enrichment_status": {
+      "enum": [
+        "enriched",
+        "not_found",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_mentions": {
+      "items": {
+        "properties": {
+          "EventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "Sub-eventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "extracted_data": {
+      "additionalProperties": false,
+      "properties": {
+        "author": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "book": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "measurement_system": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notable_impact": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "original_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "precipitation_amount": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "precipitation_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "precipitation_type": {
+          "enum": [
+            "snow",
+            "rain",
+            "sleet",
+            "hail",
+            "mixed",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "precipitation_unit": {
+          "enum": [
+            "in",
+            "cm",
+            "mm",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "temperature": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "temperature_unit": {
+          "enum": [
+            "C",
+            "F",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "last_enrichment_search": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "location": {
+      "additionalProperties": false,
+      "properties": {
+        "PlaceID": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "latitude": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "longitude": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "place_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "place_name"
+      ],
+      "type": "object"
+    },
+    "noaa_observed": {
+      "additionalProperties": false,
+      "properties": {
+        "data_type": {
+          "enum": [
+            "observed"
+          ],
+          "type": "string"
+        },
+        "precipitation_mm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "raw_elements": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "snow_depth_mm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "snowfall_mm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "source": {
+          "enum": [
+            "noaa_cdo"
+          ],
+          "type": "string"
+        },
+        "source_url": {
+          "type": "string"
+        },
+        "station_distance_km": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "station_id": {
+          "type": "string"
+        },
+        "station_latitude": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "station_longitude": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "station_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "temperature_avg_c": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "temperature_high_c": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "temperature_low_c": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "wind_dir_fastest2min_deg": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "wind_dir_fastest5sec_deg": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "wind_gust_fastest2min_ms": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "wind_gust_fastest5sec_ms": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "wind_speed_ms": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "source_type": {
+      "enum": [
+        "extracted",
+        "api_only",
+        "hybrid"
+      ],
+      "type": "string"
+    },
+    "time_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "WeatherID",
+    "date",
+    "location",
+    "source_type"
+  ],
+  "title": "Weather Output File",
+  "type": "object",
+  "version": "2.24"
+}

@@ -152,6 +152,9 @@ PEOPLE_OUTPUT_SCHEMA = {
                     "url": {"type": "string"},
                     "title": make_nullable("string"),
                     "source": make_nullable("string"),
+                    # Durable attribution: the ULID of the source_section this image came from
+                    # (schemas evolve — nullable so pre-existing records remain valid).
+                    "SourceSectionID": ulid_field(nullable=True),
                 },
             },
         },

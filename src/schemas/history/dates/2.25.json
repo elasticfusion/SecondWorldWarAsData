@@ -1,0 +1,198 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "DateID": {
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "type": "string"
+    },
+    "_last_updated": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": "string"
+    },
+    "_schema_version": {
+      "type": "string"
+    },
+    "date_end": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_precision": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_start": {
+      "type": "string"
+    },
+    "event_mentions": {
+      "items": {
+        "properties": {
+          "DateMentionID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "EventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "Sub_eventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "book": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "chapter": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "original_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "time_start": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "mention_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "normalized_datetime": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "original_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quality_flags": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "resolution_method": {
+      "enum": [
+        "precision_rule",
+        "range",
+        "unresolved",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resolved_earliest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resolved_latest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "summary_generated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "summary_mention_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "summary_mentions_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "summary_source": {
+      "enum": [
+        "synthesized",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time_end": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time_precision": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time_start": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "DateID",
+    "date_start"
+  ],
+  "title": "Dates Output File",
+  "type": "object",
+  "version": "2.25"
+}

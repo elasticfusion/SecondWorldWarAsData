@@ -1177,6 +1177,21 @@ existing exclude-domain/blacklist. Chart-image -> M6; pdf -> pdf_pipeline on aff
   drop (reuse the Task-#7 `_drop_excluded_domains` / url_registry exclusion). Surfaced while adding the M4
   `link_relevancy_whitelist` (and moving the mislocated `ibiblio.org` from blacklist -> whitelist).
 
+- **[CRITICAL · provenance · ALL M-issues] ULID attribution for every multimodal linkage (owner-confirmed CRITICAL, 2026-10-27).**
+  Every image/asset linked by the multimodal epic MUST carry a durable ULID reference back to its source
+  (the `SourceSectionID` of the originating source_section — the canonical source entity, 1:1 with a
+  chapter/Event), NOT just the human-readable `source: "document:<book>"` string. "Schemas exist to evolve"
+  (owner): the people/place `images[]` item schema gains a nullable `SourceSectionID` field.
+  STATUS: M5 does this now (schema evolved + book->SourceSectionID resolver threads the ULID into
+  place.images[]). FOLLOW-UPS required to make it uniform:
+    * M3 (MERGED, PR #589) wrote people.images[] with the `source` string ONLY — BACKFILL/attribute the
+      SourceSectionID ULID (same resolver) + add it to the write path.
+    * M4 (MERGED, PR #590) link-asset review events carry source_url+source_doc — add the SourceSectionID
+      ULID to the enqueued provenance so an affirmed asset's eventual entity link is ULID-attributed.
+    * M6/M7/M8: any chart/map/asset -> entity linkage MUST attribute by SourceSectionID ULID from the start.
+  Reuse: source_section records under `out/source_section/*.json` (carry `book`+`EventID`+`SourceSectionID`);
+  map book/chapter -> SourceSectionID. Everything observable (OBSERV ...source_section=<ULID>).
+
 
 ### Resolved this session (moved out of the active flat list)
 - [DONE · PR #562] bibliography resolver download_path rename + search_status enum

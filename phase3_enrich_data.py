@@ -328,6 +328,13 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
             "link_asset_review",
             lambda: _review_external_links(out, grok_client),
         )
+    # M5: classify terrain/aerial document photos -> link them to the PlaceID they depict (creating
+    # the place if described-but-new). Gated by images.link_places (default on).
+    if config.get("images", {}).get("link_places", True):
+        enriched += run_step(
+            "image_place_link",
+            lambda: _link_images_to_places(out, grok_client),
+        )
     # Durable OpenSERP effectiveness/health metrics -> output/metrics/openserp_metrics.json
     _write_openserp_metrics(out)
     return enriched
@@ -411,6 +418,26 @@ def _review_external_links(out, grok_client) -> int:
         totals["anchors"],
     )
     return totals["enqueued"]
+
+
+def _link_images_to_places(out, grok_client) -> int:
+    """M5: classify terrain/aerial document photos and link each to the PlaceID it depicts (creating
+    the place when described-but-new). Returns the count linked. Fail-safe."""
+    from src.extraction.image_place_link import link_images_to_places
+
+    docs = _load_parsed_docs(out)
+    if not docs:
+        return 0
+    summary = link_images_to_places(docs, out / "places", grok_client=grok_client)
+    logging.getLogger("root").info(
+        "OBSERV phase3.step name=image_place_link terrain=%d linked=%d created=%d skipped=%d "
+        "status=ok",
+        summary.get("terrain", 0),
+        summary.get("linked", 0),
+        summary.get("created", 0),
+        summary.get("skipped", 0),
+    )
+    return int(summary.get("linked", 0))
 
 
 def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
