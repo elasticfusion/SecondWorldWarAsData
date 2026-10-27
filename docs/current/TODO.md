@@ -1058,6 +1058,89 @@ escape /tmp/pipeline. Keys come from the pipeline's OWN trusted bucket (low risk
 assert the resolved local path is within WORKDIR before download_file. Flagged by the dual review of the
 phase3-durable-revalidate fix; out of scope there.
 
+
+# MULTIMODAL INGESTION GAPS — prioritized epic (from XChannel ch8 analysis, 2026-10-27)
+
+Source analysis: https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-8.html — a richly
+multimodal HyperWar page used to stress-test every content type. Each item below is a concrete gap with
+its code location + page evidence. Ordered by VALUE × TRACTABILITY (do top-down). The map-as-source work
+(spec docs/current/design/MAP_AS_SOURCE_DOCUMENT.md, PRs #583/#584/#585) is the TEMPLATE: a non-text asset
+becomes a SOURCE, an event/entity is derived, everything flows through the normal pipeline.
+
+CROSS-CUTTING ROOT CAUSES (fixing these knocks out multiple M-items):
+  RC1. parser.extract_images matches only IMAGE markdown (`![alt](url)`), NOT links (`[text](url)`) and
+       NOT bare caption text. So linked maps/charts AND caption-only embedded photos are invisible.
+  RC2. No image->entity linkage model: captions name people/places but nothing records "image depicts
+       PersonID/PlaceID"; ImageCaptioner returns free-text + a coarse class, no structured entity list.
+  RC3. In-document asset links are never FOLLOWED as sources. map-as-source added WEB-SEARCH discovery,
+       but the author already curated the best maps/charts/MoH citations as direct links in the document.
+  RC4. org chart + MoH citation are unmodeled SOURCE TYPES (each a natural map-as-source analog).
+
+## [M1 · HIGH · in-doc-asset-links] Follow in-document map LINKS -> map-as-source  (do FIRST)
+Evidence: `[Map VII]..[Map XIV]` in the narrative link directly to `maps/USA-E-XChannel-*.jpg` (author-
+curated, highest-quality maps on the page). GAP: extract_images matches `![]()` not `[]()`, and nothing
+follows a `maps/*.jpg` link from text. FIX: a parse-time extractor that finds `[text](url)` links whose
+target is an image ext OR under `maps/`, and routes them into the EXISTING map-as-source adapter
+(map_vision -> depicted -> contentrepository/ source). Reuses #585 wholesale; only the discovery front-end
+is new (in-doc link vs OpenSERP search). SSRF-safe + same-host (ibiblio) allowlist. Highest value, lowest
+ambiguity (the map is explicitly linked + captioned). Addresses RC1+RC3.
+
+## [M2 · HIGH · embedded-image-extraction] Capture caption-only / bare embedded images (RC1)
+Evidence: "PREINVASION SCENES", "ALLIED INVASION CHIEFS", "PARACHUTE TROOPS", "HEDGEROW COUNTRY", aerial
+beach views — rendered as plain-text captions with NO `![]()` in the parsed markdown, so extract_images
+never sees them -> the photo is never ingested at all. FIX: (a) in the HTML->md converter (the new
+text_converters.html_to_markdown path), PRESERVE `<img>` as `![alt](src)` instead of dropping it; (b) for
+HyperWar's figure-caption convention, pair an ALL-CAPS caption line with its image. Unblocks M3/M4/M5
+(nothing downstream can classify/link an image that was never extracted). Addresses RC1.
+
+## [M3 · HIGH · image-to-person] Named-group + headshot photos -> PersonID linkage (RC2)
+Evidence: "ALLIED INVASION CHIEFS. Left to right: Bradley, Ramsay, Tedder, Eisenhower, Montgomery,
+Leigh-Mallory, Smith" (7 identified) + "GERMAN FIELD COMMANDERS" (4). GAP: even if extracted (needs M2),
+there is no structure linking an image to the PersonIDs it depicts, and no use of the left-to-right
+positional naming. FIX: extend ImageCaptioner/vision to return a STRUCTURED depicted-persons list + wire a
+caption-name -> PersonID resolver (reuse people name-index), writing people.images[] (document-sourced) +
+an image->person link. Depends on M2. Addresses RC2.
+
+## [M4 · HIGH · footnote-asset-links] Follow footnote links: MoH citations + org chart (RC3+RC4)
+Evidence: fn63 -> `../../MoH_P-T.html#roosevelt`, fn74 -> `#pinder` (person-specific award/biography
+primary sources); fn23 -> `charts/USA-E-XChannel-4.jpg` ("naval command chart"). GAP: extract_footnotes
+captures footnote text/url but nothing FOLLOWS the embedded links; MoH citation is not attached to the
+PersonID (people.military_awards[] exists but is OpenSERP-fed, not in-doc-link-fed); org chart is an
+unmodeled source type. FIX: (a) extract links inside footnote citation text; (b) MoH link -> fetch (SSRF-
+safe) -> attach to PersonID as a biography source + award; (c) org chart -> chart-as-source (see M6).
+Addresses RC3+RC4.
+
+## [M5 · MED · image-to-place] Topology/aerial photos -> PlaceID linkage (RC2)
+Evidence: "HEDGEROW COUNTRY", "AERIAL VIEW OF UTAH/OMAHA BEACH", "TERRAIN ON OMAHA BEACH". GAP: no
+"terrain/aerial" image class (images._classify_image_type is map/diagram/photograph only) and no image->
+PlaceID link. FIX: add a terrain/aerial classification + link the terrain image to the place it depicts
+(enrich PlaceID). Depends on M2. Addresses RC2.
+
+## [M6 · MED · chart-as-source] Org / command-structure charts -> people_groups source
+Evidence: the naval command chart (fn23) + any order-of-battle/command charts. GAP: a chart that encodes
+command structure (who commands whom) is a natural source for people_groups + command relationships, but
+there is no chart-as-source path. FIX: a chart-as-source adapter analogous to map-as-source — vision reads
+the chart into a structured command hierarchy -> derived people_groups/command edges via the normal event
+spine. Depends on M1/M4 (asset-link following) to even reach the chart. Addresses RC4.
+
+## [M7 · MED · embedded-low-q-maps] Inline figure maps (Map 1/2/3, captured OB WEST map)
+Evidence: "Map 1/2/3" inline labels + "Reproduction of a captured OB WEST map". GAP: appear as text labels
+/ caption-only -> not extracted (RC1); even if extracted, lower-quality inline figures. FIX: once M2
+captures them, route through map-as-source with a quality/confidence gate (ties to the deferred P2
+confidence gating in the map spec) so low-q maps don't inject low-confidence events. Depends on M2.
+
+## [M8 · LOW · intra-corpus-links] Footnote links to OTHER ibiblio docs as INTERNAL corpus links
+Evidence: `Utah Beach to Cherbourg`, `Omaha Beachhead`, `Small Unit Actions`, cross-chapter `#page329`.
+PARTIALLY handled: the deterministic bibliography pass already makes these bibliography records. GAP
+remnant: no "this cited source IS another document we have / can ingest" linkage, and page-anchor
+cross-refs aren't modeled as intra-corpus navigation. FIX (low priority): mark citations that resolve to
+in-corpus (or ibiblio-ingestable) documents as internal links, enabling source-graph navigation.
+
+SEQUENCING: M1 (self-contained, reuses #585) -> M2 (unblocks the image chain) -> M3/M4 (person linkage +
+footnote assets) -> M5/M6/M7 (place/chart/low-q maps) -> M8 (polish). RC1 is the common unlock for
+M1/M2/M7; RC3 for M1/M4/M6.
+
+
 ### Resolved this session (moved out of the active flat list)
 - [DONE · PR #562] bibliography resolver download_path rename + search_status enum
 - [DONE · PR #571] down-bind stale Sub_eventID to resolving parent EventID
