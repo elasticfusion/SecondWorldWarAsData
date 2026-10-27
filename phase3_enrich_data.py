@@ -314,28 +314,59 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
                 "in_doc_map_links",
                 lambda: _ingest_in_doc_map_links(out, grok_client, ext_config),
             )
+    # M3: link document photos to the PersonIDs they depict (caption-driven). Independent of the
+    # maps feature; runs after people are written. Gated by images.link_people (default on).
+    if config.get("images", {}).get("link_people", True):
+        enriched += run_step(
+            "image_person_link",
+            lambda: _link_images_to_people(out, grok_client),
+        )
     # Durable OpenSERP effectiveness/health metrics -> output/metrics/openserp_metrics.json
     _write_openserp_metrics(out)
     return enriched
 
 
-def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
-    """Load parsed docs' maps[] (in-document map links) and ingest each via map-as-source. Returns
-    the count recycled. Fail-safe."""
+def _load_parsed_docs(out) -> list:
+    """Load all parsed.json docs under out/content (shared by the M1 map-link + M3 image-person
+    steps). Fail-safe: returns [] on any error."""
     import json
 
-    from src.extraction.map_link_source import ingest_in_doc_map_links
-
-    content_root = out / "content"
     docs = []
     try:
-        for pf in content_root.rglob("*-parsed.json"):
+        for pf in (out / "content").rglob("*-parsed.json"):
             try:
                 docs.append(json.loads(pf.read_text(encoding="utf-8")))
             except Exception:  # noqa: BLE001
                 continue
     except Exception:  # noqa: BLE001
+        return []
+    return docs
+
+
+def _link_images_to_people(out, grok_client) -> int:
+    """M3: resolve captioned document photos to PersonIDs and link them into people.images[].
+    Returns the count linked. Fail-safe."""
+    from src.extraction.image_person_link import link_images_to_people
+
+    docs = _load_parsed_docs(out)
+    if not docs:
         return 0
+    summary = link_images_to_people(docs, out / "people", grok_client=grok_client)
+    logging.getLogger("root").info(
+        "OBSERV phase3.step name=image_person_link images=%d linked=%d skipped=%d status=ok",
+        summary.get("images", 0),
+        summary.get("linked", 0),
+        summary.get("skipped", 0),
+    )
+    return int(summary.get("linked", 0))
+
+
+def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
+    """Load parsed docs' maps[] (in-document map links) and ingest each via map-as-source. Returns
+    the count recycled. Fail-safe."""
+    from src.extraction.map_link_source import ingest_in_doc_map_links
+
+    docs = _load_parsed_docs(out)
     if not docs:
         return 0
     summary = ingest_in_doc_map_links(
