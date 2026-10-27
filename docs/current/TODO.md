@@ -986,69 +986,6 @@ reconcile (6/6/6); (b) if index can outlive its file generally, add an index-pru
 validate_phaseN check that `index entries == existing files` (B-level warn). Low priority — cosmetic
 count only; no data loss, no false merge.
 
-## [HIGH·data-loss] bibliography enrichment writes a schema-rejected top-level key (live 2026-10-25)
-During the RoerDams Phase-3 run, the #559 write-guard correctly BLOCKED a bibliography write:
-`BLOCKED schema-invalid bibliography write (bib_01deabb179f1a2fd.json): additionalProperties at <root>`.
-The guard is working as intended (pre-#559 this would have been a silent raw-write of an invalid
-record); but a block means that record LOSES its enrichment. BIBLIOGRAPHY_OUTPUT_SCHEMA has
-additionalProperties:false at root; the in-memory enriched dict carries an extra top-level key the
-schema doesn't allow (the PERSISTED S3 copy is clean because the block prevented the bad write, so
-the offending key is added+removed or added-then-blocked mid-enrichment). Allowed set includes
-BibliographyID/alt_title/archive_*/availability/citation/copyright_status/license*/mentions/
-resource_urls/title/download_*/quality_flags/search_*/source_qualification. Fix: find the enrich_*
-helper (or bibliography_resolver apply) that stamps a non-allowed top-level key and either add it to
-the schema (version bump + re-pin fingerprint) or write it to the correct nested location. Reproduce
-by running enrich_bibliography on bib_01deabb179f1a2fd locally and diffing keys vs the schema.
-
-### ROOT CAUSE (narrowed, same run): local_source_path not in schema
-Both blocked bib records (bib_01deabb179f1a2fd, bib_165468029a181376) hit the LOCAL-HOLDING
-archival resolver path, which sets `entry["local_source_path"]` (bibliography_resolver.py
-_short_circuit_local_holding). BIBLIOGRAPHY_OUTPUT_SCHEMA (additionalProperties:false) allows
-`download_path` but NOT `local_source_path` -> every locally-held archival bib record is blocked and
-loses enrichment. 2 of 17 records in RoerDams. FIX (pick one): (a) rename entry["local_source_path"]
--> entry["download_path"] (likely the intended field; check consumers of local_source_path first), or
-(b) add local_source_path to the schema (additive -> version bump + re-pin fingerprint). Prefer (a) if
-download_path is semantically the same (a local file path to the resolved holding). Verify no reader
-depends on the local_source_path name before renaming.
-
-## [MED·referential-integrity] dangling entity->Sub-eventID refs (live run 027c, 2026-10-25)
-DATA-QUALITY alert: 14 dangling event_mentions[].Sub_eventID -> events (places 8, people_groups 4,
-dates 2). INVESTIGATED (evidence, not assumption):
-- The referenced EventIDs DO exist in the surviving events (parent resolves); only the Sub-eventIDs
-  dangle. Surviving events have 12 Sub-eventIDs across 3 events; entities reference other IDs.
-- Sub-eventIDs are DETERMINISTIC content-derived ULIDs: _sub_event_id(EventID, para_start, para_end,
-  name) (events.py:260). Same source + same segmentation => same ID.
-- Event files written 19:50 (earlier run); entity files written 21:38-22:50 (this run). The two
-  OVERLAPPING RoerDams reruns segmented events slightly differently (LLM variance in sub-event
-  paragraph boundaries / names => different deterministic Sub-eventIDs), so run-A entities reference
-  run-A sub-events while run-B events survived -> cross-generation mismatch.
-VERDICT: PRIMARY cause = overlapping-reruns artifact (a single clean run would not exhibit this).
-But it EXPOSES a genuine latent fragility worth fixing: because event segmentation is LLM-driven
-(non-deterministic across extractions), ANY re-extraction can orphan entity->Sub-eventID refs, and
-nothing repoints or down-binds them. FIX OPTIONS: (a) referential-integrity enforcement should, on a
-dangling Sub_eventID whose EventID still resolves, DOWN-BIND the mention to event-level (drop/blank
-Sub_eventID, keep EventID) rather than leave it dangling; (b) OR a reconcile step that re-resolves
-entity Sub-eventIDs against the current events by (para-range,name) match; (c) at minimum, the
-validation should DISTINGUISH 'EventID missing' (real orphan) from 'EventID ok, Sub_eventID stale'
-(re-extraction drift) so the alert severity is right. Confirm on a SINGLE clean run that danglers=0.
-
-## places geo_missing_coords / below_floor (same alert) — likely MID-RUN, confirm after
-The alert's places geo_missing_coords 13/38 + below_floor 12/38 fired from POST-PHASE-2 validation
-while Phase 3 (geocoding step 3/6) was still running / had not populated coords for all places. Must
-re-read validation_stats.json AFTER Phase 3 completes to see the TRUE residual (my #560 geocode.summary
-+ the P3-B4 floor check are the right post-Phase-3 signal). If coords are still missing for >0 places
-after a full clean Phase 3, THEN it's a geocoder-coverage issue to chase; otherwise it's mid-run noise.
-
-## [HIGH·data-loss] bibliography.py merge ignores write-guard return THEN unlinks shards (review-found)
-Found by the Phase-3 security review while fixing the resolver B3 (same class, DIFFERENT module —
-Phase-2 extraction reconcile, not the Phase-3 resolver, so out of scope of PR #566): 
-src/extraction/bibliography.py:877-883 does `write_json_with_lock(canon_path, merged, entity="bibliography")`
-IGNORING the bool return, then a loop `f.unlink()` deletes ALL source shard files. If the guard
-BLOCKS the canonical write (returns False, no exception), the canonical file is never written AND every
-shard is unlinked => total silent loss of that citation. Also :708 and :713 ignore the return (lower
-risk, no delete-after). FIX: capture the return; on False, do NOT unlink the shards (abort the merge,
-keep the sources) + surface an error. Mirror the resolver B3 discipline. Add a real-write-path test.
-
 ## [LOW·ci-flake] test_validation_performance perf tests use absolute wall-clock thresholds
 test_hook_overhead_single_validation asserts `overhead < 1.0` (ms/validation) — an ABSOLUTE
 wall-clock threshold that spuriously fails on a loaded/slow CI runner (observed 2.15ms in CI run
@@ -1056,33 +993,6 @@ wall-clock threshold that spuriously fails on a loaded/slow CI runner (observed 
 asserts RELATIVE (vs a measured baseline, like test_hook_overhead_batch's `batch < individual*1.5`)
 or mark them @pytest.mark.perf / skip-in-CI, so CI isn't red on timing noise. Several asserts in
 that file share the pattern (lines ~201, plus the elapsed-based ones).
-
-## [HIGH·xref-loss] batch_parallel SCHEMA_TARGET is events-only -> skips newer-entity records (clean rerun 602ee29e/e4b22d9)
-batch_parallel.py:108 `SCHEMA_TARGET = _entity_version("events")` (=2.24, the MIN). _add_event_mention_batch
-(~388-392) calls read_for_update(data, SCHEMA_TARGET) on ARBITRARY entity records (places/groups/
-people/...) and treats any record whose version > 2.24 as a "future schema" -> skip=True -> the
-entity->event cross-reference mention is NOT added. The clean rerun (post version bumps: places 2.29,
-people_groups 2.28, people 2.26, bibliography 2.29) is SKIPPING places/groups records live:
-"Skipping german border.json: record schema 2.29 is NEWER than this code's target 2.24". Result:
-missing event_mentions / dangling-ish xrefs for every entity newer than events=2.24 — a cross-reference
-DATA-LOSS, ironically re-creating the kind of gap #571 fixed. Latent before (entities were near 2.24);
-my version bumps widened the gap and made it fire broadly. FIX: SCHEMA_TARGET must be PER-ENTITY — pass
-the version of the ENTITY being read (entity_version(entity_name) from the dir), not a single
-events-version threshold, into read_for_update. (The module comment "targets events because it emits
-event-mention records" is wrong for the READ path — it reads the target entity's own record.) Add a
-test: a places record at the CURRENT places version is NOT skipped by _add_event_mention_batch.
-
-## [HIGH·data-loss] supplemental sub-event drop: keyed-by-ULID / content-class response not unwrapped (clean rerun e4b22d9)
-Clean RoerDams rerun dropped 1 supplemental sub-event PER chapter (3/3): "Validation error for
-sub-event <ULID>: '<ULID>','<ULID>' do not match any of the regexes: '^_'" and "'Equipment' does not
-match any of the regexes: '^_'". The supplemental-extract LLM response is keyed by sub-event ULID (or
-by a content-class name like 'Equipment') but the validated schema only permits ^_ metadata keys ->
-retries exhausted -> sub-event's bibliography DROPPED. This is the #556 prompt↔schema drift class:
-_unwrap_keyed_supplemental flattens keyed-by-Sub-eventID responses but is NOT catching (a) these
-bare-ULID top-level keys and/or (b) a content-class key like 'Equipment'. OBSERV supplemental.anomaly
-correctly surfaced it ("bibliography data lost; check prompt↔schema"). FIX: extend
-_unwrap_keyed_supplemental to recognize + flatten these shapes (bare ULID keys + content-class keys),
-OR relax the prompt to emit the flat shape. Add a regression test with the exact dropped shapes.
 
 ## [MED] source_section derive failed for 2 sections (clean rerun e4b22d9)
 "[phase2 step 1/5] Core extraction complete: 4 processed, 2 failed" + source_section.enrich errors=2:
@@ -1118,88 +1028,6 @@ tune the group image-search query templates / result parsing to prefer direct im
 commons File: / upload.wikimedia.org thumb URLs, or add an image-extraction step that resolves a page
 URL to its og:image). Low priority.
 
-## [HIGH·discovery] What happens end-to-end when OpenSERP discovers a URL?
-Owner-requested discovery (prompted by the clean RoerDams rerun 96c86bef, which logged 60+
-`OBSERV vision.image_blocked reason=ssrf_or_invalid` and ~0 images actually added). Trace and
-DOCUMENT the complete lifecycle of a single URL returned by OpenSERP's /mega/search, across every
-entity type (people/equipment/groups/places/source_sections) and the maps path, answering:
-
-1. SEARCH -> RESULT: what shape does OpenSERP return ({url,title,snippet})? Which field becomes a
-   candidate, and is it a direct resource (image/pdf) or a search-result PAGE URL? (Observed: mostly
-   HTML PAGE urls — wikipedia /wiki/, commons /wiki/Category:, army.mil .aspx, ebay /itm, militaria
-   product pages, and junk from poorly-disambiguated short queries like "2d"/"5th" -> crazygames,
-   fifth-third bank, Amazon sign-in.)
-2. RELEVANCE GATE: how/when is Grok _verify_result applied (title+snippet+url), fail-closed? What
-   fraction pass? (Observed verify REJECTs on obvious junk — working.)
-3. CLASSIFY: how does the code decide a URL is an IMAGE vs a resource_url vs discard? Is there any
-   attempt to resolve a PAGE url to its underlying image (og:image / commons File: /
-   upload.wikimedia.org thumb)? (Observed: NONE — a page URL is handed straight to
-   images.fetch_image_bytes, which SSRF-cleans it, GETs it, sees content-type text/html (not image)
-   -> rejects as non-image. So page URLs can NEVER yield an image. This is the ~0-image-yield root.)
-4. FETCH + SSRF: fetch_image_bytes -> url_hygiene.clean_url (scheme/loopback/private/link-local/
-   metadata) -> resolved_host_is_safe (DNS-rebind) -> _pinned_get (IP-pin, no-redirect) -> magic-byte
-   + bomb caps. Confirm which rejections are SSRF (security) vs content-type (not-an-image) vs
-   invalid, because the single OBSERV reason "ssrf_or_invalid" CONFLATES all three (operators can't
-   tell a real SSRF block from a benign not-an-image). FINDING: split the reason into
-   ssrf_blocked / not_an_image / fetch_error so the signal is actionable.
-5. PERSIST: for a URL that PASSES, where does it land (images[] vs resource_urls[]), under which
-   entity, through write_json_with_lock(entity=...)? Is the source/provenance (recorded_fetch)
-   captured? Is the review-enqueue policy applied?
-6. YIELD / EFFECTIVENESS: per entity type, how many searched vs enriched vs blocked? (openserp_people
-   enriched=4, equipment=0, groups ~0 images. The write_metrics / openserp.summary already track
-   this — summarize what "good" looks like and whether the query TEMPLATES (search_queries/*.yaml)
-   should target direct-image sources.)
-
-DELIVERABLE: a doc (docs/current/OPENSERP_URL_LIFECYCLE.md) mapping the path with file:line, plus a
-findings list — at minimum (a) resolve page-URL -> image (og:image/commons) so yield isn't ~0, and
-(b) split the conflated ssrf_or_invalid OBSERV reason. Ties to the existing LOW "OpenSERP group-image
-search returns HTML page URLs" note — fold that in.
-
-## [HIGH·durability] dangling-repair (#571) is clobbered by the trailing local->S3 _final_sync; validate_phase3 audits the wrong tree (clean rerun 96c86bef)
-Clean RoerDams Phase-3 run showed THREE different dangling counts for the SAME corpus at the end:
-  - in-task enforcement (run_for_phase, S3Storage prefix=output): repaired=28 -> "0 dangling" ✅
-  - in-task validate_phase3: "FAIL 82 dangling" (incl. EventID danglers)
-  - post-run S3 audit (authoritative): 23 dangling, all Sub_eventID.
-ROOT CAUSES (verified):
-  1) DURABILITY: run_for_phase/repair_dangling_subevents write the repaired records to S3 directly
-     (S3Storage, since S3_BUCKET is set) and re-audit S3 -> 0. BUT ecs_entrypoint._final_sync (runs
-     AFTER phase3 main() returns, line 56) uploads the LOCAL output/ dir to S3 — and the LOCAL copies
-     still carry the stale Sub_eventIDs (the repair never touched the local tree). The trailing sync
-     CLOBBERS the S3-side repair. Proven: wallendorf.json S3 LastModified=14:37:56 (7s AFTER the
-     14:37:49 repair/enforce) and still shows the stale Sub_eventID 6QGWBY1B... So #571's repair is
-     real but NON-DURABLE in the S3/ECS model.
-  2) VALIDATOR TREE MISMATCH: phase3 main calls validate_phase3(args.output_dir) = the LOCAL dir,
-     while enforcement used S3. The local tree is partial/stale (events not fully local) so even
-     EventIDs look dangling -> the 82 (incl. EventID) false count. validate_phase3 must audit the
-     SAME storage the pipeline persists to (S3 when S3_BUCKET set), not the local path.
-FIX: (a) make the repair + enforcement operate on the tree that _final_sync will upload (repair the
-LOCAL dir, OR run the repair AFTER the final sync / against the authoritative store), so the repair
-survives; (b) point validate_phase3 at the S3 store (S3Storage prefix=output) when S3_BUCKET is set,
-mirroring run_for_phase, so it audits reality. Net effect today: 23 real Sub_eventID danglers persist
-on S3 (down-bind lost to the sync) + a false-FAIL validation. Ties to the SCHEMA_TARGET bug which
-CREATES these danglers in Phase 2 (fix both: stop creating them + make the repair durable).
-
-## [MED·observability-flaw] places.summary `needed` is computed POST-enrichment -> always ~0 (clean rerun 5d3173e6)
-OBSERV places.summary reported `total=17 needed=0 enriched=17` — internally inconsistent (enriched 17
-but "needed" 0). enrich_places.py:549 computes `needed = sum(_place_needs_work(f) for f in files)`
-AFTER the enrichment loop already ran, so _place_needs_work now returns False for the just-enriched
-records -> needed=0 always. The `needed`-gated ANOMALY still works (fires only if needed>0 & enriched==0
-BEFORE... no — it's also post-hoc), but the summary NUMBER is meaningless. FIX: snapshot `needed`
-BEFORE the enrichment loop (count enrollable files up front), then report that. Same pattern likely in
-enrich_groups.py groups.summary. Low data impact (observability only) but misleading operator signal.
-
-## [MED·observability-flaw] bibliography.anomaly is a FALSE ALARM when only ISBN-enrich finds nothing (clean rerun 5d3173e6)
-OBSERV bibliography.summary total=15 enriched=0 skipped=15 + WARN OBSERV bibliography.anomaly
-"0-of-15 enriched (resolver services down...)" — BUT the SEPARATE bibliography_resolve sub-step then
-reported resolved=11. The two bibliography sub-steps (supplemental_advanced.enrich_bibliography =
-ISBN/copyright/alt_title; bibliography_resolver.resolve = NARA/archive/openserp) emit INDEPENDENT
-summaries, and the first's 0-of-N anomaly implies total bibliography failure when resolve actually
-succeeded (11/15). FALSE operator alarm. FIX: either (a) don't anomaly-fire bibliography.summary when
-ISBN/copyright legitimately has nothing to add (it's not a failure signal), or (b) unify the two
-bibliography sub-step summaries so the anomaly reflects the COMBINED outcome (resolved+ref_identified+
-enriched), not just the ISBN sub-step. Ties to the fragmented-bibliography-observability note.
-
-
 ## [MED·dedup] NEAR-duplicate content detection (MinHash/LSH) — same text across two domains, not byte-identical
 We now have (a) GLOBAL EXACT content dedup at submit time: `fetch_review._register_content_hash_if_new`
 claims `contenthash#<sha256>` across ALL sources/domains/titles, so byte-identical content submitted
@@ -1223,39 +1051,21 @@ near-dup tool for document bodies, which that survey does not emphasize but is t
 Ties to: fetch_review.submit_affirmed_batch (where the exact (a) gate already lives).
 
 
-## [HIGH·referential] Phase-3 validation FAIL: 26 dangling Sub_eventID survive the repair (clean RoerDams run eac5f855, 2026-10-27)
-First CLEAN full run on the newly-deployed image (HTML->MD + #578 live) completed end-to-end. The
-post-sync Phase-3 validator reported FAIL (26 dangling Sub_eventID) while the referential repair in the
-same task reported 0 dangling:
-
-  1. `OBSERV referential.subevent_repair repaired=31` then `Referential integrity: 0 dangling`
-  2. immediately after: `OBSERV phase3.validation result=FAIL ... 26 dangling cross-reference(s):
-     places.Sub_eventID->events=17, people_groups=8, dates=1` + `Post-sync Phase-3 validation exit=1`
-
-CONFIRMED ROOT CAUSE (RESOLVED — my first hypothesis of a repair coverage-gap was WRONG): the S3 corpus
-is CLEAN. Verified by direct S3 scan: 46 entity event_mentions, exactly 31 have Sub_eventID=null (the
-repair's down-binds — matches repaired=31), 0 dangling. The repair (`run_for_phase`) targets S3Storage
-when S3_BUCKET is set and fixed everything on S3. But `_phase3_durable_referential_fix` ran
-`validate_phase3` against the LOCAL `WORKDIR/output` tree, re-pulling ONLY `output/content/` (skip-
-existing). The entity dirs (places/people_groups/dates/...) were downloaded as Phase-3 INPUT BEFORE the
-S3-side repair, so validate audited STALE pre-repair local entity records -> false 26 FAIL. Same class
-as the existing [HIGH·durability] note; this is its concrete reproduction + fix.
-
-FIX (shipped): in `ecs_entrypoint._phase3_durable_referential_fix`, after the S3 repair, re-download
-`output/{places,people_groups,dates,people,equipment}/` with OVERWRITE (`_download_s3_prefix`) before
-`validate_phase3`, so validate audits the authoritative post-repair S3 state. Tests:
-tests/test_phase3_durable_revalidate.py (overwrite-before-validate + fail-safe). The repair LOGIC is
-sound (down-bind only when parent EventID resolves) and needed no change — all 26 were repairable and
-were repaired on S3. Verify end-to-end: next clean run should reach `phase3.validation result=PASS`.
-Evidence: phase3/pipeline/eac5f855..., 2026-10-27T05:42:13Z; S3 scan 2026-10-27 ~12:30Z (0 dangling).
-
-HEALTHY on the same run (for contrast, no action): validation allow=75 block=0 block_permille=0;
-JSON quality 12 clean (100%); OpenSERP summary searched=17 enriched=6 items_added=15; URL-review email
-fired (OBSERV urlreview.pending count=46 notification sent) — #578 live and working.
-
 ## [LOW·security-hardening] _download_s3_file has no path-traversal containment (ecs_entrypoint)
 Pre-existing (not introduced by the stale-tree validate fix). ecs_entrypoint._download_s3_file composes
 WORKDIR/obj["Key"] from the raw S3 key with no realpath containment check, so a crafted "../" key could
 escape /tmp/pipeline. Keys come from the pipeline's OWN trusted bucket (low risk), but defense-in-depth:
 assert the resolved local path is within WORKDIR before download_file. Flagged by the dual review of the
 phase3-durable-revalidate fix; out of scope there.
+
+### Resolved this session (moved out of the active flat list)
+- [DONE · PR #562] bibliography resolver download_path rename + search_status enum
+- [DONE · PR #571] down-bind stale Sub_eventID to resolving parent EventID
+- [DONE · PR #568] unlink shards only after confirmed canonical write (_persist_merged_bib)
+- [DONE · PR #574] per-entity SCHEMA_TARGET via _entity_target_for
+- [DONE · PR #576] _unwrap_keyed_supplemental keyed->list unwrap + ULID provenance
+- [DONE · PR #577/#578] OPENSERP_URL_LIFECYCLE doc + Lambda URL-review UI/ingestion
+- [DONE · PR #581] overwrite re-download repaired entity dirs before validate_phase3
+- [DONE · PR #575] snapshot needed pre-loop (_place_needs_work)
+- [DONE · PR #575] removed the ISBN-only 0-of-N false anomaly
+- [DONE · PR #581] SAME as the durability item — false FAIL from stale local tree; fixed by overwrite re-download
