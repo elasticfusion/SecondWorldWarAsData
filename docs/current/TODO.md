@@ -1201,6 +1201,17 @@ existing exclude-domain/blacklist. Chart-image -> M6; pdf -> pdf_pipeline on aff
   Reuse: source_section records under `out/source_section/*.json` (carry `book`+`EventID`+`SourceSectionID`);
   map book/chapter -> SourceSectionID. Everything observable (OBSERV ...source_section=<ULID>).
 
+- **[HIGH · schema-design] Review schema.org for future JSON entity enhancements (owner, 2026-10-27).**
+  Survey schema.org vocabularies for ideas to enrich our entity schemas (people/places/events/images/
+  source_section/etc.) — e.g. Person, Place, Event, Photograph/ImageObject, CreativeWork, Map, Organization,
+  and their properties/relationships (sameAs, spatialCoverage, temporalCoverage, contentLocation, depicts,
+  isBasedOn, citation, author, license). Goal: align our fields with an established, interoperable vocabulary
+  where it adds value (richer linkage, external-ID cross-walks via `sameAs`, better provenance), WITHOUT
+  over-coupling — adopt selectively. Deliverable: a short proposal mapping candidate schema.org terms to our
+  entities + which additive schema fields to introduce (each via the documented evolve-+-archive discipline:
+  bump version, re-pin fingerprint, archive to src/schemas/history/, Change Log). Pairs naturally with the
+  CRITICAL ULID-attribution work (schema.org `isBasedOn`/`citation` ~ our SourceSectionID reference).
+
 
 ### Resolved this session (moved out of the active flat list)
 - [DONE · PR #562] bibliography resolver download_path rename + search_status enum
