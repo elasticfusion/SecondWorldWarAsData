@@ -1,5 +1,6 @@
 """Markdown content parsing with entity extraction."""
 
+import logging
 import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -23,6 +24,9 @@ _FOOTNOTE_PATTERN = re.compile(r"\*\\--\d+--\*")
 _SEPARATOR_PATTERN = re.compile(r"\n\* \* \*\n")
 _HEADING_PATTERN = re.compile(r"^#{1,6}\s+\*.*\*$")
 _CHAPTER_NUM_PATTERN = re.compile(r"chapter(\d+)")
+
+
+logger = logging.getLogger(__name__)
 
 
 def _parse_yaml_metadata(yaml_file: Path) -> Metadata:
@@ -92,7 +96,7 @@ def extract_page_markers(text: str) -> List[Tuple[int, int, str]]:
     return sorted(markers, key=lambda x: x[0])
 
 
-def extract_images(text: str) -> List[Tuple[str, str, str, str]]:
+def extract_images(text: str, base_url: str = "") -> List[Tuple[str, str, str, str]]:
     """
     Extract images from markdown, avoiding duplicates.
 
@@ -115,6 +119,7 @@ def extract_images(text: str) -> List[Tuple[str, str, str, str]]:
     _extract_embedded_images(text, images, seen)
     _extract_html_combined_images(text, images, seen)
     _extract_external_images(text, images, seen)
+    _extract_relative_external_images(text, images, seen, base_url)
 
     return images
 
@@ -166,6 +171,37 @@ def _extract_external_images(text: str, images: list, seen: "set[str]") -> None:
     for match in re.finditer(r"(?<!\[)!\[(.*?)\]\((https?://[^\)]+)\)(?!\])", text):
         alt_text = match.group(1)
         url = match.group(2)
+        key = f"external:{url}"
+        if key not in seen:
+            images.append(("external", url, alt_text, ""))
+            seen.add(key)
+
+
+def _extract_relative_external_images(
+    text: str, images: list, seen: "set[str]", base_url: str
+) -> None:
+    """RELATIVE embedded images: ``![alt](icn/USA-E-XChannel-37.jpg)`` — a bare/relative image src
+    (the HyperWar ``<img src=icn/...>`` figure convention, converted by html_to_markdown). Resolve
+    against ``base_url`` so the image is fetchable; image assets only (skip arbitrary relative
+    links). No-op without a base_url. Deduped against the same ``seen`` set as the absolute branch.
+    """
+    if not base_url:
+        return
+    from urllib.parse import urljoin
+
+    _img_exts = (".jpg", ".jpeg", ".png", ".gif", ".tif", ".tiff", ".webp")
+    # ![alt](target) where target is NOT http(s) and NOT a Joplin resource (:/...).
+    for match in re.finditer(r"(?<!\[)!\[(.*?)\]\(([^):][^)]*)\)(?!\])", text):
+        alt_text = match.group(1)
+        target = match.group(2).strip()
+        low = target.lower()
+        if low.startswith("http://") or low.startswith("https://"):
+            continue  # handled by the absolute branch
+        if not low.endswith(_img_exts):
+            continue  # only genuine image assets
+        url = urljoin(base_url, target)
+        if not url.lower().startswith(("http://", "https://")):
+            continue
         key = f"external:{url}"
         if key not in seen:
             images.append(("external", url, alt_text, ""))
@@ -376,9 +412,11 @@ def _create_paragraphs(
     return paragraphs
 
 
-def _add_images_to_doc(doc: MarkdownDocument, content: str) -> None:
+def _add_images_to_doc(doc: MarkdownDocument, content: str, base_url: str = "") -> None:
     """Extract and add images to document."""
-    for img_type, resource_or_url, alt_text, external_url in extract_images(content):
+    for img_type, resource_or_url, alt_text, external_url in extract_images(
+        content, base_url=base_url
+    ):
         if img_type == "combined":
             img = Image(
                 type="combined",
@@ -404,6 +442,70 @@ def _add_images_to_doc(doc: MarkdownDocument, content: str) -> None:
                 paragraph_number=0,
             )
         doc.images.append(img)
+    _pair_image_captions(doc, content)
+
+
+# An ALL-CAPS figure caption: the line's letters are (mostly) uppercase and it has ≥2 words
+# (HyperWar convention, e.g. "ALLIED INVASION CHIEFS. Left to right: ..."). The caption carries the
+# figure's rich context (names/place/action) — pairing it to the image lets M3/M5 link it.
+def _is_caption_line(line: str) -> bool:
+    s = line.strip()
+    if len(s) < 8 or " " not in s:
+        return False
+    # Take the leading heading-ish run (up to the first sentence break) to judge caps.
+    head = s.split(".")[0].split(":")[0]
+    letters = [c for c in head if c.isalpha()]
+    if len(letters) < 6:
+        return False
+    upper = sum(1 for c in letters if c.isupper())
+    return upper / len(letters) >= 0.85
+
+
+def _pair_image_captions(doc: MarkdownDocument, content: str) -> None:
+    """Pair the ALL-CAPS caption that immediately FOLLOWS a bare image (``![](src)``) into the
+    image's ``caption`` field. HyperWar renders a figure as ``<img ...>`` then a caption paragraph;
+    the caption (not alt text) holds the names/place/action. Fail-safe: no caption -> stays None.
+    """
+    try:
+        lines = content.splitlines()
+        paired = 0
+        for img in doc.images:
+            needle = img.url or img.resource_id
+            if not needle or img.caption:
+                continue
+            caption = _find_following_caption(lines, needle)
+            if caption:
+                img.caption = caption
+                paired += 1
+        if paired:
+            logger.info(
+                "OBSERV image.captioned paired=%d of %d", paired, len(doc.images)
+            )
+    except Exception as e:  # noqa: BLE001 - captioning must never break parse
+        logger.debug("image caption pairing skipped: %s", e)
+
+
+def _find_following_caption(lines: "list[str]", needle: str) -> Optional[str]:
+    """ALL-CAPS caption paragraph just after the image line referencing ``needle`` (matched by
+    basename — present in both the relative src and the resolved absolute url), or None.
+    """
+    base = needle.rstrip("/").split("/")[-1].split("?")[0]
+    if not base:
+        return None
+    idx = next(
+        (
+            i
+            for i, ln in enumerate(lines)
+            if base in ln and re.search(r"!\[.*?\]\(", ln)
+        ),
+        None,
+    )
+    if idx is None:
+        return None
+    for ln in lines[idx + 1 : idx + 4]:
+        if ln.strip() and _is_caption_line(ln):
+            return ln.strip()
+    return None
 
 
 def _add_maps_to_doc(doc: MarkdownDocument, content: str, base_url: str = "") -> None:
@@ -517,7 +619,7 @@ def parse_content_file(
                 para.quote_attribution = attribution_by_para[block_idx]
 
     # Add images, maps, and footnotes
-    _add_images_to_doc(doc, content)
+    _add_images_to_doc(doc, content, base_url=metadata.source_url)
     _add_maps_to_doc(doc, content, base_url=metadata.source_url)
     _add_footnotes_to_doc(doc, content)
 
