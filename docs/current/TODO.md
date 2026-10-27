@@ -1224,34 +1224,38 @@ Ties to: fetch_review.submit_affirmed_batch (where the exact (a) gate already li
 
 
 ## [HIGH·referential] Phase-3 validation FAIL: 26 dangling Sub_eventID survive the repair (clean RoerDams run eac5f855, 2026-10-27)
-First CLEAN full run on the newly-deployed image (HTML->MD + #578 live) completed end-to-end, but the
-post-sync Phase-3 validator FAILED with a real data-integrity defect — and it DISAGREES with the
-referential repair that ran moments earlier in the same task:
+First CLEAN full run on the newly-deployed image (HTML->MD + #578 live) completed end-to-end. The
+post-sync Phase-3 validator reported FAIL (26 dangling Sub_eventID) while the referential repair in the
+same task reported 0 dangling:
 
-  1. `OBSERV referential.subevent_repair repaired=31` then `Referential integrity: 0 dangling
-     cross-reference(s)`  (the repair declares the corpus clean)
-  2. immediately after: `OBSERV phase3.validation result=FAIL files_checked=46 failures=1`
-     `FAIL [A3/B1] 26 dangling cross-reference(s): places.event_mentions[].Sub_eventID -> events=17,
-      people_groups.event_mentions[].Sub_eventID -> events=8, dates.event_mentions[].Sub_eventID -> events=1`
-     `Post-sync Phase-3 validation exit=1`
+  1. `OBSERV referential.subevent_repair repaired=31` then `Referential integrity: 0 dangling`
+  2. immediately after: `OBSERV phase3.validation result=FAIL ... 26 dangling cross-reference(s):
+     places.Sub_eventID->events=17, people_groups=8, dates=1` + `Post-sync Phase-3 validation exit=1`
 
-ROOT-CAUSE DIRECTION: the repair (`referential_integrity.repair_dangling_subevents`) down-binds/repairs
-the EventID side (it reported 31 repaired + a clean EventID audit), but the validator's A3/B1 check
-validates the **Sub_eventID** refs carried in places/people_groups/dates `event_mentions[]` pointing at
-sub-events that were dropped/merged in Phase 2 — and those 26 are NOT covered by the repair. So there is
-a COVERAGE GAP between what repair fixes (EventID danglers) and what the validator checks (Sub_eventID
-danglers in entity event_mentions). This is the same dangling-Sub_eventID class as the existing
-SCHEMA_TARGET note, now reproduced on a clean slate with zero stale state — so it is created WITHIN this
-run (Phase 2 sub-event minting/merge vs the mention Sub_eventIDs stamped on entities), not residue.
+CONFIRMED ROOT CAUSE (RESOLVED — my first hypothesis of a repair coverage-gap was WRONG): the S3 corpus
+is CLEAN. Verified by direct S3 scan: 46 entity event_mentions, exactly 31 have Sub_eventID=null (the
+repair's down-binds — matches repaired=31), 0 dangling. The repair (`run_for_phase`) targets S3Storage
+when S3_BUCKET is set and fixed everything on S3. But `_phase3_durable_referential_fix` ran
+`validate_phase3` against the LOCAL `WORKDIR/output` tree, re-pulling ONLY `output/content/` (skip-
+existing). The entity dirs (places/people_groups/dates/...) were downloaded as Phase-3 INPUT BEFORE the
+S3-side repair, so validate audited STALE pre-repair local entity records -> false 26 FAIL. Same class
+as the existing [HIGH·durability] note; this is its concrete reproduction + fix.
 
-FIX (two parts): (a) extend the repair to ALSO reconcile entity `event_mentions[].Sub_eventID` (re-point
-to the surviving/merged sub-event, or null + down-bind to the parent EventID like the Sub-eventID=null
-down-bind path) so repair and validator agree; (b) stop CREATING them in Phase 2 — ensure a sub-event
-merge/drop rewrites the Sub_eventID on every entity mention that referenced it (the mention is stamped at
-extraction time against a Sub-eventID that a later consolidation/merge can invalidate). Verify by a clean
-run reaching `OBSERV phase3.validation result=PASS`. Evidence stream: phase3/pipeline/eac5f855...,
-2026-10-27T05:42:13Z.
+FIX (shipped): in `ecs_entrypoint._phase3_durable_referential_fix`, after the S3 repair, re-download
+`output/{places,people_groups,dates,people,equipment}/` with OVERWRITE (`_download_s3_prefix`) before
+`validate_phase3`, so validate audits the authoritative post-repair S3 state. Tests:
+tests/test_phase3_durable_revalidate.py (overwrite-before-validate + fail-safe). The repair LOGIC is
+sound (down-bind only when parent EventID resolves) and needed no change — all 26 were repairable and
+were repaired on S3. Verify end-to-end: next clean run should reach `phase3.validation result=PASS`.
+Evidence: phase3/pipeline/eac5f855..., 2026-10-27T05:42:13Z; S3 scan 2026-10-27 ~12:30Z (0 dangling).
 
 HEALTHY on the same run (for contrast, no action): validation allow=75 block=0 block_permille=0;
 JSON quality 12 clean (100%); OpenSERP summary searched=17 enriched=6 items_added=15; URL-review email
 fired (OBSERV urlreview.pending count=46 notification sent) — #578 live and working.
+
+## [LOW·security-hardening] _download_s3_file has no path-traversal containment (ecs_entrypoint)
+Pre-existing (not introduced by the stale-tree validate fix). ecs_entrypoint._download_s3_file composes
+WORKDIR/obj["Key"] from the raw S3 key with no realpath containment check, so a crafted "../" key could
+escape /tmp/pipeline. Keys come from the pipeline's OWN trusted bucket (low risk), but defense-in-depth:
+assert the resolved local path is within WORKDIR before download_file. Flagged by the dual review of the
+phase3-durable-revalidate fix; out of scope there.
