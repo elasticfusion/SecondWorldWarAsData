@@ -381,7 +381,12 @@ Look for: official seals, "War Office", "GSGS", "AMS", military unit designation
 BE VERY STRICT. When in doubt, REJECT.
 
 Respond with ONLY a JSON object:
-{{"is_relevant": true or false, "is_government_map": true or false, "reason": "Brief explanation of what you see and why accepted/rejected"}}
+{{"is_relevant": true or false, "is_government_map": true or false, "reason": "Brief explanation of what you see and why accepted/rejected", "depicted": {{"units": ["only unit/formation names LEGIBLY labeled on the map, e.g. '116th Panzer Division'"], "places": ["place/feature names legibly labeled"], "front_line_or_sector": "the sector/front shown, or null", "date_or_window": "date or date-range the map depicts if shown/captioned, else null", "operation": "named operation if shown, else null", "movements": ["described troop movements the map depicts with arrows/annotations"], "description": "a factual 1-3 sentence prose description of WHAT THE MAP SHOWS, grounded only in legible map content (no speculation)"}}}}
+
+RULES FOR `depicted` (anti-hallucination — CRITICAL):
+- Populate `depicted` ONLY when is_relevant is true; otherwise set it to null.
+- Include ONLY what is LEGIBLY shown/labeled on the map. Do NOT infer, guess, or add outside knowledge.
+- If a field is not legibly shown, use null (scalars) or [] (lists). An empty/honest answer is REQUIRED over a fabricated one.
 """
 
 

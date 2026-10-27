@@ -57,6 +57,17 @@ ParsedSource (map):
   `AcquisitionMethod` Literal, src/ingestion/source_metadata.py:29) + `acquisition_url` = the map's source
   page, `source_id` = the map id. This makes every entity derived from the map traceable to the map
   (A3/source-traceback already requires every entity to have a source).
+- **REUSE (no map-specific event code):** the adapter's ONLY job is to render the map into the existing
+  `parsed.json` contract so the map rides the UNCHANGED event path — `events.create_event_prompt` →
+  `extract_events` → the whole Phase-2 machine, identical to a book chapter. P0 proves this at the seam:
+  the adapter output fed to the real `create_event_prompt` yields a valid event-extraction prompt
+  (units/places present). No parallel/duplicate event logic is written for maps.
+- **OBSERVABILITY (built-in, required):** every adapter outcome emits a canonical greppable OBSERV line —
+  `OBSERV map_source.built map=<id> paragraphs=N units=U places=P` on success,
+  `OBSERV map_source.skipped map=<id> reason=<...>` when there is nothing groundable to derive (empty
+  depicted / low confidence). P1 adds the downstream rollup `OBSERV map_source.derived map=<id> events=E
+  entities=N` after the recycled Phase-2 pass, so a map's yield (image → event → entities) is traceable
+  end-to-end in CloudWatch.
 
 ### (B) Richer `map_vision` extraction (prompts/map_vision.yaml)
 Today `map_vision` is a relevance verifier (is this a real WWII map of place X? yes/no — used by
@@ -114,6 +125,34 @@ The inference chain the owner described now **materializes as ordinary entities*
 No "unit-placement" derived entity is needed (the earlier alternative) — the event IS the placement fact,
 with the map as its cited source.
 
+### 3.1 Phase-ordering wrinkle: a Phase-3-discovered map must be RECYCLED to Phase-2 (owner-raised)
+
+Maps are discovered + vision-verified in **Phase 3** (`openserp_external_maps`), but event derivation
+lives in **Phase 2** (`create_event_prompt`). So an approved map must be **recycled back to Phase 2** —
+this is not a linear flow. Two options:
+
+- **Option A (in-place, same run):** Phase 3 renders the map and runs Phase-2 extraction inline on just
+  that map source. CON: Phase 3 doing Phase-2 work muddies the boundary, AND the map-derived event would
+  miss the *normal* Phase-3 enrichment (geocode/weather/OpenSERP) unless Phase 3 re-enters itself — a
+  mini re-entrancy loop.
+- **Option B (re-enter from the top — CHOSEN):** on approve, write the parsed-source (+ SourceMetadata) to
+  `contentrepository/` like any uploaded book. It re-enters via the existing `content-uploaded` front door
+  (`_handle_content_topic`) and is processed by a fresh **Phase 1 → 2 → 3** pass. The map-derived event
+  then gets FULL Phase-2 extraction AND full Phase-3 enrichment (places geocoded, weather fetched) with no
+  special-casing — exactly the "a map is just a source" model. This is what the §3 diagram implies.
+
+**Consequence (CROSS-RUN):** a map discovered in run N is ingested as a source in run N, and its event +
+entities are derived on the **next pass (run N+1)**. Verified feasible: the `content-uploaded` S3
+notification fires on any `contentrepository/` upload regardless of the phase that wrote it; Phase 2 is
+incremental (new parsed files only). An operator/dispatcher cycle (or an explicit re-trigger) processes
+the newly-ingested map sources.
+
+**LOOP GUARD (mandatory):** a map-derived source must NOT itself spawn new map searches that spawn new
+sources, ad infinitum. Guards: (a) the existing `title#`/`_resolve_title_identity` + `contenthash#` dedup
+(#578) rejects a re-ingested identical source; (b) map sources (`book=map-<MapID>`, `source_type=map`)
+are EXCLUDED from the `openserp_external_maps` place-driven search in the next pass (only prose-derived
+places seed map search), so a map can't recursively generate maps. P1 must implement guard (b) explicitly.
+
 ---
 
 ## 4. Provenance & confidence (map-derived facts must be distinguishable)
@@ -166,7 +205,7 @@ with the map as its cited source.
 - **P0 — proof (narrow, 1 map):** add the `depicted` extraction to `map_vision` + the map→parsed adapter;
   manually drive ONE vision-approved map through Phase 2 and confirm it yields a valid event +
   place/people_group/date entities with the map as source. Validates the seam end-to-end.
-- **P1 — wire into the map path:** on approve in `import_openserp_maps`/`_verify_single_image`, emit the
+- **P1 — wire into the map path:** P1 hardening (from P0 dual review): length-bound/controlled-ULID the map_id used in book/source_id; cap depicted.description length. on approve in `import_openserp_maps`/`_verify_single_image`, emit the
   SourceMetadata + parsed-source so the normal queued-parse/Phase-2 picks it up. Add `acquisition_method
   "map_vision"` + the `source_type="map"` marker + confidence.
 - **P2 — quality + guardrails:** confidence gating (skip event derivation below threshold), hallucination
