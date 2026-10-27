@@ -1221,3 +1221,37 @@ different) dedup — heavier, only if paraphrase dup becomes a real problem. Ref
 survey (Jaccard/Euclidean/Cosine + TF-IDF/Word2Vec/Sentence-Transformers); MinHash/LSH is the scalable
 near-dup tool for document bodies, which that survey does not emphasize but is the right fit here.
 Ties to: fetch_review.submit_affirmed_batch (where the exact (a) gate already lives).
+
+
+## [HIGH·referential] Phase-3 validation FAIL: 26 dangling Sub_eventID survive the repair (clean RoerDams run eac5f855, 2026-10-27)
+First CLEAN full run on the newly-deployed image (HTML->MD + #578 live) completed end-to-end, but the
+post-sync Phase-3 validator FAILED with a real data-integrity defect — and it DISAGREES with the
+referential repair that ran moments earlier in the same task:
+
+  1. `OBSERV referential.subevent_repair repaired=31` then `Referential integrity: 0 dangling
+     cross-reference(s)`  (the repair declares the corpus clean)
+  2. immediately after: `OBSERV phase3.validation result=FAIL files_checked=46 failures=1`
+     `FAIL [A3/B1] 26 dangling cross-reference(s): places.event_mentions[].Sub_eventID -> events=17,
+      people_groups.event_mentions[].Sub_eventID -> events=8, dates.event_mentions[].Sub_eventID -> events=1`
+     `Post-sync Phase-3 validation exit=1`
+
+ROOT-CAUSE DIRECTION: the repair (`referential_integrity.repair_dangling_subevents`) down-binds/repairs
+the EventID side (it reported 31 repaired + a clean EventID audit), but the validator's A3/B1 check
+validates the **Sub_eventID** refs carried in places/people_groups/dates `event_mentions[]` pointing at
+sub-events that were dropped/merged in Phase 2 — and those 26 are NOT covered by the repair. So there is
+a COVERAGE GAP between what repair fixes (EventID danglers) and what the validator checks (Sub_eventID
+danglers in entity event_mentions). This is the same dangling-Sub_eventID class as the existing
+SCHEMA_TARGET note, now reproduced on a clean slate with zero stale state — so it is created WITHIN this
+run (Phase 2 sub-event minting/merge vs the mention Sub_eventIDs stamped on entities), not residue.
+
+FIX (two parts): (a) extend the repair to ALSO reconcile entity `event_mentions[].Sub_eventID` (re-point
+to the surviving/merged sub-event, or null + down-bind to the parent EventID like the Sub-eventID=null
+down-bind path) so repair and validator agree; (b) stop CREATING them in Phase 2 — ensure a sub-event
+merge/drop rewrites the Sub_eventID on every entity mention that referenced it (the mention is stamped at
+extraction time against a Sub-eventID that a later consolidation/merge can invalidate). Verify by a clean
+run reaching `OBSERV phase3.validation result=PASS`. Evidence stream: phase3/pipeline/eac5f855...,
+2026-10-27T05:42:13Z.
+
+HEALTHY on the same run (for contrast, no action): validation allow=75 block=0 block_permille=0;
+JSON quality 12 clean (100%); OpenSERP summary searched=17 enriched=6 items_added=15; URL-review email
+fired (OBSERV urlreview.pending count=46 notification sent) — #578 live and working.
