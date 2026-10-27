@@ -1145,11 +1145,17 @@ review (code+security) BOTH PASS.
 Evidence (original): "HEDGEROW COUNTRY", "AERIAL VIEW OF UTAH/OMAHA BEACH", "TERRAIN ON OMAHA BEACH".
 
 ## [M6 · MED · chart-as-source] Org / command-structure charts -> people_groups source
-Evidence: the naval command chart (fn23) + any order-of-battle/command charts. GAP: a chart that encodes
-command structure (who commands whom) is a natural source for people_groups + command relationships, but
-there is no chart-as-source path. FIX: a chart-as-source adapter analogous to map-as-source — vision reads
-the chart into a structured command hierarchy -> derived people_groups/command edges via the normal event
-spine. Depends on M1/M4 (asset-link following) to even reach the chart. Addresses RC4.
+## [M6 · MED · chart-as-source] ✅ DONE (PR #592) — Org / command-structure charts -> people_groups source (RC4)
+Shipped: `chart_source_adapter` (mirrors map_source_adapter) — `_render_command_edges`/`_render_chart_text`
+(command hierarchy -> grounded prose), `build_chart_parsed_source` (create_event_prompt contract,
+source_type='chart'), `recycle_chart_as_source` (contentrepository/chart-<id>/ meta.yaml+content.md SOURCE
+pair -> re-enters Phase 1->2->3 -> people_groups/command edges via the event spine, no chart-specific
+logic). `prompts/chart_vision.yaml` (verify+extract command structure, anti-hallucination). `ingest_affirmed_
+chart` (affirmed chart link -> vision -> recycle; rejects non-chart). ULID TRACKING TO THE ORIGINAL EVENT:
+origin_EventID + origin_SourceSectionID in BOTH `_chart_source` provenance AND meta.yaml (from the link
+event's request_params, fallback book->SourceSectionID via M5). OBSERV chart_source.*. raw-write baseline
+67->69 (contentrepository SOURCE pair, mirrors map adapter). 9 tests, radon 0 new C, pytest 2875, dual review
+(code+security) BOTH PASS. Reuse: map_source_adapter + prompt_loader + grok vision + M5 book->section index.
 
 ## [M7 · MED · embedded-low-q-maps] Inline figure maps (Map 1/2/3, captured OB WEST map)
 Evidence: "Map 1/2/3" inline labels + "Reproduction of a captured OB WEST map". GAP: appear as text labels
