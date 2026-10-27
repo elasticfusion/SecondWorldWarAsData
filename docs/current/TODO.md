@@ -1069,3 +1069,10 @@ phase3-durable-revalidate fix; out of scope there.
 - [DONE · PR #575] snapshot needed pre-loop (_place_needs_work)
 - [DONE · PR #575] removed the ISBN-only 0-of-N false anomaly
 - [DONE · PR #581] SAME as the durability item — false FAIL from stale local tree; fixed by overwrite re-download
+
+## [LOW·dep-advisory] pylint 4.0.5 -> 4.0.9 (CVE-2026-114608), pip-audit (2026-10-27)
+Freshly-published advisory on the CI-pinned pylint (requirements-ci.txt: pylint==4.0.5; fix 4.0.9).
+Dev-only tool (not shipped in the pipeline image / lambdas). CI (lint.yml) does NOT run pip-audit so
+it's not blocking merges; the LOCAL gate.sh pip-audit trips on it. Fix: bump requirements-ci.txt to
+pylint==4.0.9 as a standalone dep-maintenance change (not bundled into a feature PR). Unrelated to the
+map-as-source work that surfaced it.

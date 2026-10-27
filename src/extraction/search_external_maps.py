@@ -346,48 +346,36 @@ def _build_verification_prompt(
     alt_text: str,
     caption: str,
 ) -> str:
-    """Build prompt for Grok vision verification."""
-    return f"""Analyze this image VERY STRICTLY to determine if it's a WWII-era military/tactical map of {place_name}.
+    """Build the Grok vision prompt for a map image — the externalized, upgraded `map_vision`
+    prompt that BOTH verifies relevance (is_relevant/is_government_map/reason) AND extracts the
+    `depicted` block (units/places/sector/date/operation/movements/description) with WWII-tactical-
+    map reading guidance + anti-hallucination. Single source of truth: prompts/map_vision.yaml.
+    """
+    from src.utils.prompt_loader import render_prompt
 
-Context:
-- Place: {place_name}
-- Date: {date or 'WWII era (1939-1945)'}
-- Event: {event_context}
-- Page title: {map_title}
-- Image alt text: {alt_text}
-- Image caption: {caption}
+    return render_prompt(
+        "map_vision",
+        place_name=place_name,
+        date=date or "WWII era (1939-1945)",
+        event_context=event_context,
+        title=f"{map_title} (image alt={alt_text!r} caption={caption!r})"[:300],
+    )
 
-CRITICAL REQUIREMENTS - ALL must be true:
-1. Must be an actual MAP with geographic features, roads, terrain, or military positions
-2. Must show {place_name} or immediate surrounding area (not just same country/region)
-3. Must be from WWII era (1935-1950) - check for period-appropriate styling
-4. Must be relevant to military operations/events (not just any historical map)
 
-REJECT if ANY of these:
-- Text document with place names but no map
-- Photograph of people, equipment, or scenes (even if location is correct)
-- Modern map (satellite, Google Maps, contemporary cartography)
-- Website artifacts (logos, buttons, email addresses, navigation elements)
-- Map of correct region but wrong time period (pre-1935 or post-1950)
-- Map of correct region but too broad (e.g., all of Europe when place is specific city)
-- Diagram, chart, or infographic (not a geographic map)
-- Map that doesn't show the specific place mentioned
+def _ssrf_safe_image_url(img_url: str) -> Optional[str]:
+    """Return the SSRF-cleaned image URL if its host resolves to ONLY public IPs (reject
+    loopback/private/link-local/cloud-metadata + DNS-rebinding), else None. The image is scraped
+    from untrusted page HTML and the vision call downloads it, so this gate runs BEFORE any fetch.
+    """
+    from urllib.parse import urlparse
 
-GOVERNMENT DOCUMENT OVERRIDE:
-If the map appears to be an official government/military document (e.g., War Office, GSGS, AMS, US Army, British military, etc.), 
-ACCEPT it regardless of the website's copyright terms, as government works are typically public domain.
-Look for: official seals, "War Office", "GSGS", "AMS", military unit designations, official map series numbers.
+    from src.utils.url_hygiene import clean_url, resolved_host_is_safe
 
-BE VERY STRICT. When in doubt, REJECT.
-
-Respond with ONLY a JSON object:
-{{"is_relevant": true or false, "is_government_map": true or false, "reason": "Brief explanation of what you see and why accepted/rejected", "depicted": {{"units": ["only unit/formation names LEGIBLY labeled on the map, e.g. '116th Panzer Division'"], "places": ["place/feature names legibly labeled"], "front_line_or_sector": "the sector/front shown, or null", "date_or_window": "date or date-range the map depicts if shown/captioned, else null", "operation": "named operation if shown, else null", "movements": ["described troop movements the map depicts with arrows/annotations"], "description": "a factual 1-3 sentence prose description of WHAT THE MAP SHOWS, grounded only in legible map content (no speculation)"}}}}
-
-RULES FOR `depicted` (anti-hallucination — CRITICAL):
-- Populate `depicted` ONLY when is_relevant is true; otherwise set it to null.
-- Include ONLY what is LEGIBLY shown/labeled on the map. Do NOT infer, guess, or add outside knowledge.
-- If a field is not legibly shown, use null (scalars) or [] (lists). An empty/honest answer is REQUIRED over a fabricated one.
-"""
+    cleaned = clean_url(img_url)
+    host = (urlparse(cleaned).hostname or "") if cleaned else ""
+    if not cleaned or not host or resolved_host_is_safe(host) is None:
+        return None
+    return cleaned
 
 
 def _verify_single_image(
@@ -398,7 +386,7 @@ def _verify_single_image(
     map_title: str,
     grok_client: GrokClient,
     image_timeout: int,
-) -> Optional[tuple[bool, bool, str]]:
+) -> Optional[tuple[bool, bool, str, Optional[dict]]]:
     """Verify a single image with Grok vision. Returns (is_relevant, is_government, approved_url) for
     an approved image, or None. approved_url is the SSRF-cleaned url so the caller downloads exactly
     the image vision approved (not a re-extracted map_images[0])."""
@@ -407,15 +395,9 @@ def _verify_single_image(
     caption = img.get("caption", "")
 
     # SSRF gate FIRST: img_url is built from scraped page HTML (untrusted) and the vision call
-    # downloads it. Require a clean http(s) URL whose host resolves to ONLY public IPs
-    # (reject loopback/private/link-local/cloud-metadata + DNS-rebinding) before any fetch.
-    # Defense-in-depth: extract_json_with_image also routes through the SSRF-safe fetcher.
-    from src.utils.url_hygiene import clean_url, resolved_host_is_safe
-    from urllib.parse import urlparse
-
-    cleaned = clean_url(img_url)
-    host = (urlparse(cleaned).hostname or "") if cleaned else ""
-    if not cleaned or not host or resolved_host_is_safe(host) is None:
+    # downloads it. Require a clean http(s) URL whose host resolves to ONLY public IPs before fetch.
+    cleaned = _ssrf_safe_image_url(img_url)
+    if not cleaned:
         logger.info(
             "   ⚠ OBSERV maps.image_skipped reason=ssrf_unsafe_url url=%s",
             img_url[:120],
@@ -440,13 +422,14 @@ def _verify_single_image(
         is_relevant = result.get("is_relevant", False)
         is_government = result.get("is_government_map", False)
         reason = result.get("reason", "No reason provided")
+        depicted = result.get("depicted") if isinstance(result, dict) else None
 
         if is_relevant:
             if is_government:
                 logger.info(f"   ✓ Government map confirmed: {reason}")
             else:
                 logger.info(f"   ✓ Grok confirmed: {reason}")
-            return True, is_government, img_url
+            return True, is_government, img_url, depicted
         else:
             logger.info(f"   ⚠ Grok rejected: {reason}")
 
@@ -463,7 +446,7 @@ def _verify_map_relevance(
     grok_client: GrokClient,
     page_timeout: int = 10,
     image_timeout: int = 30,
-) -> tuple[bool, bool, Optional[str]]:
+) -> tuple[bool, bool, Optional[str], Optional[dict]]:
     """Download page, extract map images, and verify with Grok using vision.
 
     Args:
@@ -477,13 +460,15 @@ def _verify_map_relevance(
         page_timeout: Timeout for page download
         image_timeout: Timeout for image download
 
-    Returns: (is_relevant, is_government_map) - True if relevant, and True if government document
+    Returns: (is_relevant, is_government_map, approved_image_url, depicted) — relevance, whether a
+    government document, the SSRF-cleaned approved image URL, and the vision `depicted` extraction
+    (or None). depicted is populated only for an approved map with a `depicted` block.
     """
     try:
         # Download page
         html_content = _download_page(map_url, page_timeout)
         if not html_content:
-            return False, False, None
+            return False, False, None, None
 
         # Check for map keywords
         page_has_map_keyword = _check_page_for_maps(map_title, map_description)
@@ -495,7 +480,7 @@ def _verify_map_relevance(
 
         if not map_images:
             logger.info(f"   ⚠ No map images found in HTML")
-            return False, False, None
+            return False, False, None, None
 
         logger.info(f"   Found {len(map_images)} potential map image(s)")
 
@@ -514,8 +499,8 @@ def _verify_map_relevance(
                 return result
 
         logger.info(f"   ⚠ No relevant maps found in {len(map_images)} image(s)")
-        return False, False, None
+        return False, False, None, None
 
     except Exception as e:
         logger.warning(f"   ⚠ Verification failed: {e}")
-        return False, False, None
+        return False, False, None, None
