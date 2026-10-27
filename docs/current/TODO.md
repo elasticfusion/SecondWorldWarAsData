@@ -1093,7 +1093,14 @@ text_converters.html_to_markdown path), PRESERVE `<img>` as `![alt](src)` instea
 HyperWar's figure-caption convention, pair an ALL-CAPS caption line with its image. Unblocks M3/M4/M5
 (nothing downstream can classify/link an image that was never extracted). Addresses RC1.
 
-## [M3 · HIGH · image-to-person] Named-group + headshot photos -> PersonID linkage (RC2)
+## [M3 · HIGH · image-to-person] ✅ DONE (PR #589) — Named-group + headshot photos -> PersonID linkage (RC2)
+Shipped: `caption_names.parse_caption_person_names` (positional-cue + Title+Name parse, conservative) +
+`image_person_link` (people name-index full-name + unambiguous-surname -> resolve -> append
+`{url,title=caption,source=document:<book>}` to people.images[] via the central guarded writer, dedup by
+url; optional ImageCaptioner vision gate, no network; fail-safe). Phase-3 gated step `image_person_link`
+(`images.link_people`) reusing the shared `_load_parsed_docs` (also refactored the M1 step onto it). OBSERV
+`image_person.*` + `phase3.step`. 10 tests, radon 0 new C, pytest 2843, dual review PASS (code review caught
+a test-fixture ULID bug -> fixed, write-path persistence re-verified).
 Evidence: "ALLIED INVASION CHIEFS. Left to right: Bradley, Ramsay, Tedder, Eisenhower, Montgomery,
 Leigh-Mallory, Smith" (7 identified) + "GERMAN FIELD COMMANDERS" (4). GAP: even if extracted (needs M2),
 there is no structure linking an image to the PersonIDs it depicts, and no use of the left-to-right
