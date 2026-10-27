@@ -53,4 +53,37 @@ def test_verify_single_image_returns_approved_url(monkeypatch):
         gc,
         30,
     )
-    assert out == (True, True, "https://cdn/m.png")  # approved url returned
+    # 4-tuple now (map-as-source P1): (is_relevant, is_government, approved_url, depicted).
+    # depicted is None here because the mocked result omits it (backward-compatible).
+    assert out == (True, True, "https://cdn/m.png", None)
+
+
+def test_verify_single_image_passes_depicted_through(monkeypatch):
+    import src.extraction.search_external_maps as SEM
+
+    monkeypatch.setattr("src.utils.url_hygiene.clean_url", lambda u: u)
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda h: ["93.184.216.34"]
+    )
+    gc = mock.Mock()
+    depicted = {
+        "units": ["12th SS Panzer"],
+        "places": ["Caen"],
+        "description": "map of Caen",
+    }
+    gc.extract_json_with_image.return_value = {
+        "is_relevant": True,
+        "is_government_map": False,
+        "reason": "ok",
+        "depicted": depicted,
+    }
+    out = SEM._verify_single_image(
+        {"url": "https://cdn/m.png", "alt": "", "caption": ""},
+        "Caen",
+        "1944",
+        "ctx",
+        "title",
+        gc,
+        30,
+    )
+    assert out == (True, False, "https://cdn/m.png", depicted)

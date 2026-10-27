@@ -21,6 +21,56 @@ logger = logging.getLogger(__name__)
 # (vision-inferred) events from prose-stated ones (spec §4).
 MAP_SOURCE_TYPE = "map"
 
+# Cap on the vision description length written into the source (P0-review hardening).
+_MAX_DESC_CHARS = 8000
+
+
+def _safe_map_id(map_id: str) -> str:
+    """Bound + sanitize a map id to a safe path/book token (P0-review hardening)."""
+    import re
+
+    tok = re.sub(r"[^A-Za-z0-9._-]+", "", str(map_id or ""))
+    return tok[:40] or "unknown"
+
+
+def render_map_markdown(
+    map_title: str, depicted: Dict[str, Any], source_url: str = ""
+) -> str:
+    """Render an approved map's vision ``depicted`` block into a RAW markdown SOURCE body — the same
+    kind of content a book chapter supplies to Phase-1 parse. Returns "" if nothing groundable.
+
+    This is the map-as-source body: Phase 1 parses it into paragraphs, Phase 2 derives the event.
+    """
+    text = _render_depicted_text(depicted)
+    if not text:
+        return ""
+    title = (map_title or "WWII map").strip()
+    body = text[:_MAX_DESC_CHARS]
+    lines = [f"## {title}", ""]
+    if source_url:
+        lines.append(f"(Source map: {source_url})")
+        lines.append("")
+    lines.append(body)
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_map_meta_yaml(map_id: str, map_title: str, source_url: str = "") -> str:
+    """Render the ``-meta.yaml`` sidecar for a map source (mirrors a book chapter's meta)."""
+    import yaml
+
+    meta = {
+        "series": "External maps (vision-derived)",
+        "book": f"map-{_safe_map_id(map_id)}",
+        "author": "",
+        "chapter_number": 1,
+        "chapter_title": (map_title or f"Map {_safe_map_id(map_id)}")[:300],
+        "license": "Unknown",
+        "copyright_date": "",
+        "source_url": source_url or "",
+        "source_type": MAP_SOURCE_TYPE,
+    }
+    return yaml.safe_dump(meta, sort_keys=False, allow_unicode=True)
+
 
 def _render_depicted_text(depicted: Dict[str, Any]) -> str:
     """Render the vision ``depicted`` block into factual prose paragraphs for event extraction.

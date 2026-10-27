@@ -502,16 +502,18 @@ def _process_search_result(
     logger.info(f"   🔍 Verifying: {title[:60]}...")
 
     # Verify with Grok
-    is_relevant, is_government_map, approved_image_url = _verify_map_relevance(
-        map_url=url,
-        map_title=title,
-        map_description=description,
-        place_name=place_name,
-        date=date,
-        event_context=event_context,
-        grok_client=grok_client,
-        page_timeout=page_timeout,
-        image_timeout=image_timeout,
+    is_relevant, is_government_map, approved_image_url, depicted = (
+        _verify_map_relevance(
+            map_url=url,
+            map_title=title,
+            map_description=description,
+            place_name=place_name,
+            date=date,
+            event_context=event_context,
+            grok_client=grok_client,
+            page_timeout=page_timeout,
+            image_timeout=image_timeout,
+        )
     )
 
     if not is_relevant:
@@ -582,7 +584,104 @@ def _process_search_result(
 
     logger.info(f"   ✅ Imported: {title[:60]}")
     downloaded_urls.add(url)
+    # Recycle the approved map as a SOURCE DOCUMENT (map-as-source): render the vision `depicted`
+    # block into a parsed-source under contentrepository/ so the map re-enters the normal pipeline
+    # (Phase 1->2->3) and an EVENT (+ people_groups/places/dates) is derived from it. Fail-safe +
+    # gated on depicted being present (no depicted -> catalog record only, no event derivation).
+    _recycle_map_as_source(
+        map_id=map_record["MapID"],
+        map_title=title,
+        approved_image_url=approved_image_url or "",
+        depicted=depicted,
+        source_url=url,
+    )
     return True, 0
+
+
+def _recycle_map_as_source(
+    *,
+    map_id: str,
+    map_title: str,
+    approved_image_url: str,
+    depicted: Any,
+    source_url: str,
+) -> bool:
+    """Write an approved map's vision ``depicted`` as a RAW SOURCE (meta.yaml + content.md) under
+    ``contentrepository/map-<id>/`` so it re-enters the normal pipeline via the content-uploaded
+    front door (Phase 1 parse -> Phase 2 event extraction -> Phase 3 enrich), exactly like a book
+    chapter (map-as-source P1, spec §3.1 Option B). Fail-safe: never raises; returns True iff a
+    source was written. Gated on `depicted` being present (no depicted -> catalog record only).
+    """
+    try:
+        if not isinstance(depicted, dict) or not depicted:
+            logger.info(
+                "OBSERV map_source.skipped map=%s reason=no_depicted "
+                "(catalog record only, no event derivation)",
+                map_id,
+            )
+            return False
+        from src.extraction.map_source_adapter import (
+            _safe_map_id,
+            render_map_markdown,
+            render_map_meta_yaml,
+        )
+
+        md = render_map_markdown(map_title, depicted, source_url=source_url)
+        if not md:
+            logger.info(
+                "OBSERV map_source.skipped map=%s reason=empty_depicted", map_id
+            )
+            return False
+
+        safe_id = _safe_map_id(map_id)
+        base = Path("contentrepository") / f"map-{safe_id}"
+        base.mkdir(parents=True, exist_ok=True)
+        # Mirror a book chapter's source pair so Phase-1 parse consumes it unchanged.
+        (base / f"map-{safe_id}-meta.yaml").write_text(
+            render_map_meta_yaml(map_id, map_title, source_url=source_url),
+            encoding="utf-8",
+        )
+        (base / f"map-{safe_id}a-content.md").write_text(md, encoding="utf-8")
+        logger.info(
+            "OBSERV map_source.recycled map=%s source=contentrepository/map-%s/ "
+            "(re-enters Phase 1->2->3 for event derivation)",
+            map_id,
+            safe_id,
+        )
+        return True
+    except Exception as e:  # noqa: BLE001 - recycle must never crash the map import
+        logger.warning("OBSERV map_source.error map=%s reason=%s", map_id, str(e)[:120])
+        return False
+
+
+def _is_map_derived_only(event_mentions: Any) -> bool:
+    """True iff a place's provenance is ENTIRELY map-derived (every event_mention's book is
+    'map-*'). Such places must not seed new map searches (map-as-source loop guard). A place with
+    any prose source (or no mentions) returns False and searches normally."""
+    ems = event_mentions or []
+    books = [m.get("book") for m in ems if isinstance(m, dict)]
+    return bool(books) and all(
+        isinstance(b, str) and b.startswith("map-") for b in books
+    )
+
+
+def _event_fields(place_data: dict) -> tuple:
+    """First event_mention's (context, date, EventID, Event_Name, Sub_eventID, Sub_event_Name)."""
+    ems = place_data.get("event_mentions", []) or []
+    if not ems:
+        return "WWII operations", None, None, None, None, None
+    first = ems[0]
+    en = first.get("Event_Name", "")
+    sn = first.get("Sub_event_Name", "")
+    ctx = f"{en} - {sn}" if en and sn else "WWII operations"
+    return (
+        ctx,
+        None,
+        first.get("EventID"),
+        en,
+        first.get("Sub_eventID"),
+        sn,
+    )
 
 
 def _process_place_file(
@@ -608,24 +707,25 @@ def _process_place_file(
     if not place_name:
         return 0, 0, 0
 
+    # LOOP GUARD (map-as-source): a place whose provenance is ONLY a map source must NOT seed new
+    # map searches (else map -> place -> map -> ... recursion). Prose-sourced places search normally.
+    if _is_map_derived_only(place_data.get("event_mentions")):
+        logger.info(
+            "OBSERV map_source.search_skipped place=%s reason=map_derived_only "
+            "(loop guard: a map-derived place does not seed new map searches)",
+            place_name,
+        )
+        return 0, 1, 0
+
     if skip_searched and history.has_searched(place_name):
         logger.info(f"[{idx}/{total}] {place_name} - ⏭️  Previously searched")
         return 0, 1, 0
 
     logger.info(f"[{idx}/{total}] {place_name}")
 
-    event_mentions = place_data.get("event_mentions", [])
-    event_context = "WWII operations"
-    date = None
-    event_id = event_name = sub_event_id = sub_event_name = None
-    if event_mentions:
-        first = event_mentions[0]
-        event_id = first.get("EventID")
-        event_name = first.get("Event_Name", "")
-        sub_event_id = first.get("Sub_eventID")
-        sub_event_name = first.get("Sub_event_Name", "")
-        if event_name and sub_event_name:
-            event_context = f"{event_name} - {sub_event_name}"
+    event_context, date, event_id, event_name, sub_event_id, sub_event_name = (
+        _event_fields(place_data)
+    )
 
     results = search_with_openserp(
         place_name, date, limit=search_limit, openserp_url=openserp_url
