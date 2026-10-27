@@ -1,0 +1,639 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "PersonID": {
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "type": "string"
+    },
+    "_last_updated": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": "string"
+    },
+    "_schema_version": {
+      "type": "string"
+    },
+    "academic_references": {
+      "items": {
+        "properties": {
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "aliases": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "biographical_profile": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "biographical_details": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "biography_sources": {
+          "items": {
+            "properties": {
+              "BibliographyID": {
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "EventID": {
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "Sub_eventID": {
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "confidence": {
+                "type": [
+                  "number",
+                  "string",
+                  "null"
+                ]
+              },
+              "fields_sourced": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "page": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "source": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "string"
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "birth_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "birth_place": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "death_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "death_place": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "education": {
+          "items": {
+            "properties": {
+              "degree": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "institution": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "year": {
+                "type": [
+                  "number",
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "string"
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "family": {
+          "type": [
+            "array",
+            "object",
+            "string",
+            "null"
+          ]
+        },
+        "grokipedia_url": {
+          "pattern": "^https?://",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "group_affiliations": {
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "GroupID": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "as_of_source_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "date_verified": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "group": {
+                "type": "string"
+              },
+              "group_kind": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "implied_from_title": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "source_title": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": "object"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "military_awards": {
+          "items": {
+            "properties": {
+              "award": {
+                "type": "string"
+              },
+              "class": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "date_awarded": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "string"
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "nationality": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "nationality_served": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "primary_group_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ranks": {
+          "items": {
+            "properties": {
+              "branch": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "rank": {
+                "type": "string"
+              }
+            },
+            "type": [
+              "object",
+              "string"
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "role_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "units_served": {
+          "items": {
+            "properties": {
+              "GroupID": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "designation": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "echelon": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "from": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "to": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "unit": {
+                "type": "string"
+              },
+              "unit_number": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "string"
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "wikipedia_url": {
+          "pattern": "^https?://",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "enrichment_status": {
+      "enum": [
+        "enriched",
+        "not_found",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_mentions": {
+      "items": {
+        "properties": {
+          "DateMentionID": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "EventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "Event_Name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "MentionID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "Sub-eventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "Sub-event_Name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "author": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "book": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "chapter": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "life_event": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "original_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "position_at_event": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "series": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "images": {
+      "items": {
+        "properties": {
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "last_enrichment_search": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "military_awards": {
+      "items": {
+        "properties": {
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "name": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "name_resolution": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "nationality": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "oob_convergence_note": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "openserp_searched": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "openserp_searched_at": {
+      "type": [
+        "number",
+        "string",
+        "null"
+      ]
+    },
+    "rank": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "side": {
+      "enum": [
+        "allied",
+        "axis",
+        "neutral",
+        "civilian",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_language": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "PersonID",
+    "name"
+  ],
+  "title": "People Output File",
+  "type": "object",
+  "version": "2.26"
+}

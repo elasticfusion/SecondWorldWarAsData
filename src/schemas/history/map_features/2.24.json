@@ -1,0 +1,351 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "MapID": {
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "_last_updated": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": "string"
+    },
+    "_schema_version": {
+      "type": "string"
+    },
+    "covered_places": {
+      "items": {
+        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "date_range": {
+      "additionalProperties": false,
+      "properties": {
+        "earliest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "latest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "distance_scale": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "elevation_scale": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "features": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "geometry": {
+            "additionalProperties": false,
+            "properties": {
+              "coordinates": {
+                "type": "array"
+              },
+              "type": {
+                "enum": [
+                  "Point",
+                  "LineString",
+                  "Polygon"
+                ],
+                "type": "string"
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "properties": {
+            "additionalProperties": false,
+            "properties": {
+              "DateID": {
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "GroupID": {
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "PersonID": {
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "PlaceID": {
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "additionalInformation": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "affiliation": {
+                "enum": [
+                  "friend",
+                  "hostile",
+                  "neutral",
+                  "unknown",
+                  null
+                ],
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "branch": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "confidence": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "coordinate_source": {
+                "enum": [
+                  "placeid_gazetteer",
+                  "anchor_place",
+                  "none",
+                  null
+                ],
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "dtg": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "echelon": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "feature_kind": {
+                "enum": [
+                  "place",
+                  "unit_position",
+                  "unit_boundary",
+                  "route",
+                  "fortification",
+                  "river",
+                  "road",
+                  "railroad",
+                  "elevation",
+                  "front_line"
+                ],
+                "type": "string"
+              },
+              "higherFormation": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "legend_key": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "original_label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "posture": {
+                "enum": [
+                  "attack",
+                  "defend",
+                  "axis",
+                  null
+                ],
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "sidc": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "source": {
+                "enum": [
+                  "map"
+                ],
+                "type": "string"
+              },
+              "tile_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "uniqueDesignation": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "feature_kind",
+              "source"
+            ],
+            "type": "object"
+          },
+          "type": {
+            "enum": [
+              "Feature"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "geometry",
+          "properties"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "legend": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "DateID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "confidence": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "date_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "meaning": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "meaning_en": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "symbol_description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "map_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "map_title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resolution_report": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "title_en": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "type": {
+      "enum": [
+        "FeatureCollection"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "features"
+  ],
+  "title": "Map Features Output File",
+  "type": "object",
+  "version": "2.24"
+}

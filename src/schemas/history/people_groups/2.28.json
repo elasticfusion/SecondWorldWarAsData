@@ -1,0 +1,363 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "GroupID": {
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "type": "string"
+    },
+    "_last_updated": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": "string"
+    },
+    "_schema_version": {
+      "type": "string"
+    },
+    "aliases": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "alliance_membership": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "string",
+        "null"
+      ]
+    },
+    "common_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "country_of_origin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "enrichment_ambiguity_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "enrichment_data": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "enrichment_status": {
+      "enum": [
+        "enriched",
+        "not_found",
+        "ambiguous",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_mentions": {
+      "items": {
+        "properties": {
+          "EventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "Event_Name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "MentionID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "Sub_eventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "Sub_event_Name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "author": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "book": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "context": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "original_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "role_in_event": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "series": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "grokipedia_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "group_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "group_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "images": {
+      "items": {
+        "type": [
+          "object",
+          "string"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "last_enrichment_search": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "member_countries": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "members": {
+      "items": {
+        "type": [
+          "string",
+          "object"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "military_hierarchy": {
+      "type": [
+        "object",
+        "array",
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "nationality": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "openserp_searched": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "openserp_searched_at": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "parent_organization": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_language": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sub_organizations": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "unit_patch": {
+      "additionalProperties": false,
+      "properties": {
+        "caption": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "height": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "local_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vision_verified": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "width": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "veterans_associations": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "web_results": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "wikipedia_checked_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "wikipedia_extract": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "wikipedia_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "GroupID"
+  ],
+  "title": "Groups Output File",
+  "type": "object",
+  "version": "2.28"
+}

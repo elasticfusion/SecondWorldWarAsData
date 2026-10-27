@@ -84,6 +84,21 @@ records validate). No unenforced entity types remain.
 4. [ ] Update `docs/current/SCHEMA_REFERENCE.md` (version header + the entity's field table).
 5. [ ] Validate real `output/<entity>/*.json` records against the updated schema (0 drift).
 6. [ ] Run the guard test (`tests/test_schema_target_guard.py`) — must pass.
+7. [ ] ARCHIVE the new shape to `src/schemas/history/<entity>/<version>.json`
+   (see `src/schemas/history/README.md`) — the diffable twin of the fingerprint pin.
+8. [ ] Add a row to the **Change Log** below (version, additive/breaking, backward-compat note).
+
+---
+
+## Change Log (per-entity shape changes + backward compatibility)
+
+Append a row for every schema SHAPE change. "Compat" = ADDITIVE (existing records stay valid,
+no reprocess) or BREAKING (upgrade registered / targeted reprocess). This is the human-readable
+companion to the per-entity fingerprint pins in `tests/test_schema_fingerprint.py`.
+
+| Date | Entity | Version | Change | Compat |
+|---|---|---|---|---|
+| 2026-10-27 | people | 2.26 → 2.27 | `images[]` item gains nullable `SourceSectionID` (durable ULID attribution back to the source_section) — multimodal epic M5 | ADDITIVE — existing people records without the field remain valid (confirmed by test_entity_schema_consistency); no reprocess |
 
 ---
 

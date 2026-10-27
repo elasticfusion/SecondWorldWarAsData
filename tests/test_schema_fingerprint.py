@@ -38,7 +38,7 @@ EXPECTED = {
     "events": ("2.24", "bcc344080723f54a"),
     "dates": ("2.25", "79f50ab8a186ab18"),
     "places": ("2.29", "a473bc8457032217"),
-    "people": ("2.26", "ddc8b668c0c6bc6b"),
+    "people": ("2.27", "b46ce4c711d7a1f6"),
     "people_groups": ("2.28", "136c939350cd0a97"),
     "equipment": ("2.25", "80ec735d8a6d009b"),
     "weather": ("2.24", "0f3460daa0d8519d"),
@@ -82,8 +82,44 @@ def test_schema_shape_matches_pinned_fingerprint(spec):
     expected = EXPECTED.get(spec.name, (None, None))[1]
     actual = _fingerprint(load_schema(spec))
     assert expected == actual, (
-        f"{spec.name} schema SHAPE changed (fingerprint {actual} != pinned {expected}). "
-        f"A shape change MUST bump THIS entity's version in ENTITY_SCHEMA_VERSIONS, then "
-        f"regenerate its pin via tests.test_schema_fingerprint._print_pins()."
-        f"tests.test_schema_fingerprint._print_pins()."
+        f"{spec.name} schema SHAPE changed (fingerprint {actual} != pinned {expected}).\n"
+        f"REMINDER — the documented schema-change workflow (docs/current/SCHEMA_VERSIONING.md):\n"
+        f"  1. Bump THIS entity's version in src/schemas/__init__.py::ENTITY_SCHEMA_VERSIONS.\n"
+        f"  2. Classify the change: ADDITIVE (new OPTIONAL field / widened type) -> no reprocess;\n"
+        f"     BREAKING (new required / removed / renamed / tightened) -> register an upgrade or\n"
+        f"     targeted-reprocess that one entity (test_entity_schema_consistency gates this).\n"
+        f"  3. Regenerate this entity's pin: "
+        f"python -c 'from tests.test_schema_fingerprint import _print_pins; _print_pins()'\n"
+        f"  4. ARCHIVE the new shape: src/schemas/history/{spec.name}/<version>.json "
+        f"(see src/schemas/history/README.md) — the diffable twin of this pin.\n"
+        f"  5. Record the change + backward-compatibility note in the Change Log "
+        f"(docs/current/SCHEMA_VERSIONING.md)."
     )
+
+
+def test_current_version_is_archived_in_history():
+    """Every entity's CURRENT pinned version must have a faithful archived shape under
+    src/schemas/history/<entity>/<version>.json (fingerprint == pin). Keeps a durable, diffable
+    history of schema evolution (owner requirement)."""
+    import pathlib
+
+    root = pathlib.Path("src/schemas/history")
+    missing, mismatched = [], []
+    for spec in ENTITY_REGISTRY:
+        version, pin = EXPECTED.get(spec.name, (None, None))
+        if not version:
+            continue
+        hf = root / spec.name / f"{version}.json"
+        if not hf.exists():
+            missing.append(str(hf))
+            continue
+        archived = json.loads(hf.read_text(encoding="utf-8"))
+        if _fingerprint(archived) != pin:
+            mismatched.append(
+                f"{spec.name} {version}: {_fingerprint(archived)} != pin {pin}"
+            )
+    assert not missing, (
+        f"missing archived schema history for current versions: {missing}. "
+        "Snapshot via src/schemas/history/README.md."
+    )
+    assert not mismatched, f"archived history shape != pin: {mismatched}"

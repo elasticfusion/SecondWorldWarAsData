@@ -1,0 +1,219 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "LogisticsID": {
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "type": "string"
+    },
+    "_last_updated": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": "string"
+    },
+    "_schema_version": {
+      "type": "string"
+    },
+    "category": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "delivery_method": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_mentions": {
+      "items": {
+        "properties": {
+          "EventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "EventMentionID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "Sub_eventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "context": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "paragraph_numbers": {
+            "items": {
+              "type": "integer"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "extracted_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "impacted_equipment": {
+      "items": {
+        "type": [
+          "string",
+          "object"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "impacted_organizations": {
+      "items": {
+        "type": [
+          "string",
+          "object"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "impacted_people": {
+      "items": {
+        "type": [
+          "string",
+          "object"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "impacted_places": {
+      "items": {
+        "type": [
+          "string",
+          "object"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "logistics_type": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": [
+        "object",
+        "string",
+        "number",
+        "null"
+      ]
+    },
+    "resolution": {
+      "type": [
+        "object",
+        "string",
+        "null"
+      ]
+    },
+    "severity": {
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "temporal": {
+      "type": [
+        "object",
+        "string",
+        "null"
+      ]
+    },
+    "weather_impact": {
+      "additionalProperties": false,
+      "properties": {
+        "WeatherID": {
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "impact_description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "LogisticsID",
+    "logistics_type"
+  ],
+  "title": "Logistics Output File",
+  "type": "object",
+  "version": "2.24"
+}

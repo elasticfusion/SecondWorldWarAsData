@@ -1,0 +1,444 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "BibliographyID": {
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "type": "string"
+    },
+    "_last_updated": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": "string"
+    },
+    "_schema_version": {
+      "type": "string"
+    },
+    "alt_title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "archive_physical_address": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "archive_reference_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "availability": {
+      "enum": [
+        "online",
+        "offline",
+        "archive",
+        "local",
+        "unknown",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "citation": {
+      "additionalProperties": false,
+      "properties": {
+        "alt_periodical_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "alt_title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "author": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "author_death_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "document_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "edition": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "first_edition_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isbn": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isbn_edition": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pages": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "periodical_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publication_country": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publication_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publication_location": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publisher": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "translator": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "volume": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "copyright_status": {
+      "properties": {
+        "author_death_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "determination_basis": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "jurisdiction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "download_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "download_status": {
+      "enum": [
+        "pending",
+        "downloaded",
+        "extracted",
+        "gated",
+        "skipped",
+        "error",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "license": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "license_notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mentions": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "EventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "MentionID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "Sub-eventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "book": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "chapter": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pages": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reference_number": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reference_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "verbatim_reference": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "volume": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "quality_flags": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "resource_urls": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "search_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "search_status": {
+      "enum": [
+        "resolved",
+        "not_found",
+        "pending",
+        "unresolved",
+        "held_unprocessed",
+        "not_citation",
+        "reference_identified",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_metadata": {
+      "additionalProperties": true,
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "source_qualification": {
+      "additionalProperties": false,
+      "description": "QUALIFICATION (how a source qualifies for an asserted fact), NOT veracity. Two orthogonal axes + derivation provenance. Rating ladder: NARA/archival -> primary/contemporaneous = HIGH; densely-footnoted secondary -> secondary/dense = MED-HIGH; book w/ bibliography, few footnotes -> secondary/light = MED; bare web citing nothing -> secondary|tertiary/none = LOW; Grok fact with no cited URL -> unknown (flagged, untrusted) = LOWEST. See SOURCE_QUALIFICATION_DESIGN.md + URL_SOURCED_ENRICHMENT_DESIGN.md.",
+      "properties": {
+        "basis": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidentiary_support": {
+          "enum": [
+            "dense",
+            "light",
+            "none",
+            "n/a",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "method": {
+          "enum": [
+            "derived",
+            "llm_assisted",
+            "manual",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "proximity": {
+          "enum": [
+            "participant",
+            "witness",
+            "contemporaneous",
+            "recollection",
+            "n/a",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_type": {
+          "enum": [
+            "primary",
+            "secondary",
+            "tertiary",
+            "reference",
+            "unknown",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "BibliographyID",
+    "title"
+  ],
+  "title": "Bibliography Output File",
+  "type": "object",
+  "version": "2.29"
+}

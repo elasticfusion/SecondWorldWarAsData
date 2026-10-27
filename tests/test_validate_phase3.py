@@ -29,7 +29,7 @@ def _compliant_person(pid="01HX7YZABCDEFGHJKMNPQRSTVW", link_key="wikipedia_url"
     return {
         "PersonID": pid,
         "name": "Courtney Hodges",
-        "_schema_version": "2.26",
+        "_schema_version": "2.27",
         "enrichment_status": "enriched",
         "biographical_profile": {
             link_key: "https://en.wikipedia.org/wiki/Courtney_Hodges"
