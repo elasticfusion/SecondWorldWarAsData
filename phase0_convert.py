@@ -40,7 +40,15 @@ REGION = os.getenv("AWS_DEFAULT_REGION", "us-east-1")
 BUCKET = os.getenv("S3_BUCKET", "")
 
 # Extension -> the media_type token convert_to_markdown expects.
-_EXT_MEDIA = {".epub": "epub", ".docx": "docx", ".txt": "text", ".text": "text"}
+_EXT_MEDIA = {
+    ".epub": "epub",
+    ".docx": "docx",
+    ".txt": "text",
+    ".text": "text",
+    ".html": "html",
+    ".htm": "html",
+    ".xhtml": "html",
+}
 
 
 def _book_from_key(key: str) -> str:
