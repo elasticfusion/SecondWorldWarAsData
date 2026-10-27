@@ -1129,11 +1129,20 @@ unmodeled source type. FIX: (a) extract links inside footnote citation text; (b)
 safe) -> attach to PersonID as a biography source + award; (c) org chart -> chart-as-source (see M6).
 Addresses RC3+RC4.
 
-## [M5 · MED · image-to-place] Topology/aerial photos -> PlaceID linkage (RC2)
-Evidence: "HEDGEROW COUNTRY", "AERIAL VIEW OF UTAH/OMAHA BEACH", "TERRAIN ON OMAHA BEACH". GAP: no
-"terrain/aerial" image class (images._classify_image_type is map/diagram/photograph only) and no image->
-PlaceID link. FIX: add a terrain/aerial classification + link the terrain image to the place it depicts
-(enrich PlaceID). Depends on M2. Addresses RC2.
+## [M5 · MED · image-to-place] ✅ DONE (PR #591) — Topology/aerial photos -> PlaceID linkage (RC2)
+Shipped: `image_place_link.classify_terrain_aerial` (caption keyword cues first; Grok-vision subject-matter
+fallback when ambiguous, fail-safe) + `parse_caption_place_names` (AERIAL VIEW OF UTAH/OMAHA BEACH ->
+[UTAH BEACH, OMAHA BEACH]; TERRAIN ON X) + `_resolve_or_create_place` (existing PlaceID OR routes a
+described-but-new place to the canonical `places._find_or_create_place` -> CREATES it) + guarded append to
+place.images[] with CRITICAL durable `SourceSectionID` ULID attribution (book->SourceSectionID from
+out/source_section/*.json), dedup by url. Phase-3 gated step `image_place_link` (`images.link_places`) reusing
+shared `_load_parsed_docs`. SCHEMA EVOLVED: people images[] item + nullable SourceSectionID (2.26->2.27,
+ADDITIVE, re-pinned) + NEW src/schemas/history/<entity>/<version>.json archive (all 14 entities) + guard +
+SCHEMA_VERSIONING.md Change Log/archive step + fingerprint-guard reminder echo. OBSERV image_place.* +
+phase3.step. 10 tests (incl. ULID-attribution proof) + schema-history guard, radon 0 new C, pytest 2866, dual
+review (code+security) BOTH PASS.
+
+Evidence (original): "HEDGEROW COUNTRY", "AERIAL VIEW OF UTAH/OMAHA BEACH", "TERRAIN ON OMAHA BEACH".
 
 ## [M6 · MED · chart-as-source] Org / command-structure charts -> people_groups source
 Evidence: the naval command chart (fn23) + any order-of-battle/command charts. GAP: a chart that encodes
