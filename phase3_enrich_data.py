@@ -321,6 +321,13 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
             "image_person_link",
             lambda: _link_images_to_people(out, grok_client),
         )
+    # M4: follow ALL links in parsed docs -> recognize media type -> relevancy-gate -> enqueue for
+    # HUMAN review (no auto-ingestion). Gated by links.review_external (default on).
+    if config.get("links", {}).get("review_external", True):
+        enriched += run_step(
+            "link_asset_review",
+            lambda: _review_external_links(out, grok_client),
+        )
     # Durable OpenSERP effectiveness/health metrics -> output/metrics/openserp_metrics.json
     _write_openserp_metrics(out)
     return enriched
@@ -359,6 +366,51 @@ def _link_images_to_people(out, grok_client) -> int:
         summary.get("skipped", 0),
     )
     return int(summary.get("linked", 0))
+
+
+def _doc_link_content(doc) -> str:
+    """Assemble link-bearing text for one parsed doc: paragraph bodies (inline links intact) plus
+    already-parsed footnotes rendered as markdown links so their targets are extracted too.
+    """
+    parts = [
+        p.get("text", "") for p in (doc.get("paragraphs") or []) if isinstance(p, dict)
+    ]
+    for fn in doc.get("footnotes") or []:
+        if isinstance(fn, dict) and fn.get("url"):
+            parts.append(f"[{fn.get('text', '') or fn.get('number', '')}]({fn['url']})")
+    return "\n".join(parts)
+
+
+def _review_external_links(out, grok_client) -> int:
+    """M4: extract + recognize + relevancy-gate every link in the parsed docs and enqueue the kept
+    ones for human review. Returns the count enqueued. Fail-safe."""
+    from src.extraction.link_assets import enqueue_doc_links
+
+    docs = _load_parsed_docs(out)
+    if not docs:
+        return 0
+    totals = {"links": 0, "enqueued": 0, "dropped": 0, "anchors": 0}
+    for doc in docs:
+        if not isinstance(doc, dict):
+            continue
+        base = doc.get("_source_url", "") or ""
+        s = enqueue_doc_links(
+            _doc_link_content(doc),
+            base,
+            str(doc.get("book", "")),
+            grok_client=grok_client,
+        )
+        for k in totals:
+            totals[k] += int(s.get(k, 0))
+    logging.getLogger("root").info(
+        "OBSERV phase3.step name=link_asset_review links=%d enqueued=%d dropped=%d anchors=%d "
+        "status=ok",
+        totals["links"],
+        totals["enqueued"],
+        totals["dropped"],
+        totals["anchors"],
+    )
+    return totals["enqueued"]
 
 
 def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:

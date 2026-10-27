@@ -56,6 +56,7 @@ _ENQUEUE_PROVIDERS = frozenset(
         "archive-solr",  # archive.org advancedsearch hit -> acquirable item
         "gutendex",  # Project Gutenberg full text
         "nara",  # National Archives record (archival primary source)
+        "link-asset",  # M4: a recognized, relevance-gated outbound link from a parsed document
     }
 )
 

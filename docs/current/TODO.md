@@ -1147,6 +1147,24 @@ SEQUENCING: M1 (self-contained, reuses #585) -> M2 (unblocks the image chain) ->
 footnote assets) -> M5/M6/M7 (place/chart/low-q maps) -> M8 (polish). RC1 is the common unlock for
 M1/M2/M7; RC3 for M1/M4/M6.
 
+M4 SCOPE (owner-confirmed, 2026-10-27): broaden from "footnote links" to ALL links in the HTML/parsed doc.
+Per link: extract -> resolve (SSRF-safe) -> RECOGNIZE media type (reuse media_detection: html/image/pdf/
+tif/video(moving_image)/docx/epub/text/unsupported) -> (3b) RELEVANCY GATE: if the domain is on an
+EXTERNAL, EDITABLE whitelist (new `link_relevancy_whitelist:` key in config/domain_blacklist.yaml, seeded
+with ibiblio.org) skip Grok and trust; else Grok evaluates relevancy (fail-safe default = enqueue when the
+call errors) -> ENQUEUE for human review via fetch_provenance TEXTUAL PENDING (new `footnote-asset`/link
+provider) carrying recognized type + relevancy verdict + provenance; appears in the URL-review UI; on affirm
+flows through the normal ingestion path. NO auto-ingestion of external assets. Dedup by clean_url; honor the
+existing exclude-domain/blacklist. Chart-image -> M6; pdf -> pdf_pipeline on affirm.
+
+- **[LOW · investigate] Is `config/domain_blacklist.yaml` (the `blacklist:`) still HONORED by OpenSERP?**
+  The blacklist is the human-reviewed license-rejection gate (source_retrieval references it; openserp_maps
+  appends to it). Confirm the OpenSERP enrichment path (src/enrichment/openserp_enrichment.py + the OpenSERP
+  core under openserp/) actually filters results against `blacklist:` at query/result time — not just the
+  maps sub-path — so a license-rejected domain can never re-enter via OpenSERP. If not honored, wire the
+  drop (reuse the Task-#7 `_drop_excluded_domains` / url_registry exclusion). Surfaced while adding the M4
+  `link_relevancy_whitelist` (and moving the mislocated `ibiblio.org` from blacklist -> whitelist).
+
 
 ### Resolved this session (moved out of the active flat list)
 - [DONE · PR #562] bibliography resolver download_path rename + search_status enum

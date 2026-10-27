@@ -65,7 +65,6 @@ blacklist:
 # Blacklisted: https://www.asiabookroom.com/terms.php (license rejected)
 - www.forgottenairfields.com
 # Blacklisted: https://www.forgottenairfields.com/terms (license rejected)
-- ibiblio.org
 source_material_paths:
 - ibiblio.org/hyperwar/USA/USA-E-Breakout/
 - ibiblio.org/hyperwar/USA/USA-E-XChannel/
@@ -78,4 +77,14 @@ whitelist:
 - wikipedia.org
 - grokipedia.com
 - dhc.westpoint.edu/atlases/
+- ibiblio.org
+# moved from blacklist 2026-10-27: ibiblio.org is the HyperWar corpus host (see source_material_paths),
+# a trusted source, not a license-rejected domain.
+
+# link_relevancy_whitelist (M4): domains whose OUTBOUND links in parsed HTML are trusted as
+# corpus-relevant and therefore SKIP the Grok relevancy gate before being enqueued for human review.
+# Human-editable. A domain match is host-or-subdomain (ibiblio.org matches www./hyperwar.ibiblio.org).
+# This is DECOUPLED from the maps `whitelist:` above (different use-case) on purpose.
+link_relevancy_whitelist:
+- ibiblio.org
 
