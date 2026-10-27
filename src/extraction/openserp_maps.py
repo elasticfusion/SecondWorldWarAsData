@@ -620,35 +620,14 @@ def _recycle_map_as_source(
                 map_id,
             )
             return False
-        from src.extraction.map_source_adapter import (
-            _safe_map_id,
-            render_map_markdown,
-            render_map_meta_yaml,
-        )
+        from src.extraction.map_source_adapter import recycle_map_as_source
 
-        md = render_map_markdown(map_title, depicted, source_url=source_url)
-        if not md:
-            logger.info(
-                "OBSERV map_source.skipped map=%s reason=empty_depicted", map_id
-            )
-            return False
-
-        safe_id = _safe_map_id(map_id)
-        base = Path("contentrepository") / f"map-{safe_id}"
-        base.mkdir(parents=True, exist_ok=True)
-        # Mirror a book chapter's source pair so Phase-1 parse consumes it unchanged.
-        (base / f"map-{safe_id}-meta.yaml").write_text(
-            render_map_meta_yaml(map_id, map_title, source_url=source_url),
-            encoding="utf-8",
+        return recycle_map_as_source(
+            map_id=map_id,
+            map_title=map_title,
+            source_url=source_url,
+            depicted=depicted,
         )
-        (base / f"map-{safe_id}a-content.md").write_text(md, encoding="utf-8")
-        logger.info(
-            "OBSERV map_source.recycled map=%s source=contentrepository/map-%s/ "
-            "(re-enters Phase 1->2->3 for event derivation)",
-            map_id,
-            safe_id,
-        )
-        return True
     except Exception as e:  # noqa: BLE001 - recycle must never crash the map import
         logger.warning("OBSERV map_source.error map=%s reason=%s", map_id, str(e)[:120])
         return False

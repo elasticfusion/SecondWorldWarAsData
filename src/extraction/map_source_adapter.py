@@ -220,3 +220,50 @@ def build_map_source_metadata(
     except Exception as e:  # noqa: BLE001
         logger.warning("build_map_source_metadata failed for %s: %s", map_id, e)
         return None
+
+
+def recycle_map_as_source(
+    *, map_id: str, map_title: str, source_url: str, depicted: Any
+) -> bool:
+    """SHARED map-as-source recycle: write a vision-approved map's ``depicted`` as a RAW SOURCE pair
+    (meta.yaml + content.md) under ``contentrepository/map-<id>/`` so it re-enters the normal
+    pipeline (Phase 1 parse -> Phase 2 event -> Phase 3 enrich), exactly like a book chapter
+    (spec §3.1 Option B). The SINGLE writer used by BOTH map discovery front-ends — the OpenSERP
+    search path (openserp_maps) and the in-document map-link path (map_link_source) — so the write +
+    its OBSERV live in one place. Fail-safe: never raises; returns True iff a source was written.
+    """
+    from pathlib import Path as _Path
+
+    try:
+        if not isinstance(depicted, dict) or not depicted:
+            logger.info(
+                "OBSERV map_source.skipped map=%s reason=no_depicted "
+                "(catalog record only, no event derivation)",
+                map_id,
+            )
+            return False
+        md = render_map_markdown(map_title, depicted, source_url=source_url)
+        if not md:
+            logger.info(
+                "OBSERV map_source.skipped map=%s reason=empty_depicted", map_id
+            )
+            return False
+        safe_id = _safe_map_id(map_id)
+        base = _Path("contentrepository") / f"map-{safe_id}"
+        base.mkdir(parents=True, exist_ok=True)
+        # Mirror a book chapter's source pair so Phase-1 parse consumes it unchanged.
+        (base / f"map-{safe_id}-meta.yaml").write_text(
+            render_map_meta_yaml(map_id, map_title, source_url=source_url),
+            encoding="utf-8",
+        )
+        (base / f"map-{safe_id}a-content.md").write_text(md, encoding="utf-8")
+        logger.info(
+            "OBSERV map_source.recycled map=%s source=contentrepository/map-%s/ "
+            "(re-enters Phase 1->2->3 for event derivation)",
+            map_id,
+            safe_id,
+        )
+        return True
+    except Exception as e:  # noqa: BLE001 - recycle must never crash the caller
+        logger.warning("OBSERV map_source.error map=%s reason=%s", map_id, str(e)[:120])
+        return False
