@@ -48,6 +48,9 @@ DEAD_DNS_FAILURES = 4  # failures (at ~90d increments) -> dead (#9)
 
 _KEY_PREFIX = "url#"
 _GATE_PREFIX = "fetchgate#"
+_EXCLUDE_DOMAIN_PREFIX = (
+    "excludedomain#"  # persistent operator/Grok site-level denylist
+)
 
 # go/no-go actions returned by decide()
 GO = "go"  # claim + fetch + evaluate now
@@ -83,6 +86,101 @@ def _domain_key(clean: str) -> str:
 
     host = (urlparse(clean).hostname or "").lower()
     return f"{_GATE_PREFIX}{host}"
+
+
+def _host_of(url_or_host: str) -> str:
+    """Normalize a URL or bare host to a lowercase registrable host (strip leading 'www.')."""
+    from urllib.parse import urlparse
+
+    s = (url_or_host or "").strip()
+    if not s:
+        return ""
+    if "://" in s:
+        host = urlparse(s).hostname or ""
+    else:
+        # bare host (possibly with path/port): keep only the authority's host component
+        host = s.split("/", 1)[0].split("@")[-1].split(":", 1)[0]
+    host = host.strip().lower().rstrip(".")
+    return host[4:] if host.startswith("www.") else host
+
+
+def _excludedomain_key(host: str) -> str:
+    return f"{_EXCLUDE_DOMAIN_PREFIX}{_host_of(host)}"
+
+
+def _resolve_table():
+    """DynamoDB table handle for the CURRENT runtime, or None.
+
+    The exclusion WRITE path runs in the review Lambda, where config.aws.enabled is NOT set
+    (it is only flipped on inside ECS). When genuinely in Lambda (AWS reserved env
+    AWS_LAMBDA_FUNCTION_NAME) resolve from CACHE_TABLE; otherwise defer to the config-driven
+    _table() (ECS/CLI/tests, which returns None in local/test). Fail-safe: any error -> None.
+    """
+    import os
+
+    in_lambda = bool(os.environ.get("AWS_LAMBDA_FUNCTION_NAME"))
+    name = os.environ.get("CACHE_TABLE", "").strip()
+    if in_lambda and name:
+        try:
+            import boto3
+
+            region = os.environ.get("AWS_REGION", "us-east-1")
+            return boto3.resource("dynamodb", region_name=region).Table(name)
+        except Exception as e:  # noqa: BLE001
+            logger.debug("url_registry CACHE_TABLE resolve failed: %s", e)
+            return None
+    return _table()
+
+
+def exclude_domain(url_or_host: str, *, reason: str = "", source: str = "") -> bool:
+    """Persist a SITE-level exclusion (the whole domain is skipped on search/re-search), cross-run.
+
+    Idempotent put keyed by ``excludedomain#{host}``. Returns True on persist, False if no host
+    could be derived or there is no table (local/test). Fail-safe: never raises."""
+    host = _host_of(url_or_host)
+    if not host:
+        return False
+    table = _resolve_table()
+    if table is None:
+        return False
+    try:
+        payload = json.dumps(
+            {
+                "host": host,
+                "reason": (reason or "")[:500],
+                "source": source or "",
+                "excluded_at": int(time.time()),
+            }
+        )
+        table.put_item(
+            Item={"cache_key": _excludedomain_key(host), "response": payload}
+        )
+        logger.info(
+            "OBSERV url_registry.domain_excluded host=%s source=%s", host, source
+        )
+        return True
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - an exclusion write must never crash a review action
+        logger.warning("exclude_domain failed for %s: %s", host, e)
+        return False
+
+
+def is_domain_excluded(url_or_host: str) -> bool:
+    """True iff the URL's host is on the persistent site-level denylist. Fail-safe (False on error
+    / no table / no host)."""
+    host = _host_of(url_or_host)
+    if not host:
+        return False
+    table = _resolve_table()
+    if table is None:
+        return False
+    try:
+        item = table.get_item(Key={"cache_key": _excludedomain_key(host)}).get("Item")
+        return bool(item)
+    except Exception as e:  # noqa: BLE001
+        logger.debug("is_domain_excluded check failed for %s: %s", host, e)
+        return False
 
 
 def _table():
@@ -174,6 +272,11 @@ def decide(url: str) -> Tuple[str, Optional[UrlRecord]]:
     clean = clean_url(url)
     if not clean:
         return SKIP_KNOWN, None
+    if is_domain_excluded(clean):
+        return (
+            SKIP_KNOWN,
+            None,
+        )  # site-level denylist: never search/re-search this domain
     table = _table()
     if table is None:
         return GO, None  # local/test: no coordination, just proceed

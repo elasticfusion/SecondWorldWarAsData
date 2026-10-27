@@ -229,6 +229,35 @@ def _openserp_reachable(openserp_url: str) -> bool:
         return False
 
 
+def _drop_excluded_domains(results: List[Dict]) -> List[Dict]:
+    """Remove results whose host is on the persistent site-level denylist (operator/Grok exclusions).
+    Fail-safe: if the registry is unavailable, return results unchanged (never block a search).
+    """
+    try:
+        from src.utils.url_registry import is_domain_excluded
+    except Exception:  # noqa: BLE001
+        return results
+    kept: List[Dict] = []
+    dropped = 0
+    for r in results:
+        url = r.get("url", "")
+        try:
+            if url and is_domain_excluded(url):
+                dropped += 1
+                continue
+        except (
+            Exception
+        ):  # noqa: BLE001 - a filter error must never drop the whole result set
+            pass
+        kept.append(r)
+    if dropped:
+        _metric("results_site_excluded", dropped)
+        logger.info(
+            "OBSERV openserp.site_excluded dropped=%d kept=%d", dropped, len(kept)
+        )
+    return kept
+
+
 def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict]:
     """Run an OpenSERP search. Returns list of {url, title, description}."""
     if _breaker_is_open():
@@ -278,7 +307,7 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
                 return []
             logger.info("OpenSERP [%s]: %d results", query[:60], len(results))
             _metric("results_returned", len(results))
-            return [
+            mapped = [
                 {
                     "url": r.get("url", ""),
                     "title": r.get("title", ""),
@@ -287,6 +316,7 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
                 for r in results
                 if r
             ]
+            return _drop_excluded_domains(mapped)
         logger.warning("OpenSERP [%s]: HTTP %d", query[:60], resp.status_code)
         _breaker_record_failure()
     except Exception as e:

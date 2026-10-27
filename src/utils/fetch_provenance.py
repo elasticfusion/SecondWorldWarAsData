@@ -41,6 +41,7 @@ TEXTUAL = "textual"  # wayback / award / bio — review-eligible
 PENDING = "pending"
 AFFIRMED = "affirmed"
 REJECTED = "rejected"
+SUBMITTED = "submitted"  # affirmed AND handed to Phase-1 as part of a batch (terminal)
 
 # ENQUEUE POLICY (owner-confirmed): which TEXTUAL providers represent a NEW, citable PRIMARY-SOURCE
 # document that should be enqueued for human review and, on affirm, promoted into ingestion like an

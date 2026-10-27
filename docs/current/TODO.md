@@ -1198,3 +1198,26 @@ succeeded (11/15). FALSE operator alarm. FIX: either (a) don't anomaly-fire bibl
 ISBN/copyright legitimately has nothing to add (it's not a failure signal), or (b) unify the two
 bibliography sub-step summaries so the anomaly reflects the COMBINED outcome (resolved+ref_identified+
 enriched), not just the ISBN sub-step. Ties to the fragmented-bibliography-observability note.
+
+
+## [MED·dedup] NEAR-duplicate content detection (MinHash/LSH) — same text across two domains, not byte-identical
+We now have (a) GLOBAL EXACT content dedup at submit time: `fetch_review._register_content_hash_if_new`
+claims `contenthash#<sha256>` across ALL sources/domains/titles, so byte-identical content submitted
+from two different domains (or re-submitted under a host-derived title) is caught and skipped
+(`deduped` count). What this does NOT catch: NEAR-identical pages — the common real case where the
+same article at domainA vs domainB differs only in boilerplate/ads/whitespace/tracking params, so the
+sha256 differs and both pass. The existing lexical tools (SequenceMatcher edit-distance, Jaccard
+token-overlap, Grok same/different classifier) run on short strings (names/titles), NOT on document
+bodies, and we have NO vector-embedding/cosine or MinHash path.
+
+FIX (b): add a MinHash + LSH near-duplicate gate over document SHINGLES at affirm/submit (and reuse
+for book submissions). Sketch: shingle the quarantined body (k-word or char n-grams) -> MinHash
+signature -> query an LSH index (keyed in the same DynamoDB cache table, e.g. `contentlsh#<band>`
+buckets) for an existing signature with Jaccard >= threshold (~0.8) -> on hit, skip/merge instead of
+ingesting a second near-copy; on miss, add the signature and proceed. Keep it FAIL-OPEN (a borderline
+score never blocks a legit submit) and pin `datasketch` at an exact version (MinHash/MinHashLSH). An
+optional later tier: sentence-embedding cosine for PARAPHRASE-level (semantically-equal but lexically
+different) dedup — heavier, only if paraphrase dup becomes a real problem. Ref: the user's text-similarity
+survey (Jaccard/Euclidean/Cosine + TF-IDF/Word2Vec/Sentence-Transformers); MinHash/LSH is the scalable
+near-dup tool for document bodies, which that survey does not emphasize but is the right fit here.
+Ties to: fetch_review.submit_affirmed_batch (where the exact (a) gate already lives).

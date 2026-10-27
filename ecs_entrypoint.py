@@ -1715,6 +1715,7 @@ def _post_process(phase_script: str, env: dict) -> None:
         # lacks output/content (events) -> false EventID danglers. Post-sync S3 is the authoritative,
         # complete corpus; repairing it now makes the fix durable and the audit truthful.
         _phase3_durable_referential_fix()
+        _notify_url_review_pending()  # email the operator if URL finds await human review
         _advance_doc_lifecycle("3")  # doc# -> done (multi-doc; terminal)
         next_enrich = _get_next_pending_enrich()
         if next_enrich:
@@ -1897,6 +1898,46 @@ def _notify_dedup_gate(action: str, reason: str) -> None:
         )
     except Exception as e:
         logger.warning("Failed to send dedup gate notification: %s", e)
+
+
+def _notify_url_review_pending() -> None:
+    """At the end of Phase 3, email the operator if TEXTUAL fetch-finds await human review.
+
+    Non-blocking + fail-safe. Mirrors _notify_dedup_gate: publishes to NOTIFICATION_TOPIC_ARN with
+    the count of pending finds and the URL Review UI deep link (URL_REVIEW_URL) so the operator can
+    affirm (→ ingest) or reject (→ won't do) without hunting for the link. Never raises.
+    """
+    topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
+    if not topic_arn:
+        return
+    try:
+        from src.enrichment.fetch_review import list_pending
+
+        pending = list_pending()
+        count = len(pending)
+        if count <= 0:
+            logger.info("OBSERV urlreview.pending count=0 — no review email")
+            return
+        message = (
+            f"Phase 3 complete — {count} URL(s) await human review.\n"
+            f"Bucket: {BUCKET}\n\n"
+            "These are Grok-confirmed primary-source finds (wayback/NARA/archive.org/Gutenberg). "
+            "Affirm to promote a URL into Phase-0/1 ingestion (like an uploaded source), or reject "
+            "to mark it 'won't do'."
+        )
+        review_url = os.environ.get("URL_REVIEW_URL", "")
+        if review_url:
+            message += f"\n\nURL Review UI: {review_url}"
+        boto3.client("sns", region_name=REGION).publish(
+            TopicArn=topic_arn,
+            Subject=f"WWII Pipeline: {count} URL(s) await review",
+            Message=message,
+        )
+        logger.info("OBSERV urlreview.pending count=%d notification sent", count)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - a notification must never break Phase-3 completion
+        logger.warning("Failed to send URL-review notification: %s", e)
 
 
 def _run_dedup_detection(env: dict) -> None:
