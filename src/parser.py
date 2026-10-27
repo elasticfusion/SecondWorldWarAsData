@@ -172,9 +172,15 @@ def _extract_external_images(text: str, images: list, seen: "set[str]") -> None:
             seen.add(key)
 
 
-def extract_maps(text: str) -> List[Tuple[str, str]]:
+def extract_maps(text: str, base_url: str = "") -> List[Tuple[str, str]]:
     """
     Extract map references.
+
+    Captures ``[Map X](url)`` links. ``url`` may be ABSOLUTE (``https://...``) or RELATIVE
+    (``maps/USA-E-XChannel-VIII.jpg`` — the HyperWar convention for author-curated maps); a relative
+    target is resolved against ``base_url`` (the source document's URL) so the map becomes fetchable.
+    A relative target is only accepted when it looks like an image/map asset (image extension or a
+    ``maps/`` path) so arbitrary intra-doc links are not absolutized.
 
     Returns:
         List of (map_id, url)
@@ -182,18 +188,40 @@ def extract_maps(text: str) -> List[Tuple[str, str]]:
     maps = []
     seen_urls = set()
 
-    # Pattern 1: [Map X](url) or [Map I](url) - with "Map" in description
-    for match in re.finditer(
-        r"\[Map\s+([^\]]+)\]\((https?://[^\)]+)\)", text, re.IGNORECASE
-    ):
+    # [Map X](target) — target may be absolute http(s) OR a relative asset path.
+    for match in re.finditer(r"\[Map\s+([^\]]+)\]\(([^)]+)\)", text, re.IGNORECASE):
         map_id = match.group(1).strip()
-        url = match.group(2).split("%20target=")[0].rstrip()
-
-        if url not in seen_urls:
+        target = match.group(2).split("%20target=")[0].strip().rstrip()
+        url = _resolve_map_target(target, base_url)
+        if url and url not in seen_urls:
             maps.append((map_id, url))
             seen_urls.add(url)
 
     return maps
+
+
+_MAP_IMG_EXTS = (".jpg", ".jpeg", ".png", ".gif", ".tif", ".tiff", ".webp")
+
+
+def _resolve_map_target(target: str, base_url: str) -> str:
+    """Resolve a ``[Map X](target)`` target to an absolute URL, or "" if it should be skipped.
+
+    Absolute http(s) passes through. A RELATIVE target is resolved against ``base_url`` ONLY when it
+    looks like a map/image asset (image extension or a ``maps/`` path) and a base_url is present —
+    so arbitrary intra-document links are not absolutized.
+    """
+    if not target:
+        return ""
+    from urllib.parse import urljoin
+
+    low = target.lower()
+    if low.startswith("http://") or low.startswith("https://"):
+        return target
+    is_asset = low.endswith(_MAP_IMG_EXTS) or low.startswith("maps/") or "/maps/" in low
+    if not (base_url and is_asset):
+        return ""
+    url = urljoin(base_url, target)
+    return url if url.lower().startswith(("http://", "https://")) else ""
 
 
 def extract_footnotes(text: str) -> List[Tuple[int, str, str]]:
@@ -378,9 +406,9 @@ def _add_images_to_doc(doc: MarkdownDocument, content: str) -> None:
         doc.images.append(img)
 
 
-def _add_maps_to_doc(doc: MarkdownDocument, content: str) -> None:
+def _add_maps_to_doc(doc: MarkdownDocument, content: str, base_url: str = "") -> None:
     """Extract and add maps to document."""
-    for map_id, url in extract_maps(content):
+    for map_id, url in extract_maps(content, base_url=base_url):
         map_obj = Map(
             url=url, description=f"Map {map_id}", map_id=map_id, paragraph_number=0
         )
@@ -472,6 +500,7 @@ def parse_content_file(
         author=metadata.author,
         series=metadata.series,
         license=metadata.license,
+        source_url=metadata.source_url,
         file_path=file_path,
     )
 
@@ -489,7 +518,7 @@ def parse_content_file(
 
     # Add images, maps, and footnotes
     _add_images_to_doc(doc, content)
-    _add_maps_to_doc(doc, content)
+    _add_maps_to_doc(doc, content, base_url=metadata.source_url)
     _add_footnotes_to_doc(doc, content)
 
     # Attach flattened-table hints (review-flagged) from structure repair.

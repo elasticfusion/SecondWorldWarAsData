@@ -305,9 +305,54 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
                 image_storage_path=ext_config.get("image_storage_path"),
             ),
         )
+        # M1: FOLLOW IN-DOCUMENT map links (author-curated maps linked from the narrative, e.g.
+        # [Map VIII](maps/*.jpg)) -> map-as-source. Distinct from the OpenSERP web search above:
+        # the link is already a direct image URL in the parsed doc's maps[]. Gated with the maps
+        # feature; fail-safe.
+        if ext_config.get("follow_in_doc_links", True):
+            enriched += run_step(
+                "in_doc_map_links",
+                lambda: _ingest_in_doc_map_links(out, grok_client, ext_config),
+            )
     # Durable OpenSERP effectiveness/health metrics -> output/metrics/openserp_metrics.json
     _write_openserp_metrics(out)
     return enriched
+
+
+def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
+    """Load parsed docs' maps[] (in-document map links) and ingest each via map-as-source. Returns
+    the count recycled. Fail-safe."""
+    import json
+
+    from src.extraction.map_link_source import ingest_in_doc_map_links
+
+    content_root = out / "content"
+    docs = []
+    try:
+        for pf in content_root.rglob("*-parsed.json"):
+            try:
+                docs.append(json.loads(pf.read_text(encoding="utf-8")))
+            except Exception:  # noqa: BLE001
+                continue
+    except Exception:  # noqa: BLE001
+        return 0
+    if not docs:
+        return 0
+    summary = ingest_in_doc_map_links(
+        docs,
+        grok_client,
+        image_timeout=ext_config.get("image_download_timeout", 30),
+    )
+    logging.getLogger("root").info(
+        "OBSERV phase3.step name=in_doc_map_links docs=%d links=%d recycled=%d "
+        "deduped=%d skipped=%d status=ok",
+        len(docs),
+        summary.get("links", 0),
+        summary.get("recycled", 0),
+        summary.get("deduped", 0),
+        summary.get("skipped", 0),
+    )
+    return int(summary.get("recycled", 0))
 
 
 def _run_batch_rerun(args, config, grok_client) -> int:

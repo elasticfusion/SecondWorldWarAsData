@@ -22,6 +22,7 @@ def _doc_to_dict(doc):
         "series": doc.series,
         "license": doc.license,
         "source_file": str(doc.file_path),
+        "_source_url": doc.source_url,
         "paragraphs": [
             {
                 "absolute_number": p.absolute_number,

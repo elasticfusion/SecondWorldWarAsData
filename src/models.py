@@ -88,6 +88,7 @@ class MarkdownDocument:  # pylint: disable=too-many-instance-attributes
     author: str
     series: str
     license: str
+    source_url: str = ""
 
     paragraphs: List[Paragraph] = field(default_factory=list)
     images: List[Image] = field(default_factory=list)
