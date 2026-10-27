@@ -1158,10 +1158,19 @@ event's request_params, fallback book->SourceSectionID via M5). OBSERV chart_sou
 (code+security) BOTH PASS. Reuse: map_source_adapter + prompt_loader + grok vision + M5 book->section index.
 
 ## [M7 · MED · embedded-low-q-maps] Inline figure maps (Map 1/2/3, captured OB WEST map)
-Evidence: "Map 1/2/3" inline labels + "Reproduction of a captured OB WEST map". GAP: appear as text labels
-/ caption-only -> not extracted (RC1); even if extracted, lower-quality inline figures. FIX: once M2
-captures them, route through map-as-source with a quality/confidence gate (ties to the deferred P2
-confidence gating in the map spec) so low-q maps don't inject low-confidence events. Depends on M2.
+## [M7 · MED · embedded-low-q-maps] ✅ DONE (PR #593) — Inline figure maps + shared confidence gate
+SCOPING (verified against the owner's example maps/USA-E-XChannel-2.jpg, the captured OB WEST map): a
+low-quality/captured map is STRUCTURALLY IDENTICAL to a high-quality map and is ALREADY handled end-to-end
+by M1 (extract_maps resolves the relative maps/*.jpg link) + map-as-source (vision read + recycle). So M7
+was NOT a new low-q-map ingestion path. Shipped the ONE genuine enhancement the spec identified: the
+map-wide confidence gate it deferred — a shared legibility gate at map_source_adapter._render_depicted_text
+(the single choke point for build_map_parsed_source + render_map_markdown, so it covers OpenSERP maps +
+in-doc map links): vision reports legibility_confidence 0.0-1.0 (prompts/map_vision.yaml); below 0.35 the
+map is skipped (OBSERV map_source.skipped reason=low_legibility) rather than injecting a low-confidence
+event; absent confidence not gated; malformed fails open. Observability on BOTH decisions (built line carries
+legibility=X). 7 tests, radon 0 new C, pytest 2882, dual review BOTH PASS.
+RESIDUAL (folded into RC1 backlog, not M7): bare "Map 1/2/3" TEXT labels with NO [Map X](url) link and no
+image have no ingestable asset — an RC1 extraction concern, nothing to recycle.
 
 ## [M8 · LOW · intra-corpus-links] Footnote links to OTHER ibiblio docs as INTERNAL corpus links
 Evidence: `Utah Beach to Cherbourg`, `Omaha Beachhead`, `Small Unit Actions`, cross-chapter `#page329`.
