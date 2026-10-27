@@ -1108,7 +1108,19 @@ positional naming. FIX: extend ImageCaptioner/vision to return a STRUCTURED depi
 caption-name -> PersonID resolver (reuse people name-index), writing people.images[] (document-sourced) +
 an image->person link. Depends on M2. Addresses RC2.
 
-## [M4 · HIGH · footnote-asset-links] Follow footnote links: MoH citations + org chart (RC3+RC4)
+## [M4 · HIGH · footnote-asset-links] ✅ DONE (PR #590) — Follow footnote links: MoH citations + org chart (RC3+RC4)
+Shipped (broadened to ALL links per owner): `link_assets.extract_link_assets` (all markdown+HTML-anchor
+links, resolve relative/#anchor vs `_source_url`, recognize media type via media_detection ->
+html/image/pdf/tif->image/video->moving_image/docx/epub/text/unsupported, dedup, exclude ![images]/mailto)
++ `link_relevancy` (external EDITABLE `link_relevancy_whitelist` [ibiblio.org] host-or-subdomain bypass;
+blacklist dropped first; else one-word Grok verdict; fail-safe=ENQUEUE) + `enqueue_doc_links` ->
+fetch_provenance TEXTUAL HIT `provider=link-asset` -> review_status PENDING (URL-review UI; human affirm ->
+normal ingestion; NO auto-fetch/ingest). Traceability: event carries source_url+source_doc+link_text+
+endpoint+url_key. Phase-3 gated step `link_asset_review` (`links.review_external`) reusing shared
+`_load_parsed_docs`. OBSERV link_asset.* + phase3.step. config: ibiblio.org moved blacklist->whitelist.
+12 tests, radon 0 new C, pytest 2855, dual review (code+security) BOTH PASS. On affirm: chart-image->M6,
+pdf->pdf_pipeline, MoH-html->person/source enrichment (follow-on).
+
 Evidence: fn63 -> `../../MoH_P-T.html#roosevelt`, fn74 -> `#pinder` (person-specific award/biography
 primary sources); fn23 -> `charts/USA-E-XChannel-4.jpg` ("naval command chart"). GAP: extract_footnotes
 captures footnote text/url but nothing FOLLOWS the embedded links; MoH citation is not attached to the
