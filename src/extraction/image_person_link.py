@@ -103,9 +103,14 @@ def link_images_to_people(
             "OBSERV image_person.summary people_index=0 — nothing to link against"
         )
         return summary
+    # CRITICAL provenance: map book -> SourceSectionID ULID so every link is ULID-attributed
+    # (reuses the M5 index builder; people_dir.parent is the run output dir holding source_section/).
+    from src.extraction.image_place_link import _build_book_section_index
+
+    book_to_section = _build_book_section_index(people_dir.parent)
     for doc in parsed_docs:
         if isinstance(doc, dict):
-            _link_doc_images(doc, full, surname, grok_client, summary)
+            _link_doc_images(doc, full, surname, book_to_section, grok_client, summary)
     logger.info(
         "OBSERV image_person.summary images=%d people_photos=%d names=%d linked=%d skipped=%d",
         summary["images"],
@@ -121,11 +126,13 @@ def _link_doc_images(
     doc: Dict[str, Any],
     full: Dict[str, Path],
     surname: Dict[str, Path],
+    book_to_section: Dict[str, str],
     grok_client: Any,
     summary: Dict[str, int],
 ) -> None:
     """Iterate one parsed doc's captioned images and link each (mutates ``summary``)."""
     book = str(doc.get("book", ""))
+    section_id = book_to_section.get(book.strip().lower()) if book else None
     for img in doc.get("images") or []:
         if not isinstance(img, dict):
             continue
@@ -134,7 +141,9 @@ def _link_doc_images(
         if not caption or not url:
             continue
         summary["images"] += 1
-        _link_one_image(img, caption, url, book, full, surname, grok_client, summary)
+        _link_one_image(
+            img, caption, url, book, section_id, full, surname, grok_client, summary
+        )
 
 
 def _is_people_photo(caption: str, url: str, grok_client: Any) -> bool:
@@ -166,6 +175,7 @@ def _link_one_image(
     caption: str,
     url: str,
     book: str,
+    section_id: Optional[str],
     full: Dict[str, Path],
     surname: Dict[str, Path],
     grok_client: Any,
@@ -193,7 +203,7 @@ def _link_one_image(
                     "OBSERV image_person.unresolved name=%s book=%s", name, book
                 )
                 continue
-            if _append_person_image(pf, url, caption, book):
+            if _append_person_image(pf, url, caption, book, section_id):
                 summary["linked"] += 1
             else:
                 summary["skipped"] += 1
@@ -201,10 +211,31 @@ def _link_one_image(
         logger.warning("OBSERV image_person.error reason=%s", str(e)[:120])
 
 
-def _append_person_image(person_file: Path, url: str, caption: str, book: str) -> bool:
-    """Append a document-sourced image entry to a person's images[] (schema-valid {url,title,source};
-    dedup by url) via the central guarded writer. Fail-safe; returns True iff written.
-    """
+def _build_person_image_entry(
+    url: str, caption: str, book: str, source_section_id: Optional[str]
+) -> Dict[str, Any]:
+    """Construct a schema-valid people image entry with durable ULID attribution."""
+    entry: Dict[str, Any] = {
+        "url": url,
+        "title": caption[:300],
+        "source": f"document:{book}" if book else "document",
+    }
+    if source_section_id:
+        entry["SourceSectionID"] = source_section_id  # durable ULID attribution
+    return entry
+
+
+def _append_person_image(
+    person_file: Path,
+    url: str,
+    caption: str,
+    book: str,
+    source_section_id: Optional[str] = None,
+) -> bool:
+    """Append a document-sourced image entry to a person's images[] (schema-valid
+    {url,title,source,SourceSectionID}; dedup by url) via the central guarded writer.
+    ``source_section_id`` is the durable ULID attribution back to the originating source_section.
+    Fail-safe; returns True iff written."""
     try:
         rec = json.loads(person_file.read_text(encoding="utf-8"))
         if not isinstance(rec, dict):
@@ -214,13 +245,7 @@ def _append_person_image(person_file: Path, url: str, caption: str, book: str) -
             images = []
         if any(isinstance(e, dict) and e.get("url") == url for e in images):
             return False  # already linked (dedup by url)
-        images.append(
-            {
-                "url": url,
-                "title": caption[:300],
-                "source": f"document:{book}" if book else "document",
-            }
-        )
+        images.append(_build_person_image_entry(url, caption, book, source_section_id))
         rec["images"] = images
         from src.utils.file_lock import write_json_with_lock
 
@@ -231,7 +256,10 @@ def _append_person_image(person_file: Path, url: str, caption: str, book: str) -
             )
             return False
         logger.info(
-            "OBSERV image_person.linked person=%s book=%s", person_file.stem, book
+            "OBSERV image_person.linked person=%s book=%s source_section=%s",
+            person_file.stem,
+            book,
+            source_section_id or "-",
         )
         return True
     except Exception as e:  # noqa: BLE001
