@@ -1202,6 +1202,13 @@ def _write_phase_results(output_root, processed, failed):
     except Exception as _e:  # noqa: BLE001
         logger.warning("referential-integrity enforcement skipped: %s", _e)
 
+    try:
+        from src.utils.provenance_integrity import run_for_phase as _prov_enforce
+
+        _prov_enforce(output_root, phase="Phase 2")
+    except Exception as _e:  # noqa: BLE001 - enforcement must never crash a phase
+        logger.warning("provenance-completeness enforcement skipped: %s", _e)
+
 
 if __name__ == "__main__":
     main()

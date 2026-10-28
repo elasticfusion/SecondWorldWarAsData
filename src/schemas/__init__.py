@@ -37,7 +37,7 @@ from typing import Any, Dict, Optional
 #     one entity. Never a global reprocess; other entities are untouched.
 # ---------------------------------------------------------------------------
 ENTITY_SCHEMA_VERSIONS: Dict[str, str] = {
-    "events": "2.24",
+    "events": "2.25",
     "dates": "2.25",
     "places": "2.30",
     "people": "2.27",

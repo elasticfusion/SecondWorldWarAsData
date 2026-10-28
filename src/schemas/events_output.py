@@ -22,6 +22,7 @@ EVENTS_OUTPUT_SCHEMA = {
             "required": ["EventID", "Sub-events"],
             "properties": {
                 "EventID": ulid_field(),
+                "SourceSectionID": make_nullable("string"),
                 "Event_Name": make_nullable("string"),
                 "Sub-events": {
                     "type": "array",
@@ -30,6 +31,7 @@ EVENTS_OUTPUT_SCHEMA = {
                         "required": ["Sub-eventID"],
                         "properties": {
                             "Sub-eventID": ulid_field(),
+                            "SourceSectionID": make_nullable("string"),
                             "Sub-event_summary": make_nullable("string"),
                             "Sub-event_fulltext": {
                                 "type": ["string", "object", "null"]

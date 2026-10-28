@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "Chapter": {
+      "type": [
+        "object",
+        "string",
+        "null"
+      ]
+    },
+    "Event": {
+      "properties": {
+        "EventID": {
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+          "type": "string"
+        },
+        "Event_Name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "SourceSectionID": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Sub-events": {
+          "items": {
+            "properties": {
+              "Endnote_References": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "Footnote_References": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "SourceSectionID": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "Sub-eventID": {
+                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "Sub-event_fulltext": {
+                "type": [
+                  "string",
+                  "object",
+                  "null"
+                ]
+              },
+              "Sub-event_summary": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "dates": {
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "equipment": {
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "groups": {
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "people": {
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "places": {
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "array",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "Sub-eventID"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "EventID",
+        "Sub-events"
+      ],
+      "type": "object"
+    },
+    "_last_updated": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": "string"
+    },
+    "_schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "Event"
+  ],
+  "title": "Events Output File",
+  "type": "object",
+  "version": "2.25"
+}

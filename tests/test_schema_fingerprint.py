@@ -35,7 +35,7 @@ def _fingerprint(schema: dict) -> str:
 # the single changed entity's pin after a deliberate shape change + that entity's version
 # bump: run  python -c "from tests.test_schema_fingerprint import _print_pins; _print_pins()"
 EXPECTED = {
-    "events": ("2.24", "bcc344080723f54a"),
+    "events": ("2.25", "3f296ddee5c49d39"),
     "dates": ("2.25", "79f50ab8a186ab18"),
     "places": ("2.30", "1de37dd5ec4fa398"),
     "people": ("2.27", "b46ce4c711d7a1f6"),
