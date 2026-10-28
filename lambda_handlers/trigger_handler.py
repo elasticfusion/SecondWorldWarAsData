@@ -1724,6 +1724,27 @@ def _fire_nat_warmup(family: str) -> None:
         logger.warning("Async NAT warm-up invoke failed (phase will retry): %s", e)
 
 
+def _build_env_overrides(book_name, extra_env):
+    """Assemble the container env overrides for a task launch.
+
+    BOOK_NAME + any caller extra_env, PLUS a testing passthrough: a batch-mode override set on
+    THIS lambda's env (BATCH_PHASE2/BATCH_PHASE3) is forwarded to the task. ecs_entrypoint.
+    _should_use_batch_mode honors those over /app/config.yaml (which is build-baked), so an operator
+    can disable batch for a run without a rebuild or a CFN/task-def change. Returns a list of
+    {"name","value"}.
+    """
+    env_over = []
+    if book_name:
+        env_over.append({"name": "BOOK_NAME", "value": book_name})
+    if extra_env:
+        env_over.extend(extra_env)
+    for bk in ("BATCH_PHASE2", "BATCH_PHASE3"):
+        bv = os.environ.get(bk)
+        if bv is not None:
+            env_over.append({"name": bk, "value": bv})
+    return env_over
+
+
 def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
     """Build container overrides and run the ECS task; on launch failure release
     the (already-held) lock then re-raise. Extracted verbatim from _run_task — the
@@ -1733,21 +1754,12 @@ def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
     logger.info(
         "Launching ECS task %s from %s (book=%s)", family, source, book_name or "all"
     )
-    overrides = {}
-    env_over = []
-    if book_name:
-        env_over.append({"name": "BOOK_NAME", "value": book_name})
-    if extra_env:
-        env_over.extend(extra_env)
-    if env_over:
-        overrides = {
-            "containerOverrides": [
-                {
-                    "name": "pipeline",
-                    "environment": env_over,
-                }
-            ]
-        }
+    env_over = _build_env_overrides(book_name, extra_env)
+    overrides = (
+        {"containerOverrides": [{"name": "pipeline", "environment": env_over}]}
+        if env_over
+        else {}
+    )
     try:
         resp = ecs.run_task(
             cluster=CLUSTER,
