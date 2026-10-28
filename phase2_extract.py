@@ -1191,7 +1191,7 @@ def _write_phase_results(output_root, processed, failed):
     # reached by ALL modes (incl. the batch retrieve re-run), so counts reflect the final corpus.
     import logging as _logging
 
-    _log_phase2_summary(output_root, _logging.getLogger(__name__))
+    _phase2_counts = _log_phase2_summary(output_root, _logging.getLogger(__name__))
 
     # End-of-phase referential-integrity enforcement — AFTER all extraction (incl. any batch
     # re-run), so references are checked against the final corpus. Must never crash the phase.
@@ -1208,6 +1208,22 @@ def _write_phase_results(output_root, processed, failed):
         _prov_enforce(output_root, phase="Phase 2")
     except Exception as _e:  # noqa: BLE001 - enforcement must never crash a phase
         logger.warning("provenance-completeness enforcement skipped: %s", _e)
+
+    # Data-quality gate: compare extracted yield to the DETERMINISTIC floor from the source text.
+    # A book-jeopardizing shortfall (the paragraph_numbers fingerprint) HALTS the job for
+    # root-cause rather than persisting a corrupt corpus + chaining to Phase 3 (owner directive).
+    try:
+        from src.utils.yield_baseline import run_quality_gate
+
+        _verdict, _offenders = run_quality_gate(output_root, _phase2_counts or {})
+        if _verdict == "fail_stop":
+            raise SystemExit(3)
+    except SystemExit:
+        raise  # intentional halt — propagate to the orchestrator
+    except (
+        Exception
+    ) as _e:  # noqa: BLE001 - the gate's own failure must never block a run
+        logger.warning("yield quality gate skipped: %s", _e)
 
 
 if __name__ == "__main__":
