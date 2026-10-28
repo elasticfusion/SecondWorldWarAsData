@@ -718,6 +718,22 @@ def _warn_if_no_confirmed_subs(sns, topic_arn: str) -> None:
     )
 
 
+def _topic_has_confirmed_sub(sns, topic_arn: str) -> bool:
+    """True iff ``topic_arn`` has at least one CONFIRMED subscription (so a publish will actually
+    reach an endpoint). Fail-safe: returns True on any lookup error so we never spuriously claim a
+    notification was undelivered when we simply couldn't check."""
+    try:
+        subs = sns.list_subscriptions_by_topic(TopicArn=topic_arn).get(
+            "Subscriptions", []
+        )
+        return any(
+            s.get("SubscriptionArn", "") not in ("", "PendingConfirmation", "Deleted")
+            for s in subs
+        )
+    except Exception:  # noqa: BLE001 - can't check -> don't claim undelivered
+        return True
+
+
 def run_phase(phase_script: str, extra_args: list) -> None:
     """Run a pipeline phase script with incremental S3 sync."""
     global _current_phase_script
@@ -1129,6 +1145,23 @@ def _wait_for_reconcile_barrier() -> str:
             return "seen"
         time.sleep(interval)
         waited += interval
+    # Timed out waiting for a fresh reconcile barrier. Distinguish "just slow" from KNOWN-incomplete:
+    # if pending batch jobs for THIS book are still queued (e.g. a slow Grok batch offloaded to the
+    # batch-poller), the bibliography/late records will DEFINITELY be missing this run — a loud,
+    # distinct anomaly (not the soft 'might miss'), and doubly so if the poller is disabled.
+    outstanding = _pending_batches_for_book()
+    if outstanding:
+        logger.warning(
+            "OBSERV reconcile.barrier_timeout_incomplete keys=%s waited=%ds pending_batches=%d "
+            "book=%s — proceeding with KNOWN-INCOMPLETE data (late bibliography/endnote records "
+            "from the queued batch WILL be missed; they land only when the batch-poller drains the "
+            "queue — re-enrich after)",
+            ",".join(keys),
+            waited,
+            outstanding,
+            os.environ.get("BOOK_NAME", ""),
+        )
+        return "timeout_incomplete"
     logger.warning(
         "OBSERV reconcile.barrier_timeout keys=%s waited=%ds — proceeding (Phase 3 may snapshot "
         "before reconcile finished; a late bibliography record could be missed this run)",
@@ -1136,6 +1169,19 @@ def _wait_for_reconcile_barrier() -> str:
         waited,
     )
     return "timeout"
+
+
+def _pending_batches_for_book() -> int:
+    """Count pending batch jobs queued for the CURRENT book (BOOK_NAME). Fail-safe -> 0 (never
+    blocks the barrier decision on a lookup error)."""
+    try:
+        from src.utils.job_queue import get_active_jobs
+
+        book = os.environ.get("BOOK_NAME", "")
+        return sum(1 for j in get_active_jobs() if not book or j.book == book)
+    except Exception as e:  # noqa: BLE001
+        logger.debug("pending-batch check skipped: %s", e)
+        return 0
 
 
 def _download_phase3_from_s3() -> None:
@@ -1225,7 +1271,7 @@ def _observe_bibliography_download_coverage(
         )
         if local_count < s3_count:
             # Correlate with the drain barrier so the root cause is unambiguous.
-            if barrier_status == "timeout":
+            if barrier_status in ("timeout", "timeout_incomplete"):
                 cause = (
                     "the reconcile barrier TIMED OUT, so Phase 3 snapshotted before reconcile "
                     "finished publishing (HIGH#5 drain miss — raise RECONCILE_BARRIER_WAIT_SECS "
@@ -1905,6 +1951,10 @@ def _notify_dedup_gate(action: str, reason: str) -> None:
     """Notify (non-blocking) on the dedup gate decision, incl. auto-proceed."""
     topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
     if not topic_arn:
+        logger.info(
+            "OBSERV dedup_gate.notify action=%s delivered=no reason=no_topic_arn",
+            action,
+        )
         return
     subject = (
         "WWII Pipeline: dedup auto-proceed"
@@ -1922,11 +1972,26 @@ def _notify_dedup_gate(action: str, reason: str) -> None:
                     f"\n\nPhase 3 is blocked until you review duplicates."
                     f"\nDedup Review UI: {dedup_url}"
                 )
-        boto3.client("sns", region_name=REGION).publish(
-            TopicArn=topic_arn,
-            Subject=subject,
-            Message=message,
+        sns = boto3.client("sns", region_name=REGION)
+        sns.publish(TopicArn=topic_arn, Subject=subject, Message=message)
+        # Observability: a publish to a topic with NO confirmed subscriber "succeeds" but reaches
+        # no inbox — a clean "dedup auto-proceed" then looks identical to a broken notifier. Emit a
+        # greppable OBSERV stating the outcome AND whether it will actually be delivered.
+        delivered = _topic_has_confirmed_sub(sns, topic_arn)
+        logger.info(
+            "OBSERV dedup_gate.notify action=%s delivered=%s topic=%s",
+            action,
+            "yes" if delivered else "no_confirmed_subscriber",
+            topic_arn.rsplit(":", 1)[-1],
         )
+        if not delivered:
+            logger.warning(
+                "OBSERV dedup_gate.notify_undelivered action=%s — published to %s but it has NO "
+                "confirmed subscriber; no email/alert will arrive (set aws.notification_email / "
+                "confirm a subscription on NOTIFICATION_TOPIC_ARN)",
+                action,
+                topic_arn.rsplit(":", 1)[-1],
+            )
     except Exception as e:
         logger.warning("Failed to send dedup gate notification: %s", e)
 

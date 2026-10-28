@@ -48,7 +48,26 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
 
 ### MED
-- **[MED · observability] Phase 0 (convert) + Phase 1 (parse) have NO domain-level OBSERV events.**
+- **[MED · notification] Dedup "notify on zero duplicates" reaches no inbox — silent on a clean run.**
+  Found in the XChannel-8 E2E (2026-10-28). `_notify_dedup_gate` (ecs_entrypoint) ALREADY notifies on BOTH
+  outcomes — subject "dedup auto-proceed" for zero-dup clean runs, "dedup review needed" when blocked — and
+  the run logged `Dedup gate: auto_proceed — zero duplicate groups across 16 entities`. But no email arrived
+  because it publishes to `NOTIFICATION_TOPIC_ARN`, which has NO confirmed email endpoint (config
+  `aws.notification_email` is empty; the confirmed email sub is on `dev-wwii-phase2-complete`, a different
+  topic). So the SNS publish "succeeds" into a topic nobody receives. FIX (code): make `_notify_dedup_gate`
+  (and the sibling `_notify_url_review_pending`) emit a greppable OBSERV with the outcome + whether the topic
+  has a confirmed subscriber (so a no-inbox publish is visible, not a silent success). FIX (operational, not
+  code): set `aws.notification_email` / subscribe the operator email to `NOTIFICATION_TOPIC_ARN`.
+- **[MED · phase3-race] Phase 3 proceeds past the reconcile barrier on timeout → late bibliography records missed.**
+  Found in the XChannel-8 E2E (2026-10-28). Phase 3 logged `OBSERV reconcile.barrier_timeout ... waited=300s —
+  proceeding (Phase 3 may snapshot before reconcile finished; a late bibliography record could be missed this
+  run)`, then the bibliography step ran with `No bibliography files found` / `bib.resolve in=0`. The supplemental
+  Phase-2 batch that would have written endnote/bibliography records was offloaded to the (disabled) batch-poller
+  and never completed, so Phase 3 timed out waiting and enriched an empty bibliography. FIX: the barrier-timeout
+  is currently a WARNING that proceeds silently-ish; make it a loud anomaly AND, when there are KNOWN outstanding
+  queued batches for this book, either (a) block/defer the bibliography step rather than snapshot an empty set,
+  or (b) mark the book "bibliography-incomplete, re-enrich pending" so a later poller-drained run fills it.
+  Ties to the disabled-batch-poller [HIGH] item — a disabled poller turns this race into a guaranteed miss.
   Investigated during the XChannel-8 E2E (2026-10-28). Unlike Phase 2/3 (rich `OBSERV <comp>.<event>` +
   summaries), phase0_convert.py has 0 OBSERV lines and phase1_parse.py has 0 OBSERV lines — they rely
   entirely on the generic `ecs_entrypoint` wrapper (`[step] ...` + a success-path `phase_complete` w/
