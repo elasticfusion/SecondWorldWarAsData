@@ -28,15 +28,17 @@ from src.utils.file_lock import write_json_with_lock
 logger = logging.getLogger(__name__)
 
 
-def _add_place_sameas(place: dict) -> None:
-    """Tier-1 (deterministic, no new fetch): fold the already-resolved external URLs
-    (wikipedia_url / grokipedia_url) into schema.org ``sameAs[]`` — the identity cross-walk.
+def _add_place_sameas(place: dict, extra: Optional[list] = None) -> None:
+    """Tier-1/T2-A (deterministic, no new fetch): fold the already-resolved external URLs
+    (wikipedia_url / grokipedia_url) + any ``extra`` urls (e.g. the Wikidata QID url) into
+    schema.org ``sameAs[]`` — the identity cross-walk.
     Deduped, order-preserving, idempotent. Fail-safe (mutates ``place`` in place)."""
     try:
         existing = place.get("sameAs")
         same: list = list(existing) if isinstance(existing, list) else []
-        for key in ("wikipedia_url", "grokipedia_url"):
-            u = place.get(key)
+        candidates = [place.get("wikipedia_url"), place.get("grokipedia_url")]
+        candidates += list(extra or [])
+        for u in candidates:
             if isinstance(u, str) and u.strip() and u not in same:
                 same.append(u.strip())
         if same:
@@ -90,6 +92,14 @@ def _build_wiki_place_result(name: str, page_data: dict) -> dict:
         filename = img_url.rsplit("/", 1)[-1]
         license_info = _fetch_image_license(filename)
     resolved_url = f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}"
+    # T2-A: the Wikidata QID comes back in pageprops (piggybacked on this same fetch — no new
+    # request). Turn it into a canonical wikidata URL for the sameAs cross-walk. Confident-only.
+    qid = (page_data.get("pageprops") or {}).get("wikibase_item")
+    wikidata_url = (
+        f"https://www.wikidata.org/wiki/{qid}"
+        if isinstance(qid, str) and qid.strip()
+        else None
+    )
     # Record the fetch (resolved URL) so a duplicate is skipped for 90 days.
     try:
         from src.utils import url_registry as _reg
@@ -101,6 +111,7 @@ def _build_wiki_place_result(name: str, page_data: dict) -> dict:
         pass
     return {
         "wikipedia_url": resolved_url,
+        "wikidata_url": wikidata_url,
         "image": img_url,
         "license": license_info or "unknown",
         # Structured hierarchy parsed from the SAME fetch (categories) — this is
@@ -137,7 +148,8 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
                 "action": "query",
                 "format": "json",
                 "titles": name,
-                "prop": "extracts|pageimages|categories",
+                "prop": "extracts|pageimages|categories|pageprops",
+                "ppprop": "wikibase_item",
                 "exintro": "True",
                 "explaintext": "True",
                 "redirects": "1",
@@ -259,7 +271,9 @@ def enrich_place_from_wikipedia(place: dict) -> bool:
         return False
 
     place["wikipedia_url"] = wiki_data["wikipedia_url"]
-    _add_place_sameas(place)  # Tier-1: fold the already-resolved urls into sameAs[]
+    # T2-A: the Wikidata QID url goes into sameAs[] (NOT a new top-level field — places schema is
+    # additionalProperties:false and has no wikidata_url slot). sameAs is exactly the cross-walk home.
+    _add_place_sameas(place, extra=[wiki_data.get("wikidata_url")])
     if wiki_data.get("image") and not place.get("images"):
         place.setdefault("images", []).insert(
             0,
