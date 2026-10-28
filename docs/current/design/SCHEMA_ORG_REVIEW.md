@@ -147,9 +147,12 @@ arrays. schema.org `Event` is the closest structural match and suggests:
   people/places/groups arrays; `about` is the schema.org name for that and could unify the
   cross-entity link set.
 - ◆ **`startDate` / `endDate`** (Date/DateTime) — our Event has no own date; dates live only in the
-  `dates` entity + mentions. An additive derived `startDate/endDate` on the Event (from its
-  sub-events' resolved date interval) would make events directly time-queryable. Pairs with the
-  `dates` resolution work.
+- ◆ **`startDate` / `endDate`** (Date/DateTime) — ✅ DECISION (owner, 2026-10-27): adopt as **OPTIONAL
+  fields ON THE EVENT** (a derived span for the event), making events directly time-queryable. EXPLICITLY
+  **NOT** part of the `dates` entity / `date` field — the `dates` entity models SOURCE-STATED date
+  MENTIONS with fuzzy intervals + precision + provenance, and must stay the authority; these Event
+  start/end are a convenience denormalization DERIVED from the event's sub-event/date mentions (resolved
+  interval), nullable, never a source claim on their own. (Implementation: an events-schema follow-on.)
 - ◆ **`location`** (Place) — likewise, a derived primary `location` link (dominant PlaceID) on the
   Event. Today location is only via sub-event place arrays.
 - ◆ **`organizer` / `performer`** (on `source_section`/Event) — the commanding
@@ -207,6 +210,15 @@ our own time-bounded `org_attachments` edge, not schema.org's flat parent/sub.
 This is where schema.org is most directly useful — it has a mature media model and we are actively
 ingesting images (M2/M3/M5).
 
+> **STATUS: ✅ IMPLEMENTED (images 2.26 → 2.27, 2026-10-27)** — owner directive: adopt ALL §5 suggestions.
+> Added to `images_output.py` (additive, nullable, closed): `contentUrl`, `thumbnailUrl`, `creditText`,
+> `copyrightNotice`, `copyrightHolder`, `acquireLicensePage`, `contentLocation` ({PlaceID,name} depicted),
+> `dateCreated`, `datePublished` (distinct from the ingestion dates `url_capture_date`/`extracted_date`),
+> `caption`, `width`, `height`, `encodingFormat`, `exifData`. Existing `url`/`local_copy`/`license`/
+> `description`/`SourceSectionID`(=isBasedOn)/`PlaceMentionID`/`caption_confidence`/`needs_review` KEPT.
+> Backward-compatible; fingerprint re-pinned; archived `src/schemas/history/images/2.27.json`; Change Log
+> row. (Populating these from the ingestion/vision pipeline is a separate follow-up — schema only.)
+
 - ⭐ **`contentUrl` / `thumbnailUrl`** — we have `url`/`local_copy`; schema.org separates the
   canonical content URL from a thumbnail. Minor but standard.
 - ⭐ **`creditText` / `copyrightNotice` / `license` / `acquireLicensePage`** — Google Images'
@@ -242,8 +254,13 @@ copyright_status, source_qualification). schema.org adds:
   `mentions[]` is the inverse (where *we* cite this biblio). The schema.org `citation` direction could
   model a source citing another in-corpus source — overlaps the M8 intra-corpus graph.
 - ◆ **`author` → `Person`** — our `citation.author` is a string array; schema.org expects `Person`.
-  An additive `author_PersonID[]` would link a book's author to our Person entity when they are also
-  a historical actor (e.g. a general who wrote a memoir — the bibliography already lists exactly these).
+- ◆ **`author` → `Person`** — CLARIFICATION (owner Q, 2026-10-27): we DO have an author field — it is a
+  free-text **string array `citation.author`** (e.g. `["Bradley, Omar N."]`). What we do NOT have is the
+  schema.org `author → Person` **LINK**. The only gap/suggestion here is an additive `author_PersonID[]`
+  that links a book's author to our Person entity (PersonID) when that author is also a historical actor
+  in the corpus — a general who wrote a memoir; the bibliography already lists exactly these. (Keep
+  `citation.author` strings as the verbatim authority; the PersonID link is additive + resolved, not a
+  replacement.)
 - ◆ **`abstract` / `inLanguage`** — a short work summary + language code. We have neither at the
   work level.
 - ○ **`publisher` → `Organization`**, **`locationCreated` → `Place`** — typed instead of string.
