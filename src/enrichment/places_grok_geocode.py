@@ -100,6 +100,12 @@ class GeocodeResult(BaseModel):
         default="grok",
         description="Geocoder that produced this result (e.g. grok, osm)",
     )
+    # T2-C: identity cross-walk URLs captured from the geocoder (e.g. OSM relation/way, a
+    # wikidata extratag) -> folded into place.sameAs[]. Empty unless the geocoder supplied them.
+    external_ids: list = Field(
+        default_factory=list,
+        description="Identity URLs (OSM/Wikidata) for sameAs cross-walk",
+    )
     transient: bool = Field(
         default=False,
         description="True if this is a transient failure (API timeout/5xx/exception), NOT a genuine "
@@ -590,6 +596,16 @@ def _apply_result(place: dict, result: GeocodeResult) -> str:
         place["country"] = result.country
     place["geocode_source"] = result.source
     place["enrichment_status"] = _STATUS_GEOCODED
+    # T2-C: fold any identity cross-walk ids the geocoder captured (OSM/Wikidata) into sameAs[].
+    ext = getattr(result, "external_ids", None)
+    if ext:
+        try:
+            from src.extraction.enrich_places import _add_place_sameas
+
+            _add_place_sameas(place, extra=list(ext))
+            logger.info("OBSERV place.sameas_osm count=%d", len(ext))
+        except Exception as e:  # noqa: BLE001
+            logger.debug("sameAs(osm) fold skipped: %s", e)
     enrich_place(place)  # derive bounding_box + map_urls + any outlier flag
     return _STATUS_GEOCODED
 
