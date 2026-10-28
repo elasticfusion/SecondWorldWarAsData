@@ -19,8 +19,31 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   people/people_groups/bibliography; people_groups time-bounded `org_attachments[]` (OOB, M6-populated);
   GeoNames gazetteer id (needs a free username); a prompt/schema subset-consistency guard (§11); source-only
   image fields (licensing/dateCreated/caption) via prompt IF wanted. See SCHEMA_ORG_TIER2_SCOPE.md.
+- **[HIGH · ingestion-bug] Book-name derivation mismatch: title-folder vs filename-stem aborts Phase 0.**
+  Found in the XChannel-8 cloud E2E (2026-10-28). Uploading `contentrepository/{TITLE}/{file}.html` where
+  TITLE != the file stem fails Phase 0 convert: `trigger_handler._book_from_key` derives the book from the
+  TITLE FOLDER (e.g. `USA-E-XChannel`), but the launched phase0-convert task used the FILENAME STEM
+  (`USA-E-XChannel-8`) as the book-scoped download prefix -> `contentrepository/USA-E-XChannel-8/` had 0
+  files -> ERROR "Book-scoped Phase 1 downloaded 0 files ... aborting (would parse an empty book)". The two
+  code paths (Lambda trigger book-derivation vs the convert task's BOOK_NAME/prefix) DISAGREE. Workaround
+  used: upload with folder==stem (`contentrepository/USA-E-XChannel-8/USA-E-XChannel-8.html`). FIX: make the
+  convert/phase task derive its book-scoped prefix from the SAME `_book_from_key`/title the trigger computed
+  (pass the derived book to the task, or have the task reuse the identical derivation), + a test for the
+  TITLE!=stem shape. Evidence: ECS log `/ecs/dev-wwii-pipeline` ~2026-10-28T12:52:46Z.
 
 ### MED
+- **[MED · observability] Phase 0 (convert) + Phase 1 (parse) have NO domain-level OBSERV events.**
+  Investigated during the XChannel-8 E2E (2026-10-28). Unlike Phase 2/3 (rich `OBSERV <comp>.<event>` +
+  summaries), phase0_convert.py has 0 OBSERV lines and phase1_parse.py has 0 OBSERV lines — they rely
+  entirely on the generic `ecs_entrypoint` wrapper (`[step] ...` + a success-path `phase_complete` w/
+  duration) + (Phase 1 only) a single `OBSERV run_scope.record`. Gaps: (a) phase0 convert OUTCOME is a plain
+  `logger.info("Converted %s -> %s (%d chars)")` (line ~174), not `OBSERV phase0.converted`; (b) the convert
+  ERROR/abort paths (lines ~103/122 + the book-prefix abort) emit a plain logger.error with NO OBSERV and NO
+  phase_complete — so a Phase-0 FAILURE is not greppable as a canonical anomaly (this is exactly why the
+  book-derivation abort above was hard to see); (c) phase1 'Saved ...-parsed.json (N paragraphs)' / 'Phase 1
+  complete' are readable `root` logs, not `OBSERV phase1.parsed`. FIX: add canonical OBSERV domain events to
+  both phases (phase0.converted/skipped/error with book+chars; phase1.parsed with book+chapters+paragraphs)
+  + ensure the convert abort emits an observable anomaly line, mirroring Phase 2/3.
 - **[MED] source_section derive failed for 2 sections** (clean rerun e4b22d9).
 - **[MED · dedup-false-positive] place dedup is string-only at the Phase-2 gate (no coords)** — Roscheid/
   Schmidt (deferred fix #2).
