@@ -25,7 +25,8 @@ def test_entity_target_is_per_entity_not_events():
 
 
 def test_unknown_entity_falls_back_safely():
-    # An unrecognized dir must not raise; falls back to the events (min) version.
+    # An unrecognized dir must not raise; explicitly falls back to the events version
+    # (not the global MIN — see _entity_target_for's ENTITY_SCHEMA_VERSIONS membership check).
     assert B._entity_target_for(Path("output/zzz_unknown/x.json")) == entity_version(
         "events"
     )
