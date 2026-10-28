@@ -153,7 +153,11 @@ def _is_people_photo(caption: str, url: str, grok_client: Any) -> bool:
         cls = (getattr(cap, "classification", "") or "").lower()
         # Only reject when vision is CONFIDENT it's a non-people asset.
         return cls not in ("map", "diagram")
-    except Exception:  # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
+        logger.warning(
+            "OBSERV image_person.vision_error reason=%s (fail-safe=people)",
+            str(e)[:120],
+        )
         return True
 
 
@@ -171,9 +175,13 @@ def _link_one_image(
     try:
         names = parse_caption_person_names(caption)
         if not names:
+            logger.info("OBSERV image_person.no_names url=%s", url)
             return
         if not _is_people_photo(caption, url, grok_client):
             summary["skipped"] += 1
+            logger.info(
+                "OBSERV image_person.skipped reason=not_people_photo url=%s", url
+            )
             return
         summary["people_photos"] += 1
         summary["names"] += len(names)
@@ -181,6 +189,9 @@ def _link_one_image(
             pf = _resolve_person_file(name, full, surname)
             if pf is None:
                 summary["skipped"] += 1
+                logger.info(
+                    "OBSERV image_person.unresolved name=%s book=%s", name, book
+                )
                 continue
             if _append_person_image(pf, url, caption, book):
                 summary["linked"] += 1

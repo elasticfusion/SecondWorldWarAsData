@@ -335,6 +335,14 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
             "image_place_link",
             lambda: _link_images_to_places(out, grok_client),
         )
+    # M8: recognize links to OTHER in-corpus ibiblio volumes -> mark internal corpus-graph edges
+    # (ULID-attributed) + QUEUE a not-yet-ingested cited document as another batch. Gated by
+    # links.intra_corpus (default on).
+    if config.get("links", {}).get("intra_corpus", True):
+        enriched += run_step(
+            "intra_corpus_links",
+            lambda: _process_intra_corpus_links(out),
+        )
     # Durable OpenSERP effectiveness/health metrics -> output/metrics/openserp_metrics.json
     _write_openserp_metrics(out)
     return enriched
@@ -438,6 +446,59 @@ def _link_images_to_places(out, grok_client) -> int:
         summary.get("skipped", 0),
     )
     return int(summary.get("linked", 0))
+
+
+def _process_intra_corpus_links(out) -> int:
+    """M8: recognize links to OTHER in-corpus ibiblio volumes, record internal corpus-graph edges
+    (ULID-attributed), and queue a not-yet-ingested cited document as another batch. Returns the
+    count of documents queued. Fail-safe."""
+    from src.extraction.intra_corpus import (
+        _corpus_volumes_present,
+        process_doc_links,
+    )
+
+    docs = _load_parsed_docs(out)
+    if not docs:
+        return 0
+    book_to_section = _book_section_index(out)
+    corpus_volumes = _corpus_volumes_present(out)
+    queued: set = set()
+    totals = {"edges": 0, "anchors": 0, "queued": 0, "skipped": 0}
+    for doc in docs:
+        if not isinstance(doc, dict):
+            continue
+        s = process_doc_links(
+            _doc_link_content(doc),
+            doc.get("_source_url", "") or "",
+            str(doc.get("book", "")),
+            out=out,
+            book_to_section=book_to_section,
+            corpus_volumes=corpus_volumes,
+            queued=queued,
+        )
+        totals["edges"] += len(s.get("edges", []))
+        totals["anchors"] += int(s.get("anchors", 0))
+        totals["queued"] += int(s.get("queued", 0))
+        totals["skipped"] += int(s.get("skipped", 0))
+    logging.getLogger("root").info(
+        "OBSERV phase3.step name=intra_corpus_links edges=%d anchors=%d queued=%d skipped=%d "
+        "status=ok",
+        totals["edges"],
+        totals["anchors"],
+        totals["queued"],
+        totals["skipped"],
+    )
+    return totals["queued"]
+
+
+def _book_section_index(out):
+    """book -> SourceSectionID ULID map (reuse the M5 index builder). Fail-safe -> {}."""
+    try:
+        from src.extraction.image_place_link import _build_book_section_index
+
+        return _build_book_section_index(out)
+    except Exception:  # noqa: BLE001
+        return {}
 
 
 def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:

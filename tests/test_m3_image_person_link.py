@@ -145,3 +145,82 @@ def test_link_failsafe_on_bad_docs(tmp_path):
         [None, {"images": "notalist"}, {}], d, grok_client=None
     )
     assert out["linked"] == 0
+
+
+def test_observability_remediation(tmp_path, caplog):
+    """M3 observability MUST-FIX: unresolved names, no-names, and non-people skips emit OBSERV."""
+    import logging
+
+    d = _people(tmp_path, ["Omar Bradley"])
+    docs = [
+        {
+            "book": "X",
+            "images": [
+                {
+                    "url": "https://x/a.jpg",
+                    "caption": "Left to right: General Patton.",
+                },  # unresolved
+                {
+                    "url": "https://x/b.jpg",
+                    "caption": "A quiet field at dawn.",
+                },  # no names
+            ],
+        },
+    ]
+    with caplog.at_level(logging.INFO, logger="src.extraction.image_person_link"):
+        IPL.link_images_to_people(docs, d, grok_client=None)
+    assert "OBSERV image_person.unresolved name=Patton" in caplog.text
+    assert "OBSERV image_person.no_names" in caplog.text
+
+
+def test_observability_remediation_vision_paths(tmp_path, caplog):
+    """M3 observability: not_people_photo skip + vision_error fail-safe emit OBSERV."""
+    import logging
+
+    d = _people(tmp_path, ["Omar Bradley"])
+    docs = [
+        {
+            "book": "X",
+            "images": [
+                {
+                    "url": "https://x/m.jpg",
+                    "caption": "Left to right: General Bradley.",
+                },
+            ],
+        }
+    ]
+
+    # vision says map -> not_people_photo skip
+    import src.extraction.image_person_link as M
+
+    orig = M._is_people_photo
+    M._is_people_photo = lambda caption, url, gc: False
+    try:
+        with caplog.at_level(logging.INFO, logger="src.extraction.image_person_link"):
+            M.link_images_to_people(docs, d, grok_client=object())
+    finally:
+        M._is_people_photo = orig
+    assert "OBSERV image_person.skipped reason=not_people_photo" in caplog.text
+
+    # vision client raises inside _is_people_photo -> vision_error fail-safe=people
+    caplog.clear()
+
+    class BoomCaptioner:
+        def __init__(self, grok_client=None):
+            pass
+
+        def caption(self, *a, **k):
+            raise RuntimeError("vision boom")
+
+    import src.extraction.image_captioner as IC_mod
+
+    orig_cap = IC_mod.ImageCaptioner
+    IC_mod.ImageCaptioner = BoomCaptioner
+    try:
+        with caplog.at_level(
+            logging.WARNING, logger="src.extraction.image_person_link"
+        ):
+            M.link_images_to_people(docs, d, grok_client=object())
+    finally:
+        IC_mod.ImageCaptioner = orig_cap
+    assert "OBSERV image_person.vision_error" in caplog.text

@@ -310,8 +310,8 @@ def _resolve_origin_ulids(fetch_event: Dict[str, Any], out: Optional[Path]) -> t
         book = str(params.get("source_doc") or "")
         if book:
             section_id = _build_book_section_index(out).get(book.strip().lower(), "")
-    except Exception:  # noqa: BLE001
-        pass
+    except Exception as e:  # noqa: BLE001
+        logger.debug("OBSERV chart_source.origin_unresolved reason=%s", str(e)[:120])
     return (event_id, section_id)
 
 
