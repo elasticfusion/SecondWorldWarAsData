@@ -73,7 +73,9 @@ def test_download_writes_under_given_storage_dir(tmp_path, monkeypatch):
         lambda url: (b"\xff\xd8\xffdata", "jpg"),
     )
     storage = tmp_path / "output" / "images" / "files"
-    path, ext = _download_image("https://ex.org/a.jpg", "01IMGID", storage)
+    path, ext, _w, _h, _mime = _download_image(
+        "https://ex.org/a.jpg", "01IMGID", storage
+    )
     assert ext == "jpg"
     assert (storage / "01IMGID.jpg").exists()  # bytes written
     # local_copy is RELATIVE (portable), not an absolute /.../ path, and rooted at output/
