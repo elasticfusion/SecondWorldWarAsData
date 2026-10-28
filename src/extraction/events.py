@@ -72,7 +72,12 @@ def _build_subevent_fulltext(se: dict, para_lookup: dict) -> None:
     looking up paragraph text from ``para_lookup``. Falls back to the summary when the fulltext
     would otherwise be empty. Mutates ``se`` in place; no-op if fulltext is already present.
     """
-    nums = se.pop("paragraphs", None)
+    # Grok emits `paragraph_numbers` (see prompts/events.yaml); older cached responses used
+    # `paragraphs`. Read the correct key first — a mismatch here silently empties the fulltext and
+    # forces the summary fallback below, starving every downstream entity pass of source text.
+    nums = se.pop("paragraph_numbers", None)
+    if nums is None:
+        nums = se.pop("paragraphs", None)
     if nums is None and "Sub-event_fulltext" in se:
         return  # Already has fulltext (cached old-format response)
     fulltext = {}
@@ -83,11 +88,15 @@ def _build_subevent_fulltext(se: dict, para_lookup: dict) -> None:
             logger.warning("  Paragraph %s not found in parsed data, skipping", n)
     se["Sub-event_fulltext"] = fulltext
 
-    # Fallback: if fulltext is empty but summary exists, use summary as text
+    # Fallback: if fulltext is empty but summary exists, use summary as text. This is a DEGRADED
+    # path — entity extraction then sees only the summary, not source paragraphs — so log it LOUDLY
+    # (WARNING + OBSERV) rather than silently at debug (observability gap, XChannel-8 2026-10-28).
     if not fulltext and se.get("Sub-event_summary"):
-        logger.debug(
-            "Sub-event %s has summary but no fulltext — using summary as fallback",
+        logger.warning(
+            "OBSERV events.fulltext_fallback sub_event=%s reason=no_resolved_paragraphs "
+            "nums=%s — entity extraction will see SUMMARY ONLY (degraded yield)",
             se.get("Sub-eventID"),
+            nums,
         )
         se["Sub-event_fulltext"] = {"summary": se["Sub-event_summary"]}
 
