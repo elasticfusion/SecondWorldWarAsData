@@ -398,22 +398,26 @@ def _doc_link_content(doc) -> str:
 
 def _review_external_links(out, grok_client) -> int:
     """M4: extract + recognize + relevancy-gate every link in the parsed docs and enqueue the kept
-    ones for human review. Returns the count enqueued. Fail-safe."""
+    ones for human review (carrying the originating SourceSectionID ULID). Returns the count
+    enqueued. Fail-safe."""
     from src.extraction.link_assets import enqueue_doc_links
 
     docs = _load_parsed_docs(out)
     if not docs:
         return 0
+    book_to_section = _book_section_index(out)  # CRITICAL: ULID attribution per doc
     totals = {"links": 0, "enqueued": 0, "dropped": 0, "anchors": 0}
     for doc in docs:
         if not isinstance(doc, dict):
             continue
         base = doc.get("_source_url", "") or ""
+        book = str(doc.get("book", ""))
         s = enqueue_doc_links(
             _doc_link_content(doc),
             base,
-            str(doc.get("book", "")),
+            book,
             grok_client=grok_client,
+            source_section_id=book_to_section.get(book.strip().lower(), ""),
         )
         for k in totals:
             totals[k] += int(s.get(k, 0))

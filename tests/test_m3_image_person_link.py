@@ -224,3 +224,27 @@ def test_observability_remediation_vision_paths(tmp_path, caplog):
     finally:
         IC_mod.ImageCaptioner = orig_cap
     assert "OBSERV image_person.vision_error" in caplog.text
+
+
+def test_ulid_attribution_backfill(tmp_path):
+    """CRITICAL backfill: the linked people image carries the SourceSectionID ULID of its source."""
+    import ulid as _ulid
+
+    d = _people(tmp_path, ["Omar Bradley"])
+    sid = str(_ulid.new())
+    sec = tmp_path / "source_section"
+    sec.mkdir()
+    (sec / f"{sid}.json").write_text(
+        json.dumps({"SourceSectionID": sid, "source": {"book": "XChannel"}})
+    )
+    docs = [
+        {
+            "book": "XChannel",
+            "images": [
+                {"url": "https://x/b.jpg", "caption": "Left to right: General Bradley."}
+            ],
+        }
+    ]
+    IPL.link_images_to_people(docs, d, grok_client=None)
+    rec = json.loads((d / "p0.json").read_text())
+    assert rec["images"][0]["SourceSectionID"] == sid

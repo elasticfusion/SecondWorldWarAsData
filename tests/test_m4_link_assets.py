@@ -135,6 +135,8 @@ def test_enqueue_records_pending_with_provenance(local_fp):
     # traceability: the event carries the source document URL + the resolved link endpoint
     assert p["source_url"] == BASE
     assert pend[0]["endpoint"].startswith("https://www.ibiblio.org/")
+    # CRITICAL backfill: the review event carries the originating SourceSectionID ULID key
+    assert "origin_SourceSectionID" in p
 
 
 def test_enqueue_drops_blacklisted_and_irrelevant(local_fp):
@@ -162,3 +164,19 @@ def test_enqueue_failsafe_on_bad_input(local_fp):
     fp, d = local_fp
     s = enqueue_doc_links(None, None, "X", grok_client=None)
     assert s["enqueued"] == 0
+
+
+def test_enqueue_carries_source_section_ulid(local_fp):
+    """CRITICAL backfill: a provided source_section_id lands as origin_SourceSectionID on the event."""
+    fp, d = local_fp
+    sid = "01HX7SEC0000000000000000AB"
+    enqueue_doc_links(
+        "[chart](charts/x.jpg)",
+        BASE,
+        "XChannel",
+        grok_client=None,
+        whitelist=["ibiblio.org"],
+        source_section_id=sid,
+    )
+    pend, _ = _pending(fp, d)
+    assert pend and pend[0]["request_params"]["origin_SourceSectionID"] == sid

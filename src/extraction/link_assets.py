@@ -122,11 +122,14 @@ def enqueue_doc_links(
     grok_client: Any = None,
     whitelist: Optional[List[str]] = None,
     blacklist: Optional[List[str]] = None,
+    source_section_id: str = "",
 ) -> dict:
     """Extract + recognize every link in one parsed doc, relevance-gate each, and enqueue the kept
     ones for HUMAN review (fetch_provenance TEXTUAL PENDING, provider=``link-asset``) carrying the
-    recognized media type + relevancy verdict + provenance. Same-document ``#anchor`` navigation is
-    NOT enqueued (intra-corpus concern, not a new external asset). Returns a summary. Fail-safe.
+    recognized media type + relevancy verdict + provenance. ``source_section_id`` is the ULID of the
+    originating source_section, carried on the event so an affirmed asset's eventual entity link is
+    ULID-attributed (M6 chart ingest already reads origin_SourceSectionID from here). Same-document
+    ``#anchor`` navigation is NOT enqueued. Returns a summary. Fail-safe.
     """
     summary = {"links": 0, "enqueued": 0, "dropped": 0, "anchors": 0}
     try:
@@ -157,7 +160,7 @@ def enqueue_doc_links(
                     "OBSERV link_asset.dropped verdict=%s url=%s", verdict, la.url
                 )
                 continue
-            _enqueue_one(fp, la, book, base_url, verdict, summary)
+            _enqueue_one(fp, la, book, base_url, verdict, source_section_id, summary)
     except Exception as e:  # noqa: BLE001 - enqueue must never crash the pipeline
         logger.warning("OBSERV link_asset.error reason=%s", str(e)[:120])
     logger.info(
@@ -180,11 +183,18 @@ def _safe_load_blacklist(loader) -> List[str]:
 
 
 def _enqueue_one(
-    fp: Any, la: "LinkAsset", book: str, source_url: str, verdict: str, summary: dict
+    fp: Any,
+    la: "LinkAsset",
+    book: str,
+    source_url: str,
+    verdict: str,
+    source_section_id: str,
+    summary: dict,
 ) -> None:
     """Record one review-eligible link as a fetch_provenance TEXTUAL HIT (-> PENDING). Carries full
-    provenance so a reviewer can trace the link back to the exact source document it was cited in.
-    Fail-safe."""
+    provenance so a reviewer can trace the link back to the exact source document it was cited in,
+    INCLUDING the originating source_section ULID (``origin_SourceSectionID``) so an affirmed asset's
+    eventual entity link is ULID-attributed. Fail-safe."""
     try:
         fp.record_fetch_event(
             provider="link-asset",
@@ -197,6 +207,8 @@ def _enqueue_one(
                 "link_text": la.text[:200],
                 "source_doc": book,
                 "source_url": source_url,  # the parsed doc's _source_url -> trace to source material
+                "origin_SourceSectionID": source_section_id
+                or None,  # durable ULID attribution
             },
             result_summary=(
                 f"{la.media_type} link ({verdict}) from {book} <{source_url}>: {la.text[:80]}"
@@ -204,10 +216,11 @@ def _enqueue_one(
         )
         summary["enqueued"] += 1
         logger.info(
-            "OBSERV link_asset.enqueued media=%s verdict=%s source_url=%s url=%s",
+            "OBSERV link_asset.enqueued media=%s verdict=%s source_url=%s source_section=%s url=%s",
             la.media_type,
             verdict,
             source_url,
+            source_section_id or "-",
             la.url,
         )
     except Exception as e:  # noqa: BLE001
