@@ -10,10 +10,10 @@ The curated list of what is still OPEN. Each points to its detail section lower 
 Everything not listed here is DONE (see §7 COMPLETED + the dated review sections).
 
 ### HIGH
-- **[HIGH · schema-design] Review schema.org for future JSON entity enhancements** — survey Person/Place/
-  Event/ImageObject/CreativeWork + properties (sameAs, spatialCoverage, depicts, isBasedOn, citation) for
-  additive entity-schema enrichments (external-ID cross-walks, richer linkage). Deliverable: a mapping
-  proposal; introduce each field via the evolve-+-archive discipline (SCHEMA_VERSIONING.md).
+- **[HIGH · schema-design] Review schema.org for future JSON entity enhancements** — ✅ proposal DELIVERED
+  (`docs/current/design/SCHEMA_ORG_REVIEW.md`, schema-by-schema, suggestions-only). REMAINING: owner decision
+  on which additive fields to adopt (top rec: first-class `sameAs` cross-walk), then implement each via the
+  evolve-+-archive discipline. Suggestions-only — no schemas changed.
 
 ### MED
 - **[MED] source_section derive failed for 2 sections** (clean rerun e4b22d9).
@@ -1269,10 +1269,15 @@ existing exclude-domain/blacklist. Chart-image -> M6; pdf -> pdf_pipeline on aff
   and their properties/relationships (sameAs, spatialCoverage, temporalCoverage, contentLocation, depicts,
   isBasedOn, citation, author, license). Goal: align our fields with an established, interoperable vocabulary
   where it adds value (richer linkage, external-ID cross-walks via `sameAs`, better provenance), WITHOUT
-  over-coupling — adopt selectively. Deliverable: a short proposal mapping candidate schema.org terms to our
-  entities + which additive schema fields to introduce (each via the documented evolve-+-archive discipline:
-  bump version, re-pin fingerprint, archive to src/schemas/history/, Change Log). Pairs naturally with the
-  CRITICAL ULID-attribution work (schema.org `isBasedOn`/`citation` ~ our SourceSectionID reference).
+  over-coupling — adopt selectively.
+  STATUS (2026-10-27): ✅ PROPOSAL DELIVERED — docs/current/design/SCHEMA_ORG_REVIEW.md (schema-by-schema
+  additive suggestions, suggestions-only, no schemas changed). Top recommendation: a first-class nullable
+  `sameAs: [url]` cross-walk on people/places/people_groups/bibliography/maps, then typed `identifier`,
+  ID-typed hierarchy links (containedInPlace/parentOrganization/subEvent), and the ImageObject licensing +
+  contentLocation/dateCreated vocabulary; keep ULID identity, SourceSectionID provenance, source_qualification,
+  and fuzzy-date models (stricter than schema.org). REMAINING: owner decision on which suggestions to adopt,
+  then implement each via the evolve-+-archive discipline (bump version, re-pin fingerprint, archive to
+  src/schemas/history/, Change Log).
 
 
 ### Resolved this session (moved out of the active flat list)

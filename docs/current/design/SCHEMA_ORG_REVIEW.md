@@ -1,0 +1,270 @@
+# schema.org review — additive enhancement SUGGESTIONS for our entity schemas
+
+**Status:** SUGGESTIONS ONLY. No schemas were changed by this document. Each suggestion, if
+adopted, must go through the normal evolve-+-archive discipline (`docs/current/SCHEMA_VERSIONING.md`:
+bump the entity version → classify additive/breaking → re-pin the fingerprint → archive to
+`src/schemas/history/` → Change Log row).
+
+**Sources reviewed:** <https://schema.org/> (type vocabulary) and
+<https://github.com/schemaorg/schemaorg> (the project / data model).
+
+---
+
+## 0. Framing: why schema.org fits — and where it does NOT
+
+schema.org is a vocabulary for marking up web pages so **search engines** (Google, Bing, etc.)
+can build a knowledge graph and rich results. That goal **overlaps** ours — we are also building a
+queryable entity knowledge graph with typed entities (Person, Place, Event, Organization, Image,
+CreativeWork/book) and cross-links — so its property names and linking patterns are a well-tested,
+interoperable vocabulary we can borrow from selectively.
+
+But it is **not the same problem**, and we should borrow, not adopt wholesale:
+
+| schema.org (web/SEO) | Our corpus (WWII historical research) |
+|---|---|
+| Optimized for *discovery* + rich snippets; lax, publisher-friendly typing | Optimized for *provenance + queryable truth*; strict JSON-Schema + ULID identity + write-guard |
+| Little notion of source confidence / qualification | Source qualification, confidence, `null-over-fake` are first-class |
+| "Now"-centric; weak historical-date modeling (no fuzzy intervals, no pre-1 AD rigor) | Fuzzy date intervals, `resolved_earliest/latest`, precision are core |
+| Identity by URL (`@id`, `sameAs` to Wikipedia/Wikidata) | Identity by internal ULID; external IDs would be *additive* cross-walk |
+| Flat, open (`additionalProperty` escape hatch) | Closed (`additionalProperties:false`) + version-gated |
+| No military domain (rank, OOB, command, campaign) | Military domain is the whole point |
+
+**The single highest-value idea** to take from schema.org is **`sameAs`** — a list of authoritative
+external IDs/URLs (Wikidata, Wikipedia, VIAF, GeoNames, DBpedia) on each entity. It is the
+interoperability bridge: it lets our ULID-keyed graph round-trip to the global linked-data graph
+without giving up our own identity model, and it pairs naturally with the ULID-attribution work.
+
+Each section below: **schema.org type** → concrete **ADD** suggestions (additive, nullable) → the
+**web-vs-us caveat** for that type. Priority tags: ⭐ high value, ◆ medium, ○ nice-to-have.
+
+---
+
+## 1. `people_output.py`  →  schema.org [`Person`](https://schema.org/Person)
+
+Our schema is already rich (ranks, awards, units, group_affiliations, education, bio sources). Gaps
+schema.org highlights:
+
+- ⭐ **`sameAs`** (array of URL) — authoritative external IDs for the person: Wikidata (`Q…`), VIAF,
+  LCCN, Wikipedia, DBpedia. We already capture `wikipedia_url`/`grokipedia_url` inside
+  `biographical_profile`; `sameAs` generalizes that to a first-class, multi-valued cross-walk and is
+  the key to entity reconciliation across runs/corpora.
+- ⭐ **`identifier`** (PropertyValue) — typed external identifiers (service_number, VIAF, Wikidata QID)
+  as `{propertyID, value}`. More structured than stuffing them into `aliases`.
+- ◆ **`honorificPrefix` / `honorificSuffix`** — maps cleanly to rank/title and post-nominals (e.g.
+  "Gen.", "VC", "KBE"). We have `rank` + `military_awards` but no post-nominal field.
+- ◆ **`givenName` / `familyName` / `additionalName`** — structured name parts. We only store the full
+  `name` + `aliases`; structured parts help the surname-matching the M3 linker already does by hand.
+- ◆ **`hasOccupation`** (Occupation) — role beyond the military (politician, engineer). We have
+  `role_type`; schema.org gives it a vocabulary.
+- ○ **`nationality`** (already have) — schema.org expects a Country; consider an additive
+  `nationality_sameAs` (GeoNames/Wikidata country) rather than only a free string.
+- ○ **`relatedTo` / `knows` / `colleague`** — person-person edges (commander↔subordinate). We model
+  command via groups/charts (M6); a direct person-person relation array is a possible future.
+
+**Caveat:** schema.org `Person` has no rank, unit, service-number, or award-class vocabulary — our
+military fields stay authoritative. Take `sameAs`/`identifier`/name-parts; do **not** flatten our
+structured `military_awards`/`units_served`/`ranks` into schema.org's thinner equivalents.
+
+---
+
+## 2. `places_output.py`  →  schema.org [`Place`](https://schema.org/Place) (+ `GeoCoordinates`, `GeoShape`)
+
+Strong overlap — we already have coordinates, bounding_box, hierarchy, related_places, aliases.
+
+- ⭐ **`sameAs`** (array of URL) — **GeoNames ID, Wikidata QID, OpenStreetMap relation/way**. This is
+  the biggest win for places: it disambiguates "Hill 400" / "St. Lô" against authoritative gazetteers
+  and is the fix hook for the open **MED place-dedup-by-coords** issue (match on GeoNames/Wikidata ID
+  instead of string).
+- ⭐ **`containedInPlace` / `containsPlace`** — typed hierarchy edges. Our `hierarchy` is
+  `array|object|null` (loose) and `related_places` has a free-text `relationship`; schema.org's
+  containment pair is a cleaner model for "Vierville ⊂ Normandy ⊂ France".
+- ◆ **`geo` → `GeoShape`** — we have a point (`coordinates`) + a `bounding_box`; schema.org `GeoShape`
+  adds `line`/`polygon` (useful for a beach sector, a front line, a river — exactly the terrain M5
+  links and the sectors maps depict).
+- ◆ **`additionalProperty`** (PropertyValue) — a typed escape hatch for military-geographic
+  attributes with no schema.org slot (e.g. `elevation_m`, `hill_number`, `grid_reference`). We would
+  keep these as named fields, but the PropertyValue `{propertyID,value,unitCode}` shape is a good
+  template if we want extensibility without reopening `additionalProperties`.
+- ○ **`alternateName`** — equivalent to our `aliases`/`historical_names` (already covered; note the
+  naming).
+
+**Caveat:** schema.org `Place` is contemporary-gazetteer oriented. Our **historical** names and the
+*as-of-date* of a place name (a town renamed/destroyed) have no schema.org slot — keep
+`historical_names` + the event-mention date context. GeoNames `sameAs` points at the modern place;
+record that it is a *modern-identity* cross-walk, not a claim the WWII place is identical.
+
+---
+
+## 3. `events_output.py` + `source_section_output.py`  →  schema.org [`Event`](https://schema.org/Event)
+
+Our Event is a source-anchored container of Sub-events with people/places/dates/groups/equipment
+arrays. schema.org `Event` is the closest structural match and suggests:
+
+- ⭐ **`subEvent` / `superEvent`** — we have `Sub-events` nested; schema.org's explicit
+  sub/super pair also models the **operation → battle → engagement** ladder that `source_section.operation`
+  is reaching for. Consider a `superEvent` link from an Event to its campaign/operation entity.
+- ⭐ **`about`** (array) — "subject matter" as typed links. Our Sub-events already carry
+  people/places/groups arrays; `about` is the schema.org name for that and could unify the
+  cross-entity link set.
+- ◆ **`startDate` / `endDate`** (Date/DateTime) — our Event has no own date; dates live only in the
+  `dates` entity + mentions. An additive derived `startDate/endDate` on the Event (from its
+  sub-events' resolved date interval) would make events directly time-queryable. Pairs with the
+  `dates` resolution work.
+- ◆ **`location`** (Place) — likewise, a derived primary `location` link (dominant PlaceID) on the
+  Event. Today location is only via sub-event place arrays.
+- ◆ **`organizer` / `performer`** (on `source_section`/Event) — the commanding
+  org/person. Overlaps M6 command charts (who ran the operation).
+- ○ **`EventStatus` / `eventAttendanceMode`** — SEO/ticketing concepts; **not applicable**.
+
+**Caveat:** schema.org `Event` is built for *scheduled, future, attendable* events (concerts,
+webinars) — hence `offers`, `remainingAttendeeCapacity`, `doorTime`. **None of that applies.** Take
+only `subEvent/superEvent`, `about`, `startDate/endDate`, `location`. Our Sub-event granularity +
+ULID provenance is richer than schema.org here; do not collapse to its flat model.
+
+---
+
+## 4. `groups_output.py`  →  schema.org [`Organization`](https://schema.org/Organization)
+
+Military units/organizations. Good overlap; our `military_hierarchy`, `parent_organization`,
+`sub_organizations`, `unit_patch` are domain-specific strengths.
+
+- ⭐ **`sameAs`** — Wikidata/Wikipedia for the unit (e.g. "29th Infantry Division" → Q-id). Unifies
+  our `wikipedia_url`/`grokipedia_url` into a first-class cross-walk.
+- ⭐ **`parentOrganization` / `subOrganization`** — schema.org's names for what we call
+  `parent_organization` (string) + `sub_organizations` (string array). Suggest evolving these toward
+  **GroupID-typed** links (like `related_places`), so the command hierarchy is a real graph, not
+  strings — directly supports the M6 chart-derived command edges.
+- ◆ **`memberOf` / `member`** — we have `members`; schema.org adds the inverse and a typed Person/Org
+  member. Our people↔group link lives on the Person side (`group_affiliations`); `member` would mirror
+  it on the group side.
+- ◆ **`foundingDate` / `dissolutionDate`** — a unit's activation/inactivation dates. No current slot.
+- ◆ **`logo`** → maps to our `unit_patch` (already richer: vision-verified, hashed, stored).
+- ○ **`identifier`** — unit designation codes (e.g. the OOB `designation`/`echelon`/`unit_number` we
+  already store on the Person's `units_served`) could be mirrored here as typed identifiers.
+
+**Caveat:** schema.org `Organization` is company/brand oriented (`taxID`, `duns`, `naics`,
+`contactPoint`) — ignore all of that. Military echelon/command-structure is ours to model; schema.org
+only offers the generic parent/sub/member skeleton.
+
+---
+
+## 5. `images_output.py` (+ people/places/groups inline `images[]`)  →  schema.org [`ImageObject`](https://schema.org/ImageObject) / [`MediaObject`](https://schema.org/MediaObject)
+
+This is where schema.org is most directly useful — it has a mature media model and we are actively
+ingesting images (M2/M3/M5).
+
+- ⭐ **`contentUrl` / `thumbnailUrl`** — we have `url`/`local_copy`; schema.org separates the
+  canonical content URL from a thumbnail. Minor but standard.
+- ⭐ **`creditText` / `copyrightNotice` / `license` / `acquireLicensePage`** — Google Images'
+  licensing metadata. We have `license`; schema.org's fuller set (`creditText`, `copyrightNotice`,
+  `copyrightHolder`) matches our provenance goals and the bibliography `copyright_status` work.
+- ⭐ **`contentLocation`** (Place) + **`about`/`depicts`** — "what/where the image shows." This is
+  EXACTLY the M3 (image→Person) and M5 (image→Place) linkage. schema.org's `contentLocation` (the
+  depicted place) and the `about` subject links are the vocabulary for what M3/M5 already compute.
+  Our `PlaceMentionID`/`SourceSectionID`/`EventID` links are the ULID-strong version.
+- ◆ **`isBasedOn` / `isPartOf`** — "this image came from source X." Our `SourceSectionID` IS this.
+  Note the schema.org name for the attribution we just backfilled.
+- ◆ **`dateCreated` / `datePublished`** — we have `extracted_date`/`url_capture_date` (ingestion
+  dates); schema.org distinguishes *when the photo was taken* (`dateCreated`) — a historically
+  meaningful field we don't capture.
+- ◆ **`caption` / `exifData` / `representativeOfPage`** — `caption` overlaps our vision caption;
+  `width`/`height`/`encodingFormat` are standard and we partly have them (`unit_patch` has w/h).
+
+**Caveat:** take the licensing + content-location + caption vocabulary. Skip SEO/display fields
+(`representativeOfPage`, `thumbnail` sizing hints). Our `needs_review` + vision `caption_confidence`
+have no schema.org equivalent and stay.
+
+---
+
+## 6. `bibliography_output.py`  →  schema.org [`CreativeWork`](https://schema.org/CreativeWork) / [`Book`](https://schema.org/Book) / [`Article`](https://schema.org/Article)
+
+Our bibliography is already citation-rich (author, publisher, ISBN, pages, volume, edition,
+copyright_status, source_qualification). schema.org adds:
+
+- ⭐ **`sameAs` / `identifier`** — WorldCat/OCLC number, LCCN, DOI, OpenLibrary ID, Wikidata. We have
+  `isbn`; these broaden the cross-walk and improve the Archive.org/Gutenberg resolution the
+  bibliography resolver already does.
+- ◆ **`isBasedOn` / `citation`** — schema.org `citation` is "a work cited by this work." Our
+  `mentions[]` is the inverse (where *we* cite this biblio). The schema.org `citation` direction could
+  model a source citing another in-corpus source — overlaps the M8 intra-corpus graph.
+- ◆ **`author` → `Person`** — our `citation.author` is a string array; schema.org expects `Person`.
+  An additive `author_PersonID[]` would link a book's author to our Person entity when they are also
+  a historical actor (e.g. a general who wrote a memoir — the bibliography already lists exactly these).
+- ◆ **`abstract` / `inLanguage`** — a short work summary + language code. We have neither at the
+  work level.
+- ○ **`publisher` → `Organization`**, **`locationCreated` → `Place`** — typed instead of string.
+
+**Caveat:** schema.org has no equivalent of our **`source_qualification`** (primary/secondary,
+proximity, evidentiary support) or **`copyright_status`** determination — these are research-grade
+and stay ours. `availability`/`download_status`/`search_status` are pipeline-internal, not
+schema.org concepts.
+
+---
+
+## 7. `dates_output.py`  →  schema.org `Date` / `DateTime` (+ no good interval type)
+
+- ◆ **`startDate` / `endDate`** naming — we use `date_start`/`date_end`; schema.org's camelCase is the
+  convention if we ever emit JSON-LD.
+- ○ Little else to take.
+
+**Caveat (important):** schema.org dates are **ISO-8601 points**; it has **no first-class fuzzy
+interval / precision** type. Our `resolved_earliest`/`resolved_latest`/`date_precision`/
+`resolution_method` are STRICTLY richer and are a core research requirement. **Do not** regress to a
+single schema.org `Date`. If emitting JSON-LD, map our interval to a `startDate`/`endDate` pair and
+keep our fields as the authority.
+
+---
+
+## 8. Smaller / domain-specific schemas (brief)
+
+- **`casualties_output.py`, `logistics_output.py`, `weather_output.py`** — **no meaningful schema.org
+  type.** schema.org has no casualty, order-of-battle-logistics, or historical-weather vocabulary.
+  `weather` is closest to no-type (schema.org weather is forecast/SEO, not historical observation).
+  **Recommendation: leave as-is**; only consider a generic `sameAs` if a record maps to a Wikipedia
+  article (rare).
+- **`maps_output.py` / `map_features_output.py`** → schema.org [`Map`](https://schema.org/Map) is a
+  thin `CreativeWork` subtype (only `mapType`). Our map-as-source + `map_features` (vision-extracted
+  units/places/movements) are far richer. Take only `sameAs` (if a map has a Wikimedia/archive URL)
+  + the `ImageObject` licensing fields (§5). The `spatialCoverage` property (Place/GeoShape of what
+  the map covers) is a good additive for "which sector this map depicts."
+- **`source_section_output.py`** → besides the `Event` mapping (§3), schema.org `CreativeWork`
+  `isPartOf`/`hasPart` models chapter⊂book cleanly, and `citation` models the `reference_articles`
+  we capture.
+
+---
+
+## 9. Cross-cutting recommendations (priority-ordered)
+
+1. ⭐ **Introduce a first-class `sameAs: [url]` (nullable array) on the top-level entities**
+   (`people`, `places`, `people_groups`, `bibliography`, and `maps`). Single, uniform,
+   additive, high interoperability value; the natural home for the Wikidata/Wikipedia/GeoNames/VIAF
+   IDs we already partially fetch. This is the recommended **first** schema.org adoption.
+2. ⭐ **Add a typed `identifier: [{propertyID, value}]` (PropertyValue) pattern** where we have
+   external codes (service numbers, OCLC/LCCN, GeoNames). Reuse one shared sub-schema.
+3. ◆ **Evolve string hierarchy links toward ID-typed links** using schema.org's
+   `containedInPlace`/`parentOrganization`/`subEvent` as the model (places hierarchy, group command,
+   event→operation) — supports M6 command edges + the place-dedup-by-coords fix.
+4. ◆ **Adopt the `ImageObject` licensing + `contentLocation`/`dateCreated` vocabulary** for image
+   records (§5) — closest, lowest-risk win, and our image pipeline is active.
+5. ○ **Only if we ever publish JSON-LD / sitemaps for search engines**: add a serialization layer that
+   maps our entities to schema.org `@type`/`@id`/`sameAs` at EXPORT time — keeping the internal
+   schema strict and the schema.org shape as a *view*, not the storage model. (This is the cleanest
+   way to get the SEO/discovery benefit without weakening the research corpus.)
+
+**Guiding principle:** borrow schema.org's **linking vocabulary** (`sameAs`, `identifier`,
+`containedInPlace`, `subEvent`, `about`, `contentLocation`, `isBasedOn`) and its **media/licensing**
+model; keep our **identity (ULID), provenance (SourceSectionID), source-qualification, and
+fuzzy-date** models, which are stricter and more research-appropriate than anything schema.org offers.
+
+---
+
+## 10. What NOT to take (explicit non-goals)
+
+- SEO/display/ticketing fields: `offers`, `aggregateRating`, `review`, `potentialAction`,
+  `breadcrumb`, `mainEntityOfPage`, `representativeOfPage`, event `doorTime`/attendance.
+- schema.org's **open/loose typing** (`additionalProperty` as a general escape hatch) — it conflicts
+  with our `additionalProperties:false` + write-guard discipline. Use named, nullable fields instead.
+- Replacing ULID identity with URL `@id` identity — we keep ULID; `sameAs` is the bridge, not a
+  replacement.
+- Collapsing our fuzzy-date / source-qualification / military-domain fields into thinner schema.org
+  equivalents.
