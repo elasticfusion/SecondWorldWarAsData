@@ -1,6 +1,7 @@
 """Dedup-notify delivery observability + barrier-timeout outstanding-batch detection (E2E findings)."""
 
 import os
+
 os.environ.setdefault("S3_BUCKET", "test-bucket")
 os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
 
@@ -33,6 +34,7 @@ def test_topic_has_confirmed_sub_failsafe_true_on_error():
     class Boom:
         def list_subscriptions_by_topic(self, TopicArn):
             raise RuntimeError("no perms")
+
     # can't check -> must NOT claim undelivered
     assert E._topic_has_confirmed_sub(Boom(), "arn:topic") is True
 
@@ -40,16 +42,25 @@ def test_topic_has_confirmed_sub_failsafe_true_on_error():
 def test_pending_batches_for_book_failsafe(monkeypatch):
     # job_queue lookup error -> 0, never raises
     import src.utils.job_queue as jq
-    monkeypatch.setattr(jq, "get_active_jobs", lambda: (_ for _ in ()).throw(RuntimeError("x")))
+
+    monkeypatch.setattr(
+        jq, "get_active_jobs", lambda: (_ for _ in ()).throw(RuntimeError("x"))
+    )
     assert E._pending_batches_for_book() == 0
 
 
 def test_pending_batches_for_book_filters_by_book(monkeypatch):
     import src.utils.job_queue as jq
     from types import SimpleNamespace
+
     monkeypatch.setenv("BOOK_NAME", "XChannel")
-    monkeypatch.setattr(jq, "get_active_jobs", lambda: [
-        SimpleNamespace(book="XChannel"), SimpleNamespace(book="OtherBook"),
-        SimpleNamespace(book="XChannel"),
-    ])
+    monkeypatch.setattr(
+        jq,
+        "get_active_jobs",
+        lambda: [
+            SimpleNamespace(book="XChannel"),
+            SimpleNamespace(book="OtherBook"),
+            SimpleNamespace(book="XChannel"),
+        ],
+    )
     assert E._pending_batches_for_book() == 2
