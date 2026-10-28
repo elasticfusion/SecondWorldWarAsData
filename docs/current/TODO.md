@@ -10,10 +10,15 @@ The curated list of what is still OPEN. Each points to its detail section lower 
 Everything not listed here is DONE (see §7 COMPLETED + the dated review sections).
 
 ### HIGH
-- **[HIGH · schema-design] Review schema.org for future JSON entity enhancements** — ✅ proposal DELIVERED
-  (`docs/current/design/SCHEMA_ORG_REVIEW.md`, schema-by-schema, suggestions-only). REMAINING: owner decision
-  on which additive fields to adopt (top rec: first-class `sameAs` cross-walk), then implement each via the
-  evolve-+-archive discipline. Suggestions-only — no schemas changed.
+- **[HIGH · schema-design] schema.org entity enhancements** — ✅ LARGELY DONE (2026-10-27/28).
+  Proposal `docs/current/design/SCHEMA_ORG_REVIEW.md`; ADOPTED + POPULATED: places 2.30 (sameAs/
+  containedInPlace/containsPlace/geo/additionalProperty/elevation_m, PR #596) + images 2.27 (14 ImageObject
+  fields, #597); Tier-1 deterministic population (image dims/encodingFormat #598; images.contentLocation +
+  places.sameAs from wiki/grok urls #599); Tier-2 (Wikidata QID #600; OSM/Wikidata via Nominatim #601;
+  opt-in elevation_m from DEM #602). REMAINING (backlog, owner-decide): sameAs+identifier rollout to
+  people/people_groups/bibliography; people_groups time-bounded `org_attachments[]` (OOB, M6-populated);
+  GeoNames gazetteer id (needs a free username); a prompt/schema subset-consistency guard (§11); source-only
+  image fields (licensing/dateCreated/caption) via prompt IF wanted. See SCHEMA_ORG_TIER2_SCOPE.md.
 
 ### MED
 - **[MED] source_section derive failed for 2 sections** (clean rerun e4b22d9).
