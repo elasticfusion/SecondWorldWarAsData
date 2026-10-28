@@ -45,6 +45,17 @@ _CLUSTER_MIN_RATE = (
     0.05  # 5% of an entity's writes blocked on the same keyword = systematic
 )
 
+# SMALL-BATCH escalation: the main (count>=10 AND rate>=5%) rule needs a large denominator, so a
+# SMALL but TOTALLY-degraded batch slips through — e.g. a book with only 7 places where ALL 7 are
+# empty (count=7 < 10) would NOT escalate despite being a 100% starvation signature. A small batch
+# that is overwhelmingly one concern outcome is as diagnostic as a large cluster, so escalate when
+# the concern count is at least _SMALL_BATCH_MIN_COUNT AND its rate is at least _SMALL_BATCH_MIN_RATE
+# (a near-total degradation), independent of the large-batch count floor.
+_SMALL_BATCH_MIN_COUNT = 3
+_SMALL_BATCH_MIN_RATE = (
+    0.9  # >=90% of a small batch on one concern = near-total degradation
+)
+
 # Minimum count of POPULATED content fields a real record of each entity should carry (below =>
 # allow_empty). Only entities listed here are checked; others never emit allow_empty. Conservative
 # on purpose — this flags the egregiously-empty (``{}`` biographies, bare PK-only records), not the
@@ -186,6 +197,18 @@ def _entity_totals() -> Dict[str, int]:
     return dict(totals)
 
 
+def _qualifies_as_cluster(count: int, rate: float) -> bool:
+    """True if a concern (entity, outcome, keyword) rises to a systematic alert, by EITHER rule:
+    - LARGE-BATCH: count >= _CLUSTER_MIN_COUNT AND rate >= _CLUSTER_MIN_RATE (enough volume +
+      a non-trivial share) — the original systematic-defect signal; OR
+    - SMALL-BATCH: count >= _SMALL_BATCH_MIN_COUNT AND rate >= _SMALL_BATCH_MIN_RATE (a small but
+      near-totally-degraded batch, e.g. 7-of-7 places empty) — so a 100%-empty small batch still
+      WARNs instead of hiding below the large-batch count floor."""
+    if count >= _CLUSTER_MIN_COUNT and rate >= _CLUSTER_MIN_RATE:
+        return True
+    return count >= _SMALL_BATCH_MIN_COUNT and rate >= _SMALL_BATCH_MIN_RATE
+
+
 def systematic_clusters() -> List[Dict[str, Any]]:
     """Return CONCERN clusters that look like a CODE defect (count + rate thresholds), sorted by
     severity. Concern outcomes = block + allow_empty + allow_flagged (a book-wide run of empty or
@@ -200,7 +223,7 @@ def systematic_clusters() -> List[Dict[str, Any]]:
             continue
         total = totals.get(entity, 0) or 1
         rate = n / total
-        if n >= _CLUSTER_MIN_COUNT and rate >= _CLUSTER_MIN_RATE:
+        if _qualifies_as_cluster(n, rate):
             out.append(
                 {
                     "entity": entity,

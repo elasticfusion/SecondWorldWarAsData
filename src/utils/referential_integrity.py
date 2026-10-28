@@ -398,7 +398,8 @@ def enforce(
         report = audit(storage)
     except Exception as e:  # noqa: BLE001
         logger.warning("referential-integrity enforcement skipped (audit error): %s", e)
-        return {"edges": [], "total_dangling": 0, "error": str(e)}
+        # status='unknown': audit did not complete -> this 0 is "not measured", not "clean".
+        return {"edges": [], "total_dangling": 0, "error": str(e), "status": "unknown"}
 
     total = report["total_dangling"]
     logger.info("Referential integrity: %d dangling cross-reference(s)", total)
@@ -413,6 +414,8 @@ def enforce(
             )
     if total and alert_topic_arn:
         _alert(report, alert_topic_arn, region)
+    # COMPLETED scan: 0 dangling here genuinely means clean.
+    report.setdefault("status", "ok")
     return report
 
 
@@ -435,34 +438,18 @@ def run_for_phase(output_root: Any, phase: str = "") -> Dict[str, Any]:
         logger.info(
             "Referential-integrity enforcement SKIPPED (env) for %s", phase or "phase"
         )
-        return {"edges": [], "total_dangling": 0, "skipped": "env"}
+        # status='unknown': the scan did not run, so 0 dangling here is NOT a clean result.
+        return _unknown_report(skipped="env")
 
     timeout_s = int(os.environ.get("PHASE_REFERENTIAL_ENFORCE_TIMEOUT", "90"))
-    result: Dict[str, Any] = {"edges": [], "total_dangling": 0, "skipped": "timeout"}
+    # Pre-seed as 'unknown'/timeout: only a COMPLETED scan (via _run -> enforce) flips status to
+    # 'ok'. If the thread is killed by the join timeout below, this unknown result stands — so a
+    # consumer can never read a timed-out scan as "clean, 0 dangling".
+    result: Dict[str, Any] = _unknown_report(skipped="timeout")
 
     def _run() -> None:
         nonlocal result
-        try:
-            region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
-            topic = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
-            if os.environ.get("S3_BUCKET"):
-                from src.utils.storage import S3Storage
-
-                storage: Any = S3Storage(
-                    bucket=os.environ["S3_BUCKET"], prefix="output", region=region
-                )
-            else:
-                from pathlib import Path
-
-                from src.utils.storage import LocalStorage
-
-                storage = LocalStorage(base_dir=Path(output_root))
-            if phase:
-                logger.info("Referential-integrity enforcement (%s)", phase)
-            result = enforce(storage, alert_topic_arn=topic, region=region)
-        except Exception as e:  # noqa: BLE001
-            logger.warning("referential-integrity enforcement skipped: %s", e)
-            result = {"edges": [], "total_dangling": 0, "error": str(e)}
+        result = _enforce_for_phase(output_root, phase)
 
     import threading
 
@@ -472,11 +459,59 @@ def run_for_phase(output_root: Any, phase: str = "") -> Dict[str, Any]:
     if t.is_alive():
         logger.warning(
             "referential-integrity enforcement exceeded %ds for %s — skipping (the "
-            "corpus audit runs out-of-band). Set PHASE_REFERENTIAL_ENFORCE_TIMEOUT to raise.",
+            "corpus audit runs out-of-band). Set PHASE_REFERENTIAL_ENFORCE_TIMEOUT to raise. "
+            "status=unknown (NOT a clean 0-dangling result).",
             timeout_s,
             phase or "phase",
         )
     return result
+
+
+def _unknown_report(skipped: str = "", error: str = "") -> Dict[str, Any]:
+    """A NON-completed enforcement result. ``status='unknown'`` is the explicit signal that NO
+    whole-corpus scan completed, so the accompanying ``total_dangling=0`` must NOT be read as
+    "clean, zero dangling" — it means "not measured". A completed clean scan returns
+    ``status='ok'`` instead (see ``_enforce_for_phase``)."""
+    report: Dict[str, Any] = {"edges": [], "total_dangling": 0, "status": "unknown"}
+    if skipped:
+        report["skipped"] = skipped
+    if error:
+        report["error"] = error
+    return report
+
+
+def _enforce_for_phase(output_root: Any, phase: str) -> Dict[str, Any]:
+    """Resolve storage + topic and run ``enforce``; return its report stamped ``status='ok'`` (a
+    COMPLETED scan — 0 dangling here genuinely means clean). On any resolution/enforce error,
+    return an ``status='unknown'`` report so a failure can't masquerade as clean. Fail-safe.
+    """
+    import os
+
+    try:
+        region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+        topic = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
+        if os.environ.get("S3_BUCKET"):
+            from src.utils.storage import S3Storage
+
+            storage: Any = S3Storage(
+                bucket=os.environ["S3_BUCKET"], prefix="output", region=region
+            )
+        else:
+            from pathlib import Path
+
+            from src.utils.storage import LocalStorage
+
+            storage = LocalStorage(base_dir=Path(output_root))
+        if phase:
+            logger.info("Referential-integrity enforcement (%s)", phase)
+        report = enforce(storage, alert_topic_arn=topic, region=region)
+        # enforce() already returns {'edges','total_dangling',...}; an 'error' key means the audit
+        # itself failed inside enforce -> keep status unknown, else mark the completed scan ok.
+        report.setdefault("status", "unknown" if report.get("error") else "ok")
+        return report
+    except Exception as e:  # noqa: BLE001
+        logger.warning("referential-integrity enforcement skipped: %s", e)
+        return _unknown_report(error=str(e))
 
 
 def _alert(report: Dict[str, Any], topic_arn: str, region: str) -> None:
