@@ -84,6 +84,9 @@ def convert_key(key: str) -> str:
     media = _EXT_MEDIA.get(ext)
     if not media:
         logger.warning("Unsupported convert extension %s (%s) — skipping", ext, key)
+        logger.info(
+            "OBSERV phase0.skipped reason=unsupported_ext ext=%s key=%s", ext, key
+        )
         return ""
 
     s3 = boto3.client("s3", region_name=REGION)
@@ -105,6 +108,12 @@ def convert_key(key: str) -> str:
                 key,
                 verdict.reason,
             )
+            logger.warning(
+                "OBSERV phase0.rejected reason=media_mismatch book=%s key=%s detail=%s",
+                book,
+                key,
+                str(verdict.reason)[:120],
+            )
             from src.ingestion.review_reject import reject_to_review
 
             reject_to_review(
@@ -125,6 +134,13 @@ def convert_key(key: str) -> str:
         # markdown, continue with it; otherwise off-ramp to human review.
         markdown = _grok_correct_fallback(local, book)
         if not markdown:
+            logger.warning(
+                "OBSERV phase0.error reason=convert_failed book=%s key=%s detail=%s "
+                "(Grok MD-correction could not recover; off-ramp to review)",
+                book,
+                key,
+                str(exc)[:120],
+            )
             from src.ingestion.review_reject import reject_to_review
 
             reject_to_review(
@@ -172,6 +188,13 @@ def convert_key(key: str) -> str:
 
     tag_source_cold(s3, BUCKET, key)
     logger.info("Converted %s -> %s (%d chars)", key, content_key, len(markdown))
+    logger.info(
+        "OBSERV phase0.converted book=%s chars=%d key=%s content_key=%s",
+        book,
+        len(markdown),
+        key,
+        content_key,
+    )
     return content_key
 
 
@@ -180,6 +203,7 @@ def main() -> int:
     key = os.getenv("CONVERT_KEY", "")
     if not key:
         logger.error("CONVERT_KEY env var not set — nothing to convert")
+        logger.warning("OBSERV phase0.error reason=no_convert_key")
         return 2
     out = convert_key(key)
     return 0 if out else 1

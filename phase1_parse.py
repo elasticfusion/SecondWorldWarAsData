@@ -232,6 +232,34 @@ def _process_document(doc, book_output, logger):
     _save_endnote_refs(doc, section_suffix, book_output, logger)
 
 
+def _observe_phase1_book(book_name, chapters, book_output, logger) -> None:
+    """Emit canonical phase1.parsed (or phase1.skipped anomaly) for one book. Fail-safe."""
+    try:
+        produced = sum(1 for _ in book_output.glob("*-parsed.json"))
+        paragraphs = 0
+        for pf in book_output.glob("*-parsed.json"):
+            try:
+                paragraphs += len(json.loads(pf.read_text()).get("paragraphs") or [])
+            except Exception:  # noqa: BLE001
+                continue
+        if produced:
+            logger.info(
+                "OBSERV phase1.parsed book=%s chapters=%d parsed_files=%d paragraphs=%d",
+                book_name,
+                len(chapters),
+                produced,
+                paragraphs,
+            )
+        else:
+            logger.warning(
+                "OBSERV phase1.skipped book=%s reason=no_parsed_output chapters=%d",
+                book_name,
+                len(chapters),
+            )
+    except Exception as _e:  # noqa: BLE001 - OBSERV must never crash the phase
+        logger.debug("phase1.parsed OBSERV skipped for %s: %s", book_name, _e)
+
+
 def main():
     """Main entry point for Phase 1."""
     base_dir = Path(__file__).parent
@@ -313,7 +341,16 @@ def main():
         except Exception as _e:  # noqa: BLE001 - recording must never crash the phase
             logger.debug("run_scope record skipped for %s: %s", book_name, _e)
 
+        # Canonical domain observability (mirrors Phase 2/3). Fail-safe.
+        _observe_phase1_book(book_name, chapters, book_output, logger)
+
     logger.info("Phase 1 complete: %d chapters parsed", parsed)
+    logger.info(
+        "OBSERV phase1.summary books=%d chapters_parsed=%d status=%s",
+        len(structure),
+        parsed,
+        "ok" if parsed else "anomaly_zero_parsed",
+    )
     try:
         from src.utils.referential_integrity import run_for_phase as _ref_enforce
 
