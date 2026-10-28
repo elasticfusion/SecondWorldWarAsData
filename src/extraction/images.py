@@ -233,25 +233,61 @@ def _relativize(filepath: Path) -> str:
     return str(Path(*parts[-3:])) if len(parts) >= 3 else filepath.name
 
 
+def _ext_to_mime(ext: Optional[str]) -> Optional[str]:
+    """Map a file extension to an image MIME type (schema.org encodingFormat). None if unknown."""
+    if not ext:
+        return None
+    return {
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "png": "image/png",
+        "gif": "image/gif",
+        "webp": "image/webp",
+        "tif": "image/tiff",
+        "tiff": "image/tiff",
+        "bmp": "image/bmp",
+    }.get(ext.lower().lstrip("."))
+
+
+def _image_dimensions(body: bytes) -> Tuple[Optional[int], Optional[int]]:
+    """(width, height) in px from image bytes via PIL, or (None, None). Fail-safe + decompression-
+    bomb guarded (never raises, never crashes the image pass)."""
+    try:
+        import io
+
+        from PIL import Image as _PILImage
+
+        with _PILImage.open(io.BytesIO(body)) as im:
+            w, h = im.size
+        return int(w), int(h)
+    except Exception as exc:  # noqa: BLE001 - dimensions are best-effort metadata
+        logger.debug("image dimensions unavailable: %s", exc)
+        return None, None
+
+
 def _download_image(
     url: str, image_id: str, storage_dir: Path
-) -> Tuple[Optional[str], Optional[str]]:
-    """Download image (SSRF-safe). Returns (relative_local_path, file_format) or (None, None).
+) -> Tuple[Optional[str], Optional[str], Optional[int], Optional[int], Optional[str]]:
+    """Download image (SSRF-safe). Returns (relative_local_path, file_format, width, height,
+    encodingFormat) or (None,)*5 on failure. Media metadata (dims + MIME) is derived from the
+    SAME bytes we download — deterministic, no extra fetch. Fail-safe.
 
     local_copy is stored RELATIVE (to the ``output/`` root, e.g. ``images/files/<id>.jpg``) so
     records are portable across containers/hosts (never an absolute ``/app/...`` path).
     """
     body, ext = fetch_image_bytes(url)
     if body is None:
-        return None, None
+        return None, None, None, None, None
+    width, height = _image_dimensions(body)
+    mime = _ext_to_mime(ext)
     try:
         storage_dir.mkdir(parents=True, exist_ok=True)
         filepath = storage_dir / f"{image_id}.{ext}"
         filepath.write_bytes(body)
-        return _relativize(filepath), ext
+        return _relativize(filepath), ext, width, height, mime
     except Exception as exc:  # noqa: BLE001 - write failure must be non-fatal
         logger.debug("Failed to save %s: %s", url, exc)
-        return None, None
+        return None, None, width, height, mime
 
 
 def _create_image_record(
@@ -298,6 +334,29 @@ def _create_image_record(
         record["Sub-event_Name"] = None
 
     return record
+
+
+def _set_media_metadata(
+    record: Dict[str, Any],
+    image_id: str,
+    width: Optional[int],
+    height: Optional[int],
+    encoding_format: Optional[str],
+) -> None:
+    """Set schema.org media metadata (width/height/encodingFormat) on an image record when known.
+    Null-over-guess; fail-safe (mutates ``record`` in place)."""
+    if width is not None and height is not None:
+        record["width"] = width
+        record["height"] = height
+        logger.debug(
+            "OBSERV image.media_meta image=%s width=%d height=%d fmt=%s",
+            image_id,
+            width,
+            height,
+            encoding_format or "-",
+        )
+    if encoding_format:
+        record["encodingFormat"] = encoding_format
 
 
 def _load_event_data(parsed_file: Path) -> Optional[dict]:
@@ -383,9 +442,13 @@ def _process_single_image(
         date_mention_id, date_val = _find_linked_date(seid, dates_dir)
 
     local_copy = None
+    width = height = None
+    encoding_format = None
     url = img.get("url", "")
     if download and url:
-        local_copy, _ = _download_image(url, image_id, storage_dir)
+        local_copy, _, width, height, encoding_format = _download_image(
+            url, image_id, storage_dir
+        )
 
     record = _create_image_record(
         img,
@@ -398,6 +461,9 @@ def _process_single_image(
         local_copy,
         book,
     )
+    # Tier-1 deterministic media metadata (schema.org images 2.27) — derived from the bytes we
+    # already downloaded; only set when known (null-over-guess). Fail-safe.
+    _set_media_metadata(record, image_id, width, height, encoding_format)
 
     # VISION step: identify the image (don't OCR it). Only when enabled + we have
     # local bytes to look at. Captioner never raises / never fabricates.

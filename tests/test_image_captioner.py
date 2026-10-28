@@ -87,7 +87,9 @@ def test_process_single_image_populates_caption(tmp_path):
     )
     img = {"url": "http://x/x.jpg", "alt_text": "crossroads"}
     # no event data / dirs needed for this path; download already done -> inject local
-    with_download = MagicMock(return_value=(str(img_path), "jpg"))
+    with_download = MagicMock(
+        return_value=(str(img_path), "jpg", 640, 480, "image/jpeg")
+    )
     import unittest.mock as m
 
     with m.patch.object(im, "_download_image", with_download):

@@ -182,6 +182,15 @@ def _build_image_record(
     }
 
 
+def _apply_media_meta(rec: Dict[str, Any], w, h, mime) -> None:
+    """Set schema.org media metadata (width/height/encodingFormat) on an image record when known."""
+    if w is not None and h is not None:
+        rec["width"] = w
+        rec["height"] = h
+    if mime:
+        rec["encodingFormat"] = mime
+
+
 def fetch_section_media(
     record: Dict[str, Any],
     output_dir: Path,
@@ -224,8 +233,12 @@ def fetch_section_media(
             continue
         img_id = str(ulid.new())
         local_copy = None
+        _w = _h = None
+        _mime = None
         if download:
-            local_copy, _fmt = _download_image(resolved["url"], img_id, storage_dir)
+            local_copy, _fmt, _w, _h, _mime = _download_image(
+                resolved["url"], img_id, storage_dir
+            )
         rec = _build_image_record(
             source_section_id=section_id,
             event_id=event_id,
@@ -235,6 +248,8 @@ def fetch_section_media(
             local_copy=local_copy,
         )
         rec["ImageID"] = img_id
+        # Tier-1 deterministic media metadata (schema.org images 2.27), from the bytes we downloaded.
+        _apply_media_meta(rec, _w, _h, _mime)
         write_json_with_lock(images_dir / f"{img_id}.json", rec, entity="images")
         written += 1
     logger.info(
