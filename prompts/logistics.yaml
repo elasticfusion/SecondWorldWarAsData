@@ -51,3 +51,14 @@ rules:
   - Status values: resolved, unresolved, in_progress, worsened
   - Country codes use ISO 3166-1 alpha-3
   - If no logistics issues found for a sub-event, return empty array for that key
+  - |
+    CONJUNCTIONS = SEPARATE ENTITIES. Within a logistics issue, when distinct organizations,
+    places, or people are joined by "and"/"or" or in a comma list, emit ONE object per item in
+    the relevant list (impacted_organizations, impacted_places, impacted_people) — NEVER a single
+    merged entry. Examples:
+    - "VII Corps and V Corps were short of ammunition" -> impacted_organizations has TWO entries:
+      {"name": "VII Corps", ...} and {"name": "V Corps", ...}.
+    - "supplies ran low at St. Lô, Carentan, and Isigny" -> impacted_places has THREE entries,
+      one per place.
+    Likewise, two genuinely distinct logistics problems in one sub-event are TWO array items,
+    not one.

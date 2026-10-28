@@ -100,6 +100,13 @@ rules:
   - current_name is the canonical native toponym derived from context; preserve the source form
     in original_text.
   - If no places found, return empty Place_Mentions array.
+  - |
+    CONJUNCTIONS = SEPARATE PLACES. When distinct places are joined by "and"/"or" or in a comma
+    list, emit ONE Place_Mention per place — NEVER a single merged record. Each gets its own
+    original_text (the verbatim single name) and its own current_name/coordinates. Examples:
+    - "Torquay, Poole, and Salcombe" -> THREE Place_Mentions: original_text "Torquay",
+      "Poole", "Salcombe" respectively.
+    - "between Caen and Falaise" -> TWO Place_Mentions, one "Caen" and one "Falaise".
   - Do NOT extract military units, divisions, corps, armies, or organizations as places.
   - "Entries beginning with numbers (1st, 2nd, 3rd), Roman numerals (I, II, III, IV, V, VI,
     VII), or number words (First, Second, Third) are military units and belong in people_groups,

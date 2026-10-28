@@ -64,3 +64,10 @@ rules:
     convert, or invent a number — unstated specifics come from the weather APIs
   - temperature_unit is "C" or "F"; measurement_system is "metric" or "imperial"
   - Return empty arrays for sub-events with no weather mentions
+  - |
+    CONJUNCTIONS = SEPARATE WEATHER MENTIONS. When distinct places or dates are joined by
+    "and"/"or" or in a comma list, emit ONE weather mention per place/date — NEVER a single
+    merged record spanning several. Examples:
+    - "snow fell on Bastogne and Noville" -> TWO mentions, one place_name "Bastogne", one
+      "Noville" (each with its own PlaceMentionID).
+    - "fog at St. Vith, Malmedy, and Stavelot" -> THREE mentions, one per place.
