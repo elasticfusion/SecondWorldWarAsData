@@ -1059,7 +1059,7 @@ assert the resolved local path is within WORKDIR before download_file. Flagged b
 phase3-durable-revalidate fix; out of scope there.
 
 
-# MULTIMODAL INGESTION GAPS — prioritized epic (from XChannel ch8 analysis, 2026-10-27)
+# MULTIMODAL INGESTION GAPS — prioritized epic (from XChannel ch8 analysis, 2026-10-27)  ✅ COMPLETE (M1-M8 all merged, PRs #587-#594)
 
 Source analysis: https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-8.html — a richly
 multimodal HyperWar page used to stress-test every content type. Each item below is a concrete gap with
@@ -1172,12 +1172,19 @@ legibility=X). 7 tests, radon 0 new C, pytest 2882, dual review BOTH PASS.
 RESIDUAL (folded into RC1 backlog, not M7): bare "Map 1/2/3" TEXT labels with NO [Map X](url) link and no
 image have no ingestable asset — an RC1 extraction concern, nothing to recycle.
 
-## [M8 · LOW · intra-corpus-links] Footnote links to OTHER ibiblio docs as INTERNAL corpus links
-Evidence: `Utah Beach to Cherbourg`, `Omaha Beachhead`, `Small Unit Actions`, cross-chapter `#page329`.
-PARTIALLY handled: the deterministic bibliography pass already makes these bibliography records. GAP
-remnant: no "this cited source IS another document we have / can ingest" linkage, and page-anchor
-cross-refs aren't modeled as intra-corpus navigation. FIX (low priority): mark citations that resolve to
-in-corpus (or ibiblio-ingestable) documents as internal links, enabling source-graph navigation.
+## [M8 · LOW · intra-corpus-links] ✅ DONE (PR #594) — Footnote links to OTHER ibiblio docs as INTERNAL corpus links
+Shipped: `intra_corpus` — classify_link (in_corpus_doc / same_volume_anchor / external, reusing the
+hyperwar_biblio volume recognizer) + process_doc_links (ULID-attributed corpus-graph edges from_SourceSectionID
+via the M5 index) + QUEUE a not-yet-in-corpus cited volume as ANOTHER BATCH (owner directive): SSRF-safe
+fetch_text_safe -> upload to contentrepository/_system/<vol>/ (the content-uploaded front door -> one Phase-1
+launch), TRIPLE-deduped (already-in-corpus + already-queued-this-run + global content-hash). Same-volume
+#page anchors = intra-corpus nav (not re-ingested). Phase-3 gated step intra_corpus_links (links.intra_corpus).
+OBSERV intra_corpus.* + phase3.step. Bundled an M* OBSERVABILITY REMEDIATION (independent-audit-driven):
+fixed 5 silent decision/error paths in M3 image_person_link (no_names/not_people_photo/unresolved/vision_error)
++ M6 chart_source_adapter (_resolve_origin_ulids origin_unresolved) + mypy fixes. 8+2 tests, radon 0 new C,
+mypy PASS, pytest 2892, dual review BOTH PASS.
+
+Evidence (original): `Utah Beach to Cherbourg`, `Omaha Beachhead`, `Small Unit Actions`, cross-chapter `#page329`.
 
 SEQUENCING: M1 (self-contained, reuses #585) -> M2 (unblocks the image chain) -> M3/M4 (person linkage +
 footnote assets) -> M5/M6/M7 (place/chart/low-q maps) -> M8 (polish). RC1 is the common unlock for
