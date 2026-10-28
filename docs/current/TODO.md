@@ -10,6 +10,21 @@ The curated list of what is still OPEN. Each points to its detail section lower 
 Everything not listed here is DONE (see §7 COMPLETED + the dated review sections).
 
 ### HIGH
+- **[HIGH · extraction/enrichment] Group records have NO `group_name`/`name` field — ALL group enrichment + OpenSERP skipped.**
+  Found in the synchronous XChannel-8 E2E (2026-10-28): Phase 2 wrote people_groups records whose ONLY keys are
+  `nationality`, `event_mentions`, `GroupID`, `_schema_version`, `_last_updated` — the unit name (e.g. "1st Division")
+  survives ONLY in the filename + `event_mentions[].Sub_event_Name`, never as a top-level field. Group enrichment gates on
+  `data.get("group_name")` → empty → `OBSERV groups.enrich_skip_no_name` for all 6 groups → `groups.summary needed=0
+  enriched=0 skipped=6` → OpenSERP never searches groups (`openserp_groups enriched=0`). FIX: Phase 2 must persist the
+  group name (populate `group_name`/`name` from the extracted unit), OR enrichment must derive it from the filename/mention.
+  Blocks all group web-enrichment. (Places were fine — satisfied by geocoder, `needed=0`. Link-review empty is correct:
+  the source HTML has 0 links/0 footnotes.)
+- **[HIGH · provenance] event_provenance stamp read the WRONG source_section path (fix STAGED, pending PR).**
+  Found same E2E: `OBSERV event_provenance.stamp resolved=0 reason=no_source_sections` even though 2 source_section records
+  existed — they live at `content/<book>/source_section/*.json`, but `_build_event_section_index` read top-level
+  `output/source_section/`. Fixed locally to glob BOTH (nested + top-level) + a regression test; verified against the real
+  run data (index resolves, event + 6 sub-events stamped). Needs gate→PR→review→merge→redeploy.
+
 - **[HIGH · schema-design] schema.org entity enhancements** — ✅ LARGELY DONE (2026-10-27/28).
   Proposal `docs/current/design/SCHEMA_ORG_REVIEW.md`; ADOPTED + POPULATED: places 2.30 (sameAs/
   containedInPlace/containsPlace/geo/additionalProperty/elevation_m, PR #596) + images 2.27 (14 ImageObject
