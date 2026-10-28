@@ -13,7 +13,16 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
 - **[HIGH · data-quality] Deterministic-vs-Grok YIELD-RATIO quality signal (design, owner-aligned 2026-10-28).** Cumulative,
   self-calibrating data-quality assessment: a DETERMINISTIC high-recall scan of the source text produces an expected-yield
   FLOOR per entity type; Grok's extracted count is measured against it; `ratio = produced / deterministic`. grok≈det (25 vs
-  25-28) = good; grok≪det (25 vs 0-5) = data-quality ALARM (the starvation signature). Baseline regenerated from each document
+  25-28) = good; grok≪det (25 vs 0-5) = data-quality ALARM (the starvation signature). SEVERITY LADDER (owner 2026-10-28 — a
+  deterministic shortfall may JEOPARDIZE AN ENTIRE BOOK, so worst case must STOP THE JOB until root cause is determined):
+    • ratio≈1 -> INFO, proceed (healthy).
+    • one entity moderately low (ratio ~0.3-0.5, modest baseline) -> WARN + recall-gap review, proceed (isolated dip).
+    • BOOK-JEOPARDIZING signature -> **FAIL-STOP**: produced==0 while deterministic>=floor on a single entity, OR shortfall
+      across >=2 entity types simultaneously (the paragraph_numbers fingerprint: upstream fault starves ALL passes). Emit loud
+      `OBSERV yield.fail_stop` + `raise SystemExit(nonzero)` at END of Phase 2 so ecs_entrypoint (subprocess returncode!=0 ->
+      _notify_failure + sys.exit, lines 816-841) HALTS the chain (Phase 3 never triggers), fires a failure notification, and
+      PRESERVES partial output for diagnosis. Check runs per-event/early so a 20-chapter book aborts at chapter 1, not after
+      burning spend on a corrupt corpus. Threshold (floor, min-baseline, single-vs-multi-entity) tunable in config.
   (no hand-maintained golden list); ratios accrue over many books into a WEIGHTED assessment. Reuses existing assets:
   people_group_aliases/equipment_aliases/place_aliases.yaml, data/unit_nicknames.yaml, military_equipment.yaml, unit-designator
   regex (`N(st|d|th) Division/Corps/Army`, `Force [A-Z]`, RAF, OB WEST). Alarm only when baseline >= min (e.g. 5) & ratio <
