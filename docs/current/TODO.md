@@ -68,7 +68,8 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   queued batches for this book, either (a) block/defer the bibliography step rather than snapshot an empty set,
   or (b) mark the book "bibliography-incomplete, re-enrich pending" so a later poller-drained run fills it.
   Ties to the disabled-batch-poller [HIGH] item — a disabled poller turns this race into a guaranteed miss.
-  Investigated during the XChannel-8 E2E (2026-10-28). Unlike Phase 2/3 (rich `OBSERV <comp>.<event>` +
+  ✅ DONE (PR #604): added canonical OBSERV phase0.converted/skipped/rejected/error + phase1.parsed/
+  skipped/summary (fail-safe, +4 tests). ORIGINAL FINDING: Investigated during the XChannel-8 E2E (2026-10-28). Unlike Phase 2/3 (rich `OBSERV <comp>.<event>` +
   summaries), phase0_convert.py has 0 OBSERV lines and phase1_parse.py has 0 OBSERV lines — they rely
   entirely on the generic `ecs_entrypoint` wrapper (`[step] ...` + a success-path `phase_complete` w/
   duration) + (Phase 1 only) a single `OBSERV run_scope.record`. Gaps: (a) phase0 convert OUTCOME is a plain
