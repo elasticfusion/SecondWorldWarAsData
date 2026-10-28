@@ -886,8 +886,39 @@ def _prepare_phase1() -> None:
         logger.warning("Failed to reset dedup status: %s", e)
 
 
+def _env_batch_override(phase_key: str) -> "Optional[bool]":
+    """Per-phase batch override from env (BATCH_PHASE2 / BATCH_PHASE3), or None if unset.
+
+    A NO-REBUILD testing escape hatch: config.yaml is baked into the image at build time
+    (Dockerfile COPY config.yaml), so flipping batch.<phase> there needs a rebuild. An env var
+    can be set per-task (task-def / trigger) without rebuilding. Truthy: 1/true/yes/on. Falsy:
+    0/false/no/off. An unset or UNPARSEABLE value returns None (caller falls back to config —
+    i.e. today's behavior is unchanged when the env var is absent).
+    """
+    if not phase_key:
+        return None
+    raw = os.environ.get(f"BATCH_{phase_key.upper()}")
+    if raw is None:
+        return None
+    val = raw.strip().lower()
+    if val in ("1", "true", "yes", "on"):
+        return True
+    if val in ("0", "false", "no", "off"):
+        return False
+    logger.warning(
+        "Ignoring unparseable BATCH_%s=%r (expected true/false) — falling back to config",
+        phase_key.upper(),
+        raw,
+    )
+    return None
+
+
 def _should_use_batch_mode(phase_script: str) -> bool:
-    """Check if batch mode is enabled for this phase in config.
+    """Check if batch mode is enabled for this phase.
+
+    Precedence: a per-phase env override (BATCH_PHASE2 / BATCH_PHASE3) WINS over config — a
+    no-rebuild testing switch (config.yaml is build-baked). When the env var is absent, behavior is
+    EXACTLY the config-driven path below (back-compat).
 
     Returning False here routes the run through the IN-PROCESS extractor path,
     which does NOT enqueue a batch_job# record for the poller (only the
@@ -898,15 +929,26 @@ def _should_use_batch_mode(phase_script: str) -> bool:
     """
     import yaml
 
+    phase_key = (
+        "phase2"
+        if "phase2" in phase_script
+        else "phase3" if "phase3" in phase_script else ""
+    )
+
+    override = _env_batch_override(phase_key)
+    if override is not None:
+        logger.info(
+            "Batch mode %s for %s via env BATCH_%s override (config.yaml ignored)",
+            "ENABLED" if override else "DISABLED",
+            phase_key,
+            phase_key.upper(),
+        )
+        return override
+
     try:
         with open("/app/config.yaml", encoding="utf-8") as f:
             cfg = yaml.safe_load(f)
         batch_cfg = cfg.get("batch", {})
-        phase_key = (
-            "phase2"
-            if "phase2" in phase_script
-            else "phase3" if "phase3" in phase_script else ""
-        )
         if phase_key and batch_cfg.get(phase_key, False):
             logger.info("Batch mode enabled for %s — using submit-only flow", phase_key)
             return True
