@@ -352,3 +352,39 @@ anything schema.org offers.
   replacement.
 - Collapsing our fuzzy-date / source-qualification / military-domain fields into thinner schema.org
   equivalents.
+
+
+---
+
+## 11. How these fields get POPULATED — prompt vs. deterministic (design principle)
+
+Adding a field to a schema does nothing on its own; something must WRITE it. The schema.org
+additions (places 2.30, images 2.27) are additive placeholders that are **orphan (always null)**
+until a producer is wired. The governing rule for choosing the producer:
+
+> **Prompt the LLM ONLY for fields that must be read from the SOURCE TEXT. Fields that are minted,
+> enriched, geocoded, measured, or cross-walked are populated by DETERMINISTIC code — never prompted.**
+
+We deliberately do **NOT** show the model the full enforced `*_output.py` schema. Extraction uses a
+**hand-curated compact example** in the prompt (`{schema}` placeholder) plus a **narrower Pydantic
+model** (`PeopleOutput`/`PlaceOutput`…) as the structured-output constraint — both a *subset* of the
+enforced schema. Showing the full schema would be harmful: it invites the model to **hallucinate**
+fields it must not author (ULIDs we mint server-side, `SourceSectionID`, `sameAs`, geocoded coords,
+`elevation_m`, image dimensions), violating `null-over-fake`, reopening the "trust an LLM id" hole,
+and bloating tokens/cost for no gain.
+
+Therefore the new schema.org fields are classified by producer:
+
+| Field | Producer | Why |
+|---|---|---|
+| images `width`/`height`/`encodingFormat` | **deterministic (Phase 2)** ✅ DONE | computed from the bytes we already download (PIL) |
+| images `contentLocation` | **deterministic (Phase 3)** ✅ DONE — the M3/M5 linker's resolved PlaceID | already computed; now written to the image record |
+| places `sameAs` | **deterministic (Phase 3)** ✅ PARTIAL — folds the already-resolved `wikipedia_url`/`grokipedia_url` into `sameAs[]` (no new fetch). Wikidata-QID / GeoNames-id are TIER-2 (geocoder must CAPTURE them — not already in hand) | identity cross-walk |
+| places `elevation_m` | **TIER-2 (not yet)** — the geocoder does not return elevation today; needs a new capture/source | a measurement, not already-fetched |
+| places `containedInPlace`/`containsPlace` | **deterministic** — hierarchy resolver (ID-typed) | graph edge, not a text fact |
+| places `geo` (shape) | mixed — map-as-source vision / future | a shape from a map |
+| images licensing (`creditText`/`copyrightNotice`/…), `dateCreated`, `caption` | **source/prompt** (if ever) | genuinely text/source-derived |
+
+A corollary follow-up worth doing (NOT "show the full schema"): a **consistency guard** that the
+extraction Pydantic models stay a SUBSET of the enforced schema, and that the source-derived fields
+each have a prompt slot — the inverse of the fingerprint guard, catching silent prompt/schema drift.

@@ -27,6 +27,26 @@ from src.utils.file_lock import write_json_with_lock
 
 logger = logging.getLogger(__name__)
 
+
+def _add_place_sameas(place: dict) -> None:
+    """Tier-1 (deterministic, no new fetch): fold the already-resolved external URLs
+    (wikipedia_url / grokipedia_url) into schema.org ``sameAs[]`` — the identity cross-walk.
+    Deduped, order-preserving, idempotent. Fail-safe (mutates ``place`` in place)."""
+    try:
+        existing = place.get("sameAs")
+        same: list = list(existing) if isinstance(existing, list) else []
+        for key in ("wikipedia_url", "grokipedia_url"):
+            u = place.get(key)
+            if isinstance(u, str) and u.strip() and u not in same:
+                same.append(u.strip())
+        if same:
+            place["sameAs"] = same
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - provenance enrichment must never crash the pass
+        logger.debug("sameAs derivation skipped: %s", e)
+
+
 SKIP_FILES = frozenset(
     ["index.json", "duplicate_report.json", ".processed_events.json"]
 )
@@ -203,6 +223,7 @@ def enrich_place_from_grokipedia(place: dict) -> bool:
         return False
 
     place["grokipedia_url"] = url
+    _add_place_sameas(place)  # Tier-1: fold into sameAs[]
     logger.debug("Grokipedia enriched place %s → %s", name, url)
     return True
 
@@ -238,6 +259,7 @@ def enrich_place_from_wikipedia(place: dict) -> bool:
         return False
 
     place["wikipedia_url"] = wiki_data["wikipedia_url"]
+    _add_place_sameas(place)  # Tier-1: fold the already-resolved urls into sameAs[]
     if wiki_data.get("image") and not place.get("images"):
         place.setdefault("images", []).insert(
             0,
