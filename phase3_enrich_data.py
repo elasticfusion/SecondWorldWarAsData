@@ -350,9 +350,23 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
             "intra_corpus_links",
             lambda: _process_intra_corpus_links(out),
         )
+    # Provenance: stamp a resolvable SourceSectionID onto every content event (+ sub-events) from
+    # the committed source_section records, so entity -> event -> SECTION is a hard enforceable ID
+    # chain (not filename-convention only). Always runs; fail-safe.
+    enriched += run_step(
+        "event_provenance_stamp",
+        lambda: _stamp_event_provenance(out),
+    )
     # Durable OpenSERP effectiveness/health metrics -> output/metrics/openserp_metrics.json
     _write_openserp_metrics(out)
     return enriched
+
+
+def _stamp_event_provenance(out) -> int:
+    """Stamp SourceSectionID onto content events from source_section records. Fail-safe -> 0."""
+    from src.extraction.event_provenance import stamp_event_source_sections
+
+    return stamp_event_source_sections(out)
 
 
 def _load_parsed_docs(out) -> list:
@@ -903,6 +917,12 @@ def main():
             _ref_enforce(args.output_dir, phase="Phase 3 (local)")
         except Exception as _e:  # noqa: BLE001 - enforcement must never crash a phase
             logger.warning("referential-integrity enforcement skipped: %s", _e)
+        try:
+            from src.utils.provenance_integrity import run_for_phase as _prov_enforce
+
+            _prov_enforce(args.output_dir, phase="Phase 3 (local)")
+        except Exception as _e:  # noqa: BLE001 - enforcement must never crash a phase
+            logger.warning("provenance-completeness enforcement skipped: %s", _e)
         try:
             from scripts.validate_phase3 import run as _validate_phase3
 

@@ -104,6 +104,17 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   recognize+relevancy-gate all links→human review, terrain/aerial→Place, chart-as-source, map legibility
   gate, intra-corpus links→batch.
 - **[CRITICAL] ULID attribution across ALL M-issues RESOLVED** (M3/M4 backfilled, PR #595).
+- **[provenance] Event→source traceability HARDENED** (2026-10-28): (1) Phase 3 now STAMPS a resolvable
+  `Event.SourceSectionID` (+ each Sub-event) from the committed source_section records (events 2.24→2.25),
+  so entity → event → SECTION is a hard, validator-enforceable ID chain (was filename-convention only).
+  (2) New SCHEMA-DRIVEN provenance-completeness guard `src/utils/provenance_integrity.py` wired into the
+  Phase 2 + Phase 3 end-of-phase enforcement: covers EVERY registry entity, flags records missing a
+  populated provenance edge + leftover `TODO - Add …` placeholder attribution (non-fatal, OBSERV
+  `provenance.audit`/`provenance.entity` — observability tested). Validated finding (corrects an earlier
+  shallow read): deep schema walk shows EVERY persisted entity declares a provenance edge — casualties &
+  bibliography carry nested `EventID`/`Sub-eventID` (+ bibliography `mentions[]`), so there are NO
+  structural `none` gaps. The real residual gap is DATA (unpopulated `TODO` author/chapter attribution),
+  now surfaced by the guard. event_provenance stamp emits OBSERV `event_provenance.stamp`.
 - **Schema evolution discipline**: history archive `src/schemas/history/` + Change Log + fingerprint-guard
   reminder (PR #591).
 

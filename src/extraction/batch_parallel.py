@@ -118,8 +118,14 @@ def _entity_target_for(entity_file: Path) -> str:
     entity is unknown (keeps the prior conservative behavior for unrecognized dirs)."""
     try:
         from src.utils.file_lock import _resolve_entity_type
+        from src.schemas import ENTITY_SCHEMA_VERSIONS
 
-        return _entity_version(_resolve_entity_type(entity_file))
+        resolved = _resolve_entity_type(entity_file)
+        # _resolve_entity_type echoes the dir name verbatim for unrecognized dirs; entity_version
+        # would then MIN-fallback. Honor the documented contract: unknown -> events version.
+        if resolved not in ENTITY_SCHEMA_VERSIONS:
+            return _entity_version("events")
+        return _entity_version(resolved)
     except Exception:  # noqa: BLE001 - never block a mention-add on target resolution
         return _entity_version("events")
 
