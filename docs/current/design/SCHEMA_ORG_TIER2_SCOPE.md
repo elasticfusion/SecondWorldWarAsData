@@ -21,7 +21,7 @@ Do **T2-A first** — the finding below makes it nearly free.
 
 ---
 
-## 1. T2-A — Wikidata QID into `places.sameAs`  ⭐ (do first)
+## 1. T2-A — Wikidata QID into `places.sameAs`  ⭐ ✅ IMPLEMENTED (2026-10-27)
 
 **Finding (important):** the places Wikipedia enrichment ALREADY calls the MediaWiki API with
 `prop=extracts|pageimages|categories` (`src/extraction/enrich_places.py:112` `_fetch_place_wikipedia_full`,
