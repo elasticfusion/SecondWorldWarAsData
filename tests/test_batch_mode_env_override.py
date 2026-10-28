@@ -106,3 +106,90 @@ def test_build_env_overrides_absent_batch_not_added(monkeypatch):
     env = T._build_env_overrides("", [{"name": "CONVERT_KEY", "value": "k"}])
     names = {e["name"] for e in env}
     assert names == {"CONVERT_KEY"}  # no BOOK_NAME (empty), no BATCH_*
+
+
+# --- explicit-disable detection + St. Vith guard honoring it ---
+
+
+def test_explicitly_disabled_env_falsy(monkeypatch):
+    monkeypatch.setenv("BATCH_PHASE2", "false")
+    assert E._batch_explicitly_disabled("phase2_extract.py") is True
+
+
+def test_explicitly_disabled_env_truthy_is_false(monkeypatch):
+    monkeypatch.setenv("BATCH_PHASE2", "true")
+    assert E._batch_explicitly_disabled("phase2_extract.py") is False
+
+
+def test_explicitly_disabled_config_false(monkeypatch, tmp_path):
+    monkeypatch.delenv("BATCH_PHASE2", raising=False)
+    cfg = tmp_path / "config.yaml"
+    cfg.write_text("batch:\n  phase2: false\n")
+    real = open
+    monkeypatch.setattr(
+        "builtins.open",
+        lambda p, *a, **k: (
+            real(cfg, *a, **k) if str(p) == "/app/config.yaml" else real(p, *a, **k)
+        ),
+    )
+    assert E._batch_explicitly_disabled("phase2_extract.py") is True
+
+
+def test_explicitly_disabled_config_absent_key_is_false(monkeypatch, tmp_path):
+    monkeypatch.delenv("BATCH_PHASE2", raising=False)
+    cfg = tmp_path / "config.yaml"
+    cfg.write_text("batch:\n  phase3: false\n")  # no phase2 key
+    real = open
+    monkeypatch.setattr(
+        "builtins.open",
+        lambda p, *a, **k: (
+            real(cfg, *a, **k) if str(p) == "/app/config.yaml" else real(p, *a, **k)
+        ),
+    )
+    assert E._batch_explicitly_disabled("phase2_extract.py") is False
+
+
+def test_explicitly_disabled_read_error_is_false(monkeypatch):
+    monkeypatch.delenv("BATCH_PHASE2", raising=False)
+    monkeypatch.setattr(
+        "builtins.open", lambda *a, **k: (_ for _ in ()).throw(OSError("boom"))
+    )
+    # a READ FAILURE must NOT be treated as an explicit disable (St. Vith stays safe)
+    assert E._batch_explicitly_disabled("phase2_extract.py") is False
+
+
+def test_guard_strips_batch_when_explicitly_disabled(monkeypatch):
+    monkeypatch.setenv("ECS_TASK_ID", "t1")
+    monkeypatch.setenv("BATCH_PHASE2", "false")
+
+    class _Sync:
+        def stop(self):
+            raise AssertionError("must NOT force submit-only on explicit disable")
+
+    handled, args = E._resolve_ecs_batch_args(
+        "phase2_extract.py", ["--batch", "--book", "X"], "phase2_extract", _Sync()
+    )
+    assert handled is False
+    assert "--batch" not in args and "--book" in args
+
+
+def test_guard_force_submits_when_ambiguous(monkeypatch):
+    monkeypatch.setenv("ECS_TASK_ID", "t1")
+    monkeypatch.delenv("BATCH_PHASE2", raising=False)
+    # config read fails -> NOT explicit disable -> must force submit-only
+    monkeypatch.setattr(
+        "builtins.open", lambda *a, **k: (_ for _ in ()).throw(OSError("boom"))
+    )
+    called = {"stop": False, "submit": False}
+    monkeypatch.setattr(
+        E, "run_submit_only", lambda *a, **k: called.__setitem__("submit", True)
+    )
+
+    class _Sync:
+        def stop(self):
+            called["stop"] = True
+
+    handled, _ = E._resolve_ecs_batch_args(
+        "phase2_extract.py", ["--batch"], "phase2_extract", _Sync()
+    )
+    assert handled is True and called["submit"] and called["stop"]
