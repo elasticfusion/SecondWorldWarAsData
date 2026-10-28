@@ -90,8 +90,15 @@ def _validate_before_write(data: Dict, entity: str) -> bool:
 # --- OpenSERP effectiveness/health metrics (per Phase-3 run) ---------------------------------
 _metrics_lock = threading.Lock()
 _METRIC_KEYS = (
+    # entities_eligible is the expected-yield BASELINE: how many records were real
+    # candidates for search (loadable, not recently-searched, with a usable name). Without
+    # it, `entities_searched=1` collapsing from an eligible pool of 14 reads as "ok".
+    "entities_eligible",
     "entities_searched",
     "entities_enriched",
+    # entities_skipped_no_name counts the per-entity silent `continue` on missing/too-short
+    # name (the 6/6 groups enrich_skip_no_name class) so a mass skip is no longer invisible.
+    "entities_skipped_no_name",
     "queries_issued",
     "results_returned",
     "zero_result_queries",
@@ -110,6 +117,33 @@ def _metric(key: str, n: int = 1) -> None:
         _metrics[key] = _metrics.get(key, 0) + n
 
 
+def _record_eligible() -> None:
+    """Count a record that IS a candidate for search (passed the name/recency gate). This is the
+    expected-yield baseline used by write_metrics to flag `searched << eligible` starvation.
+    """
+    _metric("entities_eligible")
+
+
+def _record_skip_no_name() -> None:
+    """Count a record skipped because it has no usable name (missing/too short). Fail-safe: a
+    large skip fraction is surfaced as a WARN in write_metrics instead of a silent `continue`.
+    """
+    _metric("entities_skipped_no_name")
+
+
+def _usable_entity_name(name: Any, min_len: int = 1) -> bool:
+    """True if `name` is a usable search anchor. Counts the skip as a metric side effect when it
+    is NOT usable, so every driver's name-gate feeds the aggregate skip counter. Never raises.
+    """
+    try:
+        ok = bool(name) and len(str(name).strip()) >= min_len
+    except Exception:  # noqa: BLE001 - treat any oddity as unusable, fail-safe
+        ok = False
+    if not ok:
+        _record_skip_no_name()
+    return ok
+
+
 def reset_metrics() -> None:
     with _metrics_lock:
         for k in _METRIC_KEYS:
@@ -123,9 +157,13 @@ def get_metrics() -> Dict[str, Any]:
     searched = m["entities_searched"] or 1
     verified = (m["verify_yes"] + m["verify_no"]) or 1
     queries = m["queries_issued"] or 1
+    eligible = m.get("entities_eligible", 0) or 1
     m["enrichment_rate"] = round(m["entities_enriched"] / searched, 3)
     m["verify_pass_rate"] = round(m["verify_yes"] / verified, 3)
     m["zero_result_rate"] = round(m["zero_result_queries"] / queries, 3)
+    # search_rate = searched / eligible. A value far below 1.0 means most candidates were
+    # never searched (the searched=1-of-14 starvation this baseline exists to catch).
+    m["search_rate"] = round(m["entities_searched"] / eligible, 3)
     return m
 
 
@@ -160,35 +198,80 @@ def write_metrics(output_dir: Any) -> Dict[str, Any]:
         )
         # Canonical, greppable rollup + anomaly (the human "OpenSERP metrics" line above is not
         # OBSERV-keyed). Rates as int permille to keep the line int-only (no log-forging surface).
-        logger.info(
-            "OBSERV openserp.summary searched=%d enriched=%d queries=%d results=%d zero=%d "
-            "verify_yes=%d verify_no=%d breaker_opened=%d items_added=%d hit_permille=%d",
-            snap["entities_searched"],
-            snap["entities_enriched"],
-            snap["queries_issued"],
-            snap["results_returned"],
-            snap["zero_result_queries"],
-            snap["verify_yes"],
-            snap["verify_no"],
-            snap["breaker_opened"],
-            snap["items_added"],
-            int(snap["enrichment_rate"] * 1000),
-        )
-        if snap["breaker_opened"]:
-            logger.warning(
-                "OBSERV openserp.anomaly circuit_breaker_opened=%d "
-                "(consecutive empty/failed searches — OpenSERP degraded/unreachable)",
-                snap["breaker_opened"],
-            )
-        elif snap["entities_searched"] > 0 and snap["entities_enriched"] == 0:
-            logger.warning(
-                "OBSERV openserp.anomaly 0-of-%d entities enriched "
-                "(service down, or every result rejected by verify?)",
-                snap["entities_searched"],
-            )
+        _emit_openserp_summary(snap)
+        _emit_openserp_anomalies(snap)
     except Exception as e:  # noqa: BLE001 - metrics are best-effort
         logger.debug("Could not write OpenSERP metrics: %s", e)
     return snap
+
+
+def _emit_openserp_summary(snap: Dict[str, Any]) -> None:
+    """Emit the canonical OBSERV openserp.summary rollup (now carrying the `eligible` baseline
+    so `searched` can be read against the candidate pool, not in isolation). Never raises.
+    """
+    logger.info(
+        "OBSERV openserp.summary eligible=%d searched=%d enriched=%d skipped_no_name=%d "
+        "queries=%d results=%d zero=%d verify_yes=%d verify_no=%d breaker_opened=%d "
+        "items_added=%d hit_permille=%d search_permille=%d",
+        snap.get("entities_eligible", 0),
+        snap["entities_searched"],
+        snap["entities_enriched"],
+        snap.get("entities_skipped_no_name", 0),
+        snap["queries_issued"],
+        snap["results_returned"],
+        snap["zero_result_queries"],
+        snap["verify_yes"],
+        snap["verify_no"],
+        snap["breaker_opened"],
+        snap["items_added"],
+        int(snap["enrichment_rate"] * 1000),
+        int(snap.get("search_rate", 0) * 1000),
+    )
+
+
+# A run where fewer than this fraction of eligible candidates were actually searched is treated
+# as starvation (e.g. searched=1 of eligible=14 -> 0.07). Independent of the breaker signal.
+_SEARCH_STARVATION_RATIO = 0.5
+# A run where this fraction (or more) of candidates were dropped for a missing/too-short name is
+# surfaced as its own anomaly (the 6/6 groups enrich_skip_no_name class).
+_SKIP_NO_NAME_RATIO = 0.5
+
+
+def _emit_openserp_anomalies(snap: Dict[str, Any]) -> None:
+    """Emit OBSERV openserp.anomaly WARNINGs. Every check is INDEPENDENT (no elif): a breaker-open
+    run can ALSO be 0-enriched and/or starved, and masking one behind another is exactly how the
+    searched=1-of-14 signal was lost. Never raises."""
+    if snap["breaker_opened"]:
+        logger.warning(
+            "OBSERV openserp.anomaly circuit_breaker_opened=%d "
+            "(consecutive empty/failed searches — OpenSERP degraded/unreachable)",
+            snap["breaker_opened"],
+        )
+    # INDEPENDENT (was elif): breaker-open must no longer mask the 0-enriched starvation signal.
+    if snap["entities_searched"] > 0 and snap["entities_enriched"] == 0:
+        logger.warning(
+            "OBSERV openserp.anomaly 0-of-%d entities enriched "
+            "(service down, or every result rejected by verify?)",
+            snap["entities_searched"],
+        )
+    eligible = snap.get("entities_eligible", 0)
+    searched = snap["entities_searched"]
+    if eligible > 0 and searched < eligible * _SEARCH_STARVATION_RATIO:
+        logger.warning(
+            "OBSERV openserp.anomaly searched=%d-of-eligible=%d "
+            "(mass search starvation — candidates present but not searched)",
+            searched,
+            eligible,
+        )
+    skipped = snap.get("entities_skipped_no_name", 0)
+    considered = skipped + eligible
+    if considered > 0 and skipped >= considered * _SKIP_NO_NAME_RATIO:
+        logger.warning(
+            "OBSERV openserp.anomaly skipped_no_name=%d-of-%d "
+            "(large fraction of records dropped for missing/too-short name)",
+            skipped,
+            considered,
+        )
 
 
 def _render_queries(query_file: str, category: str, **kwargs) -> List[str]:
@@ -1421,8 +1504,9 @@ def _collect_people_candidates(
             continue
 
         name = data.get("name", "")
-        if not name:
+        if not _usable_entity_name(name):
             continue
+        _record_eligible()
 
         candidates.append(_collect_person_candidates(f, name, data, openserp_url))
     return candidates
@@ -1455,8 +1539,9 @@ def enrich_equipment_with_openserp(
             continue
 
         name = data.get("common_name", data.get("name", ""))
-        if not name:
+        if not _usable_entity_name(name):
             continue
+        _record_eligible()
 
         changed = enrich_one_equipment(data, openserp_url, grok_client)
         if changed:
@@ -1544,6 +1629,7 @@ def _process_one_source_section(
     if _openserp_recently_searched(data):
         return False
 
+    _record_eligible()
     op_name = operation["name"]
     before = len(data.get("primary_sources") or [])
     changed = enrich_one_source_section(data, openserp_url, grok_client)
@@ -1671,11 +1757,12 @@ def enrich_groups_with_openserp(
             break
 
         name = data.get("group_name", "")
-        if not name or len(name) < 3:
+        if not _usable_entity_name(name, min_len=3):
             continue
 
         if _openserp_recently_searched(data):
             continue
+        _record_eligible()
 
         changed = enrich_one_group(
             data, openserp_url, grok_client, output_root=groups_dir.parent

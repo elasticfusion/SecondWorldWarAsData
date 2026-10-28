@@ -774,12 +774,29 @@ def _collect_verified_candidates(
 _openserp_down = False
 
 
+def _mark_backend_down(entry: Optional[Dict]) -> None:
+    """Fail-safe: flag that an enrichment backend (OpenSERP) was unavailable while resolving this
+    entry, so a resulting not_found is recorded as `backend_down` (a transient outage) rather than
+    an authoritative "no copy exists". Never raises."""
+    try:
+        if isinstance(entry, dict):
+            entry["_backend_down"] = True
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability tagging must never break resolution
+        pass
+
+
 def _search_openserp_archive(
     ref: str, openserp_url: str, grok_client: Any = None, entry: Dict = None
 ) -> Optional[str]:
     """Search OpenSERP for digitized copies of archive documents."""
     global _openserp_down
     if _openserp_down:
+        # OpenSERP was disabled earlier this run (transient outage). A None here is NOT evidence
+        # that no copy exists — tag the entry so a resulting not_found is recorded as
+        # `backend_down`, never as an authoritative "no copy exists" absence.
+        _mark_backend_down(entry)
         return None
 
     from src.utils.search_cache import cache_result, get_cached
@@ -817,6 +834,7 @@ def _search_openserp_archive(
     except Exception as e:
         logger.warning("OpenSERP unreachable, disabling for this run: %s", e)
         _openserp_down = True
+        _mark_backend_down(entry)
         return None
 
     # Only negative-cache a GENUINE miss (at least one query returned 200 with no usable result).
@@ -1985,6 +2003,10 @@ def _process_bib_file(
     from src.utils.file_lock import write_json_with_lock
 
     status = data.get("search_status") or "not_found"
+    # Pop the transient-outage marker (never persisted) and derive the accounting status: a
+    # not_found that happened while OpenSERP was down is reported as `backend_down`, not an
+    # authoritative absence. On-disk search_status is unchanged (schema-valid).
+    account_status = _consume_backend_down(data, status)
 
     # Narrative footnote, not a bibliographic reference: the deterministic pass captures every
     # non-stub footnote as a bibliography candidate, but the resolver recognizes some as
@@ -2015,7 +2037,22 @@ def _process_bib_file(
     # NARA vs archive_org vs local-holding breakdown (and NARA success rate) is visible.
     if status == "resolved":
         _observe_resolved(f, data)
-    return (status, cached is not None, "")
+    return (account_status, cached is not None, "")
+
+
+def _consume_backend_down(data: Dict[str, Any], status: str) -> str:
+    """Pop the internal `_backend_down` marker (set when OpenSERP was unavailable while resolving
+    this entry) so it is NEVER persisted (the bibliography schema is additionalProperties=False),
+    and remap a resulting `not_found` to the ACCOUNTING status `backend_down`. The on-disk
+    `search_status` stays schema-valid (`not_found`); only the run's telemetry distinguishes a
+    transient outage from an authoritative absence. Never raises."""
+    try:
+        backend_down = bool(data.pop("_backend_down", False))
+    except Exception:  # noqa: BLE001 - defensive
+        backend_down = False
+    if backend_down and status == "not_found":
+        return "backend_down"
+    return status
 
 
 def _resolve_or_reuse(
@@ -2170,8 +2207,18 @@ def _account_bib_status(stats: Dict[str, int], status: str, was_deduped: bool) -
     if was_deduped:
         stats["deduped"] += 1
     stats[status if status in stats else "not_found"] += 1
+    # backend_down is a TRANSIENT outage, not an authoritative miss — a later run retries it, so
+    # it must NOT be queued for human "not found online" disposition (that would launder a
+    # transient outage into a permanent human-review item).
     return (
-        status not in ("resolved", "not_citation", "skipped", "held_unprocessed")
+        status
+        not in (
+            "resolved",
+            "not_citation",
+            "skipped",
+            "held_unprocessed",
+            "backend_down",
+        )
         and not was_deduped
     )
 
@@ -2236,6 +2283,7 @@ def resolve_bibliography_dir(
             "deduped",
             "held_unprocessed",
             "reference_identified",
+            "backend_down",
         )
     }
     skip_files = {"index.json", "review_queue.json"}
@@ -2323,16 +2371,25 @@ def _log_bib_resolution_summary(
     try:
         logger.info(
             "OBSERV bibliography.resolve_summary in=%d resolved=%d ref_identified=%d "
-            "not_found=%d not_citation=%d queued=%d held=%d errors=%d",
+            "not_found=%d backend_down=%d not_citation=%d queued=%d held=%d errors=%d",
             processed,
             stats["resolved"],
             stats["reference_identified"],
             stats["not_found"],
+            stats.get("backend_down", 0),
             stats["not_citation"],
             stats["queued"],
             stats["held_unprocessed"],
             stats["errors"],
         )
+        # backend_down is a TRANSIENT outage recorded distinctly from not_found so it is never
+        # read as "no copy exists". Surface it independently (a later run retries these).
+        if stats.get("backend_down", 0) > 0:
+            logger.warning(
+                "OBSERV bibliography.resolve_anomaly backend_down=%d "
+                "(OpenSERP outage — these are NOT authoritative not_found, retry next run)",
+                stats["backend_down"],
+            )
         # A real citation is one we could plausibly resolve: exclude not_citation (prose) from the
         # denominator. 0 of those resolved/identified, or any errors, is the anomaly.
         resolvable = processed - stats["not_citation"]
