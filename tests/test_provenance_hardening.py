@@ -182,3 +182,37 @@ def test_guard_run_for_phase_emits_observ(tmp_path, caplog):
     # per-entity anomaly line fires for the placeholder record
     assert "OBSERV provenance.entity entity=places" in caplog.text
     assert "placeholders=1" in caplog.text
+
+
+def test_stamp_resolves_nested_source_section(tmp_path, monkeypatch):
+    """E2E-caught: source_section records live at content/<book>/source_section/, NOT top-level.
+    The index + stamp must resolve them there."""
+    out = tmp_path
+    eid = "0W4BFG28KZ8NJM0F5MKEPMGRN8"
+    sid = "01M624480WP26S9QE9XND5CB20"
+    _write(
+        out / "content" / "USA-E-XChannel-8" / "source_section" / f"{sid}.json",
+        {
+            "SourceSectionID": sid,
+            "EventID": eid,
+            "source": {"book": "USA-E-XChannel-8"},
+        },
+    )
+    ev = out / "content" / "USA-E-XChannel-8" / "chapter1full-event.json"
+    _write(
+        ev,
+        {
+            "Event": {
+                "EventID": eid,
+                "Sub-events": [{"Sub-eventID": "4Y5QFR21HP835V12HY5Y294QJV"}],
+            }
+        },
+    )
+    assert EP._build_event_section_index(out) == {eid: sid}
+    monkeypatch.setattr(
+        EP, "_write_event", lambda f, d: f.write_text(json.dumps(d), encoding="utf-8")
+    )
+    assert EP.stamp_event_source_sections(out) == 1
+    data = json.loads(ev.read_text())
+    assert data["Event"]["SourceSectionID"] == sid
+    assert data["Event"]["Sub-events"][0]["SourceSectionID"] == sid

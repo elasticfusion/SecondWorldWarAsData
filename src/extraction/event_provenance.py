@@ -40,19 +40,22 @@ def _build_event_section_index(out: Path) -> Dict[str, str]:
     """Map ``EventID`` -> ``SourceSectionID`` from the committed source_section records.
 
     The source_section is the authoritative source entity; this is the single resolvable join from
-    an event back to the section it came from. Fail-safe -> {}.
+    an event back to the section it came from. The pipeline writes these records UNDER the content
+    tree (``content/<book>/source_section/*.json``); an older/top-level layout
+    (``source_section/*.json``) is also honored. Fail-safe -> {}.
     """
     index: Dict[str, str] = {}
     try:
-        sec_dir = out / "source_section"
-        if not sec_dir.exists():
-            return index
-        for sf in sec_dir.glob("*.json"):
-            if sf.name == "index.json":
-                continue
-            pair = _section_event_pair(sf)
-            if pair:
-                index.setdefault(pair[0], pair[1])
+        seen = set()
+        patterns = ("content/*/source_section/*.json", "source_section/*.json")
+        for pat in patterns:
+            for sf in out.glob(pat):
+                if sf.name == "index.json" or sf in seen:
+                    continue
+                seen.add(sf)
+                pair = _section_event_pair(sf)
+                if pair:
+                    index.setdefault(pair[0], pair[1])
     except Exception as e:  # noqa: BLE001
         logger.debug("event->section index skipped: %s", e)
     return index
