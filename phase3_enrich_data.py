@@ -171,9 +171,8 @@ def _enrich_places_and_geocode(
 
         geo_cache = args.cache_dir / "geocode"
         # T2-B (opt-in, default OFF): capture places.elevation_m from the DEM at resolved coords.
-        _places_cfg = (
-            load_config().get("places", {}) if isinstance(load_config(), dict) else {}
-        )
+        _cfg = load_config()
+        _places_cfg = _cfg.get("places", {}) if isinstance(_cfg, dict) else {}
         configure_elevation(
             bool(_places_cfg.get("capture_elevation", False)), geo_cache / "elevation"
         )
