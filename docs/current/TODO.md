@@ -30,6 +30,22 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   convert/phase task derive its book-scoped prefix from the SAME `_book_from_key`/title the trigger computed
   (pass the derived book to the task, or have the task reuse the identical derivation), + a test for the
   TITLE!=stem shape. Evidence: ECS log `/ecs/dev-wwii-pipeline` ~2026-10-28T12:52:46Z.
+- **[HIGH · deploy/CICD] Merge-to-main does NOT rebuild/redeploy the pipeline image — stale `:latest` ran the E2E.**
+  Root-caused during the XChannel-8 E2E (2026-10-28): the run produced 0 of the page's ~11 maps + 0 of its 26
+  in-document photos (only 5 Wikipedia enrichment images) because the deployed `wwii-pipeline:latest` was
+  pushed 2026-10-27 08:59 EDT — HOURS BEFORE M1 (in-doc map links, #587 @14:04) and M2 (embedded images,
+  #588 @14:53) merged, so the running pipeline literally lacked the extraction code. The code was on `main`
+  but `main` was never rebuilt/pushed after the afternoon merges. THREE fixes (priority order):
+    1. **Deploy-on-merge:** a CI job (or documented post-merge step) that rebuilds + pushes the pipeline
+       image and re-registers the ECS phase task defs when `main` changes — close the merge≠deploy gap.
+       (CI currently runs lint+test on PRs only; it does NOT build/push the Docker image.)
+    2. **Pin task defs by image DIGEST, not the mutable `:latest`** (+ stamp the git SHA as an image tag/label)
+       so "which commit is live" is unambiguous/auditable (this bug was invisible because task defs point at
+       `:latest`).
+    3. **Emit the running git SHA in a startup OBSERV** (`OBSERV pipeline.version sha=<...>` at phase start)
+       so any run's logs self-identify the code version (no more reverse-engineering "did this run have M2?").
+  NOTE: my first diagnosis ("image from Oct 13") was WRONG — I misread the task-def registeredAt as the image
+  push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
 
 ### MED
 - **[MED · observability] Phase 0 (convert) + Phase 1 (parse) have NO domain-level OBSERV events.**

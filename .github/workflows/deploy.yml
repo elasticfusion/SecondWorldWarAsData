@@ -78,7 +78,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build image
-        run: docker build --no-cache -t ${{ env.ECR_REPO }}:${{ github.sha }} .
+        run: docker build --no-cache --build-arg GIT_SHA=${{ github.sha }} -t ${{ env.ECR_REPO }}:${{ github.sha }} .
 
       - name: Scan image (Trivy)
         uses: aquasecurity/trivy-action@master

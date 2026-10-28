@@ -49,6 +49,13 @@ RUN chown -R pipeline:pipeline /app
 
 ENV PYTHONUNBUFFERED=1
 
+# Build-time provenance: the git commit this image was built from. Stamped by CI
+# (docker build --build-arg GIT_SHA=$GITHUB_SHA); defaults to "unknown" for local
+# builds. ecs_entrypoint emits it as OBSERV pipeline.version so every run's logs
+# self-identify the deployed code version (prevents "which commit ran?" ambiguity).
+ARG GIT_SHA=unknown
+ENV GIT_SHA=${GIT_SHA}
+
 # Run as non-root
 USER pipeline
 

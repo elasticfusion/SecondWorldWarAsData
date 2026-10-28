@@ -738,6 +738,15 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     _ensure_nat_if_needed(phase_script)
     _clear_title_cache_if_reprocess(phase_script)
 
+    # Version provenance: stamp the git SHA this image was built from (baked by CI as ENV GIT_SHA)
+    # into the FIRST log line of every phase, so a run's logs self-identify the deployed code
+    # version (a stale deploy is then obvious — see the XChannel-8 E2E stale-image finding).
+    logger.info(
+        "OBSERV pipeline.version sha=%s phase=%s",
+        os.environ.get("GIT_SHA", "unknown"),
+        phase_name,
+    )
+
     logger.info("[step] %s: loading secrets", phase_name)
     _load_secrets()
     logger.info("[step] %s: preflight credit check", phase_name)
