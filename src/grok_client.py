@@ -1513,11 +1513,61 @@ class GrokClient:
             f"{'Likely transient API error - retry may succeed.' if response_len < 100000 else 'Consider splitting chapter.'}"
         )
 
+    def _decode_all_objects(self, response: str) -> list:
+        """Decode every concatenated top-level JSON value in `response` (via raw_decode)."""
+        decoder = json.JSONDecoder()
+        idx, n, objects = 0, len(response), []
+        while idx < n:
+            while idx < n and response[idx] in " \t\r\n":
+                idx += 1
+            if idx >= n:
+                break
+            obj, end = decoder.raw_decode(response, idx)
+            objects.append(obj)
+            idx = end
+        return objects
+
+    def _merge_concatenated_json(self, response: str) -> Optional[Dict[str, Any]]:
+        """Parse a response containing MULTIPLE concatenated top-level JSON objects and merge them
+        into one dict. For each key, list values are concatenated (the common case: one
+        {"people":[...]} per sub-event) and non-list values keep the first seen. Returns None if
+        fewer than 2 objects decode (nothing to merge) or on any error (fail-safe)."""
+        try:
+            objects = self._decode_all_objects(response)
+            if len(objects) < 2:
+                return None
+            merged: Dict[str, Any] = {}
+            for obj in objects:
+                if not isinstance(obj, dict):
+                    continue
+                for k, v in obj.items():
+                    if isinstance(v, list) and isinstance(
+                        merged.setdefault(k, []), list
+                    ):
+                        merged[k].extend(v)
+                    else:
+                        merged.setdefault(k, v)
+            return merged or None
+        except (
+            Exception
+        ):  # noqa: BLE001 - repair must never raise; caller falls through
+            return None
+
     def _try_repair_json(
         self, response: str, error_msg: str
     ) -> Optional[Dict[str, Any]]:
         """Attempt to repair malformed JSON response."""
         import re
+
+        # Fix 0: concatenated top-level objects (Grok sometimes emits one {...} PER sub-event
+        # instead of a single doc -> json.loads raises "Extra data"). Decode every object and MERGE
+        # list-valued keys (e.g. {"people":[..]}{"people":[..]} -> {"people":[.. ..]}). This was a
+        # silent data-loss site: the people batch zeroed 82->0 on exactly this (XChannel-8).
+        if "Extra data" in error_msg:
+            merged = self._merge_concatenated_json(response)
+            if merged is not None:
+                logger.info("✓ JSON repaired (merged concatenated top-level objects)")
+                return merged
 
         if "Invalid" not in error_msg or "escape" not in error_msg:
             return None
