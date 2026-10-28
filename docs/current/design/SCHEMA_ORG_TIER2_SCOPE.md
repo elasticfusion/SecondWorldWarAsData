@@ -50,7 +50,7 @@ request, no new rate-limit surface.
 
 ---
 
-## 2. T2-B — `places.elevation_m` (new source)  ◆
+## 2. T2-B — `places.elevation_m` (new source)  ◆ ✅ IMPLEMENTED (opt-in, 2026-10-27)
 
 The geocoder's `GeocodeResult` (`src/enrichment/places_grok_geocode.py:84`) carries ONLY
 `latitude/longitude/country/confidence/source` — **no elevation**. So elevation is a genuine new
