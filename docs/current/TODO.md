@@ -1,10 +1,53 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-10-20 (reorganized: Phase-2 issues prioritized; completed items moved to bottom)
+**Last Updated:** 2026-10-27 (reorganized: OPEN ISSUES summary at top; multimodal epic M1-M8 complete).
 
-Active work is the **clean XChannel Phase-2 E2E** and the data-quality issues it surfaced. Sections
-are ordered: (1) **Phase 2 — open**, (2) Phase 3 / enrichment — open, (3) architecture & design,
-(4) infra/security/cost, (5) data-quality remediation, (6) lower-priority & future, (7) **Completed**.
+---
+
+## ⭐ OPEN ISSUES (at a glance — highest priority first)
+
+The curated list of what is still OPEN. Each points to its detail section lower in this file.
+Everything not listed here is DONE (see §7 COMPLETED + the dated review sections).
+
+### HIGH
+- **[HIGH · schema-design] Review schema.org for future JSON entity enhancements** — survey Person/Place/
+  Event/ImageObject/CreativeWork + properties (sameAs, spatialCoverage, depicts, isBasedOn, citation) for
+  additive entity-schema enrichments (external-ID cross-walks, richer linkage). Deliverable: a mapping
+  proposal; introduce each field via the evolve-+-archive discipline (SCHEMA_VERSIONING.md).
+
+### MED
+- **[MED] source_section derive failed for 2 sections** (clean rerun e4b22d9).
+- **[MED · dedup-false-positive] place dedup is string-only at the Phase-2 gate (no coords)** — Roscheid/
+  Schmidt (deferred fix #2).
+- **[MED · dedup] NEAR-duplicate content detection (MinHash/LSH)** — same text across two domains, not
+  byte-identical.
+- Phase-2 re-review follow-ups (WARNING/NIT) still open in **§1.0d/§1.0c**: ocr_merge_handler run_task
+  guard, ecs retrieve-path count-mismatch, search_cache transient-miss, wayback DNS-rebind pin-gap,
+  credit-reservation leak, non-idempotent OCR resubmit, ingestion/Phase-0 zip-bomb/AV-bypass, + the NIT batch.
+- Standing open sections: **§2** Phase-3/enrichment (OpenSERP redesign 98.7% CPU, NARA, people/places),
+  **§3** architecture, **§4** infra/security/cost, **§5** data-quality detective.
+
+### LOW
+- **[LOW · investigate] Is `config/domain_blacklist.yaml` blacklist still HONORED by OpenSERP?**
+- **[LOW · dep-advisory] pylint 4.0.5 → 4.0.9** (CVE-2026-114608); pip-audit — not run in CI.
+- **[LOW · security-hardening] `_download_s3_file` path-traversal containment** (ecs_entrypoint).
+- **[LOW · data-hygiene] people index/duplicate_report count drift** (overlapping-rerun artifact).
+- **[LOW · ci-flake] test_validation_performance wall-clock thresholds.**
+- **[LOW · yield] OpenSERP group-image search returns HTML page URLs, not direct images.**
+
+### ✅ Recently CLOSED (headline)
+- **MULTIMODAL epic M1–M8 COMPLETE** (PRs #587–#594): in-doc maps, embedded/caption images, image→Person,
+  recognize+relevancy-gate all links→human review, terrain/aerial→Place, chart-as-source, map legibility
+  gate, intra-corpus links→batch.
+- **[CRITICAL] ULID attribution across ALL M-issues RESOLVED** (M3/M4 backfilled, PR #595).
+- **Schema evolution discipline**: history archive `src/schemas/history/` + Change Log + fingerprint-guard
+  reminder (PR #591).
+
+---
+
+Active work history below. Sections: (1) **Phase 2 — open**, (2) Phase 3 / enrichment — open,
+(3) architecture & design, (4) infra/security/cost, (5) data-quality remediation, (6) lower-priority &
+future, (7) **Completed**, then the dated epics (MULTIMODAL M1-M8) + flat backlog.
 
 ---
 
@@ -19,7 +62,6 @@ reference-rebase (unreviewed before) + sibling lambda handlers that never got tr
 safe-book hardening. Fix order (CRITICAL → HIGH → WARNING → NIT); each via branch→gate→concurrent code+
 security reviews (both PASS)→CI→merge→sync→move to §7. bandit still 0H/0M.
 
-- **[CRITICAL] dedup merge deletes the secondary entity file but fails to REBASE its references — 3 broken paths:**
 - **[CRITICAL] ✅ DONE (PR #514) — dedup merge deletes the secondary entity file but fails to REBASE its references:**
   all 3 paths fixed — (1) people_groups now resolves the real PK GroupID (not the PeopleGroupID alias) via
   _record_id/_ENTITY_DIR_PK + ecs passes GroupID; (2) merge_generic now maps the PK field to the real ON-DISK
@@ -1076,7 +1118,7 @@ CROSS-CUTTING ROOT CAUSES (fixing these knocks out multiple M-items):
        but the author already curated the best maps/charts/MoH citations as direct links in the document.
   RC4. org chart + MoH citation are unmodeled SOURCE TYPES (each a natural map-as-source analog).
 
-## [M1 · HIGH · in-doc-asset-links] Follow in-document map LINKS -> map-as-source  (do FIRST)
+## [M1 · HIGH · in-doc-asset-links] ✅ DONE (PR #587) — Follow in-document map LINKS -> map-as-source  (did FIRST)
 Evidence: `[Map VII]..[Map XIV]` in the narrative link directly to `maps/USA-E-XChannel-*.jpg` (author-
 curated, highest-quality maps on the page). GAP: extract_images matches `![]()` not `[]()`, and nothing
 follows a `maps/*.jpg` link from text. FIX: a parse-time extractor that finds `[text](url)` links whose
@@ -1085,7 +1127,7 @@ target is an image ext OR under `maps/`, and routes them into the EXISTING map-a
 is new (in-doc link vs OpenSERP search). SSRF-safe + same-host (ibiblio) allowlist. Highest value, lowest
 ambiguity (the map is explicitly linked + captioned). Addresses RC1+RC3.
 
-## [M2 · HIGH · embedded-image-extraction] Capture caption-only / bare embedded images (RC1)
+## [M2 · HIGH · embedded-image-extraction] ✅ DONE (PR #588) — Capture caption-only / bare embedded images (RC1)
 Evidence: "PREINVASION SCENES", "ALLIED INVASION CHIEFS", "PARACHUTE TROOPS", "HEDGEROW COUNTRY", aerial
 beach views — rendered as plain-text captions with NO `![]()` in the parsed markdown, so extract_images
 never sees them -> the photo is never ingested at all. FIX: (a) in the HTML->md converter (the new
@@ -1144,7 +1186,6 @@ review (code+security) BOTH PASS.
 
 Evidence (original): "HEDGEROW COUNTRY", "AERIAL VIEW OF UTAH/OMAHA BEACH", "TERRAIN ON OMAHA BEACH".
 
-## [M6 · MED · chart-as-source] Org / command-structure charts -> people_groups source
 ## [M6 · MED · chart-as-source] ✅ DONE (PR #592) — Org / command-structure charts -> people_groups source (RC4)
 Shipped: `chart_source_adapter` (mirrors map_source_adapter) — `_render_command_edges`/`_render_chart_text`
 (command hierarchy -> grounded prose), `build_chart_parsed_source` (create_event_prompt contract,
@@ -1157,7 +1198,6 @@ event's request_params, fallback book->SourceSectionID via M5). OBSERV chart_sou
 67->69 (contentrepository SOURCE pair, mirrors map adapter). 9 tests, radon 0 new C, pytest 2875, dual review
 (code+security) BOTH PASS. Reuse: map_source_adapter + prompt_loader + grok vision + M5 book->section index.
 
-## [M7 · MED · embedded-low-q-maps] Inline figure maps (Map 1/2/3, captured OB WEST map)
 ## [M7 · MED · embedded-low-q-maps] ✅ DONE (PR #593) — Inline figure maps + shared confidence gate
 SCOPING (verified against the owner's example maps/USA-E-XChannel-2.jpg, the captured OB WEST map): a
 low-quality/captured map is STRUCTURALLY IDENTICAL to a high-quality map and is ALREADY handled end-to-end
