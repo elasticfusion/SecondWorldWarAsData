@@ -7,6 +7,7 @@ from src.schemas import (
     enum_field,
     make_nullable,
     ulid_field,
+    url_field,
 )
 
 PLACES_OUTPUT_SCHEMA = {
@@ -97,6 +98,88 @@ PLACES_OUTPUT_SCHEMA = {
             },
         },
         "hierarchy": {"type": ["array", "object", "null"]},
+        # --- schema.org-aligned additive fields (adopted 2026-10-27; see
+        # docs/current/design/SCHEMA_ORG_REVIEW.md). All nullable + closed; our own strict idiom,
+        # not schema.org's loose shapes. ---
+        # sameAs: authoritative external identity URLs (Wikidata/GeoNames/Wikipedia/OSM). The
+        # interoperability cross-walk + a stronger dedup key than name strings. null-over-guess.
+        "sameAs": {"type": ["array", "null"], "items": url_field()},
+        # ID-typed hierarchy edges (schema.org containedInPlace/containsPlace). Distinct from the
+        # free-form `hierarchy`/`related_places`: these point at real PlaceIDs so the containment
+        # graph is traversable. Modern-identity cross-walk — the as-of-date place name stays in
+        # historical_names + the event-mention date context.
+        "containedInPlace": {
+            "type": ["array", "null"],
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "PlaceID": ulid_field(nullable=True),
+                    "name": make_nullable("string"),
+                },
+            },
+        },
+        "containsPlace": {
+            "type": ["array", "null"],
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "PlaceID": ulid_field(nullable=True),
+                    "name": make_nullable("string"),
+                },
+            },
+        },
+        # geo: our CLOSED GeoShape (schema.org geo -> GeoShape). Adds line/polygon/circle beyond the
+        # point `coordinates` + box `bounding_box` — for a beach (line), a sector/front (polygon), a
+        # river (polyline). Vertices as our own {lat,long} objects (NOT schema.org's lat,long-string).
+        # Populated ONLY when a source/map legibly provides the shape (null-over-fake) + provenance.
+        "geo": {
+            "type": ["object", "null"],
+            "additionalProperties": False,
+            "properties": {
+                "shape_type": enum_field(
+                    ["point", "line", "polygon", "circle"], nullable=True
+                ),
+                "vertices": {
+                    "type": ["array", "null"],
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {
+                            "lat": {"type": "number", "minimum": -90, "maximum": 90},
+                            "long": {"type": "number", "minimum": -180, "maximum": 180},
+                        },
+                    },
+                },
+                # circle convenience (schema.org GeoShape.circle): center + radius in metres.
+                "radius_m": {"type": ["number", "null"], "minimum": 0},
+                # Provenance for the shape (a hand-traced map polygon is approximate, not survey-grade).
+                "source_date": make_nullable("string"),
+                "SourceSectionID": ulid_field(nullable=True),
+                "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+            },
+        },
+        # additionalProperty: typed escape hatch (schema.org additionalProperty/PropertyValue) for
+        # long-tail military-geographic attributes with no dedicated field (grid_reference,
+        # hill_number, map designation). Our CLOSED {propertyID,value,unitCode} shape. Named fields
+        # (e.g. elevation_m below) are preferred; this is for the ENUMERABLE-only-at-runtime rest.
+        "additionalProperty": {
+            "type": ["array", "null"],
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "propertyID": {"type": "string"},
+                    "value": {"type": ["string", "number", "boolean", "null"]},
+                    "unitCode": make_nullable("string"),
+                },
+            },
+        },
+        # elevation_m: DEDICATED numeric (metres) — a first-class, unit-fixed, queryable terrain
+        # attribute (Hill 400, the Hürtgen heights). schema.org names `elevation` on GeoCoordinates;
+        # we give it a named field rather than burying it in additionalProperty. null-over-guess.
+        "elevation_m": {"type": ["number", "null"]},
         "event_mentions": {
             "type": ["array", "null"],
             "items": {

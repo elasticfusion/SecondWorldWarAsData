@@ -100,22 +100,33 @@ structured `military_awards`/`units_served`/`ranks` into schema.org's thinner eq
 
 Strong overlap — we already have coordinates, bounding_box, hierarchy, related_places, aliases.
 
-- ⭐ **`sameAs`** (array of URL) — **GeoNames ID, Wikidata QID, OpenStreetMap relation/way**. This is
-  the biggest win for places: it disambiguates "Hill 400" / "St. Lô" against authoritative gazetteers
-  and is the fix hook for the open **MED place-dedup-by-coords** issue (match on GeoNames/Wikidata ID
-  instead of string).
-- ⭐ **`containedInPlace` / `containsPlace`** — typed hierarchy edges. Our `hierarchy` is
-  `array|object|null` (loose) and `related_places` has a free-text `relationship`; schema.org's
-  containment pair is a cleaner model for "Vierville ⊂ Normandy ⊂ France".
-- ◆ **`geo` → `GeoShape`** — we have a point (`coordinates`) + a `bounding_box`; schema.org `GeoShape`
-  adds `line`/`polygon` (useful for a beach sector, a front line, a river — exactly the terrain M5
-  links and the sectors maps depict).
-- ◆ **`additionalProperty`** (PropertyValue) — a typed escape hatch for military-geographic
-  attributes with no schema.org slot (e.g. `elevation_m`, `hill_number`, `grid_reference`). We would
-  keep these as named fields, but the PropertyValue `{propertyID,value,unitCode}` shape is a good
-  template if we want extensibility without reopening `additionalProperties`.
+> **STATUS: ✅ IMPLEMENTED (places 2.29 → 2.30, 2026-10-27)** — the first schema.org adoption. Added as
+> additive, nullable, CLOSED sub-schemas: `sameAs[]`, `containedInPlace`/`containsPlace` (ID-typed),
+> `geo` (our GeoShape), `additionalProperty[]` ({propertyID,value,unitCode}), and a dedicated
+> `elevation_m`. Backward-compatible (test_entity_schema_consistency); fingerprint re-pinned; shape
+> archived to `src/schemas/history/places/2.30.json`; Change Log row added. (Population of these fields by
+> the geocode/enrichment pipeline is a separate follow-up — this PR adds the schema only.)
+
+- ⭐ **`sameAs`** (array of URL) — ✅ IMPLEMENTED. **GeoNames ID, Wikidata QID, OpenStreetMap relation/way**.
+  The biggest win for places: disambiguates "Hill 400" / "St. Lô" against authoritative gazetteers and is
+  the fix hook for the open **MED place-dedup-by-coords** issue (match on GeoNames/Wikidata ID, not string).
+- ⭐ **`containedInPlace` / `containsPlace`** — ✅ IMPLEMENTED as ID-typed edge arrays
+  (`{PlaceID, name}`). Distinct from the loose `hierarchy`/`related_places`: a traversable containment
+  graph ("Vierville ⊂ Normandy ⊂ France").
+- ◆ **`geo` → `GeoShape`** — ✅ IMPLEMENTED as a closed sub-schema `{shape_type: point|line|polygon|circle,
+  vertices:[{lat,long}], radius_m, source_date, SourceSectionID, confidence}`. Adds line/polygon/circle
+  beyond the point `coordinates` + box `bounding_box` — a beach (line), a sector/front (polygon), a river
+  (polyline) — exactly the terrain M5 links + the sectors maps depict. Vertices as our own `{lat,long}`
+  objects (NOT schema.org's `"lat,long"` string); populated only when a source/map gives the shape.
+- ◆ **`additionalProperty`** — ✅ IMPLEMENTED as a closed `{propertyID, value, unitCode}` array. Typed
+  escape hatch for long-tail military-geographic attributes with no dedicated field (`grid_reference`,
+  `hill_number`, map designation). Named fields are preferred (see `elevation_m`); this is for the rest.
+- ◆ **`elevation_m`** — ✅ IMPLEMENTED as a DEDICATED numeric field (metres), NOT inside
+  `additionalProperty`. Decision (owner, 2026-10-27): elevation is a first-class, unit-fixed, queryable
+  terrain attribute (Hill 400, the Hürtgen heights) and schema.org itself names `elevation` on
+  GeoCoordinates — so it gets a named field; `additionalProperty` is only for the non-enumerable rest.
 - ○ **`alternateName`** — equivalent to our `aliases`/`historical_names` (already covered; note the
-  naming).
+  naming). Not separately added.
 
 **Caveat:** schema.org `Place` is contemporary-gazetteer oriented. Our **historical** names and the
 *as-of-date* of a place name (a town renamed/destroyed) have no schema.org slot — keep
@@ -159,21 +170,35 @@ Military units/organizations. Good overlap; our `military_hierarchy`, `parent_or
 
 - ⭐ **`sameAs`** — Wikidata/Wikipedia for the unit (e.g. "29th Infantry Division" → Q-id). Unifies
   our `wikipedia_url`/`grokipedia_url` into a first-class cross-walk.
-- ⭐ **`parentOrganization` / `subOrganization`** — schema.org's names for what we call
-  `parent_organization` (string) + `sub_organizations` (string array). Suggest evolving these toward
-  **GroupID-typed** links (like `related_places`), so the command hierarchy is a real graph, not
-  strings — directly supports the M6 chart-derived command edges.
+- ⭐ **`parentOrganization` / `subOrganization`** — ⚠️ REVISED DECISION (owner, 2026-10-27): do **NOT**
+  adopt as flat fields. (schema.org cardinality: `subOrganization` is repeatable, `parentOrganization` is
+  single — but BOTH lack a time dimension, which is disqualifying for order-of-battle.) Military
+  attachment is **MOMENT-IN-TIME**, same principle as a person's titles (§1): a regiment may be organically
+  ASSIGNED to its division permanently, but an armored combat command (CCA/CCB) is ATTACHED to a different
+  division for a period, and a division moves between corps as the situation changes. Evidence:
+  `contentrepository/European Theater of Operations - Order of Battle` is saturated with dated structure
+  (activation dates, T/O&E revision dates, per-division arrival/combat dates). INSTEAD of flat parent/sub,
+  add a time-bounded, provenance-carrying **`org_attachments[]`** edge array:
+  `{role: parent|subordinate, attachment_type: assigned|attached|under_command, GroupID, name, from, to,
+  source_date, SourceSectionID, confidence}` — ID-typed (traversable graph), the military
+  **assigned (organic) vs attached (temporary)** distinction first-class (schema.org has no such
+  vocabulary), each slice dated + provenance-tagged, NEVER overwriting an earlier attachment with a later
+  one. Directly populated by the M6 chart-as-source command edges. (Implementation: a follow-on
+  people_groups version bump, not the places PR.)
 - ◆ **`memberOf` / `member`** — we have `members`; schema.org adds the inverse and a typed Person/Org
   member. Our people↔group link lives on the Person side (`group_affiliations`); `member` would mirror
-  it on the group side.
+  it on the group side. (NOTE: member tenure is ALSO moment-in-time — if added, it needs from/to like
+  `org_attachments`, not a flat list.)
 - ◆ **`foundingDate` / `dissolutionDate`** — a unit's activation/inactivation dates. No current slot.
+  (These two ARE point-events, so single dated values are fine — unlike attachment, which is an interval.)
 - ◆ **`logo`** → maps to our `unit_patch` (already richer: vision-verified, hashed, stored).
 - ○ **`identifier`** — unit designation codes (e.g. the OOB `designation`/`echelon`/`unit_number` we
   already store on the Person's `units_served`) could be mirrored here as typed identifiers.
 
 **Caveat:** schema.org `Organization` is company/brand oriented (`taxID`, `duns`, `naics`,
 `contactPoint`) — ignore all of that. Military echelon/command-structure is ours to model; schema.org
-only offers the generic parent/sub/member skeleton.
+only offers the generic parent/sub/member skeleton AND has no time dimension — so OOB attachment must be
+our own time-bounded `org_attachments` edge, not schema.org's flat parent/sub.
 
 ---
 
@@ -264,26 +289,39 @@ keep our fields as the authority.
 
 ## 9. Cross-cutting recommendations (priority-ordered)
 
+0. ⭐⭐ **GOVERNING PRINCIPLE — stateful attributes are MOMENT-IN-TIME, never flat.** schema.org models
+   an entity's *current* state (one `honorificPrefix`, one `parentOrganization`). Our corpus is
+   historical: a person's **title/rank/office** (General Marshall 1944 → Secretary of State 1947) and a
+   unit's **attachment** (CCA attached to a different division for a period; a division moving between
+   corps) are only true within a date interval, anchored to the SOURCE's date. ANY such attribute we add
+   must be a **time-bounded dated array with provenance** (`from`/`to`/`source_date`/`SourceSectionID`),
+   not a flat value or an unordered list. This already governs: Person `titles`/`honorifics` (§1) and
+   people_groups `org_attachments` (§4).
 1. ⭐ **Introduce a first-class `sameAs: [url]` (nullable array) on the top-level entities**
-   (`people`, `places`, `people_groups`, `bibliography`, and `maps`). Single, uniform,
+   (`people`, `places`✅, `people_groups`, `bibliography`, and `maps`). Single, uniform,
    additive, high interoperability value; the natural home for the Wikidata/Wikipedia/GeoNames/VIAF
-   IDs we already partially fetch. This is the recommended **first** schema.org adoption.
+   IDs we already partially fetch. **Places done (2.30);** roll out to the others next.
 2. ⭐ **Add a typed `identifier: [{propertyID, value}]` (PropertyValue) pattern** where we have
    external codes (service numbers, OCLC/LCCN, GeoNames). Reuse one shared sub-schema.
-3. ◆ **Evolve string hierarchy links toward ID-typed links** using schema.org's
-   `containedInPlace`/`parentOrganization`/`subEvent` as the model (places hierarchy, group command,
-   event→operation) — supports M6 command edges + the place-dedup-by-coords fix.
+3. ◆ **Evolve string hierarchy links toward ID-typed links** — places `containedInPlace`/`containsPlace`
+   DONE (2.30, ID-typed). people_groups is NEXT but as the **time-bounded `org_attachments`** edge (NOT
+   flat parentOrganization/subOrganization — see §4), which also carries the M6 command edges.
 4. ◆ **Adopt the `ImageObject` licensing + `contentLocation`/`dateCreated` vocabulary** for image
    records (§5) — closest, lowest-risk win, and our image pipeline is active.
 5. ○ **Only if we ever publish JSON-LD / sitemaps for search engines**: add a serialization layer that
    maps our entities to schema.org `@type`/`@id`/`sameAs` at EXPORT time — keeping the internal
    schema strict and the schema.org shape as a *view*, not the storage model. (This is the cleanest
    way to get the SEO/discovery benefit without weakening the research corpus.)
+6. ◆ **FOLLOW-ON (people_groups):** implement the time-bounded `org_attachments[]` edge array (§4) —
+   `{role, attachment_type: assigned|attached|under_command, GroupID, name, from, to, source_date,
+   SourceSectionID, confidence}` — the OOB order-of-battle attachment graph. Separate version bump;
+   populated by M6 chart-as-source.
 
 **Guiding principle:** borrow schema.org's **linking vocabulary** (`sameAs`, `identifier`,
 `containedInPlace`, `subEvent`, `about`, `contentLocation`, `isBasedOn`) and its **media/licensing**
-model; keep our **identity (ULID), provenance (SourceSectionID), source-qualification, and
-fuzzy-date** models, which are stricter and more research-appropriate than anything schema.org offers.
+model; keep our **identity (ULID), provenance (SourceSectionID), source-qualification, fuzzy-date, and
+moment-in-time stateful-attribute** models, which are stricter and more research-appropriate than
+anything schema.org offers.
 
 ---
 

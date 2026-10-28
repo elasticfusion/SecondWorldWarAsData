@@ -99,6 +99,7 @@ companion to the per-entity fingerprint pins in `tests/test_schema_fingerprint.p
 | Date | Entity | Version | Change | Compat |
 |---|---|---|---|---|
 | 2026-10-27 | people | 2.26 → 2.27 | `images[]` item gains nullable `SourceSectionID` (durable ULID attribution back to the source_section) — multimodal epic M5 | ADDITIVE — existing people records without the field remain valid (confirmed by test_entity_schema_consistency); no reprocess |
+| 2026-10-27 | places | 2.29 → 2.30 | First schema.org adoption (SCHEMA_ORG_REVIEW.md): nullable `sameAs[]` (external-ID cross-walk), `containedInPlace`/`containsPlace` (ID-typed hierarchy edges), `geo` (closed GeoShape: point/line/polygon/circle + provenance), `additionalProperty[]` (typed {propertyID,value,unitCode}), dedicated `elevation_m` | ADDITIVE — all nullable; existing places records remain valid (confirmed by test_entity_schema_consistency); no reprocess |
 
 ---
 

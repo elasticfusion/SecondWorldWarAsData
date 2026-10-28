@@ -1,5 +1,5 @@
 """Regression for the SCHEMA_TARGET cross-entity bug: _add_event_mention_batch used a single
-events-version (2.24) target for EVERY entity, so a newer-entity record (places 2.29, groups 2.28)
+events-version (2.24) target for EVERY entity, so a newer-entity record (places 2.30, groups 2.28)
 was classified 'future schema' and SKIPPED -> its event_mention backlink was dropped -> dangling
 cross-references. The fix resolves the target PER-ENTITY from the record's directory."""
 
