@@ -84,8 +84,11 @@ def _legibility_confidence(depicted: Dict[str, Any]) -> Optional[float]:
     """The vision-reported legibility_confidence (0.0-1.0) if present + parseable, else None."""
     if not isinstance(depicted, dict) or "legibility_confidence" not in depicted:
         return None
+    raw = depicted.get("legibility_confidence")
+    if raw is None:
+        return None
     try:
-        return float(depicted.get("legibility_confidence"))
+        return float(raw)
     except (TypeError, ValueError, OverflowError):
         return None
 
