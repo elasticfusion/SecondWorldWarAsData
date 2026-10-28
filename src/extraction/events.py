@@ -142,7 +142,20 @@ def _parse_note_context(parsed_data: dict) -> tuple:
     except (
         Exception
     ) as e:  # noqa: BLE001 - bad parsed arrays -> no classification context
-        logger.debug("footnote-ref parse of parsed_data skipped: %s", e)
+        # WARNING (not debug): a PRESENT-but-unparseable paragraphs array is the corrupt-structure
+        # signature of the paragraph_numbers incident (every note-ref then resolves to 0, silently).
+        # Distinguish "no notes" from "notes structure broken".
+        paragraphs_present = bool(
+            isinstance(parsed_data, dict) and parsed_data.get("paragraphs")
+        )
+        if paragraphs_present:
+            logger.warning(
+                "OBSERV events.note_context_unparseable paragraphs present but could not be "
+                "parsed (-> 0 note-refs resolved, silent bibliography loss): %s",
+                e,
+            )
+        else:
+            logger.debug("footnote-ref parse of parsed_data skipped: %s", e)
         return {}, set(), set()
 
 

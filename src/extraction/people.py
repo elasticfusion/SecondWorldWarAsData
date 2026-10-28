@@ -12,8 +12,14 @@ import ulid
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from src.grok_client import GrokClient, BatchModeCollecting
+from src.extraction.starvation_signal import (
+    note_empty_fulltext_skip,
+    warn_all_subevents_empty,
+)
+from src.extraction.recall_gap import record_people_recall_gaps, _text_from_sub_event
 from src.utils.json_validator import _fix_invalid_ulids
 from src.utils.text_utils import normalize_name
+from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
 
 from src.utils.prompt_loader import get_system_prompt
 
@@ -554,6 +560,7 @@ def create_people_prompt(
     book: str = "",
     author: str = "",
     series: str = "",
+    empty_counter: Optional[dict] = None,
 ) -> str:
     """Create prompt for people extraction from a sub-event."""
     sub_event_id = sub_event.get("Sub-eventID", "")
@@ -566,7 +573,7 @@ def create_people_prompt(
     text = "\n\n".join(text_parts)
 
     if not text.strip():
-        logger.debug("Skipping empty sub-event %s (people)", sub_event_id)
+        note_empty_fulltext_skip("people", sub_event_id, empty_counter)
         return ""
 
     from src.utils.prompt_loader import get_system_prompt, render_prompt
@@ -1142,12 +1149,15 @@ def _extract_people_for_sub_event(
     series: str,
     grok_client: GrokClient,
     max_retries: int,
+    empty_counter: Optional[dict] = None,
 ) -> Optional[list]:
     """Extract people for a single sub-event with retry logic."""
     sub_event_id = sub_event.get("Sub-eventID", "")
     logger.info("  Processing sub-event %s", sub_event_id)
 
-    prompt = create_people_prompt(sub_event, event_id, event_name, book, author, series)
+    prompt = create_people_prompt(
+        sub_event, event_id, event_name, book, author, series, empty_counter
+    )
     if not prompt:
         return []
 
@@ -1218,6 +1228,25 @@ def _mark_event_processed(
         json.dump(processed, f, indent=2)
 
 
+def _record_recall_gaps_safe(
+    people_dir: Path,
+    event_id: str,
+    sub_event_id: str,
+    sub_event: dict,
+    extracted_people: Optional[list],
+) -> None:
+    """Fail-safe wrapper: detect+queue people recall-gaps for one sub-event. Never raises."""
+    try:
+        text = _text_from_sub_event(sub_event)
+        if not text.strip():
+            return
+        record_people_recall_gaps(
+            people_dir, event_id, sub_event_id, text, list(extracted_people or [])
+        )
+    except Exception as e:  # noqa: BLE001 - recall-gap review must never fail the run
+        logger.debug("recall-gap review skipped for %s: %s", sub_event_id, e)
+
+
 def extract_people(
     event_file: Path,
     grok_client: GrokClient,
@@ -1263,7 +1292,10 @@ def extract_people(
     index_file = people_dir / "index.json"
     index = _load_people_index(index_file)
 
+    empty_counter: dict = {"empty": 0}
+
     for sub_event in sub_events:
+        sub_event_id = sub_event.get("Sub-eventID", "")
         extracted_people = _extract_people_for_sub_event(
             sub_event,
             event_id,
@@ -1273,6 +1305,12 @@ def extract_people(
             series,
             grok_client,
             max_retries,
+            empty_counter,
+        )
+
+        # RECALL-GAP (fail-safe): surface rank-anchored names in the source that extraction missed.
+        _record_recall_gaps_safe(
+            people_dir, event_id, sub_event_id, sub_event, extracted_people
         )
 
         if not extracted_people:
@@ -1298,6 +1336,16 @@ def extract_people(
 
     logger.info(
         "People directory: %d new, %d updated", new_people_count, updated_people_count
+    )
+    observe_yield(
+        "people",
+        event_id or "?",
+        len(sub_events),
+        count_nonempty_fulltext(event_data),
+        new_people_count + updated_people_count,
+    )
+    warn_all_subevents_empty(
+        "people", event_id or "?", len(sub_events), int(empty_counter.get("empty", 0))
     )
 
     return people_dir
