@@ -83,7 +83,7 @@ capture: given the coords we already have, call an elevation API.
 
 ---
 
-## 3. T2-C — GeoNames / OSM id into `places.sameAs`  ◆
+## 3. T2-C — GeoNames / OSM id into `places.sameAs`  ◆ (OSM piggyback ✅ IMPLEMENTED 2026-10-27; GeoNames still future)
 
 A second gazetteer id strengthens dedup (the open place-dedup-by-coords issue) beyond Wikidata.
 

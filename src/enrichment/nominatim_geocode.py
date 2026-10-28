@@ -163,6 +163,9 @@ def _query_nominatim(
         "format": "jsonv2",
         "limit": 1,
         "addressdetails": 1,
+        # T2-C: extratags surfaces a `wikidata` tag when OSM has one (identity cross-walk).
+        # osm_type/osm_id are already in the jsonv2 result.
+        "extratags": 1,
         # Return English names for all countries/theaters (ETO, N. Africa, Pacific)
         # so country/place names are consistent without a per-language map.
         "accept-language": "en",
@@ -235,7 +238,25 @@ def _to_result(raw: Optional[dict]) -> GeocodeResult:
         confidence=confidence,
         note=note,
         source="osm",
+        external_ids=_osm_external_ids(raw),
     )
+
+
+def _osm_external_ids(raw: dict) -> list:
+    """Identity cross-walk URLs from an OSM result: the OSM object URL (osm_type/osm_id) + a
+    `wikidata` extratag if present. Fail-safe -> []. Used to populate place.sameAs[]."""
+    ids: list = []
+    try:
+        osm_type = raw.get("osm_type")
+        osm_id = raw.get("osm_id")
+        if osm_type and osm_id:
+            ids.append(f"https://www.openstreetmap.org/{osm_type}/{osm_id}")
+        qid = (raw.get("extratags") or {}).get("wikidata")
+        if isinstance(qid, str) and qid.strip().startswith("Q"):
+            ids.append(f"https://www.wikidata.org/wiki/{qid.strip()}")
+    except Exception:  # noqa: BLE001
+        return ids
+    return ids
 
 
 def _alias_names(place: dict, primary: str) -> list:
