@@ -10,6 +10,28 @@ The curated list of what is still OPEN. Each points to its detail section lower 
 Everything not listed here is DONE (see §7 COMPLETED + the dated review sections).
 
 ### HIGH
+- **[HIGH · observability] Observability SWALLOWS ITS OWN ALERTS — systemic, ~40 sites across 7 patterns** (audit 2026-10-28,
+  full report `OBSERVABILITY_SWALLOWED_ALERTS_consolidated.md`). The `paragraph_numbers` fulltext bug (fixed PR #608) was ONE
+  instance; the CLASS is open. Patterns: (1) silent except/except-pass (~15 sites); (2) anomaly logged at DEBUG (~10) — incl
+  the EXACT same empty-fulltext-skip still live at **places.py:239, people.py:569, dates.py:139, weather_central.py:683**
+  (#608 only fixed events.py); (3) zero/empty yield logged status=ok (~8: equipment.py:3027, places.py:415, people.py:1296,
+  dates.py:536, phase2 optional extractors); (4) degraded fallback w/o warning (~5: openserp breaker elif, reconcile barrier,
+  referential_integrity timeout reads clean); (5) NO expected-yield baseline (~6: openserp searched 1-of-14 unflagged,
+  skip-no-name, validation count>=10 gate misses small batches); (6) NO cross-metric correlation (~5: rich sub_events vs 0
+  entities never correlated); (7) size-masks-empty-content (events fallback FIXED). ROOT: no `observe_yield(entity, sub_events,
+  fulltext_nonempty, produced)` helper — produced=0 is indistinguishable from eligible=0. FIX PLAN (5 PRs): PR-A observe_yield
+  helper+baseline (enabler, would have caught the original by design); PR-B extraction starvation (#1,2,8,9,10); PR-C
+  enrichment starvation (#4,5,6); PR-D integrity gates (#3,7 + provenance SNS parity + Phase-3 reconcile gate); PR-E
+  debug→warn sweep + untraced-except counters. TOP-10 P1 list in the report.
+  - **TEST-SUITE MIRROR GAP:** the existing OBSERV tests (test_phase3_comprehensive_observability, test_enrichment_observability)
+    DO assert anomaly correctness (groups.anomaly 0-of-N, openserp 0-of-4, places.anomaly), not mere presence — but ONLY for
+    the ENRICHMENT layer where an anomaly signal existed. The EXTRACTION layer had no anomaly concept, so there was nothing to
+    test (can't test an alarm that doesn't exist); and NO test asserts the cross-stage contradiction (rich sub_events + 0
+    downstream entities). Worse, the gates the tests validate ask the wrong question (groups.anomaly keys on `needed`, which was
+    itself corrupted upstream — test passes, gate fires correctly, bug still ships). FIX: every observability PR must add the
+    cross-stage yield-correlation test alongside the signal. PR-A (observe_yield) adds the first such test
+    (sub_events>0 & fulltext_nonempty=0 -> starvation) — the one that would have caught the original incident.
+
 - **[HIGH · extraction/enrichment] Group records have NO `group_name`/`name` field — ALL group enrichment + OpenSERP skipped.**
   Found in the synchronous XChannel-8 E2E (2026-10-28): Phase 2 wrote people_groups records whose ONLY keys are
   `nationality`, `event_mentions`, `GroupID`, `_schema_version`, `_last_updated` — the unit name (e.g. "1st Division")
