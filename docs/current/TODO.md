@@ -10,6 +10,27 @@ The curated list of what is still OPEN. Each points to its detail section lower 
 Everything not listed here is DONE (see §7 COMPLETED + the dated review sections).
 
 ### HIGH
+- **[HIGH · data-quality] Deterministic-vs-Grok YIELD-RATIO quality signal (design, owner-aligned 2026-10-28).** Cumulative,
+  self-calibrating data-quality assessment: a DETERMINISTIC high-recall scan of the source text produces an expected-yield
+  FLOOR per entity type; Grok's extracted count is measured against it; `ratio = produced / deterministic`. grok≈det (25 vs
+  25-28) = good; grok≪det (25 vs 0-5) = data-quality ALARM (the starvation signature). Baseline regenerated from each document
+  (no hand-maintained golden list); ratios accrue over many books into a WEIGHTED assessment. Reuses existing assets:
+  people_group_aliases/equipment_aliases/place_aliases.yaml, data/unit_nicknames.yaml, military_equipment.yaml, unit-designator
+  regex (`N(st|d|th) Division/Corps/Army`, `Force [A-Z]`, RAF, OB WEST). Alarm only when baseline >= min (e.g. 5) & ratio <
+  floor (e.g. 0.5), tunable in config. Append each (book,chapter,entity,deterministic,produced,ratio) to
+  output/metrics/yield_quality.json. Wire into observe_yield (PR-A).
+  **PEOPLE need special handling (owner):** count DISTINCT person-CLUSTERS, not mentions — "General Cota"/"Norman Cota"/"Cota"
+  = 1 (reuse batch_parallel._strip_rank + caption_names detect + src/dedup/surname_report distinct-people clustering + its
+  rare→very_common frequency bands). TWO signals, not one ratio:
+    (A) QUALITY RATIO on the HIGH-CONFIDENCE band only (rank+distinctive surname, or First Last, or repeated First M. Last) — can alarm.
+    (B) RECALL-GAP REVIEW for the AMBIGUOUS band ("Private Smith" = low-rank + common surname): deterministically detected but
+        NOT resolved to an extracted person -> emit a HUMAN FOLLOW-UP item (new `recall-gap` review category, reuse the
+        needs-review path), NEVER silently dropped and NEVER fails the run. RATIONALE (owner): "Private Smith may be a Medal of
+        Honor awardee" — ambiguity != unimportance; the asymmetric cost means ambiguous-and-unextracted must err toward
+        SURFACING for verification. GENERALIZES to all entities: any deterministic-found-but-extraction-missed item -> recall-gap
+        follow-up (unit the regex caught but Grok dropped, gazetteer place Grok missed). Over time, how often recall-gap items
+        prove real/notable also feeds the weighted assessment.
+
 - **[HIGH · observability] Observability SWALLOWS ITS OWN ALERTS — systemic, ~40 sites across 7 patterns** (audit 2026-10-28,
   full report `OBSERVABILITY_SWALLOWED_ALERTS_consolidated.md`). The `paragraph_numbers` fulltext bug (fixed PR #608) was ONE
   instance; the CLASS is open. Patterns: (1) silent except/except-pass (~15 sites); (2) anomaly logged at DEBUG (~10) — incl
