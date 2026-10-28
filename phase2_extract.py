@@ -261,6 +261,24 @@ def _mark_processed(output_root: Path, entity_type: str, event_name: str) -> Non
     marker.write_text(json.dumps(sorted(processed)))
 
 
+def _observe_optional_error(logger, entity, event_name, exc):
+    """Emit `OBSERV optional.persisted ... status=error` when an OPTIONAL extractor raised.
+
+    Without this, a crashed extractor is logged only as a generic error and the end-of-run summary
+    reads the entity's 0 persisted records as a LEGITIMATE empty — exactly the swallowed-alert shape
+    the audit targets. Fail-safe: never raises (observability must not compound the failure).
+    """
+    try:
+        logger.error(
+            "OBSERV optional.persisted entity=%s event=%s status=error error=%s",
+            entity,
+            event_name,
+            exc,
+        )
+    except Exception:  # noqa: BLE001 - never let telemetry mask the real error
+        pass
+
+
 def _extract_optional_entities(
     event_file, parsed_file, grok_client, paths, config, logger
 ):
@@ -298,14 +316,17 @@ def _extract_weather(event_file, parsed_file, grok_client, output_root, config, 
         )
     except ValueError as e:
         logger.error("    Weather config error for %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "weather", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Weather file I/O error for %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "weather", event_file.name, e)
     except BatchModeCollecting:
         logger.info(
             "OBSERV optional.collecting entity=weather event=%s", event_file.name
         )
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting weather from %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "weather", event_file.name, e)
 
 
 def _extract_equipment(event_file, grok_client, output_root, config, logger):
@@ -335,14 +356,17 @@ def _extract_equipment(event_file, grok_client, output_root, config, logger):
         )
     except json.JSONDecodeError as e:
         logger.error("    Equipment JSON parse error for %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "equipment", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Equipment file I/O error for %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "equipment", event_file.name, e)
     except BatchModeCollecting:
         logger.info(
             "OBSERV optional.collecting entity=equipment event=%s", event_file.name
         )
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting equipment from %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "equipment", event_file.name, e)
 
 
 def _extract_logistics(event_file, grok_client, output_root, config, logger):
@@ -372,14 +396,17 @@ def _extract_logistics(event_file, grok_client, output_root, config, logger):
         _mark_processed(output_root, "logistics", event_file.name)
     except json.JSONDecodeError as e:
         logger.error("    Logistics JSON parse error for %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "logistics", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Logistics file I/O error for %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "logistics", event_file.name, e)
     except BatchModeCollecting:
         logger.info(
             "OBSERV optional.collecting entity=logistics event=%s", event_file.name
         )
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting logistics from %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "logistics", event_file.name, e)
 
 
 def _extract_casualties(event_file, grok_client, output_root, config, logger):
@@ -409,14 +436,17 @@ def _extract_casualties(event_file, grok_client, output_root, config, logger):
         _mark_processed(output_root, "casualties", event_file.name)
     except json.JSONDecodeError as e:
         logger.error("    Casualties JSON parse error for %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "casualties", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Casualties file I/O error for %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "casualties", event_file.name, e)
     except BatchModeCollecting:
         logger.info(
             "OBSERV optional.collecting entity=casualties event=%s", event_file.name
         )
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting casualties from %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "casualties", event_file.name, e)
 
 
 def _extract_supplemental(event_file, grok_client, output_root, config, logger):
@@ -448,14 +478,17 @@ def _extract_supplemental(event_file, grok_client, output_root, config, logger):
         _mark_processed(output_root, "supplemental", event_file.name)
     except json.JSONDecodeError as e:
         logger.error("    Supplemental JSON parse error for %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "supplemental", event_file.name, e)
     except (OSError, IOError) as e:
         logger.error("    Supplemental file I/O error for %s: %s", event_file.name, e)
+        _observe_optional_error(logger, "supplemental", event_file.name, e)
     except BatchModeCollecting:
         logger.debug("    Batch collecting (supplemental): %s", event_file.name)
     except Exception as e:  # pylint: disable=broad-except
         logger.error(
             "    Error extracting supplemental from %s: %s", event_file.name, e
         )
+        _observe_optional_error(logger, "supplemental", event_file.name, e)
 
 
 def _extract_maps(output_root, config, logger):

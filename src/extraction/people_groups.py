@@ -18,6 +18,7 @@ from ulid import new as new_ulid
 from src.grok_client import GrokClient
 from src.json_schemas import PEOPLE_GROUP_ITEM_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
+from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
 from src.utils.text_utils import normalize_name
 
 logger = logging.getLogger(__name__)
@@ -278,6 +279,24 @@ def _save_group(
             logger.warning("    Create blocked (schema guard rejected): %s", group_name)
 
 
+def _observe_groups_yield(event_data: dict, produced: int) -> None:
+    """Emit the expected-yield baseline for groups (fail-safe): distinguishes a starved event
+    (sub-events had no resolved fulltext) from a genuinely group-free section."""
+    try:
+        event_obj = event_data.get("Event", {}) if isinstance(event_data, dict) else {}
+        sub_events = event_obj.get("Sub-events", []) or []
+        event_id = event_obj.get("EventID", "") or "?"
+        observe_yield(
+            "groups",
+            event_id,
+            len(sub_events),
+            count_nonempty_fulltext(event_data),
+            produced,
+        )
+    except Exception as e:  # noqa: BLE001 - observability must never break extraction
+        logger.debug("groups yield observe skipped: %s", e)
+
+
 def extract_people_groups(
     event_file: Path, grok_client: GrokClient, output_dir: Path
 ) -> Optional[Path]:
@@ -332,6 +351,7 @@ def extract_people_groups(
 
     if not groups:
         logger.info("  No people groups found")
+        _observe_groups_yield(event_data, 0)
         return groups_dir
 
     groups = _fix_invalid_ulids(groups)
@@ -357,4 +377,5 @@ def extract_people_groups(
     _mark_as_processed(
         groups_dir, event_file, len(groups), event_data.get("extracted_date", "")
     )
+    _observe_groups_yield(event_data, len(groups))
     return groups_dir

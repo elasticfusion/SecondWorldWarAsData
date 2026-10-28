@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field, field_validator
 from src.grok_client import GrokClient, BatchModeCollecting
 from src.utils.http_pool import get_session
 from src.utils.json_validator import _fix_invalid_ulids
+from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
 
 logger = logging.getLogger(__name__)
 
@@ -2957,6 +2958,24 @@ def _link_date_to_mention(
     logger.debug("Linked to date %s", mention["DateID"])
 
 
+def _observe_equipment_yield(event_data: dict, produced: int) -> None:
+    """Emit the expected-yield baseline for equipment (fail-safe). Separates a starved event
+    (sub-events had no resolved fulltext) from a genuinely equipment-free section."""
+    try:
+        event_obj = event_data.get("Event", {}) if isinstance(event_data, dict) else {}
+        sub_events = event_obj.get("Sub-events", []) or []
+        event_id = event_obj.get("EventID", "") or "?"
+        observe_yield(
+            "equipment",
+            event_id,
+            len(sub_events),
+            count_nonempty_fulltext(event_data),
+            produced,
+        )
+    except Exception as e:  # noqa: BLE001 - observability must never break extraction
+        logger.debug("equipment yield observe skipped: %s", e)
+
+
 def extract_equipment_from_event(
     event_file: Path,
     output_dir: Path,
@@ -3026,6 +3045,7 @@ def extract_equipment_from_event(
     equipment_list = _extract_equipment_with_llm(event_data, grok_client, max_retries)
     if not equipment_list:
         logger.info("  No equipment extracted")
+        _observe_equipment_yield(event_data, 0)
         return []
 
     # Process all equipment items
@@ -3052,6 +3072,7 @@ def extract_equipment_from_event(
 
     # Finalize
     _finalize_extraction(output_dir, modified_files, event_file, processed)
+    _observe_equipment_yield(event_data, len(equipment_list))
     return modified_files
 
 

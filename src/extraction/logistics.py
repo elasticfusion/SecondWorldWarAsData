@@ -11,6 +11,7 @@ import ulid
 from pydantic import BaseModel, Field
 
 from src.grok_client import GrokClient, BatchModeCollecting, GrokTruncationError
+from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
 
 logger = logging.getLogger(__name__)
 
@@ -340,8 +341,15 @@ Return empty logistics arrays for sub-events with no issues."""
         from src.utils.prompt_loader import render_prompt as _rp
 
         prompt = _rp("logistics", sub_event_block=sub_event_block)
-    except Exception:
-        pass
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - never call the API with an unrendered prompt
+        # A prompt-build failure (template drift / missing var) must NOT fall through to the API
+        # with the raw unrendered f-string (which yields garbage/empty that reads as "0 logistics").
+        logger.error(
+            "OBSERV logistics.prompt_build_failed -> returning {} (no API call): %s", e
+        )
+        return {}
 
     try:
         response = grok_client.extract_json(
@@ -878,8 +886,20 @@ def extract_logistics_from_event(
     if extracted_count > 0:
         logger.info("Extracted %d logistics issue(s)", extracted_count)
 
+    _observe_logistics_yield(event, event_data, sub_events, extracted_count)
     _rebuild_index(logistics_dir)
     return logistics_dir if extracted_count > 0 else None
+
+
+def _observe_logistics_yield(event, event_data, sub_events, extracted_count) -> None:
+    """Emit the logistics expected-yield baseline (fail-safe)."""
+    observe_yield(
+        "logistics",
+        (event.get("EventID") if isinstance(event, dict) else "") or "?",
+        len(sub_events),
+        count_nonempty_fulltext(event_data),
+        extracted_count,
+    )
 
 
 def _rebuild_index(logistics_dir: Path) -> None:

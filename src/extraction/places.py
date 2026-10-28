@@ -10,8 +10,13 @@ import ulid
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.grok_client import GrokClient
+from src.extraction.starvation_signal import (
+    note_empty_fulltext_skip,
+    warn_all_subevents_empty,
+)
 from src.utils.file_lock import write_json_with_lock
 from src.utils.json_validator import _fix_invalid_ulids
+from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
 
 from src.utils.prompt_loader import get_system_prompt
 
@@ -223,7 +228,10 @@ def _fix_null_fields(data: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def create_place_prompt(
-    sub_event: Dict[str, Any], event_id: str, event_name: str
+    sub_event: Dict[str, Any],
+    event_id: str,
+    event_name: str,
+    empty_counter: Optional[dict] = None,
 ) -> str:
     """Create prompt for place extraction from a sub-event."""
     sub_event_id = sub_event.get("Sub-eventID", "")
@@ -236,7 +244,7 @@ def create_place_prompt(
     text = "\n\n".join(text_parts)
 
     if not text.strip():
-        logger.debug("Skipping empty sub-event %s (places)", sub_event_id)
+        note_empty_fulltext_skip("places", sub_event_id, empty_counter)
         return ""
 
     from src.utils.prompt_loader import get_system_prompt, render_prompt
@@ -284,12 +292,13 @@ def _extract_place_for_sub_event(
     event_name: str,
     grok_client: GrokClient,
     max_retries: int,
+    empty_counter: Optional[dict] = None,
 ) -> Optional[Dict[str, Any]]:
     """Extract places for a single sub-event with retry logic."""
     sub_event_id = sub_event.get("Sub-eventID", "")
     logger.info("  Processing sub-event %s", sub_event_id)
 
-    prompt = create_place_prompt(sub_event, event_id, event_name)
+    prompt = create_place_prompt(sub_event, event_id, event_name, empty_counter)
     if not prompt:
         return None
 
@@ -368,13 +377,14 @@ def extract_places(
     sub_events = event_obj.get("Sub-events", [])
 
     places_updated = 0
+    empty_counter: dict = {"empty": 0}
 
     for sub_event in sub_events:
         sub_event_id = sub_event.get("Sub-eventID", "")
         sub_event_name = sub_event.get("Sub-event_summary", "")
 
         place_dict = _extract_place_for_sub_event(
-            sub_event, event_id, event_name, grok_client, max_retries
+            sub_event, event_id, event_name, grok_client, max_retries, empty_counter
         )
 
         if not place_dict:
@@ -413,14 +423,33 @@ def extract_places(
     index_file = places_dir / "index.json"
     write_json_with_lock(index_file, index)
 
-    logger.info(f"  Updated {places_updated} place(s) in central repository")
+    _observe_places_yield(
+        event_data, event_id, sub_events, places_updated, empty_counter
+    )
+    return places_dir if places_updated > 0 else None
+
+
+def _observe_places_yield(
+    event_data, event_id, sub_events, places_updated, empty_counter
+):
+    """Emit the places extract rollup + expected-yield baseline + all-empty alarm. Fail-safe."""
+    logger.info("  Updated %d place(s) in central repository", places_updated)
     logger.info(
         "OBSERV places.extract event_id=%s sub_events=%d places_updated=%d",
         event_id or "?",
         len(sub_events),
         places_updated,
     )
-    return places_dir if places_updated > 0 else None
+    observe_yield(
+        "places",
+        event_id or "?",
+        len(sub_events),
+        count_nonempty_fulltext(event_data),
+        places_updated,
+    )
+    warn_all_subevents_empty(
+        "places", event_id or "?", len(sub_events), int(empty_counter.get("empty", 0))
+    )
 
 
 def _find_or_create_place(

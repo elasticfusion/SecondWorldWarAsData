@@ -12,9 +12,14 @@ import ulid
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.grok_client import GrokClient, BatchModeCollecting, GrokTruncationError
+from src.extraction.starvation_signal import (
+    note_empty_fulltext_skip,
+    warn_all_subevents_empty,
+)
 from src.utils.file_lock import write_json_with_lock
 from src.utils.fetch_provenance import STRUCTURED, recorded_fetch
 from src.utils.json_validator import _fix_invalid_ulids
+from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
 
 from src.utils.prompt_loader import get_system_prompt
 
@@ -672,6 +677,7 @@ def create_weather_prompt(
     event_id: str,
     event_name: str,
     places_index: Optional[Dict[str, str]] = None,
+    empty_counter: Optional[dict] = None,
 ) -> str:
     """Create prompt for weather extraction."""
     sub_event_id = sub_event.get("Sub-eventID", "")
@@ -680,7 +686,7 @@ def create_weather_prompt(
 
     text = "\n".join(fulltext.values())
     if not text.strip() and not sub_event_summary.strip():
-        logger.debug("Skipping empty sub-event %s (weather)", sub_event_id)
+        note_empty_fulltext_skip("weather", sub_event_id, empty_counter)
         return ""
 
     # Extract available PlaceIDs and DateIDs
@@ -770,6 +776,7 @@ def _batch_extract_weather(
     max_retries: int,
     places_index: Optional[Dict[str, str]] = None,
     chunk_size: int = 10,
+    empty_counter: Optional[dict] = None,
 ) -> Dict[str, List[Dict[str, Any]]]:
     """Extract weather from sub-events, chunked for large chapters.
 
@@ -786,6 +793,7 @@ def _batch_extract_weather(
         fulltext = se.get("Sub-event_fulltext", {})
         text = "\n".join(fulltext.values()) if fulltext else ""
         if not text:
+            note_empty_fulltext_skip("weather", seid, empty_counter)
             continue
         places_section = _build_places_section(se, places_index)
         dates_section = _build_dates_section(se)
@@ -997,8 +1005,15 @@ def extract_weather_central(
     places_name_index = _build_places_name_index(places_dir)
 
     # Batch extract from all sub-events in single API call
+    empty_counter: dict = {"empty": 0}
     batch_results = _batch_extract_weather(
-        sub_events, event_id, event_name, grok_client, max_retries, places_name_index
+        sub_events,
+        event_id,
+        event_name,
+        grok_client,
+        max_retries,
+        places_name_index,
+        empty_counter=empty_counter,
     )
 
     weather_updated = _process_weather_mentions(
@@ -1021,6 +1036,19 @@ def extract_weather_central(
     _save_weather_processed(weather_dir, _processed)
 
     logger.info("Updated %d weather mentions in central repository", weather_updated)
+    logger.info(
+        "OBSERV weather.extract event_id=%s sub_events=%d weather_updated=%d",
+        event_id or "?",
+        len(sub_events),
+        weather_updated,
+    )
+    fulltext_nonempty = count_nonempty_fulltext(event_data)
+    observe_yield(
+        "weather", event_id or "?", len(sub_events), fulltext_nonempty, weather_updated
+    )
+    warn_all_subevents_empty(
+        "weather", event_id or "?", len(sub_events), int(empty_counter.get("empty", 0))
+    )
     return weather_dir if weather_updated > 0 else None
 
 
