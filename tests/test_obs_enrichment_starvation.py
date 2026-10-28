@@ -35,7 +35,9 @@ def test_search_starvation_warns_when_searched_far_below_eligible(tmp_path, capl
     oe.reset_metrics()
     oe._metric("entities_eligible", 14)
     oe._metric("entities_searched", 1)
-    oe._metric("entities_enriched", 1)  # avoid the 0-enriched anomaly; isolate the starvation one
+    oe._metric(
+        "entities_enriched", 1
+    )  # avoid the 0-enriched anomaly; isolate the starvation one
     with caplog.at_level(logging.WARNING, logger=oe.__name__):
         oe.write_metrics(tmp_path)
     anomalies = [
@@ -111,7 +113,8 @@ def test_usable_entity_name_counts_skips():
 
 def test_observability_is_fail_safe_on_bad_snapshot(tmp_path, monkeypatch):
     """write_metrics must never raise even if the snapshot is malformed — the try/except boundary
-    inside write_metrics is the fail-safe contract (observability can't halt the phase)."""
+    inside write_metrics is the fail-safe contract (observability can't halt the phase).
+    """
     monkeypatch.setattr(
         oe, "get_metrics", lambda: {"generated_at": None}
     )  # missing every key
@@ -152,7 +155,8 @@ def test_mark_backend_down_fail_safe():
 
 def test_openserp_disabled_tags_entry_backend_down(monkeypatch):
     """When OpenSERP was disabled for the run, _search_openserp_archive returns None AND tags the
-    entry so the resulting miss is recorded as a transient outage, not an authoritative absence."""
+    entry so the resulting miss is recorded as a transient outage, not an authoritative absence.
+    """
     monkeypatch.setattr(br, "_openserp_down", True)
     entry: dict = {}
     result = br._search_openserp_archive(
