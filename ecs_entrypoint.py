@@ -792,23 +792,13 @@ def run_phase(phase_script: str, extra_args: list) -> None:
         run_submit_only(phase_script, extra_args)
         return
 
-    # Defect guard (St. Vith 2026-09-27): in AWS/ECS mode, a batch-requested run
-    # MUST go through submit-only so the batch is enqueued (batch_job#) for the
-    # poller. If batch was requested (--batch) but _should_use_batch_mode said no
-    # (e.g. a config-read failure), running the in-process path would submit a
-    # batch that the poller never sees. Route to submit-only instead of silently
-    # taking the orphaning path.
-    _in_ecs = bool(
-        os.environ.get("ECS_TASK_ID") or os.environ.get("ECS_CONTAINER_METADATA_URI_V4")
+    # Defect guard (St. Vith 2026-09-27): in AWS/ECS a --batch run normally goes submit-only so the
+    # batch is enqueued for the poller. An EXPLICIT disable (config/env) instead strips --batch and
+    # runs synchronous. Returns (handled, extra_args): handled -> it already ran submit-only.
+    handled, extra_args = _resolve_ecs_batch_args(
+        phase_script, extra_args, phase_name, sync
     )
-    if _in_ecs and "--batch" in extra_args:
-        logger.error(
-            "Batch requested (--batch) but batch-mode routing said no — forcing "
-            "submit-only so the batch is enqueued for the poller (avoids orphaned "
-            "batch, St. Vith 2026-09-27). Check /app/config.yaml batch.* config."
-        )
-        sync.stop()
-        run_submit_only(phase_script, extra_args)
+    if handled:
         return
 
     env = os.environ.copy()
@@ -911,6 +901,62 @@ def _env_batch_override(phase_key: str) -> "Optional[bool]":
         raw,
     )
     return None
+
+
+def _resolve_ecs_batch_args(phase_script, extra_args, phase_name, sync):
+    """St. Vith guard. In ECS, a --batch run normally force-submits (poller enqueue). An EXPLICIT
+    disable strips --batch and runs synchronous. Returns (handled, extra_args): handled=True means
+    submit-only already ran and the caller must return.
+    """
+    _in_ecs = bool(
+        os.environ.get("ECS_TASK_ID") or os.environ.get("ECS_CONTAINER_METADATA_URI_V4")
+    )
+    if not (_in_ecs and "--batch" in extra_args):
+        return False, extra_args
+    if _batch_explicitly_disabled(phase_script):
+        logger.info(
+            "Batch EXPLICITLY disabled for %s — stripping --batch, running synchronous "
+            "in-process (no batch submitted)",
+            phase_name,
+        )
+        return False, [a for a in extra_args if a != "--batch"]
+    logger.error(
+        "Batch requested (--batch) but batch-mode routing said no — forcing submit-only so the "
+        "batch is enqueued for the poller (avoids orphaned batch, St. Vith 2026-09-27). Check "
+        "/app/config.yaml batch.* config."
+    )
+    sync.stop()
+    run_submit_only(phase_script, extra_args)
+    return True, extra_args
+
+
+def _batch_explicitly_disabled(phase_script: str) -> bool:
+    """True iff batch is EXPLICITLY turned off for this phase (env override falsy, or config
+    batch.<phase> present and falsy). Distinct from a config-READ failure — which must still
+    fail-safe to submit-only (St. Vith poller-orphan guard). Used so an INTENTIONAL disable runs
+    synchronous in-process instead of being force-submitted as a batch. Fail-safe: on any read
+    error returns False (i.e. NOT explicitly disabled -> the guard keeps its safe behavior).
+    """
+    import yaml
+
+    phase_key = (
+        "phase2"
+        if "phase2" in phase_script
+        else "phase3" if "phase3" in phase_script else ""
+    )
+    if not phase_key:
+        return False
+    override = _env_batch_override(phase_key)
+    if override is not None:
+        return override is False
+    try:
+        with open("/app/config.yaml", encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
+        batch_cfg = cfg.get("batch", {})
+        # Explicit key present AND falsy == intentional disable. Absent key != explicit.
+        return phase_key in batch_cfg and not batch_cfg.get(phase_key)
+    except Exception:  # noqa: BLE001 - a read error is NOT an explicit disable
+        return False
 
 
 def _should_use_batch_mode(phase_script: str) -> bool:
