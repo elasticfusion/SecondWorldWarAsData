@@ -197,6 +197,74 @@ def _build_place_image_entry(
     return entry
 
 
+def _read_place_id(place_file: Path) -> Optional[str]:
+    """PlaceID from a resolved place file, or None. Fail-safe."""
+    try:
+        import json as _json
+
+        rec = _json.loads(place_file.read_text(encoding="utf-8"))
+        return rec.get("PlaceID") if isinstance(rec, dict) else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _find_image_record_by_url(images_dir: Path, url: str) -> Optional[Path]:
+    """The images/*.json record file whose url matches, or None. Fail-safe."""
+    import json as _json
+
+    try:
+        for imf in images_dir.glob("*.json"):
+            if imf.name == "index.json":
+                continue
+            try:
+                rec = _json.loads(imf.read_text(encoding="utf-8"))
+            except Exception:  # noqa: BLE001
+                continue
+            if isinstance(rec, dict) and (rec.get("url") or "") == url:
+                return imf
+    except Exception:  # noqa: BLE001
+        return None
+    return None
+
+
+def _set_image_content_location(
+    out: Path, url: str, place_file: Path, place_name: str
+) -> bool:
+    """Set schema.org ``contentLocation`` ({PlaceID,name}) = the depicted place on the first-class
+    image record (out/images/*.json) whose url matches. Deterministic (PlaceID read from the resolved
+    place file, not guessed). Idempotent + fail-safe; True iff written."""
+    try:
+        import json as _json
+
+        images_dir = out / "images"
+        if not images_dir.exists():
+            return False
+        place_id = _read_place_id(place_file)
+        if not place_id:
+            return False
+        imf = _find_image_record_by_url(images_dir, url)
+        if imf is None:
+            return False
+        rec = _json.loads(imf.read_text(encoding="utf-8"))
+        existing = rec.get("contentLocation")
+        if isinstance(existing, dict) and existing.get("PlaceID") == place_id:
+            return False  # idempotent
+        rec["contentLocation"] = {"PlaceID": place_id, "name": place_name}
+        from src.utils.file_lock import write_json_with_lock
+
+        if write_json_with_lock(imf, rec, entity="images"):
+            logger.info(
+                "OBSERV image_place.content_location image=%s place=%s",
+                imf.stem,
+                place_id,
+            )
+            return True
+        return False
+    except Exception as e:  # noqa: BLE001
+        logger.warning("OBSERV image_place.error reason=%s", str(e)[:120])
+        return False
+
+
 def _append_place_image(
     place_file: Path,
     url: str,
@@ -398,6 +466,8 @@ def _link_one_image(
                 summary["created"] += 1
             if _append_place_image(pf, url, caption, book, section_id):
                 summary["linked"] += 1
+                # Tier-1: also set contentLocation (the depicted PlaceID) on the image record.
+                _set_image_content_location(places_dir.parent, url, pf, name)
             else:
                 summary["skipped"] += 1
     except Exception as e:  # noqa: BLE001 - linking must never crash the pipeline

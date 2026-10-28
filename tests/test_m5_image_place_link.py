@@ -189,3 +189,31 @@ def test_ulid_attribution_from_source_section(tmp_path):
         rec["images"][0]["SourceSectionID"] == sid
     )  # durable ULID attribution written
     assert rec["images"][0]["source"] == "document:XChannel"
+
+
+def test_content_location_set_on_image_record(tmp_path):
+    """Tier-1: the depicted PlaceID is written as contentLocation on the images/*.json record."""
+    import json as _json
+
+    d = _places(tmp_path, ["Omaha Beach"])
+    pid = _json.loads((d / "p0.json").read_text())["PlaceID"]
+    # a Phase-2 image record for the same url
+    images = tmp_path / "images"
+    images.mkdir()
+    (images / "01HXIMGZZZZZZZZZZZZZZZZZZZ.json").write_text(
+        _json.dumps(
+            {"ImageID": "01HXIMGZZZZZZZZZZZZZZZZZZZ", "url": "https://x/terrain.jpg"}
+        )
+    )
+    docs = [
+        {
+            "book": "X",
+            "images": [
+                {"url": "https://x/terrain.jpg", "caption": "TERRAIN ON OMAHA BEACH."}
+            ],
+        }
+    ]
+    IPL.link_images_to_places(docs, d, grok_client=None)
+    rec = _json.loads((images / "01HXIMGZZZZZZZZZZZZZZZZZZZ.json").read_text())
+    assert rec["contentLocation"]["PlaceID"] == pid
+    assert rec["contentLocation"]["name"] == "OMAHA BEACH"
