@@ -25,6 +25,7 @@ But it is **not the same problem**, and we should borrow, not adopt wholesale:
 | Optimized for *discovery* + rich snippets; lax, publisher-friendly typing | Optimized for *provenance + queryable truth*; strict JSON-Schema + ULID identity + write-guard |
 | Little notion of source confidence / qualification | Source qualification, confidence, `null-over-fake` are first-class |
 | "Now"-centric; weak historical-date modeling (no fuzzy intervals, no pre-1 AD rigor) | Fuzzy date intervals, `resolved_earliest/latest`, precision are core |
+| **"Now"-centric STATEFUL attributes** — a Person's `honorificPrefix`/`rank`/`hasOccupation`/`affiliation` describe the entity's *current* state (one value) | **Moment-in-time**: title/rank/role/affiliation are only true within a date interval, and a source's stated title is anchored to the SOURCE's date (General Marshall 1944 → Secretary of State Marshall 1947). Such attributes must be **time-bounded dated arrays with provenance**, never flat. |
 | Identity by URL (`@id`, `sameAs` to Wikipedia/Wikidata) | Identity by internal ULID; external IDs would be *additive* cross-walk |
 | Flat, open (`additionalProperty` escape hatch) | Closed (`additionalProperties:false`) + version-gated |
 | No military domain (rank, OOB, command, campaign) | Military domain is the whole point |
@@ -44,10 +45,13 @@ Each section below: **schema.org type** → concrete **ADD** suggestions (additi
 Our schema is already rich (ranks, awards, units, group_affiliations, education, bio sources). Gaps
 schema.org highlights:
 
-> **DECISIONS (owner, 2026-10-27):** ✅ ADOPT `sameAs`, `identifier`, `honorificPrefix`/`honorificSuffix`,
-> `givenName`/`familyName`/`additionalName`. ❌ DO **NOT** adopt `hasOccupation` (redundant with our
-> `role_type`; its distinctive value — O*NET codes, civilian-career timelines — is low-value for a WWII
-> event graph; if "roles over time" is ever wanted, make `role_type` a small `{role, from, to}` array in
+> **DECISIONS (owner, 2026-10-27):** ✅ ADOPT `sameAs`, `identifier`,
+> `givenName`/`familyName`/`additionalName`. ⚠️ `honorificPrefix`/`honorificSuffix`: do NOT adopt as flat
+> fields — titles/ranks are MOMENT-IN-TIME (General Marshall 1944 → Secretary of State Marshall 1947);
+> instead generalize the dated `ranks` pattern into a time-bounded `titles`/`honorifics` array
+> ({title, kind, from, to, source_date, SourceSectionID}). ❌ DO **NOT** adopt `hasOccupation` (redundant
+> with our `role_type`; its distinctive value — O*NET codes, civilian-career timelines — is low-value for
+> a WWII event graph; if "roles over time" is ever wanted, make `role_type` a small `{role, from, to}` array in
 > our own idiom instead). ❌ DO **NOT** adopt generic `relatedTo`/`knows`/`colleague` — a generic person-person edge
 > array is O(n²) on dense command networks AND unsourced (co-mention ≠ "knew"); the relationships we need
 > are already grounded via shared `event_mentions` + command structure (M6 / `group_affiliations` /
@@ -62,14 +66,18 @@ schema.org highlights:
 - ⭐ **`identifier`** (PropertyValue) — ✅ ADOPT. Typed external identifiers (service_number, VIAF,
   Wikidata QID) as `{propertyID, value}` (our own CLOSED sub-schema). More structured + matchable than
   stuffing them into `aliases`.
-- ◆ **`honorificPrefix` / `honorificSuffix`** — ✅ ADOPT (with shape nuance). Maps to rank/title +
-  post-nominals (e.g. "Gen.", "VC", "KBE"). CARDINALITY: schema.org types BOTH as a single `Text`, but
-  for us **`honorificSuffix` should be an ARRAY** — WWII post-nominals stack ("VC, DSO, MC") and must be
-  individually queryable; `honorificPrefix` can stay a single string. OVERLAP WARNING: `honorificSuffix`
-  duplicates the authoritative structured `military_awards[]` ({award,class,date_awarded}) — prefer to
-  DERIVE the post-nominal letters from `military_awards` at display time rather than store a parallel
-  field that can drift; and `honorificPrefix` largely overlaps the existing `rank` field (so it is the
-  lowest-value of the four, mostly adding civilian titles like "Sir"/"Dr.").
+- ◆ **`honorificPrefix` / `honorificSuffix`** — ⚠️ REVISED DECISION (owner, 2026-10-27): do **NOT** adopt
+  them as flat/static fields. schema.org types them as a single `Text` and is **"now"-focused** (the
+  entity's *current* title for a search snippet). Our corpus is **moment-in-time focused**: a title/rank
+  is only true within a date interval, and a source's stated title is anchored to the SOURCE's date.
+  Example — **George Marshall** is "General Marshall" in a 1944 source but "Secretary of State Marshall"
+  in a 1947 one; a single value (or an unordered array) is historically WRONG. INSTEAD: generalize the
+  EXISTING dated-`ranks` pattern (`{rank, date, branch}`) into a time-bounded **`titles`/`honorifics`
+  array** of `{title, kind: rank|office|honorific|post_nominal, from, to, source_date, SourceSectionID,
+  confidence}` — military rank, civilian office, and honorific all handled uniformly, each with its
+  validity interval + provenance, NEVER overwriting an earlier source-stated title with a later one. The
+  top-level `rank` string stays only as a convenience denormalization; the dated array is the authority.
+  Post-nominals ("VC, DSO, MC") are better DERIVED from `military_awards[]` than stored in parallel.
 - ◆ **`givenName` / `familyName` / `additionalName`** — ✅ ADOPT. Structured name parts. We only store the
   full `name` + `aliases`; structured parts help the surname-matching the M3 linker already does by hand.
 - ◆ **`hasOccupation`** (Occupation) — ❌ NOT ADOPTED. Redundant with `role_type`; schema.org's extras
