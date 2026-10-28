@@ -1,0 +1,580 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "PlaceID": {
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "type": "string"
+    },
+    "_last_updated": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": "string"
+    },
+    "_schema_version": {
+      "type": "string"
+    },
+    "additionalProperty": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "propertyID": {
+            "type": "string"
+          },
+          "unitCode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "value": {
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "aliases": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "bounding_box": {
+      "additionalProperties": false,
+      "properties": {
+        "east": {
+          "type": "number"
+        },
+        "north": {
+          "type": "number"
+        },
+        "south": {
+          "type": "number"
+        },
+        "west": {
+          "type": "number"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "containedInPlace": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "PlaceID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "containsPlace": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "PlaceID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "coordinates": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "latitude": {
+          "maximum": 90,
+          "minimum": -90,
+          "type": "number"
+        },
+        "longitude": {
+          "maximum": 180,
+          "minimum": -180,
+          "type": "number"
+        },
+        "precision": {
+          "enum": [
+            "exact",
+            "approximate",
+            "estimated",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "country": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "current_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "elevation_m": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "enrichment_status": {
+      "enum": [
+        "enriched",
+        "not_found",
+        "geocoded",
+        "geocode_low_confidence",
+        "geocode_not_found",
+        "geocode_error",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_mentions": {
+      "items": {
+        "properties": {
+          "DateMentionID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "EventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "Event_Name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "MentionID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "Sub_eventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "Sub_event_Name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "author": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "book": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "context": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "date_context": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "nationality": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "original_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "role_in_event": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "series": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "geo": {
+      "additionalProperties": false,
+      "properties": {
+        "SourceSectionID": {
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "radius_m": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "shape_type": {
+          "enum": [
+            "point",
+            "line",
+            "polygon",
+            "circle",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vertices": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "lat": {
+                "maximum": 90,
+                "minimum": -90,
+                "type": "number"
+              },
+              "long": {
+                "maximum": 180,
+                "minimum": -180,
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "geo_review": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "geocode_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "geography_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "grokipedia_checked_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "grokipedia_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hierarchy": {
+      "type": [
+        "array",
+        "object",
+        "null"
+      ]
+    },
+    "historical_names": {
+      "items": {
+        "type": [
+          "string",
+          "object"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "identified_as": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "images": {
+      "items": {
+        "type": [
+          "object",
+          "string"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "last_enrichment_search": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "latitude": {
+      "maximum": 90,
+      "minimum": -90,
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "longitude": {
+      "maximum": 180,
+      "minimum": -180,
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "map_urls": {
+      "properties": {
+        "google_maps": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "openstreetmap": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "openserp_searched": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "openserp_searched_at": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "place_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "place_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quality_flags": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "related_places": {
+      "items": {
+        "properties": {
+          "PlaceID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "relationship": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "sameAs": {
+      "items": {
+        "pattern": "^https?://",
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_language": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "web_results": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "wikipedia_checked_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "wikipedia_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "PlaceID"
+  ],
+  "title": "Places Output File",
+  "type": "object",
+  "version": "2.30"
+}
