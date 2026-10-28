@@ -34,3 +34,11 @@ rules:
   - Use prefix format for approximate dates: mid-1944-07, summer-1942, early-1944
   - Precision values: exact, early, mid, late, seasonal, approximate
   - If no dates found, return empty Date_Mentions array
+  - |
+    CONJUNCTIONS = SEPARATE DATE MENTIONS. When distinct dates/times are joined by "and"/"or"
+    or listed with commas, emit ONE Date_Mentions entry per date — NEVER a single merged record.
+    Examples:
+    - "6 and 7 June 1944" -> TWO entries: one date_start "1944-06-06", one "1944-06-07".
+    - "0630, 0730, and 0830 hours" -> THREE entries, one per time_start.
+    A genuine single range ("from 6 to 9 June") is ONE entry (date_start + date_end); only split
+    when the text lists distinct points, not a continuous span.

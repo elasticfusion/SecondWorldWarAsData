@@ -39,3 +39,12 @@ rules:
   - Paragraph numbers must be integers, not strings
   - Group related paragraphs into coherent sub-events
   - Each paragraph should belong to exactly one sub-event
+  - |
+    CONJUNCTIONS = SEPARATE SUB-EVENTS. When a passage describes distinct happenings joined by
+    "and"/"or" or in a comma list, do NOT merge them into one sub-event — emit ONE sub-event per
+    distinct happening, NEVER a single merged record.
+    Examples:
+    - "the landings at Utah and Omaha" (two distinct assaults) -> TWO sub-events: one for the
+      Utah Beach landing, one for the Omaha Beach landing.
+    - "the capture of Carentan, the relief of the 101st, and the link-up at the causeway" ->
+      THREE sub-events, one per distinct action.

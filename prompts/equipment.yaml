@@ -141,3 +141,10 @@ rules:
     reconcile them. Tracing every fact to its origin is NON-NEGOTIABLE: always populate
     original_text with the verbatim passage/narration the mention came from.
   - "If no equipment found, return empty Equipment array"
+  - |
+    CONJUNCTIONS = SEPARATE EQUIPMENT. When distinct equipment is joined by "and"/"or" or
+    listed with commas, emit ONE Equipment record per item — NEVER a single merged record
+    (do NOT put "DD tanks and howitzers" in one name). Examples:
+    - "DD tanks and howitzers" -> TWO records: one name "DD tank", one name "howitzer".
+    - "rifles, grenades, and mortars" -> THREE records: "rifle", "grenade", "mortar".
+    Each item keeps its own category/subcategory and its own original_text.

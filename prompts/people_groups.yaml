@@ -80,3 +80,10 @@ rules:
   - Use official military designations (e.g., "80th Infantry Division" not "80th Division")
   - Include both Allied and Axis organizations
   - If no people groups found, return empty People_Groups array
+  - |
+    CONJUNCTIONS = SEPARATE GROUPS. When distinct units/organizations are joined by "and"/"or"
+    or in a comma list — including a SHARED trailing noun ("Divisions") — emit ONE People_Groups
+    record per unit with its FULL official group_name, NEVER a single merged record. Examples:
+    - "101st and 82d Airborne Divisions" -> TWO groups: group_name "101st Airborne Division" and
+      group_name "82d Airborne Division" (distribute the shared "Airborne Division" to each).
+    - "Force U, Force O, and Force B" -> THREE groups, one per force.

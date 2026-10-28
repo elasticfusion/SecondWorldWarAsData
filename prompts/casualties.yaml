@@ -95,6 +95,15 @@ rules:
   - POW entries MUST include both "captured" (the prisoners) and "captor" (who captured them) organizations
   - Country codes use ISO 3166-1 alpha-3
   - If no casualties found for a sub-event, return empty array for that key
+  - |
+    CONJUNCTIONS = SEPARATE ENTITIES. Within a casualty record, when distinct organizations,
+    people, places, or equipment are joined by "and"/"or" or in a comma list, emit ONE object per
+    item in the relevant list (impacted_organizations, impacted_people, impacted_places,
+    impacted_equipment) — NEVER a single merged entry. Examples:
+    - "losses in the 101st and 82d Airborne Divisions" -> impacted_organizations has TWO entries:
+      {"name": "101st Airborne Division", ...} and {"name": "82d Airborne Division", ...}.
+    - "casualties at St. Lô, Carentan, and Isigny" -> impacted_places has THREE entries, one per
+      place. (This is distinct from the per-side/nationality rule above, which still applies.)
   - Do NOT include equipment or materiel losses — only personnel casualties
   - The impacted_equipment field is CONTEXT only -- equipment INVOLVED in a PERSONNEL
     casualty. Set relation to causative (the vehicle/weapon that caused it), medical
