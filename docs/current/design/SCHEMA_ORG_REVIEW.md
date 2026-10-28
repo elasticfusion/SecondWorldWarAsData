@@ -44,22 +44,43 @@ Each section below: **schema.org type** → concrete **ADD** suggestions (additi
 Our schema is already rich (ranks, awards, units, group_affiliations, education, bio sources). Gaps
 schema.org highlights:
 
-- ⭐ **`sameAs`** (array of URL) — authoritative external IDs for the person: Wikidata (`Q…`), VIAF,
-  LCCN, Wikipedia, DBpedia. We already capture `wikipedia_url`/`grokipedia_url` inside
+> **DECISIONS (owner, 2026-10-27):** ✅ ADOPT `sameAs`, `identifier`, `honorificPrefix`/`honorificSuffix`,
+> `givenName`/`familyName`/`additionalName`. ❌ DO **NOT** adopt `hasOccupation` (redundant with our
+> `role_type`; its distinctive value — O*NET codes, civilian-career timelines — is low-value for a WWII
+> event graph; if "roles over time" is ever wanted, make `role_type` a small `{role, from, to}` array in
+> our own idiom instead). ❌ DO **NOT** adopt generic `relatedTo`/`knows`/`colleague` — a generic person-person edge
+> array is O(n²) on dense command networks AND unsourced (co-mention ≠ "knew"); the relationships we need
+> are already grounded via shared `event_mentions` + command structure (M6 / `group_affiliations` /
+> `units_served`). If a specific need ever arises, revisit then as a NARROW source-attributed
+> command-relation array (superior/subordinate + SourceSectionID + confidence, `null`-over-guess),
+> reusing the M6 command-edge model — not schema.org's open relations.
+
+- ⭐ **`sameAs`** (array of URL) — ✅ ADOPT. Authoritative external IDs for the person: Wikidata (`Q…`),
+  VIAF, LCCN, Wikipedia, DBpedia. We already capture `wikipedia_url`/`grokipedia_url` inside
   `biographical_profile`; `sameAs` generalizes that to a first-class, multi-valued cross-walk and is
   the key to entity reconciliation across runs/corpora.
-- ⭐ **`identifier`** (PropertyValue) — typed external identifiers (service_number, VIAF, Wikidata QID)
-  as `{propertyID, value}`. More structured than stuffing them into `aliases`.
-- ◆ **`honorificPrefix` / `honorificSuffix`** — maps cleanly to rank/title and post-nominals (e.g.
-  "Gen.", "VC", "KBE"). We have `rank` + `military_awards` but no post-nominal field.
-- ◆ **`givenName` / `familyName` / `additionalName`** — structured name parts. We only store the full
-  `name` + `aliases`; structured parts help the surname-matching the M3 linker already does by hand.
-- ◆ **`hasOccupation`** (Occupation) — role beyond the military (politician, engineer). We have
-  `role_type`; schema.org gives it a vocabulary.
+- ⭐ **`identifier`** (PropertyValue) — ✅ ADOPT. Typed external identifiers (service_number, VIAF,
+  Wikidata QID) as `{propertyID, value}` (our own CLOSED sub-schema). More structured + matchable than
+  stuffing them into `aliases`.
+- ◆ **`honorificPrefix` / `honorificSuffix`** — ✅ ADOPT (with shape nuance). Maps to rank/title +
+  post-nominals (e.g. "Gen.", "VC", "KBE"). CARDINALITY: schema.org types BOTH as a single `Text`, but
+  for us **`honorificSuffix` should be an ARRAY** — WWII post-nominals stack ("VC, DSO, MC") and must be
+  individually queryable; `honorificPrefix` can stay a single string. OVERLAP WARNING: `honorificSuffix`
+  duplicates the authoritative structured `military_awards[]` ({award,class,date_awarded}) — prefer to
+  DERIVE the post-nominal letters from `military_awards` at display time rather than store a parallel
+  field that can drift; and `honorificPrefix` largely overlaps the existing `rank` field (so it is the
+  lowest-value of the four, mostly adding civilian titles like "Sir"/"Dr.").
+- ◆ **`givenName` / `familyName` / `additionalName`** — ✅ ADOPT. Structured name parts. We only store the
+  full `name` + `aliases`; structured parts help the surname-matching the M3 linker already does by hand.
+- ◆ **`hasOccupation`** (Occupation) — ❌ NOT ADOPTED. Redundant with `role_type`; schema.org's extras
+  (occupational codes, civilian-career timelines) are SEO/labor-market oriented and low-value here. The
+  military/command role-over-time is already better modeled by `units_served` + `ranks` +
+  `group_affiliations` (dated, GroupID-linked).
 - ○ **`nationality`** (already have) — schema.org expects a Country; consider an additive
   `nationality_sameAs` (GeoNames/Wikidata country) rather than only a free string.
-- ○ **`relatedTo` / `knows` / `colleague`** — person-person edges (commander↔subordinate). We model
-  command via groups/charts (M6); a direct person-person relation array is a possible future.
+- ○ **`relatedTo` / `knows` / `colleague`** — ❌ NOT ADOPTED (owner, 2026-10-27). Generic person-person
+  edges (commander↔subordinate). A generic array is O(n²) + unsourced; we model command via groups/charts
+  (M6). Revisit only on a specific need, as a narrow source-attributed command-relation array.
 
 **Caveat:** schema.org `Person` has no rank, unit, service-number, or award-class vocabulary — our
 military fields stay authoritative. Take `sameAs`/`identifier`/name-parts; do **not** flatten our
