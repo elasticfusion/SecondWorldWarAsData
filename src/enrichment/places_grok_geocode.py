@@ -55,6 +55,24 @@ _STATUS_LOW_CONF = "geocode_low_confidence"
 # real place not_found).
 _STATUS_ERROR = "geocode_error"
 
+# T2-B (opt-in): elevation capture config. DEFAULT OFF — populated only when the phase-3 caller
+# enables it (config places.capture_elevation). When on, a confident geocode also fetches the modern
+# terrain elevation at the resolved coords from a DEM (reusing elevation_verify.terrain_elevation —
+# cached, SSRF-safe, fail-safe) and stores it as places.elevation_m. The elevation is the MEASURED
+# DEM value at the coordinates — NEVER derived from a 'Hill N' designation (the name-number may be
+# feet or meters; we do not assume).
+_ELEVATION_ENABLED = False
+_ELEVATION_CACHE_DIR: Optional[Path] = None
+
+
+def configure_elevation(enabled: bool, cache_dir: Optional[Path]) -> None:
+    """Enable/disable opt-in elevation_m capture + set its on-disk cache dir. Called once by the
+    phase-3 geocode setup from config. Default (unconfigured) is OFF."""
+    global _ELEVATION_ENABLED, _ELEVATION_CACHE_DIR
+    _ELEVATION_ENABLED = bool(enabled)
+    _ELEVATION_CACHE_DIR = cache_dir
+
+
 _SKIP_FILES = frozenset(
     {
         "index.json",
@@ -606,8 +624,27 @@ def _apply_result(place: dict, result: GeocodeResult) -> str:
             logger.info("OBSERV place.sameas_osm count=%d", len(ext))
         except Exception as e:  # noqa: BLE001
             logger.debug("sameAs(osm) fold skipped: %s", e)
+    _capture_elevation(place, result.latitude, result.longitude)
     enrich_place(place)  # derive bounding_box + map_urls + any outlier flag
     return _STATUS_GEOCODED
+
+
+def _capture_elevation(place: dict, lat: float, lon: float) -> None:
+    """T2-B (opt-in): set places.elevation_m = the MEASURED DEM elevation at the resolved coords.
+    Reuses elevation_verify.terrain_elevation (cached, SSRF-safe, provenance-recorded). Default OFF;
+    fail-safe (never blocks the geocode); NEVER derived from a 'Hill N' name-number. null-over-guess.
+    """
+    if not _ELEVATION_ENABLED or _ELEVATION_CACHE_DIR is None:
+        return
+    try:
+        from src.enrichment.elevation_verify import terrain_elevation
+
+        elev = terrain_elevation(lat, lon, _ELEVATION_CACHE_DIR)
+        if isinstance(elev, (int, float)):
+            place["elevation_m"] = round(float(elev), 1)
+            logger.info("OBSERV place.elevation m=%.1f", place["elevation_m"])
+    except Exception as e:  # noqa: BLE001 - elevation is best-effort, never fatal
+        logger.debug("elevation capture skipped: %s", e)
 
 
 def _already_attempted(place: dict) -> bool:

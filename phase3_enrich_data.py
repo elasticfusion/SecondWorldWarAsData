@@ -164,11 +164,18 @@ def _enrich_places_and_geocode(
         from src.enrichment.nominatim_geocode import make_nominatim_geocoder
         from src.enrichment.places_grok_geocode import (
             cascade_geocoder,
+            configure_elevation,
             geocode_place,
             geocode_places_dir,
         )
 
         geo_cache = args.cache_dir / "geocode"
+        # T2-B (opt-in, default OFF): capture places.elevation_m from the DEM at resolved coords.
+        _cfg = load_config()
+        _places_cfg = _cfg.get("places", {}) if isinstance(_cfg, dict) else {}
+        configure_elevation(
+            bool(_places_cfg.get("capture_elevation", False)), geo_cache / "elevation"
+        )
         cascade = cascade_geocoder(
             make_nominatim_geocoder(geo_cache / "nominatim"),
             make_hill_geocoder(geo_cache / "elevation"),
