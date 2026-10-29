@@ -10,6 +10,8 @@ import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from src.utils.observe import observe_error
+
 logger = logging.getLogger(__name__)
 
 
@@ -97,16 +99,31 @@ def _write_entity_guarded(filepath: Path, data: Dict) -> bool:
     return True
 
 
-def _backup_before_delete(filepath: Path) -> None:
-    """Copy file to dedup/backups/ before deletion for undo support."""
+def _backup_before_delete(filepath: Path) -> bool:
+    """Copy file to dedup/backups/ before deletion for undo support.
+
+    Returns True if the backup succeeded (safe to delete the original), False if it failed.
+    #30: a failed backup means the delete would be UNDO-IMPOSSIBLE, so callers MUST NOT delete
+    when this returns False — the merged-away file is the only remaining copy of its data. The
+    failure is emitted as a loud canonical OBSERV at the point of loss.
+    """
     try:
         # Find output root (parent of entity dir)
         output_root = filepath.parent.parent
         backup_dir = output_root.parent / "dedup" / "backups" / filepath.parent.name
         backup_dir.mkdir(parents=True, exist_ok=True)
         shutil.copy2(filepath, backup_dir / filepath.name)
-    except Exception:
-        pass  # Best-effort — don't block merge on backup failure
+        return True
+    except Exception as e:  # noqa: BLE001 - loud + fail-safe (do-not-delete) below
+        observe_error(
+            "dedup",
+            "backup_failed",
+            reason=type(e).__name__,
+            file=filepath.name,
+            entity=filepath.parent.name,
+            note="backup failed — NOT deleting (delete would be undo-impossible)",
+        )
+        return False
 
 
 def _notify_deletion(path: Path) -> None:
@@ -170,7 +187,19 @@ def _rebase_event_file(f: Path, old_id: str, new_id: str, ref_key: str) -> int:
     try:
         with open(f, "r", encoding="utf-8") as fh:
             d = json.load(fh)
-    except (OSError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError) as e:
+        # #31: an event file that can't be read is silently skipped (return 0), leaving any
+        # old_id refs in it DANGLING after the merge with no signal. Make the skip loud.
+        observe_error(
+            "dedup",
+            "ref_rebase_error",
+            reason=type(e).__name__,
+            file=f.name,
+            ref_key=ref_key,
+            old_id=old_id,
+            new_id=new_id,
+            note="event file unreadable — refs may dangle",
+        )
         return 0
     event = d.get("Event", d)
     changed = 0
@@ -241,7 +270,19 @@ def update_event_refs(output_root: Path, old_id: str, new_id: str, ref_key: str)
                 continue
             try:
                 data = json.loads(f.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError):
+            except (OSError, json.JSONDecodeError) as e:
+                # #31: an unreadable entity file is skipped (continue), leaving any cross-entity
+                # old_id refs it holds DANGLING with no signal. Make the skip loud.
+                observe_error(
+                    "dedup",
+                    "ref_rebase_error",
+                    reason=type(e).__name__,
+                    file=f.name,
+                    entity=subdir,
+                    old_id=old_id,
+                    new_id=new_id,
+                    note="entity file unreadable — cross-refs may dangle",
+                )
                 continue
             if _replace_id_in_obj(data, old_id, new_id, id_fields):
                 _write_entity_guarded(f, data)
@@ -330,7 +371,18 @@ def _merge_one_person_secondary(
     index_path = people_dir / "index.json"
     update_index(index_path, person["name"], primary_person["filename"])
 
-    _backup_before_delete(secondary_file)
+    # #30: only destroy the secondary if its backup succeeded — otherwise the delete is
+    # undo-impossible. On a backup failure the primary is already persisted (the merge data is
+    # safe), so we keep the secondary file intact and report merged=False; the next dedup run
+    # re-attempts cleanly rather than losing the secondary's original copy.
+    if not _backup_before_delete(secondary_file):
+        logger.error(
+            "Backup FAILED for secondary %s — not deleting (merge data already persisted "
+            "in primary %s); leaving secondary for retry",
+            person["filename"],
+            primary_person["filename"],
+        )
+        return candidate, False
     secondary_file.unlink()
     _notify_deletion(secondary_file)
 
@@ -391,7 +443,19 @@ def merge_generic(
         primary_data = json.loads(
             (entity_dir / primary["filename"]).read_text(encoding="utf-8")
         )
-    except (OSError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError) as e:
+        # #10: a primary that can't be loaded silently returned None — the whole merge group
+        # (every secondary that would have folded into this primary) is dropped with no signal,
+        # indistinguishable from "nothing to merge". Make the loss loud at the point of loss.
+        observe_error(
+            "dedup",
+            "merge_load_error",
+            reason=type(e).__name__,
+            entity=entity_dir.name,
+            file=primary.get("filename", ""),
+            produced=0,
+            note="primary unreadable — merge group dropped",
+        )
         return None
 
     primary_mentions = primary_data.get("event_mentions", [])
@@ -496,7 +560,20 @@ def _merge_one_secondary(
     new_id = _record_id(primary_data, entity_dir.name, id_field)
     _rebase_refs_for_merge(entity_dir, old_id, new_id, id_field)
 
-    _backup_before_delete(f)
+    # #30: only destroy the secondary if its backup succeeded — otherwise the delete is
+    # undo-impossible. The merged primary is already persisted, so on backup failure we keep the
+    # secondary intact and report merged=True (data is safe in the primary + refs are repointed);
+    # a stale secondary file lingering is self-healing on the next dedup pass, data loss is not.
+    if not _backup_before_delete(f):
+        logger.error(
+            "Backup FAILED for secondary %s — not deleting (merge already persisted into "
+            "primary %s); leaving secondary file on disk",
+            p["filename"],
+            primary_file.name,
+        )
+        if old_id:
+            _dynamo_merge_sync(entity_dir.name, "", {}, old_id)
+        return True
     f.unlink()
     _notify_deletion(f)
     # #9: remove the merged-away secondary from DynamoDB too.
