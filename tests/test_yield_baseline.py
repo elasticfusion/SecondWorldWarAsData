@@ -87,9 +87,11 @@ def test_run_quality_gate_fail_stop_and_metrics(tmp_path):
     assert hist[-1]["entities"]["groups"]["deterministic"] >= 20
 
 
-def test_run_quality_gate_ok_on_empty_text(tmp_path):
+def test_run_quality_gate_fails_closed_on_empty_text(tmp_path):
+    # FAIL CLOSED (anti-swallow, Pattern-8 #4): an empty/unreadable baseline makes the gate BLIND,
+    # so it must halt for root-cause — NOT silently return ('ok', []) as it used to.
     from src.utils import yield_baseline as YB
 
     (tmp_path / "content").mkdir(parents=True)
     verdict, offenders = YB.run_quality_gate(tmp_path, {})
-    assert verdict == "ok" and offenders == []
+    assert verdict == "fail_stop" and offenders == ["__baseline__"]
