@@ -1,9 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  WWII Pipeline - AWS Chatbot Slack alerting. Deployed to us-east-2 (the region
-  where AWS Chatbot has an API/CloudFormation endpoint); references the
-  cross-region SNS topics in us-east-1. Replaces the fragile email-confirmation
-  path for operator alerts with Slack (no subscription confirmation required).
+  WWII Pipeline - AWS Chatbot Slack alerting. Deployed to us-east-1 (SAME region
+  as the SNS topics). AWS Chatbot only DELIVERS from SNS topics in a region it
+  serves, so the former us-east-2 deploy (chosen when Chatbot's CFN endpoint was
+  us-east-2-only) referenced the us-east-1 topics cross-region and silently never
+  delivered — breaking Slack. Collapsing into us-east-1 (verified 2026-10-29 that
+  AWS::Chatbot::SlackChannelConfiguration provisions here) fixes delivery.
+  Replaces the fragile email-confirmation path for operator alerts with Slack.
 
 Parameters:
   EnvironmentName:
