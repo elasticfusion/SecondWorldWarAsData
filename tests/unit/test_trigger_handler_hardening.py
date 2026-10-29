@@ -304,65 +304,54 @@ def test_reclaim_stale_lock_loses_race_returns_false():
     fake_dynamo.put_item.assert_not_called()  # never re-claimed after a lost delete
 
 
-def test_reclaim_confirmed_dead_within_grace_reclaims_immediately():
-    """Spot-interruption fix (XChannel-8 2026-10-29): a holder with NO running AND NO pending task
-    is CONFIRMED GONE, so its lock is reclaimable immediately even inside the launch-grace window —
-    otherwise a Spot interruption at e.g. 62s silently stalls the phase."""
+def test_try_reclaim_within_grace_returns_none():
+    """A lock within the launch-grace window (fresh holder / NAT-wait / brief Spot gap) must NOT be
+    reclaimed on list-state alone — returns None so the caller defers (no double-launch). Spot
+    recovery is driven by the authoritative ECS-STOPPED event, not by weakening this grace.
+    """
     from lambda_handlers import trigger_handler as th
 
-    fake_ecs = mock.Mock()
-    # _try_reclaim_if_gone only queries PENDING (caller already found no RUNNING). No pending task.
-    fake_ecs.list_tasks.return_value = {"taskArns": []}
-    reclaimed = {"called": False}
-
-    def _fake_reclaim(*a, **k):
-        reclaimed["called"] = True
-        return True
-
-    with (
-        mock.patch.object(th, "ecs", fake_ecs),
-        mock.patch.object(th, "_reclaim_stale_lock", _fake_reclaim),
+    with mock.patch.object(
+        th,
+        "_reclaim_stale_lock",
+        mock.Mock(side_effect=AssertionError("must not reclaim")),
     ):
         out = th._try_reclaim_if_gone(
             "fam", "lock#p2", {"cache_key": "lock#p2"}, observed_ts=100, lock_age=62
         )
-    assert out is True and reclaimed["called"]  # reclaimed despite age(62) < grace
+    assert out is None
 
 
-def test_reclaim_within_grace_with_pending_task_skips():
-    """A PENDING task in the family = a holder still in NAT-wait (not yet RUNNING); within grace it
-    must NOT be stolen (the G1 double-launch race). Returns None -> caller skips."""
+def test_try_reclaim_beyond_grace_reclaims():
+    """Beyond the launch-grace window with no live task -> genuine stale lock -> reclaim."""
     from lambda_handlers import trigger_handler as th
 
-    fake_ecs = mock.Mock()
-    fake_ecs.list_tasks.return_value = {
-        "taskArns": ["arn:pending-task"]
-    }  # a pending holder
-    with (
-        mock.patch.object(th, "ecs", fake_ecs),
-        mock.patch.object(
-            th,
-            "_reclaim_stale_lock",
-            mock.Mock(side_effect=AssertionError("must not reclaim")),
-        ),
-    ):
-        out = th._try_reclaim_if_gone(
-            "fam", "lock#p2", {"cache_key": "lock#p2"}, observed_ts=100, lock_age=62
-        )
-    assert out is None  # within grace + still launching -> defer, don't steal
-
-
-def test_reclaim_old_lock_reclaims_even_with_pending():
-    """Beyond the grace window, reclaim regardless (the original stale-lock behavior)."""
-    from lambda_handlers import trigger_handler as th
-
-    fake_ecs = mock.Mock()
-    fake_ecs.list_tasks.return_value = {"taskArns": ["arn:some-stuck-pending"]}
-    with (
-        mock.patch.object(th, "ecs", fake_ecs),
-        mock.patch.object(th, "_reclaim_stale_lock", mock.Mock(return_value=True)),
-    ):
+    with mock.patch.object(th, "_reclaim_stale_lock", mock.Mock(return_value=True)):
         out = th._try_reclaim_if_gone(
             "fam", "lock#p2", {"cache_key": "lock#p2"}, observed_ts=100, lock_age=99999
         )
-    assert out is True  # age > grace -> reclaim even though a pending task lingers
+    assert out is True
+
+
+def test_spot_ecs_stopped_event_runs_reconciliation():
+    """The spot-recovery ECS Task State Change event triggers an IMMEDIATE lock/pending
+    reconciliation (same safe logic as the scheduled sweep) rather than waiting 15 min.
+    """
+    from lambda_handlers import trigger_handler as th
+
+    called = {"n": 0}
+    with mock.patch.object(
+        th,
+        "_handle_scheduled_check",
+        lambda: called.__setitem__("n", called["n"] + 1)
+        or {"action": "lock_check_complete"},
+    ):
+        out = th.handler(
+            {
+                "source": "aws.ecs",
+                "detail-type": "ECS Task State Change",
+                "detail": {"stoppedReason": "Your Spot Task was interrupted."},
+            },
+            None,
+        )
+    assert called["n"] == 1 and out == {"action": "lock_check_complete"}

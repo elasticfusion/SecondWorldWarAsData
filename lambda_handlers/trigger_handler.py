@@ -1099,6 +1099,21 @@ s3 = boto3.client("s3")
 dynamo = boto3.resource("dynamodb").Table(CACHE_TABLE)
 
 
+def _handle_task_stopped_event(event):
+    """Spot-interruption recovery (dev-wwii-spot-recovery rule). A task STOPPED — recover NOW rather
+    than waiting up to 15 min for the scheduled sweep. Reuses the SAME safe reconciliation
+    (_handle_scheduled_check: clear a lock only when no RUNNING task remains, then drain pending#*),
+    so there is no new double-launch surface — the authoritative STOPPED event just runs it now.
+    """
+    reason = str(event.get("detail", {}).get("stoppedReason", ""))
+    logger.warning(
+        "OBSERV spot.task_stopped status=warn reason=%s — running immediate lock/pending "
+        "reconciliation (spot-interruption recovery)",
+        " ".join(reason.split())[:120] or "unknown",
+    )
+    return _handle_scheduled_check()
+
+
 def handler(event, _context):
     """Main entry point."""
     # Manual invocation: {"source": "manual", "book": "BookName"}
@@ -1131,6 +1146,13 @@ def handler(event, _context):
     # Scheduled stale lock check
     if event.get("source") == "scheduled":
         return _handle_scheduled_check()
+
+    # ECS Task State Change (the dev-wwii-spot-recovery rule): a task STOPPED — recover immediately.
+    if (
+        event.get("source") == "aws.ecs"
+        or event.get("detail-type") == "ECS Task State Change"
+    ):
+        return _handle_task_stopped_event(event)
 
     # Phase-complete event: a phase's ECS task finished and invoked us to drive the
     # NEXT phase immediately (event-driven chain — no waiting for the 15-min poll).
@@ -1732,23 +1754,18 @@ def _warn_relaunch_skipped(lock_key, lock_age, book_name) -> None:
 
 
 def _try_reclaim_if_gone(family, lock_key, item, observed_ts, lock_age):
-    """Decide whether to reclaim a lock whose holder has no RUNNING task.
+    """Reclaim a lock whose holder has no RUNNING task AND is older than the launch-grace window.
 
-    The LAUNCH_GRACE window exists ONLY to protect a holder that launched but is still in NAT-wait
-    (PENDING, not yet RUNNING) from being stolen (the G1 double-launch race). A holder that is
-    CONFIRMED GONE — no RUNNING task AND no PENDING task in the family — is dead NOW (Spot
-    interruption / crash), so it is reclaimable IMMEDIATELY regardless of age; otherwise a Spot
-    interruption inside the grace window silently stalls the phase (XChannel-8 2026-10-29).
+    The LAUNCH_GRACE window protects a holder that launched but is still in NAT-wait (not yet
+    RUNNING) from being stolen (the G1 double-launch race) — and a FRESH lock (holder took the lock
+    but hasn't called run_task yet, so no task is RUNNING or PENDING) is within that window too, so
+    it must NOT be reclaimed on list-state alone. Spot-interruption recovery is handled separately
+    by the authoritative ECS-task-STOPPED event (_handle_task_stopped), not by weakening this grace.
 
-    Returns True (this invocation won the reclaim -> launch), False (lost the reclaim race), or
-    None (not reclaimable yet: within grace and possibly still launching -> caller should skip).
+    Returns True (won the reclaim -> launch), False (lost the race), or None (within grace -> skip).
     """
     LAUNCH_GRACE_S = NAT_WAIT_SECONDS + 120
-    pending = ecs.list_tasks(
-        cluster=CLUSTER, family=family, desiredStatus="PENDING"
-    ).get("taskArns", [])
-    confirmed_dead = not pending  # no RUNNING and no PENDING -> holder is gone
-    if confirmed_dead or lock_age > LAUNCH_GRACE_S:
+    if lock_age > LAUNCH_GRACE_S:
         return _reclaim_stale_lock(
             lock_key, item, observed_ts, lock_age, LAUNCH_GRACE_S
         )
@@ -1758,12 +1775,11 @@ def _try_reclaim_if_gone(family, lock_key, item, observed_ts, lock_age):
 def _acquire_task_lock(task_def, family, lock_key, book_name, now) -> bool:
     """Atomically claim the per-task (per-book under multi-doc) launch lock. Returns True if this
     invocation now HOLDS the lock and should launch; False if another live/recent invocation holds
-    it (in which case a per-book request is queued for later). Reclaims a lock when there is no live
-    task AND either (a) the holder is CONFIRMED GONE — no RUNNING and no PENDING task in the family
-    (Spot interruption / crash), reclaimable immediately — or (b) the lock is older than the
-    launch-grace window (a holder mid-NAT-wait, not yet RUNNING, is never stolen within grace — the
-    G1 double-launch race). Case (a) is the Spot-interruption fix (XChannel-8 2026-10-29): a dead
-    holder inside the grace window must not stall the phase."""
+    it (in which case a per-book request is queued for later). Reclaims a lock only if there is no
+    live task AND it is older than the launch-grace window (so a holder mid-NAT-wait — or a fresh
+    lock not yet run_task'd — is never stolen; the G1 double-launch race). Spot-interruption
+    recovery is driven by the ECS-task-STOPPED event handler, which has the authoritative dead-task
+    signal, rather than by relaxing this grace."""
     # A lock younger than NAT_WAIT_SECONDS+120 is presumed held by an invocation still in NAT-wait;
     # the reclaim/grace decision lives in _try_reclaim_if_gone.
     item = {
