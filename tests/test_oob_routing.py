@@ -61,6 +61,13 @@ def test_merge_routes_structured_to_oob_not_narrative():
         patch("boto3.client") as bc,
     ):
         ecs = MagicMock()
+        # #44: _launch_phase0_ingest now inspects the run_task response — a confirmed launch
+        # returns a task (no failures). Without this an unconfigured MagicMock reads as a
+        # no-task-placed failure and _route_to_oob returns "" (no success key).
+        ecs.run_task.return_value = {
+            "tasks": [{"taskArn": "arn:aws:ecs:us-east-1:0:task/1"}],
+            "failures": [],
+        }
         bc.return_value = ecs
         out = mh.merge_ocr_output("ETO_OOB")
 

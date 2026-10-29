@@ -13,6 +13,8 @@ from typing import Optional
 
 import boto3
 
+from src.utils.observe import observe_error
+
 logger = logging.getLogger()
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
@@ -1000,6 +1002,17 @@ def _submit_ocr(pdf_key: str) -> bool:
         )
         return True
     except Exception as e:
+        # #13: OCR submit failed — the raw PDF/image is dropped from this intake with
+        # NOTHING downstream to re-drive it (the caller loop ignored this False). Emit a
+        # canonical, greppable, Slack-escalating anomaly at the point of loss so a failed
+        # paid-OCR submit is visible, not a silent intake drop.
+        observe_error(
+            "ocr",
+            "submit_error",
+            note="OCR submit failed — raw doc dropped from intake, not re-driven",
+            key=pdf_key,
+            reason=type(e).__name__,
+        )
         logger.error("Failed to submit OCR job for %s: %s", pdf_key, e)
         return False
 
@@ -1182,13 +1195,7 @@ def _handle_content_topic(s3_keys: list) -> None:
     # freeze-submitter (fail-closed); only clean binaries proceed. Text/md skip AV entirely.
     ocr_keys, convert_keys, video_keys = _av_gate(ocr_keys, convert_keys, video_keys)
     # Raw PDFs/images -> Chandra OCR (Phase 0). OCR output later re-triggers the parse path.
-    if ocr_keys:
-        # GPU Batch instances launch into the private GPU subnets whose 0.0.0.0/0 route points at
-        # the dynamic NAT — they need egress to register with ECS + pull the image + S3. Without
-        # NAT up, jobs sit RUNNABLE forever. Ensure NAT is up at OCR submit.
-        _ensure_nat_for_ocr()
-    for k in ocr_keys:
-        _submit_ocr(k)
+    _submit_ocr_batch(ocr_keys)
     # EPUB/DOCX -> Phase-0 convert task (pandoc); its chapter-structure upload re-triggers parse.
     for k in convert_keys:
         _submit_convert(k)
@@ -1206,6 +1213,22 @@ def _handle_content_topic(s3_keys: list) -> None:
         if _start_dispatcher("content-uploaded"):
             return
     _launch_phase1_if_idle()
+
+
+def _submit_ocr_batch(ocr_keys: list) -> None:
+    """Submit every raw PDF/image in ``ocr_keys`` to Chandra OCR (Phase 0). Ensures NAT
+    is up first (GPU Batch needs egress to register with ECS / pull the image / reach S3).
+
+    #13: honors each _submit_ocr return — a False is a dropped intake (the loud canonical
+    OBSERV ocr.submit_error already fired at the point of loss for the error path). Surfaces
+    a batch-level warning so a systematic OCR-submit outage is visible, not silently absorbed
+    one key at a time."""
+    if not ocr_keys:
+        return
+    _ensure_nat_for_ocr()
+    for k in ocr_keys:
+        if not _submit_ocr(k):
+            logger.warning("OCR submit did not proceed for %s", k)
 
 
 def _drive_next_phase(completed_phase: str) -> dict:
@@ -1433,13 +1456,7 @@ def _update_manifest(s3_keys):
     """
     manifest_key = "manifests/pending.json"
     for attempt in range(8):
-        try:
-            resp = s3.get_object(Bucket=BUCKET, Key=manifest_key)
-            existing = json.loads(resp["Body"].read())
-            etag = resp["ETag"]
-        except Exception:  # noqa: BLE001 - no manifest yet
-            existing, etag = [], None
-
+        existing, etag = _read_manifest(manifest_key)
         merged = sorted(set(existing) | set(s3_keys))
         if etag is not None and set(merged) == set(existing):
             return  # nothing new to add — avoid a needless conditional write
@@ -1455,20 +1472,58 @@ def _update_manifest(s3_keys):
             logger.info("Manifest: %d keys", len(merged))
             return
         except Exception as e:  # noqa: BLE001
-            # 412 (lost the race) / conflict -> re-read + retry; anything else after retries re-raises.
-            code = ""
-            resp_err = getattr(e, "response", None)
-            if isinstance(resp_err, dict):
-                code = resp_err.get("Error", {}).get("Code", "")
-            if code not in ("PreconditionFailed", "ConditionalRequestConflict", ""):
-                # A non-retryable error (e.g. AccessDenied) — surface immediately, don't burn the
-                # retry budget on it.
-                logger.warning("Manifest conditional write failed (%s): %s", code, e)
-                raise
-            if attempt == 7:
+            # 412 (lost the race) / conflict -> re-read + retry; anything else drops the keys.
+            if not _manifest_retry(e, attempt, s3_keys):
                 raise
             time.sleep(0.1 * (attempt + 1))
+    # Defensive: the loop exited without a successful write or a raise (should be unreachable with
+    # the bounded retries above, but a future edit must not silently drop here either). #14.
+    _observe_manifest_drop(s3_keys, reason="loop_fell_through")
     logger.error("Manifest update exhausted retries for %d keys", len(s3_keys))
+
+
+def _read_manifest(manifest_key: str):
+    """Read the current pending manifest + its ETag. Missing/unreadable -> ([], None) (create)."""
+    try:
+        resp = s3.get_object(Bucket=BUCKET, Key=manifest_key)
+        return json.loads(resp["Body"].read()), resp["ETag"]
+    except Exception:  # noqa: BLE001 - no manifest yet
+        return [], None
+
+
+def _manifest_retry(e: Exception, attempt: int, s3_keys) -> bool:
+    """Decide whether a failed conditional manifest write should be retried.
+
+    Returns True only for a retryable race (412/conflict) with budget remaining. On a
+    non-retryable error OR an exhausted budget the keys are NOT queued, so emit the canonical
+    ``OBSERV manifest.keys_dropped`` (#14) at the point of loss and return False (caller re-raises).
+    """
+    code = ""
+    resp_err = getattr(e, "response", None)
+    if isinstance(resp_err, dict):
+        code = resp_err.get("Error", {}).get("Code", "")
+    if code not in ("PreconditionFailed", "ConditionalRequestConflict", ""):
+        _observe_manifest_drop(s3_keys, reason=code or type(e).__name__)
+        logger.warning("Manifest conditional write failed (%s): %s", code, e)
+        return False
+    if attempt == 7:
+        _observe_manifest_drop(s3_keys, reason="retries_exhausted")
+        return False
+    return True
+
+
+def _observe_manifest_drop(s3_keys, reason: str) -> None:
+    """#14: emit the canonical, greppable, Slack-escalating anomaly for a manifest update that
+    dropped keys (keys NOT queued -> chapters never parse). Carries the dropped count (count=N,
+    never count=0-as-ok). Fail-safe via the observe sink; never raises into the caller.
+    """
+    observe_error(
+        "manifest",
+        "keys_dropped",
+        note="manifest update failed — keys NOT queued, chapters will not parse",
+        count=len(s3_keys),
+        reason=reason,
+    )
 
 
 def _stop_phase2_tasks():

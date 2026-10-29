@@ -20,6 +20,7 @@ import boto3
 import yaml
 
 from src.ingestion.book_slug import book_slug
+from src.utils.observe import observe_error
 
 logger = logging.getLogger()
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
@@ -49,8 +50,11 @@ def _is_structured(s3, book: str) -> bool:
 def _route_to_oob(s3, book: str, merged: str) -> str:
     """Structured-reference routing: place the OCR markdown where the OOB parser
     (phase0_ingest.discover_oob_markdown) consumes it (``{book}/ocr_output/*.md``)
-    and launch the phase0-ingest ECS task. Returns the OOB input key. Does NOT
-    promote to contentrepository/ (so it never enters narrative parse)."""
+    and launch the phase0-ingest ECS task. Returns the OOB input key on a confirmed
+    launch, or ``""`` if the phase0-ingest task FAILED to launch (#44: a launch
+    failure must NOT masquerade as a successful promote — the OOB markdown is in S3
+    but nothing will parse it, so the caller must see the drop). Does NOT promote to
+    contentrepository/ (so it never enters narrative parse)."""
     oob_key = f"contentrepository/{book}/ocr_output/{book}.md"
     s3.put_object(Bucket=BUCKET, Key=oob_key, Body=merged.encode("utf-8"))
     logger.info(
@@ -58,34 +62,75 @@ def _route_to_oob(s3, book: str, merged: str) -> str:
         BUCKET,
         oob_key,
     )
+    # #44: a launch failure must NOT return a success key — the OOB markdown is in S3
+    # but nothing will parse it. _launch_phase0_ingest emits the canonical OBSERV at the
+    # point of loss and returns False, so we surface the drop instead of a bogus promote.
+    if not _launch_phase0_ingest(book):
+        return ""
+    return oob_key
+
+
+def _launch_phase0_ingest(book: str) -> bool:
+    """Launch the phase0-ingest (OOB parser) ECS task for ``book``. Returns True on a
+    confirmed launch, False on ANY launch failure (exception OR an ECS placement that
+    placed no task). On failure emits a canonical, greppable, Slack-escalating
+    ``OBSERV ocr_merge.oob_launch_error status=error`` at the point of loss (#44) so an
+    OOB book that will never parse is loud, not a silent success. Never raises."""
     try:
         subnets = [x for x in os.getenv("PRIVATE_SUBNET_IDS", "").split(",") if x]
         sg = os.getenv("SECURITY_GROUP_ID", "")
-        boto3.client("ecs", region_name=REGION).run_task(
-            cluster=CLUSTER,
-            taskDefinition=PHASE0_INGEST_TASK_DEF,
-            count=1,
-            launchType="FARGATE",
-            networkConfiguration={
-                "awsvpcConfiguration": {
-                    "subnets": subnets,
-                    "securityGroups": [sg] if sg else [],
-                    "assignPublicIp": "DISABLED",
-                }
-            },
-            overrides={
-                "containerOverrides": [
-                    {
-                        "name": "pipeline",
-                        "environment": [{"name": "BOOK_NAME", "value": book}],
+        resp = (
+            boto3.client("ecs", region_name=REGION).run_task(
+                cluster=CLUSTER,
+                taskDefinition=PHASE0_INGEST_TASK_DEF,
+                count=1,
+                launchType="FARGATE",
+                networkConfiguration={
+                    "awsvpcConfiguration": {
+                        "subnets": subnets,
+                        "securityGroups": [sg] if sg else [],
+                        "assignPublicIp": "DISABLED",
                     }
-                ]
-            },
+                },
+                overrides={
+                    "containerOverrides": [
+                        {
+                            "name": "pipeline",
+                            "environment": [{"name": "BOOK_NAME", "value": book}],
+                        }
+                    ]
+                },
+            )
+            or {}
         )
-        logger.info("Launched phase0-ingest (OOB parser) for %s", book)
-    except Exception as e:  # noqa: BLE001 - surface, don't crash the merge
+    except Exception as e:  # noqa: BLE001 - surface loud, don't crash the merge
+        observe_error(
+            "ocr_merge",
+            "oob_launch_error",
+            note="phase0-ingest launch raised (OOB book will NOT parse)",
+            book=book,
+            reason=type(e).__name__,
+        )
         logger.error("Failed to launch phase0-ingest for %s: %s", book, e)
-    return oob_key
+        return False
+    if not resp.get("tasks") or resp.get("failures"):
+        # ECS placement failure (capacity/quota) — run_task does NOT raise.
+        observe_error(
+            "ocr_merge",
+            "oob_launch_error",
+            note="phase0-ingest task placed no task (OOB book will NOT parse)",
+            book=book,
+            reason="no_task_placed",
+            failures=resp.get("failures"),
+        )
+        logger.error(
+            "Failed to launch phase0-ingest for %s (no task placed, failures=%s)",
+            book,
+            resp.get("failures"),
+        )
+        return False
+    logger.info("Launched phase0-ingest (OOB parser) for %s", book)
+    return True
 
 
 def _s3():
@@ -272,7 +317,18 @@ def handler(event, _context):
 
     book = _book_from_event(detail)
     if not book:
-        logger.error("Could not determine book from event: %s", detail.get("jobName"))
+        # #11: a paid Chandra OCR job SUCCEEDED but we cannot derive its book from the
+        # event — the OCR output would dead-end silently. Emit a canonical, greppable,
+        # Slack-escalating anomaly at the point of loss (not a generic-only error).
+        job_name = detail.get("jobName")
+        observe_error(
+            "ocr_merge",
+            "book_underivable",
+            note="Chandra OCR SUCCEEDED but book undetectable — paid OCR output will dead-end",
+            job_name=job_name,
+            job_queue=job_queue,
+        )
+        logger.error("Could not determine book from event: %s", job_name)
         return {"action": "error", "reason": "no book"}
 
     out = merge_ocr_output(book)
