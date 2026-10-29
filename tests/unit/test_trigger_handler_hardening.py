@@ -302,3 +302,67 @@ def test_reclaim_stale_lock_loses_race_returns_false():
         )
     assert out is False  # lost the race -> must not launch
     fake_dynamo.put_item.assert_not_called()  # never re-claimed after a lost delete
+
+
+def test_reclaim_confirmed_dead_within_grace_reclaims_immediately():
+    """Spot-interruption fix (XChannel-8 2026-10-29): a holder with NO running AND NO pending task
+    is CONFIRMED GONE, so its lock is reclaimable immediately even inside the launch-grace window —
+    otherwise a Spot interruption at e.g. 62s silently stalls the phase."""
+    from lambda_handlers import trigger_handler as th
+
+    fake_ecs = mock.Mock()
+    # _try_reclaim_if_gone only queries PENDING (caller already found no RUNNING). No pending task.
+    fake_ecs.list_tasks.return_value = {"taskArns": []}
+    reclaimed = {"called": False}
+
+    def _fake_reclaim(*a, **k):
+        reclaimed["called"] = True
+        return True
+
+    with (
+        mock.patch.object(th, "ecs", fake_ecs),
+        mock.patch.object(th, "_reclaim_stale_lock", _fake_reclaim),
+    ):
+        out = th._try_reclaim_if_gone(
+            "fam", "lock#p2", {"cache_key": "lock#p2"}, observed_ts=100, lock_age=62
+        )
+    assert out is True and reclaimed["called"]  # reclaimed despite age(62) < grace
+
+
+def test_reclaim_within_grace_with_pending_task_skips():
+    """A PENDING task in the family = a holder still in NAT-wait (not yet RUNNING); within grace it
+    must NOT be stolen (the G1 double-launch race). Returns None -> caller skips."""
+    from lambda_handlers import trigger_handler as th
+
+    fake_ecs = mock.Mock()
+    fake_ecs.list_tasks.return_value = {
+        "taskArns": ["arn:pending-task"]
+    }  # a pending holder
+    with (
+        mock.patch.object(th, "ecs", fake_ecs),
+        mock.patch.object(
+            th,
+            "_reclaim_stale_lock",
+            mock.Mock(side_effect=AssertionError("must not reclaim")),
+        ),
+    ):
+        out = th._try_reclaim_if_gone(
+            "fam", "lock#p2", {"cache_key": "lock#p2"}, observed_ts=100, lock_age=62
+        )
+    assert out is None  # within grace + still launching -> defer, don't steal
+
+
+def test_reclaim_old_lock_reclaims_even_with_pending():
+    """Beyond the grace window, reclaim regardless (the original stale-lock behavior)."""
+    from lambda_handlers import trigger_handler as th
+
+    fake_ecs = mock.Mock()
+    fake_ecs.list_tasks.return_value = {"taskArns": ["arn:some-stuck-pending"]}
+    with (
+        mock.patch.object(th, "ecs", fake_ecs),
+        mock.patch.object(th, "_reclaim_stale_lock", mock.Mock(return_value=True)),
+    ):
+        out = th._try_reclaim_if_gone(
+            "fam", "lock#p2", {"cache_key": "lock#p2"}, observed_ts=100, lock_age=99999
+        )
+    assert out is True  # age > grace -> reclaim even though a pending task lingers

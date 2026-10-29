@@ -1715,14 +1715,57 @@ def _reclaim_stale_lock(lock_key, item, observed_ts, lock_age, grace_s) -> bool:
         return False
 
 
+def _warn_relaunch_skipped(lock_key, lock_age, book_name) -> None:
+    """Loud anti-swallow OBSERV when a relaunch is SKIPPED for a holder with no live task (a
+    Spot-interrupted phase queued-but-not-relaunched would otherwise be a silent stall). Fail-safe.
+    """
+    try:
+        logger.warning(
+            "OBSERV spot.relaunch_skipped status=warn lock=%s age=%ss book=%s "
+            "(no live task but lock within grace — relaunch deferred to the stale-lock sweep)",
+            lock_key,
+            lock_age,
+            book_name or "all",
+        )
+    except Exception:  # noqa: BLE001 - observability must never break the trigger
+        pass
+
+
+def _try_reclaim_if_gone(family, lock_key, item, observed_ts, lock_age):
+    """Decide whether to reclaim a lock whose holder has no RUNNING task.
+
+    The LAUNCH_GRACE window exists ONLY to protect a holder that launched but is still in NAT-wait
+    (PENDING, not yet RUNNING) from being stolen (the G1 double-launch race). A holder that is
+    CONFIRMED GONE — no RUNNING task AND no PENDING task in the family — is dead NOW (Spot
+    interruption / crash), so it is reclaimable IMMEDIATELY regardless of age; otherwise a Spot
+    interruption inside the grace window silently stalls the phase (XChannel-8 2026-10-29).
+
+    Returns True (this invocation won the reclaim -> launch), False (lost the reclaim race), or
+    None (not reclaimable yet: within grace and possibly still launching -> caller should skip).
+    """
+    LAUNCH_GRACE_S = NAT_WAIT_SECONDS + 120
+    pending = ecs.list_tasks(
+        cluster=CLUSTER, family=family, desiredStatus="PENDING"
+    ).get("taskArns", [])
+    confirmed_dead = not pending  # no RUNNING and no PENDING -> holder is gone
+    if confirmed_dead or lock_age > LAUNCH_GRACE_S:
+        return _reclaim_stale_lock(
+            lock_key, item, observed_ts, lock_age, LAUNCH_GRACE_S
+        )
+    return None
+
+
 def _acquire_task_lock(task_def, family, lock_key, book_name, now) -> bool:
     """Atomically claim the per-task (per-book under multi-doc) launch lock. Returns True if this
     invocation now HOLDS the lock and should launch; False if another live/recent invocation holds
-    it (in which case a per-book request is queued for later). Reclaims a lock only if there is no
-    live task AND it is older than the launch-grace window (so a holder mid-NAT-wait, not yet
-    RUNNING, is never stolen — the G1 double-launch race)."""
-    # A lock younger than this is presumed held by an invocation still in NAT-wait.
-    LAUNCH_GRACE_S = NAT_WAIT_SECONDS + 120
+    it (in which case a per-book request is queued for later). Reclaims a lock when there is no live
+    task AND either (a) the holder is CONFIRMED GONE — no RUNNING and no PENDING task in the family
+    (Spot interruption / crash), reclaimable immediately — or (b) the lock is older than the
+    launch-grace window (a holder mid-NAT-wait, not yet RUNNING, is never stolen within grace — the
+    G1 double-launch race). Case (a) is the Spot-interruption fix (XChannel-8 2026-10-29): a dead
+    holder inside the grace window must not stall the phase."""
+    # A lock younger than NAT_WAIT_SECONDS+120 is presumed held by an invocation still in NAT-wait;
+    # the reclaim/grace decision lives in _try_reclaim_if_gone.
     item = {
         "cache_key": lock_key,
         "book": book_name or "all",
@@ -1741,10 +1784,12 @@ def _acquire_task_lock(task_def, family, lock_key, book_name, now) -> bool:
         "taskArns", []
     )
     lock_age, observed_ts = _lock_age_seconds(lock_key, now)
-    if not live and lock_age is not None and lock_age > LAUNCH_GRACE_S:
-        return _reclaim_stale_lock(
-            lock_key, item, observed_ts, lock_age, LAUNCH_GRACE_S
-        )
+    if not live and lock_age is not None:
+        reclaimed = _try_reclaim_if_gone(family, lock_key, item, observed_ts, lock_age)
+        if reclaimed is not None:
+            return reclaimed
+        # within-grace with no live task: can't reclaim yet, but make the SKIP loud (anti-swallow).
+        _warn_relaunch_skipped(lock_key, lock_age, book_name)
 
     logger.info(
         "Task %s already locked (live=%s, age=%ss), skipping",
