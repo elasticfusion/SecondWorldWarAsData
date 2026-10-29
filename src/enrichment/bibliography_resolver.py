@@ -151,13 +151,18 @@ def _apply_local_holding(entry: Dict[str, Any], holdings: Any) -> bool:
         entry["search_status"] = "resolved"
         entry["search_source"] = "local_holding"
         entry["availability"] = "local"
-        logger.debug("Resolved from processed local holding: %s", local_path)
+        logger.info(
+            "OBSERV bibliography.resolved_local source=processed path=%s", local_path
+        )
     else:
         # Raw source on hand but not ingested — flag for the processing
         # queue rather than claiming resolution.
         entry["search_status"] = "held_unprocessed"
         entry["search_source"] = "local_holding_unprocessed"
-        logger.debug("Held but unprocessed: %s", local_path)
+        # Raised DEBUG->WARNING: held_unprocessed is NOT a resolution — the citation stays
+        # UNRESOLVED pending ingestion. At DEBUG a backlog of held-but-unprocessed sources was
+        # invisible and read as "resolved enough". Make the unresolved item loud + greppable.
+        logger.warning("OBSERV bibliography.held_unprocessed path=%s", local_path)
     return True
 
 

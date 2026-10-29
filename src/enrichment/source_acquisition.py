@@ -175,7 +175,14 @@ def plan_acquisition(
     source = str(entry.get("search_source") or "")
     fetcher = get_fetcher(source)
     if fetcher is None:
-        logger.debug("No acquisition fetcher registered for source=%s", source)
+        # A RESOLVED entry with no registered fetcher is acquirable-in-principle but silently
+        # never acquired. Raised DEBUG->WARNING + greppable so a whole source lacking a fetcher
+        # (every resolved entry dropped from acquisition) is visible, not invisible.
+        logger.warning(
+            "OBSERV acquisition.no_target reason=no_fetcher source=%s bib_id=%s",
+            source,
+            str(entry.get("BibliographyID") or "unknown"),
+        )
         return None
     try:
         target = fetcher(entry, cfg)
@@ -183,6 +190,14 @@ def plan_acquisition(
         logger.warning("acquisition fetcher %s failed: %s", source, e)
         return None
     if target is None:
+        # Fetcher ran but found nothing acquirable for a RESOLVED entry -> the resolution does
+        # not translate into bytes. Keep returning None (unchanged), but make the dropped
+        # acquisition loud + counted instead of a silent exit.
+        logger.warning(
+            "OBSERV acquisition.no_target reason=fetcher_empty source=%s bib_id=%s",
+            source,
+            str(entry.get("BibliographyID") or "unknown"),
+        )
         return None
     decision = acquisition_decision(
         target.fmt, target.pages, public_domain=_is_public_domain(entry)

@@ -439,7 +439,12 @@ def _emit_source_section_safe(
                     "series": pd.get("series"),
                 }
         except Exception as meta_err:  # noqa: BLE001
-            logger.debug("source_section: source metadata unavailable: %s", meta_err)
+            # Raised DEBUG->WARNING: missing source metadata means the source_section anchor is
+            # written WITHOUT book/author/series provenance -> it reads as a benign anchor while
+            # silently dropping provenance. Keep the fail-safe (source stays None); make it loud.
+            logger.warning(
+                "OBSERV source_section.source_meta_unavailable err=%s", meta_err
+            )
         emit_source_section(response, output_dir, source=source)
     except Exception as e:  # noqa: BLE001
         logger.warning("source_section emit skipped: %s", e)
@@ -548,8 +553,15 @@ def _try_fix_ulid_errors(
             validate_event_json(fixed_response)
             logger.info("Fixed invalid ULIDs automatically")
             return _save_event_output(fixed_response, parsed_file, output_dir)
-    except Exception as e:
-        logger.warning("Event extraction step failed: %s", e)
+    except Exception as fix_err:  # noqa: BLE001
+        # Do NOT shadow the ValidationError `e` behind a generic message: the ULID auto-fix
+        # itself failed, and the ORIGINAL validation cause is the actionable signal. Log both
+        # (the real fix failure AND the original e.message) so the drop is diagnosable, not masked.
+        logger.warning(
+            "OBSERV events.ulid_autofix_failed fix_err=%s original_cause=%s",
+            fix_err,
+            e.message,
+        )
 
     return None
 
