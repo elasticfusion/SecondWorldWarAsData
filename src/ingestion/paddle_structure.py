@@ -37,6 +37,42 @@ from typing import Any, List, Optional
 
 logger = logging.getLogger(__name__)
 
+
+# --- Observability (fail-safe; never raises into the OCR path) ---------------
+# Canonical Phase-0 OBSERV: one greppable line per PP-StructureV3 recovery.
+# Anti-swallow rule — recovery that is skipped (PaddleOCR absent), fails, or
+# yields EMPTY markdown / 0 tables when a page image was present is a LOUD
+# warning (a degraded fallback the caller must handle), never a silent count=0.
+def _observe_convert_pdf_ocr(
+    image_path: Path,
+    pages: int,
+    chars: int,
+    tables: int,
+    status: str,
+    *,
+    note: str = "",
+) -> None:
+    """Emit ``OBSERV convert.pdf ... stage=ppstructure`` for a recovery run.
+
+    ``ok`` (tables recovered) is info; ``empty`` (no table / no markdown),
+    ``skipped`` (dep absent), and ``error`` are LOUD. Fail-safe.
+    """
+    try:
+        base = (
+            "OBSERV convert.pdf stage=ppstructure image=%s pages=%d chars=%d "
+            "tables=%d status=%s"
+            % (getattr(image_path, "name", image_path), pages, chars, tables, status)
+        )
+        if note:
+            base += " note=%s" % (str(note)[:200],)
+        if status == "ok":
+            logger.info(base)
+        else:
+            logger.warning(base)
+    except Exception:  # noqa: BLE001 - observability never breaks OCR
+        pass
+
+
 # --- Validated PoC configuration (see module docstring) ------------------
 SERVER_DET_MODEL = "PP-OCRv5_server_det"
 SERVER_REC_MODEL = "PP-OCRv5_server_rec"
@@ -178,6 +214,9 @@ class PaddleStructureRunner:
             so the caller can fall back to Chandra's (flagged) output.
         """
         if not is_available():
+            _observe_convert_pdf_ocr(
+                image_path, 0, 0, 0, "skipped", note="PaddleOCR not installed"
+            )
             return RecoveredTable(
                 det_limit_side_len=self._det_limit,
                 device=self._device,
@@ -188,6 +227,9 @@ class PaddleStructureRunner:
             results = pipeline.predict(str(image_path))
         except Exception as exc:  # pragma: no cover - runtime/model failure
             logger.warning("PP-StructureV3 recovery failed on %s: %s", image_path, exc)
+            _observe_convert_pdf_ocr(
+                image_path, 0, 0, 0, "error", note=f"recovery failed: {exc}"
+            )
             return RecoveredTable(
                 det_limit_side_len=self._det_limit,
                 device=self._device,
@@ -203,6 +245,7 @@ class PaddleStructureRunner:
             layout_boxes.extend(_extract_layout_boxes(res))
         markdown = "\n\n".join(markdown_parts).strip()
         tables = _extract_tables(markdown)
+        self._observe_recovery(image_path, markdown_parts, markdown, tables)
         return RecoveredTable(
             html="\n\n".join(tables),
             markdown=markdown,
@@ -212,6 +255,28 @@ class PaddleStructureRunner:
             notes="recovered" if tables else "no <table> recovered",
             layout_boxes=layout_boxes,
         )
+
+    def _observe_recovery(
+        self,
+        image_path: Path,
+        markdown_parts: List[str],
+        markdown: str,
+        tables: List[str],
+    ) -> None:
+        """Emit the recovery OBSERV line. A run that produced 0 result pages,
+        empty markdown, or 0 ``<table>`` blocks is a LOUD anomaly (the caller
+        falls back to Chandra's flagged output); tables recovered is ``ok``."""
+        pages = len(markdown_parts)
+        chars = len(markdown)
+        if not tables:
+            note = (
+                "no result pages / empty markdown"
+                if chars == 0
+                else "markdown present but no <table> recovered"
+            )
+            _observe_convert_pdf_ocr(image_path, pages, chars, 0, "empty", note=note)
+        else:
+            _observe_convert_pdf_ocr(image_path, pages, chars, len(tables), "ok")
 
 
 def _result_markdown(res: Any) -> str:

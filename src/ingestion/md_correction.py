@@ -20,6 +20,29 @@ logger = logging.getLogger(__name__)
 
 _MIN_USABLE_CHARS = 40
 
+
+# --- Observability (fail-safe; never raises into the repair path) ------------
+# Canonical Phase-0 OBSERV: one greppable line per correction attempt.
+# Anti-swallow rule — a repair that errors or yields no usable markdown is LOUD
+# (the caller then escalates to human review); a genuine recovery is ``ok``.
+def _observe_mdcorrect(changed: bool, status: str, *, reason: str = "") -> None:
+    """Emit ``OBSERV mdcorrect.applied changed=<bool> status=ok|skipped|error``.
+
+    ``ok`` is info; ``skipped`` (nothing to repair) and ``error`` are LOUD.
+    Fail-safe: observability never raises into the (best-effort) repair.
+    """
+    try:
+        base = "OBSERV mdcorrect.applied changed=%s status=%s" % (bool(changed), status)
+        if reason:
+            base += " reason=%s" % (str(reason)[:200],)
+        if status == "ok":
+            logger.info(base)
+        else:
+            logger.warning(base)
+    except Exception:  # noqa: BLE001 - observability never breaks repair
+        pass
+
+
 _SYSTEM = (
     "You repair malformed document text into clean GitHub-flavored Markdown. You "
     "ONLY reformat text that is already present — preserve wording verbatim, fix "
@@ -45,6 +68,7 @@ def correct_markdown(
     """
     if not raw_text or len(raw_text.strip()) < min_chars:
         # Nothing meaningful to repair — don't waste a Grok call.
+        _observe_mdcorrect(False, "skipped", reason="input below minimum usable chars")
         return None
     try:
         prompt = (
@@ -62,11 +86,16 @@ def correct_markdown(
                 len(result.strip()),
                 source_hint or "raw text",
             )
+            _observe_mdcorrect(True, "ok")
             return result
         logger.warning(
             "MD-correction produced no usable markdown for %s", source_hint or "input"
         )
+        _observe_mdcorrect(
+            False, "error", reason="no usable markdown produced (escalate to review)"
+        )
         return None
     except Exception as e:  # noqa: BLE001 - repair is best-effort; escalate on fail
         logger.warning("MD-correction second pass failed for %s: %s", source_hint, e)
+        _observe_mdcorrect(False, "error", reason=str(e))
         return None

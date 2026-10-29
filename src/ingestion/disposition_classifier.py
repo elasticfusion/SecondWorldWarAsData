@@ -42,6 +42,34 @@ from src.ingestion.disposition import (
 
 logger = logging.getLogger(__name__)
 
+# The dispositions this classifier is allowed to emit. A result outside this set
+# is a recognized-but-unhandled case -> LOUD (anti-swallow rule).
+_KNOWN_DISPOSITIONS = frozenset({"structured", "unstructured", "image", "map"})
+
+
+def _observe_classified(
+    pdf_name: str, total: int, scanned: bool, review: int, unknown: int
+) -> None:
+    """Emit ``OBSERV disposition.routed source=<pdf> ... stage=classify``.
+
+    Anti-swallow rule — an unknown disposition, a zero-page classification of a
+    present PDF, or any page flagged for human review is LOUD; a clean, fully
+    auto-routed classification is info. Fail-safe: never raises into the phase.
+    """
+    try:
+        base = (
+            "OBSERV disposition.routed source=%s stage=classify pages=%d "
+            "scanned=%s review=%d unknown=%d"
+            % (pdf_name, total, scanned, review, unknown)
+        )
+        if unknown or total == 0 or review:
+            logger.warning(base + " status=anomaly")
+        else:
+            logger.info(base + " status=ok")
+    except Exception:  # noqa: BLE001 - observability never breaks the phase
+        pass
+
+
 # --- Tunable thresholds --------------------------------------------------
 # Kept as module constants so they can be adjusted without touching logic.
 
@@ -98,7 +126,13 @@ def _measure_tables(page: "fitz.Page") -> tuple[int, float]:
     try:
         tables = page.find_tables()
     except (RuntimeError, ValueError, AttributeError) as exc:  # pragma: no cover
-        logger.debug("find_tables failed: %s", exc)
+        # DEGRADED FALLBACK: table signal unavailable -> a page that may be
+        # structured is measured as 0 tables. Session anti-swallow rule -> LOUD.
+        logger.warning(
+            "OBSERV disposition.signal_degraded signal=find_tables detail=%s "
+            "action=table_count_0",
+            str(exc)[:120],
+        )
         return 0, 0.0
     table_list = list(getattr(tables, "tables", []) or [])
     area = sum(_rect_area(tuple(tbl.bbox)) for tbl in table_list)
@@ -110,7 +144,12 @@ def _count_drawings(page: "fitz.Page") -> int:
     try:
         return len(page.get_drawings())
     except (RuntimeError, ValueError) as exc:  # pragma: no cover - defensive
-        logger.debug("get_drawings failed: %s", exc)
+        # DEGRADED FALLBACK: a map-cue signal silently becomes 0 -> LOUD.
+        logger.warning(
+            "OBSERV disposition.signal_degraded signal=get_drawings detail=%s "
+            "action=drawing_count_0",
+            str(exc)[:120],
+        )
         return 0
 
 
@@ -302,6 +341,7 @@ def classify_pdf(
                 )
             )
     review = sum(1 for r in results if r.needs_review)
+    unknown = sum(1 for r in results if r.disposition not in _KNOWN_DISPOSITIONS)
     logger.info(
         "Classified %d page(s) of %s (scanned=%s, %d flagged for review)",
         len(results),
@@ -309,4 +349,5 @@ def classify_pdf(
         scanned,
         review,
     )
+    _observe_classified(pdf_path.name, len(results), scanned, review, unknown)
     return results

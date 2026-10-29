@@ -196,6 +196,13 @@ def detect_media_mismatch(
     # against the sniffed bytes. Only a confident, contradictory sniff flags.
     declared = declared_ct or by_ext
     if sniffed and declared and sniffed != declared:
+        logger.warning(
+            "OBSERV media.checked file=%s declared=%s sniffed=%s verdict=mismatch "
+            "action=reject_to_review",
+            path.name,
+            declared,
+            sniffed,
+        )
         return MediaMismatch(
             is_mismatch=True,
             declared=declared,
@@ -205,6 +212,23 @@ def detect_media_mismatch(
                 f"{'content-type' if declared_ct else 'extension'}) but content "
                 f"sniffs as '{sniffed}'"
             ),
+        )
+    # No contradiction. 'unsniffable' (declared but NO magic match — e.g. the ZIP-based
+    # docx/epub whose signature isn't in _MAGIC_SIGNATURES) is a LOUD warning, not a silent
+    # pass: the type-spoof gate is effectively blind for that file and an operator must know.
+    if declared and not sniffed:
+        logger.warning(
+            "OBSERV media.checked file=%s declared=%s sniffed=none verdict=unsniffable "
+            "(spoof gate blind for this format)",
+            path.name,
+            declared,
+        )
+    else:
+        logger.info(
+            "OBSERV media.checked file=%s declared=%s sniffed=%s verdict=match",
+            path.name,
+            declared,
+            sniffed,
         )
     return MediaMismatch(is_mismatch=False, declared=declared, detected=sniffed)
 

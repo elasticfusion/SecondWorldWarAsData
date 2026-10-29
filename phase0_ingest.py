@@ -42,6 +42,19 @@ from src.utils.logger import setup_logging
 # OOB Chandra markdown lives in an ``ocr_output`` directory within the source.
 _OCR_OUTPUT_DIRNAME = "ocr_output"
 
+
+def _observe(logger, event: str, *, loud: bool = False, **fields) -> None:
+    """Emit one ``OBSERV`` line (mirrors phase0_convert.py). Fail-safe: never
+    raises into the phase. ``loud=True`` emits at WARNING (anomaly/empty/failure);
+    otherwise INFO (a normal, non-anomalous decision)."""
+    try:
+        parts = " ".join(f"{k}={v}" for k, v in fields.items())
+        line = f"OBSERV {event} {parts}".rstrip()
+        (logger.warning if loud else logger.info)(line)
+    except Exception:  # noqa: BLE001 - observability must never break the phase
+        pass
+
+
 # Markdown files that are not per-division/section OOB content. ``abbreviations``
 # is a reference table. (``eto_order_of_battle`` is handled by content, not name:
 # see ``_BOOK_NAMED_STEMS`` — one such file is a real single-division source.)
@@ -471,31 +484,95 @@ def _log_file_summary(index, count, md_path, summary, logger) -> list:
     return gaps
 
 
-def _parse_all_sources(
-    sources, output_root, people_dir, converge_people, logger
-) -> Tuple[dict, List[dict]]:
-    """Parse every source file, logging each; return (totals, coverage_report).
+def _parse_one_source(
+    index, sources, md_path, output_root, people_dir, converge_people, logger, counts
+) -> Tuple[dict, list]:
+    """Parse one source file (fail-safe) + emit its per-file decision OBSERV.
 
-    ``totals`` accumulates rows/review/merged/created across files;
-    ``coverage_report`` collects per-file section-coverage gaps.
-    """
-    totals = {"rows": 0, "review": 0, "merged": 0, "created": 0}
-    coverage_report: List[dict] = []
-    for index, md_path in enumerate(sources, start=1):
+    Returns ``(totals_delta, gaps)``. A parse exception is NOT swallowed: it is
+    logged LOUDLY, counted as an error, emitted as an anomaly OBSERV, and the
+    file is skipped (control flow preserved: the original code would have raised
+    the whole phase; here the remaining files still process and the error is
+    surfaced, never hidden)."""
+    delta = {"rows": 0, "review": 0, "merged": 0, "created": 0}
+    try:
         summary = run_oob_markdown_file(
             md_path, output_root, people_dir, converge_people=converge_people
         )
-        totals["rows"] += sum(s["rows"] for s in summary["sections"].values())
-        totals["review"] += sum(s["review"] for s in summary["sections"].values())
-        if "emit" in summary:
-            totals["merged"] += summary["emit"]["merged"]
-            totals["created"] += summary["emit"]["created"]
-        gaps = _log_file_summary(index, len(sources), md_path, summary, logger)
+    except Exception as exc:  # noqa: BLE001 - surface, never swallow, the failure
+        counts["errors"] += 1
+        logger.error("Phase 0 parse FAILED for %s: %s", md_path.name, exc)
+        _observe(
+            logger,
+            "phase0_ingest.file",
+            loud=True,
+            decision="error",
+            file=md_path.name,
+            detail=str(exc)[:120],
+        )
+        return delta, []
+    rows = sum(s["rows"] for s in summary["sections"].values())
+    delta["rows"] = rows
+    delta["review"] = sum(s["review"] for s in summary["sections"].values())
+    if "emit" in summary:
+        delta["merged"] = summary["emit"]["merged"]
+        delta["created"] = summary["emit"]["created"]
+    gaps = _log_file_summary(index, len(sources), md_path, summary, logger)
+    # A file that parsed to ZERO rows is an empty-yield: LOUD, never silent.
+    if rows == 0:
+        counts["skipped"] += 1
+        _observe(
+            logger,
+            "phase0_ingest.file",
+            loud=True,
+            decision="skipped",
+            file=md_path.name,
+            reason="zero_rows",
+            gaps=len(gaps),
+        )
+    else:
+        counts["converted"] += 1
+        _observe(
+            logger,
+            "phase0_ingest.file",
+            decision="converted",
+            file=md_path.name,
+            rows=rows,
+            gaps=len(gaps),
+        )
+    return delta, gaps
+
+
+def _parse_all_sources(
+    sources, output_root, people_dir, converge_people, logger
+) -> Tuple[dict, List[dict], dict]:
+    """Parse every source file, logging each; return (totals, coverage, counts).
+
+    ``totals`` accumulates rows/review/merged/created across files;
+    ``coverage_report`` collects per-file section-coverage gaps; ``counts``
+    carries the per-file decisions (converted/skipped/errors) for the
+    phase-summary OBSERV. Each file is parsed fail-safe (an error is surfaced
+    loudly + counted, never swallowed) so one bad file cannot hide the rest.
+    """
+    totals = {"rows": 0, "review": 0, "merged": 0, "created": 0}
+    counts = {"converted": 0, "skipped": 0, "rejected": 0, "errors": 0}
+    coverage_report: List[dict] = []
+    for index, md_path in enumerate(sources, start=1):
+        delta, gaps = _parse_one_source(
+            index,
+            sources,
+            md_path,
+            output_root,
+            people_dir,
+            converge_people,
+            logger,
+            counts,
+        )
+        for key in totals:
+            totals[key] += delta[key]
         if gaps:
-            coverage_report.append(
-                {"source_file": summary["source_file"], "gaps": gaps}
-            )
-    return totals, coverage_report
+            coverage_report.append({"source_file": md_path.name, "gaps": gaps})
+    return totals, coverage_report, counts
 
 
 def _write_coverage_report(output_root: Path, report: List[dict], logger) -> None:
@@ -523,6 +600,28 @@ def _write_coverage_report(output_root: Path, report: List[dict], logger) -> Non
         len(report),
         total_gaps,
         out_path,
+    )
+
+
+def _emit_phase_summary(logger, files_in: int, counts: dict) -> None:
+    """Emit the phase-completion OBSERV summary (fail-safe, loud on anomaly).
+
+    ``status=anomaly`` when any file errored, or when NO file converted while
+    there were files to process (an empty-yield phase is never reported as a
+    neutral ok). Otherwise ``status=ok``."""
+    converted = counts["converted"]
+    errors = counts["errors"]
+    anomaly = errors > 0 or (converted == 0 and files_in > 0)
+    _observe(
+        logger,
+        "phase0_ingest.summary",
+        loud=anomaly,
+        files_in=files_in,
+        converted=converted,
+        skipped=counts["skipped"],
+        rejected=counts["rejected"],
+        errors=errors,
+        status="anomaly" if anomaly else "ok",
     )
 
 
@@ -580,7 +679,7 @@ def main() -> None:
     logger.info("Found %d OOB markdown file(s)", len(sources))
 
     logger.info("[phase0 step 2/2] Parsing %d file(s)", len(sources))
-    totals, coverage_report = _parse_all_sources(
+    totals, coverage_report, counts = _parse_all_sources(
         sources, output_root, people_dir, converge_people, logger
     )
     _write_coverage_report(output_root, coverage_report, logger)
@@ -591,6 +690,7 @@ def main() -> None:
         totals["rows"],
         totals["review"],
     )
+    _emit_phase_summary(logger, len(sources), counts)
     total_merged = totals["merged"]
     total_created = totals["created"]
     if converge_people:

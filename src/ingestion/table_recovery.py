@@ -148,6 +148,22 @@ def recover_page_tables(
         try:
             image = rendered_tmp = _render_pdf_page_to_png(pdf_path, page_number, dpi)
         except Exception as exc:  # pragma: no cover - render failure
+            # A flattened table was detected but the page could not be rendered,
+            # so the grid goes UNRECOVERED — a degraded-fallback, never silent.
+            logger.warning(
+                "Page render FAILED for table recovery (p%s of %s): %s — "
+                "flattened table kept unrecovered",
+                page_number,
+                pdf_path,
+                exc,
+            )
+            logger.warning(
+                "OBSERV table_recovery.degraded reason=render_failed page=%s "
+                "spans=%d detail=%s",
+                page_number,
+                len(spans),
+                str(exc)[:120],
+            )
             return PageTableRecovery(
                 routed=False,
                 flattened_spans=spans,

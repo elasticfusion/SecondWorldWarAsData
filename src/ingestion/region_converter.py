@@ -217,7 +217,13 @@ def _caption_for_image(
     """
     try:
         blocks = page.get_text("dict").get("blocks", [])
-    except (RuntimeError, ValueError):  # pragma: no cover - defensive
+    except (RuntimeError, ValueError) as exc:  # pragma: no cover - defensive
+        # Caption detection degraded to none — make the swallowed signal visible.
+        logger.warning(
+            "Caption text extraction failed (page text dict unavailable): %s — "
+            "no caption will be detected for this image",
+            exc,
+        )
         return ""
 
     body_size = _body_font_size(blocks)
@@ -306,7 +312,16 @@ def _extract_page_assets(
             caption = ""
             try:
                 rects = page.get_image_rects(xref)
-            except (RuntimeError, ValueError):  # pragma: no cover - defensive
+            except (RuntimeError, ValueError) as exc:  # pragma: no cover - defensive
+                # Cannot locate the image on the page -> caption lookup skipped.
+                # Surface the swallowed signal (control flow unchanged).
+                logger.warning(
+                    "Image rect lookup failed for xref %s on p%d: %s — "
+                    "caption detection skipped for this image",
+                    xref,
+                    page_number,
+                    exc,
+                )
                 rects = []
             if rects:
                 caption = _caption_for_image(page, tuple(rects[0]))

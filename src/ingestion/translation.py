@@ -308,6 +308,29 @@ def normalize_pages_to_english(  # pylint: disable=too-many-locals
 # returns the markdown unchanged (never block/garble a doc on a translation hiccup).
 
 
+# --- Observability (fail-safe; never raises into the phase) ------------------
+# Canonical Phase-0 OBSERV: one greppable line per normalization decision.
+# Anti-swallow rule — the fail-safe 'unchanged on error' CONTRACT is preserved
+# (we still return the original markdown), but the error is LOUD, never silent.
+def _observe_translation(lang: str, action: str, *, reason: str = "") -> None:
+    """Emit ``OBSERV translation.normalized lang=<> action=<>``.
+
+    ``translated``, ``unchanged`` (legitimately already-English), and
+    ``disabled`` (a configured choice) are info; ``error`` and any unexpected
+    action are LOUD. Fail-safe: never raises into the phase.
+    """
+    try:
+        base = "OBSERV translation.normalized lang=%s action=%s" % (lang, action)
+        if reason:
+            base += " reason=%s" % (str(reason)[:200],)
+        if action in ("translated", "unchanged", "disabled"):
+            logger.info(base)
+        else:
+            logger.warning(base)
+    except Exception:  # noqa: BLE001 - observability never breaks the phase
+        pass
+
+
 def translation_enabled(config: Optional[dict] = None) -> bool:
     """True if Phase-0 translation is on (``ingestion.translate`` or
     ``PHASE0_TRANSLATE=1``). Matches the OOB track's gate so all tracks share one
@@ -344,6 +367,7 @@ def normalize_markdown_to_english(
     if not markdown or not markdown.strip():
         return markdown
     if not translation_enabled(config):
+        _observe_translation("unknown", "disabled", reason="translation not enabled")
         return markdown
     try:
         if grok is None:
@@ -361,6 +385,8 @@ def normalize_markdown_to_english(
         return _normalize_whole_doc(markdown, grok, model_name)
     except Exception as e:  # noqa: BLE001 - fail-safe: keep original on any error
         logger.warning("Translation normalization skipped (keeping original): %s", e)
+        # CONTRACT preserved (return original) but the error is LOUD, never silent.
+        _observe_translation("unknown", "error", reason=str(e))
         return markdown
 
 
@@ -368,10 +394,14 @@ def _normalize_per_page(markdown: str, grok, model_name) -> str:
     """Per-page (Chandra multi-page OCR) normalization branch. Preserves log + return exactly."""
     page_res = normalize_pages_to_english(markdown, 1, grok, model_name=model_name)
     if page_res.translated:
+        langs = ", ".join(page_res.source_languages)
         logger.info(
             "Translated non-English markdown (%s) to English",
-            ", ".join(page_res.source_languages),
+            langs,
         )
+        _observe_translation(langs, "translated")
+    else:
+        _observe_translation("English", "unchanged")
     return page_res.english_markdown
 
 
@@ -380,4 +410,7 @@ def _normalize_whole_doc(markdown: str, grok, model_name) -> str:
     doc_res = normalize_to_english(markdown, grok, model_name=model_name)
     if doc_res.translated:
         logger.info("Translated %s markdown to English", doc_res.source_language)
+        _observe_translation(doc_res.source_language, "translated")
+    else:
+        _observe_translation(doc_res.source_language, "unchanged")
     return doc_res.english_markdown

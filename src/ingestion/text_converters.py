@@ -173,7 +173,13 @@ def _strip_html_boilerplate(html: str) -> str:
         main = soup.find("main") or soup.find("article") or soup
         return str(main)
     except Exception as e:  # noqa: BLE001 - never let cleaning block conversion
-        logger.debug("HTML boilerplate strip skipped: %s", e)
+        # DEGRADED FALLBACK: we convert the raw (chrome-laden) HTML instead of a
+        # cleaned document. Session anti-swallow rule -> LOUD, never debug.
+        logger.warning(
+            "OBSERV convert.text kind=html status=degraded "
+            "action=raw_html_fallback reason=%s",
+            str(e)[:200],
+        )
         return html
 
 
@@ -235,6 +241,61 @@ def _run_pandoc_text(text: str, from_format: str) -> str:
     return proc.stdout.rstrip() + "\n"
 
 
+# --- Observability (fail-safe; never raises into the conversion path) --------
+# Canonical Phase-0 OBSERV: one greppable line per conversion decision. The
+# session anti-swallow rule applies — an EMPTY output when input was present, or
+# any converter failure, is a LOUD warning, never a silent/debug/count=0-as-ok.
+_OBSERV_EMPTY_INPUT_CHARS = 1  # input had at least this many chars but output empty
+
+
+def _observe_convert_text(
+    path: Path, kind: str, chars: int, status: str, *, reason: str = ""
+) -> None:
+    """Emit ``OBSERV convert.text kind=<> chars=<> status=ok|empty|error``.
+
+    LOUD (warning) when status is ``empty`` (input present, no output) or
+    ``error`` (converter unavailable/failed); info only on a genuine ``ok``.
+    Fail-safe: observability never raises into the convert path.
+    """
+    try:
+        base = "OBSERV convert.text kind=%s chars=%d status=%s" % (kind, chars, status)
+        if reason:
+            base += " reason=%s" % (str(reason)[:200],)
+        if status == "ok":
+            logger.info(base)
+        else:
+            logger.warning(base)
+    except Exception:  # noqa: BLE001 - observability never breaks conversion
+        pass
+
+
+def _input_char_len(path: Path) -> int:
+    """Best-effort source size (chars) to decide if empty output is an anomaly."""
+    try:
+        return len(Path(path).read_text(encoding="utf-8", errors="replace"))
+    except Exception:  # noqa: BLE001 - size probe must not break conversion
+        try:
+            return int(Path(path).stat().st_size)
+        except Exception:  # noqa: BLE001
+            return 0
+
+
+def _dispatch_convert(path: Path, media_type: str) -> str:
+    """Pure dispatch by media type (no observability). See convert_to_markdown."""
+    if media_type == "text":
+        return txt_to_markdown(path)
+    if media_type == "docx":
+        return docx_to_markdown(path)
+    if media_type == "epub":
+        return epub_to_markdown(path)
+    if media_type == "html":
+        return html_to_markdown(path)
+    raise ValueError(
+        f"convert_to_markdown does not handle media_type={media_type!r}; "
+        "expected one of: text, docx, epub, html"
+    )
+
+
 # Dispatch by media type, mirroring the source_format handler table. Callers
 # resolve the media type first (media_detection), then convert.
 def convert_to_markdown(path: Path, media_type: str) -> str:
@@ -248,15 +309,17 @@ def convert_to_markdown(path: Path, media_type: str) -> str:
         ValueError: media_type is not a text-producing format handled here.
         ConverterUnavailable / ConverterError: as documented on the converters.
     """
-    if media_type == "text":
-        return txt_to_markdown(path)
-    if media_type == "docx":
-        return docx_to_markdown(path)
-    if media_type == "epub":
-        return epub_to_markdown(path)
-    if media_type == "html":
-        return html_to_markdown(path)
-    raise ValueError(
-        f"convert_to_markdown does not handle media_type={media_type!r}; "
-        "expected one of: text, docx, epub, html"
-    )
+    try:
+        markdown = _dispatch_convert(path, media_type)
+    except (ConverterUnavailable, ConverterError) as exc:
+        # DEGRADED/FAILURE path — LOUD with the reason, then re-raise so the
+        # caller can off-ramp (md_correction / review). Never swallowed.
+        _observe_convert_text(path, media_type, 0, "error", reason=str(exc))
+        raise
+    chars = len(markdown.strip())
+    if chars == 0 and _input_char_len(path) >= _OBSERV_EMPTY_INPUT_CHARS:
+        # Recognized input produced nothing — anomaly, not a neutral count=0.
+        _observe_convert_text(path, media_type, 0, "empty")
+    else:
+        _observe_convert_text(path, media_type, chars, "ok")
+    return markdown

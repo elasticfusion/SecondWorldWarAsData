@@ -53,10 +53,24 @@ def reject_to_review(
         }
     )
     logger.warning("REJECT-TO-REVIEW [%s] %s: %s", category, key, reason)
+    logger.warning(
+        "OBSERV review.queued category=%s book=%s key=%s reason=%s",
+        category,
+        book,
+        key,
+        str(reason)[:160],
+    )
     try:
         s3_client.put_object(Bucket=bucket, Key=marker_key, Body=body.encode("utf-8"))
     except Exception as e:  # pragma: no cover - best-effort marker
         logger.warning("Could not write needs-review marker for %s: %s", key, e)
+        logger.warning(
+            "OBSERV review.queue_failed category=%s key=%s detail=%s "
+            "(reject NOT durably recorded)",
+            category,
+            key,
+            str(e)[:120],
+        )
 
     topic = os.getenv("NOTIFICATION_TOPIC_ARN", "")
     if topic:
