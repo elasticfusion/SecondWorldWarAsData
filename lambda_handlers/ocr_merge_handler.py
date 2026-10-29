@@ -17,6 +17,10 @@ import os
 
 import boto3
 
+import yaml
+
+from src.ingestion.book_slug import book_slug
+
 logger = logging.getLogger()
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
@@ -89,10 +93,15 @@ def _s3():
 
 
 def _book_from_event(detail: dict) -> str:
-    """Extract the book/pdf name from a Batch job-state-change event.
+    """Extract the book/pdf name from a Batch job-state-change event, converged on
+    the shared SAFE slug (P1-S4/P1-C2).
 
     jobName is 'chandra-{book}' (set by the trigger's _submit_ocr). Prefer the
-    job's S3 input path if present, else parse the jobName.
+    job's S3 input path if present, else parse the jobName. Either candidate is
+    run through :func:`src.ingestion.book_slug.book_slug` (filename stem,
+    spaces->_, ``[A-Za-z0-9._-]+`` or loud 'unknown') so the OCR-merge derivation
+    matches the convert / video paths and a crafted jobName/path cannot inject a
+    traversal or unsafe char into the S3/review keys it builds.
     """
     job_name = detail.get("jobName", "")
     # Try the container command's input path first (most reliable). Handle any
@@ -103,10 +112,11 @@ def _book_from_event(detail: dict) -> str:
     for arg in cmd:
         low = arg.lower()
         if arg.startswith("s3://") and low.endswith(_ocr_exts):
-            fname = arg.rsplit("/", 1)[-1]
-            return fname.rsplit(".", 1)[0]  # strip extension
+            # book_slug strips the path + extension and validates the stem.
+            return book_slug(arg)
     if job_name.startswith("chandra-"):
-        return job_name[len("chandra-") :]
+        # Validate the jobName-derived stem the same way (no extension to strip).
+        return book_slug(job_name[len("chandra-") :])
     return ""
 
 
@@ -195,18 +205,26 @@ def merge_ocr_output(book: str) -> str:
 
     merged = normalize_markdown_to_english(merged, per_page=True)
     meta_key = f"contentrepository/{book}/chapter1/chapter1-meta.yaml"
-    meta = (
-        f'series: "TODO - Add series name"\n'
-        f'book: "{book}"\n'
-        f'author: "TODO - Add author name"\n'
-        f'chapter_number: "1"\n'
-        f'chapter_title: "TODO - Add chapter/paper title"\n'
-        f'license: "TODO - Add license"\n'
-        f'copyright_date: "TODO - Add year"\n'
-        f'source_url: "OCR of {book}"\n'
-    )
-    s3.put_object(Bucket=BUCKET, Key=meta_key, Body=meta.encode("utf-8"))
+    # P2-C1: SAFE YAML via yaml.safe_dump (never an f-string) so a book name with
+    # YAML metacharacters cannot inject structure. author/series/chapter_title/
+    # license are '' (empty) NOT a literal 'TODO - Add ...'; the gap is recorded
+    # as a needs-review/metadata marker below so it is detectable, not masqueraded.
+    meta = {
+        "series": "",
+        "book": book,
+        "author": "",
+        "chapter_number": "1",
+        "chapter_title": "",
+        "license": "",
+        "copyright_date": "",
+        "source_url": f"OCR of {book}",
+    }
+    meta_body = yaml.safe_dump(
+        meta, default_flow_style=False, allow_unicode=True
+    ).encode("utf-8")
+    s3.put_object(Bucket=BUCKET, Key=meta_key, Body=meta_body)
     s3.put_object(Bucket=BUCKET, Key=output_key, Body=merged.encode("utf-8"))
+    _mark_metadata_gap(s3, prefix, book)
     logger.info(
         "OCR->parse handoff: merged %d md file(s) -> s3://%s/%s (+meta) (%d chars)",
         len(md_keys),
@@ -215,6 +233,27 @@ def merge_ocr_output(book: str) -> str:
         len(merged),
     )
     return output_key
+
+
+def _mark_metadata_gap(s3, key: str, book: str) -> None:
+    """Record the deferred-metadata gap (empty author/series/title/license) as a
+    detectable needs-review/metadata marker (P2-C1), rather than masquerading
+    empty fields as real data. Fail-safe: best-effort, never breaks the merge."""
+    try:
+        from src.ingestion.review_reject import reject_to_review
+
+        reject_to_review(
+            s3,
+            BUCKET,
+            key,
+            book,
+            "metadata not yet extracted (author/series/title/license empty) — "
+            "real metadata extraction deferred (P2-C1 slug+meta half)",
+            category="metadata",
+            region=REGION,
+        )
+    except Exception as e:  # noqa: BLE001 - marker must never crash the merge
+        logger.warning("metadata needs-review marker failed for %s: %s", key, e)
 
 
 def handler(event, _context):

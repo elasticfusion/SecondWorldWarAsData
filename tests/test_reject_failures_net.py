@@ -152,4 +152,10 @@ def test_merge_promotes_good_ocr(monkeypatch):
     ):
         out = mh.merge_ocr_output("B9")
     assert out == "contentrepository/B9/chapter1/chapter1-content.md"
-    rej.assert_not_called()
+    # A good OCR result is PROMOTED, never off-ramped as a failure. The only
+    # reject_to_review call is the P2-C1 deferred-metadata marker — never an
+    # ocr-empty / ocr-near-empty / ocr-media-mismatch failure category.
+    reject_categories = [c.kwargs.get("category") for c in rej.call_args_list]
+    assert reject_categories == ["metadata"]
+    assert "ocr-empty" not in reject_categories
+    assert "ocr-near-empty" not in reject_categories

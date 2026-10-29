@@ -1102,7 +1102,22 @@ def _download_phase0_inputs() -> None:
     Phase 0 normalizes sources under ``contentrepository/`` (OOB Chandra
     markdown in ``*/ocr_output/*.md``, PDFs, etc.), so it needs the same content
     prefix Phase 1 consumes. Reuse the Phase 1 content download.
+
+    P1-C2: a SELF-FETCHING task (phase0_convert / phase0_video) is launched with
+    CONVERT_KEY / VIDEO_KEY set and downloads its own single source object inside
+    convert_key()/process_video(). It must NOT also run the book-scoped Phase-1
+    sync — that sync fails LOUD with sys.exit(1) on an empty/absent book prefix
+    (these self-fetching keys live at their raw upload path, not a
+    contentrepository/{book}/ prefix), which would crash the task before it ever
+    fetched its own input. Short-circuit here so the task proceeds to its own
+    fetch.
     """
+    if os.environ.get("CONVERT_KEY") or os.environ.get("VIDEO_KEY"):
+        logger.info(
+            "Phase 0 self-fetching task (CONVERT_KEY/VIDEO_KEY set) — skipping the "
+            "book-scoped Phase-1 sync; the task fetches its own source object."
+        )
+        return
     _download_phase1_inputs()
 
 

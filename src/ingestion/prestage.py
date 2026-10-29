@@ -43,6 +43,19 @@ _ROUTING: Dict[str, Tuple[str, str]] = {
 
 _ARCHIVE_EXTS = {".zip", ".rar"}
 
+# Decompression-bomb caps (P1-S3). An untrusted archive member must not be able to
+# inflate unbounded. We reject on THREE independent signals, any one of which is a bomb
+# signature: (1) declared uncompressed size over the per-member cap, (2) cumulative
+# expanded bytes for the archive over the total cap, (3) compression ratio over the max
+# (a tiny compressed member claiming/writing a huge payload). Enforcement is on BOTH the
+# declared header AND the actual bytes written — a header that lies about its size is
+# itself the bomb, so the bounded streaming copy aborts the moment actual bytes exceed
+# the cap regardless of what the header claimed.
+_PER_MEMBER_CAP = 500 * 1024 * 1024  # 500 MiB uncompressed per member
+_CUMULATIVE_CAP = 2 * 1024 * 1024 * 1024  # 2 GiB total expanded per archive
+_MAX_RATIO = 100  # uncompressed / compressed ratio ceiling
+_COPY_CHUNK = 1024 * 1024  # 1 MiB bounded read window
+
 
 def _doc_id_for(path: Path) -> str:
     """Stable doc id from the file's path + size (cheap, collision-resistant enough)."""
@@ -61,19 +74,117 @@ def route_file(path: Path) -> Tuple[str, str, str]:
     return media, track, phase
 
 
+def _bomb_reject(archive_name: str, member: str, detail: str) -> None:
+    """Emit the LOUD OBSERV bomb-rejection WARNING. Fail-safe: never raises."""
+    try:
+        logger.warning(
+            "OBSERV prestage.bomb_rejected archive=%s member=%s %s "
+            "status=anomaly (decompression bomb — member skipped)",
+            archive_name,
+            member,
+            detail,
+        )
+    except Exception:  # noqa: BLE001 - observability never breaks expansion
+        pass
+
+
+def _declared_reject_reason(
+    declared_size: int, compress_size: int, cumulative: int
+) -> Optional[str]:
+    """Return a rejection reason if the member's DECLARED header trips a bomb cap, else None.
+
+    Checks the per-member cap, the running cumulative cap, and the compression ratio
+    (guarding compress_size==0, which would otherwise divide-by-zero and is itself
+    suspicious — a 0-byte compressed member claiming real content)."""
+    if declared_size > _PER_MEMBER_CAP:
+        return "declared_size=%d over per-member cap=%d" % (
+            declared_size,
+            _PER_MEMBER_CAP,
+        )
+    if cumulative + declared_size > _CUMULATIVE_CAP:
+        return "declared_size=%d would exceed cumulative cap=%d (running=%d)" % (
+            declared_size,
+            _CUMULATIVE_CAP,
+            cumulative,
+        )
+    if compress_size <= 0:
+        if declared_size > 0:
+            return "ratio=inf (compress_size=0, declared_size=%d)" % declared_size
+    else:
+        ratio = declared_size / compress_size
+        if ratio > _MAX_RATIO:
+            return "ratio=%.1f over max=%d (declared_size=%d compress_size=%d)" % (
+                ratio,
+                _MAX_RATIO,
+                declared_size,
+                compress_size,
+            )
+    return None
+
+
+def _copy_bounded(src, out, cumulative: int) -> int:
+    """Stream src -> out in bounded chunks, enforcing the ACTUAL-bytes caps.
+
+    Returns bytes written on success, or -1 if a cap was breached mid-copy (a lying
+    header). On breach the caller is responsible for discarding the partial target."""
+    written = 0
+    while True:
+        chunk = src.read(_COPY_CHUNK)
+        if not chunk:
+            break
+        written += len(chunk)
+        if written > _PER_MEMBER_CAP:
+            return -1
+        if cumulative + written > _CUMULATIVE_CAP:
+            return -1
+        out.write(chunk)
+    return written
+
+
 def _extract_member(
-    open_member, filename: str, dest: Path, held_names: set
-) -> Optional[Path]:
-    """Extract one archive member into dest (flattened, zip-slip safe). None if skipped."""
+    open_member,
+    filename: str,
+    dest: Path,
+    held_names: set,
+    *,
+    archive_name: str = "",
+    declared_size: int = 0,
+    compress_size: int = 0,
+    cumulative: int = 0,
+) -> Tuple[Optional[Path], int]:
+    """Extract one archive member into dest (flattened, zip-slip safe, bomb-capped).
+
+    Returns ``(path, bytes_written)``. ``path`` is None when the member is skipped
+    (already held, empty name, or rejected as a decompression bomb); ``bytes_written``
+    is 0 in that case. Fail-safe: a bomb member is skipped + logged, never raised."""
     name = Path(filename).name
     if not name or name in held_names:
         if name in held_names:
             logger.info("Skipping already-held %s", name)
-        return None
+        return None, 0
+
+    reason = _declared_reject_reason(declared_size, compress_size, cumulative)
+    if reason is not None:
+        _bomb_reject(archive_name, name, reason)
+        return None, 0
+
     target = dest / name
     with open_member() as src, open(target, "wb") as out:
-        out.write(src.read())
-    return target
+        written = _copy_bounded(src, out, cumulative)
+    if written < 0:
+        # Header lied: actual bytes blew past the cap mid-stream. Discard the partial file.
+        try:
+            target.unlink()
+        except OSError:
+            pass
+        _bomb_reject(
+            archive_name,
+            name,
+            "actual bytes exceeded cap (declared_size=%d — lying header)"
+            % declared_size,
+        )
+        return None, 0
+    return target, written
 
 
 def expand_archive(
@@ -93,13 +204,22 @@ def expand_archive(
 
     if suffix == ".zip":
         with zipfile.ZipFile(archive) as zf:
+            cumulative = 0
             for info in zf.infolist():
                 if info.is_dir():
                     continue
-                target = _extract_member(
-                    lambda i=info, z=zf: z.open(i), info.filename, dest, held_names
+                target, written = _extract_member(
+                    lambda i=info, z=zf: z.open(i),
+                    info.filename,
+                    dest,
+                    held_names,
+                    archive_name=archive.name,
+                    declared_size=info.file_size,
+                    compress_size=info.compress_size,
+                    cumulative=cumulative,
                 )
                 if target:
+                    cumulative += written
                     extracted.append(target)
     elif suffix == ".rar":
         extracted.extend(_expand_rar(archive, dest, held_names))
@@ -152,13 +272,22 @@ def _expand_rar(archive: Path, dest: Path, held_names: set) -> List[Path]:
         )
         return out
     with rarfile.RarFile(archive) as rf:
+        cumulative = 0
         for info in rf.infolist():
             if getattr(info, "isdir", lambda: False)():
                 continue
-            target = _extract_member(
-                lambda i=info, r=rf: r.open(i), info.filename, dest, held_names
+            target, written = _extract_member(
+                lambda i=info, r=rf: r.open(i),
+                info.filename,
+                dest,
+                held_names,
+                archive_name=archive.name,
+                declared_size=getattr(info, "file_size", 0) or 0,
+                compress_size=getattr(info, "compress_size", 0) or 0,
+                cumulative=cumulative,
             )
             if target:
+                cumulative += written
                 out.append(target)
     return out
 

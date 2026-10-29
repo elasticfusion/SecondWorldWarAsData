@@ -44,16 +44,28 @@ def test_av_infected_is_error_level(caplog):
     assert "OBSERV av.verdict" in caplog.text and "result=infected" in caplog.text
 
 
-def test_media_unsniffable_is_loud(tmp_path, caplog):
-    # a .docx (ZIP) -> no magic signature in _MAGIC_SIGNATURES -> unsniffable -> WARNING
+def test_media_spoofed_docx_is_mismatch(tmp_path, caplog):
+    # P1-S2: a .docx whose bytes are NOT a valid docx ZIP -> MISMATCH (spoof caught), LOUD.
     f = tmp_path / "x.docx"
-    f.write_bytes(b"PK\x03\x04rest-of-zip")
+    f.write_bytes(b"PK\x03\x04not-really-a-docx")
     with caplog.at_level(logging.WARNING, logger="src.ingestion.media_detection"):
         v = media_detection.detect_media_mismatch(f)
+    assert v.is_mismatch is True
+    assert "OBSERV media.checked" in caplog.text and "verdict=mismatch" in caplog.text
+
+
+def test_media_valid_docx_is_match(tmp_path, caplog):
+    # P1-S2: a real docx ZIP (has [Content_Types].xml) verifies as a match.
+    import zipfile
+
+    f = tmp_path / "ok.docx"
+    with zipfile.ZipFile(f, "w") as z:
+        z.writestr("[Content_Types].xml", "<Types/>")
+        z.writestr("word/document.xml", "<w:document/>")
+    with caplog.at_level(logging.INFO, logger="src.ingestion.media_detection"):
+        v = media_detection.detect_media_mismatch(f)
     assert v.is_mismatch is False
-    assert (
-        "OBSERV media.checked" in caplog.text and "verdict=unsniffable" in caplog.text
-    )
+    assert "OBSERV media.checked" in caplog.text and "verdict=match" in caplog.text
 
 
 def test_media_mismatch_is_loud(tmp_path, caplog):

@@ -36,10 +36,51 @@ PHASE2_TASK_DEF = os.environ.get("PHASE2_TASK_DEF", f"{ENV_NAME}-wwii-phase2-ext
 PHASE3_TASK_DEF = os.environ.get("PHASE3_TASK_DEF", f"{ENV_NAME}-wwii-phase3-enrich")
 PHASE0_TASK_DEF = os.environ.get("PHASE0_TASK_DEF", f"{ENV_NAME}-wwii-phase0-convert")
 
-# AV scanning (demand-launched, binary-only). Gate is opt-in via AV_SCAN_ENABLED
-# so behavior is unchanged until an operator turns it on + deploys the engine.
-AV_SCAN_ENABLED = os.environ.get("AV_SCAN_ENABLED", "false").lower() == "true"
+# AV scanning (demand-launched, binary-only). P1-S1: the malware gate is now ON
+# BY DEFAULT (default 'true') — an operator must deliberately opt OUT, and in any
+# non-dev environment an opt-out is a FATAL misconfiguration (untrusted binaries
+# would reach fitz/ffmpeg/torch/pandoc unscanned). The decision is emitted loudly
+# either way so the gate state is always visible in logs.
+AV_SCAN_ENABLED = os.environ.get("AV_SCAN_ENABLED", "true").lower() == "true"
 AV_SCAN_TASK_DEF = os.environ.get("AV_SCAN_TASK_DEF", f"{ENV_NAME}-wwii-av-scan")
+# Envs where a disabled AV gate is permissible (local iteration only). Anything
+# else (staging/prod/etc.) MUST have the gate on.
+_AV_PERMISSIVE_ENVS = {"dev", "local", "test"}
+
+
+def _enforce_av_gate_policy() -> None:
+    """P1-S1 startup guard: emit a loud log of the AV-gate state, and HARD-FAIL
+    (raise) if the gate resolves OFF in a non-dev environment. Dev stays
+    permissive (warn only) so local iteration without the engine still works."""
+    if AV_SCAN_ENABLED:
+        logger.warning(
+            "OBSERV av.gate_enabled env=%s — untrusted binaries will be ClamAV-scanned "
+            "before any parser touches them",
+            ENV_NAME,
+        )
+        return
+    permissive = (ENV_NAME or "").lower() in _AV_PERMISSIVE_ENVS
+    if permissive:
+        logger.warning(
+            "OBSERV av.gate_disabled env=%s permissive=true — malware gate OFF "
+            "(dev-only; binaries reach parsers UNSCANNED)",
+            ENV_NAME,
+        )
+        return
+    logger.error(
+        "OBSERV av.gate_disabled env=%s permissive=false — FATAL: the malware gate "
+        "is OFF in a non-dev environment; refusing to start.",
+        ENV_NAME,
+    )
+    raise RuntimeError(
+        f"AV_SCAN_ENABLED resolved false in non-dev env {ENV_NAME!r}: the malware "
+        f"gate must be ON outside dev/local/test. Set AV_SCAN_ENABLED=true (or run "
+        f"in a permissive env) and redeploy."
+    )
+
+
+# Enforce at import/startup so a misconfigured deploy fails fast + loud.
+_enforce_av_gate_policy()
 
 CONTENT_TOPIC = f"{ENV_NAME}-wwii-content-uploaded"
 PARSED_TOPIC = f"{ENV_NAME}-wwii-chapter-parsed"

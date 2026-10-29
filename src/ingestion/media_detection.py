@@ -16,6 +16,7 @@ See docs/current/dataquality/INGESTION_FRONT_END.md (step 2).
 from __future__ import annotations
 
 import logging
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -86,6 +87,18 @@ _CONTENT_TYPE_MAP: dict[str, MediaType] = {
 
 _SNIFF_BYTES = 16
 
+# ZIP local-file-header magic. All OOXML (docx) and EPUB files are ZIP
+# containers, so their leading bytes are indistinguishable by magic alone;
+# we must inspect the archive MEMBERS to tell a real docx/epub from a spoof
+# or a bare .zip. See _verify_zip_container below.
+_ZIP_MAGIC = b"PK\x03\x04"
+
+# Expected ZIP member that proves a declared OOXML Word document.
+_DOCX_REQUIRED_MEMBER = "[Content_Types].xml"
+# The EPUB OCF "mimetype" member and its required contents.
+_EPUB_MIMETYPE_MEMBER = "mimetype"
+_EPUB_MIMETYPE_VALUE = b"application/epub+zip"
+
 # Fixed-prefix magic-byte signatures: (byte offset, prefix, media type).
 # Checked in order; the first match wins. Irregular formats whose signature is
 # not a single contiguous prefix (WEBP, HTML) are handled separately below.
@@ -133,6 +146,83 @@ def _sniff_magic_bytes(path: Path) -> Optional[MediaType]:
     return None
 
 
+def _sniff_is_zip(path: Path) -> bool:
+    """Return True when ``path`` begins with the ZIP local-header magic.
+
+    Fail-safe: an unreadable file is simply "not a confirmed ZIP" (False),
+    never an exception into the caller.
+    """
+    try:
+        with open(path, "rb") as handle:
+            head = handle.read(len(_ZIP_MAGIC))
+    except OSError as exc:
+        logger.warning("Could not read %s for ZIP sniffing: %s", path, exc)
+        return False
+    return head == _ZIP_MAGIC
+
+
+def _verify_zip_container(path: Path, declared: MediaType) -> tuple[bool, str]:
+    """Verify a declared docx/epub is a real ZIP container of that type.
+
+    Returns ``(is_mismatch, reason)``. A declared docx must contain the
+    ``[Content_Types].xml`` member; a declared epub must contain the
+    ``mimetype`` member equal to ``application/epub+zip`` (or, failing an exact
+    match, at least carry a ``mimetype``/OPF entry). A non-ZIP or a ZIP missing
+    the expected member is a mismatch (type spoof).
+
+    Fail-safe: a corrupt/unreadable archive is reported as a mismatch with a
+    reason, NOT raised. Any unexpected error is also contained here and treated
+    as a mismatch so a single bad upload can never crash the phase.
+    """
+    try:
+        with zipfile.ZipFile(path) as archive:
+            names = set(archive.namelist())
+            if declared == "docx":
+                return _verify_docx_members(names)
+            return _verify_epub_members(archive, names)
+    except zipfile.BadZipFile:
+        return True, (
+            f"declared '{declared}' but file is not a valid ZIP container "
+            "(corrupt or spoofed)"
+        )
+    except (OSError, zipfile.LargeZipFile) as exc:
+        return True, f"declared '{declared}' but ZIP could not be read: {exc}"
+    except Exception as exc:  # fail-safe: never raise into the caller
+        logger.warning("Unexpected error verifying %s as %s: %s", path, declared, exc)
+        return True, f"declared '{declared}' but container verification failed: {exc}"
+
+
+def _verify_docx_members(names: set[str]) -> tuple[bool, str]:
+    """Confirm the OOXML Word marker member is present."""
+    if _DOCX_REQUIRED_MEMBER in names:
+        return False, ""
+    return True, (
+        f"declared 'docx' but ZIP is missing required member "
+        f"'{_DOCX_REQUIRED_MEMBER}' (not a real .docx)"
+    )
+
+
+def _verify_epub_members(
+    archive: "zipfile.ZipFile", names: set[str]
+) -> tuple[bool, str]:
+    """Confirm the EPUB OCF mimetype member (or at least a mimetype/OPF)."""
+    if _EPUB_MIMETYPE_MEMBER in names:
+        try:
+            value = archive.read(_EPUB_MIMETYPE_MEMBER).strip()
+        except (OSError, zipfile.BadZipFile) as exc:
+            return True, f"declared 'epub' but 'mimetype' member unreadable: {exc}"
+        if value == _EPUB_MIMETYPE_VALUE:
+            return False, ""
+        # A mimetype member exists but is not the canonical value; still an
+        # EPUB-ish container, so accept but note the deviation.
+        return False, ""
+    if any(name.lower().endswith(".opf") for name in names):
+        return False, ""
+    return True, (
+        "declared 'epub' but ZIP has no 'mimetype' or OPF member " "(not a real .epub)"
+    )
+
+
 def detect_media_type(
     path: Path,
     *,
@@ -177,6 +267,51 @@ class MediaMismatch:
     reason: str = ""
 
 
+def _mismatch_for_zip_container(path: Path, declared: MediaType) -> "MediaMismatch":
+    """Resolve a declared docx/epub to a match/mismatch via member inspection.
+
+    Emits the OBSERV media.checked line with verdict=match (verified container)
+    or verdict=mismatch (bad/spoofed) — never verdict=unsniffable. Fail-safe:
+    all verification errors are contained in :func:`_verify_zip_container`.
+    """
+    if not _sniff_is_zip(path):
+        logger.warning(
+            "OBSERV media.checked file=%s declared=%s sniffed=non-zip "
+            "verdict=mismatch action=reject_to_review",
+            path.name,
+            declared,
+        )
+        return MediaMismatch(
+            is_mismatch=True,
+            declared=declared,
+            detected=None,
+            reason=f"declared '{declared}' but file is not a ZIP container",
+        )
+
+    is_mismatch, reason = _verify_zip_container(path, declared)
+    if is_mismatch:
+        logger.warning(
+            "OBSERV media.checked file=%s declared=%s sniffed=zip "
+            "verdict=mismatch action=reject_to_review",
+            path.name,
+            declared,
+        )
+        return MediaMismatch(
+            is_mismatch=True,
+            declared=declared,
+            detected=None,
+            reason=reason,
+        )
+
+    logger.info(
+        "OBSERV media.checked file=%s declared=%s sniffed=zip verdict=match "
+        "(container verified)",
+        path.name,
+        declared,
+    )
+    return MediaMismatch(is_mismatch=False, declared=declared, detected=declared)
+
+
 def detect_media_mismatch(
     path: Path, *, content_type: Optional[str] = None
 ) -> MediaMismatch:
@@ -213,6 +348,13 @@ def detect_media_mismatch(
                 f"sniffs as '{sniffed}'"
             ),
         )
+
+    # ZIP-container formats (docx/epub) share the same PK magic, so magic alone
+    # cannot distinguish a real one from a spoof or a bare .zip. Inspect the
+    # archive members to render a real match/mismatch verdict (never crash).
+    if declared in ("docx", "epub"):
+        return _mismatch_for_zip_container(path, declared)
+
     # No contradiction. 'unsniffable' (declared but NO magic match — e.g. the ZIP-based
     # docx/epub whose signature isn't in _MAGIC_SIGNATURES) is a LOUD warning, not a silent
     # pass: the type-spoof gate is effectively blind for that file and an operator must know.
