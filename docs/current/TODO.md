@@ -15,6 +15,20 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   people serially ('Searching Wikipedia...' ~3 min each). FIX candidates: (a) parallelize/bound per-person enrichment, (b)
   move bio enrichment OUT of the synchronous Phase-2 critical path (it's enrichment, not extraction), (c) a hard per-person
   wall-clock. Batch mode hides this (defers); synchronous mode exposed it.
+- **[MED · test] Simulated Spot-instance-loss test (automated recovery verification).** The XChannel-8 2026-10-29 Spot
+  interruption was a real-world test that EXPOSED the recovery gaps (grace-vs-liveness skip + disabled stale-lock sweep).
+  Build a repeatable test that INJECTS a Spot interruption and asserts the pipeline self-heals: (a) unit/integration —
+  simulate the ECS Task State Change STOPPED event ('stoppedReason: Your Spot Task was interrupted') into the trigger
+  handler and assert _handle_task_stopped_event -> reconciliation relaunches the phase (PR #630); (b) optional live/staging —
+  stop-task a running Spot phase mid-run and assert a replacement task launches within the stale-lock-check window and the
+  phase resumes from pending# without data loss or double-launch. Covers both the event-driven fast path and the 15-min
+  sweep backstop. Guards against the recovery logic silently regressing.
+- **[MED · observability] Long-running phase has NO mid-phase progress notification to Slack.** Phase-2/3 only notify
+  at start + complete/fail (_notify_complete/_notify_failure). During the ~2.5h serial bio-enrichment window NOTHING
+  reaches Slack (the heartbeat monitor only logs locally, src/utils/heartbeat.py:54 — no SNS/Slack path), so a
+  legitimately-slow phase is indistinguishable from a hung one in the operator's inbox (observed XChannel-8 2026-10-29,
+  'last Slack msg was extract-started'). FIX: emit a periodic progress notification (e.g. enrich N/total every K min, or
+  route the heartbeat through observe()/NOTIFICATION_TOPIC_ARN). Pairs with the heartbeat-false-alarm fix below.
 - **[MED · observability] Phase-2 heartbeat FALSE-ALARM.** 'no progress for N minutes' counts up to 99 min while the
   per-person enrichment loop IS progressing — the heartbeat only resets on Step-level progress, not per-entity. Fix: reset
   the heartbeat on per-person enrich.persisted (or any OBSERV progress), so a real stall is distinguishable from slow work.
@@ -521,6 +535,30 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
 ---
 
 ## 3. ARCHITECTURE & DESIGN
+
+- **[HIGH · resilience/design] Entity-level Phase-2 resume via a worklist MANIFEST + S3 diff (replace/upgrade the per-event `.processed_events.json`).**
+  PROBLEM (XChannel-8 2026-10-29): Phase-2 resume granularity is PER-EVENT — `_update_processed_registry` marks an event
+  done only AFTER the whole event finishes. Hyperwar chapters are ONE giant event each (`Step 1 batch 1: 1 chapters`, 50+
+  people, ~2.5h serial enrichment), so a Spot interruption mid-event leaves the event UNmarked → on restart the entire event
+  re-processes from the top (re-runs extraction Grok calls). The per-person `last_enrichment_search`/`_is_already_enriched`
+  gate saves the expensive enrichment re-work (done people are skipped), but the event scaffolding + any in-flight unpersisted
+  person are lost, and there is no event-internal checkpoint.
+  PROPOSAL (owner 2026-10-29): at Phase-2 start, write the FULL set of entities INTENDED to be enriched (the "to-do manifest")
+  to disk/S3 right after EXTRACTION (fast, pre-enrichment). On any (re)invocation, Phase 2 diffs the manifest against the
+  entity JSONs already in S3 and processes only the remainder → stateless, self-correcting, resumes at the individual-entity
+  level after a crash at any instant. Preferred over an in-memory "last processed index N" cursor (fragile to ordering).
+  THREE CORRECTNESS SUBTLETIES (must be in the design):
+    1. "written to S3" != "done". A person file is written at CREATION (post-extract, pre-enrich) AND updated post-enrich.
+       The diff must compare against a TERMINAL enrichment signal on the written record (`enrichment_status ∈ {enriched,
+       not_found}`), NOT mere file existence — else a resume marks extracted-but-unenriched people as done.
+    2. Key on the NATURAL/name key, NOT the entity id. PersonID is minted fresh server-side each run (`ulid.new()` in
+       _process_person), so a manifest keyed on PersonID would re-create DUPLICATES on resume. Use `_normalize_name` (people)
+       / the group key / etc. — the same stable keys the index already uses.
+    3. Write the manifest BEFORE the crash window and sync it immediately (durable version of the in-memory extracted_* list),
+       so even an early Spot kill leaves a valid to-do list. Cost: one S3 LIST + compare at startup (trivial).
+  Generalizes to all per-event entities (people/groups/dates/places + optional casualties/equipment/logistics/supplemental).
+  Non-trivial change to the extraction/enrichment flow (new manifest write + startup reconciliation pass) — design + gate +
+  test carefully; pairs with the serial-enrichment throughput + spot-retry work.
 
 - **[DOCS/SCHEMA] Schema version CHANGELOG + drift-proof current-schema doc.** Two gaps found while
   auditing the schema-stamping bug: (1) there is NO per-entity schema version HISTORY anywhere except git
