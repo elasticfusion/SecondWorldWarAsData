@@ -12,6 +12,8 @@ import os
 import boto3
 import requests
 
+from src.utils.observe import observe_error
+
 logger = logging.getLogger(__name__)
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
@@ -220,6 +222,18 @@ def _check_batch_status(api_key: str, batch_id: str, submitted_at: int = 0) -> s
             return stuck
         return "pending"
     except Exception as e:
+        # #12: a status-check error returns the 'pending' SKIP sentinel so we don't
+        # mark a batch failed on a transient fault — but that made a genuinely broken
+        # status check INDISTINGUISHABLE from a still-running batch (it silently re-polls
+        # forever). Emit a canonical, greppable, Slack-escalating anomaly at the point of
+        # loss so a persistent status-check failure is visible, not swallowed as "running".
+        observe_error(
+            "batch",
+            "status_check_error",
+            note="Grok batch status check failed — treating as pending (may mask a stuck batch)",
+            batch_id=batch_id,
+            reason=type(e).__name__,
+        )
         logger.error("Failed to check batch %s: %s", batch_id, e)
         return "pending"  # don't mark failed on transient errors
 
