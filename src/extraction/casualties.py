@@ -16,6 +16,7 @@ import ulid
 from src.grok_client import GrokClient, BatchModeCollecting, GrokTruncationError
 from src.json_schemas import CASUALTY_ITEM_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
+from src.utils.observe import observe, observe_error
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +139,30 @@ def extract_casualties(
             casualty_id = casualty.get("CasualtyID", "unknown")
             logger.error("Failed to save casualty %s: %s", casualty_id, e)
 
+    # #7 PATTERN-8: casualties had NO yield rollup, so a {}-batch -> [] (a dropped/empty extraction)
+    # was invisible. Emit a canonical produced-count rollup so the per-event yield is always a loud,
+    # greppable line (status=ok here; the point-of-loss drops above fire status=error separately).
+    _observe_casualties_rollup(event_id, len(sub_events), len(casualties))
+
     return casualties
+
+
+def _observe_casualties_rollup(
+    event_id: Optional[str], sub_events: int, produced: int
+) -> None:
+    """Emit the canonical `OBSERV casualties.extract` produced-count rollup (fail-safe).
+
+    #7 PATTERN-8: casualties has no observe_yield baseline, so without this a whole-batch {} -> []
+    drop is a silent zero. A produced-count rollup makes the per-event yield always visible.
+    """
+    observe(
+        "casualties",
+        "extract",
+        status="ok",
+        produced=produced,
+        event_id=event_id if event_id else "?",
+        sub_events=sub_events,
+    )
 
 
 def _batch_extract_casualties(
@@ -311,6 +335,10 @@ def _call_and_parse_casualties(
                     )
                 else:
                     logger.error("  ✗ All %d batch attempts failed: %s", max_retries, e)
+    # #6 PATTERN-8: retry-exhaustion falls through to a {} return — a casualty batch is being
+    # DROPPED here. Emit a LOUD canonical OBSERV at the point of loss so the zero is greppable/
+    # alertable instead of an ambiguous empty dict. Fail-safe (never raises into the caller).
+    observe_error("casualties", "extract_error", produced=0, reason="retry_exhausted")
     return {}
 
 
@@ -319,9 +347,16 @@ def _parse_casualty_response(response: str) -> Dict[str, List[Dict[str, Any]]]:
     start = response.find("{")
     end = response.rfind("}") + 1
     if start == -1 or end == 0:
+        # #6 PATTERN-8: no JSON object in the response — the whole batch is dropped. Loud canonical
+        # OBSERV at the point of loss so a parse-shaped zero is distinguishable from a real zero.
+        observe_error(
+            "casualties", "extract_error", produced=0, reason="no_json_object"
+        )
         return {}
     parsed = json.loads(response[start:end])
     if not isinstance(parsed, dict):
+        # #6 PATTERN-8: parsed to a non-dict (e.g. a bare list/scalar) — unusable, batch dropped.
+        observe_error("casualties", "extract_error", produced=0, reason="not_a_dict")
         return {}
     result = {}
     for seid, items in parsed.items():

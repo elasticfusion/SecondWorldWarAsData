@@ -18,6 +18,7 @@ from ulid import new as new_ulid
 from src.grok_client import GrokClient
 from src.json_schemas import PEOPLE_GROUP_ITEM_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
+from src.utils.observe import observe_error
 from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
 from src.utils.text_utils import normalize_name
 
@@ -335,11 +336,22 @@ def extract_people_groups(
                 "  People groups response truncated for %s — event too large",
                 event_file.name,
             )
+            # #16 PATTERN-8: truncation -> return None skipped the yield observer, so this whole
+            # event's groups dropped SILENTLY (loud-not-canonical). Emit a canonical point-of-loss
+            # OBSERV and run the yield observer (produced=0) BEFORE returning so the drop is visible.
+            observe_error(
+                "groups", "truncation_error", produced=0, reason="GrokTruncationError"
+            )
+            _observe_groups_yield(event_data, 0)
             return None
         raise
 
     if not response:
         logger.error("  Failed to get response from Grok API")
+        # Empty response is also a point-of-loss drop that bypassed the yield observer — make it
+        # loud + canonical and run the yield baseline before returning (PATTERN-8).
+        observe_error("groups", "empty_response", produced=0, reason="empty_response")
+        _observe_groups_yield(event_data, 0)
         return None
 
     try:
@@ -347,6 +359,11 @@ def extract_people_groups(
     except json.JSONDecodeError:
         logger.warning("  No valid JSON in response (likely no groups in this section)")
         logger.debug("  Response content: %s", response[:500])
+        # #8 PATTERN-8: the JSONDecodeError path returned groups_dir BEFORE the yield observer ran,
+        # so a parse-failure was indistinguishable from a legitimate zero. Emit a canonical
+        # point-of-loss OBSERV and run the yield observer (produced=0) AHEAD of the early return.
+        observe_error("groups", "parse_error", produced=0, reason="JSONDecodeError")
+        _observe_groups_yield(event_data, 0)
         return groups_dir
 
     if not groups:
