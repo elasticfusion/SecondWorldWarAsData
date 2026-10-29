@@ -42,4 +42,10 @@ def tag_source_cold(s3_client, bucket: str, key: str) -> None:
             ARCHIVE_TAG_VALUE,
         )
     except Exception as e:  # noqa: BLE001 - cost optimization, never block ingestion
+        # Degraded-fallback (object stays on STANDARD): make it LOUD, not silent.
         logger.warning("Could not tag %s for cold archive: %s", key, e)
+        logger.warning(
+            "OBSERV archive_tag.degraded reason=tag_failed key=%s detail=%s",
+            key,
+            str(e)[:120],
+        )

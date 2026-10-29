@@ -258,7 +258,26 @@ def scan_and_gate(
     outcome.results = results
     for r in results:
         _gate_result(r, outcome, s3_client, bucket, region)
+    _emit_av_summary(outcome)
     return outcome
+
+
+def _emit_av_summary(outcome: AvOutcome) -> None:
+    """Rollup for the scan batch. A non-empty quarantine set is a LOUD warning (never a silent
+    count=0-as-ok); an all-clear batch is info. Fail-safe."""
+    try:
+        q = len(outcome.quarantined_keys)
+        line = "OBSERV av.summary scanned=%d clean=%d quarantined=%d" % (
+            len(outcome.results),
+            len(outcome.clean_keys),
+            q,
+        )
+        if q:
+            logger.warning(line + " status=anomaly")
+        else:
+            logger.info(line + " status=ok")
+    except Exception:  # noqa: BLE001 - observability never breaks the gate
+        pass
 
 
 def _scan_binaries_failclosed(scanner: Scanner, bucket: str, binaries: list) -> list:
@@ -269,6 +288,11 @@ def _scan_binaries_failclosed(scanner: Scanner, bucket: str, binaries: list) -> 
         results = scanner.scan(bucket, binaries)
     except Exception as e:  # noqa: BLE001 - scanner must not, but fail closed
         logger.error("AV scanner raised (failing closed): %s", e)
+        logger.error(
+            "OBSERV av.scanner_error binaries=%d detail=%s action=fail_closed_all",
+            len(binaries),
+            str(e)[:120],
+        )
         results = [
             ScanResult(k, Verdict.ERROR, detail="scanner raised") for k in binaries
         ]
@@ -286,8 +310,23 @@ def _gate_result(r, outcome, s3_client, bucket: str, region: str) -> None:
     for INFECTED, freeze the submitter. Mutates ``outcome`` in place."""
     if r.verdict is Verdict.CLEAN:
         outcome.clean_keys.append(r.key)
+        logger.info("OBSERV av.verdict key=%s result=clean", r.key)
         return
-    # INFECTED or ERROR -> quarantine (fail-closed), never advance.
+    # INFECTED or ERROR -> quarantine (fail-closed), never advance. LOUD: a malware hit or a
+    # scanner-unavailable fail-closed must NEVER be silent (session anti-swallow rule).
+    if r.verdict is Verdict.INFECTED:
+        logger.error(
+            "OBSERV av.verdict key=%s result=infected signature=%s action=quarantine",
+            r.key,
+            r.signature or r.detail or "unknown",
+        )
+    else:
+        logger.warning(
+            "OBSERV av.verdict key=%s result=scanner_unavailable detail=%s "
+            "action=quarantine_fail_closed",
+            r.key,
+            r.detail or "unknown",
+        )
     outcome.quarantined_keys.append(r.key)
     reason = (
         f"av-infected: {r.signature or r.detail}"

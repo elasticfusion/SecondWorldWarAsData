@@ -43,6 +43,18 @@ SPEAKER_ID_VERSION = "1"  # bump when the vision/roster/resolver logic changes
 _VIDEO_EXTS = (".mp4", ".mkv", ".mov", ".webm", ".avi", ".m4v")
 
 
+def _observe(event: str, *, loud: bool = False, **fields) -> None:
+    """Emit one ``OBSERV`` line (mirrors phase0_convert.py). Fail-safe: never
+    raises into the phase. ``loud=True`` emits at WARNING (anomaly/empty/failure);
+    otherwise INFO (a normal, non-anomalous decision)."""
+    try:
+        parts = " ".join(f"{k}={v}" for k, v in fields.items())
+        line = f"OBSERV {event} {parts}".rstrip()
+        (logger.warning if loud else logger.info)(line)
+    except Exception:  # noqa: BLE001 - observability must never break the phase
+        pass
+
+
 def _book_from_key(key: str) -> str:
     stem = key.rsplit("/", 1)[-1].rsplit(".", 1)[0]
     return stem.replace(" ", "_")
@@ -153,6 +165,14 @@ def process_video(key: str) -> str:
     ext = Path(key).suffix.lower()
     if ext not in _VIDEO_EXTS:
         logger.warning("Unsupported video extension %s (%s) — skipping", ext, key)
+        _observe(
+            "phase0_video.file",
+            loud=True,
+            decision="skipped",
+            reason="unsupported_ext",
+            ext=ext,
+            key=key,
+        )
         return ""
 
     s3 = boto3.client("s3", region_name=REGION)
@@ -171,11 +191,27 @@ def process_video(key: str) -> str:
 
         if not _extract_audio(local, wav):
             logger.error("No audio extracted for %s — cannot transcribe", key)
+            _observe(
+                "phase0_video.file",
+                loud=True,
+                decision="skipped",
+                reason="no_audio",
+                book=book,
+                key=key,
+            )
             return ""
         transcriber = GrokTranscriber(diarize=True)
         segments = transcriber.transcribe(wav)
         if not segments:
             logger.warning("Transcription produced no segments for %s", key)
+            _observe(
+                "phase0_video.file",
+                loud=True,
+                decision="skipped",
+                reason="no_segments",
+                book=book,
+                key=key,
+            )
             return ""
 
         # 4) roster (9c) — transcript-derived + optional IMDB/Wikipedia by title
@@ -222,6 +258,14 @@ def process_video(key: str) -> str:
             f"s3://{BUCKET}/{key} for re-processing.",
         )
         logger.error("Video processing failed for %s: %s", key, exc)
+        _observe(
+            "phase0_video.file",
+            loud=True,
+            decision="error",
+            book=book,
+            key=key,
+            detail=str(exc)[:120],
+        )
         return ""
     finally:
         # Clean the LOCAL working copy only — the S3 source is retained.
@@ -275,6 +319,15 @@ def _write_chapter_structure(s3, key, book, markdown, resolved) -> str:
         content_key,
         len(resolved),
         n_review,
+    )
+    _observe(
+        "phase0_video.file",
+        decision="converted",
+        book=book,
+        key=key,
+        content_key=content_key,
+        segments=len(resolved),
+        needs_review=n_review,
     )
     return content_key
 
@@ -340,8 +393,34 @@ def main() -> int:
     key = os.getenv("VIDEO_KEY", "")
     if not key:
         logger.error("VIDEO_KEY env var not set — nothing to process")
+        _observe(
+            "phase0_video.summary",
+            loud=True,
+            files_in=0,
+            converted=0,
+            skipped=0,
+            rejected=0,
+            errors=1,
+            status="anomaly",
+        )
         return 2
-    return 0 if process_video(key) else 1
+    content_key = process_video(key)
+    converted = 1 if content_key else 0
+    # A single-file phase: a non-converted result is an anomaly (the one input
+    # yielded nothing) — never reported as a neutral ok. process_video has
+    # already emitted the specific per-file decision (skipped/error) loudly.
+    anomaly = converted == 0
+    _observe(
+        "phase0_video.summary",
+        loud=anomaly,
+        files_in=1,
+        converted=converted,
+        skipped=0,
+        rejected=0,
+        errors=0,
+        status="anomaly" if anomaly else "ok",
+    )
+    return 0 if content_key else 1
 
 
 if __name__ == "__main__":

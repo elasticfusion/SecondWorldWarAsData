@@ -103,8 +103,41 @@ def expand_archive(
                     extracted.append(target)
     elif suffix == ".rar":
         extracted.extend(_expand_rar(archive, dest, held_names))
-    logger.info("Expanded %s -> %d files", archive.name, len(extracted))
+    _observe_expansion(archive, extracted)
     return extracted
+
+
+# Sane caps for observability (NOT enforcement — a separate guard blocks; this makes an
+# oversized/over-count expansion LOUD so a decompression bomb is never silently absorbed).
+_EXPAND_BYTES_WARN = 2 * 1024 * 1024 * 1024  # 2 GiB total expanded
+_EXPAND_MEMBERS_WARN = 10000
+
+
+def _observe_expansion(archive: Path, extracted: List[Path]) -> None:
+    """Emit OBSERV prestage.expanded + a LOUD anomaly when the expansion is suspiciously large
+    (decompression-bomb signal). Fail-safe: never raises into the pass."""
+    try:
+        total = 0
+        for p in extracted:
+            try:
+                total += p.stat().st_size
+            except OSError:
+                continue
+        n = len(extracted)
+        base = "OBSERV prestage.expanded archive=%s members=%d bytes=%d" % (
+            archive.name,
+            n,
+            total,
+        )
+        if total > _EXPAND_BYTES_WARN or n > _EXPAND_MEMBERS_WARN:
+            logger.warning(
+                base
+                + " status=anomaly (expansion exceeds cap — possible decompression bomb)"
+            )
+        else:
+            logger.info(base + " status=ok")
+    except Exception:  # noqa: BLE001 - observability never breaks expansion
+        pass
 
 
 def _expand_rar(archive: Path, dest: Path, held_names: set) -> List[Path]:
@@ -188,4 +221,24 @@ def prestage_dir(
         summary[track] = summary.get(track, 0) + 1
 
     logger.info("Pre-stage summary: %s", summary)
+    _observe_prestage_summary(summary)
     return summary
+
+
+def _observe_prestage_summary(summary: Dict[str, int]) -> None:
+    """Canonical prestage summary; a non-empty 'skip' (unsupported) track is a LOUD anomaly so
+    dropped/unsupported files are visible, never silently summarized. Fail-safe."""
+    try:
+        skipped = summary.get("skip", 0)
+        total = sum(summary.values())
+        line = "OBSERV prestage.summary total=%d routed=%s skipped=%d" % (
+            total,
+            {k: v for k, v in summary.items() if k != "skip"},
+            skipped,
+        )
+        if skipped:
+            logger.warning(line + " status=anomaly (unsupported files -> needs-review)")
+        else:
+            logger.info(line + " status=ok")
+    except Exception:  # noqa: BLE001 - observability never breaks prestage
+        pass

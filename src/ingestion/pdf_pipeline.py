@@ -48,6 +48,37 @@ STATUS_UNSUPPORTED = "unsupported"  # not a supported media type
 STATUS_ERROR = "error"  # conversion failed
 
 
+# --- Observability (fail-safe; never raises into the PDF path) ---------------
+# Canonical Phase-0 OBSERV: one greppable line per PDF routing/conversion
+# decision. Anti-swallow rule — a digital PDF that converts to 0 pages / empty
+# markdown, or a conversion error, is a LOUD warning; a scanned deferral is a
+# normal (info) outcome, not an anomaly.
+def _observe_convert_pdf(
+    pdf_path: Path, pages: int, chars: int, status: str, *, note: str = ""
+) -> None:
+    """Emit ``OBSERV convert.pdf pages=<> chars=<> status=<>``.
+
+    LOUD (warning) for ``error``, ``unsupported``, or an ``empty`` conversion
+    (digital PDF yielding 0 pages / no chars when input was present). ``ok`` and
+    ``needs_ocr`` (a legitimate Chandra hand-off) are info. Fail-safe.
+    """
+    try:
+        base = "OBSERV convert.pdf file=%s pages=%d chars=%d status=%s" % (
+            pdf_path.name,
+            pages,
+            chars,
+            status,
+        )
+        if note:
+            base += " note=%s" % (str(note)[:200],)
+        if status in ("ok", "needs_ocr"):
+            logger.info(base)
+        else:
+            logger.warning(base)
+    except Exception:  # noqa: BLE001 - observability never breaks the PDF path
+        pass
+
+
 @dataclass
 class PdfConversionOutcome:
     """Result of routing/converting one source PDF."""
@@ -110,6 +141,9 @@ def convert_pdf_to_markdown(
             pdf_path.name,
             meta.media_type,
         )
+        _observe_convert_pdf(
+            pdf_path, 0, 0, STATUS_UNSUPPORTED, note=f"media_type={meta.media_type}"
+        )
         return PdfConversionOutcome(
             source_id=source_id,
             pdf_path=pdf_path,
@@ -133,6 +167,13 @@ def convert_pdf_to_markdown(
                 page_count,
                 manifest_path,
             )
+            _observe_convert_pdf(
+                pdf_path,
+                page_count,
+                0,
+                STATUS_NEEDS_OCR,
+                note="deferred to Chandra OCR",
+            )
             return PdfConversionOutcome(
                 source_id=source_id,
                 pdf_path=pdf_path,
@@ -152,6 +193,18 @@ def convert_pdf_to_markdown(
             page_count,
             len(result.assets),
         )
+        chars = len((result.markdown or "").strip())
+        if chars == 0 or page_count == 0:
+            # Digital PDF with pages but no extracted text -> DEGRADED, LOUD.
+            _observe_convert_pdf(
+                pdf_path,
+                page_count,
+                chars,
+                "empty",
+                note="digital PDF produced no markdown text",
+            )
+        else:
+            _observe_convert_pdf(pdf_path, page_count, chars, STATUS_CONVERTED)
         return PdfConversionOutcome(
             source_id=source_id,
             pdf_path=pdf_path,
@@ -164,6 +217,7 @@ def convert_pdf_to_markdown(
     except Exception as exc:  # noqa: BLE001  pylint: disable=broad-exception-caught
         # Defensive boundary: one bad PDF must not abort the Phase 0 batch.
         logger.error("PDF conversion failed for %s: %s", pdf_path.name, exc)
+        _observe_convert_pdf(pdf_path, 0, 0, STATUS_ERROR, note=str(exc))
         return PdfConversionOutcome(
             source_id=source_id,
             pdf_path=pdf_path,

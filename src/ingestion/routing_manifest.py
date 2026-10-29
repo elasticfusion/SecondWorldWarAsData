@@ -16,12 +16,68 @@ See docs/current/dataquality/INGESTION_FRONT_END.md (step 4).
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
 from src.ingestion.disposition import DecisionSource, Disposition, DispositionResult
 from src.ingestion.source_metadata import SourceMetadata
+
+logger = logging.getLogger(__name__)
+
+# The dispositions this front-end knows how to route downstream. Anything else
+# reaching manifest assembly is a recognized-but-unhandled case -> LOUD.
+_KNOWN_DISPOSITIONS = frozenset({"structured", "unstructured", "image", "map"})
+
+
+# --- Observability (fail-safe; never raises into the phase) ------------------
+# Canonical Phase-0 OBSERV: one greppable line per routing decision. Anti-
+# swallow rule — an unknown/unroutable disposition is a LOUD warning, and an
+# EMPTY routing (a supported source that produced zero regions) is an anomaly,
+# never a neutral count=0.
+def _observe_disposition_routed(
+    source_id: str, target: str, pages: int, *, status: str = "ok"
+) -> None:
+    """Emit ``OBSERV disposition.routed source=<> target=<> pages=<>``.
+
+    ``ok`` is info; ``unknown`` (unroutable disposition) and ``empty`` (no
+    region produced) are LOUD. Fail-safe: never raises into the phase.
+    """
+    try:
+        base = "OBSERV disposition.routed source=%s target=%s pages=%d status=%s" % (
+            source_id,
+            target,
+            pages,
+            status,
+        )
+        if status == "ok":
+            logger.info(base)
+        else:
+            logger.warning(base)
+    except Exception:  # noqa: BLE001 - observability never breaks the phase
+        pass
+
+
+def _observe_manifest(
+    source: SourceMetadata, regions: Sequence["RoutingRegion"]
+) -> None:
+    """Emit one ``disposition.routed`` line per routed region, warning on any
+    unknown/unroutable disposition and on a supported-but-empty routing. Fail-safe."""
+    try:
+        source_id = getattr(source, "source_id", "") or getattr(source, "id", "")
+        supported = getattr(source, "supported", True)
+        if supported and not regions:
+            _observe_disposition_routed(source_id, "none", 0, status="empty")
+            return
+        for region in regions:
+            target = str(getattr(region, "disposition", ""))
+            status = "ok" if target in _KNOWN_DISPOSITIONS else "unknown"
+            _observe_disposition_routed(
+                source_id, target or "none", region.page_count, status=status
+            )
+    except Exception:  # noqa: BLE001 - observability never breaks the phase
+        pass
 
 
 @dataclass
@@ -197,4 +253,5 @@ def build_manifest(
     """
     regions = _coalesce_regions(results)
     summary = _summarize(results, regions)
+    _observe_manifest(source, regions)
     return RoutingManifest(source=source, regions=regions, summary=summary)
