@@ -25,6 +25,8 @@ import logging
 import re
 from typing import Dict, List, Tuple
 
+from src.utils.observe import observe_error
+
 logger = logging.getLogger(__name__)
 
 # Default thresholds (overridable via config).
@@ -190,54 +192,90 @@ def _load_terms(entity: str) -> List[str]:
     return [t for t in terms if isinstance(t, str) and len(t) >= 3]
 
 
+def _compute_baseline(
+    text: str, produced_counts: Dict[str, int]
+) -> Dict[str, Tuple[int, int]]:
+    """Per-entity (deterministic floor, produced) + the per-entity baseline OBSERV lines."""
+    per: Dict[str, Tuple[int, int]] = {}
+    for entity in _SCORED_ENTITIES:
+        terms = _load_terms(entity) if entity in ("equipment", "places") else None
+        det = deterministic_count(entity, text, terms)
+        prod = int(produced_counts.get(entity, 0) or 0)
+        per[entity] = (det, prod)
+        logger.info(
+            "OBSERV yield.baseline entity=%s deterministic=%d produced=%d verdict=%s",
+            entity,
+            det,
+            prod,
+            classify_entity(det, prod),
+        )
+    return per
+
+
+def _log_verdict(
+    verdict: str, offenders: List[str], per: Dict[str, Tuple[int, int]]
+) -> None:
+    """Emit the end-of-gate verdict OBSERV at the right level."""
+    if verdict == "fail_stop":
+        logger.error(
+            "OBSERV yield.fail_stop offenders=%s per_entity=%s — HALTING: deterministic "
+            "baseline vastly exceeds extracted yield (possible book-wide extraction fault; "
+            "cf. paragraph_numbers 2026-10-28). Job stopped for root-cause.",
+            offenders,
+            {e: per[e] for e in offenders},
+        )
+    elif verdict == "warn":
+        logger.warning(
+            "OBSERV yield.warn offenders=%s per_entity=%s — extraction short of the "
+            "deterministic floor; recall-gap review recommended.",
+            offenders,
+            {e: per[e] for e in offenders},
+        )
+    else:
+        logger.info("OBSERV yield.ok per_entity=%s", per)
+
+
 def run_quality_gate(
     output_root, produced_counts: Dict[str, int]
 ) -> Tuple[str, List[str]]:
     """Phase-2 end-of-phase data-quality gate. Computes the deterministic floor per scored entity,
     classifies the run, emits OBSERV, and appends to output/metrics/yield_quality.json (cumulative
     weighted assessment). Returns (verdict, offenders); the CALLER decides to halt on 'fail_stop'.
-    Fail-safe: any internal error -> ('ok', []) (never block a run on the gate's own failure).
+    Fail CLOSED: if the gate's own machinery crashes OR the deterministic baseline can't be read
+    (empty source text), emit a loud OBSERV yield.gate_error / yield.gate_empty_baseline and return
+    'fail_stop' — a BLIND or BROKEN gate halts for root-cause, it never silently passes.
     """
     try:
         text = _book_source_text(output_root)
         if not text:
-            return "ok", []
-        per: Dict[str, Tuple[int, int]] = {}
-        for entity in _SCORED_ENTITIES:
-            terms = _load_terms(entity) if entity in ("equipment", "places") else None
-            det = deterministic_count(entity, text, terms)
-            prod = int(produced_counts.get(entity, 0) or 0)
-            per[entity] = (det, prod)
-            logger.info(
-                "OBSERV yield.baseline entity=%s deterministic=%d produced=%d verdict=%s",
-                entity,
-                det,
-                prod,
-                classify_entity(det, prod),
+            # The baseline source text is empty/unreadable. This is NOT healthy — the gate exists to
+            # catch starvation, and with no baseline it is BLIND. Fail CLOSED + loud (anti-swallow):
+            # a book whose source text can't be read must halt for root-cause, not silently pass.
+            observe_error(
+                "yield",
+                "gate_empty_baseline",
+                note="no source text for the deterministic baseline — gate is BLIND, halting",
+                produced_total=sum(int(v or 0) for v in produced_counts.values()),
             )
+            return "fail_stop", ["__baseline__"]
+        per = _compute_baseline(text, produced_counts)
         verdict, offenders = classify_run(per)
         _append_quality_metrics(output_root, per, verdict)
-        if verdict == "fail_stop":
-            logger.error(
-                "OBSERV yield.fail_stop offenders=%s per_entity=%s — HALTING: deterministic "
-                "baseline vastly exceeds extracted yield (possible book-wide extraction fault; "
-                "cf. paragraph_numbers 2026-10-28). Job stopped for root-cause.",
-                offenders,
-                {e: per[e] for e in offenders},
-            )
-        elif verdict == "warn":
-            logger.warning(
-                "OBSERV yield.warn offenders=%s per_entity=%s — extraction short of the "
-                "deterministic floor; recall-gap review recommended.",
-                offenders,
-                {e: per[e] for e in offenders},
-            )
-        else:
-            logger.info("OBSERV yield.ok per_entity=%s", per)
+        _log_verdict(verdict, offenders, per)
         return verdict, offenders
-    except Exception as e:  # noqa: BLE001 - the gate's own failure must not block a run
-        logger.warning("yield quality gate skipped: %s", e)
-        return "ok", []
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - the gate's own failure must be LOUD, not silent
+        # Fail CLOSED (anti-swallow): the gate crashing is NOT a pass. Previously this returned
+        # ("ok", []) — a broken safety net that silently green-lit every run (the backstop the
+        # whole Pattern-8 remediation relies on was itself blind). Emit a loud OBSERV and halt.
+        observe_error(
+            "yield",
+            "gate_error",
+            reason=type(e).__name__,
+            note="quality gate crashed — failing CLOSED (halting) rather than silently passing",
+        )
+        return "fail_stop", ["__gate_error__"]
 
 
 def _append_quality_metrics(
