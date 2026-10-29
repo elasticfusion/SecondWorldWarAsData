@@ -1,10 +1,25 @@
 """File discovery for nested markdown content structure."""
 
+import logging
 import re
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from src.models import ChapterGroup
+
+logger = logging.getLogger(__name__)
+
+# Standard Roman-numeral symbol values (subtractive notation handled in
+# _roman_to_int). Upper-cased lookup; the caller normalizes case.
+_ROMAN_VALUES = {
+    "I": 1,
+    "V": 5,
+    "X": 10,
+    "L": 50,
+    "C": 100,
+    "D": 500,
+    "M": 1000,
+}
 
 
 def _find_pdf_files(book_dir: Path) -> List[Path]:
@@ -53,13 +68,68 @@ def _find_content_files(chapter_dir: Path, chapter_num: str) -> Dict[str, Path]:
     return content_files
 
 
+def _roman_to_int(roman: str) -> Optional[int]:
+    """Convert a standard subtractive Roman numeral to int (I=1..M=1000).
+
+    Returns the integer value, or None if ``roman`` is not a well-formed
+    Roman numeral (unknown symbol or malformed order). Case-insensitive.
+    Examples: II->2, IV->4, IX->9, XIV->14.
+    """
+    if not roman:
+        return None
+    s = roman.strip().upper()
+    if not all(ch in _ROMAN_VALUES for ch in s):
+        return None
+    total = 0
+    prev = 0
+    for ch in reversed(s):
+        val = _ROMAN_VALUES[ch]
+        if val < prev:
+            total -= val
+        else:
+            total += val
+            prev = val
+    return total if total > 0 else None
+
+
+def _fallback_chapter_number(chapter_num: str) -> int:
+    """Non-colliding fallback id for a genuinely unresolvable chapter token.
+
+    LOUD OBSERV + a deterministic, non-zero hash-based id (never the constant 0
+    that silently collapsed II/III/IV into chapter0 and overwrote each other).
+    """
+    import hashlib
+
+    digest = hashlib.sha1(
+        str(chapter_num).encode("utf-8"), usedforsecurity=False
+    ).hexdigest()
+    # Large positive offset keeps it clear of real chapter numbers AND of the
+    # old constant-0 collision; distinct tokens -> distinct ids.
+    fallback = 1_000_000 + (int(digest[:8], 16) % 1_000_000)
+    logger.warning(
+        "OBSERV discovery.chapter_number_unresolved token=%r fallback=%d",
+        chapter_num,
+        fallback,
+    )
+    return fallback
+
+
 def _convert_chapter_number(chapter_num: str) -> int:
-    """Convert chapter number to int, handling Roman numerals."""
+    """Convert chapter number to int, handling Roman numerals.
+
+    Real subtractive Roman->int conversion (II->2, IV->4, IX->9, XIV->14) so
+    distinct chapters no longer collapse into a single chapter0 and overwrite
+    each other. Genuinely unresolvable tokens get a LOUD OBSERV + a non-zero,
+    non-colliding fallback id.
+    """
     if isinstance(chapter_num, int):
         return chapter_num
     if isinstance(chapter_num, str) and chapter_num.isdigit():
         return int(chapter_num)
-    return 0  # Default for Roman numerals or unknown
+    roman = _roman_to_int(chapter_num) if isinstance(chapter_num, str) else None
+    if roman is not None:
+        return roman
+    return _fallback_chapter_number(chapter_num)
 
 
 def _warn_about_pdfs(pdf_files: List[Path], content_root: Path) -> None:
@@ -80,16 +150,28 @@ def _process_chapter_dir(chapter_dir: Path, book_name: str) -> Optional[ChapterG
     # Extract chapter number
     chapter_num = _extract_chapter_number(chapter_dir.name)
     if not chapter_num:
+        logger.warning(
+            "OBSERV discovery.chapter_skipped reason=no_chapter_num dir=%s",
+            chapter_dir,
+        )
         return None
 
     # Find meta file
     meta_file = _find_meta_file(chapter_dir)
     if not meta_file:
+        logger.warning(
+            "OBSERV discovery.chapter_skipped reason=no_meta dir=%s",
+            chapter_dir,
+        )
         return None
 
     # Find content files
     content_files = _find_content_files(chapter_dir, chapter_num)
     if not content_files:
+        logger.warning(
+            "OBSERV discovery.chapter_skipped reason=no_content dir=%s",
+            chapter_dir,
+        )
         return None
 
     # Create chapter group
