@@ -12,6 +12,7 @@ import ulid as ulid_mod
 
 from src.grok_client import GrokClient, BatchModeCollecting, current_book
 from src.utils.file_lock import write_json_with_lock
+from src.utils.observe import observe_error
 from src.utils.json_validator import _fix_invalid_ulids, _ULID_PATTERN
 
 _book_manifest = None
@@ -702,16 +703,17 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
         # In batch mode, request was queued — not a failure
         return empty
     except Exception as e:  # pylint: disable=broad-except
-        # LOUD canonical anomaly (anti-swallow): a dropped batch is NOT a legitimate empty result.
-        # Emit a greppable OBSERV so this surfaces immediately in monitoring instead of only being
-        # caught by the end-of-phase yield gate hours later (groups=0 fail_stop, XChannel-8
-        # 2026-10-29). status=error distinguishes "extraction FAILED" from "genuinely 0 entities".
-        logger.error(
-            "OBSERV %s.batch_error event=%s reason=%s status=error produced=0 "
-            "(batch DROPPED — not a legitimate empty; downstream count=0 is a FAILURE)",
+        # LOUD canonical anomaly via the generic observability sink (anti-swallow): a dropped batch
+        # is NOT a legitimate empty. observe_error emits a greppable OBSERV ... status=error at the
+        # point of loss so it surfaces immediately instead of only via the end-of-phase yield gate
+        # hours later (groups=0 fail_stop, XChannel-8 2026-10-29). Fail-safe: never raises.
+        observe_error(
             entity_type,
-            event_id,
-            type(e).__name__,
+            "batch_error",
+            reason=type(e).__name__,
+            produced=0,
+            event_id=event_id,
+            note="batch DROPPED — not a legitimate empty; downstream count=0 is a FAILURE",
         )
         logger.error("%s batch extraction failed: %s", entity_type, e)
         return empty

@@ -18,7 +18,7 @@ def test_batch_failure_emits_canonical_observ(caplog):
         "Failed to parse JSON response: Extra data: line 1 column 4970"
     )
 
-    with caplog.at_level(logging.ERROR, logger="src.extraction.batch_parallel"):
+    with caplog.at_level(logging.ERROR):  # root — catches the 'observe' sink logger
         result = asyncio.run(
             BP._batch_extract(
                 event_data,
@@ -35,4 +35,4 @@ def test_batch_failure_emits_canonical_observ(caplog):
         )
     # dropped -> empty result (behavior preserved) BUT the canonical anomaly MUST have fired
     assert "OBSERV people_groups.batch_error" in caplog.text
-    assert "status=error" in caplog.text and "event=E123" in caplog.text
+    assert "status=error" in caplog.text and "event_id=E123" in caplog.text
