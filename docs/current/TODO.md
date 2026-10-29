@@ -1,6 +1,6 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-10-27 (reorganized: OPEN ISSUES summary at top; multimodal epic M1-M8 complete).
+**Last Updated:** 2026-10-29 (Pattern-8 observability P1 remediation A-E shipped + deployed; Slack Chatbot fixed to us-east-1; P2/P3 sweep + 3 review follow-ups + GIT_SHA gap logged below).
 
 ---
 
@@ -15,6 +15,23 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   people serially ('Searching Wikipedia...' ~3 min each). FIX candidates: (a) parallelize/bound per-person enrichment, (b)
   move bio enrichment OUT of the synchronous Phase-2 critical path (it's enrichment, not extraction), (c) a hard per-person
   wall-clock. Batch mode hides this (defers); synchronous mode exposed it.
+- **[MED · test] Simulated Spot-instance-loss test (automated recovery verification).** The XChannel-8 2026-10-29 Spot
+  interruption was a real-world test that EXPOSED the recovery gaps (grace-vs-liveness skip + disabled stale-lock sweep).
+  Build a repeatable test that INJECTS a Spot interruption and asserts the pipeline self-heals: (a) unit/integration —
+  simulate the ECS Task State Change STOPPED event ('stoppedReason: Your Spot Task was interrupted') into the trigger
+  handler and assert _handle_task_stopped_event -> reconciliation relaunches the phase (PR #630); (b) optional live/staging —
+  stop-task a running Spot phase mid-run and assert a replacement task launches within the stale-lock-check window and the
+  phase resumes from pending# without data loss or double-launch. Covers both the event-driven fast path and the 15-min
+  sweep backstop. Guards against the recovery logic silently regressing.
+  **SEQUENCING (owner 2026-10-29): do this AFTER the entity-level resume-manifest design (§3) is implemented** — only then
+  can the test assert TRUE mid-event resume (picks up the remaining entities, no re-work, no duplicates). Until the manifest
+  exists, a simulated-loss test could only verify lock reclaim + whole-event restart, not the resume behavior we want to lock in.
+- **[MED · observability] Long-running phase has NO mid-phase progress notification to Slack.** Phase-2/3 only notify
+  at start + complete/fail (_notify_complete/_notify_failure). During the ~2.5h serial bio-enrichment window NOTHING
+  reaches Slack (the heartbeat monitor only logs locally, src/utils/heartbeat.py:54 — no SNS/Slack path), so a
+  legitimately-slow phase is indistinguishable from a hung one in the operator's inbox (observed XChannel-8 2026-10-29,
+  'last Slack msg was extract-started'). FIX: emit a periodic progress notification (e.g. enrich N/total every K min, or
+  route the heartbeat through observe()/NOTIFICATION_TOPIC_ARN). Pairs with the heartbeat-false-alarm fix below.
 - **[MED · observability] Phase-2 heartbeat FALSE-ALARM.** 'no progress for N minutes' counts up to 99 min while the
   per-person enrichment loop IS progressing — the heartbeat only resets on Step-level progress, not per-entity. Fix: reset
   the heartbeat on per-person enrich.persisted (or any OBSERV progress), so a real stall is distinguishable from slow work.
@@ -166,6 +183,16 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   credit-reservation leak, non-idempotent OCR resubmit, ingestion/Phase-0 zip-bomb/AV-bypass, + the NIT batch.
 - Standing open sections: **§2** Phase-3/enrichment (OpenSERP redesign 98.7% CPU, NARA, people/places),
   **§3** architecture, **§4** infra/security/cost, **§5** data-quality detective.
+- **[MED · observability] Pattern-8 remediation — P2 sweep (PRs F/G/H) + P3 sweep.** The 72-finding anti-swallow
+  audit (`/home/dchristian/Downloads/OBSERVABILITY_PATTERN8_AUDIT.md`) is P1-COMPLETE (findings 1-16 shipped as PRs
+  A-E #624/#626/#625/#628/#627 + the batch_error #622; all LIVE in the deployed image 2026-10-29 17:15 UTC). REMAINING:
+  P2 findings 17-44 (PR-F schema/validation fail-open hardening #5/#27/#35/#38/#42/#59; PR-G dedup/merge durability
+  #29/#30/#31/#32/#33/#34 — note #30/#34 already done in PR-E; PR-H phase2/3 extractor+loader point-of-loss OBSERV
+  #17-28/#37/#39/#40/#41) — mostly convention-conformance, route each failure path through `observe()/observe_error`.
+  Then P3 findings 45-72 (promote debug→warn, canonicalize labels, all-zero anomalies, pre-harden the unwired
+  phase1/2/3/import Lambda handler twins #67-70 so they're not P1-on-wiring). Plus a cross-cutting CI greppability-lint:
+  any `return None/[]/{}`/`except: pass`/`continue` in a failure branch must carry an `OBSERV ... status=error|warn`
+  within N lines or an explicit `# OBSERV-EXEMPT: <reason>`.
 
 ### LOW
 - **[LOW · investigate] Is `config/domain_blacklist.yaml` blacklist still HONORED by OpenSERP?**
@@ -174,6 +201,19 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
 - **[LOW · data-hygiene] people index/duplicate_report count drift** (overlapping-rerun artifact).
 - **[LOW · ci-flake] test_validation_performance wall-clock thresholds.**
 - **[LOW · yield] OpenSERP group-image search returns HTML page URLs, not direct images.**
+- **[LOW · observability PR-D-L3] Lambda handlers' PRE-EXISTING inline `logger.error` lines interpolate book/key/batch_id**
+  (latent log-forgery vector, not widened by PR-D) — route those diagnostics through the `observe()` sink (sanitized) or
+  newline-strip. (From the PR-D security review 2026-10-29.)
+- **[LOW · observability PR-E-L1] `ExclusionLoadError` uncaught at the dedup drivers** (`find_duplicate_people.py:996`,
+  `find_duplicate_groups.py:120`) — a persistent exclusions read-failure now fails CLOSED (correct) but exits with a raw
+  traceback instead of surfacing the clean `OBSERV dedup.exclusions_load_error` as the primary signal. Add a top-level
+  handler that logs the OBSERV and exits nonzero cleanly.
+- **[LOW · observability PR-E-L2] `dedup_ui_handler` `add_by_name` returns HTTP 200 "excluded" even when the pair was NOT
+  persisted** (curated-file read-fail path). Operator truth is the Slack/OBSERV alert; UX gap only — surface the non-persist
+  in the HTTP response.
+- **[LOW · deploy-provenance] `scripts/deploy_all.sh` doesn't pass `--build-arg GIT_SHA`** so the pipeline image's
+  `GIT_SHA` env/label is `unknown` (cosmetic provenance gap; image content is still current main). Pass
+  `--build-arg GIT_SHA=$(git rev-parse HEAD)` in `build_scan_push`.
 
 ### ✅ Recently CLOSED (headline)
 - **MULTIMODAL epic M1–M8 COMPLETE** (PRs #587–#594): in-doc maps, embedded/caption images, image→Person,
@@ -498,6 +538,30 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
 ---
 
 ## 3. ARCHITECTURE & DESIGN
+
+- **[HIGH · resilience/design] Entity-level Phase-2 resume via a worklist MANIFEST + S3 diff (replace/upgrade the per-event `.processed_events.json`).**
+  PROBLEM (XChannel-8 2026-10-29): Phase-2 resume granularity is PER-EVENT — `_update_processed_registry` marks an event
+  done only AFTER the whole event finishes. Hyperwar chapters are ONE giant event each (`Step 1 batch 1: 1 chapters`, 50+
+  people, ~2.5h serial enrichment), so a Spot interruption mid-event leaves the event UNmarked → on restart the entire event
+  re-processes from the top (re-runs extraction Grok calls). The per-person `last_enrichment_search`/`_is_already_enriched`
+  gate saves the expensive enrichment re-work (done people are skipped), but the event scaffolding + any in-flight unpersisted
+  person are lost, and there is no event-internal checkpoint.
+  PROPOSAL (owner 2026-10-29): at Phase-2 start, write the FULL set of entities INTENDED to be enriched (the "to-do manifest")
+  to disk/S3 right after EXTRACTION (fast, pre-enrichment). On any (re)invocation, Phase 2 diffs the manifest against the
+  entity JSONs already in S3 and processes only the remainder → stateless, self-correcting, resumes at the individual-entity
+  level after a crash at any instant. Preferred over an in-memory "last processed index N" cursor (fragile to ordering).
+  THREE CORRECTNESS SUBTLETIES (must be in the design):
+    1. "written to S3" != "done". A person file is written at CREATION (post-extract, pre-enrich) AND updated post-enrich.
+       The diff must compare against a TERMINAL enrichment signal on the written record (`enrichment_status ∈ {enriched,
+       not_found}`), NOT mere file existence — else a resume marks extracted-but-unenriched people as done.
+    2. Key on the NATURAL/name key, NOT the entity id. PersonID is minted fresh server-side each run (`ulid.new()` in
+       _process_person), so a manifest keyed on PersonID would re-create DUPLICATES on resume. Use `_normalize_name` (people)
+       / the group key / etc. — the same stable keys the index already uses.
+    3. Write the manifest BEFORE the crash window and sync it immediately (durable version of the in-memory extracted_* list),
+       so even an early Spot kill leaves a valid to-do list. Cost: one S3 LIST + compare at startup (trivial).
+  Generalizes to all per-event entities (people/groups/dates/places + optional casualties/equipment/logistics/supplemental).
+  Non-trivial change to the extraction/enrichment flow (new manifest write + startup reconciliation pass) — design + gate +
+  test carefully; pairs with the serial-enrichment throughput + spot-retry work.
 
 - **[DOCS/SCHEMA] Schema version CHANGELOG + drift-proof current-schema doc.** Two gaps found while
   auditing the schema-stamping bug: (1) there is NO per-entity schema version HISTORY anywhere except git

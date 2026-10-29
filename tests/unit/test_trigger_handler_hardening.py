@@ -302,3 +302,56 @@ def test_reclaim_stale_lock_loses_race_returns_false():
         )
     assert out is False  # lost the race -> must not launch
     fake_dynamo.put_item.assert_not_called()  # never re-claimed after a lost delete
+
+
+def test_try_reclaim_within_grace_returns_none():
+    """A lock within the launch-grace window (fresh holder / NAT-wait / brief Spot gap) must NOT be
+    reclaimed on list-state alone — returns None so the caller defers (no double-launch). Spot
+    recovery is driven by the authoritative ECS-STOPPED event, not by weakening this grace.
+    """
+    from lambda_handlers import trigger_handler as th
+
+    with mock.patch.object(
+        th,
+        "_reclaim_stale_lock",
+        mock.Mock(side_effect=AssertionError("must not reclaim")),
+    ):
+        out = th._try_reclaim_if_gone(
+            "fam", "lock#p2", {"cache_key": "lock#p2"}, observed_ts=100, lock_age=62
+        )
+    assert out is None
+
+
+def test_try_reclaim_beyond_grace_reclaims():
+    """Beyond the launch-grace window with no live task -> genuine stale lock -> reclaim."""
+    from lambda_handlers import trigger_handler as th
+
+    with mock.patch.object(th, "_reclaim_stale_lock", mock.Mock(return_value=True)):
+        out = th._try_reclaim_if_gone(
+            "fam", "lock#p2", {"cache_key": "lock#p2"}, observed_ts=100, lock_age=99999
+        )
+    assert out is True
+
+
+def test_spot_ecs_stopped_event_runs_reconciliation():
+    """The spot-recovery ECS Task State Change event triggers an IMMEDIATE lock/pending
+    reconciliation (same safe logic as the scheduled sweep) rather than waiting 15 min.
+    """
+    from lambda_handlers import trigger_handler as th
+
+    called = {"n": 0}
+    with mock.patch.object(
+        th,
+        "_handle_scheduled_check",
+        lambda: called.__setitem__("n", called["n"] + 1)
+        or {"action": "lock_check_complete"},
+    ):
+        out = th.handler(
+            {
+                "source": "aws.ecs",
+                "detail-type": "ECS Task State Change",
+                "detail": {"stoppedReason": "Your Spot Task was interrupted."},
+            },
+            None,
+        )
+    assert called["n"] == 1 and out == {"action": "lock_check_complete"}

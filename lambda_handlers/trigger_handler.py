@@ -1099,38 +1099,65 @@ s3 = boto3.client("s3")
 dynamo = boto3.resource("dynamodb").Table(CACHE_TABLE)
 
 
+def _handle_task_stopped_event(event):
+    """Spot-interruption recovery (dev-wwii-spot-recovery rule). A task STOPPED — recover NOW rather
+    than waiting up to 15 min for the scheduled sweep. Reuses the SAME safe reconciliation
+    (_handle_scheduled_check: clear a lock only when no RUNNING task remains, then drain pending#*),
+    so there is no new double-launch surface — the authoritative STOPPED event just runs it now.
+    """
+    reason = str(event.get("detail", {}).get("stoppedReason", ""))
+    logger.warning(
+        "OBSERV spot.task_stopped status=warn reason=%s — running immediate lock/pending "
+        "reconciliation (spot-interruption recovery)",
+        " ".join(reason.split())[:120] or "unknown",
+    )
+    return _handle_scheduled_check()
+
+
+def _handle_manual_trigger(event):
+    """Manual invocation: {"source":"manual","book":..,"phase":..[,"expected_count":N]}."""
+    book = event.get("book", "")
+    phase = event.get("phase", "1")
+    task_map = {"1": PHASE1_TASK_DEF, "2": PHASE2_TASK_DEF, "3": PHASE3_TASK_DEF}
+    task_def = task_map.get(phase, PHASE1_TASK_DEF)
+    logger.info("Manual trigger for book=%s phase=%s", book or "all", phase)
+    # Optional: authorize a known large-volume run by declaring the exact expected count.
+    # Threaded as EXPECTED_COUNT env -> ecs_entrypoint adds --expected-count to Phase 2 so the
+    # unoverridable run-scope guard is satisfied by an explicit matching declaration.
+    # SECURITY: expected_count is a scope-authorization control (it can greenlight a whole-corpus
+    # run), so honor it ONLY when the operator has explicitly enabled the override via env — a
+    # plain manual-trigger JSON field must not be able to self-authorize an arbitrary-size run.
+    extra_env = None
+    exp = event.get("expected_count")
+    if isinstance(exp, int) and not isinstance(exp, bool) and exp > 0:
+        if ALLOW_MANUAL_EXPECTED_COUNT:
+            extra_env = [{"name": "EXPECTED_COUNT", "value": str(exp)}]
+        else:
+            logger.warning(
+                "Ignoring manual expected_count=%d: ALLOW_MANUAL_EXPECTED_COUNT not enabled "
+                "(set the env to authorize a scope override).",
+                exp,
+            )
+    _run_task(task_def, "manual", book_name=book, extra_env=extra_env)
+    return {"status": "launched", "book": book, "phase": phase}
+
+
 def handler(event, _context):
     """Main entry point."""
     # Manual invocation: {"source": "manual", "book": "BookName"}
     if event.get("source") == "manual":
-        book = event.get("book", "")
-        phase = event.get("phase", "1")
-        task_map = {"1": PHASE1_TASK_DEF, "2": PHASE2_TASK_DEF, "3": PHASE3_TASK_DEF}
-        task_def = task_map.get(phase, PHASE1_TASK_DEF)
-        logger.info("Manual trigger for book=%s phase=%s", book or "all", phase)
-        # Optional: authorize a known large-volume run by declaring the exact expected count.
-        # Threaded as EXPECTED_COUNT env -> ecs_entrypoint adds --expected-count to Phase 2 so the
-        # unoverridable run-scope guard is satisfied by an explicit matching declaration.
-        # SECURITY: expected_count is a scope-authorization control (it can greenlight a whole-corpus
-        # run), so honor it ONLY when the operator has explicitly enabled the override via env — a
-        # plain manual-trigger JSON field must not be able to self-authorize an arbitrary-size run.
-        extra_env = None
-        exp = event.get("expected_count")
-        if isinstance(exp, int) and not isinstance(exp, bool) and exp > 0:
-            if ALLOW_MANUAL_EXPECTED_COUNT:
-                extra_env = [{"name": "EXPECTED_COUNT", "value": str(exp)}]
-            else:
-                logger.warning(
-                    "Ignoring manual expected_count=%d: ALLOW_MANUAL_EXPECTED_COUNT not enabled "
-                    "(set the env to authorize a scope override).",
-                    exp,
-                )
-        _run_task(task_def, "manual", book_name=book, extra_env=extra_env)
-        return {"status": "launched", "book": book, "phase": phase}
+        return _handle_manual_trigger(event)
 
     # Scheduled stale lock check
     if event.get("source") == "scheduled":
         return _handle_scheduled_check()
+
+    # ECS Task State Change (the dev-wwii-spot-recovery rule): a task STOPPED — recover immediately.
+    if (
+        event.get("source") == "aws.ecs"
+        or event.get("detail-type") == "ECS Task State Change"
+    ):
+        return _handle_task_stopped_event(event)
 
     # Phase-complete event: a phase's ECS task finished and invoked us to drive the
     # NEXT phase immediately (event-driven chain — no waiting for the 15-min poll).
@@ -1715,14 +1742,51 @@ def _reclaim_stale_lock(lock_key, item, observed_ts, lock_age, grace_s) -> bool:
         return False
 
 
+def _warn_relaunch_skipped(lock_key, lock_age, book_name) -> None:
+    """Loud anti-swallow OBSERV when a relaunch is SKIPPED for a holder with no live task (a
+    Spot-interrupted phase queued-but-not-relaunched would otherwise be a silent stall). Fail-safe.
+    """
+    try:
+        logger.warning(
+            "OBSERV spot.relaunch_skipped status=warn lock=%s age=%ss book=%s "
+            "(no live task but lock within grace — relaunch deferred to the stale-lock sweep)",
+            lock_key,
+            lock_age,
+            book_name or "all",
+        )
+    except Exception:  # noqa: BLE001 - observability must never break the trigger
+        pass
+
+
+def _try_reclaim_if_gone(family, lock_key, item, observed_ts, lock_age):
+    """Reclaim a lock whose holder has no RUNNING task AND is older than the launch-grace window.
+
+    The LAUNCH_GRACE window protects a holder that launched but is still in NAT-wait (not yet
+    RUNNING) from being stolen (the G1 double-launch race) — and a FRESH lock (holder took the lock
+    but hasn't called run_task yet, so no task is RUNNING or PENDING) is within that window too, so
+    it must NOT be reclaimed on list-state alone. Spot-interruption recovery is handled separately
+    by the authoritative ECS-task-STOPPED event (_handle_task_stopped), not by weakening this grace.
+
+    Returns True (won the reclaim -> launch), False (lost the race), or None (within grace -> skip).
+    """
+    LAUNCH_GRACE_S = NAT_WAIT_SECONDS + 120
+    if lock_age > LAUNCH_GRACE_S:
+        return _reclaim_stale_lock(
+            lock_key, item, observed_ts, lock_age, LAUNCH_GRACE_S
+        )
+    return None
+
+
 def _acquire_task_lock(task_def, family, lock_key, book_name, now) -> bool:
     """Atomically claim the per-task (per-book under multi-doc) launch lock. Returns True if this
     invocation now HOLDS the lock and should launch; False if another live/recent invocation holds
     it (in which case a per-book request is queued for later). Reclaims a lock only if there is no
-    live task AND it is older than the launch-grace window (so a holder mid-NAT-wait, not yet
-    RUNNING, is never stolen — the G1 double-launch race)."""
-    # A lock younger than this is presumed held by an invocation still in NAT-wait.
-    LAUNCH_GRACE_S = NAT_WAIT_SECONDS + 120
+    live task AND it is older than the launch-grace window (so a holder mid-NAT-wait — or a fresh
+    lock not yet run_task'd — is never stolen; the G1 double-launch race). Spot-interruption
+    recovery is driven by the ECS-task-STOPPED event handler, which has the authoritative dead-task
+    signal, rather than by relaxing this grace."""
+    # A lock younger than NAT_WAIT_SECONDS+120 is presumed held by an invocation still in NAT-wait;
+    # the reclaim/grace decision lives in _try_reclaim_if_gone.
     item = {
         "cache_key": lock_key,
         "book": book_name or "all",
@@ -1741,10 +1805,12 @@ def _acquire_task_lock(task_def, family, lock_key, book_name, now) -> bool:
         "taskArns", []
     )
     lock_age, observed_ts = _lock_age_seconds(lock_key, now)
-    if not live and lock_age is not None and lock_age > LAUNCH_GRACE_S:
-        return _reclaim_stale_lock(
-            lock_key, item, observed_ts, lock_age, LAUNCH_GRACE_S
-        )
+    if not live and lock_age is not None:
+        reclaimed = _try_reclaim_if_gone(family, lock_key, item, observed_ts, lock_age)
+        if reclaimed is not None:
+            return reclaimed
+        # within-grace with no live task: can't reclaim yet, but make the SKIP loud (anti-swallow).
+        _warn_relaunch_skipped(lock_key, lock_age, book_name)
 
     logger.info(
         "Task %s already locked (live=%s, age=%ss), skipping",
