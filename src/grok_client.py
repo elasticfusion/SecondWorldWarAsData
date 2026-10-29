@@ -7,7 +7,7 @@ import os
 import threading
 import time as _time
 from pathlib import Path
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import Any, Dict, Optional, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from src.utils.cache_backend import CacheBackend
@@ -1513,45 +1513,73 @@ class GrokClient:
             f"{'Likely transient API error - retry may succeed.' if response_len < 100000 else 'Consider splitting chapter.'}"
         )
 
-    def _decode_all_objects(self, response: str) -> list:
-        """Decode every concatenated top-level JSON value in `response` (via raw_decode)."""
+    def _decode_all_objects(self, response: str) -> "Tuple[list, bool]":
+        """Decode every concatenated top-level JSON value in `response` (via raw_decode).
+
+        RESILIENT: if a later chunk is malformed/truncated (the realistic model failure — a valid
+        object #1 followed by a cut-off object #2), KEEP the objects decoded so far rather than
+        losing everything. Returns (objects, had_trailing_garbage).
+        """
         decoder = json.JSONDecoder()
         idx, n, objects = 0, len(response), []
+        truncated = False
         while idx < n:
             while idx < n and response[idx] in " \t\r\n":
                 idx += 1
             if idx >= n:
                 break
-            obj, end = decoder.raw_decode(response, idx)
+            try:
+                obj, end = decoder.raw_decode(response, idx)
+            except ValueError:
+                # a malformed/truncated tail — stop here, keep what we have, flag the loss
+                truncated = True
+                break
             objects.append(obj)
             idx = end
-        return objects
+        return objects, truncated
 
     def _merge_concatenated_json(self, response: str) -> Optional[Dict[str, Any]]:
         """Parse a response containing MULTIPLE concatenated top-level JSON objects and merge them
         into one dict. For each key, list values are concatenated (the common case: one
-        {"people":[...]} per sub-event) and non-list values keep the first seen. Returns None if
-        fewer than 2 objects decode (nothing to merge) or on any error (fail-safe)."""
+        {"people":[...]} per sub-event) and non-list values keep the first seen.
+
+        RESILIENT to a malformed/truncated tail: as long as AT LEAST ONE object decoded AND there
+        was extra data (either a 2nd object or a trailing-garbage flag), merge what decoded. This
+        recovers a valid object #1 even when object #2 is cut off (the groups=0 data-loss, 2026-10-29)
+        instead of discarding everything. Returns None only when nothing usable decoded.
+        """
         try:
-            objects = self._decode_all_objects(response)
-            if len(objects) < 2:
+            objects, truncated = self._decode_all_objects(response)
+            # Only engage on genuine concatenation: >=2 objects, OR 1 object + trailing garbage
+            # (a single clean object is the normal path and must fall through to the caller).
+            if not objects or (len(objects) < 2 and not truncated):
                 return None
-            merged: Dict[str, Any] = {}
-            for obj in objects:
-                if not isinstance(obj, dict):
-                    continue
-                for k, v in obj.items():
-                    if isinstance(v, list) and isinstance(
-                        merged.setdefault(k, []), list
-                    ):
-                        merged[k].extend(v)
-                    else:
-                        merged.setdefault(k, v)
+            if truncated:
+                logger.warning(
+                    "OBSERV grok.concat_json_truncated recovered_objects=%d "
+                    "(a later concatenated object was malformed/truncated; recovered the valid "
+                    "earlier ones instead of dropping all)",
+                    len(objects),
+                )
+            merged = self._merge_object_list(objects)
             return merged or None
         except (
             Exception
         ):  # noqa: BLE001 - repair must never raise; caller falls through
             return None
+
+    def _merge_object_list(self, objects: list) -> Dict[str, Any]:
+        """Merge a list of dict objects: list-valued keys concatenated, scalars keep-first."""
+        merged: Dict[str, Any] = {}
+        for obj in objects:
+            if not isinstance(obj, dict):
+                continue
+            for k, v in obj.items():
+                if isinstance(v, list) and isinstance(merged.setdefault(k, []), list):
+                    merged[k].extend(v)
+                else:
+                    merged.setdefault(k, v)
+        return merged
 
     def _try_repair_json(
         self, response: str, error_msg: str
