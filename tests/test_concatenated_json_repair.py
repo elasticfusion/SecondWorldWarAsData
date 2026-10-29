@@ -47,3 +47,30 @@ def test_merge_preserves_multiple_keys():
     resp = '{"people":[{"n":"A"}],"meta":1}{"people":[{"n":"B"}]}'
     m = c._merge_concatenated_json(resp)
     assert len(m["people"]) == 2 and m["meta"] == 1
+
+
+def test_valid_then_truncated_recovers_valid_object():
+    """The groups=0 fail_stop (2026-10-29): Grok returned a VALID {groups:[...]} object followed
+    by a TRUNCATED second object. #616 discarded EVERYTHING (whole groups batch lost). The resilient
+    fix must recover the valid first object instead of returning None."""
+    c = GrokClient.__new__(GrokClient)
+    resp = (
+        '{"groups":[{"sub_event_id":"S1","groups":[{"name":"VII Corps"},'
+        '{"name":"5th Armored Division"}]}]}'
+        '{"groups":[{"sub_event_id":"S2","groups":[{"name":"9th Infantry"'  # truncated
+    )
+    m = c._merge_concatenated_json(resp)
+    assert m is not None, "must recover the valid object, not discard all"
+    assert len(m["groups"]) == 1
+
+
+def test_valid_then_prose_tail_recovers():
+    c = GrokClient.__new__(GrokClient)
+    m = c._merge_concatenated_json('{"groups":[{"x":1}]} some trailing prose')
+    assert m is not None and m["groups"] == [{"x": 1}]
+
+
+def test_single_clean_object_still_falls_through():
+    # a single clean object is the NORMAL path -> None so the caller's json.loads owns it
+    c = GrokClient.__new__(GrokClient)
+    assert c._merge_concatenated_json('{"groups":[{"x":1}]}') is None
