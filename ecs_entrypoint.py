@@ -1404,6 +1404,24 @@ def _observe_bibliography_download_coverage(
         logger.debug("bibliography download coverage check failed: %s", e)
 
 
+def _rehydrate_scored_entities() -> int:
+    """RESUME CORRECTNESS (XChannel-8 2026-10-29): the yield gate counts LOCAL entity RECORD files
+    (_log_phase2_summary -> _count_entity_dir(output_root/<entity>)). On a resume that leaves
+    existing data in place, downloading index.json ONLY left local people/dates=0 while S3 had 58/18
+    — so the gate saw produced=0 and FALSELY fail_stopped ('people' starved). Rehydrate the SCORED
+    entity record dirs from S3 so the gate's local view matches the authoritative S3 totals.
+    Fail-safe (a missing dir -> 0 files, no error). Returns the count rehydrated."""
+    rehydrated = 0
+    for _edir in ("people", "people_groups", "dates", "places", "equipment"):
+        rehydrated += s3_sync_down(f"output/{_edir}/", WORKDIR)
+    logger.info(
+        "Phase 2 resume: rehydrated %d existing entity record file(s) from S3 so the "
+        "yield gate counts persisted entities (not just this run's new writes)",
+        rehydrated,
+    )
+    return rehydrated
+
+
 def _download_phase2_inputs() -> int:
     """Download only unprocessed parsed files + entity dirs for cross-referencing."""
     s3 = _s3_client()
@@ -1458,6 +1476,16 @@ def _download_phase2_inputs() -> int:
     ]
     for key in index_prefixes:
         _download_s3_file(s3, key)
+
+    # RESUME CORRECTNESS (XChannel-8 2026-10-29): the yield gate counts LOCAL entity RECORD files
+    # (_log_phase2_summary -> _count_entity_dir(output_root/<entity>)). On a resume that leaves
+    # existing data in place, downloading index.json ONLY left local people/dates=0 while S3 had
+    # 58/18 — so the gate saw produced=0 and FALSELY fail_stopped ('people' starved). Rehydrate the
+    # SCORED entity record dirs from S3 for a book-scoped run so the gate's local view matches the
+    # authoritative S3 totals. Scoped + fail-safe (missing dir -> 0 files, no error).
+    _resume_book = os.environ.get("BOOK_NAME", "")
+    if _resume_book:
+        new_parsed += _rehydrate_scored_entities()
 
     # Download the run-scope record Phase 1 wrote (authoritative per-book section count) so the
     # Phase-2 run-scope guard can reconcile its ACTUAL work-set against the INDEPENDENT upstream
