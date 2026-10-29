@@ -1,6 +1,6 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-10-27 (reorganized: OPEN ISSUES summary at top; multimodal epic M1-M8 complete).
+**Last Updated:** 2026-10-29 (Pattern-8 observability P1 remediation A-E shipped + deployed; Slack Chatbot fixed to us-east-1; P2/P3 sweep + 3 review follow-ups + GIT_SHA gap logged below).
 
 ---
 
@@ -166,6 +166,16 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   credit-reservation leak, non-idempotent OCR resubmit, ingestion/Phase-0 zip-bomb/AV-bypass, + the NIT batch.
 - Standing open sections: **§2** Phase-3/enrichment (OpenSERP redesign 98.7% CPU, NARA, people/places),
   **§3** architecture, **§4** infra/security/cost, **§5** data-quality detective.
+- **[MED · observability] Pattern-8 remediation — P2 sweep (PRs F/G/H) + P3 sweep.** The 72-finding anti-swallow
+  audit (`/home/dchristian/Downloads/OBSERVABILITY_PATTERN8_AUDIT.md`) is P1-COMPLETE (findings 1-16 shipped as PRs
+  A-E #624/#626/#625/#628/#627 + the batch_error #622; all LIVE in the deployed image 2026-10-29 17:15 UTC). REMAINING:
+  P2 findings 17-44 (PR-F schema/validation fail-open hardening #5/#27/#35/#38/#42/#59; PR-G dedup/merge durability
+  #29/#30/#31/#32/#33/#34 — note #30/#34 already done in PR-E; PR-H phase2/3 extractor+loader point-of-loss OBSERV
+  #17-28/#37/#39/#40/#41) — mostly convention-conformance, route each failure path through `observe()/observe_error`.
+  Then P3 findings 45-72 (promote debug→warn, canonicalize labels, all-zero anomalies, pre-harden the unwired
+  phase1/2/3/import Lambda handler twins #67-70 so they're not P1-on-wiring). Plus a cross-cutting CI greppability-lint:
+  any `return None/[]/{}`/`except: pass`/`continue` in a failure branch must carry an `OBSERV ... status=error|warn`
+  within N lines or an explicit `# OBSERV-EXEMPT: <reason>`.
 
 ### LOW
 - **[LOW · investigate] Is `config/domain_blacklist.yaml` blacklist still HONORED by OpenSERP?**
@@ -174,6 +184,19 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
 - **[LOW · data-hygiene] people index/duplicate_report count drift** (overlapping-rerun artifact).
 - **[LOW · ci-flake] test_validation_performance wall-clock thresholds.**
 - **[LOW · yield] OpenSERP group-image search returns HTML page URLs, not direct images.**
+- **[LOW · observability PR-D-L3] Lambda handlers' PRE-EXISTING inline `logger.error` lines interpolate book/key/batch_id**
+  (latent log-forgery vector, not widened by PR-D) — route those diagnostics through the `observe()` sink (sanitized) or
+  newline-strip. (From the PR-D security review 2026-10-29.)
+- **[LOW · observability PR-E-L1] `ExclusionLoadError` uncaught at the dedup drivers** (`find_duplicate_people.py:996`,
+  `find_duplicate_groups.py:120`) — a persistent exclusions read-failure now fails CLOSED (correct) but exits with a raw
+  traceback instead of surfacing the clean `OBSERV dedup.exclusions_load_error` as the primary signal. Add a top-level
+  handler that logs the OBSERV and exits nonzero cleanly.
+- **[LOW · observability PR-E-L2] `dedup_ui_handler` `add_by_name` returns HTTP 200 "excluded" even when the pair was NOT
+  persisted** (curated-file read-fail path). Operator truth is the Slack/OBSERV alert; UX gap only — surface the non-persist
+  in the HTTP response.
+- **[LOW · deploy-provenance] `scripts/deploy_all.sh` doesn't pass `--build-arg GIT_SHA`** so the pipeline image's
+  `GIT_SHA` env/label is `unknown` (cosmetic provenance gap; image content is still current main). Pass
+  `--build-arg GIT_SHA=$(git rev-parse HEAD)` in `build_scan_push`.
 
 ### ✅ Recently CLOSED (headline)
 - **MULTIMODAL epic M1–M8 COMPLETE** (PRs #587–#594): in-doc maps, embedded/caption images, image→Person,
