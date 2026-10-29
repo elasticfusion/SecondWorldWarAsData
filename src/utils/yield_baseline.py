@@ -192,6 +192,24 @@ def _load_terms(entity: str) -> List[str]:
     return [t for t in terms if isinstance(t, str) and len(t) >= 3]
 
 
+# Maps a SCORED entity name (the baseline scorer's name) to the key used in the Phase-2 produced
+# summary / on-disk entity dir, when they differ. The groups entity is scored as "groups" but is
+# counted/persisted as "people_groups" — without this alias the gate reads produced=0 for a book
+# that actually extracted groups and FALSELY fail_stops (XChannel-8 2026-10-29).
+_PRODUCED_KEY_ALIAS = {"groups": "people_groups"}
+
+
+def _produced_for(entity: str, produced_counts: Dict[str, int]) -> int:
+    """Produced count for a scored entity, honoring the summary/dir key alias (groups<->people_groups).
+    Checks the scored name first, then the aliased key, so either spelling in produced_counts works.
+    """
+    for key in (entity, _PRODUCED_KEY_ALIAS.get(entity, entity)):
+        val = produced_counts.get(key)
+        if val:
+            return int(val)
+    return 0
+
+
 def _compute_baseline(
     text: str, produced_counts: Dict[str, int]
 ) -> Dict[str, Tuple[int, int]]:
@@ -200,7 +218,7 @@ def _compute_baseline(
     for entity in _SCORED_ENTITIES:
         terms = _load_terms(entity) if entity in ("equipment", "places") else None
         det = deterministic_count(entity, text, terms)
-        prod = int(produced_counts.get(entity, 0) or 0)
+        prod = _produced_for(entity, produced_counts)
         per[entity] = (det, prod)
         logger.info(
             "OBSERV yield.baseline entity=%s deterministic=%d produced=%d verdict=%s",
