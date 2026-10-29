@@ -28,6 +28,7 @@ from tenacity import (
 )
 
 from src.utils.http_pool import get_session
+from src.utils.observe import observe_error
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -1553,6 +1554,17 @@ class GrokClient:
             # Only engage on genuine concatenation: >=2 objects, OR 1 object + trailing garbage
             # (a single clean object is the normal path and must fall through to the caller).
             if not objects or (len(objects) < 2 and not truncated):
+                # PATTERN-8: `not objects AND truncated` means the response HAD extra/trailing data
+                # (so it was meant to be concatenated JSON) yet NOTHING decoded — a total loss, not
+                # a normal single-object fall-through. Make that loud. The recoverable-partial path
+                # already warns via grok.concat_json_truncated (do NOT duplicate).
+                if not objects and truncated:
+                    observe_error(
+                        "grok",
+                        "concat_json_unrecoverable",
+                        reason="no_objects_decoded",
+                        length=len(response),
+                    )
                 return None
             if truncated:
                 logger.warning(
@@ -1562,10 +1574,27 @@ class GrokClient:
                     len(objects),
                 )
             merged = self._merge_object_list(objects)
-            return merged or None
+            if not merged:
+                # Objects decoded but merged to nothing usable — a total concat-JSON loss. Loud.
+                observe_error(
+                    "grok",
+                    "concat_json_unrecoverable",
+                    reason="merged_empty",
+                    length=len(response),
+                    objects=len(objects),
+                )
+                return None
+            return merged
         except (
             Exception
-        ):  # noqa: BLE001 - repair must never raise; caller falls through
+        ) as merge_exc:  # noqa: BLE001 - repair must never raise; caller falls through
+            # Fail-safe total loss: emit a LOUD OBSERV before swallowing so the drop is greppable.
+            observe_error(
+                "grok",
+                "concat_json_unrecoverable",
+                reason=type(merge_exc).__name__,
+                length=len(response),
+            )
             return None
 
     def _merge_object_list(self, objects: list) -> Dict[str, Any]:
@@ -1802,6 +1831,15 @@ class GrokClient:
         self._json_failed += 1
         self._get_cache(cache_type).pop(resolved_key, None)
         self.clear_cache_entry(prompt, cache_type, temperature)
+        # PATTERN-8: a total JSON parse-loss at the point of loss must be a LOUD canonical OBSERV
+        # (not just the generic GrokAPIError) so the drop is greppable/alertable. Fail-safe.
+        observe_error(
+            "grok",
+            "json_failed",
+            reason=type(e).__name__,
+            length=len(response),
+            cache_type=cache_type,
+        )
         raise GrokAPIError(
             f"Failed to parse JSON response: {e}\n"
             f"Response length: {len(response)} chars\n"
