@@ -23,6 +23,9 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   stop-task a running Spot phase mid-run and assert a replacement task launches within the stale-lock-check window and the
   phase resumes from pending# without data loss or double-launch. Covers both the event-driven fast path and the 15-min
   sweep backstop. Guards against the recovery logic silently regressing.
+  **SEQUENCING (owner 2026-10-29): do this AFTER the entity-level resume-manifest design (§3) is implemented** — only then
+  can the test assert TRUE mid-event resume (picks up the remaining entities, no re-work, no duplicates). Until the manifest
+  exists, a simulated-loss test could only verify lock reclaim + whole-event restart, not the resume behavior we want to lock in.
 - **[MED · observability] Long-running phase has NO mid-phase progress notification to Slack.** Phase-2/3 only notify
   at start + complete/fail (_notify_complete/_notify_failure). During the ~2.5h serial bio-enrichment window NOTHING
   reaches Slack (the heartbeat monitor only logs locally, src/utils/heartbeat.py:54 — no SNS/Slack path), so a
