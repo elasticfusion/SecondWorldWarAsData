@@ -10,6 +10,14 @@ The curated list of what is still OPEN. Each points to its detail section lower 
 Everything not listed here is DONE (see §7 COMPLETED + the dated review sections).
 
 ### HIGH
+- **[HIGH · throughput] Synchronous Phase-2 per-person bio enrichment is ~3 min/person, serial.** XChannel-8 (2026-10-29)
+  took 2h40m (9613s) because enrich_biographies runs Grokipedia+Wikipedia search + photo fetch INLINE per person for ~17+
+  people serially ('Searching Wikipedia...' ~3 min each). FIX candidates: (a) parallelize/bound per-person enrichment, (b)
+  move bio enrichment OUT of the synchronous Phase-2 critical path (it's enrichment, not extraction), (c) a hard per-person
+  wall-clock. Batch mode hides this (defers); synchronous mode exposed it.
+- **[MED · observability] Phase-2 heartbeat FALSE-ALARM.** 'no progress for N minutes' counts up to 99 min while the
+  per-person enrichment loop IS progressing — the heartbeat only resets on Step-level progress, not per-entity. Fix: reset
+  the heartbeat on per-person enrich.persisted (or any OBSERV progress), so a real stall is distinguishable from slow work.
 - **[P1 Phase-0 security DONE (PR #618)]** AV default-on+non-dev hard-fail, docx/epub ZIP spoof detection, convert_key crash off-ramp, prestage decompression-bomb cap, book_slug key validation+safe_dump meta, book-derivation convergence. FOLLOW-UPS: (a) av_scan.py:131 still has its own _book_from_key copy — converge onto book_slug; (b) epub non-canonical-mimetype soft-accept (intentional, revisit if strict). Remaining Phase-0 Tier-1 P2 (PHASE0_REVIEW_consolidated.md): real author/title/series extraction (P2-C1 big half), fitz pixmap/page cap (P2-S1), pandoc output-size/memory cap (P2-S2), AV scan-tag binding on convert/video path (P2-S3/P2-S2.3), S3 download size cap + ffmpeg -t (P2-S4), Grok-fallback payload cap (P2-S5), translation chunk cap (P2-S6), uuid4 AV run_id (P2-S7), reject-marker per-source-hash key (P2-C2), _patch_config setdefault aws (P2-C3).
 - **[HIGH · data-quality] Deterministic-vs-Grok YIELD-RATIO quality signal (design, owner-aligned 2026-10-28).** Cumulative,
   self-calibrating data-quality assessment: a DETERMINISTIC high-recall scan of the source text produces an expected-yield
