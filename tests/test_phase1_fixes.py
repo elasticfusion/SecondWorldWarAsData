@@ -359,3 +359,56 @@ def test_phase1_split_rollup_observed(tmp_path, caplog):
     assert "chunks_dropped=" in caplog.text
     # At least one chunk actually written to disk.
     assert list(book_output.glob("*-parsed.json"))
+
+
+# --- "did we get the legacy code?" — Lambda serializer convergence + roman reuse ---
+
+
+def test_lambda_doc_to_output_matches_cli_shape():
+    """Lambda _doc_to_output must delegate to the canonical phase1_parse._doc_to_dict so the
+    Lambda path emits is_quote/quote_attribution/table_hints (was a divergent copy that dropped
+    them — Phase-1 review P2-A drift)."""
+    import lambda_handlers.phase1_handler as H
+    import phase1_parse as P
+
+    class Para:
+        absolute_number = 3
+        text = "He said."
+        page_number = 12
+        section_id = ""
+        source_file = "c.md"
+        is_quote = True
+        quote_attribution = "Bradley"
+
+    class Doc:
+        book = "B"
+        chapter_number = 1
+        chapter_title = "t"
+        section_id = ""
+        author = ""
+        series = ""
+        license = ""
+        file_path = "c.md"
+        source_url = "https://ex.com/src"
+        paragraphs = [Para()]
+        images = []
+        maps = []
+        footnotes = []
+        table_hints = ["roster"]
+
+    doc = Doc()
+    out = H._doc_to_output(doc)
+    # delegation path (not the minimal fallback) -> carries quote provenance + table_hints
+    assert out == P._doc_to_dict(doc)
+    assert out["paragraphs"][0].get("is_quote") is True
+    assert out["paragraphs"][0].get("quote_attribution") == "Bradley"
+    assert out.get("table_hints") == ["roster"]
+
+
+def test_roman_reuses_canonical_parser():
+    """discovery._roman_to_int delegates to the single canonical _parse_roman (no duplicate)."""
+    from src.discovery import _roman_to_int
+    from src.dedup.unit_key import _parse_roman
+
+    for r in ("ii", "iv", "ix", "xiv", "lxvi"):
+        assert _roman_to_int(r) == _parse_roman(r)

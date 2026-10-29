@@ -151,7 +151,28 @@ def _run_parse(tmpdir: Path, book_name: str, storage) -> None:
 
 
 def _doc_to_output(doc) -> dict:
-    """Build the serializable parsed-output dict for one document."""
+    """Build the serializable parsed-output dict for one document.
+
+    Delegates to the CANONICAL phase1_parse._doc_to_dict so the Lambda path emits the SAME shape as
+    the CLI path (incl. is_quote / quote_attribution / table_hints). Previously this was a divergent
+    copy that silently dropped quote provenance (Phase-1 review P2-A drift). Fail-safe: falls back to
+    a minimal local serialization only if the shared helper can't be imported.
+    """
+    try:
+        from phase1_parse import _doc_to_dict
+
+        return _doc_to_dict(doc)
+    except Exception as e:  # noqa: BLE001 - never crash the Lambda on an import quirk
+        logger.warning(
+            "OBSERV phase1.doc_serializer_fallback reason=%s — using minimal shape "
+            "(quote provenance may be omitted)",
+            type(e).__name__,
+        )
+        return _doc_to_output_minimal(doc)
+
+
+def _doc_to_output_minimal(doc) -> dict:
+    """Minimal fallback serializer (only used if the canonical _doc_to_dict import fails)."""
     return {
         "book": doc.book,
         "chapter_number": doc.chapter_number,

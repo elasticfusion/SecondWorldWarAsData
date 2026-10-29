@@ -9,18 +9,6 @@ from src.models import ChapterGroup
 
 logger = logging.getLogger(__name__)
 
-# Standard Roman-numeral symbol values (subtractive notation handled in
-# _roman_to_int). Upper-cased lookup; the caller normalizes case.
-_ROMAN_VALUES = {
-    "I": 1,
-    "V": 5,
-    "X": 10,
-    "L": 50,
-    "C": 100,
-    "D": 500,
-    "M": 1000,
-}
-
 
 def _find_pdf_files(book_dir: Path) -> List[Path]:
     """Find PDF files in book directory (excluding sourcedocument)."""
@@ -69,27 +57,21 @@ def _find_content_files(chapter_dir: Path, chapter_num: str) -> Dict[str, Path]:
 
 
 def _roman_to_int(roman: str) -> Optional[int]:
-    """Convert a standard subtractive Roman numeral to int (I=1..M=1000).
+    """Convert a Roman numeral to int, reusing the canonical round-trip-validated parser.
 
-    Returns the integer value, or None if ``roman`` is not a well-formed
-    Roman numeral (unknown symbol or malformed order). Case-insensitive.
-    Examples: II->2, IV->4, IX->9, XIV->14.
+    Delegates to src.dedup.unit_key._parse_roman (the single battle-tested implementation —
+    rejects malformed/non-numerals via int->roman round-trip) rather than maintaining a second
+    roman parser here. Case-insensitive. Examples: II->2, IV->4, IX->9, XIV->14. Returns None
+    if not a well-formed numeral. Fail-safe: any import/parse issue -> None (caller falls back).
     """
     if not roman:
         return None
-    s = roman.strip().upper()
-    if not all(ch in _ROMAN_VALUES for ch in s):
+    try:
+        from src.dedup.unit_key import _parse_roman
+
+        return _parse_roman(roman.strip().lower())
+    except Exception:  # noqa: BLE001 - never crash discovery on a numeral parse
         return None
-    total = 0
-    prev = 0
-    for ch in reversed(s):
-        val = _ROMAN_VALUES[ch]
-        if val < prev:
-            total -= val
-        else:
-            total += val
-            prev = val
-    return total if total > 0 else None
 
 
 def _fallback_chapter_number(chapter_num: str) -> int:
