@@ -108,6 +108,27 @@ def extract_page_markers(text: str) -> List[Tuple[int, int, str]]:
     return sorted(markers, key=lambda x: x[0])
 
 
+def _observe_oversize_image_drops(text: str) -> None:
+    """Anti-swallow: the ReDoS-safe image regexes bound the URL to {0,2000}; an image whose URL
+    exceeds that is silently NON-matched (dropped). This cheap secondary probe counts such
+    over-bound image starts and WARNs so a dropped image is LOUD, never vanished. Fail-safe.
+    """
+    try:
+        if not text:
+            return
+        dropped = len(
+            re.findall(r"!\[[^\]]{0,500}\]\((?:https?://)?[^)\n]{2000,}", text)
+        )
+        if dropped:
+            logger.warning(
+                "OBSERV parser.image_dropped reason=url_too_long count=%d "
+                "(url exceeds the 2000-char ReDoS bound; image not extracted)",
+                dropped,
+            )
+    except Exception:  # noqa: BLE001 - observability never breaks extraction
+        pass
+
+
 def extract_images(text: str, base_url: str = "") -> List[Tuple[str, str, str, str]]:
     """
     Extract images from markdown, avoiding duplicates.
@@ -125,6 +146,11 @@ def extract_images(text: str, base_url: str = "") -> List[Tuple[str, str, str, s
     # markdown; cap the scanned length so a pathological page can't pin CPU (quadratic
     # worst case). A few hundred KB is far above any real chapter's markdown.
     if text and len(text) > 500_000:
+        logger.warning(
+            "OBSERV parser.text_truncated area=images original_len=%d cap=500000 "
+            "(content past the cap is NOT scanned for images)",
+            len(text),
+        )
         text = text[:500_000]
 
     _extract_combined_images(text, images, seen)
@@ -132,6 +158,7 @@ def extract_images(text: str, base_url: str = "") -> List[Tuple[str, str, str, s
     _extract_html_combined_images(text, images, seen)
     _extract_external_images(text, images, seen)
     _extract_relative_external_images(text, images, seen, base_url)
+    _observe_oversize_image_drops(text)
 
     return images
 
@@ -244,6 +271,11 @@ def extract_maps(text: str, base_url: str = "") -> List[Tuple[str, str]]:
     # Defensive bound (ReDoS/CPU): cap the scanned length like extract_images, so a
     # pathological multi-MB page can't pin CPU on the regex scans below.
     if text and len(text) > 500_000:
+        logger.warning(
+            "OBSERV parser.text_truncated area=maps original_len=%d cap=500000 "
+            "(maps past the cap are NOT scanned)",
+            len(text),
+        )
         text = text[:500_000]
     maps = []
     seen_urls = set()
@@ -302,6 +334,11 @@ def extract_footnotes(text: str) -> List[Tuple[int, str, str]]:
     """
     # Defensive bound (ReDoS/CPU): cap the scanned length like extract_images.
     if text and len(text) > 500_000:
+        logger.warning(
+            "OBSERV parser.text_truncated area=footnotes original_len=%d cap=500000 "
+            "(footnotes past the cap are NOT scanned)",
+            len(text),
+        )
         text = text[:500_000]
     marker_url: Dict[int, str] = {}
     order: List[int] = []

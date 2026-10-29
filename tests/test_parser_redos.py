@@ -42,3 +42,23 @@ def test_extract_maps_still_correct():
     assert parser.extract_maps("[Map 5](https://ex.com/map5.png)") == [
         ("5", "https://ex.com/map5.png")
     ]
+
+
+def test_oversize_url_image_is_loud_not_silently_dropped(caplog):
+    import logging
+    from src import parser
+
+    with caplog.at_level(logging.WARNING, logger="src.parser"):
+        parser.extract_images("![alt](https://ex.com/" + "a" * 2500 + ")")
+    assert (
+        "OBSERV parser.image_dropped" in caplog.text and "url_too_long" in caplog.text
+    )
+
+
+def test_truncation_is_loud(caplog):
+    import logging
+    from src import parser
+
+    with caplog.at_level(logging.WARNING, logger="src.parser"):
+        parser.extract_images("x" * 600_000)
+    assert "OBSERV parser.text_truncated area=images" in caplog.text

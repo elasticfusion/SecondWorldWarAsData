@@ -255,18 +255,27 @@ def _observe_phase1_book(book_name, chapters, book_output, logger) -> None:
     try:
         produced = sum(1 for _ in book_output.glob("*-parsed.json"))
         paragraphs = 0
+        read_failed = 0
         for pf in book_output.glob("*-parsed.json"):
             try:
                 paragraphs += len(json.loads(pf.read_text()).get("paragraphs") or [])
-            except Exception:  # noqa: BLE001
-                continue
+            except Exception as _pe:  # noqa: BLE001
+                read_failed += 1
+                logger.warning(
+                    "OBSERV phase1.paragraph_count_read_failed file=%s reason=%s "
+                    "(paragraph total undercounted)",
+                    pf.name,
+                    type(_pe).__name__,
+                )
         if produced:
             logger.info(
-                "OBSERV phase1.parsed book=%s chapters=%d parsed_files=%d paragraphs=%d",
+                "OBSERV phase1.parsed book=%s chapters=%d parsed_files=%d paragraphs=%d "
+                "read_failed=%d",
                 book_name,
                 len(chapters),
                 produced,
                 paragraphs,
+                read_failed,
             )
         else:
             logger.warning(
@@ -275,7 +284,11 @@ def _observe_phase1_book(book_name, chapters, book_output, logger) -> None:
                 len(chapters),
             )
     except Exception as _e:  # noqa: BLE001 - OBSERV must never crash the phase
-        logger.debug("phase1.parsed OBSERV skipped for %s: %s", book_name, _e)
+        logger.warning(
+            "OBSERV phase1.observe_failed book=%s reason=%s",
+            book_name,
+            type(_e).__name__,
+        )
 
 
 def _parse_one_book(
