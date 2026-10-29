@@ -267,7 +267,17 @@ def _find_section_record_by_event_id(output_dir: Path, event_id: str) -> Optiona
         try:
             if _json.loads(p.read_text()).get("EventID") == event_id:
                 return p
-        except Exception:  # noqa: BLE001
+        except Exception as _e:  # noqa: BLE001
+            # A corrupt/unreadable source_section record here means we may FAIL
+            # TO FIND an existing record and mint a brand-new ULID for the same
+            # event -> duplicate source_section records. Make it loud.
+            logger.warning(
+                "OBSERV source_section.record_read_failed file=%s event_id=%s "
+                "reason=%s (duplicate-ULID risk: existing record may be missed)",
+                p.name,
+                event_id,
+                type(_e).__name__,
+            )
             continue
     return None
 
@@ -332,7 +342,14 @@ def _load_or_build_section_record(
                 "author": pd.get("author"),
                 "series": pd.get("series"),
             }
-        except Exception:  # noqa: BLE001
+        except Exception as _e:  # noqa: BLE001
+            logger.warning(
+                "OBSERV source_section.record_read_failed file=%s event_id=%s "
+                "reason=%s (parsed sibling unreadable; building record without source)",
+                parsed.name,
+                event_id,
+                type(_e).__name__,
+            )
             source = None
     return build_source_section(event_data, source=source)
 

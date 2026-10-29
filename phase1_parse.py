@@ -121,6 +121,8 @@ def _save_split_chapter(doc, book_output, logger):
     step = chunk_size - overlap
     total_chunks = max(1, (len(doc.paragraphs) + step - 1) // step)
     width = max(2, len(str(total_chunks - 1)))
+    chunks_written = 0
+    chunks_dropped = 0
     while i < len(doc.paragraphs):
         chunk_paras = doc.paragraphs[i : i + chunk_size]
         # Zero-padded numeric suffix (e.g. "c00", "c01", ...): filesystem-safe
@@ -152,16 +154,25 @@ def _save_split_chapter(doc, book_output, logger):
         from src.utils.file_lock import write_parsed_with_guard
 
         if write_parsed_with_guard(chunk_file, chunk_data):
+            chunks_written += 1
             logger.info(
                 f"  Saved: {chunk_file.name} ({len(chunk_paras)} paragraphs, chunk {chunk_idx + 1})"
             )
         else:
+            chunks_dropped += 1
             logger.error(
                 f"  DROPPED schema-invalid parse {chunk_file.name} — re-parse needed"
             )
         # Advance by chunk_size minus overlap (so chunks share boundary paragraphs)
         i += chunk_size - overlap
         chunk_idx += 1
+    logger.info(
+        "OBSERV phase1.split book=%s chapter=%s chunks_written=%d chunks_dropped=%d",
+        doc.book,
+        doc.chapter_number,
+        chunks_written,
+        chunks_dropped,
+    )
     return True
 
 
@@ -208,7 +219,7 @@ def _process_document(doc, book_output, logger):
     import hashlib
 
     source_hash = hashlib.md5(
-        "".join(p.text for p in doc.paragraphs).encode()
+        "".join(p.text for p in doc.paragraphs).encode(), usedforsecurity=False
     ).hexdigest()
     output_data["_source_hash"] = source_hash
     if output_file.exists():
@@ -224,6 +235,13 @@ def _process_document(doc, book_output, logger):
 
     if write_parsed_with_guard(output_file, output_data):
         logger.info(f"  Saved: {output_file.name} ({len(doc.paragraphs)} paragraphs)")
+        if len(doc.paragraphs) == 0:
+            logger.warning(
+                "OBSERV phase1.chapter_empty book=%s chapter=%s file=%s",
+                doc.book,
+                doc.chapter_number,
+                output_file.name,
+            )
     else:
         logger.error(
             f"  DROPPED schema-invalid parse {output_file.name} — re-parse needed"
@@ -237,18 +255,27 @@ def _observe_phase1_book(book_name, chapters, book_output, logger) -> None:
     try:
         produced = sum(1 for _ in book_output.glob("*-parsed.json"))
         paragraphs = 0
+        read_failed = 0
         for pf in book_output.glob("*-parsed.json"):
             try:
                 paragraphs += len(json.loads(pf.read_text()).get("paragraphs") or [])
-            except Exception:  # noqa: BLE001
-                continue
+            except Exception as _pe:  # noqa: BLE001
+                read_failed += 1
+                logger.warning(
+                    "OBSERV phase1.paragraph_count_read_failed file=%s reason=%s "
+                    "(paragraph total undercounted)",
+                    pf.name,
+                    type(_pe).__name__,
+                )
         if produced:
             logger.info(
-                "OBSERV phase1.parsed book=%s chapters=%d parsed_files=%d paragraphs=%d",
+                "OBSERV phase1.parsed book=%s chapters=%d parsed_files=%d paragraphs=%d "
+                "read_failed=%d",
                 book_name,
                 len(chapters),
                 produced,
                 paragraphs,
+                read_failed,
             )
         else:
             logger.warning(
@@ -257,7 +284,52 @@ def _observe_phase1_book(book_name, chapters, book_output, logger) -> None:
                 len(chapters),
             )
     except Exception as _e:  # noqa: BLE001 - OBSERV must never crash the phase
-        logger.debug("phase1.parsed OBSERV skipped for %s: %s", book_name, _e)
+        logger.warning(
+            "OBSERV phase1.observe_failed book=%s reason=%s",
+            book_name,
+            type(_e).__name__,
+        )
+
+
+def _parse_one_book(
+    book_name,
+    chapters,
+    book_output,
+    parsed_offset,
+    total_chapters,
+    repair_structure,
+    logger,
+):
+    """Parse every chapter in one book. Fail-safe per chapter: one bad chapter
+    (malformed meta/file) is logged + counted + skipped, never aborting the rest.
+    Returns ``(chapters_processed, chapter_errors)``."""
+    processed = 0
+    errors = 0
+    for chapter_group in chapters:
+        logger.info(
+            "  Parsing %s ch%s (%d/%d)",
+            book_name,
+            chapter_group.chapter_number,
+            parsed_offset + processed + 1,
+            total_chapters,
+        )
+        try:
+            documents = parse_chapter(
+                chapter_group, apply_structure_repair=repair_structure
+            )
+            for doc in documents:
+                _process_document(doc, book_output, logger)
+        except Exception as _e:  # noqa: BLE001 - one bad chapter must not abort the run
+            errors += 1
+            logger.error(
+                "OBSERV phase1.chapter_error book=%s chapter=%s reason=%s",
+                book_name,
+                getattr(chapter_group, "chapter_number", "?"),
+                type(_e).__name__,
+                exc_info=True,
+            )
+        processed += 1
+    return processed, errors
 
 
 def main():
@@ -310,24 +382,22 @@ def main():
 
     logger.info("[phase1 step 2/2] Parsing %d chapters", total_chapters)
     parsed = 0
+    chapter_errors = 0
     for book_name, chapters in structure.items():
         book_output = content_root_out / book_name
         book_output.mkdir(exist_ok=True)
 
-        for chapter_group in chapters:
-            logger.info(
-                "  Parsing %s ch%s (%d/%d)",
-                book_name,
-                chapter_group.chapter_number,
-                parsed + 1,
-                total_chapters,
-            )
-            documents = parse_chapter(
-                chapter_group, apply_structure_repair=repair_structure
-            )
-            for doc in documents:
-                _process_document(doc, book_output, logger)
-            parsed += 1
+        book_parsed, book_errors = _parse_one_book(
+            book_name,
+            chapters,
+            book_output,
+            parsed,
+            total_chapters,
+            repair_structure,
+            logger,
+        )
+        parsed += book_parsed
+        chapter_errors += book_errors
 
         # Record the AUTHORITATIVE section count for this book = the number of parse artifacts
         # Phase 1 actually PRODUCED. This is the independent source of truth the run-scope guard
@@ -346,9 +416,10 @@ def main():
 
     logger.info("Phase 1 complete: %d chapters parsed", parsed)
     logger.info(
-        "OBSERV phase1.summary books=%d chapters_parsed=%d status=%s",
+        "OBSERV phase1.summary books=%d chapters_parsed=%d chapter_errors=%d status=%s",
         len(structure),
         parsed,
+        chapter_errors,
         "ok" if parsed else "anomaly_zero_parsed",
     )
     try:

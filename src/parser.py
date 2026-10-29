@@ -34,6 +34,18 @@ def _parse_yaml_metadata(yaml_file: Path) -> Metadata:
     with open(yaml_file, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
+    # yaml.safe_load returns a scalar/list/None for non-mapping documents
+    # (empty file, a bare string, a YAML list, etc.). Calling .get() on that
+    # raised AttributeError and aborted the whole parse. Treat it as empty
+    # metadata instead, loudly, so one malformed meta file never kills the run.
+    if not isinstance(data, dict):
+        logger.warning(
+            "OBSERV parser.meta_not_mapping file=%s type=%s -> empty Metadata",
+            yaml_file.name,
+            type(data).__name__,
+        )
+        return Metadata()
+
     return Metadata(
         series=data.get("series", ""),
         book=data.get("book", ""),
@@ -96,6 +108,27 @@ def extract_page_markers(text: str) -> List[Tuple[int, int, str]]:
     return sorted(markers, key=lambda x: x[0])
 
 
+def _observe_oversize_image_drops(text: str) -> None:
+    """Anti-swallow: the ReDoS-safe image regexes bound the URL to {0,2000}; an image whose URL
+    exceeds that is silently NON-matched (dropped). This cheap secondary probe counts such
+    over-bound image starts and WARNs so a dropped image is LOUD, never vanished. Fail-safe.
+    """
+    try:
+        if not text:
+            return
+        dropped = len(
+            re.findall(r"!\[[^\]]{0,500}\]\((?:https?://)?[^)\n]{2000,}", text)
+        )
+        if dropped:
+            logger.warning(
+                "OBSERV parser.image_dropped reason=url_too_long count=%d "
+                "(url exceeds the 2000-char ReDoS bound; image not extracted)",
+                dropped,
+            )
+    except Exception:  # noqa: BLE001 - observability never breaks extraction
+        pass
+
+
 def extract_images(text: str, base_url: str = "") -> List[Tuple[str, str, str, str]]:
     """
     Extract images from markdown, avoiding duplicates.
@@ -113,6 +146,11 @@ def extract_images(text: str, base_url: str = "") -> List[Tuple[str, str, str, s
     # markdown; cap the scanned length so a pathological page can't pin CPU (quadratic
     # worst case). A few hundred KB is far above any real chapter's markdown.
     if text and len(text) > 500_000:
+        logger.warning(
+            "OBSERV parser.text_truncated area=images original_len=%d cap=500000 "
+            "(content past the cap is NOT scanned for images)",
+            len(text),
+        )
         text = text[:500_000]
 
     _extract_combined_images(text, images, seen)
@@ -120,6 +158,7 @@ def extract_images(text: str, base_url: str = "") -> List[Tuple[str, str, str, s
     _extract_html_combined_images(text, images, seen)
     _extract_external_images(text, images, seen)
     _extract_relative_external_images(text, images, seen, base_url)
+    _observe_oversize_image_drops(text)
 
     return images
 
@@ -127,7 +166,9 @@ def extract_images(text: str, base_url: str = "") -> List[Tuple[str, str, str, s
 def _extract_combined_images(text: str, images: list, seen: "set[str]") -> None:
     # Combined format: [![alt](:/resource-id)](https://url)
     # This is a clickable image with both Joplin resource and external URL
-    for match in re.finditer(r"!\[(.*?)\]\(:(.*?)\)\]\((https?://[^\)]+)\)", text):
+    for match in re.finditer(
+        r"!\[([^\]]{0,500})\]\(:([^)]{0,500})\)\]\((https?://[^\)]{0,2000})\)", text
+    ):
         alt_text = match.group(1)
         resource_id = match.group(2)
         url = match.group(3)
@@ -142,7 +183,7 @@ def _extract_embedded_images(text: str, images: list, seen: "set[str]") -> None:
     # Use negative lookahead to exclude those followed by ](url). The resource capture is
     # `[^)]*?` (not `.*?`) so a Joplin COMBINED shape `[![a](:/r)](url)` is NOT re-matched
     # here as a spurious embedded row (the capture stops at the first ')').
-    for match in re.finditer(r"!\[(.*?)\]\(:([^)]*?)\)(?!\]\()", text):
+    for match in re.finditer(r"!\[([^\]]{0,500})\]\(:([^)]{0,500}?)\)(?!\]\()", text):
         alt_text = match.group(1)
         resource_id = match.group(2)
         key = f"embedded:{resource_id}"
@@ -156,7 +197,9 @@ def _extract_html_combined_images(text: str, images: list, seen: "set[str]") -> 
     # in an <a> (ibiblio thumbnail-linked-to-full-res). The inner IMG_URL is the image the
     # importer selected (full-res); LINK_URL (often <...>) is ignored. Must run BEFORE the
     # external branch, whose (?<!\[) lookbehind would otherwise skip these.
-    for match in re.finditer(r"\[!\[(.*?)\]\((https?://[^\)]+)\)\]\(<?[^)]*>?\)", text):
+    for match in re.finditer(
+        r"\[!\[([^\]]{0,500})\]\((https?://[^\)]{0,2000})\)\]\(<?[^)]{0,2000}>?\)", text
+    ):
         alt_text = match.group(1)
         url = match.group(2)
         key = f"external:{url}"
@@ -168,7 +211,9 @@ def _extract_html_combined_images(text: str, images: list, seen: "set[str]") -> 
 def _extract_external_images(text: str, images: list, seen: "set[str]") -> None:
     # External images only: ![alt](https://url) - standalone external image
     # Must NOT be preceded by [![ (which would make it part of combined format)
-    for match in re.finditer(r"(?<!\[)!\[(.*?)\]\((https?://[^\)]+)\)(?!\])", text):
+    for match in re.finditer(
+        r"(?<!\[)!\[([^\]]{0,500})\]\((https?://[^\)]{0,2000})\)(?!\])", text
+    ):
         alt_text = match.group(1)
         url = match.group(2)
         key = f"external:{url}"
@@ -191,7 +236,9 @@ def _extract_relative_external_images(
 
     _img_exts = (".jpg", ".jpeg", ".png", ".gif", ".tif", ".tiff", ".webp")
     # ![alt](target) where target is NOT http(s) and NOT a Joplin resource (:/...).
-    for match in re.finditer(r"(?<!\[)!\[(.*?)\]\(([^):][^)]*)\)(?!\])", text):
+    for match in re.finditer(
+        r"(?<!\[)!\[([^\]]{0,500})\]\(([^):][^)]{0,2000})\)(?!\])", text
+    ):
         alt_text = match.group(1)
         target = match.group(2).strip()
         low = target.lower()
@@ -221,11 +268,22 @@ def extract_maps(text: str, base_url: str = "") -> List[Tuple[str, str]]:
     Returns:
         List of (map_id, url)
     """
+    # Defensive bound (ReDoS/CPU): cap the scanned length like extract_images, so a
+    # pathological multi-MB page can't pin CPU on the regex scans below.
+    if text and len(text) > 500_000:
+        logger.warning(
+            "OBSERV parser.text_truncated area=maps original_len=%d cap=500000 "
+            "(maps past the cap are NOT scanned)",
+            len(text),
+        )
+        text = text[:500_000]
     maps = []
     seen_urls = set()
 
     # [Map X](target) — target may be absolute http(s) OR a relative asset path.
-    for match in re.finditer(r"\[Map\s+([^\]]+)\]\(([^)]+)\)", text, re.IGNORECASE):
+    for match in re.finditer(
+        r"\[Map\s+([^\]]{1,500})\]\(([^)]{1,2000})\)", text, re.IGNORECASE
+    ):
         map_id = match.group(1).strip()
         target = match.group(2).split("%20target=")[0].strip().rstrip()
         url = _resolve_map_target(target, base_url)
@@ -274,6 +332,14 @@ def extract_footnotes(text: str) -> List[Tuple[int, str, str]]:
     to search; it is now captured. ``text`` is "" when no definition is present;
     ``url`` falls back to the #cn url if a number appears only in a definition.
     """
+    # Defensive bound (ReDoS/CPU): cap the scanned length like extract_images.
+    if text and len(text) > 500_000:
+        logger.warning(
+            "OBSERV parser.text_truncated area=footnotes original_len=%d cap=500000 "
+            "(footnotes past the cap are NOT scanned)",
+            len(text),
+        )
+        text = text[:500_000]
     marker_url: Dict[int, str] = {}
     order: List[int] = []
 

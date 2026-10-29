@@ -672,8 +672,18 @@ def guard_parsed_content(name: str, data: Dict[str, Any]) -> bool:
             _record_stat("parsed", "allow_empty", "below_floor", "ok")
         else:
             _record_stat("parsed", "allow", None, "ok")
-    except Exception:  # noqa: BLE001 - validation/telemetry must never lose a parse
-        pass
+    except (
+        Exception
+    ) as _e:  # noqa: BLE001 - validation/telemetry must never lose a parse
+        # Behavior unchanged (still allow the parse through), but make the
+        # swallow VISIBLE so a systematic validator/import failure that lets
+        # garbage past the guard isn't silent.
+        logger.warning(
+            "guard_parsed_content swallowed validation error for %s: %s "
+            "(allowing parse through fail-safe)",
+            name,
+            _e,
+        )
     return True
 
 
