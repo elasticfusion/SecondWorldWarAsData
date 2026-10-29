@@ -1114,34 +1114,39 @@ def _handle_task_stopped_event(event):
     return _handle_scheduled_check()
 
 
+def _handle_manual_trigger(event):
+    """Manual invocation: {"source":"manual","book":..,"phase":..[,"expected_count":N]}."""
+    book = event.get("book", "")
+    phase = event.get("phase", "1")
+    task_map = {"1": PHASE1_TASK_DEF, "2": PHASE2_TASK_DEF, "3": PHASE3_TASK_DEF}
+    task_def = task_map.get(phase, PHASE1_TASK_DEF)
+    logger.info("Manual trigger for book=%s phase=%s", book or "all", phase)
+    # Optional: authorize a known large-volume run by declaring the exact expected count.
+    # Threaded as EXPECTED_COUNT env -> ecs_entrypoint adds --expected-count to Phase 2 so the
+    # unoverridable run-scope guard is satisfied by an explicit matching declaration.
+    # SECURITY: expected_count is a scope-authorization control (it can greenlight a whole-corpus
+    # run), so honor it ONLY when the operator has explicitly enabled the override via env — a
+    # plain manual-trigger JSON field must not be able to self-authorize an arbitrary-size run.
+    extra_env = None
+    exp = event.get("expected_count")
+    if isinstance(exp, int) and not isinstance(exp, bool) and exp > 0:
+        if ALLOW_MANUAL_EXPECTED_COUNT:
+            extra_env = [{"name": "EXPECTED_COUNT", "value": str(exp)}]
+        else:
+            logger.warning(
+                "Ignoring manual expected_count=%d: ALLOW_MANUAL_EXPECTED_COUNT not enabled "
+                "(set the env to authorize a scope override).",
+                exp,
+            )
+    _run_task(task_def, "manual", book_name=book, extra_env=extra_env)
+    return {"status": "launched", "book": book, "phase": phase}
+
+
 def handler(event, _context):
     """Main entry point."""
     # Manual invocation: {"source": "manual", "book": "BookName"}
     if event.get("source") == "manual":
-        book = event.get("book", "")
-        phase = event.get("phase", "1")
-        task_map = {"1": PHASE1_TASK_DEF, "2": PHASE2_TASK_DEF, "3": PHASE3_TASK_DEF}
-        task_def = task_map.get(phase, PHASE1_TASK_DEF)
-        logger.info("Manual trigger for book=%s phase=%s", book or "all", phase)
-        # Optional: authorize a known large-volume run by declaring the exact expected count.
-        # Threaded as EXPECTED_COUNT env -> ecs_entrypoint adds --expected-count to Phase 2 so the
-        # unoverridable run-scope guard is satisfied by an explicit matching declaration.
-        # SECURITY: expected_count is a scope-authorization control (it can greenlight a whole-corpus
-        # run), so honor it ONLY when the operator has explicitly enabled the override via env — a
-        # plain manual-trigger JSON field must not be able to self-authorize an arbitrary-size run.
-        extra_env = None
-        exp = event.get("expected_count")
-        if isinstance(exp, int) and not isinstance(exp, bool) and exp > 0:
-            if ALLOW_MANUAL_EXPECTED_COUNT:
-                extra_env = [{"name": "EXPECTED_COUNT", "value": str(exp)}]
-            else:
-                logger.warning(
-                    "Ignoring manual expected_count=%d: ALLOW_MANUAL_EXPECTED_COUNT not enabled "
-                    "(set the env to authorize a scope override).",
-                    exp,
-                )
-        _run_task(task_def, "manual", book_name=book, extra_env=extra_env)
-        return {"status": "launched", "book": book, "phase": phase}
+        return _handle_manual_trigger(event)
 
     # Scheduled stale lock check
     if event.get("source") == "scheduled":
