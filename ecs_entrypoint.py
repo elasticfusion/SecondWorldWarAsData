@@ -13,6 +13,8 @@ from typing import Optional
 
 import boto3
 
+from src.utils.observe import observe_error
+
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(message)s"
 )
@@ -1614,7 +1616,18 @@ def _download_s3_file(s3, key: str) -> None:
         _downloaded_keys[key] = local.stat().st_mtime
     except ClientError as e:
         if e.response["Error"]["Code"] in ("404", "NoSuchKey"):
-            logger.debug("File not found, skipping: %s", key)
+            # #15: a key enumerated by list_objects_v2 that 404s on download means a PARSED
+            # file vanished between list and download — the corpus is silently shortened. This
+            # was a debug-level skip (indistinguishable from an intentional no-op). Make it a
+            # loud canonical OBSERV at the point of loss so a disappearing input is alertable.
+            observe_error(
+                "download",
+                "file_missing",
+                reason=e.response["Error"]["Code"],
+                key=key,
+                bucket=BUCKET,
+                note="key listed but 404 on download — file vanished between list and get",
+            )
         else:
             raise
 

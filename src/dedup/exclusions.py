@@ -16,7 +16,21 @@ import logging
 from pathlib import Path
 from typing import Optional, Set, Tuple
 
+from src.utils.observe import observe_error
+
 logger = logging.getLogger(__name__)
+
+
+class ExclusionLoadError(Exception):
+    """Raised when a curated exclusion set could NOT be read (DynamoDB/local read error).
+
+    PATTERN-8 fail-CLOSED guard (#9): a load *failure* must never be silently coerced to an
+    empty set, because "no exclusions" means every human-curated not-a-duplicate pair becomes
+    eligible to re-merge. A genuine read error therefore raises this so the dedup caller aborts
+    rather than proceeding on a false-empty. (A legitimately absent/empty store is NOT an error
+    and still returns an empty set.)
+    """
+
 
 # Entity type → local JSON filename
 _LOCAL_FILES = {
@@ -104,8 +118,21 @@ class ExclusionStore:
                     existing = set(
                         tuple(p) for p in json.loads(path.read_text(encoding="utf-8"))
                     )
-                except Exception:
-                    pass
+                except Exception as e:  # noqa: BLE001 - loud + guard below
+                    # #34: a read failure here previously reset `existing` to {} and then
+                    # overwrote the curated file with ONLY the new pair — silently destroying
+                    # every prior human-curated name-exclusion. Make the loss loud and NEVER
+                    # overwrite after a read failure (bail out, leaving the file intact).
+                    observe_error(
+                        "dedup",
+                        "exclusions_reset",
+                        reason=type(e).__name__,
+                        source="local_name",
+                        entity_type=self.entity_type,
+                        path=str(path),
+                        note="read failed — refusing to overwrite curated name-exclusions",
+                    )
+                    return
             pair = tuple(
                 sorted(
                     [_normalize_exclusion_name(name1), _normalize_exclusion_name(name2)]
@@ -147,7 +174,17 @@ class ExclusionStore:
                     break
                 kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
         except Exception as e:
-            logger.warning("Failed to load name exclusions: %s", e)
+            observe_error(
+                "dedup",
+                "exclusions_load_error",
+                reason=type(e).__name__,
+                source="dynamo_name",
+                entity_type=self.entity_type,
+                note="curated name-exclusions unreadable — failing closed",
+            )
+            raise ExclusionLoadError(
+                f"failed to load {self.entity_type} name-exclusions from DynamoDB: {e}"
+            ) from e
         return pairs
 
     def _load_name_local(self) -> Set[Tuple[str, str]]:
@@ -159,8 +196,19 @@ class ExclusionStore:
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
             return set(tuple(p) for p in data)
-        except Exception:
-            return set()
+        except Exception as e:  # noqa: BLE001 - loud fail-closed below
+            observe_error(
+                "dedup",
+                "exclusions_load_error",
+                reason=type(e).__name__,
+                source="local_name",
+                entity_type=self.entity_type,
+                path=str(path),
+                note="curated name-exclusions unreadable — failing closed",
+            )
+            raise ExclusionLoadError(
+                f"failed to load {self.entity_type} name-exclusions from {path}: {e}"
+            ) from e
 
     # --- DynamoDB ---
 
@@ -190,7 +238,17 @@ class ExclusionStore:
                     if len(parts) == 4:
                         pairs.add((parts[2], parts[3]))
         except Exception as e:
-            logger.warning("Failed to load exclusions from DynamoDB: %s", e)
+            observe_error(
+                "dedup",
+                "exclusions_load_error",
+                reason=type(e).__name__,
+                source="dynamo",
+                entity_type=self.entity_type,
+                note="curated exclusions unreadable — failing closed (not 'no exclusions')",
+            )
+            raise ExclusionLoadError(
+                f"failed to load {self.entity_type} exclusions from DynamoDB: {e}"
+            ) from e
         logger.info(
             "Loaded %d %s exclusions from DynamoDB", len(pairs), self.entity_type
         )
@@ -232,16 +290,43 @@ class ExclusionStore:
                     pairs.add(tuple(sorted([f1, f2])))
             return pairs
         except (json.JSONDecodeError, OSError) as e:
-            logger.warning("Failed to load exclusions from %s: %s", path, e)
-            return set()
+            observe_error(
+                "dedup",
+                "exclusions_load_error",
+                reason=type(e).__name__,
+                source="local",
+                entity_type=self.entity_type,
+                path=str(path),
+                note="curated exclusions unreadable — failing closed (not 'no exclusions')",
+            )
+            raise ExclusionLoadError(
+                f"failed to load {self.entity_type} exclusions from {path}: {e}"
+            ) from e
 
     def _add_local(self, file1: str, file2: str) -> None:
         path = self._local_path()
         if not path:
             return
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError, FileNotFoundError):
+        if path.exists():
+            # File is present: a read failure here means the curated set is CORRUPT/unreadable,
+            # not absent. #34: previously this reset `data` to an empty set and then overwrote
+            # the file, silently destroying every prior curated pair. Make the loss loud and
+            # NEVER overwrite after a read failure (bail out, leaving the curated file intact).
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError) as e:
+                observe_error(
+                    "dedup",
+                    "exclusions_reset",
+                    reason=type(e).__name__,
+                    source="local",
+                    entity_type=self.entity_type,
+                    path=str(path),
+                    note="read failed — refusing to overwrite curated exclusions",
+                )
+                return
+        else:
+            # Legitimately absent store — safe to create fresh.
             data = {"exclusions": []}
         data["exclusions"].append(
             {"person1": min(file1, file2), "person2": max(file1, file2)}
