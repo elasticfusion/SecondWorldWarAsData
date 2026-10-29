@@ -121,24 +121,35 @@ def _escalate_to_slack(scope: str, event: str, line: str) -> None:
         logger.debug("observe slack-escalation failed (swallowed)", exc_info=True)
 
 
-def _format_kv(fields: dict[str, Any]) -> str:
-    """Render extra fields as ` key=value` tokens with values safe for a single grep-able line.
+def _safe(value: Any, limit: int = 200) -> str:
+    """Coerce a value to a single greppable, injection-safe token.
 
-    Values are coerced to a compact, whitespace-free token so the grammar stays parseable:
-    newlines/tabs collapse to a single space is NOT allowed (would break token parsing), so we
-    replace any run of whitespace in a value with '_' and strip surrounding quotes/commas.
+    Collapses ALL whitespace — including newlines, carriage returns, tabs, form/vertical feeds AND
+    the Unicode line separators U+2028/U+2029/U+0085 (which some log viewers/CloudWatch treat as
+    line breaks) — to '_', and bounds the length. This prevents a caller-influenced value from
+    FORGING a second `OBSERV ... status=ok` line that would mask a real failure (log-integrity; the
+    exact PATTERN-8 masking the sink exists to prevent). Applied to scope, event, note, and every
+    field value — nothing caller-controlled reaches the line un-sanitized.
     """
+    token = str(value)
+    # str.split() already handles \t\n\r\f\v and ASCII spaces; add the Unicode line separators.
+    for sep in ("\u2028", "\u2029", "\u0085"):
+        token = token.replace(sep, " ")
+    token = "_".join(token.split())
+    if len(token) > limit:
+        token = token[: limit - 3] + "..."
+    return token
+
+
+def _format_kv(fields: dict[str, Any]) -> str:
+    """Render extra fields as ` key=value` tokens, each value sanitized to a single grep-safe token
+    (no internal whitespace, bounded length) via `_safe` so the grammar stays parseable and a field
+    value cannot inject a newline / forge a second OBSERV line."""
     parts = []
     for key, value in fields.items():
         if value is None:
             continue
-        token = str(value)
-        # keep the line single-token-per-field: no internal whitespace, bounded length
-        token = " ".join(token.split())  # collapse internal whitespace
-        token = token.replace(" ", "_")
-        if len(token) > 200:
-            token = token[:197] + "..."
-        parts.append(f"{key}={token}")
+        parts.append(f"{_safe(key, 80)}={_safe(value)}")
     return (" " + " ".join(parts)) if parts else ""
 
 
@@ -156,14 +167,20 @@ def observe(
     It NEVER raises (fail-safe): an observability failure must not stop pipeline progress. It is NOT
     a gate — it only records; callers continue regardless of what they pass here.
 
+    SECURITY: scope, event, note, and all field keys/values are sanitized (`_safe`) so caller- or
+    model-derived text cannot inject a newline and forge a second OBSERV line (log integrity). Do
+    NOT put secrets or PII in `fields`/`note`: on `status=error` the full line is forwarded
+    off-platform to Slack via the SNS escalation. Reference entities by id/name only.
+
     Args:
         scope:  subsystem/entity (e.g. "groups", "grok", "dedup", "phase2").
         event:  the specific observation (e.g. "batch_error", "json_failed", "extract").
         status: "ok" | "warn" | "error" (anything else is coerced to "error" — fail loud).
-        note:   optional human-readable trailing clause (appended after " — ").
-        **fields: extra key=value context (e.g. produced=0, reason="Extra_data", event=event_id).
+        note:   optional human-readable trailing clause (appended after " — "). Sanitized.
+        **fields: extra key=value context (e.g. produced=0, reason="Extra_data", event_id=...).
                   `None`-valued fields are omitted. Put `produced=` on extraction paths so a
                   failure-zero is distinguishable from a legitimate zero (the PATTERN-8 defense).
+                  Must NOT contain secrets/PII (forwarded to Slack on error).
 
     Returns:
         The canonical status actually emitted ("ok" | "warn" | "error") — handy for assertions/tests.
@@ -172,9 +189,9 @@ def observe(
     try:
         canon = status if status in _STATUS_LEVEL else "error"
         level = _STATUS_LEVEL[canon]
-        line = f"OBSERV {scope}.{event} status={canon}{_format_kv(fields)}"
+        line = f"OBSERV {_safe(scope, 80)}.{_safe(event, 80)} status={canon}{_format_kv(fields)}"
         if note:
-            line += f" — {note}"
+            line += f" — {_safe(note, 300)}"
         logger.log(level, line)
         if canon == "error":
             _escalate_to_slack(scope, event, line)  # fail-safe; no-op unless configured
@@ -183,7 +200,8 @@ def observe(
         # best-effort: don't lose a data-affecting signal just because logging broke
         try:
             sys.stderr.write(
-                f"OBSERV {scope}.{event} status=error (observe-sink-failed)\n"
+                f"OBSERV {_safe(scope, 80)}.{_safe(event, 80)} status=error "
+                "(observe-sink-failed)\n"
             )
         except Exception:  # noqa: BLE001
             pass

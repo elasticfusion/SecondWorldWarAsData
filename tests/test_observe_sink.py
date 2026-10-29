@@ -195,3 +195,47 @@ def test_slack_publish_error_is_swallowed(monkeypatch):
     monkeypatch.setitem(_sys.modules, "boto3", types.SimpleNamespace(client=boom))
     # must NOT raise despite the publish exploding
     assert obs.observe_error("x", "y", produced=0) == "error"
+
+
+# ---- log-injection hardening (SECURITY-622 finding) --------------------------------------------
+
+
+def _observ_line_count(text: str) -> int:
+    # count physical lines containing the OBSERV token (caplog prefixes level/logger/path, so the
+    # message is not at col 0). A forged-injection line would add a SECOND such physical line.
+    return sum(1 for ln in text.splitlines() if "OBSERV " in ln)
+
+
+def test_newline_in_scope_cannot_forge_a_line(caplog):
+    with caplog.at_level(logging.INFO, logger="observe"):
+        observe("groups\nOBSERV fake.injected status=ok produced=999", "x", status="ok")
+    # exactly ONE OBSERV line; the injected text is collapsed into the scope token (underscored),
+    # NOT a second parseable line with its own leading "OBSERV ".
+    assert _observ_line_count(caplog.text) == 1
+    assert (
+        "groups_OBSERV_fake.injected_status=ok" in caplog.text
+    )  # neutralized into one token
+
+
+def test_newline_in_event_and_note_cannot_forge(caplog, monkeypatch):
+    monkeypatch.delenv("NOTIFICATION_TOPIC_ARN", raising=False)
+    with caplog.at_level(logging.ERROR, logger="observe"):
+        observe(
+            "a",
+            "batch_error\nOBSERV fake.e status=ok",
+            status="error",
+            note="boom\nOBSERV forged.note status=ok produced=42",
+        )
+    # one line; the real status is error; the injected status=ok lives only inside collapsed tokens,
+    # never as a forged standalone OBSERV line.
+    assert _observ_line_count(caplog.text) == 1
+    line = next(ln for ln in caplog.text.splitlines() if "OBSERV " in ln)
+    assert "status=error" in line and "_OBSERV_fake.e_status=ok" in line
+
+
+def test_unicode_line_separators_collapsed(caplog):
+    with caplog.at_level(logging.WARNING, logger="observe"):
+        observe("x", "y", status="warn", reason="a\u2028b\u0085c\u2029d")
+    msg = caplog.records[-1].message
+    assert "\u2028" not in msg and "\u2029" not in msg and "\u0085" not in msg
+    assert "reason=a_b_c_d" in msg
