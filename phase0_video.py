@@ -34,6 +34,10 @@ from typing import List, Optional
 
 import boto3
 
+import yaml
+
+from src.ingestion.book_slug import book_slug
+
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger("phase0_video")
 
@@ -56,8 +60,10 @@ def _observe(event: str, *, loud: bool = False, **fields) -> None:
 
 
 def _book_from_key(key: str) -> str:
-    stem = key.rsplit("/", 1)[-1].rsplit(".", 1)[0]
-    return stem.replace(" ", "_")
+    """Converged, SAFE book slug for the source key (P1-S4/P1-C2). Delegates to
+    the shared :func:`src.ingestion.book_slug.book_slug` so this task's derivation
+    matches the convert / OCR-merge paths exactly."""
+    return book_slug(key)
 
 
 def _load_grok_key() -> None:
@@ -293,21 +299,30 @@ def _write_chapter_structure(s3, key, book, markdown, resolved) -> str:
     meta_key = f"contentrepository/{book}/chapter1/chapter1-meta.yaml"
     content_key = f"contentrepository/{book}/chapter1/chapter1-content.md"
     n_review = sum(1 for r in resolved if r.get("needs_review"))
-    meta = (
-        'series: "TODO - Add series name"\n'
-        f'book: "{book}"\n'
-        'author: "TODO - Add author name"\n'
-        'chapter_number: "1"\n'
-        'chapter_title: "Video transcript"\n'
-        'license: "TODO - Add license"\n'
-        'copyright_date: "TODO - Add year"\n'
-        f'source_url: "s3://{BUCKET}/{key}"\n'
-        f'source_video_key: "{key}"\n'
-        f'speaker_id_version: "{SPEAKER_ID_VERSION}"\n'
-        f'speakers_needing_review: "{n_review}"\n'
-    )
-    s3.put_object(Bucket=BUCKET, Key=meta_key, Body=meta.encode("utf-8"))
+    # P2-C1: SAFE YAML via yaml.safe_dump (never an f-string) so a book/key with
+    # YAML metacharacters cannot inject structure. author/series/license are ''
+    # (empty) NOT a literal 'TODO - Add ...'; the gap is recorded as a
+    # needs-review/metadata marker below. chapter_title/source_video_key/
+    # speaker_id_version/speakers_needing_review are REAL derived values.
+    meta = {
+        "series": "",
+        "book": book,
+        "author": "",
+        "chapter_number": "1",
+        "chapter_title": "Video transcript",
+        "license": "",
+        "copyright_date": "",
+        "source_url": f"s3://{BUCKET}/{key}",
+        "source_video_key": key,
+        "speaker_id_version": SPEAKER_ID_VERSION,
+        "speakers_needing_review": str(n_review),
+    }
+    meta_body = yaml.safe_dump(
+        meta, default_flow_style=False, allow_unicode=True
+    ).encode("utf-8")
+    s3.put_object(Bucket=BUCKET, Key=meta_key, Body=meta_body)
     s3.put_object(Bucket=BUCKET, Key=content_key, Body=markdown.encode("utf-8"))
+    _mark_metadata_gap(s3, key, book)
     # The source video is now consumed (chapter written) — tag it for cold archive
     # (Glacier IR via the tag-based lifecycle rule). Fail-safe: never blocks.
     from src.ingestion.archive_tag import tag_source_cold
@@ -330,6 +345,27 @@ def _write_chapter_structure(s3, key, book, markdown, resolved) -> str:
         needs_review=n_review,
     )
     return content_key
+
+
+def _mark_metadata_gap(s3, key: str, book: str) -> None:
+    """Record the deferred-metadata gap (empty author/series/license) as a
+    detectable needs-review/metadata marker (P2-C1) rather than masquerading
+    empty fields as real data. Fail-safe: best-effort, never breaks the phase."""
+    try:
+        from src.ingestion.review_reject import reject_to_review
+
+        reject_to_review(
+            s3,
+            BUCKET,
+            key,
+            book,
+            "metadata not yet extracted (author/series/license empty) — "
+            "real metadata extraction deferred (P2-C1 slug+meta half)",
+            category="metadata",
+            region=REGION,
+        )
+    except Exception as e:  # noqa: BLE001 - marker must never crash the phase
+        logger.warning("metadata needs-review marker failed for %s: %s", key, e)
 
 
 def _vision_analyzer():

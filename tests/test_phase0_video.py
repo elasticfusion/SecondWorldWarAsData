@@ -7,6 +7,8 @@ provenance + source retention) without binaries/network."""
 import os
 from unittest.mock import MagicMock, patch
 
+import yaml
+
 os.environ.setdefault("S3_BUCKET", "dev-wwii-data-pipeline")
 os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
 
@@ -69,14 +71,29 @@ def test_process_video_writes_chapter_structure_with_provenance():
 
     assert out == "contentrepository/Battle_of_the_Bulge/chapter1/chapter1-content.md"
     keys = [c.kwargs["Key"] for c in s3.put_object.call_args_list]
+    # meta first, content second, then the P2-C1 needs-review/metadata marker
+    # recording the deferred-metadata gap (empty author/series/license).
     assert keys == [
         "contentrepository/Battle_of_the_Bulge/chapter1/chapter1-meta.yaml",
         "contentrepository/Battle_of_the_Bulge/chapter1/chapter1-content.md",
+        "needs-review/metadata/Battle_of_the_Bulge.json",
     ]
     meta_body = s3.put_object.call_args_list[0].kwargs["Body"].decode()
     assert "source_video_key:" in meta_body  # provenance for re-processing
     assert "speaker_id_version:" in meta_body
-    assert 'speakers_needing_review: "1"' in meta_body
+    # P2-C1: SAFE yaml.safe_dump; deferred fields are '' — NOT a 'TODO ...' string
+    # masquerading as real data. (chapter_title is a REAL derived value here.)
+    meta = yaml.safe_load(meta_body)
+    assert meta["author"] == ""
+    assert meta["series"] == ""
+    assert meta["license"] == ""
+    assert "TODO" not in meta_body
+    # These remain REAL derived provenance values (not blanked).
+    assert meta["speakers_needing_review"] == "1"
+    assert (
+        meta["source_video_key"]
+        == "contentrepository/BulgeVideo/Battle of the Bulge.mp4"
+    )
     # source retained: we never delete the S3 object (only local temp files)
     s3.delete_object.assert_not_called()
 

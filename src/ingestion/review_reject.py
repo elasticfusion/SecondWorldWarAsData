@@ -21,7 +21,27 @@ import os
 
 import boto3
 
+from src.ingestion.book_slug import _SAFE_SLUG_RE
+
 logger = logging.getLogger(__name__)
+
+
+def _sanitize_segment(value: str, fallback: str) -> str:
+    """SAFE-token sanitize a value that becomes an S3 KEY PATH SEGMENT
+    (``needs-review/{category}/{book}.json``). ``book`` and ``category`` are both
+    attacker-influenceable (book derives from an uploaded filename; category is a
+    caller literal but validated for defense-in-depth), so reject anything outside
+    ``[A-Za-z0-9._-]`` — a '/' or '..' here would write the marker OUTSIDE the
+    needs-review prefix / traverse the key space. Fall back to a safe constant."""
+    v = (value or "").strip().replace(" ", "_")
+    if v in ("", ".", "..") or not _SAFE_SLUG_RE.fullmatch(v):
+        logger.warning(
+            "OBSERV review.segment_rejected value=%r -> %r (unsafe for S3 key path)",
+            value,
+            fallback,
+        )
+        return fallback
+    return v
 
 
 def reject_to_review(
@@ -40,16 +60,26 @@ def reject_to_review(
     so it never triggers parse) and publishes an operator alert to the
     phase2-complete SNS topic (email + Slack). Best-effort: marker/alert failures
     are logged, not raised — rejecting must never itself crash the handler.
+
+    SECURITY (P1-S4/P1-C2): ``book`` and ``category`` become S3 KEY PATH SEGMENTS,
+    so both are SAFE-token sanitized here (the same ``[A-Za-z0-9._-]`` rule as
+    book_slug) — a crafted ``book`` like ``../../evil`` cannot escape the
+    needs-review prefix. The ORIGINAL (unsanitized) book/category are preserved in
+    the marker BODY for auditability.
     """
     region = region or os.getenv("AWS_DEFAULT_REGION", "us-east-1")
-    marker_key = f"needs-review/{category}/{book}.json"
+    safe_book = _sanitize_segment(book, "unknown")
+    safe_category = _sanitize_segment(category, "intake")
+    marker_key = f"needs-review/{safe_category}/{safe_book}.json"
     body = json.dumps(
         {
             "source_key": key,
             "book": book,
-            "reason": reason,
             "category": category,
-            "disposition": f"rejected-{category}",
+            "safe_book": safe_book,
+            "safe_category": safe_category,
+            "reason": reason,
+            "disposition": f"rejected-{safe_category}",
         }
     )
     logger.warning("REJECT-TO-REVIEW [%s] %s: %s", category, key, reason)

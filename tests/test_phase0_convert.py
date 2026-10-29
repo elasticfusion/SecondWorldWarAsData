@@ -2,12 +2,26 @@
 structure so parse triggers, mirroring the OCR-merge output convention."""
 
 import os
+import zipfile
 from unittest.mock import MagicMock, patch
+
+import yaml
 
 os.environ.setdefault("S3_BUCKET", "dev-wwii-data-pipeline")
 os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
 
 import phase0_convert as p0
+
+
+def _write_valid_epub(local):
+    """Write a minimal, VALID EPUB ZIP container to ``local`` so the P1-S2
+    media-mismatch gate (ZIP-member verification) accepts it as a real .epub:
+    the OCF ``mimetype`` member == ``application/epub+zip`` plus a content OPF."""
+    with zipfile.ZipFile(local, "w") as zf:
+        # mimetype must be the first entry and stored (OCF spec); content is what
+        # the gate verifies.
+        zf.writestr("mimetype", "application/epub+zip")
+        zf.writestr("content.opf", "<package/>")
 
 
 def test_book_from_key_strips_ext_and_spaces():
@@ -20,20 +34,46 @@ def test_book_from_key_strips_ext_and_spaces():
 
 def test_convert_key_writes_chapter_structure():
     """A successful convert writes meta THEN content under
-    contentrepository/{book}/chapter1/ (the structure phase1 discovery needs)."""
+    contentrepository/{book}/chapter1/ (the structure phase1 discovery needs),
+    plus a needs-review/metadata marker recording the deferred-metadata gap
+    (P2-C1). The download provides a VALID epub so the P1-S2 ZIP-container gate
+    accepts it."""
     s3 = MagicMock()
+
+    def _fake_download(bucket, key, local):
+        _write_valid_epub(local)
+
+    s3.download_file.side_effect = _fake_download
+    captured = {}
+
+    def _capture_put(**kwargs):
+        if kwargs["Key"].endswith("chapter1-meta.yaml"):
+            captured["meta"] = kwargs["Body"]
+
+    s3.put_object.side_effect = _capture_put
     with (
         patch.object(p0.boto3, "client", return_value=s3),
         patch.object(p0, "convert_to_markdown", return_value="# Patton\n\nText."),
     ):
         out = p0.convert_key("contentrepository/books/Patton at the Bulge.epub")
     assert out == "contentrepository/Patton_at_the_Bulge/chapter1/chapter1-content.md"
-    # both meta + content written; meta first
     put_keys = [c.kwargs["Key"] for c in s3.put_object.call_args_list]
+    # meta first, then content (parse fires on content upload), then the P2-C1
+    # needs-review/metadata marker recording the deferred-metadata gap.
     assert put_keys == [
         "contentrepository/Patton_at_the_Bulge/chapter1/chapter1-meta.yaml",
         "contentrepository/Patton_at_the_Bulge/chapter1/chapter1-content.md",
+        "needs-review/metadata/Patton_at_the_Bulge.json",
     ]
+    # Meta is now SAFE yaml.safe_dump (P2-C1) and the deferred fields are '' —
+    # NOT a literal 'TODO ...' string masquerading as real data.
+    meta = yaml.safe_load(captured["meta"])
+    assert meta["book"] == "Patton_at_the_Bulge"
+    assert meta["author"] == ""
+    assert meta["series"] == ""
+    assert meta["chapter_title"] == ""
+    assert meta["license"] == ""
+    assert "TODO" not in captured["meta"].decode("utf-8")
 
 
 def test_convert_key_unsupported_ext_skips():

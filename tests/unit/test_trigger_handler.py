@@ -75,13 +75,16 @@ def test_run_task_does_not_clear_lock_when_task_provisioning(dynamodb_table):
     from lambda_handlers import trigger_handler as th
     import boto3 as _b
 
-    table = _b.resource("dynamodb", region_name="us-east-1").Table(
-        "test-wwii-api-cache"
-    )
+    # Reference the module's ACTUAL resolved family (ENV_NAME may be 'dev' not
+    # 'test' depending on suite import order) so the seeded lock key matches the
+    # key _run_task derives — otherwise the lock silently won't be found and the
+    # launch-guard under test never engages.
+    lock_key = f"lock#{th.TASK_FAMILIES[th.PHASE1_TASK_DEF]}"
+    table = _b.resource("dynamodb", region_name="us-east-1").Table(th.CACHE_TABLE)
     # Pre-existing lock (first doc holds it)
     table.put_item(
         Item={
-            "cache_key": "lock#test-wwii-phase1-parse",
+            "cache_key": lock_key,
             "book": "all",
             "response": "1",
         }
@@ -99,6 +102,7 @@ def test_run_task_does_not_clear_lock_when_task_provisioning(dynamodb_table):
         )
 
     with (
+        patch.object(th, "dynamo", table),
         patch.object(th.ecs, "list_tasks", side_effect=fake_list_tasks),
         patch.object(th.ecs, "run_task") as run_task,
     ):
@@ -106,27 +110,36 @@ def test_run_task_does_not_clear_lock_when_task_provisioning(dynamodb_table):
     # Must NOT have launched a second task (lock respected, task is starting)
     run_task.assert_not_called()
     # Lock still present (not cleared)
-    assert table.get_item(Key={"cache_key": "lock#test-wwii-phase1-parse"}).get("Item")
+    assert table.get_item(Key={"cache_key": lock_key}).get("Item")
 
 
 def test_scheduled_lock_check_clears_stale(dynamodb_table):
+    import lambda_handlers.trigger_handler as th
     from lambda_handlers.trigger_handler import handler
 
+    # The module resolves TASK_FAMILIES / PHASE1_TASK_DEF / CACHE_TABLE from env
+    # at IMPORT time; depending on suite import order ENV_NAME may be 'dev' not
+    # 'test', so reference the module's ACTUAL resolved values rather than
+    # hard-coded 'test-wwii-*' (which would silently never match the family the
+    # handler iterates).
+    lock_key = f"lock#{th.TASK_FAMILIES[th.PHASE1_TASK_DEF]}"
     # Seed a stale lock
-    table = boto3.resource("dynamodb", region_name="us-east-1").Table(
-        "test-wwii-api-cache"
-    )
-    table.put_item(Item={"cache_key": "lock#test-wwii-phase1-parse", "response": "123"})
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(th.CACHE_TABLE)
+    table.put_item(Item={"cache_key": lock_key, "response": "123"})
 
     with patch("lambda_handlers.trigger_handler.ecs") as mock_ecs:
         mock_ecs.list_tasks.return_value = {"taskArns": []}
         with patch("lambda_handlers.trigger_handler.s3") as mock_s3:
             mock_s3.get_object.side_effect = Exception("no file")
-            result = handler({"source": "scheduled"}, None)
+            # The module-level `dynamo` Table resource is bound at IMPORT time to
+            # whatever moto backend was active then; pin it to THIS test's backend
+            # so the handler clears the same lock row this test seeded.
+            with patch.object(th, "dynamo", table):
+                result = handler({"source": "scheduled"}, None)
 
     assert result == {"action": "lock_check_complete"}
-    # Lock should be cleared
-    resp = table.get_item(Key={"cache_key": "lock#test-wwii-phase1-parse"})
+    # Lock should be cleared (no RUNNING task -> stale -> reclaimed)
+    resp = table.get_item(Key={"cache_key": lock_key})
     assert "Item" not in resp
 
 
@@ -361,19 +374,22 @@ def test_run_task_fresh_lock_no_task_is_not_reclaimed(dynamodb_table):
     import boto3 as _b
     import time as _t
 
-    table = _b.resource("dynamodb", region_name="us-east-1").Table(
-        "test-wwii-api-cache"
-    )
+    # Reference the module's ACTUAL resolved family/table (ENV_NAME may be 'dev'
+    # not 'test' depending on suite import order) so the seeded lock matches the
+    # key _run_task checks.
+    lock_key = f"lock#{th.TASK_FAMILIES[th.PHASE1_TASK_DEF]}"
+    table = _b.resource("dynamodb", region_name="us-east-1").Table(th.CACHE_TABLE)
     # First invocation just took the lock (age ~0) and is in NAT-wait; NO task RUNNING yet.
     table.put_item(
         Item={
-            "cache_key": "lock#test-wwii-phase1-parse",
+            "cache_key": lock_key,
             "book": "all",
             "response": str(int(_t.time())),  # fresh
         }
     )
 
     with (
+        patch.object(th, "dynamo", table),
         patch.object(
             th.ecs, "list_tasks", return_value={"taskArns": []}
         ),  # no live task
@@ -382,7 +398,7 @@ def test_run_task_fresh_lock_no_task_is_not_reclaimed(dynamodb_table):
         th._run_task(th.PHASE1_TASK_DEF, "second-invocation")
 
     run_task.assert_not_called()  # second invocation defers -> NO double launch
-    assert table.get_item(Key={"cache_key": "lock#test-wwii-phase1-parse"}).get("Item")
+    assert table.get_item(Key={"cache_key": lock_key}).get("Item")
 
 
 def test_run_task_genuinely_stale_lock_is_reclaimed(dynamodb_table):

@@ -3,6 +3,8 @@
 import os
 from unittest.mock import MagicMock, patch
 
+import yaml
+
 os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
 os.environ.setdefault("S3_BUCKET", "dev-wwii-data-pipeline")
 
@@ -86,6 +88,9 @@ def test_merge_whole_pdf_layout():
     keys = {c.kwargs["Key"] for c in s3.put_object.call_args_list}
     assert "contentrepository/B460/chapter1/chapter1-content.md" in keys
     assert "contentrepository/B460/chapter1/chapter1-meta.yaml" in keys
+    # P2-C1: the deferred-metadata gap is recorded as a detectable
+    # needs-review/metadata marker (book via the shared SAFE book_slug).
+    assert "needs-review/metadata/B460.json" in keys
     # content body carries the merged markdown
     content_call = next(
         c
@@ -93,13 +98,20 @@ def test_merge_whole_pdf_layout():
         if c.kwargs["Key"].endswith("chapter1-content.md")
     )
     assert b"B460 page 1" in content_call.kwargs["Body"]
-    # meta names the book
+    # meta names the book — now SAFE yaml.safe_dump (P2-C1): author/series/
+    # chapter_title/license are '' (empty), NOT a 'TODO ...' masquerade.
     meta_call = next(
         c
         for c in s3.put_object.call_args_list
         if c.kwargs["Key"].endswith("chapter1-meta.yaml")
     )
-    assert b'book: "B460"' in meta_call.kwargs["Body"]
+    meta = yaml.safe_load(meta_call.kwargs["Body"])
+    assert meta["book"] == "B460"
+    assert meta["author"] == ""
+    assert meta["series"] == ""
+    assert meta["chapter_title"] == ""
+    assert meta["license"] == ""
+    assert b"TODO" not in meta_call.kwargs["Body"]
 
 
 def test_merge_chunked_layout_sorts_pages():
@@ -125,7 +137,14 @@ def test_merge_chunked_layout_sorts_pages():
     s3.head_object.side_effect = Exception("404")  # no .structured marker (narrative)
     with patch.object(om, "_s3", return_value=s3):
         om.merge_ocr_output("Big")
-    merged = s3.put_object.call_args.kwargs["Body"].decode()
+    # Select the CONTENT put specifically — the final put_object call is now the
+    # P2-C1 needs-review/metadata marker, not the merged content.
+    content_call = next(
+        c
+        for c in s3.put_object.call_args_list
+        if c.kwargs["Key"].endswith("chapter1-content.md")
+    )
+    merged = content_call.kwargs["Body"].decode()
     # sorted by key => p0001-0050 chunk first
     assert merged.index("PAGES 1-50") < merged.index("PAGES 51-100")
 

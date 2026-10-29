@@ -102,9 +102,15 @@ def test_convert_failure_grok_correction_recovers(tmp_path, monkeypatch):
     ):
         mm.return_value = MagicMock(is_mismatch=False)
         out = pc.convert_key("contentrepository/x/book.docx")
-    # recovered -> promoted (content key returned), NOT rejected
+    # recovered -> promoted (content key returned), NOT rejected as a failure
     assert out.endswith("chapter1-content.md")
-    rej.assert_not_called()
+    # The recovered doc is written through the SAME secure chapter structure, so
+    # reject_to_review is invoked ONLY for the P2-C1 deferred-metadata marker —
+    # never a convert-failed/off-ramp category.
+    reject_categories = [c.kwargs.get("category") for c in rej.call_args_list]
+    assert reject_categories == ["metadata"]
+    assert "convert-failed" not in reject_categories
+    assert "convert-error" not in reject_categories
 
 
 def test_convert_failure_correction_fails_then_rejects(tmp_path, monkeypatch):
