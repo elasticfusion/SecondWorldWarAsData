@@ -378,6 +378,8 @@ def _parse_logistics_response(
     if not isinstance(response, dict):
         return {}
     result: Dict[str, List[LogisticsExtraction]] = {}
+    received = 0
+    kept = 0
     for seid, data in response.items():
         # Accept BOTH shapes the LLM may return: a bare list of items, OR a
         # {"logistics": [...]} wrapper. Requiring the wrapper silently dropped bare-list
@@ -388,13 +390,26 @@ def _parse_logistics_response(
             items = data.get("logistics", [])
         else:
             items = []
+        received += len(items)
         validated = []
         for item in items:
             parsed = _validate_logistics_item(item)
             if parsed is not None:
                 validated.append(parsed)
+        kept += len(validated)
         if validated:
             result[seid] = validated
+    # De-swallow the per-item drops (empty/unusable item skips logged at DEBUG below): a systematic
+    # schema drift that drops every item reads as a benign 0. Count the gap and surface it LOUD
+    # when dropped>0. Control flow unchanged; fail-safe (never raises).
+    dropped = received - kept
+    if dropped > 0:
+        logger.warning(
+            "OBSERV logistics.items_dropped dropped=%d received=%d kept=%d",
+            dropped,
+            received,
+            kept,
+        )
     return result
 
 

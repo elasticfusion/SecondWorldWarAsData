@@ -402,11 +402,18 @@ class EquipmentExtraction(BaseModel):
 def _load_json_files(
     directory: Path, skip_files: List[str]
 ) -> List[tuple[Path, Dict[str, Any]]]:
-    """Load all JSON files from directory, skipping specified files."""
+    """Load all JSON files from directory, skipping specified files.
+
+    Un-loadable files are SKIPPED (control-flow unchanged) but now COUNTED: a silently-shrunk
+    cross-ref index drops backlinks for every skipped entity, so N un-loadable files must be loud.
+    The catch-all skip is raised DEBUG->WARNING per-file and an aggregate OBSERV
+    equipment.index_load_skipped dropped=N is emitted when N>0. Fail-safe (never raises).
+    """
     results: List[tuple[Path, Dict[str, Any]]] = []
     if not directory.exists():
         return results
 
+    dropped = 0
     for json_file in directory.glob("*.json"):
         if json_file.name in skip_files:
             continue
@@ -416,9 +423,17 @@ def _load_json_files(
                 results.append((json_file, data))
         except (json.JSONDecodeError, KeyError) as e:
             logger.warning("Failed to load %s: %s", json_file.name, e)
+            dropped += 1
         except Exception as e:
-            logger.debug("Skipping %s: %s", json_file.name, e)
+            logger.warning("Skipping %s: %s", json_file.name, e)
+            dropped += 1
 
+    if dropped > 0:
+        logger.warning(
+            "OBSERV equipment.index_load_skipped dropped=%d dir=%s",
+            dropped,
+            directory.name,
+        )
     return results
 
 
@@ -2976,6 +2991,21 @@ def _observe_equipment_yield(event_data: dict, produced: int) -> None:
         logger.debug("equipment yield observe skipped: %s", e)
 
 
+def _observe_equipment_items_dropped(extracted: int, persisted: int) -> None:
+    """De-swallow per-item equipment drops (schema-invalid model_validate + no-asserted-presence
+    skips). A systematic schema drift that drops every item otherwise reads as a benign 0: count
+    the extracted->persisted gap and surface it LOUD when dropped>0. Fail-safe (never raises).
+    """
+    dropped = extracted - persisted
+    if dropped > 0:
+        logger.warning(
+            "OBSERV equipment.items_dropped dropped=%d extracted=%d persisted=%d",
+            dropped,
+            extracted,
+            persisted,
+        )
+
+
 def extract_equipment_from_event(
     event_file: Path,
     output_dir: Path,
@@ -3072,6 +3102,7 @@ def extract_equipment_from_event(
 
     # Finalize
     _finalize_extraction(output_dir, modified_files, event_file, processed)
+    _observe_equipment_items_dropped(len(equipment_list), len(modified_files))
     _observe_equipment_yield(event_data, len(equipment_list))
     return modified_files
 

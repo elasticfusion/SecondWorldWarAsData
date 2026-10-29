@@ -55,6 +55,16 @@ def _load_events() -> List[Dict[str, Any]]:
     """Load TEXTUAL fetch-provenance events. In AWS mode (a DynamoDB cache table is configured —
     e.g. inside the review Lambda) SCAN the store for ``fetchevent#`` items; otherwise read the
     local JSONL reference surface. Returns [] on any error (fail-safe)."""
+    events, _errors = _load_events_counted()
+    return events
+
+
+def _load_events_counted() -> tuple[List[Dict[str, Any]], int]:
+    """Load events AND the count of load/scan failures (corrupt records/files). Fail-safe.
+
+    The error count lets callers distinguish a GENUINELY empty queue from one that is empty only
+    because loads failed — a silent empty queue reads as 'nothing to review' and hides data loss.
+    """
     from src.utils import fetch_provenance as fp
 
     table = _resolve_table(fp)
@@ -63,13 +73,16 @@ def _load_events() -> List[Dict[str, Any]]:
     return _load_events_local(fp)
 
 
-def _load_events_dynamo(table: Any, fp: Any) -> List[Dict[str, Any]]:
-    """Scan the DynamoDB cache table for fetch-provenance TEXTUAL events (paginated). Fail-safe."""
+def _load_events_dynamo(table: Any, fp: Any) -> tuple[List[Dict[str, Any]], int]:
+    """Scan the DynamoDB cache table for fetch-provenance TEXTUAL events (paginated). Fail-safe.
+    Returns (events, error_count) — error_count tracks per-item parse failures + a failed scan.
+    """
     import json
 
     from boto3.dynamodb.conditions import Attr
 
     out: List[Dict[str, Any]] = []
+    errors = 0
     try:
         kwargs: Dict[str, Any] = {
             "FilterExpression": Attr("cache_key").begins_with(
@@ -82,6 +95,7 @@ def _load_events_dynamo(table: Any, fp: Any) -> List[Dict[str, Any]]:
                 try:
                     rec = json.loads(item.get("response", "{}"))
                 except Exception:  # noqa: BLE001
+                    errors += 1
                     continue
                 if isinstance(rec, dict) and rec.get("kind") == fp.TEXTUAL:
                     out.append(rec)
@@ -90,39 +104,60 @@ def _load_events_dynamo(table: Any, fp: Any) -> List[Dict[str, Any]]:
                 break
             kwargs["ExclusiveStartKey"] = lek
     except Exception as e:  # noqa: BLE001
+        errors += 1
         logger.debug("fetch_review dynamo scan skipped: %s", e)
-    return out
+    return out, errors
 
 
-def _load_events_local(fp: Any) -> List[Dict[str, Any]]:
-    """Load local textual fetch-provenance events (JSONL reference surface). Fail-safe."""
+def _load_events_local(fp: Any) -> tuple[List[Dict[str, Any]], int]:
+    """Load local textual fetch-provenance events (JSONL reference surface). Fail-safe.
+    Returns (events, error_count) — error_count tracks per-line parse failures + file read errors.
+    """
     import json
 
     out: List[Dict[str, Any]] = []
+    errors = 0
     try:
         d: Path = fp._LOCAL_DIR  # noqa: SLF001 - reuse the configured local dir
         if not d.exists():
-            return out
+            return out, errors
         for jf in d.glob("*.jsonl"):
-            for line in jf.read_text(encoding="utf-8").splitlines():
+            try:
+                lines = jf.read_text(encoding="utf-8").splitlines()
+            except OSError as e:
+                errors += 1
+                logger.debug("fetch_review read skipped %s: %s", jf.name, e)
+                continue
+            for line in lines:
                 if not line.strip():
                     continue
                 try:
                     rec = json.loads(line)
                 except Exception:  # noqa: BLE001
+                    errors += 1
                     continue
                 if rec.get("kind") == fp.TEXTUAL:
                     out.append(rec)
     except Exception as e:  # noqa: BLE001
+        errors += 1
         logger.debug("fetch_review load skipped: %s", e)
-    return out
+    return out, errors
 
 
 def list_pending() -> List[Dict[str, Any]]:
-    """Textual finds awaiting human review (review_status == pending)."""
+    """Textual finds awaiting human review (review_status == pending).
+
+    Fail-closed is preserved (returns [] on total failure), but an EMPTY queue caused by load/scan
+    errors no longer masquerades as 'nothing to review': when the result is empty AND errors>0 we
+    emit a LOUD, greppable OBSERV fetch_review.load_errors so the data-loss is visible. Fail-safe.
+    """
     from src.utils import fetch_provenance as fp
 
-    return [e for e in _load_events() if e.get("review_status") == fp.PENDING]
+    events, errors = _load_events_counted()
+    pending = [e for e in events if e.get("review_status") == fp.PENDING]
+    if not pending and errors > 0:
+        logger.warning("OBSERV fetch_review.load_errors errors=%d", errors)
+    return pending
 
 
 def list_affirmed() -> List[Dict[str, Any]]:

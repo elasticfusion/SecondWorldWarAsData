@@ -219,21 +219,32 @@ def _load_index(index_file: Path, entity_type: str) -> dict:
 
 
 def _build_date_id_lookup(dates_dir: Path) -> Dict[str, str]:
-    """Build date_start → DateID map from dates directory."""
+    """Build date_start → DateID map from dates directory.
+
+    Corrupt/un-loadable date files are SKIPPED (control-flow unchanged) but now COUNTED and
+    surfaced: a shrunk date lookup silently drops the time-ID backfill for every event, so N
+    un-loadable files must be loud, not invisible. Fail-safe: the count/log never raises.
+    """
     lookup: Dict[str, str] = {}
     if not dates_dir.exists():
         return lookup
+    dropped = 0
     for f in dates_dir.glob("*.json"):
         if f.name == "index.json":
             continue
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
+            dropped += 1
             continue
         ds = data.get("date_start")
         did = data.get("DateID")
         if ds and did:
             lookup[ds] = did
+    if dropped > 0:
+        logger.warning(
+            "OBSERV date_index.load_skipped dropped=%d dir=%s", dropped, dates_dir.name
+        )
     return lookup
 
 
@@ -364,7 +375,16 @@ def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positi
     try:
         with open(entity_file, "r", encoding="utf-8") as fh:
             record = json.load(fh)
-    except (OSError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError) as e:
+        # An INDEXED entity whose file is corrupt/missing is a real drop (the key resolves but the
+        # record is lost -> empty record propagates downstream). Keep the fail-safe empty-record
+        # behavior, but make the drop LOUD + greppable instead of silent. Never raises.
+        logger.warning(
+            "OBSERV entity_index.load_skipped dropped=1 dir=%s key=%s err=%s",
+            entity_dir.name,
+            str(key)[:80],
+            e,
+        )
         record = {}
     return entity_file, record.get(id_field, ""), record
 
