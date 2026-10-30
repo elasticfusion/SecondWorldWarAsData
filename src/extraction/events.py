@@ -753,26 +753,14 @@ def extract_events(
 
         # VALIDATE-AND-RESUBMIT (user 2026-10-30): the response's paragraph_numbers are
         # deterministically constrained by our input — they MUST be a subset of the paragraphs we
-        # fed the model (absolute_number 1..N). A fresh Grok call can hallucinate sequential
-        # out-of-range numbers (observed: 264..1700 against a 263-paragraph doc), which
-        # _reconstruct_fulltext then can't resolve -> summary-only -> every entity extractor starves
-        # (the paragraph_numbers fingerprint). Check the RAW response BEFORE _normalize_event_response
-        # pops the numbers; if mostly out-of-range, raise -> route through the SAME retry handler as
-        # schema validation so the loop RE-SUBMITS with explicit range feedback (not just aborts).
+        # Validate the RAW response (paragraph_numbers in-range) BEFORE _normalize pops them, then
+        # normalize + schema-validate — all under ONE retry handler. A hallucinated out-of-range
+        # paragraph set (e.g. 264..1700 vs a 263-paragraph doc) would otherwise resolve to no
+        # fulltext -> summary-only -> every entity extractor starves (the paragraph_numbers
+        # fingerprint). On any ValidationError we RE-SUBMIT with feedback (or exhaust -> loud raise).
         try:
             _validate_paragraph_range(response, parsed_data, attempt)
-        except ValidationError as e:
-            fixed_output, prompt = _handle_validation_failure(
-                response, e, parsed_file, output_dir, prompt, attempt, max_retries
-            )
-            if fixed_output:
-                return fixed_output
-            continue  # retry with the range-feedback prompt (or exhaust -> loud failure)
-
-        response = _normalize_event_response(response, parsed_data, parsed_file)
-
-        # Validate against schema
-        try:
+            response = _normalize_event_response(response, parsed_data, parsed_file)
             validate_event_json(response)
             # Validation passed - save and return
             output_file = _save_event_output(response, parsed_file, output_dir)
