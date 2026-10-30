@@ -1225,10 +1225,12 @@ async def extract_people_groups_batch_async(
         prompt_header=f'Extract military units/groups from these {n} sub-events. Return JSON:\n{{"groups": [{{"sub_event_id": "ID", "groups": [{{"name": "Unit Name", "type": "division|corps|army", "country": "USA|Germany", "context": "role in this sub-event", "original_text": "exact quote mentioning unit"}}]}}]}}\n\nSub-events:',
         response_key="groups",
         inner_key="groups",
-        make_key=lambda obj: _normalize_name(obj.get("name", "")),
+        make_key=lambda obj: _normalize_name(
+            obj.get("group_name") or obj.get("name") or ""
+        ),
         make_record=lambda obj: {
-            "name": obj.get("name"),
-            "group_name": obj.get("name"),
+            "name": obj.get("group_name") or obj.get("name"),
+            "group_name": obj.get("group_name") or obj.get("name"),
             "group_type": "military_unit",
             "nationality": obj.get("country"),
             "source_language": "English",

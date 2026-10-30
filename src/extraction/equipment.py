@@ -2470,6 +2470,21 @@ def _recheck_equipment_fields(
         logger.debug("equipment source-recheck skipped: %s", e)
 
 
+def _coerce_equipment_common_name(eq_data: Dict[str, Any]) -> None:
+    """FIELD ALIGNMENT (XChannel-8 2026-10-29, groups-class bug): prompts/equipment.yaml instructs
+    the model to emit "name" (e.g. "M4 Sherman"), but EquipmentExtraction REQUIRES common_name.
+    Without this, every item failed model_validate -> "Skipping invalid equipment" -> 0 equipment
+    persisted on a chapter that clearly has equipment. Map name->common_name when common_name is
+    absent (resilient to either field; mirrors the places.py current_name coercion). In place.
+    """
+    if (
+        isinstance(eq_data, dict)
+        and not eq_data.get("common_name")
+        and eq_data.get("name")
+    ):
+        eq_data["common_name"] = eq_data["name"]
+
+
 def _process_equipment_item(
     eq_data: Dict[str, Any],
     event_data: Dict[str, Any],
@@ -2486,6 +2501,7 @@ def _process_equipment_item(
 ) -> Optional[Path]:
     """Process a single equipment item. Returns equipment file path or None."""
     try:
+        _coerce_equipment_common_name(eq_data)
         # Validate and parse
         eq = EquipmentExtraction.model_validate(eq_data)
     except Exception as e:
