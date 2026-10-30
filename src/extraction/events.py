@@ -635,6 +635,69 @@ def _auto_split_and_extract(
     return _save_event_output(merged, parsed_file, output_dir)
 
 
+def _valid_paragraph_set(parsed_data: dict) -> set:
+    """The set of real paragraph absolute_numbers fed to the model (the valid citation domain)."""
+    return {
+        int(p["absolute_number"])
+        for p in parsed_data.get("paragraphs", [])
+        if isinstance(p, dict) and str(p.get("absolute_number", "")).isdigit()
+    }
+
+
+def _cited_paragraph_numbers(response: dict) -> list:
+    """All integer paragraph_numbers the response's sub-events cite."""
+    ev = response.get("Event", response)
+    subs = ev.get("Sub-events", ev.get("Sub_events", [])) or []
+    nums: list = []
+    for s in subs:
+        if isinstance(s, dict):
+            raw = s.get("paragraph_numbers") or s.get("paragraphs") or []
+            nums += [n for n in raw if isinstance(n, int)]
+    return nums
+
+
+def _validate_paragraph_range(response: dict, parsed_data: dict, attempt: int) -> None:
+    """Reject an events response whose sub-event paragraph_numbers fall mostly OUTSIDE the known
+    input range (absolute_number 1..N). The valid answer is deterministically constrained by the
+    paragraphs we fed the model; a hallucinated out-of-range set (e.g. 264..1700 for a 263-paragraph
+    doc) resolves to no fulltext and starves every downstream entity extractor. Raises ValidationError
+    (caught by the extract_events retry loop) so we re-submit with range feedback. Fail-safe: never
+    raises on its own bookkeeping errors (only the deliberate ValidationError)."""
+    from jsonschema import ValidationError
+
+    try:
+        valid = _valid_paragraph_set(parsed_data)
+        nums = _cited_paragraph_numbers(response)
+        if not valid or not nums:
+            return  # no baseline, or nothing to validate (fulltext may come from another path)
+        out_of_range = [n for n in nums if n not in valid]
+        frac = len(out_of_range) / len(nums)
+        max_valid = max(valid)
+    except Exception:  # noqa: BLE001 - bookkeeping must never crash extraction
+        return
+    # A few stray refs are tolerable; a MAJORITY out-of-range is a hallucinated response.
+    if frac < 0.5:
+        return
+    try:
+        logger.warning(
+            "OBSERV events.paragraph_range_invalid status=error attempt=%d out_of_range=%d/%d "
+            "max_valid=%d sample=%s — rejecting + resubmitting (hallucinated paragraph_numbers "
+            "would starve entity extraction)",
+            attempt + 1,
+            len(out_of_range),
+            len(nums),
+            max_valid,
+            out_of_range[:5],
+        )
+    except Exception:  # noqa: BLE001
+        pass
+    raise ValidationError(
+        f"paragraph_numbers out of range: {len(out_of_range)} of {len(nums)} cited numbers "
+        f"are not among the {len(valid)} paragraphs provided (valid range 1..{max_valid}). "
+        f"Cite ONLY the Paragraph_N numbers shown in the input."
+    )
+
+
 def extract_events(
     parsed_file: Path, grok_client: GrokClient, output_dir: Path, max_retries: int = 3
 ) -> Optional[Path]:
@@ -688,10 +751,16 @@ def extract_events(
                 return split_result
             raise
 
-        response = _normalize_event_response(response, parsed_data, parsed_file)
-
-        # Validate against schema
+        # VALIDATE-AND-RESUBMIT (user 2026-10-30): the response's paragraph_numbers are
+        # deterministically constrained by our input — they MUST be a subset of the paragraphs we
+        # Validate the RAW response (paragraph_numbers in-range) BEFORE _normalize pops them, then
+        # normalize + schema-validate — all under ONE retry handler. A hallucinated out-of-range
+        # paragraph set (e.g. 264..1700 vs a 263-paragraph doc) would otherwise resolve to no
+        # fulltext -> summary-only -> every entity extractor starves (the paragraph_numbers
+        # fingerprint). On any ValidationError we RE-SUBMIT with feedback (or exhaust -> loud raise).
         try:
+            _validate_paragraph_range(response, parsed_data, attempt)
+            response = _normalize_event_response(response, parsed_data, parsed_file)
             validate_event_json(response)
             # Validation passed - save and return
             output_file = _save_event_output(response, parsed_file, output_dir)

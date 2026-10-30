@@ -37,6 +37,8 @@ schema: |
 
 rules:
   - Paragraph numbers must be integers, not strings
+  - CITE ONLY the Paragraph_N numbers shown in the input above — do NOT invent or use numbers
+    beyond the paragraphs provided (they will fail to resolve and the sub-event will be empty)
   - Group related paragraphs into coherent sub-events
   - Each paragraph should belong to exactly one sub-event
   - |
