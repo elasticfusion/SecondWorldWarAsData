@@ -83,7 +83,8 @@ concurrency:
   enabled: false
   max_event_files: 3
   max_extraction_group: 3
-  max_enrichment_workers: 4
+  max_enrichment_workers: 4                # bounded pool size for Phase-2 bio enrichment fetch (small, capped at 16)
+  bio_enrichment_parallel: true            # parallelize the per-person Phase-2 bio FETCH (persist stays serial); set false to force serial
 
 enrichment:
   re_search_after_days: 180            # Re-search less frequently

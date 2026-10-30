@@ -8,6 +8,7 @@ Validates source URLs by fetching content and verifying relevance via Grok.
 
 import json
 import logging
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -39,6 +40,15 @@ def _source_award_citations(person_data: Dict[str, Any]) -> None:
 
     if os.getenv("AWARD_CITATIONS_ENABLED", "false").lower() != "true":
         return
+    # THREAD-SAFETY (PR #640): this runs inside the per-person bounded-parallel
+    # enrichment worker (bio_enrich_parallel.prefetch_enrichment). The award
+    # fetch/preserve below writes primary-source pages + error records to
+    # storage (local/S3) via _award_storage()/_persist_award_errors — that write
+    # path is NOT verified thread-safe under parallel workers. It is OFF by
+    # default (opt-in via AWARD_CITATIONS_ENABLED), so the default parallel path
+    # never hits it; if you enable it, either confirm the storage backend is
+    # concurrency-safe or set concurrency.bio_enrichment_parallel=false to force
+    # the serial path first. Do not enable both without that review.
     try:
         from src.enrichment.award_registry import make_selector
         from src.enrichment.award_sources import (
@@ -219,7 +229,8 @@ def _grokipedia_query_scan(person_name: str, timeout: int) -> Optional[str]:
         slug = _match_grokipedia_page(response.text, last_name.lower(), first_initial)
         if slug:
             cache_result("grokipedia", person_name, response.text)
-            _grokipedia_slugs[person_name] = slug
+            with _bio_cache_lock:
+                _grokipedia_slugs[person_name] = slug
             return response.text
 
     # No match found in any search query
@@ -353,6 +364,12 @@ _wikipedia_images: dict = {}
 # Grokipedia slug for each person (used to hint Wikipedia lookup)
 _grokipedia_slugs: dict = {}
 
+# Guards the two per-person module caches above. Each worker in the bounded-parallel
+# Phase-2 fetch writes/reads its OWN person key (distinct keys never collide), but a
+# concurrent insert can still resize the dict while another thread iterates/reads it;
+# this lock makes those mutations atomic so parallel fetch can never corrupt the cache.
+_bio_cache_lock = threading.Lock()
+
 
 def get_wikipedia_image(person_name: str) -> Optional[dict]:
     """Get cached Wikipedia image info for a person (found during search_wikipedia).
@@ -360,7 +377,8 @@ def get_wikipedia_image(person_name: str) -> Optional[dict]:
     Returns dict with 'url', 'license', and (when preserved) 'preserved_path' keys,
     or None.
     """
-    return _wikipedia_images.get(person_name)
+    with _bio_cache_lock:
+        return _wikipedia_images.get(person_name)
 
 
 def _store_wikipedia_image(person_name: str, response_json: dict) -> None:
@@ -380,7 +398,8 @@ def _store_wikipedia_image(person_name: str, response_json: dict) -> None:
             info["preserved_path"] = preserved
     except Exception as e:  # noqa: BLE001 - preservation best-effort, never fatal
         logger.debug("Wikipedia photo preservation skipped for %s: %s", person_name, e)
-    _wikipedia_images[person_name] = info
+    with _bio_cache_lock:
+        _wikipedia_images[person_name] = info
 
 
 def _preserve_person_photo(person_name: str, img_url: str) -> Optional[str]:
@@ -500,9 +519,11 @@ def _search_wikipedia_fallback(
         ]
 
         for srsearch in search_queries:
-            import time as _time
-
-            _time.sleep(3)  # Rate limit between Wikipedia API calls
+            # Shared thread-safe courtesy delay (not a naive per-call sleep): under the
+            # bounded-parallel Phase-2 fetch, every Wikipedia request — direct lookup AND
+            # this search fallback — funnels through the same _wikipedia_rate_limit lock, so
+            # TOTAL Wikipedia request rate stays <= the politeness bound across all threads.
+            _wikipedia_rate_limit()
             from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
 
             resp = recorded_fetch(
@@ -613,7 +634,8 @@ def search_wikipedia(
 
     # If Grokipedia already found a page, use slug as Wikipedia title hint
     grok_info = get_wikipedia_image(person_name)  # check if already populated
-    grok_slug = _grokipedia_slugs.get(person_name)
+    with _bio_cache_lock:
+        grok_slug = _grokipedia_slugs.get(person_name)
     if grok_slug:
         # Convert "albin_f_irzyk" → "Albin F Irzyk" for targeted lookup
         wiki_title = grok_slug.replace("_", " ").title()

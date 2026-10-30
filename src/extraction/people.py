@@ -1,5 +1,6 @@
 """People extraction from event data."""
 
+import copy
 import json
 import logging
 import re
@@ -930,12 +931,41 @@ def _emit_enrich_summary(path: str) -> None:
         )
 
 
-def _enrich_person_phase2(person_data: dict, grok_client) -> None:
+def _observe_enrich_persisted(person_data: dict, enriched_now: bool) -> None:
+    """Emit the ``enrich.persisted`` OBSERV line (counterpart to ``enrich.collecting``).
+
+    ``enriched_now`` distinguishes "this call populated it" from a short-circuit
+    (already-enriched / fresh not-found); has_bio=0 means fetched/returned but no
+    profile. Shared by the serial and the bounded-parallel fetch paths so the
+    observability is identical regardless of which path ran.
+    """
+    bio = person_data.get("biographical_profile") or {}
+    n_sources = len(bio.get("biography_sources", []) or []) if bio else 0
+    logger.info(
+        "OBSERV enrich.persisted entity=person name=%s enriched_now=%d has_bio=%d sources=%d",
+        person_data.get("name", "?"),
+        1 if enriched_now else 0,
+        1 if bio else 0,
+        n_sources,
+    )
+
+
+def _enrich_person_phase2(
+    person_data: dict, grok_client, prefetched: bool = False
+) -> None:
     """Phase-2 Grokipedia/Wikipedia enrichment of a person dict IN PLACE, before the
     native people save path commits it. Fail-safe: a fetch error (or batch-mode
     collection) must never abort extraction — log + continue so the un-enriched record
-    still saves and Phase 2 proceeds."""
+    still saves and Phase 2 proceeds.
+
+    ``prefetched=True`` means the bounded-parallel pre-fetch pass already ran
+    ``enrich_person_from_sources`` (and already bumped the counters + emitted
+    ``enrich.persisted``) on this record's data, so the serial persist step must
+    NOT fetch or count again — it is a no-op here (the enriched dict just saves).
+    """
     if grok_client is None:
+        return
+    if prefetched:
         return
     _bump_enrich("total")
     try:
@@ -943,18 +973,7 @@ def _enrich_person_phase2(person_data: dict, grok_client) -> None:
 
         enriched_now = enrich_person_from_sources(person_data, grok_client)
         _bump_enrich("enriched" if enriched_now else "skipped")
-        # enrich.persisted counterpart to enrich.collecting (symmetry asked for): make the RETRIEVE
-        # outcome visible. enriched_now distinguishes "this call populated it" from a short-circuit
-        # (already-enriched / fresh not-found); has_bio=0 means fetched/returned but no profile.
-        bio = person_data.get("biographical_profile") or {}
-        n_sources = len(bio.get("biography_sources", []) or []) if bio else 0
-        logger.info(
-            "OBSERV enrich.persisted entity=person name=%s enriched_now=%d has_bio=%d sources=%d",
-            person_data.get("name", "?"),
-            1 if enriched_now else 0,
-            1 if bio else 0,
-            n_sources,
-        )
+        _observe_enrich_persisted(person_data, bool(enriched_now))
     except BatchModeCollecting:
         # Batch COLLECT pass: the enrichment request was queued, not answered. MUST propagate so the
         # person is NOT saved as "done"/un-enriched — the RETRIEVE pass then applies the batch result
@@ -1051,9 +1070,15 @@ def _update_existing_person(
     name: str,
     person_id: str,
     grok_client: Optional[GrokClient],
+    prefetched: bool = False,
 ) -> None:
     """Merge ``person`` into the existing locked record, backfill integrity fields, enrich,
-    validate, and save (native people save path)."""
+    validate, and save (native people save path).
+
+    ``prefetched``: the bounded-parallel fetch already enriched ``person``; the
+    merge carries that bio into ``merged`` and ``_enrich_person_phase2`` is a
+    no-op (already counted), so only the serial locked save runs here.
+    """
     from src.utils.file_lock import locked_json
     from src.schemas.schema_contract import read_for_update
 
@@ -1078,7 +1103,9 @@ def _update_existing_person(
                 logger.info("OBSERV person.repaired field=PersonID name=%s", name)
             # Phase-2 Grokipedia/Wikipedia enrichment on the merged dict BEFORE
             # save, so the native people save path commits the enriched record.
-            _enrich_person_phase2(merged, grok_client)
+            # When prefetched, the parallel pass already enriched `person` and the
+            # merge carried that bio into `merged`, so this is a no-op.
+            _enrich_person_phase2(merged, grok_client, prefetched=prefetched)
             Person(**merged)  # Validate
             save(merged)
 
@@ -1091,11 +1118,17 @@ def _create_new_person(
     name_key: str,
     person_id: str,
     grok_client: Optional[GrokClient],
+    prefetched: bool = False,
 ) -> None:
-    """Create a brand-new person file + index entry (enrich before save). Mutates ``index``."""
+    """Create a brand-new person file + index entry (enrich before save). Mutates ``index``.
+
+    ``prefetched``: the bounded-parallel fetch already enriched ``person`` (and
+    counted it), so ``_enrich_person_phase2`` is a no-op and only the serial save
+    + index update run here.
+    """
     filename = _name_to_filename(name, person_id)
     person_file = people_dir / filename
-    _enrich_person_phase2(person, grok_client)
+    _enrich_person_phase2(person, grok_client, prefetched=prefetched)
     _save_person_file(person_file, person)
     index[name_key] = filename
     logger.debug("  Created: %s", name)
@@ -1106,8 +1139,14 @@ def _process_person(
     people_dir: Path,
     index: dict,
     grok_client: Optional[GrokClient] = None,
+    prefetched: bool = False,
 ) -> tuple[bool, bool]:
-    """Process a single person. Returns (is_new, is_updated)."""
+    """Process a single person. Returns (is_new, is_updated).
+
+    ``prefetched``: the per-person network enrichment already ran in the
+    bounded-parallel pre-fetch pass, so the serial persist here skips re-fetching
+    (see ``_enrich_person_phase2``).
+    """
     name = person["name"]
     # HIGH#7a: PersonID is a NEW entity id — MINT it server-side, never trust the LLM's value.
     # (A PersonID is not embedded in the prompt as a reference, so there is nothing to honor; a
@@ -1123,19 +1162,35 @@ def _process_person(
         # Update existing person
         person_file = people_dir / existing_filename
         if person_file.exists():
-            _update_existing_person(person_file, person, name, person_id, grok_client)
+            _update_existing_person(
+                person_file, person, name, person_id, grok_client, prefetched
+            )
             logger.debug("  Updated: %s", name)
             return False, True
         else:
             # Index points to missing file, create new
             _create_new_person(
-                person, people_dir, index, name, name_key, person_id, grok_client
+                person,
+                people_dir,
+                index,
+                name,
+                name_key,
+                person_id,
+                grok_client,
+                prefetched,
             )
             return True, False
     else:
         # New person
         _create_new_person(
-            person, people_dir, index, name, name_key, person_id, grok_client
+            person,
+            people_dir,
+            index,
+            name,
+            name_key,
+            person_id,
+            grok_client,
+            prefetched,
         )
         return True, False
 
@@ -1247,6 +1302,135 @@ def _record_recall_gaps_safe(
         logger.debug("recall-gap review skipped for %s: %s", sub_event_id, e)
 
 
+def _already_enriched_on_disk_view(person: dict, people_dir: Path, index: dict) -> bool:
+    """Return True iff ``person`` maps to an EXISTING on-disk record and the SAME
+    merged view the serial path enriches is already-enriched (so it must be SKIPPED
+    from the parallel pre-fetch, exactly like serial).
+
+    DIVERGENCE FIX (PR #640): the serial persist path enriches on
+    ``merged = _merge_person(existing_on_disk, person)`` (``_update_existing_person``),
+    so ``_is_already_enriched`` sees the on-disk ``biographical_profile`` and SKIPS
+    an already-enriched person (no fetch, counted ``skipped``). The parallel
+    pre-fetch, however, ran ``enrich_person_from_sources`` on the RAW freshly
+    extracted person (no on-disk bio yet — the merge happened later in the now-no-op
+    persist), so the gate saw NO profile => a redundant network fetch => the later
+    ``_merge_bio_lists`` folded new data in and the CONTENT could differ from serial.
+
+    This resolves each person against the people index exactly as
+    ``_process_person`` does (``_normalize_name`` -> index -> existing file), builds
+    the SAME merged view as ``_merge_person`` on a THROWAWAY copy (so the real
+    person dict and the serial persist's authoritative re-merge are untouched), and
+    returns whether that view is already-enriched. Evaluating the gate on the merged
+    view makes the parallel skip decision identical to serial — counts AND content
+    then match for both fresh-new and already-enriched-update cases.
+
+    Fail-safe: a per-person read/merge error is logged and treated as "not
+    already-enriched" (the person keeps its raw view and is fetched — the pre-fix
+    behavior for that one record) so pre-gating never aborts extraction.
+    """
+    from src.extraction.enrich_biographies import _is_already_enriched
+    from src.schemas.schema_contract import read_for_update
+
+    name = person.get("name")
+    if not name:
+        return False
+    existing_filename = index.get(_normalize_name(name))
+    if not existing_filename:
+        return False
+    person_file = people_dir / existing_filename
+    if not person_file.exists():
+        return False
+    try:
+        existing_person = _load_person_file(person_file)
+        existing_person, skip = read_for_update(
+            existing_person, SCHEMA_TARGET, logger, name
+        )
+        if skip:
+            return False
+        # Build the SAME merged view the serial path gates on, on a throwaway deep
+        # copy so neither the on-disk record nor the person dict is mutated here
+        # (the serial persist re-reads + re-merges authoritatively under its lock).
+        merged = _merge_person(copy.deepcopy(existing_person), copy.deepcopy(person))
+        return _is_already_enriched(merged)
+    except Exception as e:  # noqa: BLE001 - pre-gating is best-effort; never block
+        logger.warning("  Pre-gate bio check skipped for %s: %s", name, e)
+        return False
+
+
+def _partition_already_enriched(
+    collected: list, people_dir: Path, index: dict
+) -> tuple[list, list]:
+    """Split ``collected`` into (to_fetch, already_enriched) using the serial path's
+    merged-view gate (``_already_enriched_on_disk_view``). Already-enriched people are
+    kept OUT of the parallel pool so the parallel path skips them identically to
+    serial; the serial persist afterwards commits them unchanged (no fetch)."""
+    to_fetch: list = []
+    already: list = []
+    for person in collected:
+        if person and _already_enriched_on_disk_view(person, people_dir, index):
+            already.append(person)
+        else:
+            to_fetch.append(person)
+    return to_fetch, already
+
+
+def _maybe_prefetch_enrichment(
+    collected: list, grok_client, people_dir: Path, index: dict
+) -> bool:
+    """Run the bounded-parallel Phase-2 network fetch for ``collected`` people if eligible.
+
+    THROUGHPUT FIX: the per-person fetch (enrich_person_from_sources) is dominated
+    by fixed network timeouts (~3 min/person) and does no file I/O, so running it
+    across a small bounded thread pool collapses wall-clock for a batch. Persist
+    stays serial downstream. Returns True iff the parallel pre-fetch ran (so the
+    serial persist must skip re-enriching); False keeps the fully-serial path
+    (single person, batch-collecting mode, worker=1, or config kill switch).
+
+    Fail-safe: any error setting up / running the pool logs and returns False so
+    extraction falls back to the proven serial path rather than aborting.
+    """
+    try:
+        from src.extraction import bio_enrich_parallel as _bp
+        from src.utils.config import load_config
+
+        config = load_config()
+        if not _bp.should_parallelize(collected, grok_client, config):
+            return False
+
+        from src.extraction.enrich_biographies import enrich_person_from_sources
+
+        # DIVERGENCE FIX (PR #640): gate on the SAME merged on-disk view the serial
+        # path uses, so an already-enriched-on-disk person is SKIPPED from the pool
+        # (no redundant fetch, no content drift) — identical to serial. Only
+        # genuinely-unenriched people are fetched in the pool.
+        to_fetch, already = _partition_already_enriched(collected, people_dir, index)
+
+        # Account for the skipped (already-enriched) people on the MAIN thread,
+        # mirroring the serial _enrich_person_phase2 skip accounting (total+skipped
+        # + enrich.persisted OBSERV) so the enrich.summary totals match serial. The
+        # serial persist runs these with prefetched=True (a no-op there), so they
+        # are counted ONCE, here.
+        for person in already:
+            _bump_enrich("total")
+            _bump_enrich("skipped")
+            _observe_enrich_persisted(person, False)
+
+        _bp.prefetch_enrichment(
+            to_fetch,
+            grok_client,
+            config,
+            enrich_person_from_sources,
+            _bump_enrich,
+            _observe_enrich_persisted,
+        )
+        return True
+    except Exception as e:  # noqa: BLE001 - never let the pool setup abort extraction
+        logger.warning(
+            "Parallel bio enrichment unavailable (%s); falling back to serial", e
+        )
+        return False
+
+
 def extract_people(
     event_file: Path,
     grok_client: GrokClient,
@@ -1294,6 +1478,10 @@ def extract_people(
 
     empty_counter: dict = {"empty": 0}
 
+    # Pass 1 — extract people for every sub-event (serial Grok extraction + recall-gap
+    # surfacing). Collect the people so the slow per-person Phase-2 network enrichment
+    # can run in a bounded thread pool BEFORE the serial persist, instead of one-at-a-time.
+    collected: list = []
     for sub_event in sub_events:
         sub_event_id = sub_event.get("Sub-eventID", "")
         extracted_people = _extract_people_for_sub_event(
@@ -1315,14 +1503,24 @@ def extract_people(
 
         if not extracted_people:
             continue
+        collected.extend(extracted_people)
 
-        # Process each person
-        for person in extracted_people:
-            is_new, is_updated = _process_person(person, people_dir, index, grok_client)
-            if is_new:
-                new_people_count += 1
-            if is_updated:
-                updated_people_count += 1
+    # Pass 2 (THROUGHPUT FIX) — parallelize ONLY the independent per-person network fetch
+    # (enrich_person_from_sources: pure, no file I/O). Persist stays serial/locked below.
+    # Batch-collecting mode and the config kill switch fall through to the serial path.
+    prefetched = _maybe_prefetch_enrichment(collected, grok_client, people_dir, index)
+
+    # Pass 3 — persist serially (locked index + per-person write). When prefetched, the
+    # enrichment already ran (and counted) so this only commits; otherwise the serial
+    # _enrich_person_phase2 fetches here exactly as before.
+    for person in collected:
+        is_new, is_updated = _process_person(
+            person, people_dir, index, grok_client, prefetched
+        )
+        if is_new:
+            new_people_count += 1
+        if is_updated:
+            updated_people_count += 1
 
     # Save index
     _save_people_index(index_file, index)
