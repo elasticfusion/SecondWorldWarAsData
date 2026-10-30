@@ -268,8 +268,9 @@ def _maybe_alert_provenance(report: Dict[str, Any], phase: str) -> None:
 def _alert(report: Dict[str, Any], phase: str) -> None:
     """Best-effort SNS publish of a provenance anomaly, mirroring referential_integrity._alert
     (same NOTIFICATION_TOPIC_ARN + region resolution, aggregate counts only — no record values,
-    PII-safe). No topic configured => skip quietly (the OBSERV WARNING already carries the signal;
-    wiring SNS end-to-end from the phase caller is the follow-up — see module note). Never raises.
+    PII-safe). No topic configured => skip quietly (the OBSERV WARNING already carries the signal).
+    SNS->formatter->Slack is wired and live (verified 2026-10-30: 'DATA QUALITY — provenance anomalies'
+    forwarded to Slack). Never raises.
     """
     import os
 
