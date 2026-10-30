@@ -76,8 +76,8 @@ schema: |
               "page": null,
               "confidence": 0.9,
               "fields_sourced": ["birth_date", "nationality", "ranks", "biographical_details"],
-              "EventID": "event_id",
-              "Sub_eventID": "sub_event_id"
+              "EventID": "{event_id}",
+              "Sub_eventID": "{sub_event_id}"
             }
           ],
           "biographical_details": "Supreme Commander of Allied Forces in Europe"
@@ -86,9 +86,9 @@ schema: |
           {
             "MentionID": "01H8XYZJ2MN456PQ789RS012TU",
             "Event_Name": "Event Name",
-            "EventID": "event_id",
+            "EventID": "{event_id}",
             "Sub-event_Name": "Sub-event summary",
-            "Sub-eventID": "sub_event_id",
+            "Sub-eventID": "{sub_event_id}",
             "book": "Book Title",
             "author": "Author Name",
             "series": "Series Name",

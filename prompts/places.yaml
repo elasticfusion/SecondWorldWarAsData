@@ -61,10 +61,10 @@ prompt_template: |
 
 schema: |
   {
-    "Event_Name": "event_name",
-    "EventID": "event_id",
-    "Sub_event_Name": "sub_event_summary",
-    "Sub_eventID": "sub_event_id",
+    "Event_Name": "{event_name}",
+    "EventID": "{event_id}",
+    "Sub_event_Name": "{sub_event_summary}",
+    "Sub_eventID": "{sub_event_id}",
     "Place_Mentions": [
       {
         "PlaceMentionID": "01KHYP2M4N6P8Q0R2S4T6V8W0X",

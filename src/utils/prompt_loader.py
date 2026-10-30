@@ -53,9 +53,27 @@ def render_prompt(name: str, **kwargs: Any) -> str:
     tmpl = load_prompt(name)
     prompt = tmpl["prompt_template"]
 
-    # Inject schema if referenced
+    # Inject schema if referenced. The schema is a STATIC, trusted template (our own YAML), and its
+    # worked example embeds structural placeholders ({event_id}/{sub_event_id}/{event_name}/
+    # {sub_event_summary}) that must render to the REAL ids — otherwise the model copies the literal
+    # placeholder from the example and emits an invalid ULID -> null Sub_eventID -> broken provenance
+    # (XChannel-8 2026-10-30). The main pass below is SINGLE-PASS (never re-scans substituted text, to
+    # keep untrusted source `text` from being re-interpolated), so placeholders INSIDE the injected
+    # schema would never be reached. Pre-substitute ONLY the safe, server-controlled STRUCTURAL
+    # placeholders into the schema value here, before injection. Untrusted kwargs (e.g. `text`) are
+    # deliberately NOT applied to the schema.
     if "{schema}" in prompt and "schema" in tmpl:
-        kwargs.setdefault("schema", tmpl["schema"])
+        schema_text = tmpl["schema"]
+        _STRUCTURAL = (
+            "event_id",
+            "sub_event_id",
+            "event_name",
+            "sub_event_summary",
+        )
+        for _k in _STRUCTURAL:
+            if _k in kwargs:
+                schema_text = schema_text.replace("{" + _k + "}", str(kwargs[_k]))
+        kwargs.setdefault("schema", schema_text)
 
     # Append rules if present
     rules = tmpl.get("rules", [])
