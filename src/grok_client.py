@@ -34,6 +34,20 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 
+def _cache_globally_disabled() -> bool:
+    """Global Grok-cache kill-switch. When GROK_CACHE_DISABLED is truthy, ALL cache reads AND
+    writes are suppressed pipeline-wide (every request hits the API fresh; nothing stale is
+    served and nothing new is written). Reversible config, not code removal — default OFF
+    preserves existing caching behavior. Mirrors the bio_enrichment_parallel kill-switch pattern.
+    """
+    return os.environ.get("GROK_CACHE_DISABLED", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+
+
 class GrokAPIError(Exception):
     """Grok API error."""
 
@@ -1040,6 +1054,7 @@ class GrokClient:
         Returns:
             Response text from API
         """
+        use_cache = use_cache and not _cache_globally_disabled()
         # Validate inputs before sending
         self._validate_prompt(prompt)
 
@@ -1085,13 +1100,8 @@ class GrokClient:
         # Log API call
         self._log_api_call(cache_type, cache_key, temperature, prompt)
 
-        # Build messages
-        messages = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-        messages.append({"role": "user", "content": prompt})
-
         # Call API
+        messages = self._build_messages(prompt, system_prompt)
         response = self._call_api(messages, temperature, self._get_model(cache_type))
 
         # Extract content
@@ -1105,6 +1115,15 @@ class GrokClient:
             cache[cache_key] = content
 
         return content
+
+    @staticmethod
+    def _build_messages(prompt: str, system_prompt: Optional[str]) -> list:
+        """Build the chat messages array (optional system prompt + user prompt)."""
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+        return messages
 
     @staticmethod
     def _log_api_call(
@@ -1235,6 +1254,7 @@ class GrokClient:
         Returns:
             Parsed JSON response
         """
+        use_cache = use_cache and not _cache_globally_disabled()
         # Get cache for this type
         cache = self._get_cache(cache_type)
 
@@ -1302,6 +1322,7 @@ class GrokClient:
         Returns:
             Parsed JSON response
         """
+        use_cache = use_cache and not _cache_globally_disabled()
         # Get cache for this type
         cache = self._get_cache(cache_type)
 
@@ -1775,6 +1796,7 @@ class GrokClient:
         Returns:
             Parsed JSON response
         """
+        use_cache = use_cache and not _cache_globally_disabled()
         response = self.chat_completion(
             prompt, system_prompt, temperature, use_cache, cache_type, cache_key
         )
@@ -1925,6 +1947,7 @@ class GrokClient:
         Returns:
             Pydantic model instance matching the schema
         """
+        use_cache = use_cache and not _cache_globally_disabled()
         # Get cache for this type
         cache = self._get_cache(cache_type)
 
