@@ -25,13 +25,20 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   (b) assert len(ordered)==len(submitted) per sub-batch AND fail LOUD (OBSERV batch.result_unmapped status=error) when an
   entity gets no result, (c) cross-check: every batched entity must emit an xref.seid line or raise. Consider forcing
   places/equipment SYNC even under batch.phase2=true until fixed. Blocks trusting batch-mode output.
-- **[HIGH · data-loss] logistics / supplemental / maps report count=1 but persist 0 records (count->persist gap).** The
-  entity field-mismatch audit (2026-10-29) found these three report a non-zero extracted count in .phase_results but 0
-  files land on disk/S3 — a DISTINCT defect from the groups/equipment name-field bug (#634, fixed). Root cause TBD:
-  a save/dedup/validation drop AFTER the count is tallied. Investigate each: logistics (LogisticsExtraction save path),
-  supplemental (persists into bibliography/sub-events — may be structurally-0 and a false alarm, confirm), maps
-  (search_queries-only output -> where does a map RECORD get written?). Owner-requested follow-up AFTER the groups/equipment
-  fix + overnight batch run.
+- **[HIGH · data-loss] OPTIONAL-entity persistence bugs — DIFFERENTIATED root causes (XChannel-8 overnight 2026-10-30).**
+  Investigation split the earlier conflated 'count->persist=0' into distinct bugs (places is SEPARATE — see the batch
+  positional-mapping bug above):
+    - **supplemental (write crash):** extracted 6 materials then FileNotFoundError writing output/bibliography/review_queue.json
+      because the parent dir output/bibliography/ was never created on a fresh run (`optional.persisted status=error [Errno 2]`).
+      FIX: mkdir(parents=True, exist_ok=True) on the bibliography dir before the write. 6 materials lost per event.
+    - **logistics (100% schema-drop):** Grok returned items but ALL dropped at validation
+      (`logistics.items_dropped dropped=4 received=4 kept=0`, `chunk.summary items_in=8 results_out=0`, yield.logistics
+      regression). Same CLASS as the groups/equipment field-mismatch (#634): investigate the logistics item schema vs
+      the prompt's emitted fields; likely a required-field/field-name mismatch rejecting every item.
+    - **equipment:** genuine Grok-returned-0 this run (the #634 common_name coercion is correct but wasn't exercised);
+      recall-vs-truth still unverifiable (equipment deterministic baseline=0). Not a bug this run.
+    - **maps:** ran, found 0 — likely legitimate for a fetched-HTML chapter (maps need in-doc figure links). Low priority.
+
 - **[HIGH · throughput] Synchronous Phase-2 per-person bio enrichment is ~3 min/person, serial.** XChannel-8 (2026-10-29)
   took 2h40m (9613s) because enrich_biographies runs Grokipedia+Wikipedia search + photo fetch INLINE per person for ~17+
   people serially ('Searching Wikipedia...' ~3 min each). FIX candidates: (a) parallelize/bound per-person enrichment, (b)
