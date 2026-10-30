@@ -757,9 +757,17 @@ def extract_events(
         # out-of-range numbers (observed: 264..1700 against a 263-paragraph doc), which
         # _reconstruct_fulltext then can't resolve -> summary-only -> every entity extractor starves
         # (the paragraph_numbers fingerprint). Check the RAW response BEFORE _normalize_event_response
-        # pops the numbers; if mostly out-of-range, raise to drive the existing retry with explicit
-        # range feedback rather than persisting a degraded summary-only event.
-        _validate_paragraph_range(response, parsed_data, attempt)
+        # pops the numbers; if mostly out-of-range, raise -> route through the SAME retry handler as
+        # schema validation so the loop RE-SUBMITS with explicit range feedback (not just aborts).
+        try:
+            _validate_paragraph_range(response, parsed_data, attempt)
+        except ValidationError as e:
+            fixed_output, prompt = _handle_validation_failure(
+                response, e, parsed_file, output_dir, prompt, attempt, max_retries
+            )
+            if fixed_output:
+                return fixed_output
+            continue  # retry with the range-feedback prompt (or exhaust -> loud failure)
 
         response = _normalize_event_response(response, parsed_data, parsed_file)
 
