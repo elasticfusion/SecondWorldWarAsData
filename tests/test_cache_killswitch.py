@@ -123,3 +123,39 @@ def test_flag_set_suppresses_batch_retry_write(monkeypatch):
     # and when unset, the write path is allowed
     monkeypatch.delenv("GROK_CACHE_DISABLED", raising=False)
     assert _cache_globally_disabled() is False
+
+
+def test_flag_set_suppresses_batch_map_write(monkeypatch):
+    """_map_ordered_results (batch submit/retrieve path) must suppress its cache write under
+    GROK_CACHE_DISABLED — third unguarded write found by the pre-deploy security review.
+    Drives the real method and asserts zero cache writes but metrics still counted."""
+    monkeypatch.setenv("GROK_CACHE_DISABLED", "1")
+    from unittest.mock import MagicMock
+    from src.grok_client import GrokClient
+    from src.utils.batch_api import BatchResult, BatchMetrics
+
+    c = GrokClient.__new__(GrokClient)
+
+    class SpyCache(dict):
+        writes = 0
+
+        def __setitem__(self, k, v):
+            SpyCache.writes += 1
+            dict.__setitem__(self, k, v)
+
+    sc = SpyCache()
+    c._get_cache = MagicMock(return_value=sc)
+    c._sanitize_content = lambda x: x
+    c._is_substantive = lambda br: True
+
+    br = BatchResult(
+        request_id="r1", status="valid", content='{"x":1}' * 20, finish_reason="stop"
+    )
+    metrics = BatchMetrics()
+    submitted = [("r1", "people")]
+    ordered = [br]
+    failed, mismatch = c._map_ordered_results(
+        submitted, ordered, metrics, {"r1": None}, "batch1"
+    )
+    assert SpyCache.writes == 0  # NO cache write under the kill-switch
+    assert metrics.valid == 1  # but accounting preserved

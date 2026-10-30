@@ -634,7 +634,11 @@ class GrokClient:
                     failed_ids.append(our_id)
                     continue
                 metrics.valid += 1
-                self._get_cache(ct)[our_id] = self._sanitize_content(br.content)
+                # Respect the global kill-switch on the batch path too: with GROK_CACHE_DISABLED
+                # set, a batch result must NOT repopulate the cache (metrics/detail accounting is
+                # unaffected — only the persisted write is suppressed).
+                if not _cache_globally_disabled():
+                    self._get_cache(ct)[our_id] = self._sanitize_content(br.content)
                 metrics.add_detail(
                     RequestDetail(
                         request_id=our_id,
