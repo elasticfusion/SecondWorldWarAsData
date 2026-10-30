@@ -10,6 +10,16 @@ The curated list of what is still OPEN. Each points to its detail section lower 
 Everything not listed here is DONE (see §7 COMPLETED + the dated review sections).
 
 ### HIGH
+- **[HIGH · provenance/design] Stop trusting Grok to TRANSCRIBE paragraph numbers — resolve fulltext DETERMINISTICALLY (owner 2026-10-30).**
+  Today the events extractor feeds Grok `Paragraph_1..Paragraph_N` and asks it to echo back the paragraph_numbers per
+  sub-event; we then LOOK UP fulltext by those numbers. Asking an LLM to copy identifiers we already own is a mechanical
+  transcription task it does badly (hallucinated sequential 264..1700 ranges -> no_resolved_paragraphs -> every entity
+  extractor starves; the recurring paragraph_numbers fingerprint). This VIOLATES the codebase's own 'never trust the LLM
+  for an identifier/key' rule that we already apply to PersonID/GroupID (minted server-side). PROPER FIX: the LLM returns
+  only the SEMANTIC grouping (e.g. a short verbatim quote / first+last sentence of each sub-event span); the CODE maps that
+  quote back to paragraph absolute_numbers deterministically (substring match against parsed text). The LLM never owns a
+  provenance key. Eliminates the starvation class entirely (not just detects it). INTERIM (shipped): _validate_paragraph_range
+  rejects+resubmits an events response whose paragraph_numbers are mostly out of [1..N] (band-aid; keep as defense-in-depth).
 - **[POLICY · provenance] Provenance-completeness stays NON-FATAL (owner 2026-10-30): escalate LOUD to Slack, do NOT
   fail_stop.** Rationale: many provenance misses are NON-DETERMINISTIC (LLM ULID variance) and a RE-RUN fixes them; a
   fail_stop would halt a book a retry would heal. Reserve hard failure for DETERMINISTIC causes (prompt/code bugs like the
