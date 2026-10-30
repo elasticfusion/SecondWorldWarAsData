@@ -2207,8 +2207,16 @@ def _extract_equipment_with_llm(
                 cache_key=_cache_key,
             )
 
-            if isinstance(equipment_list, dict) and "equipment" in equipment_list:
-                equipment_list = equipment_list["equipment"]
+            # The prompt schema (prompts/equipment.yaml) specifies the wrapper key "Equipment"
+            # (capital E) and the model returns it that way; older/other responses used lowercase
+            # "equipment". Accept EITHER — a case mismatch here silently discards the ENTIRE
+            # equipment list (dict falls through isinstance(list) -> None -> "No equipment
+            # extracted"), which is the XChannel-8 0-equipment-on-an-equipment-dense-chapter bug.
+            if isinstance(equipment_list, dict):
+                for _k in ("Equipment", "equipment"):
+                    if _k in equipment_list:
+                        equipment_list = equipment_list[_k]
+                        break
 
             if isinstance(equipment_list, list):
                 return _fix_invalid_ulids(equipment_list)
