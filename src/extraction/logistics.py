@@ -413,6 +413,50 @@ def _parse_logistics_response(
     return result
 
 
+def _normalize_logistics_shape(item: Dict[str, Any]) -> Dict[str, Any]:
+    """Map the prompt's emitted SHAPE onto the LogisticsExtraction model (XChannel-8 2026-10-30:
+    prompts/logistics.yaml emits impacted_* as lists of OBJECTS ([{"name":..}]) and uses field names
+    date_string/weather_impact/paragraph_numbers, but the model wants impacted_* as List[str] and
+    fields date_start/weather/paragraphs — so EVERY item failed validation (dropped=4 kept=0). This
+    coerces the shape in place-safe (returns a new dict) so items validate. Resilient to either shape.
+    """
+    if not isinstance(item, dict):
+        return item
+    out = dict(item)
+
+    def _names(v):
+        # [{"name": "VII Corps", ...}] or ["VII Corps"] -> ["VII Corps"]
+        if isinstance(v, list):
+            names = []
+            for x in v:
+                if isinstance(x, dict):
+                    nm = x.get("name") or x.get("unit") or x.get("place")
+                    if nm:
+                        names.append(str(nm))
+                elif x:
+                    names.append(str(x))
+            return names
+        return v
+
+    for fld in (
+        "impacted_organizations",
+        "impacted_people",
+        "impacted_places",
+        "impacted_equipment",
+    ):
+        if fld in out:
+            out[fld] = _names(out[fld])
+    # field-name aliases the prompt uses vs the model's names (keep model's if already present)
+    for src_k, dst_k in (
+        ("date_string", "date_start"),
+        ("weather_impact", "weather"),
+        ("paragraph_numbers", "paragraphs"),
+    ):
+        if src_k in out and not out.get(dst_k):
+            out[dst_k] = out.pop(src_k)
+    return out
+
+
 def _coerce_logistics_item(
     item: Dict[str, Any], exc: Exception
 ) -> Optional[LogisticsExtraction]:
@@ -448,6 +492,9 @@ def _validate_logistics_item(item: Any) -> Optional[LogisticsExtraction]:
     LogisticsExtraction or None if unusable."""
     if not isinstance(item, dict):
         return None
+    item = _normalize_logistics_shape(
+        item
+    )  # map prompt shape -> model shape (impacted_* names, field aliases)
     # Uniform floor: an empty description is not a usable logistics record.
     if not str(item.get("description") or "").strip():
         return None
