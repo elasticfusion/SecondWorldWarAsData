@@ -10,16 +10,6 @@ The curated list of what is still OPEN. Each points to its detail section lower 
 Everything not listed here is DONE (see §7 COMPLETED + the dated review sections).
 
 ### HIGH
-- **[HIGH · provenance · PROMPT BUG] people.yaml schema example hard-codes LITERAL placeholders "event_id"/"sub_event_id"**
-  (lines ~79-91) instead of the braced {event_id}/{sub_event_id} that render_prompt substitutes. The INSTRUCTION (l.37-38)
-  says 'use "{sub_event_id}"' (substituted correctly) but the worked JSON EXAMPLE shows "Sub-eventID": "sub_event_id"
-  (bare literal, NOT substituted) — models weight the example, so they echo the literal token or hallucinate -> invalid
-  ULID -> null Sub_eventID on mentions -> provenance chain (record->sub-event->source_section->paragraph) BREAKS. This is
-  DETERMINISTIC (a re-run won't fix it; the bad example persists). Also a field-spelling inconsistency in the same file:
-  Sub_eventID (underscore, l.80) vs Sub-eventID (hyphen, l.91). FIX: make the schema example use {event_id}/{sub_event_id}
-  so it renders real IDs consistent with the instruction; unify the field spelling; AND prefer the server-side seid stamp
-  (batch_parallel.py:456 already does '"Sub_eventID": seid') over trusting the LLM echo in the people mention path. AUDIT
-  all entity prompts for the same bare-literal-placeholder defect (see counts logged 2026-10-30). PROVENANCE = #1 GOAL.
 - **[POLICY · provenance] Provenance-completeness stays NON-FATAL (owner 2026-10-30): escalate LOUD to Slack, do NOT
   fail_stop.** Rationale: many provenance misses are NON-DETERMINISTIC (LLM ULID variance) and a RE-RUN fixes them; a
   fail_stop would halt a book a retry would heal. Reserve hard failure for DETERMINISTIC causes (prompt/code bugs like the
@@ -44,9 +34,7 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
 - **[HIGH · data-loss] OPTIONAL-entity persistence bugs — DIFFERENTIATED root causes (XChannel-8 overnight 2026-10-30).**
   Investigation split the earlier conflated 'count->persist=0' into distinct bugs (places is SEPARATE — see the batch
   positional-mapping bug above):
-    - **supplemental (write crash):** extracted 6 materials then FileNotFoundError writing output/bibliography/review_queue.json
-      because the parent dir output/bibliography/ was never created on a fresh run (`optional.persisted status=error [Errno 2]`).
-      FIX: mkdir(parents=True, exist_ok=True) on the bibliography dir before the write. 6 materials lost per event.
+    - **supplemental (write crash): ✅ FIXED (PR #635)** — mkdir(parents=True) the bibliography dir before the review_queue write.
     - **logistics (100% schema-drop):** Grok returned items but ALL dropped at validation
       (`logistics.items_dropped dropped=4 received=4 kept=0`, `chunk.summary items_in=8 results_out=0`, yield.logistics
       regression). Same CLASS as the groups/equipment field-mismatch (#634): investigate the logistics item schema vs
@@ -862,6 +850,12 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
   prompt was de-scoped to any-theater — drop the residual era label for full consistency.
 
 ## 7. COMPLETED
+
+- **✅ Provenance restored (PRs #636, #635, #634 — 2026-10-30):** people/places prompt examples now render REAL ULIDs
+  (braced {event_id}/{sub_event_id}; render_prompt substitutes structural placeholders inside the injected schema);
+  Phase-3 downloads content/<book>/ so event_provenance stamp resolves SourceSectionID; supplemental review_queue
+  write creates its parent dir; groups persist group_name + equipment coerces name->common_name. (Validation re-run
+  in flight.)
 
 ### §1.0d WARNING — batch count-mismatch retry (PR #529, 2026-10-21)
 A batch result count-mismatch marked all requests failed, then the 20%-systemic guard skipped retry -> whole batch zeroed. _map_ordered_results now returns (failed_ids, count_mismatch) and _retry_failed_batch's force=True bypasses the guard on a mismatch (it's a pagination/envelope problem, not model failure). Genuine-systemic guard unchanged for force=False. +3 tests. Gate PASS (2581 tests, bandit 0H/0M); both reviewers PASS. Follow-up: the AWS --retrieve-only path (ecs_entrypoint._map_batch_results_by_index) has the same class (SKIP_RETRY=1).
