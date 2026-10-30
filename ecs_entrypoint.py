@@ -1289,6 +1289,37 @@ def _pending_batches_for_book() -> int:
         return 0
 
 
+def _download_phase3_provenance_inputs(s3, book_name: str) -> None:
+    """PROVENANCE (#1 project goal): pull the book's content/ tree (events + source_section records)
+    to local so the Phase-3 event_provenance stamp can build the EventID->SourceSectionID index and
+    stamp a resolvable SourceSectionID onto every event + sub-event. Without this the stamp globs an
+    empty local tree -> `event_provenance.stamp resolved=0 reason=no_source_sections` and extracted
+    records cannot be traced to their source paragraph (XChannel-8 2026-10-30). Book token is
+    validated (traversal-safe); fail-safe (missing prefix -> 0 files)."""
+    import re as _re_pv
+
+    if not (
+        book_name
+        and _re_pv.fullmatch(r"[A-Za-z0-9._-]+", book_name)
+        and ".." not in book_name
+    ):
+        return
+    try:
+        n = s3_sync_down(f"output/content/{book_name}/", WORKDIR)
+        logger.info(
+            "Phase 3 provenance inputs: downloaded %d content/source_section file(s) for %s "
+            "(enables SourceSectionID stamping)",
+            n,
+            book_name,
+        )
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - never block Phase 3 on the provenance pre-fetch
+        logger.warning(
+            "Phase 3 provenance input download failed for %s: %s", book_name, e
+        )
+
+
 def _download_phase3_from_s3() -> None:
     """Fallback: download entity files from S3 for Phase 3."""
     # Drain/ordering barrier: wait for the Phase-2 dedup/reconcile step to finish PUBLISHING the
@@ -1334,6 +1365,7 @@ def _download_phase3_from_s3() -> None:
                 _download_s3_file(s3, key)
             total += len(subdir_files)
         logger.info("Downloaded %d entity files (scoped to %s)", total, book_name)
+        _download_phase3_provenance_inputs(s3, book_name)
         _observe_bibliography_download_coverage(s3, barrier_status)
     else:
         for subdir in entity_dirs:
