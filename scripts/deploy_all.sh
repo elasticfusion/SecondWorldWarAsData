@@ -193,6 +193,9 @@ AV_IMAGE="$ECR_REPO/wwii-clamav:latest"
 TEMPLATE_BUCKET="wwii-pipeline-deploy"
 ENV="dev"
 EMAIL="dchristian@cirrusnine.com"
+# Start-of-deploy epoch (minus a 120s skew margin) for the post-push image-freshness assertion —
+# the pipeline image MUST be pushed AFTER this, else a silent no-push left a stale image deployed.
+DEPLOY_START_EPOCH=$(( $(date +%s) - 120 ))
 
 # Preflight: warn (or fail, if STRICT_COMPONENTS=1) when vendored components/base images are
 # stale vs upstream — catches the kind of drift that broke OpenSERP (78 commits behind).
@@ -214,7 +217,16 @@ echo "  2) cost-optimized    — everything batched, cheap models for light task
 echo "  3) performance       — live calls, max concurrency, fastest"
 echo "  4) review-all-data   — force reprocess everything (expensive)"
 echo "  5) keep current      — don't change config.yaml"
-read -p "  Profile [1-5, default=5]: " -r profile_choice
+# Non-interactive safe: honor DEPLOY_PROFILE env; else prompt only if a TTY is attached; else
+# HARD-FAIL (a silent default in a piped/CI run is how a deploy half-runs undetected).
+if [ -n "${DEPLOY_PROFILE:-}" ]; then
+    profile_choice="$DEPLOY_PROFILE"; echo "  Profile (env DEPLOY_PROFILE): $profile_choice"
+elif [ -t 0 ]; then
+    read -p "  Profile [1-5, default=5]: " -r profile_choice
+else
+    echo "  ✗ No TTY and DEPLOY_PROFILE unset — refusing to guess a config profile in a"
+    echo "    non-interactive deploy (set DEPLOY_PROFILE=1..5). Hard stop."; exit 1
+fi
 case "$profile_choice" in
     1) cp config.balanced.yaml config.yaml && echo "  → balanced" ;;
     2) cp config.cost-optimized.yaml config.yaml && echo "  → cost-optimized" ;;
@@ -230,13 +242,24 @@ if [ -n "$TASKS" ] && [ "$TASKS" != "None" ]; then
     echo "  WARNING: Running tasks detected!"
     echo "  Stopping them will lose any in-progress batch results."
     echo "  Tasks: $TASKS"
-    read -p "  Continue? (y/N) " -r confirm
+    # Non-interactive safe: DEPLOY_STOP_TASKS=yes authorizes; TTY prompts; else HARD-FAIL (do NOT
+    # silently abort AFTER the QA/build steps may have mutated state — and do NOT silently proceed).
+    if [ "${DEPLOY_STOP_TASKS:-}" = "yes" ]; then
+        confirm="y"; echo "  (DEPLOY_STOP_TASKS=yes — stopping)"
+    elif [ -t 0 ]; then
+        read -p "  Continue? (y/N) " -r confirm
+    else
+        echo "  ✗ No TTY and DEPLOY_STOP_TASKS unset — a task is running and this deploy would need"
+        echo "    to stop it. Refusing to decide non-interactively (set DEPLOY_STOP_TASKS=yes to"
+        echo "    authorize, or wait for the task). Hard stop."; exit 1
+    fi
     if [ "$confirm" != "y" ]; then
         echo "  Aborted. Wait for tasks to finish."
         exit 1
     fi
     for task in $TASKS; do
-        aws ecs stop-task --cluster $CLUSTER --task $task --region $REGION --no-cli-pager > /dev/null
+        aws ecs stop-task --cluster $CLUSTER --task $task --region $REGION --no-cli-pager > /dev/null \
+            || { echo "  ✗ stop-task failed for $task — hard stop"; exit 1; }
         echo "  Stopped: ${task##*/}"
     done
 fi
@@ -363,14 +386,25 @@ if command -v trivy &>/dev/null; then
 else
   # No Trivy: build+push but gate on pip-audit instead (requirements-level).
   ecr_login "$ECR_REPO"
-  docker build --no-cache --progress=plain -t wwii-pipeline .
+  docker build --no-cache --progress=plain -t wwii-pipeline . \
+    || { echo "  ✗ docker build FAILED — hard stop"; exit 1; }
   echo "  Trivy not installed — falling back to pip-audit"
   pip-audit -r requirements.txt --severity high 2>&1 | tail -10 || { echo "  ✗ pip-audit found vulnerabilities — aborting deploy"; exit 1; }
   echo "  pip-audit: OK"
   docker tag wwii-pipeline:latest $PIPELINE_IMAGE
-  docker push $PIPELINE_IMAGE
+  docker push $PIPELINE_IMAGE || { echo "  ✗ docker push FAILED — hard stop"; exit 1; }
 fi
-echo "  Pushed: $(aws ecr describe-images --repository-name wwii-pipeline --region $REGION --image-ids imageTag=latest --query 'imageDetails[0].imagePushedAt' --output text)"
+# HARD freshness assertion: the pipeline image MUST have been pushed during THIS run. A silent
+# no-push (e.g. a swallowed build/push failure) previously left a STALE image deployed undetected
+# (2026-10-30). Fail loud if the ECR pushedAt is not newer than this deploy's start.
+_pushed_at=$(aws ecr describe-images --repository-name wwii-pipeline --region $REGION --image-ids imageTag=latest --query 'imageDetails[0].imagePushedAt' --output text 2>/dev/null)
+echo "  Pushed: $_pushed_at"
+_pushed_epoch=$(date -d "$_pushed_at" +%s 2>/dev/null || echo 0)
+if [ "$_pushed_epoch" -lt "$DEPLOY_START_EPOCH" ]; then
+  echo "  ✗ wwii-pipeline:latest pushedAt ($_pushed_at) is OLDER than this deploy's start — the image"
+  echo "    did NOT get pushed this run (stale image would be deployed). Hard stop."; exit 1
+fi
+echo "  ✓ image freshness verified (pushed during this deploy)"
 
 echo ""
 echo "=== 4b. Optional separate images (video, clamav) ==="
@@ -401,12 +435,15 @@ if [[ "$STACK_STATUS" == *"IN_PROGRESS"* ]]; then
     exit 1
 fi
 echo "  Stack status: $STACK_STATUS"
-aws s3 sync cloudformation/ s3://$TEMPLATE_BUCKET/cloudformation/ --region $REGION
-python3 scripts/deploy_aws.py deploy --env $ENV --region $REGION --template-bucket $TEMPLATE_BUCKET --pipeline-image $PIPELINE_IMAGE --openserp-image $OPENSERP_IMAGE $VIDEO_ARG $AV_ARG --notification-email $EMAIL
+aws s3 sync cloudformation/ s3://$TEMPLATE_BUCKET/cloudformation/ --region $REGION \
+    || { echo "  ✗ cloudformation/ S3 sync failed — hard stop"; exit 1; }
+python3 scripts/deploy_aws.py deploy --env $ENV --region $REGION --template-bucket $TEMPLATE_BUCKET --pipeline-image $PIPELINE_IMAGE --openserp-image $OPENSERP_IMAGE $VIDEO_ARG $AV_ARG --notification-email $EMAIL \
+    || { echo "  ✗ CloudFormation deploy (deploy_aws.py) FAILED — hard stop (expected infra did not deploy)"; exit 1; }
 
 echo ""
 echo "=== 6. Updating Lambda code ==="
-bash scripts/update_lambdas.sh
+bash scripts/update_lambdas.sh \
+    || { echo "  ✗ Lambda update (update_lambdas.sh) FAILED — hard stop (expected lambdas did not deploy)"; exit 1; }
 
 echo ""
 echo "=== 7. Fixing auth ==="
