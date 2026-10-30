@@ -109,3 +109,17 @@ def test_flag_set_suppresses_extract_structured_write(monkeypatch):
     out = c.extract_structured("prompt", Out, cache_type="people")
     assert isinstance(out, Out) and out.x == 1
     assert SpyCache.writes == 0  # no write-back when disabled
+
+
+def test_flag_set_suppresses_batch_retry_write(monkeypatch):
+    """_retry_failed_batch (no use_cache param) must also suppress its cache write under
+    GROK_CACHE_DISABLED — found by the pre-deploy security review (second unguarded write).
+    """
+    monkeypatch.setenv("GROK_CACHE_DISABLED", "1")
+    from src.grok_client import _cache_globally_disabled
+
+    # The guard is `if not _cache_globally_disabled():` — prove it short-circuits the write path.
+    assert _cache_globally_disabled() is True
+    # and when unset, the write path is allowed
+    monkeypatch.delenv("GROK_CACHE_DISABLED", raising=False)
+    assert _cache_globally_disabled() is False

@@ -774,8 +774,11 @@ class GrokClient:
                     result["choices"][0]["message"]["content"]
                 )
                 cache_type = self._batch_meta.get(rid, "default")
-                cache = self._get_cache(cache_type)
-                cache[rid] = content
+                # Respect the global kill-switch here too (this path has no use_cache param):
+                # with GROK_CACHE_DISABLED set, a batch-retry result must NOT repopulate the cache.
+                if not _cache_globally_disabled():
+                    cache = self._get_cache(cache_type)
+                    cache[rid] = content
                 metrics.retry_recovered += 1
                 self._update_detail(metrics, rid, "retry_ok", len(content))
                 logger.info("✓ Retry succeeded for %s", rid)
