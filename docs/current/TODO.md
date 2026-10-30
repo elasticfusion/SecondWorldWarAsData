@@ -250,6 +250,10 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   within N lines or an explicit `# OBSERV-EXEMPT: <reason>`.
 
 ### LOW
+- **[LOW · sec-hygiene] Upgrade Trivy 0.71.0 -> 0.76.1** on the deploy host — the image scanner engine is 5 minor versions
+  behind (DB auto-updates, engine/detection does not). deploy_all.sh already warns on this; just bump the installed binary.
+- **[LOW · sec-hygiene] pylint CVE-2026-114608: FIXED by bumping requirements-ci.txt pylint 4.0.5 -> 4.0.9** (the only
+  waived CVE; CI-tooling-only, NOT in the runtime image — Trivy on the image = 0 findings). Clears the pip-audit waiver.
 - **[LOW · investigate] Is `config/domain_blacklist.yaml` blacklist still HONORED by OpenSERP?**
 - **[LOW · dep-advisory] pylint 4.0.5 → 4.0.9** (CVE-2026-114608); pip-audit — not run in CI.
 - **[LOW · security-hardening] `_download_s3_file` path-traversal containment** (ecs_entrypoint).
