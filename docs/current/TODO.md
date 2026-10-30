@@ -16,6 +16,9 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   one above). Action: provenance_integrity enforcement -> wire the SNS/Slack alert (provenance.alert already emits; ensure
   it reaches the notify topic) + a runbook: on a provenance alert, first RE-RUN; if it persists across runs, it's
   deterministic -> hunt the prompt/code bug.
+  **STATUS 2026-10-30: Slack escalation is ALREADY LIVE** — provenance_integrity._alert publishes to
+  NOTIFICATION_TOPIC_ARN; verified forwarded ('Forwarded to Slack: :warning: DATA QUALITY — provenance anomalies' at
+  22:51/23:24/00:19/08:05). Non-fatal confirmed. Remaining: write the operator runbook doc.
 - **[HIGH · data-loss · BATCH MODE] Batch places (and likely any entity) silently dropped by the positional result-mapping desync.**
   Overnight batch run (XChannel-8 2026-10-30): places persisted 0 while SYNC mode got 96. EVIDENCE: the cached batch
   places response is VALID JSON with 8 sub-events x 119 place objects (Grok extracted them fine); yet 0 persisted AND
