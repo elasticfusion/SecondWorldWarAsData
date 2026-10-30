@@ -40,3 +40,15 @@ def test_rehydrate_scored_entities_syncs_all_five_dirs():
 def test_rehydrate_is_fail_safe_on_empty():
     with mock.patch.object(EE, "s3_sync_down", lambda *a: 0):
         assert EE._rehydrate_scored_entities() == 0
+
+
+def test_malicious_book_name_not_synced_for_content():
+    """A traversal/garbage BOOK_NAME must NOT produce a content/ sync (regex-gated)."""
+    calls = []
+    with (
+        mock.patch.dict(os.environ, {"BOOK_NAME": "../evil"}),
+        mock.patch.object(EE, "s3_sync_down", lambda p, _w: calls.append(p) or 0),
+    ):
+        EE._rehydrate_scored_entities()
+    # the 5 entity dirs sync, but NO content/ key for the malicious book
+    assert not any(c.startswith("output/content/") for c in calls)
