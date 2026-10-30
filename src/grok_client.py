@@ -1977,7 +1977,10 @@ class GrokClient:
         # Validate and parse with Pydantic
         parsed = schema.model_validate(json_response)
 
-        # Cache the result
-        cache[cache_key] = json.dumps(parsed.model_dump())
+        # Cache the result (respect use_cache so GROK_CACHE_DISABLED suppresses writes too —
+        # the read above is already gated; an unconditional write here would repopulate a cache
+        # we were explicitly told not to trust).
+        if use_cache:
+            cache[cache_key] = json.dumps(parsed.model_dump())
 
         return parsed

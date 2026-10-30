@@ -77,3 +77,35 @@ def test_flag_set_suppresses_read_and_write(monkeypatch):
     assert out == "FRESH_FROM_API"  # did NOT return the stale cached value
     assert c._call_api.called  # hit the API
     assert SpyCache.writes == 0  # did NOT write back to cache
+
+
+def test_flag_set_suppresses_extract_structured_write(monkeypatch):
+    """extract_structured must ALSO suppress its cache write when the flag is set
+    (it handles caching itself; the write was previously unconditional — MEDIUM sec finding).
+    """
+    monkeypatch.setenv("GROK_CACHE_DISABLED", "1")
+    from unittest.mock import MagicMock
+    import threading
+    from pydantic import BaseModel
+    from src.grok_client import GrokClient
+
+    class Out(BaseModel):
+        x: int
+
+    c = GrokClient.__new__(GrokClient)
+
+    class SpyCache(dict):
+        writes = 0
+
+        def __setitem__(self, k, v):
+            SpyCache.writes += 1
+            dict.__setitem__(self, k, v)
+
+    sc = SpyCache()
+    c._get_cache = MagicMock(return_value=sc)
+    c._get_model = MagicMock(return_value="grok-4.3")
+    c._make_cache_key = MagicMock(return_value="K")
+    c.extract_json = MagicMock(return_value={"x": 1})
+    out = c.extract_structured("prompt", Out, cache_type="people")
+    assert isinstance(out, Out) and out.x == 1
+    assert SpyCache.writes == 0  # no write-back when disabled
