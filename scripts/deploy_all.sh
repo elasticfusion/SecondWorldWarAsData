@@ -380,8 +380,8 @@ if command -v trivy &>/dev/null; then
   # a stale engine misses newer detection logic even though the vuln DB auto-updates. Report the
   # current-vs-latest explicitly. Default: loud WARN (a GitHub-API hiccup must not block a deploy).
   # STRICT_TRIVY_VERSION=1 turns a confirmed out-of-date engine into a HARD STOP.
-  TRIVY_CURRENT=$(trivy --version 2>/dev/null | head -1 | grep -oP '\d+\.\d+\.\d+')
-  TRIVY_LATEST=$(curl -sf https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep -oP '"tag_name":\s*"v\K[^"]+' 2>/dev/null)
+  TRIVY_CURRENT=$(trivy --version 2>/dev/null | head -1 | grep -oP '\d+\.\d+\.\d+') || true  # grep no-match must not trip set -e
+  TRIVY_LATEST=$(curl -sf https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep -oP '"tag_name":\s*"v\K[^"]+' 2>/dev/null) || true  # offline/API-down -> empty, handled below (not a set -e abort)
   if [ -z "$TRIVY_LATEST" ]; then
     echo "  ⚠ Trivy version check: could not reach GitHub releases API — cannot verify currency"
     echo "    (installed $TRIVY_CURRENT). Proceeding with the scan; set STRICT_TRIVY_VERSION=1 to require a check."
