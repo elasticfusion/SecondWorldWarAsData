@@ -251,7 +251,8 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
 
 ### LOW
 - **[LOW · sec-hygiene] Upgrade Trivy 0.71.0 -> 0.76.1** on the deploy host — the image scanner engine is 5 minor versions
-  behind (DB auto-updates, engine/detection does not). deploy_all.sh already warns on this; just bump the installed binary.
+  behind (DB auto-updates, engine/detection does not). deploy_all.sh now CHECKS this (loud current-vs-latest; hard-fail
+  under STRICT_TRIVY_VERSION=1); remaining action = bump the installed binary on the deploy host.
 - **[LOW · sec-hygiene] pylint CVE-2026-114608: FIXED by bumping requirements-ci.txt pylint 4.0.5 -> 4.0.9** (the only
   waived CVE; CI-tooling-only, NOT in the runtime image — Trivy on the image = 0 findings). Clears the pip-audit waiver.
 - **[LOW · investigate] Is `config/domain_blacklist.yaml` blacklist still HONORED by OpenSERP?**

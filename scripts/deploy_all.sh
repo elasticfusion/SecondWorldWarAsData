@@ -376,11 +376,25 @@ fi
 echo ""
 echo "=== 4. Building and pushing container ==="
 if command -v trivy &>/dev/null; then
-  # Opportunistic version hint (non-blocking).
+  # Trivy VERSION CHECK (owner 2026-10-30): the image scanner engine must be reasonably current —
+  # a stale engine misses newer detection logic even though the vuln DB auto-updates. Report the
+  # current-vs-latest explicitly. Default: loud WARN (a GitHub-API hiccup must not block a deploy).
+  # STRICT_TRIVY_VERSION=1 turns a confirmed out-of-date engine into a HARD STOP.
   TRIVY_CURRENT=$(trivy --version 2>/dev/null | head -1 | grep -oP '\d+\.\d+\.\d+')
   TRIVY_LATEST=$(curl -sf https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep -oP '"tag_name":\s*"v\K[^"]+' 2>/dev/null)
-  if [ -n "$TRIVY_LATEST" ] && [ "$TRIVY_CURRENT" != "$TRIVY_LATEST" ]; then
-    echo "  ⚠ Trivy update available: $TRIVY_CURRENT → $TRIVY_LATEST"
+  if [ -z "$TRIVY_LATEST" ]; then
+    echo "  ⚠ Trivy version check: could not reach GitHub releases API — cannot verify currency"
+    echo "    (installed $TRIVY_CURRENT). Proceeding with the scan; set STRICT_TRIVY_VERSION=1 to require a check."
+    if [ "${STRICT_TRIVY_VERSION:-0}" = "1" ]; then
+      echo "  ✗ STRICT_TRIVY_VERSION=1 and the latest version is unknown — hard stop."; exit 1
+    fi
+  elif [ "$TRIVY_CURRENT" != "$TRIVY_LATEST" ]; then
+    echo "  ⚠ Trivy OUT OF DATE: installed $TRIVY_CURRENT, latest $TRIVY_LATEST — upgrade the scanner."
+    if [ "${STRICT_TRIVY_VERSION:-0}" = "1" ]; then
+      echo "  ✗ STRICT_TRIVY_VERSION=1 — refusing to scan with a stale Trivy engine. Hard stop."; exit 1
+    fi
+  else
+    echo "  ✓ Trivy up to date ($TRIVY_CURRENT)"
   fi
   build_scan_push . wwii-pipeline wwii-pipeline "$PIPELINE_IMAGE" 1
 else
