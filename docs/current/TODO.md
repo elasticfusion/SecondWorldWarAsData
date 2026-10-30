@@ -177,6 +177,15 @@ Everything not listed here is DONE (see §7 COMPLETED + the dated review section
   push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
 
 ### MED
+- **[MED · observability-precision] download.file_missing cries wolf on expected-absent TRACKING files.** On every clean-slate/
+  first run, Phase-2 download lists then 404s on index.json / .processed_events.json / manifests/run_scope/<book>.json — all
+  TRACKING/index files that legitimately don't exist yet — and each fires OBSERV download.file_missing status=ERROR ->
+  Slack. Non-fatal (run proceeds, only the parsed+event files matter) but noisy + indistinguishable from the REAL signal
+  the OBSERV was built for: an ENTITY/PARSED file that vanished between list and get (true corpus-shortening data loss).
+  FIX (ecs_entrypoint._download_s3_file #15): classify the key — an expected-absent tracking file (basename in
+  {index.json, .processed_events.json, not_duplicates.json, not_related.json} or under manifests/run_scope/) -> status=info
+  (or debug), NOT error; reserve status=error (loud Slack) for *-parsed.json / *-event.json / entity record keys. Keeps the
+  real data-loss alert sharp and stops the clean-slate false alarms.
 - **[MED · notification] Dedup "notify on zero duplicates" reaches no inbox — silent on a clean run.**
   Found in the XChannel-8 E2E (2026-10-28). `_notify_dedup_gate` (ecs_entrypoint) ALREADY notifies on BOTH
   outcomes — subject "dedup auto-proceed" for zero-dup clean runs, "dedup review needed" when blocked — and
