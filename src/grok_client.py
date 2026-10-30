@@ -582,6 +582,13 @@ class GrokClient:
         so ALL are marked failed — but ``count_mismatch=True`` signals the caller to FORCE a
         real-time retry (bypassing the 20%-systemic guard): a count mismatch is an envelope/
         pagination problem, NOT the per-request model failure the guard is meant to suppress.
+
+        Even when counts MATCH, a positional slot can map to an empty/too-short result while that
+        entity's real response sits elsewhere (XChannel-8 2026-10-30: places=0 persisted while a
+        valid 119-place response was uncorrelated). We detect that desync signature — an empty slot
+        in a batch where SIBLINGS returned substantive content — add the entity to failed_ids to
+        force a real-time retry, and emit a LOUD observe_error('batch','result_unmapped') instead
+        of silently persisting 0. An ALL-empty batch is left as-is (genuine, no false retry).
         """
         from src.utils.batch_api import RequestDetail
 
@@ -596,10 +603,22 @@ class GrokClient:
             metrics.empty += len(submitted)
             return [rid for rid, _ in submitted], True
 
+        # Positional-map desync guard: the xAI results API does NOT echo our custom_id, so a
+        # misaligned/empty slot can silently persist 0 for a whole entity while a VALID response
+        # for it sits elsewhere in the batch (XChannel-8 2026-10-30). We can't re-correlate by id,
+        # but we CAN detect the signature — an empty/too-short result in a batch where SIBLINGS
+        # returned substantive content — and force a real-time retry for just that entity instead
+        # of trusting the empty positional map. An ALL-empty batch is left as-is (genuine).
+        any_substantive = any(self._is_substantive(br) for br in ordered)
+
         failed_ids: list = []
         for (our_id, cache_type), br in zip(submitted, ordered):
             ct = cache_type or "default"
             if br.status == "valid":
+                if any_substantive and not self._is_substantive(br):
+                    self._record_desync_drop(our_id, ct, br, metrics, RequestDetail)
+                    failed_ids.append(our_id)
+                    continue
                 metrics.valid += 1
                 self._get_cache(ct)[our_id] = self._sanitize_content(br.content)
                 metrics.add_detail(
@@ -617,6 +636,41 @@ class GrokClient:
                 )
                 failed_ids.append(our_id)
         return failed_ids, False
+
+    @staticmethod
+    def _is_substantive(br) -> bool:
+        """True if a batch result carries real entity content — delegates to the single source of
+        truth ``BatchResult.is_substantive`` (``valid`` and content strips to > 2 chars). A
+        ``valid`` but empty/too-short slot either genuinely held no entities OR is a positional-map
+        desync artefact; the caller distinguishes the two by whether any sibling IS substantive.
+        """
+        return bool(getattr(br, "is_substantive", False))
+
+    def _record_desync_drop(self, our_id, ct, br, metrics, RequestDetail) -> None:
+        """Account a positional-map desync drop: a ``valid`` but empty/too-short slot in a batch
+        where siblings succeeded. Count it, emit a LOUD canonical observe_error so the silent
+        whole-entity data loss is a greppable anomaly, and record the RequestDetail. The caller
+        adds ``our_id`` to failed_ids to FORCE a real-time retry for this entity."""
+        metrics.empty += 1
+        observe_error(
+            "batch",
+            "result_unmapped",
+            request_id=our_id,
+            cache_type=ct,
+            note=(
+                "positional map produced empty result for this entity while siblings "
+                "succeeded — forcing real-time retry"
+            ),
+        )
+        metrics.add_detail(
+            RequestDetail(
+                request_id=our_id,
+                cache_type=ct,
+                status="empty",
+                finish_reason=br.finish_reason,
+                content_length=len(br.content or ""),
+            )
+        )
 
     def _record_failed_result(
         self, our_id, ct, br, metrics, requests_by_id, RequestDetail

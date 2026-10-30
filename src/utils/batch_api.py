@@ -64,6 +64,20 @@ class BatchResult:
             return "truncated"
         return "valid"
 
+    @property
+    def is_substantive(self) -> bool:
+        """True if this result is ``valid`` AND carries real entity content.
+
+        The xAI results API does not echo our ``custom_id``, so results are mapped to our cache
+        keys purely by POSITION. A ``valid`` result whose content strips to <= 2 chars (``{}`` /
+        ``[]`` / empty) is NOT substantive — it either genuinely held no entities OR is a
+        positional-map desync artefact that would silently persist 0 for a whole entity. Callers
+        distinguish the two by whether any sibling in the same batch IS substantive (a MIX of
+        empty+substantive is the desync signature; an all-empty batch is likely genuine). This is
+        the single source of truth for that 'substantive' test (see grok_client._map_ordered_results).
+        """
+        return self.status == "valid" and len((self.content or "").strip()) > 2
+
 
 @dataclass
 class RequestDetail:
