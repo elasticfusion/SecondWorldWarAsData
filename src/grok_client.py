@@ -634,7 +634,11 @@ class GrokClient:
                     failed_ids.append(our_id)
                     continue
                 metrics.valid += 1
-                self._get_cache(ct)[our_id] = self._sanitize_content(br.content)
+                # Respect the global kill-switch on the batch path too: with GROK_CACHE_DISABLED
+                # set, a batch result must NOT repopulate the cache (metrics/detail accounting is
+                # unaffected — only the persisted write is suppressed).
+                if not _cache_globally_disabled():
+                    self._get_cache(ct)[our_id] = self._sanitize_content(br.content)
                 metrics.add_detail(
                     RequestDetail(
                         request_id=our_id,
@@ -774,8 +778,11 @@ class GrokClient:
                     result["choices"][0]["message"]["content"]
                 )
                 cache_type = self._batch_meta.get(rid, "default")
-                cache = self._get_cache(cache_type)
-                cache[rid] = content
+                # Respect the global kill-switch here too (this path has no use_cache param):
+                # with GROK_CACHE_DISABLED set, a batch-retry result must NOT repopulate the cache.
+                if not _cache_globally_disabled():
+                    cache = self._get_cache(cache_type)
+                    cache[rid] = content
                 metrics.retry_recovered += 1
                 self._update_detail(metrics, rid, "retry_ok", len(content))
                 logger.info("✓ Retry succeeded for %s", rid)
@@ -1977,7 +1984,10 @@ class GrokClient:
         # Validate and parse with Pydantic
         parsed = schema.model_validate(json_response)
 
-        # Cache the result
-        cache[cache_key] = json.dumps(parsed.model_dump())
+        # Cache the result (respect use_cache so GROK_CACHE_DISABLED suppresses writes too —
+        # the read above is already gated; an unconditional write here would repopulate a cache
+        # we were explicitly told not to trust).
+        if use_cache:
+            cache[cache_key] = json.dumps(parsed.model_dump())
 
         return parsed
