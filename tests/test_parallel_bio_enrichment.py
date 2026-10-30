@@ -347,3 +347,211 @@ def test_wikipedia_rate_limit_is_thread_safe_single_lock():
     EB._wikipedia_rate_limit()
     lock2 = EB.search_wikipedia._lock
     assert lock1 is lock2  # same shared lock object, not re-created per call
+
+
+# --------------------------------------------------------------------------- #
+# DIVERGENCE FIX (PR #640): an already-enriched-ON-DISK person is SKIPPED by the
+# PARALLEL path exactly like serial — no fetch, counted "skipped", and the
+# persisted content is BYTE-IDENTICAL to the serial path for the same input.
+#
+# Root cause fixed: the parallel pre-fetch used to gate _is_already_enriched on
+# the RAW pre-merge person (no on-disk bio) => FALSE => a redundant fetch whose
+# result _merge_bio_lists folded in => content could differ from serial (which
+# gates on merged = _merge_person(on_disk, person) => TRUE => skip, no fetch).
+# --------------------------------------------------------------------------- #
+
+_ENRICHED_ON_DISK = {
+    "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW",
+    "name": "Dwight Eisenhower",
+    "biographical_profile": {
+        "birth_date": "1890-10-14",
+        "biographical_details": "Supreme Allied Commander, AEF.",
+        "biography_sources": [
+            {
+                "source": "Grokipedia",
+                "confidence": 0.95,
+                "fields_sourced": ["birth_date"],
+            }
+        ],
+    },
+    "event_mentions": [
+        {
+            "MentionID": "01HX7YZABCDEFGHJKMNPQRSTV0",
+            "EventID": "01HX7YZABCDEFGHJKMNPQRSTV1",
+            "Sub_eventID": "01HX7YZABCDEFGHJKMNPQRSTV2",
+            "Event_Name": "Normandy",
+            "Sub-event_Name": "D-Day",
+            "role": "commander",
+        }
+    ],
+}
+
+
+def _raw_mention(sub_id):
+    return {
+        "MentionID": "01HX7YZABCDEFGHJKMNPQRSTV3",
+        "EventID": "01HX7YZABCDEFGHJKMNPQRSTV1",
+        "Sub_eventID": sub_id,
+        "Event_Name": "Normandy",
+        "Sub-event_Name": "D-Day",
+        "role": "commander",
+    }
+
+
+def _gated_fetch(fetch_log, lock):
+    """A fetch stand-in that honors the SAME gate as the real
+    enrich_person_from_sources: it skips an already-enriched record (returns False,
+    no mutation) and otherwise records a fetch + mutates in place. Used by BOTH the
+    serial and parallel runs so any divergence is the GATE/merge, not the fetch."""
+    from src.extraction.enrich_biographies import _is_already_enriched
+
+    def fetch(person, client):
+        if _is_already_enriched(person):
+            return False
+        with lock:
+            fetch_log.append(person.get("name"))
+        person["biographical_profile"] = {
+            "birth_date": "FRESH-1899",
+            "biographical_details": "freshly fetched",
+        }
+        person["enrichment_status"] = "enriched"
+        return True
+
+    return fetch
+
+
+def _run_extract_once(tmp_path, monkeypatch, parallel, fetch):
+    """Drive extract_people once over a single already-enriched-on-disk person,
+    returning (persisted_bytes, counts, fetched_names). ``parallel`` toggles the
+    config kill switch; everything else (input, on-disk record) is identical."""
+    import json
+
+    out = tmp_path / "out"
+    people_dir = out / "people"
+    people_dir.mkdir(parents=True)
+
+    # Seed the on-disk already-enriched record + index (what the serial path merges
+    # into and gates on). Plain JSON write keeps the test hermetic.
+    name_key = P._normalize_name(_ENRICHED_ON_DISK["name"])
+    filename = "eisenhower.json"
+    (people_dir / filename).write_text(json.dumps(_ENRICHED_ON_DISK))
+    (people_dir / "index.json").write_text(json.dumps({name_key: filename}))
+
+    # Event with ONE sub-event; extraction yields the SAME person (raw, no on-disk
+    # bio) that already exists on disk -> the update/merge path.
+    event = {
+        "Chapter": "Ch1",
+        "Event": {"EventID": "E1", "Sub-events": [{"Sub-eventID": "S1"}]},
+    }
+    event_file = tmp_path / "event.json"
+    event_file.write_text(json.dumps(event))
+
+    raw_person = {
+        "name": "Dwight Eisenhower",
+        "event_mentions": [_raw_mention("01HX7YZABCDEFGHJKMNPQRSTV9")],
+    }
+
+    monkeypatch.setattr(
+        P, "_extract_people_for_sub_event", lambda *a, **k: [dict(raw_person)]
+    )
+    monkeypatch.setattr(P, "_check_if_processed", lambda *a, **k: False)
+    monkeypatch.setattr(P, "_load_book_metadata", lambda *a, **k: ("b", "a", "s"))
+    monkeypatch.setattr(P, "_record_recall_gaps_safe", lambda *a, **k: None)
+    monkeypatch.setattr(P, "_mark_event_processed", lambda *a, **k: None)
+    monkeypatch.setattr(P, "observe_yield", lambda *a, **k: None)
+    monkeypatch.setattr(P, "warn_all_subevents_empty", lambda *a, **k: None)
+    # Deterministic id mint (the on-disk record already has a PersonID; merge keeps it).
+    monkeypatch.setattr(P, "_mint_person_ids", lambda person, pid: None)
+
+    # should_parallelize requires >1 person normally; force the gate purely on the
+    # kill switch so we can exercise the parallel path with a single already-enriched
+    # person (the thing we are regression-testing).
+    monkeypatch.setattr(
+        BP, "should_parallelize", lambda people, client, config: parallel
+    )
+
+    cfg = {
+        "concurrency": {
+            "max_enrichment_workers": 4,
+            "bio_enrichment_parallel": parallel,
+        }
+    }
+    import src.utils.config as cfgmod
+
+    monkeypatch.setattr(cfgmod, "load_config", lambda *a, **k: cfg)
+
+    import src.extraction.enrich_biographies as EB
+
+    monkeypatch.setattr(EB, "enrich_person_from_sources", fetch)
+
+    # Hermetic persist: replace the locked save with a plain JSON read-modify-write
+    # so no DynamoDB/S3 dual-write runs and the content is byte-comparable.
+    import contextlib
+
+    @contextlib.contextmanager
+    def fake_locked_json(filepath):
+        data = {}
+        if filepath.exists():
+            data = json.loads(filepath.read_text())
+
+        def save(new_data):
+            filepath.write_text(
+                json.dumps(new_data, indent=2, ensure_ascii=False, sort_keys=True)
+            )
+
+        yield data, save
+
+    import src.utils.file_lock as FL
+
+    monkeypatch.setattr(FL, "locked_json", fake_locked_json)
+    monkeypatch.setattr(
+        P,
+        "_save_person_file",
+        lambda pf, pdata: pf.write_text(
+            json.dumps(pdata, indent=2, ensure_ascii=False, sort_keys=True)
+        ),
+    )
+
+    P.extract_people(event_file, _FakeGrok(), out)
+
+    persisted_bytes = (people_dir / filename).read_text()
+    return persisted_bytes, dict(_counts()), fetch
+
+
+def test_already_enriched_on_disk_skipped_in_parallel_matches_serial(
+    tmp_path, monkeypatch
+):
+    """The blocking divergence regression: parallel must SKIP an already-enriched-on-disk
+    person (no fetch, counted skipped) and persist content byte-identical to serial."""
+    # --- SERIAL run (kill switch off) ---
+    serial_fetches = []
+    serial_fetch = _gated_fetch(serial_fetches, threading.Lock())
+    serial_bytes, serial_counts, _ = _run_extract_once(
+        tmp_path / "serial", monkeypatch, parallel=False, fetch=serial_fetch
+    )
+
+    # --- PARALLEL run (kill switch on), same input/on-disk record ---
+    parallel_fetches = []
+    parallel_fetch = _gated_fetch(parallel_fetches, threading.Lock())
+    parallel_bytes, parallel_counts, _ = _run_extract_once(
+        tmp_path / "parallel", monkeypatch, parallel=True, fetch=parallel_fetch
+    )
+
+    # No redundant fetch on EITHER path for the already-enriched person.
+    assert serial_fetches == [], "serial must not fetch an already-enriched person"
+    assert parallel_fetches == [], (
+        "PARALLEL must not redundantly fetch an already-enriched-on-disk person "
+        "(the PR #640 divergence)"
+    )
+
+    # Counts match: both count it total=1, skipped=1, enriched=0.
+    assert serial_counts["enriched"] == 0
+    assert serial_counts["skipped"] == 1
+    assert parallel_counts["enriched"] == serial_counts["enriched"]
+    assert parallel_counts["skipped"] == serial_counts["skipped"]
+    assert parallel_counts["total"] == serial_counts["total"]
+
+    # CONTENT byte-identical: the on-disk bio is preserved unchanged on both paths
+    # (no FRESH-1899 contamination from a redundant fetch+merge).
+    assert "FRESH-1899" not in parallel_bytes
+    assert parallel_bytes == serial_bytes

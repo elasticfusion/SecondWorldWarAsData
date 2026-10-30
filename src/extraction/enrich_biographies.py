@@ -40,6 +40,15 @@ def _source_award_citations(person_data: Dict[str, Any]) -> None:
 
     if os.getenv("AWARD_CITATIONS_ENABLED", "false").lower() != "true":
         return
+    # THREAD-SAFETY (PR #640): this runs inside the per-person bounded-parallel
+    # enrichment worker (bio_enrich_parallel.prefetch_enrichment). The award
+    # fetch/preserve below writes primary-source pages + error records to
+    # storage (local/S3) via _award_storage()/_persist_award_errors — that write
+    # path is NOT verified thread-safe under parallel workers. It is OFF by
+    # default (opt-in via AWARD_CITATIONS_ENABLED), so the default parallel path
+    # never hits it; if you enable it, either confirm the storage backend is
+    # concurrency-safe or set concurrency.bio_enrichment_parallel=false to force
+    # the serial path first. Do not enable both without that review.
     try:
         from src.enrichment.award_registry import make_selector
         from src.enrichment.award_sources import (

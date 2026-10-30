@@ -1,5 +1,6 @@
 """People extraction from event data."""
 
+import copy
 import json
 import logging
 import re
@@ -1301,7 +1302,81 @@ def _record_recall_gaps_safe(
         logger.debug("recall-gap review skipped for %s: %s", sub_event_id, e)
 
 
-def _maybe_prefetch_enrichment(collected: list, grok_client) -> bool:
+def _already_enriched_on_disk_view(person: dict, people_dir: Path, index: dict) -> bool:
+    """Return True iff ``person`` maps to an EXISTING on-disk record and the SAME
+    merged view the serial path enriches is already-enriched (so it must be SKIPPED
+    from the parallel pre-fetch, exactly like serial).
+
+    DIVERGENCE FIX (PR #640): the serial persist path enriches on
+    ``merged = _merge_person(existing_on_disk, person)`` (``_update_existing_person``),
+    so ``_is_already_enriched`` sees the on-disk ``biographical_profile`` and SKIPS
+    an already-enriched person (no fetch, counted ``skipped``). The parallel
+    pre-fetch, however, ran ``enrich_person_from_sources`` on the RAW freshly
+    extracted person (no on-disk bio yet — the merge happened later in the now-no-op
+    persist), so the gate saw NO profile => a redundant network fetch => the later
+    ``_merge_bio_lists`` folded new data in and the CONTENT could differ from serial.
+
+    This resolves each person against the people index exactly as
+    ``_process_person`` does (``_normalize_name`` -> index -> existing file), builds
+    the SAME merged view as ``_merge_person`` on a THROWAWAY copy (so the real
+    person dict and the serial persist's authoritative re-merge are untouched), and
+    returns whether that view is already-enriched. Evaluating the gate on the merged
+    view makes the parallel skip decision identical to serial — counts AND content
+    then match for both fresh-new and already-enriched-update cases.
+
+    Fail-safe: a per-person read/merge error is logged and treated as "not
+    already-enriched" (the person keeps its raw view and is fetched — the pre-fix
+    behavior for that one record) so pre-gating never aborts extraction.
+    """
+    from src.extraction.enrich_biographies import _is_already_enriched
+    from src.schemas.schema_contract import read_for_update
+
+    name = person.get("name")
+    if not name:
+        return False
+    existing_filename = index.get(_normalize_name(name))
+    if not existing_filename:
+        return False
+    person_file = people_dir / existing_filename
+    if not person_file.exists():
+        return False
+    try:
+        existing_person = _load_person_file(person_file)
+        existing_person, skip = read_for_update(
+            existing_person, SCHEMA_TARGET, logger, name
+        )
+        if skip:
+            return False
+        # Build the SAME merged view the serial path gates on, on a throwaway deep
+        # copy so neither the on-disk record nor the person dict is mutated here
+        # (the serial persist re-reads + re-merges authoritatively under its lock).
+        merged = _merge_person(copy.deepcopy(existing_person), copy.deepcopy(person))
+        return _is_already_enriched(merged)
+    except Exception as e:  # noqa: BLE001 - pre-gating is best-effort; never block
+        logger.warning("  Pre-gate bio check skipped for %s: %s", name, e)
+        return False
+
+
+def _partition_already_enriched(
+    collected: list, people_dir: Path, index: dict
+) -> tuple[list, list]:
+    """Split ``collected`` into (to_fetch, already_enriched) using the serial path's
+    merged-view gate (``_already_enriched_on_disk_view``). Already-enriched people are
+    kept OUT of the parallel pool so the parallel path skips them identically to
+    serial; the serial persist afterwards commits them unchanged (no fetch)."""
+    to_fetch: list = []
+    already: list = []
+    for person in collected:
+        if person and _already_enriched_on_disk_view(person, people_dir, index):
+            already.append(person)
+        else:
+            to_fetch.append(person)
+    return to_fetch, already
+
+
+def _maybe_prefetch_enrichment(
+    collected: list, grok_client, people_dir: Path, index: dict
+) -> bool:
     """Run the bounded-parallel Phase-2 network fetch for ``collected`` people if eligible.
 
     THROUGHPUT FIX: the per-person fetch (enrich_person_from_sources) is dominated
@@ -1324,8 +1399,24 @@ def _maybe_prefetch_enrichment(collected: list, grok_client) -> bool:
 
         from src.extraction.enrich_biographies import enrich_person_from_sources
 
+        # DIVERGENCE FIX (PR #640): gate on the SAME merged on-disk view the serial
+        # path uses, so an already-enriched-on-disk person is SKIPPED from the pool
+        # (no redundant fetch, no content drift) — identical to serial. Only
+        # genuinely-unenriched people are fetched in the pool.
+        to_fetch, already = _partition_already_enriched(collected, people_dir, index)
+
+        # Account for the skipped (already-enriched) people on the MAIN thread,
+        # mirroring the serial _enrich_person_phase2 skip accounting (total+skipped
+        # + enrich.persisted OBSERV) so the enrich.summary totals match serial. The
+        # serial persist runs these with prefetched=True (a no-op there), so they
+        # are counted ONCE, here.
+        for person in already:
+            _bump_enrich("total")
+            _bump_enrich("skipped")
+            _observe_enrich_persisted(person, False)
+
         _bp.prefetch_enrichment(
-            collected,
+            to_fetch,
             grok_client,
             config,
             enrich_person_from_sources,
@@ -1417,7 +1508,7 @@ def extract_people(
     # Pass 2 (THROUGHPUT FIX) — parallelize ONLY the independent per-person network fetch
     # (enrich_person_from_sources: pure, no file I/O). Persist stays serial/locked below.
     # Batch-collecting mode and the config kill switch fall through to the serial path.
-    prefetched = _maybe_prefetch_enrichment(collected, grok_client)
+    prefetched = _maybe_prefetch_enrichment(collected, grok_client, people_dir, index)
 
     # Pass 3 — persist serially (locked index + per-person write). When prefetched, the
     # enrichment already ran (and counted) so this only commits; otherwise the serial
