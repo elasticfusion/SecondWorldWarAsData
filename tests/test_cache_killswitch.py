@@ -148,9 +148,7 @@ def test_flag_set_suppresses_batch_map_write(monkeypatch):
     c._sanitize_content = lambda x: x
     c._is_substantive = lambda br: True
 
-    br = BatchResult(
-        request_id="r1", status="valid", content='{"x":1}' * 20, finish_reason="stop"
-    )
+    br = BatchResult(request_id="r1", content='{"x":1}' * 20, finish_reason="stop")
     metrics = BatchMetrics()
     submitted = [("r1", "people")]
     ordered = [br]
