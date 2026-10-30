@@ -10,6 +10,21 @@ The curated list of what is still OPEN. Each points to its detail section lower 
 Everything not listed here is DONE (see §7 COMPLETED + the dated review sections).
 
 ### HIGH
+- **[HIGH · data-loss · BATCH MODE] Batch places (and likely any entity) silently dropped by the positional result-mapping desync.**
+  Overnight batch run (XChannel-8 2026-10-30): places persisted 0 while SYNC mode got 96. EVIDENCE: the cached batch
+  places response is VALID JSON with 8 sub-events x 119 place objects (Grok extracted them fine); yet 0 persisted AND
+  there is NO `OBSERV xref.seid entity=places` line (dates/groups/people each show exact=8 and persisted) — so
+  `_process_batch_response` NEVER ran for places. ROOT CAUSE: xAI batch results carry NO echoed custom_id, so
+  grok_client.py:600 maps results to our cache keys PURELY BY POSITION (`zip(submitted, ordered)` + retrieve_results_ordered).
+  This run had MULTIPLE sub-batches + several empty `Response: 2 chars` ({}) results interleaved — the positional zip
+  desynced, so the places slot received an empty/wrong result while the real 119-place content sat in cache uncorrelated.
+  The observability HALF-caught it (`phase2.summary.zero scope=core entity_types=places — probable bug, verify`) but the
+  yield gate could NOT (places deterministic baseline=0). IMPACT: batch mode is NOT equivalent to sync — it can silently
+  drop an entire entity's extraction. FIX DIRECTIONS: (a) stop relying on position — embed our cache key in the request
+  (e.g. as a sentinel in the prompt/content the model echoes, or map via the xAI batch_request_id recorded at submit),
+  (b) assert len(ordered)==len(submitted) per sub-batch AND fail LOUD (OBSERV batch.result_unmapped status=error) when an
+  entity gets no result, (c) cross-check: every batched entity must emit an xref.seid line or raise. Consider forcing
+  places/equipment SYNC even under batch.phase2=true until fixed. Blocks trusting batch-mode output.
 - **[HIGH · data-loss] logistics / supplemental / maps report count=1 but persist 0 records (count->persist gap).** The
   entity field-mismatch audit (2026-10-29) found these three report a non-zero extracted count in .phase_results but 0
   files land on disk/S3 — a DISTINCT defect from the groups/equipment name-field bug (#634, fixed). Root cause TBD:
