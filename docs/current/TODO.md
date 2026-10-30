@@ -10,6 +10,13 @@ The curated list of what is still OPEN. Each points to its detail section lower 
 Everything not listed here is DONE (see §7 COMPLETED + the dated review sections).
 
 ### HIGH
+- **[HIGH · data-loss] logistics / supplemental / maps report count=1 but persist 0 records (count->persist gap).** The
+  entity field-mismatch audit (2026-10-29) found these three report a non-zero extracted count in .phase_results but 0
+  files land on disk/S3 — a DISTINCT defect from the groups/equipment name-field bug (#634, fixed). Root cause TBD:
+  a save/dedup/validation drop AFTER the count is tallied. Investigate each: logistics (LogisticsExtraction save path),
+  supplemental (persists into bibliography/sub-events — may be structurally-0 and a false alarm, confirm), maps
+  (search_queries-only output -> where does a map RECORD get written?). Owner-requested follow-up AFTER the groups/equipment
+  fix + overnight batch run.
 - **[HIGH · throughput] Synchronous Phase-2 per-person bio enrichment is ~3 min/person, serial.** XChannel-8 (2026-10-29)
   took 2h40m (9613s) because enrich_biographies runs Grokipedia+Wikipedia search + photo fetch INLINE per person for ~17+
   people serially ('Searching Wikipedia...' ~3 min each). FIX candidates: (a) parallelize/bound per-person enrichment, (b)
