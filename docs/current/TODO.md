@@ -10,6 +10,22 @@ The curated list of what is still OPEN. Each points to its detail section lower 
 Everything not listed here is DONE (see §7 COMPLETED + the dated review sections).
 
 ### HIGH
+- **[HIGH · provenance · PROMPT BUG] people.yaml schema example hard-codes LITERAL placeholders "event_id"/"sub_event_id"**
+  (lines ~79-91) instead of the braced {event_id}/{sub_event_id} that render_prompt substitutes. The INSTRUCTION (l.37-38)
+  says 'use "{sub_event_id}"' (substituted correctly) but the worked JSON EXAMPLE shows "Sub-eventID": "sub_event_id"
+  (bare literal, NOT substituted) — models weight the example, so they echo the literal token or hallucinate -> invalid
+  ULID -> null Sub_eventID on mentions -> provenance chain (record->sub-event->source_section->paragraph) BREAKS. This is
+  DETERMINISTIC (a re-run won't fix it; the bad example persists). Also a field-spelling inconsistency in the same file:
+  Sub_eventID (underscore, l.80) vs Sub-eventID (hyphen, l.91). FIX: make the schema example use {event_id}/{sub_event_id}
+  so it renders real IDs consistent with the instruction; unify the field spelling; AND prefer the server-side seid stamp
+  (batch_parallel.py:456 already does '"Sub_eventID": seid') over trusting the LLM echo in the people mention path. AUDIT
+  all entity prompts for the same bare-literal-placeholder defect (see counts logged 2026-10-30). PROVENANCE = #1 GOAL.
+- **[POLICY · provenance] Provenance-completeness stays NON-FATAL (owner 2026-10-30): escalate LOUD to Slack, do NOT
+  fail_stop.** Rationale: many provenance misses are NON-DETERMINISTIC (LLM ULID variance) and a RE-RUN fixes them; a
+  fail_stop would halt a book a retry would heal. Reserve hard failure for DETERMINISTIC causes (prompt/code bugs like the
+  one above). Action: provenance_integrity enforcement -> wire the SNS/Slack alert (provenance.alert already emits; ensure
+  it reaches the notify topic) + a runbook: on a provenance alert, first RE-RUN; if it persists across runs, it's
+  deterministic -> hunt the prompt/code bug.
 - **[HIGH · data-loss · BATCH MODE] Batch places (and likely any entity) silently dropped by the positional result-mapping desync.**
   Overnight batch run (XChannel-8 2026-10-30): places persisted 0 while SYNC mode got 96. EVIDENCE: the cached batch
   places response is VALID JSON with 8 sub-events x 119 place objects (Grok extracted them fine); yet 0 persisted AND
