@@ -1405,18 +1405,28 @@ def _observe_bibliography_download_coverage(
 
 
 def _rehydrate_scored_entities() -> int:
-    """RESUME CORRECTNESS (XChannel-8 2026-10-29): the yield gate counts LOCAL entity RECORD files
-    (_log_phase2_summary -> _count_entity_dir(output_root/<entity>)). On a resume that leaves
-    existing data in place, downloading index.json ONLY left local people/dates=0 while S3 had 58/18
-    — so the gate saw produced=0 and FALSELY fail_stopped ('people' starved). Rehydrate the SCORED
-    entity record dirs from S3 so the gate's local view matches the authoritative S3 totals.
+    """RESUME CORRECTNESS (XChannel-8 2026-10-29): on a resume that leaves existing data in place, a
+    FRESH task container has an empty local disk, but Phase-2 extraction + the yield gate both read
+    LOCAL files. The default input download pulls entity INDEX files only and SKIPS a parsed file
+    whose event already exists — so local ended up with people/dates=0 (gate false-starved 'people')
+    AND no parsed file ('No parsed files found' crash). Comprehensively rehydrate a book-scoped
+    resume's local state from the authoritative S3 copies:
+      • the SCORED entity record dirs (so the yield gate counts persisted entities), and
+      • the book's content/ prefix (parsed + event files, so extraction finds its input).
     Fail-safe (a missing dir -> 0 files, no error). Returns the count rehydrated."""
     rehydrated = 0
     for _edir in ("people", "people_groups", "dates", "places", "equipment"):
         rehydrated += s3_sync_down(f"output/{_edir}/", WORKDIR)
+    # The book's parsed/event content — extraction needs the parsed file locally even when its event
+    # already exists on S3 (the default scan skips it, assuming "event present => already done").
+    _book = os.environ.get("BOOK_NAME", "")
+    import re as _re_rh
+
+    if _book and _re_rh.fullmatch(r"[A-Za-z0-9._-]+", _book) and ".." not in _book:
+        rehydrated += s3_sync_down(f"output/content/{_book}/", WORKDIR)
     logger.info(
-        "Phase 2 resume: rehydrated %d existing entity record file(s) from S3 so the "
-        "yield gate counts persisted entities (not just this run's new writes)",
+        "Phase 2 resume: rehydrated %d existing record/content file(s) from S3 so extraction + the "
+        "yield gate see persisted state (not just this run's new writes)",
         rehydrated,
     )
     return rehydrated
