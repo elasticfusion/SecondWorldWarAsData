@@ -18,7 +18,7 @@ from ulid import new as new_ulid
 from src.grok_client import GrokClient
 from src.json_schemas import PEOPLE_GROUP_ITEM_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
-from src.utils.observe import observe_error
+from src.utils.observe import observe_error, observe_warn
 from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
 from src.utils.text_utils import normalize_name
 
@@ -216,11 +216,42 @@ def _validate_group_items(items: list) -> list:
     return valid
 
 
+def _coerce_group_schema_keys(group: dict) -> None:
+    """Strip top-level keys the groups schema does NOT permit, so one stray LLM field no longer
+    triggers additionalProperties:False and SILENTLY drops the WHOLE group (the Force U/O/B loss:
+    the model emitted a compositional/extra field, the whole record was rejected, no OBSERV). We
+    keep the valid record and emit a LOUD canonical OBSERV per stripped key (anti-swallow: a loss
+    we can't avoid must be observable). In place. Fail-safe: never raises into extraction.
+    """
+    try:
+        from src.schemas.groups_output import GROUPS_OUTPUT_SCHEMA
+
+        allowed = set(GROUPS_OUTPUT_SCHEMA.get("properties", {}).keys())
+        if not allowed:
+            return
+        extra = [k for k in list(group.keys()) if k not in allowed]
+        for k in extra:
+            group.pop(k, None)
+            observe_warn(
+                "people_groups",
+                "extra_field_stripped",
+                group=str(group.get("group_name", "?"))[:60],
+                field=str(k)[:40],
+                note="unmodeled top-level field removed so the record persists "
+                "(additionalProperties) — widen the schema if this field is wanted",
+            )
+    except Exception as e:  # noqa: BLE001 - normalization must never break extraction
+        logger.debug("group schema-key coercion skipped: %s", e)
+
+
 def _save_group(
     groups_dir: Path, index_file: Path, group: dict, book: str, author: str, series: str
 ):
     """Save or merge a group file."""
     group_name = group.get("group_name", "Unknown")
+    # Strip unmodeled top-level keys BEFORE any write so additionalProperties:False cannot silently
+    # drop the whole record (Force U/O/B loss); each strip is a loud OBSERV.
+    _coerce_group_schema_keys(group)
     # HIGH#7a: GroupID is a NEW entity id — MINT it server-side, never trust the LLM's value. The
     # computed id MUST be written into the record (not just the filename) or the group has no
     # primary key and is invisible to every cross-reference (casualties/logistics/maps resolve to it).
@@ -277,6 +308,14 @@ def _save_group(
             logger.info("    Created: %s", group_name)
         else:
             # Write blocked (schema guard): do NOT index a file that was never written.
+            # LOUD canonical OBSERV (not a bare warning) — a residual schema-guard block AFTER
+            # key-coercion is real group data loss and must be greppable/escalatable.
+            observe_warn(
+                "people_groups",
+                "create_blocked",
+                group=str(group_name)[:60],
+                reason="schema_guard_rejected_after_key_coercion",
+            )
             logger.warning("    Create blocked (schema guard rejected): %s", group_name)
 
 
