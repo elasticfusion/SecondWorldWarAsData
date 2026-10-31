@@ -152,6 +152,16 @@ rules:
     (defender for emplacements, actor for fired/employed) > (3) narrator-relative enemy/friendly
     (rule above) > (4) null. Record original_text so the inference is traceable.
   - |
+    ITALICS = ENEMY (typographic convention). In US Army "Green Book"-style histories, a unit or
+    equipment name in *italics* (markdown `*...*`) denotes the ENEMY — the side OPPOSING the
+    narrator — and applies to ALL Axis/enemy nationalities, NOT just German. If an italicized unit
+    OPERATES the equipment (e.g. "*352d Division* dug in with its guns"), set operating_country to
+    the enemy nationality resolved by theater (ETO: DEU; Med: DEU/ITA by context; Pacific/CBI: JPN;
+    other Axis co-belligerents ITA/HUN/ROU/BGR/FIN where applicable); if the specific Axis country
+    is unclear, leave it null rather than defaulting to German. This is a high-confidence cue:
+    precedence just below an explicit statement, ABOVE generic context guessing. Corpus caveat: for
+    a non-US-military source, defer to the narrator-perspective rule instead of assuming Axis.
+  - |
     GENERIC TYPES ARE IN SCOPE — extract both specifically named equipment (M4 Sherman, P-47)
     AND generic equipment references (machine gun, artillery, tank, mine, grenade, barbed wire,
     bayonet, knife, parachute, glider, bombs, small arms). For a generic reference, set name to

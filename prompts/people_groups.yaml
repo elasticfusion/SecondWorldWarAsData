@@ -79,6 +79,28 @@ rules:
   - Country codes use ISO 3166-1 alpha-3 (USA, GBR, DEU, FRA, ITA, JPN, etc.)
   - Use official military designations (e.g., "80th Infantry Division" not "80th Division")
   - Include both Allied and Axis organizations
+  - |
+    ITALICS = ENEMY UNIT (typographic convention). In US Army "Green Book"-style histories
+    (and US-military-authored sources generally), a unit/formation name printed in *italics*
+    (markdown `*...*` in this text) denotes an ENEMY unit — the OPPOSING side relative to the
+    narrator. This is a STRONG, DETERMINISTIC signal and applies to ALL enemy/Axis nationalities,
+    NOT just German:
+    - Treat ANY italicized formation (*Fifteenth Army*, *352d Division*, *LXXXIV Corps*,
+      *12th SS Panzer Division*, an italicized Italian or Japanese unit, etc.) as an enemy/Axis
+      organization: extract it as its own group and set alliance_membership ["Axis Powers"].
+    - Resolve country_of_origin to the SPECIFIC enemy nationality from the theater + context — do
+      NOT default to German. ETO: German (DEU). Mediterranean: German (DEU) OR Italian (ITA) by
+      context. Pacific / CBI: Japanese (JPN). Eastern-Front co-belligerents where applicable
+      (Italian ITA, Hungarian HUN, Romanian ROU, Bulgarian BGR, Finnish FIN). If the specific Axis
+      nationality is unclear, still mark it Axis (alliance_membership ["Axis Powers"]) and leave
+      country_of_origin null rather than guessing German.
+    - NON-italic formations are the narrator's own / friendly side unless stated otherwise.
+    - Precedence: an EXPLICIT nationality statement wins; otherwise italics is a high-confidence
+      cue, ABOVE generic context guessing. Do NOT drop an italicized unit — these enemy units are
+      frequently under-extracted; extract EVERY one.
+    - Caveat: the convention is corpus-specific (US Green Books). If the source is NOT US-military
+      (e.g. a German-authored account), italics may mark the author's OWN enemy instead — fall back
+      to the narrator-perspective rule rather than assuming Axis.
   - If no people groups found, return empty People_Groups array
   - |
     CONJUNCTIONS = SEPARATE GROUPS. When distinct units/organizations are joined by "and"/"or"
