@@ -113,3 +113,4 @@ each entity against its enforced schema — so code↔schema drift (an extractor
 the strict schema forbids) fails the build. Add a new entity to the registry when you add a
 new JSON entity type.
 - people_groups 2.28 -> 2.29 (ADDITIVE, no reprocess): + organization_lifecycle, active_period{start,end,precision,original_text}, constituent_units — ephemeral mission-scoped orgs (naval task forces: date-bound + compositional). Unknown dates allowed (precision=unresolved) per the capture-despite-unknowns principle.
+- casualties 2.26 -> 2.27 (ADDITIVE, no reprocess): + magnitude (none/light/moderate/heavy/severe), + is_comparative — qualitative/comparative/rate/absence casualty granularity (gold-standard review: 27+ casualty mentions, 2 extracted).

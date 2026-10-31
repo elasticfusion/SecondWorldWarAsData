@@ -28,6 +28,15 @@ CASUALTIES_OUTPUT_SCHEMA = {
         ),
         "description": make_nullable("string"),
         "count": {"type": ["object", "integer", "number", "null"]},
+        # Qualitative magnitude for casualties stated WITHOUT a number ("heavy casualties",
+        # "extraordinarily light casualties", "no casualties") and the rate/percentage case —
+        # a casualty fact is valid without an absolute count (see prompts/casualties.yaml
+        # CASUALTY GRANULARITY). is_comparative flags a comparison between groups ("heavier among
+        # those who delayed").
+        "magnitude": enum_field(
+            ["none", "light", "moderate", "heavy", "severe"], nullable=True
+        ),
+        "is_comparative": {"type": ["boolean", "null"]},
         "date": {"type": ["object", "string", "null"]},
         # Direct individual anchors (for a single-person casualty like "Sgt Smith had
         # frostbite"), in addition to the loose impacted_* lists. Enable the
