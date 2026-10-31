@@ -96,7 +96,13 @@ def _iter_mentions(rec: Dict[str, Any]) -> List[Dict[str, Any]]:
     # mention so A3 doesn't FALSELY flag a sourced casualty as an orphan (XChannel-8: 6 casualties
     # with valid event_context were wrongly reported "no event_mentions (orphan)").
     ectx = rec.get("event_context")
-    if isinstance(ectx, dict) and str(ectx.get("EventID", "")).strip():
+    _eid = (
+        str(ectx.get("EventID", "")).strip().lower() if isinstance(ectx, dict) else ""
+    )
+    if _eid and _eid not in (
+        "none",
+        "null",
+    ):  # a present, real EventID (reject None/null string)
         return [ectx]
     return ems if isinstance(ems, list) else []
 

@@ -56,3 +56,9 @@ def test_A_successful_write_no_block_observ(tmp_path, caplog):
                 {"CasualtyID": "01ARZ3NDEKTSV4RRFFQ69G5FAV", "type": "killed"}, tmp_path
             )
     assert not any("create_blocked" in r.message for r in caplog.records)
+
+
+def test_B_event_context_with_none_eventid_is_orphan():
+    """A present event_context whose EventID is None/'null' is NOT real provenance -> still orphan."""
+    assert _iter_mentions({"event_context": {"EventID": None}}) == []
+    assert _iter_mentions({"event_context": {"EventID": "null"}}) == []
