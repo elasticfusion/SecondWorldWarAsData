@@ -3195,7 +3195,9 @@ def extract_equipment_from_event(
     # Finalize
     _finalize_extraction(output_dir, modified_files, event_file, processed)
     _observe_equipment_items_dropped(len(equipment_list), len(modified_files))
-    _observe_equipment_yield(event_data, len(equipment_list))
+    # yield MUST measure PERSISTED reality, not the pre-drop model list — the XChannel-8 false-OK
+    # was produced=len(equipment_list)=7 while only 3 persisted (verdict=ok hid the 7->3 loss).
+    _observe_equipment_yield(event_data, len(modified_files))
     return modified_files
 
 
