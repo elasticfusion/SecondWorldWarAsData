@@ -1577,6 +1577,27 @@ def _enrich_equipment_data(
         return {}
 
 
+def _best_fuzzy_candidate(name_lower, equipment_index):
+    """Best (match, ratio) over index common_names AND each file's alternate_names. Fail-safe:
+    unreadable entries are skipped."""
+    best_match, best_ratio = None, 0.0
+    for existing_name in equipment_index.keys():
+        ratio = SequenceMatcher(None, name_lower, existing_name.lower()).ratio()
+        if ratio > best_ratio:
+            best_ratio, best_match = ratio, existing_name
+    for existing_name, eq_file in equipment_index.items():
+        try:
+            with open(eq_file, encoding="utf-8") as f:
+                eq_data = json.load(f)
+            for alt_name in eq_data.get("alternate_names", []):
+                ratio = SequenceMatcher(None, name_lower, alt_name.lower()).ratio()
+                if ratio > best_ratio:
+                    best_ratio, best_match = ratio, existing_name
+        except Exception:  # nosec B112
+            continue
+    return best_match, best_ratio
+
+
 def _fuzzy_match_equipment(
     name: str, equipment_index: Dict[str, Path], threshold: float = 0.80
 ) -> Optional[str]:
@@ -1595,36 +1616,45 @@ def _fuzzy_match_equipment(
     if not equipment_index:
         return None
 
-    best_match = None
-    best_ratio = 0.0
-
     name_lower = name.lower()
+    best_match, best_ratio = _best_fuzzy_candidate(name_lower, equipment_index)
 
-    # Check common names
-    for existing_name in equipment_index.keys():
-        ratio = SequenceMatcher(None, name_lower, existing_name.lower()).ratio()
-        if ratio > best_ratio:
-            best_ratio = ratio
-            best_match = existing_name
-
-    # Also check alternate names in files
-    for existing_name, eq_file in equipment_index.items():
-        try:
-            with open(eq_file, encoding="utf-8") as f:
-                eq_data = json.load(f)
-                for alt_name in eq_data.get("alternate_names", []):
-                    ratio = SequenceMatcher(None, name_lower, alt_name.lower()).ratio()
-                    if ratio > best_ratio:
-                        best_ratio = ratio
-                        best_match = existing_name
-        except Exception:  # nosec B112
-            continue  # Skip invalid entries
-
-    if best_ratio >= threshold:
+    if best_ratio >= threshold and not _equipment_numeric_conflict(name, best_match):
         logger.debug("Fuzzy matched '%s' to '%s' (%.2f)", name, best_match, best_ratio)
         return best_match
+    if best_ratio >= threshold:
+        # A high string-similarity match whose NUMERIC tokens differ (e.g. "105-mm howitzer"
+        # vs "155-mm howitzer", ratio 0.93) is a DISTINCT piece of equipment — refusing the
+        # merge here is the fix for the XChannel-8 equipment undercount (7 extracted collapsed
+        # to 3 via fuzzy over-merge of different calibers). Loud so the near-miss is greppable.
+        logger.warning(
+            "OBSERV equipment.fuzzy_merge_blocked name=%r candidate=%r ratio=%.2f "
+            "reason=numeric_token_conflict — kept as DISTINCT equipment",
+            name,
+            best_match,
+            best_ratio,
+        )
 
     return None
+
+
+def _equipment_numeric_conflict(a: str, b: str) -> bool:
+    """True if two equipment names carry DIFFERENT numeric tokens (calibers/designations), which
+    means they are distinct equipment and must NOT be fuzzy-merged despite a high string ratio.
+
+    "105-mm howitzer" vs "155-mm howitzer" -> {105} != {155} -> CONFLICT (block merge).
+    "M4 Sherman"      vs "M4A1 Sherman"    -> {4} vs {4,1}; 4 is shared and neither is a pure
+      disjoint caliber set -> NO conflict (legitimate variant, allow merge).
+    Rule: extract integer runs from each name; if BOTH have numbers and the sets are DISJOINT
+    (no shared number), they conflict. If one has no numbers, or they share a number, no conflict.
+    """
+    import re as _re
+
+    na = set(_re.findall(r"\d+", a or ""))
+    nb = set(_re.findall(r"\d+", b or ""))
+    if not na or not nb:
+        return False
+    return na.isdisjoint(nb)
 
 
 def _find_matching_equipment(
