@@ -97,7 +97,7 @@ rules:
       context (USA/GBR/SUN).
     - Mediterranean (Italy / Sicily / N. Africa): Axis = DEU or ITA (context), Allied = USA/GBR.
     - Pacific (islands / naval Pacific): Axis = JPN, Allied = USA/GBR/AUS.
-    - Burma / China (CBI): Axis = JPN, Allied = GBR/USA/China.
+    - Burma / China (CBI): Axis = JPN, Allied = GBR/USA/CHN.
     "Friendly"/"our"/"Allied"/"we" → the NARRATOR'S OWN side (again per STEP 1, not assumed US).
     Use surrounding CONTEXT to pick the specific country when a side has several. Apply to
     operating_country (and country_of_origin when origin is otherwise unknown for a generic
