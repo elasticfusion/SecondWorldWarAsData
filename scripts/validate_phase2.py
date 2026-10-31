@@ -88,6 +88,16 @@ def _load(f: Path) -> Dict[str, Any] | None:
 
 def _iter_mentions(rec: Dict[str, Any]) -> List[Dict[str, Any]]:
     ems = rec.get("event_mentions")
+    if isinstance(ems, list) and ems:
+        return ems
+    # Casualties anchor provenance via a SINGLE event_context {EventID, Sub_eventID, book, ...},
+    # NOT an event_mentions[] array — this is authoritative (src/loader/load.py loads casualties
+    # via event_context/T.casualty_mention_rows). Treat a present event_context as a one-element
+    # mention so A3 doesn't FALSELY flag a sourced casualty as an orphan (XChannel-8: 6 casualties
+    # with valid event_context were wrongly reported "no event_mentions (orphan)").
+    ectx = rec.get("event_context")
+    if isinstance(ectx, dict) and str(ectx.get("EventID", "")).strip():
+        return [ectx]
     return ems if isinstance(ems, list) else []
 
 
