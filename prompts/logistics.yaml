@@ -2,8 +2,12 @@ system_prompt: |
   You are a WWII military logistics analysis specialist.
 
 prompt_template: |
-  Extract logistics issues from these WWII sub-events.
-  Look for supply problems, transportation issues, and capacity constraints.
+  Extract ALL logistics facts from these WWII sub-events — both POSITIVE/ROUTINE logistics
+  ACTIVITIES (supplies issued, loading/embarkation, marshaling, movement/transport of units,
+  reinforcement, resupply delivered) AND logistics PROBLEMS (shortages, delays, disruptions,
+  capacity constraints). Logistics is the movement and supply of men and materiel — a successful
+  supply/embarkation/movement is a logistics fact just as much as a shortage is. Do NOT limit to
+  problems.
 
   Sub-events:
   {sub_event_block}
@@ -35,7 +39,33 @@ schema: |
   }
 
 rules:
-  - Type values: supply_shortage, supply_excess, delivery_delay, transport_disruption, capacity_constraint, production_delay
+  - |
+    Type values (logistics_type): PROBLEM types — supply_shortage, supply_excess, delivery_delay,
+    transport_disruption, capacity_constraint, production_delay; POSITIVE/ROUTINE types —
+    supply_issue (supplies/rations/ammunition issued or distributed), embarkation (loading men/
+    materiel onto ships/craft), marshaling (assembling/staging units for movement), movement
+    (transport of units/materiel), reinforcement (reinforcements brought forward), resupply
+    (delivery of supplies). Extract positive activities too — they are logistics facts.
+  - |
+    POSITIVE / ROUTINE LOGISTICS — a successful supply/movement/embarkation chain is a logistics
+    fact, not just problems. A passage like "they moved to marshaling areas near the embarkation
+    points; final supplies were issued for the voyage, maps distributed, ... units broken down into
+    boatloads to await the move down to the ships" contains SEVERAL positive logistics facts —
+    emit records for the marshaling (type "marshaling"), the supply issue (type "supply_issue",
+    category "supplies"/"maps"), and the embarkation/loading into boatloads (type "embarkation").
+    severity "low"/null for routine activities (no problem is being asserted).
+  - |
+    SHORTAGE / ABSENCE PER ITEM — a statement that a unit LACKED or had too FEW of something is a
+    logistics fact (type "supply_shortage", severity by the calibration below). When MULTIPLE items
+    are listed as short/absent, emit ONE record PER item — do NOT merge them. Examples:
+    - "lacking vehicles, supplies, ammunition, artillery, and armored support" -> FIVE
+      supply_shortage records (category: vehicles / supplies / ammunition / artillery /
+      armored_support), each with the verbatim original_text.
+    - "very few heavy weapons, no supporting artillery, ... little prospect of ... large-scale
+      supplies or reinforcements" -> separate shortage records for heavy_weapons (few), artillery
+      (none), supplies (prospect limited), reinforcements (prospect limited).
+    "no X" / "lacking X" / "very few X" are all valid shortages — do NOT drop them for being an
+    absence; set a qualifier (none / very_few / limited) in description. original_text MANDATORY.
   - Severity values: critical, high, medium, low
   - DEFAULT TO MEDIUM. Only use high/critical when text explicitly states operations were halted, postponed, or impossible.
   - Severity calibration:
