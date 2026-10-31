@@ -183,16 +183,22 @@ def classify_run(per_entity: Dict[str, Tuple[int, int]]) -> Tuple[str, List[str]
     run (and these high-recall FLOORs over-count relative to real records, so they must never gate).
     """
     verdicts = {e: classify_entity(d, p) for e, (d, p) in per_entity.items()}
-    fatal_eligible = [e for e in verdicts if e not in _OBSERVABILITY_ONLY_ENTITIES]
-    starved = [e for e in fatal_eligible if verdicts[e] == "starved"]
-    short = [e for e in fatal_eligible if verdicts[e] in ("starved", "warn")]
+    starved, short, all_short = _partition_offenders(verdicts)
     if starved or len(short) >= MULTI_ENTITY_SHORTFALL:
         return "fail_stop", sorted(set(starved) | set(short))
-    # warn offenders INCLUDE the observability-only entities (visible, non-fatal)
-    all_short = [e for e, v in verdicts.items() if v in ("starved", "warn")]
     if all_short:
         return "warn", sorted(all_short)
     return "ok", []
+
+
+def _partition_offenders(verdicts: Dict[str, str]) -> Tuple[List[str], List[str], List[str]]:
+    """Split verdicts into (fatal-eligible starved, fatal-eligible short, ALL short incl
+    observability-only). fail_stop is driven by the fatal-eligible sets; warn reports ALL short."""
+    fatal = [e for e in verdicts if e not in _OBSERVABILITY_ONLY_ENTITIES]
+    starved = [e for e in fatal if verdicts[e] == "starved"]
+    short = [e for e in fatal if verdicts[e] in ("starved", "warn")]
+    all_short = [e for e, v in verdicts.items() if v in ("starved", "warn")]
+    return starved, short, all_short
 
 
 # Entities scored for VISIBILITY only — they get a yield.baseline + warn (so undercounts self-report)
