@@ -3,7 +3,11 @@ system_prompt: |
 
 prompt_template: |
   Extract military equipment mentioned in this WWII event data.
-  Identify specific equipment by name/designation, not generic categories.
+  Extract EVERY equipment reference, including GENERIC TYPES (e.g. "machine gun", "artillery",
+  "tank", "mine", "grenade", "barbed wire", "fighter-bomber", "small arms", "coastal battery").
+  When the source gives no specific model/designation, use the generic type itself as the name
+  (name "machine gun", name "artillery"). Do NOT drop a mention merely because it lacks a named
+  model — a generic equipment reference is still a valid mention.
 
   Event data:
   {event_data}
@@ -78,7 +82,26 @@ rules:
     - Germans using a captured US M10: country_of_origin "USA", operating_country "DEU", captured true
     - US unit using its own Shermans: country_of_origin "USA", operating_country "USA", captured false
     If the operator is not stated, leave operating_country null and captured false.
-  - Only extract specifically named equipment, not generic references
+  - |
+    "ENEMY"/"HOSTILE"/"FRIENDLY" → RESOLVE BY THEATER. The narrative often names a side only
+    relative to the viewpoint unit ("enemy coastal battery", "hostile aircraft", "enemy tanks").
+    Resolve the nationality from the THEATER of the event, then set the country code:
+    - ETO (Western Europe / Normandy / France / Germany): enemy = German (DEU).
+    - Mediterranean (Italy / Sicily / N. Africa): enemy = German (DEU) OR Italian (ITA) —
+      use surrounding CONTEXT to choose; if genuinely ambiguous, leave country null + note it.
+    - Pacific (islands / naval Pacific): enemy = Japanese (JPN).
+    - Burma / China (CBI): enemy = Japanese (JPN).
+    "Friendly"/"our"/"Allied" resolves to the viewpoint side for the theater. Apply this to
+    operating_country (and country_of_origin when origin is otherwise unknown for a generic
+    enemy item). Prefer a theater-resolved code over null; only leave null when the theater
+    itself is unclear.
+  - |
+    GENERIC TYPES ARE IN SCOPE — extract both specifically named equipment (M4 Sherman, P-47)
+    AND generic equipment references (machine gun, artillery, tank, mine, grenade, barbed wire,
+    bayonet, knife, parachute, glider, bombs, small arms). For a generic reference, set name to
+    the generic type and fill category/subcategory as best fits. The ONLY things to exclude are
+    non-equipment nouns (terrain, buildings that are not fortifications, supplies like food/fuel
+    unless they are a weapon system). When in doubt about a military item, INCLUDE it.
   - |
     ENVIRONMENTAL PERFORMANCE — if the source states how this equipment PERFORMED under a
     weather/terrain condition, record it in environmental_performance with condition
