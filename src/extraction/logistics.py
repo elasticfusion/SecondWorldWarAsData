@@ -122,12 +122,22 @@ class Logistics(BaseModel):
 
 
 _VALID_TYPES = {
+    # problem types
     "supply_shortage",
     "supply_excess",
     "delivery_delay",
     "transport_disruption",
     "capacity_constraint",
     "production_delay",
+    # positive / routine logistics activities (prompts/logistics.yaml) — WITHOUT these the clamp
+    # silently rewrote every routine-activity extraction to "supply_shortage", nullifying the
+    # positive-logistics capability (XChannel-8: marshaling/supply-issue/embarkation were lost).
+    "supply_issue",
+    "embarkation",
+    "marshaling",
+    "movement",
+    "reinforcement",
+    "resupply",
 }
 _VALID_CATEGORIES = {
     "ammunition",
@@ -137,6 +147,15 @@ _VALID_CATEGORIES = {
     "equipment",
     "personnel",
     "general",
+    # per-item shortage categories the prompt now emits (were clamped to "general")
+    "vehicles",
+    "supplies",
+    "artillery",
+    "armored_support",
+    "heavy_weapons",
+    "reinforcements",
+    "maps",
+    "transport",
 }
 _VALID_SEVERITIES = {"critical", "high", "medium", "low"}
 _VALID_STATUSES = {"unresolved", "in_progress", "resolved", "worsened"}
@@ -180,6 +199,10 @@ class LogisticsExtraction(BaseModel):
     resolution_description: Optional[str] = None
     resolution_method: Optional[str] = None
     context: Optional[str] = None
+    original_text: Optional[str] = Field(
+        default=None,
+        description="Verbatim source passage this logistics fact came from (provenance)",
+    )
     paragraphs: List[int] = Field(default_factory=list)
 
 
@@ -707,6 +730,28 @@ def _build_resolution(extraction: LogisticsExtraction) -> Optional[Dict[str, Any
     }
 
 
+_POSITIVE_TYPES = {
+    "supply_issue",
+    "embarkation",
+    "marshaling",
+    "movement",
+    "reinforcement",
+    "resupply",
+}
+
+
+def _logistics_severity_default(extraction: "LogisticsExtraction") -> str:
+    """Clamp severity; a ROUTINE/positive activity with no asserted problem defaults to 'low',
+    not 'medium' (a successful supply/movement is not a medium-severity problem)."""
+    default = (
+        "low"
+        if _clamp_enum(extraction.type, _VALID_TYPES, "supply_shortage")
+        in _POSITIVE_TYPES
+        else "medium"
+    )
+    return _clamp_enum(extraction.severity or default, _VALID_SEVERITIES, default)
+
+
 def _build_logistics_data(
     extraction: LogisticsExtraction,
     event_data: Dict[str, Any],
@@ -724,7 +769,8 @@ def _build_logistics_data(
         "logistics_type": _clamp_enum(extraction.type, _VALID_TYPES, "supply_shortage"),
         "category": _clamp_enum(extraction.category, _VALID_CATEGORIES, "general"),
         "description": extraction.description,
-        "severity": _clamp_enum(extraction.severity, _VALID_SEVERITIES, "medium"),
+        "severity": _logistics_severity_default(extraction),
+        "original_text": extraction.original_text,
         "temporal": _build_temporal(extraction, dates_index).model_dump(
             exclude_none=True
         ),
