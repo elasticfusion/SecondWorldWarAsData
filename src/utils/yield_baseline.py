@@ -112,12 +112,45 @@ _LOGISTICS_RE = re.compile(
 # meet. Complements config/equipment_aliases.yaml, which lacks common generic nouns (LST/DUKW/
 # howitzer/tank), which is why the equipment baseline read 0 on an equipment-dense chapter.
 _EQUIPMENT_GENERIC_TERMS = [
-    "lst", "lct", "lci", "lcvp", "dukw", "landing craft", "landing ship",
-    "tank", "sherman", "panzer", "howitzer", "artillery", "gun", "mortar",
-    "machine gun", "rifle", "bayonet", "grenade", "mine", "barbed wire",
-    "destroyer", "cruiser", "battleship", "minesweeper", "e-boat", "torpedo boat",
-    "bomber", "fighter", "fighter-bomber", "glider", "parachute", "aircraft",
-    "rocket", "flak", "pillbox", "bunker", "obstacle", "antitank", "antiaircraft",
+    "lst",
+    "lct",
+    "lci",
+    "lcvp",
+    "dukw",
+    "landing craft",
+    "landing ship",
+    "tank",
+    "sherman",
+    "panzer",
+    "howitzer",
+    "artillery",
+    "gun",
+    "mortar",
+    "machine gun",
+    "rifle",
+    "bayonet",
+    "grenade",
+    "mine",
+    "barbed wire",
+    "destroyer",
+    "cruiser",
+    "battleship",
+    "minesweeper",
+    "e-boat",
+    "torpedo boat",
+    "bomber",
+    "fighter",
+    "fighter-bomber",
+    "glider",
+    "parachute",
+    "aircraft",
+    "rocket",
+    "flak",
+    "pillbox",
+    "bunker",
+    "obstacle",
+    "antitank",
+    "antiaircraft",
 ]
 
 
@@ -191,9 +224,12 @@ def classify_run(per_entity: Dict[str, Tuple[int, int]]) -> Tuple[str, List[str]
     return "ok", []
 
 
-def _partition_offenders(verdicts: Dict[str, str]) -> Tuple[List[str], List[str], List[str]]:
+def _partition_offenders(
+    verdicts: Dict[str, str],
+) -> Tuple[List[str], List[str], List[str]]:
     """Split verdicts into (fatal-eligible starved, fatal-eligible short, ALL short incl
-    observability-only). fail_stop is driven by the fatal-eligible sets; warn reports ALL short."""
+    observability-only). fail_stop is driven by the fatal-eligible sets; warn reports ALL short.
+    """
     fatal = [e for e in verdicts if e not in _OBSERVABILITY_ONLY_ENTITIES]
     starved = [e for e in fatal if verdicts[e] == "starved"]
     short = [e for e in fatal if verdicts[e] in ("starved", "warn")]
