@@ -34,6 +34,29 @@ GROUPS_OUTPUT_SCHEMA = {
         "parent_organization": make_nullable("string"),
         "sub_organizations": {"type": ["array", "null"], "items": {"type": "string"}},
         "member_countries": {"type": ["array", "null"], "items": {"type": "string"}},
+        # --- Ephemeral / mission-scoped organizations (naval task forces, assault forces,
+        # provisional commands). A task force is DATE-BOUND: assembled for a mission, then
+        # dissolves — unlike a STANDING formation. Per the governing principle, dates MAY be
+        # approximate or unresolved (flagged for supplemental); an unknown date never drops the
+        # force. See docs/current/design/organizations-equipment-data-quality.md. ---
+        "organization_lifecycle": enum_field(["standing", "ephemeral"], nullable=True),
+        "active_period": {
+            "type": ["object", "null"],
+            "additionalProperties": False,
+            "properties": {
+                "start": make_nullable("string"),  # ISO date OR a fuzzy phrase ("D-Day")
+                "end": make_nullable("string"),
+                "precision": enum_field(
+                    ["exact", "approximate", "unresolved"], nullable=True
+                ),
+                "original_text": make_nullable("string"),
+            },
+        },
+        # Date-bound compositional membership: the standing units an ephemeral force
+        # DELIVERED/CONTAINED for its mission (e.g. Force O -> ["1st Division"]). Distinct from
+        # sub_organizations (permanent org chart); constituent_units is mission-scoped and must
+        # NOT be flattened into the standing unit it carried (Force O != 1st Division).
+        "constituent_units": {"type": ["array", "null"], "items": {"type": "string"}},
         "members": {
             "type": ["array", "null"],
             "items": {"type": ["string", "object"]},

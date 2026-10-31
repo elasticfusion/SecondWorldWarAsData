@@ -15,6 +15,17 @@ prompt_template: |
   - parent_organization: (if applicable) Parent unit/organization
   - member_countries: (if alliance) List of member countries
   - sub_organizations: (if applicable) List of sub-organizations
+  - organization_lifecycle: "standing" (a permanent formation like an infantry division) OR
+    "ephemeral" (a mission-scoped force assembled for an operation then dissolved — naval task/
+    assault forces like Force U/O/B, provisional commands, battlegroups formed for one action)
+  - active_period: (for ephemeral forces especially) {start, end, precision, original_text} — the
+    mission window. precision is "exact" (dated), "approximate" (a fuzzy phrase like "D-Day",
+    "the assault phase", "5-7 June"), or "unresolved" (the force clearly existed but the text
+    gives no date — set start/end null, precision "unresolved"; NEVER drop the force or invent a
+    date). original_text = the verbatim phrase the window came from.
+  - constituent_units: (for ephemeral forces) the standing units this force DELIVERED/CONTAINED for
+    its mission (e.g. Force O -> ["1st Division"], Force U -> ["VII Corps"]). This is a date-bound
+    mission composition, distinct from the permanent sub_organizations org chart.
   - common_name: (if different from official name)
   - members: List of people associated with this group (commanders, leaders, key personnel)
 
@@ -117,6 +128,19 @@ rules:
     - Corpus caveat: the convention is US-Green-Book-specific. For a non-US-military source, defer to
       the narrator-perspective rule rather than assuming italics = Axis.
   - If no people groups found, return empty People_Groups array
+  - |
+    EPHEMERAL / MISSION-SCOPED FORCES — naval task forces, assault forces (Force U, Force O,
+    Force B), provisional commands, and one-operation battlegroups are REAL organizations and MUST
+    be extracted as their own groups, SEPARATE from the standing units they carried. Rules:
+    - Set organization_lifecycle "ephemeral" and group_type "military_unit".
+    - "Force O (1st Division)" means Force O DELIVERED the 1st Division for the assault — emit TWO
+      groups: Force O (ephemeral, constituent_units ["1st Division"]) AND 1st Division (standing).
+      Force O is NOT the same as 1st Division — do NOT merge/flatten them into one.
+    - Fill active_period from the mission window; if the text gives no date, set precision
+      "unresolved" and KEEP the force (an unknown date never drops it — it is flagged for later
+      supplemental resolution).
+    - These forces are frequently under-extracted; extract EVERY named force (Force A/B/O/U, Task
+      Force NN, assault/follow-up forces).
   - |
     CONJUNCTIONS = SEPARATE GROUPS. When distinct units/organizations are joined by "and"/"or"
     or in a comma list — including a SHARED trailing noun ("Divisions") — emit ONE People_Groups
