@@ -31,6 +31,8 @@ schema: |
         "quantity_text": "10",
         "place_name": "the crossroads in Cherbourg",
         "assertion_source": "narrative",
+        "presence": "present",
+        "absence_reason": null,
         "variants": [],
         "specifications": {},
         "using_unit_name": "2nd Armored Division",
@@ -166,6 +168,25 @@ rules:
     a place without asserting this equipment was in that engagement. If a scene covers the
     Cherbourg crossroads but does not say the equipment was there, IGNORE it. Only an
     explicit assertion (narration saying "5 Shermans engaged at Cherbourg") counts.
+  - |
+    PRESENCE / ABSENCE / SHORTAGE — equipment that was ABSENT or in SHORTAGE is a VALID,
+    important fact — EXTRACT it, do NOT drop it. Set presence:
+    - "present" = it was there / employed (the default).
+    - "absent" = the source states it was NOT there / unavailable ("not a single German plane",
+      "no supporting artillery", "the tanks never arrived").
+    - "shortage" = present but insufficient ("very few heavy weapons", "a handful of mortars").
+    For absent/shortage, set absence_reason to WHY:
+    - "battlefield" = combat / air superiority / suppression / destruction prevented it
+      ("not a single German plane" because of Allied air control; "no supporting artillery"
+      because it was knocked out).
+    - "logistics" = a supply / movement / scheduling failure prevented it ("two AA gun battalions
+      scheduled for D-Day could not come in until the following day"). A logistics-caused absence
+      is ALSO a logistics fact.
+    - "unstated" = absence asserted but the cause is not given.
+    original_text (the verbatim passage) is MANDATORY for an absence/shortage mention — it is the
+    proof of the negative. country_of_origin/operating_country still apply (whose equipment was
+    absent). Example: "not a single German plane" → name "aircraft", presence "absent",
+    absence_reason "battlefield", operating_country "DEU", original_text "not a single German plane".
   - |
     CONFLICTS & TRACEABILITY — conflicting facts across sources are EXPECTED and allowed
     (one source says 10, another says 5): record each as its own mention; do NOT merge or
