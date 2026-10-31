@@ -10,6 +10,14 @@ Parameters:
     Default: 'false'
     AllowedValues: ['true', 'false']
     Description: M4 concurrency kill-switch — 'true' routes triggers to the SFN dispatcher
+  BatchPhase2:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: >-
+      Phase-2 extraction mode. 'false' forces SYNCHRONOUS extraction (overrides the task-def
+      --batch flag via the BATCH_PHASE2 env, consumed by phase2_extract.py) — the predictable path
+      used for gold-standard measurement runs. 'true' uses the async xAI Batch API.
   GrokCacheDisabled:
     Type: String
     Default: '1'
@@ -497,6 +505,8 @@ Resources:
               Value: !Ref MultiDocEnabled
             - Name: GROK_CACHE_DISABLED
               Value: !Ref GrokCacheDisabled
+            - Name: BATCH_PHASE2
+              Value: !Ref BatchPhase2
           LogConfiguration:
             LogDriver: awslogs
             Options:

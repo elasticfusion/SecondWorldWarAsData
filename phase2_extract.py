@@ -864,6 +864,25 @@ def _run_core_extraction(
     return processed, failed
 
 
+def _resolve_batch_mode(cli_batch: bool, logger) -> bool:
+    """BATCH_PHASE2 env override of the --batch CLI flag. The phase2 task-def hardcodes --batch,
+    so BATCH_PHASE2=false/0/no/off is the only way to force SYNCHRONOUS extraction without editing
+    the command; true/1/yes/on forces batch. Env wins; unset leaves the CLI value."""
+    bp = os.environ.get("BATCH_PHASE2")
+    if bp is None:
+        return cli_batch
+    v = bp.strip().lower()
+    if v in ("false", "0", "no", "off"):
+        if cli_batch:
+            logger.info(
+                "BATCH_PHASE2=%s overrides --batch: forcing SYNCHRONOUS extraction", bp
+            )
+        return False
+    if v in ("true", "1", "yes", "on"):
+        return True
+    return cli_batch
+
+
 def main():
     """Main entry point for Phase 2."""
     parser = argparse.ArgumentParser(
@@ -915,6 +934,10 @@ def main():
     )
 
     logger.info("Starting Phase 2: Event and Entity Extraction")
+
+    # BATCH_PHASE2 env override of the --batch CLI flag (the phase2 task-def hardcodes --batch;
+    # this env is the only way to force SYNCHRONOUS extraction without editing the command).
+    args.batch = _resolve_batch_mode(args.batch, logger)
 
     # Step 0: Complete metadata
     logger.info("[phase2 step 0/5] Checking metadata completeness")
