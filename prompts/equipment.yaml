@@ -161,6 +161,10 @@ rules:
     is unclear, leave it null rather than defaulting to German. This is a high-confidence cue:
     precedence just below an explicit statement, ABOVE generic context guessing. Corpus caveat: for
     a non-US-military source, defer to the narrator-perspective rule instead of assuming Axis.
+    TWO ITALIC CONVENTIONS: this applies to italic FORMATION DESIGNATIONS (numbered/named units).
+    An italic BARE SHIP NAME (*Quincy*, *Barton*, *Talybont*) is the vessel-name convention, NOT an
+    enemy marker — do NOT tag it Axis from italics; attribute by context (often ALLIED) and treat it
+    as a naval platform (see the multi-modal platform rule).
   - |
     GENERIC TYPES ARE IN SCOPE — extract both specifically named equipment (M4 Sherman, P-47)
     AND generic equipment references (machine gun, artillery, tank, mine, grenade, barbed wire,
