@@ -68,6 +68,35 @@ rules:
     BAR → category: "infantry_weapons", subcategory: "automatic_rifle"
     88mm gun → category: "artillery", subcategory: "anti_aircraft" (NOT "armor")
   - 'Do NOT use equipment-specific names as category (e.g., "Medium Tank" is WRONG — use "armor")'
+  - |
+    TRANSPORT-CAPABLE PLATFORMS (SHIPS & AIRCRAFT) ARE MULTI-MODAL — route by the ASSERTED
+    ACTIVITY in THIS mention. The same hull/airframe can be a weapon OR a transport depending on
+    what the text says it was doing:
+    - WEAPONS EMPLOYMENT (firing / bombing / strafing / shelling / engaging) → it IS equipment.
+      A named WARSHIP firing (e.g. "Quincy fired its 8-inch guns", "the destroyers shelled the
+      battery") → category "naval"; a combat aircraft (B-24 bombing, fighter-bomber strafing) →
+      category "aircraft". If the ship/aircraft has NAMED mounted weapons (Quincy's 8-inch guns),
+      emit the ship AND each named weapon as SEPARATE equipment records (see CONJUNCTIONS).
+    - MOVING MEN / CARGO (ferrying, landing troops/vehicles, convoy, airlift, air-dropping SUPPLIES,
+      unloading at docks) → this is a LOGISTICS activity, NOT weapons employment. Still extract the
+      platform as equipment (category naval/aircraft) so the reference is captured, but set
+      context to describe the LOGISTICS role (e.g. "landing vehicles on D-Day", "troop-carrier
+      airlift", "convoy member", "unloading at the pier") so a logistics linker can pick it up.
+      (LSTs/LCTs/LCVPs landing; C-47 transports carrying paratroops; cargo planes hauling supplies;
+      a bomber air-dropping resupply.) A platform NAMED ONLY as a unit with NO asserted activity
+      ("the Barton", "Task Force 124") is primarily an ORGANIZATION — still capture it, but do not
+      invent a weapons role it wasn't given.
+    DISCRIMINATOR: FIRING/BOMBING/STRAFING = weapon; CARRYING/FERRYING/LANDING/CONVOYING/UNLOADING/
+    AIRDROPPING-SUPPLIES = logistics. A bomber dropping bombs is a weapon; the same bomber dropping
+    supplies is logistics. A C-47 dropping paratroopers is logistics; strafing would be a weapon.
+  - |
+    PLATFORM TYPE / CLASS is the KEY attribute for ships & aircraft — put it in subcategory:
+    ship class (destroyer / cruiser / battleship / LST / LCT / LCVP / APA / minesweeper / E-boat /
+    torpedo_boat) or aircraft role (fighter / bomber / fighter_bomber / transport / glider). If the
+    source STATES it ("the destroyer Satterlee", "C-47 transports"), use it. If the source does NOT
+    state the type for a NAMED ship/aircraft (bare "Barton", "planes"), DO NOT guess and DO NOT drop
+    — set subcategory null and add "TYPE_UNRESOLVED" to context so it can be resolved by supplemental
+    search later. Capturing the named platform with an unresolved type is REQUIRED, not optional.
   - "Country codes use ISO 3166-1 alpha-3 (USA, GBR, DEU, FRA, ITA, JPN; use SUN for the WWII USSR, NOT USSR/RUS)"
   - |
     country_of_origin = the country that DESIGNED/MANUFACTURED the equipment type,
