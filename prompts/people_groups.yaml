@@ -80,39 +80,42 @@ rules:
   - Use official military designations (e.g., "80th Infantry Division" not "80th Division")
   - Include both Allied and Axis organizations
   - |
-    ITALICS = ENEMY UNIT (typographic convention). In US Army "Green Book"-style histories
-    (and US-military-authored sources generally), a unit/formation name printed in *italics*
-    (markdown `*...*` in this text) denotes an ENEMY unit — the OPPOSING side relative to the
-    narrator. This is a STRONG, DETERMINISTIC signal and applies to ALL enemy/Axis nationalities,
-    NOT just German:
-    - Treat ANY italicized formation (*Fifteenth Army*, *352d Division*, *LXXXIV Corps*,
-      *12th SS Panzer Division*, an italicized Italian or Japanese unit, etc.) as an enemy/Axis
-      organization: extract it as its own group and set alliance_membership ["Axis Powers"].
-    - Resolve country_of_origin to the SPECIFIC enemy nationality from the theater + context — do
-      NOT default to German. ETO: German (DEU). Mediterranean: German (DEU) OR Italian (ITA) by
-      context. Pacific / CBI: Japanese (JPN). Eastern-Front co-belligerents where applicable
-      (Italian ITA, Hungarian HUN, Romanian ROU, Bulgarian BGR, Finnish FIN). If the specific Axis
-      nationality is unclear, still mark it Axis (alliance_membership ["Axis Powers"]) and leave
-      country_of_origin null rather than guessing German.
-    - NON-italic formations are the narrator's own / friendly side unless stated otherwise.
-    - TWO ITALIC CONVENTIONS — DISAMBIGUATE. Green Books italicize BOTH (a) enemy FORMATION
-      designations AND (b) SHIP NAMES (a separate vessel-name convention). Only (a) implies enemy:
-      * An italic FORMATION DESIGNATION — a numbered/named unit (e.g. *352d Division*, *LXXXIV
-        Corps*, *Fifteenth Army*, *5th Torpedo Boat Flotilla*, *Marinegruppenkommando West*,
-        *Kampfgruppe Meyer*) — IS an enemy/Axis organization (rule above).
-      * An italic BARE VESSEL NAME — a single proper-noun ship (e.g. *Quincy*, *Augusta*, *Barton*,
-        *Talybont*, *Satterlee*) — is the SHIP-NAME convention, NOT an enemy marker. Do NOT tag it
-        Axis from italics alone; attribute its nationality by CONTEXT (these are frequently ALLIED
-        US/British warships) and handle it as a naval unit/platform (see the multi-modal ship rule).
-      Discriminator: a unit DESIGNATION (ordinal + echelon: Division/Corps/Army/Regiment/Battalion/
-      Flotilla/Kampfgruppe) → enemy formation; a bare vessel proper-noun → ship, nationality by
-      context.
-    - Precedence: an EXPLICIT nationality statement wins; otherwise italics (for a FORMATION) is a
-      high-confidence cue, ABOVE generic context guessing. Do NOT drop an italicized unit — these
-      enemy units are frequently under-extracted; extract EVERY one.
-    - Caveat: the convention is corpus-specific (US Green Books). If the source is NOT US-military
-      (e.g. a German-authored account), italics may mark the author's OWN enemy instead — fall back
-      to the narrator-perspective rule rather than assuming Axis.
+    ITALICS = ENEMY TACTICAL FORMATION (US Army "Green Book" typographic convention). In US-military-
+    authored histories, a SPECIFIC ENEMY ORDER-OF-BATTLE FORMATION is printed in *italics* (markdown
+    `*...*`). This is a STRONG, DETERMINISTIC signal — BUT it is NARROW. Confirmed by the corpus:
+    - IT MARKS: numbered OR named enemy TACTICAL FIELD formations — *352d Division*, *Seventh Army*,
+      *LXXXIV Corps*, *12th SS Panzer Division*, *6th Parachute Regiment*, *5th Torpedo Boat
+      Flotilla*, and NAMED battlegroups/divisions like *Panzer Lehr*, *Kampfgruppe Meyer*. (In the
+      corpus these are ~100% italic / 0% plain — a rock-solid cue.) Extract EVERY such italic
+      formation as its own group, alliance_membership ["Axis Powers"].
+    - IT DOES **NOT** reliably MARK (do NOT infer enemy/Axis from italics for these — classify them
+      by their WORDS, not by italics):
+      * ENEMY SERVICE BRANCHES / generic national terms — *Luftwaffe*, *Wehrmacht*, *Kriegsmarine*,
+        "German Army/Navy", "the Germans" are PLAIN even though German. (Verified: Luftwaffe is NOT
+        italicized.)
+      * HIGH COMMANDS / STAFF / HQ abbreviations — OKW, OKH, OB WEST, WFSt, Seekriegsleitung,
+        Generalquartiermeister are INCONSISTENT (OKW is mostly plain; others appear italic mainly
+        inside war-diary/KTB CITATIONS, not as the formation convention). Treat these as enemy by
+        their German command vocabulary, NOT by italics.
+      * ALLIED units of ANY kind — they are NEVER italicized by this convention: 3d Canadian
+        Division, Eighth/Ninth Air Force (US Army Air Forces), 82d/101st Airborne, US Corps/Divisions,
+        British units. If you see a KNOWN-ALLIED designation, it is friendly regardless of any italics
+        around it (any italics there are a CITATION/title, not the enemy convention).
+      * SHIP NAMES — an italic bare vessel proper-noun (*Quincy*, *Augusta*, *Barton*, *Talybont*,
+        *Satterlee*) is the separate ship-name convention, NOT an enemy marker; attribute by context
+        (often ALLIED) and handle as a naval platform (see the multi-modal ship rule).
+      * CITATION / TITLE italics — book titles, report names, and war-diary citations (KTB …,
+        "V Corps History", "My Three Years with Eisenhower") are also italic. A US/Allied unit name
+        appearing INSIDE an italic citation is NOT an enemy formation.
+    - NATIONALITY: resolve the specific enemy country by theater + context — do NOT default to German.
+      ETO: DEU. Med: DEU or ITA by context. Pacific/CBI: JPN. Co-belligerents ITA/HUN/ROU/BGR/FIN
+      where applicable. If the specific Axis nationality is unclear, mark alliance ["Axis Powers"] and
+      leave country_of_origin null rather than guessing.
+    - PRECEDENCE: an EXPLICIT nationality statement wins; a KNOWN-ALLIED designation OVERRIDES italics
+      (never tag it Axis); otherwise an italic FORMATION is a high-confidence enemy cue above generic
+      guessing. Do NOT drop italic enemy formations — they are frequently under-extracted; extract all.
+    - Corpus caveat: the convention is US-Green-Book-specific. For a non-US-military source, defer to
+      the narrator-perspective rule rather than assuming italics = Axis.
   - If no people groups found, return empty People_Groups array
   - |
     CONJUNCTIONS = SEPARATE GROUPS. When distinct units/organizations are joined by "and"/"or"

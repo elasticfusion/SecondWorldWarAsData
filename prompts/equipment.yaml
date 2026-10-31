@@ -152,19 +152,26 @@ rules:
     (defender for emplacements, actor for fired/employed) > (3) narrator-relative enemy/friendly
     (rule above) > (4) null. Record original_text so the inference is traceable.
   - |
-    ITALICS = ENEMY (typographic convention). In US Army "Green Book"-style histories, a unit or
-    equipment name in *italics* (markdown `*...*`) denotes the ENEMY — the side OPPOSING the
-    narrator — and applies to ALL Axis/enemy nationalities, NOT just German. If an italicized unit
-    OPERATES the equipment (e.g. "*352d Division* dug in with its guns"), set operating_country to
-    the enemy nationality resolved by theater (ETO: DEU; Med: DEU/ITA by context; Pacific/CBI: JPN;
-    other Axis co-belligerents ITA/HUN/ROU/BGR/FIN where applicable); if the specific Axis country
-    is unclear, leave it null rather than defaulting to German. This is a high-confidence cue:
-    precedence just below an explicit statement, ABOVE generic context guessing. Corpus caveat: for
-    a non-US-military source, defer to the narrator-perspective rule instead of assuming Axis.
-    TWO ITALIC CONVENTIONS: this applies to italic FORMATION DESIGNATIONS (numbered/named units).
-    An italic BARE SHIP NAME (*Quincy*, *Barton*, *Talybont*) is the vessel-name convention, NOT an
-    enemy marker — do NOT tag it Axis from italics; attribute by context (often ALLIED) and treat it
-    as a naval platform (see the multi-modal platform rule).
+    ITALICS = ENEMY TACTICAL FORMATION (US Army "Green Book" convention) — NARROW signal. When an
+    italicized enemy FORMATION (numbered OR named: *352d Division*, *Seventh Army*, *LXXXIV Corps*,
+    *Panzer Lehr*, *Kampfgruppe Meyer*, *5th Torpedo Boat Flotilla*) OPERATES the equipment
+    ("*352d Division* dug in with its guns"), set operating_country to the enemy nationality by
+    theater (ETO: DEU; Med: DEU/ITA by context; Pacific/CBI: JPN; co-belligerents ITA/HUN/ROU/BGR/
+    FIN where applicable; null rather than default German if unclear). High-confidence cue:
+    precedence just below an explicit statement, above generic guessing.
+    DOES NOT APPLY TO (do NOT infer enemy from italics here):
+    - enemy SERVICE BRANCHES / generic terms (*Luftwaffe*, *Wehrmacht*, *Kriegsmarine* are PLAIN,
+      not italic — classify by the word, not italics);
+    - HIGH COMMANDS / STAFF / HQ abbreviations (OKW, OKH, OB WEST, WFSt, Seekriegsleitung) —
+      inconsistent (OKW mostly plain; others italic mainly inside war-diary/KTB citations); classify
+      by their German command vocabulary, not italics;
+    - ALLIED units (never italicized: Canadian, US Army Air Forces/numbered Air Forces, Airborne,
+      US Corps/Divisions, British) — a KNOWN-ALLIED designation OVERRIDES italics;
+    - SHIP NAMES — an italic bare vessel (*Quincy*, *Barton*, *Talybont*) is the vessel-name
+      convention, attribute by context (often ALLIED), treat as a naval platform (multi-modal rule);
+    - CITATION/TITLE italics (book/report/war-diary names) — a unit inside an italic citation is not
+      an enemy formation.
+    Corpus caveat: for a non-US-military source, defer to the narrator-perspective rule.
   - |
     GENERIC TYPES ARE IN SCOPE — extract both specifically named equipment (M4 Sherman, P-47)
     AND generic equipment references (machine gun, artillery, tank, mine, grenade, barbed wire,
