@@ -135,6 +135,23 @@ rules:
     enemy/friendly item). Prefer a perspective+theater-resolved code over null; leave null only
     when the narrator's side OR the theater is genuinely unclear, and note it.
   - |
+    OWNERSHIP FROM OPERATIONAL CONTEXT — when the text does NOT state who owns a piece of
+    equipment, infer operating_country from the OPERATIONAL ROLE in the passage. These are
+    ABSOLUTE facts about the engagement (more reliable than the narrator-relative "enemy/friendly"
+    above), so prefer them:
+    - DEFENSIVE EMPLACEMENTS (mines, minefields, barbed wire, antilanding/beach obstacles,
+      fortifications, pillboxes, coastal batteries, Widerstandsnest/Stützpunkt) belong to the
+      side that was ON THE DEFENSIVE at that place/battle. Normandy beaches → Germany defending →
+      German (DEU). Battle of the Bulge → US defending (initially) → USA. Resolve from WHO HELD/
+      DEFENDED the ground in that engagement.
+    - FIRED / EMPLOYED equipment belongs to the party DOING the action. "the artillery was fired"
+      → the country/unit that FIRED it in this passage's context; attribute to the acting
+      organization (link using_unit_name when the firing unit is named, and set operating_country
+      to that unit's side).
+    RESOLUTION PRECEDENCE for operating_country: (1) explicit statement > (2) operational role
+    (defender for emplacements, actor for fired/employed) > (3) narrator-relative enemy/friendly
+    (rule above) > (4) null. Record original_text so the inference is traceable.
+  - |
     GENERIC TYPES ARE IN SCOPE — extract both specifically named equipment (M4 Sherman, P-47)
     AND generic equipment references (machine gun, artillery, tank, mine, grenade, barbed wire,
     bayonet, knife, parachute, glider, bombs, small arms). For a generic reference, set name to
