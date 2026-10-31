@@ -21,6 +21,7 @@ LOGISTICS_OUTPUT_SCHEMA = {
         "logistics_type": {"type": "string"},
         "category": make_nullable("string"),
         "description": make_nullable("string"),
+        "original_text": make_nullable("string"),  # verbatim provenance anchor
         "severity": enum_field(["critical", "high", "medium", "low"], nullable=True),
         "status": make_nullable("string"),
         "temporal": {"type": ["object", "string", "null"]},
