@@ -1007,6 +1007,18 @@ def _save_casualty(casualty: Dict[str, Any], output_dir: Path) -> None:
 
     from src.utils.file_lock import write_json_with_lock
 
-    write_json_with_lock(filepath, casualty)
-
-    logger.info("Saved casualty: %s", filename)
+    if write_json_with_lock(filepath, casualty):
+        logger.info("Saved casualty: %s", filename)
+    else:
+        # The write guard (schema-invalid) rejected it. Previously this return was IGNORED, so a
+        # rejected casualty vanished with NO signal (silent data loss — the anti-swallow violation;
+        # same class as the #655 groups silent-drop). Make it a LOUD canonical OBSERV so the drop
+        # is greppable/escalatable (casualties is the #1-goal provenance entity — losing one matters).
+        observe(
+            "casualties",
+            "create_blocked",
+            status="warn",
+            casualty_id=str(casualty_id)[:40],
+            ctype=casualty_type,
+            reason="schema_guard_rejected",
+        )
