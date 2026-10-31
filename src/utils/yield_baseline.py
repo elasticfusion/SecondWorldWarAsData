@@ -86,6 +86,51 @@ def _count_dict_terms(text: str, terms: List[str]) -> int:
     return len({t.lower() for t in terms if t and t.lower() in low})
 
 
+# --- Casualties: loss/casualty language (high-recall FLOOR; counts distinct casualty STATEMENTS,
+# not people). Each match is a casualty assertion the extractor should have produced a record for.
+_CASUALTY_RE = re.compile(
+    r"\b(?:"
+    r"\d[\d,]*\s+(?:men|troops|soldiers|casualties|dead|killed|wounded|missing|"
+    r"prisoners?|captured|lost)"  # "700 men lost", "about 200 killed"
+    r"|(?:killed|wounded|missing|captured|casualties|losses|dead)\b"  # bare loss nouns/verbs
+    r"|(?:was|were)\s+(?:sunk|lost|destroyed|disabled)"  # materiel/crew losses
+    r")",
+    re.I,
+)
+
+# --- Logistics: supply/movement/landing language (high-recall FLOOR for logistics statements) ---
+_LOGISTICS_RE = re.compile(
+    r"\b(?:"
+    r"landed?|unloaded?|ferr(?:y|ied)|convoy|resupply|supplies|supply|"
+    r"reinforcements?|build-?up|ammunition|rations?|fuel|beached?|"
+    r"shortage|could not come in|scheduled to arrive|ferried ashore"
+    r")\b",
+    re.I,
+)
+
+# Generic equipment vocabulary — the FLOOR the equipment extractor (now generics-in-scope) should
+# meet. Complements config/equipment_aliases.yaml, which lacks common generic nouns (LST/DUKW/
+# howitzer/tank), which is why the equipment baseline read 0 on an equipment-dense chapter.
+_EQUIPMENT_GENERIC_TERMS = [
+    "lst", "lct", "lci", "lcvp", "dukw", "landing craft", "landing ship",
+    "tank", "sherman", "panzer", "howitzer", "artillery", "gun", "mortar",
+    "machine gun", "rifle", "bayonet", "grenade", "mine", "barbed wire",
+    "destroyer", "cruiser", "battleship", "minesweeper", "e-boat", "torpedo boat",
+    "bomber", "fighter", "fighter-bomber", "glider", "parachute", "aircraft",
+    "rocket", "flak", "pillbox", "bunker", "obstacle", "antitank", "antiaircraft",
+]
+
+
+def _count_casualties(text: str) -> int:
+    """High-recall FLOOR of casualty statements (distinct matched phrases)."""
+    return _count_distinct([m.group(0) for m in _CASUALTY_RE.finditer(text)])
+
+
+def _count_logistics(text: str) -> int:
+    """High-recall FLOOR of logistics statements (distinct matched phrases)."""
+    return _count_distinct([m.group(0) for m in _LOGISTICS_RE.finditer(text)])
+
+
 def deterministic_count(entity_type: str, text: str, terms: List[str] = None) -> int:
     """High-recall FLOOR count of entities of `entity_type` in `text`. Fail-safe -> 0.
 
@@ -98,6 +143,13 @@ def deterministic_count(entity_type: str, text: str, terms: List[str] = None) ->
             return _count_groups(text)
         if entity_type == "people":
             return _count_people_clusters(text)
+        if entity_type == "casualties":
+            return _count_casualties(text)
+        if entity_type == "logistics":
+            return _count_logistics(text)
+        if entity_type == "equipment":
+            # dict aliases + generic vocabulary (the aliases file lacks generic nouns).
+            return _count_dict_terms(text, (terms or []) + _EQUIPMENT_GENERIC_TERMS)
         if terms:
             return _count_dict_terms(text, terms)
         return 0
@@ -122,21 +174,41 @@ def classify_run(per_entity: Dict[str, Tuple[int, int]]) -> Tuple[str, List[str]
     """Book-level severity from {entity: (deterministic, produced)}.
 
     Returns (verdict, offenders) where verdict is ok | warn | fail_stop.
-    fail_stop when ANY entity is 'starved' OR >=MULTI_ENTITY_SHORTFALL entities are short
-    (starved or warn) at once (the book-jeopardizing upstream-fault fingerprint).
+    fail_stop when ANY FATAL-eligible entity is 'starved' OR >=MULTI_ENTITY_SHORTFALL fatal-eligible
+    entities are short at once (the book-jeopardizing upstream-fault fingerprint).
+
+    OBSERVABILITY-ONLY entities (casualties, logistics) are scored + reported (their baseline +
+    warn verdict make undercounts VISIBLE) but are EXCLUDED from the fail_stop decision — per the
+    owner non-fatal policy, a casualties/logistics shortfall escalates LOUD, it does not HALT the
+    run (and these high-recall FLOORs over-count relative to real records, so they must never gate).
     """
     verdicts = {e: classify_entity(d, p) for e, (d, p) in per_entity.items()}
-    starved = [e for e, v in verdicts.items() if v == "starved"]
-    short = [e for e, v in verdicts.items() if v in ("starved", "warn")]
+    fatal_eligible = [e for e in verdicts if e not in _OBSERVABILITY_ONLY_ENTITIES]
+    starved = [e for e in fatal_eligible if verdicts[e] == "starved"]
+    short = [e for e in fatal_eligible if verdicts[e] in ("starved", "warn")]
     if starved or len(short) >= MULTI_ENTITY_SHORTFALL:
         return "fail_stop", sorted(set(starved) | set(short))
-    if short:
-        return "warn", sorted(short)
+    # warn offenders INCLUDE the observability-only entities (visible, non-fatal)
+    all_short = [e for e, v in verdicts.items() if v in ("starved", "warn")]
+    if all_short:
+        return "warn", sorted(all_short)
     return "ok", []
 
 
+# Entities scored for VISIBILITY only — they get a yield.baseline + warn (so undercounts self-report)
+# but never contribute to fail_stop (non-fatal policy; their FLOOR counters over-count vs records).
+_OBSERVABILITY_ONLY_ENTITIES = ("casualties", "logistics")
+
+
 # Entity dir -> (yield-baseline entity key, optional dict-terms loader name).
-_SCORED_ENTITIES = ("groups", "people", "equipment", "places")
+_SCORED_ENTITIES = (
+    "groups",
+    "people",
+    "equipment",
+    "places",
+    "casualties",
+    "logistics",
+)
 
 
 def _book_source_text(output_root) -> str:
