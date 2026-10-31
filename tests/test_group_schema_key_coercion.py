@@ -44,3 +44,18 @@ def test_fail_safe_on_bad_input():
     g = {"group_name": "X"}
     _coerce_group_schema_keys(g)  # must not raise
     assert g["group_name"] == "X"
+
+
+def test_strip_emits_observable_canonical_OBSERV(caplog):
+    """The strip MUST emit a loud canonical OBSERV (not be swallowed) — regression lock on the
+    observe_error(status=) TypeError-swallow bug found during development."""
+    import logging
+
+    with caplog.at_level(logging.WARNING):
+        _coerce_group_schema_keys(
+            {"group_name": "Force O", "delivered_unit": "1st Division"}
+        )
+    assert any(
+        "people_groups.extra_field_stripped" in r.message and "status=warn" in r.message
+        for r in caplog.records
+    ), "strip OBSERV did not emit (swallowed?)"
