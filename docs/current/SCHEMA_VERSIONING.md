@@ -112,3 +112,4 @@ The entity list above is mirrored in code at `src/schemas/entity_registry.py`
 each entity against its enforced schema — so code↔schema drift (an extractor writing a field
 the strict schema forbids) fails the build. Add a new entity to the registry when you add a
 new JSON entity type.
+- people_groups 2.28 -> 2.29 (ADDITIVE, no reprocess): + organization_lifecycle, active_period{start,end,precision,original_text}, constituent_units — ephemeral mission-scoped orgs (naval task forces: date-bound + compositional). Unknown dates allowed (precision=unresolved) per the capture-despite-unknowns principle.
