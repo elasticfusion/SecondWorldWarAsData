@@ -115,3 +115,40 @@ rules:
     Provide a LogisticsID if known, else a short description. Omit when the text does not
     tie the casualty to a logistics problem (co-occurring links are inferred automatically).
   - Count qualifier values: exact, approximately, greater_than, less_than, unknown
+  - |
+    CASUALTY GRANULARITY — casualties come at MULTIPLE levels of specificity and EACH is a
+    separate, valid record. Do NOT require a number, and do NOT collapse different-scope facts.
+    Extract ALL of these (a chapter describing an assault has many):
+    - NUMERIC count ("eighteen casualties", "about four thousand", "only two casualties from
+      enemy fire") -> count fields as usual, scoped to the stated unit.
+    - QUALITATIVE / COMPARATIVE (NO number) -> still a record. Put the verbatim phrase in
+      description + set magnitude ("heavy","light","moderate","severe") and is_comparative true
+      when it compares groups. Examples: "casualties generally were heavier among those who delayed
+      in getting up onto the beach" (magnitude "heavy", comparative); "extraordinarily light
+      casualties on UTAH Beach" (magnitude "light").
+    - PERCENTAGE / RATE ("Casualties to the engineers amounted to about 40 percent for the day")
+      -> record with count.rate {value: 40, unit: "percent", basis: "the engineers", period:
+      "for the day"} (or put the rate in description if the structure doesn't fit) — a rate is a
+      valid casualty magnitude even without an absolute number.
+    - MULTIPLE PER PASSAGE / NESTED SCOPE — one passage often states casualties at DIFFERENT unit
+      scopes; emit ONE record PER scope. E.g. "scattered landings and heavy casualties left the
+      first boat sections [of the 16th Infantry] incapable ... [but] Four boat sections of the 2d
+      Battalion, 16th Infantry ... crossed the beach with only two casualties from enemy fire" ->
+      TWO records: (a) 16th Infantry, magnitude "heavy", qualitative; (b) 2d Battalion 16th
+      Infantry, count 2, cause "combat"/enemy fire, magnitude "light". Different unit, number,
+      cause, and magnitude — never merge them.
+    - ABSENCE / NEGATION ("they had suffered no casualties", "no losses") -> a VALID record:
+      magnitude "none", count.total {value: 0, qualifier: "exact"}, with original_text. Do NOT drop.
+    - IMPLIED / EUPHEMISTIC loss language — casualties are OFTEN stated WITHOUT the word
+      "casualty" and WITHOUT a number; these STILL count. "virtually knocked Company A out of the
+      battle" (Company A, magnitude "severe"); "hard hit ... took two hours to assemble survivors"
+      (heavy weapons company, magnitude "heavy" — "survivors" implies losses); "decimated", "wiped
+      out", "cut to pieces", "only one company survived as an organized group". Extract each as a
+      casualty record scoped to its unit. A passage describing an assault that lists SEVERAL units
+      at different fates (one knocked out, one pinned, one hard hit, one with few casualties) =
+      ONE record PER unit — e.g. right-flank passage -> separate records for Company A (severe),
+      the battalion HQ company (pinned by small-arms fire), the heavy weapons company (heavy), and
+      Company C ("with few casualties" -> magnitude "light"). Do not reduce a multi-unit passage to
+      one record.
+    original_text (verbatim) is MANDATORY on every casualty record — it is the provenance anchor;
+    a casualty with no source text/linkable event is an ORPHAN and will be rejected.

@@ -1,0 +1,260 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "CasualtyID": {
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "type": "string"
+    },
+    "PersonID": {
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "PlaceID": {
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "_last_updated": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": "string"
+    },
+    "_schema_version": {
+      "type": "string"
+    },
+    "cause": {
+      "enum": [
+        "combat",
+        "weather_exposure",
+        "disease",
+        "accident",
+        "other",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "count": {
+      "type": [
+        "object",
+        "integer",
+        "number",
+        "null"
+      ]
+    },
+    "date": {
+      "type": [
+        "object",
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_context": {
+      "properties": {
+        "EventID": {
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+          "type": "string"
+        },
+        "Sub-eventID": {
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "book": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "chapter": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "impacted_equipment": {
+      "items": {
+        "properties": {
+          "EquipmentID": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "string",
+          "object"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "impacted_logistics": {
+      "items": {
+        "properties": {
+          "LogisticsID": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "string",
+          "object"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "impacted_organizations": {
+      "items": {
+        "properties": {
+          "PeopleGroupID": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "string",
+          "object"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "impacted_people": {
+      "items": {
+        "properties": {
+          "PersonID": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "string",
+          "object"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "impacted_places": {
+      "items": {
+        "properties": {
+          "PlaceID": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "string",
+          "object"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "is_comparative": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "magnitude": {
+      "enum": [
+        "none",
+        "light",
+        "moderate",
+        "heavy",
+        "severe",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "nationality": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "original_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "side": {
+      "enum": [
+        "allied",
+        "axis",
+        "neutral",
+        "civilian",
+        "unknown",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "type": [
+        "object",
+        "string",
+        "null"
+      ]
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "CasualtyID",
+    "type"
+  ],
+  "title": "Casualties Output File",
+  "type": "object",
+  "version": "2.27"
+}
