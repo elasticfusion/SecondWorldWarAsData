@@ -319,6 +319,26 @@ class EquipmentExtraction(BaseModel):
             "ambient/stock footage that does not assert it must NOT be extracted."
         ),
     )
+    presence: str = Field(
+        default="present",
+        description=(
+            "Whether the source asserts this equipment was PRESENT, ABSENT, or in SHORTAGE: "
+            "'present' (it was there/used), 'absent' (the source states it was NOT there / "
+            "unavailable — e.g. 'not a single German plane', 'no supporting artillery'), "
+            "'shortage' (present but insufficient — e.g. 'very few heavy weapons'). An absent/"
+            "shortage mention is a VALID equipment fact — do NOT drop it."
+        ),
+    )
+    absence_reason: Optional[str] = Field(
+        default=None,
+        description=(
+            "When presence is 'absent' or 'shortage', WHY: 'battlefield' (combat/air-superiority/"
+            "suppression/destruction prevented it — e.g. 'not a single German plane'), 'logistics' "
+            "(a supply/movement/scheduling failure — e.g. 'two AA gun battalions scheduled for D-Day "
+            "could not come in until the following day'), or 'unstated' (absence asserted, cause not "
+            "given). null when presence is 'present'. A 'logistics' absence is ALSO a logistics fact."
+        ),
+    )
     variants: List[Variant] = Field(default_factory=list)
     specifications: Optional[Dict[str, Any]] = Field(
         default=None, description="Technical specs"
@@ -2463,9 +2483,21 @@ def _build_equipment_data(eq: EquipmentExtraction) -> Dict[str, Any]:
         "common_name": eq.common_name,
         "technical_identifier": eq.technical_identifier or eq.common_name,
         "category": eq.category,
+        # presence/absence is a first-class fact (absent/shortage equipment is valid signal) —
+        # persist it so downstream (incl. the logistics cross-link for logistics-caused absences)
+        # can act on it. Default 'present'.
+        "presence": eq.presence or "present",
     }
+    _add_optional_equipment_fields(equipment_data, eq)
+    return equipment_data
 
-    # Add optional fields
+
+def _add_optional_equipment_fields(
+    equipment_data: Dict[str, Any], eq: "EquipmentExtraction"
+) -> None:
+    """Attach the optional/present-only fields to the equipment record dict (in place)."""
+    if eq.absence_reason:
+        equipment_data["absence_reason"] = eq.absence_reason
     if eq.description:
         equipment_data["description"] = eq.description
     if eq.alternate_names:
@@ -2478,8 +2510,6 @@ def _build_equipment_data(eq: EquipmentExtraction) -> Dict[str, Any]:
         equipment_data["variants"] = [v.model_dump() for v in eq.variants]  # type: ignore[assignment]
     if eq.specifications:
         equipment_data["specifications"] = dict(eq.specifications)  # type: ignore[assignment]
-
-    return equipment_data
 
 
 def _recheck_equipment_fields(
@@ -2523,6 +2553,15 @@ def _coerce_equipment_common_name(eq_data: Dict[str, Any]) -> None:
         eq_data["common_name"] = eq_data["name"]
 
 
+def _equipment_mention_fails_gate(eq: "EquipmentExtraction") -> bool:
+    """Assertion gate: a PRESENT mention requires an assertion_source (rejects ambient/stock
+    footage). An ABSENT/SHORTAGE mention is ITSELF an assertion ("no supporting artillery" IS the
+    stated fact) and is KEPT even without assertion_source — dropping it would lose a valid
+    equipment fact (XChannel-8 absence class). True = drop."""
+    is_absence = (eq.presence or "present") in ("absent", "shortage")
+    return not eq.assertion_source and not is_absence
+
+
 def _process_equipment_item(
     eq_data: Dict[str, Any],
     event_data: Dict[str, Any],
@@ -2547,10 +2586,9 @@ def _process_equipment_item(
         logger.debug("  Data: %s", eq_data)
         return None
 
-    # ASSERTION GATE (code-enforced, not just prompt): a mention exists only when the
-    # source ASSERTS presence. Drop items with no assertion_source (ambient/stock footage
-    # that merely shows/discusses a place without asserting this equipment was there).
-    if not eq.assertion_source:
+    # ASSERTION GATE (code-enforced): a present-mention needs an assertion_source (reject
+    # ambient/stock footage); an ABSENT/SHORTAGE mention is itself an assertion and is kept.
+    if _equipment_mention_fails_gate(eq):
         logger.debug(
             "  Skipping equipment with no asserted presence: %s", eq.common_name
         )
