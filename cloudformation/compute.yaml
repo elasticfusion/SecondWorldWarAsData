@@ -10,6 +10,15 @@ Parameters:
     Default: 'false'
     AllowedValues: ['true', 'false']
     Description: M4 concurrency kill-switch — 'true' routes triggers to the SFN dispatcher
+  GrokCacheDisabled:
+    Type: String
+    Default: '1'
+    AllowedValues: ['0', '1']
+    Description: >-
+      Grok response-cache kill-switch for the pipeline tasks. '1' suppresses ALL Grok cache
+      reads AND writes (every request hits the API fresh; nothing stale served or written) —
+      the trusted-fresh default for the data-quality validation cycle. Set '0' to re-enable
+      caching. Consumed by src/grok_client._cache_globally_disabled().
   OpenSerpWorkerPoolSize:
     Type: String
     Default: '0'
@@ -219,6 +228,8 @@ Resources:
               Value: !Ref DataBucketName
             - Name: NOTIFICATION_TOPIC_ARN
               Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+            - Name: GROK_CACHE_DISABLED
+              Value: !Ref GrokCacheDisabled
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -258,6 +269,8 @@ Resources:
               Value: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
             - Name: NOTIFICATION_TOPIC_ARN
               Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+            - Name: GROK_CACHE_DISABLED
+              Value: !Ref GrokCacheDisabled
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -294,6 +307,8 @@ Resources:
               Value: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
             - Name: NOTIFICATION_TOPIC_ARN
               Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+            - Name: GROK_CACHE_DISABLED
+              Value: !Ref GrokCacheDisabled
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -428,6 +443,8 @@ Resources:
               Value: !Ref MultiDocEnabled
             - Name: NOTIFICATION_TOPIC_ARN
               Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+            - Name: GROK_CACHE_DISABLED
+              Value: !Ref GrokCacheDisabled
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -478,6 +495,8 @@ Resources:
               Value: !Ref NatReadyMaxAttempts
             - Name: MULTI_DOC_ENABLED
               Value: !Ref MultiDocEnabled
+            - Name: GROK_CACHE_DISABLED
+              Value: !Ref GrokCacheDisabled
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -514,6 +533,8 @@ Resources:
               Value: !Ref NatReadyMaxAttempts
             - Name: NOTIFICATION_TOPIC_ARN
               Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+            - Name: GROK_CACHE_DISABLED
+              Value: !Ref GrokCacheDisabled
           LogConfiguration:
             LogDriver: awslogs
             Options:

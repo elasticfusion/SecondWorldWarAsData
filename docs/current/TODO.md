@@ -1579,3 +1579,10 @@ Dev-only tool (not shipped in the pipeline image / lambdas). CI (lint.yml) does 
 it's not blocking merges; the LOCAL gate.sh pip-audit trips on it. Fix: bump requirements-ci.txt to
 pylint==4.0.9 as a standalone dep-maintenance change (not bundled into a feature PR). Unrelated to the
 map-as-source work that surfaced it.
+
+## [LOW · ops/cost] Revert GrokCacheDisabled default to '0' after the data-quality validation cycle
+`cloudformation/compute.yaml` sets the `GrokCacheDisabled` CFN param default to `'1'` (Grok cache
+OFF pipeline-wide, phase0-3) for the current trusted-fresh validation cycle. This is a STANDING
+"cache off" = every run re-pays Grok API cost with no reuse, and it persists across deploys until
+flipped. ACTION: once the data-quality cycle concludes, set the stack param to `'0'` (or change the
+template default) to re-enable caching. (Operational note from the #648 independent review.)
