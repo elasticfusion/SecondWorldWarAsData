@@ -193,7 +193,7 @@ def test_p3a5_group_structured_facts_source_is_attribution(tmp_path):
         tmp_path / "people_groups" / "g1.json",
         {
             "GroupID": "01HX7YZABCDEFGHJKMNPQRSTVW",
-            "_schema_version": "2.28",
+            "_schema_version": "2.29",
             "enrichment_status": "enriched",
             "enrichment_data": {
                 "_source": {

@@ -226,7 +226,8 @@ def _coerce_group_schema_keys(group: dict) -> None:
     try:
         from src.schemas.groups_output import GROUPS_OUTPUT_SCHEMA
 
-        allowed = set(GROUPS_OUTPUT_SCHEMA.get("properties", {}).keys())
+        props = GROUPS_OUTPUT_SCHEMA.get("properties", {})
+        allowed = set(props.keys()) if isinstance(props, dict) else set()
         if not allowed:
             return
         extra = [k for k in list(group.keys()) if k not in allowed]

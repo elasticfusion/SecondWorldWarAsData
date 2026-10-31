@@ -44,7 +44,9 @@ GROUPS_OUTPUT_SCHEMA = {
             "type": ["object", "null"],
             "additionalProperties": False,
             "properties": {
-                "start": make_nullable("string"),  # ISO date OR a fuzzy phrase ("D-Day")
+                "start": make_nullable(
+                    "string"
+                ),  # ISO date OR a fuzzy phrase ("D-Day")
                 "end": make_nullable("string"),
                 "precision": enum_field(
                     ["exact", "approximate", "unresolved"], nullable=True
