@@ -22,6 +22,7 @@ schema: |
         "type": "supply_shortage",
         "category": "ammunition",
         "description": "Ammunition supplies critically low for VII Corps",
+        "original_text": "ammunition supplies were critically low",
         "severity": "critical",
         "date_string": "1944-07-15",
         "delivery_method": "truck convoy",
