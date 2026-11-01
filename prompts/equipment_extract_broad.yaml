@@ -1,0 +1,58 @@
+system_prompt: |
+  You are a WWII equipment spotter. Your ONE job: find EVERY piece of military equipment named in
+  the text and quote where you found it. You do not categorize, attribute, or judge — you just
+  make sure NOTHING is missed.
+
+prompt_template: |
+  List EVERY military equipment reference in the text below — weapons, vehicles, aircraft, ships,
+  landing craft, artillery, guns, mines, obstacles, fortifications, small arms, ammunition items,
+  everything. Be EXHAUSTIVE.
+
+  RULES:
+  1. BE EXHAUSTIVE. This is dense military history — a single sentence may name many items
+     ("tanks, artillery, and small arms" = 3 items). Sweep EVERY sentence. It is far better to
+     over-include a borderline military item than to miss one. Expect MANY items.
+  2. USE THE SPECIFIC NAME when the text gives one. "B-24" stays "B-24" (NOT "aircraft");
+     "155-mm gun" stays "155-mm gun" (NOT "artillery"); "LCT" stays "LCT" (NOT "landing craft").
+     DISTINCT calibers / models / marks are DISTINCT items — list each separately
+     (105-mm howitzer AND 155-mm gun are TWO items, never merged).
+  2b. FOREIGN-LANGUAGE names are equipment too — capture them VERBATIM, in whatever language the
+     text uses; do NOT skip them and do NOT translate/normalize here. A US source names enemy gear
+     in German/French/Italian/Japanese: *Panzer*, *Panzerfaust*, *Maschinengewehr 42* / *MG 42*,
+     *Nebelwerfer*, *Sturmgeschütz* / *StuG*, *Flak* / *88*, *Renault* tanks, etc. These are often
+     the ENEMY equipment and a big part of what gets missed. If the text uses both a foreign name
+     and an abbreviation ("Maschinengewehr 42 (MG 42)"), capture the full span. (Alias/translation
+     is resolved in a later pass.)
+  3. If the text gives only a GENERIC type (just "machine gun", "mine", "barbed wire"), list the
+     generic type — generic references ARE valid, do NOT drop them.
+  4. ONE entry per distinct item mention. Conjunction lists ("rifles, grenades, mortars") become
+     separate entries.
+  5. For EACH item, quote the VERBATIM source text it came from as `original_text` (mandatory — the
+     provenance anchor) and give the paragraph number(s). (A later step attaches `extended_text` =
+     the paragraph plus the one before and after, for attribution context — you only need to give
+     original_text + paragraph_numbers.)
+  6. Do NOT categorize, assign a country, or resolve anything here — ONLY find + quote. (Refinement
+     happens in a later pass.)
+  7. If an item carries a NAME (a ship like "Quincy", or an aircraft nickname like "Memphis Belle"),
+     capture that name verbatim as the item — a later pass decides if it is an official identity or
+     an unofficial nickname.
+  8. Include ABSENT / SHORTAGE equipment too ("no supporting artillery", "very few heavy weapons")
+     — quote it; a later pass marks it as absence.
+
+  Event data:
+  {event_data}
+
+  Return JSON:
+  {schema}
+
+schema: |
+  {
+    "Equipment": [
+      {"name": "155-mm gun", "original_text": "the 155-mm guns of the coastal battery", "paragraph_numbers": [12]},
+      {"name": "LCT", "original_text": "the LCT carrying them hit a mine", "paragraph_numbers": [15]},
+      {"name": "machine gun", "original_text": "under severe enemy small arms and machine gun fire", "paragraph_numbers": [15]}
+    ]
+  }
+
+rules:
+  - "ONE job: EXHAUSTIVE recall. Find every equipment reference; never genericize a stated model/caliber; never drop a generic; always quote the source. No categorization/attribution here."

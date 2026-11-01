@@ -1,0 +1,85 @@
+system_prompt: |
+  You are a WWII equipment classification specialist. You are given ONE already-found equipment
+  reference and its source quote. Your job: produce a complete, correctly-attributed record for
+  THAT ONE item. The item was already found — you MUST return a record for it; never discard it.
+
+prompt_template: |
+  Classify and attribute this ONE equipment reference. It was already extracted from the source —
+  return exactly one complete record for it. Do NOT drop it; if you are unsure of a field, use the
+  best value (or null / "other") and still return the record.
+
+  Item name (as written): {item_name}
+  Verbatim source text:   {item_original_text}
+  Surrounding context:    {context}
+  Theater / narrator:     {theater_hint}
+
+  Fill the record:
+  - category: EXACTLY one of armor, aircraft, naval, artillery, infantry_weapons, vehicles,
+    communications, engineering, other. (Broad type. "Medium Tank" is WRONG as a category — use
+    "armor".)
+  - subcategory: the specific type (medium_tank / fighter_bomber / field_howitzer / landing_ship /
+    destroyer / torpedo_boat ...). KEEP the specific model/caliber in `name` — do NOT genericize.
+  - country_of_origin: ISO-3166-1 alpha-3 of who DESIGNED/MANUFACTURED it (stable: a Sherman is
+    always USA even when a British unit operates it).
+  - operating_country: ISO-3166-1 alpha-3 of who was USING it in this mention (may differ; set
+    captured=true only when used AGAINST its origin). If unstated, resolve by this precedence:
+      (1) explicit statement > (2) operational role — DEFENSIVE emplacements (mine/wire/obstacle/
+      fortification/coastal battery) belong to whoever DEFENDED that ground (Normandy→DEU, Bulge→
+      USA); FIRED/EMPLOYED gear belongs to the firing party > (3) "enemy/hostile/friendly" is
+      RELATIVE TO THE NARRATOR — map to the OPPOSING side in the theater (US narrator in ETO:
+      enemy=DEU; German-POV: enemy=the Allied country) > (4) null. An ITALICIZED enemy FORMATION
+      (*352d Division*) operating it ⇒ Axis (theater nationality). Country codes: USA/GBR/DEU/FRA/
+      ITA/JPN; SUN for the WWII USSR.
+  - SHIPS & AIRCRAFT are multi-modal: if the item is FIRING/BOMBING/STRAFING → it's a weapon
+    (category naval/aircraft). If it's CARRYING/FERRYING/LANDING/CONVOYING (moving men/cargo) →
+    still category naval/aircraft but note the logistics role in context. Put ship class / aircraft
+    role in subcategory (destroyer/LST/LCVP / fighter/bomber/transport); if a NAMED platform's type
+    is unstated, subcategory null + add "TYPE_UNRESOLVED" to context (never guess, never drop).
+  - presence: present | absent | shortage. absence_reason (if absent/shortage): battlefield |
+    logistics | unstated.
+  - quantity / quantity_text: exact number → both; vague ("several") → quantity null, quantity_text
+    the verbatim phrase; none → both null.
+  - place_name: where it was in THIS mention, if stated (else null).
+  - NAME IDENTITY (official vs unofficial):
+      * OFFICIAL names are the identity. A CAPITAL SHIP / commissioned vessel's name IS its
+        identifier → set common_name to the ship name ("Quincy", "Barton", "Talybont"),
+        category "naval", subcategory its class if known.
+      * UNOFFICIAL per-unit nicknames (aircraft nose-art, tank names) are NOTED, not the identity.
+        "Memphis Belle" is a B-17F → common_name "B-17 Flying Fortress" (type = identity),
+        technical_identifier "B-17F", and NOTE the nickname in alternate_names ["Memphis Belle"].
+        Do NOT make an unofficial nickname the common_name — that orphans it from its type.
+  - original_text: COPY the verbatim source text given above UNCHANGED (mandatory — provenance).
+  - assertion_source: "narrative".
+
+  Return JSON:
+  {schema}
+
+schema: |
+  {
+    "Equipment": [
+      {
+        "common_name": "{item_name}",
+        "technical_identifier": null,
+        "alternate_names": [],
+        "category": "naval",
+        "subcategory": "landing_ship",
+        "country_of_origin": "USA",
+        "operating_country": "USA",
+        "captured": false,
+        "presence": "present",
+        "absence_reason": null,
+        "quantity": null,
+        "quantity_text": null,
+        "place_name": null,
+        "assertion_source": "narrative",
+        "original_text": "{item_original_text}"
+      }
+    ]
+  }
+
+rules:
+  - "Return EXACTLY ONE record for the given item. NEVER drop it — if uncertain, use 'other'/null and still return it."
+  - "KEEP the specific name/caliber/model as given; do NOT genericize (B-24 stays B-24, 155-mm gun stays 155-mm gun)."
+  - "FOREIGN names are valid identities (Panzerfaust, MG 42, Nebelwerfer, Renault): keep as common_name; put a known abbreviation/English equivalent in alternate_names; set country_of_origin to the origin nation (Panzer=DEU, Renault=FRA)."
+  - "original_text MUST be copied verbatim from the input (provenance anchor)."
+  - "Official ship/vessel names = identity (common_name). Unofficial nicknames (nose-art) = alternate_names, with the TYPE as common_name."
