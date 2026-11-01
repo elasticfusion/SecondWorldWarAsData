@@ -36,13 +36,19 @@ def _event_files(output_root: Path, book: str | None) -> list[Path]:
     content = output_root / "content"
     if not content.is_dir():
         return []
-    globber = content.glob(f"{book}/*-event.json") if book else content.rglob("*-event.json")
+    globber = (
+        content.glob(f"{book}/*-event.json") if book else content.rglob("*-event.json")
+    )
     return sorted(globber)
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Equipment-only re-run (skips events/people/enrichment)")
-    ap.add_argument("--output-root", default="output", help="Output root (default: output)")
+    ap = argparse.ArgumentParser(
+        description="Equipment-only re-run (skips events/people/enrichment)"
+    )
+    ap.add_argument(
+        "--output-root", default="output", help="Output root (default: output)"
+    )
     ap.add_argument("--book", default=None, help="Scope to one book dir (default: all)")
     args = ap.parse_args()
 
@@ -68,7 +74,9 @@ def main() -> int:
 
     cache_dir = output_root.parent / "cache" / "api"
     cache_dir.mkdir(parents=True, exist_ok=True)
-    grok_client = GrokClient(cache_dir, batch_mode=False)  # synchronous, honors GROK_CACHE_DISABLED
+    grok_client = GrokClient(
+        cache_dir, batch_mode=False
+    )  # synchronous, honors GROK_CACHE_DISABLED
 
     logger.info("Equipment-only re-run over %d event file(s)", len(events))
     for ev in events:
@@ -80,7 +88,8 @@ def main() -> int:
     persisted = [
         p
         for p in eq_dir.glob("*.json")
-        if p.name not in ("index.json", ".processed_events.json", "duplicate_report.json")
+        if p.name
+        not in ("index.json", ".processed_events.json", "duplicate_report.json")
     ]
     logger.info("DONE — equipment records persisted: %d", len(persisted))
     for p in sorted(persisted):
