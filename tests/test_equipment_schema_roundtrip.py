@@ -46,3 +46,12 @@ def test_absent_equipment_record_validates():
 def test_schema_has_presence_and_absence_reason():
     props = EQUIPMENT_OUTPUT_SCHEMA["properties"]
     assert "presence" in props and "absence_reason" in props
+
+
+def test_schema_has_all_process_fields():
+    """The 4 fields _process_equipment_item adds (beyond _build) must be in the schema (2.27):
+    place_name/quantity/quantity_text/_provenance — their absence caused additionalProperties
+    blocks AFTER the #663 presence/absence_reason fix (2026-11-01)."""
+    props = EQUIPMENT_OUTPUT_SCHEMA["properties"]
+    for f in ("place_name", "quantity", "quantity_text", "_provenance"):
+        assert f in props, f

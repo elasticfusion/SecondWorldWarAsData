@@ -538,6 +538,15 @@ def _handle_schema_validation_error(
     """
     loc = "/".join(str(p) for p in e.absolute_path) or "<root>"
     reason = f"{e.validator} at {loc}"
+    # ACTIONABLE ALARMS: for additionalProperties, name the EXACT offending key(s) — '<root>' alone
+    # is not actionable (you can't fix a field you can't see). jsonschema puts the unexpected keys
+    # in e.message ("Additional properties are not allowed ('x','y' were unexpected)"); surface them.
+    if e.validator == "additionalProperties":
+        import re as _re
+
+        extras = _re.findall(r"'([^']+)'", str(getattr(e, "message", "")))
+        if extras:
+            reason = f"additionalProperties at {loc}: unexpected {extras}"
     if status == "needs_upgrade" and _has_identity_floor(entity_type, data):
         logger.warning(
             "Allowing pre-%s %s write (%s) despite current-schema violation (%s): "
