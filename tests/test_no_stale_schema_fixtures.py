@@ -13,8 +13,6 @@ from src.schemas import ENTITY_SCHEMA_VERSIONS
 
 _TESTS = Path(__file__).parent
 _MARKER = "# schema-current-fixture"
-    r'"_schema_version"\s*:\s*"(\d+\.\d+)"\s*,?\s*' + re.escape(_MARKER)
-)
 
 
 def test_tagged_fixtures_match_current_target():
