@@ -13,6 +13,18 @@ narrow, NOT because the code is clean. ACTION: widen `--select` incrementally (s
 names/unused; then `I` import-order), clear the resulting backlog per family, pin a `[tool.ruff.lint]`
 config. Do it family-by-family so the gate doesn't drown. (Raised 2026-11-01.)
 
+
+### Refactor: evaluate running entity extractors in PARALLEL (MED)
+Observed 2026-11-01 (chapter-8 sync run): biography/Wikipedia enrichment ran SERIALLY and stalled the
+whole Phase-2 for 10+ minutes (per-person live Wikipedia/Grokipedia calls — Jodl, von Rundstedt),
+blocking equipment extraction (which runs AFTER core/optional entities) from even starting. The
+entity extractors (people/groups/places/dates/equipment/casualties/logistics + enrichment) are
+largely INDEPENDENT per chapter. ACTION: evaluate fanning them out concurrently (async/thread/process
+pool, or at least decoupling slow network-bound enrichment from the critical extraction path so a
+hung Wikipedia lookup can't block equipment/casualties). Consider: bounded concurrency, per-entity
+timeouts, enrichment as a deferred/parallel stage. Must preserve ordering invariants (places persist
+before equipment resolves place_name->PlaceID) + never-drop/observability. (Raised by owner.)
+
 ## ⭐ OPEN ISSUES (at a glance — highest priority first)
 
 The curated list of what is still OPEN. Each points to its detail section lower in this file.
