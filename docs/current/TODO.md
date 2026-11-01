@@ -4,6 +4,15 @@
 
 ---
 
+
+### Tooling: widen ruff beyond `--select B` (LOW/MED)
+`scripts/gate.sh` runs `ruff check src/ lambda_handlers/ --select B` (flake8-bugbear ONLY); there is
+NO `[tool.ruff]` config in pyproject. Running ruff with DEFAULT rules reports ~83 findings (55 auto-
+fixable — unused imports, etc.) the gate never sees. ruff "never fails" because the rule set is too
+narrow, NOT because the code is clean. ACTION: widen `--select` incrementally (start `B,F` → undefined
+names/unused; then `I` import-order), clear the resulting backlog per family, pin a `[tool.ruff.lint]`
+config. Do it family-by-family so the gate doesn't drown. (Raised 2026-11-01.)
+
 ## ⭐ OPEN ISSUES (at a glance — highest priority first)
 
 The curated list of what is still OPEN. Each points to its detail section lower in this file.
