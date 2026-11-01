@@ -19,6 +19,18 @@ prompt_template: |
     "armor".)
   - subcategory: the specific type (medium_tank / fighter_bomber / field_howitzer / landing_ship /
     destroyer / torpedo_boat ...). KEEP the specific model/caliber in `name` — do NOT genericize.
+  - SPECIALIZE from context: the item name may be generic ("tanks", "aircraft", "guns") because the
+    recall pass quoted a short span. Read the Surrounding context: if it NAMES a specific model /
+    mark / caliber for this item, SET common_name to that specific identity — generic "tanks" with
+    context "Panzer IV tanks of the 21st Panzer counterattacked" ⇒ common_name "Panzer IV" (not
+    "tanks"); "aircraft" with "B-24 Liberators of the Eighth bombed" ⇒ "B-24 Liberator". Only
+    specialize when the SAME context clearly refers to THIS item; if the context does not pin a
+    specific model, keep the generic name (do NOT invent a model from general knowledge).
+  - NOT EQUIPMENT (formation leak): if this "item" is actually a military UNIT/FORMATION (division/
+    regiment/corps/brigade/battalion/Kampfgruppe/task force — a body of troops, not a thing), it was
+    captured in error. Still return the record (never drop), but set category "other" and put
+    "NOT_EQUIPMENT_FORMATION" at the START of context so it can be routed out of equipment. Do NOT
+    fabricate equipment attributes for it.
   - country_of_origin: ISO-3166-1 alpha-3 of who DESIGNED/MANUFACTURED it (stable: a Sherman is
     always USA even when a British unit operates it).
   - operating_country: ISO-3166-1 alpha-3 of who was USING it in this mention (may differ; set

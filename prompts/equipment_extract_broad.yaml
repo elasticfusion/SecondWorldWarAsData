@@ -1,7 +1,8 @@
 system_prompt: |
-  You are a WWII equipment spotter. Your ONE job: find EVERY piece of military equipment named in
-  the text and quote where you found it. You do not categorize, attribute, or judge — you just
-  make sure NOTHING is missed.
+  You are a WWII equipment spotter. Your ONE job: find EVERY piece of military EQUIPMENT (weapons,
+  vehicles, aircraft, ships, guns, materiel) named in the text and quote where you found it. You do
+  NOT list military UNITS/FORMATIONS (divisions, regiments, corps — those are organisations handled
+  elsewhere). You do not categorize or attribute — you just make sure no EQUIPMENT is missed.
 
 prompt_template: |
   List EVERY military equipment reference in the text below — weapons, vehicles, aircraft, ships,
@@ -23,6 +24,18 @@ prompt_template: |
      the ENEMY equipment and a big part of what gets missed. If the text uses both a foreign name
      and an abbreviation ("Maschinengewehr 42 (MG 42)"), capture the full span. (Alias/translation
      is resolved in a later pass.)
+  2c. NOT EQUIPMENT — military UNITS / FORMATIONS are ORGANISATIONS (people), handled by a
+     different pass. Do NOT list a unit/formation as equipment, even when its name contains a
+     weapon word ("Panzer", "SS Panzer", "Panzergrenadier", "Werfer", "Luftwaffe"). Exclude:
+     division, regiment, corps, brigade, battalion, company, platoon, squadron, wing, group,
+     Kampfgruppe(n), Panzer/Panzergrenadier/Jaeger/Luftwaffe Field/SS *Division*, task force,
+     and bare "division"/"regiment"/"unit"/"forces". The distinction: a FORMATION is a body of
+     troops (has a number + echelon word: "21st Panzer Division", "II SS Panzer Corps"); the
+     EQUIPMENT it operates is separate ("the division's *tanks*", "*StuG* of the assault-gun
+     battalion" -> list the tanks / StuG, NOT the division/battalion). Also do NOT list the bare
+     word "equipment"/"materiel"/"weapons" alone as an item unless the text gives no more specific
+     noun in that span.
+
   3. If the text gives only a GENERIC type (just "machine gun", "mine", "barbed wire"), list the
      generic type — generic references ARE valid, do NOT drop them.
   4. ONE entry per distinct item mention. Conjunction lists ("rifles, grenades, mortars") become

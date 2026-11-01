@@ -2709,6 +2709,23 @@ def _coerce_equipment_common_name(eq_data: Dict[str, Any]) -> None:
         eq_data["common_name"] = eq_data["name"]
 
 
+def _equipment_is_formation_leak(eq: "EquipmentExtraction") -> bool:
+    """FORMATION-LEAK GATE: broad can over-capture a UNIT/FORMATION (division/regiment/corps) as
+    equipment; refine flags it with NOT_EQUIPMENT_FORMATION at the start of context. Route it OUT of
+    equipment (belongs to groups) with a loud ACTIONABLE OBSERV (known misclass correction, not a
+    silent drop). True = routed out."""
+    if not (eq.context or "").startswith("NOT_EQUIPMENT_FORMATION"):
+        return False
+    observe(
+        "equipment",
+        "formation_rejected",
+        status="warn",
+        item=(eq.common_name or "")[:60],
+        note="unit/formation captured as equipment by broad; routed out (belongs to groups)",
+    )
+    return True
+
+
 def _equipment_mention_fails_gate(eq: "EquipmentExtraction") -> bool:
     """Assertion gate: a PRESENT mention requires an assertion_source (rejects ambient/stock
     footage). An ABSENT/SHORTAGE mention is ITSELF an assertion ("no supporting artillery" IS the
@@ -2716,6 +2733,34 @@ def _equipment_mention_fails_gate(eq: "EquipmentExtraction") -> bool:
     equipment fact (XChannel-8 absence class). True = drop."""
     is_absence = (eq.presence or "present") in ("absent", "shortage")
     return not eq.assertion_source and not is_absence
+
+
+def _validate_and_gate_equipment(
+    eq_data: Dict[str, Any],
+) -> Optional["EquipmentExtraction"]:
+    """Validate the raw item and apply the drop gates. Returns the EquipmentExtraction to persist,
+    or None when the item is invalid, fails the assertion gate, or is a formation leak.
+    """
+    try:
+        _coerce_equipment_common_name(eq_data)
+        eq = EquipmentExtraction.model_validate(eq_data)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - invalid shape is skipped (logged), never crashes
+        logger.warning("  Skipping invalid equipment data: %s", e)
+        logger.debug("  Data: %s", eq_data)
+        return None
+    # ASSERTION GATE: a present-mention needs an assertion_source (reject ambient/stock footage);
+    # an ABSENT/SHORTAGE mention is itself an assertion and is kept.
+    if _equipment_mention_fails_gate(eq):
+        logger.debug(
+            "  Skipping equipment with no asserted presence: %s", eq.common_name
+        )
+        return None
+    # FORMATION-LEAK GATE: a unit/formation captured as equipment is routed out (loud OBSERV).
+    if _equipment_is_formation_leak(eq):
+        return None
+    return eq
 
 
 def _process_equipment_item(
@@ -2733,21 +2778,8 @@ def _process_equipment_item(
     places_index: Optional[Dict[str, str]] = None,
 ) -> Optional[Path]:
     """Process a single equipment item. Returns equipment file path or None."""
-    try:
-        _coerce_equipment_common_name(eq_data)
-        # Validate and parse
-        eq = EquipmentExtraction.model_validate(eq_data)
-    except Exception as e:
-        logger.warning("  Skipping invalid equipment data: %s", e)
-        logger.debug("  Data: %s", eq_data)
-        return None
-
-    # ASSERTION GATE (code-enforced): a present-mention needs an assertion_source (reject
-    # ambient/stock footage); an ABSENT/SHORTAGE mention is itself an assertion and is kept.
-    if _equipment_mention_fails_gate(eq):
-        logger.debug(
-            "  Skipping equipment with no asserted presence: %s", eq.common_name
-        )
+    eq = _validate_and_gate_equipment(eq_data)
+    if eq is None:
         return None
 
     # Link entities
