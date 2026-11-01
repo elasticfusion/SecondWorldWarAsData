@@ -1,6 +1,8 @@
 """Military equipment extraction from event data."""
 
+import hashlib
 import json
+import re
 import logging
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
@@ -11,6 +13,7 @@ import ulid
 from pydantic import BaseModel, Field, field_validator
 
 from src.grok_client import GrokClient, BatchModeCollecting
+from src.utils.observe import observe, observe_error
 from src.utils.http_pool import get_session
 from src.utils.json_validator import _fix_invalid_ulids
 from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
@@ -362,6 +365,13 @@ class EquipmentExtraction(BaseModel):
     )
     paragraph_numbers: List[int] = Field(
         default_factory=list, description="Paragraph numbers where mentioned"
+    )
+    extended_text: Optional[str] = Field(
+        default=None,
+        description=(
+            "Code-assembled 3-paragraph window (the reference paragraph plus the one "
+            "before and after), verbatim from the source — attribution context + audit."
+        ),
     )
     supporting_units: List["SupportingUnitInput"] = Field(
         default_factory=list,
@@ -2229,67 +2239,211 @@ def _validate_event_data(event_data: Dict[str, Any], event_file: Path) -> bool:
 def _extract_equipment_with_llm(
     event_data: Dict[str, Any], grok_client: GrokClient, max_retries: int
 ) -> Optional[List[Dict[str, Any]]]:
-    """Extract equipment using LLM with retry logic."""
+    """Multi-run equipment extraction: Run-1 BROAD (recall) -> Run-2 REFINE (per-item precision).
+    Returns the classified item list that _process_equipment_item consumes (same contract as the
+    old single-prompt path). Run-3 disambiguation + merge remain downstream, unchanged.
+
+    Both runs honor the grok client's batch_mode (sync -> inline; batch -> each call queues via
+    BatchModeCollecting, resolved across collect/retrieve passes). NEVER-DROP: every broad item
+    yields a refined record (or a loud fallback), per the design.
+    """
+    broad_items = _extract_equipment_broad(event_data, grok_client)
+    if not broad_items:
+        return []
+    refined: List[Dict[str, Any]] = []
+    fallbacks = 0
+    for item in broad_items:
+        rec = _refine_equipment_item(item, event_data, grok_client)
+        if not rec:
+            continue
+        if rec.pop(
+            "_refine_fallback", False
+        ):  # strip transient flag; count the degradation
+            fallbacks += 1
+        refined.append(rec)
+    # ACTIONABLE: refine FAILED to classify some items (model/parse degradation) — they survive as
+    # minimal present records (never dropped), but a non-zero count is a real quality signal to act
+    # on. Fires only when it genuinely happens (not a dead alarm).
+    if fallbacks:
+        observe(
+            "equipment",
+            "refine_degraded",
+            status="warn",
+            broad=len(broad_items),
+            fallbacks=fallbacks,
+            event_id=(event_data.get("Event") or {}).get("EventID", ""),
+            note="refine returned no usable classification; kept minimal present record",
+        )
+    return _fix_invalid_ulids(refined)
+
+
+def _extract_equipment_broad(
+    event_data: Dict[str, Any], grok_client: GrokClient
+) -> List[Dict[str, Any]]:
+    """Run 1 — BROAD recall. Returns raw items [{name, original_text, paragraph_numbers}].
+    One call per event. Honors batch_mode (BatchModeCollecting propagates on the collect pass).
+    """
     from src.utils.prompt_loader import render_prompt
 
-    # Serialize CANONICALLY (sort_keys=True): the full event_data is embedded in the cached
-    # prompt and _make_cache_key hashes the prompt string, so key ordering must be stable.
     prompt = render_prompt(
-        "equipment", event_data=json.dumps(event_data, indent=2, sort_keys=True)
+        "equipment_extract_broad",
+        event_data=json.dumps(event_data, indent=2, sort_keys=True),
     )
+    _key = _equipment_run_cache_key(event_data, grok_client, "broad")
+    try:
+        out = grok_client.extract_json(
+            prompt, temperature=0.1, cache_type="equipment_broad", cache_key=_key
+        )
+    except BatchModeCollecting:
+        raise
+    except Exception as e:  # noqa: BLE001 - broad failure is a loud empty, not a crash
+        observe_error("equipment", "broad_failed", reason=type(e).__name__)
+        return []
+    if isinstance(out, dict):
+        for _k in ("Equipment", "equipment"):
+            if _k in out:
+                out = out[_k]
+                break
+    return out if isinstance(out, list) else []
 
-    # STABLE, content-independent cache_key (the complete fix). sort_keys alone is NOT enough:
-    # _stamp_schema_versions rewrites *-event.json BETWEEN the batch COLLECT pass and the
-    # RETRIEVE re-run (injects _schema_version/_metadata), so the retrieve loads event_data with
-    # ADDED keys -> a prompt-derived key would still differ -> retrieve cache-MISS -> empty
-    # equipment_list -> 0 persisted (the supplemental #399/#401 bug class). Keying on the
-    # DETERMINISTIC EventID (stable across passes) + cache_type + model makes collect-key ==
-    # retrieve-key regardless of any event_data content/ordering drift. Mirrors supplemental.
-    _cache_key = _equipment_cache_key(event_data, grok_client)
 
-    for attempt in range(max_retries):
-        try:
-            equipment_list = grok_client.extract_json(
-                prompt,
-                temperature=0.1,
-                use_cache=(attempt == 0),
-                cache_type="equipment",
-                cache_key=_cache_key,
-            )
+def _build_extended_text(
+    event_data: Dict[str, Any], paragraph_numbers: List[int]
+) -> str:
+    """Code-assemble extended_text = paragraph(n-1) + (n) + (n+1), VERBATIM from the event's
+    Sub-event_fulltext ({"Paragraph_N": text}). Deterministic — never LLM-reproduced."""
+    if not paragraph_numbers:
+        return ""
+    para = _paragraph_lookup(event_data)
+    if not para:
+        return ""
+    wanted = _window_para_nums(paragraph_numbers, para)
+    return "\n\n".join(para[w] for w in wanted)
 
-            # The prompt schema (prompts/equipment.yaml) specifies the wrapper key "Equipment"
-            # (capital E) and the model returns it that way; older/other responses used lowercase
-            # "equipment". Accept EITHER — a case mismatch here silently discards the ENTIRE
-            # equipment list (dict falls through isinstance(list) -> None -> "No equipment
-            # extracted"), which is the XChannel-8 0-equipment-on-an-equipment-dense-chapter bug.
-            if isinstance(equipment_list, dict):
-                for _k in ("Equipment", "equipment"):
-                    if _k in equipment_list:
-                        equipment_list = equipment_list[_k]
-                        break
 
-            if isinstance(equipment_list, list):
-                return _fix_invalid_ulids(equipment_list)
+def _paragraph_lookup(event_data: Dict[str, Any]) -> Dict[int, str]:
+    """Gather {absolute_paragraph_number: verbatim_text} across all sub-events."""
+    para: Dict[int, str] = {}
+    for se in event_data.get("Event", {}).get("Sub-events", []):
+        for k, v in (se.get("Sub-event_fulltext") or {}).items():
+            m = re.match(r"Paragraph_(\d+)$", str(k))
+            if m and isinstance(v, str):
+                para[int(m.group(1))] = v
+    return para
 
-            return None
 
-        except BatchModeCollecting:
-            raise  # collect pass: propagate so the event is NOT marked processed
-        except Exception as e:
-            if attempt < max_retries - 1:
-                logger.warning("  ⚠ Attempt %s failed: %s", attempt + 1, e)
-                logger.info("  Retrying (%s/%s)...", attempt + 2, max_retries)
-            else:
-                import os
+def _window_para_nums(paragraph_numbers: List[int], para: Dict[int, str]) -> List[int]:
+    """The sorted set of present paragraph numbers in the (n-1, n, n+1) windows."""
+    wanted: set = set()
+    for n in paragraph_numbers:
+        wanted.update(w for w in (n - 1, n, n + 1) if w in para)
+    return sorted(wanted)
 
-                if os.environ.get("PIPELINE_PHASE"):
-                    logger.info(
-                        "  ⊘ Sync equipment fallback skipped (batch mode): %s", e
-                    )
-                else:
-                    logger.error("  ✗ All %s attempts failed: %s", max_retries, e)
 
-    return None
+def _refine_equipment_item(
+    item: Dict[str, Any], event_data: Dict[str, Any], grok_client: GrokClient
+) -> Optional[Dict[str, Any]]:
+    """Run 2 — REFINE one broad item into a full classified record. NEVER drops: on failure returns
+    a minimal record preserving name + original_text (+ extended_text) so recall is not lost.
+    """
+    name = str(item.get("name") or item.get("common_name") or "").strip()
+    original_text = str(item.get("original_text", "")).strip()
+    paras = item.get("paragraph_numbers") or []
+    extended_text = _build_extended_text(event_data, paras)
+    out = _call_refine(name, original_text, extended_text, event_data, grok_client)
+    rec = _unwrap_refined_record(out, name)
+    # provenance: always carry both the tight anchor + the context window
+    rec.setdefault("common_name", name)
+    rec["original_text"] = original_text or rec.get("original_text")
+    if extended_text:
+        rec["extended_text"] = extended_text
+    if paras:
+        rec.setdefault("paragraph_numbers", paras)
+    return rec
+
+
+def _call_refine(
+    name: str,
+    original_text: str,
+    extended_text: str,
+    event_data: Dict[str, Any],
+    grok_client: GrokClient,
+) -> Any:
+    """Render + call the refine prompt for one item. Propagates BatchModeCollecting; on any other
+    error emits a loud OBSERV and returns None (the caller's never-drop fallback takes over).
+    """
+    from src.utils.prompt_loader import render_prompt
+
+    theater_hint = (event_data.get("Event") or {}).get("Event_Name", "") or "ETO"
+    prompt = render_prompt(
+        "equipment_refine",
+        item_name=name,
+        item_original_text=original_text,
+        context=extended_text[:4000],
+        theater_hint=theater_hint,
+    )
+    # Unambiguous per-item run id: sha256 of the FULL (name, original_text) tuple — a ':'-joined
+    # name:quote[:40] could alias two DISTINCT items (':' in name, or identical first-40 chars),
+    # making them share a refine cache entry -> mis-classification. json.dumps delimits the parts.
+    _item_sig = hashlib.sha256(
+        json.dumps([name, original_text], sort_keys=True).encode("utf-8")
+    ).hexdigest()
+    _key = _equipment_run_cache_key(event_data, grok_client, f"refine:{_item_sig}")
+    try:
+        return grok_client.extract_json(
+            prompt, temperature=0.1, cache_type="equipment_refine", cache_key=_key
+        )
+    except BatchModeCollecting:
+        raise
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - never lose the item; caller emits a minimal record
+        observe_error(
+            "equipment", "refine_failed", reason=type(e).__name__, item=name[:40]
+        )
+        return None
+
+
+def _unwrap_refined_record(out: Any, name: str) -> Dict[str, Any]:
+    """Pull the single refined record out of the model response. NEVER-DROP: if the response is
+    empty/unusable, return a minimal record preserving the broad find so recall is not lost.
+    """
+    if isinstance(out, dict):
+        for _k in ("Equipment", "equipment"):
+            lst = out.get(_k)
+            if isinstance(lst, list) and lst:
+                return lst[0]
+        if out.get("common_name"):
+            return out
+    # NEVER-DROP: a broad find IS a source assertion of presence; stamp assertion_source so the
+    # downstream assertion gate (_equipment_mention_fails_gate) KEEPS it instead of silently
+    # dropping a present mention with no assertion_source. Recall must not be lost on refine failure.
+    return {
+        "common_name": name,
+        "name": name,
+        "category": "other",
+        "presence": "present",
+        "assertion_source": "narrative",
+        "_refine_fallback": True,  # transient flag: refine produced nothing usable (stripped below)
+    }
+
+
+def _equipment_run_cache_key(
+    event_data: Dict[str, Any], grok_client: GrokClient, run: str
+) -> Optional[str]:
+    """Stable per-RUN (and per-item for refine) cache key: sha256 over
+    equipment:v2:{model}:{run}:{event_id}. `run` is 'broad' or 'refine:<name>:<quote>'.
+    """
+    import hashlib
+
+    _event_id = (event_data.get("Event") or {}).get("EventID", "")
+    if not _event_id:
+        return None
+    _get_model = getattr(grok_client, "_get_model", None)
+    _model = _get_model("equipment") if callable(_get_model) else "default"
+    return hashlib.sha256(
+        f"equipment:v2:{_model}:{run}:{_event_id}".encode("utf-8")
+    ).hexdigest()
 
 
 def _equipment_cache_key(
@@ -2488,6 +2642,8 @@ def _build_equipment_data(eq: EquipmentExtraction) -> Dict[str, Any]:
         # can act on it. Default 'present'.
         "presence": eq.presence or "present",
     }
+    if eq.extended_text:
+        equipment_data["extended_text"] = eq.extended_text
     _add_optional_equipment_fields(equipment_data, eq)
     return equipment_data
 
@@ -3098,6 +3254,25 @@ def _observe_equipment_items_dropped(extracted: int, persisted: int) -> None:
         )
 
 
+def _observe_persist_shortfall(
+    event_data: Dict[str, Any], refined: int, persisted: int
+) -> None:
+    """NEVER-DROP at the PERSISTENCE boundary: refine produced `refined` records; if fewer
+    persisted, items were dropped downstream (e.g. the assertion gate / merge) — a loud,
+    actionable loss. No-op when all persisted."""
+    if persisted >= refined:
+        return
+    observe(
+        "equipment",
+        "persist_shortfall",
+        status="warn",
+        refined=refined,
+        persisted=persisted,
+        event_id=(event_data.get("Event") or {}).get("EventID", ""),
+        note="refined equipment items did not all persist (gate/merge drop)",
+    )
+
+
 def extract_equipment_from_event(
     event_file: Path,
     output_dir: Path,
@@ -3191,6 +3366,8 @@ def extract_equipment_from_event(
             )
         )
     ]
+
+    _observe_persist_shortfall(event_data, len(equipment_list), len(modified_files))
 
     # Finalize
     _finalize_extraction(output_dir, modified_files, event_file, processed)

@@ -169,6 +169,9 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         # linking + provenance stamp). Missing here caused additionalProperties blocks AFTER the
         # #663 presence/absence_reason fix (the 4 remaining fields, 2026-11-01 measurement run).
         "place_name": make_nullable("string"),
+        "extended_text": make_nullable(
+            "string"
+        ),  # para n-1/n/n+1 window (attribution context + audit)
         "quantity": {"type": ["integer", "number", "string", "null"]},
         "quantity_text": make_nullable("string"),
         "_provenance": {"type": ["object", "array", "string", "null"]},
