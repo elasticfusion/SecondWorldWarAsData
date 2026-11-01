@@ -127,7 +127,7 @@ def test_p3a5_equipment_link_in_external_data_passes(tmp_path):
         tmp_path / "equipment" / "e1.json",
         {
             "EquipmentID": "01HX7YZABCDEFGHJKMNPQRSTVW",
-            "_schema_version": "2.26",
+            "_schema_version": "2.27",
             "enrichment_status": "enriched",
             "external_data": {"wikipedia_url": "https://en.wikipedia.org/wiki/Tiger_I"},
             "event_mentions": [{"EventID": "1HZMC6KKXZEVVB3Q0BEBKDTDNH"}],
@@ -137,7 +137,7 @@ def test_p3a5_equipment_link_in_external_data_passes(tmp_path):
         tmp_path / "equipment" / "e2.json",
         {
             "EquipmentID": "01HX7YZABCDEFGHJKMNPQRSTVX",
-            "_schema_version": "2.26",
+            "_schema_version": "2.27",
             "enrichment_status": "enriched",
             "external_data": {"additional_sources": [{"url": "https://x/y"}]},
             "event_mentions": [{"EventID": "1HZMC6KKXZEVVB3Q0BEBKDTDNH"}],
