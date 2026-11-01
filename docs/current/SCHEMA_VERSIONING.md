@@ -1,3 +1,4 @@
+- **equipment 2.27 → 2.28** (2026-11-01): add `extended_text` (nullable string) — the code-assembled 3-paragraph window (reference paragraph + before + after) carried for multi-run refine attribution context + audit/provenance. Additive/nullable; no migration.
 # JSON Schema Versioning — What To Bump, When
 
 **Source of version truth:** `src/schemas/__init__.py::ENTITY_SCHEMA_VERSIONS` — a central map

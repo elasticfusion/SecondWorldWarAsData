@@ -48,6 +48,17 @@ prompt_template: |
         "Memphis Belle" is a B-17F → common_name "B-17 Flying Fortress" (type = identity),
         technical_identifier "B-17F", and NOTE the nickname in alternate_names ["Memphis Belle"].
         Do NOT make an unofficial nickname the common_name — that orphans it from its type.
+  - RICH DETAIL (only if the source states it; else omit the field):
+      * environmental_performance: how this equipment PERFORMED under a weather/terrain condition
+        (condition + effect + VERBATIM original_text). NOT ambient weather (that's the Weather entity).
+      * crew_accounts: a NAMED crew member's firsthand experience operating it (person_name, role,
+        observations, VERBATIM original_text + book). Never invent.
+      * related_equipment: relationships the SOURCE asserts to a DISTINCT piece (predecessor|
+        successor|variant; name; basis; VERBATIM original_text). A sub-designation of the SAME base
+        (M4A1) is an inline variant, NOT related_equipment.
+      * supporting_units: combined-arms units that supported it (unit_name, support_type = the
+        SUPPORTING unit's own arm, equipment_name if named).
+    All are OPTIONAL — include ONLY what the text (original_text/extended_text) actually states.
   - original_text: COPY the verbatim source text given above UNCHANGED (mandatory — provenance).
   - assertion_source: "narrative".
 
@@ -72,6 +83,10 @@ schema: |
         "quantity_text": null,
         "place_name": null,
         "assertion_source": "narrative",
+        "environmental_performance": [],
+        "crew_accounts": [],
+        "related_equipment": [],
+        "supporting_units": [],
         "original_text": "{item_original_text}"
       }
     ]

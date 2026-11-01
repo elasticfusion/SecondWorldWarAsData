@@ -99,6 +99,13 @@ un-crowded). The current mega-`equipment.yaml` attribution rules (enemy-perspect
 ownership-from-context) MOVE to Run 2 where they belong, and can be tightened since they no longer
 compete with the recall task.
 
+## Clean-slate RUN-PREP (owner: MANDATORY before any validation run)
+Before a validation/measurement run: wipe S3 output/ AND **DELETE THE DYNAMODB QUEUES** (not just
+the Grok cache) — the queue/lock/lease/manifest/pending entries in dev-wwii-api-cache, preserving
+only what a fresh run needs (HTML source untouched). A stale queue/lock from a prior run interferes.
+(Established 2026-11-01; owner reiterated 'be sure to delete dynamodb queues'.) Do this with NO task
+running. See the clean-slate procedure used for the #648-#662 runs.
+
 ## Rollout / validation
 1. Build Run-1 + Run-2 prompts + orchestration (sync path first, then batch two-pass).
 2. A/B on USA-E-XChannel-8 vs the ~50 gold list: target recall >> the single-prompt ~18.
@@ -110,7 +117,7 @@ compete with the recall task.
   lines — ~half the size, recall/precision separated.
 - `equipment.yaml` is RETIRED when the orchestration lands (nothing calls it once broad→refine is
   wired). Do NOT gut it before then — it is the live prompt until the orchestration PR.
-- DROPPED/DEFERRED from refine (option A — these are low-frequency rich-detail, NOT part of the
+- NOTE (owner reversed 2026-11-01: accuracy > brevity): the rich-detail rules are RESTORED into refine (crew_accounts, environmental_performance, related_equipment, supporting_units) — refine is accuracy-COMPLETE, not lean. [superseded] Originally DROPPED/DEFERRED from refine (option A — these are low-frequency rich-detail, NOT part of the
   ~50-item coverage goal): crew_accounts, environmental_performance, related_equipment,
   supporting_units, images. If wanted later, a SEPARATE optional enrichment pass — not every refine.
 - KEPT in refine (high-value attribution, condensed): category/subcategory, specific-name-preserve,

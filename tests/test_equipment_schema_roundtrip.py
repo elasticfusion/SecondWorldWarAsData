@@ -49,7 +49,7 @@ def test_schema_has_presence_and_absence_reason():
 
 
 def test_schema_has_all_process_fields():
-    """The 4 fields _process_equipment_item adds (beyond _build) must be in the schema (2.27):
+    """The 4 fields _process_equipment_item adds (beyond _build) must be in the schema (2.28):
     place_name/quantity/quantity_text/_provenance — their absence caused additionalProperties
     blocks AFTER the #663 presence/absence_reason fix (2026-11-01)."""
     props = EQUIPMENT_OUTPUT_SCHEMA["properties"]

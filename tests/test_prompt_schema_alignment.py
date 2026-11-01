@@ -20,7 +20,8 @@ ALL_PROMPT_TYPES = [
     "people",
     "places",
     "dates",
-    "equipment",
+    "equipment_extract_broad",
+    "equipment_refine",
     "casualties",
     "logistics",
     "weather_batch",
@@ -151,14 +152,17 @@ class TestOutputSchemaAlignment:
         """Equipment prompt example must have EquipmentID and name."""
         from src.json_schemas import EQUIPMENT_SCHEMA
 
-        example = _load_prompt_schema("equipment")
+        # The broad recall prompt is the first-pass equipment extractor. Its schema example
+        # lists items keyed by name + original_text (provenance anchor); full EquipmentID/
+        # classification is added by the refine pass + _process_equipment_item downstream.
+        example = _load_prompt_schema("equipment_extract_broad")
         items = example.get("equipment", example.get("Equipment", []))
         if items:
             item = items[0]
-            # Item-level schema only requires EquipmentID + name
-            item_schema = EQUIPMENT_SCHEMA["properties"]["equipment"]["items"]
-            for req in item_schema.get("required", []):
-                assert req in item, f"Equipment prompt missing required field: {req}"
+            assert "name" in item, "Broad equipment prompt example missing 'name'"
+            assert (
+                "original_text" in item
+            ), "Broad equipment prompt example missing 'original_text' (provenance anchor)"
 
 
 class TestPromptSchemaAlignmentGate:

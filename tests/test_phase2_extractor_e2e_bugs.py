@@ -7,9 +7,13 @@ from src.extraction.logistics_resolver import build_logistics_index
 
 def test_equipment_prompt_fills_event_data():
     # BUG1: render_prompt passed text= but the template expects {event_data}.
+    # (The single 'equipment' mega-prompt was retired for the multi-run broad+refine split;
+    # the broad prompt is now the per-event recall pass and uses the same {event_data} slot.)
     from src.utils.prompt_loader import render_prompt
 
-    p = render_prompt("equipment", event_data=json.dumps({"Event": {"EventID": "x"}}))
+    p = render_prompt(
+        "equipment_extract_broad", event_data=json.dumps({"Event": {"EventID": "x"}})
+    )
     assert "{event_data}" not in p
     assert "EventID" in p
 

@@ -15,7 +15,7 @@ PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 # Entity-extraction prompts that must carry the conjunction-splitting rule.
 ENTITY_PROMPTS = [
     "events",
-    "equipment",
+    "equipment_extract_broad",
     "dates",
     "logistics",
     "weather_batch",
