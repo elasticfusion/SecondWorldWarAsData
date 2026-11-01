@@ -1,16 +1,14 @@
 """The schema-block reason must NAME the offending additionalProperties key(s) (actionable alarms),
-not just report '<root>' — this is what let us diagnose the equipment 100%-block in minutes.
+not just report '<root>' — this is what let us diagnose the equipment 100%-block quickly.
+Verifies the reason-string extraction logic used in file_lock._validate_entity's error handler.
 """
 
+import re
+
 import jsonschema
-from src.utils.file_lock import _handle_validation_error
 
 
-class _Rep:
-    pass
-
-
-def test_additionalproperties_block_names_the_keys(monkeypatch, tmp_path):
+def test_additionalproperties_block_names_the_keys():
     schema = {
         "type": "object",
         "additionalProperties": False,
@@ -20,14 +18,11 @@ def test_additionalproperties_block_names_the_keys(monkeypatch, tmp_path):
     bad = {"a": 1, "surprise_field": 2, "another": 3}
     try:
         jsonschema.validate(bad, schema)
-        assert False, "should have raised"
+        raise AssertionError("should have raised")
     except jsonschema.ValidationError as e:
-        # reproduce the reason-string logic
         loc = "/".join(str(p) for p in e.absolute_path) or "<root>"
         reason = f"{e.validator} at {loc}"
         if e.validator == "additionalProperties":
-            import re
-
             extras = re.findall(r"'([^']+)'", str(getattr(e, "message", "")))
             if extras:
                 reason = f"additionalProperties at {loc}: unexpected {extras}"
