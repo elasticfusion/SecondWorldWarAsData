@@ -165,6 +165,13 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         ),
         "category": make_nullable("string"),
         "subcategory": make_nullable("string"),
+        # Added by _process_equipment_item after _build_equipment_data (mention/place/quantity
+        # linking + provenance stamp). Missing here caused additionalProperties blocks AFTER the
+        # #663 presence/absence_reason fix (the 4 remaining fields, 2026-11-01 measurement run).
+        "place_name": make_nullable("string"),
+        "quantity": {"type": ["integer", "number", "string", "null"]},
+        "quantity_text": make_nullable("string"),
+        "_provenance": {"type": ["object", "array", "string", "null"]},
         "country_of_origin": make_nullable("string"),
         "description": make_nullable("string"),
         "aliases": {"type": ["array", "null"], "items": {"type": "string"}},
