@@ -149,6 +149,12 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         "EquipmentID": ulid_field(),
         "common_name": make_nullable("string"),
         "technical_identifier": make_nullable("string"),
+        # presence/absence of the equipment (present|absent|shortage) + why it was absent
+        # (battlefield|logistics|unstated). Added with the #652 absence-as-first-class work to
+        # EquipmentExtraction + _build_equipment_data; MUST be in the output schema too or every
+        # record hits additionalProperties:False (the 18/18 equipment block regression, 2026-10-31).
+        "presence": make_nullable("string"),
+        "absence_reason": make_nullable("string"),
         # Canonical identity resolved by the disambiguator (exact/alias/fuzzy/Grok) so one
         # name is used across US/German/British designation systems; identity_source
         # records how it was resolved.

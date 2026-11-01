@@ -1,0 +1,964 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "EquipmentID": {
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "type": "string"
+    },
+    "_last_updated": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": "string"
+    },
+    "_schema_version": {
+      "type": "string"
+    },
+    "absence_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "aliases": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "alternate_names": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "string",
+        "null"
+      ]
+    },
+    "canonical_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "category": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "common_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "country_of_origin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "crew_accounts": {
+      "items": {
+        "properties": {
+          "PersonID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "book": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "observations": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "original_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "person_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "role": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "enrichment_checked_at": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "enrichment_status": {
+      "enum": [
+        "enriched",
+        "not_found",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "environmental_performance": {
+      "items": {
+        "properties": {
+          "condition": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "effect": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "original_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "event_mentions": {
+      "items": {
+        "properties": {
+          "DateID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "DateMentionID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "EventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "Event_Name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "MentionID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": "string"
+          },
+          "PlaceID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "Sub_eventID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "Sub_event_Name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "assertion_source": {
+            "enum": [
+              "narrative",
+              "media_narration",
+              null
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "book": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "captured": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "context": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "operating_country": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "original_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "paragraph_numbers": {
+            "items": {
+              "type": "integer"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "place_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "quantity": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "quantity_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "using_person": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "using_unit": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "variant_mentioned": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "external_data": {
+      "properties": {
+        "additional_sources": {
+          "items": {
+            "properties": {
+              "data_points": {
+                "items": {
+                  "properties": {
+                    "field": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "value": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "verified": {
+                      "type": [
+                        "boolean",
+                        "null"
+                      ]
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "source_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "source_type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "url": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": "object"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "grokipedia_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "wikipedia_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "extracted_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "identity_source": {
+      "enum": [
+        "exact",
+        "alias",
+        "learned_alias",
+        "fuzzy",
+        "grok_disambiguation",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "images": {
+      "items": {
+        "properties": {
+          "caption": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "image_scope": {
+            "enum": [
+              "representative",
+              "documentary",
+              null
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "license": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "local_path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "vision_verified": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "logistics": {
+      "properties": {
+        "ammunition_capacity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "common_spare_parts": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "fuel_consumption": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "maintenance_hours_per_100_miles": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supply_challenges": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "media": {
+      "type": [
+        "array",
+        "object",
+        "null"
+      ]
+    },
+    "openserp_searched": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "openserp_searched_at": {
+      "type": [
+        "number",
+        "string",
+        "null"
+      ]
+    },
+    "presence": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "related_equipment": {
+      "items": {
+        "properties": {
+          "EquipmentID": {
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "basis": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "original_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "relationship": {
+            "enum": [
+              "predecessor",
+              "successor",
+              "variant",
+              null
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "specifications": {
+      "properties": {
+        "armament": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "armor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "crew": {
+          "type": [
+            "integer",
+            "string",
+            "null"
+          ]
+        },
+        "main_armament": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "max_speed_kmh": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "range": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "range_km": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "speed": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "weight": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "weight_kg": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "subcategory": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "technical_evolution": {
+      "items": {
+        "properties": {
+          "change": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "effectiveness": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "technical_identifier": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "timeline": {
+      "properties": {
+        "combat_losses": {
+          "type": [
+            "integer",
+            "string",
+            "null"
+          ]
+        },
+        "first_combat_use": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "first_production": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "last_combat_use": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "total_produced": {
+          "type": [
+            "integer",
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "variants": {
+      "items": {
+        "properties": {
+          "alternate_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "differences": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "images": {
+            "items": {
+              "properties": {
+                "caption": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "image_scope": {
+                  "enum": [
+                    "representative",
+                    "documentary",
+                    null
+                  ],
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "license": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "local_path": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "vision_verified": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "specifications": {
+            "properties": {
+              "armament": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "armor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "crew": {
+                "type": [
+                  "integer",
+                  "string",
+                  "null"
+                ]
+              },
+              "main_armament": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "max_speed_kmh": {
+                "type": [
+                  "number",
+                  "string",
+                  "null"
+                ]
+              },
+              "range": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "range_km": {
+                "type": [
+                  "number",
+                  "string",
+                  "null"
+                ]
+              },
+              "speed": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "weight": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "weight_kg": {
+                "type": [
+                  "number",
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "variant_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "string",
+          "object"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "wikipedia_checked_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "wikipedia_extract": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "EquipmentID"
+  ],
+  "title": "Equipment Output File",
+  "type": "object",
+  "version": "2.26"
+}
