@@ -8,6 +8,7 @@ Import external maps from YAML file and link to events/places/dates.
 
 import json
 import logging
+from src.extraction.map_common import base_map_record, external_map_fields
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -192,33 +193,36 @@ def create_map_record(
     map_id = str(ulid.new())
 
     record = {
-        "MapID": map_id,
-        "map_title": map_data["title"],
-        "external_source": map_data["external_source"],
-        "external_source_url": map_data["external_source_url"],
-        "archive_id": map_data.get("archive_id"),
-        "license": map_data["license"],
-        "license_url": map_data.get("license_url"),
-        "date_created": map_data.get("date_created"),
-        "creator": map_data.get("creator"),
-        "EventID": event_id,
-        "Event_Name": event_name,
-        "Sub_eventID": sub_event_id,
-        "Sub_event_Name": sub_event_name,
-        "place_name": map_data.get("place_keywords", [None])[0],
-        "PlaceMentionID": place_mention_id,
-        "date": map_data.get("date"),
-        "DateMentionID": date_mention_id,
-        "local_path": f"output/external_maps/{map_id}.json",
-        "local_image_path": None,
-        "source_url": map_data.get("file_url"),
-        "file_format": None,
-        "extracted_date": datetime.utcnow().isoformat() + "Z",
-        "description": map_data.get("description"),
-        "map_type": map_data.get("map_type"),
-        "storage_backend": storage_backend,
-        "found_via": map_data.get("found_via"),
-        "found_date": map_data.get("found_date"),
+        **base_map_record(
+            map_id=map_id,
+            map_title=map_data["title"],
+            description=map_data.get("description"),
+            map_type=map_data.get("map_type"),
+            source_url=map_data.get("file_url"),
+            local_path=f"output/external_maps/{map_id}.json",
+            local_image_path=None,
+            file_format=None,
+            storage_backend=storage_backend,
+            event_id=event_id,
+            event_name=event_name,
+            sub_event_id=sub_event_id,
+            sub_event_name=sub_event_name,
+            place_name=map_data.get("place_keywords", [None])[0],
+            place_mention_id=place_mention_id,
+            date=map_data.get("date"),
+            date_mention_id=date_mention_id,
+        ),
+        **external_map_fields(
+            external_source=map_data["external_source"],
+            external_source_url=map_data["external_source_url"],
+            archive_id=map_data.get("archive_id"),
+            license_=map_data["license"],
+            license_url=map_data.get("license_url"),
+            date_created=map_data.get("date_created"),
+            creator=map_data.get("creator"),
+            found_via=map_data.get("found_via"),
+            found_date=map_data.get("found_date"),
+        ),
     }
 
     return record

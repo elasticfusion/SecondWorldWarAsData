@@ -11,6 +11,8 @@ import boto3
 import requests
 import ulid
 
+from src.extraction.map_common import base_map_record
+
 logger = logging.getLogger(__name__)
 
 
@@ -214,30 +216,32 @@ def _create_map_record(
 
     map_type = _classify_map_type(description, sub_event_name, classification_keywords)
 
+    # Common fields from the shared skeleton; merge the source-DOCUMENT-specific fields on top.
     return {
-        "MapID": map_ulid,
-        "map_title": description,
+        **base_map_record(
+            map_id=map_ulid,
+            map_title=description,
+            description=description,
+            map_type=map_type,
+            source_url=url if url else None,
+            local_path=local_path,
+            local_image_path=local_image_path,
+            file_format=file_format,
+            storage_backend=storage_backend,
+            event_id=event_id,
+            event_name=event_name,
+            sub_event_id=sub_event_id,
+            sub_event_name=sub_event_name,
+            place_name=place_name,
+            place_mention_id=place_id,
+            date=date_str,
+            date_mention_id=date_id,
+        ),
         "source_book": book,
         "source_author": author,
         "source_series": series if series else None,
         "page_number": None,
         "figure_number": map_id if map_id else None,
-        "EventID": event_id,
-        "Event_Name": event_name,
-        "Sub_eventID": sub_event_id,
-        "Sub_event_Name": sub_event_name,
-        "place_name": place_name,
-        "PlaceMentionID": place_id,
-        "date": date_str,
-        "DateMentionID": date_id,
-        "local_path": local_path,
-        "local_image_path": local_image_path,
-        "source_url": url if url else None,
-        "file_format": file_format,
-        "extracted_date": datetime.utcnow().isoformat() + "Z",
-        "description": description,
-        "map_type": map_type,
-        "storage_backend": storage_backend,
     }
 
 
