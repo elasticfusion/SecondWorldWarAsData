@@ -119,7 +119,7 @@ def _lookup_date_id(date_str: str, dates_dir: Path) -> Optional[str]:
 
 def _check_existing_download(output_path: Path) -> Optional[str]:
     """Check if map is already downloaded with any extension."""
-    for ext in ["jpg", "jpeg", "png", "tif", "tiff", "pdf"]:
+    for ext in ["jpg", "jpeg", "png", "gif", "tif", "tiff", "pdf"]:
         existing = output_path.with_suffix(f".{ext}")
         if existing.exists():
             logger.debug("    Already downloaded: %s", existing.name)
@@ -128,21 +128,27 @@ def _check_existing_download(output_path: Path) -> Optional[str]:
 
 
 def _determine_map_extension(response, url: str) -> str:
-    """Determine file extension from content-type or URL."""
-    content_type = response.headers.get("content-type", "")
-
-    if "jpeg" in content_type or "jpg" in content_type:
-        return "jpg"
-    elif "png" in content_type:
-        return "png"
-    elif "tiff" in content_type or "tif" in content_type:
-        return "tif"
-    elif "pdf" in content_type:
-        return "pdf"
-    else:
-        # Fallback to URL extension
-        ext = url.rsplit(".", maxsplit=1)[-1].lower()
-        return ext if ext in ["jpg", "jpeg", "png", "tif", "tiff", "pdf"] else "jpg"
+    """Determine the canonical file extension from content-type (preferred) or the URL suffix.
+    Normalizes to single canonical forms (jpeg->jpg, tiff->tif). Covers jpg/png/gif/tif/pdf; TIFF
+    and GIF matter for non-ibiblio (NARA/archival) map sources."""
+    content_type = (response.headers.get("content-type", "") or "").lower()
+    # content-type substring -> canonical ext (order: most specific first)
+    ct_map = (
+        ("jpeg", "jpg"),
+        ("jpg", "jpg"),
+        ("png", "png"),
+        ("tiff", "tif"),
+        ("tif", "tif"),
+        ("gif", "gif"),
+        ("pdf", "pdf"),
+    )
+    for needle, ext in ct_map:
+        if needle in content_type:
+            return ext
+    # Fallback to URL suffix, normalized to the canonical set.
+    raw = url.rsplit(".", maxsplit=1)[-1].lower()
+    norm = {"jpeg": "jpg", "tiff": "tif"}.get(raw, raw)
+    return norm if norm in ("jpg", "png", "gif", "tif", "pdf") else "jpg"
 
 
 def _download_map_image(
