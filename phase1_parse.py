@@ -50,7 +50,13 @@ def _doc_to_dict(doc):
             for img in doc.images
         ],
         "maps": [
-            {"url": m.url, "description": m.description, "map_id": m.map_id}
+            {
+                "url": m.url,
+                "description": m.description,
+                "map_id": m.map_id,
+                "paragraph_number": m.paragraph_number,
+                "references": m.references,
+            }
             for m in doc.maps
         ],
         "footnotes": [

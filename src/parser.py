@@ -3,7 +3,7 @@
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
 
@@ -256,6 +256,25 @@ def _extract_relative_external_images(
             seen.add(key)
 
 
+_HTML_ANCHOR_RE = re.compile(
+    # ReDoS-safe: ALL quantifiers bounded so malformed/unclosed <a in untrusted HTML cannot cause
+    # O(n^2) forward scans (attr span, href, and body each capped). Shared by the image + map anchor
+    # extractors so there is ONE anchor matcher, not two.
+    r"<a\s[^>]{0,500}?href=[\"']?([^\"' >]{0,2000})[^>]{0,500}>(.{0,4000}?)</a>",
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def _iter_html_anchors(text: str):
+    """Yield (href, link_text) for each raw-HTML <a href=...>...</a> that pandoc passed through
+    verbatim. link_text has inner tags stripped (bounded). Single shared matcher (ReDoS-safe).
+    """
+    for m in _HTML_ANCHOR_RE.finditer(text):
+        href = m.group(1)
+        link_text = re.sub(r"<[^>]{0,2000}>", " ", m.group(2)).strip()
+        yield href, link_text
+
+
 def _extract_html_anchor_images(
     text: str, images: list, seen: "set[str]", base_url: str
 ) -> None:
@@ -289,19 +308,8 @@ def _extract_html_anchor_images(
             seen.add(key)
 
     # <a href="IMG">...</a> — captures BOTH the <img>-wrapped (full-res href) and the link-only
-    # ("Map XII") forms. The href is the image; inner tags are stripped to recover the link text.
-    # ReDoS-safe: every quantifier is BOUNDED so a malformed/unclosed <a in untrusted HTML cannot
-    # cause O(n^2) forward scans (the sibling image extractors use the same {0,N} discipline). The
-    # attribute span before href is capped, href is capped, and the body is a bounded lazy run that
-    # fails fast when no </a> follows within the bound.
-    for m in re.finditer(
-        r"<a\s[^>]{0,500}?href=[\"']?([^\"' >]{0,2000})[^>]{0,500}>(.{0,4000}?)</a>",
-        text,
-        re.IGNORECASE | re.DOTALL,
-    ):
-        href = m.group(1)
-        inner = m.group(2)
-        link_text = re.sub(r"<[^>]{0,2000}>", " ", inner).strip()
+    # ("Map XII") forms. The href is the image; link text recovered for the alt. Shared matcher.
+    for href, link_text in _iter_html_anchors(text):
         _add(href, link_text)
 
 
@@ -330,7 +338,7 @@ def extract_maps(text: str, base_url: str = "") -> List[Tuple[str, str]]:
     maps = []
     seen_urls = set()
 
-    # [Map X](target) — target may be absolute http(s) OR a relative asset path.
+    # [Map X](target) — markdown link form. target may be absolute http(s) OR a relative asset path.
     for match in re.finditer(
         r"\[Map\s+([^\]]{1,500})\]\(([^)]{1,2000})\)", text, re.IGNORECASE
     ):
@@ -341,7 +349,33 @@ def extract_maps(text: str, base_url: str = "") -> List[Tuple[str, str]]:
             maps.append((map_id, url))
             seen_urls.add(url)
 
+    # RAW-HTML anchor form (what pandoc passes through for HyperWar) — shared matcher, hi-res href.
+    _extract_anchor_maps(text, base_url, maps, seen_urls)
     return maps
+
+
+def _extract_anchor_maps(
+    text: str, base_url: str, maps: list, seen_urls: "set[str]"
+) -> None:
+    """Capture maps from raw-HTML <a href=...>...</a> anchors (pandoc passthrough): embedded
+    <a href="maps/-N.jpg"><img></a> (hi-res href) and link-only <a href="maps/-XII.jpg">Map XII</a>.
+    An anchor is a MAP when its link text starts with "Map" OR its href resolves into a .../maps/
+    asset. Captured at HI-RES (the href, not any -Nm thumbnail). Deduped via seen_urls.
+    """
+    for href, link_text in _iter_html_anchors(text):
+        url = _resolve_map_target(href.strip().strip("<>"), base_url)
+        if not url or url in seen_urls:
+            continue
+        lt = (link_text or "").strip()
+        if not (re.match(r"(?i)^map\b", lt) or "/maps/" in url.lower()):
+            continue
+        map_id = (
+            lt
+            if re.match(r"(?i)^map\b", lt)
+            else url.rsplit("/", 1)[-1].rsplit(".", 1)[0]
+        )
+        maps.append((map_id, url))
+        seen_urls.add(url)
 
 
 _MAP_IMG_EXTS = (".jpg", ".jpeg", ".png", ".gif", ".tif", ".tiff", ".webp")
@@ -625,12 +659,71 @@ def _find_following_caption(lines: "list[str]", needle: str) -> Optional[str]:
 
 
 def _add_maps_to_doc(doc: MarkdownDocument, content: str, base_url: str = "") -> None:
-    """Extract and add maps to document."""
-    for map_id, url in extract_maps(content, base_url=base_url):
-        map_obj = Map(
-            url=url, description=f"Map {map_id}", map_id=map_id, paragraph_number=0
+    """Extract maps and attach each map's in-document REFERENCE FOOTPRINT (OI3: provenance
+    paramount). For every map, scan the document paragraphs for mentions (by its "Map <id>" label)
+    and record {paragraph_number (MANDATORY), verbatim snippet}. Emits OBSERV maps.parse; a map with
+    ZERO located references is a loud provenance-gap warning (never silently footprint-less).
+    """
+    maps = extract_maps(content, base_url=base_url)
+    gapless = 0
+    for map_id, url in maps:
+        refs = _map_reference_footprint(map_id, doc.paragraphs)
+        first_para = refs[0]["paragraph_number"] if refs else 0
+        doc.maps.append(
+            Map(
+                url=url,
+                description=f"Map {map_id}",
+                map_id=map_id,
+                paragraph_number=first_para,
+                references=refs,
+            )
         )
-        doc.maps.append(map_obj)
+        if not refs:
+            gapless += 1
+            logger.warning(
+                "OBSERV maps.ref_gap map_id=%s url=%s status=warn "
+                "(map captured but NO in-document reference located — provenance gap)",
+                map_id,
+                url[:120],
+            )
+    if maps:
+        logger.info(
+            "OBSERV maps.parse maps_found=%d refs_total=%d ref_gaps=%d status=%s",
+            len(maps),
+            sum(len(m.references) for m in doc.maps),
+            gapless,
+            "warn" if gapless else "ok",
+        )
+
+
+def _map_reference_footprint(
+    map_id: str, paragraphs: "List[Paragraph]"
+) -> "List[Dict[str, Any]]":
+    """Paragraphs that reference this map, by its "Map <id>" label. Returns [{paragraph_number,
+    text}] (paragraph_number MANDATORY). `map_id` may be "Map VIII" or a filename stem like
+    "USA-E-XChannel-1" — match the human label form ("Map VIII"/"Map 1") case-insensitively.
+    """
+    label = map_id.strip()
+    m = re.match(r"(?i)^map\s+(.+)$", label)
+    token = m.group(1).strip() if m else ""
+    if not token:
+        # filename-stem id (e.g. USA-E-XChannel-1): derive the trailing number/roman as the label.
+        tail = re.search(r"([0-9]+|[IVXLC]+)$", label)
+        token = tail.group(1) if tail else ""
+    if not token:
+        return []
+    # Word-bounded "Map <token>" so "Map 1" does not match "Map 11".
+    pat = re.compile(r"(?i)\bmap\s+" + re.escape(token) + r"\b")
+    refs: "List[Dict[str, Any]]" = []
+    for para in paragraphs:
+        if pat.search(para.text or ""):
+            refs.append(
+                {
+                    "paragraph_number": para.absolute_number,
+                    "text": (para.text or "")[:300],
+                }
+            )
+    return refs
 
 
 def _add_footnotes_to_doc(doc: MarkdownDocument, content: str) -> None:
