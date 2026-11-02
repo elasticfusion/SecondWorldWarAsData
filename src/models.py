@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 
 @dataclass
@@ -41,6 +41,10 @@ class Map:
     description: str
     map_id: str
     paragraph_number: int = 0
+    # In-document reference footprint (OI3 — provenance paramount): every paragraph that references
+    # this map. Each entry: {"paragraph_number": int (MANDATORY), "text": verbatim snippet}.
+    # Sub-event association is added downstream (Phase 1 has only paragraphs; sub-events come later).
+    references: List[Dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
