@@ -43,7 +43,7 @@ def test_cross_chapter_accumulation(tmp_path):
         },
     ]
     r = persist_map_entities(docs, tmp_path)
-    assert r == {"created": 1, "appended": 1, "skipped": 0}
+    assert r == {"created": 1, "existing": 1, "skipped": 0}
     files = _map_files(tmp_path)
     assert len(files) == 1
     rec = json.loads(files[0].read_text())
@@ -69,7 +69,7 @@ def test_index_persists_across_runs(tmp_path):
     r = persist_map_entities(
         [doc2], tmp_path
     )  # run 2: should APPEND (index loaded from disk)
-    assert r["appended"] == 1 and r["created"] == 0
+    assert r["existing"] == 1 and r["created"] == 0
     assert len(_map_files(tmp_path)) == 1
 
 
@@ -81,7 +81,7 @@ def test_loop_guard_skips_map_source_books(tmp_path):
         }
     ]
     r = persist_map_entities(docs, tmp_path)
-    assert r == {"created": 0, "appended": 0, "skipped": 0}
+    assert r == {"created": 0, "existing": 0, "skipped": 0}
     assert _map_files(tmp_path) == []
 
 

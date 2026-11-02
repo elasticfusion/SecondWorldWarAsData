@@ -543,7 +543,7 @@ def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
     # map-as-source recycle above. Reuses find_or_create_map_by_url (dedup + append across chapters).
     from src.extraction.map_link_source import persist_map_entities
 
-    persist_map_entities(docs, out / "maps")
+    persist_map_entities(docs, out / "maps", download=ext_config.get("download", True))
     logging.getLogger("root").info(
         "OBSERV phase3.step name=in_doc_map_links docs=%d links=%d recycled=%d "
         "deduped=%d skipped=%d status=ok",
