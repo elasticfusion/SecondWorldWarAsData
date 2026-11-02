@@ -37,22 +37,6 @@ A resubmission loop would silently burn cost + rate limit on every re-run. (Rais
 tie to the tiered-classifier work + the deterministic-first/Grok-backstop design.)
 
 
-### SECURITY: AV-scan downloaded map/images (download path bypasses the Phase-0 AV gate) (HIGH)
-The ClamAV scanner (src/ingestion/av_scan.py) is an INGESTION FRONT-DOOR gate — it scans binary keys
-only at Phase-0 upload (via trigger_handler). The Phase-2/3 IMAGE DOWNLOAD path
-(images.fetch_image_bytes -> map_common.download_map_image) does NOT invoke it: downloaded map/image
-bytes from UNTRUSTED sources (ibiblio; external maps = arbitrary whitelisted web) get SSRF + magic-
-byte/content-type validation but NO virus scan. Magic-byte validation blocks 'exe-disguised-as-jpg'
-but NOT a malformed image exploiting an image-parser CVE (ImageMagick/libwebp/TIFF class). Now higher
-priority: Step 5b writes these bytes to output/maps/files/ and Step 5c-ii will send them to Grok
-vision. ACTION: route downloaded image bytes through a fail-closed AV scan (reuse av_scan.Scanner)
-before persisting/forwarding; quarantine-not-persist on infected/unscannable. (Raised by owner
-2026-11-02.)
-
-## ⭐ OPEN ISSUES (at a glance — highest priority first)
-
-The curated list of what is still OPEN. Each points to its detail section lower in this file.
-Everything not listed here is DONE (see §7 COMPLETED + the dated review sections).
 
 ### HIGH
 - **[HIGH · provenance/design] Stop trusting Grok to TRANSCRIBE paragraph numbers — resolve fulltext DETERMINISTICALLY (owner 2026-10-30).**
@@ -346,6 +330,27 @@ Active work history below. Sections: (1) **Phase 2 — open**, (2) Phase 3 / enr
 future, (7) **Completed**, then the dated epics (MULTIMODAL M1-M8) + flat backlog.
 
 ---
+
+### SECURITY: AV / content-sanitization policy (owner 2026-11-02) (HIGH)
+Full contract:
+1. EXEMPT from AV: text, CSV, markdown (no practical virus risk; av_scan.select_binary_keys already
+   excludes txt/csv/md/html — verified).
+2. HTML: STRIP JAVASCRIPT on save. Current _strip_html_boilerplate removes <script>/<noscript>
+   (done) but inline event handlers (onclick/onerror/onload...) + `javascript:` URLs SURVIVE (gap,
+   verified). FIX: strip on*= attributes + javascript:/vbscript: hrefs in _strip_html_boilerplate
+   (BeautifulSoup). pandoc runs --sandbox already.
+3. BINARIES (images, Word .docx, Excel .xlsx, PowerPoint .pptx, PDF): QUARANTINE -> AV scan. A
+   POSITIVE finding (or unscannable, fail-closed) STAYS IN QUARANTINE — do NOT auto-delete; decide
+   disposition later. (Phase-0 scan_and_gate already quarantines-not-deletes.)
+4. POSITIVE finding -> THROW AN ALERT (actionable operator alert; consistent with the existing
+   av_scan freeze-submitter hook + OBSERV av.summary status=anomaly; route through the phase2-
+   complete SNS -> Slack+email operator path).
+5. SCOPE EXTENSION (the actual gap): apply #3+#4 to the PHASE-2/3 DOWNLOAD PATH (map/image bytes via
+   fetch_image_bytes/download_map_image) — today AV runs ONLY at Phase-0 S3 ingestion, so downloaded
+   binaries bypass quarantine/scan/alert. Now urgent: Step 5b writes image bytes to disk + 5c-ii
+   forwards them to Grok vision. Route downloaded binary bytes through quarantine->scan->alert
+   before persist/forward.
+
 
 ## 1. PHASE 2 — OPEN (current priority)
 

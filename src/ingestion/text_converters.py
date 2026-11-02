@@ -158,6 +158,29 @@ _HTML_BOILERPLATE_TAGS = (
 )
 
 
+def _strip_inline_js(soup) -> None:
+    """Strip inline JavaScript (owner policy): <script>/<noscript> are removed by the boilerplate
+    pass, but inline event handlers (onclick/onerror/onload/...) and javascript:/vbscript: URLs
+    survive into the markdown as raw HTML. Remove every on* attribute + neutralize script-scheme
+    href/src (tabs/newlines in the scheme are collapsed first to defeat obfuscation)."""
+    for el in soup.find_all(True):
+        for attr in [a for a in el.attrs if a.lower().startswith("on")]:
+            del el[attr]
+        for uattr in ("href", "src"):
+            val = el.get(uattr)
+            if isinstance(val, str):
+                norm = (
+                    val.strip()
+                    .lower()
+                    .replace("\t", "")
+                    .replace("\n", "")
+                    .replace("\r", "")
+                    .replace("\x00", "")
+                )
+                if norm.startswith(("javascript:", "vbscript:")):
+                    del el[uattr]
+
+
 def _strip_html_boilerplate(html: str) -> str:
     """Remove non-content chrome (scripts/styles/nav/header/footer/aside/...) from an HTML
     document, returning the cleaned HTML. Fail-safe: if BeautifulSoup is unavailable or parsing
@@ -169,6 +192,7 @@ def _strip_html_boilerplate(html: str) -> str:
         soup = BeautifulSoup(html, "html.parser")
         for tag in soup(list(_HTML_BOILERPLATE_TAGS)):
             tag.decompose()
+        _strip_inline_js(soup)
         # Prefer the main content region when the page marks one; else the whole (cleaned) doc.
         main = soup.find("main") or soup.find("article") or soup
         return str(main)
