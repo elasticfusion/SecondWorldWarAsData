@@ -158,6 +158,7 @@ def extract_images(text: str, base_url: str = "") -> List[Tuple[str, str, str, s
     _extract_html_combined_images(text, images, seen)
     _extract_external_images(text, images, seen)
     _extract_relative_external_images(text, images, seen, base_url)
+    _extract_html_anchor_images(text, images, seen, base_url)
     _observe_oversize_image_drops(text)
 
     return images
@@ -253,6 +254,55 @@ def _extract_relative_external_images(
         if key not in seen:
             images.append(("external", url, alt_text, ""))
             seen.add(key)
+
+
+def _extract_html_anchor_images(
+    text: str, images: list, seen: "set[str]", base_url: str
+) -> None:
+    """RAW-HTML image/map anchors that pandoc PASSES THROUGH verbatim (it does not always convert
+    ``<a href><img></a>`` to markdown). HyperWar maps arrive two ways and BOTH were being missed:
+      1. embedded+linked: ``<a href="maps/USA-E-XChannel-1.jpg"...><img src="maps/...-1m.jpg"></a>``
+         (thumbnail linked to full-res) -> capture the full-res HREF as the image URL.
+      2. link-only: ``<a href="maps/USA-E-XChannel-XII.jpg"...>Map XII</a>`` (no <img>) -> the map
+         exists only as a hyperlink; capture it too (the link TEXT, e.g. "Map XII", is the alt).
+    Image assets only (href ends in an image extension); relative targets resolved via base_url.
+    Deduped against the same ``seen`` set. No-op without a match.
+    """
+    from urllib.parse import urljoin
+
+    _img_exts = (".jpg", ".jpeg", ".png", ".gif", ".tif", ".tiff", ".webp")
+
+    def _add(target: str, alt_text: str) -> None:
+        target = (target or "").strip().strip("<>")
+        if not target or not target.lower().endswith(_img_exts):
+            return
+        url = target
+        if not url.lower().startswith(("http://", "https://")):
+            if not base_url:
+                return
+            url = urljoin(base_url, target)
+        if not url.lower().startswith(("http://", "https://")):
+            return
+        key = f"external:{url}"
+        if key not in seen:
+            images.append(("external", url, (alt_text or "").strip()[:500], ""))
+            seen.add(key)
+
+    # <a href="IMG">...</a> — captures BOTH the <img>-wrapped (full-res href) and the link-only
+    # ("Map XII") forms. The href is the image; inner tags are stripped to recover the link text.
+    # ReDoS-safe: every quantifier is BOUNDED so a malformed/unclosed <a in untrusted HTML cannot
+    # cause O(n^2) forward scans (the sibling image extractors use the same {0,N} discipline). The
+    # attribute span before href is capped, href is capped, and the body is a bounded lazy run that
+    # fails fast when no </a> follows within the bound.
+    for m in re.finditer(
+        r"<a\s[^>]{0,500}?href=[\"']?([^\"' >]{0,2000})[^>]{0,500}>(.{0,4000}?)</a>",
+        text,
+        re.IGNORECASE | re.DOTALL,
+    ):
+        href = m.group(1)
+        inner = m.group(2)
+        link_text = re.sub(r"<[^>]{0,2000}>", " ", inner).strip()
+        _add(href, link_text)
 
 
 def extract_maps(text: str, base_url: str = "") -> List[Tuple[str, str]]:

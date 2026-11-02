@@ -25,6 +25,17 @@ hung Wikipedia lookup can't block equipment/casualties). Consider: bounded concu
 timeouts, enrichment as a deferred/parallel stage. Must preserve ordering invariants (places persist
 before equipment resolves place_name->PlaceID) + never-drop/observability. (Raised by owner.)
 
+
+### Validate maps are NOT continually resubmitted to Grok in Phase 3 (MED)
+With the tiered maps classifier adding a Grok-vision backstop ("is this an image of a map?") for
+questionable images, we MUST ensure Phase 3 (enrichment/geocode/re-runs) does NOT re-submit the same
+map image to Grok on every run. CHECK: (1) the vision verdict is PERSISTED on the record (e.g.
+is_map / map_vision_checked_at) and the backstop SKIPS already-classified images; (2) the classifier
+only runs on NEW/unclassified images (incremental, like enrichment_checked_at gating); (3) a Phase-3
+re-run over an already-processed book issues ZERO new maps-vision calls (assert via OBSERV count).
+A resubmission loop would silently burn cost + rate limit on every re-run. (Raised by owner 2026-11-02;
+tie to the tiered-classifier work + the deterministic-first/Grok-backstop design.)
+
 ## ⭐ OPEN ISSUES (at a glance — highest priority first)
 
 The curated list of what is still OPEN. Each points to its detail section lower in this file.
