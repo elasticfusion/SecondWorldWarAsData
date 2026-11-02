@@ -305,9 +305,14 @@ def _resolve_entity_for_subevents(
         index = json.loads(index_path.read_text(encoding="utf-8"))
     except Exception:  # noqa: BLE001 - a corrupt index yields no link, not a crash
         return None, None
+    from src.extraction.batch_parallel import _contained_entity_path
+
     for fname in index.values():
-        f = entity_dir / fname
-        if not f.exists():
+        # Containment + basename strip (parity with the map read-path hardening): a poisoned index
+        # value (traversal/absolute/symlink-escape) is refused, not followed. index values are
+        # pipeline-written basenames today; this is defense-in-depth consistency.
+        f = _contained_entity_path(entity_dir, Path(str(fname)).name)
+        if f is None or not f.exists():
             continue
         try:
             rec = json.loads(f.read_text(encoding="utf-8"))

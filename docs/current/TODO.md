@@ -36,6 +36,19 @@ re-run over an already-processed book issues ZERO new maps-vision calls (assert 
 A resubmission loop would silently burn cost + rate limit on every re-run. (Raised by owner 2026-11-02;
 tie to the tiered-classifier work + the deterministic-first/Grok-backstop design.)
 
+
+### SECURITY: AV-scan downloaded map/images (download path bypasses the Phase-0 AV gate) (HIGH)
+The ClamAV scanner (src/ingestion/av_scan.py) is an INGESTION FRONT-DOOR gate — it scans binary keys
+only at Phase-0 upload (via trigger_handler). The Phase-2/3 IMAGE DOWNLOAD path
+(images.fetch_image_bytes -> map_common.download_map_image) does NOT invoke it: downloaded map/image
+bytes from UNTRUSTED sources (ibiblio; external maps = arbitrary whitelisted web) get SSRF + magic-
+byte/content-type validation but NO virus scan. Magic-byte validation blocks 'exe-disguised-as-jpg'
+but NOT a malformed image exploiting an image-parser CVE (ImageMagick/libwebp/TIFF class). Now higher
+priority: Step 5b writes these bytes to output/maps/files/ and Step 5c-ii will send them to Grok
+vision. ACTION: route downloaded image bytes through a fail-closed AV scan (reuse av_scan.Scanner)
+before persisting/forwarding; quarantine-not-persist on infected/unscannable. (Raised by owner
+2026-11-02.)
+
 ## ⭐ OPEN ISSUES (at a glance — highest priority first)
 
 The curated list of what is still OPEN. Each points to its detail section lower in this file.
