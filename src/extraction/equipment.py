@@ -2340,6 +2340,105 @@ def _window_para_nums(paragraph_numbers: List[int], para: Dict[int, str]) -> Lis
     return sorted(wanted)
 
 
+# Side-specific equipment NAME cues (German weapon terms a US source leaves in German): if the item
+# name itself is one of these, the operator is unambiguously Axis. Lower-cased substring match.
+_AXIS_WEAPON_NAME_CUES = (
+    "nebelwerfer",
+    "werfer",
+    "panzerfaust",
+    "panzerschreck",
+    "stug",
+    "sturmgeschutz",
+    "sturmgeschütz",
+    "nebel",
+    "flak 88",
+    "88-mm flak",
+    "mg 42",
+    "mg 34",
+    "maschinengewehr",
+    "panzer iv",
+    "panzer v",
+    "panther",
+    "tiger",
+    "teller mine",
+    "schu mine",
+    "s-mine",
+)
+# Formation/command tokens that mark a side when they appear in the source span/context.
+_AXIS_FORMATION_CUES = (
+    "ob west",
+    "oberbefehlshaber",
+    "wehrmacht",
+    "ss panzer",
+    "panzer lehr",
+    "luftwaffe",
+    "panzergrenadier",
+    "volksgrenadier",
+    "fallschirm",
+    "kampfgruppe",
+)
+_ALLIED_FORMATION_CUES = (
+    "u.s.",
+    "american",
+    "u.s. army",
+    "first army",
+    "vii corps",
+    "v corps",
+    "ranger",
+    "airborne division",
+    "royal navy",
+    "raf",
+    "british second army",
+)
+
+
+def _formation_side(blob: str) -> tuple:
+    """(side, reason) when the text names formations/commands of EXACTLY ONE side; else (None, "")."""
+    axis = any(c in blob for c in _AXIS_FORMATION_CUES)
+    allied = any(c in blob for c in _ALLIED_FORMATION_CUES)
+    if axis and not allied:
+        return "DEU", "axis_formation_only"
+    if allied and not axis:
+        return "USA", "allied_formation_only"
+    return None, ""
+
+
+def _detect_equipment_side(rec: Dict[str, Any], extended_text: str) -> tuple:
+    """Return (side, reason) for an UNAMBIGUOUS single-side cue, else (None, ""). A side-specific
+    weapon NAME wins; otherwise the span/context must name formations/commands of EXACTLY ONE side
+    (mixed or none -> no inference)."""
+    name = (rec.get("common_name") or rec.get("name") or "").lower()
+    if any(c in name for c in _AXIS_WEAPON_NAME_CUES):
+        return "DEU", "axis_weapon_name"
+    blob = " ".join(
+        [name, (rec.get("original_text") or "").lower(), (extended_text or "").lower()]
+    )
+    return _formation_side(blob)  # single-side formation cue, else (None, "")
+
+
+def _backfill_operating_country(rec: Dict[str, Any], extended_text: str) -> None:
+    """DETERMINISTIC backstop (the LLM is inconsistent on borderline spans): when refine left
+    operating_country EMPTY but there is an UNAMBIGUOUS side cue, fill it in code. Fires ONLY on a
+    clear single-side cue — a side-specific weapon NAME, or when the span/context names formations/
+    commands of EXACTLY ONE side. Stays null (no over-reach) for cue-less or mixed-side items. Loud
+    OBSERV so the deterministic fill is traceable (never a silent guess)."""
+    if rec.get("operating_country"):
+        return  # trust the model when it answered
+    side, reason = _detect_equipment_side(rec, extended_text)
+    if not side:
+        return
+    rec["operating_country"] = side
+    observe(
+        "equipment",
+        "operating_country_backfilled",
+        status="ok",
+        item=(rec.get("common_name") or "")[:60],
+        side=side,
+        cue=reason,
+        note="operating_country was null; filled deterministically from an unambiguous side cue",
+    )
+
+
 def _refine_equipment_item(
     item: Dict[str, Any], event_data: Dict[str, Any], grok_client: GrokClient
 ) -> Optional[Dict[str, Any]]:
@@ -2359,6 +2458,7 @@ def _refine_equipment_item(
         rec["extended_text"] = extended_text
     if paras:
         rec.setdefault("paragraph_numbers", paras)
+    _backfill_operating_country(rec, extended_text)
     return rec
 
 
