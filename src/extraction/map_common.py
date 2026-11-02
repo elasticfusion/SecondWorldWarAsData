@@ -218,3 +218,65 @@ def _create_new_map(
         len(references or []),
     )
     return map_file
+
+
+# Default map-type vocabulary (source-agnostic; config may override via classify_map_type's keywords).
+# Keyed broad->specific; first match wins. Deterministic keyword classification (no LLM).
+_MAP_TYPE_VOCAB = {
+    "situation": ("situation", "disposition", "front line", "the front"),
+    "operational": (
+        "operation",
+        "campaign",
+        "advance",
+        "offensive",
+        "assault",
+        "landing",
+    ),
+    "tactical": ("tactical", "sector", "beach", "bridgehead", "crossing"),
+    "strategic": ("strategic", "theater", "theatre", "overview", "europe"),
+    "terrain": ("terrain", "relief", "topograph", "elevation"),
+}
+
+
+def classify_map_type(title: str, context: str = "") -> Optional[str]:
+    """Deterministic map-type classification from the title/context text (no LLM). Source-agnostic
+    keyword vocab; returns the first matching type or None (unknown is honest, not guessed).
+    """
+    text = f"{title or ''} {context or ''}".lower()
+    for map_type, terms in _MAP_TYPE_VOCAB.items():
+        if any(t in text for t in terms):
+            return map_type
+    return None
+
+
+def download_map_image(url: str, map_id: str, files_dir: Path) -> tuple:
+    """SSRF-safe download of a map image to ``files_dir/{map_id}.{ext}`` (reuses the central
+    images.fetch_image_bytes gate). Returns (local_image_path|None, file_format|None). Fail-safe:
+    a blocked/non-image/failed download returns (None, None) with a loud OBSERV — never raises.
+    """
+    from src.extraction.images import fetch_image_bytes
+    from src.extraction.batch_parallel import _contained_entity_path
+
+    try:
+        body, ext = fetch_image_bytes(url)
+    except Exception as e:  # noqa: BLE001 - download failure is loud, not fatal
+        logger.warning(
+            "OBSERV maps.download_failed url=%s reason=%s status=warn",
+            (url or "")[:120],
+            type(e).__name__,
+        )
+        return None, None
+    if not body:
+        logger.warning(
+            "OBSERV maps.download_blocked url=%s status=warn (non-image/blocked)",
+            (url or "")[:120],
+        )
+        return None, None
+    ext = (ext or "jpg").lstrip(".")
+    files_dir.mkdir(parents=True, exist_ok=True)
+    out = _contained_entity_path(files_dir, f"{map_id}.{ext}")
+    if out is None:
+        logger.warning("OBSERV maps.download_path_unsafe map_id=%s status=warn", map_id)
+        return None, None
+    out.write_bytes(body)
+    return str(out), ext

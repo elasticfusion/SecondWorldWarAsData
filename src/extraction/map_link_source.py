@@ -224,7 +224,7 @@ def _content_is_new(url: str) -> bool:
 
 
 def persist_map_entities(
-    parsed_docs: List[Dict[str, Any]], maps_dir: Path
+    parsed_docs: List[Dict[str, Any]], maps_dir: Path, download: bool = True
 ) -> Dict[str, int]:
     """Step 5a — persist a Map ENTITY per in-document map, keyed by URL, ACCUMULATING each chapter's
     reference footprint (roman-numeral campaign foldouts are shared across chapters/books). Reuses
@@ -236,7 +236,7 @@ def persist_map_entities(
     maps_dir.mkdir(parents=True, exist_ok=True)
     index_path = maps_dir / "index.json"
     url_index = _load_url_index(index_path)
-    counts = {"created": 0, "appended": 0, "skipped": 0}
+    counts = {"created": 0, "existing": 0, "skipped": 0}
     for doc in parsed_docs:
         if not isinstance(doc, dict):
             continue
@@ -245,12 +245,12 @@ def persist_map_entities(
             continue  # loop guard (mirror ingest_in_doc_map_links)
         for m in doc.get("maps") or []:
             if isinstance(m, dict):
-                _persist_one_map(m, book, maps_dir, url_index, counts)
+                _persist_one_map(m, book, maps_dir, url_index, counts, download)
     _save_url_index(index_path, url_index)
     logger.info(
-        "OBSERV maps.persist_summary created=%d appended=%d skipped=%d status=%s",
+        "OBSERV maps.persist_summary created=%d existing=%d skipped=%d status=%s",
         counts["created"],
-        counts["appended"],
+        counts["existing"],
         counts["skipped"],
         "warn" if counts["skipped"] else "ok",
     )
@@ -289,9 +289,15 @@ def _persist_one_map(
     maps_dir: Path,
     url_index: Dict[str, str],
     counts: Dict[str, int],
+    download: bool = True,
 ) -> None:
     """Persist (find-or-create + append footprint) one in-document map. Mutates counts."""
-    from src.extraction.map_common import base_map_record, find_or_create_map_by_url
+    from src.extraction.map_common import (
+        base_map_record,
+        find_or_create_map_by_url,
+        classify_map_type,
+        download_map_image,
+    )
 
     url = str(m.get("url", "") or "").strip()
     if not url:
@@ -300,17 +306,26 @@ def _persist_one_map(
     refs = _stamp_book(m.get("references") or [], book)
     before = url in url_index
 
+    title = str(m.get("description", "") or m.get("map_id", ""))
+
     def _build(map_id: str) -> Dict[str, Any]:
+        # Runs ONLY on CREATE (find_or_create calls build_record just for a new map) -> download +
+        # classify happen once per map, never on a cross-chapter append (idempotent).
+        local_image_path = file_format = None
+        if download:
+            local_image_path, file_format = download_map_image(
+                url, map_id, maps_dir / "files"
+            )
         return {
             **base_map_record(
                 map_id=map_id,
-                map_title=str(m.get("description", "") or m.get("map_id", "")),
+                map_title=title,
                 description=m.get("description"),
-                map_type=None,
+                map_type=classify_map_type(title),
                 source_url=url,
                 local_path=None,
-                local_image_path=None,
-                file_format=None,
+                local_image_path=local_image_path,
+                file_format=file_format,
                 storage_backend="filesystem",
             ),
             "figure_number": m.get("map_id"),
@@ -326,7 +341,7 @@ def _persist_one_map(
     if f is None:
         counts["skipped"] += 1
     elif before:
-        counts["appended"] += 1
+        counts["existing"] += 1
     else:
         counts["created"] += 1
 
