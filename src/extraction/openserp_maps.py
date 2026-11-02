@@ -8,6 +8,7 @@ instead of asking Grok to search (which causes hallucinations).
 import json
 import logging
 import subprocess
+from src.extraction.map_common import base_map_record, external_map_fields
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime
@@ -442,33 +443,36 @@ def _create_map_record(
             file_format = "jpg" if ext == "jpeg" else ext
 
     return {
-        "MapID": map_id,
-        "map_title": result["title"],
-        "external_source": result["engine"].title(),
-        "external_source_url": result["url"],
-        "archive_id": None,
-        "license": "Unknown",
-        "license_url": None,
-        "date_created": None,
-        "creator": None,
-        "EventID": event_id,
-        "Event_Name": event_name,
-        "Sub_eventID": sub_event_id,
-        "Sub_event_Name": sub_event_name,
-        "place_name": place_name,
-        "PlaceMentionID": None,
-        "date": date,
-        "DateMentionID": None,
-        "local_path": f"output/external_maps/{map_id}.json",
-        "local_image_path": image_path,
-        "source_url": result.get("url"),
-        "file_format": file_format,
-        "extracted_date": datetime.utcnow().isoformat() + "Z",
-        "description": result.get("description", ""),
-        "map_type": None,
-        "storage_backend": "filesystem",
-        "found_via": f"OpenSERP {result['engine']} search",
-        "found_date": datetime.utcnow().strftime("%Y-%m-%d"),
+        **base_map_record(
+            map_id=map_id,
+            map_title=result["title"],
+            description=result.get("description", ""),
+            map_type=None,
+            source_url=result.get("url"),
+            local_path=f"output/external_maps/{map_id}.json",
+            local_image_path=image_path,
+            file_format=file_format,
+            storage_backend="filesystem",
+            event_id=event_id,
+            event_name=event_name,
+            sub_event_id=sub_event_id,
+            sub_event_name=sub_event_name,
+            place_name=place_name,
+            place_mention_id=None,
+            date=date,
+            date_mention_id=None,
+        ),
+        **external_map_fields(
+            external_source=result["engine"].title(),
+            external_source_url=result["url"],
+            archive_id=None,
+            license_="Unknown",
+            license_url=None,
+            date_created=None,
+            creator=None,
+            found_via=f"OpenSERP {result['engine']} search",
+            found_date=datetime.utcnow().strftime("%Y-%m-%d"),
+        ),
     }
 
 
