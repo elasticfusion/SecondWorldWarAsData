@@ -785,18 +785,56 @@ CASUALTY_ITEM_SCHEMA = {
     "required": ["type", "description"],
     "properties": {
         "CasualtyID": {"type": "string"},
+        # type MUST include non_battle (the prompt emits it for weather/disease/accident
+        # casualties); a stale narrow enum here silently dropped every non_battle item.
         "type": {
             "type": "string",
-            "enum": ["wounded", "killed", "casualties", "pow", "missing"],
+            "enum": [
+                "wounded",
+                "killed",
+                "casualties",
+                "pow",
+                "missing",
+                "non_battle",
+            ],
+        },
+        # cause classifies HOW (combat vs weather_exposure/disease/accident). The model emits
+        # it per prompts/casualties.yaml; omitting it from properties dropped the whole item.
+        "cause": {
+            "type": ["string", "null"],
+            "enum": [
+                "combat",
+                "weather_exposure",
+                "disease",
+                "accident",
+                "other",
+                None,
+            ],
         },
         "description": {"type": "string"},
+        # original_text is the provenance anchor (mandatory in the prompt) — it MUST be an
+        # accepted property or every sourced casualty item is rejected (the 0-on-684 bug).
+        "original_text": {"type": ["string", "null"]},
         "side": {
             "type": "string",
-            "enum": ["allied", "axis", "civilian", "unknown"],
+            "enum": ["allied", "axis", "civilian", "neutral", "unknown"],
         },
         "nationality": {"type": ["string", "null"]},
-        "count": {"type": "object"},
+        "count": {"type": ["object", "integer", "number", "null"]},
+        # qualitative magnitude / comparative flag (schema 2.27): a casualty fact is valid
+        # without an absolute count ("heavy casualties").
+        "magnitude": {
+            "type": ["string", "null"],
+            "enum": ["none", "light", "moderate", "heavy", "severe", None],
+        },
+        "is_comparative": {"type": ["boolean", "null"]},
         "date_string": {"type": ["string", "null"]},
+        "date": {"type": ["object", "string", "null"]},
+        "PersonID": {"type": ["string", "null"]},
+        "PlaceID": {"type": ["string", "null"]},
+        "DateID": {"type": ["string", "null"]},
+        "source": {"type": ["object", "string", "null"]},
+        "event_context": {"type": ["object", "null"]},
         "impacted_organizations": {"type": "array"},
         "impacted_people": {"type": "array"},
         "impacted_places": {"type": "array"},
