@@ -100,9 +100,22 @@ Target feedback loops:
 4. **SQS:** add the Phase-2 re-entry feedback interface (net-new); confirm Map→Phase-3 re-entry via
    `EntityCreatedTopic`; add loop-safety + scoping + idempotency OBSERVs.
 
-## Open items to confirm with owner
-- OI1: the exact trigger for Phase3→Phase2 feedback — any new place/people_group, or only ones a
-  downstream entity references? (Scope control.)
-- OI2: loop-termination policy for Phase2↔Phase3 (max rounds / converge-when-no-new-entities).
-- OI3: does the minimal Phase-1 Map JSON need the reference footprint as paragraph_numbers,
-  sub-event IDs, or both? (Provenance granularity.)
+## Resolved decisions (owner 2026-11-02)
+
+- **OI1 — ONLY NEW entities trigger feedback.** Feedback fires only when a genuinely NEW place/
+  organization is created; an already-existing entity does not.
+
+- **OI2 — FIND-OR-CREATE + ENRICH (not an unbounded loop).** When Phase 3 encounters an entity
+  reference it: (1) looks for the existing entity JSON; (2) if it EXISTS, append the new reference
+  (provenance) to it — nothing else, no feedback; (3) if it does NOT exist, create a new entity
+  JSON, then pull Wikipedia/Grokipedia enrichment for it. This is SELF-TERMINATING: a pass can only
+  continue while NEW entities are minted, and each pass mints strictly fewer (existing ones are just
+  appended-to) → converges to zero. "Feed back to Phase 2" therefore means: a newly-created entity
+  receives the same create+enrich treatment the normal pipeline gives it — there is no ping-pong to
+  bound. Reuses the existing cross-entity back-fill pattern (`places.find_or_create_place_stub` +
+  `docs/current/design/cross-entity-reference-backfill.md`): find-or-create stub → append reference
+  → enrich-if-new. Generalize that pattern to organizations (people_groups) as well as places.
+
+- **OI3 — PROVENANCE IS PARAMOUNT.** Every map reference footprint (Phase 1) AND every reference
+  appended to an entity (OI2) MUST carry `paragraph_numbers` (MANDATORY) + `Sub-eventID` when
+  relevant. Source-traceability is non-negotiable (the standing always-maintain-provenance rule).
