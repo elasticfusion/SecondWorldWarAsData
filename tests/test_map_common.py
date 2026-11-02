@@ -22,6 +22,9 @@ _COMMON = {
     "PlaceMentionID",
     "date",
     "DateMentionID",
+    "PeopleGroupID",
+    "PeopleGroupMentionID",
+    "PeopleGroup_Name",
     "extracted_date",
 }
 _EXTERNAL = {

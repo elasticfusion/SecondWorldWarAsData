@@ -119,3 +119,20 @@ Target feedback loops:
 - **OI3 — PROVENANCE IS PARAMOUNT.** Every map reference footprint (Phase 1) AND every reference
   appended to an entity (OI2) MUST carry `paragraph_numbers` (MANDATORY) + `Sub-eventID` when
   relevant. Source-traceability is non-negotiable (the standing always-maintain-provenance rule).
+
+
+## Cross-chapter shared maps (owner 2026-11-02 — refines Steps 4/5)
+Green Book chapters LINK THE SAME MAP — especially roman-numeral campaign foldouts (Map VII..XIV are
+shared across chapters, even across books). A map is therefore a SHARED entity keyed by its URL
+identity, NOT chapter-scoped. Required behavior (find-or-create by URL + ACCUMULATE footprints):
+- Map identity = its (hi-res) URL. find-or-create keys on URL.
+- When a second chapter references an already-created map, APPEND that chapter's reference footprint
+  (paragraph_numbers + sub-event + book) to the EXISTING Map record's references[] — do NOT create a
+  duplicate Map record, and do NOT merely drop the duplicate.
+- Current state (gap this fixes): Phase-2 maps.py `_process_map` mints a fresh ULID per call (=>
+  DUPLICATE Map records for a shared map); Phase-3 map_link_source dedups by URL but DROPS the
+  duplicate (losing the second chapter's reference). Neither accumulates.
+- Enabler: Step 1 already captures the per-map reference footprint; Step 4 find-or-create (by URL)
+  merges footprints across chapters/books; Step 5 Phase-3 owns the single persisted Map.
+- OBSERV: maps.shared_appended url=.. book=.. refs_added=N when a footprint is merged into an existing
+  map (so cross-chapter sharing is visible/actionable).

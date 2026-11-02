@@ -32,6 +32,9 @@ def base_map_record(
     place_mention_id: Optional[str] = None,
     date: Optional[str] = None,
     date_mention_id: Optional[str] = None,
+    people_group_id: Optional[str] = None,
+    people_group_mention_id: Optional[str] = None,
+    people_group_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """The fields common to every Map record, regardless of source. Source-specific builders merge
     their own keys onto this (``{**base_map_record(...), "license": ...}``)."""
@@ -53,6 +56,9 @@ def base_map_record(
         "PlaceMentionID": place_mention_id,
         "date": date,
         "DateMentionID": date_mention_id,
+        "PeopleGroupID": people_group_id,
+        "PeopleGroupMentionID": people_group_mention_id,
+        "PeopleGroup_Name": people_group_name,
         "extracted_date": datetime.utcnow().isoformat() + "Z",
     }
 

@@ -39,5 +39,10 @@ MAPS_OUTPUT_SCHEMA = {
         "PlaceMentionID": ulid_field(nullable=True),
         "date": make_nullable("string"),
         "DateMentionID": ulid_field(nullable=True),
+        # Organization (people_group) link — a map can depict/belong to a unit's operations.
+        # Added 2.25 per the maps target architecture (link Event/Place/Date/ORGANIZATION).
+        "PeopleGroupID": ulid_field(nullable=True),
+        "PeopleGroupMentionID": ulid_field(nullable=True),
+        "PeopleGroup_Name": make_nullable("string"),
     },
 }
