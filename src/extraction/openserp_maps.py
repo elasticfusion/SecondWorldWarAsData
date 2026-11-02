@@ -406,7 +406,7 @@ def _download_map_image(
         if not img_bytes:
             return False, None
         ext = (ext or "jpg").lstrip(".")
-        if ext not in ["jpg", "jpeg", "png", "gif"]:
+        if ext not in ["jpg", "jpeg", "png", "gif", "tif", "tiff"]:
             ext = "jpg"
 
         image_filename = f"{map_id}.{ext}"
@@ -439,7 +439,7 @@ def _create_map_record(
     file_format = None
     if image_path:
         ext = Path(image_path).suffix.lstrip(".")
-        if ext in ("jpg", "jpeg", "png", "tif", "gif", "pdf"):
+        if ext in ("jpg", "jpeg", "png", "tif", "tiff", "gif", "pdf"):
             file_format = "jpg" if ext == "jpeg" else ext
 
     return {
