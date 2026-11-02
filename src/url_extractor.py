@@ -38,8 +38,12 @@ class URLExtractor:
         return response.text
 
     def html_to_markdown(self, html: str) -> str:
-        """Convert HTML to markdown."""
-        return self.html2text.handle(html)
+        """Convert HTML to markdown. SANITIZE first via the SHARED sanitizer (same code all phases)
+        so inline JavaScript (on* handlers + javascript:/vbscript: URLs) is stripped here too, not
+        just on the pandoc ingestion path."""
+        from src.ingestion.text_converters import _strip_html_boilerplate
+
+        return self.html2text.handle(_strip_html_boilerplate(html))
 
     def extract_main_content(
         self, html: str, content_selector: Optional[str] = None
