@@ -224,7 +224,10 @@ def _content_is_new(url: str) -> bool:
 
 
 def persist_map_entities(
-    parsed_docs: List[Dict[str, Any]], maps_dir: Path, download: bool = True
+    parsed_docs: List[Dict[str, Any]],
+    maps_dir: Path,
+    download: bool = True,
+    output_root: Optional[Path] = None,
 ) -> Dict[str, int]:
     """Step 5a — persist a Map ENTITY per in-document map, keyed by URL, ACCUMULATING each chapter's
     reference footprint (roman-numeral campaign foldouts are shared across chapters/books). Reuses
@@ -245,7 +248,9 @@ def persist_map_entities(
             continue  # loop guard (mirror ingest_in_doc_map_links)
         for m in doc.get("maps") or []:
             if isinstance(m, dict):
-                _persist_one_map(m, book, maps_dir, url_index, counts, download)
+                _persist_one_map(
+                    m, book, maps_dir, url_index, counts, download, output_root
+                )
     _save_url_index(index_path, url_index)
     logger.info(
         "OBSERV maps.persist_summary created=%d existing=%d skipped=%d status=%s",
@@ -290,6 +295,7 @@ def _persist_one_map(
     url_index: Dict[str, str],
     counts: Dict[str, int],
     download: bool = True,
+    output_root: Optional[Path] = None,
 ) -> None:
     """Persist (find-or-create + append footprint) one in-document map. Mutates counts."""
     from src.extraction.map_common import (
@@ -340,10 +346,46 @@ def _persist_one_map(
     )
     if f is None:
         counts["skipped"] += 1
-    elif before:
+        return
+    if before:
         counts["existing"] += 1
     else:
         counts["created"] += 1
+    # Step 5c-i: deterministic Place/Date/Organization linking from the footprint sub-events.
+    if output_root is not None:
+        _link_persisted_map(f, output_root)
+
+
+def _link_persisted_map(map_file: Path, output_root: Path) -> None:
+    """Read the persisted map, stamp Place/Date/Org links from its footprint, write back if changed.
+    Fail-safe."""
+    import json as _json
+
+    from src.extraction.map_common import link_map_entities
+    from src.utils.file_lock import write_json_with_lock
+
+    try:
+        rec = _json.loads(map_file.read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001 - never block the phase on a link read
+        logger.warning(
+            "OBSERV maps.link_read_failed file=%s reason=%s status=warn",
+            map_file.name,
+            type(e).__name__,
+        )
+        return
+    before = (
+        rec.get("PlaceMentionID"),
+        rec.get("DateMentionID"),
+        rec.get("PeopleGroupID"),
+    )
+    link_map_entities(rec, output_root)
+    after = (
+        rec.get("PlaceMentionID"),
+        rec.get("DateMentionID"),
+        rec.get("PeopleGroupID"),
+    )
+    if after != before:
+        write_json_with_lock(map_file, rec)
 
 
 def _stamp_book(references: List[Dict[str, Any]], book: str) -> List[Dict[str, Any]]:

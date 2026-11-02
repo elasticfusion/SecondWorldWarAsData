@@ -280,3 +280,86 @@ def download_map_image(url: str, map_id: str, files_dir: Path) -> tuple:
         return None, None
     out.write_bytes(body)
     return str(out), ext
+
+
+def _sub_event_ids(references: list) -> set:
+    """Collect the Sub_eventIDs from a map's reference footprint (Step 1 captures them)."""
+    out = set()
+    for r in references or []:
+        sid = r.get("Sub_eventID") or r.get("sub_event_id")
+        if sid:
+            out.add(sid)
+    return out
+
+
+def _resolve_entity_for_subevents(
+    entity_dir: Path, sub_event_ids: set, id_field: str, name_field: str
+) -> tuple:
+    """Find the FIRST entity whose event_mentions share any of the map's sub-events. Returns
+    (entity_id, name) or (None, None). Generic over places/dates/people_groups (reuses the
+    index.json + event_mentions[].Sub_eventID matching pattern). Read-only."""
+    index_path = entity_dir / "index.json"
+    if not index_path.exists() or not sub_event_ids:
+        return None, None
+    try:
+        index = json.loads(index_path.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001 - a corrupt index yields no link, not a crash
+        return None, None
+    from src.extraction.batch_parallel import _contained_entity_path
+
+    for fname in index.values():
+        # Containment + basename strip (parity with the map read-path hardening): a poisoned index
+        # value (traversal/absolute/symlink-escape) is refused, not followed. index values are
+        # pipeline-written basenames today; this is defense-in-depth consistency.
+        f = _contained_entity_path(entity_dir, Path(str(fname)).name)
+        if f is None or not f.exists():
+            continue
+        try:
+            rec = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            continue
+        for m in rec.get("event_mentions", []):
+            if m.get("Sub_eventID") in sub_event_ids:
+                return rec.get(id_field), rec.get(name_field)
+    return None, None
+
+
+def link_map_entities(
+    record: Dict[str, Any],
+    output_root: Path,
+) -> None:
+    """Step 5c-i — stamp Place/Date/Organization links onto a Map record from its reference-footprint
+    sub-events (deterministic, no Grok). Mutates `record` in place. Only fills a link that is
+    currently empty (idempotent on re-run). OBSERV maps.linked with the dimensions resolved.
+    """
+    sids = _sub_event_ids(record.get("references") or [])
+    if not sids:
+        return
+    linked = []
+    if not record.get("PlaceMentionID"):
+        pid, pname = _resolve_entity_for_subevents(
+            output_root / "places", sids, "PlaceID", "current_name"
+        )
+        if pid:
+            record["PlaceMentionID"], record["place_name"] = pid, pname
+            linked.append("place")
+    if not record.get("DateMentionID"):
+        did, dname = _resolve_entity_for_subevents(
+            output_root / "dates", sids, "DateID", "date_start"
+        )
+        if did:
+            record["DateMentionID"], record["date"] = did, dname
+            linked.append("date")
+    if not record.get("PeopleGroupID"):
+        gid, gname = _resolve_entity_for_subevents(
+            output_root / "people_groups", sids, "GroupID", "group_name"
+        )
+        if gid:
+            record["PeopleGroupID"], record["PeopleGroup_Name"] = gid, gname
+            linked.append("organization")
+    if linked:
+        logger.info(
+            "OBSERV maps.linked map_id=%s dims=%s status=ok",
+            record.get("MapID"),
+            ",".join(linked),
+        )
