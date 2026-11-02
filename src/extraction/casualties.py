@@ -979,7 +979,14 @@ def _save_casualty(casualty: Dict[str, Any], output_dir: Path) -> None:
     casualty_id = casualty["CasualtyID"]
     # 'type' is UNTRUSTED LLM output used in the filename ({type}_{id}.json) — clamp it to the schema
     # enum so neither a traversal payload nor a junk value reaches the path, then sanitize+contain.
-    _CASUALTY_TYPES = {"wounded", "killed", "casualties", "pow", "missing"}
+    _CASUALTY_TYPES = {
+        "wounded",
+        "killed",
+        "casualties",
+        "pow",
+        "missing",
+        "non_battle",
+    }
     raw_type = str(casualty.get("type", "") or "").strip().lower()
     casualty_type = raw_type if raw_type in _CASUALTY_TYPES else "casualties"
     if casualty_type != raw_type:
