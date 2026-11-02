@@ -496,3 +496,111 @@ def scan_staged_binaries(
         _disposition_staged(r, outcome, s3_client, bucket, region)
     _emit_av_summary(outcome)
     return outcome
+
+
+# --- Model-A drainer: scan the unscanned/ queue in bounded SEQUENTIAL chunks, single-drainer -----
+import time as _time
+
+_DRAIN_LOCK_KEY = UNSCANNED_PREFIX + ".scan-lock"
+_DRAIN_LOCK_TTL = 1800  # 30 min — a crashed drainer's lock is reclaimable after this
+
+
+def _list_unscanned_keys(s3_client, bucket: str) -> list:
+    """Paginated list of the unscanned/ staging zone (excludes the lock marker + .keep prefixes)."""
+    keys = []
+    try:
+        for page in s3_client.get_paginator("list_objects_v2").paginate(
+            Bucket=bucket, Prefix=UNSCANNED_PREFIX
+        ):
+            for obj in page.get("Contents", []) or []:
+                k = obj["Key"]
+                if k == _DRAIN_LOCK_KEY or k.endswith("/.keep"):
+                    continue
+                keys.append(k)
+    except Exception as e:  # noqa: BLE001 - a list failure yields an empty drain, loud
+        logger.warning(
+            "OBSERV av.drain_list_failed bucket=%s reason=%s status=warn",
+            bucket,
+            type(e).__name__,
+        )
+    return keys
+
+
+def _acquire_drain_lock(s3_client, bucket: str) -> bool:
+    """Single-drainer S3 lock: conditional-ish put of a lock marker. If a FRESH marker exists,
+    another drainer holds it -> skip (return False, loud). A marker older than the TTL is stale and
+    reclaimed. Best-effort; a lock error fails OPEN to not starve scanning (the disposition itself is
+    idempotent + fail-closed, so an overlap at worst double-moves which copy/delete tolerates).
+    """
+    try:
+        head = s3_client.head_object(Bucket=bucket, Key=_DRAIN_LOCK_KEY)
+        age = _time.time() - head.get("LastModified").timestamp()
+        if age < _DRAIN_LOCK_TTL:
+            logger.info(
+                "OBSERV av.drain_locked held_age_s=%d status=ok (another drainer active; skipping)",
+                int(age),
+            )
+            return False
+        logger.warning(
+            "OBSERV av.drain_lock_stale age_s=%d status=warn (reclaiming)", int(age)
+        )
+    except Exception:  # noqa: BLE001 - no marker (expected) -> acquire
+        pass
+    try:
+        s3_client.put_object(
+            Bucket=bucket, Key=_DRAIN_LOCK_KEY, Body=str(_time.time()).encode()
+        )
+        return True
+    except Exception as e:  # noqa: BLE001 - fail OPEN (don't starve scanning)
+        logger.warning(
+            "OBSERV av.drain_lock_failed reason=%s status=warn", type(e).__name__
+        )
+        return True
+
+
+def _release_drain_lock(s3_client, bucket: str) -> None:
+    try:
+        s3_client.delete_object(Bucket=bucket, Key=_DRAIN_LOCK_KEY)
+    except Exception:  # noqa: BLE001 - best effort; TTL reclaims it otherwise
+        pass
+
+
+def drain_unscanned(
+    s3_client, bucket: str, scanner: Scanner, *, chunk_size: int = 25, region: str = ""
+) -> AvOutcome:
+    """Model-A drain: list the unscanned/ queue and scan it in bounded SEQUENTIAL chunks (one ClamAV
+    task per chunk so no single sequential scan outruns the poll window), dispositioning each chunk
+    via the three-zone scan_staged_binaries. Single-drainer (S3 lock) so overlapping runs don't
+    race. Keys arriving AFTER the snapshot wait for the next drain. Never raises.
+
+    Returns an aggregate AvOutcome (clean/quarantined across all chunks)."""
+    agg = AvOutcome()
+    if not _acquire_drain_lock(s3_client, bucket):
+        return agg  # another drainer is active
+    try:
+        keys = _list_unscanned_keys(s3_client, bucket)
+        step = max(
+            1, chunk_size
+        )  # clamp once: a 0/negative chunk_size must NOT yield empty chunks
+        logger.info(
+            "OBSERV av.drain_start queued=%d chunk_size=%d status=ok",
+            len(keys),
+            step,
+        )
+        for i in range(0, len(keys), step):
+            chunk = keys[i : i + step]
+            out = scan_staged_binaries(s3_client, bucket, chunk, scanner, region=region)
+            agg.results.extend(out.results)
+            agg.clean_keys.extend(out.clean_keys)
+            agg.quarantined_keys.extend(out.quarantined_keys)
+        agg.scanned = bool(agg.results)
+        logger.info(
+            "OBSERV av.drain_summary chunks=%d promoted=%d quarantined=%d status=%s",
+            (len(keys) + step - 1) // step,
+            len(agg.clean_keys),
+            len(agg.quarantined_keys),
+            "anomaly" if agg.quarantined_keys else "ok",
+        )
+    finally:
+        _release_drain_lock(s3_client, bucket)
+    return agg
