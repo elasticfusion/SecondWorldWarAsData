@@ -221,3 +221,124 @@ def _content_is_new(url: str) -> bool:
         return _register_content_hash_if_new(digest, f"maplink-{digest[:16]}")
     except Exception:  # noqa: BLE001
         return True
+
+
+def persist_map_entities(
+    parsed_docs: List[Dict[str, Any]], maps_dir: Path
+) -> Dict[str, int]:
+    """Step 5a — persist a Map ENTITY per in-document map, keyed by URL, ACCUMULATING each chapter's
+    reference footprint (roman-numeral campaign foldouts are shared across chapters/books). Reuses
+    map_common.find_or_create_map_by_url (URL find-or-create + append) + base_map_record. Distinct
+    from ingest_in_doc_map_links (which recycles a map as a SOURCE document): this writes the Map
+    entity record + its cross-chapter references[]. Fail-safe; emits OBSERV maps.persist_summary.
+    The url_index persists in maps_dir/index.json so accumulation survives across docs AND runs.
+    """
+    maps_dir.mkdir(parents=True, exist_ok=True)
+    index_path = maps_dir / "index.json"
+    url_index = _load_url_index(index_path)
+    counts = {"created": 0, "appended": 0, "skipped": 0}
+    for doc in parsed_docs:
+        if not isinstance(doc, dict):
+            continue
+        book = str(doc.get("book", ""))
+        if book.startswith("map-"):
+            continue  # loop guard (mirror ingest_in_doc_map_links)
+        for m in doc.get("maps") or []:
+            if isinstance(m, dict):
+                _persist_one_map(m, book, maps_dir, url_index, counts)
+    _save_url_index(index_path, url_index)
+    logger.info(
+        "OBSERV maps.persist_summary created=%d appended=%d skipped=%d status=%s",
+        counts["created"],
+        counts["appended"],
+        counts["skipped"],
+        "warn" if counts["skipped"] else "ok",
+    )
+    return counts
+
+
+def _load_url_index(index_path: Path) -> Dict[str, str]:
+    import json as _json
+
+    if not index_path.exists():
+        return {}
+    try:
+        return _json.loads(index_path.read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001 - a corrupt index is loud, rebuilt empty
+        logger.warning(
+            "OBSERV maps.index_read_failed reason=%s status=warn", type(e).__name__
+        )
+        return {}
+
+
+def _save_url_index(index_path: Path, url_index: Dict[str, str]) -> None:
+    # Sanctioned index write (matches places/dates/batch_parallel) — NOT a raw write_text.
+    from src.utils.file_lock import write_json_with_lock
+
+    try:
+        write_json_with_lock(index_path, url_index)
+    except Exception as e:  # noqa: BLE001 - index write failure is loud, not fatal
+        logger.warning(
+            "OBSERV maps.index_write_failed reason=%s status=warn", type(e).__name__
+        )
+
+
+def _persist_one_map(
+    m: Dict[str, Any],
+    book: str,
+    maps_dir: Path,
+    url_index: Dict[str, str],
+    counts: Dict[str, int],
+) -> None:
+    """Persist (find-or-create + append footprint) one in-document map. Mutates counts."""
+    from src.extraction.map_common import base_map_record, find_or_create_map_by_url
+
+    url = str(m.get("url", "") or "").strip()
+    if not url:
+        counts["skipped"] += 1
+        return
+    refs = _stamp_book(m.get("references") or [], book)
+    before = url in url_index
+
+    def _build(map_id: str) -> Dict[str, Any]:
+        return {
+            **base_map_record(
+                map_id=map_id,
+                map_title=str(m.get("description", "") or m.get("map_id", "")),
+                description=m.get("description"),
+                map_type=None,
+                source_url=url,
+                local_path=None,
+                local_image_path=None,
+                file_format=None,
+                storage_backend="filesystem",
+            ),
+            "figure_number": m.get("map_id"),
+        }
+
+    f = find_or_create_map_by_url(
+        url=url,
+        maps_dir=maps_dir,
+        url_index=url_index,
+        references=refs,
+        build_record=_build,
+    )
+    if f is None:
+        counts["skipped"] += 1
+    elif before:
+        counts["appended"] += 1
+    else:
+        counts["created"] += 1
+
+
+def _stamp_book(references: List[Dict[str, Any]], book: str) -> List[Dict[str, Any]]:
+    """Stamp the source `book` onto each reference footprint entry (cross-chapter/-book attribution
+    + the dedup key). Preserves paragraph_number (mandatory) + Sub_eventID."""
+    out = []
+    for r in references:
+        if not isinstance(r, dict):
+            continue
+        rr = dict(r)
+        rr.setdefault("book", book)
+        out.append(rr)
+    return out
