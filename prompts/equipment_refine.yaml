@@ -37,11 +37,20 @@ prompt_template: |
     captured=true only when used AGAINST its origin). If unstated, resolve by this precedence:
       (1) explicit statement > (2) operational role — DEFENSIVE emplacements (mine/wire/obstacle/
       fortification/coastal battery) belong to whoever DEFENDED that ground (Normandy→DEU, Bulge→
-      USA); FIRED/EMPLOYED gear belongs to the firing party > (3) "enemy/hostile/friendly" is
-      RELATIVE TO THE NARRATOR — map to the OPPOSING side in the theater (US narrator in ETO:
-      enemy=DEU; German-POV: enemy=the Allied country) > (4) null. An ITALICIZED enemy FORMATION
-      (*352d Division*) operating it ⇒ Axis (theater nationality). Country codes: USA/GBR/DEU/FRA/
-      ITA/JPN; SUN for the WWII USSR.
+      USA); FIRED/EMPLOYED gear belongs to the firing party > (3) OWNING FORMATION — if the span or
+      context ties the item to a NAMED military formation / command (e.g. "assault guns under *OB
+      WEST*", "the *326th Division*'s guns", "Panzer Lehr's tanks"), use THAT formation's side:
+      a German/Axis command (OB WEST, *NNNth Division*, SS/Panzer/Luftwaffe/Jaeger units) ⇒ DEU
+      (or the correct Axis country); an Allied command ⇒ its country > (4) "enemy/hostile/friendly"
+      is RELATIVE TO THE NARRATOR — map to the OPPOSING side in the theater (US narrator in ETO:
+      enemy=DEU; German-POV: enemy=the Allied country) > (5) THEATER DEFAULT — if the item is
+      clearly one side's materiel (German weapon names like Nebelwerfer/StuG/Panzerfaust, or gear
+      an enemy formation holds) but the exact operator is unstated, use the obvious side
+      (Normandy/ETO enemy ⇒ DEU) rather than null > (6) null ONLY when the operator is genuinely
+      indeterminate (neutral/dual-use with no side cue). Do NOT default to null when a side is
+      inferable — null is the LAST resort. An ITALICIZED enemy FORMATION (*352d Division*)
+      operating it ⇒ Axis (theater nationality). Country codes: USA/GBR/DEU/FRA/ITA/JPN; SUN for
+      the WWII USSR.
   - SHIPS & AIRCRAFT are multi-modal: if the item is FIRING/BOMBING/STRAFING → it's a weapon
     (category naval/aircraft). If it's CARRYING/FERRYING/LANDING/CONVOYING (moving men/cargo) →
     still category naval/aircraft but note the logistics role in context. Put ship class / aircraft
