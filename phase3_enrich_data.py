@@ -539,6 +539,11 @@ def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
         grok_client,
         image_timeout=ext_config.get("image_download_timeout", 30),
     )
+    # Step 5a: persist Map ENTITIES (URL-keyed, cross-chapter footprint accumulation) alongside the
+    # map-as-source recycle above. Reuses find_or_create_map_by_url (dedup + append across chapters).
+    from src.extraction.map_link_source import persist_map_entities
+
+    persist_map_entities(docs, out / "maps")
     logging.getLogger("root").info(
         "OBSERV phase3.step name=in_doc_map_links docs=%d links=%d recycled=%d "
         "deduped=%d skipped=%d status=ok",
