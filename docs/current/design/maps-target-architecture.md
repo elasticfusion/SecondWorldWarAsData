@@ -37,9 +37,17 @@ Map processing here is limited to:
 ### Phase 3 — Map ANALYSIS (consolidated home)
 All map analysis moves/stays here, for consistency with the other enrichment analysis:
 - Download the map image (if not already), classify (`map_type`), and — the substantive work —
-  link the map to Events / Places / Dates, run reverse map registration
-  (`map_registration`: coverage extent = covered_places × date_range), and the map-as-source
-  adapter (`map_source_adapter`) where a map's own content is extracted.
+  link the map to **Events / Places / Dates / Organizations** (people_groups), run reverse map
+  registration (`map_registration`), and the map-as-source adapter (`map_source_adapter`) where a
+  map's own content is extracted.
+- ORGANIZATION linkage (owner 2026-11-02) is a NEW dimension and requires grounded additions:
+    * Map schema (`src/schemas/maps_output.py`) currently has `EventID` / `PlaceMentionID` /
+      `DateMentionID` but NO organization field — ADD a `PeopleGroupID` (+ optional
+      `PeopleGroupMentionID`) nullable ULID field (schema version bump).
+    * `map_registration` currently keys the coverage extent on `covered_places (PlaceID) × date_
+      range` only — EXTEND it to also carry the organizations operating in that extent so an org
+      (people_group) whose activity falls inside a map's extent gets a back-link to the map, like
+      places/dates do today.
 - The tiered classifier + Grok-vision backstop ("is this an image of a map?") for AMBIGUOUS images
   lives here (Phase 3), batched + idempotent (see Feedback/Idempotency).
 - The existing web-search map modules (`openserp_maps`, `grok_search_maps`) remain Phase-3 and are
