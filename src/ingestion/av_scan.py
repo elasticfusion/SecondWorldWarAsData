@@ -604,3 +604,58 @@ def drain_unscanned(
     finally:
         _release_drain_lock(s3_client, bucket)
     return agg
+
+
+# --- Shared ECS ClamAV scanner (same code all phases: Phase-0 trigger_handler + Phase-3 entrypoint)
+# Demand-launches the ClamAV Fargate task over S3 keys and reads back the verdict JSON it writes.
+# The ECS run-task fn + s3 client are INJECTED so each environment supplies its own (the module does
+# not import lambda_handlers). Never raises — Verdict.ERROR per key on any failure (fail-closed).
+class EcsClamavScanner:
+    """Launches the ClamAV Fargate task (AvScanTaskDef) over the binary keys and reads the verdict
+    JSON. ``run_task(task_def, group, extra_env=[...])`` and ``s3_client`` are injected; ``task_def``
+    is the AV scan task definition name/arn."""
+
+    def __init__(self, run_task, s3_client, task_def: str):
+        self._run_task = run_task
+        self._s3 = s3_client
+        self._task_def = task_def
+
+    def scan(self, bucket: str, keys: list):
+        run_id = f"{int(_time.time())}-{abs(hash(tuple(keys))) % 100000}"
+        result_key = f"av-scan/results/{run_id}.json"
+        try:
+            self._run_task(
+                self._task_def,
+                "av-scan",
+                extra_env=[
+                    {"name": "AV_KEYS", "value": json.dumps(keys)},
+                    {"name": "AV_RESULT_KEY", "value": result_key},
+                ],
+            )
+            verdicts = _poll_av_result(self._s3, bucket, result_key)
+        except Exception as e:  # noqa: BLE001 - fail closed
+            logger.error("ClamAV scan launch/poll failed: %s", e)
+            return [ScanResult(k, Verdict.ERROR, detail=str(e)[:120]) for k in keys]
+        out = []
+        for k in keys:
+            v = verdicts.get(k, {})
+            verdict = {"clean": Verdict.CLEAN, "infected": Verdict.INFECTED}.get(
+                str(v.get("verdict", "")), Verdict.ERROR
+            )
+            out.append(ScanResult(k, verdict, signature=str(v.get("signature", ""))))
+        return out
+
+
+def _poll_av_result(
+    s3_client, bucket: str, result_key: str, *, attempts: int = 40, delay: int = 15
+):
+    """Poll S3 for the ClamAV task's verdict JSON. Raises on timeout -> fail closed."""
+    import json as _j
+
+    for _ in range(attempts):
+        try:
+            obj = s3_client.get_object(Bucket=bucket, Key=result_key)
+            return _j.loads(obj["Body"].read())
+        except Exception:  # noqa: BLE001 - not ready yet
+            _time.sleep(delay)
+    raise TimeoutError(f"AV result {result_key} not ready after polling")
