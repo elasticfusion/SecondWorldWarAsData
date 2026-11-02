@@ -400,7 +400,7 @@ def _move_key(s3_client, bucket: str, src: str, dest: str) -> bool:
         return True
     except Exception as e:  # noqa: BLE001 - best-effort; leave src in place on failure
         logger.warning(
-            "OBSERV av.move_failed src=%s dest=%s reason=%s",
+            "OBSERV av.move_failed src=%s dest=%s reason=%s status=warn",
             src,
             dest,
             type(e).__name__,
@@ -415,6 +415,15 @@ def _disposition_staged(r, outcome, s3_client, bucket: str, region: str) -> None
         if _move_key(s3_client, bucket, r.key, prod):
             outcome.clean_keys.append(prod)
             logger.info("OBSERV av.verdict key=%s result=clean action=promote", prod)
+        else:
+            # Scanner cleared it but promotion FAILED -> it must NOT vanish silently: it stays in
+            # unscanned/ and is a loud, actionable anomaly (a clean file stuck un-promoted).
+            outcome.quarantined_keys.append(r.key)
+            logger.warning(
+                "OBSERV av.promote_failed key=%s result=clean action=stay_unscanned status=warn "
+                "(scanner-clean but move to prod failed; retried next cycle)",
+                prod,
+            )
         return
     if r.verdict is Verdict.INFECTED:
         dest = QUARANTINE_PREFIX + prod
@@ -465,7 +474,19 @@ def scan_staged_binaries(
     three-zone disposition each (clean->prod / infected->quarantine/ / unscannable->stay). Never
     raises (fail-closed). Caller handles chunking + the single-drainer lock."""
     region = region or os.getenv("AWS_DEFAULT_REGION", "us-east-1")
-    keys = [k for k in unscanned_keys if k.startswith(UNSCANNED_PREFIX)]
+    # Defense-in-depth: only staged keys, and reject any traversal-ish segment. Keys come from our
+    # own download stager today (trusted), but a crafted "unscanned/../x" could produce an odd prod
+    # key on promotion — refuse it loudly rather than disposition it.
+    keys = []
+    for k in unscanned_keys:
+        if not k.startswith(UNSCANNED_PREFIX):
+            continue
+        if "/../" in k or k.endswith("/..") or ".." in k.split("/"):
+            logger.warning(
+                "OBSERV av.staged_key_rejected key=%s reason=traversal status=warn", k
+            )
+            continue
+        keys.append(k)
     outcome = AvOutcome(scanned=bool(keys))
     if not keys:
         return outcome

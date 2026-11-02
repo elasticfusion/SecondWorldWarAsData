@@ -105,3 +105,40 @@ def test_zones_mirror_prod_structure():
         s3, "b", list(s3.objs), MockScanner({"x.jpg": Verdict.INFECTED})
     )
     assert "quarantine/output/maps/files/sub/x.jpg" in s3.objs
+
+
+def test_clean_but_promote_failed_is_loud_not_silent(monkeypatch):
+    # scanner clears the file but the move to prod fails -> must NOT vanish silently: stays in
+    # unscanned/, tracked in outcome (surfaces in av.summary), logged av.promote_failed.
+    s3 = FakeS3()
+    s3.objs["unscanned/output/maps/files/ok.jpg"] = b"x"
+
+    def boom(**k):
+        raise RuntimeError("s3 down")
+
+    monkeypatch.setattr(s3, "copy_object", boom)
+    out = scan_staged_binaries(
+        s3, "b", list(s3.objs), MockScanner({"ok": Verdict.CLEAN})
+    )
+    assert "unscanned/output/maps/files/ok.jpg" in s3.objs  # stays
+    assert "output/maps/files/ok.jpg" not in s3.objs  # not promoted
+    assert out.clean_keys == []  # not counted clean
+    assert (
+        "unscanned/output/maps/files/ok.jpg" in out.quarantined_keys
+    )  # tracked, not silent
+
+
+def test_traversal_staged_key_rejected():
+    s3 = FakeS3()
+    s3.objs["unscanned/../output/evil.jpg"] = b"x"
+    s3.objs["unscanned/output/ok.jpg"] = b"x"
+    out = scan_staged_binaries(
+        s3,
+        "b",
+        list(s3.objs),
+        MockScanner({"evil": Verdict.CLEAN, "ok": Verdict.CLEAN}),
+    )
+    assert (
+        "../output/evil.jpg" not in s3.objs and "output/evil.jpg" not in s3.objs
+    )  # rejected
+    assert "output/ok.jpg" in s3.objs  # legit promoted
