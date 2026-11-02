@@ -344,3 +344,155 @@ def _gate_result(r, outcome, s3_client, bucket: str, region: str) -> None:
             signature=r.signature or "unknown",
             region=region,
         )
+
+
+# --- Three-zone staged-scan model (download-path AV, owner 2026-11-02) ----------------------------
+# Downloaded binaries (maps/images, Phase 2/3) land in UNSCANNED_PREFIX/<prod-path> (mirrors the
+# production structure). A scan cycle drains that prefix through the SAME scanner, then dispositions
+# each by a PREFIX SWAP (easy operator movement):
+#   CLEAN       -> <prod-path>                 (promote: strip UNSCANNED_PREFIX)
+#   INFECTED    -> QUARANTINE_PREFIX/<prod-path> (virus zone)
+#   UNSCANNABLE -> stays at UNSCANNED_PREFIX/<prod-path> (fail-closed; retried next cycle)
+# Every zone mirrors the prod path, so a move is always a prefix swap. Positive findings alert via
+# reject_to_review. Folder-exists is validated before placing/moving.
+UNSCANNED_PREFIX = "unscanned/"
+QUARANTINE_PREFIX = "quarantine/"
+
+
+def _prod_path(key: str) -> str:
+    """Strip the unscanned/ staging prefix to recover the production path (the move target parity)."""
+    return key[len(UNSCANNED_PREFIX) :] if key.startswith(UNSCANNED_PREFIX) else key
+
+
+def _ensure_prefix(s3_client, bucket: str, dest_key: str) -> bool:
+    """Validate the destination 'folder' is addressable before a place/move. S3 has no real dirs;
+    we assert the bucket is reachable + (best-effort) write a zero-byte prefix marker so the mirrored
+    structure exists for operator tooling. Returns False (fail-closed) if the bucket/prefix is
+    unreachable so we never move into a non-existent/wrong location."""
+    prefix = dest_key.rsplit("/", 1)[0] + "/" if "/" in dest_key else ""
+    try:
+        s3_client.head_bucket(Bucket=bucket)
+        if prefix:
+            s3_client.put_object(Bucket=bucket, Key=prefix + ".keep", Body=b"")
+        return True
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - unreachable dest -> fail closed (do not move)
+        logger.warning(
+            "OBSERV av.prefix_unavailable bucket=%s prefix=%s reason=%s status=warn",
+            bucket,
+            prefix,
+            type(e).__name__,
+        )
+        return False
+
+
+def _move_key(s3_client, bucket: str, src: str, dest: str) -> bool:
+    """Copy-then-delete move (never loses the file on a failed copy). Validates dest prefix first.
+    Returns True on success."""
+    if not _ensure_prefix(s3_client, bucket, dest):
+        return False
+    try:
+        s3_client.copy_object(
+            Bucket=bucket, CopySource={"Bucket": bucket, "Key": src}, Key=dest
+        )
+        s3_client.delete_object(Bucket=bucket, Key=src)
+        return True
+    except Exception as e:  # noqa: BLE001 - best-effort; leave src in place on failure
+        logger.warning(
+            "OBSERV av.move_failed src=%s dest=%s reason=%s status=warn",
+            src,
+            dest,
+            type(e).__name__,
+        )
+        return False
+
+
+def _disposition_staged(r, outcome, s3_client, bucket: str, region: str) -> None:
+    """Three-zone disposition for ONE staged (unscanned/) scan result (prefix-swap moves)."""
+    prod = _prod_path(r.key)
+    if r.verdict is Verdict.CLEAN:
+        if _move_key(s3_client, bucket, r.key, prod):
+            outcome.clean_keys.append(prod)
+            logger.info("OBSERV av.verdict key=%s result=clean action=promote", prod)
+        else:
+            # Scanner cleared it but promotion FAILED -> it must NOT vanish silently: it stays in
+            # unscanned/ and is a loud, actionable anomaly (a clean file stuck un-promoted).
+            outcome.quarantined_keys.append(r.key)
+            logger.warning(
+                "OBSERV av.promote_failed key=%s result=clean action=stay_unscanned status=warn "
+                "(scanner-clean but move to prod failed; retried next cycle)",
+                prod,
+            )
+        return
+    if r.verdict is Verdict.INFECTED:
+        dest = QUARANTINE_PREFIX + prod
+        _move_key(s3_client, bucket, r.key, dest)
+        outcome.quarantined_keys.append(dest)
+        logger.error(
+            "OBSERV av.verdict key=%s result=infected signature=%s action=quarantine dest=%s",
+            prod,
+            r.signature or r.detail or "unknown",
+            dest,
+        )
+        reject_to_review(
+            s3_client,
+            bucket,
+            r.key,
+            _book_from_key(r.key),
+            f"av-infected: {r.signature or r.detail}",
+            category="av-infected",
+            region=region,
+        )
+        freeze_submitter(
+            s3_client,
+            bucket,
+            _submitter_identity(s3_client, bucket, r.key),
+            key=r.key,
+            signature=r.signature or "unknown",
+            region=region,
+        )
+        return
+    # UNSCANNABLE (ERROR) -> stays in unscanned/ (fail-closed, retried next cycle).
+    outcome.quarantined_keys.append(r.key)
+    logger.warning(
+        "OBSERV av.verdict key=%s result=scanner_unavailable detail=%s action=stay_unscanned",
+        r.key,
+        r.detail or "unknown",
+    )
+
+
+def scan_staged_binaries(
+    s3_client,
+    bucket: str,
+    unscanned_keys: list[str],
+    scanner: Scanner,
+    *,
+    region: str = "",
+) -> AvOutcome:
+    """Drain-and-disposition a batch of staged (unscanned/) binaries through the SAME scanner, then
+    three-zone disposition each (clean->prod / infected->quarantine/ / unscannable->stay). Never
+    raises (fail-closed). Caller handles chunking + the single-drainer lock."""
+    region = region or os.getenv("AWS_DEFAULT_REGION", "us-east-1")
+    # Defense-in-depth: only staged keys, and reject any traversal-ish segment. Keys come from our
+    # own download stager today (trusted), but a crafted "unscanned/../x" could produce an odd prod
+    # key on promotion — refuse it loudly rather than disposition it.
+    keys = []
+    for k in unscanned_keys:
+        if not k.startswith(UNSCANNED_PREFIX):
+            continue
+        if "/../" in k or k.endswith("/..") or ".." in k.split("/"):
+            logger.warning(
+                "OBSERV av.staged_key_rejected key=%s reason=traversal status=warn", k
+            )
+            continue
+        keys.append(k)
+    outcome = AvOutcome(scanned=bool(keys))
+    if not keys:
+        return outcome
+    results = _scan_binaries_failclosed(scanner, bucket, keys)
+    outcome.results = results
+    for r in results:
+        _disposition_staged(r, outcome, s3_client, bucket, region)
+    _emit_av_summary(outcome)
+    return outcome
