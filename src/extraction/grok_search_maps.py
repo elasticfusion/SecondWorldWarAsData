@@ -58,12 +58,22 @@ def search_maps_with_grok(
 ) -> List[Dict[str, Any]]:
     """Search for maps using Grok with whitelisted sites."""
     year = date.split("-")[0] if date else "1939-1945"
-    sites = " OR ".join([f"site:{site}" for site in whitelisted_sites])
+    sites = (
+        " OR ".join(f"site:{site}" for site in whitelisted_sites)
+        if whitelisted_sites
+        else "(any reputable archive)"
+    )
 
     from src.utils.prompt_loader import render_prompt
 
+    # Thread the whitelist (and year-derived date) into the prompt so the search is actually
+    # restricted to trusted sources — previously `sites`/`year` were computed but never used.
     prompt = render_prompt(
-        "map_search", place_name=place_name, event_context=event_context, date=date
+        "map_search",
+        place_name=place_name,
+        event_context=event_context,
+        date=date or year,
+        sites=sites,
     )
 
     result = grok_client.extract_json(

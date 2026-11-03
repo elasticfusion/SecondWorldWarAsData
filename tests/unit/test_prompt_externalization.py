@@ -115,6 +115,7 @@ class TestPromptLoading:
             place_name="St. Lo",
             event_context="Breakout",
             date="1944-07-25",
+            sites="site:ibiblio.org OR site:loc.gov",
         )
         assert "St. Lo" in prompt
         _assert_no_unfilled(prompt)

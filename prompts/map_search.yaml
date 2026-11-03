@@ -8,6 +8,8 @@ prompt_template: |
   Date: {date}
   Place: {place_name}
 
+  Restrict results to these trusted sources only: {sites}
+
   Suggest search queries that would find:
   1. Military tactical/operational maps of this area
   2. Maps showing troop movements or battle positions
