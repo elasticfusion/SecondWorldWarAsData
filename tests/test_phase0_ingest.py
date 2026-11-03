@@ -264,3 +264,59 @@ def test_convert_text_documents_empty_when_none(tmp_path: Path) -> None:
     root.mkdir(parents=True)
     converted, skipped = _convert_text_documents(root, logging.getLogger("t"))
     assert converted == 0 and skipped == 0
+
+
+def test_translate_converted_markdown_failsafe_per_file(tmp_path, monkeypatch, caplog):
+    """M5: one file's translate error must NOT abort the whole phase; it is skipped,
+    counted, and surfaced as a loud OBSERV — the remaining files still translate."""
+    import logging
+    import phase0_ingest as p0
+
+    ocr = tmp_path / "book" / "ocr_output"
+    ocr.mkdir(parents=True)
+    bad = ocr / "bad.md"
+    bad.write_text("boom page", encoding="utf-8")
+    good = ocr / "good.md"
+    good.write_text("gut seite", encoding="utf-8")
+
+    # Stub GrokClient (no network/cache) and a normalize that raises for bad.md only.
+    monkeypatch.setattr(p0, "_OCR_OUTPUT_DIRNAME", "ocr_output", raising=False)
+    import src.grok_client as gc
+
+    monkeypatch.setattr(gc, "GrokClient", lambda *a, **k: object())
+
+    class _Page:
+        def __init__(self, translated):
+            self.page = 1
+            self.source_language = "German"
+            self.translated = translated
+
+    class _Result:
+        def __init__(self):
+            self.translated = True
+            self.original_markdown = "gut seite"
+            self.english_markdown = "good page"
+            self.source_languages = ["German"]
+            self.translator = "grok"
+            self.pages = [_Page(True)]
+
+    import src.ingestion.translation as tr
+
+    def _normalize(text, start, grok, model_name=None):
+        if "boom" in text:
+            raise RuntimeError("translate exploded")
+        return _Result()
+
+    monkeypatch.setattr(tr, "normalize_pages_to_english", _normalize)
+
+    logger = logging.getLogger("m5test")
+    with caplog.at_level(logging.ERROR):
+        translated, passthrough = p0._translate_converted_markdown(
+            tmp_path, {}, tmp_path / "cache", logger
+        )
+
+    # The good file still translated despite the bad file's crash (phase not aborted).
+    assert translated == 1
+    assert (ocr / "good.orig.md").exists()
+    # The failure was surfaced loudly, not swallowed.
+    assert any("translate FAILED for bad.md" in r.message for r in caplog.records)
