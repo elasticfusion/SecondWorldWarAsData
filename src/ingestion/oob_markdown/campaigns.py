@@ -31,6 +31,7 @@ from src.ingestion.oob_markdown._common import (
     division_from_recon_troop,
     first_division_in,
     iter_section_text_blocks,
+    parse_markdown_file,
 )
 from src.ingestion.oob_markdown.models import CampaignParseResult, CampaignRow
 
@@ -265,11 +266,4 @@ def parse_campaigns(markdown: str, source_file: str = "") -> CampaignParseResult
 
 def parse_campaigns_file(path: Path) -> CampaignParseResult:
     """Parse CAMPAIGNS rows from a markdown file."""
-    result = parse_campaigns(path.read_text(encoding="utf-8"), source_file=path.name)
-    logger.info(
-        "Parsed %s: %d campaign row(s), %d flagged for review",
-        path.name,
-        len(result.rows),
-        result.review_count,
-    )
-    return result
+    return parse_markdown_file(path, parse_campaigns, "campaign")

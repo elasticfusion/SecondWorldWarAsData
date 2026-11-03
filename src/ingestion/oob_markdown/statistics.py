@@ -36,6 +36,7 @@ from src.ingestion.oob_markdown._common import (
     first_division_in,
     section_from_line,
     text_lines,
+    parse_markdown_file,
 )
 from src.ingestion.oob_markdown.models import (
     StatisticParseResult,
@@ -434,11 +435,4 @@ def _advance_section(line: str, in_stats: bool, category: str) -> Tuple[bool, st
 
 def parse_statistics_file(path: Path) -> StatisticParseResult:
     """Parse STATISTICS rows from a markdown file."""
-    result = parse_statistics(path.read_text(encoding="utf-8"), source_file=path.name)
-    logger.info(
-        "Parsed %s: %d statistic row(s), %d flagged for review",
-        path.name,
-        len(result.rows),
-        result.review_count,
-    )
-    return result
+    return parse_markdown_file(path, parse_statistics, "statistic")
