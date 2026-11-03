@@ -159,8 +159,16 @@ def _write_group_event(tmp_path: Path) -> Path:
             ],
         },
     }
-    f = tmp_path / "group_event.json"
+    f = tmp_path / "chapter1-event.json"
     f.write_text(json.dumps(event), encoding="utf-8")
+    # Provenance metadata now lives in the -parsed.json sibling (people_groups loads it there,
+    # like people/places/dates, and fails loud if absent).
+    (tmp_path / "chapter1-parsed.json").write_text(
+        json.dumps(
+            {"book": "Breakout and Pursuit", "author": "Blumenson", "series": "USAWW2"}
+        ),
+        encoding="utf-8",
+    )
     return f
 
 

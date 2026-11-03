@@ -351,6 +351,63 @@ def _observe_groups_yield(event_data: dict, produced: int) -> None:
         logger.debug("groups yield observe skipped: %s", e)
 
 
+def _load_book_metadata_for_groups(event_file: Path) -> tuple[str, str, str]:
+    """Load (book, author, series) from the ``-parsed.json`` sibling of ``event_file``.
+
+    Mirrors people._load_book_metadata / dates._load_book_metadata_for_dates (same-code): event
+    files carry no top-level book/author/series, so provenance metadata must come from the parsed
+    document. Returns empty strings when the sibling is absent/empty (the caller fails loud).
+    """
+    parsed_file = event_file.parent / event_file.name.replace(
+        "-event.json", "-parsed.json"
+    )
+    if not parsed_file.exists():
+        return "", "", ""
+    with open(parsed_file, "r", encoding="utf-8") as f:
+        parsed_data = json.load(f)
+    if not parsed_data:
+        return "", "", ""
+    return (
+        parsed_data.get("book", ""),
+        parsed_data.get("author", ""),
+        parsed_data.get("series", ""),
+    )
+
+
+def _call_groups_grok(prompt, event_file, event_data, grok_client):
+    """Call Grok for group extraction; return the response string, or None on a handled drop
+    (truncation / empty) after emitting the canonical point-of-loss OBSERV + yield observer.
+    """
+    try:
+        response = grok_client.chat_completion(
+            prompt, temperature=0.3, cache_type="people_groups"
+        )
+    except Exception as e:
+        from src.grok_client import GrokTruncationError
+
+        if isinstance(e, GrokTruncationError):
+            logger.error(
+                "  People groups response truncated for %s — event too large",
+                event_file.name,
+            )
+            # #16 PATTERN-8: truncation bypassed the yield observer -> loud canonical OBSERV + run
+            # the yield observer (produced=0) so the whole-event drop is visible, not silent.
+            observe_error(
+                "groups", "truncation_error", produced=0, reason="GrokTruncationError"
+            )
+            _observe_groups_yield(event_data, 0)
+            return None
+        raise
+
+    if not response:
+        logger.error("  Failed to get response from Grok API")
+        # Empty response is also a point-of-loss drop that bypassed the yield observer.
+        observe_error("groups", "empty_response", produced=0, reason="empty_response")
+        _observe_groups_yield(event_data, 0)
+        return None
+    return response
+
+
 def extract_people_groups(
     event_file: Path, grok_client: GrokClient, output_dir: Path
 ) -> Optional[Path]:
@@ -371,40 +428,21 @@ def extract_people_groups(
     with open(event_file, "r", encoding="utf-8") as f:
         event_data = json.load(f)
 
-    book = event_data.get("book", "Unknown")
-    author = event_data.get("author", "Unknown")
-    series = event_data.get("series", "Unknown")
+    # Provenance metadata lives in the -parsed.json sibling, NOT the event file (whose schema is
+    # {Chapter, Event}). Load it the same way people/places/dates do and FAIL LOUD on missing —
+    # the previous event_data.get("book", "Unknown") silently stamped every group with "Unknown"
+    # (mandatory-provenance corruption), diverging from the batch path which threads real metadata.
+    book, author, series = _load_book_metadata_for_groups(event_file)
+    if not book or not author:
+        raise ValueError(
+            f"Missing required book metadata for {event_file.name} "
+            f"(expected in the -parsed.json sibling): book={book!r}, author={author!r}"
+        )
 
     logger.info("  Extracting people groups from %s...", event_file.name)
     prompt = _build_extraction_prompt(event_data)
-    try:
-        response = grok_client.chat_completion(
-            prompt, temperature=0.3, cache_type="people_groups"
-        )
-    except Exception as e:
-        from src.grok_client import GrokTruncationError
-
-        if isinstance(e, GrokTruncationError):
-            logger.error(
-                "  People groups response truncated for %s — event too large",
-                event_file.name,
-            )
-            # #16 PATTERN-8: truncation -> return None skipped the yield observer, so this whole
-            # event's groups dropped SILENTLY (loud-not-canonical). Emit a canonical point-of-loss
-            # OBSERV and run the yield observer (produced=0) BEFORE returning so the drop is visible.
-            observe_error(
-                "groups", "truncation_error", produced=0, reason="GrokTruncationError"
-            )
-            _observe_groups_yield(event_data, 0)
-            return None
-        raise
-
+    response = _call_groups_grok(prompt, event_file, event_data, grok_client)
     if not response:
-        logger.error("  Failed to get response from Grok API")
-        # Empty response is also a point-of-loss drop that bypassed the yield observer — make it
-        # loud + canonical and run the yield baseline before returning (PATTERN-8).
-        observe_error("groups", "empty_response", produced=0, reason="empty_response")
-        _observe_groups_yield(event_data, 0)
         return None
 
     try:
