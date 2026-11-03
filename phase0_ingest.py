@@ -642,6 +642,66 @@ def _emit_phase_summary(logger, files_in: int, counts: dict) -> None:
     )
 
 
+def _reconcile_cross_file(output_root: Path, logger) -> None:
+    """Run the cross-FILE OOB integrity pass over the persisted section rows and surface
+    findings LOUDLY (anti-swallow). The per-file parsers cannot see the cross-file picture
+    (misfiled byte-identical STATISTICS blocks = one division duplicated + another silently
+    vanished; a source that produced zero rows; one division scattered across files). This
+    wires the previously-unwired reconcile detector in so those silent-loss classes become a
+    greppable, actionable report + OBSERV. Fail-safe: reconciliation must never abort the phase.
+    """
+    from src.ingestion.oob_markdown.reconcile import (
+        reconcile_oob,
+        write_reconcile_report,
+    )
+
+    try:
+        report = reconcile_oob(output_root)
+        write_reconcile_report(output_root, report)
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 - reconcile is best-effort, never abort the phase
+        _observe(
+            logger,
+            "phase0_ingest.reconcile",
+            loud=True,
+            decision="error",
+            detail=str(exc)[:120],
+        )
+        return
+
+    errors = report.error_count
+    warnings = report.warning_count
+    if errors:
+        # A real data-integrity anomaly a human MUST resolve (misfiled duplicate / vanished
+        # division). status=error — a genuine anomaly, not a benign 0.
+        _observe(
+            logger,
+            "phase0_ingest.reconcile",
+            loud=True,
+            decision="integrity_error",
+            errors=errors,
+            warnings=warnings,
+            status="error",
+        )
+    elif warnings:
+        _observe(
+            logger,
+            "phase0_ingest.reconcile",
+            loud=True,
+            decision="integrity_warning",
+            warnings=warnings,
+            status="warn",
+        )
+    else:
+        _observe(
+            logger,
+            "phase0_ingest.reconcile",
+            decision="clean",
+            status="ok",
+        )
+
+
 def main() -> None:
     """Main entry point for Phase 0."""
     base_dir = Path(__file__).parent
@@ -700,6 +760,7 @@ def main() -> None:
         sources, output_root, people_dir, converge_people, logger
     )
     _write_coverage_report(output_root, coverage_report, logger)
+    _reconcile_cross_file(output_root, logger)
 
     logger.info(
         "Phase 0 complete: %d file(s), %d row(s), %d flagged for review",
