@@ -491,26 +491,6 @@ def _extract_supplemental(event_file, grok_client, output_root, config, logger):
         _observe_optional_error(logger, "supplemental", event_file.name, e)
 
 
-def _extract_maps(output_root, config, logger):
-    """Extract maps from Phase 1 parsed files."""
-    if not config.get("maps", {}).get("enabled", False):
-        return
-
-    logger.info("[phase2 step 2/5] Extracting maps from source material")
-    try:
-        from src.extraction.maps import extract_maps
-
-        extract_maps(
-            _parsed_dir=output_root,
-            output_dir=output_root,
-            places_dir=output_root / "places",
-            dates_dir=output_root / "dates",
-            config=config,
-        )
-    except Exception as e:
-        logger.error("  Error extracting maps: %s", e)
-
-
 def _extract_images(output_root, config, logger):
     """Extract images from source material."""
     if not config.get("images", {}).get("enabled", True):
@@ -1032,7 +1012,6 @@ def main():
     # -----------------------------------------------------------------------
     # Step 4: Maps and Images extraction
     # -----------------------------------------------------------------------
-    _extract_maps(output_root, config, logger)
     _extract_external_maps(base_dir, grok_client, paths, config, logger)
     _extract_images(output_root, config, logger)
 
