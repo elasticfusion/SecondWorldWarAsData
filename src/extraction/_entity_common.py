@@ -102,3 +102,31 @@ def drain_enrichment_futures(futures, total: int, noun: str) -> int:
                 enriched,
             )
     return enriched
+
+
+def render_source_markdown(
+    text: str,
+    title: str,
+    source_url: str,
+    *,
+    default_title: str,
+    source_label: str,
+    max_chars: int = 8000,
+) -> str:
+    """Render an already-extracted vision ``text`` into a RAW markdown SOURCE body (the same kind of
+    content a book chapter supplies to Phase-1 parse). Returns "" if ``text`` is empty.
+
+    Shared by the chart + map source adapters (identical layout): ``## <title>`` + optional
+    ``(Source <label>: <url>)`` + the body capped at ``max_chars``. Each adapter keeps its own
+    vision-depicted text renderer and passes the result in; only the default title + source label
+    differ ("WWII command chart"/"chart" vs "WWII map"/"map").
+    """
+    if not text:
+        return ""
+    heading = (title or default_title).strip()
+    lines = [f"## {heading}", ""]
+    if source_url:
+        lines.append(f"(Source {source_label}: {source_url})")
+        lines.append("")
+    lines.append(text[:max_chars])
+    return "\n".join(lines).rstrip() + "\n"

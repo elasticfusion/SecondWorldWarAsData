@@ -44,16 +44,16 @@ def render_map_markdown(
     This is the map-as-source body: Phase 1 parses it into paragraphs, Phase 2 derives the event.
     """
     text = _render_depicted_text(depicted)
-    if not text:
-        return ""
-    title = (map_title or "WWII map").strip()
-    body = text[:_MAX_DESC_CHARS]
-    lines = [f"## {title}", ""]
-    if source_url:
-        lines.append(f"(Source map: {source_url})")
-        lines.append("")
-    lines.append(body)
-    return "\n".join(lines).rstrip() + "\n"
+    from src.extraction._entity_common import render_source_markdown
+
+    return render_source_markdown(
+        text,
+        map_title,
+        source_url,
+        default_title="WWII map",
+        source_label="map",
+        max_chars=_MAX_DESC_CHARS,
+    )
 
 
 def render_map_meta_yaml(map_id: str, map_title: str, source_url: str = "") -> str:

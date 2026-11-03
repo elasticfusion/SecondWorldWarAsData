@@ -174,15 +174,16 @@ def render_chart_markdown(
     kind of content a book chapter supplies to Phase-1 parse). "" if nothing groundable.
     """
     text = _render_chart_text(depicted)
-    if not text:
-        return ""
-    title = (chart_title or "WWII command chart").strip()
-    lines = [f"## {title}", ""]
-    if source_url:
-        lines.append(f"(Source chart: {source_url})")
-        lines.append("")
-    lines.append(text[:_MAX_DESC_CHARS])
-    return "\n".join(lines).rstrip() + "\n"
+    from src.extraction._entity_common import render_source_markdown
+
+    return render_source_markdown(
+        text,
+        chart_title,
+        source_url,
+        default_title="WWII command chart",
+        source_label="chart",
+        max_chars=_MAX_DESC_CHARS,
+    )
 
 
 def render_chart_meta_yaml(
