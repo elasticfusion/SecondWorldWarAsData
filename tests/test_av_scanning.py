@@ -216,3 +216,41 @@ def test_mixed_batch_partitions_correctly():
     assert "c/good.pdf" in out.clean_keys
     assert "c/notes.md" in out.clean_keys
     assert out.quarantined_keys == ["c/bad.docx"]
+
+
+def test_gate_result_upload_identity_captured_before_delete():
+    """M1 (upload path): scan_and_gate must read submitter identity BEFORE _quarantine
+    copy-deletes the key, else the freeze marker is written for a blinded '' identity.
+    """
+
+    class KeyAwareS3:
+        def __init__(self, key):
+            self.objs = {key: b"x"}
+            self.meta = {key: {"api-key-id": "key-ABC"}}
+            self.put_keys = []
+
+        def copy_object(self, Bucket, CopySource, Key):
+            self.objs[Key] = self.objs[CopySource["Key"]]
+
+        def delete_object(self, Bucket, Key):
+            self.objs.pop(Key, None)
+            self.meta.pop(Key, None)
+
+        def head_object(self, Bucket, Key):
+            if Key not in self.objs:
+                return {"Metadata": {}}  # deleted -> blinded (the bug)
+            return {"Metadata": self.meta.get(Key, {})}
+
+        def put_object(self, Bucket, Key, Body=b""):
+            self.put_keys.append(Key)
+
+    scanner = MagicMock()
+    scanner.scan.return_value = [
+        ScanResult("c/evil.pdf", Verdict.INFECTED, signature="Eicar-Test")
+    ]
+    s3 = KeyAwareS3("c/evil.pdf")
+    with patch("boto3.client", return_value=MagicMock()):
+        scan_and_gate(s3, "buck", ["c/evil.pdf"], scanner)
+    assert (
+        "quarantine/frozen/key-ABC.json" in s3.put_keys
+    ), "freeze marker written for blinded identity -> identity read AFTER delete"

@@ -142,3 +142,50 @@ def test_traversal_staged_key_rejected():
         "../output/evil.jpg" not in s3.objs and "output/evil.jpg" not in s3.objs
     )  # rejected
     assert "output/ok.jpg" in s3.objs  # legit promoted
+
+
+class IdentityS3:
+    """head_object returns the stamped identity ONLY while the key exists (like real S3):
+    a read AFTER copy+delete returns empty metadata. Proves identity is captured pre-delete.
+    """
+
+    def __init__(self, key: str):
+        self.objs = {key: b"x"}
+        self.meta = {key: {"api-key-id": "key-ABC"}}
+
+    def head_bucket(self, Bucket):
+        pass
+
+    def put_object(self, Bucket, Key, Body=b""):
+        self.objs[Key] = Body
+
+    def copy_object(self, Bucket, CopySource, Key):
+        self.objs[Key] = self.objs[CopySource["Key"]]
+        self.meta[Key] = self.meta.get(CopySource["Key"], {})
+
+    def delete_object(self, Bucket, Key):
+        self.objs.pop(Key, None)
+        self.meta.pop(Key, None)
+
+    def head_object(self, Bucket, Key):
+        if Key not in self.objs:
+            return {"Metadata": {}}  # deleted -> no identity (the bug would hit this)
+        return {"Metadata": self.meta.get(Key, {})}
+
+
+def test_infected_freeze_receives_identity_captured_before_delete(monkeypatch):
+    """M1: _submitter_identity must be read BEFORE _move_key deletes the source key,
+    else freeze_submitter is permanently blinded (always '')."""
+    captured = {}
+    monkeypatch.setattr(av, "reject_to_review", lambda *a, **k: "marker")
+    monkeypatch.setattr(
+        av,
+        "freeze_submitter",
+        lambda s3, bucket, identity, **k: captured.update(identity=identity),
+    )
+    key = "unscanned/output/maps/files/virus.jpg"
+    s3 = IdentityS3(key)
+    scan_staged_binaries(s3, "b", [key], MockScanner({"virus": Verdict.INFECTED}))
+    assert (
+        captured.get("identity") == "key-ABC"
+    ), "freeze_submitter got a blinded identity -> _submitter_identity was read AFTER delete"
