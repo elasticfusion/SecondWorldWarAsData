@@ -46,6 +46,7 @@ def _doc_to_dict(doc):
                 "url": img.url,
                 "alt_text": img.alt_text,
                 "caption": img.caption,
+                "paragraph_number": img.paragraph_number,
             }
             for img in doc.images
         ],
@@ -61,6 +62,17 @@ def _doc_to_dict(doc):
         ],
         "footnotes": [
             {"number": f.number, "url": f.url, "text": f.text} for f in doc.footnotes
+        ],
+        # Page-marker provenance (anchor/separator -> paragraph mapping): a first-class populated
+        # model field that was previously dropped from serialization, losing the explicit
+        # page-structure provenance even though per-paragraph page_number survived.
+        "page_markers": [
+            {
+                "page_number": pm.page_number,
+                "paragraph_number": pm.paragraph_number,
+                "marker_type": pm.marker_type,
+            }
+            for pm in doc.page_markers
         ],
         **({"table_hints": doc.table_hints} if doc.table_hints else {}),
     }
