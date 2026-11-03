@@ -151,11 +151,9 @@ def _maybe_spend_alert(
 
 
 def _table():
-    import boto3
+    from src.utils.aws_clients import get_dynamo_table
 
-    region = os.getenv("AWS_REGION", os.getenv("AWS_DEFAULT_REGION", "us-east-1"))
-    name = os.getenv("CACHE_TABLE", f"{os.getenv('ENV_NAME', 'dev')}-wwii-api-cache")
-    return boto3.resource("dynamodb", region_name=region).Table(name)
+    return get_dynamo_table()
 
 
 def current_spend_usd() -> float:

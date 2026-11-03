@@ -15,7 +15,6 @@ needs-review) nor already in-flight — idempotent across restarts (§8).
 from __future__ import annotations
 
 import logging
-import os
 import time
 from typing import Any, Dict, List, Optional
 
@@ -39,11 +38,9 @@ IN_FLIGHT = {"expanding", "ocr", "parsed", "extracted", "deduped", "enriched"}
 
 
 def _table():
-    import boto3
+    from src.utils.aws_clients import get_dynamo_table
 
-    region = os.getenv("AWS_REGION", os.getenv("AWS_DEFAULT_REGION", "us-east-1"))
-    name = os.getenv("CACHE_TABLE", f"{os.getenv('ENV_NAME', 'dev')}-wwii-api-cache")
-    return boto3.resource("dynamodb", region_name=region).Table(name)
+    return get_dynamo_table()
 
 
 def _key(doc_id: str) -> str:

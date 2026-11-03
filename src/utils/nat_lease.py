@@ -34,15 +34,9 @@ DEFAULT_LEASE_TTL = int(os.getenv("NAT_LEASE_TTL_SECONDS", "900"))  # 15 min
 
 
 def _table(region: Optional[str] = None):
-    import boto3
+    from src.utils.aws_clients import get_dynamo_table
 
-    region = region or os.getenv(
-        "AWS_REGION", os.getenv("AWS_DEFAULT_REGION", "us-east-1")
-    )
-    table_name = os.getenv(
-        "CACHE_TABLE", f"{os.getenv('ENV_NAME', 'dev')}-wwii-api-cache"
-    )
-    return boto3.resource("dynamodb", region_name=region).Table(table_name)
+    return get_dynamo_table(region=region)
 
 
 def _task_id() -> str:
