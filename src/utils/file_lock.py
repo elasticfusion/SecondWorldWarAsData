@@ -193,9 +193,8 @@ def _repair_empty_ulids(data: Any) -> None:
             _repair_empty_ulids(item)
 
 
-import re as _re_mod
-
-_ULID_RE = _re_mod.compile(r"^[0-9A-HJKMNP-TV-Z]{26}$")
+# ULID pattern: single source of truth (src.schemas.ULID_REGEX).
+from src.schemas import ULID_REGEX as _ULID_RE
 
 
 def _repair_primary_key(entity_type: str, data: Dict[str, Any], filepath: Path) -> None:

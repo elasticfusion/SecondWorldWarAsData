@@ -24,7 +24,9 @@ _post_validation_hooks: list[Callable] = []
 _custom_validators_enabled = True
 
 # Compiled regex patterns for performance
-_ULID_PATTERN = re.compile(r"^[0-9A-HJKMNP-TV-Z]{26}$")
+# ULID pattern: single source of truth (src.schemas.ULID_REGEX) — do NOT re-compile the literal.
+from src.schemas import ULID_REGEX as _ULID_PATTERN
+
 _CONTROL_CHARS_PATTERN = re.compile(r"[\x00-\x1f]")
 
 

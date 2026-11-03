@@ -509,8 +509,8 @@ def _build_mention(
     # attach them when the material carries a real 26-char ULID — never "" (which would fail
     # the pattern and block the whole bibliography write).
     import re as _re
+    from src.schemas import ULID_PATTERN as _ULID  # single ULID source
 
-    _ULID = r"^[0-9A-HJKMNP-TV-Z]{26}$"
     for idf in ("EventID", "Sub-eventID"):
         val = material.get(idf)
         if isinstance(val, str) and _re.match(_ULID, val):

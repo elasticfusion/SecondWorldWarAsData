@@ -1,6 +1,6 @@
 """JSON schemas for validation."""
 
-from src.schemas import SCHEMA_VERSION
+from src.schemas import SCHEMA_VERSION, ULID_PATTERN
 
 # Event schema
 EVENT_SCHEMA = {
@@ -16,7 +16,7 @@ EVENT_SCHEMA = {
             "type": "object",
             "required": ["EventID", "Sub-events"],
             "properties": {
-                "EventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+                "EventID": {"type": "string", "pattern": ULID_PATTERN},
                 "Sub-events": {
                     "type": "array",
                     "items": {
@@ -29,7 +29,7 @@ EVENT_SCHEMA = {
                         "properties": {
                             "Sub-eventID": {
                                 "type": "string",
-                                "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                                "pattern": ULID_PATTERN,
                             },
                             "Sub-event_summary": {"type": "string"},
                             "Sub-event_fulltext": {"type": "object"},
@@ -59,9 +59,9 @@ DATE_SCHEMA = {
     ],
     "properties": {
         "Event_Name": {"type": "string"},
-        "EventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "EventID": {"type": "string", "pattern": ULID_PATTERN},
         "Sub-event_Name": {"type": "string"},
-        "Sub-eventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "Sub-eventID": {"type": "string", "pattern": ULID_PATTERN},
         "Date_Mentions": {
             "type": "array",
             "items": {
@@ -74,7 +74,7 @@ DATE_SCHEMA = {
                 "properties": {
                     "DateMentionID": {
                         "type": "string",
-                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "pattern": ULID_PATTERN,
                     },
                     "date_start": {"type": "string"},
                     "date_end": {"type": ["string", "null"]},
@@ -133,9 +133,9 @@ PLACE_SCHEMA = {
     ],
     "properties": {
         "Event_Name": {"type": "string"},
-        "EventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "EventID": {"type": "string", "pattern": ULID_PATTERN},
         "Sub-event_Name": {"type": "string"},
-        "Sub-eventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "Sub-eventID": {"type": "string", "pattern": ULID_PATTERN},
         "Place_Mentions": {
             "type": "array",
             "items": {
@@ -150,7 +150,7 @@ PLACE_SCHEMA = {
                 "properties": {
                     "PlaceMentionID": {
                         "type": "string",
-                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "pattern": ULID_PATTERN,
                     },
                     "current_name": {"type": "string"},
                     "historical_name": {"type": ["string", "null"]},
@@ -239,9 +239,9 @@ SUPPLEMENTAL_SCHEMA = {
     ],
     "properties": {
         "Event_Name": {"type": "string"},
-        "EventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "EventID": {"type": "string", "pattern": ULID_PATTERN},
         "Sub-event_Name": {"type": "string"},
-        "Sub-eventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "Sub-eventID": {"type": "string", "pattern": ULID_PATTERN},
         "Supplemental_Material": {
             "type": "array",
             "items": {
@@ -257,15 +257,15 @@ SUPPLEMENTAL_SCHEMA = {
                 "properties": {
                     "MaterialID": {
                         "type": "string",
-                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "pattern": ULID_PATTERN,
                     },
                     "EventID": {
                         "type": "string",
-                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "pattern": ULID_PATTERN,
                     },
                     "Sub-eventID": {
                         "type": "string",
-                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "pattern": ULID_PATTERN,
                     },
                     "reference_type": {
                         "type": "string",
@@ -352,7 +352,7 @@ PEOPLE_SCHEMA = {
                 "properties": {
                     "PersonID": {
                         "type": "string",
-                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "pattern": ULID_PATTERN,
                     },
                     "name": {"type": "string"},
                     "birth_date": {"type": ["string", "null"]},
@@ -380,7 +380,7 @@ PEOPLE_GROUPS_SCHEMA = {
                 "properties": {
                     "GroupID": {
                         "type": "string",
-                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "pattern": ULID_PATTERN,
                     },
                     "name": {"type": "string"},
                 },
@@ -406,7 +406,7 @@ EQUIPMENT_SCHEMA = {
                 "properties": {
                     "EquipmentID": {
                         "type": "string",
-                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "pattern": ULID_PATTERN,
                     },
                     "name": {"type": "string"},
                 },
@@ -433,16 +433,16 @@ MAP_SCHEMA = {
         "extracted_date",
     ],
     "properties": {
-        "MapID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "MapID": {"type": "string", "pattern": ULID_PATTERN},
         "map_title": {"type": "string", "minLength": 1},
         "source_book": {"type": "string", "minLength": 1},
         "source_author": {"type": "string", "minLength": 1},
         "source_series": {"type": ["string", "null"]},
         "page_number": {"type": ["integer", "null"]},
         "figure_number": {"type": ["string", "null"]},
-        "EventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "EventID": {"type": "string", "pattern": ULID_PATTERN},
         "Event_Name": {"type": ["string", "null"]},
-        "Sub_eventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "Sub_eventID": {"type": "string", "pattern": ULID_PATTERN},
         "Sub_event_Name": {"type": ["string", "null"]},
         "place_name": {"type": ["string", "null"]},
         "PlaceMentionID": {"type": ["string", "null"]},
@@ -487,7 +487,7 @@ CASUALTIES_SCHEMA = {
                 "properties": {
                     "CasualtyID": {
                         "type": "string",
-                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "pattern": ULID_PATTERN,
                     },
                     "type": {
                         "type": "string",
@@ -558,9 +558,9 @@ WEATHER_SCHEMA = {
     ],
     "properties": {
         "Event_Name": {"type": "string"},
-        "EventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "EventID": {"type": "string", "pattern": ULID_PATTERN},
         "Sub-event_Name": {"type": "string"},
-        "Sub-eventID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "Sub-eventID": {"type": "string", "pattern": ULID_PATTERN},
         "Weather_Mentions": {
             "type": "array",
             "items": {
@@ -575,7 +575,7 @@ WEATHER_SCHEMA = {
                 "properties": {
                     "WeatherMentionID": {
                         "type": "string",
-                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "pattern": ULID_PATTERN,
                     },
                     "place_name": {"type": "string"},
                     "PlaceMentionID": {"type": ["string", "null"]},
@@ -612,7 +612,7 @@ LOGISTICS_SCHEMA = {
         "extracted_date",
     ],
     "properties": {
-        "LogisticsID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "LogisticsID": {"type": "string", "pattern": ULID_PATTERN},
         "logistics_type": {
             "type": "string",
             "enum": [
@@ -686,7 +686,7 @@ IMAGES_SCHEMA = {
     "patternProperties": {"^_": {}},
     "required": ["ImageID", "image_title", "content_type", "extracted_date"],
     "properties": {
-        "ImageID": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+        "ImageID": {"type": "string", "pattern": ULID_PATTERN},
         "image_title": {"type": "string"},
         "image_type": {"type": "string"},
         "content_type": {"type": "string"},
@@ -714,7 +714,7 @@ BIBLIOGRAPHY_SCHEMA = {
     "properties": {
         "BibliographyID": {
             "type": "string",
-            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+            "pattern": ULID_PATTERN,
         },
         "title": {"type": "string"},
         "alt_title": {"type": ["string", "null"]},
@@ -762,7 +762,7 @@ BIBLIOGRAPHY_SCHEMA = {
                 "properties": {
                     "MentionID": {
                         "type": "string",
-                        "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                        "pattern": ULID_PATTERN,
                     },
                     "EventID": {"type": "string"},
                     "Sub-eventID": {"type": "string"},

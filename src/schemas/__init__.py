@@ -17,6 +17,7 @@ Validation rules:
 - This catches data corruption, malformed enrichment, and schema drift
 """
 
+import re
 from datetime import date
 from typing import Any, Dict, Optional
 
@@ -77,6 +78,9 @@ SCHEMA_VERSION = max(ENTITY_SCHEMA_VERSIONS.values(), key=_version_tuple)
 
 # Shared patterns
 ULID_PATTERN = "^[0-9A-HJKMNP-TV-Z]{26}$"
+# The single compiled form of ULID_PATTERN — import this instead of re-compiling the literal
+# (one source of truth for every runtime ULID check across the project).
+ULID_REGEX = re.compile(ULID_PATTERN)
 DATE_PATTERN = "^\\d{4}-\\d{2}-\\d{2}$"
 DATE_MONTH_PATTERN = "^\\d{4}-\\d{2}(-\\d{2})?$"
 URL_PATTERN = "^https?://"

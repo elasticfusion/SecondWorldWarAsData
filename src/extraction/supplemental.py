@@ -309,9 +309,8 @@ def _flatten_keyed_lists(data: Dict[str, Any]) -> "tuple[list, Optional[str]]":
     the flattened materials keep their true sub-event linkage instead of being defaulted to a random
     ULID (which would dangle). A content-class key (e.g. 'Equipment') carries no ID and is dropped.
     """
-    import re as _re
+    from src.schemas import ULID_REGEX as _ULID  # single ULID source
 
-    _ULID = _re.compile(r"^[0-9A-HJKMNP-TV-Z]{26}$")
     out: list = []
     detected_seid: Optional[str] = None
     for k, v in data.items():

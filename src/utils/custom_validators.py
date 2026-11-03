@@ -10,7 +10,8 @@ from urllib.parse import urlparse
 _CONTROL_CHARS_PATTERN = re.compile(r"[\x00-\x1f]")
 _JSON_BLOCK_PATTERN = re.compile(r"```json\s*\n(.*?)\n```", re.DOTALL)
 _CODE_BLOCK_PATTERN = re.compile(r"```\s*\n(.*?)\n```", re.DOTALL)
-_ULID_PATTERN = re.compile(r"^[0-9A-HJKMNP-TV-Z]{26}$")
+# ULID pattern: single source of truth (src.schemas.ULID_REGEX).
+from src.schemas import ULID_REGEX as _ULID_PATTERN
 
 
 class ValidationError(Exception):
