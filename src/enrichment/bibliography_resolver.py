@@ -1923,8 +1923,16 @@ Return ONLY "YES" or "NO". Answer "NO" if the page is unrelated, a generic searc
         )
         return match
     except Exception as e:
-        logger.debug("URL content verification failed for %s: %s", url[:80], e)
-        return True  # Accept on transient failure to avoid blocking
+        # Anti-swallow: a verification error (Grok failure, parse/decode crash) means we could NOT
+        # confirm the page matches the citation. Accepting on failure would stamp an UNVERIFIED
+        # (possibly wrong) URL as a confirmed match — worse than a miss for a provenance-first
+        # corpus. Reject + surface it loudly so the URL stays unverified/retriable.
+        logger.warning(
+            "OBSERV bib.verify_url_error url=%s err=%s status=warn",
+            _CTRL.sub(" ", url)[:100],
+            type(e).__name__,
+        )
+        return False
 
 
 # --- Batch Processing ---

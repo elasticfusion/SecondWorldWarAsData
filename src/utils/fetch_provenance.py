@@ -193,7 +193,7 @@ def recorded_fetch(
     session: Optional[requests.Session] = None,
     result_summary_fn=None,
     **kwargs: Any,
-) -> Optional[requests.Response]:
+) -> requests.Response:
     """Perform an external fetch through the single choke point, recording a fetch-provenance
     event (queried_at, status, outcome, latency, result summary). Reuses the pooled
     ``http_pool.get_session()`` unless a session is supplied.
@@ -202,6 +202,11 @@ def recorded_fetch(
     payload). Fail-safe: a recording error is swallowed; the HTTP response (or the raised transport
     error) is the caller's to handle — on a transport exception we record outcome=error and
     re-raise so callers keep their existing error handling.
+
+    Return contract: ALWAYS returns a ``requests.Response`` or RAISES (never None). An unsafe
+    endpoint host raises ``ValueError``; a transport error is recorded then re-raised. Callers can
+    therefore use the result without a None-check (the annotation was formerly ``Optional`` which
+    produced spurious mypy union-attr noise across enrichers).
     """
     if session is None:
         from src.utils.http_pool import get_session
