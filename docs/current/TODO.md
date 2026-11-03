@@ -1679,3 +1679,12 @@ it materializes writes NO -parsed.json sibling, so the PR-704 people_groups fail
 that path IF it ran — but it doesn't (dead code). Also it never carried book/author/series (same
 Unknown-provenance gap, pre-existing). Decide: wire it (thread book metadata + write the sibling) or
 retire it. Not a live regression (dead path).
+
+## LOW: equipment find-or-create not index-locked (PR #707 deferral)
+equipment.py:2170/3443 find-or-create uses a per-event in-memory index under
+ThreadPoolExecutor(max_workers=3), so concurrent events creating the same new equipment can each
+mint a separate ULID file. NOT data loss — the downstream dedup pass merges the duplicates
+(data-preserving: write-primary-first + backup-before-delete). Converting to the shared
+locked_json(index) find-or-create (like places/people_groups) is the correct long-term fix but a
+larger change (equipment's index build differs); deferred. Lower value than the entity=/vision/
+whitelist fixes shipped in PR #707 since duplicates are recovered, not lost.

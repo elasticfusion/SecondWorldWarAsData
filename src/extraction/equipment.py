@@ -2150,7 +2150,7 @@ def _create_new_equipment(
 
     from src.utils.file_lock import write_json_with_lock
 
-    write_json_with_lock(eq_file, equipment_data)
+    write_json_with_lock(eq_file, equipment_data, entity="equipment")
 
     # Update index (prefer technical_identifier for stability)
     index_key = equipment_data.get("technical_identifier") or common_name

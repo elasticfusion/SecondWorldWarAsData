@@ -437,15 +437,21 @@ def maybe_vision_classify_map(
             record.get("MapID"),
         )
         return
-    # Tier 3 — ambiguous: the Grok-vision backstop (one call, then stamped so it never repeats).
-    _vision_classify_ambiguous(record, image_bytes_loader, grok_client)
-    record["map_vision_checked_at"] = _dt.datetime.utcnow().isoformat() + "Z"
+    # Tier 3 — ambiguous: the Grok-vision backstop. Stamp checked_at ONLY when vision was actually
+    # ATTEMPTED (an image was available) — if the image wasn't available yet (download=False /
+    # blocked / not-yet-downloaded), leave checked_at UNSET so a later pass with the image present
+    # can still classify it (the backstop must not silently self-disable for its own target case).
+    vision_ran = _vision_classify_ambiguous(record, image_bytes_loader, grok_client)
+    if vision_ran:
+        record["map_vision_checked_at"] = _dt.datetime.utcnow().isoformat() + "Z"
 
 
 def _vision_classify_ambiguous(
     record: Dict[str, Any], image_bytes_loader, grok_client
-) -> None:
+) -> bool:
     """Tier-3 Grok-vision 'is this an image of a map?' (reuses verify_map_with_vision's STEP-1).
+    Returns True iff vision was ATTEMPTED (an image was available) — so the caller stamps
+    map_vision_checked_at only then; a missing image returns False (stays re-classifiable).
     Fail-safe: a download/vision failure leaves is_map unset (unknown, honest) + loud OBSERV.
     """
     try:
@@ -462,7 +468,7 @@ def _vision_classify_ambiguous(
             "OBSERV maps.vision_skipped map_id=%s reason=no_image status=warn",
             record.get("MapID"),
         )
-        return
+        return False  # no image -> NOT attempted; stays re-classifiable on a later pass
     try:
         from src.extraction.grok_search_maps import verify_map_with_vision
 
@@ -487,3 +493,6 @@ def _vision_classify_ambiguous(
             record.get("MapID"),
             type(e).__name__,
         )
+    return (
+        True  # vision was ATTEMPTED (image was available) -> caller stamps checked_at
+    )

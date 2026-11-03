@@ -72,7 +72,48 @@ def test_tier3_no_image_skips_vision(monkeypatch):
     )
     rec = {"MapID": "m", "common_name": "Figure 3", "source_url": "http://x/fig/f3.jpg"}
     maybe_vision_classify_map(rec, lambda: None, object())  # no image bytes
-    assert (
-        n["v"] == 0 and rec.get("is_map") is None
-    )  # unknown (honest), checked_at stamped
-    assert rec.get("map_vision_checked_at")
+    # No image -> vision was NOT attempted: is_map stays unknown (honest) AND checked_at is NOT
+    # stamped, so a later pass once the image exists can still classify it (the backstop must not
+    # self-disable for its own target case).
+    assert n["v"] == 0 and rec.get("is_map") is None
+    assert not rec.get("map_vision_checked_at")
+
+
+def test_tier3_vision_exception_with_image_stamps_checked_at(monkeypatch):
+    """A tier-3 image WHERE vision was attempted but Grok raised still stamps checked_at (vision
+    was attempted on an available image) so it doesn't retry Grok forever; is_map stays unknown.
+    """
+
+    def _boom(*a, **k):
+        raise RuntimeError("grok down")
+
+    monkeypatch.setattr(g, "verify_map_with_vision", _boom)
+    rec = {"MapID": "m", "common_name": "Figure 9", "source_url": "http://x/fig/f9.jpg"}
+    maybe_vision_classify_map(rec, lambda: b"imgbytes", object())
+    assert rec.get("is_map") is None  # honest unknown (vision raised)
+    assert rec.get(
+        "map_vision_checked_at"
+    )  # attempted on an available image -> stamped
+
+
+def test_tier3_loader_exception_stays_reclassifiable(monkeypatch):
+    """If the image loader itself raises (image not retrievable yet), vision was NOT attempted:
+    checked_at is NOT stamped so a later pass can still classify it."""
+    n = {"v": 0}
+    monkeypatch.setattr(
+        g,
+        "verify_map_with_vision",
+        lambda *a, **k: (n.__setitem__("v", n["v"] + 1) or (True, "")),
+    )
+
+    def _loader_boom():
+        raise OSError("not downloaded yet")
+
+    rec = {
+        "MapID": "m",
+        "common_name": "Figure 10",
+        "source_url": "http://x/fig/f10.jpg",
+    }
+    maybe_vision_classify_map(rec, _loader_boom, object())
+    assert n["v"] == 0 and rec.get("is_map") is None
+    assert not rec.get("map_vision_checked_at")  # not attempted -> re-classifiable
