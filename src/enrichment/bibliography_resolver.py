@@ -346,44 +346,41 @@ def _resolve_archive(entry, citation, grok_client, config):
     return _resolve_archive_record(entry, verbatim, grok_client, config)
 
 
-def _resolve_book(entry, citation, grok_client, config):
-    """Resolve books."""
+def _resolve_with_alt_title(citation, search):
+    """Shared resolve scaffold: try ``search(title, author)``; on no result, retry with a distinct
+    ``alt_title``. ``search`` is a ``(title, author) -> result`` callable that closes over the
+    per-type backend (book/article/generic). Returns the first truthy result or None."""
     title = citation.get("title") or ""
     author = (citation.get("author") or [None])[0]
-    result = _resolve_book_search(title, author, citation, grok_client, config)
+    result = search(title, author)
     if not result:
         alt_title = citation.get("alt_title") or ""
         if alt_title and alt_title != title:
-            result = _resolve_book_search(
-                alt_title, author, citation, grok_client, config
-            )
+            result = search(alt_title, author)
     return result
+
+
+def _resolve_book(entry, citation, grok_client, config):
+    """Resolve books."""
+    return _resolve_with_alt_title(
+        citation,
+        lambda t, a: _resolve_book_search(t, a, citation, grok_client, config),
+    )
 
 
 def _resolve_article(entry, citation, grok_client, config):
     """Resolve articles."""
-    title = citation.get("title") or ""
-    author = (citation.get("author") or [None])[0]
-    result = _resolve_article_search(title, author, citation, grok_client, config)
-    if not result:
-        alt_title = citation.get("alt_title") or ""
-        if alt_title and alt_title != title:
-            result = _resolve_article_search(
-                alt_title, author, citation, grok_client, config
-            )
-    return result
+    return _resolve_with_alt_title(
+        citation,
+        lambda t, a: _resolve_article_search(t, a, citation, grok_client, config),
+    )
 
 
 def _resolve_generic_entry(entry, citation, grok_client, config):
     """Generic fallback."""
-    title = citation.get("title") or ""
-    author = (citation.get("author") or [None])[0]
-    result = _resolve_generic(title, author, grok_client, config)
-    if not result:
-        alt_title = citation.get("alt_title") or ""
-        if alt_title and alt_title != title:
-            result = _resolve_generic(alt_title, author, grok_client, config)
-    return result
+    return _resolve_with_alt_title(
+        citation, lambda t, a: _resolve_generic(t, a, grok_client, config)
+    )
 
 
 # --- Archive/Military Records ---
@@ -700,6 +697,31 @@ def _find_in_openserp(
     return [(url, "openserp_archive")] if url else []
 
 
+def _find_in_native_source(
+    entry: Dict,
+    query: str,
+    search_title: str,
+    author: str,
+    grok_client: Any,
+    config: Dict,
+    *,
+    flag: str,
+    search_candidates,
+    label: str,
+) -> "list[Tuple[str, str]]":
+    """Shared native-source finder: gated on its own ``flag``, search candidates via
+    ``search_candidates(title, author|None)``, verify them via the shared
+    _collect_verified_candidates, and tag each hit with ``label``. Archive.org and Gutenberg are
+    independent sources that share this identical candidate-iterate-verify pattern."""
+    if not config.get(flag, True):
+        return []
+    cands = search_candidates(search_title, author or None)
+    return [
+        (url, label)
+        for url in _collect_verified_candidates(query, cands, grok_client, entry)
+    ]
+
+
 def _find_in_archive_org(
     entry: Dict,
     query: str,
@@ -708,18 +730,20 @@ def _find_in_archive_org(
     grok_client: Any,
     config: Dict,
 ) -> "list[Tuple[str, str]]":
-    """Archive.org — independent source (its own advancedsearch API), gated ONLY on its own flag.
-    Iterates + verifies candidates via the shared _collect_verified_candidates helper.
-    """
-    if not config.get("search_archive_org", True):
-        return []
+    """Archive.org — independent source (its own advancedsearch API), gated ONLY on its own flag."""
     from src.extraction.supplemental_search import search_archive_org_candidates
 
-    cands = search_archive_org_candidates(search_title, author or None)
-    return [
-        (url, "archive_org")
-        for url in _collect_verified_candidates(query, cands, grok_client, entry)
-    ]
+    return _find_in_native_source(
+        entry,
+        query,
+        search_title,
+        author,
+        grok_client,
+        config,
+        flag="search_archive_org",
+        search_candidates=search_archive_org_candidates,
+        label="archive_org",
+    )
 
 
 def _find_in_gutenberg(
@@ -730,18 +754,21 @@ def _find_in_gutenberg(
     grok_client: Any,
     config: Dict,
 ) -> "list[Tuple[str, str]]":
-    """Gutenberg — independent native source (Gutendex API), gated ONLY on its own flag. Same
-    candidate-iterate-verify pattern; low hit expectation (literary texts, not WWII records).
-    """
-    if not config.get("search_gutenberg", True):
-        return []
+    """Gutenberg — independent native source (Gutendex API), gated ONLY on its own flag. Low hit
+    expectation (literary texts, not WWII records)."""
     from src.extraction.supplemental_search import search_gutenberg_candidates
 
-    cands = search_gutenberg_candidates(search_title, author or None)
-    return [
-        (url, "gutenberg")
-        for url in _collect_verified_candidates(query, cands, grok_client, entry)
-    ]
+    return _find_in_native_source(
+        entry,
+        query,
+        search_title,
+        author,
+        grok_client,
+        config,
+        flag="search_gutenberg",
+        search_candidates=search_gutenberg_candidates,
+        label="gutenberg",
+    )
 
 
 def _collect_verified_candidates(
