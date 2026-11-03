@@ -224,23 +224,20 @@ def _coerce_group_schema_keys(group: dict) -> None:
     we can't avoid must be observable). In place. Fail-safe: never raises into extraction.
     """
     try:
+        from src.schemas import strip_unmodeled_keys
         from src.schemas.groups_output import GROUPS_OUTPUT_SCHEMA
 
-        props = GROUPS_OUTPUT_SCHEMA.get("properties", {})
-        allowed = set(props.keys()) if isinstance(props, dict) else set()
-        if not allowed:
-            return
-        extra = [k for k in list(group.keys()) if k not in allowed]
-        for k in extra:
-            group.pop(k, None)
+        def _obs(field: str) -> None:
             observe_warn(
                 "people_groups",
                 "extra_field_stripped",
                 group=str(group.get("group_name", "?"))[:60],
-                field=str(k)[:40],
+                field=str(field)[:40],
                 note="unmodeled top-level field removed so the record persists "
                 "(additionalProperties) — widen the schema if this field is wanted",
             )
+
+        strip_unmodeled_keys(group, GROUPS_OUTPUT_SCHEMA, _obs)
     except Exception as e:  # noqa: BLE001 - normalization must never break extraction
         logger.debug("group schema-key coercion skipped: %s", e)
 
