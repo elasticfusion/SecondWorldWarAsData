@@ -9,8 +9,6 @@ import threading
 from pathlib import Path
 from typing import Optional
 
-import requests
-
 logger = logging.getLogger(__name__)
 
 _HEADERS = {
@@ -172,35 +170,9 @@ def _extract_group_page(page_data: dict, title: str) -> Optional[dict]:
 
 def _fetch_license(filename: str) -> Optional[str]:
     """Fetch license from Wikimedia Commons."""
-    try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+    from src.enrichment._wikipedia_common import fetch_commons_license
 
-        resp = recorded_fetch(
-            "wikimedia-commons",
-            "https://commons.wikimedia.org/w/api.php",
-            kind=TEXTUAL,
-            method="GET",
-            params={
-                "action": "query",
-                "format": "json",
-                "titles": f"File:{filename}",
-                "prop": "imageinfo",
-                "iiprop": "extmetadata",
-            },
-            headers=_HEADERS,
-            timeout=10,
-            result_summary_fn=lambda r: f"license status={r.status_code}",
-        )
-        if resp.status_code == 200:
-            pages = resp.json().get("query", {}).get("pages", {})
-            for page_data in pages.values():
-                ii = page_data.get("imageinfo", [])
-                if ii:
-                    meta = ii[0].get("extmetadata", {})
-                    return meta.get("LicenseShortName", {}).get("value", "unknown")
-    except Exception as e:  # noqa: BLE001 - license is best-effort, but log it
-        logger.debug("Group image license fetch failed: %s", e)
-    return None
+    return fetch_commons_license(filename)
 
 
 def enrich_group_from_wikipedia(group: dict) -> bool:
