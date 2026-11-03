@@ -36,24 +36,35 @@ def test_empty_not_flagged():
 
 def test_retry_after_is_honored(monkeypatch):
     monkeypatch.setattr(wayback.time, "sleep", lambda *_: None)  # no real waiting
+    monkeypatch.setattr("src.utils.url_hygiene.clean_url", lambda u: u)
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda h: ["1.2.3.4"]
+    )
     throttled = MagicMock(status_code=503, headers={"Retry-After": "1"})
     ok = MagicMock(status_code=200, headers={})
-    with patch.object(wayback.requests, "get", side_effect=[throttled, ok]) as g:
-        resp = wayback._get_with_courtesy("https://archive.org/x", timeout=5)
+    g = MagicMock(side_effect=[throttled, ok])
+    monkeypatch.setattr("src.utils.url_hygiene._pinned_get", g)
+    resp = wayback._get_with_courtesy("https://archive.org/x", timeout=5)
     assert resp is ok
-    assert g.call_count == 2  # retried once after the 503
+    assert (
+        g.call_count == 2
+    )  # retried once after the 503 (via the pinned-get chokepoint)
 
 
 def test_identifying_user_agent_sent(monkeypatch):
     monkeypatch.setattr(wayback.time, "sleep", lambda *_: None)
+    monkeypatch.setattr("src.utils.url_hygiene.clean_url", lambda u: u)
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda h: ["1.2.3.4"]
+    )
     captured = {}
 
-    def fake_get(url, headers=None, timeout=None, **kw):
+    def fake_pinned(url, host, vetted, *, timeout=None, headers=None):
         captured["ua"] = (headers or {}).get("User-Agent", "")
         return MagicMock(status_code=200, headers={})
 
-    with patch.object(wayback.requests, "get", side_effect=fake_get):
-        wayback._get_with_courtesy("https://archive.org/x", timeout=5)
+    monkeypatch.setattr("src.utils.url_hygiene._pinned_get", fake_pinned)
+    wayback._get_with_courtesy("https://archive.org/x", timeout=5)
     assert "SecondWorldWarAsData" in captured["ua"]  # not a spoofed browser UA
 
 
@@ -80,11 +91,17 @@ def _availability(found: bool):
 
 def test_fetch_archived_returns_content_and_provenance(monkeypatch):
     monkeypatch.setattr(wayback.time, "sleep", lambda *_: None)
+    monkeypatch.setattr("src.utils.url_hygiene.clean_url", lambda u: u)
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda h: ["1.2.3.4"]
+    )
     avail = _availability(True)
     page = MagicMock(status_code=200, headers={})
     page.text = "<html><body>Real archived biography content.</body></html>"
-    with patch.object(wayback.requests, "get", side_effect=[avail, page]):
-        out = wayback.fetch_archived("https://x.com", timeout=5)
+    monkeypatch.setattr(
+        "src.utils.url_hygiene._pinned_get", MagicMock(side_effect=[avail, page])
+    )
+    out = wayback.fetch_archived("https://x.com", timeout=5)
     assert out is not None
     html, archived_url, ts = out
     assert "biography" in html
@@ -94,17 +111,30 @@ def test_fetch_archived_returns_content_and_provenance(monkeypatch):
 
 def test_fetch_archived_none_when_no_snapshot(monkeypatch):
     monkeypatch.setattr(wayback.time, "sleep", lambda *_: None)
-    with patch.object(wayback.requests, "get", return_value=_availability(False)):
-        assert wayback.fetch_archived("https://x.com", timeout=5) is None
+    monkeypatch.setattr("src.utils.url_hygiene.clean_url", lambda u: u)
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda h: ["1.2.3.4"]
+    )
+    monkeypatch.setattr(
+        "src.utils.url_hygiene._pinned_get",
+        MagicMock(return_value=_availability(False)),
+    )
+    assert wayback.fetch_archived("https://x.com", timeout=5) is None
 
 
 def test_archived_snapshot_itself_a_block_page_rejected(monkeypatch):
     monkeypatch.setattr(wayback.time, "sleep", lambda *_: None)
+    monkeypatch.setattr("src.utils.url_hygiene.clean_url", lambda u: u)
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.resolved_host_is_safe", lambda h: ["1.2.3.4"]
+    )
     avail = _availability(True)
     blocked = MagicMock(status_code=200, headers={})
     blocked.text = "Request unsuccessful. Incapsula incident ID: 1"
-    with patch.object(wayback.requests, "get", side_effect=[avail, blocked]):
-        assert wayback.fetch_archived("https://x.com", timeout=5) is None
+    monkeypatch.setattr(
+        "src.utils.url_hygiene._pinned_get", MagicMock(side_effect=[avail, blocked])
+    )
+    assert wayback.fetch_archived("https://x.com", timeout=5) is None
 
 
 # ---- integration: _fetch_url_content transparent fallback + provenance ----
@@ -216,7 +246,10 @@ def test_wayback_ts_to_iso():
 
 
 def test_wayback_rejects_archived_host_that_resolves_private(monkeypatch):
-    """§1.0c follow-up: fetch_archived SSRF-rechecks the archived_url host + refuses redirects."""
+    """The archived_url (from the availability API, untrusted) is SSRF-rechecked inside
+    _get_with_courtesy (clean_url + resolved_host_is_safe + _pinned_get). A host that resolves
+    private is rejected there, so fetch_archived returns None and NO pinned fetch is attempted.
+    """
     from src.enrichment import wayback
 
     monkeypatch.setattr(
@@ -224,15 +257,12 @@ def test_wayback_rejects_archived_host_that_resolves_private(monkeypatch):
         "find_snapshot",
         lambda url, timeout=15: ("http://evil.internal/x", "20200101000000"),
     )
+    monkeypatch.setattr("src.utils.url_hygiene.clean_url", lambda u: u)
     monkeypatch.setattr(
         "src.utils.url_hygiene.resolved_host_is_safe", lambda host: None
-    )  # resolves private
-    called = {"n": 0}
-    monkeypatch.setattr(
-        wayback,
-        "_get_with_courtesy",
-        lambda *a, **k: called.__setitem__("n", called["n"] + 1),
-    )
+    )  # resolves private -> rejected inside _get_with_courtesy
+    pinned = MagicMock()
+    monkeypatch.setattr("src.utils.url_hygiene._pinned_get", pinned)
     out = wayback.fetch_archived("https://x.com", timeout=5)
-    assert out is None  # archived host blocked
-    assert called["n"] == 0  # never fetched
+    assert out is None  # archived host blocked by the chokepoint
+    assert pinned.call_count == 0  # never reached the pinned fetch

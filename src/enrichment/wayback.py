@@ -112,17 +112,50 @@ def _throttle(host: str) -> None:
         _last_call[host] = time.monotonic()
 
 
-def _get_with_courtesy(url: str, timeout: int, **kwargs) -> Optional[requests.Response]:
-    """GET with politeness: per-host throttle, identifying UA, Retry-After + bounded backoff."""
-    from urllib.parse import urlparse
+def _vet_url(url: str, params: Optional[dict]):
+    """Fold params into the URL + SSRF-gate it (clean_url + resolved_host_is_safe). Returns
+    (final_url, host, vetted_ips) if safe, else None (loud OBSERV on a block)."""
+    from urllib.parse import urlparse, urlencode, urlsplit, urlunsplit, parse_qsl
+    from src.utils.url_hygiene import clean_url, resolved_host_is_safe
 
-    host = urlparse(url).netloc or "archive.org"
+    if params:
+        s = urlsplit(url)
+        merged = dict(parse_qsl(s.query)) | {k: str(v) for k, v in params.items()}
+        url = urlunsplit((s.scheme, s.netloc, s.path, urlencode(merged), s.fragment))
+    host = (urlparse(url).hostname or "archive.org").lower()
+    if clean_url(url) is None:
+        logger.warning(
+            "OBSERV wayback.fetch_blocked ssrf=1 url=%s status=warn", str(url)[:120]
+        )
+        return None
+    vetted = resolved_host_is_safe(host)
+    if vetted is None:
+        logger.warning(
+            "OBSERV wayback.fetch_blocked ssrf=1 resolve=1 host=%s status=warn", host
+        )
+        return None
+    return url, host, vetted
+
+
+def _get_with_courtesy(
+    url: str, timeout: int, params: Optional[dict] = None
+) -> Optional[requests.Response]:
+    """GET with politeness: per-host throttle, identifying UA, Retry-After + bounded backoff.
+
+    Routes through the SSRF chokepoint (_vet_url gate + _pinned_get) so the fetch PINS to a vetted
+    IP — closing the DNS-rebinding TOCTOU. The archived URL here comes from the archive.org
+    availability API response and is treated as untrusted.
+    """
+    from src.utils.url_hygiene import _pinned_get
+
+    vetted_tuple = _vet_url(url, params)
+    if vetted_tuple is None:
+        return None
+    url, host, vetted = vetted_tuple
     for attempt in range(_MAX_RETRIES):
         _throttle(host)
         try:
-            resp = requests.get(
-                url, headers=_HEADERS, timeout=timeout, stream=True, **kwargs
-            )
+            resp = _pinned_get(url, host, vetted, timeout=timeout, headers=_HEADERS)
         except requests.RequestException as exc:
             logger.debug("wayback GET failed (%s): %s", exc, url)
             return None
@@ -255,17 +288,11 @@ def fetch_archived(url: str, timeout: int = 20) -> Optional[Tuple[str, str, str]
         logger.debug("no wayback snapshot for %s", url)
         return None
     archived_url, ts = snap
-    # The archived_url comes from the availability-API response (normally web.archive.org, but vet
-    # it): SSRF-recheck the resolved host + refuse redirects (a redirect off the archive host could
-    # bounce to an internal address). The body is byte-capped in _get_with_courtesy.
-    from urllib.parse import urlparse
-    from src.utils.url_hygiene import resolved_host_is_safe
-
-    arch_host = (urlparse(archived_url).hostname or "").lower()
-    if resolved_host_is_safe(arch_host) is None:
-        logger.warning("OBSERV wayback.archived_host_blocked host=%s", arch_host)
-        return None
-    resp = _get_with_courtesy(archived_url, timeout=timeout, allow_redirects=False)
+    # The archived_url comes from the availability-API response (normally web.archive.org, but
+    # untrusted): _get_with_courtesy routes it through the SSRF chokepoint (clean_url +
+    # resolved_host_is_safe + _pinned_get, which pins the vetted IP and always refuses redirects),
+    # closing the DNS-rebind TOCTOU. Body byte-capped there.
+    resp = _get_with_courtesy(archived_url, timeout=timeout)
     if resp is None or resp.status_code != 200 or not resp.text:
         return None
     # The crawler may itself have archived a block page — reject that too.
