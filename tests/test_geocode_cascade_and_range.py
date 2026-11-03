@@ -107,3 +107,27 @@ def test_h2_genuine_miss_still_terminal_when_no_transient():
     casc = cascade_geocoder(a, b)
     out = casc("X", {}, None)
     assert out.transient is False  # genuine miss stays terminal (no false retry loop)
+
+
+def test_h2_low_confidence_found_does_not_suppress_transient():
+    # A transient outage followed by a FOUND-but-LOW-confidence hit (confidence <=
+    # MIN_GEOCODE_CONFIDENCE). A low-confidence found is itself non-terminal (recorded as
+    # low_confidence), so it must NOT mask the retriable transient -> the cascade must still
+    # return the transient. On origin/main the gate was `not (best and best.found)`, so a
+    # found=True low-conf best discarded the transient and persisted a terminal result.
+    osm = _g(
+        GeocodeResult(found=False, confidence=0.0, transient=True, source="nominatim")
+    )
+    grok = _g(
+        GeocodeResult(
+            found=True,
+            latitude=1.0,
+            longitude=1.0,
+            confidence=0.3,  # <= MIN_GEOCODE_CONFIDENCE (0.5): low-confidence
+            transient=False,
+            source="grok",
+        )
+    )
+    casc = cascade_geocoder(osm, grok)
+    out = casc("X", {}, None)
+    assert out.transient is True  # transient preserved -> stays retriable

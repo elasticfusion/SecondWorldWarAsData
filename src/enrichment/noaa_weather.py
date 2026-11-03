@@ -309,14 +309,25 @@ def _load_enrichable_weather(f):
     pre-1940/missing date -> skip (None)."""
     try:
         data = json.loads(f.read_text(encoding="utf-8"))
-    except Exception:
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 - corrupt weather file is a loss, surface it
+        logger.warning(
+            "OBSERV noaa.file_unreadable file=%s err=%s status=warn",
+            getattr(f, "name", f),
+            type(exc).__name__,
+        )
         return None
     if data.get("noaa_observed"):  # already has NOAA data
         return None
     loc = data.get("location", {})
     lat = loc.get("latitude", 0.0)
     lon = loc.get("longitude", 0.0)
-    if lat == 0.0 and lon == 0.0:
+    # A missing OR 0.0 coordinate on EITHER axis is an un-geocoded placeholder, not a real
+    # location. ETO places are never at the equator/prime-meridian, so treat a lone 0.0 (e.g. a
+    # missing `latitude` key defaulting to 0.0 paired with a real longitude) as un-geocoded —
+    # otherwise NOAA is queried at a bogus (0.0, lon) point and returns a spurious station.
+    if not lat or not lon:
         return None
     # Weather files store the date under "date" (not "date_start"); tolerate legacy.
     date = data.get("date") or data.get("date_start") or ""

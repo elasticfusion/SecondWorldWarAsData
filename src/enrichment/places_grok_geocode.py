@@ -148,6 +148,9 @@ class GeocodeRunReport:
     skip_non_geocodable: int = 0  # unit-relative area ("5th Division sector"), etc.
     skip_has_coords: int = 0  # already geocoded (doesn't need it)
     skip_already_attempted: int = 0  # prior attempt recorded (not forced)
+    unreadable: int = (
+        0  # corrupt/unreadable place file (parse/OS error) — a real loss, not a skip
+    )
     details: List[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -163,6 +166,7 @@ class GeocodeRunReport:
             "skip_non_geocodable": self.skip_non_geocodable,
             "skip_has_coords": self.skip_has_coords,
             "skip_already_attempted": self.skip_already_attempted,
+            "unreadable": self.unreadable,
             "details": self.details,
         }
 
@@ -716,6 +720,12 @@ def geocode_places_dir(
             path, grok_client, write, force, report, resolve, person_names
         )
 
+    _log_geocode_summary(report)
+    return report
+
+
+def _log_geocode_summary(report: "GeocodeRunReport") -> None:
+    """Emit the run-summary logs + canonical OBSERV for a geocode directory pass."""
     logger.info(
         "Geocoding: attempted %d, geocoded %d, not-found %d, low-conf %d, "
         "skipped %d, errors %d",
@@ -729,22 +739,23 @@ def geocode_places_dir(
     try:
         logger.info(
             "OBSERV geocode.dir attempted=%d geocoded=%d not_found=%d low_conf=%d "
-            "errors=%d skipped=%d skip_reasons={no_name:%d,non_geocodable:%d,"
-            "has_coords:%d,already_attempted:%d}",
+            "errors=%d unreadable=%d skipped=%d skip_reasons={no_name:%d,non_geocodable:%d,"
+            "has_coords:%d,already_attempted:%d} status=%s",
             report.attempted,
             report.geocoded,
             report.not_found,
             report.low_confidence,
             report.errors,
+            report.unreadable,
             report.skipped,
             report.skip_no_name,
             report.skip_non_geocodable,
             report.skip_has_coords,
             report.skip_already_attempted,
+            "warn" if (report.unreadable or report.errors) else "ok",
         )
     except Exception:  # noqa: BLE001 - observability must never break the pass
         pass
-    return report
 
 
 def cascade_geocoder(*geocoders: Any) -> Any:
@@ -772,8 +783,13 @@ def cascade_geocoder(*geocoders: Any) -> Any:
         # transient result over a genuine miss — otherwise a one-off outage masked by another
         # geocoder's low-confidence miss would be persisted as a TERMINAL geocode_not_found and
         # never retried (_already_attempted skips it on a non-force re-run). A transient must stay
-        # retriable.
-        if transient_seen is not None and not (best and best.found):
+        # retriable. Gate on a CONFIDENT best (found AND confidence above the low threshold): a
+        # merely-found LOW-confidence result is itself non-terminal (recorded as low_confidence),
+        # so it must not suppress a retriable transient.
+        best_is_confident = bool(
+            best and best.found and best.confidence > MIN_GEOCODE_CONFIDENCE
+        )
+        if transient_seen is not None and not best_is_confident:
             return transient_seen
         return best if best is not None else GeocodeResult(found=False)
 
@@ -792,9 +808,22 @@ def _geocode_one_file(
     """Geocode a single place file, updating ``report`` (and file if ``write``)."""
     try:
         place = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError) as exc:
+        # A corrupt/unreadable place file is a real loss (that place never gets geocoded), not a
+        # benign skip — surface it loudly so a batch of corruption is actionable, not invisible.
+        report.unreadable += 1
+        logger.warning(
+            "OBSERV geocode.file_unreadable path=%s err=%s status=warn",
+            path.name,
+            type(exc).__name__,
+        )
         return
     if not isinstance(place, dict):
+        report.unreadable += 1
+        logger.warning(
+            "OBSERV geocode.file_unreadable path=%s err=not_a_dict status=warn",
+            path.name,
+        )
         return
 
     name = _place_name(place, stem=path.stem, person_names=person_names)

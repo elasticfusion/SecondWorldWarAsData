@@ -107,6 +107,13 @@ _METRIC_KEYS = (
     "breaker_opened",
     "urls_fetched",
     "items_added",
+    # write_failed counts enriched records whose persisted write FAILED (returned False) — the
+    # enrichment is lost. Previously the count/_metric was incremented before an unchecked write,
+    # so a failed persist read as a successful enrichment. Now the count is gated on the write.
+    "write_failed",
+    # records_unreadable counts input records that could not be parsed/loaded (a distinct loss
+    # from a persist failure — kept separate so the telemetry doesn't conflate read vs write).
+    "records_unreadable",
 )
 _metrics: Dict[str, int] = {k: 0 for k in _METRIC_KEYS}
 
@@ -1530,30 +1537,55 @@ def enrich_equipment_with_openserp(
             continue
         if max_items and enriched >= max_items:
             break
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-
-        if _openserp_recently_searched(data):
-            continue
-
-        name = data.get("common_name", data.get("name", ""))
-        if not _usable_entity_name(name):
-            continue
-        _record_eligible()
-
-        changed = enrich_one_equipment(data, openserp_url, grok_client)
-        if changed:
+        if _process_equipment_file(f, openserp_url, grok_client):
             enriched += 1
-            _metric("entities_enriched")
-            logger.info("  ✓ OpenSERP enriched: %s", name)
-
-        _mark_openserp_searched(data)
-        write_json_with_lock(f, data, entity="equipment")
 
     logger.info("OpenSERP equipment enrichment: %d enriched", enriched)
     return enriched
+
+
+def _load_equipment_record(f) -> Optional[dict]:
+    """Load one equipment record; a corrupt file is a LOSS (loud OBSERV), not a silent skip."""
+    try:
+        return json.loads(f.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        _metric("records_unreadable")
+        logger.warning(
+            "OBSERV openserp.equipment_unreadable file=%s err=%s status=warn",
+            f.name,
+            type(exc).__name__,
+        )
+        return None
+
+
+def _process_equipment_file(f, openserp_url: str, grok_client: Any) -> bool:
+    """Gate + enrich + persist one equipment file. Returns True iff it was enriched AND the
+    enriched record was successfully persisted (a failed write is a loud loss, not a count).
+    """
+    data = _load_equipment_record(f)
+    if data is None:
+        return False
+    if _openserp_recently_searched(data):
+        return False
+    name = data.get("common_name", data.get("name", ""))
+    if not _usable_entity_name(name):
+        return False
+    _record_eligible()
+
+    changed = enrich_one_equipment(data, openserp_url, grok_client)
+    _mark_openserp_searched(data)
+    if not write_json_with_lock(f, data, entity="equipment"):
+        _metric("write_failed")
+        logger.warning(
+            "OBSERV openserp.equipment_write_failed file=%s name=%s status=error",
+            f.name,
+            name,
+        )
+        return False
+    if changed:
+        _metric("entities_enriched")
+        logger.info("  ✓ OpenSERP enriched: %s", name)
+    return bool(changed)
 
 
 def enrich_one_equipment(
@@ -1634,14 +1666,20 @@ def _process_one_source_section(
     before = len(data.get("primary_sources") or [])
     changed = enrich_one_source_section(data, openserp_url, grok_client)
     enriched = False
+    _mark_openserp_searched(data)
+    if not write_json_with_lock(f, data, entity="source_section"):
+        _metric("write_failed")
+        logger.warning(
+            "OBSERV openserp.source_section_write_failed file=%s op=%s status=error",
+            getattr(f, "name", f),
+            op_name,
+        )
+        return False
     if changed:
         added_count = len(data.get("primary_sources") or []) - before
         enriched = True
         _metric("entities_enriched")
         logger.info("  ✓ OpenSERP primary sources for %s: +%d", op_name, added_count)
-
-    _mark_openserp_searched(data)
-    write_json_with_lock(f, data, entity="source_section")
     return enriched
 
 
