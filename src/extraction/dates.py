@@ -371,13 +371,9 @@ def _add_event_mention(
 
 def _load_dates_index(dates_dir: Path) -> dict:
     """Load dates index from file."""
-    index_file = dates_dir / "index.json"
+    from src.extraction._entity_common import load_json_index
 
-    if index_file.exists():
-        with open(index_file, "r", encoding="utf-8") as f:
-            return json.load(f)
-
-    return {}
+    return load_json_index(dates_dir / "index.json")
 
 
 def _load_book_metadata_for_dates(parsed_file: Optional[Path]) -> tuple[str, str, str]:
