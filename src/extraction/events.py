@@ -11,6 +11,7 @@ from jsonschema import ValidationError, validate
 from src.grok_client import GrokClient, GrokAPIError
 from src.json_schemas import EVENT_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
+from src.schemas import ULID_PATTERN
 
 from src.utils.prompt_loader import get_system_prompt
 
@@ -544,7 +545,7 @@ def _try_fix_ulid_errors(
     response: dict, e: ValidationError, parsed_file: Path, output_dir: Path
 ) -> Optional[Path]:
     """Try to fix ULID validation errors automatically."""
-    if "does not match '^[0-9A-HJKMNP-TV-Z]{26}$'" not in e.message:
+    if f"does not match '{ULID_PATTERN}'" not in e.message:
         return None
 
     try:
@@ -842,7 +843,7 @@ def _handle_validation_failure(
 
     if attempt < max_retries - 1:
         logger.info("  Retrying with validation feedback...")
-        ulid_error = "does not match '^[0-9A-HJKMNP-TV-Z]{26}$'" in e.message
+        ulid_error = f"does not match '{ULID_PATTERN}'" in e.message
         return None, _build_retry_prompt(prompt, error_msg, ulid_error)
 
     logger.error(f"  Validation failed after {max_retries} attempts")
