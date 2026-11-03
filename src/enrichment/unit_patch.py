@@ -20,7 +20,6 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
 from src.utils import artifact_store
-from src.utils.url_hygiene import clean_url, resolved_host_is_safe
 
 logger = logging.getLogger(__name__)
 
@@ -33,22 +32,14 @@ _VISION_SYSTEM = "You identify military unit insignia in images. Answer strictly
 
 def _safe_url(url: str) -> Optional[str]:
     """SSRF gate for an attacker-influenceable candidate URL (OpenSERP results).
-    Returns the cleaned/normalized https URL iff it is well-formed AND its host
-    resolves to ONLY public IPs (DNS-rebinding/metadata-endpoint defense), else
-    None. Mirrors the hardened web_results path — raw image/vision fetches must
-    not bypass it."""
-    cleaned = clean_url(url)
-    if not cleaned:
-        return None
-    try:
-        from urllib.parse import urlparse
+    Returns the https URL iff it is well-formed AND its host resolves to ONLY public IPs
+    (DNS-rebinding/metadata defense), else None. Delegates to the shared
+    url_hygiene.vet_url_for_fetch chokepoint; _download re-vets + pins as defense-in-depth.
+    """
+    from src.utils.url_hygiene import vet_url_for_fetch
 
-        host = urlparse(cleaned).hostname or ""
-        if not host or resolved_host_is_safe(host) is None:
-            return None
-    except Exception:  # noqa: BLE001 - unresolvable/invalid -> unsafe
-        return None
-    return cleaned
+    vet = vet_url_for_fetch(url, scope="unit_patch")
+    return vet.url if vet is not None else None
 
 
 def _vision_is_patch(

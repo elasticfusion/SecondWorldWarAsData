@@ -149,20 +149,12 @@ def _download_to_quarantine(
     # resolved_host_is_safe (resolve + reject non-public IPs, DNS-rebinding). We do NOT rewrite url
     # to the normalized form (clean_url strips query params for dedup; a resource URL's query can be
     # significant). Redirects refused on the GETs below (a redirect can bounce to an internal addr).
-    from src.utils.url_hygiene import clean_url, resolved_host_is_safe, _pinned_get
+    from src.utils.url_hygiene import vet_url_for_fetch, _pinned_get
 
-    if clean_url(url) is None:
-        logger.warning("OBSERV source.download_blocked ssrf=1 url=%s", str(url)[:120])
-        return {"status": "error", "url": url, "reason": "ssrf-blocked (scheme/host)"}
-    host = (urlparse(url).hostname or "").lower()
-    vetted = resolved_host_is_safe(host)
-    if vetted is None:
-        logger.warning("OBSERV source.download_blocked ssrf=1 resolve=1 host=%s", host)
-        return {
-            "status": "error",
-            "url": url,
-            "reason": "ssrf-blocked (resolves non-public)",
-        }
+    vet = vet_url_for_fetch(url, scope="source.download")
+    if vet is None:
+        return {"status": "error", "url": url, "reason": "ssrf-blocked"}
+    host, vetted = vet.host, vet.vetted
     _PACER.wait(host)  # courteous per-domain spacing
     # PIN the connection to a vetted IP (keeps Host + TLS SNI = host, redirects refused) so a
     # DNS rebind between the resolved_host_is_safe check and connect cannot reach an internal

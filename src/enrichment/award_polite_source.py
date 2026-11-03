@@ -106,26 +106,16 @@ class PoliteSource:
         self.last_error: Optional[str] = None  # URL-tagged last fetch error, if any
 
     def _ssrf_ok(self, url: str):
-        """SSRF-validate an untrusted source url (clean_url + resolved_host_is_safe). Sets
-        self.last_error + logs OBSERV on a block. Returns the VETTED IPs (for connection pinning)
-        if safe, else None."""
-        from src.utils.url_hygiene import clean_url, resolved_host_is_safe
+        """SSRF-validate an untrusted source url via the shared url_hygiene.vet_url_for_fetch
+        chokepoint. Sets self.last_error on a block. Returns the VETTED IPs (for connection
+        pinning) if safe, else None."""
+        from src.utils.url_hygiene import vet_url_for_fetch
 
-        if clean_url(url) is None:
-            self.last_error = f"ssrf-blocked (scheme/host) [url={url}]"
-            logger.warning("OBSERV award.source_blocked ssrf=1 url=%s", str(url)[:120])
+        vet = vet_url_for_fetch(url, scope="award")
+        if vet is None:
+            self.last_error = f"ssrf-blocked [url={url}]"
             return None
-        resolve_host = (urlparse(url).hostname or "").lower()
-        vetted = resolved_host_is_safe(resolve_host)
-        if vetted is None:
-            self.last_error = (
-                f"ssrf-blocked (resolves non-public) [host={resolve_host}]"
-            )
-            logger.warning(
-                "OBSERV award.source_blocked ssrf=1 resolve=1 host=%s", resolve_host
-            )
-            return None
-        return vetted
+        return vet.vetted
 
     def _pinned_fetch(self, url, resolve_host, vetted, extra_headers):
         """Pinned GET to a vetted IP (closes DNS-rebind TOCTOU). _pinned_get records its own
