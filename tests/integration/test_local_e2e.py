@@ -58,11 +58,11 @@ def canned_grok_responses():
         "events": {
             "Chapter": "The Battle of the Bulge",
             "Event": {
-                "EventID": "01TESTEVNT000000000000001",
+                "EventID": "01HTEST0000000000000000EVT",
                 "Event_Name": "Battle of the Bulge",
                 "Sub-events": [
                     {
-                        "Sub-eventID": "01TESTSUB0000000000000001",
+                        "Sub-eventID": "01HTEST0000000000000000SBE",
                         "Sub-event_summary": "German forces launch surprise attack through Ardennes on 16 December 1944",
                         "Sub-event_fulltext": {
                             "1": "On 16 December 1944, German forces launched a surprise attack through the Ardennes forest."
@@ -77,7 +77,7 @@ def canned_grok_responses():
         "people": {
             "People": [
                 {
-                    "PersonID": "01TESTPPL0000000000000001",
+                    "PersonID": "01HTEST0000000000000000PER",
                     "name": "Courtney Hodges",
                     "source_language": "English",
                     "aliases": [],
@@ -87,10 +87,10 @@ def canned_grok_responses():
                     },
                     "event_mentions": [
                         {
-                            "MentionID": "01TESTMNT0000000000000001",
+                            "MentionID": "01HTEST0000000000000000MNT",
                             "Event_Name": "Battle of the Bulge",
-                            "EventID": "01TESTEVNT000000000000001",
-                            "Sub_eventID": "01TESTSUB0000000000000001",
+                            "EventID": "01HTEST0000000000000000EVT",
+                            "Sub_eventID": "01HTEST0000000000000000SBE",
                             "position_at_event": "Commanding General, US First Army",
                             "book": "TestBook",
                             "author": "Test Author",
@@ -101,12 +101,12 @@ def canned_grok_responses():
         },
         "places": {
             "Event_Name": "Battle of the Bulge",
-            "EventID": "01TESTEVNT000000000000001",
+            "EventID": "01HTEST0000000000000000EVT",
             "Sub_event_Name": "German attack",
-            "Sub_eventID": "01TESTSUB0000000000000001",
+            "Sub_eventID": "01HTEST0000000000000000SBE",
             "Place_Mentions": [
                 {
-                    "PlaceMentionID": "01TESTPLC0000000000000001",
+                    "PlaceMentionID": "01HTEST0000000000000000PGC",
                     "place_name": "Bastogne",
                     "latitude": 50.0,
                     "longitude": 5.72,
@@ -117,12 +117,12 @@ def canned_grok_responses():
         },
         "dates": {
             "Event_Name": "Battle of the Bulge",
-            "EventID": "01TESTEVNT000000000000001",
+            "EventID": "01HTEST0000000000000000EVT",
             "Sub_event_Name": "German attack",
-            "Sub_eventID": "01TESTSUB0000000000000001",
+            "Sub_eventID": "01HTEST0000000000000000SBE",
             "Date_Mentions": [
                 {
-                    "DateMentionID": "01TESTDAT0000000000000001",
+                    "DateMentionID": "01HTEST0000000000000000DAT",
                     "date_start": "1944-12-16",
                     "date_end": None,
                     "date_precision": "exact",
