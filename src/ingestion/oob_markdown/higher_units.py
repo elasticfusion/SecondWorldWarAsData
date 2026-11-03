@@ -28,6 +28,7 @@ from src.ingestion.oob_markdown._common import (
     apply_division_flag,
     clean_cell,
     iter_section_tables,
+    join_cells_verbatim,
 )
 from src.ingestion.oob_markdown.models import (
     HigherUnitParseResult,
@@ -99,7 +100,7 @@ def _row_from_cells(
         needs_review=needs_review,
         notes=notes,
         source_file=source_file,
-        raw_text=" | ".join(cells),
+        raw_text=join_cells_verbatim(cells),
         division_source=division_source,
     )
 
