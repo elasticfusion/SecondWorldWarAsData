@@ -33,6 +33,25 @@ def test_bib_verify_url_rejects_host_resolving_private(monkeypatch):
         g.assert_not_called()
 
 
+def test_bib_verify_url_fails_CLOSED_on_verify_error(monkeypatch):
+    # A verification ERROR (fetch ok, but Grok/parse raises) must REJECT, not accept. Accepting
+    # on error would stamp an UNVERIFIED URL as a confirmed citation match (provenance hazard).
+    # On origin/main the except handler returned True (fail-open); the fix returns False.
+    from src.enrichment import bibliography_resolver as br
+
+    monkeypatch.setattr("src.utils.url_hygiene.clean_url", lambda u: u)
+    monkeypatch.setattr(
+        "src.utils.url_hygiene.fetch_text_safe",
+        lambda url, timeout=10: ("<html>a real page</html>", 200),
+    )
+    grok = mock.Mock()
+    grok.chat_completion.side_effect = RuntimeError("grok down")
+    assert (
+        br._verify_url_content("https://good.example.org/doc", "citation", grok)
+        is False
+    )
+
+
 # --- equipment._download_media (image) ----------------------------------------------------
 def test_equipment_download_media_blocks_loopback():
     from src.extraction import equipment

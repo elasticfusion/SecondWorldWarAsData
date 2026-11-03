@@ -397,14 +397,34 @@ def _find_content_bytes(fetch_event: Dict[str, Any]) -> bytes:
     HTML stub (the source URL + metadata) so Phase 1 can ingest it like any uploaded source.
     """
     import html as _html
-    from pathlib import Path as _Path
 
+    _MAX_CONTENT_BYTES = (
+        25 * 1024 * 1024
+    )  # cap a quarantined-file read (don't OOM the Lambda)
     qp = fetch_event.get("quarantine_path") or fetch_event.get("retrieved_path") or ""
     try:
-        if qp and _Path(qp).is_file():
-            return _Path(qp).read_bytes()
-    except Exception:  # noqa: BLE001
-        pass
+        if qp:
+            p = Path(qp)
+            if p.is_file():
+                size = p.stat().st_size
+                if size > _MAX_CONTENT_BYTES:
+                    logger.warning(
+                        "OBSERV fetch_review.content_oversized path=%s size=%d cap=%d "
+                        "status=warn (falling back to provenance stub)",
+                        p.name,
+                        size,
+                        _MAX_CONTENT_BYTES,
+                    )
+                else:
+                    with p.open("rb") as fh:
+                        return fh.read(_MAX_CONTENT_BYTES)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - unreadable quarantine file -> fall back to the stub
+        logger.warning(
+            "OBSERV fetch_review.content_read_failed err=%s status=warn",
+            type(e).__name__,
+        )
     url = _html.escape(fetch_event.get("endpoint", ""))
     provider = _html.escape(str(fetch_event.get("provider", "")))
     summary = _html.escape(str(fetch_event.get("result_summary", "")))
@@ -548,7 +568,6 @@ def submit_affirmed_batch() -> Dict[str, Any]:
 
     Returns ``{"submitted": N, "source_ids": [...], "skipped": M}``.
     """
-    from src.utils import fetch_provenance as fp
 
     affirmed = list_affirmed()
     result: Dict[str, Any] = {

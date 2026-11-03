@@ -18,7 +18,6 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from src.utils.http_pool import get_session
 from src.utils.file_lock import write_json_with_lock
 
 # Circuit breaker: skip all OpenSERP searches after N consecutive failures
@@ -565,7 +564,7 @@ def _verify_results_batch(
         # No verifier available -> cannot confirm any -> reject all (fail-closed).
         return verdicts
 
-    from src.utils.search_cache import cache_result, get_cached
+    from src.utils.search_cache import cache_result
 
     # Pre-compute per-result cache keys (EXACTLY as _verify_result) and consult the cache so
     # already-decided results stay free (no Grok call) on repeat runs.
@@ -2030,7 +2029,6 @@ def enrich_one_place(
     for the batch driver (above) and the SQS worker; it does NOT read/write files or set
     openserp_searched. entities_enriched/entities_searched + persistence stay in the driver.
     """
-    from src.utils.search_query_loader import render_search_queries
 
     variants = place_name_variants(data)
     if not variants:

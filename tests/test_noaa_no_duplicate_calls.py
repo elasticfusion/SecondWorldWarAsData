@@ -56,10 +56,8 @@ def _write_weather(dirpath, wid, place, lat, lon):
 
 
 def test_noaa_called_once_per_station_date(tmp_path, monkeypatch):
-    # Isolate the disk cache so prior runs don't poison the count
-    monkeypatch.setattr(
-        nw, "get_session", lambda: (_ for _ in ()).throw(AssertionError("no real HTTP"))
-    )
+    # Isolate the disk cache so prior runs don't poison the count. The real "no real HTTP" guard is
+    # the nw._get patch below (get_session is not used by noaa_weather).
     import src.utils.search_cache as sc
 
     monkeypatch.setattr(sc, "_cache_backend", sc._LocalBackend(tmp_path / "cache"))

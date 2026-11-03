@@ -11,11 +11,7 @@ import logging
 import time
 import threading
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-
-import requests
-
-from src.utils.http_pool import get_session
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
