@@ -185,3 +185,35 @@ def test_exact_merge_is_idempotent(tmp_path: Path) -> None:
     assert sum(1 for r in ranks if r["rank"] == "Major General") == 1
     units = data["biographical_profile"]["units_served"]
     assert sum(1 for u in units if u["unit"] == "1st Infantry Division") == 1
+
+
+# --- M4: find-or-create is conflict-safe (no duplicate under concurrency) ---
+
+
+def test_create_new_no_duplicate_across_fresh_snapshots(tmp_path: Path) -> None:
+    """M4: two emitters that each snapshot an empty index and both create the SAME new
+    person converge to ONE file + ONE index entry (the second finds the first's locked
+    entry and merges), instead of each minting a duplicate."""
+    people = tmp_path / "people"
+    people.mkdir()
+    name = "John Q Patton"
+
+    # Two independent emitters (each loaded its own index snapshot at __init__ — the
+    # concurrent / other-phase scenario).
+    e1 = PeopleEmitter(people)
+    e2 = PeopleEmitter(people)
+    link = _link(name, MATCH_NONE)
+
+    r1 = e1._create_new(link, None)
+    r2 = e2._create_new(
+        link, None
+    )  # e2's stale snapshot would duplicate without the lock
+
+    files = _people_files(people)
+    assert len(files) == 1, f"duplicate person files created: {files}"
+    index = json.loads((people / "index.json").read_text())
+    real = {k: v for k, v in index.items() if not k.startswith("_")}
+    assert len(real) == 1
+    # First creates, second converges (merge), never a second file.
+    assert r1 == "created"
+    assert r2 == "merged"

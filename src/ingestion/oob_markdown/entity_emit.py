@@ -33,7 +33,7 @@ Design choices (see docs/current/dataquality/INGESTION_FRONT_END.md):
   ``write_json_with_lock`` (metadata stamp + schema validation + DynamoDB
   dual-write) and merged via ``src.extraction.people._merge_person`` — no
   parallel logic. The ``output/people/index.json`` name->filename map is kept in
-  sync via ``_update_index``.
+  kept in sync inside the index lock (locked find-or-create; see _create_new).
 """
 
 from __future__ import annotations
@@ -49,7 +49,6 @@ import ulid
 from src.extraction.people import (
     _merge_person,
     _name_to_filename,
-    _update_index,
 )
 from src.ingestion.oob_markdown.crosswalk import (
     MATCH_EXACT,
@@ -207,14 +206,45 @@ class PeopleEmitter:  # pylint: disable=too-few-public-methods
         return EMIT_MERGED
 
     def _create_new(self, link: Any, note: Optional[str]) -> str:
-        """Mint and persist a new person; keep the index in sync."""
+        """Find-or-create a person, conflict-safe WITHOUT a queue.
+
+        The find-vs-create decision is serialised on the shared ``index.json`` under the
+        cross-process ``locked_json`` lock: the authoritative index is re-read by normalized
+        name INSIDE the lock, so a concurrent/other-phase writer that created this same person
+        since our ``__init__`` snapshot is SEEN and merged into (not duplicated). A genuinely new
+        person is written and registered in the index under the SAME lock before release. This
+        mirrors the shared locked find-or-create (places/people_groups) — same code, no queue.
+        """
+        from src.utils.file_lock import locked_json
+
         person = _new_person_dict(link, note)
-        filename = _name_to_filename(person["name"], person["PersonID"])
-        person_file = self.people_dir / filename
-        write_json_with_lock(person_file, person)
-        _update_index(self.index_file, person["name"], filename)
-        self._index[normalize_name(person["name"])] = filename
-        return EMIT_CREATED
+        norm = normalize_name(person["name"])
+        with locked_json(self.index_file) as (disk_index, save):
+            existing_filename = disk_index.get(norm)
+            if existing_filename and (self.people_dir / existing_filename).exists():
+                # A concurrent writer already minted this name — merge into it, no duplicate.
+                self._index[norm] = existing_filename
+                self._merge_oob_into(self.people_dir / existing_filename, link)
+                return EMIT_MERGED
+
+            filename = _name_to_filename(person["name"], person["PersonID"])
+            if not write_json_with_lock(self.people_dir / filename, person):
+                return EMIT_SKIPPED  # write-guard blocked -> do NOT index an unwritten file
+            disk_index[norm] = filename
+            save(disk_index)
+            self._index[norm] = filename
+            return EMIT_CREATED
+
+    def _merge_oob_into(self, person_file: Path, link: Any) -> None:
+        """Merge an OOB bio into an existing person file (the concurrent-create convergence)."""
+        try:
+            existing = json.loads(person_file.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return
+        merged = _merge_person(
+            existing, {"biographical_profile": _oob_biographical_profile(link)}
+        )
+        write_json_with_lock(person_file, merged)
 
     def _find_file_for_person(
         self, person_id: str, matched_name: Optional[str]
