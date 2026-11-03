@@ -189,14 +189,9 @@ def _build_place_image_entry(
     url: str, caption: str, book: str, source_section_id: Optional[str]
 ) -> Dict[str, Any]:
     """Construct a schema-valid place image entry with durable ULID attribution."""
-    entry: Dict[str, Any] = {
-        "url": url,
-        "title": caption[:300],
-        "source": f"document:{book}" if book else "document",
-    }
-    if source_section_id:
-        entry["SourceSectionID"] = source_section_id  # durable ULID attribution
-    return entry
+    from src.extraction._entity_common import build_image_entry
+
+    return build_image_entry(url, caption, book, source_section_id)
 
 
 def _read_place_id(place_file: Path) -> Optional[str]:

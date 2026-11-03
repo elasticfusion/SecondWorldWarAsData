@@ -51,3 +51,22 @@ def load_json_index(index_file: Path) -> dict:
         with open(index_file, "r", encoding="utf-8") as f:
             return json.load(f)
     return {}
+
+
+def build_image_entry(
+    url: str, caption: str, book: str, source_section_id: Optional[str]
+) -> dict:
+    """Construct a schema-valid entity image entry with durable ULID attribution.
+
+    Shared by the image->person and image->place linkers (byte-identical): {url, title (caption
+    capped 300), source "document:<book>" or "document"} plus an optional SourceSectionID for
+    durable provenance attribution.
+    """
+    entry: dict = {
+        "url": url,
+        "title": caption[:300],
+        "source": f"document:{book}" if book else "document",
+    }
+    if source_section_id:
+        entry["SourceSectionID"] = source_section_id  # durable ULID attribution
+    return entry
