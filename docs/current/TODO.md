@@ -1671,3 +1671,11 @@ Two non-blocking gaps noted during PR #696 review, out of its scope (swallow sit
   OBSERV referential.subevent_repair_write_failed status=warn.
 - U3: _alert send failure logs a plain warning, not a canonical OBSERV — a failed operator alert on
   a dangling corpus is a silent escalation gap. Emit OBSERV referential.alert_send_failed status=warn.
+
+## LOW: supplemental_info_pipeline chain is dead/unwired (PR #704 finding)
+extract_from_supplemental_info / process_supplemental_information / _route_entity_extraction /
+_create_pseudo_event have ZERO production callers (only each other + 2 tests). The temp *-event.json
+it materializes writes NO -parsed.json sibling, so the PR-704 people_groups fail-loud WOULD raise on
+that path IF it ran — but it doesn't (dead code). Also it never carried book/author/series (same
+Unknown-provenance gap, pre-existing). Decide: wire it (thread book metadata + write the sibling) or
+retire it. Not a live regression (dead path).
