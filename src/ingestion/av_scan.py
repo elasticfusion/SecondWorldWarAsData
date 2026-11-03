@@ -327,15 +327,27 @@ def _gate_result(r, outcome, s3_client, bucket: str, region: str) -> None:
             r.key,
             r.detail or "unknown",
         )
+    _quarantine_and_freeze(r, outcome, s3_client, bucket, region)
+
+
+def _quarantine_and_freeze(r, outcome, s3_client, bucket: str, region: str) -> None:
+    """Quarantine an INFECTED/ERROR result (fail-closed) and, for INFECTED, freeze the submitter.
+
+    Submitter identity is read BEFORE _quarantine copy-DELETES the source key — a head_object on
+    the deleted key would always return "" and permanently blind freeze_submitter."""
     outcome.quarantined_keys.append(r.key)
     reason = (
         f"av-infected: {r.signature or r.detail}"
         if r.verdict is Verdict.INFECTED
         else f"av-unscannable (fail-closed): {r.detail}"
     )
+    identity = (
+        _submitter_identity(s3_client, bucket, r.key)
+        if r.verdict is Verdict.INFECTED
+        else ""
+    )
     _quarantine(s3_client, bucket, r.key, reason=reason, region=region)
     if r.verdict is Verdict.INFECTED:
-        identity = _submitter_identity(s3_client, bucket, r.key)
         freeze_submitter(
             s3_client,
             bucket,
@@ -427,6 +439,9 @@ def _disposition_staged(r, outcome, s3_client, bucket: str, region: str) -> None
         return
     if r.verdict is Verdict.INFECTED:
         dest = QUARANTINE_PREFIX + prod
+        # Capture submitter identity BEFORE _move_key copy-DELETES the source key (a head_object on
+        # the deleted key would always return "" and permanently blind freeze_submitter).
+        identity = _submitter_identity(s3_client, bucket, r.key)
         _move_key(s3_client, bucket, r.key, dest)
         outcome.quarantined_keys.append(dest)
         logger.error(
@@ -447,7 +462,7 @@ def _disposition_staged(r, outcome, s3_client, bucket: str, region: str) -> None
         freeze_submitter(
             s3_client,
             bucket,
-            _submitter_identity(s3_client, bucket, r.key),
+            identity,
             key=r.key,
             signature=r.signature or "unknown",
             region=region,
