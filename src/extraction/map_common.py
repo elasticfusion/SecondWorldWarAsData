@@ -66,6 +66,8 @@ def base_map_record(
         "PeopleGroupID": people_group_id,
         "PeopleGroupMentionID": people_group_mention_id,
         "PeopleGroup_Name": people_group_name,
+        "is_map": None,
+        "map_vision_checked_at": None,
         "extracted_date": datetime.utcnow().isoformat() + "Z",
     }
 
@@ -362,4 +364,126 @@ def link_map_entities(
             "OBSERV maps.linked map_id=%s dims=%s status=ok",
             record.get("MapID"),
             ",".join(linked),
+        )
+
+
+# --- Tiered map classification + idempotent Grok-vision backstop (5c-ii) --------------------------
+# Tier 1 (deterministic MAP): a map-word in the name/label OR a /maps/ URL path -> is_map=True.
+# Tier 2 (deterministic NOT a map): a clear photo/document/chart signal -> is_map=False.
+# Tier 3 (AMBIGUOUS): neither -> fall back to the Grok-vision "is this an image of a map?" classifier
+#   (reuses prompts/map_vision STEP-1). The vision call is IDEMPOTENT: it runs ONLY when the record
+#   has no map_vision_checked_at; a re-run never re-submits an already-classified image (the
+#   don't-resubmit-maps-to-Grok TODO).
+_MAP_WORD = ("map", "sketch map", "situation map", "karte", "carte", "plan ", "overlay")
+_NOT_MAP_WORD = (
+    "photo",
+    "photograph",
+    "portrait",
+    "troops",
+    "soldiers",
+    "men of",
+    "chart",
+    "diagram",
+    "table",
+    "graph",
+    "insignia",
+    "flag",
+    "medal",
+)
+
+
+def classify_image_tier(name: str, url: str) -> str:
+    """Deterministic tier: 'map' (tier 1), 'not_map' (tier 2), or 'ambiguous' (tier 3 -> vision)."""
+    n = (name or "").lower()
+    u = (url or "").lower()
+    if "/maps/" in u or any(w in n for w in _MAP_WORD):
+        return "map"
+    if any(w in n for w in _NOT_MAP_WORD):
+        return "not_map"
+    return "ambiguous"
+
+
+def maybe_vision_classify_map(
+    record: Dict[str, Any], image_bytes_loader, grok_client
+) -> None:
+    """Set record['is_map'] via the tier model, using the Grok-vision backstop ONLY for AMBIGUOUS
+    images and ONLY once (idempotent). Mutates record in place. image_bytes_loader() -> bytes|None
+    is called lazily (only for the tier-3 vision path). Fail-safe; never raises into the phase.
+    """
+    import datetime as _dt
+
+    if record.get("map_vision_checked_at"):
+        return  # already classified -> never re-submit (don't-resubmit guarantee)
+    tier = classify_image_tier(
+        str(
+            record.get("common_name")
+            or record.get("map_title")
+            or record.get("figure_number")
+            or ""
+        ),
+        str(record.get("source_url") or ""),
+    )
+    if tier == "map":
+        record["is_map"] = True
+        logger.info(
+            "OBSERV maps.tier map_id=%s tier=1 is_map=true status=ok",
+            record.get("MapID"),
+        )
+        return
+    if tier == "not_map":
+        record["is_map"] = False
+        logger.info(
+            "OBSERV maps.tier map_id=%s tier=2 is_map=false status=ok",
+            record.get("MapID"),
+        )
+        return
+    # Tier 3 — ambiguous: the Grok-vision backstop (one call, then stamped so it never repeats).
+    _vision_classify_ambiguous(record, image_bytes_loader, grok_client)
+    record["map_vision_checked_at"] = _dt.datetime.utcnow().isoformat() + "Z"
+
+
+def _vision_classify_ambiguous(
+    record: Dict[str, Any], image_bytes_loader, grok_client
+) -> None:
+    """Tier-3 Grok-vision 'is this an image of a map?' (reuses verify_map_with_vision's STEP-1).
+    Fail-safe: a download/vision failure leaves is_map unset (unknown, honest) + loud OBSERV.
+    """
+    try:
+        body = image_bytes_loader()
+    except Exception as e:  # noqa: BLE001
+        body = None
+        logger.warning(
+            "OBSERV maps.vision_load_failed map_id=%s reason=%s status=warn",
+            record.get("MapID"),
+            type(e).__name__,
+        )
+    if not body:
+        logger.warning(
+            "OBSERV maps.vision_skipped map_id=%s reason=no_image status=warn",
+            record.get("MapID"),
+        )
+        return
+    try:
+        from src.extraction.grok_search_maps import verify_map_with_vision
+
+        is_map, reason = verify_map_with_vision(
+            body,
+            str(record.get("place_name") or ""),
+            record.get("date"),
+            str(record.get("PeopleGroup_Name") or record.get("Event_Name") or ""),
+            str(record.get("map_title") or record.get("common_name") or ""),
+            grok_client,
+        )
+        record["is_map"] = bool(is_map)
+        logger.info(
+            "OBSERV maps.tier map_id=%s tier=3 is_map=%s reason=%s status=ok",
+            record.get("MapID"),
+            bool(is_map),
+            (reason or "")[:60],
+        )
+    except Exception as e:  # noqa: BLE001 - vision failure never blocks the phase
+        logger.warning(
+            "OBSERV maps.vision_failed map_id=%s reason=%s status=warn",
+            record.get("MapID"),
+            type(e).__name__,
         )
