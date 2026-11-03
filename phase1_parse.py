@@ -77,7 +77,7 @@ def _is_footnotes_chapter(doc):
     return title_match or text_match
 
 
-def _save_footnotes_chapter(doc, book_output, logger):
+def _save_footnotes_chapter(doc, section_suffix, book_output, logger):
     """Extract and save footnote/endnote definitions. Returns True if saved."""
     notes_content = []
     for para in doc.paragraphs:
@@ -95,15 +95,29 @@ def _save_footnotes_chapter(doc, book_output, logger):
         + (doc.paragraphs[0].text.lower() if doc.paragraphs else "")
     )
     file_suffix = "endnotes" if is_endnotes else "footnotes"
-    notes_file = book_output / f"chapter{doc.chapter_number}-{file_suffix}.json"
+    # Include the section suffix (like every other writer) so multiple footnotes/notes
+    # subsections of one chapter (6a/6b/...) do NOT collide onto one path and silently
+    # overwrite each other.
+    notes_file = (
+        book_output / f"chapter{doc.chapter_number}{section_suffix}-{file_suffix}.json"
+    )
     notes_data = {
         "book": doc.book,
         "chapter_number": doc.chapter_number,
         "chapter_title": doc.chapter_title,
         file_suffix: notes_content,
     }
-    with open(notes_file, "w", encoding="utf-8") as f:
-        json.dump(notes_data, f, indent=2, ensure_ascii=False)
+    from src.utils.file_lock import write_json_with_lock
+
+    if not write_json_with_lock(notes_file, notes_data):
+        # Guard/validation block -> LOUD, never a silent raw write (anti-swallow + raw-write gate).
+        logger.error(
+            "OBSERV phase1.footnotes_dropped book=%s chapter=%s file=%s status=error",
+            doc.book,
+            doc.chapter_number,
+            notes_file.name,
+        )
+        return False
     logger.info(
         f"  Saved: {notes_file.name} ({len(notes_content)} {file_suffix} with content)"
     )
@@ -200,8 +214,16 @@ def _save_endnote_refs(doc, section_suffix, book_output, logger):
             {"number": f.number, "url": f.url, "text": f.text} for f in doc.footnotes
         ],
     }
-    with open(endnotes_file, "w", encoding="utf-8") as f:
-        json.dump(endnotes_data, f, indent=2, ensure_ascii=False)
+    from src.utils.file_lock import write_json_with_lock
+
+    if not write_json_with_lock(endnotes_file, endnotes_data):
+        logger.error(
+            "OBSERV phase1.endnotes_dropped book=%s chapter=%s file=%s status=error",
+            doc.book,
+            doc.chapter_number,
+            endnotes_file.name,
+        )
+        return
     logger.info(f"  Saved: {endnotes_file.name} ({len(doc.footnotes)} endnotes)")
 
 
@@ -210,7 +232,7 @@ def _process_document(doc, book_output, logger):
     section_suffix = doc.section_id if doc.section_id else "full"
 
     if _is_footnotes_chapter(doc):
-        _save_footnotes_chapter(doc, book_output, logger)
+        _save_footnotes_chapter(doc, section_suffix, book_output, logger)
         return
 
     if _save_split_chapter(doc, book_output, logger):
