@@ -248,6 +248,10 @@ def _process_document(doc, book_output, logger):
         return
 
     if _save_split_chapter(doc, book_output, logger):
+        # A split (>400k) chapter still has footnote URLs -> its endnote-refs artifact must be
+        # written too (M3: the early return previously skipped it, silently losing endnotes for
+        # every large chapter).
+        _save_endnote_refs(doc, section_suffix, book_output, logger)
         return
 
     output_file = (
@@ -255,11 +259,15 @@ def _process_document(doc, book_output, logger):
     )
     output_data = _doc_to_dict(doc)
 
-    # Skip if source content hasn't changed (prevents S3 notification cascade)
+    # Skip if the parsed content hasn't changed (prevents an S3 notification cascade). Hash ALL
+    # provenance-bearing fields (the serialized dict), NOT just paragraph text — otherwise a
+    # re-parse that newly extracts a map/image/footnote/page-marker (unchanged prose) would be
+    # skipped as "unchanged" and the new provenance never written (M4).
     import hashlib
 
     source_hash = hashlib.md5(
-        "".join(p.text for p in doc.paragraphs).encode(), usedforsecurity=False
+        json.dumps(output_data, sort_keys=True, ensure_ascii=False).encode(),
+        usedforsecurity=False,
     ).hexdigest()
     output_data["_source_hash"] = source_hash
     if output_file.exists():
@@ -269,7 +277,14 @@ def _process_document(doc, book_output, logger):
                 logger.info(f"  Skipped: {output_file.name} (unchanged)")
                 return
         except Exception as e:
-            logger.warning("Parse step failed: %s", e)
+            # NOT a parse failure — the existing file couldn't be read for the unchanged-skip
+            # check; we fall through and re-write (safe). Surface it canonically (was a
+            # mislabeled "Parse step failed" warning).
+            logger.warning(
+                "OBSERV phase1.hash_compare_read_failed file=%s reason=%s status=warn",
+                output_file.name,
+                type(e).__name__,
+            )
 
     from src.utils.file_lock import write_parsed_with_guard
 
