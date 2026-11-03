@@ -1820,6 +1820,16 @@ def _phase3_durable_referential_fix() -> None:
     except Exception as e:  # noqa: BLE001 - enforcement must never crash teardown
         logger.warning("post-sync referential enforcement skipped: %s", e)
     try:
+        # Provenance-completeness enforcement MUST also run on the authoritative post-sync corpus.
+        # main() runs it only on the local/no-S3 branch (the in-main run would be clobbered by the
+        # trailing sync), so without this the provenance mandate's end-of-phase check never ran in
+        # production. Same fail-safe contract as the referential enforce above.
+        from src.utils.provenance_integrity import run_for_phase as _prov_enforce
+
+        _prov_enforce(WORKDIR / "output", phase="Phase 3 (post-sync)")
+    except Exception as e:  # noqa: BLE001 - enforcement must never crash teardown
+        logger.warning("post-sync provenance enforcement skipped: %s", e)
+    try:
         # validate_phase3 audits a LOCAL tree. Two staleness hazards to close so it reflects the
         # AUTHORITATIVE post-repair S3 state (else it false-FAILs):
         #   1. output/content (events key-space) is NOT in the Phase-3 input download -> pull it

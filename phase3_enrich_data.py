@@ -154,8 +154,9 @@ def _enrich_places_and_geocode(
             places_dir, grok_client, max_places=args.max_items, max_workers=max_workers
         ),
     )
-    # Link parent_place_id after enrichment populates hierarchy
-    link_parent_place_ids(places_dir)
+    # Link parent_place_id after enrichment populates hierarchy. Wrapped in run_step (like the
+    # batch-rerun path) so a raise here can't abort the rest of Phase 3 — it is surfaced + counted.
+    run_step("link_parent_places", lambda: link_parent_place_ids(places_dir) or 0)
 
     logger.info("[phase3 step 3/6] Geocoding places (coordinates)")
     _update_lock_status("step 3/6: geocoding places")
@@ -245,17 +246,27 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
     source-sections + optional external maps + metrics). Returns total enriched."""
     logger.info("[phase3 step 5/6] OpenSERP enrichment (people + equipment)")
     _update_lock_status("step 5/6: enriching openserp")
-    from src.enrichment.openserp_enrichment import (
-        enrich_equipment_with_openserp,
-        enrich_groups_with_openserp,
-        enrich_people_with_openserp,
-        enrich_places_with_openserp,
-        enrich_source_sections_with_openserp,
-        reset_metrics as _reset_openserp_metrics,
-        write_metrics as _write_openserp_metrics,
-    )
+    try:
+        from src.enrichment.openserp_enrichment import (
+            enrich_equipment_with_openserp,
+            enrich_groups_with_openserp,
+            enrich_people_with_openserp,
+            enrich_places_with_openserp,
+            enrich_source_sections_with_openserp,
+            reset_metrics as _reset_openserp_metrics,
+            write_metrics as _write_openserp_metrics,
+        )
 
-    _reset_openserp_metrics()
+        _reset_openserp_metrics()
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - a scaffolding failure must not abort the phase
+        logger.warning(
+            "OBSERV phase3.openserp_skipped reason=%s status=warn "
+            "(import/reset failed — OpenSERP enrichment group skipped)",
+            type(e).__name__,
+        )
+        return 0
     openserp_url = config.get("external_maps", {}).get(
         "openserp_url", "http://localhost:7001"
     )
@@ -358,7 +369,13 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
         lambda: _stamp_event_provenance(out),
     )
     # Durable OpenSERP effectiveness/health metrics -> output/metrics/openserp_metrics.json
-    _write_openserp_metrics(out)
+    try:
+        _write_openserp_metrics(out)
+    except Exception as e:  # noqa: BLE001 - metrics write must not abort the phase
+        logger.warning(
+            "OBSERV phase3.openserp_metrics_write_failed reason=%s status=warn",
+            type(e).__name__,
+        )
     return enriched
 
 
