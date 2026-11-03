@@ -31,7 +31,7 @@ from __future__ import annotations
 
 import logging
 import shutil
-import subprocess
+import subprocess  # nosec B404 - subprocess used list-form, no shell
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -108,7 +108,7 @@ def _run_pandoc(path: Path, from_format: str) -> str:
         str(path),
     ]
     try:
-        proc = subprocess.run(
+        proc = subprocess.run(  # nosec B603 - pandoc list-form argv + --sandbox, no untrusted interpolation
             cmd,
             capture_output=True,
             text=True,
@@ -246,7 +246,7 @@ def _run_pandoc_text(text: str, from_format: str) -> str:
         _PANDOC_WRAP,
     ]
     try:
-        proc = subprocess.run(
+        proc = subprocess.run(  # nosec B603 - pandoc list-form argv + --sandbox, no untrusted interpolation
             cmd,
             input=text,
             capture_output=True,
@@ -289,7 +289,9 @@ def _observe_convert_text(
             logger.info(base)
         else:
             logger.warning(base)
-    except Exception:  # noqa: BLE001 - observability never breaks conversion
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability never breaks conversion  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
 
 

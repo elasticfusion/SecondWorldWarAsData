@@ -55,7 +55,9 @@ def _observe_disposition_routed(
             logger.info(base)
         else:
             logger.warning(base)
-    except Exception:  # noqa: BLE001 - observability never breaks the phase
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability never breaks the phase  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
 
 
@@ -76,7 +78,9 @@ def _observe_manifest(
             _observe_disposition_routed(
                 source_id, target or "none", region.page_count, status=status
             )
-    except Exception:  # noqa: BLE001 - observability never breaks the phase
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability never breaks the phase  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
 
 

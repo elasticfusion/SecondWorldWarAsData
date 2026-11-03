@@ -570,5 +570,7 @@ def observe_rows_dropped(source_file: str, section: str, dropped: int) -> None:
             source_file,
             dropped,
         )
-    except Exception:  # noqa: BLE001 - observability must never break the parse
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability must never break the parse  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass

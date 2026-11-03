@@ -51,7 +51,9 @@ def _observe(logger, event: str, *, loud: bool = False, **fields) -> None:
         parts = " ".join(f"{k}={v}" for k, v in fields.items())
         line = f"OBSERV {event} {parts}".rstrip()
         (logger.warning if loud else logger.info)(line)
-    except Exception:  # noqa: BLE001 - observability must never break the phase
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability must never break the phase  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
 
 
@@ -572,7 +574,7 @@ def _parse_all_sources(
     loudly + counted, never swallowed) so one bad file cannot hide the rest.
     """
     totals = {"rows": 0, "review": 0, "merged": 0, "created": 0}
-    counts = {"converted": 0, "skipped": 0, "rejected": 0, "errors": 0}
+    counts = {"converted": 0, "skipped": 0, "errors": 0}
     coverage_report: List[dict] = []
     for index, md_path in enumerate(sources, start=1):
         delta, gaps = _parse_one_source(
@@ -636,7 +638,6 @@ def _emit_phase_summary(logger, files_in: int, counts: dict) -> None:
         files_in=files_in,
         converted=converted,
         skipped=counts["skipped"],
-        rejected=counts["rejected"],
         errors=errors,
         status="anomaly" if anomaly else "ok",
     )

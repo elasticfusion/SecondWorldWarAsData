@@ -416,6 +416,18 @@ def convert_manifest(
                 all_assets.extend(assets)
             else:
                 text = _text_markdown_for_pages(pdf_path, _pages_of(region))
+                if not text:
+                    # A TEXT/TABLE region that extracted NO markdown is a silent page-content
+                    # loss (pymupdf4llm found nothing on real text pages) — surface it loudly so
+                    # it is reviewable, not invisibly dropped (anti-swallow; provenance). image/map
+                    # regions legitimately carry no text and are excluded above.
+                    logger.warning(
+                        "OBSERV convert.region file=%s disposition=%s pages=%s chars=0 "
+                        "status=warn",
+                        pdf_path.name,
+                        region.disposition,
+                        _pages_of(region),
+                    )
             if text:
                 markdown_parts.append(text)
 

@@ -32,7 +32,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-import fitz
 
 from src.ingestion.disposition_classifier import classify_pdf, detect_scanned
 from src.ingestion.media_detection import build_source_metadata
@@ -75,7 +74,9 @@ def _observe_convert_pdf(
             logger.info(base)
         else:
             logger.warning(base)
-    except Exception:  # noqa: BLE001 - observability never breaks the PDF path
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability never breaks the PDF path  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
 
 

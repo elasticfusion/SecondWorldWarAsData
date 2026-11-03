@@ -327,7 +327,9 @@ def _observe_translation(lang: str, action: str, *, reason: str = "") -> None:
             logger.info(base)
         else:
             logger.warning(base)
-    except Exception:  # noqa: BLE001 - observability never breaks the phase
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability never breaks the phase  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
 
 
@@ -378,7 +380,9 @@ def normalize_markdown_to_english(
         model_name = None
         try:
             model_name = (config or {}).get("api", {}).get("grok", {}).get("model")
-        except Exception:  # noqa: BLE001
+        except (
+            Exception
+        ):  # noqa: BLE001  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
             pass
         if per_page:
             return _normalize_per_page(markdown, grok, model_name)

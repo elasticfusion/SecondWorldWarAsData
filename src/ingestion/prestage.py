@@ -84,7 +84,9 @@ def _bomb_reject(archive_name: str, member: str, detail: str) -> None:
             member,
             detail,
         )
-    except Exception:  # noqa: BLE001 - observability never breaks expansion
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability never breaks expansion  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
 
 
@@ -256,7 +258,9 @@ def _observe_expansion(archive: Path, extracted: List[Path]) -> None:
             )
         else:
             logger.info(base + " status=ok")
-    except Exception:  # noqa: BLE001 - observability never breaks expansion
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability never breaks expansion  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
 
 
@@ -369,5 +373,7 @@ def _observe_prestage_summary(summary: Dict[str, int]) -> None:
             logger.warning(line + " status=anomaly (unsupported files -> needs-review)")
         else:
             logger.info(line + " status=ok")
-    except Exception:  # noqa: BLE001 - observability never breaks prestage
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability never breaks prestage  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass

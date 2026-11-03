@@ -39,7 +39,9 @@ def _observe_mdcorrect(changed: bool, status: str, *, reason: str = "") -> None:
             logger.info(base)
         else:
             logger.warning(base)
-    except Exception:  # noqa: BLE001 - observability never breaks repair
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability never breaks repair  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
 
 
