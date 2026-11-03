@@ -588,3 +588,23 @@ def join_cells_verbatim(cells: List[str]) -> str:
     intentionally NOT routed here — their provenance semantics differ by design.
     """
     return " | ".join(cells)
+
+
+def parse_markdown_file(path, parse_fn, noun: str):
+    """Shared ``parse_<section>_file(path)`` skeleton: read the markdown file, delegate to the
+    section's ``parse_fn(markdown, source_file=path.name)`` core, log the canonical one-line summary,
+    and return the result. The per-section ``parse_fn`` (region walk / table-vs-text form / dedup)
+    stays distinct; only this read+log+return wrapper is shared across the 7 OOB parsers.
+
+    ``noun`` is the singular row label for the log line (e.g. "attachment", "campaign"). The result
+    must expose ``.rows`` (list) and ``.review_count`` (int) — the common OOB ParseResult shape.
+    """
+    result = parse_fn(path.read_text(encoding="utf-8"), source_file=path.name)
+    logger.info(
+        "Parsed %s: %d %s row(s), %d flagged for review",
+        path.name,
+        len(result.rows),
+        noun,
+        result.review_count,
+    )
+    return result

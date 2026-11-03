@@ -29,6 +29,7 @@ from src.ingestion.oob_markdown._common import (
     clean_cell,
     iter_section_tables,
     join_cells_verbatim,
+    parse_markdown_file,
 )
 from src.ingestion.oob_markdown.models import (
     HigherUnitParseResult,
@@ -135,11 +136,4 @@ def parse_higher_units(markdown: str, source_file: str = "") -> HigherUnitParseR
 
 def parse_higher_units_file(path: Path) -> HigherUnitParseResult:
     """Parse ASSIGNMENT AND ATTACHMENT rows from a markdown file."""
-    result = parse_higher_units(path.read_text(encoding="utf-8"), source_file=path.name)
-    logger.info(
-        "Parsed %s: %d higher-unit row(s), %d flagged for review",
-        path.name,
-        len(result.rows),
-        result.review_count,
-    )
-    return result
+    return parse_markdown_file(path, parse_higher_units, "higher-unit")

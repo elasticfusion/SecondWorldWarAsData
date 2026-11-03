@@ -48,6 +48,7 @@ from src.ingestion.oob_markdown._common import (
     apply_division_flag,
     clean_cell,
     iter_section_elements,
+    parse_markdown_file,
 )
 from src.ingestion.oob_markdown.models import (
     AttachmentParseResult,
@@ -315,11 +316,4 @@ def parse_attachments(markdown: str, source_file: str = "") -> AttachmentParseRe
 
 def parse_attachments_file(path: Path) -> AttachmentParseResult:
     """Parse ATTACHMENTS/DETACHMENTS rows from a markdown file."""
-    result = parse_attachments(path.read_text(encoding="utf-8"), source_file=path.name)
-    logger.info(
-        "Parsed %s: %d attachment row(s), %d flagged for review",
-        path.name,
-        len(result.rows),
-        result.review_count,
-    )
-    return result
+    return parse_markdown_file(path, parse_attachments, "attachment")

@@ -27,6 +27,7 @@ from src.ingestion.oob_markdown._common import (
     clean_cell,
     iter_section_tables,
     join_cells_verbatim,
+    parse_markdown_file,
 )
 from src.ingestion.oob_markdown.models import (
     CommandPostParseResult,
@@ -160,13 +161,4 @@ def parse_command_posts(markdown: str, source_file: str = "") -> CommandPostPars
 
 def parse_command_posts_file(path: Path) -> CommandPostParseResult:
     """Parse COMMAND POSTS rows from a markdown file."""
-    result = parse_command_posts(
-        path.read_text(encoding="utf-8"), source_file=path.name
-    )
-    logger.info(
-        "Parsed %s: %d command-post row(s), %d flagged for review",
-        path.name,
-        len(result.rows),
-        result.review_count,
-    )
-    return result
+    return parse_markdown_file(path, parse_command_posts, "command-post")

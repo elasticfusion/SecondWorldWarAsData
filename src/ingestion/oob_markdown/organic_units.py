@@ -26,6 +26,7 @@ from src.ingestion.oob_markdown._common import (
     clean_cell,
     iter_section_tables,
     iter_section_text_blocks,
+    parse_markdown_file,
 )
 from src.ingestion.oob_markdown.models import (
     OrganicUnitParseResult,
@@ -146,13 +147,4 @@ def parse_organic_units(markdown: str, source_file: str = "") -> OrganicUnitPars
 
 def parse_organic_units_file(path: Path) -> OrganicUnitParseResult:
     """Parse ORGANIC UNITS rows from a markdown file."""
-    result = parse_organic_units(
-        path.read_text(encoding="utf-8"), source_file=path.name
-    )
-    logger.info(
-        "Parsed %s: %d organic-unit row(s), %d flagged for review",
-        path.name,
-        len(result.rows),
-        result.review_count,
-    )
-    return result
+    return parse_markdown_file(path, parse_organic_units, "organic-unit")

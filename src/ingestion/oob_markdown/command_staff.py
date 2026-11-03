@@ -32,6 +32,7 @@ from src.ingestion.oob_markdown._common import (
     apply_date_flag,
     clean_cell,
     iter_section_tables,
+    parse_markdown_file,
 )
 from src.ingestion.oob_markdown.models import (
     CommandStaffParseResult,
@@ -156,16 +157,7 @@ def parse_command_staff(
 
 def parse_command_staff_file(path: Path) -> CommandStaffParseResult:
     """Parse COMMAND AND STAFF rows from a markdown file."""
-    result = parse_command_staff(
-        path.read_text(encoding="utf-8"), source_file=path.name
-    )
-    logger.info(
-        "Parsed %s: %d command-staff row(s), %d flagged for review",
-        path.name,
-        len(result.rows),
-        result.review_count,
-    )
-    return result
+    return parse_markdown_file(path, parse_command_staff, "command-staff")
 
 
 # Re-exported for backward compatibility with existing imports/tests.
