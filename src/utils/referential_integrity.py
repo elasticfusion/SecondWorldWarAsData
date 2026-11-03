@@ -80,7 +80,16 @@ def _discover_edges() -> List[Tuple[str, str, str, bool]]:
     for spec in ENTITY_REGISTRY:
         try:
             schema = load_schema(spec)
-        except Exception:  # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
+            # A schema that won't load means EVERY cross-reference into/out of that entity goes
+            # un-audited — the pass would report "clean" while structurally blind to a whole
+            # entity. Surface it loudly (never a silent edge-map gap).
+            logger.warning(
+                "OBSERV referential.edge_discovery_skipped entity=%s reason=%s status=warn "
+                "(edges for this entity NOT audited)",
+                spec.name,
+                type(e).__name__,
+            )
             continue
         own_pk = spec.required_id
         for field_path in _walk_id_fields(schema):
@@ -113,18 +122,35 @@ _DIR: Dict[str, str] = {}  # registry entity names already equal their output su
 
 def _iter_records(storage: Any, entity_dir: str):
     """Yield (key, data) for each entity JSON dict (skip index/report/dot files, and skip any file
-    whose top-level JSON is NOT a dict — e.g. ``bibliography/review_queue.json`` is a list — so a
-    non-record artifact can never crash the pass)."""
+    whose top-level JSON is NOT a dict). An UNREADABLE record is NOT silently skipped: it shrinks
+    the PK set / drops a referrer's edges, which would make real references look dangling OR hide a
+    real dangling ref — so each read failure is counted and surfaced with a loud canonical OBSERV
+    (anti-swallow: the audit must never silently run on an incomplete corpus)."""
+    skipped = 0
     for rel in storage.list_files(entity_dir, "*.json"):
         name = rel.rsplit("/", 1)[-1]
         if name == "index.json" or name.startswith(".") or "report" in name:
             continue
         try:
             data = storage.read_json(rel)
-        except Exception:  # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
+            skipped += 1
+            logger.warning(
+                "OBSERV referential.record_unreadable dir=%s file=%s reason=%s status=warn "
+                "(not audited; PK set / referrer edges incomplete)",
+                entity_dir,
+                name,
+                type(e).__name__,
+            )
             continue
         if isinstance(data, dict):
             yield rel, data
+    if skipped:
+        logger.warning(
+            "OBSERV referential.records_skipped dir=%s dropped=%d status=warn",
+            entity_dir,
+            skipped,
+        )
 
 
 def _event_files(storage: Any) -> List[str]:
@@ -137,7 +163,9 @@ def _event_files(storage: Any) -> List[str]:
             for rel in storage.list_files("content", pattern):
                 if rel.endswith("-event.json"):
                     out.append(rel)
-        except Exception:  # noqa: BLE001
+        except (
+            Exception
+        ):  # noqa: BLE001  # nosec B112 - benign pattern-listing fallback (tries next glob; a real listing failure still yields [] which the caller surfaces)
             continue
         if out:
             return out
@@ -159,18 +187,37 @@ def build_pk_sets(storage: Any) -> Dict[str, Set[str]]:
 def _add_event_pks(storage: Any, sets: Dict[str, Set[str]]) -> None:
     """Add EventID + Sub-eventID from the nested content/<book>/*-event.json files to
     the ``events`` PK set (shared by build_pk_sets and the single-read audit)."""
+    skipped = 0
     for rel in _event_files(storage):
         try:
             data = storage.read_json(rel)
-        except Exception:  # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
+            skipped += 1
+            logger.warning(
+                "OBSERV referential.event_file_unreadable file=%s reason=%s status=warn "
+                "(events PK set incomplete; event refs may read as false danglers)",
+                rel.rsplit("/", 1)[-1],
+                type(e).__name__,
+            )
             continue
-        ev = data.get("Event") if isinstance(data, dict) else None
-        if isinstance(ev, dict):
-            if isinstance(ev.get("EventID"), str):
-                sets["events"].add(ev["EventID"])
-            for se in ev.get("Sub-events", []) or []:
-                if isinstance(se, dict) and isinstance(se.get("Sub-eventID"), str):
-                    sets["events"].add(se["Sub-eventID"])
+        _collect_event_pks(data, sets)
+    if skipped:
+        logger.warning(
+            "OBSERV referential.event_files_skipped dropped=%d status=warn",
+            skipped,
+        )
+
+
+def _collect_event_pks(data: Any, sets: Dict[str, Set[str]]) -> None:
+    """Add one event file's EventID + Sub-eventID(s) to the events PK set."""
+    ev = data.get("Event") if isinstance(data, dict) else None
+    if not isinstance(ev, dict):
+        return
+    if isinstance(ev.get("EventID"), str):
+        sets["events"].add(ev["EventID"])
+    for se in ev.get("Sub-events", []) or []:
+        if isinstance(se, dict) and isinstance(se.get("Sub-eventID"), str):
+            sets["events"].add(se["Sub-eventID"])
 
 
 def resolve_path(data: Dict[str, Any], path: str) -> List[Any]:
@@ -403,6 +450,20 @@ def enforce(
 
     total = report["total_dangling"]
     logger.info("Referential integrity: %d dangling cross-reference(s)", total)
+    # Canonical, greppable audit result. The audit COMPLETED (the status='unknown' early-returns
+    # above guard the not-measured case), so total==0 here is a genuine clean result, not a benign
+    # false-zero; total>0 is a real integrity anomaly a human must resolve.
+    if total:
+        logger.warning(
+            "OBSERV referential.audit total_dangling=%d edges=%d status=warn",
+            total,
+            len(report["edges"]),
+        )
+    else:
+        logger.info(
+            "OBSERV referential.audit total_dangling=0 edges=%d status=ok",
+            len(report["edges"]),
+        )
     for edge in report["edges"]:
         if edge["dangling"]:
             logger.warning(

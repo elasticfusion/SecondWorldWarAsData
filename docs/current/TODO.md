@@ -1663,3 +1663,11 @@ passing a safe final path segment (e.g. discovery's [a-z]+ section_id capture) r
 containment at the sink. Traversal is not currently reachable anywhere, but a future caller deriving
 a path segment from untrusted input would escape silently. Harden: assert the resolved target is
 under its intended root inside the guard (pipeline-wide, not one site).
+
+## LOW: referential_integrity residual observability (PR #696 follow-up)
+Two non-blocking gaps noted during PR #696 review, out of its scope (swallow sites + audit result):
+- U1: _repaired_record_is_writable fails OPEN (returns True on guard error); a repair write that
+  the guard then blocks is not counted/OBSERV'd. Count non-persisted repairs + emit
+  OBSERV referential.subevent_repair_write_failed status=warn.
+- U3: _alert send failure logs a plain warning, not a canonical OBSERV — a failed operator alert on
+  a dangling corpus is a silent escalation gap. Emit OBSERV referential.alert_send_failed status=warn.
