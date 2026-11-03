@@ -19,7 +19,7 @@ import ipaddress
 import logging
 import re
 import unicodedata
-from typing import Optional
+from typing import NamedTuple, Optional
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 logger = logging.getLogger(__name__)
@@ -334,6 +334,52 @@ def _pinned_get(cleaned_url, host, vetted_ips, *, timeout, headers):
     raise last_exc if last_exc else RuntimeError("no vetted IPs to connect")
 
 
+class VetResult(NamedTuple):
+    """Result of :func:`vet_url_for_fetch`: the (possibly params-folded) URL to fetch, the host to
+    resolve/pin against, and the vetted public IPs to pin the connection to."""
+
+    url: str
+    host: str
+    vetted: list
+
+
+def vet_url_for_fetch(url: str, *, scope: str, params: Optional[dict] = None):
+    """THE single SSRF-prelude chokepoint for an UNTRUSTED (web/LLM/entry-derived) fetch URL.
+
+    Collapses the clean_url-gate + resolved_host_is_safe assembly that every untrusted-source
+    fetcher otherwise hand-rolls, so a future SSRF hardening change lands in ONE place and reaches
+    every caller. Steps:
+      1. (optional) fold ``params`` into the URL query (callers that pass a params dict),
+      2. ``clean_url`` gate — http(s) + reject loopback/private/link-local/metadata host,
+      3. ``resolved_host_is_safe`` — resolve + require every resolved IP public (DNS-rebind guard),
+    emitting a canonical ``OBSERV {scope}.fetch_blocked ssrf=1 [...] status=warn`` on either block.
+
+    Returns a :class:`VetResult` ``(url, host, vetted_ips)`` on success, else ``None``. The caller
+    then pins with ``_pinned_get(result.url, result.host, result.vetted, ...)`` and keeps its own
+    pacing / body-cap / response handling. The ORIGINAL (not clean_url-normalized) url is returned
+    so a significant query string is preserved — ``_pinned_get`` only rewrites the netloc.
+    """
+    if params:
+        s = urlparse(url)
+        merged = dict(parse_qsl(s.query)) | {k: str(v) for k, v in params.items()}
+        url = urlunparse(
+            (s.scheme, s.netloc, s.path, s.params, urlencode(merged), s.fragment)
+        )
+    if clean_url(url) is None:
+        logger.warning(
+            "OBSERV %s.fetch_blocked ssrf=1 url=%s status=warn", scope, str(url)[:120]
+        )
+        return None
+    host = (urlparse(url).hostname or "").lower()
+    vetted = resolved_host_is_safe(host)
+    if vetted is None:
+        logger.warning(
+            "OBSERV %s.fetch_blocked ssrf=1 resolve=1 host=%s status=warn", scope, host
+        )
+        return None
+    return VetResult(url=url, host=host, vetted=vetted)
+
+
 def _record_pinned_fetch(cleaned_url, status, exc) -> None:
     """Record a fetch-provenance event for an SSRF-pinned untrusted-source GET. Fail-safe;
     status only (the body is streamed/byte-capped by the caller, never consumed here).
@@ -384,8 +430,6 @@ def safe_get(url, *, timeout=None, headers=None, max_bytes=_SAFE_FETCH_MAX_BYTES
 
     Callers that only need HTML text should prefer ``fetch_text_safe``.
     """
-    import requests  # lazy: keep the pure-validator import path light
-
     cleaned = clean_url(url)
     if not cleaned:
         logger.debug("safe_get blocked (scheme/host): %s", url)

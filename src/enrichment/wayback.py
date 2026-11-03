@@ -113,28 +113,15 @@ def _throttle(host: str) -> None:
 
 
 def _vet_url(url: str, params: Optional[dict]):
-    """Fold params into the URL + SSRF-gate it (clean_url + resolved_host_is_safe). Returns
-    (final_url, host, vetted_ips) if safe, else None (loud OBSERV on a block)."""
-    from urllib.parse import urlparse, urlencode, urlsplit, urlunsplit, parse_qsl
-    from src.utils.url_hygiene import clean_url, resolved_host_is_safe
+    """Fold params into the URL + SSRF-gate it. Thin wrapper over the shared
+    url_hygiene.vet_url_for_fetch chokepoint; returns (final_url, host, vetted_ips) or None.
+    """
+    from src.utils.url_hygiene import vet_url_for_fetch
 
-    if params:
-        s = urlsplit(url)
-        merged = dict(parse_qsl(s.query)) | {k: str(v) for k, v in params.items()}
-        url = urlunsplit((s.scheme, s.netloc, s.path, urlencode(merged), s.fragment))
-    host = (urlparse(url).hostname or "archive.org").lower()
-    if clean_url(url) is None:
-        logger.warning(
-            "OBSERV wayback.fetch_blocked ssrf=1 url=%s status=warn", str(url)[:120]
-        )
+    vet = vet_url_for_fetch(url, scope="wayback", params=params)
+    if vet is None:
         return None
-    vetted = resolved_host_is_safe(host)
-    if vetted is None:
-        logger.warning(
-            "OBSERV wayback.fetch_blocked ssrf=1 resolve=1 host=%s status=warn", host
-        )
-        return None
-    return url, host, vetted
+    return vet.url, vet.host, vet.vetted
 
 
 def _get_with_courtesy(
