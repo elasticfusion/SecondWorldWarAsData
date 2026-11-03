@@ -11,6 +11,7 @@ from jsonschema import ValidationError, validate
 from src.grok_client import BatchModeCollecting, GrokClient
 from src.utils.json_validator import _fix_invalid_ulids
 from src.json_schemas import SUPPLEMENTAL_SCHEMA
+from src.utils.observe import observe_warn
 
 from src.utils.prompt_loader import get_system_prompt
 
@@ -382,6 +383,30 @@ def sanitize_supplemental_data(data: Dict[str, Any]) -> Dict[str, Any]:
     return data
 
 
+def _coerce_supplemental_schema_keys(data: Dict[str, Any]) -> None:
+    """Strip top-level keys SUPPLEMENTAL_SCHEMA does NOT permit, IN PLACE, so one stray LLM field
+    no longer trips additionalProperties:False and SILENTLY drops the WHOLE sub-event's materials
+    (#671 class — the whole-event validate + break->return None amplifies one bad key into total
+    loss). Each strip is a LOUD canonical OBSERV. Fail-safe: never raises into extraction.
+    """
+    try:
+        from src.schemas import strip_unmodeled_keys
+
+        def _obs(field: str) -> None:
+            observe_warn(
+                "supplemental",
+                "extra_field_stripped",
+                sub_event=str(data.get("Sub-eventID") or "?")[:40],
+                field=field,
+                note="unmodeled top-level field removed so the sub-event's materials persist "
+                "(additionalProperties) — widen the schema if this field is wanted",
+            )
+
+        strip_unmodeled_keys(data, SUPPLEMENTAL_SCHEMA, _obs)
+    except Exception as e:  # noqa: BLE001 - normalization must never break extraction
+        logger.debug("supplemental schema-key coercion skipped: %s", e)
+
+
 def validate_supplemental_json(data: Dict[str, Any]) -> None:
     """Validate supplemental material JSON against schema."""
     validate(instance=data, schema=SUPPLEMENTAL_SCHEMA)
@@ -535,6 +560,10 @@ def _extract_with_retry(
             response = generate_ulids(response)
             response = _fix_invalid_ulids(response)
             response = sanitize_supplemental_data(response)
+            # Strip unmodeled top-level keys BEFORE validate so one stray LLM field doesn't trip
+            # additionalProperties:False and drop ALL materials for this sub-event (#671 class).
+            if isinstance(response, dict):
+                _coerce_supplemental_schema_keys(response)
 
             try:
                 validate_supplemental_json(response)
