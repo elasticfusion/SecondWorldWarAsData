@@ -287,6 +287,14 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
 - **[LOW · investigate] Is `config/domain_blacklist.yaml` blacklist still HONORED by OpenSERP?**
 - **[LOW · dep-advisory] pylint 4.0.5 → 4.0.9** (CVE-2026-114608); pip-audit — not run in CI.
 - **[LOW · security-hardening] `_download_s3_file` path-traversal containment** (ecs_entrypoint).
+- **[LOW · observability · phase3 review follow-up 2026-11] people/people_groups/places OpenSERP write-paths
+  count-iff-persisted but emit NO `write_failed` OBSERV on a failed write** (silent non-count). PR #711 added the loud
+  `write_failed`=error + `records_unreadable` metrics to equipment + source_section only; extend the same
+  loud-on-failed-write treatment to the people/people_groups/places paths for full write-loss observability parity.
+- **[LOW · security-hardening · phase3 review follow-up 2026-11] `fetch_review._find_content_bytes` containment-root
+  check** — the read is now 25 MiB-capped (PR #712) and the stored `quarantine_path` is basename-normalized at the write
+  side (`source_retrieval.py` uses `Path(urlparse(url).path).name`), so traversal risk is LOW. Defense-in-depth: add a
+  `p.resolve()`-under-quarantine-dir assertion in case a future caller stores an unsanitized path into the event.
 - **[LOW · data-hygiene] people index/duplicate_report count drift** (overlapping-rerun artifact).
 - **[LOW · ci-flake] test_validation_performance wall-clock thresholds.**
 - **[LOW · yield] OpenSERP group-image search returns HTML page URLs, not direct images.**
