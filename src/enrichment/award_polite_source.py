@@ -105,25 +105,42 @@ class PoliteSource:
         self._storage = storage
         self.last_error: Optional[str] = None  # URL-tagged last fetch error, if any
 
-    def _ssrf_ok(self, url: str) -> bool:
+    def _ssrf_ok(self, url: str):
         """SSRF-validate an untrusted source url (clean_url + resolved_host_is_safe). Sets
-        self.last_error + logs OBSERV on a block. Returns True if safe to fetch."""
+        self.last_error + logs OBSERV on a block. Returns the VETTED IPs (for connection pinning)
+        if safe, else None."""
         from src.utils.url_hygiene import clean_url, resolved_host_is_safe
 
         if clean_url(url) is None:
             self.last_error = f"ssrf-blocked (scheme/host) [url={url}]"
             logger.warning("OBSERV award.source_blocked ssrf=1 url=%s", str(url)[:120])
-            return False
+            return None
         resolve_host = (urlparse(url).hostname or "").lower()
-        if resolved_host_is_safe(resolve_host) is None:
+        vetted = resolved_host_is_safe(resolve_host)
+        if vetted is None:
             self.last_error = (
                 f"ssrf-blocked (resolves non-public) [host={resolve_host}]"
             )
             logger.warning(
                 "OBSERV award.source_blocked ssrf=1 resolve=1 host=%s", resolve_host
             )
-            return False
-        return True
+            return None
+        return vetted
+
+    def _pinned_fetch(self, url, resolve_host, vetted, extra_headers):
+        """Pinned GET to a vetted IP (closes DNS-rebind TOCTOU). _pinned_get records its own
+        fetch-provenance event internally, so no manual record here (avoids double rows).
+        """
+        from src.utils.url_hygiene import _pinned_get
+        from src.utils.http_pool import browser_headers
+
+        return _pinned_get(
+            url,
+            resolve_host,
+            vetted,
+            timeout=30,
+            headers=browser_headers(extra_headers),
+        )
 
     def polite_get(
         self, url: str, *, extra_headers: Optional[dict] = None
@@ -139,30 +156,19 @@ class PoliteSource:
 
         host = urlparse(url).netloc or self._source_id
 
-        # The source url is UNTRUSTED (award-citation / search-derived). SSRF-gate before fetch.
-        if not self._ssrf_ok(url):
+        # The source url is UNTRUSTED (award-citation / search-derived). SSRF-gate AND capture the
+        # vetted IPs so the fetch PINS to them — closing the DNS-rebind TOCTOU that a host-only
+        # recorded_fetch left open (a short-TTL name could pass the resolve check then connect to an
+        # internal/metadata address). Matches source_retrieval._download_to_quarantine.
+        vetted = self._ssrf_ok(url)
+        if vetted is None:
             return None
+        resolve_host = (urlparse(url).hostname or "").lower()
 
         _throttle_host(host, self._crawl_delay)
 
         try:
-            from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
-            from src.utils.http_pool import browser_headers
-
-            resp = recorded_fetch(
-                self.name,
-                url,
-                kind=TEXTUAL,
-                method="GET",
-                session=self._session,
-                headers=browser_headers(extra_headers),
-                timeout=30,
-                allow_redirects=False,
-                stream=True,  # bounded read below (don't materialize an unbounded body)
-                # NOTE: summary must NOT read the streamed body (that would consume it before
-                # _cap_body); status only.
-                result_summary_fn=lambda r: f"status={r.status_code}",
-            )
+            resp = self._pinned_fetch(url, resolve_host, vetted, extra_headers)
         except Exception as e:  # noqa: BLE001 - transient; caller tries next source
             msg = f"{type(e).__name__}: {e} [url={url}]"
             logger.warning("%s fetch failed %s", self.name, msg)
@@ -174,7 +180,10 @@ class PoliteSource:
             logger.warning("%s %s", self.name, msg)
             self.last_error = msg
             return None
+        return self._handle_response(resp, url, key)
 
+    def _handle_response(self, resp, url, key) -> Optional[str]:
+        """Byte-cap the body, cache it, and preserve the page. Returns the text or None."""
         # Byte-cap the body (untrusted award source — a multi-GB response must not OOM the task).
         if not _cap_body(resp, self.name, url):
             self.last_error = f"body read failed [url={url}]"

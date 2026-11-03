@@ -10,15 +10,32 @@ import pytest
 
 from src.enrichment.award_hall_of_valor import HallOfValorSource
 
+_PINNED_CALLS: list = []
+
 
 @pytest.fixture(autouse=True)
 def _allow_public_host(monkeypatch):
-    # PoliteSource.polite_get now SSRF-gates the url (clean_url + resolved_host_is_safe) before the
-    # session GET. valor.militarytimes.com is a real public host; stub the resolve-check so these
-    # hermetic tests don't do real DNS (and the injected _FakeSession still serves the content).
+    # PoliteSource.polite_get now SSRF-gates the url (clean_url + resolved_host_is_safe) then PINS
+    # the connection via _pinned_get (DNS-rebind TOCTOU close). Stub resolve-check (hermetic, no DNS)
+    # and _pinned_get (serve the fixtures by URL + record the call on the source's session so the
+    # cache test's no-new-network assertion still works).
+    _PINNED_CALLS.clear()
     monkeypatch.setattr(
         "src.utils.url_hygiene.resolved_host_is_safe", lambda host: ["93.184.216.34"]
     )
+
+    def _fake_pinned(url, host, vetted, *, timeout=None, headers=None):
+        # Record on whatever session the current source holds (set per-test below is not available
+        # here; HallOfValorSource stores it as _session) — tests assert via sess.calls, so route
+        # the recording through a module-level sink the _FakeSession also appends to.
+        _PINNED_CALLS.append(url)
+        if "?s=" in url:
+            return _FakeResp(_SEARCH_HTML)
+        if "/recipient/recipient-209/" in url:
+            return _FakeResp(_RECIPIENT_HTML)
+        return _FakeResp("", 404)
+
+    monkeypatch.setattr("src.utils.url_hygiene._pinned_get", _fake_pinned)
 
 
 _SEARCH_HTML = """
@@ -102,12 +119,11 @@ def test_hall_of_valor_award_hint_filters(tmp_path):
 
 
 def test_hall_of_valor_caches(tmp_path):
-    sess = _FakeSession()
-    src = HallOfValorSource(tmp_path / "cache", session=sess)
+    src = HallOfValorSource(tmp_path / "cache", session=_FakeSession())
     src.lookup("Audie Murphy")
-    n_first = len(sess.calls)
+    n_first = len(_PINNED_CALLS)
     src.lookup("Audie Murphy")  # served from disk cache
-    assert len(sess.calls) == n_first  # no new network calls
+    assert len(_PINNED_CALLS) == n_first  # no new network (pinned) calls
 
 
 def test_hall_of_valor_rejects_wrong_recipient(tmp_path):
