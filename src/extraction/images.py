@@ -570,9 +570,17 @@ def extract_images(
             downloaded += d_d
             skipped += s_d
 
-    # Save index
-    with open(index_path, "w", encoding="utf-8") as fh:
-        json.dump(index, fh, indent=2, ensure_ascii=False)
+    # Save index under a LOCKED union-merge: re-read the on-disk index inside the lock and merge
+    # THIS run's entries, rather than a raw full overwrite that would clobber a concurrent image
+    # run's additions (lost update). locked_json treats index.json as a non-entity file (no schema
+    # stamp), so it round-trips unchanged except for the merged keys.
+    from src.utils.file_lock import locked_json
+
+    with locked_json(index_path) as (disk_index, save):
+        if not isinstance(disk_index, dict):
+            disk_index = {}
+        disk_index.update(index)
+        save(disk_index)
 
     logger.info(
         "Image extraction complete: %d extracted, %d downloaded", extracted, downloaded

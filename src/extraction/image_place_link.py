@@ -273,27 +273,31 @@ def _append_place_image(
     source_section_id: Optional[str] = None,
 ) -> bool:
     """Append a document-sourced image entry to a place's images[] (schema-valid
-    {url,title,source,SourceSectionID}; dedup by url) via the central guarded writer
-    (entity='places'). Fail-safe; True iff written."""
+    {url,title,source,SourceSectionID}; dedup by url) under a LOCKED read-modify-write so a
+    concurrent linker (or enrich_biographies, which also appends images[]) cannot lose-update the
+    append. ``locked_json``'s save runs the SAME central guard (validates as 'places' from the
+    path). Fail-safe; True iff written."""
     try:
-        rec = json.loads(place_file.read_text(encoding="utf-8"))
-        if not isinstance(rec, dict):
-            return False
-        images = rec.get("images")
-        if not isinstance(images, list):
-            images = []
-        if any(isinstance(e, dict) and e.get("url") == url for e in images):
-            return False  # already linked (dedup by url)
-        images.append(_build_place_image_entry(url, caption, book, source_section_id))
-        rec["images"] = images
-        from src.utils.file_lock import write_json_with_lock
+        from src.utils.file_lock import locked_json
 
-        if not write_json_with_lock(place_file, rec, entity="places"):
-            logger.warning(
-                "OBSERV image_place.write_blocked place=%s — guard refused",
-                place_file.name,
+        with locked_json(place_file) as (rec, save):
+            if not isinstance(rec, dict) or not rec:
+                return False  # missing/non-dict record — nothing to append to
+            images = rec.get("images")
+            if not isinstance(images, list):
+                images = []
+            if any(isinstance(e, dict) and e.get("url") == url for e in images):
+                return False  # already linked (dedup by url)
+            images.append(
+                _build_place_image_entry(url, caption, book, source_section_id)
             )
-            return False
+            rec["images"] = images
+            if not save(rec):
+                logger.warning(
+                    "OBSERV image_place.write_blocked place=%s — guard refused",
+                    place_file.name,
+                )
+                return False
         logger.info(
             "OBSERV image_place.linked place=%s book=%s source_section=%s",
             place_file.stem,

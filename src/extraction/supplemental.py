@@ -1038,13 +1038,14 @@ def _append_to_review_queue(bib_dir: Path, items: List[Dict[str, Any]]) -> None:
     if not items:
         return
     queue_file = bib_dir / "review_queue.json"
-    existing = []
-    if queue_file.exists():
-        with open(queue_file, "r", encoding="utf-8") as f:
-            existing = json.load(f)
-    existing.extend(items)
-    with open(queue_file, "w", encoding="utf-8") as f:
-        json.dump(existing, f, indent=2, ensure_ascii=False)
+    # Locked read-modify-write: review_queue.json is a shared sink appended to by parallel event
+    # workers; an unlocked read+extend+write lost-update would silently drop ambiguous items.
+    from src.utils.file_lock import locked_json
+
+    with locked_json(queue_file) as (data, save):
+        existing = data if isinstance(data, list) else []
+        existing.extend(items)
+        save(existing)
     logger.info("Added %d ambiguous items to review queue", len(items))
 
 
