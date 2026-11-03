@@ -1656,3 +1656,10 @@ Confirmed PRE-EXISTING: reproduces on clean main with all local changes stashed.
 gate-script subshell/env artifact (stale /tmp/gate_tests, config swap, or resource state),
 not a real test failure. CI's own test job is the authoritative run. Fix: isolate the gate
 pytest step (fresh env, unique tmp, or run via the same invocation CI uses).
+
+## LOW: explicit path-containment assertion at the write-guard sink (defense-in-depth)
+Security review of PR #695 noted write_json_with_lock / write_parsed_with_guard rely on callers
+passing a safe final path segment (e.g. discovery's [a-z]+ section_id capture) rather than asserting
+containment at the sink. Traversal is not currently reachable anywhere, but a future caller deriving
+a path segment from untrusted input would escape silently. Harden: assert the resolved target is
+under its intended root inside the guard (pipeline-wide, not one site).
