@@ -44,5 +44,10 @@ MAPS_OUTPUT_SCHEMA = {
         "PeopleGroupID": ulid_field(nullable=True),
         "PeopleGroupMentionID": ulid_field(nullable=True),
         "PeopleGroup_Name": make_nullable("string"),
+        # Tier-3 vision backstop idempotency (5c-ii): is_map = the deterministic/vision verdict;
+        # map_vision_checked_at = when the Grok-vision classifier ran (so a re-run does NOT re-submit
+        # an already-classified image to Grok — the don't-resubmit guarantee).
+        "is_map": {"type": ["boolean", "null"]},
+        "map_vision_checked_at": make_nullable("string"),
     },
 }

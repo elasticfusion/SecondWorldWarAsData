@@ -361,7 +361,7 @@ def _link_persisted_map(map_file: Path, output_root: Path) -> None:
     Fail-safe."""
     import json as _json
 
-    from src.extraction.map_common import link_map_entities
+    from src.extraction.map_common import link_map_entities, maybe_vision_classify_map
     from src.utils.file_lock import write_json_with_lock
 
     try:
@@ -377,15 +377,40 @@ def _link_persisted_map(map_file: Path, output_root: Path) -> None:
         rec.get("PlaceMentionID"),
         rec.get("DateMentionID"),
         rec.get("PeopleGroupID"),
+        rec.get("is_map"),
+        rec.get("map_vision_checked_at"),
     )
     link_map_entities(rec, output_root)
+
+    # Tier classification (5c-ii): tiers 1/2 deterministic; the tier-3 vision backstop runs only for
+    # AMBIGUOUS images, only if the image is downloaded locally, and ONLY once (idempotent).
+    def _load_image():
+        lip = rec.get("local_image_path")
+        if lip and Path(lip).exists():
+            return Path(lip).read_bytes()
+        return None
+
+    maybe_vision_classify_map(rec, _load_image, _grok_client_for_vision())
     after = (
         rec.get("PlaceMentionID"),
         rec.get("DateMentionID"),
         rec.get("PeopleGroupID"),
+        rec.get("is_map"),
+        rec.get("map_vision_checked_at"),
     )
     if after != before:
         write_json_with_lock(map_file, rec)
+
+
+def _grok_client_for_vision():
+    """Best-effort grok client for the tier-3 vision backstop. None -> deterministic tiers only
+    (vision skipped). Fail-safe."""
+    try:
+        from src.grok_client import GrokClient
+
+        return GrokClient(Path("cache/api"), batch_mode=False)
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def _stamp_book(references: List[Dict[str, Any]], book: str) -> List[Dict[str, Any]]:

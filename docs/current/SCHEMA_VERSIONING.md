@@ -1,3 +1,4 @@
+- **maps 2.25 → 2.26** (2026-11-02): add `is_map` (nullable bool) + `map_vision_checked_at` (nullable) — Tier-3 Grok-vision backstop verdict + idempotency gate (a re-run never re-submits an already-classified image). Additive/nullable; no migration.
 - **maps 2.24 → 2.25** (2026-11-02): add `PeopleGroupID` + `PeopleGroupMentionID` + `PeopleGroup_Name` (nullable) — link a map to the ORGANIZATION (people_group) it depicts/belongs to, per the maps target architecture (Event/Place/Date/Organization). Additive/nullable; no migration.
 - **equipment 2.27 → 2.28** (2026-11-01): add `extended_text` (nullable string) — the code-assembled 3-paragraph window (reference paragraph + before + after) carried for multi-run refine attribution context + audit/provenance. Additive/nullable; no migration.
 # JSON Schema Versioning — What To Bump, When

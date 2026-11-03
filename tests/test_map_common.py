@@ -25,6 +25,8 @@ _COMMON = {
     "PeopleGroupID",
     "PeopleGroupMentionID",
     "PeopleGroup_Name",
+    "is_map",
+    "map_vision_checked_at",
     "extracted_date",
 }
 _EXTERNAL = {
