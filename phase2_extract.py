@@ -6,6 +6,7 @@ Phase 2: Event and Entity Extraction with Grok API
 import argparse
 import asyncio
 import json
+import logging
 import os
 import sys
 from pathlib import Path
@@ -1175,6 +1176,7 @@ def main():
 
 def _write_phase_results(output_root, processed, failed):
     """Write phase results JSON for entrypoint to read."""
+    logger = logging.getLogger(__name__)
     results_file = output_root / ".phase_results.json"
     entity_counts = {}
     for subdir in [
@@ -1214,9 +1216,7 @@ def _write_phase_results(output_root, processed, failed):
     if event_count > 5:
         all_zero = all(entity_counts.get(t, 0) == 0 for t in optional_types)
         if all_zero:
-            import logging
-
-            logging.getLogger(__name__).warning(
+            logger.warning(
                 "⚠ All optional extractors produced 0 entities with %d events — possible extraction failure",
                 event_count,
             )
@@ -1224,9 +1224,7 @@ def _write_phase_results(output_root, processed, failed):
     # End-of-run per-entity-type persisted-count summary (OBSERV phase2.summary + a LOUD
     # phase2.summary.zero for any type at 0). Emitted HERE because this is the single final point
     # reached by ALL modes (incl. the batch retrieve re-run), so counts reflect the final corpus.
-    import logging as _logging
-
-    _phase2_counts = _log_phase2_summary(output_root, _logging.getLogger(__name__))
+    _phase2_counts = _log_phase2_summary(output_root, logger)
 
     # End-of-phase referential-integrity enforcement — AFTER all extraction (incl. any batch
     # re-run), so references are checked against the final corpus. Must never crash the phase.
