@@ -36,10 +36,8 @@ def _find_content_files(chapter_dir: Path, chapter_num: str) -> Dict[str, Path]:
     # Discover ALL subsection letters dynamically. (Previously hardcoded to a-f, which
     # SILENTLY DROPPED real content in chapters that run past f — e.g. chapter6g..j are combat
     # narrative, never ingested. Glob + parse the trailing section letter(s) instead.)
-    import re as _re
-
-    sub_pattern = _re.compile(
-        rf"^chapter{_re.escape(chapter_num)}([a-z]+)-content\.md$", _re.IGNORECASE
+    sub_pattern = re.compile(
+        rf"^chapter{re.escape(chapter_num)}([a-z]+)-content\.md$", re.IGNORECASE
     )
     for match_file in chapter_dir.glob(f"chapter{chapter_num}*-content.md"):
         m = sub_pattern.match(match_file.name)
