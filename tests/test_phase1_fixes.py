@@ -380,6 +380,11 @@ def test_lambda_doc_to_output_matches_cli_shape():
         is_quote = True
         quote_attribution = "Bradley"
 
+    class Marker:
+        page_number = 12
+        paragraph_number = 3
+        marker_type = "anchor"
+
     class Doc:
         book = "B"
         chapter_number = 1
@@ -394,6 +399,7 @@ def test_lambda_doc_to_output_matches_cli_shape():
         images = []
         maps = []
         footnotes = []
+        page_markers = [Marker()]
         table_hints = ["roster"]
 
     doc = Doc()
@@ -403,6 +409,10 @@ def test_lambda_doc_to_output_matches_cli_shape():
     assert out["paragraphs"][0].get("is_quote") is True
     assert out["paragraphs"][0].get("quote_attribution") == "Bradley"
     assert out.get("table_hints") == ["roster"]
+    # page-marker provenance flows through the Lambda path too (same serializer).
+    assert out.get("page_markers") == [
+        {"page_number": 12, "paragraph_number": 3, "marker_type": "anchor"}
+    ]
 
 
 def test_roman_reuses_canonical_parser():
