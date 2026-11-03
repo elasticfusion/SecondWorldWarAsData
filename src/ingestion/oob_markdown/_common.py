@@ -574,3 +574,17 @@ def observe_rows_dropped(source_file: str, section: str, dropped: int) -> None:
         Exception
     ):  # noqa: BLE001 - observability must never break the parse  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
+
+
+def join_cells_verbatim(cells: List[str]) -> str:
+    """Reconstruct a row's verbatim ``raw_text`` provenance by joining its ORIGINAL cells with
+    " | ", preserving every cell (including blanks) in source order.
+
+    This is the single source of truth for the raw-cell OOB row-provenance reconstruction shared by
+    the straight table parsers (command_posts, higher_units): both join the raw cell list verbatim
+    so the stored raw_text is byte-faithful to the source row. NOTE: parsers that reconstruct from
+    DERIVED fields with empty-skipping (attachments) or a single value (campaigns, organic_units) or
+    a text line (statistics), and command_staff's distinct ``raw_cell`` rank+name field, are
+    intentionally NOT routed here — their provenance semantics differ by design.
+    """
+    return " | ".join(cells)

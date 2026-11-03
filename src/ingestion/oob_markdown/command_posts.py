@@ -26,6 +26,7 @@ from src.ingestion.oob_markdown._common import (
     apply_date_flag,
     clean_cell,
     iter_section_tables,
+    join_cells_verbatim,
 )
 from src.ingestion.oob_markdown.models import (
     CommandPostParseResult,
@@ -123,7 +124,7 @@ def _post_row_from_cells(
         needs_review=needs_review,
         notes=notes,
         source_file=source_file,
-        raw_text=" | ".join(texts),
+        raw_text=join_cells_verbatim(texts),
         division_source=division_source,
     )
     return row, current_year
