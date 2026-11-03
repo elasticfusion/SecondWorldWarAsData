@@ -70,3 +70,35 @@ def build_image_entry(
     if source_section_id:
         entry["SourceSectionID"] = source_section_id  # durable ULID attribution
     return entry
+
+
+def drain_enrichment_futures(futures, total: int, noun: str) -> int:
+    """Drain a {future: file} map of enrichment futures, counting successes and logging progress
+    every 10 (and at the end). Returns the enriched count.
+
+    Shared by enrich_groups / enrich_places: the loop is identical apart from the log noun (e.g.
+    "group"/"Groups", "place"/"Places"). ``noun`` is the singular label used in both the per-failure
+    warning and the capitalized progress line.
+    """
+    import logging as _logging
+    from concurrent.futures import as_completed
+
+    log = _logging.getLogger(__name__)
+    enriched = 0
+    processed = 0
+    for future in as_completed(futures):
+        processed += 1
+        try:
+            if future.result():
+                enriched += 1
+        except Exception as e:  # noqa: BLE001 - one failure must not abort the drain
+            log.warning("Failed to enrich %s %s: %s", noun, futures[future].stem, e)
+        if processed % 10 == 0 or processed == total:
+            log.info(
+                "  %ss progress: %d/%d done (%d enriched)",
+                noun.capitalize(),
+                processed,
+                total,
+                enriched,
+            )
+    return enriched

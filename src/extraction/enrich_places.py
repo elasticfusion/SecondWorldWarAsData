@@ -531,28 +531,12 @@ def _enrich_place_data(data, name, grok_client):
     return changed, errored
 
 
-def _collect_place_enrichments(pool, futures, total: int) -> int:
+def _collect_place_enrichments(futures, total: int) -> int:
     """Drain the place-enrichment futures, counting successes + logging progress. Returns the
     enriched count."""
-    from concurrent.futures import as_completed
+    from src.extraction._entity_common import drain_enrichment_futures
 
-    enriched = 0
-    processed = 0
-    for future in as_completed(futures):
-        processed += 1
-        try:
-            if future.result():
-                enriched += 1
-        except Exception as e:
-            logger.warning("Failed to enrich place %s: %s", futures[future].stem, e)
-        if processed % 10 == 0 or processed == total:
-            logger.info(
-                "  Places progress: %d/%d done (%d enriched)",
-                processed,
-                total,
-                enriched,
-            )
-    return enriched
+    return drain_enrichment_futures(futures, total, "place")
 
 
 def enrich_all_places(
@@ -581,7 +565,7 @@ def enrich_all_places(
     needed = sum(1 for f in files if _place_needs_work(f))
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
         futures = {pool.submit(enrich_place, f, grok_client): f for f in files}
-        enriched = _collect_place_enrichments(pool, futures, total)
+        enriched = _collect_place_enrichments(futures, total)
 
     logger.info("Place enrichment complete: %d/%d enriched", enriched, len(files))
     # Canonical coverage rollup + anomaly, gated on how many places actually NEEDED work (so a
