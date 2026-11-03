@@ -1688,3 +1688,21 @@ mint a separate ULID file. NOT data loss — the downstream dedup pass merges th
 locked_json(index) find-or-create (like places/people_groups) is the correct long-term fix but a
 larger change (equipment's index build differs); deferred. Lower value than the entity=/vision/
 whitelist fixes shipped in PR #707 since duplicates are recovered, not lost.
+
+## MED: same-code consolidation (Phase-2 review, deferred to own PR)
+- Grokipedia resolution forked 3x: shared src/enrichment/grokipedia.resolve_grokipedia_url exists
+  (equipment uses it), but enrich_biographies._grokipedia_query_scan + enrich_places._search_grokipedia_place
+  roll their own grokipedia.com/search scrape. Wikipedia API call likewise reimplemented in
+  enrich_biographies (x3) + enrich_places. Route all through the shared lib (triples maintenance +
+  SSRF surface + drifts behavior, e.g. transient-vs-negative cache conflation enrich_places:329).
+- Conservative place-name matcher (exact -> whole-word-longest -> SequenceMatcher>=0.88)
+  reimplemented in weather_central._match_place_id, equipment._resolve_place_id, and places. Extract
+  one shared helper.
+Larger refactor with semantic-diff risk; own PR, not bundled with the PR6 correctness/security fixes.
+
+## LOW: recorded_fetch redirect-bounce residual (Phase-2 security DiD)
+recorded_fetch now gates the endpoint host via clean_url (rejects private/metadata/loopback), but a
+trusted host that open-redirects could still bounce to an internal address. Flipping
+allow_redirects=False globally would break the many callers relying on the implicit True for
+legitimate redirects, so deferred: either re-validate each redirect hop's host, or set
+allow_redirects=False per-caller where redirects aren't needed.

@@ -8,6 +8,21 @@ from typing import Optional, Set
 
 logger = logging.getLogger(__name__)
 
+# Non-record artifacts written into entity dirs (analysis + dedup passes). Kept in sync with
+# phase2_extract._count_entity_dir — these must NOT be treated as records (they are rewritten every
+# run, so an mtime filter would otherwise count them as "new" and silently zero all comparisons).
+_NON_RECORD_STEMS = {
+    "index",
+    "duplicate_report",
+    "related_groups_report",
+    "not_duplicates",
+    "not_related",
+    "not_people",
+    "review_queue",
+    "coords",
+    "surname_frequency_suggestions",
+}
+
 
 def get_last_dedup_run(entity_type: str) -> Optional[float]:
     """Get the timestamp of the last dedup run for this entity type from DynamoDB."""
@@ -45,12 +60,18 @@ def set_last_dedup_run(entity_type: str) -> None:
 
 
 def get_new_files(entity_dir: Path, since: Optional[float]) -> Set[str]:
-    """Return filenames modified after `since` timestamp. If since is None, all are 'new'."""
+    """Return RECORD filenames modified after `since` timestamp. If since is None, all are 'new'.
+
+    Excludes non-record artifacts (index/report/tracking files) that are rewritten every run — if
+    they entered the set, new_files would be non-empty but hold ZERO real records, so should_compare
+    would return False for every real pair and the pass would silently compare NOTHING. The skip
+    set is kept in sync with phase2_extract._count_entity_dir (the single non-record definition).
+    """
     if since is None:
         return set()  # No previous run — treat as full mode (empty = don't filter)
     new = set()
     for f in entity_dir.glob("*.json"):
-        if f.name in ("index.json", "duplicate_report.json", "not_duplicates.json"):
+        if f.stem in _NON_RECORD_STEMS or f.name.startswith("."):
             continue
         if f.stat().st_mtime > since:
             new.add(f.name)
