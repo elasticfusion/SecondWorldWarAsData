@@ -1610,7 +1610,7 @@ def _av_scan_and_filter(ocr_keys, convert_keys, video_keys, binaries):
         s3,
         BUCKET,
         binaries,
-        EcsClamavScanner(),
+        _make_av_scanner(),
         region=os.getenv("AWS_DEFAULT_REGION", "us-east-1"),
     )
     clean = set(outcome.clean_keys)
@@ -1627,57 +1627,12 @@ def _av_scan_and_filter(ocr_keys, convert_keys, video_keys, binaries):
     )
 
 
-class EcsClamavScanner:
-    """Scanner that demand-launches the ClamAV Fargate task over the binary keys
-    and reads back the verdict JSON it writes to S3. Never raises — returns
-    Verdict.ERROR per key on any failure so the gate fails closed.
+def _make_av_scanner():
+    """The shared ECS ClamAV scanner, wired with THIS lambda's _run_task + s3 + task def (same code
+    all phases — the scanner class lives in src.ingestion.av_scan)."""
+    from src.ingestion.av_scan import EcsClamavScanner
 
-    The task (cloudformation AvScanTaskDef) syncs ClamAV signatures from S3,
-    clamscan's each key, writes av-scan/results/{run}.json = {key: {verdict,
-    signature}}, and exits. Fargate handles any size (incl. 2.4 GB video) with no
-    Lambda /tmp cliff.
-    """
-
-    def scan(self, bucket: str, keys: list[str]):
-        from src.ingestion.av_scan import ScanResult, Verdict
-
-        run_id = f"{int(time.time())}-{abs(hash(tuple(keys))) % 100000}"
-        result_key = f"av-scan/results/{run_id}.json"
-        try:
-            _run_task(
-                AV_SCAN_TASK_DEF,
-                "av-scan",
-                extra_env=[
-                    {"name": "AV_KEYS", "value": json.dumps(keys)},
-                    {"name": "AV_RESULT_KEY", "value": result_key},
-                ],
-            )
-            verdicts = _poll_av_result(bucket, result_key)
-        except Exception as e:  # noqa: BLE001 - fail closed
-            logger.error("ClamAV scan launch/poll failed: %s", e)
-            return [ScanResult(k, Verdict.ERROR, detail=str(e)[:120]) for k in keys]
-        out = []
-        for k in keys:
-            v = verdicts.get(k, {})
-            verdict = {
-                "clean": Verdict.CLEAN,
-                "infected": Verdict.INFECTED,
-            }.get(str(v.get("verdict", "")), Verdict.ERROR)
-            out.append(ScanResult(k, verdict, signature=str(v.get("signature", ""))))
-        return out
-
-
-def _poll_av_result(
-    bucket: str, result_key: str, *, attempts: int = 40, delay: int = 15
-):
-    """Poll S3 for the ClamAV task's verdict JSON. Raises on timeout -> fail closed."""
-    for _ in range(attempts):
-        try:
-            obj = s3.get_object(Bucket=bucket, Key=result_key)
-            return json.loads(obj["Body"].read())
-        except Exception:  # noqa: BLE001 - not ready yet
-            time.sleep(delay)
-    raise TimeoutError(f"AV result {result_key} not ready after polling")
+    return EcsClamavScanner(_run_task, s3, AV_SCAN_TASK_DEF)
 
 
 def _submit_video(key: str) -> None:
