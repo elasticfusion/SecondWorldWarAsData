@@ -99,6 +99,7 @@ def _row_from_cells(
         needs_review=needs_review,
         notes=notes,
         source_file=source_file,
+        raw_text=" | ".join(cells),
         division_source=division_source,
     )
 

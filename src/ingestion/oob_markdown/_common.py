@@ -16,10 +16,13 @@ See docs/current/dataquality/INGESTION_FRONT_END.md ("Scanned documents").
 
 from __future__ import annotations
 
+import logging
 import re
 from typing import Dict, List, Optional, Tuple
 
 from bs4 import BeautifulSoup, Tag
+
+logger = logging.getLogger(__name__)
 
 # Division attributed to a table that appears before any division title in the
 # content. Captured (not dropped) but flagged, because the source cannot tell us
@@ -545,3 +548,27 @@ def coverage_gaps(
             continue
         gaps.append((marker, expected))
     return gaps
+
+
+def observe_rows_dropped(source_file: str, section: str, dropped: int) -> None:
+    """Emit a loud canonical OBSERV when a parser silently drops in-region lines.
+
+    A non-blank line INSIDE a recognized section that did not parse to a row is an
+    in-region drop (e.g. OCR-garbled content) — NOT the same as coverage_gaps, which
+    is section-level (marker present, ALL output keys zero). A section that yields SOME
+    rows previously hid every unparsed line within it. This surfaces that loss.
+
+    status=warn only when ``dropped > 0`` — a real anomaly, never a benign-0 false alarm
+    (anti-swallow / ALL-ALARMS-ACTIONABLE). Fail-safe: observability never breaks a parse.
+    """
+    if dropped <= 0:
+        return
+    try:
+        logger.warning(
+            "OBSERV oob.rows_dropped section=%s file=%s dropped=%d status=warn",
+            section,
+            source_file,
+            dropped,
+        )
+    except Exception:  # noqa: BLE001 - observability must never break the parse
+        pass

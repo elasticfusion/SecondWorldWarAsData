@@ -204,6 +204,7 @@ def _build_row(
         needs_review=needs_review,
         notes=notes,
         source_file=ctx.source_file,
+        raw_text=" | ".join(c for c in (unit, attached_to, start, end) if c),
         division_source=ctx.division_source,
     )
 

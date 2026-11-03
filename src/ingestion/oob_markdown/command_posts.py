@@ -123,6 +123,7 @@ def _post_row_from_cells(
         needs_review=needs_review,
         notes=notes,
         source_file=source_file,
+        raw_text=" | ".join(texts),
         division_source=division_source,
     )
     return row, current_year

@@ -101,6 +101,7 @@ def _row(
         needs_review=needs_review,
         notes=notes,
         source_file=source_file,
+        raw_text=name,
         division_source=division_source,
     )
 

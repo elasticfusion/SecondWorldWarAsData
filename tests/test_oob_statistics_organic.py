@@ -182,3 +182,91 @@ def test_real_file_organic_units() -> None:
     assert "357th Infantry" in names
     assert "358th Infantry" in names
     assert "359th Infantry" in names
+
+
+# --- M3 provenance: raw_text captured -----------------------------------
+
+
+def test_statistics_rows_carry_raw_text_provenance() -> None:
+    """M3: every parsed statistic row must carry the verbatim source line."""
+    result = parse_statistics(STATS_MD, "t.md")
+    assert result.rows, "expected some rows"
+    for r in result.rows:
+        assert r.raw_text.strip(), f"row {r.metric!r} has no raw_text provenance"
+    # The verbatim line is preserved (metric + value as read).
+    activated = [r for r in result.rows if r.metric == "Activated"][0]
+    assert "25 Mar 42" in activated.raw_text
+    assert "Activated" in activated.raw_text
+
+
+# --- V1 anti-swallow: in-region unparsed lines are surfaced -------------
+
+_STATS_WITH_GARBLE = """
+90th Infantry Division
+
+STATISTICS
+
+Casualties
+
+Killed..... 1,342
+@#%^ garbled ocr line with no dot leader structure here
+ Wounded..... 5,673
+"""
+
+
+def test_statistics_in_region_drop_emits_observ(caplog) -> None:
+    """V1: a non-blank line inside a recognized STATISTICS category that does not
+    parse must emit a loud OBSERV oob.rows_dropped (not silently vanish)."""
+    import logging
+
+    with caplog.at_level(logging.WARNING):
+        result = parse_statistics(_STATS_WITH_GARBLE, "garble.md")
+    # The real stat lines still parsed.
+    assert any(r.metric == "Killed" for r in result.rows)
+    assert any(r.metric == "Wounded" for r in result.rows)
+    # The garbled in-region line was surfaced, not swallowed.
+    assert any(
+        "OBSERV oob.rows_dropped" in r.message
+        and "section=statistics" in r.message
+        and "file=garble.md" in r.message
+        and "status=warn" in r.message
+        for r in caplog.records
+    ), "in-region unparsed line was silently dropped (no OBSERV)"
+
+
+def test_statistics_clean_emits_no_rows_dropped(caplog) -> None:
+    """V1: no false alarm — a clean parse (every in-region line parses) emits nothing."""
+    import logging
+
+    with caplog.at_level(logging.WARNING):
+        parse_statistics(STATS_MD, "clean.md")
+    assert not any("OBSERV oob.rows_dropped" in r.message for r in caplog.records)
+
+
+_STATS_TABLE_MD = """
+77th Infantry Division
+
+STATISTICS
+
+Casualties
+
+<table><tbody>
+<tr><td>Killed</td><td>1,342</td></tr>
+<tr><td>Wounded</td><td>5,673</td></tr>
+<tr><td>Congressional Medal of Honor</td><td>2</td></tr>
+</tbody></table>
+"""
+
+
+def test_statistics_table_encoded_no_false_rows_dropped(caplog) -> None:
+    """V1 regression: a TABLE-encoded STATISTICS file must NOT emit oob.rows_dropped —
+    the table pass recovers the cell content, so text-pass 'unparsed' lines are not drops
+    (this was a systematic false alarm on the real corpus)."""
+    import logging
+
+    with caplog.at_level(logging.WARNING):
+        result = parse_statistics(_STATS_TABLE_MD, "table.md")
+    assert any(r.metric == "Killed" for r in result.rows)
+    assert not any(
+        "OBSERV oob.rows_dropped" in r.message for r in caplog.records
+    ), "table-encoded file emitted a false rows_dropped (recovered content reported as lost)"

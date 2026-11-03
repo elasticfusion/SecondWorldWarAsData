@@ -26,6 +26,7 @@ from typing import List, Optional, Tuple, TypedDict
 from bs4 import BeautifulSoup, Tag
 
 from src.ingestion.oob_markdown._common import (
+    observe_rows_dropped,
     SECTION_STATISTICS,
     apply_division_flag,
     attribute_division,
@@ -128,11 +129,14 @@ def _parse_stat_line(
         needs_review=needs_review,
         notes=notes,
         source_file=source_file,
+        raw_text=line,
         division_source=division_source,
     )
 
 
-def parse_statistics(markdown: str, source_file: str = "") -> StatisticParseResult:
+def parse_statistics(  # pylint: disable=too-many-locals
+    markdown: str, source_file: str = ""
+) -> StatisticParseResult:
     """Parse all STATISTICS metric/value rows from a markdown string.
 
     Two encodings occur in the corpus and both are handled:
@@ -159,24 +163,41 @@ def parse_statistics(markdown: str, source_file: str = "") -> StatisticParseResu
     division = ""
     in_stats = False
     category = ""
+    dropped = 0  # in-region lines that looked like content but did not parse (V1)
     for line in text_lines(markdown):
         div = division_from_line(line)
         if div:
             division = div
+        prev_in_stats, prev_category = in_stats, category
         in_stats, category = _advance_section(line, in_stats, category)
         if not in_stats or not category:
             continue
+        # A line that changed the section/category state is a header the walk consumed, NOT
+        # droppable content — don't count it (avoids a false rows_dropped on category headers).
+        state_changed = (in_stats, category) != (prev_in_stats, prev_category)
         resolved_division, source = attribute_division(division, inferred, recon)
         row = _parse_stat_line(resolved_division, source, category, line, source_file)
         if row is not None:
             result.rows.append(row)
+        elif line.strip() and not state_changed:
+            # A non-blank CONTENT line inside a recognized STATISTICS category that did not parse
+            # to a row is a candidate in-region drop (e.g. OCR-garbled stat).
+            dropped += 1
 
-    _merge_table_rows(markdown, source_file, result)
+    table_rows = _collect_statistics_tables(markdown, source_file)
+    # Only TEXT-encoded files surface text-pass drops. In TABLE-encoded STATISTICS the text pass
+    # sees metric labels + cell fragments that the table pass (_merge_table_rows) then recovers
+    # into rows — counting those as "dropped" would be a false alarm (recovered content reported
+    # as lost), the exact noise ALL-ALARMS-ACTIONABLE forbids. The table pass owns that content.
+    if not table_rows:
+        observe_rows_dropped(source_file, "statistics", dropped)
+
+    _merge_table_rows(table_rows, result)
     return result
 
 
 def _merge_table_rows(
-    markdown: str, source_file: str, result: StatisticParseResult
+    table_rows: List[StatisticRow], result: StatisticParseResult
 ) -> None:
     """Parse STATISTICS ``<table>`` rows and merge them into ``result``.
 
@@ -187,7 +208,6 @@ def _merge_table_rows(
     shells are dropped; genuinely-empty dot-leader entries in pure-text files
     (no table row for the metric) are kept and stay flagged for review.
     """
-    table_rows = _collect_statistics_tables(markdown, source_file)
     if not table_rows:
         return
 
@@ -384,6 +404,7 @@ def _build_stat_row(
         needs_review=needs_review,
         notes=notes,
         source_file=ctx.source_file,
+        raw_text=f"{raw_metric} {raw_value}".strip(),
         division_source=ctx.division_source,
     )
 
