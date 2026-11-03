@@ -83,6 +83,7 @@ def _make_row(
         confidence=confidence,
         needs_review=needs_review,
         source_file=source_file,
+        raw_text=unit_text,
         division_source=division_source,
     )
 

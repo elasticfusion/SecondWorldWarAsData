@@ -74,7 +74,7 @@ class CommandStaffParseResult:
 
 
 @dataclass
-class CampaignRow:
+class CampaignRow:  # pylint: disable=too-many-instance-attributes
     """One campaign a division participated in.
 
     Attributes:
@@ -93,6 +93,7 @@ class CampaignRow:
     needs_review: bool = False
     notes: str = ""
     source_file: str = ""
+    raw_text: str = ""  # verbatim source line/cells (provenance)
     division_source: str = "title"  # title | inferred_next_title | unknown
 
     def to_dict(self) -> Dict[str, Any]:
@@ -149,6 +150,7 @@ class CommandPostRow:  # pylint: disable=too-many-instance-attributes
     needs_review: bool = False
     notes: str = ""
     source_file: str = ""
+    raw_text: str = ""  # verbatim source line/cells (provenance)
     division_source: str = "title"  # title | inferred_next_title | unknown
 
     def to_dict(self) -> Dict[str, Any]:
@@ -203,6 +205,7 @@ class StatisticRow:  # pylint: disable=too-many-instance-attributes
     needs_review: bool = False
     notes: str = ""
     source_file: str = ""
+    raw_text: str = ""  # verbatim source line/cells (provenance)
     division_source: str = "title"  # title | inferred_next_title | unknown
 
     def to_dict(self) -> Dict[str, Any]:
@@ -265,6 +268,7 @@ class AttachmentRow:  # pylint: disable=too-many-instance-attributes
     needs_review: bool = False
     notes: str = ""
     source_file: str = ""
+    raw_text: str = ""  # verbatim source line/cells (provenance)
     division_source: str = "title"  # title | inferred_next_title | ... | unknown
 
     def to_dict(self) -> Dict[str, Any]:
@@ -329,6 +333,7 @@ class HigherUnitRow:  # pylint: disable=too-many-instance-attributes
     needs_review: bool = False
     notes: str = ""
     source_file: str = ""
+    raw_text: str = ""  # verbatim source line/cells (provenance)
     division_source: str = "title"  # title | inferred_next_title | ... | unknown
 
     def to_dict(self) -> Dict[str, Any]:
@@ -359,7 +364,7 @@ class HigherUnitParseResult:
 
 
 @dataclass
-class OrganicUnitRow:
+class OrganicUnitRow:  # pylint: disable=too-many-instance-attributes
     """One organic unit of a division.
 
     Attributes:
@@ -378,6 +383,7 @@ class OrganicUnitRow:
     confidence: float = 1.0
     needs_review: bool = False
     source_file: str = ""
+    raw_text: str = ""  # verbatim source line/cells (provenance)
     division_source: str = "title"  # title | inferred_next_title | unknown
 
     def to_dict(self) -> Dict[str, Any]:
