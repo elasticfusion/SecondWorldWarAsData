@@ -181,9 +181,12 @@ def s3_sync_up(
     uploaded = []
     for f in local_dir.rglob("*"):
         if f.is_file():
-            if any(pat in f.name for pat in exclude):
+            rel = str(f.relative_to(local_dir))
+            # exclude matches the filename OR a path segment (so "files" excludes the files/ subdir,
+            # not just files whose NAME contains "files").
+            if any(pat in f.name or pat in rel.split("/") for pat in exclude):
                 continue
-            key = f"{prefix}/{f.relative_to(local_dir)}"
+            key = f"{prefix}/{rel}"
             if key in skip:
                 continue
             s3.upload_file(str(f), BUCKET, key)
@@ -2748,6 +2751,25 @@ def _read_manifest() -> list:
     return []
 
 
+def _sync_maps_with_av_staging(maps_dir: "Path", skip: set) -> tuple:
+    """AV staging (owner three-zone model): downloaded map image BINARIES (output/maps/files/) must
+    NOT land in production un-scanned. Stage them to the unscanned/ prefix (mirrored structure); the
+    trigger Lambda drains+promotes them on Phase-3 completion. The map RECORD JSONs
+    (output/maps/*.json) sync to prod as usual (excluding the files/ binaries). Returns the (count,
+    keys) for the PROD record sync (the staging sync is logged separately)."""
+    files_dir = maps_dir / "files"
+    if files_dir.exists():
+        nf, _ = s3_sync_up(files_dir, "unscanned/output/maps/files")
+        if nf:
+            logger.info(
+                "OBSERV av.staged_for_scan dir=output/maps/files count=%d dest=unscanned/ status=ok",
+                nf,
+            )
+    return s3_sync_up(
+        maps_dir, "output/maps", skip_keys=skip, exclude_patterns=["files"]
+    )
+
+
 def _final_sync(phase_script: str = ""):
     """Final upload of new output to S3. Only uploads entity subdirs, not parsed/event files."""
     if "phase0" in phase_script:
@@ -2786,10 +2808,14 @@ def _final_sync(phase_script: str = ""):
         skip = set(_downloaded_keys) if "phase2" in phase_script else set()
         for subdir in entity_dirs:
             d = WORKDIR / "output" / subdir
-            if d.exists():
+            if not d.exists():
+                continue
+            if subdir == "maps":
+                n, keys = _sync_maps_with_av_staging(d, skip)
+            else:
                 n, keys = s3_sync_up(d, f"output/{subdir}", skip_keys=skip)
-                total += n
-                all_uploaded.extend(keys)
+            total += n
+            all_uploaded.extend(keys)
         logger.info("Final sync: uploaded %d entity files", total)
 
         # Durable artifact store (patches, documents, ...) — persist to S3 so the
