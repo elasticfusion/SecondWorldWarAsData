@@ -121,7 +121,7 @@ Entities are **dual-written**:
    in a `data` attribute + projected columns. ~32 MB / ~5,900 items.
 
 Two **bulk-read** paths compete to be "fast":
-- `ecs_modules/s3_sync._materialize_from_dynamo` → 11 sequential `list_all` Scans.
+- `ecs_entrypoint._materialize_from_dynamo` → 11 sequential `list_all` Scans.
 - `s3_sync_down` → `list_objects_v2` + per-object `download_file` (thousands of GETs).
 
 ### Findings (evidence-based)
