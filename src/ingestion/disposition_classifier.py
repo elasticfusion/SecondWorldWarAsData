@@ -66,7 +66,9 @@ def _observe_classified(
             logger.warning(base + " status=anomaly")
         else:
             logger.info(base + " status=ok")
-    except Exception:  # noqa: BLE001 - observability never breaks the phase
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability never breaks the phase  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
 
 

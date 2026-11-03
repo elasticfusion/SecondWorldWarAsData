@@ -31,6 +31,8 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time as _time
+import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Protocol
@@ -276,7 +278,9 @@ def _emit_av_summary(outcome: AvOutcome) -> None:
             logger.warning(line + " status=anomaly")
         else:
             logger.info(line + " status=ok")
-    except Exception:  # noqa: BLE001 - observability never breaks the gate
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability never breaks the gate  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
 
 
@@ -514,8 +518,6 @@ def scan_staged_binaries(
 
 
 # --- Model-A drainer: scan the unscanned/ queue in bounded SEQUENTIAL chunks, single-drainer -----
-import time as _time
-
 _DRAIN_LOCK_KEY = UNSCANNED_PREFIX + ".scan-lock"
 _DRAIN_LOCK_TTL = 1800  # 30 min — a crashed drainer's lock is reclaimable after this
 
@@ -559,7 +561,9 @@ def _acquire_drain_lock(s3_client, bucket: str) -> bool:
         logger.warning(
             "OBSERV av.drain_lock_stale age_s=%d status=warn (reclaiming)", int(age)
         )
-    except Exception:  # noqa: BLE001 - no marker (expected) -> acquire
+    except (
+        Exception
+    ):  # noqa: BLE001 - no marker (expected) -> acquire  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
     try:
         s3_client.put_object(
@@ -576,7 +580,9 @@ def _acquire_drain_lock(s3_client, bucket: str) -> bool:
 def _release_drain_lock(s3_client, bucket: str) -> None:
     try:
         s3_client.delete_object(Bucket=bucket, Key=_DRAIN_LOCK_KEY)
-    except Exception:  # noqa: BLE001 - best effort; TTL reclaims it otherwise
+    except (
+        Exception
+    ):  # noqa: BLE001 - best effort; TTL reclaims it otherwise  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
 
 
@@ -636,7 +642,7 @@ class EcsClamavScanner:
         self._task_def = task_def
 
     def scan(self, bucket: str, keys: list):
-        run_id = f"{int(_time.time())}-{abs(hash(tuple(keys))) % 100000}"
+        run_id = f"{int(_time.time())}-{uuid.uuid4().hex[:12]}"
         result_key = f"av-scan/results/{run_id}.json"
         try:
             self._run_task(
@@ -665,12 +671,11 @@ def _poll_av_result(
     s3_client, bucket: str, result_key: str, *, attempts: int = 40, delay: int = 15
 ):
     """Poll S3 for the ClamAV task's verdict JSON. Raises on timeout -> fail closed."""
-    import json as _j
 
     for _ in range(attempts):
         try:
             obj = s3_client.get_object(Bucket=bucket, Key=result_key)
-            return _j.loads(obj["Body"].read())
+            return json.loads(obj["Body"].read())
         except Exception:  # noqa: BLE001 - not ready yet
             _time.sleep(delay)
     raise TimeoutError(f"AV result {result_key} not ready after polling")

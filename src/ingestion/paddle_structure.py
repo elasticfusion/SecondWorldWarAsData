@@ -69,7 +69,9 @@ def _observe_convert_pdf_ocr(
             logger.info(base)
         else:
             logger.warning(base)
-    except Exception:  # noqa: BLE001 - observability never breaks OCR
+    except (
+        Exception
+    ):  # noqa: BLE001 - observability never breaks OCR  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
 
 
@@ -134,7 +136,9 @@ def _select_device(prefer_gpu: bool) -> str:
 
         if paddle.device.is_compiled_with_cuda() and paddle.device.cuda.device_count():
             return "gpu"
-    except Exception:  # pragma: no cover - absence/again means CPU
+    except (
+        Exception
+    ):  # pragma: no cover - absence/again means CPU  # nosec B110 - benign fail-safe (observability/cleanup; loud OBSERV elsewhere)
         pass
     return "cpu"
 

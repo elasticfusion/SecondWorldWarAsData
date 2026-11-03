@@ -190,7 +190,7 @@ def _resolve_caption_with_pid(
         speaker_label=signals.speaker_label,
         timecode=signals.timecode,
         person_id=cap_pid,
-        name=(roster.get(cap_pid).name if cap_pid in roster else caption.text),
+        name=(roster[cap_pid].name if cap_pid in roster else caption.text),
         confidence=conf,
         method=method,
         needs_review=conf < AUTO_ASSERT_THRESHOLD,
