@@ -352,6 +352,17 @@ Full contract:
    before persist/forward.
 
 
+
+### TEST: simulate a virus file end-to-end through the AV gate (EICAR) (MED)
+Validate the download-path AV flow with the STANDARD EICAR test string (the safe, industry-standard
+68-byte test "virus" that every AV incl. ClamAV flags as Eicar-Test-Signature, harmless). Stage an
+EICAR file into unscanned/output/maps/files/ and run drain_unscanned -> assert: (1) ClamAV returns
+INFECTED; (2) it is MOVED to quarantine/output/maps/files/ (NOT promoted to prod, NOT left in
+unscanned/); (3) reject_to_review + freeze fire; (4) OBSERV av.verdict result=infected status=error +
+av.phase3_drain quarantined>=1. Also a clean image -> promoted to prod, and (ideally) a truncated/
+unscannable -> stays unscanned. Proves the three zones + alert work against a real detection, not
+just mocks. (Owner 2026-11-02.)
+
 ## 1. PHASE 2 — OPEN (current priority)
 
 ### 1.0d Phase-2 THIRD RE-REVIEW findings (2026-10-21d) — full doc: docs/current/PHASE2_REREVIEW_2026-10-21d.md

@@ -1269,6 +1269,25 @@ def _drive_next_phase(completed_phase: str) -> dict:
     just reconcile all pending queues. Delegates to _reconcile_pending so the
     event-driven path and the scheduled backstop share ONE drain implementation.
     """
+    # On Phase-3 completion, drain the unscanned/ AV queue: downloaded map/image binaries were
+    # staged to unscanned/ by the Phase-3 final sync (never prod un-scanned). Scan+promote them
+    # with the SAME ClamAV scanner (clean->prod, infected->quarantine/+alert, unscannable->stay).
+    # Fail-safe: a drain error never blocks phase chaining.
+    if completed_phase == "3" and AV_SCAN_ENABLED:
+        try:
+            from src.ingestion.av_scan import drain_unscanned
+
+            out = drain_unscanned(s3, BUCKET, _make_av_scanner())
+            logger.info(
+                "OBSERV av.phase3_drain promoted=%d quarantined=%d status=ok",
+                len(out.clean_keys),
+                len(out.quarantined_keys),
+            )
+        except Exception as e:  # noqa: BLE001 - AV drain must not block phase chaining
+            logger.warning(
+                "OBSERV av.phase3_drain_failed reason=%s status=warn", type(e).__name__
+            )
+
     launched = _reconcile_pending(reason=f"phase-{completed_phase}-complete")
     return {
         "action": "drive_next_phase",
