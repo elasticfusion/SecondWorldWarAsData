@@ -276,3 +276,68 @@ def test_run_for_phase_times_out_without_hanging(monkeypatch):
     elapsed = time.time() - start
     assert elapsed < 5  # returned promptly, did NOT hang 30s
     assert out.get("skipped") == "timeout"
+
+
+# --- PR2: anti-swallow — unreadable files are counted + surfaced, not silently skipped ---
+
+
+def test_unreadable_record_emits_observ_and_continues(caplog):
+    """V2: a record whose read_json raises must emit OBSERV referential.record_unreadable
+    (status=warn) and NOT silently shrink the PK set without a signal."""
+    import logging
+
+    corpus = _corpus()
+
+    class RaisingStorage(FakeStorage):
+        def read_json(self, path):
+            if path == "people/b.json":
+                raise OSError("disk gremlin")
+            return self.files[path]
+
+    st = RaisingStorage(corpus)
+    with caplog.at_level(logging.WARNING):
+        sets = ria.build_pk_sets(st)  # must not raise
+    assert P1 in sets["people"]  # the readable record still collected
+    assert any(
+        "OBSERV referential.record_unreadable" in r.message
+        and "file=b.json" in r.message
+        and "status=warn" in r.message
+        for r in caplog.records
+    ), "unreadable record was silently skipped (no OBSERV)"
+
+
+def test_unreadable_event_file_emits_observ(caplog):
+    """V2: an unreadable event file must emit OBSERV referential.event_file_unreadable."""
+    import logging
+
+    class RaisingEventStorage(FakeStorage):
+        def read_json(self, path):
+            if path.endswith("-event.json"):
+                raise ValueError("corrupt event json")
+            return self.files[path]
+
+    st = RaisingEventStorage(_corpus())
+    with caplog.at_level(logging.WARNING):
+        ria.build_pk_sets(st)
+    assert any(
+        "OBSERV referential.event_file_unreadable" in r.message
+        and "status=warn" in r.message
+        for r in caplog.records
+    )
+
+
+def test_enforce_emits_canonical_audit_observ(caplog):
+    """U3: enforce() emits a canonical OBSERV referential.audit with total_dangling + status
+    (warn when dangling present). The _corpus has known dangling refs (MISSING)."""
+    import logging
+
+    st = FakeStorage(_corpus())
+    with caplog.at_level(logging.WARNING):
+        report = ria.enforce(st)
+    assert report["total_dangling"] > 0
+    assert any(
+        "OBSERV referential.audit" in r.message
+        and "status=warn" in r.message
+        and f"total_dangling={report['total_dangling']}" in r.message
+        for r in caplog.records
+    )
