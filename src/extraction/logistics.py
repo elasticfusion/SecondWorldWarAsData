@@ -15,6 +15,8 @@ from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
 
 logger = logging.getLogger(__name__)
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 
 # Pydantic models
 class QuantityInfo(BaseModel):
@@ -385,7 +387,7 @@ Return empty logistics arrays for sub-events with no issues."""
     except GrokTruncationError:
         # Propagate to extract_with_chunk_halving (recursive halving, #488) instead of swallowing
         # to {} (which dropped the whole chunk on truncation).
-        logger.warning("OBSERV logistics.truncated -> propagating to chunk halver")
+        observe_warn("logistics", "truncated", note="propagating to chunk halver")
         raise
     except Exception as e:
         logger.error("Batch logistics extraction failed: %s", e)

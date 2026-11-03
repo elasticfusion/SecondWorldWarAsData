@@ -24,6 +24,8 @@ from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 # Hosts whose in-document map links we will follow. HyperWar/ibiblio is the curated corpus source;
 # same-host-as-the-document is also allowed. Everything else is skipped (defense-in-depth beyond the
 # SSRF IP gate — an in-doc link should point at the document's own asset host, not arbitrary sites).
@@ -98,7 +100,7 @@ def _recycle_as_source(
             map_id=map_id, map_title=map_title, source_url=img_url, depicted=depicted
         )
     except Exception as e:  # noqa: BLE001
-        logger.warning("OBSERV map_link.error map=%s reason=%s", map_id, str(e)[:120])
+        observe_warn("map_link", "error", map=map_id, reason=str(e)[:120])
         return False
 
 
@@ -206,7 +208,7 @@ def _ingest_one_link(
         else:
             summary["skipped"] += 1
     except Exception as e:  # noqa: BLE001 - one bad link must not crash the ingest
-        logger.warning("OBSERV map_link.error map=%s reason=%s", map_id, str(e)[:120])
+        observe_warn("map_link", "error", map=map_id, reason=str(e)[:120])
         summary["skipped"] += 1
 
 

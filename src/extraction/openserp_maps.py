@@ -24,6 +24,8 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 
 logger = logging.getLogger(__name__)
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 
 def _is_trusted_domain(domain: str) -> bool:
     """Check if domain is trusted (.gov or .edu)."""
@@ -633,7 +635,7 @@ def _recycle_map_as_source(
             depicted=depicted,
         )
     except Exception as e:  # noqa: BLE001 - recycle must never crash the map import
-        logger.warning("OBSERV map_source.error map=%s reason=%s", map_id, str(e)[:120])
+        observe_warn("map_source", "error", map=map_id, reason=str(e)[:120])
         return False
 
 

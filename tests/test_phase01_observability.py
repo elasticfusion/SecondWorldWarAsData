@@ -20,10 +20,12 @@ def test_phase0_main_no_key(caplog, monkeypatch):
     import phase0_convert as P0
 
     monkeypatch.delenv("CONVERT_KEY", raising=False)
-    with caplog.at_level(logging.WARNING, logger="phase0_convert"):
+    # OBSERV now routes through the observe() sink (src.utils.observe logger), not a bare
+    # phase0_convert logger.warning — capture at root so the sink line is recorded.
+    with caplog.at_level(logging.WARNING):
         rc = P0.main()
     assert rc == 2
-    assert "OBSERV phase0.error reason=no_convert_key" in caplog.text
+    assert "OBSERV phase0.error status=warn reason=no_convert_key" in caplog.text
 
 
 def test_phase1_observe_book_parsed(tmp_path, caplog):

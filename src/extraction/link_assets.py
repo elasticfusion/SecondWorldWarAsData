@@ -28,6 +28,8 @@ from src.ingestion.source_metadata import MediaType
 
 logger = logging.getLogger(__name__)
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 # [text](target) — ordinary markdown links. Images (![...]) are handled by the M2/M3 image path, so
 # exclude a leading '!' via a negative lookbehind. target stops at the first ')' or whitespace.
 _MD_LINK = re.compile(r"(?<!\!)\[([^\]]*)\]\(([^)\s]+)\)")
@@ -162,7 +164,7 @@ def enqueue_doc_links(
                 continue
             _enqueue_one(fp, la, book, base_url, verdict, source_section_id, summary)
     except Exception as e:  # noqa: BLE001 - enqueue must never crash the pipeline
-        logger.warning("OBSERV link_asset.error reason=%s", str(e)[:120])
+        observe_warn("link_asset", "error", reason=str(e)[:120])
     logger.info(
         "OBSERV link_asset.summary book=%s links=%d enqueued=%d dropped=%d anchors=%d",
         book,
@@ -224,4 +226,4 @@ def _enqueue_one(
             la.url,
         )
     except Exception as e:  # noqa: BLE001
-        logger.warning("OBSERV link_asset.error url=%s reason=%s", la.url, str(e)[:120])
+        observe_warn("link_asset", "error", url=la.url, reason=str(e)[:120])

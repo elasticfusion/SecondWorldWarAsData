@@ -21,6 +21,8 @@ import boto3
 logger = logging.getLogger(__name__)
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
+from src.utils.observe import observe_error  # noqa: E402
+
 STATUS_KEY = "dedup/review_status.json"
 
 # Entity ID fields per type
@@ -250,7 +252,7 @@ def _rebase_one_event_file(storage, rel, old_id, new_id, ref_key):
         try:
             storage.write_json(rel, d)
         except Exception as e:
-            logger.error("OBSERV dedup.rebase.write_failed file=%s err=%s", rel, e)
+            observe_error("dedup", "rebase.write_failed", file=rel, err=e)
             return 0
     return changed
 

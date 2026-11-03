@@ -18,6 +18,8 @@ from src.grok_client import GrokClient
 
 logger = logging.getLogger(__name__)
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 
 def load_whitelisted_sites(
     blacklist_file: Path = Path("config/domain_blacklist.yaml"),
@@ -179,7 +181,7 @@ def verify_map_with_vision(
         if not ok:
             return False, reason
     except Image.DecompressionBombError as e:
-        logger.warning("OBSERV maps.image_bomb_rejected err=%s", str(e)[:120])
+        observe_warn("maps", "image_bomb_rejected", err=str(e)[:120])
         return False, f"Image rejected (decompression bomb): {e}"
     except Exception as e:
         return False, f"Invalid image: {e}"

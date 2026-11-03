@@ -23,6 +23,8 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 # source_type marker so downstream consumers + validation distinguish CHART-DERIVED (vision-inferred
 # command structure) events from prose-stated ones. Mirrors map_source_adapter.MAP_SOURCE_TYPE.
 CHART_SOURCE_TYPE = "chart"
@@ -291,7 +293,7 @@ def _chart_vision_read(
         depicted = result.get("depicted")
         return depicted if isinstance(depicted, dict) else {}
     except Exception as e:  # noqa: BLE001
-        logger.warning("OBSERV chart_source.vision_error reason=%s", str(e)[:120])
+        observe_warn("chart_source", "vision_error", reason=str(e)[:120])
         return {}
 
 
@@ -352,5 +354,5 @@ def ingest_affirmed_chart(
     except (
         Exception
     ) as e:  # noqa: BLE001 - ingestion must never crash the affirm action
-        logger.warning("OBSERV chart_source.error reason=%s", str(e)[:120])
+        observe_warn("chart_source", "error", reason=str(e)[:120])
         return False

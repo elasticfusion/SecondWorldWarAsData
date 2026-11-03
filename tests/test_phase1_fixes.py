@@ -302,9 +302,13 @@ def test_lambda_run_parse_no_chapters_is_loud(tmp_path, caplog, monkeypatch):
     # phase1_handler imports discover_content_structure inside _run_parse via src.discovery
     (tmp_path / "content").mkdir()
     storage = Mock()
-    with caplog.at_level(logging.WARNING, logger=H.__name__):
+    # OBSERV now routes through the observe() sink (src.utils.observe logger); capture at root.
+    with caplog.at_level(logging.WARNING):
         H._run_parse(tmp_path, "MissingBook", storage)
-    assert "OBSERV phase1.skipped book=MissingBook reason=no_chapters" in caplog.text
+    assert (
+        "OBSERV phase1.skipped status=warn book=MissingBook reason=no_chapters"
+        in caplog.text
+    )
 
 
 # ---------------------------------------------------------------------------
