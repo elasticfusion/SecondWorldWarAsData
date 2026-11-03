@@ -109,16 +109,15 @@ def _redact(params: Optional[Dict[str, Any]]) -> Dict[str, Any]:
 def _table():
     """DynamoDB table handle (dev-wwii-api-cache), or None (local/test). Mirrors url_registry."""
     try:
-        import boto3
-
         from src.utils.config import load_config
+        from src.utils.aws_clients import get_dynamo_table
 
         aws = load_config().get("aws", {})
         if not aws.get("enabled"):
             return None
         name = aws.get("cache_table", "dev-wwii-api-cache")
         region = aws.get("region", "us-east-1")
-        return boto3.resource("dynamodb", region_name=region).Table(name)
+        return get_dynamo_table(name, region=region)
     except Exception as e:  # noqa: BLE001
         logger.debug("fetch-provenance table unavailable: %s", e)
         return None
