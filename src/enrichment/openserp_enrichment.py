@@ -1425,6 +1425,17 @@ def _mark_openserp_searched(data: Dict) -> None:
     data["openserp_searched_at"] = int(_time.time())
 
 
+def _reset_and_check_reachable(openserp_url: str) -> bool:
+    """Shared driver prelude: reset the circuit breaker (don't inherit a prior book/run's state) and
+    check OpenSERP reachability. Returns True to proceed, False (with a loud warning) to skip. Every
+    enrich_*_with_openserp driver opens with this identical guard."""
+    reset_circuit()  # H3: don't inherit breaker state from a prior book/run
+    if not _openserp_reachable(openserp_url):
+        logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
+        return False
+    return True
+
+
 def _iter_loadable_records(directory: Path):
     """Yield (file, parsed_data) for each non-SKIP *.json file in ``directory`` (sorted) that
     parses as JSON; silently skips the index/skip files and any file that fails to parse.
@@ -1453,9 +1464,7 @@ def enrich_people_with_openserp(
     2. Verify candidates with Grok (cached — repeat runs are free)
     3. Write verified results to files
     """
-    reset_circuit()  # H3: don't inherit breaker state from a prior book/run
-    if not _openserp_reachable(openserp_url):
-        logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
+    if not _reset_and_check_reachable(openserp_url):
         return 0
 
     # Pass 1: Collect candidates from OpenSERP
@@ -1525,9 +1534,7 @@ def enrich_equipment_with_openserp(
     max_items: Optional[int] = None,
 ) -> int:
     """Add images to equipment files. Returns count enriched."""
-    reset_circuit()  # H3: don't inherit breaker state from a prior book/run
-    if not _openserp_reachable(openserp_url):
-        logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
+    if not _reset_and_check_reachable(openserp_url):
         return 0
 
     enriched = 0
@@ -1631,9 +1638,7 @@ def enrich_source_sections_with_openserp(
     OPERATION label (the coarse anchor — e.g. 'Battle of the Bulge') rather than granular event
     names. Only sections with an operation are searched. Native write, gated on
     openserp_searched (90-day), deduped. Returns count enriched."""
-    reset_circuit()  # don't inherit breaker state from a prior book/run
-    if not _openserp_reachable(openserp_url):
-        logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
+    if not _reset_and_check_reachable(openserp_url):
         return 0
 
     enriched = 0
@@ -1783,9 +1788,7 @@ def enrich_groups_with_openserp(
     records. Queries are nationality-disambiguated and WWII-scoped (people_groups.yaml), so a
     same-numbered unit from another conflict/army is not matched. Native write, gated on
     openserp_searched (90-day), deduped. Returns count enriched."""
-    reset_circuit()
-    if not _openserp_reachable(openserp_url):
-        logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
+    if not _reset_and_check_reachable(openserp_url):
         return 0
 
     enriched = 0
@@ -1982,9 +1985,7 @@ def enrich_places_with_openserp(
     is searched alongside its English name. Textual sources are fetched + summarized via
     process_positive_url (with pos/neg URL caching); images are verify-only. Native write,
     gated on openserp_searched (90-day), deduped. Returns count enriched."""
-    reset_circuit()
-    if not _openserp_reachable(openserp_url):
-        logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
+    if not _reset_and_check_reachable(openserp_url):
         return 0
 
     enriched = 0
