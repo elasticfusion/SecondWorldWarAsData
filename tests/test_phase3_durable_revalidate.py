@@ -64,3 +64,29 @@ def test_durable_fix_failsafe_never_raises(monkeypatch):
     monkeypatch.setattr(ee, "_download_s3_prefix", lambda s3, p: 0)
     monkeypatch.setattr("scripts.validate_phase3.run", lambda root, strict_coverage: 0)
     ee._phase3_durable_referential_fix()  # must not raise
+
+
+def test_durable_fix_runs_provenance_enforcement_in_prod(monkeypatch):
+    """PR1: the prod durable fix must run provenance_integrity.run_for_phase (previously only the
+    local/no-S3 branch did, so the provenance mandate's end-of-phase check never ran in prod).
+    """
+    ran = {"referential": False, "provenance": False}
+    monkeypatch.setattr(
+        "src.utils.referential_integrity.run_for_phase",
+        lambda root, phase="": ran.__setitem__("referential", True),
+    )
+    monkeypatch.setattr(
+        "src.utils.provenance_integrity.run_for_phase",
+        lambda root, phase="": ran.__setitem__("provenance", True),
+    )
+    monkeypatch.setattr(ee, "_s3_client", lambda: object())
+    monkeypatch.setattr(ee, "_download_s3_prefix_skip_existing", lambda s3, p: (0, 0))
+    monkeypatch.setattr(ee, "_download_s3_prefix", lambda s3, p: 0)
+    monkeypatch.setattr("scripts.validate_phase3.run", lambda root, strict_coverage: 0)
+
+    ee._phase3_durable_referential_fix()
+
+    assert ran["referential"], "referential enforcement did not run"
+    assert ran[
+        "provenance"
+    ], "provenance enforcement did not run in the prod durable fix (PR1 gap)"
