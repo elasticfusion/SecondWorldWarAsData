@@ -843,24 +843,10 @@ def _check_if_processed(event_file: Path, people_dir: Path) -> bool:
 
 
 def _load_book_metadata(event_file: Path) -> tuple[str, str, str]:
-    """Load book metadata from parsed file. Returns (book, author, series)."""
-    parsed_file = event_file.parent / event_file.name.replace(
-        "-event.json", "-parsed.json"
-    )
+    """Load book metadata from the ``-parsed.json`` sibling. Returns (book, author, series)."""
+    from src.extraction._entity_common import load_book_metadata, parsed_sibling
 
-    if not parsed_file.exists():
-        return "", "", ""
-
-    with open(parsed_file, "r", encoding="utf-8") as f:
-        parsed_data = json.load(f)
-        if not parsed_data:
-            return "", "", ""
-
-        return (
-            parsed_data.get("book", ""),
-            parsed_data.get("author", ""),
-            parsed_data.get("series", ""),
-        )
+    return load_book_metadata(parsed_sibling(event_file))
 
 
 def _load_people_index(index_file: Path) -> dict:
