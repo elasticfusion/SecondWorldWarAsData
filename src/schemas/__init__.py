@@ -81,6 +81,36 @@ ULID_PATTERN = "^[0-9A-HJKMNP-TV-Z]{26}$"
 # The single compiled form of ULID_PATTERN — import this instead of re-compiling the literal
 # (one source of truth for every runtime ULID check across the project).
 ULID_REGEX = re.compile(ULID_PATTERN)
+
+
+def strip_unmodeled_keys(
+    record: Dict[str, Any], schema: Dict[str, Any], observe_cb
+) -> int:
+    """Strip top-level keys that ``schema`` does NOT permit (not in ``properties`` and not matching
+    any ``patternProperties`` regex), IN PLACE, calling ``observe_cb(field_name)`` per stripped key.
+
+    Single source for the additionalProperties:false silent-drop class (#671): an unmodeled LLM key
+    would otherwise reject the WHOLE record, so we remove it (loud) and let the record persist. This
+    NEVER loosens validation — the caller still runs the full strict validate afterward, so every
+    modeled constraint (required/enum/type/nested) is still enforced. Returns the stripped count.
+    """
+    props = schema.get("properties", {})
+    allowed = set(props.keys()) if isinstance(props, dict) else set()
+    if not allowed:
+        return 0
+    pat = schema.get("patternProperties", {}) or {}
+    pats = [re.compile(p) for p in pat] if isinstance(pat, dict) else []
+
+    def _permitted(key: str) -> bool:
+        return key in allowed or any(rx.search(key) for rx in pats)
+
+    to_strip = [k for k in list(record.keys()) if not _permitted(k)]
+    for k in to_strip:
+        record.pop(k, None)
+        observe_cb(str(k)[:40])
+    return len(to_strip)
+
+
 DATE_PATTERN = "^\\d{4}-\\d{2}-\\d{2}$"
 DATE_MONTH_PATTERN = "^\\d{4}-\\d{2}(-\\d{2})?$"
 URL_PATTERN = "^https?://"

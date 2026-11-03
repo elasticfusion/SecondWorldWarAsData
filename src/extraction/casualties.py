@@ -16,7 +16,7 @@ import ulid
 from src.grok_client import GrokClient, BatchModeCollecting, GrokTruncationError
 from src.json_schemas import CASUALTY_ITEM_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
-from src.utils.observe import observe, observe_error
+from src.utils.observe import observe, observe_error, observe_warn
 
 logger = logging.getLogger(__name__)
 
@@ -472,17 +472,58 @@ def _has_casualty_mention(text: str) -> bool:
     return any(keyword in text_lower for keyword in keywords)
 
 
+def _coerce_casualty_schema_keys(item: Dict[str, Any]) -> None:
+    """Strip top-level keys CASUALTY_ITEM_SCHEMA does NOT permit, IN PLACE, so one stray LLM field
+    no longer trips additionalProperties:False and SILENTLY drops the WHOLE casualty item (#671
+    class). Each strip is a LOUD canonical OBSERV (anti-swallow: an unavoidable loss must be
+    observable). Fail-safe: never raises into extraction. Mirrors people_groups._coerce_group_schema_keys.
+    """
+    try:
+        from src.schemas import strip_unmodeled_keys
+
+        def _obs(field: str) -> None:
+            observe_warn(
+                "casualties",
+                "extra_field_stripped",
+                item=str(item.get("CasualtyID") or item.get("type") or "?")[:40],
+                field=field,
+                note="unmodeled top-level field removed so the item persists "
+                "(additionalProperties) — widen the schema if this field is wanted",
+            )
+
+        strip_unmodeled_keys(item, CASUALTY_ITEM_SCHEMA, _obs)
+    except Exception as e:  # noqa: BLE001 - normalization must never break extraction
+        logger.debug("casualty schema-key coercion skipped: %s", e)
+
+
 def _validate_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Validate casualty items against schema, dropping invalid ones."""
+    """Validate casualty items against schema, dropping invalid ones.
+
+    Each item is first key-coerced (unmodeled top-level keys stripped + loud OBSERV) so an extra
+    LLM field no longer rejects the whole item under additionalProperties:False (#671 class). A
+    still-invalid item (a real modeled-field violation) is dropped loudly, and any net drop is
+    surfaced as a canonical aggregate OBSERV (not a silent benign 0)."""
     from jsonschema import validate, ValidationError
 
+    received = len(items)
     valid = []
     for item in items:
+        _coerce_casualty_schema_keys(item)
         try:
             validate(instance=item, schema=CASUALTY_ITEM_SCHEMA)
             valid.append(item)
         except ValidationError as e:
             logger.warning("Dropping invalid casualty item: %s", e.message)
+    dropped = received - len(valid)
+    if dropped:
+        observe(
+            "casualties",
+            "items_dropped",
+            status="warn",
+            received=received,
+            kept=len(valid),
+            dropped=dropped,
+        )
     return valid
 
 
