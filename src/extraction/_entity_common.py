@@ -38,3 +38,16 @@ def load_book_metadata(parsed_file: Optional[Path]) -> Tuple[str, str, str]:
         parsed_data.get("author", ""),
         parsed_data.get("series", ""),
     )
+
+
+def load_json_index(index_file: Path) -> dict:
+    """Load a JSON index file into a dict, or return ``{}`` if it does not exist.
+
+    The single source of truth for the ``load index.json -> dict`` read that the per-entity
+    extractors (dates, places, weather_central, people) each duplicated. Callers that hold the
+    directory pass ``entity_dir / "index.json"``.
+    """
+    if index_file.exists():
+        with open(index_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}

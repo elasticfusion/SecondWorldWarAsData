@@ -263,13 +263,9 @@ def create_place_prompt(
 
 def _load_places_index(places_dir: Path) -> dict:
     """Load existing places index."""
-    index_file = places_dir / "index.json"
+    from src.extraction._entity_common import load_json_index
 
-    if index_file.exists():
-        with open(index_file, "r", encoding="utf-8") as f:
-            return json.load(f)
-
-    return {}
+    return load_json_index(places_dir / "index.json")
 
 
 def _load_book_metadata(parsed_file: Optional[Path]) -> tuple[str, str, str]:

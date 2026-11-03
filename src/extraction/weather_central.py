@@ -740,13 +740,9 @@ IMPORTANT:
 
 def _load_weather_index(weather_dir: Path) -> dict:
     """Load weather index from file."""
-    index_file = weather_dir / "index.json"
+    from src.extraction._entity_common import load_json_index
 
-    if index_file.exists():
-        with open(index_file, "r", encoding="utf-8") as f:
-            return json.load(f)
-
-    return {}
+    return load_json_index(weather_dir / "index.json")
 
 
 def _load_book_metadata_for_weather(

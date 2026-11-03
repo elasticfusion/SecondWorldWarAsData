@@ -851,10 +851,9 @@ def _load_book_metadata(event_file: Path) -> tuple[str, str, str]:
 
 def _load_people_index(index_file: Path) -> dict:
     """Load people index from file."""
-    if index_file.exists():
-        with open(index_file, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {}
+    from src.extraction._entity_common import load_json_index
+
+    return load_json_index(index_file)
 
 
 def _save_people_index(index_file: Path, index: dict) -> None:
