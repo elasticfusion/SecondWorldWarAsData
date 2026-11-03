@@ -390,16 +390,36 @@ def _load_parsed_docs(out) -> list:
     """Load all parsed.json docs under out/content (shared by the M1 map-link + M3 image-person
     steps). Fail-safe: returns [] on any error."""
     import json
+    import logging
 
+    log = logging.getLogger(__name__)
     docs = []
+    unreadable = 0
     try:
         for pf in (out / "content").rglob("*-parsed.json"):
             try:
                 docs.append(json.loads(pf.read_text(encoding="utf-8")))
-            except Exception:  # noqa: BLE001
-                continue
-    except Exception:  # noqa: BLE001
+            except (
+                Exception
+            ) as exc:  # noqa: BLE001 - a corrupt parsed doc is a loss, not silent
+                unreadable += 1
+                log.warning(
+                    "OBSERV phase3.parsed_doc_unreadable file=%s err=%s status=warn",
+                    pf.name,
+                    type(exc).__name__,
+                )
+    except Exception as exc:  # noqa: BLE001
+        log.warning(
+            "OBSERV phase3.parsed_docs_scan_failed err=%s status=error",
+            type(exc).__name__,
+        )
         return []
+    if unreadable:
+        log.warning(
+            "OBSERV phase3.parsed_docs_load loaded=%d unreadable=%d status=warn",
+            len(docs),
+            unreadable,
+        )
     return docs
 
 
