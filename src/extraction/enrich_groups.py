@@ -360,25 +360,9 @@ def _apply_group_enrichment(
 def _collect_group_enrichments(futures, total: int) -> int:
     """Drain the group-enrichment futures, counting successes + logging progress. Returns the
     enriched count."""
-    from concurrent.futures import as_completed
+    from src.extraction._entity_common import drain_enrichment_futures
 
-    enriched = 0
-    processed = 0
-    for future in as_completed(futures):
-        processed += 1
-        try:
-            if future.result():
-                enriched += 1
-        except Exception as e:
-            logger.warning("Failed to enrich group %s: %s", futures[future].stem, e)
-        if processed % 10 == 0 or processed == total:
-            logger.info(
-                "  Groups progress: %d/%d done (%d enriched)",
-                processed,
-                total,
-                enriched,
-            )
-    return enriched
+    return drain_enrichment_futures(futures, total, "group")
 
 
 def enrich_all_groups(
