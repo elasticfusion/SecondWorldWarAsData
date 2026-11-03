@@ -208,6 +208,26 @@ def recorded_fetch(
 
         session = get_session()
 
+    # Defense-in-depth: recorded_fetch is for trusted FIXED first-party hosts, but validate the
+    # endpoint host anyway (reject loopback/private/link-local/metadata/bad-scheme) so a future
+    # caller passing a source/LLM-derived host can't turn this into an SSRF. clean_url is used only
+    # as a GATE (its normalized form is discarded — the real request keeps its query params).
+    from src.utils.url_hygiene import clean_url
+
+    if clean_url(endpoint) is None:
+        record_fetch_event(
+            provider=provider,
+            endpoint=endpoint,
+            kind=kind,
+            http_method=method,
+            request_params=params,
+            http_status=None,
+            outcome=ERROR,
+            latency_ms=0,
+            error="blocked_unsafe_host",
+        )
+        raise ValueError(f"recorded_fetch refused unsafe endpoint host: {endpoint}")
+
     start = time.monotonic()
     resp: Optional[requests.Response] = None
     try:
