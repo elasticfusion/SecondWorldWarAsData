@@ -419,9 +419,11 @@ def extract_places(
             len(place_dict.get("Place_Mentions", [])),
         )
 
-    # Save updated index
-    index_file = places_dir / "index.json"
-    write_json_with_lock(index_file, index)
+    # Merge our in-memory index entries into the AUTHORITATIVE on-disk index under the
+    # lock (never a full overwrite — that would clobber a concurrent/other-phase writer's
+    # entries). _find_or_create_place already persisted each new entry under the same lock;
+    # this union is a belt-and-suspenders for any entry only in this snapshot.
+    _persist_places_index(places_dir, index)
 
     _observe_places_yield(
         event_data, event_id, sub_events, places_updated, empty_counter
@@ -452,29 +454,24 @@ def _observe_places_yield(
     )
 
 
-def _find_or_create_place(
-    place_name: str,
-    mention: Dict[str, Any],
-    places_dir: Path,
-    index: Dict[str, str],
-) -> Path:
-    """Find existing place file or create new one."""
-    place_key = place_name.lower()
+def _persist_places_index(places_dir: Path, index: Dict[str, str]) -> None:
+    """Union the in-memory index entries into the authoritative on-disk index under the
+    lock — never a full overwrite (which would clobber a concurrent writer's entries).
+    """
+    from src.utils.file_lock import locked_json
 
-    if place_key in index:
-        # Existing place
-        return places_dir / index[place_key]
+    with locked_json(places_dir / "index.json") as (disk_index, save):
+        changed = False
+        for k, v in index.items():
+            if disk_index.get(k) != v:
+                disk_index[k] = v
+                changed = True
+        if changed:
+            save(disk_index)
 
-    # New place - create file
-    # HIGH#7a: PlaceID is a NEW entity id — MINT it server-side. Previously this reused the LLM's
-    # PlaceMentionID (both trusting an LLM id AND conflating a per-mention id with the entity id).
-    llm_place_id = mention.get("PlaceMentionID")
-    place_id = str(ulid.new())
-    if llm_place_id and llm_place_id != place_id:
-        logger.info("OBSERV id.minted entity=place field=PlaceID replaced_llm_value=1")
-    # Path-traversal guard: place_name is LLM-derived; the cosmetic replaces below do NOT block
-    # "..", backslash, NUL, leading dots. Route through the hardened sanitizer + symlink-resolved
-    # containment (write_json_with_lock does mkdir(parents=True)); fall back to the minted ULID.
+
+def _new_place_filename(place_name: str, place_id: str, places_dir: Path) -> str:
+    """Containment-safe filename for a new place (symlink-resolved; ULID fallback)."""
     from src.extraction.batch_parallel import (
         _safe_entity_filename,
         _contained_entity_path,
@@ -484,13 +481,23 @@ def _find_or_create_place(
     filename = _safe_entity_filename(
         f"{safe_name}_{place_id[:8]}.json", f"place_{place_id[:12]}"
     )
-    place_file = _contained_entity_path(places_dir, filename)
-    if place_file is None:
+    if _contained_entity_path(places_dir, filename) is None:
         filename = f"place_{place_id[:12]}.json"
-        place_file = places_dir / filename
+    return filename
 
-    # Initialize place data
-    place_data = {
+
+def _build_new_place_record(place_name: str, mention: Dict[str, Any]) -> Dict[str, Any]:
+    """Build a new place record (id minted server-side + coordinates + Phase-2 enrich).
+
+    Side-effect-free w.r.t. disk/index; the caller persists under the index lock."""
+    # HIGH#7a: PlaceID is a NEW entity id — MINT it server-side. Previously this reused the LLM's
+    # PlaceMentionID (both trusting an LLM id AND conflating a per-mention id with the entity id).
+    llm_place_id = mention.get("PlaceMentionID")
+    place_id = str(ulid.new())
+    if llm_place_id and llm_place_id != place_id:
+        logger.info("OBSERV id.minted entity=place field=PlaceID replaced_llm_value=1")
+
+    place_data: Dict[str, Any] = {
         "PlaceID": place_id,
         "current_name": place_name,
         "historical_names": [],
@@ -500,7 +507,6 @@ def _find_or_create_place(
         "event_mentions": [],
     }
 
-    # Add coordinates if present
     if mention.get("latitude") and mention.get("longitude"):
         lat = mention["latitude"]
         lon = mention["longitude"]
@@ -511,13 +517,10 @@ def _find_or_create_place(
             "confidence": 0.8,
         }
         place_data["bounding_box"] = mention.get("bounding_box")
-        # Generate map URLs if not present
         place_data["map_urls"] = mention.get("map_urls") or _generate_map_urls(lat, lon)
 
-    # Phase-2 Grokipedia + Wikipedia descriptive lookup (sets grokipedia_url /
-    # wikipedia_url + image). Phase 2 owns ALL Grokipedia/Wikipedia enrichment; this
-    # augments in place before the native save. Hierarchy/names + geocoding stay in
-    # Phase 3. Fail-safe: never block extraction.
+    # Phase-2 Grokipedia + Wikipedia descriptive lookup. Phase 2 owns ALL Grokipedia/Wikipedia
+    # enrichment; this augments in place before the native save. Fail-safe: never block extraction.
     try:
         from src.extraction.enrich_places import (
             enrich_place_from_grokipedia,
@@ -529,14 +532,53 @@ def _find_or_create_place(
     except Exception as e:  # noqa: BLE001 - enrichment is best-effort
         logger.warning("  Grokipedia enrichment failed for place %s: %s", place_name, e)
 
-    # Write initial file
-    write_json_with_lock(place_file, place_data)
+    return place_data
 
-    # Update index
-    index[place_key] = filename
 
-    logger.debug(f"  Created new place: {filename}")
-    return place_file
+def _find_or_create_place(
+    place_name: str,
+    mention: Dict[str, Any],
+    places_dir: Path,
+    index: Dict[str, str],
+) -> Path:
+    """Find existing place file or create a new one — conflict-safe WITHOUT a queue.
+
+    The find-vs-create decision is serialised on the shared ``index.json`` under the
+    cross-process ``locked_json`` lock: the authoritative index is re-read INSIDE the
+    lock (so a concurrent/other-phase writer's just-created entry is seen), and a new
+    entry is persisted to ``index.json`` under the same lock before release. Two
+    overlapping writers (e.g. Phase 2 and a Phase 3 feedback re-run) therefore
+    converge to ONE file instead of each minting a duplicate that last-write-wins
+    would orphan. The passed-in in-memory ``index`` is still updated for the caller's
+    subsequent lookups, but the on-disk locked index is the source of truth."""
+    from src.utils.file_lock import locked_json
+
+    place_key = place_name.lower()
+
+    # Fast path: already known to this in-memory snapshot.
+    if place_key in index:
+        return places_dir / index[place_key]
+
+    index_file = places_dir / "index.json"
+    with locked_json(index_file) as (disk_index, save):
+        # Re-check under the lock against the AUTHORITATIVE on-disk index — a concurrent
+        # writer may have created this place since our snapshot was taken.
+        existing = disk_index.get(place_key)
+        if existing and not str(place_key).startswith("_"):
+            index[place_key] = existing  # refresh the caller's snapshot
+            return places_dir / existing
+
+        # Still absent under the lock -> we are the creator. Build + persist the record,
+        # then register it in the locked index before releasing (so the next waiter sees it).
+        place_data = _build_new_place_record(place_name, mention)
+        filename = _new_place_filename(place_name, place_data["PlaceID"], places_dir)
+        write_json_with_lock(places_dir / filename, place_data)
+
+        disk_index[place_key] = filename
+        save(disk_index)
+        index[place_key] = filename
+        logger.debug("  Created new place: %s", filename)
+        return places_dir / filename
 
 
 def _build_place_name_index(

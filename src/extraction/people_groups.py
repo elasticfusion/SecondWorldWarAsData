@@ -245,17 +245,66 @@ def _coerce_group_schema_keys(group: dict) -> None:
         logger.debug("group schema-key coercion skipped: %s", e)
 
 
+def _merge_existing_group(group_file: Path, group: dict, group_name: str) -> None:
+    """Merge `group` into an existing group file under its own lock (add-to-it)."""
+    from src.utils.file_lock import locked_json
+    from src.schemas import inject_metadata
+    from src.schemas.schema_contract import read_for_update
+
+    with locked_json(group_file) as (existing_group, save):
+        # Older records merge best-effort (upgrade case-by-case if registered); a FUTURE-schema
+        # record is skipped gracefully (code not built for it), never silently merged.
+        existing_group, skip = read_for_update(
+            existing_group, SCHEMA_TARGET, logger, group_name
+        )
+        if not skip:
+            merged = _merge_group(existing_group, group)
+            inject_metadata(merged)
+            save(merged)
+    logger.info("    Updated: %s", group_name)
+
+
+def _create_new_group(
+    groups_dir: Path, group: dict, group_id: str, group_name: str
+) -> Optional[str]:
+    """Create a new group file. Returns the filename on success, None if write-blocked."""
+    from src.utils.file_lock import write_json_with_lock
+    from src.schemas import inject_metadata
+
+    filename = _name_to_filename(group_name, group_id)
+    inject_metadata(group)
+    if write_json_with_lock(groups_dir / filename, group):
+        logger.info("    Created: %s", group_name)
+        return filename
+    # Write blocked (schema guard): do NOT index a file that was never written. LOUD canonical
+    # OBSERV — a residual schema-guard block AFTER key-coercion is real group data loss.
+    observe_warn(
+        "people_groups",
+        "create_blocked",
+        group=str(group_name)[:60],
+        reason="schema_guard_rejected_after_key_coercion",
+    )
+    logger.warning("    Create blocked (schema guard rejected): %s", group_name)
+    return None
+
+
 def _save_group(
     groups_dir: Path, index_file: Path, group: dict, book: str, author: str, series: str
 ):
-    """Save or merge a group file."""
+    """Save or merge a group file — conflict-safe WITHOUT a queue.
+
+    The find-vs-create decision is serialised on the shared group ``index_file`` under
+    the cross-process ``locked_json`` lock: the authoritative index is re-read INSIDE
+    the lock (so a concurrent/other-phase writer's just-created group is seen) and a
+    new group is registered in the index under the same lock before release. Two
+    overlapping writers therefore converge to ONE group file (merge-into) instead of
+    each minting a duplicate. The nested per-group-file lock in the merge path is on a
+    DIFFERENT file (the group record, not the index), so there is no deadlock."""
     group_name = group.get("group_name", "Unknown")
     # Strip unmodeled top-level keys BEFORE any write so additionalProperties:False cannot silently
     # drop the whole record (Force U/O/B loss); each strip is a loud OBSERV.
     _coerce_group_schema_keys(group)
-    # HIGH#7a: GroupID is a NEW entity id — MINT it server-side, never trust the LLM's value. The
-    # computed id MUST be written into the record (not just the filename) or the group has no
-    # primary key and is invisible to every cross-reference (casualties/logistics/maps resolve to it).
+    # HIGH#7a: GroupID is a NEW entity id — MINT it server-side, never trust the LLM's value.
     llm_group_id = group.get("GroupID")
     group_id = str(new_ulid())
     group["GroupID"] = group_id
@@ -270,54 +319,18 @@ def _save_group(
         mention["author"] = author
         mention["series"] = series
 
-    # Check if group already exists
+    from src.utils.file_lock import locked_json
+
     normalized = _normalize_name(group_name)
-    existing_filename = None
-    if index_file.exists():
-        with open(index_file, "r", encoding="utf-8") as f:
-            index = json.load(f)
-            existing_filename = index.get(normalized)
-
-    if existing_filename and (groups_dir / existing_filename).exists():
-        # Merge with existing
-        from src.utils.file_lock import locked_json
-        from src.schemas import inject_metadata
-        from src.schemas.schema_contract import read_for_update
-
-        with locked_json(groups_dir / existing_filename) as (existing_group, save):
-            # Read the historical record under this module's schema contract: older records
-            # merge best-effort (upgrade case-by-case if registered); a FUTURE-schema record
-            # is skipped gracefully (code not built for it), never silently merged.
-            existing_group, skip = read_for_update(
-                existing_group, SCHEMA_TARGET, logger, group_name
-            )
-            if not skip:
-                merged = _merge_group(existing_group, group)
-                inject_metadata(merged)
-                save(merged)
-        logger.info("    Updated: %s", group_name)
-    else:
-        # Create new file
-        filename = _name_to_filename(group_name, group_id)
-        filepath = groups_dir / filename
-        from src.utils.file_lock import write_json_with_lock
-        from src.schemas import inject_metadata
-
-        inject_metadata(group)
-        if write_json_with_lock(filepath, group):
-            _update_index(index_file, group_name, filename)
-            logger.info("    Created: %s", group_name)
+    with locked_json(index_file) as (index, save_index):
+        existing_filename = index.get(normalized)
+        if existing_filename and (groups_dir / existing_filename).exists():
+            _merge_existing_group(groups_dir / existing_filename, group, group_name)
         else:
-            # Write blocked (schema guard): do NOT index a file that was never written.
-            # LOUD canonical OBSERV (not a bare warning) — a residual schema-guard block AFTER
-            # key-coercion is real group data loss and must be greppable/escalatable.
-            observe_warn(
-                "people_groups",
-                "create_blocked",
-                group=str(group_name)[:60],
-                reason="schema_guard_rejected_after_key_coercion",
-            )
-            logger.warning("    Create blocked (schema guard rejected): %s", group_name)
+            filename = _create_new_group(groups_dir, group, group_id, group_name)
+            if filename:
+                index[normalized] = filename
+                save_index(index)
 
 
 def _observe_groups_yield(event_data: dict, produced: int) -> None:

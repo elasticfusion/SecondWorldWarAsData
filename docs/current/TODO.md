@@ -1647,3 +1647,12 @@ OFF pipeline-wide, phase0-3) for the current trusted-fresh validation cycle. Thi
 "cache off" = every run re-pays Grok API cost with no reuse, and it persists across deploys until
 flipped. ACTION: once the data-quality cycle concludes, set the stack param to `'0'` (or change the
 template default) to re-enable caching. (Operational note from the #648 independent review.)
+
+## LOW: gate.sh pytest step flakes (64 errors) — pre-existing, env-only
+`scripts/gate.sh`'s pytest step reports `1 failed, 64 errors` (tests/unit RuntimeError
+cascade) that is NOT reproducible running the identical command directly
+(`pytest tests/ -m "not slow and not requires_api" -q --tb=short` → 3394 passed, 0 errors).
+Confirmed PRE-EXISTING: reproduces on clean main with all local changes stashed. Likely a
+gate-script subshell/env artifact (stale /tmp/gate_tests, config swap, or resource state),
+not a real test failure. CI's own test job is the authoritative run. Fix: isolate the gate
+pytest step (fresh env, unique tmp, or run via the same invocation CI uses).
