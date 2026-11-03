@@ -22,6 +22,8 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 
 def _resolve_table(fp: Any) -> Any:
     """DynamoDB cache-table handle for the current runtime, or None (local/test).
@@ -156,7 +158,7 @@ def list_pending() -> List[Dict[str, Any]]:
     events, errors = _load_events_counted()
     pending = [e for e in events if e.get("review_status") == fp.PENDING]
     if not pending and errors > 0:
-        logger.warning("OBSERV fetch_review.load_errors errors=%d", errors)
+        observe_warn("fetch_review", "load_errors", errors=errors)
     return pending
 
 

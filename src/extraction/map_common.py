@@ -19,6 +19,8 @@ import ulid
 
 logger = logging.getLogger(__name__)
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 
 def base_map_record(
     *,
@@ -209,7 +211,7 @@ def _create_new_map(
     filename = _safe_entity_filename(f"{map_id}.json", f"map_{map_id[:12]}")
     map_file = _contained_entity_path(maps_dir, filename)
     if map_file is None:
-        logger.warning("OBSERV maps.create_path_unsafe url=%s status=warn", key[:120])
+        observe_warn("maps", "create_path_unsafe", url=key[:120])
         return None
     write_json_with_lock(map_file, record)
     url_index[key] = map_file.name
@@ -278,7 +280,7 @@ def download_map_image(url: str, map_id: str, files_dir: Path) -> tuple:
     files_dir.mkdir(parents=True, exist_ok=True)
     out = _contained_entity_path(files_dir, f"{map_id}.{ext}")
     if out is None:
-        logger.warning("OBSERV maps.download_path_unsafe map_id=%s status=warn", map_id)
+        observe_warn("maps", "download_path_unsafe", map_id=map_id)
         return None, None
     out.write_bytes(body)
     return str(out), ext

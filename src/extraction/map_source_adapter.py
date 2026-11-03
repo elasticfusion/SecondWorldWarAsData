@@ -17,6 +17,8 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 # The source_type marker so downstream consumers + validation can distinguish MAP-DERIVED
 # (vision-inferred) events from prose-stated ones (spec §4).
 MAP_SOURCE_TYPE = "map"
@@ -192,7 +194,7 @@ def build_map_parsed_source(
         )
         return parsed
     except Exception as e:  # noqa: BLE001 - adapter must never crash the map path
-        logger.warning("OBSERV map_source.error map=%s reason=%s", map_id, str(e)[:120])
+        observe_warn("map_source", "error", map=map_id, reason=str(e)[:120])
         return None
 
 
@@ -301,5 +303,5 @@ def recycle_map_as_source(
         )
         return True
     except Exception as e:  # noqa: BLE001 - recycle must never crash the caller
-        logger.warning("OBSERV map_source.error map=%s reason=%s", map_id, str(e)[:120])
+        observe_warn("map_source", "error", map=map_id, reason=str(e)[:120])
         return False

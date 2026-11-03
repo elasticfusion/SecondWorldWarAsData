@@ -27,6 +27,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 # Deterministic terrain/aerial cues in a caption (lowercased). Conservative: a people/equipment photo
 # caption should NOT trip these.
 _TERRAIN_CUES = (
@@ -80,7 +82,7 @@ def _grok_is_terrain(caption: str, grok_client: Any) -> Tuple[bool, str]:
         resp = (grok_client.chat_completion(prompt) or "").strip().upper()
         return (resp.startswith("TERRAIN"), "grok")
     except Exception as e:  # noqa: BLE001
-        logger.warning("OBSERV image_place.grok_error reason=%s", str(e)[:120])
+        observe_warn("image_place", "grok_error", reason=str(e)[:120])
         return (False, "grok-error")
 
 
@@ -261,7 +263,7 @@ def _set_image_content_location(
             return True
         return False
     except Exception as e:  # noqa: BLE001
-        logger.warning("OBSERV image_place.error reason=%s", str(e)[:120])
+        observe_warn("image_place", "error", reason=str(e)[:120])
         return False
 
 
@@ -475,4 +477,4 @@ def _link_one_image(
             else:
                 summary["skipped"] += 1
     except Exception as e:  # noqa: BLE001 - linking must never crash the pipeline
-        logger.warning("OBSERV image_place.error reason=%s", str(e)[:120])
+        observe_warn("image_place", "error", reason=str(e)[:120])

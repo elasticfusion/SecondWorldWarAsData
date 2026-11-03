@@ -13,7 +13,7 @@ import ulid
 from pydantic import BaseModel, Field, field_validator
 
 from src.grok_client import GrokClient, BatchModeCollecting
-from src.utils.observe import observe, observe_error
+from src.utils.observe import observe, observe_error, observe_warn
 from src.utils.http_pool import get_session
 from src.utils.json_validator import _fix_invalid_ulids
 from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
@@ -635,7 +635,7 @@ def _verify_media_with_vision(
             Image.MAX_IMAGE_PIXELS = _prev_max
 
     except Image.DecompressionBombError as e:
-        logger.warning("OBSERV equipment.image_bomb_rejected err=%s", str(e)[:120])
+        observe_warn("equipment", "image_bomb_rejected", err=str(e)[:120])
         return False, f"Image rejected (decompression bomb): {e}"
     except Exception as e:
         return False, f"Invalid image: {e}"

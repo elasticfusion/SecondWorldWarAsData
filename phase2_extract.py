@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 from src.utils.config import load_config, get_paths
+from src.utils.observe import observe_error
 from src.utils.logger import setup_logging
 from src.grok_client import GrokClient, BatchModeCollecting, current_book
 from src.extraction.events import extract_events
@@ -116,7 +117,7 @@ def _log_phase2_summary(output_root: Path, logger) -> dict:
             )
         return counts
     except Exception as e:  # noqa: BLE001 - summary must never break the run
-        logger.warning("OBSERV phase2.summary status=error reason=%s", type(e).__name__)
+        observe_error("phase2", "summary", reason=type(e).__name__)
         return {}
 
 

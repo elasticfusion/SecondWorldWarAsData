@@ -28,6 +28,8 @@ from src.utils.text_utils import normalize_name
 
 logger = logging.getLogger(__name__)
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 
 def _build_people_index(people_dir: Path) -> Tuple[Dict[str, Path], Dict[str, Path]]:
     """(full-name -> file, surname -> file) indexes over existing people records. Surname maps only
@@ -208,7 +210,7 @@ def _link_one_image(
             else:
                 summary["skipped"] += 1
     except Exception as e:  # noqa: BLE001 - linking must never crash the pipeline
-        logger.warning("OBSERV image_person.error reason=%s", str(e)[:120])
+        observe_warn("image_person", "error", reason=str(e)[:120])
 
 
 def _build_person_image_entry(

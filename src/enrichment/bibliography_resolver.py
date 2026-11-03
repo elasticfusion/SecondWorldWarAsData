@@ -23,6 +23,8 @@ from src.enrichment.local_holdings import build_holdings_index, find_local_holdi
 
 logger = logging.getLogger(__name__)
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 # Strip C0 controls (incl. \n AND \r) from any untrusted-at-rest text before it enters a
 # log line — prevents OBSERV log-line forging (repo convention; matches grok_client).
 _CTRL = re.compile(r"[\x00-\x1f\x7f]")
@@ -162,7 +164,7 @@ def _apply_local_holding(entry: Dict[str, Any], holdings: Any) -> bool:
         # Raised DEBUG->WARNING: held_unprocessed is NOT a resolution — the citation stays
         # UNRESOLVED pending ingestion. At DEBUG a backlog of held-but-unprocessed sources was
         # invisible and read as "resolved enough". Make the unresolved item loud + greppable.
-        logger.warning("OBSERV bibliography.held_unprocessed path=%s", local_path)
+        observe_warn("bibliography", "held_unprocessed", path=local_path)
     return True
 
 

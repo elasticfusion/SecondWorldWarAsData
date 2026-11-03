@@ -11,6 +11,9 @@ import tempfile
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+from src.utils.observe import observe_warn  # noqa: E402
+
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
 # A book_name is a single S3 path segment used to build a prefix. Restrict it to
@@ -125,7 +128,7 @@ def _run_parse(tmpdir: Path, book_name: str, storage) -> None:
     structure = discover_content_structure(tmpdir / "content")
     chapters = structure.get(book_name, [])
     if not chapters:
-        logger.warning("OBSERV phase1.skipped book=%s reason=no_chapters", book_name)
+        observe_warn("phase1", "skipped", book=book_name, reason="no_chapters")
         logger.warning("No chapters found for %s", book_name)
         return
 

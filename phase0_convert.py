@@ -38,6 +38,8 @@ from src.ingestion.text_converters import (
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger("phase0_convert")
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 REGION = os.getenv("AWS_DEFAULT_REGION", "us-east-1")
 BUCKET = os.getenv("S3_BUCKET", "")
 
@@ -309,7 +311,7 @@ def main() -> int:
     key = os.getenv("CONVERT_KEY", "")
     if not key:
         logger.error("CONVERT_KEY env var not set — nothing to convert")
-        logger.warning("OBSERV phase0.error reason=no_convert_key")
+        observe_warn("phase0", "error", reason="no_convert_key")
         return 2
     out = convert_key(key)
     return 0 if out else 1

@@ -22,6 +22,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
+from src.utils.observe import observe_warn  # noqa: E402
+
 
 def _volume_of(url: str) -> Optional[str]:
     """The HyperWar volume key for a URL, or None if it is not a recognizable in-corpus volume page.
@@ -146,7 +148,7 @@ def process_doc_links(
                     target_vol,
                 )
     except Exception as e:  # noqa: BLE001 - must never crash the pipeline
-        logger.warning("OBSERV intra_corpus.error reason=%s", str(e)[:120])
+        observe_warn("intra_corpus", "error", reason=str(e)[:120])
     logger.info(
         "OBSERV intra_corpus.summary book=%s edges=%d anchors=%d queued=%d skipped=%d",
         book,
@@ -185,7 +187,7 @@ def _fetch_corpus_doc_body(url: str) -> Optional[bytes]:
             return None
         return text.encode("utf-8", "replace")
     except Exception as e:  # noqa: BLE001
-        logger.warning("OBSERV intra_corpus.error url=%s reason=%s", url, str(e)[:120])
+        observe_warn("intra_corpus", "error", url=url, reason=str(e)[:120])
         return None
 
 

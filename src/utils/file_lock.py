@@ -57,7 +57,9 @@ def _atomic_write_json(filepath: Path, data: Any) -> None:
     except BaseException as _se:
         if _os.path.exists(tname):
             _os.unlink(tname)
-        logger.warning("OBSERV locked_json.save_failed file=%s err=%s", filepath, _se)
+        from src.utils.observe import observe_warn
+
+        observe_warn("locked_json", "save_failed", file=str(filepath), err=str(_se))
         raise
 
 
