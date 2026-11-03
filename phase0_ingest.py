@@ -398,15 +398,31 @@ def _translate_converted_markdown(
     )
     grok = GrokClient(cache_dir)
     model_name = config.get("api", {}).get("grok", {}).get("model")
-    translated = passthrough = 0
+    translated = passthrough = errors = 0
     for md_path in md_files:
         orig_path = md_path.with_suffix(".orig.md")
         if orig_path.exists():
             continue  # already translated on a prior run — idempotent skip
-        # Each converted file is one document starting at physical page 1.
-        result = normalize_pages_to_english(
-            md_path.read_text(encoding="utf-8"), 1, grok, model_name=model_name
-        )
+        # Fail-safe PER FILE (mirrors _parse_one_source): one file's translate/network error must
+        # NOT abort the whole phase for every remaining file, and must be surfaced LOUDLY, not
+        # swallowed (anti-swallow rule). The file is skipped; the rest still process.
+        try:
+            # Each converted file is one document starting at physical page 1.
+            result = normalize_pages_to_english(
+                md_path.read_text(encoding="utf-8"), 1, grok, model_name=model_name
+            )
+        except Exception as exc:  # noqa: BLE001 - surface, never swallow, the failure
+            errors += 1
+            logger.error("Phase 0 translate FAILED for %s: %s", md_path.name, exc)
+            _observe(
+                logger,
+                "phase0_ingest.translate",
+                loud=True,
+                decision="error",
+                file=md_path.name,
+                detail=str(exc)[:120],
+            )
+            continue
         if not result.translated:
             passthrough += 1
             continue
@@ -424,9 +440,10 @@ def _translate_converted_markdown(
         )
     logger.info(
         "[phase0 pre-step] Per-page language pass: %d file(s) translated, "
-        "%d all-English",
+        "%d all-English, %d error(s)",
         translated,
         passthrough,
+        errors,
     )
     return translated, passthrough
 
