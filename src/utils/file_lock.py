@@ -378,6 +378,7 @@ def _is_non_entity_file(filepath: Path) -> bool:
         "not_people.json",
         "not_related.json",
         "related_groups_report.json",
+        "review_queue.json",
     ) or filepath.name.startswith(".")
 
 

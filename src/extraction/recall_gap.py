@@ -181,18 +181,15 @@ def _append_recall_gap_items(people_dir: Path, items: List[Dict[str, Any]]) -> N
     if not items:
         return
     queue_file = people_dir / "review_queue.json"
-    existing: List[Any] = []
-    if queue_file.exists():
-        try:
-            with open(queue_file, "r", encoding="utf-8") as f:
-                existing = json.load(f)
-            if not isinstance(existing, list):
-                existing = []
-        except (OSError, ValueError):
-            existing = []
-    existing.extend(items)
-    with open(queue_file, "w", encoding="utf-8") as f:
-        json.dump(existing, f, indent=2, ensure_ascii=False)
+    # Locked read-modify-write: review_queue.json is a shared human-review sink appended to by
+    # concurrent workers (bio_enrich_parallel / per-book tasks). An unlocked read+extend+write
+    # lost-update would SILENTLY drop rank-anchored names this function promises to never drop.
+    from src.utils.file_lock import locked_json
+
+    with locked_json(queue_file) as (data, save):
+        existing = data if isinstance(data, list) else []
+        existing.extend(items)
+        save(existing)
 
 
 def record_people_recall_gaps(

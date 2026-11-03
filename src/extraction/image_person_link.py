@@ -233,28 +233,32 @@ def _append_person_image(
     source_section_id: Optional[str] = None,
 ) -> bool:
     """Append a document-sourced image entry to a person's images[] (schema-valid
-    {url,title,source,SourceSectionID}; dedup by url) via the central guarded writer.
-    ``source_section_id`` is the durable ULID attribution back to the originating source_section.
-    Fail-safe; returns True iff written."""
+    {url,title,source,SourceSectionID}; dedup by url) under a LOCKED read-modify-write so a
+    concurrent linker (or enrich_biographies, which also appends images[]) cannot lose-update the
+    append. ``locked_json``'s save runs the SAME central guard (validates as 'people' from the
+    path). ``source_section_id`` is the durable ULID attribution. Fail-safe; True iff written.
+    """
     try:
-        rec = json.loads(person_file.read_text(encoding="utf-8"))
-        if not isinstance(rec, dict):
-            return False
-        images = rec.get("images")
-        if not isinstance(images, list):
-            images = []
-        if any(isinstance(e, dict) and e.get("url") == url for e in images):
-            return False  # already linked (dedup by url)
-        images.append(_build_person_image_entry(url, caption, book, source_section_id))
-        rec["images"] = images
-        from src.utils.file_lock import write_json_with_lock
+        from src.utils.file_lock import locked_json
 
-        if not write_json_with_lock(person_file, rec, entity="people"):
-            logger.warning(
-                "OBSERV image_person.write_blocked person=%s — guard refused",
-                person_file.name,
+        with locked_json(person_file) as (rec, save):
+            if not isinstance(rec, dict) or not rec:
+                return False
+            images = rec.get("images")
+            if not isinstance(images, list):
+                images = []
+            if any(isinstance(e, dict) and e.get("url") == url for e in images):
+                return False  # already linked (dedup by url)
+            images.append(
+                _build_person_image_entry(url, caption, book, source_section_id)
             )
-            return False
+            rec["images"] = images
+            if not save(rec):
+                logger.warning(
+                    "OBSERV image_person.write_blocked person=%s — guard refused",
+                    person_file.name,
+                )
+                return False
         logger.info(
             "OBSERV image_person.linked person=%s book=%s source_section=%s",
             person_file.stem,
