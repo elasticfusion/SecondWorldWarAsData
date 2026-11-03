@@ -1,9 +1,9 @@
 """Strict output schema for image files (output/images/*.json).
 
 Images are media records (photos/diagrams) discovered in sources, linked to the entity
-graph via Event/Place/Date mention IDs. Previously there was NO enforced output schema (only
-the extraction-time json_schemas.IMAGES_SCHEMA, which real records did not satisfy) — this
-closes that gap so image records are version-gated like every other entity.
+graph via Event/Place/Date mention IDs. Previously there was NO enforced output schema for
+image records (and the historical extraction-time image schema did not match real records) —
+this closes that gap so image records are version-gated like every other entity.
 """
 
 from src.schemas import (
