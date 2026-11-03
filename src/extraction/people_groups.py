@@ -354,24 +354,12 @@ def _observe_groups_yield(event_data: dict, produced: int) -> None:
 def _load_book_metadata_for_groups(event_file: Path) -> tuple[str, str, str]:
     """Load (book, author, series) from the ``-parsed.json`` sibling of ``event_file``.
 
-    Mirrors people._load_book_metadata / dates._load_book_metadata_for_dates (same-code): event
-    files carry no top-level book/author/series, so provenance metadata must come from the parsed
-    document. Returns empty strings when the sibling is absent/empty (the caller fails loud).
+    Delegates to the shared entity-common loader (same safe isinstance-dict guard as every other
+    entity extractor). Returns empty strings when the sibling is absent/empty (caller fails loud).
     """
-    parsed_file = event_file.parent / event_file.name.replace(
-        "-event.json", "-parsed.json"
-    )
-    if not parsed_file.exists():
-        return "", "", ""
-    with open(parsed_file, "r", encoding="utf-8") as f:
-        parsed_data = json.load(f)
-    if not parsed_data:
-        return "", "", ""
-    return (
-        parsed_data.get("book", ""),
-        parsed_data.get("author", ""),
-        parsed_data.get("series", ""),
-    )
+    from src.extraction._entity_common import load_book_metadata, parsed_sibling
+
+    return load_book_metadata(parsed_sibling(event_file))
 
 
 def _call_groups_grok(prompt, event_file, event_data, grok_client):

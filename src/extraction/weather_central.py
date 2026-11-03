@@ -753,19 +753,9 @@ def _load_book_metadata_for_weather(
     parsed_file: Optional[Path],
 ) -> tuple[str, str, str]:
     """Load book metadata from parsed file. Returns (book, author, series)."""
-    if not parsed_file or not parsed_file.exists():
-        return "", "", ""
+    from src.extraction._entity_common import load_book_metadata
 
-    with open(parsed_file, "r", encoding="utf-8") as f:
-        parsed_data = json.load(f)
-        if not isinstance(parsed_data, dict):
-            return "", "", ""
-
-        return (
-            parsed_data.get("book", ""),
-            parsed_data.get("author", ""),
-            parsed_data.get("series", ""),
-        )
+    return load_book_metadata(parsed_file)
 
 
 def _batch_extract_weather(
