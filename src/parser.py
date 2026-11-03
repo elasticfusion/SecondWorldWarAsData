@@ -491,7 +491,11 @@ def split_into_blocks(text: str) -> List[Tuple[str, bool]]:
         cleaned = cleaned.strip()
         if not cleaned:
             continue
-        # Skip standalone headings (unchanged behavior).
+        # Skip standalone headings (unchanged behavior). JUSTIFIED non-emission (not a silent
+        # content drop): a lone markdown heading (``#``/``##``, incl. asterisk-wrapped ``## *..*``)
+        # is structural navigation, NOT provenance-bearing prose — the chapter/section title is
+        # captured separately as document metadata, so dropping the heading block here loses no
+        # citable content and does not warrant an anomaly OBSERV.
         if _HEADING_PATTERN.match(cleaned):
             continue
         result.append((cleaned, is_quote))
@@ -514,18 +518,39 @@ def _build_page_map(content: str) -> Dict[int, int]:
 
 
 def _find_page_number(
-    para_text: str, content: str, page_map: Dict[int, int]
-) -> Optional[int]:
-    """Find page number for a paragraph based on its position."""
-    para_pos = content.find(para_text[:50])
+    para_text: str, content: str, page_map: Dict[int, int], search_from: int = 0
+) -> Tuple[Optional[int], int]:
+    """Find the page in effect for a paragraph by its position in the ORIGINAL content.
 
+    Returns ``(page_number, found_pos)``. ``search_from`` is the previous paragraph's position so
+    the scan is MONOTONIC: a paragraph whose leading text repeats an earlier phrase resolves to the
+    correct *sequential* occurrence instead of always the first (the content.find-from-0 bug). A
+    paragraph that cannot be located at all (marker-stripping shifted its prefix) returns
+    ``found_pos == -1`` so the caller can surface it; the returned position is otherwise clamped to
+    never precede ``search_from`` so the caller's cursor cannot go backwards.
+    """
+    probe = para_text[:60]
+    para_pos = content.find(probe, search_from)
+    if para_pos == -1:
+        # Not found at/after the cursor. Try a from-start search ONLY to recover a page estimate
+        # for a normalized block; the position we hand back is still clamped to search_from so the
+        # cursor stays monotonic (a genuinely-absent prefix returns -1 and the caller falls back).
+        fallback = content.find(probe)
+        located = max(fallback, search_from) if fallback != -1 else search_from
+        current_page = _page_in_effect(page_map, located)
+        return current_page, (-1 if fallback == -1 else located)
+    current_page = _page_in_effect(page_map, para_pos)
+    return current_page, para_pos
+
+
+def _page_in_effect(page_map: Dict[int, int], located: int) -> Optional[int]:
+    """The page whose marker is at or before ``located`` (markers precede the text they page)."""
     current_page = None
     for pos in sorted(page_map.keys()):
-        if pos < para_pos:
+        if pos <= located:
             current_page = page_map[pos]
         else:
             break
-
     return current_page
 
 
@@ -544,10 +569,22 @@ def _create_paragraphs(
     quotations stay distinct from the author's own prose.
     """
     paragraphs = []
+    search_from = 0  # monotonic cursor into the original content
+    unlocated = 0
 
     for i, (para_text, is_quote) in enumerate(paragraph_blocks):
         para_num = start_paragraph_num + i
-        current_page = _find_page_number(para_text, content, page_map)
+        current_page, found_pos = _find_page_number(
+            para_text, content, page_map, search_from
+        )
+        if found_pos == -1:
+            # The paragraph text wasn't locatable in the original content (marker stripping
+            # shifted its prefix). Page provenance falls back to the last-known page; surface it
+            # (a provenance mis-bind risk), never silently assert a wrong page.
+            if page_map:
+                unlocated += 1
+        else:
+            search_from = found_pos + 1  # advance so repeats resolve sequentially
 
         para = Paragraph(
             absolute_number=para_num,
@@ -558,6 +595,15 @@ def _create_paragraphs(
             is_quote=is_quote,
         )
         paragraphs.append(para)
+
+    if unlocated:
+        logger.warning(
+            "OBSERV parser.page_unlocated section=%s file=%s paragraphs=%d status=warn "
+            "(page_number fell back to last-known; position not found in source)",
+            section_id or "full",
+            file_path.name,
+            unlocated,
+        )
 
     return paragraphs
 

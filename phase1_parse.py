@@ -11,6 +11,22 @@ from src.utils.config import load_config, get_paths
 from src.utils.logger import setup_logging
 
 
+def _repo_relative(file_path) -> str:
+    """Return a repo-relative path string for provenance (avoids leaking the absolute host
+    path into parsed JSON that syncs to S3). Falls back to the basename if the file is not
+    under the current working directory, and to "" when there is no path."""
+    if not file_path:
+        return ""
+    try:
+        p = Path(file_path)
+        return str(p.relative_to(Path.cwd()))
+    except (ValueError, OSError, TypeError):
+        try:
+            return Path(file_path).name
+        except (TypeError, OSError):
+            return str(file_path)
+
+
 def _doc_to_dict(doc):
     """Convert a MarkdownDocument to a serializable dict."""
     return {
@@ -21,7 +37,7 @@ def _doc_to_dict(doc):
         "author": doc.author,
         "series": doc.series,
         "license": doc.license,
-        "source_file": str(doc.file_path),
+        "source_file": _repo_relative(doc.file_path),
         "_source_url": doc.source_url,
         "paragraphs": [
             {
