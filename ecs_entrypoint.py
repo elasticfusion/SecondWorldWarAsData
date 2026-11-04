@@ -839,7 +839,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
             },
         )
         _notify_failure(phase_script, result.returncode)
-        _final_sync(phase_script)
+        _final_sync_failed_phase(phase_script)
         _audit_failed_phase2(phase_script, result.returncode)
         if "phase3" not in phase_script:
             _remove_lock(phase_script)
@@ -1831,6 +1831,24 @@ def _offramp_doc_needs_review(reason: str) -> None:
         logger.info("doc lifecycle: %s -> needs-review (dedup gate: %s)", book, reason)
     except Exception as e:
         logger.warning("Failed to off-ramp doc %s to needs-review: %s", book, e)
+
+
+def _final_sync_failed_phase(phase_script: str) -> None:
+    """_final_sync on a FAILED phase's exit path. A sync failure here would otherwise propagate
+    and silently skip the failed-phase audit, lock release and NAT-lease drop that follow — so
+    it is caught and made LOUD (a lost upload is a real anomaly: status=error). Never raises.
+    """
+    try:
+        _final_sync(phase_script)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - must not skip the audit/cleanup that follows
+        observe_error(
+            "phase",
+            "final_sync_failed",
+            phase=Path(phase_script).stem,
+            error=type(e).__name__,
+        )
 
 
 def _audit_failed_phase2(phase_script: str, returncode: int) -> None:
@@ -4076,7 +4094,10 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     result = subprocess.run(cmd, cwd="/app", env=env, check=False)
 
     sync.stop()
-    _final_sync(phase_script)
+    if result.returncode != 0:
+        _final_sync_failed_phase(phase_script)
+    else:
+        _final_sync(phase_script)
 
     if result.returncode != 0:
         logger.error("Retrieve phase exited with code %d", result.returncode)
