@@ -11,6 +11,8 @@ import phase2_extract as p2
 def test_write_phase_results_enforcement_error_is_logged_not_nameerror(
     tmp_path, monkeypatch, caplog
 ):
+    # In-main enforcement is the LOCAL-run path (under S3_BUCKET it is deferred post-sync).
+    monkeypatch.delenv("S3_BUCKET", raising=False)
     output_root = tmp_path / "output"
     output_root.mkdir()
     (output_root / "content").mkdir()

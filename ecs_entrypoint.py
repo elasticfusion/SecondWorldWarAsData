@@ -1832,6 +1832,27 @@ def _offramp_doc_needs_review(reason: str) -> None:
         logger.warning("Failed to off-ramp doc %s to needs-review: %s", book, e)
 
 
+def _post_sync_integrity_enforce(phase_label: str) -> None:
+    """Referential (repair + audit) and provenance enforcement against the AUTHORITATIVE S3 corpus,
+    run AFTER ``_final_sync``. The phase processes skip their in-main enforcement when S3_BUCKET is
+    set because, before the sync, S3 holds only what the periodic background sync pushed — an
+    audit then reports records written in the final seconds as dangling. Never raises.
+    """
+    try:
+        from src.utils.referential_integrity import run_for_phase as _ref_enforce
+
+        # Repairs + re-audits S3 directly (S3Storage has the complete corpus incl. content/events).
+        _ref_enforce(WORKDIR / "output", phase=phase_label)
+    except Exception as e:  # noqa: BLE001 - enforcement must never crash teardown
+        logger.warning("post-sync referential enforcement skipped: %s", e)
+    try:
+        from src.utils.provenance_integrity import run_for_phase as _prov_enforce
+
+        _prov_enforce(WORKDIR / "output", phase=phase_label)
+    except Exception as e:  # noqa: BLE001 - enforcement must never crash teardown
+        logger.warning("post-sync provenance enforcement skipped: %s", e)
+
+
 def _phase3_durable_referential_fix() -> None:
     """Post-_final_sync referential repair + validation for Phase 3, run against the AUTHORITATIVE,
     COMPLETE corpus (S3 when S3_BUCKET is set) AFTER the local->S3 sync — so (a) the stale-sub-event
@@ -1839,23 +1860,7 @@ def _phase3_durable_referential_fix() -> None:
     overwrote) and (b) validation audits the real state (the in-task validator saw a local tree
     lacking output/content -> false EventID danglers). Fail-safe: never raises into the pipeline.
     """
-    try:
-        from src.utils.referential_integrity import run_for_phase as _ref_enforce
-
-        # Repairs + re-audits S3 directly (S3Storage has the complete corpus incl. content/events).
-        _ref_enforce(WORKDIR / "output", phase="Phase 3 (post-sync)")
-    except Exception as e:  # noqa: BLE001 - enforcement must never crash teardown
-        logger.warning("post-sync referential enforcement skipped: %s", e)
-    try:
-        # Provenance-completeness enforcement MUST also run on the authoritative post-sync corpus.
-        # main() runs it only on the local/no-S3 branch (the in-main run would be clobbered by the
-        # trailing sync), so without this the provenance mandate's end-of-phase check never ran in
-        # production. Same fail-safe contract as the referential enforce above.
-        from src.utils.provenance_integrity import run_for_phase as _prov_enforce
-
-        _prov_enforce(WORKDIR / "output", phase="Phase 3 (post-sync)")
-    except Exception as e:  # noqa: BLE001 - enforcement must never crash teardown
-        logger.warning("post-sync provenance enforcement skipped: %s", e)
+    _post_sync_integrity_enforce("Phase 3 (post-sync)")
     try:
         # validate_phase3 audits a LOCAL tree. Two staleness hazards to close so it reflects the
         # AUTHORITATIVE post-repair S3 state (else it false-FAILs):
@@ -1932,6 +1937,9 @@ def _post_process(phase_script: str, env: dict) -> None:
                 logger.warning("Failed to trigger Phase 2: %s", e)
             _invoke_trigger_phase_complete("1")
     if "phase2" in phase_script:
+        # _post_process always follows _final_sync (sync, retrieve and in-task-batch paths), so
+        # S3 now holds the complete Phase-2 corpus. Audit BEFORE dedup, as the in-main run did.
+        _post_sync_integrity_enforce("Phase 2 (post-sync)")
         dedup_ok = False
         for attempt in range(2):
             try:

@@ -552,6 +552,22 @@ def _extract_external_maps(base_dir, grok_client, paths, config, logger):
             logger.error("  Error importing from YAML: %s", e)
 
 
+def _local_integrity_enforce(output_root, logger) -> None:
+    """Referential + provenance end-of-phase enforcement on a LOCAL output tree. Never raises."""
+    try:
+        from src.utils.referential_integrity import run_for_phase as _ref_enforce
+
+        _ref_enforce(output_root, phase="Phase 2")
+    except Exception as _e:  # noqa: BLE001
+        logger.warning("referential-integrity enforcement skipped: %s", _e)
+    try:
+        from src.utils.provenance_integrity import run_for_phase as _prov_enforce
+
+        _prov_enforce(output_root, phase="Phase 2")
+    except Exception as _e:  # noqa: BLE001 - enforcement must never crash a phase
+        logger.warning("provenance-completeness enforcement skipped: %s", _e)
+
+
 def _event_file_sub_events(data: object) -> list:
     """Sub-events of a loaded event file.
 
@@ -1253,21 +1269,15 @@ def _write_phase_results(output_root, processed, failed):
     # reached by ALL modes (incl. the batch retrieve re-run), so counts reflect the final corpus.
     _phase2_counts = _log_phase2_summary(output_root, logger)
 
-    # End-of-phase referential-integrity enforcement — AFTER all extraction (incl. any batch
-    # re-run), so references are checked against the final corpus. Must never crash the phase.
-    try:
-        from src.utils.referential_integrity import run_for_phase as _ref_enforce
-
-        _ref_enforce(output_root, phase="Phase 2")
-    except Exception as _e:  # noqa: BLE001
-        logger.warning("referential-integrity enforcement skipped: %s", _e)
-
-    try:
-        from src.utils.provenance_integrity import run_for_phase as _prov_enforce
-
-        _prov_enforce(output_root, phase="Phase 2")
-    except Exception as _e:  # noqa: BLE001 - enforcement must never crash a phase
-        logger.warning("provenance-completeness enforcement skipped: %s", _e)
+    # End-of-phase referential + provenance enforcement — AFTER all extraction.
+    #   • ECS/S3 run (S3_BUCKET set): NOT here. The audit reads S3, but this process's output is
+    #     uploaded only AFTER it exits (ecs_entrypoint._final_sync); auditing now sees a partially-
+    #     synced corpus (whatever the periodic background sync pushed) -> false danglers (observed:
+    #     images.SourceSectionID 14/14 "dangling" for source_section files written seconds before).
+    #     It runs post-sync in ecs_entrypoint._post_sync_integrity_enforce("Phase 2").
+    #   • Local run (no S3_BUCKET): the local tree is authoritative -> run it here.
+    if not os.environ.get("S3_BUCKET"):
+        _local_integrity_enforce(output_root, logger)
 
     # Data-quality gate: compare extracted yield to the DETERMINISTIC floor from the source text.
     # A book-jeopardizing shortfall (the paragraph_numbers fingerprint) HALTS the job for
