@@ -27,7 +27,7 @@ def test_meta_yaml_sidecar_not_rejected_nor_queued():
     out, rej = _run(
         [
             "contentrepository/XChannel/chapter8/chapter8-meta.yaml",
-            "contentrepository/XChannel/chapter8/CHAPTER9-META.YML",
+            "contentrepository/XChannel/chapter9/CHAPTER9-META.YAML",
             "contentrepository/XChannel/chapter8/chapter8a-content.md",
         ]
     )
@@ -39,3 +39,16 @@ def test_other_yaml_still_rejected_to_review():
     out, rej = _run(["contentrepository/XChannel/chapter8/notes.yaml"])
     assert out == []
     rej.assert_called_once()
+
+
+def test_lookalikes_still_go_to_review():
+    for k in (
+        "contentrepository/XChannel/chapter8/chapter8-meta.yml",  # discovery ignores .yml
+        "contentrepository/XChannel/chapter8/evil.pdf-meta.yaml",  # content ext in stem
+        "contentrepository/XChannel/chapter8-meta.yaml",  # wrong depth
+        "contentrepository/XChannel/a/b/chapter8-meta.yaml",  # wrong depth
+        "other/XChannel/chapter8/chapter8-meta.yaml",  # wrong root
+        "contentrepository/XChannel/chapter8/-meta.yaml",  # empty stem
+    ):
+        out, rej = _run([k])
+        assert out == [] and rej.call_count == 1, k
