@@ -1,11 +1,11 @@
-"""Guard: in ECS, Phase 2's referential/provenance audit runs AFTER _final_sync, not before.
+"""Guard: in ECS, Phase 2's referential audit runs AFTER _final_sync (on success AND failure).
 
 XChannel ch8 e2e: the in-main audit read S3 before the final local->S3 sync and reported
-images.SourceSectionID 14/14 dangling — the source_section files existed locally and in S3
-seconds later. The final corpus audited clean for that edge.
+images.SourceSectionID 14/14 dangling — the source_section files existed seconds later and the
+final corpus audited clean for that edge. Provenance (local-tree) stays in-main.
 """
 
-import inspect
+import logging
 import os
 
 import pytest
@@ -15,41 +15,50 @@ import ecs_entrypoint  # noqa: E402
 import phase2_extract  # noqa: E402
 
 
-def test_phase2_main_defers_enforcement_when_s3():
-    src = inspect.getsource(phase2_extract)
-    i = src.index(
-        'if not os.environ.get("S3_BUCKET"):\n        _local_integrity_enforce('
-    )
-    assert i > 0
-    # no unconditional in-main referential enforcement left in phase2 main flow
-    assert src.count('phase="Phase 2"') == 2  # both inside _local_integrity_enforce
-
-
-def test_local_integrity_enforce_runs_both(monkeypatch, tmp_path):
+@pytest.fixture
+def _spies(monkeypatch):
     import src.utils.provenance_integrity as pi
-    import src.utils.referential_integrity as ri
 
     calls = []
     monkeypatch.setattr(
-        ri, "run_for_phase", lambda o, phase="": calls.append(("ri", phase))
+        phase2_extract,
+        "_local_referential_enforce",
+        lambda o, lg: calls.append("ref"),
     )
-    monkeypatch.setattr(
-        pi, "run_for_phase", lambda o, phase="": calls.append(("pi", phase))
-    )
-    phase2_extract._local_integrity_enforce(
-        tmp_path, phase2_extract.logging.getLogger("t")
-    )
-    assert calls == [("ri", "Phase 2"), ("pi", "Phase 2")]
+    monkeypatch.setattr(pi, "run_for_phase", lambda o, phase="": calls.append("prov"))
+    return calls
 
 
-def test_post_process_phase2_enforces_before_dedup(monkeypatch):
+def _write_results(tmp_path):
+    out = tmp_path / "output"
+    (out / "content").mkdir(parents=True)
+    try:
+        phase2_extract._write_phase_results(out, processed=1, failed=0)
+    except SystemExit:
+        pass  # downstream yield gate on an empty tmp corpus — not under test
+
+
+def test_s3_run_defers_referential_but_keeps_provenance(monkeypatch, tmp_path, _spies):
+    monkeypatch.setenv("S3_BUCKET", "b")
+    _write_results(tmp_path)
+    assert "ref" not in _spies and "prov" in _spies
+
+
+def test_local_run_does_both(monkeypatch, tmp_path, _spies):
+    monkeypatch.delenv("S3_BUCKET", raising=False)
+    _write_results(tmp_path)
+    assert "ref" in _spies and "prov" in _spies
+
+
+class _Stop(BaseException):  # not swallowed by _post_process's except Exception
+    pass
+
+
+def test_post_process_phase2_audits_before_dedup(monkeypatch):
     order = []
     monkeypatch.setattr(
-        ecs_entrypoint, "_post_sync_integrity_enforce", lambda lbl: order.append(lbl)
+        ecs_entrypoint, "_post_sync_referential_enforce", lambda lbl: order.append(lbl)
     )
-
-    class _Stop(BaseException):  # not swallowed by _post_process's except Exception
-        pass
 
     def _dedup(env):
         order.append("dedup")
@@ -61,13 +70,42 @@ def test_post_process_phase2_enforces_before_dedup(monkeypatch):
     assert order[:2] == ["Phase 2 (post-sync)", "dedup"]
 
 
-def test_post_sync_enforce_never_raises(monkeypatch):
-    import src.utils.provenance_integrity as pi
+def test_failed_phase2_is_still_audited(monkeypatch):
+    seen = []
+    monkeypatch.setattr(
+        ecs_entrypoint, "_post_sync_referential_enforce", lambda lbl: seen.append(lbl)
+    )
+    ecs_entrypoint._audit_failed_phase2("phase2_extract.py", 3)
+    ecs_entrypoint._audit_failed_phase2("phase3_enrich_data.py", 1)
+    assert seen == ["Phase 2 (post-sync, failed rc=3)"]
+
+
+@pytest.mark.parametrize(
+    "report,want",
+    [
+        ({"status": "ok", "total_dangling": 0}, "ok"),
+        ({"status": "unknown", "skipped": "timeout"}, "warn"),
+        (None, "warn"),
+    ],
+)
+def test_post_sync_audit_surfaces_unmeasured(monkeypatch, report, want):
+    import src.utils.referential_integrity as ri
+
+    obs = []
+    monkeypatch.setattr(ri, "run_for_phase", lambda o, phase="": report)
+    monkeypatch.setattr(ecs_entrypoint, "observe", lambda *a, **k: obs.append((a, k)))
+    ecs_entrypoint._post_sync_referential_enforce("Phase 2 (post-sync)")
+    assert obs[0][0] == ("integrity", "post_sync_audit") and obs[0][1]["status"] == want
+
+
+def test_post_sync_audit_never_raises(monkeypatch):
     import src.utils.referential_integrity as ri
 
     def boom(*a, **k):
         raise RuntimeError("x")
 
+    obs = []
     monkeypatch.setattr(ri, "run_for_phase", boom)
-    monkeypatch.setattr(pi, "run_for_phase", boom)
-    ecs_entrypoint._post_sync_integrity_enforce("Phase 2 (post-sync)")
+    monkeypatch.setattr(ecs_entrypoint, "observe", lambda *a, **k: obs.append(k))
+    ecs_entrypoint._post_sync_referential_enforce("P")
+    assert obs[0]["status"] == "warn" and obs[0]["error"] == "RuntimeError"
