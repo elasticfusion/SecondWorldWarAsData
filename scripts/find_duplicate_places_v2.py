@@ -121,6 +121,7 @@ def _extract_nested_coords(data: dict) -> tuple:
 
 
 MAX_DISTANCE_KM = 20  # Places farther apart than this are NOT duplicates
+_SUPPRESSED_UNVERIFIED = [0]  # weak-rule pairs skipped for unverified coords (per run)
 
 
 def _coords_verified(data: dict) -> bool:
@@ -139,6 +140,7 @@ def _coords_verified(data: dict) -> bool:
 
 def find_duplicate_places(places_dir: Path) -> List[Dict]:
     """Find potential duplicate places."""
+    _SUPPRESSED_UNVERIFIED[0] = 0
     places = _load_places(places_dir)
     excluded_pairs, excluded_names = _load_exclusions(places_dir)
 
@@ -185,6 +187,11 @@ def find_duplicate_places(places_dir: Path) -> List[Dict]:
             if not all_reviewed:
                 remaining.append(g)
         filtered = remaining
+    logger.info(
+        "OBSERV place_dedup.summary status=ok places=%d weak_suppressed_unverified=%d",
+        len(places),
+        _SUPPRESSED_UNVERIFIED[0],
+    )
     return filtered
 
 
@@ -392,7 +399,12 @@ def _evaluate_match(sim: float, dist, near: bool, verified: bool = True):
         elif dist is not None:
             reasons.add(f"{dist:.0f}km apart{qual}")
         return True, reasons
-    if near and sim >= 0.4 and verified:
+    if near and sim >= 0.4 and not verified:
+        # Countable, not silent: re-evaluated once Phase 3 geocoding verifies the coords.
+        logger.debug("OBSERV place_dedup.weak_suppressed_unverified sim=%.2f", sim)
+        _SUPPRESSED_UNVERIFIED[0] += 1
+        return False, set()
+    if near and sim >= 0.4:
         reasons.add(f"nearby + partial name match {sim:.0%}")
         return True, reasons
     return False, set()

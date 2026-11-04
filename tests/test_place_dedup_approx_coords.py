@@ -65,3 +65,45 @@ def test_run1_shapes_end_to_end(tmp_path):
     places = fdp._load_places(tmp_path)
     assert all(p["coords_verified"] is False for p in places)
     assert fdp._check_match(places[0], places[1])[0] is False
+
+
+def test_mixed_verification_is_unverified():
+    a = _p("Merderet River", 49.40, -1.35, True)
+    b = _p("Ste. Mère-Eglise", 49.41, -1.32, False)
+    assert fdp._check_match(a, b)[0] is False
+
+
+def test_geocoded_twin_does_match(tmp_path):
+    for n, lat, lon in (("merderet river", 49.40, -1.35), ("merderet", 49.401, -1.351)):
+        rec = {
+            "name": n.title(),
+            "PlaceID": n,
+            "geocode_source": "nominatim",
+            "coordinates": {"latitude": lat, "longitude": lon, **GUESS},
+        }
+        (tmp_path / f"{n}.json").write_text(json.dumps(rec), encoding="utf-8")
+    places = fdp._load_places(tmp_path)
+    assert all(p["coords_verified"] for p in places)
+    assert fdp._check_match(places[0], places[1])[0] is True
+
+
+def test_suppressed_pairs_are_counted(monkeypatch, caplog, tmp_path):
+    import logging
+
+    for n, lat, lon in (
+        ("merderet river", 49.40, -1.35),
+        ("ste mere-eglise", 49.41, -1.32),
+    ):
+        rec = {
+            "name": n.title(),
+            "coordinates": {"latitude": lat, "longitude": lon, **GUESS},
+        }
+        (tmp_path / f"{n}.json").write_text(json.dumps(rec), encoding="utf-8")
+    monkeypatch.setattr(fdp, "_load_exclusions", lambda d: (set(), set()))
+    monkeypatch.setattr(
+        "src.dedup.exclusions.load_reviewed_pairs", lambda *a, **k: set()
+    )
+    monkeypatch.setattr("src.dedup.incremental.get_last_dedup_run", lambda *a: None)
+    caplog.set_level(logging.INFO)
+    assert fdp.find_duplicate_places(tmp_path) == []
+    assert any("weak_suppressed_unverified=1" in r.getMessage() for r in caplog.records)
