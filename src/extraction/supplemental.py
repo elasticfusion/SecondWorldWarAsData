@@ -1,6 +1,7 @@
 """Supplemental material extraction from event data - Phase 1: Core Extraction."""
 
 import json
+import math
 import logging
 import hashlib
 from pathlib import Path
@@ -172,12 +173,12 @@ def _is_cross_reference(title: str) -> bool:
     return False
 
 
-def _sanitize_material(material: Dict[str, Any]) -> None:
+def _sanitize_material(material: Dict[str, Any], sub_event_id: str = "") -> None:
     """Sanitize a single supplemental material (modifies in place)."""
     _apply_defaults(material)
     _normalize_enums(material)
     _normalize_urls(material)
-    _normalize_citation(material)
+    _normalize_citation(material, sub_event_id)
 
 
 def _apply_defaults(material: Dict[str, Any]) -> None:
@@ -247,16 +248,147 @@ def _normalize_urls(material: Dict[str, Any]) -> None:
         material["resource_urls"] = []
 
 
-def _normalize_citation(material: Dict[str, Any]) -> None:
+def _normalize_citation(material: Dict[str, Any], sub_event_id: str = "") -> None:
     """Ensure citation has required fields and derive title from verbatim if needed."""
-    citation = material.get("citation") or {}
+    citation = material.get("citation")
+    if not isinstance(citation, dict):
+        citation = {}
     material["citation"] = citation
+    if citation.get("title") is not None and not isinstance(citation["title"], str):
+        citation["title"] = _scalar_text(
+            citation["title"]
+        )  # verbatim, else None -> derived
 
     if citation.get("title") is None or _is_cross_reference(citation.get("title", "")):
         citation["title"] = _derive_title_from_mentions(material.get("mentions") or [])
 
-    if citation.get("author") is None:
-        citation["author"] = []
+    _coerce_citation_types(citation, sub_event_id)
+
+
+# Key names the prompt historically used for schema properties (prompt/schema drift). Mapped so
+# their values are no longer silently ignored downstream (e.g. supplemental_advanced reads "isbn").
+_CITATION_KEY_ALIASES = {
+    "ISBN": "isbn",
+    "location": "publication_location",
+    "country": "publication_country",
+}
+
+
+_CITATION_STRING_FIELDS: Optional[tuple] = None
+
+
+def _citation_string_fields() -> tuple:
+    """Schema-derived ``["string","null"]`` citation fields (cached; never drifts from schema)."""
+    global _CITATION_STRING_FIELDS
+    if _CITATION_STRING_FIELDS is None:
+        schema: Dict[str, Any] = dict(
+            SUPPLEMENTAL_SCHEMA
+        )  # typed as object at module level
+        items: Dict[str, Any] = schema["properties"]["Supplemental_Material"]["items"]
+        props: Dict[str, Any] = (
+            items["properties"].get("citation", {}).get("properties", {})
+        )
+        _CITATION_STRING_FIELDS = tuple(
+            k
+            for k, v in props.items()
+            if "string" in (v.get("type") or []) and k != "title"
+        )
+    return _CITATION_STRING_FIELDS
+
+
+def _scalar_text(x: Any) -> Optional[str]:
+    """Verbatim text of a scalar (integral floats without '.0'); None for null/blank/bool/other."""
+    if x is None or isinstance(x, bool):
+        return None
+    if isinstance(x, float) and not math.isfinite(x):
+        return None
+    if isinstance(x, float) and x.is_integer():
+        x = int(x)
+    if isinstance(x, (str, int, float)):
+        t = str(x)
+        return t if t.strip() else None
+    return None
+
+
+def _as_text(v: Any) -> Any:
+    """Coerce a value to the schema's ``string|null`` VERBATIM. Lists join their scalar items with
+    '; ' (null/blank dropped). Non-scalars that cannot be rendered verbatim become None — the field
+    is lost, but never the whole sub-event."""
+    if v is None or isinstance(v, str):
+        return v
+    if isinstance(v, list):
+        parts = [t for t in (_scalar_text(x) for x in v) if t is not None]
+        return "; ".join(parts) or None
+    return _scalar_text(v)
+
+
+def _map_aliases(citation: Dict[str, Any], fixed: List[str]) -> None:
+    for old, new in _CITATION_KEY_ALIASES.items():
+        if old not in citation:
+            continue
+        val = citation.pop(old)
+        if citation.get(new) in (None, "", []):
+            citation[new] = val
+            fixed.append(f"{old}->{new}")
+        elif val not in (None, "", []) and val != citation[new]:
+            fixed.append(f"{old}->{new}(conflict_dropped)")
+
+
+def _coerce_author(citation: Dict[str, Any], fixed: List[str]) -> None:
+    author = citation.get("author")
+    if isinstance(author, list):
+        clean = [t for t in (_scalar_text(x) for x in author) if t is not None]
+    else:
+        # A lone string is wrapped VERBATIM — "Rapport, Leonard and Norwood, Arthur Jr." stays
+        # one entry (splitting would invent structure).
+        t = _scalar_text(author)
+        clean = [t] if t is not None else []
+    if clean != author:
+        if author is not None:
+            fixed.append("author")
+        citation["author"] = clean
+
+
+def _coerce_isbn(citation: Dict[str, Any], fixed: List[str]) -> None:
+    """Keep ``isbn`` a single parseable ISBN: first value stays, the rest go to isbn_edition."""
+    isbn = citation.get("isbn")
+    if not isinstance(isbn, list):
+        return
+    parts = [t for t in (_scalar_text(x) for x in isbn) if t is not None]
+    citation["isbn"] = parts[0] if parts else None
+    if parts[1:] and citation.get("isbn_edition") in (None, ""):
+        citation["isbn_edition"] = "; ".join(parts[1:])
+        fixed.append("isbn")
+    elif parts[1:]:
+        fixed.append("isbn(extra_dropped)")
+    else:
+        fixed.append("isbn")
+
+
+def _coerce_citation_types(citation: Dict[str, Any], sub_event_id: str = "") -> None:
+    """Coerce common LLM type/key slips to the schema, VERBATIM (never invent or split).
+
+    Validation errors are not retried, so ONE mistyped field dropped the WHOLE sub-event's materials
+    (XChannel ch8 8b: author as a string -> 9/9 sub-events, 0 of 102 endnotes). One counted OBSERV
+    warn per material names the response's Sub-eventID and the fields touched."""
+    fixed: List[str] = []
+    _map_aliases(citation, fixed)
+    _coerce_author(citation, fixed)
+    _coerce_isbn(citation, fixed)
+    for field in _citation_string_fields():
+        if field in citation:
+            val = _as_text(citation[field])
+            if val != citation[field] or type(val) is not type(citation[field]):
+                fixed.append(f"{field}:{type(citation[field]).__name__}")
+                citation[field] = val
+    if fixed:
+        observe_warn(
+            "supplemental",
+            "citation_coerced",
+            sub_event=(sub_event_id or "?")[:40],
+            fields=",".join(fixed)[:200],
+            note="LLM type/key slips coerced to the schema so the sub-event's materials persist",
+        )
 
 
 def _derive_title_from_mentions(mentions: list) -> str:
@@ -378,7 +510,7 @@ def sanitize_supplemental_data(data: Dict[str, Any]) -> Dict[str, Any]:
 
     # Sanitize each material
     for material in data.get("Supplemental_Material", []):
-        _sanitize_material(material)
+        _sanitize_material(material, str(data.get("Sub-eventID") or ""))
 
     return data
 
