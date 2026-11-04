@@ -847,6 +847,15 @@ def _process_batch_results(
             # Always name the exception type: str(TimeoutError()) is "", which logged a
             # reason-less "✗ chapter: " (an un-actionable alarm).
             logger.error("  ✗ %s: %s", name, _failure_reason(result))
+            observe_error(
+                "phase2",
+                "chapter_failed",
+                book=book_name,
+                chapter=name,
+                error=type(result).__name__,
+                reason=_failure_reason(result),
+                failed_so_far=results["failed"] + 1,
+            )
 
             cache_cmd = _get_cache_clear_command(book_name)
             logger.error("  💡 Clear cache: %s", cache_cmd)

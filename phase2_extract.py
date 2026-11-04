@@ -560,6 +560,10 @@ def _local_referential_enforce(output_root, logger) -> None:
         _ref_enforce(output_root, phase="Phase 2")
     except Exception as _e:  # noqa: BLE001
         logger.warning("referential-integrity enforcement skipped: %s", _e)
+        # Canonical, greppable: the audit did NOT run (not measured != clean).
+        observe_warn(
+            "integrity", "local_audit", phase="Phase 2", error=type(_e).__name__
+        )
 
 
 def _event_file_sub_events(data: object) -> list:
