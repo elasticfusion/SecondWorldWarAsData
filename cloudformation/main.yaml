@@ -42,6 +42,14 @@ Parameters:
     Default: 'false'
     AllowedValues: ['true', 'false']
     Description: M4 concurrency kill-switch — 'true' routes triggers to the SFN dispatcher
+  BatchPhase2:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: >-
+      Phase-2 extraction mode, passed through to ComputeStack (BATCH_PHASE2 task-def env).
+      'true' = async xAI Batch API (submit -> poller -> result mapping); 'false' = synchronous.
+      scripts/deploy_aws.py keeps the live value unless --batch-phase2 is given.
   PoolMin:
     Type: String
     Default: '2'
@@ -94,6 +102,7 @@ Resources:
       Parameters:
         EnvironmentName: !Ref EnvironmentName
         MultiDocEnabled: !Ref MultiDocEnabled
+        BatchPhase2: !Ref BatchPhase2
         PoolMin: !Ref PoolMin
         PoolMax: !Ref PoolMax
         VpcId: !GetAtt NetworkStack.Outputs.VpcId

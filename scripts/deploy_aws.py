@@ -10,6 +10,7 @@ Usage:
 
 import argparse
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Optional
@@ -100,11 +101,36 @@ def cmd_validate(_args):
     return errors == 0
 
 
+def batch_phase2_param(action: str, requested: Optional[str], existing: list) -> dict:
+    """CloudFormation parameter dict for ``BatchPhase2`` (Phase-2 batch mode).
+
+    * ``requested`` ('true'/'false') wins.
+    * Else on UPDATE: keep the live value (UsePreviousValue) — but only if the parent stack already
+      HAS the parameter (``existing`` = the stack's current Parameters); a parameter new to the
+      parent errors on UsePreviousValue, so fall back to the previous effective value ('false',
+      the ComputeStack default it was running with).
+    * Else ('create'): 'false'.
+    """
+    if requested is not None:
+        if requested not in ("true", "false"):
+            raise ValueError(
+                f"--batch-phase2 must be 'true' or 'false', got {requested!r}"
+            )
+        return {"ParameterKey": "BatchPhase2", "ParameterValue": requested}
+    if action == "update" and any(
+        p.get("ParameterKey") == "BatchPhase2" for p in existing
+    ):
+        return {"ParameterKey": "BatchPhase2", "UsePreviousValue": True}
+    return {"ParameterKey": "BatchPhase2", "ParameterValue": "false"}
+
+
 def cmd_deploy(args):
     """Deploy or update the CloudFormation stack."""
     if not cmd_validate(args):
+        # Non-zero exit: deploy_all.sh gates on this (`|| hard stop`); a bare return exited 0 and
+        # the caller carried on as if the stack had deployed.
         print("\nFix validation errors before deploying.")
-        return
+        sys.exit(1)
 
     # Read notification_email from config.yaml if not passed via CLI
     if not args.notification_email:
@@ -131,8 +157,11 @@ def cmd_deploy(args):
     gpu_az2 = gpu_azs[1] if len(gpu_azs) > 1 else gpu_azs[0]
 
     # Check if stack exists
+    existing_params: list = []
     try:
-        cf.describe_stacks(StackName=stack_name)
+        existing_params = cf.describe_stacks(StackName=stack_name)["Stacks"][0].get(
+            "Parameters", []
+        )
         action = "update"
     except cf.exceptions.ClientError:
         action = "create"
@@ -188,6 +217,9 @@ def cmd_deploy(args):
                     "ParameterKey": "MultiDocEnabled",
                     "ParameterValue": getattr(args, "multi_doc", "false") or "false",
                 },
+                batch_phase2_param(
+                    action, getattr(args, "batch_phase2", None), existing_params
+                ),
                 {"ParameterKey": "GpuAz1", "ParameterValue": gpu_az1},
                 {"ParameterKey": "GpuAz2", "ParameterValue": gpu_az2},
             ],
@@ -322,6 +354,14 @@ def main():
         default="false",
         choices=["true", "false"],
         help="M4 concurrency kill-switch (default false = dispatcher dormant)",
+    )
+
+    deploy_parser.add_argument(
+        "--batch-phase2",
+        default=None,
+        choices=["true", "false"],
+        help="Phase-2 extraction mode (BATCH_PHASE2): true = async xAI Batch API, false = "
+        "synchronous. Omitted = keep the live value.",
     )
 
     args = parser.parse_args()
