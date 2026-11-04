@@ -221,7 +221,7 @@ case "${BATCH_PHASE2:-}" in
     true|false) BATCH_ARG="--batch-phase2 $BATCH_PHASE2"; echo "  BATCH_PHASE2=$BATCH_PHASE2 → Phase-2 batch mode will be set" ;;
     *)          echo "  ✗ BATCH_PHASE2='$BATCH_PHASE2' invalid (expected true|false) — hard stop"; exit 1 ;;
 esac
-unset BATCH_PHASE2
+unset BATCH_PHASE2 BATCH_PHASE3  # BATCH_PHASE3 is not a deploy input; same QA leak shape
 
 echo "=== 0. Select config profile ==="
 echo "  1) balanced          — batch extraction, live enrichment (default)"

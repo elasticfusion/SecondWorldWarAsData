@@ -260,3 +260,27 @@ def test_unset_after_parse_hides_value_from_child_processes():
     env = {"PATH": "/usr/bin:/bin", "BATCH_PHASE2": "true"}
     r = subprocess.run(["bash", "-c", script], capture_output=True, text=True, env=env)
     assert "CHILD=[]" in r.stdout and "ARG=[--batch-phase2 true]" in r.stdout
+
+
+def test_invalid_value_is_rejected_before_anything_destructive():
+    src = (ROOT / "scripts" / "deploy_all.sh").read_text()
+    assert src.index("hard stop", src.index('BATCH_ARG=""')) < src.index(
+        "=== 1. Stopping running tasks"
+    )
+    r = _run("bogus")
+    assert r.returncode == 1 and "hard stop" in r.stdout
+
+
+def test_batch_phase3_is_scrubbed_from_the_qa_environment():
+    src = (ROOT / "scripts" / "deploy_all.sh").read_text()
+    start = src.index('BATCH_ARG=""')
+    end = src.index("unset BATCH_PHASE2", start)
+    end = src.index("\n", end)
+    script = (
+        "set -e\n"
+        + src[start:end]
+        + "\nbash -c 'echo \"P3=[${BATCH_PHASE3:-}] P2=[${BATCH_PHASE2:-}]\"'"
+    )
+    env = {"PATH": "/usr/bin:/bin", "BATCH_PHASE2": "true", "BATCH_PHASE3": "true"}
+    r = subprocess.run(["bash", "-c", script], capture_output=True, text=True, env=env)
+    assert "P3=[] P2=[]" in r.stdout
