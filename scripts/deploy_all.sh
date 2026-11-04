@@ -217,6 +217,8 @@ echo "  2) cost-optimized    — no OpenSERP for supplemental, no map image down
 echo "  3) performance       — live (non-batch) Phase 2, max concurrency, fastest"
 echo "  4) review-all-data   — force reprocess everything (expensive)"
 echo "  5) keep current      — don't change config.yaml"
+echo "     (1-4 set EVERY profile-managed key — see config/profiles/ — overwriting local tuning"
+echo "      of those keys; a backup + the full change list are printed. Use 5 to keep tuning.)"
 # Non-interactive safe: honor DEPLOY_PROFILE env; else prompt only if a TTY is attached; else
 # HARD-FAIL (a silent default in a piped/CI run is how a deploy half-runs undetected).
 if [ -n "${DEPLOY_PROFILE:-}" ]; then

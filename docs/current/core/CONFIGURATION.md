@@ -464,6 +464,12 @@ profile is an **overlay** in `config/profiles/<name>.yaml` holding only the sett
 | 4 | `review-all-data.yaml` | force reprocess everything (expensive) |
 | 5 | — | keep `config.yaml` unchanged |
 
+Profiles are **absolute over the managed keys** (the union of keys any profile sets): a managed key
+the chosen profile does not set is reset to its `config.yaml.example` value, so switching profiles
+never leaves another profile's settings behind. Local tuning of a managed key is overwritten by
+choices 1–4 (listed in the printed diff; the backup keeps it) — use 5 to keep it. Unmanaged keys
+are never touched.
+
 The apply fails (deploy aborts, `config.yaml` untouched) on a missing overlay, an unknown choice,
 or an overlay key that does not exist in `config.yaml`. On success it writes
 `config.yaml.bak-<timestamp>` (gitignored — it contains API keys) and prints every changed value.
