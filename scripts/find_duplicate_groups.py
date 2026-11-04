@@ -356,10 +356,14 @@ def _canonical_match(key1, key2, name1: str, name2: str, cluster: list) -> tuple
     if not all(_units_compatible(m["name"], name2) for m in cluster[1:]):
         # Countable (not silent): a candidate that matched the seed but is vetoed by another
         # member. It stays eligible as the seed of its own cluster later in the scan.
-        logger.info(
-            "OBSERV dedup.group_candidate_incompatible status=ok seed=%r candidate=%r",
-            cluster[0]["name"],
-            name2,
+        from src.utils.observe import observe
+
+        # Through the sink: sanitized + length-capped (unit names derive from book text).
+        observe(
+            "dedup",
+            "group_candidate_incompatible",
+            seed=cluster[0]["name"],
+            candidate=name2,
         )
         return False, "incompatible with an existing cluster member"
     return matched, why

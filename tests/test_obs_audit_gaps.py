@@ -58,6 +58,8 @@ def test_chapter_failure_emits_canonical_observ(monkeypatch):
     )
     assert seen[0][0] == ("phase2", "chapter_failed")
     assert seen[0][1]["chapter"] == "ch-parsed.json"
+    assert seen[0][1]["book"] == "Book"
+    assert "TimeoutError" in seen[0][1]["reason"]
 
 
 def test_incompatible_group_candidate_is_counted(caplog):
@@ -117,3 +119,28 @@ def test_non_finite_coords_are_missing(lat, lon):
 
     rec = {"coordinates": {"latitude": lat, "longitude": lon}}
     assert flags_for("places", rec) == ["geo_missing_coords"]
+
+
+def test_retrieve_only_failure_uses_safe_sync_and_still_audits(monkeypatch):
+    """Call-site guard: a failed retrieve whose final sync raises must still audit, mark the
+    job failed and exit with the phase's rc (reverting to a bare _final_sync would break this).
+    """
+    import inspect
+
+    src = inspect.getsource(ecs_entrypoint.run_retrieve_only)
+    i_safe = src.index("_final_sync_failed_phase(phase_script)")
+    i_audit = src.index("_audit_failed_phase2(phase_script, result.returncode)")
+    i_status = src.index('update_job_status(batch_id, "failed")')
+    assert i_safe < i_audit < i_status
+    run_src = inspect.getsource(ecs_entrypoint.run_phase)
+    assert run_src.index("_final_sync_failed_phase(phase_script)") < run_src.index(
+        "_audit_failed_phase2(phase_script, result.returncode)"
+    )
+
+
+def test_final_sync_success_is_not_observed(monkeypatch):
+    seen = []
+    monkeypatch.setattr(ecs_entrypoint, "_final_sync", lambda _p: None)
+    monkeypatch.setattr(ecs_entrypoint, "observe_error", lambda *a, **k: seen.append(a))
+    ecs_entrypoint._final_sync_failed_phase("phase2_extract.py")
+    assert seen == []

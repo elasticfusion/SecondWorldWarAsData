@@ -13,7 +13,6 @@ import ulid as ulid_mod
 from src.grok_client import GrokClient, BatchModeCollecting, current_book
 from src.utils.file_lock import write_json_with_lock
 from src.utils.observe import observe_error
-from src.utils.observe import observe_error
 from src.utils.json_validator import _fix_invalid_ulids, _ULID_PATTERN
 
 _book_manifest = None
@@ -851,8 +850,11 @@ def _process_batch_results(
             observe_error(
                 "phase2",
                 "chapter_failed",
+                book=book_name,
                 chapter=name,
                 error=type(result).__name__,
+                reason=_failure_reason(result),
+                failed_so_far=results["failed"] + 1,
             )
 
             cache_cmd = _get_cache_clear_command(book_name)
