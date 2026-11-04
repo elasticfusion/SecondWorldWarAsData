@@ -469,7 +469,15 @@ fi
 echo "  Stack status: $STACK_STATUS"
 aws s3 sync cloudformation/ s3://$TEMPLATE_BUCKET/cloudformation/ --region $REGION \
     || { echo "  ✗ cloudformation/ S3 sync failed — hard stop"; exit 1; }
-python3 scripts/deploy_aws.py deploy --env $ENV --region $REGION --template-bucket $TEMPLATE_BUCKET --pipeline-image $PIPELINE_IMAGE --openserp-image $OPENSERP_IMAGE $VIDEO_ARG $AV_ARG --notification-email $EMAIL \
+# Phase-2 batch mode: BATCH_PHASE2=true|false sets it; unset keeps the LIVE value (never silently
+# reverts to the template default on redeploy). Anything else is a hard stop.
+BATCH_ARG=""
+case "${BATCH_PHASE2:-}" in
+    "")         echo "  BATCH_PHASE2 unset → keeping the live Phase-2 batch mode" ;;
+    true|false) BATCH_ARG="--batch-phase2 $BATCH_PHASE2"; echo "  BATCH_PHASE2=$BATCH_PHASE2 → Phase-2 batch mode will be set" ;;
+    *)          echo "  ✗ BATCH_PHASE2='$BATCH_PHASE2' invalid (expected true|false) — hard stop"; exit 1 ;;
+esac
+python3 scripts/deploy_aws.py deploy --env $ENV --region $REGION --template-bucket $TEMPLATE_BUCKET --pipeline-image $PIPELINE_IMAGE --openserp-image $OPENSERP_IMAGE $VIDEO_ARG $AV_ARG $BATCH_ARG --notification-email $EMAIL \
     || { echo "  ✗ CloudFormation deploy (deploy_aws.py) FAILED — hard stop (expected infra did not deploy)"; exit 1; }
 
 echo ""
