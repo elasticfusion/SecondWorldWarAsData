@@ -50,6 +50,9 @@ jobs:
       - name: Vulture (dead code)
         run: python -m vulture src/ lambda_handlers/ .vulture_whitelist.py --min-confidence 80
 
+      - name: Unreachable modules (whole-module dead-code reachability — complements vulture)
+        run: python scripts/check_unreachable_modules.py
+
       - name: CloudFormation lint
         run: cfn-lint cloudformation/*.yaml
 
