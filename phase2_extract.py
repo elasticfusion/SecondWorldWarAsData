@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 from src.utils.config import load_config, get_paths
-from src.utils.observe import observe_error
+from src.utils.observe import observe_error, observe_warn
 from src.utils.logger import setup_logging
 from src.grok_client import GrokClient, BatchModeCollecting, current_book
 from src.extraction.events import extract_events
@@ -552,14 +552,40 @@ def _extract_external_maps(base_dir, grok_client, paths, config, logger):
             logger.error("  Error importing from YAML: %s", e)
 
 
+def _event_file_sub_events(data: object) -> list:
+    """Sub-events of a loaded event file.
+
+    The canonical shape (written by ``src.extraction.events``) nests them under
+    ``{"Event": {"Sub-events": [...]}}``; a bare top-level ``Sub-events`` is accepted as a
+    legacy fallback. Reading only the top level made EVERY healthy event file look empty,
+    which triggered a cache-clearing re-extraction that minted NEW Sub-eventIDs and left
+    the first pass's entity mentions dangling (provenance break).
+    """
+    if not isinstance(data, dict):
+        return []
+    event = data.get("Event")
+    if isinstance(event, dict) and isinstance(event.get("Sub-events"), list):
+        return event["Sub-events"]
+    legacy = data.get("Sub-events")
+    return legacy if isinstance(legacy, list) else []
+
+
 def _event_file_needs_retry(event_file: Path) -> bool:
     """Check if event file is missing, empty, or has no sub-events."""
     if not event_file.exists():
         return True
     try:
         with open(event_file, "r", encoding="utf-8") as f:
-            return not json.load(f).get("Sub-events")
-    except Exception:
+            return not _event_file_sub_events(json.load(f))
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        # Loud, not silent: an unreadable event file is retried (re-extracted), which
+        # re-mints Sub-eventIDs — the operator must be able to see why.
+        observe_warn(
+            "phase2",
+            "event_file_unreadable",
+            file=event_file.name,
+            error=type(e).__name__,
+        )
         return True
 
 
