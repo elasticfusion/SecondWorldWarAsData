@@ -30,6 +30,7 @@ class Image:
     url: Optional[str] = None
     alt_text: str = ""
     caption: Optional[str] = None
+    # Paragraph the image FOLLOWS in the source (parser anchor); 0 = unknown / before all text.
     paragraph_number: int = 0
 
 

@@ -59,6 +59,43 @@ def test_parser_anchors_images_to_preceding_paragraph():
     ]  # before-all -> first paragraph
 
 
+def test_blockquote_and_line_break_source_is_located():
+    content = (
+        ">  Intro.\n\n>  The bombardment of the coast began at dawn and\n>  continued for an hour.\n\n"
+        ">  [![x](http://h/a.jpg)](a.jpg)\n\n>  Then the landing craft went in toward the beach.\n"
+    )
+    doc = _doc(
+        [
+            (
+                5,
+                "The bombardment of the coast began at dawn and continued for an hour.",
+            ),
+            (6, "Then the landing craft went in toward the beach."),
+        ],
+        ["http://h/a.jpg"],
+    )
+    P._anchor_images_to_paragraphs(doc, content)
+    assert doc.images[0].paragraph_number == 5
+
+
+def test_real_chapter8b_all_images_anchored():
+    import json
+    from pathlib import Path
+
+    import pytest
+
+    src = Path("/tmp/stage/XChannel/chapter8/chapter8b-content.md")
+    parsed = Path("/tmp/run1/out/content/XChannel/chapter8b-parsed.json")
+    if not (src.exists() and parsed.exists()):
+        pytest.skip("run-1 artifacts not present")
+    pj = json.loads(parsed.read_text())
+    meta = P.parse_metadata(Path("/tmp/stage/XChannel/chapter8/chapter8-meta.yaml"))
+    doc = P.parse_content_file(
+        src, pj.get("section_id"), pj["paragraphs"][0]["absolute_number"], meta
+    )
+    assert all(i.paragraph_number for i in doc.images)
+
+
 def test_unlocatable_image_stays_zero_and_is_observed(caplog):
     import logging
 

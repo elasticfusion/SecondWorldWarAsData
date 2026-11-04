@@ -642,34 +642,61 @@ def _add_images_to_doc(doc: MarkdownDocument, content: str, base_url: str = "") 
     _anchor_images_to_paragraphs(doc, content)
 
 
+_MIN_PROBE_CHARS = 20  # shorter probes (page markers, one-liners) match too easily
+
+
+def _probe_regex(text: str):
+    """Regex for a paragraph's leading words tolerant of the raw source's line breaks and
+    blockquote '>' prefixes (para.text has them stripped)."""
+    words = text.split()[:8]
+    if not words or len(" ".join(words)) < _MIN_PROBE_CHARS:
+        return None
+    return re.compile(r"[\s>]+".join(re.escape(w) for w in words))
+
+
 def _paragraph_positions(paragraphs, content: str) -> list:
     """(offset, absolute_number) of each paragraph locatable in ``content``, in document order.
-    Located by a leading text probe, searched sequentially so repeated text resolves in order.
+    Searched sequentially so repeated text resolves in order; misses are counted (OBSERV).
     """
     out = []
     cursor = 0
+    missed = 0
     for para in paragraphs:
-        probe = (para.text or "").strip()[:40]
-        if not probe:
+        rx = _probe_regex((para.text or "").strip())
+        m = rx.search(content, cursor) if rx else None
+        if m is None:
+            missed += 1
             continue
-        pos = content.find(probe, cursor)
-        if pos == -1:
-            continue
-        out.append((pos, para.absolute_number))
-        cursor = pos + 1
+        out.append((m.start(), para.absolute_number))
+        cursor = m.start() + 1
+    if missed:
+        logger.info(
+            "OBSERV parser.image_anchor_probe_miss status=ok paragraphs=%d located=%d "
+            "(images after an unlocated paragraph anchor to the previous located one)",
+            missed,
+            len(out),
+        )
     return out
+
+
+def _image_pos(token: str, content: str, cursor: int) -> int:
+    """Offset of an image token at/after ``cursor``; else from the start (out-of-order image)."""
+    if not token:
+        return -1
+    pos = content.find(token, cursor)
+    return pos if pos != -1 else content.find(token)
 
 
 def _anchor_one(img, content: str, positions: list, cursor: int) -> tuple:
     """(paragraph_number or None, new_cursor) for one image: the paragraph it follows, or the
     first paragraph when it precedes all text; None if the image is not found in the source.
     """
-    token = img.url or img.resource_id or ""
-    pos = content.find(token, cursor) if token else -1
+    pos = _image_pos(img.url or img.resource_id or "", content, cursor)
     if pos == -1 or not positions:
         return None, cursor
     preceding = [num for off, num in positions if off <= pos]
-    return (preceding[-1] if preceding else positions[0][1]), pos + 1
+    # An image before ALL text follows no paragraph: leave it unanchored (0) rather than claim it.
+    return (preceding[-1] if preceding else None), max(cursor, pos + 1)
 
 
 def _anchor_images_to_paragraphs(doc: MarkdownDocument, content: str) -> None:
