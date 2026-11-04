@@ -232,3 +232,31 @@ def test_access_denied_is_not_mistaken_for_missing_stack(monkeypatch):
     with pytest.raises(_ClientError):
         _deploy(monkeypatch, cf, None)
     assert cf.calls == {}  # neither create nor update was attempted
+
+
+def test_batch_phase2_is_not_exported_to_the_qa_test_run():
+    """BATCH_PHASE2 is consumed into BATCH_ARG and UNSET before the QA pytest step: left exported
+    it made tests/test_batch_routing_guard.py fail and aborted the deploy before it deployed.
+    """
+    src = (ROOT / "scripts" / "deploy_all.sh").read_text()
+    unset = src.index("unset BATCH_PHASE2")
+    assert unset < src.index("=== 0. Select config profile")
+    assert unset < src.index("python3 -m pytest tests/")
+    assert "$BATCH_PHASE2" not in src[src.index("python3 -m pytest tests/") :]
+
+
+def test_unset_after_parse_hides_value_from_child_processes():
+    """Runs the script's OWN parse + unset segment (not a test-side unset)."""
+    src = (ROOT / "scripts" / "deploy_all.sh").read_text()
+    start = src.index('BATCH_ARG=""')
+    end = src.index("unset BATCH_PHASE2", start) + len(
+        "unset BATCH_PHASE2"
+    )  # absent -> ValueError
+    script = (
+        "set -e\n" + src[start:end] + "\n"
+        "bash -c 'echo \"CHILD=[${BATCH_PHASE2:-}]\"'\n"
+        'echo "ARG=[$BATCH_ARG]"'
+    )
+    env = {"PATH": "/usr/bin:/bin", "BATCH_PHASE2": "true"}
+    r = subprocess.run(["bash", "-c", script], capture_output=True, text=True, env=env)
+    assert "CHILD=[]" in r.stdout and "ARG=[--batch-phase2 true]" in r.stdout
