@@ -37,6 +37,28 @@ def test_mention_without_locator_or_event_does_not_trace():
     assert pi._record_has_populated_provenance(rec) is False
 
 
+def _note(**kw):
+    m = {"book": "XChannel", "chapter": "chapter8b", "reference_type": "footnote"}
+    m.update(kw)
+    return {"mentions": [m]}
+
+
+def test_bad_locators_do_not_trace():
+    for bad in (False, True, 0, -3, "", "   ", None):
+        assert pi._record_has_populated_provenance(_note(reference_number=bad)) is False
+    assert pi._record_has_populated_provenance(_note(paragraph_number=11)) is True
+
+
+def test_locator_rule_is_scoped_to_note_mentions():
+    rec = {"mentions": [{"book": "X", "chapter": "c", "paragraph_number": 3}]}
+    assert pi._record_has_populated_provenance(rec) is False
+
+
+def test_empty_or_non_dict_nested_ref_does_not_trace():
+    for v in ({"EventID": ""}, None, "E1", {"EventID": "  "}):
+        assert pi._record_has_populated_provenance({"source": v}) is False
+
+
 def test_casualty_nested_event_refs_trace():
     for key in ("source", "event_context"):
         rec = {"CasualtyID": "C1", key: {"EventID": "E1", "Sub-eventID": "S1"}}
@@ -60,5 +82,18 @@ def test_not_star_aux_files_are_skipped(tmp_path):
         json.dumps({"patterns": [], "auto_caught": ["X"]}), encoding="utf-8"
     )
     (d / "jane doe.json").write_text(json.dumps({"PersonID": "P"}), encoding="utf-8")
-    names = [n for n, _ in pi._iter_entity_records(tmp_path, "people/*.json")]
-    assert names == ["jane doe.json"]
+    (d / "not_a real record.json").write_text(json.dumps({"PersonID": "Q"}), "utf-8")
+    names = sorted(n for n, _ in pi._iter_entity_records(tmp_path, "people/*.json"))
+    assert names == ["jane doe.json", "not_a real record.json"]
+
+
+def test_unreadable_record_is_loud(tmp_path, monkeypatch):
+    import src.utils.observe as obs
+
+    seen = []
+    monkeypatch.setattr(obs, "observe_warn", lambda *a, **k: seen.append((a, k)))
+    d = tmp_path / "people"
+    d.mkdir()
+    (d / "broken.json").write_text("{nope", encoding="utf-8")
+    assert pi._iter_entity_records(tmp_path, "people/*.json") == []
+    assert seen and seen[0][0] == ("provenance", "record_unreadable")

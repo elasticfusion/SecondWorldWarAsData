@@ -32,9 +32,20 @@ _SECTION_FIELD = "SourceSectionID"
 _MENTION_ARRAYS = ("event_mentions", "mentions")
 # Nested event-reference objects carrying EventID/Sub-eventID (casualties: source / event_context).
 _NESTED_EVENT_REFS = ("source", "event_context")
-# A mention WITHOUT an EventID still traces to source when it pins the exact location in the
-# book: book + chapter + a locator (bibliography footnotes: reference_number + verbatim text).
+# A FOOTNOTE/ENDNOTE mention without an EventID still traces to source when it pins the exact
+# location in the book: book + chapter + a locator (reference_number / verbatim text). Scoped to
+# note-type mentions only — an ordinary entity mention must carry an EventID.
+_NOTE_REFERENCE_TYPES = ("footnote", "endnote")
 _MENTION_LOCATORS = ("verbatim_reference", "reference_number", "paragraph_number")
+# Curated exclusion lists that live beside entity records (explicit — never a prefix match, so
+# a real record can never be hidden from the audit).
+_AUX_LIST_FILES = (
+    "not_people.json",
+    "not_groups.json",
+    "not_related.json",
+    "not_citation.json",
+    "not_equipment.json",
+)
 # Indirect-only edges: resolve to another entity, not to the source directly (casualties).
 _INDIRECT_FIELDS = ("PersonID", "PlaceID")
 
@@ -96,17 +107,23 @@ def _has_direct_event_ref(obj: Dict[str, Any]) -> bool:
 
 
 def _mention_traces(m: Any) -> bool:
-    """A mention traces to source via an EventID, or via book + chapter + a locator."""
+    """A mention traces via an EventID, or (note mentions only) book + chapter + a locator."""
     if not isinstance(m, dict):
         return False
     if _nonempty_str(m.get("EventID")):
         return True
+    if m.get("reference_type") not in _NOTE_REFERENCE_TYPES:
+        return False
     if not (_nonempty_str(m.get("book")) and _nonempty_str(m.get("chapter"))):
         return False
-    return any(
-        _nonempty_str(m.get(k)) or (isinstance(m.get(k), int) and m.get(k) is not True)
-        for k in _MENTION_LOCATORS
-    )
+    return any(_is_locator(m.get(k)) for k in _MENTION_LOCATORS)
+
+
+def _is_locator(v: Any) -> bool:
+    """Non-empty string or a positive int (bools excluded)."""
+    if isinstance(v, bool):
+        return False
+    return _nonempty_str(v) or (isinstance(v, int) and v > 0)
 
 
 def _record_has_indirect_provenance(rec: Dict[str, Any]) -> bool:
@@ -144,16 +161,25 @@ def _iter_entity_records(out: Path, glob_pat: str) -> List[Tuple[str, Dict[str, 
     }
     recs: List[Tuple[str, Dict[str, Any]]] = []
     for f in out.glob(glob_pat):
-        # not_*.json are exclusion/curation lists (not_people, not_related), not records.
-        if f.name in skip or f.name.startswith((".", "not_")):
+        if f.name in skip or f.name in _AUX_LIST_FILES or f.name.startswith("."):
             continue
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:  # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
+            _note_unreadable(f, type(e).__name__)
             continue
         if isinstance(data, dict):
             recs.append((f.name, data))
+        else:
+            _note_unreadable(f, "not_a_json_object")
     return recs
+
+
+def _note_unreadable(f: Path, why: str) -> None:
+    """Loud, not silent: an unreadable record would otherwise vanish from the audit."""
+    from src.utils.observe import observe_warn
+
+    observe_warn("provenance", "record_unreadable", file=f.name, error=why)
 
 
 def _audit_entity(
