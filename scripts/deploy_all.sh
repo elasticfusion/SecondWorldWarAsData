@@ -283,7 +283,8 @@ python3 -c "
 import yaml, json, sys
 from pathlib import Path
 
-REQUIRED = ['events', 'people', 'places', 'dates', 'equipment',
+REQUIRED = ['events', 'people', 'places', 'dates',
+            'equipment_extract_broad', 'equipment_refine',
             'equipment_vision', 'equipment_urls', 'equipment_enrichment',
             'weather_batch', 'casualties', 'logistics',
             'supplemental', 'people_groups', 'biography',
