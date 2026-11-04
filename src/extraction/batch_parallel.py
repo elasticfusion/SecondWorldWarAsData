@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 import logging
 import re
 import threading
@@ -12,7 +13,7 @@ import ulid as ulid_mod
 
 from src.grok_client import GrokClient, BatchModeCollecting, current_book
 from src.utils.file_lock import write_json_with_lock
-from src.utils.observe import observe_error
+from src.utils.observe import observe_error, observe_warn
 from src.utils.json_validator import _fix_invalid_ulids, _ULID_PATTERN
 
 _book_manifest = None
@@ -827,10 +828,40 @@ def _get_cache_clear_command(book_name: str) -> str:
     return f"rm -rf cache/api/books/{book_name}/events/"
 
 
+# SOFT deadlines (seconds): exceeding one emits OBSERV phase2.slow status=warn — it never cancels.
+# Env-overridable for operators; defaults sized for synchronous in-loop enrichment.
+_CHAPTER_SOFT_DEADLINE_S = float(
+    os.environ.get("PHASE2_CHAPTER_SOFT_DEADLINE_S", "3600")
+)
+_ENTITY_SOFT_DEADLINE_S = float(os.environ.get("PHASE2_ENTITY_SOFT_DEADLINE_S", "1800"))
+
+
+async def _observe_slow(label: str, coro, soft_deadline_s: float):
+    """Await ``coro`` to completion (never cancelled) and warn if it exceeded the soft deadline.
+
+    Measured around the await, so it is correct even when the work blocks the event loop.
+    """
+    import time as _t
+
+    start = _t.monotonic()
+    try:
+        return await coro
+    finally:
+        elapsed = _t.monotonic() - start
+        if elapsed > soft_deadline_s:
+            observe_warn(
+                "phase2",
+                "slow",
+                task=label,
+                elapsed_s=int(elapsed),
+                soft_deadline_s=int(soft_deadline_s),
+            )
+
+
 def _failure_reason(exc: BaseException) -> str:
     """Actionable one-line reason for a failed chapter: type name + message (if any)."""
     if isinstance(exc, asyncio.TimeoutError):
-        return f"{type(exc).__name__} (chapter exceeded the per-chapter timeout)"
+        return f"{type(exc).__name__} (an API/HTTP call timed out)"
     if isinstance(exc, asyncio.CancelledError):
         return "CancelledError (chapter task was cancelled)"
     # One line, bounded: exception text can embed multi-line LLM/API bodies.
@@ -912,9 +943,14 @@ async def process_chapters_parallel(
         batch_start = _time.monotonic()
         tasks = _create_chapter_tasks(batch, grok_client, output_root, config)
 
-        # Run batch in parallel (5 min timeout per chapter)
+        # Run batch in parallel. NO wall-clock cancellation: entity work (incl. synchronous
+        # enrichment that blocks the loop for hours) PERSISTS records as it goes, so cancelling a
+        # chapter only discards its ULID write-back into the event file — orphaning everything it
+        # already wrote (XChannel ch8: a 300s wait_for fired after a 2.8h block -> chapter 8b lost
+        # its links, re-extracted, 31 dangling mentions). Hangs are bounded by the API/HTTP
+        # timeouts + the ECS watchdog; slowness is SURFACED, not killed.
         batch_results = await asyncio.gather(
-            *[asyncio.wait_for(t[2], timeout=300) for t in tasks],
+            *[_observe_slow(t[1], t[2], _CHAPTER_SOFT_DEADLINE_S) for t in tasks],
             return_exceptions=True,
         )
 
@@ -962,29 +998,35 @@ async def extract_all_async(
         "series": parsed_data.get("series", ""),
     }
 
-    # Run all extractions in parallel (3 min timeout per entity type)
+    # Run all extractions in parallel. No per-entity cancellation (see process_chapters_parallel):
+    # a cancelled entity type would lose its ULID links below while its records stay written.
+    label = event_file.name
     results = await asyncio.gather(
-        asyncio.wait_for(
+        _observe_slow(
+            f"{label}:dates",
             extract_dates_batch_async(
                 event_data, parsed_data, grok_client, output_root, book_meta
             ),
-            timeout=180,
+            _ENTITY_SOFT_DEADLINE_S,
         ),
-        asyncio.wait_for(
+        _observe_slow(
+            f"{label}:places",
             extract_places_batch_async(
                 event_data, parsed_data, grok_client, output_root, book_meta
             ),
-            timeout=180,
+            _ENTITY_SOFT_DEADLINE_S,
         ),
-        asyncio.wait_for(
+        _observe_slow(
+            f"{label}:people_groups",
             extract_people_groups_batch_async(
                 event_data, grok_client, output_root, book_meta
             ),
-            timeout=180,
+            _ENTITY_SOFT_DEADLINE_S,
         ),
-        asyncio.wait_for(
+        _observe_slow(
+            f"{label}:people",
             extract_people_batch_async(event_data, grok_client, output_root, book_meta),
-            timeout=180,
+            _ENTITY_SOFT_DEADLINE_S,
         ),
         return_exceptions=True,
     )
