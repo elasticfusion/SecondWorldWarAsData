@@ -42,7 +42,7 @@ schema: |
         "classification": "citation",
         "prose_content": null,
         "citation": {
-          "author": "Harrison, Gordon A.",
+          "author": ["Harrison, Gordon A."],
           "title": "Cross-Channel Attack",
           "alt_title": null,
           "publisher": "Center of Military History",
@@ -98,7 +98,7 @@ rules:
     For edited volumes (chapters in collected works), use the BOOK title as "title" and the
     chapter title as "alt_title". Example: 'David Ryelandt, "The Resistance Movement," in
     Jan Albert Goris, ed., Belgium under Occupation (New York, 1947)' → title: "Belgium under
-    Occupation", alt_title: "The Resistance Movement", author: "Goris, Jan Albert" (editor).
+    Occupation", alt_title: "The Resistance Movement", author: ["Goris, Jan Albert"] (editor).
     The book is what we search for, not the chapter.
   - >-
     For ARCHIVAL / primary-source citations written in military shorthand (US Army "Green Book"

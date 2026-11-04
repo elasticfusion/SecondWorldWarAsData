@@ -255,8 +255,20 @@ def _normalize_citation(material: Dict[str, Any]) -> None:
     if citation.get("title") is None or _is_cross_reference(citation.get("title", "")):
         citation["title"] = _derive_title_from_mentions(material.get("mentions") or [])
 
-    if citation.get("author") is None:
+    author = citation.get("author")
+    if author is None:
         citation["author"] = []
+    elif isinstance(author, str):
+        # The schema requires an ARRAY; the model often returns one string ("Jones, Clifford").
+        # Wrap it VERBATIM — never split ("Rapport, Leonard and Norwood, Arthur Jr." stays one
+        # entry; splitting would invent structure). Before this, every such response failed
+        # validation and the WHOLE sub-event's materials were dropped (XChannel ch8: 9/9).
+        citation["author"] = [author] if author.strip() else []
+        observe_warn(
+            "supplemental",
+            "author_coerced",
+            note="citation.author string wrapped into a list (schema requires array)",
+        )
 
 
 def _derive_title_from_mentions(mentions: list) -> str:
