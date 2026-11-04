@@ -121,10 +121,26 @@ def _extract_nested_coords(data: dict) -> tuple:
 
 
 MAX_DISTANCE_KM = 20  # Places farther apart than this are NOT duplicates
+_SUPPRESSED_UNVERIFIED = [0]  # weak-rule pairs skipped for unverified coords (per run)
+
+
+def _coords_verified(data: dict) -> bool:
+    """True if a place's coordinates come from a real geocode (Phase 3) or are stated exact.
+
+    Phase-2 coordinates are the extraction LLM's GUESS (``precision: approximate`` and no
+    ``geocode_source``). Two guesses landing within 5 km says nothing about identity, so they must
+    not power the weak "nearby + partial name" rule (XChannel ch8: Merderet River vs
+    Ste. Mère-Eglise at 42% name similarity).
+    """
+    if data.get("geocode_source") or data.get("enrichment_status") == "geocoded":
+        return True
+    coords = data.get("coordinates")
+    return isinstance(coords, dict) and coords.get("precision") == "exact"
 
 
 def find_duplicate_places(places_dir: Path) -> List[Dict]:
     """Find potential duplicate places."""
+    _SUPPRESSED_UNVERIFIED[0] = 0
     places = _load_places(places_dir)
     excluded_pairs, excluded_names = _load_exclusions(places_dir)
 
@@ -171,6 +187,11 @@ def find_duplicate_places(places_dir: Path) -> List[Dict]:
             if not all_reviewed:
                 remaining.append(g)
         filtered = remaining
+    logger.info(
+        "OBSERV place_dedup.summary status=ok places=%d weak_suppressed_unverified=%d",
+        len(places),
+        _SUPPRESSED_UNVERIFIED[0],
+    )
     return filtered
 
 
@@ -298,6 +319,7 @@ def _load_places(places_dir: Path) -> list:
                         "PlaceID": data.get("PlaceID", ""),
                         "lat": lat,
                         "lon": lon,
+                        "coords_verified": _coords_verified(data),
                     }
                 )
         except (json.JSONDecodeError, OSError) as e:
@@ -353,7 +375,10 @@ def _check_match(p1, p2):
         return False, set()
 
     near = dist is not None and dist < 5
-    return _evaluate_match(sim, dist, near)
+    # Only trust proximity as corroborating evidence when BOTH coordinates are verified; index-only
+    # entries (no record loaded) are conservatively treated as unverified.
+    verified = bool(p1.get("coords_verified")) and bool(p2.get("coords_verified"))
+    return _evaluate_match(sim, dist, near, verified=verified)
 
 
 def _place_distance(p1, p2):
@@ -363,16 +388,22 @@ def _place_distance(p1, p2):
     return None
 
 
-def _evaluate_match(sim: float, dist, near: bool):
+def _evaluate_match(sim: float, dist, near: bool, verified: bool = True):
     """Evaluate whether similarity and distance indicate a match."""
     reasons: set = set()
+    qual = "" if verified else " (approximate coords)"
     if sim >= 0.65:
         reasons.add(f"name similarity {sim:.0%}")
         if near:
-            reasons.add("within 5km")
+            reasons.add(f"within 5km{qual}")
         elif dist is not None:
-            reasons.add(f"{dist:.0f}km apart")
+            reasons.add(f"{dist:.0f}km apart{qual}")
         return True, reasons
+    if near and sim >= 0.4 and not verified:
+        # Countable, not silent: re-evaluated once Phase 3 geocoding verifies the coords.
+        logger.debug("OBSERV place_dedup.weak_suppressed_unverified sim=%.2f", sim)
+        _SUPPRESSED_UNVERIFIED[0] += 1
+        return False, set()
     if near and sim >= 0.4:
         reasons.add(f"nearby + partial name match {sim:.0%}")
         return True, reasons
