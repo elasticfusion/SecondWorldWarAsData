@@ -200,24 +200,10 @@ def _build_meta_yaml(book: str, key: str) -> bytes:
 
 
 def _mark_metadata_gap(s3, key: str, book: str) -> None:
-    """Record the deferred-metadata gap as a detectable needs-review/metadata
-    marker (P2-C1) rather than masquerading empty fields as real TODO strings.
-    Fail-safe: the marker is best-effort and never breaks the convert."""
-    try:
-        from src.ingestion.review_reject import reject_to_review
+    """Record the deferred-metadata gap as a needs-review/metadata marker (P2-C1). Fail-safe."""
+    from src.ingestion.review_reject import mark_metadata_gap
 
-        reject_to_review(
-            s3,
-            BUCKET,
-            key,
-            book,
-            "metadata not yet extracted (author/series/title/license empty) — "
-            "real metadata extraction deferred (P2-C1 slug+meta half)",
-            category="metadata",
-            region=REGION,
-        )
-    except Exception as e:  # noqa: BLE001 - marker must never crash the convert
-        logger.warning("metadata needs-review marker failed for %s: %s", key, e)
+    mark_metadata_gap(s3, BUCKET, key, book, REGION)
 
 
 def _write_chapter_structure(s3, key: str, book: str, markdown: str) -> str:
