@@ -200,3 +200,17 @@ def test_stale_config_error_suggests_resync(env, capsys):
     _write(prof / "balanced.yaml", {"a": {"gone": 1}})
     assert _apply("balanced", env) == 1
     assert "config.yaml.example" in capsys.readouterr().out
+
+
+def test_write_failure_is_clean_and_leaves_config_untouched(env, monkeypatch, capsys):
+    cfg = env[0]
+    before = cfg.read_text()
+
+    def boom(*a, **k):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(acp.os, "replace", boom)
+    assert _apply("balanced", env) == 1
+    assert cfg.read_text() == before
+    assert "NOT modified" in capsys.readouterr().out
+    assert not list(cfg.parent.glob(".config.yaml.*.tmp"))

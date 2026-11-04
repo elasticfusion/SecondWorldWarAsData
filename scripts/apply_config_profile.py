@@ -150,8 +150,14 @@ def _create_private_backup(config_path: Path) -> Path:
             fd = os.open(backup, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         except FileExistsError:
             continue
-        with os.fdopen(fd, "wb") as b:
-            b.write(data)
+        try:
+            with os.fdopen(fd, "wb") as b:
+                b.write(data)
+                b.flush()
+                os.fsync(b.fileno())
+        except OSError:
+            backup.unlink(missing_ok=True)  # never leave a truncated backup behind
+            raise
         return backup
     raise ProfileError(f"could not create a unique backup next to {config_path}")
 
@@ -194,7 +200,13 @@ def apply_profile(
         return 0
     for dotted, _old, new in changes:
         _set(config, dotted, new)
-    backup = _write_atomic(config_path, config)
+    try:
+        backup = _write_atomic(config_path, config)
+    except (ProfileError, OSError) as e:
+        print(
+            f"  ✗ could not write config.yaml safely: {e}\n    config.yaml NOT modified."
+        )
+        return 1
     print(
         f"  → profile {name!r} applied ({len(changes)} change(s); backup: {backup.name})"
     )
