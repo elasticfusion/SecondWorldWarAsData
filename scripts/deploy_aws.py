@@ -163,7 +163,11 @@ def cmd_deploy(args):
             "Parameters", []
         )
         action = "update"
-    except cf.exceptions.ClientError:
+    except cf.exceptions.ClientError as e:
+        # Only "stack does not exist" means create; AccessDenied / throttling must surface as
+        # themselves, not as a misleading AlreadyExists from create_stack on an existing stack.
+        if "does not exist" not in str(e):
+            raise
         action = "create"
 
     print(f"\n{action.title()}ing stack: {stack_name}")

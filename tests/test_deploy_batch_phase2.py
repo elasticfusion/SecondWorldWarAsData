@@ -137,3 +137,98 @@ def test_batch_arg_is_on_the_deploy_aws_command_line():
         if l.startswith("python3 scripts/deploy_aws.py deploy")
     )
     assert "$BATCH_ARG" in line and re.search(r"\$AV_ARG \$BATCH_ARG", line)
+
+
+# --- cmd_deploy -> update_stack wiring (the helper must actually be plugged in) ----------------
+class _ClientError(Exception):
+    pass
+
+
+class _FakeCf:
+    class exceptions:  # noqa: N801 - mirrors boto3's client.exceptions
+        ClientError = _ClientError
+
+    def __init__(self, params, exists=True, describe_error=None):
+        self._params, self._exists, self._err = params, exists, describe_error
+        self.calls = {}
+
+    def describe_stacks(self, StackName):
+        if self._err:
+            raise _ClientError(self._err)
+        if not self._exists:
+            raise _ClientError(f"Stack with id {StackName} does not exist")
+        return {"Stacks": [{"Parameters": self._params}]}
+
+    def update_stack(self, **kw):
+        self.calls["update"] = kw
+
+    def create_stack(self, **kw):
+        self.calls["create"] = kw
+
+
+def _deploy(monkeypatch, cf, batch):
+    monkeypatch.setattr(deploy_aws, "cmd_validate", lambda a: True)
+    monkeypatch.setattr(deploy_aws, "_get_cf_client", lambda *a, **k: cf)
+    monkeypatch.setattr(deploy_aws, "_probe_gpu_azs", lambda *a, **k: ["a", "b"])
+    monkeypatch.setattr(deploy_aws, "_wait_for_stack", lambda *a, **k: None)
+    args = SimpleNamespace(
+        env="dev",
+        region="us-east-1",
+        profile=None,
+        template_bucket="b",
+        openserp_image="o",
+        pipeline_image="p",
+        video_image=None,
+        av_image=None,
+        notification_email="e@x",
+        multi_doc="false",
+        dry_run=False,
+        batch_phase2=batch,
+    )
+    deploy_aws.cmd_deploy(args)
+
+
+def _param(cf, action):
+    return next(
+        p for p in cf.calls[action]["Parameters"] if p["ParameterKey"] == "BatchPhase2"
+    )
+
+
+def test_update_with_flag_sets_value(monkeypatch):
+    cf = _FakeCf([{"ParameterKey": "BatchPhase2", "ParameterValue": "false"}])
+    _deploy(monkeypatch, cf, "true")
+    assert _param(cf, "update") == {
+        "ParameterKey": "BatchPhase2",
+        "ParameterValue": "true",
+    }
+
+
+def test_update_without_flag_keeps_live_value(monkeypatch):
+    cf = _FakeCf([{"ParameterKey": "BatchPhase2", "ParameterValue": "true"}])
+    _deploy(monkeypatch, cf, None)
+    assert _param(cf, "update") == {
+        "ParameterKey": "BatchPhase2",
+        "UsePreviousValue": True,
+    }
+
+
+def test_first_update_without_flag_is_explicit_false(monkeypatch):
+    cf = _FakeCf([{"ParameterKey": "EnvironmentName", "ParameterValue": "dev"}])
+    _deploy(monkeypatch, cf, None)
+    assert _param(cf, "update") == {
+        "ParameterKey": "BatchPhase2",
+        "ParameterValue": "false",
+    }
+
+
+def test_missing_stack_creates(monkeypatch):
+    cf = _FakeCf([], exists=False)
+    _deploy(monkeypatch, cf, "true")
+    assert _param(cf, "create")["ParameterValue"] == "true"
+
+
+def test_access_denied_is_not_mistaken_for_missing_stack(monkeypatch):
+    cf = _FakeCf([], describe_error="AccessDenied: not authorized")
+    with pytest.raises(_ClientError):
+        _deploy(monkeypatch, cf, None)
+    assert cf.calls == {}  # neither create nor update was attempted
