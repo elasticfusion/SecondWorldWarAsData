@@ -87,8 +87,20 @@ _BARE_NUMBER = re.compile(r"^\d{1,4}[.)]?$")
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}")
 
 
+def _place_latlon(record: Dict[str, Any]) -> tuple:
+    """(lat, lon) of a place. The canonical extraction shape nests them under ``coordinates``;
+    the root ``latitude``/``longitude`` (mirrored by Phase-3 geocoding) is the fallback. Reading
+    only the root flagged EVERY Phase-2-extracted place geo_missing_coords (a 100% false
+    'systematic CODE defect' alarm) and made geo_impossible_coords unreachable for them.
+    """
+    coords = record.get("coordinates")
+    if isinstance(coords, dict) and coords.get("latitude") is not None:
+        return coords.get("latitude"), coords.get("longitude")
+    return record.get("latitude"), record.get("longitude")
+
+
 def _geo_flags(record: Dict[str, Any]) -> List[str]:
-    lat, lon = record.get("latitude"), record.get("longitude")
+    lat, lon = _place_latlon(record)
     if lat is None or lon is None or (lat == 0.0 and lon == 0.0):
         return ["geo_missing_coords"]
     try:
