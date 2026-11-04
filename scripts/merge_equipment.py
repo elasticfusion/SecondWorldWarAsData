@@ -65,17 +65,6 @@ def merge_equipment_data(primary: Dict, secondary: Dict) -> Dict:
     return primary
 
 
-def update_index(index_path: Path, old_name: str, new_filename: str):
-    """Update index.json to point old name to new file."""
-    if not index_path.exists():
-        return
-    with open(index_path, "r", encoding="utf-8") as f:
-        index = json.load(f)
-    index[old_name.lower().strip()] = new_filename
-    with open(index_path, "w", encoding="utf-8") as f:
-        json.dump(index, f, indent=2, ensure_ascii=False)
-
-
 def add_to_exclusion_list(equipment_dir: Path, items: List[Dict]):
     """Add pairs to the exclusion list."""
     exclusion_file = equipment_dir / "not_duplicates.json"
@@ -170,6 +159,10 @@ def merge_duplicate_group(equipment_dir: Path, group: Dict):
 
 def _do_merge(equipment_dir: Path, items: List[Dict], primary_idx: int):
     """Merge secondary items into primary."""
+    from src.dedup.merge import (
+        update_index,
+    )  # single source of truth (was a script-local clone)
+
     primary = items[primary_idx]
     primary_data = load_equipment(equipment_dir, primary["filename"])
     primary_id = primary_data.get("EquipmentID")
