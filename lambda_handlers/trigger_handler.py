@@ -650,6 +650,25 @@ def _validate_parse_keys(keys: list) -> list:
     return kept
 
 
+# Chapter METADATA sidecars (``contentrepository/<book>/<chapter>/<name>-meta.yaml``; the exact
+# glob src.discovery._find_meta_file reads). Not content to queue — every Phase 1 download path
+# fetches the whole chapter dir / book prefix, so the sidecar arrives with its chapter — but an
+# EXPECTED upload, never an "unrecognized type". Anything else ending in -meta.* (wrong depth,
+# .yml which discovery ignores, a content extension in the stem) still off-ramps to review.
+_METADATA_SIDECAR_SUFFIX = "-meta.yaml"
+
+
+def _is_metadata_sidecar(key: str) -> bool:
+    parts = key.split("/")
+    if len(parts) != 4 or parts[0] != "contentrepository" or not all(parts):
+        return False
+    name = parts[3].lower()
+    if not name.endswith(_METADATA_SIDECAR_SUFFIX):
+        return False
+    stem = name[: -len(_METADATA_SIDECAR_SUFFIX)]
+    return bool(stem) and not stem.endswith(_CONTENT_SUFFIXES + _COMPRESSED_SUFFIXES)
+
+
 def _content_keys(keys: list) -> list:
     """Keep only processable content keys; drop compressed files and non-content."""
     out = []
@@ -657,6 +676,9 @@ def _content_keys(keys: list) -> list:
         low = k.lower()
         if low.endswith(_COMPRESSED_SUFFIXES):
             logger.info("Ignoring compressed file (pre-stage expands these): %s", k)
+            continue
+        if _is_metadata_sidecar(k):
+            logger.info("OBSERV trigger.metadata_sidecar status=ok key=%r", k)
             continue
         if low.endswith(_CONTENT_SUFFIXES):
             out.append(k)
