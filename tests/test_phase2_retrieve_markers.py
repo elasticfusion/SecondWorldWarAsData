@@ -22,7 +22,7 @@ def test_phase2_retrieve_downloads_processed_events_markers():
     .processed_events.json marker (so _is_processed can skip them)."""
     requested_keys = []
 
-    def fake_download(s3, key):
+    def fake_download(s3, key, **_kw):
         requested_keys.append(key)
 
     with (

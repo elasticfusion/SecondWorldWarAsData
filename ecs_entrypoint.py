@@ -1054,7 +1054,7 @@ def _get_book_entity_files(s3, book_name: str) -> list:
         "bibliography",
     ]:
         index_key = f"output/{subdir}/index.json"
-        _download_s3_file(s3, index_key)
+        _download_s3_file(s3, index_key, optional=True)
         index_path = WORKDIR / index_key
         if index_path.exists():
             try:
@@ -1358,7 +1358,7 @@ def _download_phase3_from_s3() -> None:
         cross_book = {"bibliography", "supplemental"}
         for subdir in entity_dirs:
             (WORKDIR / "output" / subdir).mkdir(parents=True, exist_ok=True)
-            _download_s3_file(s3, f"output/{subdir}/index.json")
+            _download_s3_file(s3, f"output/{subdir}/index.json", optional=True)
             if subdir in cross_book:
                 d, _ = _download_s3_prefix_skip_existing(s3, f"output/{subdir}/")
                 total += d
@@ -1520,7 +1520,7 @@ def _download_phase2_inputs() -> int:
         "output/dates/index.json",
     ]
     for key in index_prefixes:
-        _download_s3_file(s3, key)
+        _download_s3_file(s3, key, optional=True)
 
     # RESUME CORRECTNESS (XChannel-8 2026-10-29): the yield gate counts LOCAL entity RECORD files
     # (_log_phase2_summary -> _count_entity_dir(output_root/<entity>)). On a resume that leaves
@@ -1545,7 +1545,9 @@ def _download_phase2_inputs() -> int:
         import re as _re_rs
 
         if _re_rs.fullmatch(r"[A-Za-z0-9._-]+", _rs_book) and ".." not in _rs_book:
-            _download_s3_file(s3, f"output/manifests/run_scope/{_rs_book}.json")
+            _download_s3_file(
+                s3, f"output/manifests/run_scope/{_rs_book}.json", optional=True
+            )
 
     # Download the per-entity processed-events markers so the optional-entity
     # skip logic (_is_processed) can fire. WITHOUT these, every Phase-2 retrieve
@@ -1560,7 +1562,7 @@ def _download_phase2_inputs() -> int:
         "casualties",
         "supplemental",
     ):
-        _download_s3_file(s3, f"output/{_etype}/.processed_events.json")
+        _download_s3_file(s3, f"output/{_etype}/.processed_events.json", optional=True)
 
     # Bibliography/supplemental: SCOPED READS — Phase 2 no longer bulk-downloads these dirs
     # (the 13k+ file bibliography prefix caused N*2 download thrash under concurrent per-book
@@ -1678,8 +1680,14 @@ def _download_s3_prefix_skip_existing(s3, prefix: str) -> tuple:
     return downloaded, skipped
 
 
-def _download_s3_file(s3, key: str) -> None:
-    """Download a single S3 file to the local workdir."""
+def _download_s3_file(s3, key: str, *, optional: bool = False) -> None:
+    """Download a single S3 file to the local workdir.
+
+    ``optional=True`` is for a FIXED, well-known key that may legitimately not exist yet (an
+    index, ``.processed_events.json``, an exclusion list, run_scope) — e.g. on a cold start.
+    Its 404 is expected state, logged at info. A key that came from a listing or a manifest
+    (``optional=False``) that 404s is a real loss and stays a loud ``status=error``.
+    """
     from botocore.exceptions import ClientError
 
     local = WORKDIR / key
@@ -1688,7 +1696,9 @@ def _download_s3_file(s3, key: str) -> None:
         s3.download_file(BUCKET, key, str(local))
         _downloaded_keys[key] = local.stat().st_mtime
     except ClientError as e:
-        if e.response["Error"]["Code"] in ("404", "NoSuchKey"):
+        if e.response["Error"]["Code"] in ("404", "NoSuchKey") and optional:
+            logger.info("Optional S3 key absent (not yet created): %s", key)
+        elif e.response["Error"]["Code"] in ("404", "NoSuchKey"):
             # #15: a key enumerated by list_objects_v2 that 404s on download means a PARSED
             # file vanished between list and download — the corpus is silently shortened. This
             # was a debug-level skip (indistinguishable from an intentional no-op). Make it a
@@ -2304,7 +2314,7 @@ def _migrate_exclusions_to_dynamo() -> None:
             "output/equipment/not_duplicates.json",
         ]
         for key in migration_files:
-            _download_s3_file(s3_migrate, key)
+            _download_s3_file(s3_migrate, key, optional=True)
         for entity, subdir in [
             ("people", "people"),
             ("places", "places"),
@@ -2339,7 +2349,7 @@ def _download_dedup_data() -> None:
         "output/equipment/index.json",
     ]
     for key in dedup_files:
-        _download_s3_file(s3, key)
+        _download_s3_file(s3, key, optional=True)
     for prefix in [
         "output/people/",
         "output/people_groups/",
