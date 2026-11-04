@@ -1,0 +1,6 @@
+# Profile overlay: cost-optimized — everything batched, no paid search/downloads.
+# OVERLAY, not a full config (scripts/apply_config_profile.py).
+supplemental_material:
+  use_openserp: false
+maps:
+  download_images: false
