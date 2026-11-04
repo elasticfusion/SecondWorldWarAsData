@@ -639,6 +639,60 @@ def _add_images_to_doc(doc: MarkdownDocument, content: str, base_url: str = "") 
             )
         doc.images.append(img)
     _pair_image_captions(doc, content)
+    _anchor_images_to_paragraphs(doc, content)
+
+
+def _paragraph_positions(paragraphs, content: str) -> list:
+    """(offset, absolute_number) of each paragraph locatable in ``content``, in document order.
+    Located by a leading text probe, searched sequentially so repeated text resolves in order.
+    """
+    out = []
+    cursor = 0
+    for para in paragraphs:
+        probe = (para.text or "").strip()[:40]
+        if not probe:
+            continue
+        pos = content.find(probe, cursor)
+        if pos == -1:
+            continue
+        out.append((pos, para.absolute_number))
+        cursor = pos + 1
+    return out
+
+
+def _anchor_one(img, content: str, positions: list, cursor: int) -> tuple:
+    """(paragraph_number or None, new_cursor) for one image: the paragraph it follows, or the
+    first paragraph when it precedes all text; None if the image is not found in the source.
+    """
+    token = img.url or img.resource_id or ""
+    pos = content.find(token, cursor) if token else -1
+    if pos == -1 or not positions:
+        return None, cursor
+    preceding = [num for off, num in positions if off <= pos]
+    return (preceding[-1] if preceding else positions[0][1]), pos + 1
+
+
+def _anchor_images_to_paragraphs(doc: MarkdownDocument, content: str) -> None:
+    """Set each image's ``paragraph_number`` to the paragraph it follows in the source (the first
+    paragraph if it precedes all text). It was hard-coded 0, so a figure placed BETWEEN paragraphs
+    could not be traced to any sub-event (XChannel ch8: 6 figures with no provenance link).
+    Unlocatable images stay 0 and are counted (OBSERV parser.image_unanchored)."""
+    positions = _paragraph_positions(doc.paragraphs, content)
+    cursor = 0
+    unanchored = 0
+    for img in doc.images:
+        num, cursor = _anchor_one(img, content, positions, cursor)
+        if num is None:
+            unanchored += 1
+        else:
+            img.paragraph_number = num
+    if unanchored:
+        logger.warning(
+            "OBSERV parser.image_unanchored status=warn images=%d file_images=%d "
+            "(paragraph_number left 0 — image position not found in source)",
+            unanchored,
+            len(doc.images),
+        )
 
 
 # An ALL-CAPS figure caption: the line's letters are (mostly) uppercase and it has ≥2 words

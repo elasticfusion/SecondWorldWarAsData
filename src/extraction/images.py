@@ -170,15 +170,44 @@ def _find_sub_event_for_image(img: dict, event_data: dict) -> Optional[Dict[str,
     event_id = event.get("EventID") or None
     event_name = event_data.get("Chapter", "")
 
-    for se in event.get("Sub-events", []):
+    sub_events = event.get("Sub-events", []) or []
+    for se in sub_events:
         if _image_matches_sub_event(se, url, resource_id, alt):
-            return {
-                "EventID": event_id,
-                "Event_Name": event_name,
-                "Sub-eventID": se.get("Sub-eventID") or None,
-                "Sub-event_Name": se.get("Sub-event_summary", ""),
-            }
+            return _event_ctx(event_id, event_name, se)
+    # FALLBACK 1: the image's anchor paragraph (parser) lies INSIDE a sub-event's source
+    # paragraphs -> that sub-event (exact containment only — never the "nearest" sub-event).
+    se = _sub_event_containing(sub_events, img.get("paragraph_number") or 0)
+    if se is not None:
+        return _event_ctx(event_id, event_name, se)
+    # FALLBACK 2: the figure IS in this chapter's source, so the chapter event is a TRUE (coarser)
+    # provenance link. Without it, a figure between paragraphs had no link at all.
+    if event_id:
+        return {
+            "EventID": event_id,
+            "Event_Name": event_name,
+            "Sub-eventID": None,
+            "Sub-event_Name": None,
+        }
     return None
+
+
+def _sub_event_containing(sub_events: list, para: int) -> Optional[dict]:
+    if not para:
+        return None
+    key = f"Paragraph_{para}"
+    for se in sub_events:
+        if key in (se.get("Sub-event_fulltext") or {}):
+            return se
+    return None
+
+
+def _event_ctx(event_id, event_name, se: dict) -> Dict[str, Any]:
+    return {
+        "EventID": event_id,
+        "Event_Name": event_name,
+        "Sub-eventID": se.get("Sub-eventID") or None,
+        "Sub-event_Name": se.get("Sub-event_summary", ""),
+    }
 
 
 def _find_linked_place(
