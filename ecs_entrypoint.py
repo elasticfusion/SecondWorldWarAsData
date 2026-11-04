@@ -9,11 +9,11 @@ import sys
 import threading
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import boto3
 
-from src.utils.observe import observe_error
+from src.utils.observe import observe, observe_error
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(message)s"
@@ -1054,7 +1054,7 @@ def _get_book_entity_files(s3, book_name: str) -> list:
         "bibliography",
     ]:
         index_key = f"output/{subdir}/index.json"
-        _download_s3_file(s3, index_key)
+        _download_s3_file(s3, index_key, optional=True)
         index_path = WORKDIR / index_key
         if index_path.exists():
             try:
@@ -1358,7 +1358,7 @@ def _download_phase3_from_s3() -> None:
         cross_book = {"bibliography", "supplemental"}
         for subdir in entity_dirs:
             (WORKDIR / "output" / subdir).mkdir(parents=True, exist_ok=True)
-            _download_s3_file(s3, f"output/{subdir}/index.json")
+            _download_s3_file(s3, f"output/{subdir}/index.json", optional=True)
             if subdir in cross_book:
                 d, _ = _download_s3_prefix_skip_existing(s3, f"output/{subdir}/")
                 total += d
@@ -1520,7 +1520,7 @@ def _download_phase2_inputs() -> int:
         "output/dates/index.json",
     ]
     for key in index_prefixes:
-        _download_s3_file(s3, key)
+        _download_s3_file(s3, key, optional=True)
 
     # RESUME CORRECTNESS (XChannel-8 2026-10-29): the yield gate counts LOCAL entity RECORD files
     # (_log_phase2_summary -> _count_entity_dir(output_root/<entity>)). On a resume that leaves
@@ -1545,7 +1545,12 @@ def _download_phase2_inputs() -> int:
         import re as _re_rs
 
         if _re_rs.fullmatch(r"[A-Za-z0-9._-]+", _rs_book) and ".." not in _rs_book:
-            _download_s3_file(s3, f"output/manifests/run_scope/{_rs_book}.json")
+            _download_s3_file(
+                # Phase 1 uploads this; absence downgrades the scope guard -> warn.
+                s3,
+                f"output/manifests/run_scope/{_rs_book}.json",
+                optional="warn",
+            )
 
     # Download the per-entity processed-events markers so the optional-entity
     # skip logic (_is_processed) can fire. WITHOUT these, every Phase-2 retrieve
@@ -1560,7 +1565,7 @@ def _download_phase2_inputs() -> int:
         "casualties",
         "supplemental",
     ):
-        _download_s3_file(s3, f"output/{_etype}/.processed_events.json")
+        _download_s3_file(s3, f"output/{_etype}/.processed_events.json", optional=True)
 
     # Bibliography/supplemental: SCOPED READS — Phase 2 no longer bulk-downloads these dirs
     # (the 13k+ file bibliography prefix caused N*2 download thrash under concurrent per-book
@@ -1678,17 +1683,39 @@ def _download_s3_prefix_skip_existing(s3, prefix: str) -> tuple:
     return downloaded, skipped
 
 
-def _download_s3_file(s3, key: str) -> None:
-    """Download a single S3 file to the local workdir."""
+def _download_s3_file(s3, key: str, *, optional: Union[bool, str] = False) -> None:
+    """Download a single S3 file to the local workdir.
+
+    ``optional`` sets the severity of a 404:
+      * ``False`` (default) — the key came from a listing or a manifest; a 404 is a real loss:
+        loud ``OBSERV download.file_missing status=error``.
+      * ``True`` — a FIXED, well-known key that may legitimately not exist yet (an index,
+        ``.processed_events.json``, an exclusion list), e.g. on a cold start:
+        ``OBSERV download.optional_absent status=ok`` (countable, not an alarm).
+      * ``"warn"`` — fixed key whose absence DEGRADES a guard (run_scope): ``status=warn``.
+    Non-404 errors always raise.
+    """
     from botocore.exceptions import ClientError
 
+    if optional not in (False, True, "warn"):
+        raise ValueError(
+            f"_download_s3_file optional must be False|True|'warn': {optional!r}"
+        )
     local = WORKDIR / key
     local.parent.mkdir(parents=True, exist_ok=True)
     try:
         s3.download_file(BUCKET, key, str(local))
         _downloaded_keys[key] = local.stat().st_mtime
     except ClientError as e:
-        if e.response["Error"]["Code"] in ("404", "NoSuchKey"):
+        if e.response["Error"]["Code"] in ("404", "NoSuchKey") and optional:
+            observe(
+                "download",
+                "optional_absent",
+                status="warn" if optional == "warn" else "ok",
+                key=key,
+                bucket=BUCKET,
+            )
+        elif e.response["Error"]["Code"] in ("404", "NoSuchKey"):
             # #15: a key enumerated by list_objects_v2 that 404s on download means a PARSED
             # file vanished between list and download — the corpus is silently shortened. This
             # was a debug-level skip (indistinguishable from an intentional no-op). Make it a
@@ -2304,7 +2331,7 @@ def _migrate_exclusions_to_dynamo() -> None:
             "output/equipment/not_duplicates.json",
         ]
         for key in migration_files:
-            _download_s3_file(s3_migrate, key)
+            _download_s3_file(s3_migrate, key, optional=True)
         for entity, subdir in [
             ("people", "people"),
             ("places", "places"),
@@ -2339,7 +2366,7 @@ def _download_dedup_data() -> None:
         "output/equipment/index.json",
     ]
     for key in dedup_files:
-        _download_s3_file(s3, key)
+        _download_s3_file(s3, key, optional=True)
     for prefix in [
         "output/people/",
         "output/people_groups/",
@@ -2780,6 +2807,22 @@ def _sync_maps_with_av_staging(maps_dir: "Path", skip: set) -> tuple:
     )
 
 
+def _final_sync_phase1() -> None:
+    """Phase 1 final upload: parsed book content + the run_scope section-count records."""
+    # Phase 1: upload book content (parsed files trigger Phase 2)
+    d = WORKDIR / "output" / "content"
+    if d.exists():
+        n, _ = s3_sync_up(d, "output/content")
+        logger.info("Final sync: uploaded %d output files", n)
+    # The authoritative per-book section count (run_scope.record_scope) that Phase 2's
+    # scope guard reconciles against. It was written locally but never uploaded, so in ECS
+    # Phase 2 always 404'd and silently fell back to the magic-50 ceiling.
+    rs = WORKDIR / "output" / "manifests" / "run_scope"
+    if rs.exists():
+        n_rs, _ = s3_sync_up(rs, "output/manifests/run_scope")
+        logger.info("OBSERV run_scope.synced files=%d", n_rs)
+
+
 def _final_sync(phase_script: str = ""):
     """Final upload of new output to S3. Only uploads entity subdirs, not parsed/event files."""
     if "phase0" in phase_script:
@@ -2790,11 +2833,7 @@ def _final_sync(phase_script: str = ""):
             logger.info("Final sync: uploaded %d Phase 0 output files", n)
         return
     if "phase1" in phase_script:
-        # Phase 1: upload book content (parsed files trigger Phase 2)
-        d = WORKDIR / "output" / "content"
-        if d.exists():
-            n, _ = s3_sync_up(d, "output/content")
-            logger.info("Final sync: uploaded %d output files", n)
+        _final_sync_phase1()
     elif "phase2" in phase_script or "phase3" in phase_script:
         # Phase 2/3: only upload entity subdirs, skip book dirs with parsed/event files
         entity_dirs = [
