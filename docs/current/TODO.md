@@ -287,6 +287,14 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
 - **[LOW · investigate] Is `config/domain_blacklist.yaml` blacklist still HONORED by OpenSERP?**
 - **[LOW · dep-advisory] pylint 4.0.5 → 4.0.9** (CVE-2026-114608); pip-audit — not run in CI.
 - **[LOW · security-hardening] `_download_s3_file` path-traversal containment** (ecs_entrypoint).
+- **[LOW · observability · DRY review follow-up 2026-11] `src/extraction/logistics.py:390` swallows a whole-chunk
+  loss.** `except Exception: logger.error("Batch logistics extraction failed: %s"); return {}` drops the entire
+  chunk's logistics on any error with only a bare `logger.error` (no canonical OBSERV, so it never escalates). Convert
+  to `observe_error("logistics", "batch_failed", ...)` (anti-swallow; surfaced during P1.4 but out of that PR's scope).
+- **[LOW · data-hygiene · DRY review follow-up 2026-11] wikipedia image-URL query-strip inconsistency.**
+  `equipment_wikipedia._extract_equipment_page` strips `?query`/`#fragment` from the image URL before the Commons
+  license lookup; `groups_wikipedia._extract_group_page` does NOT, so a group image URL with tracking params yields a
+  dirty `File:` title and a missed/incorrect license. Make groups strip the same way (surfaced during P1.9).
 - **[LOW · observability · phase3 review follow-up 2026-11] people/people_groups/places OpenSERP write-paths
   count-iff-persisted but emit NO `write_failed` OBSERV on a failed write** (silent non-count). PR #711 added the loud
   `write_failed`=error + `records_unreadable` metrics to equipment + source_section only; extend the same
