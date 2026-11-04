@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import csv
 import json
 import re
 import urllib.parse
@@ -361,12 +360,10 @@ def extract_entries(html: str) -> list[dict[str, str]]:
     ]
 
 
-def write_csv(entries: list[dict[str, str]]) -> None:
-    OUTPUT_CSV.parent.mkdir(parents=True, exist_ok=True)
-    with OUTPUT_CSV.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=CSV_FIELDS)
-        writer.writeheader()
-        writer.writerows(entries)
+def write_csv(entries) -> None:
+    from scripts._common import write_dict_csv
+
+    write_dict_csv(OUTPUT_CSV, CSV_FIELDS, entries, extrasaction=None)
 
 
 def main() -> None:

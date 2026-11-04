@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import hashlib
 import http.client
 import json
@@ -1100,20 +1099,20 @@ def unique_preserve_order(values: list[str]) -> list[str]:
     return ordered
 
 
-def write_artifact_csv(rows: list[dict[str, str]]) -> None:
-    OUTPUT_CSV_ARTIFACTS.parent.mkdir(parents=True, exist_ok=True)
-    with OUTPUT_CSV_ARTIFACTS.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=ARTIFACT_CSV_FIELDS)
-        writer.writeheader()
-        writer.writerows(rows)
+def write_artifact_csv(entries) -> None:
+    from scripts._common import write_dict_csv
+
+    write_dict_csv(
+        OUTPUT_CSV_ARTIFACTS, ARTIFACT_CSV_FIELDS, entries, extrasaction=None
+    )
 
 
-def write_individual_csv(rows: list[dict[str, str]]) -> None:
-    OUTPUT_CSV_INDIVIDUALS.parent.mkdir(parents=True, exist_ok=True)
-    with OUTPUT_CSV_INDIVIDUALS.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=INDIVIDUAL_CSV_FIELDS)
-        writer.writeheader()
-        writer.writerows(rows)
+def write_individual_csv(entries) -> None:
+    from scripts._common import write_dict_csv
+
+    write_dict_csv(
+        OUTPUT_CSV_INDIVIDUALS, INDIVIDUAL_CSV_FIELDS, entries, extrasaction=None
+    )
 
 
 def write_csv(rows: list[dict[str, str]]) -> None:
