@@ -34,7 +34,51 @@ def _spy(tmp_path, monkeypatch):
     return calls
 
 
-def test_optional_key_404_is_not_an_error(_spy):
+@pytest.fixture
+def _obs(monkeypatch):
+    seen = []
+    monkeypatch.setattr(
+        ecs_entrypoint, "observe", lambda *a, **k: seen.append((a, k)) or "ok"
+    )
+    return seen
+
+
+def test_optional_absence_is_countable_ok(_spy, _obs):
+    ecs_entrypoint._download_s3_file(
+        _S3_404(), "output/people/index.json", optional=True
+    )
+    assert _spy == []
+    assert (
+        _obs[0][0] == ("download", "optional_absent") and _obs[0][1]["status"] == "ok"
+    )
+
+
+def test_run_scope_absence_is_warn(_spy, _obs):
+    ecs_entrypoint._download_s3_file(
+        _S3_404(), "output/manifests/run_scope/B.json", optional="warn"
+    )
+    assert _spy == [] and _obs[0][1]["status"] == "warn"
+    src = inspect.getsource(ecs_entrypoint._download_phase2_inputs)
+    assert 'optional="warn"' in src
+
+
+def test_phase1_final_sync_uploads_run_scope(tmp_path, monkeypatch):
+    monkeypatch.setattr(ecs_entrypoint, "WORKDIR", tmp_path)
+    (tmp_path / "output" / "content" / "B").mkdir(parents=True)
+    rs = tmp_path / "output" / "manifests" / "run_scope"
+    rs.mkdir(parents=True)
+    (rs / "B.json").write_text('{"section_count": 2}', encoding="utf-8")
+    prefixes = []
+    monkeypatch.setattr(
+        ecs_entrypoint,
+        "s3_sync_up",
+        lambda d, prefix, **k: prefixes.append(prefix) or (1, []),
+    )
+    ecs_entrypoint._final_sync("phase1_parse.py")
+    assert "output/manifests/run_scope" in prefixes
+
+
+def test_optional_key_404_is_not_an_error(_spy, _obs):
     ecs_entrypoint._download_s3_file(
         _S3_404(), "output/people/not_duplicates.json", optional=True
     )
