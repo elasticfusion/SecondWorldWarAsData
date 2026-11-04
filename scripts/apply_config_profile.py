@@ -25,7 +25,6 @@ from __future__ import annotations
 import argparse
 import os
 import re
-import shutil
 import stat
 import sys
 import time
@@ -119,7 +118,10 @@ def _plan(
         lines = [f"key absent from config.yaml: {k}" for k in unknown]
         lines += [f"type mismatch: {k}" for k in mismatched]
         raise ProfileError(
-            "profile cannot be applied safely:\n      - " + "\n      - ".join(lines)
+            "profile cannot be applied safely:\n      - "
+            + "\n      - ".join(lines)
+            + "\n    (config.yaml is older than the profiles — add the missing keys from "
+            "config.yaml.example)"
         )
     return changes
 
@@ -136,14 +138,34 @@ def _show(dotted: str, value: Any) -> str:
     return "'***'" if _SECRET_RE.search(dotted.rsplit(".", 1)[-1]) else repr(value)
 
 
+def _create_private_backup(config_path: Path) -> Path:
+    """Backup created 0600 from the start (no world-readable window: config.yaml holds API keys).
+    O_EXCL + a counter: never overwrites an earlier backup (two applies in the same second).
+    """
+    stamp = f"{time.strftime('%Y%m%d-%H%M%S')}-{os.getpid()}"
+    data = config_path.read_bytes()
+    for n in range(1000):
+        backup = config_path.with_name(f"{config_path.name}.bak-{stamp}-{n}")
+        try:
+            fd = os.open(backup, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        except FileExistsError:
+            continue
+        try:
+            with os.fdopen(fd, "wb") as b:
+                b.write(data)
+                b.flush()
+                os.fsync(b.fileno())
+        except OSError:
+            backup.unlink(missing_ok=True)  # never leave a truncated backup behind
+            raise
+        return backup
+    raise ProfileError(f"could not create a unique backup next to {config_path}")
+
+
 def _write_atomic(config_path: Path, config: Dict[str, Any]) -> Path:
     """0600 backup, then an atomic replace that keeps config.yaml's original mode."""
     mode = stat.S_IMODE(config_path.stat().st_mode)
-    backup = config_path.with_name(
-        f"{config_path.name}.bak-{time.strftime('%Y%m%d-%H%M%S')}-{os.getpid()}"
-    )
-    shutil.copyfile(config_path, backup)
-    os.chmod(backup, 0o600)
+    backup = _create_private_backup(config_path)
     tmp = config_path.with_name(f".{config_path.name}.{os.getpid()}.tmp")
     fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     try:
@@ -178,7 +200,13 @@ def apply_profile(
         return 0
     for dotted, _old, new in changes:
         _set(config, dotted, new)
-    backup = _write_atomic(config_path, config)
+    try:
+        backup = _write_atomic(config_path, config)
+    except (ProfileError, OSError) as e:
+        print(
+            f"  ✗ could not write config.yaml safely: {e}\n    config.yaml NOT modified."
+        )
+        return 1
     print(
         f"  → profile {name!r} applied ({len(changes)} change(s); backup: {backup.name})"
     )

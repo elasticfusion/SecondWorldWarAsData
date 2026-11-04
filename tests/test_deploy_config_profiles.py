@@ -173,3 +173,44 @@ def test_apply_failure_aborts_deploy(tmp_path):
 def test_no_full_file_cp_of_profiles_remains():
     src = (ROOT / "scripts" / "deploy_all.sh").read_text()
     assert not re.search(r"cp config\.[a-z-]+\.yaml config\.yaml", src)
+
+
+def test_backup_never_world_readable(env, monkeypatch):
+    """The backup must be created 0600 — not copied with umask perms then chmod'ed."""
+    cfg = env[0]
+    seen = []
+    real_open = os.open
+
+    def spy(path, flags, mode=0o777, *a, **k):
+        if ".bak-" in str(path):
+            seen.append(mode)
+        return real_open(path, flags, mode, *a, **k)
+
+    monkeypatch.setattr(os, "open", spy)
+    old = os.umask(0o022)
+    try:
+        assert _apply("balanced", env) == 0
+    finally:
+        os.umask(old)
+    assert seen == [0o600]
+
+
+def test_stale_config_error_suggests_resync(env, capsys):
+    cfg, prof, _ = env
+    _write(prof / "balanced.yaml", {"a": {"gone": 1}})
+    assert _apply("balanced", env) == 1
+    assert "config.yaml.example" in capsys.readouterr().out
+
+
+def test_write_failure_is_clean_and_leaves_config_untouched(env, monkeypatch, capsys):
+    cfg = env[0]
+    before = cfg.read_text()
+
+    def boom(*a, **k):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(acp.os, "replace", boom)
+    assert _apply("balanced", env) == 1
+    assert cfg.read_text() == before
+    assert "NOT modified" in capsys.readouterr().out
+    assert not list(cfg.parent.glob(".config.yaml.*.tmp"))
