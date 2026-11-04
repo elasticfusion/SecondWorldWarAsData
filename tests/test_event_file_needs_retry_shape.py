@@ -48,7 +48,35 @@ def test_missing_or_corrupt_is_retried(tmp_path):
     assert phase2_extract._event_file_needs_retry(lst) is True
 
 
-def test_retry_pass_skips_healthy_nested_files(tmp_path):
+def test_nested_empty_wins_over_stale_legacy_key(tmp_path):
+    ef = _write(
+        tmp_path / "ch-event.json",
+        {"Event": {"Sub-events": []}, "Sub-events": [{"Sub-eventID": "OLD"}]},
+    )
+    assert phase2_extract._event_file_needs_retry(ef) is True
+
+
+def test_odd_shapes_are_retried(tmp_path):
+    for i, data in enumerate(
+        [{"Event": "x"}, {"Event": {"Sub-events": None}}, {"Event": None}]
+    ):
+        ef = _write(tmp_path / f"o{i}-event.json", data)
+        assert phase2_extract._event_file_needs_retry(ef) is True
+
+
+def test_unreadable_event_file_is_loud(tmp_path, monkeypatch):
+    seen = []
+    monkeypatch.setattr(
+        phase2_extract, "observe_warn", lambda *a, **k: seen.append((a, k))
+    )
+    bad = tmp_path / "bad-event.json"
+    bad.write_text("{not json", encoding="utf-8")
+    assert phase2_extract._event_file_needs_retry(bad) is True
+    assert seen and seen[0][0] == ("phase2", "event_file_unreadable")
+    assert seen[0][1]["file"] == "bad-event.json"
+
+
+def test_retry_pass_skips_healthy_nested_files(tmp_path, monkeypatch):
     """End-to-end over _retry_missing_events: no re-extraction for a healthy chapter."""
     pf = _write(tmp_path / "ch-parsed.json", {"paragraphs": ["p"]})
     _write(
@@ -62,6 +90,15 @@ def test_retry_pass_skips_healthy_nested_files(tmp_path):
         def clear_cache_entry(self, *a, **k):  # pragma: no cover - must not be hit
             raise AssertionError("healthy chapter was re-extracted")
 
+    import src.extraction.events as events_mod
+
+    # Guarantee a prompt is produced so the old (buggy) check WOULD reach clear_cache_entry.
+    monkeypatch.setattr(events_mod, "create_event_prompt", lambda _d: "prompt")
+    monkeypatch.setattr(
+        events_mod,
+        "extract_events",
+        lambda *a, **k: (_ for _ in ()).throw(AssertionError("re-extracted")),
+    )
     retried, failed = phase2_extract._retry_missing_events(
         [pf], _Grok(), logging.getLogger("t")
     )
@@ -78,6 +115,19 @@ def test_timeout_failure_reason_is_not_empty(caplog):
     line = next(r.getMessage() for r in caplog.records if "✗" in r.getMessage())
     assert "TimeoutError" in line
     assert not line.rstrip().endswith(":")
+
+
+def test_cancelled_chapter_counts_as_failed():
+    results = {"processed": 0, "failed": 0}
+    batch_parallel._process_batch_results(
+        [("Book", "ch-parsed.json", None)], [asyncio.CancelledError()], results
+    )
+    assert results["failed"] == 1
+
+
+def test_failure_reason_is_one_bounded_line():
+    r = batch_parallel._failure_reason(ValueError("a\nb" + "x" * 1000))
+    assert "\n" not in r and len(r) <= len("ValueError: ") + 300
 
 
 def test_failure_reason_keeps_message():

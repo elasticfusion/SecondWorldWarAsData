@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 from src.utils.config import load_config, get_paths
-from src.utils.observe import observe_error
+from src.utils.observe import observe_error, observe_warn
 from src.utils.logger import setup_logging
 from src.grok_client import GrokClient, BatchModeCollecting, current_book
 from src.extraction.events import extract_events
@@ -577,7 +577,15 @@ def _event_file_needs_retry(event_file: Path) -> bool:
     try:
         with open(event_file, "r", encoding="utf-8") as f:
             return not _event_file_sub_events(json.load(f))
-    except Exception:
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        # Loud, not silent: an unreadable event file is retried (re-extracted), which
+        # re-mints Sub-eventIDs — the operator must be able to see why.
+        observe_warn(
+            "phase2",
+            "event_file_unreadable",
+            file=event_file.name,
+            error=type(e).__name__,
+        )
         return True
 
 

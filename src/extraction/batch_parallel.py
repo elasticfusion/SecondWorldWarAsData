@@ -831,7 +831,10 @@ def _failure_reason(exc: BaseException) -> str:
     """Actionable one-line reason for a failed chapter: type name + message (if any)."""
     if isinstance(exc, asyncio.TimeoutError):
         return f"{type(exc).__name__} (chapter exceeded the per-chapter timeout)"
-    msg = str(exc)
+    if isinstance(exc, asyncio.CancelledError):
+        return "CancelledError (chapter task was cancelled)"
+    # One line, bounded: exception text can embed multi-line LLM/API bodies.
+    msg = " ".join(str(exc).split())[:300]
     return f"{type(exc).__name__}: {msg}" if msg else type(exc).__name__
 
 
@@ -840,7 +843,7 @@ def _process_batch_results(
 ) -> None:
     """Process results from a batch of chapters."""
     for (book_name, name, _), result in zip(tasks, batch_results):
-        if isinstance(result, Exception):
+        if isinstance(result, BaseException):  # incl. CancelledError (not an Exception)
             # Always name the exception type: str(TimeoutError()) is "", which logged a
             # reason-less "✗ chapter: " (an un-actionable alarm).
             logger.error("  ✗ %s: %s", name, _failure_reason(result))
