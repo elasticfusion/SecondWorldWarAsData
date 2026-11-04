@@ -469,6 +469,29 @@ def unit_keys_match(k1: UnitKey, k2: UnitKey) -> tuple[bool, str]:
     )
 
 
+def defaulted_arm_review_reason(name1: str, name2: str) -> Optional[str]:
+    """Review-candidate reason when two names fail the strict key match ONLY because one side's
+    arm is the infantry DEFAULT (no arm stated) and the other states a non-infantry arm, with
+    number/service/echelon otherwise compatible — e.g. "82d Division" vs "82d Airborne Division"
+    (WWII histories routinely drop "Airborne"). The strict veto is kept for linking; this only
+    surfaces the pair for HUMAN review (never an auto-merge). Explicit-vs-explicit arm mismatches
+    ("9th Infantry Division" vs "9th Armored Division") and service/nationality vetoes stay vetoes.
+    """
+    k1, k2 = derive_unit_key(name1), derive_unit_key(name2)
+    if not (k1.numbers and k2.numbers) or unit_keys_match(k1, k2)[0]:
+        return None
+    raw1 = derive_unit_key(name1, infantry_default=False)
+    raw2 = derive_unit_key(name2, infantry_default=False)
+    if (raw1.arm is None) == (raw2.arm is None):
+        return (
+            None  # both explicit (a real veto) or both absent (strict match handled it)
+        )
+    if not unit_keys_match(raw1, raw2)[0]:
+        return None
+    explicit = raw1.arm or raw2.arm
+    return f"arm unstated on one side (defaulted infantry) vs {explicit} — review"
+
+
 def _is_bare_combat_command(numbers) -> bool:
     """True if the number-set has a CC letter but NO parent-division number — a bare
     Combat Command is underspecified (composition is task-organized; letter+division is

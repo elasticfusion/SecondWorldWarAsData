@@ -288,7 +288,11 @@ def _numbers_match(name1: str, name2: str) -> bool:
 
 def _find_group_cluster(i, g1, groups, seen, **kwargs):
     """Find all groups matching g1. Returns (cluster, reasons)."""
-    from src.dedup.unit_key import derive_unit_key, unit_keys_match
+    from src.dedup.unit_key import (
+        defaulted_arm_review_reason,
+        derive_unit_key,
+        unit_keys_match,
+    )
 
     gcfg = kwargs.get("gcfg")
     text_index = kwargs.get("text_index") or {}
@@ -311,6 +315,11 @@ def _find_group_cluster(i, g1, groups, seen, **kwargs):
             if _group_nationality_conflict(g1, g2):
                 continue
             matched, why = unit_keys_match(key1, key2)
+            if not matched:
+                # Soft path: a defaulted-infantry arm vs an explicit non-infantry arm is a
+                # HUMAN-REVIEW candidate (e.g. "82d Division" / "82d Airborne Division").
+                soft = defaulted_arm_review_reason(g1["name"], g2["name"])
+                matched, why = (True, soft) if soft else (False, why)
             if matched:
                 cluster.append(g2)
                 reasons.add(why)
