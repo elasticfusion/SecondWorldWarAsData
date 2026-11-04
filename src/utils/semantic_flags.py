@@ -16,8 +16,9 @@ alert rather than a per-record decision.
 from __future__ import annotations
 
 import logging
+import math
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -87,15 +88,40 @@ _BARE_NUMBER = re.compile(r"^\d{1,4}[.)]?$")
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}")
 
 
-def _geo_flags(record: Dict[str, Any]) -> List[str]:
-    lat, lon = record.get("latitude"), record.get("longitude")
-    if lat is None or lon is None or (lat == 0.0 and lon == 0.0):
-        return ["geo_missing_coords"]
+def _as_coord(v: Any) -> Optional[float]:
+    """A finite float coordinate, or None (bools, NaN/inf, non-numerics rejected)."""
+    if isinstance(v, bool) or v is None:
+        return None
     try:
-        latf, lonf = float(lat), float(lon)
+        f = float(v)
     except (TypeError, ValueError):
+        return None
+    return f if math.isfinite(f) else None
+
+
+def place_latlon(record: Dict[str, Any]) -> Tuple[Optional[float], Optional[float]]:
+    """(lat, lon) of a place: the FIRST complete, finite, non-placeholder pair, checking the
+    canonical nested ``coordinates`` object and then the root ``latitude``/``longitude`` (the
+    Phase-3 mirror). (None, None) if neither is usable.
+
+    Reading only the root flagged EVERY Phase-2-extracted place geo_missing_coords (a 100%
+    false 'systematic CODE defect' alarm) and made geo_impossible_coords unreachable for them.
+    A partial / 0,0 / junk pair on one side never masks a complete pair on the other.
+    """
+    coords = record.get("coordinates") if isinstance(record, dict) else None
+    sources = [coords if isinstance(coords, dict) else {}, record or {}]
+    for src in sources:
+        lat, lon = _as_coord(src.get("latitude")), _as_coord(src.get("longitude"))
+        if lat is not None and lon is not None and not (lat == 0.0 and lon == 0.0):
+            return lat, lon
+    return None, None
+
+
+def _geo_flags(record: Dict[str, Any]) -> List[str]:
+    lat, lon = place_latlon(record)
+    if lat is None or lon is None:
         return ["geo_missing_coords"]
-    if not (_LAT_MIN <= latf <= _LAT_MAX and _LON_MIN <= lonf <= _LON_MAX):
+    if not (_LAT_MIN <= lat <= _LAT_MAX and _LON_MIN <= lon <= _LON_MAX):
         return ["geo_impossible_coords"]
     return []
 
