@@ -53,10 +53,8 @@ def test_parser_anchors_images_to_preceding_paragraph():
         ["http://h/img-1.jpg", "http://h/img-2.jpg"],
     )
     P._anchor_images_to_paragraphs(doc, content)
-    assert [i.paragraph_number for i in doc.images] == [
-        2,
-        2,
-    ]  # before-all -> first paragraph
+    # before all text -> unanchored (0), never a false "follows paragraph 2" claim
+    assert [i.paragraph_number for i in doc.images] == [0, 2]
 
 
 def test_blockquote_and_line_break_source_is_located():
