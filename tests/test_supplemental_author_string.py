@@ -161,3 +161,10 @@ def test_observ_carries_response_sub_event_id(monkeypatch):
     monkeypatch.setattr(sup, "observe_warn", lambda *a, **k: seen.append(k))
     sup.sanitize_supplemental_data(_resp("Jones, Clifford"))
     assert seen[0]["sub_event"] == "01M6J3NGB3DR9QD7VT6ST9Y8SH"
+
+
+def test_non_string_title_and_nan_are_safe():
+    out = sup.sanitize_supplemental_data(_cite(title=1944, pages=float("nan")))
+    c = _c(out)
+    assert c["title"] == "1944" and c["pages"] is None
+    sup.validate_supplemental_json(out)

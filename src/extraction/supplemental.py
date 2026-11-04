@@ -1,6 +1,7 @@
 """Supplemental material extraction from event data - Phase 1: Core Extraction."""
 
 import json
+import math
 import logging
 import hashlib
 from pathlib import Path
@@ -249,8 +250,14 @@ def _normalize_urls(material: Dict[str, Any]) -> None:
 
 def _normalize_citation(material: Dict[str, Any], sub_event_id: str = "") -> None:
     """Ensure citation has required fields and derive title from verbatim if needed."""
-    citation = material.get("citation") or {}
+    citation = material.get("citation")
+    if not isinstance(citation, dict):
+        citation = {}
     material["citation"] = citation
+    if citation.get("title") is not None and not isinstance(citation["title"], str):
+        citation["title"] = _scalar_text(
+            citation["title"]
+        )  # verbatim, else None -> derived
 
     if citation.get("title") is None or _is_cross_reference(citation.get("title", "")):
         citation["title"] = _derive_title_from_mentions(material.get("mentions") or [])
@@ -292,6 +299,8 @@ def _citation_string_fields() -> tuple:
 def _scalar_text(x: Any) -> Optional[str]:
     """Verbatim text of a scalar (integral floats without '.0'); None for null/blank/bool/other."""
     if x is None or isinstance(x, bool):
+        return None
+    if isinstance(x, float) and not math.isfinite(x):
         return None
     if isinstance(x, float) and x.is_integer():
         x = int(x)
@@ -349,7 +358,11 @@ def _coerce_isbn(citation: Dict[str, Any], fixed: List[str]) -> None:
     citation["isbn"] = parts[0] if parts else None
     if parts[1:] and citation.get("isbn_edition") in (None, ""):
         citation["isbn_edition"] = "; ".join(parts[1:])
-    fixed.append("isbn")
+        fixed.append("isbn")
+    elif parts[1:]:
+        fixed.append("isbn(extra_dropped)")
+    else:
+        fixed.append("isbn")
 
 
 def _coerce_citation_types(citation: Dict[str, Any], sub_event_id: str = "") -> None:
