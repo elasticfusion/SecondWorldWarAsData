@@ -116,3 +116,9 @@ def test_processed_events_marker_fetch_is_optional():
         if ".processed_events.json" in ln and "_download_s3_file" in ln
     )
     assert "optional=True" in line
+
+
+def test_bad_optional_value_rejected(tmp_path, monkeypatch):
+    monkeypatch.setattr(ecs_entrypoint, "WORKDIR", tmp_path)
+    with pytest.raises(ValueError):
+        ecs_entrypoint._download_s3_file(_S3_404(), "output/x.json", optional="warning")

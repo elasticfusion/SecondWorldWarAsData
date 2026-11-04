@@ -1697,6 +1697,10 @@ def _download_s3_file(s3, key: str, *, optional: Union[bool, str] = False) -> No
     """
     from botocore.exceptions import ClientError
 
+    if optional not in (False, True, "warn"):
+        raise ValueError(
+            f"_download_s3_file optional must be False|True|'warn': {optional!r}"
+        )
     local = WORKDIR / key
     local.parent.mkdir(parents=True, exist_ok=True)
     try:
