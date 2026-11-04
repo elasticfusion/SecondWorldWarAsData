@@ -840,6 +840,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
         )
         _notify_failure(phase_script, result.returncode)
         _final_sync(phase_script)
+        _audit_failed_phase2(phase_script, result.returncode)
         if "phase3" not in phase_script:
             _remove_lock(phase_script)
         _release_nat_lease()  # M3: task exiting — drop NAT demand
@@ -1832,6 +1833,48 @@ def _offramp_doc_needs_review(reason: str) -> None:
         logger.warning("Failed to off-ramp doc %s to needs-review: %s", book, e)
 
 
+def _audit_failed_phase2(phase_script: str, returncode: int) -> None:
+    """A FAILED/halted Phase 2 (e.g. the yield-gate fail_stop) skips _post_process, but its
+    partial corpus is exactly what the operator must root-cause — so still run the post-sync
+    referential audit (call AFTER _final_sync). No-op for other phases. Never raises."""
+    if "phase2" in phase_script:
+        _post_sync_referential_enforce(f"Phase 2 (post-sync, failed rc={returncode})")
+
+
+def _post_sync_referential_enforce(phase_label: str) -> None:
+    """Referential repair + audit against the AUTHORITATIVE S3 corpus, run AFTER ``_final_sync``.
+
+    Phase processes skip their in-main referential audit when S3_BUCKET is set: before the sync,
+    S3 holds only what the periodic background sync pushed, so records written in the final
+    seconds look dangling. Emits ``OBSERV integrity.post_sync_audit`` with the audit status so a
+    NOT-MEASURED run (timeout / env skip / error -> status=unknown) is a warn, never mistaken for
+    clean. Never raises.
+    """
+    try:
+        from src.utils.referential_integrity import run_for_phase as _ref_enforce
+
+        # Repairs + re-audits S3 directly (S3Storage has the complete corpus incl. content/events).
+        report = _ref_enforce(WORKDIR / "output", phase=phase_label) or {}
+        ref_status = report.get("status", "unknown")
+        observe(
+            "integrity",
+            "post_sync_audit",
+            status="ok" if ref_status == "ok" else "warn",
+            phase=phase_label,
+            referential_status=ref_status,
+            dangling=int(report.get("total_dangling", 0) or 0),
+        )
+    except Exception as e:  # noqa: BLE001 - enforcement must never crash teardown
+        observe(
+            "integrity",
+            "post_sync_audit",
+            status="warn",
+            phase=phase_label,
+            referential_status="error",
+            error=type(e).__name__,
+        )
+
+
 def _phase3_durable_referential_fix() -> None:
     """Post-_final_sync referential repair + validation for Phase 3, run against the AUTHORITATIVE,
     COMPLETE corpus (S3 when S3_BUCKET is set) AFTER the local->S3 sync — so (a) the stale-sub-event
@@ -1839,13 +1882,7 @@ def _phase3_durable_referential_fix() -> None:
     overwrote) and (b) validation audits the real state (the in-task validator saw a local tree
     lacking output/content -> false EventID danglers). Fail-safe: never raises into the pipeline.
     """
-    try:
-        from src.utils.referential_integrity import run_for_phase as _ref_enforce
-
-        # Repairs + re-audits S3 directly (S3Storage has the complete corpus incl. content/events).
-        _ref_enforce(WORKDIR / "output", phase="Phase 3 (post-sync)")
-    except Exception as e:  # noqa: BLE001 - enforcement must never crash teardown
-        logger.warning("post-sync referential enforcement skipped: %s", e)
+    _post_sync_referential_enforce("Phase 3 (post-sync)")
     try:
         # Provenance-completeness enforcement MUST also run on the authoritative post-sync corpus.
         # main() runs it only on the local/no-S3 branch (the in-main run would be clobbered by the
@@ -1932,6 +1969,9 @@ def _post_process(phase_script: str, env: dict) -> None:
                 logger.warning("Failed to trigger Phase 2: %s", e)
             _invoke_trigger_phase_complete("1")
     if "phase2" in phase_script:
+        # _post_process always follows _final_sync (sync, retrieve and in-task-batch paths), so
+        # S3 now holds the complete Phase-2 corpus. Audit BEFORE dedup, as the in-main run did.
+        _post_sync_referential_enforce("Phase 2 (post-sync)")
         dedup_ok = False
         for attempt in range(2):
             try:
@@ -4040,6 +4080,7 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
 
     if result.returncode != 0:
         logger.error("Retrieve phase exited with code %d", result.returncode)
+        _audit_failed_phase2(phase_script, result.returncode)
         update_job_status(batch_id, "failed")
         sys.exit(result.returncode)
 
