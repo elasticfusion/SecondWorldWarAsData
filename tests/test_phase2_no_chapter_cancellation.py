@@ -132,7 +132,7 @@ def test_slow_is_reported_live_while_loop_is_blocked(monkeypatch):
     assert any(k.get("state") == "finished" for k in seen)
 
 
-@pytest.mark.parametrize("raw", ["abc", "0", "-5"])
+@pytest.mark.parametrize("raw", ["abc", "0", "-5", "nan", "inf"])
 def test_bad_soft_deadline_env_falls_back(monkeypatch, raw):
     monkeypatch.setenv("X_DEADLINE", raw)
     assert bp._soft_deadline("X_DEADLINE", 42.0) == 42.0

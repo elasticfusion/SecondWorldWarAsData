@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import math
 import os
 import logging
 import re
@@ -836,7 +837,7 @@ def _soft_deadline(env: str, default: float) -> float:
         val = float(raw) if raw else default
     except ValueError:
         val = 0.0
-    if val <= 0:
+    if not math.isfinite(val) or val <= 0:
         logger.warning(
             "OBSERV phase2.bad_soft_deadline status=warn env=%s value=%r", env, raw
         )
@@ -871,7 +872,14 @@ async def _observe_slow(label: str, coro, soft_deadline_s: float):
 
     timer = threading.Timer(soft_deadline_s, _still_running)
     timer.daemon = True
-    timer.start()
+    try:
+        timer.start()
+    except (
+        RuntimeError
+    ):  # observability must never fail the chapter (thread exhaustion)
+        logger.warning(
+            "OBSERV phase2.slow_watch_unavailable status=warn task=%s", label
+        )
     try:
         return await coro
     finally:
