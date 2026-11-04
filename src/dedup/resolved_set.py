@@ -46,15 +46,16 @@ def _norm_key(name: str) -> str:
 
 
 def _geo_cell(entity: Dict[str, Any], precision: int = 1) -> Optional[str]:
-    """Blocking key for a place: coarse lat/lon cell. None if no usable coords."""
-    lat = entity.get("latitude")
-    lon = entity.get("longitude")
-    try:
-        if lat in (None, 0, 0.0) and lon in (None, 0, 0.0):
-            return None
-        return f"{round(float(lat), precision)},{round(float(lon), precision)}"
-    except (TypeError, ValueError):
+    """Blocking key for a place: coarse lat/lon cell. None if no usable coords.
+
+    Reads the canonical nested ``coordinates`` (root as fallback) via the shared reader — a
+    root-only read gave pre-geocode places no geo blocking key."""
+    from src.utils.semantic_flags import place_latlon
+
+    lat, lon = place_latlon(entity)
+    if lat is None or lon is None:
         return None
+    return f"{round(lat, precision)},{round(lon, precision)}"
 
 
 def blocking_keys(entity: Dict[str, Any], entity_type: str) -> List[str]:
