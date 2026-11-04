@@ -1,0 +1,30 @@
+# Profile overlay: balanced — batch extraction, live enrichment.
+# OVERLAY, not a full config: only these keys are changed in config.yaml
+# (scripts/apply_config_profile.py). Every key must exist in config.yaml.
+api:
+  calls_per_minute: 30
+processing:
+  generate_jq_queries: true
+  generate_download_scripts: true
+equipment:
+  enable_enrichment: true
+  verify_media_with_vision: true
+supplemental_material:
+  verify_archive_urls: true
+  extract_isbn: true
+  determine_copyright: true
+  max_materials_per_chapter: 1000
+concurrency:
+  enabled: true
+  max_enrichment_workers: 6
+enrichment:
+  re_search_after_days: 90
+openserp:
+  results_per_query: 20
+  max_images_per_entity: 5
+  max_web_results_per_entity: 5
+external_maps:
+  enabled: true
+logging:
+  debug_message_preview_chars: 15000
+  debug_response_preview_chars: 15000

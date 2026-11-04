@@ -450,6 +450,25 @@ python3 phase2_extract.py --log-level DEBUG
 
 ---
 
+## Deploy Profiles
+
+`scripts/deploy_all.sh` step 0 offers profiles (`DEPLOY_PROFILE=1..5` non-interactively). A
+profile is an **overlay** in `config/profiles/<name>.yaml` holding only the settings it changes;
+`scripts/apply_config_profile.py` deep-merges it onto `config.yaml`:
+
+| Choice | Overlay | Intent |
+|---|---|---|
+| 1 | `balanced.yaml` | batch extraction, live enrichment |
+| 2 | `cost-optimized.yaml` | no OpenSERP for supplemental, no map downloads |
+| 3 | `performance-optimized.yaml` | live Phase 2, max concurrency |
+| 4 | `review-all-data.yaml` | force reprocess everything (expensive) |
+| 5 | — | keep `config.yaml` unchanged |
+
+The apply fails (deploy aborts, `config.yaml` untouched) on a missing overlay, an unknown choice,
+or an overlay key that does not exist in `config.yaml`. On success it writes
+`config.yaml.bak-<timestamp>` (gitignored — it contains API keys) and prints every changed value.
+Re-serialization drops YAML comments from `config.yaml`; the backup keeps them.
+
 ## Common Configuration Scenarios
 
 ### Testing with Limited Data

@@ -1,0 +1,43 @@
+# Profile overlay: review-all-data — force reprocess everything (EXPENSIVE).
+# OVERLAY, not a full config (scripts/apply_config_profile.py).
+api:
+  calls_per_minute: 30
+  grok:
+    max_retries: 5
+    timeout: 120
+processing:
+  generate_jq_queries: true
+  generate_download_scripts: true
+  force_reprocess: true
+  reprocess_types:
+    [people, places, dates, equipment, weather, logistics, casualties, maps, supplemental, people_groups]
+weather:
+  cache_responses: false
+  only_precise_dates: false
+equipment:
+  enable_enrichment: true
+  verify_media_with_vision: true
+supplemental_material:
+  verify_archive_urls: true
+  extract_isbn: true
+  determine_copyright: true
+  max_materials_per_chapter: 1000
+concurrency:
+  max_event_files: 1
+  max_extraction_group: 1
+  max_enrichment_workers: 3
+enrichment:
+  re_search_after_days: 0
+batch:
+  phase2: false
+openserp:
+  results_per_query: 30
+  max_images_per_entity: 10
+  max_web_results_per_entity: 10
+  rate_limit_seconds: 3
+external_maps:
+  enabled: true
+logging:
+  level: DEBUG
+  debug_message_preview_chars: 15000
+  debug_response_preview_chars: 15000

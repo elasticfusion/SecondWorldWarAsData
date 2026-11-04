@@ -213,8 +213,8 @@ fi
 
 echo "=== 0. Select config profile ==="
 echo "  1) balanced          — batch extraction, live enrichment (default)"
-echo "  2) cost-optimized    — everything batched, cheap models for light tasks"
-echo "  3) performance       — live calls, max concurrency, fastest"
+echo "  2) cost-optimized    — no OpenSERP for supplemental, no map image downloads"
+echo "  3) performance       — live (non-batch) Phase 2, max concurrency, fastest"
 echo "  4) review-all-data   — force reprocess everything (expensive)"
 echo "  5) keep current      — don't change config.yaml"
 # Non-interactive safe: honor DEPLOY_PROFILE env; else prompt only if a TTY is attached; else
@@ -227,12 +227,27 @@ else
     echo "  ✗ No TTY and DEPLOY_PROFILE unset — refusing to guess a config profile in a"
     echo "    non-interactive deploy (set DEPLOY_PROFILE=1..5). Hard stop."; exit 1
 fi
-case "$profile_choice" in
-    1) cp config.balanced.yaml config.yaml && echo "  → balanced" ;;
-    2) cp config.cost-optimized.yaml config.yaml && echo "  → cost-optimized" ;;
-    3) cp config.performance-optimized.yaml config.yaml && echo "  → performance" ;;
-    4) cp config.review-all-data.yaml config.yaml && echo "  → review-all-data (WARNING: expensive)" ;;
-    *) echo "  → keeping current config.yaml" ;;
+# Profiles are OVERLAYS (config/profiles/<name>.yaml) deep-merged onto config.yaml — never a full
+# copy (the old `cp config.<p>.yaml config.yaml && echo` silently no-op'd when the file was absent,
+# since set -e ignores a failure inside an && list, and a present copy was 84+ keys stale).
+# apply_config_profile.py fails loud on a missing overlay or a stale key; any failure stops here.
+_apply_profile() {
+    # Runs BEFORE the later `cd`/venv activation: resolve the repo root and use the venv's Python
+    # (PyYAML) explicitly; the script defaults to absolute repo-root paths.
+    local root py
+    root="$(cd "$(dirname "$0")/.." && pwd)"
+    py="$root/.venv/bin/python"; [ -x "$py" ] || py=python3
+    "$py" "$root/scripts/apply_config_profile.py" "$1" || {
+        echo "  ✗ config profile '$1' failed — deploy aborted (config.yaml unchanged)."; exit 1;
+    }
+}
+case "${profile_choice:-5}" in
+    1) _apply_profile balanced ;;
+    2) _apply_profile cost-optimized ;;
+    3) _apply_profile performance-optimized ;;
+    4) echo "  (WARNING: review-all-data is expensive)"; _apply_profile review-all-data ;;
+    5) echo "  → keeping current config.yaml" ;;
+    *) echo "  ✗ unknown profile choice '$profile_choice' (expected 1-5) — deploy aborted."; exit 1 ;;
 esac
 echo ""
 

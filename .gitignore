@@ -38,10 +38,7 @@ Thumbs.db
 openserp/
 .openserp.pid
 config.yaml
-config.balanced.yaml
-config.cost-optimized.yaml
-config.performance-optimized.yaml
-config.review-all-data.yaml
+config.yaml.bak-*
 logs/*.log
 cache/
 output/

@@ -1,0 +1,36 @@
+# Profile overlay: performance — live calls, max concurrency, fastest.
+# OVERLAY, not a full config (scripts/apply_config_profile.py).
+api:
+  calls_per_minute: 60
+  grok:
+    max_retries: 2
+    timeout: 45
+weather:
+  timeout: 10
+equipment:
+  enable_enrichment: true
+  verify_media_with_vision: true
+supplemental_material:
+  verify_archive_urls: true
+  extract_isbn: true
+  determine_copyright: true
+  max_materials_per_chapter: 1000
+concurrency:
+  enabled: true
+  max_event_files: 6
+  max_extraction_group: 6
+  max_enrichment_workers: 12
+enrichment:
+  re_search_after_days: 90
+batch:
+  phase2: false
+openserp:
+  results_per_query: 20
+  max_images_per_entity: 5
+  max_web_results_per_entity: 5
+  rate_limit_seconds: 2
+external_maps:
+  enabled: true
+logging:
+  debug_message_preview_chars: 5000
+  debug_response_preview_chars: 5000
