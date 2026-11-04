@@ -348,24 +348,20 @@ def _write_chapter_structure(s3, key, book, markdown, resolved) -> str:
 
 
 def _mark_metadata_gap(s3, key: str, book: str) -> None:
-    """Record the deferred-metadata gap (empty author/series/license) as a
-    detectable needs-review/metadata marker (P2-C1) rather than masquerading
-    empty fields as real data. Fail-safe: best-effort, never breaks the phase."""
-    try:
-        from src.ingestion.review_reject import reject_to_review
+    """Record the deferred-metadata gap as a needs-review/metadata marker (P2-C1). Fail-safe."""
+    from src.ingestion.review_reject import mark_metadata_gap
 
-        reject_to_review(
-            s3,
-            BUCKET,
-            key,
-            book,
+    mark_metadata_gap(
+        s3,
+        BUCKET,
+        key,
+        book,
+        REGION,
+        note=(
             "metadata not yet extracted (author/series/license empty) — "
-            "real metadata extraction deferred (P2-C1 slug+meta half)",
-            category="metadata",
-            region=REGION,
-        )
-    except Exception as e:  # noqa: BLE001 - marker must never crash the phase
-        logger.warning("metadata needs-review marker failed for %s: %s", key, e)
+            "real metadata extraction deferred (P2-C1 slug+meta half)"
+        ),
+    )
 
 
 def _vision_analyzer():

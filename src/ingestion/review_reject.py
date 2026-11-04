@@ -117,3 +117,38 @@ def reject_to_review(
         except Exception as e:  # pragma: no cover - best-effort alert
             logger.warning("Could not alert on reject for %s: %s", key, e)
     return marker_key
+
+
+_METADATA_GAP_NOTE = (
+    "metadata not yet extracted (author/series/title/license empty) — "
+    "real metadata extraction deferred (P2-C1 slug+meta half)"
+)
+
+
+def mark_metadata_gap(
+    s3_client,
+    bucket: str,
+    key: str,
+    book: str,
+    region: str,
+    *,
+    note: str = _METADATA_GAP_NOTE,
+) -> None:
+    """Record the deferred-metadata gap (empty author/series/title/license) as a detectable
+    needs-review/metadata marker (P2-C1) rather than masquerading empty fields as real data.
+
+    Shared by ocr_merge_handler / phase0_convert / phase0_video (identical off-ramp). Fail-safe:
+    best-effort, never raises into the caller's merge/convert/phase.
+    """
+    try:
+        reject_to_review(
+            s3_client,
+            bucket,
+            key,
+            book,
+            note,
+            category="metadata",
+            region=region,
+        )
+    except Exception as e:  # noqa: BLE001 - marker must never crash the caller
+        logger.warning("metadata needs-review marker failed for %s: %s", key, e)
