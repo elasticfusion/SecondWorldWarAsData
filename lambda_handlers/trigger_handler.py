@@ -650,6 +650,12 @@ def _validate_parse_keys(keys: list) -> list:
     return kept
 
 
+# Chapter METADATA sidecars (``<chapter>-meta.yaml``; discovery._find_meta_file). They are not
+# content to queue — a book-scoped Phase 1 syncs the whole book prefix, so the sidecar arrives
+# with its chapter — but they are an EXPECTED upload, never an "unrecognized type" for review.
+_METADATA_SIDECAR_SUFFIXES = ("-meta.yaml", "-meta.yml")
+
+
 def _content_keys(keys: list) -> list:
     """Keep only processable content keys; drop compressed files and non-content."""
     out = []
@@ -657,6 +663,9 @@ def _content_keys(keys: list) -> list:
         low = k.lower()
         if low.endswith(_COMPRESSED_SUFFIXES):
             logger.info("Ignoring compressed file (pre-stage expands these): %s", k)
+            continue
+        if low.endswith(_METADATA_SIDECAR_SUFFIXES):
+            logger.info("OBSERV trigger.metadata_sidecar status=ok key=%s", k)
             continue
         if low.endswith(_CONTENT_SUFFIXES):
             out.append(k)
