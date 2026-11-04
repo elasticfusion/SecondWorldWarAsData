@@ -115,3 +115,32 @@ def test_chapter_loop_does_not_cancel_before_write_back(tmp_path, _extractors):
     assert res["failed"] == 0 and res["processed"] == 1
     se = json.loads(ev.read_text())["Event"]["Sub-events"][0]
     assert se.get("people") == [PID]
+
+
+def test_slow_is_reported_live_while_loop_is_blocked(monkeypatch):
+    """The watcher must fire DURING a loop-blocking step, not only after it."""
+    seen = []
+    monkeypatch.setattr(bp, "observe_warn", lambda *a, **k: seen.append(k))
+
+    async def blocked():
+        await asyncio.sleep(0)
+        time.sleep(0.3)  # loop blocked; an in-loop timer could not fire here
+        return [k.get("state") for k in seen]
+
+    states_during = asyncio.run(bp._observe_slow("ch", blocked(), 0.05))
+    assert "running" in states_during
+    assert any(k.get("state") == "finished" for k in seen)
+
+
+@pytest.mark.parametrize("raw", ["abc", "0", "-5"])
+def test_bad_soft_deadline_env_falls_back(monkeypatch, raw):
+    monkeypatch.setenv("X_DEADLINE", raw)
+    assert bp._soft_deadline("X_DEADLINE", 42.0) == 42.0
+
+
+def test_no_wall_clock_cancellation_reintroduced():
+    import inspect
+
+    for fn in (bp.process_chapters_parallel, bp.extract_all_async):
+        src = inspect.getsource(fn)
+        assert "wait_for(" not in src and "asyncio.timeout(" not in src

@@ -830,29 +830,59 @@ def _get_cache_clear_command(book_name: str) -> str:
 
 # SOFT deadlines (seconds): exceeding one emits OBSERV phase2.slow status=warn — it never cancels.
 # Env-overridable for operators; defaults sized for synchronous in-loop enrichment.
-_CHAPTER_SOFT_DEADLINE_S = float(
-    os.environ.get("PHASE2_CHAPTER_SOFT_DEADLINE_S", "3600")
-)
-_ENTITY_SOFT_DEADLINE_S = float(os.environ.get("PHASE2_ENTITY_SOFT_DEADLINE_S", "1800"))
+def _soft_deadline(env: str, default: float) -> float:
+    raw = os.environ.get(env, "")
+    try:
+        val = float(raw) if raw else default
+    except ValueError:
+        val = 0.0
+    if val <= 0:
+        logger.warning(
+            "OBSERV phase2.bad_soft_deadline status=warn env=%s value=%r", env, raw
+        )
+        return default
+    return val
+
+
+_CHAPTER_SOFT_DEADLINE_S = _soft_deadline("PHASE2_CHAPTER_SOFT_DEADLINE_S", 3600.0)
+_ENTITY_SOFT_DEADLINE_S = _soft_deadline("PHASE2_ENTITY_SOFT_DEADLINE_S", 1800.0)
 
 
 async def _observe_slow(label: str, coro, soft_deadline_s: float):
-    """Await ``coro`` to completion (never cancelled) and warn if it exceeded the soft deadline.
+    """Await ``coro`` to completion (never cancelled); surface slowness LIVE and at the end.
 
-    Measured around the await, so it is correct even when the work blocks the event loop.
-    """
+    A daemon THREAD timer fires at the soft deadline while the work is still running — an
+    in-loop timer could not, because synchronous enrichment blocks the event loop — and the
+    final elapsed is reported on completion."""
+    import threading
     import time as _t
 
     start = _t.monotonic()
+
+    def _still_running() -> None:
+        observe_warn(
+            "phase2",
+            "slow",
+            task=label,
+            state="running",
+            elapsed_s=int(_t.monotonic() - start),
+            soft_deadline_s=int(soft_deadline_s),
+        )
+
+    timer = threading.Timer(soft_deadline_s, _still_running)
+    timer.daemon = True
+    timer.start()
     try:
         return await coro
     finally:
+        timer.cancel()
         elapsed = _t.monotonic() - start
         if elapsed > soft_deadline_s:
             observe_warn(
                 "phase2",
                 "slow",
                 task=label,
+                state="finished",
                 elapsed_s=int(elapsed),
                 soft_deadline_s=int(soft_deadline_s),
             )
