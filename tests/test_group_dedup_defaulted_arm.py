@@ -44,7 +44,7 @@ def test_already_matching_pair_is_not_a_soft_candidate():
     )
 
 
-def test_find_duplicate_groups_surfaces_airborne_pairs(tmp_path, monkeypatch):
+def _groups(tmp_path, monkeypatch, names):
     import scripts.find_duplicate_groups as fdg
 
     monkeypatch.setattr(
@@ -52,19 +52,48 @@ def test_find_duplicate_groups_surfaces_airborne_pairs(tmp_path, monkeypatch):
     )
     monkeypatch.setattr(fdg, "_load_group_exclusions", lambda d: (set(), set()))
     monkeypatch.setattr("src.dedup.incremental.get_last_dedup_run", lambda *_a: None)
-    for i, n in enumerate(
-        [
-            "82d Division",
-            "82d Airborne Division",
-            "9th Infantry Division",
-            "9th Armored Division",
-        ]
-    ):
+    for f in tmp_path.glob("*.json"):
+        f.unlink()
+    for i, n in enumerate(names):
         (tmp_path / f"g{i}.json").write_text(
             json.dumps({"GroupID": f"G{i}", "name": n, "group_type": "military_unit"}),
             encoding="utf-8",
         )
-    groups = fdg.find_duplicate_groups(tmp_path)
+    return fdg.find_duplicate_groups(tmp_path)
+
+
+def test_find_duplicate_groups_surfaces_airborne_pairs(tmp_path, monkeypatch):
+    names_in = [
+        "82d Division",
+        "82d Airborne Division",
+        "9th Infantry Division",
+        "9th Armored Division",
+    ]
+    groups = _groups(tmp_path, monkeypatch, names_in)
     names = [sorted(p["name"] for p in g["people"]) for g in groups]
     assert ["82d Airborne Division", "82d Division"] in names
     assert not any("9th Armored Division" in n for n in names)
+    assert any("defaulted infantry" in r for g in groups for r in g["reasons"])
+
+
+def test_soft_path_never_chains_explicit_vetoes(tmp_path, monkeypatch):
+    import itertools
+
+    for order in itertools.permutations(
+        ["9th Division", "9th Infantry Division", "9th Armored Division"]
+    ):
+        for g in _groups(tmp_path, monkeypatch, list(order)):
+            names = {p["name"] for p in g["people"]}
+            assert not {"9th Infantry Division", "9th Armored Division"} <= names, order
+
+
+def test_soft_candidates_are_never_auto_merged(tmp_path):
+    import os
+
+    os.environ.setdefault("S3_BUCKET", "test-bucket")
+    import ecs_entrypoint as ee
+
+    d = tmp_path / "people_groups"
+    d.mkdir()
+    recs = [{"name": "82d Division"}, {"name": "82d Airborne Division"}]
+    assert not ee._group_cluster_canonically_mergeable(d, recs)

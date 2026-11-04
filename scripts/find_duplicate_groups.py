@@ -288,11 +288,7 @@ def _numbers_match(name1: str, name2: str) -> bool:
 
 def _find_group_cluster(i, g1, groups, seen, **kwargs):
     """Find all groups matching g1. Returns (cluster, reasons)."""
-    from src.dedup.unit_key import (
-        defaulted_arm_review_reason,
-        derive_unit_key,
-        unit_keys_match,
-    )
+    from src.dedup.unit_key import derive_unit_key
 
     gcfg = kwargs.get("gcfg")
     text_index = kwargs.get("text_index") or {}
@@ -314,12 +310,7 @@ def _find_group_cluster(i, g1, groups, seen, **kwargs):
             # Nationality VETO: "2nd Division (Canadian)" != "2nd Division (US)".
             if _group_nationality_conflict(g1, g2):
                 continue
-            matched, why = unit_keys_match(key1, key2)
-            if not matched:
-                # Soft path: a defaulted-infantry arm vs an explicit non-infantry arm is a
-                # HUMAN-REVIEW candidate (e.g. "82d Division" / "82d Airborne Division").
-                soft = defaulted_arm_review_reason(g1["name"], g2["name"])
-                matched, why = (True, soft) if soft else (False, why)
+            matched, why = _canonical_match(key1, key2, g1["name"], g2["name"], cluster)
             if matched:
                 cluster.append(g2)
                 reasons.add(why)
@@ -346,6 +337,41 @@ def _find_group_cluster(i, g1, groups, seen, **kwargs):
             reasons.add("substring match")
             seen.add(j)
     return cluster, reasons
+
+
+def _canonical_match(key1, key2, name1: str, name2: str, cluster: list) -> tuple:
+    """(matched, reason) for two keyed units: strict canonical match, else a defaulted-arm
+    HUMAN-REVIEW candidate ("82d Division" / "82d Airborne Division"). Clusters are seeded
+    star-wise from the first member, so a candidate must ALSO be compatible with every existing
+    member — else a bare "9th Division" seed would chain the vetoed "9th Infantry Division" +
+    "9th Armored Division" into one (input-order-dependent) cluster."""
+    from src.dedup.unit_key import defaulted_arm_review_reason, unit_keys_match
+
+    matched, why = unit_keys_match(key1, key2)
+    if not matched:
+        soft = defaulted_arm_review_reason(name1, name2)
+        if not soft:
+            return False, why
+        matched, why = True, soft
+    if not all(_units_compatible(m["name"], name2) for m in cluster[1:]):
+        return False, "incompatible with an existing cluster member"
+    return matched, why
+
+
+def _units_compatible(a: str, b: str) -> bool:
+    """True if two unit names may share a review cluster: strict key match or a defaulted-arm
+    review candidate. Any other veto (explicit arm / service / echelon / number) separates them.
+    """
+    from src.dedup.unit_key import (
+        defaulted_arm_review_reason,
+        derive_unit_key,
+        unit_keys_match,
+    )
+
+    ka, kb = derive_unit_key(a), derive_unit_key(b)
+    if not (ka.numbers and kb.numbers):
+        return True  # no canonical key: the string-similarity fallback decides
+    return unit_keys_match(ka, kb)[0] or defaulted_arm_review_reason(a, b) is not None
 
 
 def _group_nationality(g: Dict) -> Optional[str]:
