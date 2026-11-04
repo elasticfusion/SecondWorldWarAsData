@@ -10,10 +10,13 @@ from unittest.mock import MagicMock, patch
 os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
 os.environ.setdefault("S3_BUCKET", "test-bucket")
 
-from lambda_handlers import trigger_handler as th  # noqa: E402
-
 
 def _run(keys):
+    # Lazy import (like test_intake_net_complete): a module-level import binds the handler's
+    # boto3 clients at COLLECTION time, before tests/unit/test_trigger_handler.py's moto mocks,
+    # which then hit real AWS ("security token invalid") in full-suite ordering.
+    import lambda_handlers.trigger_handler as th
+
     with (
         patch.object(th, "BUCKET", "buck"),
         patch.object(th.boto3, "client", return_value=MagicMock()),
