@@ -827,13 +827,23 @@ def _get_cache_clear_command(book_name: str) -> str:
     return f"rm -rf cache/api/books/{book_name}/events/"
 
 
+def _failure_reason(exc: BaseException) -> str:
+    """Actionable one-line reason for a failed chapter: type name + message (if any)."""
+    if isinstance(exc, asyncio.TimeoutError):
+        return f"{type(exc).__name__} (chapter exceeded the per-chapter timeout)"
+    msg = str(exc)
+    return f"{type(exc).__name__}: {msg}" if msg else type(exc).__name__
+
+
 def _process_batch_results(
     tasks: List[tuple], batch_results: list, results: Dict[str, Any], heartbeat=None
 ) -> None:
     """Process results from a batch of chapters."""
     for (book_name, name, _), result in zip(tasks, batch_results):
         if isinstance(result, Exception):
-            logger.error("  ✗ %s: %s", name, result)
+            # Always name the exception type: str(TimeoutError()) is "", which logged a
+            # reason-less "✗ chapter: " (an un-actionable alarm).
+            logger.error("  ✗ %s: %s", name, _failure_reason(result))
 
             cache_cmd = _get_cache_clear_command(book_name)
             logger.error("  💡 Clear cache: %s", cache_cmd)
