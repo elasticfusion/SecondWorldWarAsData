@@ -255,19 +255,86 @@ def _normalize_citation(material: Dict[str, Any]) -> None:
     if citation.get("title") is None or _is_cross_reference(citation.get("title", "")):
         citation["title"] = _derive_title_from_mentions(material.get("mentions") or [])
 
+    _coerce_citation_types(citation, material)
+
+
+# Key names the prompt historically used for schema properties (prompt/schema drift). Mapped so
+# their values are no longer silently ignored downstream (e.g. supplemental_advanced reads "isbn").
+_CITATION_KEY_ALIASES = {
+    "ISBN": "isbn",
+    "location": "publication_location",
+    "country": "publication_country",
+}
+
+
+def _citation_string_fields() -> tuple:
+    props = (
+        SUPPLEMENTAL_SCHEMA["properties"]["Supplemental_Material"]["items"][
+            "properties"
+        ]
+        .get("citation", {})
+        .get("properties", {})
+    )
+    return tuple(
+        k
+        for k, v in props.items()
+        if "string" in (v.get("type") or []) and k != "title"
+    )
+
+
+def _as_text(v: Any) -> Any:
+    """Scalar -> verbatim string; list -> '; '-joined verbatim items; else unchanged."""
+    if isinstance(v, bool):
+        return v
+    if isinstance(v, (int, float)):
+        return str(v)
+    if isinstance(v, list) and all(isinstance(x, (str, int, float)) for x in v):
+        return "; ".join(str(x) for x in v if str(x).strip()) or None
+    return v
+
+
+def _coerce_citation_types(citation: Dict[str, Any], material: Dict[str, Any]) -> None:
+    """Coerce common LLM type slips to the schema's types, VERBATIM (never invent or split).
+
+    Validation errors are not retried, so ONE mistyped field dropped the WHOLE sub-event's materials
+    (XChannel ch8 8b: author as a string -> 9/9 sub-events, 0 of 102 endnotes). Each coercion is a
+    counted OBSERV warn naming the field."""
+    fixed: List[str] = []
+    for old, new in _CITATION_KEY_ALIASES.items():
+        if old in citation:
+            val = citation.pop(old)
+            if citation.get(new) in (None, ""):
+                citation[new] = val
+            fixed.append(f"{old}->{new}")
     author = citation.get("author")
     if author is None:
         citation["author"] = []
     elif isinstance(author, str):
-        # The schema requires an ARRAY; the model often returns one string ("Jones, Clifford").
-        # Wrap it VERBATIM — never split ("Rapport, Leonard and Norwood, Arthur Jr." stays one
-        # entry; splitting would invent structure). Before this, every such response failed
-        # validation and the WHOLE sub-event's materials were dropped (XChannel ch8: 9/9).
+        # Wrap VERBATIM — "Rapport, Leonard and Norwood, Arthur Jr." stays one entry.
         citation["author"] = [author] if author.strip() else []
+        fixed.append("author")
+    elif isinstance(author, list):
+        clean = [
+            str(x)
+            for x in author
+            if isinstance(x, (str, int, float)) and str(x).strip()
+        ]
+        if clean != author:
+            citation["author"] = clean
+            fixed.append("author")
+    for field in _citation_string_fields():
+        if field in citation:
+            val = _as_text(citation[field])
+            if val is not citation[field]:
+                citation[field] = val
+                fixed.append(field)
+    if fixed:
         observe_warn(
             "supplemental",
-            "author_coerced",
-            note="citation.author string wrapped into a list (schema requires array)",
+            "citation_coerced",
+            sub_event=str(material.get("Sub-eventID") or "?")[:40],
+            fields=",".join(fixed)[:200],
+            note="LLM type/key slips coerced to the schema so the sub-event's materials persist",
         )
 
 

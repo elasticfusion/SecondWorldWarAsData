@@ -46,7 +46,7 @@ def test_coercion_is_observed(monkeypatch):
     seen = []
     monkeypatch.setattr(sup, "observe_warn", lambda *a, **k: seen.append(a))
     sup.sanitize_supplemental_data(_resp("Jones, Clifford"))
-    assert ("supplemental", "author_coerced") in seen
+    assert ("supplemental", "citation_coerced") in seen
 
 
 def test_extract_with_retry_keeps_string_author_response(monkeypatch):
@@ -81,3 +81,53 @@ def test_prompt_example_matches_schema_type():
         Path("prompts/supplemental.yaml").read_text(encoding="utf-8")
     )
     assert '"author": ["Harrison, Gordon A."]' in prompt["schema"]
+
+
+def _cite(**kw):
+    r = _resp(["A"])
+    r["Supplemental_Material"][0]["citation"].update(kw)
+    return r
+
+
+def _c(resp):
+    return resp["Supplemental_Material"][0]["citation"]
+
+
+def test_numeric_and_list_string_fields_coerced_and_validate():
+    out = sup.sanitize_supplemental_data(
+        _cite(publication_date=1951, volume=2, pages=120, isbn=["0-1", "0-2"])
+    )
+    c = _c(out)
+    assert (
+        c["publication_date"] == "1951" and c["volume"] == "2" and c["pages"] == "120"
+    )
+    assert c["isbn"] == "0-1; 0-2"
+    sup.validate_supplemental_json(out)  # must not raise
+
+
+def test_prompt_key_aliases_mapped():
+    c = _c(
+        sup.sanitize_supplemental_data(_cite(ISBN="0-1", location="DC", country="USA"))
+    )
+    assert c["isbn"] == "0-1" and c["publication_location"] == "DC"
+    assert c["publication_country"] == "USA" and "ISBN" not in c
+
+
+def test_dirty_author_list_cleaned():
+    assert _authors(sup.sanitize_supplemental_data(_resp(["", None, "Jones", 3]))) == [
+        "Jones",
+        "3",
+    ]
+
+
+def test_prompt_example_keys_exist_in_schema():
+    import json
+
+    prompt = yaml.safe_load(
+        Path("prompts/supplemental.yaml").read_text(encoding="utf-8")
+    )
+    ex = json.loads(prompt["schema"])["Supplemental_Material"][0]["citation"]
+    props = sup.SUPPLEMENTAL_SCHEMA["properties"]["Supplemental_Material"]["items"][
+        "properties"
+    ]["citation"]["properties"]
+    assert [k for k in ex if k not in props] == []
