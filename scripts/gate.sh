@@ -117,6 +117,11 @@ run_radon() {
 }
 run_radon
 run "vulture"  python -m vulture src/ lambda_handlers/ .vulture_whitelist.py --min-confidence 80
+# Reachability: flag whole modules under src/ ecs_modules/ lambda_handlers/ that NO other module
+# imports and that are not an entry point. vulture can't catch this class (a module whose funcs call
+# each other but which is never imported passes vulture) — it was exactly the P1.1 dead ecs_modules
+# (931 LOC, drifted) blind spot. Import-graph check; entry points allowlisted in the script.
+run "reachable" python scripts/check_unreachable_modules.py
 run "cfn-lint" bash -c 'cfn-lint cloudformation/*.yaml'
 # JSON lint: strict-parse every PROJECT-OWNED *.json (stdlib json, no new dep). Excludes
 # vendored/third-party trees (aws/ bundled CLI = ~1500 files, .venv, node_modules, dist,
