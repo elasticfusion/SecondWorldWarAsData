@@ -60,15 +60,9 @@ def handler(event, _context):
 
 def _extract_s3_records(event: dict) -> list[tuple[str, str]]:
     """Extract (bucket, key) pairs from SNS → S3 event."""
-    records = []
-    for record in event.get("Records", []):
-        message = record.get("Sns", {}).get("Message", "{}")
-        s3_event = json.loads(message) if isinstance(message, str) else message
-        for s3_record in s3_event.get("Records", []):
-            bucket = s3_record["s3"]["bucket"]["name"]
-            key = s3_record["s3"]["object"]["key"]
-            records.append((bucket, key))
-    return records
+    from lambda_handlers._handler_common import extract_s3_records
+
+    return extract_s3_records(event)
 
 
 def _get_entity_type(key: str) -> str:
@@ -79,15 +73,9 @@ def _get_entity_type(key: str) -> str:
 
 def _get_api_key(config: dict) -> str:
     """Get Grok API key from Secrets Manager or environment."""
-    aws = config.get("aws", {})
-    secrets_id = aws.get("secrets_id")
-    if secrets_id:
-        import boto3
+    from lambda_handlers._handler_common import get_api_key
 
-        sm = boto3.client("secretsmanager", region_name=aws.get("region", "us-east-1"))
-        resp = sm.get_secret_value(SecretId=secrets_id)
-        return resp["SecretString"]
-    return os.getenv("GROK_API_KEY", "")
+    return get_api_key(config)
 
 
 def _enrich_entity(

@@ -3,7 +3,6 @@
 Triggered by S3 event (via SNS) when markdown files are uploaded to content/ prefix.
 """
 
-import json
 import logging
 import os
 import re
@@ -78,16 +77,9 @@ def handler(event, _context):
 
 def _extract_s3_records(event: dict) -> list[tuple[str, str]]:
     """Extract (bucket, key) pairs from SNS → S3 event."""
-    records = []
-    for record in event.get("Records", []):
-        # SNS wraps S3 events in Message
-        message = record.get("Sns", {}).get("Message", "{}")
-        s3_event = json.loads(message) if isinstance(message, str) else message
-        for s3_record in s3_event.get("Records", []):
-            bucket = s3_record["s3"]["bucket"]["name"]
-            key = s3_record["s3"]["object"]["key"]
-            records.append((bucket, key))
-    return records
+    from lambda_handlers._handler_common import extract_s3_records
+
+    return extract_s3_records(event)
 
 
 def _download_book(storage, book_name: str, tmpdir: Path) -> None:
