@@ -101,7 +101,7 @@ def test_numeric_and_list_string_fields_coerced_and_validate():
     assert (
         c["publication_date"] == "1951" and c["volume"] == "2" and c["pages"] == "120"
     )
-    assert c["isbn"] == "0-1; 0-2"
+    assert c["isbn"] == "0-1" and c["isbn_edition"] == "0-2"
     sup.validate_supplemental_json(out)  # must not raise
 
 
@@ -131,3 +131,33 @@ def test_prompt_example_keys_exist_in_schema():
         "properties"
     ]["citation"]["properties"]
     assert [k for k in ex if k not in props] == []
+
+
+def test_non_scalar_values_never_drop_the_sub_event():
+    out = sup.sanitize_supplemental_data(
+        _cite(
+            pages=[None, "12"],
+            volume=[["x"]],
+            edition={"n": 2},
+            publication_date=1951.0,
+        )
+    )
+    c = _c(out)
+    assert c["pages"] == "12" and c["volume"] is None and c["edition"] is None
+    assert c["publication_date"] == "1951"
+    sup.validate_supplemental_json(out)
+
+
+def test_alias_conflict_is_reported(monkeypatch):
+    seen = []
+    monkeypatch.setattr(sup, "observe_warn", lambda *a, **k: seen.append(k))
+    c = _c(sup.sanitize_supplemental_data(_cite(ISBN="X", isbn="Y")))
+    assert c["isbn"] == "Y"
+    assert "ISBN->isbn(conflict_dropped)" in seen[0]["fields"]
+
+
+def test_observ_carries_response_sub_event_id(monkeypatch):
+    seen = []
+    monkeypatch.setattr(sup, "observe_warn", lambda *a, **k: seen.append(k))
+    sup.sanitize_supplemental_data(_resp("Jones, Clifford"))
+    assert seen[0]["sub_event"] == "01M6J3NGB3DR9QD7VT6ST9Y8SH"
