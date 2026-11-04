@@ -30,6 +30,11 @@ _DIRECT_EVENT_FIELDS = ("EventID", "Sub-eventID")
 _SECTION_FIELD = "SourceSectionID"
 # Mention-array fields that carry an EventID per element (entity -> event provenance).
 _MENTION_ARRAYS = ("event_mentions", "mentions")
+# Nested event-reference objects carrying EventID/Sub-eventID (casualties: source / event_context).
+_NESTED_EVENT_REFS = ("source", "event_context")
+# A mention WITHOUT an EventID still traces to source when it pins the exact location in the
+# book: book + chapter + a locator (bibliography footnotes: reference_number + verbatim text).
+_MENTION_LOCATORS = ("verbatim_reference", "reference_number", "paragraph_number")
 # Indirect-only edges: resolve to another entity, not to the source directly (casualties).
 _INDIRECT_FIELDS = ("PersonID", "PlaceID")
 
@@ -73,16 +78,35 @@ def _record_has_populated_provenance(rec: Dict[str, Any]) -> bool:
     """True if the record carries at least one POPULATED (non-empty) provenance edge."""
     if _nonempty_str(rec.get(_SECTION_FIELD)):
         return True
-    for f in _DIRECT_EVENT_FIELDS:
-        if _nonempty_str(rec.get(f)):
+    if _has_direct_event_ref(rec):
+        return True
+    for key in _NESTED_EVENT_REFS:
+        nested = rec.get(key)
+        if isinstance(nested, dict) and _has_direct_event_ref(nested):
             return True
     for arr in _MENTION_ARRAYS:
         items = rec.get(arr)
-        if isinstance(items, list):
-            for m in items:
-                if isinstance(m, dict) and _nonempty_str(m.get("EventID")):
-                    return True
+        if isinstance(items, list) and any(_mention_traces(m) for m in items):
+            return True
     return False
+
+
+def _has_direct_event_ref(obj: Dict[str, Any]) -> bool:
+    return any(_nonempty_str(obj.get(f)) for f in _DIRECT_EVENT_FIELDS)
+
+
+def _mention_traces(m: Any) -> bool:
+    """A mention traces to source via an EventID, or via book + chapter + a locator."""
+    if not isinstance(m, dict):
+        return False
+    if _nonempty_str(m.get("EventID")):
+        return True
+    if not (_nonempty_str(m.get("book")) and _nonempty_str(m.get("chapter"))):
+        return False
+    return any(
+        _nonempty_str(m.get(k)) or (isinstance(m.get(k), int) and m.get(k) is not True)
+        for k in _MENTION_LOCATORS
+    )
 
 
 def _record_has_indirect_provenance(rec: Dict[str, Any]) -> bool:
@@ -120,7 +144,8 @@ def _iter_entity_records(out: Path, glob_pat: str) -> List[Tuple[str, Dict[str, 
     }
     recs: List[Tuple[str, Dict[str, Any]]] = []
     for f in out.glob(glob_pat):
-        if f.name in skip or f.name.startswith("."):
+        # not_*.json are exclusion/curation lists (not_people, not_related), not records.
+        if f.name in skip or f.name.startswith((".", "not_")):
             continue
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
