@@ -33,7 +33,7 @@ paths:
 **Notes:**
 - All paths are relative to project root
 - Directories are created automatically if they don't exist
-- `content_output` separates book-specific files (parsed/event) from entity directories. Backwards compatible: if `output/content/` doesn't exist, falls back to `output/` (old layout). Run `python3 scripts/migrate_output_content.py` to migrate.
+- `content_output` separates book-specific files (parsed/event) from entity directories. Backwards compatible: if `output/content/` doesn't exist, falls back to `output/` (old layout). Run `python3 scripts/archive/migrate_output_content.py` to migrate.
 
 ---
 

@@ -73,7 +73,7 @@
 
 ## Cross-Reference Integrity
 
-Regenerate with `scripts/referential_integrity_audit.py` (read-only; writes
+Regenerate with `scripts/utils/referential_integrity_audit.py` (read-only; writes
 `docs/current/dataquality/referential_integrity_report.json`). Snapshot **2026-10-10**
 (5,076 dangling refs total; PK counts: people 1,714 / places 2,855 / groups 1,682 /
 equipment 551 / dates 1,912 / events 5,953):
@@ -113,8 +113,8 @@ contains none that resolve — tracked.)
 
 ## Validation Tools
 
-- `scripts/validate_all_output.py` — Schema validation across all entities
-- `scripts/json_quality_report.py` — Field completeness report
+- `scripts/utils/validate_all_output.py` — Schema validation across all entities
+- `scripts/utils/json_quality_report.py` — Field completeness report
 - `scripts/find_duplicate_people.py` — People dedup detection
 - `scripts/find_duplicate_equipment.py` — Equipment dedup detection
 - `scripts/find_duplicate_groups.py` — Groups dedup detection

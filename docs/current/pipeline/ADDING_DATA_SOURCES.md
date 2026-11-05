@@ -345,7 +345,7 @@ ls output/people_groups/*.json | wc -l
 
 ```bash
 # Inspect API calls
-python3 scripts/review_cache.py
+python3 scripts/utils/review_cache.py
 ```
 
 ## Troubleshooting

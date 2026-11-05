@@ -1081,7 +1081,7 @@ with added OBSERV; data fixes regenerate only on a NEW run:
 - **~~P3 end-of-run summary + schema~~ ✅ #466** — `OBSERV phase2.summary` per-type counts (CORE
   zero=LOUD, optional=INFO) + standardized colon-format lines. Audit:
   `docs/current/dataquality/PHASE2_OBSERVABILITY_AUDIT.md`.
-- Tooling: `scripts/batch_metrics.py`; `scripts/ai_review.sh`.
+- Tooling: `scripts/utils/batch_metrics.py`; `scripts/ai_review.sh`.
 
 ### Identity / id discipline + session review fixes (2026-10-18)
 - **~~#448~~** `_fix_invalid_ulids` skips reference ids; **~~#454~~** unconditional identity-id skip;

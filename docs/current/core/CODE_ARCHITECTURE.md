@@ -276,7 +276,7 @@ Inspects API cache contents.
 
 **Usage:**
 ```bash
-python3 scripts/review_cache.py
+python3 scripts/utils/review_cache.py
 ```
 
 #### `validate_output.py`

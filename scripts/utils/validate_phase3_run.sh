@@ -36,7 +36,7 @@ echo ""
 
 # 2. Enrichment status
 echo "--- 2. Enrichment Status ---"
-python3 scripts/enrichment_stats.py
+python3 scripts/utils/enrichment_stats.py
 ENRICHED=$(python3 -c "
 import json
 from pathlib import Path
@@ -54,12 +54,12 @@ echo ""
 
 # 3. Actual data
 echo "--- 3. Actual Data Presence ---"
-python3 scripts/enrichment_data_check.py
+python3 scripts/utils/enrichment_data_check.py
 echo ""
 
 # 4. Schema validation
 echo "--- 4. Schema Validation ---"
-RESULT=$(python3 scripts/validate_all_output.py 2>&1 | tail -1)
+RESULT=$(python3 scripts/utils/validate_all_output.py 2>&1 | tail -1)
 echo "  $RESULT"
 if echo "$RESULT" | grep -q "need migration"; then
     MIGRATE=$(echo "$RESULT" | grep -oP '\d+ need migration')

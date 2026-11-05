@@ -308,7 +308,7 @@ python3 phase2_extract.py --log-level TRACE
 ### Inspect Cache
 
 ```bash
-python3 scripts/review_cache.py
+python3 scripts/utils/review_cache.py
 ```
 
 ### Clear Cache
