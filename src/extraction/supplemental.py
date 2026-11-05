@@ -154,7 +154,7 @@ def create_supplemental_prompt(
                 ),
             ]
         )
-        prompts.append((sub_event_id, prompt, stable_material))
+        prompts.append((sub_event_id, prompt, stable_material, event_id))
 
     return prompts
 
@@ -173,19 +173,82 @@ def _is_cross_reference(title: str) -> bool:
     return False
 
 
-def _sanitize_material(material: Dict[str, Any], sub_event_id: str = "") -> None:
-    """Sanitize a single supplemental material (modifies in place)."""
-    _apply_defaults(material)
+def _resolve_reference_id(
+    material: Dict[str, Any],
+    field: str,
+    known_id: str,
+    *,
+    material_id: str,
+) -> None:
+    """Resolve a cross-reference ID field (EventID / Sub-eventID) on a material.
+
+    A supplemental material's EventID/Sub-eventID are REFERENCES to the owning event/sub-event —
+    NOT primary keys this record is free to invent. The project rule is to never mint a random
+    identity for a reference (that produces a DANGLING cross-ref no entity resolves to). So:
+      1. If the LLM echoed a value, keep it (it is validated/reconciled elsewhere).
+      2. Else if we KNOW the real parent id (threaded from the extraction context), DERIVE from it.
+      3. Else (no echo AND no known parent) mint a last-resort ULID but emit a LOUD observe_error so
+         the dangling reference is a greppable anomaly instead of a silent corpus defect.
+    """
+    if material.get(field) is not None:
+        return
+    if known_id:
+        material[field] = known_id
+        return
+    import ulid
+
+    from src.utils.observe import observe_error
+
+    minted = str(ulid.new())
+    material[field] = minted
+    observe_error(
+        "supplemental",
+        "reference_id_fabricated",
+        field=field,
+        material_id=material_id,
+        minted=minted,
+        note=(
+            "no LLM-echoed value AND no known parent id in context — minted a last-resort "
+            "ULID; this reference is DANGLING (no event/sub-event resolves to it). Thread the "
+            "real parent id into sanitize_supplemental_data to eliminate"
+        ),
+    )
+
+
+def _sanitize_material(
+    material: Dict[str, Any],
+    sub_event_id: str = "",
+    *,
+    known_event_id: str = "",
+) -> None:
+    """Sanitize a single supplemental material (modifies in place).
+
+    ``sub_event_id`` / ``known_event_id`` are the REAL parent ids from the extraction context; when
+    the LLM omitted a reference, the material inherits the known parent rather than a random ULID
+    (derive-not-fabricate). See ``_resolve_reference_id``.
+    """
+    _apply_defaults(
+        material, known_event_id=known_event_id, known_sub_event_id=sub_event_id
+    )
     _normalize_enums(material)
     _normalize_urls(material)
     _normalize_citation(material, sub_event_id)
 
 
-def _apply_defaults(material: Dict[str, Any]) -> None:
-    """Set required string fields to defaults if missing. ID fields get a REAL ULID directly
-    (not the GENERATE_NEW_ULID sentinel) because this record is validated without a guaranteed
-    generate_ulids pass afterward — an empty string or the literal sentinel both fail the
-    strict ULID pattern."""
+def _apply_defaults(
+    material: Dict[str, Any],
+    *,
+    known_event_id: str = "",
+    known_sub_event_id: str = "",
+) -> None:
+    """Set required string fields to defaults if missing.
+
+    MaterialID is a PRIMARY key for this record, so a fresh ULID is correct. EventID/Sub-eventID are
+    REFERENCES — resolved via ``_resolve_reference_id`` (keep echo → derive from known parent →
+    loud last-resort mint), never silently randomized. ID fields get a REAL ULID (not the
+    GENERATE_NEW_ULID sentinel) because this record is validated without a guaranteed generate_ulids
+    pass afterward — an empty string or the literal sentinel both fail the strict ULID pattern.
+    """
     import ulid
 
     # The LLM emits the class as "classification" (prompt); routing reads "content_class".
@@ -195,10 +258,20 @@ def _apply_defaults(material: Dict[str, Any]) -> None:
     if material.get("content_class") is None and material.get("classification"):
         material["content_class"] = material["classification"]
 
+    if material.get("MaterialID") is None:
+        material["MaterialID"] = str(ulid.new())
+    # References: derive from the known parent rather than fabricate (never-dangle rule).
+    _resolve_reference_id(
+        material, "EventID", known_event_id, material_id=material["MaterialID"]
+    )
+    _resolve_reference_id(
+        material,
+        "Sub-eventID",
+        known_sub_event_id,
+        material_id=material["MaterialID"],
+    )
+
     defaults = {
-        "MaterialID": lambda: str(ulid.new()),
-        "EventID": lambda: str(ulid.new()),
-        "Sub-eventID": lambda: str(ulid.new()),
         # Unknown class -> human review (NOT document_reference: silently storing an
         # unclassified endnote as a citation, or dropping a prose one, is worse than a
         # review-queue entry).
@@ -486,31 +559,41 @@ def _unwrap_keyed_supplemental(data: Dict[str, Any]) -> Dict[str, Any]:
     return {**base, "Supplemental_Material": merged}
 
 
-def sanitize_supplemental_data(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Sanitize supplemental data to ensure schema compliance."""
+def sanitize_supplemental_data(
+    data: Dict[str, Any],
+    *,
+    known_event_id: str = "",
+    known_sub_event_id: str = "",
+) -> Dict[str, Any]:
+    """Sanitize supplemental data to ensure schema compliance.
+
+    ``known_event_id`` / ``known_sub_event_id`` are the REAL parent ids from the extraction
+    context. When the LLM omits an EventID/Sub-eventID the record DERIVES from these rather than
+    minting a random ULID (which would dangle). If a known id is absent the last-resort mint emits a
+    loud observe_error (see ``_resolve_reference_id``)."""
     data = _unwrap_keyed_supplemental(data)
 
     # Normalize plural key variant (LLM sometimes returns "Supplemental_Materials")
     if "Supplemental_Materials" in data and "Supplemental_Material" not in data:
         data["Supplemental_Material"] = data.pop("Supplemental_Materials")
 
-    # Event-level defaults. ID fields get a REAL ULID — this sanitize pass runs AFTER
-    # generate_ulids(), so a GENERATE_NEW_ULID sentinel here would never be resolved.
-    import ulid
+    # Event-level references: derive from the known parent ids (never-dangle rule). A missing
+    # reference with no known parent is minted loud via _resolve_reference_id, not silently.
+    # A keyed-by-ULID unwrap may have recovered a real Sub-eventID into data; prefer the explicitly
+    # threaded known id, else what the data already carries.
+    eff_sub = known_sub_event_id or str(data.get("Sub-eventID") or "")
+    if data.get("Event_Name") is None:
+        data["Event_Name"] = ""
+    if data.get("Sub-event_Name") is None:
+        data["Sub-event_Name"] = ""
+    _resolve_reference_id(data, "EventID", known_event_id, material_id="<event-level>")
+    _resolve_reference_id(data, "Sub-eventID", eff_sub, material_id="<event-level>")
 
-    defaults = {
-        "Sub-event_Name": lambda: "",
-        "Event_Name": lambda: "",
-        "EventID": lambda: str(ulid.new()),
-        "Sub-eventID": lambda: str(ulid.new()),
-    }
-    for key, make_default in defaults.items():
-        if data.get(key) is None:
-            data[key] = make_default()
-
-    # Sanitize each material
+    # Sanitize each material, inheriting the resolved event/sub-event ids as the known parents.
+    parent_event = str(data.get("EventID") or "")
+    parent_sub = str(data.get("Sub-eventID") or "")
     for material in data.get("Supplemental_Material", []):
-        _sanitize_material(material, str(data.get("Sub-eventID") or ""))
+        _sanitize_material(material, parent_sub, known_event_id=parent_event)
 
     return data
 
@@ -659,6 +742,7 @@ def _extract_with_retry(
     grok_client: GrokClient,
     max_retries: int = 3,
     stable_key_material: str = "",
+    known_event_id: str = "",
 ) -> Optional[Dict[str, Any]]:
     """Extract supplemental material with retry logic.
 
@@ -691,7 +775,11 @@ def _extract_with_retry(
 
             response = generate_ulids(response)
             response = _fix_invalid_ulids(response)
-            response = sanitize_supplemental_data(response)
+            response = sanitize_supplemental_data(
+                response,
+                known_event_id=known_event_id,
+                known_sub_event_id=sub_event_id,
+            )
             # Strip unmodeled top-level keys BEFORE validate so one stray LLM field doesn't trip
             # additionalProperties:False and drop ALL materials for this sub-event (#671 class).
             if isinstance(response, dict):
@@ -1229,15 +1317,25 @@ def extract_supplemental(
         logger.info("No sub-events found in %s", event_file.name)
         return None
 
-    # Extract from API
+    # Extract from API. Keep each response paired with its KNOWN parent ids so sanitize can
+    # derive (not fabricate) any reference the LLM omitted — carried in a parallel list rather
+    # than stashed on the dict (which would risk leaking into the validated record).
     all_supplemental = []
-    for sub_event_id, prompt, stable_material in prompts:
+    known_parents = (
+        []
+    )  # parallel to all_supplemental: (known_event_id, known_sub_event_id)
+    for sub_event_id, prompt, stable_material, parent_event_id in prompts:
         logger.debug("Processing sub-event %s", sub_event_id)
         response = _extract_with_retry(
-            prompt, sub_event_id, grok_client, stable_key_material=stable_material
+            prompt,
+            sub_event_id,
+            grok_client,
+            stable_key_material=stable_material,
+            known_event_id=parent_event_id,
         )
         if response:
             all_supplemental.append(response)
+            known_parents.append((parent_event_id, sub_event_id))
 
     # OBSERV: how many sub-event prompts returned materials (post-batch answers).
     _observe_supplemental_extract(event_file, prompts, all_supplemental)
@@ -1247,8 +1345,10 @@ def extract_supplemental(
         return None
 
     # Sanitize and generate ULIDs
-    for sub_event_data in all_supplemental:
-        sanitize_supplemental_data(sub_event_data)
+    for sub_event_data, (ev_id, se_id) in zip(all_supplemental, known_parents):
+        sanitize_supplemental_data(
+            sub_event_data, known_event_id=ev_id, known_sub_event_id=se_id
+        )
     all_supplemental = generate_ulids(all_supplemental)
 
     # Route by content class

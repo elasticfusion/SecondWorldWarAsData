@@ -693,15 +693,27 @@ def _preflight_notification_subscriptions() -> None:
 
 
 def _warn_if_no_confirmed_subs(sns, topic_arn: str) -> None:
-    """Log a WARNING (never raise) if a topic has no confirmed subscription."""
+    """Emit a canonical OBSERV anomaly (never raise) if a topic has no confirmed subscription.
+
+    Uses observe() (not a bare logger.warning) so a no-subscriber topic is a greppable
+    `OBSERV notify.no_subscriber` anomaly that reaches the alerting path, not just a log line a
+    human has to notice. Non-blocking — the pipeline continues regardless."""
+    from src.utils.observe import observe
+
+    short = topic_arn.rsplit(":", 1)[-1]
     try:
         subs = sns.list_subscriptions_by_topic(TopicArn=topic_arn).get(
             "Subscriptions", []
         )
     except Exception as e:
         # Topic missing / no permission — surface but never block.
-        logger.warning(
-            "SNS subscription preflight: could not list subs for %s: %s", topic_arn, e
+        observe(
+            "notify",
+            "preflight_check_failed",
+            status="warn",
+            topic=short,
+            reason=type(e).__name__,
+            note="could not list SNS subscriptions for the notification topic",
         )
         return
     confirmed = any(
@@ -709,17 +721,25 @@ def _warn_if_no_confirmed_subs(sns, topic_arn: str) -> None:
         for s in subs
     )
     if confirmed:
+        observe("notify", "subscriber_ok", status="ok", topic=short)
         return
     pending = sum(
         1 for s in subs if s.get("SubscriptionArn", "") == "PendingConfirmation"
     )
-    detail = f"{pending} pending-confirmation" if pending else "none"
-    logger.warning(
-        "SNS topic %s has NO confirmed subscriptions (%s) — notifications/alarms "
-        "will not be delivered until a subscription is confirmed. Non-blocking; "
-        "pipeline continues.",
-        topic_arn.rsplit(":", 1)[-1],
-        detail,
+    detail = f"{pending}_pending_confirmation" if pending else "none"
+    # status=warn (not error) so it escalates to Slack ONCE per window without being treated as a
+    # data-affecting failure — a missing operator subscription is a config gap, not corruption.
+    observe(
+        "notify",
+        "no_subscriber",
+        status="warn",
+        topic=short,
+        subscriptions=detail,
+        note=(
+            "SNS topic has NO confirmed subscription — notifications/alarms will NOT be "
+            "delivered until one is confirmed (set aws.notification_email / confirm the sub). "
+            "Non-blocking; pipeline continues"
+        ),
     )
 
 
@@ -3954,29 +3974,37 @@ def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
     submission-ordered list of (our_request_id, cache_type); ``ordered_results`` is
     the API-ordered list of BatchResult. Returns {cache_type: {our_id: cleaned_content}}.
 
-    Fail-safe: if the counts differ we CANNOT safely index-map, so return {} and log an
-    error (never silently mis-key — that produced 0 bibliography before this fix). A result is
-    cached iff it is content-first OK (BatchResult.ok: non-empty content, not truncated, no error) —
-    NOT a hardcoded finish_reason=='stop', because retrieve_results_ordered defaults finish_reason to
-    'unknown' when the xAI API omits it, which was silently dropping valid content here too. An
-    errored/truncated entry is skipped WITHOUT shifting the index (positional zip)."""
-    import re as _re
+    Delegates to the SHARED positional mapper (src.utils.batch_api.map_results_positionally) so this
+    retrieve-only path carries the SAME safety as the realtime grok_client path — in particular the
+    empty-slot-amid-substantive-siblings DESYNC guard that this copy previously lacked (it would
+    silently cache a mis-positioned empty slot and persist 0 for a whole entity — the XChannel-8
+    places=0 data-loss class). Fail-safe: on count mismatch the shared mapper returns {} and logs an
+    error (never silently mis-key); a desync-empty slot is NOT cached and emits a loud observe_error,
+    so the phase re-run treats it as a cache miss instead of trusting an empty result.
+    """
+    from src.utils.batch_api import map_results_positionally
+    from src.utils.observe import observe_error
 
-    if not submitted or len(submitted) != len(ordered_results):
-        logger.error(
-            "Batch %s: result count (%d) != submitted request count (%d) — cannot "
-            "index-map results to cache keys; cache NOT populated. Investigate.",
-            batch_id,
-            len(ordered_results),
-            len(submitted),
+    def _on_desync(our_id, cache_type, br):
+        observe_error(
+            "batch",
+            "result_unmapped",
+            request_id=our_id,
+            cache_type=cache_type,
+            batch_id=batch_id,
+            note=(
+                "retrieve-only positional map produced empty result for this entity while "
+                "siblings succeeded — NOT caching (phase re-run will treat as cache miss)"
+            ),
         )
-        return {}
-    out: "dict" = {}
-    for (our_id, cache_type), br in zip(submitted, ordered_results):
-        if getattr(br, "ok", False) and getattr(br, "content", ""):
-            cleaned = _re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", br.content)
-            out.setdefault(cache_type or "default", {})[our_id] = cleaned
-    return out
+
+    result = map_results_positionally(
+        submitted,
+        ordered_results,
+        batch_id=batch_id,
+        on_desync=_on_desync,
+    )
+    return result.mapped
 
 
 def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> None:

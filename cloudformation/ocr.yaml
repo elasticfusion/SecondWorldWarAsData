@@ -159,6 +159,15 @@ Resources:
     Properties:
       LaunchTemplateName: !Sub ${EnvironmentName}-wwii-chandra-lt
       LaunchTemplateData:
+        # Enforce IMDSv2 (token-required) + minimal hop limit so a compromised process /
+        # SSRF on the GPU OCR instance cannot steal the instance role credentials from the
+        # metadata endpoint (IMDSv1 credential-theft class; checkov CKV_AWS_79). These
+        # instances fetch untrusted scanned source documents, so the metadata surface must be
+        # locked down.
+        MetadataOptions:
+          HttpTokens: required
+          HttpEndpoint: enabled
+          HttpPutResponseHopLimit: 1
         BlockDeviceMappings:
           - DeviceName: /dev/xvda
             Ebs:
@@ -376,13 +385,29 @@ Resources:
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
+              # ListJobs/DescribeJobs are read-only and do not support resource-level scoping
+              # (DescribeJobs takes job IDs; ListJobs filters by queue in the request) — keep '*'.
               - Effect: Allow
                 Action:
                   - batch:ListJobs
                   - batch:DescribeJobs
-                  - batch:SubmitJob
-                  - batch:TerminateJob
                 Resource: '*'
+              # SubmitJob is the privileged write: scope it to THIS env's job queues + job
+              # definitions so the controller cannot submit into arbitrary account-wide queues
+              # (checkov CKV_AWS_111). SubmitJob authorizes against both the queue and the
+              # job-definition ARN, so both are listed.
+              - Effect: Allow
+                Action: batch:SubmitJob
+                Resource:
+                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu
+                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu-ondemand
+                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-definition/${EnvironmentName}-wwii-chandra*
+                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-definition/${EnvironmentName}-wwii-paddle*
+              # TerminateJob targets a job by its server-assigned job ID (job/*), which cannot be
+              # restricted by queue/name; scope it to this account+region's Batch jobs.
+              - Effect: Allow
+                Action: batch:TerminateJob
+                Resource: !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job/*
               - Effect: Allow
                 Action: [dynamodb:GetItem, dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:Scan]
                 Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${EnvironmentName}-wwii-api-cache
