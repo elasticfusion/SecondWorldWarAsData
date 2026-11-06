@@ -202,7 +202,7 @@ Other (under `cache/api/`):
 
 1. **Short response rejection** — `TODO_short_response_rejection.md`. The `chat_completion` path (L179) now only warns on short responses. The `extract_json` path (L745) tries `json.loads` before retrying. But 5 extractors using `chat_completion` + manual JSON parsing may still waste retries on valid short responses.
 
-2. **Endnote content not fetched** — `TODO_fetch_endnote_content.md`. Supplemental prompt receives reference numbers but not actual text. Grok fabricates `verbatim_reference` content.
+2. **Endnote/footnote type still set by the LLM** — endnote TEXT is now fetched and passed to the supplemental prompt (see [features/supplemental/ENDNOTE_HANDLING.md](../features/supplemental/ENDNOTE_HANDLING.md)), but `reference_type` (endnote vs footnote) is still the model's call when text is present.
 
 3. **Inconsistent system prompt patterns** — Mix of module-level constants and inline strings makes auditing harder.
 

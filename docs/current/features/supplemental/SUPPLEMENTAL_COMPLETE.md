@@ -14,6 +14,9 @@ Grok classifies each endnote/footnote into one of three categories:
 
 Mixed entries (factual statement + citation) are split into separate entries.
 
+How the endnote/footnote **text** reaches the prompt (parse-time capture, HTML fallback,
+"cited in n. X" resolution, semicolon splitting) is in [ENDNOTE_HANDLING.md](ENDNOTE_HANDLING.md).
+
 ### Key Files
 - `src/extraction/supplemental.py` (922 lines) — classification, routing, extraction
 - `src/extraction/bibliography.py` (152 lines) — deduplicated document storage with fuzzy title matching

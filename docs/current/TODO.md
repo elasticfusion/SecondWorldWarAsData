@@ -216,6 +216,47 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
 
 ### MED
+- **[MED · entity-resolution] Resolve `people_groups` against the ETO Order of Battle (the authoritative unit spine).**
+  Moved from the steering "known gaps" list (2026-11-04). Name-level resolution exists (`find_duplicate_groups`,
+  `src/dedup/unit_key.py`, `data/unit_nicknames.yaml`), but nothing resolves groups TO the OOB: the OOB crosswalk
+  (`src/ingestion/oob_markdown/crosswalk.py`, `entity_emit.emit_crosswalk_to_people`) links command staff -> people only.
+  Open: map each per-mention group to an OOB unit, and add the time-bounded `org_attachments[]` on `people_groups`
+  (see the schema.org item under HIGH).
+- **[MED · verify-on-next-run] Confirm four former "known data-quality gaps" are closed in the DATA, not just the code.**
+  Code now covers each, but the dev environment was empty on 2026-11-04 (data bucket had 0 objects; the entity
+  DynamoDB tables are empty by design), so none could be checked against real records. After the next full run verify:
+    - Places: no record left with null/`0.0` lat/lon or empty `country` (geocoding: `places_grok_geocode`, `nominatim_geocode`,
+      wired in `phase3_enrich_data._enrich_places_and_geocode`).
+    - Images: `description` is populated. Vision captioning (`images._apply_vision_caption`) is opt-in; check its config default.
+    - Bibliography: no stub records (`ibid`, bare numbers like `1`/`26`) persisted (`bibliography._is_stub_citation` skips them
+      at extraction; it does not clean records already stored).
+  Then refresh `DATA_QUALITY_STATUS.md` (dated 2026-10-05; still lists "Places missing coordinates" as open).
+- **[MED · provenance] Derive endnote vs footnote `reference_type` from the SOURCE, not Grok.**
+  From the retired `messages/TODO_fetch_endnote_content.md`. Endnote text is now fetched and passed to the supplemental
+  prompt, but `reference_type` is still the model's call: `supplemental._build_ref_context` only adds a type hint when NO
+  text was found, and `_separate_by_type` routes on whatever the model returned. Symptom seen before: Breakout and Pursuit
+  (endnote-only) produced `*-footnotes.json`. Fix: set the type deterministically from the source structure (marker style /
+  where the definition lives) during parse, carry it in the parsed `footnotes` entries, and override the model's value.
+  See `docs/current/features/supplemental/ENDNOTE_HANDLING.md`.
+- **[MED · storage/cache] Move the external search-result cache from DynamoDB to S3.**
+  Owner direction (2026-11-04): DynamoDB is for queues only; caching is fine but belongs in S3. `src/utils/search_cache.py`
+  (`_DynamoBackend`, keys `search#<source>#<hash>`) is the target, written from 17 live sites across 14 sources (nara,
+  openserp_archive, openserp_verify, openserp_awards, wikipedia, wikipedia_equipment, wikipedia_group, wikipedia_situational,
+  grokipedia, grokipedia_url, grokipedia_place, noaa_station, noaa_data, archive_org). The Grok response cache stays in
+  DynamoDB (owner decision); this item does not touch it. Design notes for the move:
+    - Layout: one object per entry, e.g. `cache/search/<source>/<hash>.json`, with the QUERY stored in the body (today only
+      a one-way hash is kept, so entries cannot be audited by name).
+    - TTLs differ (30d hit / 7d `NOT_FOUND`): use two prefixes with S3 lifecycle rules, or keep `ttl` in the object and check
+      on read. Keep the `TRANSIENT` rule: never persist a transient failure as a negative.
+    - Fix two defects while moving: (1) source `grokipedia_place` is written with a URL by `enrich_places._search_grokipedia_place`
+      and with page text by `situational_geocode.grokipedia_context`, so the same string collides and returns the wrong payload
+      shape: give the extract its own source name; (2) the `grokipedia` source caches the raw search-results HTML
+      (`response.text`) with no size cap, and DynamoDB's 400 KB item limit makes oversized writes fail silently (caught, debug log):
+      S3 removes the limit, but still decide whether to cache raw HTML at all.
+    - Dev reset: a dedicated S3 prefix lets `e2e_reset` clear the cache. Today `search#` items are not part of its sweep (per
+      `scripts/README.md`), so a "clean" dev run can see stale `NOT_FOUND` results.
+    - Not in this item: `fetch_provenance` (`fetchevent#`) and `url_registry` (`url#`, `excludedomain#`) were judged acceptable
+      in DynamoDB but can give unpredictable results in Dev; revisit with the reset behaviour above.
 - **[MED · observability-precision] download.file_missing cries wolf on expected-absent TRACKING files.** On every clean-slate/
   first run, Phase-2 download lists then 404s on index.json / .processed_events.json / manifests/run_scope/<book>.json — all
   TRACKING/index files that legitimately don't exist yet — and each fires OBSERV download.file_missing status=ERROR ->
