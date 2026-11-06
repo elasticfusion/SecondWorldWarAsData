@@ -54,6 +54,7 @@ Utility scripts for pipeline operations, data management, and maintenance.
 |--------|---------|
 | `deploy_all.sh` | Full deploy (container rebuild + Lambda + CFn) |
 | `deploy_aws.py` | CloudFormation deploy helper (called by `deploy_all.sh`) |
+| `e2e_reset.sh` | Dev clean slate before an E2E run: pauses backstops, stops tasks, deletes NAT, sweeps DynamoDB run-state (`--wipe-title T` also clears a title's S3 content/output) |
 | `update_lambdas.sh` | Lambda-only deploy (fast) |
 | `apply_config_profile.py` | Apply a config overlay profile (called by `deploy_all.sh`) |
 | `check_component_versions.sh` | Pre-deploy component-version preflight |
@@ -183,5 +184,5 @@ Representative (not exhaustive): `backfill_*.py`, `fix_fake_place_ulids.py`,
 `wipe_entity_store.py`, `rerun_equipment_only.py`, `split_chapters.py`,
 `generate_dashboard.py`, `generate_schema_docs.py`, `render_mermaid_diagrams.py`,
 `test_nara_api.py` / `test_nara_resolve.py` / `test_noaa_api.py`,
-and the orphaned operator shells (`e2e_reset.sh`, `trigger_phase3.sh`,
+and the orphaned operator shells (`trigger_phase3.sh`,
 `epub_monitor.sh`, `nat_teardown_after_drain.sh`, `qa_check_tests.sh`).
