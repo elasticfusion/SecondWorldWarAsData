@@ -373,6 +373,11 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   within N lines or an explicit `# OBSERV-EXEMPT: <reason>`.
 
 ### LOW
+- **[LOW · test-hygiene] Tests write into the tracked `logs/processing_summary.json` (found 2026-11-06).**
+  `src/extraction/events._write_processing_summary` appends to the cwd-relative `logs/processing_summary.json`, and
+  event-extraction tests (for example `tests/test_events_paragraph_range.py`) run it from the repo root, adding
+  `{"book": "B", "chapter": "C", ...}` lines on every test run. Fix: an autouse fixture that redirects the summary
+  path (or chdirs to tmp_path), plus a gate check that `git status` is clean after pytest.
 - **[LOW · sec-hygiene] Upgrade Trivy 0.71.0 -> 0.76.1** on the deploy host — the image scanner engine is 5 minor versions
   behind (DB auto-updates, engine/detection does not). deploy_all.sh now CHECKS this (loud current-vs-latest; hard-fail
   under STRICT_TRIVY_VERSION=1); remaining action = bump the installed binary on the deploy host.
