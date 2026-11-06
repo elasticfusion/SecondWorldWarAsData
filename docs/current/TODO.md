@@ -216,6 +216,15 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
 
 ### MED
+- **[MED · architecture/gate-coverage] Move pipeline code out of `scripts/` into `src/` (plan: `design/SRC_SCRIPTS_SEPARATION.md`).**
+  The pipeline imports 11 modules from `scripts/` (dedup detectors, validators, metadata completion, the metrics Lambda
+  handler), and two `src/dedup` modules import `scripts/` themselves. The gate lints only `src/` and `lambda_handlers/`,
+  so ~4,700 lines of pipeline code get only black + tests. That gap hides a real bypass:
+  `reclassify_military_units` writes `people_groups` entity records with a raw `write_text`, skipping the write guard.
+  Plan: 4 PRs (dedup family; validators + metadata + metrics Lambda; an import-direction guard; retire duplicates after
+  salvaging their useful logic). Decisions made 2026-11-06: oob_markdown is the canonical Order of Battle parser,
+  `pdf_to_markdown.py` keeps its new-book scaffolding under a clearer name with its conversion replaced, generic HTML goes through `text_converters` (+ `web_video` for video pages), and the
+  20 complexity-C functions are grandfathered behind a golden-output test, then refactored file by file.
 - **[MED · entity-resolution] Resolve `people_groups` against the ETO Order of Battle (the authoritative unit spine).**
   Moved from the steering "known gaps" list (2026-11-04). Name-level resolution exists (`find_duplicate_groups`,
   `src/dedup/unit_key.py`, `data/unit_nicknames.yaml`), but nothing resolves groups TO the OOB: the OOB crosswalk
