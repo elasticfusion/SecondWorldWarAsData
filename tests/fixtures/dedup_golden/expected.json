@@ -1,0 +1,713 @@
+{
+  "cleanup_index": {
+    "index_after": {
+      "Real Person": "real_person.json"
+    },
+    "result": {
+      "cleaned": 1,
+      "original": 2,
+      "removed_missing": 1,
+      "removed_stale": 0
+    }
+  },
+  "equipment": {
+    "duplicate_groups": 5,
+    "duplicates": [
+      {
+        "confidence": 0.6,
+        "people": [
+          {
+            "EquipmentID": "EQ000100000000000000000000",
+            "filename": "m4_sherman.json",
+            "name": "M4 Sherman"
+          },
+          {
+            "EquipmentID": "EQ000400000000000000000000",
+            "filename": "m4a3_sherman.json",
+            "name": "M4A3 Sherman"
+          }
+        ],
+        "reasons": [
+          "name_similarity=0.91",
+          "same_category"
+        ]
+      },
+      {
+        "confidence": 0.8,
+        "people": [
+          {
+            "EquipmentID": "EQ001000000000000000000000",
+            "filename": "50_caliber_mg.json",
+            "name": ".50-caliber machine gun"
+          },
+          {
+            "EquipmentID": "EQ001100000000000000000000",
+            "filename": "50_cal_mg.json",
+            "name": "50 cal machine gun"
+          }
+        ],
+        "reasons": [
+          "name_contained",
+          "name_similarity=1.00",
+          "same_category"
+        ]
+      },
+      {
+        "confidence": 0.8,
+        "people": [
+          {
+            "EquipmentID": "EQ001200000000000000000000",
+            "filename": "155mm_howitzer_a.json",
+            "name": "155-mm howitzer"
+          },
+          {
+            "EquipmentID": "EQ001300000000000000000000",
+            "filename": "155mm_howitzer_b.json",
+            "name": "155mm howitzer"
+          }
+        ],
+        "reasons": [
+          "name_contained",
+          "name_similarity=1.00",
+          "same_category"
+        ]
+      },
+      {
+        "confidence": 0.8,
+        "people": [
+          {
+            "EquipmentID": "EQ001600000000000000000000",
+            "filename": "m1_garand.json",
+            "name": "M1 Garand"
+          },
+          {
+            "EquipmentID": "EQ001700000000000000000000",
+            "filename": "garand.json",
+            "name": "Garand"
+          }
+        ],
+        "reasons": [
+          "name_contained",
+          "name_similarity=1.00",
+          "same_category"
+        ]
+      },
+      {
+        "confidence": 0.8,
+        "people": [
+          {
+            "EquipmentID": "EQ001800000000000000000000",
+            "filename": "thompson.json",
+            "name": "Thompson"
+          },
+          {
+            "EquipmentID": "EQ001900000000000000000000",
+            "filename": "tommy_gun.json",
+            "name": "Tommy gun"
+          }
+        ],
+        "reasons": [
+          "name_contained",
+          "name_similarity=1.00",
+          "same_category"
+        ]
+      }
+    ],
+    "total_equipment": 20
+  },
+  "groups": {
+    "duplicate_groups": 7,
+    "duplicates": [
+      {
+        "confidence": 0.71,
+        "people": [
+          {
+            "GroupID": "GR000900000000000000000000",
+            "filename": "panzer_lehr_division.json",
+            "group_type": "military_unit",
+            "name": "Panzer Lehr Division"
+          },
+          {
+            "GroupID": "GR001000000000000000000000",
+            "filename": "panzer_lehr.json",
+            "group_type": "military_unit",
+            "name": "Panzer Lehr"
+          }
+        ],
+        "reasons": [
+          "substring match"
+        ]
+      },
+      {
+        "confidence": 0.72,
+        "people": [
+          {
+            "GroupID": "GR001700000000000000000000",
+            "filename": "352d_division.json",
+            "group_type": "military_unit",
+            "name": "352d Division"
+          },
+          {
+            "GroupID": "GR001800000000000000000000",
+            "filename": "352nd_infantry_division.json",
+            "group_type": "military_unit",
+            "name": "352nd Infantry Division"
+          }
+        ],
+        "reasons": [
+          "canonical unit key match (#['352'] ARMY infantry division)",
+          "text proximity corroboration"
+        ]
+      },
+      {
+        "confidence": 0.73,
+        "people": [
+          {
+            "GroupID": "GR000100000000000000000000",
+            "filename": "1st_infantry_division.json",
+            "group_type": "military_unit",
+            "name": "1st Infantry Division"
+          },
+          {
+            "GroupID": "GR000200000000000000000000",
+            "filename": "1st_infantry.json",
+            "group_type": "military_unit",
+            "name": "1st Infantry"
+          },
+          {
+            "GroupID": "GR000300000000000000000000",
+            "filename": "1st_inf_div.json",
+            "group_type": "military_unit",
+            "name": "1st Inf Div"
+          }
+        ],
+        "reasons": [
+          "canonical unit key match (#['1'] ARMY infantry division)"
+        ]
+      },
+      {
+        "confidence": 0.74,
+        "people": [
+          {
+            "GroupID": "GR000400000000000000000000",
+            "filename": "16th_infantry_regiment.json",
+            "group_type": "military_unit",
+            "name": "16th Infantry Regiment"
+          },
+          {
+            "GroupID": "GR000500000000000000000000",
+            "filename": "16th_infantry.json",
+            "group_type": "military_unit",
+            "name": "16th Infantry"
+          }
+        ],
+        "reasons": [
+          "canonical unit key match (#['16'] ARMY infantry regiment)"
+        ]
+      },
+      {
+        "confidence": 0.74,
+        "people": [
+          {
+            "GroupID": "GR001900000000000000000000",
+            "filename": "4th_cavalry_group.json",
+            "group_type": "military_unit",
+            "name": "4th Cavalry Group"
+          },
+          {
+            "GroupID": "GR002000000000000000000000",
+            "filename": "4th_cav_gp.json",
+            "group_type": "military_unit",
+            "name": "4th Cav Gp"
+          }
+        ],
+        "reasons": [
+          "canonical unit key match (#['4'] ARMY cavalry group)"
+        ]
+      },
+      {
+        "confidence": 0.8,
+        "people": [
+          {
+            "GroupID": "GR001300000000000000000000",
+            "filename": "first_army.json",
+            "group_type": "military_unit",
+            "name": "First Army"
+          },
+          {
+            "GroupID": "GR001400000000000000000000",
+            "filename": "first_us_army.json",
+            "group_type": "military_unit",
+            "name": "First U.S. Army"
+          }
+        ],
+        "reasons": [
+          "canonical unit key match (#['1'] ARMY unspecified army)",
+          "text proximity corroboration"
+        ]
+      },
+      {
+        "confidence": 0.97,
+        "people": [
+          {
+            "GroupID": "GR000600000000000000000000",
+            "filename": "2nd_panzer_division.json",
+            "group_type": "military_unit",
+            "name": "2nd Panzer Division"
+          },
+          {
+            "GroupID": "GR000700000000000000000000",
+            "filename": "2d_panzer_division.json",
+            "group_type": "military_unit",
+            "name": "2d Panzer Division"
+          }
+        ],
+        "reasons": [
+          "canonical unit key match (#['2'] ARMY armored division)"
+        ]
+      }
+    ],
+    "total_groups": 20
+  },
+  "people": {
+    "duplicate_groups": 9,
+    "duplicates": [
+      {
+        "confidence": 1.278261,
+        "people": [
+          {
+            "PersonID": "PE000700000000000000000000",
+            "filename": "paul_hausser.json",
+            "name": "Paul Hausser"
+          },
+          {
+            "PersonID": "PE000800000000000000000000",
+            "filename": "paul_hauser.json",
+            "name": "Paul Hauser"
+          }
+        ],
+        "reasons": [
+          "Mention proximity (radius=5w, +0.80)",
+          "Name similarity: 0.96"
+        ]
+      },
+      {
+        "confidence": 1.6775,
+        "people": [
+          {
+            "PersonID": "PE002700000000000000000000",
+            "filename": "sam_rayburn.json",
+            "name": "Sam Rayburn"
+          },
+          {
+            "PersonID": "PE002800000000000000000000",
+            "filename": "samuel_rayburn.json",
+            "name": "Samuel Rayburn"
+          }
+        ],
+        "reasons": [
+          "Mention proximity (radius=2w, +0.80)",
+          "Name similarity: 0.88",
+          "Same last name: rayburn",
+          "Shared group [legislature, date-unverified] (+0.037)"
+        ]
+      },
+      {
+        "confidence": 1.885714,
+        "people": [
+          {
+            "PersonID": "PE001000000000000000000000",
+            "filename": "gunther_von_kluge.json",
+            "name": "Günther von Kluge"
+          },
+          {
+            "PersonID": "PE001100000000000000000000",
+            "filename": "guenther_von_kluge.json",
+            "name": "Guenther von Kluge"
+          },
+          {
+            "PersonID": "PE001200000000000000000000",
+            "filename": "hans_von_kluge.json",
+            "name": "Hans von Kluge"
+          }
+        ],
+        "reasons": [
+          "German transliteration variant",
+          "Mention proximity (radius=3w, +0.40)",
+          "Name similarity: 0.71",
+          "Name similarity: 0.97",
+          "Same last name: kluge"
+        ]
+      },
+      {
+        "confidence": 1.931765,
+        "people": [
+          {
+            "PersonID": "PE000500000000000000000000",
+            "filename": "walter_bedell_smith.json",
+            "name": "Walter Bedell Smith"
+          },
+          {
+            "PersonID": "PE000600000000000000000000",
+            "filename": "walter_b_smith.json",
+            "name": "Walter B. Smith"
+          },
+          {
+            "PersonID": "PE001300000000000000000000",
+            "filename": "john_smith.json",
+            "name": "John Smith"
+          }
+        ],
+        "reasons": [
+          "Mention proximity (radius=2w, +0.62)",
+          "Mention proximity (radius=3w, +0.62)",
+          "Middle name/initial variant",
+          "Name similarity: 0.82",
+          "Same last name: smith",
+          "Surname rarity[USA]×0.40"
+        ]
+      },
+      {
+        "confidence": 2.148276,
+        "people": [
+          {
+            "PersonID": "PE001600000000000000000000",
+            "filename": "leonard_t_gerow.json",
+            "name": "Leonard T. Gerow"
+          },
+          {
+            "PersonID": "PE001700000000000000000000",
+            "filename": "leonard_gerow.json",
+            "name": "Leonard Gerow"
+          }
+        ],
+        "reasons": [
+          "Mention proximity (radius=2w, +0.80)",
+          "Middle name/initial variant",
+          "Name similarity: 0.90",
+          "Same last name: gerow"
+        ]
+      },
+      {
+        "confidence": 2.34,
+        "people": [
+          {
+            "PersonID": "PE002300000000000000000000",
+            "filename": "norman_cota.json",
+            "name": "Norman Cota"
+          },
+          {
+            "PersonID": "PE002400000000000000000000",
+            "filename": "norman_d_cota.json",
+            "name": "Norman D. Cota"
+          }
+        ],
+        "reasons": [
+          "Mention proximity (radius=2w, +0.80)",
+          "Middle name/initial variant",
+          "Name similarity: 0.88",
+          "Shared biographical data",
+          "Shared unit [regiment] via designation (+0.10)"
+        ]
+      },
+      {
+        "confidence": 2.348276,
+        "people": [
+          {
+            "PersonID": "PE002500000000000000000000",
+            "filename": "henry_l_stimson.json",
+            "name": "Henry L. Stimson"
+          },
+          {
+            "PersonID": "PE002600000000000000000000",
+            "filename": "henry_stimson.json",
+            "name": "Henry Stimson"
+          }
+        ],
+        "reasons": [
+          "Mention proximity (radius=2w, +0.80)",
+          "Middle name/initial variant",
+          "Name similarity: 0.90",
+          "Same last name: stimson",
+          "Shared group [executive, verified] (+0.200)"
+        ]
+      },
+      {
+        "confidence": 2.554545,
+        "people": [
+          {
+            "PersonID": "PE001900000000000000000000",
+            "filename": "george_c_marshall.json",
+            "name": "George C. Marshall"
+          },
+          {
+            "PersonID": "PE002000000000000000000000",
+            "filename": "george_marshall.json",
+            "name": "George Marshall"
+          },
+          {
+            "PersonID": "PE002200000000000000000000",
+            "filename": "marshall.json",
+            "name": "Marshall"
+          }
+        ],
+        "reasons": [
+          "Mention proximity (radius=2w, +0.70)",
+          "Mention proximity (radius=3w, +0.70)",
+          "Middle name/initial variant",
+          "Name similarity: 0.91",
+          "Name substring match",
+          "Same last name: marshall",
+          "Shared biographical data",
+          "Single name match (distinctive)"
+        ]
+      },
+      {
+        "confidence": 4.0,
+        "people": [
+          {
+            "PersonID": "PE000100000000000000000000",
+            "filename": "omar_n_bradley.json",
+            "name": "Omar N. Bradley"
+          },
+          {
+            "PersonID": "PE000200000000000000000000",
+            "filename": "omar_bradley.json",
+            "name": "Omar Bradley"
+          },
+          {
+            "PersonID": "PE000300000000000000000000",
+            "filename": "general_bradley.json",
+            "name": "General Bradley"
+          },
+          {
+            "PersonID": "PE000400000000000000000000",
+            "filename": "bradley.json",
+            "name": "Bradley"
+          }
+        ],
+        "reasons": [
+          "Mention proximity (radius=2w, +0.70)",
+          "Mention proximity (radius=3w, +0.70)",
+          "Middle name/initial variant",
+          "Name similarity: 0.72",
+          "Name similarity: 0.86",
+          "Name similarity: 0.89",
+          "Name substring match",
+          "Same last name: bradley",
+          "Single name match (distinctive)",
+          "Title/alias match: 'Bradley' → 'Omar N. Bradley'"
+        ]
+      }
+    ],
+    "total_people": 31
+  },
+  "places": {
+    "duplicate_groups": 2,
+    "duplicates": [
+      {
+        "confidence": 0.77,
+        "people": [
+          {
+            "PlaceID": "PK000300000000000000000000",
+            "filename": "saint-lo.json",
+            "name": "Saint-Lô"
+          },
+          {
+            "PlaceID": "PK000500000000000000000000",
+            "filename": "st-lo.json",
+            "name": "St-Lô"
+          }
+        ],
+        "reasons": [
+          "name similarity 77%",
+          "within 5km (approximate coords)"
+        ]
+      },
+      {
+        "confidence": 0.94,
+        "people": [
+          {
+            "PlaceID": "PK000800000000000000000000",
+            "filename": "avranches.json",
+            "name": "Avranches"
+          },
+          {
+            "PlaceID": "PK000900000000000000000000",
+            "filename": "avranche.json",
+            "name": "Avranche"
+          }
+        ],
+        "reasons": [
+          "name similarity 94%",
+          "within 5km (approximate coords)"
+        ]
+      }
+    ],
+    "total_places": 15
+  },
+  "reclassify_is_military_unit": {
+    "16th Infantry Regiment": true,
+    "1st Infantry Division": true,
+    "Caen": false,
+    "Combat Command B": false,
+    "Hill 192": false,
+    "Omaha Beach": false,
+    "Panzer Lehr": true,
+    "Seventh Army": true,
+    "Task Force Butler": false,
+    "V Corps": true
+  },
+  "reclassify_run": {
+    "count": 2,
+    "dry_run_count": 2,
+    "tree_after": {
+      "people_groups": {
+        "1st_infantry_division.json": {
+          "GroupID": "PK006100000000000000000000",
+          "aliases": [
+            "Big Red One"
+          ],
+          "country_of_origin": "USA",
+          "event_mentions": [
+            {
+              "EventID": "EV000100000000000000000000"
+            }
+          ],
+          "group_name": "1st Infantry Division",
+          "group_type": "military_unit",
+          "name": "1st Infantry Division",
+          "source_language": "English"
+        },
+        "panzer_lehr.json": {
+          "GroupID": "PK006200000000000000000000",
+          "aliases": [],
+          "country_of_origin": "",
+          "event_mentions": [],
+          "group_name": "Panzer Lehr",
+          "group_type": "military_unit",
+          "name": "Panzer Lehr",
+          "source_language": "English"
+        }
+      },
+      "places": {
+        "caen.json": {
+          "PlaceID": "PK006000000000000000000000",
+          "current_name": "Caen"
+        },
+        "corrupt.json": "{not json",
+        "index.json": {
+          "current_name": "V Corps"
+        }
+      }
+    }
+  },
+  "reclassify_transform": {
+    "GroupID": "PK005000000000000000000000",
+    "aliases": [],
+    "country_of_origin": "",
+    "event_mentions": [],
+    "group_name": "1st Infantry Division",
+    "group_type": "military_unit",
+    "name": "1st Infantry Division",
+    "source_language": "English"
+  },
+  "related_groups": [
+    {
+      "confidence": 1.3,
+      "groups": [
+        {
+          "GroupID": "GR001300000000000000000000",
+          "filename": "first_army.json",
+          "name": "First Army",
+          "type": "military_unit"
+        },
+        {
+          "GroupID": "GR001400000000000000000000",
+          "filename": "first_us_army.json",
+          "name": "First U.S. Army",
+          "type": "military_unit"
+        }
+      ],
+      "reasons": [
+        "Core name match: 1.00",
+        "Name similarity: 0.80",
+        "Same type: military_unit"
+      ]
+    },
+    {
+      "confidence": 1.328571,
+      "groups": [
+        {
+          "GroupID": "GR001100000000000000000000",
+          "filename": "v_corps.json",
+          "name": "V Corps",
+          "type": "military_unit"
+        },
+        {
+          "GroupID": "GR001200000000000000000000",
+          "filename": "5th_corps.json",
+          "name": "5th Corps",
+          "type": "military_unit"
+        }
+      ],
+      "reasons": [
+        "Core name match: 0.86",
+        "Name similarity: 0.86",
+        "Same type: military_unit"
+      ]
+    },
+    {
+      "confidence": 1.4,
+      "groups": [
+        {
+          "GroupID": "GR000600000000000000000000",
+          "filename": "2nd_panzer_division.json",
+          "name": "2nd Panzer Division",
+          "type": "military_unit"
+        },
+        {
+          "GroupID": "GR000700000000000000000000",
+          "filename": "2d_panzer_division.json",
+          "name": "2d Panzer Division",
+          "type": "military_unit"
+        },
+        {
+          "GroupID": "GR000900000000000000000000",
+          "filename": "panzer_lehr_division.json",
+          "name": "Panzer Lehr Division",
+          "type": "military_unit"
+        }
+      ],
+      "reasons": [
+        "Core name match: 0.81",
+        "Core name match: 1.00",
+        "Name similarity: 0.81",
+        "Name similarity: 1.00",
+        "Same type: military_unit"
+      ]
+    },
+    {
+      "confidence": 1.4,
+      "groups": [
+        {
+          "GroupID": "GR001500000000000000000000",
+          "filename": "seventh_army.json",
+          "name": "Seventh Army",
+          "type": "military_unit"
+        },
+        {
+          "GroupID": "GR001600000000000000000000",
+          "filename": "7th_army.json",
+          "name": "7th Army",
+          "type": "military_unit"
+        }
+      ],
+      "reasons": [
+        "Core name match: 1.00",
+        "Name similarity: 1.00",
+        "Same type: military_unit"
+      ]
+    }
+  ]
+}

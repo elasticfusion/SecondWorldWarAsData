@@ -1033,8 +1033,9 @@ def _load_people_data(people_dir_path: Path) -> List[Dict[str, Any]]:
     people_data = []
     seen_filenames: set = set()
 
-    # Load full data from local files
-    for person_file in people_dir_path.glob("*.json"):
+    # Load full data from local files. sorted(): deterministic across filesystems (glob order is
+    # filesystem-dependent), matching the other dedup loaders.
+    for person_file in sorted(people_dir_path.glob("*.json")):
         if person_file.name in skip:
             continue
         seen_filenames.add(person_file.name)

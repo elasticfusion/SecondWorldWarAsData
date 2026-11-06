@@ -406,7 +406,10 @@ def _load_groups_data(groups_dir_path: Path) -> List[Dict[str, Any]]:
         )
 
     groups_data = []
-    for group_file in groups_dir_path.glob("*.json"):
+    # sorted(): clustering is greedy, so iteration order changes cluster confidence/reasons. Unsorted
+    # glob order is filesystem-dependent (ext4 hash vs tmpfs reverse-creation), which made the report
+    # vary between machines. Sorting makes it deterministic, matching the other dedup loaders.
+    for group_file in sorted(groups_dir_path.glob("*.json")):
         if group_file.name in excluded_files:
             continue
         with open(group_file, "r", encoding="utf-8") as f:
