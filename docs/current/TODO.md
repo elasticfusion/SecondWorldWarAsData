@@ -84,6 +84,15 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
     - `grok_client._log_api_response`: the debug "Log preview" block is indented inside the model-deprecation branch, so
       it logs only on a redirect. It was probably meant to sit under the `choices` branch.
     - `nodejs-wheel-binaries` (transitive, unpinned range) comes with basedpyright in CI only; pin it or use hashes.
+- **[MED · provenance] Stop shipping HTML/EPUB/DOCX/video books with EMPTY metadata (P2-C1 "slug+meta half"; found 2026-11-06).**
+  `phase0_convert` / `phase0_video` / `ocr_merge_handler` write `chapter1-meta.yaml` with `author`, `series`, `chapter_title`,
+  `license`, `copyright_date` all `''` and `source_url: "converted from <key>"` (not a URL). The pipeline continues, so every
+  record cites an empty author, copyright status is unknown, and weather extraction errors (`Missing required book metadata`).
+  The alert is now actionable (names the fields, the consequence and the S3 file to edit), but an alert on EVERY upload is still
+  manual toil. Derive what is deterministic: HTML `<title>` (e.g. "HyperWar: US Army in WWII: Cross Channel Invasion [Chapter 8]"
+  gives series + chapter), the upload's `x-amz-meta-source-url` (set by the operator) for `source_url`, and the known licence of
+  the source host (ibiblio HyperWar = US Army CMH public domain). Leave `author` empty ONLY when it cannot be derived, and alert
+  only for what is still missing.
 - **[MED · security] Scanner baseline (security-scanner MCP + CLI, 2026-11-06). Nothing found in this branch's changes.**
   Branch vs `origin/main` by Checkov CLI: 141 -> 138 failed, 0 new (fixed: both `CKV_AWS_111` scoped-IAM findings and
   `CKV_AWS_79` IMDSv1). Bandit `src/` 73 LOW (B110/B112 swallowed exceptions) + 8 in `lambda_handlers/`, 0 MEDIUM/HIGH. ASH on

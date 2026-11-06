@@ -357,6 +357,7 @@ def _mark_metadata_gap(s3, key: str, book: str) -> None:
         key,
         book,
         REGION,
+        fields=("author", "series", "license"),
         note=(
             "metadata not yet extracted (author/series/license empty) — "
             "real metadata extraction deferred (P2-C1 slug+meta half)"
