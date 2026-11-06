@@ -11,7 +11,7 @@ from pathlib import Path
 
 from jsonschema import ValidationError, validate
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.schemas import SCHEMA_VERSION, needs_migration
 from src.schemas.weather_output import WEATHER_OUTPUT_SCHEMA

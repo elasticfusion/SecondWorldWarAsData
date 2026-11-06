@@ -60,7 +60,7 @@ def _detect_mode() -> str:
     try:
         import yaml  # pylint: disable=import-outside-toplevel
 
-        config_path = Path(__file__).parent.parent / "config.yaml"
+        config_path = Path(__file__).resolve().parents[2] / "config.yaml"
         with open(config_path, encoding="utf-8") as f:
             config = yaml.safe_load(f)
         return "aws" if config.get("aws", {}).get("enabled") else "local"
@@ -241,7 +241,7 @@ def _collect_entity_counts_s3(status: dict, s3: Any, bucket: str) -> None:
 
 def _collect_local_status(status: dict) -> None:
     """Collect status from local filesystem."""
-    base = Path(__file__).parent.parent
+    base = Path(__file__).resolve().parents[2]
     output = base / "output"
 
     _collect_local_phases(status, output)
