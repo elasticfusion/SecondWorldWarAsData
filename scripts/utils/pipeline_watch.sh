@@ -7,6 +7,9 @@
 # batch-poller, dedup-gate, ... plus /ecs/{env}-wwii-pipeline). Watching only the ECS log misses
 # launches, gate decisions and Lambda-side failures.
 #
+# Dedup: shows each duplicate_report.json in S3 (group count, upload time), the related-groups
+# report, dedup/review_status.json, and dedup log lines (detectors, detector_failed, gate decision).
+#
 # Usage:
 #   bash scripts/utils/pipeline_watch.sh                 # last 15 min, once
 #   bash scripts/utils/pipeline_watch.sh -m 60 -n 100    # last 60 min, 100 lines
@@ -80,12 +83,34 @@ snapshot() {
     | awk -F/ '{ p=$1; if ($1=="output" && NF>2) p=$1"/"$2; print p }' | sort | uniq -c \
     | awk '{ printf "   %6d  %s\n", $1, $2 }'
 
+  echo "-- Dedup (reports in S3 + gate/review status)"
+  local sub rep when
+  for sub in people people_groups places equipment; do
+    when=$(aws_ s3 ls "s3://$BUCKET/output/$sub/duplicate_report.json" 2>/dev/null | awk '{print $1" "$2}')
+    rep=$(aws_ s3 cp "s3://$BUCKET/output/$sub/duplicate_report.json" - 2>/dev/null \
+      | python3 -c 'import json,sys
+try:
+    d=json.load(sys.stdin); print("groups=%s" % d.get("duplicate_groups", len(d.get("duplicates", []))))
+except Exception as e:
+    print("UNREADABLE (%s)" % type(e).__name__)' 2>/dev/null)
+    printf "   %-14s %s\n" "$sub" "${when:+$rep  (uploaded $when)}${when:-no report yet}"
+  done
+  when=$(aws_ s3 ls "s3://$BUCKET/output/people_groups/related_groups_report.json" 2>/dev/null | awk '{print $1" "$2}')
+  rep=$(aws_ s3 cp "s3://$BUCKET/output/people_groups/related_groups_report.json" - 2>/dev/null \
+    | python3 -c 'import json,sys
+try:
+    d=json.load(sys.stdin); print("clusters=%s" % d.get("related_clusters", "?"))
+except Exception as e:
+    print("UNREADABLE (%s)" % type(e).__name__)' 2>/dev/null)
+  printf "   %-14s %s\n" "related_groups" "${when:+$rep  (uploaded $when)}${when:-no report yet}"
+  printf "   %-14s %s\n" "review_status" "$(aws_ s3 cp "s3://$BUCKET/dedup/review_status.json" - 2>/dev/null | tr -d '\n' | cut -c1-160 || true)"
+
   echo "-- Log lines (last $LINES)"
   local pat
   if [ "$ERRORS_ONLY" = 1 ]; then
     pat='?"status=error" ?"status=warn" ?"ERROR" ?"Traceback" ?"BLOCKED" ?"AccessDenied" ?"exited with code"'
   else
-    pat='?"OBSERV" ?"Phase complete" ?"Phase started" ?"Launching" ?"Running dedup" ?"ERROR" ?"Traceback" ?"BLOCKED" ?"AccessDenied"'
+    pat='?"OBSERV" ?"Phase complete" ?"Phase started" ?"Launching" ?"Running dedup" ?"Dedup" ?"dedup report" ?"ERROR" ?"Traceback" ?"BLOCKED" ?"AccessDenied"'
   fi
   local groups
   groups="/ecs/${ENV}-wwii-pipeline $(aws_ logs describe-log-groups --log-group-name-prefix "/aws/lambda/${ENV}-wwii" --query 'logGroups[].logGroupName' --output text)"
@@ -131,4 +156,5 @@ if [ "$FOLLOW" = 1 ]; then
   while true; do clear 2>/dev/null || true; snapshot; sleep "$INTERVAL"; done
 else
   snapshot
+  echo "(single snapshot — the pipeline keeps running; use -f to refresh every ${INTERVAL}s)"
 fi
