@@ -6,3 +6,4 @@
 - MUST: all generated data must have provenance back to its source. If LLM data does not include that, a deterministic mechanism must be put in place to find and fix it. If none of these are possible, the issue must be loudly called out.
 - MUST optimize for cost, AWS and Grok, unless the operator specifically overrides this.
 - MUST use DRY (don't repeat yourself) practices.
+- MUST: all log alerts must be actionable. "Benign" alerts are disallowed.
