@@ -70,6 +70,82 @@ def transform_place_to_group(data: dict) -> dict:
     }
 
 
+def _is_prior_move(dest: Path, data: dict) -> bool:
+    """True if ``dest`` is this place's own earlier output (a move interrupted after the write but
+    before the unlink): transform_place_to_group carries PlaceID over as GroupID."""
+    try:
+        existing = json.loads(dest.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return False
+    place_id = data.get("PlaceID")
+    return bool(place_id) and existing.get("GroupID") == place_id
+
+
+def _finish_move(f: Path, name: str) -> None:
+    """Remove the place file and report it so ECS also deletes it from S3 at final sync."""
+    from src.dedup.merge import notify_deletion
+    from src.utils.observe import observe_warn
+
+    f.unlink()
+    try:
+        notify_deletion(f)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - one bad callback must not abort the whole pass
+        observe_warn(
+            "dedup",
+            "reclassify_notify_failed",
+            file=f.name,
+            error=type(e).__name__,
+            note="place deleted locally but may linger in S3",
+        )
+    logger.info("  %s → people_groups/", name)
+
+
+def _move_to_groups(
+    f: Path, data: dict, name: str, groups_dir: Path, dry_run: bool = False
+) -> bool:
+    """Move one place record to people_groups/. Returns True if it was (or, in a dry run, would
+    be) moved.
+
+    Never loses data: an existing group file is never overwritten (unless it is this place's own
+    output from an interrupted earlier move, which is then completed), a record the write guard
+    blocks is not written, and in both cases the place file is kept and the skip is loud.
+    """
+    from src.utils.file_lock import write_json_with_lock
+    from src.utils.observe import observe_error, observe_warn
+
+    dest = groups_dir / f.name
+    if dest.exists():
+        if not _is_prior_move(dest, data):
+            observe_warn(
+                "dedup",
+                "reclassify_dest_exists",
+                file=f.name,
+                note="people_groups record already exists; place kept for dedup review, not overwritten",
+            )
+            return False
+        if not dry_run:
+            _finish_move(f, name)  # group already written by an interrupted earlier run
+        return True
+    if dry_run:
+        # The write guard cannot be consulted without writing, so a dry run may over-count blocks.
+        logger.info("[DRY RUN] %s → people_groups/", name)
+        return True
+    if not write_json_with_lock(
+        dest, transform_place_to_group(data), entity="people_groups"
+    ):
+        observe_error(
+            "dedup",
+            "reclassify_blocked",
+            file=f.name,
+            note="write guard blocked the transformed group; place kept",
+        )
+        return False
+    _finish_move(f, name)
+    return True
+
+
 def reclassify(output_root: Path, dry_run: bool = False) -> int:
     """Move military units from places/ to people_groups/. Returns count moved."""
     places_dir = output_root / "places"
@@ -84,25 +160,20 @@ def reclassify(output_root: Path, dry_run: bool = False) -> int:
             continue
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
+        except (json.JSONDecodeError, OSError) as e:
+            from src.utils.observe import observe_warn
+
+            observe_warn(
+                "dedup", "reclassify_unreadable", file=f.name, error=type(e).__name__
+            )
             continue
 
         name = data.get("current_name", data.get("name", f.stem.replace("_", " ")))
         if not is_military_unit(name):
             continue
 
-        dest = groups_dir / f.name
-        if dry_run:
-            logger.info("[DRY RUN] %s → people_groups/", name)
-        else:
-            group_data = transform_place_to_group(data)
-            groups_dir.mkdir(parents=True, exist_ok=True)
-            dest.write_text(
-                json.dumps(group_data, indent=2, ensure_ascii=False),
-                encoding="utf-8",
-            )
-            f.unlink()
-            logger.info("  %s → people_groups/", name)
+        if not _move_to_groups(f, data, name, groups_dir, dry_run=dry_run):
+            continue
         moved += 1
 
     if moved:

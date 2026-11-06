@@ -559,12 +559,19 @@
     "V Corps": true
   },
   "reclassify_run": {
-    "count": 2,
-    "dry_run_count": 2,
+    "count": 3,
+    "deletions_reported": [
+      "1st_infantry_division.json",
+      "3rd_armored_division.json",
+      "panzer_lehr.json"
+    ],
+    "dry_run_count": 4,
     "tree_after": {
       "people_groups": {
         "1st_infantry_division.json": {
           "GroupID": "PK006100000000000000000000",
+          "_last_updated": "<stamped>",
+          "_schema_version": "2.29",
           "aliases": [
             "Big Red One"
           ],
@@ -579,8 +586,27 @@
           "name": "1st Infantry Division",
           "source_language": "English"
         },
+        "2nd_armored_division.json": {
+          "GroupID": "GR006300000000000000000000",
+          "aliases": [
+            "Hell on Wheels"
+          ],
+          "event_mentions": [
+            {
+              "EventID": "EV000100000000000000000000"
+            }
+          ],
+          "group_name": "2nd Armored Division"
+        },
+        "3rd_armored_division.json": {
+          "GroupID": "PK006500000000000000000000",
+          "group_name": "3rd Armored Division",
+          "group_type": "military_unit"
+        },
         "panzer_lehr.json": {
           "GroupID": "PK006200000000000000000000",
+          "_last_updated": "<stamped>",
+          "_schema_version": "2.29",
           "aliases": [],
           "country_of_origin": "",
           "event_mentions": [],
@@ -591,6 +617,15 @@
         }
       },
       "places": {
+        "2nd_armored_division.json": {
+          "PlaceID": "PK006300000000000000000000",
+          "current_name": "2nd Armored Division"
+        },
+        "9th_armored_division.json": {
+          "PlaceID": "PK006400000000000000000000",
+          "current_name": "9th Armored Division",
+          "event_mentions": "not-a-list"
+        },
         "caen.json": {
           "PlaceID": "PK006000000000000000000000",
           "current_name": "Caen"

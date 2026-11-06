@@ -641,30 +641,78 @@ def _run_reclassify(reclass_root: Path) -> Dict[str, Any]:
                 "historical_names": ["Big Red One"],
             },
             "panzer_lehr.json": {"PlaceID": _id("PL", 62), "name": "Panzer Lehr"},
+            # Collides with an existing group record: must NOT overwrite it; place kept.
+            "2nd_armored_division.json": {
+                "PlaceID": _id("PL", 63),
+                "current_name": "2nd Armored Division",
+            },
+            # Transformed record fails the write guard (event_mentions must be a list): place kept.
+            "9th_armored_division.json": {
+                "PlaceID": _id("PL", 64),
+                "current_name": "9th Armored Division",
+                "event_mentions": "not-a-list",
+            },
+            # Its group was already written by an interrupted earlier run (GroupID == PlaceID):
+            # the move is completed (place removed + reported), the group left as is.
+            "3rd_armored_division.json": {
+                "PlaceID": _id("PL", 65),
+                "current_name": "3rd Armored Division",
+            },
             # SKIP_FILES entry with a unit-like name must never be moved.
             "index.json": {"current_name": "V Corps"},
         },
     )
     (places / "corrupt.json").write_text("{not json", encoding="utf-8")
+    _write_dir(
+        reclass_root / "people_groups",
+        {
+            "2nd_armored_division.json": {
+                "GroupID": _id("GR", 63),
+                "group_name": "2nd Armored Division",
+                "aliases": ["Hell on Wheels"],
+                "event_mentions": [{"EventID": _EVENT_ID}],
+            },
+            "3rd_armored_division.json": {
+                "GroupID": _id("PL", 65),
+                "group_name": "3rd Armored Division",
+                "group_type": "military_unit",
+            },
+        },
+    )
 
     def _tree() -> Dict[str, Any]:
-        return {
-            sub: {
-                p.name: (
-                    p.read_text(encoding="utf-8")
-                    if p.name == "corrupt.json"
-                    else _read(p)
-                )
-                for p in sorted((reclass_root / sub).glob("*.json"))
-            }
-            for sub in ("places", "people_groups")
-        }
+        tree: Dict[str, Any] = {}
+        for sub in ("places", "people_groups"):
+            tree[sub] = {}
+            for p in sorted((reclass_root / sub).glob("*.json")):
+                if p.name == "corrupt.json":
+                    tree[sub][p.name] = p.read_text(encoding="utf-8")
+                    continue
+                rec = _read(p)
+                # The write guard stamps today's date; pin presence, not the value.
+                if rec.pop("_last_updated", None) is not None:
+                    rec["_last_updated"] = "<stamped>"
+                tree[sub][p.name] = rec
+        return tree
 
+    from src.dedup import merge as dedup_merge
+
+    deleted: List[str] = []
     before = _tree()
     dry_count = reclassify.reclassify(reclass_root, dry_run=True)
     assert _tree() == before, "reclassify dry run modified files"
-    count = reclassify.reclassify(reclass_root, dry_run=False)
-    return {"dry_run_count": dry_count, "count": count, "tree_after": _tree()}
+    prior_callback = dedup_merge.get_deletion_callback()
+    dedup_merge.set_deletion_callback(lambda p: deleted.append(p.name))
+    try:
+        count = reclassify.reclassify(reclass_root, dry_run=False)
+    finally:
+        dedup_merge.set_deletion_callback(prior_callback)
+    return {
+        "dry_run_count": dry_count,
+        "count": count,
+        "tree_after": _tree(),
+        "deletions_reported": sorted(deleted),
+    }
 
 
 # --------------------------------------------------------------------------- the test
