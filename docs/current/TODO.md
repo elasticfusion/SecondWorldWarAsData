@@ -71,6 +71,21 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
     - A Commons license fetch that fails transiently is stored and positive-cached as `license="unknown"`.
     - `_extract_media_from_wikipedia` returns no media on TRANSIENT without deferring (pre-existing behaviour).
     - `scripts/utils/debug_searches.py` calls en.wikipedia.org directly (diagnostic only; the guard scans `src/`).
+- **[MED · security] Scanner baseline (security-scanner MCP + CLI, 2026-11-06). Nothing found in this branch's changes.**
+  Branch vs `origin/main` by Checkov CLI: 141 -> 138 failed, 0 new (fixed: both `CKV_AWS_111` scoped-IAM findings and
+  `CKV_AWS_79` IMDSv1). Bandit `src/` 73 LOW (B110/B112 swallowed exceptions) + 8 in `lambda_handlers/`, 0 MEDIUM/HIGH. ASH on
+  `src/`: 8 HIGH, all false positives (word list flagged as "secret", `secrets.choice` alphabet, SHA-1 with
+  `usedforsecurity=False`, static-registry `import_module`, `http://` adapter mount prefix, "token" in log text).
+  OPEN, all pre-existing:
+    - Grype: the Go tool binaries `tools/search_maps` and `tools/search_media` (tracked in git, built with go1.26.0) carry 3
+      Critical / ~40 High stdlib CVEs. They are not copied by any Dockerfile, so local-only; rebuild with a patched Go or stop
+      tracking binaries. The `openserp` submodule's Go modules (`brotli` Critical, `x/net`, `klauspost/compress` High) ship in the
+      OpenSERP image: bump the submodule (`scripts/check_component_versions.sh`).
+    - ~73 swallowed exceptions (B110/B112) conflict with the actionable-alerts rule; fold into the PATTERN-8 audit.
+    - cdk-nag/Checkov CloudFormation baseline (~138): Lambda DLQ / VPC / concurrency / env-var KMS, DynamoDB PITR + CMK, SNS/SQS
+      encryption, log-group KMS, API Gateway logging/tracing/authorization (`AwsSolutions-APIG4`).
+    - Semgrep standalone is not installed on the dev machine (the MCP `scan_directory_with_semgrep` fails); the MCP Checkov scan
+      returned a STALE copy of `ocr.yaml`. Use the Checkov CLI as the source of truth.
 - **[HIGH · release] Push the local commits and open PR 1 (owner decision pending, 2026-11-06).**
   `main` has 6 unpushed local commits (`12ee5159`..`7e45750b`: pre-deploy fixes, scripts/ reorg, steering, aws/ and
   agent-history removal, endnote doc, separation plan). Branch `refactor/pr1-dedup-into-src` has 4 more on top

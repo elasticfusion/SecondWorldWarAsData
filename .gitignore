@@ -96,3 +96,8 @@ outputs/
 # AWS CLI v2 installer bundle (unzipped awscli-exe-linux-*.zip). Not part of the project:
 # install the CLI from AWS, don't vendor it. Ignored so it can't be re-committed by accident.
 /aws/
+
+# Output of the security-scanner MCP tools (ASH / Grype / Syft)
+/.ash/
+/.grype/
+/.sbom/
