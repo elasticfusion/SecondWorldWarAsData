@@ -665,6 +665,19 @@ def _preflight_credit_check() -> None:
         logger.warning("Preflight check failed (proceeding anyway): %s", e)
 
 
+def _preflight_runtime_tables() -> None:
+    """Omission check: the lookup-table loaders fall back to "empty" silently, so a table missing
+    from the image is only visible here (2026-11-06: config/ and data/ were absent from the image
+    for weeks with no signal). Emits OBSERV runtime.table_unusable status=error per bad table.
+    Non-blocking."""
+    from src.utils.runtime_tables import check_runtime_tables
+
+    try:
+        check_runtime_tables(Path("/app"))
+    except Exception as e:  # noqa: BLE001 - a preflight must never stop the phase
+        logger.warning("Runtime-table preflight failed (proceeding anyway): %s", e)
+
+
 def _preflight_notification_subscriptions() -> None:
     """Non-blocking: warn if notification/alarm SNS topics have no confirmed subscription.
 
@@ -793,6 +806,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: preflight credit check", phase_name)
     _preflight_credit_check()
     _preflight_notification_subscriptions()
+    _preflight_runtime_tables()
     _patch_config()
     _start_openserp_if_needed(phase_script)
 
@@ -3663,6 +3677,7 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: preflight credit check", phase_name)
     _preflight_credit_check()
     _preflight_notification_subscriptions()
+    _preflight_runtime_tables()
     _patch_config()
     _start_openserp_if_needed(phase_script)
 

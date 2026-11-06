@@ -39,19 +39,22 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
 
 
 ### HIGH
-- **[HIGH · deploy/data-quality] The ECS image has no `config/` or `data/` (found 2026-11-06 in PR 1 review; VERIFIED in prod).**
-  `Dockerfile` copies `src/ scripts/ prompts/ search_queries/ config.yaml` but not `config/` (176K) or `data/` (12K),
-  and nothing downloads them at runtime. In ECS every lookup of these files therefore falls back to defaults:
-  `config/equipment_aliases.yaml` (equipment extraction + dedup), `config/domain_blacklist.yaml` (source retrieval,
-  link relevancy, map search), `config/award_sources.yaml`, `config/place_aliases.yaml`,
-  `data/surname_frequency.yaml` and `data/unit_nicknames.yaml` (dedup scoring).
-  Verified 2026-11-06 against the deployed `wwii-pipeline:latest` (pushed 2026-11-03, used by phase2-extract rev 13
-  and phase3-enrich rev 9): `/app/config` and `/app/data` do not exist. The deployed code loads 0 equipment aliases
-  (repo: 97) and 0 surname-frequency entries (repo: 6). That image reports `GIT_SHA=unknown`, so it was built locally,
-  not by CI. Since PR 1, equipment dedup reports the gap loudly
-  (`OBSERV dedup.equipment_aliases_missing status=error`, once per run). Fix: `COPY config/ config/` and `COPY data/ data/`.
-  This changes production dedup and enrichment output on the next deploy, so the owner must confirm it first.
-  Audit the other loaders for silent fallbacks at the same time.
+- **[HIGH · observability] Silent "fall back to empty" loaders hide omissions (root cause of the config/ + data/ gap).**
+  FIXED 2026-11-06 (branch `refactor/pr1-dedup-into-src`, not yet deployed): the ECS image had no `config/` or
+  `data/` for weeks (the deployed 2026-11-03 `wwii-pipeline:latest` loaded 0 of 97 equipment aliases, 0 of 6 surname
+  priors, no domain blacklist). 14 days of `/ecs/dev-wwii-pipeline` logs held no warning about any of it.
+  The Dockerfile now COPYs both dirs. `src/utils/runtime_tables.check_runtime_tables` runs at every phase start
+  and emits `OBSERV runtime.tables status=error tables=...` (Slack + email) when a required table is missing or
+  empty. `tests/test_dockerfile_runtime_files.py` fails if code reads a table that is unregistered or not copied.
+  WHY IT WAS MISSED: observability here is event-driven, and an absent file produces no event. Each loader treats
+  "missing" as a legitimate empty table (`except Exception: return {}`, `if not p.is_file(): return {}`), so
+  an omission looks exactly like an empty table. No metric tracked how many aliases or priors a run actually used.
+  REMAINING:
+    - Audit every `return {}` / `return []` fallback in `src/` loaders and make each one say whether the input was
+      absent, unreadable or genuinely empty (`observe_warn`). Same class as PATTERN-8, applied to inputs.
+    - Consider a per-run "inputs used" rollup (alias count, prior count, blacklist size) so a sudden zero is visible
+      even when a file is present but wrong.
+    - Learned equipment aliases written in ECS are lost when the task ends (pre-existing; now dockerignored).
 - **[HIGH · release] Push the local commits and open PR 1 (owner decision pending, 2026-11-06).**
   `main` has 6 unpushed local commits (`12ee5159`..`7e45750b`: pre-deploy fixes, scripts/ reorg, steering, aws/ and
   agent-history removal, endnote doc, separation plan). Branch `refactor/pr1-dedup-into-src` has 4 more on top
