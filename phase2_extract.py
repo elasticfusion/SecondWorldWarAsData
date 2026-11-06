@@ -1266,6 +1266,9 @@ def _write_phase_results(output_root, processed, failed):
     # phase2.summary.zero for any type at 0). Emitted HERE because this is the single final point
     # reached by ALL modes (incl. the batch retrieve re-run), so counts reflect the final corpus.
     _phase2_counts = _log_phase2_summary(output_root, logger)
+    from src.utils.wikimedia_client import summarize as _wikimedia_summary
+
+    _wikimedia_summary("phase2")
 
     # End-of-phase referential enforcement — AFTER all extraction.
     #   • ECS/S3 run (S3_BUCKET set): NOT here. It reads S3, but this process's output is uploaded

@@ -220,3 +220,50 @@ def observe_error(scope: str, event: str, *, note: str = "", **fields: Any) -> s
 def observe_warn(scope: str, event: str, *, note: str = "", **fields: Any) -> str:
     """Convenience: a degraded-but-recovered path (status=warn). Never raises."""
     return observe(scope, event, status="warn", note=note, **fields)
+
+
+# --- Counted warnings: actionable, not noisy ------------------------------------------------------
+# A condition that repeats per item (one bad paragraph list, one rate-limited lookup) must not emit
+# one alert per occurrence: the 40th identical line carries no new information and buries the real
+# ones. observe_warn_counted() warns on the FIRST occurrence of a key and every `every`-th after,
+# with the running count, and logs the rest at DEBUG. Pair every call with an actionable `note`.
+_counts: dict = {}
+_counts_lock = __import__("threading").Lock()
+
+
+def observe_warn_counted(
+    scope: str,
+    event: str,
+    *,
+    key: tuple,
+    note: str,
+    every: int = 25,
+    **fields: Any,
+) -> int:
+    """Count ``key``; emit observe_warn on count 1 and every ``every``-th. Returns the new count.
+    ``note`` is REQUIRED: it must say what to do. Never raises."""
+    try:
+        with _counts_lock:
+            n = _counts.get((scope, event) + tuple(key), 0) + 1
+            _counts[(scope, event) + tuple(key)] = n
+        if n == 1 or n % every == 0:
+            observe_warn(scope, event, note=note, count=n, **fields)
+        else:
+            logger.debug(
+                "%s.%s key=%s count=%d (suppressed repeat)", scope, event, key, n
+            )
+        return n
+    except Exception:  # noqa: BLE001 - the sink must never raise into the phase
+        return 0
+
+
+def reset_counted_warnings() -> None:
+    """Forget all counted-warning state (tests / a new run)."""
+    with _counts_lock:
+        _counts.clear()
+
+
+def counted_warning_totals(scope: str, event: str) -> dict:
+    """{key-tuple: count} for one (scope, event): feeds end-of-phase rollups."""
+    with _counts_lock:
+        return {k[2:]: v for k, v in _counts.items() if k[0] == scope and k[1] == event}

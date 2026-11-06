@@ -19,7 +19,9 @@ Policy (polite AND fast):
   to the next run).
 * 403 (block) backs the host off for :data:`BLOCK_BACKOFF_SECONDS`; 5xx and transport errors are
   TRANSIENT.
-* Every transient outcome is one loud ``OBSERV wikimedia.transient status=warn`` line.
+* Transient outcomes are counted. ``OBSERV wikimedia.transient status=warn`` names the CAUSE once per
+  outage episode (and every 25th repeat) with the action to take; ``backoff_active`` is a symptom and
+  only counted. :func:`summarize` emits one end-of-phase ``OBSERV wikimedia.summary``.
 
 Return contract: the ``requests.Response`` for any other status (200, 404, ...), or the
 ``search_cache.TRANSIENT`` sentinel.
@@ -35,6 +37,7 @@ this client.
 
 from __future__ import annotations
 
+import logging
 import threading
 import time
 from typing import Any, Callable, Dict, Optional, Set, Tuple
@@ -43,6 +46,8 @@ from urllib.parse import urlparse
 import requests
 
 from src.utils.search_cache import TRANSIENT
+
+logger = logging.getLogger(__name__)
 
 #: Providers routed through this client (fetch-provenance provider names).
 WIKIMEDIA_PROVIDERS = ("wikipedia", "wikimedia-commons")
@@ -65,7 +70,24 @@ BLOCK_BACKOFF_SECONDS = 60
 MAX_DEFERRED = 10_000
 
 
+#: What to do about each transient reason (alerts must be actionable).
+_ACTIONS = {
+    "rate_limited": "Wikimedia is rate limiting this pipeline's egress IP; lookups are deferred to "
+    "the next run. If this repeats every run, reduce request rate or contact Wikimedia",
+    "backoff_active": "lookups skipped while a Wikimedia back-off is active; deferred to next run",
+    "blocked": "Wikimedia returned 403 (blocked); check the User-Agent/IP standing with Wikimedia",
+    "http_error": "Wikimedia server errors; deferred to next run. Check status.wikimedia.org if persistent",
+    "fetch_error": "network/timeout reaching Wikimedia from the task; check NAT/egress if persistent",
+}
+
 _backoff_until: Dict[str, float] = {}  # host -> time.monotonic() deadline
+_transient_counts: Dict[Tuple[str, str], int] = (
+    {}
+)  # (provider, reason) -> total this process
+_episode = (
+    0  # bumped when a lookup succeeds after transients: a NEW outage warns afresh
+)
+_had_transient = False
 _deferred: Set[Tuple[str, str]] = set()
 _lock = threading.Lock()
 
@@ -82,18 +104,77 @@ def _retry_after_seconds(response: requests.Response) -> Optional[int]:
 
 
 def _transient(provider: str, subject: str, reason: str, **fields: Any) -> object:
-    from src.utils.observe import observe_warn
+    """Count a transient outcome and return TRANSIENT.
 
-    observe_warn(
+    Actionable alerts only: the CAUSE (rate_limited / blocked / http_error / fetch_error) warns on
+    the first occurrence of each distinct (provider, reason, status-or-error) per outage episode and
+    every 25th after, with the running count and what to do. ``backoff_active`` is only a symptom of
+    an earlier cause, so it is counted (see :func:`summarize`) and never warns by itself.
+    """
+    from src.utils.observe import observe_warn_counted
+
+    global _had_transient
+    with _lock:
+        _transient_counts[(provider, reason)] = (
+            _transient_counts.get((provider, reason), 0) + 1
+        )
+        _had_transient = True
+        episode = _episode
+    if reason == "backoff_active":
+        logger.debug(
+            "wikimedia backoff_active provider=%s subject=%s", provider, subject[:80]
+        )
+        return TRANSIENT
+    detail = fields.get("http_status") or fields.get("error") or ""
+    observe_warn_counted(
         "wikimedia",
         "transient",
+        key=(provider, reason, str(detail), episode),
         provider=provider,
-        subject=subject[:80] or None,
         reason=reason,
-        note="treated as transient: not negative-cached, not marked not_found",
+        subject=subject[:80] or None,
+        note=_ACTIONS.get(reason, "deferred to next run"),
         **fields,
     )
     return TRANSIENT
+
+
+def _recovered() -> None:
+    """A real response arrived: if transients preceded it, the next failure is a NEW episode."""
+    global _episode, _had_transient
+    with _lock:
+        if _had_transient:
+            _episode += 1
+            _had_transient = False
+
+
+def summarize(phase: str) -> Dict[str, int]:
+    """One end-of-phase rollup (``OBSERV wikimedia.summary``): how many lookups were transient and
+    how many records were left unstamped (deferred), so a deferral stays visible after the first
+    warning has scrolled away. Warns (actionable) only when something was deferred."""
+    from src.utils.observe import observe
+
+    with _lock:
+        counts = dict(_transient_counts)
+        deferred = len(_deferred)
+    total = sum(counts.values())
+    by_reason = ",".join(f"{p}:{r}={n}" for (p, r), n in sorted(counts.items()))
+    observe(
+        "wikimedia",
+        "summary",
+        status="warn" if total else "ok",
+        phase=phase,
+        transient=total,
+        records_deferred=deferred,
+        by_reason=by_reason or None,
+        note=(
+            "lookups were rate limited/blocked; those records were left unstamped and are "
+            "looked up again next run. See the wikimedia.transient warning for the cause"
+            if total
+            else ""
+        ),
+    )
+    return {"transient": total, "deferred": deferred}
 
 
 def _backoff_remaining(host: str) -> float:
@@ -129,26 +210,28 @@ def _wait_if_short(host: str) -> bool:
 
 def reset_state() -> None:
     """Forget all recorded back-offs and deferred subjects (tests / a new process run)."""
+    global _episode, _had_transient
     with _lock:
         _backoff_until.clear()
         _deferred.clear()
+        _transient_counts.clear()
+        _episode = 0
+        _had_transient = False
 
 
 def mark_transient(namespace: str, subject: str, reason: str) -> None:
-    """Record that the ``namespace`` lookup for ``subject`` failed transiently (loud)."""
-    from src.utils.observe import observe_warn
-
+    """Record that the ``namespace`` lookup for ``subject`` failed transiently. Debug only: the
+    actionable signal is the rate-limited/blocked warning from the client that caused it.
+    """
     with _lock:
         if len(_deferred) >= MAX_DEFERRED:
             _deferred.clear()  # bounded; worst case a deferred record is stamped (prior behaviour)
         _deferred.add((namespace, subject[:200]))
-    observe_warn(
-        "wikimedia",
-        "deferred",
-        namespace=namespace,
-        subject=subject[:80],
-        reason=reason,
-        note="record left unstamped; looked up again next run",
+    logger.debug(
+        "wikimedia deferred namespace=%s subject=%s reason=%s",
+        namespace,
+        subject[:80],
+        reason,
     )
 
 
@@ -197,6 +280,7 @@ def _classify(resp, provider: str, subject: str, host: str):
         return _transient(provider, subject, "blocked", http_status=status)
     if status >= 500:
         return _transient(provider, subject, "http_error", http_status=status)
+    _recovered()
     return resp
 
 

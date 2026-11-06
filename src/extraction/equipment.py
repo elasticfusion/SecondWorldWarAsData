@@ -2453,7 +2453,12 @@ def _refine_equipment_item(
     """
     name = str(item.get("name") or item.get("common_name") or "").strip()
     original_text = str(item.get("original_text", "")).strip()
-    paras = item.get("paragraph_numbers") or []
+    from src.utils.paragraph_numbers import coerce_paragraph_numbers
+
+    # LLM output: may be ["12"], "12", 12, ... -> ints (unreadable entries dropped loudly)
+    paras = coerce_paragraph_numbers(
+        item.get("paragraph_numbers"), scope="equipment.broad", subject=name
+    )
     extended_text = _build_extended_text(event_data, paras)
     out = _call_refine(name, original_text, extended_text, event_data, grok_client)
     rec = _unwrap_refined_record(out, name)
@@ -2463,7 +2468,14 @@ def _refine_equipment_item(
     if extended_text:
         rec["extended_text"] = extended_text
     if paras:
-        rec.setdefault("paragraph_numbers", paras)
+        # The refine response may carry its own paragraph_numbers (LLM shape): normalise it too, and
+        # fall back to the broad item's numbers.
+        rec["paragraph_numbers"] = (
+            coerce_paragraph_numbers(
+                rec.get("paragraph_numbers"), scope="equipment.refine", subject=name
+            )
+            or paras
+        )
     _backfill_operating_country(rec, extended_text)
     return rec
 

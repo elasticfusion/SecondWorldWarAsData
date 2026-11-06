@@ -75,6 +75,9 @@ def wire(monkeypatch):
     monkeypatch.setattr(HTTPConnectionPool, "_make_request", fake_make_request)
     http_pool.close_session()
     WC.reset_state()
+    from src.utils import observe as _observe
+
+    _observe.reset_counted_warnings()
     monkeypatch.setattr("src.utils.fetch_provenance._table", lambda: None)
     monkeypatch.setattr("src.utils.search_cache.get_cached", lambda *a, **k: None)
     monkeypatch.setattr("src.utils.search_cache.cache_result", lambda *a, **k: None)
@@ -187,6 +190,94 @@ def test_transient_is_loud(wire, caplog):
         and "reason=rate_limited" in r.message
         for r in caplog.records
     )
+
+
+def _wm_lines(caplog, event):
+    return [
+        r.message for r in caplog.records if f"OBSERV wikimedia.{event}" in r.message
+    ]
+
+
+def test_one_actionable_warning_per_cause_not_per_lookup(wire, caplog):
+    """Alerts must be actionable: 31 lookups during one rate limit -> ONE warning naming the cause
+    (rate_limited, with the action). backoff_active is only a symptom: counted, never a warning.
+    """
+    import logging
+
+    from src.utils import observe
+
+    observe.reset_counted_warnings()
+    caplog.set_level(logging.WARNING)
+    for n in range(31):
+        _get(f"P{n}")
+    lines = _wm_lines(caplog, "transient")
+    assert len(lines) == 1, lines
+    assert "reason=rate_limited" in lines[0] and "count=1" in lines[0]
+    assert (
+        "rate_limiting" in lines[0]
+    )  # carries the action note (observe joins words with _)
+    assert not any("backoff_active" in m for m in lines)
+    assert WC._transient_counts[("wikipedia", "backoff_active")] == 30
+
+
+def test_new_cause_warns_afresh_same_cause_stays_quiet(wire, caplog):
+    import logging
+
+    caplog.set_level(logging.WARNING)
+    _get("A")  # 429 rate_limited
+    WC._backoff_until.clear()
+    wire.status, wire.retry_after = 403, None
+    _get("B")  # a different cause is a different problem
+    WC._backoff_until.clear()
+    wire.status, wire.retry_after = 429, "60"
+    _get("C")  # rate_limited again, same episode: quiet
+    lines = _wm_lines(caplog, "transient")
+    assert len(lines) == 2
+    assert "reason=rate_limited" in lines[0] and "reason=blocked" in lines[1]
+
+
+def test_new_outage_after_recovery_warns_again(wire, caplog):
+    import logging
+
+    from src.utils import observe
+
+    observe.reset_counted_warnings()
+    caplog.set_level(logging.WARNING)
+    wire.status, wire.retry_after = 403, None
+    _get("A")
+    WC._backoff_until.clear()  # block back-off over (host free again)
+    wire.status, wire.body = 200, b'{"query": {}}'
+    assert _get("ok").status_code == 200  # recovery -> next failure is a new episode
+    wire.status = 403
+    _get("B")
+    assert len(_wm_lines(caplog, "transient")) == 2
+
+
+def test_summary_rollup_makes_deferrals_visible(wire, caplog):
+    import logging
+
+    from src.utils import observe
+
+    observe.reset_counted_warnings()
+    caplog.set_level(logging.INFO)
+    _get("A")
+    WC.mark_transient(WC.PEOPLE, "A", "lookup")
+    out = WC.summarize("phase2")
+    assert out == {"transient": 1, "deferred": 1}
+    line = _wm_lines(caplog, "summary")[0]
+    assert (
+        "status=warn" in line
+        and "records_deferred=1" in line
+        and "wikipedia:rate_limited=1" in line
+    )
+
+
+def test_clean_run_summary_is_ok_and_silent_of_warnings(wire, caplog):
+    import logging
+
+    caplog.set_level(logging.INFO)
+    assert WC.summarize("phase2") == {"transient": 0, "deferred": 0}
+    assert "status=ok" in _wm_lines(caplog, "summary")[0]
 
 
 def test_injected_session_is_used(wire):
