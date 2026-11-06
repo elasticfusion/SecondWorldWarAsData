@@ -7,3 +7,4 @@
 - MUST optimize for cost, AWS and Grok, unless the operator specifically overrides this.
 - MUST use DRY (don't repeat yourself) practices.
 - MUST: all log alerts must be actionable. "Benign" alerts are disallowed.
+- MUST: all code needs tests.
