@@ -324,38 +324,10 @@ def _extract_page_image_filename(response_data: dict) -> Optional[str]:
 
 
 def _fetch_image_license(filename: str) -> Optional[str]:
-    """Fetch license info for a Wikipedia/Commons image file."""
-    try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+    """Fetch license info for a Wikipedia/Commons image file (shared implementation)."""
+    from src.enrichment._wikipedia_common import fetch_commons_license
 
-        resp = recorded_fetch(
-            "wikimedia-commons",
-            "https://commons.wikimedia.org/w/api.php",
-            kind=TEXTUAL,
-            method="GET",
-            params={
-                "action": "query",
-                "format": "json",
-                "titles": f"File:{filename}",
-                "prop": "imageinfo",
-                "iiprop": "extmetadata",
-            },
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-            },
-            timeout=10,
-            result_summary_fn=lambda r: f"status={r.status_code} file={filename[:40]!r}",
-        )
-        if resp.status_code == 200:
-            pages = resp.json().get("query", {}).get("pages", {})
-            for _page_id, page_data in pages.items():
-                ii = page_data.get("imageinfo", [])
-                if ii:
-                    meta = ii[0].get("extmetadata", {})
-                    return meta.get("LicenseShortName", {}).get("value", "unknown")
-    except Exception as e:
-        logger.debug("Failed to fetch image license for %s: %s", filename, e)
-    return None
+    return fetch_commons_license(filename)
 
 
 # Module-level store for Wikipedia images found during search
@@ -438,38 +410,6 @@ def _preserve_person_photo(person_name: str, img_url: str) -> Optional[str]:
     )
 
 
-def _handle_wikipedia_error(
-    e: Exception, person_name: str, attempt: int, max_retries: int
-) -> bool:
-    """Handle Wikipedia API errors. Returns True if should retry."""
-    if isinstance(e, requests.Timeout):
-        if attempt < max_retries - 1:
-            logger.debug(
-                "Wikipedia timeout for %s, retrying (%d/%d)...",
-                person_name,
-                attempt + 2,
-                max_retries,
-            )
-            return True
-        logger.debug("Wikipedia timeout for %s: %s", person_name, e)
-        return False
-
-    if (
-        isinstance(e, requests.HTTPError)
-        and getattr(e, "response", None) is not None
-        and e.response.status_code == 403
-    ):
-        logger.warning(
-            "Wikipedia API blocked request for %s (403 Forbidden). "
-            "Wikipedia may be rate limiting or blocking automated requests.",
-            person_name,
-        )
-        return False
-
-    logger.debug("Wikipedia search failed for %s: %s", person_name, e)
-    return False
-
-
 _MILITARY_KEYWORDS = frozenset(
     [
         "military",
@@ -507,10 +447,11 @@ def _is_military_relevant(text: str) -> bool:
     return sum(1 for kw in _MILITARY_KEYWORDS if kw in lower) >= 2
 
 
-def _search_wikipedia_fallback(
-    person_name: str, headers: dict, timeout: int
-) -> Optional[str]:
-    """Fall back to Wikipedia search API when direct title lookup misses."""
+def _search_wikipedia_fallback(person_name: str, headers: dict, timeout: int) -> Any:
+    """Fall back to Wikipedia search API when direct title lookup misses.
+
+    Returns the content, None (genuine miss) or ``search_cache.TRANSIENT`` (rate limit / block /
+    error: unknown, must not be negative-cached)."""
     try:
         last_name, first_initial = _name_match_tokens(person_name)
         search_queries = [
@@ -524,13 +465,11 @@ def _search_wikipedia_fallback(
             # this search fallback — funnels through the same _wikipedia_rate_limit lock, so
             # TOTAL Wikipedia request rate stays <= the politeness bound across all threads.
             _wikipedia_rate_limit()
-            from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+            from src.utils.wikimedia_client import TRANSIENT, wikimedia_get
 
-            resp = recorded_fetch(
+            resp = wikimedia_get(
                 "wikipedia",
                 "https://en.wikipedia.org/w/api.php",
-                kind=TEXTUAL,
-                method="GET",
                 params={
                     "action": "query",
                     "format": "json",
@@ -540,8 +479,11 @@ def _search_wikipedia_fallback(
                 },
                 headers=headers,
                 timeout=timeout,
+                subject=person_name,
                 result_summary_fn=lambda r: f"search status={r.status_code}",
             )
+            if resp is TRANSIENT:
+                return TRANSIENT
             if resp.status_code != 200:
                 return None
             results = resp.json().get("query", {}).get("search", [])
@@ -550,10 +492,17 @@ def _search_wikipedia_fallback(
             content = _wiki_fallback_match(
                 results, person_name, last_name, first_initial, headers, timeout
             )
-            if content:
+            if (
+                content
+            ):  # a page's content, or TRANSIENT (truthy sentinel): either ends the search
                 return content
-    except Exception as e:
-        logger.debug("Wikipedia search fallback failed for %s: %s", person_name, e)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - unknown failure: defer, never negative-cache
+        logger.warning("Wikipedia search fallback failed for %s: %s", person_name, e)
+        from src.utils.search_cache import TRANSIENT
+
+        return TRANSIENT
     return None
 
 
@@ -571,6 +520,17 @@ def _name_match_tokens(person_name: str) -> "tuple[str, str]":
     return last_name, first_initial
 
 
+def _title_matches_person(title: str, last_name: str, first_initial: str) -> bool:
+    """Search-hit title must contain the last name and (if known) start with the first initial."""
+    if not last_name or last_name.lower() not in title.lower():
+        return False
+    if first_initial:
+        title_words = title.split()
+        if title_words and title_words[0][0].upper() != first_initial.upper():
+            return False
+    return True
+
+
 def _wiki_fallback_match(
     results: "list",
     person_name: str,
@@ -578,24 +538,18 @@ def _wiki_fallback_match(
     first_initial: str,
     headers: dict,
     timeout: int,
-) -> Optional[str]:
+) -> Any:
     """For each Wikipedia search hit, require last-name + first-initial agreement, then fetch the
-    intro extract and keep it if military-relevant. Returns the content or None."""
+    intro extract and keep it if military-relevant. Returns the content, None, or TRANSIENT.
+    """
     for result in results:
-        title = result.get("title", "")
-        if not last_name or last_name.lower() not in title.lower():
+        if not _title_matches_person(result.get("title", ""), last_name, first_initial):
             continue
-        if first_initial:
-            title_words = title.split()
-            if title_words and title_words[0][0].upper() != first_initial.upper():
-                continue
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+        from src.utils.wikimedia_client import TRANSIENT, wikimedia_get
 
-        resp2 = recorded_fetch(
+        resp2 = wikimedia_get(
             "wikipedia",
             "https://en.wikipedia.org/w/api.php",
-            kind=TEXTUAL,
-            method="GET",
             params={
                 "action": "query",
                 "format": "json",
@@ -608,8 +562,11 @@ def _wiki_fallback_match(
             },
             headers=headers,
             timeout=timeout,
+            subject=person_name,
             result_summary_fn=lambda r: f"extract status={r.status_code}",
         )
+        if resp2 is TRANSIENT:
+            return TRANSIENT
         if resp2.status_code == 200:
             content = _extract_page_content(resp2.json())
             if content and _is_military_relevant(content):
@@ -618,9 +575,7 @@ def _wiki_fallback_match(
     return None
 
 
-def search_wikipedia(
-    person_name: str, timeout: int = 30, max_retries: int = 2
-) -> Optional[str]:
+def search_wikipedia(person_name: str, timeout: int = 30) -> Optional[str]:
     """Search Wikipedia for person biographical data."""
     _wikipedia_rate_limit()
 
@@ -645,58 +600,48 @@ def search_wikipedia(
     else:
         wiki_title = person_name
 
+    try:
+        return _fetch_wikipedia_bio(person_name, wiki_title, timeout)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - contract: never raises; an unknown failure defers
+        logger.warning("Wikipedia lookup failed for %s: %s", person_name, e)
+        _mark_transient_miss(person_name, f"error:{type(e).__name__}")
+        return None
+
+
+def _fetch_wikipedia_bio(
+    person_name: str, wiki_title: str, timeout: int
+) -> Optional[str]:
+    """Direct-title lookup (then search fallback) through the shared Wikimedia client."""
+    from src.utils.wikimedia_client import TRANSIENT, wikimedia_get
+
     api_url, params, headers = _build_wikipedia_request(wiki_title)
-
-    for attempt in range(max_retries):
-        try:
-            from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
-
-            response = recorded_fetch(
-                "wikipedia",
-                api_url,
-                kind=TEXTUAL,
-                method="GET",
-                params=params,
-                headers=headers,
-                timeout=timeout,
-                result_summary_fn=lambda r: f"status={r.status_code}",
-            )
-
-            if response.status_code == 200:
-                return _handle_wikipedia_200(person_name, response, timeout)
-
-            if response.status_code == 429:
-                import time
-
-                retry_after = int(response.headers.get("retry-after", "15"))
-                logger.debug(
-                    "Wikipedia rate limited for %s, waiting %ds",
-                    person_name,
-                    retry_after,
-                )
-                time.sleep(retry_after)
-                continue  # Retry
-
-            if response.status_code == 403:
-                logger.warning(
-                    "Wikipedia API blocked request for %s (403 Forbidden). "
-                    "Wikipedia may be rate limiting or blocking automated requests. "
-                    "Consider using a different approach or contacting Wikipedia.",
-                    person_name,
-                )
-                return None
-
-            logger.debug(
-                "Wikipedia returned %d for %s", response.status_code, person_name
-            )
-            return None
-
-        except Exception as e:
-            if not _handle_wikipedia_error(e, person_name, attempt, max_retries):
-                return None
-
-    # Exhausted retries without success — don't cache (likely rate limited)
+    # 429 / 503 / 403 / 5xx / transport errors are handled once, in the shared client (polite
+    # back-off, loud OBSERV); here they mean "unknown, try next run", never "not found".
+    response = wikimedia_get(
+        "wikipedia",
+        api_url,
+        params=params,
+        headers=headers,
+        timeout=timeout,
+        subject=person_name,
+        result_summary_fn=lambda r: f"status={r.status_code}",
+    )
+    if response is TRANSIENT:
+        _mark_transient_miss(person_name, "lookup")
+        return None
+    if response.status_code == 200:
+        return _handle_wikipedia_200(person_name, response, timeout)
+    logger.debug("Wikipedia returned %d for %s", response.status_code, person_name)
     return None
+
+
+def _mark_transient_miss(person_name: str, reason: str) -> None:
+    """Shared rule (src.utils.wikimedia_client): a transient miss leaves the record unstamped."""
+    from src.utils.wikimedia_client import PEOPLE, mark_transient
+
+    mark_transient(PEOPLE, person_name, reason)
 
 
 def _wikipedia_rate_limit() -> None:
@@ -732,6 +677,12 @@ def _handle_wikipedia_200(person_name: str, response, timeout: int) -> Optional[
         return content
     # Direct title miss — try search API
     content = _search_wikipedia_fallback(person_name, headers, timeout)
+    from src.utils.search_cache import TRANSIENT
+
+    if content is TRANSIENT:
+        # Unknown, not a miss: do NOT write NOT_FOUND (the next run would stamp not_found).
+        _mark_transient_miss(person_name, "search_fallback")
+        return None
     cache_result("wikipedia", person_name, content)
     return content
 
@@ -815,6 +766,11 @@ def search_references(
 
         # Try Wikipedia
         text = search_wikipedia(ref)
+        from src.utils.wikimedia_client import PEOPLE, lookup_was_transient
+
+        # ref is a referenced name, not the person being stamped: clear any transient flag the
+        # lookup set so it cannot leak onto a later record of the same name.
+        lookup_was_transient(PEOPLE, ref, text)
         if text:
             data = extract_biographical_data(
                 ref, text, f"Wikipedia: {ref}", grok_client
@@ -1076,6 +1032,13 @@ def enrich_person_biography(
         # Batch mode — request collected, don't mark as not_found
         return False
 
+    from src.utils.wikimedia_client import PEOPLE, lookup_was_transient
+
+    if lookup_was_transient(PEOPLE, person_name, enriched):
+        # Wikipedia rate limited / blocked / unreachable: unknown, not "not found". Leave the record
+        # unstamped so the next run looks again (not_found would suppress it for 90 days).
+        return False
+
     if not enriched:
         logger.info("  No new data found")
         person_data["enrichment_status"] = "not_found"
@@ -1171,6 +1134,13 @@ def enrich_person_from_sources(person_data: Dict[str, Any], grok_client) -> bool
     except BatchModeCollecting:
         # Batch mode — request collected; leave record untouched (don't mark not_found).
         raise
+
+    from src.utils.wikimedia_client import PEOPLE, lookup_was_transient
+
+    if lookup_was_transient(PEOPLE, person_name, enriched):
+        # Wikipedia rate limited / blocked / unreachable: unknown, not "not found". Leave the record
+        # unstamped so the next run looks again (not_found would suppress it for 90 days).
+        return False
 
     if not enriched:
         person_data["enrichment_status"] = "not_found"

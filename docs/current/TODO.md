@@ -55,6 +55,22 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
     - Consider a per-run "inputs used" rollup (alias count, prior count, blacklist size) so a sudden zero is visible
       even when a file is present but wrong.
     - Learned equipment aliases written in ECS are lost when the task ends (pre-existing; now dockerignored).
+- **[HIGH · data-quality] Wikipedia rate limits became "not found" for every entity type (FIXED 2026-11-06, not yet deployed).**
+  Seen in the XChannel-8 dev E2E: every Wikipedia bio lookup after the first got 429 / Retry-After 60. The shared
+  pooled session (fetch-provenance migration `5711c48d`, 2026-10-23) retried each 429 three times at the full
+  Retry-After (180 s per lookup), then raised; callers recorded a miss. People were stamped `not_found` (90-day
+  suppression), and groups, equipment and places stamped `wikipedia_checked_at` (never re-fetch). FIX: all 11
+  Wikimedia call sites go through `src/utils/wikimedia_client.py` (per-host back-off, polite short waits, TRANSIENT on
+  429/403/5xx, records left unstamped), guarded by `tests/test_wikimedia_client.py`. REMAINING:
+    - After deploy, re-queue this run's casualties: people with `enrichment_status=not_found` and
+      `last_enrichment_search=2026-11-06` whose fetch-provenance shows a Wikipedia `RetryError` (Eisenhower, Marshall,
+      Montgomery, Ramsay, Bedell Smith, Leigh-Mallory, Tedder, Bradley, Kirk, Dönitz, Rommel, ...).
+    - Grokipedia hit + Wikipedia rate limited stamps the person `enriched`, so Wikipedia is never tried again for them.
+    - A deterministic parse failure (malformed body, missing key) is now deferred every run instead of negative-cached:
+      add a deferral count or backstop. The same applies to a permanent 403.
+    - A Commons license fetch that fails transiently is stored and positive-cached as `license="unknown"`.
+    - `_extract_media_from_wikipedia` returns no media on TRANSIENT without deferring (pre-existing behaviour).
+    - `scripts/utils/debug_searches.py` calls en.wikipedia.org directly (diagnostic only; the guard scans `src/`).
 - **[HIGH · release] Push the local commits and open PR 1 (owner decision pending, 2026-11-06).**
   `main` has 6 unpushed local commits (`12ee5159`..`7e45750b`: pre-deploy fixes, scripts/ reorg, steering, aws/ and
   agent-history removal, endnote doc, separation plan). Branch `refactor/pr1-dedup-into-src` has 4 more on top
