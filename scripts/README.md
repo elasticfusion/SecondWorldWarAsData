@@ -145,6 +145,7 @@ run by hand (or scheduled) to inspect corpus state. See `scripts/utils/README.md
 
 | Script | Purpose |
 |--------|---------|
+| `pipeline_watch.sh` | Live run monitor: ECS tasks, alarms, S3 counts + notable lines from ALL pipeline log groups (`-f` follow, `-e` errors only, `-b BOOK`) |
 | `pipeline_status.py` / `.sh` | Pipeline status dashboard / quick CLI status |
 | `corpus_audit.py` | Corpus-level data-quality audit (read-only) |
 | `referential_integrity_audit.py` | Cross-reference dangling-edge audit (read-only) |
