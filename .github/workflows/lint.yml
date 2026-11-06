@@ -60,7 +60,7 @@ jobs:
         run: |
           python - <<'PYJSON'
           import json, subprocess, sys
-          _EXCL = ("aws/", ".venv/", "node_modules/", "dist/", "build/", ".git/", "contentrepository/", "logs/")
+          _EXCL = (".venv/", "node_modules/", "dist/", "build/", ".git/", "contentrepository/", "logs/")
           files = subprocess.check_output(["git", "ls-files", "*.json"], text=True).split()
           bad, checked = [], 0
           for f in files:

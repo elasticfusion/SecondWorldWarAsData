@@ -93,3 +93,7 @@ config/equipment_aliases_learned.yaml
 
 # Local sync target for AWS pipeline results (aws s3 sync .../output -> outputs/) — not committed
 outputs/
+
+# AWS CLI v2 installer bundle (unzipped awscli-exe-linux-*.zip). Not part of the project:
+# install the CLI from AWS, don't vendor it. Ignored so it can't be re-committed by accident.
+/aws/

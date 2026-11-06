@@ -124,13 +124,13 @@ run "vulture"  python -m vulture src/ lambda_handlers/ .vulture_whitelist.py --m
 run "reachable" python scripts/check_unreachable_modules.py
 run "cfn-lint" bash -c 'cfn-lint cloudformation/*.yaml'
 # JSON lint: strict-parse every PROJECT-OWNED *.json (stdlib json, no new dep). Excludes
-# vendored/third-party trees (aws/ bundled CLI = ~1500 files, .venv, node_modules, dist,
+# vendored/third-party trees (.venv, node_modules, dist,
 # build, .git). A malformed JSON (schema fixture, agent config, prompt, test fixture) fails
 # the gate instead of surfacing only at runtime. Prefers git-tracked files so untracked
 # scratch JSON is ignored.
 run "json-lint" python - <<'PYJSON'
 import json, subprocess, sys
-_EXCL = ("aws/", ".venv/", "node_modules/", "dist/", "build/", ".git/", "contentrepository/", "logs/")
+_EXCL = (".venv/", "node_modules/", "dist/", "build/", ".git/", "contentrepository/", "logs/")
 try:
     files = subprocess.check_output(["git", "ls-files", "*.json"], text=True).split()
 except Exception:
