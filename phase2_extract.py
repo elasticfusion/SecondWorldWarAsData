@@ -18,8 +18,8 @@ from src.grok_client import GrokClient, BatchModeCollecting, current_book
 from src.extraction.events import extract_events
 from src.extraction.external_maps import import_maps
 
-from scripts.find_duplicate_people import generate_duplicate_report
-from scripts.find_related_groups import generate_related_groups_report
+from src.dedup.find_duplicate_people import generate_duplicate_report
+from src.dedup.find_related_groups import generate_related_groups_report
 
 # ---------------------------------------------------------------------------
 # Stage helpers

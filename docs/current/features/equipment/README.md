@@ -71,7 +71,7 @@ Enrichment-on-identity (follows identity resolution)
 |---|---|
 | Extraction, mention building, **ingest-time merge, enrichment, media/vision (ALL LIVE)** | `src/extraction/equipment.py` |
 | Dedup — how it works (spec) | [EQUIPMENT_DEDUPLICATION.md](EQUIPMENT_DEDUPLICATION.md) |
-| Dedup (detection scoring) | `scripts/find_duplicate_equipment.py` |
+| Dedup (detection scoring) | `src/dedup/find_duplicate_equipment.py` |
 | Merge tool | `scripts/merge_equipment.py`, `scripts/archive/merge_equipment_dupes.py` |
 | Media backfill | `scripts/archive/backfill_equipment_media.py` |
 | Wikipedia enrichment | `src/enrichment/equipment_wikipedia.py` |

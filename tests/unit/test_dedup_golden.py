@@ -39,15 +39,15 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
-# The modules under test. Update these import paths when the modules move; the golden file itself
-# must not change across a pure move.
-import scripts.cleanup_indexes as cleanup_indexes
-import scripts.find_duplicate_equipment as dup_equipment
-import scripts.find_duplicate_groups as dup_groups
-import scripts.find_duplicate_people as dup_people
-import scripts.find_duplicate_places_v2 as dup_places
-import scripts.find_related_groups as related_groups
-import scripts.reclassify_military_units as reclassify
+# The modules under test (moved from scripts/ in PR 1 with the golden file unchanged byte-for-byte).
+# A pure move or refactor must not change the golden file.
+import src.dedup.cleanup_indexes as cleanup_indexes
+import src.dedup.find_duplicate_equipment as dup_equipment
+import src.dedup.find_duplicate_groups as dup_groups
+import src.dedup.find_duplicate_people as dup_people
+import src.dedup.find_duplicate_places_v2 as dup_places
+import src.dedup.find_related_groups as related_groups
+import src.dedup.reclassify_military_units as reclassify
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 GOLDEN = REPO_ROOT / "tests" / "fixtures" / "dedup_golden" / "expected.json"

@@ -20,7 +20,7 @@ pre-canonical-key model) and the two point-in-time review snapshots
 ## Code
 - Extraction: `src/extraction/people_groups.py` (`prompts/people_groups.yaml`)
 - Enrichment: `src/extraction/enrich_groups.py` (disambiguated query + wrong-article guard)
-- Dedup: `scripts/find_duplicate_groups.py` + `src/dedup/unit_key.py` + `data/unit_nicknames.yaml`
+- Dedup: `src/dedup/find_duplicate_groups.py` + `src/dedup/unit_key.py` + `data/unit_nicknames.yaml`
 - Person→group linking: `src/extraction/enrich_biographies.py::_link_person_to_groups`
   (canonical-key for units; name-match for civilian memberships, carrying `date_verified`)
 

@@ -39,6 +39,16 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
 
 
 ### HIGH
+- **[HIGH · deploy/data-quality] The ECS image has no `config/` or `data/` (found 2026-11-06 in PR 1 review; awaiting owner decision).**
+  `Dockerfile` copies `src/ scripts/ prompts/ search_queries/ config.yaml` but not `config/` (176K) or `data/` (12K),
+  and nothing downloads them at runtime. In ECS every lookup of these files therefore falls back to defaults:
+  `config/equipment_aliases.yaml` (equipment extraction + dedup), `config/domain_blacklist.yaml` (source retrieval,
+  link relevancy, map search), `config/award_sources.yaml`, `config/place_aliases.yaml`,
+  `data/surname_frequency.yaml` and `data/unit_nicknames.yaml` (dedup scoring). Verified from source only; the deployed
+  image was not inspected (no AWS credentials). Since PR 1, equipment dedup reports it loudly
+  (`OBSERV dedup.equipment_aliases_missing status=error`, once per run). Fix: `COPY config/ config/` and `COPY data/ data/`.
+  This changes production dedup and enrichment output on the next deploy, so the owner must confirm it first.
+  Audit the other loaders for silent fallbacks at the same time.
 - **[HIGH · provenance/design] Stop trusting Grok to TRANSCRIBE paragraph numbers — resolve fulltext DETERMINISTICALLY (owner 2026-10-30).**
   Today the events extractor feeds Grok `Paragraph_1..Paragraph_N` and asks it to echo back the paragraph_numbers per
   sub-event; we then LOOK UP fulltext by those numbers. Asking an LLM to copy identifiers we already own is a mechanical
@@ -225,6 +235,18 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   salvaging their useful logic). Decisions made 2026-11-06: oob_markdown is the canonical Order of Battle parser,
   `pdf_to_markdown.py` keeps its new-book scaffolding under a clearer name with its conversion replaced, generic HTML goes through `text_converters` (+ `web_video` for video pages), and the
   20 complexity-C functions are grandfathered behind a golden-output test, then refactored file by file.
+  PROGRESS: PR 1 (dedup family -> `src/dedup/`) on branch `refactor/pr1-dedup-into-src`. Follow-ups it created:
+    - Refactor the 18 grandfathered C blocks in `src/dedup/` (D4; `scripts/.radon_inherent` "moved unrefactored"),
+      starting with `find_duplicate_people.py` (10). `tests/unit/test_dedup_golden.py` must stay green; remove each
+      allowlist entry as its block drops below C.
+    - `find_duplicate_places_v2._filter_excluded` and `find_duplicate_groups._filter_excluded` are byte-identical
+      (same AST hash): extract one shared helper.
+    - Dead code: `find_duplicate_people._check_proximity` has no callers; it and the helpers only it calls
+      (`_names_within_distance`, `_get_person_titles`) can be deleted (drop the allowlist entry too).
+    - Questionable pinned dedup decisions (golden records them as current behaviour): John Smith grouped with
+      Walter Bedell Smith; bare "Marshall" grouped with George Marshall; Panzer Lehr clustered with 2nd Panzer.
+    - PR 2: the `metrics` Lambda handler is `scripts.view_metrics.handler`, but `scripts/update_lambdas.sh` never
+      packaged `scripts/view_metrics.py` (CI's deploy.yml copies all of `scripts/`, so it works only after a CI deploy).
 - **[MED · entity-resolution] Resolve `people_groups` against the ETO Order of Battle (the authoritative unit spine).**
   Moved from the steering "known gaps" list (2026-11-04). Name-level resolution exists (`find_duplicate_groups`,
   `src/dedup/unit_key.py`, `data/unit_nicknames.yaml`), but nothing resolves groups TO the OOB: the OOB crosswalk

@@ -1,6 +1,6 @@
 # Plan: Separate `src/` (library) from `scripts/` (entry points)
 
-**Status:** decisions D1 to D4 made 2026-11-06 (see §5). Ready to implement, PR 1 first.
+**Status:** decisions D1 to D4 made 2026-11-06 (see §5). PR 1 in progress (branch `refactor/pr1-dedup-into-src`).
 **Rule this plan establishes:** `scripts/` may import `src/`; `src/`, `lambda_handlers/`, the phase
 scripts and `ecs_entrypoint.py` must never import `scripts/`. Anything the pipeline runs lives in `src/`
 (or `lambda_handlers/`). `scripts/` keeps command-line tools, entrypoints and thin wrappers.

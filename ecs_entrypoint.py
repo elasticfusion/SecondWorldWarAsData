@@ -2370,17 +2370,19 @@ def _maybe_generate_surname_report() -> None:
 def _reclassify_military_units() -> None:
     """Reclassify military units from places to groups."""
     try:
-        from scripts.reclassify_military_units import reclassify
+        from src.dedup.reclassify_military_units import reclassify
 
         reclassify(WORKDIR / "output")
-    except Exception as e:
-        logger.warning("Military unit reclassification failed: %s", e)
+    except Exception as e:  # noqa: BLE001 - never blocks dedup, but must be loud
+        # Detail (may include paths / record text) stays in CloudWatch; the Slack line gets the type.
+        logger.exception("Military unit reclassification failed")
+        observe_error("dedup", "reclassify_failed", error=type(e).__name__)
 
 
 def _cleanup_entity_indexes() -> None:
     """Clean stale index entries before dedup."""
     try:
-        from scripts.cleanup_indexes import cleanup_index
+        from src.dedup.cleanup_indexes import cleanup_index
 
         for entity, name_field in [
             ("people", "name"),
@@ -2391,8 +2393,9 @@ def _cleanup_entity_indexes() -> None:
             entity_dir = WORKDIR / "output" / entity
             if entity_dir.exists():
                 cleanup_index(entity_dir, name_field, dry_run=False)
-    except Exception as e:
-        logger.warning("Index cleanup failed: %s", e)
+    except Exception as e:  # noqa: BLE001 - never blocks dedup, but must be loud
+        logger.exception("Index cleanup failed")
+        observe_error("dedup", "index_cleanup_failed", error=type(e).__name__)
 
 
 def _migrate_exclusions_to_dynamo() -> None:
@@ -2691,7 +2694,7 @@ def _all_keys_match(recs: list) -> bool:
 def _any_nationality_conflict(recs: list) -> bool:
     """True if any pair has a nationality conflict (never auto-merge different nations'
     same-number units)."""
-    from scripts.find_duplicate_groups import _group_nationality_conflict
+    from src.dedup.find_duplicate_groups import _group_nationality_conflict
 
     for i in range(len(recs)):
         for j in range(i + 1, len(recs)):
@@ -2770,24 +2773,30 @@ def _execute_dedup_scripts() -> None:
     # Generate places coords cache for cross-book distance matching
     _generate_places_coords()
 
-    dedup_scripts = [
-        "scripts/find_duplicate_people.py",
-        "scripts/find_duplicate_places_v2.py",
-        "scripts/find_duplicate_groups.py",
-        "scripts/find_duplicate_equipment.py",
+    # Run each detector as a module from the repo root (/app). A detector that is missing (python -m
+    # exits 1) or fails means that entity type got NO duplicate report this run — a data-affecting
+    # gap, so it is an observe_error (Slack-escalated), never a silent skip.
+    dedup_modules = [
+        "src.dedup.find_duplicate_people",
+        "src.dedup.find_duplicate_places_v2",
+        "src.dedup.find_duplicate_groups",
+        "src.dedup.find_duplicate_equipment",
     ]
     dedup_env = os.environ.copy()
     dedup_env["PYTHONPATH"] = "/app"
-    for script in dedup_scripts:
-        if Path(f"/app/{script}").exists():
-            logger.info("Running dedup: %s", script)
-            result = subprocess.run(
-                [sys.executable, script], cwd="/app", env=dedup_env, check=False
+    for module in dedup_modules:
+        logger.info("Running dedup: %s", module)
+        result = subprocess.run(
+            [sys.executable, "-m", module], cwd="/app", env=dedup_env, check=False
+        )
+        if result.returncode != 0:
+            observe_error(
+                "dedup",
+                "detector_failed",
+                detector=module,
+                returncode=result.returncode,
+                note="no duplicate report for this entity this run",
             )
-            if result.returncode != 0:
-                logger.warning(
-                    "Dedup script %s exited with code %d", script, result.returncode
-                )
     # Auto-merge exact duplicates (identical normalized names) without human review
     _auto_merge_exact_duplicates()
 

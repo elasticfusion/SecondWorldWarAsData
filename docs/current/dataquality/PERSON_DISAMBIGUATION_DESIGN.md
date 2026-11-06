@@ -6,7 +6,7 @@ Last updated: 2026-10-14
 Companion: `.kiro/steering/project-overview.md` (names entity-resolution as a known
 gap: "People/units are per-mention → needs entity resolution/de-duplication; the ETO
 Order of Battle is the authoritative spine"), `ARTIFACT_STORE_DESIGN.md` (uploaded
-service records = a source), existing dedup (`scripts/find_duplicate_people.py` —
+service records = a source), existing dedup (`src/dedup/find_duplicate_people.py` —
 rank/alias/promotion-aware scoring + the human `dev-wwii-dedup-ui` review gate).
 
 ---
@@ -115,7 +115,7 @@ surnames). Strength order:
    corroboration bump.
 
 Reuse the existing rank/alias/promotion-aware scorer in
-`scripts/find_duplicate_people.py` (`_RANK_TOKENS`, `_rank_set`) + the confidence
+`src/dedup/find_duplicate_people.py` (`_RANK_TOKENS`, `_rank_set`) + the confidence
 grouping already feeding the dedup gate — extend it with service-number exact-match,
 the unit+date compound, and the common-surname penalty.
 

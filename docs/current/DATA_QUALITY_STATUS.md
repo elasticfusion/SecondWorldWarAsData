@@ -115,10 +115,10 @@ contains none that resolve — tracked.)
 
 - `scripts/utils/validate_all_output.py` — Schema validation across all entities
 - `scripts/utils/json_quality_report.py` — Field completeness report
-- `scripts/find_duplicate_people.py` — People dedup detection
-- `scripts/find_duplicate_equipment.py` — Equipment dedup detection
-- `scripts/find_duplicate_groups.py` — Groups dedup detection
-- `scripts/find_duplicate_places_v2.py` — Places dedup detection
+- `src/dedup/find_duplicate_people.py` — People dedup detection
+- `src/dedup/find_duplicate_equipment.py` — Equipment dedup detection
+- `src/dedup/find_duplicate_groups.py` — Groups dedup detection
+- `src/dedup/find_duplicate_places_v2.py` — Places dedup detection
 
 ---
 

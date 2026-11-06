@@ -7,7 +7,7 @@ XChannel ch8: Merderet River vs Ste. Mère-Eglise (42% name similarity, Phase-2 
 
 import json
 
-import scripts.find_duplicate_places_v2 as fdp
+import src.dedup.find_duplicate_places_v2 as fdp
 
 GUESS = {"precision": "approximate", "confidence": 0.8}
 

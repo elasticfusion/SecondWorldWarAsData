@@ -27,13 +27,13 @@ Utility scripts for pipeline operations, data management, and maintenance.
 ### Pipeline-invoked (imported or subprocess-run by the pipeline)
 | Script | Purpose |
 |--------|---------|
-| `find_duplicate_people.py` | Score people pairs; run by `ecs_entrypoint` dedup + imported by `phase2_extract` |
-| `find_duplicate_places_v2.py` | Score place pairs; run by `ecs_entrypoint` dedup |
-| `find_duplicate_groups.py` | Score group pairs; imported + run by `ecs_entrypoint` |
-| `find_duplicate_equipment.py` | Score equipment pairs; run by `ecs_entrypoint` dedup |
-| `find_related_groups.py` | Groups with overlapping members; imported by `phase2_extract` |
-| `cleanup_indexes.py` | Remove stale index entries; imported by `ecs_entrypoint` |
-| `reclassify_military_units.py` | Move military units places→groups; imported by `ecs_entrypoint` |
+| `find_duplicate_people.py` | CLI wrapper for `src/dedup/find_duplicate_people.py` (pipeline uses the `src/` module) |
+| `find_duplicate_places_v2.py` | CLI wrapper for `src/dedup/find_duplicate_places_v2.py` |
+| `find_duplicate_groups.py` | CLI wrapper for `src/dedup/find_duplicate_groups.py` |
+| `find_duplicate_equipment.py` | CLI wrapper for `src/dedup/find_duplicate_equipment.py` |
+| `find_related_groups.py` | CLI wrapper for `src/dedup/find_related_groups.py` |
+| `cleanup_indexes.py` | CLI wrapper for `src/dedup/cleanup_indexes.py` |
+| `reclassify_military_units.py` | CLI wrapper for `src/dedup/reclassify_military_units.py` |
 | `complete_metadata_with_grok.py` | Fill incomplete chapter metadata; imported by `phase2_extract` |
 | `validate_phase2.py` | Phase-2 output validator; imported by `phase2_extract` |
 | `validate_phase3.py` | Phase-3 validator; imported by `ecs_entrypoint` + `phase3_enrich_data` |

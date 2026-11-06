@@ -66,7 +66,7 @@ After Phase 2, duplicate detection runs automatically:
 1. Military units in `output/places/` are auto-reclassified to `output/people_groups/`
 2. Stale index entries are cleaned up
 3. Exclusion pairs are migrated from local JSON to DynamoDB (one-time)
-4. All four dedup scripts run, reading exclusions from DynamoDB (AWS) or local JSON (local mode)
+4. All four dedup detectors run as `python -m src.dedup.<module>` (people, places_v2, groups, equipment), reading exclusions from DynamoDB (AWS) or local JSON (local mode). A detector that fails emits `OBSERV dedup.detector_failed status=error` (Slack + email), so a missing duplicate report is never silent
 
 In AWS mode, a web UI allows merging, skipping, and reclassifying entities before Phase 3 proceeds. UI actions (merge, reclassify, assign) append changed file keys to the DynamoDB manifest so Phase 3 downloads them. "Not Duplicates" decisions are stored in DynamoDB and persist across pipeline runs.
 
