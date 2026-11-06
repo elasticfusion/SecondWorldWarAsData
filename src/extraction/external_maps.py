@@ -444,7 +444,7 @@ def main():
     if not yaml_path.exists():
         logger.error(f"✗ File not found: {yaml_path}")
         logger.info("\nCreate external_maps.yaml with map metadata.")
-        logger.info("See contextmanagement/Specs/external_maps.md for format.")
+        logger.info("See docs/current/features/external-maps/README.md for format.")
         return
 
     output_dir = project_root / "output" / "external_maps"

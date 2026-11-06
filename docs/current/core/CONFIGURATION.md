@@ -575,7 +575,7 @@ Configurable via CloudFormation stack parameters in `cloudformation/compute.yaml
 - [Domain Blacklist](../features/external-maps/domain-blacklist.md) - Configure URL filtering
 - [Vision Verification](../features/external-maps/vision-verification.md) - How image verification works
 - [External Maps](../features/external-maps/README.md) - External maps feature overview
-- [Quality Assurance](../../../contextmanagement/Specs/quality_assurance.md) - Code quality tools
+- [Quality gate](../../../scripts/gate.sh) - Code quality tools (CI-equivalent; run before every commit)
 
 ---
 

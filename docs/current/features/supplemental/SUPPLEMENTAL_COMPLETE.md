@@ -348,8 +348,8 @@ Ambiguous items queued for human review:
 ## Documentation
 
 ### Specification
-- `contextmanagement/Specs/supplementalmaterial_v2.md` - Full specification
-- `contextmanagement/Specs/supplementalmaterial_v2.json` - JSON schema
+- `docs/archive/contextmanagement/Specs/supplementalmaterial_v2.md` - Full specification (historical; current schema: `src/schemas/`)
+- `docs/archive/contextmanagement/Specs/supplementalmaterial_v2.json` - JSON schema (historical; current schema: `src/schemas/`)
 
 ### Implementation Docs
 - `docs/archive/2026-03-22/SUPPLEMENTAL_PHASE1.md` - Phase 1 details (archived)

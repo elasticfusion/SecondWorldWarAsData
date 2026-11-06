@@ -63,7 +63,6 @@ debug2
 
 # AI agent artifacts
 agent-history/
-contextmanagement/
 messages/
 
 # Tools

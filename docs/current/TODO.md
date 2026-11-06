@@ -238,6 +238,16 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
 
 ### MED
+- **[MED · provenance/copyright] Copyright date rules have off-by-one and stale-cutoff errors (found 2026-11-06).**
+  Not verified by a lawyer; these are code-vs-stated-rule mismatches against `docs/current/core/copyright/`.
+    - `src/extraction/copyright_calculator.py`: for a US work with an unknown death date, only `pub_year < 1928` is
+      treated as public domain. That hardcoded cutoff has gone stale: works from 1928–1930 have since entered the public
+      domain, so they are now reported as `unknown`. Derive the cutoff from the current year instead.
+    - Both modules treat life+70 as expired when `current_year >= death_year + 70`. The term runs to the END of
+      that year, so a work enters the public domain on Jan 1 of `death_year + 71`. The code over-claims public
+      domain by one year, which is the harmful direction for a citation-ready dataset.
+    - `supplemental_advanced._determine_usa_copyright` has the same off-by-one for the 95-year term (`pub_year + 95`).
+    - Two implementations of one rule: consolidate into `copyright_calculator` and pin it with year-boundary tests.
 - **[MED · architecture/gate-coverage] Move pipeline code out of `scripts/` into `src/` (plan: `design/SRC_SCRIPTS_SEPARATION.md`).**
   The pipeline imports 11 modules from `scripts/` (dedup detectors, validators, metadata completion, the metrics Lambda
   handler), and two `src/dedup` modules import `scripts/` themselves. The gate lints only `src/` and `lambda_handlers/`,
