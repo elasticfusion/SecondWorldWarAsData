@@ -401,8 +401,7 @@ Resources:
                 Resource:
                   - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu
                   - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu-ondemand
-                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-definition/${EnvironmentName}-wwii-chandra*
-                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-definition/${EnvironmentName}-wwii-paddle*
+                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-definition/${EnvironmentName}-wwii-chandra:*
               # TerminateJob targets a job by its server-assigned job ID (job/*), which cannot be
               # restricted by queue/name; scope it to this account+region's Batch jobs.
               - Effect: Allow
