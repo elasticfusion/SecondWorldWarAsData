@@ -39,16 +39,25 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
 
 
 ### HIGH
-- **[HIGH · deploy/data-quality] The ECS image has no `config/` or `data/` (found 2026-11-06 in PR 1 review; awaiting owner decision).**
+- **[HIGH · deploy/data-quality] The ECS image has no `config/` or `data/` (found 2026-11-06 in PR 1 review; VERIFIED in prod).**
   `Dockerfile` copies `src/ scripts/ prompts/ search_queries/ config.yaml` but not `config/` (176K) or `data/` (12K),
   and nothing downloads them at runtime. In ECS every lookup of these files therefore falls back to defaults:
   `config/equipment_aliases.yaml` (equipment extraction + dedup), `config/domain_blacklist.yaml` (source retrieval,
   link relevancy, map search), `config/award_sources.yaml`, `config/place_aliases.yaml`,
-  `data/surname_frequency.yaml` and `data/unit_nicknames.yaml` (dedup scoring). Verified from source only; the deployed
-  image was not inspected (no AWS credentials). Since PR 1, equipment dedup reports it loudly
+  `data/surname_frequency.yaml` and `data/unit_nicknames.yaml` (dedup scoring).
+  Verified 2026-11-06 against the deployed `wwii-pipeline:latest` (pushed 2026-11-03, used by phase2-extract rev 13
+  and phase3-enrich rev 9): `/app/config` and `/app/data` do not exist. The deployed code loads 0 equipment aliases
+  (repo: 97) and 0 surname-frequency entries (repo: 6). That image reports `GIT_SHA=unknown`, so it was built locally,
+  not by CI. Since PR 1, equipment dedup reports the gap loudly
   (`OBSERV dedup.equipment_aliases_missing status=error`, once per run). Fix: `COPY config/ config/` and `COPY data/ data/`.
   This changes production dedup and enrichment output on the next deploy, so the owner must confirm it first.
   Audit the other loaders for silent fallbacks at the same time.
+- **[HIGH · release] Push the local commits and open PR 1 (owner decision pending, 2026-11-06).**
+  `main` has 6 unpushed local commits (`12ee5159`..`7e45750b`: pre-deploy fixes, scripts/ reorg, steering, aws/ and
+  agent-history removal, endnote doc, separation plan). Branch `refactor/pr1-dedup-into-src` has 4 more on top
+  (`f8db5a56` golden test, `9f9e6703` scripts/utils root fix, `27f3fd18` dedup move, `7ac6593d` reclassify fixes).
+  Decide: push `main` first and open PR 1 against it (smaller PR diff), or open one PR carrying all 10. Then let CI run
+  (it has not run on any of these), and after deploying do the end-to-end check in SRC_SCRIPTS_SEPARATION.md §6.
 - **[HIGH · provenance/design] Stop trusting Grok to TRANSCRIBE paragraph numbers — resolve fulltext DETERMINISTICALLY (owner 2026-10-30).**
   Today the events extractor feeds Grok `Paragraph_1..Paragraph_N` and asks it to echo back the paragraph_numbers per
   sub-event; we then LOOK UP fulltext by those numbers. Asking an LLM to copy identifiers we already own is a mechanical
