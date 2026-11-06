@@ -71,6 +71,19 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
     - A Commons license fetch that fails transiently is stored and positive-cached as `license="unknown"`.
     - `_extract_media_from_wikipedia` returns no media on TRANSIENT without deferring (pre-existing behaviour).
     - `scripts/utils/debug_searches.py` calls en.wikipedia.org directly (diagnostic only; the guard scans `src/`).
+- **[MED · data-quality] Follow-ups from the schema-stamp and basedpyright reviews (2026-11-06).**
+    - Writes into an UNREGISTERED directory skip schema validation (fail-safe allow) and get the minimum-version stamp.
+      Emit one counted, actionable warning when a record is written to a directory that is not a registered entity
+      (catches typos and LLM-derived directory names). Callers: 13 of `_resolve_entity_type`, e.g. `batch_parallel`.
+    - `locked_json` logs a failed schema stamp at DEBUG only: raise it to a counted warning (alerts must be actionable).
+    - Existing `index.json` files written before the fix carry `_schema_version`/`_last_updated` entries. Dev was reset;
+      before any prod run, either clean them once or make the index loaders skip keys starting with `_`.
+    - basedpyright baseline (`.basedpyright/baseline.json`, 147 findings) was generated on Python 3.14 with
+      `pythonVersion = "3.12"`. If the first CI run (3.12 + resolved deps) differs, regenerate it from a 3.12 env.
+      Shrink it by fixing findings (77 `reportAttributeAccessIssue`, 37 `reportArgumentType`), never to hide a new one.
+    - `grok_client._log_api_response`: the debug "Log preview" block is indented inside the model-deprecation branch, so
+      it logs only on a redirect. It was probably meant to sit under the `choices` branch.
+    - `nodejs-wheel-binaries` (transitive, unpinned range) comes with basedpyright in CI only; pin it or use hashes.
 - **[MED · security] Scanner baseline (security-scanner MCP + CLI, 2026-11-06). Nothing found in this branch's changes.**
   Branch vs `origin/main` by Checkov CLI: 141 -> 138 failed, 0 new (fixed: both `CKV_AWS_111` scoped-IAM findings and
   `CKV_AWS_79` IMDSv1). Bandit `src/` 73 LOW (B110/B112 swallowed exceptions) + 8 in `lambda_handlers/`, 0 MEDIUM/HIGH. ASH on

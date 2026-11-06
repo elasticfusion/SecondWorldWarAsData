@@ -873,9 +873,12 @@ class GrokClient:
         # Log token usage
         self._log_token_usage(result)
 
-        # Log response content
+        # Log response content. ``content`` is also read by the deprecation preview below, which can
+        # run when the response has no choices (e.g. an error payload served by another model).
+        content = ""
         if "choices" in result and len(result["choices"]) > 0:
-            content = result["choices"][0].get("message", {}).get("content", "")
+            # ``or ""``: a refusal / tool-call response carries content=null, not a missing key
+            content = result["choices"][0].get("message", {}).get("content") or ""
             finish_reason = result["choices"][0].get("finish_reason", "unknown")
             logger.info(
                 f"Response: {len(content)} chars, finish_reason: {finish_reason}"

@@ -101,3 +101,4 @@ outputs/
 /.ash/
 /.grype/
 /.sbom/
+/.bandit/

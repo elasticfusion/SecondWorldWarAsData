@@ -9,8 +9,8 @@ mis-attribute an entity to the wrong-but-real sub-event — undetectable corrupt
 import json
 from src.extraction import batch_parallel as bp
 
-_R1 = "REAL0000000000000000000001"
-_R2 = "REAL0000000000000000000002"
+_R1 = "REA10000000000000000000001"
+_R2 = "REA10000000000000000000002"
 
 
 def _run(tmp_path, response):
@@ -30,7 +30,7 @@ def _run(tmp_path, response):
         index={},
         id_field="PlaceID",
         se_by_id=se_by_id,
-        event_id="EVT0000000000000000000001",
+        event_id="EV00000000000000000000001A",  # valid ULID ("U" is not in the ULID alphabet)
         event_name="ch1",
         meta={"book": "B"},
         sub_event_key="places",
@@ -53,7 +53,7 @@ def test_exact_match_anchors_to_real(tmp_path):
 
 def test_cosmetic_mangle_recovers_to_unique_real(tmp_path):
     # Case/dash noise the LLM might introduce -> normalizes to exactly one real id -> recovered.
-    mangled = "real0000-0000-0000-0000-000002"
+    mangled = "rea10000-0000-0000-0000-000002"
     _, recs = _run(
         tmp_path,
         {"places": [{"sub_event_id": mangled, "places": [{"name": "Aachen"}]}]},
@@ -150,7 +150,7 @@ def test_cosmetic_mangle_recovers_end_to_end(tmp_path):
     """
     from src.utils.json_validator import _fix_invalid_ulids
 
-    real = "REAL0000000000000000000001"
+    real = "REA10000000000000000000001"
     resp = {"places": [{"sub_event_id": real.lower(), "places": [{"name": "Schmidt"}]}]}
     resp = _fix_invalid_ulids(resp, skip_keys={"sub_event_id"})  # preserve
     assert resp["places"][0]["sub_event_id"] == real.lower()
