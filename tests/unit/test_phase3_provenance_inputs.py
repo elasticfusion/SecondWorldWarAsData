@@ -90,3 +90,56 @@ def test_sync_down_skips_folder_markers_and_path_escapes(tmp_path, monkeypatch):
     assert alerts == [
         "unsafe_key_skipped"
     ]  # the escape alerts; the folder marker does not
+
+
+def test_sync_down_works_when_the_target_dir_is_a_symlink_into_elsewhere(
+    tmp_path, monkeypatch
+):
+    """REGRESSION (XChannel-8 rerun 2026-11-07): in the container /app/contentrepository is a symlink
+    into the work dir. A resolve()-based escape check flagged every Phase 1 key as unsafe, downloaded
+    0 files and the phase exited 1. Symlinked layouts must download normally."""
+    real = tmp_path / "pipeline" / "contentrepository"
+    real.mkdir(parents=True)
+    app = tmp_path / "app"
+    app.mkdir()
+    (app / "contentrepository").symlink_to(real, target_is_directory=True)
+    fake = _FakeS3(
+        [
+            "contentrepository/B/B.html",
+            "contentrepository/B/chapter1/chapter1-content.md",
+        ]
+    )
+    monkeypatch.setattr(EE, "_s3_client", lambda: fake)
+    assert EE.s3_sync_down("contentrepository/B/", app) == 2
+    assert (real / "B" / "B.html").exists()  # landed through the symlink
+
+
+def test_safe_local_path_rules(tmp_path):
+    f = EE._safe_local_path
+    assert f(tmp_path, "a/b.json") == tmp_path / "a/b.json"
+    assert (
+        f(tmp_path, "a/../b.json") is None
+    )  # ANY '..' segment: never legitimate in a key
+    assert f(tmp_path, "contentrepository/B/../../app.py") is None  # leaves the prefix
+    assert f(tmp_path, "../x.json") is None
+    assert f(tmp_path, "a/../../x.json") is None
+    assert f(tmp_path, "/etc/passwd") is None
+    assert f(tmp_path, "a/") is None and f(tmp_path, "") is None
+
+
+def test_download_keys_skips_markers_and_escapes(tmp_path, monkeypatch):
+    """The incremental Phase 1 path (_download_keys) had no guard at all."""
+    fake = _FakeS3(
+        [
+            "content/B/chapter1/",  # folder marker equal to the listed prefix
+            "content/B/chapter1/c.md",
+            "content/B/chapter1/../../../evil.py",
+        ]
+    )
+    alerts = []
+    monkeypatch.setattr(EE, "_s3_client", lambda: fake)
+    monkeypatch.setattr(EE, "observe_warn", lambda *a, **k: alerts.append(a[1]) or "")
+    n = EE._download_keys(["content/B/chapter1/c.md"], tmp_path)
+    assert n == 1 and fake.downloaded == ["content/B/chapter1/c.md"]
+    assert not (tmp_path.parent / "evil.py").exists()
+    assert alerts == ["unsafe_key_skipped"]

@@ -124,7 +124,9 @@ def _download_keys(keys: list, local_dir: Path) -> int:
             for obj in page.get("Contents", []):
                 k = obj["Key"]
                 if k not in downloaded:
-                    local = local_dir / k
+                    local = _download_target(local_dir, k)
+                    if local is None:
+                        continue
                     local.parent.mkdir(parents=True, exist_ok=True)
                     s3.download_file(BUCKET, k, str(local))
                     downloaded.add(k)
@@ -173,52 +175,58 @@ def track_deletion(local_path: Path) -> None:
 
 def _safe_local_path(local_dir: Path, key: str) -> Optional[Path]:
     """Local path for an S3 key under ``local_dir``, or None if the key must not be downloaded:
-    a folder-marker key (ends with '/') has no file content, and a key that resolves outside
-    ``local_dir`` (``..`` segments) must never be written."""
-    if not key or key.endswith("/"):
-        return None
+    a folder-marker key (ends with '/') has no file content, and a key whose ``..`` segments (or an
+    absolute key) lead outside ``local_dir`` must never be written - including a ``..`` that merely
+    stays inside it but leaves the synced prefix (``contentrepository/B/../../ecs_entrypoint.py``).
+
+    The containment test is LEXICAL (``normpath``), deliberately NOT ``resolve()``: in the container
+    ``/app/contentrepository`` etc. are symlinks into the work dir, and resolving them made every
+    legitimate Phase 1 key look like an escape (it downloaded nothing and the phase exited 1).
+    """
+    if not key or key.endswith("/") or ".." in key.split("/"):
+        return None  # S3 keys never legitimately contain a '..' segment
     local = local_dir / key
-    root = local_dir.resolve()
-    if not local.resolve().is_relative_to(root):
+    base = os.path.normpath(local_dir)
+    candidate = os.path.normpath(local)
+    if candidate != base and not candidate.startswith(base + os.sep):
         return None
     return local
 
 
+def _download_target(local_dir: Path, key: str) -> Optional[Path]:
+    """Where to write ``key`` under ``local_dir``, or None to skip it. A folder-marker key is
+    skipped quietly; an unsafe key (``..`` / absolute) is skipped with an actionable alert.
+    """
+    local = _safe_local_path(local_dir, key)
+    if local is None and key and not key.endswith("/"):
+        observe_warn(
+            "s3_sync",
+            "unsafe_key_skipped",
+            note=(
+                "an S3 key that resolves outside the work dir was NOT downloaded; inspect the "
+                "key in the data bucket and delete it if unexpected"
+            ),
+            key=key[:200],
+        )
+    return local
+
+
 def s3_sync_down(prefix: str, local_dir: Path) -> int:
-    """Download S3 prefix to local dir. Returns file count. Skips (and counts, loudly) folder-marker
-    keys and keys that would escape ``local_dir``."""
+    """Download S3 prefix to local dir. Returns file count. Skips folder-marker keys and unsafe
+    keys (see ``_download_target``)."""
     s3 = _s3_client()
     paginator = s3.get_paginator("list_objects_v2")
     count = 0
-    skipped = 0
     for page in paginator.paginate(Bucket=BUCKET, Prefix=prefix):
         for obj in page.get("Contents", []):
             key = obj["Key"]
-            local = _safe_local_path(local_dir, key)
+            local = _download_target(local_dir, key)
             if local is None:
-                if not key.endswith("/"):  # a folder marker is normal; an escape is not
-                    skipped += 1
-                    observe_warn(
-                        "s3_sync",
-                        "unsafe_key_skipped",
-                        note=(
-                            "an S3 key resolving outside the work dir was NOT downloaded; "
-                            "inspect the key in the data bucket and delete it if unexpected"
-                        ),
-                        key=key[:200],
-                    )
                 continue
             local.parent.mkdir(parents=True, exist_ok=True)
             s3.download_file(BUCKET, key, str(local))
             _downloaded_keys[key] = local.stat().st_mtime
             count += 1
-    if skipped:
-        logger.warning(
-            "OBSERV s3_sync.down prefix=%s downloaded=%d unsafe_skipped=%d status=warn",
-            prefix,
-            count,
-            skipped,
-        )
     return count
 
 
