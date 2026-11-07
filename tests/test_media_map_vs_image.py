@@ -440,10 +440,11 @@ def test_in_doc_maps_persist_always_but_recycle_only_when_enabled(
     monkeypatch.setattr(
         mls, "ingest_in_doc_map_links", lambda *a, **k: calls.append("recycle") or {}
     )
-    p3._ingest_in_doc_map_links(tmp_path, None, {"enabled": False})
+    # external_maps.enabled (OpenSERP web search) must NOT switch the recycle on by itself.
+    p3._ingest_in_doc_map_links(tmp_path, None, {"enabled": True})
     assert calls == ["persist"]
     calls.clear()
-    p3._ingest_in_doc_map_links(tmp_path, None, {"enabled": True})
+    p3._ingest_in_doc_map_links(tmp_path, None, {"recycle_in_doc_maps": True})
     assert calls == ["recycle", "persist"]
 
 
@@ -546,6 +547,56 @@ def test_in_doc_maps_persist_even_when_follow_links_disabled(monkeypatch, tmp_pa
     monkeypatch.setattr(
         mls, "ingest_in_doc_map_links", lambda *a, **k: calls.append("recycle") or {}
     )
-    cfg = {"enabled": True, "follow_in_doc_links": False}
+    cfg = {"recycle_in_doc_maps": True, "follow_in_doc_links": False}
     p3._ingest_in_doc_map_links(tmp_path, None, cfg)
     assert calls == ["persist"]
+
+
+def test_shipped_config_recycles_in_doc_maps_without_enabling_openserp_search():
+    """The TRACKED baseline (config.yaml is gitignored; CI and the gate use the example)."""
+    import yaml
+
+    cfg = yaml.safe_load(open("config.yaml.example"))["external_maps"]
+    assert cfg["recycle_in_doc_maps"] is True and cfg["enabled"] is False
+    assert cfg["max_recycled_per_doc"] == 50
+
+
+def test_uploader_controlled_source_host_cannot_widen_the_fetch_allowlist(
+    monkeypatch,
+):
+    """source-url is uploader metadata: a doc claiming host evil.example must not get its own
+    host's map links fetched (and sent to paid vision)."""
+    import src.extraction.map_link_source as mls
+
+    fetched = []
+    monkeypatch.setattr(mls, "_ssrf_safe_image_url", lambda u: u)
+    monkeypatch.setattr(
+        mls, "_vision_depicted", lambda *a, **k: fetched.append(a[2]) or None
+    )
+    doc = {
+        "book": "B",
+        "_source_url": "https://evil.example/x.html",
+        "maps": [{"url": "https://evil.example/maps/a.jpg", "map_id": "A"}],
+    }
+    out = mls.ingest_in_doc_map_links([doc], object())
+    assert not fetched and out["skipped"] == 1 and out["fetched"] == 0
+
+
+def test_recycle_cap_limits_paid_calls_and_alerts(monkeypatch):
+    import src.extraction.map_link_source as mls
+
+    alerts, asked = [], []
+    monkeypatch.setattr(mls, "observe_warn", lambda *a, **k: alerts.append((a, k)))
+    monkeypatch.setattr(mls, "_ssrf_safe_image_url", lambda u: u)
+    monkeypatch.setattr(
+        mls, "_vision_depicted", lambda *a, **k: asked.append(a[2]) or None
+    )
+    maps = [
+        {"url": f"https://www.ibiblio.org/hyperwar/x/maps/m{i}.jpg", "map_id": str(i)}
+        for i in range(10)
+    ]
+    out = mls.ingest_in_doc_map_links(
+        [{"book": "B", "maps": maps}], object(), max_per_doc=3
+    )
+    assert len(asked) == 3 and out["links"] == 3 and out["skipped"] == 3 + 7
+    assert alerts and alerts[0][0][1] == "cap_hit" and alerts[0][1]["note"]

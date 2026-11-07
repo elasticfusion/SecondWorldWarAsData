@@ -252,7 +252,7 @@ def _run_document_media_steps(args, config, grok_client, run_step) -> int:
     # M1: IN-DOCUMENT map links (author-curated maps linked from the narrative, e.g.
     # [Map VIII](maps/*.jpg)) -> Map entities ALWAYS (Phase 2 skips these as images, so not
     # persisting them would lose them); the paid map-as-source recycle stays behind
-    # external_maps.enabled + follow_in_doc_links. Fail-safe.
+    # external_maps.recycle_in_doc_maps (+ follow_in_doc_links). Fail-safe.
     produced += run_step(
         "in_doc_map_links",
         lambda: _ingest_in_doc_map_links(out, grok_client, ext_config),
@@ -579,9 +579,19 @@ def _book_section_index(out):
         return {}
 
 
+def _recycle_in_doc_maps(ext_config) -> bool:
+    """Recycle in-document maps as map-as-source? Its OWN flag: external_maps.enabled also turns on
+    the paid OpenSERP web search, which must stay independent of reading the maps already in the
+    document. Default off (cost); config.yaml turns it on."""
+    return bool(
+        ext_config.get("recycle_in_doc_maps", False)
+        and ext_config.get("follow_in_doc_links", True)
+    )
+
+
 def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
     """Persist parsed docs' maps[] (in-document map links) as Map entities — ALWAYS — and, only when
-    external_maps.enabled, also recycle each as a map-as-source (a paid Grok place-relevance vision
+    external_maps.recycle_in_doc_maps, also recycle each as a map-as-source (a paid Grok place-relevance vision
     call + re-ingestion per map; unchanged cost gate). Returns the count recycled. Fail-safe.
     """
     from src.extraction.map_link_source import ingest_in_doc_map_links
@@ -590,11 +600,14 @@ def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
     if not docs:
         return 0
     summary: dict = {}
-    if ext_config.get("enabled", False) and ext_config.get("follow_in_doc_links", True):
+    recycle = _recycle_in_doc_maps(ext_config)
+    if recycle:
         summary = ingest_in_doc_map_links(
             docs,
             grok_client,
             image_timeout=ext_config.get("image_download_timeout", 30),
+            allowed_hosts=tuple(ext_config.get("allowed_hosts") or ()),
+            max_per_doc=int(ext_config.get("max_recycled_per_doc", 50)),
         )
     # Step 5a: persist Map ENTITIES (URL-keyed, cross-chapter footprint accumulation) alongside the
     # map-as-source recycle above. Reuses find_or_create_map_by_url (dedup + append across chapters).
@@ -611,11 +624,7 @@ def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
         "OBSERV phase3.step name=in_doc_map_links docs=%d recycle=%s links=%d recycled=%d "
         "deduped=%d skipped=%d status=ok",
         len(docs),
-        (
-            "on"
-            if ext_config.get("enabled", False)
-            else "off(external_maps.enabled=false)"
-        ),
+        ("on" if recycle else "off(external_maps.recycle_in_doc_maps=false)"),
         summary.get("links", 0),
         summary.get("recycled", 0),
         summary.get("deduped", 0),

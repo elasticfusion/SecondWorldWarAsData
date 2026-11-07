@@ -30,6 +30,8 @@ from src.utils.observe import observe_warn  # noqa: E402
 # same-host-as-the-document is also allowed. Everything else is skipped (defense-in-depth beyond the
 # SSRF IP gate — an in-doc link should point at the document's own asset host, not arbitrary sites).
 _ALLOWED_MAP_HOSTS = ("ibiblio.org",)
+# Per-document ceiling on recycled map links (cost: one vision call + one new source each).
+DEFAULT_MAX_LINKS_PER_DOC = 50
 
 
 def _ssrf_safe_image_url(url: str):
@@ -41,14 +43,19 @@ def _ssrf_safe_image_url(url: str):
     return _impl(url)
 
 
-def _host_allowed(url: str, source_host: str = "") -> bool:
-    """True if the map URL's host is the source document's host or an allowlisted corpus host."""
+def _host_allowed(url: str, extra_hosts: "tuple[str, ...]" = ()) -> bool:
+    """True if the map URL's host is an allowlisted corpus host (ibiblio, plus operator-configured
+    ``external_maps.allowed_hosts``). The document's OWN host is deliberately NOT trusted: the
+    source URL is uploader-supplied metadata, so honouring it would let an upload widen the
+    allowlist and make the pipeline fetch arbitrary images and send them to paid vision.
+    """
     host = (urlparse(url).hostname or "").lower()
     if not host:
         return False
-    if source_host and host == source_host.lower():
-        return True
-    return any(host == h or host.endswith("." + h) for h in _ALLOWED_MAP_HOSTS)
+    return any(
+        host == h or host.endswith("." + h)
+        for h in (*_ALLOWED_MAP_HOSTS, *(x.lower() for x in extra_hosts))
+    )
 
 
 def _vision_depicted(
@@ -109,6 +116,8 @@ def ingest_in_doc_map_links(
     grok_client: Any,
     *,
     image_timeout: int = 30,
+    allowed_hosts: "tuple[str, ...]" = (),
+    max_per_doc: int = DEFAULT_MAX_LINKS_PER_DOC,
 ) -> Dict[str, int]:
     """For each parsed doc's ``maps[]`` (in-document map links), follow the link and recycle an
     approved map as a source. Returns a summary dict. Fail-safe; emits OBSERV map_link.* lines.
@@ -129,15 +138,29 @@ def ingest_in_doc_map_links(
         book = str(doc.get("book", ""))
         if book.startswith("map-"):
             continue  # loop guard: do not follow a map-source's own map links
-        maps = doc.get("maps") or []
+        maps = [m for m in (doc.get("maps") or []) if isinstance(m, dict)]
         context = _doc_context(doc)
-        source_host = urlparse(doc.get("_source_url", "")).hostname or ""
+        if len(maps) > max_per_doc:
+            # Cost cap: each link is a paid vision call + a new source document. Never silent.
+            observe_warn(
+                "map_link",
+                "cap_hit",
+                note=(
+                    f"this document has {len(maps)} map links; only the first {max_per_doc} are "
+                    "recycled (each costs a Grok vision call and a new source). Raise "
+                    "external_maps.max_recycled_per_doc if that many maps are expected, else "
+                    "check the document for junk links"
+                ),
+                book=book,
+                links=len(maps),
+                cap=max_per_doc,
+            )
+            summary["skipped"] += len(maps) - max_per_doc
+            maps = maps[:max_per_doc]
         for m in maps:
-            if not isinstance(m, dict):
-                continue
             summary["links"] += 1
             _ingest_one_link(
-                m, grok_client, context, source_host, image_timeout, summary
+                m, grok_client, context, tuple(allowed_hosts), image_timeout, summary
             )
     logger.info(
         "OBSERV map_link.summary links=%d fetched=%d verified=%d recycled=%d deduped=%d skipped=%d",
@@ -167,7 +190,7 @@ def _ingest_one_link(
     m: Dict[str, Any],
     grok_client: Any,
     context: Dict[str, str],
-    source_host: str,
+    allowed_hosts: "tuple[str, ...]",
     image_timeout: int,
     summary: Dict[str, int],
 ) -> None:
@@ -177,7 +200,7 @@ def _ingest_one_link(
     map_title = str(m.get("description", "") or f"Map {map_id}")
     try:
         cleaned = _ssrf_safe_image_url(url)
-        if not cleaned or not _host_allowed(cleaned, source_host):
+        if not cleaned or not _host_allowed(cleaned, allowed_hosts):
             logger.info("OBSERV map_link.skipped url=%s reason=ssrf_or_host", url[:120])
             summary["skipped"] += 1
             return

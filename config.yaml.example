@@ -218,6 +218,14 @@ images:
 
 external_maps:
   enabled: false                       # Disable external map search (expensive: OpenSERP + vision)
+  # In-document maps (author-curated, linked from the narrative, e.g. HyperWar maps/*.jpg): read
+  # what each map depicts (Grok vision: units, places, sector, date, movements) and recycle it as a
+  # map-as-source document. INDEPENDENT of `enabled` above (the OpenSERP web search). One vision
+  # call + one extra source document per map. Map ENTITIES are persisted regardless of this flag.
+  recycle_in_doc_maps: true
+  max_recycled_per_doc: 50             # cost cap per document (alerts when hit)
+  # allowed_hosts: []                  # extra hosts whose map links may be fetched (ibiblio.org is built in);
+  #                                    # the uploaded document's own host is NOT trusted
 
 storage:
   entity_backend: "filesystem"
