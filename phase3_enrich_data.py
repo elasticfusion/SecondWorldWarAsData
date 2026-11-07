@@ -665,6 +665,23 @@ def _resolve_pending_image_map_vision(out, grok_client, config) -> int:
     return int(counts.get("map", 0))
 
 
+def _bibliography_resolve_config(config: dict) -> dict:
+    """Config for ``resolve_bibliography_dir`` - ONE definition for both call sites. Every
+    supplemental search (NARA, archive.org, Gutenberg, OpenSERP, Grok LLM search) is a Phase 3
+    concern; Phase 2 performs none."""
+    supplemental = config.get("supplemental_material", {})
+    return {
+        "nara_api_key": config.get("api", {}).get("nara_api_key"),
+        "search_gutenberg": supplemental.get("search_gutenberg", True),
+        "search_archive_org": supplemental.get("search_archive_org", True),
+        "llm_search": supplemental.get("llm_search", True),
+        "use_openserp": supplemental.get("use_openserp", False),
+        "openserp_url": config.get("external_maps", {}).get(
+            "openserp_url", "http://localhost:7001"
+        ),
+    }
+
+
 def _run_batch_rerun(args, config, grok_client) -> int:
     """Re-run the batch-cached enrichers after a batch submission completes. Each enricher is
     wrapped per-source fail-safe (mirroring main()'s _run_step) so one raising enricher can neither
@@ -711,15 +728,7 @@ def _run_batch_rerun(args, config, grok_client) -> int:
 
     from src.enrichment.bibliography_resolver import resolve_bibliography_dir
 
-    resolve_config = {
-        "nara_api_key": config.get("api", {}).get("nara_api_key"),
-        "search_gutenberg": supplemental_config.get("search_gutenberg", True),
-        "search_archive_org": supplemental_config.get("search_archive_org", True),
-        "use_openserp": supplemental_config.get("use_openserp", False),
-        "openserp_url": config.get("external_maps", {}).get(
-            "openserp_url", "http://localhost:7001"
-        ),
-    }
+    resolve_config = _bibliography_resolve_config(config)
     total += _step(
         "bibliography_resolve",
         lambda: resolve_bibliography_dir(
@@ -875,15 +884,7 @@ def main():
         # Resolve bibliography sources (NARA, Archive.org, LOC)
         from src.enrichment.bibliography_resolver import resolve_bibliography_dir
 
-        resolve_config = {
-            "nara_api_key": config.get("api", {}).get("nara_api_key"),
-            "search_gutenberg": supplemental_config.get("search_gutenberg", True),
-            "search_archive_org": supplemental_config.get("search_archive_org", True),
-            "use_openserp": supplemental_config.get("use_openserp", False),
-            "openserp_url": config.get("external_maps", {}).get(
-                "openserp_url", "http://localhost:7001"
-            ),
-        }
+        resolve_config = _bibliography_resolve_config(config)
         total_enriched += _run_step(
             "bibliography_resolve",
             lambda: resolve_bibliography_dir(

@@ -68,12 +68,13 @@ casualties:
 
 supplemental_material:
   enabled: true
-  extract_citations: true
-  enrich_with_searches: true
-  llm_search: true
-  search_gutenberg: true               # Free (native Gutendex API — independent of OpenSERP)
-  search_archive_org: true             # Free (archive.org API — independent of OpenSERP)
-  use_openserp: true                   # Enabled — Phase 3 scales the OpenSERP service on demand
+  extract_citations: true              # Phase 2: parse citations into structured bibliography entries
+  # Phase 2 performs NO supplemental searches (only Grokipedia/Wikipedia + submitting data to Grok).
+  # Every search for where a cited document can be obtained runs in Phase 3 (bibliography_resolver):
+  llm_search: true                     # Phase 3: Grok "LLM search" fallback (content-verified)
+  search_gutenberg: true               # Phase 3: Gutendex API (free; independent of OpenSERP)
+  search_archive_org: true             # Phase 3: archive.org API (free; independent of OpenSERP)
+  use_openserp: true                   # Phase 3 ONLY: OpenSERP service is scaled up on demand
   verify_archive_urls: false           # Skip verification pass
   extract_isbn: false                  # Skip — uses API calls
   determine_copyright: false           # Skip — uses API calls

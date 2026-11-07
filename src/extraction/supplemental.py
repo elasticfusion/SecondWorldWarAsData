@@ -822,74 +822,24 @@ def _extract_with_retry(
     return None
 
 
-def _supplemental_url_verified(title: str, url: str, grok_client: Any) -> bool:
-    """Content-verify a search-found URL against the citation before it is stored as a supplemental
-    resource_url. Reuses bibliography_resolver._verify_match (Grok fetches the page + confirms it
-    matches), so the supplemental path gets the SAME verification gate the bibliography path has.
-    Fail-open ONLY when there is no grok_client (offline/test) — matching _verify_match's own
-    no-client behavior; any verifier error inside _verify_match is already caught there.
+def _apply_license(material: Dict[str, Any]) -> None:
+    """Fill the material's license from its citation fields (modifies in place).
+
+    PURE computation - no network, no search. Phase 2 deliberately performs NO supplemental
+    searches (archive.org, Gutenberg, OpenSERP, Grok "LLM search"): Phase 2 only talks to
+    Grokipedia/Wikipedia and submits data to Grok for extraction. Looking up where a cited document
+    can be obtained is Phase 3's job (``bibliography_resolver``), which verifies every candidate.
+    ``resource_urls`` is therefore left EMPTY here: a pre-filled URL would trip the resolver's
+    "has resource_urls -> already resolved" short-circuit and block NARA resolution
+    (see src/extraction/bibliography.py).
     """
-    try:
-        from src.enrichment.bibliography_resolver import _verify_match
-
-        return _verify_match(title or "", url, grok_client)
-    except Exception as e:  # noqa: BLE001 - verification must never crash enrichment
-        logger.debug("supplemental url verify errored for %s: %s", url, e)
-        # Fail-CLOSED on an unexpected verifier import/call error when a client WAS available:
-        # better to drop an unverified url than to store a possibly-wrong source.
-        return grok_client is None
-
-
-def _enrich_material(
-    material: Dict[str, Any],
-    grok_client: Any,
-    openserp_url: str = "http://localhost:7001",
-) -> None:
-    """Enrich material with searches and copyright calculation (modifies in place)."""
     from src.extraction.copyright_calculator import determine_license
-    from src.extraction.supplemental_search import sequential_search
 
-    category = material.get("material_category", "referenced_material")
-
-    # Only enrich referenced material
-    if category != "referenced_material":
+    if (
+        material.get("material_category", "referenced_material")
+        != "referenced_material"
+    ):
         return
-
-    citation = material.get("citation", {})
-    title = citation.get("title", "")
-    author = citation.get("author", [])
-    author_str = author[0] if author else None
-    periodical = citation.get("periodical_name")
-
-    # Search for URLs if not already present
-    if not material.get("resource_urls"):
-        url, source = sequential_search(
-            title=title,
-            author=author_str,
-            periodical=periodical,
-            grok_client=grok_client,
-            openserp_url=openserp_url,
-            search_gutenberg=True,
-        )
-
-        if url and _supplemental_url_verified(title, url, grok_client):
-            material["resource_urls"] = [url]
-            material["search_source"] = source
-            logger.info("Found URL via %s: %s", source, url)
-        elif url:
-            # A search hit that does NOT verify against the citation is DROPPED — sequential_search
-            # returns the FIRST hit per source with no content-match, so storing it unchecked
-            # silently attributes a wrong source to the citation (§1.0d HIGH). Mirror the
-            # bibliography_resolver verify gate.
-            logger.warning(
-                "OBSERV supplemental.url_rejected source=%s title=%r url=%s — "
-                "search hit did not verify against the citation; not stored",
-                source,
-                str(title)[:80],
-                str(url)[:120],
-            )
-
-    # Calculate copyright
     license_status, license_notes = determine_license(material)
     if not material.get("license") or material.get("license") == "unknown":
         material["license"] = license_status
@@ -917,76 +867,6 @@ def _resolve_entities_in_materials(
             material["mentioned_people"] = mentioned_people
         if mentioned_orgs:
             material["mentioned_organizations"] = mentioned_orgs
-
-
-def _enrich_materials(materials: list, grok_client: Any, enrich: bool) -> None:
-    """Enrich materials with searches and copyright if enabled."""
-    if enrich and grok_client:
-        for material in materials:
-            _enrich_material(material, grok_client)
-
-
-def _filter_by_reference_type(materials: list, ref_type: str) -> list:
-    """Filter materials by reference type."""
-    return [m for m in materials if m.get("reference_type") == ref_type]
-
-
-def _create_event_metadata(sub_event_data: dict) -> dict:
-    """Create event metadata dictionary."""
-    return {
-        "Event_Name": sub_event_data.get("Event_Name"),
-        "EventID": sub_event_data.get("EventID"),
-        "Sub-event_Name": sub_event_data.get("Sub-event_Name"),
-        "Sub-eventID": sub_event_data.get("Sub-eventID"),
-    }
-
-
-def _separate_by_type(
-    all_supplemental: List[Dict[str, Any]],
-    people_index: Dict[str, str],
-    groups_index: Dict[str, str],
-    grok_client: Any = None,
-    enrich: bool = True,
-) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    """Separate supplemental materials into endnotes and footnotes, resolving entities."""
-    endnotes = []
-    footnotes = []
-
-    for sub_event_data in all_supplemental:
-        # Normalize plural key variant
-        if (
-            "Supplemental_Materials" in sub_event_data
-            and "Supplemental_Material" not in sub_event_data
-        ):
-            sub_event_data["Supplemental_Material"] = sub_event_data.pop(
-                "Supplemental_Materials"
-            )
-        materials = sub_event_data.get("Supplemental_Material", [])
-
-        # Resolve entities
-        _resolve_entities_in_materials(materials, people_index, groups_index)
-
-        # Enrich with searches and copyright
-        _enrich_materials(materials, grok_client, enrich)
-
-        # Filter by type
-        endnote_materials = _filter_by_reference_type(materials, "endnote")
-        footnote_materials = _filter_by_reference_type(materials, "footnote")
-
-        # Create event metadata
-        event_metadata = _create_event_metadata(sub_event_data)
-
-        if endnote_materials:
-            endnotes.append(
-                {**event_metadata, "Supplemental_Material": endnote_materials}
-            )
-
-        if footnote_materials:
-            footnotes.append(
-                {**event_metadata, "Supplemental_Material": footnote_materials}
-            )
-
-    return endnotes, footnotes
 
 
 def _get_source_copyright_year(event_file: Path) -> Optional[int]:
@@ -1069,7 +949,6 @@ def _route_one_material(
     bib_dir: Path,
     book: str,
     chapter: str,
-    grok_client: Any,
     enrich: bool,
     factual_items: list,
     ambiguous_items: list,
@@ -1089,7 +968,7 @@ def _route_one_material(
     # empty (a pure prose entry carries no document to store).
     if is_citation and _has_document(material):
         if enrich:
-            _enrich_material(material, grok_client)
+            _apply_license(material)
         from src.extraction.bibliography import store_bibliography_entry
 
         store_bibliography_entry(bib_dir, material, book, chapter)
@@ -1141,8 +1020,7 @@ def _route_by_content_class(
     bib_dir: Path,
     book: str,
     chapter: str,
-    grok_client: Any = None,
-    enrich: bool = False,
+    enrich: bool = True,
 ) -> tuple:
     """Route materials by content_class. Returns (factual_items, ambiguous_items, bib_count)."""
     factual_items: list = []
@@ -1163,7 +1041,6 @@ def _route_by_content_class(
                 bib_dir,
                 book,
                 chapter,
-                grok_client,
                 enrich,
                 factual_items,
                 ambiguous_items,
@@ -1273,7 +1150,7 @@ def extract_supplemental(
     event_file: Path,
     grok_client: GrokClient,
     output_root: Path,
-    enrich: bool = False,
+    enrich: bool = True,
 ) -> Optional[Path]:
     """Extract and classify endnotes/footnotes from event file.
 
@@ -1282,8 +1159,8 @@ def extract_supplemental(
     and ambiguous items to review_queue.json.
 
     Args:
-        enrich: If True, search online/offline repositories for bibliography URLs
-                and determine copyright status before storing.
+        enrich: If True, determine the license from the citation before storing. This is pure
+                computation: Phase 2 performs NO supplemental searches (they live in Phase 3).
     """
     logger.info("Extracting supplemental material from %s", event_file.name)
 
@@ -1357,7 +1234,7 @@ def extract_supplemental(
     bib_dir = output_root / "bibliography"
 
     factual, ambiguous, bib_count = _route_by_content_class(
-        all_supplemental, bib_dir, book, chapter, grok_client, enrich
+        all_supplemental, bib_dir, book, chapter, enrich
     )
 
     # Write factual content as notes-event file (URL map from the parsed file's footnotes).

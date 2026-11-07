@@ -57,7 +57,7 @@ def test_collect_pass_does_not_mark_processed(tmp_path, monkeypatch):
     gc.extract_json.side_effect = BatchModeCollecting("collecting")  # collect pass
     gc.chat_completion.side_effect = BatchModeCollecting("collecting")
     paths = {"output_root": tmp_path}
-    cfg = {"supplemental_material": {"enabled": True, "enrich_with_searches": False}}
+    cfg = {"supplemental_material": {"enabled": True}}
     import logging
 
     p2._extract_supplemental(

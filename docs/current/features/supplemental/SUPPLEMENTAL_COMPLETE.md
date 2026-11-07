@@ -1,5 +1,11 @@
 # Supplemental Material Extraction - Complete Implementation
 
+> **2026-11-07 — Phase 2 performs no supplemental searches.** Phase 2 only talks to Grokipedia/Wikipedia and
+> submits data to Grok. Looking up where a cited document can be obtained (NARA, archive.org, Gutenberg,
+> OpenSERP, Grok "LLM search") is Phase 3 (`bibliography_resolver`), with every candidate Grok-verified. The
+> `enrich_with_searches` flag no longer exists; citations are stored with an empty `resource_urls`.
+
+
 ## Overview
 
 Extracts, classifies, and routes referenced materials (footnotes, endnotes, bibliography) from WWII historical documents. Uses a split architecture that separates document references from factual content.
@@ -108,8 +114,7 @@ supplemental_material:
   extract_citations: true          # Parse citations into structured format
   max_materials_per_chapter: 100   # Limit materials per chapter
   
-  # Phase 2: Search integration
-  enrich_with_searches: false      # Enable online resource searches
+  # Phase 3: search (bibliography_resolver) - Phase 2 performs NO supplemental searches
   llm_search: true                 # Use LLM for search (first pass)
   search_gutenberg: false          # Search Gutenberg.org for books/periodicals
   search_archive_org: false        # Search Archive.org (second pass)
@@ -142,7 +147,6 @@ python3 phase2_extract.py
 # config.yaml
 supplemental_material:
   enabled: true
-  enrich_with_searches: true
   llm_search: true
   search_archive_org: true
   extract_isbn: true
@@ -381,7 +385,6 @@ All in `requirements.txt`:
 # Edit config.yaml:
 supplemental_material:
   enabled: true
-  enrich_with_searches: true
   llm_search: true
   search_archive_org: true
   extract_isbn: true
@@ -443,7 +446,6 @@ All three phases complete, tested, and integrated into the pipeline. Ready for u
 ```yaml
 supplemental_material:
   enabled: true
-  enrich_with_searches: true
   llm_search: true
   search_archive_org: true
   extract_isbn: true

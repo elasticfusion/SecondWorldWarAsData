@@ -471,9 +471,6 @@ def _extract_supplemental(event_file, grok_client, output_root, config, logger):
             event_file=event_file,
             grok_client=grok_client,
             output_root=output_root,
-            enrich=config.get("supplemental_material", {}).get(
-                "enrich_with_searches", False
-            ),
         )
         if result:
             logger.info("    ✓ Supplemental updated")
