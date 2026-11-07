@@ -17,7 +17,6 @@ import os
 
 import boto3
 
-import yaml
 
 from src.ingestion.book_slug import book_slug
 from src.utils.observe import observe_error
@@ -250,23 +249,13 @@ def merge_ocr_output(book: str) -> str:
 
     merged = normalize_markdown_to_english(merged, per_page=True)
     meta_key = f"contentrepository/{book}/chapter1/chapter1-meta.yaml"
-    # P2-C1: SAFE YAML via yaml.safe_dump (never an f-string) so a book name with
-    # YAML metacharacters cannot inject structure. author/series/chapter_title/
-    # license are '' (empty) NOT a literal 'TODO - Add ...'; the gap is recorded
-    # as a needs-review/metadata marker below so it is detectable, not masqueraded.
-    meta = {
-        "series": "",
-        "book": book,
-        "author": "",
-        "chapter_number": "1",
-        "chapter_title": "",
-        "license": "",
-        "copyright_date": "",
-        "source_url": f"OCR of {book}",
-    }
-    meta_body = yaml.safe_dump(
-        meta, default_flow_style=False, allow_unicode=True
-    ).encode("utf-8")
+    # Shared chapter-meta builder (safe YAML, P2-C1). OCR output has no web URL: source_url is ""
+    # (never the old "OCR of <book>" placeholder) and source_key points at the OCR output prefix.
+    from src.ingestion.chapter_meta import build_meta_yaml
+
+    meta_body = build_meta_yaml(
+        book, source_url="", source_url_basis="ocr", source_key=prefix
+    )
     s3.put_object(Bucket=BUCKET, Key=meta_key, Body=meta_body)
     s3.put_object(Bucket=BUCKET, Key=output_key, Body=merged.encode("utf-8"))
     _mark_metadata_gap(s3, prefix, book)

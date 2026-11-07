@@ -44,6 +44,24 @@ SYNC_INTERVAL = int(os.environ.get("SYNC_INTERVAL", "120"))  # seconds
 # Process (= ECS task) start time, used by the reconcile drain barrier's freshness guard: a barrier
 # whose completed_at predates this is a stale previous-run signal and is ignored (HIGH#5).
 _TASK_START_TS = time.time()
+# Entity subdirs Phase 3 downloads and Phases 2/3 upload at final sync — ONE list (DRY), so a new
+# entity dir cannot be downloaded-but-never-uploaded (images were missing from both: Phase 2 image
+# records were never final-synced and Phase 3 never saw them).
+_PHASE23_ENTITY_DIRS = (
+    "people",
+    "people_groups",
+    "places",
+    "dates",
+    "equipment",
+    "weather",
+    "logistics",
+    "casualties",
+    "maps",
+    "images",
+    "supplemental",
+    "bibliography",
+    "narrative_notes",
+)
 # Paths used by _clear_title_cache_if_reprocess (module constants so tests can
 # redirect them to a temp dir without patching Path globally).
 _CONFIG_PATH = Path("/app/config.yaml")
@@ -1364,20 +1382,7 @@ def _download_phase3_from_s3() -> None:
     # the reconcile upload and miss just-reconciled records (the HIGH#5 late-arrival gap). This is
     # an ordering signal only — S3 remains the authoritative store, not a data queue.
     barrier_status = _wait_for_reconcile_barrier()
-    entity_dirs = [
-        "people",
-        "people_groups",
-        "places",
-        "dates",
-        "equipment",
-        "weather",
-        "logistics",
-        "casualties",
-        "maps",
-        "supplemental",
-        "bibliography",
-        "narrative_notes",
-    ]
+    entity_dirs = list(_PHASE23_ENTITY_DIRS)
     s3 = _s3_client()
     book_name = os.environ.get("BOOK_NAME", "")
     total = 0
@@ -3076,21 +3081,7 @@ def _final_sync(phase_script: str = ""):
         _final_sync_phase1()
     elif "phase2" in phase_script or "phase3" in phase_script:
         # Phase 2/3: only upload entity subdirs, skip book dirs with parsed/event files
-        entity_dirs = [
-            "people",
-            "people_groups",
-            "places",
-            "dates",
-            "equipment",
-            "weather",
-            "logistics",
-            "casualties",
-            "maps",
-            "supplemental",
-            "bibliography",
-            "narrative_notes",
-            "metrics",
-        ]
+        entity_dirs = [*_PHASE23_ENTITY_DIRS, "metrics"]
         total = 0
         all_uploaded = []
         # Phase 3 modifies existing files — don't skip any

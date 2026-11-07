@@ -230,6 +230,7 @@ def persist_map_entities(
     maps_dir: Path,
     download: bool = True,
     output_root: Optional[Path] = None,
+    grok_client: Any = None,
 ) -> Dict[str, int]:
     """Step 5a — persist a Map ENTITY per in-document map, keyed by URL, ACCUMULATING each chapter's
     reference footprint (roman-numeral campaign foldouts are shared across chapters/books). Reuses
@@ -251,7 +252,14 @@ def persist_map_entities(
         for m in doc.get("maps") or []:
             if isinstance(m, dict):
                 _persist_one_map(
-                    m, book, maps_dir, url_index, counts, download, output_root
+                    m,
+                    book,
+                    maps_dir,
+                    url_index,
+                    counts,
+                    download,
+                    output_root,
+                    grok_client,
                 )
     _save_url_index(index_path, url_index)
     logger.info(
@@ -298,6 +306,7 @@ def _persist_one_map(
     counts: Dict[str, int],
     download: bool = True,
     output_root: Optional[Path] = None,
+    grok_client: Any = None,
 ) -> None:
     """Persist (find-or-create + append footprint) one in-document map. Mutates counts."""
     from src.extraction.map_common import (
@@ -337,6 +346,13 @@ def _persist_one_map(
                 storage_backend="filesystem",
             ),
             "figure_number": m.get("map_id"),
+            # A map routed from an image already vision-classified in Phase 3 carries its verdict,
+            # so the tier-3 backstop does not re-submit it to Grok (don't-resubmit guarantee).
+            **{
+                k: m[k]
+                for k in ("is_map", "map_vision_checked_at")
+                if m.get(k) is not None
+            },
         }
 
     f = find_or_create_map_by_url(
@@ -355,10 +371,12 @@ def _persist_one_map(
         counts["created"] += 1
     # Step 5c-i: deterministic Place/Date/Organization linking from the footprint sub-events.
     if output_root is not None:
-        _link_persisted_map(f, output_root)
+        _link_persisted_map(f, output_root, grok_client)
 
 
-def _link_persisted_map(map_file: Path, output_root: Path) -> None:
+def _link_persisted_map(
+    map_file: Path, output_root: Path, grok_client: Any = None
+) -> None:
     """Read the persisted map, stamp Place/Date/Org links from its footprint, write back if changed.
     Fail-safe."""
     import json as _json
@@ -392,7 +410,11 @@ def _link_persisted_map(map_file: Path, output_root: Path) -> None:
             return Path(lip).read_bytes()
         return None
 
-    maybe_vision_classify_map(rec, _load_image, _grok_client_for_vision())
+    # The CALLER's client (the phase's rate-limited, cache-routed one); a private fallback only
+    # when none was passed — never a process-cached None that silently disables vision.
+    maybe_vision_classify_map(
+        rec, _load_image, grok_client or _grok_client_for_vision()
+    )
     after = (
         rec.get("PlaceMentionID"),
         rec.get("DateMentionID"),

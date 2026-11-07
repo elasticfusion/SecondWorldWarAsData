@@ -98,12 +98,14 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   gives series + chapter), the upload's `x-amz-meta-source-url` (set by the operator) for `source_url`, and the known licence of
   the source host (ibiblio HyperWar = US Army CMH public domain). Leave `author` empty ONLY when it cannot be derived, and alert
   only for what is still missing.
-  **Consequence found in the XChannel-8 E2E (2026-11-06): `images=0` and `maps=0`.** `src/parser.py:958-959` passes
-  `metadata.source_url` as `base_url`; the converter sets it to `"converted from <key>"` (not http), so every relative
-  `<img src=icn/..>` / `<a href=img/..>` / `maps/..` is skipped. Verified on the converted markdown: base_url as written
-  -> 0 images, 0 maps; base_url `https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/` -> 39 images, 11 maps. Fix with the
-  metadata root fix (real `source_url`), and make the parser emit an actionable warning when relative image/map refs exist
-  but `base_url` is not an http(s) URL (today it is silent).
+  (The images/maps=0 consequence is FIXED in code: real `source_url` from S3 metadata / HyperWar derivation, parser
+  guard, shared map-vs-image classifier, Phase 3 map vision; verify on the next dev E2E. This item now covers only the
+  remaining empty author/series/license/copyright fields.)
+- **[MED · cost/owner decision] In-doc map recycle (map-as-source) stays OFF in prod.** Map ENTITIES are now always
+  persisted, but `ingest_in_doc_map_links` (a paid Grok place-relevance vision call + re-ingestion per map) still runs
+  only when `external_maps.enabled` (false in config.yaml). Decide whether in-doc ibiblio maps should be recycled.
+- **[LOW · cost] Phase 3 downloads/uploads `output/images/files/` bytes** now that `images` is a Phase 2/3 entity dir
+  (unscoped runs only; scoped runs pull manifested JSON). Consider syncing only `*.json` and fetching bytes by URL.
 - **[LOW · observability] `enrich.summary` label `skipped_already` is misleading** (`src/extraction/people.py:893`). The
   `skipped` counter also counts "attempted, not enriched" (e.g. Wikipedia rate-limit deferral), so 59 of 62 people read as
   "already enriched" when they were deferred. Split into `skipped_already` vs `deferred`.

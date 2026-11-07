@@ -8,7 +8,7 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import AbstractSet, Any, Dict, Optional, Tuple
 
 import ulid as ulid_mod
 
@@ -17,6 +17,16 @@ logger = logging.getLogger(__name__)
 _DOWNLOAD_TIMEOUT = 30
 _USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 _MAX_IMAGE_BYTES = 25 * 1024 * 1024  # 25MB cap per image
+# Image records carry their book only inside `source`; one prefix, one parser (DRY).
+IMAGE_SOURCE_PREFIX = "Original book illustration - "
+
+
+def book_from_image_source(record: Dict[str, Any]) -> str:
+    """The source book of an image record (from its ``source``), or "" if not recorded."""
+    src = str(record.get("source") or "")
+    return (
+        src[len(IMAGE_SOURCE_PREFIX) :] if src.startswith(IMAGE_SOURCE_PREFIX) else ""
+    )
 
 
 def fetch_image_bytes(url: str) -> Tuple[Optional[bytes], Optional[str]]:
@@ -140,13 +150,10 @@ def _ext_for(content_type: str, cleaned: str) -> str:
 
 
 def _classify_content_type(alt_text: str, url: str) -> str:
-    """Classify image content type from alt text and URL."""
-    text = f"{alt_text} {url}".lower()
-    if any(w in text for w in ("map ", "map_", "/maps/")):
-        return "map"
-    if any(w in text for w in ("diagram", "chart", "plan ", "sketch")):
-        return "diagram"
-    return "photograph"
+    """Image-record content_type hint from the shared classifier (map | photograph | diagram)."""
+    from src.extraction.media_classify import classify_media
+
+    return classify_media(alt_text, url).content_type
 
 
 def _image_matches_sub_event(se: dict, url: str, resource_id: str, alt: str) -> bool:
@@ -340,7 +347,7 @@ def _create_image_record(
         "image_title": alt or "Untitled",
         "image_type": "source_material",
         "content_type": content_type,
-        "source": f"Original book illustration - {book}",
+        "source": f"{IMAGE_SOURCE_PREFIX}{book}",
         "place_name": place_name,
         "PlaceMentionID": place_mention_id,
         "date": date_val,
@@ -435,9 +442,53 @@ def _apply_vision_caption(
     cap = caption.to_dict()
     if cap["description"]:
         record["description"] = cap["description"]
+    # Keep the vision classification (was discarded) — but ONLY a real vision verdict, never the
+    # context-only keyword prior echoed back without image bytes. _stamp_map_check reconciles it
+    # with the URL rule; Phase 3 reuses it for ambiguous images (no second Grok call).
+    if cap["caption_method"] == "grok-vision":
+        record["vision_classification"] = cap["classification"]
     record["caption_confidence"] = cap["caption_confidence"]
     record["caption_method"] = cap["caption_method"]
     record["needs_review"] = cap["needs_review"]
+
+
+def _stamp_map_check(record: Dict[str, Any], verdict: Any) -> None:
+    """Record the map-vs-image decision on the image record. Ambiguous (non-ibiblio) images are
+    marked ``pending_vision``: Phase 3 (image_map_vision.resolve_pending) MUST run Grok vision on
+    them — deferred, never skipped. A captioner 'map' verdict on an ambiguous image keeps it
+    pending for that same vision check."""
+    from src.extraction.media_classify import (
+        MAP_CHECK_MAP,
+        MAP_CHECK_NOT_MAP,
+        MAP_CHECK_PENDING,
+    )
+
+    record["map_check_basis"] = verdict.basis
+    if verdict.kind == "map":
+        record["map_check"] = MAP_CHECK_MAP
+        record["is_map"] = True
+        record["content_type"] = "map"
+    elif verdict.kind == "image":
+        record["map_check"] = MAP_CHECK_NOT_MAP
+        record["is_map"] = False
+        if record.get("vision_classification") == "map":
+            # URL rule is authoritative for ibiblio; a disagreeing vision caption needs a human.
+            record["needs_review"] = True
+            from src.utils.observe import observe_warn
+
+            observe_warn(
+                "images",
+                "classification_conflict",
+                note=(
+                    "ibiblio URL says image but vision says map; open the image and, if it is a "
+                    "map, report the URL so the ibiblio path rule can be corrected"
+                ),
+                image_id=record.get("ImageID"),
+                url=record.get("url"),
+            )
+    else:
+        record["map_check"] = MAP_CHECK_PENDING
+        record["is_map"] = None
 
 
 def _process_single_image(
@@ -490,7 +541,7 @@ def _process_single_image(
         local_copy,
         book,
     )
-    # Tier-1 deterministic media metadata (schema.org images 2.27) — derived from the bytes we
+    # Tier-1 deterministic media metadata (schema.org images 2.27+) — derived from the bytes we
     # already downloaded; only set when known (null-over-guess). Fail-safe.
     _set_media_metadata(record, image_id, width, height, encoding_format)
 
@@ -525,6 +576,13 @@ def _load_existing_urls(images_dir: Path, index: dict) -> set:
             except (json.JSONDecodeError, OSError):
                 pass
     return urls
+
+
+def _doc_map_urls(parsed: Dict[str, Any]) -> AbstractSet[str]:
+    """URLs the parser listed in this doc's maps[] (persisted as Maps by Phase 3)."""
+    return {
+        str(m.get("url") or "") for m in parsed.get("maps") or [] if isinstance(m, dict)
+    }
 
 
 def extract_images(
@@ -579,6 +637,7 @@ def extract_images(
 
         book = parsed.get("book", "")
         event_data = _load_event_data(parsed_file)
+        doc_map_urls = _doc_map_urls(parsed)
 
         for img in imgs:
             images_seen += 1
@@ -594,6 +653,7 @@ def extract_images(
                 images_dir,
                 index,
                 existing_urls,
+                doc_map_urls,
             )
             extracted += e_d
             downloaded += d_d
@@ -638,6 +698,7 @@ def _extract_one_image(
     images_dir,
     index,
     existing_urls,
+    doc_map_urls: AbstractSet[str] = frozenset(),
 ) -> "Tuple[int, int, int]":
     """Process one parsed image: skip if already-seen or a map, else build+write the entity, update
     the index/existing_urls (by reference), and download the file. Returns (extracted, downloaded,
@@ -646,17 +707,40 @@ def _extract_one_image(
     alt = img.get("alt_text", "")
     if url and url in existing_urls:
         return 0, 0, 1
-    if _classify_content_type(alt, url) == "map":
+    from src.extraction.media_classify import classify_media
+
+    verdict = classify_media(alt, url)
+    if verdict.kind == "map" and url in doc_map_urls:
+        # Deterministic map (ibiblio /maps/) the parser listed in maps[]: Phase 3's in-doc map
+        # step persists it as a Map entity — never also stored as an image (no duplicate).
+        # A map NOT in maps[] (e.g. a bare ![](maps/x.jpg)) falls through: it is recorded with
+        # map_check=map and Phase 3 (image_map_vision) persists it as a Map — never dropped.
         return 0, 0, 1
 
     record, local_copy = _process_single_image(
         img, event_data, book, places_dir, dates_dir, download, storage_dir, captioner
     )
+    _stamp_map_check(record, verdict)
     out_file = images_dir / f"{record['ImageID']}.json"
     from src.utils.file_lock import write_json_with_lock
 
-    write_json_with_lock(out_file, record)
+    write_json_with_lock(out_file, record, entity="images")
     index[record["ImageID"]] = out_file.name
+    # Book manifest: a book-scoped Phase 3 downloads ONLY manifested files, and Phase 3 must see
+    # pending_vision images to run the deferred map-vision check. Shared registrar (DRY).
+    from src.extraction.batch_parallel import _register_entity
+
+    try:
+        _register_entity(book, "images", out_file.name)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - manifest is an index; the record is already saved
+        logger.warning(
+            "OBSERV images.manifest_register_failed image=%s err=%s status=warn — a "
+            "book-scoped Phase 3 will not see this image; re-run Phase 2 for the book",
+            out_file.name,
+            type(e).__name__,
+        )
     if url:
         existing_urls.add(url)
     logger.info(

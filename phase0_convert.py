@@ -26,7 +26,6 @@ import tempfile
 from pathlib import Path
 
 import boto3
-import yaml
 
 from src.ingestion.book_slug import book_slug
 from src.ingestion.text_converters import (
@@ -178,24 +177,19 @@ def _recover_or_offramp(s3, key: str, book: str, exc: Exception) -> str:
     return ""
 
 
-def _build_meta_yaml(book: str, key: str) -> bytes:
-    """Build chapter meta as SAFE YAML (P2-C1). Uses yaml.safe_dump (never an
-    f-string) so a book/key with YAML metacharacters cannot inject structure.
-    author/series/chapter_title/license are emitted as '' (empty) — NOT a literal
-    'TODO - Add ...' that masquerades as real data; the gap is recorded via a
-    needs-review/metadata marker instead."""
-    meta = {
-        "series": "",
-        "book": book,
-        "author": "",
-        "chapter_number": "1",
-        "chapter_title": "",
-        "license": "",
-        "copyright_date": "",
-        "source_url": f"converted from {key}",
-    }
-    return yaml.safe_dump(meta, default_flow_style=False, allow_unicode=True).encode(
-        "utf-8"
+def _build_meta_yaml(
+    book: str, key: str, source_url: str = "", source_url_basis: str = "missing"
+) -> bytes:
+    """Chapter meta via the shared builder (src/ingestion/chapter_meta). ``source_url`` is a real
+    URL or "" — never a "converted from <key>" placeholder (the parser resolves relative
+    images/maps against it); the uploaded object stays recorded as ``source_key``."""
+    from src.ingestion.chapter_meta import build_meta_yaml
+
+    return build_meta_yaml(
+        book,
+        source_url=source_url,
+        source_url_basis=source_url_basis,
+        source_key=key,
     )
 
 
@@ -211,7 +205,14 @@ def _write_chapter_structure(s3, key: str, book: str, markdown: str) -> str:
     source for cold archive, and record the metadata gap. Returns the content key."""
     meta_key = f"contentrepository/{book}/chapter1/chapter1-meta.yaml"
     content_key = f"contentrepository/{book}/chapter1/chapter1-content.md"
-    s3.put_object(Bucket=BUCKET, Key=meta_key, Body=_build_meta_yaml(book, key))
+    from src.ingestion.source_url import resolve_source_url
+
+    source_url, basis = resolve_source_url(s3, BUCKET, key, book)
+    s3.put_object(
+        Bucket=BUCKET,
+        Key=meta_key,
+        Body=_build_meta_yaml(book, key, source_url, basis),
+    )
     s3.put_object(Bucket=BUCKET, Key=content_key, Body=markdown.encode("utf-8"))
     _mark_metadata_gap(s3, key, book)
     # Source doc (epub/docx) now consumed — tag it for cold archive. Fail-safe.
