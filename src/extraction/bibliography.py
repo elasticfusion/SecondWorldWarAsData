@@ -168,7 +168,17 @@ def _collect_parsed_notes(parsed_file: Path) -> Optional[List[Dict[str, Any]]]:
     for key, ref_type in (("footnotes", "footnote"), ("endnotes", "endnote")):
         for n in data.get(key, []) or []:
             if isinstance(n, dict):
-                notes.append({**n, "_ref_type": ref_type})
+                # Phase 1 records the SOURCE's own label per note (src/notes); the array key is
+                # only the fallback for records written before notes carried a kind.
+                kind = n.get("kind")
+                notes.append(
+                    {
+                        **n,
+                        "_ref_type": (
+                            kind if kind in ("footnote", "endnote") else ref_type
+                        ),
+                    }
+                )
     return notes
 
 

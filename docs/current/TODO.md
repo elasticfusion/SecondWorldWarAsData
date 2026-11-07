@@ -124,6 +124,12 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   (accepts only `source_section/...`); and the schema registry `output_glob` consumers `scripts/validate_phase2.py`,
   `src/utils/provenance_integrity.py:236`, `src/utils/referential_integrity.py:130`. Route them through the helper (the
   worker needs a strict `content/<safe-book>/source_section/<ulid>.json` allowance) and add a test per reader.
+- **[MED · provenance] Carry Phase 1 note provenance into the entity records (schema bumps, do together; 2026-11-07).**
+  Phase 1 (src/notes.py) now records each note's `kind` + citing `paragraph_number`, and `Image.note_number` for an image
+  linked only from a note (XChannel-8 note 23 "naval command chart"). Downstream drops them: (a) bibliography mentions need
+  `paragraph_number` (+ `reference_type` from `kind` in the Grok supplemental path) - bibliography schema bump; (b) the image
+  entity needs a `note_number`/cited-in-note field (`src/extraction/images.py`, `images_output.py` is
+  `additionalProperties: False`) - images schema bump. Each bump: history snapshot, fingerprint pin, SCHEMA_VERSIONING entry.
 - **[MED · provenance] People marked `enriched` with no source link (P3-A5, 4 people: J. M. Stagg, M. D. Taylor, G. C. Marshall,
   D. D. Eisenhower; found 2026-11-07).** `validate_phase3` FAIL: `enrichment_status=enriched but no source link
   (top-level/biographical_profile/external_data)`. Find which enrichment path sets `enriched` without writing a source URL.

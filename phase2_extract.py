@@ -91,7 +91,14 @@ def _log_phase2_summary(output_root: Path, logger) -> dict:
             "equipment",
             "logistics",
         ):
-            counts[name] = _count_entity_dir(output_root / name)
+            if name == "source_section":
+                # Records live under content/<book>/source_section/ (src/utils/source_sections);
+                # counting output/source_section reported a false 0.
+                from src.utils.source_sections import iter_section_files
+
+                counts[name] = sum(1 for _ in iter_section_files(output_root))
+            else:
+                counts[name] = _count_entity_dir(output_root / name)
 
         summary = " ".join(f"{k}={v}" for k, v in counts.items())
         logger.info("OBSERV phase2.summary %s", summary)

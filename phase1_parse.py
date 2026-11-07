@@ -55,17 +55,7 @@ def _doc_to_dict(doc):
             }
             for p in doc.paragraphs
         ],
-        "images": [
-            {
-                "type": img.type,
-                "resource_id": img.resource_id,
-                "url": img.url,
-                "alt_text": img.alt_text,
-                "caption": img.caption,
-                "paragraph_number": img.paragraph_number,
-            }
-            for img in doc.images
-        ],
+        "images": [img.to_dict() for img in doc.images],
         "maps": [
             {
                 "url": m.url,
@@ -76,9 +66,7 @@ def _doc_to_dict(doc):
             }
             for m in doc.maps
         ],
-        "footnotes": [
-            {"number": f.number, "url": f.url, "text": f.text} for f in doc.footnotes
-        ],
+        "footnotes": [f.to_dict() for f in doc.footnotes],
         # Page-marker provenance (anchor/separator -> paragraph mapping): a first-class populated
         # model field that was previously dropped from serialization, losing the explicit
         # page-structure provenance even though per-paragraph page_number survived.
@@ -238,9 +226,7 @@ def _save_endnote_refs(doc, section_suffix, book_output, logger):
         "book": doc.book,
         "chapter_number": doc.chapter_number,
         "chapter_title": doc.chapter_title,
-        "endnotes": [
-            {"number": f.number, "url": f.url, "text": f.text} for f in doc.footnotes
-        ],
+        "endnotes": [f.to_dict() for f in doc.footnotes],
     }
     from src.utils.file_lock import write_json_with_lock
 

@@ -126,6 +126,17 @@ def _int_number_set(items) -> set:
     }
 
 
+def _note_numbers_by_kind(parsed_data: dict) -> tuple:
+    """``(footnote_numbers, endnote_numbers)``: Phase 1 records each note's source ``kind`` in the
+    one ``footnotes`` array; a legacy separate ``endnotes`` array is still honoured."""
+    notes = [n for n in (parsed_data.get("footnotes") or []) if isinstance(n, dict)]
+    endnotes = [n for n in notes if n.get("kind") == "endnote"]
+    footnotes = [n for n in notes if n.get("kind") != "endnote"]
+    return _int_number_set(footnotes), (
+        _int_number_set(endnotes) | _int_number_set(parsed_data.get("endnotes"))
+    )
+
+
 def _parse_note_context(parsed_data: dict) -> tuple:
     """Return ``(para_lookup, fn_nums, en_nums)`` from the parsed chapter data: a map of
     absolute paragraph number -> raw text, and the sets of known footnote/endnote numbers.
@@ -137,11 +148,8 @@ def _parse_note_context(parsed_data: dict) -> tuple:
             for p in parsed_data.get("paragraphs", [])
             if isinstance(p, dict) and "absolute_number" in p
         }
-        return (
-            para_lookup,
-            _int_number_set(parsed_data.get("footnotes")),
-            _int_number_set(parsed_data.get("endnotes")),
-        )
+        fn_nums, en_nums = _note_numbers_by_kind(parsed_data)
+        return para_lookup, fn_nums, en_nums
     except (
         Exception
     ) as e:  # noqa: BLE001 - bad parsed arrays -> no classification context

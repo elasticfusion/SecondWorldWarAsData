@@ -648,8 +648,16 @@ def _warn_unresolvable_media(content: str, base_url: str, book: str) -> int:
     return lost
 
 
-def _add_images_to_doc(doc: MarkdownDocument, content: str, base_url: str = "") -> None:
-    """Extract and add images to document."""
+def _add_images_to_doc(
+    doc: MarkdownDocument,
+    content: str,
+    base_url: str = "",
+    anchor_content: Optional[str] = None,
+    notes=None,
+) -> None:
+    """Extract and add images to document. ``anchor_content`` is the text the paragraphs were
+    built from (the notes-separated body) when it differs from ``content``; ``notes`` are the
+    section's notes, to anchor an image linked only from a note."""
     for img_type, resource_or_url, alt_text, external_url in extract_images(
         content, base_url=base_url
     ):
@@ -679,7 +687,9 @@ def _add_images_to_doc(doc: MarkdownDocument, content: str, base_url: str = "") 
             )
         doc.images.append(img)
     _pair_image_captions(doc, content)
-    _anchor_images_to_paragraphs(doc, content)
+    _anchor_images_to_paragraphs(
+        doc, content if anchor_content is None else anchor_content, notes
+    )
 
 
 _MIN_PROBE_CHARS = 20  # shorter probes (page markers, one-liners) match too easily
@@ -719,47 +729,172 @@ def _paragraph_positions(paragraphs, content: str) -> list:
     return out
 
 
+# A token must stand as a whole reference, delimited the way markdown / HTML delimit a URL:
+# ![](X) [t](X "T") ![](<X>) src="X" src='X' src=X> - so img/X.jpg never matches other/img/X.jpg.
+_REF_BEFORE = r"(?<![^\s\"'(=<])"
+_REF_AFTER = r"(?![^\s\"')#?>])"
+
+
 def _image_pos(token: str, content: str, cursor: int) -> int:
     """Offset of an image token at/after ``cursor``; else from the start (out-of-order image)."""
     if not token:
         return -1
-    pos = content.find(token, cursor)
-    return pos if pos != -1 else content.find(token)
+    rx = re.compile(_REF_BEFORE + re.escape(token) + _REF_AFTER)
+    m = rx.search(content, cursor) or rx.search(content)
+    return m.start() if m else -1
 
 
-def _anchor_one(img, content: str, positions: list, cursor: int) -> tuple:
-    """(paragraph_number or None, new_cursor) for one image: the paragraph it follows, or the
-    first paragraph when it precedes all text; None if the image is not found in the source.
+def _safe_urlsplit(url: str):
+    """``urlsplit`` or None: a malformed URL from an untrusted page (``https://[x/a.jpg``) raises
+    ValueError, which must not abort the chapter's parse."""
+    from urllib.parse import urlsplit
+
+    try:
+        return urlsplit(url)
+    except ValueError:
+        logger.warning(
+            "OBSERV parser.image_url_malformed status=warn url=%.200s (unparseable URL: only its "
+            "exact text can locate it; fix the reference in the source markup)",
+            url,
+        )
+        return None
+
+
+def _relative_forms(u, base) -> List[str]:
+    """Root-relative and document-relative forms of ``u`` against ``base`` (same host only)."""
+    import posixpath
+
+    if not (base and u and base.netloc and u.path):
+        return []
+    if u.netloc.lower() != base.netloc.lower():
+        return []
+    query = f"?{u.query}" if u.query else ""
+    rel = posixpath.relpath(u.path, posixpath.dirname(base.path) or "/") + query
+    forms = [u.path + query, rel]  # /hyperwar/.../img/X.jpg ; img/X.jpg or ../img/X.jpg
+    if not rel.startswith("."):
+        forms.append("./" + rel)  # urljoin collapsed a written "./img/X.jpg"
+    return forms
+
+
+def _image_tokens(img, base_url: str) -> List[str]:
+    """The forms an image reference can be WRITTEN in the source, most specific first. Image URLs
+    are resolved to absolute against the chapter's source URL, but the source keeps them as
+    written (HyperWar: ``img/X.jpg``), so the absolute form alone never matched (XChannel-8:
+    39/39 unanchored). Each form is derived exactly from the URL and the base (no basename
+    guessing: ``icn/X.jpg`` and ``img/X.jpg`` are different images)."""
+    base = _safe_urlsplit((base_url or "").split("#", 1)[0]) if base_url else None
+    tokens: List[str] = []
+    for ref, is_resource in ((img.url, False), (img.resource_id, True)):
+        if not ref:
+            continue
+        if is_resource and ref.startswith("/"):
+            tokens.append(":" + ref)  # Joplin resource, written (:/id)
+        tokens.append(ref)
+        if "://" in ref:
+            tokens.extend(_relative_forms(_safe_urlsplit(ref), base))
+    return list(dict.fromkeys(tokens))
+
+
+def _anchor_one(
+    img, content: str, positions: list, cursor: int, base_url: str = ""
+) -> tuple:
+    """(paragraph_number or None, new_cursor, found) for one image: the nearest LOCATED paragraph
+    at or before it (short paragraphs cannot be probed, so this can be an earlier one); None
+    when no located paragraph precedes it or it is not in ``content``; ``found`` says whether it
+    was located.
     """
-    pos = _image_pos(img.url or img.resource_id or "", content, cursor)
-    if pos == -1 or not positions:
-        return None, cursor
+    pos = -1
+    for token in _image_tokens(img, base_url):
+        pos = _image_pos(token, content, cursor)
+        if pos != -1:
+            break
+    if pos == -1:
+        return None, cursor, False
     preceding = [num for off, num in positions if off <= pos]
     # An image before ALL text follows no paragraph: leave it unanchored (0) rather than claim it.
-    return (preceding[-1] if preceding else None), max(cursor, pos + 1)
+    return (preceding[-1] if preceding else None), max(cursor, pos + 1), True
 
 
-def _anchor_images_to_paragraphs(doc: MarkdownDocument, content: str) -> None:
-    """Set each image's ``paragraph_number`` to the paragraph it follows in the source (the first
-    paragraph if it precedes all text). It was hard-coded 0, so a figure placed BETWEEN paragraphs
-    could not be traced to any sub-event (XChannel ch8: 6 figures with no provenance link).
-    Unlocatable images stay 0 and are counted (OBSERV parser.image_unanchored)."""
+def _anchor_in_notes(img, notes, base_url: str) -> bool:
+    """Link an image that is not in the narrative to the note whose text links it ("See naval
+    command chart"): its paragraph is the one citing that note. True when found."""
+    tokens = _image_tokens(img, base_url)
+    for note in notes or ():
+        if any(_image_pos(t, note.text or "", 0) != -1 for t in tokens):
+            img.note_number = note.number
+            img.paragraph_number = note.paragraph_number
+            return True
+    return False
+
+
+def _unanchored_kind(doc, found: bool, positions: list) -> str:
+    """Why a FOUND-or-not image got no paragraph: 'leading' (no located paragraph precedes it),
+    'unprobeable' (the file has no paragraph long enough to locate - nothing to fix), 'probe_miss'
+    (long paragraphs exist but none was located), or 'not_found'."""
+    if not found:
+        return "not_found"
+    if positions:
+        return "leading"
+    probeable = any(_probe_regex((p.text or "").strip()) for p in doc.paragraphs)
+    return "probe_miss" if probeable else "unprobeable"
+
+
+def _anchor_images_to_paragraphs(
+    doc: MarkdownDocument, content: str, notes=None
+) -> None:
+    """Set each image's ``paragraph_number`` to the paragraph it follows in the source. It was
+    hard-coded 0, so a figure placed BETWEEN paragraphs could not be traced to any sub-event
+    (XChannel ch8: 6 figures with no provenance link). An image linked only from a note
+    (``notes``) takes that note's citing paragraph. An image no LOCATED paragraph precedes (a
+    frontispiece, or only short unprobeable paragraphs before it) stays 0 by design and is
+    counted at INFO; images not found in the source, or in a file whose long paragraphs could
+    not be located, stay 0 and are alerted."""
     positions = _paragraph_positions(doc.paragraphs, content)
     cursor = 0
-    unanchored = 0
+    counts: Dict[str, int] = {}
+    base_url = getattr(doc, "source_url", "") or ""
     for img in doc.images:
-        num, cursor = _anchor_one(img, content, positions, cursor)
-        if num is None:
-            unanchored += 1
-        else:
+        num, cursor, found = _anchor_one(img, content, positions, cursor, base_url)
+        if num is not None:
             img.paragraph_number = num
-    if unanchored:
-        logger.warning(
-            "OBSERV parser.image_unanchored status=warn images=%d file_images=%d "
-            "(paragraph_number left 0 — image position not found in source)",
-            unanchored,
-            len(doc.images),
+        elif not found and _anchor_in_notes(img, notes, base_url):
+            continue
+        else:
+            kind = _unanchored_kind(doc, found, positions)
+            counts[kind] = counts.get(kind, 0) + 1
+    _report_unanchored_images(counts, len(doc.images), len(positions))
+
+
+def _report_unanchored_images(counts: Dict[str, int], total: int, located: int) -> None:
+    benign = {k: counts[k] for k in ("leading", "unprobeable") if counts.get(k)}
+    if benign:
+        logger.info(
+            "OBSERV parser.image_leading status=ok %s (no LOCATED paragraph precedes them: a "
+            "frontispiece, or only short paragraphs; paragraph_number 0 by design)",
+            " ".join(f"{k}={v}" for k, v in benign.items()),
         )
+    for kind, hint in (
+        (
+            "not_found",
+            "image position not found in source; check how the image is written in the "
+            "source against src/parser._image_tokens / _REF_BEFORE / _REF_AFTER",
+        ),
+        (
+            "probe_miss",
+            "no paragraph could be located in the source although long paragraphs exist; "
+            "check src/parser._probe_regex against this file's paragraph markup",
+        ),
+    ):
+        if counts.get(kind):
+            logger.warning(
+                "OBSERV parser.image_unanchored status=warn reason=%s images=%d file_images=%d "
+                "located_paragraphs=%d (paragraph_number left 0 - %s)",
+                kind,
+                counts[kind],
+                total,
+                located,
+                hint,
+            )
 
 
 # An ALL-CAPS figure caption: the line's letters are (mostly) uppercase and it has ≥2 words
@@ -893,11 +1028,124 @@ def _map_reference_footprint(
     return refs
 
 
-def _add_footnotes_to_doc(doc: MarkdownDocument, content: str) -> None:
-    """Extract and add footnotes to document."""
-    for number, url, text in extract_footnotes(content):
-        footnote = Footnote(number=number, url=url, paragraph_number=0, text=text)
-        doc.footnotes.append(footnote)
+def _add_footnotes_to_doc(
+    doc: MarkdownDocument, content: str, notes: Optional[list] = None
+) -> None:
+    """Add the section's notes, each linked to the paragraph (in this section) that cites it.
+
+    ``notes`` come from the separated notes section (src/notes). When the file has none in that
+    form, fall back to the legacy markdown-link form (``extract_footnotes``). Notes cited from an
+    EARLIER section of the chapter are linked, and unlinked ones reported, chapter-wide by
+    ``_link_chapter_notes`` (a chapter's notes section usually sits only in its last file).
+    """
+    from src.notes import Note, attach_citing_paragraphs
+
+    if not notes:
+        notes = [
+            Note(number=n, kind="footnote", text=t, url=u)
+            for n, u, t in extract_footnotes(content)
+        ]
+    attach_citing_paragraphs(notes, doc.paragraphs)
+    for n in notes:
+        doc.footnotes.append(
+            Footnote(
+                number=n.number,
+                url=n.url,
+                paragraph_number=n.paragraph_number,
+                text=n.text,
+                kind=n.kind,
+            )
+        )
+
+
+def _link_note_images(documents: List[MarkdownDocument]) -> None:
+    """An image linked from a note takes the note's (chapter-wide) citing paragraph. Looked up in
+    the image's OWN file: numbering can restart per file, so a chapter-wide number map could
+    hand it another file's note."""
+    for d in documents:
+        cited_at = {f.number: f.paragraph_number for f in d.footnotes}
+        for img in d.images:
+            if getattr(img, "note_number", 0) and not img.paragraph_number:
+                img.paragraph_number = cited_at.get(img.note_number, 0)
+
+
+def _report_chapter_notes(
+    book: str, chapter, footnotes: list, orphans: List[int]
+) -> None:
+    """OBSERV line + actionable alerts for a chapter's notes: unanchored notes, orphan markers."""
+    located = sum(1 for f in footnotes if f.paragraph_number)
+    logger.info(
+        "OBSERV parser.notes book=%s notes=%d located=%d orphan_markers=%d kinds=%s",
+        book,
+        len(footnotes),
+        located,
+        len(orphans),
+        ",".join(sorted({f.kind for f in footnotes})),
+    )
+    from src.utils.observe import observe_warn_counted
+
+    if located < len(footnotes):
+        observe_warn_counted(
+            "parser",
+            "notes_unanchored",
+            key=(book, chapter),
+            every=10**9,
+            note=(
+                "some notes have no in-text marker anywhere in the chapter, so their citing "
+                "paragraph is unknown (provenance gap); check the chapter's marker markup "
+                "against src/notes._HTML_MARKER / CANONICAL_MARKER"
+            ),
+            book=book,
+            chapter=chapter,
+            notes=len(footnotes),
+            located=located,
+            unanchored=[f.number for f in footnotes if not f.paragraph_number][:10],
+        )
+    if orphans:
+        observe_warn_counted(
+            "parser",
+            "notes_orphan_markers",
+            key=(book, chapter),
+            every=10**9,
+            note=(
+                "in-text note markers have no note definition, so those citations are lost; "
+                "the chapter's notes section was not recognised - check its heading / "
+                "definition markup against src/notes._HEADING and _DEF_HTML/_DEF_MD"
+            ),
+            book=book,
+            chapter=chapter,
+            orphan_markers=len(orphans),
+            numbers=orphans[:10],
+        )
+
+
+def _link_chapter_notes(documents: List[MarkdownDocument], book: str) -> None:
+    """Link each note not cited in its own file to the first paragraph citing it elsewhere in the
+    chapter, then report notes no paragraph cites (provenance gap) and markers no note defines (a
+    notes section the parser did not recognise - the XChannel-8 0-of-102 failure). Alerts are
+    chapter-level so a multi-file chapter is not flagged for markers in its other files.
+    """
+    from src.notes import attach_citing_paragraphs, first_citing_paragraphs
+
+    paragraphs = [p for d in documents for p in d.paragraphs]
+    footnotes = [f for d in documents for f in d.footnotes]
+    markers = first_citing_paragraphs(paragraphs)
+    if not footnotes and not markers:
+        return
+    # A note cited in its own file is already linked (_add_footnotes_to_doc); only the rest are
+    # looked up chapter-wide, so restarted per-file numbering keeps its local citation.
+    attach_citing_paragraphs(
+        [f for f in footnotes if not f.paragraph_number], paragraphs
+    )
+    _link_note_images(documents)
+    orphans = sorted(set(markers) - {f.number for f in footnotes})
+    _report_chapter_notes(book, _chapter_key(documents[0]), footnotes, orphans)
+
+
+def _chapter_key(doc) -> object:
+    """The chapter's alert identity: its number, or (chapter 0 = no chapterN in the file name)
+    its file, so un-numbered chapters do not collide on one alert key."""
+    return doc.chapter_number or str(getattr(doc, "file_path", "") or "")
 
 
 def _apply_structure_repair(content: str) -> Tuple[str, Dict[int, Optional[str]]]:
@@ -982,11 +1230,34 @@ def parse_content_file(
         file_path=file_path,
     )
 
-    # Build page map and create paragraphs
-    page_map = _build_page_map(content)
-    paragraph_blocks = split_into_blocks(content)
+    # Phase 1 SEPARATES the notes from the narrative (src/notes): the body loses the notes section
+    # and site navigation, and its note markers are canonicalised; the notes keep their provenance.
+    from src.notes import separate_notes_detailed
+
+    body, notes, separation = separate_notes_detailed(content, metadata.source_url)
+    if separation.duplicates:
+        from src.utils.observe import observe_warn_counted
+
+        observe_warn_counted(
+            "parser",
+            "notes_duplicate_definition",
+            key=(metadata.book, str(file_path)),
+            every=10**9,
+            note=(
+                "a note number is defined more than once in the notes section; the FIRST "
+                "definition was kept and the repeat dropped - check the source for a repeated "
+                "section or restarted numbering and fix the markdown"
+            ),
+            book=metadata.book,
+            file=str(file_path),
+            numbers=separation.duplicates[:10],
+        )
+
+    # Build page map and create paragraphs (from the BODY only)
+    page_map = _build_page_map(body)
+    paragraph_blocks = split_into_blocks(body)
     doc.paragraphs = _create_paragraphs(
-        paragraph_blocks, start_paragraph_num, section_id, file_path, content, page_map
+        paragraph_blocks, start_paragraph_num, section_id, file_path, body, page_map
     )
     # Attach quote attribution to re-marked quote paragraphs (by block index).
     if attribution_by_para:
@@ -994,11 +1265,19 @@ def parse_content_file(
             if para.is_quote and block_idx in attribution_by_para:
                 para.quote_attribution = attribution_by_para[block_idx]
 
-    # Add images, maps, and footnotes
+    # Add footnotes, images and maps. Notes first: an image linked only from a note anchors to the
+    # paragraph citing that note. Media are extracted from the FULL content (a map linked only
+    # from a note is still a map) but anchored against the BODY the paragraphs were built from.
+    _add_footnotes_to_doc(doc, content, notes)
     _warn_unresolvable_media(content, metadata.source_url, metadata.book)
-    _add_images_to_doc(doc, content, base_url=metadata.source_url)
+    _add_images_to_doc(
+        doc,
+        content,
+        base_url=metadata.source_url,
+        anchor_content=body,
+        notes=doc.footnotes,
+    )
     _add_maps_to_doc(doc, content, base_url=metadata.source_url)
-    _add_footnotes_to_doc(doc, content)
 
     # Attach flattened-table hints (review-flagged) from structure repair.
     doc.table_hints = table_hints
@@ -1036,4 +1315,6 @@ def parse_chapter(
         if doc.paragraphs:
             current_para_num = doc.paragraphs[-1].absolute_number + 1
 
+    if documents:
+        _link_chapter_notes(documents, metadata.book)
     return documents
