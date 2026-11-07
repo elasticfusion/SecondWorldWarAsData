@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Identify possible duplicate places based on name similarity and coordinates."""
 
+import itertools
 import json
 import logging
+import os
+import re
 import sys
 import unicodedata
 from difflib import SequenceMatcher
@@ -75,7 +78,70 @@ def _strip_geo_terms(name: str) -> str:
     return n.strip()
 
 
+# Leading words that do not identify a place (titles/articles): skipped when finding the
+# distinctive START of a name, so "St. Lô" / "Saint-Lô" / "Le Lô" all start at "lo".
+_LEADING_NOISE = frozenset(p.strip() for p in _GEO_PREFIXES) | {
+    # articles / elided articles ("L'Aigle", "d'Isigny", "Pont-a-Mousson")
+    "le",
+    "la",
+    "les",
+    "the",
+    "l",
+    "d",
+    "de",
+    "du",
+    "des",
+    "a",
+    "au",
+    "aux",
+    "sur",
+    "en",
+    # title variants of the _GEO_PREFIXES words ("Mt. Cassino" == "Monte Cassino")
+    "mt",
+    "mte",
+    "mount",
+}
+_MIN_START_MATCH = 4  # shared leading characters required (fewer if a name is shorter)
+
+
+def _distinctive_start(name: str) -> str:
+    """The first identifying word of a place name (accent/case/punctuation-insensitive)."""
+    tokens = re.findall(r"[a-z0-9]+", _normalize(name))
+    while len(tokens) > 1 and tokens[0] in _LEADING_NOISE:
+        tokens.pop(0)
+    return tokens[0] if tokens else ""
+
+
+def _starts_match(a: str, b: str) -> bool:
+    """True when the two names begin the same way.
+
+    A place name is identified by its START. Shared ENDINGS are generic toponym suffixes
+    (-mouth, -ville, Beach, -au-Plain, -du-Mont) that tell nothing about identity: Plymouth /
+    Weymouth, Colleville / Culoville, OMAHA Beach / UTAH Beach, Neuville-au-Plain /
+    Beuzeville-au-Plain are different places. So when the starts differ the names cannot
+    be duplicates, however much of their tails match.
+    """
+    sa, sb = _distinctive_start(a), _distinctive_start(b)
+    if not sa or not sb:
+        return False
+    need = min(_MIN_START_MATCH, len(sa), len(sb))
+    return len(os.path.commonprefix([sa, sb])) >= need
+
+
+_GATED_HIGH_SIM = [
+    0
+]  # pairs zeroed by the start gate that raw string similarity rated >= 0.85
+_RAW_HIGH_SIM = 0.85
+
+
 def _similarity(a: str, b: str) -> float:
+    if not _starts_match(a, b):
+        # The ending must not matter when the beginning does not match. Count the rare pair that
+        # is nearly identical apart from its first letters (a typo like Havre/Harve) so a lost
+        # duplicate is visible in place_dedup.summary instead of silently gone.
+        if SequenceMatcher(None, _normalize(a), _normalize(b)).ratio() >= _RAW_HIGH_SIM:
+            _GATED_HIGH_SIM[0] += 1
+        return 0.0
     base_sim = SequenceMatcher(None, _normalize(a), _normalize(b)).ratio()
     # If names share a geographic prefix/suffix, also check core name similarity
     core_a = _strip_geo_terms(_normalize(a))
@@ -144,6 +210,7 @@ def _coords_verified(data: dict) -> bool:
 def find_duplicate_places(places_dir: Path) -> List[Dict]:
     """Find potential duplicate places."""
     _SUPPRESSED_UNVERIFIED[0] = 0
+    _GATED_HIGH_SIM[0] = 0
     places = _load_places(places_dir)
     excluded_pairs, excluded_names = _load_exclusions(places_dir)
 
@@ -174,28 +241,31 @@ def find_duplicate_places(places_dir: Path) -> List[Dict]:
     duplicates.sort(key=lambda x: float(x["confidence"]), reverse=True)
     filtered = _filter_excluded(duplicates, excluded_pairs, excluded_names)
 
-    # Suppress recently-reviewed pairs
+    filtered = _drop_fully_reviewed(filtered)
+    logger.info(
+        "OBSERV place_dedup.summary status=ok places=%d weak_suppressed_unverified=%d "
+        "start_gated_near_identical=%d",
+        len(places),
+        _SUPPRESSED_UNVERIFIED[0],
+        _GATED_HIGH_SIM[0],
+    )
+    return filtered
+
+
+def _drop_fully_reviewed(groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Suppress groups whose every pair was already reviewed by a human."""
     from src.dedup.exclusions import load_reviewed_pairs
 
     reviewed = load_reviewed_pairs("places")
-    if reviewed:
-        remaining = []
-        for g in filtered:
-            filenames = [p["filename"] for p in g["people"]]
-            all_reviewed = all(
-                tuple(sorted([filenames[i], filenames[j]])) in reviewed
-                for i in range(len(filenames))
-                for j in range(i + 1, len(filenames))
-            )
-            if not all_reviewed:
-                remaining.append(g)
-        filtered = remaining
-    logger.info(
-        "OBSERV place_dedup.summary status=ok places=%d weak_suppressed_unverified=%d",
-        len(places),
-        _SUPPRESSED_UNVERIFIED[0],
-    )
-    return filtered
+    if not reviewed:
+        return groups
+    remaining = []
+    for g in groups:
+        names = [p["filename"] for p in g["people"]]
+        pairs = itertools.combinations(names, 2)
+        if not all(tuple(sorted(pair)) in reviewed for pair in pairs):
+            remaining.append(g)
+    return remaining
 
 
 def _load_exclusions(places_dir: Path) -> tuple:
@@ -300,9 +370,9 @@ def _load_coords_cache(places_dir: Path) -> Dict[str, Dict]:
     return {}
 
 
-def _load_places(places_dir: Path) -> list:
-    """Load place data from local files + index.json for non-local entries."""
-    places = []
+def _load_local_places(places_dir: Path) -> "tuple[list, set]":
+    """Place records from the local *.json files. Returns (places, filenames seen)."""
+    places: list = []
     seen_filenames: set = set()
     for f in sorted(places_dir.glob("*.json")):
         if f.name in SKIP_FILES:
@@ -310,46 +380,57 @@ def _load_places(places_dir: Path) -> list:
         seen_filenames.add(f.name)
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
-            name = data.get(
-                "current_name", data.get("place_name", data.get("name", ""))
-            )
-            if name:
-                lat, lon = _get_coords(data)
-                places.append(
-                    {
-                        "name": name,
-                        "filename": f.name,
-                        "PlaceID": data.get("PlaceID", ""),
-                        "lat": lat,
-                        "lon": lon,
-                        "coords_verified": _coords_verified(data),
-                    }
-                )
         except (json.JSONDecodeError, OSError) as e:
             logger.warning("Skipping %s: %s", f.name, e)
+            continue
+        name = data.get("current_name", data.get("place_name", data.get("name", "")))
+        if not (isinstance(name, str) and name.strip()):
+            continue  # missing / non-string name: not a comparable place
+        lat, lon = _get_coords(data)
+        places.append(
+            {
+                "name": name,
+                "filename": f.name,
+                "PlaceID": data.get("PlaceID", ""),
+                "lat": lat,
+                "lon": lon,
+                "coords_verified": _coords_verified(data),
+            }
+        )
+    return places, seen_filenames
 
-    # Add entries from index.json that aren't local
+
+def _load_index_places(places_dir: Path, seen_filenames: set) -> list:
+    """Entries from index.json that have no local file (coords from the shared cache)."""
     index_file = places_dir / "index.json"
+    if not index_file.exists():
+        return []
     coords_cache = _load_coords_cache(places_dir)
-    if index_file.exists():
-        try:
-            raw = json.loads(index_file.read_text(encoding="utf-8"))
-            for name, filename in raw.items():
-                if filename not in seen_filenames and filename not in SKIP_FILES:
-                    cached = coords_cache.get(filename, {})
-                    places.append(
-                        {
-                            "name": name.replace("_", " "),
-                            "filename": filename,
-                            "PlaceID": cached.get("PlaceID", ""),
-                            "lat": cached.get("lat"),
-                            "lon": cached.get("lon"),
-                        }
-                    )
-        except (json.JSONDecodeError, OSError):
-            pass
-
+    try:
+        raw = json.loads(index_file.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+    places = []
+    for name, filename in raw.items():
+        if filename in seen_filenames or filename in SKIP_FILES:
+            continue
+        cached = coords_cache.get(filename, {})
+        places.append(
+            {
+                "name": name.replace("_", " "),
+                "filename": filename,
+                "PlaceID": cached.get("PlaceID", ""),
+                "lat": cached.get("lat"),
+                "lon": cached.get("lon"),
+            }
+        )
     return places
+
+
+def _load_places(places_dir: Path) -> list:
+    """Load place data from local files + index.json for non-local entries."""
+    places, seen_filenames = _load_local_places(places_dir)
+    return places + _load_index_places(places_dir, seen_filenames)
 
 
 def _find_cluster(i, p1, places, seen):

@@ -90,9 +90,12 @@ def test_geocoded_twin_does_match(tmp_path):
 def test_suppressed_pairs_are_counted(monkeypatch, caplog, tmp_path):
     import logging
 
+    # Same START ("merderet"), partial name match (~50%), close, but only LLM-guessed coords: the
+    # weak rule must suppress AND count it. (The original XChannel pair, Merderet River vs
+    # Ste. Mere-Eglise, now never gets this far: different starts are rejected by the start gate.)
     for n, lat, lon in (
         ("merderet river", 49.40, -1.35),
-        ("ste mere-eglise", 49.41, -1.32),
+        ("merderet bridge causeway", 49.41, -1.32),
     ):
         rec = {
             "name": n.title(),
