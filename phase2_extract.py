@@ -883,6 +883,34 @@ def _run_core_extraction(
     return processed, failed
 
 
+def _warn_if_env_contradicts_config(env_value: str, logger) -> None:
+    """BATCH_PHASE2 (deploy-time) silently overriding config.yaml batch.phase2 is how batching was
+    off for a week while config said on. Make a disagreement an actionable alert."""
+    try:
+        from src.utils.config import load_config
+
+        cfg_on = bool(load_config().get("batch", {}).get("phase2", False))
+    except Exception:  # noqa: BLE001 - the check is advisory; never block extraction
+        return
+    env_on = env_value in ("true", "1", "yes", "on")
+    env_off = env_value in ("false", "0", "no", "off")
+    if (env_on and not cfg_on) or (env_off and cfg_on):
+        from src.utils.observe import observe_warn
+
+        observe_warn(
+            "batch",
+            "mode_config_mismatch",
+            note=(
+                f"BATCH_PHASE2={env_value} (task env) overrides config.yaml batch.phase2="
+                f"{str(cfg_on).lower()}; to make them agree redeploy with "
+                f"BATCH_PHASE2={str(cfg_on).lower()} bash scripts/deploy_all.sh (or change "
+                "config.yaml)"
+            ),
+            env=env_value,
+            config=cfg_on,
+        )
+
+
 def _resolve_batch_mode(cli_batch: bool, logger) -> bool:
     """BATCH_PHASE2 env override of the --batch CLI flag. The phase2 task-def hardcodes --batch,
     so BATCH_PHASE2=false/0/no/off is the only way to force SYNCHRONOUS extraction without editing
@@ -891,6 +919,7 @@ def _resolve_batch_mode(cli_batch: bool, logger) -> bool:
     if bp is None:
         return cli_batch
     v = bp.strip().lower()
+    _warn_if_env_contradicts_config(v, logger)
     if v in ("false", "0", "no", "off"):
         if cli_batch:
             logger.info(

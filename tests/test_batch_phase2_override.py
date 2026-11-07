@@ -28,3 +28,27 @@ def test_unset_leaves_cli(monkeypatch):
 def test_garbage_leaves_cli(monkeypatch):
     monkeypatch.setenv("BATCH_PHASE2", "maybe")
     assert _resolve_batch_mode(True, log) is True
+
+
+def test_env_contradicting_config_raises_an_actionable_alert(monkeypatch):
+    """BATCH_PHASE2=false silently overrode config.yaml batch.phase2=true for a week (no batches
+    submitted). A disagreement must alert with the fix."""
+    import logging
+
+    import phase2_extract as p2
+    import src.utils.config as cfgmod
+    import src.utils.observe as obs
+
+    alerts = []
+    monkeypatch.setattr(obs, "observe_warn", lambda *a, **k: alerts.append(k) or "")
+    monkeypatch.setattr(
+        cfgmod, "load_config", lambda *a, **k: {"batch": {"phase2": True}}
+    )
+    log = logging.getLogger("t")
+    monkeypatch.setenv("BATCH_PHASE2", "false")
+    assert p2._resolve_batch_mode(True, log) is False  # env still wins
+    assert alerts and "BATCH_PHASE2=true" in alerts[0]["note"]
+    alerts.clear()
+    monkeypatch.setenv("BATCH_PHASE2", "true")
+    assert p2._resolve_batch_mode(True, log) is True
+    assert not alerts  # agreement: no alert

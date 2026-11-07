@@ -12,12 +12,12 @@ Parameters:
     Description: M4 concurrency kill-switch — 'true' routes triggers to the SFN dispatcher
   BatchPhase2:
     Type: String
-    Default: 'false'
+    Default: 'true'
     AllowedValues: ['true', 'false']
     Description: >-
-      Phase-2 extraction mode. 'false' forces SYNCHRONOUS extraction (overrides the task-def
-      --batch flag via the BATCH_PHASE2 env, consumed by phase2_extract.py) — the predictable path
-      used for gold-standard measurement runs. 'true' uses the async xAI Batch API.
+      Phase-2 extraction mode. 'true' (default) uses the async xAI Batch API - the production path.
+      'false' forces SYNCHRONOUS extraction (overrides the task-def --batch flag via the
+      BATCH_PHASE2 env, consumed by phase2_extract.py), e.g. for a deliberate measurement run.
   GrokCacheDisabled:
     Type: String
     Default: '1'
