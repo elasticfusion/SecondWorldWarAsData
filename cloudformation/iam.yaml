@@ -268,6 +268,25 @@ Resources:
                 Resource:
                   - !Ref DataBucketArn
                   - !Sub ${DataBucketArn}/*
+              - Sid: S3SourceArchiveTagging
+                Effect: Allow
+                # Phase 0 (convert/video) tags a consumed SOURCE archive=cold so the storage
+                # lifecycle rule moves it to Glacier IR (src/ingestion/archive_tag). Without this
+                # grant every Phase 0 logged archive_tag.degraded (AccessDenied) and all sources
+                # stayed on STANDARD. Least privilege: sources only (contentrepository/), and the
+                # ONLY tag that may be written is archive=cold - so this role cannot clear the
+                # s3-validation-backstop quarantine=true tag on output/ or set the
+                # artifact-tier=deep-archive tag that sends an object to DEEP_ARCHIVE.
+                Action:
+                  - s3:PutObjectTagging
+                Resource:
+                  - !Sub ${DataBucketArn}/contentrepository/*
+                Condition:
+                  ForAllValues:StringEquals:
+                    s3:RequestObjectTagKeys:
+                      - archive
+                  StringEquals:
+                    s3:RequestObjectTag/archive: cold
               - Sid: DynamoDBAccess
                 Effect: Allow
                 Action:
