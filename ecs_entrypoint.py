@@ -3,17 +3,19 @@
 import json
 import logging
 import os
+import re
 import signal
 import subprocess
 import sys
 import threading
 import time
+import uuid
 from pathlib import Path
 from typing import Optional, Union
 
 import boto3
 
-from src.utils.observe import observe, observe_error
+from src.utils.observe import observe, observe_error, observe_warn, observe_warn_counted
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(message)s"
@@ -1230,9 +1232,13 @@ def _wait_for_reconcile_barrier() -> str:
     (default 300s); 0 disables the wait.
 
     Correctness guards:
-    - FRESHNESS (FINDING 2): a barrier whose ``completed_at`` predates this task's start is treated
-      as STALE (a previous run's signal that _clear_reconcile_barrier failed to delete) and ignored,
-      so a failed clear cannot mask the race as a false "seen".
+    - FRESHNESS: judged by ``_judge_barrier``. When the barrier and the run marker both carry a
+      ``run_id`` the match is AUTHORITATIVE (equal => fresh, different => stale, regardless of
+      timestamps), because Phase 3 starts AFTER the reconcile published and so a barrier is
+      legitimately older than this task. Without run ids (marker write failed / legacy barrier) it
+      falls back to the timestamp rule: ``completed_at`` before this task's start is STALE.
+      Residual gap: a Phase 3 launched before the reconcile has cleared the old marker+barrier
+      sees a consistent OLD pair; the pipeline chain launches Phase 3 only after dedup.
     - CROSS-BOOK (FINDING 1): waits for EITHER this book's barrier OR the ``_all`` full-corpus
       barrier — the full-corpus reconcile unions all books and publishes ``_all``; a per-book
       reconcile publishes the book key. Seeing either (fresh) means the corpus Phase 3 needs is
@@ -1244,7 +1250,12 @@ def _wait_for_reconcile_barrier() -> str:
         timeout = 300
     if timeout <= 0:
         return "disabled"
-    keys = [_reconcile_barrier_key(), "manifests/reconcile_complete/_all.json"]
+    # dict.fromkeys: BOOK_NAME unset/empty makes both keys "_all" — poll it once, not twice.
+    keys = list(
+        dict.fromkeys(
+            [_reconcile_barrier_key(), "manifests/reconcile_complete/_all.json"]
+        )
+    )
     # Only accept barriers published at/after this task started — a few seconds of slack for clock
     # skew. _TASK_START_TS is set at module import (process start = task start).
     min_completed_at = _TASK_START_TS - 30
@@ -1258,32 +1269,20 @@ def _wait_for_reconcile_barrier() -> str:
                 obj = s3.get_object(Bucket=BUCKET, Key=key)
             except Exception:  # noqa: BLE001 - not present yet (404) or transient
                 continue
-            body = {}
-            try:
-                body = json.loads(obj["Body"].read().decode())
-            except Exception:  # noqa: BLE001
-                pass
-            completed_at = body.get("completed_at")
-            if not isinstance(completed_at, (int, float)):
-                # No/old-format timestamp — can't prove freshness; treat as stale, keep waiting.
-                logger.debug("reconcile barrier %s missing completed_at; ignoring", key)
+            body = _parse_barrier_body(obj)
+            fresh, via = _judge_barrier(s3, body, min_completed_at, key)
+            if not fresh:
                 continue
-            if completed_at < min_completed_at:
-                logger.info(
-                    "OBSERV reconcile.barrier_stale key=%s age=%.1fs (predates task start) — "
-                    "ignoring",
-                    key,
-                    time.time() - completed_at,
-                )
-                continue
-            age = time.time() - completed_at
+            completed_at = body["completed_at"]
             logger.info(
-                "OBSERV reconcile.barrier_seen key=%s waited=%ds barrier_age=%.1fs "
-                "canonical_count=%s ordering=ok",
+                "OBSERV reconcile.barrier_seen key=%s waited=%ds via=%s barrier_age=%.1fs "
+                "run_id=%s canonical_count=%r ordering=ok",
                 key,
                 waited,
-                age,
-                body.get("canonical_count"),
+                via,
+                time.time() - completed_at,
+                str(body.get("run_id"))[:32],
+                str(body.get("canonical_count"))[:16],
             )
             return "seen"
         time.sleep(interval)
@@ -2495,6 +2494,8 @@ def _reconcile_bibliography_full_corpus() -> None:
         # completion signal and snapshot before THIS run's reconcile finishes. This reconcile
         # produces the cross-book UNION, so it owns the "_all" barrier.
         _clear_reconcile_barrier(s3, key="manifests/reconcile_complete/_all.json")
+        _clear_reconcile_barrier(s3, key=_RECONCILE_RUN_MARKER_KEY)
+        run_id = _start_reconcile_run(s3)
         n = _download_s3_prefix(s3, "output/bibliography/")
         logger.info("Full-corpus bibliography reconcile: downloaded %d files", n)
         from src.extraction.bibliography import reconcile_bibliography_dir
@@ -2522,6 +2523,7 @@ def _reconcile_bibliography_full_corpus() -> None:
             s3,
             canonical_count=canonical_count,
             key="manifests/reconcile_complete/_all.json",
+            run_id=run_id,
         )
     except (
         Exception
@@ -2531,8 +2533,123 @@ def _reconcile_bibliography_full_corpus() -> None:
 
 # S3 key for the "Phase-2 dedup/reconcile finished publishing bibliography" barrier. Book-scoped so
 # concurrent books don't clobber each other's signal.
+# Run marker written by the full-corpus reconcile BEFORE it publishes the barrier. The barrier
+# body carries the same run_id, so Phase 3 judges freshness by identity (barrier.run_id ==
+# marker.run_id) instead of comparing against its own start time — Phase 3 starts AFTER the
+# reconcile published, so a time comparison against Phase 3's start rejects a correct barrier.
+_RECONCILE_RUN_MARKER_KEY = "manifests/reconcile_complete/_run.json"
+
+
+def _start_reconcile_run(s3) -> Optional[str]:
+    """Record a fresh run_id marker at reconcile start. Returns the id, or None if the marker
+    could not be written (Phase 3 then falls back to the timestamp freshness check)."""
+    run_id = uuid.uuid4().hex
+    try:
+        s3.put_object(
+            Bucket=BUCKET,
+            Key=_RECONCILE_RUN_MARKER_KEY,
+            Body=json.dumps({"run_id": run_id, "started_at": time.time()}).encode(),
+        )
+        return run_id
+    except Exception as e:  # noqa: BLE001 - must not block dedup
+        observe_warn(
+            "reconcile",
+            "run_marker_write_failed",
+            note=(
+                "Phase 3 falls back to the timestamp freshness check and may wait out "
+                "RECONCILE_BARRIER_WAIT_SECS; check the task role's s3:PutObject on "
+                "manifests/ and re-run the dedup phase"
+            ),
+            error=type(e).__name__,
+        )
+        return None
+
+
+_RUN_ID_RE = re.compile(r"[0-9a-f]{32}")  # uuid4().hex
+
+
+def _parse_barrier_body(obj) -> dict:
+    """Decode a barrier S3 object; anything that is not a JSON object yields {} (=> stale)."""
+    try:
+        body = json.loads(obj["Body"].read().decode())
+    except (
+        Exception
+    ):  # noqa: BLE001 - corrupt/partial write: treat as no usable barrier
+        return {}
+    return body if isinstance(body, dict) else {}
+
+
+def _read_run_marker(s3) -> Optional[dict]:
+    """Return the reconcile run marker, or None if absent/unreadable/malformed. Anything other
+    than a plain 'not there yet' is surfaced so a permissions problem is not silent."""
+    try:
+        raw = s3.get_object(Bucket=BUCKET, Key=_RECONCILE_RUN_MARKER_KEY)
+    except Exception as e:  # noqa: BLE001
+        code = getattr(e, "response", {}).get("Error", {}).get("Code", "")
+        if code not in ("NoSuchKey", "404") and not isinstance(e, KeyError):
+            observe_warn_counted(
+                "reconcile",
+                "run_marker_read_failed",
+                key=("run_marker_read_failed", type(e).__name__),
+                note=(
+                    "falling back to the timestamp freshness check; verify the task role "
+                    "has s3:GetObject on manifests/reconcile_complete/"
+                ),
+                error=type(e).__name__,
+            )
+        return None
+    marker = _parse_barrier_body(raw)
+    # Validate shapes: the marker is S3 JSON, so a wrong type must degrade to the timestamp path
+    # (and never reach logs / comparisons) rather than raise out of the wait loop.
+    if not _RUN_ID_RE.fullmatch(str(marker.get("run_id", ""))):
+        return None
+    started = marker.get("started_at")
+    if isinstance(started, bool) or not isinstance(started, (int, float)):
+        return None
+    return marker
+
+
+def _judge_barrier(
+    s3, body: dict, min_completed_at: float, key: str
+) -> "tuple[bool, str]":
+    """Decide whether ``body`` is a fresh barrier. Returns (fresh, via) with via in
+    {"run_id", "timestamp"}; logs why a barrier was rejected so a timeout is diagnosable.
+    """
+    completed_at = body.get("completed_at")
+    if isinstance(completed_at, bool) or not isinstance(completed_at, (int, float)):
+        logger.debug("reconcile barrier %s missing completed_at; ignoring", key)
+        return False, "timestamp"
+    barrier_id = body.get("run_id")
+    if barrier_id is not None and not _RUN_ID_RE.fullmatch(str(barrier_id)):
+        barrier_id = None  # malformed: ignore it (never logged), use the timestamp rule
+    marker = _read_run_marker(s3) if barrier_id else None
+    if marker:
+        if marker["run_id"] == barrier_id and completed_at >= marker.get(
+            "started_at", 0
+        ):
+            return True, "run_id"
+        logger.info(
+            "OBSERV reconcile.barrier_run_mismatch key=%s barrier_run_id=%s "
+            "marker_run_id=%s — ignoring",
+            key,
+            str(barrier_id)[:64],
+            str(marker["run_id"])[:64],
+        )
+        return False, "run_id"
+    if completed_at < min_completed_at:
+        logger.info(
+            "OBSERV reconcile.barrier_stale key=%s age=%.1fs (predates task start) — ignoring",
+            key,
+            time.time() - completed_at,
+        )
+        return False, "timestamp"
+    return True, "timestamp"
+
+
 def _reconcile_barrier_key() -> str:
-    book = os.environ.get("BOOK_NAME", "_all")
+    # `or` (not a get() default): BOOK_NAME is set to "" at startup, which would otherwise yield
+    # the nonsense key manifests/reconcile_complete/.json.
+    book = os.environ.get("BOOK_NAME") or "_all"
     return f"manifests/reconcile_complete/{book}.json"
 
 
@@ -2541,11 +2658,23 @@ def _clear_reconcile_barrier(s3, key: Optional[str] = None) -> None:
     try:
         s3.delete_object(Bucket=BUCKET, Key=key or _reconcile_barrier_key())
     except Exception as e:  # noqa: BLE001 - best-effort
-        logger.debug("reconcile barrier clear skipped: %s", e)
+        observe_warn(
+            "reconcile",
+            "barrier_clear_failed",
+            note=(
+                "a previous run's barrier may remain and be mistaken for fresh; check the task "
+                "role's s3:DeleteObject on manifests/reconcile_complete/ then re-run dedup"
+            ),
+            key=key or _reconcile_barrier_key(),
+            error=type(e).__name__,
+        )
 
 
 def _publish_reconcile_barrier(
-    s3, canonical_count: int = -1, key: Optional[str] = None
+    s3,
+    canonical_count: int = -1,
+    key: Optional[str] = None,
+    run_id: Optional[str] = None,
 ) -> None:
     """Write the reconcile-complete barrier (records how many canonical files were published so it
     is comparable with Phase 3's download coverage). Best-effort; a failure here must not break
@@ -2557,9 +2686,10 @@ def _publish_reconcile_barrier(
             Key=barrier_key,
             Body=json.dumps(
                 {
-                    "book": os.environ.get("BOOK_NAME", "_all"),
+                    "book": os.environ.get("BOOK_NAME") or "_all",
                     "completed_at": time.time(),
                     "canonical_count": canonical_count,
+                    "run_id": run_id,
                     "_schema": "reconcile_barrier_v1",
                 }
             ).encode(),
@@ -2570,7 +2700,16 @@ def _publish_reconcile_barrier(
             canonical_count,
         )
     except Exception as e:  # noqa: BLE001
-        logger.warning("reconcile barrier publish failed: %s", e)
+        observe_warn(
+            "reconcile",
+            "barrier_publish_failed",
+            note=(
+                "Phase 3 will wait out RECONCILE_BARRIER_WAIT_SECS and proceed with possibly "
+                "incomplete bibliography; check s3:PutObject on manifests/ and re-run dedup"
+            ),
+            key=barrier_key,
+            error=type(e).__name__,
+        )
 
 
 def _delete_orphaned_bibliography_shards(s3, bib_dir: Path) -> None:

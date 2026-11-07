@@ -84,17 +84,11 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
     - `grok_client._log_api_response`: the debug "Log preview" block is indented inside the model-deprecation branch, so
       it logs only on a redirect. It was probably meant to sit under the `choices` branch.
     - `nodejs-wheel-binaries` (transitive, unpinned range) comes with basedpyright in CI only; pin it or use hashes.
-- **[MED · observability/throughput] Phase-3 reconcile barrier always times out 300s on a single-book run (found 2026-11-06 E2E).**
-  Two defects, both violating the actionable-alerts rule (~60 identical `reconcile.barrier_stale` lines per run):
-    1. `_reconcile_barrier_key()` does `os.environ.get("BOOK_NAME", "_all")`, but ecs_entrypoint sets `BOOK_NAME=""`
-       (empty, not unset) at startup, so the per-book key is `manifests/reconcile_complete/.json` — malformed, never
-       matches. Use `(os.environ.get("BOOK_NAME") or "_all")`.
-    2. The freshness guard rejects any barrier whose `completed_at` predates the Phase-3 TASK start. But `_all.json`
-       is written by the full-corpus reconcile DURING the Phase-2 task, which always ends before Phase 3 starts, so a
-       correct same-pipeline barrier is always judged stale -> full 300s timeout + fail-open every run. Compare against
-       the content upload / Phase-2 start (e.g. a run-scoped marker), not `_TASK_START_TS`.
-  Impact now: Phase 3 proceeds correctly (fail-open), but wastes 5 min/run and the barrier gives false confidence
-  (it never actually confirms the drain). Verified: barrier_timeout at 00:04:10, then Phase 3 enriched normally.
+- **[LOW · verify] Phase-3 reconcile barrier fix (run-id marker) is unverified on AWS.**
+  Fixed in code (empty `BOOK_NAME` key; freshness by run_id marker `manifests/reconcile_complete/_run.json`). Confirm on the
+  next dev E2E: Phase 3 logs `reconcile.barrier_seen via=run_id` (no 300s `barrier_timeout`). Residual gap: a Phase 3
+  launched BEFORE the reconcile clears the previous marker+barrier sees a consistent old pair; fully closing it needs the
+  orchestrator (SFN/ECS overrides) to pass a run_id to both tasks.
 - **[MED · provenance] Stop shipping HTML/EPUB/DOCX/video books with EMPTY metadata (P2-C1 "slug+meta half"; found 2026-11-06).**
   `phase0_convert` / `phase0_video` / `ocr_merge_handler` write `chapter1-meta.yaml` with `author`, `series`, `chapter_title`,
   `license`, `copyright_date` all `''` and `source_url: "converted from <key>"` (not a URL). The pipeline continues, so every
