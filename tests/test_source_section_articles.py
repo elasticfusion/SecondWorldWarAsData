@@ -50,14 +50,14 @@ def test_wikipedia_missing_page_returns_none():
 
 
 def test_grokipedia_rendered_text_captured():
-    # resolver returns a clean URL; headless render returns article text -> extract populated
+    # resolver returns a clean URL; the article fetch returns its text -> extract populated
     with (
         patch(
             "src.enrichment.grokipedia.resolve_grokipedia_url",
             return_value="https://grokipedia.com/page/Battle_of_the_Bulge",
         ),
         patch(
-            "src.enrichment.grokipedia.fetch_grokipedia_rendered",
+            "src.enrichment.grokipedia.fetch_grokipedia_article_text",
             return_value="The Battle of the Bulge was a German offensive.",
         ),
     ):
@@ -69,19 +69,25 @@ def test_grokipedia_rendered_text_captured():
 
 
 def test_grokipedia_graceful_url_only_when_render_unavailable():
-    # headless render unavailable/fails -> extract None, but URL+title still captured
-    with (
-        patch(
-            "src.enrichment.grokipedia.resolve_grokipedia_url",
-            return_value="https://grokipedia.com/page/Battle_of_the_Bulge",
-        ),
-        patch("src.enrichment.grokipedia.fetch_grokipedia_rendered", return_value=None),
-    ):
-        art = ssa.fetch_grokipedia_article("Battle of the Bulge")
-    assert art is not None
-    assert art["url"] == "https://grokipedia.com/page/Battle_of_the_Bulge"
-    assert art["extract"] is None  # graceful: URL-only
-    assert art["license"] is None
+    # text unavailable (no article / transient) -> extract None, but URL+title still captured
+    from src.utils.search_cache import TRANSIENT
+
+    for unavailable in (None, TRANSIENT):
+        with (
+            patch(
+                "src.enrichment.grokipedia.resolve_grokipedia_url",
+                return_value="https://grokipedia.com/page/Battle_of_the_Bulge",
+            ),
+            patch(
+                "src.enrichment.grokipedia.fetch_grokipedia_article_text",
+                return_value=unavailable,
+            ),
+        ):
+            art = ssa.fetch_grokipedia_article("Battle of the Bulge")
+        assert art is not None
+        assert art["url"] == "https://grokipedia.com/page/Battle_of_the_Bulge"
+        assert art["extract"] is None  # graceful: URL-only, never the sentinel
+        assert art["license"] is None
 
 
 def test_grokipedia_no_resolution_returns_none():

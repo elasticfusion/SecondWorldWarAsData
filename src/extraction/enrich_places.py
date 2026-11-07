@@ -286,42 +286,67 @@ def _apply_place_wikipedia(place: dict, wiki_data: dict) -> None:
 
 
 def _search_grokipedia_place(name: str) -> Optional[str]:
-    """Search Grokipedia for a place. Returns page URL or None."""
-    import re
-
+    """Search Grokipedia for a place. Returns page URL or None. A genuine miss is
+    negative-cached; a transient failure (429 / 5xx / network) is not - an outage must not
+    suppress the place for NEGATIVE_TTL_DAYS."""
+    from src.enrichment.grokipedia import response_text
+    from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
     from src.utils.search_cache import cache_result, get_cached
 
     cached = get_cached("grokipedia_place", name)
     if cached == "NOT_FOUND":
         return None
-    if cached:
+    # Only a URL this function built is served from cache: the namespace was once shared with
+    # situational_geocode, whose page TEXT is still stored under it for some terms. Anything
+    # else falls through to a live lookup, which overwrites the entry.
+    if cached and cached.startswith("https://grokipedia.com/page/"):
         return cached
 
     try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
-
         resp = recorded_fetch(
             "grokipedia",
-            f"https://grokipedia.com/search?q={name} World War",
+            "https://grokipedia.com/search",
             kind=TEXTUAL,
             method="GET",
+            params={"q": f"{name} World War"},
             headers=_WIKI_HEADERS,
             timeout=15,
             result_summary_fn=lambda r: f"status={r.status_code} place={name[:40]!r}",
         )
-        if resp.status_code == 200 and "/page/" in resp.text:
-            # Find page links matching the place name
-            page_links = re.findall(r'href="/page/([^"]+)"', resp.text)
-            name_lower = name.lower().replace(" ", "")
-            for link in page_links:
-                link_lower = link.lower().replace("_", "")
-                if name_lower in link_lower or link_lower in name_lower:
-                    url = f"https://grokipedia.com/page/{link}"
-                    cache_result("grokipedia_place", name, url)
-                    return url
-    except Exception:
-        pass
-    cache_result("grokipedia_place", name, None)
+    except (requests.RequestException, ValueError) as e:
+        logger.info(
+            "OBSERV grokipedia.transient place=%r err=%s", name[:60], str(e)[:80]
+        )
+        return None
+    if resp.status_code != 200:
+        logger.info(
+            "OBSERV grokipedia.transient place=%r status=%d",
+            name[:60],
+            resp.status_code,
+        )
+        return None
+    url = _matching_place_page(name, response_text(resp))  # UTF-8: accents must match
+    cache_result("grokipedia_place", name, url)
+    return url
+
+
+def _matching_place_page(name: str, search_html: str) -> Optional[str]:
+    """The /page/ URL of the first search result whose slug contains (or is contained in) the
+    place name, else None. hrefs are percent-encoded ("Sainte-M%C3%A8re-%C3%89glise").
+    """
+    import re
+    from urllib.parse import unquote
+
+    from src.enrichment.grokipedia import grokipedia_page_url
+
+    name_lower = name.lower().replace(" ", "")
+    for link in re.findall(r'href="/page/([^"]+)"', search_html):
+        slug = unquote(link)
+        slug_lower = slug.lower().replace("_", "")
+        if name_lower in slug_lower or slug_lower in name_lower:
+            url = grokipedia_page_url(slug)
+            if url:
+                return url
     return None
 
 

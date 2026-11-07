@@ -158,23 +158,72 @@ _URL_HEADERS = {
 }
 
 
+_GROKIPEDIA_PAGE = "https://grokipedia.com/page/"
+_GROKIPEDIA_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+)
+# A cached article carries the page it came from on its first line (citation provenance that
+# survives across runs; the in-memory slug map does not).
+_SOURCE_HEADER = "SOURCE_URL: "
+
+
+def _pack_article(url: str, text: str) -> str:
+    return f"{_SOURCE_HEADER}{url}\n{text}"
+
+
+def _unpack_article(person_name: str, cached: str) -> str:
+    """Article text from a cache value, restoring the slug (Wikipedia hint + source page)."""
+    if not cached.startswith(_SOURCE_HEADER):
+        return cached
+    header, _, text = cached.partition("\n")
+    url = header[len(_SOURCE_HEADER) :].strip()
+    if url.startswith(_GROKIPEDIA_PAGE):
+        from urllib.parse import unquote
+
+        with _bio_cache_lock:
+            _grokipedia_slugs[person_name] = unquote(url[len(_GROKIPEDIA_PAGE) :])
+    return text
+
+
+def _as_text(result) -> Optional[str]:
+    """A fetch outcome as text: the article string, or None (miss or TRANSIENT)."""
+    return result if isinstance(result, str) and result else None
+
+
+def _from_grokipedia_cache(person_name: str, cached: str, timeout: int):
+    """(handled, text) for a cached value. Article text is served directly; a legacy SEARCH
+    page HTML value (its first 5000 chars are <head>/script, so it never yielded a bio) has
+    its matched slug re-derived and the article fetched. Unmatched legacy HTML is not handled
+    (the caller runs the live search)."""
+    if cached == "NOT_FOUND":
+        return True, None
+    if not _is_search_page_html(cached):
+        return True, _unpack_article(person_name, cached)
+    last_name, first_initial = _name_match_tokens(person_name)
+    slug = _match_grokipedia_page(cached, last_name.lower(), first_initial.lower())
+    if slug:
+        return True, _as_text(_grokipedia_article(person_name, slug, timeout))
+    return False, None
+
+
 def search_grokipedia(
     person_name: str, timeout: int = 30, max_retries: int = 2
 ) -> Optional[str]:
-    """Search Grokipedia for person biographical data."""
+    """Search Grokipedia for a person and return the matched ARTICLE TEXT (not the search page).
+    Genuine misses are negative-cached; transient failures (429 / 5xx / network) are not.
+    """
     from src.utils.search_cache import get_cached
 
     cached = get_cached("grokipedia", person_name)
-    if cached == "NOT_FOUND":
-        return None
     if cached:
-        return cached
+        handled, text = _from_grokipedia_cache(person_name, cached, timeout)
+        if handled:
+            return text
 
     for attempt in range(max_retries):
         try:
-            result = _grokipedia_query_scan(person_name, timeout)
-            return result
-
+            return _as_text(_grokipedia_query_scan(person_name, timeout))
         except requests.Timeout as e:
             if attempt < max_retries - 1:
                 logger.debug(
@@ -192,50 +241,90 @@ def search_grokipedia(
     return None
 
 
-def _grokipedia_query_scan(person_name: str, timeout: int) -> Optional[str]:
-    """Run the Grokipedia search queries for one attempt; on a name-matched result
-    write the positive cache + slug and return the page HTML, else write the NEGATIVE
-    cache and return None. Extracted verbatim from search_grokipedia's try-body —
-    requests.Timeout / other exceptions are NOT caught here so the caller preserves
-    the TRANSIENT (no cache, retry) vs NEGATIVE (cache_result None) distinction."""
-    from src.utils.search_cache import cache_result
+def _grokipedia_query_scan(person_name: str, timeout: int):
+    """Run the Grokipedia search queries for one attempt. On a name-matched result return the
+    article text (see ``_grokipedia_article``); on a genuine miss write the NEGATIVE cache and
+    return None; if a search answered 429 / 5xx return ``search_cache.TRANSIENT`` without
+    caching (an outage must not suppress the person for NEGATIVE_TTL_DAYS). requests.Timeout /
+    other exceptions are NOT caught here (the caller retries / treats them as transient).
+    """
+    from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+    from src.utils.search_cache import TRANSIENT, cache_result
 
     last_name, first_initial = _name_match_tokens(person_name)
     first_initial = first_initial.lower()
-    search_queries = [
-        f"{person_name} World War",
-        f"{last_name} World War",
-    ]
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-    }
-
-    for search_q in search_queries:
-        search_url = f"https://grokipedia.com/search?q={search_q}"
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
-
+    transient = False
+    for search_q in (f"{person_name} World War", f"{last_name} World War"):
         response = recorded_fetch(
             "grokipedia",
-            search_url,
+            "https://grokipedia.com/search",
             kind=TEXTUAL,
             method="GET",
-            headers=headers,
+            params={"q": search_q},
+            headers={"User-Agent": _GROKIPEDIA_UA},
             timeout=timeout,
             allow_redirects=True,
             result_summary_fn=lambda r: f"status={r.status_code}",
         )
-        if response.status_code != 200 or "/page/" not in response.text:
+        if response.status_code != 200:
+            transient = True
+            logger.info(
+                "OBSERV grokipedia.transient status=%d person=%r",
+                response.status_code,
+                person_name[:60],
+            )
             continue
-        slug = _match_grokipedia_page(response.text, last_name.lower(), first_initial)
-        if slug:
-            cache_result("grokipedia", person_name, response.text)
-            with _bio_cache_lock:
-                _grokipedia_slugs[person_name] = slug
-            return response.text
+        from src.enrichment.grokipedia import response_text
 
-    # No match found in any search query
-    cache_result("grokipedia", person_name, None)
+        body = response_text(response)  # UTF-8: "Dönitz" must match
+        if "/page/" not in body:
+            continue
+        slug = _match_grokipedia_page(body, last_name.lower(), first_initial)
+        if slug:
+            return _grokipedia_article(person_name, slug, timeout)
+
+    if transient:
+        return TRANSIENT
+    cache_result("grokipedia", person_name, None)  # genuine miss
     return None
+
+
+def _is_search_page_html(cached: str) -> bool:
+    """A legacy cache value holding the raw search page instead of article text."""
+    head = cached.lstrip()[:200].lower()
+    return head.startswith(("<!doctype", "<html"))
+
+
+def _grokipedia_article(person_name: str, slug: str, timeout: int):
+    """Fetch the matched person's article text and cache it (positive, with its source URL);
+    record the slug (Wikipedia title hint + citation page). A page with no article is a genuine
+    miss (negative-cached); a transient fetch failure returns TRANSIENT, uncached."""
+    from src.enrichment.grokipedia import (
+        fetch_grokipedia_article_text,
+        grokipedia_page_url,
+    )
+    from src.utils.search_cache import TRANSIENT, cache_result
+
+    url = grokipedia_page_url(slug)
+    if url is None:
+        # the slug comes from scraped HTML: never splice an unusable value into a URL
+        logger.warning(
+            "OBSERV grokipedia.unclean_slug status=warn person=%r slug=%r (search-result "
+            "markup changed; check src/extraction/enrich_biographies._match_grokipedia_page)",
+            person_name[:60],
+            slug[:80],
+        )
+        return None
+    with _bio_cache_lock:
+        _grokipedia_slugs[person_name] = slug
+    text = fetch_grokipedia_article_text(url, timeout=timeout)
+    if text is TRANSIENT:
+        return TRANSIENT
+    if not isinstance(text, str) or not text:
+        cache_result("grokipedia", person_name, None)
+        return None
+    cache_result("grokipedia", person_name, _pack_article(url, text))
+    return text
 
 
 def _match_grokipedia_page(
@@ -244,13 +333,17 @@ def _match_grokipedia_page(
     """Scan Grokipedia search-result HTML for a slug whose name matches (last name present +
     first-initial agreement) and whose snippet is military-relevant. Returns the slug or None.
     """
+    import html as _html
     import re as _re
 
     results = _re.findall(
         r'data-slug="([^"]+)"[^>]*data-search-result-link="true"[^>]*data-scroll-anchor-text="([^"]*)"',
         html,
     )
-    for slug, snippet in results:
+    for raw_slug, snippet in results:
+        slug = _html.unescape(
+            raw_slug
+        )  # attribute values are HTML-escaped ("A_&amp;_B")
         slug_lower = slug.lower().replace("_", " ")
         if last_name_lower not in slug_lower:
             continue
@@ -715,6 +808,9 @@ def extract_biographical_data(
 
             if isinstance(result, dict) and result:
                 # Add source tracking
+                # Grok's JSON comes from untrusted page text: it may never set our private
+                # provenance keys (a "_source_url" there would become a citation)
+                result.pop("_source_url", None)
                 result["_source"] = source_name
                 return result
 
@@ -761,6 +857,9 @@ def search_references(
                 ref, text, f"Grokipedia: {ref}", grok_client
             )
             if data:
+                page = _source_page_url(ref, "Grokipedia")
+                if page:
+                    data["_source_url"] = page
                 enrichment_data.append(data)
                 continue
 
@@ -909,9 +1008,23 @@ def _search_and_enrich(
     if text:
         data = extract_biographical_data(person_name, text, source_name, grok_client)
         if data:
+            page = _source_page_url(person_name, source_name)
+            if page:
+                data["_source_url"] = page
             return _merge_enrichment(bio_profile, data)
 
     return False
+
+
+def _source_page_url(person_name: str, source_name: str) -> Optional[str]:
+    """The page a source's text came from, when known (the matched Grokipedia article)."""
+    if source_name != "Grokipedia":
+        return None
+    from src.enrichment.grokipedia import grokipedia_page_url
+
+    with _bio_cache_lock:
+        slug = _grokipedia_slugs.get(person_name)
+    return grokipedia_page_url(slug) if slug else None
 
 
 def _follow_references(bio_profile: Dict[str, Any], grok_client: GrokClient) -> bool:
@@ -1253,6 +1366,11 @@ def _merge_enrichment(bio_profile: Dict[str, Any], enrichment: Dict[str, Any]) -
     Returns True if any new data was added.
     """
     source = enrichment.pop("_source", "Unknown")
+    # the exact page the facts came from (e.g. the Grokipedia article URL) - citation provenance;
+    # only a URL this module built is accepted
+    page = enrichment.pop("_source_url", None)
+    if not (isinstance(page, str) and page.startswith("https://grokipedia.com/page/")):
+        page = None
 
     # Merge different field types
     modified = _merge_simple_fields(bio_profile, enrichment)
@@ -1265,7 +1383,7 @@ def _merge_enrichment(bio_profile: Dict[str, Any], enrichment: Dict[str, Any]) -
         sources.append(
             {
                 "source": source,
-                "page": None,
+                "page": page,
                 "confidence": 0.8,  # External sources get lower confidence
                 "fields_sourced": list(enrichment.keys()),
             }

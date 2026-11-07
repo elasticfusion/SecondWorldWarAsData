@@ -47,7 +47,12 @@ def test_grokipedia_genuine_miss_is_negative_cached(monkeypatch):
     )
     monkeypatch.setattr("src.utils.search_cache.get_cached", lambda s, q: None)
     # 200 with no /page/ -> genuine miss -> negative-cached (None)
-    resp = mock.Mock(status_code=200, text="<html>no results</html>")
+    resp = mock.Mock(
+        status_code=200,
+        text="<html>no results</html>",
+        content=b"<html>no results</html>",
+        headers={},
+    )
     monkeypatch.setattr(
         "src.utils.http_pool.get_session",
         lambda: mock.Mock(request=lambda *a, **k: resp),

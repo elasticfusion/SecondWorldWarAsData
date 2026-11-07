@@ -124,6 +124,11 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   (accepts only `source_section/...`); and the schema registry `output_glob` consumers `scripts/validate_phase2.py`,
   `src/utils/provenance_integrity.py:236`, `src/utils/referential_integrity.py:130`. Route them through the helper (the
   worker needs a strict `content/<safe-book>/source_section/<ulid>.json` allowance) and add a test per reader.
+- **[MED · quality] Other `resp.text` reads may mojibake UTF-8 pages served without a charset (2026-11-07).**
+  `requests` decodes such `text/*` responses as ISO-8859-1; Grokipedia did, so no accented name matched (fixed with
+  `src/utils/http_text.response_text`). Confirm each site's server charset behaviour, then adopt `response_text`:
+  `src/utils/url_hygiene.py` (`fetch_html_text`), `src/enrichment/wayback.py`, `src/extraction/openserp_maps.py`,
+  `src/extraction/search_external_maps.py`, `src/url_extractor.py`, `src/enrichment/award_polite_source.py`.
 - **[MED · provenance] Carry Phase 1 note provenance into the entity records (schema bumps, do together; 2026-11-07).**
   Phase 1 (src/notes.py) now records each note's `kind` + citing `paragraph_number`, and `Image.note_number` for an image
   linked only from a note (XChannel-8 note 23 "naval command chart"). Downstream drops them: (a) bibliography mentions need
