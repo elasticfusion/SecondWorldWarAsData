@@ -908,10 +908,30 @@ def _failure_reason(exc: BaseException) -> str:
 
 
 def _process_batch_results(
-    tasks: List[tuple], batch_results: list, results: Dict[str, Any], heartbeat=None
+    tasks: List[tuple],
+    batch_results: list,
+    results: Dict[str, Any],
+    heartbeat=None,
+    expect_collecting: bool = False,
 ) -> None:
-    """Process results from a batch of chapters."""
+    """Process results from a batch of chapters. ``expect_collecting`` is True on a batch
+    COLLECT pass (the client is in batch mode): only then is BatchModeCollecting the expected
+    "queued" outcome. Anywhere else (sync run, retrieve re-run) it is a real failure."""
+    from src.grok_client import BatchModeCollecting
+
     for (book_name, name, _), result in zip(tasks, batch_results):
+        if expect_collecting and isinstance(result, BatchModeCollecting):
+            # Batch collect pass: the chapter's request was QUEUED for the Grok Batch API (by
+            # design every chapter "raises" here); the retrieve re-run processes it. Not a
+            # failure - counting it as one sent a false error alert on every batch run.
+            logger.info(
+                "OBSERV phase2.chapter_collecting status=ok book=%s chapter=%s "
+                "(request queued for the batch; processed on the retrieve pass)",
+                book_name,
+                name,
+            )
+            results["collecting"] = results.get("collecting", 0) + 1
+            continue
         if isinstance(result, BaseException):  # incl. CancelledError (not an Exception)
             # Always name the exception type: str(TimeoutError()) is "", which logged a
             # reason-less "✗ chapter: " (an un-actionable alarm).
@@ -966,7 +986,7 @@ async def process_chapters_parallel(
     for i in range(0, len(parsed_files), max_parallel):
         batch = parsed_files[i : i + max_parallel]
         batch_num = i // max_parallel + 1
-        done = results["processed"] + results["failed"]
+        done = results["processed"] + results["failed"] + results.get("collecting", 0)
         logger.info(
             "Processing batch %d (%d/%d chapters done): %d chapters",
             batch_num,
@@ -996,13 +1016,21 @@ async def process_chapters_parallel(
         logger.info("Batch %d complete in %.0fs", batch_num, batch_elapsed)
 
         # Process results
-        _process_batch_results(tasks, batch_results, results, heartbeat)
+        _process_batch_results(
+            tasks,
+            batch_results,
+            results,
+            heartbeat,
+            expect_collecting=bool(getattr(grok_client, "batch_mode", False)),
+        )
 
     total_elapsed = _time.monotonic() - phase_start
     logger.info(
-        "All chapters processed: %d/%d OK in %.0fs",
+        "All chapters processed: %d/%d OK, %d queued for batch, %d failed in %.0fs",
         results["processed"],
         total_chapters,
+        results.get("collecting", 0),
+        results["failed"],
         total_elapsed,
     )
     return results

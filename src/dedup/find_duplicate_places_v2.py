@@ -4,13 +4,13 @@
 import itertools
 import json
 import logging
-import os
-import re
 import sys
 import unicodedata
 from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any, Dict, List
+
+from src.utils.name_start import MIN_START_MATCH, distinctive_start, starts_match
 
 logger = logging.getLogger(__name__)
 
@@ -101,15 +101,14 @@ _LEADING_NOISE = frozenset(p.strip() for p in _GEO_PREFIXES) | {
     "mte",
     "mount",
 }
-_MIN_START_MATCH = 4  # shared leading characters required (fewer if a name is shorter)
+_MIN_START_MATCH = (
+    MIN_START_MATCH  # shared leading characters required (src/utils/name_start)
+)
 
 
 def _distinctive_start(name: str) -> str:
     """The first identifying word of a place name (accent/case/punctuation-insensitive)."""
-    tokens = re.findall(r"[a-z0-9]+", _normalize(name))
-    while len(tokens) > 1 and tokens[0] in _LEADING_NOISE:
-        tokens.pop(0)
-    return tokens[0] if tokens else ""
+    return distinctive_start(_normalize(name), _LEADING_NOISE)
 
 
 def _starts_match(a: str, b: str) -> bool:
@@ -121,11 +120,7 @@ def _starts_match(a: str, b: str) -> bool:
     Beuzeville-au-Plain are different places. So when the starts differ the names cannot
     be duplicates, however much of their tails match.
     """
-    sa, sb = _distinctive_start(a), _distinctive_start(b)
-    if not sa or not sb:
-        return False
-    need = min(_MIN_START_MATCH, len(sa), len(sb))
-    return len(os.path.commonprefix([sa, sb])) >= need
+    return starts_match(_normalize(a), _normalize(b), _LEADING_NOISE, _MIN_START_MATCH)
 
 
 _GATED_HIGH_SIM = [

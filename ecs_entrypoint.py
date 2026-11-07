@@ -4212,6 +4212,18 @@ def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
     return result.mapped
 
 
+def _retrieve_rerun_env(phase_script: str) -> dict:
+    """Environment for the retrieve re-run, which must be SYNCHRONOUS (it reads the cache the
+    batch results populated). BATCH_PHASE2=true in the task env would override the dropped
+    --batch (phase2_extract._resolve_batch_mode: env wins) and re-queue every cache miss into a
+    NEW batch instead of calling the API, so it is removed."""
+    env = os.environ.copy()
+    env["SKIP_RETRY"] = "1"
+    env["PIPELINE_PHASE"] = Path(phase_script).stem
+    env.pop("BATCH_PHASE2", None)
+    return env
+
+
 def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> None:
     """Retrieve completed batch results and re-run phase with cached data."""
     import re as _re
@@ -4319,9 +4331,7 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     sync = BackgroundSync(SYNC_INTERVAL)
     sync.start()
 
-    env = os.environ.copy()
-    env["SKIP_RETRY"] = "1"
-    env["PIPELINE_PHASE"] = Path(phase_script).stem
+    env = _retrieve_rerun_env(phase_script)
     cmd = [sys.executable, phase_script] + _scope_args(phase_script, clean_args)
     logger.info("Re-running with cached results: %s", " ".join(cmd))
     result = subprocess.run(cmd, cwd="/app", env=env, check=False)
