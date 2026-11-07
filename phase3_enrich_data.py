@@ -436,7 +436,29 @@ def _load_parsed_docs(out) -> list:
             len(docs),
             unreadable,
         )
+    if not docs:
+        _warn_no_parsed_docs(out)
     return docs
+
+
+def _warn_no_parsed_docs(out) -> None:
+    """No parsed documents are available: every step that reads the source document (in-document
+    maps, image->person links, link review, ...) will silently produce nothing. Alert once.
+    """
+    from src.utils.observe import observe_warn_counted
+
+    observe_warn_counted(
+        "phase3",
+        "no_parsed_docs",
+        key=("no_parsed_docs",),
+        every=10**9,
+        note=(
+            f"no *-parsed.json under {out}/content, so in-document maps, image-person links and "
+            "link review are SKIPPED; Phase 3 must download output/content/ (it does for book-"
+            "scoped and unscoped runs) - check the S3 sync in this task's log and re-run Phase 3"
+        ),
+        out=str(out),
+    )
 
 
 def _link_images_to_people(out, grok_client) -> int:

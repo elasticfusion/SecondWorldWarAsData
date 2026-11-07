@@ -600,3 +600,22 @@ def test_recycle_cap_limits_paid_calls_and_alerts(monkeypatch):
     )
     assert len(asked) == 3 and out["links"] == 3 and out["skipped"] == 3 + 7
     assert alerts and alerts[0][0][1] == "cap_hit" and alerts[0][1]["note"]
+
+
+def test_missing_parsed_docs_raises_one_actionable_alert(tmp_path, monkeypatch):
+    """No parsed docs => in-doc maps/image-person links/link review would all silently do nothing."""
+    import phase3_enrich_data as p3
+    import src.utils.observe as obs
+
+    obs.reset_counted_warnings()
+    alerts = []
+    monkeypatch.setattr(
+        obs, "observe_warn", lambda *a, **k: alerts.append((a, k)) or ""
+    )
+    assert p3._load_parsed_docs(tmp_path) == []
+    assert p3._load_parsed_docs(tmp_path) == []  # 2nd step: no repeat alert
+    assert len(alerts) == 1 and alerts[0][0][1] == "no_parsed_docs"
+    assert alerts[0][1]["note"]
+    (tmp_path / "content" / "B").mkdir(parents=True)
+    (tmp_path / "content" / "B" / "c-parsed.json").write_text(json.dumps({"book": "B"}))
+    assert len(p3._load_parsed_docs(tmp_path)) == 1  # present: no alert path

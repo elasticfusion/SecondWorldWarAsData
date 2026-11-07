@@ -171,19 +171,54 @@ def track_deletion(local_path: Path) -> None:
             pass
 
 
+def _safe_local_path(local_dir: Path, key: str) -> Optional[Path]:
+    """Local path for an S3 key under ``local_dir``, or None if the key must not be downloaded:
+    a folder-marker key (ends with '/') has no file content, and a key that resolves outside
+    ``local_dir`` (``..`` segments) must never be written."""
+    if not key or key.endswith("/"):
+        return None
+    local = local_dir / key
+    root = local_dir.resolve()
+    if not local.resolve().is_relative_to(root):
+        return None
+    return local
+
+
 def s3_sync_down(prefix: str, local_dir: Path) -> int:
-    """Download S3 prefix to local dir. Returns file count."""
+    """Download S3 prefix to local dir. Returns file count. Skips (and counts, loudly) folder-marker
+    keys and keys that would escape ``local_dir``."""
     s3 = _s3_client()
     paginator = s3.get_paginator("list_objects_v2")
     count = 0
+    skipped = 0
     for page in paginator.paginate(Bucket=BUCKET, Prefix=prefix):
         for obj in page.get("Contents", []):
             key = obj["Key"]
-            local = local_dir / key
+            local = _safe_local_path(local_dir, key)
+            if local is None:
+                if not key.endswith("/"):  # a folder marker is normal; an escape is not
+                    skipped += 1
+                    observe_warn(
+                        "s3_sync",
+                        "unsafe_key_skipped",
+                        note=(
+                            "an S3 key resolving outside the work dir was NOT downloaded; "
+                            "inspect the key in the data bucket and delete it if unexpected"
+                        ),
+                        key=key[:200],
+                    )
+                continue
             local.parent.mkdir(parents=True, exist_ok=True)
             s3.download_file(BUCKET, key, str(local))
             _downloaded_keys[key] = local.stat().st_mtime
             count += 1
+    if skipped:
+        logger.warning(
+            "OBSERV s3_sync.down prefix=%s downloaded=%d unsafe_skipped=%d status=warn",
+            prefix,
+            count,
+            skipped,
+        )
     return count
 
 
@@ -1350,22 +1385,29 @@ def _download_phase3_provenance_inputs(s3, book_name: str) -> None:
     stamp a resolvable SourceSectionID onto every event + sub-event. Without this the stamp globs an
     empty local tree -> `event_provenance.stamp resolved=0 reason=no_source_sections` and extracted
     records cannot be traced to their source paragraph (XChannel-8 2026-10-30). Book token is
-    validated (traversal-safe); fail-safe (missing prefix -> 0 files)."""
+    validated (traversal-safe); fail-safe (missing prefix -> 0 files).
+
+    UNSCOPED Phase 3 (empty ``book_name``, whole-corpus mode) pulls the whole ``output/content/``
+    tree: the parsed documents there feed the in-document map step, image->person linking and link
+    review, which previously were skipped silently because only the book-scoped path fetched them
+    (XChannel-8 2026-11-07: maps=0 after a manual unscoped Phase 3)."""
     import re as _re_pv
 
-    if not (
-        book_name
-        and _re_pv.fullmatch(r"[A-Za-z0-9._-]+", book_name)
-        and ".." not in book_name
-    ):
-        return
+    if book_name:
+        if not (
+            _re_pv.fullmatch(r"[A-Za-z0-9._-]+", book_name) and ".." not in book_name
+        ):
+            return
+        prefix = f"output/content/{book_name}/"
+    else:
+        prefix = "output/content/"
     try:
-        n = s3_sync_down(f"output/content/{book_name}/", WORKDIR)
+        n = s3_sync_down(prefix, WORKDIR)
         logger.info(
             "Phase 3 provenance inputs: downloaded %d content/source_section file(s) for %s "
-            "(enables SourceSectionID stamping)",
+            "(enables SourceSectionID stamping + in-document maps)",
             n,
-            book_name,
+            book_name or "ALL books",
         )
     except (
         Exception
@@ -1414,6 +1456,7 @@ def _download_phase3_from_s3() -> None:
             d, s = _download_s3_prefix_skip_existing(s3, f"output/{subdir}/")
             total += d
         logger.info("Downloaded %d entity files for Phase 3 (full)", total)
+        _download_phase3_provenance_inputs(s3, "")
         _observe_bibliography_download_coverage(s3, barrier_status)
 
 
