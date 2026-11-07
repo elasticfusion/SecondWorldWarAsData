@@ -98,6 +98,19 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   gives series + chapter), the upload's `x-amz-meta-source-url` (set by the operator) for `source_url`, and the known licence of
   the source host (ibiblio HyperWar = US Army CMH public domain). Leave `author` empty ONLY when it cannot be derived, and alert
   only for what is still missing.
+  **Consequence found in the XChannel-8 E2E (2026-11-06): `images=0` and `maps=0`.** `src/parser.py:958-959` passes
+  `metadata.source_url` as `base_url`; the converter sets it to `"converted from <key>"` (not http), so every relative
+  `<img src=icn/..>` / `<a href=img/..>` / `maps/..` is skipped. Verified on the converted markdown: base_url as written
+  -> 0 images, 0 maps; base_url `https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/` -> 39 images, 11 maps. Fix with the
+  metadata root fix (real `source_url`), and make the parser emit an actionable warning when relative image/map refs exist
+  but `base_url` is not an http(s) URL (today it is silent).
+- **[LOW · observability] `enrich.summary` label `skipped_already` is misleading** (`src/extraction/people.py:893`). The
+  `skipped` counter also counts "attempted, not enriched" (e.g. Wikipedia rate-limit deferral), so 59 of 62 people read as
+  "already enriched" when they were deferred. Split into `skipped_already` vs `deferred`.
+- **[MED · enrichment] Deferred Wikipedia lookups have no automatic retry.** XChannel-8: 194 transient (28 `rate_limited`,
+  166 `backoff_active`), people enriched 3/62; Phase 3 does not retry, so records stay unstamped until Phase 2 is re-run.
+  Repeated same-day dev runs share one NAT egress IP, which likely kept it rate-limited. Decide: scheduled re-enrich pass for
+  records with no `wikipedia_checked_at`, or accept and document.
 - **[MED · security] Scanner baseline (security-scanner MCP + CLI, 2026-11-06). Nothing found in this branch's changes.**
   Branch vs `origin/main` by Checkov CLI: 141 -> 138 failed, 0 new (fixed: both `CKV_AWS_111` scoped-IAM findings and
   `CKV_AWS_79` IMDSv1). Bandit `src/` 73 LOW (B110/B112 swallowed exceptions) + 8 in `lambda_handlers/`, 0 MEDIUM/HIGH. ASH on
