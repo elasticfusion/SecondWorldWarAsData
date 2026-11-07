@@ -324,7 +324,7 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
     enriched += run_step(
         "openserp_source_sections",
         lambda: enrich_source_sections_with_openserp(
-            out / "source_section", openserp_url, grok_client, args.max_items
+            out, openserp_url, grok_client, args.max_items
         ),
     )
     # External maps via live web search — MOVED FROM PHASE 2 so OpenSERP/NAT come up

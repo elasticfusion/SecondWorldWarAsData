@@ -71,16 +71,23 @@ def build_source_section(
     return record
 
 
-def _save_source_section(output_dir: Path, record: Dict[str, Any]) -> Optional[Path]:
-    """Write one source_section record via the native, version-stamped locked writer."""
+def _save_source_section(
+    output_dir: Path, record: Dict[str, Any], path: Optional[Path] = None
+) -> Optional[Path]:
+    """Write one source_section record via the native, version-stamped locked writer.
+
+    ``path`` writes the record back WHERE IT LIVES (an existing record found under
+    ``content/<book>/source_section/``); without it the record goes to ``output_dir/source_section``.
+    """
     section_id = record.get("SourceSectionID")
     if not section_id:
         return None
-    section_dir = output_dir / "source_section"
-    section_dir.mkdir(parents=True, exist_ok=True)
-    path = section_dir / f"{section_id}.json"
+    if path is None:
+        path = output_dir / "source_section" / f"{section_id}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
     inject_metadata(record, entity=ENTITY)
-    write_json_with_lock(path, record, entity=ENTITY)
+    if not write_json_with_lock(path, record, entity=ENTITY):
+        return None  # guarded write refused: do not report a save that did not happen
     return path
 
 
@@ -256,29 +263,44 @@ def _iter_event_files(output_dir: Path):
     yield from (output_dir / "content").glob("*/*-event.json")
 
 
-def _find_section_record_by_event_id(output_dir: Path, event_id: str) -> Optional[Path]:
-    """Locate the source_section record for an EventID (no index: scan the small dir)."""
-    section_dir = output_dir / "source_section"
-    if not section_dir.exists():
-        return None
+def _candidate_section_files(output_dir: Path, near: Optional[Path]):
+    """Record files to search: the event's own ``source_section`` dir first (where the event pass
+    emitted it - the common case reads one directory), then every other location."""
+    from src.utils.source_sections import section_dirs
+
+    dirs = [d for d in ([near] if near else []) if d.is_dir()]
+    dirs += [d for d in section_dirs(output_dir) if d not in dirs]
+    for d in dirs:
+        for p in sorted(d.glob("*.json")):
+            if p.name != "index.json":
+                yield p
+
+
+def _record_event_id(p: Path, wanted: str = "?") -> Optional[str]:
+    """EventID of a record file, or None - LOUD when unreadable (a missed record means a duplicate
+    ULID is minted for the same event)."""
     import json as _json
 
-    for p in section_dir.glob("*.json"):
-        try:
-            if _json.loads(p.read_text()).get("EventID") == event_id:
-                return p
-        except Exception as _e:  # noqa: BLE001
-            # A corrupt/unreadable source_section record here means we may FAIL
-            # TO FIND an existing record and mint a brand-new ULID for the same
-            # event -> duplicate source_section records. Make it loud.
-            logger.warning(
-                "OBSERV source_section.record_read_failed file=%s event_id=%s "
-                "reason=%s (duplicate-ULID risk: existing record may be missed)",
-                p.name,
-                event_id,
-                type(_e).__name__,
-            )
-            continue
+    try:
+        return _json.loads(p.read_text()).get("EventID")
+    except Exception as _e:  # noqa: BLE001
+        logger.warning(
+            "OBSERV source_section.record_read_failed file=%s event_id=%s "
+            "reason=%s (duplicate-ULID risk: existing record may be missed)",
+            p.name,
+            wanted,
+            type(_e).__name__,
+        )
+        return None
+
+
+def _find_section_record_by_event_id(
+    output_dir: Path, event_id: str, near: Optional[Path] = None
+) -> Optional[Path]:
+    """Locate the source_section record for an EventID (layout: src/utils/source_sections)."""
+    for p in _candidate_section_files(output_dir, near):
+        if _record_event_id(p, event_id) == event_id:
+            return p
     return None
 
 
@@ -325,13 +347,16 @@ def _load_or_build_section_record(
     event_data: Dict[str, Any],
 ):
     """Find the existing source_section record for ``event_id``, or build a new one from the
-    event (pulling book/author/series from the sibling -parsed.json when present). Returns the
-    record dict, or None if no record could be built."""
+    event (pulling book/author/series from the sibling -parsed.json when present). Returns
+    ``(record, existing_path)``: ``existing_path`` is where a found record lives (save back THERE),
+    None for a newly built one; ``record`` is None if none could be built."""
     import json as _json
 
-    rec_path = _find_section_record_by_event_id(output_dir, event_id)
+    rec_path = _find_section_record_by_event_id(
+        output_dir, event_id, near=event_file.parent / "source_section"
+    )
     if rec_path is not None:
-        return _json.loads(rec_path.read_text())
+        return _json.loads(rec_path.read_text()), rec_path
     source = None
     parsed = event_file.parent / event_file.name.replace("-event.json", "-parsed.json")
     if parsed.exists():
@@ -351,7 +376,7 @@ def _load_or_build_section_record(
                 type(_e).__name__,
             )
             source = None
-    return build_source_section(event_data, source=source)
+    return build_source_section(event_data, source=source), None
 
 
 def _fetch_section_extras(record: Dict[str, Any], output_dir: Path, event_id: str):
@@ -374,6 +399,99 @@ def _fetch_section_extras(record: Dict[str, Any], output_dir: Path, event_id: st
     return fetched, media_written
 
 
+def _read_event(event_file: Path):
+    """(event_data, event_id, status): status is '' when usable, else 'error' | 'skipped'."""
+    import json as _json
+
+    try:
+        event_data = _json.loads(event_file.read_text())
+    except Exception as e:  # noqa: BLE001
+        logger.warning("source_section: cannot read %s: %s", event_file, e)
+        return None, None, "error"
+    event_id = (event_data.get("Event") or {}).get("EventID")
+    if not event_id:
+        return event_data, None, "skipped"
+    return event_data, event_id, ""
+
+
+def _note_record_rebuilt(event_id: str) -> None:
+    """No existing record was found for this event: a NEW SourceSectionID is minted. If S3 already
+    holds one for this EventID (the content tree was not rehydrated) that makes two - say so.
+    """
+    from src.utils.observe import observe_warn_counted
+
+    observe_warn_counted(
+        "source_section",
+        "record_rebuilt",
+        key=("record_rebuilt",),
+        every=25,
+        note=(
+            "no existing source_section record was found for an event, so a new one (new ID) was "
+            "created; if the data bucket already has a record for this EventID under "
+            "output/content/<book>/source_section/, delete the duplicate and re-run Phase 2 "
+            "with output/content/ rehydrated"
+        ),
+        event_id=event_id,
+    )
+
+
+def _commit_section(
+    record: Dict[str, Any],
+    rec_path: Optional[Path],
+    event_file: Path,
+    output_dir: Path,
+    event_id: str,
+    enriched: bool,
+) -> str:
+    """Save the record where it lives (new ones next to their event, never into an unsynced
+    ``output/source_section``). The idempotency gates (media_checked_at / wikipedia_checked_at) are
+    stamped even when a lookup found nothing, so they are saved too. Returns the status.
+    """
+    target = rec_path or (
+        event_file.parent / "source_section" / f"{record['SourceSectionID']}.json"
+    )
+    if _save_source_section(output_dir, record, target) is not None:
+        return "enriched" if enriched else "noop"
+    from src.utils.observe import observe_warn
+
+    observe_warn(
+        "source_section",
+        "save_refused",
+        note=(
+            "the enriched source_section could not be saved (schema guard or missing "
+            "SourceSectionID); its Wikipedia images are already written, so a re-run may "
+            "duplicate them - inspect the schema error in this task's log"
+        ),
+        event_id=event_id,
+    )
+    return "error"
+
+
+def _derive_and_fetch(
+    record: Dict[str, Any],
+    event_data: Dict[str, Any],
+    event_id: str,
+    output_dir: Path,
+    grok_client: Any,
+    confidence_threshold: float,
+) -> Optional[bool]:
+    """Derive summary+operation and fetch articles + media into ``record``. True if anything was
+    enriched, False if not, None if the derivation itself failed."""
+    try:
+        changed = derive_summary_and_operation(
+            record, event_data, grok_client, confidence_threshold
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("source_section derive failed for %s: %s", event_id, e)
+        return None
+    fetched, media_written = _fetch_section_extras(record, output_dir, event_id)
+    return bool(changed or fetched or media_written)
+
+
+def _gate_stamps(record: Dict[str, Any]) -> tuple:
+    return (record.get("media_checked_at"), record.get("wikipedia_checked_at"))
+
+
 def _enrich_one_section(
     event_file: Path,
     output_dir: Path,
@@ -384,28 +502,22 @@ def _enrich_one_section(
     summary+operation, fetch reference articles + Wikipedia media, native-commit if anything
     changed. Returns a status: 'enriched' | 'skipped' (no EventID) | 'error' | 'noop'.
     """
-    import json as _json
-
-    try:
-        event_data = _json.loads(event_file.read_text())
-    except Exception as e:  # noqa: BLE001
-        logger.warning("source_section: cannot read %s: %s", event_file, e)
-        return "error"
-    event_id = (event_data.get("Event") or {}).get("EventID")
-    if not event_id:
-        return "skipped"
-    record = _load_or_build_section_record(event_file, output_dir, event_id, event_data)
+    event_data, event_id, status = _read_event(event_file)
+    if status or event_data is None or event_id is None:
+        return status or "error"
+    record, rec_path = _load_or_build_section_record(
+        event_file, output_dir, event_id, event_data
+    )
     if record is None:
         return "noop"
-    try:
-        changed = derive_summary_and_operation(
-            record, event_data, grok_client, confidence_threshold
-        )
-    except Exception as e:  # noqa: BLE001
-        logger.warning("source_section derive failed for %s: %s", event_id, e)
+    if rec_path is None:
+        _note_record_rebuilt(event_id)
+    gates_before = _gate_stamps(record)
+    enriched = _derive_and_fetch(
+        record, event_data, event_id, output_dir, grok_client, confidence_threshold
+    )
+    if enriched is None:
         return "error"
-    fetched, media_written = _fetch_section_extras(record, output_dir, event_id)
-    if changed or fetched or media_written:
-        _save_source_section(output_dir, record)
-        return "enriched"
-    return "noop"
+    if not (enriched or _gate_stamps(record) != gates_before):
+        return "noop"
+    return _commit_section(record, rec_path, event_file, output_dir, event_id, enriched)

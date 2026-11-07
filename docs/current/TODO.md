@@ -117,6 +117,23 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   it active and parked again; only `reconcile-scheduled-backstop` launched Phase 1 at 02:47:39. Fix: the trigger should
   not count the notifying phase's own task as busy on a `phase-complete` event (or the task should notify after it
   has exited / the trigger should retry shortly).
+- **[MED · data-loss class] More readers still hard-code `output/source_section/` (found 2026-11-07 E2E; the main bug is FIXED).**
+  The event pass writes `output/content/<book>/source_section/`. Phase 2 step 4b, Phase 3 OpenSERP source-section enrichment,
+  image->place links, intra-corpus dedup and event provenance now share `src/utils/source_sections.py`. STILL on the old path:
+  `phase3_enqueue_openserp.py:42` (`list_files("source_section")` -> enqueues 0) and `openserp_worker._safe_entity_path`
+  (accepts only `source_section/...`); and the schema registry `output_glob` consumers `scripts/validate_phase2.py`,
+  `src/utils/provenance_integrity.py:236`, `src/utils/referential_integrity.py:130`. Route them through the helper (the
+  worker needs a strict `content/<safe-book>/source_section/<ulid>.json` allowance) and add a test per reader.
+- **[MED · provenance] People marked `enriched` with no source link (P3-A5, 4 people: J. M. Stagg, M. D. Taylor, G. C. Marshall,
+  D. D. Eisenhower; found 2026-11-07).** `validate_phase3` FAIL: `enrichment_status=enriched but no source link
+  (top-level/biographical_profile/external_data)`. Find which enrichment path sets `enriched` without writing a source URL.
+- **[MED · quality] Phase 3 degradation seen 2026-11-07:** OpenSERP circuit breaker opened 4x (5 consecutive empty/failed
+  searches) so bibliography resolve had `backend_down=2`; 88/264 places have no coordinates (`geo_missing_coords` 33%). Check the
+  OpenSERP service health on the Phase 3 NAT path and the geocoder fallbacks.
+- **[MED · design] The real "dedup complete" path launches Phase 3 for ALL books with NO `BOOK_NAME`** (`trigger_handler.py`
+  DEDUP_COMPLETE_TOPIC). Everything Phase 3 reads from the source documents (in-doc maps, image->person/place links, link review)
+  only worked for book-scoped runs until the unscoped branch started downloading `output/content/` (2026-11-07). Consider
+  whether the unscoped whole-corpus run should re-run paid Grok steps (image-person, link review) over every book each time.
 - **[LOW · observability] `enrich.summary` label `skipped_already` is misleading** (`src/extraction/people.py:893`). The
   `skipped` counter also counts "attempted, not enriched" (e.g. Wikipedia rate-limit deferral), so 59 of 62 people read as
   "already enriched" when they were deferred. Split into `skipped_already` vs `deferred`.

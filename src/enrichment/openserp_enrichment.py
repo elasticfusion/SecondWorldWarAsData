@@ -1441,7 +1441,12 @@ def _iter_loadable_records(directory: Path):
     parses as JSON; silently skips the index/skip files and any file that fails to parse.
     Mirrors the per-file load/skip preamble the drivers shared (the max_items break, which
     depends on the running enriched count, stays in each driver)."""
-    for f in sorted(directory.glob("*.json")):
+    yield from _iter_loadable_files(sorted(directory.glob("*.json")))
+
+
+def _iter_loadable_files(files):
+    """(file, parsed_data) for each non-SKIP file in ``files`` that parses as JSON."""
+    for f in files:
         if f.name in SKIP_FILES:
             continue
         try:
@@ -1629,7 +1634,7 @@ def enrich_one_equipment(
 
 
 def enrich_source_sections_with_openserp(
-    source_section_dir: Path,
+    output_root: Path,
     openserp_url: str,
     grok_client: Any = None,
     max_items: Optional[int] = None,
@@ -1637,18 +1642,35 @@ def enrich_source_sections_with_openserp(
     """Add OpenSERP primary-source web results to source_section records, keyed on the derived
     OPERATION label (the coarse anchor — e.g. 'Battle of the Bulge') rather than granular event
     names. Only sections with an operation are searched. Native write, gated on
-    openserp_searched (90-day), deduped. Returns count enriched."""
+    openserp_searched (90-day), deduped. Returns count enriched.
+
+    ``output_root`` is the OUTPUT ROOT (not a source_section dir): the records live under
+    ``content/<book>/source_section/`` (src/utils/source_sections) — iterating
+    ``output_root/source_section`` found nothing in production, so this enriched 0 silently.
+    """
     if not _reset_and_check_reachable(openserp_url):
         return 0
 
+    from src.utils.source_sections import iter_section_files
+
     enriched = 0
-    for f, data in _iter_loadable_records(source_section_dir):
+    n_records = 0
+    for f, data in _iter_loadable_files(iter_section_files(output_root)):
+        n_records += 1
         if max_items and enriched >= max_items:
             break
         if _process_one_source_section(f, data, openserp_url, grok_client):
             enriched += 1
 
-    logger.info("OpenSERP source_section enrichment: %d enriched", enriched)
+    logger.info(
+        "OBSERV openserp.source_sections records=%d enriched=%d", n_records, enriched
+    )
+    if n_records == 0:
+        logger.warning(
+            "OBSERV openserp.source_sections_none status=warn — no source_section records under "
+            "%s; Phase 3 must download output/content/ (see no_parsed_docs) before this step",
+            output_root,
+        )
     return enriched
 
 
