@@ -429,7 +429,7 @@ def test_images_anchor_against_the_separated_body(tmp_path, monkeypatch):
     monkeypatch.setattr(
         P,
         "_anchor_images_to_paragraphs",
-        lambda d, c, n=None: (seen.setdefault("c", c), real(d, c, n)),
+        lambda d, c, n=None, **kw: (seen.setdefault("c", c), real(d, c, n, **kw)),
     )
     src = _write(tmp_path / "chapter1-content.md", raw)
     meta = Metadata(

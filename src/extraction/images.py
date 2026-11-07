@@ -326,6 +326,38 @@ def _download_image(
         return None, None, width, height, mime
 
 
+_TITLE_MAX = 100
+
+
+def _ends_headline(word: str) -> bool:
+    """A word closing the headline: it ends in '.'/':' and is not an abbreviation (U.S., GEN.,
+    a number like '1.')."""
+    if not word.endswith((".", ":")):
+        return False
+    core = word.rstrip(".:")
+    return "." not in core and len(core) > 3
+
+
+def _caption_title(caption: Optional[str]) -> Optional[str]:
+    """The caption's ALL-CAPS headline ("ALLIED INVASION CHIEFS" from "ALLIED INVASION CHIEFS.
+    Left to right: ..."): leading words with no lowercase letter, up to the word that ends the
+    headline - so abbreviations ("U.S. TROOPS LAND.", "GEN. EISENHOWER") are kept and a
+    following sentence's "A"/"I" does not leak in."""
+    if not caption:
+        return None
+    words = []
+    for word in caption.split():
+        if any(c.islower() for c in word):
+            break
+        words.append(word)
+        if _ends_headline(word):
+            break
+    head = " ".join(words).rstrip(".:,;").strip()
+    if len(head) > _TITLE_MAX:  # an all-caps caption has no headline break
+        head = head[:_TITLE_MAX].rsplit(" ", 1)[0].rstrip(".:,;")
+    return head if sum(c.isalpha() for c in head) >= 3 else None
+
+
 def _create_image_record(
     img: dict,
     image_id: str,
@@ -340,11 +372,14 @@ def _create_image_record(
     """Create spec-compliant image record."""
     url = img.get("url")
     alt = img.get("alt_text", "")
+    # The PRINTED caption Phase 1 paired to the figure (src/parser._pair_image_captions): source
+    # text, so it is kept verbatim and is the best title when there is no alt text.
+    caption = (img.get("caption") or "").strip() or None
     content_type = _classify_content_type(alt, url or "")
 
     record: Dict[str, Any] = {
         "ImageID": image_id,
-        "image_title": alt or "Untitled",
+        "image_title": alt or _caption_title(caption) or "Untitled",
         "image_type": "source_material",
         "content_type": content_type,
         "source": f"{IMAGE_SOURCE_PREFIX}{book}",
@@ -358,6 +393,7 @@ def _create_image_record(
         "url_capture_date": None,
         "license": "Public Domain - Original source material",
         "description": alt,
+        "caption": caption,
         "extracted_date": datetime.utcnow().isoformat() + "Z",
     }
 
@@ -432,6 +468,7 @@ def _apply_vision_caption(
         image_bytes,
         {
             "alt_text": img.get("alt_text", ""),
+            "caption": img.get("caption") or "",
             "sub_event_name": (event_ctx or {}).get("Sub-event_Name", ""),
             "place_name": place_name or "",
             "date": date_val or "",

@@ -61,6 +61,7 @@ def _image_bytes(rec: Dict[str, Any], output_root: Path) -> Optional[bytes]:
 def _context(rec: Dict[str, Any]) -> Dict[str, str]:
     return {
         "alt_text": str(rec.get("image_title") or ""),
+        "caption": str(rec.get("caption") or ""),
         "sub_event_name": str(rec.get("Sub-event_Name") or ""),
         "place_name": str(rec.get("place_name") or ""),
         "date": str(rec.get("date") or ""),

@@ -1,6 +1,7 @@
 """Markdown content parsing with entity extraction."""
 
 import logging
+import functools
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -686,9 +687,12 @@ def _add_images_to_doc(
                 paragraph_number=0,
             )
         doc.images.append(img)
-    _pair_image_captions(doc, content)
+    _pair_image_captions(doc, content, base_url)
     _anchor_images_to_paragraphs(
-        doc, content if anchor_content is None else anchor_content, notes
+        doc,
+        content if anchor_content is None else anchor_content,
+        notes,
+        base_url=base_url,
     )
 
 
@@ -735,11 +739,16 @@ _REF_BEFORE = r"(?<![^\s\"'(=<])"
 _REF_AFTER = r"(?![^\s\"')#?>])"
 
 
+@functools.lru_cache(maxsize=4096)
+def _ref_regex(token: str) -> "re.Pattern[str]":
+    return re.compile(_REF_BEFORE + re.escape(token) + _REF_AFTER)
+
+
 def _image_pos(token: str, content: str, cursor: int) -> int:
     """Offset of an image token at/after ``cursor``; else from the start (out-of-order image)."""
     if not token:
         return -1
-    rx = re.compile(_REF_BEFORE + re.escape(token) + _REF_AFTER)
+    rx = _ref_regex(token)
     m = rx.search(content, cursor) or rx.search(content)
     return m.start() if m else -1
 
@@ -840,7 +849,7 @@ def _unanchored_kind(doc, found: bool, positions: list) -> str:
 
 
 def _anchor_images_to_paragraphs(
-    doc: MarkdownDocument, content: str, notes=None
+    doc: MarkdownDocument, content: str, notes=None, base_url: Optional[str] = None
 ) -> None:
     """Set each image's ``paragraph_number`` to the paragraph it follows in the source. It was
     hard-coded 0, so a figure placed BETWEEN paragraphs could not be traced to any sub-event
@@ -852,12 +861,14 @@ def _anchor_images_to_paragraphs(
     positions = _paragraph_positions(doc.paragraphs, content)
     cursor = 0
     counts: Dict[str, int] = {}
-    base_url = getattr(doc, "source_url", "") or ""
+    base: str = (
+        base_url if base_url is not None else (getattr(doc, "source_url", "") or "")
+    )
     for img in doc.images:
-        num, cursor, found = _anchor_one(img, content, positions, cursor, base_url)
+        num, cursor, found = _anchor_one(img, content, positions, cursor, base)
         if num is not None:
             img.paragraph_number = num
-        elif not found and _anchor_in_notes(img, notes, base_url):
+        elif not found and _anchor_in_notes(img, notes, base):
             continue
         else:
             kind = _unanchored_kind(doc, found, positions)
@@ -900,12 +911,23 @@ def _report_unanchored_images(counts: Dict[str, int], total: int, located: int) 
 # An ALL-CAPS figure caption: the line's letters are (mostly) uppercase and it has ≥2 words
 # (HyperWar convention, e.g. "ALLIED INVASION CHIEFS. Left to right: ..."). The caption carries the
 # figure's rich context (names/place/action) — pairing it to the image lets M3/M5 link it.
+# Where a caption's headline ends: ':', the italic continuation '*', or a sentence period that is
+# not an abbreviation's ("U.S. TROOPS LAND.", "GEN. EISENHOWER" keep going).
+_CAPTION_HEAD_END = re.compile(
+    r"[:*]|(?<!\b[A-Z])(?<!\b[A-Z]{2})(?<!\b[A-Z]{3})\.(?:\s|$)"
+)
+_NOT_CAPTION = re.compile(
+    r"^(?:#|\*{0,2}\\?-{1,2}\d)"
+)  # "## CHAPTER VIII", "*--271--*"
+
+
 def _is_caption_line(line: str) -> bool:
     s = line.strip()
-    if len(s) < 8 or " " not in s:
+    if len(s) < 8 or " " not in s or _NOT_CAPTION.match(s):
         return False
-    # Take the leading heading-ish run (up to the first sentence break) to judge caps.
-    head = s.split(".")[0].split(":")[0]
+    # Take the leading heading-ish run (up to the first sentence break, or the italic continuation
+    # HyperWar appends without a period: "PARACHUTE TROOPS *marching onto airfield...*").
+    head = _CAPTION_HEAD_END.split(s, maxsplit=1)[0]
     letters = [c for c in head if c.isalpha()]
     if len(letters) < 6:
         return False
@@ -913,19 +935,22 @@ def _is_caption_line(line: str) -> bool:
     return upper / len(letters) >= 0.85
 
 
-def _pair_image_captions(doc: MarkdownDocument, content: str) -> None:
-    """Pair the ALL-CAPS caption that immediately FOLLOWS a bare image (``![](src)``) into the
-    image's ``caption`` field. HyperWar renders a figure as ``<img ...>`` then a caption paragraph;
-    the caption (not alt text) holds the names/place/action. Fail-safe: no caption -> stays None.
-    """
+def _pair_image_captions(
+    doc: MarkdownDocument, content: str, base_url: str = ""
+) -> None:
+    """Pair the ALL-CAPS caption that immediately FOLLOWS an image into the image's ``caption``
+    field. HyperWar renders a figure as ``<a href="img/X"><img src="icn/X"></a>`` (or ``![](src)``)
+    then a caption paragraph; the caption (not alt text) holds the names/place/action. The image
+    line is found with the SAME exact reference forms as anchoring (``_image_tokens``): matching
+    only markdown ``![`` lines missed every HTML figure (XChannel-8: 0 of 39 captioned).
+    Fail-safe: no caption -> stays None."""
     try:
         lines = content.splitlines()
         paired = 0
         for img in doc.images:
-            needle = img.url or img.resource_id
-            if not needle or img.caption:
+            if img.caption:
                 continue
-            caption = _find_following_caption(lines, needle)
+            caption = _find_following_caption(lines, _image_tokens(img, base_url))
             if caption:
                 img.caption = caption
                 paired += 1
@@ -934,29 +959,91 @@ def _pair_image_captions(doc: MarkdownDocument, content: str) -> None:
                 "OBSERV image.captioned paired=%d of %d", paired, len(doc.images)
             )
     except Exception as e:  # noqa: BLE001 - captioning must never break parse
-        logger.debug("image caption pairing skipped: %s", e)
+        logger.warning(
+            "OBSERV image.caption_pairing_failed status=warn book=%s error=%s (captions for "
+            "this file were skipped; fix src/parser._pair_image_captions for this input)",
+            doc.book,
+            e,
+        )
 
 
-def _find_following_caption(lines: "list[str]", needle: str) -> Optional[str]:
-    """ALL-CAPS caption paragraph just after the image line referencing ``needle`` (matched by
-    basename — present in both the relative src and the resolved absolute url), or None.
-    """
-    base = needle.rstrip("/").split("/")[-1].split("?")[0]
-    if not base:
-        return None
-    idx = next(
-        (
-            i
-            for i, ln in enumerate(lines)
-            if base in ln and re.search(r"!\[.*?\]\(", ln)
-        ),
-        None,
-    )
-    if idx is None:
-        return None
-    for ln in lines[idx + 1 : idx + 4]:
-        if ln.strip() and _is_caption_line(ln):
-            return ln.strip()
+_LINE_QUOTE = re.compile(r"^[ \t]{0,3}(?:>[ \t]?){0,3}")
+_IMAGE_LINE = re.compile(r"<img\b|!\[", re.IGNORECASE)
+_GROUP_WINDOW = 8  # lines scanned each way for a figure group's caption
+
+
+# A caption SHARED by a figure group names each image's position. Only such a caption may go to
+# an image it does not directly follow, and only in the matching DIRECTION: an image ABOVE the
+# caption (reached past other images) needs "(above)"/"(top)"/"upper left"; an image BELOW it
+# needs "(below)"/"(bottom)"/"lower right". ("Left to right" names people in ONE photo, and a
+# bare word like "(Lower Normandy)" is not a position.)
+_CUE_UPPER = re.compile(
+    r"\((?:above|top)\)|\bupper\s+(?:left|right)\b|\bat\s+(?:the\s+)?top\b",
+    re.IGNORECASE,
+)
+_CUE_LOWER = re.compile(
+    r"\((?:below|bottom)\)|\blower\s+(?:left|right)\b|\bat\s+(?:the\s+)?bottom\b",
+    re.IGNORECASE,
+)
+_TAGS = re.compile(r"<[^>]{0,300}>")
+
+
+def _group_caption(lines: "list[str]", indices) -> Tuple[Optional[str], bool]:
+    """(caption, passed_another_image): walk ``indices`` past blank / bare '>' / other image
+    lines; the first real text line is the caption if it is an ALL-CAPS caption line, else None
+    (narrative or a page marker stops it)."""
+    passed = False
+    for i in indices:
+        text = _LINE_QUOTE.sub("", lines[i]).strip()
+        if _IMAGE_LINE.search(text):
+            passed = True
+            continue
+        if not _TAGS.sub("", text).strip():
+            continue  # blank, bare '>' or a tag-only anchor line (<span id="page279"></span>)
+        if not _is_caption_line(text):
+            return None, passed
+        # markdown emphasis is a conversion artefact of the printed italics, not caption text
+        return re.sub(r"\s+", " ", text.replace("*", "")).strip(), passed
+    return None, passed
+
+
+def _caption_for_line(lines: "list[str]", idx: int) -> Optional[str]:
+    after = range(idx + 1, min(len(lines), idx + 1 + _GROUP_WINDOW))
+    caption, passed = _group_caption(lines, after)
+    if caption and (not passed or _CUE_UPPER.search(caption)):
+        return (
+            caption  # directly follows it, or the group caption names an image above it
+        )
+    before = range(idx - 1, max(-1, idx - 1 - _GROUP_WINDOW), -1)
+    caption, _passed = _group_caption(lines, before)
+    return caption if caption and _CUE_LOWER.search(caption) else None
+
+
+def _find_following_caption(lines: "list[str]", tokens: List[str]) -> Optional[str]:
+    """The caption of the image's FIGURE, blockquote prefix and emphasis removed; else None.
+    Only lines DISPLAYING the image count (an in-text "Map 2" link is not the figure). HyperWar
+    shares one caption across a group of adjacent images, after the whole group ("TERRAIN ON
+    OMAHA BEACH. Bluffs ... (top)") or between its rows ("PREINVASION SCENES. ... (above) ...
+    (below)"); a caption reached past other images, or before the image, is taken only when it
+    names the image's position in that direction (_CUE_UPPER / _CUE_LOWER)."""
+    for idx, ln in enumerate(lines):
+        if not any(_image_pos(t, ln, 0) != -1 for t in tokens):
+            continue
+        if not _IMAGE_LINE.search(ln):
+            # an <a href="img/X"> left OPEN, whose <img> thumbnail starts the next line, is still
+            # the figure; an in-text link ("<a href=img/X>the chart</a>") is not
+            nxt = (
+                _LINE_QUOTE.sub("", lines[idx + 1]).lstrip()
+                if idx + 1 < len(lines)
+                else ""
+            )
+            if "</a" not in ln.lower() and nxt.lower().startswith("<img"):
+                idx += 1
+            else:
+                continue
+        caption = _caption_for_line(lines, idx)
+        if caption:
+            return caption
     return None
 
 
