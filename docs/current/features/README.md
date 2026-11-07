@@ -243,6 +243,7 @@ Third-party map search and verification.
 Bibliography and reference extraction with split architecture.
 
 **Key Features:**
+- Real endnote/footnote text passed to the model, with "cited in n. X" cross-references resolved and multi-work notes split ([supplemental/ENDNOTE_HANDLING.md](supplemental/ENDNOTE_HANDLING.md))
 - Split routing: document references → `output/bibliography/`, factual content → notes-event files
 - Deduplicated bibliography with fuzzy title matching (`bibliography.py`)
 - `alt_title` for expanded abbreviations (e.g., "OB WEST KTB" → "Oberbefehlshaber West Kriegstagebuch")

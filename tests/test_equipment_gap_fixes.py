@@ -4,7 +4,7 @@ nickname/fuzzy -> canonical EquipmentID (not name-exact)."""
 import json
 from pathlib import Path
 
-from scripts.find_duplicate_equipment import _all_names
+from src.dedup.find_duplicate_equipment import _all_names
 from src.extraction.equipment import (
     _resolve_support_equipment_id,
     SupportingUnitInput,

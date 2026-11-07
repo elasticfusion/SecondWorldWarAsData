@@ -14,6 +14,9 @@ Grok classifies each endnote/footnote into one of three categories:
 
 Mixed entries (factual statement + citation) are split into separate entries.
 
+How the endnote/footnote **text** reaches the prompt (parse-time capture, HTML fallback,
+"cited in n. X" resolution, semicolon splitting) is in [ENDNOTE_HANDLING.md](ENDNOTE_HANDLING.md).
+
 ### Key Files
 - `src/extraction/supplemental.py` (922 lines) — classification, routing, extraction
 - `src/extraction/bibliography.py` (152 lines) — deduplicated document storage with fuzzy title matching
@@ -345,8 +348,8 @@ Ambiguous items queued for human review:
 ## Documentation
 
 ### Specification
-- `contextmanagement/Specs/supplementalmaterial_v2.md` - Full specification
-- `contextmanagement/Specs/supplementalmaterial_v2.json` - JSON schema
+- `docs/archive/contextmanagement/Specs/supplementalmaterial_v2.md` - Full specification (historical; current schema: `src/schemas/`)
+- `docs/archive/contextmanagement/Specs/supplementalmaterial_v2.json` - JSON schema (historical; current schema: `src/schemas/`)
 
 ### Implementation Docs
 - `docs/archive/2026-03-22/SUPPLEMENTAL_PHASE1.md` - Phase 1 details (archived)

@@ -205,13 +205,13 @@ aws dynamodb delete-item --table-name $TABLE \
 
 ```bash
 # Tail logs (last 5 minutes)
-bash scripts/monitor_logs.sh 5m
+bash scripts/utils/monitor_logs.sh 5m
 
 # Pipeline status summary
-python scripts/pipeline_status.py
+python scripts/utils/pipeline_status.py
 
 # Quick CLI status
-bash scripts/pipeline_status.sh
+bash scripts/utils/pipeline_status.sh
 ```
 
 ---
@@ -236,7 +236,7 @@ aws lambda invoke --function-name dev-wwii-nat-manager \
 
 ```bash
 # View cache contents
-python scripts/review_cache.py
+python scripts/utils/review_cache.py
 
 # Clear cache for a specific book
 python scripts/cleanup_book_cache.py --book TheSiegfriedLineCampaign
@@ -246,20 +246,20 @@ python scripts/cleanup_book_cache.py --book TheSiegfriedLineCampaign
 
 ```bash
 # Full schema validation
-python scripts/validate_all_output.py
+python scripts/utils/validate_all_output.py
 
 # Quick quality report
-python scripts/json_quality_report.py
+python scripts/utils/json_quality_report.py
 ```
 
 ### Enrichment not progressing
 
 ```bash
 # Check enrichment coverage
-python scripts/enrichment_stats.py
+python scripts/utils/enrichment_stats.py
 
 # Diagnose specific entity
-python scripts/diagnose_enrichment.py output/people/some_person.json
+python scripts/utils/diagnose_enrichment.py output/people/some_person.json
 ```
 
 ---

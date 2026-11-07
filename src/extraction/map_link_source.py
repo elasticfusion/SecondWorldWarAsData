@@ -30,6 +30,8 @@ from src.utils.observe import observe_warn  # noqa: E402
 # same-host-as-the-document is also allowed. Everything else is skipped (defense-in-depth beyond the
 # SSRF IP gate — an in-doc link should point at the document's own asset host, not arbitrary sites).
 _ALLOWED_MAP_HOSTS = ("ibiblio.org",)
+# Per-document ceiling on recycled map links (cost: one vision call + one new source each).
+DEFAULT_MAX_LINKS_PER_DOC = 50
 
 
 def _ssrf_safe_image_url(url: str):
@@ -41,14 +43,19 @@ def _ssrf_safe_image_url(url: str):
     return _impl(url)
 
 
-def _host_allowed(url: str, source_host: str = "") -> bool:
-    """True if the map URL's host is the source document's host or an allowlisted corpus host."""
+def _host_allowed(url: str, extra_hosts: "tuple[str, ...]" = ()) -> bool:
+    """True if the map URL's host is an allowlisted corpus host (ibiblio, plus operator-configured
+    ``external_maps.allowed_hosts``). The document's OWN host is deliberately NOT trusted: the
+    source URL is uploader-supplied metadata, so honouring it would let an upload widen the
+    allowlist and make the pipeline fetch arbitrary images and send them to paid vision.
+    """
     host = (urlparse(url).hostname or "").lower()
     if not host:
         return False
-    if source_host and host == source_host.lower():
-        return True
-    return any(host == h or host.endswith("." + h) for h in _ALLOWED_MAP_HOSTS)
+    return any(
+        host == h or host.endswith("." + h)
+        for h in (*_ALLOWED_MAP_HOSTS, *(x.lower() for x in extra_hosts))
+    )
 
 
 def _vision_depicted(
@@ -109,6 +116,8 @@ def ingest_in_doc_map_links(
     grok_client: Any,
     *,
     image_timeout: int = 30,
+    allowed_hosts: "tuple[str, ...]" = (),
+    max_per_doc: int = DEFAULT_MAX_LINKS_PER_DOC,
 ) -> Dict[str, int]:
     """For each parsed doc's ``maps[]`` (in-document map links), follow the link and recycle an
     approved map as a source. Returns a summary dict. Fail-safe; emits OBSERV map_link.* lines.
@@ -129,15 +138,29 @@ def ingest_in_doc_map_links(
         book = str(doc.get("book", ""))
         if book.startswith("map-"):
             continue  # loop guard: do not follow a map-source's own map links
-        maps = doc.get("maps") or []
+        maps = [m for m in (doc.get("maps") or []) if isinstance(m, dict)]
         context = _doc_context(doc)
-        source_host = urlparse(doc.get("_source_url", "")).hostname or ""
+        if len(maps) > max_per_doc:
+            # Cost cap: each link is a paid vision call + a new source document. Never silent.
+            observe_warn(
+                "map_link",
+                "cap_hit",
+                note=(
+                    f"this document has {len(maps)} map links; only the first {max_per_doc} are "
+                    "recycled (each costs a Grok vision call and a new source). Raise "
+                    "external_maps.max_recycled_per_doc if that many maps are expected, else "
+                    "check the document for junk links"
+                ),
+                book=book,
+                links=len(maps),
+                cap=max_per_doc,
+            )
+            summary["skipped"] += len(maps) - max_per_doc
+            maps = maps[:max_per_doc]
         for m in maps:
-            if not isinstance(m, dict):
-                continue
             summary["links"] += 1
             _ingest_one_link(
-                m, grok_client, context, source_host, image_timeout, summary
+                m, grok_client, context, tuple(allowed_hosts), image_timeout, summary
             )
     logger.info(
         "OBSERV map_link.summary links=%d fetched=%d verified=%d recycled=%d deduped=%d skipped=%d",
@@ -167,7 +190,7 @@ def _ingest_one_link(
     m: Dict[str, Any],
     grok_client: Any,
     context: Dict[str, str],
-    source_host: str,
+    allowed_hosts: "tuple[str, ...]",
     image_timeout: int,
     summary: Dict[str, int],
 ) -> None:
@@ -177,7 +200,7 @@ def _ingest_one_link(
     map_title = str(m.get("description", "") or f"Map {map_id}")
     try:
         cleaned = _ssrf_safe_image_url(url)
-        if not cleaned or not _host_allowed(cleaned, source_host):
+        if not cleaned or not _host_allowed(cleaned, allowed_hosts):
             logger.info("OBSERV map_link.skipped url=%s reason=ssrf_or_host", url[:120])
             summary["skipped"] += 1
             return
@@ -230,6 +253,7 @@ def persist_map_entities(
     maps_dir: Path,
     download: bool = True,
     output_root: Optional[Path] = None,
+    grok_client: Any = None,
 ) -> Dict[str, int]:
     """Step 5a — persist a Map ENTITY per in-document map, keyed by URL, ACCUMULATING each chapter's
     reference footprint (roman-numeral campaign foldouts are shared across chapters/books). Reuses
@@ -251,7 +275,14 @@ def persist_map_entities(
         for m in doc.get("maps") or []:
             if isinstance(m, dict):
                 _persist_one_map(
-                    m, book, maps_dir, url_index, counts, download, output_root
+                    m,
+                    book,
+                    maps_dir,
+                    url_index,
+                    counts,
+                    download,
+                    output_root,
+                    grok_client,
                 )
     _save_url_index(index_path, url_index)
     logger.info(
@@ -298,6 +329,7 @@ def _persist_one_map(
     counts: Dict[str, int],
     download: bool = True,
     output_root: Optional[Path] = None,
+    grok_client: Any = None,
 ) -> None:
     """Persist (find-or-create + append footprint) one in-document map. Mutates counts."""
     from src.extraction.map_common import (
@@ -337,6 +369,13 @@ def _persist_one_map(
                 storage_backend="filesystem",
             ),
             "figure_number": m.get("map_id"),
+            # A map routed from an image already vision-classified in Phase 3 carries its verdict,
+            # so the tier-3 backstop does not re-submit it to Grok (don't-resubmit guarantee).
+            **{
+                k: m[k]
+                for k in ("is_map", "map_vision_checked_at")
+                if m.get(k) is not None
+            },
         }
 
     f = find_or_create_map_by_url(
@@ -355,10 +394,12 @@ def _persist_one_map(
         counts["created"] += 1
     # Step 5c-i: deterministic Place/Date/Organization linking from the footprint sub-events.
     if output_root is not None:
-        _link_persisted_map(f, output_root)
+        _link_persisted_map(f, output_root, grok_client)
 
 
-def _link_persisted_map(map_file: Path, output_root: Path) -> None:
+def _link_persisted_map(
+    map_file: Path, output_root: Path, grok_client: Any = None
+) -> None:
     """Read the persisted map, stamp Place/Date/Org links from its footprint, write back if changed.
     Fail-safe."""
     import json as _json
@@ -392,7 +433,11 @@ def _link_persisted_map(map_file: Path, output_root: Path) -> None:
             return Path(lip).read_bytes()
         return None
 
-    maybe_vision_classify_map(rec, _load_image, _grok_client_for_vision())
+    # The CALLER's client (the phase's rate-limited, cache-routed one); a private fallback only
+    # when none was passed — never a process-cached None that silently disables vision.
+    maybe_vision_classify_map(
+        rec, _load_image, grok_client or _grok_client_for_vision()
+    )
     after = (
         rec.get("PlaceMentionID"),
         rec.get("DateMentionID"),

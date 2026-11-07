@@ -73,13 +73,11 @@ def _classify(filename: str) -> Optional[str]:
 def _list_article_image_titles(title: str, timeout: int) -> List[str]:
     """List the File: titles embedded in a Wikipedia article (action=parse prop=images)."""
     try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+        from src.utils.wikimedia_client import TRANSIENT, wikimedia_get
 
-        resp = recorded_fetch(
+        resp = wikimedia_get(
             "wikipedia",
             _WIKI_API,
-            kind=TEXTUAL,
-            method="GET",
             params={
                 "action": "parse",
                 "format": "json",
@@ -89,9 +87,10 @@ def _list_article_image_titles(title: str, timeout: int) -> List[str]:
             },
             headers=_HEADERS,
             timeout=timeout,
+            subject=title,
             result_summary_fn=lambda r: f"parse-images status={r.status_code}",
         )
-        if resp.status_code != 200:
+        if resp is TRANSIENT or resp.status_code != 200:
             return []
         imgs = (resp.json().get("parse") or {}).get("images") or []
         return [f"File:{name}" for name in imgs]
@@ -103,13 +102,11 @@ def _list_article_image_titles(title: str, timeout: int) -> List[str]:
 def _resolve_commons_image(file_title: str, timeout: int) -> Optional[Dict[str, Any]]:
     """Resolve a File: title to its URL + license metadata via Commons imageinfo."""
     try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+        from src.utils.wikimedia_client import TRANSIENT, wikimedia_get
 
-        resp = recorded_fetch(
+        resp = wikimedia_get(
             "wikimedia-commons",
             _COMMONS_API,
-            kind=TEXTUAL,
-            method="GET",
             params={
                 "action": "query",
                 "format": "json",
@@ -119,9 +116,10 @@ def _resolve_commons_image(file_title: str, timeout: int) -> Optional[Dict[str, 
             },
             headers=_HEADERS,
             timeout=timeout,
+            subject=file_title,
             result_summary_fn=lambda r: f"imageinfo status={r.status_code}",
         )
-        if resp.status_code != 200:
+        if resp is TRANSIENT or resp.status_code != 200:
             return None
         pages = (resp.json().get("query") or {}).get("pages") or {}
         for _pid, pdata in pages.items():

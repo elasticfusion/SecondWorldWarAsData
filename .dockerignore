@@ -20,3 +20,5 @@ filestore
 lambda_package
 lambda-code.zip
 .gitnexus
+# Runtime-learned state (gitignored): a developer's local copy must not be baked into the image.
+config/equipment_aliases_learned.yaml

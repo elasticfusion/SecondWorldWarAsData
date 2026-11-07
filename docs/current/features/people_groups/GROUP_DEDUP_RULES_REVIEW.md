@@ -4,7 +4,7 @@
 **Status:** Living doc — the single source of truth for how people_groups flow through
 the pipeline and how group dedup decides matches. Implementation:
 `src/extraction/people_groups.py`, `src/extraction/enrich_groups.py`,
-`src/extraction/enrich_biographies.py` (linking), `scripts/find_duplicate_groups.py`,
+`src/extraction/enrich_biographies.py` (linking), `src/dedup/find_duplicate_groups.py`,
 `src/dedup/unit_key.py`, `src/dedup/config.py`; config: `config.yaml → dedup.groups`.
 Open questions are flagged **[REVIEW]**; not-yet-built items **[PENDING]**.
 

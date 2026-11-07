@@ -155,7 +155,7 @@ locally by scanning Chandra's markdown for the flattened signature via
 flattened). The two engines' outputs are kept side-by-side — where they
 **disagree** on structure the region is flagged `needs_review`
 (ensemble-as-verification — the same "make corruption loud" stance as the
-loader's skip-logging and `scripts/check_output_integrity.py`); recovered tables
+loader's skip-logging and `scripts/utils/check_output_integrity.py`); recovered tables
 are spliced back non-destructively via `table_merge_back.py`. Block quotes are
 handled by post-processing regardless of engine
 (`markdown_structure.py`, implemented).

@@ -87,13 +87,11 @@ def fetch_wikipedia_article(title: str, timeout: int = 20) -> Optional[Dict[str,
     if not title:
         return None
     try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+        from src.utils.wikimedia_client import TRANSIENT, wikimedia_get
 
-        resp = recorded_fetch(
+        resp = wikimedia_get(
             "wikipedia",
             _WIKI_API,
-            kind=TEXTUAL,
-            method="GET",
             params={
                 "action": "parse",
                 "format": "json",
@@ -103,9 +101,10 @@ def fetch_wikipedia_article(title: str, timeout: int = 20) -> Optional[Dict[str,
             },
             headers=_HEADERS,
             timeout=timeout,
+            subject=title,
             result_summary_fn=lambda r: f"parse-text status={r.status_code}",
         )
-        if resp.status_code != 200:
+        if resp is TRANSIENT or resp.status_code != 200:
             return None
         data = resp.json()
         if "error" in data:

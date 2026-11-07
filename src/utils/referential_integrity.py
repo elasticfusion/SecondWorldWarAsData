@@ -1,6 +1,6 @@
 """Corpus referential-integrity: the single source of the cross-reference edge model + checker.
 
-Core (not a throwaway utility): both the read-only CLI audit (`scripts/referential_integrity_audit.py`)
+Core (not a throwaway utility): both the read-only CLI audit (`scripts/utils/referential_integrity_audit.py`)
 and the end-of-phase ENFORCEMENT pass import from here, so the edge map + resolution logic can never
 drift. The per-write guard validates each record in isolation and is structurally blind to dangling
 cross-references (a `source_section.EventID` pointing at an event that was never persisted); this

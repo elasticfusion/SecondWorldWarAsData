@@ -160,13 +160,13 @@ python3 scripts/archive/merge_duplicate_people.py
 python3 scripts/fix_orphaned_person_refs.py --dry-run
 
 # Validate data
-python3 scripts/validate_output.py
+python3 scripts/utils/validate_output.py
 
 # JSON quality report (extraction quality metrics)
-python3 scripts/json_quality_report.py
+python3 scripts/utils/json_quality_report.py
 
 # Monitor pipeline logs (polling-based, color-coded)
-bash scripts/monitor_logs.sh
+bash scripts/utils/monitor_logs.sh
 
 # Clean up cache for completed books
 python3 scripts/cleanup_book_cache.py --all --dry-run

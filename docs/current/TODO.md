@@ -39,6 +39,112 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
 
 
 ### HIGH
+- **[HIGH · observability] Silent "fall back to empty" loaders hide omissions (root cause of the config/ + data/ gap).**
+  FIXED 2026-11-06 (branch `refactor/pr1-dedup-into-src`, not yet deployed): the ECS image had no `config/` or
+  `data/` for weeks (the deployed 2026-11-03 `wwii-pipeline:latest` loaded 0 of 97 equipment aliases, 0 of 6 surname
+  priors, no domain blacklist). 14 days of `/ecs/dev-wwii-pipeline` logs held no warning about any of it.
+  The Dockerfile now COPYs both dirs. `src/utils/runtime_tables.check_runtime_tables` runs at every phase start
+  and emits `OBSERV runtime.tables status=error tables=...` (Slack + email) when a required table is missing or
+  empty. `tests/test_dockerfile_runtime_files.py` fails if code reads a table that is unregistered or not copied.
+  WHY IT WAS MISSED: observability here is event-driven, and an absent file produces no event. Each loader treats
+  "missing" as a legitimate empty table (`except Exception: return {}`, `if not p.is_file(): return {}`), so
+  an omission looks exactly like an empty table. No metric tracked how many aliases or priors a run actually used.
+  REMAINING:
+    - Audit every `return {}` / `return []` fallback in `src/` loaders and make each one say whether the input was
+      absent, unreadable or genuinely empty (`observe_warn`). Same class as PATTERN-8, applied to inputs.
+    - Consider a per-run "inputs used" rollup (alias count, prior count, blacklist size) so a sudden zero is visible
+      even when a file is present but wrong.
+    - Learned equipment aliases written in ECS are lost when the task ends (pre-existing; now dockerignored).
+- **[HIGH · data-quality] Wikipedia rate limits became "not found" for every entity type (FIXED 2026-11-06, not yet deployed).**
+  Seen in the XChannel-8 dev E2E: every Wikipedia bio lookup after the first got 429 / Retry-After 60. The shared
+  pooled session (fetch-provenance migration `5711c48d`, 2026-10-23) retried each 429 three times at the full
+  Retry-After (180 s per lookup), then raised; callers recorded a miss. People were stamped `not_found` (90-day
+  suppression), and groups, equipment and places stamped `wikipedia_checked_at` (never re-fetch). FIX: all 11
+  Wikimedia call sites go through `src/utils/wikimedia_client.py` (per-host back-off, polite short waits, TRANSIENT on
+  429/403/5xx, records left unstamped), guarded by `tests/test_wikimedia_client.py`. REMAINING:
+    - After deploy, re-queue this run's casualties: people with `enrichment_status=not_found` and
+      `last_enrichment_search=2026-11-06` whose fetch-provenance shows a Wikipedia `RetryError` (Eisenhower, Marshall,
+      Montgomery, Ramsay, Bedell Smith, Leigh-Mallory, Tedder, Bradley, Kirk, Dönitz, Rommel, ...).
+    - Grokipedia hit + Wikipedia rate limited stamps the person `enriched`, so Wikipedia is never tried again for them.
+    - A deterministic parse failure (malformed body, missing key) is now deferred every run instead of negative-cached:
+      add a deferral count or backstop. The same applies to a permanent 403.
+    - A Commons license fetch that fails transiently is stored and positive-cached as `license="unknown"`.
+    - `_extract_media_from_wikipedia` returns no media on TRANSIENT without deferring (pre-existing behaviour).
+    - `scripts/utils/debug_searches.py` calls en.wikipedia.org directly (diagnostic only; the guard scans `src/`).
+- **[MED · data-quality] Follow-ups from the schema-stamp and basedpyright reviews (2026-11-06).**
+    - Writes into an UNREGISTERED directory skip schema validation (fail-safe allow) and get the minimum-version stamp.
+      Emit one counted, actionable warning when a record is written to a directory that is not a registered entity
+      (catches typos and LLM-derived directory names). Callers: 13 of `_resolve_entity_type`, e.g. `batch_parallel`.
+    - `locked_json` logs a failed schema stamp at DEBUG only: raise it to a counted warning (alerts must be actionable).
+    - Existing `index.json` files written before the fix carry `_schema_version`/`_last_updated` entries. Dev was reset;
+      before any prod run, either clean them once or make the index loaders skip keys starting with `_`.
+    - basedpyright baseline (`.basedpyright/baseline.json`, 147 findings) was generated on Python 3.14 with
+      `pythonVersion = "3.12"`. If the first CI run (3.12 + resolved deps) differs, regenerate it from a 3.12 env.
+      Shrink it by fixing findings (77 `reportAttributeAccessIssue`, 37 `reportArgumentType`), never to hide a new one.
+    - `grok_client._log_api_response`: the debug "Log preview" block is indented inside the model-deprecation branch, so
+      it logs only on a redirect. It was probably meant to sit under the `choices` branch.
+    - `nodejs-wheel-binaries` (transitive, unpinned range) comes with basedpyright in CI only; pin it or use hashes.
+- **[LOW · verify] Phase-3 reconcile barrier fix (run-id marker) is unverified on AWS.**
+  Fixed in code (empty `BOOK_NAME` key; freshness by run_id marker `manifests/reconcile_complete/_run.json`). Confirm on the
+  next dev E2E: Phase 3 logs `reconcile.barrier_seen via=run_id` (no 300s `barrier_timeout`). Residual gap: a Phase 3
+  launched BEFORE the reconcile clears the previous marker+barrier sees a consistent old pair; fully closing it needs the
+  orchestrator (SFN/ECS overrides) to pass a run_id to both tasks.
+- **[MED · provenance] Stop shipping HTML/EPUB/DOCX/video books with EMPTY metadata (P2-C1 "slug+meta half"; found 2026-11-06).**
+  `phase0_convert` / `phase0_video` / `ocr_merge_handler` write `chapter1-meta.yaml` with `author`, `series`, `chapter_title`,
+  `license`, `copyright_date` all `''` and `source_url: "converted from <key>"` (not a URL). The pipeline continues, so every
+  record cites an empty author, copyright status is unknown, and weather extraction errors (`Missing required book metadata`).
+  The alert is now actionable (names the fields, the consequence and the S3 file to edit), but an alert on EVERY upload is still
+  manual toil. Derive what is deterministic: HTML `<title>` (e.g. "HyperWar: US Army in WWII: Cross Channel Invasion [Chapter 8]"
+  gives series + chapter), the upload's `x-amz-meta-source-url` (set by the operator) for `source_url`, and the known licence of
+  the source host (ibiblio HyperWar = US Army CMH public domain). Leave `author` empty ONLY when it cannot be derived, and alert
+  only for what is still missing.
+  (The images/maps=0 consequence is FIXED in code: real `source_url` from S3 metadata / HyperWar derivation, parser
+  guard, shared map-vs-image classifier, Phase 3 map vision; verify on the next dev E2E. This item now covers only the
+  remaining empty author/series/license/copyright fields.)
+- **[MED · cost/owner decision] In-doc map recycle (map-as-source) stays OFF in prod.** Map ENTITIES are now always
+  persisted, but `ingest_in_doc_map_links` (a paid Grok place-relevance vision call + re-ingestion per map) still runs
+  only when `external_maps.enabled` (false in config.yaml). Decide whether in-doc ibiblio maps should be recycled.
+- **[LOW · cost] Phase 3 downloads/uploads `output/images/files/` bytes** now that `images` is a Phase 2/3 entity dir
+  (unscoped runs only; scoped runs pull manifested JSON). Consider syncing only `*.json` and fetching bytes by URL.
+- **[MED · cost/IAM] Task role cannot tag consumed sources for cold archive (found 2026-11-07 E2E).**
+  Every Phase 0 logs `archive_tag.degraded ... AccessDenied PutObjectTagging`: `cloudformation/iam.yaml` ECSTaskRole
+  `S3Access` allows Get/Put/List/Delete but not `s3:PutObjectTagging`, so no source ever gets `archive=cold` and all
+  stay on STANDARD. Add `s3:PutObjectTagging` (and Get) to that statement, deploy the IAM stack, confirm the next
+  Phase 0 logs `Tagged source ... (cold archive)`.
+- **[MED · latency] Phase 1 waits ~9 min for the scheduled backstop after Phase 0 (found 2026-11-07 E2E).**
+  Trigger logged `Pipeline busy (phase0-convert active), Phase 1 will run after completion` at 02:38:44; Phase 0 sent its
+  completion notification at 02:38:59 while its ECS task was still stopping (stopped 02:39:22), so the trigger still saw
+  it active and parked again; only `reconcile-scheduled-backstop` launched Phase 1 at 02:47:39. Fix: the trigger should
+  not count the notifying phase's own task as busy on a `phase-complete` event (or the task should notify after it
+  has exited / the trigger should retry shortly).
+- **[LOW · observability] `enrich.summary` label `skipped_already` is misleading** (`src/extraction/people.py:893`). The
+  `skipped` counter also counts "attempted, not enriched" (e.g. Wikipedia rate-limit deferral), so 59 of 62 people read as
+  "already enriched" when they were deferred. Split into `skipped_already` vs `deferred`.
+- **[MED · enrichment] Deferred Wikipedia lookups have no automatic retry.** XChannel-8: 194 transient (28 `rate_limited`,
+  166 `backoff_active`), people enriched 3/62; Phase 3 does not retry, so records stay unstamped until Phase 2 is re-run.
+  Repeated same-day dev runs share one NAT egress IP, which likely kept it rate-limited. Decide: scheduled re-enrich pass for
+  records with no `wikipedia_checked_at`, or accept and document.
+- **[MED · security] Scanner baseline (security-scanner MCP + CLI, 2026-11-06). Nothing found in this branch's changes.**
+  Branch vs `origin/main` by Checkov CLI: 141 -> 138 failed, 0 new (fixed: both `CKV_AWS_111` scoped-IAM findings and
+  `CKV_AWS_79` IMDSv1). Bandit `src/` 73 LOW (B110/B112 swallowed exceptions) + 8 in `lambda_handlers/`, 0 MEDIUM/HIGH. ASH on
+  `src/`: 8 HIGH, all false positives (word list flagged as "secret", `secrets.choice` alphabet, SHA-1 with
+  `usedforsecurity=False`, static-registry `import_module`, `http://` adapter mount prefix, "token" in log text).
+  OPEN, all pre-existing:
+    - Grype: the Go tool binaries `tools/search_maps` and `tools/search_media` (tracked in git, built with go1.26.0) carry 3
+      Critical / ~40 High stdlib CVEs. They are not copied by any Dockerfile, so local-only; rebuild with a patched Go or stop
+      tracking binaries. The `openserp` submodule's Go modules (`brotli` Critical, `x/net`, `klauspost/compress` High) ship in the
+      OpenSERP image: bump the submodule (`scripts/check_component_versions.sh`).
+    - ~73 swallowed exceptions (B110/B112) conflict with the actionable-alerts rule; fold into the PATTERN-8 audit.
+    - cdk-nag/Checkov CloudFormation baseline (~138): Lambda DLQ / VPC / concurrency / env-var KMS, DynamoDB PITR + CMK, SNS/SQS
+      encryption, log-group KMS, API Gateway logging/tracing/authorization (`AwsSolutions-APIG4`).
+    - Semgrep standalone is not installed on the dev machine (the MCP `scan_directory_with_semgrep` fails); the MCP Checkov scan
+      returned a STALE copy of `ocr.yaml`. Use the Checkov CLI as the source of truth.
+- **[HIGH · release] Push the local commits and open PR 1 (owner decision pending, 2026-11-06).**
+  `main` has 6 unpushed local commits (`12ee5159`..`7e45750b`: pre-deploy fixes, scripts/ reorg, steering, aws/ and
+  agent-history removal, endnote doc, separation plan). Branch `refactor/pr1-dedup-into-src` has 4 more on top
+  (`f8db5a56` golden test, `9f9e6703` scripts/utils root fix, `27f3fd18` dedup move, `7ac6593d` reclassify fixes).
+  Decide: push `main` first and open PR 1 against it (smaller PR diff), or open one PR carrying all 10. Then let CI run
+  (it has not run on any of these), and after deploying do the end-to-end check in SRC_SCRIPTS_SEPARATION.md §6.
 - **[HIGH · provenance/design] Stop trusting Grok to TRANSCRIBE paragraph numbers — resolve fulltext DETERMINISTICALLY (owner 2026-10-30).**
   Today the events extractor feeds Grok `Paragraph_1..Paragraph_N` and asks it to echo back the paragraph_numbers per
   sub-event; we then LOOK UP fulltext by those numbers. Asking an LLM to copy identifiers we already own is a mechanical
@@ -216,6 +322,78 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
 
 ### MED
+- **[MED · provenance/copyright] Copyright date rules have off-by-one and stale-cutoff errors (found 2026-11-06).**
+  Not verified by a lawyer; these are code-vs-stated-rule mismatches against `docs/current/core/copyright/`.
+    - `src/extraction/copyright_calculator.py`: for a US work with an unknown death date, only `pub_year < 1928` is
+      treated as public domain. That hardcoded cutoff has gone stale: works from 1928–1930 have since entered the public
+      domain, so they are now reported as `unknown`. Derive the cutoff from the current year instead.
+    - Both modules treat life+70 as expired when `current_year >= death_year + 70`. The term runs to the END of
+      that year, so a work enters the public domain on Jan 1 of `death_year + 71`. The code over-claims public
+      domain by one year, which is the harmful direction for a citation-ready dataset.
+    - `supplemental_advanced._determine_usa_copyright` has the same off-by-one for the 95-year term (`pub_year + 95`).
+    - Two implementations of one rule: consolidate into `copyright_calculator` and pin it with year-boundary tests.
+- **[MED · architecture/gate-coverage] Move pipeline code out of `scripts/` into `src/` (plan: `design/SRC_SCRIPTS_SEPARATION.md`).**
+  The pipeline imports 11 modules from `scripts/` (dedup detectors, validators, metadata completion, the metrics Lambda
+  handler), and two `src/dedup` modules import `scripts/` themselves. The gate lints only `src/` and `lambda_handlers/`,
+  so ~4,700 lines of pipeline code get only black + tests. That gap hides a real bypass:
+  `reclassify_military_units` writes `people_groups` entity records with a raw `write_text`, skipping the write guard.
+  Plan: 4 PRs (dedup family; validators + metadata + metrics Lambda; an import-direction guard; retire duplicates after
+  salvaging their useful logic). Decisions made 2026-11-06: oob_markdown is the canonical Order of Battle parser,
+  `pdf_to_markdown.py` keeps its new-book scaffolding under a clearer name with its conversion replaced, generic HTML goes through `text_converters` (+ `web_video` for video pages), and the
+  20 complexity-C functions are grandfathered behind a golden-output test, then refactored file by file.
+  PROGRESS: PR 1 (dedup family -> `src/dedup/`) on branch `refactor/pr1-dedup-into-src`. Follow-ups it created:
+    - Refactor the 18 grandfathered C blocks in `src/dedup/` (D4; `scripts/.radon_inherent` "moved unrefactored"),
+      starting with `find_duplicate_people.py` (10). `tests/unit/test_dedup_golden.py` must stay green; remove each
+      allowlist entry as its block drops below C.
+    - `find_duplicate_places_v2._filter_excluded` and `find_duplicate_groups._filter_excluded` are byte-identical
+      (same AST hash): extract one shared helper.
+    - Dead code: `find_duplicate_people._check_proximity` has no callers; it and the helpers only it calls
+      (`_names_within_distance`, `_get_person_titles`) can be deleted (drop the allowlist entry too).
+    - Questionable pinned dedup decisions (golden records them as current behaviour): John Smith grouped with
+      Walter Bedell Smith; bare "Marshall" grouped with George Marshall; Panzer Lehr clustered with 2nd Panzer.
+    - PR 2: the `metrics` Lambda handler is `scripts.view_metrics.handler`, but `scripts/update_lambdas.sh` never
+      packaged `scripts/view_metrics.py` (CI's deploy.yml copies all of `scripts/`, so it works only after a CI deploy).
+- **[MED · entity-resolution] Resolve `people_groups` against the ETO Order of Battle (the authoritative unit spine).**
+  Moved from the steering "known gaps" list (2026-11-04). Name-level resolution exists (`find_duplicate_groups`,
+  `src/dedup/unit_key.py`, `data/unit_nicknames.yaml`), but nothing resolves groups TO the OOB: the OOB crosswalk
+  (`src/ingestion/oob_markdown/crosswalk.py`, `entity_emit.emit_crosswalk_to_people`) links command staff -> people only.
+  Open: map each per-mention group to an OOB unit, and add the time-bounded `org_attachments[]` on `people_groups`
+  (see the schema.org item under HIGH).
+- **[MED · verify-on-next-run] Confirm four former "known data-quality gaps" are closed in the DATA, not just the code.**
+  Code now covers each, but the dev environment was empty on 2026-11-04 (data bucket had 0 objects; the entity
+  DynamoDB tables are empty by design), so none could be checked against real records. After the next full run verify:
+    - Places: no record left with null/`0.0` lat/lon or empty `country` (geocoding: `places_grok_geocode`, `nominatim_geocode`,
+      wired in `phase3_enrich_data._enrich_places_and_geocode`).
+    - Images: `description` is populated. Vision captioning (`images._apply_vision_caption`) is opt-in; check its config default.
+    - Bibliography: no stub records (`ibid`, bare numbers like `1`/`26`) persisted (`bibliography._is_stub_citation` skips them
+      at extraction; it does not clean records already stored).
+  Then refresh `DATA_QUALITY_STATUS.md` (dated 2026-10-05; still lists "Places missing coordinates" as open).
+- **[MED · provenance] Derive endnote vs footnote `reference_type` from the SOURCE, not Grok.**
+  From the retired `messages/TODO_fetch_endnote_content.md`. Endnote text is now fetched and passed to the supplemental
+  prompt, but `reference_type` is still the model's call: `supplemental._build_ref_context` only adds a type hint when NO
+  text was found, and `_separate_by_type` routes on whatever the model returned. Symptom seen before: Breakout and Pursuit
+  (endnote-only) produced `*-footnotes.json`. Fix: set the type deterministically from the source structure (marker style /
+  where the definition lives) during parse, carry it in the parsed `footnotes` entries, and override the model's value.
+  See `docs/current/features/supplemental/ENDNOTE_HANDLING.md`.
+- **[MED · storage/cache] Move the external search-result cache from DynamoDB to S3.**
+  Owner direction (2026-11-04): DynamoDB is for queues only; caching is fine but belongs in S3. `src/utils/search_cache.py`
+  (`_DynamoBackend`, keys `search#<source>#<hash>`) is the target, written from 17 live sites across 14 sources (nara,
+  openserp_archive, openserp_verify, openserp_awards, wikipedia, wikipedia_equipment, wikipedia_group, wikipedia_situational,
+  grokipedia, grokipedia_url, grokipedia_place, noaa_station, noaa_data, archive_org). The Grok response cache stays in
+  DynamoDB (owner decision); this item does not touch it. Design notes for the move:
+    - Layout: one object per entry, e.g. `cache/search/<source>/<hash>.json`, with the QUERY stored in the body (today only
+      a one-way hash is kept, so entries cannot be audited by name).
+    - TTLs differ (30d hit / 7d `NOT_FOUND`): use two prefixes with S3 lifecycle rules, or keep `ttl` in the object and check
+      on read. Keep the `TRANSIENT` rule: never persist a transient failure as a negative.
+    - Fix two defects while moving: (1) source `grokipedia_place` is written with a URL by `enrich_places._search_grokipedia_place`
+      and with page text by `situational_geocode.grokipedia_context`, so the same string collides and returns the wrong payload
+      shape: give the extract its own source name; (2) the `grokipedia` source caches the raw search-results HTML
+      (`response.text`) with no size cap, and DynamoDB's 400 KB item limit makes oversized writes fail silently (caught, debug log):
+      S3 removes the limit, but still decide whether to cache raw HTML at all.
+    - Dev reset: a dedicated S3 prefix lets `e2e_reset` clear the cache. Today `search#` items are not part of its sweep (per
+      `scripts/README.md`), so a "clean" dev run can see stale `NOT_FOUND` results.
+    - Not in this item: `fetch_provenance` (`fetchevent#`) and `url_registry` (`url#`, `excludedomain#`) were judged acceptable
+      in DynamoDB but can give unpredictable results in Dev; revisit with the reset behaviour above.
 - **[MED · observability-precision] download.file_missing cries wolf on expected-absent TRACKING files.** On every clean-slate/
   first run, Phase-2 download lists then 404s on index.json / .processed_events.json / manifests/run_scope/<book>.json — all
   TRACKING/index files that legitimately don't exist yet — and each fires OBSERV download.file_missing status=ERROR ->
@@ -279,6 +457,11 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   within N lines or an explicit `# OBSERV-EXEMPT: <reason>`.
 
 ### LOW
+- **[LOW · test-hygiene] Tests write into the tracked `logs/processing_summary.json` (found 2026-11-06).**
+  `src/extraction/events._write_processing_summary` appends to the cwd-relative `logs/processing_summary.json`, and
+  event-extraction tests (for example `tests/test_events_paragraph_range.py`) run it from the repo root, adding
+  `{"book": "B", "chapter": "C", ...}` lines on every test run. Fix: an autouse fixture that redirects the summary
+  path (or chdirs to tmp_path), plus a gate check that `git status` is clean after pytest.
 - **[LOW · sec-hygiene] Upgrade Trivy 0.71.0 -> 0.76.1** on the deploy host — the image scanner engine is 5 minor versions
   behind (DB auto-updates, engine/detection does not). deploy_all.sh now CHECKS this (loud current-vs-latest; hard-fail
   under STRICT_TRIVY_VERSION=1); remaining action = bump the installed binary on the deploy host.
@@ -1081,7 +1264,7 @@ with added OBSERV; data fixes regenerate only on a NEW run:
 - **~~P3 end-of-run summary + schema~~ ✅ #466** — `OBSERV phase2.summary` per-type counts (CORE
   zero=LOUD, optional=INFO) + standardized colon-format lines. Audit:
   `docs/current/dataquality/PHASE2_OBSERVABILITY_AUDIT.md`.
-- Tooling: `scripts/batch_metrics.py`; `scripts/ai_review.sh`.
+- Tooling: `scripts/utils/batch_metrics.py`; `scripts/ai_review.sh`.
 
 ### Identity / id discipline + session review fixes (2026-10-18)
 - **~~#448~~** `_fix_invalid_ulids` skips reference ids; **~~#454~~** unconditional identity-id skip;

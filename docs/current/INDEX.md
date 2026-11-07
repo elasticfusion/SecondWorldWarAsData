@@ -32,6 +32,7 @@
 | [core/TESTING.md](core/TESTING.md) | Test framework and conventions |
 | [core/WORKFLOW_DIAGRAMS.md](core/WORKFLOW_DIAGRAMS.md) | Mermaid diagrams of all flows |
 | [core/ULID_IMPLEMENTATION.md](core/ULID_IMPLEMENTATION.md) | ULID generation and validation |
+| [core/copyright/README.md](core/copyright/README.md) | Copyright rules by country (books, periodicals) behind `license`/`copyright_status` |
 | [core/PROMPT_MANAGEMENT.md](core/PROMPT_MANAGEMENT.md) | Prompt template system |
 | [core/TEXT_UTILS.md](core/TEXT_UTILS.md) | Text normalization utilities |
 | [core/JSON_REPAIR.md](core/JSON_REPAIR.md) | LLM JSON output repair |

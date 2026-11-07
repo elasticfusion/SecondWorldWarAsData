@@ -81,9 +81,11 @@ def _build_subevent_fulltext(se: dict, para_lookup: dict) -> None:
         nums = se.pop("paragraphs", None)
     if nums is None and "Sub-event_fulltext" in se:
         return  # Already has fulltext (cached old-format response)
+    from src.utils.paragraph_numbers import coerce_paragraph_numbers
+
     fulltext = {}
-    for n in nums or []:
-        if isinstance(n, int) and n in para_lookup:
+    for n in coerce_paragraph_numbers(nums, scope="events.fulltext"):
+        if n in para_lookup:
             fulltext[f"Paragraph_{n}"] = para_lookup[n]
         else:
             logger.warning("  Paragraph %s not found in parsed data, skipping", n)
@@ -649,11 +651,13 @@ def _cited_paragraph_numbers(response: dict) -> list:
     """All integer paragraph_numbers the response's sub-events cite."""
     ev = response.get("Event", response)
     subs = ev.get("Sub-events", ev.get("Sub_events", [])) or []
+    from src.utils.paragraph_numbers import coerce_paragraph_numbers
+
     nums: list = []
     for s in subs:
         if isinstance(s, dict):
             raw = s.get("paragraph_numbers") or s.get("paragraphs") or []
-            nums += [n for n in raw if isinstance(n, int)]
+            nums += coerce_paragraph_numbers(raw, scope="events.cited")
     return nums
 
 

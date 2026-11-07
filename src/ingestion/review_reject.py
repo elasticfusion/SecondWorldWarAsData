@@ -26,6 +26,33 @@ from src.ingestion.book_slug import _SAFE_SLUG_RE
 logger = logging.getLogger(__name__)
 
 
+_CORE_MARKER_KEYS = frozenset(
+    {
+        "source_key",
+        "book",
+        "category",
+        "safe_book",
+        "safe_category",
+        "reason",
+        "disposition",
+    }
+)
+_SNS_SUBJECT_MAX = (
+    100  # SNS rejects a longer Subject, which would silently lose the alert
+)
+
+
+def _sns_subject(subject: str) -> str:
+    """SNS Subject must be <=100 ASCII chars with no line breaks; anything else makes publish FAIL
+    (and the failure is swallowed), so the alert would be lost."""
+    clean = " ".join(subject.split()).encode("ascii", "replace").decode("ascii")
+    return (
+        clean
+        if len(clean) <= _SNS_SUBJECT_MAX
+        else clean[: _SNS_SUBJECT_MAX - 3] + "..."
+    )
+
+
 def _sanitize_segment(value: str, fallback: str) -> str:
     """SAFE-token sanitize a value that becomes an S3 KEY PATH SEGMENT
     (``needs-review/{category}/{book}.json``). ``book`` and ``category`` are both
@@ -53,8 +80,16 @@ def reject_to_review(
     *,
     category: str = "intake",
     region: str = "",
+    alert_subject: str = "",
+    alert_message: str = "",
+    extra: dict | None = None,
 ) -> str:
     """Off-ramp a file to needs-review + alert. Returns the marker S3 key.
+
+    ``alert_subject`` / ``alert_message`` override the default "verify its true type and re-route"
+    text, which is only right for a genuine reject (wrong media type, empty output). A caller whose
+    situation needs different action (e.g. mark_metadata_gap) must say what to DO. ``extra`` adds
+    fields to the marker body.
 
     Writes ``needs-review/{category}/{book}.json`` (NOT under contentrepository/,
     so it never triggers parse) and publishes an operator alert to the
@@ -81,6 +116,7 @@ def reject_to_review(
             "reason": reason,
             "disposition": f"rejected-{safe_category}",
         }
+        | {k: v for k, v in (extra or {}).items() if k not in _CORE_MARKER_KEYS}
     )
     logger.warning("REJECT-TO-REVIEW [%s] %s: %s", category, key, reason)
     logger.warning(
@@ -107,8 +143,11 @@ def reject_to_review(
         try:
             boto3.client("sns", region_name=region).publish(
                 TopicArn=topic,
-                Subject=f"WWII Pipeline: {category} rejected to review",
-                Message=(
+                Subject=_sns_subject(
+                    alert_subject or f"WWII Pipeline: {category} rejected to review"
+                ),
+                Message=alert_message
+                or (
                     f"Rejected {key} — {reason}. A needs-review marker was written "
                     f"to s3://{bucket}/{marker_key}. The file needs more extensive "
                     f"evaluation (verify its true type / disposition and re-route)."
@@ -125,6 +164,49 @@ _METADATA_GAP_NOTE = (
 )
 
 
+_DEFAULT_GAP_FIELDS = ("author", "series", "chapter_title", "license", "copyright_date")
+
+
+def _metadata_gap_alert(
+    key: str, book: str, bucket: str, meta_key: str, fields: tuple[str, ...]
+) -> tuple[str, str]:
+    """(subject, message) for an empty-metadata alert: which fields, what it breaks, what to do.
+
+    Every claim is checked against the code/E2E: the parse hashes author, so a Phase 1 re-run
+    re-parses after the edit; weather logged 'Missing required book metadata' and dates/places/
+    people_groups raise the same on their sync path."""
+    import json as _json
+    import shlex
+
+    env = bucket.split("-wwii-")[0] if "-wwii-" in bucket else "<env>"
+    subject = f"WWII Pipeline: metadata missing for {book[:45]}"
+    common = (
+        f"({key[:200]}) was ingested with EMPTY metadata: {', '.join(fields)}. "
+        f"Processing CONTINUES, but until this is filled: mentions of this book carry an empty "
+        f"author in their provenance, its licence/copyright is not recorded, and Phase 2 "
+        f"extractors that require an author (weather; dates, places and people groups on their "
+        f"sync path) fail with 'Missing required book metadata'. "
+        f"TO FIX: edit the chapter metadata and re-run Phase 1 for the book (it re-parses because "
+        f"the metadata changed) and Phase 2 follows; do NOT re-upload the source (that rewrites "
+        f"the metadata empty). "
+    )
+    # The message embeds a copy-paste shell command, so `book` must be the safe slug — defence in
+    # depth even though every caller passes book_slug output. An unsafe/unknown book => no command.
+    if _SAFE_SLUG_RE.fullmatch(book or "") and book != "unknown":
+        payload = _json.dumps({"source": "manual", "book": book, "phase": "1"})
+        cmd = (
+            f"Edit s3://{bucket}/{meta_key} (set {', '.join(fields)} + a real source_url if it is "
+            f"a placeholder), then: aws lambda invoke --function-name {env}-wwii-trigger "
+            f"--payload {shlex.quote(payload)} --cli-binary-format raw-in-base64-out /tmp/out.json."
+        )
+    else:
+        cmd = (
+            f"The book name could not be identified safely, so no command is given: edit the "
+            f"chapter metadata under s3://{bucket}/contentrepository/<book>/ and re-run Phase 1."
+        )
+    return subject, f"{book} {common}{cmd} Nothing needs re-routing."
+
+
 def mark_metadata_gap(
     s3_client,
     bucket: str,
@@ -133,6 +215,8 @@ def mark_metadata_gap(
     region: str,
     *,
     note: str = _METADATA_GAP_NOTE,
+    fields: tuple[str, ...] = _DEFAULT_GAP_FIELDS,
+    meta_key: str = "",
 ) -> None:
     """Record the deferred-metadata gap (empty author/series/title/license) as a detectable
     needs-review/metadata marker (P2-C1) rather than masquerading empty fields as real data.
@@ -140,6 +224,8 @@ def mark_metadata_gap(
     Shared by ocr_merge_handler / phase0_convert / phase0_video (identical off-ramp). Fail-safe:
     best-effort, never raises into the caller's merge/convert/phase.
     """
+    meta_key = meta_key or f"contentrepository/{book}/chapter1/chapter1-meta.yaml"
+    subject, message = _metadata_gap_alert(key, book, bucket, meta_key, fields)
     try:
         reject_to_review(
             s3_client,
@@ -149,6 +235,9 @@ def mark_metadata_gap(
             note,
             category="metadata",
             region=region,
+            alert_subject=subject,
+            alert_message=message,
+            extra={"missing_fields": list(fields), "meta_key": meta_key},
         )
     except Exception as e:  # noqa: BLE001 - marker must never crash the caller
         logger.warning("metadata needs-review marker failed for %s: %s", key, e)

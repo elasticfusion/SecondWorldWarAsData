@@ -1,18 +1,9 @@
 """Config-driven people dedup weighting: defaults, radius decay, conflicting-initial
 veto, and config override."""
 
-import importlib.util
-import sys
-from pathlib import Path
-
 from src.dedup.config import load_dedup_config
 
-_SPEC = importlib.util.spec_from_file_location(
-    "fdp_test", Path(__file__).parent.parent / "scripts" / "find_duplicate_people.py"
-)
-fdp = importlib.util.module_from_spec(_SPEC)
-sys.modules["fdp_test"] = fdp
-_SPEC.loader.exec_module(fdp)
+import src.dedup.find_duplicate_people as fdp  # noqa: E402
 
 
 def test_defaults_match_prior_behavior():

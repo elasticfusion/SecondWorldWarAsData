@@ -141,6 +141,16 @@ def set_deletion_callback(callback) -> None:
     _deletion_callback = callback
 
 
+def get_deletion_callback():
+    """The currently registered deletion callback (or None). Lets callers save/restore it."""
+    return _deletion_callback
+
+
+def notify_deletion(path: Path) -> None:
+    """Public: report a locally deleted entity file so ECS removes it from S3 at final sync."""
+    _notify_deletion(path)
+
+
 from src.extraction.people import _merge_person
 
 

@@ -33,7 +33,7 @@ paths:
 **Notes:**
 - All paths are relative to project root
 - Directories are created automatically if they don't exist
-- `content_output` separates book-specific files (parsed/event) from entity directories. Backwards compatible: if `output/content/` doesn't exist, falls back to `output/` (old layout). Run `python3 scripts/migrate_output_content.py` to migrate.
+- `content_output` separates book-specific files (parsed/event) from entity directories. Backwards compatible: if `output/content/` doesn't exist, falls back to `output/` (old layout). Run `python3 scripts/archive/migrate_output_content.py` to migrate.
 
 ---
 
@@ -575,7 +575,7 @@ Configurable via CloudFormation stack parameters in `cloudformation/compute.yaml
 - [Domain Blacklist](../features/external-maps/domain-blacklist.md) - Configure URL filtering
 - [Vision Verification](../features/external-maps/vision-verification.md) - How image verification works
 - [External Maps](../features/external-maps/README.md) - External maps feature overview
-- [Quality Assurance](../../../contextmanagement/Specs/quality_assurance.md) - Code quality tools
+- [Quality gate](../../../scripts/gate.sh) - Code quality tools (CI-equivalent; run before every commit)
 
 ---
 

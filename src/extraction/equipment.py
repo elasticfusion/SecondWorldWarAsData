@@ -14,7 +14,6 @@ from pydantic import BaseModel, Field, field_validator
 
 from src.grok_client import GrokClient, BatchModeCollecting
 from src.utils.observe import observe, observe_error, observe_warn
-from src.utils.http_pool import get_session
 from src.utils.json_validator import _fix_invalid_ulids
 from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
 
@@ -836,8 +835,16 @@ def _apply_wikipedia_text_extract(
         result = search_equipment_wikipedia(common_name)
     except Exception as e:  # noqa: BLE001 - enrichment is best-effort, never block
         logger.debug("Wikipedia text lookup failed for %s: %s", common_name, e)
+        equipment_data.pop("wikipedia_checked_at", None)  # unknown, not a miss
         return
 
+    from src.utils.wikimedia_client import EQUIPMENT, lookup_was_transient
+
+    if lookup_was_transient(EQUIPMENT, common_name, result):
+        equipment_data.pop(
+            "wikipedia_checked_at", None
+        )  # unknown, not a miss: retry next run
+        return
     if not result:
         logger.debug("No Wikipedia text extract for %s", common_name)
         return
@@ -1438,21 +1445,17 @@ def _extract_media_from_wikipedia(
     real download URLs. Grok vision validates relevance downstream.
     """
     identifier = technical_identifier or common_name
-    session = get_session()
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
     }
 
     try:
         # Step 1: Find the Wikipedia article
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+        from src.utils.wikimedia_client import TRANSIENT, wikimedia_get
 
-        search_resp = recorded_fetch(
+        search_resp = wikimedia_get(
             "wikipedia",
             "https://en.wikipedia.org/w/api.php",
-            kind=TEXTUAL,
-            method="GET",
-            session=session,
             params={
                 "action": "query",
                 "format": "json",
@@ -1462,8 +1465,11 @@ def _extract_media_from_wikipedia(
             },
             timeout=15,
             headers=headers,
+            subject=identifier,
             result_summary_fn=lambda r: f"equip-search status={r.status_code}",
         )
+        if search_resp is TRANSIENT:
+            return []  # rate limit / block / 5xx: client already logged it
         search_resp.raise_for_status()
         results = search_resp.json().get("query", {}).get("search", [])
         if not results:
@@ -1473,12 +1479,9 @@ def _extract_media_from_wikipedia(
         page_title = results[0]["title"]
 
         # Step 2: Get images from that article
-        img_resp = recorded_fetch(
+        img_resp = wikimedia_get(
             "wikipedia",
             "https://en.wikipedia.org/w/api.php",
-            kind=TEXTUAL,
-            method="GET",
-            session=session,
             params={
                 "action": "query",
                 "format": "json",
@@ -1488,8 +1491,11 @@ def _extract_media_from_wikipedia(
             },
             timeout=15,
             headers=headers,
+            subject=identifier,
             result_summary_fn=lambda r: f"equip-images status={r.status_code}",
         )
+        if img_resp is TRANSIENT:
+            return []  # rate limit / block / 5xx: client already logged it
         img_resp.raise_for_status()
         pages = img_resp.json().get("query", {}).get("pages", {})
         image_titles = _filter_wikipedia_image_titles(pages)
@@ -1499,12 +1505,9 @@ def _extract_media_from_wikipedia(
             return []
 
         # Step 3: Get actual file URLs from Commons (batch up to 5)
-        file_resp = recorded_fetch(
+        file_resp = wikimedia_get(
             "wikimedia-commons",
             "https://commons.wikimedia.org/w/api.php",
-            kind=TEXTUAL,
-            method="GET",
-            session=session,
             params={
                 "action": "query",
                 "format": "json",
@@ -1515,8 +1518,11 @@ def _extract_media_from_wikipedia(
             },
             timeout=15,
             headers=headers,
+            subject=identifier,
             result_summary_fn=lambda r: f"equip-commons status={r.status_code}",
         )
+        if file_resp is TRANSIENT:
+            return []  # rate limit / block / 5xx: client already logged it
         file_resp.raise_for_status()
         file_pages = file_resp.json().get("query", {}).get("pages", {})
 
@@ -2447,7 +2453,12 @@ def _refine_equipment_item(
     """
     name = str(item.get("name") or item.get("common_name") or "").strip()
     original_text = str(item.get("original_text", "")).strip()
-    paras = item.get("paragraph_numbers") or []
+    from src.utils.paragraph_numbers import coerce_paragraph_numbers
+
+    # LLM output: may be ["12"], "12", 12, ... -> ints (unreadable entries dropped loudly)
+    paras = coerce_paragraph_numbers(
+        item.get("paragraph_numbers"), scope="equipment.broad", subject=name
+    )
     extended_text = _build_extended_text(event_data, paras)
     out = _call_refine(name, original_text, extended_text, event_data, grok_client)
     rec = _unwrap_refined_record(out, name)
@@ -2457,7 +2468,14 @@ def _refine_equipment_item(
     if extended_text:
         rec["extended_text"] = extended_text
     if paras:
-        rec.setdefault("paragraph_numbers", paras)
+        # The refine response may carry its own paragraph_numbers (LLM shape): normalise it too, and
+        # fall back to the broad item's numbers.
+        rec["paragraph_numbers"] = (
+            coerce_paragraph_numbers(
+                rec.get("paragraph_numbers"), scope="equipment.refine", subject=name
+            )
+            or paras
+        )
     _backfill_operating_country(rec, extended_text)
     return rec
 

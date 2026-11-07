@@ -34,7 +34,6 @@ from typing import List, Optional
 
 import boto3
 
-import yaml
 
 from src.ingestion.book_slug import book_slug
 
@@ -299,27 +298,22 @@ def _write_chapter_structure(s3, key, book, markdown, resolved) -> str:
     meta_key = f"contentrepository/{book}/chapter1/chapter1-meta.yaml"
     content_key = f"contentrepository/{book}/chapter1/chapter1-content.md"
     n_review = sum(1 for r in resolved if r.get("needs_review"))
-    # P2-C1: SAFE YAML via yaml.safe_dump (never an f-string) so a book/key with
-    # YAML metacharacters cannot inject structure. author/series/license are ''
-    # (empty) NOT a literal 'TODO - Add ...'; the gap is recorded as a
-    # needs-review/metadata marker below. chapter_title/source_video_key/
+    # Shared chapter-meta builder (safe YAML, P2-C1). chapter_title/source_video_key/
     # speaker_id_version/speakers_needing_review are REAL derived values.
-    meta = {
-        "series": "",
-        "book": book,
-        "author": "",
-        "chapter_number": "1",
-        "chapter_title": "Video transcript",
-        "license": "",
-        "copyright_date": "",
-        "source_url": f"s3://{BUCKET}/{key}",
-        "source_video_key": key,
-        "speaker_id_version": SPEAKER_ID_VERSION,
-        "speakers_needing_review": str(n_review),
-    }
-    meta_body = yaml.safe_dump(
-        meta, default_flow_style=False, allow_unicode=True
-    ).encode("utf-8")
+    from src.ingestion.chapter_meta import build_meta_yaml
+
+    meta_body = build_meta_yaml(
+        book,
+        source_url=f"s3://{BUCKET}/{key}",
+        source_url_basis="s3_object",
+        source_key=key,
+        chapter_title="Video transcript",
+        extra={
+            "source_video_key": key,
+            "speaker_id_version": SPEAKER_ID_VERSION,
+            "speakers_needing_review": str(n_review),
+        },
+    )
     s3.put_object(Bucket=BUCKET, Key=meta_key, Body=meta_body)
     s3.put_object(Bucket=BUCKET, Key=content_key, Body=markdown.encode("utf-8"))
     _mark_metadata_gap(s3, key, book)
@@ -357,6 +351,7 @@ def _mark_metadata_gap(s3, key: str, book: str) -> None:
         key,
         book,
         REGION,
+        fields=("author", "series", "license"),
         note=(
             "metadata not yet extracted (author/series/license empty) — "
             "real metadata extraction deferred (P2-C1 slug+meta half)"

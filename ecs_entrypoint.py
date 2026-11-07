@@ -3,17 +3,19 @@
 import json
 import logging
 import os
+import re
 import signal
 import subprocess
 import sys
 import threading
 import time
+import uuid
 from pathlib import Path
 from typing import Optional, Union
 
 import boto3
 
-from src.utils.observe import observe, observe_error
+from src.utils.observe import observe, observe_error, observe_warn, observe_warn_counted
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(message)s"
@@ -42,6 +44,24 @@ SYNC_INTERVAL = int(os.environ.get("SYNC_INTERVAL", "120"))  # seconds
 # Process (= ECS task) start time, used by the reconcile drain barrier's freshness guard: a barrier
 # whose completed_at predates this is a stale previous-run signal and is ignored (HIGH#5).
 _TASK_START_TS = time.time()
+# Entity subdirs Phase 3 downloads and Phases 2/3 upload at final sync — ONE list (DRY), so a new
+# entity dir cannot be downloaded-but-never-uploaded (images were missing from both: Phase 2 image
+# records were never final-synced and Phase 3 never saw them).
+_PHASE23_ENTITY_DIRS = (
+    "people",
+    "people_groups",
+    "places",
+    "dates",
+    "equipment",
+    "weather",
+    "logistics",
+    "casualties",
+    "maps",
+    "images",
+    "supplemental",
+    "bibliography",
+    "narrative_notes",
+)
 # Paths used by _clear_title_cache_if_reprocess (module constants so tests can
 # redirect them to a temp dir without patching Path globally).
 _CONFIG_PATH = Path("/app/config.yaml")
@@ -665,6 +685,19 @@ def _preflight_credit_check() -> None:
         logger.warning("Preflight check failed (proceeding anyway): %s", e)
 
 
+def _preflight_runtime_tables() -> None:
+    """Omission check: the lookup-table loaders fall back to "empty" silently, so a table missing
+    from the image is only visible here (2026-11-06: config/ and data/ were absent from the image
+    for weeks with no signal). Emits OBSERV runtime.table_unusable status=error per bad table.
+    Non-blocking."""
+    from src.utils.runtime_tables import check_runtime_tables
+
+    try:
+        check_runtime_tables(Path("/app"))
+    except Exception as e:  # noqa: BLE001 - a preflight must never stop the phase
+        logger.warning("Runtime-table preflight failed (proceeding anyway): %s", e)
+
+
 def _preflight_notification_subscriptions() -> None:
     """Non-blocking: warn if notification/alarm SNS topics have no confirmed subscription.
 
@@ -693,15 +726,27 @@ def _preflight_notification_subscriptions() -> None:
 
 
 def _warn_if_no_confirmed_subs(sns, topic_arn: str) -> None:
-    """Log a WARNING (never raise) if a topic has no confirmed subscription."""
+    """Emit a canonical OBSERV anomaly (never raise) if a topic has no confirmed subscription.
+
+    Uses observe() (not a bare logger.warning) so a no-subscriber topic is a greppable
+    `OBSERV notify.no_subscriber` anomaly that reaches the alerting path, not just a log line a
+    human has to notice. Non-blocking — the pipeline continues regardless."""
+    from src.utils.observe import observe
+
+    short = topic_arn.rsplit(":", 1)[-1]
     try:
         subs = sns.list_subscriptions_by_topic(TopicArn=topic_arn).get(
             "Subscriptions", []
         )
     except Exception as e:
         # Topic missing / no permission — surface but never block.
-        logger.warning(
-            "SNS subscription preflight: could not list subs for %s: %s", topic_arn, e
+        observe(
+            "notify",
+            "preflight_check_failed",
+            status="warn",
+            topic=short,
+            reason=type(e).__name__,
+            note="could not list SNS subscriptions for the notification topic",
         )
         return
     confirmed = any(
@@ -709,17 +754,25 @@ def _warn_if_no_confirmed_subs(sns, topic_arn: str) -> None:
         for s in subs
     )
     if confirmed:
+        observe("notify", "subscriber_ok", status="ok", topic=short)
         return
     pending = sum(
         1 for s in subs if s.get("SubscriptionArn", "") == "PendingConfirmation"
     )
-    detail = f"{pending} pending-confirmation" if pending else "none"
-    logger.warning(
-        "SNS topic %s has NO confirmed subscriptions (%s) — notifications/alarms "
-        "will not be delivered until a subscription is confirmed. Non-blocking; "
-        "pipeline continues.",
-        topic_arn.rsplit(":", 1)[-1],
-        detail,
+    detail = f"{pending}_pending_confirmation" if pending else "none"
+    # status=warn (not error) so it escalates to Slack ONCE per window without being treated as a
+    # data-affecting failure — a missing operator subscription is a config gap, not corruption.
+    observe(
+        "notify",
+        "no_subscriber",
+        status="warn",
+        topic=short,
+        subscriptions=detail,
+        note=(
+            "SNS topic has NO confirmed subscription — notifications/alarms will NOT be "
+            "delivered until one is confirmed (set aws.notification_email / confirm the sub). "
+            "Non-blocking; pipeline continues"
+        ),
     )
 
 
@@ -773,6 +826,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: preflight credit check", phase_name)
     _preflight_credit_check()
     _preflight_notification_subscriptions()
+    _preflight_runtime_tables()
     _patch_config()
     _start_openserp_if_needed(phase_script)
 
@@ -1196,9 +1250,13 @@ def _wait_for_reconcile_barrier() -> str:
     (default 300s); 0 disables the wait.
 
     Correctness guards:
-    - FRESHNESS (FINDING 2): a barrier whose ``completed_at`` predates this task's start is treated
-      as STALE (a previous run's signal that _clear_reconcile_barrier failed to delete) and ignored,
-      so a failed clear cannot mask the race as a false "seen".
+    - FRESHNESS: judged by ``_judge_barrier``. When the barrier and the run marker both carry a
+      ``run_id`` the match is AUTHORITATIVE (equal => fresh, different => stale, regardless of
+      timestamps), because Phase 3 starts AFTER the reconcile published and so a barrier is
+      legitimately older than this task. Without run ids (marker write failed / legacy barrier) it
+      falls back to the timestamp rule: ``completed_at`` before this task's start is STALE.
+      Residual gap: a Phase 3 launched before the reconcile has cleared the old marker+barrier
+      sees a consistent OLD pair; the pipeline chain launches Phase 3 only after dedup.
     - CROSS-BOOK (FINDING 1): waits for EITHER this book's barrier OR the ``_all`` full-corpus
       barrier — the full-corpus reconcile unions all books and publishes ``_all``; a per-book
       reconcile publishes the book key. Seeing either (fresh) means the corpus Phase 3 needs is
@@ -1210,7 +1268,12 @@ def _wait_for_reconcile_barrier() -> str:
         timeout = 300
     if timeout <= 0:
         return "disabled"
-    keys = [_reconcile_barrier_key(), "manifests/reconcile_complete/_all.json"]
+    # dict.fromkeys: BOOK_NAME unset/empty makes both keys "_all" — poll it once, not twice.
+    keys = list(
+        dict.fromkeys(
+            [_reconcile_barrier_key(), "manifests/reconcile_complete/_all.json"]
+        )
+    )
     # Only accept barriers published at/after this task started — a few seconds of slack for clock
     # skew. _TASK_START_TS is set at module import (process start = task start).
     min_completed_at = _TASK_START_TS - 30
@@ -1224,32 +1287,20 @@ def _wait_for_reconcile_barrier() -> str:
                 obj = s3.get_object(Bucket=BUCKET, Key=key)
             except Exception:  # noqa: BLE001 - not present yet (404) or transient
                 continue
-            body = {}
-            try:
-                body = json.loads(obj["Body"].read().decode())
-            except Exception:  # noqa: BLE001
-                pass
-            completed_at = body.get("completed_at")
-            if not isinstance(completed_at, (int, float)):
-                # No/old-format timestamp — can't prove freshness; treat as stale, keep waiting.
-                logger.debug("reconcile barrier %s missing completed_at; ignoring", key)
+            body = _parse_barrier_body(obj)
+            fresh, via = _judge_barrier(s3, body, min_completed_at, key)
+            if not fresh:
                 continue
-            if completed_at < min_completed_at:
-                logger.info(
-                    "OBSERV reconcile.barrier_stale key=%s age=%.1fs (predates task start) — "
-                    "ignoring",
-                    key,
-                    time.time() - completed_at,
-                )
-                continue
-            age = time.time() - completed_at
+            completed_at = body["completed_at"]
             logger.info(
-                "OBSERV reconcile.barrier_seen key=%s waited=%ds barrier_age=%.1fs "
-                "canonical_count=%s ordering=ok",
+                "OBSERV reconcile.barrier_seen key=%s waited=%ds via=%s barrier_age=%.1fs "
+                "run_id=%s canonical_count=%r ordering=ok",
                 key,
                 waited,
-                age,
-                body.get("canonical_count"),
+                via,
+                time.time() - completed_at,
+                str(body.get("run_id"))[:32],
+                str(body.get("canonical_count"))[:16],
             )
             return "seen"
         time.sleep(interval)
@@ -1331,20 +1382,7 @@ def _download_phase3_from_s3() -> None:
     # the reconcile upload and miss just-reconciled records (the HIGH#5 late-arrival gap). This is
     # an ordering signal only — S3 remains the authoritative store, not a data queue.
     barrier_status = _wait_for_reconcile_barrier()
-    entity_dirs = [
-        "people",
-        "people_groups",
-        "places",
-        "dates",
-        "equipment",
-        "weather",
-        "logistics",
-        "casualties",
-        "maps",
-        "supplemental",
-        "bibliography",
-        "narrative_notes",
-    ]
+    entity_dirs = list(_PHASE23_ENTITY_DIRS)
     s3 = _s3_client()
     book_name = os.environ.get("BOOK_NAME", "")
     total = 0
@@ -2350,17 +2388,19 @@ def _maybe_generate_surname_report() -> None:
 def _reclassify_military_units() -> None:
     """Reclassify military units from places to groups."""
     try:
-        from scripts.reclassify_military_units import reclassify
+        from src.dedup.reclassify_military_units import reclassify
 
         reclassify(WORKDIR / "output")
-    except Exception as e:
-        logger.warning("Military unit reclassification failed: %s", e)
+    except Exception as e:  # noqa: BLE001 - never blocks dedup, but must be loud
+        # Detail (may include paths / record text) stays in CloudWatch; the Slack line gets the type.
+        logger.exception("Military unit reclassification failed")
+        observe_error("dedup", "reclassify_failed", error=type(e).__name__)
 
 
 def _cleanup_entity_indexes() -> None:
     """Clean stale index entries before dedup."""
     try:
-        from scripts.cleanup_indexes import cleanup_index
+        from src.dedup.cleanup_indexes import cleanup_index
 
         for entity, name_field in [
             ("people", "name"),
@@ -2371,8 +2411,9 @@ def _cleanup_entity_indexes() -> None:
             entity_dir = WORKDIR / "output" / entity
             if entity_dir.exists():
                 cleanup_index(entity_dir, name_field, dry_run=False)
-    except Exception as e:
-        logger.warning("Index cleanup failed: %s", e)
+    except Exception as e:  # noqa: BLE001 - never blocks dedup, but must be loud
+        logger.exception("Index cleanup failed")
+        observe_error("dedup", "index_cleanup_failed", error=type(e).__name__)
 
 
 def _migrate_exclusions_to_dynamo() -> None:
@@ -2458,6 +2499,8 @@ def _reconcile_bibliography_full_corpus() -> None:
         # completion signal and snapshot before THIS run's reconcile finishes. This reconcile
         # produces the cross-book UNION, so it owns the "_all" barrier.
         _clear_reconcile_barrier(s3, key="manifests/reconcile_complete/_all.json")
+        _clear_reconcile_barrier(s3, key=_RECONCILE_RUN_MARKER_KEY)
+        run_id = _start_reconcile_run(s3)
         n = _download_s3_prefix(s3, "output/bibliography/")
         logger.info("Full-corpus bibliography reconcile: downloaded %d files", n)
         from src.extraction.bibliography import reconcile_bibliography_dir
@@ -2485,6 +2528,7 @@ def _reconcile_bibliography_full_corpus() -> None:
             s3,
             canonical_count=canonical_count,
             key="manifests/reconcile_complete/_all.json",
+            run_id=run_id,
         )
     except (
         Exception
@@ -2494,8 +2538,123 @@ def _reconcile_bibliography_full_corpus() -> None:
 
 # S3 key for the "Phase-2 dedup/reconcile finished publishing bibliography" barrier. Book-scoped so
 # concurrent books don't clobber each other's signal.
+# Run marker written by the full-corpus reconcile BEFORE it publishes the barrier. The barrier
+# body carries the same run_id, so Phase 3 judges freshness by identity (barrier.run_id ==
+# marker.run_id) instead of comparing against its own start time — Phase 3 starts AFTER the
+# reconcile published, so a time comparison against Phase 3's start rejects a correct barrier.
+_RECONCILE_RUN_MARKER_KEY = "manifests/reconcile_complete/_run.json"
+
+
+def _start_reconcile_run(s3) -> Optional[str]:
+    """Record a fresh run_id marker at reconcile start. Returns the id, or None if the marker
+    could not be written (Phase 3 then falls back to the timestamp freshness check)."""
+    run_id = uuid.uuid4().hex
+    try:
+        s3.put_object(
+            Bucket=BUCKET,
+            Key=_RECONCILE_RUN_MARKER_KEY,
+            Body=json.dumps({"run_id": run_id, "started_at": time.time()}).encode(),
+        )
+        return run_id
+    except Exception as e:  # noqa: BLE001 - must not block dedup
+        observe_warn(
+            "reconcile",
+            "run_marker_write_failed",
+            note=(
+                "Phase 3 falls back to the timestamp freshness check and may wait out "
+                "RECONCILE_BARRIER_WAIT_SECS; check the task role's s3:PutObject on "
+                "manifests/ and re-run the dedup phase"
+            ),
+            error=type(e).__name__,
+        )
+        return None
+
+
+_RUN_ID_RE = re.compile(r"[0-9a-f]{32}")  # uuid4().hex
+
+
+def _parse_barrier_body(obj) -> dict:
+    """Decode a barrier S3 object; anything that is not a JSON object yields {} (=> stale)."""
+    try:
+        body = json.loads(obj["Body"].read().decode())
+    except (
+        Exception
+    ):  # noqa: BLE001 - corrupt/partial write: treat as no usable barrier
+        return {}
+    return body if isinstance(body, dict) else {}
+
+
+def _read_run_marker(s3) -> Optional[dict]:
+    """Return the reconcile run marker, or None if absent/unreadable/malformed. Anything other
+    than a plain 'not there yet' is surfaced so a permissions problem is not silent."""
+    try:
+        raw = s3.get_object(Bucket=BUCKET, Key=_RECONCILE_RUN_MARKER_KEY)
+    except Exception as e:  # noqa: BLE001
+        code = getattr(e, "response", {}).get("Error", {}).get("Code", "")
+        if code not in ("NoSuchKey", "404") and not isinstance(e, KeyError):
+            observe_warn_counted(
+                "reconcile",
+                "run_marker_read_failed",
+                key=("run_marker_read_failed", type(e).__name__),
+                note=(
+                    "falling back to the timestamp freshness check; verify the task role "
+                    "has s3:GetObject on manifests/reconcile_complete/"
+                ),
+                error=type(e).__name__,
+            )
+        return None
+    marker = _parse_barrier_body(raw)
+    # Validate shapes: the marker is S3 JSON, so a wrong type must degrade to the timestamp path
+    # (and never reach logs / comparisons) rather than raise out of the wait loop.
+    if not _RUN_ID_RE.fullmatch(str(marker.get("run_id", ""))):
+        return None
+    started = marker.get("started_at")
+    if isinstance(started, bool) or not isinstance(started, (int, float)):
+        return None
+    return marker
+
+
+def _judge_barrier(
+    s3, body: dict, min_completed_at: float, key: str
+) -> "tuple[bool, str]":
+    """Decide whether ``body`` is a fresh barrier. Returns (fresh, via) with via in
+    {"run_id", "timestamp"}; logs why a barrier was rejected so a timeout is diagnosable.
+    """
+    completed_at = body.get("completed_at")
+    if isinstance(completed_at, bool) or not isinstance(completed_at, (int, float)):
+        logger.debug("reconcile barrier %s missing completed_at; ignoring", key)
+        return False, "timestamp"
+    barrier_id = body.get("run_id")
+    if barrier_id is not None and not _RUN_ID_RE.fullmatch(str(barrier_id)):
+        barrier_id = None  # malformed: ignore it (never logged), use the timestamp rule
+    marker = _read_run_marker(s3) if barrier_id else None
+    if marker:
+        if marker["run_id"] == barrier_id and completed_at >= marker.get(
+            "started_at", 0
+        ):
+            return True, "run_id"
+        logger.info(
+            "OBSERV reconcile.barrier_run_mismatch key=%s barrier_run_id=%s "
+            "marker_run_id=%s — ignoring",
+            key,
+            str(barrier_id)[:64],
+            str(marker["run_id"])[:64],
+        )
+        return False, "run_id"
+    if completed_at < min_completed_at:
+        logger.info(
+            "OBSERV reconcile.barrier_stale key=%s age=%.1fs (predates task start) — ignoring",
+            key,
+            time.time() - completed_at,
+        )
+        return False, "timestamp"
+    return True, "timestamp"
+
+
 def _reconcile_barrier_key() -> str:
-    book = os.environ.get("BOOK_NAME", "_all")
+    # `or` (not a get() default): BOOK_NAME is set to "" at startup, which would otherwise yield
+    # the nonsense key manifests/reconcile_complete/.json.
+    book = os.environ.get("BOOK_NAME") or "_all"
     return f"manifests/reconcile_complete/{book}.json"
 
 
@@ -2504,11 +2663,23 @@ def _clear_reconcile_barrier(s3, key: Optional[str] = None) -> None:
     try:
         s3.delete_object(Bucket=BUCKET, Key=key or _reconcile_barrier_key())
     except Exception as e:  # noqa: BLE001 - best-effort
-        logger.debug("reconcile barrier clear skipped: %s", e)
+        observe_warn(
+            "reconcile",
+            "barrier_clear_failed",
+            note=(
+                "a previous run's barrier may remain and be mistaken for fresh; check the task "
+                "role's s3:DeleteObject on manifests/reconcile_complete/ then re-run dedup"
+            ),
+            key=key or _reconcile_barrier_key(),
+            error=type(e).__name__,
+        )
 
 
 def _publish_reconcile_barrier(
-    s3, canonical_count: int = -1, key: Optional[str] = None
+    s3,
+    canonical_count: int = -1,
+    key: Optional[str] = None,
+    run_id: Optional[str] = None,
 ) -> None:
     """Write the reconcile-complete barrier (records how many canonical files were published so it
     is comparable with Phase 3's download coverage). Best-effort; a failure here must not break
@@ -2520,9 +2691,10 @@ def _publish_reconcile_barrier(
             Key=barrier_key,
             Body=json.dumps(
                 {
-                    "book": os.environ.get("BOOK_NAME", "_all"),
+                    "book": os.environ.get("BOOK_NAME") or "_all",
                     "completed_at": time.time(),
                     "canonical_count": canonical_count,
+                    "run_id": run_id,
                     "_schema": "reconcile_barrier_v1",
                 }
             ).encode(),
@@ -2533,7 +2705,16 @@ def _publish_reconcile_barrier(
             canonical_count,
         )
     except Exception as e:  # noqa: BLE001
-        logger.warning("reconcile barrier publish failed: %s", e)
+        observe_warn(
+            "reconcile",
+            "barrier_publish_failed",
+            note=(
+                "Phase 3 will wait out RECONCILE_BARRIER_WAIT_SECS and proceed with possibly "
+                "incomplete bibliography; check s3:PutObject on manifests/ and re-run dedup"
+            ),
+            key=barrier_key,
+            error=type(e).__name__,
+        )
 
 
 def _delete_orphaned_bibliography_shards(s3, bib_dir: Path) -> None:
@@ -2671,7 +2852,7 @@ def _all_keys_match(recs: list) -> bool:
 def _any_nationality_conflict(recs: list) -> bool:
     """True if any pair has a nationality conflict (never auto-merge different nations'
     same-number units)."""
-    from scripts.find_duplicate_groups import _group_nationality_conflict
+    from src.dedup.find_duplicate_groups import _group_nationality_conflict
 
     for i in range(len(recs)):
         for j in range(i + 1, len(recs)):
@@ -2750,24 +2931,30 @@ def _execute_dedup_scripts() -> None:
     # Generate places coords cache for cross-book distance matching
     _generate_places_coords()
 
-    dedup_scripts = [
-        "scripts/find_duplicate_people.py",
-        "scripts/find_duplicate_places_v2.py",
-        "scripts/find_duplicate_groups.py",
-        "scripts/find_duplicate_equipment.py",
+    # Run each detector as a module from the repo root (/app). A detector that is missing (python -m
+    # exits 1) or fails means that entity type got NO duplicate report this run — a data-affecting
+    # gap, so it is an observe_error (Slack-escalated), never a silent skip.
+    dedup_modules = [
+        "src.dedup.find_duplicate_people",
+        "src.dedup.find_duplicate_places_v2",
+        "src.dedup.find_duplicate_groups",
+        "src.dedup.find_duplicate_equipment",
     ]
     dedup_env = os.environ.copy()
     dedup_env["PYTHONPATH"] = "/app"
-    for script in dedup_scripts:
-        if Path(f"/app/{script}").exists():
-            logger.info("Running dedup: %s", script)
-            result = subprocess.run(
-                [sys.executable, script], cwd="/app", env=dedup_env, check=False
+    for module in dedup_modules:
+        logger.info("Running dedup: %s", module)
+        result = subprocess.run(
+            [sys.executable, "-m", module], cwd="/app", env=dedup_env, check=False
+        )
+        if result.returncode != 0:
+            observe_error(
+                "dedup",
+                "detector_failed",
+                detector=module,
+                returncode=result.returncode,
+                note="no duplicate report for this entity this run",
             )
-            if result.returncode != 0:
-                logger.warning(
-                    "Dedup script %s exited with code %d", script, result.returncode
-                )
     # Auto-merge exact duplicates (identical normalized names) without human review
     _auto_merge_exact_duplicates()
 
@@ -2894,21 +3081,7 @@ def _final_sync(phase_script: str = ""):
         _final_sync_phase1()
     elif "phase2" in phase_script or "phase3" in phase_script:
         # Phase 2/3: only upload entity subdirs, skip book dirs with parsed/event files
-        entity_dirs = [
-            "people",
-            "people_groups",
-            "places",
-            "dates",
-            "equipment",
-            "weather",
-            "logistics",
-            "casualties",
-            "maps",
-            "supplemental",
-            "bibliography",
-            "narrative_notes",
-            "metrics",
-        ]
+        entity_dirs = [*_PHASE23_ENTITY_DIRS, "metrics"]
         total = 0
         all_uploaded = []
         # Phase 3 modifies existing files — don't skip any
@@ -3634,6 +3807,7 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: preflight credit check", phase_name)
     _preflight_credit_check()
     _preflight_notification_subscriptions()
+    _preflight_runtime_tables()
     _patch_config()
     _start_openserp_if_needed(phase_script)
 
@@ -3954,29 +4128,37 @@ def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
     submission-ordered list of (our_request_id, cache_type); ``ordered_results`` is
     the API-ordered list of BatchResult. Returns {cache_type: {our_id: cleaned_content}}.
 
-    Fail-safe: if the counts differ we CANNOT safely index-map, so return {} and log an
-    error (never silently mis-key — that produced 0 bibliography before this fix). A result is
-    cached iff it is content-first OK (BatchResult.ok: non-empty content, not truncated, no error) —
-    NOT a hardcoded finish_reason=='stop', because retrieve_results_ordered defaults finish_reason to
-    'unknown' when the xAI API omits it, which was silently dropping valid content here too. An
-    errored/truncated entry is skipped WITHOUT shifting the index (positional zip)."""
-    import re as _re
+    Delegates to the SHARED positional mapper (src.utils.batch_api.map_results_positionally) so this
+    retrieve-only path carries the SAME safety as the realtime grok_client path — in particular the
+    empty-slot-amid-substantive-siblings DESYNC guard that this copy previously lacked (it would
+    silently cache a mis-positioned empty slot and persist 0 for a whole entity — the XChannel-8
+    places=0 data-loss class). Fail-safe: on count mismatch the shared mapper returns {} and logs an
+    error (never silently mis-key); a desync-empty slot is NOT cached and emits a loud observe_error,
+    so the phase re-run treats it as a cache miss instead of trusting an empty result.
+    """
+    from src.utils.batch_api import map_results_positionally
+    from src.utils.observe import observe_error
 
-    if not submitted or len(submitted) != len(ordered_results):
-        logger.error(
-            "Batch %s: result count (%d) != submitted request count (%d) — cannot "
-            "index-map results to cache keys; cache NOT populated. Investigate.",
-            batch_id,
-            len(ordered_results),
-            len(submitted),
+    def _on_desync(our_id, cache_type, br):
+        observe_error(
+            "batch",
+            "result_unmapped",
+            request_id=our_id,
+            cache_type=cache_type,
+            batch_id=batch_id,
+            note=(
+                "retrieve-only positional map produced empty result for this entity while "
+                "siblings succeeded — NOT caching (phase re-run will treat as cache miss)"
+            ),
         )
-        return {}
-    out: "dict" = {}
-    for (our_id, cache_type), br in zip(submitted, ordered_results):
-        if getattr(br, "ok", False) and getattr(br, "content", ""):
-            cleaned = _re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", br.content)
-            out.setdefault(cache_type or "default", {})[our_id] = cleaned
-    return out
+
+    result = map_results_positionally(
+        submitted,
+        ordered_results,
+        batch_id=batch_id,
+        on_desync=_on_desync,
+    )
+    return result.mapped
 
 
 def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> None:

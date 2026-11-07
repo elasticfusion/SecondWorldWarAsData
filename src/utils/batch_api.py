@@ -520,3 +520,136 @@ def retrieve_results_ordered(api_key: str, batch_id: str) -> List["BatchResult"]
             break
     logger.info("Retrieved %d ordered results from batch %s", len(ordered), batch_id)
     return ordered
+
+
+# --- Shared positional result mapping (single source of truth) -----------------------------------
+# Both batch-result consumers (src/grok_client.py realtime path and ecs_entrypoint.py retrieve-only
+# path) map API-ordered results to OUR cache keys PURELY BY POSITION, because the xAI results API
+# does not echo our custom_id. The dangerous failure mode is a SAME-COUNT desync: a valid-but-empty
+# slot lands where a substantive response should be, silently persisting 0 for a whole entity while
+# its real content sits uncorrelated elsewhere (XChannel-8 2026-10-30: places=0 persisted while a
+# valid 119-place response was uncorrelated). This helper is the ONE place that owns both the
+# count-mismatch guard and the empty-slot-amid-substantive-siblings desync guard, so a fix cannot
+# land in one consumer and silently miss the other.
+
+# Non-whitespace control characters that must be stripped from model output before it is parsed /
+# cached. Single source of truth (was duplicated as a literal regex in grok_client + ecs_entrypoint).
+import re as _re  # noqa: E402  (kept local to this section's helpers)
+
+_CONTROL_CHARS_RE = _re.compile(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]")
+
+
+def strip_control_chars(text: str) -> str:
+    """Remove non-whitespace control characters (0x00-0x1f except tab/newline/CR) from model
+    output. Single source of truth for the control-char strip shared across batch-result handling.
+    """
+    return _CONTROL_CHARS_RE.sub("", text or "")
+
+
+@dataclass
+class MappedResults:
+    """Outcome of positionally mapping batch results to our cache keys.
+
+    Attributes:
+        mapped: {cache_type: {our_id: cleaned_content}} for slots safe to persist.
+        failed_ids: our_ids whose slot could NOT be trusted (count mismatch, or a desync-empty slot
+            amid substantive siblings) — the caller should FORCE a real-time retry for these rather
+            than persist an empty/mis-keyed result.
+        count_mismatch: True when len(ordered) != len(submitted) (an envelope/pagination fault, not
+            a per-request model failure) — callers use this to bypass the systemic-failure guard.
+    """
+
+    mapped: Dict[str, Dict[str, str]] = field(default_factory=dict)
+    failed_ids: List[Any] = field(default_factory=list)
+    count_mismatch: bool = False
+
+
+def map_results_positionally(
+    submitted: List[Any],
+    ordered: List["BatchResult"],
+    *,
+    batch_id: str = "",
+    sanitizer=strip_control_chars,
+    on_desync=None,
+    cache_allowed=None,
+) -> MappedResults:
+    """Map API-ordered batch ``ordered`` results to our submission-ordered ``submitted``
+    ``(our_id, cache_type)`` pairs BY POSITION, with the count-mismatch + empty-slot desync guards.
+
+    Args:
+        submitted: submission-ordered ``[(our_request_id, cache_type), ...]``.
+        ordered: API-ordered ``BatchResult`` list (from ``retrieve_results_ordered``).
+        batch_id: for log correlation.
+        sanitizer: applied to content before caching (default: ``strip_control_chars``).
+        on_desync: optional ``callable(our_id, cache_type, br)`` invoked for each desync-empty slot
+            (e.g. to emit a loud ``observe_error`` and record metrics). Fail-safe: exceptions in the
+            callback are swallowed so observability can never break mapping.
+        cache_allowed: optional ``callable() -> bool`` global kill-switch; when it returns False the
+            content is NOT written into ``mapped`` (the slot is still accounted, just not cached).
+
+    Returns a ``MappedResults``. On count mismatch, ``mapped`` is empty, ALL submitted ids are in
+    ``failed_ids``, and ``count_mismatch=True`` (never silently mis-key). On a matched count, a
+    valid-but-empty slot that appears amid substantive siblings is treated as a desync artefact:
+    it is NOT cached, its id is added to ``failed_ids``, and ``on_desync`` fires. An all-empty batch
+    is left as-is (genuine zero, no false retry).
+    """
+    if not submitted or len(submitted) != len(ordered):
+        logger.error(
+            "Batch %s: result count (%d) != submitted (%d) — cannot positionally map; "
+            "forcing retry for all (count mismatch, not a systemic model failure).",
+            batch_id,
+            len(ordered),
+            len(submitted),
+        )
+        return MappedResults(
+            mapped={},
+            failed_ids=[rid for rid, _ in submitted],
+            count_mismatch=True,
+        )
+
+    any_substantive = any(getattr(br, "is_substantive", False) for br in ordered)
+    out: Dict[str, Dict[str, str]] = {}
+    failed_ids: List[Any] = []
+    for (our_id, cache_type), br in zip(submitted, ordered):
+        _classify_slot(
+            our_id,
+            cache_type,
+            br,
+            any_substantive=any_substantive,
+            on_desync=on_desync,
+            out=out,
+            failed_ids=failed_ids,
+            sanitizer=sanitizer,
+            cache_allowed=cache_allowed,
+        )
+    return MappedResults(mapped=out, failed_ids=failed_ids, count_mismatch=False)
+
+
+def _classify_slot(
+    our_id,
+    cache_type,
+    br,
+    *,
+    any_substantive,
+    on_desync,
+    out,
+    failed_ids,
+    sanitizer,
+    cache_allowed,
+) -> None:
+    """Classify one positional slot into mapped/failed (helper for map_results_positionally)."""
+    ct = cache_type or "default"
+    if getattr(br, "status", "error") != "valid" or not getattr(br, "content", ""):
+        failed_ids.append(our_id)
+        return
+    # Desync signature: a valid-but-empty slot while SIBLINGS returned substantive content.
+    if any_substantive and not getattr(br, "is_substantive", False):
+        if on_desync is not None:
+            try:
+                on_desync(our_id, ct, br)
+            except Exception:  # noqa: BLE001 - observability must never break mapping
+                logger.debug("on_desync callback failed (swallowed)", exc_info=True)
+        failed_ids.append(our_id)
+        return
+    if cache_allowed is None or cache_allowed():
+        out.setdefault(ct, {})[our_id] = sanitizer(br.content)

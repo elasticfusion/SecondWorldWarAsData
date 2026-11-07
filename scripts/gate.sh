@@ -36,6 +36,12 @@ run "black"    python -m black --check $BLACK_SCOPE
 run "pylint"   python -m pylint --disable=$PYLINT_DISABLE --fail-under=5.0 $SCOPE
 # shellcheck disable=SC2086
 run "mypy"     python -m mypy $SCOPE --ignore-missing-imports --no-strict-optional
+# basedpyright: second, stricter type checker (catches e.g. possibly-unbound variables that mypy
+# misses). Config + scope in pyproject.toml [tool.basedpyright]; today's findings are baselined in
+# .basedpyright/baseline.json so only NEW errors fail (a ratchet, like radon / raw-writes). Fix
+# findings and re-run `python -m basedpyright --writebaseline` to shrink the baseline — never to
+# silence a regression.
+run "basedpyright" python -m basedpyright
 run "bandit"   python -m bandit -r src/ lambda_handlers/ -ll -q
 # Ruff: high-value bug-pattern rules (flake8-bugbear 'B') only — e.g. raise-without-from,
 # loop-var-closure, mutable-default. Deliberately NOT the logging/style groups (the project uses
@@ -124,13 +130,13 @@ run "vulture"  python -m vulture src/ lambda_handlers/ .vulture_whitelist.py --m
 run "reachable" python scripts/check_unreachable_modules.py
 run "cfn-lint" bash -c 'cfn-lint cloudformation/*.yaml'
 # JSON lint: strict-parse every PROJECT-OWNED *.json (stdlib json, no new dep). Excludes
-# vendored/third-party trees (aws/ bundled CLI = ~1500 files, .venv, node_modules, dist,
+# vendored/third-party trees (.venv, node_modules, dist,
 # build, .git). A malformed JSON (schema fixture, agent config, prompt, test fixture) fails
 # the gate instead of surfacing only at runtime. Prefers git-tracked files so untracked
 # scratch JSON is ignored.
 run "json-lint" python - <<'PYJSON'
 import json, subprocess, sys
-_EXCL = ("aws/", ".venv/", "node_modules/", "dist/", "build/", ".git/", "contentrepository/", "logs/")
+_EXCL = (".venv/", "node_modules/", "dist/", "build/", ".git/", "contentrepository/", "logs/")
 try:
     files = subprocess.check_output(["git", "ls-files", "*.json"], text=True).split()
 except Exception:
@@ -154,7 +160,7 @@ if bad:
     sys.exit(1)
 print(f"json-lint: {checked} project JSON files parse OK")
 PYJSON
-run "pip-audit" bash -c 'pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-2447 && pip-audit -r requirements-lambda.txt --ignore-vuln PYSEC-2026-2447 && pip-audit --ignore-vuln PYSEC-2026-2447'
+run "pip-audit" bash -c 'pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-2447 && pip-audit -r requirements-lambda.txt --ignore-vuln PYSEC-2026-2447 && pip-audit -r requirements-ci.txt --ignore-vuln PYSEC-2026-2447 && pip-audit --ignore-vuln PYSEC-2026-2447'
 # The final `pip-audit` (no -r) audits the FULL installed environment — it catches a vulnerable
 # TRANSITIVE dependency (e.g. certifi, pulled in by requests) that the per-file audits would miss
 # when it isn't explicitly declared.

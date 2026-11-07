@@ -80,7 +80,7 @@ One vehicle can **correctly** be called **all** of these simultaneously:
 - **GAP:** no normalization of `Pz.Kpfw.` ⇄ `Panzer` ⇄ `PzKpfw` punctuation/spacing
   variants, nor Roman-numeral handling on the equipment side.
 
-### Dedup (`scripts/find_duplicate_equipment.py`)
+### Dedup (`src/dedup/find_duplicate_equipment.py`)
 - The leading-number veto (105 vs 155) is US-caliber-oriented; it must not wrongly veto
   German `Sd.Kfz.` numbers vs type Roman numerals.
 - Needs German-aware normalization: `Pz.Kpfw. IV` == `Panzer IV` == `PzKpfw IV`;

@@ -137,13 +137,16 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
     except Exception:  # noqa: BLE001
         pass
     try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+        from src.utils.wikimedia_client import (
+            PLACES,
+            TRANSIENT,
+            mark_transient,
+            wikimedia_get,
+        )
 
-        resp = recorded_fetch(
+        resp = wikimedia_get(
             "wikipedia",
             _WIKI_API,
-            kind=TEXTUAL,
-            method="GET",
             params={  # type: ignore[arg-type]
                 "action": "query",
                 "format": "json",
@@ -158,8 +161,12 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
             },
             headers=_WIKI_HEADERS,
             timeout=15,
+            subject=name,
             result_summary_fn=lambda r: f"status={r.status_code} place={name[:40]!r}",
         )
+        if resp is TRANSIENT:
+            mark_transient(PLACES, name, "place_lookup")
+            return None
         if resp.status_code != 200:
             return None
         pages = resp.json().get("query", {}).get("pages", {})
@@ -173,36 +180,10 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
 
 
 def _fetch_image_license(filename: str) -> Optional[str]:
-    """Fetch license from Wikimedia Commons."""
-    try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+    """Fetch license from Wikimedia Commons (shared implementation)."""
+    from src.enrichment._wikipedia_common import fetch_commons_license
 
-        resp = recorded_fetch(
-            "wikimedia-commons",
-            "https://commons.wikimedia.org/w/api.php",
-            kind=TEXTUAL,
-            method="GET",
-            params={
-                "action": "query",
-                "format": "json",
-                "titles": f"File:{filename}",
-                "prop": "imageinfo",
-                "iiprop": "extmetadata",
-            },
-            headers=_WIKI_HEADERS,
-            timeout=10,
-            result_summary_fn=lambda r: f"status={r.status_code}",
-        )
-        if resp.status_code == 200:
-            pages = resp.json().get("query", {}).get("pages", {})
-            for page_data in pages.values():
-                ii = page_data.get("imageinfo", [])
-                if ii:
-                    meta = ii[0].get("extmetadata", {})
-                    return meta.get("LicenseShortName", {}).get("value", "unknown")
-    except Exception:
-        pass
-    return None
+    return fetch_commons_license(filename)
 
 
 def enrich_place_from_grokipedia(place: dict) -> bool:
@@ -266,10 +247,24 @@ def enrich_place_from_wikipedia(place: dict) -> bool:
         return False
 
     wiki_data = _fetch_place_wikipedia_full(name)
+    from src.utils.wikimedia_client import PLACES, lookup_was_transient
+
+    if lookup_was_transient(PLACES, name, wiki_data):
+        # Unknown, not a miss: wikipedia_checked_at means "never re-fetch", so a rate limit must
+        # not leave it set (that would lose this place's Wikipedia link permanently).
+        place.pop("wikipedia_checked_at", None)
+        return False
     if not wiki_data or not wiki_data.get("wikipedia_url"):
         logger.debug("No Wikipedia page for place %s", name)
         return False
 
+    _apply_place_wikipedia(place, wiki_data)
+    logger.debug("Wikipedia enriched place %s → %s", name, wiki_data["wikipedia_url"])
+    return True
+
+
+def _apply_place_wikipedia(place: dict, wiki_data: dict) -> None:
+    """Fold a Wikipedia hit (URL, Wikidata sameAs, lead image, hierarchy) into ``place``."""
     place["wikipedia_url"] = wiki_data["wikipedia_url"]
     # T2-A: the Wikidata QID url goes into sameAs[] (NOT a new top-level field — places schema is
     # additionalProperties:false and has no wikidata_url slot). sameAs is exactly the cross-walk home.
@@ -288,8 +283,6 @@ def enrich_place_from_wikipedia(place: dict) -> bool:
     hierarchy = wiki_data.get("hierarchy")
     if hierarchy:
         _merge_hierarchy(place, hierarchy)
-    logger.debug("Wikipedia enriched place %s → %s", name, wiki_data["wikipedia_url"])
-    return True
 
 
 def _search_grokipedia_place(name: str) -> Optional[str]:

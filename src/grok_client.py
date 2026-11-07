@@ -580,10 +580,14 @@ class GrokClient:
         return ""
 
     def _sanitize_content(self, content: str) -> str:
-        """Remove control chars and fix invalid JSON escapes."""
+        """Remove control chars and fix invalid JSON escapes. The control-char strip delegates to
+        the shared ``src.utils.batch_api.strip_control_chars`` (single source of truth, also used by
+        the retrieve-only mapper) so the two batch paths sanitize identically."""
         import re  # pylint: disable=import-outside-toplevel
 
-        content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
+        from src.utils.batch_api import strip_control_chars
+
+        content = strip_control_chars(content)
         content = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r"\\\\", content)
         return content
 
@@ -603,6 +607,12 @@ class GrokClient:
         in a batch where SIBLINGS returned substantive content — add the entity to failed_ids to
         force a real-time retry, and emit a LOUD observe_error('batch','result_unmapped') instead
         of silently persisting 0. An ALL-empty batch is left as-is (genuine, no false retry).
+
+        CANONICAL ALGORITHM: the count-mismatch + empty-slot desync guards here are the SAME
+        contract as ``src.utils.batch_api.map_results_positionally`` (which the retrieve-only
+        ecs_entrypoint path uses). This copy keeps the inline loop only because it also threads
+        rich per-request metrics (valid/empty counters + RequestDetail) that the realtime path
+        needs; the two must stay behaviourally in sync.
         """
         from src.utils.batch_api import RequestDetail
 
@@ -863,9 +873,12 @@ class GrokClient:
         # Log token usage
         self._log_token_usage(result)
 
-        # Log response content
+        # Log response content. ``content`` is also read by the deprecation preview below, which can
+        # run when the response has no choices (e.g. an error payload served by another model).
+        content = ""
         if "choices" in result and len(result["choices"]) > 0:
-            content = result["choices"][0].get("message", {}).get("content", "")
+            # ``or ""``: a refusal / tool-call response carries content=null, not a missing key
+            content = result["choices"][0].get("message", {}).get("content") or ""
             finish_reason = result["choices"][0].get("finish_reason", "unknown")
             logger.info(
                 f"Response: {len(content)} chars, finish_reason: {finish_reason}"
@@ -1201,8 +1214,10 @@ class GrokClient:
         """Strip control chars + fix invalid escapes before caching."""
         import re
 
-        # Remove control characters (0x00-0x1f except whitespace)
-        content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
+        from src.utils.batch_api import strip_control_chars
+
+        # Remove control characters (0x00-0x1f except whitespace) — shared single source of truth
+        content = strip_control_chars(content)
         # Fix invalid escape sequences - more aggressive approach
         # Valid JSON escapes: \" \\ \/ \b \f \n \r \t \uXXXX
         # Replace any backslash not followed by valid escape with double backslash
@@ -1450,10 +1465,10 @@ class GrokClient:
 
     def _sanitize_json_response(self, response: str) -> str:
         """Sanitize JSON response by removing control chars and fixing invalid escapes."""
-        import re
+        from src.utils.batch_api import strip_control_chars
 
-        # Remove non-whitespace control characters
-        response = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", response)
+        # Remove non-whitespace control characters — shared single source of truth
+        response = strip_control_chars(response)
 
         result = []
         i = 0

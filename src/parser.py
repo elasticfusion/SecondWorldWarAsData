@@ -608,6 +608,46 @@ def _create_paragraphs(
     return paragraphs
 
 
+_PROBE_BASE = "https://unresolved.invalid/"
+
+
+def _warn_unresolvable_media(content: str, base_url: str, book: str) -> int:
+    """Phase 1 guard: relative image/map references (``img/…``, ``icn/…``, ``maps/…``) resolve
+    only against an http(s) ``base_url``. Without one they are silently skipped, so count them by
+    running the SAME extractors against a probe base (no second set of regexes) and raise an
+    actionable alert — once per book, not once per section. Pandoc-extracted ``media/…`` files
+    (EPUB/DOCX) have no web URL to supply, so they are not counted. Returns the count.
+    """
+    if (base_url or "").lower().startswith(("http://", "https://")):
+        return 0
+    probed = [u for _k, u, _a, _e in extract_images(content, base_url=_PROBE_BASE)]
+    probed += [u for _id, u in extract_maps(content, base_url=_PROBE_BASE)]
+    lost = len(
+        {
+            u
+            for u in probed
+            if u.startswith(_PROBE_BASE) and not u.startswith(_PROBE_BASE + "media/")
+        }
+    )
+    if lost > 0:
+        from src.utils.observe import observe_warn_counted
+
+        observe_warn_counted(
+            "parser",
+            "media_unresolvable",
+            key=(book,),
+            every=10**9,  # once per book per process, not again every 25th section
+            note=(
+                "relative images/maps were DROPPED because source_url is not an http(s) URL; "
+                "re-upload the source with --metadata source-url=<page URL>, re-run Phase 0, "
+                "then re-run Phase 1"
+            ),
+            book=book,
+            refs=lost,
+        )
+    return lost
+
+
 def _add_images_to_doc(doc: MarkdownDocument, content: str, base_url: str = "") -> None:
     """Extract and add images to document."""
     for img_type, resource_or_url, alt_text, external_url in extract_images(
@@ -955,6 +995,7 @@ def parse_content_file(
                 para.quote_attribution = attribution_by_para[block_idx]
 
     # Add images, maps, and footnotes
+    _warn_unresolvable_media(content, metadata.source_url, metadata.book)
     _add_images_to_doc(doc, content, base_url=metadata.source_url)
     _add_maps_to_doc(doc, content, base_url=metadata.source_url)
     _add_footnotes_to_doc(doc, content)

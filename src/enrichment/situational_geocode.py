@@ -251,13 +251,13 @@ def _wiki_extract(title: str, session: Any):
     from src.utils.search_cache import TRANSIENT
 
     try:
-        from src.utils.fetch_provenance import STRUCTURED, recorded_fetch
+        from src.utils.fetch_provenance import STRUCTURED
+        from src.utils.wikimedia_client import wikimedia_get
 
-        resp = recorded_fetch(
+        resp = wikimedia_get(
             "wikipedia",
             _WIKI_ENDPOINT,
             kind=STRUCTURED,
-            method="GET",
             params={
                 "action": "query",
                 "format": "json",
@@ -270,8 +270,11 @@ def _wiki_extract(title: str, session: Any):
             session=session,
             headers=_HEADERS,
             timeout=15,
+            subject=title,
             result_summary_fn=lambda r: f"status={r.status_code} title={title[:40]!r}",
         )
+        if resp is TRANSIENT:
+            return TRANSIENT  # rate limit / block / 5xx / network (client logged it)
         if resp.status_code != 200:
             logger.info(
                 "OBSERV situational.wiki_transient status=%d title=%r",
