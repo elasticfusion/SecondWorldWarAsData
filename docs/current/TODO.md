@@ -106,6 +106,17 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   only when `external_maps.enabled` (false in config.yaml). Decide whether in-doc ibiblio maps should be recycled.
 - **[LOW · cost] Phase 3 downloads/uploads `output/images/files/` bytes** now that `images` is a Phase 2/3 entity dir
   (unscoped runs only; scoped runs pull manifested JSON). Consider syncing only `*.json` and fetching bytes by URL.
+- **[MED · cost/IAM] Task role cannot tag consumed sources for cold archive (found 2026-11-07 E2E).**
+  Every Phase 0 logs `archive_tag.degraded ... AccessDenied PutObjectTagging`: `cloudformation/iam.yaml` ECSTaskRole
+  `S3Access` allows Get/Put/List/Delete but not `s3:PutObjectTagging`, so no source ever gets `archive=cold` and all
+  stay on STANDARD. Add `s3:PutObjectTagging` (and Get) to that statement, deploy the IAM stack, confirm the next
+  Phase 0 logs `Tagged source ... (cold archive)`.
+- **[MED · latency] Phase 1 waits ~9 min for the scheduled backstop after Phase 0 (found 2026-11-07 E2E).**
+  Trigger logged `Pipeline busy (phase0-convert active), Phase 1 will run after completion` at 02:38:44; Phase 0 sent its
+  completion notification at 02:38:59 while its ECS task was still stopping (stopped 02:39:22), so the trigger still saw
+  it active and parked again; only `reconcile-scheduled-backstop` launched Phase 1 at 02:47:39. Fix: the trigger should
+  not count the notifying phase's own task as busy on a `phase-complete` event (or the task should notify after it
+  has exited / the trigger should retry shortly).
 - **[LOW · observability] `enrich.summary` label `skipped_already` is misleading** (`src/extraction/people.py:893`). The
   `skipped` counter also counts "attempted, not enriched" (e.g. Wikipedia rate-limit deferral), so 59 of 62 people read as
   "already enriched" when they were deferred. Split into `skipped_already` vs `deferred`.

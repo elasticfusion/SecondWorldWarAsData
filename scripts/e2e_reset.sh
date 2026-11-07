@@ -78,7 +78,10 @@ DATA_PY=(python3 "$(dirname "$0")/e2e_reset_data.py" --env "$ENV" --region "$REG
 for t in "${WIPE_TITLES[@]+"${WIPE_TITLES[@]}"}"; do DATA_PY+=(--wipe-title "$t"); done
 
 # Refuse a bad invocation (e.g. --env prod --full) BEFORE touching anything.
-"${DATA_PY[@]}" validate || { echo "refusing to run (see message above)" >&2; exit 2; }
+# (--enable-backstops only re-enables schedules: no Python/boto3 needed, nothing destructive.)
+if [ "$ENABLE_ONLY" != "1" ]; then
+  "${DATA_PY[@]}" validate || { echo "refusing to run (see message above)" >&2; exit 2; }
+fi
 
 _rule_exists() { aws events describe-rule --name "$1" --region "$REGION" >/dev/null 2>&1; }
 

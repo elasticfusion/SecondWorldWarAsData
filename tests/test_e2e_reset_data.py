@@ -378,4 +378,6 @@ def test_shell_wrapper_ordering_and_safety():
     assert SH.index('"${DATA_PY[@]}" sweep ||') < SH.index('--function-name "$NAT_FN"')
     assert "openserp-worker" in SH and "openserp-worker-autoscaler-schedule" in SH
     assert "trap _restore_backstops_on_exit EXIT" in SH
+    # --enable-backstops must not need Python/boto3 (it only re-enables schedules).
+    assert 'if [ "$ENABLE_ONLY" != "1" ]; then' in SH
     assert "mktemp" in SH and "/tmp/e2e_reset_nat.json" not in SH
