@@ -393,6 +393,19 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   book's: on 10 of the 24 plates it wrote model-made descriptions ("The map illustrates ...",
   "Key features include", up to 35k chars a page) as plain paragraphs - Phase 0 must not feed
   those to Phase 1/2 as narrative (affects every map-heavy scanned book).
+  STATUS 2026-11-08: BUILT as a standalone tool - `src/ingestion/pdf_figures.py` +
+  `scripts/extract_pdf_figures.py` (tests: tests/test_pdf_figures.py). Cross-Channel Attack: 124
+  figures, all 96 list entries placed (24 plates by printed title, 30 maps, 4 charts, 62
+  illustrations + 27 further photos of listed entries), 48 citations attached, 3 HyperWar wins
+  (single aerials with more pixels; HyperWar's combined images of multi-photo entries never win).
+  Measured correction to the above: photos on ~70 text pages are stored as ONE 150 dpi grey
+  full-page image (not 300 dpi), so each picture is cut from the stored image where Chandra's
+  crop matches (Pillow template search). OPEN: (a) wire into Phase 0 after Chandra; (b) the
+  images must NOT be written under `contentrepository/` - its S3 notification has no suffix
+  filter and `trigger_handler` sends every image there to Chandra OCR (cost + loop); use a
+  separate prefix (e.g. `figures/{book}/`) and point the promoted markdown's image links at it;
+  (c) Phase-1 stub Map JSON from figures.json (+ paragraph numbers / Sub-eventID per OI3);
+  (d) Phase 3 Grok submission.
 - **[MED · bug · found 2026-11-08 · noisy] `ocr_merge_handler` false "ocr-empty" alerts for Chandra jobs that
   write OUTSIDE `ocr-output/`.** `_book_from_event` derives the book from the job's INPUT path,
   then `merge_ocr_output` always lists `ocr-output/{book}/`; it never reads the job's OUTPUT
