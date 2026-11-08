@@ -125,13 +125,6 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   (accepts only `source_section/...`); and the schema registry `output_glob` consumers `scripts/validate_phase2.py`,
   `src/utils/provenance_integrity.py:236`, `src/utils/referential_integrity.py:130`. Route them through the helper (the
   worker needs a strict `content/<safe-book>/source_section/<ulid>.json` allowance) and add a test per reader.
-- **[HIGH · accuracy] Phase 2 sub-events overlap: one sub-event's text contains another's (XChannel-8, 2026-11-07).**
-  Sub-event 3 "U.S. airborne assault ... in the Cotentin" spans Paragraph_39-262, which includes 105 of the 139 paragraphs of
-  sub-event 4 "Seaborne beach landings at UTAH and OMAHA" (Paragraph_124-262). Every entity extracted from those paragraphs
-  (people, places, groups, dates, equipment, weather) is attributed to the airborne sub-event as well as the beach landings,
-  and the text is sent to Grok twice. Weather now counts a statement once per event, but keeps the FIRST sub-event's
-  attribution. Find why the event extractor's paragraph ranges overlap (sub-event boundaries), enforce disjoint ranges with a
-  check that fails loud, and add a test on this chapter's event file.
 - **[MED · data loss] A schema-blocked weather mention leaves an empty shell record, and the event is marked processed (2026-11-07).**
   `weather_central._find_or_create_weather` writes the new record (`extracted_data: null`, `event_mentions: []`) BEFORE
   `_add_event_mention` merges the statement; if that merge is refused by the write guard (`locked_json.blocked_schema_invalid`),

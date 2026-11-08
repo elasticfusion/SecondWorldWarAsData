@@ -104,6 +104,139 @@ def _build_subevent_fulltext(se: dict, para_lookup: dict) -> None:
         se["Sub-event_fulltext"] = {"summary": se["Sub-event_summary"]}
 
 
+def _known_paragraphs(parsed_data: Optional[dict]) -> Optional[set]:
+    """The paragraph numbers actually given to the model, or None when unknown."""
+    nums = {
+        p["absolute_number"]
+        for p in (parsed_data or {}).get("paragraphs", []) or []
+        if isinstance(p, dict) and isinstance(p.get("absolute_number"), int)
+    }
+    return nums or None
+
+
+def _paragraph_claims(subs: list, known: Optional[set] = None) -> list:
+    """[(index, [paragraph numbers in the model's order])] for each sub-event that cites any
+    (the model's ``paragraph_numbers``, or the older ``paragraphs`` key). With ``known``, a cited
+    number that is not one of the given paragraphs takes no part in ownership (it resolves to no
+    text anyway, and must not make a claim look bigger or steal a real paragraph)."""
+    from src.utils.paragraph_numbers import coerce_paragraph_numbers
+
+    claims = []
+    for i, se in enumerate(subs):
+        if not isinstance(se, dict):
+            continue
+        raw = se.get("paragraph_numbers")
+        if raw is None:
+            raw = se.get("paragraphs")
+        if raw is None:
+            continue  # cached old-format sub-event that already carries its fulltext
+        nums = list(
+            dict.fromkeys(coerce_paragraph_numbers(raw, scope="events.disjoint"))
+        )
+        if known is not None:
+            nums = [n for n in nums if n in known]
+        claims.append((i, nums))
+    return claims
+
+
+def _make_paragraphs_disjoint(
+    response: dict, parsed_data: Optional[dict] = None
+) -> int:
+    """Give every paragraph to exactly ONE sub-event. Returns the number of contested paragraphs.
+
+    XChannel-8 (2026-11-07): the model assigned Paragraph_39-262 to "U.S. airborne assault" and
+    Paragraph_124-262 to "Seaborne beach landings", so 105 paragraphs were extracted twice for
+    every entity type (people, places, units, dates, equipment, weather), attributed to both
+    sub-events, and their footnotes counted twice. A contested paragraph goes to the claimant with
+    the SMALLEST claim (the more specific grouping; the earlier sub-event on a tie): the airborne
+    assault keeps 39-123, the beach landings 124-262. Runs BEFORE the footnote refs and the
+    fulltext are built from the paragraph arrays. A sub-event left with no paragraph keeps its
+    summary (the existing summary fallback) and is reported. Note markers that occur ONLY in the
+    paragraphs a sub-event gave up are removed from its ``references`` too (they belong to the
+    sub-event that now owns those paragraphs).
+    """
+    subs = (response.get("Event", {}) or {}).get("Sub-events", []) or []
+    claims = _paragraph_claims(subs, _known_paragraphs(parsed_data))
+    owner, contested = _paragraph_owners(claims)
+    text = _paragraph_text_lookup(parsed_data)
+    emptied = []
+    for i, nums in claims:
+        kept = _keep_owned(subs[i], nums, owner, i, text)
+        if nums and not kept:
+            emptied.append(str(subs[i].get("Sub-event_summary") or "")[:60])
+    if contested:
+        logger.info(
+            "OBSERV events.paragraph_overlap_resolved contested=%d sub_events=%d emptied=%d "
+            "(each paragraph now belongs to one sub-event; emptied ones keep their summary)%s",
+            len(contested),
+            len(claims),
+            len(emptied),
+            f" emptied_summaries={emptied}" if emptied else "",
+        )
+    return len(contested)
+
+
+def _paragraph_owners(claims: list) -> tuple:
+    """({paragraph: owning sub-event index}, contested paragraphs): the smallest claim wins, the
+    earlier sub-event on a tie."""
+    size = {i: len(nums) for i, nums in claims}
+    owner: dict = {}
+    contested = set()
+    for i, nums in claims:
+        for n in nums:
+            current = owner.setdefault(n, i)
+            if current == i:
+                continue
+            contested.add(n)
+            if size[i] < size[current]:
+                owner[n] = i
+    return owner, contested
+
+
+def _keep_owned(se: dict, nums: list, owner: dict, i: int, text: dict) -> list:
+    """Rewrite the sub-event's paragraph_numbers to the paragraphs it owns. Returns them."""
+    kept = [n for n in nums if owner[n] == i]
+    lost = [n for n in nums if owner[n] != i]
+    se.pop("paragraphs", None)
+    se["paragraph_numbers"] = kept
+    if lost:
+        _drop_lost_references(se, kept, lost, text)
+    return kept
+
+
+def _paragraph_text_lookup(parsed_data: Optional[dict]) -> dict:
+    return {
+        p["absolute_number"]: str(p.get("text", ""))
+        for p in (parsed_data or {}).get("paragraphs", []) or []
+        if isinstance(p, dict) and "absolute_number" in p
+    }
+
+
+_SUP_MARK = re.compile(r"<sup>\[(\d{1,6})\]")
+
+
+def _drop_lost_references(se: dict, kept: list, lost: list, text: dict) -> None:
+    """Remove from ``se["references"]`` the note markers found only in its ``lost`` paragraphs."""
+    refs = se.get("references")
+    if not isinstance(refs, list) or not refs or not text:
+        return
+
+    def marks(nums):
+        return {int(m) for n in nums for m in _SUP_MARK.findall(text.get(n, ""))}
+
+    elsewhere = marks(lost) - marks(kept)
+    if elsewhere:
+        se["references"] = [r for r in refs if _ref_number(r) not in elsewhere]
+
+
+def _ref_number(ref) -> Optional[int]:
+    if isinstance(ref, int):
+        return ref
+    if isinstance(ref, str) and ref.isascii() and ref.isdigit():
+        return int(ref)
+    return None
+
+
 def _reconstruct_fulltext(response: dict, parsed_data: dict) -> dict:
     """Replace 'paragraphs' number arrays with 'Sub-event_fulltext' dicts.
 
@@ -280,6 +413,7 @@ def _assign_subevent_ids(event: dict, eid: str) -> None:
     raises before schema validation)."""
     from src.utils.deterministic_ids import sub_event_id as _sub_event_id
 
+    seen: set = set()
     for index, se in enumerate(event.get("Sub-events", []) or []):
         if not isinstance(se, dict):
             continue
@@ -290,12 +424,13 @@ def _assign_subevent_ids(event: dict, eid: str) -> None:
             # raise before schema validation (aborting the whole extraction + bypassing the retry
             # loop). Fall back to the sub-event's ordinal — still deterministic within the parent.
             name = f"index:{index}"
-        se["Sub-eventID"] = _sub_event_id(
-            eid,
-            para_start=start,
-            para_end=end,
-            name=name,
-        )
+        seid = _sub_event_id(eid, para_start=start, para_end=end, name=name)
+        if seid in seen:
+            # Two range-less sub-events with the same name (e.g. both left with only their
+            # summary after paragraph de-overlap): keep IDs unique, still deterministic.
+            seid = _sub_event_id(eid, name=f"{name}|index:{index}")
+        seen.add(seid)
+        se["Sub-eventID"] = seid
 
 
 def _apply_deterministic_ids(response: dict, parsed_data: dict) -> dict:
@@ -544,6 +679,7 @@ def _extract_chunk(
     # Blocker C (both paths): populate footnote refs from the chunk's raw paragraphs
     # BEFORE _reconstruct_fulltext pops them. Without this, auto-split chapters yield
     # sub-events with no Footnote_References -> 0 bibliography for split documents.
+    _make_paragraphs_disjoint(result, chunk_data)
     _populate_footnote_refs(result, chunk_data)
     _reconstruct_fulltext(result, chunk_data)
     _apply_deterministic_ids(result, chunk_data)
@@ -812,6 +948,8 @@ def _normalize_event_response(response, parsed_data, parsed_file):
     if "Chapter" not in response:
         response["Chapter"] = parsed_data.get("chapter_title", "")
     # Populate refs BEFORE _reconstruct_fulltext (which pops the 'paragraphs' arrays it needs).
+    # Each paragraph belongs to ONE sub-event first (overlapping claims duplicated every entity).
+    _make_paragraphs_disjoint(response, parsed_data)
     _populate_footnote_refs(response, parsed_data)
     _reconstruct_fulltext(response, parsed_data)
     # OBSERV (bibliography chain): did we actually populate refs on the sub-events?

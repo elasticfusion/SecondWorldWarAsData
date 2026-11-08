@@ -37,6 +37,9 @@ schema: |
 
 rules:
   - Paragraph numbers must be integers, not strings
+  - EACH PARAGRAPH BELONGS TO EXACTLY ONE SUB-EVENT. Sub-events must not share paragraphs, and
+    one sub-event's range must not contain another's (a paragraph listed twice is extracted twice
+    for every person, place, unit and date it mentions)
   - CITE ONLY the Paragraph_N numbers shown in the input above — do NOT invent or use numbers
     beyond the paragraphs provided (they will fail to resolve and the sub-event will be empty)
   - Group related paragraphs into coherent sub-events
