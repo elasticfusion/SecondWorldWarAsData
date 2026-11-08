@@ -113,14 +113,13 @@ import re as _re_title
 _SAFE_TITLE_RE = _re_title.compile(r"[A-Za-z0-9._-]+")
 
 
-def _title_registry_get(title: str):
-    """Return the registered content checksum for a title, or None if unused."""
-    try:
-        item = dynamo.get_item(Key={"cache_key": f"title#{title}"}).get("Item")
-        return item.get("checksum") if item else None
-    except Exception as e:  # noqa: BLE001 - fail-open: treat as unused on error
-        logger.warning("title registry lookup failed for %s: %s", title, e)
-        return None
+def _title_registry_key(title: str) -> str:
+    """The registry key of a title: its NORMALISED form (src.ingestion.title_uniqueness), so
+    "Cross-Channel_Attack" and "cross-channel-attack" are the same name for the duplicate
+    check. The displayed title / S3 folder is never changed."""
+    from src.ingestion.title_uniqueness import normalised_title
+
+    return f"title#{normalised_title(title)}"
 
 
 # How long a title's "claimed" placeholder is considered part of the SAME upload
@@ -150,10 +149,14 @@ def _title_claim(title: str):
     import time as _t
 
     now = int(_t.time())
+    key = _title_registry_key(title)
     try:
+        legacy = _legacy_title_entry(title, key)
+        if legacy:
+            return _existing_claim(legacy, now, title)
         dynamo.put_item(
             Item={
-                "cache_key": f"title#{title}",
+                "cache_key": key,
                 "state": "claimed",
                 "claimed_at": now,
                 "registered_at": _dt.datetime.now(_dt.timezone.utc).isoformat(),
@@ -162,30 +165,43 @@ def _title_claim(title: str):
         )
         return "claimed", None
     except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
-        item = dynamo.get_item(Key={"cache_key": f"title#{title}"}).get("Item") or {}
-        state = item.get("state")
-        claimed_at = int(item.get("claimed_at", 0) or 0)
-        same_wave = (now - claimed_at) <= _TITLE_CLAIM_WAVE_S if claimed_at else False
-        if state == "final":
-            if claimed_at == 0:
-                logger.warning(
-                    "title %r is 'final' without claimed_at (legacy/foreign entry) "
-                    "— treating as a prior submission",
-                    title,
-                )
-            # A finalized entry from THIS wave (the claim winner finalized just
-            # ahead of us) is the SAME submission — treat as in-flight, never
-            # compare our partial fingerprint against it (the finalize-race that
-            # caused the self-collision). Only a GENUINELY PRIOR final entry
-            # (outside the wave) is a real identity comparison.
-            if same_wave:
-                return "inflight", None
-            return "final", item.get("checksum")
-        # A 'claimed' placeholder (sibling still finalizing) -> same submission.
-        return "inflight", None
+        item = dynamo.get_item(Key={"cache_key": key}).get("Item") or {}
+        return _existing_claim(item, now, title)
     except Exception as e:  # noqa: BLE001 - fail-open: proceed, don't false-collide
         logger.warning("title claim failed for %s: %s — proceeding", title, e)
         return "inflight", None
+
+
+def _legacy_title_entry(title: str, key: str):
+    """An entry registered BEFORE normalisation, under the exact title (``title#{title}``):
+    the name is still taken. None when the exact key is the normalised one or absent."""
+    exact = f"title#{title}"
+    if exact == key:
+        return None
+    return dynamo.get_item(Key={"cache_key": exact}).get("Item")
+
+
+def _existing_claim(item: dict, now: int, title: str):
+    """Judge a title's existing registry entry (see ``_title_claim``)."""
+    state = item.get("state")
+    claimed_at = int(item.get("claimed_at", 0) or 0)
+    same_wave = (now - claimed_at) <= _TITLE_CLAIM_WAVE_S if claimed_at else False
+    if state == "final":
+        if claimed_at == 0:
+            logger.warning(
+                "title %r is 'final' without claimed_at (legacy/foreign entry) "
+                "— treating as a prior submission",
+                title,
+            )
+        # A finalized entry from THIS wave (the claim winner finalized just ahead of us) is the
+        # SAME submission — treat as in-flight, never compare our partial fingerprint against it
+        # (the finalize-race that caused the self-collision). Only a GENUINELY PRIOR final entry
+        # (outside the wave) is a real identity comparison.
+        if same_wave:
+            return "inflight", None
+        return "final", item.get("checksum")
+    # A 'claimed' placeholder (sibling still finalizing) -> same submission.
+    return "inflight", None
 
 
 def _title_finalize(title: str, marker: str) -> None:
@@ -197,7 +213,7 @@ def _title_finalize(title: str, marker: str) -> None:
 
     try:
         dynamo.update_item(
-            Key={"cache_key": f"title#{title}"},
+            Key={"cache_key": _title_registry_key(title)},
             UpdateExpression="SET #s = :final, checksum = :m, registered_at = :t",
             ExpressionAttributeNames={"#s": "state"},
             ExpressionAttributeValues={
@@ -658,6 +674,49 @@ def _validate_parse_keys(keys: list) -> list:
 _METADATA_SIDECAR_SUFFIX = "-meta.yaml"
 
 
+# A book's derived figures (src/ingestion/pdf_figures: maps, charts, photos extracted from its
+# PDF, + figures.json) live in a reserved folder beside its content. They are the pipeline's
+# own output, not uploads: never OCR'd (an image here would otherwise go to Chandra), parsed or
+# AV-scanned as new content. Leading underscore = reserved, like "_oob" and "_system".
+_FIGURES_DIR = "_figures"
+
+
+def _is_derived_figure(key: str) -> bool:
+    """``contentrepository/{TITLE}/_figures/...`` or ``contentrepository/_system/{TITLE}/
+    _figures/...`` exactly (case-sensitive; no empty or '..' segment but a trailing folder
+    marker): a book's figures, written by the pipeline. SECURITY: SYSTEM namespace only - a
+    contributor path (user-/contrib-/org-) is NEVER exempt, so an upload cannot skip the AV
+    gate by naming a ``_figures`` folder; readers of ``_figures/`` treat it as pipeline output
+    of the system namespace and nothing else."""
+    parts = _clean_content_parts(key)
+    if parts is None:
+        return False
+    depth = _figures_depth(parts[1])
+    return depth is not None and len(parts) > depth and parts[depth] == _FIGURES_DIR
+
+
+def _clean_content_parts(key: str):
+    """``key``'s segments when it is a well-formed ``contentrepository/`` key of 4+ segments
+    (a trailing "/" - a folder marker - allowed; no other empty, '.' or '..' segment).
+    """
+    parts = key.split("/")
+    if parts and parts[-1] == "":
+        parts = parts[:-1]
+    if len(parts) < 3 or parts[0] != "contentrepository":
+        return None
+    if any(p in ("", ".", "..") for p in parts):
+        return None
+    return parts
+
+
+def _figures_depth(first: str):
+    """Where ``_figures`` sits under the title: index 2 (legacy ``{TITLE}/``), 3 under the
+    system source; None for a contributor namespace (never exempt)."""
+    if not _is_source_segment(first):
+        return 2
+    return 3 if first == SYSTEM_SOURCE_ID else None
+
+
 def _is_metadata_sidecar(key: str) -> bool:
     parts = key.split("/")
     if len(parts) != 4 or parts[0] != "contentrepository" or not all(parts):
@@ -672,8 +731,12 @@ def _is_metadata_sidecar(key: str) -> bool:
 def _content_keys(keys: list) -> list:
     """Keep only processable content keys; drop compressed files and non-content."""
     out = []
+    figures = 0
     for k in keys:
         low = k.lower()
+        if _is_derived_figure(k):
+            figures += 1
+            continue
         if low.endswith(_COMPRESSED_SUFFIXES):
             logger.info("Ignoring compressed file (pre-stage expands these): %s", k)
             continue
@@ -702,6 +765,11 @@ def _content_keys(keys: list) -> list:
                 )
             except Exception as e:  # noqa: BLE001 - never let a reject crash intake
                 logger.warning("Could not reject-to-review %s: %s", k, e)
+    if figures:
+        logger.info(
+            "OBSERV trigger.derived_figures status=ok count=%d (book figures, not new content)",
+            figures,
+        )
     return out
 
 

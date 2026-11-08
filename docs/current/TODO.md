@@ -373,6 +373,51 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
 
 ### MED
+- **[MED · DESIGN · owner 2026-11-08] Book naming: a WORK key + an EDITION key, so duplicate
+  titles and editions of one work are told apart.** Today the name is the upload folder / file
+  stem (`src/ingestion/book_slug.py`); a different work under a taken name is rejected with an
+  opaque `{title}-{6 random chars}` suggestion, and another edition of the SAME work (different
+  checksum) is treated as a different work. Target: `{work}/{edition}` (e.g.
+  `Cross-Channel_Attack/CMH-1993`, `Cross-Channel_Attack/HyperWar-1951`) so editions link (the
+  newer is the source of record, others cross-check it - `scripts/crosscheck_pdf_html.py`) and
+  every phase's "book" key, S3 layout, figures (`_figures/` belongs to an edition) and locks carry
+  both. OWNER RULE for the edition: assume the FIRST edition, unless more than one copyright /
+  printing date, or a book plate, shows the copy is a later printing - then the edition is the
+  printing that evidence names (e.g. Cross-Channel Attack PDF: "First Printed 1951 - CMH Pub
+  7-4-1", "Washington, D.C., 1993" -> the 1993 CMH printing). Suggested names for a true title
+  collision should be meaningful (`{title}__{issuer}_{year}`), random only as a last resort.
+  Also OPEN: names derived outside intake (`ocr_merge_handler` from an OCR job's input filename)
+  bypass the title check.
+  - DONE 2026-11-08: duplicate titles are compared NORMALISED (case, punctuation, accents, a
+    leading article ignored; `title_uniqueness.normalised_title`); legacy exact-key registry
+    entries still honoured.
+
+- **[MED · DESIGN · owner 2026-11-08] A human-review QUEUE of possible duplicates (overlapping
+  titles), with copyright dates and author shown.** Today a taken name + different content is
+  rejected with a random-suffix rename, and a SERIES-prefixed title is not matched at all
+  ("The European Theater of Operations CROSS-CHANNEL ATTACK" normalises to
+  `european_theater_of_operations_cross_channel_attack`, "CROSS-CHANNEL ATTACK" to
+  `cross_channel_attack`: both would ingest as separate books; a full "United States Army in
+  World War II: ...: Cross-Channel Attack" filename is even rejected as `unknown` for its
+  colons). Target: route (a) an exact normalised match with different content and (b) a
+  containment match (one title's words a whole-word prefix/suffix of the other's, or a known
+  series prefix - "United States Army in World War II", "The European Theater of Operations",
+  "The Mediterranean Theater of Operations", ...) to a review queue instead of a rename. Each
+  entry shows side by side: both titles, AUTHOR(S), COPYRIGHT / PRINTING DATES (highlighted;
+  extracted deterministically from the front matter, with page provenance), publisher /
+  series, checksums, sizes, page counts - the reviewer decides SAME work (link as editions of
+  one work, per the work/edition item), DIFFERENT work (meaningful name), or REPEAT. Same author
+  + same earliest copyright date = strong same-work signal. OWNER RULE: when BOTH the copyright
+  date AND the author differ, the works are DIFFERENT - decided without a reviewer (name them
+  meaningfully). Only the remaining overlaps go to the queue. At SUBMISSION through the web
+  interface, show the possible matches (same signals) up front so the submitter can
+  disallow / withdraw a duplicate before it is ingested. Alerts to `phase2-complete` (both
+  channels). Fits the planned submit/review web interface (§2).
+- **[LOW · security · 2026-11-08] Deny writes to `contentrepository/**/_figures/*` for every
+  principal but the pipeline role** (IAM / bucket policy). The trigger exempts the system
+  namespace's `_figures/` from intake (no AV / OCR: it is pipeline output); contributor
+  namespaces are never exempt, but an operator credential could still write there. Any future
+  reader (site, CDN) must treat `_figures/` as trusted only because of that deny.
 - **[MED · DESIGN · owner 2026-11-08] Maps of a scanned-PDF book: take them from the PDF (its
   numbering is definitive), link them to the text that cites them, Grok later.** Owner rules: maps
   need NO OCR; they must be associated with the text that refers to them; eventual Grok
@@ -859,6 +904,18 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
   Open questions: authentication for
   submitters, static-site hosting vs API Gateway (Phase 2 of the architecture plan), and how
   review decisions are stored (versioned, auditable).
+
+- **[TODO · UI · owner 2026-11-08] What the site may SHOW depends on the source's copyright
+  status (the UI has not been started - remember this when it is).** Copyrighted material will
+  be processed too; the difference is only in what a visitor can see of the ORIGINAL:
+  PUBLIC DOMAIN and EXPIRED copyright -> the entire body (full text, page images, figures);
+  CURRENT copyright -> only a relevant, brief extract around what the visitor is looking at
+  (the passage supporting a fact / citation), never the whole work, never full page images.
+  Extracted data (events, people, places, citations, provenance) is shown for all. Needs: a
+  per-source (and per-figure: a photo can differ from its book, e.g. "Captured German Photos"
+  vs "U.S. Army Photos" credits from `figures.json`) `copyright_status` the renderer enforces
+  (the records already carry `license` / `copyright_status`); an extract-length rule; and a
+  default of "current copyright" (brief extract only) when the status is unknown.
 
 - **[TODO · owner 2026-11-04] OCR-correction rules are per LANGUAGE (and script) - today's are
   English-only.** `src/ingestion/pdf_html_crosscheck` + `pdf_text_corrections` assume an English
