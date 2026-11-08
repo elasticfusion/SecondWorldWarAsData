@@ -39,22 +39,7 @@ def _doc_to_dict(doc):
         "license": doc.license,
         "source_file": _repo_relative(doc.file_path),
         "_source_url": doc.source_url,
-        "paragraphs": [
-            {
-                "absolute_number": p.absolute_number,
-                "text": p.text,
-                "page_number": p.page_number,
-                "section_id": p.section_id,
-                "source_file": p.source_file,
-                **({"is_quote": True} if p.is_quote else {}),
-                **(
-                    {"quote_attribution": p.quote_attribution}
-                    if p.quote_attribution
-                    else {}
-                ),
-            }
-            for p in doc.paragraphs
-        ],
+        "paragraphs": [_paragraph_dict(p) for p in doc.paragraphs],
         "images": [img.to_dict() for img in doc.images],
         "maps": [
             {
@@ -79,6 +64,22 @@ def _doc_to_dict(doc):
             for pm in doc.page_markers
         ],
         **({"table_hints": doc.table_hints} if doc.table_hints else {}),
+    }
+
+
+def _paragraph_dict(p) -> dict:
+    """One paragraph of a parsed chapter (whole-chapter and chunk files alike)."""
+    return {
+        "absolute_number": p.absolute_number,
+        "text": p.text,
+        "page_number": p.page_number,
+        **(
+            {"page_end": p.page_end} if getattr(p, "page_end", None) is not None else {}
+        ),
+        "section_id": p.section_id,
+        "source_file": p.source_file,
+        **({"is_quote": True} if p.is_quote else {}),
+        **({"quote_attribution": p.quote_attribution} if p.quote_attribution else {}),
     }
 
 
@@ -171,22 +172,7 @@ def _save_split_chapter(doc, book_output, logger):
         )
         chunk_data = _doc_to_dict(doc)
         chunk_data["section_id"] = f"{doc.section_id or 'full'}-{chunk_suffix}"
-        chunk_data["paragraphs"] = [
-            {
-                "absolute_number": p.absolute_number,
-                "text": p.text,
-                "page_number": p.page_number,
-                "section_id": p.section_id,
-                "source_file": p.source_file,
-                **({"is_quote": True} if p.is_quote else {}),
-                **(
-                    {"quote_attribution": p.quote_attribution}
-                    if p.quote_attribution
-                    else {}
-                ),
-            }
-            for p in chunk_paras
-        ]
+        chunk_data["paragraphs"] = [_paragraph_dict(p) for p in chunk_paras]
         from src.utils.file_lock import write_parsed_with_guard
 
         if write_parsed_with_guard(chunk_file, chunk_data):

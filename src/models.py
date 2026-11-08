@@ -12,6 +12,9 @@ class Paragraph:
     absolute_number: int
     text: str
     page_number: Optional[int] = None
+    # The page the paragraph ENDS on, when it runs past page_number (HyperWar paragraphs that
+    # cross a printed page are rejoined; a citation of their second half needs this page).
+    page_end: Optional[int] = None
     section_id: str = ""
     source_file: str = ""
     # Quotation provenance (set when a block was re-marked as a block quote by

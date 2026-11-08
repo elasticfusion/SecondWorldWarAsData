@@ -124,14 +124,20 @@ def _parse_section(
 ) -> Tuple[Dict[int, Note], List[int]]:
     """Parse definition lines (with continuation lines) into notes keyed by number, plus the
     numbers defined more than once. A repeated number keeps its FIRST definition: merging two
-    texts under one number would be false provenance."""
+    texts under one number would be false provenance.
+
+    A note runs to the NEXT definition (or the section end), across blank lines: a note can hold
+    several paragraphs or a quoted list (CBI-Mission note 23: "The six points of General Brett's
+    plan were:" + six quoted points + "Memo cited n. 21(1)."), and ending it at the first blank
+    line dropped all of that text. Its paragraphs are kept apart by a newline."""
     notes: Dict[int, Note] = {}
     duplicates: List[int] = []
     current: Optional[Note] = None
+    gap = False
     for raw in lines:
         line = _QUOTE_PREFIX.sub("", raw).strip()
         if not line:
-            current = None  # a blank (or bare '>') line ends a note
+            gap = current is not None  # a blank (or bare '>') line separates paragraphs
             continue
         found = _match_definition(line, base_url)
         if found:
@@ -141,11 +147,26 @@ def _parse_section(
                 current = Note(number, kind, text, url)  # absorbs its lines; not kept
             else:
                 current = notes[number] = Note(number, kind, text, url)
+            gap = False
             continue
-        if current is not None:  # continuation of a multi-line note
+        if current is not None:  # continuation of a multi-line / multi-paragraph note
+            if _ends_notes(line):
+                break  # a heading or the page navigation: the notes are over
             cont = _MD_ESCAPE.sub(r"\1", line)
-            current.text = f"{current.text} {cont}".strip()
+            current.text = f"{current.text}{chr(10) if gap else ' '}{cont}".strip()
+            gap = False
     return notes, duplicates
+
+
+_MD_HEADING = re.compile(r"^#{1,6}\s")
+
+
+def _ends_notes(line: str) -> bool:
+    """A heading (the next section) or a site-navigation line ends the notes - a note may run on
+    across blank lines, but never into what follows the notes section."""
+    return (
+        bool(_MD_HEADING.match(line)) or len(_NAV_LINK.findall(line)) >= _NAV_MIN_LINKS
+    )
 
 
 def _section_end(content: str, start: int) -> int:

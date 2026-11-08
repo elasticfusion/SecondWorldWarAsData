@@ -15,12 +15,13 @@ from src.models import (
     Map,
     MarkdownDocument,
     Metadata,
+    PageMarker,
     Paragraph,
 )
 
 # Compiled regex patterns for performance
 _BLOCKQUOTE_PATTERN = re.compile(r"^>\s*")
-_PAGE_MARKER_PATTERN = re.compile(r'<a id="page\d+"></a>')
+_PAGE_MARKER_PATTERN = re.compile(r'<(a|span) id="page\d+"></\1>')
 _FOOTNOTE_PATTERN = re.compile(r"\*\\--\d+--\*")
 _SEPARATOR_PATTERN = re.compile(r"\n\* \* \*\n")
 _HEADING_PATTERN = re.compile(r"^#{1,6}\s+\*.*\*$")
@@ -93,12 +94,13 @@ def parse_metadata(meta_file: Path) -> Metadata:
 
 
 def extract_page_markers(text: str) -> List[Tuple[int, int, str]]:
-    """Extract page markers and their positions."""
+    """Extract page markers and their positions. An anchor marks the START of its page:
+    ``<a id="page4"></a>``, or ``<span id="page4"></span>`` (what pandoc writes for an HTML page
+    anchor - HyperWar's, src/ingestion/hyperwar_html)."""
     markers: List[Tuple[int, int, str]] = []
 
-    # Find anchor markers: <a id="page4"></a>
-    for match in re.finditer(r'<a id="page(\d+)"></a>', text):
-        page_num = int(match.group(1))
+    for match in re.finditer(r'<(a|span) id="page(\d+)"></\1>', text):
+        page_num = int(match.group(2))
         markers.append((match.start(), page_num, "anchor"))
 
     # Find separator markers: *\--3--*
@@ -518,6 +520,56 @@ def _build_page_map(content: str) -> Dict[int, int]:
     return {pos: page_num for pos, page_num, _ in page_markers_raw}
 
 
+_ANY_PAGE_MARKER = re.compile(r'<(a|span) id="page(\d+)"></\1>|\*\\--(\d+)--\*')
+
+
+def _paginate(content: str) -> Tuple[str, Dict[int, int], List[Tuple[int, str]]]:
+    """(content WITHOUT page markers, {position in it: page}, [(page, marker type)]).
+
+    Paragraph text has its markers removed (split_into_blocks), so paragraphs are located in the
+    marker-free content: a marker inside a paragraph's first 60 characters (a HyperWar paragraph
+    rejoined across a page) would otherwise make it unlocatable."""
+    pieces: List[str] = []
+    page_map: Dict[int, int] = {}
+    markers: List[Tuple[int, str]] = []
+    size = 0
+    last = 0
+    for m in _ANY_PAGE_MARKER.finditer(content):
+        chunk = content[last : m.start()]
+        pieces.append(chunk)
+        size += len(chunk)
+        page = int(m.group(2) or m.group(3))
+        page_map[size] = page
+        markers.append((page, "anchor" if m.group(2) else "separator"))
+        last = m.end()
+    pieces.append(content[last:])
+    return "".join(pieces), page_map, markers
+
+
+def _page_markers_for(markers, paragraphs) -> List[PageMarker]:
+    """Each page marker with the paragraph it falls in (a paragraph running onto that page), else
+    the first paragraph starting on it; 0 when no paragraph has that page."""
+    out = []
+    for page, kind in markers:
+        number = next(
+            (
+                p.absolute_number
+                for p in paragraphs
+                if p.page_number is not None
+                and p.page_number < page <= (p.page_end or p.page_number)
+            ),
+            None,
+        )
+        if number is None:
+            number = next(
+                (p.absolute_number for p in paragraphs if p.page_number == page), 0
+            )
+        out.append(
+            PageMarker(page_number=page, paragraph_number=number, marker_type=kind)
+        )
+    return out
+
+
 def _find_page_number(
     para_text: str, content: str, page_map: Dict[int, int], search_from: int = 0
 ) -> Tuple[Optional[int], int]:
@@ -587,10 +639,16 @@ def _create_paragraphs(
         else:
             search_from = found_pos + 1  # advance so repeats resolve sequentially
 
+        page_end = None
+        if found_pos != -1 and current_page is not None:
+            end_page = _page_in_effect(page_map, found_pos + max(len(para_text) - 1, 0))
+            if end_page is not None and end_page != current_page:
+                page_end = end_page
         para = Paragraph(
             absolute_number=para_num,
             text=para_text,
             page_number=current_page,
+            page_end=page_end,
             section_id=section_id,
             source_file=file_path.name,
             is_quote=is_quote,
@@ -1340,12 +1398,18 @@ def parse_content_file(
             numbers=separation.duplicates[:10],
         )
 
-    # Build page map and create paragraphs (from the BODY only)
-    page_map = _build_page_map(body)
+    # Build page map and create paragraphs (from the BODY only), located in the marker-free body
+    page_content, page_map, page_markers = _paginate(body)
     paragraph_blocks = split_into_blocks(body)
     doc.paragraphs = _create_paragraphs(
-        paragraph_blocks, start_paragraph_num, section_id, file_path, body, page_map
+        paragraph_blocks,
+        start_paragraph_num,
+        section_id,
+        file_path,
+        page_content,
+        page_map,
     )
+    doc.page_markers = _page_markers_for(page_markers, doc.paragraphs)
     # Attach quote attribution to re-marked quote paragraphs (by block index).
     if attribution_by_para:
         for block_idx, para in enumerate(doc.paragraphs):
