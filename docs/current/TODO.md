@@ -373,6 +373,26 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
 
 ### MED
+- **[MED · DESIGN · owner 2026-11-08] Maps of a scanned-PDF book: take them from the PDF (its
+  numbering is definitive), link them to the text that cites them, Grok later.** Owner rules: maps
+  need NO OCR; they must be associated with the text that refers to them; eventual Grok
+  submission (Phase 3 analysis, `docs/current/design/maps-target-architecture.md`); where a copy
+  exists in more than one source the HIGHER RESOLUTION wins; the PDF's edition rules - its map
+  numbering, and whether a printing had extra maps (some green-book printings carried National
+  Geographic / Rand McNally maps: the 1951 Cross-Channel Attack's Map I was a Rand McNally world
+  map, absent from the 1993 CMH PDF, so HyperWar's map numbers are one higher).
+  Measured (Cross-Channel Attack): PDF fold-out plates (PDF pp. 539-562, 24 maps) are embedded at
+  150 dpi, 1793x1411 to 2894x1389 px colour; HyperWar's copies are 800-1200 px wide. PDF in-text
+  maps 1-6 are 300 dpi bilevel (JBIG2, ~1990x2930 px) vs HyperWar 800 px greyscale -> the PDF wins
+  every map here; HyperWar is the fallback where a book has no PDF (record both candidates'
+  pixel size and keep the larger, per map). Steps: (1) extract the embedded map images from the
+  PDF (no OCR, no Chandra description) with page, PDF map number and title/legend from the plate;
+  (2) find each map's references in the corrected text ("Map VII", "See Map 3", with paragraph
+  numbers + Sub-eventID per OI3) and write the Phase-1 stub Map JSON + reference footprint; (3)
+  Phase 3 (Grok vision) analyses and links them. Chandra's text for the map pages is NOT the
+  book's: on 10 of the 24 plates it wrote model-made descriptions ("The map illustrates ...",
+  "Key features include", up to 35k chars a page) as plain paragraphs - Phase 0 must not feed
+  those to Phase 1/2 as narrative (affects every map-heavy scanned book).
 - **[MED · bug · found 2026-11-08 · noisy] `ocr_merge_handler` false "ocr-empty" alerts for Chandra jobs that
   write OUTSIDE `ocr-output/`.** `_book_from_event` derives the book from the job's INPUT path,
   then `merge_ocr_output` always lists `ocr-output/{book}/`; it never reads the job's OUTPUT

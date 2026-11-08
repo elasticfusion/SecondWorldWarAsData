@@ -87,11 +87,13 @@ def test_numbers_are_never_decided_by_frequency():
     assert X.classify(_t("11th"), _t("111th"), vocab) == "review"  # a unit designation
 
 
-def test_a_numeral_look_alike_on_either_side_is_a_claim():
-    """The transcription's "Il" against the book's "II": never blamed on the PDF."""
+def test_a_numeral_look_alike_is_never_blamed_on_the_pdf():
+    """The transcription's "Il" against the book's "II" (letters only: could be a word) is
+    looked at; its "l500" against "1500" (a digit inside no valid number) is its own error. The
+    PDF's number is never the one changed."""
     vocab = Counter({"ii": 50, "1500": 3})
     assert X.classify(_t("Il"), _t("II"), vocab) == "review"
-    assert X.classify(_t("l500"), _t("1500"), vocab) == "review"
+    assert X.classify(_t("l500"), _t("1500"), vocab) == "html_error"
 
 
 def test_running_heads_and_captions_are_layout():
@@ -693,3 +695,146 @@ def test_cli_writes_nothing_but_the_failure_when_a_correction_does_not_land(
     failed = json.loads((fixed / "corrections.FAILED.json").read_text(encoding="utf-8"))
     assert failed["remaining_are_the_skipped"] is False
     assert "did not land cleanly" in capsys.readouterr().err
+
+
+# --- numbers: the transcription's look-alike typos inside a number (Cross-Channel Attack notes) --
+
+
+@pytest.mark.parametrize(
+    "html,pdf",
+    [("V1", "VI"), ("X11", "XII"), ("I47th", "147th"), ("1O", "10")],
+)
+def test_a_malformed_number_in_the_transcription_is_its_error(html, pdf):
+    """The PDF's number is well formed, the transcription's is no number at all - and the two
+    are look-alikes: the transcription is wrong, decided even without vocabulary."""
+    assert X.classify(_t(html), _t(pdf)) == "html_error"
+    assert X.classify(_t(html), _t(pdf), BOOK) == "html_error"
+
+
+@pytest.mark.parametrize(
+    "html,pdf,cls",
+    [
+        ("VII", "VI", "review"),  # two valid numerals: a claim, never decided
+        ("11th", "111th", "review"),
+        ("44", "544", "review"),
+        ("V1", "VIII", "review"),  # not look-alikes
+        ("101st", "lOlst", "ocr_confusion"),  # the PDF's malformed number is still OCR
+    ],
+)
+def test_numbers_otherwise_stay_claims(html, pdf, cls):
+    assert X.classify(_t(html), _t(pdf), BOOK) == cls
+
+
+def test_well_formed_numbers():
+    assert all(
+        X.well_formed_number(w) for w in ("6", "147th", "2d", "XII", "IV", "MCMXLIV")
+    )
+    assert not any(
+        X.well_formed_number(w) for w in ("V1", "X11", "IIII", "vi", "I47th", "")
+    )
+
+
+def test_an_ordinal_set_as_a_superscript_is_one_word():
+    """Chandra writes "709<sup>th</sup>"; the book prints the ordinal "709th"."""
+    tokens = X.chandra_tokens(
+        "the 709<sup>th</sup> and 716<sup>th</sup> *Divisions*", 1
+    )
+    assert [t.text for t in tokens] == ["the", "709th", "and", "716th", "Divisions"]
+    assert (
+        next(t for t in tokens if t.text == "709th").span is None
+    )  # never a correction site
+    # a note marker is not an ordinal
+    assert [t.text for t in X.chandra_tokens("held.<sup>3</sup> Then", 1)] == [
+        "held",
+        "3",
+        "Then",
+    ]
+
+
+def test_a_failed_correction_run_still_writes_its_report_and_clears_stale_outputs(
+    cli_inputs, monkeypatch
+):
+    """The cross-check is valid even when the corrections fail: report.json is this run's, and
+    no earlier run's corrected.md is left beside the failure."""
+    args, md, out = cli_inputs
+    html = Path(args[args.index("--html") + 1])
+    html.write_text(_PAGE_HTML.replace("the river", "UTAH Beach"), encoding="utf-8")
+    md.write_text(_PAGE_MD.replace("the river", "УТАН Beach"), encoding="utf-8")
+    fixed = out.parent / "fixed"
+    run = args + ["--chandra-md", str(md), "--corrected-out", str(fixed)]
+    assert _cli().main(run) == 0  # a good run first: corrected.md exists
+    cli = _cli()
+    monkeypatch.setattr(cli.C, "apply_corrections", lambda markdown, _c: markdown)
+    assert cli.main(run) == 3
+    assert sorted(p.name for p in fixed.iterdir()) == ["corrections.FAILED.json"]
+    report = json.loads((out / "report.json").read_text(encoding="utf-8"))
+    assert report["corrections"]["remaining_are_the_skipped"] is False
+
+
+def test_the_recheck_ignores_a_one_sided_run_grouped_in_another_order():
+    """After a correction the alignment may group "Van Fleet Col James A" as "Fleet Col James A
+    Van": the same words - not a change. A changed word is."""
+    key = _cli()._key
+    assert key("pdf_only", "", "Van Fleet Col James A") == key(
+        "pdf_only", "", "Fleet Col James A Van"
+    )
+    assert key("pdf_only", "", "Van Fleet Col James A") != key(
+        "pdf_only", "", "Van Fleet Col James B"
+    )
+
+
+def test_a_designation_the_book_prints_is_never_blamed_on_the_transcription():
+    """HyperWar "M1" (the rifle, printed throughout) against a PDF "MI": the OCR's misread."""
+    vocab = Counter({"m1": 40, "mi": 0})
+    assert X.classify(_t("M1"), _t("MI"), vocab) != "html_error"
+    # "I1" against "11": the book prints "i1" as often as "11" - no evidence of a typo
+    assert X.classify(_t("I1"), _t("11"), Counter({"i1": 2, "11": 2})) == "review"
+    # a few OCR slips of the 2010 text layer ("v1" 18 times) are no evidence against "VI" (200)
+    assert (
+        X.classify(_t("V1"), _t("VI"), Counter({"v1": 18, "vi": 200})) == "html_error"
+    )
+
+
+def test_lowercase_or_two_malformed_numbers_are_not_decided_by_the_numeral_rule():
+    assert (
+        X.classify(_t("v1"), _t("vi"), BOOK) != "html_error"
+    )  # "vi" is not well formed
+    assert X.classify(_t("V1"), _t("X11"), BOOK) == "review"  # neither is
+
+
+def test_only_a_suffix_that_agrees_with_the_number_joins():
+    def texts(md):
+        return [t.text for t in X.chandra_tokens(md, 1)]
+
+    assert texts("the 22<sup>d</sup> and 103<sup>d</sup> and 1<sup>st</sup>") == [
+        "the", "22d", "and", "103d", "and", "1st",
+    ]  # fmt: skip
+    assert texts("in 1944<sup>d</sup> it") == ["in", "1944", "d", "it"]  # a note marker
+    assert texts("the 11<sup>st</sup> unit") == ["the", "11", "st", "unit"]
+
+
+def test_list_numbers_keep_page_anchors_and_nested_lists():
+    html = (
+        '<ol type="I" start="2"><li>Command <a id="page460"></a>is held'
+        '<ol type="a"><li>first</li><li>second</li></ol></li><li>Next</li></ol>'
+    )
+    narrative, _notes = X.html_streams(html)
+    assert [t.text for t in narrative] == (
+        "II Command is held a first b second III Next".split()
+    )
+    assert [t.printed for t in narrative if t.text == "held"] == [460]
+
+
+def test_centred_text_stays_but_credits_navigation_and_figures_go():
+    html = (
+        "<center><h2>Appendix C</h2></center><center>Fuehrer Headquarters</center>"
+        '<center><a href="x.jpg"><img src="x.jpg"></a><br>A PHOTO</center>'
+        '<center><a href="index.html">Table of Contents</a> * <a href="b.html">Next Chapter</a>'
+        "</center><center><address>Transcribed by Someone</address></center>"
+        "<table><tr><td>Date</td><td>Paper</td></tr></table>"
+        "<table><tr><td><img src='m.jpg'></td><td>MAP LABEL</td></tr></table>"
+    )
+    narrative, _notes = X.html_streams(html)
+    assert [t.text for t in narrative] == (
+        "Appendix C Fuehrer Headquarters Date Paper".split()
+    )

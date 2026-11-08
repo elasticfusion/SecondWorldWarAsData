@@ -128,12 +128,12 @@ def _unplaceable(d: X.Difference, markdown: str) -> Optional[str]:
     if d.span is None:
         return "no_position"  # a word joined across a break, or normalised text
     original = markdown[d.span[0] : d.span[1]]
-    if X.words(original) != d.pdf.split():
-        return "position_mismatch"
     if _PARAGRAPH_BREAK.search(original):
         return "paragraph_break_inside"
     if not _BETWEEN_WORDS.fullmatch(X._WORD.sub("", X._normalised(original))):
-        return "markup_inside"
+        return "markup_inside"  # before the words check: a tag's name reads as a word
+    if X.words(original) != d.pdf.split():
+        return "position_mismatch"
     return None
 
 

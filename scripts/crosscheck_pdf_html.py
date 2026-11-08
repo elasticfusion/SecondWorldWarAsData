@@ -50,6 +50,10 @@ class InputError(ValueError):
 class CorrectionError(RuntimeError):
     """The corrected text did not cross-check as the corrections promised."""
 
+    def __init__(self, message: str, summary: "dict | None" = None):
+        super().__init__(message)
+        self.summary = summary or {}
+
 
 # A stream's aligned share is judged from this many HTML words up (a page's three-word notes
 # stream with one changed number aligns 67% and is no sign of wrong pages).
@@ -203,9 +207,18 @@ def run(args) -> dict:
         checks = _checks((narrative, notes), side.tokens, side)
         moved = X.reconcile_moved(checks)
         report = _report_dict(args, checks, moved, stats)
-        if args.corrected_out:
-            report["corrections"] = _correct(args, side, checks, (narrative, notes))
-        _write(args, doc, checks, report)
+        if (
+            args.corrected_out
+        ):  # replaced by the result; stays if correcting itself crashes
+            report["corrections"] = {"status": "error: correcting did not finish"}
+        try:
+            if args.corrected_out:
+                report["corrections"] = _correct(args, side, checks, (narrative, notes))
+        except CorrectionError as exc:
+            report["corrections"] = exc.summary
+            raise
+        finally:  # the cross-check itself is valid either way: never leave a stale report
+            _write(args, doc, checks, report)
     return report
 
 
@@ -223,8 +236,8 @@ def _correct(args, side: _Side, checks, streams) -> dict:
     tokens = X.chandra_tokens(corrected, args.first, side.printed, streams)
     after = _checks(streams, tokens, side)
     X.reconcile_moved(after)
-    remaining = sorted(_keys(after, correctable=True))
-    landed = remaining == sorted(plan.skipped_differences)
+    remaining = _keys(after, correctable=True)
+    landed = remaining == sorted(_key(*k) for k in plan.skipped_differences)
     unchanged = _keys(checks, correctable=False) == _keys(after, correctable=False)
     summary = {
         "source": str(args.chandra_md),
@@ -240,20 +253,36 @@ def _correct(args, side: _Side, checks, streams) -> dict:
         "corrections": [asdict(c) for c in plan.corrections],
         "skipped_differences": plan.skipped_differences,
     }
-    out = args.corrected_out
-    out.mkdir(parents=True, exist_ok=True)
     _observ(f"corrections {summary}")
-    if not (landed and unchanged):
+    _publish(args.corrected_out, landed and unchanged, corrected, log, newline)
+    return summary
+
+
+_OUTPUTS = ("corrected.md", "corrections.json", "corrections.FAILED.json")
+
+
+def _publish(out: Path, ok: bool, corrected: str, log: dict, newline: str) -> None:
+    """corrected.md + corrections.json when the re-check passed, else ONLY
+    corrections.FAILED.json - and never an earlier run's files beside them."""
+    out.mkdir(parents=True, exist_ok=True)
+    for name in _OUTPUTS:
+        (out / name).unlink(missing_ok=True)
+    if not ok:
         failed = out / "corrections.FAILED.json"
         failed.write_text(json.dumps(log, indent=2), encoding="utf-8")
         raise CorrectionError(
-            f"corrections did not land cleanly (remaining are the skipped: {landed}, other "
-            f"differences unchanged: {unchanged}); nothing written but {failed}"
+            f"corrections did not land cleanly (remaining are the skipped: "
+            f"{log['remaining_are_the_skipped']}, other differences unchanged: "
+            f"{log['other_differences_unchanged']}); nothing written but {failed}",
+            {
+                k: v
+                for k, v in log.items()
+                if k not in ("corrections", "skipped_differences")
+            },
         )
     with (out / "corrected.md").open("w", encoding="utf-8", newline=newline) as f:
         f.write(corrected)
     (out / "corrections.json").write_text(json.dumps(log, indent=2), encoding="utf-8")
-    return summary
 
 
 def _newline(args) -> str:
@@ -270,12 +299,20 @@ def _newline(args) -> str:
 
 
 def _keys(checks, correctable: bool) -> list:
+    """The differences as comparable keys (see ``_key``)."""
     return sorted(
-        (d.cls, d.html, d.pdf)
+        _key(d.cls, d.html, d.pdf)
         for c in checks
         for d in c.differences
         if (d.cls in X.CORRECTABLE) == correctable
     )
+
+
+def _key(cls: str, html: str, pdf: str) -> tuple:
+    """A difference's class and the WORDS on each side, order aside: after a correction the
+    alignment may group a one-sided run differently ("Van Fleet Col James A" / "Fleet Col James
+    A Van") - the same text, not a change; any changed or lost word still differs."""
+    return (cls, tuple(sorted(html.split())), tuple(sorted(pdf.split())))
 
 
 def _report_dict(args, checks, moved, stats) -> dict:

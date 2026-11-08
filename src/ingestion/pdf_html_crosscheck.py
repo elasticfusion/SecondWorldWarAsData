@@ -353,7 +353,46 @@ def chandra_tokens(
         stats[kind] += 1
         printed_page = (printed or {}).get(page)
         _add_tokens(out, body, page, printed_page, kind.split(":")[0], base=start)
+    return _join_ordinal_superscripts(out, markdown)
+
+
+def _join_ordinal_superscripts(tokens: List[Token], markdown: str) -> List[Token]:
+    """ "709<sup>th</sup>" is the ordinal "709th" (Chandra sets the suffix as a superscript), not
+    "709" + "th". Only a suffix that agrees with the number joins ("1st", "22d", "103d",
+    "709th"; not a lettered note marker after a year, "1944<sup>d</sup>"). The joined word has
+    no single span, so it is never a correction site: a misread digit in it is left for review.
+    """
+    out: List[Token] = []
+    for t in tokens:
+        prev = out[-1] if out else None
+        if prev is not None and _is_ordinal_suffix(prev, t, markdown):
+            prev.text += t.text
+            prev.span = None
+            continue
+        out.append(t)
     return out
+
+
+def _is_ordinal_suffix(prev: Token, t: Token, markdown: str) -> bool:
+    """``t`` is the superscript suffix of the number ``prev`` ("709" + "<sup>" + "th")."""
+    if not (prev.span and t.span and prev.kind == t.kind and _DIGITS.match(prev.text)):
+        return False
+    suffix = t.text.lower()
+    return (
+        bool(_ORDINAL.match(prev.text + suffix))
+        and _suffix_agrees(prev.text, suffix)
+        and markdown[prev.span[1] : t.span[0]] == "<sup>"
+    )
+
+
+def _suffix_agrees(number: str, suffix: str) -> bool:
+    """English ordinal suffix for ``number``; the Army's "2d"/"3d" style counts too."""
+    teen = number[-2:-1] == "1"
+    last = number[-1]
+    if teen or last not in "123":
+        return suffix == "th"
+    allowed = {"1": ("st",), "2": ("nd", "d"), "3": ("rd", "d")}[last]
+    return suffix in allowed
 
 
 def _chandra_paragraphs(
@@ -448,13 +487,16 @@ _PAGE_ANCHOR = re.compile(r'<a id="page(\d+)"></a>')
 
 def html_streams(normalised_html: str) -> Tuple[List[Token], List[Token]]:
     """(narrative tokens, note tokens) of a normalised HyperWar page
-    (src/ingestion/hyperwar_html.normalise_hyperwar_html). Figures and captions are left out (the
-    PDF prints them apart from the text); page anchors give each token its printed page. The
-    transcriber's ``<address>`` credit is not the book's text.
+    (src/ingestion/hyperwar_html.normalise_hyperwar_html). Figures and their captions are left
+    out (the PDF prints them apart from the text), as are the transcriber's credit
+    (``<address>``) and navigation bar; text tables and centred text (an appendix's directive
+    header, a data table) are the book's and stay. Ordered lists get the numbers the browser
+    would draw (the book prints them). Page anchors give each token its printed page.
     """
     normalised_html = re.sub(
         r"<address\b.*?</address>", " ", normalised_html, flags=re.S | re.I
     )
+    normalised_html = _number_lists(normalised_html)
     parts = _NOTES_HEADING.split(normalised_html, maxsplit=1)
     body, notes = (parts[0], parts[1]) if len(parts) == 2 else (normalised_html, "")
     return _html_tokens(_narrative(body)), _html_tokens(notes)
@@ -462,17 +504,83 @@ def html_streams(normalised_html: str) -> Tuple[List[Token], List[Token]]:
 
 # The notes heading, not any mention of the word in the prose.
 _NOTES_HEADING = re.compile(r"<h[1-6]\b[^>]*>\s*Footnotes\s*</h[1-6]>", re.I)
+_NAVIGATION = re.compile(r"Previous Chapter|Next Chapter|Table of Contents", re.I)
 
 
 def _narrative(body: str) -> str:
-    """Paragraphs, quotations, lists and headings, without figures (images/tables/captions)."""
-    body = re.sub(r"<center\b.*?</center>", _keep_headings, body, flags=re.S | re.I)
-    body = re.sub(r"<table\b.*?</table>", " ", body, flags=re.S | re.I)
-    return re.sub(r"<div>.*?</div>", " ", body, flags=re.S | re.I)
+    """Paragraphs, quotations, lists, headings and text tables, without figures (images and
+    their captions) and the navigation bar."""
+    body = re.sub(r"<center\b.*?</center>", _centred, body, flags=re.S | re.I)
+    body = re.sub(r"<table\b.*?</table>", _unless_figure, body, flags=re.S | re.I)
+    return re.sub(r"<div>.*?</div>", " ", body, flags=re.S | re.I)  # captions
+
+
+def _centred(m: "re.Match[str]") -> str:
+    """A figure keeps only its headings; the navigation bar goes; other centred text stays."""
+    block = m.group(0)
+    if "<img" in block.lower():
+        return _keep_headings(m)
+    if "<a " in block.lower() and _NAVIGATION.search(block):
+        return " "
+    return block
+
+
+def _unless_figure(m: "re.Match[str]") -> str:
+    return " " if "<img" in m.group(0).lower() else m.group(0)
 
 
 def _keep_headings(m: "re.Match[str]") -> str:
     return " ".join(re.findall(r"<h[1-6]\b[^>]*>.*?</h[1-6]>", m.group(0), re.S | re.I))
+
+
+def _number_lists(html: str) -> str:
+    """Each ``<li>`` of an ``<ol>`` prefixed with the marker the browser draws for it
+    (``type`` 1 / a / A / i / I, ``start``): HyperWar's lists carry no numbers in the text, the
+    book prints them ("II.", "1.", "a)")."""
+    if "<ol" not in html.lower():
+        return html
+    from bs4 import BeautifulSoup  # pinned in requirements.txt (with html5lib)
+
+    soup = BeautifulSoup(html, "html5lib")
+    for ol in soup.find_all("ol"):
+        kind = str(ol.get("type") or "1")
+        start = _int(ol.get("start"), 1)
+        items = [li for li in ol.find_all("li", recursive=False)]
+        for n, li in enumerate(items, start=start):
+            li.insert(0, f"{_marker(kind, n)}. ")
+    return str(soup)
+
+
+def _int(value: Any, default: int) -> int:
+    try:
+        return int(str(value))
+    except (TypeError, ValueError):
+        return default
+
+
+def _marker(kind: str, n: int) -> str:
+    if kind in ("a", "A"):
+        letters = ""
+        while n > 0:
+            n, r = divmod(n - 1, 26)
+            letters = chr(ord("a") + r) + letters
+        return letters.upper() if kind == "A" else letters
+    if kind in ("i", "I"):
+        roman = _roman(n)
+        return roman if kind == "I" else roman.lower()
+    return str(n)
+
+
+def _roman(n: int) -> str:
+    out = ""
+    for value, numeral in (
+        (1000, "M"), (900, "CM"), (500, "D"), (400, "CD"), (100, "C"), (90, "XC"),
+        (50, "L"), (40, "XL"), (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I"),
+    ):  # fmt: skip
+        while n >= value:
+            out += numeral
+            n -= value
+    return out
 
 
 def _html_tokens(html: str) -> List[Token]:
@@ -548,9 +656,52 @@ def classify(
         return _by_form(html_part, pdf_part, vocab)
     if has_homoglyphs(b) and a == b.translate(_HOMOGLYPH_U).translate(_HOMOGLYPHS):
         return "ocr_homoglyph"
+    if _malformed_numeral(html_part, pdf_part, vocab):
+        return "html_error"
     if not vocab:
         return "review"
     return _by_reading(a, b, (html_part, pdf_part), vocab, second)
+
+
+# A well-formed number as the book prints it: digits, an ordinal ("1st", "2d", "147th") or a
+# Roman numeral (strict form, upper case).
+_ORDINAL = re.compile(r"^\d+(?:st|nd|rd|th|d)$")
+_STRICT_ROMAN = re.compile(
+    r"^(?=[MDCLXVI])M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$"
+)
+
+
+def well_formed_number(word: str) -> bool:
+    """Digits, an ordinal or a strict Roman numeral."""
+    return bool(
+        _DIGITS.match(word) or _ORDINAL.match(word) or _STRICT_ROMAN.match(word)
+    )
+
+
+def _malformed_numeral(
+    html_part: Sequence[Token],
+    pdf_part: Sequence[Token],
+    vocab: Optional[Counter] = None,
+) -> bool:
+    """The transcription's look-alike typo inside a number ("V1" for "VI", "X11" for "XII",
+    "I47th" for "147th"): its reading mixes digits and letters into no valid number, the PDF's
+    is a well-formed one, and the two are the same after the OCR confusions. Not when the book
+    prints the transcription's form at least as often as the PDF's - "M1" is a rifle, and a PDF
+    "MI" beside it is the OCR's error (the vocabulary includes the 2010 text layer, whose own
+    slips put a few "V1" for "VI" in it: a count alone is no evidence). Only the
+    CLASSIFICATION changes (the PDF needs nothing); the PDF's number is never altered.
+    """
+    if len(html_part) != 1 or len(pdf_part) != 1:
+        return False
+    h, p = html_part[0].text, pdf_part[0].text
+    if vocab and vocab[h.lower()] >= max(vocab[p.lower()], 1):
+        return False
+    return (
+        any(c.isdigit() for c in h)
+        and not well_formed_number(h)
+        and well_formed_number(p)
+        and _confused(h) == _confused(p)
+    )
 
 
 def _one_sided_class(pdf_part: Sequence[Token]) -> str:
