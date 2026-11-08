@@ -14,8 +14,15 @@ finding, then each with PDF page, printed page and both readings) and, with ``--
 of each review line from the authoritative page image (the whole page when the line cannot be
 located). Deterministic, no model calls.
 
+With ``--corrected-out DIR`` (needs ``--chandra-md``) it also writes the Chandra text with its
+OCR artefacts corrected where the book itself settles them (src/ingestion/pdf_text_corrections:
+only to readings the PDF - the newer, 1993 printing - itself prints), ``corrected.md``, and the
+log of every change, ``corrections.json``; the corrected text is cross-checked again to prove
+each correction landed and nothing else changed.
+
 Exit codes: 0 done; 1 a stream (of 50+ HTML words) aligned under ``--min-aligned`` (wrong
-pages or a missing stream: the counts are not meaningful); 2 invalid input.
+pages or a missing stream: the counts are not meaningful); 2 invalid input; 3 the corrections
+did not land cleanly (a bug: see corrections.json).
 """
 
 from __future__ import annotations
@@ -25,12 +32,13 @@ import hashlib
 import json
 import sys
 from collections import Counter
-from dataclasses import asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.ingestion import pdf_html_crosscheck as X  # noqa: E402
+from src.ingestion import pdf_text_corrections as C  # noqa: E402
 from src.ingestion.chunk_pages import split_pages  # noqa: E402
 from src.ingestion.hyperwar_html import normalise_hyperwar_html  # noqa: E402
 
@@ -39,13 +47,19 @@ class InputError(ValueError):
     """An argument the run cannot proceed with; the message says how to fix it."""
 
 
+class CorrectionError(RuntimeError):
+    """The corrected text did not cross-check as the corrections promised."""
+
+
 # A stream's aligned share is judged from this many HTML words up (a page's three-word notes
 # stream with one changed number aligns 67% and is no sign of wrong pages).
 _MIN_GUARDED_WORDS = 50
 
 
 def _args(argv=None):
-    ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
+    ap = argparse.ArgumentParser(
+        description=(__doc__ or "").split("\n\n", maxsplit=1)[0]
+    )
     ap.add_argument("--pdf", required=True, type=Path)
     ap.add_argument("--html", required=True, type=Path)
     ap.add_argument("--first", required=True, type=int, help="first PDF page (1-based)")
@@ -66,7 +80,15 @@ def _args(argv=None):
         default=0.9,
         help="fail when a stream aligns fewer than this share of its HTML words",
     )
-    return ap.parse_args(argv)
+    ap.add_argument(
+        "--corrected-out",
+        type=Path,
+        help="write corrected.md + corrections.json here (needs --chandra-md)",
+    )
+    args = ap.parse_args(argv)
+    if args.corrected_out and not args.chandra_md:
+        ap.error("--corrected-out needs --chandra-md (the text to correct)")
+    return args
 
 
 def _observ(message: str) -> None:
@@ -113,20 +135,45 @@ def _chandra_markdown(args) -> str:
     return markdown
 
 
-def _pdf_side(args, doc, streams, stats: Counter):
-    """(PDF tokens, whole-book vocabulary, second reading). With ``--chandra-md`` the chapter's
-    words are counted from the Chandra reading (whose small caps and accents the 2010 text layer
-    lacks) INSTEAD of the text layer, so no page of the book counts twice; the text layer of the
-    chapter's pages is then an independent second OCR of the same images."""
+@dataclass
+class _Side:
+    """The PDF side of a run: its tokens and the evidence they are judged by."""
+
+    tokens: list
+    vocab: Counter
+    second: "Counter | None" = None  # the chapter's text layer, with --chandra-md
+    markdown: "str | None" = None  # the Chandra text, with --chandra-md
+    printed: dict = field(default_factory=dict)
+
+
+def _pdf_side(args, doc, streams, stats: Counter) -> _Side:
+    """With ``--chandra-md`` the chapter's words are counted from the Chandra reading (whose small
+    caps and accents the 2010 text layer lacks) INSTEAD of the text layer, so no page of the book
+    counts twice; the text layer of the chapter's pages is then an independent second OCR of
+    the same images."""
     if not args.chandra_md:
-        return X.pdf_tokens(doc, args.first, args.last), X.pdf_vocabulary(doc), None
+        return _Side(X.pdf_tokens(doc, args.first, args.last), X.pdf_vocabulary(doc))
     printed = X.printed_pages(doc, args.first, args.last)
-    pdf = X.chandra_tokens(_chandra_markdown(args), args.first, printed, streams, stats)
+    markdown = _chandra_markdown(args)
+    pdf = X.chandra_tokens(markdown, args.first, printed, streams, stats)
     chapter = range(args.first, args.last + 1)
     vocab = X.pdf_vocabulary(doc, skip=chapter)
     vocab.update(X.token_vocabulary(pdf))
     others = [n for n in range(1, len(doc) + 1) if n not in chapter]
-    return pdf, vocab, X.pdf_vocabulary(doc, skip=others)
+    return _Side(pdf, vocab, X.pdf_vocabulary(doc, skip=others), markdown, printed)
+
+
+def _checks(streams, tokens, side: _Side) -> list:
+    """The narrative and notes cross-checks of ``tokens`` against the transcription's streams."""
+    narrative, notes = streams
+    body = [t for t in tokens if t.kind != "note"]
+    note_tokens = [t for t in tokens if t.kind == "note"]
+    return [
+        X.crosscheck(
+            "narrative", narrative, body, vocab=side.vocab, second=side.second
+        ),
+        X.crosscheck("notes", notes, note_tokens, vocab=side.vocab, second=side.second),
+    ]
 
 
 def _sha256(path: Path) -> str:
@@ -138,6 +185,7 @@ def _sha256(path: Path) -> str:
 
 
 def run(args) -> dict:
+    """Cross-check (and with --corrected-out, correct) one chapter; returns the report."""
     _check_files(args)
     with _open_pdf(args.pdf) as doc:
         _validate(args, doc)
@@ -146,25 +194,88 @@ def run(args) -> dict:
         )
         narrative, notes = X.html_streams(html)
         stats: Counter = Counter()
-        pdf, vocab, second = _pdf_side(args, doc, (narrative, notes), stats)
-        if not notes and any(t.kind == "note" for t in pdf):
+        side = _pdf_side(args, doc, (narrative, notes), stats)
+        if not notes and any(t.kind == "note" for t in side.tokens):
             _observ(
                 f"the PDF has notes but {args.html} has no Footnotes heading: every note "
                 "will read as pdf_only"
             )
-        evidence = {"vocab": vocab, "second": second}
-        checks = [
-            X.crosscheck(
-                "narrative", narrative, [t for t in pdf if t.kind != "note"], **evidence
-            ),
-            X.crosscheck(
-                "notes", notes, [t for t in pdf if t.kind == "note"], **evidence
-            ),
-        ]
+        checks = _checks((narrative, notes), side.tokens, side)
         moved = X.reconcile_moved(checks)
         report = _report_dict(args, checks, moved, stats)
+        if args.corrected_out:
+            report["corrections"] = _correct(args, side, checks, (narrative, notes))
         _write(args, doc, checks, report)
     return report
+
+
+def _correct(args, side: _Side, checks, streams) -> dict:
+    """Write the corrected Chandra text and its log to ``--corrected-out``, after cross-checking
+    the corrected text again: exactly the skipped differences may remain correctable, and no
+    other difference may change. Otherwise nothing is written but ``corrections.FAILED.json``
+    and the run fails - a correction that does not land is a bug, not data."""
+    markdown = side.markdown
+    if markdown is None:  # _args guarantees --chandra-md with --corrected-out
+        raise InputError("--corrected-out needs --chandra-md (the text to correct)")
+    newline = _newline(args)  # refuse mixed endings before any work
+    plan = C.plan_corrections(checks, markdown, side.vocab, side.second)
+    corrected = C.apply_corrections(markdown, plan.corrections)
+    tokens = X.chandra_tokens(corrected, args.first, side.printed, streams)
+    after = _checks(streams, tokens, side)
+    X.reconcile_moved(after)
+    remaining = sorted(_keys(after, correctable=True))
+    landed = remaining == sorted(plan.skipped_differences)
+    unchanged = _keys(checks, correctable=False) == _keys(after, correctable=False)
+    summary = {
+        "source": str(args.chandra_md),
+        "source_sha256": _sha256(args.chandra_md),
+        "applied": len(plan.corrections),
+        "skipped": dict(plan.skipped),
+        "correctable_remaining": len(remaining),
+        "remaining_are_the_skipped": landed,
+        "other_differences_unchanged": unchanged,
+    }
+    log = {
+        **summary,
+        "corrections": [asdict(c) for c in plan.corrections],
+        "skipped_differences": plan.skipped_differences,
+    }
+    out = args.corrected_out
+    out.mkdir(parents=True, exist_ok=True)
+    _observ(f"corrections {summary}")
+    if not (landed and unchanged):
+        failed = out / "corrections.FAILED.json"
+        failed.write_text(json.dumps(log, indent=2), encoding="utf-8")
+        raise CorrectionError(
+            f"corrections did not land cleanly (remaining are the skipped: {landed}, other "
+            f"differences unchanged: {unchanged}); nothing written but {failed}"
+        )
+    with (out / "corrected.md").open("w", encoding="utf-8", newline=newline) as f:
+        f.write(corrected)
+    (out / "corrections.json").write_text(json.dumps(log, indent=2), encoding="utf-8")
+    return summary
+
+
+def _newline(args) -> str:
+    """The source's line endings, so corrected.md differs from it only by the corrections. Mixed
+    endings cannot be reproduced through text-mode reading, so they are refused."""
+    raw = args.chandra_md.read_bytes()
+    crlf = raw.count(b"\r\n")
+    lone_cr = raw.count(b"\r") != crlf
+    if lone_cr or (crlf and crlf != raw.count(b"\n")):
+        raise InputError(
+            f"{args.chandra_md} mixes line endings: normalise it (all LF or all CRLF) first"
+        )
+    return "\r\n" if crlf else "\n"
+
+
+def _keys(checks, correctable: bool) -> list:
+    return sorted(
+        (d.cls, d.html, d.pdf)
+        for c in checks
+        for d in c.differences
+        if (d.cls in X.CORRECTABLE) == correctable
+    )
 
 
 def _report_dict(args, checks, moved, stats) -> dict:
@@ -264,17 +375,22 @@ def _write_crops(doc, checks, folder: Path) -> "tuple[int, int, int]":
 
 
 def _locate(page, reading: str):
+    """The reading's bbox on the page when it occurs there exactly once, else None."""
     hits = page.search_for(reading) if reading else []
     return tuple(hits[0]) if len(hits) == 1 else None
 
 
 def main(argv=None) -> int:
+    """Run the cross-check; the exit code is in the module docstring."""
     args = _args(argv)
     try:
         report = run(args)
     except InputError as exc:
         print(f"crosscheck: {exc}", file=sys.stderr)
         return 2
+    except CorrectionError as exc:
+        print(f"crosscheck: {exc}", file=sys.stderr)
+        return 3
     for s in report["streams"]:
         print(json.dumps(s))
     low = [

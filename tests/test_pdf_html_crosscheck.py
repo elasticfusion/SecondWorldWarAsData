@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -507,6 +508,7 @@ def _cli():
     )
     assert spec is not None and spec.loader is not None
     cli = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = cli  # dataclasses resolve their module through sys.modules
     spec.loader.exec_module(cli)
     return cli
 
@@ -605,3 +607,89 @@ def test_cli_fails_when_a_stream_does_not_align(cli_inputs, capsys):
     md.write_text("Entirely different words on this page.", encoding="utf-8")
     assert _cli().main(args + ["--chandra-md", str(md)]) == 1
     assert "narrative aligned only 0%" in capsys.readouterr().err
+
+
+def test_cli_writes_the_corrected_text_and_proves_it(cli_inputs, capsys):
+    """--corrected-out: Chandra's small caps "УТАН" become "UTAH" (the PDF's own letters), the
+    log records it, and the corrected text cross-checks clean."""
+    args, md, out = cli_inputs
+    html = Path(args[args.index("--html") + 1])
+    html.write_text(_PAGE_HTML.replace("the river", "UTAH Beach"), encoding="utf-8")
+    md.write_text(_PAGE_MD.replace("the river", "УТАН Beach"), encoding="utf-8")
+    fixed = out.parent / "fixed"
+    assert (
+        _cli().main(args + ["--chandra-md", str(md), "--corrected-out", str(fixed)])
+        == 0
+    )
+    assert "toward UTAH Beach at dawn" in (fixed / "corrected.md").read_text(
+        encoding="utf-8"
+    )
+    log = json.loads((fixed / "corrections.json").read_text(encoding="utf-8"))
+    assert log["applied"] == 1 and log["correctable_remaining"] == 0
+    assert log["other_differences_unchanged"] is True
+    assert [(c["cls"], c["original"], c["corrected"]) for c in log["corrections"]] == [
+        ("ocr_homoglyph", "УТАН", "UTAH")
+    ]
+    report = json.loads((out / "report.json").read_text(encoding="utf-8"))
+    assert report["corrections"]["applied"] == 1
+
+
+def test_cli_corrections_need_the_chandra_text(cli_inputs, tmp_path):
+    args, _md, _out = cli_inputs
+    with pytest.raises(SystemExit) as exc:
+        _cli().main(args + ["--corrected-out", str(tmp_path / "fixed")])
+    assert exc.value.code == 2  # argparse usage error
+
+
+def test_cli_keeps_the_sources_crlf_line_endings(cli_inputs):
+    args, md, out = cli_inputs
+    html = Path(args[args.index("--html") + 1])
+    html.write_text(_PAGE_HTML.replace("the river", "UTAH Beach"), encoding="utf-8")
+    md.write_bytes(
+        _PAGE_MD.replace("the river", "УТАН Beach").replace("\n", "\r\n").encode()
+    )
+    fixed = out.parent / "fixed"
+    assert (
+        _cli().main(args + ["--chandra-md", str(md), "--corrected-out", str(fixed)])
+        == 0
+    )
+    expected = (
+        _PAGE_MD.replace("the river", "UTAH Beach").replace("\n", "\r\n").encode()
+    )
+    assert (
+        fixed / "corrected.md"
+    ).read_bytes() == expected  # only the correction differs
+
+
+def test_cli_refuses_mixed_line_endings(cli_inputs, capsys):
+    args, md, out = cli_inputs
+    md.write_bytes(_PAGE_MD.replace("\n", "\r\n", 1).encode())
+    fixed = out.parent / "fixed"
+    assert (
+        _cli().main(args + ["--chandra-md", str(md), "--corrected-out", str(fixed)])
+        == 2
+    )
+    assert "mixes line endings" in capsys.readouterr().err
+
+
+def test_cli_writes_nothing_but_the_failure_when_a_correction_does_not_land(
+    cli_inputs, monkeypatch, capsys
+):
+    """A correction that does not change the text (a bug) leaves the difference in place: the
+    re-check catches it, exit 3, and no corrected.md exists for anything to pick up."""
+    args, md, out = cli_inputs
+    html = Path(args[args.index("--html") + 1])
+    html.write_text(_PAGE_HTML.replace("the river", "UTAH Beach"), encoding="utf-8")
+    md.write_text(_PAGE_MD.replace("the river", "УТАН Beach"), encoding="utf-8")
+    cli = _cli()
+    monkeypatch.setattr(
+        cli.C, "apply_corrections", lambda markdown, _corrections: markdown
+    )
+    fixed = out.parent / "fixed"
+    assert (
+        cli.main(args + ["--chandra-md", str(md), "--corrected-out", str(fixed)]) == 3
+    )
+    assert not (fixed / "corrected.md").exists()
+    failed = json.loads((fixed / "corrections.FAILED.json").read_text(encoding="utf-8"))
+    assert failed["remaining_are_the_skipped"] is False
+    assert "did not land cleanly" in capsys.readouterr().err

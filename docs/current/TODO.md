@@ -373,6 +373,15 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
 
 ### MED
+- **[MED · bug · found 2026-11-08 · noisy] `ocr_merge_handler` false "ocr-empty" alerts for Chandra jobs that
+  write OUTSIDE `ocr-output/`.** `_book_from_event` derives the book from the job's INPUT path,
+  then `merge_ocr_output` always lists `ocr-output/{book}/`; it never reads the job's OUTPUT
+  argument. A cross-check / scratch OCR run (`scripts/submit_ocr_job.py`-style job writing to
+  `scratch/...`) therefore rejects to `needs-review/ocr-empty/{book}.json` and alerts Slack+email
+  once per job - pretty noisy: one Slack + one email per finished chunk (seen: ch. VIII xcheck job, then the 14 per-chapter jobs of the Cross-Channel
+  Attack full-book cross-check). FIX: take the output prefix from the container command (the
+  second `s3://` argument); if it is not under `ocr-output/`, log `OBSERV ocr_merge.skip
+  reason=output_outside_ocr_output` and return without merging or alerting; test both paths.
 - **[MED · provenance/copyright] Copyright date rules have off-by-one and stale-cutoff errors (found 2026-11-06).**
   Not verified by a lawyer; these are code-vs-stated-rule mismatches against `docs/current/core/copyright/`.
     - `src/extraction/copyright_calculator.py`: for a US work with an unknown death date, only `pub_year < 1928` is
@@ -799,6 +808,53 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
   guard (#453), dedup-UI pattern, acquisition fetchers. Open Q: are place/person IMAGES user-facing
   today? measure before dropping image search. (Supersedes the A00 "Grok-proposes + liveness + human
   audit" framing — same intent, now fully specced in the doc.)
+
+- **[TODO · owner 2026-11-04 · DESIGN] Web interface to SUBMIT and REVIEW sources - both what
+  Phase 3 finds AND new documents / sites (a PDF, a scan, a transcription site, an archive
+  collection) that a user or operator brings - the path for expanding the knowledge base WITH
+  provenance.** Goal: grow the corpus from Phase 3's discoveries (OpenSERP PDF/EPUB documents,
+  Grok-proposed HTML references, NARA/bibliography resolutions) and from directly submitted
+  documents and websites, all through ONE review gate, with every accepted item carrying its
+  provenance end to end (where found, by what query/resolver and version, who reviewed it and
+  when, the decision and reason, source URL + content hash, license/copyright status, and for a
+  second copy of an existing work its edition/printing - the newer printing is deferred to,
+  especially for people's names). Start from the human ADD / DISCARD(>=90-day) / NEVER gate in
+  `docs/current/design/OPENSERP_SCOPE_REDUCTION.md` and the dedup-UI pattern (§1.4); an accepted
+  document enters Phase 0 like any upload (scanned PDF -> Chandra; a transcription of a book we
+  already hold -> `scripts/crosscheck_pdf_html.py` against it); a submitted SITE needs a
+  site-level record too (owner, terms/license, crawl scope, which pages were taken and when).
+  Open questions: authentication for
+  submitters, static-site hosting vs API Gateway (Phase 2 of the architecture plan), and how
+  review decisions are stored (versioned, auditable).
+
+- **[TODO · owner 2026-11-04] OCR-correction rules are per LANGUAGE (and script) - today's are
+  English-only.** `src/ingestion/pdf_html_crosscheck` + `pdf_text_corrections` assume an English
+  book in Latin script: the homoglyph rule maps Cyrillic/Greek look-alikes ("УТАН") to Latin, the
+  confusion table (rn/m, vv/w, l/1, O/0 ...) and the frequency/spacing thresholds are tuned on
+  Cross-Channel Attack. A Russian document is Cyrillic by right (the homoglyph rule must NOT run;
+  its confusions are Cyrillic ones, e.g. ш/щ, и/й, е/ё), French needs its accents and elisions
+  (l', d', qu') kept and its own hyphenation, German its umlauts/ß (and ae/oe/ue transliterations
+  such as "Kanalkueste"), compound nouns and suspended hyphens ("Atlantik- und"). Dutch keeps the
+  "ij" digraph (an OCR "y"/"ij" confusion is common), its diaeresis (ë, ï), name particles
+  ("van", "de", "ter" - part of a person's name, never merged or dropped) and apostrophe forms
+  ("'s-Hertogenbosch", "'t"). Japanese has no spaces between words, so the word tokenizer
+  (`_WORD`) itself is wrong for it: it needs segmentation (e.g. a morphological analyser),
+  kana/kanji look-alike confusions (ロ/口, カ/力, エ/工, ー/一), full-width digits and Latin, and
+  possibly vertical text; spacing rules do not apply at all. Needed: a
+  document language (from metadata or detected), a per-language rule set (scripts allowed,
+  confusion table, accent policy, compound/hyphen rules, tokenizer and segmentation, apostrophes),
+  and refusing to auto-correct when the language has no rule set (review only). Mixed-language
+  books (English narrative with German quotations/notes, as here) need the rule chosen per
+  paragraph or span. ENGLISH is not one rule set either: an American document (the CMH green
+  books) and a British one (War Office / Cabinet Office histories, British unit war diaries)
+  differ in spelling ("defense"/"defence", "armor"/"armour", "-ize"/"-ise", "center"/"centre",
+  "maneuver"/"manoeuvre"), and period usage differs from today's ("co-ordinated", "to-day") - so
+  the variety is part of the document's metadata, and a transcription in the OTHER variety must
+  never "correct" the original's spelling (today's book-vocabulary rule already prefers the
+  book's own forms; a cross-variety transcription would show up as html_error / book_form, not
+  be applied). ITALIAN also needs its own rules: accented finals ("città", "perché" - accent
+  direction matters), elisions with apostrophes ("dell'", "un'", "l'"), and its double consonants
+  as an OCR confusion site.
 
 ### 2.2 NARA resolution redesign (correctness)
 

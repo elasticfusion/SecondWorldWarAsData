@@ -42,6 +42,7 @@ comply with the current data structure.
 | `review_cache.py` | api cache | cache inspection |
 | `analyze_logs.sh` | CloudWatch | recent-log analysis |
 | `monitor_logs.sh` | CloudWatch | live log tail |
+| `monitor_ocr_jobs.py` | Batch + S3 | live progress of a set of Chandra OCR jobs (`--jobs-file`) |
 | `review_phase3_results.sh` | S3 | Phase-3 bibliography review |
 
 ## Running

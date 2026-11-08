@@ -27,7 +27,8 @@ every disagreement into:
   disagrees is ``review``.
 * ``html_error``    - the reverse: the PDF reading is established in the book and the HTML one
   is not ("Speidel" vs "Spieled", "killed" vs "kilied" - a look-alike on the transcription's
-  side): the transcription is wrong and the PDF needs nothing.
+  side): the transcription is wrong, or follows the older 1951 printing where the PDF is the
+  newer (1993) one - which is deferred to, above all for people's names. The PDF needs nothing.
 * ``html_accent``   - the transcription dropped an accent the book prints, and prints more than
   once ("Periers" for Périers): the PDF is right.
 * ``moved``         - the same words on both sides but in the other stream (a note continued on
@@ -93,6 +94,8 @@ class Token:
     )
     kind: str = "body"  # body | note | layout
     joined: str = ""  # "-" or "," joining this word to the previous one in the source
+    # (start, end) of the word in the source markdown (Chandra), when it is one contiguous run
+    span: Optional[Tuple[int, int]] = None
 
 
 def _normalised(text: str) -> str:
@@ -113,14 +116,23 @@ def joined_words(text: str) -> List[Tuple[str, str]]:
     for digit grouping ("1,240"), else "". A hyphen followed by a space is NOT joined: it is a
     German suspended compound ("Atlantik- und Kanalkueste") as often as a kept line break.
     """
-    text = _normalised(text)
-    out: List[Tuple[str, str]] = []
+    return [(w, j) for w, j, _span in _joined_spans(text)]
+
+
+def _joined_spans(text: str) -> List[Tuple[str, str, Optional[Tuple[int, int]]]]:
+    """``joined_words`` with each word's (start, end) in ``text`` - None when normalising
+    changed the text's length (an entity, a decomposed accent), so offsets would not hold.
+    """
+    normal = _normalised(text)
+    exact = len(normal) == len(text)
+    out: List[Tuple[str, str, Optional[Tuple[int, int]]]] = []
     end: Optional[int] = None
-    for m in _WORD.finditer(text):
-        word, gap = m.group(0), text[end : m.start()] if end is not None else ""
+    for m in _WORD.finditer(normal):
+        word, gap = m.group(0), normal[end : m.start()] if end is not None else ""
         end = m.end()
         digits = gap == "," and out and out[-1][0].isdigit() and word.isdigit()
-        out.append((word, gap if gap == "-" or digits else ""))
+        joiner = gap if gap == "-" or digits else ""
+        out.append((word, joiner, (m.start(), m.end()) if exact else None))
     return out
 
 
@@ -224,22 +236,35 @@ def _add_tokens(
     printed: Optional[int],
     kind: str,
     bbox: Optional[Tuple[float, ...]] = None,
+    base: Optional[int] = None,
 ) -> None:
     """Append ``text``'s words to ``out``; a word the previous line of the same stream broke
     with a hyphen ("fortifica-" / "tions") is joined, so a caption or note printed between the
     halves does not split it. A word broken over three lines ("in-" / "dica-" / "ted") joins
     whole. Limit: a genuine compound broken at its hyphen ("co-" / "ordinated") is joined too;
-    the book's vocabulary then judges the joined form (``_by_form``)."""
-    tokens = joined_words(text)
+    the book's vocabulary then judges the joined form (``_by_form``). ``base``: the offset of
+    ``text`` in the source markdown, for each token's ``span`` (a joined word has none).
+    """
+    tokens = _joined_spans(text)
     ends_hyphen = _ends_with_break(text)
     prev = next((t for t in reversed(out) if t.kind == kind), None)
     if prev is not None and prev.hyphen and tokens:
         prev.text += tokens.pop(0)[0]
         prev.hyphen = ends_hyphen and not tokens  # "dica-" consumed whole: still broken
-    for w, joiner in tokens:
-        out.append(Token(w, page, printed, bbox, kind=kind, joined=joiner))
+        prev.span = None  # two runs of the source: not one place to correct
+    for w, joiner, span in tokens:
+        at = _offset(span, base)
+        out.append(Token(w, page, printed, bbox, kind=kind, joined=joiner, span=at))
     if tokens and ends_hyphen:
         out[-1].hyphen = True
+
+
+def _offset(
+    span: Optional[Tuple[int, int]], base: Optional[int]
+) -> Optional[Tuple[int, int]]:
+    if base is None or span is None:
+        return None
+    return (base + span[0], base + span[1])
 
 
 def _ends_with_break(text: str) -> bool:
@@ -315,24 +340,47 @@ def chandra_tokens(
     A word hyphenated across a line, paragraph or page break ("in-" / "dicated") is joined within
     its own stream, so a caption or note printed mid-word does not split it. ``stats`` (if
     given) counts the paragraphs of each judgement."""
-    from src.ingestion.chunk_pages import split_pages
-
     placed = _note_placer(streams)
     stats = stats if stats is not None else Counter()
     out: List[Token] = []
-    for page, text in split_pages(markdown, first_page):
-        for paragraph in re.split(r"\n\s*\n", text):
-            stripped = paragraph.strip()
-            if not stripped:
-                continue
-            if stripped.startswith("!["):
-                stats["image_dropped"] += 1
-                continue
-            body = _MD_MARKUP.sub(" ", stripped)
-            kind = _chandra_kind(stripped, body, placed)
-            stats[kind] += 1
-            _add_tokens(out, body, page, (printed or {}).get(page), kind.split(":")[0])
+    for page, start, stripped in _chandra_paragraphs(markdown, first_page):
+        if stripped.startswith("!["):
+            stats["image_dropped"] += 1
+            continue
+        # markup blanked to spaces of its own length, so word offsets stay true to the source
+        body = _MD_MARKUP.sub(lambda m: " " * len(m.group(0)), stripped)
+        kind = _chandra_kind(stripped, body, placed)
+        stats[kind] += 1
+        printed_page = (printed or {}).get(page)
+        _add_tokens(out, body, page, printed_page, kind.split(":")[0], base=start)
     return out
+
+
+def _chandra_paragraphs(
+    markdown: str, first_page: int
+) -> Iterable[Tuple[int, int, str]]:
+    """(PDF page, offset in ``markdown``, paragraph) of every non-blank paragraph, paginated as
+    ``src.ingestion.chunk_pages.split_pages`` does (pages numbered on from ``first_page``).
+    """
+    from src.ingestion.chunk_pages import PAGE_SEPARATOR_RE
+
+    bounds, pos = [], 0
+    for m in PAGE_SEPARATOR_RE.finditer(markdown):
+        bounds.append((pos, m.start()))
+        pos = m.end()
+    bounds.append((pos, len(markdown)))
+    for page, (start, end) in enumerate(bounds, start=first_page):
+        piece_start = start
+        for sep in list(_PARAGRAPH_BREAK.finditer(markdown, start, end)) + [None]:
+            piece_end = sep.start() if sep else end
+            piece = markdown[piece_start:piece_end]
+            stripped = piece.strip()
+            if stripped:
+                yield page, piece_start + len(piece) - len(piece.lstrip()), stripped
+            piece_start = sep.end() if sep else end
+
+
+_PARAGRAPH_BREAK = re.compile(r"\n\s*\n")
 
 
 def _chandra_kind(paragraph: str, body: str, placed) -> str:
@@ -589,6 +637,13 @@ def _printed_form(pdf_part: Sequence[Token], joiners: set) -> str:
     return "hyphen" if joiners == {"-"} else "space"
 
 
+def established_form(pieces: Sequence[str], vocab: Counter) -> Optional[str]:
+    """ "hyphen" or "joined": how the book prints the word made of ``pieces`` ("co" +
+    "ordinated"), if its vocabulary says - the form an ``ocr_spacing`` correction restores.
+    """
+    return _established_form([Token(p) for p in pieces], vocab)
+
+
 def _established_form(split: Sequence[Token], vocab: Counter) -> Optional[str]:
     """ "hyphen" or "joined": how the book prints the word ``split`` spells, if it says."""
     joined = vocab["".join(t.text for t in split).lower()]
@@ -674,6 +729,8 @@ class Difference:
     printed_page: Optional[int]
     bbox: Optional[Tuple[float, ...]]
     context: str
+    # (start, end) of the PDF reading in the source markdown, when every token has a position
+    span: Optional[Tuple[int, int]] = None
 
 
 @dataclass
@@ -780,7 +837,15 @@ def _difference(h_part, p_part, html_all, a1, context) -> Difference:
         ),
         bbox=anchor.bbox if anchor else None,
         context=f"{before} [...] {after}".strip(),
+        span=_part_span(p_part),
     )
+
+
+def _part_span(p_part: Sequence[Token]) -> Optional[Tuple[int, int]]:
+    spans = [t.span for t in p_part]
+    if not spans or any(s is None for s in spans):
+        return None
+    return (spans[0][0], spans[-1][1])  # type: ignore[index]
 
 
 def _one_sided(checks: Sequence[CrossCheck], cls: str) -> List[Difference]:
