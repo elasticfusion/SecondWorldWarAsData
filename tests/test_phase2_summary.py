@@ -9,6 +9,8 @@ bug (the optional-entity-zero / people-bio-zero class) is visible immediately. I
 """
 
 import logging
+
+import pytest
 from pathlib import Path
 
 from phase2_extract import _log_phase2_summary, _count_entity_dir
@@ -75,3 +77,43 @@ def test_summary_failsafe_on_bad_root(caplog):
     with caplog.at_level(logging.WARNING):
         counts = _log_phase2_summary(None, logging.getLogger("t"))
     assert counts == {}  # returns empty, no exception
+
+
+# --- "0 because it failed" vs "0, nothing in the text" (XChannel-8, 2026-11-07) --------------
+
+
+@pytest.fixture
+def optional_errors():
+    import phase2_extract as P
+
+    P._OPTIONAL_ERRORS.clear()
+    yield P
+    P._OPTIONAL_ERRORS.clear()
+
+
+def test_an_optional_zero_caused_by_errors_is_an_actionable_error(
+    tmp_path, caplog, optional_errors
+):
+    P = optional_errors
+    P._observe_optional_error(
+        logging.getLogger("t"), "weather", "ch1-event.json", "boom"
+    )
+    with caplog.at_level(logging.INFO):
+        _log_phase2_summary(tmp_path / "output", logging.getLogger("t"))
+    errors = [r.getMessage() for r in caplog.records if r.levelno >= logging.ERROR]
+    failed = [m.replace("_", " ") for m in errors if "phase2.optional_failed" in m]
+    assert len(failed) == 1 and "weather" in failed[0] and "re-run Phase 2" in failed[0]
+    quiet = [m for m in caplog.records if "scope=optional" in m.getMessage()]
+    assert all("weather" not in r.getMessage().split("(")[0] for r in quiet)
+
+
+def test_records_plus_errors_is_partial(tmp_path, caplog, optional_errors):
+    P = optional_errors
+    _w(tmp_path / "output" / "weather", "w.json")
+    P._observe_optional_error(
+        logging.getLogger("t"), "weather", "ch2-event.json", "boom"
+    )
+    with caplog.at_level(logging.INFO):
+        _log_phase2_summary(tmp_path / "output", logging.getLogger("t"))
+    assert any("phase2.optional_partial" in r.getMessage() for r in caplog.records)
+    assert not any("phase2.optional_failed" in r.getMessage() for r in caplog.records)

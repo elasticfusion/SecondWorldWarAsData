@@ -90,8 +90,10 @@ def test_alert_names_the_fields_the_consequence_and_the_fix():
     for field in ("author", "series", "chapter_title", "license", "copyright_date"):
         assert field in msg
     # what it breaks (claims verified against the code and the dev E2E)
-    assert "Processing CONTINUES" in msg and "weather" in msg
-    assert "Missing required book metadata" in msg
+    assert "Processing CONTINUES" in msg
+    # an empty author no longer drops an entity type (weather lost every record to it)
+    assert "weather included, is still extracted" in msg
+    assert "Missing required book metadata" not in msg
     # exactly what to do, with the real S3 path and the RIGHT phase: the parse hashes the author,
     # so Phase 1 must re-run to re-parse; re-running only Phase 2 would reuse the empty author.
     assert (

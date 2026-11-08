@@ -92,7 +92,8 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
 - **[MED · provenance] Stop shipping HTML/EPUB/DOCX/video books with EMPTY metadata (P2-C1 "slug+meta half"; found 2026-11-06).**
   `phase0_convert` / `phase0_video` / `ocr_merge_handler` write `chapter1-meta.yaml` with `author`, `series`, `chapter_title`,
   `license`, `copyright_date` all `''` and `source_url: "converted from <key>"` (not a URL). The pipeline continues, so every
-  record cites an empty author, copyright status is unknown, and weather extraction errors (`Missing required book metadata`).
+  record cites an empty author and copyright status is unknown. (Until 2026-11-07 weather also lost EVERY record to it -
+  `Missing required book metadata`; fixed: an empty author now alerts once per book and extraction continues.)
   The alert is now actionable (names the fields, the consequence and the S3 file to edit), but an alert on EVERY upload is still
   manual toil. Derive what is deterministic: HTML `<title>` (e.g. "HyperWar: US Army in WWII: Cross Channel Invasion [Chapter 8]"
   gives series + chapter), the upload's `x-amz-meta-source-url` (set by the operator) for `source_url`, and the known licence of
@@ -124,10 +125,22 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   (accepts only `source_section/...`); and the schema registry `output_glob` consumers `scripts/validate_phase2.py`,
   `src/utils/provenance_integrity.py:236`, `src/utils/referential_integrity.py:130`. Route them through the helper (the
   worker needs a strict `content/<safe-book>/source_section/<ulid>.json` allowance) and add a test per reader.
+- **[HIGH · accuracy] Phase 2 sub-events overlap: one sub-event's text contains another's (XChannel-8, 2026-11-07).**
+  Sub-event 3 "U.S. airborne assault ... in the Cotentin" spans Paragraph_39-262, which includes 105 of the 139 paragraphs of
+  sub-event 4 "Seaborne beach landings at UTAH and OMAHA" (Paragraph_124-262). Every entity extracted from those paragraphs
+  (people, places, groups, dates, equipment, weather) is attributed to the airborne sub-event as well as the beach landings,
+  and the text is sent to Grok twice. Weather now counts a statement once per event, but keeps the FIRST sub-event's
+  attribution. Find why the event extractor's paragraph ranges overlap (sub-event boundaries), enforce disjoint ranges with a
+  check that fails loud, and add a test on this chapter's event file.
+- **[MED · data loss] A schema-blocked weather mention leaves an empty shell record, and the event is marked processed (2026-11-07).**
+  `weather_central._find_or_create_weather` writes the new record (`extracted_data: null`, `event_mentions: []`) BEFORE
+  `_add_event_mention` merges the statement; if that merge is refused by the write guard (`locked_json.blocked_schema_invalid`),
+  the shell stays and `extract_weather_central` still marks the event processed, so the statement is never retried. Build the
+  full record (statement + mention) and write it once, and do not mark the event processed when a merge was blocked; add a test.
 - **[HIGH · data loss] Entity filenames use the ULID TIMESTAMP prefix (`id[:8]` / `[:12]`) (found 2026-11-07).**
   Two records with the same name created in the same millisecond get the same filename and the second write overwrites the
-  first. Equipment is fixed (random tail `id[-8:]`, it locates records only via its index). Still affected:
-  `src/extraction/people.py` (`person_id[:12]`), `places.py`, `dates.py`, `logistics.py`, `weather_central.py`,
+  first. Equipment and weather are fixed (random tail `id[-8:]`; both locate records only via their index). Still affected:
+  `src/extraction/people.py` (`person_id[:12]`), `places.py`, `dates.py`, `logistics.py`,
   `batch_parallel.py` (shared helper). Before switching each, confirm nothing recomputes the filename from the ID to find an
   existing record, then add a same-ms collision test per writer.
 - **[MED · quality] Equipment records written before schema 2.29 keep ungrounded Grok text (2026-11-07).**

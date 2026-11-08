@@ -1,65 +1,105 @@
 system_prompt: |
-  You are a WWII historical weather data extraction specialist. You extract weather
-  mentions from WWII historical texts.
+  You are a WWII historical weather data extraction specialist. You extract weather and
+  sea/light conditions from WWII historical texts, exactly as the text states them.
 
 prompt_template: |
-  Extract weather mentions from these WWII event sub-events.
+  Extract weather and environmental-condition mentions from these WWII event sub-events.
 
   Event: {event_name}
   EventID: {event_id}
 
   {sub_event_blocks}
 
-  For each weather mention provide:
-  - place_name, PlaceMentionID (from available places above)
-  - date (YYYY-MM-DD exact only), DateMentionID (from available dates above)
-  - weather_description: what the SOURCE TEXT says about the weather (e.g. "heavy snow",
-    "dense fog", "driving rain"), in the document's own terms
+  WHAT COUNTS (land, air AND sea): sky / cloud and cloud ceiling, visibility (fog, haze,
+  smoke-free or not), precipitation, temperature, wind (speed, direction, gusts), sea state
+  (heavy seas, swell, surf, choppy water, currents), tide (high/low/rising/falling, rate,
+  height), and light conditions ONLY where the text treats the light itself as a condition that
+  helped or hindered (moonlight for the drops, darkness that hid a move, sunshine). A time of day
+  used as a time ("before dawn the town fell", "at dusk the gliders landed", "with daylight the
+  fire grew") is NOT a weather mention. Amphibious and naval narratives describe the weather
+  mostly as sea state, wind and tide - extract those.
+
+  For each mention provide:
+  - place_name: the place as the text gives it ("Omaha Beach", "off Utah Beach", "the
+    Channel", "Portsmouth"); PlaceMentionID ONLY if that place is in the list above
+  - date (YYYY-MM-DD) and DateMentionID - see DATES below
+  - observation_type:
+      "observed"             - conditions that actually occurred
+      "forecast"             - a forecast or prediction ("the forecast for 5 June called for...")
+      "planning_requirement" - conditions the planners required or assumed ("a late-rising
+                               moon and a low tide at dawn were needed")
+  - weather_description: what the SOURCE TEXT says, in the document's own terms
+  - wind_text: the wind phrase as written ("gusty wind 15-20 knots from the northwest");
+    wind_speed_low / wind_speed_high / wind_speed_unit ("knots", "mph", "kmh", "ms",
+    "beaufort") and wind_direction ONLY if the text states them ("15-20 knots" -> low 15,
+    high 20, unit "knots"; a single value -> low = high)
+  - sea_state_text: sea / surf / swell as written ("waves of five to six feet")
+  - visibility_text, cloud_text, tide_text, light_text: each as written, when stated
   - temperature, temperature_unit: ONLY if the text explicitly states a temperature
-    (e.g. "the thermometer read 20 degrees" -> temperature 20). Leave null otherwise.
-  - precipitation_text: the verbatim precipitation phrase if stated (e.g. "3 inches of
-    snow on the ground"); precipitation_amount/unit/type ONLY if the text states a number
-  - notable_impact: the operational impact the text describes (e.g. "grounded air support")
+  - precipitation_text: the verbatim precipitation phrase if stated; precipitation_amount /
+    unit / type ONLY if the text states a number
+  - notable_impact: the operational impact the text describes (e.g. "swamped DD tanks",
+    "bombs fell inland of the beach")
   - original_text: the exact sentence/phrase from the document
 
-  CRITICAL RULE — EXTRACT, NEVER INFER: report a weather specific (temperature, precipitation
-  amount, snow-on-the-ground, etc.) ONLY when the source text explicitly states it. Copy what
-  the document says; do NOT guess, convert units, average, or invent any value the text does
-  not give. Unstated quantitative specifics are supplied separately by the deterministic
-  weather APIs (Open-Meteo / NOAA) — you are NOT responsible for them. If the text gives no
-  number, leave the numeric fields null and keep only the words.
+  CRITICAL RULE - EXTRACT, NEVER INFER: report a specific (temperature, wind speed, wave
+  height, precipitation amount, ...) ONLY when the source text states it. Copy what the
+  document says; do NOT guess, convert units, average, or invent a value. Unstated
+  quantitative specifics come from the deterministic weather APIs (Open-Meteo / NOAA), not
+  from you. If the text gives no number, leave the numeric fields null and keep the words.
 
-  CRITICAL: Only extract EXACT dates. Skip approximate dates.
+  DATES - NEVER DROP A MENTION FOR ITS DATE:
+  - An exact date stated or unambiguous in context ("D Day" in a Normandy chapter whose dates
+    list 1944-06-06; "that night" of a sub-event dated 1944-06-05) -> that YYYY-MM-DD and its
+    DateMentionID from the list.
+  - Otherwise (no date, or only an approximate one like "early June") -> date null, and keep
+    the mention.
+  - A forecast's date is the date it is a forecast FOR.
 
-  Return JSON object keyed by Sub-eventID:
+  Return JSON object keyed by Sub-eventID (shape only - every value in it is a placeholder;
+  take every value from the text):
   {schema}
 
 schema: |
   {
     "<Sub-eventID>": [
       {
-        "WeatherMentionID": "01ULID...",
-        "place_name": "Bastogne",
-        "PlaceMentionID": "01ULID...",
-        "date": "1944-12-22",
-        "DateMentionID": "01ULID...",
-        "weather_description": "Heavy snowfall",
-        "temperature": -5,
-        "temperature_unit": "C",
-        "measurement_system": "metric",
-        "precipitation_text": "3 inches of snow",
-        "precipitation_amount": 3,
-        "precipitation_unit": "in",
-        "precipitation_type": "snow",
-        "notable_impact": "Limited visibility for air support",
-        "original_text": "Heavy snow blanketed the region"
+        "WeatherMentionID": "<ULID>",
+        "place_name": "<place as written>",
+        "PlaceMentionID": "<ULID from the list, or null>",
+        "date": "<YYYY-MM-DD or null>",
+        "DateMentionID": "<ULID from the list, or null>",
+        "observation_type": "<observed | forecast | planning_requirement>",
+        "weather_description": "<what the text says>",
+        "wind_text": "<wind phrase as written, or null>",
+        "wind_speed_low": "<number stated, or null>",
+        "wind_speed_high": "<number stated, or null>",
+        "wind_speed_unit": "<knots | mph | kmh | ms | beaufort, or null>",
+        "wind_direction": "<as stated, or null>",
+        "sea_state_text": "<as written, or null>",
+        "visibility_text": "<as written, or null>",
+        "cloud_text": "<as written, or null>",
+        "tide_text": "<as written, or null>",
+        "light_text": "<as written, or null>",
+        "temperature": "<number stated, or null>",
+        "temperature_unit": "<C | F, or null>",
+        "measurement_system": "<metric | imperial, or null>",
+        "precipitation_text": "<as written, or null>",
+        "precipitation_amount": "<number stated, or null>",
+        "precipitation_unit": "<in | cm | mm, or null>",
+        "precipitation_type": "<rain | snow | sleet | hail | mixed, or null>",
+        "notable_impact": "<impact the text describes, or null>",
+        "original_text": "<exact sentence from the document>"
       }
     ]
   }
 
 rules:
-  - Only extract EXACT dates (YYYY-MM-DD), skip "early December", "mid-winter"
-  - Link PlaceMentionID and DateMentionID from available lists in sub-event headers
+  - Sea state, wind, tide, cloud ceiling, visibility and light conditions ARE weather mentions
+  - Mark every mention observed / forecast / planning_requirement; a forecast or a planning
+    requirement is NEVER reported as observed
+  - Keep a mention whose date is missing or approximate (date null); never drop it for the date
+  - Link PlaceMentionID and DateMentionID only from the lists in the sub-event headers
   - EXTRACT specifics only when the TEXT STATES them (verbatim-grounded); NEVER infer,
     convert, or invent a number — unstated specifics come from the weather APIs
   - temperature_unit is "C" or "F"; measurement_system is "metric" or "imperial"
@@ -70,4 +110,4 @@ rules:
     merged record spanning several. Examples:
     - "snow fell on Bastogne and Noville" -> TWO mentions, one place_name "Bastogne", one
       "Noville" (each with its own PlaceMentionID).
-    - "fog at St. Vith, Malmedy, and Stavelot" -> THREE mentions, one per place.
+    - "heavy surf off Omaha and Utah Beaches" -> TWO mentions, one per beach.

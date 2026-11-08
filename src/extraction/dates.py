@@ -498,11 +498,9 @@ def extract_dates(
     book, author, series = _load_book_metadata_for_dates(parsed_file)
 
     # Validate required metadata
-    if not book or not author:
-        raise ValueError(
-            f"Missing required book metadata in {parsed_file}: "
-            f"book={book!r}, author={author!r}"
-        )
+    from src.extraction._entity_common import require_book_provenance
+
+    require_book_provenance(book, author, "dates", str(parsed_file))
 
     event_name = event_data.get("Chapter", "")
     event_obj = event_data.get("Event", {})

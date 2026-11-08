@@ -2,6 +2,8 @@
 
 import json
 import logging
+import math
+import re
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
@@ -111,10 +113,21 @@ def _filter_invalid_weather(data: Dict[str, Any]) -> Dict[str, Any]:
     return data
 
 
+_EXACT_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def _exact_date(value: Any) -> str:
+    """A YYYY-MM-DD date, or "" (undated) for null / approximate / placeholder values."""
+    text = str(value or "").strip()
+    return text if _EXACT_DATE.fullmatch(text) else ""
+
+
 def _fetch_weather_from_api(
     date: str, lat: float, lon: float, timeout: int = 30
 ) -> Optional[Dict[str, Any]]:
     """Fetch historical weather from Open-Meteo API."""
+    if not _EXACT_DATE.fullmatch(date or ""):
+        return None  # undated / approximate: no day to ask the archive for
     url = "https://archive-api.open-meteo.com/v1/archive"
     params = {
         "latitude": str(lat),
@@ -406,8 +419,8 @@ def _create_new_weather_file(
 ) -> tuple[Path, str]:
     """Create new weather file. Returns (weather_file, filename)."""
     weather_id = str(ulid.new())
-    safe_date = date.replace("-", "")
-    safe_place = place_name.replace(" ", "_").replace(",", "")
+    safe_date = (date or "undated").replace("-", "")
+    safe_place = (place_name or "unknown").replace(" ", "_").replace(",", "")
     # place_name is UNTRUSTED (LLM-extracted) — a '/' or '..' survives the .replace() above and would
     # escape weather_dir. Route the composed name through the shared path-traversal sanitizer +
     # symlink-containment guard (same discipline as the other entity writers).
@@ -416,7 +429,10 @@ def _create_new_weather_file(
         _contained_entity_path,
     )
 
-    proposed = f"{safe_date}_{safe_place}_{weather_id[:8]}.json"
+    # The ULID RANDOM tail, not its timestamp prefix: two records for the same place and date
+    # created in the same millisecond (observed + forecast) got the same name and one overwrote the
+    # other. Records are located only through index.json, never by recomputing this name.
+    proposed = f"{safe_date}_{safe_place}_{weather_id[-8:]}.json"
     filename = _safe_entity_filename(proposed, weather_id)
     weather_file = _contained_entity_path(weather_dir, filename)
     if weather_file is None:
@@ -476,10 +492,14 @@ def _find_or_create_weather(
     places_dir: Path,
     fetch_api: bool = True,
     date_id_lookup: Optional[Dict[str, Dict[str, Any]]] = None,
+    event_id: str = "",
 ) -> Path:
     """Find existing weather file or create new one, updating if needed."""
-    date = mention.get("date", "")
-    place_name = mention.get("place_name", "")
+    date = _exact_date(
+        mention.get("date")
+    )  # "" = undated: kept, never dropped for its date
+    mention["date"] = date
+    place_name = _clean_text(mention.get("place_name")) or ""
 
     # Dedup key: prefer the CANONICAL PlaceID (so 'Saint-Lô' / 'St Lo' / an alias collapse
     # to ONE weather file per place+date); fall back to the normalized name when the place
@@ -490,6 +510,17 @@ def _find_or_create_weather(
     )
     name_key = _normalize_weather_key(date, place_name)
     weather_key = f"{date}_pid_{place_id}" if place_id else name_key
+    if not date and event_id:
+        # undated statements of DIFFERENT events never share one record (its extracted_data
+        # would describe an arbitrary one of them)
+        name_key, weather_key = (
+            f"{name_key}_ev_{event_id}",
+            f"{weather_key}_ev_{event_id}",
+        )
+    kind = _observation_type(mention.get("observation_type"))
+    if kind != "observed":
+        # observed keys are unchanged (existing records); others get their own record
+        name_key, weather_key = f"{name_key}_{kind}", f"{weather_key}_{kind}"
 
     # Check if file exists (canonical key, then legacy name key)
     existing_key = (
@@ -537,16 +568,71 @@ def _find_or_create_weather(
     return weather_file
 
 
-def _mention_exists(mentions, sub_event_id) -> bool:
-    """True if any existing event_mention is for ``sub_event_id``. Legacy mentions may predate the
+def _mention_exists(
+    mentions, sub_event_id, original_text: str = "", event_id: str = ""
+) -> bool:
+    """True if this statement is already recorded: the same sub-event's same statement (a
+    re-run), or the same statement of the same EVENT from another sub-event (overlapping sub-event
+    text would otherwise count one sentence twice). Two different statements of one sub-event about
+    the same place and date are both kept (a long sub-event is read in windows). A legacy mention
+    without original_text matches on the sub-event alone. Legacy mentions may predate the
     Sub_eventID field, so use .get() (no KeyError) + OBSERV the legacy one (mirrors places.py #495).
     """
     for m in mentions:
         if "Sub_eventID" not in m:
             logger.info("OBSERV weather.legacy_mention_no_subevent")
-        if m.get("Sub_eventID") == sub_event_id:
+        if _same_statement(m, sub_event_id, original_text, event_id):
             return True
     return False
+
+
+def _norm_statement(text: Any) -> str:
+    return " ".join(str(text or "").split()).casefold().rstrip(".")
+
+
+def _same_statement(
+    m: Dict[str, Any], sub_event_id: str, original_text: str, event_id: str
+) -> bool:
+    recorded = m.get("original_text")
+    same_text = bool(original_text) and _norm_statement(recorded) == _norm_statement(
+        original_text
+    )
+    if m.get("Sub_eventID") == sub_event_id:
+        return same_text or not recorded or not original_text
+    return same_text and bool(event_id) and m.get("EventID") == event_id
+
+
+def _extracted_data(mention: Dict[str, Any], book: str, author: str) -> Dict[str, Any]:
+    """The record's extracted_data from its first mention. Specifics (temperature,
+    precipitation, wind numbers) are populated ONLY when the SOURCE TEXT states them - the prompt
+    forbids inferring numbers; unstated values come from the weather APIs (api_data)."""
+    return {
+        "description": mention.get("weather_description", ""),
+        "temperature": _stated_number(mention.get("temperature"), allow_negative=True),
+        "temperature_unit": _normalize_temp_unit(mention.get("temperature_unit")),
+        "measurement_system": mention.get("measurement_system") or None,
+        "precipitation_text": _clean_text(mention.get("precipitation_text")),
+        "precipitation_amount": _stated_number(mention.get("precipitation_amount")),
+        "precipitation_unit": _normalize_precip_unit(mention.get("precipitation_unit")),
+        "precipitation_type": _normalize_precip_type(mention.get("precipitation_type")),
+        "notable_impact": _clean_text(mention.get("notable_impact")),
+        "original_text": mention.get("original_text", ""),
+        "book": book,
+        "author": author,
+        "observation_type": _observation_type(mention.get("observation_type")),
+        **_condition_fields(mention),
+    }
+
+
+def _mention_statement(mention: Dict[str, Any]) -> Dict[str, Any]:
+    """This mention's OWN statement, kept on its event_mention (extracted_data holds only the
+    record's first one)."""
+    return {
+        "weather_description": mention.get("weather_description") or None,
+        "original_text": mention.get("original_text") or None,
+        "observation_type": _observation_type(mention.get("observation_type")),
+        **_condition_fields(mention),
+    }
 
 
 def _add_event_mention(
@@ -572,7 +658,12 @@ def _add_event_mention(
             weather_data, SCHEMA_TARGET, logger, weather_file.name
         )
         if not skip:
-            if _mention_exists(weather_data.get("event_mentions", []), sub_event_id):
+            if _mention_exists(
+                weather_data.get("event_mentions", []),
+                sub_event_id,
+                mention.get("original_text") or "",
+                event_id,
+            ):
                 logger.info(
                     "    Weather already has mention from this sub-event, skipping"
                 )
@@ -583,30 +674,10 @@ def _add_event_mention(
             # prompt forbids inferring/inventing numbers. Unstated quantitative values come
             # from the deterministic weather APIs in `api_data` (Open-Meteo/NOAA).
             if not weather_data.get("extracted_data"):
-                weather_data["extracted_data"] = {
-                    "description": mention.get("weather_description", ""),
-                    "temperature": mention.get("temperature") or None,
-                    "temperature_unit": _normalize_temp_unit(
-                        mention.get("temperature_unit")
-                    ),
-                    "measurement_system": mention.get("measurement_system") or None,
-                    "precipitation_text": mention.get("precipitation_text") or None,
-                    "precipitation_amount": mention.get("precipitation_amount"),
-                    "precipitation_unit": _normalize_precip_unit(
-                        mention.get("precipitation_unit")
-                    ),
-                    "precipitation_type": _normalize_precip_type(
-                        mention.get("precipitation_type")
-                    ),
-                    "notable_impact": mention.get("notable_impact") or None,
-                    "original_text": mention.get("original_text", ""),
-                    "book": book,
-                    "author": author,
-                }
+                weather_data["extracted_data"] = _extracted_data(mention, book, author)
                 if weather_data.get("api_data"):
                     weather_data["source_type"] = "hybrid"
 
-            # Add event mention
             event_mention = {
                 "MentionID": str(ulid.new()),
                 "Event_Name": event_name,
@@ -616,6 +687,7 @@ def _add_event_mention(
                 "book": book,
                 "author": author,
                 "series": series,
+                **_mention_statement(mention),
             }
             weather_data.setdefault("event_mentions", []).append(event_mention)
             save(weather_data)
@@ -763,38 +835,46 @@ def _batch_extract_weather(
     places_index: Optional[Dict[str, str]] = None,
     chunk_size: int = 10,
     empty_counter: Optional[dict] = None,
+    failures: Optional[dict] = None,
 ) -> Dict[str, List[Dict[str, Any]]]:
-    """Extract weather from sub-events, chunked for large chapters.
+    """Extract weather from sub-events, chunked for large chapters. A call that failed every
+    attempt is skipped by the chunker and counted in ``failures["calls"]``.
+
+    A long sub-event is split into paragraph WINDOWS (each labelled with its Sub-eventID) and
+    calls are packed by character budget, not by block count: XChannel-8's 143K- and 83K-char
+    sub-events went to Grok as single blocks and most of their stated weather (the tide rising
+    four feet an hour, DUKWs swamped in heavy seas) was not returned. Windows of one sub-event
+    accumulate (extend_lists), never replace each other.
 
     Returns dict mapping sub_event_id → list of weather mention dicts.
     """
     if not sub_events:
         return {}
 
-    # Build per-sub-event blocks with their place/date context
     blocks = []
     for se in sub_events:
         seid = se.get("Sub-eventID", "")
         summary = se.get("Sub-event_summary", "")
         fulltext = se.get("Sub-event_fulltext", {})
-        text = "\n".join(fulltext.values()) if fulltext else ""
-        if not text:
+        windows = _text_windows(fulltext) if fulltext else []
+        if not windows:
             note_empty_fulltext_skip("weather", seid, empty_counter)
             continue
         places_section = _build_places_section(se, places_index)
         dates_section = _build_dates_section(se)
-        blocks.append(
-            f"--- Sub-event [{seid}] {summary} ---{places_section}{dates_section}\n\nText:\n{text}"
-        )
+        for i, text in enumerate(windows, start=1):
+            part = f" (part {i} of {len(windows)})" if len(windows) > 1 else ""
+            blocks.append(
+                f"--- Sub-event [{seid}] {summary}{part} ---{places_section}{dates_section}"
+                f"\n\nText:\n{text}"
+            )
 
     if not blocks:
         return {}
 
-    # Chunk to avoid truncation on large chapters
-    chunks = [blocks[i : i + chunk_size] for i in range(0, len(blocks), chunk_size)]
-    all_results: Dict[str, List[Dict[str, Any]]] = {}
+    chunks = _pack_blocks(blocks, max_blocks=chunk_size)
 
-    from src.utils.chunked_extract import extract_with_chunk_halving
+    from src.utils.chunked_extract import extend_lists, extract_with_chunk_halving
 
     def _extract_weather_chunk(chunk):
         from src.utils.prompt_loader import get_system_prompt, render_prompt as _rp
@@ -805,15 +885,76 @@ def _batch_extract_weather(
             event_id=event_id,
             sub_event_blocks="".join(chr(10) + chr(10) + b for b in chunk),
         )
-        return _call_and_parse_weather(grok_client, prompt, max_retries)
+        try:
+            return _call_and_parse_weather(grok_client, prompt, max_retries)
+        except GrokTruncationError as e:
+            if len(chunk) > 1:
+                raise  # the chunker halves it
+            _count_failure(
+                failures
+            )  # one window that still truncates is lost: count it
+            raise WeatherCallFailed(f"weather window truncated even alone: {e}") from e
+        except WeatherCallFailed:
+            _count_failure(failures)
+            raise
 
-    return extract_with_chunk_halving(chunks, _extract_weather_chunk, "weather")
+    return extract_with_chunk_halving(
+        chunks, _extract_weather_chunk, "weather", merge=extend_lists
+    )
+
+
+def _count_failure(failures: Optional[dict]) -> None:
+    if failures is not None:
+        failures["calls"] = failures.get("calls", 0) + 1
+
+
+WINDOW_CHARS = 12_000  # sub-event text per block (paragraph-aligned)
+CALL_CHARS = 30_000  # text per Grok call (several blocks)
+
+
+def _text_windows(fulltext: Dict[str, str]) -> List[str]:
+    """The sub-event's paragraphs joined into windows of at most WINDOW_CHARS (a single longer
+    paragraph is its own window - never cut mid-sentence)."""
+    windows: List[str] = []
+    current: List[str] = []
+    size = 0
+    for para in (p for p in fulltext.values() if isinstance(p, str) and p.strip()):
+        if current and size + len(para) > WINDOW_CHARS:
+            windows.append("\n".join(current))
+            current, size = [], 0
+        current.append(para)
+        size += len(para) + 1
+    if current:
+        windows.append("\n".join(current))
+    return windows
+
+
+def _pack_blocks(blocks: List[str], max_blocks: int) -> List[List[str]]:
+    """Group blocks into calls of at most ``max_blocks`` blocks and about CALL_CHARS of text."""
+    chunks: List[List[str]] = []
+    current: List[str] = []
+    size = 0
+    for block in blocks:
+        if current and (len(current) >= max_blocks or size + len(block) > CALL_CHARS):
+            chunks.append(current)
+            current, size = [], 0
+        current.append(block)
+        size += len(block)
+    if current:
+        chunks.append(current)
+    return chunks
+
+
+class WeatherCallFailed(RuntimeError):
+    """Every attempt of one weather call failed (not a truncation, not batch-collect)."""
 
 
 def _call_and_parse_weather(
     grok_client: GrokClient, prompt: str, max_retries: int
 ) -> Dict[str, List[Dict[str, Any]]]:
-    """Call Grok API with retries and parse batched weather response."""
+    """Call Grok API with retries and parse batched weather response. Raises WeatherCallFailed
+    when every attempt failed."""
+    last_error: Optional[Exception] = None
     for attempt in range(max_retries):
         try:
             response = grok_client.extract_json(
@@ -835,19 +976,17 @@ def _call_and_parse_weather(
                 attempt + 1,
             )
             raise
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - retried; the last failure is raised
+            last_error = e
             if attempt < max_retries - 1:
                 logger.warning(
                     "  ⚠ Batch weather attempt %d failed: %s", attempt + 1, e
                 )
-            else:
-                import os
-
-                if os.environ.get("PIPELINE_PHASE"):
-                    logger.info("  ⊘ Sync weather fallback skipped (batch mode): %s", e)
-                else:
-                    logger.error("  ✗ All %d batch attempts failed: %s", max_retries, e)
-    return {}
+    # All attempts failed: RAISE (the caller counts it and does not mark the event processed).
+    # Returning {} here read as "no weather in this text" - the silent-zero shape.
+    raise WeatherCallFailed(
+        f"weather extraction failed after {max_retries} attempt(s): {last_error}"
+    )
 
 
 # Descriptive-content keys: a weather mention is kept if ANY is non-empty (resolved date/place
@@ -859,7 +998,91 @@ _WEATHER_CONTENT_KEYS = (
     "original_text",
     "notable_impact",
     "precipitation_text",
+    "wind_text",
+    "wind_direction",
+    "sea_state_text",
+    "visibility_text",
+    "cloud_text",
+    "tide_text",
+    "light_text",
 )
+
+_OBSERVATION_TYPES = ("observed", "forecast", "planning_requirement")
+_CONDITION_TEXT_KEYS = (
+    "wind_text",
+    "wind_direction",
+    "sea_state_text",
+    "visibility_text",
+    "cloud_text",
+    "tide_text",
+    "light_text",
+)
+_WIND_UNITS = {
+    "knots": "knots",
+    "knot": "knots",
+    "kt": "knots",
+    "kts": "knots",
+    "mph": "mph",
+    "kmh": "kmh",
+    "km/h": "kmh",
+    "kph": "kmh",
+    "ms": "ms",
+    "m/s": "ms",
+    "beaufort": "beaufort",
+    "force": "beaufort",
+}
+
+
+def _stated_number(value: Any, allow_negative: bool = False) -> Optional[float]:
+    """A number the text stated (int/float or a numeric string), else None - never a guess.
+    NaN / infinity (and negatives, unless allowed: temperatures) are not stated numbers.
+    """
+    if isinstance(value, bool) or value is None:
+        return None
+    try:
+        number = (
+            float(value)
+            if isinstance(value, (int, float))
+            else float(str(value).strip())
+        )
+    except ValueError:
+        return None
+    if not math.isfinite(number) or (number < 0 and not allow_negative):
+        return None
+    return number
+
+
+_PLACEHOLDER = re.compile(r"^\s*(?:<.*>|null|none|n/?a|unknown|-)\s*$", re.I)
+
+
+def _clean_text(value: Any) -> Optional[str]:
+    """Text as written, or None for empty / "null" / a copied prompt placeholder ("<...>")."""
+    text = str(value).strip() if value is not None else ""
+    return None if not text or _PLACEHOLDER.match(text) else text
+
+
+def _observation_type(value: Any) -> str:
+    """observed | forecast | planning_requirement; unknown/absent -> observed (the prompt
+    marks forecasts and requirements explicitly)."""
+    v = str(value or "").strip().lower().replace(" ", "_")
+    return v if v in _OBSERVATION_TYPES else "observed"
+
+
+def _condition_fields(mention: Dict[str, Any]) -> Dict[str, Any]:
+    """The 2.25 condition fields of one mention, normalized (texts as written; wind numbers
+    only when stated, with a known unit)."""
+    out: Dict[str, Any] = {k: _clean_text(mention.get(k)) for k in _CONDITION_TEXT_KEYS}
+    low = _stated_number(mention.get("wind_speed_low"))
+    high = _stated_number(mention.get("wind_speed_high"))
+    unit = _WIND_UNITS.get(str(mention.get("wind_speed_unit") or "").strip().lower())
+    if unit is None or (low is None and high is None):
+        low = high = unit = (
+            None  # a number without a unit (or a unit alone) is not a speed
+        )
+    elif low is not None and high is not None and low > high:
+        low, high = high, low
+    out.update(wind_speed_low=low, wind_speed_high=high, wind_speed_unit=unit)
+    return out
 
 
 def _normalize_weather_mention(m: Any) -> Optional[Dict[str, Any]]:
@@ -871,9 +1094,9 @@ def _normalize_weather_mention(m: Any) -> Optional[Dict[str, Any]]:
     # persisted record carry the text that justified keeping this mention.
     desc = next(
         (
-            str(m.get(k)).strip()
-            for k in _WEATHER_CONTENT_KEYS
-            if str(m.get(k) or "").strip()
+            text
+            for text in (_clean_text(m.get(k)) for k in _WEATHER_CONTENT_KEYS)
+            if text
         ),
         "",
     )
@@ -883,6 +1106,7 @@ def _normalize_weather_mention(m: Any) -> Optional[Dict[str, Any]]:
         m["weather_description"] = desc
     if not str(m.get("original_text") or "").strip():
         m["original_text"] = desc
+    m["observation_type"] = _observation_type(m.get("observation_type"))
     return m
 
 
@@ -973,10 +1197,9 @@ def extract_weather_central(
     # Get book metadata
     book, author, series = _load_book_metadata_for_weather(parsed_file)
 
-    if not book or not author:
-        raise ValueError(
-            f"Missing required book metadata: book={book!r}, author={author!r}"
-        )
+    from src.extraction._entity_common import require_book_provenance
+
+    require_book_provenance(book, author, "weather", getattr(event_file, "name", ""))
 
     event_name = event_data.get("Chapter", "")
     event_obj = event_data.get("Event", {})
@@ -992,6 +1215,7 @@ def extract_weather_central(
 
     # Batch extract from all sub-events in single API call
     empty_counter: dict = {"empty": 0}
+    failures: dict = {"calls": 0}
     batch_results = _batch_extract_weather(
         sub_events,
         event_id,
@@ -1000,6 +1224,7 @@ def extract_weather_central(
         max_retries,
         places_name_index,
         empty_counter=empty_counter,
+        failures=failures,
     )
 
     weather_updated = _process_weather_mentions(
@@ -1016,6 +1241,13 @@ def extract_weather_central(
     # Save index
     index_file = weather_dir / "index.json"
     write_json_with_lock(index_file, index)
+
+    if failures["calls"]:
+        # The answered windows are saved (a re-run de-duplicates them by statement); the event
+        # is NOT marked processed, so the failed windows are retried on the next run.
+        raise WeatherCallFailed(
+            f"{failures['calls']} weather call(s) failed for {getattr(event_file, 'name', '')}"
+        )
 
     # Mark processed (ANSWERED pass only — collect re-raises before here). Idempotent.
     _processed[str(event_file)] = True
@@ -1097,7 +1329,13 @@ def _process_weather_mentions(
         sub_event_name = sub_event.get("Sub-event_summary", "")
         for mention in batch_results.get(sub_event_id, []):
             weather_file = _find_or_create_weather(
-                mention, weather_dir, index, places_dir, fetch_api, date_id_lookup
+                mention,
+                weather_dir,
+                index,
+                places_dir,
+                fetch_api,
+                date_id_lookup,
+                event_id,
             )
             _add_event_mention(
                 weather_file,

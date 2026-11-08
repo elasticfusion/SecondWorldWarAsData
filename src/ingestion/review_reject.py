@@ -173,8 +173,9 @@ def _metadata_gap_alert(
     """(subject, message) for an empty-metadata alert: which fields, what it breaks, what to do.
 
     Every claim is checked against the code/E2E: the parse hashes author, so a Phase 1 re-run
-    re-parses after the edit; weather logged 'Missing required book metadata' and dates/places/
-    people_groups raise the same on their sync path."""
+    re-parses after the edit; an empty author no longer stops any extractor (weather lost every
+    record to it before 2026-11-07) - records keep an empty author in their provenance.
+    """
     import json as _json
     import shlex
 
@@ -183,9 +184,8 @@ def _metadata_gap_alert(
     common = (
         f"({key[:200]}) was ingested with EMPTY metadata: {', '.join(fields)}. "
         f"Processing CONTINUES, but until this is filled: mentions of this book carry an empty "
-        f"author in their provenance, its licence/copyright is not recorded, and Phase 2 "
-        f"extractors that require an author (weather; dates, places and people groups on their "
-        f"sync path) fail with 'Missing required book metadata'. "
+        f"author in their provenance (every entity, weather included, is still extracted) and "
+        f"its licence/copyright is not recorded. "
         f"TO FIX: edit the chapter metadata and re-run Phase 1 for the book (it re-parses because "
         f"the metadata changed) and Phase 2 follows; do NOT re-upload the source (that rewrites "
         f"the metadata empty). "

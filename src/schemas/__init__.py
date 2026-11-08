@@ -44,7 +44,7 @@ ENTITY_SCHEMA_VERSIONS: Dict[str, str] = {
     "people": "2.27",
     "people_groups": "2.29",
     "equipment": "2.29",
-    "weather": "2.24",
+    "weather": "2.25",
     "logistics": "2.25",
     "casualties": "2.27",
     "maps": "2.26",

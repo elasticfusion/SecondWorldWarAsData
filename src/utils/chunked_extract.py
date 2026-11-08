@@ -1,7 +1,7 @@
 """Shared utilities for chunked extraction with truncation recovery."""
 
 import logging
-from typing import Any, Callable, Dict, List, TypeVar
+from typing import Any, Callable, Dict, List, Optional, TypeVar
 
 from src.grok_client import GrokTruncationError, BatchModeCollecting
 
@@ -10,11 +10,27 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
+def _replace(out: Dict[str, Any], new: Dict[str, Any]) -> None:
+    out.update(new)
+
+
+def extend_lists(out: Dict[str, Any], new: Dict[str, Any]) -> None:
+    """Merge for results keyed by sub-event whose values are LISTS: a sub-event split across
+    several chunks (long text windows) accumulates every chunk's items instead of the last one
+    replacing the others."""
+    for key, items in (new or {}).items():
+        if isinstance(items, list):
+            out.setdefault(key, []).extend(items)  # type: ignore[union-attr]
+        else:
+            out[key] = items
+
+
 def _extract_one_chunk_recursive(
     chunk: List[Any],
     extract_fn: Callable[[List[Any]], Dict[str, T]],
     entity_type: str,
     out: Dict[str, T],
+    merge: Optional[Callable[[Dict[str, T], Dict[str, T]], None]] = None,
 ) -> None:
     """Extract one chunk, RECURSIVELY halving on truncation down to a single item.
 
@@ -24,7 +40,7 @@ def _extract_one_chunk_recursive(
     not mark the event processed — the optional-entity-zero bug). Merges into ``out`` in place.
     """
     try:
-        out.update(extract_fn(chunk))
+        (merge or _replace)(out, extract_fn(chunk))
         return
     except BatchModeCollecting:
         raise  # collect pass: propagate, never swallow
@@ -47,8 +63,8 @@ def _extract_one_chunk_recursive(
             len(chunk) - mid,
         )
         # Recurse per half so a persistently-truncating half keeps halving (not dropped whole).
-        _extract_one_chunk_recursive(chunk[:mid], extract_fn, entity_type, out)
-        _extract_one_chunk_recursive(chunk[mid:], extract_fn, entity_type, out)
+        _extract_one_chunk_recursive(chunk[:mid], extract_fn, entity_type, out, merge)
+        _extract_one_chunk_recursive(chunk[mid:], extract_fn, entity_type, out, merge)
     except Exception as e:  # noqa: BLE001
         # Non-truncation failure on this (sub)chunk: skip it gracefully so one bad chunk can't abort
         # the whole batch (preserves the prior leniency), but make it VISIBLE. NOT recursed (halving
@@ -62,6 +78,7 @@ def extract_with_chunk_halving(
     chunks: List[List[Any]],
     extract_fn: Callable[[List[Any]], Dict[str, T]],
     entity_type: str,
+    merge: Optional[Callable[[Dict[str, T], Dict[str, T]], None]] = None,
 ) -> Dict[str, T]:
     """Run extract_fn on each chunk. On truncation, RECURSIVELY halve and retry down to a single
     item (a too-large single item is dropped alone, with OBSERV). The batch-COLLECT signal
@@ -77,7 +94,7 @@ def extract_with_chunk_halving(
     """
     all_results: Dict[str, T] = {}
     for chunk in chunks:
-        _extract_one_chunk_recursive(chunk, extract_fn, entity_type, all_results)
+        _extract_one_chunk_recursive(chunk, extract_fn, entity_type, all_results, merge)
     # Summary: items submitted vs results recovered, so net loss from truncation-drops / skipped
     # sub-chunks is visible (the per-branch OBSERV lines above explain any shortfall).
     items_in = sum(len(c) for c in chunks)

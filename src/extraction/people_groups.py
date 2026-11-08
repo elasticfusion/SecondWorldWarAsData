@@ -418,11 +418,11 @@ def extract_people_groups(
     # the previous event_data.get("book", "Unknown") silently stamped every group with "Unknown"
     # (mandatory-provenance corruption), diverging from the batch path which threads real metadata.
     book, author, series = _load_book_metadata_for_groups(event_file)
-    if not book or not author:
-        raise ValueError(
-            f"Missing required book metadata for {event_file.name} "
-            f"(expected in the -parsed.json sibling): book={book!r}, author={author!r}"
-        )
+    from src.extraction._entity_common import require_book_provenance
+
+    require_book_provenance(
+        book, author, "people_groups", f"{event_file.name} (-parsed.json sibling)"
+    )
 
     logger.info("  Extracting people groups from %s...", event_file.name)
     prompt = _build_extraction_prompt(event_data)
