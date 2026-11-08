@@ -1581,6 +1581,11 @@ def _process_equipment_file(f, openserp_url: str, grok_client: Any) -> bool:
     name = data.get("common_name", data.get("name", ""))
     if not _usable_entity_name(name):
         return False
+    from src.enrichment.equipment_images import record_scope
+    from src.extraction.equipment_identity import SPECIFIC
+
+    if record_scope(data, grok_client) != SPECIFIC:
+        return False  # generic / unresolved / undecided equipment is never searched (owner rule)
     _record_eligible()
 
     changed = enrich_one_equipment(data, openserp_url, grok_client)

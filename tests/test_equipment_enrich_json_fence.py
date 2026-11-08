@@ -16,6 +16,12 @@ class _FencedGrok:
 
 
 def test_enrichment_parses_via_extract_json():
-    out = eq._enrich_equipment_data("M4 Sherman", "M4", "armor", _FencedGrok())
+    out = eq._enrich_equipment_data(
+        "M4 Sherman",
+        "M4",
+        "armor",
+        _FencedGrok(),
+        source_text="[url]\nThe M4 Sherman...",
+    )
     assert out["specifications"]["weight_kg"] == 30300
     assert out["type"] == "medium_tank"

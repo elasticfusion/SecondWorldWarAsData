@@ -517,8 +517,6 @@ def test_groups_phase3_checked_stamp(wire, monkeypatch, tmp_path, transient):
 def test_equipment_phase2_checked_stamp(wire, monkeypatch, transient):
     import src.extraction.equipment as EQ
 
-    monkeypatch.setattr(EQ, "_apply_grokipedia_url", lambda d, n: None)
-
     def fake_search(name):
         if transient:
             WC.mark_transient(WC.EQUIPMENT, name, "lookup")
@@ -528,7 +526,13 @@ def test_equipment_phase2_checked_stamp(wire, monkeypatch, transient):
         "src.enrichment.equipment_wikipedia.search_equipment_wikipedia", fake_search
     )
     rec = {}
-    EQ._apply_wikipedia_text_extract(rec, "M4 Sherman")
+    if (
+        transient
+    ):  # unknown, not a miss: deferred (the caller leaves the record unstamped)
+        with pytest.raises(EQ._SourceDeferred):
+            EQ._apply_wikipedia_text_extract(rec, "M4 Sherman")
+    else:
+        EQ._apply_wikipedia_text_extract(rec, "M4 Sherman")
     assert ("wikipedia_checked_at" in rec) is (not transient)
 
 

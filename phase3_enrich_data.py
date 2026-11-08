@@ -655,6 +655,18 @@ def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
     return int(summary.get("recycled", 0))
 
 
+def _resolve_equipment_images(out, grok_client, config) -> int:
+    """Vision-checked equipment images (src/enrichment/equipment_images). Returns images verified."""
+    from src.enrichment.equipment_images import resolve_equipment_images
+
+    counts = resolve_equipment_images(
+        out / "equipment",
+        grok_client,
+        images_per_record=int(config.get("equipment", {}).get("images_per_record", 3)),
+    )
+    return int(counts.get("verified", 0))
+
+
 def _resolve_pending_image_map_vision(out, grok_client, config) -> int:
     """Run the deferred Grok map-vision check on pending images. Returns maps created."""
     from src.extraction.image_map_vision import resolve_pending
@@ -734,6 +746,12 @@ def _run_batch_rerun(args, config, grok_client) -> int:
         lambda: resolve_bibliography_dir(
             bib_dir, grok_client, resolve_config, max_items=args.max_items
         ).get("resolved", 0),
+    )
+    # Equipment scope decisions queued on the collect pass (legacy records with no identity_scope)
+    # are now cached: decide them and vision-check their images.
+    total += _step(
+        "equipment_images",
+        lambda: _resolve_equipment_images(args.output_dir, grok_client, config),
     )
     return total
 
@@ -913,6 +931,15 @@ def main():
         "use_openserp", False
     ):
         total_enriched += _run_openserp_enrichment(args, config, grok_client, _run_step)
+
+    # Equipment images: candidates for SPECIFIC equipment only (qualified Wikipedia article +
+    # any OpenSERP candidates above), each confirmed by Grok vision; generic records are cleaned.
+    # NOT gated by use_openserp (it is not a web search). Never skipped; leftovers alert.
+    if not args.people_only:
+        total_enriched += _run_step(
+            "equipment_images",
+            lambda: _resolve_equipment_images(args.output_dir, grok_client, config),
+        )
 
     # NOAA weather enrichment (observed data to supplement Open-Meteo)
     noaa_token = config.get("api", {}).get("noaa_api_token", "")

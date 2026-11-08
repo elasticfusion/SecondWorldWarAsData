@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 import requests
 
@@ -48,25 +48,34 @@ def grokipedia_page_url(slug: str) -> Optional[str]:
 def resolve_grokipedia_url(name: str, timeout: int = 20) -> Optional[str]:
     """Resolve a name to a Grokipedia /page/ URL (clean-slug only). Cached (incl. negative).
     Returns None on a miss — null-over-fake."""
+    return resolve_grokipedia_url_status(name, timeout)[0]
+
+
+def resolve_grokipedia_url_status(
+    name: str, timeout: int = 20
+) -> Tuple[Optional[str], bool]:
+    """(url, transient): like resolve_grokipedia_url, but tells a transient failure (not
+    cached; retry later) apart from a genuine miss (negative-cached)."""
     if not name or len(name) < 3:
-        return None
+        return None, False
     from src.utils.search_cache import cache_result, get_cached
 
     cached = get_cached("grokipedia_url", name)
     if cached == "NOT_FOUND":
-        return None
+        return None, False
     if cached:
-        return cached
+        return cached, False
 
     url = _scrape_grokipedia_url(name, timeout)
     from src.utils.search_cache import TRANSIENT
 
     if url is TRANSIENT:
         return (
-            None  # transient failure: don't negative-cache, don't return the sentinel
-        )
+            None,
+            True,
+        )  # transient failure: don't negative-cache, don't return the sentinel
     cache_result("grokipedia_url", name, url if url else None)
-    return url
+    return url, False
 
 
 def _scrape_grokipedia_url(name: str, timeout: int):

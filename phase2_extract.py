@@ -352,9 +352,6 @@ def _extract_equipment(event_file, grok_client, output_root, config, logger):
             enable_enrichment=config.get("equipment", {}).get(
                 "enable_enrichment", False
             ),
-            verify_media_with_vision=config.get("equipment", {}).get(
-                "verify_media_with_vision", True
-            ),
         )
         if equipment_files:
             logger.info("    ✓ Equipment: %d file(s)", len(equipment_files))

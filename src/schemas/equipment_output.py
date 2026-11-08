@@ -42,6 +42,24 @@ _IMAGES_SCHEMA = {
             "image_scope": enum_field(["representative", "documentary"], nullable=True),
             # whether Grok vision confirmed the image depicts this equipment TYPE.
             "vision_verified": {"type": ["boolean", "null"]},
+            # Phase 3 vision state (src/enrichment/equipment_images): pending until vision
+            # decides; undecided attempts are counted and capped -> needs_review.
+            "vision_check": enum_field(
+                ["pending", "verified", "rejected"], nullable=True
+            ),
+            "vision_reason": make_nullable("string"),
+            "vision_checked_at": make_nullable("string"),
+            "vision_attempts": {"type": ["integer", "null"], "minimum": 0},
+            # image download failures (own budget; a 429 is not a vision verdict)
+            "fetch_failures": {"type": ["integer", "null"], "minimum": 0},
+            # perceptual hash of a verified image (duplicate rejection across runs)
+            "phash": make_nullable("string"),
+            "needs_review": {"type": ["boolean", "null"]},
+            # where the candidate came from: wikipedia (qualified article) | openserp | legacy
+            "candidate_source": make_nullable("string"),
+            # provenance: the article page the candidate was taken from, and when
+            "source_page_url": make_nullable("string"),
+            "candidate_added_at": make_nullable("string"),
         },
     },
 }
@@ -160,9 +178,37 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         # records how it was resolved.
         "canonical_name": make_nullable("string"),
         "identity_source": enum_field(
-            ["exact", "alias", "learned_alias", "fuzzy", "grok_disambiguation"],
+            [
+                "exact",
+                "alias",
+                "learned_alias",
+                "fuzzy",
+                "grok_disambiguation",
+                "vessel_disambiguation",
+            ],
             nullable=True,
         ),
+        # specific (enriched: text in Phase 2, vision-checked images in Phase 3) | generic (kept
+        # in the JSON with its mentions, never searched) | unresolved (a named vessel whose ship
+        # could not be determined - needs review, never searched).
+        "identity_scope": enum_field(
+            ["specific", "generic", "unresolved"], nullable=True
+        ),
+        # How a named vessel was resolved: resolved_title, method (service_dates|grok_choice),
+        # the Wikipedia candidates with their service periods, and the date used.
+        "identity_resolution": {
+            "type": ["object", "null"],
+            "properties": {
+                "resolved_title": make_nullable("string"),
+                "method": make_nullable("string"),
+                "candidates": {"type": ["array", "null"]},
+                "date_used": make_nullable("string"),
+                "date_source": make_nullable("string"),
+                "confidence": {"type": ["number", "null"]},
+                # True when unresolved because Wikipedia could not be reached
+                "transient": {"type": ["boolean", "null"]},
+            },
+        },
         "category": make_nullable("string"),
         "subcategory": make_nullable("string"),
         # Added by _process_equipment_item after _build_equipment_data (mention/place/quantity
@@ -309,5 +355,11 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         "openserp_searched_at": {"type": ["number", "string", "null"]},
         "wikipedia_extract": make_nullable("string"),
         "wikipedia_checked_at": make_nullable("string"),
+        # The Wikipedia article text placed the subject in WWII (False: article not used).
+        "wikipedia_wwii_relevant": {"type": ["boolean", "null"]},
+        # The page the Grok description was written from (it is grounded in that text).
+        "description_source_url": make_nullable("string"),
+        # When Phase 3 took image candidates from the qualified Wikipedia article.
+        "image_candidates_checked_at": make_nullable("string"),
     },
 }

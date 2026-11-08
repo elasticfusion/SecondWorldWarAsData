@@ -124,6 +124,23 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   (accepts only `source_section/...`); and the schema registry `output_glob` consumers `scripts/validate_phase2.py`,
   `src/utils/provenance_integrity.py:236`, `src/utils/referential_integrity.py:130`. Route them through the helper (the
   worker needs a strict `content/<safe-book>/source_section/<ulid>.json` allowance) and add a test per reader.
+- **[HIGH · data loss] Entity filenames use the ULID TIMESTAMP prefix (`id[:8]` / `[:12]`) (found 2026-11-07).**
+  Two records with the same name created in the same millisecond get the same filename and the second write overwrites the
+  first. Equipment is fixed (random tail `id[-8:]`, it locates records only via its index). Still affected:
+  `src/extraction/people.py` (`person_id[:12]`), `places.py`, `dates.py`, `logistics.py`, `weather_central.py`,
+  `batch_parallel.py` (shared helper). Before switching each, confirm nothing recomputes the filename from the ID to find an
+  existing record, then add a same-ms collision test per writer.
+- **[MED · quality] Equipment records written before schema 2.29 keep ungrounded Grok text (2026-11-07).**
+  The old Phase 2 gap-filled `description` / `specifications` / `alternate_names` / `variants` from an UNGROUNDED Grok
+  call, for generic AND specific records, with no marker telling it apart from narrative text. Phase 3 `equipment_images`
+  strips the sourced enrichment from generic records but cannot identify these fields. The planned full reset + rerun
+  regenerates every record under the grounded rule; if any pre-2.29 equipment record must be kept instead, re-extract it.
+- **[LOW · completeness] Unresolved named vessels are not re-resolved automatically (2026-11-07).**
+  A vessel left `identity_scope: unresolved` (Wikipedia unreachable -> `identity_resolution.transient: true`, or no
+  date-consistent candidate) keeps its `"<name> (unresolved vessel, <year>)"` record until an operator sets
+  `canonical_name` (the `equipment.vessel_unresolved` alert says so). Add a Phase 3 pass that re-runs
+  `equipment_identity.resolve_vessel` on transient ones and, when resolved, merges the record into the ship's record
+  (dedup gate) - with a test that two years' mentions resolve to their two ships.
 - **[MED · quality] Other `resp.text` reads may mojibake UTF-8 pages served without a charset (2026-11-07).**
   `requests` decodes such `text/*` responses as ISO-8859-1; Grokipedia did, so no accented name matched (fixed with
   `src/utils/http_text.response_text`). Confirm each site's server charset behaviour, then adopt `response_text`:

@@ -555,13 +555,17 @@ def load_equipment_index(equipment_dir: Path) -> Dict[str, Path]:
     """Load equipment index mapping name to file path.
 
     Returns:
-        Dict mapping common_name to file path
+        Dict mapping common_name (and canonical_name, when it differs and is not already a key)
+        to file path. The canonical key is what a later process matches a resolved identity on
+        (named vessels match ONLY by canonical name): without it every Phase 2 resume would
+        create a second record for the same ship.
     """
     index: Dict[str, Path] = {}
     if not equipment_dir.exists():
         return index
 
-    for eq_file in equipment_dir.glob("*.json"):
+    canonical: Dict[str, Path] = {}
+    for eq_file in sorted(equipment_dir.glob("*.json")):
         if eq_file.name in ("index.json", ".processed_events.json"):
             continue
         try:
@@ -569,9 +573,15 @@ def load_equipment_index(equipment_dir: Path) -> Dict[str, Path]:
                 eq_data = json.load(file_handle)
                 if "common_name" in eq_data:
                     index[eq_data["common_name"]] = eq_file
+                if eq_data.get("canonical_name"):
+                    canonical.setdefault(eq_data["canonical_name"], eq_file)
         except Exception as e:
             logger.warning("Failed to load equipment file %s: %s", eq_file.name, e)
 
+    for name, eq_file in canonical.items():
+        index.setdefault(
+            name, eq_file
+        )  # a common_name key wins (that record IS the name)
     return index
 
 
@@ -581,106 +591,117 @@ def _verify_media_with_vision(
     equipment_category: str,
     media_title: str,
     grok_client: GrokClient,
-) -> tuple[bool, str]:
+) -> tuple[Optional[bool], str]:
     """Verify media relevance using Grok vision API.
 
-    Returns: (is_relevant, reason)
+    Returns ``(is_relevant, reason)``: True / False when vision (or the image check) decided;
+    None when it could not decide (Grok error / no verdict) - retry, never reject.
     """
     import base64
-    from io import BytesIO
-
-    from PIL import Image
-
-    # Validate and convert image if needed
-    try:
-        # Decompression-bomb defense: cap decoded pixels so a crafted tiny file that expands to a
-        # huge raster raises DecompressionBombError. The cap MUST be held across the ENTIRE decode —
-        # verify() AND the rasterizing convert()/resize() below (those fully decode pixels). Restoring
-        # it right after verify() (the old bug) left convert/resize running at Pillow's default cap.
-        _prev_max = Image.MAX_IMAGE_PIXELS
-        Image.MAX_IMAGE_PIXELS = 50_000_000
-        try:
-            img = Image.open(BytesIO(image_data))
-            img.verify()
-            img = Image.open(BytesIO(image_data))  # Reload after verify
-
-            # Convert unsupported formats to PNG
-            if img.format not in ["PNG", "JPEG", "JPG", "GIF"]:
-                logger.debug("Converting %s to PNG", img.format)
-                buffer = BytesIO()
-                img.convert("RGB").save(buffer, format="PNG")
-                image_data = buffer.getvalue()
-
-            # Resize if too large
-            size_mb = len(image_data) / (1024 * 1024)
-            if size_mb > 5:
-                logger.debug("Resizing image (%.1fMB → target <5MB)", size_mb)
-                img = Image.open(BytesIO(image_data))
-
-                scale = 0.7
-                while size_mb > 5 and scale > 0.1:
-                    new_size = (int(img.width * scale), int(img.height * scale))
-                    resized = img.resize(new_size, Image.Resampling.LANCZOS)
-
-                    buffer = BytesIO()
-                    resized.save(buffer, format="PNG", optimize=True)
-                    image_data = buffer.getvalue()
-                    size_mb = len(image_data) / (1024 * 1024)
-                    scale -= 0.1
-
-                if size_mb > 5:
-                    return False, f"Image too large ({size_mb:.1f}MB)"
-        finally:
-            Image.MAX_IMAGE_PIXELS = _prev_max
-
-    except Image.DecompressionBombError as e:
-        observe_warn("equipment", "image_bomb_rejected", err=str(e)[:120])
-        return False, f"Image rejected (decompression bomb): {e}"
-    except Exception as e:
-        return False, f"Invalid image: {e}"
-
-    image_b64 = base64.b64encode(image_data).decode()
 
     from src.utils.prompt_loader import render_prompt
 
+    prepared, problem = _prepare_image_for_vision(image_data)
+    if prepared is None:
+        return False, problem
     prompt = render_prompt(
         "equipment_vision",
         equipment_name=equipment_name,
         equipment_category=equipment_category,
         image_title=media_title,
     )
-
     try:
         result = grok_client.extract_json_with_image_base64(
             prompt=prompt,
-            image_base64=image_b64,
+            image_base64=base64.b64encode(prepared).decode(),
             cache_type="vision_verification",
             temperature=0.0,
         )
-
-        if isinstance(result, dict):
-            return result.get("is_relevant", False), result.get("reason", "Unknown")
-
-    except Exception as e:
+    except BatchModeCollecting:
+        raise
+    except Exception as e:  # noqa: BLE001 - undecided, retried by the caller
         logger.warning("Vision verification failed: %s", e)
+        result = None
+    if isinstance(result, dict):
+        verdict = result.get("is_relevant")
+        reason = str(result.get("reason") or "Unknown")
+        return (verdict if isinstance(verdict, bool) else None), reason
+    # UNDECIDED (not a rejection): Grok errored or gave no verdict. The caller retries it (attempt
+    # cap -> needs_review) instead of discarding a possibly correct image.
+    return None, "Verification failed"
 
-    return False, "Verification failed"
+
+_VISION_MAX_MB = 5
+_VISION_MAX_PIXELS = (
+    50_000_000  # decompression-bomb cap (held on Image.MAX_IMAGE_PIXELS too)
+)
 
 
-def _extract_year_from_date(
-    sub_event_id: Optional[str], dates_index: Optional[Dict[str, Dict[str, str]]]
-) -> Optional[str]:
-    """Extract year from date index."""
-    if not sub_event_id or not dates_index or sub_event_id not in dates_index:
-        return None
+def _prepare_image_for_vision(image_data: bytes) -> tuple[Optional[bytes], str]:
+    """Validate the image and make it vision-ready (PNG/JPEG/GIF, < _VISION_MAX_MB).
+    Returns (bytes, "") or (None, reason) for an image that must be rejected."""
+    from io import BytesIO
 
-    date_info = dates_index[sub_event_id]
-    date_str = date_info.get("date_start", "")
+    from PIL import Image
 
-    if date_str and len(date_str) >= 4:
-        return date_str[:4]  # Extract year (YYYY)
+    # Decompression-bomb defense: cap decoded pixels so a crafted tiny file that expands to a
+    # huge raster raises DecompressionBombError. The cap MUST be held across the ENTIRE decode —
+    # verify() AND the rasterizing convert()/resize() below (those fully decode pixels).
+    _prev_max = Image.MAX_IMAGE_PIXELS
+    Image.MAX_IMAGE_PIXELS = 50_000_000
+    try:
+        img = Image.open(BytesIO(image_data))
+        img.verify()
+        img = Image.open(BytesIO(image_data))  # Reload after verify
+        if img.width * img.height > _VISION_MAX_PIXELS:
+            # Pillow only RAISES above 2x MAX_IMAGE_PIXELS (it warns between 1x and 2x): enforce
+            # the cap explicitly before convert()/resize() rasterize it.
+            observe_warn(
+                "equipment", "image_bomb_rejected", err=f"{img.width}x{img.height}"
+            )
+            return None, f"Image rejected (too many pixels: {img.width}x{img.height})"
+        if img.format not in ["PNG", "JPEG", "JPG", "GIF"]:
+            logger.debug("Converting %s to PNG", img.format)
+            buffer = BytesIO()
+            img.convert("RGB").save(buffer, format="PNG")
+            image_data = buffer.getvalue()
+        image_data = _shrink_image(image_data)
+    except Image.DecompressionBombError as e:
+        observe_warn("equipment", "image_bomb_rejected", err=str(e)[:120])
+        return None, f"Image rejected (decompression bomb): {e}"
+    except Exception as e:  # noqa: BLE001 - any decode failure is an invalid image
+        return None, f"Invalid image: {e}"
+    finally:
+        Image.MAX_IMAGE_PIXELS = _prev_max
+    size_mb = len(image_data) / (1024 * 1024)
+    if size_mb > _VISION_MAX_MB:
+        return None, f"Image too large ({size_mb:.1f}MB)"
+    return image_data, ""
 
-    return None
+
+def _shrink_image(image_data: bytes) -> bytes:
+    """Downscale (PNG, LANCZOS) in 10% steps until under _VISION_MAX_MB or scale hits 0.1.
+    Caller holds the decompression-bomb pixel cap."""
+    from io import BytesIO
+
+    from PIL import Image
+
+    size_mb = len(image_data) / (1024 * 1024)
+    if size_mb <= _VISION_MAX_MB:
+        return image_data
+    logger.debug("Resizing image (%.1fMB -> target <%dMB)", size_mb, _VISION_MAX_MB)
+    img = Image.open(BytesIO(image_data))
+    scale = 0.7
+    while size_mb > _VISION_MAX_MB and scale > 0.1:
+        new_size = (int(img.width * scale), int(img.height * scale))
+        buffer = BytesIO()
+        img.resize(new_size, Image.Resampling.LANCZOS).save(
+            buffer, format="PNG", optimize=True
+        )
+        image_data = buffer.getvalue()
+        size_mb = len(image_data) / (1024 * 1024)
+        scale -= 0.1
+    return image_data
 
 
 def _build_external_data(
@@ -751,83 +772,45 @@ def _enrichment_source(enriched: Dict[str, Any]) -> tuple:
     return "enrichment", None
 
 
-def _add_downloaded_media(
-    equipment_data: Dict[str, Any],
-    media_list: list,
-    common_name: str,
-    grok_client: GrokClient,
-    verify_media_with_vision: bool,
-) -> None:
-    """Download and add media to equipment data."""
-    if not media_list:
-        return
-
-    media_dir = Path("filestore/equipment")
-    downloaded_media = _download_and_store_media(
-        media_list,
-        common_name,
-        equipment_data["category"],
-        media_dir,
-        grok_client,
-        verify_with_vision=verify_media_with_vision,
-    )
-
-    if downloaded_media:
-        equipment_data["media"] = downloaded_media
-        # Also populate the structured images[] (first-class, schema-validated) so photos
-        # are managed with provenance + trust markers, not just the legacy loose `media`.
-        equipment_data["images"] = _to_structured_images(
-            downloaded_media, verify_media_with_vision
-        )
-        logger.info("  Added %s verified media items", len(downloaded_media))
-
-
-def _to_structured_images(
-    media_items: list, vision_verified: bool
-) -> List[Dict[str, Any]]:
-    """Map downloaded media items to the structured images[] shape. image_scope defaults
-    to 'representative' (a canonical TYPE reference image from Grokipedia/Wikipedia, not a
-    documentary photo of a specific event); vision_verified reflects whether vision ran.
-    """
-    images = []
-    for m in media_items:
-        if m.get("media_type", "photo") != "photo":
-            continue
-        images.append(
-            {
-                "url": m.get("url"),
-                "local_path": m.get("local_path"),
-                "source": m.get("source"),
-                "license": m.get("license"),
-                "caption": m.get("title") or m.get("description"),
-                "image_scope": "representative",
-                "vision_verified": bool(vision_verified),
-            }
-        )
-    return images
-
-
 def _apply_wikipedia_text_extract(
     equipment_data: Dict[str, Any], common_name: str
-) -> None:
-    """Phase-2 Wikipedia TEXT enrichment (moved here from Phase-3 equipment_wikipedia).
+) -> Optional[Tuple[str, str]]:
+    """Phase-2 Wikipedia TEXT for a SPECIFIC record. Reuses
+    src/enrichment/equipment_wikipedia.search_equipment_wikipedia (the single source of the
+    Wikipedia HTTP code). The article is kept ONLY if its text places the subject in WWII
+    (owner rule: "world war" qualifies the TEXT, the JSON response): otherwise neither its URL
+    nor its extract is stored and ``wikipedia_wwii_relevant`` is False. Gated on
+    wikipedia_checked_at (a miss is stamped; a transient failure is not, so it retries).
 
-    Reuses src/enrichment/equipment_wikipedia.search_equipment_wikipedia (the single
-    source of the Wikipedia HTTP code — we do NOT duplicate it) to set wikipedia_url +
-    wikipedia_extract + wikipedia_checked_at on the equipment record. The timestamp is
-    stamped even on a MISS so we never re-fetch, and the whole step is GATED on
-    wikipedia_checked_at (idempotent across runs). Images are NOT taken from here — they
-    continue to flow through the existing media path (_extract_media)."""
+    Returns (text, url) to ground the description, or None. Raises _SourceDeferred when
+    Wikipedia could not be reached (the record is NOT stamped, so it is retried)."""
     from datetime import date
 
-    # Gate: already checked (hit or miss) -> never re-fetch.
     if equipment_data.get("wikipedia_checked_at"):
-        return
+        return _stored_wikipedia_text(equipment_data)
 
+    result = _lookup_wikipedia_text(common_name)
+    if result is None:
+        raise _SourceDeferred(f"wikipedia: {common_name}")  # unknown, not a miss: retry
     equipment_data["wikipedia_checked_at"] = date.today().isoformat()
+    if not result.get("extract"):
+        return None
+    return _keep_if_wwii(
+        equipment_data, common_name, result["extract"], result.get("wikipedia_url")
+    )
 
-    # Grokipedia (independent of the Wikipedia outcome; runs within the same gate).
-    _apply_grokipedia_url(equipment_data, common_name)
+
+def _stored_wikipedia_text(equipment_data: Dict[str, Any]) -> Optional[Tuple[str, str]]:
+    """The (extract, url) already kept on a checked record, or None."""
+    url = (equipment_data.get("external_data") or {}).get("wikipedia_url")
+    text = equipment_data.get("wikipedia_extract")
+    return (text, url) if text and url else None
+
+
+def _lookup_wikipedia_text(common_name: str) -> Optional[Dict[str, Any]]:
+    """search_equipment_wikipedia result; {} for a definite miss; None when the lookup failed or
+    was transient (unknown - the caller must not stamp it as checked)."""
+    from src.utils.wikimedia_client import EQUIPMENT, lookup_was_transient
 
     try:
         from src.enrichment.equipment_wikipedia import search_equipment_wikipedia
@@ -835,180 +818,170 @@ def _apply_wikipedia_text_extract(
         result = search_equipment_wikipedia(common_name)
     except Exception as e:  # noqa: BLE001 - enrichment is best-effort, never block
         logger.debug("Wikipedia text lookup failed for %s: %s", common_name, e)
-        equipment_data.pop("wikipedia_checked_at", None)  # unknown, not a miss
-        return
-
-    from src.utils.wikimedia_client import EQUIPMENT, lookup_was_transient
-
+        return None
     if lookup_was_transient(EQUIPMENT, common_name, result):
-        equipment_data.pop(
-            "wikipedia_checked_at", None
-        )  # unknown, not a miss: retry next run
-        return
-    if not result:
-        logger.debug("No Wikipedia text extract for %s", common_name)
-        return
-
-    wiki_url = result.get("wikipedia_url")
-    if wiki_url:
-        # wikipedia_url is NOT a valid top-level property (EQUIPMENT_OUTPUT_SCHEMA has
-        # additionalProperties: False). It lives ONLY nested under external_data, matching
-        # the grokipedia_url convention. Write it there via _build_external_data.
-        _build_external_data({"wikipedia_url": wiki_url}, equipment_data)
-    extract = result.get("extract")
-    if extract:
-        equipment_data["wikipedia_extract"] = extract[:500]
-    logger.debug("Wikipedia text extract applied for %s", common_name)
+        return None
+    return result or {}
 
 
-def _apply_grokipedia_url(equipment_data: Dict[str, Any], common_name: str) -> None:
-    """Phase-2 Grokipedia enrichment: resolve a grokipedia_url via the shared generic resolver
-    and store it in external_data.grokipedia_url (the field + media-preference logic already
-    exist). Null-over-fake: a miss leaves it unset. Gated alongside the Wikipedia step by the
-    caller's wikipedia_checked_at window; the resolver itself caches (incl. negatives).
-    """
-    try:
-        from src.enrichment.grokipedia import resolve_grokipedia_url
-
-        grok_url = resolve_grokipedia_url(common_name)
-    except Exception as e:  # noqa: BLE001 - best-effort, never block
-        logger.debug("Grokipedia lookup failed for %s: %s", common_name, e)
-        return
-    if grok_url:
-        _build_external_data({"grokipedia_url": grok_url}, equipment_data)
-        logger.debug("Grokipedia url applied for %s → %s", common_name, grok_url)
-
-
-def _enrich_and_add_media(
+def _keep_if_wwii(
     equipment_data: Dict[str, Any],
     common_name: str,
-    grok_client: GrokClient,
-    verify_media_with_vision: bool = True,
-    sub_event_id: Optional[str] = None,
-    dates_index: Optional[Dict[str, Dict[str, str]]] = None,
-) -> None:
-    """Enrich equipment data and add media files.
+    extract: str,
+    wiki_url: Optional[str],
+) -> Optional[Tuple[str, str]]:
+    """Store the Wikipedia URL + extract only when the text places the subject in WWII."""
+    from src.extraction.equipment_identity import mentions_wwii
 
-    Args:
-        equipment_data: Equipment data dict (modified in place)
-        common_name: Equipment common name
-        grok_client: Grok API client
-        verify_media_with_vision: Verify media relevance with Grok vision API
-        sub_event_id: Sub-event ID to look up date
-        dates_index: Index of dates by Sub-eventID
+    relevant = mentions_wwii(extract)
+    equipment_data["wikipedia_wwii_relevant"] = relevant
+    if not relevant or not wiki_url:
+        logger.info(
+            "OBSERV equipment.wikipedia_not_wwii name=%r url=%s (article text does not place "
+            "it in WWII; not used)",
+            common_name,
+            wiki_url,
+        )
+        return None
+    # wikipedia_url lives ONLY under external_data (EQUIPMENT_OUTPUT_SCHEMA is
+    # additionalProperties: False), matching the grokipedia_url convention.
+    _build_external_data({"wikipedia_url": wiki_url}, equipment_data)
+    equipment_data["wikipedia_extract"] = extract[:500]
+    return extract, wiki_url
+
+
+class _SourceDeferred(Exception):
+    """An encyclopedia lookup failed TRANSIENTLY (outage / 429 / network): the record must not be
+    stamped as enriched or checked, so the next run retries it (a miss would be permanent).
     """
-    # Get year from date if available
-    year = _extract_year_from_date(sub_event_id, dates_index)
 
-    # Enrich equipment data
+
+def _grokipedia_article(
+    equipment_data: Dict[str, Any], common_name: str
+) -> Tuple[Optional[str], Optional[str]]:
+    """(url, article text) - either may be None for a genuine miss. Raises _SourceDeferred when
+    Grokipedia could not be reached or its page could not be read (unknown, not a miss).
+    """
+    from src.utils.search_cache import TRANSIENT
+
+    try:
+        from src.enrichment.grokipedia import (
+            fetch_grokipedia_article_text,
+            resolve_grokipedia_url_status,
+        )
+
+        grok_url = (equipment_data.get("external_data") or {}).get("grokipedia_url")
+        if not grok_url:
+            grok_url, transient = resolve_grokipedia_url_status(common_name)
+            if transient:
+                raise _SourceDeferred(f"grokipedia search: {common_name}")
+        text = fetch_grokipedia_article_text(grok_url) if grok_url else None
+    except (_SourceDeferred, BatchModeCollecting):
+        raise
+    except Exception as e:  # noqa: BLE001 - a parser bug is unknown, not a miss: retry
+        logger.warning(
+            "OBSERV equipment.grokipedia_error name=%r err=%s status=warn",
+            common_name,
+            type(e).__name__,
+        )
+        raise _SourceDeferred(f"grokipedia error: {common_name}") from e
+    if text is TRANSIENT:
+        raise _SourceDeferred(f"grokipedia article: {grok_url}")
+    return grok_url, (text if isinstance(text, str) and text else None)
+
+
+def _apply_grokipedia_text(
+    equipment_data: Dict[str, Any], common_name: str
+) -> Optional[Tuple[str, str]]:
+    """Phase-2 Grokipedia for a SPECIFIC record: resolve the article, fetch its TEXT, keep it
+    only if the text places the subject in WWII (its URL goes to external_data.grokipedia_url).
+    Returns (text, url) to ground the description, or None (null-over-fake). Raises
+    _SourceDeferred when Grokipedia could not be reached."""
+    from src.extraction.equipment_identity import mentions_wwii
+
+    grok_url, text = _grokipedia_article(equipment_data, common_name)
+    if not (grok_url and text):
+        return None
+    if not mentions_wwii(text):
+        logger.info(
+            "OBSERV equipment.grokipedia_not_wwii name=%r url=%s (article text does not place "
+            "it in WWII; not used)",
+            common_name,
+            grok_url,
+        )
+        return None
+    _build_external_data({"grokipedia_url": grok_url}, equipment_data)
+    return text, grok_url
+
+
+_GROUNDING_CHARS = 6000  # source text handed to the description prompt
+
+
+def _enrich_from_encyclopedias(
+    equipment_data: Dict[str, Any], common_name: str, grok_client: GrokClient
+) -> None:
+    """Phase-2 TEXT enrichment of a SPECIFIC record (images are vision-checked in Phase 3).
+
+    1. Grokipedia + Wikipedia article text, each kept only if it places the subject in WWII.
+    2. The Grok description / specifications / timeline are written FROM that text and cite it
+       (description_source_url; reference blocks stamped with source + source_url). With no
+       qualifying text there is NO Grok description: facts with no source are not generated.
+    Raises _SourceDeferred when either source was unreachable: nothing is generated from a
+    partial view (the description would be written once, without the missing source).
+    """
+    sources = [
+        s
+        for s in (
+            _apply_grokipedia_text(equipment_data, common_name),
+            _apply_wikipedia_text_extract(equipment_data, common_name),
+        )
+        if s
+    ]
+    if not sources:
+        logger.info(
+            "OBSERV equipment.enrich_no_source name=%r (no WWII Grokipedia/Wikipedia text; "
+            "description not generated)",
+            common_name,
+        )
+        return
+    source_text = "\n\n".join(f"[{url}]\n{text}" for text, url in sources)[
+        :_GROUNDING_CHARS
+    ]
+    primary_url = sources[0][1]
     logger.info("Enriching equipment data for: %s", common_name)
     enriched = _enrich_equipment_data(
         common_name,
         equipment_data.get("technical_identifier"),
         equipment_data["category"],
         grok_client,
+        source_text=source_text,
     )
+    if not enriched:
+        return
+    # cite the page the facts came from (the reference blocks are stamped from these keys)
+    key = "grokipedia_url" if "grokipedia.com" in primary_url else "wikipedia_url"
+    enriched[key] = primary_url
+    had_description = bool(equipment_data.get("description"))
     _merge_enriched_data(equipment_data, enriched)
-
-    # Wikipedia TEXT extract (Phase-2; was Phase-3 step 4b). Sets wikipedia_url +
-    # wikipedia_extract + wikipedia_checked_at, gated so it is not re-fetched.
-    _apply_wikipedia_text_extract(equipment_data, common_name)
-
-    # Extract and download media (WIKIPEDIA-ONLY in Phase 2 — OpenSERP media moved to
-    # Phase 3). Images come from the Wikipedia article path, not OpenSERP.
-    media_list = _extract_media(
-        common_name,
-        equipment_data.get("technical_identifier"),
-        equipment_data["category"],
-        grok_client,
-        year=year,
-    )
-    _add_downloaded_media(
-        equipment_data, media_list, common_name, grok_client, verify_media_with_vision
-    )
+    if not had_description and equipment_data.get("description"):
+        equipment_data["description_source_url"] = primary_url
 
 
-def _download_and_store_media(
-    media_list: List[Dict[str, Any]],
-    equipment_name: str,
-    equipment_category: str,
-    media_dir: Path,
-    grok_client: GrokClient,
-    verify_with_vision: bool = True,
-) -> List[Dict[str, Any]]:
-    """Download media files and add local paths with deduplication.
-
-    Args:
-        media_list: List of media items with URLs
-        equipment_name: Equipment name for logging
-        equipment_category: Equipment category for verification
-        media_dir: Base media directory
-        grok_client: Grok API client for vision verification
-        verify_with_vision: Whether to verify images with Grok vision API
-
-    Returns:
-        Media list with local_path added to verified/downloaded items (duplicates removed)
-    """
-    downloaded_media = []
-    image_hashes: Dict[str, Tuple[str, str]] = {}  # hash -> (local_path, title)
-
-    for media_item in media_list:
-        local_path = _download_media_file(
-            media_item,
-            equipment_name,
-            equipment_category,
-            media_dir,
-            grok_client,
-            verify_with_vision,
-        )
-        if local_path:
-            # Check for duplicate images using perceptual hash
-            if media_item.get("media_type") == "photo":
-                full_path = media_dir.parent / local_path
-                img_hash = _compute_image_hash(full_path)
-
-                if img_hash and img_hash in image_hashes:
-                    # Duplicate found - remove the file
-                    existing_path, existing_title = image_hashes[img_hash]
-                    logger.info(
-                        "  🗑️  Duplicate image removed: %s (same as %s)",
-                        media_item.get("title", "Unknown"),
-                        existing_title,
-                    )
-                    try:
-                        full_path.unlink()
-                        # Remove empty parent directory
-                        if full_path.parent.exists() and not any(
-                            full_path.parent.iterdir()
-                        ):
-                            full_path.parent.rmdir()
-                    except Exception as e:
-                        logger.debug("Failed to remove duplicate: %s", e)
-                    continue
-                elif img_hash:
-                    # New unique image
-                    image_hashes[img_hash] = (
-                        local_path,
-                        media_item.get("title", "Unknown"),
-                    )
-
-            media_item["local_path"] = local_path
-            downloaded_media.append(media_item)
-        else:
-            logger.debug("Skipped media: %s", media_item.get("title", "Unknown"))
-
-    return downloaded_media
-
-
-def _compute_image_hash(image_path: Path) -> Optional[str]:
+def _compute_image_hash(image_path) -> Optional[str]:
     """Compute perceptual hash for image deduplication.
 
     Args:
-        image_path: Path to image file
+        image_path: Path to an image file, or the image's raw bytes (Phase 3 holds fetched
+            images in memory and never writes them to the ephemeral filestore)
 
     Returns:
         Hash string or None if failed
     """
+    from io import BytesIO
+
+    label = getattr(image_path, "name", "<bytes>")
+    if isinstance(image_path, (bytes, bytearray)):
+        image_path = BytesIO(image_path)
     try:
         from PIL import Image
         import imagehash
@@ -1030,206 +1003,14 @@ def _compute_image_hash(image_path: Path) -> Optional[str]:
             if isinstance(e, _Img.DecompressionBombError):
                 logger.warning(
                     "OBSERV equipment.hash_image_bomb_rejected file=%s err=%s",
-                    image_path.name,
+                    label,
                     str(e)[:120],
                 )
                 return None
         except Exception:  # noqa: BLE001
             pass
-        logger.debug("Failed to compute hash for %s: %s", image_path.name, e)
+        logger.debug("Failed to compute hash for %s: %s", label, e)
         return None
-
-
-def _determine_file_extension(response, url: str) -> str:
-    """Determine file extension from content-type or URL."""
-    content_type = response.headers.get("content-type", "")
-
-    if "jpeg" in content_type or "jpg" in content_type:
-        return ".jpg"
-    elif "png" in content_type:
-        return ".png"
-    elif "gif" in content_type:
-        return ".gif"
-    elif "webp" in content_type:
-        return ".webp"
-    elif "pdf" in content_type:
-        return ".pdf"
-    elif "mp4" in content_type or "video" in content_type:
-        return ".mp4"
-    else:
-        # Fallback to URL extension
-        from urllib.parse import urlparse
-
-        parsed = urlparse(url)
-        return Path(parsed.path).suffix or ".jpg"
-
-
-def _verify_and_save_media(
-    response,
-    filepath: Path,
-    equipment_dir: Path,
-    media_item: Dict[str, Any],
-    equipment_name: str,
-    equipment_category: str,
-    grok_client: GrokClient,
-    verify_with_vision: bool,
-) -> bool:
-    """Verify media with vision API and save if relevant."""
-    # Verify with vision API if enabled
-    if verify_with_vision and media_item.get("media_type") == "photo":
-        is_relevant, reason = _verify_media_with_vision(
-            response.content,
-            equipment_name,
-            equipment_category,
-            media_item.get("title", ""),
-            grok_client,
-        )
-        if not is_relevant:
-            logger.info("  ⚠️  Rejected: %s", reason)
-            return False
-        logger.info("  ✅ Verified: %s", reason)
-
-    # Create directory and save file
-    equipment_dir.mkdir(parents=True, exist_ok=True)
-    with open(filepath, "wb") as f:
-        f.write(response.content)
-
-    logger.debug("Downloaded media: %s", filepath.name)
-    return True
-
-
-def _cleanup_empty_directory(equipment_dir: Path) -> None:
-    """Clean up empty directory if download failed."""
-    if equipment_dir.exists() and not any(equipment_dir.iterdir()):
-        try:
-            equipment_dir.rmdir()
-            logger.debug("Cleaned up empty directory: %s", equipment_dir.name)
-        except Exception:
-            logger.debug("Could not remove empty directory: %s", equipment_dir.name)
-
-
-def _download_media_file(
-    media_item: Dict[str, Any],
-    equipment_name: str,
-    equipment_category: str,
-    media_dir: Path,
-    grok_client: GrokClient,
-    verify_with_vision: bool = True,
-) -> Optional[str]:
-    """Download media file to local storage with vision verification.
-
-    Args:
-        media_item: Media item with URL
-        equipment_name: Equipment name for subdirectory
-        equipment_category: Equipment category for verification
-        media_dir: Base media directory (/filestore)
-        grok_client: Grok API client for vision verification
-        verify_with_vision: Whether to verify images with Grok vision API
-
-    Returns:
-        Relative path to downloaded file or None
-    """
-    import requests
-
-    url = media_item.get("url")
-    if not url:
-        return None
-
-    # Create equipment subdirectory
-    media_id = str(ulid.new())
-    equipment_dir = media_dir / media_id
-
-    try:
-        # Download file with User-Agent header. The media URL is UNTRUSTED (LLM/search-derived),
-        # so route through safe_get (SSRF-safe: clean_url + DNS-rebind resolve-check + no redirects
-        # + byte cap) rather than a bare session.get. Returns None if blocked/failed.
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-        }
-        from src.utils.url_hygiene import safe_get
-
-        response = safe_get(url, timeout=30, headers=headers)
-        if response is None:
-            logger.warning(
-                "OBSERV equipment.media_blocked ssrf_or_fetch_fail url=%s",
-                str(url)[:120],
-            )
-            return None
-        if response.status_code != 200:
-            logger.info(
-                "OBSERV equipment.media_skipped status=%d url=%s",
-                response.status_code,
-                str(url)[:120],
-            )
-            return None
-
-        # Determine file extension and generate filename
-        ext = _determine_file_extension(response, url)
-        filename = f"{media_id}{ext}"
-        filepath = equipment_dir / filename
-
-        # Check if already downloaded
-        if filepath.exists():
-            logger.debug("Media already downloaded: %s", filename)
-            return str(filepath.relative_to(media_dir.parent))
-
-        # Verify and save
-        if not _verify_and_save_media(
-            response,
-            filepath,
-            equipment_dir,
-            media_item,
-            equipment_name,
-            equipment_category,
-            grok_client,
-            verify_with_vision,
-        ):
-            return None
-
-        return str(filepath.relative_to(media_dir.parent))
-
-    except requests.RequestException as e:
-        logger.warning("Failed to download %s: %s", url, e)
-        return None
-    except Exception as e:
-        logger.debug("Media download error: %s", e)
-        return None
-    finally:
-        _cleanup_empty_directory(equipment_dir)
-
-
-def _extract_media(
-    common_name: str,
-    technical_identifier: Optional[str],
-    category: str,
-    grok_client: GrokClient,
-    year: Optional[str] = None,
-) -> List[Dict[str, Any]]:
-    """Extract media for Phase 2 — WIKIPEDIA-ONLY.
-
-    Phase 2 owns ALL Wikipedia/Grokipedia enrichment (text + images); OpenSERP media
-    moved to Phase 3. The OpenSERP media helpers (_extract_media_with_openserp and its
-    callees) are intentionally LEFT IN PLACE for Phase 3 to reuse — they are simply no
-    longer invoked on the Phase-2 path.
-
-    Args:
-        common_name: Equipment common name
-        technical_identifier: Technical designation
-        category: Equipment category
-        grok_client: Grok API client
-        year: Year for temporal filtering (unused on the Wikipedia path; kept for the
-            Phase-3 OpenSERP signature compatibility)
-
-    Returns:
-        List of media items with URLs (from the Wikipedia article)
-    """
-    media_list = _extract_media_from_wikipedia(
-        common_name, technical_identifier, category, grok_client
-    )
-    if media_list:
-        logger.debug("Using Wikipedia media for %s", common_name)
-
-    return media_list
 
 
 def _extract_image_urls_from_page(
@@ -1433,110 +1214,6 @@ def _filter_wikipedia_image_titles(pages: dict) -> list:
     return titles
 
 
-def _extract_media_from_wikipedia(
-    common_name: str,
-    technical_identifier: Optional[str],
-    category: str,
-    grok_client: GrokClient,
-) -> List[Dict[str, Any]]:
-    """Extract images from the actual Wikipedia article for this equipment.
-
-    Finds the Wikipedia page, gets its images via the API, then returns
-    real download URLs. Grok vision validates relevance downstream.
-    """
-    identifier = technical_identifier or common_name
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-    }
-
-    try:
-        # Step 1: Find the Wikipedia article
-        from src.utils.wikimedia_client import TRANSIENT, wikimedia_get
-
-        search_resp = wikimedia_get(
-            "wikipedia",
-            "https://en.wikipedia.org/w/api.php",
-            params={
-                "action": "query",
-                "format": "json",
-                "list": "search",
-                "srsearch": identifier,
-                "srlimit": "1",
-            },
-            timeout=15,
-            headers=headers,
-            subject=identifier,
-            result_summary_fn=lambda r: f"equip-search status={r.status_code}",
-        )
-        if search_resp is TRANSIENT:
-            return []  # rate limit / block / 5xx: client already logged it
-        search_resp.raise_for_status()
-        results = search_resp.json().get("query", {}).get("search", [])
-        if not results:
-            logger.debug("No Wikipedia article for %s", identifier)
-            return []
-
-        page_title = results[0]["title"]
-
-        # Step 2: Get images from that article
-        img_resp = wikimedia_get(
-            "wikipedia",
-            "https://en.wikipedia.org/w/api.php",
-            params={
-                "action": "query",
-                "format": "json",
-                "titles": page_title,
-                "prop": "images",
-                "imlimit": "20",
-            },
-            timeout=15,
-            headers=headers,
-            subject=identifier,
-            result_summary_fn=lambda r: f"equip-images status={r.status_code}",
-        )
-        if img_resp is TRANSIENT:
-            return []  # rate limit / block / 5xx: client already logged it
-        img_resp.raise_for_status()
-        pages = img_resp.json().get("query", {}).get("pages", {})
-        image_titles = _filter_wikipedia_image_titles(pages)
-
-        if not image_titles:
-            logger.debug("No images on Wikipedia page for %s", identifier)
-            return []
-
-        # Step 3: Get actual file URLs from Commons (batch up to 5)
-        file_resp = wikimedia_get(
-            "wikimedia-commons",
-            "https://commons.wikimedia.org/w/api.php",
-            params={
-                "action": "query",
-                "format": "json",
-                "titles": "|".join(image_titles[:5]),
-                "prop": "imageinfo",
-                "iiprop": "url|extmetadata|mime",
-                "iiurlwidth": "1280",
-            },
-            timeout=15,
-            headers=headers,
-            subject=identifier,
-            result_summary_fn=lambda r: f"equip-commons status={r.status_code}",
-        )
-        if file_resp is TRANSIENT:
-            return []  # rate limit / block / 5xx: client already logged it
-        file_resp.raise_for_status()
-        file_pages = file_resp.json().get("query", {}).get("pages", {})
-
-        media_list = _build_wikipedia_media_list(file_pages)
-
-        logger.debug(
-            "Found %s images from Wikipedia article '%s'", len(media_list), page_title
-        )
-        return media_list
-    except Exception as e:
-        logger.warning("Wikipedia media lookup failed for %s: %s", common_name, e)
-        return []
-
-
 def _build_wikipedia_media_list(file_pages: dict) -> list:
     """Build the media-entry list from Commons imageinfo pages. Extracted verbatim
     from _extract_media_from_wikipedia — same image/* mime filter, same thumburl→url
@@ -1572,18 +1249,16 @@ def _enrich_equipment_data(
     technical_identifier: Optional[str],
     category: str,
     grok_client: GrokClient,
+    source_text: str = "",
 ) -> Dict[str, Any]:
-    """Enrich equipment data with external sources (Wikipedia/Grokipedia).
+    """Structured facts for one specific equipment record, written FROM ``source_text`` (the
+    WWII-qualified Grokipedia/Wikipedia article text; each block prefixed by its URL).
 
-    Args:
-        common_name: Equipment common name
-        technical_identifier: Technical designation
-        category: Equipment category
-        grok_client: Grok API client
-
-    Returns:
-        Dict with enriched data (description, specifications, etc.)
+    Returns a dict (description, specifications, ...) or {} on failure. BatchModeCollecting
+    propagates (batch collect pass: the request is queued, the retrieve pass answers it).
     """
+    if not source_text:
+        return {}
     identifier = technical_identifier or common_name
 
     from src.utils.prompt_loader import render_prompt
@@ -1594,6 +1269,7 @@ def _enrich_equipment_data(
         common_name=common_name,
         category=category,
         country="",
+        source_text=source_text,
     )
 
     try:
@@ -1608,6 +1284,8 @@ def _enrich_equipment_data(
         )
         logger.debug("Enriched data for %s", common_name)
         return enriched if isinstance(enriched, dict) else {}
+    except BatchModeCollecting:
+        raise
     except Exception as e:
         logger.warning("Failed to enrich equipment data for %s: %s", common_name, e)
         return {}
@@ -1616,12 +1294,18 @@ def _enrich_equipment_data(
 def _best_fuzzy_candidate(name_lower, equipment_index):
     """Best (match, ratio) over index common_names AND each file's alternate_names. Fail-safe:
     unreadable entries are skipped."""
+    from src.extraction.equipment_identity import is_vessel_key
+
     best_match, best_ratio = None, 0.0
     for existing_name in equipment_index.keys():
+        if is_vessel_key(existing_name):
+            continue  # a ship title / unresolved-vessel key is matched exactly, never fuzzily
         ratio = SequenceMatcher(None, name_lower, existing_name.lower()).ratio()
         if ratio > best_ratio:
             best_ratio, best_match = ratio, existing_name
     for existing_name, eq_file in equipment_index.items():
+        if is_vessel_key(existing_name):
+            continue
         try:
             with open(eq_file, encoding="utf-8") as f:
                 eq_data = json.load(f)
@@ -1698,13 +1382,18 @@ def _find_matching_equipment(
     equipment_index: Dict[str, Path],
     technical_id: str = "",
     canonical_name: str = "",
+    canonical_only: bool = False,
 ) -> Optional[str]:
     """Find matching equipment. Canonical identity (resolved across US/German/British
     naming systems) is the MOST stable key, so check it first — this is what lets the
     disambiguator actually prevent cross-naming splits (M4 vs Sherman V -> one record).
+    ``canonical_only`` (named vessels): match the resolved ship title ONLY - "Quincy" by name
+    or fuzzily would merge two different ships.
     """
     if canonical_name and canonical_name in equipment_index:
         return canonical_name
+    if canonical_only:
+        return None
     # Check technical_identifier next (stable)
     if technical_id and technical_id in equipment_index:
         return technical_id
@@ -1811,8 +1500,6 @@ def _merge_into_existing(
     equipment_data: dict,
     matched_name: str,
     grok_client: Optional[GrokClient] = None,
-    verify_media_with_vision: bool = True,
-    dates_index: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> Path:
     """Merge mention into existing equipment file."""
     logger.debug("Merging mention into existing equipment: %s", matched_name)
@@ -1847,13 +1534,7 @@ def _merge_into_existing(
             # enrichment_status stamp. A later mention is our chance to retry (idempotent —
             # _enrich_on_identity no-ops once stamped). Already-enriched records are untouched.
             if grok_client and not existing.get("enrichment_status"):
-                _enrich_on_identity(
-                    existing,
-                    grok_client,
-                    verify_media_with_vision,
-                    new_mention.get("Sub_eventID"),
-                    dates_index,
-                )
+                _enrich_on_identity(existing, grok_client)
 
             # Stamp last-modified (equipment previously only set extracted_date on create).
             existing["_last_updated"] = datetime.now(timezone.utc).date().isoformat()
@@ -1926,24 +1607,6 @@ def _normalize_generic(name: str) -> str:
     import re as _re
 
     return _re.sub(r"\s+", " ", name.replace("_", " ")).strip()
-
-
-def _is_specific_identity(equipment_data: dict) -> bool:
-    """True if the record has resolved to a SPECIFIC designation worth enriching
-    (has a technical_identifier, a nickname that resolves to a canonical technical name
-    via the alias table, or a common_name that is not a bare generic word)."""
-    if equipment_data.get("technical_identifier"):
-        return True
-    name = (equipment_data.get("common_name") or "").strip().lower()
-    if not name:
-        return False
-    # A nickname that resolves via the alias table (sherman -> m4 sherman, 88 -> 88mm
-    # flak 36) is a specific identity expressed informally.
-    if _normalize_designation(name) in _equipment_aliases():
-        return True
-    # A bare category/subcategory classification ("medium tank", "medium_tank",
-    # "field gun") is NOT a specific identity — it's a class, not a designation.
-    return _normalize_generic(name) not in _GENERIC_EQUIPMENT_WORDS
 
 
 def _normalize_designation(name: str) -> str:
@@ -2037,26 +1700,130 @@ def _normalize_origin(nationality: Optional[str]) -> Optional[str]:
         return nationality.strip().upper()
 
 
-def _enrich_on_identity(
-    equipment_data: dict,
-    grok_client: Optional[GrokClient],
-    verify_media_with_vision: bool,
-    sub_event_id: Optional[str],
-    dates_index: Optional[Dict[str, Dict[str, str]]],
-) -> None:
-    """Grokipedia/Wikipedia enrichment + canonical reference image, triggered by identity
-    resolution. Fires once per SPECIFIC record (never re-enriches: enrichment_status
-    stamp). Vision verifies the equipment TYPE for the reference image, never an event.
-    """
-    if not grok_client:
-        return
-    if equipment_data.get("enrichment_status") == "enriched":
-        return  # already successfully enriched — never re-enrich
-    if not _is_specific_identity(equipment_data):
-        logger.debug(
-            "Skipping enrichment for non-specific equipment: %s",
-            equipment_data.get("common_name"),
+def _is_alias_name(name: str) -> bool:
+    """A nickname in the alias table, as written or without a trailing class word
+    ("Sherman tank" -> "sherman", "Tommy gun")."""
+    norm = _normalize_designation(name or "")
+    aliases = _equipment_aliases()
+    if norm in aliases:
+        return True
+    words = norm.split()
+    return (
+        len(words) > 1
+        and _normalize_generic(words[-1]) in _GENERIC_EQUIPMENT_WORDS
+        and (" ".join(words[:-1]) in aliases)
+    )
+
+
+GROK_SPECIFIC_MIN_CONFIDENCE = 0.8
+
+
+def _identity_scope(equipment_data: dict, grok_client: Optional[GrokClient]) -> str:
+    """SPECIFIC (enrich: Grokipedia/Wikipedia text, Phase 3 images) or GENERIC (kept in the JSON
+    with its mentions, never searched). Owner rule 2026-11-07: "cannon", "trench", "rifle" stay
+    unenriched; "M1 Garand", "Sherman tank" are searched.
+
+    Deterministic first (designation / alias -> specific; bare caliber / class word -> generic;
+    a named vessel was resolved before matching). Otherwise the canonical resolver decides
+    (alias tables, then Grok, cached): specific only with a canonical designation at
+    >= GROK_SPECIFIC_MIN_CONFIDENCE. ``technical_identifier`` is NOT evidence: the extractor fills
+    it with the bare name ("trench")."""
+    from src.extraction.equipment_identity import (
+        GENERIC,
+        SPECIFIC,
+        deterministic_scope,
+        has_designation,
+    )
+
+    stamped = equipment_data.get("identity_scope")
+    if stamped in (SPECIFIC, GENERIC):
+        return stamped
+    name = equipment_data.get("common_name") or ""
+    tech = (equipment_data.get("technical_identifier") or "").strip()
+    if tech and tech.lower() != name.strip().lower() and has_designation(tech):
+        return (
+            SPECIFIC  # a real designation ("M4"), not the bare name copied ("trench")
         )
+    scope = deterministic_scope(
+        name,
+        equipment_data.get("category"),
+        _is_alias_name(name),
+        _GENERIC_EQUIPMENT_WORDS,
+        equipment_data.get("subcategory"),
+    )
+    if scope:
+        return scope
+    return SPECIFIC if _resolver_says_specific(name, grok_client) else GENERIC
+
+
+def _resolver_says_specific(name: str, grok_client: Optional[GrokClient]) -> bool:
+    """The canonical resolver's verdict: a table match (exact/alias/learned/fuzzy) is specific;
+    a Grok disambiguation only with a canonical name at >= GROK_SPECIFIC_MIN_CONFIDENCE.
+    """
+    from src.extraction.equipment_disambiguation import resolve_designation
+
+    ident = resolve_designation(name, grok_client) or {}
+    source = ident.get("identity_source")
+    if source in ("exact", "alias", "learned_alias", "fuzzy"):
+        return True
+    if source != "grok_disambiguation" or not ident.get("canonical_name"):
+        return False
+    try:
+        confidence = float(ident.get("confidence") or 0.0)
+    except (TypeError, ValueError):
+        return False
+    return confidence >= GROK_SPECIFIC_MIN_CONFIDENCE
+
+
+def _is_enrichment_target(equipment_data: dict, grok_client: GrokClient) -> bool:
+    """Not yet enriched, not an unresolved vessel, and SPECIFIC (the scope is stamped here;
+    a GENERIC record stays in the JSON unenriched)."""
+    from src.extraction.equipment_identity import GENERIC, UNRESOLVED
+
+    if equipment_data.get("enrichment_status") == "enriched":
+        return False  # already successfully enriched — never re-enrich
+    if equipment_data.get("identity_scope") == UNRESOLVED:
+        return False
+    scope = _identity_scope(equipment_data, grok_client)
+    equipment_data["identity_scope"] = scope
+    if scope == GENERIC:
+        logger.debug(
+            "Generic equipment kept unenriched: %s", equipment_data.get("common_name")
+        )
+        return False
+    return True
+
+
+def _alert_enrich_deferred(equipment_data: dict, err: Exception) -> None:
+    """One counted alert per name (the wikimedia/grokipedia transient lines say why)."""
+    from src.utils.observe import observe_warn_counted
+
+    name = str(equipment_data.get("common_name") or "")
+    observe_warn_counted(
+        "equipment",
+        "enrich_deferred",
+        key=(name,),
+        every=10**9,
+        note=(
+            "Grokipedia/Wikipedia was unreachable, so this record was left unenriched and is "
+            "retried on its next mention or Phase 2 run; if this repeats, check the "
+            "wikimedia.transient / grokipedia lines in this task's log"
+        ),
+        name=name,
+        source=str(err),
+    )
+
+
+def _enrich_on_identity(
+    equipment_data: dict, grok_client: Optional[GrokClient]
+) -> None:
+    """Grokipedia/Wikipedia TEXT enrichment, triggered by identity resolution. Fires once per
+    SPECIFIC record (enrichment_status stamp); GENERIC records are stamped and left unenriched;
+    an UNRESOLVED vessel is never searched (needs review). Images are not fetched here: Phase 3
+    gathers candidates for specific records and Grok vision must confirm each one."""
+    from src.grok_client import BatchModeCollecting
+
+    if not grok_client or not _is_enrichment_target(equipment_data, grok_client):
         return
     # CANONICAL DISAMBIGUATION (exact→alias→fuzzy→Grok, cached): resolve to a canonical
     # identity so enrichment/dedup use one name across US/German/British naming systems.
@@ -2076,14 +1843,7 @@ def _enrich_on_identity(
         return
     try:
         before = {k: v for k, v in equipment_data.items()}
-        _enrich_and_add_media(
-            equipment_data,
-            canonical_name,
-            grok_client,
-            verify_media_with_vision,
-            sub_event_id,
-            dates_index,
-        )
+        _enrich_from_encyclopedias(equipment_data, canonical_name, grok_client)
         # DIFF the revised entry: which keys did enrichment actually change/add?
         changed = diff_enrichment(before, equipment_data)
         equipment_data["enrichment_status"] = "enriched"
@@ -2096,6 +1856,11 @@ def _enrich_on_identity(
             logger.debug(
                 "Enrichment no-op for %s (no new data)", equipment_data["common_name"]
             )
+    except BatchModeCollecting:
+        raise  # batch collect pass: queued; the retrieve pass enriches (never stamp here)
+    except _SourceDeferred as e:
+        # Unknown, not a miss: no enrichment_status and no checked stamp, so it is retried.
+        _alert_enrich_deferred(equipment_data, e)
     except Exception as e:  # noqa: BLE001 - enrichment is best-effort, never block
         # Stamp the CHECK even on failure so the staleness gate still advances (limit
         # updates); leave enrichment_status unset so a later run can still retry.
@@ -2114,24 +1879,16 @@ def _create_new_equipment(
     equipment_index: Dict[str, Path],
     grok_client: Optional[GrokClient],
     enable_enrichment: bool,
-    verify_media_with_vision: bool,
-    dates_index: Optional[Dict[str, Dict[str, str]]],
 ) -> Path:
     """Create new equipment file."""
     common_name = equipment_data["common_name"]
     logger.debug("Creating new equipment file: %s", common_name)
 
     # Enrichment follows IDENTITY RESOLUTION: once a record has a specific designation
-    # (M4 Sherman, M2 .50 cal), Grokipedia/Wikipedia enrichment + a canonical reference
-    # image are the natural next step — not an opt-in flag. Generic records (bare "tank")
-    # are skipped. Enriched once, stamped (never re-enriched).
-    _enrich_on_identity(
-        equipment_data,
-        grok_client,
-        verify_media_with_vision,
-        new_mention.get("Sub_eventID"),
-        dates_index,
-    )
+    # (M4 Sherman, M2 .50 cal), Grokipedia/Wikipedia text enrichment is the natural next step
+    # — not an opt-in flag. Generic records (bare "tank") stay unenriched. Enriched once,
+    # stamped (never re-enriched). Images: Phase 3 (vision-checked).
+    _enrich_on_identity(equipment_data, grok_client)
 
     equipment_id = str(ulid.new())
     equipment_data["EquipmentID"] = equipment_id
@@ -2148,11 +1905,11 @@ def _create_new_equipment(
 
     safe_name = common_name.replace(" ", "_").replace("/", "_")[:120]
     _eqname = _safe_entity_filename(
-        f"{safe_name}_{equipment_id[:8]}.json", f"equipment_{equipment_id[:12]}"
+        f"{safe_name}_{equipment_id[-8:]}.json", f"equipment_{equipment_id[-12:]}"
     )
     eq_file = _contained_entity_path(equipment_dir, _eqname)
     if eq_file is None:
-        eq_file = equipment_dir / f"equipment_{equipment_id[:12]}.json"
+        eq_file = equipment_dir / f"equipment_{equipment_id[-12:]}.json"
 
     from src.utils.file_lock import write_json_with_lock
 
@@ -2180,31 +1937,32 @@ def merge_or_create_equipment(
     equipment_index: Dict[str, Path],
     grok_client: Optional[GrokClient] = None,
     enable_enrichment: bool = False,
-    verify_media_with_vision: bool = True,
-    dates_index: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> Path:
     """Merge mention into existing equipment or create new file.
 
     Args:
         equipment_data: Equipment data (common_name, category, etc.)
-        new_mention: New mention to add
+        new_mention: New mention to add (carries the mention's date + source paragraph)
         equipment_dir: Output directory
         equipment_index: Index of existing equipment
         grok_client: Grok API client for enrichment
         enable_enrichment: Whether to enrich new equipment with external data
-        verify_media_with_vision: Verify media relevance with Grok vision API
-        dates_index: Index of dates by Sub-eventID for temporal filtering
 
     Returns:
         Path to equipment file
     """
     common_name = equipment_data["common_name"]
 
+    # A NAMED VESSEL is resolved to ONE ship BEFORE matching ("Quincy" on 6 Jun 1944 is
+    # USS Quincy (CA-71); in Aug 1942 CA-39) and then matches ONLY on that resolved title, so two
+    # ships of the same name never merge.
+    vessel = _resolve_named_vessel(equipment_data, new_mention, grok_client)
+
     # Find matching equipment (canonical identity is the most stable key)
     technical_id = equipment_data.get("technical_identifier", "")
     canonical = equipment_data.get("canonical_name", "")
     matched_name = _find_matching_equipment(
-        common_name, equipment_index, technical_id, canonical
+        common_name, equipment_index, technical_id, canonical, canonical_only=vessel
     )
 
     if matched_name:
@@ -2215,20 +1973,78 @@ def merge_or_create_equipment(
             equipment_data,
             matched_name,
             grok_client,
-            verify_media_with_vision,
-            dates_index,
         )
-    else:
-        return _create_new_equipment(
-            equipment_data,
-            new_mention,
-            equipment_dir,
-            equipment_index,
-            grok_client,
-            enable_enrichment,
-            verify_media_with_vision,
-            dates_index,
-        )
+    return _create_new_equipment(
+        equipment_data,
+        new_mention,
+        equipment_dir,
+        equipment_index,
+        grok_client,
+        enable_enrichment,
+    )
+
+
+def _resolve_named_vessel(
+    equipment_data: dict, new_mention: dict, grok_client: Optional[GrokClient]
+) -> bool:
+    """For a named vessel, stamp canonical_name / identity_source / identity_scope /
+    identity_resolution from src/extraction/equipment_identity.resolve_vessel. Returns True when
+    the record is a named vessel (resolved or not). An unresolved vessel gets a distinct
+    canonical key so it never merges with a resolved ship, and is never searched."""
+    from src.extraction.equipment_identity import (
+        SPECIFIC,
+        UNRESOLVED,
+        is_named_vessel,
+        resolve_vessel,
+    )
+
+    name = equipment_data.get("common_name") or ""
+    if not is_named_vessel(
+        name, equipment_data.get("category"), equipment_data.get("subcategory")
+    ):
+        return False
+    resolution = resolve_vessel(
+        name, new_mention, equipment_data.get("subcategory"), grok_client
+    )
+    transient = resolution.pop("transient", False)
+    equipment_data["identity_resolution"] = resolution
+    title = resolution.get("resolved_title")
+    if title:
+        equipment_data["canonical_name"] = title
+        equipment_data["identity_source"] = "vessel_disambiguation"
+        equipment_data["identity_scope"] = SPECIFIC
+        return True
+    equipment_data["identity_scope"] = UNRESOLVED
+    if transient:
+        resolution["transient"] = True  # why it is unresolved (Wikipedia unreachable)
+    year = (resolution.get("date_used") or "")[:4]
+    # Keyed by the mention year: "Quincy" in 1942 and in 1944 are different ships, so unresolved
+    # mentions from different years must not collect in one record.
+    equipment_data["canonical_name"] = (
+        f"{name} (unresolved vessel, {year})" if year else f"{name} (unresolved vessel)"
+    )
+    from src.utils.observe import observe_warn_counted
+
+    observe_warn_counted(
+        "equipment",
+        "vessel_unresolved",
+        key=(name, resolution.get("date_used") or ""),
+        every=10**9,
+        note=(
+            "Wikipedia was unreachable while identifying this ship; set canonical_name to the "
+            "ship's Wikipedia article title (the mention date is in identity_resolution) - it is "
+            "not searched until then"
+            if transient
+            else "the named ship could not be identified from its Wikipedia candidates and "
+            "the mention date; set canonical_name to the right ship article (identity_resolution "
+            "lists the candidates) - it is not searched until then"
+        ),
+        vessel=name,
+        date=resolution.get("date_used"),
+        candidates=len(resolution.get("candidates") or []),
+        transient=transient,
+    )
+    return True
 
 
 def _validate_event_data(event_data: Dict[str, Any], event_file: Path) -> bool:
@@ -2892,7 +2708,6 @@ def _process_equipment_item(
     equipment_index: Dict[str, Path],
     grok_client: GrokClient,
     enable_enrichment: bool = False,
-    verify_media_with_vision: bool = True,
     places_index: Optional[Dict[str, str]] = None,
 ) -> Optional[Path]:
     """Process a single equipment item. Returns equipment file path or None."""
@@ -2940,7 +2755,6 @@ def _process_equipment_item(
             equipment_index,
             output_dir,
             grok_client,
-            verify_media_with_vision,
         )
 
     # Record-level crew_accounts (narrative-sourced; original_text mandatory; person-linked)
@@ -2964,11 +2778,11 @@ def _process_equipment_item(
             equipment_index,
             grok_client,
             enable_enrichment,
-            verify_media_with_vision,
-            dates_index,
         )
         logger.debug("Updated equipment file: %s", eq_file.name)
         return eq_file
+    except BatchModeCollecting:
+        raise  # batch collect pass: a Grok call was queued; the retrieve pass saves it
     except Exception as e:
         logger.error("Failed to save equipment '%s': %s", eq.common_name, e)
         return None
@@ -3138,7 +2952,6 @@ def _link_related_equipment(
     equipment_index: Dict[str, Path],
     output_dir: Path,
     grok_client: Optional[GrokClient] = None,
-    verify_media_with_vision: bool = True,
 ) -> List[Dict[str, Any]]:
     """Build the record-level related_equipment list. Each entry is narrative-sourced
     (original_text retained). Resolve name->EquipmentID; auto-create a minimal distinct
@@ -3162,7 +2975,6 @@ def _link_related_equipment(
                 equipment_index,
                 output_dir,
                 grok_client,
-                verify_media_with_vision,
             )
         if eq_id:
             entry["EquipmentID"] = eq_id
@@ -3175,13 +2987,12 @@ def _autocreate_minimal_equipment(
     equipment_index: Dict[str, Path],
     output_dir: Path,
     grok_client: Optional[GrokClient] = None,
-    verify_media_with_vision: bool = True,
 ) -> Optional[str]:
     """Create a minimal equipment record (EquipmentID + common_name) for a distinct piece
     the narrative relates but that has no record yet. Because the stub has no mention of
     its own, enrichment is its ONLY source of substance — so if the name is a specific
-    identity (e.g. 'M26 Pershing') it is enriched on creation (Grokipedia/Wikipedia +
-    canonical reference image). Registers it in the index. Returns the EquipmentID."""
+    identity (e.g. 'M26 Pershing') it is enriched on creation (Grokipedia/Wikipedia text;
+    images come from Phase 3). Registers it in the index. Returns the EquipmentID."""
     try:
         equipment_id = str(ulid.new())
         record: Dict[str, Any] = {
@@ -3191,7 +3002,7 @@ def _autocreate_minimal_equipment(
             "event_mentions": [],
         }
         # Enrich the stub on identity (no Sub_eventID -> no date context).
-        _enrich_on_identity(record, grok_client, verify_media_with_vision, None, None)
+        _enrich_on_identity(record, grok_client)
         # Path-traversal guard (name is LLM-derived): harden + contain; fall back to the ULID.
         from src.extraction.batch_parallel import (
             _safe_entity_filename,
@@ -3200,11 +3011,11 @@ def _autocreate_minimal_equipment(
 
         safe_name = name.replace(" ", "_").replace("/", "_")[:120]
         _eqname = _safe_entity_filename(
-            f"{safe_name}_{equipment_id[:8]}.json", f"equipment_{equipment_id[:12]}"
+            f"{safe_name}_{equipment_id[-8:]}.json", f"equipment_{equipment_id[-12:]}"
         )
         eq_file = _contained_entity_path(output_dir, _eqname)
         if eq_file is None:
-            eq_file = output_dir / f"equipment_{equipment_id[:12]}.json"
+            eq_file = output_dir / f"equipment_{equipment_id[-12:]}.json"
         from src.utils.file_lock import write_json_with_lock
 
         write_json_with_lock(eq_file, record, entity="equipment")
@@ -3430,7 +3241,6 @@ def extract_equipment_from_event(
     output_root: Optional[Path] = None,
     max_retries: int = 3,
     enable_enrichment: bool = False,
-    verify_media_with_vision: bool = True,
 ) -> List[Path]:
     """Extract equipment from event file.
 
@@ -3441,7 +3251,6 @@ def extract_equipment_from_event(
         output_root: Root output directory (defaults to output_dir.parent)
         max_retries: Maximum retry attempts per extraction
         enable_enrichment: Enable external data enrichment (Wikipedia/Grokipedia)
-        verify_media_with_vision: Verify media relevance with Grok vision API
 
     Returns:
         List of created/updated equipment file paths
@@ -3511,7 +3320,6 @@ def extract_equipment_from_event(
                 equipment_index,
                 grok_client,
                 enable_enrichment,
-                verify_media_with_vision,
                 places_index,
             )
         )
