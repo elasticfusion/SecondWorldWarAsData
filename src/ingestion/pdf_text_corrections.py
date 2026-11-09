@@ -148,11 +148,11 @@ def _corrected(d: X.Difference, original: str, vocab: Counter) -> "str | Skip":
     if len(d.pdf.split()) != 1 or len(d.html.split()) != 1:
         return Skip("multi_word")
     if d.cls == "ocr_homoglyph":
-        return _latin(original)
+        return to_latin(original)
     return _like(original, d.html)
 
 
-def _latin(word: str) -> str:
+def to_latin(word: str) -> str:
     """Cyrillic / Greek look-alike letters as Latin, each letter's case kept ("Утан" -> "Utah")."""
     out = []
     for ch in word:
@@ -231,3 +231,97 @@ def apply_corrections(markdown: str, corrections: Sequence[Correction]) -> str:
         pos = c.span[1]
     parts.append(markdown[pos:])
     return "".join(parts)
+
+
+# --- correct, then prove it (shared by scripts/crosscheck_pdf_html and the Phase 0 cross-check) ---
+
+
+@dataclass
+class Verified:
+    """The corrected Chandra text and the proof: cross-checked AGAIN, exactly the skipped
+    differences may remain correctable, and no other difference may have changed."""
+
+    corrected: str
+    plan: Plan
+    landed: bool  # the correctable differences left are exactly the skipped ones
+    unchanged: bool  # every other difference is as before
+    remaining: int = 0  # correctable differences left after correcting
+
+    @property
+    def ok(self) -> bool:
+        return self.landed and self.unchanged
+
+    def summary(self) -> dict:
+        return {
+            "applied": len(self.plan.corrections),
+            "skipped": dict(self.plan.skipped),
+            "correctable_remaining": self.remaining,
+            "remaining_are_the_skipped": self.landed,
+            "other_differences_unchanged": self.unchanged,
+        }
+
+    def log(self) -> dict:
+        from dataclasses import asdict
+
+        return {
+            **self.summary(),
+            "corrections": [asdict(c) for c in self.plan.corrections],
+            "skipped_differences": self.plan.skipped_differences,
+        }
+
+
+def stream_checks(
+    streams: Tuple[Sequence[X.Token], Sequence[X.Token]],
+    tokens: Sequence[X.Token],
+    vocab: Counter,
+    second: Optional[Counter] = None,
+) -> List[X.CrossCheck]:
+    """The narrative and notes cross-checks of the PDF's ``tokens`` against the transcription's
+    (narrative, notes) streams."""
+    narrative, notes = streams
+    body = [t for t in tokens if t.kind != "note"]
+    note_tokens = [t for t in tokens if t.kind == "note"]
+    return [
+        X.crosscheck("narrative", list(narrative), body, vocab=vocab, second=second),
+        X.crosscheck("notes", list(notes), note_tokens, vocab=vocab, second=second),
+    ]
+
+
+def correct_verified(
+    markdown: str,
+    first_page: int,
+    streams: Tuple[Sequence[X.Token], Sequence[X.Token]],
+    checks: Sequence[X.CrossCheck],
+    vocab: Counter,
+    second: Optional[Counter] = None,
+    printed: Optional[Dict[int, int]] = None,
+) -> Verified:
+    """``markdown`` (the Chandra text ``checks`` read) corrected, and cross-checked again."""
+    plan = plan_corrections(checks, markdown, vocab, second)
+    corrected = apply_corrections(markdown, plan.corrections)
+    tokens = X.chandra_tokens(corrected, first_page, printed, streams)
+    after = stream_checks(streams, tokens, vocab, second)
+    X.reconcile_moved(after)
+    remaining = difference_keys(after, correctable=True)
+    landed = remaining == sorted(difference_key(*k) for k in plan.skipped_differences)
+    unchanged = difference_keys(checks, correctable=False) == difference_keys(
+        after, correctable=False
+    )
+    return Verified(corrected, plan, landed, unchanged, len(remaining))
+
+
+def difference_keys(checks: Sequence[X.CrossCheck], correctable: bool) -> list:
+    """The differences as comparable keys (see ``difference_key``)."""
+    return sorted(
+        difference_key(d.cls, d.html, d.pdf)
+        for c in checks
+        for d in c.differences
+        if (d.cls in X.CORRECTABLE) == correctable
+    )
+
+
+def difference_key(cls: str, html: str, pdf: str) -> tuple:
+    """A difference's class and the WORDS on each side, order aside: after a correction the
+    alignment may group a one-sided run differently ("Van Fleet Col James A" / "Fleet Col James
+    A Van") - the same text, not a change; any changed or lost word still differs."""
+    return (cls, tuple(sorted(html.split())), tuple(sorted(pdf.split())))

@@ -454,10 +454,13 @@ def test_all_converters_share_one_meta_builder():
     import lambda_handlers.ocr_merge_handler as ocr
     import phase0_convert as p0
     import phase0_video as vid
+    from src.ingestion import ocr_promote
 
-    for mod in (p0, vid, ocr):
+    # The OCR merge publishes through src/ingestion/ocr_promote (one builder there).
+    for mod in (p0, vid, ocr_promote):
         src = inspect.getsource(mod)
         assert "build_meta_yaml" in src and "yaml.safe_dump" not in src, mod.__name__
+    assert "yaml.safe_dump" not in inspect.getsource(ocr)
     assert 'f"OCR of {book}"' not in inspect.getsource(ocr)  # old non-URL placeholder
 
 

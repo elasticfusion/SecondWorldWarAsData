@@ -774,7 +774,8 @@ def test_a_failed_correction_run_still_writes_its_report_and_clears_stale_output
 def test_the_recheck_ignores_a_one_sided_run_grouped_in_another_order():
     """After a correction the alignment may group "Van Fleet Col James A" as "Fleet Col James A
     Van": the same words - not a change. A changed word is."""
-    key = _cli()._key
+    from src.ingestion.pdf_text_corrections import difference_key as key
+
     assert key("pdf_only", "", "Van Fleet Col James A") == key(
         "pdf_only", "", "Fleet Col James A Van"
     )

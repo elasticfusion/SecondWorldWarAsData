@@ -478,7 +478,11 @@ def _clear_title_cache_if_reprocess(phase_script: str) -> None:
     processing.force_reprocess true, OR processing.reprocess_types non-empty, OR
     REPROCESS_TITLE env == BOOK_NAME.
     """
-    if "phase2" not in phase_script and "phase3" not in phase_script:
+    if (
+        "phase2" not in phase_script
+        and "phase3" not in phase_script
+        and "ocr_crosscheck" not in phase_script  # fetches the validation URL
+    ):
         return
     book = os.environ.get("BOOK_NAME", "").strip()
     if not book:
@@ -549,7 +553,11 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
     OpenSERP (the browser service) is Phase-3 only, but NAT must be up earlier so
     Phase 2's Grok/Wiki lookups can reach the internet.
     """
-    if "phase2" not in phase_script and "phase3" not in phase_script:
+    if (
+        "phase2" not in phase_script
+        and "phase3" not in phase_script
+        and "ocr_crosscheck" not in phase_script  # fetches the validation URL
+    ):
         return
     # READINESS CONTRACT: Phase 2/3 need public egress (Grok/Wiki/geocode). Invoke
     # the nat-manager and WAIT until it reports status=ready (NAT available + ACTIVE
@@ -1215,10 +1223,14 @@ def _download_phase0_inputs() -> None:
     fetched its own input. Short-circuit here so the task proceeds to its own
     fetch.
     """
-    if os.environ.get("CONVERT_KEY") or os.environ.get("VIDEO_KEY"):
+    if (
+        os.environ.get("CONVERT_KEY")
+        or os.environ.get("VIDEO_KEY")
+        or "ocr_crosscheck" in os.environ.get("PIPELINE_PHASE", "")
+    ):
         logger.info(
-            "Phase 0 self-fetching task (CONVERT_KEY/VIDEO_KEY set) — skipping the "
-            "book-scoped Phase-1 sync; the task fetches its own source object."
+            "Phase 0 self-fetching task (CONVERT_KEY/VIDEO_KEY set, or the OCR cross-check) — "
+            "skipping the book-scoped Phase-1 sync; the task fetches its own source objects."
         )
         return
     _download_phase1_inputs()

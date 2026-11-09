@@ -8,7 +8,20 @@ os.environ.setdefault("ECS_CLUSTER", "dev-wwii-pipeline")
 os.environ.setdefault("CACHE_TABLE", "dev-wwii-api-cache")
 os.environ.setdefault("S3_BUCKET", "dev-wwii-data-pipeline")
 
+import pytest
+
 from lambda_handlers import trigger_handler as th
+
+
+@pytest.fixture(autouse=True)
+def _no_s3_for_the_chunk_manifest():
+    """_submit_ocr records the submission's chunk manifest in S3 before submitting
+    (tests/test_trigger_ocr_manifest.py covers it); these tests are about the jobs."""
+    with (
+        patch("src.ingestion.ocr_chunk_manifest.write_manifest"),
+        patch.object(th, "_validation_url", return_value=""),
+    ):
+        yield
 
 
 def test_split_by_media_separates_pdf_from_parseable():

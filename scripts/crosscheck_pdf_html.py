@@ -169,15 +169,7 @@ def _pdf_side(args, doc, streams, stats: Counter) -> _Side:
 
 def _checks(streams, tokens, side: _Side) -> list:
     """The narrative and notes cross-checks of ``tokens`` against the transcription's streams."""
-    narrative, notes = streams
-    body = [t for t in tokens if t.kind != "note"]
-    note_tokens = [t for t in tokens if t.kind == "note"]
-    return [
-        X.crosscheck(
-            "narrative", narrative, body, vocab=side.vocab, second=side.second
-        ),
-        X.crosscheck("notes", notes, note_tokens, vocab=side.vocab, second=side.second),
-    ]
+    return C.stream_checks(streams, tokens, side.vocab, side.second)
 
 
 def _sha256(path: Path) -> str:
@@ -231,30 +223,17 @@ def _correct(args, side: _Side, checks, streams) -> dict:
     if markdown is None:  # _args guarantees --chandra-md with --corrected-out
         raise InputError("--corrected-out needs --chandra-md (the text to correct)")
     newline = _newline(args)  # refuse mixed endings before any work
-    plan = C.plan_corrections(checks, markdown, side.vocab, side.second)
-    corrected = C.apply_corrections(markdown, plan.corrections)
-    tokens = X.chandra_tokens(corrected, args.first, side.printed, streams)
-    after = _checks(streams, tokens, side)
-    X.reconcile_moved(after)
-    remaining = _keys(after, correctable=True)
-    landed = remaining == sorted(_key(*k) for k in plan.skipped_differences)
-    unchanged = _keys(checks, correctable=False) == _keys(after, correctable=False)
+    verified = C.correct_verified(
+        markdown, args.first, streams, checks, side.vocab, side.second, side.printed
+    )
     summary = {
         "source": str(args.chandra_md),
         "source_sha256": _sha256(args.chandra_md),
-        "applied": len(plan.corrections),
-        "skipped": dict(plan.skipped),
-        "correctable_remaining": len(remaining),
-        "remaining_are_the_skipped": landed,
-        "other_differences_unchanged": unchanged,
+        **verified.summary(),
     }
-    log = {
-        **summary,
-        "corrections": [asdict(c) for c in plan.corrections],
-        "skipped_differences": plan.skipped_differences,
-    }
+    log = {**summary, **verified.log()}
     _observ(f"corrections {summary}")
-    _publish(args.corrected_out, landed and unchanged, corrected, log, newline)
+    _publish(args.corrected_out, verified.ok, verified.corrected, log, newline)
     return summary
 
 
@@ -296,23 +275,6 @@ def _newline(args) -> str:
             f"{args.chandra_md} mixes line endings: normalise it (all LF or all CRLF) first"
         )
     return "\r\n" if crlf else "\n"
-
-
-def _keys(checks, correctable: bool) -> list:
-    """The differences as comparable keys (see ``_key``)."""
-    return sorted(
-        _key(d.cls, d.html, d.pdf)
-        for c in checks
-        for d in c.differences
-        if (d.cls in X.CORRECTABLE) == correctable
-    )
-
-
-def _key(cls: str, html: str, pdf: str) -> tuple:
-    """A difference's class and the WORDS on each side, order aside: after a correction the
-    alignment may group a one-sided run differently ("Van Fleet Col James A" / "Fleet Col James
-    A Van") - the same text, not a change; any changed or lost word still differs."""
-    return (cls, tuple(sorted(html.split())), tuple(sorted(pdf.split())))
 
 
 def _report_dict(args, checks, moved, stats) -> dict:

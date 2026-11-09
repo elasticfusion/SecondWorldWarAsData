@@ -80,7 +80,7 @@ _CONFUSIONS = (
     ("rn", "m"), ("vv", "w"), ("cl", "d"), ("w", "v"),
     ("1", "l"), ("i", "l"), ("0", "o"), ("5", "s"), ("8", "b"),
 )  # fmt: skip
-_HOMOGLYPH_CHARS = "аеорсухтнмкві" "αεορτυικνχ"
+HOMOGLYPH_CHARS = "аеорсухтнмкві" "αεορτυικνχ"
 
 
 @dataclass
@@ -380,12 +380,12 @@ def _is_ordinal_suffix(prev: Token, t: Token, markdown: str) -> bool:
     suffix = t.text.lower()
     return (
         bool(_ORDINAL.match(prev.text + suffix))
-        and _suffix_agrees(prev.text, suffix)
+        and suffix_agrees(prev.text, suffix)
         and markdown[prev.span[1] : t.span[0]] == "<sup>"
     )
 
 
-def _suffix_agrees(number: str, suffix: str) -> bool:
+def suffix_agrees(number: str, suffix: str) -> bool:
     """English ordinal suffix for ``number``; the Army's "2d"/"3d" style counts too."""
     teen = number[-2:-1] == "1"
     last = number[-1]
@@ -426,12 +426,12 @@ def _chandra_kind(paragraph: str, body: str, placed) -> str:
     """body | note | note:placed | layout"""
     if _NOTE_DEF.match(paragraph):
         return "note"
-    if _is_chandra_caption(paragraph):
+    if is_chandra_caption(paragraph):
         return "layout"
     return "note:placed" if placed(body) else "body"
 
 
-def _is_chandra_caption(paragraph: str) -> bool:
+def is_chandra_caption(paragraph: str) -> bool:
     """The words before the first italic are an ALL-CAPS title (at most one lower-case word, as
     in "... BEACHHEAD at *Lion-sur-Mer*"): "XIX CORPS ordered the attack on *Texas*" is not.
     """
@@ -612,7 +612,7 @@ def _unaccented(text: str) -> str:
 
 
 def has_homoglyphs(word: str) -> bool:
-    return any(ch.lower() in _HOMOGLYPH_CHARS for ch in word)
+    return any(ch.lower() in HOMOGLYPH_CHARS for ch in word)
 
 
 def _confused(word: str) -> str:

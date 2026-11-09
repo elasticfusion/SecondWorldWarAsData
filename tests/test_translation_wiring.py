@@ -89,19 +89,14 @@ def test_convert_translates_before_promote(monkeypatch):
 
 def test_ocr_merge_translates_narrative(monkeypatch):
     import lambda_handlers.ocr_merge_handler as mh
+    from tests.fake_s3 import FakeS3
 
     monkeypatch.setattr(mh, "BUCKET", "buck")
-    s3 = MagicMock()
-    s3.get_paginator.return_value.paginate.return_value = [
-        {"Contents": [{"Key": "ocr-output/B9/input/input.md"}]}
-    ]
-    s3.get_object.return_value = {
-        "Body": MagicMock(
-            read=lambda: b"# Doc\n\nDeutscher Bericht mit genug Text hier."
-        )
-    }
-    s3.head_object.side_effect = Exception("404")  # not structured -> narrative
-
+    s3 = FakeS3(
+        {
+            "ocr-output/B9/input/input.md": "# Doc\n\nDeutscher Bericht mit genug Text hier."
+        }
+    )
     called = {}
 
     def fake_norm(md, **k):
@@ -111,19 +106,13 @@ def test_ocr_merge_translates_narrative(monkeypatch):
     with (
         patch.object(mh, "_s3", return_value=s3),
         patch("src.ingestion.translation.normalize_markdown_to_english", fake_norm),
+        patch("src.ingestion.review_reject.reject_to_review"),
     ):
         out = mh.merge_ocr_output("B9")
     assert out == "contentrepository/B9/chapter1/chapter1-content.md"
     assert called["per_page"] is True  # OCR uses per-page detection
-    content = [
-        c
-        for c in s3.put_object.call_args_list
-        if c.kwargs.get("Key", "").endswith("chapter1-content.md")
-    ][0]
-    assert b"English report" in content.kwargs["Body"]
-
-
-# --- VIDEO segment translation ---
+    assert "English report" in s3.text(out)
+    assert "Deutscher" in s3.text("ocr-output/B9/merged/raw.md")  # the raw OCR is kept
 
 
 def test_video_translate_segments_preserves_structure(monkeypatch):

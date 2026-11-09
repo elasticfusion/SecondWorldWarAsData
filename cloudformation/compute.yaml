@@ -286,6 +286,50 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: phase0ingest
 
+  Phase0CrosscheckTaskDef:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${EnvironmentName}-wwii-phase0-crosscheck
+      Cpu: '1024'
+      Memory: '2048'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      TaskRoleArn: !Ref ECSTaskRoleArn
+      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
+      ContainerDefinitions:
+        - Name: pipeline
+          Image: !Ref PipelineImageUri
+          StopTimeout: 30
+          # OCR cross-check track: an OCR'd narrative book whose upload carries a
+          # validation URL (a transcription) is sanitised, split into chapters,
+          # cross-checked + corrected against the transcription, normalised and
+          # published to contentrepository/ (which starts Phase 1). Launched by
+          # ocr_merge_handler once every OCR chunk is in. Needs NAT (fetches the URL).
+          Command: ['phase0_ocr_crosscheck.py']
+          Environment:
+            - Name: ENV_NAME
+              Value: !Ref EnvironmentName
+            - Name: AWS_DEFAULT_REGION
+              Value: !Ref AWS::Region
+            - Name: S3_BUCKET
+              Value: !Ref DataBucketName
+            - Name: CACHE_TABLE
+              Value: !Ref CacheTableName
+            - Name: MULTI_DOC_ENABLED
+              Value: !Ref MultiDocEnabled
+            - Name: SECRETS_ID
+              Value: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
+            - Name: NOTIFICATION_TOPIC_ARN
+              Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+            - Name: GROK_CACHE_DISABLED
+              Value: !Ref GrokCacheDisabled
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref PipelineLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: phase0crosscheck
+
   Phase0VideoTaskDef:
     Condition: HasVideoImage
     Type: AWS::ECS::TaskDefinition
@@ -699,6 +743,40 @@ Resources:
           Arn: !GetAtt TriggerFunction.Arn
           Input: '{"source": "scheduled", "action": "check_locks"}'
 
+  # --- OCR cross-check task died without finishing: relaunch once, then alert ---
+  # The task is one-shot (no restart). Every STOPPED event of its family goes to the OCR merge
+  # Lambda, which ignores clean exits and failures the task reported itself, relaunches a task that
+  # died holding the merge claim (more memory), and alerts only if the retry dies too.
+  CrosscheckStoppedRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-crosscheck-stopped
+      Description: Phase 0 OCR cross-check task STOPPED - recover it (one retry) or alert
+      State: ENABLED
+      EventPattern:
+        source:
+          - aws.ecs
+        detail-type:
+          - ECS Task State Change
+        detail:
+          clusterArn:
+            - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${EnvironmentName}-wwii-pipeline
+          lastStatus:
+            - STOPPED
+          group:
+            - !Sub "family:${EnvironmentName}-wwii-phase0-crosscheck"
+      Targets:
+        - Id: OcrMergeLambda
+          Arn: !GetAtt OcrMergeFunction.Arn
+
+  CrosscheckStoppedPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref OcrMergeFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt CrosscheckStoppedRule.Arn
+
   SpotTerminationPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -949,6 +1027,7 @@ Resources:
           CACHE_TABLE: !Ref CacheTableName
           ECS_CLUSTER: !Sub ${EnvironmentName}-wwii-pipeline
           PHASE0_INGEST_TASK_DEF: !Sub ${EnvironmentName}-wwii-phase0-ingest
+          PHASE0_CROSSCHECK_TASK_DEF: !Sub ${EnvironmentName}-wwii-phase0-crosscheck
           PRIVATE_SUBNET_IDS: !Sub "${PrivateSubnet1Id},${PrivateSubnet2Id}"
           SECURITY_GROUP_ID: !Ref LambdaSGId
           SECRETS_ID: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key

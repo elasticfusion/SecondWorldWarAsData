@@ -9,6 +9,7 @@ import logging
 import os
 import time
 import urllib.parse
+import uuid
 from typing import Optional
 
 import boto3
@@ -1019,6 +1020,35 @@ def _claim_or_reclaim_ocr(claim_key: str, pdf_name: str) -> bool:
     return True
 
 
+def _validation_url(key: str) -> str:
+    """The upload's optional transcription to cross-check its OCR against: object metadata
+    ``validation-url`` (``aws s3 cp ... --metadata validation-url=<url>``; the future submit UI's
+    optional URL field), cleaned (http(s), public host). "" when absent or unusable - the OCR is
+    then sanitised but never cross-checked against nothing. Never raises."""
+    try:
+        meta = (
+            boto3.client("s3").head_object(Bucket=BUCKET, Key=key).get("Metadata") or {}
+        )
+    except Exception as e:  # noqa: BLE001 - absent/transient: no validation
+        logger.warning("validation-url lookup failed for %s: %s", key, e)
+        return ""
+    raw = str(meta.get("validation-url") or meta.get("validation_url") or "").strip()
+    if not raw:
+        return ""
+    from src.utils.url_hygiene import clean_url
+
+    url = clean_url(raw) or ""
+    if not url:
+        observe_error(
+            "ocr",
+            "validation_url_rejected",
+            note="upload's validation-url is not a public http(s) URL: OCR will NOT be "
+            "cross-checked; re-upload with a valid --metadata validation-url=<url>",
+            key=key,
+        )
+    return url
+
+
 def _submit_ocr(pdf_key: str) -> bool:
     """Submit Chandra GPU OCR for a raw PDF/image (Option B: -> Phase 0), with
     best-guess page-range chunking so a SPOT reclaim loses one chunk, not the whole
@@ -1063,11 +1093,26 @@ def _submit_ocr(pdf_key: str) -> bool:
                 )
         chunks = _ocr_chunks(pdf_key)
         try:
+            # The merge promotes only once EVERY chunk of this submission is in (one merge,
+            # whole book): record the expected chunks BEFORE any job can finish.
+            from src.ingestion import ocr_chunk_manifest as manifest
+
+            manifest.write_manifest(
+                boto3.client("s3"),
+                BUCKET,
+                pdf_name,
+                manifest.build_manifest(
+                    uuid.uuid4().hex,
+                    chunks,
+                    source_key=pdf_key,
+                    validation_url=_validation_url(pdf_key),
+                ),
+            )
             batch = _batch_client()
             for rng in chunks:
                 if rng:
                     a, b = rng.split("-")
-                    out = f"s3://{BUCKET}/ocr-output/{pdf_name}/chunk-p{int(a):04d}-{int(b):04d}/"
+                    out = f"s3://{BUCKET}/ocr-output/{pdf_name}/{manifest.chunk_dir(rng)}/"
                     job_name = f"chandra-{pdf_name}-p{a}-{b}"[:128].replace(" ", "_")
                     cmd = [s3_input, out, "--page-range", rng]
                 else:

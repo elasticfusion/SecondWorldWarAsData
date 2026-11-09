@@ -1133,6 +1133,33 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
 
 ## 4. INFRA / SECURITY / COST
 
+- **[MED · notes, owner 2026-11-09] Endnotes in OCR'd books.** `chandra_markdown` handles notes printed at the foot
+  of each page (`<sup>N</sup>` paragraphs, gathered into one `### Footnotes` section; kind "footnote"). A book that
+  collects its notes at the end of each chapter or of the book (a "Notes" / "Endnotes" section in Chandra's output,
+  with the numbers restarting or running on) is NOT handled or tested: the section would stay narrative text and
+  its markers unmatched. Needs: detect the section, parse its definitions (kind "endnote", the book's own heading as
+  the label), match markers across chapters when the numbers run on, and a fixture from a real endnote book. The
+  PDF is the defining document for notes: the repeated-number case (first definition kept, the repeat only in
+  `postprocess.json`) was accepted as is.
+- **[MED · ocr-resilience, found in the 2026-11-09 pre-commit review] OCR merge hardening still open.**
+  (a) A Batch job of an EARLIER submission that finishes AFTER a re-OCR's manifest was written produces output
+  newer than the manifest and is taken for the new submission's: write chunk output under
+  `ocr-output/{book}/{submission}/chunk-…/` so staleness never depends on time. (b) DONE (2026-11-09): a cross-check task that dies hard (OOM, the NAT/credit pre-flight `sys.exit`, a failure to
+  start) is relaunched once with 4 GiB by the `CrosscheckStoppedRule` EventBridge rule -> OCR merge Lambda
+  (`handle_crosscheck_stopped`), and alerts (`ocr_merge.crosscheck_died`) only if the retry dies too. The
+  `claim_stale` warning and the forced re-drive (`ocr_chunk_manifest.redrive_command`) remain the manual path.
+  (c) A book OCR'd with no manifest (operator CLI) still merges whatever chunks exist: give
+  `scripts/submit_ocr_job.py` the same manifest. (d) `chandra_markdown`: a hyphen at a break is removed when
+  the book never prints the compound ("anti-"/"aircraft"); the HyperWar text, when there is a validation URL,
+  could settle it.
+- **[DONE in template, deploy pending · cost, owner 2026-11-08] Noncurrent-version expiry scoped to
+  high-churn prefixes.** The bucket-wide 30-day `ExpireOldVersions` rule is removed from
+  `cloudformation/storage.yaml`; old versions now expire only under `tmp/`, `cache/`, `scratch/` (7d),
+  `av-test/` (1d), `relocated/`, `manifests/` (30d). Kept forever: `contentrepository/`, `output/`,
+  `ocr-output/`, `source/`, `artifacts/`, `dedup/`, `needs-review/`, `person_photos/`. After deploy,
+  check noncurrent bytes (S3 Storage Lens / inventory) after a month — `output/` is rewritten every
+  run, so its retained versions are the item to watch.
+
 - **[TRIVIAL · housekeeping, found 2026-10-20 in #486 review] Stale `concurrent.py` string literals
   in scripts/archive/qa/.** Dead archived one-off QA scripts reference the now-deleted module; never
   imported/CI'd. Optional cleanup in a future housekeeping pass.

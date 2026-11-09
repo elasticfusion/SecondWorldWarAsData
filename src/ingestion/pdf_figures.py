@@ -228,7 +228,7 @@ def _caption_after(paragraphs, i: int, page: int) -> Optional[str]:
     if i + 1 >= len(paragraphs) or paragraphs[i + 1][0] != page:
         return None
     text = paragraphs[i + 1][2]
-    if _IMAGE_PARAGRAPH.match(text) or not X._is_chandra_caption(text):
+    if _IMAGE_PARAGRAPH.match(text) or not X.is_chandra_caption(text):
         return None
     return " ".join(X._MD_MARKUP.sub(" ", text).split())
 
