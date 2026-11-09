@@ -1953,6 +1953,8 @@ def _run_task(task_def, source, book_name="", extra_env=None):
             "Rejecting unsafe book_name %r for %s (not launching)", book_name, source
         )
         return
+    if _task_family(task_def) == _task_family(AV_SCAN_TASK_DEF):
+        return _run_av_scan(task_def, source, extra_env)
     # Cancel any pending delayed teardown
     _cancel_delayed_teardown()
 
@@ -1979,6 +1981,20 @@ def _run_task(task_def, source, book_name="", extra_env=None):
     _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family)
 
 
+def _run_av_scan(task_def, source, extra_env) -> None:
+    """Launch ONE ClamAV scan task. Scans are independent (each has its own keys and its own result
+    file), so they take no shared task lock: under the family lock a second scan was silently
+    skipped (the scanner then polled 10 minutes for a result that never came and quarantined its
+    uploads), and the lock itself was never cleared (``TASK_FAMILIES`` has no entry for it), which
+    also kept the NAT up for its 2 h TTL. A launch failure raises, so the scanner fails closed.
+    """
+    _cancel_delayed_teardown()
+    _fire_nat_warmup("av-scan")
+    # nothing ever holds this key: only the launch-failure path deletes it
+    lock_key = f"lock#av-scan#{uuid.uuid4().hex}"
+    _launch_ecs_task(task_def, source, "", extra_env, lock_key, "av-scan")
+
+
 def _fire_nat_warmup(family: str) -> None:
     """Fire-and-forget async NAT warm-up invoke. A failed warm-up is non-fatal
     (the phase invokes nat-manager itself before egress); log and proceed."""
@@ -1995,7 +2011,7 @@ def _fire_nat_warmup(family: str) -> None:
         logger.warning("Async NAT warm-up invoke failed (phase will retry): %s", e)
 
 
-def _build_env_overrides(book_name, extra_env):
+def _build_env_overrides(book_name, extra_env, batch_passthrough=True):
     """Assemble the container env overrides for a task launch.
 
     BOOK_NAME + any caller extra_env, PLUS a testing passthrough: a batch-mode override set on
@@ -2009,11 +2025,27 @@ def _build_env_overrides(book_name, extra_env):
         env_over.append({"name": "BOOK_NAME", "value": book_name})
     if extra_env:
         env_over.extend(extra_env)
-    for bk in ("BATCH_PHASE2", "BATCH_PHASE3"):
+    for bk in ("BATCH_PHASE2", "BATCH_PHASE3") if batch_passthrough else ():
         bv = os.environ.get(bk)
         if bv is not None:
             env_over.append({"name": bk, "value": bv})
     return env_over
+
+
+def _task_family(task_def: str) -> str:
+    """``task_def`` (a family, family:revision or ARN) as its bare family name."""
+    return task_def.rsplit("/", 1)[-1].split(":")[0]
+
+
+def _override_container(task_def: str) -> str:
+    """The container of ``task_def`` that environment overrides address. ECS rejects an override
+    naming a container the task definition does not have, so the name must match the template:
+    every pipeline task's container is ``pipeline``; the ClamAV scan task's is ``clamav``
+    (cloudformation/compute.yaml AvScanTaskDef). Naming ``pipeline`` for the scan task made every
+    scan fail to launch, so every binary upload was quarantined as unscannable."""
+    if _task_family(task_def) == _task_family(AV_SCAN_TASK_DEF):
+        return "clamav"
+    return "pipeline"
 
 
 def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
@@ -2025,9 +2057,13 @@ def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
     logger.info(
         "Launching ECS task %s from %s (book=%s)", family, source, book_name or "all"
     )
-    env_over = _build_env_overrides(book_name, extra_env)
+    container = _override_container(task_def)
+    # the batch-mode passthrough is for the pipeline phases; the scan container has no use for it
+    env_over = _build_env_overrides(
+        book_name, extra_env, batch_passthrough=container == "pipeline"
+    )
     overrides = (
-        {"containerOverrides": [{"name": "pipeline", "environment": env_over}]}
+        {"containerOverrides": [{"name": container, "environment": env_over}]}
         if env_over
         else {}
     )

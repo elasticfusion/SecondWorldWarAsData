@@ -631,11 +631,13 @@ Resources:
       FunctionName: !Sub ${EnvironmentName}-wwii-trigger
       Runtime: python3.12
       Handler: lambda_handlers.trigger_handler.handler
-      Timeout: 300
-      # Generous timeout for the launch handler. NOTE: the trigger NO LONGER waits
-      # for NAT (it fires an async warm-up and launches immediately); Phase 2/3
-      # validate NAT readiness themselves. 300s is headroom for S3/DynamoDB
-      # bookkeeping + RunTask, not a NAT wait.
+      # Must exceed the AV scan poll in src/ingestion/av_scan.py (_poll_av_result: attempts x delay =
+      # 600 s): the malware gate waits inside this Lambda for the scan task's verdict, and a Lambda that
+      # timed out mid-poll never reached its quarantine logic (tests/test_trigger_container_override.py).
+      Timeout: 900
+      # NOTE: the trigger NO LONGER waits for NAT (it fires an async warm-up and launches
+      # immediately); Phase 2/3 validate NAT readiness themselves. Launching is seconds of S3/
+      # DynamoDB bookkeeping + RunTask; the long part is the AV scan wait above.
       # 128MB OOM-killed the handler mid-execution (used 127/128MB) AFTER writing
       # an OCR claim but BEFORE submitting the job — a silent doc drop (B401). The
       # handler reads the manifest + creates boto3 clients (batch/ecs/sns/ec2/dynamo)
