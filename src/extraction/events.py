@@ -552,6 +552,7 @@ def _save_event_output(response: dict, parsed_file: Path, output_dir: Path) -> P
             event_obj.get("EventID") or "?",
             n_subs,
         )
+        _observe_coverage(response, parsed_file)
         _emit_source_section_safe(response, parsed_file, output_dir)
     else:
         logger.warning(
@@ -563,6 +564,106 @@ def _save_event_output(response: dict, parsed_file: Path, output_dir: Path) -> P
             (response.get("Event", {}) or {}).get("EventID") or "?",
         )
     return output_file
+
+
+# Below this share of the chapter's narrative text (by characters, so headings weigh little) in
+# its sub-events, the chapter's entities are extracted from part of it only: alert.
+_MIN_COVERAGE = 0.8
+
+
+def _observe_coverage(response: dict, parsed_file: Path) -> None:
+    """How much of the chapter's narrative the sub-events hold. Every entity extractor reads the
+    sub-events' fulltext, so a paragraph in no sub-event yields no people, places, units ... :
+    a low share is an actionable error (re-run the chapter's event extraction). Observability
+    only - never raises."""
+    try:
+        found = _coverage(response, parsed_file)
+    except Exception as e:  # noqa: BLE001 - observability must never break extraction
+        logger.warning(
+            "OBSERV events.coverage status=unknown file=%s err=%s", parsed_file.name, e
+        )
+        return
+    if found is None:
+        return
+    share, paragraphs, missing = found
+    logger.info(
+        "OBSERV events.coverage file=%s share=%.3f paragraphs=%d uncovered=%d",
+        parsed_file.name,
+        share,
+        paragraphs,
+        len(missing),
+    )
+    if share < _MIN_COVERAGE:
+        from src.utils.observe import observe_error
+
+        observe_error(
+            "events",
+            "coverage_low",
+            note=(
+                f"sub-events hold only {share:.0%} of the chapter's narrative: entities of the "
+                "uncovered paragraphs are NOT extracted. Clear the chapter's events cache and "
+                "re-run its Phase 2 event extraction"
+            ),
+            file=parsed_file.name,
+            share=round(share, 3),
+            uncovered=_ranges(missing)[:20],
+        )
+
+
+def _coverage(response: dict, parsed_file: Path):
+    """(share of narrative characters covered, narrative paragraphs, uncovered numbers), or None
+    for a chapter with no narrative."""
+    with open(parsed_file, "r", encoding="utf-8") as f:
+        paragraphs = json.load(f).get("paragraphs", []) or []
+    content = _narrative_sizes(paragraphs)
+    total = sum(content.values())
+    if not total:
+        return None
+    covered = _covered_paragraphs(response)
+    share = sum(n for k, n in content.items() if k in covered) / total
+    return share, len(content), sorted(k for k in content if k not in covered)
+
+
+def _narrative_sizes(paragraphs: list) -> Dict[int, int]:
+    """{paragraph number: characters} of the narrative: no footnotes, no tables."""
+    return {
+        int(p["absolute_number"]): len(str(p.get("text", "")))
+        for p in paragraphs
+        if _is_numbered(p)
+        and not _is_footnote_paragraph(p, paragraphs)
+        and not _is_table(p)
+    }
+
+
+def _is_table(p: dict) -> bool:
+    """A table paragraph holds figures, not narrative the extractors are expected to cover."""
+    return str(p.get("text", "")).lstrip().startswith(("<table", "|"))
+
+
+def _is_numbered(p: Any) -> bool:
+    return isinstance(p, dict) and str(p.get("absolute_number", "")).isdigit()
+
+
+def _covered_paragraphs(response: dict) -> set:
+    covered = set()
+    for se in (response.get("Event", {}) or {}).get("Sub-events", []) or []:
+        fulltext = se.get("Sub-event_fulltext") if isinstance(se, dict) else None
+        for key in fulltext or {}:
+            key = str(key)
+            if key.startswith("Paragraph_") and key[10:].isdigit():
+                covered.add(int(key[10:]))
+    return covered
+
+
+def _ranges(numbers: List[int]) -> List[str]:
+    """[3, 4, 5, 9] -> ["3-5", "9"]."""
+    out: List[str] = []
+    for n in numbers:
+        if out and int(out[-1].split("-")[-1]) == n - 1:
+            out[-1] = f"{out[-1].split('-')[0]}-{n}"
+        else:
+            out.append(str(n))
+    return out
 
 
 def _emit_source_section_safe(
