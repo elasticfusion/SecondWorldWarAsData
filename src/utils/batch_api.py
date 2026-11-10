@@ -9,6 +9,8 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from src.utils import batch_stats
+
 logger = logging.getLogger(__name__)
 
 API_BASE = "https://api.x.ai/v1"
@@ -350,6 +352,9 @@ def poll_batch(
     headers = {"Authorization": f"Bearer {api_key}"}
     start = time.monotonic()
     consecutive_errors = 0
+    last_done = (
+        -1
+    )  # timing statistics are written only when the completed count changes
     while True:
         try:
             resp = requests.get(
@@ -375,13 +380,22 @@ def poll_batch(
 
         # Fail fast on xAI cancellation/rejection or an empty accepted batch
         # (raises BatchSubmissionError) instead of polling 0/0 for hours.
-        _check_batch_submission_ok(
-            batch,
-            batch_id,
-            submitted_count,
-            total,
-            grace_elapsed=(time.monotonic() - start) > _SUBMIT_GRACE_SECS,
-        )
+        try:
+            _check_batch_submission_ok(
+                batch,
+                batch_id,
+                submitted_count,
+                total,
+                grace_elapsed=(time.monotonic() - start) > _SUBMIT_GRACE_SECS,
+            )
+        except BatchSubmissionError:
+            batch_stats.record_outcome(batch_id, "rejected")
+            raise
+        if success + error != last_done:
+            last_done = success + error
+            batch_stats.record_progress(
+                batch_id, last_done, total, success, error, source="task"
+            )
 
         logger.info(
             "Batch %s: %d/%d complete (%d success, %d error, %d pending)%s",
@@ -413,6 +427,7 @@ def poll_batch(
             )
             batch["_poll_seconds"] = time.monotonic() - start
             batch["_timed_out"] = True
+            batch_stats.record_outcome(batch_id, "timeout")
             return batch
 
         time.sleep(interval)

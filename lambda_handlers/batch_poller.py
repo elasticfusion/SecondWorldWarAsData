@@ -213,6 +213,24 @@ def _check_batch_status(api_key: str, batch_id: str, submitted_at: int = 0) -> s
             success,
             error,
         )
+        # timing statistics: a batch that outlives its task is still timed (written on change)
+        try:  # never changes the batch's status: a failure here is only a lost statistic
+            from src.utils import batch_stats
+
+            batch_stats.record_progress(
+                batch_id,
+                success + error,
+                total,
+                success,
+                error,
+                source="poller",
+                submitted_at=int(submitted_at) if submitted_at else None,
+            )
+        except Exception as stats_err:  # noqa: BLE001
+            logger.warning(
+                "OBSERV batch_stats.write_failed op=poller err=%s",
+                type(stats_err).__name__,
+            )
 
         if total > 0 and success + error >= total:
             return _classify_complete_batch(batch_id, success, error, total)

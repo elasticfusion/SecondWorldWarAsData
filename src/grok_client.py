@@ -566,6 +566,7 @@ class GrokClient:
 
         try:
             batch_id = submit_batch(self.api_key, jsonl_path, batch_name)
+            self._record_batch_submitted(batch_id, batch_name, count)
             logger.info("Waiting for batch to complete (may take minutes to hours)...")
             batch_state = poll_batch(self.api_key, batch_id, submitted_count=count)
 
@@ -586,6 +587,31 @@ class GrokClient:
             )
             raise
         return batch_id, batch_state, ordered
+
+    def _record_batch_submitted(
+        self, batch_id: str, batch_name: str, count: int
+    ) -> None:
+        """Timing statistics (src/utils/batch_stats): the batch, its size and request kinds."""
+        try:
+            from collections import Counter
+
+            from src.utils import batch_stats
+
+            requests = getattr(self._batch_collector, "requests", None) or []
+            batch_stats.record_submitted(
+                batch_id,
+                requests=count,
+                by_type=dict(Counter(getattr(r, "cache_type", "?") for r in requests)),
+                name=batch_name,
+                model=str(getattr(self, "model", "") or ""),
+                phase=os.getenv("PIPELINE_PHASE", ""),
+            )
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - never a batch failure: it is already submitted
+            logger.warning(
+                "OBSERV batch_stats.write_failed op=submitted err=%s", type(e).__name__
+            )
 
     @staticmethod
     def _batch_prompt_preview(rid: str, requests_by_id: dict) -> str:
