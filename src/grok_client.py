@@ -390,12 +390,31 @@ class GrokClient:
         except Exception:  # noqa: BLE001 - traceability must never break a call
             pass
 
+    def cache_key_for(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        cache_type: str = "default",
+        temperature: float = 0.1,
+    ) -> str:
+        """The key ``extract_json``/``chat_completion`` store this request's answer under: prompt,
+        system prompt, temperature and the cache type's model. The one way to name an entry to
+        evict or replace."""
+        return self._make_cache_key(
+            prompt, temperature, self._get_model(cache_type), system_prompt or ""
+        )
+
     def clear_cache_entry(
-        self, prompt: str, cache_type: str = "default", temperature: float = 0.1
+        self,
+        prompt: str,
+        cache_type: str = "default",
+        temperature: float = 0.1,
+        system_prompt: Optional[str] = None,
     ) -> bool:
-        """Remove a single cache entry by prompt. Returns True if removed."""
+        """Remove a single cache entry by prompt (and the system prompt it was asked with).
+        Returns True if removed."""
         cache = self._get_cache(cache_type)
-        key = self._make_cache_key(prompt, temperature)
+        key = self.cache_key_for(prompt, system_prompt, cache_type, temperature)
         return cache.pop(key, None) is not None
 
     def _estimate_batch_cost(self) -> float:
@@ -1778,8 +1797,8 @@ class GrokClient:
         _retried=True so it can't recurse again). Shared by the poisoned-cache + short-response
         guards."""
         cache = self._get_cache(cache_type)
-        evict_key = cache_key or self._make_cache_key(
-            prompt, temperature, self._get_model(cache_type), system_prompt or ""
+        evict_key = cache_key or self.cache_key_for(
+            prompt, system_prompt, cache_type, temperature
         )
         cache.pop(evict_key, None)
         return self.extract_json(

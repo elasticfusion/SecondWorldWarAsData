@@ -56,7 +56,7 @@ def test_extract_events_resubmits_on_out_of_range_then_succeeds(tmp_path, monkey
         "chapter_title": "C",
         "chapter": "C",
         "paragraphs": [
-            {"absolute_number": str(i), "text": f"para {i}"} for i in range(1, 11)
+            {"absolute_number": i, "text": f"para {i}"} for i in range(1, 11)
         ],
         "images": [],
         "maps": [],
@@ -85,7 +85,9 @@ def test_extract_events_resubmits_on_out_of_range_then_succeeds(tmp_path, monkey
 
     def fake_extract_json(**kw):
         calls["n"] += 1
-        return _ev(list(range(900, 1000))) if calls["n"] == 1 else _ev([1, 2, 3])
+        return (
+            _ev(list(range(900, 1000))) if calls["n"] == 1 else _ev(list(range(1, 11)))
+        )
 
     grok = mock.Mock()
     grok.extract_json.side_effect = fake_extract_json

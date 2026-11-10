@@ -62,13 +62,14 @@ def test_retry_runs_in_live_mode(tmp_path, monkeypatch):
 
     grok = types.SimpleNamespace(
         batch_mode=False,
-        clear_cache_entry=lambda prompt, cache_type: seen.__setitem__(
+        clear_cache_entry=lambda prompt, cache_type, system_prompt=None: seen.__setitem__(
             "cleared", seen["cleared"] + 1
         ),
     )
     retried, failed = phase2_extract._retry_missing_events([pf], grok, _Logger())
 
     assert seen["extracted"] == 1 and retried == 1 and failed == 0
+    assert seen["cleared"] == 1
 
 
 class _Logger:

@@ -720,7 +720,14 @@ def _retry_missing_events(parsed_files, grok_client, logger):
             parsed_data = json.load(f)
         prompt = create_event_prompt(parsed_data)
         if prompt:
-            grok_client.clear_cache_entry(prompt, cache_type="events")
+            from src.utils.prompt_loader import get_system_prompt
+
+            # the key the answer is cached under includes the system prompt and the model: a
+            # prompt-only key never matched, so the "retry with cache cleared" replayed the
+            # same cached answer
+            grok_client.clear_cache_entry(
+                prompt, cache_type="events", system_prompt=get_system_prompt("events")
+            )
 
         try:
             output_file = extract_events(

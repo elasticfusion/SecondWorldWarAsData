@@ -615,6 +615,11 @@ def _coverage(response: dict, parsed_file: Path):
     for a chapter with no narrative."""
     with open(parsed_file, "r", encoding="utf-8") as f:
         paragraphs = json.load(f).get("paragraphs", []) or []
+    return _coverage_of(response, paragraphs)
+
+
+def _coverage_of(response: dict, paragraphs: list):
+    """``_coverage`` over the chapter's ``paragraphs``."""
     content = _narrative_sizes(paragraphs)
     total = sum(content.values())
     if not total:
@@ -799,6 +804,9 @@ def _try_fix_ulid_errors(
         fixed_response = _fix_invalid_ulids(response)
         if isinstance(fixed_response, dict):
             validate_event_json(fixed_response)
+            found = _coverage(fixed_response, parsed_file)
+            if found is not None and found[0] < _MIN_COVERAGE:
+                return None  # fixed ids, but too little of the chapter: the retry loop decides
             logger.info("Fixed invalid ULIDs automatically")
             return _save_event_output(fixed_response, parsed_file, output_dir)
     except Exception as fix_err:  # noqa: BLE001
@@ -840,8 +848,12 @@ def _auto_split_and_extract(
     parsed_file: Path,
     output_dir: Path,
     grok_client: GrokClient,
+    require_coverage: bool = False,
 ) -> Optional[Path]:
-    """Split a too-large chapter into chunks, extract each, merge results."""
+    """Split a too-large chapter into chunks, extract each, merge results. With
+    ``require_coverage`` the merged sub-events must hold the chapter's narrative (_MIN_COVERAGE):
+    otherwise nothing is saved, the chunks' cached answers are evicted, and None is returned.
+    """
     content_paras = [
         p
         for p in parsed_data["paragraphs"]
@@ -868,19 +880,52 @@ def _auto_split_and_extract(
         return None
 
     merged = _merge_event_results(results)
-    if len(results) < len(chunks):
+    if require_coverage and _parts_leave_chapter_out(
+        merged, parsed_data, chunks, grok_client
+    ):
+        return None
+    _mark_partial(merged, len(results), len(chunks))
+    return _save_event_output(merged, parsed_file, output_dir)
+
+
+def _mark_partial(merged: dict, extracted: int, total: int) -> None:
+    """Record (and log) how many of the chapter's parts the merged answer holds."""
+    if extracted < total:
         merged["_partial"] = True
-        merged["_chunks_extracted"] = len(results)
-        merged["_chunks_total"] = len(chunks)
+        merged["_chunks_extracted"] = extracted
+        merged["_chunks_total"] = total
         logger.warning(
             "  Merged %d/%d chunks (partial — %d chunks failed)",
-            len(results),
-            len(chunks),
-            len(chunks) - len(results),
+            extracted,
+            total,
+            total - extracted,
         )
     else:
-        logger.info("  Merged %d chunks into single event", len(results))
-    return _save_event_output(merged, parsed_file, output_dir)
+        logger.info("  Merged %d chunks into single event", extracted)
+
+
+def _parts_leave_chapter_out(merged, parsed_data, chunks, grok_client) -> bool:
+    """Whether the merged parts still miss too much of the chapter (then their cached answers
+    are evicted, so a re-run asks afresh)."""
+    shortfall = _coverage_shortfall(merged, parsed_data)
+    if not shortfall:
+        return False
+    logger.warning(
+        "  The chapter's parts still cover only %.0f%% — not saved", shortfall[0] * 100
+    )
+    _evict_chunks(parsed_data, chunks, grok_client)
+    return True
+
+
+def _evict_chunks(parsed_data: dict, chunks: list, grok_client) -> None:
+    """Drop the chunks' cached answers (a re-run must ask afresh, not replay them)."""
+    system_prompt = get_system_prompt("events")
+    for chunk in chunks:
+        prompt = create_event_prompt({**parsed_data, "paragraphs": chunk})
+        if prompt:
+            grok_client.clear_cache_entry(
+                prompt, cache_type="events", system_prompt=system_prompt
+            )
 
 
 def _valid_paragraph_set(parsed_data: dict) -> set:
@@ -978,6 +1023,8 @@ def extract_events(
         return None
 
     original_prompt = prompt  # Keep original for cache key
+    system_prompt = get_system_prompt("events")
+    shortfall = None  # the last answer's coverage shortfall, if it was too low
 
     # Try to get valid JSON with retries
     for attempt in range(max_retries):
@@ -985,21 +1032,20 @@ def extract_events(
             # Call Grok API
             response = grok_client.extract_json(
                 prompt=prompt,
-                system_prompt=get_system_prompt("events"),
+                system_prompt=system_prompt,
                 temperature=0.1,
                 use_cache=True,
                 cache_type="events",
             )
         except GrokAPIError as e:
-            if "splitting chapter" not in str(e).lower():
-                raise
-            logger.warning("  Response truncated — auto-splitting chapter")
-            split_result = _auto_split_and_extract(
-                parsed_data, parsed_file, output_dir, grok_client
+            if shortfall:  # a truncated re-ask of a chapter already found under-covered
+                return _split_after_low_coverage(
+                    parsed_data, parsed_file, output_dir, grok_client, shortfall
+                )
+            return _split_on_truncation(
+                e, parsed_data, parsed_file, output_dir, grok_client
             )
-            if split_result:
-                return split_result
-            raise
+        raw = json.dumps(response)  # as answered, before normalisation rewrites it
 
         # VALIDATE-AND-RESUBMIT (user 2026-10-30): the response's paragraph_numbers are
         # deterministically constrained by our input — they MUST be a subset of the paragraphs we
@@ -1012,18 +1058,32 @@ def extract_events(
             _validate_paragraph_range(response, parsed_data, attempt)
             response = _normalize_event_response(response, parsed_data, parsed_file)
             validate_event_json(response)
-            # Validation passed - save and return
-            output_file = _save_event_output(response, parsed_file, output_dir)
-
-            if attempt > 0:
-                logger.info(f"  Validation passed on attempt {attempt + 1}")
-                # Cache the successful result with original prompt
-                cache = grok_client._get_cache("events")
-                cache[grok_client._make_cache_key(original_prompt, 0.1)] = json.dumps(
-                    response
+            # A complete, valid answer can still leave most of the chapter in no sub-event
+            # (Cross-Channel Attack ch. VIII, 2026-11-10: 7 sub-events held paragraphs 1-43 of 206,
+            # and every entity of the other 163 was never extracted): reject it like an invalid
+            # one - evict it, keep it for diagnosis, and ask again naming what was left out.
+            shortfall = _coverage_shortfall(response, parsed_data)
+            if shortfall:
+                _reject_low_coverage(
+                    grok_client,
+                    prompt,
+                    system_prompt,
+                    raw,
+                    parsed_file,
+                    attempt,
+                    shortfall,
                 )
-
-            return output_file
+                prompt = _coverage_retry_prompt(original_prompt, shortfall)
+                continue
+            # Validation passed - save and return
+            return _save_accepted(
+                response,
+                parsed_file,
+                output_dir,
+                attempt,
+                grok_client,
+                (original_prompt, system_prompt, raw),
+            )
 
         except ValidationError as e:
             fixed_output, prompt = _handle_validation_failure(
@@ -1032,8 +1092,171 @@ def extract_events(
             if fixed_output:
                 return fixed_output
 
+    if shortfall:
+        return _split_after_low_coverage(
+            parsed_data, parsed_file, output_dir, grok_client, shortfall
+        )
     # Should never reach here — all loop paths return or raise
     raise ValueError("Unexpected error in validation loop")
+
+
+def _split_on_truncation(e, parsed_data, parsed_file, output_dir, grok_client) -> Path:
+    """A truncated answer (the client asks for a split): extract the chapter in parts, else
+    re-raise ``e``."""
+    if "splitting chapter" not in str(e).lower():
+        raise e
+    logger.warning("  Response truncated — auto-splitting chapter")
+    split_result = _auto_split_and_extract(
+        parsed_data, parsed_file, output_dir, grok_client
+    )
+    if split_result:
+        return split_result
+    raise e
+
+
+def _save_accepted(response, parsed_file, output_dir, attempt, grok_client, asked):
+    """Save the accepted answer. After a retry, also store it under the ORIGINAL request's key
+    (``asked`` = original prompt, system prompt, answer as received), so a re-run of the chapter
+    is served it instead of re-asking - and re-rejecting - the first answer."""
+    output_file = _save_event_output(response, parsed_file, output_dir)
+    if attempt > 0:
+        logger.info(f"  Validation passed on attempt {attempt + 1}")
+        _cache_answer(grok_client, *asked)
+    return output_file
+
+
+def _coverage_shortfall(response: dict, parsed_data: dict) -> Optional[tuple]:
+    """(share, uncovered paragraph numbers) when the sub-events hold less than _MIN_COVERAGE of
+    the chapter's narrative, else None (also for a chapter with no narrative)."""
+    found = _coverage_of(response, parsed_data.get("paragraphs", []) or [])
+    if found is None or found[0] >= _MIN_COVERAGE:
+        return None
+    return found[0], found[2]
+
+
+def _reject_low_coverage(
+    grok_client, prompt, system_prompt, raw, parsed_file, attempt, shortfall
+) -> None:
+    """Evict the incomplete answer (with the cache on it would be served to every re-run), keep a
+    copy beside the cache for diagnosis (uploaded with it to diagnostics/cache/<book>/), log it.
+    """
+    share, missing = shortfall
+    evicted = grok_client.clear_cache_entry(
+        prompt, cache_type="events", system_prompt=system_prompt
+    )
+    kept = _keep_rejected(grok_client, parsed_file, attempt, raw, share, missing)
+    logger.warning(
+        "OBSERV events.coverage_rejected status=warn file=%s attempt=%d share=%.3f "
+        "uncovered=%s evicted=%s kept=%s — asking again with the uncovered paragraphs named",
+        parsed_file.name,
+        attempt + 1,
+        share,
+        _ranges(missing)[:20],
+        evicted,
+        kept or "-",
+    )
+
+
+def _keep_rejected(grok_client, parsed_file, attempt, raw, share, missing) -> str:
+    """Write the rejected answer under <cache dir>/rejected/<book>/ ("" if there is no cache dir
+    or the write fails: diagnostics never break extraction)."""
+    try:
+        base = getattr(grok_client, "cache_dir", None)
+        if base is None:
+            return ""
+        out = (
+            Path(base)
+            / "rejected"
+            / parsed_file.parent.name
+            / f"{parsed_file.stem}-coverage-attempt{attempt + 1}.json"
+        )
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(
+            json.dumps(
+                {
+                    "reason": "coverage_low",
+                    "share": round(share, 3),
+                    "uncovered": _ranges(missing),
+                    "answer": json.loads(raw),
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        return str(out)
+    except Exception as e:  # noqa: BLE001 - diagnostics only
+        logger.warning(
+            "Could not keep the rejected events answer: %s", type(e).__name__
+        )
+        return ""
+
+
+def _coverage_retry_prompt(original_prompt: str, shortfall: tuple) -> str:
+    """The original request, with what the previous answer left out (always built on the
+    original, so feedback never piles up over attempts)."""
+    share, missing = shortfall
+    return f"""{original_prompt}
+
+PREVIOUS ATTEMPT WAS INCOMPLETE:
+Your sub-events held only {share:.0%} of the chapter's narrative. These paragraphs are in NO
+sub-event: {", ".join(_ranges(missing)[:40])}.
+Every narrative paragraph must belong to exactly one sub-event. Read the WHOLE chapter, to its last
+paragraph, and return the complete set of sub-events.
+"""
+
+
+def _cache_answer(
+    grok_client, prompt: str, system_prompt: Optional[str], raw: str
+) -> None:
+    """Store ``raw`` as the answer to ``prompt`` (respecting the cache kill-switch)."""
+    from src.grok_client import _cache_globally_disabled
+
+    if _cache_globally_disabled():
+        return
+    key = grok_client.cache_key_for(prompt, system_prompt, "events", 0.1)
+    grok_client._get_cache("events")[key] = raw
+
+
+def _split_after_low_coverage(
+    parsed_data, parsed_file, output_dir, grok_client, shortfall
+) -> Path:
+    """Every attempt left too much of the chapter out: extract it in halves (each a shorter
+    request). If that does not cover it either, fail the chapter LOUDLY - never publish a chapter
+    whose entities come from a fraction of it."""
+    logger.warning(
+        "  Events cover only %.0f%% after every attempt — extracting the chapter in parts",
+        shortfall[0] * 100,
+    )
+    error = None
+    try:
+        out = _auto_split_and_extract(
+            parsed_data, parsed_file, output_dir, grok_client, require_coverage=True
+        )
+    except Exception as e:  # noqa: BLE001 - re-raised below, after the canonical alert
+        out, error = None, e
+    if out:
+        return out
+    from src.utils.observe import observe_error
+
+    observe_error(
+        "events",
+        "coverage_unrecoverable",
+        note=(
+            f"every events answer for this chapter held only {shortfall[0]:.0%} of its narrative, "
+            "also when extracted in parts: NO event file was written (entities of this chapter are "
+            "not extracted). The rejected answers are under diagnostics/cache/<book>/rejected/; "
+            "re-run the chapter's Phase 2 after reviewing them"
+        ),
+        file=parsed_file.name,
+        share=round(shortfall[0], 3),
+        uncovered=_ranges(shortfall[1])[:20],
+        split_error=type(error).__name__ if error else "",
+    )
+    if error is not None:
+        raise error
+    raise ValueError(
+        f"events for {parsed_file.name} cover only {shortfall[0]:.0%} of the chapter"
+    )
 
 
 def _normalize_event_response(response, parsed_data, parsed_file):
