@@ -1049,6 +1049,28 @@ def _validation_url(key: str) -> str:
     return url
 
 
+def _ocr_jobs(pdf_name: str, s3_input: str, chunks: list) -> list:
+    """(range, Batch job name, Chandra command) of every OCR chunk of ``pdf_name``. Raises
+    ValueError on a range Chandra cannot be given (see ocr_chunk_manifest.chandra_page_range).
+    """
+    from src.ingestion import ocr_chunk_manifest as manifest
+
+    jobs = []
+    for rng in chunks:
+        if rng:
+            a, b = rng.split("-")
+            out = f"s3://{BUCKET}/ocr-output/{pdf_name}/{manifest.chunk_dir(rng)}/"
+            job_name = f"chandra-{pdf_name}-p{a}-{b}"[:128].replace(" ", "_")
+            # Chandra's --page-range is 0-based; ``rng`` (and the chunk dir) is 1-based
+            cmd = [s3_input, out, "--page-range", manifest.chandra_page_range(rng)]
+        else:
+            out = f"s3://{BUCKET}/ocr-output/{pdf_name}/"
+            job_name = f"chandra-{pdf_name}"[:128].replace(" ", "_")
+            cmd = [s3_input, out]
+        jobs.append((rng, job_name, cmd))
+    return jobs
+
+
 def _submit_ocr(pdf_key: str) -> bool:
     """Submit Chandra GPU OCR for a raw PDF/image (Option B: -> Phase 0), with
     best-guess page-range chunking so a SPOT reclaim loses one chunk, not the whole
@@ -1092,11 +1114,15 @@ def _submit_ocr(pdf_key: str) -> bool:
                     "Could not write .structured marker for %s: %s", pdf_name, e
                 )
         chunks = _ocr_chunks(pdf_key)
+        from src.ingestion import ocr_chunk_manifest as manifest
+
         try:
+            # Every chunk's job is built FIRST: a range that cannot be converted fails the whole
+            # submission before a manifest is written or any GPU job starts (no half-submitted
+            # book), and the claim is released for a retry.
+            jobs = _ocr_jobs(pdf_name, s3_input, chunks)
             # The merge promotes only once EVERY chunk of this submission is in (one merge,
             # whole book): record the expected chunks BEFORE any job can finish.
-            from src.ingestion import ocr_chunk_manifest as manifest
-
             manifest.write_manifest(
                 boto3.client("s3"),
                 BUCKET,
@@ -1109,16 +1135,7 @@ def _submit_ocr(pdf_key: str) -> bool:
                 ),
             )
             batch = _batch_client()
-            for rng in chunks:
-                if rng:
-                    a, b = rng.split("-")
-                    out = f"s3://{BUCKET}/ocr-output/{pdf_name}/{manifest.chunk_dir(rng)}/"
-                    job_name = f"chandra-{pdf_name}-p{a}-{b}"[:128].replace(" ", "_")
-                    cmd = [s3_input, out, "--page-range", rng]
-                else:
-                    out = f"s3://{BUCKET}/ocr-output/{pdf_name}/"
-                    job_name = f"chandra-{pdf_name}"[:128].replace(" ", "_")
-                    cmd = [s3_input, out]
+            for rng, job_name, cmd in jobs:
                 batch.submit_job(
                     jobName=job_name,
                     jobQueue=OCR_JOB_QUEUE,

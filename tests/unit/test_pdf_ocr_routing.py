@@ -250,5 +250,11 @@ def test_submit_ocr_large_pdf_submits_chunk_set():
         c.kwargs["containerOverrides"]["command"]
         for c in batch.submit_job.call_args_list
     ]
-    assert any("--page-range" in c and "1-50" in c for c in cmds)
-    assert any("--page-range" in c and "51-100" in c for c in cmds)
+    # Chandra's --page-range is 0-based: physical pages 1-50 are indices 0-49 (passing "1-50"
+    # dropped every chunk's first page); the output directories stay 1-based physical.
+    assert any("--page-range" in c and "0-49" in c for c in cmds)
+    assert any("--page-range" in c and "50-99" in c for c in cmds)
+    assert not any("1-50" in c for c in cmds)
+    outs = [c[1] for c in cmds]
+    assert any(o.endswith("/chunk-p0001-0050/") for o in outs)
+    assert any(o.endswith("/chunk-p0051-0100/") for o in outs)

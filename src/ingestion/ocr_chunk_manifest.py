@@ -71,6 +71,40 @@ def chunk_dir(page_range: str) -> str:
     return f"chunk-p{int(first):04d}-{int(last):04d}"
 
 
+def chandra_page_range(page_range: str) -> str:
+    """A 1-based *physical* page-range spec as Chandra's 0-based ``--page-range`` argument.
+
+    Chandra's ``--page-range`` is 0-based (``chandra.input.parse_range_str`` matches PDF page
+    INDICES). Everything else here - chunk directories, manifests, logs, the merge's page numbers -
+    speaks 1-based physical pages. Passing a 1-based spec straight through dropped the FIRST page
+    of every chunk and read one page past its end (Cross-Channel Attack Chapter VIII, 2026-11-09:
+    chunk "1-50" OCR'd pages 2-51, so the chapter's opening page - its "CHAPTER VIII" heading - was
+    never read, and page 52 was read twice). Physical page N -> index N-1; single pages ("7"),
+    ranges ("1-50") and comma lists ("21-34,40") are converted. Raises ValueError on anything
+    else: a wrong page range must not reach a paid GPU job.
+    """
+    out = [
+        _chandra_token(t.strip(), page_range)
+        for t in page_range.split(",")
+        if t.strip()
+    ]
+    if not out:
+        raise ValueError(f"empty page range: {page_range!r}")
+    return ",".join(out)
+
+
+def _chandra_token(token: str, spec: str) -> str:
+    """One "N" or "A-B" of a 1-based spec as 0-based."""
+    first, sep, last = (part.strip() for part in token.partition("-"))
+    if not first.isdigit() or int(first) < 1 or (sep and not last.isdigit()):
+        raise ValueError(f"not a 1-based page range: {spec!r}")
+    if not sep:
+        return str(int(first) - 1)
+    if int(last) < int(first):
+        raise ValueError(f"backwards page range: {spec!r}")
+    return f"{int(first) - 1}-{int(last) - 1}"
+
+
 def book_prefix(book: str) -> str:
     return f"ocr-output/{book}/"
 
