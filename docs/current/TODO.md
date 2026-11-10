@@ -2085,6 +2085,30 @@ it's not blocking merges; the LOCAL gate.sh pip-audit trips on it. Fix: bump req
 pylint==4.0.9 as a standalone dep-maintenance change (not bundled into a feature PR). Unrelated to the
 map-as-source work that surfaced it.
 
+## [MED · robustness, owner 2026-11-10] Hand a long-waiting batch to the poller instead of holding a Spot task
+The Phase 2 task submits its Grok batch and then polls it IN-TASK (`batch_api.poll_batch`, up to
+24 h) on Fargate Spot. 2026-11-10: the Cross-Channel Attack chapter 8 re-run's 99-request batch
+(submitted 17:01 UTC) was still 65/99 after 4 h when Spot reclaimed the task (exit 143, 21:03). The
+task died mid-poll, before `_enqueue_from_metrics`, so the batch had NO `batch_job#` record and NO
+metrics file: orphaned (recovered by hand from `diagnostics/cache/<book>/batch_requests.jsonl` + the
+`cachekey.submit` log lines). Long waits are pure Spot exposure and idle compute.
+- **Hand-off:** past a time budget (e.g. `BATCH_INTASK_MAX_MIN`, ~90 min - small batches finish in
+  ~61 min), write the metrics file (`submitted_request_ids` in order) and a `pending` `batch_job#`,
+  then exit cleanly; the batch-poller launches the `--retrieve-only` task on completion.
+- **Register at submit, not after polling:** write the metrics + `batch_job#` (status
+  `in_task`, ignored by the poller) right after `submit_batch`, flipped to `retrieved`/`pending` at
+  the end - so a task killed at any point leaves a recoverable batch; the poller adopts an `in_task`
+  job whose task is gone.
+- Done when: a test kills the poll mid-way and the poller recovers the batch with no hand work.
+
+## [LOW · obs, owner 2026-11-10] Batch timing statistics from the results, not from polling
+`src/utils/batch_stats` (8449f2c3) records submit at submit time and progress on every change
+from the in-task poll and the poller. Simpler and more exact (owner suggestion): keep the submit
+write (xAI's batch record has only a DATE `create_time`, so the submit moment must be recorded
+live), drop the per-poll progress writes, and at retrieve compute first/last result and per-type
+durations from each result's own `created` timestamp (to the second). Live progress stays visible
+in the poller logs.
+
 ## [LOW · ops/cost, owner 2026-11-10] Manage the Grok response cache long-term
 The cache-off validation default (`GrokCacheDisabled='1'`, #648) was reverted to `'0'` on 2026-11-10:
 the Cross-Channel Attack run re-paid ~2,700 sync calls + 21 batch event answers with nothing cached,
