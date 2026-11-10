@@ -3217,6 +3217,12 @@ def _final_sync(phase_script: str = ""):
                 logger.info(
                     "OBSERV cache.synced files=%d prefix=%s", n_cache, _cache_prefix
                 )
+            else:
+                # the answers themselves live in the DynamoDB api-cache (when it is on); this
+                # directory holds only batch JSONL and rejected answers kept for diagnosis
+                logger.info(
+                    "OBSERV cache.synced files=0 status=absent dir=%s", cache_api
+                )
         except Exception as _e:  # noqa: BLE001 - diagnostics upload is best-effort
             logger.warning(
                 "OBSERV cache.synced status=error reason=%s", type(_e).__name__
@@ -4101,15 +4107,53 @@ def _enqueue_from_metrics(phase_script: str) -> bool:
         book,
         request_count,
     )
+    # A batch whose answers already came back in THIS task (the in-process poll ran to completion)
+    # is recorded as retrieved: as "pending" the poller launched a second, --retrieve-only task
+    # for it that re-ran the phase's paid calls and rewrote its entities after dedup (2026-11-10).
+    status = "retrieved" if _retrieved_in_task(metrics) else "pending"
+    if status == "retrieved":
+        logger.info(
+            "OBSERV batch.retrieved_in_task batch=%s requests=%d answered=%d — recorded as "
+            "retrieved (nothing for the poller)",
+            batch_id,
+            request_count,
+            _answered(metrics),
+        )
     _enqueue_or_alert(
-        batch_id, phase, book, metrics.get("batch_name", ""), request_count
+        batch_id,
+        phase,
+        book,
+        metrics.get("batch_name", ""),
+        request_count,
+        status=status,
     )
-    _notify_batch_submitted(phase, book, batch_id, request_count)
+    if status == "pending":
+        _notify_batch_submitted(phase, book, batch_id, request_count)
     return True
 
 
+def _answered(metrics: dict) -> int:
+    return int(metrics.get("api_successes", 0) or 0) + int(
+        metrics.get("api_errors", 0) or 0
+    )
+
+
+def _retrieved_in_task(metrics: dict) -> bool:
+    """Whether every request of the batch has an answer recorded in its metrics (the in-process
+    poll and retrieve completed) and at least one succeeded. A submit-only batch records none; an
+    all-error batch stays with the poller."""
+    total = int(metrics.get("total_requests", 0) or 0)
+    ok = int(metrics.get("api_successes", 0) or 0)
+    return total > 0 and ok > 0 and _answered(metrics) >= total
+
+
 def _enqueue_or_alert(
-    batch_id: str, phase: str, book: str, batch_name: str, request_count: int
+    batch_id: str,
+    phase: str,
+    book: str,
+    batch_name: str,
+    request_count: int,
+    status: str = "pending",
 ) -> None:
     """Register the submitted batch for the poller (batch_job#) AND verify it
     landed — a batch submitted to Grok but NOT enqueued is an orphan that stalls
@@ -4129,7 +4173,7 @@ def _enqueue_or_alert(
                 book=book,
                 batch_name=batch_name,
                 submitted_at=int(_t.time()),
-                status="pending",
+                status=status,
                 request_count=request_count,
             )
         )
@@ -4204,6 +4248,40 @@ def _notify_batch_submitted(
         )
     except Exception as e:
         logger.warning("Failed to send batch submitted notification: %s", e)
+
+
+def _populate_cache(grok_client, mapped: dict, batch_id: str) -> int:
+    """Store a retrieved batch's answers where the re-run will look for them: under the book's
+    prefix (``books/<BOOK_NAME>/<type>``, as the in-task path and every per-book lookup use - bare
+    keys were invisible to the re-run, which then asked Grok again), and not at all when the cache
+    is switched off (GROK_CACHE_DISABLED). Returns the number stored."""
+    from src.grok_client import _cache_globally_disabled, current_book
+
+    if _cache_globally_disabled():
+        logger.info(
+            "OBSERV batch.cache_populate status=skipped reason=cache_disabled batch=%s",
+            batch_id,
+        )
+        return 0
+    book = os.environ.get("BOOK_NAME", "").strip()
+    token = current_book.set(book) if book else None
+    populated = 0
+    try:
+        for cache_type, entries in mapped.items():
+            cache = grok_client._get_cache(cache_type)
+            for our_id, content in entries.items():
+                cache[our_id] = content
+                populated += 1
+    finally:
+        if token is not None:
+            current_book.reset(token)
+    logger.info(
+        "Populated %d cache entries from batch %s (book=%s)",
+        populated,
+        batch_id,
+        book or "-",
+    )
+    return populated
 
 
 def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
@@ -4351,13 +4429,7 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     grok_client = GrokClient(cache_dir)
 
     mapped = _map_batch_results_by_index(submitted, ordered_results, batch_id)
-    populated = 0
-    for cache_type, entries in mapped.items():
-        cache = grok_client._get_cache(cache_type)
-        for our_id, content in entries.items():
-            cache[our_id] = content
-            populated += 1
-    logger.info("Populated %d cache entries from batch %s", populated, batch_id)
+    populated = _populate_cache(grok_client, mapped, batch_id)
 
     # Re-run phase without --batch (hits cache, skip retry since batch results are authoritative)
     clean_args = [a for a in extra_args if a != "--batch"]
