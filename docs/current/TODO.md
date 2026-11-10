@@ -864,6 +864,27 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
   `original_text`/`verbatim_reference` (mentions junction → `*-parsed.json`) so a reviewer can judge
   "same Smith?" against real context.
 
+- **[MED · dedup, owner 2026-11-10] Externalize the duplication factors into a config file.** Every
+  weight, threshold and word list the dedup detectors score with should live in one config file
+  (e.g. `config/dedup.yaml`, or the `dedup:` block of `config.yaml`), with the code holding only
+  defaults, so tuning needs no code change or deploy of Python.
+  - **People: the existing config is dead.** `config.yaml` `dedup.people.weights`
+    (`shared_external_url`, `same_last_name`, `event_overlap_*`, `shared_biographical`,
+    `middle_initial_subset`) is loaded into `DedupConfig.weights`, but `find_duplicate_people.py`
+    never calls `cfg.weight(...)`: every check returns a literal (name similarity `> 0.7` and
+    `× 0.5`, same surname 0.4, shared bio 0.5, shared positions 0.3, substring 0.5, single-name
+    0.4/0.6 with `last_sim >= 0.85`, unicode/German variant 0.6, middle-initial 0.5, event overlap
+    0.8/1.5 at 0.3/0.5 ratios, title alias 2.0, shared URL 3.0). Editing the YAML changes nothing
+    today. Only proximity, rank-proximity, frequency/commonness, surname rarity, shared unit, the
+    conflicting-middle veto and the different-surname veto are actually config-driven.
+  - Word lists too: the rank/title and suffix sets in `_core_name_tokens`, `_TITLE_ALIASES`.
+  - **Equipment** (`find_duplicate_equipment.py`): no config at all (~12 literal thresholds).
+    **Places** (`find_duplicate_places_v2.py`): mostly literals. **Groups**: largely configured
+    (`_GROUP_DEFAULTS`).
+  - Done when: each factor is read from config with a default, the defaults reproduce today's
+    scores (a test diffing the duplicate report of a fixture corpus before/after), an invalid
+    value falls back to its default with a warning, and the config is documented beside each key.
+
 ### 1.5 Phase-2 ingestion polish
 
 - **[LOW · ingestion] `chapterN-meta.yaml` sidecars rejected by the Phase-0 type-gate** → 21
@@ -2064,12 +2085,27 @@ it's not blocking merges; the LOCAL gate.sh pip-audit trips on it. Fix: bump req
 pylint==4.0.9 as a standalone dep-maintenance change (not bundled into a feature PR). Unrelated to the
 map-as-source work that surfaced it.
 
-## [LOW · ops/cost] Revert GrokCacheDisabled default to '0' after the data-quality validation cycle
-`cloudformation/compute.yaml` sets the `GrokCacheDisabled` CFN param default to `'1'` (Grok cache
-OFF pipeline-wide, phase0-3) for the current trusted-fresh validation cycle. This is a STANDING
-"cache off" = every run re-pays Grok API cost with no reuse, and it persists across deploys until
-flipped. ACTION: once the data-quality cycle concludes, set the stack param to `'0'` (or change the
-template default) to re-enable caching. (Operational note from the #648 independent review.)
+## [LOW · ops/cost, owner 2026-11-10] Manage the Grok response cache long-term
+The cache-off validation default (`GrokCacheDisabled='1'`, #648) was reverted to `'0'` on 2026-11-10:
+the Cross-Channel Attack run re-paid ~2,700 sync calls + 21 batch event answers with nothing cached,
+and its bad chapter 8 events answer could not be inspected afterwards. Caching is now ON; manage it:
+- **No poisoned entries.** A cached answer that a later check rejects must be EVICTED, or every
+  re-run replays it. The events coverage check (chapter 8, 16% coverage) is the first case: the
+  low-coverage answer must be evicted when it is rejected, before the re-ask. Audit the other
+  validate-and-resubmit paths (`paragraph_range_invalid`, schema failures) for the same.
+- **One write path, one key scheme.** The `--retrieve-only` path (`ecs_entrypoint.py`, batch results
+  -> `grok_client._get_cache(...)[id] = ...`) ignores `GROK_CACHE_DISABLED` and never sets
+  `current_book`, so its entries land as bare `casualties#<h>` / `weather#<h>` instead of
+  `books/<book>/<type>#<h>` (seen 2026-11-10 13:29 from the duplicate retrieve task). Route it
+  through the same guarded, book-scoped write as the in-task path.
+- **Fresh runs on purpose.** A per-run / per-title "fresh" option (today only `REPROCESS_TITLE`
+  clears the local per-title events cache) instead of the stack-wide kill-switch; record in each
+  record's provenance whether the answer came from cache.
+- **Lifetime and size.** TTL is 90 days (`aws.cache_ttl_days`); decide whether book extraction
+  answers should outlive it. `GrokClient` preloads the WHOLE table with one Scan per task: watch its
+  size/time as the corpus grows, and scope the preload to the book's prefix.
+- **Observability.** Cache hit/miss and the Grok spend avoided per run in the run summary / Slack
+  completion message, so a silently-off cache is visible.
 
 ## LOW: gate.sh pytest step flakes (64 errors) — pre-existing, env-only
 `scripts/gate.sh`'s pytest step reports `1 failed, 64 errors` (tests/unit RuntimeError

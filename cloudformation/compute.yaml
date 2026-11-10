@@ -20,13 +20,14 @@ Parameters:
       BATCH_PHASE2 env, consumed by phase2_extract.py), e.g. for a deliberate measurement run.
   GrokCacheDisabled:
     Type: String
-    Default: '1'
+    Default: '0'
     AllowedValues: ['0', '1']
     Description: >-
-      Grok response-cache kill-switch for the pipeline tasks. '1' suppresses ALL Grok cache
-      reads AND writes (every request hits the API fresh; nothing stale served or written) —
-      the trusted-fresh default for the data-quality validation cycle. Set '0' to re-enable
-      caching. Consumed by src/grok_client._cache_globally_disabled().
+      Grok response-cache kill-switch for the pipeline tasks. '0' (default, owner 2026-11-10:
+      the validation cycle's cache-off default re-paid every Grok call on every run) caches
+      responses in the DynamoDB api-cache. '1' suppresses ALL Grok cache reads AND writes (every
+      request hits the API fresh; nothing stale served or written) - for a trusted-fresh run.
+      Consumed by src/grok_client._cache_globally_disabled().
   OpenSerpWorkerPoolSize:
     Type: String
     Default: '0'
