@@ -54,30 +54,38 @@ def _similarity_ratio(name1: str, name2: str) -> float:
 
 
 @lru_cache(maxsize=5000)
+def _core_name_tokens(name: str) -> tuple:
+    """The name's words without ranks/titles and suffixes ("Lt. Col. Robert G. Cole, Jr." ->
+    ("Robert", "G", "Cole"))."""
+    titles = {
+        "general",
+        "colonel",
+        "major",
+        "captain",
+        "lieutenant",
+        "field",
+        "marshal",
+        "admiral",
+        "commander",
+        "sergeant",
+    }
+    suffixes = {"jr.", "jr", "sr.", "sr", "ii", "iii", "iv"}
+    return tuple(
+        p.strip(".,")
+        for p in name.split()
+        if p.strip(".,")
+        and p.lower().strip(".,") not in titles
+        and p.lower().strip(".,") not in suffixes
+    )
+
+
+@lru_cache(maxsize=5000)
 def _extract_last_name(name: str) -> str:
     """Extract likely last name from full name."""
     parts = name.split()
     if len(parts) > 1:
         # Skip titles/ranks and suffixes
-        titles = {
-            "general",
-            "colonel",
-            "major",
-            "captain",
-            "lieutenant",
-            "field",
-            "marshal",
-            "admiral",
-            "commander",
-            "sergeant",
-        }
-        suffixes = {"jr.", "jr", "sr.", "sr", "ii", "iii", "iv"}
-        filtered = [
-            p.strip(".,")
-            for p in parts
-            if p.lower().strip(".,") not in titles
-            and p.lower().strip(".,") not in suffixes
-        ]
+        filtered = _core_name_tokens(name)
         if filtered:
             return filtered[-1].lower()
     return name.lower()
@@ -748,6 +756,57 @@ def _check_conflicting_middle(
     return [], 0.0
 
 
+def _is_full_name(name: str) -> bool:
+    """A given name (or initial) and a surname, not a bare surname ("Paget", "Rundstedt")."""
+    return len(_core_name_tokens(name)) >= 2
+
+
+def _name_words(name: str) -> set:
+    """The name's words of three letters or more, hyphenated parts split too ("Trafford
+    Leigh-Mallory" -> {"trafford", "leigh-mallory", "leigh", "mallory"})."""
+    words = set()
+    for token in _core_name_tokens(name):
+        t = token.lower().strip(",")
+        words.add(t)
+        words.update(t.split("-"))
+    return {w for w in words if len(w) >= 3}
+
+
+def _surname_in(last: str, words: set, ratio: float) -> bool:
+    """Whether ``last`` is (within ``ratio``) one of ``words``, or contains / is contained in one
+    of four letters or more ("brooke" in "alanbrooke")."""
+    for w in words:
+        if _similarity_ratio(last, w) >= ratio:
+            return True
+        short, long_ = sorted((last, w), key=len)
+        if len(short) >= 4 and short in long_:
+            return True
+    return False
+
+
+def _check_different_surname(
+    name1: str, name2: str, last1: str, last2: str, cfg, identity: bool
+) -> tuple[list[str], float]:
+    """Disambiguation veto: two full names with different surnames are two people, however
+    alike their first names ("William E. Dreher, Jr." vs "William R. Benn, Jr.": the shared
+    "William ... Jr." alone made the whole names 0.76 alike). The veto holds only when NEITHER
+    surname is among the other name's words: a surname spelt within ``surname_variant_ratio`` (an
+    OCR or spelling variant: Schwarzwalder/Schwarzwaldor), in another order ("Tojo Hideki"), in a
+    title ("Viscount Montgomery of Alamein", "Viscount Alanbrooke") or a hyphenated name
+    ("Leigh Mallory" / "Leigh-Mallory") is the same person's. An identity signal - a shared
+    Wikipedia/Grokipedia URL, a title alias - lifts the veto too."""
+    if identity or last1 == last2:
+        return [], 0.0
+    if not (_is_full_name(name1) and _is_full_name(name2)):
+        return [], 0.0
+    ratio = cfg.surname_variant_ratio
+    if _surname_in(last1, _name_words(name2), ratio) or _surname_in(
+        last2, _name_words(name1), ratio
+    ):
+        return [], 0.0
+    return [f"Different surnames: {last1} vs {last2}"], cfg.different_surname_weight
+
+
 def _check_event_overlap(p1: Dict, p2: Dict) -> tuple[list[str], float]:
     """Check: High overlap in Sub-eventIDs suggests same entity with different name/title."""
     mentions1 = p1.get("event_mentions", [])
@@ -871,6 +930,8 @@ def _score_pair(
     all_reasons: list[str] = []
     total_confidence = 0.0
 
+    alias = _check_title_alias(name1, name2, person1, person2)
+    urls = _check_shared_external_urls(person1, person2)
     checks = [
         _check_name_similarity(name1, name2),
         _check_same_last_name(last1, last2),
@@ -880,13 +941,20 @@ def _score_pair(
         _check_unicode_variants(name1, name2),
         _check_middle_name_variant(name1, name2, last1, last2),
         _check_event_overlap(person1, person2),
-        _check_title_alias(name1, name2, person1, person2),
-        _check_shared_external_urls(person1, person2),
+        alias,
+        urls,
     ]
 
     for reasons, conf in checks:
         all_reasons.extend(reasons)
         total_confidence += conf
+
+    # Disambiguation veto: different surnames on two full names (config-weighted); lifted only
+    # by an identity signal (a title alias, a shared external URL)
+    identity = bool(alias[0] or urls[0])
+    r, c = _check_different_surname(name1, name2, last1, last2, cfg, identity)
+    all_reasons.extend(r)
+    total_confidence += c
 
     # Check 3 depends on whether we have a name match
     r, c = _check_shared_bio(person1, person2, total_confidence > 0)

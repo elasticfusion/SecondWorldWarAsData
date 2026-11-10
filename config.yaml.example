@@ -121,6 +121,12 @@ dedup:
     # Disambiguation veto: both names carry a comparable middle initial/name AND they
     # DIFFER (George S. vs George P. Patton) -> strong negative that overrides proximity.
     conflicting_middle_initial_weight: -5.0
+    # Disambiguation veto: two FULL names with different surnames are different people, however
+    # alike the first names ("William E. Dreher, Jr." vs "William R. Benn, Jr."). A surname
+    # within surname_variant_ratio (an OCR/spelling variant: Schwarzwalder/Schwarzwaldor) is the
+    # same surname. Lifted only by a shared external URL or a title alias.
+    different_surname_weight: -5.0
+    surname_variant_ratio: 0.8
     frequency:                         # SECONDARY: a surname dominating a book (Patton book)
       enabled: true
       dominant_surname_boost: 0.3      # applied only with a compatible first name/initial
