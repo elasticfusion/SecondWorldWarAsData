@@ -19,7 +19,9 @@ def test_mark_metadata_gap_calls_reject(monkeypatch):
     bucket, key, book, note, kw = calls[0]
     assert (bucket, key, book) == ("mybucket", "k.md", "Book1")
     assert kw["category"] == "metadata" and kw["region"] == "us-east-1"
-    assert "metadata not yet extracted" in note
+    assert (
+        "title page did not establish" in note
+    )  # src/ingestion/book_metadata ran first
 
 
 def test_mark_metadata_gap_fail_safe(monkeypatch, caplog):
@@ -40,19 +42,46 @@ def test_custom_note_passthrough(monkeypatch):
     assert seen["note"] == "custom gap note"
 
 
-def test_all_three_callers_delegate(monkeypatch):
+def test_every_import_marks_only_what_its_title_page_left_empty(monkeypatch):
+    """The OCR publish (src/ingestion/ocr_promote), the convert and the video imports each ask
+    Grok for the document's metadata first (src/ingestion/book_metadata) and mark only the fields
+    still empty - and nothing when nothing is missing."""
     seen = []
     monkeypatch.setattr(rr, "mark_metadata_gap", lambda *a, **k: seen.append((a, k)))
-    import lambda_handlers.ocr_merge_handler as ocr
     import phase0_convert as pc
     import phase0_video as pv
 
-    ocr._mark_metadata_gap("s3", "k1", "B")
-    pc._mark_metadata_gap("s3", "k2", "B")
-    pv._mark_metadata_gap("s3", "k3", "B")
-    assert len(seen) == 3
-    # video passes a title-less note
-    assert any("author/series/license empty" in (k.get("note") or "") for _a, k in seen)
+    pc._mark_metadata_gap("s3", "k2", "B", ("author", "license"))
+    pv._mark_metadata_gap("s3", "k3", "B", ("series",))
+    pc._mark_metadata_gap("s3", "k4", "B", ())  # nothing missing: no marker
+    pv._mark_metadata_gap("s3", "k5", "B", ())
+    assert [k.get("fields") for _a, k in seen] == [("author", "license"), ("series",)]
+    assert "series empty" in seen[1][1]["note"]
+
+
+def test_the_ocr_publish_marks_only_the_first_chapters_missing_fields(monkeypatch):
+    """The OCR path marks inside the publish, from the first chapter's resolved meta."""
+    from types import SimpleNamespace
+
+    from src.ingestion import ocr_promote
+
+    seen = []
+    monkeypatch.setattr(rr, "mark_metadata_gap", lambda *a, **k: seen.append((a, k)))
+    pub = SimpleNamespace(
+        chapters=[SimpleNamespace(number=3), SimpleNamespace(number=4)]
+    )
+    first = {
+        "author": "Gordon A. Harrison",
+        "chapter_title": "Roots",
+        "license": "public_domain",
+    }
+    ocr_promote._mark_gap("s3", "buck", "CXA", pub, first)
+    ((args, kw),) = seen
+    assert args[2] == "ocr-output/CXA/" and kw["fields"] == ("series",)
+    assert kw["meta_key"] == "contentrepository/CXA/chapter3/chapter3-meta.yaml"
+    seen.clear()
+    ocr_promote._mark_gap("s3", "buck", "CXA", pub, {**first, "series": "USAWW2"})
+    assert seen == []  # nothing missing: no marker
 
 
 # --- the ALERT must be actionable (owner rule: benign alerts are disallowed) ---------------------
@@ -101,7 +130,10 @@ def test_alert_names_the_fields_the_consequence_and_the_fix():
         in msg
     )
     assert "re-run Phase 1" in msg and "re-run Phase 2" not in msg
-    assert "do NOT re-upload the source" in msg  # re-upload would overwrite the fix
+    # an operator's value survives a later import (book_metadata.resolve), so no warning against
+    # re-uploading - that warning was true only while an import rewrote the meta empty
+    assert "do NOT re-upload" not in msg
+    assert "operator's value is kept by later imports" in msg
     assert '"book": "USA-E-XChannel-8"' in msg and '"phase": "1"' in msg
     assert "dev-wwii-trigger" in msg
     assert "Nothing needs re-routing" in msg
@@ -158,6 +190,16 @@ def test_video_passes_its_own_field_list():
     pub, marker = _alert_for(fields=("author", "series", "license"))
     assert "chapter_title" not in pub["Message"].split("TO FIX")[0]
     assert marker["missing_fields"] == ["author", "series", "license"]
+
+
+def test_the_alert_claims_only_the_effects_of_the_missing_fields():
+    pub, _ = _alert_for(fields=("series",))
+    before_fix = pub["Message"].split("TO FIX")[0]
+    assert "listed under no series" in before_fix
+    assert "empty author" not in before_fix and "licence" not in before_fix
+    pub, _ = _alert_for(fields=("license",))
+    before_fix = pub["Message"].split("TO FIX")[0]
+    assert "licence is not recorded" in before_fix and "author" not in before_fix
 
 
 def test_real_rejects_keep_the_generic_text():

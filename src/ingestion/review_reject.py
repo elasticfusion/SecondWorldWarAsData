@@ -159,12 +159,27 @@ def reject_to_review(
 
 
 _METADATA_GAP_NOTE = (
-    "metadata not yet extracted (author/series/title/license empty) — "
-    "real metadata extraction deferred (P2-C1 slug+meta half)"
+    "metadata the document's title page did not establish (src/ingestion/book_metadata): "
+    "fill it in the chapter meta"
 )
 
 
 _DEFAULT_GAP_FIELDS = ("author", "series", "chapter_title", "license", "copyright_date")
+
+# What each missing field costs, as the alert tells it (only for the fields actually missing).
+_GAP_EFFECT = {
+    "author": "mentions of this book carry an empty author in their provenance (every entity, "
+    "weather included, is still extracted)",
+    "series": "the book is listed under no series",
+    "chapter_title": "the chapter is shown untitled",
+    "license": "its licence is not recorded",
+    "copyright_date": "its copyright date is not recorded",
+}
+
+
+def _gap_effects(fields: tuple[str, ...]) -> str:
+    effects = [_GAP_EFFECT[f] for f in fields if f in _GAP_EFFECT]
+    return ("; ".join(effects) + ".") if effects else "nothing it uses is missing."
 
 
 def _metadata_gap_alert(
@@ -182,13 +197,12 @@ def _metadata_gap_alert(
     env = bucket.split("-wwii-")[0] if "-wwii-" in bucket else "<env>"
     subject = f"WWII Pipeline: metadata missing for {book[:45]}"
     common = (
-        f"({key[:200]}) was ingested with EMPTY metadata: {', '.join(fields)}. "
-        f"Processing CONTINUES, but until this is filled: mentions of this book carry an empty "
-        f"author in their provenance (every entity, weather included, is still extracted) and "
-        f"its licence/copyright is not recorded. "
+        f"({key[:200]}) was ingested without this metadata (its title page did not establish "
+        f"it): {', '.join(fields)}. Processing CONTINUES, but until it is filled: "
+        f"{_gap_effects(fields)} "
         f"TO FIX: edit the chapter metadata and re-run Phase 1 for the book (it re-parses because "
-        f"the metadata changed) and Phase 2 follows; do NOT re-upload the source (that rewrites "
-        f"the metadata empty). "
+        f"the metadata changed) and Phase 2 follows; an operator's value is kept by later "
+        f"imports. "
     )
     # The message embeds a copy-paste shell command, so `book` must be the safe slug — defence in
     # depth even though every caller passes book_slug output. An unsafe/unknown book => no command.
@@ -241,3 +255,28 @@ def mark_metadata_gap(
         )
     except Exception as e:  # noqa: BLE001 - marker must never crash the caller
         logger.warning("metadata needs-review marker failed for %s: %s", key, e)
+
+
+def clear_metadata_gap(s3_client, bucket: str, book: str) -> None:
+    """Remove the book's needs-review/metadata marker once an import left nothing missing (a
+    re-drive after the metadata was filled, or a better OCR of the title page): an open marker
+    for a resolved gap would send a person to fix what is already fixed. Bucket versioning keeps
+    the old marker. Fail-safe: never raises into the caller's import."""
+    marker_key = f"needs-review/metadata/{_sanitize_segment(book, 'unknown')}.json"
+    try:
+        s3_client.head_object(Bucket=bucket, Key=marker_key)
+    except (
+        Exception
+    ):  # noqa: BLE001 - no marker (the usual case) or unreadable: nothing to do
+        return
+    try:
+        s3_client.delete_object(Bucket=bucket, Key=marker_key)
+        logger.info("OBSERV metadata_gap.cleared book=%s key=%s", book, marker_key)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - a stale marker is no reason to fail an import
+        logger.warning(
+            "OBSERV metadata_gap.clear_failed status=warn book=%s err=%s",
+            book,
+            type(e).__name__,
+        )

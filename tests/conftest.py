@@ -1,5 +1,12 @@
 """Shared pytest fixtures for testing."""
 
+import os
+
+# The import step's title-page metadata request (src/ingestion/book_metadata) is ON in production;
+# in tests it is OFF unless a test turns it on and injects a fake client - no test may reach Grok
+# (a developer's .env key would otherwise make real, billed calls).
+os.environ.setdefault("BOOK_METADATA", "0")
+
 import json
 from pathlib import Path
 from typing import Any, Dict

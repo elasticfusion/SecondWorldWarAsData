@@ -17,8 +17,10 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from typing import Any, Callable, List, Optional, Sequence, Tuple
+import os
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
+from src.ingestion import book_metadata
 from src.ingestion import ocr_publish as P
 
 logger = logging.getLogger(__name__)
@@ -82,11 +84,13 @@ def promote(
     if validation_url:
         from src.ingestion import ocr_crosscheck
 
-        check = ocr_crosscheck.correct_sections(
-            sections, validation_url, fetch or ocr_crosscheck.fetch_html
-        )
+        # the cross-check and the metadata request read the same page: fetch it once
+        fetch = _fetch_once(fetch or ocr_crosscheck.fetch_html)
+        check = ocr_crosscheck.correct_sections(sections, validation_url, fetch)
     pub = P.publication(sections, P.book_vocabulary(clean))
     _alert_unchecked(book, validation_url, check, pub)
+    # the book's own title page and imprint, read once for the whole book (src/ingestion/book_metadata)
+    book_meta = book_metadata.for_import(clean, _validation_page(validation_url, fetch))
     log = {
         "book": book,
         "source_key": source_key,
@@ -98,6 +102,8 @@ def promote(
             else {"status": "no validation URL: not cross-checked"}
         ),
         "publication": pub.to_dict(),
+        "metadata": book_meta
+        or {"status": "nothing established (see the metadata gap marker)"},
     }
     s3.put_object(
         Bucket=bucket,
@@ -107,7 +113,8 @@ def promote(
     )
     if still_current is not None:
         still_current()
-    keys = _write_chapters(s3, bucket, book, pub, source_key)
+    keys, first_meta = _write_chapters(s3, bucket, book, pub, source_key, book_meta)
+    _mark_gap(s3, bucket, book, pub, first_meta)
     _warn_stale(s3, bucket, book, pub)
     logger.info(
         "OBSERV ocr_promote.done book=%s chapters=%d held_back=%s sanitise=%s crosscheck=%s",
@@ -154,31 +161,85 @@ def _alert_unchecked(book: str, url: str, check: Any, pub: P.Publication) -> Non
         )
 
 
-def _write_chapters(
-    s3: Any, bucket: str, book: str, pub: P.Publication, source_key: str
-) -> List[str]:
+def _fetch_once(
+    fetch: Callable[[str], Optional[str]],
+) -> Callable[[str], Optional[str]]:
+    """``fetch``, reading each URL at most once (a failure is not remembered: it raises again)."""
+    pages: Dict[str, Optional[str]] = {}
+
+    def once(url: str) -> Optional[str]:
+        if url not in pages:
+            pages[url] = fetch(url)
+        return pages[url]
+
+    return once
+
+
+def _validation_page(url: str, fetch: Optional[Callable[[str], Optional[str]]]) -> str:
+    """The validation page, a fallback source for the book's metadata ("" without one)."""
+    if not url:
+        return ""
+    try:
+        from src.ingestion import ocr_crosscheck
+
+        return (fetch or ocr_crosscheck.fetch_html)(url) or ""
+    except Exception as e:  # noqa: BLE001 - only a hint
+        logger.warning(
+            "OBSERV ocr_promote.validation_page_unreadable err=%s", str(e)[:200]
+        )
+        return ""
+
+
+def _chapter_meta(
+    s3: Any, bucket: str, book: str, c: P.Chapter, source_key: str, book_meta: dict
+) -> Tuple[str, bytes, dict]:
+    """(key, YAML, fields) of chapter ``c``'s meta: the book's metadata (the title-page request)
+    and the chapter's title, with an operator's edit of the meta at ``key`` kept
+    (book_metadata.resolve).
+    """
     from src.ingestion.chapter_meta import build_meta_yaml
 
+    meta_key, _ = chapter_keys(book, c.number)
+    # a document that is one chapter (no chapter headings) is titled by its title page
+    title = c.title or str(book_meta.get("book_title", ""))
+    fields = book_metadata.resolve(
+        book_metadata.existing(s3, bucket, meta_key), book_meta, title
+    )
+    title = str(fields.pop("chapter_title", "") or title)
+    body = build_meta_yaml(
+        book,
+        source_url="",
+        source_url_basis="ocr",
+        source_key=source_key or f"ocr-output/{book}/",
+        chapter_title=title,
+        extra={
+            "chapter_number": str(c.number),
+            "section_label": c.label,
+            "pdf_pages": f"{c.first_page}-{c.last_page}" if c.first_page else "",
+            "page_basis": "pdf",
+            **fields,
+        },
+    )
+    return meta_key, body, {**fields, "chapter_title": title}
+
+
+def _write_chapters(
+    s3: Any,
+    bucket: str,
+    book: str,
+    pub: P.Publication,
+    source_key: str,
+    book_meta: Optional[dict] = None,
+) -> Tuple[List[str], dict]:
+    """Every chapter's meta, then every chapter's content (each content upload starts a parse).
+    Returns (content keys, the first chapter's metadata fields)."""
     meta_changed = set()
-    for (
-        c
-    ) in (
-        pub.chapters
-    ):  # every meta before any content (each content upload starts a parse)
-        meta_key, _ = chapter_keys(book, c.number)
-        body = build_meta_yaml(
-            book,
-            source_url="",
-            source_url_basis="ocr",
-            source_key=source_key or f"ocr-output/{book}/",
-            chapter_title=c.title,
-            extra={
-                "chapter_number": str(c.number),
-                "section_label": c.label,
-                "pdf_pages": f"{c.first_page}-{c.last_page}" if c.first_page else "",
-                "page_basis": "pdf",
-            },
+    first: dict = {}
+    for c in pub.chapters:
+        meta_key, body, fields = _chapter_meta(
+            s3, bucket, book, c, source_key, book_meta or {}
         )
+        first = first or fields
         if _put_if_changed(s3, bucket, meta_key, body):
             meta_changed.add(c.number)
     keys = []
@@ -191,7 +252,25 @@ def _write_chapters(
         else:
             _put_if_changed(s3, bucket, content_key, text)
         keys.append(content_key)
-    return keys
+    return keys, first
+
+
+def _mark_gap(s3: Any, bucket: str, book: str, pub: P.Publication, first: dict) -> None:
+    """The needs-review metadata marker, for the fields the title-page request (and any operator
+    edit) still left empty; an earlier marker is cleared when nothing is missing."""
+    if not pub.chapters:
+        return
+    gaps = book_metadata.missing(first)
+    from src.ingestion import review_reject
+
+    if not gaps:
+        review_reject.clear_metadata_gap(s3, bucket, book)
+        return
+    meta_key, _ = chapter_keys(book, pub.chapters[0].number)
+    region = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION") or "us-east-1"
+    review_reject.mark_metadata_gap(
+        s3, bucket, f"ocr-output/{book}/", book, region, fields=gaps, meta_key=meta_key
+    )
 
 
 def _put_if_changed(s3: Any, bucket: str, key: str, body: bytes) -> bool:

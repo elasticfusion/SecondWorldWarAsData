@@ -425,7 +425,6 @@ def _publish(s3, book: str, plan: "_ChunkPlan", parts: list) -> str:
         source_key=(manifest.source_key if manifest else "") or prefix,
         translate=lambda text: normalize_markdown_to_english(text, per_page=True),
     )
-    _mark_metadata_gap(s3, prefix, book)
     logger.info(
         "OCR->parse handoff: merged %d md file(s) -> %d chapter(s) of s3://%s/contentrepository/%s/",
         len(plan.keys),
@@ -462,13 +461,6 @@ def _reject(s3, book: str, reason: str, category: str) -> None:
         category=category,
         region=REGION,
     )
-
-
-def _mark_metadata_gap(s3, key: str, book: str) -> None:
-    """Record the deferred-metadata gap as a needs-review/metadata marker (P2-C1). Fail-safe."""
-    from src.ingestion.review_reject import mark_metadata_gap
-
-    mark_metadata_gap(s3, BUCKET, key, book, REGION)
 
 
 def _stop_environment(detail: dict) -> dict:

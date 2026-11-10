@@ -170,8 +170,41 @@ def test_the_entrypoint_brings_nat_up_for_the_cross_check(monkeypatch):
                 pass
         assert client.return_value.invoke.called  # it fetches the validation URL
         client.reset_mock()
-        ecs_entrypoint._ensure_nat_if_needed("phase0_convert.py")
+        # Phase 1 (local parse) needs no internet; the import tasks now ask Grok for the
+        # document's title-page metadata (src/ingestion/book_metadata), so they do
+        ecs_entrypoint._ensure_nat_if_needed("phase1_parse.py")
         assert not client.return_value.invoke.called
+
+
+def test_an_import_task_tries_nat_once_and_goes_on_without_it(monkeypatch):
+    """The import tasks need the internet only for the fail-safe title-page metadata request:
+    one try, then the import goes on (no abort, no lock released, no 6 x 2 min wait)."""
+    monkeypatch.setenv("S3_BUCKET", "test-bucket")
+    monkeypatch.setenv("AWS_REGION", "us-east-1")
+    monkeypatch.setenv("NAT_READY_MAX_ATTEMPTS", "6")
+    monkeypatch.setenv("BOOK_METADATA", "1")
+    import ecs_entrypoint
+
+    for task in ("phase0_convert.py", "phase0_video.py"):
+        with (
+            patch.object(ecs_entrypoint.boto3, "client") as client,
+            patch.object(ecs_entrypoint.time, "sleep") as sleep,
+            patch.object(ecs_entrypoint, "_remove_lock") as unlock,
+        ):
+            client.return_value.invoke.side_effect = RuntimeError("no NAT")
+            ecs_entrypoint._ensure_nat_if_needed(task)  # returns: no SystemExit
+        assert client.return_value.invoke.call_count == 1, task
+        sleep.assert_not_called()
+        unlock.assert_not_called()
+
+
+def test_an_import_with_the_metadata_request_off_needs_no_nat(monkeypatch):
+    monkeypatch.setenv("BOOK_METADATA", "0")
+    import ecs_entrypoint
+
+    with patch.object(ecs_entrypoint.boto3, "client") as client:
+        ecs_entrypoint._ensure_nat_if_needed("phase0_convert.py")
+    client.return_value.invoke.assert_not_called()
 
 
 def test_the_image_and_the_stack_carry_the_task():

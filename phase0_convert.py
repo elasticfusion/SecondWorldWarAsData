@@ -178,26 +178,52 @@ def _recover_or_offramp(s3, key: str, book: str, exc: Exception) -> str:
 
 
 def _build_meta_yaml(
-    book: str, key: str, source_url: str = "", source_url_basis: str = "missing"
+    book: str,
+    key: str,
+    source_url: str = "",
+    source_url_basis: str = "missing",
+    fields: dict | None = None,
 ) -> bytes:
     """Chapter meta via the shared builder (src/ingestion/chapter_meta). ``source_url`` is a real
     URL or "" — never a "converted from <key>" placeholder (the parser resolves relative
     images/maps against it); the uploaded object stays recorded as ``source_key``."""
     from src.ingestion.chapter_meta import build_meta_yaml
 
+    fields = dict(fields or {})
     return build_meta_yaml(
         book,
         source_url=source_url,
         source_url_basis=source_url_basis,
         source_key=key,
+        chapter_title=str(fields.pop("chapter_title", "") or ""),
+        extra=fields,
     )
 
 
-def _mark_metadata_gap(s3, key: str, book: str) -> None:
-    """Record the deferred-metadata gap as a needs-review/metadata marker (P2-C1). Fail-safe."""
-    from src.ingestion.review_reject import mark_metadata_gap
+def _document_metadata(s3, meta_key: str, markdown: str) -> dict:
+    """The chapter-meta fields of the converted document: its title page, read by one Grok
+    request (src/ingestion/book_metadata), with an operator's edit of the meta at ``meta_key``
+    kept. A one-chapter document is titled by its title page.
+    """
+    from src.ingestion import book_metadata
 
-    mark_metadata_gap(s3, BUCKET, key, book, REGION)
+    derived = book_metadata.for_import(markdown)
+    return book_metadata.resolve(
+        book_metadata.existing(s3, BUCKET, meta_key),
+        derived,
+        str(derived.get("book_title", "")),
+    )
+
+
+def _mark_metadata_gap(s3, key: str, book: str, fields: tuple) -> None:
+    """Record the metadata the title page did not establish as a needs-review/metadata marker
+    (an earlier one is cleared when nothing is missing). Fail-safe."""
+    from src.ingestion import review_reject
+
+    if not fields:
+        review_reject.clear_metadata_gap(s3, BUCKET, book)
+        return
+    review_reject.mark_metadata_gap(s3, BUCKET, key, book, REGION, fields=fields)
 
 
 def _write_chapter_structure(s3, key: str, book: str, markdown: str) -> str:
@@ -208,13 +234,16 @@ def _write_chapter_structure(s3, key: str, book: str, markdown: str) -> str:
     from src.ingestion.source_url import resolve_source_url
 
     source_url, basis = resolve_source_url(s3, BUCKET, key, book)
+    from src.ingestion.book_metadata import missing
+
+    fields = _document_metadata(s3, meta_key, markdown)
     s3.put_object(
         Bucket=BUCKET,
         Key=meta_key,
-        Body=_build_meta_yaml(book, key, source_url, basis),
+        Body=_build_meta_yaml(book, key, source_url, basis, fields),
     )
     s3.put_object(Bucket=BUCKET, Key=content_key, Body=markdown.encode("utf-8"))
-    _mark_metadata_gap(s3, key, book)
+    _mark_metadata_gap(s3, key, book, missing(fields))
     # Source doc (epub/docx) now consumed — tag it for cold archive. Fail-safe.
     from src.ingestion.archive_tag import tag_source_cold
 

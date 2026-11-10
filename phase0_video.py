@@ -300,23 +300,38 @@ def _write_chapter_structure(s3, key, book, markdown, resolved) -> str:
     n_review = sum(1 for r in resolved if r.get("needs_review"))
     # Shared chapter-meta builder (safe YAML, P2-C1). chapter_title/source_video_key/
     # speaker_id_version/speakers_needing_review are REAL derived values.
+    from src.ingestion import book_metadata
     from src.ingestion.chapter_meta import build_meta_yaml
 
+    # the transcript's opening (its title card / introduction), read by one Grok request; an
+    # operator's edit of the meta is kept; no licence is decided from what is said in a video
+    derived = book_metadata.for_import(markdown, transcript=True)
+    title = str(derived.get("book_title", "") or "Video transcript")
+    fields = book_metadata.resolve(
+        book_metadata.existing(s3, BUCKET, meta_key), derived, title
+    )
+    title = str(fields.pop("chapter_title", "") or title)
     meta_body = build_meta_yaml(
         book,
         source_url=f"s3://{BUCKET}/{key}",
         source_url_basis="s3_object",
         source_key=key,
-        chapter_title="Video transcript",
+        chapter_title=title,
         extra={
             "source_video_key": key,
             "speaker_id_version": SPEAKER_ID_VERSION,
             "speakers_needing_review": str(n_review),
+            **fields,
         },
     )
     s3.put_object(Bucket=BUCKET, Key=meta_key, Body=meta_body)
     s3.put_object(Bucket=BUCKET, Key=content_key, Body=markdown.encode("utf-8"))
-    _mark_metadata_gap(s3, key, book)
+    _mark_metadata_gap(
+        s3,
+        key,
+        book,
+        book_metadata.missing({**fields, "chapter_title": title}),
+    )
     # The source video is now consumed (chapter written) — tag it for cold archive
     # (Glacier IR via the tag-based lifecycle rule). Fail-safe: never blocks.
     from src.ingestion.archive_tag import tag_source_cold
@@ -341,21 +356,22 @@ def _write_chapter_structure(s3, key, book, markdown, resolved) -> str:
     return content_key
 
 
-def _mark_metadata_gap(s3, key: str, book: str) -> None:
-    """Record the deferred-metadata gap as a needs-review/metadata marker (P2-C1). Fail-safe."""
-    from src.ingestion.review_reject import mark_metadata_gap
+def _mark_metadata_gap(s3, key: str, book: str, fields: tuple) -> None:
+    """Record the metadata the transcript did not establish as a needs-review/metadata marker
+    (an earlier one is cleared when nothing is missing). Fail-safe."""
+    from src.ingestion import review_reject
 
-    mark_metadata_gap(
+    if not fields:
+        review_reject.clear_metadata_gap(s3, BUCKET, book)
+        return
+    review_reject.mark_metadata_gap(
         s3,
         BUCKET,
         key,
         book,
         REGION,
-        fields=("author", "series", "license"),
-        note=(
-            "metadata not yet extracted (author/series/license empty) — "
-            "real metadata extraction deferred (P2-C1 slug+meta half)"
-        ),
+        fields=fields,
+        note=f"metadata not established by the transcript ({'/'.join(fields)} empty)",
     )
 
 

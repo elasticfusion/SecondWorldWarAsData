@@ -73,9 +73,6 @@ def run(s3, bucket: str, book: str, submission: str = "") -> list:
         still_current=lambda: _require_current(s3, bucket, book, submission),
         translate=lambda text: normalize_markdown_to_english(text, per_page=True),
     )
-    from src.ingestion.review_reject import mark_metadata_gap
-
-    mark_metadata_gap(s3, bucket, f"ocr-output/{book}/", book, REGION)
     return written
 
 

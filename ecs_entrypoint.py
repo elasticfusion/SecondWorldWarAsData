@@ -557,8 +557,20 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
         "phase2" not in phase_script
         and "phase3" not in phase_script
         and "ocr_crosscheck" not in phase_script  # fetches the validation URL
+        # the import tasks ask Grok for the document's title-page metadata - optional egress
+        and "phase0_convert" not in phase_script
+        and "phase0_video" not in phase_script
     ):
         return
+    stem = Path(phase_script).stem
+    # An import needs the internet only for its title-page metadata request, which is fail-safe:
+    # one try, and on failure the import goes on (the metadata-gap marker records what is missing).
+    optional = "phase0_convert" in phase_script or "phase0_video" in phase_script
+    if optional:
+        from src.ingestion import book_metadata
+
+        if not book_metadata.enabled():
+            return  # the request is switched off: the import needs no internet at all
     # READINESS CONTRACT: Phase 2/3 need public egress (Grok/Wiki/geocode). Invoke
     # the nat-manager and WAIT until it reports status=ready (NAT available + ACTIVE
     # route + endpoints). nat-manager itself blocks on route-active, but a cold NAT
@@ -566,8 +578,9 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
     # deadline. The long-lived ECS task can afford this wait (unlike the old 240s
     # trigger Lambda that fail-closed/livelocked). Phase 3 self-heals this way too:
     # if NAT was torn down during the human dedup wait, this brings it back up.
-    stem = Path(phase_script).stem
-    max_attempts = int(os.environ.get("NAT_READY_MAX_ATTEMPTS", "6"))  # ~6 x ~2min
+    max_attempts = (
+        1 if optional else int(os.environ.get("NAT_READY_MAX_ATTEMPTS", "6"))
+    )  # ~6 x ~2min
     env = os.environ.get("ENV_NAME", "dev")
     for attempt in range(1, max_attempts + 1):
         try:
@@ -613,7 +626,15 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
                 max_attempts,
                 e,
             )
-        time.sleep(10)
+        if attempt < max_attempts:
+            time.sleep(10)
+    if optional:
+        logger.warning(
+            "OBSERV nat.unavailable status=warn phase=%s: going on without internet "
+            "(the title-page metadata request will be skipped)",
+            stem,
+        )
+        return
     # Exhausted retries: fail LOUD. Proceeding guarantees a mass egress failure.
     logger.error(
         "NAT NEVER became ready for %s after %d attempts — egress will fail; "
