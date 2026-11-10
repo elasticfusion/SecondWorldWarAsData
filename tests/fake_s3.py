@@ -109,5 +109,11 @@ class FakeS3:
         self.deletes.append(Key)
         return {}
 
+    def copy_object(self, Bucket: str, Key: str, CopySource: dict, **_kw):  # noqa: N803
+        src = (CopySource["Bucket"], CopySource["Key"])
+        if src not in self.objects:
+            raise _error("NoSuchKey", "CopyObject")
+        return self.put_object(Bucket=Bucket, Key=Key, Body=self.objects[src])
+
     def get_paginator(self, _name: str) -> _Paginator:
         return _Paginator(self)
