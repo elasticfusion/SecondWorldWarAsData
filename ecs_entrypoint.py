@@ -4298,8 +4298,11 @@ def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
     error (never silently mis-key); a desync-empty slot is NOT cached and emits a loud observe_error,
     so the phase re-run treats it as a cache miss instead of trusting an empty result.
     """
-    from src.utils.batch_api import map_results_positionally
+    from src.utils.batch_api import align_by_request_id, map_results_positionally
     from src.utils.observe import observe_error
+
+    # each answer to its own request first (the API returns them out of order)
+    ordered_results = align_by_request_id(submitted, ordered_results, batch_id=batch_id)
 
     def _on_desync(our_id, cache_type, br):
         observe_error(
@@ -4383,7 +4386,7 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     if "phase3" in phase_script:
         _stamp_schema_versions()
 
-    # Retrieve results in SUBMISSION ORDER. The xAI results API does NOT echo our
+    # Retrieve results in SUBMISSION ORDER. The xAI results API was thought not to echo our (it does; aligned by id first)
     # custom_id (only a server-assigned batch_request_id), so we map results to OUR
     # cache keys by POSITION against the submission-ordered request_details in metrics.
     api_key = os.environ.get("GROK_API_KEY", "")

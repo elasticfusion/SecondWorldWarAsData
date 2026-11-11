@@ -501,6 +501,10 @@ class GrokClient:
         submitted = [
             (r.request_id, r.cache_type) for r in self._batch_collector.requests
         ]
+        # each answer to its own request (the API returns them out of order: batch_api)
+        from src.utils.batch_api import align_by_request_id, alignment_degraded
+
+        ordered = align_by_request_id(submitted, ordered, batch_id=batch_id)
 
         # Build metrics
         metrics = BatchMetrics(
@@ -516,6 +520,9 @@ class GrokClient:
         failed_ids, count_mismatch = self._map_ordered_results(
             submitted, ordered, metrics, requests_by_id, batch_id
         )
+        # results the API did not return (or that could not be aligned) are an envelope problem,
+        # like a count mismatch: force the realtime retry past the 20%-systemic guard
+        count_mismatch = count_mismatch or alignment_degraded(ordered)
 
         # Retry failed requests via real-time API. A count mismatch forces retry past the
         # 20%-systemic guard (it's an envelope problem, not per-request model failure).
@@ -570,7 +577,7 @@ class GrokClient:
             logger.info("Waiting for batch to complete (may take minutes to hours)...")
             batch_state = poll_batch(self.api_key, batch_id, submitted_count=count)
 
-            # Retrieve results as an ORDERED list. The xAI results API does NOT echo our submitted
+            # Retrieve results as an ORDERED list. The xAI results API was thought not to echo our submitted (it does; aligned by id first:)
             # custom_id (only a server-assigned batch_request_id), so results MUST be mapped to our
             # cache keys by POSITION (submission order), NOT by id — mirrors the AWS retrieve-only
             # path (ecs_entrypoint._map_batch_results_by_index / retrieve_results_ordered).
@@ -672,7 +679,7 @@ class GrokClient:
             metrics.empty += len(submitted)
             return [rid for rid, _ in submitted], True
 
-        # Positional-map desync guard: the xAI results API does NOT echo our custom_id, so a
+        # Positional-map desync guard: the xAI results API was thought not to echo our custom_id (it does; aligned by id first), so a
         # misaligned/empty slot can silently persist 0 for a whole entity while a VALID response
         # for it sits elsewhere in the batch (XChannel-8 2026-10-30). We can't re-correlate by id,
         # but we CAN detect the signature — an empty/too-short result in a batch where SIBLINGS

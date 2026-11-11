@@ -70,7 +70,7 @@ class BatchResult:
     def is_substantive(self) -> bool:
         """True if this result is ``valid`` AND carries real entity content.
 
-        The xAI results API does not echo our ``custom_id``, so results are mapped to our cache
+        The xAI results API was thought not to echo our ``custom_id`` (it does: results are aligned by id first, ``align_by_request_id``), so results are mapped to our cache
         keys purely by POSITION. A ``valid`` result whose content strips to <= 2 chars (``{}`` /
         ``[]`` / empty) is NOT substantive — it either genuinely held no entities OR is a
         positional-map desync artefact that would silently persist 0 for a whole entity. Callers
@@ -79,6 +79,76 @@ class BatchResult:
         the single source of truth for that 'substantive' test (see grok_client._map_ordered_results).
         """
         return self.status == "valid" and len((self.content or "").strip()) > 2
+
+
+RESULT_MISSING = "no result returned"
+RESULT_UNALIGNABLE = "unalignable batch results"
+
+
+def alignment_degraded(aligned: List["BatchResult"]) -> bool:
+    """Whether alignment had to fill in results (missing, or unalignable): the caller must
+    force its realtime retry, as it did for a count mismatch before results were aligned.
+    """
+    return any(br.error in (RESULT_MISSING, RESULT_UNALIGNABLE) for br in aligned)
+
+
+def align_by_request_id(
+    submitted: List[Any], ordered: List["BatchResult"], *, batch_id: str = ""
+) -> List["BatchResult"]:
+    """``ordered`` rearranged into ``submitted``'s order by request id (the xAI results API
+    returns OUR ``custom_id`` as each result's ``batch_request_id`` - verified 2026-11-11 on three
+    batches - but NOT in submission order: 1 of 99 results in place). Run before the positional
+    mapping, which then pairs each request with its own answer.
+
+    * every result id is one of ours: aligned; a request with no result gets an error placeholder
+      (it is then retried like any failed request, instead of failing the whole batch);
+    * no result id is one of ours (server-assigned ids, as the API returned on 2026-10-14): the
+      order is left as is - the old positional behaviour - and said so;
+    * some are ours and some not, or an id repeats: nothing can be trusted - every request gets an
+      error placeholder (all retried), loudly.
+    """
+    ours = [our_id for our_id, _ in submitted]
+    ids = [getattr(br, "request_id", "") for br in ordered]
+    matched = [i for i in ids if i in set(ours)]
+    if ordered and not matched:
+        logger.warning(
+            "OBSERV batch.align status=positional batch=%s: no result carries our request id; "
+            "mapping by position",
+            batch_id,
+        )
+        return ordered
+    if len(matched) != len(ids) or len(set(matched)) != len(matched):
+        logger.error(
+            "OBSERV batch.align status=error batch=%s results=%d ours=%d distinct=%d: result ids "
+            "are mixed or repeated - retrying every request rather than guess",
+            batch_id,
+            len(ids),
+            len(matched),
+            len(set(matched)),
+        )
+        return [BatchResult(request_id=i, error=RESULT_UNALIGNABLE) for i in ours]
+    return _aligned(ours, ids, ordered, batch_id)
+
+
+def _aligned(
+    ours: list, ids: list, ordered: list, batch_id: str
+) -> List["BatchResult"]:
+    """``ordered`` in ``ours`` order (all ids known and distinct); a placeholder for a missing one."""
+    by_id = {br.request_id: br for br in ordered}
+    aligned = [
+        by_id.get(i) or BatchResult(request_id=i, error=RESULT_MISSING) for i in ours
+    ]
+    missing = len(ours) - len(by_id)
+    logger.log(
+        logging.WARNING if missing else logging.INFO,
+        "OBSERV batch.align status=%s batch=%s results=%d reordered=%d missing=%d",
+        "warn" if missing else "ok",
+        batch_id,
+        len(ids),
+        sum(1 for a, b in zip(ours, ids) if a != b),
+        missing,
+    )
+    return aligned
 
 
 @dataclass
@@ -112,7 +182,7 @@ class BatchMetrics:  # pylint: disable=too-many-instance-attributes
     poll_seconds: float = 0.0
     request_details: List["RequestDetail"] = field(default_factory=list)
     # Ordered [our_cache_key, cache_type] pairs in SUBMISSION ORDER. The xAI results
-    # API does not echo custom_id, so retrieve maps results to these by position.
+    # API was thought not to echo custom_id (it does; aligned by id first), so retrieve maps results to these by position.
     submitted_request_ids: List[Any] = field(default_factory=list)
 
     def add_detail(self, detail: "RequestDetail") -> None:
@@ -485,15 +555,10 @@ def retrieve_results(api_key: str, batch_id: str) -> Dict[str, BatchResult]:
 
 
 def retrieve_results_ordered(api_key: str, batch_id: str) -> List["BatchResult"]:
-    """Retrieve all batch results as a LIST in API (= submission) order.
-
-    The xAI batch results API does NOT echo our submitted ``custom_id`` — each
-    result item carries only a server-assigned ``batch_request_id`` (verified
-    2026-10-14 against the live API). So results cannot be mapped back to our
-    cache keys by id; the only reliable mapping is by POSITION, since the API
-    returns results in submission order. Callers zip this list with the submitted
-    request ids (recorded in metrics ``request_details`` in submission order) to
-    populate the cache under OUR keys. Order is preserved across pagination."""
+    """Retrieve all batch results as a LIST in the API's order (NOT submission order: callers
+    must ``align_by_request_id`` first - each item's ``batch_request_id`` is our custom_id,
+    verified 2026-11-11; the 2026-10-14 note that the API returned only server ids and kept
+    submission order no longer holds). Order is preserved across pagination."""
     headers = {"Authorization": f"Bearer {api_key}"}
     ordered: List["BatchResult"] = []
     pagination_token: Optional[str] = None
@@ -540,7 +605,7 @@ def retrieve_results_ordered(api_key: str, batch_id: str) -> List["BatchResult"]
 # --- Shared positional result mapping (single source of truth) -----------------------------------
 # Both batch-result consumers (src/grok_client.py realtime path and ecs_entrypoint.py retrieve-only
 # path) map API-ordered results to OUR cache keys PURELY BY POSITION, because the xAI results API
-# does not echo our custom_id. The dangerous failure mode is a SAME-COUNT desync: a valid-but-empty
+# was thought not to echo our custom_id (it does; aligned by id first). The dangerous failure mode is a SAME-COUNT desync: a valid-but-empty
 # slot lands where a substantive response should be, silently persisting 0 for a whole entity while
 # its real content sits uncorrelated elsewhere (XChannel-8 2026-10-30: places=0 persisted while a
 # valid 119-place response was uncorrelated). This helper is the ONE place that owns both the
