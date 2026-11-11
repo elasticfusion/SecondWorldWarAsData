@@ -37,6 +37,7 @@ from botocore.exceptions import BotoCoreError, ClientError
 # keep the NAT up (the reset would then report NOT clean for no visible reason).
 RUNSTATE_PREFIXES = (
     "title#",
+    "source#",  # a document's slug binding (lambda_handlers/trigger_handler._bind_source)
     "pending#",
     "manifest#",
     "book_manifest#",

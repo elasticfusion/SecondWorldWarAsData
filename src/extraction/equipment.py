@@ -3134,8 +3134,9 @@ def _add_metadata_to_mention(
 ) -> None:
     """Add book metadata to mention."""
     metadata = event_data.get("metadata", {})
-    if metadata.get("book_title"):
-        mention["book"] = metadata["book_title"]
+    if metadata.get("book"):
+        # the slug, like every other record's mention (not the display title: one book, one name)
+        mention["book"] = metadata["book"]
     if metadata.get("author"):
         mention["author"] = metadata["author"]
     if metadata.get("series"):

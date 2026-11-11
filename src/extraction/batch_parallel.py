@@ -1,6 +1,7 @@
 """Batch and parallel extraction for maximum performance."""
 
 import asyncio
+import contextvars
 import json
 import math
 import os
@@ -696,10 +697,20 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     # NOTE: Entity extraction follows a hierarchical order within each book:
     # events → people/groups/places/dates → optional (equipment/weather/etc.)
     # Parallelism is across books, not within a single book's entity hierarchy.
+    # The call runs in a worker thread: copy this task's context into it (a bare run_in_executor
+    # starts the thread with an EMPTY context, so current_book was lost and every book-scoped cache
+    # lookup missed - chapter 8's cached events re-asked, 2026-11-11), and name the book explicitly.
     loop = asyncio.get_event_loop()
+    # the folder slug (set as current_book per chapter) is the book; the parsed `book` (enforced
+    # equal to it by Phase 1) is the fallback
+    book = current_book.get() or meta.get("book") or None
+    ctx = contextvars.copy_context()
     try:
         response = await loop.run_in_executor(
-            None, lambda: grok_client.extract_json(prompt, cache_type=cache_type)
+            None,
+            lambda: ctx.run(
+                grok_client.extract_json, prompt, cache_type=cache_type, book=book
+            ),
         )
     except BatchModeCollecting:
         # In batch mode, request was queued — not a failure
@@ -786,8 +797,12 @@ async def process_chapter_async(
         from src.extraction.events import extract_events
 
         loop = asyncio.get_event_loop()
+        ctx = contextvars.copy_context()  # carry current_book into the worker thread
         await loop.run_in_executor(
-            None, lambda: extract_events(parsed_file, grok_client, parsed_file.parent)
+            None,
+            lambda: ctx.run(
+                extract_events, parsed_file, grok_client, parsed_file.parent
+            ),
         )
 
     # Extract all entities in parallel

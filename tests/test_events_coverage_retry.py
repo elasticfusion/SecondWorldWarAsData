@@ -93,7 +93,7 @@ def test_a_low_coverage_answer_is_rejected_evicted_kept_and_asked_again(
     # the incomplete answer is evicted under the key it was cached with (system prompt included)
     first_prompt = grok.extract_json.call_args_list[0].kwargs["prompt"]
     grok.clear_cache_entry.assert_called_once_with(
-        first_prompt, cache_type="events", system_prompt="SYS"
+        first_prompt, cache_type="events", system_prompt="SYS", book="B"
     )
     # the re-ask names what was left out, built on the original request
     second = grok.extract_json.call_args_list[1].kwargs["prompt"]
@@ -110,8 +110,11 @@ def test_a_low_coverage_answer_is_rejected_evicted_kept_and_asked_again(
         ).read_text()
     )
     assert kept["share"] == 0.15 and kept["uncovered"] == ["4-20"]
-    # the complete answer is cached under the ORIGINAL request, so a re-run is served it
-    assert grok.cache == {f"key:{hash(first_prompt)}": json.dumps(FULL)}
+    # the complete answer is cached under the ORIGINAL request (with ITS identity), so a re-run is
+    # served it
+    grok.store_json_answer.assert_called_once_with(
+        first_prompt, "SYS", "events", FULL, temperature=0.1, book="B"
+    )
     saved, _ = _light["out"]
     assert len(saved["Event"]["Sub-events"]) == 2
 
@@ -122,7 +125,7 @@ def test_a_complete_first_answer_is_one_request_and_nothing_evicted(tmp_path):
     assert E.extract_events(pf, grok, pf.parent) is not None
     assert grok.extract_json.call_count == 1
     grok.clear_cache_entry.assert_not_called()
-    assert grok.cache == {}
+    grok.store_json_answer.assert_not_called()
 
 
 def test_coverage_at_the_threshold_passes(tmp_path):
@@ -174,12 +177,39 @@ def test_parts_that_still_leave_the_chapter_out_are_not_saved_and_are_evicted(
     assert grok.clear_cache_entry.call_count == 2  # each part's cached answer
 
 
+def _real_client(tmp_path, monkeypatch):
+    import src.grok_client as gc
+    from src.utils.cache_backend import DiskCacheBackend
+
+    monkeypatch.setenv("GROK_API_KEY", "test-not-a-key")
+    return gc.GrokClient(DiskCacheBackend(tmp_path / "c"))
+
+
 def test_with_the_cache_off_a_passing_retry_is_not_written(tmp_path, monkeypatch):
     monkeypatch.setenv("GROK_CACHE_DISABLED", "1")
-    pf = _parsed_file(tmp_path)
-    grok = _grok(tmp_path, LOW, FULL)
-    assert E.extract_events(pf, grok, pf.parent) is not None
-    assert grok.cache == {}
+    grok = _real_client(tmp_path, monkeypatch)
+    grok.store_json_answer("P", "SYS", "events", {"Event": {}}, book="B")
+    with mock.patch.object(grok, "_call_api") as api:
+        api.return_value = {"choices": [{"message": {"content": '{"x": 1}'}}]}
+        monkeypatch.delenv("GROK_CACHE_DISABLED")
+        got = grok.extract_json(
+            prompt="P", system_prompt="SYS", cache_type="events", book="B"
+        )
+    assert api.called and got == {"x": 1}  # nothing was stored
+
+
+def test_a_stored_answer_carries_the_original_requests_identity(tmp_path, monkeypatch):
+    """The answer a re-ask got carries the RE-ASK's RequestID; stored as is under the original
+    request it would be rejected on every re-run. store_json_answer stamps the original's.
+    """
+    grok = _real_client(tmp_path, monkeypatch)
+    grok.store_json_answer("P", "SYS", "events", {"Event": {"n": 1}}, book="B")
+    with mock.patch.object(grok, "_call_api") as api:
+        got = grok.extract_json(
+            prompt="P", system_prompt="SYS", cache_type="events", book="B"
+        )
+    api.assert_not_called()
+    assert got == {"Event": {"n": 1}}
 
 
 def test_evicting_names_the_key_the_answer_was_stored_under(tmp_path, monkeypatch):
@@ -197,6 +227,28 @@ def test_evicting_names_the_key_the_answer_was_stored_under(tmp_path, monkeypatc
         grok.extract_json(prompt="P", system_prompt="SYS", cache_type="events")
     assert api.call_count == 2  # evicted, so asked again
     assert grok.cache_key_for("P", "SYS", "events") in grok._get_cache("events")
+
+
+def test_evicting_a_book_bound_request_names_its_stamped_key(tmp_path, monkeypatch):
+    grok = _real_client(tmp_path, monkeypatch)
+    from src.utils import request_identity as ri
+
+    def answer(messages, *a, **k):
+        _, bid, rid = ri.stamp("P", "SYS", "events", "B")
+        body = {"ok": 1, "BookID": bid, "RequestID": rid}
+        return {"choices": [{"message": {"content": json.dumps(body)}}]}
+
+    with mock.patch.object(grok, "_call_api", side_effect=answer) as api:
+        assert grok.extract_json(
+            prompt="P", system_prompt="SYS", cache_type="events", book="B"
+        ) == {"ok": 1}
+        assert grok.clear_cache_entry(
+            "P", cache_type="events", system_prompt="SYS", book="B"
+        )
+        grok.extract_json(
+            prompt="P", system_prompt="SYS", cache_type="events", book="B"
+        )
+    assert api.call_count == 2
 
 
 def test_a_truncated_reask_of_an_under_covered_chapter_still_requires_coverage(

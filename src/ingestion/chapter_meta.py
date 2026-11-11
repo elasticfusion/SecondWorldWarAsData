@@ -27,9 +27,13 @@ def build_meta_yaml(
     extra: Optional[Dict[str, Any]] = None,
 ) -> bytes:
     """Serialize the chapter meta (see module docstring). ``extra`` adds converter-specific keys."""
+    from src.utils.deterministic_ids import book_id
+
     meta: Dict[str, Any] = {
         "series": "",
         "book": book,
+        # the book's deterministic ULID, from its immutable slug (deterministic_ids.book_id)
+        "book_id": book_id(book),
         "author": "",
         "chapter_number": "1",
         "chapter_title": chapter_title,

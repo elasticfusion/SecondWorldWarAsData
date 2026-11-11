@@ -62,7 +62,7 @@ def test_retry_runs_in_live_mode(tmp_path, monkeypatch):
 
     grok = types.SimpleNamespace(
         batch_mode=False,
-        clear_cache_entry=lambda prompt, cache_type, system_prompt=None: seen.__setitem__(
+        clear_cache_entry=lambda prompt, cache_type, system_prompt=None, book=None: seen.__setitem__(
             "cleared", seen["cleared"] + 1
         ),
     )

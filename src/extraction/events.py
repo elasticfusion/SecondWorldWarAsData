@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from jsonschema import ValidationError, validate
 
-from src.grok_client import GrokClient, GrokAPIError
+from src.grok_client import GrokClient, GrokAPIError, current_book
 from src.json_schemas import EVENT_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
 from src.schemas import ULID_PATTERN
@@ -758,6 +758,14 @@ def _merge_event_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
     return base
 
 
+def _book_of(parsed_data: Dict[str, Any]) -> Optional[str]:
+    """The book a chapter's requests are asked for: the chapter's folder slug (``current_book``,
+    set per chapter), else the parsed ``book`` (Phase 1 enforces the two are equal). Passed to the
+    client explicitly so a worker thread that lost the context still asks for the right book.
+    """
+    return current_book.get() or parsed_data.get("book") or None
+
+
 def _extract_chunk(
     parsed_data: Dict[str, Any],
     paragraphs: List[Dict[str, Any]],
@@ -779,6 +787,7 @@ def _extract_chunk(
         temperature=0.1,
         use_cache=True,
         cache_type="events",
+        book=_book_of(parsed_data),
     )
     if "EventID" in result and "Event" not in result:
         result = {"Event": result}
@@ -924,7 +933,10 @@ def _evict_chunks(parsed_data: dict, chunks: list, grok_client) -> None:
         prompt = create_event_prompt({**parsed_data, "paragraphs": chunk})
         if prompt:
             grok_client.clear_cache_entry(
-                prompt, cache_type="events", system_prompt=system_prompt
+                prompt,
+                cache_type="events",
+                system_prompt=system_prompt,
+                book=_book_of(parsed_data),
             )
 
 
@@ -1024,6 +1036,7 @@ def extract_events(
 
     original_prompt = prompt  # Keep original for cache key
     system_prompt = get_system_prompt("events")
+    book = _book_of(parsed_data)
     shortfall = None  # the last answer's coverage shortfall, if it was too low
 
     # Try to get valid JSON with retries
@@ -1036,6 +1049,7 @@ def extract_events(
                 temperature=0.1,
                 use_cache=True,
                 cache_type="events",
+                book=book,
             )
         except GrokAPIError as e:
             if shortfall:  # a truncated re-ask of a chapter already found under-covered
@@ -1072,6 +1086,7 @@ def extract_events(
                     parsed_file,
                     attempt,
                     shortfall,
+                    book,
                 )
                 prompt = _coverage_retry_prompt(original_prompt, shortfall)
                 continue
@@ -1082,7 +1097,7 @@ def extract_events(
                 output_dir,
                 attempt,
                 grok_client,
-                (original_prompt, system_prompt, raw),
+                (original_prompt, system_prompt, raw, book),
             )
 
         except ValidationError as e:
@@ -1116,7 +1131,7 @@ def _split_on_truncation(e, parsed_data, parsed_file, output_dir, grok_client) -
 
 def _save_accepted(response, parsed_file, output_dir, attempt, grok_client, asked):
     """Save the accepted answer. After a retry, also store it under the ORIGINAL request's key
-    (``asked`` = original prompt, system prompt, answer as received), so a re-run of the chapter
+    (``asked`` = original prompt, system prompt, answer as received, book), so a re-run of the chapter
     is served it instead of re-asking - and re-rejecting - the first answer."""
     output_file = _save_event_output(response, parsed_file, output_dir)
     if attempt > 0:
@@ -1135,14 +1150,14 @@ def _coverage_shortfall(response: dict, parsed_data: dict) -> Optional[tuple]:
 
 
 def _reject_low_coverage(
-    grok_client, prompt, system_prompt, raw, parsed_file, attempt, shortfall
+    grok_client, prompt, system_prompt, raw, parsed_file, attempt, shortfall, book=None
 ) -> None:
     """Evict the incomplete answer (with the cache on it would be served to every re-run), keep a
     copy beside the cache for diagnosis (uploaded with it to diagnostics/cache/<book>/), log it.
     """
     share, missing = shortfall
     evicted = grok_client.clear_cache_entry(
-        prompt, cache_type="events", system_prompt=system_prompt
+        prompt, cache_type="events", system_prompt=system_prompt, book=book
     )
     kept = _keep_rejected(grok_client, parsed_file, attempt, raw, share, missing)
     logger.warning(
@@ -1206,15 +1221,18 @@ paragraph, and return the complete set of sub-events.
 
 
 def _cache_answer(
-    grok_client, prompt: str, system_prompt: Optional[str], raw: str
+    grok_client,
+    prompt: str,
+    system_prompt: Optional[str],
+    raw: str,
+    book: Optional[str] = None,
 ) -> None:
-    """Store ``raw`` as the answer to ``prompt`` (respecting the cache kill-switch)."""
-    from src.grok_client import _cache_globally_disabled
-
-    if _cache_globally_disabled():
-        return
-    key = grok_client.cache_key_for(prompt, system_prompt, "events", 0.1)
-    grok_client._get_cache("events")[key] = raw
+    """Store ``raw`` as the answer to ``prompt``, stamped with THAT request's identity (the answer
+    came from a re-ask, which carried its own RequestID; unstamped, a re-run would reject it).
+    """
+    grok_client.store_json_answer(
+        prompt, system_prompt, "events", json.loads(raw), temperature=0.1, book=book
+    )
 
 
 def _split_after_low_coverage(

@@ -373,8 +373,23 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
 
 ### MED
+- **[MED · owner 2026-11-11] Books submitted together are processed as separate books.** When more than
+  one book is uploaded at the same time, each one gets its own runs (its own Phase 0-3 tasks, Grok
+  batches, locks, stats and alerts). Runs are never combined across books. One book's failure, retry,
+  purge or rerun must not hold up or touch another book. Check where runs are grouped today (the
+  trigger's per-wave key batching, the multi-doc task pool, Grok batch submission) and split them
+  per book.
+- **[MED · post Phase 3 · owner 2026-11-11] Provenance validation run for a book.** After Phase 3, run
+  one pass over a whole book that checks every published record's provenance resolves back to its
+  source: `verbatim_reference` / `original_text` is found in the cited chapter text at the cited
+  page/paragraph, the bibliography entries are real sources (not stubs), and the
+  `archive_reference_number` / `license` / `copyright_status` fields are filled in. Write a per-book
+  report and alert (phase2-complete topic) when a check fails.
 - **[MED · DESIGN · owner 2026-11-08] Book naming: a WORK key + an EDITION key, so duplicate
-  titles and editions of one work are told apart.** Today the name is the upload folder / file
+  titles and editions of one work are told apart.** CONSTRAINT (owner 2026-11-11): slugs are
+  IMMUTABLE (`.kiro/steering/architecture-decisions.md`, "Book identity") - this scheme applies to
+  NEW uploads only; every existing slug (and so its BookID and EventIDs) is grandfathered, never
+  re-keyed. Today the name is the upload folder / file
   stem (`src/ingestion/book_slug.py`); a different work under a taken name is rejected with an
   opaque `{title}-{6 random chars}` suggestion, and another edition of the SAME work (different
   checksum) is treated as a different work. Target: `{work}/{edition}` (e.g.
@@ -595,6 +610,12 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   within N lines or an explicit `# OBSERV-EXEMPT: <reason>`.
 
 ### LOW
+- **[LOW · identity · 2026-11-11] Answer identity covers only kinds read through `extract_json`.**
+  `src/utils/request_identity.BOOK_BOUND` stamps each book-bound request with its BookID + RequestID
+  and verifies the echo, but casualties and people_groups read via `chat_completion` (raw text) and
+  equipment_broad answers a JSON array, so none of them is verified. Fix: move casualties to
+  `extract_json` (its answer is an object keyed by sub-event) and add it to `BOOK_BOUND`; give array
+  answers an object wrapper if they are ever made book-bound.
 - **[LOW · test-hygiene] Tests write into the tracked `logs/processing_summary.json` (found 2026-11-06).**
   `src/extraction/events._write_processing_summary` appends to the cwd-relative `logs/processing_summary.json`, and
   event-extraction tests (for example `tests/test_events_paragraph_range.py`) run it from the repo root, adding

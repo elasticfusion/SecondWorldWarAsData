@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 from src.discovery import discover_content_structure
+from src.utils.deterministic_ids import book_id
 from src.parser import parse_chapter
 from src.utils.config import load_config, get_paths
 from src.utils.logger import setup_logging
@@ -31,6 +32,7 @@ def _doc_to_dict(doc):
     """Convert a MarkdownDocument to a serializable dict."""
     return {
         "book": doc.book,
+        "BookID": book_id(doc.book),
         "chapter_number": doc.chapter_number,
         "chapter_title": doc.chapter_title,
         "section_id": doc.section_id,
@@ -120,6 +122,7 @@ def _save_footnotes_chapter(doc, section_suffix, book_output, logger):
     )
     notes_data = {
         "book": doc.book,
+        "BookID": book_id(doc.book),
         "chapter_number": doc.chapter_number,
         "chapter_title": doc.chapter_title,
         file_suffix: notes_content,
@@ -210,6 +213,7 @@ def _save_endnote_refs(doc, section_suffix, book_output, logger):
     )
     endnotes_data = {
         "book": doc.book,
+        "BookID": book_id(doc.book),
         "chapter_number": doc.chapter_number,
         "chapter_title": doc.chapter_title,
         "endnotes": [f.to_dict() for f in doc.footnotes],
@@ -334,6 +338,29 @@ def _observe_phase1_book(book_name, chapters, book_output, logger) -> None:
         )
 
 
+def _enforce_book_slug(doc, book_name: str) -> None:
+    """A chapter's ``book`` IS its folder slug (immutable, src/ingestion/book_slug): the parsed
+    data, its EventIDs (``event_id(book, ...)``) and its BookID all derive from it. A chapter meta
+    naming another ``book`` (hand-written, legacy, an import script) would otherwise give the same
+    book a second identity: the slug wins, loudly."""
+    if not book_name or doc.book == book_name:
+        return
+    from src.utils.observe import observe_error
+
+    observe_error(
+        "phase1",
+        "book_slug_mismatch",
+        note=(
+            "the chapter meta's book differs from its folder: the folder slug is used (the "
+            "book's identity); correct the chapter meta's book to the slug"
+        ),
+        book=book_name,
+        meta_book=str(doc.book)[:80],
+        chapter=getattr(doc, "chapter_number", ""),
+    )
+    doc.book = book_name
+
+
 def _parse_one_book(
     book_name,
     chapters,
@@ -361,6 +388,7 @@ def _parse_one_book(
                 chapter_group, apply_structure_repair=repair_structure
             )
             for doc in documents:
+                _enforce_book_slug(doc, book_name)
                 _process_document(doc, book_output, logger)
         except Exception as _e:  # noqa: BLE001 - one bad chapter must not abort the run
             errors += 1

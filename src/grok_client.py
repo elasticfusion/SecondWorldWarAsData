@@ -1,5 +1,6 @@
 """Grok API client with retry logic and caching."""
 
+import contextlib
 import contextvars
 import json
 import logging
@@ -7,7 +8,7 @@ import os
 import threading
 import time as _time
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, TYPE_CHECKING
+from typing import Any, Dict, NamedTuple, Optional, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from src.utils.cache_backend import CacheBackend
@@ -27,11 +28,48 @@ from tenacity import (
     wait_exponential,
 )
 
+from src.utils import request_identity
 from src.utils.http_pool import get_session
-from src.utils.observe import observe_error
+from src.utils.observe import observe_error, observe_warn
 
 load_dotenv()
 logger = logging.getLogger(__name__)
+
+
+class _Ask(NamedTuple):
+    """One extract_json request as asked (its prompt already stamped)."""
+
+    prompt: str
+    system_prompt: Optional[str]
+    temperature: float
+    use_cache: bool
+    cache_type: str
+    cache_key: Optional[str]
+
+    @property
+    def args(self) -> Tuple[str, Optional[str], float, bool, str]:
+        return (
+            self.prompt,
+            self.system_prompt,
+            self.temperature,
+            self.use_cache,
+            self.cache_type,
+        )
+
+
+@contextlib.contextmanager
+def book_scope(book: Optional[str]):
+    """Run the block with ``current_book`` = ``book`` (no change when ``book`` is empty). The
+    explicit book of a call wins over an inherited (or, in a worker thread, lost) context.
+    """
+    if not book:
+        yield
+        return
+    token = current_book.set(book)
+    try:
+        yield
+    finally:
+        current_book.reset(token)
 
 
 def _cache_globally_disabled() -> bool:
@@ -270,6 +308,9 @@ class GrokClient:
         calls_per_minute = _effective_calls_per_minute(config)
         self._rate_limiter = _RateLimiter(calls_per_minute)
 
+        # Cache keys a batch-mode identity mismatch already evicted + re-queued (a second one raises)
+        self._identity_reasked: set = set()
+
         # Cache stats
         self._cache_hits = 0
         self._cache_misses = 0
@@ -396,13 +437,58 @@ class GrokClient:
         system_prompt: Optional[str] = None,
         cache_type: str = "default",
         temperature: float = 0.1,
+        book: Optional[str] = None,
     ) -> str:
-        """The key ``extract_json``/``chat_completion`` store this request's answer under: prompt,
-        system prompt, temperature and the cache type's model. The one way to name an entry to
-        evict or replace."""
+        """The key ``extract_json``/``chat_completion`` store this request's answer under: prompt
+        (with its identity block, for a book-bound kind), system prompt, temperature and the cache
+        type's model. The one way to name an entry to evict or replace."""
+        prompt = self._identity(prompt, system_prompt, cache_type, book)[0]
         return self._make_cache_key(
             prompt, temperature, self._get_model(cache_type), system_prompt or ""
         )
+
+    @staticmethod
+    def _identity(
+        prompt: str,
+        system_prompt: Optional[str],
+        cache_type: str,
+        book: Optional[str],
+        basis: Optional[str] = None,
+    ) -> Tuple[str, str, str]:
+        """(the prompt as asked, BookID, RequestID) - the prompt is stamped for a book-bound kind
+        (``request_identity``); otherwise returned unchanged with empty ids."""
+        book = book or current_book.get()
+        if not book or not request_identity.is_bound(cache_type, book):
+            return prompt, "", ""
+        return request_identity.stamp(prompt, system_prompt, cache_type, book, basis)
+
+    def store_json_answer(
+        self,
+        prompt: str,
+        system_prompt: Optional[str],
+        cache_type: str,
+        answer: Dict[str, Any],
+        temperature: float = 0.1,
+        book: Optional[str] = None,
+        cache_key: Optional[str] = None,
+    ) -> None:
+        """Cache ``answer`` as THE answer to ``prompt`` (under ``cache_key`` when the request has a
+        stable key override) (e.g. an answer obtained by a re-ask, kept
+        for the original request), carrying the original request's identity so a later read
+        verifies. Respects the cache kill-switch."""
+        if _cache_globally_disabled():
+            return
+        with book_scope(book):
+            _, bid, rid = self._identity(
+                prompt, system_prompt, cache_type, None, cache_key
+            )
+            body: Any = dict(answer) if isinstance(answer, dict) else answer
+            if bid and isinstance(body, dict):
+                body.update({"BookID": bid, "RequestID": rid})
+            key = cache_key or self.cache_key_for(
+                prompt, system_prompt, cache_type, temperature
+            )
+            self._get_cache(cache_type)[key] = json.dumps(body, ensure_ascii=False)
 
     def clear_cache_entry(
         self,
@@ -410,12 +496,14 @@ class GrokClient:
         cache_type: str = "default",
         temperature: float = 0.1,
         system_prompt: Optional[str] = None,
+        book: Optional[str] = None,
     ) -> bool:
         """Remove a single cache entry by prompt (and the system prompt it was asked with).
         Returns True if removed."""
-        cache = self._get_cache(cache_type)
-        key = self.cache_key_for(prompt, system_prompt, cache_type, temperature)
-        return cache.pop(key, None) is not None
+        with book_scope(book):
+            cache = self._get_cache(cache_type)
+            key = self.cache_key_for(prompt, system_prompt, cache_type, temperature)
+            return cache.pop(key, None) is not None
 
     def _estimate_batch_cost(self) -> float:
         """Estimate USD cost of the collected batch for the credit gate (§9.1).
@@ -1834,7 +1922,7 @@ class GrokClient:
             prompt, system_prompt, cache_type, temperature
         )
         cache.pop(evict_key, None)
-        return self.extract_json(
+        return self._extract_json(
             prompt,
             system_prompt,
             temperature,
@@ -1851,11 +1939,120 @@ class GrokClient:
         temperature: float = 0.1,
         use_cache: bool = True,
         cache_type: str = "default",
+        cache_key: Optional[str] = None,
+        book: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Get a JSON answer from Grok - for a book-bound kind, one PROVEN to answer this request.
+
+        ``book`` - the request's book (else the ``current_book`` context). It scopes the cache
+        (``books/<book>/<kind>``) and, for a ``request_identity.BOOK_BOUND`` kind, the prompt is
+        stamped with the BookID + RequestID and the answer must echo both (live or cached):
+
+        * ``mismatch`` (the answer belongs to another request) - evicted and asked once more; a
+          second mismatch raises ``GrokAPIError``: such an answer is never used;
+        * ``missing`` (not echoed) - asked once more; then accepted with a warning;
+        * ``unverifiable`` (not a JSON object) - accepted with a warning.
+
+        Other arguments: see ``_extract_json``.
+        """
+        with book_scope(book):
+            asked, bid, rid = self._identity(
+                prompt, system_prompt, cache_type, None, cache_key
+            )
+            ask = _Ask(
+                asked, system_prompt, temperature, use_cache, cache_type, cache_key
+            )
+            result = self._extract_json(*ask.args, cache_key=cache_key)
+            if not bid:
+                return result
+            result, status = request_identity.verify(result, bid, rid)
+            if status in ("mismatch", "missing") and self._reask_on(status, ask, rid):
+                result = self._extract_json(*ask.args, cache_key=cache_key)
+                result, status = request_identity.verify(result, bid, rid)
+            return self._settle_identity(result, status, ask, (bid, rid))
+
+    def _ask_key(self, ask: "_Ask") -> str:
+        return ask.cache_key or self.cache_key_for(
+            ask.prompt, ask.system_prompt, ask.cache_type, ask.temperature
+        )
+
+    def _reask_on(self, status: str, ask: "_Ask", rid: str) -> bool:
+        """Evict an unproven answer to ask again - once (True) - or not (False).
+
+        In BATCH mode an evicted answer is re-queued (the re-ask raises BatchModeCollecting) and a
+        paid answer is lost, so: a ``missing`` echo is not re-asked there (accepted, below), and a
+        ``mismatch`` is re-asked once per key across cycles - a second one raises."""
+        key = self._ask_key(ask)
+        if self.batch_mode:
+            if status == "missing":
+                return False
+            if key in self._identity_reasked:
+                return False
+            self._identity_reasked.add(key)
+        self._observe_identity(status, ask.cache_type, rid, retried=False)
+        self._get_cache(ask.cache_type).pop(key, None)
+        return True
+
+    def _settle_identity(
+        self, result: Any, status: str, ask: "_Ask", ids: Tuple[str, str]
+    ) -> Any:
+        """The final verdict: raise on a mismatch; accept anything else, and keep an accepted
+        answer that did not echo its identity STAMPED in the cache, so a re-run reads it as ``ok``
+        instead of re-asking (and paying) every time."""
+        rid = ids[1]
+        if status == "ok":
+            self._identity_reasked.discard(self._ask_key(ask))
+            return result
+        if (
+            status == "unverifiable"
+        ):  # a non-object answer: permanent, so not an alert per read
+            logger.debug("identity unverifiable: %s request %s", ask.cache_type, rid)
+            return result
+        self._observe_identity(status, ask.cache_type, rid, retried=True)
+        if status == "mismatch":
+            # never leave the wrong answer cached: the next read asks afresh
+            self._get_cache(ask.cache_type).pop(self._ask_key(ask), None)
+            raise GrokAPIError(
+                f"Answer identity mismatch for a {ask.cache_type} request (RequestID {rid}): "
+                "the answer belongs to another request"
+            )
+        if ask.use_cache and not _cache_globally_disabled():  # status == "missing"
+            body = {**result, "BookID": ids[0], "RequestID": ids[1]}
+            self._get_cache(ask.cache_type)[self._ask_key(ask)] = json.dumps(
+                body, ensure_ascii=False
+            )
+        return result
+
+    @staticmethod
+    def _observe_identity(
+        status: str, cache_type: str, rid: str, retried: bool
+    ) -> None:
+        """OBSERV grok.identity_<status>: an answer not proven to be this request's."""
+        emit = observe_error if status == "mismatch" and retried else observe_warn
+        emit(
+            "grok",
+            f"identity_{status}",
+            cache_type=cache_type,
+            request_id=rid,
+            action=(
+                "raise"
+                if emit is observe_error
+                else ("accept" if retried else "re-ask")
+            ),
+        )
+
+    def _extract_json(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        temperature: float = 0.1,
+        use_cache: bool = True,
+        cache_type: str = "default",
         _retried: bool = False,
         cache_key: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
-        Get JSON response from Grok API.
+        Get JSON response from Grok API (the prompt as asked; no identity check).
 
         Args:
             prompt: User prompt

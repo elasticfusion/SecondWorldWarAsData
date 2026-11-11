@@ -131,8 +131,11 @@ def select_binary_keys(keys: list[str]) -> list[str]:
 
 
 def _book_from_key(key: str) -> str:
-    base = key.rsplit("/", 1)[-1]
-    return base.rsplit(".", 1)[0] if "." in base else base
+    """The slug of a scanned SOURCE document (its filename stem) - the shared rule
+    (src/ingestion/book_slug.book_slug), validated."""
+    from src.ingestion.book_slug import book_slug
+
+    return book_slug(key)
 
 
 def _submitter_identity(s3_client, bucket: str, key: str) -> str:
