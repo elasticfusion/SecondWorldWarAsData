@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import ulid
 from pydantic import BaseModel, Field, field_validator
 
+from src.utils.entity_records import merge_mentions
 from src.grok_client import for_chapter_book
 from src.grok_client import GrokClient, BatchModeCollecting
 from src.utils.observe import observe, observe_error, observe_warn
@@ -1515,18 +1516,13 @@ def _merge_into_existing(
         # best-effort (upgrade case-by-case if registered).
         existing, skip = read_for_update(existing, SCHEMA_TARGET, logger, matched_name)
         if not skip:
-            # Check if mention already exists (semantic dedup by event+sub-event)
-            existing_keys = {
-                (m.get("EventID"), m.get("Sub_eventID"))
-                for m in existing.get("event_mentions", [])
-            }
-            new_key = (new_mention.get("EventID"), new_mention.get("Sub_eventID"))
-            if new_key in existing_keys:
-                logger.debug("Mention for %s already exists, skipping", new_key)
+            # The mention may already be there (entity_records.merge_mentions: one per sub-event)
+            if not merge_mentions(existing["event_mentions"], [new_mention]):
+                logger.debug(
+                    "Mention for %s already exists, skipping",
+                    new_mention.get("Sub_eventID"),
+                )
                 return eq_file
-
-            # Append mention
-            existing["event_mentions"].append(new_mention)
 
             # Update optional fields
             _merge_equipment_fields(existing, equipment_data)

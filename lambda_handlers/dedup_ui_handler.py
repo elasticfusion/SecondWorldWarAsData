@@ -21,6 +21,7 @@ import boto3
 logger = logging.getLogger(__name__)
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
+from src.utils.entity_records import merge_mentions  # noqa: E402
 from src.utils.observe import observe_error  # noqa: E402
 
 STATUS_KEY = "dedup/review_status.json"
@@ -569,6 +570,31 @@ def _merge_generic_files(entity_type, people, primary_index, storage):
     aliases = primary_data.get("aliases", []) or []
     primary_id = primary_data.get(pk_field, "") if pk_field else ""
 
+    absorbed = _absorb_secondaries(
+        storage, prefix, people, primary_index, primary_mentions, aliases
+    )
+    # Write the merged primary FIRST: only once it holds the secondaries' mentions are their refs
+    # repointed and their files deleted (a failed write leaves every secondary intact).
+    primary_data["event_mentions"] = primary_mentions
+    primary_data["aliases"] = aliases
+    storage.write_json(f"{prefix}/{primary['filename']}", primary_data)
+    _sync_entity_to_dynamo(prefix.split("/")[-1], primary_data)
+    _append_to_manifest([f"{prefix}/{primary['filename']}"])
+    for p, secondary in absorbed:
+        secondary_id = secondary.get(pk_field, "") if pk_field else ""
+        _rebase_event_refs_storage(storage, secondary_id, primary_id, ref_key)
+        try:
+            storage.delete(f"{prefix}/{p['filename']}")
+        except Exception as e:
+            logger.warning("Could not delete %s: %s", p.get("filename"), e)
+
+
+def _absorb_secondaries(
+    storage, prefix, people, primary_index, primary_mentions, aliases
+):
+    """Absorb every secondary into the primary lists (until the Lambda nears its timeout).
+    Returns [(entry, secondary record)] of those absorbed - nothing is deleted here."""
+    absorbed = []
     for i, p in enumerate(people):
         if i == primary_index:
             continue
@@ -576,41 +602,24 @@ def _merge_generic_files(entity_type, people, primary_index, storage):
         if _lambda_context and _lambda_context.get_remaining_time_in_millis() < 10000:
             logger.warning("Lambda timeout approaching — saving partial merge")
             break
-        _absorb_secondary_generic(
-            storage, prefix, p, primary_mentions, aliases, primary_id, pk_field, ref_key
+        secondary = _absorb_secondary_generic(
+            storage, prefix, p, primary_mentions, aliases
         )
-
-    primary_data["event_mentions"] = primary_mentions
-    primary_data["aliases"] = aliases
-    storage.write_json(f"{prefix}/{primary['filename']}", primary_data)
-    _sync_entity_to_dynamo(prefix.split("/")[-1], primary_data)
-    _append_to_manifest([f"{prefix}/{primary['filename']}"])
+        if secondary is not None:
+            absorbed.append((p, secondary))
+    return absorbed
 
 
-def _absorb_secondary_generic(
-    storage, prefix, p, primary_mentions, aliases, primary_id, pk_field, ref_key
-):
-    """Union one secondary's mentions/alias into the primary lists, rebase its event refs to the
-    primary id (BEFORE delete so nothing is orphaned), then delete the secondary file.
-    """
+def _absorb_secondary_generic(storage, prefix, p, primary_mentions, aliases):
+    """Union one secondary's mentions (entity_records.merge_mentions - the same rule as every
+    other merge) and its name (as an alias) into the primary lists. Returns the secondary record,
+    or None when it cannot be read (then nothing of it is merged or deleted)."""
     try:
         secondary = storage.read_json(f"{prefix}/{p['filename']}")
     except Exception as e:
         logger.warning("Could not read %s: %s", p.get("filename"), e)
-        return
-    seen = {
-        (m.get("Sub_eventID", ""), m.get("event_id", ""), m.get("Event_Name", ""))
-        for m in primary_mentions
-    }
-    for m in secondary.get("event_mentions", []):
-        mention_key = (
-            m.get("Sub_eventID", ""),
-            m.get("event_id", ""),
-            m.get("Event_Name", ""),
-        )
-        if mention_key not in seen:
-            primary_mentions.append(m)
-            seen.add(mention_key)
+        return None
+    merge_mentions(primary_mentions, secondary.get("event_mentions", []))
     sec_name = secondary.get(
         "name",
         secondary.get(
@@ -620,12 +629,7 @@ def _absorb_secondary_generic(
     )
     if sec_name and sec_name not in aliases:
         aliases.append(sec_name)
-    secondary_id = secondary.get(pk_field, "") if pk_field else ""
-    _rebase_event_refs_storage(storage, secondary_id, primary_id, ref_key)
-    try:
-        storage.delete(f"{prefix}/{p['filename']}")
-    except Exception as e:
-        logger.warning("Could not delete %s: %s", p.get("filename"), e)
+    return secondary
 
 
 def _rename_to_match_content(event, storage):
@@ -901,7 +905,8 @@ def _assign_to_person(event, storage):
         if source_name and source_name not in aliases:
             aliases.append(source_name)
         target["aliases"] = aliases
-        target["event_mentions"] = target_mentions + source_mentions
+        merge_mentions(target_mentions, source_mentions)
+        target["event_mentions"] = target_mentions
         storage.write_json(f"{prefix}/{target_file}", target)
         storage.delete(f"{prefix}/{source_file}")
         _append_to_manifest([f"{prefix}/{target_file}"])

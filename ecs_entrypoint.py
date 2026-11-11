@@ -2015,6 +2015,118 @@ def _post_sync_referential_enforce(phase_label: str) -> None:
         )
 
 
+def _refresh_validation_corpus(book: str = "", entities: tuple = ()) -> None:
+    """Make the LOCAL tree the authoritative post-sync corpus for a local-tree validator (run AFTER
+    _final_sync and the S3-side referential repair). No-op without S3_BUCKET (local is authoritative).
+
+      * ``output/content/`` (``<book>/`` only, when given) - the events and chapter text;
+      * the entity dirs the repair mutates - re-downloaded with OVERWRITE: the local copies predate
+        the S3-side down-bind repair (else a validator audits stale records);
+      * ``entities`` - other dirs the validator reads, skip-existing (local copies are this run's
+        own, newest writes; the rest exist only in S3).
+    """
+    if not os.environ.get("S3_BUCKET"):
+        return
+    s3 = _s3_client()
+    _download_s3_prefix_skip_existing(
+        s3, f"output/content/{book}/" if book else "output/content/"
+    )
+    # the SAME entity set the repair mutates (single source of truth)
+    from src.utils.referential_integrity import _MENTION_REPAIR_ENTITIES
+
+    for ent in _MENTION_REPAIR_ENTITIES:
+        _download_s3_prefix(s3, f"output/{ent}/")
+    for ent in entities:
+        if ent not in _MENTION_REPAIR_ENTITIES:
+            _download_s3_prefix_skip_existing(s3, f"output/{ent}/")
+
+
+def _provenance_gate(phase: str) -> tuple:
+    """Provenance validation of this task's book at a phase end, against the post-sync corpus
+    (scripts/validate_provenance). Returns (passed, reason). The report is uploaded to
+    ``output/reports/provenance/``. FAIL-CLOSED: a validation that cannot run does not pass.
+    """
+    book = os.environ.get("BOOK_NAME", "")
+    if not book:
+        observe_warn(
+            "provenance",
+            "validation_skipped",
+            phase=phase,
+            note="no BOOK_NAME: provenance validation is per book",
+        )
+        return True, "no book to validate"
+    import time as _time
+
+    started = _time.monotonic()
+    try:
+        from scripts import validate_provenance as vp
+
+        _refresh_validation_corpus(book, vp.TEXT_CITING_ENTITIES)
+        findings, report = vp.validate_and_record(WORKDIR / "output", book, phase)
+    except Exception as e:  # noqa: BLE001 - fail closed, loudly
+        observe_error(
+            "provenance",
+            "validation_failed",
+            phase=phase,
+            book=book,
+            error=type(e).__name__,
+            note="provenance validation could not run: treated as failed",
+        )
+        return False, f"provenance validation could not run ({type(e).__name__})"
+    logger.info(
+        "OBSERV provenance.gate_timing phase=%s book=%s seconds=%.1f",
+        phase,
+        book,
+        _time.monotonic() - started,
+    )
+    _upload_provenance_report(report, f"output/{vp.report_key(book, phase)}")
+    if findings.ok:
+        return True, "provenance validation passed"
+    return False, (
+        f"provenance validation failed: {sum(findings.failed.values())} hard finding(s) "
+        f"(report s3://{BUCKET}/output/{vp.report_key(book, phase)})"
+    )
+
+
+def _upload_provenance_report(report: Path, key: str) -> None:
+    """Upload a provenance report (the validation already ran: an upload failure is alerted on
+    its own, never read as a failed validation)."""
+    if not os.environ.get("S3_BUCKET"):
+        return
+    try:
+        _s3_client().upload_file(str(report), BUCKET, key)
+    except Exception as e:  # noqa: BLE001
+        observe_error(
+            "provenance",
+            "report_upload_failed",
+            key=key,
+            error=type(e).__name__,
+            note="the validation ran; its report is only in the task's local tree",
+        )
+
+
+def _phase3_gate_decision(dedup_ok: bool, provenance: tuple) -> tuple:
+    """The Phase-2 -> Phase-3 gate: (action, reason, held_by). The dedup gate, held also by a
+    failed provenance validation when the provenance gate mode is ``block`` (warn: alerted, not
+    held). ``held_by`` names what holds Phase 3 ("dedup", "provenance" or both)."""
+    action, reason = _dedup_gate_decision(dedup_ok)
+    held_by = [] if action == "auto_proceed" else ["dedup"]
+    passed, prov_reason = provenance
+    if passed:
+        return action, reason, held_by
+    try:
+        from scripts.validate_provenance import gate_mode
+
+        mode = gate_mode()
+    except Exception as e:  # noqa: BLE001 - a gate that cannot load its mode is closed
+        observe_error("provenance", "gate_mode_unavailable", error=type(e).__name__)
+        mode = "block"
+    if mode != "block":
+        return action, f"{reason}; {prov_reason} (gate=warn: not held)", held_by
+    reason = prov_reason if action == "auto_proceed" else f"{reason}; {prov_reason}"
+    return "block", reason, held_by + ["provenance"]
+
+
 def _phase3_durable_referential_fix() -> None:
     """Post-_final_sync referential repair + validation for Phase 3, run against the AUTHORITATIVE,
     COMPLETE corpus (S3 when S3_BUCKET is set) AFTER the local->S3 sync — so (a) the stale-sub-event
@@ -2043,25 +2155,7 @@ def _phase3_durable_referential_fix() -> None:
         #      carry the pre-repair dangling Sub_eventID. Re-download the repaired entity dirs with
         #      OVERWRITE so validate audits the repaired records, not the stale input snapshot.
         #      (Root cause of the observed "repair=0 dangling but validate_phase3 FAIL 26" split.)
-        if os.environ.get("S3_BUCKET"):
-            s3 = _s3_client()
-            _download_s3_prefix_skip_existing(s3, "output/content/")
-            # Use the SAME entity set the repair mutates (single source of truth — so the overwrite
-            # refresh can never drift from what repair_dangling_subevents actually touches).
-            try:
-                from src.utils.referential_integrity import _MENTION_REPAIR_ENTITIES
-            except (
-                Exception
-            ):  # noqa: BLE001 - fall back to the known set if import changes
-                _MENTION_REPAIR_ENTITIES = (
-                    "places",
-                    "people_groups",
-                    "dates",
-                    "people",
-                    "equipment",
-                )
-            for _ent in _MENTION_REPAIR_ENTITIES:
-                _download_s3_prefix(s3, f"output/{_ent}/")
+        _refresh_validation_corpus()
         from scripts.validate_phase3 import run as _validate_phase3
 
         rc = _validate_phase3(str(WORKDIR / "output"), strict_coverage=False)
@@ -2112,6 +2206,7 @@ def _post_process(phase_script: str, env: dict) -> None:
         # _post_process always follows _final_sync (sync, retrieve and in-task-batch paths), so
         # S3 now holds the complete Phase-2 corpus. Audit BEFORE dedup, as the in-main run did.
         _post_sync_referential_enforce("Phase 2 (post-sync)")
+        provenance = _provenance_gate("2")
         dedup_ok = False
         for attempt in range(2):
             try:
@@ -2130,9 +2225,9 @@ def _post_process(phase_script: str, env: dict) -> None:
         # zero groups and the run isn't suspiciously large; otherwise block for
         # human review. Notify on the decision either way (auto-proceed is now
         # observable, not silent).
-        gate_action, gate_reason = _dedup_gate_decision(dedup_ok)
+        gate_action, gate_reason, held_by = _phase3_gate_decision(dedup_ok, provenance)
         logger.info("Dedup gate: %s — %s", gate_action, gate_reason)
-        _notify_dedup_gate(gate_action, gate_reason)
+        _notify_dedup_gate(gate_action, gate_reason, held_by)
 
         if _multi_doc_enabled():
             # Multi-doc: SFN owns progression. On auto-proceed advance to phase3;
@@ -2353,8 +2448,10 @@ def _dedup_gate_decision(dedup_ok: bool) -> tuple:
     return "auto_proceed", f"zero duplicate groups across {entity_count} entities"
 
 
-def _notify_dedup_gate(action: str, reason: str) -> None:
-    """Notify (non-blocking) on the dedup gate decision, incl. auto-proceed."""
+def _notify_dedup_gate(action: str, reason: str, held_by: tuple = ("dedup",)) -> None:
+    """Notify (non-blocking) on the Phase-3 gate decision, incl. auto-proceed. ``held_by`` (from
+    _phase3_gate_decision) picks the subject and the action link: the Dedup Review UI for dedup,
+    the report for provenance."""
     topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
     if not topic_arn:
         logger.info(
@@ -2362,20 +2459,26 @@ def _notify_dedup_gate(action: str, reason: str) -> None:
             action,
         )
         return
-    subject = (
-        "WWII Pipeline: dedup auto-proceed"
-        if action == "auto_proceed"
-        else "WWII Pipeline: dedup review needed"
-    )
+    if action == "auto_proceed":
+        subject = "WWII Pipeline: dedup auto-proceed"
+    else:
+        what = " + ".join(held_by) or "dedup"
+        subject = f"WWII Pipeline: {what} review needed"
     try:
         message = f"Dedup gate: {action}\nReason: {reason}\nBucket: {BUCKET}"
+        if "provenance" in held_by:
+            message += (
+                "\n\nPhase 3 is held: records cite source content that is not where they say "
+                "(see the report in the reason). Fix the extraction and re-run Phase 2, or set "
+                "PROVENANCE_GATE=warn to release it."
+            )
         # Make the alert ACTIONABLE: when the gate BLOCKS (human review needed), include
         # the Dedup Review UI deep link so the operator can act without hunting for it.
-        if action != "auto_proceed":
+        if action != "auto_proceed" and "dedup" in held_by:
             dedup_url = os.environ.get("DEDUP_REVIEW_URL", "")
             if dedup_url:
                 message += (
-                    f"\n\nPhase 3 is blocked until you review duplicates."
+                    f"\n\nPhase 3 is blocked until this is reviewed."
                     f"\nDedup Review UI: {dedup_url}"
                 )
         sns = boto3.client("sns", region_name=REGION)

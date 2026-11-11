@@ -10,6 +10,8 @@ from typing import Any, Dict, List, Optional
 
 import ulid
 
+from src.utils.entity_records import citation_identity, merge_mentions
+
 logger = logging.getLogger(__name__)
 
 # Memoized per-process writer id (ECS task id or per-process ULID) used as the bibliography
@@ -762,15 +764,11 @@ def _repair_bib_title(f: str, rec: Dict[str, Any], cur: Any) -> int:
 
 
 def _has_mention(mentions: List[Dict], mention: Dict) -> bool:
-    """Check if a mention already exists (same event + sub-event + reference_number)."""
-    for m in mentions:
-        if (
-            m.get("EventID") == mention.get("EventID")
-            and m.get("Sub-eventID") == mention.get("Sub-eventID")
-            and m.get("reference_number") == mention.get("reference_number")
-        ):
-            return True
-    return False
+    """Check if a mention already exists: the same citation (entity_records.citation_identity -
+    same note; an unnumbered note by its quoted text, so distinct unnumbered notes are kept).
+    """
+    key = citation_identity(mention)
+    return any(citation_identity(m) == key for m in mentions if isinstance(m, dict))
 
 
 def store_bibliography_entry(
@@ -828,8 +826,8 @@ def store_bibliography_entry(
 
 
 def _merge_bib_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Merge records that share a match key into one: union mentions (by _has_mention),
-    and prefer the most-enriched base fields (a real title over 'Unknown', non-empty
+    """Merge records that share a match key into one: union mentions (entity_records
+    .citation_identity), and prefer the most-enriched base fields (a real title over 'Unknown', non-empty
     alt_title/author/resource_urls). Deterministic: records sorted by BibliographyID so the
     outcome is stable regardless of listing order."""
     records = sorted(records, key=lambda r: str(r.get("BibliographyID") or ""))
@@ -837,9 +835,7 @@ def _merge_bib_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
     merged_mentions: List[Dict[str, Any]] = []
     for rec in records:
         _merge_bib_fields(base, rec)
-        for m in rec.get("mentions") or []:
-            if not _has_mention(merged_mentions, m):
-                merged_mentions.append(m)
+        merge_mentions(merged_mentions, rec.get("mentions"), citation_identity)
     base["mentions"] = merged_mentions
     return base
 

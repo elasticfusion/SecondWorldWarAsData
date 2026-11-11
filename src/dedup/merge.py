@@ -10,6 +10,7 @@ import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from src.utils.entity_records import merge_mentions
 from src.utils.observe import observe_error
 
 logger = logging.getLogger(__name__)
@@ -470,9 +471,6 @@ def merge_generic(
 
     primary_mentions = primary_data.get("event_mentions", [])
     aliases = primary_data.get("aliases", []) or []
-    seen_sub_events = {
-        m.get("Sub_eventID") for m in primary_mentions if m.get("Sub_eventID")
-    }
     primary_file = entity_dir / primary["filename"]
     merged_any = False
 
@@ -486,7 +484,6 @@ def merge_generic(
             primary_file,
             primary_mentions,
             aliases,
-            seen_sub_events,
             id_field,
             name_fields,
         ):
@@ -512,12 +509,11 @@ def _merge_one_secondary(
     primary_file: Path,
     primary_mentions: List,
     aliases: List,
-    seen_sub_events: set,
     id_field: str,
     name_fields: tuple,
 ) -> bool:
     """Merge one secondary entity file into the primary — CRASH-ATOMIC ordering: union its
-    event_mentions (dedup by Sub_eventID) + alias, WRITE+VALIDATE the primary FIRST, and only on a
+    event_mentions (entity_records.merge_mentions) + alias, WRITE+VALIDATE the primary FIRST, and only on a
     confirmed write repoint event refs old->primary id + delete the secondary. Previously the
     secondary was unlinked BEFORE the (end-of-loop) primary write, so a crash or a schema-blocked
     primary write lost the secondary's mentions / left dangling refs (§1.0d WARNING). Returns True
@@ -531,17 +527,14 @@ def _merge_one_secondary(
     except (OSError, json.JSONDecodeError):
         return False
 
-    # Union mentions (dedup by Sub_eventID) + record the secondary name as an alias. Snapshot the
+    # Union mentions (entity_records.merge_mentions) + record the secondary name as an alias. Snapshot the
     # shared accumulation state FIRST so a blocked write can roll back — otherwise this secondary's
     # mentions would linger in primary_mentions and get persisted by a LATER secondary's successful
     # write while this secondary's file still exists (a double-count). Lists are shared refs mutated
     # in place by callers, so snapshot/restore CONTENTS (not rebind).
     _mentions_snapshot = list(primary_mentions)
     _aliases_snapshot = list(aliases)
-    _seen_snapshot = set(seen_sub_events)
-    _absorb_secondary_fields(
-        secondary, primary_mentions, aliases, seen_sub_events, name_fields
-    )
+    _absorb_secondary_fields(secondary, primary_mentions, aliases, name_fields)
 
     # Persist the merged primary FIRST (validated + crash-atomic). Only if it lands do we repoint
     # refs / delete the secondary — a blocked or crashed write must never lose the secondary.
@@ -557,8 +550,6 @@ def _merge_one_secondary(
         # (unmerged, still-on-disk) secondary's mentions.
         primary_mentions[:] = _mentions_snapshot
         aliases[:] = _aliases_snapshot
-        seen_sub_events.clear()
-        seen_sub_events.update(_seen_snapshot)
         primary_data["event_mentions"] = primary_mentions
         primary_data["aliases"] = aliases
         return False
@@ -596,17 +587,11 @@ def _absorb_secondary_fields(
     secondary: Dict,
     primary_mentions: List,
     aliases: List,
-    seen_sub_events: set,
     name_fields: tuple,
 ) -> None:
-    """Union the secondary's event_mentions into primary_mentions (dedup by Sub_eventID) and
-    append its first available name field to aliases."""
-    for m in secondary.get("event_mentions", []):
-        sub_id = m.get("Sub_eventID")
-        if not sub_id or sub_id not in seen_sub_events:
-            primary_mentions.append(m)
-            if sub_id:
-                seen_sub_events.add(sub_id)
+    """Union the secondary's event_mentions into primary_mentions (entity_records
+    .merge_mentions) and append its first available name field to aliases."""
+    merge_mentions(primary_mentions, secondary.get("event_mentions", []))
     for field in name_fields:
         sec_name = secondary.get(field, "")
         if sec_name and sec_name not in aliases:

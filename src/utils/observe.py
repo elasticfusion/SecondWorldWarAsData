@@ -97,6 +97,37 @@ def _should_escalate(key: str, now: float) -> bool:
     return False
 
 
+def publish_alert(
+    subject: str,
+    message: str,
+    topic_arn: str = "",
+    region: str = "",
+) -> bool:
+    """Publish an operator alert to the notify topic (``NOTIFICATION_TOPIC_ARN``, the
+    ``{env}-wwii-phase2-complete`` topic: email + Slack via the formatter). The ONE publisher for
+    pipeline alerts. True when published. Best-effort: no topic -> False; never raises. Put counts
+    and ids in ``message``, never record values."""
+    topic = topic_arn or os.environ.get("NOTIFICATION_TOPIC_ARN", "")
+    if not topic:
+        logger.debug("No NOTIFICATION_TOPIC_ARN - alert not sent: %s", subject)
+        return False
+    try:
+        import boto3  # lazy: keep boto3 out of the hot path / local imports
+
+        region = (
+            region
+            or os.getenv("AWS_REGION")
+            or os.getenv("AWS_DEFAULT_REGION", "us-east-1")
+        )
+        boto3.client("sns", region_name=region).publish(
+            TopicArn=topic, Subject=subject[:100], Message=message
+        )
+        return True
+    except Exception as e:  # noqa: BLE001 - alerting must NEVER stop the pipeline
+        logger.warning("Failed to send alert %r: %s", subject, type(e).__name__)
+        return False
+
+
 def _escalate_to_slack(scope: str, event: str, line: str) -> None:
     """Publish a status=error OBSERV line to the notify SNS topic (-> formatter -> Slack).
 
@@ -108,15 +139,7 @@ def _escalate_to_slack(scope: str, event: str, line: str) -> None:
             return
         if not _should_escalate(f"{scope}.{event}", time.time()):
             return
-        import boto3  # lazy: keep boto3 out of the hot path / local imports
-
-        topic = os.environ["NOTIFICATION_TOPIC_ARN"]
-        region = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION", "us-east-1")
-        boto3.client("sns", region_name=region).publish(
-            TopicArn=topic,
-            Subject=f"WWII Pipeline: OBSERV error — {scope}.{event}"[:100],
-            Message=line,
-        )
+        publish_alert(f"WWII Pipeline: OBSERV error — {scope}.{event}", line)
     except Exception:  # noqa: BLE001 - Slack escalation must NEVER stop the pipeline
         logger.debug("observe slack-escalation failed (swallowed)", exc_info=True)
 

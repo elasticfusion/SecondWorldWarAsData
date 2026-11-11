@@ -568,24 +568,6 @@
                 }
             }
         ],
-        "./src/extraction/anchor_resolve.py": [
-            {
-                "code": "reportArgumentType",
-                "range": {
-                    "startColumn": 22,
-                    "endColumn": 25,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportArgumentType",
-                "range": {
-                    "startColumn": 22,
-                    "endColumn": 25,
-                    "lineCount": 1
-                }
-            }
-        ],
         "./src/extraction/casualties.py": [
             {
                 "code": "reportArgumentType",

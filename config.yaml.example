@@ -94,6 +94,13 @@ batch:
   phase2: true                         # 50% off extraction
   phase3: false                        # Live calls — avoids network bounce between submit/retrieve
 
+# Provenance validation (scripts/validate_provenance.py): is every record's cited source content
+# true (quotes in the cited paragraphs, locators in the cited sub-event)? Runs per book at the end
+# of Phase 2. gate: warn = report + alert, the book goes on to Phase 3; block = Phase 3 is held for
+# review when a hard check fails. PROVENANCE_GATE env overrides (no rebuild). Default: warn.
+provenance_validation:
+  gate: warn
+
 # Deduplication scoring. All values optional — if a key (or the whole block) is
 # absent, the built-in defaults below are used (= current behavior). Auto-merge stays
 # conservative: with these defaults, nothing new auto-merges beyond byte-identical

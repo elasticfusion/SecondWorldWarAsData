@@ -379,12 +379,35 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   purge or rerun must not hold up or touch another book. Check where runs are grouped today (the
   trigger's per-wave key batching, the multi-doc task pool, Grok batch submission) and split them
   per book.
-- **[MED · post Phase 3 · owner 2026-11-11] Provenance validation run for a book.** After Phase 3, run
-  one pass over a whole book that checks every published record's provenance resolves back to its
-  source: `verbatim_reference` / `original_text` is found in the cited chapter text at the cited
-  page/paragraph, the bibliography entries are real sources (not stubs), and the
-  `archive_reference_number` / `license` / `copyright_status` fields are filled in. Write a per-book
-  report and alert (phase2-complete topic) when a check fails.
+- **[MED · owner 2026-11-11] Provenance validation run for a book - Phase 2 DONE, Phase 3 open.**
+  `scripts/validate_provenance.py` (matcher: `src/utils/quote_match.py`) runs per book at the end of
+  Phase 2 (`ecs_entrypoint._provenance_gate`): quotes in the cited paragraphs / sub-event, sub-event
+  links, paragraph locators, note quotes. Gate mode `provenance_validation.gate` (config.yaml) /
+  `PROVENANCE_GATE`: `warn` now; switch to `block` once the extraction defects below are fixed.
+  OPEN (Phase 3): re-run the Phase-2 checks after Phase 3's merges/dedup - every merge runs AFTER
+  the Phase-2 gate (dedup auto-merge, bibliography full-corpus reconcile, Dedup Review UI merges),
+  so only a Phase-3 run validates the merged corpus - plus bibliography entries
+  are real sources (not stubs), every citation resolves, `license` / `copyright_status` /
+  `archive_reference_number` filled in, enrichment attributed (reuse validate_phase3 P3-A5).
+  Merge review (2026-11-11, fixed): all merges now union mentions by ONE rule
+  (`entity_records.merge_mentions`: one mention per sub-event); bibliography no longer collapses
+  unnumbered notes (`citation_identity`); the UI merge writes the primary before deleting.
+  Still open: the UI people merge repoints only event sub-event refs, not PersonID/PlaceID/GroupID
+  held in other records (referential_integrity catches it); a dropped same-sub-event mention's
+  alternate quote is not kept, and its MentionID is not redirected (only `maps.PeopleGroupMentionID`
+  references a mention id; dates keep their own key `(Sub_eventID, original_text)` with a
+  `DateMentionID` redirect in `scripts/merge_dates.py`).
+- **[HIGH · data quality · 2026-11-11] Extraction defects found by the provenance validation
+  (USA-E-XChannel, 20 chapters; report `output/reports/provenance/USA-E-XChannel-phase2.json`).**
+  (a) logistics `paragraph_numbers` are NOT chapter paragraph numbers: the prompt gives the model the
+  sub-event text with no paragraph numbers (`logistics._get_sub_event_text` joins the fulltext), so it
+  numbers them itself (41 of 61 cited numbers fit a 1-based count within the sub-event; 67 fail).
+  Fix: number the paragraphs in the prompt, or resolve them from `original_text` (anchor_resolve).
+  (b) 183 entity mentions quote text that is in ANOTHER sub-event of the chapter (places 50, equipment
+  55, dates 38, people_groups 23, people 16): the mention is linked to the wrong sub-event. (c) 66
+  `original_text` values are not in the book (paraphrases, e.g. "after 1940 defeat"; chapter
+  headings). (d) 11 equipment paragraph numbers exceed the chapter. (e) all 854 bibliography mentions
+  of the book have no note locator (no `reference_number`, empty `verbatim_reference`).
 - **[MED · DESIGN · owner 2026-11-08] Book naming: a WORK key + an EDITION key, so duplicate
   titles and editions of one work are told apart.** CONSTRAINT (owner 2026-11-11): slugs are
   IMMUTABLE (`.kiro/steering/architecture-decisions.md`, "Book identity") - this scheme applies to

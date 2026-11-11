@@ -329,7 +329,8 @@ def _resolve_edge(
     }
 
 
-_SUBEVENT_FIELDS = ("Sub_eventID", "Sub-eventID")
+from src.utils.entity_records import SUBEVENT_FIELDS as _SUBEVENT_FIELDS  # noqa: E402
+
 # Registry entities whose records carry event_mentions with a sub-event reference that can go stale
 # when events are re-extracted (LLM segmentation can mint different deterministic Sub-eventIDs).
 _MENTION_REPAIR_ENTITIES = ("places", "people_groups", "dates", "people", "equipment")
@@ -588,14 +589,12 @@ def _alert(report: Dict[str, Any], topic_arn: str, region: str) -> None:
             lines.append(
                 f"  - {edge['edge']}: {edge['dangling']}/{edge['total_refs']} ({edge['rate'] * 100:.1f}%)"
             )
-    try:
-        import boto3
+    from src.utils.observe import publish_alert
 
-        boto3.client("sns", region_name=region).publish(
-            TopicArn=topic_arn,
-            Subject="WWII Pipeline: DATA QUALITY — dangling cross-references",
-            Message="\n".join(lines),
-        )
+    if publish_alert(
+        "WWII Pipeline: DATA QUALITY — dangling cross-references",
+        "\n".join(lines),
+        topic_arn=topic_arn,
+        region=region,
+    ):
         logger.info("Sent dangling-reference alert")
-    except Exception as e:  # noqa: BLE001
-        logger.warning("Failed to send dangling-reference alert: %s", e)
