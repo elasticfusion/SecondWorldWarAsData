@@ -2092,8 +2092,9 @@ The Phase 2 task submits its Grok batch and then polls it IN-TASK (`batch_api.po
 task died mid-poll, before `_enqueue_from_metrics`, so the batch had NO `batch_job#` record and NO
 metrics file: orphaned (recovered by hand from `diagnostics/cache/<book>/batch_requests.jsonl` + the
 `cachekey.submit` log lines). Long waits are pure Spot exposure and idle compute.
-- **Hand-off:** past a time budget (e.g. `BATCH_INTASK_MAX_MIN`, ~90 min - small batches finish in
-  ~61 min), write the metrics file (`submitted_request_ids` in order) and a `pending` `batch_job#`,
+- **Hand-off:** past a 90-minute in-task budget (`BATCH_INTASK_MAX_MIN`, default 90 - owner
+  2026-11-10: batches often answer in ~61 min, and up/down churn is to be avoided), write the
+  metrics file (`submitted_request_ids` in order) and a `pending` `batch_job#`,
   then exit cleanly; the batch-poller launches the `--retrieve-only` task on completion.
 - **Register at submit, not after polling:** write the metrics + `batch_job#` (status
   `in_task`, ignored by the poller) right after `submit_batch`, flipped to `retrieved`/`pending` at
