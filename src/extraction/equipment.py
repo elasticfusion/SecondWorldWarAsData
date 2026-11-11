@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import ulid
 from pydantic import BaseModel, Field, field_validator
 
+from src.grok_client import for_chapter_book
 from src.grok_client import GrokClient, BatchModeCollecting
 from src.utils.observe import observe, observe_error, observe_warn
 from src.utils.json_validator import _fix_invalid_ulids
@@ -3235,6 +3236,7 @@ def _observe_persist_shortfall(
     )
 
 
+@for_chapter_book
 def extract_equipment_from_event(
     event_file: Path,
     output_dir: Path,

@@ -13,7 +13,14 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import ulid
 
-from src.grok_client import GrokClient, BatchModeCollecting, GrokTruncationError
+from src.grok_client import (
+    BatchModeCollecting,
+    GrokClient,
+    GrokIdentityError,
+    GrokNoJsonError,
+    GrokTruncationError,
+    for_chapter_book,
+)
 from src.json_schemas import CASUALTY_ITEM_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
 from src.utils.observe import observe, observe_error, observe_warn
@@ -24,6 +31,7 @@ logger = logging.getLogger(__name__)
 GroupUnitKeyIndex = List[Tuple[str, str, Any]]
 
 
+@for_chapter_book
 def extract_casualties(
     event_file: Path,
     output_root: Path,
@@ -300,7 +308,9 @@ def _call_and_parse_casualties(
     max_retries = 3
     for attempt in range(max_retries):
         try:
-            response = grok_client.chat_completion(
+            # extract_json, not chat_completion: the answer is verified as THIS request's
+            # (src/utils/request_identity) and parsed/repaired in one place
+            response = grok_client.extract_json(
                 prompt,
                 use_cache=(attempt == 0),
                 cache_type="casualties",
@@ -321,6 +331,15 @@ def _call_and_parse_casualties(
                 attempt + 1,
             )
             raise
+        except GrokIdentityError:
+            raise  # another request's answer (alerted by the client): never a "no casualties"
+        except GrokNoJsonError:
+            # an answer with no JSON in it: re-asking pays again for the same prose (a malformed
+            # JSON answer is retried below - a fresh one often parses)
+            observe_error(
+                "casualties", "extract_error", produced=0, reason="no_json_object"
+            )
+            return {}
         except Exception as e:
             if attempt < max_retries - 1:
                 logger.warning(
@@ -342,8 +361,10 @@ def _call_and_parse_casualties(
     return {}
 
 
-def _parse_casualty_response(response: str) -> Dict[str, List[Dict[str, Any]]]:
-    """Parse raw Grok response into validated casualty items by sub-event."""
+def _parse_casualty_response(response: Any) -> Dict[str, List[Dict[str, Any]]]:
+    """Validated casualty items by sub-event, from the parsed answer (or raw response text)."""
+    if not isinstance(response, str):
+        return _casualties_by_sub_event(response)
     start = response.find("{")
     end = response.rfind("}") + 1
     if start == -1 or end == 0:
@@ -353,7 +374,10 @@ def _parse_casualty_response(response: str) -> Dict[str, List[Dict[str, Any]]]:
             "casualties", "extract_error", produced=0, reason="no_json_object"
         )
         return {}
-    parsed = json.loads(response[start:end])
+    return _casualties_by_sub_event(json.loads(response[start:end]))
+
+
+def _casualties_by_sub_event(parsed: Any) -> Dict[str, List[Dict[str, Any]]]:
     if not isinstance(parsed, dict):
         # #6 PATTERN-8: parsed to a non-dict (e.g. a bare list/scalar) — unusable, batch dropped.
         observe_error("casualties", "extract_error", produced=0, reason="not_a_dict")

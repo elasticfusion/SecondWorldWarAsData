@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 import ulid
 from jsonschema import ValidationError, validate
 
+from src.grok_client import for_chapter_book
 from src.grok_client import BatchModeCollecting, GrokClient
 from src.utils.json_validator import _fix_invalid_ulids
 from src.json_schemas import SUPPLEMENTAL_SCHEMA
@@ -1146,6 +1147,7 @@ def _append_to_review_queue(bib_dir: Path, items: List[Dict[str, Any]]) -> None:
     logger.info("Added %d ambiguous items to review queue", len(items))
 
 
+@for_chapter_book
 def extract_supplemental(
     event_file: Path,
     grok_client: GrokClient,

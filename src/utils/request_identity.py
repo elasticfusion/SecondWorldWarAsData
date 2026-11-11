@@ -28,11 +28,10 @@ import re
 from typing import Any, Optional, Tuple
 
 # Kinds whose answers belong to one book's chapter (not cross-book enrichment like a person's
-# biography or a place's coordinates) AND are JSON objects. A kind answered with a JSON array
-# (equipment_broad) cannot carry the fields and must stay out: the identity block asks for an
-# object, which would break its parser. Only ``GrokClient.extract_json`` stamps + verifies: a kind
-# read through ``chat_completion`` (casualties, people_groups) must stay out too, or
-# ``cache_key_for`` would name a key its reads never use (TODO: move casualties to extract_json).
+# biography or a place's coordinates). Each is asked for a JSON object and read through
+# ``GrokClient.extract_json``, which stamps + verifies (a kind read through ``chat_completion``
+# would have ``cache_key_for`` name a key its reads never use - so none may be). A bare array that
+# comes back anyway is ``unverifiable``: accepted, not proven.
 BOOK_BOUND = frozenset(
     {
         "events",
@@ -42,6 +41,10 @@ BOOK_BOUND = frozenset(
         "peoplegroups",
         "weather",
         "logistics",
+        "casualties",
+        "people_groups",
+        "equipment_broad",
+        "equipment_refine",
         "supplemental",
         "source_section",
     }

@@ -13,6 +13,7 @@ import requests
 import ulid
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.grok_client import for_chapter_book
 from src.grok_client import GrokClient, BatchModeCollecting, GrokTruncationError
 from src.extraction.starvation_signal import (
     note_empty_fulltext_skip,
@@ -1137,6 +1138,7 @@ def _parse_weather_response(
     return result
 
 
+@for_chapter_book
 def extract_weather_central(
     event_file: Path,
     weather_dir: Path,

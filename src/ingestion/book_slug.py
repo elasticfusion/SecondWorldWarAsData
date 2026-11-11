@@ -28,7 +28,8 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import List
+from pathlib import Path
+from typing import Any, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -90,3 +91,14 @@ def content_slug(key: str) -> str:
         return _validated(content_candidate(key), key)
     except Exception:  # noqa: BLE001
         return _validated("", key)
+
+
+def chapter_file_book(path: Any) -> Optional[str]:
+    """The slug of a Phase-1/2 chapter file (``<root>/<slug>/chapterN-parsed.json`` /
+    ``-event.json``): its folder - the same folder rule as chapter content. None when the folder
+    is not a safe slug (the caller then names no book rather than a wrong one)."""
+    try:
+        name = Path(path).parent.name
+    except TypeError:
+        return None
+    return name if is_safe_slug(name) else None

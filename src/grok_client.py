@@ -57,6 +57,43 @@ class _Ask(NamedTuple):
         )
 
 
+_WORKING_FOLDERS = frozenset({"_supplemental_tmp", "_system"})
+
+
+def _in_working_folder(chapter_file: Any) -> bool:
+    """A file in an internal working folder (``_supplemental_tmp``, ``_system``) - never a book's
+    own folder. Named explicitly: a slug may itself start with ``_``."""
+    try:
+        return Path(chapter_file).parent.name in _WORKING_FOLDERS
+    except TypeError:
+        return False
+
+
+def for_chapter_book(fn):
+    """Run an extractor for a chapter file (its first argument, or ``event_file=``) with
+    ``current_book`` = THAT file's book (``book_slug.chapter_file_book``) - named by the file being
+    processed, not inherited from whatever the caller (or a worker thread) left in the context.
+    """
+    import functools
+
+    @functools.wraps(fn)
+    def run(*args, **kwargs):
+        from src.ingestion.book_slug import chapter_file_book
+
+        chapter_file = kwargs.get("event_file", args[0] if args else None)
+        if _in_working_folder(chapter_file):
+            # a caller's scratch copy (e.g. <root>/_supplemental_tmp/): the CALLER's book
+            return fn(*args, **kwargs)
+        # set even when None: a file in no book's folder must not inherit another book
+        token = current_book.set(chapter_file_book(chapter_file))
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            current_book.reset(token)
+
+    return run
+
+
 @contextlib.contextmanager
 def book_scope(book: Optional[str]):
     """Run the block with ``current_book`` = ``book`` (no change when ``book`` is empty). The
@@ -92,6 +129,31 @@ class GrokAPIError(Exception):
 
 class GrokTruncationError(GrokAPIError):
     """Response was truncated (hit max_tokens or context limit)."""
+
+
+class GrokParseError(GrokAPIError):
+    """The answer is not JSON and could not be repaired (prose, junk): a real answer that holds no
+    data - not a transport failure to retry, and not a truncation to split for."""
+
+
+class GrokNoJsonError(GrokParseError):
+    """The answer holds no JSON at all (prose: "there are no casualties here"). Asking again
+    pays for the same prose; a malformed JSON answer (GrokParseError) may parse when re-asked.
+    """
+
+
+def _starts_as_json(response: str) -> bool:
+    return response.lstrip()[:1] in ("{", "[")
+
+
+def _parse_error(message: str, response: str) -> GrokParseError:
+    cls = GrokParseError if _starts_as_json(response) else GrokNoJsonError
+    return cls(message)
+
+
+class GrokIdentityError(GrokAPIError):
+    """The answer belongs to another request (src/utils/request_identity): never usable, and never
+    to be read as an empty answer."""
 
 
 def _effective_calls_per_minute(config: Dict[str, Any]) -> int:
@@ -1699,8 +1761,9 @@ class GrokClient:
         if cache_key in cache:
             cache.pop(cache_key, None)
 
-        raise GrokAPIError(
-            f"API returned invalid response: {error_msg}. Response: {response[:200]}"
+        raise _parse_error(
+            f"API returned invalid response: {error_msg}. Response: {response[:200]}",
+            response,
         )
 
     def _handle_truncation_error(
@@ -2012,7 +2075,7 @@ class GrokClient:
         if status == "mismatch":
             # never leave the wrong answer cached: the next read asks afresh
             self._get_cache(ask.cache_type).pop(self._ask_key(ask), None)
-            raise GrokAPIError(
+            raise GrokIdentityError(
                 f"Answer identity mismatch for a {ask.cache_type} request (RequestID {rid}): "
                 "the answer belongs to another request"
             )
@@ -2161,7 +2224,12 @@ class GrokClient:
             )
 
         # Handle truncated responses (auto-clear cache)
-        if "Unterminated string" in error_msg or "Expecting" in error_msg:
+        # a truncation cuts JSON short, so it STARTS as JSON: a body that does not (prose, even
+        # prose quoting "[1]") is a parse failure - the chunk halver would split and re-ask it down
+        # to single items
+        if _starts_as_json(response) and (
+            "Unterminated string" in error_msg or "Expecting" in error_msg
+        ):
             self._json_truncated += 1
             self._handle_truncation_error(
                 response, error_msg, cache_type, prompt, temperature, resolved_key
@@ -2187,11 +2255,12 @@ class GrokClient:
             length=len(response),
             cache_type=cache_type,
         )
-        raise GrokAPIError(
+        raise _parse_error(
             f"Failed to parse JSON response: {e}\n"
             f"Response length: {len(response)} chars\n"
             f"First 500 chars: {response[:500]}\n"
-            f"Last 500 chars: {response[-500:]}"
+            f"Last 500 chars: {response[-500:]}",
+            response,
         ) from e
 
     def extract_structured(

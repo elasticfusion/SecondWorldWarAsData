@@ -19,7 +19,7 @@ def test_casualties_reraises_truncation():
 
     client = mock.Mock()
     client._get_model.return_value = "m"
-    client.chat_completion.side_effect = GrokTruncationError("truncated")
+    client.extract_json.side_effect = GrokTruncationError("truncated")
     with pytest.raises(GrokTruncationError):
         _call_and_parse_casualties(client, "prompt")
 
@@ -29,7 +29,7 @@ def test_casualties_still_returns_empty_on_non_truncation():
 
     client = mock.Mock()
     client._get_model.return_value = "m"
-    client.chat_completion.side_effect = RuntimeError("other")
+    client.extract_json.side_effect = RuntimeError("other")
     assert _call_and_parse_casualties(client, "prompt") == {}  # unchanged leniency
 
 
@@ -77,6 +77,6 @@ def test_batchmodecollecting_still_propagates_from_inner_fns():
 
     client = mock.Mock()
     client._get_model.return_value = "m"
-    client.chat_completion.side_effect = BatchModeCollecting("queued")
+    client.extract_json.side_effect = BatchModeCollecting("queued")
     with pytest.raises(BatchModeCollecting):
         _call_and_parse_casualties(client, "prompt")

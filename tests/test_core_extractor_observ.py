@@ -26,7 +26,7 @@ import pytest
 
 from src.extraction import casualties as C
 from src.extraction import people_groups as PG
-from src.grok_client import GrokTruncationError
+from src.grok_client import GrokAPIError, GrokTruncationError
 
 
 @pytest.fixture(autouse=True)
@@ -77,7 +77,7 @@ def test_parse_casualty_valid_does_not_emit_error(caplog):
 
 def test_call_and_parse_retry_exhaustion_emits_observ(caplog):
     grok = MagicMock()
-    grok.chat_completion.side_effect = ValueError("boom")  # every attempt fails
+    grok.extract_json.side_effect = ValueError("boom")  # every attempt fails
     with caplog.at_level(logging.ERROR):
         out = C._call_and_parse_casualties(grok, "prompt", cache_key="k")
     assert out == {}
@@ -175,7 +175,7 @@ def _write_group_event(tmp_path: Path) -> Path:
 def test_groups_truncation_emits_observ_and_yield(tmp_path, caplog):
     event_file = _write_group_event(tmp_path)
     grok = MagicMock()
-    grok.chat_completion.side_effect = GrokTruncationError("too large")
+    grok.extract_json.side_effect = GrokTruncationError("too large")
 
     with caplog.at_level(logging.INFO):
         result = PG.extract_people_groups(event_file, grok, tmp_path)
@@ -192,7 +192,8 @@ def test_groups_truncation_emits_observ_and_yield(tmp_path, caplog):
 def test_groups_parse_error_emits_observ_and_yield(tmp_path, caplog):
     event_file = _write_group_event(tmp_path)
     grok = MagicMock()
-    grok.chat_completion.return_value = "this is not json {{{"
+    # extract_json raises on an answer it cannot parse or repair
+    grok.extract_json.side_effect = GrokAPIError("Failed to parse JSON response")
 
     with caplog.at_level(logging.INFO):
         result = PG.extract_people_groups(event_file, grok, tmp_path)
@@ -209,7 +210,7 @@ def test_groups_parse_error_emits_observ_and_yield(tmp_path, caplog):
 def test_groups_empty_response_emits_observ_and_yield(tmp_path, caplog):
     event_file = _write_group_event(tmp_path)
     grok = MagicMock()
-    grok.chat_completion.return_value = ""  # empty response -> point-of-loss drop
+    grok.extract_json.return_value = ""  # empty response -> point-of-loss drop
 
     with caplog.at_level(logging.INFO):
         result = PG.extract_people_groups(event_file, grok, tmp_path)

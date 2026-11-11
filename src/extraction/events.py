@@ -1118,7 +1118,13 @@ def extract_events(
 def _split_on_truncation(e, parsed_data, parsed_file, output_dir, grok_client) -> Path:
     """A truncated answer (the client asks for a split): extract the chapter in parts, else
     re-raise ``e``."""
-    if "splitting chapter" not in str(e).lower():
+    from src.grok_client import GrokTruncationError
+
+    # the class, not only the text: a parse error's message quotes the answer, which could say it
+    if (
+        not isinstance(e, GrokTruncationError)
+        or "splitting chapter" not in str(e).lower()
+    ):
         raise e
     logger.warning("  Response truncated — auto-splitting chapter")
     split_result = _auto_split_and_extract(

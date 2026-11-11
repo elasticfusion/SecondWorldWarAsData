@@ -101,9 +101,11 @@ def test_an_array_answer_is_unverifiable():
     assert ri.verify([1], "b", "r") == ([1], "unverifiable")
 
 
-def test_only_object_kinds_read_by_extract_json_are_bound():
+def test_the_chapter_kinds_are_bound_and_cross_book_enrichment_is_not():
     assert ri.is_bound("events", "B") and not ri.is_bound("events", None)
-    for kind in ("equipment_broad", "casualties", "biography", "places_enrichment"):
+    for kind in ("casualties", "people_groups", "equipment_broad", "equipment_refine"):
+        assert ri.is_bound(kind, "B")
+    for kind in ("biography", "places_enrichment", "date_summary"):
         assert not ri.is_bound(kind, "B")
 
 
@@ -346,3 +348,201 @@ def test_in_batch_mode_a_mismatch_is_re_queued_once_then_raises(batch):
         assert key not in batch._get_cache(
             "events"
         )  # the wrong answer is not left cached
+
+
+# --- every chapter extractor is verified, for the book of the file it processes -----------------
+
+
+def _stamped_reply(prompt_kind, body, book="B", prompt=None, system=None, temp=None):
+    """A fake _call_api that echoes the identity the request carried."""
+
+    def call(messages, *a, **k):
+        import re
+
+        sent = messages[-1]["content"]
+        bid = re.search(r'"BookID": "([0-9A-Z]{26})"', sent).group(1)
+        rid = re.search(r'"RequestID": "([0-9a-f]{16})"', sent).group(1)
+        return _reply({**body, "BookID": bid, "RequestID": rid})
+
+    return call
+
+
+def test_casualties_are_read_through_the_identity_check(grok):
+    from src.extraction import casualties as C
+
+    body = {"S1": [{"description": "x"}]}
+    with (
+        gc.book_scope("B"),
+        mock.patch.object(
+            grok, "_call_api", side_effect=_stamped_reply("casualties", body)
+        ) as api,
+        mock.patch.object(C, "_validate_items", side_effect=lambda items: items),
+    ):
+        got = C._call_and_parse_casualties(grok, "P")
+    assert got == {"S1": [{"description": "x"}]}
+    assert '"RequestID"' in api.call_args.args[0][-1]["content"]
+
+
+def test_people_groups_are_read_through_the_identity_check(grok, tmp_path):
+    from src.extraction import people_groups as G
+
+    body = {"People_Groups": [{"name": "1st Infantry Division"}]}
+    with (
+        gc.book_scope("B"),
+        mock.patch.object(
+            grok, "_call_api", side_effect=_stamped_reply("people_groups", body)
+        ),
+    ):
+        got = G._call_groups_grok("P", tmp_path / "e.json", {}, grok)
+    assert G._parse_groups_response(got) == [{"name": "1st Infantry Division"}]
+
+
+def test_people_groups_never_read_another_requests_answer_as_no_groups(grok, tmp_path):
+    from src.extraction import people_groups as G
+
+    bid, _ = _ids(kind="people_groups")
+    wrong = _reply({"People_Groups": [], "BookID": bid, "RequestID": "0" * 16})
+    with (
+        gc.book_scope("B"),
+        mock.patch.object(grok, "_call_api", return_value=wrong),
+        mock.patch.object(gc, "observe_error"),
+    ):
+        with pytest.raises(gc.GrokIdentityError):
+            G._call_groups_grok("P", tmp_path / "e.json", {}, grok)
+
+
+def test_an_unparsable_groups_answer_is_a_parse_failure_not_a_truncation(
+    grok, tmp_path
+):
+    """extract_people_groups' parse-error path takes it (a loud drop; tests/
+    test_core_extractor_observ) - not mislabelled "truncated - event too large"."""
+    from src.extraction import people_groups as G
+
+    junk = {"choices": [{"message": {"content": "no JSON here " * 60}}]}
+    with (
+        mock.patch.object(grok, "_call_api", return_value=junk),
+        mock.patch.object(gc, "observe_error"),
+        mock.patch.object(G, "observe_error") as err,
+    ):
+        with pytest.raises(gc.GrokParseError):
+            G._call_groups_grok("P", tmp_path / "e.json", {}, grok)
+    err.assert_not_called()
+
+
+def test_an_extractor_runs_for_the_book_of_its_file(tmp_path):
+    seen = []
+
+    @gc.for_chapter_book
+    def extract(event_file, *a):
+        seen.append(gc.current_book.get())
+
+    token = gc.current_book.set("SomeOtherBook")  # left behind by an earlier chapter
+    try:
+        extract(tmp_path / "USA-E-XChannel" / "chapter8-event.json")
+        extract(event_file=tmp_path / "B2" / "chapter1-event.json")
+        extract(tmp_path / "Bad Name!" / "chapter1-event.json")  # no safe slug: no book
+        # a caller's scratch folder: the caller's book
+        extract(tmp_path / "_supplemental_tmp" / "x-event.json")
+        extract(tmp_path / "_Foo" / "chapter1-event.json")  # a slug may start with "_"
+        assert gc.current_book.get() == "SomeOtherBook"  # restored
+    finally:
+        gc.current_book.reset(token)
+    assert seen == ["USA-E-XChannel", "B2", None, "SomeOtherBook", "_Foo"]
+
+
+@pytest.mark.parametrize(
+    "module, name",
+    [
+        ("logistics", "extract_logistics_from_event"),
+        ("weather_central", "extract_weather_central"),
+        ("supplemental", "extract_supplemental"),
+        ("casualties", "extract_casualties"),
+        ("equipment", "extract_equipment_from_event"),
+        ("people_groups", "extract_people_groups"),
+        ("source_section", "_enrich_one_section"),
+    ],
+)
+def test_every_chapter_extractor_names_its_files_book(module, name):
+    import importlib
+    import inspect
+
+    fn = getattr(importlib.import_module(f"src.extraction.{module}"), name)
+    assert getattr(fn, "__wrapped__", None) is not None  # @for_chapter_book
+    assert next(iter(inspect.signature(fn).parameters)) == "event_file"
+
+
+def test_a_prose_answer_is_a_parse_failure_not_a_truncation(grok):
+    """A truncation sends the chunk to the halver, which re-asks it down to single items: a prose
+    answer ("there are no casualties here") must not, or one chunk costs ~2(2n-1) calls.
+    """
+    prose = {
+        "choices": [{"message": {"content": "There are no casualties here. " * 30}}]
+    }
+    with (
+        mock.patch.object(grok, "_call_api", return_value=prose),
+        mock.patch.object(gc, "observe_error"),
+    ):
+        with pytest.raises(gc.GrokNoJsonError):
+            grok.extract_json("P", cache_type="casualties")
+    cited = {"choices": [{"message": {"content": "No casualties [see note 1]. " * 30}}]}
+    with (
+        mock.patch.object(grok, "_call_api", return_value=cited),
+        mock.patch.object(gc, "observe_error"),
+    ):
+        with pytest.raises(gc.GrokNoJsonError):  # a bracket in prose is still prose
+            grok.extract_json("Q", cache_type="casualties")
+
+
+def test_a_malformed_json_answer_is_retried_by_casualties(grok):
+    """Only a no-JSON answer is final; a malformed JSON one is asked again (a fresh one often
+    parses)."""
+    from src.extraction import casualties as C
+
+    bad = {  # "Extra data": malformed JSON, not a truncation
+        "choices": [{"message": {"content": '{"S1": []} ' + "x " * 300}}]
+    }
+    good = _stamped_reply("casualties", {"S1": []})
+    answers = iter([bad, bad])
+
+    def call(messages, *a, **k):
+        nxt = next(answers, None)
+        return nxt if nxt is not None else good(messages)
+
+    with (
+        gc.book_scope("B"),
+        mock.patch.object(grok, "_call_api", side_effect=call),
+        mock.patch.object(gc, "observe_error"),
+        mock.patch.object(grok, "_try_repair_json", return_value=None),
+    ):
+        assert C._call_and_parse_casualties(grok, "P") == {"S1": []}
+
+
+def test_casualties_do_not_re_ask_a_prose_answer(grok):
+    from src.extraction import casualties as C
+
+    prose = {
+        "choices": [{"message": {"content": "There are no casualties here. " * 30}}]
+    }
+    with (
+        mock.patch.object(grok, "_call_api", return_value=prose) as api,
+        mock.patch.object(gc, "observe_error"),
+        mock.patch.object(C, "observe_error") as err,
+    ):
+        assert C._call_and_parse_casualties(grok, "P") == {}
+    assert api.call_count == 2  # the answer + the client's one poisoned-body re-ask
+    assert err.call_args.kwargs["reason"] == "no_json_object"
+
+
+def test_casualties_raise_on_another_requests_answer(grok):
+    from src.extraction import casualties as C
+
+    bid, _ = _ids(kind="casualties")
+    wrong = _reply({"S1": [], "BookID": bid, "RequestID": "0" * 16})
+    with (
+        gc.book_scope("B"),
+        mock.patch.object(grok, "_call_api", return_value=wrong) as api,
+        mock.patch.object(gc, "observe_error"),
+    ):
+        with pytest.raises(gc.GrokIdentityError):
+            C._call_and_parse_casualties(grok, "P")
+    assert api.call_count == 2  # not retried by the extractor

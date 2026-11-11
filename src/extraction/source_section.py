@@ -20,6 +20,7 @@ from datetime import date
 
 import ulid
 
+from src.grok_client import for_chapter_book
 from src.schemas import entity_version, inject_metadata
 from src.utils.file_lock import write_json_with_lock
 
@@ -492,6 +493,7 @@ def _gate_stamps(record: Dict[str, Any]) -> tuple:
     return (record.get("media_checked_at"), record.get("wikipedia_checked_at"))
 
 
+@for_chapter_book
 def _enrich_one_section(
     event_file: Path,
     output_dir: Path,

@@ -610,12 +610,6 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   within N lines or an explicit `# OBSERV-EXEMPT: <reason>`.
 
 ### LOW
-- **[LOW · identity · 2026-11-11] Answer identity covers only kinds read through `extract_json`.**
-  `src/utils/request_identity.BOOK_BOUND` stamps each book-bound request with its BookID + RequestID
-  and verifies the echo, but casualties and people_groups read via `chat_completion` (raw text) and
-  equipment_broad answers a JSON array, so none of them is verified. Fix: move casualties to
-  `extract_json` (its answer is an object keyed by sub-event) and add it to `BOOK_BOUND`; give array
-  answers an object wrapper if they are ever made book-bound.
 - **[LOW · test-hygiene] Tests write into the tracked `logs/processing_summary.json` (found 2026-11-06).**
   `src/extraction/events._write_processing_summary` appends to the cwd-relative `logs/processing_summary.json`, and
   event-extraction tests (for example `tests/test_events_paragraph_range.py`) run it from the repo root, adding

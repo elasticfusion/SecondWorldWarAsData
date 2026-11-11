@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 import ulid
 from pydantic import BaseModel, Field
 
+from src.grok_client import for_chapter_book
 from src.grok_client import GrokClient, BatchModeCollecting, GrokTruncationError
 from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
 
@@ -904,6 +905,7 @@ def _save_extraction(
         return False
 
 
+@for_chapter_book
 def extract_logistics_from_event(
     event_file: Path,
     output_root: Path,
