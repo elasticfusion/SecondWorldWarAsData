@@ -379,16 +379,18 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   purge or rerun must not hold up or touch another book. Check where runs are grouped today (the
   trigger's per-wave key batching, the multi-doc task pool, Grok batch submission) and split them
   per book.
-- **[MED · owner 2026-11-11] Provenance validation run for a book - Phase 2 DONE, Phase 3 open.**
+- **[MED · owner 2026-11-11] Provenance validation run for a book - Phase 2 + Phase 3 DONE.**
   `scripts/validate_provenance.py` (matcher: `src/utils/quote_match.py`) runs per book at the end of
   Phase 2 (`ecs_entrypoint._provenance_gate`): quotes in the cited paragraphs / sub-event, sub-event
-  links, paragraph locators, note quotes. Gate mode `provenance_validation.gate` (config.yaml) /
-  `PROVENANCE_GATE`: `warn` now; switch to `block` once the extraction defects below are fixed.
-  OPEN (Phase 3): re-run the Phase-2 checks after Phase 3's merges/dedup - every merge runs AFTER
-  the Phase-2 gate (dedup auto-merge, bibliography full-corpus reconcile, Dedup Review UI merges),
-  so only a Phase-3 run validates the merged corpus - plus bibliography entries
-  are real sources (not stubs), every citation resolves, `license` / `copyright_status` /
-  `archive_reference_number` filled in, enrichment attributed (reuse validate_phase3 P3-A5).
+  links, paragraph locators, note quotes. At the end of Phase 3 - after every merge (dedup
+  auto-merge, bibliography reconcile, Dedup Review UI) - it re-runs those and adds P3-B1 (no stub
+  bibliography entries), P3-R1 (license / copyright_status / NARA archive reference), P3-A1
+  (enriched records name their source) and P3-C1 (every cited note has a bibliography entry).
+  Gate mode `provenance_validation.gate` / `PROVENANCE_GATE`: `warn` now; `block` holds Phase 3
+  (end of Phase 2) or keeps the book from "done" (end of Phase 3, multi-doc: needs-review).
+  Switch to `block` once the extraction defects below are fixed. LIMIT: in serial mode a held
+  Phase-3 book is alerted only (there is no doc lifecycle to hold). A Dedup Review UI merge made
+  after the book's Phase 3 is validated only by the book's next Phase-3 run.
   Merge review (2026-11-11, fixed): all merges now union mentions by ONE rule
   (`entity_records.merge_mentions`: one mention per sub-event); bibliography no longer collapses
   unnumbered notes (`citation_identity`); the UI merge writes the primary before deleting.
@@ -408,6 +410,9 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   `original_text` values are not in the book (paraphrases, e.g. "after 1940 defeat"; chapter
   headings). (d) 11 equipment paragraph numbers exceed the chapter. (e) all 854 bibliography mentions
   of the book have no note locator (no `reference_number`, empty `verbatim_reference`).
+  (f) Phase-3 run (2026-11-11, pre-Phase-3 data): 7 enriched records name no source (people
+  georges bidault, frank m andrews; 5 equipment incl. V-1) - P3-A1; every cited note of the 10
+  footnoted chapters has no bibliography entry (follows from (e)) - P3-C1.
 - **[MED · DESIGN · owner 2026-11-08] Book naming: a WORK key + an EDITION key, so duplicate
   titles and editions of one work are told apart.** CONSTRAINT (owner 2026-11-11): slugs are
   IMMUTABLE (`.kiro/steering/architecture-decisions.md`, "Book identity") - this scheme applies to

@@ -15,7 +15,13 @@ from typing import Optional, Union
 
 import boto3
 
-from src.utils.observe import observe, observe_error, observe_warn, observe_warn_counted
+from src.utils.observe import (
+    observe,
+    observe_error,
+    observe_warn,
+    observe_warn_counted,
+    publish_alert,
+)
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(message)s"
@@ -1950,7 +1956,7 @@ def _offramp_doc_needs_review(reason: str) -> None:
         from src.ingestion import doc_lifecycle
 
         doc_lifecycle.set_status(book, "needs-review")
-        logger.info("doc lifecycle: %s -> needs-review (dedup gate: %s)", book, reason)
+        logger.info("doc lifecycle: %s -> needs-review (%s)", book, reason)
     except Exception as e:
         logger.warning("Failed to off-ramp doc %s to needs-review: %s", book, e)
 
@@ -2041,10 +2047,11 @@ def _refresh_validation_corpus(book: str = "", entities: tuple = ()) -> None:
             _download_s3_prefix_skip_existing(s3, f"output/{ent}/")
 
 
-def _provenance_gate(phase: str) -> tuple:
+def _provenance_gate(phase: str, refresh: bool = True) -> tuple:
     """Provenance validation of this task's book at a phase end, against the post-sync corpus
     (scripts/validate_provenance). Returns (passed, reason). The report is uploaded to
     ``output/reports/provenance/``. FAIL-CLOSED: a validation that cannot run does not pass.
+    ``refresh=False`` when the caller already refreshed the local corpus (Phase 3).
     """
     book = os.environ.get("BOOK_NAME", "")
     if not book:
@@ -2061,7 +2068,8 @@ def _provenance_gate(phase: str) -> tuple:
     try:
         from scripts import validate_provenance as vp
 
-        _refresh_validation_corpus(book, vp.TEXT_CITING_ENTITIES)
+        if refresh:
+            _refresh_validation_corpus(book, vp.TEXT_CITING_ENTITIES)
         findings, report = vp.validate_and_record(WORKDIR / "output", book, phase)
     except Exception as e:  # noqa: BLE001 - fail closed, loudly
         observe_error(
@@ -2105,6 +2113,32 @@ def _upload_provenance_report(report: Path, key: str) -> None:
         )
 
 
+def _provenance_gate_mode() -> str:
+    """The provenance gate mode (scripts/validate_provenance.gate_mode); ``block`` when it cannot
+    be read - a gate that cannot load its mode is closed."""
+    try:
+        from scripts.validate_provenance import gate_mode
+
+        return gate_mode()
+    except Exception as e:  # noqa: BLE001
+        observe_error("provenance", "gate_mode_unavailable", error=type(e).__name__)
+        return "block"
+
+
+def _phase_end_held(provenance: tuple, phase_label: str) -> bool:
+    """True when a failed provenance validation holds the book at ``phase_label``'s end (gate mode
+    ``block``); the failure itself is already alerted by the validation."""
+    passed, reason = provenance
+    if passed or _provenance_gate_mode() != "block":
+        return False
+    publish_alert(
+        f"WWII Pipeline: provenance review needed ({phase_label})",
+        f"{reason}\n\nThe book is held at the end of {phase_label} for review. Fix the "
+        "records and re-run, or set PROVENANCE_GATE=warn to release it.",
+    )
+    return True
+
+
 def _phase3_gate_decision(dedup_ok: bool, provenance: tuple) -> tuple:
     """The Phase-2 -> Phase-3 gate: (action, reason, held_by). The dedup gate, held also by a
     failed provenance validation when the provenance gate mode is ``block`` (warn: alerted, not
@@ -2114,27 +2148,22 @@ def _phase3_gate_decision(dedup_ok: bool, provenance: tuple) -> tuple:
     passed, prov_reason = provenance
     if passed:
         return action, reason, held_by
-    try:
-        from scripts.validate_provenance import gate_mode
-
-        mode = gate_mode()
-    except Exception as e:  # noqa: BLE001 - a gate that cannot load its mode is closed
-        observe_error("provenance", "gate_mode_unavailable", error=type(e).__name__)
-        mode = "block"
-    if mode != "block":
+    if _provenance_gate_mode() != "block":
         return action, f"{reason}; {prov_reason} (gate=warn: not held)", held_by
     reason = prov_reason if action == "auto_proceed" else f"{reason}; {prov_reason}"
     return "block", reason, held_by + ["provenance"]
 
 
-def _phase3_durable_referential_fix() -> None:
+def _phase3_durable_referential_fix() -> bool:
     """Post-_final_sync referential repair + validation for Phase 3, run against the AUTHORITATIVE,
     COMPLETE corpus (S3 when S3_BUCKET is set) AFTER the local->S3 sync — so (a) the stale-sub-event
     down-bind repair is DURABLE (nothing clobbers it, unlike the in-main() repair which the sync
     overwrote) and (b) validation audits the real state (the in-task validator saw a local tree
     lacking output/content -> false EventID danglers). Fail-safe: never raises into the pipeline.
+    Returns True when the local corpus was refreshed (the provenance gate then reuses it).
     """
     _post_sync_referential_enforce("Phase 3 (post-sync)")
+    refreshed = False
     try:
         # Provenance-completeness enforcement MUST also run on the authoritative post-sync corpus.
         # main() runs it only on the local/no-S3 branch (the in-main run would be clobbered by the
@@ -2155,13 +2184,18 @@ def _phase3_durable_referential_fix() -> None:
         #      carry the pre-repair dangling Sub_eventID. Re-download the repaired entity dirs with
         #      OVERWRITE so validate audits the repaired records, not the stale input snapshot.
         #      (Root cause of the observed "repair=0 dangling but validate_phase3 FAIL 26" split.)
-        _refresh_validation_corpus()
+        # every entity the provenance validation reads too (it runs on this same corpus next)
+        from scripts.validate_provenance import TEXT_CITING_ENTITIES
+
+        _refresh_validation_corpus(entities=TEXT_CITING_ENTITIES)
+        refreshed = True
         from scripts.validate_phase3 import run as _validate_phase3
 
         rc = _validate_phase3(str(WORKDIR / "output"), strict_coverage=False)
         logger.info("Post-sync Phase-3 validation exit=%d (0=pass, 1=fail)", rc)
     except Exception as e:  # noqa: BLE001 - validation must never crash teardown
         logger.warning("post-sync Phase-3 validation skipped: %s", e)
+    return refreshed
 
 
 def _post_process(phase_script: str, env: dict) -> None:
@@ -2292,9 +2326,15 @@ def _post_process(phase_script: str, env: dict) -> None:
         # so its S3-side down-bind repair was clobbered by the sync and it audited a local tree that
         # lacks output/content (events) -> false EventID danglers. Post-sync S3 is the authoritative,
         # complete corpus; repairing it now makes the fix durable and the audit truthful.
-        _phase3_durable_referential_fix()
+        refreshed = _phase3_durable_referential_fix()
         _notify_url_review_pending()  # email the operator if URL finds await human review
-        _advance_doc_lifecycle("3")  # doc# -> done (multi-doc; terminal)
+        # After every merge (dedup auto-merge, bibliography reconcile, review-UI merges): the book
+        # is "done" only if its provenance holds - in gate mode block, held for review instead.
+        # the corpus the fix refreshed is reused; if its refresh failed, the gate refreshes itself
+        if _phase_end_held(_provenance_gate("3", refresh=not refreshed), "Phase 3"):
+            _offramp_doc_needs_review("provenance validation failed after Phase 3")
+        else:
+            _advance_doc_lifecycle("3")  # doc# -> done (multi-doc; terminal)
         next_enrich = _get_next_pending_enrich()
         if next_enrich:
             logger.info(

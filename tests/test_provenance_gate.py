@@ -124,3 +124,88 @@ def test_the_phase3_gate(monkeypatch, dedup, provenance, mode, expected):
     assert ("dedup" in held_by) == (dedup[0] == "block")
     if not provenance[0]:
         assert "prov failed" in reason  # the operator sees why, in either mode
+
+
+# --- end of Phase 3 -------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "provenance, mode, held",
+    [
+        ((True, "ok"), "block", False),
+        ((False, "x"), "warn", False),
+        ((False, "x"), "block", True),
+    ],
+)
+def test_the_phase3_end_holds_a_failed_book_only_in_block_mode(
+    monkeypatch, provenance, mode, held
+):
+    monkeypatch.setenv("PROVENANCE_GATE", mode)
+    with mock.patch.object(ee, "publish_alert") as alert:
+        assert ee._phase_end_held(provenance, "Phase 3") is held
+    assert alert.called is held
+    if held:
+        assert "Phase 3" in alert.call_args.args[0]
+
+
+def test_an_unreadable_gate_mode_is_closed(monkeypatch):
+    import scripts.validate_provenance as vp
+
+    with (
+        mock.patch.object(vp, "gate_mode", side_effect=RuntimeError("x")),
+        mock.patch.object(ee, "observe_error") as err,
+    ):
+        assert ee._provenance_gate_mode() == "block"
+    assert err.call_args.args[:2] == ("provenance", "gate_mode_unavailable")
+
+
+def _run_phase3_post_process(monkeypatch, provenance, mode, refreshed=True):
+    monkeypatch.setenv("PROVENANCE_GATE", mode)
+    calls = []
+    monkeypatch.setattr(ee, "_phase3_durable_referential_fix", lambda: refreshed)
+    for name in (
+        "_remove_lock",
+        "_notify_url_review_pending",
+        "_stop_openserp_if_running",
+        "_notify_complete",
+    ):
+        monkeypatch.setattr(ee, name, mock.Mock())
+    monkeypatch.setattr(ee, "_get_next_pending_enrich", lambda: "")
+    monkeypatch.setattr(ee, "_get_next_pending_book", lambda: "")
+    monkeypatch.setattr(
+        ee,
+        "_provenance_gate",
+        lambda phase, refresh=True: (
+            calls.append(("gate", phase, refresh)) or provenance
+        ),
+    )
+    monkeypatch.setattr(
+        ee, "_advance_doc_lifecycle", lambda p: calls.append(("done", p))
+    )
+    monkeypatch.setattr(
+        ee, "_offramp_doc_needs_review", lambda r: calls.append(("held", r))
+    )
+    monkeypatch.setattr(ee, "publish_alert", mock.Mock())
+    ee._post_process("phase3_enrich_data.py", {})
+    return calls
+
+
+def test_phase3_validates_the_book_after_the_merges_then_finishes_it(monkeypatch):
+    calls = _run_phase3_post_process(monkeypatch, (True, "ok"), "block")
+    assert calls == [("gate", "3", False), ("done", "3")]
+
+
+def test_a_failed_phase3_validation_holds_the_book_in_block_mode(monkeypatch):
+    calls = _run_phase3_post_process(monkeypatch, (False, "bad"), "block")
+    assert calls[0] == ("gate", "3", False) and calls[1][0] == "held"
+    assert _run_phase3_post_process(monkeypatch, (False, "bad"), "warn")[1] == (
+        "done",
+        "3",
+    )
+
+
+def test_when_the_phase3_refresh_failed_the_gate_refreshes_itself(monkeypatch):
+    calls = _run_phase3_post_process(
+        monkeypatch, (True, "ok"), "block", refreshed=False
+    )
+    assert calls == [("gate", "3", True), ("done", "3")]

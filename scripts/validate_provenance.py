@@ -21,6 +21,20 @@ dedups records and can break a link):
   cites (hard when absent from the chapter's notes; warning when the note text itself is empty, or
   it sits under another note number).
 
+Phase 3 (enrichment - run at the end of Phase 3, after every merge: the dedup auto-merge, the
+bibliography reconcile and Dedup Review UI merges all run AFTER the Phase-2 gate): the Phase-2
+checks again, plus
+
+* ``P3-B1`` real source: a bibliography entry of the book has a real title - a stub (the
+  extractor's own test: ``ibid``, ``op. cit.``, a bare short number, empty; or ``Unknown``) fails; one Phase 3 classed ``not_citation`` warns (awaits disposition);
+* ``P3-R1`` rights: an empty ``license`` fails; ``unknown`` license, no ``copyright_status``, or a
+  NARA-searchable source (the resolver's own predicate) with no ``archive_reference_number`` warn;
+* ``P3-A1`` attribution: an enriched people / people_groups / equipment record of the book names
+  its source (``entity_records.has_source_link``, the P3-A5 predicate) - hard;
+* ``P3-C1`` citations resolve: every note a sub-event cites (``Footnote_References`` /
+  ``Endnote_References``) that names a source (not a stub, which the extractor skips) has a
+  bibliography mention - one warning per chapter, with counts.
+
 A mention is in this book when its EventID is one of the book's events
 (``output/content/<book>/*-event.json``); records are shared across books, so the check is per
 mention. An id that resolves nowhere is referential_integrity's finding, not repeated here.
@@ -37,15 +51,20 @@ import argparse
 import json
 import logging
 import os
+import re
 import sys
 from collections import Counter
+from urllib.parse import urlparse
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, FrozenSet, Iterable, List, Optional, Tuple
 
 from src.schemas import entity_registry as _er
 from src.utils.entity_records import (
+    ENRICHED_ENTITIES,
     entity_files,
+    has_source_link,
+    is_enriched,
     iter_mentions,
     load_json,
     mention_sub_event,
@@ -76,7 +95,7 @@ class Chapter:
     stem: str  # e.g. "chapter8" (the -parsed/-event/-endnotes files share it)
     index: Index
     numbers: FrozenSet[int]
-    # note number -> normalised note texts (footnotes AND endnotes may share a number)
+    # note number -> its note texts as in the source (footnotes AND endnotes may share a number)
     notes: Dict[str, List[str]]
     owner: Dict[int, str] = field(default_factory=dict)  # paragraph -> its sub-event
     notes_event: bool = False  # a -notes-event: its "paragraphs" are note texts
@@ -88,6 +107,8 @@ class Book:
     chapters: Dict[str, Chapter] = field(default_factory=dict)  # EventID -> chapter
     sub_events: Dict[str, Tuple[str, FrozenSet[int]]] = field(default_factory=dict)
     degraded: set = field(default_factory=set)  # Sub-eventIDs with no source paragraphs
+    # Sub-eventID -> the note numbers it cites (Footnote_References / Endnote_References)
+    cited_notes: Dict[str, set] = field(default_factory=dict)
 
 
 def _notes(
@@ -99,7 +120,7 @@ def _notes(
     ):
         if isinstance(n, dict) and n.get("number") is not None:
             out.setdefault(str(n["number"]).strip(), []).append(
-                normalize(n.get("text", ""))
+                str(n.get("text") or "")
             )
     return out
 
@@ -112,6 +133,21 @@ def _sub_event_paragraphs(se: Dict[str, Any]) -> FrozenSet[int]:
         subject=str(se.get("Sub-eventID", "")),
     )
     return frozenset(nums)
+
+
+def _cited_notes(ev: Dict[str, Any]) -> Dict[str, set]:
+    """Sub-eventID -> the note numbers its ``Footnote_References`` / ``Endnote_References`` cite."""
+    out: Dict[str, set] = {}
+    for se in ev.get("Sub-events") or []:
+        if not isinstance(se, dict) or not se.get("Sub-eventID"):
+            continue
+        refs = list(se.get("Footnote_References") or []) + list(
+            se.get("Endnote_References") or []
+        )
+        nums = {str(r).strip() for r in refs if not isinstance(r, (dict, list))}
+        if nums:
+            out[str(se["Sub-eventID"])] = nums
+    return out
 
 
 def _note_sub_events(
@@ -168,6 +204,7 @@ def _add_chapter(book: Book, folder: Path, ev_file: Path) -> None:
             for se in ev.get("Sub-events") or []
             if isinstance(se, dict) and se.get("Sub-eventID")
         }
+        book.cited_notes.update(_cited_notes(ev))
     endnotes = load_json(folder / f"{parsed_stem}-endnotes.json")
     book.chapters[event_id] = Chapter(
         stem,
@@ -353,7 +390,7 @@ def check_note(f: Findings, where: str, chapter: Chapter, m: Dict[str, Any]) -> 
                 WARN, "P2-Q2", where, "no note locator (no reference_number or quote)"
             )
         return
-    texts = chapter.notes.get(number, [])
+    texts = [normalize(t) for t in chapter.notes.get(number, [])]
     if texts and not any(texts):
         f.add(
             WARN,
@@ -365,7 +402,9 @@ def check_note(f: Findings, where: str, chapter: Chapter, m: Dict[str, Any]) -> 
         return
     if any(_quotes_note(quote, t) for t in texts):
         return
-    if any(_quotes_note(quote, t) for ts in chapter.notes.values() for t in ts):
+    if any(
+        _quotes_note(quote, normalize(t)) for ts in chapter.notes.values() for t in ts
+    ):
         f.add(WARN, "P2-Q2", where, "quote is under another note number", note=number)
         return
     f.add(
@@ -421,7 +460,111 @@ def _check_record(
         )
 
 
-PHASE_CHECKS = {"2": "P2"}
+# --- Phase-3 checks ------------------------------------------------------------------------------
+def _is_stub(text: str) -> bool:
+    """A note / title that names no source: the extractor's own test (``ibid.``, ``op. cit.``,
+    ``see n. 5``, under four characters), plus the placeholder title ``Unknown``."""
+    from src.extraction.bibliography import _is_stub_citation
+
+    return _is_stub_citation(text) or text.strip().lower() == "unknown"
+
+
+def is_nara_source(rec: Dict[str, Any]) -> bool:
+    """Phase 3 found the source at NARA: resolved through it (``search_source`` ``nara_catalog`` /
+    ``nara_grok``) or holding a catalog.archives.gov copy. Not the resolver's routing test
+    (``_is_nara_searchable``), which sends every citation-shaped entry to NARA to look.
+    """
+    if str(rec.get("search_source") or "").lower().startswith("nara"):
+        return True
+    urls = re.findall(r"https?://[^\s\"']+", json.dumps(rec.get("resource_urls") or []))
+    return any(_is_nara_host(urlparse(u).hostname or "") for u in urls)
+
+
+def _is_nara_host(host: str) -> bool:
+    return host == "archives.gov" or host.endswith(".archives.gov")
+
+
+def check_bib_source(f: Findings, where: str, rec: Dict[str, Any]) -> None:
+    """P3-B1 (a real source) + P3-R1 (its rights fields) for a bibliography entry of the book."""
+    f.checked["P3-B1"] += 1
+    title = str(rec.get("title") or "")
+    if _is_stub(title):
+        f.add(HARD, "P3-B1", where, "stub entry, not a source", title=title[:40])
+    elif rec.get("search_status") == "not_citation":
+        f.add(WARN, "P3-B1", where, "classed not_citation (awaits disposition)")
+    f.checked["P3-R1"] += 1
+    license_ = str(rec.get("license") or "").strip()
+    if not license_:
+        f.add(HARD, "P3-R1", where, "no license")
+    elif license_ == "unknown":
+        f.add(WARN, "P3-R1", where, "license unknown")
+    if not rec.get("copyright_status"):
+        f.add(WARN, "P3-R1", where, "no copyright_status")
+    ref = str(rec.get("archive_reference_number") or "").strip()
+    if (not ref or ref == "None") and is_nara_source(rec):
+        f.add(WARN, "P3-R1", where, "NARA source without an archive_reference_number")
+
+
+def check_attribution(f: Findings, where: str, rec: Dict[str, Any]) -> None:
+    """P3-A1: an enriched record names where its enrichment came from."""
+    if not is_enriched(rec):
+        return
+    f.checked["P3-A1"] += 1
+    if not has_source_link(rec):
+        f.add(HARD, "P3-A1", where, "enriched but names no source (un-attributable)")
+
+
+def check_citations_resolve(f: Findings, book: Book, bib_mentions: set) -> None:
+    """P3-C1: every note a sub-event cites that names a source (not a stub - those the extractor
+    skips by design) has a bibliography mention (by sub-event + note number). One finding per
+    chapter, with counts (one per note would bury the signal)."""
+    cited: Counter = Counter()
+    missing: Counter = Counter()
+    for seid, nums in book.cited_notes.items():
+        event_id = book.sub_events.get(seid, ("", frozenset()))[0]
+        chapter = book.chapters.get(event_id)
+        for n in nums:
+            texts = chapter.notes.get(n, []) if chapter else []
+            if texts and all(_is_stub(t) for t in texts):
+                continue  # a stub note ("Ibid."): no source of its own to resolve
+            f.checked["P3-C1"] += 1
+            cited[event_id] += 1
+            if (seid, n) not in bib_mentions:
+                missing[event_id] += 1
+    for event_id, n_missing in missing.items():
+        chapter = book.chapters.get(event_id)
+        f.add(
+            WARN,
+            "P3-C1",
+            f"content/{book.slug}/{chapter.stem if chapter else event_id}",
+            "cited notes with no bibliography entry",
+            missing=n_missing,
+            cited=cited[event_id],
+        )
+
+
+def _phase3_record(
+    f: Findings, book: Book, entity: str, name: str, rec: Dict[str, Any], bib: set
+) -> None:
+    """The Phase-3 checks of one record of the book (any mention in the book)."""
+    ours = [
+        m
+        for m in iter_mentions(rec)
+        if isinstance(m, dict) and str(m.get("EventID")) in book.chapters
+    ]
+    if not ours:
+        return
+    if entity == "bibliography":
+        check_bib_source(f, f"{entity}/{name}", rec)
+        bib.update(
+            (mention_sub_event(m), str(m.get("reference_number") or "").strip())
+            for m in ours
+        )
+    elif entity in ENRICHED_ENTITIES:
+        check_attribution(f, f"{entity}/{name}", rec)
+
+
+PHASE_CHECKS = {"2": "P2", "3": "P3"}
 # the entities whose records cite the book's text (the corpus a validation run needs)
 _TEXT_CITING_SPECS = tuple(
     spec
@@ -462,11 +605,19 @@ def validate(root: Path, slug: str, phase: str = "2") -> Findings:
             "no readable event + parsed chapter files",
         )
         return f
+    bib_mentions: set = (
+        set()
+    )  # (Sub-eventID, note number) the book's bibliography holds
     for spec in _TEXT_CITING_SPECS:
         for path in entity_files(Path(root), spec.output_glob):
             rec = load_json(path)
-            if isinstance(rec, dict):
-                _check_record(f, book, spec.name, path.name, rec)
+            if not isinstance(rec, dict):
+                continue
+            _check_record(f, book, spec.name, path.name, rec)  # Phase 2: in every phase
+            if phase == "3":
+                _phase3_record(f, book, spec.name, path.name, rec, bib_mentions)
+    if phase == "3":
+        check_citations_resolve(f, book, bib_mentions)
     return f
 
 

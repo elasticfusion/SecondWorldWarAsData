@@ -434,3 +434,153 @@ def test_a_record_level_summary_only_warns(root):
     )
     f = _run(root)
     assert f.ok and _reasons(f, "P2-Q1") == [("warn", "quote is not in the book")]
+
+
+# --- Phase 3 (after every merge) -----------------------------------------------------------------
+
+
+def _bib_rec(root, name="b", **rec):
+    base = {
+        "BibliographyID": "B1",
+        "title": "Outline OVERLORD, Part II",
+        "license": "public_domain",
+        "copyright_status": {"status": "public_domain"},
+        "mentions": [
+            {
+                "EventID": EV,
+                "Sub-eventID": S1,
+                "reference_number": "1",
+                "verbatim_reference": "Phantom Intercept in 21 A Gp Sitrep 4",
+            }
+        ],
+    }
+    base.update(rec)
+    _write(root / "bibliography" / f"{name}.json", base)
+
+
+def _p3(root, check):
+    return [
+        (i["level"], i["reason"])
+        for i in V.validate(root, "B", "3").items
+        if i["check"] == check
+    ]
+
+
+def test_phase3_reruns_the_phase2_checks(root):
+    _person(root, "p", _m("the 101st Airborne stormed the beach at dawn"))
+    assert _p3(root, "P2-Q1") == [("fail", "quote is not in the book")]
+
+
+@pytest.mark.parametrize("title", ["ibid.", "26", "", "Op. cit.", "Unknown"])
+def test_a_stub_bibliography_entry_fails(root, title):
+    _bib_rec(root, title=title)
+    assert _p3(root, "P3-B1") == [("fail", "stub entry, not a source")]
+
+
+def test_a_not_citation_entry_warns(root):
+    _bib_rec(root, search_status="not_citation")
+    assert _p3(root, "P3-B1") == [("warn", "classed not_citation (awaits disposition)")]
+
+
+def test_rights_fields(root):
+    plain = [
+        {
+            "EventID": EV,
+            "Sub-eventID": S1,
+            "reference_number": "1",
+            "verbatim_reference": "Harrison, Cross-Channel Attack, p. 4",
+        }
+    ]
+    _bib_rec(root, license="", copyright_status=None, mentions=plain)
+    assert sorted(_p3(root, "P3-R1")) == [
+        ("fail", "no license"),
+        ("warn", "no copyright_status"),
+    ]
+    _bib_rec(root, license="unknown", mentions=plain)
+    assert _p3(root, "P3-R1") == [("warn", "license unknown")]
+
+
+def test_a_nara_source_needs_an_archive_reference(root):
+    nara_warn = [("warn", "NARA source without an archive_reference_number")]
+    _bib_rec(root, search_source="nara_catalog", archive_reference_number="")
+    assert _p3(root, "P3-R1") == nara_warn
+    _bib_rec(root, resource_urls=[{"url": "https://catalog.archives.gov/id/1"}])
+    assert _p3(root, "P3-R1") == nara_warn
+    _bib_rec(root, search_source="nara_grok", archive_reference_number="RG 407")
+    assert _p3(root, "P3-R1") == []
+    _bib_rec(root)  # a citation-shaped entry Phase 3 did not find at NARA: no warning
+    assert _p3(root, "P3-R1") == []
+
+
+def test_a_bibliography_entry_of_another_book_is_not_checked(root):
+    _bib_rec(root, license="", mentions=[{"EventID": "OTHER", "Sub-eventID": "X"}])
+    assert _p3(root, "P3-R1") == []
+
+
+def test_an_enriched_record_must_name_its_source(root):
+    _write(
+        root / "people" / "p.json",
+        {"enrichment_status": "enriched", "event_mentions": [_m("Force U")]},
+    )
+    assert _p3(root, "P3-A1") == [
+        ("fail", "enriched but names no source (un-attributable)")
+    ]
+    _write(
+        root / "people" / "p.json",
+        {
+            "enrichment_status": "enriched",
+            "event_mentions": [_m("Force U")],
+            "biographical_profile": {
+                "biography_sources": [
+                    {"source": "Grokipedia", "page": "https://grokipedia.com/page/X"}
+                ]
+            },
+        },
+    )
+    assert _p3(root, "P3-A1") == []
+
+
+def test_every_cited_note_needs_a_bibliography_mention(root):
+    ev_file = root / "content" / "B" / "chapter1-event.json"
+    ev = json.loads(ev_file.read_text())
+    ev["Event"]["Sub-events"][0]["Footnote_References"] = [1, 2]
+    ev_file.write_text(json.dumps(ev))
+    _bib_rec(root)  # holds note 1 of S1 only
+    f = V.validate(root, "B", "3")
+    found = [i for i in f.items if i["check"] == "P3-C1"]
+    assert len(found) == 1 and found[0]["missing"] == 1 and found[0]["cited"] == 2
+    assert found[0]["where"] == "content/B/chapter1"
+
+
+def test_phase2_does_not_run_the_phase3_checks(root):
+    _bib_rec(root, title="ibid")
+    assert not [
+        i for i in V.validate(root, "B", "2").items if i["check"].startswith("P3")
+    ]
+
+
+def test_a_stub_note_needs_no_bibliography_entry(root):
+    """The extractor skips stub notes ("Ibid.") by design: they are not unresolved citations."""
+    book = root / "content" / "B"
+    (book / "chapter1-endnotes.json").write_text(
+        json.dumps({"endnotes": [{"number": 2, "text": "Ibid."}]})
+    )
+    ev = json.loads((book / "chapter1-event.json").read_text())
+    ev["Event"]["Sub-events"][0]["Footnote_References"] = [1, 2]
+    (book / "chapter1-event.json").write_text(json.dumps(ev))
+    _bib_rec(root)  # note 1 only
+    assert not [i for i in V.validate(root, "B", "3").items if i["check"] == "P3-C1"]
+
+
+@pytest.mark.parametrize("title", ["1944", "FM 100-5", "Outline OVERLORD"])
+def test_a_short_real_title_is_not_a_stub(root, title):
+    _bib_rec(root, title=title)
+    assert _p3(root, "P3-B1") == []
+
+
+def test_another_countrys_national_archives_is_not_nara(root):
+    _bib_rec(
+        root,
+        resource_urls=[{"url": "https://discovery.nationalarchives.gov.uk/details/C1"}],
+    )
+    assert _p3(root, "P3-R1") == []

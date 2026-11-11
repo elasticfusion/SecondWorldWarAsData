@@ -117,3 +117,56 @@ def merge_mentions(
             seen.add(key)
             added += 1
     return added
+
+
+# Entities whose ``enrichment_status == "enriched"`` means a DESCRIPTIVE external-source
+# enrichment, so a source link is expected (validate_phase3 P3-A5, validate_provenance P3-A1).
+ENRICHED_ENTITIES = ("people", "people_groups", "equipment")
+
+
+def is_enriched(rec: Dict[str, Any]) -> bool:
+    return str(rec.get("enrichment_status", "")).strip() == "enriched"
+
+
+# Fields that signal an external-source LINK; checked at top level and inside biographical_profile.
+LINK_FIELDS = ("wikipedia_url", "grokipedia_url", "source_url", "archive_url")
+
+
+def _dict(v: Any) -> Dict[str, Any]:
+    return v if isinstance(v, dict) else {}
+
+
+def _any_link(d: Dict[str, Any]) -> bool:
+    return any(d.get(k) for k in LINK_FIELDS)
+
+
+def _any_entry_with(items: Any, *keys: str) -> bool:
+    """A list holding at least one dict with a non-empty value under one of ``keys``."""
+    return isinstance(items, list) and any(
+        isinstance(i, dict) and any(i.get(k) for k in keys) for i in items
+    )
+
+
+def has_source_link(rec: Dict[str, Any]) -> bool:
+    """The record names where its enrichment came from. The ONE attribution predicate
+    (validate_phase3 P3-A5, validate_provenance P3-A1). A source is any of:
+
+    * a wiki/grok/archive/source URL at the top level or in ``biographical_profile``;
+    * a biography's ``biography_sources[].page`` (a biography built from sources lists each);
+    * equipment's ``external_data`` URL or ``additional_sources[].url`` (its schema forbids a
+      top-level URL);
+    * ``resource_urls``;
+    * a structured enrichment's ``enrichment_data._source.type`` (e.g. groups via the Grok
+      group_enrichment prompt: {type, query, retrieved_at} - traceable attribution).
+    """
+    bp, ext = _dict(rec.get("biographical_profile")), _dict(rec.get("external_data"))
+    source = _dict(_dict(rec.get("enrichment_data")).get("_source"))
+    return bool(
+        _any_link(rec)
+        or _any_link(bp)
+        or _any_entry_with(bp.get("biography_sources"), "page", "url")
+        or _any_link(ext)
+        or _any_entry_with(ext.get("additional_sources"), "url")
+        or (isinstance(rec.get("resource_urls"), list) and rec.get("resource_urls"))
+        or source.get("type")
+    )
