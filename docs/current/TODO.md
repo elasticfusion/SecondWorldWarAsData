@@ -468,11 +468,23 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
       core + every optional extractor), with a round cap; over the cap -> ALERT plus automated
       diagnostics (queued request counts by cache_type/stage, keys queued in consecutive rounds =
       submit/lookup key divergence, sample prompts), extendable as new cases appear.
+      DONE 2026-11-12 (`phase2_extract._run_batch_rounds`, `src/utils/batch_rounds.py`,
+      `batch.max_rounds`: 8): a cap stop alerts, writes `.phase_results.json` `incomplete` and
+      exits 1. Steps 4-5 (maps, images, source sections, analysis, stats) now run once after
+      the rounds. Source-section enrichment is not batch-aware yet (runs live after the rounds)
+      - audit it and the other optional extractors for swallowed BatchModeCollecting.
   (3) ECS: the container waits up to 90 min PER BATCH ROUND for Grok (goal: prevent container
       churn); a round not back in 90 min -> enqueue + exit, the Lambda poller resumes it, and the
       resumed container follows the same rule for further rounds. The retrieve re-run must keep
       batch mode for the next round (today `_retrieve_rerun_env` strips it: equipment runs live).
       The shutdown wait is configurable (shorter for testing).
+      FOUND 2026-11-12: (a) `run_submit_only` monkey-patches `poll_batch` in the PARENT process but
+      runs Phase 2 as a subprocess, so the patch never applies: the child already waits in-task,
+      up to 24 h (`poll_batch` `max_hours=24`); (b) on that timeout a partial result is a count
+      mismatch, which forces a LIVE retry of every request (`_retry_failed_batch(force=True)`);
+      (c) after a round-cap stop (exit 1) the last round's batch is still enqueued, so the poller
+      can launch a retrieve-only re-run that finishes the book LIVE and triggers Phase 3 - skip
+      the enqueue (or refuse the retrieve) when `.phase_results.json` has `incomplete`.
   (4) One container per book/resource; one book at a time for now (parallel later). A second
       book submitted while one is batched must never co-mingle with it (per-book jobs, batches,
       locks). A book split across several batches keeps provenance, one consolidated dedup and

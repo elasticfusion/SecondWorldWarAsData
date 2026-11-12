@@ -967,6 +967,105 @@ def _run_core_extraction(
     return processed, failed
 
 
+def _run_batch_rounds(
+    parsed_files,
+    grok_client,
+    output_root,
+    config,
+    paths,
+    max_parallel,
+    logger,
+    counts,
+):
+    """Submit the queued requests, re-run the whole pass (core + optional extractors) in batch
+    mode, and repeat until a pass queues nothing. A pass that queues nothing has written
+    everything from the cache, so the run is complete. Past ``batch.max_rounds`` the run stops
+    with an alert + diagnostics instead of submitting more. Returns (processed, failed).
+    """
+    from src.utils.batch_api import BatchCollector
+    from src.utils.batch_rounds import (
+        DEFAULT_MAX_ROUNDS,
+        BatchRounds,
+        BatchRoundsExceeded,
+    )
+    from src.utils.heartbeat import Heartbeat
+
+    books = sorted({pf.parent.name for pf in parsed_files})
+    base = f"phase2-{'-'.join(books)}-{len(parsed_files)}files"
+    rounds = BatchRounds(
+        scope=",".join(books),
+        cap=int(config.get("batch", {}).get("max_rounds", DEFAULT_MAX_ROUNDS)),
+    )
+    processed, failed = counts
+    while grok_client._batch_collector and len(grok_client._batch_collector) > 0:
+        queued = list(grok_client._batch_collector.requests)
+        if not rounds.admit(queued, grok_client):
+            raise BatchRoundsExceeded(
+                rounds.cap, rounds.scope
+            )  # alerted: no more spend
+        logger.info(
+            "[phase2] Batch round %d: submitting %d requests", rounds.count, len(queued)
+        )
+        batch_id = grok_client.submit_batch(
+            batch_name=f"{base}-r{rounds.count}-{len(queued)}reqs"[:128]
+        )
+        if not batch_id:  # submit_batch returns None only for an empty collector
+            raise RuntimeError(
+                f"batch round {rounds.count}: {len(queued)} requests queued but not submitted"
+            )
+        grok_client.batch_mode = (
+            True  # the next round queues what this one's answers unlock
+        )
+        grok_client._batch_collector = BatchCollector()
+        heartbeat = Heartbeat(
+            timeout=300, label=f"Phase 2 (batch round {rounds.count + 1})"
+        )
+        heartbeat.start()
+        try:
+            processed, failed = _run_core_extraction(
+                parsed_files,
+                grok_client,
+                output_root,
+                config,
+                paths,
+                max_parallel,
+                heartbeat,
+                logger,
+            )
+        finally:
+            heartbeat.stop()
+    retried, retry_failed = _finish_after_rounds(
+        parsed_files, grok_client, logger, rounds.count
+    )
+    return processed + retried, failed + retry_failed
+
+
+def _finish_after_rounds(parsed_files, grok_client, logger, n_rounds):
+    """After the last round (or none: everything was cached): leave batch mode and retry the
+    chapters whose events still failed (live; a no-op in batch mode). Returns (retried, failed).
+    """
+    grok_client.batch_mode = False
+    grok_client._batch_collector = None
+    logger.info("[phase2] Batch rounds complete after %d round(s)", n_rounds)
+    return _retry_missing_events(parsed_files, grok_client, logger)
+
+
+def _run_post_extraction_steps(
+    base_dir, grok_client, paths, config, output_root, logger, processed, failed
+):
+    """Steps 4-5 on the FINISHED extraction output (after any batch rounds): maps, images,
+    source-section enrichment (live: not batch-aware), analysis, stats."""
+    _extract_external_maps(base_dir, grok_client, paths, config, logger)
+    _extract_images(output_root, config, logger)
+    _run_source_section_enrichment(output_root, grok_client, logger)
+    _run_analysis(output_root, logger)
+    logger.info("Phase 2 complete: %d processed, %d failed", processed, failed)
+    grok_client.log_cache_stats()
+    from src.utils.validation_stats import write_validation_stats as _write_val_stats
+
+    _write_val_stats(paths["output_root"])
+
+
 def _warn_if_env_contradicts_config(env_value: str, logger) -> None:
     """BATCH_PHASE2 (deploy-time) silently overriding config.yaml batch.phase2 is how batching was
     off for a week while config said on. Make a disagreement an actionable alert."""
@@ -1161,150 +1260,36 @@ def main():
         failed,
     )
 
-    # -----------------------------------------------------------------------
-    # Step 4: Maps and Images extraction
-    # -----------------------------------------------------------------------
-    _extract_external_maps(base_dir, grok_client, paths, config, logger)
-    _extract_images(output_root, config, logger)
-
-    # -----------------------------------------------------------------------
-    # Step 4b: Source-section enrichment (summary + operation + Grok/Wiki articles + media)
-    # -----------------------------------------------------------------------
-    _run_source_section_enrichment(output_root, grok_client, logger)
-
-    # -----------------------------------------------------------------------
-    # Step 5: Analysis
-    # -----------------------------------------------------------------------
-    _run_analysis(output_root, logger)
-
-    # -----------------------------------------------------------------------
-    # Done
-    # -----------------------------------------------------------------------
-    logger.info("Phase 2 complete: %d processed, %d failed", processed, failed)
-    grok_client.log_cache_stats()
-    from src.utils.validation_stats import write_validation_stats as _write_val_stats
-
-    _write_val_stats(paths["output_root"])
     heartbeat.stop()
 
-    # If batch mode, submit collected requests, wait, then re-run
-    if (
-        args.batch
-        and grok_client._batch_collector
-        and len(grok_client._batch_collector) > 0
-    ):
-        logger.info(
-            "[phase2] Submitting %d requests to Grok Batch API",
-            len(grok_client._batch_collector),
-        )
-        # Build descriptive batch name from processed books
-        books = set()
-        for pf in parsed_files:
-            books.add(pf.parent.name)
-        req_count = len(grok_client._batch_collector)
-        batch_name = f"phase2-{'-'.join(sorted(books))}-{len(parsed_files)}files-{req_count}reqs"[
-            :128
-        ]
-        batch_id = grok_client.submit_batch(batch_name=batch_name)
-        if batch_id:
-            logger.info("Batch complete! Re-running pipeline with cached results...")
-            grok_client.batch_mode = False
-            heartbeat = Heartbeat(timeout=300, label="Phase 2 (batch re-run)")
-            heartbeat.start()
-            heartbeat.ping("Batch re-run: step 1")
+    # Batch mode: ROUNDS of collect -> submit -> re-run until a pass queues nothing (each
+    # dependent stage - events, entities, equipment refine / identity / re-check ... - is one
+    # round), with a round cap + alert + diagnostics (src/utils/batch_rounds.py). Steps 4-5 run
+    # AFTER the rounds, on the finished output (before, they saw the first collect pass only).
+    if args.batch:
+        from src.utils.batch_rounds import BatchRoundsExceeded
 
-            processed, failed = _run_core_extraction(
+        try:
+            processed, failed = _run_batch_rounds(
                 parsed_files,
                 grok_client,
                 output_root,
                 config,
                 paths,
                 max_parallel,
-                heartbeat,
                 logger,
-                skip_optional=True,
+                (processed, failed),
             )
+        except BatchRoundsExceeded as e:
+            # alerted with diagnostics: the book is incomplete - fail the phase so nothing
+            # downstream (dedup gate, Phase 3) runs on it
+            logger.error("[phase2] %s", e)
+            _write_phase_results(output_root, processed, failed, incomplete=str(e))
+            sys.exit(1)
 
-            heartbeat.stop()
-            logger.info(
-                "[phase2] Batch re-run complete: %d processed, %d failed",
-                processed,
-                failed,
-            )
-
-            # Source-section enrichment now runs with cached batch results available
-            # (grok_client is back in real-time mode), so the derive pass actually produces
-            # output in batch mode (it is a no-op during the collection phase above).
-            _run_source_section_enrichment(output_root, grok_client, logger)
-
-            # Second batch cycle: optional extractors
-            if any(
-                config.get(f, {}).get("enabled", False)
-                for f in [
-                    "weather",
-                    "equipment",
-                    "logistics",
-                    "casualties",
-                    "supplemental_material",
-                ]
-            ):
-                from src.utils.batch_api import BatchCollector
-
-                grok_client.batch_mode = True
-                grok_client._batch_collector = BatchCollector()
-                logger.info("\nCollecting optional extractor requests for batch...")
-
-                # Same scope as the guarded run — derive from parsed_files, not a
-                # whole-corpus rglob (keeps --book/--expected-count honest).
-                event_files = sorted(
-                    {
-                        pf.parent / pf.name.replace("-parsed.json", "-event.json")
-                        for pf in parsed_files
-                    }
-                )
-                event_files = [e for e in event_files if e.exists()]
-                for event_file in event_files:
-                    current_book.set(event_file.parent.name)
-                    parsed_file = event_file.parent / event_file.name.replace(
-                        "-event.json", "-parsed.json"
-                    )
-                    if not parsed_file.exists():
-                        parsed_file = None
-                    _extract_optional_entities(
-                        event_file,
-                        parsed_file,
-                        grok_client,
-                        paths,
-                        config,
-                        logger,
-                    )
-
-                batch_id2 = grok_client.submit_batch(
-                    batch_name=f"{batch_name}-optional"
-                )
-                if batch_id2:
-                    logger.info(
-                        "Optional batch complete! Re-running with cached results..."
-                    )
-                    grok_client.batch_mode = False
-                    for event_file in event_files:
-                        current_book.set(event_file.parent.name)
-                        parsed_file = event_file.parent / event_file.name.replace(
-                            "-event.json", "-parsed.json"
-                        )
-                        if not parsed_file.exists():
-                            parsed_file = None
-                        _extract_optional_entities(
-                            event_file,
-                            parsed_file,
-                            grok_client,
-                            paths,
-                            config,
-                            logger,
-                        )
-                else:
-                    grok_client.batch_mode = False
-                    logger.info("No optional batch requests (all cached)")
+    _run_post_extraction_steps(
+        base_dir, grok_client, paths, config, output_root, logger, processed, failed
+    )
 
     from src.utils.http_pool import close_session
 
@@ -1325,8 +1310,9 @@ def main():
     _write_phase_results(output_root, processed, failed)
 
 
-def _write_phase_results(output_root, processed, failed):
-    """Write phase results JSON for entrypoint to read."""
+def _write_phase_results(output_root, processed, failed, incomplete=""):
+    """Write phase results JSON for entrypoint to read. ``incomplete`` - why the run stopped
+    before finishing (the book must not be treated as done)."""
     logger = logging.getLogger(__name__)
     results_file = output_root / ".phase_results.json"
     entity_counts = {}
@@ -1353,10 +1339,13 @@ def _write_phase_results(output_root, processed, failed):
                 "processed": processed,
                 "failed": failed,
                 "entity_counts": entity_counts,
+                **({"incomplete": incomplete} if incomplete else {}),
             }
         ),
         encoding="utf-8",
     )
+    if incomplete:
+        return  # the run stopped before finishing: no end-of-phase verdicts on partial output
 
     # Sanity check: warn if all optional extractors produced 0 with >5 events
     optional_types = ["equipment", "weather", "logistics", "casualties"]
