@@ -40,8 +40,9 @@ def test_strong_name_match_still_reported_and_annotated():
 
 
 def test_coords_verified_detection():
-    assert fdp._coords_verified({"geocode_source": "nominatim"})
-    assert fdp._coords_verified({"enrichment_status": "geocoded"})
+    xy = {"coordinates": {"latitude": 1, "longitude": 2}}
+    assert fdp._coords_verified({**xy, "geocode_source": "nominatim"})
+    assert fdp._coords_verified({**xy, "enrichment_status": "geocoded"})
     assert fdp._coords_verified(
         {"coordinates": {"latitude": 1, "longitude": 2, "precision": "exact"}}
     )
@@ -49,6 +50,8 @@ def test_coords_verified_detection():
         {"coordinates": {"latitude": 1, "longitude": 2, **GUESS}}
     )
     assert not fdp._coords_verified({})
+    # a not-found geocode still records its source: no coordinates is nothing verified
+    assert not fdp._coords_verified({"geocode_source": "nominatim"})
 
 
 def test_run1_shapes_end_to_end(tmp_path):

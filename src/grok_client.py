@@ -94,6 +94,29 @@ def for_chapter_book(fn):
     return run
 
 
+# The first message of the chapter-entity requests (batch_parallel._build_source_block) starts with
+# this: shared by a chapter's dates/places/groups/people requests, so it is the cacheable prefix.
+SOURCE_TEXT_INTRO = "SOURCE TEXT."
+
+
+def _cache_routing_header(messages: list) -> Dict[str, str]:
+    """``x-grok-conv-id`` from a chapter-source first message (``SOURCE_TEXT_INTRO``): the
+    requests sharing it reach the same xAI server, where it is cached (xAI recommends the header;
+    without it a cache hit is left to chance). {} for any other request - a constant system prompt
+    shared by thousands of lookups must not pin them all to one server."""
+    import hashlib
+
+    first = messages[0] if messages else {}
+    if (
+        not isinstance(first, dict)
+        or first.get("role") != "system"
+        or not str(first.get("content", "")).startswith(SOURCE_TEXT_INTRO)
+    ):
+        return {}
+    digest = hashlib.sha256(str(first.get("content", "")).encode("utf-8")).hexdigest()
+    return {"x-grok-conv-id": f"src-{digest[:32]}"}
+
+
 @contextlib.contextmanager
 def book_scope(book: Optional[str]):
     """Run the block with ``current_book`` = ``book`` (no change when ``book`` is empty). The
@@ -1015,16 +1038,18 @@ class GrokClient:
                     d.error = error
                 break
 
-    def _validate_prompt(self, prompt: str) -> None:
-        """Validate prompt before sending to API."""
+    def _validate_prompt(
+        self, prompt: str, system_prompt: Optional[str] = None
+    ) -> None:
+        """Validate prompt before sending to API (the size cap counts the system message too: the
+        chapter-entity requests carry the chapter text there)."""
         import re
 
         if not prompt or not prompt.strip():
             raise ValueError("Empty prompt — nothing to send to API")
-        if len(prompt) > 500_000:
-            raise ValueError(
-                f"Prompt too large: {len(prompt)} chars (~{len(prompt)//4} tokens)"
-            )
+        size = len(prompt) + len(system_prompt or "")
+        if size > 500_000:
+            raise ValueError(f"Prompt too large: {size} chars (~{size//4} tokens)")
         # Detect unfilled template placeholders (e.g., {book}, {author})
         unfilled = re.findall(r"\{([a-z_]+)\}", prompt)
         if unfilled:
@@ -1091,21 +1116,28 @@ class GrokClient:
         logger.debug(f"  {preview}")
 
     def _log_token_usage(self, result: Dict[str, Any]) -> None:
-        """Log prompt/completion/total token counts from a response."""
+        """Log prompt/completion/total token counts from a response, and how many prompt tokens
+        xAI served from its prompt cache (``usage.prompt_tokens_details.cached_tokens``: billed
+        at the cached rate - the measure of the shared-first-message saving)."""
         usage = result.get("usage", {})
         if usage:
+            cached = (usage.get("prompt_tokens_details") or {}).get(
+                "cached_tokens", 0
+            ) or 0
             logger.info(
-                "API tokens: %d prompt, %d completion, %d total",
+                "API tokens: %d prompt (%d cached), %d completion, %d total",
                 usage.get("prompt_tokens", 0),
+                cached,
                 usage.get("completion_tokens", 0),
                 usage.get("total_tokens", 0),
                 extra={
                     "extra_fields": {
                         "event": "api_usage",
                         "prompt_tokens": usage.get("prompt_tokens", 0),
+                        "cached_prompt_tokens": cached,
                         "completion_tokens": usage.get("completion_tokens", 0),
                         "total_tokens": usage.get("total_tokens", 0),
-                        "model": self.model,
+                        "model": result.get("model") or self.model,
                     }
                 },
             )
@@ -1184,6 +1216,7 @@ class GrokClient:
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
+            **_cache_routing_header(messages),
         }
 
         from src.utils.batch_api import GROK_MAX_TOKENS
@@ -1249,7 +1282,7 @@ class GrokClient:
         """
         use_cache = use_cache and not _cache_globally_disabled()
         # Validate inputs before sending
-        self._validate_prompt(prompt)
+        self._validate_prompt(prompt, system_prompt)
 
         # Get cache for this type
         cache = self._get_cache(cache_type)

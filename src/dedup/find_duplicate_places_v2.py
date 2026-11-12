@@ -10,6 +10,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any, Dict, List
 
+from src.enrichment.places_geo import coords_verified as _coords_verified
 from src.utils.name_start import MIN_START_MATCH, distinctive_start, starts_match
 
 logger = logging.getLogger(__name__)
@@ -186,20 +187,6 @@ def _extract_nested_coords(data: dict) -> tuple:
 
 MAX_DISTANCE_KM = 20  # Places farther apart than this are NOT duplicates
 _SUPPRESSED_UNVERIFIED = [0]  # weak-rule pairs skipped for unverified coords (per run)
-
-
-def _coords_verified(data: dict) -> bool:
-    """True if a place's coordinates come from a real geocode (Phase 3) or are stated exact.
-
-    Phase-2 coordinates are the extraction LLM's GUESS (``precision: approximate`` and no
-    ``geocode_source``). Two guesses landing within 5 km says nothing about identity, so they must
-    not power the weak "nearby + partial name" rule (XChannel ch8: Merderet River vs
-    Ste. Mère-Eglise at 42% name similarity).
-    """
-    if data.get("geocode_source") or data.get("enrichment_status") == "geocoded":
-        return True
-    coords = data.get("coordinates")
-    return isinstance(coords, dict) and coords.get("precision") == "exact"
 
 
 def find_duplicate_places(places_dir: Path) -> List[Dict]:

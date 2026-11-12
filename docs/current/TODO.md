@@ -416,8 +416,14 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   (g) SILENT places shortfall, chapter 8 (rerun 2026-11-11): places extracted for sub-events 1-2
   only (10 refs; 0 in sub-events 3-12 although the text names Colleville 25x, St. Laurent 25x,
   Carentan 24x, Merderet 18x, Vierville 14x). Task log: `chapter8full-parsed.json: places=10`, no
-  warning, and the yield gate did not fire. Root-cause the places batch for long chapters, and add
-  a per-sub-event yield check (a sub-event with narrative text and 0 places/people is suspect).
+  warning, and the yield gate did not fire. ROOT CAUSE (2026-11-12): the places request asked the
+  model for coordinates (a geographic lookup, not reading); the same request without them answered
+  12/12 twice. FIXED: Phase 2 places carry no coordinates; Phase 3 geocodes the 215 places that held
+  Phase-2 guesses. OPEN: a per-sub-event coverage check on entity answers (re-ask the sub-events an
+  answer leaves out), and repair chapter 8 (re-ask its places).
+  (h) People recall varies run to run on the same chapter: chapter 8 people answers gave 55, 75,
+  76, 83, 84 mentions (2026-11-12 A/B). A coverage check does not catch it (the sub-events are
+  answered, just not fully). Options: a second "who did you miss" pass, or union two answers.
 - **[MED · DESIGN · owner 2026-11-08] Book naming: a WORK key + an EDITION key, so duplicate
   titles and editions of one work are told apart.** CONSTRAINT (owner 2026-11-11): slugs are
   IMMUTABLE (`.kiro/steering/architecture-decisions.md`, "Book identity") - this scheme applies to
