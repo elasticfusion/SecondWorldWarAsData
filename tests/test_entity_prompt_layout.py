@@ -1,6 +1,6 @@
-"""The chapter entity requests (groups) send the chapter text as their FIRST message,
-and their own instructions after it (places, dates and people: one request per
-sub-event, each with its sub-event's text first): xAI caches a
+"""Entity requests send the source text as their FIRST message and their own instructions after
+it. Places, dates, people and groups ask one sub-event at a time, each with its sub-event's text
+first - the same first message for all four, so xAI caches a
 request's leading messages (cached input $0.20 vs $1.25 / 1M tokens), routed by x-grok-conv-id.
 And Phase 2 places carry no coordinates (Phase 3 geocodes): asking for them was a guess stored
 with a made-up confidence, and the chapter-8 places answer stopped after 2 of 12 sub-events while
@@ -60,19 +60,25 @@ def _requests():
     return seen
 
 
-def test_the_chapter_requests_share_one_first_message():
-    reqs = _requests()
-    assert set(reqs) == {"dates", "places", "peoplegroups", "people"}
-    chapter_types = ("peoplegroups",)
-    assert all(len(reqs[t]) == 1 for t in chapter_types)
-    sources = {reqs[t][0][0] for t in chapter_types}
-    assert len(sources) == 1  # identical: the cacheable prefix
-    source = sources.pop()
+def test_a_multi_sub_event_request_sends_the_text_first_and_once():
+    """No core entity asks chapter-wide any more, but ``_batch_extract`` still takes several
+    sub-events (the per-sub-event helpers accept any event): text first, not repeated after.
+    """
+    seen = []
+
+    class Client:
+        def extract_json(self, prompt, system_prompt=None, **k):
+            seen.append((system_prompt, prompt))
+            raise gc.BatchModeCollecting("queued")
+
+    asyncio.run(
+        bp._extract_people_groups(EVENT, Client(), Path(tempfile.mkdtemp()), {})
+    )
+    ((source, prompt),) = seen
     assert "Force U was marshaled at Tor Bay." in source and "[S2]" in source
-    for t in chapter_types:
-        prompt = reqs[t][0][1]
-        assert "Tor Bay" not in prompt  # the chapter text is not repeated in the task
-        assert prompt.rstrip().endswith("answer for every one of them.")
+    assert "Tor Bay" not in prompt  # the chapter text is not repeated in the task
+    assert "these 2 sub-events" in prompt
+    assert prompt.rstrip().endswith("answer for every one of them.")
 
 
 @pytest.mark.parametrize(
@@ -81,13 +87,15 @@ def test_the_chapter_requests_share_one_first_message():
         ("places", "EVERY place named in this sub-event"),
         ("dates", "all dates and times from this sub-event"),
         ("people", "ALL people mentioned in this sub-event"),
+        ("peoplegroups", "EVERY military unit or group named in this sub-event"),
     ],
 )
 def test_entities_are_asked_one_sub_event_at_a_time(entity, phrase):
     """Chapter-wide, the same places request returned 42, 118 and 89 places on three runs; per
     sub-event, three runs returned 227, 226 and 226 (chapter 8, 2026-11-12). Dates: 74 mentions
     chapter-wide, 91 / 98 / 99 per sub-event. People: 78 chapter-wide, 105 / 103 / 102 per
-    sub-event - and chapter-wide named people the text does not ("Eugen König")."""
+    sub-event - and chapter-wide named people the text does not ("Eugen König"). Groups: 54
+    chapter-wide; per sub-event with every echelon named, 258 / 267 / 266."""
     reqs = _requests()[entity]
     assert len(reqs) == 2  # one per sub-event
     texts = [system for system, _ in reqs]
@@ -99,11 +107,21 @@ def test_entities_are_asked_one_sub_event_at_a_time(entity, phrase):
 
 
 def test_per_sub_event_requests_share_the_sub_event_first_message():
-    """Places, dates and people for one sub-event lead with the same text: one cacheable prefix."""
+    """All four entity types for one sub-event lead with the same text: one cacheable prefix."""
     reqs = _requests()
     firsts = sorted(s for s, _ in reqs["places"])
-    assert firsts == sorted(s for s, _ in reqs["dates"])
-    assert firsts == sorted(s for s, _ in reqs["people"])
+    for entity in ("dates", "people", "peoplegroups"):
+        assert firsts == sorted(s for s, _ in reqs[entity])
+
+
+def test_the_groups_prompt_asks_for_every_echelon_and_leaves_ships_out():
+    """Asked for 'division|corps|army' only, the model chose per run whether regiments,
+    battalions, army groups or British units counted (69-84 mentions, a different set each run);
+    named echelons, 258-267. Ships came in with 'naval force' - they are equipment."""
+    for _system, prompt in _requests()["peoplegroups"]:
+        assert "battalion" in prompt and "army group" in prompt and "British" in prompt
+        assert "ships are equipment" in prompt and "full designation" in prompt
+        assert "alpha-3" in prompt  # enrich_groups compares nationality as alpha-3
 
 
 def test_per_sub_event_results_are_merged_and_a_stop_ends_it():

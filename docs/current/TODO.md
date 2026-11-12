@@ -437,8 +437,16 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   knowledge, and once named a person the text never mentions ("Eugen König"). Surname-only and
   split records ("Bradley" / "Omar Bradley") are for entity resolution (the OOB spine), not the
   extraction prompt.
-  OPEN: move people_groups (and the optional extractors) to `_per_sub_event` too, then the same
-  3-run check. Until then people_groups keeps the chapter-wide cached prefix.
+  OPEN: move the optional extractors to `_per_sub_event` too (each with a 3-run check).
+  FIXED for people_groups (2026-11-12): chapter-wide 54 mentions; per sub-event with the old
+  prompt 78 / 69 / 84 - the prompt's 'division|corps|army' left the model to decide per run
+  whether regiments, battalions, army groups and British units counted. With every echelon and
+  nationality named, full designations asked for and ships left out (they are equipment):
+  258 / 267 / 266, 11/12 sub-events, 0 provenance gaps. All four core entity types now share each
+  sub-event's text as one cached first message.
+  OPEN (review 2026-11-12): group enrichment (`enrich_groups.enrich_all_groups`, not wired today)
+  has no specificity gate - with ~4x more, finer groups ("Group under Lt. X", "SHAEF staff",
+  companies) each would cost a Grok call. Gate it on a derivable unit_key before wiring it in.
   OPEN (pre-existing, review 2026-11-12): person enrichment (Grokipedia/Wikipedia fetches) runs
   synchronously inside the people index lock (`_batch_extract` -> `enrich_record`), so it blocks
   the event loop and serializes sub-events / chapters. Move it after the index write.

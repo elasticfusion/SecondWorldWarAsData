@@ -1487,6 +1487,12 @@ _GEO_TYPES = (
     "city|town|village|country|region|province|state|sea|ocean|river|lake|mountain|island|"
     "peninsula|continent|military_base|battlefield|fortification|bridge|port|airfield|other"
 )
+# Shapes the groups answer (the model reads every echelon as in scope); make_record does not store
+# it - mapping it to military_hierarchy would trip enrich_groups' echelon contradiction check.
+_UNIT_TYPES = (
+    "army_group|army|corps|division|brigade|regiment|battalion|company|group|task_force|"
+    "fleet|squadron|wing|headquarters|other"
+)
 
 
 async def extract_places_batch_async(
@@ -1549,17 +1555,44 @@ async def extract_people_groups_batch_async(
     output_root: Path,
     book_meta: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
-    """Extract people groups in batch."""
+    """Extract people groups one sub-event at a time (``_per_sub_event``)."""
+    return await _per_sub_event(
+        lambda one: _extract_people_groups(one, grok_client, output_root, book_meta),
+        event_data,
+        "people_groups",
+    )
+
+
+async def _extract_people_groups(
+    event_data: Dict[str, Any],
+    grok_client: GrokClient,
+    output_root: Path,
+    book_meta: Optional[Dict[str, str]],
+) -> Dict[str, Any]:
+    """One people-groups request for the sub-event(s) in ``event_data``."""
     from src.extraction.people_groups import _normalize_name
 
-    n = len(event_data.get("Event", {}).get("Sub-events", []))
+    what = _sub_events_phrase(event_data)
     return await _batch_extract(
         event_data,
         grok_client,
         output_root,
         entity_type="people_groups",
         cache_type="peoplegroups",
-        prompt_header=f'Extract military units/groups from these {n} sub-events. Return JSON:\n{{"groups": [{{"sub_event_id": "ID", "groups": [{{"name": "Unit Name", "type": "division|corps|army", "country": "USA|Germany", "context": "role in this sub-event", "original_text": "exact quote mentioning unit"}}]}}]}}\n\nSub-events:',
+        prompt_header=(
+            f"Extract EVERY military unit or group named in {what}, at every echelon - army "
+            "group, army, corps, division, brigade, regiment, battalion, company, task force, "
+            "naval force, air unit, staff or headquarters - and of every nationality (American, "
+            "British, Canadian, French, German, ...), even if named only once. Give each unit's "
+            "full designation as the passage makes it clear (a '2d Battalion' of the 16th "
+            "Infantry is '2d Battalion, 16th Infantry'). Individual ships are equipment, not "
+            "units: leave them out. Return JSON:\n"
+            f'{{"groups": [{{"sub_event_id": "ID", "groups": [{{"name": "Unit Name", "type": '
+            f'"{_UNIT_TYPES}", "country": "ISO 3166-1 alpha-3 (USA, GBR, CAN, FRA, DEU, ...) or '
+            'null", "context": '
+            '"role in this sub-event", "original_text": "exact quote mentioning unit"}]}]}'
+            "\n\nSub-events:"
+        ),
         response_key="groups",
         inner_key="groups",
         make_key=lambda obj: _normalize_name(
