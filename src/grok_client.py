@@ -361,6 +361,12 @@ class GrokClient:
         self._cache_lock = threading.Lock()
         # (cache_type, cache_key) -> Event: one live request per key at a time (single_flight)
         self._in_flight: Dict[Tuple[str, str], threading.Event] = {}
+        self._flight_shared = (
+            0  # waiters answered by another thread's identical request
+        )
+        self._flight_retried = (
+            0  # waiters that asked themselves (the first request failed)
+        )
         self.timeout = 600.0  # 10 minutes for large chapters
         self.debug_msg_chars = config.get("logging", {}).get(
             "debug_message_preview_chars", 500
@@ -458,6 +464,13 @@ class GrokClient:
             self._cache_hits,
             self._cache_misses,
             rate,
+        )
+        # identical concurrent requests answered by one call (single_flight); a waiter whose
+        # first request failed asked itself (asked_itself) - both are counted, never alerted
+        logger.info(
+            "OBSERV grok.single_flight shared=%d asked_itself=%d",
+            getattr(self, "_flight_shared", 0),
+            getattr(self, "_flight_retried", 0),
         )
         json_total = (
             self._json_clean
@@ -1439,7 +1452,11 @@ class GrokClient:
         if waiting_on is not None:
             waiting_on.wait(timeout=self.timeout * 2)
             if cache_key in cache:
+                with self._cache_lock:
+                    self._flight_shared += 1
                 return self._handle_cache_hit(cache, cache_key, cache_type)
+            with self._cache_lock:
+                self._flight_retried += 1
             return ask()
         try:
             if cache_key in cache:  # answered between the miss and the claim

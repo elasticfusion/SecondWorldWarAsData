@@ -83,20 +83,22 @@ _current_resume_batch = ""
 def _requeue_interrupted_resume() -> None:
     """A resumed Phase 2 run was stopped mid-run: its batch's answers are in the cache, but the
     job is marked retrieved - put it back to ``ready`` so the poller retrieves it again and a new
-    task resumes the book (after the poller's retrieve claim lapses). Alerted."""
+    task resumes the book (after the poller's retrieve claim lapses, up to 6 h). Alerted (Slack):
+    the book is delayed."""
     if not _current_resume_batch:
         return
     try:
         from src.utils.job_queue import update_job_status
-        from src.utils.observe import observe_warn
+        from src.utils.observe import observe_error
 
         update_job_status(_current_resume_batch, "ready")
-        observe_warn(
+        observe_error(
             "batch",
             "resume_interrupted",
             batch=_current_resume_batch,
             book=os.environ.get("BOOK_NAME", ""),
-            note="the task resuming this book was stopped: the job is ready again for the poller",
+            note="the task resuming this book was stopped: the job is ready again; the poller "
+            "resumes it once its retrieve claim lapses (up to 6 h)",
         )
     except Exception as e:  # noqa: BLE001 - the emergency path must not raise
         logger.error("Could not re-queue batch %s: %s", _current_resume_batch, e)
@@ -107,9 +109,10 @@ def _handle_sigterm(_signum, _frame):
     logger.warning("SIGTERM received — performing emergency S3 sync")
     try:
         _final_sync(_current_phase_script)
-        _requeue_interrupted_resume()
         _remove_lock(_current_phase_script)
         _release_nat_lease()
+        # last: it publishes an alert, which must not eat the window the lock + lease need
+        _requeue_interrupted_resume()
         logger.info("Emergency sync complete — exiting cleanly")
     except Exception as e:
         logger.error("Emergency sync failed: %s", e)
@@ -4216,9 +4219,45 @@ def _entities_materialized_in_task() -> bool:
         return False
 
 
-def _enqueue_from_metrics(phase_script: str, batch_id: str = "") -> bool:
+def _alert_handed_off(batch_id: str, batch_name: str) -> None:
+    """Operator alert (phase2-complete topic: email + Slack) that a Phase 2 batch round went to
+    the poller: which book and round, and what happens next. Informational, not an error.
+    """
+    from src.utils.batch_api import in_task_wait_minutes
+    from src.utils.batch_rounds import round_of
+    from src.utils.observe import publish_alert
+
+    book = os.environ.get("BOOK_NAME", "") or "?"
+    rnd = round_of(batch_name)
+    try:
+        from src.utils.config import load_config
+
+        wait = in_task_wait_minutes(load_config())
+    except Exception:  # noqa: BLE001 - the alert must not fail on config
+        wait = in_task_wait_minutes()
+    publish_alert(
+        f"WWII Pipeline: Phase 2 round {rnd or '?'} handed to the poller ({book})"[
+            :100
+        ],
+        (
+            f"Phase 2 for {book}: batch round {rnd or '?'} (batch {batch_id}) was not answered "
+            f"within the {wait:.0f}-minute in-task wait, so this task ended.\n\n"
+            "Next: the batch poller checks it every poll interval; when Grok has answered it, a "
+            "retrieve task loads the answers and resumes the book from the next round (same "
+            "wait rule). Nothing was retried live.\n\n"
+            f"Batch: {batch_name or batch_id}\n"
+            "Logs: OBSERV batch.handed_off / batch.round lines of this task; batch_stats for "
+            "the batch's progress."
+        ),
+    )
+
+
+def _enqueue_from_metrics(
+    phase_script: str, batch_id: str = "", notify: bool = True
+) -> bool:
     """Find the latest batch metrics (or those of ``batch_id``) and enqueue the job. Returns True
-    if a batch was enqueued."""
+    if a batch was enqueued. ``notify`` - send the "batch submitted" notification for a pending
+    job (Phase 2's hand-off sends its own alert instead)."""
     metrics_dir = WORKDIR / "output" / "metrics"
     if not metrics_dir.exists():
         logger.warning("No metrics dir — batch may not have submitted")
@@ -4328,7 +4367,7 @@ def _enqueue_from_metrics(phase_script: str, batch_id: str = "") -> bool:
         request_count,
         status=status,
     )
-    if status == "pending":
+    if status == "pending" and notify:
         _notify_batch_submitted(phase, book, batch_id, request_count)
     return True
 
@@ -4378,9 +4417,10 @@ def _settle_phase2_task(
             "retrieved" if returncode in (0, HANDED_OFF_EXIT) else "failed",
         )
     if returncode == HANDED_OFF_EXIT:
-        pending = str(_phase_results().get("pending_batch") or "")
+        results = _phase_results()
+        pending = str(results.get("pending_batch") or "")
         enqueued = bool(pending) and _enqueue_from_metrics(
-            phase_script, batch_id=pending
+            phase_script, batch_id=pending, notify=False
         )
         _final_sync(phase_script)
         _stop_openserp_if_running(phase_script)
@@ -4395,6 +4435,10 @@ def _settle_phase2_task(
                 note="a batch round was handed off but not enqueued: nothing will resume the book",
             )
             sys.exit(1)
+        try:
+            _alert_handed_off(pending, str(results.get("pending_batch_name") or ""))
+        except Exception as e:  # noqa: BLE001 - advisory: the batch is enqueued already
+            logger.warning("Hand-off alert not sent: %s", e)
         logger.info("Phase 2 handed batch %s to the poller; this task ends.", pending)
         return
     if returncode != 0:

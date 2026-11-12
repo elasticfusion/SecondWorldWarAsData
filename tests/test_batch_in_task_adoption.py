@@ -178,7 +178,7 @@ def test_a_resumed_run_stopped_mid_run_goes_back_to_the_poller(ep, monkeypatch):
     monkeypatch.setattr(ep, "_current_resume_batch", "b-3")
     with (
         mock.patch("src.utils.job_queue.update_job_status") as status,
-        mock.patch("src.utils.observe.observe_warn") as warn,
+        mock.patch("src.utils.observe.observe_error") as warn,
     ):
         ep._requeue_interrupted_resume()
     status.assert_called_once_with("b-3", "ready")
@@ -209,3 +209,121 @@ def test_the_submitted_ids_fall_back_to_the_dynamo_metrics_copy(ep):
             ("k2", "dates"),
         ]
     table.get_item.assert_called_once_with(Key={"cache_key": "metrics#b-4"})
+
+
+# --- observability --------------------------------------------------------------------------
+
+
+def test_a_hand_off_alerts_the_book_and_round_on_the_standard_topic(ep, monkeypatch):
+    monkeypatch.setenv("BOOK_NAME", "USA-E-XChannel")
+    monkeypatch.delenv("BATCH_IN_TASK_WAIT_MINUTES", raising=False)
+    with mock.patch("src.utils.observe.publish_alert") as alert:
+        ep._alert_handed_off("b-5", "phase2-USA-E-XChannel-15files-r3-812reqs")
+    subject, text = alert.call_args.args
+    assert "round 3 handed to the poller" in subject and "USA-E-XChannel" in subject
+    assert "b-5" in text and "Nothing was retried live" in text
+
+
+def test_the_hand_off_does_not_also_send_the_old_submitted_notice(
+    ep, tmp_path, monkeypatch
+):
+    import json as _json
+
+    monkeypatch.setattr(ep, "WORKDIR", tmp_path)
+    (tmp_path / "output" / "metrics").mkdir(parents=True)
+    (tmp_path / "output" / "metrics" / "batch_b-6_1.json").write_text(
+        _json.dumps(
+            {"batch_id": "b-6", "total_requests": 3, "batch_name": "n-r2-3reqs"}
+        )
+    )
+    with (
+        mock.patch.object(ep, "_enqueue_or_alert"),
+        mock.patch.object(ep, "_notify_batch_submitted") as notice,
+        mock.patch("src.utils.job_queue.get_active_jobs", return_value=[]),
+        mock.patch("src.utils.job_queue._get_table"),
+    ):
+        assert ep._enqueue_from_metrics(
+            "phase2_extract.py", batch_id="b-6", notify=False
+        )
+    notice.assert_not_called()
+
+
+def test_a_finished_book_logs_one_rounds_summary():
+    from src.utils import batch_rounds as br
+    from src.utils.batch_api import BatchRequest
+
+    def req(rid, kind):
+        return BatchRequest(rid, [], "m", 0.1, kind)
+
+    rounds = br.BatchRounds(scope="B", first=3)
+    with mock.patch.object(br, "observe"):
+        rounds.admit([req("a", "events"), req("b", "places")])
+        rounds.admit([req("c", "equipment_refine")])
+    with mock.patch.object(br, "observe") as obs:
+        rounds.complete(125.0)
+    kw = obs.call_args.kwargs
+    assert obs.call_args.args[1] == "rounds_complete"
+    assert (kw["rounds"], kw["this_task_rounds"], kw["this_task_requests"]) == (4, 2, 3)
+    assert kw["resumed"] is True and kw["this_task_minutes"] == 2.1
+
+
+def test_shared_requests_are_counted_and_logged(tmp_path, monkeypatch, caplog):
+    import json as _json
+    import threading
+    import time as _time
+
+    import src.grok_client as gc
+    from src.utils.cache_backend import DiskCacheBackend
+
+    monkeypatch.setenv("GROK_API_KEY", "test-not-a-key")
+    token = gc.current_book.set(None)
+    try:
+        client = gc.GrokClient(DiskCacheBackend(tmp_path / "c"))
+
+        def api(*a, **k):
+            _time.sleep(0.2)
+            return {"choices": [{"message": {"content": _json.dumps({"ok": 1})}}]}
+
+        start = threading.Barrier(3)
+
+        def ask():
+            start.wait()
+            client.extract_json("Same?", cache_type="equipment_disambiguation")
+
+        with mock.patch.object(client, "_call_api", side_effect=api):
+            threads = [threading.Thread(target=ask) for _ in range(3)]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join(timeout=10)
+        assert client._flight_shared == 2
+        with caplog.at_level("INFO"):
+            client.log_cache_stats()
+        assert "OBSERV grok.single_flight shared=2 asked_itself=0" in caplog.text
+    finally:
+        gc.current_book.reset(token)
+
+
+def test_the_spot_handler_requeues_last_after_the_lock_and_lease(ep, monkeypatch):
+    order = []
+    for name in (
+        "_final_sync",
+        "_remove_lock",
+        "_release_nat_lease",
+        "_requeue_interrupted_resume",
+    ):
+        monkeypatch.setattr(ep, name, lambda *a, _n=name: order.append(_n))
+    with pytest.raises(SystemExit):
+        ep._handle_sigterm(15, None)
+    assert order[-1] == "_requeue_interrupted_resume"
+    assert order.index("_remove_lock") < order.index("_requeue_interrupted_resume")
+
+
+def test_alerts_publish_with_short_timeouts(monkeypatch):
+    from src.utils import observe
+
+    monkeypatch.setenv("NOTIFICATION_TOPIC_ARN", "arn:aws:sns:us-east-1:1:t")
+    with mock.patch("boto3.client") as client:
+        assert observe.publish_alert("s", "m") is True
+    cfg = client.call_args.kwargs["config"]
+    assert cfg.connect_timeout == 3 and cfg.read_timeout == 5

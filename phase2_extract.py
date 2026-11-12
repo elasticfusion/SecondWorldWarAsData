@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import sys
+import time
 import threading
 from pathlib import Path
 
@@ -999,6 +1000,7 @@ def _run_batch_rounds(
         first=first_round_from_env(),
     )
     wait_minutes = in_task_wait_minutes(config)
+    started = time.monotonic()
     processed, failed = counts
     while grok_client._batch_collector and len(grok_client._batch_collector) > 0:
         queued = list(grok_client._batch_collector.requests)
@@ -1043,6 +1045,7 @@ def _run_batch_rounds(
             )
         finally:
             heartbeat.stop()
+    rounds.complete(time.monotonic() - started)
     retried, retry_failed = _finish_after_rounds(
         parsed_files, grok_client, logger, rounds.count
     )
@@ -1093,7 +1096,13 @@ def _run_batch_rounds_or_exit(
         )
     except BatchPending as e:
         logger.info("[phase2] %s: handed to the poller", e)
-        _write_phase_results(output_root, processed, failed, pending_batch=e.batch_id)
+        _write_phase_results(
+            output_root,
+            processed,
+            failed,
+            pending_batch=e.batch_id,
+            pending_batch_name=e.batch_name,
+        )
         sys.exit(HANDED_OFF_EXIT)
     except BatchRoundsExceeded as e:
         logger.error("[phase2] %s", e)
@@ -1353,7 +1362,12 @@ def main():
 
 
 def _write_phase_results(
-    output_root, processed, failed, incomplete="", pending_batch=""
+    output_root,
+    processed,
+    failed,
+    incomplete="",
+    pending_batch="",
+    pending_batch_name="",
 ):
     """Write phase results JSON for entrypoint to read. ``incomplete`` - why the run stopped
     before finishing (the book must not be treated as done); ``pending_batch`` - the batch handed
@@ -1386,6 +1400,11 @@ def _write_phase_results(
                 "entity_counts": entity_counts,
                 **({"incomplete": incomplete} if incomplete else {}),
                 **({"pending_batch": pending_batch} if pending_batch else {}),
+                **(
+                    {"pending_batch_name": pending_batch_name}
+                    if pending_batch_name
+                    else {}
+                ),
             }
         ),
         encoding="utf-8",

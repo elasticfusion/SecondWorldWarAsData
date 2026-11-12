@@ -50,12 +50,13 @@ def _metrics(ep, batch_id, mtime, answered=0):
 
 
 def test_a_handed_off_round_enqueues_that_batch_and_ends(ep):
-    _results(ep, pending_batch="new")
+    _results(ep, pending_batch="new", pending_batch_name="phase2-B-1files-r2-new")
     _metrics(ep, "new", 1000)
     _metrics(ep, "older", 2000)  # newer file, earlier round (downloaded from S3)
     with (
         mock.patch.object(ep, "_enqueue_or_alert") as enqueue,
-        mock.patch.object(ep, "_notify_batch_submitted"),
+        mock.patch.object(ep, "_notify_batch_submitted") as old_notice,
+        mock.patch.object(ep, "_alert_handed_off") as alert,
         mock.patch("src.utils.job_queue.update_job_status") as status,
         mock.patch("src.utils.job_queue.get_active_jobs", return_value=[]),
         mock.patch("src.utils.job_queue._get_table"),
@@ -64,8 +65,22 @@ def test_a_handed_off_round_enqueues_that_batch_and_ends(ep):
     assert enqueue.call_args.args[0] == "new"
     assert enqueue.call_args.kwargs["status"] == "pending"
     assert enqueue.call_args.args[3] == "phase2-B-1files-r2-new"  # the round travels on
+    alert.assert_called_once_with("new", "phase2-B-1files-r2-new")  # standard topic
+    old_notice.assert_not_called()  # not also the old "batch submitted" notice
     status.assert_called_once_with("prev", "retrieved")
     ep._post_process.assert_not_called()
+
+
+def test_a_failing_hand_off_alert_does_not_fail_the_settle(ep):
+    _results(ep, pending_batch="new")
+    _metrics(ep, "new", 1000)
+    with (
+        mock.patch.object(ep, "_enqueue_or_alert"),
+        mock.patch.object(ep, "_alert_handed_off", side_effect=RuntimeError("sns")),
+        mock.patch("src.utils.job_queue.get_active_jobs", return_value=[]),
+        mock.patch("src.utils.job_queue._get_table"),
+    ):
+        ep._settle_phase2_task("phase2_extract.py", 75)  # no SystemExit
 
 
 def test_a_hand_off_with_nothing_to_enqueue_fails_loudly(ep):

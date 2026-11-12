@@ -110,6 +110,24 @@ class BatchRounds:
         self.alert(client)
         return False
 
+    def complete(self, seconds: float) -> None:
+        """The book's rounds are done (a pass queued nothing): one summary line - the book's
+        round count (rounds of earlier tasks included), this task's rounds, requests and time.
+        """
+        observe(
+            "batch",
+            "rounds_complete",
+            books=self.scope,
+            rounds=self.count,
+            this_task_rounds=len(self.rounds),
+            this_task_requests=sum(sum(r.by_kind.values()) for r in self.rounds),
+            this_task_by_kind=_compact(
+                sum((Counter(r.by_kind) for r in self.rounds), Counter())
+            ),
+            this_task_minutes=round(seconds / 60, 1),
+            resumed=self.first > 1,
+        )
+
     def repeats(self) -> Set[str]:
         """Keys queued this round that the previous round already submitted (and answered)."""
         if len(self.rounds) < 2:

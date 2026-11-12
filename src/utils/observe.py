@@ -113,13 +113,17 @@ def publish_alert(
         return False
     try:
         import boto3  # lazy: keep boto3 out of the hot path / local imports
+        from botocore.config import Config
 
         region = (
             region
             or os.getenv("AWS_REGION")
             or os.getenv("AWS_DEFAULT_REGION", "us-east-1")
         )
-        boto3.client("sns", region_name=region).publish(
+        # short timeouts, one attempt: an alert must never hold up the pipeline (e.g. a
+        # spot-termination handler with a 30 s window)
+        quick = Config(connect_timeout=3, read_timeout=5, retries={"max_attempts": 1})
+        boto3.client("sns", region_name=region, config=quick).publish(
             TopicArn=topic, Subject=subject[:100], Message=message
         )
         return True
