@@ -31,6 +31,45 @@ class BatchSubmissionError(RuntimeError):
     and had per-request errors. Fail fast; do not poll for hours."""
 
 
+class BatchPending(Exception):
+    """A submitted batch was not answered within the in-task wait: the run hands it to the
+    poller (its metrics are saved; nothing is retried live) and stops."""
+
+    def __init__(self, batch_id: str, batch_name: str = ""):
+        super().__init__(f"batch {batch_id} still pending after the in-task wait")
+        self.batch_id, self.batch_name = batch_id, batch_name
+
+
+def in_task_wait_minutes(config: Optional[Dict[str, Any]] = None) -> float:
+    """How long a task waits for one batch round before handing it to the poller:
+    ``BATCH_IN_TASK_WAIT_MINUTES`` (env, e.g. shorter for tests), else
+    ``batch.in_task_wait_minutes``, else 90."""
+    import os as _os
+
+    raw = _os.environ.get("BATCH_IN_TASK_WAIT_MINUTES") or (
+        ((config or {}).get("batch") or {}).get("in_task_wait_minutes")
+    )
+    try:
+        minutes = float(raw) if raw not in (None, "") else DEFAULT_IN_TASK_WAIT_MINUTES
+    except (TypeError, ValueError):
+        logger.warning("OBSERV batch.wait_config_invalid value=%r: using default", raw)
+        minutes = DEFAULT_IN_TASK_WAIT_MINUTES
+    if minutes > MAX_IN_TASK_WAIT_MINUTES:
+        # the poller adopts an in_task batch after BATCH_IN_TASK_ADOPT_SECONDS (2 h): a longer
+        # wait would let it resume the book while this task still waits on it
+        logger.warning(
+            "OBSERV batch.wait_clamped value=%s max=%s (keep it below the poller's adopt age)",
+            minutes,
+            MAX_IN_TASK_WAIT_MINUTES,
+        )
+        minutes = MAX_IN_TASK_WAIT_MINUTES
+    return max(minutes, 1.0)
+
+
+DEFAULT_IN_TASK_WAIT_MINUTES = 90.0
+MAX_IN_TASK_WAIT_MINUTES = 100.0  # < the poller's 2 h in_task adopt age, with margin
+
+
 @dataclass
 class BatchResult:
     """Result for a single request in a batch."""
@@ -170,6 +209,9 @@ class BatchMetrics:  # pylint: disable=too-many-instance-attributes
     """Metrics collected from a batch run."""
 
     batch_id: str = ""
+    batch_name: str = (
+        ""  # carries the round ("-r<n>-"): a resumed run continues the count
+    )
     total_requests: int = 0
     api_successes: int = 0
     api_errors: int = 0
@@ -434,10 +476,11 @@ def poll_batch(
     api_key: str,
     batch_id: str,
     interval: int = 30,
-    max_hours: int = 24,
+    max_hours: float = 24,
     submitted_count: int = 0,
 ) -> Dict[str, Any]:
-    """Poll until batch completes. Returns final batch state."""
+    """Poll until batch completes. Returns final batch state (``_timed_out`` when ``max_hours``
+    ran out first)."""
     headers = {"Authorization": f"Bearer {api_key}"}
     start = time.monotonic()
     consecutive_errors = 0
@@ -516,7 +559,8 @@ def poll_batch(
             )
             batch["_poll_seconds"] = time.monotonic() - start
             batch["_timed_out"] = True
-            batch_stats.record_outcome(batch_id, "timeout")
+            # not a failure: the caller hands the batch to the poller (BatchPending)
+            batch_stats.record_outcome(batch_id, "handed_off")
             return batch
 
         time.sleep(interval)

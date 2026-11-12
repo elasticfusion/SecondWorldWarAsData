@@ -28,6 +28,10 @@ NOTIFICATION_TOPIC_ARN = os.getenv("NOTIFICATION_TOPIC_ARN", "")
 # A completed batch with an error fraction >= this % triggers an operator alert (the batch still
 # proceeds on its successful fraction, but the lost fraction must not vanish silently).
 _PARTIAL_FAILURE_ALERT_PCT = float(os.getenv("BATCH_PARTIAL_FAILURE_ALERT_PCT", "10"))
+# An "in_task" job is a batch a running task waits for (up to batch.in_task_wait_minutes, 90).
+# Older than this, the task died during its wait (spot reclaim): adopt the batch as pending.
+# Must stay above the in-task wait.
+_IN_TASK_ADOPT_S = int(os.getenv("BATCH_IN_TASK_ADOPT_SECONDS", str(2 * 3600)))
 
 
 def handler(event, _context):
@@ -169,16 +173,19 @@ def _get_api_key() -> str:
 
 
 def _get_pending_jobs() -> list:
-    """Scan DynamoDB for pending or ready batch jobs."""
+    """Scan DynamoDB for pending or ready batch jobs, and adopt orphaned in-task ones."""
     table = boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE)
     items = []
     kwargs = {
-        "FilterExpression": "begins_with(cache_key, :prefix) AND #s IN (:pending, :ready)",
+        "FilterExpression": (
+            "begins_with(cache_key, :prefix) AND #s IN (:pending, :ready, :in_task)"
+        ),
         "ExpressionAttributeNames": {"#s": "status"},
         "ExpressionAttributeValues": {
             ":prefix": "batch_job#",
             ":pending": "pending",
             ":ready": "ready",
+            ":in_task": "in_task",
         },
     }
     while True:
@@ -187,7 +194,44 @@ def _get_pending_jobs() -> list:
         if "LastEvaluatedKey" not in resp:
             break
         kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
-    return items
+    return [job for job in items if _pollable(job, table)]
+
+
+def _pollable(job: dict, table: Any) -> bool:
+    """pending / ready jobs are polled. An in_task job is left to the task waiting for it -
+    unless it is older than _IN_TASK_ADOPT_S (that task died during its wait): then it is adopted
+    as pending (alerted) so its answers are retrieved, not paid for and lost."""
+    import time
+
+    if job.get("status") != "in_task":
+        return True
+    age = int(time.time()) - int(job.get("submitted_at", 0) or 0)
+    if age < _IN_TASK_ADOPT_S:
+        return False
+    try:
+        table.update_item(
+            Key={"cache_key": job["cache_key"]},
+            UpdateExpression="SET #s = :pending",
+            ConditionExpression="#s = :in_task",
+            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeValues={":pending": "pending", ":in_task": "in_task"},
+        )
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - conditional miss: the task settled it meanwhile
+        logger.info("in_task job %s not adopted: %s", job.get("batch_id"), e)
+        return False
+    observe_error(
+        "batch",
+        "in_task_adopted",
+        batch=job.get("batch_id", ""),
+        book=job.get("book", ""),
+        age_min=age // 60,
+        note="the task waiting for this batch ended without settling it (e.g. spot reclaim): "
+        "the poller retrieves it and resumes the book",
+    )
+    job["status"] = "pending"
+    return True
 
 
 def _check_batch_status(api_key: str, batch_id: str, submitted_at: int = 0) -> str:

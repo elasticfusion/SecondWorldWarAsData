@@ -75,6 +75,31 @@ _CACHE_BOOKS_DIR = Path("/app/cache/api/books")
 
 # Global state for SIGTERM handler
 _current_phase_script = ""
+# The batch a resumed Phase 2 run (retrieve task) was started from: marked retrieved before the
+# run, so a reclaim mid-run must hand it back to the poller (see _handle_sigterm)
+_current_resume_batch = ""
+
+
+def _requeue_interrupted_resume() -> None:
+    """A resumed Phase 2 run was stopped mid-run: its batch's answers are in the cache, but the
+    job is marked retrieved - put it back to ``ready`` so the poller retrieves it again and a new
+    task resumes the book (after the poller's retrieve claim lapses). Alerted."""
+    if not _current_resume_batch:
+        return
+    try:
+        from src.utils.job_queue import update_job_status
+        from src.utils.observe import observe_warn
+
+        update_job_status(_current_resume_batch, "ready")
+        observe_warn(
+            "batch",
+            "resume_interrupted",
+            batch=_current_resume_batch,
+            book=os.environ.get("BOOK_NAME", ""),
+            note="the task resuming this book was stopped: the job is ready again for the poller",
+        )
+    except Exception as e:  # noqa: BLE001 - the emergency path must not raise
+        logger.error("Could not re-queue batch %s: %s", _current_resume_batch, e)
 
 
 def _handle_sigterm(_signum, _frame):
@@ -82,6 +107,7 @@ def _handle_sigterm(_signum, _frame):
     logger.warning("SIGTERM received — performing emergency S3 sync")
     try:
         _final_sync(_current_phase_script)
+        _requeue_interrupted_resume()
         _remove_lock(_current_phase_script)
         _release_nat_lease()
         logger.info("Emergency sync complete — exiting cleanly")
@@ -4094,6 +4120,12 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     _batch_mod.poll_batch = _orig_poll
     _batch_mod.retrieve_results = _orig_retrieve
 
+    if "phase2" in phase_script:
+        # Phase 2 runs its batch ROUNDS in the child, each waiting up to batch.in_task_wait_minutes
+        # (the stubs above do not reach the child process): settle from its exit status.
+        _settle_phase2_task(phase_script, result.returncode)
+        return
+
     # Enqueue the batch job (returns False if no batch was actually submitted)
     logger.info("[step] %s: enqueueing batch job", phase_name)
     batch_enqueued = _enqueue_from_metrics(phase_script)
@@ -4184,16 +4216,23 @@ def _entities_materialized_in_task() -> bool:
         return False
 
 
-def _enqueue_from_metrics(phase_script: str) -> bool:
-    """Find the latest batch metrics and enqueue the job. Returns True if a batch was enqueued."""
+def _enqueue_from_metrics(phase_script: str, batch_id: str = "") -> bool:
+    """Find the latest batch metrics (or those of ``batch_id``) and enqueue the job. Returns True
+    if a batch was enqueued."""
     metrics_dir = WORKDIR / "output" / "metrics"
     if not metrics_dir.exists():
         logger.warning("No metrics dir — batch may not have submitted")
         return False
 
     files = sorted(metrics_dir.glob("batch_*.json"), key=lambda f: f.stat().st_mtime)
+    if batch_id:
+        # a resumed task also holds the metrics of earlier rounds (downloaded from S3): select
+        # the handed-off batch itself, never "the newest file"
+        files = [f for f in files if f.name.startswith(f"batch_{batch_id}_")]
     if not files:
-        logger.warning("No batch metrics files found")
+        logger.warning(
+            "No batch metrics files found%s", f" for {batch_id}" if batch_id else ""
+        )
         return False
 
     with open(files[-1]) as f:
@@ -4307,6 +4346,66 @@ def _retrieved_in_task(metrics: dict) -> bool:
     total = int(metrics.get("total_requests", 0) or 0)
     ok = int(metrics.get("api_successes", 0) or 0)
     return total > 0 and ok > 0 and _answered(metrics) >= total
+
+
+def _phase_results() -> dict:
+    """The phase's ``.phase_results.json`` (empty when missing or unreadable)."""
+    try:
+        return json.loads((WORKDIR / "output" / ".phase_results.json").read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def _settle_phase2_task(
+    phase_script: str, returncode: int, retrieved_batch: str = ""
+) -> None:
+    """After a Phase 2 run (submit-only task, or a resumed retrieve task), from its exit status:
+
+    - HANDED_OFF_EXIT (75): a batch round was not answered within the in-task wait: enqueue THAT
+      batch (``pending_batch``) for the poller, which resumes the book in a new task; no post-
+      processing yet;
+    - 0: the book is finished (every round answered): post-process (dedup gate, notify, Phase 3);
+    - otherwise (incl. the round cap, exit 1): failed - nothing enqueued, no post-processing.
+
+    ``retrieved_batch`` - the batch this task resumed from: recorded as retrieved first (so the
+    enqueue's duplicate guard does not see it as still pending)."""
+    from src.utils.batch_rounds import HANDED_OFF_EXIT
+    from src.utils.job_queue import update_job_status
+
+    if retrieved_batch:
+        update_job_status(
+            retrieved_batch,
+            "retrieved" if returncode in (0, HANDED_OFF_EXIT) else "failed",
+        )
+    if returncode == HANDED_OFF_EXIT:
+        pending = str(_phase_results().get("pending_batch") or "")
+        enqueued = bool(pending) and _enqueue_from_metrics(
+            phase_script, batch_id=pending
+        )
+        _final_sync(phase_script)
+        _stop_openserp_if_running(phase_script)
+        if not enqueued:
+            from src.utils.observe import observe_error
+
+            observe_error(
+                "batch",
+                "handoff_not_enqueued",
+                batch=pending or "?",
+                book=os.environ.get("BOOK_NAME", ""),
+                note="a batch round was handed off but not enqueued: nothing will resume the book",
+            )
+            sys.exit(1)
+        logger.info("Phase 2 handed batch %s to the poller; this task ends.", pending)
+        return
+    if returncode != 0:
+        _final_sync_failed_phase(phase_script)
+        _audit_failed_phase2(phase_script, returncode)
+        logger.error("Phase 2 exited with code %d", returncode)
+        sys.exit(returncode)
+    _final_sync(phase_script)
+    _stop_openserp_if_running(phase_script)
+    _post_process(phase_script, os.environ.copy())
+    logger.info("Phase 2 complete in this task (every batch round answered).")
 
 
 def _enqueue_or_alert(
@@ -4488,16 +4587,59 @@ def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
     return result.mapped
 
 
-def _retrieve_rerun_env(phase_script: str) -> dict:
-    """Environment for the retrieve re-run, which must be SYNCHRONOUS (it reads the cache the
-    batch results populated). BATCH_PHASE2=true in the task env would override the dropped
-    --batch (phase2_extract._resolve_batch_mode: env wins) and re-queue every cache miss into a
-    NEW batch instead of calling the API, so it is removed."""
+def _retrieve_rerun_env(phase_script: str, batch_name: str = "") -> dict:
+    """Environment for the retrieve re-run (it reads the cache the batch results populated).
+
+    Phase 2 RESUMES its batch rounds: batch mode stays on (the next dependent stage is the next
+    round, each waiting up to batch.in_task_wait_minutes) and ``BATCH_ROUND_START`` continues the
+    book's round count from the retrieved batch's round, so the cap counts every round.
+
+    Other phases re-run SYNCHRONOUSLY: BATCH_PHASE2=true in the task env would override the
+    dropped --batch (phase2_extract._resolve_batch_mode: env wins) and re-queue every cache miss
+    into a NEW batch instead of calling the API, so it is removed."""
     env = os.environ.copy()
     env["SKIP_RETRY"] = "1"
     env["PIPELINE_PHASE"] = Path(phase_script).stem
+    if "phase2" in phase_script:
+        from src.utils.batch_rounds import round_of
+
+        env["BATCH_ROUND_START"] = str(round_of(batch_name) + 1)
+        return env
     env.pop("BATCH_PHASE2", None)
     return env
+
+
+def _submitted_from_dynamo_metrics(batch_id: str) -> list:
+    """The batch's submitted (request_id, cache_type) pairs from its DynamoDB ``metrics#<id>``
+    copy (``grok_client._save_metrics``). For a task killed right after submitting, before its
+    metrics file reached S3 (the background sync runs every 2 min). [] when not found.
+    """
+    try:
+        from src.utils.job_queue import _get_table
+
+        item = (
+            _get_table().get_item(Key={"cache_key": f"metrics#{batch_id}"}).get("Item")
+        )
+        metrics = json.loads((item or {}).get("response") or "{}")
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - a fallback: the caller reports nothing mapped
+        logger.warning(
+            "OBSERV batch.metrics_fallback_failed batch=%s err=%s", batch_id, e
+        )
+        return []
+    pairs = [
+        (p[0], p[1] if len(p) > 1 else "default")
+        for p in metrics.get("submitted_request_ids") or []
+        if isinstance(p, (list, tuple)) and p
+    ]
+    if pairs:
+        logger.info(
+            "OBSERV batch.metrics_from_dynamo batch=%s requests=%d",
+            batch_id,
+            len(pairs),
+        )
+    return pairs
 
 
 def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> None:
@@ -4509,7 +4651,7 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     # Register the phase for the SIGTERM handler. Without this, a spot reclaim of a --retrieve-only
     # task hit _handle_sigterm with _current_phase_script="" → _final_sync("")/_remove_lock("") were
     # no-ops, so in-task entities were lost and the lock leaked (§1.0d H3).
-    global _current_phase_script
+    global _current_phase_script, _current_resume_batch
     _current_phase_script = phase_script
 
     WORKDIR.mkdir(parents=True, exist_ok=True)
@@ -4587,6 +4729,8 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
                 for d in metrics.get("request_details", []):
                     submitted.append((d["request_id"], d.get("cache_type", "default")))
             break
+    if not submitted:
+        submitted = _submitted_from_dynamo_metrics(batch_id)
 
     from src.grok_client import GrokClient
 
@@ -4596,18 +4740,37 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
 
     mapped = _map_batch_results_by_index(submitted, ordered_results, batch_id)
     populated = _populate_cache(grok_client, mapped, batch_id)
+    if "phase2" in phase_script:
+        # the answers are in the (shared) cache: the job is retrieved NOW, not after the resumed
+        # run - that run can take several 90-min rounds, past the poller's retrieve claim, and a
+        # still-"ready" job would be retrieved again by a second task on the same book. A reclaim
+        # mid-run puts it back to ready (_handle_sigterm).
+        update_job_status(batch_id, "retrieved")
+        _current_resume_batch = batch_id
 
-    # Re-run phase without --batch (hits cache, skip retry since batch results are authoritative)
-    clean_args = [a for a in extra_args if a != "--batch"]
+    # Re-run the phase on the cached results. Phase 2 keeps --batch: it resumes its rounds.
+    # Others re-run without it (hits cache; skip retry since batch results are authoritative).
+    resume = "phase2" in phase_script
+    clean_args = (
+        list(extra_args) if resume else [a for a in extra_args if a != "--batch"]
+    )
+    if resume and "--batch" not in clean_args:
+        clean_args = ["--batch"] + clean_args
     sync = BackgroundSync(SYNC_INTERVAL)
     sync.start()
 
-    env = _retrieve_rerun_env(phase_script)
+    env = _retrieve_rerun_env(phase_script, job.batch_name)
     cmd = [sys.executable, phase_script] + _scope_args(phase_script, clean_args)
     logger.info("Re-running with cached results: %s", " ".join(cmd))
     result = subprocess.run(cmd, cwd="/app", env=env, check=False)
 
     sync.stop()
+    if resume:
+        # already marked retrieved (above); on failure it is marked failed in settle
+        _current_resume_batch = ""  # the run ended: settled below, nothing to re-queue
+        _settle_phase2_task(phase_script, result.returncode, retrieved_batch=batch_id)
+        logger.info("Retrieve-only complete for batch %s", batch_id)
+        return
     if result.returncode != 0:
         _final_sync_failed_phase(phase_script)
     else:

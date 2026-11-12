@@ -8,7 +8,16 @@ import os
 import threading
 import time as _time
 from pathlib import Path
-from typing import Any, Callable, Dict, NamedTuple, Optional, Tuple, TYPE_CHECKING
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    NamedTuple,
+    NoReturn,
+    Optional,
+    Tuple,
+    TYPE_CHECKING,
+)
 
 if TYPE_CHECKING:
     from src.utils.cache_backend import CacheBackend
@@ -617,13 +626,17 @@ class GrokClient:
         return round(total, 6)
 
     def submit_batch(  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
-        self, batch_name: str = "pipeline"
+        self, batch_name: str = "pipeline", max_wait_minutes: Optional[float] = None
     ) -> Optional[str]:
         """Submit collected batch requests to xAI Batch API.
 
         Validates each result (finish_reason, JSON parse) before caching.
         Failed/truncated requests are retried via real-time API if under
         the failure threshold (20%). Returns batch_id, or None if nothing to submit.
+
+        ``max_wait_minutes`` - how long to wait for the answers (default: 24 h). If they are not
+        all in by then, the batch is HANDED OFF: its metrics (with the submitted request ids) are
+        saved for the poller's retrieve and ``BatchPending`` is raised - nothing is retried live.
         """
         if not self._batch_collector or len(self._batch_collector) == 0:
             logger.info("No batch requests to submit (all cached)")
@@ -665,7 +678,7 @@ class GrokClient:
         # the reservation, else the budget is permanently consumed by a batch that didn't complete
         # (the old code released only on submit failure, leaking on poll/retrieve failure).
         batch_id, batch_state, ordered = self._submit_poll_retrieve(
-            jsonl_path, batch_name, count, est_cost
+            jsonl_path, batch_name, count, est_cost, max_wait_minutes
         )
         submitted = [
             (r.request_id, r.cache_type) for r in self._batch_collector.requests
@@ -678,6 +691,7 @@ class GrokClient:
         # Build metrics
         metrics = BatchMetrics(
             batch_id=batch_id,
+            batch_name=batch_name,
             total_requests=count,
             poll_seconds=batch_state.get("_poll_seconds", 0.0),
         )
@@ -702,6 +716,11 @@ class GrokClient:
 
         metrics.log_summary()
         _save_metrics(metrics)
+        from src.utils.job_queue import mark_retrieved_in_task
+
+        mark_retrieved_in_task(
+            batch_id
+        )  # answered in this task: nothing for the poller
 
         # Clean up
         jsonl_path.unlink(missing_ok=True)
@@ -709,6 +728,57 @@ class GrokClient:
         self.batch_mode = False
 
         return batch_id
+
+    def _submitted_ids(self) -> list:
+        return [
+            [r.request_id, r.cache_type]
+            for r in getattr(self._batch_collector, "requests", None) or []
+        ]
+
+    def _record_in_flight(self, batch_id: str, batch_name: str, count: int) -> None:
+        """Metrics with the submitted request ids + an ``in_task`` job, as soon as the batch is
+        submitted. Best-effort: never a batch failure (it is already submitted)."""
+        from src.utils.batch_api import BatchMetrics
+        from src.utils.job_queue import record_in_task
+
+        try:
+            metrics = BatchMetrics(
+                batch_id=batch_id, batch_name=batch_name, total_requests=count
+            )
+            metrics.submitted_request_ids = self._submitted_ids()
+            _save_metrics(metrics)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("OBSERV batch.in_flight_metrics_failed err=%s", e)
+        record_in_task(batch_id, batch_name, count)
+
+    def _hand_off(
+        self,
+        batch_id: str,
+        batch_name: str,
+        count: int,
+        jsonl_path: Any,
+    ) -> NoReturn:
+        """The batch was not answered within the wait: save its metrics with the submitted
+        request ids (the poller's retrieve maps the answers back by them), leave batch mode and
+        raise ``BatchPending``. Nothing is retried live."""
+        from src.utils.batch_api import BatchMetrics, BatchPending
+
+        metrics = BatchMetrics(
+            batch_id=batch_id, batch_name=batch_name, total_requests=count
+        )
+        metrics.submitted_request_ids = self._submitted_ids()
+        _save_metrics(metrics)
+        observe_warn(
+            "batch",
+            "handed_off",
+            batch=batch_id,
+            requests=count,
+            note="not answered within the in-task wait: the poller retrieves it and resumes the run",
+        )
+        jsonl_path.unlink(missing_ok=True)
+        self._batch_collector = None
+        self.batch_mode = False
+        raise BatchPending(batch_id, batch_name)
 
     def _write_batch_jsonl(self) -> tuple[Any, int]:
         """Write collected batch requests to JSONL and log the type breakdown."""
@@ -735,17 +805,36 @@ class GrokClient:
         return jsonl_path, count
 
     def _submit_poll_retrieve(
-        self, jsonl_path: Any, batch_name: str, count: int, est_cost: float
+        self,
+        jsonl_path: Any,
+        batch_name: str,
+        count: int,
+        est_cost: float,
+        max_wait_minutes: Optional[float] = None,
     ) -> tuple[str, Dict[str, Any], list]:
-        """Submit, poll, and retrieve a batch; release the credit reservation on any failure."""
-        from src.utils.batch_api import submit_batch, poll_batch
+        """Submit, poll, and retrieve a batch; release the credit reservation on any failure.
+        Not answered within ``max_wait_minutes`` -> handed off (``_hand_off`` raises
+        ``BatchPending``; the reservation stays: the batch is still being answered and billed).
+        """
+        from src.utils.batch_api import BatchPending, submit_batch, poll_batch
         from src.utils import credit_gate
 
+        submitted_id = ""
         try:
-            batch_id = submit_batch(self.api_key, jsonl_path, batch_name)
+            batch_id = submitted_id = submit_batch(self.api_key, jsonl_path, batch_name)
             self._record_batch_submitted(batch_id, batch_name, count)
+            # recorded NOW, not at hand-off: a task killed during its wait (spot reclaim) must
+            # leave enough for the poller to retrieve the batch (metrics + an in_task job)
+            self._record_in_flight(batch_id, batch_name, count)
             logger.info("Waiting for batch to complete (may take minutes to hours)...")
-            batch_state = poll_batch(self.api_key, batch_id, submitted_count=count)
+            batch_state = poll_batch(
+                self.api_key,
+                batch_id,
+                submitted_count=count,
+                max_hours=24.0 if max_wait_minutes is None else max_wait_minutes / 60,
+            )
+            if batch_state.get("_timed_out"):
+                self._hand_off(batch_id, batch_name, count, jsonl_path)
 
             # Retrieve results as an ORDERED list. The xAI results API was thought not to echo our submitted (it does; aligned by id first:)
             # custom_id (only a server-assigned batch_request_id), so results MUST be mapped to our
@@ -758,6 +847,8 @@ class GrokClient:
 
             ordered = retrieve_results_ordered(self.api_key, batch_id)
             verify_served_models(ordered, "batch_retrieve")
+        except BatchPending:
+            raise
         except (Exception, grok_models.GrokModelUnavailable) as _batch_exc:
             credit_gate.release(est_cost, config=self._config)
             logger.warning(
@@ -766,6 +857,11 @@ class GrokClient:
                 est_cost,
                 _batch_exc,
             )
+            if isinstance(_batch_exc, grok_models.GrokModelUnavailable):
+                # a deliberate stop: the in_task job must not be adopted and retried forever
+                from src.utils.job_queue import mark_in_task
+
+                mark_in_task(submitted_id, "failed")
             raise
         return batch_id, batch_state, ordered
 

@@ -485,6 +485,14 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
       (c) after a round-cap stop (exit 1) the last round's batch is still enqueued, so the poller
       can launch a retrieve-only re-run that finishes the book LIVE and triggers Phase 3 - skip
       the enqueue (or refuse the retrieve) when `.phase_results.json` has `incomplete`.
+      DONE 2026-11-12: each round waits `batch.in_task_wait_minutes` (90; env
+      BATCH_IN_TASK_WAIT_MINUTES); a round not answered by then is HANDED OFF - metrics with the
+      submitted ids saved, no live retry, credit reservation kept, Phase 2 exits 75 with
+      `pending_batch`; the task enqueues exactly that batch (`_settle_phase2_task`). The
+      retrieve task resumes Phase 2 IN BATCH MODE from the next round (`BATCH_ROUND_START`, the
+      round is in the batch name, now kept in the metrics/job). Exit 0 -> post-process; any other
+      exit (incl. the cap) -> nothing enqueued. The ineffective poll stub in `run_submit_only`
+      still serves Phase 3's path (it never reaches the child either).
   (4) One container per book/resource; one book at a time for now (parallel later). A second
       book submitted while one is batched must never co-mingle with it (per-book jobs, batches,
       locks). A book split across several batches keeps provenance, one consolidated dedup and

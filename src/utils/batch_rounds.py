@@ -26,6 +26,29 @@ from src.utils.observe import observe, observe_error, observe_warn, publish_aler
 logger = logging.getLogger(__name__)
 
 DEFAULT_MAX_ROUNDS = 8
+# Phase 2 exit status when a batch round was handed to the poller (EX_TEMPFAIL): not a failure -
+# the book resumes when the poller retrieves the batch.
+HANDED_OFF_EXIT = 75
+
+
+def first_round_from_env() -> int:
+    """The round a resumed run starts at (``BATCH_ROUND_START``, set by the retrieve task from the
+    handed-off batch's name), so the cap counts every round of the book, not per container.
+    """
+    import os
+
+    try:
+        return max(1, int(os.environ.get("BATCH_ROUND_START", "1")))
+    except ValueError:
+        return 1
+
+
+def round_of(batch_name: str) -> int:
+    """The round in a batch name ("phase2-<book>-<n>files-r<round>-<k>reqs"); 0 if none."""
+    import re
+
+    m = re.search(r"-r(\d+)-", batch_name or "")
+    return int(m.group(1)) if m else 0
 
 
 class BatchRoundsExceeded(RuntimeError):
@@ -50,10 +73,12 @@ class BatchRounds:
     scope: str  # the book(s) of the run, for the alert
     cap: int = DEFAULT_MAX_ROUNDS
     rounds: List[Round] = field(default_factory=list)
+    first: int = 1  # a resumed run continues the book's round count
 
     @property
     def count(self) -> int:
-        return len(self.rounds)
+        """The book's current round number (rounds before this run included)."""
+        return self.first - 1 + len(self.rounds)
 
     def admit(self, requests: Iterable[Any], client: Any = None) -> bool:
         """Record the requests queued for the next round. False (and an alert) when that round

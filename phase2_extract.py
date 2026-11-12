@@ -982,11 +982,12 @@ def _run_batch_rounds(
     everything from the cache, so the run is complete. Past ``batch.max_rounds`` the run stops
     with an alert + diagnostics instead of submitting more. Returns (processed, failed).
     """
-    from src.utils.batch_api import BatchCollector
+    from src.utils.batch_api import BatchCollector, in_task_wait_minutes
     from src.utils.batch_rounds import (
         DEFAULT_MAX_ROUNDS,
         BatchRounds,
         BatchRoundsExceeded,
+        first_round_from_env,
     )
     from src.utils.heartbeat import Heartbeat
 
@@ -995,19 +996,27 @@ def _run_batch_rounds(
     rounds = BatchRounds(
         scope=",".join(books),
         cap=int(config.get("batch", {}).get("max_rounds", DEFAULT_MAX_ROUNDS)),
+        first=first_round_from_env(),
     )
+    wait_minutes = in_task_wait_minutes(config)
     processed, failed = counts
     while grok_client._batch_collector and len(grok_client._batch_collector) > 0:
         queued = list(grok_client._batch_collector.requests)
         if not rounds.admit(queued, grok_client):
-            raise BatchRoundsExceeded(
-                rounds.cap, rounds.scope
-            )  # alerted: no more spend
+            # alerted: no more spend
+            raise BatchRoundsExceeded(rounds.cap, rounds.scope)
         logger.info(
-            "[phase2] Batch round %d: submitting %d requests", rounds.count, len(queued)
+            "[phase2] Batch round %d: submitting %d requests (waiting up to %.0f min)",
+            rounds.count,
+            len(queued),
+            wait_minutes,
         )
+        # not answered within the wait -> BatchPending: the poller resumes the book. The round
+        # suffix survives truncation (a resumed task reads the round from the name).
+        suffix = f"-r{rounds.count}-{len(queued)}reqs"
         batch_id = grok_client.submit_batch(
-            batch_name=f"{base}-r{rounds.count}-{len(queued)}reqs"[:128]
+            batch_name=base[: 128 - len(suffix)] + suffix,
+            max_wait_minutes=wait_minutes,
         )
         if not batch_id:  # submit_batch returns None only for an empty collector
             raise RuntimeError(
@@ -1048,6 +1057,48 @@ def _finish_after_rounds(parsed_files, grok_client, logger, n_rounds):
     grok_client._batch_collector = None
     logger.info("[phase2] Batch rounds complete after %d round(s)", n_rounds)
     return _retry_missing_events(parsed_files, grok_client, logger)
+
+
+def _run_batch_rounds_or_exit(
+    parsed_files,
+    grok_client,
+    output_root,
+    config,
+    paths,
+    max_parallel,
+    logger,
+    counts,
+):
+    """``_run_batch_rounds``; returns (processed, failed) when the book is finished. Otherwise
+    exits, with ``.phase_results.json`` saying why:
+
+    - a round not answered within the in-task wait -> exit ``HANDED_OFF_EXIT`` (75): the poller
+      retrieves the batch and a new task resumes the book (``pending_batch``);
+    - over the round cap (alerted) -> exit 1: the book is incomplete (``incomplete``), nothing
+      downstream (dedup gate, Phase 3) runs on it."""
+    from src.utils.batch_api import BatchPending
+    from src.utils.batch_rounds import HANDED_OFF_EXIT, BatchRoundsExceeded
+
+    processed, failed = counts
+    try:
+        return _run_batch_rounds(
+            parsed_files,
+            grok_client,
+            output_root,
+            config,
+            paths,
+            max_parallel,
+            logger,
+            counts,
+        )
+    except BatchPending as e:
+        logger.info("[phase2] %s: handed to the poller", e)
+        _write_phase_results(output_root, processed, failed, pending_batch=e.batch_id)
+        sys.exit(HANDED_OFF_EXIT)
+    except BatchRoundsExceeded as e:
+        logger.error("[phase2] %s", e)
+        _write_phase_results(output_root, processed, failed, incomplete=str(e))
+        sys.exit(1)
 
 
 def _run_post_extraction_steps(
@@ -1267,25 +1318,16 @@ def main():
     # round), with a round cap + alert + diagnostics (src/utils/batch_rounds.py). Steps 4-5 run
     # AFTER the rounds, on the finished output (before, they saw the first collect pass only).
     if args.batch:
-        from src.utils.batch_rounds import BatchRoundsExceeded
-
-        try:
-            processed, failed = _run_batch_rounds(
-                parsed_files,
-                grok_client,
-                output_root,
-                config,
-                paths,
-                max_parallel,
-                logger,
-                (processed, failed),
-            )
-        except BatchRoundsExceeded as e:
-            # alerted with diagnostics: the book is incomplete - fail the phase so nothing
-            # downstream (dedup gate, Phase 3) runs on it
-            logger.error("[phase2] %s", e)
-            _write_phase_results(output_root, processed, failed, incomplete=str(e))
-            sys.exit(1)
+        processed, failed = _run_batch_rounds_or_exit(
+            parsed_files,
+            grok_client,
+            output_root,
+            config,
+            paths,
+            max_parallel,
+            logger,
+            (processed, failed),
+        )
 
     _run_post_extraction_steps(
         base_dir, grok_client, paths, config, output_root, logger, processed, failed
@@ -1310,9 +1352,12 @@ def main():
     _write_phase_results(output_root, processed, failed)
 
 
-def _write_phase_results(output_root, processed, failed, incomplete=""):
+def _write_phase_results(
+    output_root, processed, failed, incomplete="", pending_batch=""
+):
     """Write phase results JSON for entrypoint to read. ``incomplete`` - why the run stopped
-    before finishing (the book must not be treated as done)."""
+    before finishing (the book must not be treated as done); ``pending_batch`` - the batch handed
+    to the poller (the book resumes when it is retrieved)."""
     logger = logging.getLogger(__name__)
     results_file = output_root / ".phase_results.json"
     entity_counts = {}
@@ -1340,11 +1385,12 @@ def _write_phase_results(output_root, processed, failed, incomplete=""):
                 "failed": failed,
                 "entity_counts": entity_counts,
                 **({"incomplete": incomplete} if incomplete else {}),
+                **({"pending_batch": pending_batch} if pending_batch else {}),
             }
         ),
         encoding="utf-8",
     )
-    if incomplete:
+    if incomplete or pending_batch:
         return  # the run stopped before finishing: no end-of-phase verdicts on partial output
 
     # Sanity check: warn if all optional extractors produced 0 with >5 events

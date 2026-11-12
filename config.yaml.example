@@ -93,6 +93,7 @@ batch:
   phase2: true                         # 50% off extraction
   phase3: false                        # Live calls — avoids network bounce between submit/retrieve
   max_rounds: 8                        # Phase 2 batch rounds before alert + stop (equipment ~6)
+  in_task_wait_minutes: 90             # per round; not answered by then -> poller (env BATCH_IN_TASK_WAIT_MINUTES)
 
 # Provenance validation (scripts/validate_provenance.py): is every record's cited source content
 # true (quotes in the cited paragraphs, locators in the cited sub-event)? Runs per book at the end

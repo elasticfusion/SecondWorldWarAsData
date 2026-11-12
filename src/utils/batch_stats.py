@@ -12,7 +12,8 @@ per batch, kept for trend analysis; not a run-state prefix, so the e2e reset kee
   poll every 30 s, the batch-poller Lambda every 5 min - so a batch that outlives its task is still
   timed): first_result_at, completed_at, success/error, and a bounded progress history
   [[epoch, done], ...] that shows the flat stretches. A write happens only on a change.
-* ``record_outcome`` - complete / failed / timeout / rejected.
+* ``record_outcome`` - complete / failed / timeout / rejected / handed_off (the in-task wait ran
+  out and the batch went to the poller; completion later overwrites it).
 
 Everything is fail-safe: statistics never break or slow a batch (a failure is logged, once).
 ``scripts/batch_stats_report.py`` reads the rows (and backfills older batches from the logs).
