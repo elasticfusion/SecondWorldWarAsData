@@ -266,6 +266,16 @@ class BatchRequest:
         )
 
 
+def _same_request(a: "BatchRequest", b: "BatchRequest") -> bool:
+    """The same request asked twice (not two requests sharing a key)."""
+    return (a.messages, a.model, a.temperature, a.cache_type) == (
+        b.messages,
+        b.model,
+        b.temperature,
+        b.cache_type,
+    )
+
+
 class BatchCollector:
     """Collects API requests for batch submission instead of real-time calls."""
 
@@ -273,21 +283,29 @@ class BatchCollector:
         import threading
 
         self.requests: List[BatchRequest] = []
-        self._seen: set = set()
+        self._seen: Dict[str, BatchRequest] = {}
         self._lock = threading.Lock()
+        self.duplicates = (
+            0  # identical requests folded into one (expected; counted, not alerted)
+        )
 
     def add(self, req: BatchRequest) -> None:
         """Add request if not already queued (thread-safe).
 
-        request_id IS the cache_key, so a collision drops the second request. That is correct for a
-        true duplicate, but if two LOGICALLY-DISTINCT requests ever resolve to one stable cache_key,
-        the second is silently lost -> never submitted -> never cached -> that unit extracts 0 on
-        retrieve with no diagnostic (latent optional-entity-zero). Log the drop so it's visible.
+        request_id IS the cache_key, so a collision drops the second request. An IDENTICAL request
+        (same messages, model, temperature) is a true duplicate - the same designation asked for
+        twice in a chapter - and is folded in silently (counted). But if two LOGICALLY-DISTINCT
+        requests ever resolve to one stable cache_key, the second is lost -> never submitted ->
+        never cached -> that unit extracts 0 on retrieve (latent optional-entity-zero): that drop
+        is logged loudly.
         """
         with self._lock:
-            if req.request_id not in self._seen:
+            first = self._seen.get(req.request_id)
+            if first is None:
                 self.requests.append(req)
-                self._seen.add(req.request_id)
+                self._seen[req.request_id] = req
+            elif _same_request(first, req):
+                self.duplicates += 1
             else:
                 logger.warning(
                     "OBSERV batch.duplicate_request_id_dropped cache_type=%s key=%s",

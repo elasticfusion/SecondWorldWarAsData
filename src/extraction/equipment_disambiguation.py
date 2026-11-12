@@ -61,7 +61,7 @@ def _load_learned() -> Dict[str, Dict[str, Any]]:
         try:
             data = yaml.safe_load(_LEARNED_PATH.read_text(encoding="utf-8")) or {}
             _LEARNED_CACHE = {
-                k.lower(): v for k, v in (data.get("learned") or {}).items()
+                _designation_key(k): v for k, v in (data.get("learned") or {}).items()
             }
         except Exception:  # noqa: BLE001 - absent/malformed -> empty
             _LEARNED_CACHE = {}
@@ -123,7 +123,7 @@ def resolve_designation(
     empty input. Canonical lookup only — no specs."""
     if not name or not name.strip():
         return None
-    key = name.strip().lower()
+    key = _designation_key(name)
 
     with _CACHE_LOCK:
         if key in _CACHE:
@@ -180,6 +180,24 @@ def _try_fuzzy(key: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def _designation_key(name: str) -> str:
+    """The designation as one identity: case and spacing do not make "Sherman", "SHERMAN" and
+    "Sherman  " different requests."""
+    return " ".join(name.split()).lower()
+
+
+def _grok_cache_key(key: str, grok_client: Any) -> str:
+    """Stable cache key for the Grok resolution of a designation: the normalised designation,
+    not the prompt (which quotes the name as first written)."""
+    import hashlib
+
+    get_model = getattr(grok_client, "_get_model", None)
+    model = get_model("equipment_disambiguation") if callable(get_model) else "default"
+    return hashlib.sha256(
+        f"equipment_disambiguation:v1:{model}:{key}".encode("utf-8")
+    ).hexdigest()
+
+
 def _try_grok(
     name: str, key: str, grok_client: Optional[Any]
 ) -> Optional[Dict[str, Any]]:
@@ -190,12 +208,13 @@ def _try_grok(
     try:
         from src.utils.prompt_loader import render_prompt
 
-        prompt = render_prompt("equipment_disambiguation", designation=name)
+        prompt = render_prompt("equipment_disambiguation", designation=name.strip())
         res = grok_client.extract_json(
             prompt,
             temperature=0.0,
             use_cache=True,
             cache_type="equipment_disambiguation",
+            cache_key=_grok_cache_key(key, grok_client),
         )
         if not isinstance(res, dict) or not res.get("canonical_name"):
             return None

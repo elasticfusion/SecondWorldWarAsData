@@ -8,7 +8,7 @@ import os
 import threading
 import time as _time
 from pathlib import Path
-from typing import Any, Dict, NamedTuple, Optional, Tuple, TYPE_CHECKING
+from typing import Any, Callable, Dict, NamedTuple, Optional, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from src.utils.cache_backend import CacheBackend
@@ -350,6 +350,8 @@ class GrokClient:
         # sub-cache could be created twice (last writer wins -> a dropped backend) and counter
         # increments could be lost. Scoped to the fast state mutations only — NOT the API call.
         self._cache_lock = threading.Lock()
+        # (cache_type, cache_key) -> Event: one live request per key at a time (single_flight)
+        self._in_flight: Dict[Tuple[str, str], threading.Event] = {}
         self.timeout = 600.0  # 10 minutes for large chapters
         self.debug_msg_chars = config.get("logging", {}).get(
             "debug_message_preview_chars", 500
@@ -718,10 +720,11 @@ class GrokClient:
 
         type_counts = Counter(r.cache_type for r in self._batch_collector.requests)  # type: ignore[union-attr]
         logger.info(
-            "Wrote %d requests to %s — breakdown: %s",
+            "Wrote %d requests to %s — breakdown: %s (identical requests folded: %d)",
             count,
             jsonl_path,
             dict(type_counts),
+            getattr(self._batch_collector, "duplicates", 0),
             extra={
                 "extra_fields": {
                     "event": "batch_breakdown",
@@ -1314,6 +1317,55 @@ class GrokClient:
         if use_cache and cache_key in cache:
             return self._handle_cache_hit(cache, cache_key, cache_type)
 
+        def ask() -> str:
+            return self._ask_and_cache(
+                prompt, system_prompt, temperature, use_cache, cache_type, cache_key
+            )
+
+        if use_cache and not self.batch_mode:
+            return self._single_flight(cache, cache_type, cache_key, ask)
+        return ask()
+
+    def _single_flight(
+        self, cache: Any, cache_type: str, cache_key: str, ask: Callable[[], str]
+    ) -> str:
+        """One live request per cache key at a time: identical requests made concurrently
+        (equipment prepares a chapter's items in parallel: "Sherman" twice) wait for the first
+        one's answer instead of each paying for it. If the first fails (or outlasts the wait),
+        a waiter asks itself. Batch mode needs none: the collector keeps one request per key.
+        """
+        flight = (cache_type, cache_key)
+        done = threading.Event()
+        with self._cache_lock:
+            waiting_on = self._in_flight.get(flight)
+            if waiting_on is None:
+                self._in_flight[flight] = done
+        if waiting_on is not None:
+            waiting_on.wait(timeout=self.timeout * 2)
+            if cache_key in cache:
+                return self._handle_cache_hit(cache, cache_key, cache_type)
+            return ask()
+        try:
+            if cache_key in cache:  # answered between the miss and the claim
+                return self._handle_cache_hit(cache, cache_key, cache_type)
+            return ask()
+        finally:
+            with self._cache_lock:
+                self._in_flight.pop(flight, None)
+            done.set()
+
+    def _ask_and_cache(
+        self,
+        prompt: str,
+        system_prompt: Optional[str],
+        temperature: float,
+        use_cache: bool,
+        cache_type: str,
+        cache_key: str,
+    ) -> str:
+        """A cache miss: queue it (batch mode) or call the API, then cache the answer."""
+        cache = self._get_cache(cache_type)
+        model_used = self._get_model(cache_type)
         with self._cache_lock:
             self._cache_misses += 1
 
@@ -1328,7 +1380,7 @@ class GrokClient:
 
         # Call API
         messages = self._build_messages(prompt, system_prompt)
-        response = self._call_api(messages, temperature, self._get_model(cache_type))
+        response = self._call_api(messages, temperature, model_used)
 
         # Extract content
         content = response["choices"][0]["message"]["content"]
