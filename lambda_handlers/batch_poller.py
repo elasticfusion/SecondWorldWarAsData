@@ -482,6 +482,15 @@ def _release_retrieve(batch_id: str) -> None:
         logger.warning("Failed to release retrieve claim %s: %s", batch_id, e)
 
 
+def _retrieve_env(job: dict) -> list:
+    """The retrieve task's environment: the book, and the submitting run's chapter scope (a
+    resumed Phase 2 run stays on the chapters it was started for)."""
+    env = [{"name": "BOOK_NAME", "value": job.get("book", "unknown")}]
+    if job.get("chapters"):
+        env.append({"name": "PHASE2_CHAPTERS", "value": job["chapters"]})
+    return env
+
+
 def _trigger_retrieve(job: dict) -> bool:
     """Start ECS task in retrieve-only mode for the completed batch. Returns True
     only if THIS invocation actually launched (or a launch is genuinely owned)."""
@@ -546,9 +555,7 @@ def _trigger_retrieve(job: dict) -> bool:
                             batch_id,
                             phase_script,
                         ],
-                        "environment": [
-                            {"name": "BOOK_NAME", "value": job.get("book", "unknown")},
-                        ],
+                        "environment": _retrieve_env(job),
                     }
                 ]
             },

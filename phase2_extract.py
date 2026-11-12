@@ -165,6 +165,33 @@ def _report_optional_outcomes(counts: dict, optional_zeros: list, logger) -> Non
         )
 
 
+def _apply_chapter_scope(parsed_files, chapters, logger):
+    """``PHASE2_CHAPTERS`` ("chapter8full,chapter9"): run only these chapters of the scoped book
+    (a book-scoped run otherwise re-extracts EVERY chapter's entities - a one-chapter redo would
+    pay for all of them). Names are parsed-file stems without ``-parsed.json``; a name that matches
+    nothing is a hard error (never silently widen or empty the run). Unset -> unchanged.
+    """
+    wanted = [c.strip() for c in (chapters or "").split(",") if c.strip()]
+    if not wanted:
+        return parsed_files
+    by_name = {p.name.replace("-parsed.json", ""): p for p in parsed_files}
+    missing = [c for c in wanted if c not in by_name]
+    if missing:
+        logger.error(
+            "PHASE2_CHAPTERS %s matched no parsed file (have: %s) — aborting",
+            missing,
+            ", ".join(sorted(by_name)[:20]),
+        )
+        raise SystemExit(2)
+    logger.info(
+        "Scoped to chapters %s: %d of %d parsed files",
+        wanted,
+        len(wanted),
+        len(parsed_files),
+    )
+    return [by_name[c] for c in wanted]
+
+
 def _apply_scope_guard(parsed_files, book, expected_count, content_root, logger):
     """Scope ``parsed_files`` by book, then enforce the shared run-scope contract.
 
@@ -1278,6 +1305,9 @@ def main():
     scope_book = args.book or os.environ.get("BOOK_NAME", "").strip() or None
     parsed_files = _apply_scope_guard(
         parsed_files, scope_book, args.expected_count, content_root, logger
+    )
+    parsed_files = _apply_chapter_scope(
+        parsed_files, os.environ.get("PHASE2_CHAPTERS", ""), logger
     )
 
     logger.info("Found %d parsed file(s)", len(parsed_files))

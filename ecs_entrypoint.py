@@ -1644,6 +1644,34 @@ def _rehydrate_scored_entities() -> int:
     return rehydrated
 
 
+def _scope_to_manifest_chapters(parsed_keys: list) -> None:
+    """Phase 2 runs the chapters Phase 1 just produced (the manifest), not every chapter on disk:
+    the book-scoped resume rehydrate pulls the whole book's content, and Phase 2 would otherwise
+    re-extract (and pay for) every chapter's entities when one chapter was re-submitted. Sets
+    ``PHASE2_CHAPTERS`` (phase2_extract._apply_chapter_scope) unless already set (a resumed run's
+    scope, from its batch job). Only this book's keys count."""
+    if os.environ.get("PHASE2_CHAPTERS"):
+        return
+    book = os.environ.get("BOOK_NAME", "").strip()
+    if not book:
+        return  # chapter names are per book: never merge several books' names into one scope
+    prefix = f"output/content/{book}/"
+    chapters = sorted(
+        {
+            k.rsplit("/", 1)[-1].replace("-parsed.json", "")
+            for k in parsed_keys
+            if k.endswith("-parsed.json") and k.startswith(prefix)
+        }
+    )
+    if chapters:
+        os.environ["PHASE2_CHAPTERS"] = ",".join(chapters)
+        logger.info(
+            "OBSERV phase2.chapter_scope book=%s chapters=%s (from the Phase 1 manifest)",
+            book or "-",
+            ",".join(chapters)[:300],
+        )
+
+
 def _download_phase2_inputs() -> int:
     """Download only unprocessed parsed files + entity dirs for cross-referencing."""
     s3 = _s3_client()
@@ -1668,6 +1696,7 @@ def _download_phase2_inputs() -> int:
             "Phase 2 incremental (manifest): %d parsed files from manifest",
             len(parsed_keys),
         )
+        _scope_to_manifest_chapters(parsed_keys)
         new_parsed = len(parsed_keys)
     else:
         # Fallback: scan S3 for parsed files without event files

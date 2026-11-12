@@ -22,6 +22,8 @@ class BatchJob:
     status: str = "pending"  # pending, complete, failed, retrieved
     completed_at: int = 0
     request_count: int = 0
+    # PHASE2_CHAPTERS of the run that submitted it: a resumed run (retrieve task) keeps the scope
+    chapters: str = ""
 
 
 def _get_table():
@@ -35,7 +37,13 @@ def _get_table():
 
 
 def enqueue_job(job: BatchJob) -> None:
-    """Add a batch job to the queue."""
+    """Add a batch job to the queue. A Phase 2 job carries its run's chapter scope
+    (``PHASE2_CHAPTERS``) so the task that resumes it processes the same chapters."""
+    import os
+
+    chapters = job.chapters or (
+        os.environ.get("PHASE2_CHAPTERS", "") if job.phase == "phase2" else ""
+    )
     table = _get_table()
     table.put_item(
         Item={
@@ -49,6 +57,7 @@ def enqueue_job(job: BatchJob) -> None:
             "completed_at": job.completed_at,
             "request_count": job.request_count,
             "ttl": job.submitted_at + 30 * 86400,
+            **({"chapters": chapters} if chapters else {}),
         }
     )
     logger.info("Enqueued batch job %s (%s/%s)", job.batch_id, job.phase, job.book)
@@ -74,6 +83,7 @@ def get_active_jobs() -> List[BatchJob]:
                 status=item["status"],
                 completed_at=int(item.get("completed_at", 0)),
                 request_count=int(item.get("request_count", 0)),
+                chapters=item.get("chapters", ""),
             )
         )
     return jobs
@@ -112,6 +122,7 @@ def get_job(batch_id: str) -> Optional[BatchJob]:
         status=item["status"],
         completed_at=int(item.get("completed_at", 0)),
         request_count=int(item.get("request_count", 0)),
+        chapters=item.get("chapters", ""),
     )
 
 

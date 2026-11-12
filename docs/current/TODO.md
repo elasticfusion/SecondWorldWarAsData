@@ -497,6 +497,11 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
       book submitted while one is batched must never co-mingle with it (per-book jobs, batches,
       locks). A book split across several batches keeps provenance, one consolidated dedup and
       one consolidated Phase 3.
+  CHAPTER SCOPE (2026-11-12): re-submitting one chapter now runs Phase 2 on that chapter only
+  (`PHASE2_CHAPTERS` from the Phase 1 manifest; carried on the batch job to a resumed run).
+  OPEN: the manifest is consumed on read (`_read_manifest` deletes `pending#parsed#<book>`), so a
+  retry/reconcile after a task died before its first batch job falls back to the whole book (as
+  before) - persist the scope (e.g. a `scope#<book>` row) if one-chapter retries matter.
   LOW (review): `_build_mention` falls back to a random Sub_eventID when a sub-event has none
   (merge_mentions then cannot dedup across rounds); `enrich_groups._maybe_source_recheck`
   swallows BatchModeCollecting (groups enrichment is not wired today).
