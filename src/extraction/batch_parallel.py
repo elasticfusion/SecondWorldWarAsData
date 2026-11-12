@@ -21,6 +21,7 @@ from src.grok_client import (
     current_book,
 )
 from src.utils.file_lock import write_json_with_lock
+from src.extraction import sub_events as per_sub_event
 from src.utils.grok_models import GrokModelUnavailable, raise_if_unavailable
 from src.utils.observe import observe_error, observe_warn
 from src.utils.json_validator import _fix_invalid_ulids, _ULID_PATTERN
@@ -1369,7 +1370,7 @@ def _add_relationship(from_path, to_path, rel_type):
 
 # Sub-event requests in flight per process: each holds an executor thread while it waits for the
 # rate limiter, and the default executor (min(32, cpu+4)) is shared with event extraction.
-_SUB_EVENT_CONCURRENCY = int(os.environ.get("SUB_EVENT_CONCURRENCY", "8"))
+_SUB_EVENT_CONCURRENCY = per_sub_event.CONCURRENCY
 # One semaphore per event loop: a semaphore binds to the loop it first waits on, so a second
 # asyncio.run must not reuse the first one's.
 _sub_event_slots: (
@@ -1390,55 +1391,38 @@ def _slots() -> asyncio.Semaphore:
 async def _per_sub_event(
     extract_one: Callable, event_data: Dict[str, Any], entity_type: str = ""
 ) -> Dict[str, Any]:
-    """Run an entity extraction once PER SUB-EVENT and merge the results (count, links).
-
-    Discovery from one short passage at a time: asked for a whole chapter at once (chapter 8:
-    ~37k tokens, 12 sub-events) the model decides how much is "enough" - the same places request
-    returned 42, 118 and 89 places on three runs, one answer a flat 3-4 per sub-event; per
-    sub-event three runs returned 227, 226 and 226. Input cost is the same text, split.
+    """Run an entity extraction once PER SUB-EVENT and merge the results (count, links) - the
+    async form of ``sub_events`` (why per sub-event, the failure and stop rules).
 
     At most ``SUB_EVENT_CONCURRENCY`` requests run at once (per event loop). A sub-event whose
-    request failed (``_batch_extract`` returns ``failed``) or raised is counted and alerted - a
-    lost request must not read as a smaller total, and it must not cost the other sub-events
-    their links (their records are already written). A model that is gone stops the run
-    (grok_models): requests still waiting for a slot are not sent; those in flight finish, so
-    their records are saved (their links are not returned: the run stops, a rerun re-links).
+    request failed (``_batch_extract`` returns ``failed``) or raised is counted and alerted, and
+    it must not cost the other sub-events their links (their records are already written). After
+    a model stop the links of finished requests are not returned: the run stops, a rerun re-links.
     """
-    event = event_data.get("Event", {})
-    sub_events = event.get("Sub-events", []) or []
+    pairs = per_sub_event.views(event_data)
     stopped = asyncio.Event()
 
-    def one(se: Dict[str, Any]) -> Dict[str, Any]:
-        return {**event_data, "Event": {**event, "Sub-events": [se]}}
-
-    async def capped(se: Dict[str, Any]) -> Any:
+    async def capped(view: Dict[str, Any]) -> Any:
         async with _slots():
             if stopped.is_set():
                 return _NOT_SENT
             try:
-                return await extract_one(one(se))
+                return await extract_one(view)
             except GrokModelUnavailable:
                 stopped.set()
                 raise
 
     results = await asyncio.gather(
-        *[capped(se) for se in sub_events], return_exceptions=True
+        *[capped(view) for _se, view in pairs], return_exceptions=True
     )
     raise_if_unavailable(results)
     merged: Dict[str, Any] = {"count": 0, "links": {}, "failed": 0}
     errors: List[str] = []
-    for se, r in zip(sub_events, results):
+    for (se, _view), r in zip(pairs, results):
         _merge_sub_event_result(merged, errors, se, r, entity_type)
-    if merged["failed"]:
-        observe_error(
-            entity_type or "entities",
-            "sub_events_failed",
-            failed=merged["failed"],
-            of=len(sub_events),
-            event_id=event.get("EventID", ""),
-            errors=errors[:5],
-            note="these sub-events' requests failed: their entities are missing, not zero",
-        )
+    per_sub_event.report_failed(
+        entity_type, merged["failed"], len(pairs), event_data, errors
+    )
     return merged
 
 
@@ -1454,7 +1438,7 @@ def _merge_sub_event_result(
     """
     if isinstance(r, Exception):
         merged["failed"] += 1
-        errors.append(f"{se.get('Sub-eventID', '')}: {type(r).__name__}: {r}")
+        errors.append(per_sub_event.describe_error(se, r))
         logger.error(
             "%s sub-event %s failed", entity_type, se.get("Sub-eventID"), exc_info=r
         )

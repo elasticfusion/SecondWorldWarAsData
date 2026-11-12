@@ -447,6 +447,18 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   OPEN (review 2026-11-12): group enrichment (`enrich_groups.enrich_all_groups`, not wired today)
   has no specificity gate - with ~4x more, finer groups ("Group under Lt. X", "SHAEF staff",
   companies) each would cost a Grok call. Gate it on a derivable unit_key before wiring it in.
+  FIXED for equipment BROAD (run 1) (2026-11-12): chapter-wide 99 items (95% of quotes verbatim);
+  per sub-event 358 / 331 / 317 (97-98% verbatim), 336 through the shipped code. Shared code:
+  `src/extraction/sub_events.py` (views, failure alert, stop rule, `run_sync` for synchronous
+  extractors) now serves all five. Items are pinned to their sub-event's paragraphs, and the run
+  cache key carries the Sub-eventID (EventID alone would have served every sub-event the first
+  one's answer). COST: run 2 (REFINE) is one call per item, so ~3.4x more refine calls per
+  chapter (chapter 8: ~100 -> ~340), and they run one after another - parallelise refine
+  (`run_sync`-style map over items) before a full-book run. The same holds for the per-item
+  `_resolve_canonical_identity` / `_recheck_equipment_fields` calls in `_process_equipment_item`
+  (and enrichment when enabled). Concurrency: 3 event workers x 8 sub-event workers = up to 24
+  requests in flight per process, all on the shared rate limiter. Old chapter-wide "broad" cache
+  entries are orphaned: re-running an extracted chapter pays again.
   OPEN (pre-existing, review 2026-11-12): person enrichment (Grokipedia/Wikipedia fetches) runs
   synchronously inside the people index lock (`_batch_extract` -> `enrich_record`), so it blocks
   the event loop and serializes sub-events / chapters. Move it after the index write.

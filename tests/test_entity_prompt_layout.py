@@ -14,6 +14,7 @@ import pytest
 
 import src.grok_client as gc
 from src.extraction import batch_parallel as bp
+from src.extraction import sub_events as per_sub_event
 
 EVENT = {
     "Event": {
@@ -376,7 +377,7 @@ def test_a_failed_sub_event_request_is_counted_and_alerted(monkeypatch):
             return {"count": 0, "links": {}, "failed": 1}
         return {"count": 3, "links": {sid: ["P1"]}}
 
-    with mock.patch.object(bp, "observe_error") as err:
+    with mock.patch.object(per_sub_event, "observe_error") as err:
         merged = asyncio.run(bp._per_sub_event(one, EVENT, "places"))
     assert merged["count"] == 3 and merged["failed"] == 1
     assert err.call_args.args[:2] == ("places", "sub_events_failed")
@@ -418,7 +419,7 @@ def test_a_raised_failure_is_counted_and_the_others_keep_their_links():
             raise KeyError("boom")
         return {"count": 1, "links": {sid: ["P1", "P1"]}}
 
-    with mock.patch.object(bp, "observe_error") as err:
+    with mock.patch.object(per_sub_event, "observe_error") as err:
         merged = asyncio.run(bp._per_sub_event(one, EVENT, "places"))
     assert merged == {"count": 1, "links": {"S2": ["P1"]}, "failed": 1}
     assert "S1: KeyError" in err.call_args.kwargs["errors"][0]

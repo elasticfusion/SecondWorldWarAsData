@@ -2099,31 +2099,127 @@ def _extract_equipment_with_llm(
 def _extract_equipment_broad(
     event_data: Dict[str, Any], grok_client: GrokClient
 ) -> List[Dict[str, Any]]:
-    """Run 1 — BROAD recall. Returns raw items [{name, original_text, paragraph_numbers}].
-    One call per event. Honors batch_mode (BatchModeCollecting propagates on the collect pass).
+    """Run 1 — BROAD recall, one call PER SUB-EVENT (``sub_events``): asked for the whole chapter
+    at once, chapter 8 gave 99 items; one sub-event at a time, 358 / 331 / 317 (2026-11-12).
+    Returns raw items [{name, original_text, paragraph_numbers}], each pinned to its sub-event's
+    paragraphs. A failed sub-event is counted and alerted; the others are kept. Honors
+    batch_mode (BatchModeCollecting is raised once every sub-event's request is queued).
     """
+    from src.extraction import sub_events as per_sub_event
+
+    if not per_sub_event.views(
+        event_data
+    ):  # no sub-events: ask about the event whole, as before
+        try:
+            return _extract_equipment_broad_one({}, event_data, grok_client)
+        except BatchModeCollecting:
+            raise
+        except (
+            Exception
+        ):  # noqa: BLE001 - alerted as broad_failed; a loud empty, not a crash
+            return []
+    found = per_sub_event.run_sync(
+        lambda se, view: _extract_equipment_broad_one(se, view, grok_client),
+        event_data,
+        "equipment",
+    )
+    return [item for items in found for item in items]
+
+
+def _broad_run(se: Dict[str, Any]) -> str:
+    """The BROAD run name in the cache key: whole event "broad", a sub-event "broad:<id>"."""
+    if not se:
+        return "broad"
+    sid = (
+        se.get("Sub-eventID")
+        or hashlib.sha256(
+            json.dumps(se, sort_keys=True, default=str).encode("utf-8")
+        ).hexdigest()[:16]
+    )
+    return f"broad:{sid}"
+
+
+def _extract_equipment_broad_one(
+    se: Dict[str, Any], view: Dict[str, Any], grok_client: GrokClient
+) -> List[Dict[str, Any]]:
+    """One BROAD call for one sub-event (``view`` = the event narrowed to it). Raises on failure."""
     from src.utils.prompt_loader import render_prompt
 
     prompt = render_prompt(
         "equipment_extract_broad",
-        event_data=json.dumps(event_data, indent=2, sort_keys=True),
+        event_data=json.dumps(view, indent=2, sort_keys=True),
     )
-    _key = _equipment_run_cache_key(event_data, grok_client, "broad")
+    # per sub-event: the EventID alone would give every sub-event the first one's cached answer;
+    # a sub-event without an ID is keyed on its content (never "broad", the whole-event key)
+    _key = _equipment_run_cache_key(view, grok_client, _broad_run(se))
     try:
         out = grok_client.extract_json(
             prompt, temperature=0.1, cache_type="equipment_broad", cache_key=_key
         )
     except BatchModeCollecting:
         raise
-    except Exception as e:  # noqa: BLE001 - broad failure is a loud empty, not a crash
-        observe_error("equipment", "broad_failed", reason=type(e).__name__)
-        return []
+    except Exception as e:
+        if (
+            not se
+        ):  # whole-event call; a sub-event's failure is alerted by sub_events.run_sync
+            observe_error("equipment", "broad_failed", reason=type(e).__name__)
+        raise
     if isinstance(out, dict):
         for _k in ("Equipment", "equipment"):
             if _k in out:
                 out = out[_k]
                 break
-    return out if isinstance(out, list) else []
+    items: List[Any] = out if isinstance(out, list) else []
+    return [_pin_to_sub_event(it, se) for it in items if isinstance(it, dict)]
+
+
+def _sub_event_paragraphs(se: Dict[str, Any]) -> Dict[int, str]:
+    """{paragraph number: text} of one sub-event (numbers run through the whole chapter)."""
+    paras: Dict[int, str] = {}
+    fulltext = se.get("Sub-event_fulltext", {})
+    for key, text in (fulltext.items() if isinstance(fulltext, dict) else []):
+        try:
+            paras[int(str(key).split("_")[-1])] = str(text)
+        except ValueError:
+            continue
+    return paras
+
+
+def _squash(text: Any) -> str:
+    return " ".join(str(text or "").split()).lower()
+
+
+def _quoting(item: Dict[str, Any], paras: Dict[int, str]) -> List[int]:
+    """The paragraph numbers whose text contains the item's quote."""
+    quote = _squash(item.get("original_text"))
+    return [n for n, t in sorted(paras.items()) if quote and quote in _squash(t)]
+
+
+def _pin_to_sub_event(item: Dict[str, Any], se: Dict[str, Any]) -> Dict[str, Any]:
+    """Keep only the item's paragraph numbers that lie in the sub-event it was found in, so the
+    mention is attributed to that sub-event (``_find_sub_event``). None left: the paragraph(s)
+    quoting it, else all of the sub-event's."""
+    from src.utils.paragraph_numbers import coerce_paragraph_numbers
+
+    paras = _sub_event_paragraphs(se)
+    if not paras:
+        return item
+    given = coerce_paragraph_numbers(
+        item.get("paragraph_numbers"),
+        scope="equipment.broad",
+        subject=str(item.get("name") or ""),
+    )
+    inside = [n for n in given if n in paras] or _quoting(item, paras)
+    if not inside:
+        inside = sorted(paras)
+        observe_warn(
+            "equipment",
+            "pin_fallback_whole_sub_event",
+            item=str(item.get("name") or "")[:60],
+            sub_event_id=se.get("Sub-eventID", ""),
+            note="no paragraph in the sub-event given or quoting it: context is the whole sub-event",
+        )
+    return {**item, "paragraph_numbers": inside}
 
 
 def _build_extended_text(
