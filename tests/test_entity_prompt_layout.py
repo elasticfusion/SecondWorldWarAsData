@@ -1,5 +1,6 @@
-"""The four entity requests of a chapter (dates, places, groups, people) send the chapter text as
-their FIRST message, identical across the four, and their own instructions after it: xAI caches a
+"""The chapter entity requests (dates, groups, people) send the chapter text as their FIRST message,
+identical across them, and their own instructions after it (places: one request per sub-event,
+each with its sub-event's text first): xAI caches a
 request's leading messages (cached input $0.20 vs $1.25 / 1M tokens), routed by x-grok-conv-id.
 And Phase 2 places carry no coordinates (Phase 3 geocodes): asking for them was a guess stored
 with a made-up confidence, and the chapter-8 places answer stopped after 2 of 12 sub-events while
@@ -38,14 +39,14 @@ EVENT = {
 
 
 def _requests():
-    """{cache_type: (system, prompt)} of the four entity requests for EVENT."""
+    """{cache_type: [(system, prompt), ...]} of the entity requests for EVENT."""
     seen = {}
 
     class Client:
         def extract_json(
             self, prompt, system_prompt=None, cache_type="", book=None, **k
         ):
-            seen[cache_type] = (system_prompt, prompt)
+            seen.setdefault(cache_type, []).append((system_prompt, prompt))
             raise gc.BatchModeCollecting("queued")
 
     async def run():
@@ -59,22 +60,83 @@ def _requests():
     return seen
 
 
-def test_the_four_requests_share_one_first_message():
+def test_the_chapter_requests_share_one_first_message():
     reqs = _requests()
     assert set(reqs) == {"dates", "places", "peoplegroups", "people"}
-    sources = {system for system, _ in reqs.values()}
+    chapter_types = ("dates", "peoplegroups", "people")
+    assert all(len(reqs[t]) == 1 for t in chapter_types)
+    sources = {reqs[t][0][0] for t in chapter_types}
     assert len(sources) == 1  # identical: the cacheable prefix
     source = sources.pop()
     assert "Force U was marshaled at Tor Bay." in source and "[S2]" in source
-    for _system, prompt in reqs.values():
+    for t in chapter_types:
+        prompt = reqs[t][0][1]
         assert "Tor Bay" not in prompt  # the chapter text is not repeated in the task
         assert prompt.rstrip().endswith("answer for every one of them.")
-        assert not prompt.rstrip().endswith("Sub-events:")
 
 
-def test_the_places_request_asks_no_coordinates():
-    _system, prompt = _requests()["places"]
-    assert "coordinates" not in prompt and "latitude" not in prompt
+def test_places_are_asked_one_sub_event_at_a_time():
+    """Chapter-wide, the same places request returned 42, 118 and 89 places on three runs; per
+    sub-event, three runs returned 227, 226 and 226 (chapter 8, 2026-11-12)."""
+    places = _requests()["places"]
+    assert len(places) == 2  # one per sub-event
+    texts = [system for system, _ in places]
+    assert any("Tor Bay" in t and "UTAH" not in t for t in texts)
+    assert any("UTAH" in t and "Tor Bay" not in t for t in texts)
+    for _system, prompt in places:
+        assert "EVERY place named in this sub-event" in prompt
+        assert "coordinates" not in prompt and "latitude" not in prompt
+
+
+def test_per_sub_event_results_are_merged_and_a_stop_ends_it():
+    from src.utils.grok_models import GrokModelUnavailable
+
+    async def one(ev):
+        se = ev["Event"]["Sub-events"]
+        assert len(se) == 1
+        sid = se[0]["Sub-eventID"]
+        return {"count": 2, "links": {sid: ["P" + sid]}}
+
+    merged = asyncio.run(bp._per_sub_event(one, EVENT))
+    assert merged == {"count": 4, "links": {"S1": ["PS1"], "S2": ["PS2"]}, "failed": 0}
+
+    done = []
+
+    async def gone(ev):
+        sid = ev["Event"]["Sub-events"][0]["Sub-eventID"]
+        if sid == "S1":
+            await asyncio.sleep(0)  # S2's request is sent before S1's answer arrives
+            raise GrokModelUnavailable("x")
+        done.append(sid)
+        return {"count": 1, "links": {}}
+
+    with pytest.raises(GrokModelUnavailable):
+        asyncio.run(bp._per_sub_event(gone, EVENT))
+    assert done == [
+        "S2"
+    ]  # the other sub-event's request was already in flight: it finished (records saved)
+
+
+def test_after_a_model_stop_waiting_requests_are_not_sent(monkeypatch):
+    from src.utils.grok_models import GrokModelUnavailable
+
+    monkeypatch.setattr(bp, "_SUB_EVENT_CONCURRENCY", 1)
+    sent = []
+
+    async def gone(ev):
+        sid = ev["Event"]["Sub-events"][0]["Sub-eventID"]
+        sent.append(sid)
+        raise GrokModelUnavailable("x")
+
+    many = {
+        "Event": {
+            "EventID": "E",
+            "Sub-events": [{"Sub-eventID": f"S{i}"} for i in range(5)],
+        }
+    }
+    with pytest.raises(GrokModelUnavailable):
+        asyncio.run(bp._per_sub_event(gone, many))
+    assert sent == ["S0"]
 
 
 def test_a_place_record_carries_no_coordinates():
@@ -264,3 +326,113 @@ def test_stated_exact_coordinates_are_not_re_geocoded():
     )
     assert not _needs_geocode(exact)
     assert _needs_geocode(dict(GUESS))
+
+
+# --- per-sub-event review follow-ups ------------------------------------------------------------
+
+
+def test_a_failed_sub_event_request_is_counted_and_alerted(monkeypatch):
+    from unittest import mock
+
+    async def one(ev):
+        sid = ev["Event"]["Sub-events"][0]["Sub-eventID"]
+        if sid == "S1":
+            return {"count": 0, "links": {}, "failed": 1}
+        return {"count": 3, "links": {sid: ["P1"]}}
+
+    with mock.patch.object(bp, "observe_error") as err:
+        merged = asyncio.run(bp._per_sub_event(one, EVENT, "places"))
+    assert merged["count"] == 3 and merged["failed"] == 1
+    assert err.call_args.args[:2] == ("places", "sub_events_failed")
+    assert err.call_args.kwargs["failed"] == 1 and err.call_args.kwargs["of"] == 2
+
+
+def test_a_request_failure_inside_batch_extract_is_marked(tmp_path):
+    class Broken:
+        def extract_json(self, *a, **k):
+            raise RuntimeError("api down")
+
+    ev = {"Event": {"EventID": "E1", "Sub-events": [EVENT["Event"]["Sub-events"][0]]}}
+    out = asyncio.run(bp._extract_places(ev, Broken(), tmp_path, {}))
+    assert out["failed"] == 1 and out["count"] == 0
+
+
+def test_no_sub_events_is_an_empty_result():
+    async def one(ev):
+        raise AssertionError("not called")
+
+    merged = asyncio.run(bp._per_sub_event(one, {"Event": {"Sub-events": []}}))
+    assert merged == {"count": 0, "links": {}, "failed": 0}
+
+
+def test_a_non_dict_result_is_an_error():
+    async def one(ev):
+        return None
+
+    with pytest.raises(TypeError):
+        asyncio.run(bp._per_sub_event(one, EVENT, "places"))
+
+
+def test_a_raised_failure_is_counted_and_the_others_keep_their_links():
+    from unittest import mock
+
+    async def one(ev):
+        sid = ev["Event"]["Sub-events"][0]["Sub-eventID"]
+        if sid == "S1":
+            raise KeyError("boom")
+        return {"count": 1, "links": {sid: ["P1", "P1"]}}
+
+    with mock.patch.object(bp, "observe_error") as err:
+        merged = asyncio.run(bp._per_sub_event(one, EVENT, "places"))
+    assert merged == {"count": 1, "links": {"S2": ["P1"]}, "failed": 1}
+    assert "S1: KeyError" in err.call_args.kwargs["errors"][0]
+
+
+def test_sub_event_requests_are_capped(monkeypatch):
+    monkeypatch.setattr(bp, "_SUB_EVENT_CONCURRENCY", 2)
+    in_flight, peak = [0], [0]
+
+    async def one(ev):
+        in_flight[0] += 1
+        peak[0] = max(peak[0], in_flight[0])
+        await asyncio.sleep(0.01)
+        in_flight[0] -= 1
+        return {"count": 1, "links": {}}
+
+    many = {
+        "Event": {
+            "EventID": "E",
+            "Sub-events": [{"Sub-eventID": f"S{i}"} for i in range(7)],
+        }
+    }
+    for _ in range(2):  # a second event loop gets its own semaphore, still capped
+        peak[0] = 0
+        merged = asyncio.run(bp._per_sub_event(one, many))
+        assert merged["count"] == 7 and peak[0] == 2
+
+
+def test_place_mentions_link_dates_written_while_the_request_ran(tmp_path):
+    """Dates are extracted concurrently: the lookup must be read after the answer, not before."""
+    from unittest import mock
+
+    seen = []
+
+    class Client:
+        def extract_json(self, *a, **k):
+            (tmp_path / "dates").mkdir(exist_ok=True)
+            (tmp_path / "dates" / "d.json").write_text("{}")  # written mid-request
+            return {"places": []}
+
+    def lookup(d):
+        seen.append(sorted(p.name for p in d.glob("*.json")))
+        return {}
+
+    ev = {"Event": {"EventID": "E1", "Sub-events": [EVENT["Event"]["Sub-events"][0]]}}
+    with (
+        mock.patch.object(bp, "_build_date_id_lookup", side_effect=lookup),
+        mock.patch.object(
+            bp, "_process_batch_response", return_value={"count": 0, "links": {}}
+        ),
+    ):
+        asyncio.run(bp.extract_places_batch_async(ev, {}, Client(), tmp_path, {}))
+    assert seen == [["d.json"]]

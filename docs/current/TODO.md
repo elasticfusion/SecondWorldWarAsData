@@ -421,9 +421,14 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   12/12 twice. FIXED: Phase 2 places carry no coordinates; Phase 3 geocodes the 215 places that held
   Phase-2 guesses. OPEN: a per-sub-event coverage check on entity answers (re-ask the sub-events an
   answer leaves out), and repair chapter 8 (re-ask its places).
-  (h) People recall varies run to run on the same chapter: chapter 8 people answers gave 55, 75,
-  76, 83, 84 mentions (2026-11-12 A/B). A coverage check does not catch it (the sub-events are
-  answered, just not fully). Options: a second "who did you miss" pass, or union two answers.
+  (h) Recall varied run to run when a whole chapter was asked at once: chapter 8 places 42 / 118 /
+  89, people 55-84 mentions. CAUSE: one request per chapter (~37k tokens, 12 sub-events) - the
+  model decides how much is enough (one answer: a flat 3-4 places per sub-event). FIXED for
+  places (2026-11-12): one request per sub-event (`batch_parallel._per_sub_event`); three runs gave
+  227 / 226 / 226 mentions, near-identical per sub-event, and the provenance check passes them.
+  OPEN: move dates, people, people_groups (and the optional extractors) to `_per_sub_event` too -
+  each a one-line change of its extractor, then the same 3-run check. Until then places no longer
+  shares the cached chapter prefix with the other three.
 - **[MED · DESIGN · owner 2026-11-08] Book naming: a WORK key + an EDITION key, so duplicate
   titles and editions of one work are told apart.** CONSTRAINT (owner 2026-11-11): slugs are
   IMMUTABLE (`.kiro/steering/architecture-decisions.md`, "Book identity") - this scheme applies to

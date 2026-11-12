@@ -8,6 +8,7 @@ import os
 import logging
 import re
 import threading
+import weakref
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -762,7 +763,10 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
             note="batch DROPPED — not a legitimate empty; downstream count=0 is a FAILURE",
         )
         logger.error("%s batch extraction failed: %s", entity_type, e)
-        return empty
+        return {
+            **empty,
+            "failed": 1,
+        }  # counted by _per_sub_event: a lost request, not a zero
 
     # sub_event_id is a REFERENCE to an event's Sub-eventID — _fix_invalid_ulids now skips it (and
     # all EventID/Sub-eventID spellings) BY DEFAULT per the identity-id invariant, so the mangled
@@ -777,9 +781,9 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     entity_dir.mkdir(parents=True, exist_ok=True)
     index_file = entity_dir / "index.json"
 
-    # Build date lookup outside lock (read-only, safe for parallel access)
-    dates_dir = output_root / "dates"
-    date_id_lookup = _build_date_id_lookup(dates_dir)
+    # Build date lookup outside lock (read-only, safe for parallel access). Built AFTER the
+    # response, never up front: dates are extracted concurrently, so an early read misses them.
+    date_id_lookup = _build_date_id_lookup(output_root / "dates")
 
     # Lock protects read-modify-write of index.json across concurrent event files
     lock = _get_index_lock(index_file)
@@ -1349,6 +1353,128 @@ def _add_relationship(from_path, to_path, rel_type):
     write_json_with_lock(from_path, data)
 
 
+# Sub-event requests in flight per process: each holds an executor thread while it waits for the
+# rate limiter, and the default executor (min(32, cpu+4)) is shared with event extraction.
+_SUB_EVENT_CONCURRENCY = int(os.environ.get("SUB_EVENT_CONCURRENCY", "8"))
+# One semaphore per event loop: a semaphore binds to the loop it first waits on, so a second
+# asyncio.run must not reuse the first one's.
+_sub_event_slots: (
+    "weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, asyncio.Semaphore]"
+) = weakref.WeakKeyDictionary()
+
+
+def _slots() -> asyncio.Semaphore:
+    loop = asyncio.get_running_loop()
+    slots = _sub_event_slots.get(loop)
+    if slots is None:
+        slots = _sub_event_slots[loop] = asyncio.Semaphore(
+            max(1, _SUB_EVENT_CONCURRENCY)
+        )
+    return slots
+
+
+async def _per_sub_event(
+    extract_one: Callable, event_data: Dict[str, Any], entity_type: str = ""
+) -> Dict[str, Any]:
+    """Run an entity extraction once PER SUB-EVENT and merge the results (count, links).
+
+    Discovery from one short passage at a time: asked for a whole chapter at once (chapter 8:
+    ~37k tokens, 12 sub-events) the model decides how much is "enough" - the same places request
+    returned 42, 118 and 89 places on three runs, one answer a flat 3-4 per sub-event; per
+    sub-event three runs returned 227, 226 and 226. Input cost is the same text, split.
+
+    At most ``SUB_EVENT_CONCURRENCY`` requests run at once (per event loop). A sub-event whose
+    request failed (``_batch_extract`` returns ``failed``) or raised is counted and alerted - a
+    lost request must not read as a smaller total, and it must not cost the other sub-events
+    their links (their records are already written). A model that is gone stops the run
+    (grok_models): requests still waiting for a slot are not sent; those in flight finish, so
+    their records are saved (their links are not returned: the run stops, a rerun re-links).
+    """
+    event = event_data.get("Event", {})
+    sub_events = event.get("Sub-events", []) or []
+    stopped = asyncio.Event()
+
+    def one(se: Dict[str, Any]) -> Dict[str, Any]:
+        return {**event_data, "Event": {**event, "Sub-events": [se]}}
+
+    async def capped(se: Dict[str, Any]) -> Any:
+        async with _slots():
+            if stopped.is_set():
+                return _NOT_SENT
+            try:
+                return await extract_one(one(se))
+            except GrokModelUnavailable:
+                stopped.set()
+                raise
+
+    results = await asyncio.gather(
+        *[capped(se) for se in sub_events], return_exceptions=True
+    )
+    raise_if_unavailable(results)
+    merged: Dict[str, Any] = {"count": 0, "links": {}, "failed": 0}
+    errors: List[str] = []
+    for se, r in zip(sub_events, results):
+        _merge_sub_event_result(merged, errors, se, r, entity_type)
+    if merged["failed"]:
+        observe_error(
+            entity_type or "entities",
+            "sub_events_failed",
+            failed=merged["failed"],
+            of=len(sub_events),
+            event_id=event.get("EventID", ""),
+            errors=errors[:5],
+            note="these sub-events' requests failed: their entities are missing, not zero",
+        )
+    return merged
+
+
+def _merge_sub_event_result(
+    merged: Dict[str, Any],
+    errors: List[str],
+    se: Dict[str, Any],
+    r: Any,
+    entity_type: str,
+) -> None:
+    """Fold one sub-event's gathered result into ``merged``: an ordinary exception is a failed
+    sub-event (counted, logged); any other BaseException propagates; a non-dict is a bug.
+    """
+    if isinstance(r, Exception):
+        merged["failed"] += 1
+        errors.append(f"{se.get('Sub-eventID', '')}: {type(r).__name__}: {r}")
+        logger.error(
+            "%s sub-event %s failed", entity_type, se.get("Sub-eventID"), exc_info=r
+        )
+        return
+    if isinstance(r, BaseException):
+        raise r  # not an error to count (e.g. cancellation)
+    if not isinstance(r, dict):
+        raise TypeError(
+            f"{entity_type} sub-event extraction returned {type(r).__name__}"
+        )
+    merged["count"] += r.get("count", 0)
+    merged["failed"] += r.get("failed", 0)
+    for seid, ids in (r.get("links") or {}).items():
+        have = merged["links"].setdefault(seid, [])
+        have.extend(i for i in ids if i not in have)
+
+
+_NOT_SENT: Dict[str, Any] = {
+    "count": 0,
+    "links": {},
+}  # a request skipped after a model stop
+
+
+def _sub_events_phrase(event_data: Dict[str, Any]) -> str:
+    n = len(event_data.get("Event", {}).get("Sub-events", []))
+    return "this sub-event" if n == 1 else f"these {n} sub-events"
+
+
+_GEO_TYPES = (
+    "city|town|village|country|region|province|state|sea|ocean|river|lake|mountain|island|"
+    "peninsula|continent|military_base|battlefield|fortification|bridge|port|airfield|other"
+)
+
+
 async def extract_places_batch_async(
     event_data: Dict[str, Any],
     parsed_data: Dict[str, Any],  # pylint: disable=unused-argument
@@ -1356,18 +1482,41 @@ async def extract_places_batch_async(
     output_root: Path,
     book_meta: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
-    """Extract places from all sub-events in single API call."""
+    """Extract places one sub-event at a time (``_per_sub_event``)."""
+    return await _per_sub_event(
+        lambda one: _extract_places(one, grok_client, output_root, book_meta),
+        event_data,
+        "places",
+    )
+
+
+async def _extract_places(
+    event_data: Dict[str, Any],
+    grok_client: GrokClient,
+    output_root: Path,
+    book_meta: Optional[Dict[str, str]],
+) -> Dict[str, Any]:
+    """One places request for the sub-event(s) in ``event_data``. No coordinates: Phase 3
+    geocodes (asking for them was a guess, and it cut the answer short)."""
     from src.utils.text_utils import normalize_name
 
-    n = len(event_data.get("Event", {}).get("Sub-events", []))
-    geo_types = "city|town|village|country|region|province|state|sea|ocean|river|lake|mountain|island|peninsula|continent|military_base|battlefield|fortification|bridge|port|airfield|other"
+    what = _sub_events_phrase(event_data)
     return await _batch_extract(
         event_data,
         grok_client,
         output_root,
         entity_type="places",
         cache_type="places",
-        prompt_header=f'Extract all places from these {n} sub-events. Return JSON:\n{{"places": [{{"sub_event_id": "ID", "places": [{{"name": "Name", "type": "{geo_types}", "date_context": "YYYY-MM-DD or null", "role_in_event": "role or null", "original_text": "exact quote"}}], "relationships": [{{"from": "Place A", "to": "Place B", "type": "part_of|near|contains|connected_by_route"}}]}}]}}\n\nSub-events:',
+        prompt_header=(
+            f"Extract EVERY place named in {what}: each town, village, hamlet, region, river, "
+            "beach, height, bridge, port or other location the text names, even once - a long "
+            "passage names many. Return JSON:\n"
+            f'{{"places": [{{"sub_event_id": "ID", "places": [{{"name": "Name", "type": '
+            f'"{_GEO_TYPES}", "date_context": "YYYY-MM-DD or null", "role_in_event": '
+            '"role or null", "original_text": "exact quote"}], "relationships": [{"from": '
+            '"Place A", "to": "Place B", "type": "part_of|near|contains|connected_by_route"}]}]}'
+            "\n\nSub-events:"
+        ),
         response_key="places",
         inner_key="places",
         make_key=lambda obj: normalize_name(obj.get("name", "")),
