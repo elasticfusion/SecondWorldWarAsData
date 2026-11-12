@@ -1189,8 +1189,22 @@ async def extract_dates_batch_async(
     output_root: Path,
     book_meta: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
-    """Extract dates from all sub-events in single API call."""
-    n = len(event_data.get("Event", {}).get("Sub-events", []))
+    """Extract dates one sub-event at a time (``_per_sub_event``)."""
+    return await _per_sub_event(
+        lambda one: _extract_dates(one, grok_client, output_root, book_meta),
+        event_data,
+        "dates",
+    )
+
+
+async def _extract_dates(
+    event_data: Dict[str, Any],
+    grok_client: GrokClient,
+    output_root: Path,
+    book_meta: Optional[Dict[str, str]],
+) -> Dict[str, Any]:
+    """One dates request for the sub-event(s) in ``event_data``."""
+    what = _sub_events_phrase(event_data)
     return await _batch_extract(
         event_data,
         grok_client,
@@ -1198,7 +1212,7 @@ async def extract_dates_batch_async(
         entity_type="dates",
         cache_type="dates",
         prompt_header=(
-            f"Extract all dates and times from these {n} sub-events. Return JSON:\n"
+            f"Extract all dates and times from {what}. Return JSON:\n"
             '{"dates": [{"sub_event_id": "ID", "dates": ['
             '{"date_start": "YYYY-MM-DD", "date_end": null, '
             '"time_start": "HH:MM or null", "time_end": null, '

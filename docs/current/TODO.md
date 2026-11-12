@@ -426,9 +426,14 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   model decides how much is enough (one answer: a flat 3-4 places per sub-event). FIXED for
   places (2026-11-12): one request per sub-event (`batch_parallel._per_sub_event`); three runs gave
   227 / 226 / 226 mentions, near-identical per sub-event, and the provenance check passes them.
-  OPEN: move dates, people, people_groups (and the optional extractors) to `_per_sub_event` too -
-  each a one-line change of its extractor, then the same 3-run check. Until then places no longer
-  shares the cached chapter prefix with the other three.
+  FIXED for dates (2026-11-12): chapter-wide 74 mentions; per sub-event 91 / 98 / 99, all 12
+  sub-events covered, 0 provenance gaps (the one chapter-wide-only date was "July 1944" stored as
+  exact 1944-07-01). Places and dates for a sub-event share its text as the cached first message.
+  Note: per-sub-event requests have new cache keys, so re-running an already-extracted chapter
+  pays again for its places/dates.
+  OPEN: move people, people_groups (and the optional extractors) to `_per_sub_event` too -
+  each a one-line change of its extractor, then the same 3-run check. Until then people and
+  people_groups keep the chapter-wide cached prefix.
 - **[MED · DESIGN · owner 2026-11-08] Book naming: a WORK key + an EDITION key, so duplicate
   titles and editions of one work are told apart.** CONSTRAINT (owner 2026-11-11): slugs are
   IMMUTABLE (`.kiro/steering/architecture-decisions.md`, "Book identity") - this scheme applies to

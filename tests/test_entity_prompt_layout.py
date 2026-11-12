@@ -1,6 +1,6 @@
-"""The chapter entity requests (dates, groups, people) send the chapter text as their FIRST message,
-identical across them, and their own instructions after it (places: one request per sub-event,
-each with its sub-event's text first): xAI caches a
+"""The chapter entity requests (groups, people) send the chapter text as their FIRST message,
+identical across them, and their own instructions after it (places and dates: one request per
+sub-event, each with its sub-event's text first): xAI caches a
 request's leading messages (cached input $0.20 vs $1.25 / 1M tokens), routed by x-grok-conv-id.
 And Phase 2 places carry no coordinates (Phase 3 geocodes): asking for them was a guess stored
 with a made-up confidence, and the chapter-8 places answer stopped after 2 of 12 sub-events while
@@ -63,7 +63,7 @@ def _requests():
 def test_the_chapter_requests_share_one_first_message():
     reqs = _requests()
     assert set(reqs) == {"dates", "places", "peoplegroups", "people"}
-    chapter_types = ("dates", "peoplegroups", "people")
+    chapter_types = ("peoplegroups", "people")
     assert all(len(reqs[t]) == 1 for t in chapter_types)
     sources = {reqs[t][0][0] for t in chapter_types}
     assert len(sources) == 1  # identical: the cacheable prefix
@@ -75,17 +75,31 @@ def test_the_chapter_requests_share_one_first_message():
         assert prompt.rstrip().endswith("answer for every one of them.")
 
 
-def test_places_are_asked_one_sub_event_at_a_time():
+@pytest.mark.parametrize(
+    "entity, phrase",
+    [
+        ("places", "EVERY place named in this sub-event"),
+        ("dates", "all dates and times from this sub-event"),
+    ],
+)
+def test_entities_are_asked_one_sub_event_at_a_time(entity, phrase):
     """Chapter-wide, the same places request returned 42, 118 and 89 places on three runs; per
-    sub-event, three runs returned 227, 226 and 226 (chapter 8, 2026-11-12)."""
-    places = _requests()["places"]
-    assert len(places) == 2  # one per sub-event
-    texts = [system for system, _ in places]
+    sub-event, three runs returned 227, 226 and 226 (chapter 8, 2026-11-12). Dates: 74 mentions
+    chapter-wide, 91 / 98 / 99 per sub-event (2026-11-12)."""
+    reqs = _requests()[entity]
+    assert len(reqs) == 2  # one per sub-event
+    texts = [system for system, _ in reqs]
     assert any("Tor Bay" in t and "UTAH" not in t for t in texts)
     assert any("UTAH" in t and "Tor Bay" not in t for t in texts)
-    for _system, prompt in places:
-        assert "EVERY place named in this sub-event" in prompt
+    for _system, prompt in reqs:
+        assert phrase in prompt
         assert "coordinates" not in prompt and "latitude" not in prompt
+
+
+def test_per_sub_event_requests_share_the_sub_event_first_message():
+    """Places and dates for one sub-event lead with the same text: one cacheable prefix."""
+    reqs = _requests()
+    assert sorted(s for s, _ in reqs["places"]) == sorted(s for s, _ in reqs["dates"])
 
 
 def test_per_sub_event_results_are_merged_and_a_stop_ends_it():
@@ -436,3 +450,38 @@ def test_place_mentions_link_dates_written_while_the_request_ran(tmp_path):
     ):
         asyncio.run(bp.extract_places_batch_async(ev, {}, Client(), tmp_path, {}))
     assert seen == [["d.json"]]
+
+
+def test_one_date_in_two_sub_events_is_one_record_with_two_mentions(tmp_path):
+    """Per-sub-event dates requests write concurrently: a shared date must merge, not duplicate."""
+    import json
+
+    s1, s2 = "01HZZZZZZZZZZZZZZZZZZZZZZ1", "01HZZZZZZZZZZZZZZZZZZZZZZ2"
+    ev = json.loads(json.dumps(EVENT))
+    ev["Event"]["EventID"] = "01HZZZZZZZZZZZZZZZZZZZZZZ0"
+    ev["Event"]["Sub-events"][0]["Sub-eventID"] = s1
+    ev["Event"]["Sub-events"][1]["Sub-eventID"] = s2
+
+    class Client:
+        def extract_json(self, prompt, system_prompt=None, **k):
+            sid = s1 if "Tor Bay" in (system_prompt or "") else s2
+            return {
+                "dates": [
+                    {
+                        "sub_event_id": sid,
+                        "dates": [
+                            {"date_start": "1944-06-06", "original_text": "D-Day"}
+                        ],
+                    }
+                ]
+            }
+
+    asyncio.run(bp.extract_dates_batch_async(ev, {}, Client(), tmp_path, {"book": "B"}))
+    records = [
+        json.loads(f.read_text())
+        for f in (tmp_path / "dates").glob("*.json")
+        if f.name != "index.json"
+    ]
+    assert len(records) == 1
+    seids = sorted(m["Sub_eventID"] for m in records[0]["event_mentions"])
+    assert seids == [s1, s2]
