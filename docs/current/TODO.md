@@ -430,10 +430,18 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   sub-events covered, 0 provenance gaps (the one chapter-wide-only date was "July 1944" stored as
   exact 1944-07-01). Places and dates for a sub-event share its text as the cached first message.
   Note: per-sub-event requests have new cache keys, so re-running an already-extracted chapter
-  pays again for its places/dates.
-  OPEN: move people, people_groups (and the optional extractors) to `_per_sub_event` too -
-  each a one-line change of its extractor, then the same 3-run check. Until then people and
-  people_groups keep the chapter-wide cached prefix.
+  pays again for its places/dates/people.
+  FIXED for people (2026-11-12): chapter-wide 78 mentions (10/12 sub-events; 2 name nobody);
+  per sub-event 105 / 103 / 102, 0 provenance gaps. Per sub-event the model names people as the
+  passage does ("Gerow", "Jodl", "Sperrle"); chapter-wide it filled in full names from background
+  knowledge, and once named a person the text never mentions ("Eugen König"). Surname-only and
+  split records ("Bradley" / "Omar Bradley") are for entity resolution (the OOB spine), not the
+  extraction prompt.
+  OPEN: move people_groups (and the optional extractors) to `_per_sub_event` too, then the same
+  3-run check. Until then people_groups keeps the chapter-wide cached prefix.
+  OPEN (pre-existing, review 2026-11-12): person enrichment (Grokipedia/Wikipedia fetches) runs
+  synchronously inside the people index lock (`_batch_extract` -> `enrich_record`), so it blocks
+  the event loop and serializes sub-events / chapters. Move it after the index write.
 - **[MED · DESIGN · owner 2026-11-08] Book naming: a WORK key + an EDITION key, so duplicate
   titles and editions of one work are told apart.** CONSTRAINT (owner 2026-11-11): slugs are
   IMMUTABLE (`.kiro/steering/architecture-decisions.md`, "Book identity") - this scheme applies to

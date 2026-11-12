@@ -1,5 +1,5 @@
-"""The chapter entity requests (groups, people) send the chapter text as their FIRST message,
-identical across them, and their own instructions after it (places and dates: one request per
+"""The chapter entity requests (groups) send the chapter text as their FIRST message,
+and their own instructions after it (places, dates and people: one request per
 sub-event, each with its sub-event's text first): xAI caches a
 request's leading messages (cached input $0.20 vs $1.25 / 1M tokens), routed by x-grok-conv-id.
 And Phase 2 places carry no coordinates (Phase 3 geocodes): asking for them was a guess stored
@@ -63,7 +63,7 @@ def _requests():
 def test_the_chapter_requests_share_one_first_message():
     reqs = _requests()
     assert set(reqs) == {"dates", "places", "peoplegroups", "people"}
-    chapter_types = ("peoplegroups", "people")
+    chapter_types = ("peoplegroups",)
     assert all(len(reqs[t]) == 1 for t in chapter_types)
     sources = {reqs[t][0][0] for t in chapter_types}
     assert len(sources) == 1  # identical: the cacheable prefix
@@ -80,12 +80,14 @@ def test_the_chapter_requests_share_one_first_message():
     [
         ("places", "EVERY place named in this sub-event"),
         ("dates", "all dates and times from this sub-event"),
+        ("people", "ALL people mentioned in this sub-event"),
     ],
 )
 def test_entities_are_asked_one_sub_event_at_a_time(entity, phrase):
     """Chapter-wide, the same places request returned 42, 118 and 89 places on three runs; per
     sub-event, three runs returned 227, 226 and 226 (chapter 8, 2026-11-12). Dates: 74 mentions
-    chapter-wide, 91 / 98 / 99 per sub-event (2026-11-12)."""
+    chapter-wide, 91 / 98 / 99 per sub-event. People: 78 chapter-wide, 105 / 103 / 102 per
+    sub-event - and chapter-wide named people the text does not ("Eugen König")."""
     reqs = _requests()[entity]
     assert len(reqs) == 2  # one per sub-event
     texts = [system for system, _ in reqs]
@@ -97,9 +99,11 @@ def test_entities_are_asked_one_sub_event_at_a_time(entity, phrase):
 
 
 def test_per_sub_event_requests_share_the_sub_event_first_message():
-    """Places and dates for one sub-event lead with the same text: one cacheable prefix."""
+    """Places, dates and people for one sub-event lead with the same text: one cacheable prefix."""
     reqs = _requests()
-    assert sorted(s for s, _ in reqs["places"]) == sorted(s for s, _ in reqs["dates"])
+    firsts = sorted(s for s, _ in reqs["places"])
+    assert firsts == sorted(s for s, _ in reqs["dates"])
+    assert firsts == sorted(s for s, _ in reqs["people"])
 
 
 def test_per_sub_event_results_are_merged_and_a_stop_ends_it():
@@ -485,3 +489,23 @@ def test_one_date_in_two_sub_events_is_one_record_with_two_mentions(tmp_path):
     assert len(records) == 1
     seids = sorted(m["Sub_eventID"] for m in records[0]["event_mentions"])
     assert seids == [s1, s2]
+
+
+def test_people_chapter_setup_and_summary_run_once(tmp_path):
+    """Exclusions, the enrichment counters and their summary are per chapter, not per sub-event."""
+    from unittest import mock
+
+    from src.extraction import people as people_mod
+
+    class Client:
+        def extract_json(self, *a, **k):
+            return {"people": []}
+
+    with (
+        mock.patch.object(people_mod, "_reset_enrich_counts") as reset,
+        mock.patch.object(people_mod, "_emit_enrich_summary") as summary,
+        mock.patch.object(bp, "_load_people_exclusions") as excl,
+    ):
+        out = asyncio.run(bp.extract_people_batch_async(EVENT, Client(), tmp_path, {}))
+    assert reset.call_count == summary.call_count == excl.call_count == 1
+    assert out["failed"] == 0

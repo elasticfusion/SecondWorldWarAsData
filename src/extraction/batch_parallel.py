@@ -1585,25 +1585,38 @@ async def extract_people_batch_async(
     output_root: Path,
     book_meta: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
-    """Extract people in batch — includes fulltext for complete coverage."""
-    from src.extraction.people import (
-        _normalize_name,
-        _enrich_person_batch_apply,
-        _reset_enrich_counts,
-        _emit_enrich_summary,
-    )
+    """Extract people one sub-event at a time (``_per_sub_event``) — includes fulltext."""
+    from src.extraction.people import _reset_enrich_counts, _emit_enrich_summary
 
     _load_people_exclusions(output_root / "people")
     _reset_enrich_counts()  # batch-path people-enrichment coverage (summary after the apply pass)
-    n = len(event_data.get("Event", {}).get("Sub-events", []))
-    result = await _batch_extract(
+    result = await _per_sub_event(
+        lambda one: _extract_people(one, grok_client, output_root, book_meta),
+        event_data,
+        "people",
+    )
+    _emit_enrich_summary("batch")
+    return result
+
+
+async def _extract_people(
+    event_data: Dict[str, Any],
+    grok_client: GrokClient,
+    output_root: Path,
+    book_meta: Optional[Dict[str, str]],
+) -> Dict[str, Any]:
+    """One people request for the sub-event(s) in ``event_data``."""
+    from src.extraction.people import _normalize_name, _enrich_person_batch_apply
+
+    what = _sub_events_phrase(event_data)
+    return await _batch_extract(
         event_data,
         grok_client,
         output_root,
         entity_type="people",
         cache_type="people",
         prompt_header=(
-            f"Extract ALL people mentioned in these {n} sub-events. "
+            f"Extract ALL people mentioned in {what}. "
             "Include every named individual, even if mentioned only once.\n"
             "IMPORTANT: When a plural rank precedes multiple names joined by "
             "'and'/'or' (e.g. 'Admirals Leahy and King', 'Generals Bradley and "
@@ -1646,5 +1659,3 @@ async def extract_people_batch_async(
             entity_file, grok_client
         ),
     )
-    _emit_enrich_summary("batch")
-    return result
