@@ -28,6 +28,8 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
+from src.grok_client import BatchModeCollecting
+
 logger = logging.getLogger(__name__)
 
 
@@ -97,6 +99,8 @@ class SourceRechecker:
                     use_cache=True,
                     cache_type=f"{self.spec.label}_source_recheck",
                 )
+            except BatchModeCollecting:
+                raise  # batch collect pass: queued; applying nothing would write a gap
             except Exception as e:  # noqa: BLE001 - fail-safe
                 logger.warning("source-recheck skipped for %s: %s", name, e)
         return self._apply(record, res, needed)

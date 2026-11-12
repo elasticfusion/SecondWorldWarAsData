@@ -452,13 +452,34 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   `src/extraction/sub_events.py` (views, failure alert, stop rule, `run_sync` for synchronous
   extractors) now serves all five. Items are pinned to their sub-event's paragraphs, and the run
   cache key carries the Sub-eventID (EventID alone would have served every sub-event the first
-  one's answer). COST: run 2 (REFINE) is one call per item, so ~3.4x more refine calls per
-  chapter (chapter 8: ~100 -> ~340), and they run one after another - parallelise refine
-  (`run_sync`-style map over items) before a full-book run. The same holds for the per-item
-  `_resolve_canonical_identity` / `_recheck_equipment_fields` calls in `_process_equipment_item`
-  (and enrichment when enabled). Concurrency: 3 event workers x 8 sub-event workers = up to 24
-  requests in flight per process, all on the shared rate limiter. Old chapter-wide "broad" cache
-  entries are orphaned: re-running an extracted chapter pays again.
+  one's answer). Run 2 (REFINE) is one call per item, ~3.4x more per chapter (chapter 8: ~100 ->
+  ~340). Concurrency: 3 event workers x 8 workers = up to 24 requests in flight per process, all
+  on the shared rate limiter. Old chapter-wide "broad" cache entries are orphaned: re-running an
+  extracted chapter pays again.
+  FIXED (2026-11-12, step 1 of 4): every equipment Grok call is batchable, ONE batch round per
+  dependent stage (`sub_events.run_all`): broad -> refine -> identity -> source re-check ->
+  (persist: vessel disambiguation, enrichment). Refine and prepare run concurrently; nothing is
+  written before the requests a record depends on are answered; identity resolution, source
+  re-check and stub creation no longer swallow the batch signal (they wrote unresolved records
+  without their re-checked fields); a failed item leaves the chapter unmarked for a retry;
+  enrichment's cache key is the record + source URLs, not the fetched text.
+  BATCH ORCHESTRATION (owner design 2026-11-12) - remaining steps:
+  (2) Phase 2 driver: loop collect -> submit -> re-run until nothing is queued (all of Phase 2,
+      core + every optional extractor), with a round cap; over the cap -> ALERT plus automated
+      diagnostics (queued request counts by cache_type/stage, keys queued in consecutive rounds =
+      submit/lookup key divergence, sample prompts), extendable as new cases appear.
+  (3) ECS: the container waits up to 90 min PER BATCH ROUND for Grok (goal: prevent container
+      churn); a round not back in 90 min -> enqueue + exit, the Lambda poller resumes it, and the
+      resumed container follows the same rule for further rounds. The retrieve re-run must keep
+      batch mode for the next round (today `_retrieve_rerun_env` strips it: equipment runs live).
+      The shutdown wait is configurable (shorter for testing).
+  (4) One container per book/resource; one book at a time for now (parallel later). A second
+      book submitted while one is batched must never co-mingle with it (per-book jobs, batches,
+      locks). A book split across several batches keeps provenance, one consolidated dedup and
+      one consolidated Phase 3.
+  LOW (review): `_build_mention` falls back to a random Sub_eventID when a sub-event has none
+  (merge_mentions then cannot dedup across rounds); `enrich_groups._maybe_source_recheck`
+  swallows BatchModeCollecting (groups enrichment is not wired today).
   OPEN (pre-existing, review 2026-11-12): person enrichment (Grokipedia/Wikipedia fetches) runs
   synchronously inside the people index lock (`_batch_extract` -> `enrich_record`), so it blocks
   the event loop and serializes sub-events / chapters. Move it after the index write.

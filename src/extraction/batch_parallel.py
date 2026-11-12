@@ -1438,7 +1438,7 @@ def _merge_sub_event_result(
     """
     if isinstance(r, Exception):
         merged["failed"] += 1
-        errors.append(per_sub_event.describe_error(se, r))
+        errors.append(per_sub_event.describe_error(str(se.get("Sub-eventID", "")), r))
         logger.error(
             "%s sub-event %s failed", entity_type, se.get("Sub-eventID"), exc_info=r
         )

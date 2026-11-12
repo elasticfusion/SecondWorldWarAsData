@@ -957,6 +957,7 @@ def _enrich_from_encyclopedias(
         equipment_data["category"],
         grok_client,
         source_text=source_text,
+        source_urls=[url for _text, url in sources],
     )
     if not enriched:
         return
@@ -1246,18 +1247,41 @@ def _build_wikipedia_media_list(file_pages: dict) -> list:
     return media_list
 
 
+def _enrichment_cache_key(
+    grok_client: GrokClient,
+    identifier: str,
+    common_name: str,
+    category: str,
+    source_urls: Optional[List[str]],
+) -> Optional[str]:
+    """sha256 over equipment:enrich:v1:{model}:{identifier, name, category, urls}; None (the
+    prompt-hash key) when the source URLs are unknown."""
+    if not source_urls:
+        return None
+    _get_model = getattr(grok_client, "_get_model", None)
+    model = _get_model("equipment_enrichment") if callable(_get_model) else "default"
+    ident = json.dumps([identifier, common_name, category, sorted(source_urls)])
+    return hashlib.sha256(
+        f"equipment:enrich:v1:{model}:{ident}".encode("utf-8")
+    ).hexdigest()
+
+
 def _enrich_equipment_data(
     common_name: str,
     technical_identifier: Optional[str],
     category: str,
     grok_client: GrokClient,
     source_text: str = "",
+    source_urls: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """Structured facts for one specific equipment record, written FROM ``source_text`` (the
     WWII-qualified Grokipedia/Wikipedia article text; each block prefixed by its URL).
 
     Returns a dict (description, specifications, ...) or {} on failure. BatchModeCollecting
     propagates (batch collect pass: the request is queued, the retrieve pass answers it).
+    The cache key is the record and its source URLs, not the fetched text: an article re-fetched
+    in the next batch round (edited, or cut differently) must find the queued answer, not queue a
+    new request every round.
     """
     if not source_text:
         return {}
@@ -1283,6 +1307,9 @@ def _enrich_equipment_data(
             temperature=0.1,
             use_cache=True,
             cache_type="equipment_enrichment",
+            cache_key=_enrichment_cache_key(
+                grok_client, identifier, common_name, category, source_urls
+            ),
         )
         logger.debug("Enriched data for %s", common_name)
         return enriched if isinstance(enriched, dict) else {}
@@ -2062,17 +2089,27 @@ def _extract_equipment_with_llm(
     Returns the classified item list that _process_equipment_item consumes (same contract as the
     old single-prompt path). Run-3 disambiguation + merge remain downstream, unchanged.
 
-    Both runs honor the grok client's batch_mode (sync -> inline; batch -> each call queues via
-    BatchModeCollecting, resolved across collect/retrieve passes). NEVER-DROP: every broad item
+    Each run is ONE stage over all its requests (``sub_events.run_all``): sync -> the calls run
+    concurrently; batch collect pass -> every request is queued, then BatchModeCollecting is
+    raised once (one batch round per stage, not one per item). NEVER-DROP: every broad item
     yields a refined record (or a loud fallback), per the design.
     """
+    from src.extraction import sub_events as fan
+
     broad_items = _extract_equipment_broad(event_data, grok_client)
     if not broad_items:
         return []
+    done = fan.run_all(
+        lambda item: _refine_or_fallback(item, event_data, grok_client),
+        broad_items,
+        "equipment",
+        event_data,
+        label=lambda item: str(item.get("name") or "")[:60],
+        what="refine_items",
+    )
     refined: List[Dict[str, Any]] = []
     fallbacks = 0
-    for item in broad_items:
-        rec = _refine_equipment_item(item, event_data, grok_client)
+    for _item, rec in done:
         if not rec:
             continue
         if rec.pop(
@@ -2352,6 +2389,29 @@ def _backfill_operating_country(rec: Dict[str, Any], extended_text: str) -> None
         cue=reason,
         note="operating_country was null; filled deterministically from an unambiguous side cue",
     )
+
+
+def _refine_or_fallback(
+    item: Dict[str, Any], event_data: Dict[str, Any], grok_client: GrokClient
+) -> Optional[Dict[str, Any]]:
+    """``_refine_equipment_item``, NEVER-DROP on any error outside the refine call too: the
+    broad find survives as the minimal fallback record (counted as ``refine_degraded``).
+    """
+    try:
+        return _refine_equipment_item(item, event_data, grok_client)
+    except BatchModeCollecting:
+        raise
+    except Exception as e:  # noqa: BLE001 - never lose the broad find
+        name = str(item.get("name") or item.get("common_name") or "").strip()
+        observe_error(
+            "equipment", "refine_failed", reason=type(e).__name__, item=name[:40]
+        )
+        rec = _unwrap_refined_record(None, name)
+        rec["original_text"] = str(item.get("original_text", "")).strip() or None
+        rec["paragraph_numbers"] = list(
+            item.get("paragraph_numbers") or []
+        )  # pinned ints
+        return rec
 
 
 def _refine_equipment_item(
@@ -2706,19 +2766,20 @@ def _recheck_equipment_fields(
     it doesn't leak into the merge payload. Fail-open."""
     if not grok_client:
         return
-    try:
-        from src.extraction.equipment_source_recheck import (
-            recheck_equipment_from_source,
-        )
+    from src.extraction.equipment_source_recheck import recheck_equipment_from_source
 
-        injected = "event_mentions" not in equipment_data
-        if injected:
-            equipment_data["event_mentions"] = [mention]
+    injected = "event_mentions" not in equipment_data
+    if injected:
+        equipment_data["event_mentions"] = [mention]
+    try:
         recheck_equipment_from_source(equipment_data, grok_client)
-        if injected:
-            del equipment_data["event_mentions"]
+    except BatchModeCollecting:
+        raise  # batch collect pass: queued; the record must not be written without it
     except Exception as e:  # noqa: BLE001 - never block extraction
         logger.debug("equipment source-recheck skipped: %s", e)
+    finally:
+        if injected:
+            equipment_data.pop("event_mentions", None)
 
 
 def _coerce_equipment_common_name(eq_data: Dict[str, Any]) -> None:
@@ -2804,6 +2865,44 @@ def _process_equipment_item(
     places_index: Optional[Dict[str, str]] = None,
 ) -> Optional[Path]:
     """Process a single equipment item. Returns equipment file path or None."""
+    prepared = _prepare_equipment_item(
+        eq_data,
+        event_data,
+        people_index,
+        people_groups_index,
+        dates_index,
+        output_root,
+        equipment_index,
+        grok_client,
+        places_index,
+    )
+    if prepared is None:
+        return None
+    return _persist_equipment_item(
+        prepared,
+        people_index,
+        output_dir,
+        equipment_index,
+        grok_client,
+        enable_enrichment,
+    )
+
+
+def _prepare_equipment_item(
+    eq_data: Dict[str, Any],
+    event_data: Dict[str, Any],
+    people_index: Dict[str, str],
+    people_groups_index: Dict[str, str],
+    dates_index: Dict[str, Dict[str, str]],
+    output_root: Path,
+    equipment_index: Dict[str, Path],
+    grok_client: GrokClient,
+    places_index: Optional[Dict[str, str]] = None,
+) -> Optional[Tuple["EquipmentExtraction", Dict[str, Any], Dict[str, Any]]]:
+    """Everything before a write: validate + gate, link, build the mention and record, resolve
+    the canonical identity, re-check fields from the source. Writes nothing, so the items of a
+    chapter can be prepared concurrently (and, on a batch collect pass, all queued at once).
+    Returns (eq, mention, equipment_data) or None when the item is gated out."""
     eq = _validate_and_gate_equipment(eq_data)
     if eq is None:
         return None
@@ -2839,6 +2938,23 @@ def _process_equipment_item(
     # SOURCE-RECHECK: recover missing critical fields (esp. country_of_origin — the dedup
     # veto — + category/quantity/place) from the retained original_text BEFORE merge/dedup.
     _recheck_equipment_fields(equipment_data, mention, grok_client)
+    return eq, mention, equipment_data
+
+
+def _persist_equipment_item(
+    prepared: Tuple["EquipmentExtraction", Dict[str, Any], Dict[str, Any]],
+    people_index: Dict[str, str],
+    output_dir: Path,
+    equipment_index: Dict[str, Path],
+    grok_client: GrokClient,
+    enable_enrichment: bool = False,
+) -> Optional[Path]:
+    """Link related records and merge or create the equipment file. Writes, so the items of a
+    chapter are persisted one after another. On a batch collect pass a call here (vessel
+    disambiguation, enrichment) raises BatchModeCollecting before this item's record is written;
+    an item already written is a no-op when its chapter is processed again (one mention per
+    sub-event)."""
+    eq, mention, equipment_data = prepared
 
     # Record-level related_equipment (narrative-sourced). Resolve/auto-create distinct
     # related records so links carry a real EquipmentID.
@@ -3115,6 +3231,8 @@ def _autocreate_minimal_equipment(
         equipment_index[name] = eq_file
         logger.info("  ＋ Auto-created related equipment record: %s", name)
         return equipment_id
+    except BatchModeCollecting:
+        raise  # batch collect pass: the stub's enrichment is queued; it is created next round
     except Exception as e:  # noqa: BLE001 - best-effort; link falls back to name-only
         logger.warning("Could not auto-create related equipment '%s': %s", name, e)
         return None
@@ -3399,36 +3517,93 @@ def extract_equipment_from_event(
         _observe_equipment_yield(event_data, 0)
         return []
 
-    # Process all equipment items
-    modified_files = [
-        eq_file
-        for eq_data in equipment_list
-        if (
-            eq_file := _process_equipment_item(
-                eq_data,
-                event_data,
-                people_index,
-                people_groups_index,
-                dates_index,
-                output_root,
-                output_dir,
-                equipment_index,
-                grok_client,
-                enable_enrichment,
-                places_index,
-            )
-        )
-    ]
+    failures: List[Tuple[str, BaseException]] = []
+    modified_files = _prepare_and_persist_items(
+        equipment_list,
+        event_data,
+        (people_index, people_groups_index, dates_index, places_index),
+        output_root,
+        output_dir,
+        equipment_index,
+        grok_client,
+        enable_enrichment,
+        failures,
+    )
 
     _observe_persist_shortfall(event_data, len(equipment_list), len(modified_files))
 
-    # Finalize
-    _finalize_extraction(output_dir, modified_files, event_file, processed)
+    # Finalize. An item that FAILED (alerted as items_failed) leaves the chapter unmarked, so the
+    # next run retries it; the items already written are no-ops then (one mention per sub-event).
+    if failures:
+        if modified_files:
+            generate_equipment_index(output_dir)
+    else:
+        _finalize_extraction(output_dir, modified_files, event_file, processed)
     _observe_equipment_items_dropped(len(equipment_list), len(modified_files))
     # yield MUST measure PERSISTED reality, not the pre-drop model list — the XChannel-8 false-OK
     # was produced=len(equipment_list)=7 while only 3 persisted (verdict=ok hid the 7->3 loss).
     _observe_equipment_yield(event_data, len(modified_files))
     return modified_files
+
+
+def _item_label(d: Any) -> str:
+    rec = d[2] if isinstance(d, tuple) else d
+    return str(rec.get("common_name") or rec.get("name") or "")[:60]
+
+
+def _prepare_and_persist_items(
+    equipment_list: List[Dict[str, Any]],
+    event_data: Dict[str, Any],
+    indices: Tuple[Any, Any, Any, Any],
+    output_root: Path,
+    output_dir: Path,
+    equipment_index: Dict[str, Path],
+    grok_client: GrokClient,
+    enable_enrichment: bool,
+    failures: Optional[List[Tuple[str, BaseException]]] = None,
+) -> List[Path]:
+    """Process a chapter's items in two stages (``sub_events.run_all``): PREPARE every item
+    concurrently (identity, then source re-check; no writes), then PERSIST them one after another
+    (shared files). On a batch collect pass a stage queues every item's request before raising:
+    a prepare-stage round writes nothing; in the persist stage an item that queues a request
+    (vessel disambiguation, enrichment) is left for the next round while the others are written.
+    Either way the chapter's registry entry is not marked. Failed items go to ``failures``.
+    """
+    from src.extraction import sub_events as fan
+
+    people_index, people_groups_index, dates_index, places_index = indices
+    prepared = fan.run_all(
+        lambda d: _prepare_equipment_item(
+            d,
+            event_data,
+            people_index,
+            people_groups_index,
+            dates_index,
+            output_root,
+            equipment_index,
+            grok_client,
+            places_index,
+        ),
+        equipment_list,
+        "equipment",
+        event_data,
+        label=_item_label,
+        what="items",
+        failures=failures,
+    )
+    persisted = fan.run_all(
+        lambda p: _persist_equipment_item(
+            p, people_index, output_dir, equipment_index, grok_client, enable_enrichment
+        ),
+        [p for _d, p in prepared if p is not None],
+        "equipment",
+        event_data,
+        label=_item_label,
+        workers=1,
+        what="items",
+        failures=failures,
+    )
+    return [f for _p, f in persisted if f]
 
 
 def generate_equipment_index(equipment_dir: Path) -> None:

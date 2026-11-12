@@ -34,6 +34,8 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from src.grok_client import BatchModeCollecting
+
 logger = logging.getLogger(__name__)
 
 _CACHE: Dict[str, Dict[str, Any]] = {}
@@ -207,6 +209,10 @@ def _try_grok(
         _write_suggestion(name, result)
         _persist_learned(key, result)  # auto-update learned coverage (first-wins)
         return result
+    except BatchModeCollecting:
+        # batch collect pass: the request is queued. Propagate - never fall through to the "raw"
+        # result, which resolve_designation would cache for the rest of the process.
+        raise
     except Exception as e:  # noqa: BLE001 - fail-open to the next fallback
         logger.warning("Grok disambiguation failed for %s: %s", name, e)
         return None
