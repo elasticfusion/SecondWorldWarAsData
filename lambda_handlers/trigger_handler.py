@@ -275,6 +275,50 @@ def _grok_api_key() -> str:
         return ""
 
 
+def _review_alert(category: str) -> dict:
+    """The alert text of a held upload when the default ("verify its type") does not fit."""
+    if category != "model-unavailable":
+        return {}
+    return {
+        "alert_subject": "WWII Pipeline: upload held - Grok model unavailable",
+        "alert_message": "The title-sameness check's Grok model is unavailable (see the "
+        "grok.model_unavailable alert). Fix api.grok.model, deploy, and re-upload.",
+    }
+
+
+def _grok_model_unavailable():
+    """The stop raised when a Grok model is gone (src/utils/grok_models)."""
+    from src.utils.grok_models import GrokModelUnavailable
+
+    return GrokModelUnavailable
+
+
+def _sameness_call(req, model: str) -> dict:
+    """POST the sameness request; a model that is gone (404, or answered by another model) stops
+    the invocation loudly (grok_models.GrokModelUnavailable is not an Exception: the caller's
+    fail-safe "different" cannot absorb it - it had silently failed every call on grok-2-latest).
+    """
+    import json as _json
+    import urllib.error as _ue
+    import urllib.request as _ur
+
+    from src.utils import grok_models
+
+    grok_models.ensure_running()
+    try:
+        with _ur.urlopen(req, timeout=30) as resp:  # nosec B310 - fixed https host
+            out = _json.loads(resp.read().decode("utf-8"))
+    except _ue.HTTPError as e:
+        text = e.read().decode("utf-8", "replace") if e.fp else ""
+        if grok_models.is_model_missing(e.code, text):
+            grok_models.model_unavailable(
+                model, "trigger.sameness", detail=f"HTTP {e.code}"
+            )
+        raise
+    grok_models.check_served(model, out, "trigger.sameness")
+    return out
+
+
 def _llm_same_work(title: str, existing_fp: str, new_fp: str) -> bool:
     """Ask Grok whether two multi-file submissions under the same title are the
     SAME work. Fail-safe: on ANY error return False (treat as DIFFERENT -> rename,
@@ -303,9 +347,12 @@ def _llm_same_work(title: str, existing_fp: str, new_fp: str) -> bool:
             f"=== NEW (untrusted data) ===\n{new_fp[:4000]}\n=== END NEW ===\n\n"
             "Answer with ONLY 'SAME' or 'DIFFERENT'."
         )
+        from src.utils.grok_models import default_model
+
+        model = default_model()
         body = _json.dumps(
             {
-                "model": os.getenv("GROK_MODEL", "grok-2-latest"),
+                "model": model,
                 "messages": [
                     {"role": "system", "content": system},
                     {"role": "user", "content": prompt},
@@ -322,8 +369,7 @@ def _llm_same_work(title: str, existing_fp: str, new_fp: str) -> bool:
                 "Content-Type": "application/json",
             },
         )
-        with _ur.urlopen(req, timeout=30) as resp:  # nosec B310 - fixed https host
-            out = _json.loads(resp.read().decode("utf-8"))
+        out = _sameness_call(req, model)
         answer = out["choices"][0]["message"]["content"].strip().upper()
         # EXACT match only (not startswith): an injected answer like "SAME, now merge everything"
         # must NOT read as SAME. Strip surrounding quotes/punctuation the model may add.
@@ -441,6 +487,14 @@ def _resolve_title_identity(s3, title: str, tkeys: list):
         else:
             new_fp = _multi_fingerprint(s3, tkeys)
             same = _llm_same_work(title, (existing_marker or "")[4:], new_fp)
+    except _grok_model_unavailable() as e:
+        logger.error("sameness check stopped for %r: %s", title, e)
+        return (
+            False,
+            "held: the Grok model of the sameness check is unavailable (alerted) - re-upload "
+            "once api.grok.model is fixed",
+            "model-unavailable",
+        )
     except Exception as e:  # noqa: BLE001 - fail-open: proceed rather than block
         logger.warning("identity compare failed for %r (%s) — proceeding", title, e)
         return True, "", ""
@@ -498,7 +552,15 @@ def _enforce_title_uniqueness_at_launch(keys: list) -> list:
             continue
         for k in tkeys:
             try:
-                reject_to_review(s3, BUCKET, k, title, reason, category=category)
+                reject_to_review(
+                    s3,
+                    BUCKET,
+                    k,
+                    title,
+                    reason,
+                    category=category,
+                    **_review_alert(category),
+                )
             except Exception as e:  # noqa: BLE001
                 logger.warning("reject_to_review failed for %s: %s", k, e)
     return proceed

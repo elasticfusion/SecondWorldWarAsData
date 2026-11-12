@@ -5,7 +5,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 import requests
 
@@ -39,6 +39,7 @@ class BatchResult:
     content: str = ""
     finish_reason: str = ""
     error: str = ""
+    model: str = ""  # the model that answered (grok_models: must be a configured one)
 
     @property
     def ok(self) -> bool:
@@ -538,6 +539,7 @@ def retrieve_results(api_key: str, batch_id: str) -> Dict[str, BatchResult]:
                     content=content,
                     finish_reason=finish_reason,
                     error=error_msg,
+                    model=str(completion.get("model") or ""),
                 )
             else:
                 results[rid] = BatchResult(
@@ -587,6 +589,7 @@ def retrieve_results_ordered(api_key: str, batch_id: str) -> List["BatchResult"]
                         content=choices[0].get("message", {}).get("content", ""),
                         finish_reason=choices[0].get("finish_reason", "unknown"),
                         error=error_msg,
+                        model=str(completion.get("model") or ""),
                     )
                 )
             else:
@@ -600,6 +603,16 @@ def retrieve_results_ordered(api_key: str, batch_id: str) -> List["BatchResult"]
             break
     logger.info("Retrieved %d ordered results from batch %s", len(ordered), batch_id)
     return ordered
+
+
+def verify_served_models(results: Iterable["BatchResult"], where: str) -> None:
+    """Every batch answer came from a configured model, else the run stops
+    (grok_models.GrokModelUnavailable). Shared by both batch-result consumers."""
+    from src.utils.grok_models import check_batch_served, configured_models
+
+    allowed = configured_models()
+    for r in results:
+        check_batch_served(r.model, allowed, where)
 
 
 # --- Shared positional result mapping (single source of truth) -----------------------------------

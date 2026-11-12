@@ -12,18 +12,16 @@ from src.grok_client import GrokClient
 def _client(monkeypatch):
     c = object.__new__(GrokClient)
     c.model = "grok-requested"
-    c._deprecation_alerted = False
     c.debug_resp_chars = 50
     monkeypatch.setattr(c, "_log_token_usage", lambda r: None)
-    alerts = []
-    monkeypatch.setattr(c, "_send_deprecation_alert", alerts.append)
-    return c, alerts
+    return c, []
 
 
 def test_no_choices_with_redirected_model_does_not_raise(monkeypatch):
-    c, alerts = _client(monkeypatch)
+    """Logging never raises; a redirected model is stopped by grok_models.check_served in
+    _call_api (tests/test_grok_models.py), not here."""
+    c, _ = _client(monkeypatch)
     c._log_api_response({"error": "overloaded", "model": "grok-other"})
-    assert alerts == ["grok-other"]  # the deprecation alert still fires
 
 
 def test_empty_choices_does_not_raise(monkeypatch):
@@ -39,7 +37,6 @@ def test_normal_response_unchanged(monkeypatch):
             "model": "grok-requested",
         }
     )
-    assert alerts == []
 
 
 def test_null_content_does_not_raise(monkeypatch):

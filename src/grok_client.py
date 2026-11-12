@@ -28,7 +28,7 @@ from tenacity import (
     wait_exponential,
 )
 
-from src.utils import request_identity
+from src.utils import grok_models, request_identity
 from src.utils.http_pool import get_session
 from src.utils.observe import observe_error, observe_warn
 
@@ -317,12 +317,7 @@ class GrokClient:
             .get("grok", {})
             .get("base_url", "https://api.x.ai/v1/chat/completions"),
         )
-        self.model = os.getenv(
-            "GROK_MODEL",
-            config.get("api", {})
-            .get("grok", {})
-            .get("model", "grok-4.20-0309-reasoning"),
-        )
+        self.model = grok_models.default_model(config)
         self._model_map = (
             config.get("api", {}).get("grok", {}).get("model_map", {}) or {}
         )
@@ -333,7 +328,6 @@ class GrokClient:
         # increments could be lost. Scoped to the fast state mutations only — NOT the API call.
         self._cache_lock = threading.Lock()
         self.timeout = 600.0  # 10 minutes for large chapters
-        self._deprecation_alerted = False
         self.debug_msg_chars = config.get("logging", {}).get(
             "debug_message_preview_chars", 500
         )
@@ -731,10 +725,14 @@ class GrokClient:
             # custom_id (only a server-assigned batch_request_id), so results MUST be mapped to our
             # cache keys by POSITION (submission order), NOT by id — mirrors the AWS retrieve-only
             # path (ecs_entrypoint._map_batch_results_by_index / retrieve_results_ordered).
-            from src.utils.batch_api import retrieve_results_ordered
+            from src.utils.batch_api import (
+                retrieve_results_ordered,
+                verify_served_models,
+            )
 
             ordered = retrieve_results_ordered(self.api_key, batch_id)
-        except Exception as _batch_exc:
+            verify_served_models(ordered, "batch_retrieve")
+        except (Exception, grok_models.GrokModelUnavailable) as _batch_exc:
             credit_gate.release(est_cost, config=self._config)
             logger.warning(
                 "OBSERV credit.released reason=batch_failed est_cost=%.4f err=%s "
@@ -1075,8 +1073,7 @@ class GrokClient:
         # Log token usage
         self._log_token_usage(result)
 
-        # Log response content. ``content`` is also read by the deprecation preview below, which can
-        # run when the response has no choices (e.g. an error payload served by another model).
+        # Log response content (``content`` stays "" when the response has no choices).
         content = ""
         if "choices" in result and len(result["choices"]) > 0:
             # ``or ""``: a refusal / tool-call response carries content=null, not a missing key
@@ -1087,26 +1084,11 @@ class GrokClient:
             )
             self._log_response_warnings(content, finish_reason)
 
-        # Check for model deprecation (redirect to different model)
-        served_model = result.get("model", "")
-        if (
-            served_model
-            and served_model != self.model
-            and not self._deprecation_alerted
-        ):
-            self._deprecation_alerted = True
-            logger.warning(
-                "MODEL DEPRECATED: requested '%s' but served by '%s'",
-                self.model,
-                served_model,
-            )
-            self._send_deprecation_alert(served_model)
-
-            # Log preview
-            preview = content[: self.debug_resp_chars]
-            if len(content) > self.debug_resp_chars:
-                preview += "..."
-            logger.debug(f"  {preview}")
+        # Log preview
+        preview = content[: self.debug_resp_chars]
+        if len(content) > self.debug_resp_chars:
+            preview += "..."
+        logger.debug(f"  {preview}")
 
     def _log_token_usage(self, result: Dict[str, Any]) -> None:
         """Log prompt/completion/total token counts from a response."""
@@ -1145,30 +1127,9 @@ class GrokClient:
                 )
                 logger.warning(f"Content: {content}")
 
-    def _send_deprecation_alert(self, served_model: str) -> None:
-        """Send SNS email alert when configured model is deprecated/redirected."""
-        try:
-            import boto3
-
-            topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
-            if not topic_arn:
-                return
-            boto3.client(
-                "sns", region_name=os.environ.get("AWS_REGION", "us-east-1")
-            ).publish(
-                TopicArn=topic_arn,
-                Subject="WWII Pipeline: Grok model deprecated",
-                Message=(
-                    f"The configured model '{self.model}' has been deprecated.\n"
-                    f"Requests are being redirected to '{served_model}'.\n\n"
-                    f"Update config.yaml api.grok.model to a current model."
-                ),
-            )
-        except Exception as e:
-            logger.debug("Failed to send deprecation alert: %s", e)
-
-    def _handle_api_errors(self, response) -> None:
-        """Handle API error responses."""
+    def _handle_api_errors(self, response, model: str = "") -> None:
+        """Handle API error responses (a model that does not exist stops the run:
+        grok_models)."""
         if response.status_code == 429:
             retry_after = int(response.headers.get("Retry-After", 60))
             self._rate_limiter.backoff(retry_after)
@@ -1178,6 +1139,12 @@ class GrokClient:
             response.raise_for_status()
 
         if response.status_code != 200:
+            if grok_models.is_model_missing(response.status_code, response.text):
+                grok_models.model_unavailable(
+                    model or self.model,
+                    "grok_client",
+                    detail=f"HTTP {response.status_code}",
+                )
             raise GrokAPIError(f"API error {response.status_code}: {response.text}")
 
     def _post_with_deadline(self, session, headers, payload):
@@ -1209,6 +1176,7 @@ class GrokClient:
         self, messages: list, temperature: float = 0.1, model: str = ""
     ) -> Dict[str, Any]:
         """Make API call with retry logic."""
+        grok_models.ensure_running()  # a model already found gone: no more calls (grok_models)
         self._rate_limiter.wait()
         self._validate_input_size(messages)
         self._log_api_request(messages, temperature)
@@ -1220,8 +1188,9 @@ class GrokClient:
 
         from src.utils.batch_api import GROK_MAX_TOKENS
 
+        requested = model or self.model
         payload = {
-            "model": model or self.model,
+            "model": requested,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": GROK_MAX_TOKENS,
@@ -1232,7 +1201,7 @@ class GrokClient:
         response = self._post_with_deadline(session, headers, payload)
         logger.debug(f"API Response: {response.status_code}")
 
-        self._handle_api_errors(response)
+        self._handle_api_errors(response, requested)
         result = response.json()
 
         # Validate response structure
@@ -1246,6 +1215,8 @@ class GrokClient:
             raise GrokAPIError("API returned empty response")
 
         self._log_api_response(result)
+        # a retired model is answered by another one: stop, never extract with it (grok_models)
+        grok_models.check_served(requested, result, "grok_client")
 
         return result
 

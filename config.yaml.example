@@ -21,12 +21,11 @@ api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
     model: "grok-4.3"  # xAI retired grok-4.20-0309-reasoning (May 15 2026) -> redirects here; grok-4.3 is Batch-API accepted. Alias = latest stable. Verify Batch support before bumping to grok-4.6/4.7.
-    model_map:
-      isbn: "grok-3-mini"             # Cheap model for simple lookups
-      url_verify: "grok-3-mini"
-      copyright: "grok-3-mini"
-      nara_match: "grok-3-mini"
-      openserp_verify: "grok-3-mini"
+    # Per-request-type models (cache_type -> model). Every model named here (and api.grok.model)
+    # must be served AS ITSELF: each phase's preflight stops the run otherwise
+    # (src/utils/grok_models). grok-3-mini was removed 2026-11-12: xAI no longer serves it
+    # (answered by grok-4.3, so the "cheap" lookups were already running on grok-4.3).
+    model_map: {}
     max_retries: 3
     timeout: 60
   calls_per_minute: 20                 # Conservative rate limit

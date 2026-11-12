@@ -15,6 +15,7 @@ import ulid as ulid_mod
 
 from src.grok_client import GrokClient, BatchModeCollecting, current_book
 from src.utils.file_lock import write_json_with_lock
+from src.utils.grok_models import GrokModelUnavailable, raise_if_unavailable
 from src.utils.observe import observe_error, observe_warn
 from src.utils.json_validator import _fix_invalid_ulids, _ULID_PATTERN
 
@@ -947,6 +948,8 @@ def _process_batch_results(
             )
             results["collecting"] = results.get("collecting", 0) + 1
             continue
+        if isinstance(result, GrokModelUnavailable):
+            continue  # stops the run after this batch (raise_if_unavailable), not a chapter failure
         if isinstance(result, BaseException):  # incl. CancelledError (not an Exception)
             # Always name the exception type: str(TimeoutError()) is "", which logged a
             # reason-less "✗ chapter: " (an un-actionable alarm).
@@ -1038,6 +1041,8 @@ async def process_chapters_parallel(
             heartbeat,
             expect_collecting=bool(getattr(grok_client, "batch_mode", False)),
         )
+        # a model that is gone stops the run (its alert is already sent) - not "a chapter failed"
+        raise_if_unavailable(batch_results)
 
     total_elapsed = _time.monotonic() - phase_start
     logger.info(
@@ -1125,6 +1130,8 @@ async def extract_all_async(
                 se[se_key] = list(existing | set(new_ids))
 
     write_json_with_lock(event_file, event_data)
+    # the completed entity types' links are saved: now stop if a model is gone
+    raise_if_unavailable(results)
 
     def _count(res):
         if isinstance(res, dict):

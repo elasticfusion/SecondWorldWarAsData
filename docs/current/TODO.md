@@ -413,6 +413,11 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   (f) Phase-3 run (2026-11-11, pre-Phase-3 data): 7 enriched records name no source (people
   georges bidault, frank m andrews; 5 equipment incl. V-1) - P3-A1; every cited note of the 10
   footnoted chapters has no bibliography entry (follows from (e)) - P3-C1.
+  (g) SILENT places shortfall, chapter 8 (rerun 2026-11-11): places extracted for sub-events 1-2
+  only (10 refs; 0 in sub-events 3-12 although the text names Colleville 25x, St. Laurent 25x,
+  Carentan 24x, Merderet 18x, Vierville 14x). Task log: `chapter8full-parsed.json: places=10`, no
+  warning, and the yield gate did not fire. Root-cause the places batch for long chapters, and add
+  a per-sub-event yield check (a sub-event with narrative text and 0 places/people is suspect).
 - **[MED · DESIGN · owner 2026-11-08] Book naming: a WORK key + an EDITION key, so duplicate
   titles and editions of one work are told apart.** CONSTRAINT (owner 2026-11-11): slugs are
   IMMUTABLE (`.kiro/steering/architecture-decisions.md`, "Book identity") - this scheme applies to

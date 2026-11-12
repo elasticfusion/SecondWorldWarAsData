@@ -731,6 +731,8 @@ def _preflight_credit_check() -> None:
     api_key = os.environ.get("GROK_API_KEY", "")
     if not api_key:
         return
+    from src.utils import grok_models as _grok_models
+
     try:
         import requests as _req
 
@@ -741,7 +743,7 @@ def _preflight_credit_check() -> None:
                 "Content-Type": "application/json",
             },
             json={
-                "model": "grok-3-mini-fast",
+                "model": _grok_models.default_model(),
                 "messages": [{"role": "user", "content": "hi"}],
                 "max_tokens": 1,
             },
@@ -757,10 +759,27 @@ def _preflight_credit_check() -> None:
             sys.exit(1)
         resp.raise_for_status()
         logger.info("Preflight OK: Grok API credits available")
+        # every configured model is served AS ITSELF (a retired one is redirected silently);
+        # the probe above already asked the default
+        default = _grok_models.default_model()
+        _grok_models.check_served(default, resp.json(), "preflight")
+        _grok_models.preflight(
+            api_key, _grok_models.configured_models(), probed={default}
+        )
+    except _grok_models.GrokModelUnavailable:
+        logger.error(
+            "PREFLIGHT FAILED: a configured Grok model is unavailable. Aborting."
+        )
+        sys.exit(1)  # already alerted (OBSERV grok.model_unavailable + operator alert)
     except SystemExit:
         raise
     except Exception as e:
-        logger.warning("Preflight check failed (proceeding anyway): %s", e)
+        logger.warning(
+            "OBSERV preflight.unverified status=warn error=%s - Grok credits/models not verified "
+            "at start; proceeding (every answer is still model-checked). Check xAI status / the "
+            "API key if this repeats.",
+            e,
+        )
 
 
 def _preflight_runtime_tables() -> None:
@@ -4533,10 +4552,11 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     # custom_id (only a server-assigned batch_request_id), so we map results to OUR
     # cache keys by POSITION against the submission-ordered request_details in metrics.
     api_key = os.environ.get("GROK_API_KEY", "")
-    from src.utils.batch_api import retrieve_results_ordered
+    from src.utils.batch_api import retrieve_results_ordered, verify_served_models
 
     ordered_results = retrieve_results_ordered(api_key, batch_id)
     logger.info("Retrieved %d ordered results", len(ordered_results))
+    verify_served_models(ordered_results, "batch_retrieve_only")
 
     # Load the submission-ordered (OUR cache key, cache_type) list. Prefer the new
     # submitted_request_ids (authoritative — our custom_ids in order); fall back to
