@@ -23,6 +23,7 @@ from src.grok_client import (
 from src.utils.file_lock import write_json_with_lock
 from src.utils.entity_records import merge_mentions
 from src.extraction import sub_events as per_sub_event
+from src.extraction import windows as _windows
 from src.utils.quote_match import QUOTE_RULE
 from src.utils.grok_models import GrokModelUnavailable, raise_if_unavailable
 from src.utils.observe import observe_error, observe_warn
@@ -1654,16 +1655,7 @@ def _window_kwargs(
     if ask_only:
         return windows_event, {"ask_only": True}
     real = event_data or {}
-    if not real.get("Event", {}).get("Sub-events"):
-        return {}, {}
-    if not windows_event.get("Event", {}).get("Sub-events"):
-        observe_error(
-            entity_type or "entities",
-            "windows_empty",
-            event_id=real["Event"].get("EventID", ""),
-            note="the chapter has sub-events but no paragraph windows (parsed paragraphs "
-            "missing absolute_number/text?): nothing asked - a count of 0 here is a FAILURE",
-        )
+    if _windows.unusable(windows_event, real, entity_type or "entities"):
         return {}, {}
     return windows_event, {"attribute_to": real}
 

@@ -880,20 +880,12 @@ _BLOCK_ID = re.compile(r"^--- Sub-event \[([^\]]*)\]")
 def _own_block(
     chunk: List[str], found: Dict[str, List[Dict[str, Any]]]
 ) -> Dict[str, List[Dict[str, Any]]]:
-    """A one-block request's answer is ALL that block's, whatever key Grok echoes (a mangled key
-    lost the window's statements). Several blocks: as answered (keyed by the echoed ids).
-    """
-    if len(chunk) != 1 or not found:
-        return found
-    match = _BLOCK_ID.match(chunk[0].lstrip())
-    if not match:
-        return found
-    own = match.group(1)
-    if set(found) != {own}:
-        logger.info(
-            "OBSERV weather.echo_rekeyed block=%s echoed=%s", own, ",".join(found)[:120]
-        )
-    return {own: [m for v in found.values() if isinstance(v, list) for m in v]}
+    """A one-block request's answer is ALL that block's (``windows.own_answer``). Several blocks:
+    as answered (keyed by the echoed ids)."""
+    from src.extraction.windows import own_answer
+
+    match = _BLOCK_ID.match(chunk[0].lstrip()) if len(chunk) == 1 else None
+    return own_answer(match.group(1), found, "weather") if match else found
 
 
 WINDOW_CHARS = 12_000  # sub-event text per block (paragraph-aligned)
@@ -1273,9 +1265,15 @@ def _ask_weather(
     window per request, the raw text only - no summary, no grouping, no places list (so the request
     depends on the parsed file alone) - each statement then attributed to the REAL sub-event
     holding its quote. Without a parsed file: the sub-events, as before."""
+    from src.extraction import windows
+
     event_file, parsed_file, event_data = chapter
     event = event_data.get("Event", {})
-    wev = _weather_windows(event_file, parsed_file)
+    wev = (
+        windows.chapter_windows(parsed_file)
+        if parsed_file is not None
+        else windows.window_event_for(event_file, windows.window_size())
+    )
     if wev is None:
         return _batch_extract_weather(
             event.get("Sub-events", []),
@@ -1287,7 +1285,7 @@ def _ask_weather(
             empty_counter=empty_counter,
             failures=failures,
         )
-    if _windows_unusable(wev, event_data):
+    if windows.unusable(wev, event_data, "weather"):
         return None
     found = _batch_extract_weather(
         wev["Event"]["Sub-events"],
@@ -1302,86 +1300,7 @@ def _ask_weather(
         empty_counter=empty_counter,
         failures=failures,
     )
-    return _attribute_windows(found, wev, event_data)
-
-
-def _weather_windows(
-    event_file: Path, parsed_file: Optional[Path]
-) -> Optional[Dict[str, Any]]:
-    """The chapter's paragraph windows (``windows.window_event``), or None without a parsed file."""
-    from src.extraction import windows
-
-    if parsed_file is None:
-        return windows.window_event_for(event_file, windows.window_size())
-    try:
-        parsed = json.loads(Path(parsed_file).read_text(encoding="utf-8"))
-        return windows.window_event(parsed, windows.window_size())
-    except (
-        Exception
-    ) as e:  # noqa: BLE001 - unreadable or malformed: the sub-events then
-        logger.warning(
-            "OBSERV weather.no_windows file=%s err=%s: asked per sub-event",
-            getattr(parsed_file, "name", parsed_file),
-            type(e).__name__,
-        )
-        return None
-
-
-def _windows_unusable(wev: Dict[str, Any], event_data: Dict[str, Any]) -> bool:
-    """True (and said LOUDLY when it is a loss) when the windows cannot be attributed: no real
-    sub-events, or a chapter with sub-events but no windows - nothing is asked then, never the
-    events' own text."""
-    real = (event_data.get("Event") or {}).get("Sub-events") or []
-    if not real:
-        logger.info(
-            "OBSERV weather.skipped reason=no_sub_events event_id=%s",
-            (event_data.get("Event") or {}).get("EventID", "?"),
-        )
-        return True
-    if wev["Event"]["Sub-events"]:
-        return False
-    from src.utils.observe import observe_error
-
-    observe_error(
-        "weather",
-        "windows_empty",
-        event_id=(event_data.get("Event") or {}).get("EventID", ""),
-        note="the chapter has sub-events but no paragraph windows (parsed paragraphs missing "
-        "absolute_number/text?): nothing asked - weather=0 here is a FAILURE",
-    )
-    return True
-
-
-def _attribute_windows(
-    results: Dict[str, List[Dict[str, Any]]],
-    wev: Dict[str, Any],
-    event_data: Dict[str, Any],
-) -> Dict[str, List[Dict[str, Any]]]:
-    """{window id: statements} -> {real Sub-eventID: statements}: each statement goes to the
-    sub-event holding its quote (``windows.regroup``, the rule every windowed entity uses);
-    one no sub-event holds is dropped and counted."""
-    from src.extraction import windows
-    from src.utils.deterministic_ids import reconcile_echoed_keys
-
-    wins = wev["Event"]["Sub-events"]
-    results = reconcile_echoed_keys(
-        [w["Sub-eventID"] for w in wins], results, "weather"
-    )
-    out: Dict[str, List[Dict[str, Any]]] = {}
-    for w in wins:
-        answer = {
-            "weather": [
-                {
-                    "sub_event_id": w["Sub-eventID"],
-                    "weather": results.get(w["Sub-eventID"]) or [],
-                }
-            ]
-        }
-        for group in windows.regroup(
-            answer, "weather", "weather", w, event_data, "weather"
-        )["weather"]:
-            out.setdefault(group["sub_event_id"], []).extend(group["weather"])
-    return out
+    return windows.attribute_found(found, wev, event_data, "weather")
 
 
 def _load_weather_processed(weather_dir: Path) -> Dict[str, bool]:

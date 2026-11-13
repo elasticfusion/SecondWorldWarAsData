@@ -288,7 +288,7 @@ def test_nothing_is_asked_when_windows_cannot_be_attributed(tmp_path, isolated_p
     no_windows = {"Event": {"EventID": "E", "Sub-events": []}}
     no_events = {"Event": {"EventID": "E", "Sub-events": []}}
     client = Client()
-    with mock.patch.object(bp, "observe_error") as loud:
+    with mock.patch("src.utils.observe.observe_error") as loud:
         a = asyncio.run(
             bp.extract_places_batch_async(
                 REAL, PARSED, client, tmp_path, {}, windows_event=no_windows
@@ -516,3 +516,156 @@ def test_a_window_answer_under_a_mangled_key_is_still_the_windows(
         if f.name not in ("index.json", ".processed_events.json")
     ]
     assert [m["Sub_eventID"] for m in rec["event_mentions"]] == [S2]
+
+
+# --- logistics and casualties: windows + the one statement rule ----------------------------------
+
+STATEMENT_PARSED = {
+    "book": "B",
+    "author": "A",
+    "chapter_title": "The Sixth of June",
+    "paragraphs": [
+        {"absolute_number": 1, "text": "Fuel ran short at Omaha. Ten men were killed."},
+        {"absolute_number": 2, "text": "Fuel ran short again at dusk."},
+        {"absolute_number": 3, "text": "Bradley watched from the Augusta."},
+        {
+            "absolute_number": 4,
+            "text": "Rudder climbed Pointe du Hoe; five were killed.",
+        },
+    ],
+}
+
+
+def _statement_chapter(tmp_path):
+    book = tmp_path / "content" / "B"
+    book.mkdir(parents=True)
+    event_file = book / "c-event.json"
+    event_file.write_text(json.dumps(REAL))
+    (book / "c-parsed.json").write_text(json.dumps(STATEMENT_PARSED))
+    return event_file
+
+
+class _ByWindow:
+    """Answers the window request whose block holds ``window`` with ``answer`` under a MANGLED key
+    (the window's own id is not echoed), every other request with nothing."""
+
+    batch_mode = False
+
+    def __init__(self, window, answer):
+        self.window, self.answer, self.prompts = window, answer, []
+
+    def extract_json(self, prompt, **_k):
+        self.prompts.append(prompt)
+        return {"mangled": self.answer} if f"[{self.window}]" in prompt else {}
+
+
+def _records(directory):
+    return [
+        json.loads(f.read_text())
+        for f in directory.glob("*.json")
+        if f.name != "index.json"
+    ]
+
+
+def test_logistics_are_asked_per_window_and_each_statement_kept_once(tmp_path):
+    from src.extraction import logistics as L
+
+    event_file = _statement_chapter(tmp_path)
+    item = {
+        "type": "supply_shortage",
+        "category": "fuel",
+        "description": "fuel short",
+        "date_start": "1944-06-06",
+    }
+    client = _ByWindow(
+        "P001-P003",
+        {
+            "logistics": [
+                dict(item, original_text="Fuel ran short at Omaha."),
+                dict(item, original_text="Fuel ran short again at dusk."),
+            ]
+        },
+    )
+    for _ in range(2):  # a re-run adds nothing
+        L.extract_logistics_from_event(event_file, tmp_path, client)
+    assert len(client.prompts) == 4  # two windows, twice (the client has no cache)
+    assert not any("SUMMARY-" in p for p in client.prompts)
+    recs = _records(tmp_path / "logistics")
+    # two statements of one sub-event, category, type and day: both kept, once each
+    assert sorted(r["original_text"] for r in recs) == [
+        "Fuel ran short again at dusk.",
+        "Fuel ran short at Omaha.",
+    ]
+    assert {r["event_mentions"][0]["Sub_eventID"] for r in recs} == {S1}
+
+
+def test_casualties_are_asked_per_window_and_each_statement_kept_once(tmp_path):
+    from src.extraction import casualties as C
+
+    event_file = _statement_chapter(tmp_path)
+    client = _ByWindow(
+        "P004-P004",
+        [
+            {
+                "type": "killed",
+                "side": "allied",
+                "description": "five killed",
+                "original_text": "five were killed",
+            }
+        ],
+    )
+    for _ in range(2):  # a re-run adds nothing
+        C.extract_casualties(event_file, tmp_path, client)
+    assert not any("SUMMARY-" in p for p in client.prompts)
+    (rec,) = _records(tmp_path / "casualties")
+    assert rec["source"]["Sub-eventID"] == S2
+
+
+def test_one_quote_holding_several_logistics_records_keeps_them_all(tmp_path):
+    from src.extraction import logistics as L
+
+    event_file = _statement_chapter(tmp_path)
+    quote = "Fuel ran short at Omaha."
+    client = _ByWindow(
+        "P001-P003",
+        {
+            "logistics": [
+                {
+                    "type": "supply_shortage",
+                    "category": c,
+                    "description": c,
+                    "original_text": quote,
+                }
+                for c in ("fuel", "ammunition", "vehicles")
+            ]
+        },
+    )
+    L.extract_logistics_from_event(event_file, tmp_path, client)
+    recs = _records(tmp_path / "logistics")
+    assert sorted(r["category"] for r in recs) == ["ammunition", "fuel", "vehicles"]
+
+
+def test_one_quote_holding_several_casualty_records_keeps_them_all(tmp_path):
+    from src.extraction import casualties as C
+
+    event_file = _statement_chapter(tmp_path)
+    quote = "Ten men were killed."
+    client = _ByWindow(
+        "P001-P003",
+        [
+            {"type": t, "side": "allied", "description": t, "original_text": quote}
+            for t in ("killed", "wounded")
+        ],
+    )
+    C.extract_casualties(event_file, tmp_path, client)
+    assert sorted(r["type"] for r in _records(tmp_path / "casualties")) == [
+        "killed",
+        "wounded",
+    ]
+
+
+def test_a_casualty_window_with_plain_loss_wording_is_asked():
+    from src.extraction.casualties import _has_casualty_mention
+
+    assert _has_casualty_mention("Two companies were lost in the surf.")
+    assert _has_casualty_mention("The tanks were knocked out on the beach.")

@@ -66,7 +66,8 @@ rules:
       supplies or reinforcements" -> separate shortage records for heavy_weapons (few), artillery
       (none), supplies (prospect limited), reinforcements (prospect limited).
     "no X" / "lacking X" / "very few X" are all valid shortages — do NOT drop them for being an
-    absence; set a qualifier (none / very_few / limited) in description. original_text MANDATORY.
+    absence; set a qualifier (none / very_few / limited) in description. original_text MANDATORY:
+    {quote_rule}.
   - Severity values: critical, high, medium, low
   - DEFAULT TO MEDIUM. Only use high/critical when text explicitly states operations were halted, postponed, or impossible.
   - Severity calibration:

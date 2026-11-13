@@ -96,14 +96,13 @@ def extract_casualties(
 
     casualties = []
 
-    # Batch extract from all sub-events with casualty mentions
-    batch_results = _batch_extract_casualties(
+    # Batch extract from all sub-events with casualty mentions - or the chapter's paragraph windows
+    batch_results = _ask_casualties(
+        event_file,
+        {"Event": event},
         sub_events,
         grok_client,
-        dates_index,
-        places_index,
-        people_index,
-        people_groups_index,
+        (dates_index, places_index, people_index, people_groups_index),
     )
 
     # Process results for each sub-event
@@ -139,13 +138,8 @@ def extract_casualties(
             except Exception as e:
                 logger.error("Failed to build casualty: %s", e)
 
-    # Save casualties
-    for casualty in casualties:
-        try:
-            _save_casualty(casualty, casualties_dir)
-        except Exception as e:
-            casualty_id = casualty.get("CasualtyID", "unknown")
-            logger.error("Failed to save casualty %s: %s", casualty_id, e)
+    # Save casualties: each statement once
+    _save_new(casualties, casualties_dir)
 
     # #7 PATTERN-8: casualties had NO yield rollup, so a {}-batch -> [] (a dropped/empty extraction)
     # was invisible. Emit a canonical produced-count rollup so the per-event yield is always a loud,
@@ -153,6 +147,120 @@ def extract_casualties(
     _observe_casualties_rollup(event_id, len(sub_events), len(casualties))
 
     return casualties
+
+
+def _ask_casualties(
+    event_file: Path,
+    real: Dict[str, Any],
+    sub_events: List[Dict[str, Any]],
+    grok_client: GrokClient,
+    indexes: tuple,
+) -> Dict[str, List[Dict[str, Any]]]:
+    """{real Sub-eventID: casualty items} ({} when nothing could be asked - said where).
+
+    Discovery in the chapter's paragraph windows of the parsed text (src/extraction/windows): one
+    window per request, the raw text only, each item attributed to the REAL sub-event holding its
+    quote. Without a parsed file: the sub-events, as before."""
+    from src.extraction import windows
+
+    dates_index, places_index, people_index, groups_index = indexes
+    wev = windows.window_event_for(event_file, windows.window_size())
+    if wev is None:
+        return _batch_extract_casualties(
+            sub_events,
+            grok_client,
+            dates_index,
+            places_index,
+            people_index,
+            groups_index,
+        )
+    if windows.unusable(wev, real, "casualties"):
+        return {}
+    found = _batch_extract_casualties(
+        wev["Event"]["Sub-events"],
+        grok_client,
+        dates_index,
+        places_index,
+        people_index,
+        groups_index,
+        chunk_size=1,
+    )
+    return windows.attribute_found(found, wev, real, "casualties")
+
+
+def _save_new(casualties: List[Dict[str, Any]], casualties_dir: Path) -> None:
+    """Save each casualty statement once (entity_records.mention_identity - the ONE statement
+    rule): a re-run of a chapter used to write every casualty again under a new id."""
+    seen = _existing_statements(casualties_dir)
+    for casualty in casualties:
+        key = _casualty_statement(casualty)
+        if key in seen:
+            continue
+        try:
+            _save_casualty(casualty, casualties_dir)
+            seen.add(key)
+        except Exception as e:
+            casualty_id = casualty.get("CasualtyID", "unknown")
+            logger.error("Failed to save casualty %s: %s", casualty_id, e)
+
+
+def _casualty_statement(casualty: Dict[str, Any]) -> tuple:
+    """A casualty record's identity: its statement (entity_records.mention_identity - the ONE
+    statement rule) AND its claim. One quote holds several records ("100 killed and 200 wounded";
+    one per side; one per unit of a multi-unit passage), so the same quote of the same sub-event
+    is one record only for the same type, side, units and people. The same fields for a saved
+    record and a new one."""
+    from src.utils.entity_records import mention_identity
+
+    source = casualty.get("source") or {}
+    statement = mention_identity(
+        {
+            "Sub-eventID": source.get("Sub-eventID") or "",
+            "EventID": source.get("EventID") or "",
+            "original_text": casualty.get("original_text"),
+            "type": casualty.get("type"),
+            "side": casualty.get("side"),
+            "description": casualty.get("description") or "",
+        }
+    )
+    return statement + (
+        _token(casualty.get("type")),
+        _token(casualty.get("side")),
+        _names(casualty.get("impacted_organizations")),
+        _names(casualty.get("impacted_people")),
+    )
+
+
+def _token(value: Any) -> str:
+    """A claim field as a hashable, case-free string (an LLM may send a list or dict)."""
+    return str(value or "").strip().casefold()
+
+
+def _names(items: Any) -> tuple:
+    """The sorted names of a record's impacted_* list (strings or {"name": ...})."""
+    out = []
+    for item in items or []:
+        name = item.get("name") if isinstance(item, dict) else item
+        if name:
+            out.append(str(name).strip().casefold())
+    return tuple(sorted(out))
+
+
+def _existing_statements(casualties_dir: Path) -> set:
+    """The statement keys (``_casualty_statement``) of the casualties already saved."""
+    keys = set()
+    for f in casualties_dir.glob("*.json"):
+        if f.name == "index.json":
+            continue
+        try:
+            keys.add(_casualty_statement(json.loads(f.read_text(encoding="utf-8"))))
+        except (OSError, ValueError, AttributeError) as e:
+            logger.warning(
+                "OBSERV casualties.unreadable_record file=%s err=%s: not deduplicated against",
+                f.name,
+                type(e).__name__,
+            )
+    return keys
 
 
 def _observe_casualties_rollup(
@@ -258,7 +366,14 @@ def _batch_extract_casualties(
         _cache_key = hashlib.sha256(
             f"casualties:v1:{_model}:0.1:{_seids}:{_chunk_sig}".encode("utf-8")
         ).hexdigest()
-        return _call_and_parse_casualties(grok_client, prompt, cache_key=_cache_key)
+        found = _call_and_parse_casualties(grok_client, prompt, cache_key=_cache_key)
+        # a one-block request's answer is all that block's, whatever key Grok echoes (a window,
+        # or a lone sub-event block on the per-sub-event path)
+        if len(chunk) == 1:
+            from src.extraction.windows import own_answer
+
+            return own_answer(chunk[0][0], found, "casualties")
+        return found
 
     return extract_with_chunk_halving(chunks, _extract_chunk, "casualties")
 
@@ -491,6 +606,12 @@ def _has_casualty_mention(text: str) -> bool:
         "surrender",
         "men lost",
         "lost men",
+        # a 3-paragraph window must carry its own keyword (a whole sub-event used to pass on one
+        # anywhere in it): plain loss wording a window may hold alone. A false positive costs one
+        # small request; a miss loses the casualty.
+        "lost",
+        "knocked out",
+        "evacuated",
     ]
     text_lower = text.lower()
     return any(keyword in text_lower for keyword in keywords)

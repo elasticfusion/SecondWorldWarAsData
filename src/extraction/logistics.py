@@ -109,6 +109,9 @@ class Logistics(BaseModel):
     logistics_type: str
     category: str
     description: str
+    # the verbatim provenance anchor (in the JSON schema; missing here, model_dump dropped it from
+    # every saved record - and the statement rule needs it)
+    original_text: Optional[str] = None
     severity: str
     temporal: TemporalInfo
     delivery_method: Optional[str] = None
@@ -312,13 +315,16 @@ def _batch_extract_logistics(
 
     # Chunk to avoid truncation on large chapters
     chunks = [relevant[i : i + chunk_size] for i in range(0, len(relevant), chunk_size)]
-    all_results: Dict[str, List[LogisticsExtraction]] = {}
 
+    from src.extraction.windows import own_answer
     from src.utils.chunked_extract import extract_with_chunk_halving
 
-    return extract_with_chunk_halving(
-        chunks, lambda chunk: _extract_logistics_chunk(chunk, grok_client), "logistics"
-    )
+    def _ask(chunk):
+        found = _extract_logistics_chunk(chunk, grok_client)
+        # a one-block request's answer is all that block's, whatever key Grok echoes
+        return own_answer(chunk[0][0], found, "logistics") if len(chunk) == 1 else found
+
+    return extract_with_chunk_halving(chunks, _ask, "logistics")
 
 
 def _extract_logistics_chunk(
@@ -814,8 +820,36 @@ def _build_logistics_data(
     return data
 
 
+def _statement_key(
+    sub_event_id: str,
+    category: str,
+    logistics_type: str,
+    date_start: Optional[str],
+    description: str,
+    original_text: Optional[str],
+) -> tuple:
+    """A logistics record's identity: its statement (entity_records.mention_identity - the ONE
+    statement rule) AND its claim. One quote holds several records ("lacking vehicles, supplies,
+    ammunition" -> three shortages, each quoting the same sentence), so the same quote of the same
+    sub-event is one record only for the same category, type and day. The same fields for a saved
+    record and a new one."""
+    from src.utils.entity_records import mention_identity
+
+    statement = mention_identity(
+        {
+            "Sub_eventID": sub_event_id or "",
+            "original_text": original_text,
+            "category": category,
+            "logistics_type": logistics_type,
+            "date_start": date_start or "unknown",
+            "description": description or "",
+        }
+    )
+    return statement + (category, logistics_type, date_start or "unknown")
+
+
 def _load_existing_keys(logistics_dir: Path) -> set:
-    """Load dedup keys from existing logistics files."""
+    """Load dedup keys (``_statement_key``) from existing logistics files."""
     keys = set()
     for f in logistics_dir.glob("*.json"):
         if f.name == "index.json":
@@ -824,11 +858,13 @@ def _load_existing_keys(logistics_dir: Path) -> set:
             d = json.loads(f.read_text())
             em = d.get("event_mentions", [{}])[0]
             keys.add(
-                (
+                _statement_key(
                     em.get("Sub_eventID", ""),
                     d.get("category", ""),
                     d.get("logistics_type", ""),
-                    d.get("temporal", {}).get("date_start", ""),
+                    d.get("temporal", {}).get("date_start"),
+                    d.get("description", ""),
+                    d.get("original_text"),
                 )
             )
         except Exception:
@@ -841,11 +877,13 @@ def _save_extraction(
 ) -> bool:
     """Validate, dedup, and save a single logistics extraction. Returns True if saved."""
     sub_event_id = sub_event.get("Sub-eventID", "")
-    dedup_key = (
+    dedup_key = _statement_key(
         sub_event_id,
         _clamp_enum(extraction.category, _VALID_CATEGORIES, "general"),
         _clamp_enum(extraction.type, _VALID_TYPES, "supply_shortage"),
-        extraction.date_start or "unknown",
+        extraction.date_start,
+        extraction.description,
+        extraction.original_text,
     )
     if dedup_key in existing_keys:
         return False
@@ -880,7 +918,9 @@ def _save_extraction(
             _contained_entity_path,
         )
 
-        proposed = f"{data['category']}_{data['logistics_type']}_{date_str}_{data['LogisticsID'][:8]}.json"
+        # the ULID's RANDOM tail, not its head: [:8] is the millisecond timestamp, so two records
+        # of one answer got the same name and the second overwrote the first
+        proposed = f"{data['category']}_{data['logistics_type']}_{date_str}_{data['LogisticsID'][-8:]}.json"
         filename = _safe_entity_filename(proposed, data["LogisticsID"])
         target = _contained_entity_path(logistics_dir, filename)
         if target is None:
@@ -965,8 +1005,7 @@ def extract_logistics_from_event(
 
     existing_keys = _load_existing_keys(logistics_dir)
 
-    # Batch extract from all sub-events in single API call
-    batch_results = _batch_extract_logistics(sub_events, grok_client)
+    batch_results = _ask_logistics(event_file, event, sub_events, grok_client)
 
     indexes = (
         people_index,
@@ -1003,6 +1042,31 @@ def extract_logistics_from_event(
     return logistics_dir if extracted_count > 0 else None
 
 
+def _ask_logistics(
+    event_file: Path,
+    event: Dict[str, Any],
+    sub_events: List[Dict[str, Any]],
+    grok_client: GrokClient,
+) -> Dict[str, List[LogisticsExtraction]]:
+    """{real Sub-eventID: logistics statements} ({} when nothing could be asked - said where).
+
+    Discovery in the chapter's paragraph windows of the parsed text (src/extraction/windows): one
+    window per request, the raw text only, each statement attributed to the REAL sub-event holding
+    its quote. Without a parsed file: the sub-events, as before."""
+    from src.extraction import windows
+
+    wev = windows.window_event_for(event_file, windows.window_size())
+    if wev is None:
+        return _batch_extract_logistics(sub_events, grok_client)
+    real = {"Event": event}
+    if windows.unusable(wev, real, "logistics"):
+        return {}
+    found = _batch_extract_logistics(
+        wev["Event"]["Sub-events"], grok_client, chunk_size=1
+    )
+    return windows.attribute_found(found, wev, real, "logistics")
+
+
 def _observe_logistics_yield(event, event_data, sub_events, extracted_count) -> None:
     """Emit the logistics expected-yield baseline (fail-safe)."""
     observe_yield(
@@ -1020,7 +1084,7 @@ def _rebuild_index(logistics_dir: Path) -> None:
     for f in sorted(logistics_dir.glob("*.json")):
         if f.name == "index.json":
             continue
-        # Key on the FULL stem (includes the unique LogisticsID[:8] suffix). Stripping the ULID
+        # Key on the FULL stem (includes the unique LogisticsID[-8:] suffix). Stripping the ULID
         # (rsplit('_',1)[0]) collapsed DISTINCT sub-events that share category_type_date into one
         # index entry, so only the last survived -> the rest were unreachable via the index.
         key = f.stem

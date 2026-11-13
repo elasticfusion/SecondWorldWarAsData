@@ -113,22 +113,119 @@ def window_event(
 
 
 def window_event_for(event_file: Path, size: int) -> Optional[Dict[str, Any]]:
-    """The window event of an event file's chapter (its sibling ``-parsed.json``), or None."""
+    """The window event of an event file's chapter (its sibling ``-parsed.json``), or None (no
+    such sibling: a file not named ``*-event.json`` has none - never read the event file itself).
+    """
+    if not event_file.name.endswith("-event.json"):
+        logger.warning(
+            "OBSERV windows.no_parsed_file file=%s: not an *-event.json",
+            event_file.name,
+        )
+        return None
     parsed_file = event_file.with_name(
-        event_file.name.replace("-event.json", "-parsed.json")
+        event_file.name[: -len("-event.json")] + "-parsed.json"
     )
+    return chapter_windows(parsed_file, size)
+
+
+def chapter_windows(
+    parsed_file: Path, size: Optional[int] = None
+) -> Optional[Dict[str, Any]]:
+    """The window event of a parsed chapter file, or None when it is unreadable or malformed
+    (the caller's per-sub-event path then, said in the log)."""
     try:
-        return window_event(json.loads(parsed_file.read_text(encoding="utf-8")), size)
+        return window_event(
+            json.loads(Path(parsed_file).read_text(encoding="utf-8")),
+            size or window_size(),
+        )
     except (
         Exception
     ) as e:  # noqa: BLE001 - unreadable or malformed: the caller's legacy path
         logger.warning(
-            "OBSERV windows.no_parsed_file event=%s err=%s: %s",
-            event_file.name,
+            "OBSERV windows.no_parsed_file file=%s err=%s: %s",
+            getattr(parsed_file, "name", parsed_file),
             type(e).__name__,
             e,
         )
         return None
+
+
+def unusable(wev: Dict[str, Any], real_event: Dict[str, Any], entity: str) -> bool:
+    """True when a chapter's windows cannot be attributed, so nothing is asked: no real
+    sub-events (every answer would be dropped), or sub-events but no windows (its parsed
+    paragraphs are unusable) - the second a LOUD failure, never a fall back to the events' own
+    text."""
+    event = (real_event or {}).get("Event") or {}
+    if not event.get("Sub-events"):
+        logger.info(
+            "OBSERV %s.skipped reason=no_sub_events event_id=%s",
+            entity,
+            event.get("EventID", "?"),
+        )
+        return True
+    if (wev.get("Event") or {}).get("Sub-events"):
+        return False
+    from src.utils.observe import observe_error
+
+    observe_error(
+        entity or "entities",
+        "windows_empty",
+        event_id=event.get("EventID", ""),
+        note="the chapter has sub-events but no paragraph windows (parsed paragraphs "
+        "missing absolute_number/text?): nothing asked - a count of 0 here is a FAILURE",
+    )
+    return True
+
+
+def own_answer(window_id: str, found: Dict[str, Any], entity: str) -> Dict[str, Any]:
+    """A ONE-window request's answer is all that window's, whatever key Grok echoes (a mangled
+    key lost the window's items): ``{window_id: every item}``."""
+    if not found:
+        return found
+    if set(found) != {window_id}:
+        logger.info(
+            "OBSERV windows.echo_rekeyed entity=%s window=%s echoed=%s",
+            entity,
+            window_id,
+            ",".join(map(str, found))[:120],
+        )
+    return {window_id: [m for v in found.values() if isinstance(v, list) for m in v]}
+
+
+def _quote_of(item: Any) -> Any:
+    if isinstance(item, dict):
+        return item.get("original_text")
+    return getattr(item, "original_text", None)
+
+
+def attribute_found(
+    found: Dict[str, List[Any]],
+    wev: Dict[str, Any],
+    real_event: Dict[str, Any],
+    entity: str,
+) -> Dict[str, List[Any]]:
+    """``{window id: items}`` -> ``{real Sub-eventID: items}``: each item (a dict or a model with
+    ``original_text``) goes to the sub-event holding its quote (``attribute``); one no sub-event
+    holds is dropped and counted. The statement extractors' form of ``regroup``."""
+    from src.utils.deterministic_ids import reconcile_echoed_keys
+
+    wins = (wev.get("Event") or {}).get("Sub-events") or []
+    found = reconcile_echoed_keys([w["Sub-eventID"] for w in wins], found, entity)
+    owners = paragraph_owners(real_event)
+    out: Dict[str, List[Any]] = {}
+    for w in wins:
+        unowned = unquoted = 0
+        for item in found.get(w["Sub-eventID"]) or []:
+            seid, _nums, quoted = attribute(
+                w, {"original_text": _quote_of(item)}, owners
+            )
+            unquoted += not quoted
+            if seid is None:
+                unowned += 1
+            else:
+                out.setdefault(seid, []).append(item)
+        _observe(entity, w, unowned, unquoted)
+    return out
 
 
 # --- attribution: a window's answer -> the real sub-events -------------------------------------
@@ -180,18 +277,17 @@ def regroup(
     Every item of a one-window request is that window's, whatever ``sub_event_id`` it echoes.
     Items no sub-event holds are dropped and counted; per-group extras (places' relationships) go
     with the first group."""
-    owners = paragraph_owners(real_event)
-    groups: Dict[str, List[Dict[str, Any]]] = {}
     extras: Dict[str, List[Any]] = {}
-    unowned = unquoted = 0
-    for obj in _items(response, response_key, inner_key, extras):
-        seid, _nums, quoted = attribute(window, obj, owners)
-        unquoted += not quoted
-        if seid is None:
-            unowned += 1
-        else:
-            groups.setdefault(seid, []).append(obj)
-    _observe(entity_type, window, unowned, unquoted)
+    groups = attribute_found(
+        {
+            window.get("Sub-eventID", ""): _items(
+                response, response_key, inner_key, extras
+            )
+        },
+        {"Event": {"Sub-events": [window]}},
+        real_event,
+        entity_type,
+    )
     out = [{"sub_event_id": s, inner_key: objs} for s, objs in groups.items()]
     if out:
         out[0].update(extras)

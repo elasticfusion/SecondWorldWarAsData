@@ -152,3 +152,4 @@ rules:
       one record.
     original_text (verbatim) is MANDATORY on every casualty record — it is the provenance anchor;
     a casualty with no source text/linkable event is an ORPHAN and will be rejected.
+    original_text: {quote_rule}.
