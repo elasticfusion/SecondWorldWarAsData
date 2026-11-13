@@ -28,9 +28,9 @@ def test_reconstruct_fulltext_resolves_paragraph_numbers():
     }
     EV._reconstruct_fulltext(event, _parsed())
     ft = event["Event"]["Sub-events"][0]["Sub-event_fulltext"]
-    assert set(ft.keys()) == {"Paragraph_3", "Paragraph_5", "Paragraph_7"}, ft
+    assert set(ft.keys()) == {"Paragraph_003", "Paragraph_005", "Paragraph_007"}, ft
     assert "summary" not in ft  # must NOT fall back to summary
-    assert "real source text" in ft["Paragraph_3"]
+    assert "real source text" in ft["Paragraph_003"]
 
 
 def test_backcompat_old_paragraphs_key_still_works():
@@ -43,7 +43,7 @@ def test_backcompat_old_paragraphs_key_still_works():
     }
     EV._reconstruct_fulltext(event, _parsed())
     ft = event["Event"]["Sub-events"][0]["Sub-event_fulltext"]
-    assert set(ft.keys()) == {"Paragraph_2", "Paragraph_4"}
+    assert set(ft.keys()) == {"Paragraph_002", "Paragraph_004"}
 
 
 def test_summary_fallback_only_when_truly_no_paragraphs():

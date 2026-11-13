@@ -103,8 +103,16 @@ def test_the_normalizer_builds_disjoint_fulltext_and_footnotes():
     resp = _resp(range(1, 7), range(4, 7))
     out = EV._normalize_event_response(resp, parsed, None)
     a, b = out["Event"]["Sub-events"]
-    assert set(a["Sub-event_fulltext"]) == {"Paragraph_1", "Paragraph_2", "Paragraph_3"}
-    assert set(b["Sub-event_fulltext"]) == {"Paragraph_4", "Paragraph_5", "Paragraph_6"}
+    assert set(a["Sub-event_fulltext"]) == {
+        "Paragraph_001",
+        "Paragraph_002",
+        "Paragraph_003",
+    }
+    assert set(b["Sub-event_fulltext"]) == {
+        "Paragraph_004",
+        "Paragraph_005",
+        "Paragraph_006",
+    }
     assert not set(a.get("Footnote_References") or []) & set(
         b.get("Footnote_References") or []
     )

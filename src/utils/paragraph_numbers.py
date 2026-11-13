@@ -70,3 +70,34 @@ def coerce_paragraph_numbers(raw: Any, *, scope: str, subject: str = "") -> List
             "for this site; the provenance window for those paragraphs is missing)",
         )
     return out
+
+
+# --- paragraph KEYS ("Paragraph_007") --------------------------------------------------------
+# Keys are zero-padded so that sorting them as text is also paragraph order: "Paragraph_10" sorted
+# before "Paragraph_9", so a sub-event's paragraphs reached the model out of order. Width 3 covers
+# a chapter up to 999 paragraphs; past that the number is simply longer, and every reader parses
+# the number (paragraph_number) rather than trusting the text order.
+KEY_WIDTH = 3
+
+
+def paragraph_key(n: int) -> str:
+    """The key of paragraph ``n``: ``Paragraph_007``. The ONE place keys are made."""
+    return f"Paragraph_{int(n):0{KEY_WIDTH}d}"
+
+
+def paragraph_number(key: Any) -> int | None:
+    """The paragraph number of a key - padded ("Paragraph_007") or not ("Paragraph_7", records
+    written before the padding) - or None for a non-paragraph key ("summary")."""
+    return _one(key)
+
+
+def in_paragraph_order(fulltext: Any) -> List[tuple]:
+    """``[(key, text), ...]`` of a ``Sub-event_fulltext`` dict in paragraph order (by number, so
+    old unpadded and new padded keys order correctly together); non-paragraph keys (the
+    ``summary`` fallback) come after, in their own order."""
+    if not isinstance(fulltext, dict):
+        return []
+    numbered = [(paragraph_number(k), k, v) for k, v in fulltext.items()]
+    paras = sorted((n, k, v) for n, k, v in numbered if n is not None)
+    rest = [(k, v) for n, k, v in numbered if n is None]
+    return [(k, v) for _n, k, v in paras] + rest

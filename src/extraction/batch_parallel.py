@@ -654,9 +654,10 @@ def _build_source_block(sub_events: list, include_fulltext: bool) -> str:
     for i, se in enumerate(sub_events, 1):
         block += f"\n{i}. [{se.get('Sub-eventID')}] {se.get('Sub-event_summary', '')}"
         if include_fulltext:
-            ft = se.get("Sub-event_fulltext", {})
-            for pk in sorted(ft.keys()):
-                block += f"\n   {ft[pk]}"
+            from src.utils.paragraph_numbers import in_paragraph_order
+
+            for _pk, text in in_paragraph_order(se.get("Sub-event_fulltext", {})):
+                block += f"\n   {text}"
     return block
 
 

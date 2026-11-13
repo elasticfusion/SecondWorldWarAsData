@@ -36,7 +36,8 @@ schema: |
   }
 
 rules:
-  - Paragraph numbers must be integers, not strings
+  - Paragraph numbers must be integers, not strings, written without leading zeros (Paragraph_007
+    is cited as 7)
   - EACH PARAGRAPH BELONGS TO EXACTLY ONE SUB-EVENT. Sub-events must not share paragraphs, and
     one sub-event's range must not contain another's (a paragraph listed twice is extracted twice
     for every person, place, unit and date it mentions)

@@ -2212,13 +2212,14 @@ def _extract_equipment_broad_one(
 
 def _sub_event_paragraphs(se: Dict[str, Any]) -> Dict[int, str]:
     """{paragraph number: text} of one sub-event (numbers run through the whole chapter)."""
+    from src.utils.paragraph_numbers import paragraph_number
+
     paras: Dict[int, str] = {}
     fulltext = se.get("Sub-event_fulltext", {})
     for key, text in (fulltext.items() if isinstance(fulltext, dict) else []):
-        try:
-            paras[int(str(key).split("_")[-1])] = str(text)
-        except ValueError:
-            continue
+        n = paragraph_number(key)
+        if n is not None:
+            paras[n] = str(text)
     return paras
 
 
@@ -2275,12 +2276,14 @@ def _build_extended_text(
 
 def _paragraph_lookup(event_data: Dict[str, Any]) -> Dict[int, str]:
     """Gather {absolute_paragraph_number: verbatim_text} across all sub-events."""
+    from src.utils.paragraph_numbers import paragraph_number
+
     para: Dict[int, str] = {}
     for se in event_data.get("Event", {}).get("Sub-events", []):
         for k, v in (se.get("Sub-event_fulltext") or {}).items():
-            m = re.match(r"Paragraph_(\d+)$", str(k))
-            if m and isinstance(v, str):
-                para[int(m.group(1))] = v
+            n = paragraph_number(k)
+            if n is not None and isinstance(v, str):
+                para[n] = v
     return para
 
 
@@ -2558,6 +2561,8 @@ def _find_sub_event(
     event_data: Dict[str, Any], paragraph_numbers: List[int]
 ) -> Dict[str, Any]:
     """Find the sub-event matching the given paragraph numbers."""
+    from src.utils.paragraph_numbers import paragraph_number as _para_number
+
     sub_events = event_data["Event"].get("Sub-events", [])
     if not sub_events:
         return {}
@@ -2569,12 +2574,8 @@ def _find_sub_event(
         fulltext = se.get("Sub-event_fulltext", {})
         if isinstance(fulltext, dict):
             for key in fulltext:
-                try:
-                    para_num = int(key.split("_")[-1]) if "_" in key else int(key)
-                    if para_num in paragraph_numbers:
-                        return se
-                except (ValueError, IndexError):
-                    continue
+                if _para_number(key) in paragraph_numbers:
+                    return se
     return sub_events[0]
 
 

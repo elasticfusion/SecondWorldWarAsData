@@ -14,6 +14,7 @@ from src.utils.json_validator import _fix_invalid_ulids
 from src.schemas import ULID_PATTERN
 
 from src.utils.prompt_loader import get_system_prompt
+from src.utils.paragraph_numbers import paragraph_key
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +87,7 @@ def _build_subevent_fulltext(se: dict, para_lookup: dict) -> None:
     fulltext = {}
     for n in coerce_paragraph_numbers(nums, scope="events.fulltext"):
         if n in para_lookup:
-            fulltext[f"Paragraph_{n}"] = para_lookup[n]
+            fulltext[paragraph_key(n)] = para_lookup[n]
         else:
             logger.warning("  Paragraph %s not found in parsed data, skipping", n)
     se["Sub-event_fulltext"] = fulltext
@@ -480,7 +481,7 @@ def create_event_prompt(parsed_data: Dict[str, Any]) -> Optional[str]:
     for para in content_paragraphs:
         num = para["absolute_number"]
         text = para["text"]
-        paragraphs_text.append(f"Paragraph_{num}: {text}")
+        paragraphs_text.append(f"{paragraph_key(num)}: {text}")
 
     paragraphs = "\n\n".join(paragraphs_text)
 

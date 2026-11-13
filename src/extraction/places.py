@@ -239,9 +239,9 @@ def create_place_prompt(
     sub_event_summary = sub_event.get("Sub-event_summary", "")
     fulltext = sub_event.get("Sub-event_fulltext", {})
 
-    text_parts = []
-    for key in sorted(fulltext.keys()):
-        text_parts.append(fulltext[key])
+    from src.utils.paragraph_numbers import in_paragraph_order
+
+    text_parts = [text for _key, text in in_paragraph_order(fulltext)]
     text = "\n\n".join(text_parts)
 
     if not text.strip():

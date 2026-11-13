@@ -400,16 +400,16 @@ def _book_name_from_path(event_file: Path) -> str:
 
 
 def _first_paragraph_number(sub_event: Dict[str, Any]) -> Optional[int]:
-    """Extract first paragraph number from sub-event fulltext keys."""
-    fulltext = sub_event.get("Sub-event_fulltext", {})
-    for key in fulltext:
-        # Keys like "Paragraph_7"
-        if key.startswith("Paragraph_"):
-            try:
-                return int(key.split("_", 1)[1])
-            except (ValueError, IndexError):
-                pass
-    return None
+    """The sub-event's first (lowest) paragraph number, from its fulltext keys (padded
+    "Paragraph_007" or older "Paragraph_7"); None when it has none."""
+    from src.utils.paragraph_numbers import paragraph_number
+
+    nums = [
+        n
+        for n in (paragraph_number(k) for k in sub_event.get("Sub-event_fulltext", {}))
+        if n is not None
+    ]
+    return min(nums) if nums else None
 
 
 _COUNT_RE = re.compile(r"[\d,]+")

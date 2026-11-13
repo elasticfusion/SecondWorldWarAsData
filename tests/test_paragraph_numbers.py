@@ -118,8 +118,8 @@ def test_events_fulltext_accepts_string_numbers():
     se = {"paragraph_numbers": ["12", 13], "Sub-event_summary": "s"}
     EV._build_subevent_fulltext(se, {12: "twelve", 13: "thirteen"})
     assert se["Sub-event_fulltext"] == {
-        "Paragraph_12": "twelve",
-        "Paragraph_13": "thirteen",
+        "Paragraph_012": "twelve",
+        "Paragraph_013": "thirteen",
     }
 
 

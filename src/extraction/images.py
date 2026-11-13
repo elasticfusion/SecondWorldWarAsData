@@ -199,11 +199,15 @@ def _find_sub_event_for_image(img: dict, event_data: dict) -> Optional[Dict[str,
 
 
 def _sub_event_containing(sub_events: list, para: int) -> Optional[dict]:
+    from src.utils.paragraph_numbers import paragraph_number
+
     if not para:
         return None
-    key = f"Paragraph_{para}"
     for se in sub_events:
-        if key in (se.get("Sub-event_fulltext") or {}):
+        # by number: event files hold padded ("Paragraph_007") and older unpadded keys
+        if any(
+            paragraph_number(k) == para for k in (se.get("Sub-event_fulltext") or {})
+        ):
             return se
     return None
 
