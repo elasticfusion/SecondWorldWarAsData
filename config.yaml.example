@@ -89,6 +89,9 @@ concurrency:
 enrichment:
   re_search_after_days: 180            # Re-search less frequently
 
+extraction:
+  window_paragraphs: 3                 # people/groups/places/equipment discovery: paragraphs per request (env WINDOW_PARAGRAPHS)
+
 batch:
   phase2: true                         # 50% off extraction
   phase3: false                        # Live calls — avoids network bounce between submit/retrieve

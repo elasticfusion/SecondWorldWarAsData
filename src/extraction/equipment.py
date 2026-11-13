@@ -2082,8 +2082,30 @@ def _validate_event_data(event_data: Dict[str, Any], event_file: Path) -> bool:
     return True
 
 
+def _windows_empty(
+    windows_event: Optional[Dict[str, Any]], event_data: Dict[str, Any]
+) -> bool:
+    """True (said LOUDLY) for a chapter given windows but none in them: nothing is asked - never
+    the whole event, the events' own text."""
+    if windows_event is None or windows_event["Event"].get("Sub-events"):
+        return False
+    from src.utils.observe import observe_error
+
+    observe_error(
+        "equipment",
+        "windows_empty",
+        event_id=event_data.get("Event", {}).get("EventID", ""),
+        note="no paragraph windows for this chapter (parsed paragraphs missing "
+        "absolute_number/text?): nothing asked - equipment=0 here is a FAILURE",
+    )
+    return True
+
+
 def _extract_equipment_with_llm(
-    event_data: Dict[str, Any], grok_client: GrokClient, max_retries: int
+    event_data: Dict[str, Any],
+    grok_client: GrokClient,
+    max_retries: int,
+    windows_event: Optional[Dict[str, Any]] = None,
 ) -> Optional[List[Dict[str, Any]]]:
     """Multi-run equipment extraction: Run-1 BROAD (recall) -> Run-2 REFINE (per-item precision).
     Returns the classified item list that _process_equipment_item consumes (same contract as the
@@ -2096,7 +2118,12 @@ def _extract_equipment_with_llm(
     """
     from src.extraction import sub_events as fan
 
-    broad_items = _extract_equipment_broad(event_data, grok_client)
+    # Discovery in the chapter's paragraph windows of the parsed text (src/extraction/windows) when
+    # given: items are pinned to the window paragraphs their quotes came from, and every later
+    # stage (refine context, mention -> sub-event) reads the REAL event by those paragraphs.
+    if _windows_empty(windows_event, event_data):
+        return []
+    broad_items = _extract_equipment_broad(windows_event or event_data, grok_client)
     if not broad_items:
         return []
     done = fan.run_all(
@@ -2576,6 +2603,16 @@ def _find_sub_event(
             for key in fulltext:
                 if _para_number(key) in paragraph_numbers:
                     return se
+    from src.utils.observe import observe_warn_counted
+
+    observe_warn_counted(
+        "equipment",
+        "sub_event_unmatched",
+        key=(event_data["Event"].get("EventID", ""),),
+        paragraphs=",".join(str(n) for n in paragraph_numbers[:5]),
+        note="no sub-event holds the item's paragraphs (events left them out?): the mention was "
+        "put on the FIRST sub-event - check events coverage",
+    )
     return sub_events[0]
 
 
@@ -3511,8 +3548,13 @@ def extract_equipment_from_event(
         logger.error("Failed to load indices: %s", e)
         return []
 
-    # Extract equipment using LLM
-    equipment_list = _extract_equipment_with_llm(event_data, grok_client, max_retries)
+    # Extract equipment using LLM: discovery in the chapter's paragraph windows (windows)
+    from src.extraction import windows
+
+    windows_event = windows.window_event_for(event_file, windows.window_size())
+    equipment_list = _extract_equipment_with_llm(
+        event_data, grok_client, max_retries, windows_event=windows_event
+    )
     if not equipment_list:
         logger.info("  No equipment extracted")
         _observe_equipment_yield(event_data, 0)

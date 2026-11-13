@@ -687,6 +687,43 @@ def _observe_preserved_seids(response, response_key: str) -> None:
         pass
 
 
+def _sub_events_by_id(event_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+    return {
+        se.get("Sub-eventID", ""): se
+        for se in event_data.get("Event", {}).get("Sub-events", []) or []
+    }
+
+
+def _target(
+    real: Dict[str, Any],
+) -> Tuple[str, str, Dict[str, Dict[str, Any]]]:
+    """The event an answer is recorded against: its EventID, name, and sub-events by id."""
+    return (
+        real.get("Event", {}).get("EventID", ""),
+        real.get("Chapter", ""),
+        _sub_events_by_id(real),
+    )
+
+
+def _attributed(
+    response: Dict[str, Any],
+    response_key: str,
+    inner_key: str,
+    asked: List[Dict[str, Any]],
+    attribute_to: Optional[Dict[str, Any]],
+    entity_type: str,
+) -> Dict[str, Any]:
+    """A window's answer regrouped under the real sub-events (``windows.regroup``); any other
+    answer as is."""
+    if attribute_to is None:
+        return response
+    from src.extraction.windows import regroup
+
+    return regroup(
+        response, response_key, inner_key, asked[0], attribute_to, entity_type
+    )
+
+
 async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     event_data: Dict[str, Any],
     grok_client: GrokClient,
@@ -705,20 +742,28 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     make_filename: Optional[Callable[[str, str], str]] = None,
     post_process: Optional[Callable] = None,
     enrich_record: Optional[Callable[[Path], None]] = None,
+    attribute_to: Optional[Dict[str, Any]] = None,
+    ask_only: bool = False,
 ) -> Dict[str, Any]:
     """Generic batch extraction with cross-referencing.
 
     Returns dict with 'count' and 'links' (sub_event_id → [entity_ulid]).
+
+    ``event_data`` is what is ASKED about. For a paragraph window (``windows.window_event``) the
+    answer is attributed to ``attribute_to`` - the chapter's real event - by paragraph
+    (``windows.regroup``): mentions, links and names are the real sub-events'. ``ask_only``: send
+    the request (queue it in batch mode, cache it live) and stop - the chapter's events are not in
+    yet (``prefetch_windows``).
     """
     empty: Dict[str, Any] = {"count": 0, "links": {}}
     sub_events = event_data.get("Event", {}).get("Sub-events", [])
     if not sub_events:
         return empty
 
-    event_id = event_data.get("Event", {}).get("EventID", "")
-    event_name = event_data.get("Chapter", "")
+    event_id, event_name, se_by_id = _target(
+        attribute_to if attribute_to is not None else event_data
+    )
     meta = book_meta or {}
-    se_by_id = {se.get("Sub-eventID", ""): se for se in sub_events}
 
     # Build prompt
     source, prompt = _build_batch_prompt(prompt_header, sub_events, include_fulltext)
@@ -775,6 +820,11 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     # LLM ULID-mangling rate is observable.
     _observe_preserved_seids(response, response_key)
     response = _fix_invalid_ulids(response, skip_keys={"sub_event_id"})
+    if ask_only:
+        return empty  # asked (and cached, live): processed once the chapter's events are in
+    response = _attributed(
+        response, response_key, inner_key, sub_events, attribute_to, entity_type
+    )
 
     # Process response
     entity_dir = output_root / entity_type
@@ -815,6 +865,80 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     return result
 
 
+async def prefetch_windows(
+    parsed_file: Path,
+    grok_client: GrokClient,
+    output_root: Path,
+    config: Dict[str, Any],
+) -> None:
+    """Ask a chapter's paragraph-window requests (people, groups, places, and equipment's broad
+    discovery when equipment is on) before its events are in. Each is built exactly as the later
+    pass builds it (``windows.window_event``), so that pass finds the answer cached: in batch mode
+    the requests are queued with the events request (one round saved); live they are answered
+    now, alongside it. Never fails the chapter - the later pass asks anything missing - except a
+    model that is gone, which stops the run."""
+    from src.extraction import windows
+
+    try:
+        parsed = json.loads(parsed_file.read_text(encoding="utf-8"))
+        wev = windows.window_event(parsed, windows.window_size())
+        meta = {k: parsed.get(k, "") for k in ("book", "author", "series")}
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - an unreadable chapter is the later pass's to report
+        logger.warning(
+            "OBSERV windows.prefetch_skipped file=%s err=%s: %s",
+            parsed_file.name,
+            type(e).__name__,
+            e,
+        )
+        return
+    if not wev["Event"]["Sub-events"]:
+        return
+    asks: List[Any] = [
+        extract_places_batch_async(
+            None,
+            parsed,
+            grok_client,
+            output_root,
+            meta,
+            windows_event=wev,
+            ask_only=True,
+        ),
+        extract_people_groups_batch_async(
+            None, grok_client, output_root, meta, windows_event=wev, ask_only=True
+        ),
+        extract_people_batch_async(
+            None, grok_client, output_root, meta, windows_event=wev, ask_only=True
+        ),
+    ]
+    if (config or {}).get("equipment", {}).get("enabled", False):
+        asks.append(_prefetch_equipment(wev, grok_client))
+    results = await asyncio.gather(*asks, return_exceptions=True)
+    raise_if_unavailable(results)
+    for r in results:
+        if isinstance(r, Exception) and not isinstance(r, BatchModeCollecting):
+            logger.warning(
+                "OBSERV windows.prefetch_failed file=%s err=%s (asked again later)",
+                parsed_file.name,
+                type(r).__name__,
+            )
+
+
+async def _prefetch_equipment(wev: Dict[str, Any], grok_client: GrokClient) -> None:
+    """Equipment's broad discovery over the windows (the later optional pass asks the same)."""
+    from src.extraction.equipment import _extract_equipment_broad
+
+    loop = asyncio.get_event_loop()
+    ctx = contextvars.copy_context()
+    try:
+        await loop.run_in_executor(
+            None, lambda: ctx.run(_extract_equipment_broad, wev, grok_client)
+        )
+    except BatchModeCollecting:
+        pass  # queued
+
+
 async def process_chapter_async(
     parsed_file: Path,
     event_file: Path,
@@ -829,18 +953,35 @@ async def process_chapter_async(
         book_name = None  # Files directly in output root — no book
     current_book.set(book_name)
 
-    # If event file doesn't exist, extract events first
+    # If event file doesn't exist, extract events first - and ask the chapter's paragraph-window
+    # entity requests alongside: they need the parsed text only, so in batch mode they join the
+    # events request's round instead of waiting one (prefetch_windows)
     if not event_file.exists():
         from src.extraction.events import extract_events
 
+        prefetch = asyncio.ensure_future(
+            prefetch_windows(parsed_file, grok_client, output_root, config)
+        )
         loop = asyncio.get_event_loop()
         ctx = contextvars.copy_context()  # carry current_book into the worker thread
-        await loop.run_in_executor(
-            None,
-            lambda: ctx.run(
-                extract_events, parsed_file, grok_client, parsed_file.parent
-            ),
-        )
+        try:
+            await loop.run_in_executor(
+                None,
+                lambda: ctx.run(
+                    extract_events, parsed_file, grok_client, parsed_file.parent
+                ),
+            )
+        except BaseException as exc:
+            # the prefetch finishes either way (in batch mode events always raises
+            # BatchModeCollecting, and the windows must be queued with it); the events'
+            # exception stands - unless the prefetch found the model gone, which stops the run
+            (late,) = await asyncio.gather(prefetch, return_exceptions=True)
+            if isinstance(late, GrokModelUnavailable) and isinstance(
+                exc, BatchModeCollecting
+            ):
+                raise late from exc
+            raise
+        await prefetch
 
     # Extract all entities in parallel
     return await extract_all_async(
@@ -1119,6 +1260,11 @@ async def extract_all_async(
         "author": parsed_data.get("author", ""),
         "series": parsed_data.get("series", ""),
     }
+    # people, groups and places are discovered in paragraph windows of the parsed text (windows);
+    # dates still per sub-event (they are not part of the window design yet)
+    from src.extraction import windows
+
+    wev = windows.window_event(parsed_data, windows.window_size())
 
     # Run all extractions in parallel. No per-entity cancellation (see process_chapters_parallel):
     # a cancelled entity type would lose its ULID links below while its records stay written.
@@ -1134,20 +1280,27 @@ async def extract_all_async(
         _observe_slow(
             f"{label}:places",
             extract_places_batch_async(
-                event_data, parsed_data, grok_client, output_root, book_meta
+                event_data,
+                parsed_data,
+                grok_client,
+                output_root,
+                book_meta,
+                windows_event=wev,
             ),
             _ENTITY_SOFT_DEADLINE_S,
         ),
         _observe_slow(
             f"{label}:people_groups",
             extract_people_groups_batch_async(
-                event_data, grok_client, output_root, book_meta
+                event_data, grok_client, output_root, book_meta, windows_event=wev
             ),
             _ENTITY_SOFT_DEADLINE_S,
         ),
         _observe_slow(
             f"{label}:people",
-            extract_people_batch_async(event_data, grok_client, output_root, book_meta),
+            extract_people_batch_async(
+                event_data, grok_client, output_root, book_meta, windows_event=wev
+            ),
             _ENTITY_SOFT_DEADLINE_S,
         ),
         return_exceptions=True,
@@ -1461,6 +1614,38 @@ _NOT_SENT: Dict[str, Any] = {
 }  # a request skipped after a model stop
 
 
+def _window_kwargs(
+    event_data: Optional[Dict[str, Any]],
+    windows_event: Optional[Dict[str, Any]],
+    ask_only: bool,
+    entity_type: str = "",
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """(what an entity type is asked about, the _batch_extract window options): the chapter's
+    paragraph windows when given - their answers attributed to its real event, or only asked
+    (``ask_only``: the events are not in yet) - else its sub-events, as before.
+
+    Nothing is asked when the windows cannot be attributed: a real event without sub-events (every
+    answer would be dropped) or a chapter without windows (its parsed paragraphs are unusable) -
+    the second is a LOUD failure, never a fall back to the events' own text."""
+    if windows_event is None:
+        return event_data or {}, {}
+    if ask_only:
+        return windows_event, {"ask_only": True}
+    real = event_data or {}
+    if not real.get("Event", {}).get("Sub-events"):
+        return {}, {}
+    if not windows_event.get("Event", {}).get("Sub-events"):
+        observe_error(
+            entity_type or "entities",
+            "windows_empty",
+            event_id=real["Event"].get("EventID", ""),
+            note="the chapter has sub-events but no paragraph windows (parsed paragraphs "
+            "missing absolute_number/text?): nothing asked - a count of 0 here is a FAILURE",
+        )
+        return {}, {}
+    return windows_event, {"attribute_to": real}
+
+
 def _sub_events_phrase(event_data: Dict[str, Any]) -> str:
     n = len(event_data.get("Event", {}).get("Sub-events", []))
     return "this sub-event" if n == 1 else f"these {n} sub-events"
@@ -1486,16 +1671,19 @@ _UNIT_TYPES = (
 
 
 async def extract_places_batch_async(
-    event_data: Dict[str, Any],
+    event_data: Optional[Dict[str, Any]],
     parsed_data: Dict[str, Any],  # pylint: disable=unused-argument
     grok_client: GrokClient,
     output_root: Path,
     book_meta: Optional[Dict[str, str]] = None,
+    windows_event: Optional[Dict[str, Any]] = None,
+    ask_only: bool = False,
 ) -> Dict[str, Any]:
-    """Extract places one sub-event at a time (``_per_sub_event``)."""
+    """Extract places one sub-event - or one paragraph window (``windows``) - at a time."""
+    asked, window = _window_kwargs(event_data, windows_event, ask_only, "places")
     return await _per_sub_event(
-        lambda one: _extract_places(one, grok_client, output_root, book_meta),
-        event_data,
+        lambda one: _extract_places(one, grok_client, output_root, book_meta, **window),
+        asked,
         "places",
     )
 
@@ -1505,6 +1693,7 @@ async def _extract_places(
     grok_client: GrokClient,
     output_root: Path,
     book_meta: Optional[Dict[str, str]],
+    **window: Any,
 ) -> Dict[str, Any]:
     """One places request for the sub-event(s) in ``event_data``. No coordinates: Phase 3
     geocodes (asking for them was a guess, and it cut the answer short)."""
@@ -1536,19 +1725,25 @@ async def _extract_places(
         book_meta=book_meta,
         include_fulltext=True,
         post_process=_process_place_relationships,
+        **window,
     )
 
 
 async def extract_people_groups_batch_async(
-    event_data: Dict[str, Any],
+    event_data: Optional[Dict[str, Any]],
     grok_client: GrokClient,
     output_root: Path,
     book_meta: Optional[Dict[str, str]] = None,
+    windows_event: Optional[Dict[str, Any]] = None,
+    ask_only: bool = False,
 ) -> Dict[str, Any]:
-    """Extract people groups one sub-event at a time (``_per_sub_event``)."""
+    """Extract people groups one sub-event - or one paragraph window - at a time."""
+    asked, window = _window_kwargs(event_data, windows_event, ask_only, "people_groups")
     return await _per_sub_event(
-        lambda one: _extract_people_groups(one, grok_client, output_root, book_meta),
-        event_data,
+        lambda one: _extract_people_groups(
+            one, grok_client, output_root, book_meta, **window
+        ),
+        asked,
         "people_groups",
     )
 
@@ -1558,6 +1753,7 @@ async def _extract_people_groups(
     grok_client: GrokClient,
     output_root: Path,
     book_meta: Optional[Dict[str, str]],
+    **window: Any,
 ) -> Dict[str, Any]:
     """One people-groups request for the sub-event(s) in ``event_data``."""
     from src.extraction.people_groups import _normalize_name
@@ -1599,23 +1795,37 @@ async def _extract_people_groups(
         sub_event_key="peoplegroups",
         book_meta=book_meta,
         include_fulltext=True,
+        **window,
     )
 
 
 async def extract_people_batch_async(
-    event_data: Dict[str, Any],
+    event_data: Optional[Dict[str, Any]],
     grok_client: GrokClient,
     output_root: Path,
     book_meta: Optional[Dict[str, str]] = None,
+    windows_event: Optional[Dict[str, Any]] = None,
+    ask_only: bool = False,
 ) -> Dict[str, Any]:
-    """Extract people one sub-event at a time (``_per_sub_event``) — includes fulltext."""
+    """Extract people one sub-event - or one paragraph window - at a time — includes fulltext."""
     from src.extraction.people import _reset_enrich_counts, _emit_enrich_summary
 
     _load_people_exclusions(output_root / "people")
+    asked, window = _window_kwargs(event_data, windows_event, ask_only, "people")
+    if (
+        ask_only
+    ):  # nothing is recorded: no enrichment to count (and the counts are shared state)
+        return await _per_sub_event(
+            lambda one: _extract_people(
+                one, grok_client, output_root, book_meta, **window
+            ),
+            asked,
+            "people",
+        )
     _reset_enrich_counts()  # batch-path people-enrichment coverage (summary after the apply pass)
     result = await _per_sub_event(
-        lambda one: _extract_people(one, grok_client, output_root, book_meta),
-        event_data,
+        lambda one: _extract_people(one, grok_client, output_root, book_meta, **window),
+        asked,
         "people",
     )
     _emit_enrich_summary("batch")
@@ -1627,6 +1837,7 @@ async def _extract_people(
     grok_client: GrokClient,
     output_root: Path,
     book_meta: Optional[Dict[str, str]],
+    **window: Any,
 ) -> Dict[str, Any]:
     """One people request for the sub-event(s) in ``event_data``."""
     from src.extraction.people import _normalize_name, _enrich_person_batch_apply
@@ -1681,4 +1892,5 @@ async def _extract_people(
         enrich_record=lambda entity_file: _enrich_person_batch_apply(
             entity_file, grok_client
         ),
+        **window,
     )
