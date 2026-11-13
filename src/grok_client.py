@@ -3,6 +3,7 @@
 import contextlib
 import contextvars
 import json
+import re
 import logging
 import os
 import threading
@@ -176,6 +177,71 @@ class GrokNoJsonError(GrokParseError):
 
 def _starts_as_json(response: str) -> bool:
     return response.lstrip()[:1] in ("{", "[")
+
+
+_FENCE = re.compile(r"```(?:json|JSON)?[ \t]*\n?(.*?)(?:```|\Z)", re.DOTALL)
+
+
+def json_payload(text: str) -> str:
+    """The JSON part of a model answer - the ONE rule for every reader (parse, the short / poisoned
+    answer guards). Grok often wraps valid JSON: in a code fence, or behind prose
+    ("**JSON Response:**", "**Answer:**"), which read as unparseable or "poisoned" and were evicted
+    and re-asked (chapter 8 window test: 185 equipment answers lost, 299 re-asks).
+
+    Order: the text as is when it parses (or starts as JSON - a cut-short answer stays whole for
+    the truncation handling); else the first fenced block; else the first JSON value in the text
+    (an object before a non-empty list); else everything from the first ``{``; else the text.
+    """
+    s = (text or "").strip()
+    if not s:
+        return s
+    if _parses(s) or _starts_as_json(s):
+        return s  # valid, or cut short (the truncation handling needs it whole)
+    fenced = _FENCE.search(s)
+    if fenced:
+        return fenced.group(1).strip()  # an empty block is an empty answer
+    found = _first_json_value(s)
+    if found is not None:
+        return found
+    # cut short behind prose: from its first "{" (never a "[": prose cites "[see note 1]")
+    brace = s.find("{")
+    return s[brace:] if brace >= 0 else s
+
+
+def _parses(s: str) -> bool:
+    try:
+        json.loads(s)
+        return True
+    except (json.JSONDecodeError, ValueError):
+        return False
+
+
+def _first_json_value(s: str) -> Optional[str]:
+    """The JSON value starting at the first ``{`` when it decodes completely, else a non-empty
+    list that holds that ``{`` (or there is none) - as text. Any other ``[`` is not the answer: a
+    list inside an outer value cut short, or a citation ("See [1]."), and taking it would read a
+    truncated answer as complete."""
+    decoder = json.JSONDecoder()
+    brace, bracket = s.find("{"), s.find("[")
+    # a "[" before the first "{" goes first (it may be the list holding it); then the "{"
+    order = [bracket, brace] if 0 <= bracket < brace or brace < 0 else [brace]
+    for i in (i for i in order if i >= 0):
+        try:
+            value, end = decoder.raw_decode(s, i)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if _is_the_answer(value, i, end, brace):
+            return s[i:end]
+    return None
+
+
+def _is_the_answer(value: Any, start: int, end: int, brace: int) -> bool:
+    """An object; or a non-empty list that holds the text's first "{" (or there is none)."""
+    if isinstance(value, dict):
+        return True
+    return (
+        isinstance(value, list) and bool(value) and (brace < 0 or start < brace < end)
+    )
 
 
 def _parse_error(message: str, response: str) -> GrokParseError:
@@ -1262,14 +1328,9 @@ class GrokClient:
         elif finish_reason != "stop":
             logger.warning(f"Unexpected finish_reason: {finish_reason}")
 
-        if len(content) < 200:
-            try:
-                json.loads(content)
-            except (json.JSONDecodeError, ValueError):
-                logger.warning(
-                    f"API returned very short response: {len(content)} chars"
-                )
-                logger.warning(f"Content: {content}")
+        if len(content) < 200 and not _parses(json_payload(content)):
+            logger.warning(f"API returned very short response: {len(content)} chars")
+            logger.warning(f"Content: {content}")
 
     def _handle_api_errors(self, response, model: str = "") -> None:
         """Handle API error responses (a model that does not exist stops the run:
@@ -1821,15 +1882,9 @@ class GrokClient:
         return result
 
     def _strip_markdown_wrapper(self, response: str) -> str:
-        """Remove markdown code block wrapper from response."""
-        response = response.strip()
-        if response.startswith("```json"):
-            response = response[7:]
-        if response.startswith("```"):
-            response = response[3:]
-        if response.endswith("```"):
-            response = response[:-3]
-        return response.strip()
+        """The JSON in a model answer (``json_payload``): a fenced block anywhere, or the first
+        JSON value in prose ("**JSON Response:** {...}")."""
+        return json_payload(response)
 
     _VALID_ESCAPES = frozenset('"\\/bfnrt')
     _CTRL_ESCAPE = {"\t": "\\t", "\n": "\\n", "\r": "\\r"}
@@ -2311,11 +2366,11 @@ class GrokClient:
             )
 
         # Clean and sanitize response
-        had_markdown = response.startswith("```")
-        response = self._strip_markdown_wrapper(response)
+        payload = self._strip_markdown_wrapper(response)
+        had_markdown = payload != response.strip()
         if had_markdown:
             self._json_markdown_stripped += 1
-        response = self._sanitize_json_response(response)
+        response = self._sanitize_json_response(payload)
 
         # Try to parse
         try:
@@ -2343,24 +2398,21 @@ class GrokClient:
         from extract_json to keep it below the C gate."""
         if _retried:
             return False
-        if use_cache:
-            stripped = response.strip()
-            if stripped and stripped[0] not in '{["' and "```" not in stripped[:10]:
-                logger.warning(
-                    "Poisoned cache entry detected (%d chars, starts with '%s'), clearing",
-                    len(response),
-                    stripped[:20],
-                )
-                return True
-        if len(response) < 500:
-            try:
-                json.loads(response)
-            except (json.JSONDecodeError, ValueError):
-                logger.warning(
-                    "Short response (%d chars), clearing cache and retrying",
-                    len(response),
-                )
-                return True
+        payload = json_payload(response)
+        if use_cache and response.strip() and not _starts_as_json(payload):
+            # no JSON anywhere in it (prose wrapping JSON is fine: json_payload finds it)
+            logger.warning(
+                "Poisoned cache entry detected (%d chars, starts with '%s'), clearing",
+                len(response),
+                response.strip()[:20],
+            )
+            return True
+        if len(payload) < 500 and not _parses(payload):
+            logger.warning(
+                "Short response (%d chars), clearing cache and retrying",
+                len(response),
+            )
+            return True
         return False
 
     def _handle_json_decode_error(

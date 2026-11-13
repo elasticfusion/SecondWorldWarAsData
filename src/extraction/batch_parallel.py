@@ -21,6 +21,7 @@ from src.grok_client import (
     current_book,
 )
 from src.utils.file_lock import write_json_with_lock
+from src.utils.entity_records import merge_mentions
 from src.extraction import sub_events as per_sub_event
 from src.utils.grok_models import GrokModelUnavailable, raise_if_unavailable
 from src.utils.observe import observe_error, observe_warn
@@ -450,15 +451,6 @@ def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-pos
         data, skip = read_for_update(data, _target, logger, entity_file.name)
         if not skip:
             mentions = data.get("event_mentions", [])
-            book = meta.get("book", "")
-            # Dedup by (EventID + book + Sub_event_Name) — not Sub_eventID which changes on re-extraction
-            if any(
-                m.get("EventID") == event_id
-                and m.get("book") == book
-                and m.get("Sub_event_Name") == se_name
-                for m in mentions
-            ):
-                return
             mention = {
                 "MentionID": str(ulid_mod.new()),
                 "Event_Name": event_name,
@@ -471,7 +463,13 @@ def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-pos
             }
             if source_obj:
                 _enrich_mention_from_source(mention, data, source_obj, date_id_lookup)
-            mentions.append(mention)
+            # The ONE mention rule (entity_records.merge_mentions: one per Sub-eventID). This used
+            # to dedup on (EventID, book, Sub_event_Name) - the sub-event's SUMMARY text - so two
+            # sub-events with the same (or no) summary kept only the first one's mention. A
+            # re-extraction mints new Sub-eventIDs: purge the chapter first
+            # (scripts/purge_chapter_event.py), or its mentions are kept beside the new ones.
+            if not merge_mentions(mentions, [mention]):
+                return
             data["event_mentions"] = mentions
             save(data)
     # Update the in-memory record to reflect the change
@@ -1472,6 +1470,13 @@ _GEO_TYPES = (
     "city|town|village|country|region|province|state|sea|ocean|river|lake|mountain|island|"
     "peninsula|continent|military_base|battlefield|fortification|bridge|port|airfield|other"
 )
+# original_text is the provenance anchor: checked against the source text verbatim. Asked for "the
+# sentence(s)" (with an example ending in "..."), people quotes spliced sentences together with
+# ellipses - ~70% verbatim against 97-100% for the other entities (chapter 8 window test).
+QUOTE_RULE = (
+    "ONE passage copied exactly from the text, word for word (the sentence that names it) - "
+    "never join separate sentences, never shorten with '...', never paraphrase"
+)
 # Shapes the groups answer (the model reads every echelon as in scope); make_record does not store
 # it - mapping it to military_hierarchy would trip enrich_groups' echelon contradiction check.
 _UNIT_TYPES = (
@@ -1648,13 +1653,13 @@ async def _extract_people(
             "- country: USA, Germany, Britain, etc.\n"
             "- position_at_event: Role/position during this event\n"
             "- life_event: What happened to this person in this sub-event\n"
-            "- original_text: The sentence(s) mentioning this person\n"
+            f"- original_text: {QUOTE_RULE}\n"
             'Return JSON:\n{"people": [{"sub_event_id": "ID", '
             '"people": [{"name": "Full Name", "rank": "Rank", '
             '"unit": "Unit", "country": "USA", '
             '"position_at_event": "Commander of...", '
             '"life_event": "Ordered the attack on...", '
-            '"original_text": "General X ordered..."}]}]}\n\nSub-events:'
+            '"original_text": "General X ordered the attack."}]}]}\n\nSub-events:'
         ),
         response_key="people",
         inner_key="people",
