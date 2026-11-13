@@ -132,6 +132,19 @@ def alignment_degraded(aligned: List["BatchResult"]) -> bool:
     return any(br.error in (RESULT_MISSING, RESULT_UNALIGNABLE) for br in aligned)
 
 
+def desync_possible(submitted: List[Any], ordered: List["BatchResult"]) -> bool:
+    """Whether an empty answer may be another request's slot (the empty-slot desync guard): only
+    when results are paired by POSITION - the API returned no ids of ours - and some sibling
+    carries content. Paired by our request id (``align_by_request_id``), an empty answer IS that
+    request's answer ("{}": nothing to extract) - rejecting it re-asked the same request every
+    round (a biography, chapter 8 rounds 7-9, 2026-11-13)."""
+    by_id = bool(ordered) and all(
+        getattr(br, "request_id", None) == our_id
+        for (our_id, _), br in zip(submitted, ordered)
+    )
+    return not by_id and any(getattr(br, "is_substantive", False) for br in ordered)
+
+
 def align_by_request_id(
     submitted: List[Any], ordered: List["BatchResult"], *, batch_id: str = ""
 ) -> List["BatchResult"]:
@@ -762,7 +775,7 @@ def map_results_positionally(
             count_mismatch=True,
         )
 
-    any_substantive = any(getattr(br, "is_substantive", False) for br in ordered)
+    any_substantive = desync_possible(submitted, ordered)
     out: Dict[str, Dict[str, str]] = {}
     failed_ids: List[Any] = []
     for (our_id, cache_type), br in zip(submitted, ordered):

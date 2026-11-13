@@ -19,6 +19,7 @@ from src.extraction.starvation_signal import (
     note_empty_fulltext_skip,
     warn_all_subevents_empty,
 )
+from src.utils.entity_records import merge_mentions
 from src.utils.file_lock import write_json_with_lock
 from src.utils.fetch_provenance import STRUCTURED, recorded_fetch
 from src.utils.json_validator import _fix_invalid_ulids
@@ -569,40 +570,6 @@ def _find_or_create_weather(
     return weather_file
 
 
-def _mention_exists(
-    mentions, sub_event_id, original_text: str = "", event_id: str = ""
-) -> bool:
-    """True if this statement is already recorded: the same sub-event's same statement (a
-    re-run), or the same statement of the same EVENT from another sub-event (overlapping sub-event
-    text would otherwise count one sentence twice). Two different statements of one sub-event about
-    the same place and date are both kept (a long sub-event is read in windows). A legacy mention
-    without original_text matches on the sub-event alone. Legacy mentions may predate the
-    Sub_eventID field, so use .get() (no KeyError) + OBSERV the legacy one (mirrors places.py #495).
-    """
-    for m in mentions:
-        if "Sub_eventID" not in m:
-            logger.info("OBSERV weather.legacy_mention_no_subevent")
-        if _same_statement(m, sub_event_id, original_text, event_id):
-            return True
-    return False
-
-
-def _norm_statement(text: Any) -> str:
-    return " ".join(str(text or "").split()).casefold().rstrip(".")
-
-
-def _same_statement(
-    m: Dict[str, Any], sub_event_id: str, original_text: str, event_id: str
-) -> bool:
-    recorded = m.get("original_text")
-    same_text = bool(original_text) and _norm_statement(recorded) == _norm_statement(
-        original_text
-    )
-    if m.get("Sub_eventID") == sub_event_id:
-        return same_text or not recorded or not original_text
-    return same_text and bool(event_id) and m.get("EventID") == event_id
-
-
 def _extracted_data(mention: Dict[str, Any], book: str, author: str) -> Dict[str, Any]:
     """The record's extracted_data from its first mention. Specifics (temperature,
     precipitation, wind numbers) are populated ONLY when the SOURCE TEXT states them - the prompt
@@ -659,26 +626,6 @@ def _add_event_mention(
             weather_data, SCHEMA_TARGET, logger, weather_file.name
         )
         if not skip:
-            if _mention_exists(
-                weather_data.get("event_mentions", []),
-                sub_event_id,
-                mention.get("original_text") or "",
-                event_id,
-            ):
-                logger.info(
-                    "    Weather already has mention from this sub-event, skipping"
-                )
-                return
-
-            # Add extracted data if not present. Specifics (temperature, precipitation
-            # amount/unit/type) are populated ONLY when the SOURCE TEXT states them — the
-            # prompt forbids inferring/inventing numbers. Unstated quantitative values come
-            # from the deterministic weather APIs in `api_data` (Open-Meteo/NOAA).
-            if not weather_data.get("extracted_data"):
-                weather_data["extracted_data"] = _extracted_data(mention, book, author)
-                if weather_data.get("api_data"):
-                    weather_data["source_type"] = "hybrid"
-
             event_mention = {
                 "MentionID": str(ulid.new()),
                 "Event_Name": event_name,
@@ -690,7 +637,22 @@ def _add_event_mention(
                 "series": series,
                 **_mention_statement(mention),
             }
-            weather_data.setdefault("event_mentions", []).append(event_mention)
+            mentions = weather_data.setdefault("event_mentions", [])
+            # The ONE mention rule (entity_records.merge_mentions): the same statement of the same
+            # sub-event is a repeat; every other statement - another wording, sub-event, chapter
+            # or book, or one without a quote - is kept.
+            if not merge_mentions(mentions, [event_mention]):
+                logger.info("    Weather already has this statement, skipping")
+                return
+
+            # Add extracted data if not present. Specifics (temperature, precipitation
+            # amount/unit/type) are populated ONLY when the SOURCE TEXT states them — the
+            # prompt forbids inferring/inventing numbers. Unstated quantitative values come
+            # from the deterministic weather APIs in `api_data` (Open-Meteo/NOAA).
+            if not weather_data.get("extracted_data"):
+                weather_data["extracted_data"] = _extracted_data(mention, book, author)
+                if weather_data.get("api_data"):
+                    weather_data["source_type"] = "hybrid"
             save(weather_data)
 
     logger.info("    Added mention to %s", weather_file.name)

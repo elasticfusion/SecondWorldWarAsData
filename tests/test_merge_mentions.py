@@ -32,10 +32,57 @@ def _m(seid, text, mid, spelling="Sub_eventID", **kw):
 # --- the rule ------------------------------------------------------------------------------------
 
 
-def test_one_mention_per_sub_event_so_a_re_extraction_does_not_stack():
-    into = [_m("S1", "first wording", "M1")]
-    assert merge_mentions(into, [_m("S1", "second wording", "M2")]) == 0
+def test_the_same_statement_of_a_sub_event_is_one_mention():
+    into = [_m("S1", "Gerow landed at Omaha.", "M1")]
+    assert merge_mentions(into, [_m("S1", "gerow  landed at Omaha", "M2")]) == 0
     assert [m["MentionID"] for m in into] == ["M1"]
+
+
+def test_every_distinct_statement_of_a_sub_event_is_kept():
+    into = [_m("S1", "first statement", "M1")]
+    assert merge_mentions(into, [_m("S1", "second statement", "M2")]) == 1
+    assert [m["MentionID"] for m in into] == ["M1", "M2"]
+
+
+def test_the_same_statement_in_another_sub_event_is_kept():
+    into = [_m("S1", "heavy seas", "M1")]
+    assert merge_mentions(into, [_m("S2", "heavy seas", "M2")]) == 1
+
+
+def test_quote_less_mentions_are_told_apart_by_what_they_say():
+    into = [_m("S1", "a statement", "M1"), _m("S1", "", "M2", context="rain at dawn")]
+    # a different quote-less statement of the same sub-event is kept
+    assert merge_mentions(into, [_m("S1", None, "M3", context="fog by noon")]) == 1
+    # the same one re-applied (a resumed chapter mints a new MentionID) is not
+    assert merge_mentions(into, [_m("S1", "", "M9", context="rain at dawn")]) == 0
+    assert [m["MentionID"] for m in into] == ["M1", "M2", "M3"]
+
+
+def test_a_re_applied_chapter_does_not_stack_quote_less_mentions(tmp_path):
+    import json
+
+    from src.extraction import batch_parallel as bp
+
+    rec_file = tmp_path / "people" / "x.json"
+    rec_file.parent.mkdir()
+    record = {
+        "name": "X",
+        "PersonID": "01HZZZZZZZZZZZZZZZZZZZZZP1",
+        "event_mentions": [],
+    }
+    rec_file.write_text(json.dumps(record))
+    for _ in range(2):  # the same cached answer applied twice
+        bp._add_event_mention_batch(
+            record,
+            rec_file,
+            "01HZZZZZZZZZZZZZZZZZZZZZS1",
+            "",
+            "01HZZZZZZZZZZZZZZZZZZZZZE0",
+            "C",
+            {"book": "B"},
+            source_obj=None,
+        )
+    assert len(json.loads(rec_file.read_text())["event_mentions"]) == 1
 
 
 def test_both_sub_event_spellings_are_one_identity():
@@ -113,7 +160,7 @@ def test_dedup_auto_merge_unions_by_the_rule(tmp_path):
         "PlaceID": "P2",
         "name": "caen",
         "event_mentions": [
-            _m("S1", "dup", "M2"),
+            _m("S1", "q1", "M2"),
             _m("S2", "q2", "M3", paragraph_numbers=[4]),
         ],
     }
@@ -144,7 +191,7 @@ def test_people_merge_unions_by_the_rule():
 
     existing = {"event_mentions": [_m("S1", "q", "M1")]}
     _merge_person(
-        existing, {"event_mentions": [_m("S1", "x", "M2"), _m("S2", "y", "M3")]}
+        existing, {"event_mentions": [_m("S1", "q", "M2"), _m("S2", "y", "M3")]}
     )
     assert [m["MentionID"] for m in existing["event_mentions"]] == ["M1", "M3"]
 
@@ -179,7 +226,7 @@ def test_the_review_ui_merge_unions_by_the_rule_and_writes_before_deleting(
             f"{prefix}/b.json": {
                 "PlaceID": "P2",
                 "name": "caen",
-                "event_mentions": [_m("S1", "dup", "M2"), _m("S2", "q2", "M3")],
+                "event_mentions": [_m("S1", "q1", "M2"), _m("S2", "q2", "M3")],
             },
         }
     )

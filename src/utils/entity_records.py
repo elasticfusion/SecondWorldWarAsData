@@ -76,16 +76,42 @@ def mention_sub_event(m: Dict[str, Any]) -> str:
 
 
 def mention_identity(m: Dict[str, Any]) -> tuple:
-    """What makes two mentions of ONE entity the same mention: an entity appears in a sub-event
-    once (re-extracting a chapter must not stack a second mention per sub-event), so a mention with
-    a sub-event is identified by its sub-event (unique across events); one without by (EventID, its normalised
-    quote) - two different quotes of an event are two mentions."""
+    """What makes two mentions of ONE entity the same mention: the same statement in the same
+    place of the source - its sub-event (unique across events; else its EventID) and its
+    normalised quote. Every distinct statement is its own mention: a sub-event that names a
+    person twice, or reports the weather at Omaha twice, keeps both - as does another sub-event,
+    chapter or book. A mention without a quote is told apart by what it says (every field but its
+    minted ids): the same statement re-applied is one mention, two different ones are two -
+    dropping a real statement is worse than keeping a possible duplicate. A re-extracted chapter
+    mints new Sub-eventIDs and new wording - purge it first (scripts/purge_chapter_event.py).
+    """
     from src.utils.quote_match import normalize
 
     seid = mention_sub_event(m)
-    if seid:
-        return ("", seid)  # a Sub-eventID is unique across events
-    return (str(m.get("EventID") or ""), "", normalize(m.get("original_text")))
+    where = ("", seid) if seid else (str(m.get("EventID") or ""), "")
+    quote = normalize(m.get("original_text"))
+    if not quote:
+        return where + ("", _statement_fingerprint(m))
+    return where + (quote, "")
+
+
+# A mention's own minted ids: a re-applied answer gets new ones, so they never tell two statements
+# apart (a link to ANOTHER record, e.g. a person mention's DateMentionID, is content - but dates
+# mint their own mention id under that name, so it is left out too).
+_MINTED_IDS = frozenset(("MentionID", "EventMentionID", "DateMentionID"))
+
+
+def _statement_fingerprint(m: Dict[str, Any]) -> str:
+    """What a quote-less mention says - every field but its minted ids - so the same statement
+    re-applied (a resumed or retried chapter) is one mention, and two different ones are two.
+    """
+    import json
+
+    return json.dumps(
+        {k: v for k, v in m.items() if k not in _MINTED_IDS},
+        sort_keys=True,
+        default=str,
+    )
 
 
 def citation_identity(m: Dict[str, Any]) -> tuple:

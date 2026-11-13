@@ -17,6 +17,7 @@ from src.extraction.starvation_signal import (
     note_empty_fulltext_skip,
     warn_all_subevents_empty,
 )
+from src.utils.entity_records import merge_mentions
 from src.utils.file_lock import write_json_with_lock
 from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
 
@@ -345,25 +346,13 @@ def _add_event_mention(
                 "original_text": mention.get("original_text", ""),
             }
 
-            # Dedup by (Sub_eventID, time_start, original_text): a re-run of the SAME mention
-            # is skipped, but the same sub-event citing this date at a DIFFERENT time ("0500"
-            # vs "1800") or in DIFFERENT words is kept (previously keyed on Sub_eventID alone,
-            # which silently dropped a sub-event's second same-date mention).
-            new_key = (
-                sub_event_id,
-                event_mention["time_start"],
-                event_mention["original_text"],
-            )
-            existing_keys = {
-                (m.get("Sub_eventID"), m.get("time_start"), m.get("original_text", ""))
-                for m in date_data.get("event_mentions", [])
-            }
-            if new_key in existing_keys:
-                logger.info("    Date already has this exact mention, skipping")
+            # The ONE mention rule (entity_records.merge_mentions): the same statement of the same
+            # sub-event is a repeat; another wording, time or sub-event is kept.
+            if not merge_mentions(
+                date_data.setdefault("event_mentions", []), [event_mention]
+            ):
+                logger.info("    Date already has this statement, skipping")
                 return
-
-            # Add mention
-            date_data.setdefault("event_mentions", []).append(event_mention)
             save(date_data)
 
     logger.info("    Added mention to %s", date_file.name)

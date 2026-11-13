@@ -1543,7 +1543,8 @@ def _merge_into_existing(
         # best-effort (upgrade case-by-case if registered).
         existing, skip = read_for_update(existing, SCHEMA_TARGET, logger, matched_name)
         if not skip:
-            # The mention may already be there (entity_records.merge_mentions: one per sub-event)
+            # The mention may already be there (entity_records.merge_mentions: the same statement
+            # of the same sub-event)
             if not merge_mentions(existing["event_mentions"], [new_mention]):
                 logger.debug(
                     "Mention for %s already exists, skipping",
@@ -3576,7 +3577,8 @@ def extract_equipment_from_event(
     _observe_persist_shortfall(event_data, len(equipment_list), len(modified_files))
 
     # Finalize. An item that FAILED (alerted as items_failed) leaves the chapter unmarked, so the
-    # next run retries it; the items already written are no-ops then (one mention per sub-event).
+    # next run retries it; the items already written are no-ops then (the same statement of the
+    # same sub-event is one mention: entity_records.merge_mentions).
     if failures:
         if modified_files:
             generate_equipment_index(output_dir)

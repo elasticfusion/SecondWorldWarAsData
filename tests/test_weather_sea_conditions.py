@@ -234,12 +234,21 @@ def test_two_statements_of_one_sub_event_are_both_kept(tmp_path, monkeypatch):
     assert len(rec["event_mentions"]) == 2
 
 
-def test_one_statement_in_two_overlapping_sub_events_counts_once(tmp_path, monkeypatch):
+def test_one_statement_in_two_sub_events_is_two_mentions(tmp_path, monkeypatch):
+    # sub-events no longer overlap (events._make_paragraphs_disjoint), so the same sentence in two
+    # of them is two statements of the narrative - both kept (entity_records.mention_identity)
     same = _mention(
         weather_description="rising tide", original_text="The tide rose fast."
     )
     (rec,) = _run(tmp_path, {SEID: [dict(same)], SEID2: [dict(same)]}, monkeypatch)
-    assert len(rec["event_mentions"]) == 1
+    assert {m["Sub_eventID"] for m in rec["event_mentions"]} == {SEID, SEID2}
+
+
+def test_a_statement_without_a_quote_is_kept_beside_another(tmp_path, monkeypatch):
+    quoted = _mention(weather_description="heavy seas", original_text="Heavy seas.")
+    unquoted = _mention(weather_description="rain squalls", original_text=None)
+    (rec,) = _run(tmp_path, {SEID: [quoted, unquoted]}, monkeypatch)
+    assert len(rec["event_mentions"]) == 2
 
 
 # --- review hardening --------------------------------------------------------------------------
@@ -431,12 +440,18 @@ def test_a_window_that_truncates_even_alone_is_counted_as_failed():
 
 
 def test_a_requoted_statement_is_the_same_statement():
-    m = {
-        "Sub_eventID": SEID,
-        "EventID": EVENT_ID,
-        "original_text": "The tide  rose fast.",
-    }
-    assert wc._same_statement(m, SEID, "the tide rose fast", EVENT_ID)
+    from src.utils.entity_records import merge_mentions
+
+    recorded = [
+        {
+            "MentionID": "M1",
+            "Sub_eventID": SEID,
+            "EventID": EVENT_ID,
+            "original_text": "The tide  rose fast.",
+        }
+    ]
+    again = dict(recorded[0], MentionID="M2", original_text="the tide rose fast")
+    assert merge_mentions(recorded, [again]) == 0
 
 
 def test_a_placeholder_only_mention_is_dropped():

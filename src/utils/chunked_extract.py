@@ -25,6 +25,19 @@ def extend_lists(out: Dict[str, Any], new: Dict[str, Any]) -> None:
             out[key] = items
 
 
+def _ask_all(items: List[Any], ask: Callable[[Any], None]) -> None:
+    """``ask`` each item; a queued one (BatchModeCollecting) does not stop the rest - every request
+    joins this batch round - and the signal is raised once all were asked."""
+    collecting: Optional[BatchModeCollecting] = None
+    for item in items:
+        try:
+            ask(item)
+        except BatchModeCollecting as e:
+            collecting = collecting or e
+    if collecting is not None:
+        raise collecting
+
+
 def _extract_one_chunk_recursive(
     chunk: List[Any],
     extract_fn: Callable[[List[Any]], Dict[str, T]],
@@ -63,8 +76,13 @@ def _extract_one_chunk_recursive(
             len(chunk) - mid,
         )
         # Recurse per half so a persistently-truncating half keeps halving (not dropped whole).
-        _extract_one_chunk_recursive(chunk[:mid], extract_fn, entity_type, out, merge)
-        _extract_one_chunk_recursive(chunk[mid:], extract_fn, entity_type, out, merge)
+        # Both halves are asked even when the first is queued (batch mode), so they share a round.
+        _ask_all(
+            [chunk[:mid], chunk[mid:]],
+            lambda half: _extract_one_chunk_recursive(
+                half, extract_fn, entity_type, out, merge
+            ),
+        )
     except Exception as e:  # noqa: BLE001
         # Non-truncation failure on this (sub)chunk: skip it gracefully so one bad chunk can't abort
         # the whole batch (preserves the prior leniency), but make it VISIBLE. NOT recursed (halving
@@ -82,7 +100,9 @@ def extract_with_chunk_halving(
 ) -> Dict[str, T]:
     """Run extract_fn on each chunk. On truncation, RECURSIVELY halve and retry down to a single
     item (a too-large single item is dropped alone, with OBSERV). The batch-COLLECT signal
-    (BatchModeCollecting) always propagates.
+    (BatchModeCollecting) always propagates - AFTER every chunk was asked: stopping at the first
+    queued chunk queued one chunk per batch round (chapter 8's weather took six rounds, one chunk
+    each, 2026-11-13).
 
     Args:
         chunks: List of chunk lists (each chunk is a list of items to process)
@@ -93,8 +113,12 @@ def extract_with_chunk_halving(
         Merged results dict from all chunks
     """
     all_results: Dict[str, T] = {}
-    for chunk in chunks:
-        _extract_one_chunk_recursive(chunk, extract_fn, entity_type, all_results, merge)
+    _ask_all(
+        chunks,
+        lambda chunk: _extract_one_chunk_recursive(
+            chunk, extract_fn, entity_type, all_results, merge
+        ),
+    )
     # Summary: items submitted vs results recovered, so net loss from truncation-drops / skipped
     # sub-chunks is visible (the per-branch OBSERV lines above explain any shortfall).
     items_in = sum(len(c) for c in chunks)

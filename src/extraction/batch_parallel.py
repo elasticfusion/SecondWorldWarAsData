@@ -463,7 +463,8 @@ def _add_event_mention_batch(  # pylint: disable=too-many-arguments,too-many-pos
             }
             if source_obj:
                 _enrich_mention_from_source(mention, data, source_obj, date_id_lookup)
-            # The ONE mention rule (entity_records.merge_mentions: one per Sub-eventID). This used
+            # The ONE mention rule (entity_records.merge_mentions): the same statement of the same
+            # sub-event is a repeat; every other statement is its own mention. This used
             # to dedup on (EventID, book, Sub_event_Name) - the sub-event's SUMMARY text - so two
             # sub-events with the same (or no) summary kept only the first one's mention. A
             # re-extraction mints new Sub-eventIDs: purge the chapter first

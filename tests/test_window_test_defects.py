@@ -18,7 +18,7 @@ from src.extraction import batch_parallel as bp
 from src.grok_client import json_payload
 from src.utils.cache_backend import DiskCacheBackend
 
-# --- 1. one mention per sub-event, not per summary text ------------------------------------------
+# --- 1. a mention per statement of a sub-event, not per summary text ------------------------------
 
 
 def test_two_sub_events_with_the_same_summary_both_keep_their_mention(tmp_path):
@@ -45,7 +45,7 @@ def test_two_sub_events_with_the_same_summary_both_keep_their_mention(tmp_path):
     assert sorted(m["Sub_eventID"][-2:] for m in mentions) == ["S1", "S2"]
 
 
-def test_the_same_sub_event_is_still_one_mention(tmp_path):
+def test_the_same_statement_of_a_sub_event_is_still_one_mention(tmp_path):
     rec_file = tmp_path / "people" / "x.json"
     rec_file.parent.mkdir()
     record = {

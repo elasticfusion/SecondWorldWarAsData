@@ -1034,13 +1034,15 @@ class GrokClient:
         # but we CAN detect the signature — an empty/too-short result in a batch where SIBLINGS
         # returned substantive content — and force a real-time retry for just that entity instead
         # of trusting the empty positional map. An ALL-empty batch is left as-is (genuine).
-        any_substantive = any(self._is_substantive(br) for br in ordered)
+        from src.utils.batch_api import desync_possible
+
+        desync = desync_possible(submitted, ordered)
 
         failed_ids: list = []
         for (our_id, cache_type), br in zip(submitted, ordered):
             ct = cache_type or "default"
             if br.status == "valid":
-                if any_substantive and not self._is_substantive(br):
+                if desync and not self._is_substantive(br):
                     self._record_desync_drop(our_id, ct, br, metrics, RequestDetail)
                     failed_ids.append(our_id)
                     continue

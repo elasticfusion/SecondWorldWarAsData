@@ -753,7 +753,7 @@ def _update_missing_fields(
 
 def _merge_event_mentions(existing: Dict[str, Any], new_person: Dict[str, Any]) -> None:
     """Append new event mentions onto ``existing`` in place (src/utils/entity_records
-    .merge_mentions: one mention per sub-event)."""
+    .merge_mentions: the same statement of the same sub-event is one mention)."""
     existing_mentions = existing.get("event_mentions", [])
     merge_mentions(existing_mentions, new_person.get("event_mentions", []))
     existing["event_mentions"] = existing_mentions

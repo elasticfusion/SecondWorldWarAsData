@@ -725,8 +725,8 @@ def _add_event_mention(
                 "original_text": mention.get("original_text", ""),
             }
 
-            # The mention may already be there (entity_records.merge_mentions: one per sub-event).
-            # A legacy mention predating the sub-event field is observably noted.
+            # The mention may already be there (entity_records.merge_mentions: the same statement
+            # of the same sub-event). A legacy mention predating the sub-event field is noted.
             for m in place_data.get("event_mentions", []):
                 if isinstance(m, dict) and not mention_sub_event(m):
                     logger.info(
