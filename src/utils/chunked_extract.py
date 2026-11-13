@@ -25,7 +25,7 @@ def extend_lists(out: Dict[str, Any], new: Dict[str, Any]) -> None:
             out[key] = items
 
 
-def _ask_all(items: List[Any], ask: Callable[[Any], None]) -> None:
+def ask_all(items: List[Any], ask: Callable[[Any], None]) -> None:
     """``ask`` each item; a queued one (BatchModeCollecting) does not stop the rest - every request
     joins this batch round - and the signal is raised once all were asked."""
     collecting: Optional[BatchModeCollecting] = None
@@ -77,7 +77,7 @@ def _extract_one_chunk_recursive(
         )
         # Recurse per half so a persistently-truncating half keeps halving (not dropped whole).
         # Both halves are asked even when the first is queued (batch mode), so they share a round.
-        _ask_all(
+        ask_all(
             [chunk[:mid], chunk[mid:]],
             lambda half: _extract_one_chunk_recursive(
                 half, extract_fn, entity_type, out, merge
@@ -113,7 +113,7 @@ def extract_with_chunk_halving(
         Merged results dict from all chunks
     """
     all_results: Dict[str, T] = {}
-    _ask_all(
+    ask_all(
         chunks,
         lambda chunk: _extract_one_chunk_recursive(
             chunk, extract_fn, entity_type, all_results, merge

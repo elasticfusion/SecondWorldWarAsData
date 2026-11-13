@@ -669,3 +669,154 @@ def test_a_casualty_window_with_plain_loss_wording_is_asked():
 
     assert _has_casualty_mention("Two companies were lost in the surf.")
     assert _has_casualty_mention("The tanks were knocked out on the beach.")
+
+
+# --- supplemental: note classification over each sub-event's own raw paragraph windows ----------
+
+
+NOTES_PARSED = {
+    "book": "B",
+    "chapter_title": "The Sixth of June",
+    "paragraphs": [
+        {"absolute_number": 1, "text": "Gerow landed.<sup>[1](#fn1)</sup>"},
+        {"absolute_number": 2, "text": "The 16th Infantry crossed."},
+        {"absolute_number": 3, "text": "Bradley watched.<sup>[2](#fn2)</sup>"},
+        {"absolute_number": 4, "text": "Rudder climbed."},
+    ],
+    "footnotes": [{"number": 1, "text": "AAR."}, {"number": 2, "text": "Diary."}],
+}
+NOTES_REAL = {
+    "Event": {
+        "EventID": "01HZZZZZZZZZZZZZZZZZZZZZE0",
+        "Event_Name": "The Sixth of June",
+        "Sub-events": [
+            {
+                "Sub-eventID": S1,
+                "Sub-event_summary": "SUMMARY-S1",
+                "Sub-event_fulltext": {"Paragraph_001": "x", "Paragraph_002": "x"},
+            },
+            {
+                "Sub-eventID": S2,
+                "Sub-event_summary": "SUMMARY-S2",
+                "Sub-event_fulltext": {"Paragraph_003": "x", "Paragraph_004": "x"},
+            },
+        ],
+    },
+}
+
+
+def test_sub_event_windows_never_cross_a_sub_event():
+    pairs = W.sub_event_windows(NOTES_PARSED, NOTES_REAL, 3)
+    assert [(s, w["Sub-eventID"]) for s, w in pairs] == [
+        (S1, "P001-P002"),
+        (S2, "P003-P004"),
+    ]
+    # a sub-event longer than a window is split - still inside the sub-event
+    assert [
+        (s, w["Sub-eventID"])
+        for s, w in W.sub_event_windows(NOTES_PARSED, NOTES_REAL, 1)
+    ] == [(S1, "P001-P001"), (S1, "P002-P002"), (S2, "P003-P003"), (S2, "P004-P004")]
+
+
+def test_endnotes_and_footnotes_are_told_apart_per_window():
+    from src.extraction.supplemental import create_supplemental_prompt
+
+    parsed = dict(
+        NOTES_PARSED,
+        footnotes=[{"number": 1, "text": "AAR."}],
+        endnotes=[{"number": 2, "text": "Diary."}],
+    )
+    by_seid = {
+        seid: prompt
+        for seid, prompt, _m, _e in create_supplemental_prompt(NOTES_REAL, {}, parsed)
+    }
+    assert "Footnote references: [1]" in by_seid[S1]
+    assert "Endnote references: [2]" in by_seid[S2]
+
+
+def test_a_note_repeated_in_a_sub_event_is_asked_once():
+    from src.extraction.supplemental import create_supplemental_prompt
+
+    parsed = dict(NOTES_PARSED)
+    parsed["paragraphs"] = [dict(p) for p in NOTES_PARSED["paragraphs"]]
+    parsed["paragraphs"][1][
+        "text"
+    ] = "Again.<sup>[1](#fn1)</sup>"  # S1's second paragraph
+    with mock.patch.object(W, "window_size", return_value=1):
+        prompts = create_supplemental_prompt(NOTES_REAL, {}, parsed)
+    assert [p[2].split("|")[-1] for p in prompts if p[0] == S1] == ["w:P001-P001"]
+
+
+def test_a_note_no_sub_event_holds_is_loud():
+    from src.extraction.supplemental import create_supplemental_prompt
+
+    parsed = dict(NOTES_PARSED)
+    parsed["paragraphs"] = NOTES_PARSED["paragraphs"] + [
+        {"absolute_number": 5, "text": "Orphan.<sup>[3](#fn3)</sup>"}
+    ]
+    with mock.patch("src.utils.observe.observe_error") as loud:
+        create_supplemental_prompt(NOTES_REAL, {}, parsed)
+    assert loud.call_args.args[:2] == ("supplemental", "notes_unowned")
+    assert loud.call_args.kwargs["notes"] == "3"
+
+
+def test_supplemental_asks_each_note_bearing_window_of_raw_text():
+    from src.extraction.supplemental import create_supplemental_prompt
+
+    prompts = create_supplemental_prompt(NOTES_REAL, {}, NOTES_PARSED)
+    assert [(seid, material.split("|")[-1]) for seid, _p, material, _e in prompts] == [
+        (S1, "w:P001-P002"),
+        (S2, "w:P003-P004"),
+    ]
+    by_seid = {seid: prompt for seid, prompt, _m, _e in prompts}
+    assert "SUMMARY-" not in by_seid[S1] + by_seid[S2]  # never the events' own text
+    assert "Gerow landed" in by_seid[S1] and "Bradley" not in by_seid[S1]
+    assert "Footnote references: [1]" in by_seid[S1]
+    assert "Footnote references: [2]" in by_seid[S2]
+
+
+def test_a_window_without_notes_is_not_asked():
+    from src.extraction.supplemental import create_supplemental_prompt
+
+    parsed = dict(
+        NOTES_PARSED,
+        paragraphs=[dict(p, text="no note here") for p in NOTES_PARSED["paragraphs"]],
+    )
+    assert create_supplemental_prompt(NOTES_REAL, {}, parsed) == []
+
+
+def test_supplemental_without_usable_paragraphs_asks_nothing_loudly():
+    from src.extraction.supplemental import create_supplemental_prompt
+
+    with mock.patch("src.utils.observe.observe_error") as loud:
+        assert create_supplemental_prompt(NOTES_REAL, {}, {"paragraphs": []}) == []
+    assert loud.call_args.args[:2] == ("supplemental", "windows_empty")
+
+
+def test_supplemental_without_a_parsed_chapter_is_per_sub_event_as_before():
+    from src.extraction.supplemental import create_supplemental_prompt
+
+    prompts = create_supplemental_prompt(NOTES_REAL, {})
+    assert [p[0] for p in prompts] == [S1, S2]
+    assert all("|w:" not in p[2] for p in prompts)  # the old cache keys, unchanged
+
+
+def test_every_supplemental_window_is_queued_in_one_batch_round(tmp_path):
+    from src.extraction import supplemental as supp
+
+    book = tmp_path / "content" / "B"
+    book.mkdir(parents=True)
+    event_file = book / "c-event.json"
+    event_file.write_text(json.dumps(NOTES_REAL))
+    (book / "c-parsed.json").write_text(json.dumps(NOTES_PARSED))
+    client = mock.Mock()
+    client.extract_json.side_effect = gc.BatchModeCollecting("queued")
+    client._get_model.return_value = "m"
+    with (
+        mock.patch(
+            "src.extraction.fetch_endnotes.fetch_endnote_texts", return_value={}
+        ),
+        pytest.raises(gc.BatchModeCollecting),
+    ):
+        supp.extract_supplemental(event_file, client, tmp_path)
+    assert client.extract_json.call_count == 2  # both windows, not just the first

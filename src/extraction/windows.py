@@ -80,6 +80,40 @@ def window_id(numbers: List[int]) -> str:
     return f"P{min(numbers):03d}-P{max(numbers):03d}"
 
 
+def _window(chunk: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """One window of parsed paragraphs as a one-"sub-event" view: its range id, no summary, the
+    raw text."""
+    return {
+        "Sub-eventID": window_id([p["absolute_number"] for p in chunk]),
+        "Sub-event_summary": "",
+        "Sub-event_fulltext": {
+            paragraph_key(p["absolute_number"]): p["text"] for p in chunk
+        },
+    }
+
+
+def sub_event_windows(
+    parsed_data: Dict[str, Any], real_event: Dict[str, Any], size: Optional[int] = None
+) -> List[Tuple[str, Dict[str, Any]]]:
+    """``[(real Sub-eventID, window)]``: each sub-event's OWN raw paragraphs in windows of
+    ``size`` - a window never crosses a sub-event boundary, so a request whose answer carries no
+    quote to attribute it by (supplemental's note classification) belongs to one sub-event.
+    Paragraphs no sub-event holds are left out (as everywhere: the events answer omitted them).
+    """
+    size = max(1, size or window_size())
+    owners = paragraph_owners(real_event)
+    by_sub_event: Dict[str, List[Dict[str, Any]]] = {}
+    for p in content_paragraphs(parsed_data):
+        seid = owners.get(p["absolute_number"])
+        if seid:
+            by_sub_event.setdefault(seid, []).append(p)
+    return [
+        (seid, _window(paras[i : i + size]))
+        for seid, paras in by_sub_event.items()
+        for i in range(0, len(paras), size)
+    ]
+
+
 def window_event(
     parsed_data: Dict[str, Any], size: int = DEFAULT_WINDOW_PARAGRAPHS
 ) -> Dict[str, Any]:
@@ -89,19 +123,7 @@ def window_event(
     from src.utils.deterministic_ids import event_id
 
     paras = content_paragraphs(parsed_data)
-    windows = []
-    for i in range(0, len(paras), max(1, size)):
-        chunk = paras[i : i + size]
-        nums = [p["absolute_number"] for p in chunk]
-        windows.append(
-            {
-                "Sub-eventID": window_id(nums),
-                "Sub-event_summary": "",
-                "Sub-event_fulltext": {
-                    paragraph_key(p["absolute_number"]): p["text"] for p in chunk
-                },
-            }
-        )
+    windows = [_window(paras[i : i + size]) for i in range(0, len(paras), max(1, size))]
     section = parsed_data.get("section_id") or parsed_data.get("section") or "full"
     eid = event_id(parsed_data.get("book"), parsed_data.get("chapter_title"), section)
     # "Chapter": the parsed title, for prompts that name the chapter (weather) - parsed-only, so a
@@ -165,6 +187,16 @@ def unusable(wev: Dict[str, Any], real_event: Dict[str, Any], entity: str) -> bo
         return True
     if (wev.get("Event") or {}).get("Sub-events"):
         return False
+    return no_windows(real_event, entity)
+
+
+def no_windows(real_event: Dict[str, Any], entity: str) -> bool:
+    """A chapter with no windows to ask: a skip without sub-events, else a LOUD failure (its
+    parsed paragraphs are unusable) - never a fall back to the events' own text. Always True.
+    """
+    event = (real_event or {}).get("Event") or {}
+    if not event.get("Sub-events"):
+        return True
     from src.utils.observe import observe_error
 
     observe_error(

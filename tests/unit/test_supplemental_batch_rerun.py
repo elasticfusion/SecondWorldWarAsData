@@ -30,7 +30,8 @@ def test_collect_pass_does_not_mark_processed(tmp_path, monkeypatch):
     book = tmp_path / "content" / "RoerDams"
     book.mkdir(parents=True)
     (book / "chapter2a-parsed.json").write_text(
-        '{"footnotes": [{"number":1,"url":"u","text":"Cite."}]}'
+        '{"footnotes": [{"number":1,"url":"u","text":"Cite."}],'
+        ' "paragraphs": [{"absolute_number": 1, "text": "t<sup>[1](#fn1)</sup>"}]}'
     )
     ev = {
         "Event": {
@@ -40,7 +41,7 @@ def test_collect_pass_does_not_mark_processed(tmp_path, monkeypatch):
                 {
                     "Sub-eventID": "01SE",
                     "Sub-event_summary": "s",
-                    "Sub-event_fulltext": {"p": "t"},
+                    "Sub-event_fulltext": {"Paragraph_001": "t"},
                     "Footnote_References": [1],
                     "Endnote_References": [],
                 }

@@ -94,70 +94,167 @@ def _build_ref_context(
 def create_supplemental_prompt(
     event_data: Dict[str, Any],
     endnote_texts: Optional[Dict[int, str]] = None,
+    parsed_data: Optional[Dict[str, Any]] = None,
 ) -> List[tuple]:
-    """Create prompt for supplemental material extraction."""
-    event_name = event_data.get("Event", {})
-    event_id = event_name.get("EventID", "")
-    event_title = event_name.get("Event_Name", "")
+    """Prompts for supplemental material extraction: ``[(Sub-eventID, prompt, stable cache key
+    material, EventID)]``.
 
+    With the parsed chapter (``parsed_data``): one prompt per paragraph window of each sub-event's
+    OWN raw paragraphs (``windows.sub_event_windows``) that carries note markers - the raw text
+    only, never the events' summary; its notes are the ``<sup>[N]</sup>`` markers of those
+    paragraphs. Without: one per sub-event, as before."""
+    event = event_data.get("Event", {})
+    if parsed_data is not None:
+        return _window_prompts(event, parsed_data, endnote_texts)
     prompts = []
-
-    for sub_event in event_name.get("Sub-events", []):
-        sub_event_id = sub_event.get("Sub-eventID", "")
-        sub_event_summary = sub_event.get("Sub-event_summary", "")
-        fulltext = sub_event.get("Sub-event_fulltext", {})
-        endnote_refs = sub_event.get("Endnote_References", [])
-        footnote_refs = sub_event.get("Footnote_References", [])
-
-        text = "\n".join(fulltext.values())
-        endnote_block, ref_type_hint = _build_ref_context(
-            endnote_refs, footnote_refs, endnote_texts
-        )
-
-        from src.utils.prompt_loader import get_system_prompt, render_prompt
-
-        prompt = render_prompt(
-            "supplemental",
-            event_title=event_title,
-            event_id=event_id,
-            sub_event_summary=sub_event_summary,
-            sub_event_id=sub_event_id,
-            text=text,
-            endnote_refs=endnote_refs,
-            footnote_refs=footnote_refs,
-            endnote_block=endnote_block,
-            ref_type_hint=ref_type_hint,
-        )
-        # Deterministic identity for cache keying — DELIBERATELY excludes the volatile
-        # `text` (Sub-event_fulltext is regenerated/summarized differently between a
-        # batch submit and the retrieve re-run) AND the endnote_block (same volatility
-        # class — must not reintroduce a submit-vs-rerun mismatch). The event/sub-event
-        # ids are deterministic content-derived ULIDs and, with the sorted reference
-        # numbers, uniquely identify the sub-event, so a submit and its retrieve resolve
-        # to the SAME supplemental cache entry.
-        stable_material = "|".join(
-            [
-                str(event_id),
-                str(sub_event_id),
-                "e:"
-                + ",".join(
-                    str(n)
-                    for n in sorted(
-                        r for r in (endnote_refs or []) if isinstance(r, int)
-                    )
+    for sub_event in event.get("Sub-events", []):
+        prompts.append(
+            _sub_event_prompt(
+                event,
+                sub_event.get("Sub-eventID", ""),
+                sub_event.get("Sub-event_summary", ""),
+                "\n".join(sub_event.get("Sub-event_fulltext", {}).values()),
+                (
+                    sub_event.get("Endnote_References", []),
+                    sub_event.get("Footnote_References", []),
                 ),
-                "f:"
-                + ",".join(
-                    str(n)
-                    for n in sorted(
-                        r for r in (footnote_refs or []) if isinstance(r, int)
-                    )
-                ),
-            ]
+                endnote_texts,
+            )
         )
-        prompts.append((sub_event_id, prompt, stable_material, event_id))
-
     return prompts
+
+
+def _window_prompts(
+    event: Dict[str, Any],
+    parsed_data: Dict[str, Any],
+    endnote_texts: Optional[Dict[int, str]],
+) -> List[tuple]:
+    """One prompt per note-bearing window of each sub-event's own raw paragraphs; a note is asked
+    once per sub-event (in the first window carrying its marker)."""
+    from src.extraction import windows
+    from src.extraction.events import _parse_note_context
+
+    note_context = _parse_note_context(parsed_data)
+    pairs = windows.sub_event_windows(parsed_data, {"Event": event})
+    if not pairs:
+        windows.no_windows({"Event": event}, "supplemental")
+        return []
+    prompts = []
+    asked: Dict[str, set] = {}
+    for seid, window in pairs:
+        refs = _window_refs(window, note_context, asked.setdefault(seid, set()))
+        if refs is None:
+            continue  # no (new) note in these paragraphs: nothing to classify, nothing asked
+        prompts.append(
+            _sub_event_prompt(
+                event,
+                seid,
+                "",
+                "\n".join(window["Sub-event_fulltext"].values()),
+                refs,
+                endnote_texts,
+                window=window["Sub-eventID"],
+            )
+        )
+    _observe_note_coverage(event, parsed_data, note_context, asked)
+    return prompts
+
+
+def _window_refs(
+    window: Dict[str, Any], note_context: tuple, asked: set
+) -> Optional[tuple]:
+    """``(endnote numbers, footnote numbers)`` the window's raw paragraphs mark and its sub-event
+    has not been asked yet (recorded in ``asked``), or None when there are none."""
+    from src.extraction.events import _classify_marks, _subevent_marks
+    from src.utils.paragraph_numbers import paragraph_number
+
+    para_lookup, fn_nums, en_nums = note_context
+    nums = [n for n in map(paragraph_number, window["Sub-event_fulltext"]) if n]
+    marks = _subevent_marks({"paragraph_numbers": nums}, para_lookup) - asked
+    if not marks:
+        return None
+    asked |= marks
+    fnotes, enotes = _classify_marks(marks, fn_nums, en_nums)
+    return enotes, fnotes
+
+
+def _observe_note_coverage(
+    event: Dict[str, Any],
+    parsed_data: Dict[str, Any],
+    note_context: tuple,
+    asked: Dict[str, set],
+) -> None:
+    """LOUD when a note marked in the chapter's narrative is in no sub-event's paragraphs (the
+    events answer left its paragraph out): it is never classified - a lost citation."""
+    from src.extraction import windows
+    from src.extraction.events import _subevent_marks
+
+    nums = [p["absolute_number"] for p in windows.content_paragraphs(parsed_data)]
+    marked = _subevent_marks({"paragraph_numbers": nums}, note_context[0])
+    covered = set().union(*asked.values()) if asked else set()
+    missing = sorted(marked - covered)
+    if missing:
+        from src.utils.observe import observe_error
+
+        observe_error(
+            "supplemental",
+            "notes_unowned",
+            event_id=event.get("EventID", ""),
+            notes=",".join(map(str, missing[:20])),
+            count=len(missing),
+            note="these notes are marked in paragraphs no sub-event holds: never classified "
+            "(no bibliography for them) - check events coverage",
+        )
+
+
+def _sub_event_prompt(
+    event: Dict[str, Any],
+    sub_event_id: str,
+    summary: str,
+    text: str,
+    refs: tuple,
+    endnote_texts: Optional[Dict[int, str]],
+    window: str = "",
+) -> tuple:
+    """``(Sub-eventID, prompt, stable cache key material, EventID)`` for one request."""
+    from src.utils.prompt_loader import render_prompt
+
+    endnote_refs, footnote_refs = refs
+    event_id = event.get("EventID", "")
+    endnote_block, ref_type_hint = _build_ref_context(
+        endnote_refs, footnote_refs, endnote_texts
+    )
+    prompt = render_prompt(
+        "supplemental",
+        event_title=event.get("Event_Name", ""),
+        event_id=event_id,
+        sub_event_summary=summary,
+        sub_event_id=sub_event_id,
+        text=text,
+        endnote_refs=endnote_refs,
+        footnote_refs=footnote_refs,
+        endnote_block=endnote_block,
+        ref_type_hint=ref_type_hint,
+    )
+    # Deterministic identity for cache keying — DELIBERATELY excludes the volatile `text` and
+    # the endnote_block (a submit and its retrieve re-run must resolve to the SAME entry). The
+    # event/sub-event ids are deterministic content-derived ULIDs and, with the sorted reference
+    # numbers (and the window's paragraph range), uniquely identify the request.
+    parts = [
+        str(event_id),
+        str(sub_event_id),
+        "e:" + _sorted_refs(endnote_refs),
+        "f:" + _sorted_refs(footnote_refs),
+    ]
+    if window:
+        parts.append("w:" + window)
+    return sub_event_id, prompt, "|".join(parts), event_id
+
+
+def _sorted_refs(refs: Any) -> str:
+    return ",".join(
+        str(n) for n in sorted(r for r in (refs or []) if isinstance(r, int))
+    )
 
 
 def _is_cross_reference(title: str) -> bool:
@@ -719,6 +816,20 @@ def append_subevents_to_files(
     _append_to_file(parsed_file, new_subevents, "parsed")
 
 
+def _load_parsed(parsed_file: Path) -> Optional[Dict[str, Any]]:
+    """The parsed chapter (a dict), or None - said in the log - when it cannot be read."""
+    try:
+        data = json.loads(parsed_file.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        logger.warning(
+            "OBSERV supplemental.no_parsed_file file=%s err=%s: asked per sub-event",
+            parsed_file.name,
+            type(e).__name__,
+        )
+        return None
+    return data if isinstance(data, dict) else None
+
+
 def _load_event_data(event_file: Path) -> Optional[Dict[str, Any]]:
     """Load and validate event data from file."""
     try:
@@ -1190,10 +1301,18 @@ def extract_supplemental(
     # OBSERV (bibliography chain): what does supplemental actually see for this event?
     _observe_supplemental_input(event_file, event_data, endnote_texts)
 
-    # Create prompts
-    prompts = create_supplemental_prompt(event_data, endnote_texts)
+    # Create prompts: over each sub-event's own raw paragraph windows (the parsed chapter), else
+    # per sub-event when there is no readable parsed file
+    prompts = create_supplemental_prompt(
+        event_data, endnote_texts, _load_parsed(parsed_file)
+    )
     if not prompts:
-        logger.info("No sub-events found in %s", event_file.name)
+        logger.info(
+            "OBSERV supplemental.nothing_to_ask event=%s sub_events=%d: no sub-event "
+            "paragraph carries a note marker (or no sub-events)",
+            event_file.name,
+            len(event_data.get("Event", {}).get("Sub-events", [])),
+        )
         return None
 
     # Extract from API. Keep each response paired with its KNOWN parent ids so sanitize can
@@ -1203,7 +1322,9 @@ def extract_supplemental(
     known_parents = (
         []
     )  # parallel to all_supplemental: (known_event_id, known_sub_event_id)
-    for sub_event_id, prompt, stable_material, parent_event_id in prompts:
+
+    def _ask(item: tuple) -> None:
+        sub_event_id, prompt, stable_material, parent_event_id = item
         logger.debug("Processing sub-event %s", sub_event_id)
         response = _extract_with_retry(
             prompt,
@@ -1215,6 +1336,12 @@ def extract_supplemental(
         if response:
             all_supplemental.append(response)
             known_parents.append((parent_event_id, sub_event_id))
+
+    # every request joins this batch round: a queued one does not stop the rest (stopping at the
+    # first queued asked one per round - chapter 8: supplemental:1 in round after round)
+    from src.utils.chunked_extract import ask_all
+
+    ask_all(prompts, _ask)
 
     # OBSERV: how many sub-event prompts returned materials (post-batch answers).
     _observe_supplemental_extract(event_file, prompts, all_supplemental)

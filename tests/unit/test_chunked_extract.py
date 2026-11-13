@@ -110,10 +110,10 @@ class TestExtractWithChunkHalving:
                 raise BatchModeCollecting("queued")
             return {chunk[0]: 1}
 
-        from src.utils.chunked_extract import _ask_all, _extract_one_chunk_recursive
+        from src.utils.chunked_extract import ask_all, _extract_one_chunk_recursive
 
         with pytest.raises(BatchModeCollecting):
-            _ask_all(
+            ask_all(
                 [["a"], ["b"], ["c"]],
                 lambda c: _extract_one_chunk_recursive(c, extract_fn, "t", out),
             )
