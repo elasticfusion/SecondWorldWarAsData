@@ -1169,6 +1169,9 @@ def _append_to_review_queue(bib_dir: Path, items: List[Dict[str, Any]]) -> None:
     """Append ambiguous items to review_queue.json."""
     if not items:
         return
+    bib_dir.mkdir(
+        parents=True, exist_ok=True
+    )  # self-sufficient: never assume a sibling created it
     queue_file = bib_dir / "review_queue.json"
     # Locked read-modify-write: review_queue.json is a shared sink appended to by parallel event
     # workers; an unlocked read+extend+write lost-update would silently drop ambiguous items.
@@ -1255,6 +1258,10 @@ def extract_supplemental(
     book = event_file.parent.name
     chapter = event_file.name.replace("-event.json", "")
     bib_dir = output_root / "bibliography"
+    # Create the dir up front: on a fresh run where bibliography extraction produced 0 records,
+    # nothing else creates output/bibliography/, and the review-queue write below would crash with
+    # FileNotFoundError, discarding all extracted supplemental materials (XChannel-8 2026-10-30).
+    bib_dir.mkdir(parents=True, exist_ok=True)
 
     factual, ambiguous, bib_count = _route_by_content_class(
         all_supplemental, bib_dir, book, chapter, grok_client, enrich
