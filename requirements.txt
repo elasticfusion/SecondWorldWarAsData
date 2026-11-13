@@ -19,6 +19,8 @@ python-dotenv==1.2.2
 ulid-py==1.1.0
 jsonschema==4.26.0
 beautifulsoup4==4.14.3
+# bs4's CSS-selector engine: >=4.0.0 fixes CVE-2026-126190 (2.10 was pulled in unpinned)
+soupsieve==4.1
 # HTML5 parsing (browser rules: bare <p> closed, missing </tr> supplied) for HyperWar pages
 html5lib==1.1
 html2text==2025.4.15
