@@ -23,6 +23,7 @@ from src.grok_client import (
 from src.utils.file_lock import write_json_with_lock
 from src.utils.entity_records import merge_mentions
 from src.extraction import sub_events as per_sub_event
+from src.utils.quote_match import QUOTE_RULE
 from src.utils.grok_models import GrokModelUnavailable, raise_if_unavailable
 from src.utils.observe import observe_error, observe_warn
 from src.utils.json_validator import _fix_invalid_ulids, _ULID_PATTERN
@@ -872,10 +873,10 @@ async def prefetch_windows(
     output_root: Path,
     config: Dict[str, Any],
 ) -> None:
-    """Ask a chapter's paragraph-window requests (people, groups, places, and equipment's broad
-    discovery when equipment is on) before its events are in. Each is built exactly as the later
-    pass builds it (``windows.window_event``), so that pass finds the answer cached: in batch mode
-    the requests are queued with the events request (one round saved); live they are answered
+    """Ask a chapter's paragraph-window requests (dates, people, groups, places, and equipment's
+    broad discovery when equipment is on) before its events are in. Each is built exactly as the
+    later pass builds it (``windows.window_event``), so that pass finds the answer cached: in batch
+    mode the requests are queued with the events request (one round saved); live they are answered
     now, alongside it. Never fails the chapter - the later pass asks anything missing - except a
     model that is gone, which stops the run."""
     from src.extraction import windows
@@ -897,6 +898,15 @@ async def prefetch_windows(
     if not wev["Event"]["Sub-events"]:
         return
     asks: List[Any] = [
+        extract_dates_batch_async(
+            None,
+            parsed,
+            grok_client,
+            output_root,
+            meta,
+            windows_event=wev,
+            ask_only=True,
+        ),
         extract_places_batch_async(
             None,
             parsed,
@@ -1261,8 +1271,8 @@ async def extract_all_async(
         "author": parsed_data.get("author", ""),
         "series": parsed_data.get("series", ""),
     }
-    # people, groups and places are discovered in paragraph windows of the parsed text (windows);
-    # dates still per sub-event (they are not part of the window design yet)
+    # dates, people, groups and places are discovered in paragraph windows of the parsed text
+    # (windows): the raw source only, never the events' own summary or grouping
     from src.extraction import windows
 
     wev = windows.window_event(parsed_data, windows.window_size())
@@ -1274,7 +1284,12 @@ async def extract_all_async(
         _observe_slow(
             f"{label}:dates",
             extract_dates_batch_async(
-                event_data, parsed_data, grok_client, output_root, book_meta
+                event_data,
+                parsed_data,
+                grok_client,
+                output_root,
+                book_meta,
+                windows_event=wev,
             ),
             _ENTITY_SOFT_DEADLINE_S,
         ),
@@ -1337,16 +1352,19 @@ async def extract_all_async(
 
 
 async def extract_dates_batch_async(
-    event_data: Dict[str, Any],
+    event_data: Optional[Dict[str, Any]],
     parsed_data: Dict[str, Any],  # pylint: disable=unused-argument
     grok_client: GrokClient,
     output_root: Path,
     book_meta: Optional[Dict[str, str]] = None,
+    windows_event: Optional[Dict[str, Any]] = None,
+    ask_only: bool = False,
 ) -> Dict[str, Any]:
-    """Extract dates one sub-event at a time (``_per_sub_event``)."""
+    """Extract dates one sub-event - or one paragraph window (``windows``) - at a time."""
+    asked, window = _window_kwargs(event_data, windows_event, ask_only, "dates")
     return await _per_sub_event(
-        lambda one: _extract_dates(one, grok_client, output_root, book_meta),
-        event_data,
+        lambda one: _extract_dates(one, grok_client, output_root, book_meta, **window),
+        asked,
         "dates",
     )
 
@@ -1356,6 +1374,7 @@ async def _extract_dates(
     grok_client: GrokClient,
     output_root: Path,
     book_meta: Optional[Dict[str, str]],
+    **window: Any,
 ) -> Dict[str, Any]:
     """One dates request for the sub-event(s) in ``event_data``."""
     what = _sub_events_phrase(event_data)
@@ -1373,8 +1392,9 @@ async def _extract_dates(
             '"time_precision": "exact|approximate|null", '
             '"date_precision": "exact|early|mid|late|spring|summer|fall|winter", '
             '"time_source": "German|Allied|Zulu|Local|null", '
-            '"original_text": "exact quote from text"}'
+            '"original_text": "ONE passage copied exactly from the text"}'
             "]}]}\n"
+            f"original_text: {QUOTE_RULE}\n"
             "For approximate dates use prefix: mid-1944-07, early-1944, summer-1942\n"
             "Sub-events:"
         ),
@@ -1387,6 +1407,7 @@ async def _extract_dates(
         book_meta=book_meta,
         include_fulltext=True,
         make_filename=_make_date_filename,
+        **window,
     )
 
 
@@ -1656,13 +1677,8 @@ _GEO_TYPES = (
     "city|town|village|country|region|province|state|sea|ocean|river|lake|mountain|island|"
     "peninsula|continent|military_base|battlefield|fortification|bridge|port|airfield|other"
 )
-# original_text is the provenance anchor: checked against the source text verbatim. Asked for "the
-# sentence(s)" (with an example ending in "..."), people quotes spliced sentences together with
-# ellipses - ~70% verbatim against 97-100% for the other entities (chapter 8 window test).
-QUOTE_RULE = (
-    "ONE passage copied exactly from the text, word for word (the sentence that names it) - "
-    "never join separate sentences, never shorten with '...', never paraphrase"
-)
+# original_text is the provenance anchor and the key a windowed answer is attributed by: the ONE
+# quote rule (quote_match.QUOTE_RULE, imported above) for every extractor's prompt.
 # Shapes the groups answer (the model reads every echelon as in scope); make_record does not store
 # it - mapping it to military_hierarchy would trip enrich_groups' echelon contradiction check.
 _UNIT_TYPES = (

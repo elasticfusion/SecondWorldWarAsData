@@ -21,7 +21,8 @@ prompt_template: |
 
   For each mention provide:
   - place_name: the place as the text gives it ("Omaha Beach", "off Utah Beach", "the
-    Channel", "Portsmouth"); PlaceMentionID ONLY if that place is in the list above
+    Channel", "Portsmouth"); PlaceMentionID ONLY if a places list is given with the text and
+    that place is in it - otherwise null
   - date (YYYY-MM-DD) and DateMentionID - see DATES below
   - observation_type:
       "observed"             - conditions that actually occurred
@@ -40,7 +41,7 @@ prompt_template: |
     unit / type ONLY if the text states a number
   - notable_impact: the operational impact the text describes (e.g. "swamped DD tanks",
     "bombs fell inland of the beach")
-  - original_text: the exact sentence/phrase from the document
+  - original_text: {quote_rule}
 
   CRITICAL RULE - EXTRACT, NEVER INFER: report a specific (temperature, wind speed, wave
   height, precipitation amount, ...) ONLY when the source text states it. Copy what the
@@ -49,9 +50,9 @@ prompt_template: |
   from you. If the text gives no number, leave the numeric fields null and keep the words.
 
   DATES - NEVER DROP A MENTION FOR ITS DATE:
-  - An exact date stated or unambiguous in context ("D Day" in a Normandy chapter whose dates
-    list 1944-06-06; "that night" of a sub-event dated 1944-06-05) -> that YYYY-MM-DD and its
-    DateMentionID from the list.
+  - An exact date stated or unambiguous in context ("D Day" in a Normandy chapter; "that night"
+    after the text dates the day) -> that YYYY-MM-DD, and its DateMentionID ONLY if a dates
+    list is given with the text (otherwise null).
   - Otherwise (no date, or only an approximate one like "early June") -> date null, and keep
     the mention.
   - A forecast's date is the date it is a forecast FOR.
@@ -99,7 +100,8 @@ rules:
   - Mark every mention observed / forecast / planning_requirement; a forecast or a planning
     requirement is NEVER reported as observed
   - Keep a mention whose date is missing or approximate (date null); never drop it for the date
-  - Link PlaceMentionID and DateMentionID only from the lists in the sub-event headers
+  - Link PlaceMentionID and DateMentionID only from lists given with the text; with no list,
+    null
   - EXTRACT specifics only when the TEXT STATES them (verbatim-grounded); NEVER infer,
     convert, or invent a number — unstated specifics come from the weather APIs
   - temperature_unit is "C" or "F"; measurement_system is "metric" or "imperial"

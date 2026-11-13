@@ -215,8 +215,13 @@ def test_a_chapter_without_events_asks_its_windows_with_the_events_request(tmp_p
             )
         )
     kinds = sorted({c for c, _s, _p in client.asked})
-    assert kinds == ["people", "peoplegroups", "places"]  # queued in the events' round
-    assert len(client.asked) == 3 * 2  # three types x two windows
+    assert kinds == [
+        "dates",
+        "people",
+        "peoplegroups",
+        "places",
+    ]  # queued in the events' round
+    assert len(client.asked) == 4 * 2  # four types x two windows
 
 
 def test_equipment_discovery_runs_over_the_windows_and_the_real_event_attributes(
@@ -351,3 +356,163 @@ def test_the_prefetch_never_masks_the_events_exception(tmp_path):
 def test_a_malformed_parsed_file_gives_no_windows(tmp_path):
     (tmp_path / "c-parsed.json").write_text(json.dumps(["not", "a", "chapter"]))
     assert W.window_event_for(tmp_path / "c-event.json", 3) is None
+
+
+def test_dates_found_in_windows_get_the_real_sub_events(tmp_path):
+    asked = []
+
+    class Dates:
+        def extract_json(self, prompt, system_prompt=None, cache_type="", **_k):
+            asked.append((cache_type, system_prompt or ""))
+            found = [
+                {"date_start": "1944-06-06", "original_text": "Gerow landed at Omaha."}
+            ]
+            if "Gerow" not in (system_prompt or ""):
+                found = [
+                    {"date_start": "1944-06-07", "original_text": "Rudder climbed"}
+                ]
+            return {"dates": [{"sub_event_id": "x", "dates": found}]}
+
+    out = asyncio.run(
+        bp.extract_dates_batch_async(
+            REAL,
+            PARSED,
+            Dates(),
+            tmp_path,
+            {"book": "B"},
+            windows_event=W.window_event(PARSED, 3),
+        )
+    )
+    assert len(asked) == 2 and not any("SUMMARY-" in s for _c, s in asked)
+    by_date = {
+        json.loads(f.read_text())["date_start"]: [
+            m["Sub_eventID"] for m in json.loads(f.read_text())["event_mentions"]
+        ]
+        for f in (tmp_path / "dates").glob("*.json")
+        if f.name != "index.json"
+    }
+    assert by_date == {"1944-06-06": [S1], "1944-06-07": [S2]}
+    assert set(out["links"]) == {S1, S2}
+
+
+def _weather_chapter(tmp_path, parsed):
+    book = tmp_path / "content" / "B"
+    book.mkdir(parents=True)
+    event_file = book / "c-event.json"
+    event_file.write_text(json.dumps(REAL))
+    parsed_file = book / "c-parsed.json"
+    parsed_file.write_text(json.dumps(parsed))
+    (tmp_path / "weather").mkdir()
+    return event_file, parsed_file
+
+
+def test_weather_is_asked_per_window_of_raw_text_and_attributed_by_quote(
+    tmp_path, monkeypatch
+):
+    from src.extraction import weather_central as wc
+
+    monkeypatch.setattr("src.utils.config.should_reprocess", lambda *_a: False)
+    event_file, parsed_file = _weather_chapter(tmp_path, PARSED)
+    prompts = []
+
+    class Weather:
+        batch_mode = False
+
+        def extract_json(self, prompt, **_k):
+            prompts.append(prompt)
+            if "[P001-P003]" in prompt:
+                return {
+                    "P001-P003": [
+                        {
+                            "place_name": "Augusta",
+                            "date": "1944-06-06",
+                            "weather_description": "fair from the Augusta",
+                            "original_text": "Bradley watched from the Augusta.",
+                        }
+                    ]
+                }
+            return {}
+
+    wc.extract_weather_central(
+        event_file,
+        tmp_path / "weather",
+        Weather(),
+        tmp_path / "places",
+        parsed_file=parsed_file,
+    )
+    assert len(prompts) == 2  # one request per window
+    assert not any("SUMMARY-" in p or "Available Places" in p for p in prompts)
+    (rec,) = [
+        json.loads(f.read_text())
+        for f in (tmp_path / "weather").glob("*.json")
+        if f.name not in ("index.json", ".processed_events.json")
+    ]
+    # paragraph 3 is S2's (the window P001-P003 straddles S1 and S2)
+    assert [m["Sub_eventID"] for m in rec["event_mentions"]] == [S2]
+
+
+def test_weather_asks_nothing_for_a_chapter_without_windows(tmp_path, monkeypatch):
+    from src.extraction import weather_central as wc
+
+    monkeypatch.setattr("src.utils.config.should_reprocess", lambda *_a: False)
+    event_file, parsed_file = _weather_chapter(
+        tmp_path, {"book": "B", "author": "A", "paragraphs": []}
+    )
+    client = mock.Mock()
+    with mock.patch("src.utils.observe.observe_error") as loud:
+        assert (
+            wc.extract_weather_central(
+                event_file,
+                tmp_path / "weather",
+                client,
+                tmp_path / "places",
+                parsed_file=parsed_file,
+            )
+            is None
+        )
+    client.extract_json.assert_not_called()  # never the events' own text
+    assert loud.call_args.args[:2] == ("weather", "windows_empty")
+
+
+def test_a_window_answer_under_a_mangled_key_is_still_the_windows(
+    tmp_path, monkeypatch
+):
+    from src.extraction import weather_central as wc
+    from src.utils.quote_match import QUOTE_RULE
+
+    monkeypatch.setattr("src.utils.config.should_reprocess", lambda *_a: False)
+    event_file, parsed_file = _weather_chapter(tmp_path, PARSED)
+    prompts = []
+
+    class Mangled:
+        batch_mode = False
+
+        def extract_json(self, prompt, **_k):
+            prompts.append(prompt)
+            if "[P004-P004]" not in prompt:
+                return {}
+            return {
+                "window 2": [  # not the window id
+                    {
+                        "place_name": "Pointe du Hoe",
+                        "date": "1944-06-06",
+                        "weather_description": "rough surf",
+                        "original_text": "Rudder climbed Pointe du Hoe.",
+                    }
+                ]
+            }
+
+    wc.extract_weather_central(
+        event_file,
+        tmp_path / "weather",
+        Mangled(),
+        tmp_path / "places",
+        parsed_file=parsed_file,
+    )
+    assert all(QUOTE_RULE in p for p in prompts)  # the shared quote rule
+    (rec,) = [
+        json.loads(f.read_text())
+        for f in (tmp_path / "weather").glob("*.json")
+        if f.name not in ("index.json", ".processed_events.json")
+    ]
+    assert [m["Sub_eventID"] for m in rec["event_mentions"]] == [S2]

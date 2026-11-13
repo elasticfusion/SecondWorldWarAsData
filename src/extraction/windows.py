@@ -104,7 +104,12 @@ def window_event(
         )
     section = parsed_data.get("section_id") or parsed_data.get("section") or "full"
     eid = event_id(parsed_data.get("book"), parsed_data.get("chapter_title"), section)
-    return {"Event": {"EventID": eid, "Sub-events": windows}}
+    # "Chapter": the parsed title, for prompts that name the chapter (weather) - parsed-only, so a
+    # window request is the same before and after the events are in
+    return {
+        "Chapter": parsed_data.get("chapter_title") or "",
+        "Event": {"EventID": eid, "Sub-events": windows},
+    }
 
 
 def window_event_for(event_file: Path, size: int) -> Optional[Dict[str, Any]]:

@@ -55,7 +55,7 @@ class _Grok:
 
     def extract_json(self, prompt, **_k):
         return {
-            SEID: [
+            "P001-P001": [  # the chapter's one paragraph window
                 {
                     "place_name": "Omaha Beach",
                     "date": "1944-06-06",
@@ -83,7 +83,9 @@ def test_weather_is_extracted_with_an_empty_author(tmp_path, monkeypatch):
                         {
                             "Sub-eventID": SEID,
                             "Sub-event_summary": "Landing",
-                            "Sub-event_fulltext": {"1": "The seas were heavy."},
+                            "Sub-event_fulltext": {
+                                "Paragraph_001": "The seas were heavy."
+                            },
                         }
                     ],
                 },
@@ -93,7 +95,14 @@ def test_weather_is_extracted_with_an_empty_author(tmp_path, monkeypatch):
     )
     parsed = content / "chapter1full-parsed.json"
     parsed.write_text(
-        json.dumps({"book": "USA-E-XChannel-8", "author": ""}), encoding="utf-8"
+        json.dumps(
+            {
+                "book": "USA-E-XChannel-8",
+                "author": "",
+                "paragraphs": [{"absolute_number": 1, "text": "The seas were heavy."}],
+            }
+        ),
+        encoding="utf-8",
     )
     wdir = tmp_path / "weather"
     wdir.mkdir()

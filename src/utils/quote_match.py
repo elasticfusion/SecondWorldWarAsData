@@ -17,6 +17,17 @@ import unicodedata
 from difflib import SequenceMatcher
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+# The ONE quote rule of every extractor's prompt (Python prompts import it; YAML prompts get it as
+# ``{quote_rule}`` from prompt_loader.render_prompt). original_text is the provenance anchor and
+# how a paragraph window's item finds its real sub-event (windows.attribute): it must be IN the
+# text. Asked for "the sentence(s)" (with an example ending in "..."), people quotes spliced
+# sentences together with ellipses - ~70% verbatim against 97-100% for the other entities
+# (chapter 8 window test, 2026-11-13).
+QUOTE_RULE = (
+    "ONE passage copied exactly from the text, word for word (the sentence that names it) - "
+    "never join separate sentences, never shorten with '...', never paraphrase"
+)
+
 # Minimum similarity for a near match to be reported (below -> not found).
 FUZZY_THRESHOLD = 0.85
 # A near match needs this many words (a 2-3 word quote "matches" half the book) ...

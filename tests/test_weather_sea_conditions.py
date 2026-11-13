@@ -24,15 +24,32 @@ class _Grok:
         return self.reply
 
 
+# the chapter _run builds: paragraphs 1-3 are SEID's, paragraph 4 SEID2's; read in 3-paragraph
+# windows P001-P003 and P004-P004
+_WINDOW_OF = {SEID: "P001-P003", SEID2: "P004-P004"}
+
+
+class _WindowGrok(_Grok):
+    """Answers each window request with what ``reply`` gives the sub-event holding it."""
+
+    def extract_json(self, prompt, **_k):
+        return {
+            w: self.reply.get(seid, [])
+            for seid, w in _WINDOW_OF.items()
+            if f"[{w}]" in prompt
+        }
+
+
 def _run(tmp_path, reply, monkeypatch):
     monkeypatch.setattr("src.utils.config.should_reprocess", lambda *_a: False)
     content = tmp_path / "content" / "B"
     content.mkdir(parents=True)
+    owned = {SEID: (1, 2, 3), SEID2: (4,)}
     sub_events = [
         {
             "Sub-eventID": sid,
             "Sub-event_summary": f"S{i}",
-            "Sub-event_fulltext": {"1": "x"},
+            "Sub-event_fulltext": {f"Paragraph_{n:03d}": f"x{n}" for n in owned[sid]},
         }
         for i, sid in enumerate((SEID, SEID2))
     ]
@@ -44,11 +61,15 @@ def _run(tmp_path, reply, monkeypatch):
         encoding="utf-8",
     )
     parsed = content / "c-parsed.json"
-    parsed.write_text(json.dumps({"book": "B", "author": "A"}), encoding="utf-8")
+    paragraphs = [{"absolute_number": n, "text": f"x{n}"} for n in (1, 2, 3, 4)]
+    parsed.write_text(
+        json.dumps({"book": "B", "author": "A", "paragraphs": paragraphs}),
+        encoding="utf-8",
+    )
     wdir = tmp_path / "weather"
     wdir.mkdir()
     wc.extract_weather_central(
-        event_file, wdir, _Grok(reply), tmp_path / "places", parsed_file=parsed
+        event_file, wdir, _WindowGrok(reply), tmp_path / "places", parsed_file=parsed
     )
     return [
         json.loads(f.read_text(encoding="utf-8"))
@@ -273,7 +294,7 @@ def test_a_failed_window_keeps_the_answered_ones_and_leaves_the_event_unprocesse
             calls["n"] += 1
             if "para0" in prompt:
                 return {
-                    SEID: [
+                    "P001-P002": [
                         _mention(
                             weather_description="heavy seas", original_text="para0"
                         )
@@ -284,17 +305,28 @@ def test_a_failed_window_keeps_the_answered_ones_and_leaves_the_event_unprocesse
     monkeypatch.setattr("src.utils.config.should_reprocess", lambda *_a: False)
     content = tmp_path / "content" / "B"
     content.mkdir(parents=True)
+    long_paras = {n: f"para{n - 1} " + "x" * 20_000 for n in (1, 2)}
     se = {
         "Sub-eventID": SEID,
         "Sub-event_summary": "Long",
-        "Sub-event_fulltext": {f"P{i}": f"para{i} " + "x" * 20_000 for i in range(2)},
+        "Sub-event_fulltext": {f"Paragraph_{n:03d}": t for n, t in long_paras.items()},
     }
     event_file = content / "c-event.json"
     event_file.write_text(
         json.dumps({"Chapter": "C", "Event": {"EventID": EVENT_ID, "Sub-events": [se]}})
     )
     parsed = content / "c-parsed.json"
-    parsed.write_text(json.dumps({"book": "B", "author": "A"}))
+    parsed.write_text(
+        json.dumps(
+            {
+                "book": "B",
+                "author": "A",
+                "paragraphs": [
+                    {"absolute_number": n, "text": t} for n, t in long_paras.items()
+                ],
+            }
+        )
+    )
     wdir = tmp_path / "weather"
     wdir.mkdir()
     with pytest.raises(wc.WeatherCallFailed):
