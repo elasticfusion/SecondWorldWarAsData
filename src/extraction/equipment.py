@@ -1701,6 +1701,9 @@ def _resolve_canonical_identity(
         canonical_name = ident["canonical_name"]
         equipment_data["canonical_name"] = canonical_name
         equipment_data["identity_source"] = ident["identity_source"]
+        for k in ("variant_of", "distinguishing_features", "lineage_source"):
+            if ident.get(k) and not equipment_data.get(k):
+                equipment_data[k] = ident[k]
         if ident.get("nationality_of_origin") and not equipment_data.get(
             "country_of_origin"
         ):

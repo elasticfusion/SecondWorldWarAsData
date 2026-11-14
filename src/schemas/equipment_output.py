@@ -177,6 +177,12 @@ EQUIPMENT_OUTPUT_SCHEMA = {
         # name is used across US/German/British designation systems; identity_source
         # records how it was resolved.
         "canonical_name": make_nullable("string"),
+        # 2.30: the type this model is a variant of ("M4" for the M4A1) and what sets it apart
+        # from it ("cast rather than welded hull") - the disambiguator's answer, so records of one
+        # family consolidate (Sherman > M4 > M4A1) and a variant's difference is stated.
+        "variant_of": make_nullable("string"),
+        "distinguishing_features": make_nullable("string"),
+        "lineage_source": enum_field(["grok_disambiguation"], nullable=True),
         "identity_source": enum_field(
             [
                 "exact",
