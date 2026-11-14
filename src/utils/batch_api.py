@@ -43,7 +43,9 @@ class BatchPending(Exception):
 def in_task_wait_minutes(config: Optional[Dict[str, Any]] = None) -> float:
     """How long a task waits for one batch round before handing it to the poller:
     ``BATCH_IN_TASK_WAIT_MINUTES`` (env, e.g. shorter for tests), else
-    ``batch.in_task_wait_minutes``, else 90."""
+    ``batch.in_task_wait_minutes``, else 5 (the task is the expensive part: an unanswered
+    round goes to the poller Lambda, which checks every 5 minutes, and a new task resumes the run).
+    """
     import os as _os
 
     raw = _os.environ.get("BATCH_IN_TASK_WAIT_MINUTES") or (
@@ -66,7 +68,7 @@ def in_task_wait_minutes(config: Optional[Dict[str, Any]] = None) -> float:
     return max(minutes, 1.0)
 
 
-DEFAULT_IN_TASK_WAIT_MINUTES = 90.0
+DEFAULT_IN_TASK_WAIT_MINUTES = 5.0
 MAX_IN_TASK_WAIT_MINUTES = 100.0  # < the poller's 2 h in_task adopt age, with margin
 
 

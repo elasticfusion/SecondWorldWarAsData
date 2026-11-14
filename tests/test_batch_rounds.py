@@ -157,7 +157,9 @@ def test_each_round_waits_the_configured_time(monkeypatch):
     monkeypatch.delenv("BATCH_IN_TASK_WAIT_MINUTES", raising=False)
     client = Client([[_req("ev", "events")], []])
     _rounds(client)
-    assert client.waits == [90.0]  # the default
+    assert client.waits == [
+        5.0
+    ]  # the default: an unanswered round goes to the poller Lambda
 
 
 def test_the_wait_can_be_shortened_for_testing(monkeypatch):
@@ -168,7 +170,7 @@ def test_the_wait_can_be_shortened_for_testing(monkeypatch):
     monkeypatch.setenv("BATCH_IN_TASK_WAIT_MINUTES", "5")
     assert in_task_wait_minutes({"batch": {"in_task_wait_minutes": 45}}) == 5
     monkeypatch.setenv("BATCH_IN_TASK_WAIT_MINUTES", "soon")
-    assert in_task_wait_minutes({}) == 90  # unreadable -> default, flagged
+    assert in_task_wait_minutes({}) == 5  # unreadable -> default, flagged
 
 
 def test_a_resumed_run_counts_on_from_the_retrieved_round(monkeypatch):

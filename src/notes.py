@@ -42,6 +42,8 @@ _HTML_MARKER = re.compile(
     r"\s{0,5}</a>\s{0,5}</sup>",
     re.IGNORECASE,
 )
+# A bare-number in-text marker: <sup>9</sup> (no link, no brackets).
+_BARE_MARKER = re.compile(r"<sup>\s{0,3}(\d{1,6})\s{0,3}</sup>", re.IGNORECASE)
 # A note DEFINITION line, after any leading blockquote markers are removed:
 #   HTML:      \[<a href="#cn1" id="fn1">1</a>\] text      (also [<a name=fn1 href=#cn1>1</a>] text)
 #   markdown:  [1](https://host/page.html#cn1). text
@@ -209,16 +211,27 @@ def _strip_nav(text: str) -> Tuple[str, int]:
 
 
 def canonicalize_markers(text: str, base_url: str) -> str:
-    """Rewrite raw-HTML in-text note markers to ``<sup>[N](<base>#fnN)</sup>`` (or ``<sup>[N]</sup>``
-    when there is no http(s) base) - the single form the parser, events and supplemental read.
-    """
+    """Rewrite in-text note markers to ``<sup>[N](<base>#fnN)</sup>`` (or ``<sup>[N]</sup>`` when
+    there is no http(s) base) - the single form the parser, events and supplemental read. Two raw
+    forms: the HTML link (``<sup><a href="#fnN">N</a></sup>``) and the bare number
+    (``<sup>N</sup>``, which the OCR/HTML merge leaves for some notes: Cross-Channel Attack
+    chapters 1, 5, 6 and 8 - 8 notes whose citing paragraph was unknown)."""
 
     def _sub(m: "re.Match[str]") -> str:
         n = int(m.group(1))
         url = _note_url(base_url, n)
         return f"<sup>[{n}]({url})</sup>" if url else f"<sup>[{n}]</sup>"
 
-    return _HTML_MARKER.sub(_sub, text)
+    def _cited(m: "re.Match[str]") -> str:
+        # at the start of a line it is a note DEFINITION left in the body ("<sup>3</sup> Text"),
+        # not a citation: canonicalised it would cite itself
+        line_start = text.rfind("\n", 0, m.start()) + 1
+        if not text[line_start : m.start()].strip(" \t>"):
+            return m.group(0)
+        return _sub(m)
+
+    text = _HTML_MARKER.sub(_sub, text)
+    return _BARE_MARKER.sub(_cited, text)
 
 
 def separate_notes_detailed(

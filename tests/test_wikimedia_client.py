@@ -712,3 +712,34 @@ def test_guard_catches_known_bypass_shapes(tmp_path):
         if isinstance(n, ast.Call) and _call_targets_wikimedia(n, consts)
     ]
     assert len(hits) == 3
+
+
+# --- proactive pacing (2026-11-14 full-book run: ~75 rate-limit back-offs of 60 s) -------------
+
+
+def test_requests_to_one_host_are_spaced(monkeypatch):
+    from src.utils import wikimedia_client as wc
+
+    monkeypatch.setenv("WIKIMEDIA_MIN_INTERVAL_SECONDS", "2")
+    monkeypatch.setattr(wc, "_next_slot", {})
+    clock = {"t": 100.0}
+    slept = []
+    monkeypatch.setattr(wc.time, "monotonic", lambda: clock["t"])
+    monkeypatch.setattr(wc.time, "sleep", lambda s: slept.append(s))
+    wc._pace("en.wikipedia.org")
+    wc._pace("en.wikipedia.org")
+    wc._pace("en.wikipedia.org")
+    wc._pace("commons.wikimedia.org")  # another host has its own slots
+    assert slept == [2.0, 4.0]
+
+
+def test_pacing_can_be_turned_off(monkeypatch):
+    from src.utils import wikimedia_client as wc
+
+    monkeypatch.setenv("WIKIMEDIA_MIN_INTERVAL_SECONDS", "0")
+    monkeypatch.setattr(wc, "_next_slot", {})
+    monkeypatch.setattr(
+        wc.time, "sleep", lambda s: (_ for _ in ()).throw(AssertionError)
+    )
+    wc._pace("en.wikipedia.org")
+    wc._pace("en.wikipedia.org")

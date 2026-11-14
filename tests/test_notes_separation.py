@@ -797,3 +797,35 @@ def test_body_image_is_not_reassigned_to_a_note():
         [note],
     )
     assert (doc.images[0].paragraph_number, doc.images[0].note_number) == (0, 0)
+
+
+# --- bare-number markers (Cross-Channel Attack chapters 1, 5, 6 and 8, 2026-11-14) -------------
+
+
+def test_a_bare_number_marker_is_canonicalised():
+    from src.notes import canonicalize_markers
+
+    text = "Air Marshal A. T. Harris.<sup>9</sup> John Dill<sup> 10 </sup> sat."
+    assert canonicalize_markers(text, "https://h/p.html") == (
+        "Air Marshal A. T. Harris.<sup>[9](https://h/p.html#fn9)</sup> John Dill"
+        "<sup>[10](https://h/p.html#fn10)</sup> sat."
+    )
+    assert canonicalize_markers("x<sup>3</sup>", "") == "x<sup>[3]</sup>"
+
+
+def test_canonical_and_non_numeric_superscripts_are_left_alone():
+    from src.notes import canonicalize_markers
+
+    text = "the 1<sup>st</sup> army<sup>[4](https://h/p.html#fn4)</sup>"
+    assert canonicalize_markers(text, "https://h/p.html") == text
+
+
+def test_a_bare_marker_starting_a_line_is_a_definition_not_a_citation():
+    from src.notes import canonicalize_markers
+
+    text = (
+        "Body.<sup>2</sup>\n<sup>2</sup> Ltr, Hodges to Gerow.\n> <sup>3</sup> Diary."
+    )
+    assert canonicalize_markers(text, "") == (
+        "Body.<sup>[2]</sup>\n<sup>2</sup> Ltr, Hodges to Gerow.\n> <sup>3</sup> Diary."
+    )

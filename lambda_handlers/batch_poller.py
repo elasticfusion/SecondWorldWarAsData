@@ -28,7 +28,7 @@ NOTIFICATION_TOPIC_ARN = os.getenv("NOTIFICATION_TOPIC_ARN", "")
 # A completed batch with an error fraction >= this % triggers an operator alert (the batch still
 # proceeds on its successful fraction, but the lost fraction must not vanish silently).
 _PARTIAL_FAILURE_ALERT_PCT = float(os.getenv("BATCH_PARTIAL_FAILURE_ALERT_PCT", "10"))
-# An "in_task" job is a batch a running task waits for (up to batch.in_task_wait_minutes, 90).
+# An "in_task" job is a batch a running task waits for (up to batch.in_task_wait_minutes, 5).
 # Older than this, the task died during its wait (spot reclaim): adopt the batch as pending.
 # Must stay above the in-task wait.
 _IN_TASK_ADOPT_S = int(os.getenv("BATCH_IN_TASK_ADOPT_SECONDS", str(2 * 3600)))

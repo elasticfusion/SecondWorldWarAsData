@@ -68,6 +68,26 @@ MAX_BACKOFF_SECONDS = 900
 BLOCK_BACKOFF_SECONDS = 60
 #: Bound on remembered deferred subjects (a long ECS task must not grow without limit).
 MAX_DEFERRED = 10_000
+#: Least time between two requests to one Wikimedia host, across all threads of the process
+#: (env ``WIKIMEDIA_MIN_INTERVAL_SECONDS``). Back-off only REACTED to 429s: the full-book run of
+#: 2026-11-14 drew ~75 of them (60 s each), which stalled Phase 2 past its soft deadlines.
+DEFAULT_MIN_INTERVAL_SECONDS = 1.0
+
+
+def _min_interval() -> float:
+    import os
+
+    try:
+        return max(
+            0.0,
+            float(
+                os.environ.get(
+                    "WIKIMEDIA_MIN_INTERVAL_SECONDS", DEFAULT_MIN_INTERVAL_SECONDS
+                )
+            ),
+        )
+    except ValueError:
+        return DEFAULT_MIN_INTERVAL_SECONDS
 
 
 #: What to do about each transient reason (alerts must be actionable).
@@ -90,6 +110,24 @@ _episode = (
 _had_transient = False
 _deferred: Set[Tuple[str, str]] = set()
 _lock = threading.Lock()
+_next_slot: Dict[str, float] = (
+    {}
+)  # host -> time.monotonic() of its next allowed request
+
+
+def _pace(host: str) -> None:
+    """Wait for ``host``'s next request slot: requests to one host go at most one per
+    ``_min_interval()`` seconds, whatever the number of threads (each reserves its slot under the
+    lock, then sleeps outside it)."""
+    interval = _min_interval()
+    if interval <= 0:
+        return
+    with _lock:
+        now = time.monotonic()
+        slot = max(now, _next_slot.get(host, 0.0))
+        _next_slot[host] = slot + interval
+    if slot > now:
+        time.sleep(slot - now)
 
 
 def _retry_after_seconds(response: requests.Response) -> Optional[int]:
@@ -313,6 +351,7 @@ def wikimedia_get(
             "backoff_active",
             wait_s=int(_backoff_remaining(host)),
         )
+    _pace(host)
     request = dict(
         kind=kind or TEXTUAL,
         params=params,
@@ -327,8 +366,9 @@ def wikimedia_get(
     )
     remaining = _backoff_remaining(host) if resp is TRANSIENT else 0.0
     if 0 < remaining <= MAX_INLINE_WAIT_SECONDS:
-        # A short rate-limit back-off was just recorded: wait it out, retry once.
+        # A short rate-limit back-off was just recorded: wait it out, retry once (in turn).
         time.sleep(remaining)
+        _pace(host)
         resp = _classify(
             _send(provider, endpoint, subject, request), provider, subject, host
         )
