@@ -1,5 +1,6 @@
 """Event and sub-event extraction from parsed content."""
 
+import bisect
 import json
 import logging
 import re
@@ -175,6 +176,73 @@ def _make_paragraphs_disjoint(
             f" emptied_summaries={emptied}" if emptied else "",
         )
     return len(contested)
+
+
+def _claim_orphan_paragraphs(response: dict, parsed_data: Optional[dict]) -> int:
+    """Give each narrative paragraph NO sub-event holds to the nearest one that holds a paragraph
+    before it (else after it), deterministically - no Grok call. Returns how many were claimed.
+
+    The events answer leaves paragraphs out: a chapter's heading lines (every Cross-Channel Attack
+    chapter) and, in chapter 10, its closing four paragraphs (2026-11-14) - and every entity found
+    in them was dropped as unattributable (21 records, 2 notes). Runs after
+    ``_make_paragraphs_disjoint``, before the refs and fulltext are built from the paragraph arrays.
+    An answer that holds too little of the chapter (``_MIN_COVERAGE``) is left as is: it is
+    rejected and asked again, and claiming would hide that.
+    """
+    subs = (response.get("Event", {}) or {}).get("Sub-events", []) or []
+    owner = {n: i for i, nums in _paragraph_claims(subs) for n in nums}
+    orphans = _orphans(owner, parsed_data)
+    if not orphans:
+        return 0
+    share = _held_share(owner, parsed_data or {})
+    _give_to_nearest(subs, owner, orphans)
+    logger.info(
+        "OBSERV events.orphans_claimed count=%d held_share=%.3f paragraphs=%s (given to the "
+        "nearest sub-event: the events answer left them out)",
+        len(orphans),
+        share,
+        _ranges(orphans)[:20],
+    )
+    return len(orphans)
+
+
+def _orphans(owner: dict, parsed_data: Optional[dict]) -> list:
+    """The narrative paragraphs no sub-event holds - none when nothing is held, or too little of
+    the chapter is (that answer is for the coverage retry). Tables are claimed too (their units and
+    places reach extraction), though the coverage share counts narrative only."""
+    from src.extraction.windows import content_paragraphs
+
+    if not owner or not parsed_data:
+        return []
+    orphans = [
+        p["absolute_number"]
+        for p in content_paragraphs(parsed_data)
+        if p["absolute_number"] not in owner
+    ]
+    if orphans and _held_share(owner, parsed_data) < _MIN_COVERAGE:
+        return []
+    return orphans
+
+
+def _give_to_nearest(subs: list, owner: dict, orphans: list) -> None:
+    """Add each orphan to the sub-event holding the nearest paragraph before it (else the first
+    held one after it); each sub-event's paragraph_numbers end sorted and unique."""
+    held = sorted(owner)
+    touched = set()
+    for n in orphans:
+        at = bisect.bisect_left(held, n)
+        i = owner[held[at - 1] if at else held[0]]
+        subs[i].setdefault("paragraph_numbers", []).append(n)
+        touched.add(i)
+    for i in touched:
+        subs[i]["paragraph_numbers"] = sorted(set(subs[i]["paragraph_numbers"]))
+
+
+def _held_share(owner: dict, parsed_data: dict) -> float:
+    """Share of the chapter's narrative characters in the paragraphs some sub-event holds."""
+    sizes = _narrative_sizes(parsed_data.get("paragraphs", []) or [])
+    total = sum(sizes.values())
+    return sum(c for n, c in sizes.items() if n in owner) / total if total else 1.0
 
 
 def _paragraph_owners(claims: list) -> tuple:
@@ -796,6 +864,7 @@ def _extract_chunk(
     # BEFORE _reconstruct_fulltext pops them. Without this, auto-split chapters yield
     # sub-events with no Footnote_References -> 0 bibliography for split documents.
     _make_paragraphs_disjoint(result, chunk_data)
+    _claim_orphan_paragraphs(result, chunk_data)
     _populate_footnote_refs(result, chunk_data)
     _reconstruct_fulltext(result, chunk_data)
     _apply_deterministic_ids(result, chunk_data)
@@ -1299,6 +1368,7 @@ def _normalize_event_response(response, parsed_data, parsed_file):
     # Populate refs BEFORE _reconstruct_fulltext (which pops the 'paragraphs' arrays it needs).
     # Each paragraph belongs to ONE sub-event first (overlapping claims duplicated every entity).
     _make_paragraphs_disjoint(response, parsed_data)
+    _claim_orphan_paragraphs(response, parsed_data)
     _populate_footnote_refs(response, parsed_data)
     _reconstruct_fulltext(response, parsed_data)
     # OBSERV (bibliography chain): did we actually populate refs on the sub-events?
