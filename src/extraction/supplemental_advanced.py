@@ -425,8 +425,10 @@ def enrich_bibliography(
 def _set_alt_title(data: dict, citation: dict, value: str) -> None:
     """Write alt_title to the ONE canonical place (top-level) and keep citation.alt_title
     in lockstep so the two copies never drift (validated by the output schema check)."""
-    data["alt_title"] = value
-    citation["alt_title"] = value
+    from src.utils.entity_records import set_alt_title
+
+    data["citation"] = citation
+    set_alt_title(data, value)
 
 
 def _alt_title_looks_expanded(text: str) -> bool:

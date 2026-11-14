@@ -837,7 +837,21 @@ def _merge_bib_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
         _merge_bib_fields(base, rec)
         merge_mentions(merged_mentions, rec.get("mentions"), citation_identity)
     base["mentions"] = merged_mentions
+    _align_alt_title(base)
     return base
+
+
+def _align_alt_title(rec: Dict[str, Any]) -> None:
+    """Make the two copies of alt_title agree (the citation's wins, else the top level's): a
+    record whose copies differ is rejected by the write guard, and its merge is lost."""
+    raw = rec.get("citation")
+    citation: Dict[str, Any] = raw if isinstance(raw, dict) else {}
+    if rec.get("alt_title") == citation.get("alt_title"):
+        return
+    from src.utils.entity_records import set_alt_title
+
+    rec["citation"] = dict(citation)
+    set_alt_title(rec, citation.get("alt_title") or rec.get("alt_title"))
 
 
 def _merge_bib_fields(base: Dict[str, Any], rec: Dict[str, Any]) -> None:
@@ -849,9 +863,15 @@ def _merge_bib_fields(base: Dict[str, Any], rec: Dict[str, Any]) -> None:
         None,
     ):
         base["title"] = rec["title"]
-    for fld in ("alt_title", "archive_reference_number"):
-        if not base.get(fld) and rec.get(fld):
-            base[fld] = rec[fld]
+    if not base.get("alt_title") and rec.get("alt_title"):
+        from src.utils.entity_records import set_alt_title
+
+        base["citation"] = dict(
+            base.get("citation") or {}
+        )  # never alias the merged shard's
+        set_alt_title(base, rec["alt_title"])  # both copies: the guard rejects a drift
+    if not base.get("archive_reference_number") and rec.get("archive_reference_number"):
+        base["archive_reference_number"] = rec["archive_reference_number"]
     if not base.get("resource_urls") and rec.get("resource_urls"):
         base["resource_urls"] = rec["resource_urls"]
 

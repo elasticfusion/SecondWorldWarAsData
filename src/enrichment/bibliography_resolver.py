@@ -245,7 +245,12 @@ def _enrich_from_biblio_note(entry: Dict[str, Any], citation: Dict[str, Any]) ->
         if prov.get("biblio_category") == "published_work":
             # Give the online-copy search a real, findable title/author.
             if not citation.get("alt_title"):
-                citation["alt_title"] = prov["canonical_title"]
+                from src.utils.entity_records import set_alt_title
+
+                entry["citation"] = citation
+                set_alt_title(
+                    entry, prov["canonical_title"]
+                )  # both copies (write guard)
             if citation.get("title", "Unknown") in ("", "Unknown"):
                 citation["title"] = prov["canonical_title"]
             if not citation.get("author"):

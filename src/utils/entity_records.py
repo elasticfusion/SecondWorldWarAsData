@@ -145,6 +145,18 @@ def merge_mentions(
     return added
 
 
+def set_alt_title(record: Dict[str, Any], value: Any) -> None:
+    """A bibliography record's alt_title, in BOTH places it lives (top level and citation): the
+    write guard rejects a record whose two copies differ (file_lock._bibliography_alt_title_ok),
+    so setting only one lost the whole write (2026-11-14: reconcile merges of 4 citations).
+    """
+    citation = record.get("citation")
+    if not isinstance(citation, dict):
+        citation = record["citation"] = {}
+    record["alt_title"] = value
+    citation["alt_title"] = value
+
+
 # Entities whose ``enrichment_status == "enriched"`` means a DESCRIPTIVE external-source
 # enrichment, so a source link is expected (validate_phase3 P3-A5, validate_provenance P3-A1).
 ENRICHED_ENTITIES = ("people", "people_groups", "equipment")

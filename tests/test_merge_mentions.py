@@ -259,3 +259,69 @@ def test_a_failed_primary_write_deletes_nothing(ui, monkeypatch):
         )
     st.delete.assert_not_called()
     ui._rebase_event_refs_storage.assert_not_called()
+
+
+# --- alt_title in both places (2026-11-14: 4 reconcile merges rejected by the write guard) -------
+
+
+def test_a_merge_that_fills_alt_title_fills_both_copies():
+    from src.extraction.bibliography import _merge_bib_records
+
+    poor = {
+        "BibliographyID": "1",
+        "title": "KTB",
+        "alt_title": None,
+        "citation": {"title": "KTB", "alt_title": None},
+        "mentions": [],
+    }
+    rich = {
+        "BibliographyID": "2",
+        "title": "KTB",
+        "alt_title": "Fifteenth Army, War Diary",
+        "citation": {"title": "KTB", "alt_title": "Fifteenth Army, War Diary"},
+        "mentions": [],
+    }
+    merged = _merge_bib_records([poor, rich])
+    assert (
+        merged["alt_title"]
+        == merged["citation"]["alt_title"]
+        == "Fifteenth Army, War Diary"
+    )
+    assert poor["citation"]["alt_title"] is None  # the shard itself is untouched
+
+
+def test_drifted_copies_are_aligned_on_merge():
+    from src.extraction.bibliography import _merge_bib_records
+
+    drifted = {
+        "BibliographyID": "1",
+        "alt_title": "top",
+        "citation": {"alt_title": "cit"},
+        "mentions": [],
+    }
+    merged = _merge_bib_records([drifted])
+    assert merged["alt_title"] == merged["citation"]["alt_title"] == "cit"
+
+
+def test_the_merged_record_passes_the_write_guard(tmp_path):
+    from pathlib import Path
+
+    from src.extraction.bibliography import _merge_bib_records
+    from src.utils.file_lock import _bibliography_alt_title_ok
+
+    poor = {
+        "BibliographyID": "1",
+        "alt_title": None,
+        "citation": {"alt_title": None},
+        "mentions": [],
+    }
+    rich = {
+        "BibliographyID": "2",
+        "alt_title": "X",
+        "citation": {"alt_title": "X"},
+        "mentions": [],
+    }
+    merged = _merge_bib_records([poor, rich])
+    assert _bibliography_alt_title_ok(
+        merged, "bibliography", Path("b.json"), "s", False
+    )
