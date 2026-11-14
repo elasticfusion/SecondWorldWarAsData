@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import argparse
 import importlib
-import json
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
@@ -34,20 +33,11 @@ from src.schemas import ENTITY_SCHEMA_VERSIONS, entity_version
 from src.schemas import entity_registry as _er
 from src.utils.storage import LocalStorage
 
-# entity dir name -> glob leaf under output/ (events live nested under content/)
-_SKIP_NAMES = {
-    "index.json",
-    ".processed_events.json",
-    "duplicate_report.json",
-    "not_duplicates.json",
-    "related_groups_report.json",
-    "surname_frequency_suggestions.json",
-    "not_people.json",
-    # Non-entity sidecar files that live in entity dirs (lists/reports, not schema records):
-    "review_queue.json",
-    "not_related.json",
-    "not_citation.json",
-}
+# record files, JSON loading and mention iteration: ONE definition (src/utils/entity_records)
+from src.utils.entity_records import SKIP_NAMES as _SKIP_NAMES  # noqa: E402,F401
+from src.utils.entity_records import entity_files as _entity_files  # noqa: E402
+from src.utils.entity_records import iter_mentions as _iter_mentions  # noqa: E402
+from src.utils.entity_records import load_json as _load  # noqa: E402
 
 
 class Report:
@@ -68,43 +58,6 @@ class Report:
 def _resolve_schema(spec: str) -> Dict[str, Any]:
     mod, attr = spec.split(":")
     return getattr(importlib.import_module(mod), attr)
-
-
-def _entity_files(root: Path, glob: str) -> List[Path]:
-    files = [
-        f
-        for f in root.glob(glob.replace("output/", "", 1))
-        if not f.name.endswith(".lock") and f.name not in _SKIP_NAMES
-    ]
-    return files
-
-
-def _load(f: Path) -> Dict[str, Any] | None:
-    try:
-        return json.loads(f.read_text(encoding="utf-8"))
-    except Exception:  # noqa: BLE001
-        return None
-
-
-def _iter_mentions(rec: Dict[str, Any]) -> List[Dict[str, Any]]:
-    ems = rec.get("event_mentions")
-    if isinstance(ems, list) and ems:
-        return ems
-    # Casualties anchor provenance via a SINGLE event_context {EventID, Sub_eventID, book, ...},
-    # NOT an event_mentions[] array — this is authoritative (src/loader/load.py loads casualties
-    # via event_context/T.casualty_mention_rows). Treat a present event_context as a one-element
-    # mention so A3 doesn't FALSELY flag a sourced casualty as an orphan (XChannel-8: 6 casualties
-    # with valid event_context were wrongly reported "no event_mentions (orphan)").
-    ectx = rec.get("event_context")
-    _eid = (
-        str(ectx.get("EventID", "")).strip().lower() if isinstance(ectx, dict) else ""
-    )
-    if _eid and _eid not in (
-        "none",
-        "null",
-    ):  # a present, real EventID (reject None/null string)
-        return [ectx]
-    return ems if isinstance(ems, list) else []
 
 
 # --- A1 + A2: schema version match + schema/mandatory-field compliance -------------------------

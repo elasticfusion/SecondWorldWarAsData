@@ -256,7 +256,7 @@ python3 -m pytest tests/unit/test_extraction/test_people.py -v
 
 ## Related
 
-- **Code Quality:** See `contextmanagement/Specs/quality_assurance.md`
+- **Code Quality:** Run `scripts/gate.sh` (see `.kiro/steering/development.md`)
 - **People Extraction:** [../features/people/README.md](../features/people/README.md)
 - **Deduplication:** [../features/people/deduplication.md](../features/people/deduplication.md)
 

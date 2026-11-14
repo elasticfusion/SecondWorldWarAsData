@@ -24,14 +24,9 @@ pip install -r requirements-lambda.txt -t lambda_package/ -q
 pip install -r requirements-lambda.txt -t lambda_package/ -q \
   --platform manylinux2014_x86_64 --implementation cp --python-version 3.12 \
   --only-binary=:all: --upgrade
-cp -r src/ lambda_handlers/ config.yaml lambda_package/
-# Only include scripts that Lambda handlers import
-mkdir -p lambda_package/scripts
-for s in find_duplicate_people.py find_duplicate_places_v2.py find_duplicate_groups.py \
-         find_duplicate_equipment.py find_related_groups.py reclassify_military_units.py \
-         cleanup_indexes.py; do
-  [ -f "scripts/$s" ] && cp "scripts/$s" lambda_package/scripts/
-done
+# prompts/: the OCR merge Lambda renders prompts (book_metadata) - load_prompt reads them locally
+cp -r src/ lambda_handlers/ prompts/ config.yaml lambda_package/
+# The dedup detectors live in src/dedup/ (copied above); no scripts/ files are needed.
 # Scan Lambda dependencies for vulnerabilities
 if command -v trivy &>/dev/null; then
   trivy fs lambda_package/ --severity HIGH,CRITICAL --exit-code 0 2>&1 | tail -5

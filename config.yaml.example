@@ -21,12 +21,11 @@ api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
     model: "grok-4.3"  # xAI retired grok-4.20-0309-reasoning (May 15 2026) -> redirects here; grok-4.3 is Batch-API accepted. Alias = latest stable. Verify Batch support before bumping to grok-4.6/4.7.
-    model_map:
-      isbn: "grok-3-mini"             # Cheap model for simple lookups
-      url_verify: "grok-3-mini"
-      copyright: "grok-3-mini"
-      nara_match: "grok-3-mini"
-      openserp_verify: "grok-3-mini"
+    # Per-request-type models (cache_type -> model). Every model named here (and api.grok.model)
+    # must be served AS ITSELF: each phase's preflight stops the run otherwise
+    # (src/utils/grok_models). grok-3-mini was removed 2026-11-12: xAI no longer serves it
+    # (answered by grok-4.3, so the "cheap" lookups were already running on grok-4.3).
+    model_map: {}
     max_retries: 3
     timeout: 60
   calls_per_minute: 20                 # Conservative rate limit
@@ -68,12 +67,13 @@ casualties:
 
 supplemental_material:
   enabled: true
-  extract_citations: true
-  enrich_with_searches: true
-  llm_search: true
-  search_gutenberg: true               # Free (native Gutendex API — independent of OpenSERP)
-  search_archive_org: true             # Free (archive.org API — independent of OpenSERP)
-  use_openserp: true                   # Enabled — Phase 3 scales the OpenSERP service on demand
+  extract_citations: true              # Phase 2: parse citations into structured bibliography entries
+  # Phase 2 performs NO supplemental searches (only Grokipedia/Wikipedia + submitting data to Grok).
+  # Every search for where a cited document can be obtained runs in Phase 3 (bibliography_resolver):
+  llm_search: true                     # Phase 3: Grok "LLM search" fallback (content-verified)
+  search_gutenberg: true               # Phase 3: Gutendex API (free; independent of OpenSERP)
+  search_archive_org: true             # Phase 3: archive.org API (free; independent of OpenSERP)
+  use_openserp: true                   # Phase 3 ONLY: OpenSERP service is scaled up on demand
   verify_archive_urls: false           # Skip verification pass
   extract_isbn: false                  # Skip — uses API calls
   determine_copyright: false           # Skip — uses API calls
@@ -89,9 +89,21 @@ concurrency:
 enrichment:
   re_search_after_days: 180            # Re-search less frequently
 
+extraction:
+  window_paragraphs: 3                 # people/groups/places/equipment discovery: paragraphs per request (env WINDOW_PARAGRAPHS)
+
 batch:
   phase2: true                         # 50% off extraction
   phase3: false                        # Live calls — avoids network bounce between submit/retrieve
+  max_rounds: 8                        # Phase 2 batch rounds before alert + stop (equipment ~6)
+  in_task_wait_minutes: 90             # per round; not answered by then -> poller (env BATCH_IN_TASK_WAIT_MINUTES)
+
+# Provenance validation (scripts/validate_provenance.py): is every record's cited source content
+# true (quotes in the cited paragraphs, locators in the cited sub-event)? Runs per book at the end
+# of Phase 2. gate: warn = report + alert, the book goes on to Phase 3; block = Phase 3 is held for
+# review when a hard check fails. PROVENANCE_GATE env overrides (no rebuild). Default: warn.
+provenance_validation:
+  gate: warn
 
 # Deduplication scoring. All values optional — if a key (or the whole block) is
 # absent, the built-in defaults below are used (= current behavior). Auto-merge stays
@@ -120,6 +132,12 @@ dedup:
     # Disambiguation veto: both names carry a comparable middle initial/name AND they
     # DIFFER (George S. vs George P. Patton) -> strong negative that overrides proximity.
     conflicting_middle_initial_weight: -5.0
+    # Disambiguation veto: two FULL names with different surnames are different people, however
+    # alike the first names ("William E. Dreher, Jr." vs "William R. Benn, Jr."). A surname
+    # within surname_variant_ratio (an OCR/spelling variant: Schwarzwalder/Schwarzwaldor) is the
+    # same surname. Lifted only by a shared external URL or a title alias.
+    different_surname_weight: -5.0
+    surname_variant_ratio: 0.8
     frequency:                         # SECONDARY: a surname dominating a book (Patton book)
       enabled: true
       dominant_surname_boost: 0.3      # applied only with a compatible first name/initial
@@ -218,6 +236,14 @@ images:
 
 external_maps:
   enabled: false                       # Disable external map search (expensive: OpenSERP + vision)
+  # In-document maps (author-curated, linked from the narrative, e.g. HyperWar maps/*.jpg): read
+  # what each map depicts (Grok vision: units, places, sector, date, movements) and recycle it as a
+  # map-as-source document. INDEPENDENT of `enabled` above (the OpenSERP web search). One vision
+  # call + one extra source document per map. Map ENTITIES are persisted regardless of this flag.
+  recycle_in_doc_maps: true
+  max_recycled_per_doc: 50             # cost cap per document (alerts when hit)
+  # allowed_hosts: []                  # extra hosts whose map links may be fetched (ibiblio.org is built in);
+  #                                    # the uploaded document's own host is NOT trusted
 
 storage:
   entity_backend: "filesystem"

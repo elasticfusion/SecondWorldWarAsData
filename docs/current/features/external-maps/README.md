@@ -262,7 +262,7 @@ Each map saved as JSON in `output/external_maps/`:
 
 - **Automated Search:** [combined-search.md](combined-search.md) (recommended)
 - **AI Guide:** [AI guide (archived)](../../../archive/external-maps/EXTERNAL_MAPS_AI_GUIDE.md) (YAML approach)
-- **Specification:** `contextmanagement/Specs/external_maps.md`
-- **Schema:** `contextmanagement/Specs/external_maps_v2_schema.json`
+- **Specification:** `docs/archive/contextmanagement/Specs/external_maps.md` (historical; current schema: `src/schemas/`)
+- **Schema:** `docs/archive/contextmanagement/Specs/external_maps_v2_schema.json` (historical; current schema: `src/schemas/`)
 - **Source Material Maps:** `docs/current/MAPS.md` (v1.0.0)
 - **Example YAML:** `external_maps.yaml.example`

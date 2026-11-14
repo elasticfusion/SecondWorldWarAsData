@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 from src.discovery import discover_content_structure
+from src.utils.deterministic_ids import book_id
 from src.parser import parse_chapter
 from src.utils.config import load_config, get_paths
 from src.utils.logger import setup_logging
@@ -31,6 +32,7 @@ def _doc_to_dict(doc):
     """Convert a MarkdownDocument to a serializable dict."""
     return {
         "book": doc.book,
+        "BookID": book_id(doc.book),
         "chapter_number": doc.chapter_number,
         "chapter_title": doc.chapter_title,
         "section_id": doc.section_id,
@@ -39,33 +41,8 @@ def _doc_to_dict(doc):
         "license": doc.license,
         "source_file": _repo_relative(doc.file_path),
         "_source_url": doc.source_url,
-        "paragraphs": [
-            {
-                "absolute_number": p.absolute_number,
-                "text": p.text,
-                "page_number": p.page_number,
-                "section_id": p.section_id,
-                "source_file": p.source_file,
-                **({"is_quote": True} if p.is_quote else {}),
-                **(
-                    {"quote_attribution": p.quote_attribution}
-                    if p.quote_attribution
-                    else {}
-                ),
-            }
-            for p in doc.paragraphs
-        ],
-        "images": [
-            {
-                "type": img.type,
-                "resource_id": img.resource_id,
-                "url": img.url,
-                "alt_text": img.alt_text,
-                "caption": img.caption,
-                "paragraph_number": img.paragraph_number,
-            }
-            for img in doc.images
-        ],
+        "paragraphs": [_paragraph_dict(p) for p in doc.paragraphs],
+        "images": [img.to_dict() for img in doc.images],
         "maps": [
             {
                 "url": m.url,
@@ -76,9 +53,7 @@ def _doc_to_dict(doc):
             }
             for m in doc.maps
         ],
-        "footnotes": [
-            {"number": f.number, "url": f.url, "text": f.text} for f in doc.footnotes
-        ],
+        "footnotes": [f.to_dict() for f in doc.footnotes],
         # Page-marker provenance (anchor/separator -> paragraph mapping): a first-class populated
         # model field that was previously dropped from serialization, losing the explicit
         # page-structure provenance even though per-paragraph page_number survived.
@@ -91,6 +66,22 @@ def _doc_to_dict(doc):
             for pm in doc.page_markers
         ],
         **({"table_hints": doc.table_hints} if doc.table_hints else {}),
+    }
+
+
+def _paragraph_dict(p) -> dict:
+    """One paragraph of a parsed chapter (whole-chapter and chunk files alike)."""
+    return {
+        "absolute_number": p.absolute_number,
+        "text": p.text,
+        "page_number": p.page_number,
+        **(
+            {"page_end": p.page_end} if getattr(p, "page_end", None) is not None else {}
+        ),
+        "section_id": p.section_id,
+        "source_file": p.source_file,
+        **({"is_quote": True} if p.is_quote else {}),
+        **({"quote_attribution": p.quote_attribution} if p.quote_attribution else {}),
     }
 
 
@@ -131,6 +122,7 @@ def _save_footnotes_chapter(doc, section_suffix, book_output, logger):
     )
     notes_data = {
         "book": doc.book,
+        "BookID": book_id(doc.book),
         "chapter_number": doc.chapter_number,
         "chapter_title": doc.chapter_title,
         file_suffix: notes_content,
@@ -183,22 +175,7 @@ def _save_split_chapter(doc, book_output, logger):
         )
         chunk_data = _doc_to_dict(doc)
         chunk_data["section_id"] = f"{doc.section_id or 'full'}-{chunk_suffix}"
-        chunk_data["paragraphs"] = [
-            {
-                "absolute_number": p.absolute_number,
-                "text": p.text,
-                "page_number": p.page_number,
-                "section_id": p.section_id,
-                "source_file": p.source_file,
-                **({"is_quote": True} if p.is_quote else {}),
-                **(
-                    {"quote_attribution": p.quote_attribution}
-                    if p.quote_attribution
-                    else {}
-                ),
-            }
-            for p in chunk_paras
-        ]
+        chunk_data["paragraphs"] = [_paragraph_dict(p) for p in chunk_paras]
         from src.utils.file_lock import write_parsed_with_guard
 
         if write_parsed_with_guard(chunk_file, chunk_data):
@@ -236,11 +213,10 @@ def _save_endnote_refs(doc, section_suffix, book_output, logger):
     )
     endnotes_data = {
         "book": doc.book,
+        "BookID": book_id(doc.book),
         "chapter_number": doc.chapter_number,
         "chapter_title": doc.chapter_title,
-        "endnotes": [
-            {"number": f.number, "url": f.url, "text": f.text} for f in doc.footnotes
-        ],
+        "endnotes": [f.to_dict() for f in doc.footnotes],
     }
     from src.utils.file_lock import write_json_with_lock
 
@@ -362,6 +338,29 @@ def _observe_phase1_book(book_name, chapters, book_output, logger) -> None:
         )
 
 
+def _enforce_book_slug(doc, book_name: str) -> None:
+    """A chapter's ``book`` IS its folder slug (immutable, src/ingestion/book_slug): the parsed
+    data, its EventIDs (``event_id(book, ...)``) and its BookID all derive from it. A chapter meta
+    naming another ``book`` (hand-written, legacy, an import script) would otherwise give the same
+    book a second identity: the slug wins, loudly."""
+    if not book_name or doc.book == book_name:
+        return
+    from src.utils.observe import observe_error
+
+    observe_error(
+        "phase1",
+        "book_slug_mismatch",
+        note=(
+            "the chapter meta's book differs from its folder: the folder slug is used (the "
+            "book's identity); correct the chapter meta's book to the slug"
+        ),
+        book=book_name,
+        meta_book=str(doc.book)[:80],
+        chapter=getattr(doc, "chapter_number", ""),
+    )
+    doc.book = book_name
+
+
 def _parse_one_book(
     book_name,
     chapters,
@@ -389,6 +388,7 @@ def _parse_one_book(
                 chapter_group, apply_structure_repair=repair_structure
             )
             for doc in documents:
+                _enforce_book_slug(doc, book_name)
                 _process_document(doc, book_output, logger)
         except Exception as _e:  # noqa: BLE001 - one bad chapter must not abort the run
             errors += 1

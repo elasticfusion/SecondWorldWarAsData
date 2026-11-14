@@ -7,7 +7,7 @@ XChannel ch8: Merderet River vs Ste. Mère-Eglise (42% name similarity, Phase-2 
 
 import json
 
-import scripts.find_duplicate_places_v2 as fdp
+import src.dedup.find_duplicate_places_v2 as fdp
 
 GUESS = {"precision": "approximate", "confidence": 0.8}
 
@@ -40,8 +40,9 @@ def test_strong_name_match_still_reported_and_annotated():
 
 
 def test_coords_verified_detection():
-    assert fdp._coords_verified({"geocode_source": "nominatim"})
-    assert fdp._coords_verified({"enrichment_status": "geocoded"})
+    xy = {"coordinates": {"latitude": 1, "longitude": 2}}
+    assert fdp._coords_verified({**xy, "geocode_source": "nominatim"})
+    assert fdp._coords_verified({**xy, "enrichment_status": "geocoded"})
     assert fdp._coords_verified(
         {"coordinates": {"latitude": 1, "longitude": 2, "precision": "exact"}}
     )
@@ -49,6 +50,8 @@ def test_coords_verified_detection():
         {"coordinates": {"latitude": 1, "longitude": 2, **GUESS}}
     )
     assert not fdp._coords_verified({})
+    # a not-found geocode still records its source: no coordinates is nothing verified
+    assert not fdp._coords_verified({"geocode_source": "nominatim"})
 
 
 def test_run1_shapes_end_to_end(tmp_path):
@@ -90,9 +93,12 @@ def test_geocoded_twin_does_match(tmp_path):
 def test_suppressed_pairs_are_counted(monkeypatch, caplog, tmp_path):
     import logging
 
+    # Same START ("merderet"), partial name match (~50%), close, but only LLM-guessed coords: the
+    # weak rule must suppress AND count it. (The original XChannel pair, Merderet River vs
+    # Ste. Mere-Eglise, now never gets this far: different starts are rejected by the start gate.)
     for n, lat, lon in (
         ("merderet river", 49.40, -1.35),
-        ("ste mere-eglise", 49.41, -1.32),
+        ("merderet bridge causeway", 49.41, -1.32),
     ):
         rec = {
             "name": n.title(),

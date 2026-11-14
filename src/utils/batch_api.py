@@ -5,9 +5,11 @@ import logging
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 import requests
+
+from src.utils import batch_stats
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +31,45 @@ class BatchSubmissionError(RuntimeError):
     and had per-request errors. Fail fast; do not poll for hours."""
 
 
+class BatchPending(Exception):
+    """A submitted batch was not answered within the in-task wait: the run hands it to the
+    poller (its metrics are saved; nothing is retried live) and stops."""
+
+    def __init__(self, batch_id: str, batch_name: str = ""):
+        super().__init__(f"batch {batch_id} still pending after the in-task wait")
+        self.batch_id, self.batch_name = batch_id, batch_name
+
+
+def in_task_wait_minutes(config: Optional[Dict[str, Any]] = None) -> float:
+    """How long a task waits for one batch round before handing it to the poller:
+    ``BATCH_IN_TASK_WAIT_MINUTES`` (env, e.g. shorter for tests), else
+    ``batch.in_task_wait_minutes``, else 90."""
+    import os as _os
+
+    raw = _os.environ.get("BATCH_IN_TASK_WAIT_MINUTES") or (
+        ((config or {}).get("batch") or {}).get("in_task_wait_minutes")
+    )
+    try:
+        minutes = float(raw) if raw not in (None, "") else DEFAULT_IN_TASK_WAIT_MINUTES
+    except (TypeError, ValueError):
+        logger.warning("OBSERV batch.wait_config_invalid value=%r: using default", raw)
+        minutes = DEFAULT_IN_TASK_WAIT_MINUTES
+    if minutes > MAX_IN_TASK_WAIT_MINUTES:
+        # the poller adopts an in_task batch after BATCH_IN_TASK_ADOPT_SECONDS (2 h): a longer
+        # wait would let it resume the book while this task still waits on it
+        logger.warning(
+            "OBSERV batch.wait_clamped value=%s max=%s (keep it below the poller's adopt age)",
+            minutes,
+            MAX_IN_TASK_WAIT_MINUTES,
+        )
+        minutes = MAX_IN_TASK_WAIT_MINUTES
+    return max(minutes, 1.0)
+
+
+DEFAULT_IN_TASK_WAIT_MINUTES = 90.0
+MAX_IN_TASK_WAIT_MINUTES = 100.0  # < the poller's 2 h in_task adopt age, with margin
+
+
 @dataclass
 class BatchResult:
     """Result for a single request in a batch."""
@@ -37,6 +78,7 @@ class BatchResult:
     content: str = ""
     finish_reason: str = ""
     error: str = ""
+    model: str = ""  # the model that answered (grok_models: must be a configured one)
 
     @property
     def ok(self) -> bool:
@@ -68,7 +110,7 @@ class BatchResult:
     def is_substantive(self) -> bool:
         """True if this result is ``valid`` AND carries real entity content.
 
-        The xAI results API does not echo our ``custom_id``, so results are mapped to our cache
+        The xAI results API was thought not to echo our ``custom_id`` (it does: results are aligned by id first, ``align_by_request_id``), so results are mapped to our cache
         keys purely by POSITION. A ``valid`` result whose content strips to <= 2 chars (``{}`` /
         ``[]`` / empty) is NOT substantive — it either genuinely held no entities OR is a
         positional-map desync artefact that would silently persist 0 for a whole entity. Callers
@@ -77,6 +119,89 @@ class BatchResult:
         the single source of truth for that 'substantive' test (see grok_client._map_ordered_results).
         """
         return self.status == "valid" and len((self.content or "").strip()) > 2
+
+
+RESULT_MISSING = "no result returned"
+RESULT_UNALIGNABLE = "unalignable batch results"
+
+
+def alignment_degraded(aligned: List["BatchResult"]) -> bool:
+    """Whether alignment had to fill in results (missing, or unalignable): the caller must
+    force its realtime retry, as it did for a count mismatch before results were aligned.
+    """
+    return any(br.error in (RESULT_MISSING, RESULT_UNALIGNABLE) for br in aligned)
+
+
+def desync_possible(submitted: List[Any], ordered: List["BatchResult"]) -> bool:
+    """Whether an empty answer may be another request's slot (the empty-slot desync guard): only
+    when results are paired by POSITION - the API returned no ids of ours - and some sibling
+    carries content. Paired by our request id (``align_by_request_id``), an empty answer IS that
+    request's answer ("{}": nothing to extract) - rejecting it re-asked the same request every
+    round (a biography, chapter 8 rounds 7-9, 2026-11-13)."""
+    by_id = bool(ordered) and all(
+        getattr(br, "request_id", None) == our_id
+        for (our_id, _), br in zip(submitted, ordered)
+    )
+    return not by_id and any(getattr(br, "is_substantive", False) for br in ordered)
+
+
+def align_by_request_id(
+    submitted: List[Any], ordered: List["BatchResult"], *, batch_id: str = ""
+) -> List["BatchResult"]:
+    """``ordered`` rearranged into ``submitted``'s order by request id (the xAI results API
+    returns OUR ``custom_id`` as each result's ``batch_request_id`` - verified 2026-11-11 on three
+    batches - but NOT in submission order: 1 of 99 results in place). Run before the positional
+    mapping, which then pairs each request with its own answer.
+
+    * every result id is one of ours: aligned; a request with no result gets an error placeholder
+      (it is then retried like any failed request, instead of failing the whole batch);
+    * no result id is one of ours (server-assigned ids, as the API returned on 2026-10-14): the
+      order is left as is - the old positional behaviour - and said so;
+    * some are ours and some not, or an id repeats: nothing can be trusted - every request gets an
+      error placeholder (all retried), loudly.
+    """
+    ours = [our_id for our_id, _ in submitted]
+    ids = [getattr(br, "request_id", "") for br in ordered]
+    matched = [i for i in ids if i in set(ours)]
+    if ordered and not matched:
+        logger.warning(
+            "OBSERV batch.align status=positional batch=%s: no result carries our request id; "
+            "mapping by position",
+            batch_id,
+        )
+        return ordered
+    if len(matched) != len(ids) or len(set(matched)) != len(matched):
+        logger.error(
+            "OBSERV batch.align status=error batch=%s results=%d ours=%d distinct=%d: result ids "
+            "are mixed or repeated - retrying every request rather than guess",
+            batch_id,
+            len(ids),
+            len(matched),
+            len(set(matched)),
+        )
+        return [BatchResult(request_id=i, error=RESULT_UNALIGNABLE) for i in ours]
+    return _aligned(ours, ids, ordered, batch_id)
+
+
+def _aligned(
+    ours: list, ids: list, ordered: list, batch_id: str
+) -> List["BatchResult"]:
+    """``ordered`` in ``ours`` order (all ids known and distinct); a placeholder for a missing one."""
+    by_id = {br.request_id: br for br in ordered}
+    aligned = [
+        by_id.get(i) or BatchResult(request_id=i, error=RESULT_MISSING) for i in ours
+    ]
+    missing = len(ours) - len(by_id)
+    logger.log(
+        logging.WARNING if missing else logging.INFO,
+        "OBSERV batch.align status=%s batch=%s results=%d reordered=%d missing=%d",
+        "warn" if missing else "ok",
+        batch_id,
+        len(ids),
+        sum(1 for a, b in zip(ours, ids) if a != b),
+        missing,
+    )
+    return aligned
 
 
 @dataclass
@@ -97,6 +222,9 @@ class BatchMetrics:  # pylint: disable=too-many-instance-attributes
     """Metrics collected from a batch run."""
 
     batch_id: str = ""
+    batch_name: str = (
+        ""  # carries the round ("-r<n>-"): a resumed run continues the count
+    )
     total_requests: int = 0
     api_successes: int = 0
     api_errors: int = 0
@@ -110,7 +238,7 @@ class BatchMetrics:  # pylint: disable=too-many-instance-attributes
     poll_seconds: float = 0.0
     request_details: List["RequestDetail"] = field(default_factory=list)
     # Ordered [our_cache_key, cache_type] pairs in SUBMISSION ORDER. The xAI results
-    # API does not echo custom_id, so retrieve maps results to these by position.
+    # API was thought not to echo custom_id (it does; aligned by id first), so retrieve maps results to these by position.
     submitted_request_ids: List[Any] = field(default_factory=list)
 
     def add_detail(self, detail: "RequestDetail") -> None:
@@ -193,6 +321,16 @@ class BatchRequest:
         )
 
 
+def _same_request(a: "BatchRequest", b: "BatchRequest") -> bool:
+    """The same request asked twice (not two requests sharing a key)."""
+    return (a.messages, a.model, a.temperature, a.cache_type) == (
+        b.messages,
+        b.model,
+        b.temperature,
+        b.cache_type,
+    )
+
+
 class BatchCollector:
     """Collects API requests for batch submission instead of real-time calls."""
 
@@ -200,21 +338,29 @@ class BatchCollector:
         import threading
 
         self.requests: List[BatchRequest] = []
-        self._seen: set = set()
+        self._seen: Dict[str, BatchRequest] = {}
         self._lock = threading.Lock()
+        self.duplicates = (
+            0  # identical requests folded into one (expected; counted, not alerted)
+        )
 
     def add(self, req: BatchRequest) -> None:
         """Add request if not already queued (thread-safe).
 
-        request_id IS the cache_key, so a collision drops the second request. That is correct for a
-        true duplicate, but if two LOGICALLY-DISTINCT requests ever resolve to one stable cache_key,
-        the second is silently lost -> never submitted -> never cached -> that unit extracts 0 on
-        retrieve with no diagnostic (latent optional-entity-zero). Log the drop so it's visible.
+        request_id IS the cache_key, so a collision drops the second request. An IDENTICAL request
+        (same messages, model, temperature) is a true duplicate - the same designation asked for
+        twice in a chapter - and is folded in silently (counted). But if two LOGICALLY-DISTINCT
+        requests ever resolve to one stable cache_key, the second is lost -> never submitted ->
+        never cached -> that unit extracts 0 on retrieve (latent optional-entity-zero): that drop
+        is logged loudly.
         """
         with self._lock:
-            if req.request_id not in self._seen:
+            first = self._seen.get(req.request_id)
+            if first is None:
                 self.requests.append(req)
-                self._seen.add(req.request_id)
+                self._seen[req.request_id] = req
+            elif _same_request(first, req):
+                self.duplicates += 1
             else:
                 logger.warning(
                     "OBSERV batch.duplicate_request_id_dropped cache_type=%s key=%s",
@@ -343,13 +489,17 @@ def poll_batch(
     api_key: str,
     batch_id: str,
     interval: int = 30,
-    max_hours: int = 24,
+    max_hours: float = 24,
     submitted_count: int = 0,
 ) -> Dict[str, Any]:
-    """Poll until batch completes. Returns final batch state."""
+    """Poll until batch completes. Returns final batch state (``_timed_out`` when ``max_hours``
+    ran out first)."""
     headers = {"Authorization": f"Bearer {api_key}"}
     start = time.monotonic()
     consecutive_errors = 0
+    last_done = (
+        -1
+    )  # timing statistics are written only when the completed count changes
     while True:
         try:
             resp = requests.get(
@@ -375,13 +525,22 @@ def poll_batch(
 
         # Fail fast on xAI cancellation/rejection or an empty accepted batch
         # (raises BatchSubmissionError) instead of polling 0/0 for hours.
-        _check_batch_submission_ok(
-            batch,
-            batch_id,
-            submitted_count,
-            total,
-            grace_elapsed=(time.monotonic() - start) > _SUBMIT_GRACE_SECS,
-        )
+        try:
+            _check_batch_submission_ok(
+                batch,
+                batch_id,
+                submitted_count,
+                total,
+                grace_elapsed=(time.monotonic() - start) > _SUBMIT_GRACE_SECS,
+            )
+        except BatchSubmissionError:
+            batch_stats.record_outcome(batch_id, "rejected")
+            raise
+        if success + error != last_done:
+            last_done = success + error
+            batch_stats.record_progress(
+                batch_id, last_done, total, success, error, source="task"
+            )
 
         logger.info(
             "Batch %s: %d/%d complete (%d success, %d error, %d pending)%s",
@@ -413,6 +572,8 @@ def poll_batch(
             )
             batch["_poll_seconds"] = time.monotonic() - start
             batch["_timed_out"] = True
+            # not a failure: the caller hands the batch to the poller (BatchPending)
+            batch_stats.record_outcome(batch_id, "handed_off")
             return batch
 
         time.sleep(interval)
@@ -453,6 +614,7 @@ def retrieve_results(api_key: str, batch_id: str) -> Dict[str, BatchResult]:
                     content=content,
                     finish_reason=finish_reason,
                     error=error_msg,
+                    model=str(completion.get("model") or ""),
                 )
             else:
                 results[rid] = BatchResult(
@@ -470,15 +632,10 @@ def retrieve_results(api_key: str, batch_id: str) -> Dict[str, BatchResult]:
 
 
 def retrieve_results_ordered(api_key: str, batch_id: str) -> List["BatchResult"]:
-    """Retrieve all batch results as a LIST in API (= submission) order.
-
-    The xAI batch results API does NOT echo our submitted ``custom_id`` — each
-    result item carries only a server-assigned ``batch_request_id`` (verified
-    2026-10-14 against the live API). So results cannot be mapped back to our
-    cache keys by id; the only reliable mapping is by POSITION, since the API
-    returns results in submission order. Callers zip this list with the submitted
-    request ids (recorded in metrics ``request_details`` in submission order) to
-    populate the cache under OUR keys. Order is preserved across pagination."""
+    """Retrieve all batch results as a LIST in the API's order (NOT submission order: callers
+    must ``align_by_request_id`` first - each item's ``batch_request_id`` is our custom_id,
+    verified 2026-11-11; the 2026-10-14 note that the API returned only server ids and kept
+    submission order no longer holds). Order is preserved across pagination."""
     headers = {"Authorization": f"Bearer {api_key}"}
     ordered: List["BatchResult"] = []
     pagination_token: Optional[str] = None
@@ -507,6 +664,7 @@ def retrieve_results_ordered(api_key: str, batch_id: str) -> List["BatchResult"]
                         content=choices[0].get("message", {}).get("content", ""),
                         finish_reason=choices[0].get("finish_reason", "unknown"),
                         error=error_msg,
+                        model=str(completion.get("model") or ""),
                     )
                 )
             else:
@@ -520,3 +678,146 @@ def retrieve_results_ordered(api_key: str, batch_id: str) -> List["BatchResult"]
             break
     logger.info("Retrieved %d ordered results from batch %s", len(ordered), batch_id)
     return ordered
+
+
+def verify_served_models(results: Iterable["BatchResult"], where: str) -> None:
+    """Every batch answer came from a configured model, else the run stops
+    (grok_models.GrokModelUnavailable). Shared by both batch-result consumers."""
+    from src.utils.grok_models import check_batch_served, configured_models
+
+    allowed = configured_models()
+    for r in results:
+        check_batch_served(r.model, allowed, where)
+
+
+# --- Shared positional result mapping (single source of truth) -----------------------------------
+# Both batch-result consumers (src/grok_client.py realtime path and ecs_entrypoint.py retrieve-only
+# path) map API-ordered results to OUR cache keys PURELY BY POSITION, because the xAI results API
+# was thought not to echo our custom_id (it does; aligned by id first). The dangerous failure mode is a SAME-COUNT desync: a valid-but-empty
+# slot lands where a substantive response should be, silently persisting 0 for a whole entity while
+# its real content sits uncorrelated elsewhere (XChannel-8 2026-10-30: places=0 persisted while a
+# valid 119-place response was uncorrelated). This helper is the ONE place that owns both the
+# count-mismatch guard and the empty-slot-amid-substantive-siblings desync guard, so a fix cannot
+# land in one consumer and silently miss the other.
+
+# Non-whitespace control characters that must be stripped from model output before it is parsed /
+# cached. Single source of truth (was duplicated as a literal regex in grok_client + ecs_entrypoint).
+import re as _re  # noqa: E402  (kept local to this section's helpers)
+
+_CONTROL_CHARS_RE = _re.compile(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]")
+
+
+def strip_control_chars(text: str) -> str:
+    """Remove non-whitespace control characters (0x00-0x1f except tab/newline/CR) from model
+    output. Single source of truth for the control-char strip shared across batch-result handling.
+    """
+    return _CONTROL_CHARS_RE.sub("", text or "")
+
+
+@dataclass
+class MappedResults:
+    """Outcome of positionally mapping batch results to our cache keys.
+
+    Attributes:
+        mapped: {cache_type: {our_id: cleaned_content}} for slots safe to persist.
+        failed_ids: our_ids whose slot could NOT be trusted (count mismatch, or a desync-empty slot
+            amid substantive siblings) — the caller should FORCE a real-time retry for these rather
+            than persist an empty/mis-keyed result.
+        count_mismatch: True when len(ordered) != len(submitted) (an envelope/pagination fault, not
+            a per-request model failure) — callers use this to bypass the systemic-failure guard.
+    """
+
+    mapped: Dict[str, Dict[str, str]] = field(default_factory=dict)
+    failed_ids: List[Any] = field(default_factory=list)
+    count_mismatch: bool = False
+
+
+def map_results_positionally(
+    submitted: List[Any],
+    ordered: List["BatchResult"],
+    *,
+    batch_id: str = "",
+    sanitizer=strip_control_chars,
+    on_desync=None,
+    cache_allowed=None,
+) -> MappedResults:
+    """Map API-ordered batch ``ordered`` results to our submission-ordered ``submitted``
+    ``(our_id, cache_type)`` pairs BY POSITION, with the count-mismatch + empty-slot desync guards.
+
+    Args:
+        submitted: submission-ordered ``[(our_request_id, cache_type), ...]``.
+        ordered: API-ordered ``BatchResult`` list (from ``retrieve_results_ordered``).
+        batch_id: for log correlation.
+        sanitizer: applied to content before caching (default: ``strip_control_chars``).
+        on_desync: optional ``callable(our_id, cache_type, br)`` invoked for each desync-empty slot
+            (e.g. to emit a loud ``observe_error`` and record metrics). Fail-safe: exceptions in the
+            callback are swallowed so observability can never break mapping.
+        cache_allowed: optional ``callable() -> bool`` global kill-switch; when it returns False the
+            content is NOT written into ``mapped`` (the slot is still accounted, just not cached).
+
+    Returns a ``MappedResults``. On count mismatch, ``mapped`` is empty, ALL submitted ids are in
+    ``failed_ids``, and ``count_mismatch=True`` (never silently mis-key). On a matched count, a
+    valid-but-empty slot that appears amid substantive siblings is treated as a desync artefact:
+    it is NOT cached, its id is added to ``failed_ids``, and ``on_desync`` fires. An all-empty batch
+    is left as-is (genuine zero, no false retry).
+    """
+    if not submitted or len(submitted) != len(ordered):
+        logger.error(
+            "Batch %s: result count (%d) != submitted (%d) — cannot positionally map; "
+            "forcing retry for all (count mismatch, not a systemic model failure).",
+            batch_id,
+            len(ordered),
+            len(submitted),
+        )
+        return MappedResults(
+            mapped={},
+            failed_ids=[rid for rid, _ in submitted],
+            count_mismatch=True,
+        )
+
+    any_substantive = desync_possible(submitted, ordered)
+    out: Dict[str, Dict[str, str]] = {}
+    failed_ids: List[Any] = []
+    for (our_id, cache_type), br in zip(submitted, ordered):
+        _classify_slot(
+            our_id,
+            cache_type,
+            br,
+            any_substantive=any_substantive,
+            on_desync=on_desync,
+            out=out,
+            failed_ids=failed_ids,
+            sanitizer=sanitizer,
+            cache_allowed=cache_allowed,
+        )
+    return MappedResults(mapped=out, failed_ids=failed_ids, count_mismatch=False)
+
+
+def _classify_slot(
+    our_id,
+    cache_type,
+    br,
+    *,
+    any_substantive,
+    on_desync,
+    out,
+    failed_ids,
+    sanitizer,
+    cache_allowed,
+) -> None:
+    """Classify one positional slot into mapped/failed (helper for map_results_positionally)."""
+    ct = cache_type or "default"
+    if getattr(br, "status", "error") != "valid" or not getattr(br, "content", ""):
+        failed_ids.append(our_id)
+        return
+    # Desync signature: a valid-but-empty slot while SIBLINGS returned substantive content.
+    if any_substantive and not getattr(br, "is_substantive", False):
+        if on_desync is not None:
+            try:
+                on_desync(our_id, ct, br)
+            except Exception:  # noqa: BLE001 - observability must never break mapping
+                logger.debug("on_desync callback failed (swallowed)", exc_info=True)
+        failed_ids.append(our_id)
+        return
+    if cache_allowed is None or cache_allowed():
+        out.setdefault(ct, {})[our_id] = sanitizer(br.content)

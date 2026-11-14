@@ -1,13 +1,24 @@
 """Grok API client with retry logic and caching."""
 
+import contextlib
 import contextvars
 import json
+import re
 import logging
 import os
 import threading
 import time as _time
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, TYPE_CHECKING
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    NamedTuple,
+    NoReturn,
+    Optional,
+    Tuple,
+    TYPE_CHECKING,
+)
 
 if TYPE_CHECKING:
     from src.utils.cache_backend import CacheBackend
@@ -27,11 +38,108 @@ from tenacity import (
     wait_exponential,
 )
 
+from src.utils import grok_models, request_identity
 from src.utils.http_pool import get_session
-from src.utils.observe import observe_error
+from src.utils.observe import observe_error, observe_warn
 
 load_dotenv()
 logger = logging.getLogger(__name__)
+
+
+class _Ask(NamedTuple):
+    """One extract_json request as asked (its prompt already stamped)."""
+
+    prompt: str
+    system_prompt: Optional[str]
+    temperature: float
+    use_cache: bool
+    cache_type: str
+    cache_key: Optional[str]
+
+    @property
+    def args(self) -> Tuple[str, Optional[str], float, bool, str]:
+        return (
+            self.prompt,
+            self.system_prompt,
+            self.temperature,
+            self.use_cache,
+            self.cache_type,
+        )
+
+
+_WORKING_FOLDERS = frozenset({"_supplemental_tmp", "_system"})
+
+
+def _in_working_folder(chapter_file: Any) -> bool:
+    """A file in an internal working folder (``_supplemental_tmp``, ``_system``) - never a book's
+    own folder. Named explicitly: a slug may itself start with ``_``."""
+    try:
+        return Path(chapter_file).parent.name in _WORKING_FOLDERS
+    except TypeError:
+        return False
+
+
+def for_chapter_book(fn):
+    """Run an extractor for a chapter file (its first argument, or ``event_file=``) with
+    ``current_book`` = THAT file's book (``book_slug.chapter_file_book``) - named by the file being
+    processed, not inherited from whatever the caller (or a worker thread) left in the context.
+    """
+    import functools
+
+    @functools.wraps(fn)
+    def run(*args, **kwargs):
+        from src.ingestion.book_slug import chapter_file_book
+
+        chapter_file = kwargs.get("event_file", args[0] if args else None)
+        if _in_working_folder(chapter_file):
+            # a caller's scratch copy (e.g. <root>/_supplemental_tmp/): the CALLER's book
+            return fn(*args, **kwargs)
+        # set even when None: a file in no book's folder must not inherit another book
+        token = current_book.set(chapter_file_book(chapter_file))
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            current_book.reset(token)
+
+    return run
+
+
+# The first message of the chapter-entity requests (batch_parallel._build_source_block) starts with
+# this: shared by a chapter's dates/places/groups/people requests, so it is the cacheable prefix.
+SOURCE_TEXT_INTRO = "SOURCE TEXT."
+
+
+def _cache_routing_header(messages: list) -> Dict[str, str]:
+    """``x-grok-conv-id`` from a chapter-source first message (``SOURCE_TEXT_INTRO``): the
+    requests sharing it reach the same xAI server, where it is cached (xAI recommends the header;
+    without it a cache hit is left to chance). {} for any other request - a constant system prompt
+    shared by thousands of lookups must not pin them all to one server."""
+    import hashlib
+
+    first = messages[0] if messages else {}
+    if (
+        not isinstance(first, dict)
+        or first.get("role") != "system"
+        or not str(first.get("content", "")).startswith(SOURCE_TEXT_INTRO)
+    ):
+        return {}
+    digest = hashlib.sha256(str(first.get("content", "")).encode("utf-8")).hexdigest()
+    return {"x-grok-conv-id": f"src-{digest[:32]}"}
+
+
+@contextlib.contextmanager
+def book_scope(book: Optional[str]):
+    """Run the block with ``current_book`` = ``book`` (no change when ``book`` is empty). The
+    explicit book of a call wins over an inherited (or, in a worker thread, lost) context.
+    """
+    if not book:
+        yield
+        return
+    token = current_book.set(book)
+    try:
+        yield
+    finally:
+        current_book.reset(token)
 
 
 def _cache_globally_disabled() -> bool:
@@ -54,6 +162,139 @@ class GrokAPIError(Exception):
 
 class GrokTruncationError(GrokAPIError):
     """Response was truncated (hit max_tokens or context limit)."""
+
+
+class GrokParseError(GrokAPIError):
+    """The answer is not JSON and could not be repaired (prose, junk): a real answer that holds no
+    data - not a transport failure to retry, and not a truncation to split for."""
+
+
+class GrokNoJsonError(GrokParseError):
+    """The answer holds no JSON at all (prose: "there are no casualties here"). Asking again
+    pays for the same prose; a malformed JSON answer (GrokParseError) may parse when re-asked.
+    """
+
+
+def _starts_as_json(response: str) -> bool:
+    return response.lstrip()[:1] in ("{", "[")
+
+
+_FENCE = re.compile(r"```(?:json|JSON)?[ \t]*\n?(.*?)(?:```|\Z)", re.DOTALL)
+
+
+def json_payload(text: str) -> str:
+    """The JSON part of a model answer - the ONE rule for every reader (parse, the short / poisoned
+    answer guards). Grok often wraps valid JSON: in a code fence, or behind prose
+    ("**JSON Response:**", "**Answer:**"), which read as unparseable or "poisoned" and were evicted
+    and re-asked (chapter 8 window test: 185 equipment answers lost, 299 re-asks).
+
+    Order: the text as is when it parses (or starts as JSON - a cut-short answer stays whole for
+    the truncation handling); else the first fenced block; else the first JSON value in the text
+    (an object before a non-empty list); else everything from the first ``{``; else the text.
+    """
+    s = (text or "").strip()
+    if not s:
+        return s
+    s = _strip_leading_zeros(s)
+    if _parses(s) or _starts_as_json(s):
+        return s  # valid, or cut short (the truncation handling needs it whole)
+    fenced = _FENCE.search(s)
+    if fenced:
+        return fenced.group(1).strip()  # an empty block is an empty answer
+    found = _first_json_value(s)
+    if found is not None:
+        return found
+    # cut short behind prose: from its first "{" (never a "[": prose cites "[see note 1]")
+    brace = s.find("{")
+    return s[brace:] if brace >= 0 else s
+
+
+def _parses(s: str) -> bool:
+    try:
+        json.loads(s)
+        return True
+    except (json.JSONDecodeError, ValueError):
+        return False
+
+
+def _cut_short(response: str, error: Exception) -> bool:
+    """Whether a parse error is a TRUNCATION: the text ran out (the error is at its end) or a
+    string was never closed - not malformed JSON in its middle."""
+    msg = str(error)
+    if "Unterminated string" in msg:
+        return True
+    pos = getattr(error, "pos", None)
+    if "Expecting" not in msg or not isinstance(pos, int):
+        return False
+    return pos >= len(response.rstrip()) - 2
+
+
+# an integer written with leading zeros where a JSON value starts ([052], : 007): invalid JSON
+_ZERO_PADDED = re.compile(r"(?<=[\[,:])(\s*-?)0+(?=\d)")
+
+
+def _strip_leading_zeros(s: str) -> str:
+    """``s`` with zero-padded integers OUTSIDE strings written plainly (``[052]`` -> ``[52]``).
+    The prompts show paragraphs as "Paragraph_052", and Grok echoes that padding into
+    ``paragraph_numbers`` - invalid JSON ("Expecting ',' delimiter") read as a truncation, evicted
+    and re-asked every batch round (chapter 8: two equipment windows, rounds 1-4, 2026-11-14).
+    Quoted text is never touched."""
+    if not re.search(r"[\[,:]\s*-?0\d", s):
+        return s  # the common case: nothing padded (a padded digit in a string only costs a scan)
+    out, pos, in_string, escaped = [], 0, False, False
+    for i, ch in enumerate(s):
+        if in_string:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_string = False
+                out.append(s[pos : i + 1])
+                pos = i + 1
+        elif ch == '"':
+            out.append(_ZERO_PADDED.sub(r"\1", s[pos:i]))
+            pos, in_string = i, True
+    out.append(s[pos:] if in_string else _ZERO_PADDED.sub(r"\1", s[pos:]))
+    return "".join(out)
+
+
+def _first_json_value(s: str) -> Optional[str]:
+    """The JSON value starting at the first ``{`` when it decodes completely, else a non-empty
+    list that holds that ``{`` (or there is none) - as text. Any other ``[`` is not the answer: a
+    list inside an outer value cut short, or a citation ("See [1]."), and taking it would read a
+    truncated answer as complete."""
+    decoder = json.JSONDecoder()
+    brace, bracket = s.find("{"), s.find("[")
+    # a "[" before the first "{" goes first (it may be the list holding it); then the "{"
+    order = [bracket, brace] if 0 <= bracket < brace or brace < 0 else [brace]
+    for i in (i for i in order if i >= 0):
+        try:
+            value, end = decoder.raw_decode(s, i)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if _is_the_answer(value, i, end, brace):
+            return s[i:end]
+    return None
+
+
+def _is_the_answer(value: Any, start: int, end: int, brace: int) -> bool:
+    """An object; or a non-empty list that holds the text's first "{" (or there is none)."""
+    if isinstance(value, dict):
+        return True
+    return (
+        isinstance(value, list) and bool(value) and (brace < 0 or start < brace < end)
+    )
+
+
+def _parse_error(message: str, response: str) -> GrokParseError:
+    cls = GrokParseError if _starts_as_json(response) else GrokNoJsonError
+    return cls(message)
+
+
+class GrokIdentityError(GrokAPIError):
+    """The answer belongs to another request (src/utils/request_identity): never usable, and never
+    to be read as an empty answer."""
 
 
 def _effective_calls_per_minute(config: Dict[str, Any]) -> int:
@@ -217,12 +458,7 @@ class GrokClient:
             .get("grok", {})
             .get("base_url", "https://api.x.ai/v1/chat/completions"),
         )
-        self.model = os.getenv(
-            "GROK_MODEL",
-            config.get("api", {})
-            .get("grok", {})
-            .get("model", "grok-4.20-0309-reasoning"),
-        )
+        self.model = grok_models.default_model(config)
         self._model_map = (
             config.get("api", {}).get("grok", {}).get("model_map", {}) or {}
         )
@@ -232,8 +468,15 @@ class GrokClient:
         # sub-cache could be created twice (last writer wins -> a dropped backend) and counter
         # increments could be lost. Scoped to the fast state mutations only — NOT the API call.
         self._cache_lock = threading.Lock()
+        # (cache_type, cache_key) -> Event: one live request per key at a time (single_flight)
+        self._in_flight: Dict[Tuple[str, str], threading.Event] = {}
+        self._flight_shared = (
+            0  # waiters answered by another thread's identical request
+        )
+        self._flight_retried = (
+            0  # waiters that asked themselves (the first request failed)
+        )
         self.timeout = 600.0  # 10 minutes for large chapters
-        self._deprecation_alerted = False
         self.debug_msg_chars = config.get("logging", {}).get(
             "debug_message_preview_chars", 500
         )
@@ -269,6 +512,9 @@ class GrokClient:
         # (§5.2), so N parallel tasks collectively stay under Grok's cap.
         calls_per_minute = _effective_calls_per_minute(config)
         self._rate_limiter = _RateLimiter(calls_per_minute)
+
+        # Cache keys a batch-mode identity mismatch already evicted + re-queued (a second one raises)
+        self._identity_reasked: set = set()
 
         # Cache stats
         self._cache_hits = 0
@@ -327,6 +573,13 @@ class GrokClient:
             self._cache_hits,
             self._cache_misses,
             rate,
+        )
+        # identical concurrent requests answered by one call (single_flight); a waiter whose
+        # first request failed asked itself (asked_itself) - both are counted, never alerted
+        logger.info(
+            "OBSERV grok.single_flight shared=%d asked_itself=%d",
+            getattr(self, "_flight_shared", 0),
+            getattr(self, "_flight_retried", 0),
         )
         json_total = (
             self._json_clean
@@ -390,13 +643,79 @@ class GrokClient:
         except Exception:  # noqa: BLE001 - traceability must never break a call
             pass
 
+    def cache_key_for(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        cache_type: str = "default",
+        temperature: float = 0.1,
+        book: Optional[str] = None,
+    ) -> str:
+        """The key ``extract_json``/``chat_completion`` store this request's answer under: prompt
+        (with its identity block, for a book-bound kind), system prompt, temperature and the cache
+        type's model. The one way to name an entry to evict or replace."""
+        prompt = self._identity(prompt, system_prompt, cache_type, book)[0]
+        return self._make_cache_key(
+            prompt, temperature, self._get_model(cache_type), system_prompt or ""
+        )
+
+    @staticmethod
+    def _identity(
+        prompt: str,
+        system_prompt: Optional[str],
+        cache_type: str,
+        book: Optional[str],
+        basis: Optional[str] = None,
+    ) -> Tuple[str, str, str]:
+        """(the prompt as asked, BookID, RequestID) - the prompt is stamped for a book-bound kind
+        (``request_identity``); otherwise returned unchanged with empty ids."""
+        book = book or current_book.get()
+        if not book or not request_identity.is_bound(cache_type, book):
+            return prompt, "", ""
+        return request_identity.stamp(prompt, system_prompt, cache_type, book, basis)
+
+    def store_json_answer(
+        self,
+        prompt: str,
+        system_prompt: Optional[str],
+        cache_type: str,
+        answer: Dict[str, Any],
+        temperature: float = 0.1,
+        book: Optional[str] = None,
+        cache_key: Optional[str] = None,
+    ) -> None:
+        """Cache ``answer`` as THE answer to ``prompt`` (under ``cache_key`` when the request has a
+        stable key override) (e.g. an answer obtained by a re-ask, kept
+        for the original request), carrying the original request's identity so a later read
+        verifies. Respects the cache kill-switch."""
+        if _cache_globally_disabled():
+            return
+        with book_scope(book):
+            _, bid, rid = self._identity(
+                prompt, system_prompt, cache_type, None, cache_key
+            )
+            body: Any = dict(answer) if isinstance(answer, dict) else answer
+            if bid and isinstance(body, dict):
+                body.update({"BookID": bid, "RequestID": rid})
+            key = cache_key or self.cache_key_for(
+                prompt, system_prompt, cache_type, temperature
+            )
+            self._get_cache(cache_type)[key] = json.dumps(body, ensure_ascii=False)
+
     def clear_cache_entry(
-        self, prompt: str, cache_type: str = "default", temperature: float = 0.1
+        self,
+        prompt: str,
+        cache_type: str = "default",
+        temperature: float = 0.1,
+        system_prompt: Optional[str] = None,
+        book: Optional[str] = None,
     ) -> bool:
-        """Remove a single cache entry by prompt. Returns True if removed."""
-        cache = self._get_cache(cache_type)
-        key = self._make_cache_key(prompt, temperature)
-        return cache.pop(key, None) is not None
+        """Remove a single cache entry by prompt (and the system prompt it was asked with).
+        Returns True if removed."""
+        with book_scope(book):
+            cache = self._get_cache(cache_type)
+            key = self.cache_key_for(prompt, system_prompt, cache_type, temperature)
+            return cache.pop(key, None) is not None
 
     def _estimate_batch_cost(self) -> float:
         """Estimate USD cost of the collected batch for the credit gate (§9.1).
@@ -429,13 +748,17 @@ class GrokClient:
         return round(total, 6)
 
     def submit_batch(  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
-        self, batch_name: str = "pipeline"
+        self, batch_name: str = "pipeline", max_wait_minutes: Optional[float] = None
     ) -> Optional[str]:
         """Submit collected batch requests to xAI Batch API.
 
         Validates each result (finish_reason, JSON parse) before caching.
         Failed/truncated requests are retried via real-time API if under
         the failure threshold (20%). Returns batch_id, or None if nothing to submit.
+
+        ``max_wait_minutes`` - how long to wait for the answers (default: 24 h). If they are not
+        all in by then, the batch is HANDED OFF: its metrics (with the submitted request ids) are
+        saved for the poller's retrieve and ``BatchPending`` is raised - nothing is retried live.
         """
         if not self._batch_collector or len(self._batch_collector) == 0:
             logger.info("No batch requests to submit (all cached)")
@@ -477,15 +800,20 @@ class GrokClient:
         # the reservation, else the budget is permanently consumed by a batch that didn't complete
         # (the old code released only on submit failure, leaking on poll/retrieve failure).
         batch_id, batch_state, ordered = self._submit_poll_retrieve(
-            jsonl_path, batch_name, count, est_cost
+            jsonl_path, batch_name, count, est_cost, max_wait_minutes
         )
         submitted = [
             (r.request_id, r.cache_type) for r in self._batch_collector.requests
         ]
+        # each answer to its own request (the API returns them out of order: batch_api)
+        from src.utils.batch_api import align_by_request_id, alignment_degraded
+
+        ordered = align_by_request_id(submitted, ordered, batch_id=batch_id)
 
         # Build metrics
         metrics = BatchMetrics(
             batch_id=batch_id,
+            batch_name=batch_name,
             total_requests=count,
             poll_seconds=batch_state.get("_poll_seconds", 0.0),
         )
@@ -497,6 +825,9 @@ class GrokClient:
         failed_ids, count_mismatch = self._map_ordered_results(
             submitted, ordered, metrics, requests_by_id, batch_id
         )
+        # results the API did not return (or that could not be aligned) are an envelope problem,
+        # like a count mismatch: force the realtime retry past the 20%-systemic guard
+        count_mismatch = count_mismatch or alignment_degraded(ordered)
 
         # Retry failed requests via real-time API. A count mismatch forces retry past the
         # 20%-systemic guard (it's an envelope problem, not per-request model failure).
@@ -507,6 +838,11 @@ class GrokClient:
 
         metrics.log_summary()
         _save_metrics(metrics)
+        from src.utils.job_queue import mark_retrieved_in_task
+
+        mark_retrieved_in_task(
+            batch_id
+        )  # answered in this task: nothing for the poller
 
         # Clean up
         jsonl_path.unlink(missing_ok=True)
@@ -514,6 +850,57 @@ class GrokClient:
         self.batch_mode = False
 
         return batch_id
+
+    def _submitted_ids(self) -> list:
+        return [
+            [r.request_id, r.cache_type]
+            for r in getattr(self._batch_collector, "requests", None) or []
+        ]
+
+    def _record_in_flight(self, batch_id: str, batch_name: str, count: int) -> None:
+        """Metrics with the submitted request ids + an ``in_task`` job, as soon as the batch is
+        submitted. Best-effort: never a batch failure (it is already submitted)."""
+        from src.utils.batch_api import BatchMetrics
+        from src.utils.job_queue import record_in_task
+
+        try:
+            metrics = BatchMetrics(
+                batch_id=batch_id, batch_name=batch_name, total_requests=count
+            )
+            metrics.submitted_request_ids = self._submitted_ids()
+            _save_metrics(metrics)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("OBSERV batch.in_flight_metrics_failed err=%s", e)
+        record_in_task(batch_id, batch_name, count)
+
+    def _hand_off(
+        self,
+        batch_id: str,
+        batch_name: str,
+        count: int,
+        jsonl_path: Any,
+    ) -> NoReturn:
+        """The batch was not answered within the wait: save its metrics with the submitted
+        request ids (the poller's retrieve maps the answers back by them), leave batch mode and
+        raise ``BatchPending``. Nothing is retried live."""
+        from src.utils.batch_api import BatchMetrics, BatchPending
+
+        metrics = BatchMetrics(
+            batch_id=batch_id, batch_name=batch_name, total_requests=count
+        )
+        metrics.submitted_request_ids = self._submitted_ids()
+        _save_metrics(metrics)
+        observe_warn(
+            "batch",
+            "handed_off",
+            batch=batch_id,
+            requests=count,
+            note="not answered within the in-task wait: the poller retrieves it and resumes the run",
+        )
+        jsonl_path.unlink(missing_ok=True)
+        self._batch_collector = None
+        self.batch_mode = False
+        raise BatchPending(batch_id, batch_name)
 
     def _write_batch_jsonl(self) -> tuple[Any, int]:
         """Write collected batch requests to JSONL and log the type breakdown."""
@@ -525,10 +912,11 @@ class GrokClient:
 
         type_counts = Counter(r.cache_type for r in self._batch_collector.requests)  # type: ignore[union-attr]
         logger.info(
-            "Wrote %d requests to %s — breakdown: %s",
+            "Wrote %d requests to %s — breakdown: %s (identical requests folded: %d)",
             count,
             jsonl_path,
             dict(type_counts),
+            getattr(self._batch_collector, "duplicates", 0),
             extra={
                 "extra_fields": {
                     "event": "batch_breakdown",
@@ -539,25 +927,51 @@ class GrokClient:
         return jsonl_path, count
 
     def _submit_poll_retrieve(
-        self, jsonl_path: Any, batch_name: str, count: int, est_cost: float
+        self,
+        jsonl_path: Any,
+        batch_name: str,
+        count: int,
+        est_cost: float,
+        max_wait_minutes: Optional[float] = None,
     ) -> tuple[str, Dict[str, Any], list]:
-        """Submit, poll, and retrieve a batch; release the credit reservation on any failure."""
-        from src.utils.batch_api import submit_batch, poll_batch
+        """Submit, poll, and retrieve a batch; release the credit reservation on any failure.
+        Not answered within ``max_wait_minutes`` -> handed off (``_hand_off`` raises
+        ``BatchPending``; the reservation stays: the batch is still being answered and billed).
+        """
+        from src.utils.batch_api import BatchPending, submit_batch, poll_batch
         from src.utils import credit_gate
 
+        submitted_id = ""
         try:
-            batch_id = submit_batch(self.api_key, jsonl_path, batch_name)
+            batch_id = submitted_id = submit_batch(self.api_key, jsonl_path, batch_name)
+            self._record_batch_submitted(batch_id, batch_name, count)
+            # recorded NOW, not at hand-off: a task killed during its wait (spot reclaim) must
+            # leave enough for the poller to retrieve the batch (metrics + an in_task job)
+            self._record_in_flight(batch_id, batch_name, count)
             logger.info("Waiting for batch to complete (may take minutes to hours)...")
-            batch_state = poll_batch(self.api_key, batch_id, submitted_count=count)
+            batch_state = poll_batch(
+                self.api_key,
+                batch_id,
+                submitted_count=count,
+                max_hours=24.0 if max_wait_minutes is None else max_wait_minutes / 60,
+            )
+            if batch_state.get("_timed_out"):
+                self._hand_off(batch_id, batch_name, count, jsonl_path)
 
-            # Retrieve results as an ORDERED list. The xAI results API does NOT echo our submitted
+            # Retrieve results as an ORDERED list. The xAI results API was thought not to echo our submitted (it does; aligned by id first:)
             # custom_id (only a server-assigned batch_request_id), so results MUST be mapped to our
             # cache keys by POSITION (submission order), NOT by id — mirrors the AWS retrieve-only
             # path (ecs_entrypoint._map_batch_results_by_index / retrieve_results_ordered).
-            from src.utils.batch_api import retrieve_results_ordered
+            from src.utils.batch_api import (
+                retrieve_results_ordered,
+                verify_served_models,
+            )
 
             ordered = retrieve_results_ordered(self.api_key, batch_id)
-        except Exception as _batch_exc:
+            verify_served_models(ordered, "batch_retrieve")
+        except BatchPending:
+            raise
+        except (Exception, grok_models.GrokModelUnavailable) as _batch_exc:
             credit_gate.release(est_cost, config=self._config)
             logger.warning(
                 "OBSERV credit.released reason=batch_failed est_cost=%.4f err=%s "
@@ -565,8 +979,38 @@ class GrokClient:
                 est_cost,
                 _batch_exc,
             )
+            if isinstance(_batch_exc, grok_models.GrokModelUnavailable):
+                # a deliberate stop: the in_task job must not be adopted and retried forever
+                from src.utils.job_queue import mark_in_task
+
+                mark_in_task(submitted_id, "failed")
             raise
         return batch_id, batch_state, ordered
+
+    def _record_batch_submitted(
+        self, batch_id: str, batch_name: str, count: int
+    ) -> None:
+        """Timing statistics (src/utils/batch_stats): the batch, its size and request kinds."""
+        try:
+            from collections import Counter
+
+            from src.utils import batch_stats
+
+            requests = getattr(self._batch_collector, "requests", None) or []
+            batch_stats.record_submitted(
+                batch_id,
+                requests=count,
+                by_type=dict(Counter(getattr(r, "cache_type", "?") for r in requests)),
+                name=batch_name,
+                model=str(getattr(self, "model", "") or ""),
+                phase=os.getenv("PIPELINE_PHASE", ""),
+            )
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - never a batch failure: it is already submitted
+            logger.warning(
+                "OBSERV batch_stats.write_failed op=submitted err=%s", type(e).__name__
+            )
 
     @staticmethod
     def _batch_prompt_preview(rid: str, requests_by_id: dict) -> str:
@@ -580,10 +1024,14 @@ class GrokClient:
         return ""
 
     def _sanitize_content(self, content: str) -> str:
-        """Remove control chars and fix invalid JSON escapes."""
+        """Remove control chars and fix invalid JSON escapes. The control-char strip delegates to
+        the shared ``src.utils.batch_api.strip_control_chars`` (single source of truth, also used by
+        the retrieve-only mapper) so the two batch paths sanitize identically."""
         import re  # pylint: disable=import-outside-toplevel
 
-        content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
+        from src.utils.batch_api import strip_control_chars
+
+        content = strip_control_chars(content)
         content = re.sub(r'\\(?!["\\/bfnrtu]|u[0-9a-fA-F]{4})', r"\\\\", content)
         return content
 
@@ -603,6 +1051,12 @@ class GrokClient:
         in a batch where SIBLINGS returned substantive content — add the entity to failed_ids to
         force a real-time retry, and emit a LOUD observe_error('batch','result_unmapped') instead
         of silently persisting 0. An ALL-empty batch is left as-is (genuine, no false retry).
+
+        CANONICAL ALGORITHM: the count-mismatch + empty-slot desync guards here are the SAME
+        contract as ``src.utils.batch_api.map_results_positionally`` (which the retrieve-only
+        ecs_entrypoint path uses). This copy keeps the inline loop only because it also threads
+        rich per-request metrics (valid/empty counters + RequestDetail) that the realtime path
+        needs; the two must stay behaviourally in sync.
         """
         from src.utils.batch_api import RequestDetail
 
@@ -617,19 +1071,21 @@ class GrokClient:
             metrics.empty += len(submitted)
             return [rid for rid, _ in submitted], True
 
-        # Positional-map desync guard: the xAI results API does NOT echo our custom_id, so a
+        # Positional-map desync guard: the xAI results API was thought not to echo our custom_id (it does; aligned by id first), so a
         # misaligned/empty slot can silently persist 0 for a whole entity while a VALID response
         # for it sits elsewhere in the batch (XChannel-8 2026-10-30). We can't re-correlate by id,
         # but we CAN detect the signature — an empty/too-short result in a batch where SIBLINGS
         # returned substantive content — and force a real-time retry for just that entity instead
         # of trusting the empty positional map. An ALL-empty batch is left as-is (genuine).
-        any_substantive = any(self._is_substantive(br) for br in ordered)
+        from src.utils.batch_api import desync_possible
+
+        desync = desync_possible(submitted, ordered)
 
         failed_ids: list = []
         for (our_id, cache_type), br in zip(submitted, ordered):
             ct = cache_type or "default"
             if br.status == "valid":
-                if any_substantive and not self._is_substantive(br):
+                if desync and not self._is_substantive(br):
                     self._record_desync_drop(our_id, ct, br, metrics, RequestDetail)
                     failed_ids.append(our_id)
                     continue
@@ -805,16 +1261,18 @@ class GrokClient:
                     d.error = error
                 break
 
-    def _validate_prompt(self, prompt: str) -> None:
-        """Validate prompt before sending to API."""
+    def _validate_prompt(
+        self, prompt: str, system_prompt: Optional[str] = None
+    ) -> None:
+        """Validate prompt before sending to API (the size cap counts the system message too: the
+        chapter-entity requests carry the chapter text there)."""
         import re
 
         if not prompt or not prompt.strip():
             raise ValueError("Empty prompt — nothing to send to API")
-        if len(prompt) > 500_000:
-            raise ValueError(
-                f"Prompt too large: {len(prompt)} chars (~{len(prompt)//4} tokens)"
-            )
+        size = len(prompt) + len(system_prompt or "")
+        if size > 500_000:
+            raise ValueError(f"Prompt too large: {size} chars (~{size//4} tokens)")
         # Detect unfilled template placeholders (e.g., {book}, {author})
         unfilled = re.findall(r"\{([a-z_]+)\}", prompt)
         if unfilled:
@@ -863,52 +1321,46 @@ class GrokClient:
         # Log token usage
         self._log_token_usage(result)
 
-        # Log response content
+        # Log response content (``content`` stays "" when the response has no choices).
+        content = ""
         if "choices" in result and len(result["choices"]) > 0:
-            content = result["choices"][0].get("message", {}).get("content", "")
+            # ``or ""``: a refusal / tool-call response carries content=null, not a missing key
+            content = result["choices"][0].get("message", {}).get("content") or ""
             finish_reason = result["choices"][0].get("finish_reason", "unknown")
             logger.info(
                 f"Response: {len(content)} chars, finish_reason: {finish_reason}"
             )
             self._log_response_warnings(content, finish_reason)
 
-        # Check for model deprecation (redirect to different model)
-        served_model = result.get("model", "")
-        if (
-            served_model
-            and served_model != self.model
-            and not self._deprecation_alerted
-        ):
-            self._deprecation_alerted = True
-            logger.warning(
-                "MODEL DEPRECATED: requested '%s' but served by '%s'",
-                self.model,
-                served_model,
-            )
-            self._send_deprecation_alert(served_model)
-
-            # Log preview
-            preview = content[: self.debug_resp_chars]
-            if len(content) > self.debug_resp_chars:
-                preview += "..."
-            logger.debug(f"  {preview}")
+        # Log preview
+        preview = content[: self.debug_resp_chars]
+        if len(content) > self.debug_resp_chars:
+            preview += "..."
+        logger.debug(f"  {preview}")
 
     def _log_token_usage(self, result: Dict[str, Any]) -> None:
-        """Log prompt/completion/total token counts from a response."""
+        """Log prompt/completion/total token counts from a response, and how many prompt tokens
+        xAI served from its prompt cache (``usage.prompt_tokens_details.cached_tokens``: billed
+        at the cached rate - the measure of the shared-first-message saving)."""
         usage = result.get("usage", {})
         if usage:
+            cached = (usage.get("prompt_tokens_details") or {}).get(
+                "cached_tokens", 0
+            ) or 0
             logger.info(
-                "API tokens: %d prompt, %d completion, %d total",
+                "API tokens: %d prompt (%d cached), %d completion, %d total",
                 usage.get("prompt_tokens", 0),
+                cached,
                 usage.get("completion_tokens", 0),
                 usage.get("total_tokens", 0),
                 extra={
                     "extra_fields": {
                         "event": "api_usage",
                         "prompt_tokens": usage.get("prompt_tokens", 0),
+                        "cached_prompt_tokens": cached,
                         "completion_tokens": usage.get("completion_tokens", 0),
                         "total_tokens": usage.get("total_tokens", 0),
-                        "model": self.model,
+                        "model": result.get("model") or self.model,
                     }
                 },
             )
@@ -921,39 +1373,13 @@ class GrokClient:
         elif finish_reason != "stop":
             logger.warning(f"Unexpected finish_reason: {finish_reason}")
 
-        if len(content) < 200:
-            try:
-                json.loads(content)
-            except (json.JSONDecodeError, ValueError):
-                logger.warning(
-                    f"API returned very short response: {len(content)} chars"
-                )
-                logger.warning(f"Content: {content}")
+        if len(content) < 200 and not _parses(json_payload(content)):
+            logger.warning(f"API returned very short response: {len(content)} chars")
+            logger.warning(f"Content: {content}")
 
-    def _send_deprecation_alert(self, served_model: str) -> None:
-        """Send SNS email alert when configured model is deprecated/redirected."""
-        try:
-            import boto3
-
-            topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
-            if not topic_arn:
-                return
-            boto3.client(
-                "sns", region_name=os.environ.get("AWS_REGION", "us-east-1")
-            ).publish(
-                TopicArn=topic_arn,
-                Subject="WWII Pipeline: Grok model deprecated",
-                Message=(
-                    f"The configured model '{self.model}' has been deprecated.\n"
-                    f"Requests are being redirected to '{served_model}'.\n\n"
-                    f"Update config.yaml api.grok.model to a current model."
-                ),
-            )
-        except Exception as e:
-            logger.debug("Failed to send deprecation alert: %s", e)
-
-    def _handle_api_errors(self, response) -> None:
-        """Handle API error responses."""
+    def _handle_api_errors(self, response, model: str = "") -> None:
+        """Handle API error responses (a model that does not exist stops the run:
+        grok_models)."""
         if response.status_code == 429:
             retry_after = int(response.headers.get("Retry-After", 60))
             self._rate_limiter.backoff(retry_after)
@@ -963,6 +1389,12 @@ class GrokClient:
             response.raise_for_status()
 
         if response.status_code != 200:
+            if grok_models.is_model_missing(response.status_code, response.text):
+                grok_models.model_unavailable(
+                    model or self.model,
+                    "grok_client",
+                    detail=f"HTTP {response.status_code}",
+                )
             raise GrokAPIError(f"API error {response.status_code}: {response.text}")
 
     def _post_with_deadline(self, session, headers, payload):
@@ -994,6 +1426,7 @@ class GrokClient:
         self, messages: list, temperature: float = 0.1, model: str = ""
     ) -> Dict[str, Any]:
         """Make API call with retry logic."""
+        grok_models.ensure_running()  # a model already found gone: no more calls (grok_models)
         self._rate_limiter.wait()
         self._validate_input_size(messages)
         self._log_api_request(messages, temperature)
@@ -1001,12 +1434,14 @@ class GrokClient:
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
+            **_cache_routing_header(messages),
         }
 
         from src.utils.batch_api import GROK_MAX_TOKENS
 
+        requested = model or self.model
         payload = {
-            "model": model or self.model,
+            "model": requested,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": GROK_MAX_TOKENS,
@@ -1017,7 +1452,7 @@ class GrokClient:
         response = self._post_with_deadline(session, headers, payload)
         logger.debug(f"API Response: {response.status_code}")
 
-        self._handle_api_errors(response)
+        self._handle_api_errors(response, requested)
         result = response.json()
 
         # Validate response structure
@@ -1031,6 +1466,8 @@ class GrokClient:
             raise GrokAPIError("API returned empty response")
 
         self._log_api_response(result)
+        # a retired model is answered by another one: stop, never extract with it (grok_models)
+        grok_models.check_served(requested, result, "grok_client")
 
         return result
 
@@ -1063,7 +1500,7 @@ class GrokClient:
         """
         use_cache = use_cache and not _cache_globally_disabled()
         # Validate inputs before sending
-        self._validate_prompt(prompt)
+        self._validate_prompt(prompt, system_prompt)
 
         # Get cache for this type
         cache = self._get_cache(cache_type)
@@ -1095,6 +1532,59 @@ class GrokClient:
         if use_cache and cache_key in cache:
             return self._handle_cache_hit(cache, cache_key, cache_type)
 
+        def ask() -> str:
+            return self._ask_and_cache(
+                prompt, system_prompt, temperature, use_cache, cache_type, cache_key
+            )
+
+        if use_cache and not self.batch_mode:
+            return self._single_flight(cache, cache_type, cache_key, ask)
+        return ask()
+
+    def _single_flight(
+        self, cache: Any, cache_type: str, cache_key: str, ask: Callable[[], str]
+    ) -> str:
+        """One live request per cache key at a time: identical requests made concurrently
+        (equipment prepares a chapter's items in parallel: "Sherman" twice) wait for the first
+        one's answer instead of each paying for it. If the first fails (or outlasts the wait),
+        a waiter asks itself. Batch mode needs none: the collector keeps one request per key.
+        """
+        flight = (cache_type, cache_key)
+        done = threading.Event()
+        with self._cache_lock:
+            waiting_on = self._in_flight.get(flight)
+            if waiting_on is None:
+                self._in_flight[flight] = done
+        if waiting_on is not None:
+            waiting_on.wait(timeout=self.timeout * 2)
+            if cache_key in cache:
+                with self._cache_lock:
+                    self._flight_shared += 1
+                return self._handle_cache_hit(cache, cache_key, cache_type)
+            with self._cache_lock:
+                self._flight_retried += 1
+            return ask()
+        try:
+            if cache_key in cache:  # answered between the miss and the claim
+                return self._handle_cache_hit(cache, cache_key, cache_type)
+            return ask()
+        finally:
+            with self._cache_lock:
+                self._in_flight.pop(flight, None)
+            done.set()
+
+    def _ask_and_cache(
+        self,
+        prompt: str,
+        system_prompt: Optional[str],
+        temperature: float,
+        use_cache: bool,
+        cache_type: str,
+        cache_key: str,
+    ) -> str:
+        """A cache miss: queue it (batch mode) or call the API, then cache the answer."""
+        cache = self._get_cache(cache_type)
+        model_used = self._get_model(cache_type)
         with self._cache_lock:
             self._cache_misses += 1
 
@@ -1109,7 +1599,7 @@ class GrokClient:
 
         # Call API
         messages = self._build_messages(prompt, system_prompt)
-        response = self._call_api(messages, temperature, self._get_model(cache_type))
+        response = self._call_api(messages, temperature, model_used)
 
         # Extract content
         content = response["choices"][0]["message"]["content"]
@@ -1201,8 +1691,10 @@ class GrokClient:
         """Strip control chars + fix invalid escapes before caching."""
         import re
 
-        # Remove control characters (0x00-0x1f except whitespace)
-        content = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", content)
+        from src.utils.batch_api import strip_control_chars
+
+        # Remove control characters (0x00-0x1f except whitespace) — shared single source of truth
+        content = strip_control_chars(content)
         # Fix invalid escape sequences - more aggressive approach
         # Valid JSON escapes: \" \\ \/ \b \f \n \r \t \uXXXX
         # Replace any backslash not followed by valid escape with double backslash
@@ -1435,25 +1927,19 @@ class GrokClient:
         return result
 
     def _strip_markdown_wrapper(self, response: str) -> str:
-        """Remove markdown code block wrapper from response."""
-        response = response.strip()
-        if response.startswith("```json"):
-            response = response[7:]
-        if response.startswith("```"):
-            response = response[3:]
-        if response.endswith("```"):
-            response = response[:-3]
-        return response.strip()
+        """The JSON in a model answer (``json_payload``): a fenced block anywhere, or the first
+        JSON value in prose ("**JSON Response:** {...}")."""
+        return json_payload(response)
 
     _VALID_ESCAPES = frozenset('"\\/bfnrt')
     _CTRL_ESCAPE = {"\t": "\\t", "\n": "\\n", "\r": "\\r"}
 
     def _sanitize_json_response(self, response: str) -> str:
         """Sanitize JSON response by removing control chars and fixing invalid escapes."""
-        import re
+        from src.utils.batch_api import strip_control_chars
 
-        # Remove non-whitespace control characters
-        response = re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", response)
+        # Remove non-whitespace control characters — shared single source of truth
+        response = strip_control_chars(response)
 
         result = []
         i = 0
@@ -1544,8 +2030,9 @@ class GrokClient:
         if cache_key in cache:
             cache.pop(cache_key, None)
 
-        raise GrokAPIError(
-            f"API returned invalid response: {error_msg}. Response: {response[:200]}"
+        raise _parse_error(
+            f"API returned invalid response: {error_msg}. Response: {response[:200]}",
+            response,
         )
 
     def _handle_truncation_error(
@@ -1763,11 +2250,11 @@ class GrokClient:
         _retried=True so it can't recurse again). Shared by the poisoned-cache + short-response
         guards."""
         cache = self._get_cache(cache_type)
-        evict_key = cache_key or self._make_cache_key(
-            prompt, temperature, self._get_model(cache_type), system_prompt or ""
+        evict_key = cache_key or self.cache_key_for(
+            prompt, system_prompt, cache_type, temperature
         )
         cache.pop(evict_key, None)
-        return self.extract_json(
+        return self._extract_json(
             prompt,
             system_prompt,
             temperature,
@@ -1784,11 +2271,120 @@ class GrokClient:
         temperature: float = 0.1,
         use_cache: bool = True,
         cache_type: str = "default",
+        cache_key: Optional[str] = None,
+        book: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Get a JSON answer from Grok - for a book-bound kind, one PROVEN to answer this request.
+
+        ``book`` - the request's book (else the ``current_book`` context). It scopes the cache
+        (``books/<book>/<kind>``) and, for a ``request_identity.BOOK_BOUND`` kind, the prompt is
+        stamped with the BookID + RequestID and the answer must echo both (live or cached):
+
+        * ``mismatch`` (the answer belongs to another request) - evicted and asked once more; a
+          second mismatch raises ``GrokAPIError``: such an answer is never used;
+        * ``missing`` (not echoed) - asked once more; then accepted with a warning;
+        * ``unverifiable`` (not a JSON object) - accepted with a warning.
+
+        Other arguments: see ``_extract_json``.
+        """
+        with book_scope(book):
+            asked, bid, rid = self._identity(
+                prompt, system_prompt, cache_type, None, cache_key
+            )
+            ask = _Ask(
+                asked, system_prompt, temperature, use_cache, cache_type, cache_key
+            )
+            result = self._extract_json(*ask.args, cache_key=cache_key)
+            if not bid:
+                return result
+            result, status = request_identity.verify(result, bid, rid)
+            if status in ("mismatch", "missing") and self._reask_on(status, ask, rid):
+                result = self._extract_json(*ask.args, cache_key=cache_key)
+                result, status = request_identity.verify(result, bid, rid)
+            return self._settle_identity(result, status, ask, (bid, rid))
+
+    def _ask_key(self, ask: "_Ask") -> str:
+        return ask.cache_key or self.cache_key_for(
+            ask.prompt, ask.system_prompt, ask.cache_type, ask.temperature
+        )
+
+    def _reask_on(self, status: str, ask: "_Ask", rid: str) -> bool:
+        """Evict an unproven answer to ask again - once (True) - or not (False).
+
+        In BATCH mode an evicted answer is re-queued (the re-ask raises BatchModeCollecting) and a
+        paid answer is lost, so: a ``missing`` echo is not re-asked there (accepted, below), and a
+        ``mismatch`` is re-asked once per key across cycles - a second one raises."""
+        key = self._ask_key(ask)
+        if self.batch_mode:
+            if status == "missing":
+                return False
+            if key in self._identity_reasked:
+                return False
+            self._identity_reasked.add(key)
+        self._observe_identity(status, ask.cache_type, rid, retried=False)
+        self._get_cache(ask.cache_type).pop(key, None)
+        return True
+
+    def _settle_identity(
+        self, result: Any, status: str, ask: "_Ask", ids: Tuple[str, str]
+    ) -> Any:
+        """The final verdict: raise on a mismatch; accept anything else, and keep an accepted
+        answer that did not echo its identity STAMPED in the cache, so a re-run reads it as ``ok``
+        instead of re-asking (and paying) every time."""
+        rid = ids[1]
+        if status == "ok":
+            self._identity_reasked.discard(self._ask_key(ask))
+            return result
+        if (
+            status == "unverifiable"
+        ):  # a non-object answer: permanent, so not an alert per read
+            logger.debug("identity unverifiable: %s request %s", ask.cache_type, rid)
+            return result
+        self._observe_identity(status, ask.cache_type, rid, retried=True)
+        if status == "mismatch":
+            # never leave the wrong answer cached: the next read asks afresh
+            self._get_cache(ask.cache_type).pop(self._ask_key(ask), None)
+            raise GrokIdentityError(
+                f"Answer identity mismatch for a {ask.cache_type} request (RequestID {rid}): "
+                "the answer belongs to another request"
+            )
+        if ask.use_cache and not _cache_globally_disabled():  # status == "missing"
+            body = {**result, "BookID": ids[0], "RequestID": ids[1]}
+            self._get_cache(ask.cache_type)[self._ask_key(ask)] = json.dumps(
+                body, ensure_ascii=False
+            )
+        return result
+
+    @staticmethod
+    def _observe_identity(
+        status: str, cache_type: str, rid: str, retried: bool
+    ) -> None:
+        """OBSERV grok.identity_<status>: an answer not proven to be this request's."""
+        emit = observe_error if status == "mismatch" and retried else observe_warn
+        emit(
+            "grok",
+            f"identity_{status}",
+            cache_type=cache_type,
+            request_id=rid,
+            action=(
+                "raise"
+                if emit is observe_error
+                else ("accept" if retried else "re-ask")
+            ),
+        )
+
+    def _extract_json(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        temperature: float = 0.1,
+        use_cache: bool = True,
+        cache_type: str = "default",
         _retried: bool = False,
         cache_key: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
-        Get JSON response from Grok API.
+        Get JSON response from Grok API (the prompt as asked; no identity check).
 
         Args:
             prompt: User prompt
@@ -1815,11 +2411,11 @@ class GrokClient:
             )
 
         # Clean and sanitize response
-        had_markdown = response.startswith("```")
-        response = self._strip_markdown_wrapper(response)
+        payload = self._strip_markdown_wrapper(response)
+        had_markdown = payload != response.strip()
         if had_markdown:
             self._json_markdown_stripped += 1
-        response = self._sanitize_json_response(response)
+        response = self._sanitize_json_response(payload)
 
         # Try to parse
         try:
@@ -1847,24 +2443,21 @@ class GrokClient:
         from extract_json to keep it below the C gate."""
         if _retried:
             return False
-        if use_cache:
-            stripped = response.strip()
-            if stripped and stripped[0] not in '{["' and "```" not in stripped[:10]:
-                logger.warning(
-                    "Poisoned cache entry detected (%d chars, starts with '%s'), clearing",
-                    len(response),
-                    stripped[:20],
-                )
-                return True
-        if len(response) < 500:
-            try:
-                json.loads(response)
-            except (json.JSONDecodeError, ValueError):
-                logger.warning(
-                    "Short response (%d chars), clearing cache and retrying",
-                    len(response),
-                )
-                return True
+        payload = json_payload(response)
+        if use_cache and response.strip() and not _starts_as_json(payload):
+            # no JSON anywhere in it (prose wrapping JSON is fine: json_payload finds it)
+            logger.warning(
+                "Poisoned cache entry detected (%d chars, starts with '%s'), clearing",
+                len(response),
+                response.strip()[:20],
+            )
+            return True
+        if len(payload) < 500 and not _parses(payload):
+            logger.warning(
+                "Short response (%d chars), clearing cache and retrying",
+                len(response),
+            )
+            return True
         return False
 
     def _handle_json_decode_error(
@@ -1897,7 +2490,12 @@ class GrokClient:
             )
 
         # Handle truncated responses (auto-clear cache)
-        if "Unterminated string" in error_msg or "Expecting" in error_msg:
+        # a truncation cuts JSON short, so it STARTS as JSON: a body that does not (prose, even
+        # prose quoting "[1]") is a parse failure - the chunk halver would split and re-ask it down
+        # to single items. And it fails at its END: an error mid-document ("[052]", a missing
+        # comma) is malformed JSON - re-asking returns the same answer, so it was evicted and
+        # re-asked every batch round (chapter 8, 2026-11-14); it goes to the repair below.
+        if _starts_as_json(response) and _cut_short(response, e):
             self._json_truncated += 1
             self._handle_truncation_error(
                 response, error_msg, cache_type, prompt, temperature, resolved_key
@@ -1923,11 +2521,12 @@ class GrokClient:
             length=len(response),
             cache_type=cache_type,
         )
-        raise GrokAPIError(
+        raise _parse_error(
             f"Failed to parse JSON response: {e}\n"
             f"Response length: {len(response)} chars\n"
             f"First 500 chars: {response[:500]}\n"
-            f"Last 500 chars: {response[-500:]}"
+            f"Last 500 chars: {response[-500:]}",
+            response,
         ) from e
 
     def extract_structured(

@@ -40,6 +40,39 @@ def load_book_metadata(parsed_file: Optional[Path]) -> Tuple[str, str, str]:
     )
 
 
+def require_book_provenance(book: str, author: str, entity: str, source: str) -> None:
+    """The ONE provenance check for the per-entity extractors (weather, dates, places, groups).
+
+    ``book`` is required: it is the provenance key every record is traced and audited by
+    (provenance_integrity), so a record without it cannot be cited - raise ValueError.
+
+    An empty ``author`` is NOT a reason to drop the entity: the records keep ``author: ""`` (as the
+    batch path always has) and one actionable alert per book says how to fill it. Raising here lost
+    ALL weather of XChannel-8 (2026-11-07) although the chapter describes the sea state, wind and
+    tide throughout.
+    """
+    if not book:
+        raise ValueError(
+            f"Missing required book metadata for {entity} ({source}): book={book!r}"
+        )
+    if not author:
+        from src.utils.observe import observe_warn_counted
+
+        observe_warn_counted(
+            "metadata",
+            "author_missing",
+            key=(book,),
+            every=10**9,
+            note=(
+                "the chapter metadata has no author, so this book's records carry an empty "
+                "author in their provenance; fill author (and series/license) in the chapter's "
+                "-meta.yaml and re-run Phase 1 for the book"
+            ),
+            book=book,
+            entity=entity,
+        )
+
+
 def load_json_index(index_file: Path) -> dict:
     """Load a JSON index file into a dict, or return ``{}`` if it does not exist.
 

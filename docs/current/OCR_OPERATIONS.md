@@ -238,6 +238,50 @@ You are responsible for merging/publishing outputs when done.
 
 The output files are immediately available for the existing pipeline (Phase 1 parsing triggers on new `.md` files in `contentrepository/`).
 
+### Uploaded PDFs: chunks, merge, chapters, cross-check
+
+A PDF uploaded to `contentrepository/` is OCR'd by the trigger (`_submit_ocr`) and published by
+the OCR merge Lambda when Batch reports each chunk done. The pieces:
+
+```
+trigger        writes ocr-output/{book}/.chunks.json  BEFORE submitting any job
+               {submission, chunks, source_key, validation_url, created}
+Batch (x N)    ocr-output/{book}/chunk-pNNNN-NNNN/input/input.md   (or .../input/input.md whole)
+merge Lambda   waits until EVERY listed chunk exists AND is newer than the manifest, then
+               claims the merge once (.merged = {submission, claimed_at}) and
+               keeps  ocr-output/{book}/merged/raw.md          (the OCR exactly as Chandra wrote it)
+               writes ocr-output/{book}/merged/postprocess.json (every change, per chapter)
+publishes      contentrepository/{book}/chapterN/chapterN-{meta.yaml,content.md}  (metas first)
+```
+
+* **Always:** `ocr_sanitise` (small-caps look-alike letters `УТАН` → `UTAH` where the book prints
+  the Latin word; superscript ordinals `709<sup>th</sup>` → `709th`), the book split at its own
+  chapter headings (`ocr_chapters`; front matter, glossary and index are held back, listed in the
+  log), and `chandra_markdown` (notes gathered into a `### Footnotes` section, paragraphs rejoined
+  across page breaks, Chandra's model-written picture and map-plate text removed and logged under
+  `dropped`). Citation is by chapter and paragraph number; PDF page anchors are kept.
+* **Only with a validation URL** (`aws s3 cp book.pdf s3://… --metadata validation-url=<url>`; the
+  future submit UI's optional URL field): a transcription of the book (a HyperWar contents page, or
+  one page for a one-chapter document). The merge then launches the **`phase0-crosscheck`** ECS task
+  (needs NAT: it fetches the URL), which cross-checks each chapter against its page and corrects the
+  OCR where the book itself settles it. No URL, no cross-check — never checked against nothing.
+  Chapters it could not check are listed in `postprocess.json` and raise `ocr_promote.crosscheck_incomplete`.
+  Differences no rule settles (a name the book never prints the other way, a number, two valid words)
+  are listed per chapter under `review` (PDF page, both readings, context; `review_total` counts them
+  all, 300 kept): **the PDF's OCR reading stands**, the list is for a person to check against the page
+  image. They raise no alert.
+* **Hard task deaths.** The `phase0-crosscheck` task is one-shot. An EventBridge rule
+  (`CrosscheckStoppedRule`) sends its STOPPED events to the merge Lambda: a task that died holding
+  the merge claim (out of memory, a pre-flight exit, a failure to start) is relaunched once with
+  4 GiB; if the retry dies too, one `ocr_merge.crosscheck_died` alert names the cause and the
+  re-drive. Clean exits, operator stops and failures the task reported itself are ignored.
+* **A stuck book.** The claim expires after `OCR_MERGE_CLAIM_TTL` (3 h). If a merge or cross-check
+  task died without releasing it (`ocr_merge.claim_stale` warning after 30 min), re-drive — only when
+  no merge/cross-check task of that book is running:
+  `python -c "from src.ingestion.ocr_chunk_manifest import redrive_command as r; print(r('BOOK'))"`
+  prints the `aws lambda invoke … "force": true …` command. A re-drive republishes only the chapters
+  whose text changed.
+
 ---
 
 ## Infrastructure

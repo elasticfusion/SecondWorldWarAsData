@@ -21,9 +21,27 @@ Outcomes:
 from __future__ import annotations
 
 import hashlib
+import re
 import secrets
+import unicodedata
 from dataclasses import dataclass
 from typing import Callable, List, Optional
+
+_LEADING_ARTICLES = ("the", "a", "an")
+
+
+def normalised_title(title: str) -> str:
+    """The form two titles are compared in for duplicates - never the displayed title: accents
+    dropped, case folded, punctuation and spacing ignored, a leading article dropped.
+    "Cross-Channel_Attack", "cross channel attack" and "The Cross-Channel Attack" are all
+    "cross_channel_attack". A match only starts the identity check (checksum / LLM): two
+    different works that normalise alike are still told apart and one renamed."""
+    text = unicodedata.normalize("NFKD", title or "")
+    text = "".join(c for c in text if not unicodedata.combining(c)).casefold()
+    words = re.findall(r"[^\W_]+", text)
+    if len(words) > 1 and words[0] in _LEADING_ARTICLES:
+        words = words[1:]
+    return "_".join(words) or (title or "")
 
 
 @dataclass

@@ -5,11 +5,12 @@ import json
 import logging
 import os
 import re
-from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import ulid
+
+from src.utils.entity_records import citation_identity, merge_mentions
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +169,17 @@ def _collect_parsed_notes(parsed_file: Path) -> Optional[List[Dict[str, Any]]]:
     for key, ref_type in (("footnotes", "footnote"), ("endnotes", "endnote")):
         for n in data.get(key, []) or []:
             if isinstance(n, dict):
-                notes.append({**n, "_ref_type": ref_type})
+                # Phase 1 records the SOURCE's own label per note (src/notes); the array key is
+                # only the fallback for records written before notes carried a kind.
+                kind = n.get("kind")
+                notes.append(
+                    {
+                        **n,
+                        "_ref_type": (
+                            kind if kind in ("footnote", "endnote") else ref_type
+                        ),
+                    }
+                )
     return notes
 
 
@@ -386,10 +397,114 @@ def _slugify(title: str) -> str:
 
 
 def _normalize_title(title: str) -> str:
-    """Normalize title for matching."""
-    title = title.lower().strip()
+    """Normalize title for matching: the citation's DOCUMENT identity (``_document_key``),
+    lower-cased with punctuation runs collapsed."""
+    title = _document_key(title).lower().strip()
     title = re.sub(r"[,.:;'\"\-]+", " ", title)
     return re.sub(r"\s+", " ", title).strip()
+
+
+# --- citation -> document identity -----------------------------------------------------------
+# Owner decision (2026-11-07): "116th Inf S-3 Jnl should be one record, with multiple citations".
+# A periodic record (unit journal, German KTB war diary, log) is ONE document; the date of the
+# entry cited ("6 Jun 44", "27 Jan and 9 Jun 44") belongs to the CITATION (the mention keeps the
+# full verbatim), not to the document's identity. For other documents (an interview "31 May 47")
+# the date IS identity and is kept. Pages ("p. 81", "pp. 275ff.") are always citation detail,
+# and "See" / "cf." are citing cues.
+_CITE_CUE = re.compile(r"^(?:see\s+also|see|cf\.?|also)\s+", re.IGNORECASE)
+_PAGES = re.compile(
+    r"[,;]?\s{0,3}\bpp?\.\s{0,3}[0-9ivxlc]{1,8}(?:\s{0,3}[-–]\s{0,3}[0-9]{1,6})?(?:\s{0,3}ff)?"
+    r"\.?\s{0,3}$",
+    re.IGNORECASE,
+)
+_MONTH = (
+    r"(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?"
+    r"|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)(?![a-z])\.?"
+)  # explicit names: "Marine", "Junction", "Decoy" are not months
+_ORD = r"(?:st|nd|rd|th)?"
+# "6 Jun", "6th June", "6-7 Jun" (a day range)
+_DAY_MONTH = (
+    rf"\d{{1,2}}{_ORD}(?:\s{{0,3}}[-–]\s{{0,3}}\d{{1,2}}{_ORD})?\s{{1,3}}{_MONTH}"
+)
+# separators between dated entries: "27 Jan and 9 Jun", "6, 7 Jun", "30 May-1 Jun"
+_DATE_SEP = r"(?:\s{0,3}[,–-]\s{0,3}|\s{1,3}and\s{1,3})"
+_ENTRY_DATE = re.compile(
+    # (?<![^\s,;]): the date starts after whitespace / a separator, never inside an identifier
+    # ("KTB 1.I.-30.VI.44, 6 Jun 44": the "44" of the period is not a day of the entry date).
+    # The year is optional ("Jnl, 6 Jun").
+    rf"[,;]?\s{{0,3}}(?<![^\s,;])(?:\d{{1,2}}{_ORD}{_DATE_SEP}){{0,3}}{_DAY_MONTH}"
+    rf"(?:{_DATE_SEP}{_DAY_MONTH}){{0,10}}(?:\s{{1,3}}\d{{1,4}})?[.,;]?\s{{0,3}}$",
+    re.IGNORECASE,
+)
+# US order: "June 6, 1944", "Jun 6th"
+_ENTRY_DATE_US = re.compile(
+    rf"[,;]?\s{{0,3}}(?<![^\s,;]){_MONTH}\s{{1,3}}\d{{1,2}}{_ORD}"
+    rf"(?:\s{{0,3}},?\s{{0,3}}\d{{2,4}})?[.,;]?\s{{0,3}}$",
+    re.IGNORECASE,
+)
+# Periodic records whose cited DATE is an entry, not the document's identity. Not the generic
+# "journal": "Journal of Modern History, 14 Mar 1944" is an issue whose date identifies it.
+_PERIODIC_RECORD = re.compile(r"\b(?:ktb|jnl|diary|tagebuch|log)\b", re.IGNORECASE)
+_CITE_NOISE = frozenset({"see", "cf", "also", "the", "a", "an"})
+
+
+def _document_key(citation_text: str) -> str:
+    """The DOCUMENT a citation names: markdown emphasis, citing cues, trailing pages and - for a
+    periodic record - the trailing entry date removed. "*Seventh Army, KTB 1.I.-30.VI.44,* 6 Jun
+    44." -> "Seventh Army, KTB 1.I.-30.VI.44"; "See First Army G-3 Jnl." -> "First Army G-3 Jnl".
+    """
+    text = (citation_text or "").replace("*", " ")
+    text = _CITE_CUE.sub("", re.sub(r"\s+", " ", text).strip())
+    for _ in range(3):  # "KTB ..., 6 Jun 44, p. 3": strip in any order
+        before = text
+        text = _PAGES.sub("", text).strip()
+        if _PERIODIC_RECORD.search(text):
+            text = _ENTRY_DATE.sub("", text).strip()
+            text = _ENTRY_DATE_US.sub("", text).strip()
+        if text == before:
+            break
+    return text.rstrip(" ,;.") or (citation_text or "")
+
+
+_VOLUME_WORDS = frozenset(
+    {"vol", "volume", "part", "pt", "book", "bk", "no", "series", "annex"}
+)
+# a volume NUMBER (Roman or Arabic) - "Book of the Dead" has no volume identifier
+_VOLUME_NUMBER = re.compile(
+    r"(?=[ivxlc\d])(?:c{0,3}(?:xc|xl|l?x{0,3})(?:ix|iv|v?i{0,3})|\d{1,4}[a-z]{0,2})"
+)
+
+
+def _identifiers(normalized: str) -> set:
+    """Document identifiers in a normalized key: the digit-bearing tokens (B-432, S-3, 116th,
+    1.I.-30.VI.44, 1939) plus the word after a volume/part marker ("vol iii" -> "vol iii"), so
+    Roman-numeral volumes are told apart."""
+    tokens = normalized.split()
+    ids = {t for t in tokens if any(c.isdigit() for c in t)}
+    for word, nxt in zip(tokens, tokens[1:]):
+        if word in _VOLUME_WORDS and _VOLUME_NUMBER.fullmatch(nxt):
+            ids.add(f"{word} {nxt}")
+    return ids
+
+
+def _same_document(a: str, b: str) -> bool:
+    """Whether two normalized citation keys name the same document. Fuzzy similarity alone
+    merged "*Seventh Army*, KTB ..." into "*Fifteenth Army*, KTB ..." (0.897) and would merge
+    MS # B-432 / B-433. So, beyond >=0.85 similarity: the identifying START must match (the owner's
+    start-of-name rule, src/utils/name_start) and the document identifiers must be IDENTICAL (a
+    different manuscript / journal / volume number is a different document; "Vol III" and an
+    untagged title are not assumed to be the same work)."""
+    from difflib import SequenceMatcher
+
+    from src.utils.name_start import starts_match
+
+    if a == b:
+        return True
+    if not starts_match(a, b, _CITE_NOISE):
+        return False
+    if _identifiers(a) != _identifiers(b):
+        return False
+    return SequenceMatcher(None, a, b).ratio() >= 0.85
 
 
 def _normalize_ref(ref: str) -> str:
@@ -460,7 +575,6 @@ def _find_match(
        source even when the title string differs).
     3. AUTHOR: exact normalized author-key match (weak — same author+work cited
        with a divergent title)."""
-    from difflib import SequenceMatcher
 
     titles = index.get("titles", {})
     norm = keys.get("title", "")
@@ -468,7 +582,7 @@ def _find_match(
         return titles[norm]
     if norm:
         for existing_title, ref in titles.items():
-            if SequenceMatcher(None, norm, existing_title).ratio() >= 0.85:
+            if _same_document(norm, existing_title):
                 return ref
     ref_key = keys.get("ref", "")
     if ref_key and ref_key in index.get("refs", {}):
@@ -650,15 +764,11 @@ def _repair_bib_title(f: str, rec: Dict[str, Any], cur: Any) -> int:
 
 
 def _has_mention(mentions: List[Dict], mention: Dict) -> bool:
-    """Check if a mention already exists (same event + sub-event + reference_number)."""
-    for m in mentions:
-        if (
-            m.get("EventID") == mention.get("EventID")
-            and m.get("Sub-eventID") == mention.get("Sub-eventID")
-            and m.get("reference_number") == mention.get("reference_number")
-        ):
-            return True
-    return False
+    """Check if a mention already exists: the same citation (entity_records.citation_identity -
+    same note; an unnumbered note by its quoted text, so distinct unnumbered notes are kept).
+    """
+    key = citation_identity(mention)
+    return any(citation_identity(m) == key for m in mentions if isinstance(m, dict))
 
 
 def store_bibliography_entry(
@@ -716,8 +826,8 @@ def store_bibliography_entry(
 
 
 def _merge_bib_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Merge records that share a match key into one: union mentions (by _has_mention),
-    and prefer the most-enriched base fields (a real title over 'Unknown', non-empty
+    """Merge records that share a match key into one: union mentions (entity_records
+    .citation_identity), and prefer the most-enriched base fields (a real title over 'Unknown', non-empty
     alt_title/author/resource_urls). Deterministic: records sorted by BibliographyID so the
     outcome is stable regardless of listing order."""
     records = sorted(records, key=lambda r: str(r.get("BibliographyID") or ""))
@@ -725,9 +835,7 @@ def _merge_bib_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
     merged_mentions: List[Dict[str, Any]] = []
     for rec in records:
         _merge_bib_fields(base, rec)
-        for m in rec.get("mentions") or []:
-            if not _has_mention(merged_mentions, m):
-                merged_mentions.append(m)
+        merge_mentions(merged_mentions, rec.get("mentions"), citation_identity)
     base["mentions"] = merged_mentions
     return base
 
@@ -773,7 +881,6 @@ def _fuzzy_collapse_groups(groups: Dict[str, List[tuple]]) -> None:
     Only title-bearing groups participate; each merge target is the lexicographically-smallest
     group key so the collapse is deterministic regardless of iteration order. Fail-safe.
     """
-    from difflib import SequenceMatcher
 
     titled = [(k, _group_title(v)) for k, v in list(groups.items())]
     titled = [(k, t) for k, t in titled if t]
@@ -783,13 +890,21 @@ def _fuzzy_collapse_groups(groups: Dict[str, List[tuple]]) -> None:
     for i, (key_i, title_i) in enumerate(titled):
         if key_i in absorbed:
             continue
-        for key_j, title_j in titled[i + 1 :]:
-            if key_j in absorbed or key_j == key_i:
-                continue
-            if SequenceMatcher(None, title_i, title_j).ratio() >= 0.85:
-                groups[key_i].extend(groups.get(key_j, []))
-                groups.pop(key_j, None)
-                absorbed[key_j] = key_i
+        _absorb_same_documents(groups, absorbed, key_i, title_i, titled[i + 1 :])
+
+
+def _absorb_same_documents(groups, absorbed, key_i, title_i, candidates) -> None:
+    """Fold every candidate group naming the same document into ``key_i``. A candidate must be
+    the same document as EVERY member already folded in (no chain merges)."""
+    members = [title_i]
+    for key_j, title_j in candidates:
+        if key_j in absorbed or key_j == key_i:
+            continue
+        if all(_same_document(m, title_j) for m in members):
+            groups[key_i].extend(groups.get(key_j, []))
+            groups.pop(key_j, None)
+            absorbed[key_j] = key_i
+            members.append(title_j)
 
 
 def reconcile_bibliography_dir(bib_dir: Path) -> int:
@@ -820,9 +935,31 @@ def reconcile_bibliography_dir(bib_dir: Path) -> int:
     except OSError:
         pass
     logger.info(
-        "OBSERV bib.reconcile groups=%d merged_away=%d", len(groups), merged_away
+        "OBSERV bib.reconcile groups=%d merged_away=%d periodic_date_residue=%d",
+        len(groups),
+        merged_away,
+        _periodic_date_residue(groups),
     )
     return merged_away
+
+
+_MONTH_WORD = re.compile(rf"\b{_MONTH}", re.IGNORECASE)
+
+
+def _periodic_date_residue(groups: Dict[str, List[tuple]]) -> int:
+    """Groups whose periodic-record key (journal / KTB / diary) still ENDS with a month (within
+    its last 4 tokens): an entry date ``_ENTRY_DATE`` did not recognise, so that journal may be
+    split across records (the owner's "one record, many citations" rule). A month deep inside a
+    long key is a hybrid note's prose (reference + commentary, left to the Grok split), not a
+    date residue. >0 -> extend _ENTRY_DATE / _ENTRY_DATE_US for that date form."""
+    count = 0
+    for items in groups.values():
+        key = _group_title(items)
+        if not _PERIODIC_RECORD.search(key):
+            continue
+        if _MONTH_WORD.search(" ".join(key.split()[-4:])):
+            count += 1
+    return count
 
 
 def _group_bib_files_by_hash(bib_dir: Path) -> "Dict[str, List[tuple]]":

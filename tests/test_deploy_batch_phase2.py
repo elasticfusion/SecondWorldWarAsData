@@ -44,17 +44,24 @@ def test_update_keeps_live_value_when_parent_has_param():
     assert p == {"ParameterKey": "BatchPhase2", "UsePreviousValue": True}
 
 
-def test_first_update_after_param_added_falls_back_to_false_not_usepreviousvalue():
+def test_first_update_after_param_added_falls_back_to_true_not_usepreviousvalue():
     # UsePreviousValue for a parameter new to the parent stack makes CloudFormation error.
     p = deploy_aws.batch_phase2_param("update", None, [{"ParameterKey": "Other"}])
-    assert p == {"ParameterKey": "BatchPhase2", "ParameterValue": "false"}
+    assert p == {"ParameterKey": "BatchPhase2", "ParameterValue": "true"}
 
 
-def test_create_defaults_false():
+def test_create_defaults_true():
+    """Batch is the production path (owner 2026-11-07: batch results are mapped differently from
+    live calls, so the batch path must be the one that runs by default)."""
     assert deploy_aws.batch_phase2_param("create", None, []) == {
         "ParameterKey": "BatchPhase2",
-        "ParameterValue": "false",
+        "ParameterValue": "true",
     }
+
+
+def test_template_defaults_are_true_in_both_stacks():
+    assert _tpl("main.yaml")["Parameters"]["BatchPhase2"]["Default"] == "true"
+    assert _tpl("compute.yaml")["Parameters"]["BatchPhase2"]["Default"] == "true"
 
 
 def test_invalid_value_rejected():
@@ -212,12 +219,12 @@ def test_update_without_flag_keeps_live_value(monkeypatch):
     }
 
 
-def test_first_update_without_flag_is_explicit_false(monkeypatch):
+def test_first_update_without_flag_is_explicit_true(monkeypatch):
     cf = _FakeCf([{"ParameterKey": "EnvironmentName", "ParameterValue": "dev"}])
     _deploy(monkeypatch, cf, None)
     assert _param(cf, "update") == {
         "ParameterKey": "BatchPhase2",
-        "ParameterValue": "false",
+        "ParameterValue": "true",
     }
 
 

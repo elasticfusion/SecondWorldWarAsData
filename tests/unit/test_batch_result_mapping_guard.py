@@ -158,3 +158,28 @@ def test_is_substantive_single_source_of_truth():
         is False
     )
     assert BatchResult("r", content="", finish_reason="stop").is_substantive is False
+
+
+def test_an_empty_answer_paired_by_our_request_id_is_the_real_answer():
+    """Results carrying OUR request ids are paired by id (align_by_request_id), so an empty slot is
+    that request's own answer ("{}": nothing to extract) - cached, never re-asked. Rejecting it
+    re-queued the same biography request every batch round (chapter 8, rounds 7-9, 2026-11-13).
+    """
+    import src.grok_client as gc
+    from src.utils.batch_api import BatchMetrics, BatchResult, map_results_positionally
+
+    submitted = [("k1", "api"), ("k2", "places")]
+    ordered = [
+        BatchResult("k1", content="{}", finish_reason="stop"),
+        BatchResult("k2", content='{"places":[{"name":"Caen"}]}', finish_reason="stop"),
+    ]
+    client = _make_client()
+    with mock.patch.object(gc, "observe_error") as obs:
+        failed, _mismatch = client._map_ordered_results(
+            submitted, ordered, BatchMetrics(batch_id="b4", total_requests=2), {}, "b4"
+        )
+    assert failed == [] and client.caches["api"]["k1"] == "{}"
+    obs.assert_not_called()
+
+    mapped = map_results_positionally(submitted, ordered, batch_id="b4")
+    assert mapped.failed_ids == [] and mapped.mapped["api"]["k1"] == "{}"

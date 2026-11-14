@@ -10,7 +10,7 @@ people weighted model (see [dedup-weighting.md](../people/dedup-weighting.md)); 
 equipment (which is an alias/synonym problem — a separate future model).
 
 Config: `config.yaml` → `dedup.groups`. Implementation: `src/dedup/unit_key.py` +
-`scripts/find_duplicate_groups.py`.
+`src/dedup/find_duplicate_groups.py`.
 
 ---
 

@@ -9,6 +9,8 @@ import json
 import logging
 import os
 
+from typing import Any
+
 import boto3
 import requests
 
@@ -26,6 +28,10 @@ NOTIFICATION_TOPIC_ARN = os.getenv("NOTIFICATION_TOPIC_ARN", "")
 # A completed batch with an error fraction >= this % triggers an operator alert (the batch still
 # proceeds on its successful fraction, but the lost fraction must not vanish silently).
 _PARTIAL_FAILURE_ALERT_PCT = float(os.getenv("BATCH_PARTIAL_FAILURE_ALERT_PCT", "10"))
+# An "in_task" job is a batch a running task waits for (up to batch.in_task_wait_minutes, 90).
+# Older than this, the task died during its wait (spot reclaim): adopt the batch as pending.
+# Must stay above the in-task wait.
+_IN_TASK_ADOPT_S = int(os.getenv("BATCH_IN_TASK_ADOPT_SECONDS", str(2 * 3600)))
 
 
 def handler(event, _context):
@@ -167,16 +173,19 @@ def _get_api_key() -> str:
 
 
 def _get_pending_jobs() -> list:
-    """Scan DynamoDB for pending or ready batch jobs."""
+    """Scan DynamoDB for pending or ready batch jobs, and adopt orphaned in-task ones."""
     table = boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE)
     items = []
     kwargs = {
-        "FilterExpression": "begins_with(cache_key, :prefix) AND #s IN (:pending, :ready)",
+        "FilterExpression": (
+            "begins_with(cache_key, :prefix) AND #s IN (:pending, :ready, :in_task)"
+        ),
         "ExpressionAttributeNames": {"#s": "status"},
         "ExpressionAttributeValues": {
             ":prefix": "batch_job#",
             ":pending": "pending",
             ":ready": "ready",
+            ":in_task": "in_task",
         },
     }
     while True:
@@ -185,7 +194,44 @@ def _get_pending_jobs() -> list:
         if "LastEvaluatedKey" not in resp:
             break
         kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
-    return items
+    return [job for job in items if _pollable(job, table)]
+
+
+def _pollable(job: dict, table: Any) -> bool:
+    """pending / ready jobs are polled. An in_task job is left to the task waiting for it -
+    unless it is older than _IN_TASK_ADOPT_S (that task died during its wait): then it is adopted
+    as pending (alerted) so its answers are retrieved, not paid for and lost."""
+    import time
+
+    if job.get("status") != "in_task":
+        return True
+    age = int(time.time()) - int(job.get("submitted_at", 0) or 0)
+    if age < _IN_TASK_ADOPT_S:
+        return False
+    try:
+        table.update_item(
+            Key={"cache_key": job["cache_key"]},
+            UpdateExpression="SET #s = :pending",
+            ConditionExpression="#s = :in_task",
+            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeValues={":pending": "pending", ":in_task": "in_task"},
+        )
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - conditional miss: the task settled it meanwhile
+        logger.info("in_task job %s not adopted: %s", job.get("batch_id"), e)
+        return False
+    observe_error(
+        "batch",
+        "in_task_adopted",
+        batch=job.get("batch_id", ""),
+        book=job.get("book", ""),
+        age_min=age // 60,
+        note="the task waiting for this batch ended without settling it (e.g. spot reclaim): "
+        "the poller retrieves it and resumes the book",
+    )
+    job["status"] = "pending"
+    return True
 
 
 def _check_batch_status(api_key: str, batch_id: str, submitted_at: int = 0) -> str:
@@ -213,6 +259,24 @@ def _check_batch_status(api_key: str, batch_id: str, submitted_at: int = 0) -> s
             success,
             error,
         )
+        # timing statistics: a batch that outlives its task is still timed (written on change)
+        try:  # never changes the batch's status: a failure here is only a lost statistic
+            from src.utils import batch_stats
+
+            batch_stats.record_progress(
+                batch_id,
+                success + error,
+                total,
+                success,
+                error,
+                source="poller",
+                submitted_at=int(submitted_at) if submitted_at else None,
+            )
+        except Exception as stats_err:  # noqa: BLE001
+            logger.warning(
+                "OBSERV batch_stats.write_failed op=poller err=%s",
+                type(stats_err).__name__,
+            )
 
         if total > 0 and success + error >= total:
             return _classify_complete_batch(batch_id, success, error, total)
@@ -329,29 +393,83 @@ def _mark_failed(batch_id: str) -> None:
     )
 
 
+def _nat_reported_ready(body: str) -> bool:
+    """Whether the nat-manager's answer says the NAT and its route are up."""
+    try:
+        return json.loads(body or "{}").get("status") == "ready"
+    except (ValueError, AttributeError):
+        return False
+
+
+# A claim covers the launch (one Lambda run, <= 300 s) until the task is started, then the
+# retrieve's run. A Lambda that dies mid-launch (timeout) left a 6 h claim that blocked the
+# batch's retrieve for 6 h (2026-11-11): the claim is short until the launch, and an EXPIRED
+# claim is taken over (DynamoDB's TTL deletion can lag by up to two days).
+_LAUNCH_CLAIM_S = 900
+_RUN_CLAIM_S = 21600  # 6 h > max retrieve runtime
+
+
 def _claim_retrieve(batch_id: str) -> bool:
     """Atomically claim the retrieve for THIS batch (per-batch, not per-phase).
 
     Returns True if this invocation won the claim (should launch), False if
     another invocation already owns this batch's retrieve (skip — do NOT count as
-    complete). TTL'd so a crashed retrieve re-claims on a later poll. This replaces
+    complete). Short until the task is launched (``_hold_retrieve``), and an expired claim is
+    re-claimed, so a crashed launch is retried on a later poll. This replaces
     the old per-phase 'is any retrieve task RUNNING?' guard, which serialized ALL
     books' retrievals behind one task and falsely reported success (§3.4)."""
     import time as _t
 
     table = boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE)
+    now = int(_t.time())
     try:
         table.put_item(
             Item={
                 "cache_key": f"retrieve#{batch_id}",
-                "ttl": int(_t.time()) + 21600,  # 6h > max retrieve runtime
-                "claimed_at": int(_t.time()),
+                "ttl": now + _LAUNCH_CLAIM_S,
+                "claimed_at": now,
             },
-            ConditionExpression="attribute_not_exists(cache_key)",
+            ConditionExpression="attribute_not_exists(cache_key) OR #ttl < :now",
+            ExpressionAttributeNames={"#ttl": "ttl"},
+            ExpressionAttributeValues={":now": now},
         )
         return True
     except table.meta.client.exceptions.ConditionalCheckFailedException:
         return False
+
+
+def _hold_retrieve(batch_id: str, attempts: int = 3) -> bool:
+    """The retrieve task started: keep the claim for its run. If it cannot be extended the
+    15-min launch claim lapses while the task runs and a later poll could start a second
+    retrieve of the batch - said loudly."""
+    import time as _t
+
+    last = "unknown"
+    for attempt in range(attempts):
+        try:
+            ddb: Any = boto3.resource("dynamodb", region_name=REGION)
+            ddb.Table(CACHE_TABLE).update_item(
+                Key={"cache_key": f"retrieve#{batch_id}"},
+                UpdateExpression="SET #ttl = :ttl",
+                ExpressionAttributeNames={"#ttl": "ttl"},
+                ExpressionAttributeValues={":ttl": int(_t.time()) + _RUN_CLAIM_S},
+            )
+            return True
+        except Exception as e:  # noqa: BLE001
+            last = type(e).__name__
+            if attempt < attempts - 1:
+                _t.sleep(1)
+    observe_error(
+        "batch",
+        "retrieve_claim_not_held",
+        note=(
+            "the retrieve task started but its claim could not be extended: after 15 min a later "
+            "poll may start a SECOND retrieve of this batch (extend retrieve#<batch> by hand)"
+        ),
+        batch_id=batch_id,
+        reason=last,
+    )
+    return False
 
 
 def _release_retrieve(batch_id: str) -> None:
@@ -362,6 +480,15 @@ def _release_retrieve(batch_id: str) -> None:
         )
     except Exception as e:
         logger.warning("Failed to release retrieve claim %s: %s", batch_id, e)
+
+
+def _retrieve_env(job: dict) -> list:
+    """The retrieve task's environment: the book, and the submitting run's chapter scope (a
+    resumed Phase 2 run stays on the chapters it was started for)."""
+    env = [{"name": "BOOK_NAME", "value": job.get("book", "unknown")}]
+    if job.get("chapters"):
+        env.append({"name": "PHASE2_CHAPTERS", "value": job["chapters"]})
+    return env
 
 
 def _trigger_retrieve(job: dict) -> bool:
@@ -385,6 +512,7 @@ def _trigger_retrieve(job: dict) -> bool:
     )
 
     # First, ensure networking is up
+    nat_ready = False
     try:
         lam = boto3.client("lambda", region_name=REGION)
         resp = lam.invoke(
@@ -392,13 +520,18 @@ def _trigger_retrieve(job: dict) -> bool:
             InvocationType="RequestResponse",
             Payload=json.dumps({"action": "create"}).encode(),
         )
+        body = resp["Payload"].read().decode()
         if resp.get("FunctionError"):
-            logger.error("nat_manager error: %s", resp["Payload"].read().decode())
+            logger.error("nat_manager error: %s", body)
+        else:
+            nat_ready = _nat_reported_ready(body)
     except Exception as e:
         logger.warning("Failed to invoke nat_manager: %s", e)
 
-    # Wait for NAT to be available (takes ~2 min after creation)
-    _wait_for_nat()
+    # Wait for NAT only if the manager did not already report it ready (it blocks until the NAT
+    # and its route are up, ~3 min from cold: waiting again overran the 300 s Lambda, 2026-11-11)
+    if not nat_ready:
+        _wait_for_nat()
 
     # Launch ECS task with --retrieve-only
     ecs = boto3.client("ecs", region_name=REGION)
@@ -422,9 +555,7 @@ def _trigger_retrieve(job: dict) -> bool:
                             batch_id,
                             phase_script,
                         ],
-                        "environment": [
-                            {"name": "BOOK_NAME", "value": job.get("book", "unknown")},
-                        ],
+                        "environment": _retrieve_env(job),
                     }
                 ]
             },
@@ -446,6 +577,9 @@ def _trigger_retrieve(job: dict) -> bool:
             return False
         task_arn = resp["tasks"][0]["taskArn"]
         logger.info("Started retrieve task %s for batch %s", task_arn, batch_id)
+        _hold_retrieve(
+            batch_id
+        )  # launched: hold the claim for the retrieve's whole run
         _notify(
             f"Batch {batch_id} complete ({job.get('book', '?')}, "
             f"{job.get('request_count', '?')} reqs). Retrieve task started."
@@ -469,7 +603,9 @@ def _wait_for_nat(max_seconds: int = None) -> None:
         try:
             resp = ec2.describe_nat_gateways(
                 Filters=[
-                    {"Name": "tag:Project", "Values": ["wwii-pipeline"]},
+                    # the nat-manager's own tag (it was 'Project=wwii-pipeline', which no NAT
+                    # carries: every wait ran its full 180 s)
+                    {"Name": "tag:Name", "Values": [f"{ENV_NAME}-nat"]},
                     {"Name": "state", "Values": ["available", "pending"]},
                 ]
             )
@@ -541,7 +677,8 @@ def _check_stalled(job: dict, api_key: str) -> None:
     )
     # Record the notified hour so a different poll cadence can't re-alert within the same hour.
     try:
-        boto3.resource("dynamodb", region_name=REGION).Table(CACHE_TABLE).update_item(
+        ddb: Any = boto3.resource("dynamodb", region_name=REGION)
+        ddb.Table(CACHE_TABLE).update_item(
             Key={"cache_key": f"batch_job#{job['batch_id']}"},
             UpdateExpression="SET last_stall_notify_hour = :h",
             ExpressionAttributeValues={":h": cur_hour},

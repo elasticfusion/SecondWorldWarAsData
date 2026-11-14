@@ -33,7 +33,7 @@ paths:
 **Notes:**
 - All paths are relative to project root
 - Directories are created automatically if they don't exist
-- `content_output` separates book-specific files (parsed/event) from entity directories. Backwards compatible: if `output/content/` doesn't exist, falls back to `output/` (old layout). Run `python3 scripts/migrate_output_content.py` to migrate.
+- `content_output` separates book-specific files (parsed/event) from entity directories. Backwards compatible: if `output/content/` doesn't exist, falls back to `output/` (old layout). Run `python3 scripts/archive/migrate_output_content.py` to migrate.
 
 ---
 
@@ -187,28 +187,30 @@ Citations, footnotes, endnotes, and bibliographic references.
 
 ```yaml
 supplemental_material:
-  enabled: true                    # Enable supplemental material extraction (Phase 1: Core)
-  extract_citations: true          # Parse citations into structured format
-  enrich_with_searches: true       # Phase 2: Search integration
-  llm_search: true                 # Phase 2: Use LLM for search (first pass)
-  search_gutenberg: true           # Phase 2: Search Gutenberg.org for books/periodicals
-  search_archive_org: true         # Phase 2: Search Archive.org
-  use_openserp: true               # Phase 3 ONLY: OpenSERP live web search (Phase 2 is Grok/Wikipedia + local corpus)
+  enabled: true                    # Enable supplemental material extraction
+  extract_citations: true          # Phase 2: parse citations into structured bibliography entries
+  llm_search: true                 # Phase 3: Grok "LLM search" fallback (content-verified)
+  search_gutenberg: true           # Phase 3: search Gutenberg
+  search_archive_org: true         # Phase 3: search Archive.org
+  use_openserp: true               # Phase 3 ONLY: OpenSERP live web search
   verify_archive_urls: true        # Phase 3: Verify archive URLs
   extract_isbn: true               # Phase 3: Extract ISBN for books (post-1966)
   determine_copyright: true        # Phase 3: Determine copyright status
   max_materials_per_chapter: 1000  # Limit materials per chapter
 ```
 
-**Phase 1 (Core):**
+**Phase 2 performs NO supplemental searches.** It only talks to Grokipedia/Wikipedia and submits data to Grok for
+extraction. Citations are stored in `output/bibliography/` with an EMPTY `resource_urls`; the (network-free)
+license is derived from the citation fields. There is no `enrich_with_searches` flag any more.
+
+**Phase 2 (Core):**
 - `extract_citations` - Parse footnotes/endnotes into structured citation format
 
-**Phase 2 (Search):**
-- `enrich_with_searches` - Master toggle for all search features
-- `llm_search` - Use Grok to search for online versions of cited works
+**Phase 3 (Search — `bibliography_resolver`):** every candidate is Grok-verified against the citation before it is stored
+- `llm_search` - Ask Grok for an online copy of the cited work (last resort, only when no other source found one; the URL is fetched SSRF-safely and content-verified)
 - `search_gutenberg` - Search Project Gutenberg
 - `search_archive_org` - Search Internet Archive
-- `use_openserp` - Use OpenSERP for live web search (**Phase 3 ONLY**: images, academic sources, event content, external maps). Phase 2 never uses OpenSERP (Grokipedia/Wikipedia + local corpus only).
+- `use_openserp` - Use OpenSERP for live web search (images, academic sources, event content, external maps, repository search)
 
 **Phase 3 (Advanced):**
 - `verify_archive_urls` - Verify that discovered archive URLs are still accessible
@@ -575,7 +577,7 @@ Configurable via CloudFormation stack parameters in `cloudformation/compute.yaml
 - [Domain Blacklist](../features/external-maps/domain-blacklist.md) - Configure URL filtering
 - [Vision Verification](../features/external-maps/vision-verification.md) - How image verification works
 - [External Maps](../features/external-maps/README.md) - External maps feature overview
-- [Quality Assurance](../../../contextmanagement/Specs/quality_assurance.md) - Code quality tools
+- [Quality gate](../../../scripts/gate.sh) - Code quality tools (CI-equivalent; run before every commit)
 
 ---
 

@@ -53,18 +53,14 @@ def test_bib_verify_url_fails_CLOSED_on_verify_error(monkeypatch):
 
 
 # --- equipment._download_media (image) ----------------------------------------------------
-def test_equipment_download_media_blocks_loopback():
-    from src.extraction import equipment
+def test_equipment_image_fetch_blocks_loopback():
+    # Phase 3 equipment image fetch (the URL comes from Wikipedia/OpenSERP - untrusted): routed
+    # through safe_get, so a loopback / metadata URL never reaches the network.
+    from src.enrichment import equipment_images
 
     with mock.patch("src.utils.http_pool.get_session") as sess:
-        out = equipment._download_media_file(
-            {"url": "http://127.0.0.1/evil.jpg"},
-            "Tiger",
-            "tank",
-            __import__("pathlib").Path("/tmp/x"),
-            None,
-        )
-        assert out is None
+        assert equipment_images._fetch_bytes("http://127.0.0.1/evil.jpg") is None
+        assert equipment_images._fetch_bytes("http://169.254.169.254/x.jpg") is None
         sess.return_value.get.assert_not_called()  # never hit the raw session
 
 

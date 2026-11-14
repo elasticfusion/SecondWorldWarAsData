@@ -3,7 +3,7 @@ consistent codes; and the T-34 (Soviet) vs T34 Calliope (US) collision stays sep
 origin is complete + consistently coded."""
 
 from src.extraction.equipment import _normalize_origin
-from scripts.find_duplicate_equipment import _score_pair
+from src.dedup.find_duplicate_equipment import _score_pair
 
 
 def test_soviet_variants_normalize_to_sun():

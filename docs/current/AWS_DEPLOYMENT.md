@@ -90,7 +90,7 @@ bash scripts/monitor_logs.sh
 aws logs tail /ecs/dev-wwii-pipeline --follow --region us-east-1 --since 2m
 
 # Analyze last 24h of logs
-bash scripts/analyze_logs.sh
+bash scripts/utils/analyze_logs.sh
 
 # JSON extraction quality report
 python3 scripts/json_quality_report.py

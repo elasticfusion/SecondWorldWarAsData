@@ -8,7 +8,7 @@ conflicting facts across sources are kept as separate traceable records, never s
 merged.
 
 Entry point: `extract_equipment_from_event` (`src/extraction/equipment.py`), run per event
-file in Phase 2. Dedup detection is a separate pass (`scripts/find_duplicate_equipment.py`),
+file in Phase 2. Dedup detection is a separate pass (`src/dedup/find_duplicate_equipment.py`),
 wired into `ecs_entrypoint._run_dedup_detection`.
 
 ---
@@ -139,7 +139,7 @@ gate advances).
 
 Writes `output/equipment/index.json`; marks the event processed.
 
-## Dedup detection (separate pass)  (`scripts/find_duplicate_equipment.py`)
+## Dedup detection (separate pass)  (`src/dedup/find_duplicate_equipment.py`)
 
 `find_potential_duplicates` → `_score_pair`:
 - normalize (caliber/mm/cm) + alias-expand (`equipment_aliases.yaml`);

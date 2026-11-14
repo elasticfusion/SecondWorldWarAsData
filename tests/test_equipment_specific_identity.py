@@ -1,29 +1,59 @@
-"""_is_specific_identity: alias-aware (nicknames are specific) + category/subcategory
-classification phrases ('medium tank' vs 'M4') are NOT specific."""
+"""_identity_scope: alias-aware (nicknames are specific) + category/subcategory classification
+phrases ('medium tank' vs 'M4') and bare calibers are GENERIC (kept in the JSON, never searched).
+A technical_identifier counts only when it is a real designation, not the bare name copied.
+"""
 
-from src.extraction.equipment import _is_specific_identity, _canonical_equipment_name
+import pytest
+
+from src.extraction.equipment import _canonical_equipment_name, _identity_scope
 
 
-def test_technical_identifier_is_specific():
-    assert _is_specific_identity(
-        {"common_name": "whatever", "technical_identifier": "M4"}
-    )
+@pytest.fixture(autouse=True)
+def _no_disambiguation_writes(monkeypatch, tmp_path):
+    """Resolutions must never write the real learned-alias store or suggestions file."""
+    from src.extraction import equipment_disambiguation as ED
+
+    monkeypatch.setattr(ED, "_persist_learned", lambda *a, **k: None)
+    monkeypatch.setattr(ED, "_SUGGESTIONS_PATH", tmp_path / "suggestions.jsonl")
+    ED._CACHE.clear()
+    yield
+    ED._CACHE.clear()
+
+
+class _NoGrok:
+    """Canonical resolver finds nothing (Grok returns no designation)."""
+
+    def extract_json(self, *a, **k):
+        return {}
+
+
+def _scope(**rec):
+    return _identity_scope(rec, _NoGrok())
+
+
+def test_technical_identifier_designation_is_specific():
+    assert _scope(common_name="whatever", technical_identifier="M4") == "specific"
+
+
+def test_technical_identifier_copy_of_a_generic_name_is_not_evidence():
+    # XChannel-8: the extractor filled technical_identifier with the bare name for 50/53 records
+    assert _scope(common_name="trench", technical_identifier="trench") == "generic"
+    assert _scope(common_name="rifle", technical_identifier="rifle") == "generic"
 
 
 def test_nickname_resolves_specific():
-    assert _is_specific_identity({"common_name": "Sherman"})
-    assert _is_specific_identity({"common_name": "Pershing"})
-    assert _is_specific_identity({"common_name": "88"})
+    for name in ("Sherman", "Pershing", "88", "Sherman tank", "Tommy gun"):
+        assert _scope(common_name=name) == "specific", name
 
 
 def test_bare_generic_not_specific():
-    assert not _is_specific_identity({"common_name": "tank"})
-    assert not _is_specific_identity({"common_name": "gun"})
+    for name in ("tank", "gun", "cannon", "howitzer", "rifle"):
+        assert _scope(common_name=name) == "generic", name
 
 
-def test_category_phrase_not_specific():
-    # the "medium tank vs M4" disambiguation: the class is NOT a specific identity
-    for cls in [
+@pytest.mark.parametrize(
+    "cls",
+    [
         "medium tank",
         "Medium Tank",
         "medium_tank",
@@ -32,14 +62,65 @@ def test_category_phrase_not_specific():
         "tank destroyer",
         "fighter-bomber",
         "self-propelled gun",
-    ]:
-        assert not _is_specific_identity({"common_name": cls}), cls
+    ],
+)
+def test_category_phrase_not_specific(cls):
+    # the "medium tank vs M4" disambiguation: the class is NOT a specific identity
+    assert _scope(common_name=cls) == "generic"
 
 
-def test_specific_designation_is_specific():
-    # Both are specific identities (independent of nationality):
-    assert _is_specific_identity({"common_name": "M4 Sherman"})  # US
-    assert _is_specific_identity({"common_name": "Tiger I"})  # German — a DISTINCT type
+@pytest.mark.parametrize(
+    "name",
+    ["105-mm howitzer", "Russian 122-mm gun", "75-mm antitank gun", "155-mm gun"],
+)
+def test_bare_caliber_is_generic(name):
+    # owner decision: a caliber without a model is generic (upgrading it would be guessing)
+    assert _scope(common_name=name) == "generic"
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "M4 Sherman",
+        "Tiger I",
+        "Panzer IV",
+        "B-24",
+        "Bf 109",
+        "LCVP",
+        "LCI(L)",
+        "DUKW",
+        "E-boat",
+    ],
+)
+def test_specific_designation_is_specific(name):
+    assert _scope(common_name=name) == "specific"
+
+
+def test_ship_type_word_is_generic_even_capitalised():
+    assert _scope(
+        common_name="Minesweeper", category="naval", subcategory="minesweeper"
+    ) == ("generic")
+
+
+def test_grok_resolution_needs_confidence(monkeypatch, tmp_path):
+    class _Grok:
+        def __init__(self, conf):
+            self.conf = conf
+
+        def extract_json(self, *a, **k):
+            return {"canonical_name": "Zephyr Mk Test Gun", "confidence": self.conf}
+
+    from src.extraction import equipment_disambiguation as ED
+
+    # never write the real learned-alias store / suggestions file from a test
+    monkeypatch.setattr(ED, "_persist_learned", lambda *a, **k: None)
+    monkeypatch.setattr(ED, "_SUGGESTIONS_PATH", tmp_path / "s.jsonl")
+    name = "zephyr widget"  # in no alias table: the Grok answer decides
+    ED._CACHE.clear()
+    assert _identity_scope({"common_name": name}, _Grok(0.95)) == "specific"
+    ED._CACHE.clear()
+    assert _identity_scope({"common_name": name}, _Grok(0.5)) == "generic"
+    ED._CACHE.clear()
 
 
 def test_tiger_alias_is_german_not_sherman():

@@ -3,17 +3,25 @@
 import json
 import logging
 import os
+import re
 import signal
 import subprocess
 import sys
 import threading
 import time
+import uuid
 from pathlib import Path
 from typing import Optional, Union
 
 import boto3
 
-from src.utils.observe import observe, observe_error
+from src.utils.observe import (
+    observe,
+    observe_error,
+    observe_warn,
+    observe_warn_counted,
+    publish_alert,
+)
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(message)s"
@@ -42,6 +50,24 @@ SYNC_INTERVAL = int(os.environ.get("SYNC_INTERVAL", "120"))  # seconds
 # Process (= ECS task) start time, used by the reconcile drain barrier's freshness guard: a barrier
 # whose completed_at predates this is a stale previous-run signal and is ignored (HIGH#5).
 _TASK_START_TS = time.time()
+# Entity subdirs Phase 3 downloads and Phases 2/3 upload at final sync — ONE list (DRY), so a new
+# entity dir cannot be downloaded-but-never-uploaded (images were missing from both: Phase 2 image
+# records were never final-synced and Phase 3 never saw them).
+_PHASE23_ENTITY_DIRS = (
+    "people",
+    "people_groups",
+    "places",
+    "dates",
+    "equipment",
+    "weather",
+    "logistics",
+    "casualties",
+    "maps",
+    "images",
+    "supplemental",
+    "bibliography",
+    "narrative_notes",
+)
 # Paths used by _clear_title_cache_if_reprocess (module constants so tests can
 # redirect them to a temp dir without patching Path globally).
 _CONFIG_PATH = Path("/app/config.yaml")
@@ -49,6 +75,33 @@ _CACHE_BOOKS_DIR = Path("/app/cache/api/books")
 
 # Global state for SIGTERM handler
 _current_phase_script = ""
+# The batch a resumed Phase 2 run (retrieve task) was started from: marked retrieved before the
+# run, so a reclaim mid-run must hand it back to the poller (see _handle_sigterm)
+_current_resume_batch = ""
+
+
+def _requeue_interrupted_resume() -> None:
+    """A resumed Phase 2 run was stopped mid-run: its batch's answers are in the cache, but the
+    job is marked retrieved - put it back to ``ready`` so the poller retrieves it again and a new
+    task resumes the book (after the poller's retrieve claim lapses, up to 6 h). Alerted (Slack):
+    the book is delayed."""
+    if not _current_resume_batch:
+        return
+    try:
+        from src.utils.job_queue import update_job_status
+        from src.utils.observe import observe_error
+
+        update_job_status(_current_resume_batch, "ready")
+        observe_error(
+            "batch",
+            "resume_interrupted",
+            batch=_current_resume_batch,
+            book=os.environ.get("BOOK_NAME", ""),
+            note="the task resuming this book was stopped: the job is ready again; the poller "
+            "resumes it once its retrieve claim lapses (up to 6 h)",
+        )
+    except Exception as e:  # noqa: BLE001 - the emergency path must not raise
+        logger.error("Could not re-queue batch %s: %s", _current_resume_batch, e)
 
 
 def _handle_sigterm(_signum, _frame):
@@ -58,6 +111,8 @@ def _handle_sigterm(_signum, _frame):
         _final_sync(_current_phase_script)
         _remove_lock(_current_phase_script)
         _release_nat_lease()
+        # last: it publishes an alert, which must not eat the window the lock + lease need
+        _requeue_interrupted_resume()
         logger.info("Emergency sync complete — exiting cleanly")
     except Exception as e:
         logger.error("Emergency sync failed: %s", e)
@@ -104,7 +159,9 @@ def _download_keys(keys: list, local_dir: Path) -> int:
             for obj in page.get("Contents", []):
                 k = obj["Key"]
                 if k not in downloaded:
-                    local = local_dir / k
+                    local = _download_target(local_dir, k)
+                    if local is None:
+                        continue
                     local.parent.mkdir(parents=True, exist_ok=True)
                     s3.download_file(BUCKET, k, str(local))
                     downloaded.add(k)
@@ -151,15 +208,56 @@ def track_deletion(local_path: Path) -> None:
             pass
 
 
+def _safe_local_path(local_dir: Path, key: str) -> Optional[Path]:
+    """Local path for an S3 key under ``local_dir``, or None if the key must not be downloaded:
+    a folder-marker key (ends with '/') has no file content, and a key whose ``..`` segments (or an
+    absolute key) lead outside ``local_dir`` must never be written - including a ``..`` that merely
+    stays inside it but leaves the synced prefix (``contentrepository/B/../../ecs_entrypoint.py``).
+
+    The containment test is LEXICAL (``normpath``), deliberately NOT ``resolve()``: in the container
+    ``/app/contentrepository`` etc. are symlinks into the work dir, and resolving them made every
+    legitimate Phase 1 key look like an escape (it downloaded nothing and the phase exited 1).
+    """
+    if not key or key.endswith("/") or ".." in key.split("/"):
+        return None  # S3 keys never legitimately contain a '..' segment
+    local = local_dir / key
+    base = os.path.normpath(local_dir)
+    candidate = os.path.normpath(local)
+    if candidate != base and not candidate.startswith(base + os.sep):
+        return None
+    return local
+
+
+def _download_target(local_dir: Path, key: str) -> Optional[Path]:
+    """Where to write ``key`` under ``local_dir``, or None to skip it. A folder-marker key is
+    skipped quietly; an unsafe key (``..`` / absolute) is skipped with an actionable alert.
+    """
+    local = _safe_local_path(local_dir, key)
+    if local is None and key and not key.endswith("/"):
+        observe_warn(
+            "s3_sync",
+            "unsafe_key_skipped",
+            note=(
+                "an S3 key that resolves outside the work dir was NOT downloaded; inspect the "
+                "key in the data bucket and delete it if unexpected"
+            ),
+            key=key[:200],
+        )
+    return local
+
+
 def s3_sync_down(prefix: str, local_dir: Path) -> int:
-    """Download S3 prefix to local dir. Returns file count."""
+    """Download S3 prefix to local dir. Returns file count. Skips folder-marker keys and unsafe
+    keys (see ``_download_target``)."""
     s3 = _s3_client()
     paginator = s3.get_paginator("list_objects_v2")
     count = 0
     for page in paginator.paginate(Bucket=BUCKET, Prefix=prefix):
         for obj in page.get("Contents", []):
             key = obj["Key"]
-            local = local_dir / key
+            local = _download_target(local_dir, key)
+            if local is None:
+                continue
             local.parent.mkdir(parents=True, exist_ok=True)
             s3.download_file(BUCKET, key, str(local))
             _downloaded_keys[key] = local.stat().st_mtime
@@ -415,7 +513,11 @@ def _clear_title_cache_if_reprocess(phase_script: str) -> None:
     processing.force_reprocess true, OR processing.reprocess_types non-empty, OR
     REPROCESS_TITLE env == BOOK_NAME.
     """
-    if "phase2" not in phase_script and "phase3" not in phase_script:
+    if (
+        "phase2" not in phase_script
+        and "phase3" not in phase_script
+        and "ocr_crosscheck" not in phase_script  # fetches the validation URL
+    ):
         return
     book = os.environ.get("BOOK_NAME", "").strip()
     if not book:
@@ -486,8 +588,24 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
     OpenSERP (the browser service) is Phase-3 only, but NAT must be up earlier so
     Phase 2's Grok/Wiki lookups can reach the internet.
     """
-    if "phase2" not in phase_script and "phase3" not in phase_script:
+    if (
+        "phase2" not in phase_script
+        and "phase3" not in phase_script
+        and "ocr_crosscheck" not in phase_script  # fetches the validation URL
+        # the import tasks ask Grok for the document's title-page metadata - optional egress
+        and "phase0_convert" not in phase_script
+        and "phase0_video" not in phase_script
+    ):
         return
+    stem = Path(phase_script).stem
+    # An import needs the internet only for its title-page metadata request, which is fail-safe:
+    # one try, and on failure the import goes on (the metadata-gap marker records what is missing).
+    optional = "phase0_convert" in phase_script or "phase0_video" in phase_script
+    if optional:
+        from src.ingestion import book_metadata
+
+        if not book_metadata.enabled():
+            return  # the request is switched off: the import needs no internet at all
     # READINESS CONTRACT: Phase 2/3 need public egress (Grok/Wiki/geocode). Invoke
     # the nat-manager and WAIT until it reports status=ready (NAT available + ACTIVE
     # route + endpoints). nat-manager itself blocks on route-active, but a cold NAT
@@ -495,8 +613,9 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
     # deadline. The long-lived ECS task can afford this wait (unlike the old 240s
     # trigger Lambda that fail-closed/livelocked). Phase 3 self-heals this way too:
     # if NAT was torn down during the human dedup wait, this brings it back up.
-    stem = Path(phase_script).stem
-    max_attempts = int(os.environ.get("NAT_READY_MAX_ATTEMPTS", "6"))  # ~6 x ~2min
+    max_attempts = (
+        1 if optional else int(os.environ.get("NAT_READY_MAX_ATTEMPTS", "6"))
+    )  # ~6 x ~2min
     env = os.environ.get("ENV_NAME", "dev")
     for attempt in range(1, max_attempts + 1):
         try:
@@ -542,7 +661,15 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
                 max_attempts,
                 e,
             )
-        time.sleep(10)
+        if attempt < max_attempts:
+            time.sleep(10)
+    if optional:
+        logger.warning(
+            "OBSERV nat.unavailable status=warn phase=%s: going on without internet "
+            "(the title-page metadata request will be skipped)",
+            stem,
+        )
+        return
     # Exhausted retries: fail LOUD. Proceeding guarantees a mass egress failure.
     logger.error(
         "NAT NEVER became ready for %s after %d attempts — egress will fail; "
@@ -633,6 +760,8 @@ def _preflight_credit_check() -> None:
     api_key = os.environ.get("GROK_API_KEY", "")
     if not api_key:
         return
+    from src.utils import grok_models as _grok_models
+
     try:
         import requests as _req
 
@@ -643,7 +772,7 @@ def _preflight_credit_check() -> None:
                 "Content-Type": "application/json",
             },
             json={
-                "model": "grok-3-mini-fast",
+                "model": _grok_models.default_model(),
                 "messages": [{"role": "user", "content": "hi"}],
                 "max_tokens": 1,
             },
@@ -659,10 +788,40 @@ def _preflight_credit_check() -> None:
             sys.exit(1)
         resp.raise_for_status()
         logger.info("Preflight OK: Grok API credits available")
+        # every configured model is served AS ITSELF (a retired one is redirected silently);
+        # the probe above already asked the default
+        default = _grok_models.default_model()
+        _grok_models.check_served(default, resp.json(), "preflight")
+        _grok_models.preflight(
+            api_key, _grok_models.configured_models(), probed={default}
+        )
+    except _grok_models.GrokModelUnavailable:
+        logger.error(
+            "PREFLIGHT FAILED: a configured Grok model is unavailable. Aborting."
+        )
+        sys.exit(1)  # already alerted (OBSERV grok.model_unavailable + operator alert)
     except SystemExit:
         raise
     except Exception as e:
-        logger.warning("Preflight check failed (proceeding anyway): %s", e)
+        logger.warning(
+            "OBSERV preflight.unverified status=warn error=%s - Grok credits/models not verified "
+            "at start; proceeding (every answer is still model-checked). Check xAI status / the "
+            "API key if this repeats.",
+            e,
+        )
+
+
+def _preflight_runtime_tables() -> None:
+    """Omission check: the lookup-table loaders fall back to "empty" silently, so a table missing
+    from the image is only visible here (2026-11-06: config/ and data/ were absent from the image
+    for weeks with no signal). Emits OBSERV runtime.table_unusable status=error per bad table.
+    Non-blocking."""
+    from src.utils.runtime_tables import check_runtime_tables
+
+    try:
+        check_runtime_tables(Path("/app"))
+    except Exception as e:  # noqa: BLE001 - a preflight must never stop the phase
+        logger.warning("Runtime-table preflight failed (proceeding anyway): %s", e)
 
 
 def _preflight_notification_subscriptions() -> None:
@@ -693,15 +852,27 @@ def _preflight_notification_subscriptions() -> None:
 
 
 def _warn_if_no_confirmed_subs(sns, topic_arn: str) -> None:
-    """Log a WARNING (never raise) if a topic has no confirmed subscription."""
+    """Emit a canonical OBSERV anomaly (never raise) if a topic has no confirmed subscription.
+
+    Uses observe() (not a bare logger.warning) so a no-subscriber topic is a greppable
+    `OBSERV notify.no_subscriber` anomaly that reaches the alerting path, not just a log line a
+    human has to notice. Non-blocking — the pipeline continues regardless."""
+    from src.utils.observe import observe
+
+    short = topic_arn.rsplit(":", 1)[-1]
     try:
         subs = sns.list_subscriptions_by_topic(TopicArn=topic_arn).get(
             "Subscriptions", []
         )
     except Exception as e:
         # Topic missing / no permission — surface but never block.
-        logger.warning(
-            "SNS subscription preflight: could not list subs for %s: %s", topic_arn, e
+        observe(
+            "notify",
+            "preflight_check_failed",
+            status="warn",
+            topic=short,
+            reason=type(e).__name__,
+            note="could not list SNS subscriptions for the notification topic",
         )
         return
     confirmed = any(
@@ -709,17 +880,25 @@ def _warn_if_no_confirmed_subs(sns, topic_arn: str) -> None:
         for s in subs
     )
     if confirmed:
+        observe("notify", "subscriber_ok", status="ok", topic=short)
         return
     pending = sum(
         1 for s in subs if s.get("SubscriptionArn", "") == "PendingConfirmation"
     )
-    detail = f"{pending} pending-confirmation" if pending else "none"
-    logger.warning(
-        "SNS topic %s has NO confirmed subscriptions (%s) — notifications/alarms "
-        "will not be delivered until a subscription is confirmed. Non-blocking; "
-        "pipeline continues.",
-        topic_arn.rsplit(":", 1)[-1],
-        detail,
+    detail = f"{pending}_pending_confirmation" if pending else "none"
+    # status=warn (not error) so it escalates to Slack ONCE per window without being treated as a
+    # data-affecting failure — a missing operator subscription is a config gap, not corruption.
+    observe(
+        "notify",
+        "no_subscriber",
+        status="warn",
+        topic=short,
+        subscriptions=detail,
+        note=(
+            "SNS topic has NO confirmed subscription — notifications/alarms will NOT be "
+            "delivered until one is confirmed (set aws.notification_email / confirm the sub). "
+            "Non-blocking; pipeline continues"
+        ),
     )
 
 
@@ -773,6 +952,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: preflight credit check", phase_name)
     _preflight_credit_check()
     _preflight_notification_subscriptions()
+    _preflight_runtime_tables()
     _patch_config()
     _start_openserp_if_needed(phase_script)
 
@@ -1118,10 +1298,14 @@ def _download_phase0_inputs() -> None:
     fetched its own input. Short-circuit here so the task proceeds to its own
     fetch.
     """
-    if os.environ.get("CONVERT_KEY") or os.environ.get("VIDEO_KEY"):
+    if (
+        os.environ.get("CONVERT_KEY")
+        or os.environ.get("VIDEO_KEY")
+        or "ocr_crosscheck" in os.environ.get("PIPELINE_PHASE", "")
+    ):
         logger.info(
-            "Phase 0 self-fetching task (CONVERT_KEY/VIDEO_KEY set) — skipping the "
-            "book-scoped Phase-1 sync; the task fetches its own source object."
+            "Phase 0 self-fetching task (CONVERT_KEY/VIDEO_KEY set, or the OCR cross-check) — "
+            "skipping the book-scoped Phase-1 sync; the task fetches its own source objects."
         )
         return
     _download_phase1_inputs()
@@ -1196,9 +1380,13 @@ def _wait_for_reconcile_barrier() -> str:
     (default 300s); 0 disables the wait.
 
     Correctness guards:
-    - FRESHNESS (FINDING 2): a barrier whose ``completed_at`` predates this task's start is treated
-      as STALE (a previous run's signal that _clear_reconcile_barrier failed to delete) and ignored,
-      so a failed clear cannot mask the race as a false "seen".
+    - FRESHNESS: judged by ``_judge_barrier``. When the barrier and the run marker both carry a
+      ``run_id`` the match is AUTHORITATIVE (equal => fresh, different => stale, regardless of
+      timestamps), because Phase 3 starts AFTER the reconcile published and so a barrier is
+      legitimately older than this task. Without run ids (marker write failed / legacy barrier) it
+      falls back to the timestamp rule: ``completed_at`` before this task's start is STALE.
+      Residual gap: a Phase 3 launched before the reconcile has cleared the old marker+barrier
+      sees a consistent OLD pair; the pipeline chain launches Phase 3 only after dedup.
     - CROSS-BOOK (FINDING 1): waits for EITHER this book's barrier OR the ``_all`` full-corpus
       barrier — the full-corpus reconcile unions all books and publishes ``_all``; a per-book
       reconcile publishes the book key. Seeing either (fresh) means the corpus Phase 3 needs is
@@ -1210,7 +1398,12 @@ def _wait_for_reconcile_barrier() -> str:
         timeout = 300
     if timeout <= 0:
         return "disabled"
-    keys = [_reconcile_barrier_key(), "manifests/reconcile_complete/_all.json"]
+    # dict.fromkeys: BOOK_NAME unset/empty makes both keys "_all" — poll it once, not twice.
+    keys = list(
+        dict.fromkeys(
+            [_reconcile_barrier_key(), "manifests/reconcile_complete/_all.json"]
+        )
+    )
     # Only accept barriers published at/after this task started — a few seconds of slack for clock
     # skew. _TASK_START_TS is set at module import (process start = task start).
     min_completed_at = _TASK_START_TS - 30
@@ -1224,32 +1417,20 @@ def _wait_for_reconcile_barrier() -> str:
                 obj = s3.get_object(Bucket=BUCKET, Key=key)
             except Exception:  # noqa: BLE001 - not present yet (404) or transient
                 continue
-            body = {}
-            try:
-                body = json.loads(obj["Body"].read().decode())
-            except Exception:  # noqa: BLE001
-                pass
-            completed_at = body.get("completed_at")
-            if not isinstance(completed_at, (int, float)):
-                # No/old-format timestamp — can't prove freshness; treat as stale, keep waiting.
-                logger.debug("reconcile barrier %s missing completed_at; ignoring", key)
+            body = _parse_barrier_body(obj)
+            fresh, via = _judge_barrier(s3, body, min_completed_at, key)
+            if not fresh:
                 continue
-            if completed_at < min_completed_at:
-                logger.info(
-                    "OBSERV reconcile.barrier_stale key=%s age=%.1fs (predates task start) — "
-                    "ignoring",
-                    key,
-                    time.time() - completed_at,
-                )
-                continue
-            age = time.time() - completed_at
+            completed_at = body["completed_at"]
             logger.info(
-                "OBSERV reconcile.barrier_seen key=%s waited=%ds barrier_age=%.1fs "
-                "canonical_count=%s ordering=ok",
+                "OBSERV reconcile.barrier_seen key=%s waited=%ds via=%s barrier_age=%.1fs "
+                "run_id=%s canonical_count=%r ordering=ok",
                 key,
                 waited,
-                age,
-                body.get("canonical_count"),
+                via,
+                time.time() - completed_at,
+                str(body.get("run_id"))[:32],
+                str(body.get("canonical_count"))[:16],
             )
             return "seen"
         time.sleep(interval)
@@ -1299,22 +1480,29 @@ def _download_phase3_provenance_inputs(s3, book_name: str) -> None:
     stamp a resolvable SourceSectionID onto every event + sub-event. Without this the stamp globs an
     empty local tree -> `event_provenance.stamp resolved=0 reason=no_source_sections` and extracted
     records cannot be traced to their source paragraph (XChannel-8 2026-10-30). Book token is
-    validated (traversal-safe); fail-safe (missing prefix -> 0 files)."""
+    validated (traversal-safe); fail-safe (missing prefix -> 0 files).
+
+    UNSCOPED Phase 3 (empty ``book_name``, whole-corpus mode) pulls the whole ``output/content/``
+    tree: the parsed documents there feed the in-document map step, image->person linking and link
+    review, which previously were skipped silently because only the book-scoped path fetched them
+    (XChannel-8 2026-11-07: maps=0 after a manual unscoped Phase 3)."""
     import re as _re_pv
 
-    if not (
-        book_name
-        and _re_pv.fullmatch(r"[A-Za-z0-9._-]+", book_name)
-        and ".." not in book_name
-    ):
-        return
+    if book_name:
+        if not (
+            _re_pv.fullmatch(r"[A-Za-z0-9._-]+", book_name) and ".." not in book_name
+        ):
+            return
+        prefix = f"output/content/{book_name}/"
+    else:
+        prefix = "output/content/"
     try:
-        n = s3_sync_down(f"output/content/{book_name}/", WORKDIR)
+        n = s3_sync_down(prefix, WORKDIR)
         logger.info(
             "Phase 3 provenance inputs: downloaded %d content/source_section file(s) for %s "
-            "(enables SourceSectionID stamping)",
+            "(enables SourceSectionID stamping + in-document maps)",
             n,
-            book_name,
+            book_name or "ALL books",
         )
     except (
         Exception
@@ -1331,20 +1519,7 @@ def _download_phase3_from_s3() -> None:
     # the reconcile upload and miss just-reconciled records (the HIGH#5 late-arrival gap). This is
     # an ordering signal only — S3 remains the authoritative store, not a data queue.
     barrier_status = _wait_for_reconcile_barrier()
-    entity_dirs = [
-        "people",
-        "people_groups",
-        "places",
-        "dates",
-        "equipment",
-        "weather",
-        "logistics",
-        "casualties",
-        "maps",
-        "supplemental",
-        "bibliography",
-        "narrative_notes",
-    ]
+    entity_dirs = list(_PHASE23_ENTITY_DIRS)
     s3 = _s3_client()
     book_name = os.environ.get("BOOK_NAME", "")
     total = 0
@@ -1376,6 +1551,7 @@ def _download_phase3_from_s3() -> None:
             d, s = _download_s3_prefix_skip_existing(s3, f"output/{subdir}/")
             total += d
         logger.info("Downloaded %d entity files for Phase 3 (full)", total)
+        _download_phase3_provenance_inputs(s3, "")
         _observe_bibliography_download_coverage(s3, barrier_status)
 
 
@@ -1468,6 +1644,34 @@ def _rehydrate_scored_entities() -> int:
     return rehydrated
 
 
+def _scope_to_manifest_chapters(parsed_keys: list) -> None:
+    """Phase 2 runs the chapters Phase 1 just produced (the manifest), not every chapter on disk:
+    the book-scoped resume rehydrate pulls the whole book's content, and Phase 2 would otherwise
+    re-extract (and pay for) every chapter's entities when one chapter was re-submitted. Sets
+    ``PHASE2_CHAPTERS`` (phase2_extract._apply_chapter_scope) unless already set (a resumed run's
+    scope, from its batch job). Only this book's keys count."""
+    if os.environ.get("PHASE2_CHAPTERS"):
+        return
+    book = os.environ.get("BOOK_NAME", "").strip()
+    if not book:
+        return  # chapter names are per book: never merge several books' names into one scope
+    prefix = f"output/content/{book}/"
+    chapters = sorted(
+        {
+            k.rsplit("/", 1)[-1].replace("-parsed.json", "")
+            for k in parsed_keys
+            if k.endswith("-parsed.json") and k.startswith(prefix)
+        }
+    )
+    if chapters:
+        os.environ["PHASE2_CHAPTERS"] = ",".join(chapters)
+        logger.info(
+            "OBSERV phase2.chapter_scope book=%s chapters=%s (from the Phase 1 manifest)",
+            book or "-",
+            ",".join(chapters)[:300],
+        )
+
+
 def _download_phase2_inputs() -> int:
     """Download only unprocessed parsed files + entity dirs for cross-referencing."""
     s3 = _s3_client()
@@ -1492,6 +1696,7 @@ def _download_phase2_inputs() -> int:
             "Phase 2 incremental (manifest): %d parsed files from manifest",
             len(parsed_keys),
         )
+        _scope_to_manifest_chapters(parsed_keys)
         new_parsed = len(parsed_keys)
     else:
         # Fallback: scan S3 for parsed files without event files
@@ -1828,7 +2033,7 @@ def _offramp_doc_needs_review(reason: str) -> None:
         from src.ingestion import doc_lifecycle
 
         doc_lifecycle.set_status(book, "needs-review")
-        logger.info("doc lifecycle: %s -> needs-review (dedup gate: %s)", book, reason)
+        logger.info("doc lifecycle: %s -> needs-review (%s)", book, reason)
     except Exception as e:
         logger.warning("Failed to off-ramp doc %s to needs-review: %s", book, e)
 
@@ -1893,14 +2098,149 @@ def _post_sync_referential_enforce(phase_label: str) -> None:
         )
 
 
-def _phase3_durable_referential_fix() -> None:
+def _refresh_validation_corpus(book: str = "", entities: tuple = ()) -> None:
+    """Make the LOCAL tree the authoritative post-sync corpus for a local-tree validator (run AFTER
+    _final_sync and the S3-side referential repair). No-op without S3_BUCKET (local is authoritative).
+
+      * ``output/content/`` (``<book>/`` only, when given) - the events and chapter text;
+      * the entity dirs the repair mutates - re-downloaded with OVERWRITE: the local copies predate
+        the S3-side down-bind repair (else a validator audits stale records);
+      * ``entities`` - other dirs the validator reads, skip-existing (local copies are this run's
+        own, newest writes; the rest exist only in S3).
+    """
+    if not os.environ.get("S3_BUCKET"):
+        return
+    s3 = _s3_client()
+    _download_s3_prefix_skip_existing(
+        s3, f"output/content/{book}/" if book else "output/content/"
+    )
+    # the SAME entity set the repair mutates (single source of truth)
+    from src.utils.referential_integrity import _MENTION_REPAIR_ENTITIES
+
+    for ent in _MENTION_REPAIR_ENTITIES:
+        _download_s3_prefix(s3, f"output/{ent}/")
+    for ent in entities:
+        if ent not in _MENTION_REPAIR_ENTITIES:
+            _download_s3_prefix_skip_existing(s3, f"output/{ent}/")
+
+
+def _provenance_gate(phase: str, refresh: bool = True) -> tuple:
+    """Provenance validation of this task's book at a phase end, against the post-sync corpus
+    (scripts/validate_provenance). Returns (passed, reason). The report is uploaded to
+    ``output/reports/provenance/``. FAIL-CLOSED: a validation that cannot run does not pass.
+    ``refresh=False`` when the caller already refreshed the local corpus (Phase 3).
+    """
+    book = os.environ.get("BOOK_NAME", "")
+    if not book:
+        observe_warn(
+            "provenance",
+            "validation_skipped",
+            phase=phase,
+            note="no BOOK_NAME: provenance validation is per book",
+        )
+        return True, "no book to validate"
+    import time as _time
+
+    started = _time.monotonic()
+    try:
+        from scripts import validate_provenance as vp
+
+        if refresh:
+            _refresh_validation_corpus(book, vp.TEXT_CITING_ENTITIES)
+        findings, report = vp.validate_and_record(WORKDIR / "output", book, phase)
+    except Exception as e:  # noqa: BLE001 - fail closed, loudly
+        observe_error(
+            "provenance",
+            "validation_failed",
+            phase=phase,
+            book=book,
+            error=type(e).__name__,
+            note="provenance validation could not run: treated as failed",
+        )
+        return False, f"provenance validation could not run ({type(e).__name__})"
+    logger.info(
+        "OBSERV provenance.gate_timing phase=%s book=%s seconds=%.1f",
+        phase,
+        book,
+        _time.monotonic() - started,
+    )
+    _upload_provenance_report(report, f"output/{vp.report_key(book, phase)}")
+    if findings.ok:
+        return True, "provenance validation passed"
+    return False, (
+        f"provenance validation failed: {sum(findings.failed.values())} hard finding(s) "
+        f"(report s3://{BUCKET}/output/{vp.report_key(book, phase)})"
+    )
+
+
+def _upload_provenance_report(report: Path, key: str) -> None:
+    """Upload a provenance report (the validation already ran: an upload failure is alerted on
+    its own, never read as a failed validation)."""
+    if not os.environ.get("S3_BUCKET"):
+        return
+    try:
+        _s3_client().upload_file(str(report), BUCKET, key)
+    except Exception as e:  # noqa: BLE001
+        observe_error(
+            "provenance",
+            "report_upload_failed",
+            key=key,
+            error=type(e).__name__,
+            note="the validation ran; its report is only in the task's local tree",
+        )
+
+
+def _provenance_gate_mode() -> str:
+    """The provenance gate mode (scripts/validate_provenance.gate_mode); ``block`` when it cannot
+    be read - a gate that cannot load its mode is closed."""
+    try:
+        from scripts.validate_provenance import gate_mode
+
+        return gate_mode()
+    except Exception as e:  # noqa: BLE001
+        observe_error("provenance", "gate_mode_unavailable", error=type(e).__name__)
+        return "block"
+
+
+def _phase_end_held(provenance: tuple, phase_label: str) -> bool:
+    """True when a failed provenance validation holds the book at ``phase_label``'s end (gate mode
+    ``block``); the failure itself is already alerted by the validation."""
+    passed, reason = provenance
+    if passed or _provenance_gate_mode() != "block":
+        return False
+    publish_alert(
+        f"WWII Pipeline: provenance review needed ({phase_label})",
+        f"{reason}\n\nThe book is held at the end of {phase_label} for review. Fix the "
+        "records and re-run, or set PROVENANCE_GATE=warn to release it.",
+    )
+    return True
+
+
+def _phase3_gate_decision(dedup_ok: bool, provenance: tuple) -> tuple:
+    """The Phase-2 -> Phase-3 gate: (action, reason, held_by). The dedup gate, held also by a
+    failed provenance validation when the provenance gate mode is ``block`` (warn: alerted, not
+    held). ``held_by`` names what holds Phase 3 ("dedup", "provenance" or both)."""
+    action, reason = _dedup_gate_decision(dedup_ok)
+    held_by = [] if action == "auto_proceed" else ["dedup"]
+    passed, prov_reason = provenance
+    if passed:
+        return action, reason, held_by
+    if _provenance_gate_mode() != "block":
+        return action, f"{reason}; {prov_reason} (gate=warn: not held)", held_by
+    reason = prov_reason if action == "auto_proceed" else f"{reason}; {prov_reason}"
+    return "block", reason, held_by + ["provenance"]
+
+
+def _phase3_durable_referential_fix() -> bool:
     """Post-_final_sync referential repair + validation for Phase 3, run against the AUTHORITATIVE,
     COMPLETE corpus (S3 when S3_BUCKET is set) AFTER the local->S3 sync — so (a) the stale-sub-event
     down-bind repair is DURABLE (nothing clobbers it, unlike the in-main() repair which the sync
     overwrote) and (b) validation audits the real state (the in-task validator saw a local tree
     lacking output/content -> false EventID danglers). Fail-safe: never raises into the pipeline.
+    Returns True when the local corpus was refreshed (the provenance gate then reuses it).
     """
     _post_sync_referential_enforce("Phase 3 (post-sync)")
+    refreshed = False
     try:
         # Provenance-completeness enforcement MUST also run on the authoritative post-sync corpus.
         # main() runs it only on the local/no-S3 branch (the in-main run would be clobbered by the
@@ -1921,31 +2261,18 @@ def _phase3_durable_referential_fix() -> None:
         #      carry the pre-repair dangling Sub_eventID. Re-download the repaired entity dirs with
         #      OVERWRITE so validate audits the repaired records, not the stale input snapshot.
         #      (Root cause of the observed "repair=0 dangling but validate_phase3 FAIL 26" split.)
-        if os.environ.get("S3_BUCKET"):
-            s3 = _s3_client()
-            _download_s3_prefix_skip_existing(s3, "output/content/")
-            # Use the SAME entity set the repair mutates (single source of truth — so the overwrite
-            # refresh can never drift from what repair_dangling_subevents actually touches).
-            try:
-                from src.utils.referential_integrity import _MENTION_REPAIR_ENTITIES
-            except (
-                Exception
-            ):  # noqa: BLE001 - fall back to the known set if import changes
-                _MENTION_REPAIR_ENTITIES = (
-                    "places",
-                    "people_groups",
-                    "dates",
-                    "people",
-                    "equipment",
-                )
-            for _ent in _MENTION_REPAIR_ENTITIES:
-                _download_s3_prefix(s3, f"output/{_ent}/")
+        # every entity the provenance validation reads too (it runs on this same corpus next)
+        from scripts.validate_provenance import TEXT_CITING_ENTITIES
+
+        _refresh_validation_corpus(entities=TEXT_CITING_ENTITIES)
+        refreshed = True
         from scripts.validate_phase3 import run as _validate_phase3
 
         rc = _validate_phase3(str(WORKDIR / "output"), strict_coverage=False)
         logger.info("Post-sync Phase-3 validation exit=%d (0=pass, 1=fail)", rc)
     except Exception as e:  # noqa: BLE001 - validation must never crash teardown
         logger.warning("post-sync Phase-3 validation skipped: %s", e)
+    return refreshed
 
 
 def _post_process(phase_script: str, env: dict) -> None:
@@ -1990,6 +2317,7 @@ def _post_process(phase_script: str, env: dict) -> None:
         # _post_process always follows _final_sync (sync, retrieve and in-task-batch paths), so
         # S3 now holds the complete Phase-2 corpus. Audit BEFORE dedup, as the in-main run did.
         _post_sync_referential_enforce("Phase 2 (post-sync)")
+        provenance = _provenance_gate("2")
         dedup_ok = False
         for attempt in range(2):
             try:
@@ -2008,9 +2336,9 @@ def _post_process(phase_script: str, env: dict) -> None:
         # zero groups and the run isn't suspiciously large; otherwise block for
         # human review. Notify on the decision either way (auto-proceed is now
         # observable, not silent).
-        gate_action, gate_reason = _dedup_gate_decision(dedup_ok)
+        gate_action, gate_reason, held_by = _phase3_gate_decision(dedup_ok, provenance)
         logger.info("Dedup gate: %s — %s", gate_action, gate_reason)
-        _notify_dedup_gate(gate_action, gate_reason)
+        _notify_dedup_gate(gate_action, gate_reason, held_by)
 
         if _multi_doc_enabled():
             # Multi-doc: SFN owns progression. On auto-proceed advance to phase3;
@@ -2075,9 +2403,15 @@ def _post_process(phase_script: str, env: dict) -> None:
         # so its S3-side down-bind repair was clobbered by the sync and it audited a local tree that
         # lacks output/content (events) -> false EventID danglers. Post-sync S3 is the authoritative,
         # complete corpus; repairing it now makes the fix durable and the audit truthful.
-        _phase3_durable_referential_fix()
+        refreshed = _phase3_durable_referential_fix()
         _notify_url_review_pending()  # email the operator if URL finds await human review
-        _advance_doc_lifecycle("3")  # doc# -> done (multi-doc; terminal)
+        # After every merge (dedup auto-merge, bibliography reconcile, review-UI merges): the book
+        # is "done" only if its provenance holds - in gate mode block, held for review instead.
+        # the corpus the fix refreshed is reused; if its refresh failed, the gate refreshes itself
+        if _phase_end_held(_provenance_gate("3", refresh=not refreshed), "Phase 3"):
+            _offramp_doc_needs_review("provenance validation failed after Phase 3")
+        else:
+            _advance_doc_lifecycle("3")  # doc# -> done (multi-doc; terminal)
         next_enrich = _get_next_pending_enrich()
         if next_enrich:
             logger.info(
@@ -2231,8 +2565,10 @@ def _dedup_gate_decision(dedup_ok: bool) -> tuple:
     return "auto_proceed", f"zero duplicate groups across {entity_count} entities"
 
 
-def _notify_dedup_gate(action: str, reason: str) -> None:
-    """Notify (non-blocking) on the dedup gate decision, incl. auto-proceed."""
+def _notify_dedup_gate(action: str, reason: str, held_by: tuple = ("dedup",)) -> None:
+    """Notify (non-blocking) on the Phase-3 gate decision, incl. auto-proceed. ``held_by`` (from
+    _phase3_gate_decision) picks the subject and the action link: the Dedup Review UI for dedup,
+    the report for provenance."""
     topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
     if not topic_arn:
         logger.info(
@@ -2240,20 +2576,26 @@ def _notify_dedup_gate(action: str, reason: str) -> None:
             action,
         )
         return
-    subject = (
-        "WWII Pipeline: dedup auto-proceed"
-        if action == "auto_proceed"
-        else "WWII Pipeline: dedup review needed"
-    )
+    if action == "auto_proceed":
+        subject = "WWII Pipeline: dedup auto-proceed"
+    else:
+        what = " + ".join(held_by) or "dedup"
+        subject = f"WWII Pipeline: {what} review needed"
     try:
         message = f"Dedup gate: {action}\nReason: {reason}\nBucket: {BUCKET}"
+        if "provenance" in held_by:
+            message += (
+                "\n\nPhase 3 is held: records cite source content that is not where they say "
+                "(see the report in the reason). Fix the extraction and re-run Phase 2, or set "
+                "PROVENANCE_GATE=warn to release it."
+            )
         # Make the alert ACTIONABLE: when the gate BLOCKS (human review needed), include
         # the Dedup Review UI deep link so the operator can act without hunting for it.
-        if action != "auto_proceed":
+        if action != "auto_proceed" and "dedup" in held_by:
             dedup_url = os.environ.get("DEDUP_REVIEW_URL", "")
             if dedup_url:
                 message += (
-                    f"\n\nPhase 3 is blocked until you review duplicates."
+                    f"\n\nPhase 3 is blocked until this is reviewed."
                     f"\nDedup Review UI: {dedup_url}"
                 )
         sns = boto3.client("sns", region_name=REGION)
@@ -2350,17 +2692,19 @@ def _maybe_generate_surname_report() -> None:
 def _reclassify_military_units() -> None:
     """Reclassify military units from places to groups."""
     try:
-        from scripts.reclassify_military_units import reclassify
+        from src.dedup.reclassify_military_units import reclassify
 
         reclassify(WORKDIR / "output")
-    except Exception as e:
-        logger.warning("Military unit reclassification failed: %s", e)
+    except Exception as e:  # noqa: BLE001 - never blocks dedup, but must be loud
+        # Detail (may include paths / record text) stays in CloudWatch; the Slack line gets the type.
+        logger.exception("Military unit reclassification failed")
+        observe_error("dedup", "reclassify_failed", error=type(e).__name__)
 
 
 def _cleanup_entity_indexes() -> None:
     """Clean stale index entries before dedup."""
     try:
-        from scripts.cleanup_indexes import cleanup_index
+        from src.dedup.cleanup_indexes import cleanup_index
 
         for entity, name_field in [
             ("people", "name"),
@@ -2371,8 +2715,9 @@ def _cleanup_entity_indexes() -> None:
             entity_dir = WORKDIR / "output" / entity
             if entity_dir.exists():
                 cleanup_index(entity_dir, name_field, dry_run=False)
-    except Exception as e:
-        logger.warning("Index cleanup failed: %s", e)
+    except Exception as e:  # noqa: BLE001 - never blocks dedup, but must be loud
+        logger.exception("Index cleanup failed")
+        observe_error("dedup", "index_cleanup_failed", error=type(e).__name__)
 
 
 def _migrate_exclusions_to_dynamo() -> None:
@@ -2458,6 +2803,8 @@ def _reconcile_bibliography_full_corpus() -> None:
         # completion signal and snapshot before THIS run's reconcile finishes. This reconcile
         # produces the cross-book UNION, so it owns the "_all" barrier.
         _clear_reconcile_barrier(s3, key="manifests/reconcile_complete/_all.json")
+        _clear_reconcile_barrier(s3, key=_RECONCILE_RUN_MARKER_KEY)
+        run_id = _start_reconcile_run(s3)
         n = _download_s3_prefix(s3, "output/bibliography/")
         logger.info("Full-corpus bibliography reconcile: downloaded %d files", n)
         from src.extraction.bibliography import reconcile_bibliography_dir
@@ -2485,6 +2832,7 @@ def _reconcile_bibliography_full_corpus() -> None:
             s3,
             canonical_count=canonical_count,
             key="manifests/reconcile_complete/_all.json",
+            run_id=run_id,
         )
     except (
         Exception
@@ -2494,8 +2842,123 @@ def _reconcile_bibliography_full_corpus() -> None:
 
 # S3 key for the "Phase-2 dedup/reconcile finished publishing bibliography" barrier. Book-scoped so
 # concurrent books don't clobber each other's signal.
+# Run marker written by the full-corpus reconcile BEFORE it publishes the barrier. The barrier
+# body carries the same run_id, so Phase 3 judges freshness by identity (barrier.run_id ==
+# marker.run_id) instead of comparing against its own start time — Phase 3 starts AFTER the
+# reconcile published, so a time comparison against Phase 3's start rejects a correct barrier.
+_RECONCILE_RUN_MARKER_KEY = "manifests/reconcile_complete/_run.json"
+
+
+def _start_reconcile_run(s3) -> Optional[str]:
+    """Record a fresh run_id marker at reconcile start. Returns the id, or None if the marker
+    could not be written (Phase 3 then falls back to the timestamp freshness check)."""
+    run_id = uuid.uuid4().hex
+    try:
+        s3.put_object(
+            Bucket=BUCKET,
+            Key=_RECONCILE_RUN_MARKER_KEY,
+            Body=json.dumps({"run_id": run_id, "started_at": time.time()}).encode(),
+        )
+        return run_id
+    except Exception as e:  # noqa: BLE001 - must not block dedup
+        observe_warn(
+            "reconcile",
+            "run_marker_write_failed",
+            note=(
+                "Phase 3 falls back to the timestamp freshness check and may wait out "
+                "RECONCILE_BARRIER_WAIT_SECS; check the task role's s3:PutObject on "
+                "manifests/ and re-run the dedup phase"
+            ),
+            error=type(e).__name__,
+        )
+        return None
+
+
+_RUN_ID_RE = re.compile(r"[0-9a-f]{32}")  # uuid4().hex
+
+
+def _parse_barrier_body(obj) -> dict:
+    """Decode a barrier S3 object; anything that is not a JSON object yields {} (=> stale)."""
+    try:
+        body = json.loads(obj["Body"].read().decode())
+    except (
+        Exception
+    ):  # noqa: BLE001 - corrupt/partial write: treat as no usable barrier
+        return {}
+    return body if isinstance(body, dict) else {}
+
+
+def _read_run_marker(s3) -> Optional[dict]:
+    """Return the reconcile run marker, or None if absent/unreadable/malformed. Anything other
+    than a plain 'not there yet' is surfaced so a permissions problem is not silent."""
+    try:
+        raw = s3.get_object(Bucket=BUCKET, Key=_RECONCILE_RUN_MARKER_KEY)
+    except Exception as e:  # noqa: BLE001
+        code = getattr(e, "response", {}).get("Error", {}).get("Code", "")
+        if code not in ("NoSuchKey", "404") and not isinstance(e, KeyError):
+            observe_warn_counted(
+                "reconcile",
+                "run_marker_read_failed",
+                key=("run_marker_read_failed", type(e).__name__),
+                note=(
+                    "falling back to the timestamp freshness check; verify the task role "
+                    "has s3:GetObject on manifests/reconcile_complete/"
+                ),
+                error=type(e).__name__,
+            )
+        return None
+    marker = _parse_barrier_body(raw)
+    # Validate shapes: the marker is S3 JSON, so a wrong type must degrade to the timestamp path
+    # (and never reach logs / comparisons) rather than raise out of the wait loop.
+    if not _RUN_ID_RE.fullmatch(str(marker.get("run_id", ""))):
+        return None
+    started = marker.get("started_at")
+    if isinstance(started, bool) or not isinstance(started, (int, float)):
+        return None
+    return marker
+
+
+def _judge_barrier(
+    s3, body: dict, min_completed_at: float, key: str
+) -> "tuple[bool, str]":
+    """Decide whether ``body`` is a fresh barrier. Returns (fresh, via) with via in
+    {"run_id", "timestamp"}; logs why a barrier was rejected so a timeout is diagnosable.
+    """
+    completed_at = body.get("completed_at")
+    if isinstance(completed_at, bool) or not isinstance(completed_at, (int, float)):
+        logger.debug("reconcile barrier %s missing completed_at; ignoring", key)
+        return False, "timestamp"
+    barrier_id = body.get("run_id")
+    if barrier_id is not None and not _RUN_ID_RE.fullmatch(str(barrier_id)):
+        barrier_id = None  # malformed: ignore it (never logged), use the timestamp rule
+    marker = _read_run_marker(s3) if barrier_id else None
+    if marker:
+        if marker["run_id"] == barrier_id and completed_at >= marker.get(
+            "started_at", 0
+        ):
+            return True, "run_id"
+        logger.info(
+            "OBSERV reconcile.barrier_run_mismatch key=%s barrier_run_id=%s "
+            "marker_run_id=%s — ignoring",
+            key,
+            str(barrier_id)[:64],
+            str(marker["run_id"])[:64],
+        )
+        return False, "run_id"
+    if completed_at < min_completed_at:
+        logger.info(
+            "OBSERV reconcile.barrier_stale key=%s age=%.1fs (predates task start) — ignoring",
+            key,
+            time.time() - completed_at,
+        )
+        return False, "timestamp"
+    return True, "timestamp"
+
+
 def _reconcile_barrier_key() -> str:
-    book = os.environ.get("BOOK_NAME", "_all")
+    # `or` (not a get() default): BOOK_NAME is set to "" at startup, which would otherwise yield
+    # the nonsense key manifests/reconcile_complete/.json.
+    book = os.environ.get("BOOK_NAME") or "_all"
     return f"manifests/reconcile_complete/{book}.json"
 
 
@@ -2504,11 +2967,23 @@ def _clear_reconcile_barrier(s3, key: Optional[str] = None) -> None:
     try:
         s3.delete_object(Bucket=BUCKET, Key=key or _reconcile_barrier_key())
     except Exception as e:  # noqa: BLE001 - best-effort
-        logger.debug("reconcile barrier clear skipped: %s", e)
+        observe_warn(
+            "reconcile",
+            "barrier_clear_failed",
+            note=(
+                "a previous run's barrier may remain and be mistaken for fresh; check the task "
+                "role's s3:DeleteObject on manifests/reconcile_complete/ then re-run dedup"
+            ),
+            key=key or _reconcile_barrier_key(),
+            error=type(e).__name__,
+        )
 
 
 def _publish_reconcile_barrier(
-    s3, canonical_count: int = -1, key: Optional[str] = None
+    s3,
+    canonical_count: int = -1,
+    key: Optional[str] = None,
+    run_id: Optional[str] = None,
 ) -> None:
     """Write the reconcile-complete barrier (records how many canonical files were published so it
     is comparable with Phase 3's download coverage). Best-effort; a failure here must not break
@@ -2520,9 +2995,10 @@ def _publish_reconcile_barrier(
             Key=barrier_key,
             Body=json.dumps(
                 {
-                    "book": os.environ.get("BOOK_NAME", "_all"),
+                    "book": os.environ.get("BOOK_NAME") or "_all",
                     "completed_at": time.time(),
                     "canonical_count": canonical_count,
+                    "run_id": run_id,
                     "_schema": "reconcile_barrier_v1",
                 }
             ).encode(),
@@ -2533,7 +3009,16 @@ def _publish_reconcile_barrier(
             canonical_count,
         )
     except Exception as e:  # noqa: BLE001
-        logger.warning("reconcile barrier publish failed: %s", e)
+        observe_warn(
+            "reconcile",
+            "barrier_publish_failed",
+            note=(
+                "Phase 3 will wait out RECONCILE_BARRIER_WAIT_SECS and proceed with possibly "
+                "incomplete bibliography; check s3:PutObject on manifests/ and re-run dedup"
+            ),
+            key=barrier_key,
+            error=type(e).__name__,
+        )
 
 
 def _delete_orphaned_bibliography_shards(s3, bib_dir: Path) -> None:
@@ -2671,7 +3156,7 @@ def _all_keys_match(recs: list) -> bool:
 def _any_nationality_conflict(recs: list) -> bool:
     """True if any pair has a nationality conflict (never auto-merge different nations'
     same-number units)."""
-    from scripts.find_duplicate_groups import _group_nationality_conflict
+    from src.dedup.find_duplicate_groups import _group_nationality_conflict
 
     for i in range(len(recs)):
         for j in range(i + 1, len(recs)):
@@ -2750,24 +3235,30 @@ def _execute_dedup_scripts() -> None:
     # Generate places coords cache for cross-book distance matching
     _generate_places_coords()
 
-    dedup_scripts = [
-        "scripts/find_duplicate_people.py",
-        "scripts/find_duplicate_places_v2.py",
-        "scripts/find_duplicate_groups.py",
-        "scripts/find_duplicate_equipment.py",
+    # Run each detector as a module from the repo root (/app). A detector that is missing (python -m
+    # exits 1) or fails means that entity type got NO duplicate report this run — a data-affecting
+    # gap, so it is an observe_error (Slack-escalated), never a silent skip.
+    dedup_modules = [
+        "src.dedup.find_duplicate_people",
+        "src.dedup.find_duplicate_places_v2",
+        "src.dedup.find_duplicate_groups",
+        "src.dedup.find_duplicate_equipment",
     ]
     dedup_env = os.environ.copy()
     dedup_env["PYTHONPATH"] = "/app"
-    for script in dedup_scripts:
-        if Path(f"/app/{script}").exists():
-            logger.info("Running dedup: %s", script)
-            result = subprocess.run(
-                [sys.executable, script], cwd="/app", env=dedup_env, check=False
+    for module in dedup_modules:
+        logger.info("Running dedup: %s", module)
+        result = subprocess.run(
+            [sys.executable, "-m", module], cwd="/app", env=dedup_env, check=False
+        )
+        if result.returncode != 0:
+            observe_error(
+                "dedup",
+                "detector_failed",
+                detector=module,
+                returncode=result.returncode,
+                note="no duplicate report for this entity this run",
             )
-            if result.returncode != 0:
-                logger.warning(
-                    "Dedup script %s exited with code %d", script, result.returncode
-                )
     # Auto-merge exact duplicates (identical normalized names) without human review
     _auto_merge_exact_duplicates()
 
@@ -2894,21 +3385,7 @@ def _final_sync(phase_script: str = ""):
         _final_sync_phase1()
     elif "phase2" in phase_script or "phase3" in phase_script:
         # Phase 2/3: only upload entity subdirs, skip book dirs with parsed/event files
-        entity_dirs = [
-            "people",
-            "people_groups",
-            "places",
-            "dates",
-            "equipment",
-            "weather",
-            "logistics",
-            "casualties",
-            "maps",
-            "supplemental",
-            "bibliography",
-            "narrative_notes",
-            "metrics",
-        ]
+        entity_dirs = [*_PHASE23_ENTITY_DIRS, "metrics"]
         total = 0
         all_uploaded = []
         # Phase 3 modifies existing files — don't skip any
@@ -2959,6 +3436,12 @@ def _final_sync(phase_script: str = ""):
                 n_cache, _ = s3_sync_up(cache_api, _cache_prefix)
                 logger.info(
                     "OBSERV cache.synced files=%d prefix=%s", n_cache, _cache_prefix
+                )
+            else:
+                # the answers themselves live in the DynamoDB api-cache (when it is on); this
+                # directory holds only batch JSONL and rejected answers kept for diagnosis
+                logger.info(
+                    "OBSERV cache.synced files=0 status=absent dir=%s", cache_api
                 )
         except Exception as _e:  # noqa: BLE001 - diagnostics upload is best-effort
             logger.warning(
@@ -3634,6 +4117,7 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: preflight credit check", phase_name)
     _preflight_credit_check()
     _preflight_notification_subscriptions()
+    _preflight_runtime_tables()
     _patch_config()
     _start_openserp_if_needed(phase_script)
 
@@ -3667,6 +4151,12 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     sync.stop()
     _batch_mod.poll_batch = _orig_poll
     _batch_mod.retrieve_results = _orig_retrieve
+
+    if "phase2" in phase_script:
+        # Phase 2 runs its batch ROUNDS in the child, each waiting up to batch.in_task_wait_minutes
+        # (the stubs above do not reach the child process): settle from its exit status.
+        _settle_phase2_task(phase_script, result.returncode)
+        return
 
     # Enqueue the batch job (returns False if no batch was actually submitted)
     logger.info("[step] %s: enqueueing batch job", phase_name)
@@ -3758,16 +4248,59 @@ def _entities_materialized_in_task() -> bool:
         return False
 
 
-def _enqueue_from_metrics(phase_script: str) -> bool:
-    """Find the latest batch metrics and enqueue the job. Returns True if a batch was enqueued."""
+def _alert_handed_off(batch_id: str, batch_name: str) -> None:
+    """Operator alert (phase2-complete topic: email + Slack) that a Phase 2 batch round went to
+    the poller: which book and round, and what happens next. Informational, not an error.
+    """
+    from src.utils.batch_api import in_task_wait_minutes
+    from src.utils.batch_rounds import round_of
+    from src.utils.observe import publish_alert
+
+    book = os.environ.get("BOOK_NAME", "") or "?"
+    rnd = round_of(batch_name)
+    try:
+        from src.utils.config import load_config
+
+        wait = in_task_wait_minutes(load_config())
+    except Exception:  # noqa: BLE001 - the alert must not fail on config
+        wait = in_task_wait_minutes()
+    publish_alert(
+        f"WWII Pipeline: Phase 2 round {rnd or '?'} handed to the poller ({book})"[
+            :100
+        ],
+        (
+            f"Phase 2 for {book}: batch round {rnd or '?'} (batch {batch_id}) was not answered "
+            f"within the {wait:.0f}-minute in-task wait, so this task ended.\n\n"
+            "Next: the batch poller checks it every poll interval; when Grok has answered it, a "
+            "retrieve task loads the answers and resumes the book from the next round (same "
+            "wait rule). Nothing was retried live.\n\n"
+            f"Batch: {batch_name or batch_id}\n"
+            "Logs: OBSERV batch.handed_off / batch.round lines of this task; batch_stats for "
+            "the batch's progress."
+        ),
+    )
+
+
+def _enqueue_from_metrics(
+    phase_script: str, batch_id: str = "", notify: bool = True
+) -> bool:
+    """Find the latest batch metrics (or those of ``batch_id``) and enqueue the job. Returns True
+    if a batch was enqueued. ``notify`` - send the "batch submitted" notification for a pending
+    job (Phase 2's hand-off sends its own alert instead)."""
     metrics_dir = WORKDIR / "output" / "metrics"
     if not metrics_dir.exists():
         logger.warning("No metrics dir — batch may not have submitted")
         return False
 
     files = sorted(metrics_dir.glob("batch_*.json"), key=lambda f: f.stat().st_mtime)
+    if batch_id:
+        # a resumed task also holds the metrics of earlier rounds (downloaded from S3): select
+        # the handed-off batch itself, never "the newest file"
+        files = [f for f in files if f.name.startswith(f"batch_{batch_id}_")]
     if not files:
-        logger.warning("No batch metrics files found")
+        logger.warning(
+            "No batch metrics files found%s", f" for {batch_id}" if batch_id else ""
+        )
         return False
 
     with open(files[-1]) as f:
@@ -3843,15 +4376,118 @@ def _enqueue_from_metrics(phase_script: str) -> bool:
         book,
         request_count,
     )
+    # A batch whose answers already came back in THIS task (the in-process poll ran to completion)
+    # is recorded as retrieved: as "pending" the poller launched a second, --retrieve-only task
+    # for it that re-ran the phase's paid calls and rewrote its entities after dedup (2026-11-10).
+    status = "retrieved" if _retrieved_in_task(metrics) else "pending"
+    if status == "retrieved":
+        logger.info(
+            "OBSERV batch.retrieved_in_task batch=%s requests=%d answered=%d — recorded as "
+            "retrieved (nothing for the poller)",
+            batch_id,
+            request_count,
+            _answered(metrics),
+        )
     _enqueue_or_alert(
-        batch_id, phase, book, metrics.get("batch_name", ""), request_count
+        batch_id,
+        phase,
+        book,
+        metrics.get("batch_name", ""),
+        request_count,
+        status=status,
     )
-    _notify_batch_submitted(phase, book, batch_id, request_count)
+    if status == "pending" and notify:
+        _notify_batch_submitted(phase, book, batch_id, request_count)
     return True
 
 
+def _answered(metrics: dict) -> int:
+    return int(metrics.get("api_successes", 0) or 0) + int(
+        metrics.get("api_errors", 0) or 0
+    )
+
+
+def _retrieved_in_task(metrics: dict) -> bool:
+    """Whether every request of the batch has an answer recorded in its metrics (the in-process
+    poll and retrieve completed) and at least one succeeded. A submit-only batch records none; an
+    all-error batch stays with the poller."""
+    total = int(metrics.get("total_requests", 0) or 0)
+    ok = int(metrics.get("api_successes", 0) or 0)
+    return total > 0 and ok > 0 and _answered(metrics) >= total
+
+
+def _phase_results() -> dict:
+    """The phase's ``.phase_results.json`` (empty when missing or unreadable)."""
+    try:
+        return json.loads((WORKDIR / "output" / ".phase_results.json").read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def _settle_phase2_task(
+    phase_script: str, returncode: int, retrieved_batch: str = ""
+) -> None:
+    """After a Phase 2 run (submit-only task, or a resumed retrieve task), from its exit status:
+
+    - HANDED_OFF_EXIT (75): a batch round was not answered within the in-task wait: enqueue THAT
+      batch (``pending_batch``) for the poller, which resumes the book in a new task; no post-
+      processing yet;
+    - 0: the book is finished (every round answered): post-process (dedup gate, notify, Phase 3);
+    - otherwise (incl. the round cap, exit 1): failed - nothing enqueued, no post-processing.
+
+    ``retrieved_batch`` - the batch this task resumed from: recorded as retrieved first (so the
+    enqueue's duplicate guard does not see it as still pending)."""
+    from src.utils.batch_rounds import HANDED_OFF_EXIT
+    from src.utils.job_queue import update_job_status
+
+    if retrieved_batch:
+        update_job_status(
+            retrieved_batch,
+            "retrieved" if returncode in (0, HANDED_OFF_EXIT) else "failed",
+        )
+    if returncode == HANDED_OFF_EXIT:
+        results = _phase_results()
+        pending = str(results.get("pending_batch") or "")
+        enqueued = bool(pending) and _enqueue_from_metrics(
+            phase_script, batch_id=pending, notify=False
+        )
+        _final_sync(phase_script)
+        _stop_openserp_if_running(phase_script)
+        if not enqueued:
+            from src.utils.observe import observe_error
+
+            observe_error(
+                "batch",
+                "handoff_not_enqueued",
+                batch=pending or "?",
+                book=os.environ.get("BOOK_NAME", ""),
+                note="a batch round was handed off but not enqueued: nothing will resume the book",
+            )
+            sys.exit(1)
+        try:
+            _alert_handed_off(pending, str(results.get("pending_batch_name") or ""))
+        except Exception as e:  # noqa: BLE001 - advisory: the batch is enqueued already
+            logger.warning("Hand-off alert not sent: %s", e)
+        logger.info("Phase 2 handed batch %s to the poller; this task ends.", pending)
+        return
+    if returncode != 0:
+        _final_sync_failed_phase(phase_script)
+        _audit_failed_phase2(phase_script, returncode)
+        logger.error("Phase 2 exited with code %d", returncode)
+        sys.exit(returncode)
+    _final_sync(phase_script)
+    _stop_openserp_if_running(phase_script)
+    _post_process(phase_script, os.environ.copy())
+    logger.info("Phase 2 complete in this task (every batch round answered).")
+
+
 def _enqueue_or_alert(
-    batch_id: str, phase: str, book: str, batch_name: str, request_count: int
+    batch_id: str,
+    phase: str,
+    book: str,
+    batch_name: str,
+    request_count: int,
+    status: str = "pending",
 ) -> None:
     """Register the submitted batch for the poller (batch_job#) AND verify it
     landed — a batch submitted to Grok but NOT enqueued is an orphan that stalls
@@ -3871,7 +4507,7 @@ def _enqueue_or_alert(
                 book=book,
                 batch_name=batch_name,
                 submitted_at=int(_t.time()),
-                status="pending",
+                status=status,
                 request_count=request_count,
             )
         )
@@ -3948,35 +4584,135 @@ def _notify_batch_submitted(
         logger.warning("Failed to send batch submitted notification: %s", e)
 
 
+def _populate_cache(grok_client, mapped: dict, batch_id: str) -> int:
+    """Store a retrieved batch's answers where the re-run will look for them: under the book's
+    prefix (``books/<BOOK_NAME>/<type>``, as the in-task path and every per-book lookup use - bare
+    keys were invisible to the re-run, which then asked Grok again), and not at all when the cache
+    is switched off (GROK_CACHE_DISABLED). Returns the number stored."""
+    from src.grok_client import _cache_globally_disabled, current_book
+
+    if _cache_globally_disabled():
+        logger.info(
+            "OBSERV batch.cache_populate status=skipped reason=cache_disabled batch=%s",
+            batch_id,
+        )
+        return 0
+    book = os.environ.get("BOOK_NAME", "").strip()
+    token = current_book.set(book) if book else None
+    populated = 0
+    try:
+        for cache_type, entries in mapped.items():
+            cache = grok_client._get_cache(cache_type)
+            for our_id, content in entries.items():
+                cache[our_id] = content
+                populated += 1
+    finally:
+        if token is not None:
+            current_book.reset(token)
+    logger.info(
+        "Populated %d cache entries from batch %s (book=%s)",
+        populated,
+        batch_id,
+        book or "-",
+    )
+    return populated
+
+
 def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
     """Map batch results to OUR cache keys by POSITION (the xAI results API does not
     echo our custom_id — only a server batch_request_id). ``submitted`` is the
     submission-ordered list of (our_request_id, cache_type); ``ordered_results`` is
     the API-ordered list of BatchResult. Returns {cache_type: {our_id: cleaned_content}}.
 
-    Fail-safe: if the counts differ we CANNOT safely index-map, so return {} and log an
-    error (never silently mis-key — that produced 0 bibliography before this fix). A result is
-    cached iff it is content-first OK (BatchResult.ok: non-empty content, not truncated, no error) —
-    NOT a hardcoded finish_reason=='stop', because retrieve_results_ordered defaults finish_reason to
-    'unknown' when the xAI API omits it, which was silently dropping valid content here too. An
-    errored/truncated entry is skipped WITHOUT shifting the index (positional zip)."""
-    import re as _re
+    Delegates to the SHARED positional mapper (src.utils.batch_api.map_results_positionally) so this
+    retrieve-only path carries the SAME safety as the realtime grok_client path — in particular the
+    empty-slot-amid-substantive-siblings DESYNC guard that this copy previously lacked (it would
+    silently cache a mis-positioned empty slot and persist 0 for a whole entity — the XChannel-8
+    places=0 data-loss class). Fail-safe: on count mismatch the shared mapper returns {} and logs an
+    error (never silently mis-key); a desync-empty slot is NOT cached and emits a loud observe_error,
+    so the phase re-run treats it as a cache miss instead of trusting an empty result.
+    """
+    from src.utils.batch_api import align_by_request_id, map_results_positionally
+    from src.utils.observe import observe_error
 
-    if not submitted or len(submitted) != len(ordered_results):
-        logger.error(
-            "Batch %s: result count (%d) != submitted request count (%d) — cannot "
-            "index-map results to cache keys; cache NOT populated. Investigate.",
-            batch_id,
-            len(ordered_results),
-            len(submitted),
+    # each answer to its own request first (the API returns them out of order)
+    ordered_results = align_by_request_id(submitted, ordered_results, batch_id=batch_id)
+
+    def _on_desync(our_id, cache_type, br):
+        observe_error(
+            "batch",
+            "result_unmapped",
+            request_id=our_id,
+            cache_type=cache_type,
+            batch_id=batch_id,
+            note=(
+                "retrieve-only positional map produced empty result for this entity while "
+                "siblings succeeded — NOT caching (phase re-run will treat as cache miss)"
+            ),
         )
-        return {}
-    out: "dict" = {}
-    for (our_id, cache_type), br in zip(submitted, ordered_results):
-        if getattr(br, "ok", False) and getattr(br, "content", ""):
-            cleaned = _re.sub(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]", "", br.content)
-            out.setdefault(cache_type or "default", {})[our_id] = cleaned
-    return out
+
+    result = map_results_positionally(
+        submitted,
+        ordered_results,
+        batch_id=batch_id,
+        on_desync=_on_desync,
+    )
+    return result.mapped
+
+
+def _retrieve_rerun_env(phase_script: str, batch_name: str = "") -> dict:
+    """Environment for the retrieve re-run (it reads the cache the batch results populated).
+
+    Phase 2 RESUMES its batch rounds: batch mode stays on (the next dependent stage is the next
+    round, each waiting up to batch.in_task_wait_minutes) and ``BATCH_ROUND_START`` continues the
+    book's round count from the retrieved batch's round, so the cap counts every round.
+
+    Other phases re-run SYNCHRONOUSLY: BATCH_PHASE2=true in the task env would override the
+    dropped --batch (phase2_extract._resolve_batch_mode: env wins) and re-queue every cache miss
+    into a NEW batch instead of calling the API, so it is removed."""
+    env = os.environ.copy()
+    env["SKIP_RETRY"] = "1"
+    env["PIPELINE_PHASE"] = Path(phase_script).stem
+    if "phase2" in phase_script:
+        from src.utils.batch_rounds import round_of
+
+        env["BATCH_ROUND_START"] = str(round_of(batch_name) + 1)
+        return env
+    env.pop("BATCH_PHASE2", None)
+    return env
+
+
+def _submitted_from_dynamo_metrics(batch_id: str) -> list:
+    """The batch's submitted (request_id, cache_type) pairs from its DynamoDB ``metrics#<id>``
+    copy (``grok_client._save_metrics``). For a task killed right after submitting, before its
+    metrics file reached S3 (the background sync runs every 2 min). [] when not found.
+    """
+    try:
+        from src.utils.job_queue import _get_table
+
+        item = (
+            _get_table().get_item(Key={"cache_key": f"metrics#{batch_id}"}).get("Item")
+        )
+        metrics = json.loads((item or {}).get("response") or "{}")
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - a fallback: the caller reports nothing mapped
+        logger.warning(
+            "OBSERV batch.metrics_fallback_failed batch=%s err=%s", batch_id, e
+        )
+        return []
+    pairs = [
+        (p[0], p[1] if len(p) > 1 else "default")
+        for p in metrics.get("submitted_request_ids") or []
+        if isinstance(p, (list, tuple)) and p
+    ]
+    if pairs:
+        logger.info(
+            "OBSERV batch.metrics_from_dynamo batch=%s requests=%d",
+            batch_id,
+            len(pairs),
+        )
+    return pairs
 
 
 def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> None:
@@ -3988,7 +4724,7 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     # Register the phase for the SIGTERM handler. Without this, a spot reclaim of a --retrieve-only
     # task hit _handle_sigterm with _current_phase_script="" → _final_sync("")/_remove_lock("") were
     # no-ops, so in-task entities were lost and the lock leaked (§1.0d H3).
-    global _current_phase_script
+    global _current_phase_script, _current_resume_batch
     _current_phase_script = phase_script
 
     WORKDIR.mkdir(parents=True, exist_ok=True)
@@ -4027,14 +4763,15 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     if "phase3" in phase_script:
         _stamp_schema_versions()
 
-    # Retrieve results in SUBMISSION ORDER. The xAI results API does NOT echo our
+    # Retrieve results in SUBMISSION ORDER. The xAI results API was thought not to echo our (it does; aligned by id first)
     # custom_id (only a server-assigned batch_request_id), so we map results to OUR
     # cache keys by POSITION against the submission-ordered request_details in metrics.
     api_key = os.environ.get("GROK_API_KEY", "")
-    from src.utils.batch_api import retrieve_results_ordered
+    from src.utils.batch_api import retrieve_results_ordered, verify_served_models
 
     ordered_results = retrieve_results_ordered(api_key, batch_id)
     logger.info("Retrieved %d ordered results", len(ordered_results))
+    verify_served_models(ordered_results, "batch_retrieve_only")
 
     # Load the submission-ordered (OUR cache key, cache_type) list. Prefer the new
     # submitted_request_ids (authoritative — our custom_ids in order); fall back to
@@ -4065,6 +4802,8 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
                 for d in metrics.get("request_details", []):
                     submitted.append((d["request_id"], d.get("cache_type", "default")))
             break
+    if not submitted:
+        submitted = _submitted_from_dynamo_metrics(batch_id)
 
     from src.grok_client import GrokClient
 
@@ -4073,27 +4812,38 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     grok_client = GrokClient(cache_dir)
 
     mapped = _map_batch_results_by_index(submitted, ordered_results, batch_id)
-    populated = 0
-    for cache_type, entries in mapped.items():
-        cache = grok_client._get_cache(cache_type)
-        for our_id, content in entries.items():
-            cache[our_id] = content
-            populated += 1
-    logger.info("Populated %d cache entries from batch %s", populated, batch_id)
+    populated = _populate_cache(grok_client, mapped, batch_id)
+    if "phase2" in phase_script:
+        # the answers are in the (shared) cache: the job is retrieved NOW, not after the resumed
+        # run - that run can take several 90-min rounds, past the poller's retrieve claim, and a
+        # still-"ready" job would be retrieved again by a second task on the same book. A reclaim
+        # mid-run puts it back to ready (_handle_sigterm).
+        update_job_status(batch_id, "retrieved")
+        _current_resume_batch = batch_id
 
-    # Re-run phase without --batch (hits cache, skip retry since batch results are authoritative)
-    clean_args = [a for a in extra_args if a != "--batch"]
+    # Re-run the phase on the cached results. Phase 2 keeps --batch: it resumes its rounds.
+    # Others re-run without it (hits cache; skip retry since batch results are authoritative).
+    resume = "phase2" in phase_script
+    clean_args = (
+        list(extra_args) if resume else [a for a in extra_args if a != "--batch"]
+    )
+    if resume and "--batch" not in clean_args:
+        clean_args = ["--batch"] + clean_args
     sync = BackgroundSync(SYNC_INTERVAL)
     sync.start()
 
-    env = os.environ.copy()
-    env["SKIP_RETRY"] = "1"
-    env["PIPELINE_PHASE"] = Path(phase_script).stem
+    env = _retrieve_rerun_env(phase_script, job.batch_name)
     cmd = [sys.executable, phase_script] + _scope_args(phase_script, clean_args)
     logger.info("Re-running with cached results: %s", " ".join(cmd))
     result = subprocess.run(cmd, cwd="/app", env=env, check=False)
 
     sync.stop()
+    if resume:
+        # already marked retrieved (above); on failure it is marked failed in settle
+        _current_resume_batch = ""  # the run ended: settled below, nothing to re-queue
+        _settle_phase2_task(phase_script, result.returncode, retrieved_batch=batch_id)
+        logger.info("Retrieve-only complete for batch %s", batch_id)
+        return
     if result.returncode != 0:
         _final_sync_failed_phase(phase_script)
     else:

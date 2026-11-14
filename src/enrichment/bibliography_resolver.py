@@ -322,7 +322,8 @@ def _apply_resolved_url(
 ) -> None:
     """Record a resolved online URL (+ optional PDF url from metadata) onto the entry and merge
     any additional source metadata. Sets availability/status to online/resolved."""
-    entry.setdefault("resource_urls", []).append(url)
+    if url not in entry.setdefault("resource_urls", []):
+        entry["resource_urls"].append(url)
     # Add PDF URL from metadata if available
     if extra and extra.get("pdf_url"):
         pdf_url = extra.pop("pdf_url")
@@ -334,6 +335,32 @@ def _apply_resolved_url(
     # Merge additional metadata
     if extra:
         entry.setdefault("source_metadata", {}).update(extra)
+    _refresh_license(entry)
+
+
+def _refresh_license(entry: Dict) -> None:
+    """Re-derive the license now that ``resource_urls`` is known. Phase 2 derives it with an empty
+    resource_urls (it performs no searches), so URL-based rules (a Project Gutenberg copy => public
+    domain) only apply here. Only fills an empty/'unknown' license - never overrides a decided one.
+    Network-free (copyright_calculator)."""
+    if entry.get("license") and entry.get("license") != "unknown":
+        return
+    try:
+        from src.extraction.copyright_calculator import determine_license
+
+        status, notes = determine_license(entry)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - a license refresh must never break resolution
+        logger.warning(
+            "OBSERV bib.license_refresh_failed err=%s status=warn - license left as is; "
+            "re-run Phase 3 after checking copyright_calculator",
+            type(e).__name__,
+        )
+        return
+    if status and status != "unknown":
+        entry["license"] = status
+        entry["license_notes"] = notes
 
 
 def _resolve_archive(entry, citation, grok_client, config):
@@ -361,11 +388,21 @@ def _resolve_with_alt_title(citation, search):
 
 
 def _resolve_book(entry, citation, grok_client, config):
-    """Resolve books."""
-    return _resolve_with_alt_title(
+    """Resolve books: archive.org / Gutenberg / OpenSERP (title, then alt_title), then - ONCE, as
+    the last resort - the content-verified Grok LLM search (moved here from Phase 2)."""
+    found = _resolve_with_alt_title(
         citation,
         lambda t, a: _resolve_book_search(t, a, citation, grok_client, config),
     )
+    if found:
+        return found
+    title = citation.get("title") or ""
+    author = (citation.get("author") or [""])[0] or ""
+    for url, source in _find_in_llm(
+        entry or {}, title, title, author, grok_client, config
+    ):
+        return (url, source, None)
+    return None
 
 
 def _resolve_article(entry, citation, grok_client, config):
@@ -377,10 +414,18 @@ def _resolve_article(entry, citation, grok_client, config):
 
 
 def _resolve_generic_entry(entry, citation, grok_client, config):
-    """Generic fallback."""
-    return _resolve_with_alt_title(
-        citation, lambda t, a: _resolve_generic(t, a, grok_client, config)
+    """Untyped / unknown-type citation (the common case for green-book footnotes, e.g. a published
+    work like "Harrison, Cross-Channel Attack"). It gets the SAME verified multi-source search as an
+    archive record - NARA, OpenSERP, archive.org, Gutenberg, then the Grok LLM fallback - every
+    candidate verified against the citation. (It used to take archive.org's FIRST hit unverified,
+    the wrong-attribution bug; and it is where the searches moved out of Phase 2 must land.)
+    """
+    verbatim = _entry_verbatim(entry)
+    title = citation.get("title", "")
+    found = _search_online_sources(
+        entry, verbatim, verbatim or title, title, grok_client, config
     )
+    return (found[0], found[1], None) if found else None
 
 
 # --- Archive/Military Records ---
@@ -584,6 +629,13 @@ def _search_online_sources(
     findings += _find_in_gutenberg(
         entry, query, search_title, author, grok_client, config
     )
+    if not findings:
+        # Grok "LLM search" last and only when nothing else found a copy: it costs a Grok call plus
+        # a content-verify call per citation, and an LLM-suggested URL is the most hallucination-
+        # prone source. (Moved here from Phase 2, which performs no supplemental searches.)
+        findings += _find_in_llm(
+            entry, query, search_title, author, grok_client, config
+        )
 
     if not findings:
         return None
@@ -744,6 +796,39 @@ def _find_in_archive_org(
         search_candidates=search_archive_org_candidates,
         label="archive_org",
     )
+
+
+def _find_in_llm(
+    entry: Dict,
+    query: str,
+    search_title: str,
+    author: str,
+    grok_client: Any,
+    config: Dict,
+) -> "list[Tuple[str, str]]":
+    """Grok "LLM search": ask the model for a URL for the cited work, then CONTENT-VERIFY it
+    (fetch the page SSRF-safely and have Grok confirm it matches the citation) before accepting it.
+    An unverified LLM URL is never stored. Gated on ``llm_search``; needs a grok_client.
+    """
+    if not config.get("llm_search", True) or grok_client is None:
+        return []
+    if getattr(grok_client, "batch_mode", False):
+        # Batch COLLECT pass: a Grok call is only queued (BatchModeCollecting), so the search and
+        # its verify would be swallowed as "no URL" and the verify failure would raise a false
+        # bib.verify_url_error. Defer: Phase 3's batch re-run turns batch_mode off and this runs
+        # then (the entry stays unresolved - retried, never stored unverified).
+        return []
+    from src.extraction.supplemental_search import search_llm
+
+    url = search_llm(search_title, author or None, grok_client)
+    if url and _verify_url_content(url, query, grok_client):
+        return [(url, "llm")]
+    if url:
+        logger.info(
+            "OBSERV bib.llm_search_rejected url=%s — LLM URL did not verify against the citation",
+            url[:120],
+        )
+    return []
 
 
 def _find_in_gutenberg(
@@ -1787,21 +1872,6 @@ def _resolve_article_search(
 
     url = search_archive_org(title, author)
     if url and _verify_match(title, url, grok_client):
-        return (url, "archive_org", None)
-    return None
-
-
-# --- Generic ---
-
-
-def _resolve_generic(
-    title: str, author: Optional[str], grok_client: Any, config: Dict
-) -> Optional[Tuple[Optional[str], str, Optional[Dict]]]:
-    """Generic search fallback."""
-    from src.extraction.supplemental_search import search_archive_org
-
-    url = search_archive_org(title, author)
-    if url:
         return (url, "archive_org", None)
     return None
 

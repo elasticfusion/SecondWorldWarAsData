@@ -190,4 +190,4 @@ Minimum required IAM permissions:
 
 - [AWS S3 Documentation](https://docs.aws.amazon.com/s3/)
 - [Boto3 S3 Documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html)
-- `contextmanagement/Specs/maps.md` - Maps extraction specification
+- `docs/archive/contextmanagement/Specs/maps.md` - Maps extraction specification (historical; current schema: `src/schemas/`)

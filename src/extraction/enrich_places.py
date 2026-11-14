@@ -137,13 +137,16 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
     except Exception:  # noqa: BLE001
         pass
     try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+        from src.utils.wikimedia_client import (
+            PLACES,
+            TRANSIENT,
+            mark_transient,
+            wikimedia_get,
+        )
 
-        resp = recorded_fetch(
+        resp = wikimedia_get(
             "wikipedia",
             _WIKI_API,
-            kind=TEXTUAL,
-            method="GET",
             params={  # type: ignore[arg-type]
                 "action": "query",
                 "format": "json",
@@ -158,8 +161,12 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
             },
             headers=_WIKI_HEADERS,
             timeout=15,
+            subject=name,
             result_summary_fn=lambda r: f"status={r.status_code} place={name[:40]!r}",
         )
+        if resp is TRANSIENT:
+            mark_transient(PLACES, name, "place_lookup")
+            return None
         if resp.status_code != 200:
             return None
         pages = resp.json().get("query", {}).get("pages", {})
@@ -173,36 +180,10 @@ def _fetch_place_wikipedia_full(name: str) -> Optional[dict]:
 
 
 def _fetch_image_license(filename: str) -> Optional[str]:
-    """Fetch license from Wikimedia Commons."""
-    try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+    """Fetch license from Wikimedia Commons (shared implementation)."""
+    from src.enrichment._wikipedia_common import fetch_commons_license
 
-        resp = recorded_fetch(
-            "wikimedia-commons",
-            "https://commons.wikimedia.org/w/api.php",
-            kind=TEXTUAL,
-            method="GET",
-            params={
-                "action": "query",
-                "format": "json",
-                "titles": f"File:{filename}",
-                "prop": "imageinfo",
-                "iiprop": "extmetadata",
-            },
-            headers=_WIKI_HEADERS,
-            timeout=10,
-            result_summary_fn=lambda r: f"status={r.status_code}",
-        )
-        if resp.status_code == 200:
-            pages = resp.json().get("query", {}).get("pages", {})
-            for page_data in pages.values():
-                ii = page_data.get("imageinfo", [])
-                if ii:
-                    meta = ii[0].get("extmetadata", {})
-                    return meta.get("LicenseShortName", {}).get("value", "unknown")
-    except Exception:
-        pass
-    return None
+    return fetch_commons_license(filename)
 
 
 def enrich_place_from_grokipedia(place: dict) -> bool:
@@ -266,10 +247,24 @@ def enrich_place_from_wikipedia(place: dict) -> bool:
         return False
 
     wiki_data = _fetch_place_wikipedia_full(name)
+    from src.utils.wikimedia_client import PLACES, lookup_was_transient
+
+    if lookup_was_transient(PLACES, name, wiki_data):
+        # Unknown, not a miss: wikipedia_checked_at means "never re-fetch", so a rate limit must
+        # not leave it set (that would lose this place's Wikipedia link permanently).
+        place.pop("wikipedia_checked_at", None)
+        return False
     if not wiki_data or not wiki_data.get("wikipedia_url"):
         logger.debug("No Wikipedia page for place %s", name)
         return False
 
+    _apply_place_wikipedia(place, wiki_data)
+    logger.debug("Wikipedia enriched place %s → %s", name, wiki_data["wikipedia_url"])
+    return True
+
+
+def _apply_place_wikipedia(place: dict, wiki_data: dict) -> None:
+    """Fold a Wikipedia hit (URL, Wikidata sameAs, lead image, hierarchy) into ``place``."""
     place["wikipedia_url"] = wiki_data["wikipedia_url"]
     # T2-A: the Wikidata QID url goes into sameAs[] (NOT a new top-level field — places schema is
     # additionalProperties:false and has no wikidata_url slot). sameAs is exactly the cross-walk home.
@@ -288,47 +283,70 @@ def enrich_place_from_wikipedia(place: dict) -> bool:
     hierarchy = wiki_data.get("hierarchy")
     if hierarchy:
         _merge_hierarchy(place, hierarchy)
-    logger.debug("Wikipedia enriched place %s → %s", name, wiki_data["wikipedia_url"])
-    return True
 
 
 def _search_grokipedia_place(name: str) -> Optional[str]:
-    """Search Grokipedia for a place. Returns page URL or None."""
-    import re
-
+    """Search Grokipedia for a place. Returns page URL or None. A genuine miss is
+    negative-cached; a transient failure (429 / 5xx / network) is not - an outage must not
+    suppress the place for NEGATIVE_TTL_DAYS."""
+    from src.enrichment.grokipedia import response_text
+    from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
     from src.utils.search_cache import cache_result, get_cached
 
     cached = get_cached("grokipedia_place", name)
     if cached == "NOT_FOUND":
         return None
-    if cached:
+    # Only a URL this function built is served from cache: the namespace was once shared with
+    # situational_geocode, whose page TEXT is still stored under it for some terms. Anything
+    # else falls through to a live lookup, which overwrites the entry.
+    if cached and cached.startswith("https://grokipedia.com/page/"):
         return cached
 
     try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
-
         resp = recorded_fetch(
             "grokipedia",
-            f"https://grokipedia.com/search?q={name} World War",
+            "https://grokipedia.com/search",
             kind=TEXTUAL,
             method="GET",
+            params={"q": f"{name} World War"},
             headers=_WIKI_HEADERS,
             timeout=15,
             result_summary_fn=lambda r: f"status={r.status_code} place={name[:40]!r}",
         )
-        if resp.status_code == 200 and "/page/" in resp.text:
-            # Find page links matching the place name
-            page_links = re.findall(r'href="/page/([^"]+)"', resp.text)
-            name_lower = name.lower().replace(" ", "")
-            for link in page_links:
-                link_lower = link.lower().replace("_", "")
-                if name_lower in link_lower or link_lower in name_lower:
-                    url = f"https://grokipedia.com/page/{link}"
-                    cache_result("grokipedia_place", name, url)
-                    return url
-    except Exception:
-        pass
-    cache_result("grokipedia_place", name, None)
+    except (requests.RequestException, ValueError) as e:
+        logger.info(
+            "OBSERV grokipedia.transient place=%r err=%s", name[:60], str(e)[:80]
+        )
+        return None
+    if resp.status_code != 200:
+        logger.info(
+            "OBSERV grokipedia.transient place=%r status=%d",
+            name[:60],
+            resp.status_code,
+        )
+        return None
+    url = _matching_place_page(name, response_text(resp))  # UTF-8: accents must match
+    cache_result("grokipedia_place", name, url)
+    return url
+
+
+def _matching_place_page(name: str, search_html: str) -> Optional[str]:
+    """The /page/ URL of the first search result whose slug contains (or is contained in) the
+    place name, else None. hrefs are percent-encoded ("Sainte-M%C3%A8re-%C3%89glise").
+    """
+    import re
+    from urllib.parse import unquote
+
+    from src.enrichment.grokipedia import grokipedia_page_url
+
+    name_lower = name.lower().replace(" ", "")
+    for link in re.findall(r'href="/page/([^"]+)"', search_html):
+        slug = unquote(link)
+        slug_lower = slug.lower().replace("_", "")
+        if name_lower in slug_lower or slug_lower in name_lower:
+            url = grokipedia_page_url(slug)
+            if url:
+                return url
     return None
 
 

@@ -13,7 +13,7 @@ Parameters:
     Default: dev
   ECSClusterArn:
     Type: String
-    Description: ARN of the pipeline ECS cluster
+    Description: Name of the pipeline ECS cluster (historical parameter name; main.yaml passes ComputeStack ECSClusterName)
   Phase1TaskDefArn:
     Type: String
   Phase2TaskDefArn:
@@ -174,8 +174,18 @@ Resources:
                   - !Ref Phase2TaskDefArn
                   - !Ref Phase3TaskDefArn
               - Effect: Allow
+                # StopTask/DescribeTasks operate on run-time task ARNs (random task IDs) that
+                # cannot be enumerated at template time, so Resource stays '*' — but we bound it
+                # with an ecs:cluster condition so the role can only act on tasks in THIS
+                # pipeline's cluster, not account-wide (checkov CKV_AWS_111 mitigation).
                 Action: [ecs:StopTask, ecs:DescribeTasks]
                 Resource: '*'
+                Condition:
+                  ArnEquals:
+                    # ECSClusterArn actually carries the cluster NAME (main.yaml passes ComputeStack's
+                    # ECSClusterName output, i.e. !Ref of the cluster), so build the ARN here; comparing
+                    # ArnEquals against a bare name never matches and would deny both actions.
+                    ecs:cluster: !Sub arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${ECSClusterArn}
               - Effect: Allow
                 Action: [iam:PassRole]
                 Resource: [!Ref TaskRoleArn, !Ref ExecutionRoleArn]

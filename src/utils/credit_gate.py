@@ -29,21 +29,22 @@ logger = logging.getLogger(__name__)
 
 SPEND_KEY = "credit#spend"
 
-# Verified xAI standard-context prices, USD per 1M tokens (§9.1). Config
-# api.grok.pricing overrides these. Batch discount is a fraction (0.20 = 20% off).
+# xAI standard-context prices (< 200k prompt tokens), USD per 1M tokens, from
+# https://docs.x.ai/developers/pricing (checked 2026-11-12). Config api.grok.pricing overrides
+# these. Batch discount is a fraction (0.20 = 20% off; grok-build-0.1 has none).
+_GROK_43 = {"input": 1.25, "output": 2.50, "batch_discount": 0.20}
+_GROK_45_PLUS = {"input": 2.00, "output": 6.00, "batch_discount": 0.20}
 DEFAULT_PRICING: Dict[str, Dict[str, float]] = {
-    "grok-4.20-0309-reasoning": {"input": 1.25, "output": 2.50, "batch_discount": 0.20},
-    "grok-4.20-0309-non-reasoning": {
-        "input": 1.25,
-        "output": 2.50,
-        "batch_discount": 0.20,
-    },
-    "grok-4.3": {"input": 1.25, "output": 2.50, "batch_discount": 0.20},
-    "grok-4.6": {"input": 2.00, "output": 6.00, "batch_discount": 0.0},
-    "grok-4.7": {"input": 2.00, "output": 6.00, "batch_discount": 0.0},
+    "grok-4.3": dict(_GROK_43),
+    "grok-4.20-0309-reasoning": dict(_GROK_43),
+    "grok-4.20-0309-non-reasoning": dict(_GROK_43),
+    "grok-4.5": dict(_GROK_45_PLUS),
+    "grok-4.6": dict(_GROK_45_PLUS),
+    "grok-4.7": dict(_GROK_45_PLUS),
+    "grok-build-0.1": {"input": 1.00, "output": 2.00, "batch_discount": 0.0},
 }
 
-_DEFAULT_MODEL = "grok-4.20-0309-reasoning"
+from src.utils.grok_models import DEFAULT_MODEL as _DEFAULT_MODEL  # noqa: E402
 
 
 def _pricing_for(

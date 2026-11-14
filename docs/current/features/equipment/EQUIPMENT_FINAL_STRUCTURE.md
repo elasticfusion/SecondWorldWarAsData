@@ -159,8 +159,7 @@ Essential linking and data:
 ## Examples
 
 ### Full Examples
-- `contextmanagement/Specs/military_equipment_example.json` - M4 Sherman
-- `contextmanagement/Specs/military_equipment_example2.json` - Tiger I (multiple events)
+- `docs/archive/contextmanagement/Specs/military_equipment_example2.json` - Tiger I (multiple events) (historical; current schema: `src/schemas/`)
 
 ### Minimal Example
 ```json

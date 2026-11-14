@@ -1,5 +1,11 @@
 # Supplemental Material Extraction - Complete Implementation
 
+> **2026-11-07 — Phase 2 performs no supplemental searches.** Phase 2 only talks to Grokipedia/Wikipedia and
+> submits data to Grok. Looking up where a cited document can be obtained (NARA, archive.org, Gutenberg,
+> OpenSERP, Grok "LLM search") is Phase 3 (`bibliography_resolver`), with every candidate Grok-verified. The
+> `enrich_with_searches` flag no longer exists; citations are stored with an empty `resource_urls`.
+
+
 ## Overview
 
 Extracts, classifies, and routes referenced materials (footnotes, endnotes, bibliography) from WWII historical documents. Uses a split architecture that separates document references from factual content.
@@ -13,6 +19,9 @@ Grok classifies each endnote/footnote into one of three categories:
 - `ambiguous` — unclear classification → `output/bibliography/review_queue.json` for human review
 
 Mixed entries (factual statement + citation) are split into separate entries.
+
+How the endnote/footnote **text** reaches the prompt (parse-time capture, HTML fallback,
+"cited in n. X" resolution, semicolon splitting) is in [ENDNOTE_HANDLING.md](ENDNOTE_HANDLING.md).
 
 ### Key Files
 - `src/extraction/supplemental.py` (922 lines) — classification, routing, extraction
@@ -105,8 +114,7 @@ supplemental_material:
   extract_citations: true          # Parse citations into structured format
   max_materials_per_chapter: 100   # Limit materials per chapter
   
-  # Phase 2: Search integration
-  enrich_with_searches: false      # Enable online resource searches
+  # Phase 3: search (bibliography_resolver) - Phase 2 performs NO supplemental searches
   llm_search: true                 # Use LLM for search (first pass)
   search_gutenberg: false          # Search Gutenberg.org for books/periodicals
   search_archive_org: false        # Search Archive.org (second pass)
@@ -139,7 +147,6 @@ python3 phase2_extract.py
 # config.yaml
 supplemental_material:
   enabled: true
-  enrich_with_searches: true
   llm_search: true
   search_archive_org: true
   extract_isbn: true
@@ -345,8 +352,8 @@ Ambiguous items queued for human review:
 ## Documentation
 
 ### Specification
-- `contextmanagement/Specs/supplementalmaterial_v2.md` - Full specification
-- `contextmanagement/Specs/supplementalmaterial_v2.json` - JSON schema
+- `docs/archive/contextmanagement/Specs/supplementalmaterial_v2.md` - Full specification (historical; current schema: `src/schemas/`)
+- `docs/archive/contextmanagement/Specs/supplementalmaterial_v2.json` - JSON schema (historical; current schema: `src/schemas/`)
 
 ### Implementation Docs
 - `docs/archive/2026-03-22/SUPPLEMENTAL_PHASE1.md` - Phase 1 details (archived)
@@ -378,7 +385,6 @@ All in `requirements.txt`:
 # Edit config.yaml:
 supplemental_material:
   enabled: true
-  enrich_with_searches: true
   llm_search: true
   search_archive_org: true
   extract_isbn: true
@@ -440,7 +446,6 @@ All three phases complete, tested, and integrated into the pipeline. Ready for u
 ```yaml
 supplemental_material:
   enabled: true
-  enrich_with_searches: true
   llm_search: true
   search_archive_org: true
   extract_isbn: true

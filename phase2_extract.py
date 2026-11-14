@@ -9,6 +9,8 @@ import json
 import logging
 import os
 import sys
+import time
+import threading
 from pathlib import Path
 
 from src.utils.config import load_config, get_paths
@@ -18,8 +20,8 @@ from src.grok_client import GrokClient, BatchModeCollecting, current_book
 from src.extraction.events import extract_events
 from src.extraction.external_maps import import_maps
 
-from scripts.find_duplicate_people import generate_duplicate_report
-from scripts.find_related_groups import generate_related_groups_report
+from src.dedup.find_duplicate_people import generate_duplicate_report
+from src.dedup.find_related_groups import generate_related_groups_report
 
 # ---------------------------------------------------------------------------
 # Stage helpers
@@ -91,7 +93,14 @@ def _log_phase2_summary(output_root: Path, logger) -> dict:
             "equipment",
             "logistics",
         ):
-            counts[name] = _count_entity_dir(output_root / name)
+            if name == "source_section":
+                # Records live under content/<book>/source_section/ (src/utils/source_sections);
+                # counting output/source_section reported a false 0.
+                from src.utils.source_sections import iter_section_files
+
+                counts[name] = sum(1 for _ in iter_section_files(output_root))
+            else:
+                counts[name] = _count_entity_dir(output_root / name)
 
         summary = " ".join(f"{k}={v}" for k, v in counts.items())
         logger.info("OBSERV phase2.summary %s", summary)
@@ -109,16 +118,78 @@ def _log_phase2_summary(output_root: Path, logger) -> dict:
         optional_zeros = [
             k for k, v in counts.items() if v == 0 and k not in core_types
         ]
-        if optional_zeros:
-            logger.info(
-                "OBSERV phase2.summary.zero scope=optional entity_types=%s "
-                "(0 persisted — expected for some chapters)",
-                ",".join(optional_zeros),
-            )
+        _report_optional_outcomes(counts, optional_zeros, logger)
         return counts
     except Exception as e:  # noqa: BLE001 - summary must never break the run
         observe_error("phase2", "summary", reason=type(e).__name__)
         return {}
+
+
+def _report_optional_outcomes(counts: dict, optional_zeros: list, logger) -> None:
+    """Optional types at 0: FAILED (its extractor raised this run) -> one actionable error alert;
+    otherwise INFO (legitimately empty for many chapters). A type with records AND errors is
+    reported as partial."""
+    errors = _outstanding_optional_errors()
+    failed = [k for k in optional_zeros if errors.get(k)]
+    empty = [k for k in optional_zeros if not errors.get(k)]
+    if failed:
+        observe_error(
+            "phase2",
+            "optional_failed",
+            entity_types=",".join(failed),
+            errors=",".join(f"{k}:{errors[k]}" for k in failed),
+            note=(
+                "0 records persisted because the extractor raised, not because the text has "
+                "none; the OBSERV optional.persisted status=error lines in this task's log give "
+                "the cause - fix it and re-run Phase 2 for the book (failed events are not marked "
+                "processed, so they are retried)"
+            ),
+        )
+    partial = [k for k, n in errors.items() if n and counts.get(k, 0) > 0]
+    if partial:
+        observe_warn(
+            "phase2",
+            "optional_partial",
+            entity_types=",".join(partial),
+            errors=",".join(f"{k}:{errors[k]}" for k in partial),
+            note=(
+                "some events' extraction raised (see OBSERV optional.persisted status=error); "
+                "those events are retried on the next Phase 2 run for the book"
+            ),
+        )
+    if empty:
+        logger.info(
+            "OBSERV phase2.summary.zero scope=optional entity_types=%s "
+            "(0 persisted, no extractor errors — expected for some chapters)",
+            ",".join(empty),
+        )
+
+
+def _apply_chapter_scope(parsed_files, chapters, logger):
+    """``PHASE2_CHAPTERS`` ("chapter8full,chapter9"): run only these chapters of the scoped book
+    (a book-scoped run otherwise re-extracts EVERY chapter's entities - a one-chapter redo would
+    pay for all of them). Names are parsed-file stems without ``-parsed.json``; a name that matches
+    nothing is a hard error (never silently widen or empty the run). Unset -> unchanged.
+    """
+    wanted = [c.strip() for c in (chapters or "").split(",") if c.strip()]
+    if not wanted:
+        return parsed_files
+    by_name = {p.name.replace("-parsed.json", ""): p for p in parsed_files}
+    missing = [c for c in wanted if c not in by_name]
+    if missing:
+        logger.error(
+            "PHASE2_CHAPTERS %s matched no parsed file (have: %s) — aborting",
+            missing,
+            ", ".join(sorted(by_name)[:20]),
+        )
+        raise SystemExit(2)
+    logger.info(
+        "Scoped to chapters %s: %d of %d parsed files",
+        wanted,
+        len(wanted),
+        len(parsed_files),
+    )
+    return [by_name[c] for c in wanted]
 
 
 def _apply_scope_guard(parsed_files, book, expected_count, content_root, logger):
@@ -264,13 +335,19 @@ def _mark_processed(output_root: Path, entity_type: str, event_name: str) -> Non
 
 
 def _observe_optional_error(logger, entity, event_name, exc):
-    """Emit `OBSERV optional.persisted ... status=error` when an OPTIONAL extractor raised.
+    """Emit `OBSERV optional.persisted ... status=error` when an OPTIONAL extractor raised, and
+    count it per entity so the end-of-run summary can tell "0 because it failed" from "0, nothing
+    in the text" (_log_phase2_summary).
 
     Without this, a crashed extractor is logged only as a generic error and the end-of-run summary
     reads the entity's 0 persisted records as a LEGITIMATE empty — exactly the swallowed-alert shape
     the audit targets. Fail-safe: never raises (observability must not compound the failure).
     """
     try:
+        with _OPTIONAL_ERRORS_LOCK:
+            _OPTIONAL_ERRORS[(entity, event_name)] = (
+                _OPTIONAL_ERRORS.get((entity, event_name), 0) + 1
+            )
         logger.error(
             "OBSERV optional.persisted entity=%s event=%s status=error error=%s",
             entity,
@@ -279,6 +356,29 @@ def _observe_optional_error(logger, entity, event_name, exc):
         )
     except Exception:  # noqa: BLE001 - never let telemetry mask the real error
         pass
+
+
+# Optional-extractor failures OUTSTANDING this process ({(entity, event): count}); an event that
+# later succeeds (the batch retrieve pass, a retry) is cleared, so only unresolved failures reach
+# _log_phase2_summary.
+_OPTIONAL_ERRORS: dict = {}
+_OPTIONAL_ERRORS_LOCK = threading.Lock()
+
+
+def _observe_optional_ok(entity, event_name):
+    """The event's optional extraction succeeded: an earlier failure of it is resolved."""
+    with _OPTIONAL_ERRORS_LOCK:
+        _OPTIONAL_ERRORS.pop((entity, event_name), None)
+
+
+def _outstanding_optional_errors() -> dict:
+    """{entity: number of events whose last attempt failed}."""
+    with _OPTIONAL_ERRORS_LOCK:
+        keys = list(_OPTIONAL_ERRORS)
+    out: dict = {}
+    for entity, _event in keys:
+        out[entity] = out.get(entity, 0) + 1
+    return out
 
 
 def _extract_optional_entities(
@@ -316,19 +416,20 @@ def _extract_weather(event_file, parsed_file, grok_client, output_root, config, 
             event_file.name,
             bool(result),
         )
+        _observe_optional_ok("weather", str(event_file))
     except ValueError as e:
         logger.error("    Weather config error for %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "weather", event_file.name, e)
+        _observe_optional_error(logger, "weather", str(event_file), e)
     except (OSError, IOError) as e:
         logger.error("    Weather file I/O error for %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "weather", event_file.name, e)
+        _observe_optional_error(logger, "weather", str(event_file), e)
     except BatchModeCollecting:
         logger.info(
             "OBSERV optional.collecting entity=weather event=%s", event_file.name
         )
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting weather from %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "weather", event_file.name, e)
+        _observe_optional_error(logger, "weather", str(event_file), e)
 
 
 def _extract_equipment(event_file, grok_client, output_root, config, logger):
@@ -345,9 +446,6 @@ def _extract_equipment(event_file, grok_client, output_root, config, logger):
             enable_enrichment=config.get("equipment", {}).get(
                 "enable_enrichment", False
             ),
-            verify_media_with_vision=config.get("equipment", {}).get(
-                "verify_media_with_vision", True
-            ),
         )
         if equipment_files:
             logger.info("    ✓ Equipment: %d file(s)", len(equipment_files))
@@ -356,19 +454,20 @@ def _extract_equipment(event_file, grok_client, output_root, config, logger):
             event_file.name,
             len(equipment_files or []),
         )
+        _observe_optional_ok("equipment", str(event_file))
     except json.JSONDecodeError as e:
         logger.error("    Equipment JSON parse error for %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "equipment", event_file.name, e)
+        _observe_optional_error(logger, "equipment", str(event_file), e)
     except (OSError, IOError) as e:
         logger.error("    Equipment file I/O error for %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "equipment", event_file.name, e)
+        _observe_optional_error(logger, "equipment", str(event_file), e)
     except BatchModeCollecting:
         logger.info(
             "OBSERV optional.collecting entity=equipment event=%s", event_file.name
         )
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting equipment from %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "equipment", event_file.name, e)
+        _observe_optional_error(logger, "equipment", str(event_file), e)
 
 
 def _extract_logistics(event_file, grok_client, output_root, config, logger):
@@ -396,19 +495,20 @@ def _extract_logistics(event_file, grok_client, output_root, config, logger):
             len(result) if hasattr(result, "__len__") else (1 if result else 0),
         )
         _mark_processed(output_root, "logistics", event_file.name)
+        _observe_optional_ok("logistics", str(event_file))
     except json.JSONDecodeError as e:
         logger.error("    Logistics JSON parse error for %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "logistics", event_file.name, e)
+        _observe_optional_error(logger, "logistics", str(event_file), e)
     except (OSError, IOError) as e:
         logger.error("    Logistics file I/O error for %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "logistics", event_file.name, e)
+        _observe_optional_error(logger, "logistics", str(event_file), e)
     except BatchModeCollecting:
         logger.info(
             "OBSERV optional.collecting entity=logistics event=%s", event_file.name
         )
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting logistics from %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "logistics", event_file.name, e)
+        _observe_optional_error(logger, "logistics", str(event_file), e)
 
 
 def _extract_casualties(event_file, grok_client, output_root, config, logger):
@@ -436,19 +536,20 @@ def _extract_casualties(event_file, grok_client, output_root, config, logger):
             len(casualties or []),
         )
         _mark_processed(output_root, "casualties", event_file.name)
+        _observe_optional_ok("casualties", str(event_file))
     except json.JSONDecodeError as e:
         logger.error("    Casualties JSON parse error for %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "casualties", event_file.name, e)
+        _observe_optional_error(logger, "casualties", str(event_file), e)
     except (OSError, IOError) as e:
         logger.error("    Casualties file I/O error for %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "casualties", event_file.name, e)
+        _observe_optional_error(logger, "casualties", str(event_file), e)
     except BatchModeCollecting:
         logger.info(
             "OBSERV optional.collecting entity=casualties event=%s", event_file.name
         )
     except Exception as e:  # pylint: disable=broad-except
         logger.error("    Error extracting casualties from %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "casualties", event_file.name, e)
+        _observe_optional_error(logger, "casualties", str(event_file), e)
 
 
 def _extract_supplemental(event_file, grok_client, output_root, config, logger):
@@ -471,26 +572,24 @@ def _extract_supplemental(event_file, grok_client, output_root, config, logger):
             event_file=event_file,
             grok_client=grok_client,
             output_root=output_root,
-            enrich=config.get("supplemental_material", {}).get(
-                "enrich_with_searches", False
-            ),
         )
         if result:
             logger.info("    ✓ Supplemental updated")
         _mark_processed(output_root, "supplemental", event_file.name)
+        _observe_optional_ok("supplemental", str(event_file))
     except json.JSONDecodeError as e:
         logger.error("    Supplemental JSON parse error for %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "supplemental", event_file.name, e)
+        _observe_optional_error(logger, "supplemental", str(event_file), e)
     except (OSError, IOError) as e:
         logger.error("    Supplemental file I/O error for %s: %s", event_file.name, e)
-        _observe_optional_error(logger, "supplemental", event_file.name, e)
+        _observe_optional_error(logger, "supplemental", str(event_file), e)
     except BatchModeCollecting:
         logger.debug("    Batch collecting (supplemental): %s", event_file.name)
     except Exception as e:  # pylint: disable=broad-except
         logger.error(
             "    Error extracting supplemental from %s: %s", event_file.name, e
         )
-        _observe_optional_error(logger, "supplemental", event_file.name, e)
+        _observe_optional_error(logger, "supplemental", str(event_file), e)
 
 
 def _extract_images(output_root, config, logger):
@@ -649,7 +748,17 @@ def _retry_missing_events(parsed_files, grok_client, logger):
             parsed_data = json.load(f)
         prompt = create_event_prompt(parsed_data)
         if prompt:
-            grok_client.clear_cache_entry(prompt, cache_type="events")
+            from src.utils.prompt_loader import get_system_prompt
+
+            # the key the answer is cached under includes the system prompt and the model: a
+            # prompt-only key never matched, so the "retry with cache cleared" replayed the
+            # same cached answer
+            grok_client.clear_cache_entry(
+                prompt,
+                cache_type="events",
+                system_prompt=get_system_prompt("events"),
+                book=parsed_file.parent.name,
+            )
 
         try:
             output_file = extract_events(
@@ -886,6 +995,192 @@ def _run_core_extraction(
     return processed, failed
 
 
+def _run_batch_rounds(
+    parsed_files,
+    grok_client,
+    output_root,
+    config,
+    paths,
+    max_parallel,
+    logger,
+    counts,
+):
+    """Submit the queued requests, re-run the whole pass (core + optional extractors) in batch
+    mode, and repeat until a pass queues nothing. A pass that queues nothing has written
+    everything from the cache, so the run is complete. Past ``batch.max_rounds`` the run stops
+    with an alert + diagnostics instead of submitting more. Returns (processed, failed).
+    """
+    from src.utils.batch_api import BatchCollector, in_task_wait_minutes
+    from src.utils.batch_rounds import (
+        DEFAULT_MAX_ROUNDS,
+        BatchRounds,
+        BatchRoundsExceeded,
+        first_round_from_env,
+    )
+    from src.utils.heartbeat import Heartbeat
+
+    books = sorted({pf.parent.name for pf in parsed_files})
+    base = f"phase2-{'-'.join(books)}-{len(parsed_files)}files"
+    rounds = BatchRounds(
+        scope=",".join(books),
+        cap=int(config.get("batch", {}).get("max_rounds", DEFAULT_MAX_ROUNDS)),
+        first=first_round_from_env(),
+    )
+    wait_minutes = in_task_wait_minutes(config)
+    started = time.monotonic()
+    processed, failed = counts
+    while grok_client._batch_collector and len(grok_client._batch_collector) > 0:
+        queued = list(grok_client._batch_collector.requests)
+        if not rounds.admit(queued, grok_client):
+            # alerted: no more spend
+            raise BatchRoundsExceeded(rounds.cap, rounds.scope)
+        logger.info(
+            "[phase2] Batch round %d: submitting %d requests (waiting up to %.0f min)",
+            rounds.count,
+            len(queued),
+            wait_minutes,
+        )
+        # not answered within the wait -> BatchPending: the poller resumes the book. The round
+        # suffix survives truncation (a resumed task reads the round from the name).
+        suffix = f"-r{rounds.count}-{len(queued)}reqs"
+        batch_id = grok_client.submit_batch(
+            batch_name=base[: 128 - len(suffix)] + suffix,
+            max_wait_minutes=wait_minutes,
+        )
+        if not batch_id:  # submit_batch returns None only for an empty collector
+            raise RuntimeError(
+                f"batch round {rounds.count}: {len(queued)} requests queued but not submitted"
+            )
+        grok_client.batch_mode = (
+            True  # the next round queues what this one's answers unlock
+        )
+        grok_client._batch_collector = BatchCollector()
+        heartbeat = Heartbeat(
+            timeout=300, label=f"Phase 2 (batch round {rounds.count + 1})"
+        )
+        heartbeat.start()
+        try:
+            processed, failed = _run_core_extraction(
+                parsed_files,
+                grok_client,
+                output_root,
+                config,
+                paths,
+                max_parallel,
+                heartbeat,
+                logger,
+            )
+        finally:
+            heartbeat.stop()
+    rounds.complete(time.monotonic() - started)
+    retried, retry_failed = _finish_after_rounds(
+        parsed_files, grok_client, logger, rounds.count
+    )
+    return processed + retried, failed + retry_failed
+
+
+def _finish_after_rounds(parsed_files, grok_client, logger, n_rounds):
+    """After the last round (or none: everything was cached): leave batch mode and retry the
+    chapters whose events still failed (live; a no-op in batch mode). Returns (retried, failed).
+    """
+    grok_client.batch_mode = False
+    grok_client._batch_collector = None
+    logger.info("[phase2] Batch rounds complete after %d round(s)", n_rounds)
+    return _retry_missing_events(parsed_files, grok_client, logger)
+
+
+def _run_batch_rounds_or_exit(
+    parsed_files,
+    grok_client,
+    output_root,
+    config,
+    paths,
+    max_parallel,
+    logger,
+    counts,
+):
+    """``_run_batch_rounds``; returns (processed, failed) when the book is finished. Otherwise
+    exits, with ``.phase_results.json`` saying why:
+
+    - a round not answered within the in-task wait -> exit ``HANDED_OFF_EXIT`` (75): the poller
+      retrieves the batch and a new task resumes the book (``pending_batch``);
+    - over the round cap (alerted) -> exit 1: the book is incomplete (``incomplete``), nothing
+      downstream (dedup gate, Phase 3) runs on it."""
+    from src.utils.batch_api import BatchPending
+    from src.utils.batch_rounds import HANDED_OFF_EXIT, BatchRoundsExceeded
+
+    processed, failed = counts
+    try:
+        return _run_batch_rounds(
+            parsed_files,
+            grok_client,
+            output_root,
+            config,
+            paths,
+            max_parallel,
+            logger,
+            counts,
+        )
+    except BatchPending as e:
+        logger.info("[phase2] %s: handed to the poller", e)
+        _write_phase_results(
+            output_root,
+            processed,
+            failed,
+            pending_batch=e.batch_id,
+            pending_batch_name=e.batch_name,
+        )
+        sys.exit(HANDED_OFF_EXIT)
+    except BatchRoundsExceeded as e:
+        logger.error("[phase2] %s", e)
+        _write_phase_results(output_root, processed, failed, incomplete=str(e))
+        sys.exit(1)
+
+
+def _run_post_extraction_steps(
+    base_dir, grok_client, paths, config, output_root, logger, processed, failed
+):
+    """Steps 4-5 on the FINISHED extraction output (after any batch rounds): maps, images,
+    source-section enrichment (live: not batch-aware), analysis, stats."""
+    _extract_external_maps(base_dir, grok_client, paths, config, logger)
+    _extract_images(output_root, config, logger)
+    _run_source_section_enrichment(output_root, grok_client, logger)
+    _run_analysis(output_root, logger)
+    logger.info("Phase 2 complete: %d processed, %d failed", processed, failed)
+    grok_client.log_cache_stats()
+    from src.utils.validation_stats import write_validation_stats as _write_val_stats
+
+    _write_val_stats(paths["output_root"])
+
+
+def _warn_if_env_contradicts_config(env_value: str, logger) -> None:
+    """BATCH_PHASE2 (deploy-time) silently overriding config.yaml batch.phase2 is how batching was
+    off for a week while config said on. Make a disagreement an actionable alert."""
+    try:
+        from src.utils.config import load_config
+
+        cfg_on = bool(load_config().get("batch", {}).get("phase2", False))
+    except Exception:  # noqa: BLE001 - the check is advisory; never block extraction
+        return
+    env_on = env_value in ("true", "1", "yes", "on")
+    env_off = env_value in ("false", "0", "no", "off")
+    if (env_on and not cfg_on) or (env_off and cfg_on):
+        from src.utils.observe import observe_warn
+
+        observe_warn(
+            "batch",
+            "mode_config_mismatch",
+            note=(
+                f"BATCH_PHASE2={env_value} (task env) overrides config.yaml batch.phase2="
+                f"{str(cfg_on).lower()}; to make them agree redeploy with "
+                f"BATCH_PHASE2={str(cfg_on).lower()} bash scripts/deploy_all.sh (or change "
+                "config.yaml)"
+            ),
+            env=env_value,
+            config=cfg_on,
+        )
+
+
 def _resolve_batch_mode(cli_batch: bool, logger) -> bool:
     """BATCH_PHASE2 env override of the --batch CLI flag. The phase2 task-def hardcodes --batch,
     so BATCH_PHASE2=false/0/no/off is the only way to force SYNCHRONOUS extraction without editing
@@ -894,6 +1189,7 @@ def _resolve_batch_mode(cli_batch: bool, logger) -> bool:
     if bp is None:
         return cli_batch
     v = bp.strip().lower()
+    _warn_if_env_contradicts_config(v, logger)
     if v in ("false", "0", "no", "off"):
         if cli_batch:
             logger.info(
@@ -1010,6 +1306,9 @@ def main():
     parsed_files = _apply_scope_guard(
         parsed_files, scope_book, args.expected_count, content_root, logger
     )
+    parsed_files = _apply_chapter_scope(
+        parsed_files, os.environ.get("PHASE2_CHAPTERS", ""), logger
+    )
 
     logger.info("Found %d parsed file(s)", len(parsed_files))
 
@@ -1051,150 +1350,27 @@ def main():
         failed,
     )
 
-    # -----------------------------------------------------------------------
-    # Step 4: Maps and Images extraction
-    # -----------------------------------------------------------------------
-    _extract_external_maps(base_dir, grok_client, paths, config, logger)
-    _extract_images(output_root, config, logger)
-
-    # -----------------------------------------------------------------------
-    # Step 4b: Source-section enrichment (summary + operation + Grok/Wiki articles + media)
-    # -----------------------------------------------------------------------
-    _run_source_section_enrichment(output_root, grok_client, logger)
-
-    # -----------------------------------------------------------------------
-    # Step 5: Analysis
-    # -----------------------------------------------------------------------
-    _run_analysis(output_root, logger)
-
-    # -----------------------------------------------------------------------
-    # Done
-    # -----------------------------------------------------------------------
-    logger.info("Phase 2 complete: %d processed, %d failed", processed, failed)
-    grok_client.log_cache_stats()
-    from src.utils.validation_stats import write_validation_stats as _write_val_stats
-
-    _write_val_stats(paths["output_root"])
     heartbeat.stop()
 
-    # If batch mode, submit collected requests, wait, then re-run
-    if (
-        args.batch
-        and grok_client._batch_collector
-        and len(grok_client._batch_collector) > 0
-    ):
-        logger.info(
-            "[phase2] Submitting %d requests to Grok Batch API",
-            len(grok_client._batch_collector),
+    # Batch mode: ROUNDS of collect -> submit -> re-run until a pass queues nothing (each
+    # dependent stage - events, entities, equipment refine / identity / re-check ... - is one
+    # round), with a round cap + alert + diagnostics (src/utils/batch_rounds.py). Steps 4-5 run
+    # AFTER the rounds, on the finished output (before, they saw the first collect pass only).
+    if args.batch:
+        processed, failed = _run_batch_rounds_or_exit(
+            parsed_files,
+            grok_client,
+            output_root,
+            config,
+            paths,
+            max_parallel,
+            logger,
+            (processed, failed),
         )
-        # Build descriptive batch name from processed books
-        books = set()
-        for pf in parsed_files:
-            books.add(pf.parent.name)
-        req_count = len(grok_client._batch_collector)
-        batch_name = f"phase2-{'-'.join(sorted(books))}-{len(parsed_files)}files-{req_count}reqs"[
-            :128
-        ]
-        batch_id = grok_client.submit_batch(batch_name=batch_name)
-        if batch_id:
-            logger.info("Batch complete! Re-running pipeline with cached results...")
-            grok_client.batch_mode = False
-            heartbeat = Heartbeat(timeout=300, label="Phase 2 (batch re-run)")
-            heartbeat.start()
-            heartbeat.ping("Batch re-run: step 1")
 
-            processed, failed = _run_core_extraction(
-                parsed_files,
-                grok_client,
-                output_root,
-                config,
-                paths,
-                max_parallel,
-                heartbeat,
-                logger,
-                skip_optional=True,
-            )
-
-            heartbeat.stop()
-            logger.info(
-                "[phase2] Batch re-run complete: %d processed, %d failed",
-                processed,
-                failed,
-            )
-
-            # Source-section enrichment now runs with cached batch results available
-            # (grok_client is back in real-time mode), so the derive pass actually produces
-            # output in batch mode (it is a no-op during the collection phase above).
-            _run_source_section_enrichment(output_root, grok_client, logger)
-
-            # Second batch cycle: optional extractors
-            if any(
-                config.get(f, {}).get("enabled", False)
-                for f in [
-                    "weather",
-                    "equipment",
-                    "logistics",
-                    "casualties",
-                    "supplemental_material",
-                ]
-            ):
-                from src.utils.batch_api import BatchCollector
-
-                grok_client.batch_mode = True
-                grok_client._batch_collector = BatchCollector()
-                logger.info("\nCollecting optional extractor requests for batch...")
-
-                # Same scope as the guarded run — derive from parsed_files, not a
-                # whole-corpus rglob (keeps --book/--expected-count honest).
-                event_files = sorted(
-                    {
-                        pf.parent / pf.name.replace("-parsed.json", "-event.json")
-                        for pf in parsed_files
-                    }
-                )
-                event_files = [e for e in event_files if e.exists()]
-                for event_file in event_files:
-                    current_book.set(event_file.parent.name)
-                    parsed_file = event_file.parent / event_file.name.replace(
-                        "-event.json", "-parsed.json"
-                    )
-                    if not parsed_file.exists():
-                        parsed_file = None
-                    _extract_optional_entities(
-                        event_file,
-                        parsed_file,
-                        grok_client,
-                        paths,
-                        config,
-                        logger,
-                    )
-
-                batch_id2 = grok_client.submit_batch(
-                    batch_name=f"{batch_name}-optional"
-                )
-                if batch_id2:
-                    logger.info(
-                        "Optional batch complete! Re-running with cached results..."
-                    )
-                    grok_client.batch_mode = False
-                    for event_file in event_files:
-                        current_book.set(event_file.parent.name)
-                        parsed_file = event_file.parent / event_file.name.replace(
-                            "-event.json", "-parsed.json"
-                        )
-                        if not parsed_file.exists():
-                            parsed_file = None
-                        _extract_optional_entities(
-                            event_file,
-                            parsed_file,
-                            grok_client,
-                            paths,
-                            config,
-                            logger,
-                        )
-                else:
-                    grok_client.batch_mode = False
-                    logger.info("No optional batch requests (all cached)")
+    _run_post_extraction_steps(
+        base_dir, grok_client, paths, config, output_root, logger, processed, failed
+    )
 
     from src.utils.http_pool import close_session
 
@@ -1215,8 +1391,17 @@ def main():
     _write_phase_results(output_root, processed, failed)
 
 
-def _write_phase_results(output_root, processed, failed):
-    """Write phase results JSON for entrypoint to read."""
+def _write_phase_results(
+    output_root,
+    processed,
+    failed,
+    incomplete="",
+    pending_batch="",
+    pending_batch_name="",
+):
+    """Write phase results JSON for entrypoint to read. ``incomplete`` - why the run stopped
+    before finishing (the book must not be treated as done); ``pending_batch`` - the batch handed
+    to the poller (the book resumes when it is retrieved)."""
     logger = logging.getLogger(__name__)
     results_file = output_root / ".phase_results.json"
     entity_counts = {}
@@ -1243,10 +1428,19 @@ def _write_phase_results(output_root, processed, failed):
                 "processed": processed,
                 "failed": failed,
                 "entity_counts": entity_counts,
+                **({"incomplete": incomplete} if incomplete else {}),
+                **({"pending_batch": pending_batch} if pending_batch else {}),
+                **(
+                    {"pending_batch_name": pending_batch_name}
+                    if pending_batch_name
+                    else {}
+                ),
             }
         ),
         encoding="utf-8",
     )
+    if incomplete or pending_batch:
+        return  # the run stopped before finishing: no end-of-phase verdicts on partial output
 
     # Sanity check: warn if all optional extractors produced 0 with >5 events
     optional_types = ["equipment", "weather", "logistics", "casualties"]
@@ -1266,6 +1460,9 @@ def _write_phase_results(output_root, processed, failed):
     # phase2.summary.zero for any type at 0). Emitted HERE because this is the single final point
     # reached by ALL modes (incl. the batch retrieve re-run), so counts reflect the final corpus.
     _phase2_counts = _log_phase2_summary(output_root, logger)
+    from src.utils.wikimedia_client import summarize as _wikimedia_summary
+
+    _wikimedia_summary("phase2")
 
     # End-of-phase referential enforcement — AFTER all extraction.
     #   • ECS/S3 run (S3_BUCKET set): NOT here. It reads S3, but this process's output is uploaded

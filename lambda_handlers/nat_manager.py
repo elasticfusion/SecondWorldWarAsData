@@ -318,6 +318,29 @@ def _status(ec2):
 # === CREATE ===
 
 
+def _await_other_instance(ec2, region) -> dict:
+    """Another instance holds the create lock: wait for its NAT, then make sure the default route
+    points at it (idempotent) and return VERIFIED readiness - never a blind 'ready'.
+
+    The lock holder can die between creating the NAT and updating the route (a Lambda timeout:
+    endpoints took 3 min, then the NAT wait ran past 300s, 2026-11-14). Its NAT is then
+    'available' while 0.0.0.0/0 still points at the deleted one (a blackhole), and every caller
+    used to be told 'ready' - tasks ran for an hour with no egress."""
+    _wait_for_nat(ec2)
+    nat_id = _find_nat(ec2)
+    if nat_id and not _route_active(ec2, nat_id):
+        logger.warning(
+            "Default route not active for %s after the other instance: repointing",
+            nat_id,
+        )
+        try:
+            _update_route(ec2, nat_id)
+        except Exception as e:  # noqa: BLE001 - reported as not ready below
+            logger.error("Route repair failed for %s: %s", nat_id, e)
+    ready, missing = _verify_ready(ec2, region)
+    return {"status": "ready" if ready else "not_ready", "missing": missing}
+
+
 def _create_all(ec2, region):
     """Create all networking components. Each is validated before creation."""
     import boto3
@@ -336,8 +359,7 @@ def _create_all(ec2, region):
         )
     except table.meta.client.exceptions.ConditionalCheckFailedException:
         logger.info("Another instance running, waiting for completion...")
-        _wait_for_nat(ec2)
-        return {"status": "ready"}
+        return _await_other_instance(ec2, region)
 
     try:
         # 1. VPC Endpoints (fastest to create)

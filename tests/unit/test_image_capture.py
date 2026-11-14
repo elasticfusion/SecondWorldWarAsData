@@ -17,17 +17,17 @@ from src.extraction.images import _classify_content_type
 def test_empty_alt_images_not_collapsed():
     """Multiple images sharing an empty alt must all survive (dedupe on URL, not alt)."""
     md = (
-        "![](https://ex.org/USA-E-XChannel/img/a.jpg)\n"
-        "![](https://ex.org/USA-E-XChannel/img/b.jpg)\n"
-        "![](https://ex.org/USA-E-XChannel/img/c.jpg)\n"
+        "![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/a.jpg)\n"
+        "![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/b.jpg)\n"
+        "![](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/c.jpg)\n"
     )
     imgs = extract_images(md)
     urls = {u for _t, u, _alt, _e in imgs}
     assert len(imgs) == 3
     assert urls == {
-        "https://ex.org/USA-E-XChannel/img/a.jpg",
-        "https://ex.org/USA-E-XChannel/img/b.jpg",
-        "https://ex.org/USA-E-XChannel/img/c.jpg",
+        "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/a.jpg",
+        "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/b.jpg",
+        "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/c.jpg",
     }
 
 
@@ -35,20 +35,22 @@ def test_html_combined_thumbnail_linked_to_fullres_captures_inner_url():
     """[![alt](FULL)](<THUMB>) — the html2text shape for an <img> wrapped in a link — must
     capture the inner FULL-res image url, and multiple such images must not collapse."""
     md = (
-        "[![USA-E-XChannel-4](https://ex.org/USA-E-XChannel/maps/USA-E-XChannel-4.jpg)]"
+        "[![USA-E-XChannel-4](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/maps/USA-E-XChannel-4.jpg)]"
         "(<maps/USA-E-XChannel-4m.jpg>)\n"
-        "[![USA-E-XChannel-62](https://ex.org/USA-E-XChannel/img/USA-E-XChannel-62.jpg)]"
+        "[![USA-E-XChannel-62](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/USA-E-XChannel-62.jpg)]"
         "(<img/USA-E-XChannel-62.jpg>)\n"
     )
     imgs = extract_images(md)
     urls = sorted(u for _t, u, _alt, _e in imgs)
     assert urls == [
-        "https://ex.org/USA-E-XChannel/img/USA-E-XChannel-62.jpg",
-        "https://ex.org/USA-E-XChannel/maps/USA-E-XChannel-4.jpg",
+        "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/img/USA-E-XChannel-62.jpg",
+        "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/maps/USA-E-XChannel-4.jpg",
     ]
-    # the maps/ full-res url classifies as a map
+    # on ibiblio the maps/ full-res url classifies as a map (URL rule; other hosts -> vision)
     maps = [u for _t, u, _a, _e in imgs if _classify_content_type(_a, u) == "map"]
-    assert maps == ["https://ex.org/USA-E-XChannel/maps/USA-E-XChannel-4.jpg"]
+    assert maps == [
+        "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/maps/USA-E-XChannel-4.jpg"
+    ]
 
 
 def test_importer_prefers_fullres_href_over_thumbnail_src():
@@ -69,7 +71,7 @@ def test_importer_prefers_fullres_href_over_thumbnail_src():
     except SystemExit:
         pass
 
-    url = "https://ex.org/USA-E-XChannel/USA-E-XChannel-9.html"
+    url = "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html"
     html = (
         "<html><body>"
         '<a href="maps/USA-E-XChannel-4.jpg"><img src="maps/USA-E-XChannel-4m.jpg"></a>'
@@ -114,7 +116,7 @@ def test_importer_alt_stem_strips_control_chars():
     except SystemExit:
         pass
     # relative image with no alt -> stem-derived alt; ensure no control chars leak
-    url = "https://ex.org/USA-E-XChannel/USA-E-XChannel-9.html"
+    url = "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html"
     html = '<html><body><img src="img/USA-E-XChannel-4.jpg"></body></html>'
     md = imp.convert_html_to_markdown(BeautifulSoup(html, "html.parser"), url)
     imgs = extract_images(md)
@@ -141,7 +143,7 @@ def test_importer_captures_adjacent_caption_as_alt():
         spec.loader.exec_module(imp)
     except SystemExit:
         pass
-    url = "https://ex.org/USA-E-XChannel/USA-E-XChannel-9.html"
+    url = "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html"
     html = (
         "<html><body>"
         '<p><a href="maps/USA-E-XChannel-4.jpg"><img src="maps/USA-E-XChannel-4m.jpg"></a>'
@@ -173,7 +175,7 @@ def test_caption_not_cross_assigned_in_shared_parent_block():
         spec.loader.exec_module(imp)
     except SystemExit:
         pass
-    url = "https://ex.org/USA-E-XChannel/USA-E-XChannel-9.html"
+    url = "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-9.html"
     html = (
         "<html><body><td>"
         '<a href="img/USA-E-XChannel-66.jpg"><img src="icn/USA-E-XChannel-66.jpg"></a>'

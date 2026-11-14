@@ -10,6 +10,23 @@ from src.schemas import (
     ulid_field,
 )
 
+WIND_SPEED_UNITS = ["knots", "mph", "kmh", "ms", "beaufort"]
+
+# Text-as-written condition fields (+ stated wind numbers), shared by extracted_data and each
+# event mention so every mention keeps its OWN evidence.
+_CONDITION_FIELDS = {
+    "wind_text": make_nullable("string"),
+    "wind_speed_low": make_nullable("number"),
+    "wind_speed_high": make_nullable("number"),
+    "wind_speed_unit": enum_field(WIND_SPEED_UNITS, nullable=True),
+    "wind_direction": make_nullable("string"),
+    "sea_state_text": make_nullable("string"),
+    "visibility_text": make_nullable("string"),
+    "cloud_text": make_nullable("string"),
+    "tide_text": make_nullable("string"),
+    "light_text": make_nullable("string"),
+}
+
 WEATHER_OUTPUT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": entity_version("weather"),
@@ -65,6 +82,15 @@ WEATHER_OUTPUT_SCHEMA = {
                 "original_text": make_nullable("string"),
                 "book": make_nullable("string"),
                 "author": make_nullable("string"),
+                # 2.25: what KIND of statement this is - a forecast or a planning requirement
+                # ("a low tide at dawn was needed") is never stored as observed weather.
+                "observation_type": enum_field(
+                    ["observed", "forecast", "planning_requirement"], nullable=True
+                ),
+                # 2.25: sea / air conditions as the SOURCE states them (amphibious and naval
+                # narratives describe weather mostly as wind, sea state and tide). Numbers only
+                # when the text gives them.
+                **_CONDITION_FIELDS,
             },
         },
         "api_data": {
@@ -118,6 +144,14 @@ WEATHER_OUTPUT_SCHEMA = {
                 "properties": {
                     "EventID": ulid_field(),
                     "Sub-eventID": ulid_field(),
+                    # 2.25: each mention keeps its own statement (the record's extracted_data
+                    # holds the first one; later mentions' text was lost before).
+                    "weather_description": make_nullable("string"),
+                    "original_text": make_nullable("string"),
+                    "observation_type": enum_field(
+                        ["observed", "forecast", "planning_requirement"], nullable=True
+                    ),
+                    **_CONDITION_FIELDS,
                 },
             },
         },

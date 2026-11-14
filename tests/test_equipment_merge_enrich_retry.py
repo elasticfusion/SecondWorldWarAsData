@@ -27,7 +27,7 @@ def test_already_enriched_not_re_enriched(tmp_path, monkeypatch):
     calls = {"n": 0}
     monkeypatch.setattr(
         eq,
-        "_enrich_and_add_media",
+        "_enrich_from_encyclopedias",
         lambda *a, **k: calls.__setitem__("n", calls["n"] + 1),
     )
     f = _write(
@@ -45,7 +45,6 @@ def test_already_enriched_not_re_enriched(tmp_path, monkeypatch):
         {"common_name": "M4 Sherman"},
         "M4",
         grok_client=_CountingGrok(),
-        verify_media_with_vision=False,
     )
     assert calls["n"] == 0  # never re-enriched
     rec = json.loads(f.read_text())
@@ -60,7 +59,7 @@ def test_failed_enrichment_retried_on_merge(tmp_path, monkeypatch):
         calls["n"] += 1
         data["specifications"] = {"weight_kg": 30300}
 
-    monkeypatch.setattr(eq, "_enrich_and_add_media", fake)
+    monkeypatch.setattr(eq, "_enrich_from_encyclopedias", fake)
     # Record saved WITHOUT enrichment_status -> first enrichment had failed.
     f = _write(
         tmp_path,
@@ -76,7 +75,6 @@ def test_failed_enrichment_retried_on_merge(tmp_path, monkeypatch):
         {"common_name": "M4 Sherman"},
         "M4",
         grok_client=_CountingGrok(),
-        verify_media_with_vision=False,
     )
     assert calls["n"] == 1  # retried
     rec = json.loads(f.read_text())

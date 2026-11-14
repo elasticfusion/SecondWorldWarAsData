@@ -12,6 +12,9 @@ class Paragraph:
     absolute_number: int
     text: str
     page_number: Optional[int] = None
+    # The page the paragraph ENDS on, when it runs past page_number (HyperWar paragraphs that
+    # cross a printed page are rejoined; a citation of their second half needs this page).
+    page_end: Optional[int] = None
     section_id: str = ""
     source_file: str = ""
     # Quotation provenance (set when a block was re-marked as a block quote by
@@ -32,6 +35,21 @@ class Image:
     caption: Optional[str] = None
     # Paragraph the image FOLLOWS in the source (parser anchor); 0 = unknown / before all text.
     paragraph_number: int = 0
+    # The note whose text links the image ("See naval command chart"), 0 = linked from the text.
+    # Its paragraph_number is then the paragraph citing that note.
+    note_number: int = 0
+
+    def to_dict(self) -> dict:
+        """The ONE serialized form of an image (parsed.json, Lambda output)."""
+        return {
+            "type": self.type,
+            "resource_id": self.resource_id,
+            "url": self.url,
+            "alt_text": self.alt_text,
+            "caption": self.caption,
+            "paragraph_number": self.paragraph_number,
+            "note_number": self.note_number,
+        }
 
 
 @dataclass
@@ -58,6 +76,19 @@ class Footnote:
     text: str = (
         ""  # the citation text from the end-of-chapter #cn definition (if present)
     )
+    # "footnote" | "endnote" - the SOURCE's own label (its notes-section heading).
+    kind: str = "footnote"
+
+    def to_dict(self) -> dict:
+        """The ONE serialized form of a note (parsed.json, endnotes.json, Lambda output)."""
+        return {
+            "number": self.number,
+            "url": self.url,
+            "text": self.text,
+            "kind": self.kind,
+            # first paragraph citing this note (0 = not located) - provenance for the citation
+            "paragraph_number": self.paragraph_number,
+        }
 
 
 @dataclass

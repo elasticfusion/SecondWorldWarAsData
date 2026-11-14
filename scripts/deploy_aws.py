@@ -107,9 +107,9 @@ def batch_phase2_param(action: str, requested: Optional[str], existing: list) ->
     * ``requested`` ('true'/'false') wins.
     * Else on UPDATE: keep the live value (UsePreviousValue) — but only if the parent stack already
       HAS the parameter (``existing`` = the stack's current Parameters); a parameter new to the
-      parent errors on UsePreviousValue, so fall back to the previous effective value ('false',
-      the ComputeStack default it was running with).
-    * Else ('create'): 'false'.
+      parent errors on UsePreviousValue, so fall back to the template default ('true').
+    * Else ('create'): 'true' - batch is the production path (batch results are mapped differently
+      from live calls, so the batch path must be the one that runs by default).
     """
     if requested is not None:
         if requested not in ("true", "false"):
@@ -121,7 +121,7 @@ def batch_phase2_param(action: str, requested: Optional[str], existing: list) ->
         p.get("ParameterKey") == "BatchPhase2" for p in existing
     ):
         return {"ParameterKey": "BatchPhase2", "UsePreviousValue": True}
-    return {"ParameterKey": "BatchPhase2", "ParameterValue": "false"}
+    return {"ParameterKey": "BatchPhase2", "ParameterValue": "true"}
 
 
 def cmd_deploy(args):

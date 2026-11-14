@@ -8,12 +8,13 @@ from typing import Any, Dict, List, Optional
 
 from jsonschema import ValidationError, validate
 
-from src.grok_client import GrokClient, GrokAPIError
+from src.grok_client import GrokClient, GrokAPIError, current_book
 from src.json_schemas import EVENT_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
 from src.schemas import ULID_PATTERN
 
 from src.utils.prompt_loader import get_system_prompt
+from src.utils.paragraph_numbers import paragraph_key
 
 logger = logging.getLogger(__name__)
 
@@ -81,10 +82,12 @@ def _build_subevent_fulltext(se: dict, para_lookup: dict) -> None:
         nums = se.pop("paragraphs", None)
     if nums is None and "Sub-event_fulltext" in se:
         return  # Already has fulltext (cached old-format response)
+    from src.utils.paragraph_numbers import coerce_paragraph_numbers
+
     fulltext = {}
-    for n in nums or []:
-        if isinstance(n, int) and n in para_lookup:
-            fulltext[f"Paragraph_{n}"] = para_lookup[n]
+    for n in coerce_paragraph_numbers(nums, scope="events.fulltext"):
+        if n in para_lookup:
+            fulltext[paragraph_key(n)] = para_lookup[n]
         else:
             logger.warning("  Paragraph %s not found in parsed data, skipping", n)
     se["Sub-event_fulltext"] = fulltext
@@ -100,6 +103,139 @@ def _build_subevent_fulltext(se: dict, para_lookup: dict) -> None:
             nums,
         )
         se["Sub-event_fulltext"] = {"summary": se["Sub-event_summary"]}
+
+
+def _known_paragraphs(parsed_data: Optional[dict]) -> Optional[set]:
+    """The paragraph numbers actually given to the model, or None when unknown."""
+    nums = {
+        p["absolute_number"]
+        for p in (parsed_data or {}).get("paragraphs", []) or []
+        if isinstance(p, dict) and isinstance(p.get("absolute_number"), int)
+    }
+    return nums or None
+
+
+def _paragraph_claims(subs: list, known: Optional[set] = None) -> list:
+    """[(index, [paragraph numbers in the model's order])] for each sub-event that cites any
+    (the model's ``paragraph_numbers``, or the older ``paragraphs`` key). With ``known``, a cited
+    number that is not one of the given paragraphs takes no part in ownership (it resolves to no
+    text anyway, and must not make a claim look bigger or steal a real paragraph)."""
+    from src.utils.paragraph_numbers import coerce_paragraph_numbers
+
+    claims = []
+    for i, se in enumerate(subs):
+        if not isinstance(se, dict):
+            continue
+        raw = se.get("paragraph_numbers")
+        if raw is None:
+            raw = se.get("paragraphs")
+        if raw is None:
+            continue  # cached old-format sub-event that already carries its fulltext
+        nums = list(
+            dict.fromkeys(coerce_paragraph_numbers(raw, scope="events.disjoint"))
+        )
+        if known is not None:
+            nums = [n for n in nums if n in known]
+        claims.append((i, nums))
+    return claims
+
+
+def _make_paragraphs_disjoint(
+    response: dict, parsed_data: Optional[dict] = None
+) -> int:
+    """Give every paragraph to exactly ONE sub-event. Returns the number of contested paragraphs.
+
+    XChannel-8 (2026-11-07): the model assigned Paragraph_39-262 to "U.S. airborne assault" and
+    Paragraph_124-262 to "Seaborne beach landings", so 105 paragraphs were extracted twice for
+    every entity type (people, places, units, dates, equipment, weather), attributed to both
+    sub-events, and their footnotes counted twice. A contested paragraph goes to the claimant with
+    the SMALLEST claim (the more specific grouping; the earlier sub-event on a tie): the airborne
+    assault keeps 39-123, the beach landings 124-262. Runs BEFORE the footnote refs and the
+    fulltext are built from the paragraph arrays. A sub-event left with no paragraph keeps its
+    summary (the existing summary fallback) and is reported. Note markers that occur ONLY in the
+    paragraphs a sub-event gave up are removed from its ``references`` too (they belong to the
+    sub-event that now owns those paragraphs).
+    """
+    subs = (response.get("Event", {}) or {}).get("Sub-events", []) or []
+    claims = _paragraph_claims(subs, _known_paragraphs(parsed_data))
+    owner, contested = _paragraph_owners(claims)
+    text = _paragraph_text_lookup(parsed_data)
+    emptied = []
+    for i, nums in claims:
+        kept = _keep_owned(subs[i], nums, owner, i, text)
+        if nums and not kept:
+            emptied.append(str(subs[i].get("Sub-event_summary") or "")[:60])
+    if contested:
+        logger.info(
+            "OBSERV events.paragraph_overlap_resolved contested=%d sub_events=%d emptied=%d "
+            "(each paragraph now belongs to one sub-event; emptied ones keep their summary)%s",
+            len(contested),
+            len(claims),
+            len(emptied),
+            f" emptied_summaries={emptied}" if emptied else "",
+        )
+    return len(contested)
+
+
+def _paragraph_owners(claims: list) -> tuple:
+    """({paragraph: owning sub-event index}, contested paragraphs): the smallest claim wins, the
+    earlier sub-event on a tie."""
+    size = {i: len(nums) for i, nums in claims}
+    owner: dict = {}
+    contested = set()
+    for i, nums in claims:
+        for n in nums:
+            current = owner.setdefault(n, i)
+            if current == i:
+                continue
+            contested.add(n)
+            if size[i] < size[current]:
+                owner[n] = i
+    return owner, contested
+
+
+def _keep_owned(se: dict, nums: list, owner: dict, i: int, text: dict) -> list:
+    """Rewrite the sub-event's paragraph_numbers to the paragraphs it owns. Returns them."""
+    kept = [n for n in nums if owner[n] == i]
+    lost = [n for n in nums if owner[n] != i]
+    se.pop("paragraphs", None)
+    se["paragraph_numbers"] = kept
+    if lost:
+        _drop_lost_references(se, kept, lost, text)
+    return kept
+
+
+def _paragraph_text_lookup(parsed_data: Optional[dict]) -> dict:
+    return {
+        p["absolute_number"]: str(p.get("text", ""))
+        for p in (parsed_data or {}).get("paragraphs", []) or []
+        if isinstance(p, dict) and "absolute_number" in p
+    }
+
+
+_SUP_MARK = re.compile(r"<sup>\[(\d{1,6})\]")
+
+
+def _drop_lost_references(se: dict, kept: list, lost: list, text: dict) -> None:
+    """Remove from ``se["references"]`` the note markers found only in its ``lost`` paragraphs."""
+    refs = se.get("references")
+    if not isinstance(refs, list) or not refs or not text:
+        return
+
+    def marks(nums):
+        return {int(m) for n in nums for m in _SUP_MARK.findall(text.get(n, ""))}
+
+    elsewhere = marks(lost) - marks(kept)
+    if elsewhere:
+        se["references"] = [r for r in refs if _ref_number(r) not in elsewhere]
+
+
+def _ref_number(ref) -> Optional[int]:
+    if isinstance(ref, int):
+        return ref
+    if isinstance(ref, str) and ref.isascii() and ref.isdigit():
+        return int(ref)
+    return None
 
 
 def _reconstruct_fulltext(response: dict, parsed_data: dict) -> dict:
@@ -124,6 +260,17 @@ def _int_number_set(items) -> set:
     }
 
 
+def _note_numbers_by_kind(parsed_data: dict) -> tuple:
+    """``(footnote_numbers, endnote_numbers)``: Phase 1 records each note's source ``kind`` in the
+    one ``footnotes`` array; a legacy separate ``endnotes`` array is still honoured."""
+    notes = [n for n in (parsed_data.get("footnotes") or []) if isinstance(n, dict)]
+    endnotes = [n for n in notes if n.get("kind") == "endnote"]
+    footnotes = [n for n in notes if n.get("kind") != "endnote"]
+    return _int_number_set(footnotes), (
+        _int_number_set(endnotes) | _int_number_set(parsed_data.get("endnotes"))
+    )
+
+
 def _parse_note_context(parsed_data: dict) -> tuple:
     """Return ``(para_lookup, fn_nums, en_nums)`` from the parsed chapter data: a map of
     absolute paragraph number -> raw text, and the sets of known footnote/endnote numbers.
@@ -135,11 +282,8 @@ def _parse_note_context(parsed_data: dict) -> tuple:
             for p in parsed_data.get("paragraphs", [])
             if isinstance(p, dict) and "absolute_number" in p
         }
-        return (
-            para_lookup,
-            _int_number_set(parsed_data.get("footnotes")),
-            _int_number_set(parsed_data.get("endnotes")),
-        )
+        fn_nums, en_nums = _note_numbers_by_kind(parsed_data)
+        return para_lookup, fn_nums, en_nums
     except (
         Exception
     ) as e:  # noqa: BLE001 - bad parsed arrays -> no classification context
@@ -270,6 +414,7 @@ def _assign_subevent_ids(event: dict, eid: str) -> None:
     raises before schema validation)."""
     from src.utils.deterministic_ids import sub_event_id as _sub_event_id
 
+    seen: set = set()
     for index, se in enumerate(event.get("Sub-events", []) or []):
         if not isinstance(se, dict):
             continue
@@ -280,12 +425,13 @@ def _assign_subevent_ids(event: dict, eid: str) -> None:
             # raise before schema validation (aborting the whole extraction + bypassing the retry
             # loop). Fall back to the sub-event's ordinal — still deterministic within the parent.
             name = f"index:{index}"
-        se["Sub-eventID"] = _sub_event_id(
-            eid,
-            para_start=start,
-            para_end=end,
-            name=name,
-        )
+        seid = _sub_event_id(eid, para_start=start, para_end=end, name=name)
+        if seid in seen:
+            # Two range-less sub-events with the same name (e.g. both left with only their
+            # summary after paragraph de-overlap): keep IDs unique, still deterministic.
+            seid = _sub_event_id(eid, name=f"{name}|index:{index}")
+        seen.add(seid)
+        se["Sub-eventID"] = seid
 
 
 def _apply_deterministic_ids(response: dict, parsed_data: dict) -> dict:
@@ -335,7 +481,7 @@ def create_event_prompt(parsed_data: Dict[str, Any]) -> Optional[str]:
     for para in content_paragraphs:
         num = para["absolute_number"]
         text = para["text"]
-        paragraphs_text.append(f"Paragraph_{num}: {text}")
+        paragraphs_text.append(f"{paragraph_key(num)}: {text}")
 
     paragraphs = "\n\n".join(paragraphs_text)
 
@@ -407,6 +553,7 @@ def _save_event_output(response: dict, parsed_file: Path, output_dir: Path) -> P
             event_obj.get("EventID") or "?",
             n_subs,
         )
+        _observe_coverage(response, parsed_file)
         _emit_source_section_safe(response, parsed_file, output_dir)
     else:
         logger.warning(
@@ -418,6 +565,111 @@ def _save_event_output(response: dict, parsed_file: Path, output_dir: Path) -> P
             (response.get("Event", {}) or {}).get("EventID") or "?",
         )
     return output_file
+
+
+# Below this share of the chapter's narrative text (by characters, so headings weigh little) in
+# its sub-events, the chapter's entities are extracted from part of it only: alert.
+_MIN_COVERAGE = 0.8
+
+
+def _observe_coverage(response: dict, parsed_file: Path) -> None:
+    """How much of the chapter's narrative the sub-events hold. Every entity extractor reads the
+    sub-events' fulltext, so a paragraph in no sub-event yields no people, places, units ... :
+    a low share is an actionable error (re-run the chapter's event extraction). Observability
+    only - never raises."""
+    try:
+        found = _coverage(response, parsed_file)
+    except Exception as e:  # noqa: BLE001 - observability must never break extraction
+        logger.warning(
+            "OBSERV events.coverage status=unknown file=%s err=%s", parsed_file.name, e
+        )
+        return
+    if found is None:
+        return
+    share, paragraphs, missing = found
+    logger.info(
+        "OBSERV events.coverage file=%s share=%.3f paragraphs=%d uncovered=%d",
+        parsed_file.name,
+        share,
+        paragraphs,
+        len(missing),
+    )
+    if share < _MIN_COVERAGE:
+        from src.utils.observe import observe_error
+
+        observe_error(
+            "events",
+            "coverage_low",
+            note=(
+                f"sub-events hold only {share:.0%} of the chapter's narrative: entities of the "
+                "uncovered paragraphs are NOT extracted. Clear the chapter's events cache and "
+                "re-run its Phase 2 event extraction"
+            ),
+            file=parsed_file.name,
+            share=round(share, 3),
+            uncovered=_ranges(missing)[:20],
+        )
+
+
+def _coverage(response: dict, parsed_file: Path):
+    """(share of narrative characters covered, narrative paragraphs, uncovered numbers), or None
+    for a chapter with no narrative."""
+    with open(parsed_file, "r", encoding="utf-8") as f:
+        paragraphs = json.load(f).get("paragraphs", []) or []
+    return _coverage_of(response, paragraphs)
+
+
+def _coverage_of(response: dict, paragraphs: list):
+    """``_coverage`` over the chapter's ``paragraphs``."""
+    content = _narrative_sizes(paragraphs)
+    total = sum(content.values())
+    if not total:
+        return None
+    covered = _covered_paragraphs(response)
+    share = sum(n for k, n in content.items() if k in covered) / total
+    return share, len(content), sorted(k for k in content if k not in covered)
+
+
+def _narrative_sizes(paragraphs: list) -> Dict[int, int]:
+    """{paragraph number: characters} of the narrative: no footnotes, no tables."""
+    return {
+        int(p["absolute_number"]): len(str(p.get("text", "")))
+        for p in paragraphs
+        if _is_numbered(p)
+        and not _is_footnote_paragraph(p, paragraphs)
+        and not _is_table(p)
+    }
+
+
+def _is_table(p: dict) -> bool:
+    """A table paragraph holds figures, not narrative the extractors are expected to cover."""
+    return str(p.get("text", "")).lstrip().startswith(("<table", "|"))
+
+
+def _is_numbered(p: Any) -> bool:
+    return isinstance(p, dict) and str(p.get("absolute_number", "")).isdigit()
+
+
+def _covered_paragraphs(response: dict) -> set:
+    covered = set()
+    for se in (response.get("Event", {}) or {}).get("Sub-events", []) or []:
+        fulltext = se.get("Sub-event_fulltext") if isinstance(se, dict) else None
+        for key in fulltext or {}:
+            key = str(key)
+            if key.startswith("Paragraph_") and key[10:].isdigit():
+                covered.add(int(key[10:]))
+    return covered
+
+
+def _ranges(numbers: List[int]) -> List[str]:
+    """[3, 4, 5, 9] -> ["3-5", "9"]."""
+    out: List[str] = []
+    for n in numbers:
+        if out and int(out[-1].split("-")[-1]) == n - 1:
+            out[-1] = f"{out[-1].split('-')[0]}-{n}"
+        else:
+            out.append(str(n))
+    return out
 
 
 def _emit_source_section_safe(
@@ -507,6 +759,14 @@ def _merge_event_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
     return base
 
 
+def _book_of(parsed_data: Dict[str, Any]) -> Optional[str]:
+    """The book a chapter's requests are asked for: the chapter's folder slug (``current_book``,
+    set per chapter), else the parsed ``book`` (Phase 1 enforces the two are equal). Passed to the
+    client explicitly so a worker thread that lost the context still asks for the right book.
+    """
+    return current_book.get() or parsed_data.get("book") or None
+
+
 def _extract_chunk(
     parsed_data: Dict[str, Any],
     paragraphs: List[Dict[str, Any]],
@@ -528,12 +788,14 @@ def _extract_chunk(
         temperature=0.1,
         use_cache=True,
         cache_type="events",
+        book=_book_of(parsed_data),
     )
     if "EventID" in result and "Event" not in result:
         result = {"Event": result}
     # Blocker C (both paths): populate footnote refs from the chunk's raw paragraphs
     # BEFORE _reconstruct_fulltext pops them. Without this, auto-split chapters yield
     # sub-events with no Footnote_References -> 0 bibliography for split documents.
+    _make_paragraphs_disjoint(result, chunk_data)
     _populate_footnote_refs(result, chunk_data)
     _reconstruct_fulltext(result, chunk_data)
     _apply_deterministic_ids(result, chunk_data)
@@ -552,6 +814,9 @@ def _try_fix_ulid_errors(
         fixed_response = _fix_invalid_ulids(response)
         if isinstance(fixed_response, dict):
             validate_event_json(fixed_response)
+            found = _coverage(fixed_response, parsed_file)
+            if found is not None and found[0] < _MIN_COVERAGE:
+                return None  # fixed ids, but too little of the chapter: the retry loop decides
             logger.info("Fixed invalid ULIDs automatically")
             return _save_event_output(fixed_response, parsed_file, output_dir)
     except Exception as fix_err:  # noqa: BLE001
@@ -593,8 +858,12 @@ def _auto_split_and_extract(
     parsed_file: Path,
     output_dir: Path,
     grok_client: GrokClient,
+    require_coverage: bool = False,
 ) -> Optional[Path]:
-    """Split a too-large chapter into chunks, extract each, merge results."""
+    """Split a too-large chapter into chunks, extract each, merge results. With
+    ``require_coverage`` the merged sub-events must hold the chapter's narrative (_MIN_COVERAGE):
+    otherwise nothing is saved, the chunks' cached answers are evicted, and None is returned.
+    """
     content_paras = [
         p
         for p in parsed_data["paragraphs"]
@@ -621,19 +890,55 @@ def _auto_split_and_extract(
         return None
 
     merged = _merge_event_results(results)
-    if len(results) < len(chunks):
+    if require_coverage and _parts_leave_chapter_out(
+        merged, parsed_data, chunks, grok_client
+    ):
+        return None
+    _mark_partial(merged, len(results), len(chunks))
+    return _save_event_output(merged, parsed_file, output_dir)
+
+
+def _mark_partial(merged: dict, extracted: int, total: int) -> None:
+    """Record (and log) how many of the chapter's parts the merged answer holds."""
+    if extracted < total:
         merged["_partial"] = True
-        merged["_chunks_extracted"] = len(results)
-        merged["_chunks_total"] = len(chunks)
+        merged["_chunks_extracted"] = extracted
+        merged["_chunks_total"] = total
         logger.warning(
             "  Merged %d/%d chunks (partial — %d chunks failed)",
-            len(results),
-            len(chunks),
-            len(chunks) - len(results),
+            extracted,
+            total,
+            total - extracted,
         )
     else:
-        logger.info("  Merged %d chunks into single event", len(results))
-    return _save_event_output(merged, parsed_file, output_dir)
+        logger.info("  Merged %d chunks into single event", extracted)
+
+
+def _parts_leave_chapter_out(merged, parsed_data, chunks, grok_client) -> bool:
+    """Whether the merged parts still miss too much of the chapter (then their cached answers
+    are evicted, so a re-run asks afresh)."""
+    shortfall = _coverage_shortfall(merged, parsed_data)
+    if not shortfall:
+        return False
+    logger.warning(
+        "  The chapter's parts still cover only %.0f%% — not saved", shortfall[0] * 100
+    )
+    _evict_chunks(parsed_data, chunks, grok_client)
+    return True
+
+
+def _evict_chunks(parsed_data: dict, chunks: list, grok_client) -> None:
+    """Drop the chunks' cached answers (a re-run must ask afresh, not replay them)."""
+    system_prompt = get_system_prompt("events")
+    for chunk in chunks:
+        prompt = create_event_prompt({**parsed_data, "paragraphs": chunk})
+        if prompt:
+            grok_client.clear_cache_entry(
+                prompt,
+                cache_type="events",
+                system_prompt=system_prompt,
+                book=_book_of(parsed_data),
+            )
 
 
 def _valid_paragraph_set(parsed_data: dict) -> set:
@@ -649,11 +954,13 @@ def _cited_paragraph_numbers(response: dict) -> list:
     """All integer paragraph_numbers the response's sub-events cite."""
     ev = response.get("Event", response)
     subs = ev.get("Sub-events", ev.get("Sub_events", [])) or []
+    from src.utils.paragraph_numbers import coerce_paragraph_numbers
+
     nums: list = []
     for s in subs:
         if isinstance(s, dict):
             raw = s.get("paragraph_numbers") or s.get("paragraphs") or []
-            nums += [n for n in raw if isinstance(n, int)]
+            nums += coerce_paragraph_numbers(raw, scope="events.cited")
     return nums
 
 
@@ -729,6 +1036,9 @@ def extract_events(
         return None
 
     original_prompt = prompt  # Keep original for cache key
+    system_prompt = get_system_prompt("events")
+    book = _book_of(parsed_data)
+    shortfall = None  # the last answer's coverage shortfall, if it was too low
 
     # Try to get valid JSON with retries
     for attempt in range(max_retries):
@@ -736,21 +1046,21 @@ def extract_events(
             # Call Grok API
             response = grok_client.extract_json(
                 prompt=prompt,
-                system_prompt=get_system_prompt("events"),
+                system_prompt=system_prompt,
                 temperature=0.1,
                 use_cache=True,
                 cache_type="events",
+                book=book,
             )
         except GrokAPIError as e:
-            if "splitting chapter" not in str(e).lower():
-                raise
-            logger.warning("  Response truncated — auto-splitting chapter")
-            split_result = _auto_split_and_extract(
-                parsed_data, parsed_file, output_dir, grok_client
+            if shortfall:  # a truncated re-ask of a chapter already found under-covered
+                return _split_after_low_coverage(
+                    parsed_data, parsed_file, output_dir, grok_client, shortfall
+                )
+            return _split_on_truncation(
+                e, parsed_data, parsed_file, output_dir, grok_client
             )
-            if split_result:
-                return split_result
-            raise
+        raw = json.dumps(response)  # as answered, before normalisation rewrites it
 
         # VALIDATE-AND-RESUBMIT (user 2026-10-30): the response's paragraph_numbers are
         # deterministically constrained by our input — they MUST be a subset of the paragraphs we
@@ -763,18 +1073,33 @@ def extract_events(
             _validate_paragraph_range(response, parsed_data, attempt)
             response = _normalize_event_response(response, parsed_data, parsed_file)
             validate_event_json(response)
-            # Validation passed - save and return
-            output_file = _save_event_output(response, parsed_file, output_dir)
-
-            if attempt > 0:
-                logger.info(f"  Validation passed on attempt {attempt + 1}")
-                # Cache the successful result with original prompt
-                cache = grok_client._get_cache("events")
-                cache[grok_client._make_cache_key(original_prompt, 0.1)] = json.dumps(
-                    response
+            # A complete, valid answer can still leave most of the chapter in no sub-event
+            # (Cross-Channel Attack ch. VIII, 2026-11-10: 7 sub-events held paragraphs 1-43 of 206,
+            # and every entity of the other 163 was never extracted): reject it like an invalid
+            # one - evict it, keep it for diagnosis, and ask again naming what was left out.
+            shortfall = _coverage_shortfall(response, parsed_data)
+            if shortfall:
+                _reject_low_coverage(
+                    grok_client,
+                    prompt,
+                    system_prompt,
+                    raw,
+                    parsed_file,
+                    attempt,
+                    shortfall,
+                    book,
                 )
-
-            return output_file
+                prompt = _coverage_retry_prompt(original_prompt, shortfall)
+                continue
+            # Validation passed - save and return
+            return _save_accepted(
+                response,
+                parsed_file,
+                output_dir,
+                attempt,
+                grok_client,
+                (original_prompt, system_prompt, raw, book),
+            )
 
         except ValidationError as e:
             fixed_output, prompt = _handle_validation_failure(
@@ -783,8 +1108,180 @@ def extract_events(
             if fixed_output:
                 return fixed_output
 
+    if shortfall:
+        return _split_after_low_coverage(
+            parsed_data, parsed_file, output_dir, grok_client, shortfall
+        )
     # Should never reach here — all loop paths return or raise
     raise ValueError("Unexpected error in validation loop")
+
+
+def _split_on_truncation(e, parsed_data, parsed_file, output_dir, grok_client) -> Path:
+    """A truncated answer (the client asks for a split): extract the chapter in parts, else
+    re-raise ``e``."""
+    from src.grok_client import GrokTruncationError
+
+    # the class, not only the text: a parse error's message quotes the answer, which could say it
+    if (
+        not isinstance(e, GrokTruncationError)
+        or "splitting chapter" not in str(e).lower()
+    ):
+        raise e
+    logger.warning("  Response truncated — auto-splitting chapter")
+    split_result = _auto_split_and_extract(
+        parsed_data, parsed_file, output_dir, grok_client
+    )
+    if split_result:
+        return split_result
+    raise e
+
+
+def _save_accepted(response, parsed_file, output_dir, attempt, grok_client, asked):
+    """Save the accepted answer. After a retry, also store it under the ORIGINAL request's key
+    (``asked`` = original prompt, system prompt, answer as received, book), so a re-run of the chapter
+    is served it instead of re-asking - and re-rejecting - the first answer."""
+    output_file = _save_event_output(response, parsed_file, output_dir)
+    if attempt > 0:
+        logger.info(f"  Validation passed on attempt {attempt + 1}")
+        _cache_answer(grok_client, *asked)
+    return output_file
+
+
+def _coverage_shortfall(response: dict, parsed_data: dict) -> Optional[tuple]:
+    """(share, uncovered paragraph numbers) when the sub-events hold less than _MIN_COVERAGE of
+    the chapter's narrative, else None (also for a chapter with no narrative)."""
+    found = _coverage_of(response, parsed_data.get("paragraphs", []) or [])
+    if found is None or found[0] >= _MIN_COVERAGE:
+        return None
+    return found[0], found[2]
+
+
+def _reject_low_coverage(
+    grok_client, prompt, system_prompt, raw, parsed_file, attempt, shortfall, book=None
+) -> None:
+    """Evict the incomplete answer (with the cache on it would be served to every re-run), keep a
+    copy beside the cache for diagnosis (uploaded with it to diagnostics/cache/<book>/), log it.
+    """
+    share, missing = shortfall
+    evicted = grok_client.clear_cache_entry(
+        prompt, cache_type="events", system_prompt=system_prompt, book=book
+    )
+    kept = _keep_rejected(grok_client, parsed_file, attempt, raw, share, missing)
+    logger.warning(
+        "OBSERV events.coverage_rejected status=warn file=%s attempt=%d share=%.3f "
+        "uncovered=%s evicted=%s kept=%s — asking again with the uncovered paragraphs named",
+        parsed_file.name,
+        attempt + 1,
+        share,
+        _ranges(missing)[:20],
+        evicted,
+        kept or "-",
+    )
+
+
+def _keep_rejected(grok_client, parsed_file, attempt, raw, share, missing) -> str:
+    """Write the rejected answer under <cache dir>/rejected/<book>/ ("" if there is no cache dir
+    or the write fails: diagnostics never break extraction)."""
+    try:
+        base = getattr(grok_client, "cache_dir", None)
+        if base is None:
+            return ""
+        out = (
+            Path(base)
+            / "rejected"
+            / parsed_file.parent.name
+            / f"{parsed_file.stem}-coverage-attempt{attempt + 1}.json"
+        )
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(
+            json.dumps(
+                {
+                    "reason": "coverage_low",
+                    "share": round(share, 3),
+                    "uncovered": _ranges(missing),
+                    "answer": json.loads(raw),
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        return str(out)
+    except Exception as e:  # noqa: BLE001 - diagnostics only
+        logger.warning(
+            "Could not keep the rejected events answer: %s", type(e).__name__
+        )
+        return ""
+
+
+def _coverage_retry_prompt(original_prompt: str, shortfall: tuple) -> str:
+    """The original request, with what the previous answer left out (always built on the
+    original, so feedback never piles up over attempts)."""
+    share, missing = shortfall
+    return f"""{original_prompt}
+
+PREVIOUS ATTEMPT WAS INCOMPLETE:
+Your sub-events held only {share:.0%} of the chapter's narrative. These paragraphs are in NO
+sub-event: {", ".join(_ranges(missing)[:40])}.
+Every narrative paragraph must belong to exactly one sub-event. Read the WHOLE chapter, to its last
+paragraph, and return the complete set of sub-events.
+"""
+
+
+def _cache_answer(
+    grok_client,
+    prompt: str,
+    system_prompt: Optional[str],
+    raw: str,
+    book: Optional[str] = None,
+) -> None:
+    """Store ``raw`` as the answer to ``prompt``, stamped with THAT request's identity (the answer
+    came from a re-ask, which carried its own RequestID; unstamped, a re-run would reject it).
+    """
+    grok_client.store_json_answer(
+        prompt, system_prompt, "events", json.loads(raw), temperature=0.1, book=book
+    )
+
+
+def _split_after_low_coverage(
+    parsed_data, parsed_file, output_dir, grok_client, shortfall
+) -> Path:
+    """Every attempt left too much of the chapter out: extract it in halves (each a shorter
+    request). If that does not cover it either, fail the chapter LOUDLY - never publish a chapter
+    whose entities come from a fraction of it."""
+    logger.warning(
+        "  Events cover only %.0f%% after every attempt — extracting the chapter in parts",
+        shortfall[0] * 100,
+    )
+    error = None
+    try:
+        out = _auto_split_and_extract(
+            parsed_data, parsed_file, output_dir, grok_client, require_coverage=True
+        )
+    except Exception as e:  # noqa: BLE001 - re-raised below, after the canonical alert
+        out, error = None, e
+    if out:
+        return out
+    from src.utils.observe import observe_error
+
+    observe_error(
+        "events",
+        "coverage_unrecoverable",
+        note=(
+            f"every events answer for this chapter held only {shortfall[0]:.0%} of its narrative, "
+            "also when extracted in parts: NO event file was written (entities of this chapter are "
+            "not extracted). The rejected answers are under diagnostics/cache/<book>/rejected/; "
+            "re-run the chapter's Phase 2 after reviewing them"
+        ),
+        file=parsed_file.name,
+        share=round(shortfall[0], 3),
+        uncovered=_ranges(shortfall[1])[:20],
+        split_error=type(error).__name__ if error else "",
+    )
+    if error is not None:
+        raise error
+    raise ValueError(
+        f"events for {parsed_file.name} cover only {shortfall[0]:.0%} of the chapter"
+    )
 
 
 def _normalize_event_response(response, parsed_data, parsed_file):
@@ -800,6 +1297,8 @@ def _normalize_event_response(response, parsed_data, parsed_file):
     if "Chapter" not in response:
         response["Chapter"] = parsed_data.get("chapter_title", "")
     # Populate refs BEFORE _reconstruct_fulltext (which pops the 'paragraphs' arrays it needs).
+    # Each paragraph belongs to ONE sub-event first (overlapping claims duplicated every entity).
+    _make_paragraphs_disjoint(response, parsed_data)
     _populate_footnote_refs(response, parsed_data)
     _reconstruct_fulltext(response, parsed_data)
     # OBSERV (bibliography chain): did we actually populate refs on the sub-events?

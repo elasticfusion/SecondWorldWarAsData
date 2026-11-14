@@ -87,13 +87,11 @@ def fetch_wikipedia_article(title: str, timeout: int = 20) -> Optional[Dict[str,
     if not title:
         return None
     try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+        from src.utils.wikimedia_client import TRANSIENT, wikimedia_get
 
-        resp = recorded_fetch(
+        resp = wikimedia_get(
             "wikipedia",
             _WIKI_API,
-            kind=TEXTUAL,
-            method="GET",
             params={
                 "action": "parse",
                 "format": "json",
@@ -103,9 +101,10 @@ def fetch_wikipedia_article(title: str, timeout: int = 20) -> Optional[Dict[str,
             },
             headers=_HEADERS,
             timeout=timeout,
+            subject=title,
             result_summary_fn=lambda r: f"parse-text status={r.status_code}",
         )
-        if resp.status_code != 200:
+        if resp is TRANSIENT or resp.status_code != 200:
             return None
         data = resp.json()
         if "error" in data:
@@ -134,12 +133,12 @@ def fetch_grokipedia_article(name: str, timeout: int = 20) -> Optional[Dict[str,
     page_url = _resolve_grokipedia_page(name, timeout)
     if not page_url:
         return None
-    # Grokipedia is a JS-rendered SPA, so a plain GET returns an empty shell. Render it with
-    # headless Chromium to capture the real article text; falls back to URL-only (extract=None)
-    # if Playwright/Chromium is unavailable or the render fails.
-    from src.enrichment.grokipedia import fetch_grokipedia_rendered
+    # The article is served server-side, so a plain GET carries its text; only a shell page
+    # falls back to the headless render. Unavailable text (transient, or no article) -> URL-only.
+    from src.enrichment.grokipedia import fetch_grokipedia_article_text
 
-    extract = fetch_grokipedia_rendered(page_url)
+    text = fetch_grokipedia_article_text(page_url, timeout=timeout)
+    extract = text if isinstance(text, str) and text else None
     return {
         "source": "grokipedia",
         "title": name,

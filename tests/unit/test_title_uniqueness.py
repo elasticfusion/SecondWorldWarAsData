@@ -253,3 +253,73 @@ def test_title_claim_old_final_is_real_collision_candidate():
     with patch.object(th, "dynamo", fake):
         state, marker = th._title_claim("OldTitle")
     assert state == "final" and marker == "sha256:prior"
+
+
+# --- normalised comparison (owner 2026-11-08: the same book under another spelling of its name) --
+
+
+def test_normalised_title_ignores_case_punctuation_accents_and_a_leading_article():
+    from src.ingestion.title_uniqueness import normalised_title
+
+    same = ("Cross-Channel_Attack", "cross channel attack", "The Cross-Channel Attack",
+            "CROSS_CHANNEL_ATTACK.", "Cross–Channel  Attack")  # fmt: skip
+    assert {normalised_title(t) for t in same} == {"cross_channel_attack"}
+    assert normalised_title("Rivière") == normalised_title("Riviere") == "riviere"
+    assert normalised_title("The_War") == "war" and normalised_title("The") == "the"
+    assert normalised_title("Утах") == "утах"  # other scripts are kept, not dropped
+    assert normalised_title("Logistical_Support_I") != normalised_title(
+        "Logistical_Support_II"
+    )
+
+
+def _fake_dynamo(items):
+    from unittest.mock import MagicMock
+
+    class _CCFE(Exception):
+        pass
+
+    fake = MagicMock()
+    fake.meta.client.exceptions.ConditionalCheckFailedException = _CCFE
+
+    def get_item(Key):
+        item = items.get(Key["cache_key"])
+        return {"Item": item} if item else {}
+
+    def put_item(Item, ConditionExpression):
+        if Item["cache_key"] in items:
+            raise _CCFE()
+        items[Item["cache_key"]] = Item
+
+    fake.get_item.side_effect = get_item
+    fake.put_item.side_effect = put_item
+    return fake
+
+
+def test_a_differently_spelled_name_finds_the_earlier_claim():
+    """ "cross-channel-attack" after "Cross-Channel_Attack": the same registry entry - so the
+    identity check runs instead of the second copy slipping in under another spelling.
+    """
+    import time
+    from unittest.mock import patch
+    from lambda_handlers import trigger_handler as th
+
+    old = int(time.time()) - th._TITLE_CLAIM_WAVE_S - 100
+    items = {"title#cross_channel_attack": {"state": "final", "checksum": "sha256:a",
+                                            "claimed_at": old}}  # fmt: skip
+    with patch.object(th, "dynamo", _fake_dynamo(items)):
+        assert th._title_claim("cross-channel-attack") == ("final", "sha256:a")
+        assert th._title_claim("Logistical_Support") == ("claimed", None)
+    assert "title#logistical_support" in items  # claimed under the normalised key
+
+
+def test_an_entry_registered_before_normalisation_still_holds_its_name():
+    import time
+    from unittest.mock import patch
+    from lambda_handlers import trigger_handler as th
+
+    old = int(time.time()) - th._TITLE_CLAIM_WAVE_S - 100
+    items = {"title#Cross-Channel_Attack": {"state": "final", "checksum": "sha256:legacy",
+                                            "claimed_at": old}}  # fmt: skip
+    with patch.object(th, "dynamo", _fake_dynamo(items)):
+        assert th._title_claim("Cross-Channel_Attack") == ("final", "sha256:legacy")
+    assert "title#cross_channel_attack" not in items  # nothing re-registered over it

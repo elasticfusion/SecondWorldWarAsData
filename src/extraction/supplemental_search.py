@@ -508,45 +508,12 @@ def search_llm(
             logger.info("Found via LLM: %s", url)
             return url
 
-    except Exception as e:
-        logger.debug("LLM search failed: %s", e)
+    except Exception as e:  # noqa: BLE001 - one failed lookup must not stop resolution
+        # Visible, not debug: a failing Grok call here silently turns into "no copy found".
+        logger.warning(
+            "OBSERV bib.llm_search_failed err=%s status=warn - this citation was not searched "
+            "via Grok; check Grok errors in this task's log (it is retried next Phase 3 run)",
+            type(e).__name__,
+        )
 
     return None
-
-
-def sequential_search(
-    title: str,
-    author: Optional[str] = None,
-    periodical: Optional[str] = None,
-    grok_client=None,
-    openserp_url: str = "http://localhost:7001",
-    search_gutenberg: bool = True,
-) -> Tuple[Optional[str], Optional[str]]:
-    """
-    Sequential search: Gutenberg → LLM → Archive.org → OpenSERP.
-
-    Returns:
-        tuple: (url, source) where source is the search method that found it
-    """
-    # First: Gutenberg (for books/periodicals only)
-    if search_gutenberg:
-        url = search_gutenberg_openserp(title, author, openserp_url)
-        if url:
-            return (url, "gutenberg")
-
-    # Second: LLM search
-    url = search_llm(title, author, grok_client)
-    if url:
-        return (url, "llm")
-
-    # Third: Archive.org
-    url = search_archive_org(title, author, periodical)
-    if url:
-        return (url, "archive_org")
-
-    # Fourth: OpenSERP general search
-    url = search_openserp(title, author, openserp_url)
-    if url:
-        return (url, "openserp")
-
-    return (None, None)

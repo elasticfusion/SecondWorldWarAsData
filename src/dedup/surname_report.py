@@ -48,14 +48,11 @@ def _band_for(distinct_count: int) -> str:
 
 def _extract_last_name(name: str) -> str:
     """Last-name extraction mirroring the dedup matcher (rank/suffix tolerant)."""
-    from importlib import import_module
+    from src.dedup.find_duplicate_people import (
+        _extract_last_name as _matcher_last_name,
+    )
 
-    try:
-        fdp = import_module("scripts.find_duplicate_people")  # type: ignore
-        return fdp._extract_last_name(name)
-    except Exception:
-        parts = name.split()
-        return (parts[-1] if parts else name).lower()
+    return _matcher_last_name(name)
 
 
 def _canonical_nationality(nat: Optional[str]) -> Optional[str]:

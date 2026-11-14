@@ -88,6 +88,50 @@ class TestExtractWithChunkHalving:
     def test_empty_chunks(self):
         assert extract_with_chunk_halving([], lambda c: {}, "test") == {}
 
+    def test_every_chunk_is_asked_in_one_batch_round(self):
+        """A queued chunk (BatchModeCollecting) must not stop the others: all are queued in the same
+        round, then the signal propagates. Stopping at the first queued one asked chapter 8's
+        weather one chunk per round, for six rounds (2026-11-13)."""
+        asked = []
+
+        def extract_fn(chunk):
+            asked.append(chunk[0])
+            raise BatchModeCollecting("queued")
+
+        with pytest.raises(BatchModeCollecting):
+            extract_with_chunk_halving([["a"], ["b"], ["c"]], extract_fn, "test")
+        assert asked == ["a", "b", "c"]
+
+    def test_answered_chunks_are_kept_when_another_is_queued(self):
+        out = {}
+
+        def extract_fn(chunk):
+            if chunk[0] == "b":
+                raise BatchModeCollecting("queued")
+            return {chunk[0]: 1}
+
+        from src.utils.chunked_extract import ask_all, _extract_one_chunk_recursive
+
+        with pytest.raises(BatchModeCollecting):
+            ask_all(
+                [["a"], ["b"], ["c"]],
+                lambda c: _extract_one_chunk_recursive(c, extract_fn, "t", out),
+            )
+        assert out == {"a": 1, "c": 1}
+
+    def test_both_halves_of_a_split_are_asked_in_one_round(self):
+        asked = []
+
+        def extract_fn(chunk):
+            if len(chunk) > 1:
+                raise GrokTruncationError("split")
+            asked.append(chunk[0])
+            raise BatchModeCollecting("queued")
+
+        with pytest.raises(BatchModeCollecting):
+            extract_with_chunk_halving([["a", "b"]], extract_fn, "test")
+        assert asked == ["a", "b"]
+
     def test_merges_across_chunks(self):
         chunks = [["x"], ["y"], ["z"]]
         result = extract_with_chunk_halving(chunks, lambda c: {c[0]: len(c)}, "test")

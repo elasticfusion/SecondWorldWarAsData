@@ -8,7 +8,6 @@ processing:
   generate_download_scripts: true
 equipment:
   enable_enrichment: true
-  verify_media_with_vision: true
 supplemental_material:
   verify_archive_urls: true
   extract_isbn: true

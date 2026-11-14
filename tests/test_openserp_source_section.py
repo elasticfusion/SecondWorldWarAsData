@@ -38,7 +38,7 @@ def test_searches_only_sections_with_operation(tmp_path):
             return_value=[{"url": "http://s1", "title": "AAR", "source": "openserp"}],
         ) as mock_search,
     ):
-        n = oe.enrich_source_sections_with_openserp(ss, "http://x")
+        n = oe.enrich_source_sections_with_openserp(ss.parent, "http://x")
     assert n == 1
     # searched the operation name, NOT a granular event name
     assert mock_search.call_args.args[0] == "Battle of the Bulge"
@@ -72,7 +72,7 @@ def test_dedupes_primary_sources(tmp_path):
             ],
         ),
     ):
-        oe.enrich_source_sections_with_openserp(ss, "http://x")
+        oe.enrich_source_sections_with_openserp(ss.parent, "http://x")
     a = json.loads((ss / "a.json").read_text())
     urls = [s["url"] for s in a["primary_sources"]]
     assert urls.count("http://dup") == 1 and "http://new" in urls

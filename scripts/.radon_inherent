@@ -16,3 +16,23 @@ src/enrichment/places_grok_geocode.py::_toponym_from_prose 30cf7de6df8c1332424f0
 # --- bulk-seeded C+ backlog (2026-10-20) ---
 
 # --- bulk-seeded C+ backlog (2026-10-20) ---
+
+# --- moved unrefactored from scripts/ (SRC_SCRIPTS_SEPARATION.md PR 1, D4, 2026-11-06) ---
+src/dedup/find_duplicate_people.py::_shared_group_affiliation 43ae6f062ea4fe66d3fbcc9a60d1de6eef345638883fbe4048bbca472d5bbd40  # C19: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_people.py::_build_pairwise_matches e7cfcee79fa08ad92ab3dac88db21adf014d182898497f54020a06557f74b173  # C17: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_people.py::_has_shared_biographical_data 0012e41df6de234d1b67e992b8b3965baf88412f7a6843ccb1552cf1be584afb  # C14: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_people.py::_person_units 45dd14c1e5557c633aac33770859fcf624ba7597659af555bb3315d4360daae7  # C14: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_people.py::_check_event_overlap 68d57de61710ab27a86082bff7efedea9e0a923601d1ed3c421fab5b4388f2a0  # C14: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_people.py::_person_group_affiliations 278f48610b192e7bf945d506dbc22cd3ff85f198229877d5fb27329aa1382cb6  # C13: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_people.py::_check_title_alias b63be969c6f70af0c2551944011b35af7e7769bfacc3c10408b33074d6fe3dfe  # C13: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_people.py::_min_distance_in_text 7e65982be16ecd767f998c77bfffeb2120ae12927beeea48d1f30246a09c92e7  # C12: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_people.py::_names_within_distance 210d6a6838c3e0e0c7f9df446a8f43cf0dc5b351c158a896412849f3755e933a  # C11: moved unrefactored; DEAD CODE (only caller _check_proximity has no callers), not exercised by the golden test; remove per TODO
+src/dedup/find_duplicate_people.py::_check_middle_name_variant 58d0ca0d77addc65e8a3d4ec58e41613d93c5fce8215e1cb5f147105e732c81a  # C11: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_places_v2.py::find_duplicate_places 11d6f60c3f6e7a7270ce722564d7e19c83a5233df3c8a897acc65d33d6248bb4  # C14: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_places_v2.py::_filter_excluded 0c9841bf5ff7bb86947e13f099969dddda909d4f6c3b719e4122107a848658fc  # C12: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_groups.py::find_duplicate_groups d5e234d29ac58189daf6898b185c63cf4003c1f707e0bd390458d074ada01fc7  # C17: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_groups.py::_find_group_cluster e46a50b6d05df3b3a9d4ccea401c19392ffd4ff0085427699548ea015093d378  # C13: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_groups.py::_filter_excluded 0c9841bf5ff7bb86947e13f099969dddda909d4f6c3b719e4122107a848658fc  # C12: moved unrefactored; byte-identical body to find_duplicate_places_v2._filter_excluded (DRY, refactor per TODO); golden test guards behaviour
+src/dedup/find_duplicate_equipment.py::_score_pair 5f1a44fcbd4e5040df826ffb276e76b2b00f0f5452abdef40da2166501827698  # C13: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/find_duplicate_equipment.py::find_potential_duplicates 97c6e74b6fb850225d8bb43dcbffcc13749af5ced4ff517c091b0adb16b0c3ff  # C13: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour
+src/dedup/cleanup_indexes.py::cleanup_index 264c1f06aa31d26cce7bfe3596640dc9782167f5617e76a6046db6af76c68c56  # C17: moved unrefactored from scripts/; refactor tracked in TODO (D4); golden test guards behaviour

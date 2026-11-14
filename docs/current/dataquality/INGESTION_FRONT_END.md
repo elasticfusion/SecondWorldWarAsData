@@ -358,7 +358,7 @@ rows, below). Findings that shaped the implementation:
       the normalization fix + fuzzy tier).
 - [x] Piece 2 / entity convergence — Consume the crosswalk into the people
       entity space (`src/ingestion/oob_markdown/entity_emit.py`) so the existing
-      dedup pass (`scripts/find_duplicate_people.py` + dedup UI) unifies
+      dedup pass (`src/dedup/find_duplicate_people.py` + dedup UI) unifies
       OOB-derived and narrative-derived people into single `PersonID`s (the
       "Huebner goal"). OOB data is treated as **biographical, not narrative**: a
       command-staff row maps to `biographical_profile` (`ranks`/`units_served`/

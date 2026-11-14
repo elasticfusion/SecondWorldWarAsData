@@ -89,7 +89,7 @@ python3 phase2_retry.py [--max-attempts 5]
 python3 phase3_retry.py [--max-attempts 5]
 ```
 
-### Utility Scripts (`scripts/`)
+### Dedup detectors (`src/dedup/`, CLI wrappers in `scripts/`)
 
 #### `find_duplicate_people.py`
 Detects potential duplicate people using 8 heuristics.
@@ -131,7 +131,7 @@ python3 scripts/merge_duplicate_people.py [--auto-confirm]
 - `skip` - Skip this group (same as n)
 - `exclude` - Mark as false positive (never suggest again)
 
-### People Groups Scripts
+### People Groups (`src/dedup/`, CLI wrapper in `scripts/`)
 
 #### `find_related_groups.py`
 Detects related people groups using 8 heuristics.
@@ -276,7 +276,7 @@ Inspects API cache contents.
 
 **Usage:**
 ```bash
-python3 scripts/review_cache.py
+python3 scripts/utils/review_cache.py
 ```
 
 #### `validate_output.py`

@@ -9,7 +9,6 @@ weather:
   timeout: 10
 equipment:
   enable_enrichment: true
-  verify_media_with_vision: true
 supplemental_material:
   verify_archive_urls: true
   extract_isbn: true

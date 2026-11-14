@@ -35,10 +35,16 @@ COPY src/ src/
 COPY scripts/ scripts/
 COPY prompts/ prompts/
 COPY search_queries/ search_queries/
+# Curated lookup tables read at runtime by relative path (equipment/place aliases, domain blacklist,
+# award sources, surname frequency, unit nicknames). Without these every loader silently falls
+# back to defaults (verified in the 2026-11-03 image: 0 aliases loaded). Guarded by
+# tests/test_dockerfile_runtime_files.py.
+COPY config/ config/
+COPY data/ data/
 COPY config.yaml .
 COPY ecs_entrypoint.py .
 COPY ecs_modules/ ecs_modules/
-COPY phase0_ingest.py phase0_convert.py \
+COPY phase0_ingest.py phase0_convert.py phase0_ocr_crosscheck.py \
      phase1_parse.py phase2_extract.py phase2_retry.py \
      phase3_enrich_data.py phase3_retry.py \
      phase3_enqueue_openserp.py openserp_worker.py \

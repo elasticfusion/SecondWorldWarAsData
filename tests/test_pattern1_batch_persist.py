@@ -20,7 +20,7 @@ from unittest import mock
 # ---------------------------------------------------------------------------
 def _capture_casualties_cache_keys(people_index):
     """Drive the real _batch_extract_casualties and capture the cache_key(s) passed to
-    chat_completion, under a given (growing) people_index."""
+    extract_json, under a given (growing) people_index."""
     from src.extraction import casualties as cas
     from src.grok_client import BatchModeCollecting
 
@@ -33,7 +33,7 @@ def _capture_casualties_cache_keys(people_index):
         captured.append(kwargs.get("cache_key"))
         raise BatchModeCollecting("queued")  # simulate the COLLECT pass
 
-    client.chat_completion.side_effect = fake_chat_completion
+    client.extract_json.side_effect = fake_chat_completion
 
     sub_events = [
         {
@@ -83,7 +83,7 @@ def test_casualties_cache_key_tracks_subevent_ids():
         captured = []
         client = mock.Mock()
         client._get_model.return_value = "m"
-        client.chat_completion.side_effect = lambda p, **k: (
+        client.extract_json.side_effect = lambda p, **k: (
             captured.append(k.get("cache_key")),
             (_ for _ in ()).throw(BatchModeCollecting("q")),
         )[1]
