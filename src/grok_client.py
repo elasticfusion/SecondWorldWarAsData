@@ -195,6 +195,7 @@ def json_payload(text: str) -> str:
     s = (text or "").strip()
     if not s:
         return s
+    s = _strip_leading_zeros(s)
     if _parses(s) or _starts_as_json(s):
         return s  # valid, or cut short (the truncation handling needs it whole)
     fenced = _FENCE.search(s)
@@ -214,6 +215,48 @@ def _parses(s: str) -> bool:
         return True
     except (json.JSONDecodeError, ValueError):
         return False
+
+
+def _cut_short(response: str, error: Exception) -> bool:
+    """Whether a parse error is a TRUNCATION: the text ran out (the error is at its end) or a
+    string was never closed - not malformed JSON in its middle."""
+    msg = str(error)
+    if "Unterminated string" in msg:
+        return True
+    pos = getattr(error, "pos", None)
+    if "Expecting" not in msg or not isinstance(pos, int):
+        return False
+    return pos >= len(response.rstrip()) - 2
+
+
+# an integer written with leading zeros where a JSON value starts ([052], : 007): invalid JSON
+_ZERO_PADDED = re.compile(r"(?<=[\[,:])(\s*-?)0+(?=\d)")
+
+
+def _strip_leading_zeros(s: str) -> str:
+    """``s`` with zero-padded integers OUTSIDE strings written plainly (``[052]`` -> ``[52]``).
+    The prompts show paragraphs as "Paragraph_052", and Grok echoes that padding into
+    ``paragraph_numbers`` - invalid JSON ("Expecting ',' delimiter") read as a truncation, evicted
+    and re-asked every batch round (chapter 8: two equipment windows, rounds 1-4, 2026-11-14).
+    Quoted text is never touched."""
+    if not re.search(r"[\[,:]\s*-?0\d", s):
+        return s  # the common case: nothing padded (a padded digit in a string only costs a scan)
+    out, pos, in_string, escaped = [], 0, False, False
+    for i, ch in enumerate(s):
+        if in_string:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_string = False
+                out.append(s[pos : i + 1])
+                pos = i + 1
+        elif ch == '"':
+            out.append(_ZERO_PADDED.sub(r"\1", s[pos:i]))
+            pos, in_string = i, True
+    out.append(s[pos:] if in_string else _ZERO_PADDED.sub(r"\1", s[pos:]))
+    return "".join(out)
 
 
 def _first_json_value(s: str) -> Optional[str]:
@@ -2449,10 +2492,10 @@ class GrokClient:
         # Handle truncated responses (auto-clear cache)
         # a truncation cuts JSON short, so it STARTS as JSON: a body that does not (prose, even
         # prose quoting "[1]") is a parse failure - the chunk halver would split and re-ask it down
-        # to single items
-        if _starts_as_json(response) and (
-            "Unterminated string" in error_msg or "Expecting" in error_msg
-        ):
+        # to single items. And it fails at its END: an error mid-document ("[052]", a missing
+        # comma) is malformed JSON - re-asking returns the same answer, so it was evicted and
+        # re-asked every batch round (chapter 8, 2026-11-14); it goes to the repair below.
+        if _starts_as_json(response) and _cut_short(response, e):
             self._json_truncated += 1
             self._handle_truncation_error(
                 response, error_msg, cache_type, prompt, temperature, resolved_key
