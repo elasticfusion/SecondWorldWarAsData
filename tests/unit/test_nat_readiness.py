@@ -323,3 +323,34 @@ def test_grok_batch_zombie_age_capped(monkeypatch):
     }
     monkeypatch.setattr("src.utils.job_queue._get_table", lambda: fake)
     assert nm._grok_batch_pending() is False
+
+
+# --- a caller that finds another instance's lock (2026-11-14: the lock holder timed out after
+# creating the NAT, before updating the route; every caller was told a blind 'ready') ----------
+
+
+def test_a_waiter_repairs_a_blackholed_route_and_reports_verified_readiness():
+    ec2 = _ec2(nat_state="available", available_endpoints=set(nm.INTERFACE_ENDPOINTS))
+    states = iter([False, True])  # blackhole first, active after the repair
+    with (
+        patch.object(nm, "_wait_for_nat"),
+        patch.object(nm, "_route_active", side_effect=lambda *_a: next(states, True)),
+        patch.object(nm, "_update_route") as repoint,
+    ):
+        out = nm._await_other_instance(ec2, "us-east-1")
+    repoint.assert_called_once_with(ec2, "nat-1")
+    assert out == {"status": "ready", "missing": []}
+
+
+def test_a_waiter_never_reports_ready_without_a_route():
+    ec2 = _ec2(
+        nat_state="available",
+        available_endpoints=set(nm.INTERFACE_ENDPOINTS),
+        route_active=False,
+    )
+    with (
+        patch.object(nm, "_wait_for_nat"),
+        patch.object(nm, "_update_route", side_effect=RuntimeError("denied")),
+    ):
+        out = nm._await_other_instance(ec2, "us-east-1")
+    assert out["status"] == "not_ready" and "route" in out["missing"]
