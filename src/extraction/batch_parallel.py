@@ -524,10 +524,9 @@ def _process_entity_obj(  # pylint: disable=too-many-arguments,too-many-position
             date_id_lookup=date_id_lookup,
         )
 
-    # Phase-2 entity enrichment hook (people only): the record is now FINALIZED on the
-    # batch apply path. The synchronous (non-batch) extractor enriches before save; the
-    # generic batch path has no such hook, so without this people extracted in --batch
-    # mode were persisted un-enriched. Fail-safe inside the callback — never aborts here.
+    # Phase-2 enrichment hook (people, places, units): the record is now FINALIZED on the batch
+    # apply path. _batch_extract passes a collector here and enriches once the index lock is
+    # released. Fail-safe inside the callback — never aborts here.
     if enrich_record is not None:
         enrich_record(entity_file)
 
@@ -838,7 +837,10 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
     # response, never up front: dates are extracted concurrently, so an early read misses them.
     date_id_lookup = _build_date_id_lookup(output_root / "dates")
 
-    # Lock protects read-modify-write of index.json across concurrent event files
+    # Lock protects read-modify-write of index.json across concurrent event files. Records to
+    # enrich are collected and enriched AFTER it is released: the lookups are HTTP (Wikipedia is
+    # paced to 1/s), and under the lock every new place / unit stalled every other event's writes
+    to_enrich: List[Path] = []
     lock = _get_index_lock(index_file)
     with lock:
         index = _load_index(index_file, entity_type)
@@ -859,10 +861,11 @@ async def _batch_extract(  # pylint: disable=too-many-arguments,too-many-positio
             sub_event_key,
             make_filename,
             date_id_lookup,
-            enrich_record,
+            to_enrich.append,  # collected; enriched once the lock is released
         )
 
         write_json_with_lock(index_file, index)
+    _enrich_each(to_enrich, enrich_record)
     if post_process:
         post_process(response, entity_dir, index)
     return result
@@ -1734,8 +1737,79 @@ async def _extract_places(
         book_meta=book_meta,
         include_fulltext=True,
         post_process=_process_place_relationships,
+        enrich_record=_enrich_place_record,
         **window,
     )
+
+
+# --- Phase-2 Grokipedia/Wikipedia lookups for records the batch path writes --------------------
+# The per-type extractors that did these (places._find_or_create_place, people_groups.
+# extract_people_groups) are not on the batch path, so since 2026-10-06 no place or unit got them
+# in Phase 2. Each lookup is gated on its own checked_at marker: a record is looked up once, on
+# its first mention; a transient failure leaves it unmarked for the next.
+
+
+def _enrich_each(
+    files: List[Path], enrich_record: Optional[Callable[[Path], None]]
+) -> None:
+    """``enrich_record`` once per record written (each under its file lock only)."""
+    for entity_file in dict.fromkeys(files):
+        if enrich_record is not None:
+            enrich_record(entity_file)
+
+
+def _enrich_in_place(
+    entity_file: Path, enrich: Callable[[dict], Any], entity: str
+) -> None:
+    """Run ``enrich(record)`` on the just-written record under its file lock and save it when it
+    changed. HTTP lookups only (no Grok): never fails extraction."""
+    import os
+
+    from src.utils.file_lock import locked_json
+    from src.schemas.schema_contract import read_for_update
+
+    if os.environ.get("PHASE2_REFERENCE_LOOKUPS", "1") == "0":
+        return  # off (tests: no network)
+    try:
+        with locked_json(entity_file) as (data, save):
+            data, skip = read_for_update(
+                data, _entity_target_for(entity_file), logger, entity_file.name
+            )
+            if skip or not isinstance(data, dict):
+                return
+            before = json.dumps(data, sort_keys=True, default=str)
+            enrich(data)
+            if json.dumps(data, sort_keys=True, default=str) != before:
+                save(data)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - enrichment is additive; never block extraction
+        logger.warning(
+            "OBSERV %s.enrich_skipped file=%s err=%s: not saved - looked up again on the "
+            "record's next mention or run",
+            entity,
+            entity_file.name,
+            type(e).__name__,
+        )
+
+
+def _enrich_place_record(entity_file: Path) -> None:
+    from src.extraction.enrich_places import (
+        enrich_place_from_grokipedia,
+        enrich_place_from_wikipedia,
+    )
+
+    def both(place: dict) -> None:
+        enrich_place_from_grokipedia(place)
+        enrich_place_from_wikipedia(place)
+
+    _enrich_in_place(entity_file, both, "places")
+
+
+def _enrich_group_record(entity_file: Path) -> None:
+    from src.enrichment.groups_wikipedia import enrich_group_from_wikipedia
+
+    _enrich_in_place(entity_file, enrich_group_from_wikipedia, "people_groups")
 
 
 async def extract_people_groups_batch_async(
@@ -1804,6 +1878,7 @@ async def _extract_people_groups(
         sub_event_key="peoplegroups",
         book_meta=book_meta,
         include_fulltext=True,
+        enrich_record=_enrich_group_record,
         **window,
     )
 

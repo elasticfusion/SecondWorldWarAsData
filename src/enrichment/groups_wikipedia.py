@@ -32,7 +32,7 @@ def search_group_wikipedia(name: str) -> Optional[dict]:
     from src.enrichment._wikipedia_common import cached_variant_search
     from src.utils.wikimedia_client import GROUPS
 
-    return cached_variant_search(
+    found = cached_variant_search(
         GROUPS,
         name,
         lambda title: _lookup_group(title),  # late-bound (tests patch _lookup_group)
@@ -40,6 +40,18 @@ def search_group_wikipedia(name: str) -> Optional[dict]:
         _groups_wiki_images,
         _groups_wiki_images_lock,
     )
+    # a cached answer from before the WWII rule is held to it too
+    if isinstance(found, dict) and not _in_wwii(found.get("extract")):
+        return None
+    return found
+
+
+def _in_wwii(extract: Optional[str]) -> bool:
+    """The unit's article places it in WWII (names the war or 1939-1945) - the deterministic
+    text rule equipment uses (equipment_identity.mentions_wwii); no Grok request."""
+    from src.extraction.equipment_identity import mentions_wwii
+
+    return mentions_wwii(extract)
 
 
 def _lookup_group(title: str):  # -> dict | None | search_cache.TRANSIENT sentinel
@@ -126,6 +138,12 @@ def _extract_group_page(page_data: dict, title: str) -> Optional[dict]:
     lower = extract.lower()
     if not any(kw in lower for kw in _GROUP_KEYWORDS):
         return None  # not a military unit/organization
+    if not _in_wwii(extract):
+        logger.info(
+            "OBSERV groups_wikipedia.not_wwii title=%s: page does not place the unit in WWII",
+            title[:80],
+        )
+        return None  # a same-named modern / other-war unit (the next title variant is tried)
 
     img_url = page_data.get("original", {}).get("source", "")
     license_info = None
@@ -181,16 +199,7 @@ def enrich_group_from_wikipedia(group: dict) -> bool:
         return False
 
     # Grokipedia (independent of the Wikipedia outcome; runs within the same gate).
-    changed = False
-    try:
-        from src.enrichment.grokipedia import resolve_grokipedia_url
-
-        grok_url = resolve_grokipedia_url(name)
-        if grok_url:
-            group["grokipedia_url"] = grok_url
-            changed = True
-    except Exception as e:  # noqa: BLE001 - best-effort, never block
-        logger.debug("Grokipedia lookup failed for group %s: %s", name, e)
+    changed = _apply_group_grokipedia(group, name)
 
     result = search_group_wikipedia(name)
     from src.utils.wikimedia_client import GROUPS, lookup_was_transient
@@ -206,17 +215,43 @@ def enrich_group_from_wikipedia(group: dict) -> bool:
 
     group["wikipedia_url"] = result["wikipedia_url"]
     group["wikipedia_extract"] = result["extract"][:500]
-    if result.get("image"):
-        group.setdefault("images", []).insert(
+    _add_wikipedia_image(group, result)
+    logger.debug("Wikipedia enriched group %s → %s", name, result["wikipedia_url"])
+    return True
+
+
+def _apply_group_grokipedia(group: dict, name: str) -> bool:
+    """Set the unit's grokipedia_url; True when set. A transient failure clears the one
+    checked_at marker that gates both lookups (a rate limit / outage must not lose the unit's
+    link for good; the Wikipedia answer is search-cached, so looking again costs no request).
+    """
+    try:
+        from src.enrichment.grokipedia import resolve_grokipedia_url_status
+
+        grok_url, grok_transient = resolve_grokipedia_url_status(name)
+        if grok_transient:
+            group.pop("wikipedia_checked_at", None)
+        if grok_url:
+            group["grokipedia_url"] = grok_url
+            return True
+    except Exception as e:  # noqa: BLE001 - best-effort, never block
+        logger.debug("Grokipedia lookup failed for group %s: %s", name, e)
+    return False
+
+
+def _add_wikipedia_image(rec: dict, result: dict) -> None:
+    """Put the article's image first in ``images`` - once (a retry adds no second copy)."""
+    image = result.get("image")
+    known = {i.get("url") for i in rec.get("images") or [] if isinstance(i, dict)}
+    if image and image not in known:
+        rec.setdefault("images", []).insert(
             0,
             {
-                "url": result["image"],
+                "url": image,
                 "license": result.get("license", "unknown"),
                 "source": "wikipedia",
             },
         )
-    logger.debug("Wikipedia enriched group %s → %s", name, result["wikipedia_url"])
-    return True
 
 
 def _apply_group_wikipedia(rec, result):
@@ -227,15 +262,7 @@ def _apply_group_wikipedia(rec, result):
     if result:
         rec["wikipedia_url"] = result["wikipedia_url"]
         rec["wikipedia_extract"] = result["extract"][:500]
-        if result.get("image"):
-            rec.setdefault("images", []).insert(
-                0,
-                {
-                    "url": result["image"],
-                    "license": result["license"],
-                    "source": "wikipedia",
-                },
-            )
+        _add_wikipedia_image(rec, result)
         rec["enrichment_status"] = "enriched"
     return rec
 

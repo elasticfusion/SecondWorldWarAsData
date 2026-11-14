@@ -476,7 +476,8 @@ def test_groups_phase2_checked_stamp(wire, monkeypatch, transient):
     import src.enrichment.groups_wikipedia as GW
 
     monkeypatch.setattr(
-        "src.enrichment.grokipedia.resolve_grokipedia_url", lambda n: None
+        "src.enrichment.grokipedia.resolve_grokipedia_url_status",
+        lambda n: (None, False),
     )
 
     def fake_search(name):
@@ -743,3 +744,44 @@ def test_pacing_can_be_turned_off(monkeypatch):
     )
     wc._pace("en.wikipedia.org")
     wc._pace("en.wikipedia.org")
+
+
+def test_a_grokipedia_outage_leaves_the_unit_unstamped(monkeypatch):
+    import src.enrichment.groups_wikipedia as GW
+
+    monkeypatch.setattr(
+        "src.enrichment.grokipedia.resolve_grokipedia_url_status",
+        lambda n: (None, True),
+    )
+    monkeypatch.setattr(GW, "search_group_wikipedia", lambda name: None)
+    group = {"group_name": "1st Infantry Division"}
+    GW.enrich_group_from_wikipedia(group)
+    assert "wikipedia_checked_at" not in group  # looked up again later
+
+
+def test_a_grokipedia_outage_leaves_the_place_unstamped(monkeypatch):
+    from src.extraction import enrich_places as EP
+
+    monkeypatch.setattr(EP, "_search_grokipedia_place_status", lambda n: EP._TRANSIENT)
+    place = {"current_name": "Cherbourg"}
+    assert EP.enrich_place_from_grokipedia(place) is False
+    assert "grokipedia_checked_at" not in place
+
+
+def test_a_retried_unit_lookup_adds_no_second_image(monkeypatch):
+    import src.enrichment.groups_wikipedia as GW
+
+    monkeypatch.setattr(
+        "src.enrichment.grokipedia.resolve_grokipedia_url_status",
+        lambda n: (None, True),  # Grokipedia down: the unit is looked up again later
+    )
+    hit = {
+        "wikipedia_url": "u",
+        "extract": "A division in World War II.",
+        "image": "img",
+    }
+    monkeypatch.setattr(GW, "search_group_wikipedia", lambda name: hit)
+    group = {"group_name": "1st Infantry Division"}
+    GW.enrich_group_from_wikipedia(group)
+    GW.enrich_group_from_wikipedia(group)
+    assert [i["url"] for i in group["images"]] == ["img"]

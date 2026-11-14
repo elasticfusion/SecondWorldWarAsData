@@ -3,7 +3,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import requests
 
@@ -210,7 +210,12 @@ def enrich_place_from_grokipedia(place: dict) -> bool:
     if not name:
         return False
 
-    url = _search_grokipedia_place(name)
+    url = _search_grokipedia_place_status(name)
+    if url is _TRANSIENT:
+        # unknown, not a miss: grokipedia_checked_at means "never re-fetch", so a rate limit or
+        # an outage must not leave it set (the place's link would be lost for good)
+        place.pop("grokipedia_checked_at", None)
+        return False
     if not url:
         logger.debug("No Grokipedia page for place %s", name)
         return False
@@ -285,10 +290,21 @@ def _apply_place_wikipedia(place: dict, wiki_data: dict) -> None:
         _merge_hierarchy(place, hierarchy)
 
 
+_TRANSIENT = (
+    object()
+)  # _search_grokipedia_place_status: a transient failure, not a miss
+
+
 def _search_grokipedia_place(name: str) -> Optional[str]:
     """Search Grokipedia for a place. Returns page URL or None. A genuine miss is
     negative-cached; a transient failure (429 / 5xx / network) is not - an outage must not
     suppress the place for NEGATIVE_TTL_DAYS."""
+    url = _search_grokipedia_place_status(name)
+    return None if url is _TRANSIENT else url  # type: ignore[return-value]
+
+
+def _search_grokipedia_place_status(name: str) -> Any:
+    """``_search_grokipedia_place``, but a transient failure returns ``_TRANSIENT``."""
     from src.enrichment.grokipedia import response_text
     from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
     from src.utils.search_cache import cache_result, get_cached
@@ -317,14 +333,14 @@ def _search_grokipedia_place(name: str) -> Optional[str]:
         logger.info(
             "OBSERV grokipedia.transient place=%r err=%s", name[:60], str(e)[:80]
         )
-        return None
+        return _TRANSIENT
     if resp.status_code != 200:
         logger.info(
             "OBSERV grokipedia.transient place=%r status=%d",
             name[:60],
             resp.status_code,
         )
-        return None
+        return _TRANSIENT
     url = _matching_place_page(name, response_text(resp))  # UTF-8: accents must match
     cache_result("grokipedia_place", name, url)
     return url

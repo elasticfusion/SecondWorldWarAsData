@@ -8,6 +8,9 @@ import os
 os.environ.setdefault("BOOK_METADATA", "0")
 # Wikimedia pacing (src/utils/wikimedia_client._pace) would sleep 1 s per mocked request
 os.environ.setdefault("WIKIMEDIA_MIN_INTERVAL_SECONDS", "0")
+# Phase 2's place/unit Grokipedia + Wikipedia lookups (batch_parallel._enrich_in_place) reach the
+# network: off unless a test turns them on and mocks them
+os.environ.setdefault("PHASE2_REFERENCE_LOOKUPS", "0")
 
 import json
 from pathlib import Path

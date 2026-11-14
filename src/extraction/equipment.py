@@ -4,6 +4,7 @@ import hashlib
 import json
 import re
 import logging
+import threading
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -1989,27 +1990,56 @@ def merge_or_create_equipment(
     # Find matching equipment (canonical identity is the most stable key)
     technical_id = equipment_data.get("technical_identifier", "")
     canonical = equipment_data.get("canonical_name", "")
-    matched_name = _find_matching_equipment(
-        common_name, equipment_index, technical_id, canonical, canonical_only=vessel
+    with _FIND_OR_CREATE_LOCK:
+        # chapters run in parallel threads, each with its own index snapshot: see the records
+        # the others created this run, and find + create as ONE step - else two chapters each
+        # created their own "M4 Sherman" (left to the dedup review)
+        _see_created_this_run(equipment_index, equipment_dir)
+        matched_name = _find_matching_equipment(
+            common_name, equipment_index, technical_id, canonical, canonical_only=vessel
+        )
+        if not matched_name:
+            known = set(equipment_index)
+            created = _create_new_equipment(
+                equipment_data,
+                new_mention,
+                equipment_dir,
+                equipment_index,
+                grok_client,
+                enable_enrichment,
+            )
+            for key in set(equipment_index) - known:
+                _CREATED_THIS_RUN[key] = equipment_index[key]
+            return created
+    return _merge_into_existing(
+        equipment_index[matched_name],
+        new_mention,
+        equipment_data,
+        matched_name,
+        grok_client,
     )
 
-    if matched_name:
-        eq_file = equipment_index[matched_name]
-        return _merge_into_existing(
-            eq_file,
-            new_mention,
-            equipment_data,
-            matched_name,
-            grok_client,
-        )
-    return _create_new_equipment(
-        equipment_data,
-        new_mention,
-        equipment_dir,
-        equipment_index,
-        grok_client,
-        enable_enrichment,
-    )
+
+def _see_created_this_run(
+    equipment_index: Dict[str, Path], equipment_dir: Path
+) -> None:
+    """Add to a chapter's index the records the other chapter threads created this run (in the
+    same output, still there)."""
+    for key, path in _CREATED_THIS_RUN.items():
+        if (
+            key not in equipment_index
+            and path.parent == equipment_dir
+            and path.exists()
+        ):
+            equipment_index[key] = path
+
+
+# merge_or_create_equipment's find + create, across the chapter threads of one process. Creates are
+# serialised on purpose (a create's identity resolution + enrichment run under it): a NEW type is
+# rare after the first chapters, merges into existing records take no lock, and in batch mode the
+# Grok calls only queue (BatchModeCollecting releases it at once).
+_FIND_OR_CREATE_LOCK = threading.RLock()
+_CREATED_THIS_RUN: Dict[str, Path] = {}
 
 
 def _resolve_named_vessel(
