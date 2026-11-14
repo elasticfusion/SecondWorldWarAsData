@@ -2802,8 +2802,9 @@ def _recheck_equipment_fields(
     mention: Dict[str, Any],
     grok_client: Optional[GrokClient],
 ) -> None:
-    """Source-first gap-fill of missing critical fields (country_of_origin/category/
-    quantity/place) from the mention's retained original_text, before merge/dedup. The
+    """Source-first gap-fill of the record's missing country_of_origin/category (quantity and
+    place are the mention's, from refine) from the mention's retained original_text, before
+    merge/dedup. The
     recheck reads event_mentions[].original_text; pass the mention context transiently so
     it doesn't leak into the merge payload. Fail-open."""
     if not grok_client:
@@ -2977,8 +2978,8 @@ def _prepare_equipment_item(
     if grok_client:
         _resolve_canonical_identity(equipment_data, grok_client)
 
-    # SOURCE-RECHECK: recover missing critical fields (esp. country_of_origin — the dedup
-    # veto — + category/quantity/place) from the retained original_text BEFORE merge/dedup.
+    # SOURCE-RECHECK: recover the record's missing country_of_origin (the dedup veto) and
+    # category from the retained original_text BEFORE merge/dedup.
     _recheck_equipment_fields(equipment_data, mention, grok_client)
     return eq, mention, equipment_data
 

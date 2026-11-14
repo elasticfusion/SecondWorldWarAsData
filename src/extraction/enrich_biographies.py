@@ -670,15 +670,16 @@ def _wiki_fallback_match(
 
 def search_wikipedia(person_name: str, timeout: int = 30) -> Optional[str]:
     """Search Wikipedia for person biographical data."""
-    _wikipedia_rate_limit()
-
     from src.utils.search_cache import get_cached
 
+    # the cache first: a cached answer costs no request, so it waits for no rate-limit slot (the
+    # 5 s wait ran before it, under a lock - every repeat mention of a person paid it)
     cached = get_cached("wikipedia", person_name)
     if cached == "NOT_FOUND":
         return None
     if cached:
         return cached
+    _wikipedia_rate_limit()
 
     # If Grokipedia already found a page, use slug as Wikipedia title hint
     grok_info = get_wikipedia_image(person_name)  # check if already populated
@@ -1088,14 +1089,14 @@ def _load_person_for_enrichment(person_file: Path) -> Optional[tuple]:
         return None
 
     bio_profile = person_data.get("biographical_profile", {})
-    if bio_profile.get("birth_date") or bio_profile.get("biographical_details"):
-        logger.debug("  Already enriched: %s, skipping", person_name)
+    if _is_already_enriched(
+        person_data
+    ):  # the ONE gate (the in-place path uses it too)
+        logger.debug(
+            "  Already enriched or recently not found: %s, skipping", person_name
+        )
         return None
-
     if person_data.get("enrichment_status") == "not_found":
-        if not _should_re_search(person_data):
-            logger.debug("  Previously searched, not found: %s, skipping", person_name)
-            return None
         logger.info("  Re-searching (stale not_found): %s", person_name)
 
     return person_data, person_name, bio_profile
@@ -1202,6 +1203,8 @@ def _is_already_enriched(person_data: Dict[str, Any]) -> bool:
     not_found). Mirrors the skip logic in ``_load_person_for_enrichment`` so the
     in-place and file-based paths gate identically.
     """
+    if person_data.get("enrichment_status") == "enriched":
+        return True  # enriched from what the sources had (even without a birth date / details)
     bio_profile = person_data.get("biographical_profile") or {}
     if bio_profile.get("birth_date") or bio_profile.get("biographical_details"):
         return True
