@@ -397,3 +397,41 @@ def test_cli_rejects_a_folder_without_chunks(tmp_path, capsys):
         == 2
     )
     assert "no chunk-pFFFF-LLLL" in capsys.readouterr().err
+
+
+def test_the_map_envelopes_list_as_a_table_without_pages():
+    """Cross-Channel Attack lists Maps I-XXIV as a two-column table (number, title), no page:
+    unread, the 24 fold-outs were unnumbered "figures" (2026-11-15)."""
+    front = F.front_matter(
+        "## Maps\n\n<table><tbody><tr><td>1.</td><td>Situation . . .</td><td>268</td></tr>"
+        "</tbody></table>\n\nMaps I-XXIV are in accompanying map envelope\n\n<table><tbody>"
+        "<tr><td>I.</td><td>Overlord Area.</td></tr><tr><td>XIII.</td>"
+        "<td>German Countermeasures, 6 June 1944.</td></tr></tbody></table>\n\n## Next\n"
+    )
+    assert [(e.number, e.title, e.printed_page) for e in front.entries] == [
+        ("1", "Situation", 268),
+        ("I", "Overlord Area", None),
+        ("XIII", "German Countermeasures, 6 June 1944", None),
+    ]
+
+
+def test_a_crop_the_ocr_never_wrote_is_skipped_and_the_plate_is_its_whole_page(
+    book, tmp_path, monkeypatch
+):
+    """The OCR names a plate's map crop it did not write (USA-E-XChannel Map XIII): the run
+    goes on, counted, and the plate is the whole stored page - never the region of the crop
+    that is left (its 344x36 scale bar)."""
+    from src.utils import observe
+
+    pdf, _ocr, chunk = book
+    (chunk / "plate.webp").unlink()
+    warned = []
+    monkeypatch.setattr(
+        observe, "observe_warn_counted", lambda *a, **k: warned.append((a, k))
+    )
+    figures = _build(pdf, chunk, tmp_path / "out")
+    plate = next(f for f in figures if f.pdf_page == 2)
+    assert (plate.kind, plate.number) == ("map", "II")
+    assert (plate.width, plate.height) == (600, 750)
+    assert warned[0][0][:2] == ("figures", "crop_missing")
+    assert warned[0][1]["file"] == "plate.webp"

@@ -199,8 +199,8 @@ def _discover_book_chapters(book_dir: Path, book_name: str) -> list:
     for chapter_dir in book_dir.iterdir():
         if not chapter_dir.is_dir() or chapter_dir.name.startswith("."):
             continue
-        if chapter_dir.name == "sourcedocument":
-            continue
+        if chapter_dir.name in ("sourcedocument", "_figures"):
+            continue  # the source / the book's extracted figures (src/ingestion/book_figures)
 
         chapter = _process_chapter_dir(chapter_dir, book_name)
         if chapter:

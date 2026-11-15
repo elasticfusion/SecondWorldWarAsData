@@ -1114,7 +1114,7 @@ def _add_maps_to_doc(doc: MarkdownDocument, content: str, base_url: str = "") ->
     maps = extract_maps(content, base_url=base_url)
     gapless = 0
     for map_id, url in maps:
-        refs = _map_reference_footprint(map_id, doc.paragraphs)
+        refs = map_reference_footprint(map_id, doc.paragraphs)
         first_para = refs[0]["paragraph_number"] if refs else 0
         doc.maps.append(
             Map(
@@ -1143,7 +1143,7 @@ def _add_maps_to_doc(doc: MarkdownDocument, content: str, base_url: str = "") ->
         )
 
 
-def _map_reference_footprint(
+def map_reference_footprint(
     map_id: str, paragraphs: "List[Paragraph]"
 ) -> "List[Dict[str, Any]]":
     """Paragraphs that reference this map, by its "Map <id>" label. Returns [{paragraph_number,

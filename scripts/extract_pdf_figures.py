@@ -24,19 +24,17 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import json
 import re
 import sys
 import time
 import urllib.error
 import urllib.request
-from dataclasses import asdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from src.ingestion import book_figures as B  # noqa: E402
 from src.ingestion import pdf_figures as F  # noqa: E402
-from src.ingestion import pdf_html_crosscheck as X  # noqa: E402
 
 _CHUNK = re.compile(r"^chunk-p(\d{4})-(\d{4})$")
 _USER_AGENT = "Mozilla/5.0 (research; SecondWorldWarAsData)"
@@ -67,10 +65,6 @@ def _observ(message: str) -> None:
     print(f"OBSERV figures: {message}", file=sys.stderr)
 
 
-def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
 def _chunks(folder: Path):
     """The OCR chunks, in page order."""
     out = []
@@ -85,15 +79,6 @@ def _chunks(folder: Path):
     return out
 
 
-def _front(chunks) -> F.FrontMatter:
-    """The book's lists, from the first chunk that has them."""
-    for chunk in chunks:
-        front = F.front_matter((chunk.folder / "input.md").read_text(encoding="utf-8"))
-        if front.entries:
-            return front
-    raise InputError("no chunk holds the book's lists of maps / charts / illustrations")
-
-
 def _texts(specs):
     """[(unit, path, first PDF page)] from UNIT=PATH:PAGE."""
     out = []
@@ -106,17 +91,6 @@ def _texts(specs):
             )
         out.append((unit, Path(path), int(page)))
     return out
-
-
-def _known_ids(out: Path):
-    """{(PDF page, position): figure_id} of an earlier run in --out."""
-    old = out / "figures.json"
-    if not old.is_file():
-        return {}
-    data = json.loads(old.read_text(encoding="utf-8"))
-    return {
-        (f["pdf_page"], f["position"]): f["figure_id"] for f in data.get("figures", [])
-    }
 
 
 _MAX_DOWNLOAD = 50 * 1024 * 1024  # bytes: a map scan is a few MB
@@ -179,73 +153,25 @@ def _other_copies(args, fetch):
 
 
 def run(args) -> dict:
-    """Extract, compare, cite; write figures.json. Returns the report."""
-    import fitz  # pymupdf (pinned)
-
+    """Extract, compare, cite; write figures.json (src/ingestion/book_figures.extract). Returns
+    the report."""
     if not args.pdf.is_file():
         raise InputError(f"--pdf {args.pdf}: no such file")
     chunks = _chunks(args.chunks)
-    front = _front(chunks)
-    texts = _texts(args.text)
-    with fitz.open(str(args.pdf)) as doc:
-        printed = X.printed_pages(doc, 1, len(doc))
-        figures = F.build_figures(
-            doc, chunks, front, printed, args.out, _known_ids(args.out)
+    front = B.front_of(chunks)
+    if front is None:
+        raise InputError(
+            "no chunk holds the book's lists of maps / charts / illustrations"
         )
+    texts = _texts(args.text)
     fetch = _fetcher(args.out / ".cache")
-    copies, copies_source = _other_copies(args, fetch)
-    copy_log = (
-        F.add_other_copies(figures, copies, fetch, args.out) if copies else F.CopyLog()
-    )
-    refs = [
-        ref
-        for unit, path, first in texts
-        for ref in F.references(path.read_text(encoding="utf-8"), first, unit)
-    ]
-    unmatched_refs = F.attach_references(figures, refs)
-    return _report(
-        args, figures, front, chunks, texts, copies_source, unmatched_refs, copy_log
-    )
 
+    def other(figures, out):
+        copies, source = _other_copies(args, fetch)
+        log = F.add_other_copies(figures, copies, fetch, out) if copies else F.CopyLog()
+        return log, source
 
-def _report(
-    args, figures, front, chunks, texts, copies_source, unmatched_refs, copy_log
-) -> dict:
-    placed = {(f.kind, f.number, f.title) for f in figures if f.match}
-    missing = [
-        asdict(e) for e in front.entries if (e.kind, e.number, e.title) not in placed
-    ]
-    report = {
-        "pdf": str(args.pdf),
-        "pdf_sha256": _sha256(args.pdf),
-        "ocr_chunks": {str(c.folder): _sha256(c.folder / "input.md") for c in chunks},
-        "other_copies": copies_source,
-        "texts": {unit: {"path": str(p), "sha256": _sha256(p), "first_pdf_page": first}
-                  for unit, p, first in texts},  # fmt: skip
-        "counts": _counts(figures),
-        "list_entries_without_figure": missing,
-        "citations_of_unlisted_numbers": unmatched_refs,
-        "other_copies_log": asdict(copy_log),
-        "figures": [asdict(f) for f in figures],
-    }
-    args.out.mkdir(parents=True, exist_ok=True)
-    (args.out / "figures.json").write_text(
-        json.dumps(report, indent=2), encoding="utf-8"
-    )
-    return report
-
-
-def _counts(figures) -> dict:
-    from collections import Counter
-
-    return {
-        "figures": len(figures),
-        "by_kind": dict(Counter(f.kind for f in figures)),
-        "by_source": dict(Counter(f.source for f in figures)),
-        "by_match": dict(Counter(f.match or "unlisted" for f in figures)),
-        "fallbacks": sum(1 for f in figures if f.chosen_because.startswith("FALLBACK")),
-        "references": sum(len(f.references) for f in figures),
-    }
+    return B.extract(args.pdf, chunks, front, args.out, texts, other)
 
 
 def _observ_copies(log: dict) -> None:

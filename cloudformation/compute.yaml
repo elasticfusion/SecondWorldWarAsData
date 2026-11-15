@@ -484,7 +484,9 @@ Resources:
     Properties:
       Family: !Sub ${EnvironmentName}-wwii-phase1-parse
       Cpu: '512'
-      Memory: '1024'
+      # 2 GB: Phase 1 also extracts an OCR'd PDF book's figures once (src/ingestion/book_figures;
+      # Cross-Channel Attack, 562 pages: 650 MB peak) - 1 GB left no headroom for a larger book
+      Memory: '2048'
       NetworkMode: awsvpc
       RequiresCompatibilities: [FARGATE]
       TaskRoleArn: !Ref ECSTaskRoleArn

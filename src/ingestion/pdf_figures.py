@@ -163,9 +163,25 @@ def _table_entries(section: str, kind: str) -> List[ListEntry]:
     return entries
 
 
+_PLATE_NUMBER = re.compile(r"^(?P<num>[IVXLC]+)\.?$")
+
+
+def _plate_row(cells: List[str]) -> Optional[ListEntry]:
+    """``Roman. Title`` with no page: a fold-out map of the envelope, else None."""
+    plate = _PLATE_NUMBER.match(cells[0]) if len(cells) == 2 else None
+    if plate is None or cells[1].isdigit():
+        return None
+    return ListEntry("map", plate["num"], _clean_title(cells[1]), None)
+
+
 def _row_entry(cells: List[str], kind: str) -> Optional[ListEntry]:
-    """``[No.] Title . . . Page`` -> an entry (header rows and blanks give None)."""
+    """``[No.] Title . . . Page`` -> an entry; for maps also ``Roman. Title`` without a page - a
+    fold-out in the map envelope (Cross-Channel Attack's "Maps I-XXIV" table). Header rows and
+    blanks give None."""
     cells = [c for c in cells if c]
+    plate = _plate_row(cells) if kind == "map" else None
+    if plate is not None:
+        return plate
     if len(cells) < 2 or not cells[-1].isdigit():
         return None
     number = cells[0].rstrip(".") if len(cells) >= 3 else None
@@ -295,13 +311,13 @@ def build_figures(
     figures: List[Figure] = []
     plate_texts: Dict[int, str] = {}
     for chunk in chunks:
-        for page, images, box in _chunk_pages(chunk):
+        for page, images, box, complete in _chunk_pages(chunk):
             plate_texts[page] = images[0].page_text
             is_plate = page not in printed and (
                 _plate_title(plate_texts[page], plate_entries) is not None
             )  # fold-outs are unnumbered ('in accompanying map envelope')
             figures += _page_figures(
-                doc, page, images, box, chunk.folder, files, is_plate
+                doc, page, images, box, chunk.folder, files, is_plate, complete
             )
     for f in figures:
         f.printed_page = printed.get(f.pdf_page)
@@ -321,7 +337,8 @@ def _identify(figures: Sequence[Figure], front: FrontMatter, known: Dict) -> Non
 
 
 def _chunk_pages(chunk: Chunk):
-    """(PDF page, its Chandra images, Chandra's page box) of every page with a picture."""
+    """(PDF page, its Chandra images, Chandra's page box, whether every crop the OCR names is
+    there) of every page with a picture."""
     import json
 
     meta = json.loads(
@@ -333,9 +350,31 @@ def _chunk_pages(chunk: Chunk):
     for img in chandra_images(markdown, chunk.first_page):
         by_page.setdefault(img.pdf_page, []).append(img)
     for page, images in by_page.items():
-        pictures = [img for img in images if not _blank(chunk.folder / img.file)]
+        present = [img for img in images if _crop_present(chunk, img)]
+        pictures = [img for img in present if not _blank(chunk.folder / img.file)]
         if pictures:
-            yield page, pictures, boxes.get(page)
+            yield page, pictures, boxes.get(page), len(present) == len(images)
+
+
+def _crop_present(chunk: Chunk, img: ChandraImage) -> bool:
+    """The crop file Chandra's markdown names exists. One it never wrote (USA-E-XChannel: 1 of
+    139) is skipped LOUDLY - the page's other pictures, and the book's list entries (rendered
+    from the page, ``_printed_only``), still yield their figures."""
+    if (chunk.folder / img.file).is_file():
+        return True
+    from src.utils.observe import observe_warn_counted
+
+    observe_warn_counted(
+        "figures",
+        "crop_missing",
+        key=(str(chunk.folder),),
+        pdf_page=img.pdf_page,
+        file=img.file[:80],
+        note="the OCR names a picture crop it did not write: that picture is skipped (a "
+        "listed figure on the page is still rendered from the PDF) - re-OCR the chunk if it "
+        "repeats",
+    )
+    return False
 
 
 _BLANK_STDDEV = 3.0  # grey-level spread below which a crop is empty paper
@@ -438,7 +477,7 @@ def _page_render(doc, page: int, files: Path, position: int = 0) -> Figure:
 
 def _page_figures(
     doc, page: int, images: List[ChandraImage], box, folder: Path, files: Path,
-    is_plate: bool = False,
+    is_plate: bool = False, complete: bool = True,
 ):  # fmt: skip
     raster = page_raster(doc, page)
     render = _render_dpi(box, doc, page) if box else 0.0
@@ -449,7 +488,9 @@ def _page_figures(
             (img, locate(native, _open(folder / img.file), scale)) for img in images
         ]
         if is_plate:
-            return [_plate_figure(page, located, native, raster, folder, files)]
+            return [
+                _plate_figure(page, located, native, raster, folder, files, complete)
+            ]
         return [
             _located_figure(page, il, native, raster, folder, files) for il in located
         ]
@@ -470,23 +511,33 @@ def _native_image(doc: Any, xref: int) -> Any:
     return Image.frombytes(mode, (pix.width, pix.height), pix.samples)
 
 
-def _plate_figure(page, located, native, raster, folder: Path, files: Path) -> Figure:
+def _plate_figure(
+    page, located, native, raster, folder: Path, files: Path, complete: bool = True
+) -> Figure:
     """A fold-out plate: the region holding all its pieces (map, legend, scale bars) - the whole
-    stored page when they cover most of it."""
-    boxes = [box for _img, (box, score) in located if score <= _MATCH_LIMIT]
-    union = (
-        (min(b[0] for b in boxes), min(b[1] for b in boxes),
-         max(b[2] for b in boxes), max(b[3] for b in boxes))
-        if boxes else (0, 0, native.width, native.height)
-    )  # fmt: skip
-    if _area(union) >= _PLATE_SHARE * native.width * native.height:
-        union = (0, 0, native.width, native.height)
+    stored page when they cover most of it, or when a piece's crop is missing (the region of the
+    rest - a scale bar - is not the plate)."""
+    union = _plate_region(located, native, complete)
     main = max(located, key=lambda il: _area(il[1][0]))[0]
     why = (f"a fold-out plate (its title is in the book's list): the stored page image at "
            f"{raster.native_dpi:.0f} dpi; Chandra's crops of it are upsampled renders")  # fmt: skip
     images = [img for img, _ in located]
     return _native_figure(
         page, 0, main, native, union, why, folder, files, parts=images
+    )
+
+
+def _plate_region(located, native, complete: bool) -> Tuple[int, int, int, int]:
+    """The region holding a plate's matched pieces; the whole page when they cover most of it,
+    or when a piece is missing (``complete`` False)."""
+    whole = (0, 0, native.width, native.height)
+    boxes = [box for _img, (box, score) in located if score <= _MATCH_LIMIT]
+    if not complete or not boxes:
+        return whole
+    union = (min(b[0] for b in boxes), min(b[1] for b in boxes),
+             max(b[2] for b in boxes), max(b[3] for b in boxes))  # fmt: skip
+    return (
+        whole if _area(union) >= _PLATE_SHARE * native.width * native.height else union
     )
 
 

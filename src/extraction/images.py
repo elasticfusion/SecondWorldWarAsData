@@ -53,6 +53,9 @@ def fetch_image_bytes_with_reason(url: str):
     failure."""
     from src.utils.url_hygiene import clean_url
 
+    figure = _book_figure(url)
+    if figure is not None:
+        return figure
     cleaned = clean_url(url)
     if not cleaned:
         logger.debug("image fetch blocked (scheme/host): %s", url)
@@ -81,6 +84,20 @@ def fetch_image_bytes_with_reason(url: str):
     except Exception as exc:  # noqa: BLE001 - fetch failure must be non-fatal
         logger.debug("Failed to download %s: %s", cleaned, exc)
         return None, None, "fetch_error"
+
+
+def _book_figure(url: str):
+    """(bytes, ext, reason) of a book's own figure (src/ingestion/book_figures: a pipeline-written
+    file in the system namespace, read from storage - never fetched over HTTP); None when ``url``
+    is not a figure key."""
+    from src.ingestion import book_figures
+
+    if not book_figures.is_figure_key(url):
+        return None
+    body, ext = book_figures.read_figure(url)
+    if body is None or not _is_valid_image_body(body, ""):  # magic bytes only
+        return None, None, "figure_unreadable"
+    return body, ext, "ok"
 
 
 def _safe_image_response(cleaned: str):
