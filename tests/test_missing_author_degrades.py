@@ -84,7 +84,7 @@ def test_weather_is_extracted_with_an_empty_author(tmp_path, monkeypatch):
                             "Sub-eventID": SEID,
                             "Sub-event_summary": "Landing",
                             "Sub-event_fulltext": {
-                                "Paragraph_001": "The seas were heavy."
+                                "Paragraph_001": "The wind was 15-20 knots and the seas were heavy."
                             },
                         }
                     ],
@@ -99,7 +99,12 @@ def test_weather_is_extracted_with_an_empty_author(tmp_path, monkeypatch):
             {
                 "book": "USA-E-XChannel-8",
                 "author": "",
-                "paragraphs": [{"absolute_number": 1, "text": "The seas were heavy."}],
+                "paragraphs": [
+                    {
+                        "absolute_number": 1,
+                        "text": "The wind was 15-20 knots and the seas were heavy.",
+                    }
+                ],
             }
         ),
         encoding="utf-8",

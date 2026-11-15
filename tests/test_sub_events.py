@@ -138,25 +138,22 @@ def test_equipment_broad_asks_each_sub_event_with_its_own_cache_key():
     assert len(client.keys) == 3 and len(set(client.keys)) == 3
 
 
-def test_an_item_is_pinned_to_the_sub_event_it_was_found_in():
-    """A paragraph number outside the sub-event would attribute the mention elsewhere
-    (_find_sub_event): keep the in-sub-event ones, else the paragraph quoting the item.
-    """
+def test_an_item_is_pinned_to_the_paragraphs_its_quote_is_in():
+    """The model's paragraph numbers are not trusted (a window-relative 1-3, or one off): the
+    quote's own paragraphs attribute the mention (_find_sub_event)."""
     se = EVENT["Event"]["Sub-events"][0]
     stray = {
         "name": "DD tank",
         "original_text": "two  DD tanks",
-        "paragraph_numbers": [3, 9],
+        "paragraph_numbers": [1, 9],
     }
     assert eq._pin_to_sub_event(stray, se)["paragraph_numbers"] == [2]
-    mixed = {"name": "LCT", "original_text": "x", "paragraph_numbers": [1, 3]}
-    assert eq._pin_to_sub_event(mixed, se)["paragraph_numbers"] == [1]
-    unquoted = {
-        "name": "mine",
-        "original_text": "not in the text",
-        "paragraph_numbers": [],
+    named = {"name": "LCT", "original_text": "x", "paragraph_numbers": [1, 3]}
+    assert eq._pin_to_sub_event(named, se) == {
+        "name": "LCT",
+        "original_text": "The LCTs beached.",
+        "paragraph_numbers": [1],
     }
-    assert eq._pin_to_sub_event(unquoted, se)["paragraph_numbers"] == [1, 2]
     found_in = eq._find_sub_event(
         EVENT, eq._pin_to_sub_event(stray, se)["paragraph_numbers"]
     )
@@ -198,8 +195,14 @@ def test_an_event_without_sub_events_is_asked_whole():
     assert [i["name"] for i in items] == ["LST"]
 
 
-def test_falling_back_to_the_whole_sub_event_is_flagged():
+def test_an_item_the_text_does_not_support_is_dropped_and_counted():
     se = EVENT["Event"]["Sub-events"][0]
-    with mock.patch.object(eq, "observe_warn") as warn:
-        eq._pin_to_sub_event({"name": "mine", "original_text": "elsewhere"}, se)
-    assert warn.call_args.args[1] == "pin_fallback_whole_sub_event"
+    assert (
+        eq._pin_to_sub_event({"name": "mine", "original_text": "elsewhere"}, se) is None
+    )
+    client = _Client(
+        {"S1": [{"name": "mine", "original_text": "elsewhere"}], "S2": [], "S3": []}
+    )
+    with mock.patch("src.utils.observe.observe_warn_counted") as warn:
+        assert eq._extract_equipment_broad(EVENT, client) == []
+    assert warn.call_args.args[1] == "quote_unsupported"

@@ -442,7 +442,7 @@ def test_images_anchor_against_the_separated_body(tmp_path, monkeypatch):
 def test_bibliography_reference_type_follows_note_kind(tmp_path):
     import json
 
-    from src.extraction.bibliography import _collect_parsed_notes
+    from src.extraction.bibliography import collect_parsed_notes
 
     pf = tmp_path / "x-parsed.json"
     pf.write_text(
@@ -458,7 +458,7 @@ def test_bibliography_reference_type_follows_note_kind(tmp_path):
         ),
         encoding="utf-8",
     )
-    got = {n["number"]: n["_ref_type"] for n in _collect_parsed_notes(pf)}
+    got = {n["number"]: n["_ref_type"] for n in collect_parsed_notes(pf)}
     assert got == {1: "endnote", 2: "footnote", 3: "footnote", 4: "endnote"}
 
 

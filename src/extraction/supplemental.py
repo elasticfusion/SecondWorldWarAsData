@@ -5,7 +5,7 @@ import math
 import logging
 import hashlib
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 import ulid
 from jsonschema import ValidationError, validate
 
@@ -255,6 +255,159 @@ def _sorted_refs(refs: Any) -> str:
     return ",".join(
         str(n) for n in sorted(r for r in (refs or []) if isinstance(r, int))
     )
+
+
+_KIND_OF_KEY = {"e:": "endnote", "f:": "footnote"}
+
+
+def _asked_notes(stable_material: str) -> List[Tuple[str, str]]:
+    """``[(note number, kind)]`` a request asked about, from its stable cache-key material (built
+    by ``_sub_event_prompt``: ``...|e:<endnotes>|f:<footnotes>[|w:<window>]``)."""
+    asked: List[Tuple[str, str]] = []
+    for part in str(stable_material or "").split("|"):
+        kind = _KIND_OF_KEY.get(part[:2], "")
+        pairs = [(n, kind) for n in part[2:].split(",") if n and kind]
+        asked.extend(p for p in pairs if p not in asked)
+    return asked
+
+
+# a citation's own words, to tell which asked note it came from
+_CITATION_KEYS = ("title", "alt_title", "archive_reference_number")
+_MATERIAL_KEYS = ("archive_reference", "archive_reference_number", "prose_content")
+
+
+Note = Tuple[str, str]  # (note number, kind: "footnote" | "endnote")
+
+
+def _note_of(
+    material: Dict[str, Any], asked: List[Note], notes: Dict[Note, List[str]]
+) -> Optional[Note]:
+    """Which of the ``asked`` notes one answer item comes from: the number the model gave (when
+    it is ONE asked note), else the ONE asked note, else the one asked note holding the item's
+    title / archive reference / prose (``_holding``); None when no or several notes do (footnote
+    3 and endnote 3 asked together are told apart by their text, never guessed)."""
+    given = str(material.get("reference_number") or "").strip()
+    named = [k for k in asked if k[0] == given]
+    if len(named) == 1:
+        return named[0]
+    if len(asked) == 1:
+        return asked[0]
+    holding = _holding(_own_words(material), asked, notes)
+    return holding.pop() if len(holding) == 1 else None
+
+
+def _own_words(material: Dict[str, Any]) -> List[str]:
+    """An item's title / alt title / archive reference / prose - what its note's text holds."""
+    from src.utils.quote_match import too_short
+
+    citation = material.get("citation")
+    words = [
+        *(citation.get(k) for k in _CITATION_KEYS if isinstance(citation, dict)),
+        *(material.get(k) for k in _MATERIAL_KEYS),
+    ]
+    return [w for w in words if isinstance(w, str) and not too_short(w)]
+
+
+def _holding(words: List[str], asked: List[Any], notes: Dict[Any, List[str]]) -> set:
+    """The asked notes whose text holds any of ``words`` (whole words, or a near match -
+    ``quote_match.in_paragraphs``)."""
+    from src.utils.quote_match import build_index, in_paragraphs
+
+    def holds(text: str, part: str) -> bool:
+        index = build_index([{"absolute_number": 0, "text": text}])
+        return bool(in_paragraphs(part, index, [0])[1])
+
+    return {
+        n
+        for n in asked
+        if any(holds(text, w) for text in notes.get(n, []) for w in words)
+    }
+
+
+def chapter_notes(parsed_file: Path) -> Dict[str, List[Dict[str, Any]]]:
+    """``{note number: [its notes as parsed]}`` of a chapter - the source's own text and kind
+    (``bibliography.collect_parsed_notes``), never the cross-reference-resolved text the prompt
+    shows (a ``verbatim_reference`` must be the note's own words)."""
+    from src.extraction.bibliography import collect_parsed_notes
+
+    out: Dict[str, List[Dict[str, Any]]] = {}
+    for note in collect_parsed_notes(parsed_file) or []:
+        if note.get("number") is not None:
+            out.setdefault(str(note["number"]).strip(), []).append(note)
+    return out
+
+
+def locate_notes(
+    response: Dict[str, Any],
+    stable_material: str,
+    notes: Dict[str, List[Dict[str, Any]]],
+) -> Tuple[int, int]:
+    """Give each item of one supplemental answer its note locator IN PLACE, deterministically
+    (``_note_of``, ``_put_locator``). The prompt asks none of these: without them a bibliography
+    mention says only which sub-event cited the source (provenance P2-Q2). Returns (located, not
+    located)."""
+    asked = _asked_notes(stable_material)
+    own = {(n, kind): _of_kind(notes.get(n, []), kind) for n, kind in asked}
+    texts = {k: [str(x.get("text") or "") for x in got] for k, got in own.items()}
+    located = unlocated = 0
+    for material in (response or {}).get("Supplemental_Material") or []:
+        if not isinstance(material, dict):
+            continue
+        note = _note_of(material, asked, texts)
+        if note is None:
+            unlocated += 1
+        else:
+            located += 1
+            _put_locator(material, note, own[note])
+    return located, unlocated
+
+
+def _of_kind(notes: List[Dict[str, Any]], kind: str) -> List[Dict[str, Any]]:
+    """A number's notes of the asked ``kind`` (footnote 3 and endnote 3 may both exist); all of
+    them when none is labelled so (the request's kind and the note's own label can differ).
+    """
+    return [x for x in notes if x.get("_ref_type") == kind] or notes
+
+
+_CITATION_CLASSES = ("citation", "hybrid", "document_reference")
+
+
+def _put_locator(
+    material: Dict[str, Any], note: Note, notes: List[Dict[str, Any]]
+) -> None:
+    """``reference_number``; ``reference_type`` the asked note's kind (for the "bibliography"
+    default); and ``verbatim_reference`` (``_verbatim``)."""
+    material["reference_number"], kind = note
+    if material.get("reference_type") in (None, "", "bibliography"):
+        material["reference_type"] = kind
+    if not str(material.get("verbatim_reference") or "").strip():
+        material["verbatim_reference"] = _verbatim(material, notes)
+
+
+def _verbatim(material: Dict[str, Any], notes: List[Dict[str, Any]]) -> str:
+    """The note's own words for a CITATION that names its document (a title, alt title or archive
+    reference - an empty one stays empty: a verbatim_reference alone makes it a stored document,
+    ``_has_document``); "" for a prose item, a stub note ("Ibid.") or no note text."""
+    from src.extraction.bibliography import _is_stub_citation
+
+    words = _own_words(material)
+    text = next((str(x["text"]) for x in notes if str(x.get("text") or "").strip()), "")
+    if material.get("content_class") not in _CITATION_CLASSES or not words or not text:
+        return ""
+    own = _own_part(text, words)
+    return "" if _is_stub_citation(own) else own
+
+
+def _own_part(text: str, words: List[str]) -> str:
+    """The note's text; of a note citing several documents (the green-book ";"), the ONE part
+    holding the item's words, else "" (which document it is, is unknown)."""
+    from src.extraction.bibliography import _GREENBOOK_DOC_DELIMITER
+
+    parts = [p.strip() for p in text.split(_GREENBOOK_DOC_DELIMITER) if p.strip()]
+    if len(parts) <= 1:
+        return text
+    holding = [p for p in parts if _holding(words, ["p"], {"p": [p]})]
+    return holding[0] if len(holding) == 1 else ""  # never all its documents' text
 
 
 def _is_cross_reference(title: str) -> bool:
@@ -1321,7 +1474,7 @@ def extract_supplemental(
     all_supplemental = []
     known_parents = (
         []
-    )  # parallel to all_supplemental: (known_event_id, known_sub_event_id)
+    )  # parallel to all_supplemental: (known EventID, known Sub-eventID, stable key material)
 
     def _ask(item: tuple) -> None:
         sub_event_id, prompt, stable_material, parent_event_id = item
@@ -1335,7 +1488,7 @@ def extract_supplemental(
         )
         if response:
             all_supplemental.append(response)
-            known_parents.append((parent_event_id, sub_event_id))
+            known_parents.append((parent_event_id, sub_event_id, stable_material))
 
     # every request joins this batch round: a queued one does not stop the rest (stopping at the
     # first queued asked one per round - chapter 8: supplemental:1 in round after round)
@@ -1350,11 +1503,25 @@ def extract_supplemental(
         logger.info("No supplemental material extracted from %s", event_file.name)
         return None
 
-    # Sanitize and generate ULIDs
-    for sub_event_data, (ev_id, se_id) in zip(all_supplemental, known_parents):
+    # Sanitize, give each item its note locator, and generate ULIDs
+    notes = chapter_notes(parsed_file)
+    located = unlocated = 0
+    for sub_event_data, (ev_id, se_id, material) in zip(
+        all_supplemental, known_parents
+    ):
         sanitize_supplemental_data(
             sub_event_data, known_event_id=ev_id, known_sub_event_id=se_id
         )
+        got, missed = locate_notes(sub_event_data, material, notes)
+        located, unlocated = located + got, unlocated + missed
+    logger.info(
+        "OBSERV supplemental.notes_located file=%s located=%d unlocated=%d (unlocated: "
+        "several asked notes and none or more than one holds the item's title - its mention "
+        "cites only its sub-event)",
+        event_file.name,
+        located,
+        unlocated,
+    )
     all_supplemental = generate_ulids(all_supplemental)
 
     # Route by content class

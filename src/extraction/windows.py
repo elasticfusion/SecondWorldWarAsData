@@ -25,7 +25,15 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.utils.paragraph_numbers import paragraph_key, paragraph_number
-from src.utils.quote_match import normalize
+from src.utils.quote_match import (
+    EXACT,
+    NEAR,
+    fragments,
+    locate,
+    naming_sentence,
+    normalize,
+    source_passage,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -224,10 +232,121 @@ def own_answer(window_id: str, found: Dict[str, Any], entity: str) -> Dict[str, 
     return {window_id: [m for v in found.values() if isinstance(v, list) for m in v]}
 
 
-def _quote_of(item: Any) -> Any:
+def _field(item: Any, key: str) -> Any:
+    return item.get(key) if isinstance(item, dict) else getattr(item, key, None)
+
+
+# the keys an item names its entity by (people/equipment "name", places "current_name", groups
+# "group_name"); a statement (date, weather, logistics, casualty) has none
+_NAME_KEYS = ("name", "current_name", "group_name")
+# the keys an item cites its paragraphs by (equipment/dates "paragraph_numbers", logistics
+# "paragraphs")
+_PARAGRAPH_KEYS = ("paragraph_numbers", "paragraphs")
+
+# how an item's quote was settled (``settle``): verbatim; replaced by the source passage it nearly
+# matched; replaced by the sentence naming the item; no quote given (kept, unverifiable)
+REPAIRED, NAMED, UNQUOTED = "repaired", "named", "unquoted"
+
+
+def _name_of(item: Any) -> str:
+    return next((str(v) for k in _NAME_KEYS if (v := _field(item, k))), "")
+
+
+def settle(
+    quote: Any, name: Any, fulltext: Dict[str, Any]
+) -> Optional[Tuple[str, List[int], str]]:
+    """(the quote to store, the paragraphs it is in, how) for one item of an answer about the
+    paragraphs ``fulltext`` (``{"Paragraph_<n>": text}``), or None when that text supports
+    neither the item's quote nor its name - an item the source does not show.
+
+    original_text is the provenance anchor: it must be IN the source. In order:
+
+    * ``EXACT``: the quote is verbatim (whole words; an elided "A ... B" is its parts; across two
+      consecutive paragraphs) - kept, with every paragraph it is in;
+    * ``REPAIRED``: a near match (OCR noise or a model's rewording, ``quote_match.NEAR``) - the
+      source's own sentence(s) instead (``source_passage``);
+    * ``NAMED``: the first sentence naming the item (an entity's name, never a statement's);
+    * ``UNQUOTED``: no quote given (or no words in it: "...") and no name in the text - kept as
+      before, on all the paragraphs (a quote-less statement is still a statement of them).
+    """
+    raw = _paragraph_texts(fulltext)
+    nums, how = locate(quote, [(n, normalize(t)) for n, t in sorted(raw.items())], raw)
+    if how == EXACT:
+        return str(quote), nums, EXACT
+    passage = _passage(quote, raw, nums) if how == NEAR else None
+    if passage:
+        return passage[0], [passage[1]], REPAIRED
+    named = _naming(name, raw)
+    if named:
+        return named[0], [named[1]], NAMED
+    return ("", sorted(raw), UNQUOTED) if not fragments(quote) else None
+
+
+def _paragraph_texts(fulltext: Dict[str, Any]) -> Dict[int, str]:
+    """``{paragraph number: text}`` of a ``{"Paragraph_<n>": text}`` fulltext."""
+    return {
+        n: str(t or "")
+        for k, t in (fulltext or {}).items()
+        if (n := paragraph_number(k)) is not None
+    }
+
+
+def _passage(
+    quote: Any, raw: Dict[int, str], nums: List[int]
+) -> Optional[Tuple[str, int]]:
+    """(the source passage a near-matched quote is, its paragraph): the first of the quote's
+    paragraphs that holds one (an elided quote's exact part may come first)."""
+    for n in nums:
+        passage = source_passage(quote, raw[n])
+        if passage:
+            return passage, n
+    return None
+
+
+def _naming(name: Any, raw: Dict[int, str]) -> Optional[Tuple[str, int]]:
+    """(the first sentence naming ``name``, its paragraph), or None (no name, or not named)."""
+    for n, text in sorted(raw.items()) if name else ():
+        sentence = naming_sentence(name, text)
+        if sentence:
+            return sentence, n
+    return None
+
+
+def settle_item(
+    item: Any, fulltext: Dict[str, Any], entity: str, where: str
+) -> Optional[List[int]]:
+    """``settle`` one answer item (a dict or a model) IN PLACE: its original_text becomes the
+    settled quote, its cited paragraphs (when it has the field) the ones the quote is in.
+    Returns those paragraphs; None (item untouched) when the text supports neither its quote nor
+    its name - the caller drops it."""
+    answered = _field(item, "original_text")
+    settled = settle(answered, _name_of(item), fulltext)
+    if settled is None:
+        return None
+    quote, nums, how = settled
+    _put(item, "original_text", quote or answered)
+    for key in _PARAGRAPH_KEYS:
+        _put(item, key, list(nums))
+    if how in (REPAIRED, NAMED):
+        logger.info(
+            "OBSERV windows.quote_settled entity=%s how=%s where=%s answered=%r stored=%r",
+            entity,
+            how,
+            where,
+            str(answered or "")[:120],
+            quote[:120],
+        )
+    return nums
+
+
+def _put(item: Any, key: str, value: Any) -> None:
+    """Set a field the item HAS (a dict key or a model field): a stray key would be an
+    unmodeled field downstream; a model without the field would raise."""
     if isinstance(item, dict):
-        return item.get("original_text")
-    return getattr(item, "original_text", None)
+        if key in item or key == "original_text":
+            item[key] = value
+    elif key in (getattr(type(item), "model_fields", None) or {}):
+        setattr(item, key, value)
 
 
 def attribute_found(
@@ -237,8 +356,10 @@ def attribute_found(
     entity: str,
 ) -> Dict[str, List[Any]]:
     """``{window id: items}`` -> ``{real Sub-eventID: items}``: each item (a dict or a model with
-    ``original_text``) goes to the sub-event holding its quote (``attribute``); one no sub-event
-    holds is dropped and counted. The statement extractors' form of ``regroup``."""
+    ``original_text``) is settled against its window's text (``settle_item``) and goes to the
+    sub-event holding its paragraphs (``attribute``); one the text does not support, or no
+    sub-event holds, is dropped and counted. The statement extractors' form of ``regroup``.
+    """
     from src.utils.deterministic_ids import reconcile_echoed_keys
 
     wins = (wev.get("Event") or {}).get("Sub-events") or []
@@ -246,17 +367,20 @@ def attribute_found(
     owners = paragraph_owners(real_event)
     out: Dict[str, List[Any]] = {}
     for w in wins:
-        unowned = unquoted = 0
+        unowned = unsupported = 0
         for item in found.get(w["Sub-eventID"]) or []:
-            seid, _nums, quoted = attribute(
-                w, {"original_text": _quote_of(item)}, owners
+            nums = settle_item(
+                item, w.get("Sub-event_fulltext") or {}, entity, w["Sub-eventID"]
             )
-            unquoted += not quoted
+            if nums is None:
+                unsupported += 1
+                continue
+            seid = attribute(nums, owners)
             if seid is None:
                 unowned += 1
             else:
                 out.setdefault(seid, []).append(item)
-        _observe(entity, w, unowned, unquoted)
+        observe_drops(entity, w, unowned, unsupported)
     return out
 
 
@@ -274,27 +398,10 @@ def paragraph_owners(event_data: Dict[str, Any]) -> Dict[int, str]:
     return owners
 
 
-def attribute(
-    window: Dict[str, Any], obj: Dict[str, Any], owners: Dict[int, str]
-) -> Tuple[Optional[str], List[int], bool]:
-    """(real Sub-eventID, the paragraphs the item came from, whether its quote was found).
-
-    The paragraphs are those of the window whose text contains the item's quote; when it is in none
-    of them (a quote spanning two paragraphs, or not verbatim) all the window's paragraphs. The
-    sub-event is the one holding the first of them; None when no sub-event holds any (the events
-    answer left those paragraphs out)."""
-    paras = {
-        n: normalize(text)
-        for k, text in (window.get("Sub-event_fulltext") or {}).items()
-        if (n := paragraph_number(k)) is not None
-    }
-    quote = normalize(obj.get("original_text"))
-    found = [n for n, text in sorted(paras.items()) if quote and quote in text]
-    nums = found or sorted(paras)
-    for n in nums:
-        if owners.get(n):
-            return owners[n], nums, bool(found)
-    return None, nums, bool(found)
+def attribute(nums: List[int], owners: Dict[int, str]) -> Optional[str]:
+    """The real Sub-eventID holding the first of an item's paragraphs (``settle_item``), or None
+    when no sub-event holds any (the events answer left them out)."""
+    return next((owners[n] for n in nums if owners.get(n)), None)
 
 
 def regroup(
@@ -351,9 +458,12 @@ def _collect_extras(
             extras.setdefault(k, []).extend(v)
 
 
-def _observe(
-    entity_type: str, window: Dict[str, Any], unowned: int, unquoted: int
+def observe_drops(
+    entity_type: str, window: Dict[str, Any], unowned: int = 0, unsupported: int = 0
 ) -> None:
+    """Count (and alert) the items of one window / sub-event's answer that were dropped: no
+    sub-event holds their paragraphs (``unowned``), or the text does not support them
+    (``unsupported``)."""
     from src.utils.observe import observe_warn_counted
 
     if unowned:
@@ -366,12 +476,14 @@ def _observe(
             note="the events answer holds none of this window's paragraphs: its items have no "
             "sub-event and were dropped (check events coverage)",
         )
-    if unquoted:
-        # the item went to the sub-event of the window's FIRST paragraph: right unless the window
-        # spans two sub-events
-        logger.info(
-            "OBSERV windows.quote_not_in_window entity=%s window=%s items=%d",
-            entity_type,
-            window.get("Sub-eventID", ""),
-            unquoted,
+    if unsupported:
+        observe_warn_counted(
+            entity_type or "entities",
+            "quote_unsupported",
+            key=(entity_type,),
+            window=window.get("Sub-eventID", ""),
+            dropped=unsupported,
+            note="the window's text holds neither the item's quote (not even nearly) nor its "
+            "name: dropped as not in the source - if a window repeats here, check its parsed "
+            "text (a split or garbled paragraph)",
         )

@@ -161,7 +161,12 @@ def test_weather_whitespace_only_content_dropped_and_condition_carried():
     assert len(out.get("SE1", [])) == 0
     assert len(out.get("SE2", [])) == 1
     assert out["SE2"][0]["weather_description"] == "fog"
-    assert out["SE2"][0]["original_text"] == "fog"
+    # no quote: the description stands in for it only AFTER attribution (windows.settle keeps an
+    # unquoted statement, but would drop the description as a quote the source does not hold)
+    assert not out["SE2"][0].get("original_text")
+    from src.extraction.weather_central import _describe_unquoted
+
+    assert _describe_unquoted(out)["SE2"][0]["original_text"] == "fog"
 
 
 def test_logistics_strict_path_empty_description_dropped():

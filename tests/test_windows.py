@@ -76,25 +76,97 @@ def test_the_window_event_id_is_the_chapters_event_id():
 def test_an_item_goes_to_the_sub_event_holding_its_quote():
     owners = W.paragraph_owners(REAL)
     window = W.window_event(PARSED, 3)["Event"]["Sub-events"][0]  # paragraphs 1-3
-    assert W.attribute(window, {"original_text": "Bradley watched"}, owners) == (
-        S2,
+    text = window["Sub-event_fulltext"]
+    assert W.settle("Bradley watched", "", text) == ("Bradley watched", [3], W.EXACT)
+    assert W.attribute([3], owners) == S2
+    assert W.settle("Gerow  landed", "", text)[1] == [1]
+    assert W.attribute([1, 2, 3], owners) == S1  # the first paragraph's sub-event
+    assert W.attribute([1], {}) is None  # no sub-event holds it
+
+
+def test_a_quote_the_text_does_not_hold_is_replaced_or_dropped():
+    text = W.window_event(PARSED, 3)["Event"]["Sub-events"][0]["Sub-event_fulltext"]
+    # a near match: the source's own sentence instead (here a model's added word)
+    assert W.settle("The 16th Infantry has crossed the beach", "", text) == (
+        "The 16th Infantry crossed the beach.",
+        [2],
+        W.REPAIRED,
+    )
+    # a paraphrase: the sentence naming the entity
+    assert W.settle("Bradley observed", "Bradley", text) == (
+        "Bradley watched from the Augusta.",
         [3],
-        True,
+        W.NAMED,
     )
-    assert W.attribute(window, {"original_text": "Gerow  landed"}, owners) == (
-        S1,
-        [1],
-        True,
+    # neither the quote nor the name is in the text: not in the source
+    assert W.settle("Patton raced east", "Patton", text) is None
+    assert W.settle("rain fell", "", text) is None
+    # no quote at all: kept on the whole window, as before
+    assert W.settle(None, "", text) == ("", [1, 2, 3], W.UNQUOTED)
+
+
+def test_a_quote_split_by_a_page_break_is_found_across_two_paragraphs():
+    text = {
+        "Paragraph_077": "he was at length given the shadow. The",
+        "Paragraph_078": "Combined Chiefs of Staff in September made him responsible.",
+    }
+    quote = "The Combined Chiefs of Staff in September made him responsible"
+    assert W.settle(quote, "", text) == (quote, [77, 78], W.EXACT)
+    # a footnote's text the parser set between the halves of a sentence
+    text = {
+        "Paragraph_046": "The leading planes dropped the majority conducted by Col. Marshall.",
+        "Paragraph_047": "of the 2d Battalion outside their zone.",
+    }
+    assert W.settle(
+        "The leading planes dropped the majority of the 2d Battalion outside their zone.",
+        "",
+        text,
+    )[1:] == ([46, 47], W.EXACT)
+
+
+def test_settling_writes_the_quote_and_paragraphs_back_and_drops_what_is_unsupported():
+    from pydantic import BaseModel
+
+    class Statement(BaseModel):
+        original_text: str = ""
+        paragraphs: list = []
+
+    wev = W.window_event(PARSED, 3)
+    near = Statement(
+        original_text="The 16th Infantry has crossed the beach", paragraphs=[1]
     )
-    # quote not in any one paragraph: the window's first owned paragraph
-    assert W.attribute(window, {"original_text": "elsewhere"}, owners) == (
-        S1,
-        [1, 2, 3],
-        False,
-    )
-    assert (
-        W.attribute(window, {"original_text": "x"}, {})[0] is None
-    )  # no sub-event holds it
+    unsupported = {"name": "Patton", "original_text": "Patton raced east"}
+    with mock.patch("src.utils.observe.observe_warn_counted") as warn:
+        out = W.attribute_found(
+            {"P001-P003": [near, unsupported]}, wev, REAL, "logistics"
+        )
+    assert out == {S1: [near]}
+    assert near.original_text == "The 16th Infantry crossed the beach."
+    assert near.paragraphs == [
+        2
+    ]  # the quote's paragraph, never the model's (window-relative)
+    assert warn.call_args.args[1] == "quote_unsupported"
+    assert warn.call_args.kwargs["dropped"] == 1
+
+
+def test_settling_writes_only_the_fields_an_item_has():
+    from pydantic import BaseModel
+
+    class Bare(BaseModel):
+        name: str = ""
+
+    text = W.window_event(PARSED, 3)["Event"]["Sub-events"][0]["Sub-event_fulltext"]
+    bare = Bare(
+        name="Bradley"
+    )  # no original_text, no paragraph field: nothing set, no error
+    assert W.settle_item(bare, text, "people", "P001-P003") == [3]
+    assert not hasattr(bare, "original_text")
+    item = {"name": "Bradley"}
+    W.settle_item(item, text, "people", "P001-P003")
+    assert item == {
+        "name": "Bradley",
+        "original_text": "Bradley watched from the Augusta.",
+    }
 
 
 def test_a_window_answer_is_regrouped_under_the_real_sub_events():

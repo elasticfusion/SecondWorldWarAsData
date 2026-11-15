@@ -1084,8 +1084,6 @@ def _normalize_weather_mention(m: Any) -> Optional[Dict[str, Any]]:
         return None  # no descriptive signal at all -> drop
     if not str(m.get("weather_description") or "").strip():
         m["weather_description"] = desc
-    if not str(m.get("original_text") or "").strip():
-        m["original_text"] = desc
     m["observation_type"] = _observation_type(m.get("observation_type"))
     return m
 
@@ -1275,15 +1273,17 @@ def _ask_weather(
         else windows.window_event_for(event_file, windows.window_size())
     )
     if wev is None:
-        return _batch_extract_weather(
-            event.get("Sub-events", []),
-            event.get("EventID", ""),
-            event_data.get("Chapter", ""),
-            grok_client,
-            max_retries,
-            places_index,
-            empty_counter=empty_counter,
-            failures=failures,
+        return _describe_unquoted(
+            _batch_extract_weather(
+                event.get("Sub-events", []),
+                event.get("EventID", ""),
+                event_data.get("Chapter", ""),
+                grok_client,
+                max_retries,
+                places_index,
+                empty_counter=empty_counter,
+                failures=failures,
+            )
         )
     if windows.unusable(wev, event_data, "weather"):
         return None
@@ -1300,7 +1300,23 @@ def _ask_weather(
         empty_counter=empty_counter,
         failures=failures,
     )
-    return windows.attribute_found(found, wev, event_data, "weather")
+    return _describe_unquoted(
+        windows.attribute_found(found, wev, event_data, "weather")
+    )
+
+
+def _describe_unquoted(
+    results: Dict[str, List[Dict[str, Any]]],
+) -> Dict[str, List[Dict[str, Any]]]:
+    """A statement the model gave no quote for keeps its description as its original_text (the
+    record guard requires one). Done AFTER attribution: there, an empty quote is unquoted
+    (``windows.settle`` keeps it), while the description - not the source's words - would be
+    dropped as an unsupported quote."""
+    for mentions in (results or {}).values():
+        for m in mentions:
+            if isinstance(m, dict) and not str(m.get("original_text") or "").strip():
+                m["original_text"] = m.get("weather_description") or ""
+    return results
 
 
 def _load_weather_processed(weather_dir: Path) -> Dict[str, bool]:

@@ -128,7 +128,7 @@ def extract_bibliography_deterministic(
 
     Returns the number of citations stored (new or mention-appended).
     """
-    notes = _collect_parsed_notes(parsed_file)
+    notes = collect_parsed_notes(parsed_file)
     if notes is None:
         return 0
     bib_dir = output_root / "bibliography"
@@ -154,7 +154,7 @@ def materialize_bibliography_to_local(output_root: Path) -> int:
     return 0
 
 
-def _collect_parsed_notes(parsed_file: Path) -> Optional[List[Dict[str, Any]]]:
+def collect_parsed_notes(parsed_file: Path) -> Optional[List[Dict[str, Any]]]:
     """Read the parsed file and return tagged footnote/endnote dicts, or ``None`` if the
     file is absent/unreadable (so the caller returns 0 without raising)."""
     if not parsed_file or not parsed_file.exists():

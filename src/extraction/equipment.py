@@ -2268,7 +2268,18 @@ def _extract_equipment_broad_one(
                 out = out[_k]
                 break
     items: List[Any] = out if isinstance(out, list) else []
-    return [_pin_to_sub_event(it, se) for it in items if isinstance(it, dict)]
+    return _pin_all(items, se)
+
+
+def _pin_all(items: List[Any], se: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Every answer item pinned to ``se`` (``_pin_to_sub_event``); the ones the text does not
+    support dropped and counted."""
+    from src.extraction.windows import observe_drops
+
+    pinned = [_pin_to_sub_event(it, se) for it in items if isinstance(it, dict)]
+    kept = [it for it in pinned if it is not None]
+    observe_drops("equipment", se, unsupported=len(pinned) - len(kept))
+    return kept
 
 
 def _sub_event_paragraphs(se: Dict[str, Any]) -> Dict[int, str]:
@@ -2284,41 +2295,22 @@ def _sub_event_paragraphs(se: Dict[str, Any]) -> Dict[int, str]:
     return paras
 
 
-def _squash(text: Any) -> str:
-    return " ".join(str(text or "").split()).lower()
+def _pin_to_sub_event(
+    item: Dict[str, Any], se: Dict[str, Any]
+) -> Optional[Dict[str, Any]]:
+    """The item settled against the window / sub-event it was found in (``windows.settle_item``):
+    its quote the source's, its paragraph_numbers the ones that quote is in - so the mention is
+    attributed by them (``_find_sub_event``), never by the paragraph numbers the model gave. None
+    when the text supports neither its quote nor its name. A sub-event without paragraphs: the
+    item as given."""
+    from src.extraction.windows import settle_item
 
-
-def _quoting(item: Dict[str, Any], paras: Dict[int, str]) -> List[int]:
-    """The paragraph numbers whose text contains the item's quote."""
-    quote = _squash(item.get("original_text"))
-    return [n for n, t in sorted(paras.items()) if quote and quote in _squash(t)]
-
-
-def _pin_to_sub_event(item: Dict[str, Any], se: Dict[str, Any]) -> Dict[str, Any]:
-    """Keep only the item's paragraph numbers that lie in the sub-event it was found in, so the
-    mention is attributed to that sub-event (``_find_sub_event``). None left: the paragraph(s)
-    quoting it, else all of the sub-event's."""
-    from src.utils.paragraph_numbers import coerce_paragraph_numbers
-
-    paras = _sub_event_paragraphs(se)
-    if not paras:
+    fulltext = se.get("Sub-event_fulltext") if isinstance(se, dict) else None
+    if not isinstance(fulltext, dict) or not _sub_event_paragraphs(se):
         return item
-    given = coerce_paragraph_numbers(
-        item.get("paragraph_numbers"),
-        scope="equipment.broad",
-        subject=str(item.get("name") or ""),
-    )
-    inside = [n for n in given if n in paras] or _quoting(item, paras)
-    if not inside:
-        inside = sorted(paras)
-        observe_warn(
-            "equipment",
-            "pin_fallback_whole_sub_event",
-            item=str(item.get("name") or "")[:60],
-            sub_event_id=se.get("Sub-eventID", ""),
-            note="no paragraph in the sub-event given or quoting it: context is the whole sub-event",
-        )
-    return {**item, "paragraph_numbers": inside}
+    item = {**item, "paragraph_numbers": []}
+    nums = settle_item(item, fulltext, "equipment", str(se.get("Sub-eventID", "")))
+    return item if nums is not None else None
 
 
 def _build_extended_text(

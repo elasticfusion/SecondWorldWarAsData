@@ -45,11 +45,17 @@ def _run(tmp_path, reply, monkeypatch):
     content = tmp_path / "content" / "B"
     content.mkdir(parents=True)
     owned = {SEID: (1, 2, 3), SEID2: (4,)}
+    # each sub-event's first paragraph says what its answer quotes: an item the source does not
+    # support is dropped (windows.settle)
+    text = {n: f"x{n}" for n in (1, 2, 3, 4)}
+    for sid, items in reply.items():
+        quotes = [str(m.get("original_text") or "") for m in items]
+        text[owned[sid][0]] += " " + " ".join(q for q in quotes if q)
     sub_events = [
         {
             "Sub-eventID": sid,
             "Sub-event_summary": f"S{i}",
-            "Sub-event_fulltext": {f"Paragraph_{n:03d}": f"x{n}" for n in owned[sid]},
+            "Sub-event_fulltext": {f"Paragraph_{n:03d}": text[n] for n in owned[sid]},
         }
         for i, sid in enumerate((SEID, SEID2))
     ]
@@ -61,7 +67,7 @@ def _run(tmp_path, reply, monkeypatch):
         encoding="utf-8",
     )
     parsed = content / "c-parsed.json"
-    paragraphs = [{"absolute_number": n, "text": f"x{n}"} for n in (1, 2, 3, 4)]
+    paragraphs = [{"absolute_number": n, "text": text[n]} for n in (1, 2, 3, 4)]
     parsed.write_text(
         json.dumps({"book": "B", "author": "A", "paragraphs": paragraphs}),
         encoding="utf-8",
